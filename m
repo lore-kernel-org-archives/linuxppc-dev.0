@@ -2,99 +2,94 @@ Return-Path: <SRS0=MnD0=R6=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
+X-Spam-Status: No, score=-3.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D65C1C43381
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Mar 2019 04:39:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C63E6C43381
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Mar 2019 05:34:45 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 5C72B20811
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Mar 2019 04:39:40 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5C72B20811
+	by mail.kernel.org (Postfix) with ESMTPS id 00386206DF
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Mar 2019 05:34:44 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 00386206DF
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=au1.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44TZzF59CCzDqMd
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Mar 2019 15:39:37 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44TcBp1NtqzDqLZ
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Mar 2019 16:34:42 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=au1.ibm.com
- (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
+ (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
  envelope-from=alastair@au1.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=au1.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44TZxV1GMDzDqGW
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Mar 2019 15:38:05 +1100 (AEDT)
-Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x2R4Yq3u031498
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Mar 2019 00:38:02 -0400
-Received: from e06smtp02.uk.ibm.com (e06smtp02.uk.ibm.com [195.75.94.98])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2rg23b8dxa-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44Tc8C5NSyzDqMd
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Mar 2019 16:32:26 +1100 (AEDT)
+Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
+ x2R5Tq42101206
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Mar 2019 01:32:24 -0400
+Received: from e06smtp07.uk.ibm.com (e06smtp07.uk.ibm.com [195.75.94.103])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2rg05m5nnd-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Mar 2019 00:38:02 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Mar 2019 01:32:24 -0400
 Received: from localhost
- by e06smtp02.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp07.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <alastair@au1.ibm.com>;
- Wed, 27 Mar 2019 04:38:00 -0000
-Received: from b06cxnps3075.portsmouth.uk.ibm.com (9.149.109.195)
- by e06smtp02.uk.ibm.com (192.168.101.132) with IBM ESMTP SMTP Gateway:
+ Wed, 27 Mar 2019 05:32:22 -0000
+Received: from b06cxnps3074.portsmouth.uk.ibm.com (9.149.109.194)
+ by e06smtp07.uk.ibm.com (192.168.101.137) with IBM ESMTP SMTP Gateway:
  Authorized Use Only! Violators will be prosecuted; 
  (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Wed, 27 Mar 2019 04:37:57 -0000
-Received: from d06av25.portsmouth.uk.ibm.com (d06av25.portsmouth.uk.ibm.com
- [9.149.105.61])
- by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x2R4buul54853724
+ Wed, 27 Mar 2019 05:32:19 -0000
+Received: from d06av24.portsmouth.uk.ibm.com (d06av24.portsmouth.uk.ibm.com
+ [9.149.105.60])
+ by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x2R5WI1j54067332
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Wed, 27 Mar 2019 04:37:57 GMT
-Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id D2F8F11C052;
- Wed, 27 Mar 2019 04:37:56 +0000 (GMT)
-Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 3C35111C04C;
- Wed, 27 Mar 2019 04:37:56 +0000 (GMT)
+ Wed, 27 Mar 2019 05:32:18 GMT
+Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id BCB7142049;
+ Wed, 27 Mar 2019 05:32:18 +0000 (GMT)
+Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 6A8C142045;
+ Wed, 27 Mar 2019 05:32:18 +0000 (GMT)
 Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
- by d06av25.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Wed, 27 Mar 2019 04:37:56 +0000 (GMT)
+ by d06av24.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Wed, 27 Mar 2019 05:32:18 +0000 (GMT)
 Received: from adsilva.ozlabs.ibm.com (haven.au.ibm.com [9.192.254.114])
- (using TLSv1.2 with cipher AES256-GCM-SHA384 (256/256 bits))
+ (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.au.ibm.com (Postfix) with ESMTPSA id 780FAA00E2;
- Wed, 27 Mar 2019 15:37:54 +1100 (AEDT)
-Subject: Re: [PATCH v2]  arch/powerpc: Rework local_paca to avoid LTO warnings
+ by ozlabs.au.ibm.com (Postfix) with ESMTPSA id 51072A00BD;
+ Wed, 27 Mar 2019 16:32:16 +1100 (AEDT)
 From: "Alastair D'Silva" <alastair@au1.ibm.com>
-To: Nicholas Piggin <npiggin@gmail.com>
-Date: Wed, 27 Mar 2019 15:37:54 +1100
-In-Reply-To: <1553579424.0r39b9otz6.astroid@bobo.none>
-References: <20190313034208.13134-1-alastair@au1.ibm.com>
- <20190314023125.10076-1-alastair@au1.ibm.com>
- <1553579424.0r39b9otz6.astroid@bobo.none>
-Organization: IBM Australia
-Content-Type: text/plain; charset="UTF-8"
-User-Agent: Evolution 3.30.5 (3.30.5-1.fc29) 
+To: alastair@d-silva.org
+Subject: [PATCH v4 0/7] Refactor OCXL driver to allow external drivers to use
+ it
+Date: Wed, 27 Mar 2019 16:31:29 +1100
+X-Mailer: git-send-email 2.20.1
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-x-cbid: 19032704-0008-0000-0000-000002D1F4F9
+x-cbid: 19032705-0028-0000-0000-00000358B771
 X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19032704-0009-0000-0000-0000223E2439
-Message-Id: <8d8a97e145758b92c2760012373f5217877a035c.camel@au1.ibm.com>
+x-cbparentid: 19032705-0029-0000-0000-0000241771B1
+Message-Id: <20190327053137.15173-1-alastair@au1.ibm.com>
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2019-03-27_02:, , signatures=0
+ definitions=2019-03-27_03:, , signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
  priorityscore=1501
- malwarescore=0 suspectscore=2 phishscore=0 bulkscore=0 spamscore=0
+ malwarescore=0 suspectscore=3 phishscore=0 bulkscore=0 spamscore=0
  clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=958 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1810050000 definitions=main-1903270031
+ mlxlogscore=706 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1810050000 definitions=main-1903270038
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -106,110 +101,81 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Michal Hocko <mhocko@suse.com>, linux-kernel@vger.kernel.org,
- Mike Rapoport <rppt@linux.vnet.ibm.com>, Paul Mackerras <paulus@samba.org>,
- Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>,
- Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
- "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
+Cc: Arnd Bergmann <arnd@arndb.de>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org,
+ Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
+ Frederic Barrat <fbarrat@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, 2019-03-26 at 15:58 +1000, Nicholas Piggin wrote:
-> Alastair D'Silva's on March 14, 2019 12:31 pm:
-> > From: Alastair D'Silva <alastair@d-silva.org>
-> > 
-> > When building an LTO kernel, the existing code generates warnings:
-> >     ./arch/powerpc/include/asm/paca.h:37:30: warning: register of
-> >         ‘local_paca’ used for multiple global register variables
-> >      register struct paca_struct *local_paca asm("r13");
-> >                                   ^
-> >     ./arch/powerpc/include/asm/paca.h:37:30: note: conflicts with
-> >         ‘local_paca’
-> 
-> Isn't this a bogus warning? It doesn't look like there's a way to 
-> define it any other way.
+From: Alastair D'Silva <alastair@d-silva.org>
 
-There isn't any other way to define it as a global. However, the
-warning is legitimate.
+This series reworks the OpenCAPI driver to split frontend
+(driver interactions) from backend (hardware interactions).
 
-The compiler sees that there are multiple global register variables,
-all pointing at the same register.
+This allows external drivers to utilise the core of the
+generic OpenCAPI driver to communicate with specific
+OpenCAPI hardware.
 
-The compiler can only determine this when LTO is used, as otherwise it
-only sees the one in the current compilation unit, whicd disappears by
-the time the kernel is linked.
+This series is bisectable.
 
-> 
-> > This patch reworks local_paca into an inline getter & setter
-> > function,
-> > which addresses the warning.
-> > 
-> > Changelog:
-> > V2
-> >   - Address whitespace issues
-> >   - keep new implementation close to where the old implementation
-> > was
-> > 
-> > Signed-off-by: Alastair D'Silva <alastair@d-silva.org>
-> > ---
-> >  arch/powerpc/include/asm/paca.h | 37 +++++++++++++++++++++++++--
-> > ------
-> >  arch/powerpc/kernel/paca.c      |  2 +-
-> >  2 files changed, 29 insertions(+), 10 deletions(-)
-> > 
-> > diff --git a/arch/powerpc/include/asm/paca.h
-> > b/arch/powerpc/include/asm/paca.h
-> > index e843bc5d1a0f..2fa0b43357c9 100644
-> > --- a/arch/powerpc/include/asm/paca.h
-> > +++ b/arch/powerpc/include/asm/paca.h
-> > @@ -34,19 +34,38 @@
-> >  #include <asm/cpuidle.h>
-> >  #include <asm/atomic.h>
-> >  
-> > -register struct paca_struct *local_paca asm("r13");
-> > -
-> >  #if defined(CONFIG_DEBUG_PREEMPT) && defined(CONFIG_SMP)
-> >  extern unsigned int debug_smp_processor_id(void); /* from
-> > linux/smp.h */
-> > -/*
-> > - * Add standard checks that preemption cannot occur when using
-> > get_paca():
-> > - * otherwise the paca_struct it points to may be the wrong one
-> > just after.
-> > - */
-> > -#define get_paca()	((void) debug_smp_processor_id(), local_paca)
-> > -#else
-> > -#define get_paca()	local_paca
-> >  #endif
-> >  
-> > +static inline struct paca_struct *get_paca_no_preempt_check(void)
-> > +{
-> > +	register struct paca_struct *paca asm("r13");
-> > +
-> > +	return paca;
-> > +}
-> 
-> Problem is it now changes the global register variable to a local 
-> register variable. The compiler would presumably be within its rights
-> to "cache" that return value or use another register for it, which
-> is not really what we want.
-> 
-> 
+Changelog:
+V4: 
+  - For: 'ocxl: Create a clear delineation between ocxl backend & frontend'
+      - Reword non-RCU comment to reflect info struct
+      - Inline returns from err label in afu_open()
+      - ocxl_file_make_(in)visibile & ocxl_sysfs_(un)register use info
+        directly, rather than fetching in from the AFU. This, together with
+        a delayed ocxl_afu_set_private(), make it clearer that
+        ocxl_file_register() must succeed for cleanup code to be called
+      - Remove stray ocxl_free_afu() prototype from header
+  - For: 'ocxl: Allow external drivers to use OpenCAPI contexts'
+      - Merge ocxl_context_init & ocxl_context_alloc
+      - Add missing opaque struct ocxl_context 
+  - For: 'ocxl: move event_fd handling to frontend'
+      - Set missed free_private value in irq struct
+      - Change goto unlock to fall-through comment
+      - Clean stray whitespace
+      - Mention that free_private can be NULL in ocxl_irq_set_handler docs
+V3:
+  - For: 'ocxl: Create a clear delineation between ocxl backend & frontend'
+      - Integrate Frederick Barrat's suggestions
+      - Further cleanup on error paths
+      - Remove release handler for AFU private data
+      - Make ocxl_file_make_(in)visibile static & call from ocxl_file_(un)register
+V2:
+  - Reorder patches as some required structs that were only available later
+  - Add dev.release implementation for ocxl_file_info to address warning on
+    driver unload (ocxl: Create a clear delineation...)
+  - Set output var irq_id in ocxl_afu_irq_alloc (ocxl: afu_irq only deals...)
+  - Bump copyright year (ocxl: Provide global MMIO accessors...,
+        ocxl: Split pci.c)
 
-I've confirmed that at least with GCC 8.2.0, the generated assembler is
-similar, but yes, the compiler may be free to take a copy into another
-register (although that would be a terrible optimisation), and then
-operate on that value.
+Alastair D'Silva (7):
+  ocxl: Split pci.c
+  ocxl: Don't pass pci_dev around
+  ocxl: Create a clear delineation between ocxl backend & frontend
+  ocxl: Allow external drivers to use OpenCAPI contexts
+  ocxl: afu_irq only deals with IRQ IDs, not offsets
+  ocxl: move event_fd handling to frontend
+  ocxl: Provide global MMIO accessors for external drivers
 
-Subsequent uses would still have to call the function (ie. fetch the
-data from r13) regardless, so I believe this scenario is safe.
-
-Can you think of a scenario where this is a problem?
+ drivers/misc/ocxl/Makefile        |   3 +-
+ drivers/misc/ocxl/afu_irq.c       | 102 +++---
+ drivers/misc/ocxl/context.c       |  31 +-
+ drivers/misc/ocxl/core.c          | 574 ++++++++++++++++++++++++++++++
+ drivers/misc/ocxl/file.c          | 177 ++++++---
+ drivers/misc/ocxl/mmio.c          | 234 ++++++++++++
+ drivers/misc/ocxl/ocxl_internal.h |  39 +-
+ drivers/misc/ocxl/pci.c           | 565 ++---------------------------
+ drivers/misc/ocxl/sysfs.c         |  54 +--
+ drivers/misc/ocxl/trace.h         |  12 +-
+ include/misc/ocxl.h               | 314 +++++++++++++++-
+ 11 files changed, 1390 insertions(+), 715 deletions(-)
+ create mode 100644 drivers/misc/ocxl/core.c
+ create mode 100644 drivers/misc/ocxl/mmio.c
 
 -- 
-Alastair D'Silva
-Open Source Developer
-Linux Technology Centre, IBM Australia
-mob: 0423 762 819
+2.20.1
 
