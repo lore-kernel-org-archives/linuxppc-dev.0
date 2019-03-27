@@ -6,21 +6,21 @@ X-Spam-Status: No, score=-8.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
 	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3D99CC43381
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Mar 2019 18:10:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5BCD3C4360F
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Mar 2019 18:13:38 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B79E721741
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Mar 2019 18:10:23 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id C003A2184D
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Mar 2019 18:13:37 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="qKJDa9lq"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B79E721741
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="zKpQsigS"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C003A2184D
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44Twyj3M6CzDq9T
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Mar 2019 05:10:21 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44Tx2R52yJzDqQc
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Mar 2019 05:13:35 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=kernel.org
  (client-ip=198.145.29.99; helo=mail.kernel.org;
@@ -28,33 +28,33 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="qKJDa9lq"; 
+ unprotected) header.d=kernel.org header.i=@kernel.org header.b="zKpQsigS"; 
  dkim-atps=neutral
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44Twq91wKPzDqK9
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Mar 2019 05:03:49 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44Twqf5k1JzDqQw
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Mar 2019 05:04:14 +1100 (AEDT)
 Received: from sasha-vm.mshome.net (c-73-47-72-35.hsd1.nh.comcast.net
  [73.47.72.35])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id A9AB42087C;
- Wed, 27 Mar 2019 18:03:44 +0000 (UTC)
+ by mail.kernel.org (Postfix) with ESMTPSA id D4A792063F;
+ Wed, 27 Mar 2019 18:04:11 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1553709827;
- bh=MGfIoXnzyNJ/KAFrw5ZJrFi7P/sOO+b797C3j3DpCrs=;
+ s=default; t=1553709852;
+ bh=jP3DAWteqrZWVLGoDQ1J1sgOBI1kizCw3nn9obA3X8Y=;
  h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=qKJDa9lqPCT5FrQKRqlbe33Y1Ye8nJS7oPjbXYzBZXdORbP2sT2Gk9qQ/a+zaOe+r
- 56eY7JaZIzN0iAPiS8P7be/uC6PxgIAFcyBrhSvdPoWSPmaep2ZwWuIFnw4qKCwHN4
- ZhUQpFgGkEsWbo2bsOhgFsFweXmOBPHTka2uJitQ=
+ b=zKpQsigSHU6Z3+U0kDMAckoiAEiU0FgwsL2e8Pp68f3n8jSaxTcw+PH2qF9yLVImG
+ lT2YHjZyCX9pbuR5IzSa1sIeDiVXcXyyAaGHOqWuQaBO84fU26EgiKU4TgmqbpfKLU
+ W3K4Pls9uF92g54PCFE9hjauIYtoF0U0uBT8rRys=
 From: Sasha Levin <sashal@kernel.org>
 To: linux-kernel@vger.kernel.org,
 	stable@vger.kernel.org
-Subject: [PATCH AUTOSEL 5.0 061/262] mm/resource: Return real error codes from
- walk failures
-Date: Wed, 27 Mar 2019 13:58:36 -0400
-Message-Id: <20190327180158.10245-61-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 5.0 072/262] powerpc/powernv/ioda: Fix locked_vm
+ counting for memory used by IOMMU tables
+Date: Wed, 27 Mar 2019 13:58:47 -0400
+Message-Id: <20190327180158.10245-72-sashal@kernel.org>
 X-Mailer: git-send-email 2.19.1
 In-Reply-To: <20190327180158.10245-1-sashal@kernel.org>
 References: <20190327180158.10245-1-sashal@kernel.org>
@@ -72,95 +72,94 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Sasha Levin <sashal@kernel.org>, Tom Lendacky <thomas.lendacky@amd.com>,
- Michal Hocko <mhocko@suse.com>, Dave Jiang <dave.jiang@intel.com>,
- linux-nvdimm@lists.01.org, Takashi Iwai <tiwai@suse.de>,
- Vishal Verma <vishal.l.verma@intel.com>,
- Dave Hansen <dave.hansen@linux.intel.com>, Huang Ying <ying.huang@intel.com>,
- Keith Busch <keith.busch@intel.com>, linux-mm@kvack.org,
- Jerome Glisse <jglisse@redhat.com>, Borislav Petkov <bp@suse.de>,
- Yaowei Bai <baiyaowei@cmss.chinamobile.com>, Ross Zwisler <zwisler@kernel.org>,
- Paul Mackerras <paulus@samba.org>, Dan Williams <dan.j.williams@intel.com>,
- Fengguang Wu <fengguang.wu@intel.com>, linuxppc-dev@lists.ozlabs.org,
- Andrew Morton <akpm@linux-foundation.org>
+Cc: Alexey Kardashevskiy <aik@ozlabs.ru>, linuxppc-dev@lists.ozlabs.org,
+ Sasha Levin <sashal@kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Dave Hansen <dave.hansen@linux.intel.com>
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
 
-[ Upstream commit 5cd401ace914dc68556c6d2fcae0c349444d5f86 ]
+[ Upstream commit 11f5acce2fa43b015a8120fa7620fa4efd0a2952 ]
 
-walk_system_ram_range() can return an error code either becuase
-*it* failed, or because the 'func' that it calls returned an
-error.  The memory hotplug does the following:
+We store 2 multilevel tables in iommu_table - one for the hardware and
+one with the corresponding userspace addresses. Before allocating
+the tables, the iommu_table_group_ops::get_table_size() hook returns
+the combined size of the two and VFIO SPAPR TCE IOMMU driver adjusts
+the locked_vm counter correctly. When the table is actually allocated,
+the amount of allocated memory is stored in iommu_table::it_allocated_size
+and used to decrement the locked_vm counter when we release the memory
+used by the table; .get_table_size() and .create_table() calculate it
+independently but the result is expected to be the same.
 
-	ret = walk_system_ram_range(..., func);
-        if (ret)
-		return ret;
+However the allocator does not add the userspace table size to
+.it_allocated_size so when we destroy the table because of VFIO PCI
+unplug (i.e. VFIO container is gone but the userspace keeps running),
+we decrement locked_vm by just a half of size of memory we are
+releasing.
 
-and 'ret' makes it out to userspace, eventually.  The problem
-s, walk_system_ram_range() failues that result from *it* failing
-(as opposed to 'func') return -1.  That leads to a very odd
--EPERM (-1) return code out to userspace.
+To make things worse, since we enabled on-demand allocation of
+indirect levels, it_allocated_size contains only the amount of memory
+actually allocated at the table creation time which can just be a
+fraction. It is not a problem with incrementing locked_vm (as
+get_table_size() value is used) but it is with decrementing.
 
-Make walk_system_ram_range() return -EINVAL for internal
-failures to keep userspace less confused.
+As the result, we leak locked_vm and may not be able to allocate more
+IOMMU tables after few iterations of hotplug/unplug.
 
-This return code is compatible with all the callers that I
-audited.
+This sets it_allocated_size in the pnv_pci_ioda2_ops::create_table()
+hook to what pnv_pci_ioda2_get_table_size() returns so from now on we
+have a single place which calculates the maximum memory a table can
+occupy. The original meaning of it_allocated_size is somewhat lost now
+though.
 
-Signed-off-by: Dave Hansen <dave.hansen@linux.intel.com>
-Reviewed-by: Bjorn Helgaas <bhelgaas@google.com>
-Acked-by: Michael Ellerman <mpe@ellerman.id.au> (powerpc)
-Cc: Dan Williams <dan.j.williams@intel.com>
-Cc: Dave Jiang <dave.jiang@intel.com>
-Cc: Ross Zwisler <zwisler@kernel.org>
-Cc: Vishal Verma <vishal.l.verma@intel.com>
-Cc: Tom Lendacky <thomas.lendacky@amd.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Cc: Michal Hocko <mhocko@suse.com>
-Cc: linux-nvdimm@lists.01.org
-Cc: linux-kernel@vger.kernel.org
-Cc: linux-mm@kvack.org
-Cc: Huang Ying <ying.huang@intel.com>
-Cc: Fengguang Wu <fengguang.wu@intel.com>
-Cc: Borislav Petkov <bp@suse.de>
-Cc: Yaowei Bai <baiyaowei@cmss.chinamobile.com>
-Cc: Takashi Iwai <tiwai@suse.de>
-Cc: Jerome Glisse <jglisse@redhat.com>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: linuxppc-dev@lists.ozlabs.org
-Cc: Keith Busch <keith.busch@intel.com>
-Signed-off-by: Dan Williams <dan.j.williams@intel.com>
+We do not ditch it_allocated_size whatsoever here and we do not call
+get_table_size() from vfio_iommu_spapr_tce.c when decrementing
+locked_vm as we may have multiple IOMMU groups per container and even
+though they all are supposed to have the same get_table_size()
+implementation, there is a small chance for failure or confusion.
+
+Fixes: 090bad39b237 ("powerpc/powernv: Add indirect levels to it_userspace")
+Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- kernel/resource.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ arch/powerpc/platforms/powernv/pci-ioda-tce.c | 1 -
+ arch/powerpc/platforms/powernv/pci-ioda.c     | 7 ++++++-
+ 2 files changed, 6 insertions(+), 2 deletions(-)
 
-diff --git a/kernel/resource.c b/kernel/resource.c
-index 915c02e8e5dd..ca7ed5158cff 100644
---- a/kernel/resource.c
-+++ b/kernel/resource.c
-@@ -382,7 +382,7 @@ static int __walk_iomem_res_desc(resource_size_t start, resource_size_t end,
- 				 int (*func)(struct resource *, void *))
+diff --git a/arch/powerpc/platforms/powernv/pci-ioda-tce.c b/arch/powerpc/platforms/powernv/pci-ioda-tce.c
+index 697449afb3f7..e28f03e1eb5e 100644
+--- a/arch/powerpc/platforms/powernv/pci-ioda-tce.c
++++ b/arch/powerpc/platforms/powernv/pci-ioda-tce.c
+@@ -313,7 +313,6 @@ long pnv_pci_ioda2_table_alloc_pages(int nid, __u64 bus_offset,
+ 			page_shift);
+ 	tbl->it_level_size = 1ULL << (level_shift - 3);
+ 	tbl->it_indirect_levels = levels - 1;
+-	tbl->it_allocated_size = total_allocated;
+ 	tbl->it_userspace = uas;
+ 	tbl->it_nid = nid;
+ 
+diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+index 145373f0e5dc..2d62c58f9a4c 100644
+--- a/arch/powerpc/platforms/powernv/pci-ioda.c
++++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+@@ -2594,8 +2594,13 @@ static long pnv_pci_ioda2_create_table_userspace(
+ 		int num, __u32 page_shift, __u64 window_size, __u32 levels,
+ 		struct iommu_table **ptbl)
  {
- 	struct resource res;
--	int ret = -1;
-+	int ret = -EINVAL;
+-	return pnv_pci_ioda2_create_table(table_group,
++	long ret = pnv_pci_ioda2_create_table(table_group,
+ 			num, page_shift, window_size, levels, true, ptbl);
++
++	if (!ret)
++		(*ptbl)->it_allocated_size = pnv_pci_ioda2_get_table_size(
++				page_shift, window_size, levels);
++	return ret;
+ }
  
- 	while (start < end &&
- 	       !find_next_iomem_res(start, end, flags, desc, first_lvl, &res)) {
-@@ -462,7 +462,7 @@ int walk_system_ram_range(unsigned long start_pfn, unsigned long nr_pages,
- 	unsigned long flags;
- 	struct resource res;
- 	unsigned long pfn, end_pfn;
--	int ret = -1;
-+	int ret = -EINVAL;
- 
- 	start = (u64) start_pfn << PAGE_SHIFT;
- 	end = ((u64)(start_pfn + nr_pages) << PAGE_SHIFT) - 1;
+ static void pnv_ioda2_take_ownership(struct iommu_table_group *table_group)
 -- 
 2.19.1
 
