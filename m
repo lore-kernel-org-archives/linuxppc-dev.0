@@ -2,64 +2,74 @@ Return-Path: <SRS0=MnD0=R6=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-11.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_PASS,
-	URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4BAC5C43381
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Mar 2019 12:55:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9F415C43381
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Mar 2019 12:57:23 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id AE2A32146F
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Mar 2019 12:55:14 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=sirena.org.uk header.i=@sirena.org.uk header.b="AHWeSVUb"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org AE2A32146F
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	by mail.kernel.org (Postfix) with ESMTPS id 2A44A20449
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Mar 2019 12:57:23 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2A44A20449
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ghiti.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44Tnz411kzzDqC4
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Mar 2019 23:55:12 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44Tp1Y26b5zDqQX
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Mar 2019 23:57:21 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=sirena.org.uk
- (client-ip=2a01:7e01::f03c:91ff:fed4:a3b6; helo=heliosphere.sirena.org.uk;
- envelope-from=broonie@sirena.org.uk; receiver=<UNKNOWN>)
+ spf=none (mailfrom) smtp.mailfrom=ghiti.fr
+ (client-ip=217.70.178.232; helo=relay12.mail.gandi.net;
+ envelope-from=alex@ghiti.fr; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=fail (p=none dis=none) header.from=kernel.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=sirena.org.uk header.i=@sirena.org.uk
- header.b="AHWeSVUb"; dkim-atps=neutral
-Received: from heliosphere.sirena.org.uk (heliosphere.sirena.org.uk
- [IPv6:2a01:7e01::f03c:91ff:fed4:a3b6])
+ dmarc=none (p=none dis=none) header.from=ghiti.fr
+Received: from relay12.mail.gandi.net (relay12.mail.gandi.net [217.70.178.232])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44TnwF0VyyzDq77
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Mar 2019 23:52:44 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
- d=sirena.org.uk; s=20170815-heliosphere; h=Date:Message-Id:In-Reply-To:
- Subject:Cc:To:From:Sender:Reply-To:MIME-Version:Content-Type:
- Content-Transfer-Encoding:Content-ID:Content-Description:Resent-Date:
- Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:References:
- List-Id:List-Help:List-Unsubscribe:List-Subscribe:List-Post:List-Owner:
- List-Archive; bh=xVp3/Bt7FUUYE4y5ndD+RXHou8sHQHV4zptCXcNMx1g=; b=AHWeSVUbQN8z
- Y2+gR5AUqgx1jmrO4iiFNmbEDRTfT+ExfsuIRYlJbPWkGOT832FL4hU/19KYvJelzYZ4QdA1BEqsy
- SSppMNFQWKHmOad7gmufRudpvxqmFr5b61RGhNRWxHAxq6aHVtNSPw2cCQDZswc4zogIUsXZ/mPd2
- +Iupg=;
-Received: from cpc102320-sgyl38-2-0-cust46.18-2.cable.virginm.net
- ([82.37.168.47] helo=debutante.sirena.org.uk)
- by heliosphere.sirena.org.uk with esmtpa (Exim 4.89)
- (envelope-from <broonie@sirena.org.uk>)
- id 1h982l-0006Yc-2i; Wed, 27 Mar 2019 12:52:35 +0000
-Received: by debutante.sirena.org.uk (Postfix, from userid 1000)
- id 3357411288FA; Wed, 27 Mar 2019 12:52:34 +0000 (GMT)
-From: Mark Brown <broonie@kernel.org>
-To: Viorel Suman <viorel.suman@nxp.com>
-Subject: Applied "ASoC: fsl_audmix: Fix kbuild failure" to the asoc tree
-In-Reply-To: <1553678953-31228-1-git-send-email-viorel.suman@nxp.com>
-X-Patchwork-Hint: ignore
-Message-Id: <20190327125234.3357411288FA@debutante.sirena.org.uk>
-Date: Wed, 27 Mar 2019 12:52:34 +0000 (GMT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44Tnyc4dfdzDqLX
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Mar 2019 23:54:45 +1100 (AEDT)
+Received: from [10.30.1.20] (lneuilly-657-1-5-103.w81-250.abo.wanadoo.fr
+ [81.250.144.103]) (Authenticated sender: alex@ghiti.fr)
+ by relay12.mail.gandi.net (Postfix) with ESMTPSA id 4CC6A20000A;
+ Wed, 27 Mar 2019 12:54:35 +0000 (UTC)
+Subject: Re: [PATCH v8 4/4] hugetlb: allow to free gigantic pages regardless
+ of the configuration
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>, mpe@ellerman.id.au,
+ Andrew Morton <akpm@linux-foundation.org>, Vlastimil Babka <vbabka@suse.cz>,
+ Catalin Marinas <catalin.marinas@arm.com>, Will Deacon
+ <will.deacon@arm.com>, Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>,
+ Yoshinori Sato <ysato@users.sourceforge.jp>, Rich Felker <dalias@libc.org>,
+ "David S . Miller" <davem@davemloft.net>,
+ Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+ Borislav Petkov <bp@alien8.de>, "H . Peter Anvin" <hpa@zytor.com>,
+ x86@kernel.org, Dave Hansen <dave.hansen@linux.intel.com>,
+ Andy Lutomirski <luto@kernel.org>, Peter Zijlstra <peterz@infradead.org>,
+ Mike Kravetz <mike.kravetz@oracle.com>,
+ linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
+ linux-sh@vger.kernel.org, sparclinux@vger.kernel.org, linux-mm@kvack.org
+References: <20190327063626.18421-1-alex@ghiti.fr>
+ <20190327063626.18421-5-alex@ghiti.fr>
+ <f6e74ad8-acca-3b1e-27eb-a2881ac8437d@linux.ibm.com>
+ <fbae7220-2e6f-8516-cf93-fbe430452043@ghiti.fr>
+ <aabfc780-1681-c69a-9927-4645d6499984@linux.ibm.com>
+ <e7637427-5f17-b4f4-93a2-70cac9b3a264@ghiti.fr>
+ <87pnqcws2u.fsf@linux.ibm.com>
+From: Alexandre Ghiti <alex@ghiti.fr>
+Message-ID: <95819dc9-7910-f273-681c-a241fee62dd2@ghiti.fr>
+Date: Wed, 27 Mar 2019 13:54:15 +0100
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:52.0) Gecko/20100101
+ Thunderbird/52.5.2
+MIME-Version: 1.0
+In-Reply-To: <87pnqcws2u.fsf@linux.ibm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 8bit
+Content-Language: fr
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -71,76 +81,70 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Mark Rutland <mark.rutland@arm.com>,
- "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- alsa-devel@alsa-project.org, Timur Tabi <timur@kernel.org>,
- Xiubo Li <Xiubo.Lee@gmail.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "S.j. Wang" <shengjiu.wang@nxp.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Takashi Iwai <tiwai@suse.com>, Rob Herring <robh+dt@kernel.org>,
- Liam Girdwood <lgirdwood@gmail.com>, Nicolin Chen <nicoleotsuka@gmail.com>,
- Cosmin Samoila <cosmin.samoila@nxp.com>, Mark Brown <broonie@kernel.org>,
- dl-linux-imx <linux-imx@nxp.com>, Viorel Suman <viorel.suman@gmail.com>,
- Fabio Estevam <fabio.estevam@nxp.com>, Jaroslav Kysela <perex@perex.cz>,
- Daniel Baluta <daniel.baluta@nxp.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The patch
+On 03/27/2019 11:05 AM, Aneesh Kumar K.V wrote:
+> Alexandre Ghiti <alex@ghiti.fr> writes:
+>
+>> On 03/27/2019 09:55 AM, Aneesh Kumar K.V wrote:
+>>> On 3/27/19 2:14 PM, Alexandre Ghiti wrote:
+>>>>
+>>>> On 03/27/2019 08:01 AM, Aneesh Kumar K.V wrote:
+>>>>> On 3/27/19 12:06 PM, Alexandre Ghiti wrote:
+> .....
+>
+>>> This is now
+>>> #define __HAVE_ARCH_GIGANTIC_PAGE_RUNTIME_SUPPORTED
+>>> static inline bool gigantic_page_runtime_supported(void)
+>>> {
+>>> if (firmware_has_feature(FW_FEATURE_LPAR) && !radix_enabled())
+>>>          return false;
+>>>
+>>>      return true;
+>>> }
+>>>
+>>>
+>>> I am wondering whether it should be
+>>>
+>>> #define __HAVE_ARCH_GIGANTIC_PAGE_RUNTIME_SUPPORTED
+>>> static inline bool gigantic_page_runtime_supported(void)
+>>> {
+>>>
+>>>     if (!IS_ENABLED(CONFIG_CONTIG_ALLOC))
+>>>          return false;
+>> I don't think this test should happen here, CONFIG_CONTIG_ALLOC only allows
+>> to allocate gigantic pages, doing that check here would prevent powerpc
+>> to free boottime gigantic pages when not a guest. Note that this check
+>> is actually done in set_max_huge_pages.
+>>
+>>
+>>> if (firmware_has_feature(FW_FEATURE_LPAR) && !radix_enabled())
+>>>          return false;
+>> Maybe I did not understand this check: I understood that, in the case
+>> the system
+>> is virtualized, we do not want it to hand back gigantic pages. Does this
+>> check
+>> test if the system is currently being virtualized ?
+>> If yes, I think the patch is correct: it prevents freeing gigantic pages
+>> when the system
+>> is virtualized but allows a 'normal' system to free gigantic pages.
+>>
+>>
+> Ok double checked the patch applying the the tree. I got confused by the
+> removal of that #ifdef. So we now disallow the runtime free by checking
+> for gigantic_page_runtime_supported() in  __nr_hugepages_store_common.
+> Now if we allow and if CONFIG_CONTIG_ALLOC is disabled, we still should
+> allow to free the boot time allocated pages back to buddy.
+>
+> The patch looks good. You can add for the series
+>
+> Reviewed-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
+>
+> -aneesh
+>
 
-   ASoC: fsl_audmix: Fix kbuild failure
+Thanks for your time Aneesh,
 
-has been applied to the asoc tree at
-
-   https://git.kernel.org/pub/scm/linux/kernel/git/broonie/sound.git 
-
-All being well this means that it will be integrated into the linux-next
-tree (usually sometime in the next 24 hours) and sent to Linus during
-the next merge window (or sooner if it is a bug fix), however if
-problems are discovered then the patch may be dropped or reverted.  
-
-You may get further e-mails resulting from automated or manual testing
-and review of the tree, please engage with people reporting problems and
-send followup patches addressing any issues that are reported if needed.
-
-If any updates are required or you are submitting further changes they
-should be sent as incremental updates against current git, existing
-patches will not be replaced.
-
-Please add any relevant lists and maintainers to the CCs when replying
-to this mail.
-
-Thanks,
-Mark
-
-From 5fb94d46c3179cb7afd805a5a9252111316a926f Mon Sep 17 00:00:00 2001
-From: Viorel Suman <viorel.suman@nxp.com>
-Date: Wed, 27 Mar 2019 09:29:38 +0000
-Subject: [PATCH] ASoC: fsl_audmix: Fix kbuild failure
-
-The format in dev_dbg function must be a constant.
-
-Signed-off-by: Viorel Suman <viorel.suman@nxp.com>
-Signed-off-by: Mark Brown <broonie@kernel.org>
----
- sound/soc/fsl/fsl_audmix.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/sound/soc/fsl/fsl_audmix.c b/sound/soc/fsl/fsl_audmix.c
-index 3356cb617713..dabde0342c95 100644
---- a/sound/soc/fsl/fsl_audmix.c
-+++ b/sound/soc/fsl/fsl_audmix.c
-@@ -90,7 +90,7 @@ static int fsl_audmix_state_trans(struct snd_soc_component *comp,
- 	struct fsl_audmix *priv = snd_soc_component_get_drvdata(comp);
- 	/* Enforce all required TDMs are started */
- 	if ((priv->tdms & prm.tdms) != prm.tdms) {
--		dev_dbg(comp->dev, prm.msg);
-+		dev_dbg(comp->dev, "%s", prm.msg);
- 		return -EINVAL;
- 	}
- 
--- 
-2.20.1
-
+Alex
