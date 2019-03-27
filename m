@@ -2,89 +2,61 @@ Return-Path: <SRS0=MnD0=R6=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_MUTT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_MUTT autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9EC65C43381
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Mar 2019 12:22:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9D43DC43381
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Mar 2019 12:51:08 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id DB3B82087C
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Mar 2019 12:22:38 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=sirena.org.uk header.i=@sirena.org.uk header.b="FYX93jVC"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DB3B82087C
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	by mail.kernel.org (Postfix) with ESMTPS id C094F2087C
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Mar 2019 12:51:07 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C094F2087C
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kernel.crashing.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44TnFS2fMmzDqPv
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Mar 2019 23:22:36 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44TntJ0qdszDqPg
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Mar 2019 23:51:04 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=permerror (mailfrom)
+ smtp.mailfrom=kernel.crashing.org (client-ip=63.228.1.57;
+ helo=gate.crashing.org; envelope-from=segher@kernel.crashing.org;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=kernel.crashing.org
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44TnC55JBDzDqH6
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Mar 2019 23:20:33 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
- dmarc=fail (p=none dis=none) header.from=kernel.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=sirena.org.uk header.i=@sirena.org.uk
- header.b="FYX93jVC"; dkim-atps=neutral
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 44TnC43cH4z8wRT
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Mar 2019 23:20:32 +1100 (AEDT)
-Received: by ozlabs.org (Postfix)
- id 44TnC439gkz9sSV; Wed, 27 Mar 2019 23:20:32 +1100 (AEDT)
-Authentication-Results: ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=sirena.org.uk
- (client-ip=2a01:7e01::f03c:91ff:fed4:a3b6; helo=heliosphere.sirena.org.uk;
- envelope-from=broonie@sirena.org.uk; receiver=<UNKNOWN>)
-Authentication-Results: ozlabs.org;
- dmarc=fail (p=none dis=none) header.from=kernel.org
-Authentication-Results: ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=sirena.org.uk header.i=@sirena.org.uk
- header.b="FYX93jVC"; dkim-atps=neutral
-X-Greylist: delayed 1352 seconds by postgrey-1.36 at bilbo;
- Wed, 27 Mar 2019 23:20:31 AEDT
-Received: from heliosphere.sirena.org.uk (heliosphere.sirena.org.uk
- [IPv6:2a01:7e01::f03c:91ff:fed4:a3b6])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 44TnC336jRz9sRx
- for <linuxppc-dev@ozlabs.org>; Wed, 27 Mar 2019 23:20:31 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
- d=sirena.org.uk; s=20170815-heliosphere; h=In-Reply-To:Content-Type:
- MIME-Version:References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
- Content-Transfer-Encoding:Content-ID:Content-Description:Resent-Date:
- Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:
- List-Help:List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
- bh=9d69b/QXfoYGWqfguLUdUfQSZItwCRrq/XtCINmWXYA=; b=FYX93jVCfRd7RO4wRhrB6O2YT
- pRhSmq6t+a3H90iCB0S9mT65yjY/hBj7rgiX4dfWvC0iUtvjp/WAj+IrnND2mzKlllPyMMkE9DVUU
- 3dYiK/mTbaOb5Lz0c80P4CbXXix5Gxa4ZJuW6isc7NEHCoNTxmCcxbkRLJjr/vmQNgAk4=;
-Received: from cpc102320-sgyl38-2-0-cust46.18-2.cable.virginm.net
- ([82.37.168.47] helo=debutante.sirena.org.uk)
- by heliosphere.sirena.org.uk with esmtpa (Exim 4.89)
- (envelope-from <broonie@sirena.org.uk>)
- id 1h97Bi-0006TP-Bq; Wed, 27 Mar 2019 11:57:46 +0000
-Received: by debutante.sirena.org.uk (Postfix, from userid 1000)
- id 9F93511288FA; Wed, 27 Mar 2019 11:57:45 +0000 (GMT)
-Date: Wed, 27 Mar 2019 11:57:45 +0000
-From: Mark Brown <broonie@kernel.org>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: linux-next: build failure after merge of the sound-asoc tree
-Message-ID: <20190327115745.GA11404@sirena.org.uk>
-References: <20190326133349.3d9427dc@canb.auug.org.au>
- <20190326131550.GB10898@sirena.org.uk>
- <87pnqdndmk.fsf@concordia.ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
- protocol="application/pgp-signature"; boundary="YZ5djTAD1cGYuMQK"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44TnqM3hWZzDqDZ
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Mar 2019 23:48:29 +1100 (AEDT)
+Received: from gate.crashing.org (localhost.localdomain [127.0.0.1])
+ by gate.crashing.org (8.14.1/8.14.1) with ESMTP id x2RClx6c021285;
+ Wed, 27 Mar 2019 07:48:01 -0500
+Received: (from segher@localhost)
+ by gate.crashing.org (8.14.1/8.14.1/Submit) id x2RCltKW021271;
+ Wed, 27 Mar 2019 07:47:55 -0500
+X-Authentication-Warning: gate.crashing.org: segher set sender to
+ segher@kernel.crashing.org using -f
+Date: Wed, 27 Mar 2019 07:47:55 -0500
+From: Segher Boessenkool <segher@kernel.crashing.org>
+To: Christophe Leroy <christophe.leroy@c-s.fr>
+Subject: Re: [PATCH] powerpc: vmlinux.lds: Drop Binutils 2.18 workarounds
+Message-ID: <20190327124754.GY3969@gate.crashing.org>
+References: <20190321003253.22100-1-joel@jms.id.au>
+ <874l7qpi7l.fsf@concordia.ellerman.id.au>
+ <d340ae4b-a009-0ef3-9621-da3e0a7684f5@c-s.fr>
+ <20190326181914.GS3969@gate.crashing.org>
+ <5f4aa4b2-1c44-70b9-c383-5d40aecd695c@c-s.fr>
+ <20190326201231.GV3969@gate.crashing.org>
+ <20190326222941.GW3969@gate.crashing.org>
+ <8aa0290a-908c-38d8-e040-c8c0cc226eb9@c-s.fr>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <87pnqdndmk.fsf@concordia.ellerman.id.au>
-X-Cookie: May be too intense for some viewers.
-User-Agent: Mutt/1.10.1 (2018-07-13)
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <8aa0290a-908c-38d8-e040-c8c0cc226eb9@c-s.fr>
+User-Agent: Mutt/1.4.2.3i
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -96,48 +68,50 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
- Liam Girdwood <lgirdwood@gmail.com>, Annaliese McDermond <nh6z@nh6z.net>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- linuxppc-dev@ozlabs.org, Linux Next Mailing List <linux-next@vger.kernel.org>,
- Paul Mackerras <paulus@samba.org>
+Cc: linuxppc-dev@lists.ozlabs.org, Joel Stanley <joel@jms.id.au>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+On Wed, Mar 27, 2019 at 07:40:32AM +0100, Christophe Leroy wrote:
+> Le 26/03/2019 à 23:29, Segher Boessenkool a écrit :
+> >I tried to reproduce this.  It does not fail with a ppc6xx_defconfig
+> >build, and mpc885_ads_defconfig fails with
+> 
+> So far, the only defconfig which fails for me is ppc64_defconfig, like 
+> Michael.
 
---YZ5djTAD1cGYuMQK
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Oh, I misunderstood then.  Let me try that :-)
 
-On Wed, Mar 27, 2019 at 03:29:55PM +1100, Michael Ellerman wrote:
-> Mark Brown <broonie@kernel.org> writes:
+> 885_ads is ok, I just noticed the STACK header in vmlinux that is not 
+> there when the patch is not applies.
 
-> > Hrm, seems PowerPC is still not using the common clock API - is there
-> > any plan for that?  There are some ASoC PowerPC uses so it's going to be
-> > a bit of an issue as we expand our use of the clock API.
+Right...  The linker generates that by default, it's nothing to worry
+about.
 
-> I don't know anything about the common clock API. What would it involve
-> for powerpc to use it?
+> >What is your GCC?
+> 
+> [root@localhost linux-powerpc]# powerpc64-linux-gcc -v
+> Using built-in specs.
+> COLLECT_GCC=powerpc64-linux-gcc
+> COLLECT_LTO_WRAPPER=/opt/gcc-8.1.0-nolibc/powerpc64-linux/bin/../libexec/gcc/powerpc64-linux/8.1.0/lto-wrapper
+> Target: powerpc64-linux
+> Configured with: /home/arnd/git/gcc/configure --target=powerpc64-linux 
+> --enable-targets=all 
+> --prefix=/home/arnd/cross/x86_64/gcc-8.1.0-nolibc/powerpc64-linux 
+> --enable-languages=c --without-headers --disable-bootstrap --disable-nls 
+> --disable-threads --disable-shared --disable-libmudflap --disable-libssp 
+> --disable-libgomp --disable-decimal-float --disable-libquadmath 
+> --disable-libatomic --disable-libcc1 --disable-libmpx 
+> --enable-checking=release
+> Thread model: single
+> gcc version 8.1.0 (GCC)
 
-It's what's in drivers/clk - you'd have to provide clock drivers for all
-the clocks that are current supported by arch-specific code, make sure
-that those drivers can be instantiated and then remove the custom
-implementation of the clock API in arch/powerpc in favour of those.
+Okay cool, a plain GCC build, importantly not a vendor compiler.  Built
+with my scripts no less ;-)
 
---YZ5djTAD1cGYuMQK
-Content-Type: application/pgp-signature; name="signature.asc"
+> [root@localhost linux-powerpc]# powerpc64-linux-ld -v
+> GNU ld (GNU Binutils) 2.30
 
------BEGIN PGP SIGNATURE-----
 
-iQEzBAABCgAdFiEEreZoqmdXGLWf4p/qJNaLcl1Uh9AFAlybZTgACgkQJNaLcl1U
-h9B1Swf+PbhuOweQKwnnpdgGWrrDdszCdLjzP1NdPdjWVhB1B+Y8gm8uA2CbgSCQ
-FHCL9GmY1si64Jg2+W+uD7o+rdg3neUXfZ3rmQ60mdvdmg8O+iz6ngwn2iJIbGy2
-5zuQoky3maZLgElEQMKWlZ8A3nHQpk6BkWra83M7tZJJnU5SOQ69vE2oKK6sGfTf
-Xu7R13qHpVeRNQU2baIRdbkhgQFl01wiRswA8JbJSAQmeMX3XcjwrDakT10USHNy
-PnNPllnXLAE9brC8AeYr9vNQj7vTL5fjn94Gz9P0yX2dWbnVSy2Yc2QASwiKB4P+
-2qblx6/w3O4uBa8dTNx45qHwObNlHw==
-=kXyA
------END PGP SIGNATURE-----
-
---YZ5djTAD1cGYuMQK--
+Segher
