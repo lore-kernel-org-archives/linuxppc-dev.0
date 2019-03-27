@@ -2,106 +2,74 @@ Return-Path: <SRS0=MnD0=R6=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2A679C43381
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Mar 2019 09:31:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 21599C43381
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Mar 2019 09:51:06 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6295B2075E
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Mar 2019 09:31:39 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=nxp.com header.i=@nxp.com header.b="iqqquzAB"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6295B2075E
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nxp.com
+	by mail.kernel.org (Postfix) with ESMTPS id 674A92075C
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Mar 2019 09:51:04 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 674A92075C
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ghiti.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44TjS86RC9zDqP5
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Mar 2019 20:31:36 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44TjtZ181lzDqJt
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Mar 2019 20:51:02 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=nxp.com
- (client-ip=40.107.4.50; helo=eur03-db5-obe.outbound.protection.outlook.com;
- envelope-from=viorel.suman@nxp.com; receiver=<UNKNOWN>)
+ spf=none (mailfrom) smtp.mailfrom=ghiti.fr
+ (client-ip=217.70.178.232; helo=relay12.mail.gandi.net;
+ envelope-from=alex@ghiti.fr; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=nxp.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=nxp.com header.i=@nxp.com header.b="iqqquzAB"; 
- dkim-atps=neutral
-Received: from EUR03-DB5-obe.outbound.protection.outlook.com
- (mail-eopbgr40050.outbound.protection.outlook.com [40.107.4.50])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+ dmarc=none (p=none dis=none) header.from=ghiti.fr
+X-Greylist: delayed 11561 seconds by postgrey-1.36 at bilbo;
+ Wed, 27 Mar 2019 20:49:28 AEDT
+Received: from relay12.mail.gandi.net (relay12.mail.gandi.net [217.70.178.232])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44TjQ62bzvzDqGF
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Mar 2019 20:29:46 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nxp.com; s=selector1; 
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=G5unYHKtMDUDeG4xLPNpLUg7JC8nwYOMXovA+iDGX/M=;
- b=iqqquzAB5kez5asWl3ctgC2AM0zsvVrnr8BDvwXWK8LQC4yFUJpDsOGKJR7g1HxOuwLQiV6nLzta4EBo7dxscoFP+WRp57XvPCK1rrYH5GlgGPl47Hm4W9W12DUo8JSyxEtkaStLKv2ZNSgxmTwlJff1ECMAWKkO49ihNmFKdk8=
-Received: from VI1PR04MB4704.eurprd04.prod.outlook.com (20.177.48.157) by
- VI1PR04MB5022.eurprd04.prod.outlook.com (20.177.50.91) with Microsoft SMTP
- Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.20.1750.15; Wed, 27 Mar 2019 09:29:38 +0000
-Received: from VI1PR04MB4704.eurprd04.prod.outlook.com
- ([fe80::2594:3cf0:20a2:8888]) by VI1PR04MB4704.eurprd04.prod.outlook.com
- ([fe80::2594:3cf0:20a2:8888%3]) with mapi id 15.20.1750.014; Wed, 27 Mar 2019
- 09:29:38 +0000
-From: Viorel Suman <viorel.suman@nxp.com>
-To: Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, Rob
- Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Jaroslav
- Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>, Timur Tabi
- <timur@kernel.org>, Nicolin Chen <nicoleotsuka@gmail.com>, Xiubo Li
- <Xiubo.Lee@gmail.com>, Fabio Estevam <fabio.estevam@nxp.com>, Viorel Suman
- <viorel.suman@nxp.com>, "S.j. Wang" <shengjiu.wang@nxp.com>, Daniel Baluta
- <daniel.baluta@nxp.com>, Cosmin Samoila <cosmin.samoila@nxp.com>
-Subject: [PATCH] ASoC: fsl_audmix: Fix kbuild failure
-Thread-Topic: [PATCH] ASoC: fsl_audmix: Fix kbuild failure
-Thread-Index: AQHU5H+Za4taWNTOpUOEdsHqnsjN/w==
-Date: Wed, 27 Mar 2019 09:29:38 +0000
-Message-ID: <1553678953-31228-1-git-send-email-viorel.suman@nxp.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-x-clientproxiedby: VI1PR02CA0057.eurprd02.prod.outlook.com
- (2603:10a6:802:14::28) To VI1PR04MB4704.eurprd04.prod.outlook.com
- (2603:10a6:803:52::29)
-authentication-results: spf=none (sender IP is )
- smtp.mailfrom=viorel.suman@nxp.com; 
-x-ms-exchange-messagesentrepresentingtype: 1
-x-mailer: git-send-email 2.7.4
-x-originating-ip: [212.146.100.6]
-x-ms-publictraffictype: Email
-x-ms-office365-filtering-correlation-id: ca4440bf-59b1-426e-7c53-08d6b296bb81
-x-ms-office365-filtering-ht: Tenant
-x-microsoft-antispam: BCL:0; PCL:0;
- RULEID:(2390118)(7020095)(4652040)(8989299)(4534185)(4627221)(201703031133081)(201702281549075)(8990200)(5600127)(711020)(4605104)(4618075)(2017052603328)(7153060)(7193020);
- SRVR:VI1PR04MB5022; 
-x-ms-traffictypediagnostic: VI1PR04MB5022:
-x-microsoft-antispam-prvs: <VI1PR04MB50229C84456A739C87B62B8692580@VI1PR04MB5022.eurprd04.prod.outlook.com>
-x-forefront-prvs: 0989A7979C
-x-forefront-antispam-report: SFV:NSPM;
- SFS:(10009020)(39860400002)(396003)(346002)(376002)(136003)(366004)(199004)(189003)(99286004)(4744005)(66066001)(256004)(14444005)(6116002)(3846002)(44832011)(6512007)(106356001)(86362001)(6436002)(71190400001)(71200400001)(7416002)(6486002)(105586002)(186003)(486006)(102836004)(8676002)(26005)(386003)(4326008)(5660300002)(53936002)(476003)(2616005)(316002)(110136005)(54906003)(478600001)(6506007)(50226002)(8936002)(81156014)(97736004)(36756003)(2906002)(7736002)(6636002)(305945005)(81166006)(14454004)(68736007)(52116002)(25786009)(921003)(1121003);
- DIR:OUT; SFP:1101; SCL:1; SRVR:VI1PR04MB5022;
- H:VI1PR04MB4704.eurprd04.prod.outlook.com; FPR:; SPF:None; LANG:en;
- PTR:InfoNoRecords; A:1; MX:1; 
-received-spf: None (protection.outlook.com: nxp.com does not designate
- permitted sender hosts)
-x-ms-exchange-senderadcheck: 1
-x-microsoft-antispam-message-info: y8Rj6gvpmM4QpUcWXG8KZbbPsxA+S/5C6kIcSa3FlcFLrf7u2vn9oTRemPgkXODNl0DdzX4zcA9A/U9PvLFhYt+z5qO2Qx1KiuXZubnDWmfvqxu2jommPWH8WkyVwgcAHWo1RDC0dNfhh0ST5mp5QKHSyYO26rHBNYeMZMNd1R1qE7s/qmB0pzd58sz5dusesOqLq6QqpJMKj8enqVQWrWxTNgcrWPR6kJfiVAT2o+wyoET5p5RuveD+77oA6lmRdC+6ip5I53SvNOaxXuhditpl0u7t4/hlqM1yzZ4yg51FUjnIkqIzc+0d/nOL/eTni8mIvavND4OMVBiNLGA0+OQzb1NFBTNIXJG/hyjxGzFVQxCZwXdaf0zlV+5+bm4tbKnjlktxcyVVexY+OZRRrAZgoG0jiJj7bfifQHsNru8=
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44Tjrm47wBzDqDP
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Mar 2019 20:49:25 +1100 (AEDT)
+Received: from [10.30.1.20] (lneuilly-657-1-5-103.w81-250.abo.wanadoo.fr
+ [81.250.144.103]) (Authenticated sender: alex@ghiti.fr)
+ by relay12.mail.gandi.net (Postfix) with ESMTPSA id 2175620000E;
+ Wed, 27 Mar 2019 09:49:13 +0000 (UTC)
+Subject: Re: [PATCH v8 4/4] hugetlb: allow to free gigantic pages regardless
+ of the configuration
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>, mpe@ellerman.id.au,
+ Andrew Morton <akpm@linux-foundation.org>, Vlastimil Babka <vbabka@suse.cz>,
+ Catalin Marinas <catalin.marinas@arm.com>, Will Deacon
+ <will.deacon@arm.com>, Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>,
+ Yoshinori Sato <ysato@users.sourceforge.jp>, Rich Felker <dalias@libc.org>,
+ "David S . Miller" <davem@davemloft.net>,
+ Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+ Borislav Petkov <bp@alien8.de>, "H . Peter Anvin" <hpa@zytor.com>,
+ x86@kernel.org, Dave Hansen <dave.hansen@linux.intel.com>,
+ Andy Lutomirski <luto@kernel.org>, Peter Zijlstra <peterz@infradead.org>,
+ Mike Kravetz <mike.kravetz@oracle.com>,
+ linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
+ linux-sh@vger.kernel.org, sparclinux@vger.kernel.org, linux-mm@kvack.org
+References: <20190327063626.18421-1-alex@ghiti.fr>
+ <20190327063626.18421-5-alex@ghiti.fr>
+ <f6e74ad8-acca-3b1e-27eb-a2881ac8437d@linux.ibm.com>
+ <fbae7220-2e6f-8516-cf93-fbe430452043@ghiti.fr>
+ <aabfc780-1681-c69a-9927-4645d6499984@linux.ibm.com>
+From: Alexandre Ghiti <alex@ghiti.fr>
+Message-ID: <e7637427-5f17-b4f4-93a2-70cac9b3a264@ghiti.fr>
+Date: Wed, 27 Mar 2019 10:48:54 +0100
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:52.0) Gecko/20100101
+ Thunderbird/52.5.2
 MIME-Version: 1.0
-X-OriginatorOrg: nxp.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: ca4440bf-59b1-426e-7c53-08d6b296bb81
-X-MS-Exchange-CrossTenant-originalarrivaltime: 27 Mar 2019 09:29:38.3249 (UTC)
-X-MS-Exchange-CrossTenant-fromentityheader: Hosted
-X-MS-Exchange-CrossTenant-id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
-X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: VI1PR04MB5022
+In-Reply-To: <aabfc780-1681-c69a-9927-4645d6499984@linux.ibm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 8bit
+Content-Language: fr
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -113,36 +81,179 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Viorel Suman <viorel.suman@gmail.com>, dl-linux-imx <linux-imx@nxp.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The format in dev_dbg function must be a constant.
+On 03/27/2019 09:55 AM, Aneesh Kumar K.V wrote:
+> On 3/27/19 2:14 PM, Alexandre Ghiti wrote:
+>>
+>>
+>> On 03/27/2019 08:01 AM, Aneesh Kumar K.V wrote:
+>>> On 3/27/19 12:06 PM, Alexandre Ghiti wrote:
+>>>> On systems without CONTIG_ALLOC activated but that support gigantic 
+>>>> pages,
+>>>> boottime reserved gigantic pages can not be freed at all. This patch
+>>>> simply enables the possibility to hand back those pages to memory
+>>>> allocator.
+>>>>
+>>>> Signed-off-by: Alexandre Ghiti <alex@ghiti.fr>
+>>>> Acked-by: David S. Miller <davem@davemloft.net> [sparc]
+>>>>
+>>>> diff --git a/arch/powerpc/include/asm/book3s/64/hugetlb.h 
+>>>> b/arch/powerpc/include/asm/book3s/64/hugetlb.h
+>>>> index ec2a55a553c7..7013284f0f1b 100644
+>>>> --- a/arch/powerpc/include/asm/book3s/64/hugetlb.h
+>>>> +++ b/arch/powerpc/include/asm/book3s/64/hugetlb.h
+>>>> @@ -36,8 +36,8 @@ static inline int hstate_get_psize(struct hstate 
+>>>> *hstate)
+>>>>       }
+>>>>   }
+>>>>   -#ifdef CONFIG_ARCH_HAS_GIGANTIC_PAGE
+>>>> -static inline bool gigantic_page_supported(void)
+>>>> +#define __HAVE_ARCH_GIGANTIC_PAGE_RUNTIME_SUPPORTED
+>>>> +static inline bool gigantic_page_runtime_supported(void)
+>>>>   {
+>>>>       /*
+>>>>        * We used gigantic page reservation with hypervisor assist 
+>>>> in some case.
+>>>> @@ -49,7 +49,6 @@ static inline bool gigantic_page_supported(void)
+>>>>         return true;
+>>>>   }
+>>>> -#endif
+>>>>     /* hugepd entry valid bit */
+>>>>   #define HUGEPD_VAL_BITS        (0x8000000000000000UL)
+>>>
+>>> Is that correct when CONTIG_ALLOC is not enabled? I guess we want
+>>>
+>>> gigantic_page_runtime_supported to return false when CONTIG_ALLOC is 
+>>> not enabled on all architectures and on POWER when it is enabled we 
+>>> want it to be conditional as it is now.
+>>>
+>>> -aneesh
+>>>
+>>
+>> CONFIG_ARCH_HAS_GIGANTIC_PAGE is set by default when an architecture 
+>> supports gigantic
+>> pages: on its own, it allows to allocate boottime gigantic pages AND 
+>> to free them at runtime
+>> (this is the goal of this series), but not to allocate runtime 
+>> gigantic pages.
+>> If CONTIG_ALLOC is set, it allows in addition to allocate runtime 
+>> gigantic pages.
+>>
+>> I re-introduced the runtime checks because we can't know at compile 
+>> time if powerpc can
+>> or not support gigantic pages.
+>>
+>> So for all architectures, gigantic_page_runtime_supported only 
+>> depends on
+>> CONFIG_ARCH_HAS_GIGANTIC_PAGE enabled or not. The possibility to 
+>> allocate runtime
+>> gigantic pages is dealt with after those runtime checks.
+>>
+>
+> you removed that #ifdef in the patch above. ie we had
+> #ifdef CONFIG_ARCH_HAS_GIGANTIC_PAGE
+> static inline bool gigantic_page_supported(void)
+> {
+>     /*
+>      * We used gigantic page reservation with hypervisor assist in 
+> some case.
+>      * We cannot use runtime allocation of gigantic pages in those 
+> platforms
+>      * This is hash translation mode LPARs.
+>      */
+>     if (firmware_has_feature(FW_FEATURE_LPAR) && !radix_enabled())
+>         return false;
+>
+>     return true;
+> }
+> #endif
 
-Signed-off-by: Viorel Suman <viorel.suman@nxp.com>
----
- sound/soc/fsl/fsl_audmix.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Yes, I removed the #ifdef CONFIG_ARCH_HAS_GIGANTIC_PAGE because it was 
+defined only
+if CONTIG_ALLOC was set. But now, CONFIG_ARCH_HAS_GIGANTIC_PAGE is 
+inconditionally
+set for powerpc so I think we don't need it anymore.
+Actually I have doubts now, is this true for all configurations ? I see 
+that it is only set for
+PPC_RADIX_MMU. I think the problem is here: instead of returning true, 
+it should do like
+the generic version, ie return IS_ENABLED(CONFIG_ARCH_HAS_GIGANTIC_PAGE).
+Do you agree ?
 
-diff --git a/sound/soc/fsl/fsl_audmix.c b/sound/soc/fsl/fsl_audmix.c
-index 3356cb6..dabde03 100644
---- a/sound/soc/fsl/fsl_audmix.c
-+++ b/sound/soc/fsl/fsl_audmix.c
-@@ -90,7 +90,7 @@ static int fsl_audmix_state_trans(struct snd_soc_componen=
-t *comp,
- 	struct fsl_audmix *priv =3D snd_soc_component_get_drvdata(comp);
- 	/* Enforce all required TDMs are started */
- 	if ((priv->tdms & prm.tdms) !=3D prm.tdms) {
--		dev_dbg(comp->dev, prm.msg);
-+		dev_dbg(comp->dev, "%s", prm.msg);
- 		return -EINVAL;
- 	}
-=20
---=20
-2.7.4
+>
+>
+> This is now
+> #define __HAVE_ARCH_GIGANTIC_PAGE_RUNTIME_SUPPORTED
+> static inline bool gigantic_page_runtime_supported(void)
+> {
+> if (firmware_has_feature(FW_FEATURE_LPAR) && !radix_enabled())
+>         return false;
+>
+>     return true;
+> }
+>
+>
+> I am wondering whether it should be
+>
+> #define __HAVE_ARCH_GIGANTIC_PAGE_RUNTIME_SUPPORTED
+> static inline bool gigantic_page_runtime_supported(void)
+> {
+>
+>    if (!IS_ENABLED(CONFIG_CONTIG_ALLOC))
+>         return false;
+
+I don't think this test should happen here, CONFIG_CONTIG_ALLOC only allows
+to allocate gigantic pages, doing that check here would prevent powerpc
+to free boottime gigantic pages when not a guest. Note that this check
+is actually done in set_max_huge_pages.
+
+
+>
+> if (firmware_has_feature(FW_FEATURE_LPAR) && !radix_enabled())
+>         return false;
+
+Maybe I did not understand this check: I understood that, in the case 
+the system
+is virtualized, we do not want it to hand back gigantic pages. Does this 
+check
+test if the system is currently being virtualized ?
+If yes, I think the patch is correct: it prevents freeing gigantic pages 
+when the system
+is virtualized but allows a 'normal' system to free gigantic pages.
+
+
+>
+>     return true;
+> }
+>
+> or add that #ifdef back.
+>
+>> By the way, I forgot to ask you why you think that if an arch cannot 
+>> allocate runtime gigantic
+>> pages, it should not be able to free boottime gigantic pages ?
+>>
+>
+> on virtualized platforms like powervm which use a paravirtualized page 
+> table update mechanism (we dont' have two level table). The ability to 
+> map a page huge depends on how hypervisor allocated the guest ram. 
+> Hypervisor also allocates the guest specific page table of a specific 
+> size depending on how many pages are going to be mapped by what page 
+> size.
+>
+> on POWER we indicate possible guest real address that can be mapped 
+> via hugepage (in this case 16G) using a device tree node 
+> (ibm,expected#pages) . It is expected that we will map these pages 
+> only as 16G pages. Hence we cannot free them back to the buddy where 
+> it could get mapped via 64K page size.
+
+Thanks for the explanations.
+
+Alex
+>
+> -aneesh
+>
+>
 
