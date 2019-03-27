@@ -6,21 +6,21 @@ X-Spam-Status: No, score=-8.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
 	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 96F24C43381
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Mar 2019 19:13:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A3483C10F00
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Mar 2019 19:16:46 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 0F6832064A
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Mar 2019 19:13:08 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 24B222064A
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Mar 2019 19:16:46 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="XLOPPKhV"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0F6832064A
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="nLPBikNZ"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 24B222064A
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44TyM65RhmzDqVf
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Mar 2019 06:13:06 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44TyRJ0HRFzDqFC
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Mar 2019 06:16:44 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=kernel.org
  (client-ip=198.145.29.99; helo=mail.kernel.org;
@@ -28,36 +28,35 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="XLOPPKhV"; 
+ unprotected) header.d=kernel.org header.i=@kernel.org header.b="nLPBikNZ"; 
  dkim-atps=neutral
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44Tx9Y34HHzDqSL
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Mar 2019 05:19:45 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44TxCt68kVzDqRZ
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Mar 2019 05:21:46 +1100 (AEDT)
 Received: from sasha-vm.mshome.net (c-73-47-72-35.hsd1.nh.comcast.net
  [73.47.72.35])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id 5BEBB2070B;
- Wed, 27 Mar 2019 18:19:42 +0000 (UTC)
+ by mail.kernel.org (Postfix) with ESMTPSA id D44AF2082F;
+ Wed, 27 Mar 2019 18:21:41 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1553710783;
- bh=dvm1MwDIl90JCc5ujvjlWeJc7ji6CHHNqQ44o9pKmGo=;
+ s=default; t=1553710903;
+ bh=yndFG5TDCiBAyRfMNpx2aFT8XMkFs6scNwzQFgVIs1g=;
  h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=XLOPPKhVMH28FRsZZyJrwBf0qlaKnZGqf3rmoyum/oQGsE/UcslllKW3YC9J0EN/k
- VKsiMWhzcazeY1uK/YGWuvbLbBkbo20UtRl2WvOz1DNHYkNWQRitNMezV94FwHFvJ2
- v10NY7gd5CC7kF1nksWBW7xihqtW/UEmJYL9Gicc=
+ b=nLPBikNZ9r7QzAsMT3sSf/wUrp1D5rG7fiCVSpq+2rVJCcP1ZIhiq4KQWSE+/Q65o
+ +xppZ/bFUVfzll6r4gdZcw/z1dW2uDe7YUKXzAnUXtZgzQiM3ioi+tk86AJMadpP1W
+ 9z1WNgwJ2L3R8B6OJiz3i0qHpz/xRzmza27qB3Ng=
 From: Sasha Levin <sashal@kernel.org>
 To: linux-kernel@vger.kernel.org,
 	stable@vger.kernel.org
-Subject: [PATCH AUTOSEL 4.14 098/123] powerpc/pseries: Perform full re-add of
- CPU for topology update post-migration
-Date: Wed, 27 Mar 2019 14:16:02 -0400
-Message-Id: <20190327181628.15899-98-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 4.9 38/87] SoC: imx-sgtl5000: add missing put_device()
+Date: Wed, 27 Mar 2019 14:19:51 -0400
+Message-Id: <20190327182040.17444-38-sashal@kernel.org>
 X-Mailer: git-send-email 2.19.1
-In-Reply-To: <20190327181628.15899-1-sashal@kernel.org>
-References: <20190327181628.15899-1-sashal@kernel.org>
+In-Reply-To: <20190327182040.17444-1-sashal@kernel.org>
+References: <20190327182040.17444-1-sashal@kernel.org>
 MIME-Version: 1.0
 X-Patchwork-Hint: Ignore
 Content-Transfer-Encoding: 8bit
@@ -72,116 +71,70 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Sasha Levin <sashal@kernel.org>, Nathan Fontenot <nfont@linux.vnet.ibm.com>,
- "Michael W . Bringmann" <mwb@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org
+Cc: Sasha Levin <sashal@kernel.org>, alsa-devel@alsa-project.org,
+ linuxppc-dev@lists.ozlabs.org, Timur Tabi <timur@kernel.org>,
+ Xiubo Li <Xiubo.Lee@gmail.com>, Wen Yang <yellowriver2010@hotmail.com>,
+ Sascha Hauer <s.hauer@pengutronix.de>, Takashi Iwai <tiwai@suse.com>,
+ Liam Girdwood <lgirdwood@gmail.com>, Jaroslav Kysela <perex@perex.cz>,
+ Nicolin Chen <nicoleotsuka@gmail.com>, Mark Brown <broonie@kernel.org>,
+ NXP Linux Team <linux-imx@nxp.com>,
+ Pengutronix Kernel Team <kernel@pengutronix.de>,
+ Shawn Guo <shawnguo@kernel.org>, Fabio Estevam <festevam@gmail.com>,
+ linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Nathan Fontenot <nfont@linux.vnet.ibm.com>
+From: Wen Yang <yellowriver2010@hotmail.com>
 
-[ Upstream commit 81b61324922c67f73813d8a9c175f3c153f6a1c6 ]
+[ Upstream commit 8fa857da9744f513036df1c43ab57f338941ae7d ]
 
-On pseries systems, performing a partition migration can result in
-altering the nodes a CPU is assigned to on the destination system. For
-exampl, pre-migration on the source system CPUs are in node 1 and 3,
-post-migration on the destination system CPUs are in nodes 2 and 3.
+The of_find_device_by_node() takes a reference to the underlying device
+structure, we should release that reference.
 
-Handling the node change for a CPU can cause corruption in the slab
-cache if we hit a timing where a CPUs node is changed while cache_reap()
-is invoked. The corruption occurs because the slab cache code appears
-to rely on the CPU and slab cache pages being on the same node.
+Detected by coccinelle with the following warnings:
+./sound/soc/fsl/imx-sgtl5000.c:169:1-7: ERROR: missing put_device;
+call of_find_device_by_node on line 105, but without a corresponding
+object release within this function.
+./sound/soc/fsl/imx-sgtl5000.c:177:1-7: ERROR: missing put_device;
+call of_find_device_by_node on line 105, but without a corresponding
+object release within this function.
 
-The current dynamic updating of a CPUs node done in arch/powerpc/mm/numa.c
-does not prevent us from hitting this scenario.
-
-Changing the device tree property update notification handler that
-recognizes an affinity change for a CPU to do a full DLPAR remove and
-add of the CPU instead of dynamically changing its node resolves this
-issue.
-
-Signed-off-by: Nathan Fontenot <nfont@linux.vnet.ibm.com>
-Signed-off-by: Michael W. Bringmann <mwb@linux.vnet.ibm.com>
-Tested-by: Michael W. Bringmann <mwb@linux.vnet.ibm.com>
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+Signed-off-by: Wen Yang <yellowriver2010@hotmail.com>
+Cc: Timur Tabi <timur@kernel.org>
+Cc: Nicolin Chen <nicoleotsuka@gmail.com>
+Cc: Xiubo Li <Xiubo.Lee@gmail.com>
+Cc: Fabio Estevam <festevam@gmail.com>
+Cc: Liam Girdwood <lgirdwood@gmail.com>
+Cc: Mark Brown <broonie@kernel.org>
+Cc: Jaroslav Kysela <perex@perex.cz>
+Cc: Takashi Iwai <tiwai@suse.com>
+Cc: Shawn Guo <shawnguo@kernel.org>
+Cc: Sascha Hauer <s.hauer@pengutronix.de>
+Cc: Pengutronix Kernel Team <kernel@pengutronix.de>
+Cc: NXP Linux Team <linux-imx@nxp.com>
+Cc: alsa-devel@alsa-project.org
+Cc: linuxppc-dev@lists.ozlabs.org
+Cc: linux-arm-kernel@lists.infradead.org
+Cc: linux-kernel@vger.kernel.org
+Signed-off-by: Mark Brown <broonie@kernel.org>
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- arch/powerpc/include/asm/topology.h          |  2 ++
- arch/powerpc/mm/numa.c                       |  9 +--------
- arch/powerpc/platforms/pseries/hotplug-cpu.c | 19 +++++++++++++++++++
- 3 files changed, 22 insertions(+), 8 deletions(-)
+ sound/soc/fsl/imx-sgtl5000.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/arch/powerpc/include/asm/topology.h b/arch/powerpc/include/asm/topology.h
-index 66c72b356ac0..e6b185b4b3b1 100644
---- a/arch/powerpc/include/asm/topology.h
-+++ b/arch/powerpc/include/asm/topology.h
-@@ -117,6 +117,8 @@ static inline int prrn_is_enabled(void)
- #define topology_sibling_cpumask(cpu)	(per_cpu(cpu_sibling_map, cpu))
- #define topology_core_cpumask(cpu)	(per_cpu(cpu_core_map, cpu))
- #define topology_core_id(cpu)		(cpu_to_core_id(cpu))
-+
-+int dlpar_cpu_readd(int cpu);
- #endif
- #endif
- 
-diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
-index 40fb9a8835fe..0a02c73a27b3 100644
---- a/arch/powerpc/mm/numa.c
-+++ b/arch/powerpc/mm/numa.c
-@@ -1527,13 +1527,6 @@ static void reset_topology_timer(void)
- 
- #ifdef CONFIG_SMP
- 
--static void stage_topology_update(int core_id)
--{
--	cpumask_or(&cpu_associativity_changes_mask,
--		&cpu_associativity_changes_mask, cpu_sibling_mask(core_id));
--	reset_topology_timer();
--}
--
- static int dt_update_callback(struct notifier_block *nb,
- 				unsigned long action, void *data)
- {
-@@ -1546,7 +1539,7 @@ static int dt_update_callback(struct notifier_block *nb,
- 		    !of_prop_cmp(update->prop->name, "ibm,associativity")) {
- 			u32 core_id;
- 			of_property_read_u32(update->dn, "reg", &core_id);
--			stage_topology_update(core_id);
-+			rc = dlpar_cpu_readd(core_id);
- 			rc = NOTIFY_OK;
- 		}
- 		break;
-diff --git a/arch/powerpc/platforms/pseries/hotplug-cpu.c b/arch/powerpc/platforms/pseries/hotplug-cpu.c
-index b1ac8ac38434..0baaaa6b0929 100644
---- a/arch/powerpc/platforms/pseries/hotplug-cpu.c
-+++ b/arch/powerpc/platforms/pseries/hotplug-cpu.c
-@@ -799,6 +799,25 @@ static int dlpar_cpu_add_by_count(u32 cpus_to_add)
- 	return rc;
- }
- 
-+int dlpar_cpu_readd(int cpu)
-+{
-+	struct device_node *dn;
-+	struct device *dev;
-+	u32 drc_index;
-+	int rc;
-+
-+	dev = get_cpu_device(cpu);
-+	dn = dev->of_node;
-+
-+	rc = of_property_read_u32(dn, "ibm,my-drc-index", &drc_index);
-+
-+	rc = dlpar_cpu_remove_by_index(drc_index);
-+	if (!rc)
-+		rc = dlpar_cpu_add(drc_index);
-+
-+	return rc;
-+}
-+
- int dlpar_cpu(struct pseries_hp_errorlog *hp_elog)
- {
- 	u32 count, drc_index;
+diff --git a/sound/soc/fsl/imx-sgtl5000.c b/sound/soc/fsl/imx-sgtl5000.c
+index b99e0b5e00e9..8e525f7ac08d 100644
+--- a/sound/soc/fsl/imx-sgtl5000.c
++++ b/sound/soc/fsl/imx-sgtl5000.c
+@@ -115,6 +115,7 @@ static int imx_sgtl5000_probe(struct platform_device *pdev)
+ 		ret = -EPROBE_DEFER;
+ 		goto fail;
+ 	}
++	put_device(&ssi_pdev->dev);
+ 	codec_dev = of_find_i2c_device_by_node(codec_np);
+ 	if (!codec_dev) {
+ 		dev_err(&pdev->dev, "failed to find codec platform device\n");
 -- 
 2.19.1
 
