@@ -2,83 +2,78 @@ Return-Path: <SRS0=U6gC=R7=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_PASS,UNPARSEABLE_RELAY,USER_AGENT_MUTT autolearn=ham autolearn_force=no
-	version=3.4.0
+	SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id F2C13C43381
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Mar 2019 14:21:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id ACDFEC43381
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Mar 2019 14:23:13 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E7C1D2075E
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Mar 2019 14:21:08 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 2E38F20823
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Mar 2019 14:23:13 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=oracle.com header.i=@oracle.com header.b="N81AN6uE"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E7C1D2075E
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=oracle.com
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="JO8wmztr"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2E38F20823
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44VRqj5P8nzDqPK
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Mar 2019 01:21:05 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44VRt72tJ6zDqHj
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Mar 2019 01:23:11 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=oracle.com
- (client-ip=156.151.31.86; helo=userp2130.oracle.com;
- envelope-from=dan.carpenter@oracle.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=c-s.fr
+ (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=oracle.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=oracle.com header.i=@oracle.com header.b="N81AN6uE"; 
+ dmarc=none (p=none dis=none) header.from=c-s.fr
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="JO8wmztr"; 
  dkim-atps=neutral
-Received: from userp2130.oracle.com (userp2130.oracle.com [156.151.31.86])
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44VRnZ58SVzDqGG
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Mar 2019 01:19:07 +1100 (AEDT)
-Received: from pps.filterd (userp2130.oracle.com [127.0.0.1])
- by userp2130.oracle.com (8.16.0.27/8.16.0.27) with SMTP id x2SE9Idg034338;
- Thu, 28 Mar 2019 14:19:04 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com;
- h=date : from : to : cc
- : subject : message-id : mime-version : content-type; s=corp-2018-07-02;
- bh=YhIzL/687iSSGYOfh/6Kw8TmYsIra4mRH0IarZmasWo=;
- b=N81AN6uECzZ2R7dJdzmygZ6Xvn+Yer1LHI4mFiLirMJfzouAK9kE2Jk/b4EyMIwQNnRM
- i8Eqv/AP7BpAeXw5QqpvpFRqn71AXxxDoqVYKcQwmMRQXkPQZpCSPYEbWDDmkvsNiQfK
- 3ui3EPhdgt7AJUukAbCllQhyYEgn68AGEANGbm76dCZwIVWZ0hBPkJtgLt+Mu7J6vJND
- FYkoo5BFEhiH1Aa24t9JiURWHAMzxMgym7tJ4MbfJRblM4coE7Zq/NmcIgMp3fsM8FT7
- gvn+6qcpEiHrCZ0jkoXJpp2OqH+nl6MDj/vlmzEC1TAufFLIXtxTLqhGqLhaq6RGKHN3 OQ== 
-Received: from userv0022.oracle.com (userv0022.oracle.com [156.151.31.74])
- by userp2130.oracle.com with ESMTP id 2re6g1euy0-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Thu, 28 Mar 2019 14:19:04 +0000
-Received: from userv0121.oracle.com (userv0121.oracle.com [156.151.31.72])
- by userv0022.oracle.com (8.14.4/8.14.4) with ESMTP id x2SEIxSh023125
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Thu, 28 Mar 2019 14:18:59 GMT
-Received: from abhmp0016.oracle.com (abhmp0016.oracle.com [141.146.116.22])
- by userv0121.oracle.com (8.14.4/8.13.8) with ESMTP id x2SEIuRC012623;
- Thu, 28 Mar 2019 14:18:56 GMT
-Received: from kadam (/41.202.241.10) by default (Oracle Beehive Gateway v4.0)
- with ESMTP ; Thu, 28 Mar 2019 07:18:54 -0700
-Date: Thu, 28 Mar 2019 17:18:41 +0300
-From: Dan Carpenter <dan.carpenter@oracle.com>
-To: Qiang Zhao <qiang.zhao@nxp.com>, Grant Likely <grant.likely@secretlab.ca>
-Subject: [PATCH] soc/fsl/qe: Fix an error code in qe_pin_request()
-Message-ID: <20190328141841.GN32590@kadam>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-X-Mailer: git-send-email haha only kidding
-User-Agent: Mutt/1.9.4 (2018-02-28)
-X-Proofpoint-Virus-Version: vendor=nai engine=5900 definitions=9208
- signatures=668685
-X-Proofpoint-Spam-Details: rule=notspam policy=default score=0
- priorityscore=1501 malwarescore=0
- suspectscore=0 phishscore=0 bulkscore=0 spamscore=0 clxscore=1011
- lowpriorityscore=0 mlxscore=0 impostorscore=0 mlxlogscore=999 adultscore=0
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.0.1-1810050000
- definitions=main-1903280097
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44VRr95XB7zDqHj
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Mar 2019 01:21:28 +1100 (AEDT)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 44VRr42VPnz9tyRF;
+ Thu, 28 Mar 2019 15:21:24 +0100 (CET)
+Authentication-Results: localhost; dkim=pass
+ reason="1024-bit key; insecure key"
+ header.d=c-s.fr header.i=@c-s.fr header.b=JO8wmztr; dkim-adsp=pass;
+ dkim-atps=neutral
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id axVLpAMYPF41; Thu, 28 Mar 2019 15:21:24 +0100 (CET)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 44VRr41MF4z9tyRD;
+ Thu, 28 Mar 2019 15:21:24 +0100 (CET)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
+ t=1553782884; bh=NfUz4WNgnOooXS2IE3dB18lpfq5BCwPK3vlyIjLs8Gs=;
+ h=From:Subject:To:Cc:Date:From;
+ b=JO8wmztryWTpAFzgAZz4d1FRQgE4sUxrXN+NGzKOHtG7VwjBKHbCh3dveB6GekwDC
+ 3XKasSKTT0VtlqfPdg3C92x05B16ITo/Q8iZsn5gbNLgBEM3vFBaWVIwSlth6AaqtG
+ JPmrRAkPoU24fY5MSBIqudWnV+uioS2nW3XyfCeM=
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 9BD3B8B922;
+ Thu, 28 Mar 2019 15:21:25 +0100 (CET)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id Wi7AIBZNvrRl; Thu, 28 Mar 2019 15:21:25 +0100 (CET)
+Received: from po16846vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 555C68B91C;
+ Thu, 28 Mar 2019 15:21:25 +0100 (CET)
+Received: by po16846vm.idsi0.si.c-s.fr (Postfix, from userid 0)
+ id CB72769D41; Thu, 28 Mar 2019 14:21:24 +0000 (UTC)
+Message-Id: <3401648225001077db54172ee87573b21e1cfa38.1553782837.git.christophe.leroy@c-s.fr>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Subject: [RFC PATCH] powerpc/book3e: KASAN Full support for 64bit
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, 
+ dja@axtens.net
+Date: Thu, 28 Mar 2019 14:21:24 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -90,36 +85,287 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: kernel-janitors@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- Li Yang <leoyang.li@nxp.com>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-We forgot to set "err" on this error path.
+The KASAN shadow area is mapped into vmemmap space:
+0x8000 0400 0000 0000 to 0x8000 0600 0000 0000.
+For this vmemmap has to be disabled.
 
-Fixes: 1a2d397a6eb5 ("gpio/powerpc: Eliminate duplication of of_get_named_gpio_flags()")
-Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
+Cc: Daniel Axtens <dja@axtens.net>
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
- drivers/soc/fsl/qe/gpio.c | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+ arch/powerpc/Kconfig                  |   1 +
+ arch/powerpc/Kconfig.debug            |   3 +-
+ arch/powerpc/include/asm/kasan.h      |  11 +++
+ arch/powerpc/kernel/Makefile          |   2 +
+ arch/powerpc/kernel/head_64.S         |   3 +
+ arch/powerpc/kernel/setup_64.c        |  20 +++---
+ arch/powerpc/mm/kasan/Makefile        |   1 +
+ arch/powerpc/mm/kasan/kasan_init_64.c | 129 ++++++++++++++++++++++++++++++++++
+ 8 files changed, 159 insertions(+), 11 deletions(-)
+ create mode 100644 arch/powerpc/mm/kasan/kasan_init_64.c
 
-diff --git a/drivers/soc/fsl/qe/gpio.c b/drivers/soc/fsl/qe/gpio.c
-index 819bed0f5667..51b3a47b5a55 100644
---- a/drivers/soc/fsl/qe/gpio.c
-+++ b/drivers/soc/fsl/qe/gpio.c
-@@ -179,8 +179,10 @@ struct qe_pin *qe_pin_request(struct device_node *np, int index)
- 	if (err < 0)
- 		goto err0;
- 	gc = gpio_to_chip(err);
--	if (WARN_ON(!gc))
-+	if (WARN_ON(!gc)) {
-+		err = -ENODEV;
- 		goto err0;
-+	}
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index 1a2fb50126b2..e0b7c45e4dc7 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -174,6 +174,7 @@ config PPC
+ 	select HAVE_ARCH_AUDITSYSCALL
+ 	select HAVE_ARCH_JUMP_LABEL
+ 	select HAVE_ARCH_KASAN			if PPC32
++	select HAVE_ARCH_KASAN			if PPC_BOOK3E_64 && !SPARSEMEM_VMEMMAP
+ 	select HAVE_ARCH_KGDB
+ 	select HAVE_ARCH_MMAP_RND_BITS
+ 	select HAVE_ARCH_MMAP_RND_COMPAT_BITS	if COMPAT
+diff --git a/arch/powerpc/Kconfig.debug b/arch/powerpc/Kconfig.debug
+index 61febbbdd02b..b4140dd6b4e4 100644
+--- a/arch/powerpc/Kconfig.debug
++++ b/arch/powerpc/Kconfig.debug
+@@ -370,4 +370,5 @@ config PPC_FAST_ENDIAN_SWITCH
+ config KASAN_SHADOW_OFFSET
+ 	hex
+ 	depends on KASAN
+-	default 0xe0000000
++	default 0xe0000000 if PPC32
++	default 0x6800040000000000 if PPC64
+diff --git a/arch/powerpc/include/asm/kasan.h b/arch/powerpc/include/asm/kasan.h
+index 296e51c2f066..756b3d58f921 100644
+--- a/arch/powerpc/include/asm/kasan.h
++++ b/arch/powerpc/include/asm/kasan.h
+@@ -23,10 +23,21 @@
  
- 	if (!of_device_is_compatible(gc->of_node, "fsl,mpc8323-qe-pario-bank")) {
- 		pr_debug("%s: tried to get a non-qe pin\n", __func__);
+ #define KASAN_SHADOW_OFFSET	ASM_CONST(CONFIG_KASAN_SHADOW_OFFSET)
+ 
++#ifdef CONFIG_PPC32
+ #define KASAN_SHADOW_END	0UL
+ 
+ #define KASAN_SHADOW_SIZE	(KASAN_SHADOW_END - KASAN_SHADOW_START)
+ 
++#else
++
++#include <asm/pgtable.h>
++
++#define KASAN_SHADOW_SIZE	(KERN_VIRT_SIZE >> KASAN_SHADOW_SCALE_SHIFT)
++
++#define KASAN_SHADOW_END	(KASAN_SHADOW_START + KASAN_SHADOW_SIZE)
++
++#endif /* CONFIG_PPC32 */
++
+ #ifdef CONFIG_KASAN
+ void kasan_early_init(void);
+ void kasan_mmu_init(void);
+diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
+index 0ea6c4aa3a20..7f232c06f11d 100644
+--- a/arch/powerpc/kernel/Makefile
++++ b/arch/powerpc/kernel/Makefile
+@@ -35,6 +35,8 @@ KASAN_SANITIZE_early_32.o := n
+ KASAN_SANITIZE_cputable.o := n
+ KASAN_SANITIZE_prom_init.o := n
+ KASAN_SANITIZE_btext.o := n
++KASAN_SANITIZE_paca.o := n
++KASAN_SANITIZE_setup_64.o := n
+ 
+ ifdef CONFIG_KASAN
+ CFLAGS_early_32.o += -DDISABLE_BRANCH_PROFILING
+diff --git a/arch/powerpc/kernel/head_64.S b/arch/powerpc/kernel/head_64.S
+index 3fad8d499767..80fbd8024fb2 100644
+--- a/arch/powerpc/kernel/head_64.S
++++ b/arch/powerpc/kernel/head_64.S
+@@ -966,6 +966,9 @@ start_here_multiplatform:
+ 	 * and SLB setup before we turn on relocation.
+ 	 */
+ 
++#ifdef CONFIG_KASAN
++	bl	kasan_early_init
++#endif
+ 	/* Restore parameters passed from prom_init/kexec */
+ 	mr	r3,r31
+ 	bl	early_setup		/* also sets r13 and SPRG_PACA */
+diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
+index ba404dd9ce1d..d2bf860dd966 100644
+--- a/arch/powerpc/kernel/setup_64.c
++++ b/arch/powerpc/kernel/setup_64.c
+@@ -311,6 +311,16 @@ void __init early_setup(unsigned long dt_ptr)
+  	DBG(" -> early_setup(), dt_ptr: 0x%lx\n", dt_ptr);
+ 
+ 	/*
++	 * Configure exception handlers. This include setting up trampolines
++	 * if needed, setting exception endian mode, etc...
++	 */
++	configure_exceptions();
++
++	/* Apply all the dynamic patching */
++	apply_feature_fixups();
++	setup_feature_keys();
++
++	/*
+ 	 * Do early initialization using the flattened device
+ 	 * tree, such as retrieving the physical memory map or
+ 	 * calculating/retrieving the hash table size.
+@@ -325,16 +335,6 @@ void __init early_setup(unsigned long dt_ptr)
+ 	setup_paca(paca_ptrs[boot_cpuid]);
+ 	fixup_boot_paca();
+ 
+-	/*
+-	 * Configure exception handlers. This include setting up trampolines
+-	 * if needed, setting exception endian mode, etc...
+-	 */
+-	configure_exceptions();
+-
+-	/* Apply all the dynamic patching */
+-	apply_feature_fixups();
+-	setup_feature_keys();
+-
+ 	/* Initialize the hash table or TLB handling */
+ 	early_init_mmu();
+ 
+diff --git a/arch/powerpc/mm/kasan/Makefile b/arch/powerpc/mm/kasan/Makefile
+index 6577897673dd..0bfbe3892808 100644
+--- a/arch/powerpc/mm/kasan/Makefile
++++ b/arch/powerpc/mm/kasan/Makefile
+@@ -3,3 +3,4 @@
+ KASAN_SANITIZE := n
+ 
+ obj-$(CONFIG_PPC32)           += kasan_init_32.o
++obj-$(CONFIG_PPC64)	+= kasan_init_64.o
+diff --git a/arch/powerpc/mm/kasan/kasan_init_64.c b/arch/powerpc/mm/kasan/kasan_init_64.c
+new file mode 100644
+index 000000000000..7fd71b8e883b
+--- /dev/null
++++ b/arch/powerpc/mm/kasan/kasan_init_64.c
+@@ -0,0 +1,129 @@
++// SPDX-License-Identifier: GPL-2.0
++
++#define DISABLE_BRANCH_PROFILING
++
++#include <linux/kasan.h>
++#include <linux/printk.h>
++#include <linux/memblock.h>
++#include <linux/sched/task.h>
++#include <asm/pgalloc.h>
++
++static void __init kasan_populate_pte(pte_t *ptep, pgprot_t prot)
++{
++	unsigned long va = (unsigned long)kasan_early_shadow_page;
++	phys_addr_t pa = __pa(kasan_early_shadow_page);
++	int i;
++
++	for (i = 0; i < PTRS_PER_PTE; i++, ptep++)
++		__set_pte_at(&init_mm, va, ptep, pfn_pte(PHYS_PFN(pa), prot), 0);
++}
++
++static void __init kasan_populate_pmd(pmd_t *pmdp)
++{
++	int i;
++
++	for (i = 0; i < PTRS_PER_PMD; i++)
++		pmd_populate_kernel(&init_mm, pmdp + i, kasan_early_shadow_pte);
++}
++
++static void __init kasan_populate_pud(pud_t *pudp)
++{
++	int i;
++
++	for (i = 0; i < PTRS_PER_PUD; i++)
++		pud_populate(&init_mm, pudp + i, kasan_early_shadow_pmd);
++}
++
++static void __init *kasan_alloc_pgtable(unsigned long size)
++{
++	void *ptr = memblock_alloc_try_nid(size, size, MEMBLOCK_LOW_LIMIT,
++					   __pa(MAX_DMA_ADDRESS), NUMA_NO_NODE);
++
++	if (!ptr)
++		panic("%s: Failed to allocate %lu bytes align=0x%lx max_addr=%lx\n",
++		      __func__, size, size, __pa(MAX_DMA_ADDRESS));
++
++	return ptr;
++}
++
++static int __init kasan_map_page(unsigned long va, unsigned long pa, pgprot_t prot)
++{
++	pgd_t *pgdp = pgd_offset_k(va);
++	pud_t *pudp;
++	pmd_t *pmdp;
++	pte_t *ptep;
++
++	if (pgd_none(*pgdp) || (void *)pgd_page_vaddr(*pgdp) == kasan_early_shadow_pud) {
++		pudp = kasan_alloc_pgtable(PUD_TABLE_SIZE);
++		kasan_populate_pud(pudp);
++		pgd_populate(&init_mm, pgdp, pudp);
++	}
++	pudp = pud_offset(pgdp, va);
++	if (pud_none(*pudp) || (void *)pud_page_vaddr(*pudp) == kasan_early_shadow_pmd) {
++		pmdp = kasan_alloc_pgtable(PMD_TABLE_SIZE);
++		kasan_populate_pmd(pmdp);
++		pud_populate(&init_mm, pudp, pmdp);
++	}
++	pmdp = pmd_offset(pudp, va);
++	if (!pmd_present(*pmdp) || (void *)pmd_page_vaddr(*pmdp) == kasan_early_shadow_pte) {
++		ptep = kasan_alloc_pgtable(PTE_TABLE_SIZE);
++		kasan_populate_pte(ptep, PAGE_KERNEL);
++		pmd_populate_kernel(&init_mm, pmdp, ptep);
++	}
++	ptep = pte_offset_kernel(pmdp, va);
++
++	__set_pte_at(&init_mm, va, ptep, pfn_pte(pa >> PAGE_SHIFT, prot), 0);
++
++	return 0;
++}
++
++static void __init kasan_init_region(struct memblock_region *reg)
++{
++	void *start = __va(reg->base);
++	void *end = __va(reg->base + reg->size);
++	unsigned long k_start, k_end, k_cur;
++
++	if (start >= end)
++		return;
++
++	k_start = (unsigned long)kasan_mem_to_shadow(start);
++	k_end = (unsigned long)kasan_mem_to_shadow(end);
++
++	for (k_cur = k_start; k_cur < k_end; k_cur += PAGE_SIZE) {
++		void *va = memblock_alloc(PAGE_SIZE, PAGE_SIZE);
++
++		kasan_map_page(k_cur, __pa(va), PAGE_KERNEL);
++	}
++	flush_tlb_kernel_range(k_start, k_end);
++}
++
++void __init kasan_init(void)
++{
++	struct memblock_region *reg;
++
++	for_each_memblock(memory, reg)
++		kasan_init_region(reg);
++
++	/* It's too early to use clear_page() ! */
++	memset(kasan_early_shadow_page, 0, sizeof(kasan_early_shadow_page));
++
++	/* Enable error messages */
++	init_task.kasan_depth = 0;
++	pr_info("KASAN init done\n");
++}
++
++/* The early shadow maps everything to a single page of zeroes */
++asmlinkage void __init kasan_early_init(void)
++{
++	unsigned long addr = KASAN_SHADOW_START;
++	unsigned long end = KASAN_SHADOW_END;
++	pgd_t *pgdp = pgd_offset_k(addr);
++
++	kasan_populate_pte(kasan_early_shadow_pte, PAGE_KERNEL);
++	kasan_populate_pmd(kasan_early_shadow_pmd);
++	kasan_populate_pud(kasan_early_shadow_pud);
++
++	do {
++		pgd_populate(&init_mm, pgdp, kasan_early_shadow_pud);
++	} while (pgdp++, addr = pgd_addr_end(addr, end), addr != end);
++}
 -- 
-2.17.1
+2.13.3
 
