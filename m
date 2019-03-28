@@ -2,24 +2,23 @@ Return-Path: <SRS0=U6gC=R7=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.9 required=3.0 tests=DATE_IN_PAST_06_12,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-1.9 required=3.0 tests=DATE_IN_PAST_06_12,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0DEC4C43381
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Mar 2019 16:49:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D833EC43381
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Mar 2019 16:51:35 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 8CFAD2173C
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Mar 2019 16:49:46 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8CFAD2173C
+	by mail.kernel.org (Postfix) with ESMTPS id 60E062173C
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Mar 2019 16:51:35 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 60E062173C
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=intel.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44VW7D3ZR1zDqBL
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Mar 2019 03:49:44 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44VW9K2q6hzDqRP
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Mar 2019 03:51:33 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=intel.com
  (client-ip=134.134.136.126; helo=mga18.intel.com;
@@ -29,17 +28,17 @@ Authentication-Results: lists.ozlabs.org;
 Received: from mga18.intel.com (mga18.intel.com [134.134.136.126])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44VW2f0Kq0zDqQP
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Mar 2019 03:45:42 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44VW2f0KpGzDqQN
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Mar 2019 03:45:38 +1100 (AEDT)
 X-Amp-Result: SKIPPED(no attachment in message)
 X-Amp-File-Uploaded: False
 Received: from orsmga001.jf.intel.com ([10.7.209.18])
  by orsmga106.jf.intel.com with ESMTP/TLS/DHE-RSA-AES256-GCM-SHA384;
- 28 Mar 2019 09:45:36 -0700
+ 28 Mar 2019 09:45:34 -0700
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.60,281,1549958400"; d="scan'208";a="218460196"
+X-IronPort-AV: E=Sophos;i="5.60,281,1549958400"; d="scan'208";a="218460183"
 Received: from iweiny-desk2.sc.intel.com ([10.3.52.157])
- by orsmga001.jf.intel.com with ESMTP; 28 Mar 2019 09:45:35 -0700
+ by orsmga001.jf.intel.com with ESMTP; 28 Mar 2019 09:45:33 -0700
 From: ira.weiny@intel.com
 To: Andrew Morton <akpm@linux-foundation.org>,
  John Hubbard <jhubbard@nvidia.com>, Michal Hocko <mhocko@suse.com>,
@@ -53,12 +52,10 @@ To: Andrew Morton <akpm@linux-foundation.org>,
  Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
  Borislav Petkov <bp@alien8.de>, Ralf Baechle <ralf@linux-mips.org>,
  James Hogan <jhogan@kernel.org>
-Subject: [PATCH V3 2/7] mm/gup: Change write parameter to flags in fast walk
-Date: Thu, 28 Mar 2019 01:44:17 -0700
-Message-Id: <20190328084422.29911-3-ira.weiny@intel.com>
+Subject: [PATCH V3 0/7] Add FOLL_LONGTERM to GUP fast and use it
+Date: Thu, 28 Mar 2019 01:44:15 -0700
+Message-Id: <20190328084422.29911-1-ira.weiny@intel.com>
 X-Mailer: git-send-email 2.20.1
-In-Reply-To: <20190328084422.29911-1-ira.weiny@intel.com>
-References: <20190328084422.29911-1-ira.weiny@intel.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -76,229 +73,97 @@ Cc: linux-s390@vger.kernel.org, linux-sh@vger.kernel.org,
  linux-rdma@vger.kernel.org, Ira Weiny <ira.weiny@intel.com>,
  linux-kernel@vger.kernel.org, linux-mips@vger.kernel.org, linux-mm@kvack.org,
  netdev@vger.kernel.org, sparclinux@vger.kernel.org,
- Dan Williams <dan.j.williams@intel.com>, linuxppc-dev@lists.ozlabs.org
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
 From: Ira Weiny <ira.weiny@intel.com>
 
-In order to support more options in the GUP fast walk, change
-the write parameter to flags throughout the call stack.
+Following discussion and review[1] here are the cleanups requested.
 
-This patch does not change functionality and passes FOLL_WRITE
-where write was previously used.
+The biggest change for V3 was the disabling of the ability to use FOLL_LONGTERM
+in get_user_pages[unlocked|locked|remote]
 
-Reviewed-by: Dan Williams <dan.j.williams@intel.com>
-Signed-off-by: Ira Weiny <ira.weiny@intel.com>
+Comments were also enhanced throughout to show potential users what
+FOLL_LONGTERM is all about and limitations it has.
 
----
-Changes from V2
-	Add review by
+Minor review comments were fixed
 
- mm/gup.c | 52 ++++++++++++++++++++++++++--------------------------
- 1 file changed, 26 insertions(+), 26 deletions(-)
+Original cover letter:
 
-diff --git a/mm/gup.c b/mm/gup.c
-index 12ce886733b9..6304317a308e 100644
---- a/mm/gup.c
-+++ b/mm/gup.c
-@@ -1591,7 +1591,7 @@ static void undo_dev_pagemap(int *nr, int nr_start, struct page **pages)
- 
- #ifdef CONFIG_ARCH_HAS_PTE_SPECIAL
- static int gup_pte_range(pmd_t pmd, unsigned long addr, unsigned long end,
--			 int write, struct page **pages, int *nr)
-+			 unsigned int flags, struct page **pages, int *nr)
- {
- 	struct dev_pagemap *pgmap = NULL;
- 	int nr_start = *nr, ret = 0;
-@@ -1609,7 +1609,7 @@ static int gup_pte_range(pmd_t pmd, unsigned long addr, unsigned long end,
- 		if (pte_protnone(pte))
- 			goto pte_unmap;
- 
--		if (!pte_access_permitted(pte, write))
-+		if (!pte_access_permitted(pte, flags & FOLL_WRITE))
- 			goto pte_unmap;
- 
- 		if (pte_devmap(pte)) {
-@@ -1661,7 +1661,7 @@ static int gup_pte_range(pmd_t pmd, unsigned long addr, unsigned long end,
-  * useful to have gup_huge_pmd even if we can't operate on ptes.
-  */
- static int gup_pte_range(pmd_t pmd, unsigned long addr, unsigned long end,
--			 int write, struct page **pages, int *nr)
-+			 unsigned int flags, struct page **pages, int *nr)
- {
- 	return 0;
- }
-@@ -1744,12 +1744,12 @@ static int __gup_device_huge_pud(pud_t pud, pud_t *pudp, unsigned long addr,
- #endif
- 
- static int gup_huge_pmd(pmd_t orig, pmd_t *pmdp, unsigned long addr,
--		unsigned long end, int write, struct page **pages, int *nr)
-+		unsigned long end, unsigned int flags, struct page **pages, int *nr)
- {
- 	struct page *head, *page;
- 	int refs;
- 
--	if (!pmd_access_permitted(orig, write))
-+	if (!pmd_access_permitted(orig, flags & FOLL_WRITE))
- 		return 0;
- 
- 	if (pmd_devmap(orig))
-@@ -1782,12 +1782,12 @@ static int gup_huge_pmd(pmd_t orig, pmd_t *pmdp, unsigned long addr,
- }
- 
- static int gup_huge_pud(pud_t orig, pud_t *pudp, unsigned long addr,
--		unsigned long end, int write, struct page **pages, int *nr)
-+		unsigned long end, unsigned int flags, struct page **pages, int *nr)
- {
- 	struct page *head, *page;
- 	int refs;
- 
--	if (!pud_access_permitted(orig, write))
-+	if (!pud_access_permitted(orig, flags & FOLL_WRITE))
- 		return 0;
- 
- 	if (pud_devmap(orig))
-@@ -1820,13 +1820,13 @@ static int gup_huge_pud(pud_t orig, pud_t *pudp, unsigned long addr,
- }
- 
- static int gup_huge_pgd(pgd_t orig, pgd_t *pgdp, unsigned long addr,
--			unsigned long end, int write,
-+			unsigned long end, unsigned int flags,
- 			struct page **pages, int *nr)
- {
- 	int refs;
- 	struct page *head, *page;
- 
--	if (!pgd_access_permitted(orig, write))
-+	if (!pgd_access_permitted(orig, flags & FOLL_WRITE))
- 		return 0;
- 
- 	BUILD_BUG_ON(pgd_devmap(orig));
-@@ -1857,7 +1857,7 @@ static int gup_huge_pgd(pgd_t orig, pgd_t *pgdp, unsigned long addr,
- }
- 
- static int gup_pmd_range(pud_t pud, unsigned long addr, unsigned long end,
--		int write, struct page **pages, int *nr)
-+		unsigned int flags, struct page **pages, int *nr)
- {
- 	unsigned long next;
- 	pmd_t *pmdp;
-@@ -1880,7 +1880,7 @@ static int gup_pmd_range(pud_t pud, unsigned long addr, unsigned long end,
- 			if (pmd_protnone(pmd))
- 				return 0;
- 
--			if (!gup_huge_pmd(pmd, pmdp, addr, next, write,
-+			if (!gup_huge_pmd(pmd, pmdp, addr, next, flags,
- 				pages, nr))
- 				return 0;
- 
-@@ -1890,9 +1890,9 @@ static int gup_pmd_range(pud_t pud, unsigned long addr, unsigned long end,
- 			 * pmd format and THP pmd format
- 			 */
- 			if (!gup_huge_pd(__hugepd(pmd_val(pmd)), addr,
--					 PMD_SHIFT, next, write, pages, nr))
-+					 PMD_SHIFT, next, flags, pages, nr))
- 				return 0;
--		} else if (!gup_pte_range(pmd, addr, next, write, pages, nr))
-+		} else if (!gup_pte_range(pmd, addr, next, flags, pages, nr))
- 			return 0;
- 	} while (pmdp++, addr = next, addr != end);
- 
-@@ -1900,7 +1900,7 @@ static int gup_pmd_range(pud_t pud, unsigned long addr, unsigned long end,
- }
- 
- static int gup_pud_range(p4d_t p4d, unsigned long addr, unsigned long end,
--			 int write, struct page **pages, int *nr)
-+			 unsigned int flags, struct page **pages, int *nr)
- {
- 	unsigned long next;
- 	pud_t *pudp;
-@@ -1913,14 +1913,14 @@ static int gup_pud_range(p4d_t p4d, unsigned long addr, unsigned long end,
- 		if (pud_none(pud))
- 			return 0;
- 		if (unlikely(pud_huge(pud))) {
--			if (!gup_huge_pud(pud, pudp, addr, next, write,
-+			if (!gup_huge_pud(pud, pudp, addr, next, flags,
- 					  pages, nr))
- 				return 0;
- 		} else if (unlikely(is_hugepd(__hugepd(pud_val(pud))))) {
- 			if (!gup_huge_pd(__hugepd(pud_val(pud)), addr,
--					 PUD_SHIFT, next, write, pages, nr))
-+					 PUD_SHIFT, next, flags, pages, nr))
- 				return 0;
--		} else if (!gup_pmd_range(pud, addr, next, write, pages, nr))
-+		} else if (!gup_pmd_range(pud, addr, next, flags, pages, nr))
- 			return 0;
- 	} while (pudp++, addr = next, addr != end);
- 
-@@ -1928,7 +1928,7 @@ static int gup_pud_range(p4d_t p4d, unsigned long addr, unsigned long end,
- }
- 
- static int gup_p4d_range(pgd_t pgd, unsigned long addr, unsigned long end,
--			 int write, struct page **pages, int *nr)
-+			 unsigned int flags, struct page **pages, int *nr)
- {
- 	unsigned long next;
- 	p4d_t *p4dp;
-@@ -1943,9 +1943,9 @@ static int gup_p4d_range(pgd_t pgd, unsigned long addr, unsigned long end,
- 		BUILD_BUG_ON(p4d_huge(p4d));
- 		if (unlikely(is_hugepd(__hugepd(p4d_val(p4d))))) {
- 			if (!gup_huge_pd(__hugepd(p4d_val(p4d)), addr,
--					 P4D_SHIFT, next, write, pages, nr))
-+					 P4D_SHIFT, next, flags, pages, nr))
- 				return 0;
--		} else if (!gup_pud_range(p4d, addr, next, write, pages, nr))
-+		} else if (!gup_pud_range(p4d, addr, next, flags, pages, nr))
- 			return 0;
- 	} while (p4dp++, addr = next, addr != end);
- 
-@@ -1953,7 +1953,7 @@ static int gup_p4d_range(pgd_t pgd, unsigned long addr, unsigned long end,
- }
- 
- static void gup_pgd_range(unsigned long addr, unsigned long end,
--		int write, struct page **pages, int *nr)
-+		unsigned int flags, struct page **pages, int *nr)
- {
- 	unsigned long next;
- 	pgd_t *pgdp;
-@@ -1966,14 +1966,14 @@ static void gup_pgd_range(unsigned long addr, unsigned long end,
- 		if (pgd_none(pgd))
- 			return;
- 		if (unlikely(pgd_huge(pgd))) {
--			if (!gup_huge_pgd(pgd, pgdp, addr, next, write,
-+			if (!gup_huge_pgd(pgd, pgdp, addr, next, flags,
- 					  pages, nr))
- 				return;
- 		} else if (unlikely(is_hugepd(__hugepd(pgd_val(pgd))))) {
- 			if (!gup_huge_pd(__hugepd(pgd_val(pgd)), addr,
--					 PGDIR_SHIFT, next, write, pages, nr))
-+					 PGDIR_SHIFT, next, flags, pages, nr))
- 				return;
--		} else if (!gup_p4d_range(pgd, addr, next, write, pages, nr))
-+		} else if (!gup_p4d_range(pgd, addr, next, flags, pages, nr))
- 			return;
- 	} while (pgdp++, addr = next, addr != end);
- }
-@@ -2027,7 +2027,7 @@ int __get_user_pages_fast(unsigned long start, int nr_pages, int write,
- 
- 	if (gup_fast_permitted(start, nr_pages)) {
- 		local_irq_save(flags);
--		gup_pgd_range(start, end, write, pages, &nr);
-+		gup_pgd_range(start, end, write ? FOLL_WRITE : 0, pages, &nr);
- 		local_irq_restore(flags);
- 	}
- 
-@@ -2069,7 +2069,7 @@ int get_user_pages_fast(unsigned long start, int nr_pages, int write,
- 
- 	if (gup_fast_permitted(start, nr_pages)) {
- 		local_irq_disable();
--		gup_pgd_range(addr, end, write, pages, &nr);
-+		gup_pgd_range(addr, end, write ? FOLL_WRITE : 0, pages, &nr);
- 		local_irq_enable();
- 		ret = nr;
- 	}
+HFI1, qib, and mthca, use get_user_pages_fast() due to it performance
+advantages.  These pages can be held for a significant time.  But
+get_user_pages_fast() does not protect against mapping FS DAX pages.
+
+Introduce FOLL_LONGTERM and use this flag in get_user_pages_fast() which
+retains the performance while also adding the FS DAX checks.  XDP has also
+shown interest in using this functionality.[1]
+
+In addition we change get_user_pages() to use the new FOLL_LONGTERM flag and
+remove the specialized get_user_pages_longterm call.
+
+[1] https://lkml.org/lkml/2019/3/19/939
+
+
+
+Ira Weiny (7):
+  mm/gup: Replace get_user_pages_longterm() with FOLL_LONGTERM
+  mm/gup: Change write parameter to flags in fast walk
+  mm/gup: Change GUP fast to use flags rather than a write 'bool'
+  mm/gup: Add FOLL_LONGTERM capability to GUP fast
+  IB/hfi1: Use the new FOLL_LONGTERM flag to get_user_pages_fast()
+  IB/qib: Use the new FOLL_LONGTERM flag to get_user_pages_fast()
+  IB/mthca: Use the new FOLL_LONGTERM flag to get_user_pages_fast()
+
+ arch/mips/mm/gup.c                          |  11 +-
+ arch/powerpc/kvm/book3s_64_mmu_hv.c         |   4 +-
+ arch/powerpc/kvm/e500_mmu.c                 |   2 +-
+ arch/powerpc/mm/mmu_context_iommu.c         |   3 +-
+ arch/s390/kvm/interrupt.c                   |   2 +-
+ arch/s390/mm/gup.c                          |  12 +-
+ arch/sh/mm/gup.c                            |  11 +-
+ arch/sparc/mm/gup.c                         |   9 +-
+ arch/x86/kvm/paging_tmpl.h                  |   2 +-
+ arch/x86/kvm/svm.c                          |   2 +-
+ drivers/fpga/dfl-afu-dma-region.c           |   2 +-
+ drivers/gpu/drm/via/via_dmablit.c           |   3 +-
+ drivers/infiniband/core/umem.c              |   5 +-
+ drivers/infiniband/hw/hfi1/user_pages.c     |   3 +-
+ drivers/infiniband/hw/mthca/mthca_memfree.c |   3 +-
+ drivers/infiniband/hw/qib/qib_user_pages.c  |   8 +-
+ drivers/infiniband/hw/qib/qib_user_sdma.c   |   2 +-
+ drivers/infiniband/hw/usnic/usnic_uiom.c    |   9 +-
+ drivers/media/v4l2-core/videobuf-dma-sg.c   |   6 +-
+ drivers/misc/genwqe/card_utils.c            |   2 +-
+ drivers/misc/vmw_vmci/vmci_host.c           |   2 +-
+ drivers/misc/vmw_vmci/vmci_queue_pair.c     |   6 +-
+ drivers/platform/goldfish/goldfish_pipe.c   |   3 +-
+ drivers/rapidio/devices/rio_mport_cdev.c    |   4 +-
+ drivers/sbus/char/oradax.c                  |   2 +-
+ drivers/scsi/st.c                           |   3 +-
+ drivers/staging/gasket/gasket_page_table.c  |   4 +-
+ drivers/tee/tee_shm.c                       |   2 +-
+ drivers/vfio/vfio_iommu_spapr_tce.c         |   3 +-
+ drivers/vfio/vfio_iommu_type1.c             |   3 +-
+ drivers/vhost/vhost.c                       |   2 +-
+ drivers/video/fbdev/pvr2fb.c                |   2 +-
+ drivers/virt/fsl_hypervisor.c               |   2 +-
+ drivers/xen/gntdev.c                        |   2 +-
+ fs/io_uring.c                               |   5 +-
+ fs/orangefs/orangefs-bufmap.c               |   2 +-
+ include/linux/mm.h                          |  45 ++-
+ kernel/futex.c                              |   2 +-
+ lib/iov_iter.c                              |   7 +-
+ mm/gup.c                                    | 288 +++++++++++++-------
+ mm/gup_benchmark.c                          |   5 +-
+ mm/util.c                                   |   8 +-
+ net/ceph/pagevec.c                          |   2 +-
+ net/rds/info.c                              |   2 +-
+ net/rds/rdma.c                              |   3 +-
+ net/xdp/xdp_umem.c                          |   4 +-
+ 46 files changed, 314 insertions(+), 200 deletions(-)
+
 -- 
 2.20.1
 
