@@ -4,51 +4,99 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
-	autolearn=unavailable autolearn_force=no version=3.4.0
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E5B87C43381
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Mar 2019 11:02:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 03C60C43381
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Mar 2019 11:42:32 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6C4DC2082F
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Mar 2019 11:02:49 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6C4DC2082F
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 19DFD20700
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Mar 2019 11:42:31 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 19DFD20700
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44VMQt72MYzDqQc
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Mar 2019 22:02:46 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=arm.com
- (client-ip=217.140.101.70; helo=foss.arm.com;
- envelope-from=steven.price@arm.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=arm.com
-Received: from foss.arm.com (foss.arm.com [217.140.101.70])
- by lists.ozlabs.org (Postfix) with ESMTP id 44VMNh6F4NzDqNg
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Mar 2019 22:00:51 +1100 (AEDT)
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.72.51.249])
- by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id C8DD415AB;
- Thu, 28 Mar 2019 04:00:47 -0700 (PDT)
-Received: from [10.1.196.69] (e112269-lin.cambridge.arm.com [10.1.196.69])
- by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 04B733F59C;
- Thu, 28 Mar 2019 04:00:43 -0700 (PDT)
-Subject: Re: [PATCH v6 04/19] powerpc: mm: Add p?d_large() definitions
-To: Christophe Leroy <christophe.leroy@c-s.fr>, linux-mm@kvack.org
-References: <20190326162624.20736-1-steven.price@arm.com>
- <20190326162624.20736-5-steven.price@arm.com>
- <8a2efe07-b99f-3caa-fab9-47e49043bf66@c-s.fr>
-From: Steven Price <steven.price@arm.com>
-Message-ID: <2b7d32ce-f258-1b34-1dbf-3a05ea9a0f6b@arm.com>
-Date: Thu, 28 Mar 2019 11:00:42 +0000
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
- Thunderbird/60.5.1
+	by lists.ozlabs.org (Postfix) with ESMTP id 44VNJh4L41zDqKD
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Mar 2019 22:42:28 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44VNGj26mlzDqHw
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Mar 2019 22:40:45 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=linux.vnet.ibm.com
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 44VNGh5xYlz8tRt
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Mar 2019 22:40:44 +1100 (AEDT)
+Received: by ozlabs.org (Postfix)
+ id 44VNGh53R9z9sPp; Thu, 28 Mar 2019 22:40:44 +1100 (AEDT)
+Authentication-Results: ozlabs.org;
+ spf=none (mailfrom) smtp.mailfrom=linux.vnet.ibm.com
+ (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
+ envelope-from=mahesh@linux.vnet.ibm.com; receiver=<UNKNOWN>)
+Authentication-Results: ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=linux.vnet.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 44VNGh0mM3z9sPj
+ for <linuxppc-dev@ozlabs.org>; Thu, 28 Mar 2019 22:40:43 +1100 (AEDT)
+Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
+ x2SBYNnS133868
+ for <linuxppc-dev@ozlabs.org>; Thu, 28 Mar 2019 07:40:41 -0400
+Received: from e06smtp03.uk.ibm.com (e06smtp03.uk.ibm.com [195.75.94.99])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2rgtpu8f58-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@ozlabs.org>; Thu, 28 Mar 2019 07:40:41 -0400
+Received: from localhost
+ by e06smtp03.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <mahesh@linux.vnet.ibm.com>;
+ Thu, 28 Mar 2019 11:40:38 -0000
+Received: from b06cxnps3074.portsmouth.uk.ibm.com (9.149.109.194)
+ by e06smtp03.uk.ibm.com (192.168.101.133) with IBM ESMTP SMTP Gateway:
+ Authorized Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Thu, 28 Mar 2019 11:40:35 -0000
+Received: from d06av24.portsmouth.uk.ibm.com (mk.ibm.com [9.149.105.60])
+ by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x2SBeYjb55246994
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Thu, 28 Mar 2019 11:40:34 GMT
+Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id BF0AA4204C;
+ Thu, 28 Mar 2019 11:40:34 +0000 (GMT)
+Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 284C34204B;
+ Thu, 28 Mar 2019 11:40:34 +0000 (GMT)
+Received: from [192.168.0.24] (unknown [9.85.72.216])
+ by d06av24.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Thu, 28 Mar 2019 11:40:33 +0000 (GMT)
+Subject: [PATCH] powerpc/pseries/mce: Improve array initialization.
+From: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
+To: linuxppc-dev <linuxppc-dev@ozlabs.org>
+Date: Thu, 28 Mar 2019 17:10:33 +0530
+User-Agent: StGit/unknown-version
 MIME-Version: 1.0
-In-Reply-To: <8a2efe07-b99f-3caa-fab9-47e49043bf66@c-s.fr>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-GB
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-TM-AS-GCONF: 00
+x-cbid: 19032811-0012-0000-0000-0000030865CC
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 19032811-0013-0000-0000-0000213F969D
+Message-Id: <155377322203.28683.445138408998573736.stgit@jupiter>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
+ definitions=2019-03-28_06:, , signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=607 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1810050000 definitions=main-1903280084
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -60,172 +108,97 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Mark Rutland <Mark.Rutland@arm.com>,
- Dave Hansen <dave.hansen@linux.intel.com>, Arnd Bergmann <arnd@arndb.de>,
- Ard Biesheuvel <ard.biesheuvel@linaro.org>,
- Peter Zijlstra <peterz@infradead.org>,
- Catalin Marinas <catalin.marinas@arm.com>, x86@kernel.org,
- Will Deacon <will.deacon@arm.com>, linux-kernel@vger.kernel.org,
- kvm-ppc@vger.kernel.org, =?UTF-8?B?SsOpcsO0bWUgR2xpc3Nl?= <jglisse@redhat.com>,
- Ingo Molnar <mingo@redhat.com>, James Morse <james.morse@arm.com>,
- Andy Lutomirski <luto@kernel.org>, "H. Peter Anvin" <hpa@zytor.com>,
- Borislav Petkov <bp@alien8.de>, Paul Mackerras <paulus@samba.org>,
- Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@lists.ozlabs.org,
- linux-arm-kernel@lists.infradead.org, "Liang, Kan" <kan.liang@linux.intel.com>
+Cc: Nicholas Piggin <npiggin@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 26/03/2019 16:58, Christophe Leroy wrote:
-> 
-> 
-> Le 26/03/2019 à 17:26, Steven Price a écrit :
->> walk_page_range() is going to be allowed to walk page tables other than
->> those of user space. For this it needs to know when it has reached a
->> 'leaf' entry in the page tables. This information is provided by the
->> p?d_large() functions/macros.
->>
->> For powerpc pmd_large() was already implemented, so hoist it out of the
->> CONFIG_TRANSPARENT_HUGEPAGE condition and implement the other levels.
->>
->> Also since we now have a pmd_large always implemented we can drop the
->> pmd_is_leaf() function.
-> 
-> Wouldn't it be better to drop the pmd_is_leaf() in a second patch ?
+From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
 
-Fair point, I'll split this patch.
+This is a follow up to the patch that fixed misleading print for TLB
+mutlihit due to wrongly populated mc_err_types[] array. Convert all the
+static array initialization to '[x] = val' style for better
+readability of array indexing and avoid any further confusion.
 
-Thanks for the review,
+Suggested-by: Michael Ellerman <mpe@ellerman.id.au>
+Signed-off-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+---
+ arch/powerpc/platforms/pseries/ras.c |   52 +++++++++++++++++-----------------
+ 1 file changed, 26 insertions(+), 26 deletions(-)
 
-Steve
-
-> Christophe
-> 
->>
->> CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>
->> CC: Paul Mackerras <paulus@samba.org>
->> CC: Michael Ellerman <mpe@ellerman.id.au>
->> CC: linuxppc-dev@lists.ozlabs.org
->> CC: kvm-ppc@vger.kernel.org
->> Signed-off-by: Steven Price <steven.price@arm.com>
->> ---
->>   arch/powerpc/include/asm/book3s/64/pgtable.h | 30 ++++++++++++++------
->>   arch/powerpc/kvm/book3s_64_mmu_radix.c       | 12 ++------
->>   2 files changed, 24 insertions(+), 18 deletions(-)
->>
->> diff --git a/arch/powerpc/include/asm/book3s/64/pgtable.h
->> b/arch/powerpc/include/asm/book3s/64/pgtable.h
->> index 581f91be9dd4..f6d1ac8b832e 100644
->> --- a/arch/powerpc/include/asm/book3s/64/pgtable.h
->> +++ b/arch/powerpc/include/asm/book3s/64/pgtable.h
->> @@ -897,6 +897,12 @@ static inline int pud_present(pud_t pud)
->>       return !!(pud_raw(pud) & cpu_to_be64(_PAGE_PRESENT));
->>   }
->>   +#define pud_large    pud_large
->> +static inline int pud_large(pud_t pud)
->> +{
->> +    return !!(pud_raw(pud) & cpu_to_be64(_PAGE_PTE));
->> +}
->> +
->>   extern struct page *pud_page(pud_t pud);
->>   extern struct page *pmd_page(pmd_t pmd);
->>   static inline pte_t pud_pte(pud_t pud)
->> @@ -940,6 +946,12 @@ static inline int pgd_present(pgd_t pgd)
->>       return !!(pgd_raw(pgd) & cpu_to_be64(_PAGE_PRESENT));
->>   }
->>   +#define pgd_large    pgd_large
->> +static inline int pgd_large(pgd_t pgd)
->> +{
->> +    return !!(pgd_raw(pgd) & cpu_to_be64(_PAGE_PTE));
->> +}
->> +
->>   static inline pte_t pgd_pte(pgd_t pgd)
->>   {
->>       return __pte_raw(pgd_raw(pgd));
->> @@ -1093,6 +1105,15 @@ static inline bool pmd_access_permitted(pmd_t
->> pmd, bool write)
->>       return pte_access_permitted(pmd_pte(pmd), write);
->>   }
->>   +#define pmd_large    pmd_large
->> +/*
->> + * returns true for pmd migration entries, THP, devmap, hugetlb
->> + */
->> +static inline int pmd_large(pmd_t pmd)
->> +{
->> +    return !!(pmd_raw(pmd) & cpu_to_be64(_PAGE_PTE));
->> +}
->> +
->>   #ifdef CONFIG_TRANSPARENT_HUGEPAGE
->>   extern pmd_t pfn_pmd(unsigned long pfn, pgprot_t pgprot);
->>   extern pmd_t mk_pmd(struct page *page, pgprot_t pgprot);
->> @@ -1119,15 +1140,6 @@ pmd_hugepage_update(struct mm_struct *mm,
->> unsigned long addr, pmd_t *pmdp,
->>       return hash__pmd_hugepage_update(mm, addr, pmdp, clr, set);
->>   }
->>   -/*
->> - * returns true for pmd migration entries, THP, devmap, hugetlb
->> - * But compile time dependent on THP config
->> - */
->> -static inline int pmd_large(pmd_t pmd)
->> -{
->> -    return !!(pmd_raw(pmd) & cpu_to_be64(_PAGE_PTE));
->> -}
->> -
->>   static inline pmd_t pmd_mknotpresent(pmd_t pmd)
->>   {
->>       return __pmd(pmd_val(pmd) & ~_PAGE_PRESENT);
->> diff --git a/arch/powerpc/kvm/book3s_64_mmu_radix.c
->> b/arch/powerpc/kvm/book3s_64_mmu_radix.c
->> index f55ef071883f..1b57b4e3f819 100644
->> --- a/arch/powerpc/kvm/book3s_64_mmu_radix.c
->> +++ b/arch/powerpc/kvm/book3s_64_mmu_radix.c
->> @@ -363,12 +363,6 @@ static void kvmppc_pte_free(pte_t *ptep)
->>       kmem_cache_free(kvm_pte_cache, ptep);
->>   }
->>   -/* Like pmd_huge() and pmd_large(), but works regardless of config
->> options */
->> -static inline int pmd_is_leaf(pmd_t pmd)
->> -{
->> -    return !!(pmd_val(pmd) & _PAGE_PTE);
->> -}
->> -
->>   static pmd_t *kvmppc_pmd_alloc(void)
->>   {
->>       return kmem_cache_alloc(kvm_pmd_cache, GFP_KERNEL);
->> @@ -460,7 +454,7 @@ static void kvmppc_unmap_free_pmd(struct kvm *kvm,
->> pmd_t *pmd, bool full,
->>       for (im = 0; im < PTRS_PER_PMD; ++im, ++p) {
->>           if (!pmd_present(*p))
->>               continue;
->> -        if (pmd_is_leaf(*p)) {
->> +        if (pmd_large(*p)) {
->>               if (full) {
->>                   pmd_clear(p);
->>               } else {
->> @@ -593,7 +587,7 @@ int kvmppc_create_pte(struct kvm *kvm, pgd_t
->> *pgtable, pte_t pte,
->>       else if (level <= 1)
->>           new_pmd = kvmppc_pmd_alloc();
->>   -    if (level == 0 && !(pmd && pmd_present(*pmd) &&
->> !pmd_is_leaf(*pmd)))
->> +    if (level == 0 && !(pmd && pmd_present(*pmd) && !pmd_large(*pmd)))
->>           new_ptep = kvmppc_pte_alloc();
->>         /* Check if we might have been invalidated; let the guest
->> retry if so */
->> @@ -662,7 +656,7 @@ int kvmppc_create_pte(struct kvm *kvm, pgd_t
->> *pgtable, pte_t pte,
->>           new_pmd = NULL;
->>       }
->>       pmd = pmd_offset(pud, gpa);
->> -    if (pmd_is_leaf(*pmd)) {
->> +    if (pmd_large(*pmd)) {
->>           unsigned long lgpa = gpa & PMD_MASK;
->>             /* Check if we raced and someone else has set the same
->> thing */
->>
-> 
-> _______________________________________________
-> linux-arm-kernel mailing list
-> linux-arm-kernel@lists.infradead.org
-> http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
+diff --git a/arch/powerpc/platforms/pseries/ras.c b/arch/powerpc/platforms/pseries/ras.c
+index 452dcfd7e5dd..a25c2ac0c9c0 100644
+--- a/arch/powerpc/platforms/pseries/ras.c
++++ b/arch/powerpc/platforms/pseries/ras.c
+@@ -539,44 +539,44 @@ static void pseries_print_mce_info(struct pt_regs *regs,
+ 	int disposition = rtas_error_disposition(errp);
+ 
+ 	static const char * const initiators[] = {
+-		"Unknown",
+-		"CPU",
+-		"PCI",
+-		"ISA",
+-		"Memory",
+-		"Power Mgmt",
++		[0] = "Unknown",
++		[1] = "CPU",
++		[2] = "PCI",
++		[3] = "ISA",
++		[4] = "Memory",
++		[5] = "Power Mgmt",
+ 	};
+ 	static const char * const mc_err_types[] = {
+-		"UE",
+-		"SLB",
+-		"ERAT",
+-		"Unknown",
+-		"TLB",
+-		"D-Cache",
+-		"Unknown",
+-		"I-Cache",
++		[0] = "UE",
++		[1] = "SLB",
++		[2] = "ERAT",
++		[3] = "Unknown",
++		[4] = "TLB",
++		[5] = "D-Cache",
++		[6] = "Unknown",
++		[7] = "I-Cache",
+ 	};
+ 	static const char * const mc_ue_types[] = {
+-		"Indeterminate",
+-		"Instruction fetch",
+-		"Page table walk ifetch",
+-		"Load/Store",
+-		"Page table walk Load/Store",
++		[0] = "Indeterminate",
++		[1] = "Instruction fetch",
++		[2] = "Page table walk ifetch",
++		[3] = "Load/Store",
++		[4] = "Page table walk Load/Store",
+ 	};
+ 
+ 	/* SLB sub errors valid values are 0x0, 0x1, 0x2 */
+ 	static const char * const mc_slb_types[] = {
+-		"Parity",
+-		"Multihit",
+-		"Indeterminate",
++		[0] = "Parity",
++		[1] = "Multihit",
++		[2] = "Indeterminate",
+ 	};
+ 
+ 	/* TLB and ERAT sub errors valid values are 0x1, 0x2, 0x3 */
+ 	static const char * const mc_soft_types[] = {
+-		"Unknown",
+-		"Parity",
+-		"Multihit",
+-		"Indeterminate",
++		[0] = "Unknown",
++		[1] = "Parity",
++		[2] = "Multihit",
++		[3] = "Indeterminate",
+ 	};
+ 
+ 	if (!rtas_error_extended(errp)) {
 
