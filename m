@@ -2,55 +2,92 @@ Return-Path: <SRS0=U6gC=R7=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B7A50C43381
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Mar 2019 09:30:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5BA69C43381
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Mar 2019 10:20:19 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 2B46420700
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Mar 2019 09:30:20 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2B46420700
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=canonical.com
+	by mail.kernel.org (Postfix) with ESMTPS id 93A65206B8
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Mar 2019 10:20:18 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="key not found in DNS" (0-bit key) header.d=codeaurora.org header.i=@codeaurora.org header.b="VRhHpNrV";
+	dkim=fail reason="key not found in DNS" (0-bit key) header.d=codeaurora.org header.i=@codeaurora.org header.b="Drhn/Uxh"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 93A65206B8
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=codeaurora.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44VKNB3JDqzDqQ9
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Mar 2019 20:30:18 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44VLTn52ClzDqNL
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Mar 2019 21:20:13 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=canonical.com
- (client-ip=91.189.89.112; helo=youngberry.canonical.com;
- envelope-from=colin.king@canonical.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=fail (p=none dis=none) header.from=canonical.com
-Received: from youngberry.canonical.com (youngberry.canonical.com
- [91.189.89.112])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ spf=pass (mailfrom) smtp.mailfrom=codeaurora.org
+ (client-ip=198.145.29.96; helo=smtp.codeaurora.org;
+ envelope-from=mojha@codeaurora.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=codeaurora.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=codeaurora.org header.i=@codeaurora.org
+ header.b="VRhHpNrV"; 
+ dkim=pass (1024-bit key) header.d=codeaurora.org header.i=@codeaurora.org
+ header.b="Drhn/Uxh"; dkim-atps=neutral
+Received: from smtp.codeaurora.org (smtp.codeaurora.org [198.145.29.96])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44VKLJ3Lw1zDqHb
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Mar 2019 20:28:38 +1100 (AEDT)
-Received: from 1.general.cking.uk.vpn ([10.172.193.212] helo=localhost)
- by youngberry.canonical.com with esmtpsa (TLS1.0:RSA_AES_256_CBC_SHA1:32)
- (Exim 4.76) (envelope-from <colin.king@canonical.com>)
- id 1h9RKa-0006qd-QO; Thu, 28 Mar 2019 09:28:16 +0000
-From: Colin King <colin.king@canonical.com>
-To: Timur Tabi <timur@kernel.org>, Nicolin Chen <nicoleotsuka@gmail.com>,
- Xiubo Li <Xiubo.Lee@gmail.com>, Fabio Estevam <festevam@gmail.com>,
- Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>,
- Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>,
- Shawn Guo <shawnguo@kernel.org>, Sascha Hauer <s.hauer@pengutronix.de>,
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44VLS30lqjzDqNC
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Mar 2019 21:18:42 +1100 (AEDT)
+Received: by smtp.codeaurora.org (Postfix, from userid 1000)
+ id A1E9F61BCB; Thu, 28 Mar 2019 10:18:38 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=codeaurora.org;
+ s=default; t=1553768319;
+ bh=bK6Sf2HApUV7EdOwGFUFkVAHdGlzyq0/CUNAgsIAxBs=;
+ h=Subject:To:Cc:References:From:Date:In-Reply-To:From;
+ b=VRhHpNrVhnSYHjLnfjHEZ8Q9Yd70BlLRIcBw8NK6y2pIZsGAQ8tDI0GBVyCKzkiz0
+ JiAzf543fUO0WUqz834+lXAtn9fBqTwQDlsHhVUubggA64aOTWR0402S1bx6Po3d5E
+ BMidNSL7QbWzVl5UklDBo7n5BAnRktyYGE+3abwo=
+Received: from [10.204.79.83]
+ (blr-c-bdr-fw-01_globalnat_allzones-outside.qualcomm.com [103.229.19.19])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ (Authenticated sender: mojha@smtp.codeaurora.org)
+ by smtp.codeaurora.org (Postfix) with ESMTPSA id 5D7DF6194E;
+ Thu, 28 Mar 2019 10:18:28 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=codeaurora.org;
+ s=default; t=1553768317;
+ bh=bK6Sf2HApUV7EdOwGFUFkVAHdGlzyq0/CUNAgsIAxBs=;
+ h=Subject:To:Cc:References:From:Date:In-Reply-To:From;
+ b=Drhn/UxhQ+kyjSSlDhgpz8sdFSVcbineJBgoqtoyGk6HhFk/P37sU9VdOr3LqEHvp
+ vsBvf4uuVooemiyGc2NChK79kYSvGDzfr7cY5zwAH3oSCPsHKF+qig4ym0M/LQALz8
+ dXNq9DD0Hn17wK5hQhNlMHULEs8Seta/8dlSV/3w=
+DMARC-Filter: OpenDMARC Filter v1.3.2 smtp.codeaurora.org 5D7DF6194E
+Authentication-Results: pdx-caf-mail.web.codeaurora.org;
+ dmarc=none (p=none dis=none) header.from=codeaurora.org
+Authentication-Results: pdx-caf-mail.web.codeaurora.org;
+ spf=none smtp.mailfrom=mojha@codeaurora.org
+Subject: Re: [PATCH][next] ASoC: fsl: fix spelling mistake: "missign" ->
+ "missing"
+To: Colin King <colin.king@canonical.com>, Timur Tabi <timur@kernel.org>,
+ Nicolin Chen <nicoleotsuka@gmail.com>, Xiubo Li <Xiubo.Lee@gmail.com>,
+ Fabio Estevam <festevam@gmail.com>, Liam Girdwood <lgirdwood@gmail.com>,
+ Mark Brown <broonie@kernel.org>, Jaroslav Kysela <perex@perex.cz>,
+ Takashi Iwai <tiwai@suse.com>, Shawn Guo <shawnguo@kernel.org>,
+ Sascha Hauer <s.hauer@pengutronix.de>,
  Pengutronix Kernel Team <kernel@pengutronix.de>,
  NXP Linux Team <linux-imx@nxp.com>, alsa-devel@alsa-project.org,
  linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
-Subject: [PATCH][next] ASoC: fsl: fix spelling mistake: "missign" -> "missing"
-Date: Thu, 28 Mar 2019 09:28:16 +0000
-Message-Id: <20190328092816.12883-1-colin.king@canonical.com>
-X-Mailer: git-send-email 2.20.1
+References: <20190328092816.12883-1-colin.king@canonical.com>
+From: Mukesh Ojha <mojha@codeaurora.org>
+Message-ID: <acedd6b3-9234-390d-1626-ac02223c93cd@codeaurora.org>
+Date: Thu, 28 Mar 2019 15:48:25 +0530
+User-Agent: Mozilla/5.0 (Windows NT 10.0; WOW64; rv:60.0) Gecko/20100101
+ Thunderbird/60.6.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+In-Reply-To: <20190328092816.12883-1-colin.king@canonical.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Language: en-US
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -67,28 +104,33 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Colin Ian King <colin.king@canonical.com>
 
-There is a spelling mistake in a dev_err message. Fix this.
+On 3/28/2019 2:58 PM, Colin King wrote:
+> From: Colin Ian King <colin.king@canonical.com>
+>
+> There is a spelling mistake in a dev_err message. Fix this.
+>
+> Signed-off-by: Colin Ian King <colin.king@canonical.com>
 
-Signed-off-by: Colin Ian King <colin.king@canonical.com>
----
- sound/soc/fsl/imx-audmix.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/sound/soc/fsl/imx-audmix.c b/sound/soc/fsl/imx-audmix.c
-index 72e37ca6cfbb..7983bd339c01 100644
---- a/sound/soc/fsl/imx-audmix.c
-+++ b/sound/soc/fsl/imx-audmix.c
-@@ -161,7 +161,7 @@ static int imx_audmix_probe(struct platform_device *pdev)
- 	}
- 
- 	if (!audmix_np) {
--		dev_err(&pdev->dev, "Missign DT node for parent device.\n");
-+		dev_err(&pdev->dev, "Missing DT node for parent device.\n");
- 		return -EINVAL;
- 	}
- 
--- 
-2.20.1
+Reviewed-by: Mukesh Ojha <mojha@codeaurora.org>
 
+-Mukesh
+
+> ---
+>   sound/soc/fsl/imx-audmix.c | 2 +-
+>   1 file changed, 1 insertion(+), 1 deletion(-)
+>
+> diff --git a/sound/soc/fsl/imx-audmix.c b/sound/soc/fsl/imx-audmix.c
+> index 72e37ca6cfbb..7983bd339c01 100644
+> --- a/sound/soc/fsl/imx-audmix.c
+> +++ b/sound/soc/fsl/imx-audmix.c
+> @@ -161,7 +161,7 @@ static int imx_audmix_probe(struct platform_device *pdev)
+>   	}
+>   
+>   	if (!audmix_np) {
+> -		dev_err(&pdev->dev, "Missign DT node for parent device.\n");
+> +		dev_err(&pdev->dev, "Missing DT node for parent device.\n");
+>   		return -EINVAL;
+>   	}
+>   
