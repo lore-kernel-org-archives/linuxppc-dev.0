@@ -2,92 +2,86 @@ Return-Path: <SRS0=U6gC=R7=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,
-	URIBL_BLOCKED autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DA5E3C43381
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Mar 2019 06:21:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 16C2EC43381
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Mar 2019 06:47:38 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C267C2173C
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Mar 2019 06:21:41 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 5010220700
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Mar 2019 06:47:37 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="amdKcfyn"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C267C2173C
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
+	dkim=fail reason="key not found in DNS" (0-bit key) header.d=codeaurora.org header.i=@codeaurora.org header.b="az5K5PI5";
+	dkim=fail reason="key not found in DNS" (0-bit key) header.d=codeaurora.org header.i=@codeaurora.org header.b="JvWBn4nP"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5010220700
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=codeaurora.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44VFBW3s5yzDqR5
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Mar 2019 17:21:39 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44VFmQ4cDnzDqNT
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Mar 2019 17:47:34 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=c-s.fr
- (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
- envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=c-s.fr
+ spf=pass (mailfrom) smtp.mailfrom=codeaurora.org
+ (client-ip=198.145.29.96; helo=smtp.codeaurora.org;
+ envelope-from=mojha@codeaurora.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=codeaurora.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="amdKcfyn"; 
- dkim-atps=neutral
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ unprotected) header.d=codeaurora.org header.i=@codeaurora.org
+ header.b="az5K5PI5"; 
+ dkim=pass (1024-bit key) header.d=codeaurora.org header.i=@codeaurora.org
+ header.b="JvWBn4nP"; dkim-atps=neutral
+Received: from smtp.codeaurora.org (smtp.codeaurora.org [198.145.29.96])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44VF8h0FqBzDqNL
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Mar 2019 17:20:02 +1100 (AEDT)
-Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 44VF8Y1MCFz9v163;
- Thu, 28 Mar 2019 07:19:57 +0100 (CET)
-Authentication-Results: localhost; dkim=pass
- reason="1024-bit key; insecure key"
- header.d=c-s.fr header.i=@c-s.fr header.b=amdKcfyn; dkim-adsp=pass;
- dkim-atps=neutral
-X-Virus-Scanned: Debian amavisd-new at c-s.fr
-Received: from pegase1.c-s.fr ([192.168.12.234])
- by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id 4TzLt52_E3o7; Thu, 28 Mar 2019 07:19:57 +0100 (CET)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 44VF8X72GBz9v160;
- Thu, 28 Mar 2019 07:19:56 +0100 (CET)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
- t=1553753997; bh=l7YbsCji1aMTrkRsMFe2dFCB4dIikgmReMCHtlbUFRQ=;
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44VFkg3MbYzDqNT
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Mar 2019 17:46:02 +1100 (AEDT)
+Received: by smtp.codeaurora.org (Postfix, from userid 1000)
+ id 0DDF86079C; Thu, 28 Mar 2019 06:46:01 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=codeaurora.org;
+ s=default; t=1553755561;
+ bh=47bmnSigqol8Jggj4w+wPd+sqe8XXTSQCycP1p9Sh9o=;
  h=Subject:To:Cc:References:From:Date:In-Reply-To:From;
- b=amdKcfynGB/34aFXhb0qdRLJ5OAH1BK1ZpozjLK0i5R2EA0vB23zSLHrvav+aE1TP
- crlhQWjbBIYYbaE9nzooJFy0p9hmH8rDSrIlYl5oej/4c2/hAumOn+WY3FAV8DFnW5
- y8O3qf5UuUHS6KIq3YYCNP/4CqikU35UCa+rvyL4=
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id CBA508B851;
- Thu, 28 Mar 2019 07:19:57 +0100 (CET)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id 5QHjbgult4T5; Thu, 28 Mar 2019 07:19:57 +0100 (CET)
-Received: from PO15451 (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 8644E8B75A;
- Thu, 28 Mar 2019 07:19:57 +0100 (CET)
-Subject: Re: [PATCH] powerpc: vmlinux.lds: Drop Binutils 2.18 workarounds
-To: Segher Boessenkool <segher@kernel.crashing.org>,
- Joel Stanley <joel@jms.id.au>
-References: <20190321003253.22100-1-joel@jms.id.au>
- <874l7qpi7l.fsf@concordia.ellerman.id.au>
- <d340ae4b-a009-0ef3-9621-da3e0a7684f5@c-s.fr>
- <20190326181914.GS3969@gate.crashing.org>
- <5f4aa4b2-1c44-70b9-c383-5d40aecd695c@c-s.fr>
- <20190326201231.GV3969@gate.crashing.org>
- <20190326222941.GW3969@gate.crashing.org>
- <8aa0290a-908c-38d8-e040-c8c0cc226eb9@c-s.fr>
- <20190327124754.GY3969@gate.crashing.org>
- <20190327182128.GA3969@gate.crashing.org>
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Message-ID: <4ceb12ff-b114-6edd-e9c2-a6cd922720a2@c-s.fr>
-Date: Thu, 28 Mar 2019 07:19:57 +0100
-User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:60.0) Gecko/20100101
+ b=az5K5PI5hPIURomd4dGJ3VVstlQSkAWGCt5CQtlyMxuBs8HbbMdXsXrgjsv7jVksk
+ lcs3qYpczOkNK1T8dPSH2X+yYk4jXRRWAeEcXzwdIn7mLU1ckC3vzn4pN5k5X40k8F
+ kvHxlxL9+wgt0WHMy9X/HjWmD83ff1F2kFnoN8hI=
+Received: from [10.204.79.83]
+ (blr-c-bdr-fw-01_globalnat_allzones-outside.qualcomm.com [103.229.19.19])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ (Authenticated sender: mojha@smtp.codeaurora.org)
+ by smtp.codeaurora.org (Postfix) with ESMTPSA id 0678560237;
+ Thu, 28 Mar 2019 06:45:51 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=codeaurora.org;
+ s=default; t=1553755560;
+ bh=47bmnSigqol8Jggj4w+wPd+sqe8XXTSQCycP1p9Sh9o=;
+ h=Subject:To:Cc:References:From:Date:In-Reply-To:From;
+ b=JvWBn4nPQN7cBDZrdJfAT1Hz9IpZnLm4ZdXrcPGs9RPsv2f9kJO5y9lLu2YusJB+U
+ X+aBAqVrSYrsCWrBWcMnLciTNxhEoCz1C67kAxdhDclwxcLDbzVaq2C+ljLinD2Tks
+ OXhujmCmh5UhE5UwpmOOkVSyEhO3g2uOuaf6Dd48=
+DMARC-Filter: OpenDMARC Filter v1.3.2 smtp.codeaurora.org 0678560237
+Authentication-Results: pdx-caf-mail.web.codeaurora.org;
+ dmarc=none (p=none dis=none) header.from=codeaurora.org
+Authentication-Results: pdx-caf-mail.web.codeaurora.org;
+ spf=none smtp.mailfrom=mojha@codeaurora.org
+Subject: Re: [PATCH] arch/powerpc: Remove duplicate headers
+To: jagdsh.linux@gmail.com, benh@kernel.crashing.org, paulus@samba.org,
+ mpe@ellerman.id.au, npiggin@gmail.com, hristophe.leroy@c-s.fr,
+ arnd@arndb.de, anton@ozlabs.org, paul.burton@mips.com, mikey@neuling.org,
+ akpm@linux-foundation.org, mwb@linux.vnet.ibm.com
+References: <1553345455-32085-1-git-send-email-jagdsh.linux@gmail.com>
+From: Mukesh Ojha <mojha@codeaurora.org>
+Message-ID: <39b75391-1c80-c205-a253-8390811bdcac@codeaurora.org>
+Date: Thu, 28 Mar 2019 12:15:48 +0530
+User-Agent: Mozilla/5.0 (Windows NT 10.0; WOW64; rv:60.0) Gecko/20100101
  Thunderbird/60.6.1
 MIME-Version: 1.0
-In-Reply-To: <20190327182128.GA3969@gate.crashing.org>
+In-Reply-To: <1553345455-32085-1-git-send-email-jagdsh.linux@gmail.com>
 Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: fr
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7bit
+Content-Language: en-US
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -99,41 +93,60 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
 
+On 3/23/2019 6:20 PM, jagdsh.linux@gmail.com wrote:
+> From: Jagadeesh Pagadala <jagdsh.linux@gmail.com>
+>
+> Remove duplicate headers which are included twice.
+>
+> Signed-off-by: Jagadeesh Pagadala <jagdsh.linux@gmail.com>
+Reviewed-by: Mukesh Ojha <mojha@codeaurora.org>
 
-Le 27/03/2019 à 19:21, Segher Boessenkool a écrit :
-> On Wed, Mar 27, 2019 at 07:47:55AM -0500, Segher Boessenkool wrote:
->> On Wed, Mar 27, 2019 at 07:40:32AM +0100, Christophe Leroy wrote:
->>> Le 26/03/2019 à 23:29, Segher Boessenkool a écrit :
->>>> I tried to reproduce this.  It does not fail with a ppc6xx_defconfig
->>>> build, and mpc885_ads_defconfig fails with
->>>
->>> So far, the only defconfig which fails for me is ppc64_defconfig, like
->>> Michael.
->>
->> Oh, I misunderstood then.  Let me try that :-)
-> 
-> Yeah, okay, we should have some PHDRS statement here still.  You can drop
-> the dummy segment, and the notes segment as well, or you can keep the notes
-> section in both the notes and kernel segments.
-
-Is the note segment useful at all ? I guess if we decide to keep it, we 
-should have a reason.
-
-> 
-> (You patch doesn't apply btw, whitespace damage I think; will you send a
-> new one?)
-
-Originally the patch is by Joel Stanley <joel@jms.id.au>
-
-I guess he will send a v2 taking into account the discussion ?
-
-Or maybe you can send it yourself as you are probably the best person to 
-explain in details the change in the commit message.
-
-Christophe
+-Mukesh
+> ---
+>   arch/powerpc/kernel/time.c       | 1 -
+>   arch/powerpc/lib/code-patching.c | 1 -
+>   arch/powerpc/mm/numa.c           | 1 -
+>   3 files changed, 3 deletions(-)
+>
+> diff --git a/arch/powerpc/kernel/time.c b/arch/powerpc/kernel/time.c
+> index bc0503e..6ef3247 100644
+> --- a/arch/powerpc/kernel/time.c
+> +++ b/arch/powerpc/kernel/time.c
+> @@ -43,7 +43,6 @@
+>   #include <linux/timex.h>
+>   #include <linux/kernel_stat.h>
+>   #include <linux/time.h>
+> -#include <linux/clockchips.h>
+>   #include <linux/init.h>
+>   #include <linux/profile.h>
+>   #include <linux/cpu.h>
+> diff --git a/arch/powerpc/lib/code-patching.c b/arch/powerpc/lib/code-patching.c
+> index 506413a..587ff97 100644
+> --- a/arch/powerpc/lib/code-patching.c
+> +++ b/arch/powerpc/lib/code-patching.c
+> @@ -15,7 +15,6 @@
+>   #include <linux/cpuhotplug.h>
+>   #include <linux/slab.h>
+>   #include <linux/uaccess.h>
+> -#include <linux/kprobes.h>
+>   
+>   #include <asm/pgtable.h>
+>   #include <asm/tlbflush.h>
+> diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
+> index f976676..f3ee0e1 100644
+> --- a/arch/powerpc/mm/numa.c
+> +++ b/arch/powerpc/mm/numa.c
+> @@ -32,7 +32,6 @@
+>   #include <asm/sparsemem.h>
+>   #include <asm/prom.h>
+>   #include <asm/smp.h>
+> -#include <asm/cputhreads.h>
+>   #include <asm/topology.h>
+>   #include <asm/firmware.h>
+>   #include <asm/paca.h>
