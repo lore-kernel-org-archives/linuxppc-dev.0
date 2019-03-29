@@ -6,37 +6,37 @@ X-Spam-Status: No, score=-3.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,
 	URIBL_BLOCKED autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C633DC43381
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Mar 2019 15:11:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id F045CC43381
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Mar 2019 15:13:38 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 43A86206BA
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Mar 2019 15:11:30 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 6F00B206BA
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Mar 2019 15:13:38 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="UxYZWXlA"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 43A86206BA
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="kg/zPZ0j"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6F00B206BA
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linuxfoundation.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44W4vN0M3SzDqKD
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 30 Mar 2019 02:11:28 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44W4xr2vQ2zDqHl
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 30 Mar 2019 02:13:36 +1100 (AEDT)
 Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44W4Xh71tgzDqJm
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Mar 2019 01:55:16 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44W4Xm2vNbzDqQZ
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Mar 2019 01:55:20 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=linuxfoundation.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="UxYZWXlA"; 
+ unprotected) header.d=kernel.org header.i=@kernel.org header.b="kg/zPZ0j"; 
  dkim-atps=neutral
 Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 44W4Xh6JV6z8w0T
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Mar 2019 01:55:16 +1100 (AEDT)
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 44W4Xm0ynXz8w0T
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Mar 2019 01:55:20 +1100 (AEDT)
 Received: by ozlabs.org (Postfix)
- id 44W4Xh5LC9z9sQq; Sat, 30 Mar 2019 01:55:16 +1100 (AEDT)
+ id 44W4Xm0Hx7z9sQq; Sat, 30 Mar 2019 01:55:20 +1100 (AEDT)
 Authentication-Results: ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=linuxfoundation.org
  (client-ip=198.145.29.99; helo=mail.kernel.org;
@@ -44,34 +44,34 @@ Authentication-Results: ozlabs.org;
 Authentication-Results: ozlabs.org; dmarc=none (p=none dis=none)
  header.from=linuxfoundation.org
 Authentication-Results: ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="UxYZWXlA"; 
+ unprotected) header.d=kernel.org header.i=@kernel.org header.b="kg/zPZ0j"; 
  dkim-atps=neutral
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 44W4Xh0p4Kz9sPp
- for <linuxppc-dev@ozlabs.org>; Sat, 30 Mar 2019 01:55:16 +1100 (AEDT)
+ by ozlabs.org (Postfix) with ESMTPS id 44W4Xl3KQHz9sPp
+ for <linuxppc-dev@ozlabs.org>; Sat, 30 Mar 2019 01:55:19 +1100 (AEDT)
 Received: from localhost (83-86-89-107.cable.dynamic.v4.ziggo.nl
  [83.86.89.107])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id 7B13B2184C;
- Fri, 29 Mar 2019 14:55:13 +0000 (UTC)
+ by mail.kernel.org (Postfix) with ESMTPSA id 6DE0E206C0;
+ Fri, 29 Mar 2019 14:55:17 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1553871314;
- bh=KBQ0YZBToWGVg+NbmhxEppBZWAmaCq34hSy7nj/5wQU=;
+ s=default; t=1553871317;
+ bh=vK4f6I9MPj+sV6DquAk6UQkE72Hp1qBk0GcgXFoqwB4=;
  h=Subject:To:Cc:From:Date:In-Reply-To:From;
- b=UxYZWXlAooAJXFDSADLclLM5Q1icI1sdfcAW2Zw4A6K1esNN6jyiihZXVIgfWIS3O
- liHD9EVBvU5gTo/QQcO+qkBuvehNiHJm58liYaNk2vjZhh4bITt4+vM+QwPCP9WVM6
- 5Sa1015h5NJefU1q30q7S4nozwN3sQ0EJbbk5zIo=
-Subject: Patch "[PATCH stable v4.14 01/32] powerpc/64s: Add support for ori
- barrier_nospec patching" has been added to the 4.14-stable tree
+ b=kg/zPZ0jlg9HQedcW2AwbjU6NtSB5k45xo5Pui9xtBm1IB2IWm/5rn653QD4Ngr+5
+ XK5Mmy7dZ1lpQdgN5TC3BtuhvQFRPySL9fJ+RFRenEN+22BMtrIdbdz99GPJX3II6p
+ XRxxRRKyYFROFtsEbzQMvLfkpCyGf5dmj7yf5JOw=
+Subject: Patch "[PATCH stable v4.14 17/32] powerpc/64s: Add support for
+ software count cache flush" has been added to the 4.14-stable tree
 To: christophe.leroy@c-s.fr, diana.craciun@nxp.com, gregkh@linuxfoundation.org,
  linuxppc-dev@ozlabs.org, mpe@ellerman.id.au, msuchanek@suse.de
 From: <gregkh@linuxfoundation.org>
 Date: Fri, 29 Mar 2019 15:54:46 +0100
-In-Reply-To: <20190329112620.14489-2-mpe@ellerman.id.au>
-Message-ID: <1553871286141239@kroah.com>
+In-Reply-To: <20190329112620.14489-18-mpe@ellerman.id.au>
+Message-ID: <1553871286213118@kroah.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ANSI_X3.4-1968
 Content-Transfer-Encoding: 8bit
@@ -96,13 +96,13 @@ Sender: "Linuxppc-dev"
 
 This is a note to let you know that I've just added the patch titled
 
-    [PATCH stable v4.14 01/32] powerpc/64s: Add support for ori barrier_nospec patching
+    [PATCH stable v4.14 17/32] powerpc/64s: Add support for software count cache flush
 
 to the 4.14-stable tree which can be found at:
     http://www.kernel.org/git/?p=linux/kernel/git/stable/stable-queue.git;a=summary
 
 The filename of the patch is:
-     powerpc-64s-add-support-for-ori-barrier_nospec-patching.patch
+     powerpc-64s-add-support-for-software-count-cache-flush.patch
 and it can be found in the queue-4.14 subdirectory.
 
 If you, or anyone else, feels it should not be added to the stable tree,
@@ -111,158 +111,273 @@ please let <stable@vger.kernel.org> know about it.
 
 From foo@baz Fri Mar 29 15:53:50 CET 2019
 From: Michael Ellerman <mpe@ellerman.id.au>
-Date: Fri, 29 Mar 2019 22:25:49 +1100
-Subject: [PATCH stable v4.14 01/32] powerpc/64s: Add support for ori barrier_nospec patching
+Date: Fri, 29 Mar 2019 22:26:05 +1100
+Subject: [PATCH stable v4.14 17/32] powerpc/64s: Add support for software count cache flush
 To: stable@vger.kernel.org, gregkh@linuxfoundation.org
 Cc: linuxppc-dev@ozlabs.org, diana.craciun@nxp.com, msuchanek@suse.de, christophe.leroy@c-s.fr
-Message-ID: <20190329112620.14489-2-mpe@ellerman.id.au>
+Message-ID: <20190329112620.14489-18-mpe@ellerman.id.au>
 
 From: Michael Ellerman <mpe@ellerman.id.au>
 
-From: Michal Suchanek <msuchanek@suse.de>
+commit ee13cb249fabdff8b90aaff61add347749280087 upstream.
 
-commit 2eea7f067f495e33b8b116b35b5988ab2b8aec55 upstream.
+Some CPU revisions support a mode where the count cache needs to be
+flushed by software on context switch. Additionally some revisions may
+have a hardware accelerated flush, in which case the software flush
+sequence can be shortened.
 
-Based on the RFI patching. This is required to be able to disable the
-speculation barrier.
+If we detect the appropriate flag from firmware we patch a branch
+into _switch() which takes us to a count cache flush sequence.
 
-Only one barrier type is supported and it does nothing when the
-firmware does not enable it. Also re-patching modules is not supported
-So the only meaningful thing that can be done is patching out the
-speculation barrier at boot when the user says it is not wanted.
+That sequence in turn may be patched to return early if we detect that
+the CPU supports accelerating the flush sequence in hardware.
 
-Signed-off-by: Michal Suchanek <msuchanek@suse.de>
+Add debugfs support for reporting the state of the flush, as well as
+runtime disabling it.
+
+And modify the spectre_v2 sysfs file to report the state of the
+software flush.
+
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 ---
- arch/powerpc/include/asm/barrier.h        |    2 +-
- arch/powerpc/include/asm/feature-fixups.h |    9 +++++++++
- arch/powerpc/include/asm/setup.h          |    1 +
- arch/powerpc/kernel/security.c            |    9 +++++++++
- arch/powerpc/kernel/vmlinux.lds.S         |    7 +++++++
- arch/powerpc/lib/feature-fixups.c         |   27 +++++++++++++++++++++++++++
- 6 files changed, 54 insertions(+), 1 deletion(-)
+ arch/powerpc/include/asm/asm-prototypes.h    |    6 +
+ arch/powerpc/include/asm/security_features.h |    1 
+ arch/powerpc/kernel/entry_64.S               |   54 ++++++++++++++
+ arch/powerpc/kernel/security.c               |   98 +++++++++++++++++++++++++--
+ 4 files changed, 154 insertions(+), 5 deletions(-)
 
---- a/arch/powerpc/include/asm/barrier.h
-+++ b/arch/powerpc/include/asm/barrier.h
-@@ -81,7 +81,7 @@ do {									\
-  * Prevent execution of subsequent instructions until preceding branches have
-  * been fully resolved and are no longer executing speculatively.
-  */
--#define barrier_nospec_asm ori 31,31,0
-+#define barrier_nospec_asm NOSPEC_BARRIER_FIXUP_SECTION; nop
+--- a/arch/powerpc/include/asm/asm-prototypes.h
++++ b/arch/powerpc/include/asm/asm-prototypes.h
+@@ -126,4 +126,10 @@ extern int __ucmpdi2(u64, u64);
+ void _mcount(void);
+ unsigned long prepare_ftrace_return(unsigned long parent, unsigned long ip);
  
- // This also acts as a compiler barrier due to the memory clobber.
- #define barrier_nospec() asm (stringify_in_c(barrier_nospec_asm) ::: "memory")
---- a/arch/powerpc/include/asm/feature-fixups.h
-+++ b/arch/powerpc/include/asm/feature-fixups.h
-@@ -211,6 +211,14 @@ label##3:					       	\
- 	FTR_ENTRY_OFFSET 951b-952b;			\
- 	.popsection;
- 
-+#define NOSPEC_BARRIER_FIXUP_SECTION			\
-+953:							\
-+	.pushsection __barrier_nospec_fixup,"a";	\
-+	.align 2;					\
-+954:							\
-+	FTR_ENTRY_OFFSET 953b-954b;			\
-+	.popsection;
++/* Patch sites */
++extern s32 patch__call_flush_count_cache;
++extern s32 patch__flush_count_cache_return;
 +
++extern long flush_count_cache;
++
+ #endif /* _ASM_POWERPC_ASM_PROTOTYPES_H */
+--- a/arch/powerpc/include/asm/security_features.h
++++ b/arch/powerpc/include/asm/security_features.h
+@@ -22,6 +22,7 @@ enum stf_barrier_type {
  
- #ifndef __ASSEMBLY__
- #include <linux/types.h>
-@@ -219,6 +227,7 @@ extern long stf_barrier_fallback;
- extern long __start___stf_entry_barrier_fixup, __stop___stf_entry_barrier_fixup;
- extern long __start___stf_exit_barrier_fixup, __stop___stf_exit_barrier_fixup;
- extern long __start___rfi_flush_fixup, __stop___rfi_flush_fixup;
-+extern long __start___barrier_nospec_fixup, __stop___barrier_nospec_fixup;
+ void setup_stf_barrier(void);
+ void do_stf_barrier_fixups(enum stf_barrier_type types);
++void setup_count_cache_flush(void);
  
- void apply_feature_fixups(void);
- void setup_feature_keys(void);
---- a/arch/powerpc/include/asm/setup.h
-+++ b/arch/powerpc/include/asm/setup.h
-@@ -52,6 +52,7 @@ enum l1d_flush_type {
+ static inline void security_ftr_set(unsigned long feature)
+ {
+--- a/arch/powerpc/kernel/entry_64.S
++++ b/arch/powerpc/kernel/entry_64.S
+@@ -25,6 +25,7 @@
+ #include <asm/page.h>
+ #include <asm/mmu.h>
+ #include <asm/thread_info.h>
++#include <asm/code-patching-asm.h>
+ #include <asm/ppc_asm.h>
+ #include <asm/asm-offsets.h>
+ #include <asm/cputable.h>
+@@ -497,6 +498,57 @@ _GLOBAL(ret_from_kernel_thread)
+ 	li	r3,0
+ 	b	.Lsyscall_exit
  
- void setup_rfi_flush(enum l1d_flush_type, bool enable);
- void do_rfi_flush_fixups(enum l1d_flush_type types);
-+void do_barrier_nospec_fixups(bool enable);
++#ifdef CONFIG_PPC_BOOK3S_64
++
++#define FLUSH_COUNT_CACHE	\
++1:	nop;			\
++	patch_site 1b, patch__call_flush_count_cache
++
++
++#define BCCTR_FLUSH	.long 0x4c400420
++
++.macro nops number
++	.rept \number
++	nop
++	.endr
++.endm
++
++.balign 32
++.global flush_count_cache
++flush_count_cache:
++	/* Save LR into r9 */
++	mflr	r9
++
++	.rept 64
++	bl	.+4
++	.endr
++	b	1f
++	nops	6
++
++	.balign 32
++	/* Restore LR */
++1:	mtlr	r9
++	li	r9,0x7fff
++	mtctr	r9
++
++	BCCTR_FLUSH
++
++2:	nop
++	patch_site 2b patch__flush_count_cache_return
++
++	nops	3
++
++	.rept 278
++	.balign 32
++	BCCTR_FLUSH
++	nops	7
++	.endr
++
++	blr
++#else
++#define FLUSH_COUNT_CACHE
++#endif /* CONFIG_PPC_BOOK3S_64 */
++
+ /*
+  * This routine switches between two different tasks.  The process
+  * state of one is saved on its kernel stack.  Then the state
+@@ -528,6 +580,8 @@ _GLOBAL(_switch)
+ 	std	r23,_CCR(r1)
+ 	std	r1,KSP(r3)	/* Set old stack pointer */
  
- #endif /* !__ASSEMBLY__ */
- 
++	FLUSH_COUNT_CACHE
++
+ 	/*
+ 	 * On SMP kernels, care must be taken because a task may be
+ 	 * scheduled off CPUx and on to CPUy. Memory ordering must be
 --- a/arch/powerpc/kernel/security.c
 +++ b/arch/powerpc/kernel/security.c
-@@ -10,10 +10,19 @@
+@@ -9,12 +9,21 @@
+ #include <linux/seq_buf.h>
  
  #include <asm/debugfs.h>
++#include <asm/asm-prototypes.h>
++#include <asm/code-patching.h>
  #include <asm/security_features.h>
-+#include <asm/setup.h>
+ #include <asm/setup.h>
  
  
  unsigned long powerpc_security_features __read_mostly = SEC_FTR_DEFAULT;
  
-+static bool barrier_nospec_enabled;
++enum count_cache_flush_type {
++	COUNT_CACHE_FLUSH_NONE	= 0x1,
++	COUNT_CACHE_FLUSH_SW	= 0x2,
++	COUNT_CACHE_FLUSH_HW	= 0x4,
++};
++static enum count_cache_flush_type count_cache_flush_type;
 +
-+static void enable_barrier_nospec(bool enable)
-+{
-+	barrier_nospec_enabled = enable;
-+	do_barrier_nospec_fixups(enable);
-+}
-+
- ssize_t cpu_show_meltdown(struct device *dev, struct device_attribute *attr, char *buf)
- {
- 	bool thread_priv;
---- a/arch/powerpc/kernel/vmlinux.lds.S
-+++ b/arch/powerpc/kernel/vmlinux.lds.S
-@@ -153,6 +153,13 @@ SECTIONS
- 		*(__rfi_flush_fixup)
- 		__stop___rfi_flush_fixup = .;
- 	}
-+
-+	. = ALIGN(8);
-+	__spec_barrier_fixup : AT(ADDR(__spec_barrier_fixup) - LOAD_OFFSET) {
-+		__start___barrier_nospec_fixup = .;
-+		*(__barrier_nospec_fixup)
-+		__stop___barrier_nospec_fixup = .;
-+	}
- #endif
+ bool barrier_nospec_enabled;
+ static bool no_nospec;
  
- 	EXCEPTION_TABLE(0)
---- a/arch/powerpc/lib/feature-fixups.c
-+++ b/arch/powerpc/lib/feature-fixups.c
-@@ -277,6 +277,33 @@ void do_rfi_flush_fixups(enum l1d_flush_
- 		(types &  L1D_FLUSH_MTTRIG)     ? "mttrig type"
- 						: "unknown");
+@@ -159,17 +168,29 @@ ssize_t cpu_show_spectre_v2(struct devic
+ 	bcs = security_ftr_enabled(SEC_FTR_BCCTRL_SERIALISED);
+ 	ccd = security_ftr_enabled(SEC_FTR_COUNT_CACHE_DISABLED);
+ 
+-	if (bcs || ccd) {
++	if (bcs || ccd || count_cache_flush_type != COUNT_CACHE_FLUSH_NONE) {
++		bool comma = false;
+ 		seq_buf_printf(&s, "Mitigation: ");
+ 
+-		if (bcs)
++		if (bcs) {
+ 			seq_buf_printf(&s, "Indirect branch serialisation (kernel only)");
++			comma = true;
++		}
++
++		if (ccd) {
++			if (comma)
++				seq_buf_printf(&s, ", ");
++			seq_buf_printf(&s, "Indirect branch cache disabled");
++			comma = true;
++		}
+ 
+-		if (bcs && ccd)
++		if (comma)
+ 			seq_buf_printf(&s, ", ");
+ 
+-		if (ccd)
+-			seq_buf_printf(&s, "Indirect branch cache disabled");
++		seq_buf_printf(&s, "Software count cache flush");
++
++		if (count_cache_flush_type == COUNT_CACHE_FLUSH_HW)
++			seq_buf_printf(&s, "(hardware accelerated)");
+ 	} else
+ 		seq_buf_printf(&s, "Vulnerable");
+ 
+@@ -326,4 +347,71 @@ static __init int stf_barrier_debugfs_in
  }
+ device_initcall(stf_barrier_debugfs_init);
+ #endif /* CONFIG_DEBUG_FS */
 +
-+void do_barrier_nospec_fixups(bool enable)
++static void toggle_count_cache_flush(bool enable)
 +{
-+	unsigned int instr, *dest;
-+	long *start, *end;
-+	int i;
-+
-+	start = PTRRELOC(&__start___barrier_nospec_fixup),
-+	end = PTRRELOC(&__stop___barrier_nospec_fixup);
-+
-+	instr = 0x60000000; /* nop */
-+
-+	if (enable) {
-+		pr_info("barrier-nospec: using ORI speculation barrier\n");
-+		instr = 0x63ff0000; /* ori 31,31,0 speculation barrier */
++	if (!enable || !security_ftr_enabled(SEC_FTR_FLUSH_COUNT_CACHE)) {
++		patch_instruction_site(&patch__call_flush_count_cache, PPC_INST_NOP);
++		count_cache_flush_type = COUNT_CACHE_FLUSH_NONE;
++		pr_info("count-cache-flush: software flush disabled.\n");
++		return;
 +	}
 +
-+	for (i = 0; start < end; start++, i++) {
-+		dest = (void *)start + *start;
++	patch_branch_site(&patch__call_flush_count_cache,
++			  (u64)&flush_count_cache, BRANCH_SET_LINK);
 +
-+		pr_devel("patching dest %lx\n", (unsigned long)dest);
-+		patch_instruction(dest, instr);
++	if (!security_ftr_enabled(SEC_FTR_BCCTR_FLUSH_ASSIST)) {
++		count_cache_flush_type = COUNT_CACHE_FLUSH_SW;
++		pr_info("count-cache-flush: full software flush sequence enabled.\n");
++		return;
 +	}
 +
-+	printk(KERN_DEBUG "barrier-nospec: patched %d locations\n", i);
++	patch_instruction_site(&patch__flush_count_cache_return, PPC_INST_BLR);
++	count_cache_flush_type = COUNT_CACHE_FLUSH_HW;
++	pr_info("count-cache-flush: hardware assisted flush sequence enabled\n");
 +}
 +
++void setup_count_cache_flush(void)
++{
++	toggle_count_cache_flush(true);
++}
++
++#ifdef CONFIG_DEBUG_FS
++static int count_cache_flush_set(void *data, u64 val)
++{
++	bool enable;
++
++	if (val == 1)
++		enable = true;
++	else if (val == 0)
++		enable = false;
++	else
++		return -EINVAL;
++
++	toggle_count_cache_flush(enable);
++
++	return 0;
++}
++
++static int count_cache_flush_get(void *data, u64 *val)
++{
++	if (count_cache_flush_type == COUNT_CACHE_FLUSH_NONE)
++		*val = 0;
++	else
++		*val = 1;
++
++	return 0;
++}
++
++DEFINE_SIMPLE_ATTRIBUTE(fops_count_cache_flush, count_cache_flush_get,
++			count_cache_flush_set, "%llu\n");
++
++static __init int count_cache_flush_debugfs_init(void)
++{
++	debugfs_create_file("count_cache_flush", 0600, powerpc_debugfs_root,
++			    NULL, &fops_count_cache_flush);
++	return 0;
++}
++device_initcall(count_cache_flush_debugfs_init);
++#endif /* CONFIG_DEBUG_FS */
  #endif /* CONFIG_PPC_BOOK3S_64 */
- 
- void do_lwsync_fixups(unsigned long value, void *fixup_start, void *fixup_end)
 
 
 Patches currently in stable-queue which might be from mpe@ellerman.id.au are
