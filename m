@@ -2,74 +2,85 @@ Return-Path: <SRS0=YrVw=SA=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8FA0BC43381
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Mar 2019 21:23:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 678A8C43381
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Mar 2019 21:31:32 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 03B162184C
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Mar 2019 21:23:00 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 03B162184C
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nxp.com
+	by mail.kernel.org (Postfix) with ESMTPS id D38EF218A2
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Mar 2019 21:31:31 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="key not found in DNS" (0-bit key) header.d=codeaurora.org header.i=@codeaurora.org header.b="ewsK2G44";
+	dkim=fail reason="key not found in DNS" (0-bit key) header.d=codeaurora.org header.i=@codeaurora.org header.b="jgo2nrPx"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D38EF218A2
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=codeaurora.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44WF824cZyzDqYX
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 30 Mar 2019 08:22:58 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44WFKs6NCKzDqV2
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 30 Mar 2019 08:31:29 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=209.85.210.68; helo=mail-ot1-f68.google.com;
- envelope-from=pku.leo@gmail.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=fail (p=none dis=none) header.from=nxp.com
-Received: from mail-ot1-f68.google.com (mail-ot1-f68.google.com
- [209.85.210.68])
+ spf=pass (mailfrom) smtp.mailfrom=codeaurora.org
+ (client-ip=198.145.29.96; helo=smtp.codeaurora.org;
+ envelope-from=mojha@codeaurora.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=codeaurora.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=codeaurora.org header.i=@codeaurora.org
+ header.b="ewsK2G44"; 
+ dkim=pass (1024-bit key) header.d=codeaurora.org header.i=@codeaurora.org
+ header.b="jgo2nrPx"; dkim-atps=neutral
+Received: from smtp.codeaurora.org (smtp.codeaurora.org [198.145.29.96])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44WF0m6KrlzDqXC
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Mar 2019 08:16:37 +1100 (AEDT)
-Received: by mail-ot1-f68.google.com with SMTP id u15so3303589otq.10
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Mar 2019 14:16:37 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:mime-version:references:in-reply-to:from:date
- :message-id:subject:to:cc;
- bh=JaV0olP+PRVr93TPoHK2LvE8ZTF6aplfAuvUXORDfRg=;
- b=QgbvpvM6Z+11mbKdkEkKCmB+klZ3NzE7AL2gZzh+ixY8VauuweuFi9vRcfOFVxsuT5
- nKMryomjxtw2pje+iUAhsyTGpm8Ukm4JQx7X6x31L978bGugWJxeZjqpDaDvYUmoPM9A
- EQ6h0OeARO0NYnwHZjeXzcBxlPx5lRMEWheaCW8AUAgqraihLmmzFRlchnO3+EoKgPQW
- Et8LzsW+RW4qY3skcN1cvK8bLtESoGL9eyB+rfwG6B2WeEDoX53pXUzFD6FbK6UtoMA1
- zdULk8TCqqDYIdURGme+vlo8OXh8paUPEJUjH/KidlFvKE/N0s156stARV8FM0kY5m0F
- bhlw==
-X-Gm-Message-State: APjAAAUqLcpK8zX4TheRaL4534bcIXR3VE+otYEGBWhvlQYTjqn8u5of
- puJbfaK1ib/BnAquE1/79T39r8ABgLc=
-X-Google-Smtp-Source: APXvYqzTiCJEzyRTE3Ntt1O4C7O/Y2KpdDBmpCL5/q14H5glry7WkkX0pdkFn6DZNnDAfYDh5jm80Q==
-X-Received: by 2002:a9d:745a:: with SMTP id p26mr5431219otk.136.1553894192753; 
- Fri, 29 Mar 2019 14:16:32 -0700 (PDT)
-Received: from mail-ot1-f52.google.com (mail-ot1-f52.google.com.
- [209.85.210.52])
- by smtp.gmail.com with ESMTPSA id s73sm1228032oie.53.2019.03.29.14.16.31
- for <linuxppc-dev@lists.ozlabs.org>
- (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
- Fri, 29 Mar 2019 14:16:31 -0700 (PDT)
-Received: by mail-ot1-f52.google.com with SMTP id t8so3320243otp.7
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Mar 2019 14:16:31 -0700 (PDT)
-X-Received: by 2002:a9d:30d1:: with SMTP id r17mr34948159otg.331.1553894191481; 
- Fri, 29 Mar 2019 14:16:31 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44WFJ03jLgzDqQc
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Mar 2019 08:29:51 +1100 (AEDT)
+Received: by smtp.codeaurora.org (Postfix, from userid 1000)
+ id 849736087D; Fri, 29 Mar 2019 21:29:49 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=codeaurora.org;
+ s=default; t=1553894989;
+ bh=J0wz0I+Iwv9SmSNn3kJ+vHfOj5hN3rY1UZMX4khmb2M=;
+ h=Subject:To:Cc:References:From:Date:In-Reply-To:From;
+ b=ewsK2G44sa5xNhsuzwc6MdXbxJWuUVnMpIozLJdw2QIkfV/ltXtQY50GWplGDhcFn
+ 8LytQNy4KtuLFskJkoXwtwniTHm8eHShyJW5xfICvcTwq73ekvKj+z31gaHGCSJMgJ
+ szJ1AnFmkemrvMnvlbbhz2wGk2wW7fK48cHOL7Tc=
+Received: from [10.79.168.116]
+ (blr-bdr-fw-01_globalnat_allzones-outside.qualcomm.com [103.229.18.19])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ (Authenticated sender: mojha@smtp.codeaurora.org)
+ by smtp.codeaurora.org (Postfix) with ESMTPSA id 5D25E6087D;
+ Fri, 29 Mar 2019 21:29:41 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=codeaurora.org;
+ s=default; t=1553894987;
+ bh=J0wz0I+Iwv9SmSNn3kJ+vHfOj5hN3rY1UZMX4khmb2M=;
+ h=Subject:To:Cc:References:From:Date:In-Reply-To:From;
+ b=jgo2nrPxNy2z5n/R157FwpwImkF4CXzELhQmMMnVWgGUEOB2Y5avzr3l/xzhP/OTR
+ OvJhsuzqGNcKJlAxloc6hschIXP+QgwcTX97N31xHoreRR2Sbnv1uuQdWfd79FLbAP
+ rWEY5k38vpLUkCRYgmDKeYvFQNfQyxENiI+AaSbk=
+DMARC-Filter: OpenDMARC Filter v1.3.2 smtp.codeaurora.org 5D25E6087D
+Authentication-Results: pdx-caf-mail.web.codeaurora.org;
+ dmarc=none (p=none dis=none) header.from=codeaurora.org
+Authentication-Results: pdx-caf-mail.web.codeaurora.org;
+ spf=none smtp.mailfrom=mojha@codeaurora.org
+Subject: Re: [PATCH -next] ocxl: remove set but not used variables 'tid' and
+ 'lpid'
+To: Yue Haibing <yuehaibing@huawei.com>, fbarrat@linux.ibm.com,
+ andrew.donnellan@au1.ibm.com, arnd@arndb.de, gregkh@linuxfoundation.org
+References: <20190329154456.27152-1-yuehaibing@huawei.com>
+From: Mukesh Ojha <mojha@codeaurora.org>
+Message-ID: <b30655eb-dcd1-16b2-78a0-6886ceb9ef3d@codeaurora.org>
+Date: Sat, 30 Mar 2019 02:59:38 +0530
+User-Agent: Mozilla/5.0 (Windows NT 10.0; WOW64; rv:60.0) Gecko/20100101
+ Thunderbird/60.6.1
 MIME-Version: 1.0
-References: <20190329140014.8126-1-laurentiu.tudor@nxp.com>
- <20190329140014.8126-3-laurentiu.tudor@nxp.com>
-In-Reply-To: <20190329140014.8126-3-laurentiu.tudor@nxp.com>
-From: Li Yang <leoyang.li@nxp.com>
-Date: Fri, 29 Mar 2019 16:16:20 -0500
-X-Gmail-Original-Message-ID: <CADRPPNTPZ1xhYr_YKZvrXVJhVqhV9RNAu6ekVHDeOudXTZx3=g@mail.gmail.com>
-Message-ID: <CADRPPNTPZ1xhYr_YKZvrXVJhVqhV9RNAu6ekVHDeOudXTZx3=g@mail.gmail.com>
-Subject: Re: [PATCH 02/13] soc/fsl/bman: map FBPR area in the iommu
-To: Laurentiu Tudor <laurentiu.tudor@nxp.com>
-Content-Type: text/plain; charset="UTF-8"
+In-Reply-To: <20190329154456.27152-1-yuehaibing@huawei.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Language: en-US
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -81,72 +92,52 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: madalin.bucur@nxp.com, Netdev <netdev@vger.kernel.org>,
- Roy Pledge <roy.pledge@nxp.com>, lkml <linux-kernel@vger.kernel.org>,
- Linux IOMMU <iommu@lists.linux-foundation.org>, camelia.groza@nxp.com,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- David Miller <davem@davemloft.net>,
- "moderated list:ARM/FREESCALE IMX / MXC ARM ARCHITECTURE"
- <linux-arm-kernel@lists.infradead.org>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, Mar 29, 2019 at 9:03 AM <laurentiu.tudor@nxp.com> wrote:
+
+On 3/29/2019 9:14 PM, Yue Haibing wrote:
+> From: YueHaibing <yuehaibing@huawei.com>
 >
-> From: Laurentiu Tudor <laurentiu.tudor@nxp.com>
+> Fixes gcc '-Wunused-but-set-variable' warning:
 >
-> Add a one-to-one iommu mapping for bman private data memory (FBPR).
-> This is required for BMAN to work without faults behind an iommu.
+> drivers/misc/ocxl/link.c: In function 'xsl_fault_handler':
+> drivers/misc/ocxl/link.c:187:17: warning: variable 'tid' set but not used [-Wunused-but-set-variable]
+> drivers/misc/ocxl/link.c:187:6: warning: variable 'lpid' set but not used [-Wunused-but-set-variable]
 >
-> Signed-off-by: Laurentiu Tudor <laurentiu.tudor@nxp.com>
+> They are never used and can be removed.
+>
+> Signed-off-by: YueHaibing <yuehaibing@huawei.com>
+Reviewed-by: Mukesh Ojha <mojha@codeaurora.org>
+
+Cheers,
+-Mukesh
 > ---
->  drivers/soc/fsl/qbman/bman_ccsr.c | 11 +++++++++++
->  1 file changed, 11 insertions(+)
+>   drivers/misc/ocxl/link.c | 4 +---
+>   1 file changed, 1 insertion(+), 3 deletions(-)
 >
-> diff --git a/drivers/soc/fsl/qbman/bman_ccsr.c b/drivers/soc/fsl/qbman/bman_ccsr.c
-> index 7c3cc968053c..b209c79511bb 100644
-> --- a/drivers/soc/fsl/qbman/bman_ccsr.c
-> +++ b/drivers/soc/fsl/qbman/bman_ccsr.c
-> @@ -29,6 +29,7 @@
->   */
->
->  #include "bman_priv.h"
-> +#include <linux/iommu.h>
->
->  u16 bman_ip_rev;
->  EXPORT_SYMBOL(bman_ip_rev);
-> @@ -178,6 +179,7 @@ static int fsl_bman_probe(struct platform_device *pdev)
->         int ret, err_irq;
->         struct device *dev = &pdev->dev;
->         struct device_node *node = dev->of_node;
-> +       struct iommu_domain *domain;
->         struct resource *res;
->         u16 id, bm_pool_cnt;
->         u8 major, minor;
-> @@ -225,6 +227,15 @@ static int fsl_bman_probe(struct platform_device *pdev)
->
->         dev_dbg(dev, "Allocated FBPR 0x%llx 0x%zx\n", fbpr_a, fbpr_sz);
->
-> +       /* Create an 1-to-1 iommu mapping for FBPR area */
-> +       domain = iommu_get_domain_for_dev(dev);
-> +       if (domain) {
-> +               ret = iommu_map(domain, fbpr_a, fbpr_a, fbpr_sz,
-> +                               IOMMU_READ | IOMMU_WRITE | IOMMU_CACHE);
-> +               if (ret)
-> +                       dev_warn(dev, "failed to iommu_map() %d\n", ret);
-> +       }
-
-Like Robin has pointed out, could you explain why the mapping in this
-patch and other similar patches cannot be dealt with the dma APIs
-automatically?  If the current bqman driver doesn't use the dma APIs
-correctly, we need to fix that instead of doing the mapping
-explicitly.
-
-> +
->         bm_set_memory(fbpr_a, fbpr_sz);
->
->         err_irq = platform_get_irq(pdev, 0);
-> --
-> 2.17.1
->
+> diff --git a/drivers/misc/ocxl/link.c b/drivers/misc/ocxl/link.c
+> index d50b861..3be07e9 100644
+> --- a/drivers/misc/ocxl/link.c
+> +++ b/drivers/misc/ocxl/link.c
+> @@ -184,7 +184,7 @@ static irqreturn_t xsl_fault_handler(int irq, void *data)
+>   	u64 dsisr, dar, pe_handle;
+>   	struct pe_data *pe_data;
+>   	struct ocxl_process_element *pe;
+> -	int lpid, pid, tid;
+> +	int pid;
+>   	bool schedule = false;
+>   
+>   	read_irq(spa, &dsisr, &dar, &pe_handle);
+> @@ -192,9 +192,7 @@ static irqreturn_t xsl_fault_handler(int irq, void *data)
+>   
+>   	WARN_ON(pe_handle > SPA_PE_MASK);
+>   	pe = spa->spa_mem + pe_handle;
+> -	lpid = be32_to_cpu(pe->lpid);
+>   	pid = be32_to_cpu(pe->pid);
+> -	tid = be32_to_cpu(pe->tid);
+>   	/* We could be reading all null values here if the PE is being
+>   	 * removed while an interrupt kicks in. It's not supposed to
+>   	 * happen if the driver notified the AFU to terminate the
