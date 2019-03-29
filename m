@@ -2,90 +2,54 @@ Return-Path: <SRS0=BcJT=SB=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED,USER_AGENT_MUTT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C1000C43381
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 30 Mar 2019 06:04:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E9DB5C43381
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 30 Mar 2019 06:06:24 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 04F9D2173C
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 30 Mar 2019 06:04:16 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 04F9D2173C
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id A8712218A6
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 30 Mar 2019 06:06:22 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A8712218A6
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kernel.crashing.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44WSjT6XMNzDqVj
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 30 Mar 2019 17:04:13 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
- (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=aneesh.kumar@linux.ibm.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 44WSlw3bSpzDqVh
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 30 Mar 2019 17:06:20 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=permerror (mailfrom)
+ smtp.mailfrom=kernel.crashing.org (client-ip=63.228.1.57;
+ helo=gate.crashing.org; envelope-from=segher@kernel.crashing.org;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=kernel.crashing.org
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44WSgT2TRNzDq6B
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Mar 2019 17:02:28 +1100 (AEDT)
-Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x2U62Ksn130125
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Mar 2019 02:02:26 -0400
-Received: from e06smtp07.uk.ibm.com (e06smtp07.uk.ibm.com [195.75.94.103])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2rj23b10mk-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Mar 2019 02:02:25 -0400
-Received: from localhost
- by e06smtp07.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.ibm.com>;
- Sat, 30 Mar 2019 05:58:39 -0000
-Received: from b06cxnps4074.portsmouth.uk.ibm.com (9.149.109.196)
- by e06smtp07.uk.ibm.com (192.168.101.137) with IBM ESMTP SMTP Gateway:
- Authorized Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Sat, 30 Mar 2019 05:58:37 -0000
-Received: from d06av25.portsmouth.uk.ibm.com (d06av25.portsmouth.uk.ibm.com
- [9.149.105.61])
- by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x2U5waRq44368058
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Sat, 30 Mar 2019 05:58:36 GMT
-Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 2960211C04A;
- Sat, 30 Mar 2019 05:58:36 +0000 (GMT)
-Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 19B8711C04C;
- Sat, 30 Mar 2019 05:58:35 +0000 (GMT)
-Received: from skywalker.linux.ibm.com (unknown [9.85.85.132])
- by d06av25.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Sat, 30 Mar 2019 05:58:34 +0000 (GMT)
-X-Mailer: emacs 26.1 (via feedmail 11-beta-1 I)
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
-To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH] powerpc/64s/radix: Fix radix segment exception handling
-In-Reply-To: <20190329074257.14428-1-npiggin@gmail.com>
-References: <20190329074257.14428-1-npiggin@gmail.com>
-Date: Sat, 30 Mar 2019 11:28:33 +0530
-MIME-Version: 1.0
-Content-Type: text/plain
-X-TM-AS-GCONF: 00
-x-cbid: 19033005-0028-0000-0000-0000035A4567
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19033005-0029-0000-0000-000024190C9C
-Message-Id: <871s2oq4xi.fsf@linux.ibm.com>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2019-03-30_02:, , signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1810050000 definitions=main-1903300042
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44WShy4X0XzDqV6
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Mar 2019 17:03:44 +1100 (AEDT)
+Received: from gate.crashing.org (localhost.localdomain [127.0.0.1])
+ by gate.crashing.org (8.14.1/8.14.1) with ESMTP id x2TKQKTV010775;
+ Fri, 29 Mar 2019 15:26:24 -0500
+Received: (from segher@localhost)
+ by gate.crashing.org (8.14.1/8.14.1/Submit) id x2TKQ6eX010707;
+ Fri, 29 Mar 2019 15:26:06 -0500
+X-Authentication-Warning: gate.crashing.org: segher set sender to
+ segher@kernel.crashing.org using -f
+Date: Fri, 29 Mar 2019 15:25:58 -0500
+From: Segher Boessenkool <segher@kernel.crashing.org>
+To: George Spelvin <lkml@sdf.org>
+Subject: Re: CONFIG_ARCH_SUPPORTS_INT128: Why not mips, s390, powerpc,
+ and alpha?
+Message-ID: <20190329202557.GL3969@gate.crashing.org>
+References: <201903291307.x2TD772v013534@sdf.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <201903291307.x2TD772v013534@sdf.org>
+User-Agent: Mutt/1.4.2.3i
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -97,77 +61,87 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "Aneesh Kumar K . V" <aneesh.kumar@linux.vnet.ibm.com>,
- Nicholas Piggin <npiggin@gmail.com>, Anton Blanchard <anton@samba.org>
+Cc: linux-s390@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-mips@vger.kernel.org, linux-alpha@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Nicholas Piggin <npiggin@gmail.com> writes:
+Hi!
 
-> Commit 48e7b76957 ("powerpc/64s/hash: Convert SLB miss handlers to C")
-> broke the radix-mode segment exception handler. In radix mode, this is
-> exception is not an SLB miss, rather it signals that the EA is outside
-> the range translated by any page table.
->
-> The commit lost the radix feature alternate code patch, which can
-> cause faults to some EAs to kernel BUG at arch/powerpc/mm/slb.c:639!
->
-> The original radix code would send faults to slb_miss_large_addr,
-> which would end up faulting due to slb_addr_limit being 0. This patch
-> sends radix directly to do_bad_slb_fault, which is a bit clearer.
->
+On Fri, Mar 29, 2019 at 01:07:07PM +0000, George Spelvin wrote:
+> I was working on some scaling code that can benefit from 64x64->128-bit
+> multiplies.  GCC supports an __int128 type on processors with hardware
+> support (including z/Arch and MIPS64), but the support was broken on
+> early compilers, so it's gated behind CONFIG_ARCH_SUPPORTS_INT128.
+> 
+> Currently, of the ten 64-bit architectures Linux supports, that's
+> only enabled on x86, ARM, and RISC-V.
+> 
+> SPARC and HP-PA don't have support.
+> 
+> But that leaves Alpha, Mips, PowerPC, and S/390x.
+> 
+> Current mips64, powerpc64, and s390x gcc seems to generate sensible code
+> for mul_u64_u64_shr() in <linux/math64.h> if I cross-compile them.
 
-Reviewed-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
+Yup.
 
-> Fixes: 48e7b76957 ("powerpc/64s/hash: Convert SLB miss handlers to C")
-> Cc: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-> Reported-by: Anton Blanchard <anton@samba.org>
-> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
-> ---
->  arch/powerpc/kernel/exceptions-64s.S | 12 ++++++++++++
->  1 file changed, 12 insertions(+)
->
-> diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
-> index a5b8fbae56a0..9481a117e242 100644
-> --- a/arch/powerpc/kernel/exceptions-64s.S
-> +++ b/arch/powerpc/kernel/exceptions-64s.S
-> @@ -656,11 +656,17 @@ EXC_COMMON_BEGIN(data_access_slb_common)
->  	ld	r4,PACA_EXSLB+EX_DAR(r13)
->  	std	r4,_DAR(r1)
->  	addi	r3,r1,STACK_FRAME_OVERHEAD
-> +BEGIN_MMU_FTR_SECTION
-> +	/* HPT case, do SLB fault */
->  	bl	do_slb_fault
->  	cmpdi	r3,0
->  	bne-	1f
->  	b	fast_exception_return
->  1:	/* Error case */
-> +MMU_FTR_SECTION_ELSE
-> +	/* Radix case, access is outside page table range */
-> +	li	r3,-EFAULT
-> +ALT_MMU_FTR_SECTION_END_IFCLR(MMU_FTR_TYPE_RADIX)
->  	std	r3,RESULT(r1)
->  	bl	save_nvgprs
->  	RECONCILE_IRQ_STATE(r10, r11)
-> @@ -705,11 +711,17 @@ EXC_COMMON_BEGIN(instruction_access_slb_common)
->  	EXCEPTION_PROLOG_COMMON(0x480, PACA_EXSLB)
->  	ld	r4,_NIP(r1)
->  	addi	r3,r1,STACK_FRAME_OVERHEAD
-> +BEGIN_MMU_FTR_SECTION
-> +	/* HPT case, do SLB fault */
->  	bl	do_slb_fault
->  	cmpdi	r3,0
->  	bne-	1f
->  	b	fast_exception_return
->  1:	/* Error case */
-> +MMU_FTR_SECTION_ELSE
-> +	/* Radix case, access is outside page table range */
-> +	li	r3,-EFAULT
-> +ALT_MMU_FTR_SECTION_END_IFCLR(MMU_FTR_TYPE_RADIX)
->  	std	r3,RESULT(r1)
->  	bl	save_nvgprs
->  	RECONCILE_IRQ_STATE(r10, r11)
-> -- 
-> 2.20.1
+> I don't have easy access to an Alpha cross-compiler to test, but
+> as it has UMULH, I suspect it would work, too.
 
+https://mirrors.edge.kernel.org/pub/tools/crosstool/
+
+> u64 get_random_u64(void);
+> u64 get_random_max64(u64 range, u64 lim)
+> {
+> 	unsigned __int128 prod;
+> 	do {
+> 		prod = (unsigned __int128)get_random_u64() * range;
+> 	} while (unlikely((u64)prod < lim));
+> 	return prod >> 64;
+> }
+
+> Which turns into these inner loops:
+> MIPS:
+> .L7:
+> 	jal	get_random_u64
+> 	nop
+> 	dmultu $2,$17
+> 	mflo	$3
+> 	sltu	$4,$3,$16
+> 	bne	$4,$0,.L7
+> 	mfhi	$2
+> 
+> PowerPC:
+> .L9:
+> 	bl get_random_u64
+> 	nop
+> 	mulld 9,3,31
+> 	mulhdu 3,3,31
+> 	cmpld 7,30,9
+> 	bgt 7,.L9
+> 
+> s/390:
+> .L13:
+> 	brasl	%r14,get_random_u64@PLT
+> 	lgr	%r5,%r2
+> 	mlgr	%r4,%r10
+> 	lgr	%r2,%r4
+> 	clgr	%r11,%r5
+> 	jh	.L13
+> 
+> I like that the MIPS code leaves the high half of the product in
+> the hi register until it tests the low half; I wish PowerPC would
+> similarly move the mulhdu *after* the loop,
+
+The MIPS code has the multiplication inside the loop as well, and even
+the mfhi I think: MIPS has delay slots.
+
+GCC treats the int128 as one register until it has expanded to RTL, and it
+does not do such loop optimisations after that, apparently.
+
+File a PR please?  https://gcc.gnu.org/bugzilla/
+
+
+Segher
