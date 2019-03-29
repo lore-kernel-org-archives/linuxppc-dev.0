@@ -6,38 +6,37 @@ X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
 	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CB908C43381
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Mar 2019 12:23:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8D034C43381
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Mar 2019 12:25:15 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 311342082F
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Mar 2019 12:23:39 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 311342082F
+	by mail.kernel.org (Postfix) with ESMTPS id 40BAF206DD
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Mar 2019 12:25:14 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 40BAF206DD
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44W19h6YpRzDqWB
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Mar 2019 23:23:36 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44W1CW3TsyzDqYW
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Mar 2019 23:25:11 +1100 (AEDT)
 Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44VzwS3JrtzDqSx
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Mar 2019 22:27:04 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44VzwT4HkLzDqSH
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Mar 2019 22:27:05 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: by ozlabs.org (Postfix)
- id 44VzwR6zncz9sSC; Fri, 29 Mar 2019 22:27:03 +1100 (AEDT)
+ id 44VzwT1Cskz9sTQ; Fri, 29 Mar 2019 22:27:05 +1100 (AEDT)
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 44VzwR4ySVz9sS7; Fri, 29 Mar 2019 22:27:03 +1100 (AEDT)
+ id 44VzwS6RfZz9sSC; Fri, 29 Mar 2019 22:27:04 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: stable@vger.kernel.org,
 	gregkh@linuxfoundation.org
-Subject: [PATCH stable v4.14 28/32] powerpc/fsl: Enable runtime patching if
- nospectre_v2 boot arg is used
-Date: Fri, 29 Mar 2019 22:26:16 +1100
-Message-Id: <20190329112620.14489-29-mpe@ellerman.id.au>
+Subject: [PATCH stable v4.14 29/32] powerpc/fsl: Update Spectre v2 reporting
+Date: Fri, 29 Mar 2019 22:26:17 +1100
+Message-Id: <20190329112620.14489-30-mpe@ellerman.id.au>
 X-Mailer: git-send-email 2.20.1
 In-Reply-To: <20190329112620.14489-1-mpe@ellerman.id.au>
 References: <20190329112620.14489-1-mpe@ellerman.id.au>
@@ -61,28 +60,33 @@ Sender: "Linuxppc-dev"
 
 From: Diana Craciun <diana.craciun@nxp.com>
 
-commit 3bc8ea8603ae4c1e09aca8de229ad38b8091fcb3 upstream.
+commit dfa88658fb0583abb92e062c7a9cd5a5b94f2a46 upstream.
 
-If the user choses not to use the mitigations, replace
-the code sequence with nops.
+Report branch predictor state flush as a mitigation for
+Spectre variant 2.
 
 Signed-off-by: Diana Craciun <diana.craciun@nxp.com>
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- arch/powerpc/kernel/setup-common.c | 1 +
- 1 file changed, 1 insertion(+)
+ arch/powerpc/kernel/security.c | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/kernel/setup-common.c b/arch/powerpc/kernel/setup-common.c
-index ab7a75b731da..c58364c74dad 100644
---- a/arch/powerpc/kernel/setup-common.c
-+++ b/arch/powerpc/kernel/setup-common.c
-@@ -938,6 +938,7 @@ void __init setup_arch(char **cmdline_p)
- 		ppc_md.setup_arch();
+diff --git a/arch/powerpc/kernel/security.c b/arch/powerpc/kernel/security.c
+index 7a611a187b53..720a7a912d0d 100644
+--- a/arch/powerpc/kernel/security.c
++++ b/arch/powerpc/kernel/security.c
+@@ -212,8 +212,11 @@ ssize_t cpu_show_spectre_v2(struct device *dev, struct device_attribute *attr, c
  
- 	setup_barrier_nospec();
-+	setup_spectre_v2();
+ 		if (count_cache_flush_type == COUNT_CACHE_FLUSH_HW)
+ 			seq_buf_printf(&s, "(hardware accelerated)");
+-	} else
++	} else if (btb_flush_enabled) {
++		seq_buf_printf(&s, "Mitigation: Branch predictor state flush");
++	} else {
+ 		seq_buf_printf(&s, "Vulnerable");
++	}
  
- 	paging_init();
+ 	seq_buf_printf(&s, "\n");
  
 -- 
 2.20.1
