@@ -4,23 +4,23 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
+	SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CDCBEC43381
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Mar 2019 16:48:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 459C3C43381
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Mar 2019 16:50:49 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 487FF218D0
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Mar 2019 16:48:54 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id B4986218D0
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Mar 2019 16:50:48 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="P6umroAd"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 487FF218D0
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="iRyE+cIy"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B4986218D0
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44W73m1GzpzDqT5
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 30 Mar 2019 03:48:52 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44W75y6JS2zDq5h
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 30 Mar 2019 03:50:46 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=c-s.fr
  (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
@@ -28,55 +28,55 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="P6umroAd"; 
+ unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="iRyE+cIy"; 
  dkim-atps=neutral
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44W6qt07q0zDqGQ
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44W6qt02YLzDq5h
  for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Mar 2019 03:38:34 +1100 (AEDT)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 44W6qk1Ytkz9tyQW;
- Fri, 29 Mar 2019 17:38:26 +0100 (CET)
+ by localhost (Postfix) with ESMTP id 44W6ql1hVzz9tyQX;
+ Fri, 29 Mar 2019 17:38:27 +0100 (CET)
 Authentication-Results: localhost; dkim=pass
  reason="1024-bit key; insecure key"
- header.d=c-s.fr header.i=@c-s.fr header.b=P6umroAd; dkim-adsp=pass;
+ header.d=c-s.fr header.i=@c-s.fr header.b=iRyE+cIy; dkim-adsp=pass;
  dkim-atps=neutral
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id hYkjMq0EM4Om; Fri, 29 Mar 2019 17:38:26 +0100 (CET)
+ with ESMTP id O3YMl1DrW5EU; Fri, 29 Mar 2019 17:38:27 +0100 (CET)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 44W6qj75g0z9tyQP;
- Fri, 29 Mar 2019 17:38:25 +0100 (CET)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
- t=1553877506; bh=fJwNdDqiAlgoT/1EYCI/ynpZSPt+QfYdJMVJTkDRues=;
- h=In-Reply-To:References:From:Subject:To:Cc:Date:From;
- b=P6umroAdnjNzhAY3YuCKDLWMgJSU9VOEqfdCLCYzoCGa0VFw8W4g3V/GJd0TRoV+z
- Je88GVm8pjEwS89ME+hzvR2iku+AHJhA71gsX4gR+aIxckp6Jn02cbRp0rJH0At2mS
- KKfvpWjO5RS9RLYV7P8tP9fc8FNzhs1Y8CrzZQtE=
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 918838B93D;
+ by pegase1.c-s.fr (Postfix) with ESMTP id 44W6ql0WZHz9tyQP;
  Fri, 29 Mar 2019 17:38:27 +0100 (CET)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
+ t=1553877507; bh=XvXA4BMh4E6TIZg6dxaZb2e6bZuem4Kr4mb92NmoWwk=;
+ h=In-Reply-To:References:From:Subject:To:Cc:Date:From;
+ b=iRyE+cIyYL/LJmIKKuevzKtgKI3h7gS1rypA2S/+tikk86FR+JIku0gWzW3Mdfuj/
+ 1MQBq8jfYvKpneydiVVhb4UESRdYl7oaFGe66qHeu9QnatN4/y/9vdVVkKD4pj3b+e
+ h2FNzMrx85dGjYTw02o1TEUL6I+ErVglHYfz8I3I=
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id A5FF48B93D;
+ Fri, 29 Mar 2019 17:38:28 +0100 (CET)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id sEIsK4FdQ2Y4; Fri, 29 Mar 2019 17:38:27 +0100 (CET)
+ with ESMTP id gDsqmnURlcHI; Fri, 29 Mar 2019 17:38:28 +0100 (CET)
 Received: from po16846vm.idsi0.si.c-s.fr (po15451.idsi0.si.c-s.fr
  [172.25.231.2])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 7B2248B938;
- Fri, 29 Mar 2019 17:38:27 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 8414D8B938;
+ Fri, 29 Mar 2019 17:38:28 +0100 (CET)
 Received: by po16846vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id 6CE236FC56; Fri, 29 Mar 2019 16:38:27 +0000 (UTC)
-Message-Id: <5d7afd5fadcf8a52576424a85a0ff580e69302ea.1553877076.git.christophe.leroy@c-s.fr>
+ id 7350E6FC56; Fri, 29 Mar 2019 16:38:28 +0000 (UTC)
+Message-Id: <f001fa4f71bbeb7d5b2d3f9705488b6b425ba485.1553877076.git.christophe.leroy@c-s.fr>
 In-Reply-To: <cover.1553877076.git.christophe.leroy@c-s.fr>
 References: <cover.1553877076.git.christophe.leroy@c-s.fr>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v2 05/17] powerpc/40x: add exception frame marker
+Subject: [PATCH v2 06/17] powerpc/40x: Split and rename NORMAL_EXCEPTION_PROLOG
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
  Nicholas Piggin <npiggin@gmail.com>
-Date: Fri, 29 Mar 2019 16:38:27 +0000 (UTC)
+Date: Fri, 29 Mar 2019 16:38:28 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -93,52 +93,118 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This patch adds STACK_FRAME_REGS_MARKER in the stack at exception entry
-in order to see interrupts in call traces as below:
-
-[    0.013964] Call Trace:
-[    0.014014] [c0745db0] [c007a9d4] tick_periodic.constprop.5+0xd8/0x104 (unreliable)
-[    0.014086] [c0745dc0] [c007aa20] tick_handle_periodic+0x20/0x9c
-[    0.014181] [c0745de0] [c0009cd0] timer_interrupt+0xa0/0x264
-[    0.014258] [c0745e10] [c000e484] ret_from_except+0x0/0x14
-[    0.014390] --- interrupt: 901 at console_unlock.part.7+0x3f4/0x528
-[    0.014390]     LR = console_unlock.part.7+0x3f0/0x528
-[    0.014455] [c0745ee0] [c0050334] console_unlock.part.7+0x114/0x528 (unreliable)
-[    0.014542] [c0745f30] [c00524e0] register_console+0x3d8/0x44c
-[    0.014625] [c0745f60] [c0675aac] cpm_uart_console_init+0x18/0x2c
-[    0.014709] [c0745f70] [c06614f4] console_init+0x114/0x1cc
-[    0.014795] [c0745fb0] [c0658b68] start_kernel+0x300/0x3d8
-[    0.014864] [c0745ff0] [c00022cc] start_here+0x44/0x98
+This patch splits NORMAL_EXCEPTION_PROLOG in the same way as in
+head_8xx.S and head_32.S and renames it EXCEPTION_PROLOG() as well
+to match head_32.h
 
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
- arch/powerpc/kernel/head_40x.S | 6 ++++++
- 1 file changed, 6 insertions(+)
+ arch/powerpc/kernel/head_40x.S | 26 ++++++++++++++++----------
+ 1 file changed, 16 insertions(+), 10 deletions(-)
 
 diff --git a/arch/powerpc/kernel/head_40x.S b/arch/powerpc/kernel/head_40x.S
-index f49b0278e995..cb95a5c17cea 100644
+index cb95a5c17cea..1547750567b6 100644
 --- a/arch/powerpc/kernel/head_40x.S
 +++ b/arch/powerpc/kernel/head_40x.S
-@@ -132,6 +132,9 @@ _ENTRY(saved_ksp_limit)
- 	tovirt(r1,r11);			/* set new kernel sp */	\
- 	rlwinm	r9,r9,0,14,12;		/* clear MSR_WE (necessary?)	   */\
- 	stw	r0,GPR0(r11);						     \
-+	lis	r10, STACK_FRAME_REGS_MARKER@ha; /* exception frame marker */\
-+	addi	r10, r10, STACK_FRAME_REGS_MARKER@l;			     \
-+	stw	r10, 8(r11);						     \
- 	SAVE_4GPRS(3, r11);						     \
- 	SAVE_2GPRS(7, r11)
+@@ -103,10 +103,14 @@ _ENTRY(saved_ksp_limit)
+  * turned off (i.e. using physical addresses). We assume SPRG_THREAD has
+  * the physical address of the current task thread_struct.
+  */
+-#define NORMAL_EXCEPTION_PROLOG						     \
++#define EXCEPTION_PROLOG						     \
+ 	mtspr	SPRN_SPRG_SCRATCH0,r10;	/* save two registers to work with */\
+ 	mtspr	SPRN_SPRG_SCRATCH1,r11;					     \
+ 	mfcr	r10;			/* save CR in r10 for now	   */\
++	EXCEPTION_PROLOG_1;						     \
++	EXCEPTION_PROLOG_2
++
++#define EXCEPTION_PROLOG_1						     \
+ 	mfspr	r11,SPRN_SRR1;		/* check whether user or kernel    */\
+ 	andi.	r11,r11,MSR_PR;						     \
+ 	tophys(r11,r1);							     \
+@@ -115,7 +119,9 @@ _ENTRY(saved_ksp_limit)
+ 	lwz	r11,TASK_STACK-THREAD(r11); /* this thread's kernel stack */\
+ 	addi	r11,r11,THREAD_SIZE;					     \
+ 	tophys(r11,r11);						     \
+-1:	subi	r11,r11,INT_FRAME_SIZE;	/* Allocate an exception frame     */\
++1:	subi	r11,r11,INT_FRAME_SIZE	/* Allocate an exception frame     */
++
++#define EXCEPTION_PROLOG_2						     \
+ 	stw	r10,_CCR(r11);          /* save various registers	   */\
+ 	stw	r12,GPR12(r11);						     \
+ 	stw	r9,GPR9(r11);						     \
+@@ -205,7 +211,7 @@ label:
  
-@@ -174,6 +177,9 @@ _ENTRY(saved_ksp_limit)
- 	tovirt(r1,r11);							     \
- 	rlwinm	r9,r9,0,14,12;		/* clear MSR_WE (necessary?)	   */\
- 	stw	r0,GPR0(r11);						     \
-+	lis	r10, STACK_FRAME_REGS_MARKER@ha; /* exception frame marker */\
-+	addi	r10, r10, STACK_FRAME_REGS_MARKER@l;			     \
-+	stw	r10, 8(r11);						     \
- 	SAVE_4GPRS(3, r11);						     \
- 	SAVE_2GPRS(7, r11)
+ #define EXCEPTION(n, label, hdlr, xfer)				\
+ 	START_EXCEPTION(n, label);				\
+-	NORMAL_EXCEPTION_PROLOG;				\
++	EXCEPTION_PROLOG;				\
+ 	addi	r3,r1,STACK_FRAME_OVERHEAD;			\
+ 	xfer(n, hdlr)
  
+@@ -396,7 +402,7 @@ label:
+  * This is caused by a fetch from non-execute or guarded pages.
+  */
+ 	START_EXCEPTION(0x0400, InstructionAccess)
+-	NORMAL_EXCEPTION_PROLOG
++	EXCEPTION_PROLOG
+ 	mr	r4,r12			/* Pass SRR0 as arg2 */
+ 	li	r5,0			/* Pass zero as arg3 */
+ 	EXC_XFER_LITE(0x400, handle_page_fault)
+@@ -406,7 +412,7 @@ label:
+ 
+ /* 0x0600 - Alignment Exception */
+ 	START_EXCEPTION(0x0600, Alignment)
+-	NORMAL_EXCEPTION_PROLOG
++	EXCEPTION_PROLOG
+ 	mfspr	r4,SPRN_DEAR		/* Grab the DEAR and save it */
+ 	stw	r4,_DEAR(r11)
+ 	addi	r3,r1,STACK_FRAME_OVERHEAD
+@@ -414,7 +420,7 @@ label:
+ 
+ /* 0x0700 - Program Exception */
+ 	START_EXCEPTION(0x0700, ProgramCheck)
+-	NORMAL_EXCEPTION_PROLOG
++	EXCEPTION_PROLOG
+ 	mfspr	r4,SPRN_ESR		/* Grab the ESR and save it */
+ 	stw	r4,_ESR(r11)
+ 	addi	r3,r1,STACK_FRAME_OVERHEAD
+@@ -427,7 +433,7 @@ label:
+ 
+ /* 0x0C00 - System Call Exception */
+ 	START_EXCEPTION(0x0C00,	SystemCall)
+-	NORMAL_EXCEPTION_PROLOG
++	EXCEPTION_PROLOG
+ 	EXC_XFER_EE_LITE(0xc00, DoSyscall)
+ 
+ 	EXCEPTION(0x0D00, Trap_0D, unknown_exception, EXC_XFER_EE)
+@@ -733,7 +739,7 @@ label:
+ 
+ 	/* Programmable Interval Timer (PIT) Exception. (from 0x1000) */
+ Decrementer:
+-	NORMAL_EXCEPTION_PROLOG
++	EXCEPTION_PROLOG
+ 	lis	r0,TSR_PIS@h
+ 	mtspr	SPRN_TSR,r0		/* Clear the PIT exception */
+ 	addi	r3,r1,STACK_FRAME_OVERHEAD
+@@ -741,7 +747,7 @@ Decrementer:
+ 
+ 	/* Fixed Interval Timer (FIT) Exception. (from 0x1010) */
+ FITException:
+-	NORMAL_EXCEPTION_PROLOG
++	EXCEPTION_PROLOG
+ 	addi	r3,r1,STACK_FRAME_OVERHEAD;
+ 	EXC_XFER_EE(0x1010, unknown_exception)
+ 
+@@ -759,7 +765,7 @@ WDTException:
+  * if they can't resolve the lightweight TLB fault.
+  */
+ DataAccess:
+-	NORMAL_EXCEPTION_PROLOG
++	EXCEPTION_PROLOG
+ 	mfspr	r5,SPRN_ESR		/* Grab the ESR, save it, pass arg3 */
+ 	stw	r5,_ESR(r11)
+ 	mfspr	r4,SPRN_DEAR		/* Grab the DEAR, save it, pass arg2 */
 -- 
 2.13.3
 
