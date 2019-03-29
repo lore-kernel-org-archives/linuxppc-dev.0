@@ -6,38 +6,38 @@ X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
 	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 773F6C43381
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Mar 2019 12:20:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6FC73C43381
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Mar 2019 12:21:49 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id F166F217F5
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Mar 2019 12:20:03 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org F166F217F5
+	by mail.kernel.org (Postfix) with ESMTPS id 195B9217F5
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Mar 2019 12:21:48 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 195B9217F5
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44W15Y64tWzDqDb
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Mar 2019 23:20:01 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+	by lists.ozlabs.org (Postfix) with ESMTP id 44W17Z51fczDqNW
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Mar 2019 23:21:46 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44VzwQ0jR6zDqSH
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44VzwQ4Hk8zDqSy
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Mar 2019 22:27:02 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: by ozlabs.org (Postfix)
- id 44VzwP1mYdz9sP8; Fri, 29 Mar 2019 22:27:01 +1100 (AEDT)
+ id 44VzwQ2p3Sz9sR3; Fri, 29 Mar 2019 22:27:02 +1100 (AEDT)
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 44VzwN4Slvz9sPb; Fri, 29 Mar 2019 22:27:00 +1100 (AEDT)
+ id 44VzwQ17gLz9sT9; Fri, 29 Mar 2019 22:27:01 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: stable@vger.kernel.org,
 	gregkh@linuxfoundation.org
-Subject: [PATCH stable v4.14 26/32] powerpc/fsl: Flush the branch predictor at
- each kernel entry (32 bit)
-Date: Fri, 29 Mar 2019 22:26:14 +1100
-Message-Id: <20190329112620.14489-27-mpe@ellerman.id.au>
+Subject: [PATCH stable v4.14 27/32] powerpc/fsl: Flush branch predictor when
+ entering KVM
+Date: Fri, 29 Mar 2019 22:26:15 +1100
+Message-Id: <20190329112620.14489-28-mpe@ellerman.id.au>
 X-Mailer: git-send-email 2.20.1
 In-Reply-To: <20190329112620.14489-1-mpe@ellerman.id.au>
 References: <20190329112620.14489-1-mpe@ellerman.id.au>
@@ -61,80 +61,33 @@ Sender: "Linuxppc-dev"
 
 From: Diana Craciun <diana.craciun@nxp.com>
 
-commit 7fef436295bf6c05effe682c8797dfcb0deb112a upstream.
+commit e7aa61f47b23afbec41031bc47ca8d6cb6516abc upstream.
 
-In order to protect against speculation attacks on
-indirect branches, the branch predictor is flushed at
-kernel entry to protect for the following situations:
-- userspace process attacking another userspace process
-- userspace process attacking the kernel
-Basically when the privillege level change (i.e.the kernel
-is entered), the branch predictor state is flushed.
+Switching from the guest to host is another place
+where the speculative accesses can be exploited.
+Flush the branch predictor when entering KVM.
 
 Signed-off-by: Diana Craciun <diana.craciun@nxp.com>
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- arch/powerpc/kernel/head_booke.h     |  6 ++++++
- arch/powerpc/kernel/head_fsl_booke.S | 15 +++++++++++++++
- 2 files changed, 21 insertions(+)
+ arch/powerpc/kvm/bookehv_interrupts.S | 4 ++++
+ 1 file changed, 4 insertions(+)
 
-diff --git a/arch/powerpc/kernel/head_booke.h b/arch/powerpc/kernel/head_booke.h
-index d0862a100d29..15ac51072eb3 100644
---- a/arch/powerpc/kernel/head_booke.h
-+++ b/arch/powerpc/kernel/head_booke.h
-@@ -43,6 +43,9 @@
- 	andi.	r11, r11, MSR_PR;	/* check whether user or kernel    */\
- 	mr	r11, r1;						     \
- 	beq	1f;							     \
-+START_BTB_FLUSH_SECTION					\
-+	BTB_FLUSH(r11)						\
-+END_BTB_FLUSH_SECTION					\
- 	/* if from user, start at top of this thread's kernel stack */       \
- 	lwz	r11, THREAD_INFO-THREAD(r10);				     \
- 	ALLOC_STACK_FRAME(r11, THREAD_SIZE);				     \
-@@ -128,6 +131,9 @@
- 	stw	r9,_CCR(r8);		/* save CR on stack		   */\
- 	mfspr	r11,exc_level_srr1;	/* check whether user or kernel    */\
- 	DO_KVM	BOOKE_INTERRUPT_##intno exc_level_srr1;		             \
-+START_BTB_FLUSH_SECTION								\
-+	BTB_FLUSH(r10)									\
-+END_BTB_FLUSH_SECTION								\
- 	andi.	r11,r11,MSR_PR;						     \
- 	mfspr	r11,SPRN_SPRG_THREAD;	/* if from user, start at top of   */\
- 	lwz	r11,THREAD_INFO-THREAD(r11); /* this thread's kernel stack */\
-diff --git a/arch/powerpc/kernel/head_fsl_booke.S b/arch/powerpc/kernel/head_fsl_booke.S
-index bf4c6021515f..60a0aeefc4a7 100644
---- a/arch/powerpc/kernel/head_fsl_booke.S
-+++ b/arch/powerpc/kernel/head_fsl_booke.S
-@@ -452,6 +452,13 @@ END_FTR_SECTION_IFSET(CPU_FTR_EMB_HV)
- 	mfcr	r13
- 	stw	r13, THREAD_NORMSAVE(3)(r10)
- 	DO_KVM	BOOKE_INTERRUPT_DTLB_MISS SPRN_SRR1
-+START_BTB_FLUSH_SECTION
-+	mfspr r11, SPRN_SRR1
-+	andi. r10,r11,MSR_PR
-+	beq 1f
-+	BTB_FLUSH(r10)
-+1:
-+END_BTB_FLUSH_SECTION
- 	mfspr	r10, SPRN_DEAR		/* Get faulting address */
+diff --git a/arch/powerpc/kvm/bookehv_interrupts.S b/arch/powerpc/kvm/bookehv_interrupts.S
+index 81bd8a07aa51..612b7f6a887f 100644
+--- a/arch/powerpc/kvm/bookehv_interrupts.S
++++ b/arch/powerpc/kvm/bookehv_interrupts.S
+@@ -75,6 +75,10 @@
+ 	PPC_LL	r1, VCPU_HOST_STACK(r4)
+ 	PPC_LL	r2, HOST_R2(r1)
  
- 	/* If we are faulting a kernel address, we have to use the
-@@ -546,6 +553,14 @@ END_FTR_SECTION_IFSET(CPU_FTR_EMB_HV)
- 	mfcr	r13
- 	stw	r13, THREAD_NORMSAVE(3)(r10)
- 	DO_KVM	BOOKE_INTERRUPT_ITLB_MISS SPRN_SRR1
 +START_BTB_FLUSH_SECTION
-+	mfspr r11, SPRN_SRR1
-+	andi. r10,r11,MSR_PR
-+	beq 1f
 +	BTB_FLUSH(r10)
-+1:
 +END_BTB_FLUSH_SECTION
 +
- 	mfspr	r10, SPRN_SRR0		/* Get faulting address */
- 
- 	/* If we are faulting a kernel address, we have to use the
+ 	mfspr	r10, SPRN_PID
+ 	lwz	r8, VCPU_HOST_PID(r4)
+ 	PPC_LL	r11, VCPU_SHARED(r4)
 -- 
 2.20.1
 
