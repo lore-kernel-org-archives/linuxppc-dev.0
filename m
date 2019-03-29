@@ -2,106 +2,44 @@ Return-Path: <SRS0=YrVw=SA=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-4.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_PASS autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-6.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 24763C43381
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Mar 2019 10:27:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9334FC43381
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Mar 2019 11:29:07 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 9448B206B8
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Mar 2019 10:27:16 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9448B206B8
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 8D0E42064A
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Mar 2019 11:29:05 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8D0E42064A
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44VybQ3Ns0zDqF6
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Mar 2019 21:27:14 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+	by lists.ozlabs.org (Postfix) with ESMTP id 44Vzyl38SMzDqTZ
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Mar 2019 22:29:03 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44VyYh2h5vzDqB7
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Mar 2019 21:25:44 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44Vzvl2rJkzDqSC
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Mar 2019 22:26:27 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=linux.vnet.ibm.com
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 44VyYh1VKvz8tRt
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Mar 2019 21:25:44 +1100 (AEDT)
+ header.from=ellerman.id.au
 Received: by ozlabs.org (Postfix)
- id 44VyYg3Q5gz9sQr; Fri, 29 Mar 2019 21:25:43 +1100 (AEDT)
-Authentication-Results: ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=linux.vnet.ibm.com
- (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=mahesh@linux.vnet.ibm.com; receiver=<UNKNOWN>)
-Authentication-Results: ozlabs.org; dmarc=none (p=none dis=none)
- header.from=linux.vnet.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 44VyYf5s7cz9sQm
- for <linuxppc-dev@ozlabs.org>; Fri, 29 Mar 2019 21:25:42 +1100 (AEDT)
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x2TAPegQ100982
- for <linuxppc-dev@ozlabs.org>; Fri, 29 Mar 2019 06:25:40 -0400
-Received: from e06smtp03.uk.ibm.com (e06smtp03.uk.ibm.com [195.75.94.99])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2rhef5jba2-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@ozlabs.org>; Fri, 29 Mar 2019 06:25:40 -0400
-Received: from localhost
- by e06smtp03.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <mahesh@linux.vnet.ibm.com>;
- Fri, 29 Mar 2019 10:24:43 -0000
-Received: from b06cxnps3074.portsmouth.uk.ibm.com (9.149.109.194)
- by e06smtp03.uk.ibm.com (192.168.101.133) with IBM ESMTP SMTP Gateway:
- Authorized Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Fri, 29 Mar 2019 10:24:41 -0000
-Received: from d06av21.portsmouth.uk.ibm.com (d06av21.portsmouth.uk.ibm.com
- [9.149.105.232])
- by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x2TAOe3A61407380
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Fri, 29 Mar 2019 10:24:40 GMT
-Received: from d06av21.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 78B5652050;
- Fri, 29 Mar 2019 10:24:40 +0000 (GMT)
-Received: from [9.85.92.96] (unknown [9.85.92.96])
- by d06av21.portsmouth.uk.ibm.com (Postfix) with ESMTP id B0FA15204E;
- Fri, 29 Mar 2019 10:24:39 +0000 (GMT)
-Subject: Re: [RFC PATCH 2/3] powernv/mce: Print correct severity for mce error.
-To: Michael Ellerman <mpe@ellerman.id.au>,
- linuxppc-dev <linuxppc-dev@ozlabs.org>
-References: <155324738319.7819.17982472592795327790.stgit@jupiter.in.ibm.com>
- <155324739171.7819.1095626412782166400.stgit@jupiter.in.ibm.com>
- <878swyo7es.fsf@concordia.ellerman.id.au>
-From: Mahesh Jagannath Salgaonkar <mahesh@linux.vnet.ibm.com>
-Date: Fri, 29 Mar 2019 15:54:39 +0530
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
- Thunderbird/60.6.0
+ id 44Vzvl0gVGz9sPB; Fri, 29 Mar 2019 22:26:27 +1100 (AEDT)
+Received: by ozlabs.org (Postfix, from userid 1034)
+ id 44Vzvl00jsz9sQq; Fri, 29 Mar 2019 22:26:26 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: stable@vger.kernel.org,
+	gregkh@linuxfoundation.org
+Subject: [PATCH stable v4.14 00/32] powerpc spectre backports for 4.14
+Date: Fri, 29 Mar 2019 22:25:48 +1100
+Message-Id: <20190329112620.14489-1-mpe@ellerman.id.au>
+X-Mailer: git-send-email 2.20.1
 MIME-Version: 1.0
-In-Reply-To: <878swyo7es.fsf@concordia.ellerman.id.au>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-MW
-Content-Transfer-Encoding: 7bit
-X-TM-AS-GCONF: 00
-x-cbid: 19032910-0012-0000-0000-00000308C983
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19032910-0013-0000-0000-0000213FFE73
-Message-Id: <2a78d8e0-6383-4bf2-9762-9c7eb5521a85@linux.vnet.ibm.com>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2019-03-29_05:, , signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1810050000 definitions=main-1903290076
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -113,59 +51,1262 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Paul Mackerras <paulus@samba.org>, Nicholas Piggin <npiggin@gmail.com>
+Cc: diana.craciun@nxp.com, linuxppc-dev@ozlabs.org, msuchanek@suse.de
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 3/29/19 5:53 AM, Michael Ellerman wrote:
-> Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com> writes:
->> diff --git a/arch/powerpc/include/asm/mce.h b/arch/powerpc/include/asm/mce.h
->> index 8d0b1c24c636..314ed3f13d59 100644
->> --- a/arch/powerpc/include/asm/mce.h
->> +++ b/arch/powerpc/include/asm/mce.h
->> @@ -110,17 +110,18 @@ enum MCE_LinkErrorType {
->>  };
->>  
->>  struct machine_check_event {
->> -	enum MCE_Version	version:8;	/* 0x00 */
->> -	uint8_t			in_use;		/* 0x01 */
->> -	enum MCE_Severity	severity:8;	/* 0x02 */
->> -	enum MCE_Initiator	initiator:8;	/* 0x03 */
->> -	enum MCE_ErrorType	error_type:8;	/* 0x04 */
->> -	enum MCE_Disposition	disposition:8;	/* 0x05 */
->> -	uint16_t		cpu;		/* 0x06 */
->> -	uint64_t		gpr3;		/* 0x08 */
->> -	uint64_t		srr0;		/* 0x10 */
->> -	uint64_t		srr1;		/* 0x18 */
->> -	union {					/* 0x20 */
->> +	enum MCE_Version	version:8;
->> +	uint8_t			in_use;
->> +	enum MCE_Severity	severity:8;
->> +	enum MCE_Initiator	initiator:8;
->> +	enum MCE_ErrorType	error_type:8;
->> +	enum MCE_Disposition	disposition:8;
->> +	uint8_t			sync_error;
->> +	uint16_t		cpu;
->> +	uint64_t		gpr3;
->> +	uint64_t		srr0;
->> +	uint64_t		srr1;
-> 
-> Can you switch these to use kernel types while you're at it, ie. u8, u64 etc.
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
-sure.
+Hi Greg,
 
-> 
->> @@ -194,6 +195,7 @@ struct mce_error_info {
->>  	} u;
->>  	enum MCE_Severity	severity:8;
->>  	enum MCE_Initiator	initiator:8;
->> +	uint8_t			sync_error;
-> 
-> u8 here but bool later?
+Please queue up these powerpc patches for 4.14 if you have no objections.
 
-Will make it bool everywhere.
+cheers
 
-Thanks,
--Mahesh.
 
+Christophe Leroy (1):
+  powerpc/fsl: Fix the flush of branch predictor.
+
+Diana Craciun (16):
+  powerpc/64: Disable the speculation barrier from the command line
+  powerpc/64: Make stf barrier PPC_BOOK3S_64 specific.
+  powerpc/64: Make meltdown reporting Book3S 64 specific
+  powerpc/fsl: Add barrier_nospec implementation for NXP PowerPC Book3E
+  powerpc/fsl: Sanitize the syscall table for NXP PowerPC 32 bit
+    platforms
+  powerpc/fsl: Add infrastructure to fixup branch predictor flush
+  powerpc/fsl: Add macro to flush the branch predictor
+  powerpc/fsl: Fix spectre_v2 mitigations reporting
+  powerpc/fsl: Emulate SPRN_BUCSR register
+  powerpc/fsl: Add nospectre_v2 command line argument
+  powerpc/fsl: Flush the branch predictor at each kernel entry (64bit)
+  powerpc/fsl: Flush the branch predictor at each kernel entry (32 bit)
+  powerpc/fsl: Flush branch predictor when entering KVM
+  powerpc/fsl: Enable runtime patching if nospectre_v2 boot arg is used
+  powerpc/fsl: Update Spectre v2 reporting
+  powerpc/fsl: Fixed warning: orphan section `__btb_flush_fixup'
+
+Michael Ellerman (11):
+  powerpc: Use barrier_nospec in copy_from_user()
+  powerpc/64: Use barrier_nospec in syscall entry
+  powerpc64s: Show ori31 availability in spectre_v1 sysfs file not v2
+  powerpc/64: Add CONFIG_PPC_BARRIER_NOSPEC
+  powerpc/64: Call setup_barrier_nospec() from setup_arch()
+  powerpc/asm: Add a patch_site macro & helpers for patching
+    instructions
+  powerpc/64s: Add new security feature flags for count cache flush
+  powerpc/64s: Add support for software count cache flush
+  powerpc/pseries: Query hypervisor for count cache flush settings
+  powerpc/powernv: Query firmware for count cache flush settings
+  powerpc/security: Fix spectre_v2 reporting
+
+Michal Suchanek (4):
+  powerpc/64s: Add support for ori barrier_nospec patching
+  powerpc/64s: Patch barrier_nospec in modules
+  powerpc/64s: Enable barrier_nospec based on firmware settings
+  powerpc/64s: Enhance the information in cpu_show_spectre_v1()
+
+ arch/powerpc/Kconfig                         |   7 +-
+ arch/powerpc/include/asm/asm-prototypes.h    |   6 +
+ arch/powerpc/include/asm/barrier.h           |  12 +-
+ arch/powerpc/include/asm/code-patching-asm.h |  18 ++
+ arch/powerpc/include/asm/code-patching.h     |   2 +
+ arch/powerpc/include/asm/feature-fixups.h    |  21 ++
+ arch/powerpc/include/asm/hvcall.h            |   2 +
+ arch/powerpc/include/asm/ppc_asm.h           |  10 +
+ arch/powerpc/include/asm/security_features.h |   7 +
+ arch/powerpc/include/asm/setup.h             |  20 ++
+ arch/powerpc/include/asm/uaccess.h           |  11 +-
+ arch/powerpc/kernel/Makefile                 |   3 +-
+ arch/powerpc/kernel/entry_32.S               |  10 +
+ arch/powerpc/kernel/entry_64.S               |  69 ++++++
+ arch/powerpc/kernel/exceptions-64e.S         |  27 ++-
+ arch/powerpc/kernel/head_booke.h             |  12 ++
+ arch/powerpc/kernel/head_fsl_booke.S         |  15 ++
+ arch/powerpc/kernel/module.c                 |  10 +-
+ arch/powerpc/kernel/security.c               | 215 ++++++++++++++++++-
+ arch/powerpc/kernel/setup-common.c           |   3 +
+ arch/powerpc/kernel/vmlinux.lds.S            |  19 +-
+ arch/powerpc/kvm/bookehv_interrupts.S        |   4 +
+ arch/powerpc/kvm/e500_emulate.c              |   7 +
+ arch/powerpc/lib/code-patching.c             |  16 ++
+ arch/powerpc/lib/feature-fixups.c            |  93 ++++++++
+ arch/powerpc/mm/tlb_low_64e.S                |   7 +
+ arch/powerpc/platforms/powernv/setup.c       |   7 +
+ arch/powerpc/platforms/pseries/setup.c       |   7 +
+ 28 files changed, 622 insertions(+), 18 deletions(-)
+ create mode 100644 arch/powerpc/include/asm/code-patching-asm.h
+
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index fe418226df7f..de3b07c7be30 100644
+- --- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -164,7 +164,7 @@ config PPC
+ 	select GENERIC_CLOCKEVENTS_BROADCAST	if SMP
+ 	select GENERIC_CMOS_UPDATE
+ 	select GENERIC_CPU_AUTOPROBE
+- -	select GENERIC_CPU_VULNERABILITIES	if PPC_BOOK3S_64
++	select GENERIC_CPU_VULNERABILITIES	if PPC_BARRIER_NOSPEC
+ 	select GENERIC_IRQ_SHOW
+ 	select GENERIC_IRQ_SHOW_LEVEL
+ 	select GENERIC_SMP_IDLE_THREAD
+@@ -236,6 +236,11 @@ config PPC
+ 	# Please keep this list sorted alphabetically.
+ 	#
+ 
++config PPC_BARRIER_NOSPEC
++    bool
++    default y
++    depends on PPC_BOOK3S_64 || PPC_FSL_BOOK3E
++
+ config GENERIC_CSUM
+ 	def_bool n
+ 
+diff --git a/arch/powerpc/include/asm/asm-prototypes.h b/arch/powerpc/include/asm/asm-prototypes.h
+index 7330150bfe34..ba4c75062d49 100644
+- --- a/arch/powerpc/include/asm/asm-prototypes.h
++++ b/arch/powerpc/include/asm/asm-prototypes.h
+@@ -126,4 +126,10 @@ extern int __ucmpdi2(u64, u64);
+ void _mcount(void);
+ unsigned long prepare_ftrace_return(unsigned long parent, unsigned long ip);
+ 
++/* Patch sites */
++extern s32 patch__call_flush_count_cache;
++extern s32 patch__flush_count_cache_return;
++
++extern long flush_count_cache;
++
+ #endif /* _ASM_POWERPC_ASM_PROTOTYPES_H */
+diff --git a/arch/powerpc/include/asm/barrier.h b/arch/powerpc/include/asm/barrier.h
+index e582d2c88092..449474f667c4 100644
+- --- a/arch/powerpc/include/asm/barrier.h
++++ b/arch/powerpc/include/asm/barrier.h
+@@ -77,19 +77,25 @@ do {									\
+ })
+ 
+ #ifdef CONFIG_PPC_BOOK3S_64
++#define NOSPEC_BARRIER_SLOT   nop
++#elif defined(CONFIG_PPC_FSL_BOOK3E)
++#define NOSPEC_BARRIER_SLOT   nop; nop
++#endif
++
++#ifdef CONFIG_PPC_BARRIER_NOSPEC
+ /*
+  * Prevent execution of subsequent instructions until preceding branches have
+  * been fully resolved and are no longer executing speculatively.
+  */
+- -#define barrier_nospec_asm ori 31,31,0
++#define barrier_nospec_asm NOSPEC_BARRIER_FIXUP_SECTION; NOSPEC_BARRIER_SLOT
+ 
+ // This also acts as a compiler barrier due to the memory clobber.
+ #define barrier_nospec() asm (stringify_in_c(barrier_nospec_asm) ::: "memory")
+ 
+- -#else /* !CONFIG_PPC_BOOK3S_64 */
++#else /* !CONFIG_PPC_BARRIER_NOSPEC */
+ #define barrier_nospec_asm
+ #define barrier_nospec()
+- -#endif
++#endif /* CONFIG_PPC_BARRIER_NOSPEC */
+ 
+ #include <asm-generic/barrier.h>
+ 
+diff --git a/arch/powerpc/include/asm/code-patching-asm.h b/arch/powerpc/include/asm/code-patching-asm.h
+new file mode 100644
+index 000000000000..ed7b1448493a
+- --- /dev/null
++++ b/arch/powerpc/include/asm/code-patching-asm.h
+@@ -0,0 +1,18 @@
++/* SPDX-License-Identifier: GPL-2.0+ */
++/*
++ * Copyright 2018, Michael Ellerman, IBM Corporation.
++ */
++#ifndef _ASM_POWERPC_CODE_PATCHING_ASM_H
++#define _ASM_POWERPC_CODE_PATCHING_ASM_H
++
++/* Define a "site" that can be patched */
++.macro patch_site label name
++	.pushsection ".rodata"
++	.balign 4
++	.global \name
++\name:
++	.4byte	\label - .
++	.popsection
++.endm
++
++#endif /* _ASM_POWERPC_CODE_PATCHING_ASM_H */
+diff --git a/arch/powerpc/include/asm/code-patching.h b/arch/powerpc/include/asm/code-patching.h
+index 812535f40124..b2051234ada8 100644
+- --- a/arch/powerpc/include/asm/code-patching.h
++++ b/arch/powerpc/include/asm/code-patching.h
+@@ -32,6 +32,8 @@ unsigned int create_cond_branch(const unsigned int *addr,
+ int patch_branch(unsigned int *addr, unsigned long target, int flags);
+ int patch_instruction(unsigned int *addr, unsigned int instr);
+ int raw_patch_instruction(unsigned int *addr, unsigned int instr);
++int patch_instruction_site(s32 *addr, unsigned int instr);
++int patch_branch_site(s32 *site, unsigned long target, int flags);
+ 
+ int instr_is_relative_branch(unsigned int instr);
+ int instr_is_relative_link_branch(unsigned int instr);
+diff --git a/arch/powerpc/include/asm/feature-fixups.h b/arch/powerpc/include/asm/feature-fixups.h
+index a9b64df34e2a..b1d478acbaec 100644
+- --- a/arch/powerpc/include/asm/feature-fixups.h
++++ b/arch/powerpc/include/asm/feature-fixups.h
+@@ -211,6 +211,25 @@ label##3:					       	\
+ 	FTR_ENTRY_OFFSET 951b-952b;			\
+ 	.popsection;
+ 
++#define NOSPEC_BARRIER_FIXUP_SECTION			\
++953:							\
++	.pushsection __barrier_nospec_fixup,"a";	\
++	.align 2;					\
++954:							\
++	FTR_ENTRY_OFFSET 953b-954b;			\
++	.popsection;
++
++#define START_BTB_FLUSH_SECTION			\
++955:							\
++
++#define END_BTB_FLUSH_SECTION			\
++956:							\
++	.pushsection __btb_flush_fixup,"a";	\
++	.align 2;							\
++957:						\
++	FTR_ENTRY_OFFSET 955b-957b;			\
++	FTR_ENTRY_OFFSET 956b-957b;			\
++	.popsection;
+ 
+ #ifndef __ASSEMBLY__
+ #include <linux/types.h>
+@@ -219,6 +238,8 @@ extern long stf_barrier_fallback;
+ extern long __start___stf_entry_barrier_fixup, __stop___stf_entry_barrier_fixup;
+ extern long __start___stf_exit_barrier_fixup, __stop___stf_exit_barrier_fixup;
+ extern long __start___rfi_flush_fixup, __stop___rfi_flush_fixup;
++extern long __start___barrier_nospec_fixup, __stop___barrier_nospec_fixup;
++extern long __start__btb_flush_fixup, __stop__btb_flush_fixup;
+ 
+ void apply_feature_fixups(void);
+ void setup_feature_keys(void);
+diff --git a/arch/powerpc/include/asm/hvcall.h b/arch/powerpc/include/asm/hvcall.h
+index 5a740feb7bd7..15cef59092c7 100644
+- --- a/arch/powerpc/include/asm/hvcall.h
++++ b/arch/powerpc/include/asm/hvcall.h
+@@ -340,10 +340,12 @@
+ #define H_CPU_CHAR_BRANCH_HINTS_HONORED	(1ull << 58) // IBM bit 5
+ #define H_CPU_CHAR_THREAD_RECONFIG_CTRL	(1ull << 57) // IBM bit 6
+ #define H_CPU_CHAR_COUNT_CACHE_DISABLED	(1ull << 56) // IBM bit 7
++#define H_CPU_CHAR_BCCTR_FLUSH_ASSIST	(1ull << 54) // IBM bit 9
+ 
+ #define H_CPU_BEHAV_FAVOUR_SECURITY	(1ull << 63) // IBM bit 0
+ #define H_CPU_BEHAV_L1D_FLUSH_PR	(1ull << 62) // IBM bit 1
+ #define H_CPU_BEHAV_BNDS_CHK_SPEC_BAR	(1ull << 61) // IBM bit 2
++#define H_CPU_BEHAV_FLUSH_COUNT_CACHE	(1ull << 58) // IBM bit 5
+ 
+ /* Flag values used in H_REGISTER_PROC_TBL hcall */
+ #define PROC_TABLE_OP_MASK	0x18
+diff --git a/arch/powerpc/include/asm/ppc_asm.h b/arch/powerpc/include/asm/ppc_asm.h
+index 36f3e41c9fbe..3e1b8de72776 100644
+- --- a/arch/powerpc/include/asm/ppc_asm.h
++++ b/arch/powerpc/include/asm/ppc_asm.h
+@@ -802,4 +802,14 @@ END_FTR_SECTION_IFCLR(CPU_FTR_601)
+ 	stringify_in_c(.long (_target) - . ;)	\
+ 	stringify_in_c(.previous)
+ 
++#ifdef CONFIG_PPC_FSL_BOOK3E
++#define BTB_FLUSH(reg)			\
++	lis reg,BUCSR_INIT@h;		\
++	ori reg,reg,BUCSR_INIT@l;	\
++	mtspr SPRN_BUCSR,reg;		\
++	isync;
++#else
++#define BTB_FLUSH(reg)
++#endif /* CONFIG_PPC_FSL_BOOK3E */
++
+ #endif /* _ASM_POWERPC_PPC_ASM_H */
+diff --git a/arch/powerpc/include/asm/security_features.h b/arch/powerpc/include/asm/security_features.h
+index 44989b22383c..759597bf0fd8 100644
+- --- a/arch/powerpc/include/asm/security_features.h
++++ b/arch/powerpc/include/asm/security_features.h
+@@ -22,6 +22,7 @@ enum stf_barrier_type {
+ 
+ void setup_stf_barrier(void);
+ void do_stf_barrier_fixups(enum stf_barrier_type types);
++void setup_count_cache_flush(void);
+ 
+ static inline void security_ftr_set(unsigned long feature)
+ {
+@@ -59,6 +60,9 @@ static inline bool security_ftr_enabled(unsigned long feature)
+ // Indirect branch prediction cache disabled
+ #define SEC_FTR_COUNT_CACHE_DISABLED	0x0000000000000020ull
+ 
++// bcctr 2,0,0 triggers a hardware assisted count cache flush
++#define SEC_FTR_BCCTR_FLUSH_ASSIST	0x0000000000000800ull
++
+ 
+ // Features indicating need for Spectre/Meltdown mitigations
+ 
+@@ -74,6 +78,9 @@ static inline bool security_ftr_enabled(unsigned long feature)
+ // Firmware configuration indicates user favours security over performance
+ #define SEC_FTR_FAVOUR_SECURITY		0x0000000000000200ull
+ 
++// Software required to flush count cache on context switch
++#define SEC_FTR_FLUSH_COUNT_CACHE	0x0000000000000400ull
++
+ 
+ // Features enabled by default
+ #define SEC_FTR_DEFAULT \
+diff --git a/arch/powerpc/include/asm/setup.h b/arch/powerpc/include/asm/setup.h
+index a5e919e34c42..5ceab440ecb9 100644
+- --- a/arch/powerpc/include/asm/setup.h
++++ b/arch/powerpc/include/asm/setup.h
+@@ -52,6 +52,26 @@ enum l1d_flush_type {
+ 
+ void setup_rfi_flush(enum l1d_flush_type, bool enable);
+ void do_rfi_flush_fixups(enum l1d_flush_type types);
++#ifdef CONFIG_PPC_BARRIER_NOSPEC
++void setup_barrier_nospec(void);
++#else
++static inline void setup_barrier_nospec(void) { };
++#endif
++void do_barrier_nospec_fixups(bool enable);
++extern bool barrier_nospec_enabled;
++
++#ifdef CONFIG_PPC_BARRIER_NOSPEC
++void do_barrier_nospec_fixups_range(bool enable, void *start, void *end);
++#else
++static inline void do_barrier_nospec_fixups_range(bool enable, void *start, void *end) { };
++#endif
++
++#ifdef CONFIG_PPC_FSL_BOOK3E
++void setup_spectre_v2(void);
++#else
++static inline void setup_spectre_v2(void) {};
++#endif
++void do_btb_flush_fixups(void);
+ 
+ #endif /* !__ASSEMBLY__ */
+ 
+diff --git a/arch/powerpc/include/asm/uaccess.h b/arch/powerpc/include/asm/uaccess.h
+index cf26e62b268d..bd6d0fb5be9f 100644
+- --- a/arch/powerpc/include/asm/uaccess.h
++++ b/arch/powerpc/include/asm/uaccess.h
+@@ -238,6 +238,7 @@ do {								\
+ 	__chk_user_ptr(ptr);					\
+ 	if (!is_kernel_addr((unsigned long)__gu_addr))		\
+ 		might_fault();					\
++	barrier_nospec();					\
+ 	__get_user_size(__gu_val, __gu_addr, (size), __gu_err);	\
+ 	(x) = (__typeof__(*(ptr)))__gu_val;			\
+ 	__gu_err;						\
+@@ -249,8 +250,10 @@ do {								\
+ 	__long_type(*(ptr)) __gu_val = 0;				\
+ 	const __typeof__(*(ptr)) __user *__gu_addr = (ptr);		\
+ 	might_fault();							\
+- -	if (access_ok(VERIFY_READ, __gu_addr, (size)))			\
++	if (access_ok(VERIFY_READ, __gu_addr, (size))) {		\
++		barrier_nospec();					\
+ 		__get_user_size(__gu_val, __gu_addr, (size), __gu_err);	\
++	}								\
+ 	(x) = (__force __typeof__(*(ptr)))__gu_val;				\
+ 	__gu_err;							\
+ })
+@@ -261,6 +264,7 @@ do {								\
+ 	__long_type(*(ptr)) __gu_val;				\
+ 	const __typeof__(*(ptr)) __user *__gu_addr = (ptr);	\
+ 	__chk_user_ptr(ptr);					\
++	barrier_nospec();					\
+ 	__get_user_size(__gu_val, __gu_addr, (size), __gu_err);	\
+ 	(x) = (__force __typeof__(*(ptr)))__gu_val;			\
+ 	__gu_err;						\
+@@ -288,15 +292,19 @@ static inline unsigned long raw_copy_from_user(void *to,
+ 
+ 		switch (n) {
+ 		case 1:
++			barrier_nospec();
+ 			__get_user_size(*(u8 *)to, from, 1, ret);
+ 			break;
+ 		case 2:
++			barrier_nospec();
+ 			__get_user_size(*(u16 *)to, from, 2, ret);
+ 			break;
+ 		case 4:
++			barrier_nospec();
+ 			__get_user_size(*(u32 *)to, from, 4, ret);
+ 			break;
+ 		case 8:
++			barrier_nospec();
+ 			__get_user_size(*(u64 *)to, from, 8, ret);
+ 			break;
+ 		}
+@@ -304,6 +312,7 @@ static inline unsigned long raw_copy_from_user(void *to,
+ 			return 0;
+ 	}
+ 
++	barrier_nospec();
+ 	return __copy_tofrom_user((__force void __user *)to, from, n);
+ }
+ 
+diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
+index a1089c9a9aa5..142b08d40642 100644
+- --- a/arch/powerpc/kernel/Makefile
++++ b/arch/powerpc/kernel/Makefile
+@@ -45,9 +45,10 @@ obj-$(CONFIG_VDSO32)		+= vdso32/
+ obj-$(CONFIG_PPC_WATCHDOG)	+= watchdog.o
+ obj-$(CONFIG_HAVE_HW_BREAKPOINT)	+= hw_breakpoint.o
+ obj-$(CONFIG_PPC_BOOK3S_64)	+= cpu_setup_ppc970.o cpu_setup_pa6t.o
+- -obj-$(CONFIG_PPC_BOOK3S_64)	+= cpu_setup_power.o security.o
++obj-$(CONFIG_PPC_BOOK3S_64)	+= cpu_setup_power.o
+ obj-$(CONFIG_PPC_BOOK3S_64)	+= mce.o mce_power.o
+ obj-$(CONFIG_PPC_BOOK3E_64)	+= exceptions-64e.o idle_book3e.o
++obj-$(CONFIG_PPC_BARRIER_NOSPEC) += security.o
+ obj-$(CONFIG_PPC64)		+= vdso64/
+ obj-$(CONFIG_ALTIVEC)		+= vecemu.o
+ obj-$(CONFIG_PPC_970_NAP)	+= idle_power4.o
+diff --git a/arch/powerpc/kernel/entry_32.S b/arch/powerpc/kernel/entry_32.S
+index 4ae464b9d490..a2999cd73a82 100644
+- --- a/arch/powerpc/kernel/entry_32.S
++++ b/arch/powerpc/kernel/entry_32.S
+@@ -33,6 +33,7 @@
+ #include <asm/unistd.h>
+ #include <asm/ptrace.h>
+ #include <asm/export.h>
++#include <asm/barrier.h>
+ 
+ /*
+  * MSR_KERNEL is > 0x10000 on 4xx/Book-E since it include MSR_CE.
+@@ -358,6 +359,15 @@ _GLOBAL(DoSyscall)
+ 	ori	r10,r10,sys_call_table@l
+ 	slwi	r0,r0,2
+ 	bge-	66f
++
++	barrier_nospec_asm
++	/*
++	 * Prevent the load of the handler below (based on the user-passed
++	 * system call number) being speculatively executed until the test
++	 * against NR_syscalls and branch to .66f above has
++	 * committed.
++	 */
++
+ 	lwzx	r10,r10,r0	/* Fetch system call handler [ptr] */
+ 	mtlr	r10
+ 	addi	r9,r1,STACK_FRAME_OVERHEAD
+diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
+index c194f4c8e66b..12395895b9aa 100644
+- --- a/arch/powerpc/kernel/entry_64.S
++++ b/arch/powerpc/kernel/entry_64.S
+@@ -25,6 +25,7 @@
+ #include <asm/page.h>
+ #include <asm/mmu.h>
+ #include <asm/thread_info.h>
++#include <asm/code-patching-asm.h>
+ #include <asm/ppc_asm.h>
+ #include <asm/asm-offsets.h>
+ #include <asm/cputable.h>
+@@ -36,6 +37,7 @@
+ #include <asm/context_tracking.h>
+ #include <asm/tm.h>
+ #include <asm/ppc-opcode.h>
++#include <asm/barrier.h>
+ #include <asm/export.h>
+ #ifdef CONFIG_PPC_BOOK3S
+ #include <asm/exception-64s.h>
+@@ -76,6 +78,11 @@ END_FTR_SECTION_IFSET(CPU_FTR_TM)
+ 	std	r0,GPR0(r1)
+ 	std	r10,GPR1(r1)
+ 	beq	2f			/* if from kernel mode */
++#ifdef CONFIG_PPC_FSL_BOOK3E
++START_BTB_FLUSH_SECTION
++	BTB_FLUSH(r10)
++END_BTB_FLUSH_SECTION
++#endif
+ 	ACCOUNT_CPU_USER_ENTRY(r13, r10, r11)
+ 2:	std	r2,GPR2(r1)
+ 	std	r3,GPR3(r1)
+@@ -179,6 +186,15 @@ system_call:			/* label this so stack traces look sane */
+ 	clrldi	r8,r8,32
+ 15:
+ 	slwi	r0,r0,4
++
++	barrier_nospec_asm
++	/*
++	 * Prevent the load of the handler below (based on the user-passed
++	 * system call number) being speculatively executed until the test
++	 * against NR_syscalls and branch to .Lsyscall_enosys above has
++	 * committed.
++	 */
++
+ 	ldx	r12,r11,r0	/* Fetch system call handler [ptr] */
+ 	mtctr   r12
+ 	bctrl			/* Call handler */
+@@ -487,6 +503,57 @@ _GLOBAL(ret_from_kernel_thread)
+ 	li	r3,0
+ 	b	.Lsyscall_exit
+ 
++#ifdef CONFIG_PPC_BOOK3S_64
++
++#define FLUSH_COUNT_CACHE	\
++1:	nop;			\
++	patch_site 1b, patch__call_flush_count_cache
++
++
++#define BCCTR_FLUSH	.long 0x4c400420
++
++.macro nops number
++	.rept \number
++	nop
++	.endr
++.endm
++
++.balign 32
++.global flush_count_cache
++flush_count_cache:
++	/* Save LR into r9 */
++	mflr	r9
++
++	.rept 64
++	bl	.+4
++	.endr
++	b	1f
++	nops	6
++
++	.balign 32
++	/* Restore LR */
++1:	mtlr	r9
++	li	r9,0x7fff
++	mtctr	r9
++
++	BCCTR_FLUSH
++
++2:	nop
++	patch_site 2b patch__flush_count_cache_return
++
++	nops	3
++
++	.rept 278
++	.balign 32
++	BCCTR_FLUSH
++	nops	7
++	.endr
++
++	blr
++#else
++#define FLUSH_COUNT_CACHE
++#endif /* CONFIG_PPC_BOOK3S_64 */
++
+ /*
+  * This routine switches between two different tasks.  The process
+  * state of one is saved on its kernel stack.  Then the state
+@@ -518,6 +585,8 @@ _GLOBAL(_switch)
+ 	std	r23,_CCR(r1)
+ 	std	r1,KSP(r3)	/* Set old stack pointer */
+ 
++	FLUSH_COUNT_CACHE
++
+ 	/*
+ 	 * On SMP kernels, care must be taken because a task may be
+ 	 * scheduled off CPUx and on to CPUy. Memory ordering must be
+diff --git a/arch/powerpc/kernel/exceptions-64e.S b/arch/powerpc/kernel/exceptions-64e.S
+index acd8ca76233e..2edc1b7b34cc 100644
+- --- a/arch/powerpc/kernel/exceptions-64e.S
++++ b/arch/powerpc/kernel/exceptions-64e.S
+@@ -295,7 +295,8 @@ END_FTR_SECTION_IFSET(CPU_FTR_EMB_HV)
+ 	andi.	r10,r11,MSR_PR;		/* save stack pointer */	    \
+ 	beq	1f;			/* branch around if supervisor */   \
+ 	ld	r1,PACAKSAVE(r13);	/* get kernel stack coming from usr */\
+- -1:	cmpdi	cr1,r1,0;		/* check if SP makes sense */	    \
++1:	type##_BTB_FLUSH		\
++	cmpdi	cr1,r1,0;		/* check if SP makes sense */	    \
+ 	bge-	cr1,exc_##n##_bad_stack;/* bad stack (TODO: out of line) */ \
+ 	mfspr	r10,SPRN_##type##_SRR0;	/* read SRR0 before touching stack */
+ 
+@@ -327,6 +328,30 @@ END_FTR_SECTION_IFSET(CPU_FTR_EMB_HV)
+ #define SPRN_MC_SRR0	SPRN_MCSRR0
+ #define SPRN_MC_SRR1	SPRN_MCSRR1
+ 
++#ifdef CONFIG_PPC_FSL_BOOK3E
++#define GEN_BTB_FLUSH			\
++	START_BTB_FLUSH_SECTION		\
++		beq 1f;			\
++		BTB_FLUSH(r10)			\
++		1:		\
++	END_BTB_FLUSH_SECTION
++
++#define CRIT_BTB_FLUSH			\
++	START_BTB_FLUSH_SECTION		\
++		BTB_FLUSH(r10)		\
++	END_BTB_FLUSH_SECTION
++
++#define DBG_BTB_FLUSH CRIT_BTB_FLUSH
++#define MC_BTB_FLUSH CRIT_BTB_FLUSH
++#define GDBELL_BTB_FLUSH GEN_BTB_FLUSH
++#else
++#define GEN_BTB_FLUSH
++#define CRIT_BTB_FLUSH
++#define DBG_BTB_FLUSH
++#define MC_BTB_FLUSH
++#define GDBELL_BTB_FLUSH
++#endif
++
+ #define NORMAL_EXCEPTION_PROLOG(n, intnum, addition)			    \
+ 	EXCEPTION_PROLOG(n, intnum, GEN, addition##_GEN(n))
+ 
+diff --git a/arch/powerpc/kernel/head_booke.h b/arch/powerpc/kernel/head_booke.h
+index d0862a100d29..306e26c073a0 100644
+- --- a/arch/powerpc/kernel/head_booke.h
++++ b/arch/powerpc/kernel/head_booke.h
+@@ -32,6 +32,16 @@
+  */
+ #define THREAD_NORMSAVE(offset)	(THREAD_NORMSAVES + (offset * 4))
+ 
++#ifdef CONFIG_PPC_FSL_BOOK3E
++#define BOOKE_CLEAR_BTB(reg)									\
++START_BTB_FLUSH_SECTION								\
++	BTB_FLUSH(reg)									\
++END_BTB_FLUSH_SECTION
++#else
++#define BOOKE_CLEAR_BTB(reg)
++#endif
++
++
+ #define NORMAL_EXCEPTION_PROLOG(intno)						     \
+ 	mtspr	SPRN_SPRG_WSCRATCH0, r10;	/* save one register */	     \
+ 	mfspr	r10, SPRN_SPRG_THREAD;					     \
+@@ -43,6 +53,7 @@
+ 	andi.	r11, r11, MSR_PR;	/* check whether user or kernel    */\
+ 	mr	r11, r1;						     \
+ 	beq	1f;							     \
++	BOOKE_CLEAR_BTB(r11)						\
+ 	/* if from user, start at top of this thread's kernel stack */       \
+ 	lwz	r11, THREAD_INFO-THREAD(r10);				     \
+ 	ALLOC_STACK_FRAME(r11, THREAD_SIZE);				     \
+@@ -128,6 +139,7 @@
+ 	stw	r9,_CCR(r8);		/* save CR on stack		   */\
+ 	mfspr	r11,exc_level_srr1;	/* check whether user or kernel    */\
+ 	DO_KVM	BOOKE_INTERRUPT_##intno exc_level_srr1;		             \
++	BOOKE_CLEAR_BTB(r10)						\
+ 	andi.	r11,r11,MSR_PR;						     \
+ 	mfspr	r11,SPRN_SPRG_THREAD;	/* if from user, start at top of   */\
+ 	lwz	r11,THREAD_INFO-THREAD(r11); /* this thread's kernel stack */\
+diff --git a/arch/powerpc/kernel/head_fsl_booke.S b/arch/powerpc/kernel/head_fsl_booke.S
+index bf4c6021515f..60a0aeefc4a7 100644
+- --- a/arch/powerpc/kernel/head_fsl_booke.S
++++ b/arch/powerpc/kernel/head_fsl_booke.S
+@@ -452,6 +452,13 @@ END_FTR_SECTION_IFSET(CPU_FTR_EMB_HV)
+ 	mfcr	r13
+ 	stw	r13, THREAD_NORMSAVE(3)(r10)
+ 	DO_KVM	BOOKE_INTERRUPT_DTLB_MISS SPRN_SRR1
++START_BTB_FLUSH_SECTION
++	mfspr r11, SPRN_SRR1
++	andi. r10,r11,MSR_PR
++	beq 1f
++	BTB_FLUSH(r10)
++1:
++END_BTB_FLUSH_SECTION
+ 	mfspr	r10, SPRN_DEAR		/* Get faulting address */
+ 
+ 	/* If we are faulting a kernel address, we have to use the
+@@ -546,6 +553,14 @@ END_FTR_SECTION_IFSET(CPU_FTR_EMB_HV)
+ 	mfcr	r13
+ 	stw	r13, THREAD_NORMSAVE(3)(r10)
+ 	DO_KVM	BOOKE_INTERRUPT_ITLB_MISS SPRN_SRR1
++START_BTB_FLUSH_SECTION
++	mfspr r11, SPRN_SRR1
++	andi. r10,r11,MSR_PR
++	beq 1f
++	BTB_FLUSH(r10)
++1:
++END_BTB_FLUSH_SECTION
++
+ 	mfspr	r10, SPRN_SRR0		/* Get faulting address */
+ 
+ 	/* If we are faulting a kernel address, we have to use the
+diff --git a/arch/powerpc/kernel/module.c b/arch/powerpc/kernel/module.c
+index 3f7ba0f5bf29..77371c9ef3d8 100644
+- --- a/arch/powerpc/kernel/module.c
++++ b/arch/powerpc/kernel/module.c
+@@ -72,7 +72,15 @@ int module_finalize(const Elf_Ehdr *hdr,
+ 		do_feature_fixups(powerpc_firmware_features,
+ 				  (void *)sect->sh_addr,
+ 				  (void *)sect->sh_addr + sect->sh_size);
+- -#endif
++#endif /* CONFIG_PPC64 */
++
++#ifdef CONFIG_PPC_BARRIER_NOSPEC
++	sect = find_section(hdr, sechdrs, "__spec_barrier_fixup");
++	if (sect != NULL)
++		do_barrier_nospec_fixups_range(barrier_nospec_enabled,
++				  (void *)sect->sh_addr,
++				  (void *)sect->sh_addr + sect->sh_size);
++#endif /* CONFIG_PPC_BARRIER_NOSPEC */
+ 
+ 	sect = find_section(hdr, sechdrs, "__lwsync_fixup");
+ 	if (sect != NULL)
+diff --git a/arch/powerpc/kernel/security.c b/arch/powerpc/kernel/security.c
+index b98a722da915..48b50fb8dc4b 100644
+- --- a/arch/powerpc/kernel/security.c
++++ b/arch/powerpc/kernel/security.c
+@@ -9,11 +9,120 @@
+ #include <linux/seq_buf.h>
+ 
+ #include <asm/debugfs.h>
++#include <asm/asm-prototypes.h>
++#include <asm/code-patching.h>
+ #include <asm/security_features.h>
++#include <asm/setup.h>
+ 
+ 
+ unsigned long powerpc_security_features __read_mostly = SEC_FTR_DEFAULT;
+ 
++enum count_cache_flush_type {
++	COUNT_CACHE_FLUSH_NONE	= 0x1,
++	COUNT_CACHE_FLUSH_SW	= 0x2,
++	COUNT_CACHE_FLUSH_HW	= 0x4,
++};
++static enum count_cache_flush_type count_cache_flush_type = COUNT_CACHE_FLUSH_NONE;
++
++bool barrier_nospec_enabled;
++static bool no_nospec;
++static bool btb_flush_enabled;
++#ifdef CONFIG_PPC_FSL_BOOK3E
++static bool no_spectrev2;
++#endif
++
++static void enable_barrier_nospec(bool enable)
++{
++	barrier_nospec_enabled = enable;
++	do_barrier_nospec_fixups(enable);
++}
++
++void setup_barrier_nospec(void)
++{
++	bool enable;
++
++	/*
++	 * It would make sense to check SEC_FTR_SPEC_BAR_ORI31 below as well.
++	 * But there's a good reason not to. The two flags we check below are
++	 * both are enabled by default in the kernel, so if the hcall is not
++	 * functional they will be enabled.
++	 * On a system where the host firmware has been updated (so the ori
++	 * functions as a barrier), but on which the hypervisor (KVM/Qemu) has
++	 * not been updated, we would like to enable the barrier. Dropping the
++	 * check for SEC_FTR_SPEC_BAR_ORI31 achieves that. The only downside is
++	 * we potentially enable the barrier on systems where the host firmware
++	 * is not updated, but that's harmless as it's a no-op.
++	 */
++	enable = security_ftr_enabled(SEC_FTR_FAVOUR_SECURITY) &&
++		 security_ftr_enabled(SEC_FTR_BNDS_CHK_SPEC_BAR);
++
++	if (!no_nospec)
++		enable_barrier_nospec(enable);
++}
++
++static int __init handle_nospectre_v1(char *p)
++{
++	no_nospec = true;
++
++	return 0;
++}
++early_param("nospectre_v1", handle_nospectre_v1);
++
++#ifdef CONFIG_DEBUG_FS
++static int barrier_nospec_set(void *data, u64 val)
++{
++	switch (val) {
++	case 0:
++	case 1:
++		break;
++	default:
++		return -EINVAL;
++	}
++
++	if (!!val == !!barrier_nospec_enabled)
++		return 0;
++
++	enable_barrier_nospec(!!val);
++
++	return 0;
++}
++
++static int barrier_nospec_get(void *data, u64 *val)
++{
++	*val = barrier_nospec_enabled ? 1 : 0;
++	return 0;
++}
++
++DEFINE_SIMPLE_ATTRIBUTE(fops_barrier_nospec,
++			barrier_nospec_get, barrier_nospec_set, "%llu\n");
++
++static __init int barrier_nospec_debugfs_init(void)
++{
++	debugfs_create_file("barrier_nospec", 0600, powerpc_debugfs_root, NULL,
++			    &fops_barrier_nospec);
++	return 0;
++}
++device_initcall(barrier_nospec_debugfs_init);
++#endif /* CONFIG_DEBUG_FS */
++
++#ifdef CONFIG_PPC_FSL_BOOK3E
++static int __init handle_nospectre_v2(char *p)
++{
++	no_spectrev2 = true;
++
++	return 0;
++}
++early_param("nospectre_v2", handle_nospectre_v2);
++void setup_spectre_v2(void)
++{
++	if (no_spectrev2)
++		do_btb_flush_fixups();
++	else
++		btb_flush_enabled = true;
++}
++#endif /* CONFIG_PPC_FSL_BOOK3E */
++
++#ifdef CONFIG_PPC_BOOK3S_64
+ ssize_t cpu_show_meltdown(struct device *dev, struct device_attribute *attr, char *buf)
+ {
+ 	bool thread_priv;
+@@ -46,25 +155,39 @@ ssize_t cpu_show_meltdown(struct device *dev, struct device_attribute *attr, cha
+ 
+ 	return sprintf(buf, "Vulnerable\n");
+ }
++#endif
+ 
+ ssize_t cpu_show_spectre_v1(struct device *dev, struct device_attribute *attr, char *buf)
+ {
+- -	if (!security_ftr_enabled(SEC_FTR_BNDS_CHK_SPEC_BAR))
+- -		return sprintf(buf, "Not affected\n");
++	struct seq_buf s;
+ 
+- -	return sprintf(buf, "Vulnerable\n");
++	seq_buf_init(&s, buf, PAGE_SIZE - 1);
++
++	if (security_ftr_enabled(SEC_FTR_BNDS_CHK_SPEC_BAR)) {
++		if (barrier_nospec_enabled)
++			seq_buf_printf(&s, "Mitigation: __user pointer sanitization");
++		else
++			seq_buf_printf(&s, "Vulnerable");
++
++		if (security_ftr_enabled(SEC_FTR_SPEC_BAR_ORI31))
++			seq_buf_printf(&s, ", ori31 speculation barrier enabled");
++
++		seq_buf_printf(&s, "\n");
++	} else
++		seq_buf_printf(&s, "Not affected\n");
++
++	return s.len;
+ }
+ 
+ ssize_t cpu_show_spectre_v2(struct device *dev, struct device_attribute *attr, char *buf)
+ {
+- -	bool bcs, ccd, ori;
+ 	struct seq_buf s;
++	bool bcs, ccd;
+ 
+ 	seq_buf_init(&s, buf, PAGE_SIZE - 1);
+ 
+ 	bcs = security_ftr_enabled(SEC_FTR_BCCTRL_SERIALISED);
+ 	ccd = security_ftr_enabled(SEC_FTR_COUNT_CACHE_DISABLED);
+- -	ori = security_ftr_enabled(SEC_FTR_SPEC_BAR_ORI31);
+ 
+ 	if (bcs || ccd) {
+ 		seq_buf_printf(&s, "Mitigation: ");
+@@ -77,17 +200,23 @@ ssize_t cpu_show_spectre_v2(struct device *dev, struct device_attribute *attr, c
+ 
+ 		if (ccd)
+ 			seq_buf_printf(&s, "Indirect branch cache disabled");
+- -	} else
++	} else if (count_cache_flush_type != COUNT_CACHE_FLUSH_NONE) {
++		seq_buf_printf(&s, "Mitigation: Software count cache flush");
++
++		if (count_cache_flush_type == COUNT_CACHE_FLUSH_HW)
++			seq_buf_printf(&s, " (hardware accelerated)");
++	} else if (btb_flush_enabled) {
++		seq_buf_printf(&s, "Mitigation: Branch predictor state flush");
++	} else {
+ 		seq_buf_printf(&s, "Vulnerable");
+- -
+- -	if (ori)
+- -		seq_buf_printf(&s, ", ori31 speculation barrier enabled");
++	}
+ 
+ 	seq_buf_printf(&s, "\n");
+ 
+ 	return s.len;
+ }
+ 
++#ifdef CONFIG_PPC_BOOK3S_64
+ /*
+  * Store-forwarding barrier support.
+  */
+@@ -235,3 +364,71 @@ static __init int stf_barrier_debugfs_init(void)
+ }
+ device_initcall(stf_barrier_debugfs_init);
+ #endif /* CONFIG_DEBUG_FS */
++
++static void toggle_count_cache_flush(bool enable)
++{
++	if (!enable || !security_ftr_enabled(SEC_FTR_FLUSH_COUNT_CACHE)) {
++		patch_instruction_site(&patch__call_flush_count_cache, PPC_INST_NOP);
++		count_cache_flush_type = COUNT_CACHE_FLUSH_NONE;
++		pr_info("count-cache-flush: software flush disabled.\n");
++		return;
++	}
++
++	patch_branch_site(&patch__call_flush_count_cache,
++			  (u64)&flush_count_cache, BRANCH_SET_LINK);
++
++	if (!security_ftr_enabled(SEC_FTR_BCCTR_FLUSH_ASSIST)) {
++		count_cache_flush_type = COUNT_CACHE_FLUSH_SW;
++		pr_info("count-cache-flush: full software flush sequence enabled.\n");
++		return;
++	}
++
++	patch_instruction_site(&patch__flush_count_cache_return, PPC_INST_BLR);
++	count_cache_flush_type = COUNT_CACHE_FLUSH_HW;
++	pr_info("count-cache-flush: hardware assisted flush sequence enabled\n");
++}
++
++void setup_count_cache_flush(void)
++{
++	toggle_count_cache_flush(true);
++}
++
++#ifdef CONFIG_DEBUG_FS
++static int count_cache_flush_set(void *data, u64 val)
++{
++	bool enable;
++
++	if (val == 1)
++		enable = true;
++	else if (val == 0)
++		enable = false;
++	else
++		return -EINVAL;
++
++	toggle_count_cache_flush(enable);
++
++	return 0;
++}
++
++static int count_cache_flush_get(void *data, u64 *val)
++{
++	if (count_cache_flush_type == COUNT_CACHE_FLUSH_NONE)
++		*val = 0;
++	else
++		*val = 1;
++
++	return 0;
++}
++
++DEFINE_SIMPLE_ATTRIBUTE(fops_count_cache_flush, count_cache_flush_get,
++			count_cache_flush_set, "%llu\n");
++
++static __init int count_cache_flush_debugfs_init(void)
++{
++	debugfs_create_file("count_cache_flush", 0600, powerpc_debugfs_root,
++			    NULL, &fops_count_cache_flush);
++	return 0;
++}
++device_initcall(count_cache_flush_debugfs_init);
++#endif /* CONFIG_DEBUG_FS */
++#endif /* CONFIG_PPC_BOOK3S_64 */
+diff --git a/arch/powerpc/kernel/setup-common.c b/arch/powerpc/kernel/setup-common.c
+index 008447664643..c58364c74dad 100644
+- --- a/arch/powerpc/kernel/setup-common.c
++++ b/arch/powerpc/kernel/setup-common.c
+@@ -937,6 +937,9 @@ void __init setup_arch(char **cmdline_p)
+ 	if (ppc_md.setup_arch)
+ 		ppc_md.setup_arch();
+ 
++	setup_barrier_nospec();
++	setup_spectre_v2();
++
+ 	paging_init();
+ 
+ 	/* Initialize the MMU context management stuff. */
+diff --git a/arch/powerpc/kernel/vmlinux.lds.S b/arch/powerpc/kernel/vmlinux.lds.S
+index c89ffb88fa3b..b0cf4af7ba84 100644
+- --- a/arch/powerpc/kernel/vmlinux.lds.S
++++ b/arch/powerpc/kernel/vmlinux.lds.S
+@@ -153,8 +153,25 @@ SECTIONS
+ 		*(__rfi_flush_fixup)
+ 		__stop___rfi_flush_fixup = .;
+ 	}
+- -#endif
++#endif /* CONFIG_PPC64 */
++
++#ifdef CONFIG_PPC_BARRIER_NOSPEC
++	. = ALIGN(8);
++	__spec_barrier_fixup : AT(ADDR(__spec_barrier_fixup) - LOAD_OFFSET) {
++		__start___barrier_nospec_fixup = .;
++		*(__barrier_nospec_fixup)
++		__stop___barrier_nospec_fixup = .;
++	}
++#endif /* CONFIG_PPC_BARRIER_NOSPEC */
+ 
++#ifdef CONFIG_PPC_FSL_BOOK3E
++	. = ALIGN(8);
++	__spec_btb_flush_fixup : AT(ADDR(__spec_btb_flush_fixup) - LOAD_OFFSET) {
++		__start__btb_flush_fixup = .;
++		*(__btb_flush_fixup)
++		__stop__btb_flush_fixup = .;
++	}
++#endif
+ 	EXCEPTION_TABLE(0)
+ 
+ 	NOTES :kernel :notes
+diff --git a/arch/powerpc/kvm/bookehv_interrupts.S b/arch/powerpc/kvm/bookehv_interrupts.S
+index 81bd8a07aa51..612b7f6a887f 100644
+- --- a/arch/powerpc/kvm/bookehv_interrupts.S
++++ b/arch/powerpc/kvm/bookehv_interrupts.S
+@@ -75,6 +75,10 @@
+ 	PPC_LL	r1, VCPU_HOST_STACK(r4)
+ 	PPC_LL	r2, HOST_R2(r1)
+ 
++START_BTB_FLUSH_SECTION
++	BTB_FLUSH(r10)
++END_BTB_FLUSH_SECTION
++
+ 	mfspr	r10, SPRN_PID
+ 	lwz	r8, VCPU_HOST_PID(r4)
+ 	PPC_LL	r11, VCPU_SHARED(r4)
+diff --git a/arch/powerpc/kvm/e500_emulate.c b/arch/powerpc/kvm/e500_emulate.c
+index 990db69a1d0b..fa88f641ac03 100644
+- --- a/arch/powerpc/kvm/e500_emulate.c
++++ b/arch/powerpc/kvm/e500_emulate.c
+@@ -277,6 +277,13 @@ int kvmppc_core_emulate_mtspr_e500(struct kvm_vcpu *vcpu, int sprn, ulong spr_va
+ 		vcpu->arch.pwrmgtcr0 = spr_val;
+ 		break;
+ 
++	case SPRN_BUCSR:
++		/*
++		 * If we are here, it means that we have already flushed the
++		 * branch predictor, so just return to guest.
++		 */
++		break;
++
+ 	/* extra exceptions */
+ #ifdef CONFIG_SPE_POSSIBLE
+ 	case SPRN_IVOR32:
+diff --git a/arch/powerpc/lib/code-patching.c b/arch/powerpc/lib/code-patching.c
+index 130405158afa..c5154817178b 100644
+- --- a/arch/powerpc/lib/code-patching.c
++++ b/arch/powerpc/lib/code-patching.c
+@@ -206,6 +206,22 @@ int patch_branch(unsigned int *addr, unsigned long target, int flags)
+ 	return patch_instruction(addr, create_branch(addr, target, flags));
+ }
+ 
++int patch_branch_site(s32 *site, unsigned long target, int flags)
++{
++	unsigned int *addr;
++
++	addr = (unsigned int *)((unsigned long)site + *site);
++	return patch_instruction(addr, create_branch(addr, target, flags));
++}
++
++int patch_instruction_site(s32 *site, unsigned int instr)
++{
++	unsigned int *addr;
++
++	addr = (unsigned int *)((unsigned long)site + *site);
++	return patch_instruction(addr, instr);
++}
++
+ bool is_offset_in_branch_range(long offset)
+ {
+ 	/*
+diff --git a/arch/powerpc/lib/feature-fixups.c b/arch/powerpc/lib/feature-fixups.c
+index e1bcdc32a851..de7861e09b41 100644
+- --- a/arch/powerpc/lib/feature-fixups.c
++++ b/arch/powerpc/lib/feature-fixups.c
+@@ -277,8 +277,101 @@ void do_rfi_flush_fixups(enum l1d_flush_type types)
+ 		(types &  L1D_FLUSH_MTTRIG)     ? "mttrig type"
+ 						: "unknown");
+ }
++
++void do_barrier_nospec_fixups_range(bool enable, void *fixup_start, void *fixup_end)
++{
++	unsigned int instr, *dest;
++	long *start, *end;
++	int i;
++
++	start = fixup_start;
++	end = fixup_end;
++
++	instr = 0x60000000; /* nop */
++
++	if (enable) {
++		pr_info("barrier-nospec: using ORI speculation barrier\n");
++		instr = 0x63ff0000; /* ori 31,31,0 speculation barrier */
++	}
++
++	for (i = 0; start < end; start++, i++) {
++		dest = (void *)start + *start;
++
++		pr_devel("patching dest %lx\n", (unsigned long)dest);
++		patch_instruction(dest, instr);
++	}
++
++	printk(KERN_DEBUG "barrier-nospec: patched %d locations\n", i);
++}
++
+ #endif /* CONFIG_PPC_BOOK3S_64 */
+ 
++#ifdef CONFIG_PPC_BARRIER_NOSPEC
++void do_barrier_nospec_fixups(bool enable)
++{
++	void *start, *end;
++
++	start = PTRRELOC(&__start___barrier_nospec_fixup),
++	end = PTRRELOC(&__stop___barrier_nospec_fixup);
++
++	do_barrier_nospec_fixups_range(enable, start, end);
++}
++#endif /* CONFIG_PPC_BARRIER_NOSPEC */
++
++#ifdef CONFIG_PPC_FSL_BOOK3E
++void do_barrier_nospec_fixups_range(bool enable, void *fixup_start, void *fixup_end)
++{
++	unsigned int instr[2], *dest;
++	long *start, *end;
++	int i;
++
++	start = fixup_start;
++	end = fixup_end;
++
++	instr[0] = PPC_INST_NOP;
++	instr[1] = PPC_INST_NOP;
++
++	if (enable) {
++		pr_info("barrier-nospec: using isync; sync as speculation barrier\n");
++		instr[0] = PPC_INST_ISYNC;
++		instr[1] = PPC_INST_SYNC;
++	}
++
++	for (i = 0; start < end; start++, i++) {
++		dest = (void *)start + *start;
++
++		pr_devel("patching dest %lx\n", (unsigned long)dest);
++		patch_instruction(dest, instr[0]);
++		patch_instruction(dest + 1, instr[1]);
++	}
++
++	printk(KERN_DEBUG "barrier-nospec: patched %d locations\n", i);
++}
++
++static void patch_btb_flush_section(long *curr)
++{
++	unsigned int *start, *end;
++
++	start = (void *)curr + *curr;
++	end = (void *)curr + *(curr + 1);
++	for (; start < end; start++) {
++		pr_devel("patching dest %lx\n", (unsigned long)start);
++		patch_instruction(start, PPC_INST_NOP);
++	}
++}
++
++void do_btb_flush_fixups(void)
++{
++	long *start, *end;
++
++	start = PTRRELOC(&__start__btb_flush_fixup);
++	end = PTRRELOC(&__stop__btb_flush_fixup);
++
++	for (; start < end; start += 2)
++		patch_btb_flush_section(start);
++}
++#endif /* CONFIG_PPC_FSL_BOOK3E */
++
+ void do_lwsync_fixups(unsigned long value, void *fixup_start, void *fixup_end)
+ {
+ 	long *start, *end;
+diff --git a/arch/powerpc/mm/tlb_low_64e.S b/arch/powerpc/mm/tlb_low_64e.S
+index eb82d787d99a..b7e9c09dfe19 100644
+- --- a/arch/powerpc/mm/tlb_low_64e.S
++++ b/arch/powerpc/mm/tlb_low_64e.S
+@@ -69,6 +69,13 @@ END_FTR_SECTION_IFSET(CPU_FTR_EMB_HV)
+ 	std	r15,EX_TLB_R15(r12)
+ 	std	r10,EX_TLB_CR(r12)
+ #ifdef CONFIG_PPC_FSL_BOOK3E
++START_BTB_FLUSH_SECTION
++	mfspr r11, SPRN_SRR1
++	andi. r10,r11,MSR_PR
++	beq 1f
++	BTB_FLUSH(r10)
++1:
++END_BTB_FLUSH_SECTION
+ 	std	r7,EX_TLB_R7(r12)
+ #endif
+ 	TLB_MISS_PROLOG_STATS
+diff --git a/arch/powerpc/platforms/powernv/setup.c b/arch/powerpc/platforms/powernv/setup.c
+index fd143c934768..888aa9584e94 100644
+- --- a/arch/powerpc/platforms/powernv/setup.c
++++ b/arch/powerpc/platforms/powernv/setup.c
+@@ -77,6 +77,12 @@ static void init_fw_feat_flags(struct device_node *np)
+ 	if (fw_feature_is("enabled", "fw-count-cache-disabled", np))
+ 		security_ftr_set(SEC_FTR_COUNT_CACHE_DISABLED);
+ 
++	if (fw_feature_is("enabled", "fw-count-cache-flush-bcctr2,0,0", np))
++		security_ftr_set(SEC_FTR_BCCTR_FLUSH_ASSIST);
++
++	if (fw_feature_is("enabled", "needs-count-cache-flush-on-context-switch", np))
++		security_ftr_set(SEC_FTR_FLUSH_COUNT_CACHE);
++
+ 	/*
+ 	 * The features below are enabled by default, so we instead look to see
+ 	 * if firmware has *disabled* them, and clear them if so.
+@@ -123,6 +129,7 @@ static void pnv_setup_rfi_flush(void)
+ 		  security_ftr_enabled(SEC_FTR_L1D_FLUSH_HV));
+ 
+ 	setup_rfi_flush(type, enable);
++	setup_count_cache_flush();
+ }
+ 
+ static void __init pnv_setup_arch(void)
+diff --git a/arch/powerpc/platforms/pseries/setup.c b/arch/powerpc/platforms/pseries/setup.c
+index 45f814041448..6a0ad56e89b9 100644
+- --- a/arch/powerpc/platforms/pseries/setup.c
++++ b/arch/powerpc/platforms/pseries/setup.c
+@@ -484,6 +484,12 @@ static void init_cpu_char_feature_flags(struct h_cpu_char_result *result)
+ 	if (result->character & H_CPU_CHAR_COUNT_CACHE_DISABLED)
+ 		security_ftr_set(SEC_FTR_COUNT_CACHE_DISABLED);
+ 
++	if (result->character & H_CPU_CHAR_BCCTR_FLUSH_ASSIST)
++		security_ftr_set(SEC_FTR_BCCTR_FLUSH_ASSIST);
++
++	if (result->behaviour & H_CPU_BEHAV_FLUSH_COUNT_CACHE)
++		security_ftr_set(SEC_FTR_FLUSH_COUNT_CACHE);
++
+ 	/*
+ 	 * The features below are enabled by default, so we instead look to see
+ 	 * if firmware has *disabled* them, and clear them if so.
+@@ -534,6 +540,7 @@ void pseries_setup_rfi_flush(void)
+ 		 security_ftr_enabled(SEC_FTR_L1D_FLUSH_PR);
+ 
+ 	setup_rfi_flush(types, enable);
++	setup_count_cache_flush();
+ }
+ 
+ static void __init pSeries_setup_arch(void)
+- -- 
+2.20.1
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIcBAEBAgAGBQJcngBeAAoJEFHr6jzI4aWAEAcP/jR1tS4sWnyzjbNPPDb49qWi
+ZFUERlA7UYuGn2ikJNavmUfVLze5NMzI73g7dgS1JF3DiiV2/gqHsUYtDvODoR0f
+6H1KUYo2Z+eU2OtBvcauPuFTMcWGqT/YQUt5RJ5vV2yf/YJIBkXxbLl4Z64zOHyF
+K094Hq/oWXdl2Oj8Jsdb2MOg7wq6YJCYQ3BA3MN1Vr6SfKwoU265dNxR+bM0mFxd
+9g9Hx7/Kh0q7PL+BkjH/nt+czZ92NC5k3TKv+E1UAQO4BGJys+gHFHUgvrWarl/H
+2hvaw9FQbLHhBuIWTJaTGbiWL2LcV7j8KK1+SjjMTBkl3DlLhkpgXw2f0F1SaSaT
+KxekFNxz5GaIG2d07HybvCRWhEoUf2LC/ey34Hu60hjxRWiZayeZZuAztIhS22u1
+95MFUkJykjfztOzSfW/FFuzxun/3ZkY4mDClGtGGRYJ72UC6fSW4pxVinwQeZn91
+HTIPCF/URYNh5F3CMSN6kP6Z6npp+C6vs6inEW1n6y98YXKl8U0cXg9vpsKkSQ2/
+Puh1wQXFIa3zQkZTsZZIBYnPxLKaavnyfRzkRcGpdX/7EZUzQs9Am3WXgL5wPtfb
+S4irV1qBsd2wnMLop00yVXoiZXUH/llFOFWwYfjkgcjebJdZ++hmfGH69K1F5eKI
+XZNhnxpR9ykE5QkhlybW
+=QXu0
+-----END PGP SIGNATURE-----
