@@ -6,38 +6,38 @@ X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 16632C4360F
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 12833C43381
 	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Mar 2019 11:52:03 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 83A5A2183E
+	by mail.kernel.org (Postfix) with ESMTPS id 839DC2082F
 	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Mar 2019 11:52:02 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 83A5A2183E
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 839DC2082F
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44W0Hb1gqgzDqDr
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Mar 2019 22:43:39 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44W0Kf6KTFzDqMP
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Mar 2019 22:45:26 +1100 (AEDT)
 Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44Vzvw5xjbzDqSx
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Mar 2019 22:26:36 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44Vzvx6QbzzDqT3
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Mar 2019 22:26:37 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: by ozlabs.org (Postfix)
- id 44Vzvw4d4hz9sPB; Fri, 29 Mar 2019 22:26:36 +1100 (AEDT)
+ id 44Vzvx4wg6z9sPB; Fri, 29 Mar 2019 22:26:37 +1100 (AEDT)
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 44Vzvw3jhRz9sR3; Fri, 29 Mar 2019 22:26:36 +1100 (AEDT)
+ id 44Vzvx2sJkz9sQq; Fri, 29 Mar 2019 22:26:37 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: stable@vger.kernel.org,
 	gregkh@linuxfoundation.org
-Subject: [PATCH stable v4.14 08/32] powerpc/64: Disable the speculation
- barrier from the command line
-Date: Fri, 29 Mar 2019 22:25:56 +1100
-Message-Id: <20190329112620.14489-9-mpe@ellerman.id.au>
+Subject: [PATCH stable v4.14 09/32] powerpc/64: Make stf barrier PPC_BOOK3S_64
+ specific.
+Date: Fri, 29 Mar 2019 22:25:57 +1100
+Message-Id: <20190329112620.14489-10-mpe@ellerman.id.au>
 X-Mailer: git-send-email 2.20.1
 In-Reply-To: <20190329112620.14489-1-mpe@ellerman.id.au>
 References: <20190329112620.14489-1-mpe@ellerman.id.au>
@@ -61,49 +61,34 @@ Sender: "Linuxppc-dev"
 
 From: Diana Craciun <diana.craciun@nxp.com>
 
-commit cf175dc315f90185128fb061dc05b6fbb211aa2f upstream.
+commit 6453b532f2c8856a80381e6b9a1f5ea2f12294df upstream.
 
-The speculation barrier can be disabled from the command line
-with the parameter: "nospectre_v1".
+NXP Book3E platforms are not vulnerable to speculative store
+bypass, so make the mitigations PPC_BOOK3S_64 specific.
 
 Signed-off-by: Diana Craciun <diana.craciun@nxp.com>
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- arch/powerpc/kernel/security.c | 12 +++++++++++-
- 1 file changed, 11 insertions(+), 1 deletion(-)
+ arch/powerpc/kernel/security.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
 diff --git a/arch/powerpc/kernel/security.c b/arch/powerpc/kernel/security.c
-index 4cb8f1f7b593..79f9397998ed 100644
+index 79f9397998ed..8ee1ade845c6 100644
 --- a/arch/powerpc/kernel/security.c
 +++ b/arch/powerpc/kernel/security.c
-@@ -16,6 +16,7 @@
- unsigned long powerpc_security_features __read_mostly = SEC_FTR_DEFAULT;
- 
- bool barrier_nospec_enabled;
-+static bool no_nospec;
- 
- static void enable_barrier_nospec(bool enable)
- {
-@@ -42,9 +43,18 @@ void setup_barrier_nospec(void)
- 	enable = security_ftr_enabled(SEC_FTR_FAVOUR_SECURITY) &&
- 		 security_ftr_enabled(SEC_FTR_BNDS_CHK_SPEC_BAR);
- 
--	enable_barrier_nospec(enable);
-+	if (!no_nospec)
-+		enable_barrier_nospec(enable);
+@@ -176,6 +176,7 @@ ssize_t cpu_show_spectre_v2(struct device *dev, struct device_attribute *attr, c
+ 	return s.len;
  }
  
-+static int __init handle_nospectre_v1(char *p)
-+{
-+	no_nospec = true;
-+
-+	return 0;
-+}
-+early_param("nospectre_v1", handle_nospectre_v1);
-+
- #ifdef CONFIG_DEBUG_FS
- static int barrier_nospec_set(void *data, u64 val)
- {
++#ifdef CONFIG_PPC_BOOK3S_64
+ /*
+  * Store-forwarding barrier support.
+  */
+@@ -323,3 +324,4 @@ static __init int stf_barrier_debugfs_init(void)
+ }
+ device_initcall(stf_barrier_debugfs_init);
+ #endif /* CONFIG_DEBUG_FS */
++#endif /* CONFIG_PPC_BOOK3S_64 */
 -- 
 2.20.1
 
