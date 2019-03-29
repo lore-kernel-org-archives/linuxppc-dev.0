@@ -6,37 +6,37 @@ X-Spam-Status: No, score=-3.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,
 	URIBL_BLOCKED autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 258BDC43381
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Mar 2019 16:06:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C42CFC43381
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Mar 2019 16:08:52 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 5F1442070B
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Mar 2019 16:06:56 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 3A5212070B
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Mar 2019 16:08:52 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="LDrWQ3PM"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5F1442070B
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="odSO37UT"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3A5212070B
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linuxfoundation.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44W67L3ccHzDqd3
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 30 Mar 2019 03:06:54 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+	by lists.ozlabs.org (Postfix) with ESMTP id 44W69Y62mNzDqT7
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 30 Mar 2019 03:08:49 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44W4qq192mzDqLC
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Mar 2019 02:08:23 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44W4qt60SXzDqCM
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Mar 2019 02:08:26 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=linuxfoundation.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="LDrWQ3PM"; 
+ unprotected) header.d=kernel.org header.i=@kernel.org header.b="odSO37UT"; 
  dkim-atps=neutral
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 44W4qp6YZyz8tDh
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Mar 2019 02:08:22 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 44W4qt3ySHz8tDh
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Mar 2019 02:08:26 +1100 (AEDT)
 Received: by ozlabs.org (Postfix)
- id 44W4qp5TWHz9sQq; Sat, 30 Mar 2019 02:08:22 +1100 (AEDT)
+ id 44W4qt2dD4z9sPv; Sat, 30 Mar 2019 02:08:26 +1100 (AEDT)
 Authentication-Results: ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=linuxfoundation.org
  (client-ip=198.145.29.99; helo=mail.kernel.org;
@@ -44,34 +44,34 @@ Authentication-Results: ozlabs.org;
 Authentication-Results: ozlabs.org; dmarc=none (p=none dis=none)
  header.from=linuxfoundation.org
 Authentication-Results: ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="LDrWQ3PM"; 
+ unprotected) header.d=kernel.org header.i=@kernel.org header.b="odSO37UT"; 
  dkim-atps=neutral
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 44W4qp2zQtz9sPv
- for <linuxppc-dev@ozlabs.org>; Sat, 30 Mar 2019 02:08:22 +1100 (AEDT)
+ by ozlabs.org (Postfix) with ESMTPS id 44W4qs4dgLz9sPx
+ for <linuxppc-dev@ozlabs.org>; Sat, 30 Mar 2019 02:08:25 +1100 (AEDT)
 Received: from localhost (83-86-89-107.cable.dynamic.v4.ziggo.nl
  [83.86.89.107])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id 721532075E;
- Fri, 29 Mar 2019 15:08:20 +0000 (UTC)
+ by mail.kernel.org (Postfix) with ESMTPSA id 1FC042184D;
+ Fri, 29 Mar 2019 15:08:22 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1553872100;
- bh=0PqfPOdsgq7lR8314H1KCKfc6ua29soFassgFRE1VeQ=;
+ s=default; t=1553872103;
+ bh=Oj5IyVALa1TiUULbBPUjN/rFtgaICPe4mEBsvVrsAeA=;
  h=Subject:To:Cc:From:Date:In-Reply-To:From;
- b=LDrWQ3PM88Sv5WO5FPlQzxuCTns2+nC2nm5/IeFr/RWmw+ebX5GHLcTFCQWFxyjg4
- ZOkP8hkasjgBLBqev6LxSlyQhPfInc3aS0Ox13FLxS2+PdkIkw1M35FKhDsIWvRfxt
- hX2EQI8P4Far9AdlDwwpFJfjuD5lOF2UTQC5zelg=
-Subject: Patch "powerpc/fsl: Flush branch predictor when entering KVM" has
- been added to the 4.19-stable tree
+ b=odSO37UTY4uzTD2uIHqk+B0gKYAq9ign7tQCjudYOsivzLbFYt5oaOcn4kmpU36Qo
+ /KW2ZOUjSalHBC6RKot9nF4jjWJz6niy3p6xZHBT+oN6dcUPI6fc9wUdB5/kRmaxWV
+ AcMxhcCAQiOYGg28uCX88wddZZigYe+YpB8KuPpk=
+Subject: Patch "powerpc/fsl: Flush the branch predictor at each kernel entry
+ (32 bit)" has been added to the 4.19-stable tree
 To: christophe.leroy@c-s.fr, diana.craciun@nxp.com, gregkh@linuxfoundation.org,
  linuxppc-dev@ozlabs.org, mpe@ellerman.id.au, msuchanek@suse.de
 From: <gregkh@linuxfoundation.org>
 Date: Fri, 29 Mar 2019 16:07:54 +0100
-In-Reply-To: <20190329112620.14489-28-mpe@ellerman.id.au>
-Message-ID: <1553872074153233@kroah.com>
+In-Reply-To: <20190329112620.14489-27-mpe@ellerman.id.au>
+Message-ID: <155387207423311@kroah.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ANSI_X3.4-1968
 Content-Transfer-Encoding: 8bit
@@ -96,13 +96,13 @@ Sender: "Linuxppc-dev"
 
 This is a note to let you know that I've just added the patch titled
 
-    powerpc/fsl: Flush branch predictor when entering KVM
+    powerpc/fsl: Flush the branch predictor at each kernel entry (32 bit)
 
 to the 4.19-stable tree which can be found at:
     http://www.kernel.org/git/?p=linux/kernel/git/stable/stable-queue.git;a=summary
 
 The filename of the patch is:
-     powerpc-fsl-flush-branch-predictor-when-entering-kvm.patch
+     powerpc-fsl-flush-the-branch-predictor-at-each-kernel-entry-32-bit.patch
 and it can be found in the queue-4.19 subdirectory.
 
 If you, or anyone else, feels it should not be added to the stable tree,
@@ -111,40 +111,85 @@ please let <stable@vger.kernel.org> know about it.
 
 From foo@baz Fri Mar 29 16:04:51 CET 2019
 From: Michael Ellerman <mpe@ellerman.id.au>
-Date: Fri, 29 Mar 2019 22:26:15 +1100
-Subject: powerpc/fsl: Flush branch predictor when entering KVM
+Date: Fri, 29 Mar 2019 22:26:14 +1100
+Subject: powerpc/fsl: Flush the branch predictor at each kernel entry (32 bit)
 To: stable@vger.kernel.org, gregkh@linuxfoundation.org
 Cc: linuxppc-dev@ozlabs.org, diana.craciun@nxp.com, msuchanek@suse.de, christophe.leroy@c-s.fr
-Message-ID: <20190329112620.14489-28-mpe@ellerman.id.au>
+Message-ID: <20190329112620.14489-27-mpe@ellerman.id.au>
 
 From: Diana Craciun <diana.craciun@nxp.com>
 
-commit e7aa61f47b23afbec41031bc47ca8d6cb6516abc upstream.
+commit 7fef436295bf6c05effe682c8797dfcb0deb112a upstream.
 
-Switching from the guest to host is another place
-where the speculative accesses can be exploited.
-Flush the branch predictor when entering KVM.
+In order to protect against speculation attacks on
+indirect branches, the branch predictor is flushed at
+kernel entry to protect for the following situations:
+- userspace process attacking another userspace process
+- userspace process attacking the kernel
+Basically when the privillege level change (i.e.the kernel
+is entered), the branch predictor state is flushed.
 
 Signed-off-by: Diana Craciun <diana.craciun@nxp.com>
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 ---
- arch/powerpc/kvm/bookehv_interrupts.S |    4 ++++
- 1 file changed, 4 insertions(+)
+ arch/powerpc/kernel/head_booke.h     |    6 ++++++
+ arch/powerpc/kernel/head_fsl_booke.S |   15 +++++++++++++++
+ 2 files changed, 21 insertions(+)
 
---- a/arch/powerpc/kvm/bookehv_interrupts.S
-+++ b/arch/powerpc/kvm/bookehv_interrupts.S
-@@ -75,6 +75,10 @@
- 	PPC_LL	r1, VCPU_HOST_STACK(r4)
- 	PPC_LL	r2, HOST_R2(r1)
- 
+--- a/arch/powerpc/kernel/head_booke.h
++++ b/arch/powerpc/kernel/head_booke.h
+@@ -43,6 +43,9 @@
+ 	andi.	r11, r11, MSR_PR;	/* check whether user or kernel    */\
+ 	mr	r11, r1;						     \
+ 	beq	1f;							     \
++START_BTB_FLUSH_SECTION					\
++	BTB_FLUSH(r11)						\
++END_BTB_FLUSH_SECTION					\
+ 	/* if from user, start at top of this thread's kernel stack */       \
+ 	lwz	r11, THREAD_INFO-THREAD(r10);				     \
+ 	ALLOC_STACK_FRAME(r11, THREAD_SIZE);				     \
+@@ -128,6 +131,9 @@
+ 	stw	r9,_CCR(r8);		/* save CR on stack		   */\
+ 	mfspr	r11,exc_level_srr1;	/* check whether user or kernel    */\
+ 	DO_KVM	BOOKE_INTERRUPT_##intno exc_level_srr1;		             \
++START_BTB_FLUSH_SECTION								\
++	BTB_FLUSH(r10)									\
++END_BTB_FLUSH_SECTION								\
+ 	andi.	r11,r11,MSR_PR;						     \
+ 	mfspr	r11,SPRN_SPRG_THREAD;	/* if from user, start at top of   */\
+ 	lwz	r11,THREAD_INFO-THREAD(r11); /* this thread's kernel stack */\
+--- a/arch/powerpc/kernel/head_fsl_booke.S
++++ b/arch/powerpc/kernel/head_fsl_booke.S
+@@ -453,6 +453,13 @@ END_FTR_SECTION_IFSET(CPU_FTR_EMB_HV)
+ 	mfcr	r13
+ 	stw	r13, THREAD_NORMSAVE(3)(r10)
+ 	DO_KVM	BOOKE_INTERRUPT_DTLB_MISS SPRN_SRR1
 +START_BTB_FLUSH_SECTION
++	mfspr r11, SPRN_SRR1
++	andi. r10,r11,MSR_PR
++	beq 1f
 +	BTB_FLUSH(r10)
++1:
++END_BTB_FLUSH_SECTION
+ 	mfspr	r10, SPRN_DEAR		/* Get faulting address */
+ 
+ 	/* If we are faulting a kernel address, we have to use the
+@@ -547,6 +554,14 @@ END_FTR_SECTION_IFSET(CPU_FTR_EMB_HV)
+ 	mfcr	r13
+ 	stw	r13, THREAD_NORMSAVE(3)(r10)
+ 	DO_KVM	BOOKE_INTERRUPT_ITLB_MISS SPRN_SRR1
++START_BTB_FLUSH_SECTION
++	mfspr r11, SPRN_SRR1
++	andi. r10,r11,MSR_PR
++	beq 1f
++	BTB_FLUSH(r10)
++1:
 +END_BTB_FLUSH_SECTION
 +
- 	mfspr	r10, SPRN_PID
- 	lwz	r8, VCPU_HOST_PID(r4)
- 	PPC_LL	r11, VCPU_SHARED(r4)
+ 	mfspr	r10, SPRN_SRR0		/* Get faulting address */
+ 
+ 	/* If we are faulting a kernel address, we have to use the
 
 
 Patches currently in stable-queue which might be from mpe@ellerman.id.au are
