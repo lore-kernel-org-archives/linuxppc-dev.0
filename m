@@ -2,83 +2,53 @@ Return-Path: <SRS0=YrVw=SA=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.5 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-3.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_NEOMUTT autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EB184C43381
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Mar 2019 07:44:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 62AE7C43381
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Mar 2019 08:34:25 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6A1502173C
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Mar 2019 07:44:40 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="q+tln/dz"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6A1502173C
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	by mail.kernel.org (Postfix) with ESMTPS id D34342173C
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Mar 2019 08:34:24 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D34342173C
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linutronix.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44Vtzp6L6TzDqTs
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Mar 2019 18:44:38 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44Vw5B3vXkzDqS4
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Mar 2019 19:34:22 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=2607:f8b0:4864:20::643; helo=mail-pl1-x643.google.com;
- envelope-from=npiggin@gmail.com; receiver=<UNKNOWN>)
+ spf=none (mailfrom) smtp.mailfrom=linutronix.de
+ (client-ip=2a01:7a0:2:106d:700::1; helo=galois.linutronix.de;
+ envelope-from=bigeasy@linutronix.de; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="q+tln/dz"; 
- dkim-atps=neutral
-Received: from mail-pl1-x643.google.com (mail-pl1-x643.google.com
- [IPv6:2607:f8b0:4864:20::643])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ dmarc=none (p=none dis=none) header.from=linutronix.de
+Received: from Galois.linutronix.de (Galois.linutronix.de
+ [IPv6:2a01:7a0:2:106d:700::1])
+ (using TLSv1.2 with cipher DHE-RSA-AES256-SHA256 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44Vty82VwJzDq83
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Mar 2019 18:43:11 +1100 (AEDT)
-Received: by mail-pl1-x643.google.com with SMTP id g37so631804plb.5
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Mar 2019 00:43:11 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=from:to:cc:subject:date:message-id:mime-version
- :content-transfer-encoding;
- bh=9B6C4Fr3f7ZIhra2/vMOkAqKYKeA5EviZAXmdxyQmg4=;
- b=q+tln/dzdIVQ+BBw7cp3eZHuEIC6NiZ1RZK6xu1FFF3HMWBjcmPrpRonIIOFgiZJQJ
- bBOp9k+txH4G7ulds5cihN8FquNS2BBUtIraGGoVMExcP80YDfUiB8IS/0hmGtRNnUv7
- 8qGQQilV9Y+aBgGkLoK+CH2PWt2Mhn0heC7HgRyJfT0pB/Yu7Z4JGKdsINXY8no/TidH
- 2ioPsCP0CZ8z1OH1FblgiTKEE/KCd1uqTCBb6cZqVs6x76M4nUfTu1+9L6O5qThRI+9x
- ku2Rjbvrj0rmwqOcaVzCLI5smHwcJzcbaqclj72s7Yxh9TKKX5Ehgh8nlXAbcHc6aFo1
- GpHg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
- :content-transfer-encoding;
- bh=9B6C4Fr3f7ZIhra2/vMOkAqKYKeA5EviZAXmdxyQmg4=;
- b=GBRGv/EKh42o4psjPpiR2rGMgcmlZneJb6tWzZQy3exVAhog/guYekb/juRuZLaNvF
- sEU1/IaYxbF2afrnAn2ARWPeJ6JI5sHjnZfuRjkgeNhUZftXyXvChrzVmvmKyqDifByc
- DvR86tIySlbSlnH/9qSTeR2UvGsflGJz6EDQ4mW5r+hdESUkj0o5FMmn1oRIprCgVj/N
- tnAPZKY+yFaYjUPYqoi4cWEcU6Dq3v7EA+Frg3y2j+qUHDzu82E9iikmwok/A18omWhW
- 1qFcfHHQSH6DCPUQUSLkxQ6HSNjyllsQkEd47EhtIFWGil0wf24l1/24r4JXHfdnI8nA
- B7Hg==
-X-Gm-Message-State: APjAAAVgdoNTXL6LVOvNa146bEhA4oIrjHCncRajYKHp/D+LSlcelYwn
- RL8MIGYn2sOCZ7S/RdG/jSDOQVVe
-X-Google-Smtp-Source: APXvYqxNHDcbbtCJc0ZOgLu0xVK3L5uJfObE9wxXoadhMm1AVJKWHznz0HoXNTJefNkMuVMSGGuXkw==
-X-Received: by 2002:a17:902:2963:: with SMTP id
- g90mr47808054plb.182.1553845388633; 
- Fri, 29 Mar 2019 00:43:08 -0700 (PDT)
-Received: from bobo.local0.net ([58.84.105.43])
- by smtp.gmail.com with ESMTPSA id z6sm2212138pfz.65.2019.03.29.00.43.05
- (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
- Fri, 29 Mar 2019 00:43:08 -0700 (PDT)
-From: Nicholas Piggin <npiggin@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] powerpc/64s/radix: Fix radix segment exception handling
-Date: Fri, 29 Mar 2019 17:42:57 +1000
-Message-Id: <20190329074257.14428-1-npiggin@gmail.com>
-X-Mailer: git-send-email 2.20.1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44Vw3Z3gtfzDqLB
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Mar 2019 19:32:57 +1100 (AEDT)
+Received: from bigeasy by Galois.linutronix.de with local (Exim 4.80)
+ (envelope-from <bigeasy@linutronix.de>)
+ id 1h9mwP-000340-Au; Fri, 29 Mar 2019 09:32:45 +0100
+Date: Fri, 29 Mar 2019 09:32:45 +0100
+From: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+To: Suraj Jitindar Singh <sjitindarsingh@gmail.com>
+Subject: Re: [Qemu-ppc] pseries on qemu-system-ppc64le crashes in
+ doorbell_core_ipi()
+Message-ID: <20190329083244.m3dee76whnr2mzsk@linutronix.de>
+References: <20190327123615.rwhk6h3ayfurvapf@linutronix.de>
+ <7d97f3c6-4614-ead7-179a-e7e223ea3997@kaod.org>
+ <2bbc1490-400d-585e-d74b-924c570b4236@kaod.org>
+ <1553836851.2264.2.camel@gmail.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <1553836851.2264.2.camel@gmail.com>
+User-Agent: NeoMutt/20180716
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -90,72 +60,37 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "Aneesh Kumar K . V" <aneesh.kumar@linux.vnet.ibm.com>,
- Nicholas Piggin <npiggin@gmail.com>, Anton Blanchard <anton@samba.org>
+Cc: Nicholas Piggin <npiggin@gmail.com>, qemu-ppc@nongnu.org,
+ =?utf-8?Q?C=C3=A9dric?= Le Goater <clg@kaod.org>,
+ Paul Mackerras <paulus@samba.org>, tglx@linutronix.de,
+ linuxppc-dev@lists.ozlabs.org, David Gibson <david@gibson.dropbear.id.au>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Commit 48e7b76957 ("powerpc/64s/hash: Convert SLB miss handlers to C")
-broke the radix-mode segment exception handler. In radix mode, this is
-exception is not an SLB miss, rather it signals that the EA is outside
-the range translated by any page table.
+On 2019-03-29 16:20:51 [+1100], Suraj Jitindar Singh wrote:
+> 
+> Yeah the kernel must have used msgsndp which isn't implemented for TCG
+> yet. We use doorbells in linux but only for threads which are on the
+> same core.
 
-The commit lost the radix feature alternate code patch, which can
-cause faults to some EAs to kernel BUG at arch/powerpc/mm/slb.c:639!
+It is msgsndp as per instruction decode.
 
-The original radix code would send faults to slb_miss_large_addr,
-which would end up faulting due to slb_addr_limit being 0. This patch
-sends radix directly to do_bad_slb_fault, which is a bit clearer.
+> And when I try to construct a situation with more than 1 thread per
+> core (e.g. -smp 4,threads=4), I get "TCG cannot support more than 1
+> thread/core on a pseries machine".
+>
+> So I wonder why the guest thinks it can use msgsndp...
 
-Fixes: 48e7b76957 ("powerpc/64s/hash: Convert SLB miss handlers to C")
-Cc: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-Reported-by: Anton Blanchard <anton@samba.org>
-Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
----
- arch/powerpc/kernel/exceptions-64s.S | 12 ++++++++++++
- 1 file changed, 12 insertions(+)
+I see
+|# cat /sys/devices/system/cpu/cpu*/topology/thread_siblings_list
+|0
+|1
+|2
+|3
 
-diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
-index a5b8fbae56a0..9481a117e242 100644
---- a/arch/powerpc/kernel/exceptions-64s.S
-+++ b/arch/powerpc/kernel/exceptions-64s.S
-@@ -656,11 +656,17 @@ EXC_COMMON_BEGIN(data_access_slb_common)
- 	ld	r4,PACA_EXSLB+EX_DAR(r13)
- 	std	r4,_DAR(r1)
- 	addi	r3,r1,STACK_FRAME_OVERHEAD
-+BEGIN_MMU_FTR_SECTION
-+	/* HPT case, do SLB fault */
- 	bl	do_slb_fault
- 	cmpdi	r3,0
- 	bne-	1f
- 	b	fast_exception_return
- 1:	/* Error case */
-+MMU_FTR_SECTION_ELSE
-+	/* Radix case, access is outside page table range */
-+	li	r3,-EFAULT
-+ALT_MMU_FTR_SECTION_END_IFCLR(MMU_FTR_TYPE_RADIX)
- 	std	r3,RESULT(r1)
- 	bl	save_nvgprs
- 	RECONCILE_IRQ_STATE(r10, r11)
-@@ -705,11 +711,17 @@ EXC_COMMON_BEGIN(instruction_access_slb_common)
- 	EXCEPTION_PROLOG_COMMON(0x480, PACA_EXSLB)
- 	ld	r4,_NIP(r1)
- 	addi	r3,r1,STACK_FRAME_OVERHEAD
-+BEGIN_MMU_FTR_SECTION
-+	/* HPT case, do SLB fault */
- 	bl	do_slb_fault
- 	cmpdi	r3,0
- 	bne-	1f
- 	b	fast_exception_return
- 1:	/* Error case */
-+MMU_FTR_SECTION_ELSE
-+	/* Radix case, access is outside page table range */
-+	li	r3,-EFAULT
-+ALT_MMU_FTR_SECTION_END_IFCLR(MMU_FTR_TYPE_RADIX)
- 	std	r3,RESULT(r1)
- 	bl	save_nvgprs
- 	RECONCILE_IRQ_STATE(r10, r11)
--- 
-2.20.1
+so this works all well. The problem is when a CPU sends an IPI to itself
+then linux's doorbell_try_core_ipi() considers this as a valid sibling
+and here we have the msgsndp.
 
+Sebastian
