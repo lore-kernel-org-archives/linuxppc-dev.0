@@ -6,38 +6,38 @@ X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
 	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 015ABC43381
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Mar 2019 11:55:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9BC68C43381
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Mar 2019 11:57:02 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id AC1A22075E
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Mar 2019 11:55:28 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org AC1A22075E
+	by mail.kernel.org (Postfix) with ESMTPS id 1EEC22075E
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Mar 2019 11:57:01 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1EEC22075E
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44W0YB3wJ8zDqHk
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Mar 2019 22:55:26 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44W0Qj1krfzDqHV
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Mar 2019 22:49:49 +1100 (AEDT)
 Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44Vzw42hqJzDqSW
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Mar 2019 22:26:44 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44Vzw03PtGzDqSx
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Mar 2019 22:26:40 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: by ozlabs.org (Postfix)
- id 44Vzw40w7qz9sQs; Fri, 29 Mar 2019 22:26:44 +1100 (AEDT)
+ id 44Vzw01hKZz9sRY; Fri, 29 Mar 2019 22:26:40 +1100 (AEDT)
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 44Vzw35Qg6z9sQt; Fri, 29 Mar 2019 22:26:43 +1100 (AEDT)
+ id 44Vzvz6BkZz9sPB; Fri, 29 Mar 2019 22:26:39 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: stable@vger.kernel.org,
 	gregkh@linuxfoundation.org
-Subject: [PATCH stable v4.14 14/32] powerpc/fsl: Sanitize the syscall table
- for NXP PowerPC 32 bit platforms
-Date: Fri, 29 Mar 2019 22:26:02 +1100
-Message-Id: <20190329112620.14489-15-mpe@ellerman.id.au>
+Subject: [PATCH stable v4.14 11/32] powerpc/64: Call setup_barrier_nospec()
+ from setup_arch()
+Date: Fri, 29 Mar 2019 22:25:59 +1100
+Message-Id: <20190329112620.14489-12-mpe@ellerman.id.au>
 X-Mailer: git-send-email 2.20.1
 In-Reply-To: <20190329112620.14489-1-mpe@ellerman.id.au>
 References: <20190329112620.14489-1-mpe@ellerman.id.au>
@@ -59,46 +59,74 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Diana Craciun <diana.craciun@nxp.com>
+commit af375eefbfb27cbb5b831984e66d724a40d26b5c upstream.
 
-commit c28218d4abbf4f2035495334d8bfcba64bda4787 upstream.
-
-Used barrier_nospec to sanitize the syscall table.
+Currently we require platform code to call setup_barrier_nospec(). But
+if we add an empty definition for the !CONFIG_PPC_BARRIER_NOSPEC case
+then we can call it in setup_arch().
 
 Signed-off-by: Diana Craciun <diana.craciun@nxp.com>
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- arch/powerpc/kernel/entry_32.S | 10 ++++++++++
- 1 file changed, 10 insertions(+)
+ arch/powerpc/include/asm/setup.h       | 4 ++++
+ arch/powerpc/kernel/setup-common.c     | 2 ++
+ arch/powerpc/platforms/powernv/setup.c | 1 -
+ arch/powerpc/platforms/pseries/setup.c | 1 -
+ 4 files changed, 6 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/kernel/entry_32.S b/arch/powerpc/kernel/entry_32.S
-index 4ae464b9d490..a2999cd73a82 100644
---- a/arch/powerpc/kernel/entry_32.S
-+++ b/arch/powerpc/kernel/entry_32.S
-@@ -33,6 +33,7 @@
- #include <asm/unistd.h>
- #include <asm/ptrace.h>
- #include <asm/export.h>
-+#include <asm/barrier.h>
+diff --git a/arch/powerpc/include/asm/setup.h b/arch/powerpc/include/asm/setup.h
+index 1f06bfaac7cc..102b778c8496 100644
+--- a/arch/powerpc/include/asm/setup.h
++++ b/arch/powerpc/include/asm/setup.h
+@@ -52,7 +52,11 @@ enum l1d_flush_type {
  
- /*
-  * MSR_KERNEL is > 0x10000 on 4xx/Book-E since it include MSR_CE.
-@@ -358,6 +359,15 @@ _GLOBAL(DoSyscall)
- 	ori	r10,r10,sys_call_table@l
- 	slwi	r0,r0,2
- 	bge-	66f
+ void setup_rfi_flush(enum l1d_flush_type, bool enable);
+ void do_rfi_flush_fixups(enum l1d_flush_type types);
++#ifdef CONFIG_PPC_BARRIER_NOSPEC
+ void setup_barrier_nospec(void);
++#else
++static inline void setup_barrier_nospec(void) { };
++#endif
+ void do_barrier_nospec_fixups(bool enable);
+ extern bool barrier_nospec_enabled;
+ 
+diff --git a/arch/powerpc/kernel/setup-common.c b/arch/powerpc/kernel/setup-common.c
+index 008447664643..ab7a75b731da 100644
+--- a/arch/powerpc/kernel/setup-common.c
++++ b/arch/powerpc/kernel/setup-common.c
+@@ -937,6 +937,8 @@ void __init setup_arch(char **cmdline_p)
+ 	if (ppc_md.setup_arch)
+ 		ppc_md.setup_arch();
+ 
++	setup_barrier_nospec();
 +
-+	barrier_nospec_asm
-+	/*
-+	 * Prevent the load of the handler below (based on the user-passed
-+	 * system call number) being speculatively executed until the test
-+	 * against NR_syscalls and branch to .66f above has
-+	 * committed.
-+	 */
-+
- 	lwzx	r10,r10,r0	/* Fetch system call handler [ptr] */
- 	mtlr	r10
- 	addi	r9,r1,STACK_FRAME_OVERHEAD
+ 	paging_init();
+ 
+ 	/* Initialize the MMU context management stuff. */
+diff --git a/arch/powerpc/platforms/powernv/setup.c b/arch/powerpc/platforms/powernv/setup.c
+index e6f8505a3818..fd143c934768 100644
+--- a/arch/powerpc/platforms/powernv/setup.c
++++ b/arch/powerpc/platforms/powernv/setup.c
+@@ -123,7 +123,6 @@ static void pnv_setup_rfi_flush(void)
+ 		  security_ftr_enabled(SEC_FTR_L1D_FLUSH_HV));
+ 
+ 	setup_rfi_flush(type, enable);
+-	setup_barrier_nospec();
+ }
+ 
+ static void __init pnv_setup_arch(void)
+diff --git a/arch/powerpc/platforms/pseries/setup.c b/arch/powerpc/platforms/pseries/setup.c
+index ac12ec4d839d..45f814041448 100644
+--- a/arch/powerpc/platforms/pseries/setup.c
++++ b/arch/powerpc/platforms/pseries/setup.c
+@@ -534,7 +534,6 @@ void pseries_setup_rfi_flush(void)
+ 		 security_ftr_enabled(SEC_FTR_L1D_FLUSH_PR);
+ 
+ 	setup_rfi_flush(types, enable);
+-	setup_barrier_nospec();
+ }
+ 
+ static void __init pSeries_setup_arch(void)
 -- 
 2.20.1
 
