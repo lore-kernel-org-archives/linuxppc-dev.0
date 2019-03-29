@@ -6,37 +6,37 @@ X-Spam-Status: No, score=-3.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS
 	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5926BC43381
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Mar 2019 15:04:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EEAC1C43381
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Mar 2019 15:05:53 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 5F73C204FD
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Mar 2019 15:03:59 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 5E1682075E
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Mar 2019 15:05:53 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="Upv1GbOS"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5F73C204FD
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="iLI8zki2"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5E1682075E
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linuxfoundation.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44W4kj1pmBzDqT8
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 30 Mar 2019 02:03:57 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+	by lists.ozlabs.org (Postfix) with ESMTP id 44W4mv2WznzDqQs
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 30 Mar 2019 02:05:51 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44W4XR6L7wzDqD5
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Mar 2019 01:55:03 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44W4XW4V9PzDqGW
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Mar 2019 01:55:07 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=linuxfoundation.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="Upv1GbOS"; 
+ unprotected) header.d=kernel.org header.i=@kernel.org header.b="iLI8zki2"; 
  dkim-atps=neutral
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 44W4XR2bY3z8wHQ
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Mar 2019 01:55:03 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 44W4XW2vrYz8vpj
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Mar 2019 01:55:07 +1100 (AEDT)
 Received: by ozlabs.org (Postfix)
- id 44W4XR0kDFz9sQq; Sat, 30 Mar 2019 01:55:03 +1100 (AEDT)
+ id 44W4XW1MZ5z9sQq; Sat, 30 Mar 2019 01:55:07 +1100 (AEDT)
 Authentication-Results: ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=linuxfoundation.org
  (client-ip=198.145.29.99; helo=mail.kernel.org;
@@ -44,34 +44,34 @@ Authentication-Results: ozlabs.org;
 Authentication-Results: ozlabs.org; dmarc=none (p=none dis=none)
  header.from=linuxfoundation.org
 Authentication-Results: ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="Upv1GbOS"; 
+ unprotected) header.d=kernel.org header.i=@kernel.org header.b="iLI8zki2"; 
  dkim-atps=neutral
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 44W4XQ3QmDz9sPp
- for <linuxppc-dev@ozlabs.org>; Sat, 30 Mar 2019 01:55:02 +1100 (AEDT)
+ by ozlabs.org (Postfix) with ESMTPS id 44W4XV0Bx3z9sPx
+ for <linuxppc-dev@ozlabs.org>; Sat, 30 Mar 2019 01:55:05 +1100 (AEDT)
 Received: from localhost (83-86-89-107.cable.dynamic.v4.ziggo.nl
  [83.86.89.107])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id DCF742184C;
- Fri, 29 Mar 2019 14:54:59 +0000 (UTC)
+ by mail.kernel.org (Postfix) with ESMTPSA id EBAA9206C0;
+ Fri, 29 Mar 2019 14:55:03 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1553871300;
- bh=ZScr6oZHjdgXHjF69fohAJ3PSHYnQ2VyloTxQnabfG0=;
+ s=default; t=1553871304;
+ bh=7kotoAC+QoBjJ1HQNLV6xj6E7KILk9rcwuHXZavdfPU=;
  h=Subject:To:Cc:From:Date:In-Reply-To:From;
- b=Upv1GbOSrHis9Dvu7Si5fMm6jwIMW+93eZE9FS1PrUbxP7TpG5PYsA2ZpKHR67ADo
- PpOfVpZhwtDAQVrmmcx0t0KEZLHgIFKPQfL9z7UtJyC3emu+ZLYcj9EW1CFEWtInhi
- Q1xYrdccjfmE8ZQajrHw7xhGkBJM/WqnwFYZh58c=
-Subject: Patch "[PATCH stable v4.14 09/32] powerpc/64: Make stf barrier
- PPC_BOOK3S_64 specific." has been added to the 4.14-stable tree
+ b=iLI8zki2nmDaE8psicsiQHl2udue+OqxIaA9JTSPgLycg2B9LKgaBOvFJT9Iu7jIG
+ sT60jE0C1EuNU98Ha26dhfwCN9492SVvzcTuW+QOz2OqbLk13dwybkTCJWpJwnWVrN
+ q7f05xvSApbJjRDIpTIPkWP8iyk1u2fr/kpWRkFc=
+Subject: Patch "[PATCH stable v4.14 16/32] powerpc/64s: Add new security
+ feature flags for count cache flush" has been added to the 4.14-stable tree
 To: christophe.leroy@c-s.fr, diana.craciun@nxp.com, gregkh@linuxfoundation.org,
  linuxppc-dev@ozlabs.org, mpe@ellerman.id.au, msuchanek@suse.de
 From: <gregkh@linuxfoundation.org>
-Date: Fri, 29 Mar 2019 15:54:45 +0100
-In-Reply-To: <20190329112620.14489-10-mpe@ellerman.id.au>
-Message-ID: <155387128569143@kroah.com>
+Date: Fri, 29 Mar 2019 15:54:46 +0100
+In-Reply-To: <20190329112620.14489-17-mpe@ellerman.id.au>
+Message-ID: <1553871286158215@kroah.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ANSI_X3.4-1968
 Content-Transfer-Encoding: 8bit
@@ -96,13 +96,13 @@ Sender: "Linuxppc-dev"
 
 This is a note to let you know that I've just added the patch titled
 
-    [PATCH stable v4.14 09/32] powerpc/64: Make stf barrier PPC_BOOK3S_64 specific.
+    [PATCH stable v4.14 16/32] powerpc/64s: Add new security feature flags for count cache flush
 
 to the 4.14-stable tree which can be found at:
     http://www.kernel.org/git/?p=linux/kernel/git/stable/stable-queue.git;a=summary
 
 The filename of the patch is:
-     powerpc-64-make-stf-barrier-ppc_book3s_64-specific.patch
+     powerpc-64s-add-new-security-feature-flags-for-count-cache-flush.patch
 and it can be found in the queue-4.14 subdirectory.
 
 If you, or anyone else, feels it should not be added to the stable tree,
@@ -111,43 +111,48 @@ please let <stable@vger.kernel.org> know about it.
 
 From foo@baz Fri Mar 29 15:53:50 CET 2019
 From: Michael Ellerman <mpe@ellerman.id.au>
-Date: Fri, 29 Mar 2019 22:25:57 +1100
-Subject: [PATCH stable v4.14 09/32] powerpc/64: Make stf barrier PPC_BOOK3S_64 specific.
+Date: Fri, 29 Mar 2019 22:26:04 +1100
+Subject: [PATCH stable v4.14 16/32] powerpc/64s: Add new security feature flags for count cache flush
 To: stable@vger.kernel.org, gregkh@linuxfoundation.org
 Cc: linuxppc-dev@ozlabs.org, diana.craciun@nxp.com, msuchanek@suse.de, christophe.leroy@c-s.fr
-Message-ID: <20190329112620.14489-10-mpe@ellerman.id.au>
+Message-ID: <20190329112620.14489-17-mpe@ellerman.id.au>
 
 From: Michael Ellerman <mpe@ellerman.id.au>
 
-From: Diana Craciun <diana.craciun@nxp.com>
+commit dc8c6cce9a26a51fc19961accb978217a3ba8c75 upstream.
 
-commit 6453b532f2c8856a80381e6b9a1f5ea2f12294df upstream.
+Add security feature flags to indicate the need for software to flush
+the count cache on context switch, and for the presence of a hardware
+assisted count cache flush.
 
-NXP Book3E platforms are not vulnerable to speculative store
-bypass, so make the mitigations PPC_BOOK3S_64 specific.
-
-Signed-off-by: Diana Craciun <diana.craciun@nxp.com>
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 ---
- arch/powerpc/kernel/security.c |    2 ++
- 1 file changed, 2 insertions(+)
+ arch/powerpc/include/asm/security_features.h |    6 ++++++
+ 1 file changed, 6 insertions(+)
 
---- a/arch/powerpc/kernel/security.c
-+++ b/arch/powerpc/kernel/security.c
-@@ -176,6 +176,7 @@ ssize_t cpu_show_spectre_v2(struct devic
- 	return s.len;
- }
+--- a/arch/powerpc/include/asm/security_features.h
++++ b/arch/powerpc/include/asm/security_features.h
+@@ -59,6 +59,9 @@ static inline bool security_ftr_enabled(
+ // Indirect branch prediction cache disabled
+ #define SEC_FTR_COUNT_CACHE_DISABLED	0x0000000000000020ull
  
-+#ifdef CONFIG_PPC_BOOK3S_64
- /*
-  * Store-forwarding barrier support.
-  */
-@@ -323,3 +324,4 @@ static __init int stf_barrier_debugfs_in
- }
- device_initcall(stf_barrier_debugfs_init);
- #endif /* CONFIG_DEBUG_FS */
-+#endif /* CONFIG_PPC_BOOK3S_64 */
++// bcctr 2,0,0 triggers a hardware assisted count cache flush
++#define SEC_FTR_BCCTR_FLUSH_ASSIST	0x0000000000000800ull
++
+ 
+ // Features indicating need for Spectre/Meltdown mitigations
+ 
+@@ -74,6 +77,9 @@ static inline bool security_ftr_enabled(
+ // Firmware configuration indicates user favours security over performance
+ #define SEC_FTR_FAVOUR_SECURITY		0x0000000000000200ull
+ 
++// Software required to flush count cache on context switch
++#define SEC_FTR_FLUSH_COUNT_CACHE	0x0000000000000400ull
++
+ 
+ // Features enabled by default
+ #define SEC_FTR_DEFAULT \
 
 
 Patches currently in stable-queue which might be from mpe@ellerman.id.au are
