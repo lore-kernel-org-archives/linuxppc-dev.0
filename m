@@ -3,40 +3,40 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
 X-Spam-Status: No, score=-3.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,
-	URIBL_BLOCKED autolearn=ham autolearn_force=no version=3.4.0
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9ACB4C43381
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Mar 2019 15:58:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CAE10C43381
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Mar 2019 16:00:22 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 13025206BA
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Mar 2019 15:58:49 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 4218C2070B
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Mar 2019 16:00:22 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="NqrsjDc1"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 13025206BA
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="eBMC/QnY"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4218C2070B
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linuxfoundation.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44W5xz0S2YzDq8D
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 30 Mar 2019 02:58:47 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44W5zm1zPxzDqXX
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 30 Mar 2019 03:00:20 +1100 (AEDT)
 Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44W4qZ2076zDqCV
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Mar 2019 02:08:10 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44W4qd378VzDqGW
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Mar 2019 02:08:13 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=linuxfoundation.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="NqrsjDc1"; 
+ unprotected) header.d=kernel.org header.i=@kernel.org header.b="eBMC/QnY"; 
  dkim-atps=neutral
 Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 44W4qZ0wfRz8tDh
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Mar 2019 02:08:10 +1100 (AEDT)
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 44W4qd1y0Vz8tDh
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Mar 2019 02:08:13 +1100 (AEDT)
 Received: by ozlabs.org (Postfix)
- id 44W4qZ08fbz9sQq; Sat, 30 Mar 2019 02:08:10 +1100 (AEDT)
+ id 44W4qd1bw8z9sPv; Sat, 30 Mar 2019 02:08:13 +1100 (AEDT)
 Authentication-Results: ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=linuxfoundation.org
  (client-ip=198.145.29.99; helo=mail.kernel.org;
@@ -44,34 +44,34 @@ Authentication-Results: ozlabs.org;
 Authentication-Results: ozlabs.org; dmarc=none (p=none dis=none)
  header.from=linuxfoundation.org
 Authentication-Results: ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="NqrsjDc1"; 
+ unprotected) header.d=kernel.org header.i=@kernel.org header.b="eBMC/QnY"; 
  dkim-atps=neutral
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 44W4qY2S4kz9sPx
- for <linuxppc-dev@ozlabs.org>; Sat, 30 Mar 2019 02:08:09 +1100 (AEDT)
+ by ozlabs.org (Postfix) with ESMTPS id 44W4qc3ylGz9sPx
+ for <linuxppc-dev@ozlabs.org>; Sat, 30 Mar 2019 02:08:12 +1100 (AEDT)
 Received: from localhost (83-86-89-107.cable.dynamic.v4.ziggo.nl
  [83.86.89.107])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id 57E892075E;
- Fri, 29 Mar 2019 15:08:07 +0000 (UTC)
+ by mail.kernel.org (Postfix) with ESMTPSA id 004062184C;
+ Fri, 29 Mar 2019 15:08:09 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1553872087;
- bh=1yHMWl+rwH927sRbiA4RtVHbNc0xTM6kpqS/uNgJBJU=;
+ s=default; t=1553872090;
+ bh=Y37J1diumgLaUGRiCdCvkQvYc1TYxIdRu6XL5pcje/g=;
  h=Subject:To:Cc:From:Date:In-Reply-To:From;
- b=NqrsjDc1uupIZy6Ev4gSQRQURD33rcvripxshUF/YS4TbTpHfqPCfs5fBngNvC+ZM
- zNTOXWC7/ytNkE1GzMgmveiR1Lje4eprydogTku90XgHOkGr5QFJ58wK2LG96r/SQ2
- tT+AtYhhpG+hZ4I8a6Pj/mReAm58LI67CEoqVfso=
-Subject: Patch "powerpc/fsl: Add nospectre_v2 command line argument" has been
- added to the 4.19-stable tree
+ b=eBMC/QnY4/k+I2FX13dvL6gUT8mug+6Uyy7djFTqj7aK129hXDMcRDK7QzLxxUv+b
+ QTvRWjgJLW3degQ9Ea6KtqOI7CpChuOlyDIq+rpJuqD23SYAgOYTeYg/esOYT03+xq
+ SfX8QScRVNDdECk3vYiqJw8dYEnMnu2ZDKZAWxfc=
+Subject: Patch "powerpc/fsl: Emulate SPRN_BUCSR register" has been added to
+ the 4.19-stable tree
 To: christophe.leroy@c-s.fr, diana.craciun@nxp.com, gregkh@linuxfoundation.org,
  linuxppc-dev@ozlabs.org, mpe@ellerman.id.au, msuchanek@suse.de
 From: <gregkh@linuxfoundation.org>
 Date: Fri, 29 Mar 2019 16:07:53 +0100
-In-Reply-To: <20190329112620.14489-25-mpe@ellerman.id.au>
-Message-ID: <155387207354113@kroah.com>
+In-Reply-To: <20190329112620.14489-24-mpe@ellerman.id.au>
+Message-ID: <15538720735618@kroah.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ANSI_X3.4-1968
 Content-Transfer-Encoding: 8bit
@@ -96,13 +96,13 @@ Sender: "Linuxppc-dev"
 
 This is a note to let you know that I've just added the patch titled
 
-    powerpc/fsl: Add nospectre_v2 command line argument
+    powerpc/fsl: Emulate SPRN_BUCSR register
 
 to the 4.19-stable tree which can be found at:
     http://www.kernel.org/git/?p=linux/kernel/git/stable/stable-queue.git;a=summary
 
 The filename of the patch is:
-     powerpc-fsl-add-nospectre_v2-command-line-argument.patch
+     powerpc-fsl-emulate-sprn_bucsr-register.patch
 and it can be found in the queue-4.19 subdirectory.
 
 If you, or anyone else, feels it should not be added to the stable tree,
@@ -111,78 +111,46 @@ please let <stable@vger.kernel.org> know about it.
 
 From foo@baz Fri Mar 29 16:04:51 CET 2019
 From: Michael Ellerman <mpe@ellerman.id.au>
-Date: Fri, 29 Mar 2019 22:26:12 +1100
-Subject: powerpc/fsl: Add nospectre_v2 command line argument
+Date: Fri, 29 Mar 2019 22:26:11 +1100
+Subject: powerpc/fsl: Emulate SPRN_BUCSR register
 To: stable@vger.kernel.org, gregkh@linuxfoundation.org
 Cc: linuxppc-dev@ozlabs.org, diana.craciun@nxp.com, msuchanek@suse.de, christophe.leroy@c-s.fr
-Message-ID: <20190329112620.14489-25-mpe@ellerman.id.au>
+Message-ID: <20190329112620.14489-24-mpe@ellerman.id.au>
 
 From: Diana Craciun <diana.craciun@nxp.com>
 
-commit f633a8ad636efb5d4bba1a047d4a0f1ef719aa06 upstream.
+commit 98518c4d8728656db349f875fcbbc7c126d4c973 upstream.
 
-When the command line argument is present, the Spectre variant 2
-mitigations are disabled.
+In order to flush the branch predictor the guest kernel performs
+writes to the BUCSR register which is hypervisor privilleged. However,
+the branch predictor is flushed at each KVM entry, so the branch
+predictor has been already flushed, so just return as soon as possible
+to guest.
 
 Signed-off-by: Diana Craciun <diana.craciun@nxp.com>
+[mpe: Tweak comment formatting]
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 ---
- arch/powerpc/include/asm/setup.h |    5 +++++
- arch/powerpc/kernel/security.c   |   21 +++++++++++++++++++++
- 2 files changed, 26 insertions(+)
+ arch/powerpc/kvm/e500_emulate.c |    7 +++++++
+ 1 file changed, 7 insertions(+)
 
---- a/arch/powerpc/include/asm/setup.h
-+++ b/arch/powerpc/include/asm/setup.h
-@@ -67,6 +67,11 @@ void do_barrier_nospec_fixups_range(bool
- static inline void do_barrier_nospec_fixups_range(bool enable, void *start, void *end) { };
- #endif
+--- a/arch/powerpc/kvm/e500_emulate.c
++++ b/arch/powerpc/kvm/e500_emulate.c
+@@ -277,6 +277,13 @@ int kvmppc_core_emulate_mtspr_e500(struc
+ 		vcpu->arch.pwrmgtcr0 = spr_val;
+ 		break;
  
-+#ifdef CONFIG_PPC_FSL_BOOK3E
-+void setup_spectre_v2(void);
-+#else
-+static inline void setup_spectre_v2(void) {};
-+#endif
- void do_btb_flush_fixups(void);
- 
- #endif /* !__ASSEMBLY__ */
---- a/arch/powerpc/kernel/security.c
-+++ b/arch/powerpc/kernel/security.c
-@@ -26,6 +26,10 @@ static enum count_cache_flush_type count
- 
- bool barrier_nospec_enabled;
- static bool no_nospec;
-+static bool btb_flush_enabled;
-+#ifdef CONFIG_PPC_FSL_BOOK3E
-+static bool no_spectrev2;
-+#endif
- 
- static void enable_barrier_nospec(bool enable)
- {
-@@ -101,6 +105,23 @@ static __init int barrier_nospec_debugfs
- device_initcall(barrier_nospec_debugfs_init);
- #endif /* CONFIG_DEBUG_FS */
- 
-+#ifdef CONFIG_PPC_FSL_BOOK3E
-+static int __init handle_nospectre_v2(char *p)
-+{
-+	no_spectrev2 = true;
++	case SPRN_BUCSR:
++		/*
++		 * If we are here, it means that we have already flushed the
++		 * branch predictor, so just return to guest.
++		 */
++		break;
 +
-+	return 0;
-+}
-+early_param("nospectre_v2", handle_nospectre_v2);
-+void setup_spectre_v2(void)
-+{
-+	if (no_spectrev2)
-+		do_btb_flush_fixups();
-+	else
-+		btb_flush_enabled = true;
-+}
-+#endif /* CONFIG_PPC_FSL_BOOK3E */
-+
- #ifdef CONFIG_PPC_BOOK3S_64
- ssize_t cpu_show_meltdown(struct device *dev, struct device_attribute *attr, char *buf)
- {
+ 	/* extra exceptions */
+ #ifdef CONFIG_SPE_POSSIBLE
+ 	case SPRN_IVOR32:
 
 
 Patches currently in stable-queue which might be from mpe@ellerman.id.au are
