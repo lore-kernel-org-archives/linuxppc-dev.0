@@ -6,38 +6,38 @@ X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
 	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6D3BAC43381
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Mar 2019 12:01:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A8BBFC43381
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Mar 2019 12:03:38 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 229C42173C
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Mar 2019 12:01:23 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 229C42173C
+	by mail.kernel.org (Postfix) with ESMTPS id 2C2B02173C
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Mar 2019 12:03:38 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2C2B02173C
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44W0h10rKwzDqZR
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Mar 2019 23:01:21 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+	by lists.ozlabs.org (Postfix) with ESMTP id 44W0kc0LqMzDqT5
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Mar 2019 23:03:36 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44Vzw85qYXzDqSy
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Mar 2019 22:26:48 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44VzwB4DvKzDqSh
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Mar 2019 22:26:50 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: by ozlabs.org (Postfix)
- id 44Vzw65NpBz9sSK; Fri, 29 Mar 2019 22:26:46 +1100 (AEDT)
+ id 44Vzw95W9zz9sSK; Fri, 29 Mar 2019 22:26:49 +1100 (AEDT)
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 44Vzw61JmTz9sSC; Fri, 29 Mar 2019 22:26:45 +1100 (AEDT)
+ id 44Vzw909W9z9sSl; Fri, 29 Mar 2019 22:26:48 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: stable@vger.kernel.org,
 	gregkh@linuxfoundation.org
-Subject: [PATCH stable v4.14 16/32] powerpc/64s: Add new security feature
- flags for count cache flush
-Date: Fri, 29 Mar 2019 22:26:04 +1100
-Message-Id: <20190329112620.14489-17-mpe@ellerman.id.au>
+Subject: [PATCH stable v4.14 18/32] powerpc/pseries: Query hypervisor for
+ count cache flush settings
+Date: Fri, 29 Mar 2019 22:26:06 +1100
+Message-Id: <20190329112620.14489-19-mpe@ellerman.id.au>
 X-Mailer: git-send-email 2.20.1
 In-Reply-To: <20190329112620.14489-1-mpe@ellerman.id.au>
 References: <20190329112620.14489-1-mpe@ellerman.id.au>
@@ -59,41 +59,60 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-commit dc8c6cce9a26a51fc19961accb978217a3ba8c75 upstream.
+commit ba72dc171954b782a79d25e0f4b3ed91090c3b1e upstream.
 
-Add security feature flags to indicate the need for software to flush
-the count cache on context switch, and for the presence of a hardware
-assisted count cache flush.
+Use the existing hypercall to determine the appropriate settings for
+the count cache flush, and then call the generic powerpc code to set
+it up based on the security feature flags.
 
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- arch/powerpc/include/asm/security_features.h | 6 ++++++
- 1 file changed, 6 insertions(+)
+ arch/powerpc/include/asm/hvcall.h      | 2 ++
+ arch/powerpc/platforms/pseries/setup.c | 7 +++++++
+ 2 files changed, 9 insertions(+)
 
-diff --git a/arch/powerpc/include/asm/security_features.h b/arch/powerpc/include/asm/security_features.h
-index 44989b22383c..a0d47bc18a5c 100644
---- a/arch/powerpc/include/asm/security_features.h
-+++ b/arch/powerpc/include/asm/security_features.h
-@@ -59,6 +59,9 @@ static inline bool security_ftr_enabled(unsigned long feature)
- // Indirect branch prediction cache disabled
- #define SEC_FTR_COUNT_CACHE_DISABLED	0x0000000000000020ull
+diff --git a/arch/powerpc/include/asm/hvcall.h b/arch/powerpc/include/asm/hvcall.h
+index 5a740feb7bd7..15cef59092c7 100644
+--- a/arch/powerpc/include/asm/hvcall.h
++++ b/arch/powerpc/include/asm/hvcall.h
+@@ -340,10 +340,12 @@
+ #define H_CPU_CHAR_BRANCH_HINTS_HONORED	(1ull << 58) // IBM bit 5
+ #define H_CPU_CHAR_THREAD_RECONFIG_CTRL	(1ull << 57) // IBM bit 6
+ #define H_CPU_CHAR_COUNT_CACHE_DISABLED	(1ull << 56) // IBM bit 7
++#define H_CPU_CHAR_BCCTR_FLUSH_ASSIST	(1ull << 54) // IBM bit 9
  
-+// bcctr 2,0,0 triggers a hardware assisted count cache flush
-+#define SEC_FTR_BCCTR_FLUSH_ASSIST	0x0000000000000800ull
+ #define H_CPU_BEHAV_FAVOUR_SECURITY	(1ull << 63) // IBM bit 0
+ #define H_CPU_BEHAV_L1D_FLUSH_PR	(1ull << 62) // IBM bit 1
+ #define H_CPU_BEHAV_BNDS_CHK_SPEC_BAR	(1ull << 61) // IBM bit 2
++#define H_CPU_BEHAV_FLUSH_COUNT_CACHE	(1ull << 58) // IBM bit 5
+ 
+ /* Flag values used in H_REGISTER_PROC_TBL hcall */
+ #define PROC_TABLE_OP_MASK	0x18
+diff --git a/arch/powerpc/platforms/pseries/setup.c b/arch/powerpc/platforms/pseries/setup.c
+index 45f814041448..6a0ad56e89b9 100644
+--- a/arch/powerpc/platforms/pseries/setup.c
++++ b/arch/powerpc/platforms/pseries/setup.c
+@@ -484,6 +484,12 @@ static void init_cpu_char_feature_flags(struct h_cpu_char_result *result)
+ 	if (result->character & H_CPU_CHAR_COUNT_CACHE_DISABLED)
+ 		security_ftr_set(SEC_FTR_COUNT_CACHE_DISABLED);
+ 
++	if (result->character & H_CPU_CHAR_BCCTR_FLUSH_ASSIST)
++		security_ftr_set(SEC_FTR_BCCTR_FLUSH_ASSIST);
 +
- 
- // Features indicating need for Spectre/Meltdown mitigations
- 
-@@ -74,6 +77,9 @@ static inline bool security_ftr_enabled(unsigned long feature)
- // Firmware configuration indicates user favours security over performance
- #define SEC_FTR_FAVOUR_SECURITY		0x0000000000000200ull
- 
-+// Software required to flush count cache on context switch
-+#define SEC_FTR_FLUSH_COUNT_CACHE	0x0000000000000400ull
++	if (result->behaviour & H_CPU_BEHAV_FLUSH_COUNT_CACHE)
++		security_ftr_set(SEC_FTR_FLUSH_COUNT_CACHE);
 +
+ 	/*
+ 	 * The features below are enabled by default, so we instead look to see
+ 	 * if firmware has *disabled* them, and clear them if so.
+@@ -534,6 +540,7 @@ void pseries_setup_rfi_flush(void)
+ 		 security_ftr_enabled(SEC_FTR_L1D_FLUSH_PR);
  
- // Features enabled by default
- #define SEC_FTR_DEFAULT \
+ 	setup_rfi_flush(types, enable);
++	setup_count_cache_flush();
+ }
+ 
+ static void __init pSeries_setup_arch(void)
 -- 
 2.20.1
 
