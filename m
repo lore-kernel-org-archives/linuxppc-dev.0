@@ -2,81 +2,106 @@ Return-Path: <SRS0=YrVw=SA=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-4.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_PASS autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id F0358C43381
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Mar 2019 10:07:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3EF7AC43381
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Mar 2019 10:25:05 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6E0B520643
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Mar 2019 10:07:59 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="Bju0SG+x"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6E0B520643
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
+	by mail.kernel.org (Postfix) with ESMTPS id BD4D8206B8
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Mar 2019 10:25:04 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BD4D8206B8
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44Vy993FJwzDqR7
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Mar 2019 21:07:57 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=c-s.fr
- (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
- envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=c-s.fr
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="Bju0SG+x"; 
- dkim-atps=neutral
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+	by lists.ozlabs.org (Postfix) with ESMTP id 44VyXt5HvszDqGL
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Mar 2019 21:25:02 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44VyWC55FJzDqCH
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Mar 2019 21:23:35 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=linux.vnet.ibm.com
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 44VyWC3tj1z8t1D
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Mar 2019 21:23:35 +1100 (AEDT)
+Received: by ozlabs.org (Postfix)
+ id 44VyWC33vrz9sPx; Fri, 29 Mar 2019 21:23:35 +1100 (AEDT)
+Authentication-Results: ozlabs.org;
+ spf=none (mailfrom) smtp.mailfrom=linux.vnet.ibm.com
+ (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
+ envelope-from=mahesh@linux.vnet.ibm.com; receiver=<UNKNOWN>)
+Authentication-Results: ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=linux.vnet.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44Vy062kvPzDqSR
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Mar 2019 21:00:06 +1100 (AEDT)
-Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 44Vy021nkTz9v4yM;
- Fri, 29 Mar 2019 11:00:02 +0100 (CET)
-Authentication-Results: localhost; dkim=pass
- reason="1024-bit key; insecure key"
- header.d=c-s.fr header.i=@c-s.fr header.b=Bju0SG+x; dkim-adsp=pass;
- dkim-atps=neutral
-X-Virus-Scanned: Debian amavisd-new at c-s.fr
-Received: from pegase1.c-s.fr ([192.168.12.234])
- by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id D7xPgzbR1DXr; Fri, 29 Mar 2019 11:00:02 +0100 (CET)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 44Vy020hylz9v4yL;
- Fri, 29 Mar 2019 11:00:02 +0100 (CET)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
- t=1553853602; bh=J927/YRhwOF2gHU65SwHNZZSjTNcbiAI8FfauRb44GM=;
- h=In-Reply-To:References:From:Subject:To:Cc:Date:From;
- b=Bju0SG+xX5biaDjAWQ8nbh78G5u7qh8VUhPIKV8iRKgb7etPW/M96qvLmhtyL+7Id
- vG/guu5VHqqmWbUyGQzrFIUbdG6wi9CvHplCL3jcz7tmOyOZiBIkRi/hQa1cLvPE9J
- jVEKM+rKlDZnN7IPtY2e8QFGLSVg17i7WEVxw23Y=
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 2D5788B88C;
- Fri, 29 Mar 2019 11:00:03 +0100 (CET)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id JFBFpTtcTjsB; Fri, 29 Mar 2019 11:00:03 +0100 (CET)
-Received: from po16846vm.idsi0.si.c-s.fr (po15451.idsi0.si.c-s.fr
- [172.25.231.2])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 0AC1A8B88A;
- Fri, 29 Mar 2019 11:00:03 +0100 (CET)
-Received: by po16846vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id E48596FC95; Fri, 29 Mar 2019 10:00:02 +0000 (UTC)
-Message-Id: <a87606761d285e4f3dee5c2de1e6691f04e429b6.1553853405.git.christophe.leroy@c-s.fr>
-In-Reply-To: <cover.1553853405.git.christophe.leroy@c-s.fr>
-References: <cover.1553853405.git.christophe.leroy@c-s.fr>
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v1 4/4] powerpc/mm: Move nohash specifics in subdirectory
- mm/nohash
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Date: Fri, 29 Mar 2019 10:00:02 +0000 (UTC)
+ by ozlabs.org (Postfix) with ESMTPS id 44VyWB5y4Wz9sQm
+ for <linuxppc-dev@ozlabs.org>; Fri, 29 Mar 2019 21:23:34 +1100 (AEDT)
+Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
+ x2TAJDun106981
+ for <linuxppc-dev@ozlabs.org>; Fri, 29 Mar 2019 06:23:32 -0400
+Received: from e06smtp04.uk.ibm.com (e06smtp04.uk.ibm.com [195.75.94.100])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2rhgdrve9y-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@ozlabs.org>; Fri, 29 Mar 2019 06:23:31 -0400
+Received: from localhost
+ by e06smtp04.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <mahesh@linux.vnet.ibm.com>;
+ Fri, 29 Mar 2019 10:23:29 -0000
+Received: from b06cxnps3074.portsmouth.uk.ibm.com (9.149.109.194)
+ by e06smtp04.uk.ibm.com (192.168.101.134) with IBM ESMTP SMTP Gateway:
+ Authorized Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Fri, 29 Mar 2019 10:23:26 -0000
+Received: from d06av21.portsmouth.uk.ibm.com (d06av21.portsmouth.uk.ibm.com
+ [9.149.105.232])
+ by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x2TANPcS53412050
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Fri, 29 Mar 2019 10:23:26 GMT
+Received: from d06av21.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id DDE1352065;
+ Fri, 29 Mar 2019 10:23:25 +0000 (GMT)
+Received: from [9.85.92.96] (unknown [9.85.92.96])
+ by d06av21.portsmouth.uk.ibm.com (Postfix) with ESMTP id 267A25204E;
+ Fri, 29 Mar 2019 10:23:25 +0000 (GMT)
+Subject: Re: [RFC PATCH 1/3] powernv/mce: reduce mce console logs to lesser
+ lines.
+To: Michael Ellerman <mpe@ellerman.id.au>,
+ linuxppc-dev <linuxppc-dev@ozlabs.org>
+References: <155324738319.7819.17982472592795327790.stgit@jupiter.in.ibm.com>
+ <87bm1uo7iw.fsf@concordia.ellerman.id.au>
+From: Mahesh Jagannath Salgaonkar <mahesh@linux.vnet.ibm.com>
+Date: Fri, 29 Mar 2019 15:53:24 +0530
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.6.0
+MIME-Version: 1.0
+In-Reply-To: <87bm1uo7iw.fsf@concordia.ellerman.id.au>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-MW
+Content-Transfer-Encoding: 7bit
+X-TM-AS-GCONF: 00
+x-cbid: 19032910-0016-0000-0000-00000268C9E6
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 19032910-0017-0000-0000-000032C412DD
+Message-Id: <cdfb484e-0468-edb3-3d8f-306c50ddceca@linux.vnet.ibm.com>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
+ definitions=2019-03-29_05:, , signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1810050000 definitions=main-1903290075
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -88,144 +113,110 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: Paul Mackerras <paulus@samba.org>, Nicholas Piggin <npiggin@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Many files in arch/powerpc/mm are only for nohash. This patch
-creates a subdirectory for them.
+On 3/29/19 5:50 AM, Michael Ellerman wrote:
+> Hi Mahesh,
+> 
+> Thanks for doing this series.
+> 
+> Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com> writes:
+>> From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+>>
+>> Also add cpu number while displaying mce log. This will help cleaner logs
+>> when mce hits on multiple cpus simultaneously.
+> 
+> Can you include some examples of the output before and after, so it's
+> easier to compare what the changes are.
 
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
----
- arch/powerpc/mm/Makefile                          | 17 +----------------
- arch/powerpc/mm/{ => nohash}/40x_mmu.c            |  0
- arch/powerpc/mm/{ => nohash}/44x_mmu.c            |  0
- arch/powerpc/mm/{ => nohash}/8xx_mmu.c            |  0
- arch/powerpc/mm/nohash/Makefile                   | 21 +++++++++++++++++++++
- arch/powerpc/mm/{ => nohash}/fsl_booke_mmu.c      |  0
- arch/powerpc/mm/{ => nohash}/hugetlbpage-book3e.c |  0
- arch/powerpc/mm/{ => nohash}/mmu_context_nohash.c |  0
- arch/powerpc/mm/{ => nohash}/pgtable-book3e.c     |  0
- arch/powerpc/mm/{ => nohash}/tlb_low_64e.S        |  0
- arch/powerpc/mm/{ => nohash}/tlb_nohash.c         |  0
- arch/powerpc/mm/{ => nohash}/tlb_nohash_low.S     |  0
- 12 files changed, 22 insertions(+), 16 deletions(-)
- rename arch/powerpc/mm/{ => nohash}/40x_mmu.c (100%)
- rename arch/powerpc/mm/{ => nohash}/44x_mmu.c (100%)
- rename arch/powerpc/mm/{ => nohash}/8xx_mmu.c (100%)
- create mode 100644 arch/powerpc/mm/nohash/Makefile
- rename arch/powerpc/mm/{ => nohash}/fsl_booke_mmu.c (100%)
- rename arch/powerpc/mm/{ => nohash}/hugetlbpage-book3e.c (100%)
- rename arch/powerpc/mm/{ => nohash}/mmu_context_nohash.c (100%)
- rename arch/powerpc/mm/{ => nohash}/pgtable-book3e.c (100%)
- rename arch/powerpc/mm/{ => nohash}/tlb_low_64e.S (100%)
- rename arch/powerpc/mm/{ => nohash}/tlb_nohash.c (100%)
- rename arch/powerpc/mm/{ => nohash}/tlb_nohash_low.S (100%)
+Sure will add that in next revision.
 
-diff --git a/arch/powerpc/mm/Makefile b/arch/powerpc/mm/Makefile
-index 68cb1e840b5e..08557bae6fa1 100644
---- a/arch/powerpc/mm/Makefile
-+++ b/arch/powerpc/mm/Makefile
-@@ -8,30 +8,15 @@ ccflags-$(CONFIG_PPC64)	:= $(NO_MINIMAL_TOC)
- obj-y				:= fault.o mem.o pgtable.o mmap.o \
- 				   init_$(BITS).o pgtable_$(BITS).o \
- 				   init-common.o mmu_context.o drmem.o
--obj-$(CONFIG_PPC_MMU_NOHASH)	+= mmu_context_nohash.o tlb_nohash.o \
--				   tlb_nohash_low.o
--obj-$(CONFIG_PPC_BOOK3E)	+= tlb_low_$(BITS)e.o
--obj-$(CONFIG_PPC_BOOK3E_64)   += pgtable-book3e.o
-+obj-$(CONFIG_PPC_MMU_NOHASH)	+= nohash/
- obj-$(CONFIG_PPC_BOOK3S_32)	+= book3s32/
- obj-$(CONFIG_PPC_BOOK3S_64)	+= book3s64/
- obj-$(CONFIG_PPC_BOOK3S_64)	+= pgtable-frag.o
- obj-$(CONFIG_PPC32)		+= pgtable-frag.o
--obj-$(CONFIG_40x)		+= 40x_mmu.o
--obj-$(CONFIG_44x)		+= 44x_mmu.o
--obj-$(CONFIG_PPC_8xx)		+= 8xx_mmu.o
--obj-$(CONFIG_PPC_FSL_BOOK3E)	+= fsl_booke_mmu.o
- obj-$(CONFIG_NEED_MULTIPLE_NODES) += numa.o
- obj-$(CONFIG_PPC_MM_SLICES)	+= slice.o
- obj-y				+= hugetlbpage.o
--ifdef CONFIG_HUGETLB_PAGE
--obj-$(CONFIG_PPC_BOOK3E_MMU)	+= hugetlbpage-book3e.o
--endif
- obj-$(CONFIG_NOT_COHERENT_CACHE) += dma-noncoherent.o
- obj-$(CONFIG_HIGHMEM)		+= highmem.o
- obj-$(CONFIG_PPC_COPRO_BASE)	+= copro_fault.o
- obj-$(CONFIG_PPC_PTDUMP)	+= ptdump/
--
--# Disable kcov instrumentation on sensitive code
--# This is necessary for booting with kcov enabled on book3e machines
--KCOV_INSTRUMENT_tlb_nohash.o := n
--KCOV_INSTRUMENT_fsl_booke_mmu.o := n
-diff --git a/arch/powerpc/mm/40x_mmu.c b/arch/powerpc/mm/nohash/40x_mmu.c
-similarity index 100%
-rename from arch/powerpc/mm/40x_mmu.c
-rename to arch/powerpc/mm/nohash/40x_mmu.c
-diff --git a/arch/powerpc/mm/44x_mmu.c b/arch/powerpc/mm/nohash/44x_mmu.c
-similarity index 100%
-rename from arch/powerpc/mm/44x_mmu.c
-rename to arch/powerpc/mm/nohash/44x_mmu.c
-diff --git a/arch/powerpc/mm/8xx_mmu.c b/arch/powerpc/mm/nohash/8xx_mmu.c
-similarity index 100%
-rename from arch/powerpc/mm/8xx_mmu.c
-rename to arch/powerpc/mm/nohash/8xx_mmu.c
-diff --git a/arch/powerpc/mm/nohash/Makefile b/arch/powerpc/mm/nohash/Makefile
-new file mode 100644
-index 000000000000..f9f5161fd487
---- /dev/null
-+++ b/arch/powerpc/mm/nohash/Makefile
-@@ -0,0 +1,21 @@
-+# SPDX-License-Identifier: GPL-2.0
-+#
-+# Makefile for the linux ppc-specific parts of the memory manager.
-+#
-+
-+ccflags-$(CONFIG_PPC64)	:= $(NO_MINIMAL_TOC)
-+
-+obj-y				+= mmu_context_nohash.o tlb_nohash.o tlb_nohash_low.o
-+obj-$(CONFIG_PPC_BOOK3E_64)  	+= tlb_low_64e.o pgtable-book3e.o
-+obj-$(CONFIG_40x)		+= 40x_mmu.o
-+obj-$(CONFIG_44x)		+= 44x_mmu.o
-+obj-$(CONFIG_PPC_8xx)		+= 8xx_mmu.o
-+obj-$(CONFIG_PPC_FSL_BOOK3E)	+= fsl_booke_mmu.o
-+ifdef CONFIG_HUGETLB_PAGE
-+obj-$(CONFIG_PPC_BOOK3E_MMU)	+= hugetlbpage-book3e.o
-+endif
-+
-+# Disable kcov instrumentation on sensitive code
-+# This is necessary for booting with kcov enabled on book3e machines
-+KCOV_INSTRUMENT_tlb_nohash.o := n
-+KCOV_INSTRUMENT_fsl_booke_mmu.o := n
-diff --git a/arch/powerpc/mm/fsl_booke_mmu.c b/arch/powerpc/mm/nohash/fsl_booke_mmu.c
-similarity index 100%
-rename from arch/powerpc/mm/fsl_booke_mmu.c
-rename to arch/powerpc/mm/nohash/fsl_booke_mmu.c
-diff --git a/arch/powerpc/mm/hugetlbpage-book3e.c b/arch/powerpc/mm/nohash/hugetlbpage-book3e.c
-similarity index 100%
-rename from arch/powerpc/mm/hugetlbpage-book3e.c
-rename to arch/powerpc/mm/nohash/hugetlbpage-book3e.c
-diff --git a/arch/powerpc/mm/mmu_context_nohash.c b/arch/powerpc/mm/nohash/mmu_context_nohash.c
-similarity index 100%
-rename from arch/powerpc/mm/mmu_context_nohash.c
-rename to arch/powerpc/mm/nohash/mmu_context_nohash.c
-diff --git a/arch/powerpc/mm/pgtable-book3e.c b/arch/powerpc/mm/nohash/pgtable-book3e.c
-similarity index 100%
-rename from arch/powerpc/mm/pgtable-book3e.c
-rename to arch/powerpc/mm/nohash/pgtable-book3e.c
-diff --git a/arch/powerpc/mm/tlb_low_64e.S b/arch/powerpc/mm/nohash/tlb_low_64e.S
-similarity index 100%
-rename from arch/powerpc/mm/tlb_low_64e.S
-rename to arch/powerpc/mm/nohash/tlb_low_64e.S
-diff --git a/arch/powerpc/mm/tlb_nohash.c b/arch/powerpc/mm/nohash/tlb_nohash.c
-similarity index 100%
-rename from arch/powerpc/mm/tlb_nohash.c
-rename to arch/powerpc/mm/nohash/tlb_nohash.c
-diff --git a/arch/powerpc/mm/tlb_nohash_low.S b/arch/powerpc/mm/nohash/tlb_nohash_low.S
-similarity index 100%
-rename from arch/powerpc/mm/tlb_nohash_low.S
-rename to arch/powerpc/mm/nohash/tlb_nohash_low.S
--- 
-2.13.3
+> 
+> I think you have an example in patch 3, but it would be good to have it here.
+> 
+>> diff --git a/arch/powerpc/kernel/mce.c b/arch/powerpc/kernel/mce.c
+>> index b5fec1f9751a..44614462cb34 100644
+>> --- a/arch/powerpc/kernel/mce.c
+>> +++ b/arch/powerpc/kernel/mce.c
+>> @@ -384,101 +387,100 @@ void machine_check_print_event_info(struct machine_check_event *evt,
+>>  		break;
+>>  	}
+>>  
+>> -	printk("%s%s Machine check interrupt [%s]\n", level, sevstr,
+> 
+> I think I'd still like the first line at least to include "machine
+> check" somewhere, I'm not sure everyone will understand what "MCE" means.
+
+I reduced it to MCE so that I can pack in more stuff in 80 columns. But
+you are right, let me see.
+
+> 
+> ...
+>> +
+>> +	if (ea && evt->srr0 != ea)
+>> +		sprintf(dar_str, "DAR: %016llx ", ea);
+>> +	else
+>> +		memset(dar_str, 0, sizeof(dar_str));
+> 
+> Just dar_str[0] = '\0' would work wouldn't it?
+
+Yeah, that also should be enough.
+
+> 
+>> +	if (in_guest || user_mode) {
+>> +		printk("%sMCE: CPU%d: (%s) %s %s %s at %016llx %s[%s]\n",
+>> +			level, evt->cpu, sevstr,
+>> +			in_guest ? "Guest" : "Host",
+>> +			err_type, subtype, evt->srr0, dar_str,
+>> +			evt->disposition == MCE_DISPOSITION_RECOVERED ?
+>> +			"Recovered" : "Not recovered");
+>> +		printk("%sMCE: CPU%d: PID: %d Comm: %s\n",
+>> +			level, evt->cpu, current->pid, current->comm);
+>> +	} else {
+>> +		printk("%sMCE: CPU%d: (%s) Host %s %s at %016llx %s[%s]\n",
+>> +			level, evt->cpu, sevstr, err_type, subtype, evt->srr0,
+>> +			dar_str,
+>> +			evt->disposition == MCE_DISPOSITION_RECOVERED ?
+>> +			"Recovered" : "Not recovered");
+>> +		printk("%sMCE: CPU%d: NIP: [%016llx] %pS\n",
+>> +			level, evt->cpu, evt->srr0, (void *)evt->srr0);
+>> +	}
+> 
+> The first printf in the two cases is quite similar, seems like they
+> could be consolidated.
+> 
+> I also think it'd be clearer to print the NIP on the 2nd line in all
+> cases, rather than the first.
+
+Sure, and I will then put "machine check" on 1st line like below ?
+
+printk("%sMCE: CPU%d: machine check (%s) %s %s %s %s[%s]\n",
+
+
+> 
+> What about (untested) ?
+> 
+>   printk("%sMCE: CPU%d: (%s) %s %s %s %s[%s]\n",
+> 	 level, evt->cpu, sevstr,
+> 	 in_guest ? "Guest" : "Host",
+> 	 err_type, subtype, dar_str,
+> 	 evt->disposition == MCE_DISPOSITION_RECOVERED ?
+> 	 "Recovered" : "Not recovered");
+>   
+>   if (in_guest || user_mode) {
+> 	printk("%sMCE: CPU%d: PID: %d Comm: %s %sNIP: [%016llx]\n",
+> 	       level, evt->cpu, current->pid, current->comm,
+> 	       in_guest ? "Guest " : "", evt->srr0);
+>   } else {
+> 	printk("%sMCE: CPU%d: NIP: [%016llx] %pS\n",
+> 		level, evt->cpu, evt->srr0, (void *)evt->srr0);
+>   }
+
+Sure, will make these changes.
+
+Thanks,
+-Mahesh.
 
