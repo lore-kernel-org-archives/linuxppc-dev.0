@@ -6,38 +6,38 @@ X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
 	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 21D93C43381
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Mar 2019 11:32:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4F017C43381
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Mar 2019 11:34:24 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 97FC4217F5
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Mar 2019 11:32:39 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 97FC4217F5
+	by mail.kernel.org (Postfix) with ESMTPS id CA3EB217F5
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Mar 2019 11:34:23 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CA3EB217F5
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44W02s5VPmzDqV9
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Mar 2019 22:32:37 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+	by lists.ozlabs.org (Postfix) with ESMTP id 44W04s6WjdzDqTj
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Mar 2019 22:34:21 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44Vzvp1HwNzDqSC
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Mar 2019 22:26:30 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44Vzvq1FXHzDqSC
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Mar 2019 22:26:31 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: by ozlabs.org (Postfix)
- id 44Vzvn473Cz9sQs; Fri, 29 Mar 2019 22:26:29 +1100 (AEDT)
+ id 44Vzvp58qwz9sQs; Fri, 29 Mar 2019 22:26:30 +1100 (AEDT)
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 44Vzvn26C3z9sQr; Fri, 29 Mar 2019 22:26:29 +1100 (AEDT)
+ id 44Vzvp3jbPz9sR0; Fri, 29 Mar 2019 22:26:30 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: stable@vger.kernel.org,
 	gregkh@linuxfoundation.org
-Subject: [PATCH stable v4.14 02/32] powerpc/64s: Patch barrier_nospec in
- modules
-Date: Fri, 29 Mar 2019 22:25:50 +1100
-Message-Id: <20190329112620.14489-3-mpe@ellerman.id.au>
+Subject: [PATCH stable v4.14 03/32] powerpc/64s: Enable barrier_nospec based
+ on firmware settings
+Date: Fri, 29 Mar 2019 22:25:51 +1100
+Message-Id: <20190329112620.14489-4-mpe@ellerman.id.au>
 X-Mailer: git-send-email 2.20.1
 In-Reply-To: <20190329112620.14489-1-mpe@ellerman.id.au>
 References: <20190329112620.14489-1-mpe@ellerman.id.au>
@@ -61,112 +61,128 @@ Sender: "Linuxppc-dev"
 
 From: Michal Suchanek <msuchanek@suse.de>
 
-commit 815069ca57c142eb71d27439bc27f41a433a67b3 upstream.
+commit cb3d6759a93c6d0aea1c10deb6d00e111c29c19c upstream.
 
-Note that unlike RFI which is patched only in kernel the nospec state
-reflects settings at the time the module was loaded.
+Check what firmware told us and enable/disable the barrier_nospec as
+appropriate.
 
-Iterating all modules and re-patching every time the settings change
-is not implemented.
+We err on the side of enabling the barrier, as it's no-op on older
+systems, see the comment for more detail.
 
-Based on lwsync patching.
-
-Signed-off-by: Michal Suchanek <msuchanek@suse.de>
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- arch/powerpc/include/asm/setup.h  |  7 +++++++
- arch/powerpc/kernel/module.c      |  6 ++++++
- arch/powerpc/kernel/security.c    |  2 +-
- arch/powerpc/lib/feature-fixups.c | 16 +++++++++++++---
- 4 files changed, 27 insertions(+), 4 deletions(-)
+ arch/powerpc/include/asm/setup.h       |  1 +
+ arch/powerpc/kernel/security.c         | 59 ++++++++++++++++++++++++++
+ arch/powerpc/platforms/powernv/setup.c |  1 +
+ arch/powerpc/platforms/pseries/setup.c |  1 +
+ 4 files changed, 62 insertions(+)
 
 diff --git a/arch/powerpc/include/asm/setup.h b/arch/powerpc/include/asm/setup.h
-index 88018e442386..8f3e5f6de0dd 100644
+index 8f3e5f6de0dd..cd436d208b40 100644
 --- a/arch/powerpc/include/asm/setup.h
 +++ b/arch/powerpc/include/asm/setup.h
-@@ -53,6 +53,13 @@ enum l1d_flush_type {
+@@ -52,6 +52,7 @@ enum l1d_flush_type {
+ 
  void setup_rfi_flush(enum l1d_flush_type, bool enable);
  void do_rfi_flush_fixups(enum l1d_flush_type types);
++void setup_barrier_nospec(void);
  void do_barrier_nospec_fixups(bool enable);
-+extern bool barrier_nospec_enabled;
-+
-+#ifdef CONFIG_PPC_BOOK3S_64
-+void do_barrier_nospec_fixups_range(bool enable, void *start, void *end);
-+#else
-+static inline void do_barrier_nospec_fixups_range(bool enable, void *start, void *end) { };
-+#endif
+ extern bool barrier_nospec_enabled;
  
- #endif /* !__ASSEMBLY__ */
- 
-diff --git a/arch/powerpc/kernel/module.c b/arch/powerpc/kernel/module.c
-index 3f7ba0f5bf29..1b3c6835e730 100644
---- a/arch/powerpc/kernel/module.c
-+++ b/arch/powerpc/kernel/module.c
-@@ -72,6 +72,12 @@ int module_finalize(const Elf_Ehdr *hdr,
- 		do_feature_fixups(powerpc_firmware_features,
- 				  (void *)sect->sh_addr,
- 				  (void *)sect->sh_addr + sect->sh_size);
-+
-+	sect = find_section(hdr, sechdrs, "__spec_barrier_fixup");
-+	if (sect != NULL)
-+		do_barrier_nospec_fixups_range(barrier_nospec_enabled,
-+				  (void *)sect->sh_addr,
-+				  (void *)sect->sh_addr + sect->sh_size);
- #endif
- 
- 	sect = find_section(hdr, sechdrs, "__lwsync_fixup");
 diff --git a/arch/powerpc/kernel/security.c b/arch/powerpc/kernel/security.c
-index 4f18a447ab70..4eb9d2b252e3 100644
+index 4eb9d2b252e3..7553951b500a 100644
 --- a/arch/powerpc/kernel/security.c
 +++ b/arch/powerpc/kernel/security.c
-@@ -15,7 +15,7 @@
- 
- unsigned long powerpc_security_features __read_mostly = SEC_FTR_DEFAULT;
- 
--static bool barrier_nospec_enabled;
-+bool barrier_nospec_enabled;
- 
- static void enable_barrier_nospec(bool enable)
- {
-diff --git a/arch/powerpc/lib/feature-fixups.c b/arch/powerpc/lib/feature-fixups.c
-index 65b4e8276bdd..d78421174ab6 100644
---- a/arch/powerpc/lib/feature-fixups.c
-+++ b/arch/powerpc/lib/feature-fixups.c
-@@ -278,14 +278,14 @@ void do_rfi_flush_fixups(enum l1d_flush_type types)
- 						: "unknown");
+@@ -23,6 +23,65 @@ static void enable_barrier_nospec(bool enable)
+ 	do_barrier_nospec_fixups(enable);
  }
  
--void do_barrier_nospec_fixups(bool enable)
-+void do_barrier_nospec_fixups_range(bool enable, void *fixup_start, void *fixup_end)
- {
- 	unsigned int instr, *dest;
- 	long *start, *end;
- 	int i;
- 
--	start = PTRRELOC(&__start___barrier_nospec_fixup),
--	end = PTRRELOC(&__stop___barrier_nospec_fixup);
-+	start = fixup_start;
-+	end = fixup_end;
- 
- 	instr = 0x60000000; /* nop */
- 
-@@ -304,6 +304,16 @@ void do_barrier_nospec_fixups(bool enable)
- 	printk(KERN_DEBUG "barrier-nospec: patched %d locations\n", i);
- }
- 
-+void do_barrier_nospec_fixups(bool enable)
++void setup_barrier_nospec(void)
 +{
-+	void *start, *end;
++	bool enable;
 +
-+	start = PTRRELOC(&__start___barrier_nospec_fixup),
-+	end = PTRRELOC(&__stop___barrier_nospec_fixup);
++	/*
++	 * It would make sense to check SEC_FTR_SPEC_BAR_ORI31 below as well.
++	 * But there's a good reason not to. The two flags we check below are
++	 * both are enabled by default in the kernel, so if the hcall is not
++	 * functional they will be enabled.
++	 * On a system where the host firmware has been updated (so the ori
++	 * functions as a barrier), but on which the hypervisor (KVM/Qemu) has
++	 * not been updated, we would like to enable the barrier. Dropping the
++	 * check for SEC_FTR_SPEC_BAR_ORI31 achieves that. The only downside is
++	 * we potentially enable the barrier on systems where the host firmware
++	 * is not updated, but that's harmless as it's a no-op.
++	 */
++	enable = security_ftr_enabled(SEC_FTR_FAVOUR_SECURITY) &&
++		 security_ftr_enabled(SEC_FTR_BNDS_CHK_SPEC_BAR);
 +
-+	do_barrier_nospec_fixups_range(enable, start, end);
++	enable_barrier_nospec(enable);
 +}
 +
- #endif /* CONFIG_PPC_BOOK3S_64 */
++#ifdef CONFIG_DEBUG_FS
++static int barrier_nospec_set(void *data, u64 val)
++{
++	switch (val) {
++	case 0:
++	case 1:
++		break;
++	default:
++		return -EINVAL;
++	}
++
++	if (!!val == !!barrier_nospec_enabled)
++		return 0;
++
++	enable_barrier_nospec(!!val);
++
++	return 0;
++}
++
++static int barrier_nospec_get(void *data, u64 *val)
++{
++	*val = barrier_nospec_enabled ? 1 : 0;
++	return 0;
++}
++
++DEFINE_SIMPLE_ATTRIBUTE(fops_barrier_nospec,
++			barrier_nospec_get, barrier_nospec_set, "%llu\n");
++
++static __init int barrier_nospec_debugfs_init(void)
++{
++	debugfs_create_file("barrier_nospec", 0600, powerpc_debugfs_root, NULL,
++			    &fops_barrier_nospec);
++	return 0;
++}
++device_initcall(barrier_nospec_debugfs_init);
++#endif /* CONFIG_DEBUG_FS */
++
+ ssize_t cpu_show_meltdown(struct device *dev, struct device_attribute *attr, char *buf)
+ {
+ 	bool thread_priv;
+diff --git a/arch/powerpc/platforms/powernv/setup.c b/arch/powerpc/platforms/powernv/setup.c
+index fd143c934768..e6f8505a3818 100644
+--- a/arch/powerpc/platforms/powernv/setup.c
++++ b/arch/powerpc/platforms/powernv/setup.c
+@@ -123,6 +123,7 @@ static void pnv_setup_rfi_flush(void)
+ 		  security_ftr_enabled(SEC_FTR_L1D_FLUSH_HV));
  
- void do_lwsync_fixups(unsigned long value, void *fixup_start, void *fixup_end)
+ 	setup_rfi_flush(type, enable);
++	setup_barrier_nospec();
+ }
+ 
+ static void __init pnv_setup_arch(void)
+diff --git a/arch/powerpc/platforms/pseries/setup.c b/arch/powerpc/platforms/pseries/setup.c
+index 45f814041448..ac12ec4d839d 100644
+--- a/arch/powerpc/platforms/pseries/setup.c
++++ b/arch/powerpc/platforms/pseries/setup.c
+@@ -534,6 +534,7 @@ void pseries_setup_rfi_flush(void)
+ 		 security_ftr_enabled(SEC_FTR_L1D_FLUSH_PR);
+ 
+ 	setup_rfi_flush(types, enable);
++	setup_barrier_nospec();
+ }
+ 
+ static void __init pSeries_setup_arch(void)
 -- 
 2.20.1
 
