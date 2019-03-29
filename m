@@ -3,40 +3,40 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
 X-Spam-Status: No, score=-3.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS
-	autolearn=ham autolearn_force=no version=3.4.0
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,
+	URIBL_BLOCKED autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BF7D3C43381
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Mar 2019 15:17:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 77C43C43381
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Mar 2019 15:19:01 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3764B2184C
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Mar 2019 15:17:16 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id AE9BB2054F
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Mar 2019 15:19:00 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="cPqnb4g3"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3764B2184C
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="WyeZSpUY"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org AE9BB2054F
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linuxfoundation.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44W5222pGqzDqNj
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 30 Mar 2019 02:17:14 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44W5422y4QzDqRC
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 30 Mar 2019 02:18:58 +1100 (AEDT)
 Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44W4Xt6vqNzDqQZ
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Mar 2019 01:55:26 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44W4Xz1G0dzDqD5
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Mar 2019 01:55:31 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=linuxfoundation.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="cPqnb4g3"; 
+ unprotected) header.d=kernel.org header.i=@kernel.org header.b="WyeZSpUY"; 
  dkim-atps=neutral
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 44W4Xt5MTpz8w0T
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Mar 2019 01:55:26 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 44W4Xy5MPNz8w0T
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Mar 2019 01:55:30 +1100 (AEDT)
 Received: by ozlabs.org (Postfix)
- id 44W4Xt3w6Fz9sQq; Sat, 30 Mar 2019 01:55:26 +1100 (AEDT)
+ id 44W4Xy2bcSz9sPx; Sat, 30 Mar 2019 01:55:30 +1100 (AEDT)
 Authentication-Results: ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=linuxfoundation.org
  (client-ip=198.145.29.99; helo=mail.kernel.org;
@@ -44,34 +44,34 @@ Authentication-Results: ozlabs.org;
 Authentication-Results: ozlabs.org; dmarc=none (p=none dis=none)
  header.from=linuxfoundation.org
 Authentication-Results: ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="cPqnb4g3"; 
+ unprotected) header.d=kernel.org header.i=@kernel.org header.b="WyeZSpUY"; 
  dkim-atps=neutral
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 44W4Xs6Jwmz9sPp
- for <linuxppc-dev@ozlabs.org>; Sat, 30 Mar 2019 01:55:25 +1100 (AEDT)
+ by ozlabs.org (Postfix) with ESMTPS id 44W4Xx3v70z9sQq
+ for <linuxppc-dev@ozlabs.org>; Sat, 30 Mar 2019 01:55:29 +1100 (AEDT)
 Received: from localhost (83-86-89-107.cable.dynamic.v4.ziggo.nl
  [83.86.89.107])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id E42AA206C0;
- Fri, 29 Mar 2019 14:55:23 +0000 (UTC)
+ by mail.kernel.org (Postfix) with ESMTPSA id 7F5F82184C;
+ Fri, 29 Mar 2019 14:55:26 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1553871324;
- bh=nA7Vkg0EwMmK60O329y5adDYcb1Q0HxKo9/YFRyBMCQ=;
+ s=default; t=1553871327;
+ bh=yQSmvLUrjfPo2ZmdXxl8WCiD3usQ8cE8MCU0B+cQJ4Q=;
  h=Subject:To:Cc:From:Date:In-Reply-To:From;
- b=cPqnb4g3IkAL+RzjK5ZrT8zJ569+gDKgAHiKYSkAmLTt2FY8uFfKn2MljrbKKX88D
- OP/upmaLLlILbNnptldjrd//W5lzt/GIEH4NJ1M3ueg6yR/0cPFyomZjdZwAMnujjy
- bbDleie26ywIWQclJqWr1HyrZjhKzooegfeSbJK0=
-Subject: Patch "[PATCH stable v4.14 06/32] powerpc/64s: Enhance the
- information in cpu_show_spectre_v1()" has been added to the 4.14-stable tree
+ b=WyeZSpUYnQqrmjIUhyNWapbFj+WWQ0MnqDQCUfjd/Og5SoyAfGv9FmvIwgnVm+6ix
+ wP30tilcDt21I+7D5uh+T3JGz05NwNZnPnZr2NnATg5hG7AN5ZfFkuvVCWWw/KNMfG
+ 56EWBAoNGAHnfgA8af4h0IADnQQcUQG8Pqaczr/8=
+Subject: Patch "[PATCH stable v4.14 02/32] powerpc/64s: Patch barrier_nospec
+ in modules" has been added to the 4.14-stable tree
 To: christophe.leroy@c-s.fr, diana.craciun@nxp.com, gregkh@linuxfoundation.org,
  linuxppc-dev@ozlabs.org, mpe@ellerman.id.au, msuchanek@suse.de
 From: <gregkh@linuxfoundation.org>
 Date: Fri, 29 Mar 2019 15:54:46 +0100
-In-Reply-To: <20190329112620.14489-7-mpe@ellerman.id.au>
-Message-ID: <155387128654124@kroah.com>
+In-Reply-To: <20190329112620.14489-3-mpe@ellerman.id.au>
+Message-ID: <1553871286208208@kroah.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ANSI_X3.4-1968
 Content-Transfer-Encoding: 8bit
@@ -96,13 +96,13 @@ Sender: "Linuxppc-dev"
 
 This is a note to let you know that I've just added the patch titled
 
-    [PATCH stable v4.14 06/32] powerpc/64s: Enhance the information in cpu_show_spectre_v1()
+    [PATCH stable v4.14 02/32] powerpc/64s: Patch barrier_nospec in modules
 
 to the 4.14-stable tree which can be found at:
     http://www.kernel.org/git/?p=linux/kernel/git/stable/stable-queue.git;a=summary
 
 The filename of the patch is:
-     powerpc-64s-enhance-the-information-in-cpu_show_spectre_v1.patch
+     powerpc-64s-patch-barrier_nospec-in-modules.patch
 and it can be found in the queue-4.14 subdirectory.
 
 If you, or anyone else, feels it should not be added to the stable tree,
@@ -111,40 +111,115 @@ please let <stable@vger.kernel.org> know about it.
 
 From foo@baz Fri Mar 29 15:53:50 CET 2019
 From: Michael Ellerman <mpe@ellerman.id.au>
-Date: Fri, 29 Mar 2019 22:25:54 +1100
-Subject: [PATCH stable v4.14 06/32] powerpc/64s: Enhance the information in cpu_show_spectre_v1()
+Date: Fri, 29 Mar 2019 22:25:50 +1100
+Subject: [PATCH stable v4.14 02/32] powerpc/64s: Patch barrier_nospec in modules
 To: stable@vger.kernel.org, gregkh@linuxfoundation.org
 Cc: linuxppc-dev@ozlabs.org, diana.craciun@nxp.com, msuchanek@suse.de, christophe.leroy@c-s.fr
-Message-ID: <20190329112620.14489-7-mpe@ellerman.id.au>
+Message-ID: <20190329112620.14489-3-mpe@ellerman.id.au>
 
 From: Michael Ellerman <mpe@ellerman.id.au>
 
 From: Michal Suchanek <msuchanek@suse.de>
 
-commit a377514519b9a20fa1ea9adddbb4129573129cef upstream.
+commit 815069ca57c142eb71d27439bc27f41a433a67b3 upstream.
 
-We now have barrier_nospec as mitigation so print it in
-cpu_show_spectre_v1() when enabled.
+Note that unlike RFI which is patched only in kernel the nospec state
+reflects settings at the time the module was loaded.
+
+Iterating all modules and re-patching every time the settings change
+is not implemented.
+
+Based on lwsync patching.
 
 Signed-off-by: Michal Suchanek <msuchanek@suse.de>
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 ---
- arch/powerpc/kernel/security.c |    3 +++
- 1 file changed, 3 insertions(+)
+ arch/powerpc/include/asm/setup.h  |    7 +++++++
+ arch/powerpc/kernel/module.c      |    6 ++++++
+ arch/powerpc/kernel/security.c    |    2 +-
+ arch/powerpc/lib/feature-fixups.c |   16 +++++++++++++---
+ 4 files changed, 27 insertions(+), 4 deletions(-)
 
+--- a/arch/powerpc/include/asm/setup.h
++++ b/arch/powerpc/include/asm/setup.h
+@@ -53,6 +53,13 @@ enum l1d_flush_type {
+ void setup_rfi_flush(enum l1d_flush_type, bool enable);
+ void do_rfi_flush_fixups(enum l1d_flush_type types);
+ void do_barrier_nospec_fixups(bool enable);
++extern bool barrier_nospec_enabled;
++
++#ifdef CONFIG_PPC_BOOK3S_64
++void do_barrier_nospec_fixups_range(bool enable, void *start, void *end);
++#else
++static inline void do_barrier_nospec_fixups_range(bool enable, void *start, void *end) { };
++#endif
+ 
+ #endif /* !__ASSEMBLY__ */
+ 
+--- a/arch/powerpc/kernel/module.c
++++ b/arch/powerpc/kernel/module.c
+@@ -72,6 +72,12 @@ int module_finalize(const Elf_Ehdr *hdr,
+ 		do_feature_fixups(powerpc_firmware_features,
+ 				  (void *)sect->sh_addr,
+ 				  (void *)sect->sh_addr + sect->sh_size);
++
++	sect = find_section(hdr, sechdrs, "__spec_barrier_fixup");
++	if (sect != NULL)
++		do_barrier_nospec_fixups_range(barrier_nospec_enabled,
++				  (void *)sect->sh_addr,
++				  (void *)sect->sh_addr + sect->sh_size);
+ #endif
+ 
+ 	sect = find_section(hdr, sechdrs, "__lwsync_fixup");
 --- a/arch/powerpc/kernel/security.c
 +++ b/arch/powerpc/kernel/security.c
-@@ -120,6 +120,9 @@ ssize_t cpu_show_spectre_v1(struct devic
- 	if (!security_ftr_enabled(SEC_FTR_BNDS_CHK_SPEC_BAR))
- 		return sprintf(buf, "Not affected\n");
+@@ -15,7 +15,7 @@
  
-+	if (barrier_nospec_enabled)
-+		return sprintf(buf, "Mitigation: __user pointer sanitization\n");
-+
- 	return sprintf(buf, "Vulnerable\n");
+ unsigned long powerpc_security_features __read_mostly = SEC_FTR_DEFAULT;
+ 
+-static bool barrier_nospec_enabled;
++bool barrier_nospec_enabled;
+ 
+ static void enable_barrier_nospec(bool enable)
+ {
+--- a/arch/powerpc/lib/feature-fixups.c
++++ b/arch/powerpc/lib/feature-fixups.c
+@@ -278,14 +278,14 @@ void do_rfi_flush_fixups(enum l1d_flush_
+ 						: "unknown");
  }
  
+-void do_barrier_nospec_fixups(bool enable)
++void do_barrier_nospec_fixups_range(bool enable, void *fixup_start, void *fixup_end)
+ {
+ 	unsigned int instr, *dest;
+ 	long *start, *end;
+ 	int i;
+ 
+-	start = PTRRELOC(&__start___barrier_nospec_fixup),
+-	end = PTRRELOC(&__stop___barrier_nospec_fixup);
++	start = fixup_start;
++	end = fixup_end;
+ 
+ 	instr = 0x60000000; /* nop */
+ 
+@@ -304,6 +304,16 @@ void do_barrier_nospec_fixups(bool enabl
+ 	printk(KERN_DEBUG "barrier-nospec: patched %d locations\n", i);
+ }
+ 
++void do_barrier_nospec_fixups(bool enable)
++{
++	void *start, *end;
++
++	start = PTRRELOC(&__start___barrier_nospec_fixup),
++	end = PTRRELOC(&__stop___barrier_nospec_fixup);
++
++	do_barrier_nospec_fixups_range(enable, start, end);
++}
++
+ #endif /* CONFIG_PPC_BOOK3S_64 */
+ 
+ void do_lwsync_fixups(unsigned long value, void *fixup_start, void *fixup_end)
 
 
 Patches currently in stable-queue which might be from mpe@ellerman.id.au are
