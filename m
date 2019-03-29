@@ -6,37 +6,37 @@ X-Spam-Status: No, score=-3.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,
 	URIBL_BLOCKED autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AC228C43381
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Mar 2019 15:31:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 89CD3C10F05
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Mar 2019 15:33:37 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 2AB51218A5
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Mar 2019 15:31:36 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 09E8F218A5
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Mar 2019 15:33:36 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="0HVE2Drk"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2AB51218A5
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="Z/M+uhl0"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 09E8F218A5
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linuxfoundation.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44W5LZ1QxhzDqSm
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 30 Mar 2019 02:31:34 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+	by lists.ozlabs.org (Postfix) with ESMTP id 44W5Nv22c3zDqQN
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 30 Mar 2019 02:33:35 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44W4YK4jvhzDqQl
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Mar 2019 01:55:49 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44W4YR42W4zDqK9
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Mar 2019 01:55:55 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=linuxfoundation.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="0HVE2Drk"; 
+ unprotected) header.d=kernel.org header.i=@kernel.org header.b="Z/M+uhl0"; 
  dkim-atps=neutral
 Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 44W4YK4390z8t23
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Mar 2019 01:55:49 +1100 (AEDT)
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 44W4YR2nkPz8t23
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Mar 2019 01:55:55 +1100 (AEDT)
 Received: by ozlabs.org (Postfix)
- id 44W4YK3lNGz9sQq; Sat, 30 Mar 2019 01:55:49 +1100 (AEDT)
+ id 44W4YR2Fnfz9sQq; Sat, 30 Mar 2019 01:55:55 +1100 (AEDT)
 Authentication-Results: ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=linuxfoundation.org
  (client-ip=198.145.29.99; helo=mail.kernel.org;
@@ -44,34 +44,34 @@ Authentication-Results: ozlabs.org;
 Authentication-Results: ozlabs.org; dmarc=none (p=none dis=none)
  header.from=linuxfoundation.org
 Authentication-Results: ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="0HVE2Drk"; 
+ unprotected) header.d=kernel.org header.i=@kernel.org header.b="Z/M+uhl0"; 
  dkim-atps=neutral
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 44W4YK058bz9sPx
- for <linuxppc-dev@ozlabs.org>; Sat, 30 Mar 2019 01:55:49 +1100 (AEDT)
+ by ozlabs.org (Postfix) with ESMTPS id 44W4YQ5hzxz9sPx
+ for <linuxppc-dev@ozlabs.org>; Sat, 30 Mar 2019 01:55:53 +1100 (AEDT)
 Received: from localhost (83-86-89-107.cable.dynamic.v4.ziggo.nl
  [83.86.89.107])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id 31193206C0;
- Fri, 29 Mar 2019 14:55:47 +0000 (UTC)
+ by mail.kernel.org (Postfix) with ESMTPSA id 02EB8206C0;
+ Fri, 29 Mar 2019 14:55:50 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1553871347;
- bh=AmKhezehLrvh2iGa0CGemrTnOIDBrJ0TCrRy8RswAVs=;
+ s=default; t=1553871351;
+ bh=Ue/gZSBz40EN9G/2AhEtlzQvy8COCBU2FHFP+cfzoAE=;
  h=Subject:To:Cc:From:Date:In-Reply-To:From;
- b=0HVE2Drk8bpWnNvDrTZK4K95dJcKeONZ9t8SK7rLDajzk6TeKIl6idNkH4KQTiuQP
- dHN4OboZoh/4b4tYXlRi7J9RSzTUfFRpRManB1z9RaZ5A0DDT3UhN/8z/CTKu2Y4Lh
- QQ/qsdb3hzMCp6fGJ9iVQOhQYkeqItnqsO/RIgZ8=
-Subject: Patch "[PATCH stable v4.14 18/32] powerpc/pseries: Query hypervisor
- for count cache flush settings" has been added to the 4.14-stable tree
+ b=Z/M+uhl0dJ6DLfFUjZP+G4NxMwbft30fsVZIsJA5HNMusuavWxXvNja27fDhEU87v
+ KH9s9+T9C3lI4BDIZRWKSlmwBZOhzwJ3CUQbkCQgLN5XNryvWij3fCcw00U6cG6qjX
+ 70fseAXprMPbwVT3AoNqj+H+3/RJVAGnHOUMXh+w=
+Subject: Patch "[PATCH stable v4.14 22/32] powerpc/fsl: Fix spectre_v2
+ mitigations reporting" has been added to the 4.14-stable tree
 To: christophe.leroy@c-s.fr, diana.craciun@nxp.com, gregkh@linuxfoundation.org,
  linuxppc-dev@ozlabs.org, mpe@ellerman.id.au, msuchanek@suse.de
 From: <gregkh@linuxfoundation.org>
 Date: Fri, 29 Mar 2019 15:54:47 +0100
-In-Reply-To: <20190329112620.14489-19-mpe@ellerman.id.au>
-Message-ID: <1553871287221208@kroah.com>
+In-Reply-To: <20190329112620.14489-23-mpe@ellerman.id.au>
+Message-ID: <155387128713231@kroah.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ANSI_X3.4-1968
 Content-Transfer-Encoding: 8bit
@@ -96,13 +96,13 @@ Sender: "Linuxppc-dev"
 
 This is a note to let you know that I've just added the patch titled
 
-    [PATCH stable v4.14 18/32] powerpc/pseries: Query hypervisor for count cache flush settings
+    [PATCH stable v4.14 22/32] powerpc/fsl: Fix spectre_v2 mitigations reporting
 
 to the 4.14-stable tree which can be found at:
     http://www.kernel.org/git/?p=linux/kernel/git/stable/stable-queue.git;a=summary
 
 The filename of the patch is:
-     powerpc-pseries-query-hypervisor-for-count-cache-flush-settings.patch
+     powerpc-fsl-fix-spectre_v2-mitigations-reporting.patch
 and it can be found in the queue-4.14 subdirectory.
 
 If you, or anyone else, feels it should not be added to the stable tree,
@@ -111,65 +111,45 @@ please let <stable@vger.kernel.org> know about it.
 
 From foo@baz Fri Mar 29 15:53:50 CET 2019
 From: Michael Ellerman <mpe@ellerman.id.au>
-Date: Fri, 29 Mar 2019 22:26:06 +1100
-Subject: [PATCH stable v4.14 18/32] powerpc/pseries: Query hypervisor for count cache flush settings
+Date: Fri, 29 Mar 2019 22:26:10 +1100
+Subject: [PATCH stable v4.14 22/32] powerpc/fsl: Fix spectre_v2 mitigations reporting
 To: stable@vger.kernel.org, gregkh@linuxfoundation.org
 Cc: linuxppc-dev@ozlabs.org, diana.craciun@nxp.com, msuchanek@suse.de, christophe.leroy@c-s.fr
-Message-ID: <20190329112620.14489-19-mpe@ellerman.id.au>
+Message-ID: <20190329112620.14489-23-mpe@ellerman.id.au>
 
 From: Michael Ellerman <mpe@ellerman.id.au>
 
-commit ba72dc171954b782a79d25e0f4b3ed91090c3b1e upstream.
+From: Diana Craciun <diana.craciun@nxp.com>
 
-Use the existing hypercall to determine the appropriate settings for
-the count cache flush, and then call the generic powerpc code to set
-it up based on the security feature flags.
+commit 7d8bad99ba5a22892f0cad6881289fdc3875a930 upstream.
 
+Currently for CONFIG_PPC_FSL_BOOK3E the spectre_v2 file is incorrect:
+
+  $ cat /sys/devices/system/cpu/vulnerabilities/spectre_v2
+  "Mitigation: Software count cache flush"
+
+Which is wrong. Fix it to report vulnerable for now.
+
+Fixes: ee13cb249fab ("powerpc/64s: Add support for software count cache flush")
+Cc: stable@vger.kernel.org # v4.19+
+Signed-off-by: Diana Craciun <diana.craciun@nxp.com>
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 ---
- arch/powerpc/include/asm/hvcall.h      |    2 ++
- arch/powerpc/platforms/pseries/setup.c |    7 +++++++
- 2 files changed, 9 insertions(+)
+ arch/powerpc/kernel/security.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/arch/powerpc/include/asm/hvcall.h
-+++ b/arch/powerpc/include/asm/hvcall.h
-@@ -340,10 +340,12 @@
- #define H_CPU_CHAR_BRANCH_HINTS_HONORED	(1ull << 58) // IBM bit 5
- #define H_CPU_CHAR_THREAD_RECONFIG_CTRL	(1ull << 57) // IBM bit 6
- #define H_CPU_CHAR_COUNT_CACHE_DISABLED	(1ull << 56) // IBM bit 7
-+#define H_CPU_CHAR_BCCTR_FLUSH_ASSIST	(1ull << 54) // IBM bit 9
+--- a/arch/powerpc/kernel/security.c
++++ b/arch/powerpc/kernel/security.c
+@@ -22,7 +22,7 @@ enum count_cache_flush_type {
+ 	COUNT_CACHE_FLUSH_SW	= 0x2,
+ 	COUNT_CACHE_FLUSH_HW	= 0x4,
+ };
+-static enum count_cache_flush_type count_cache_flush_type;
++static enum count_cache_flush_type count_cache_flush_type = COUNT_CACHE_FLUSH_NONE;
  
- #define H_CPU_BEHAV_FAVOUR_SECURITY	(1ull << 63) // IBM bit 0
- #define H_CPU_BEHAV_L1D_FLUSH_PR	(1ull << 62) // IBM bit 1
- #define H_CPU_BEHAV_BNDS_CHK_SPEC_BAR	(1ull << 61) // IBM bit 2
-+#define H_CPU_BEHAV_FLUSH_COUNT_CACHE	(1ull << 58) // IBM bit 5
- 
- /* Flag values used in H_REGISTER_PROC_TBL hcall */
- #define PROC_TABLE_OP_MASK	0x18
---- a/arch/powerpc/platforms/pseries/setup.c
-+++ b/arch/powerpc/platforms/pseries/setup.c
-@@ -484,6 +484,12 @@ static void init_cpu_char_feature_flags(
- 	if (result->character & H_CPU_CHAR_COUNT_CACHE_DISABLED)
- 		security_ftr_set(SEC_FTR_COUNT_CACHE_DISABLED);
- 
-+	if (result->character & H_CPU_CHAR_BCCTR_FLUSH_ASSIST)
-+		security_ftr_set(SEC_FTR_BCCTR_FLUSH_ASSIST);
-+
-+	if (result->behaviour & H_CPU_BEHAV_FLUSH_COUNT_CACHE)
-+		security_ftr_set(SEC_FTR_FLUSH_COUNT_CACHE);
-+
- 	/*
- 	 * The features below are enabled by default, so we instead look to see
- 	 * if firmware has *disabled* them, and clear them if so.
-@@ -534,6 +540,7 @@ void pseries_setup_rfi_flush(void)
- 		 security_ftr_enabled(SEC_FTR_L1D_FLUSH_PR);
- 
- 	setup_rfi_flush(types, enable);
-+	setup_count_cache_flush();
- }
- 
- static void __init pSeries_setup_arch(void)
+ bool barrier_nospec_enabled;
+ static bool no_nospec;
 
 
 Patches currently in stable-queue which might be from mpe@ellerman.id.au are
