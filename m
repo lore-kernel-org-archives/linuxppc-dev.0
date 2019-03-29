@@ -2,85 +2,74 @@ Return-Path: <SRS0=YrVw=SA=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 678A8C43381
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Mar 2019 21:31:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 31AD9C43381
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Mar 2019 21:52:34 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id D38EF218A2
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Mar 2019 21:31:31 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="key not found in DNS" (0-bit key) header.d=codeaurora.org header.i=@codeaurora.org header.b="ewsK2G44";
-	dkim=fail reason="key not found in DNS" (0-bit key) header.d=codeaurora.org header.i=@codeaurora.org header.b="jgo2nrPx"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D38EF218A2
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=codeaurora.org
+	by mail.kernel.org (Postfix) with ESMTPS id 4A94421773
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Mar 2019 21:52:33 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4A94421773
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nxp.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44WFKs6NCKzDqV2
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 30 Mar 2019 08:31:29 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44WFp70YBNzDqKL
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 30 Mar 2019 08:52:31 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=codeaurora.org
- (client-ip=198.145.29.96; helo=smtp.codeaurora.org;
- envelope-from=mojha@codeaurora.org; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=codeaurora.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=codeaurora.org header.i=@codeaurora.org
- header.b="ewsK2G44"; 
- dkim=pass (1024-bit key) header.d=codeaurora.org header.i=@codeaurora.org
- header.b="jgo2nrPx"; dkim-atps=neutral
-Received: from smtp.codeaurora.org (smtp.codeaurora.org [198.145.29.96])
+ spf=pass (mailfrom) smtp.mailfrom=gmail.com
+ (client-ip=209.85.167.194; helo=mail-oi1-f194.google.com;
+ envelope-from=pku.leo@gmail.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=fail (p=none dis=none) header.from=nxp.com
+Received: from mail-oi1-f194.google.com (mail-oi1-f194.google.com
+ [209.85.167.194])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44WFJ03jLgzDqQc
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Mar 2019 08:29:51 +1100 (AEDT)
-Received: by smtp.codeaurora.org (Postfix, from userid 1000)
- id 849736087D; Fri, 29 Mar 2019 21:29:49 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=codeaurora.org;
- s=default; t=1553894989;
- bh=J0wz0I+Iwv9SmSNn3kJ+vHfOj5hN3rY1UZMX4khmb2M=;
- h=Subject:To:Cc:References:From:Date:In-Reply-To:From;
- b=ewsK2G44sa5xNhsuzwc6MdXbxJWuUVnMpIozLJdw2QIkfV/ltXtQY50GWplGDhcFn
- 8LytQNy4KtuLFskJkoXwtwniTHm8eHShyJW5xfICvcTwq73ekvKj+z31gaHGCSJMgJ
- szJ1AnFmkemrvMnvlbbhz2wGk2wW7fK48cHOL7Tc=
-Received: from [10.79.168.116]
- (blr-bdr-fw-01_globalnat_allzones-outside.qualcomm.com [103.229.18.19])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- (Authenticated sender: mojha@smtp.codeaurora.org)
- by smtp.codeaurora.org (Postfix) with ESMTPSA id 5D25E6087D;
- Fri, 29 Mar 2019 21:29:41 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=codeaurora.org;
- s=default; t=1553894987;
- bh=J0wz0I+Iwv9SmSNn3kJ+vHfOj5hN3rY1UZMX4khmb2M=;
- h=Subject:To:Cc:References:From:Date:In-Reply-To:From;
- b=jgo2nrPxNy2z5n/R157FwpwImkF4CXzELhQmMMnVWgGUEOB2Y5avzr3l/xzhP/OTR
- OvJhsuzqGNcKJlAxloc6hschIXP+QgwcTX97N31xHoreRR2Sbnv1uuQdWfd79FLbAP
- rWEY5k38vpLUkCRYgmDKeYvFQNfQyxENiI+AaSbk=
-DMARC-Filter: OpenDMARC Filter v1.3.2 smtp.codeaurora.org 5D25E6087D
-Authentication-Results: pdx-caf-mail.web.codeaurora.org;
- dmarc=none (p=none dis=none) header.from=codeaurora.org
-Authentication-Results: pdx-caf-mail.web.codeaurora.org;
- spf=none smtp.mailfrom=mojha@codeaurora.org
-Subject: Re: [PATCH -next] ocxl: remove set but not used variables 'tid' and
- 'lpid'
-To: Yue Haibing <yuehaibing@huawei.com>, fbarrat@linux.ibm.com,
- andrew.donnellan@au1.ibm.com, arnd@arndb.de, gregkh@linuxfoundation.org
-References: <20190329154456.27152-1-yuehaibing@huawei.com>
-From: Mukesh Ojha <mojha@codeaurora.org>
-Message-ID: <b30655eb-dcd1-16b2-78a0-6886ceb9ef3d@codeaurora.org>
-Date: Sat, 30 Mar 2019 02:59:38 +0530
-User-Agent: Mozilla/5.0 (Windows NT 10.0; WOW64; rv:60.0) Gecko/20100101
- Thunderbird/60.6.1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44WFly721hzDqV6
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Mar 2019 08:50:38 +1100 (AEDT)
+Received: by mail-oi1-f194.google.com with SMTP id 3so2849595oir.7
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Mar 2019 14:50:38 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+ :message-id:subject:to:cc;
+ bh=Rs7S2foonqwWEFVwaHGYfcLOLiZaazzWH2lQCi+hjMA=;
+ b=po5U2DgSM702oLmPS4vmD2Z3Whm+pjRYVEiu2TyiT8hjnUbEE9qr/7EEpx+PWsyZys
+ Mq5AKdjjn1fZujwFF4elpkjjcHhU5cE6asNSeyc0wByLHni5AAa2SRvWtf8GFoY1TzZK
+ jEZPDp9T4m4oc3MDqSKK5Jgz4mtEI954v3vCEfxyPGKLDBUySsQIl79yQCRPLdEa9DBo
+ dCEwkPkU5M+iW+BQnItRVdS03n+pT43yQczgP3txsIu5iEFQRqeBL/sj8J2I1eyDQL4Q
+ Ag1R0V1vNpe+PPpj9gi9pkyzWSOAsUTMbZr1ZahSGy8D0SMV+3tzaRYyrw2PELPcr1ml
+ TLbQ==
+X-Gm-Message-State: APjAAAVg9DaPPIAGAVO95oDy58MuGVx48uhJt2mEh5EM8ZvddxSjs4AT
+ Vkxxq3Oho03eZEO5TsZJwDmQIrWyoQo=
+X-Google-Smtp-Source: APXvYqx7du6KySI+ozM2w+LZskDtOVAPDVHA8uNyzEyuwcpPtkRshNSPbcL6lR41/+eifhqFKBubuQ==
+X-Received: by 2002:a54:4390:: with SMTP id u16mr5246170oiv.32.1553896235374; 
+ Fri, 29 Mar 2019 14:50:35 -0700 (PDT)
+Received: from mail-ot1-f52.google.com (mail-ot1-f52.google.com.
+ [209.85.210.52])
+ by smtp.gmail.com with ESMTPSA id j14sm1338364oih.28.2019.03.29.14.50.34
+ for <linuxppc-dev@lists.ozlabs.org>
+ (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
+ Fri, 29 Mar 2019 14:50:34 -0700 (PDT)
+Received: by mail-ot1-f52.google.com with SMTP id k21so3509266otf.1
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Mar 2019 14:50:34 -0700 (PDT)
+X-Received: by 2002:a9d:6d92:: with SMTP id x18mr20780140otp.112.1553896234713; 
+ Fri, 29 Mar 2019 14:50:34 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <20190329154456.27152-1-yuehaibing@huawei.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Language: en-US
+References: <20190329140014.8126-1-laurentiu.tudor@nxp.com>
+ <20190329140014.8126-2-laurentiu.tudor@nxp.com>
+In-Reply-To: <20190329140014.8126-2-laurentiu.tudor@nxp.com>
+From: Li Yang <leoyang.li@nxp.com>
+Date: Fri, 29 Mar 2019 16:50:23 -0500
+X-Gmail-Original-Message-ID: <CADRPPNQ9AGRvq8XDjeTerUBry+_hO-U=shCXFaqHhtc9QvMvng@mail.gmail.com>
+Message-ID: <CADRPPNQ9AGRvq8XDjeTerUBry+_hO-U=shCXFaqHhtc9QvMvng@mail.gmail.com>
+Subject: Re: [PATCH 01/13] soc/fsl/qman: fixup liodns only on ppc targets
+To: Laurentiu Tudor <laurentiu.tudor@nxp.com>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -92,52 +81,57 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: madalin.bucur@nxp.com, Netdev <netdev@vger.kernel.org>,
+ Roy Pledge <roy.pledge@nxp.com>, lkml <linux-kernel@vger.kernel.org>,
+ Linux IOMMU <iommu@lists.linux-foundation.org>, camelia.groza@nxp.com,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ David Miller <davem@davemloft.net>,
+ "moderated list:ARM/FREESCALE IMX / MXC ARM ARCHITECTURE"
+ <linux-arm-kernel@lists.infradead.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-
-On 3/29/2019 9:14 PM, Yue Haibing wrote:
-> From: YueHaibing <yuehaibing@huawei.com>
+On Fri, Mar 29, 2019 at 9:01 AM <laurentiu.tudor@nxp.com> wrote:
 >
-> Fixes gcc '-Wunused-but-set-variable' warning:
+> From: Laurentiu Tudor <laurentiu.tudor@nxp.com>
 >
-> drivers/misc/ocxl/link.c: In function 'xsl_fault_handler':
-> drivers/misc/ocxl/link.c:187:17: warning: variable 'tid' set but not used [-Wunused-but-set-variable]
-> drivers/misc/ocxl/link.c:187:6: warning: variable 'lpid' set but not used [-Wunused-but-set-variable]
+> ARM SoCs use SMMU so the liodn fixup done in the qman driver is no
+> longer making sense and it also breaks the ICID settings inherited
+> from u-boot. Do the fixups only for PPC targets.
 >
-> They are never used and can be removed.
->
-> Signed-off-by: YueHaibing <yuehaibing@huawei.com>
-Reviewed-by: Mukesh Ojha <mojha@codeaurora.org>
-
-Cheers,
--Mukesh
+> Signed-off-by: Laurentiu Tudor <laurentiu.tudor@nxp.com>
 > ---
->   drivers/misc/ocxl/link.c | 4 +---
->   1 file changed, 1 insertion(+), 3 deletions(-)
+>  drivers/soc/fsl/qbman/qman_ccsr.c | 2 ++
+>  1 file changed, 2 insertions(+)
 >
-> diff --git a/drivers/misc/ocxl/link.c b/drivers/misc/ocxl/link.c
-> index d50b861..3be07e9 100644
-> --- a/drivers/misc/ocxl/link.c
-> +++ b/drivers/misc/ocxl/link.c
-> @@ -184,7 +184,7 @@ static irqreturn_t xsl_fault_handler(int irq, void *data)
->   	u64 dsisr, dar, pe_handle;
->   	struct pe_data *pe_data;
->   	struct ocxl_process_element *pe;
-> -	int lpid, pid, tid;
-> +	int pid;
->   	bool schedule = false;
->   
->   	read_irq(spa, &dsisr, &dar, &pe_handle);
-> @@ -192,9 +192,7 @@ static irqreturn_t xsl_fault_handler(int irq, void *data)
->   
->   	WARN_ON(pe_handle > SPA_PE_MASK);
->   	pe = spa->spa_mem + pe_handle;
-> -	lpid = be32_to_cpu(pe->lpid);
->   	pid = be32_to_cpu(pe->pid);
-> -	tid = be32_to_cpu(pe->tid);
->   	/* We could be reading all null values here if the PE is being
->   	 * removed while an interrupt kicks in. It's not supposed to
->   	 * happen if the driver notified the AFU to terminate the
+> diff --git a/drivers/soc/fsl/qbman/qman_ccsr.c b/drivers/soc/fsl/qbman/qman_ccsr.c
+> index 109b38de3176..12e414ca3b03 100644
+> --- a/drivers/soc/fsl/qbman/qman_ccsr.c
+> +++ b/drivers/soc/fsl/qbman/qman_ccsr.c
+> @@ -598,6 +598,7 @@ static int qman_init_ccsr(struct device *dev)
+>  #define LIO_CFG_LIODN_MASK 0x0fff0000
+>  void qman_liodn_fixup(u16 channel)
+>  {
+> +#ifdef CONFIG_PPC
+>         static int done;
+>         static u32 liodn_offset;
+>         u32 before, after;
+> @@ -617,6 +618,7 @@ void qman_liodn_fixup(u16 channel)
+>                 qm_ccsr_out(REG_REV3_QCSP_LIO_CFG(idx), after);
+>         else
+>                 qm_ccsr_out(REG_QCSP_LIO_CFG(idx), after);
+> +#endif
+
+According to the Linux coding style recommendation, it would be better
+to put the #ifdef into the header files
+"drivers/soc/fsl/qbman/qman_priv.h".  And I'm not sure if this is
+needed on PPC when IOMMU(PAMU) driver is not compiled, if not,
+probably using CONFIG_PAMU as condition would be even better.
+
+>  }
+>
+>  #define IO_CFG_SDEST_MASK 0x00ff0000
+> --
+> 2.17.1
+>
