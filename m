@@ -3,40 +3,40 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
 X-Spam-Status: No, score=-3.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,
-	URIBL_BLOCKED autolearn=ham autolearn_force=no version=3.4.0
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 748E7C43381
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Mar 2019 15:26:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B0E01C43381
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Mar 2019 15:28:26 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E5B20206DD
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Mar 2019 15:26:48 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 24CEE206DD
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Mar 2019 15:28:26 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="TOFEMg0J"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E5B20206DD
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="iE7qRx8f"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 24CEE206DD
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linuxfoundation.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44W5F22sZmzDqTl
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 30 Mar 2019 02:26:46 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44W5Gw1FQNzDqRt
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 30 Mar 2019 02:28:24 +1100 (AEDT)
 Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44W4YB4SfYzDqF5
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Mar 2019 01:55:42 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44W4YD6l1lzDq83
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Mar 2019 01:55:44 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=linuxfoundation.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="TOFEMg0J"; 
+ unprotected) header.d=kernel.org header.i=@kernel.org header.b="iE7qRx8f"; 
  dkim-atps=neutral
 Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 44W4Y91th3z8t23
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Mar 2019 01:55:41 +1100 (AEDT)
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 44W4YD4J4Kz8t23
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Mar 2019 01:55:44 +1100 (AEDT)
 Received: by ozlabs.org (Postfix)
- id 44W4Y908Cxz9sQr; Sat, 30 Mar 2019 01:55:41 +1100 (AEDT)
+ id 44W4YD2l71z9sQr; Sat, 30 Mar 2019 01:55:44 +1100 (AEDT)
 Authentication-Results: ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=linuxfoundation.org
  (client-ip=198.145.29.99; helo=mail.kernel.org;
@@ -44,34 +44,35 @@ Authentication-Results: ozlabs.org;
 Authentication-Results: ozlabs.org; dmarc=none (p=none dis=none)
  header.from=linuxfoundation.org
 Authentication-Results: ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="TOFEMg0J"; 
+ unprotected) header.d=kernel.org header.i=@kernel.org header.b="iE7qRx8f"; 
  dkim-atps=neutral
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 44W4Y830wxz9sQq
- for <linuxppc-dev@ozlabs.org>; Sat, 30 Mar 2019 01:55:40 +1100 (AEDT)
+ by ozlabs.org (Postfix) with ESMTPS id 44W4YC4JZ2z9sQq
+ for <linuxppc-dev@ozlabs.org>; Sat, 30 Mar 2019 01:55:43 +1100 (AEDT)
 Received: from localhost (83-86-89-107.cable.dynamic.v4.ziggo.nl
  [83.86.89.107])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id 63EFC2184C;
- Fri, 29 Mar 2019 14:55:38 +0000 (UTC)
+ by mail.kernel.org (Postfix) with ESMTPSA id 11972206C0;
+ Fri, 29 Mar 2019 14:55:40 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1553871338;
- bh=nPK5+sfzelKAlbi8p8iLlseCMKZs0uvTfG65uxFTdqc=;
+ s=default; t=1553871341;
+ bh=ENX3cgxhxDwNI/7IJPFwoVF58tzjEZXwz87G75WJ4Co=;
  h=Subject:To:Cc:From:Date:In-Reply-To:From;
- b=TOFEMg0JYI3voqt65IKzDfZNhkH0Jx0QuoabjzUIpxqH/V36BvsGF2wcYKQWIsXfb
- IPHtwj/h39utt0gB/1ncDsfop72GV4jy6in8LJ44p7LSQ/X2U3zLx4E2TYoYqQIMqA
- lofosVv/Tj9diDNJ6qFT/QcdnLvOdCOTVz8UQ2BM=
-Subject: Patch "[PATCH stable v4.14 05/32] powerpc/64: Use barrier_nospec in
- syscall entry" has been added to the 4.14-stable tree
+ b=iE7qRx8fhGaf7lteY5Ma54FVJqXSgKjA55/oigcP7qpdQWrUTsW5Wi7P3AnL4M/AD
+ kpslCnXn9aJUDc5QbXFjm38UjkZ6fcW8QtTdgtOdxSZvr6URh/9OVceOEl7Ec3yNLJ
+ 9M3Fo2vMn0B5OBE2TD7Pqh+WSj5pp1tHSDh3KL1Y=
+Subject: Patch "[PATCH stable v4.14 28/32] powerpc/fsl: Enable runtime
+ patching if nospectre_v2 boot arg is used" has been added to the 4.14-stable
+ tree
 To: christophe.leroy@c-s.fr, diana.craciun@nxp.com, gregkh@linuxfoundation.org,
  linuxppc-dev@ozlabs.org, mpe@ellerman.id.au, msuchanek@suse.de
 From: <gregkh@linuxfoundation.org>
-Date: Fri, 29 Mar 2019 15:54:46 +0100
-In-Reply-To: <20190329112620.14489-6-mpe@ellerman.id.au>
-Message-ID: <15538712865648@kroah.com>
+Date: Fri, 29 Mar 2019 15:54:47 +0100
+In-Reply-To: <20190329112620.14489-29-mpe@ellerman.id.au>
+Message-ID: <155387128729164@kroah.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ANSI_X3.4-1968
 Content-Transfer-Encoding: 8bit
@@ -96,13 +97,13 @@ Sender: "Linuxppc-dev"
 
 This is a note to let you know that I've just added the patch titled
 
-    [PATCH stable v4.14 05/32] powerpc/64: Use barrier_nospec in syscall entry
+    [PATCH stable v4.14 28/32] powerpc/fsl: Enable runtime patching if nospectre_v2 boot arg is used
 
 to the 4.14-stable tree which can be found at:
     http://www.kernel.org/git/?p=linux/kernel/git/stable/stable-queue.git;a=summary
 
 The filename of the patch is:
-     powerpc-64-use-barrier_nospec-in-syscall-entry.patch
+     powerpc-fsl-enable-runtime-patching-if-nospectre_v2-boot-arg-is-used.patch
 and it can be found in the queue-4.14 subdirectory.
 
 If you, or anyone else, feels it should not be added to the stable tree,
@@ -111,54 +112,38 @@ please let <stable@vger.kernel.org> know about it.
 
 From foo@baz Fri Mar 29 15:53:50 CET 2019
 From: Michael Ellerman <mpe@ellerman.id.au>
-Date: Fri, 29 Mar 2019 22:25:53 +1100
-Subject: [PATCH stable v4.14 05/32] powerpc/64: Use barrier_nospec in syscall entry
+Date: Fri, 29 Mar 2019 22:26:16 +1100
+Subject: [PATCH stable v4.14 28/32] powerpc/fsl: Enable runtime patching if nospectre_v2 boot arg is used
 To: stable@vger.kernel.org, gregkh@linuxfoundation.org
 Cc: linuxppc-dev@ozlabs.org, diana.craciun@nxp.com, msuchanek@suse.de, christophe.leroy@c-s.fr
-Message-ID: <20190329112620.14489-6-mpe@ellerman.id.au>
+Message-ID: <20190329112620.14489-29-mpe@ellerman.id.au>
 
 From: Michael Ellerman <mpe@ellerman.id.au>
 
-commit 51973a815c6b46d7b23b68d6af371ad1c9d503ca upstream.
+From: Diana Craciun <diana.craciun@nxp.com>
 
-Our syscall entry is done in assembly so patch in an explicit
-barrier_nospec.
+commit 3bc8ea8603ae4c1e09aca8de229ad38b8091fcb3 upstream.
 
-Based on a patch by Michal Suchanek.
+If the user choses not to use the mitigations, replace
+the code sequence with nops.
 
-Signed-off-by: Michal Suchanek <msuchanek@suse.de>
+Signed-off-by: Diana Craciun <diana.craciun@nxp.com>
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 ---
- arch/powerpc/kernel/entry_64.S |   10 ++++++++++
- 1 file changed, 10 insertions(+)
+ arch/powerpc/kernel/setup-common.c |    1 +
+ 1 file changed, 1 insertion(+)
 
---- a/arch/powerpc/kernel/entry_64.S
-+++ b/arch/powerpc/kernel/entry_64.S
-@@ -36,6 +36,7 @@
- #include <asm/context_tracking.h>
- #include <asm/tm.h>
- #include <asm/ppc-opcode.h>
-+#include <asm/barrier.h>
- #include <asm/export.h>
- #ifdef CONFIG_PPC_BOOK3S
- #include <asm/exception-64s.h>
-@@ -179,6 +180,15 @@ system_call:			/* label this so stack tr
- 	clrldi	r8,r8,32
- 15:
- 	slwi	r0,r0,4
-+
-+	barrier_nospec_asm
-+	/*
-+	 * Prevent the load of the handler below (based on the user-passed
-+	 * system call number) being speculatively executed until the test
-+	 * against NR_syscalls and branch to .Lsyscall_enosys above has
-+	 * committed.
-+	 */
-+
- 	ldx	r12,r11,r0	/* Fetch system call handler [ptr] */
- 	mtctr   r12
- 	bctrl			/* Call handler */
+--- a/arch/powerpc/kernel/setup-common.c
++++ b/arch/powerpc/kernel/setup-common.c
+@@ -938,6 +938,7 @@ void __init setup_arch(char **cmdline_p)
+ 		ppc_md.setup_arch();
+ 
+ 	setup_barrier_nospec();
++	setup_spectre_v2();
+ 
+ 	paging_init();
+ 
 
 
 Patches currently in stable-queue which might be from mpe@ellerman.id.au are
