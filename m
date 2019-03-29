@@ -2,24 +2,23 @@ Return-Path: <SRS0=YrVw=SA=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,
-	UNWANTED_LANGUAGE_BODY,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8C97AC43381
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Mar 2019 14:28:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2FF3BC43381
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Mar 2019 14:29:47 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 110AE2173C
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Mar 2019 14:28:11 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 110AE2173C
+	by mail.kernel.org (Postfix) with ESMTPS id D7B542173C
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Mar 2019 14:29:46 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D7B542173C
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nxp.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44W3xQ0sRyzDqSw
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 30 Mar 2019 01:28:10 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44W3zD5JH7zDqS7
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 30 Mar 2019 01:29:44 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=nxp.com
  (client-ip=92.121.34.13; helo=inva020.nxp.com;
@@ -29,25 +28,25 @@ Authentication-Results: lists.ozlabs.org;
 Received: from inva020.nxp.com (inva020.nxp.com [92.121.34.13])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44W3WM4V7PzDqWS
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44W3WM4btXzDqWs
  for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Mar 2019 01:09:02 +1100 (AEDT)
 Received: from inva020.nxp.com (localhost [127.0.0.1])
- by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id 116BC1A027E;
- Fri, 29 Mar 2019 15:00:19 +0100 (CET)
+ by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id CB0091A0294;
+ Fri, 29 Mar 2019 15:00:17 +0100 (CET)
 Received: from inva024.eu-rdc02.nxp.com (inva024.eu-rdc02.nxp.com
  [134.27.226.22])
- by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id 0520B1A01C1;
- Fri, 29 Mar 2019 15:00:19 +0100 (CET)
+ by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id C81EF1A00A7;
+ Fri, 29 Mar 2019 15:00:17 +0100 (CET)
 Received: from fsr-ub1864-101.ea.freescale.net
  (fsr-ub1864-101.ea.freescale.net [10.171.74.120])
- by inva024.eu-rdc02.nxp.com (Postfix) with ESMTP id 788E920606;
- Fri, 29 Mar 2019 15:00:18 +0100 (CET)
+ by inva024.eu-rdc02.nxp.com (Postfix) with ESMTP id 3DC1A20606;
+ Fri, 29 Mar 2019 15:00:17 +0100 (CET)
 From: laurentiu.tudor@nxp.com
 To: netdev@vger.kernel.org, madalin.bucur@nxp.com, roy.pledge@nxp.com,
  camelia.groza@nxp.com, leoyang.li@nxp.com
-Subject: [PATCH 03/13] soc/fsl/qman: map FQD and PFDR areas in the iommu
-Date: Fri, 29 Mar 2019 16:00:04 +0200
-Message-Id: <20190329140014.8126-4-laurentiu.tudor@nxp.com>
+Subject: [PATCH 01/13] soc/fsl/qman: fixup liodns only on ppc targets
+Date: Fri, 29 Mar 2019 16:00:02 +0200
+Message-Id: <20190329140014.8126-2-laurentiu.tudor@nxp.com>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20190329140014.8126-1-laurentiu.tudor@nxp.com>
 References: <20190329140014.8126-1-laurentiu.tudor@nxp.com>
@@ -73,55 +72,35 @@ Sender: "Linuxppc-dev"
 
 From: Laurentiu Tudor <laurentiu.tudor@nxp.com>
 
-Add a one-to-one iommu mapping for qman private data memory areas
-(FQD and PFDR). This is required for QMAN to work without faults
-behind an iommu.
+ARM SoCs use SMMU so the liodn fixup done in the qman driver is no
+longer making sense and it also breaks the ICID settings inherited
+from u-boot. Do the fixups only for PPC targets.
 
 Signed-off-by: Laurentiu Tudor <laurentiu.tudor@nxp.com>
 ---
- drivers/soc/fsl/qbman/qman_ccsr.c | 15 +++++++++++++++
- 1 file changed, 15 insertions(+)
+ drivers/soc/fsl/qbman/qman_ccsr.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
 diff --git a/drivers/soc/fsl/qbman/qman_ccsr.c b/drivers/soc/fsl/qbman/qman_ccsr.c
-index 12e414ca3b03..eec7700507e1 100644
+index 109b38de3176..12e414ca3b03 100644
 --- a/drivers/soc/fsl/qbman/qman_ccsr.c
 +++ b/drivers/soc/fsl/qbman/qman_ccsr.c
-@@ -29,6 +29,7 @@
-  */
- 
- #include "qman_priv.h"
-+#include <linux/iommu.h>
- 
- u16 qman_ip_rev;
- EXPORT_SYMBOL(qman_ip_rev);
-@@ -699,6 +700,7 @@ static int fsl_qman_probe(struct platform_device *pdev)
+@@ -598,6 +598,7 @@ static int qman_init_ccsr(struct device *dev)
+ #define LIO_CFG_LIODN_MASK 0x0fff0000
+ void qman_liodn_fixup(u16 channel)
  {
- 	struct device *dev = &pdev->dev;
- 	struct device_node *node = dev->of_node;
-+	struct iommu_domain *domain;
- 	struct resource *res;
- 	int ret, err_irq;
- 	u16 id;
-@@ -778,6 +780,19 @@ static int fsl_qman_probe(struct platform_device *pdev)
- 	}
- 	dev_dbg(dev, "Allocated PFDR 0x%llx 0x%zx\n", pfdr_a, pfdr_sz);
++#ifdef CONFIG_PPC
+ 	static int done;
+ 	static u32 liodn_offset;
+ 	u32 before, after;
+@@ -617,6 +618,7 @@ void qman_liodn_fixup(u16 channel)
+ 		qm_ccsr_out(REG_REV3_QCSP_LIO_CFG(idx), after);
+ 	else
+ 		qm_ccsr_out(REG_QCSP_LIO_CFG(idx), after);
++#endif
+ }
  
-+	/* Create an 1-to-1 iommu mapping for fqd and pfdr areas */
-+	domain = iommu_get_domain_for_dev(dev);
-+	if (domain) {
-+		ret = iommu_map(domain, fqd_a, fqd_a, fqd_sz,
-+				IOMMU_READ | IOMMU_WRITE | IOMMU_CACHE);
-+		if (ret)
-+			dev_warn(dev, "iommu_map(fqd) failed %d\n", ret);
-+		ret = iommu_map(domain, pfdr_a, pfdr_a, pfdr_sz,
-+				IOMMU_READ | IOMMU_WRITE | IOMMU_CACHE);
-+		if (ret)
-+			dev_warn(dev, "iommu_map(pfdr) failed %d\n", ret);
-+	}
-+
- 	ret = qman_init_ccsr(dev);
- 	if (ret) {
- 		dev_err(dev, "CCSR setup failed\n");
+ #define IO_CFG_SDEST_MASK 0x00ff0000
 -- 
 2.17.1
 
