@@ -2,23 +2,24 @@ Return-Path: <SRS0=YrVw=SA=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,
+	UNWANTED_LANGUAGE_BODY,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 80CF9C43381
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Mar 2019 14:26:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8C97AC43381
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Mar 2019 14:28:12 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 03A8D2173C
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Mar 2019 14:26:13 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 03A8D2173C
+	by mail.kernel.org (Postfix) with ESMTPS id 110AE2173C
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Mar 2019 14:28:11 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 110AE2173C
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nxp.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44W3v73ChgzDqBh
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 30 Mar 2019 01:26:11 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44W3xQ0sRyzDqSw
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 30 Mar 2019 01:28:10 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=nxp.com
  (client-ip=92.121.34.13; helo=inva020.nxp.com;
@@ -28,25 +29,25 @@ Authentication-Results: lists.ozlabs.org;
 Received: from inva020.nxp.com (inva020.nxp.com [92.121.34.13])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44W3WM4X7DzDqWd
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44W3WM4V7PzDqWS
  for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Mar 2019 01:09:02 +1100 (AEDT)
 Received: from inva020.nxp.com (localhost [127.0.0.1])
- by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id 344C21A0287;
- Fri, 29 Mar 2019 15:00:23 +0100 (CET)
+ by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id 116BC1A027E;
+ Fri, 29 Mar 2019 15:00:19 +0100 (CET)
 Received: from inva024.eu-rdc02.nxp.com (inva024.eu-rdc02.nxp.com
  [134.27.226.22])
- by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id 27E181A0291;
- Fri, 29 Mar 2019 15:00:23 +0100 (CET)
+ by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id 0520B1A01C1;
+ Fri, 29 Mar 2019 15:00:19 +0100 (CET)
 Received: from fsr-ub1864-101.ea.freescale.net
  (fsr-ub1864-101.ea.freescale.net [10.171.74.120])
- by inva024.eu-rdc02.nxp.com (Postfix) with ESMTP id 99A1E20606;
- Fri, 29 Mar 2019 15:00:22 +0100 (CET)
+ by inva024.eu-rdc02.nxp.com (Postfix) with ESMTP id 788E920606;
+ Fri, 29 Mar 2019 15:00:18 +0100 (CET)
 From: laurentiu.tudor@nxp.com
 To: netdev@vger.kernel.org, madalin.bucur@nxp.com, roy.pledge@nxp.com,
  camelia.groza@nxp.com, leoyang.li@nxp.com
-Subject: [PATCH 09/13] dpaa_eth: defer probing after qbman
-Date: Fri, 29 Mar 2019 16:00:10 +0200
-Message-Id: <20190329140014.8126-10-laurentiu.tudor@nxp.com>
+Subject: [PATCH 03/13] soc/fsl/qman: map FQD and PFDR areas in the iommu
+Date: Fri, 29 Mar 2019 16:00:04 +0200
+Message-Id: <20190329140014.8126-4-laurentiu.tudor@nxp.com>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20190329140014.8126-1-laurentiu.tudor@nxp.com>
 References: <20190329140014.8126-1-laurentiu.tudor@nxp.com>
@@ -72,60 +73,55 @@ Sender: "Linuxppc-dev"
 
 From: Laurentiu Tudor <laurentiu.tudor@nxp.com>
 
-Enabling SMMU altered the order of device probing causing the dpaa1
-ethernet driver to get probed before qbman and causing a boot crash.
-Add predictability in the probing order by deferring the ethernet
-driver probe after qbman and portals by using the recently introduced
-qbman APIs.
+Add a one-to-one iommu mapping for qman private data memory areas
+(FQD and PFDR). This is required for QMAN to work without faults
+behind an iommu.
 
 Signed-off-by: Laurentiu Tudor <laurentiu.tudor@nxp.com>
-Acked-by: Madalin Bucur <madalin.bucur@nxp.com>
 ---
- .../net/ethernet/freescale/dpaa/dpaa_eth.c    | 31 +++++++++++++++++++
- 1 file changed, 31 insertions(+)
+ drivers/soc/fsl/qbman/qman_ccsr.c | 15 +++++++++++++++
+ 1 file changed, 15 insertions(+)
 
-diff --git a/drivers/net/ethernet/freescale/dpaa/dpaa_eth.c b/drivers/net/ethernet/freescale/dpaa/dpaa_eth.c
-index dfebc30c4841..647e90e7434f 100644
---- a/drivers/net/ethernet/freescale/dpaa/dpaa_eth.c
-+++ b/drivers/net/ethernet/freescale/dpaa/dpaa_eth.c
-@@ -2774,6 +2774,37 @@ static int dpaa_eth_probe(struct platform_device *pdev)
- 	int err = 0, i, channel;
- 	struct device *dev;
+diff --git a/drivers/soc/fsl/qbman/qman_ccsr.c b/drivers/soc/fsl/qbman/qman_ccsr.c
+index 12e414ca3b03..eec7700507e1 100644
+--- a/drivers/soc/fsl/qbman/qman_ccsr.c
++++ b/drivers/soc/fsl/qbman/qman_ccsr.c
+@@ -29,6 +29,7 @@
+  */
  
-+	err = bman_is_probed();
-+	if (!err)
-+		return -EPROBE_DEFER;
-+	if (err < 0) {
-+		dev_err(&pdev->dev, "failing probe due to bman probe error\n");
-+		return -ENODEV;
-+	}
-+	err = qman_is_probed();
-+	if (!err)
-+		return -EPROBE_DEFER;
-+	if (err < 0) {
-+		dev_err(&pdev->dev, "failing probe due to qman probe error\n");
-+		return -ENODEV;
-+	}
-+	err = bman_portals_probed();
-+	if (!err)
-+		return -EPROBE_DEFER;
-+	if (err < 0) {
-+		dev_err(&pdev->dev,
-+			"failing probe due to bman portals probe error\n");
-+		return -ENODEV;
-+	}
-+	err = qman_portals_probed();
-+	if (!err)
-+		return -EPROBE_DEFER;
-+	if (err < 0) {
-+		dev_err(&pdev->dev,
-+			"failing probe due to qman portals probe error\n");
-+		return -ENODEV;
+ #include "qman_priv.h"
++#include <linux/iommu.h>
+ 
+ u16 qman_ip_rev;
+ EXPORT_SYMBOL(qman_ip_rev);
+@@ -699,6 +700,7 @@ static int fsl_qman_probe(struct platform_device *pdev)
+ {
+ 	struct device *dev = &pdev->dev;
+ 	struct device_node *node = dev->of_node;
++	struct iommu_domain *domain;
+ 	struct resource *res;
+ 	int ret, err_irq;
+ 	u16 id;
+@@ -778,6 +780,19 @@ static int fsl_qman_probe(struct platform_device *pdev)
+ 	}
+ 	dev_dbg(dev, "Allocated PFDR 0x%llx 0x%zx\n", pfdr_a, pfdr_sz);
+ 
++	/* Create an 1-to-1 iommu mapping for fqd and pfdr areas */
++	domain = iommu_get_domain_for_dev(dev);
++	if (domain) {
++		ret = iommu_map(domain, fqd_a, fqd_a, fqd_sz,
++				IOMMU_READ | IOMMU_WRITE | IOMMU_CACHE);
++		if (ret)
++			dev_warn(dev, "iommu_map(fqd) failed %d\n", ret);
++		ret = iommu_map(domain, pfdr_a, pfdr_a, pfdr_sz,
++				IOMMU_READ | IOMMU_WRITE | IOMMU_CACHE);
++		if (ret)
++			dev_warn(dev, "iommu_map(pfdr) failed %d\n", ret);
 +	}
 +
- 	/* device used for DMA mapping */
- 	dev = pdev->dev.parent;
- 	err = dma_coerce_mask_and_coherent(dev, DMA_BIT_MASK(40));
+ 	ret = qman_init_ccsr(dev);
+ 	if (ret) {
+ 		dev_err(dev, "CCSR setup failed\n");
 -- 
 2.17.1
 
