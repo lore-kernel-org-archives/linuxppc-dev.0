@@ -6,37 +6,38 @@ X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
 	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8D034C43381
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Mar 2019 12:25:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8509DC43381
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Mar 2019 12:27:06 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 40BAF206DD
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Mar 2019 12:25:14 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 40BAF206DD
+	by mail.kernel.org (Postfix) with ESMTPS id 067D4206DD
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Mar 2019 12:27:05 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 067D4206DD
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44W1CW3TsyzDqYW
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Mar 2019 23:25:11 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+	by lists.ozlabs.org (Postfix) with ESMTP id 44W1Fg56lTzDqW7
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Mar 2019 23:27:03 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44VzwT4HkLzDqSH
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Mar 2019 22:27:05 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44VzwW3KRfzDqSH
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Mar 2019 22:27:07 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: by ozlabs.org (Postfix)
- id 44VzwT1Cskz9sTQ; Fri, 29 Mar 2019 22:27:05 +1100 (AEDT)
+ id 44VzwV6nhhz9sSD; Fri, 29 Mar 2019 22:27:06 +1100 (AEDT)
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 44VzwS6RfZz9sSC; Fri, 29 Mar 2019 22:27:04 +1100 (AEDT)
+ id 44VzwV4HQJz9sTQ; Fri, 29 Mar 2019 22:27:06 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: stable@vger.kernel.org,
 	gregkh@linuxfoundation.org
-Subject: [PATCH stable v4.14 29/32] powerpc/fsl: Update Spectre v2 reporting
-Date: Fri, 29 Mar 2019 22:26:17 +1100
-Message-Id: <20190329112620.14489-30-mpe@ellerman.id.au>
+Subject: [PATCH stable v4.14 30/32] powerpc/fsl: Fixed warning: orphan section
+ `__btb_flush_fixup'
+Date: Fri, 29 Mar 2019 22:26:18 +1100
+Message-Id: <20190329112620.14489-31-mpe@ellerman.id.au>
 X-Mailer: git-send-email 2.20.1
 In-Reply-To: <20190329112620.14489-1-mpe@ellerman.id.au>
 References: <20190329112620.14489-1-mpe@ellerman.id.au>
@@ -60,34 +61,62 @@ Sender: "Linuxppc-dev"
 
 From: Diana Craciun <diana.craciun@nxp.com>
 
-commit dfa88658fb0583abb92e062c7a9cd5a5b94f2a46 upstream.
+commit 039daac5526932ec731e4499613018d263af8b3e upstream.
 
-Report branch predictor state flush as a mitigation for
-Spectre variant 2.
+Fixed the following build warning:
+powerpc-linux-gnu-ld: warning: orphan section `__btb_flush_fixup' from
+`arch/powerpc/kernel/head_44x.o' being placed in section
+`__btb_flush_fixup'.
 
 Signed-off-by: Diana Craciun <diana.craciun@nxp.com>
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- arch/powerpc/kernel/security.c | 5 ++++-
- 1 file changed, 4 insertions(+), 1 deletion(-)
+ arch/powerpc/kernel/head_booke.h | 18 ++++++++++++------
+ 1 file changed, 12 insertions(+), 6 deletions(-)
 
-diff --git a/arch/powerpc/kernel/security.c b/arch/powerpc/kernel/security.c
-index 7a611a187b53..720a7a912d0d 100644
---- a/arch/powerpc/kernel/security.c
-+++ b/arch/powerpc/kernel/security.c
-@@ -212,8 +212,11 @@ ssize_t cpu_show_spectre_v2(struct device *dev, struct device_attribute *attr, c
+diff --git a/arch/powerpc/kernel/head_booke.h b/arch/powerpc/kernel/head_booke.h
+index 15ac51072eb3..306e26c073a0 100644
+--- a/arch/powerpc/kernel/head_booke.h
++++ b/arch/powerpc/kernel/head_booke.h
+@@ -32,6 +32,16 @@
+  */
+ #define THREAD_NORMSAVE(offset)	(THREAD_NORMSAVES + (offset * 4))
  
- 		if (count_cache_flush_type == COUNT_CACHE_FLUSH_HW)
- 			seq_buf_printf(&s, "(hardware accelerated)");
--	} else
-+	} else if (btb_flush_enabled) {
-+		seq_buf_printf(&s, "Mitigation: Branch predictor state flush");
-+	} else {
- 		seq_buf_printf(&s, "Vulnerable");
-+	}
- 
- 	seq_buf_printf(&s, "\n");
- 
++#ifdef CONFIG_PPC_FSL_BOOK3E
++#define BOOKE_CLEAR_BTB(reg)									\
++START_BTB_FLUSH_SECTION								\
++	BTB_FLUSH(reg)									\
++END_BTB_FLUSH_SECTION
++#else
++#define BOOKE_CLEAR_BTB(reg)
++#endif
++
++
+ #define NORMAL_EXCEPTION_PROLOG(intno)						     \
+ 	mtspr	SPRN_SPRG_WSCRATCH0, r10;	/* save one register */	     \
+ 	mfspr	r10, SPRN_SPRG_THREAD;					     \
+@@ -43,9 +53,7 @@
+ 	andi.	r11, r11, MSR_PR;	/* check whether user or kernel    */\
+ 	mr	r11, r1;						     \
+ 	beq	1f;							     \
+-START_BTB_FLUSH_SECTION					\
+-	BTB_FLUSH(r11)						\
+-END_BTB_FLUSH_SECTION					\
++	BOOKE_CLEAR_BTB(r11)						\
+ 	/* if from user, start at top of this thread's kernel stack */       \
+ 	lwz	r11, THREAD_INFO-THREAD(r10);				     \
+ 	ALLOC_STACK_FRAME(r11, THREAD_SIZE);				     \
+@@ -131,9 +139,7 @@ END_BTB_FLUSH_SECTION					\
+ 	stw	r9,_CCR(r8);		/* save CR on stack		   */\
+ 	mfspr	r11,exc_level_srr1;	/* check whether user or kernel    */\
+ 	DO_KVM	BOOKE_INTERRUPT_##intno exc_level_srr1;		             \
+-START_BTB_FLUSH_SECTION								\
+-	BTB_FLUSH(r10)									\
+-END_BTB_FLUSH_SECTION								\
++	BOOKE_CLEAR_BTB(r10)						\
+ 	andi.	r11,r11,MSR_PR;						     \
+ 	mfspr	r11,SPRN_SPRG_THREAD;	/* if from user, start at top of   */\
+ 	lwz	r11,THREAD_INFO-THREAD(r11); /* this thread's kernel stack */\
 -- 
 2.20.1
 
