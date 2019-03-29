@@ -3,40 +3,40 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
 X-Spam-Status: No, score=-3.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS
-	autolearn=ham autolearn_force=no version=3.4.0
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,
+	URIBL_BLOCKED autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 47F82C43381
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Mar 2019 15:49:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9D348C43381
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Mar 2019 15:51:37 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B56662173C
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Mar 2019 15:49:41 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id BB3B72173C
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Mar 2019 15:51:36 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="nVtgORMa"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B56662173C
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="0aQuPnA1"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BB3B72173C
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linuxfoundation.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44W5lR53tZzDqM3
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 30 Mar 2019 02:49:39 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+	by lists.ozlabs.org (Postfix) with ESMTP id 44W5nf47RCzDqRZ
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 30 Mar 2019 02:51:34 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44W4Yw4NCDzDq83
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Mar 2019 01:56:20 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44W4Yz5tXLzDqQh
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Mar 2019 01:56:23 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=linuxfoundation.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="nVtgORMa"; 
+ unprotected) header.d=kernel.org header.i=@kernel.org header.b="0aQuPnA1"; 
  dkim-atps=neutral
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 44W4Yw3Pk9z8t23
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Mar 2019 01:56:20 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 44W4Yz4l73z8t23
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Mar 2019 01:56:23 +1100 (AEDT)
 Received: by ozlabs.org (Postfix)
- id 44W4Yw2h7Sz9sQr; Sat, 30 Mar 2019 01:56:20 +1100 (AEDT)
+ id 44W4Yz4NxHz9sQq; Sat, 30 Mar 2019 01:56:23 +1100 (AEDT)
 Authentication-Results: ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=linuxfoundation.org
  (client-ip=198.145.29.99; helo=mail.kernel.org;
@@ -44,34 +44,34 @@ Authentication-Results: ozlabs.org;
 Authentication-Results: ozlabs.org; dmarc=none (p=none dis=none)
  header.from=linuxfoundation.org
 Authentication-Results: ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="nVtgORMa"; 
+ unprotected) header.d=kernel.org header.i=@kernel.org header.b="0aQuPnA1"; 
  dkim-atps=neutral
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 44W4Yv67kyz9sPx
- for <linuxppc-dev@ozlabs.org>; Sat, 30 Mar 2019 01:56:19 +1100 (AEDT)
+ by ozlabs.org (Postfix) with ESMTPS id 44W4Yz0m0Pz9sPx
+ for <linuxppc-dev@ozlabs.org>; Sat, 30 Mar 2019 01:56:23 +1100 (AEDT)
 Received: from localhost (83-86-89-107.cable.dynamic.v4.ziggo.nl
  [83.86.89.107])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id DD9B2206C0;
- Fri, 29 Mar 2019 14:56:17 +0000 (UTC)
+ by mail.kernel.org (Postfix) with ESMTPSA id 81A792184C;
+ Fri, 29 Mar 2019 14:56:20 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1553871378;
- bh=sMs4yI0Se3yq0RMC0ABjVgp1+2vcqCds9Cks7FFiAuE=;
+ s=default; t=1553871381;
+ bh=K+ifO09rqm0JEEgOhBMhUnadPs4EIbVuqkDBokFc6mE=;
  h=Subject:To:Cc:From:Date:In-Reply-To:From;
- b=nVtgORMatDgxhZ5d+tDc5BtGU/cr9o4/TR3iOPVkOvNEn6WHYKK0um+2EQkKK5MhX
- zT4xxSBcxPhMLN4hiuNkBLQaJ0N8+yKQOVsbstLnJaRXg9SQmGXc8vqIKxnOZOxgwf
- 4x4+THjls4vdJVZO8/Q3ajwfeJztA3Tfpg61pibY=
-Subject: Patch "[PATCH stable v4.14 04/32] powerpc: Use barrier_nospec in
- copy_from_user()" has been added to the 4.14-stable tree
+ b=0aQuPnA1i5S5vo1Bd5ksr1zS9F9Jfp8I0Yl8tCTmz8CMOLHcKEU+8DJSqOkI0q2Wm
+ GHS1EMkS8WR2foP+fNaLXP8BlLGJHefSKtUP1QHC5r3UB7oPURwpRKBcfmcM44gHWD
+ tToK+1lgpN5ipKWalzn2evVWYjBlWtge1hVLXhwE=
+Subject: Patch "[PATCH stable v4.14 07/32] powerpc64s: Show ori31 availability
+ in spectre_v1 sysfs file not v2" has been added to the 4.14-stable tree
 To: christophe.leroy@c-s.fr, diana.craciun@nxp.com, gregkh@linuxfoundation.org,
  linuxppc-dev@ozlabs.org, mpe@ellerman.id.au, msuchanek@suse.de
 From: <gregkh@linuxfoundation.org>
 Date: Fri, 29 Mar 2019 15:54:48 +0100
-In-Reply-To: <20190329112620.14489-5-mpe@ellerman.id.au>
-Message-ID: <15538712885947@kroah.com>
+In-Reply-To: <20190329112620.14489-8-mpe@ellerman.id.au>
+Message-ID: <15538712889183@kroah.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ANSI_X3.4-1968
 Content-Transfer-Encoding: 8bit
@@ -96,13 +96,13 @@ Sender: "Linuxppc-dev"
 
 This is a note to let you know that I've just added the patch titled
 
-    [PATCH stable v4.14 04/32] powerpc: Use barrier_nospec in copy_from_user()
+    [PATCH stable v4.14 07/32] powerpc64s: Show ori31 availability in spectre_v1 sysfs file not v2
 
 to the 4.14-stable tree which can be found at:
     http://www.kernel.org/git/?p=linux/kernel/git/stable/stable-queue.git;a=summary
 
 The filename of the patch is:
-     powerpc-use-barrier_nospec-in-copy_from_user.patch
+     powerpc64s-show-ori31-availability-in-spectre_v1-sysfs-file-not-v2.patch
 and it can be found in the queue-4.14 subdirectory.
 
 If you, or anyone else, feels it should not be added to the stable tree,
@@ -111,93 +111,101 @@ please let <stable@vger.kernel.org> know about it.
 
 From foo@baz Fri Mar 29 15:53:50 CET 2019
 From: Michael Ellerman <mpe@ellerman.id.au>
-Date: Fri, 29 Mar 2019 22:25:52 +1100
-Subject: [PATCH stable v4.14 04/32] powerpc: Use barrier_nospec in copy_from_user()
+Date: Fri, 29 Mar 2019 22:25:55 +1100
+Subject: [PATCH stable v4.14 07/32] powerpc64s: Show ori31 availability in spectre_v1 sysfs file not v2
 To: stable@vger.kernel.org, gregkh@linuxfoundation.org
 Cc: linuxppc-dev@ozlabs.org, diana.craciun@nxp.com, msuchanek@suse.de, christophe.leroy@c-s.fr
-Message-ID: <20190329112620.14489-5-mpe@ellerman.id.au>
+Message-ID: <20190329112620.14489-8-mpe@ellerman.id.au>
 
 From: Michael Ellerman <mpe@ellerman.id.au>
 
-commit ddf35cf3764b5a182b178105f57515b42e2634f8 upstream.
+commit 6d44acae1937b81cf8115ada8958e04f601f3f2e upstream.
 
-Based on the x86 commit doing the same.
+When I added the spectre_v2 information in sysfs, I included the
+availability of the ori31 speculation barrier.
 
-See commit 304ec1b05031 ("x86/uaccess: Use __uaccess_begin_nospec()
-and uaccess_try_nospec") and b3bbfb3fb5d2 ("x86: Introduce
-__uaccess_begin_nospec() and uaccess_try_nospec") for more detail.
+Although the ori31 barrier can be used to mitigate v2, it's primarily
+intended as a spectre v1 mitigation. Spectre v2 is mitigated by
+hardware changes.
 
-In all cases we are ordering the load from the potentially
-user-controlled pointer vs a previous branch based on an access_ok()
-check or similar.
+So rework the sysfs files to show the ori31 information in the
+spectre_v1 file, rather than v2.
 
-Base on a patch from Michal Suchanek.
+Currently we display eg:
 
-Signed-off-by: Michal Suchanek <msuchanek@suse.de>
+  $ grep . spectre_v*
+  spectre_v1:Mitigation: __user pointer sanitization
+  spectre_v2:Mitigation: Indirect branch cache disabled, ori31 speculation barrier enabled
+
+After:
+
+  $ grep . spectre_v*
+  spectre_v1:Mitigation: __user pointer sanitization, ori31 speculation barrier enabled
+  spectre_v2:Mitigation: Indirect branch cache disabled
+
+Fixes: d6fbe1c55c55 ("powerpc/64s: Wire up cpu_show_spectre_v2()")
+Cc: stable@vger.kernel.org # v4.17+
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 ---
- arch/powerpc/include/asm/uaccess.h |   11 ++++++++++-
- 1 file changed, 10 insertions(+), 1 deletion(-)
+ arch/powerpc/kernel/security.c |   27 +++++++++++++++++----------
+ 1 file changed, 17 insertions(+), 10 deletions(-)
 
---- a/arch/powerpc/include/asm/uaccess.h
-+++ b/arch/powerpc/include/asm/uaccess.h
-@@ -238,6 +238,7 @@ do {								\
- 	__chk_user_ptr(ptr);					\
- 	if (!is_kernel_addr((unsigned long)__gu_addr))		\
- 		might_fault();					\
-+	barrier_nospec();					\
- 	__get_user_size(__gu_val, __gu_addr, (size), __gu_err);	\
- 	(x) = (__typeof__(*(ptr)))__gu_val;			\
- 	__gu_err;						\
-@@ -249,8 +250,10 @@ do {								\
- 	__long_type(*(ptr)) __gu_val = 0;				\
- 	const __typeof__(*(ptr)) __user *__gu_addr = (ptr);		\
- 	might_fault();							\
--	if (access_ok(VERIFY_READ, __gu_addr, (size)))			\
-+	if (access_ok(VERIFY_READ, __gu_addr, (size))) {		\
-+		barrier_nospec();					\
- 		__get_user_size(__gu_val, __gu_addr, (size), __gu_err);	\
-+	}								\
- 	(x) = (__force __typeof__(*(ptr)))__gu_val;				\
- 	__gu_err;							\
- })
-@@ -261,6 +264,7 @@ do {								\
- 	__long_type(*(ptr)) __gu_val;				\
- 	const __typeof__(*(ptr)) __user *__gu_addr = (ptr);	\
- 	__chk_user_ptr(ptr);					\
-+	barrier_nospec();					\
- 	__get_user_size(__gu_val, __gu_addr, (size), __gu_err);	\
- 	(x) = (__force __typeof__(*(ptr)))__gu_val;			\
- 	__gu_err;						\
-@@ -288,15 +292,19 @@ static inline unsigned long raw_copy_fro
+--- a/arch/powerpc/kernel/security.c
++++ b/arch/powerpc/kernel/security.c
+@@ -117,25 +117,35 @@ ssize_t cpu_show_meltdown(struct device
  
- 		switch (n) {
- 		case 1:
-+			barrier_nospec();
- 			__get_user_size(*(u8 *)to, from, 1, ret);
- 			break;
- 		case 2:
-+			barrier_nospec();
- 			__get_user_size(*(u16 *)to, from, 2, ret);
- 			break;
- 		case 4:
-+			barrier_nospec();
- 			__get_user_size(*(u32 *)to, from, 4, ret);
- 			break;
- 		case 8:
-+			barrier_nospec();
- 			__get_user_size(*(u64 *)to, from, 8, ret);
- 			break;
- 		}
-@@ -304,6 +312,7 @@ static inline unsigned long raw_copy_fro
- 			return 0;
- 	}
+ ssize_t cpu_show_spectre_v1(struct device *dev, struct device_attribute *attr, char *buf)
+ {
+-	if (!security_ftr_enabled(SEC_FTR_BNDS_CHK_SPEC_BAR))
+-		return sprintf(buf, "Not affected\n");
++	struct seq_buf s;
++
++	seq_buf_init(&s, buf, PAGE_SIZE - 1);
++
++	if (security_ftr_enabled(SEC_FTR_BNDS_CHK_SPEC_BAR)) {
++		if (barrier_nospec_enabled)
++			seq_buf_printf(&s, "Mitigation: __user pointer sanitization");
++		else
++			seq_buf_printf(&s, "Vulnerable");
  
-+	barrier_nospec();
- 	return __copy_tofrom_user((__force void __user *)to, from, n);
+-	if (barrier_nospec_enabled)
+-		return sprintf(buf, "Mitigation: __user pointer sanitization\n");
++		if (security_ftr_enabled(SEC_FTR_SPEC_BAR_ORI31))
++			seq_buf_printf(&s, ", ori31 speculation barrier enabled");
+ 
+-	return sprintf(buf, "Vulnerable\n");
++		seq_buf_printf(&s, "\n");
++	} else
++		seq_buf_printf(&s, "Not affected\n");
++
++	return s.len;
  }
  
+ ssize_t cpu_show_spectre_v2(struct device *dev, struct device_attribute *attr, char *buf)
+ {
+-	bool bcs, ccd, ori;
+ 	struct seq_buf s;
++	bool bcs, ccd;
+ 
+ 	seq_buf_init(&s, buf, PAGE_SIZE - 1);
+ 
+ 	bcs = security_ftr_enabled(SEC_FTR_BCCTRL_SERIALISED);
+ 	ccd = security_ftr_enabled(SEC_FTR_COUNT_CACHE_DISABLED);
+-	ori = security_ftr_enabled(SEC_FTR_SPEC_BAR_ORI31);
+ 
+ 	if (bcs || ccd) {
+ 		seq_buf_printf(&s, "Mitigation: ");
+@@ -151,9 +161,6 @@ ssize_t cpu_show_spectre_v2(struct devic
+ 	} else
+ 		seq_buf_printf(&s, "Vulnerable");
+ 
+-	if (ori)
+-		seq_buf_printf(&s, ", ori31 speculation barrier enabled");
+-
+ 	seq_buf_printf(&s, "\n");
+ 
+ 	return s.len;
 
 
 Patches currently in stable-queue which might be from mpe@ellerman.id.au are
