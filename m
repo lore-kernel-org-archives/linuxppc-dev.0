@@ -2,43 +2,83 @@ Return-Path: <SRS0=YrVw=SA=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 51C3DC43381
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Mar 2019 05:51:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4B84CC43381
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Mar 2019 06:46:54 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C9C4B21773
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Mar 2019 05:51:19 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C9C4B21773
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ozlabs.ru
+	by mail.kernel.org (Postfix) with ESMTPS id 774232183F
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Mar 2019 06:46:53 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="rD9A4CJo"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 774232183F
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=jms.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44VrT15zR9zDqNn
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Mar 2019 16:51:17 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44Vsj66Lf5zDqRh
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Mar 2019 17:46:50 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=ozlabs.ru
- (client-ip=107.173.13.209; helo=ozlabs.ru; envelope-from=aik@ozlabs.ru;
- receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=gmail.com
+ (client-ip=2607:f8b0:4864:20::442; helo=mail-pf1-x442.google.com;
+ envelope-from=joel.stan@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=ozlabs.ru
-Received: from ozlabs.ru (ozlabs.ru [107.173.13.209])
- by lists.ozlabs.org (Postfix) with ESMTP id 44VrMx26klzDqNk
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Mar 2019 16:46:52 +1100 (AEDT)
-Received: from fstn1-p1.ozlabs.ibm.com (localhost [IPv6:::1])
- by ozlabs.ru (Postfix) with ESMTP id 7BC3BAE80120;
- Fri, 29 Mar 2019 01:46:49 -0400 (EDT)
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
+ dmarc=none (p=none dis=none) header.from=jms.id.au
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="rD9A4CJo"; 
+ dkim-atps=neutral
+Received: from mail-pf1-x442.google.com (mail-pf1-x442.google.com
+ [IPv6:2607:f8b0:4864:20::442])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44Vsg810jzzDqRM
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Mar 2019 17:45:07 +1100 (AEDT)
+Received: by mail-pf1-x442.google.com with SMTP id e24so565280pfi.12
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Mar 2019 23:45:07 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=sender:from:to:cc:subject:date:message-id:mime-version
+ :content-transfer-encoding;
+ bh=3QMBndSJUG66bEm5laqHvvWsM0uekV0VrM5u+ankrxo=;
+ b=rD9A4CJo4TPl7vqqSLWrYwF9znfsrGO8RvUAlglZzTwpzz3oBIT6oTFs+tko8UPuAz
+ vgJSLSKQPvZSbQBVSjBQioxt7bgBUMwcUO5zjYFssJiqDZD7XEdG3NQU09caFJUotD3m
+ h8TI+pyOKe55knWUJ8GqbJTnlwjNmraT7AZEZQJOfhtiEeTJp3ckZrc0jCCW/r91J273
+ l36wlMbPd4FIlLJS+5SkfMzYFWWeNBxskhJtm/H3DEVOIeYmH83kwfi+5E4oQyz7XJl5
+ zC/JhNWNFQhwrwjeBNb4dlNuImNcsOQe/0FND65wdPfjQZFAxV68+z/xu2DqvJ7THOC0
+ medg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:sender:from:to:cc:subject:date:message-id
+ :mime-version:content-transfer-encoding;
+ bh=3QMBndSJUG66bEm5laqHvvWsM0uekV0VrM5u+ankrxo=;
+ b=AlvVbyeKBMPp417jwBHSZRD+gEMvLv2G1SuiTxCxJf2qVR+s834l6TnsglU7yY5gQH
+ U+c/4kQ94ajMrLavUMNh8c08MHJ/4VA9DMytQtrlSdNStvKUDtYWoJhTUOOe+qw4pXVK
+ s+yfSbmRUFPMjLwUsmYYN6cLvo4Wt0gHxGxbujFBcm0o36hxNqvWBynDfi0wiQB3k8lI
+ w5WKCv3sBroy8aXJwL8U7Q+6R0qZDVpQ/bQEbV1aYPpQqiiRX3CtKjThY2uWLsDvpw4m
+ +05GdP2MXpTgQcOR3Gqny+iRT9LhuO9YEczwOoMOb0pnueV7Xw4flUMDVFRfZMPPYWbs
+ 9JIQ==
+X-Gm-Message-State: APjAAAWcTST1UFmZPwJ+5n/B+r0iakXYGH/YEC5k6PmPoKY7NLnel4fY
+ DVks5xpN7YeQN+8MxFcWuOOSZQTG
+X-Google-Smtp-Source: APXvYqyunk+17C05TmZeWJAVQRUqXagae1i/arm1NjzdQ9tHmhOGMB9kfmJJSIejysLHRlquEqJdkw==
+X-Received: by 2002:aa7:864a:: with SMTP id a10mr47000723pfo.181.1553841903952; 
+ Thu, 28 Mar 2019 23:45:03 -0700 (PDT)
+Received: from voyager.jms.id.au (bh02i525f01.au.ibm.com. [202.81.18.30])
+ by smtp.gmail.com with ESMTPSA id n65sm2848183pfb.160.2019.03.28.23.45.00
+ (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
+ Thu, 28 Mar 2019 23:45:03 -0700 (PDT)
+Received: by voyager.jms.id.au (sSMTP sendmail emulation);
+ Fri, 29 Mar 2019 17:14:56 +1030
+From: Joel Stanley <joel@jms.id.au>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH kernel 2/2] powerpc/mm_iommu: Fix potential deadlock
-Date: Fri, 29 Mar 2019 16:46:41 +1100
-Message-Id: <20190329054641.48597-3-aik@ozlabs.ru>
-X-Mailer: git-send-email 2.17.1
-In-Reply-To: <20190329054641.48597-1-aik@ozlabs.ru>
-References: <20190329054641.48597-1-aik@ozlabs.ru>
+Subject: [PATCH v2] powerpc/vmlinux.lds: Drop binutils < 2.18 workarounds
+Date: Fri, 29 Mar 2019 17:14:53 +1030
+Message-Id: <20190329064453.12761-1-joel@jms.id.au>
+X-Mailer: git-send-email 2.20.1
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -50,306 +90,79 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Alexey Kardashevskiy <aik@ozlabs.ru>,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>, kvm-ppc@vger.kernel.org,
- David Gibson <david@gibson.dropbear.id.au>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Currently mm_iommu_do_alloc() is called in 2 cases:
-- VFIO_IOMMU_SPAPR_REGISTER_MEMORY ioctl() for normal memory;
-- vfio_pci_nvgpu_regops::mmap() for GPU memory.
+Segher added some workarounds for binutils < 2.18 and GCC < 4.2. We
+now set GCC 4.6 and binutils 2.20 as the minimum, so the workarounds
+can be dropped.
 
-One of the differences here is that the mmap() is called with mm::mmap_sem
-help and mm_iommu_do_alloc() locks mm::mmap_sem itself (when adjusting
-locked_vm and when pinning pages) which can potentially cause a deadlock.
+This is mostly a revert of c69cccc95fe4 ("powerpc: Fix build bug with
+binutils < 2.18 and GCC < 4.2"), except we keep the kernel PHDRS
+statement as ppc64_defconfig would fail to link without it:
 
-We did not hit this yet because the mmap() path does not adjust
-locked_vm and does not pin pages. However with CONFIG_DEBUG_LOCKDEP=y
-there is an annoying warning (below, it is slightly confusing).
+ powerpc64-linux-ld: .tmp_vmlinux1: Not enough room for program headers, try linking with -N
+ powerpc64-linux-ld: final link failed: Bad value
 
-This makes a few changes to reduce the amount of time spent under a lock.
+See https://lore.kernel.org/linuxppc-dev/20190321003253.22100-1-joel@jms.id.au/
+for the discussion.
 
-This holds mem_list_mutex only when looking or changing the mem list.
-This means the list is checked twice now for the normal memory case -
-before starting pinning and before adding the item to the list.
-
-This changes mm_iommu_do_alloc() to only allocate and add an iommu memory
-descriptor (used to deal with both normal and GPU memory in a rather
-messy way).
-
-This cleans the code in a way that mm_iommu_new() and mm_iommu_do_alloc()
-do not need to test for (dev_hpa != MM_IOMMU_TABLE_INVALID_HPA) which
-makes the code simpler.
-
-This moves locked_vm decrementing from under mem_list_mutex for the same
-reasons.
-
-This is one of the lockdep warnings:
-======================================================
-WARNING: possible circular locking dependency detected
-5.1.0-rc2-le_nv2_aikATfstn1-p1 #363 Not tainted
-------------------------------------------------------
-qemu-system-ppc/8038 is trying to acquire lock:
-000000002ec6c453 (mem_list_mutex){+.+.}, at: mm_iommu_do_alloc+0x70/0x490
-
-but task is already holding lock:
-00000000fd7da97f (&mm->mmap_sem){++++}, at: vm_mmap_pgoff+0xf0/0x160
-
-which lock already depends on the new lock.
-
-the existing dependency chain (in reverse order) is:
-
--> #1 (&mm->mmap_sem){++++}:
-       lock_acquire+0xf8/0x260
-       down_write+0x44/0xa0
-       mm_iommu_adjust_locked_vm.part.1+0x4c/0x190
-       mm_iommu_do_alloc+0x310/0x490
-       tce_iommu_ioctl.part.9+0xb84/0x1150 [vfio_iommu_spapr_tce]
-       vfio_fops_unl_ioctl+0x94/0x430 [vfio]
-       do_vfs_ioctl+0xe4/0x930
-       ksys_ioctl+0xc4/0x110
-       sys_ioctl+0x28/0x80
-       system_call+0x5c/0x70
-
--> #0 (mem_list_mutex){+.+.}:
-       __lock_acquire+0x1484/0x1900
-       lock_acquire+0xf8/0x260
-       __mutex_lock+0x88/0xa70
-       mm_iommu_do_alloc+0x70/0x490
-       vfio_pci_nvgpu_mmap+0xc0/0x130 [vfio_pci]
-       vfio_pci_mmap+0x198/0x2a0 [vfio_pci]
-       vfio_device_fops_mmap+0x44/0x70 [vfio]
-       mmap_region+0x5d4/0x770
-       do_mmap+0x42c/0x650
-       vm_mmap_pgoff+0x124/0x160
-       ksys_mmap_pgoff+0xdc/0x2f0
-       sys_mmap+0x40/0x80
-       system_call+0x5c/0x70
-
-other info that might help us debug this:
-
- Possible unsafe locking scenario:
-
-       CPU0                    CPU1
-       ----                    ----
-  lock(&mm->mmap_sem);
-                               lock(mem_list_mutex);
-                               lock(&mm->mmap_sem);
-  lock(mem_list_mutex);
-
- *** DEADLOCK ***
-
-1 lock held by qemu-system-ppc/8038:
- #0: 00000000fd7da97f (&mm->mmap_sem){++++}, at: vm_mmap_pgoff+0xf0/0x160
-
-Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+Signed-off-by: Joel Stanley <joel@jms.id.au>
 ---
- arch/powerpc/mm/mmu_context_iommu.c | 128 ++++++++++++++--------------
- 1 file changed, 65 insertions(+), 63 deletions(-)
+v2: Fix ppc64_defconfig by keeping kernel PHDRS
 
-diff --git a/arch/powerpc/mm/mmu_context_iommu.c b/arch/powerpc/mm/mmu_context_iommu.c
-index 6b351c79713b..36a826e23d45 100644
---- a/arch/powerpc/mm/mmu_context_iommu.c
-+++ b/arch/powerpc/mm/mmu_context_iommu.c
-@@ -96,50 +96,59 @@ static bool mm_iommu_find(struct mm_struct *mm, unsigned long ua,
- 	return false;
+Segher, Christophe, I did my best but to summarise your conversation.
+Please suggest corrections or additions to the commit message if you
+have any.
+
+---
+ arch/powerpc/kernel/vmlinux.lds.S | 25 +------------------------
+ 1 file changed, 1 insertion(+), 24 deletions(-)
+
+diff --git a/arch/powerpc/kernel/vmlinux.lds.S b/arch/powerpc/kernel/vmlinux.lds.S
+index 060a1acd7c6d..9ddc7c0dc672 100644
+--- a/arch/powerpc/kernel/vmlinux.lds.S
++++ b/arch/powerpc/kernel/vmlinux.lds.S
+@@ -19,21 +19,6 @@ ENTRY(_stext)
+ 
+ PHDRS {
+ 	kernel PT_LOAD FLAGS(7); /* RWX */
+-	notes PT_NOTE FLAGS(0);
+-	dummy PT_NOTE FLAGS(0);
+-
+-	/* binutils < 2.18 has a bug that makes it misbehave when taking an
+-	   ELF file with all segments at load address 0 as input.  This
+-	   happens when running "strip" on vmlinux, because of the AT() magic
+-	   in this linker script.  People using GCC >= 4.2 won't run into
+-	   this problem, because the "build-id" support will put some data
+-	   into the "notes" segment (at a non-zero load address).
+-
+-	   To work around this, we force some data into both the "dummy"
+-	   segment and the kernel segment, so the dummy segment will get a
+-	   non-zero load address.  It's not enough to always create the
+-	   "notes" segment, since if nothing gets assigned to it, its load
+-	   address will be zero.  */
  }
  
--static long mm_iommu_do_alloc(struct mm_struct *mm, unsigned long ua,
--			      unsigned long entries, unsigned long dev_hpa,
--			      struct mm_iommu_table_group_mem_t **pmem)
-+/* Must be called with &mem_list_mutex held */
-+static int mm_iommu_do_alloc(struct mm_struct *mm, unsigned long ua,
-+		unsigned long entries, unsigned long dev_hpa,
-+		unsigned int mem_pageshift, phys_addr_t *hpas,
-+		struct mm_iommu_table_group_mem_t **pmem)
- {
- 	struct mm_iommu_table_group_mem_t *mem;
--	long i, ret, locked_entries = 0;
-+
-+	if (mm_iommu_find(mm, ua, entries))
-+		return -EINVAL;
-+
-+	mem = kzalloc(sizeof(*mem), GFP_KERNEL);
-+	if (!mem)
-+		return -ENOMEM;
-+
-+	atomic64_set(&mem->mapped, 1);
-+	mem->dev_hpa = dev_hpa;
-+	mem->used = 1;
-+	mem->ua = ua;
-+	mem->entries = entries;
-+	mem->pageshift = mem_pageshift;
-+	mem->hpas = hpas;
-+	list_add_rcu(&mem->next, &mm->context.iommu_group_mem_list);
-+	*pmem = mem;
-+
-+	return 0;
-+}
-+
-+long mm_iommu_new(struct mm_struct *mm, unsigned long ua, unsigned long entries,
-+		struct mm_iommu_table_group_mem_t **pmem)
-+{
-+	long i, ret = 0, locked_entries = 0;
- 	unsigned int pageshift, mem_pageshift;
- 	struct page **hpages;
- 	phys_addr_t *hpas;
+ #ifdef CONFIG_PPC64
+@@ -177,15 +162,7 @@ SECTIONS
+ #endif
+ 	EXCEPTION_TABLE(0)
  
- 	mutex_lock(&mem_list_mutex);
+-	NOTES :kernel :notes
 -
- 	if (mm_iommu_find(mm, ua, entries)) {
--		ret = -EINVAL;
--		goto unlock_exit;
-+		mutex_unlock(&mem_list_mutex);
-+		return -EINVAL;
- 	}
-+	mutex_unlock(&mem_list_mutex);
+-	/* The dummy segment contents for the bug workaround mentioned above
+-	   near PHDRS.  */
+-	.dummy : AT(ADDR(.dummy) - LOAD_OFFSET) {
+-		LONG(0)
+-		LONG(0)
+-		LONG(0)
+-	} :kernel :dummy
++	NOTES
  
--	if (dev_hpa == MM_IOMMU_TABLE_INVALID_HPA) {
--		ret = mm_iommu_adjust_locked_vm(mm, entries, true);
--		if (ret)
--			goto unlock_exit;
-+	ret = mm_iommu_adjust_locked_vm(mm, entries, true);
-+	if (ret)
-+		return ret;
- 
--		locked_entries = entries;
--	}
--
--	mem = kzalloc(sizeof(*mem), GFP_KERNEL);
--	if (!mem) {
--		ret = -ENOMEM;
--		goto unlock_exit;
--	}
--
--	if (dev_hpa != MM_IOMMU_TABLE_INVALID_HPA) {
--		mem_pageshift = __ffs(dev_hpa | (entries << PAGE_SHIFT));
--		hpas = NULL;
--		mem->dev_hpa = dev_hpa;
--		goto good_exit;
--	}
--	mem->dev_hpa = MM_IOMMU_TABLE_INVALID_HPA;
-+	locked_entries = entries;
- 
- 	hpages = vzalloc(array_size(entries, sizeof(hpages[0])));
- 	if (!hpages) {
--		kfree(mem);
- 		ret = -ENOMEM;
--		goto unlock_exit;
-+		goto cleanup_exit;
- 	}
- 
- 	down_read(&mm->mmap_sem);
-@@ -149,11 +158,8 @@ static long mm_iommu_do_alloc(struct mm_struct *mm, unsigned long ua,
- 		/* free the reference taken */
- 		for (i = 0; i < ret; i++)
- 			put_page(hpages[i]);
--
--		vfree(hpages);
--		kfree(mem);
- 		ret = -EFAULT;
--		goto unlock_exit;
-+		goto cleanup_exit;
- 	}
- 
- 	/*
-@@ -184,40 +190,35 @@ static long mm_iommu_do_alloc(struct mm_struct *mm, unsigned long ua,
- 		hpas[i] = page_to_pfn(page) << PAGE_SHIFT;
- 	}
- 
--good_exit:
--	ret = 0;
--	atomic64_set(&mem->mapped, 1);
--	mem->used = 1;
--	mem->ua = ua;
--	mem->entries = entries;
--	mem->hpas = hpas;
--	mem->pageshift = mem_pageshift;
--	*pmem = mem;
--
--	list_add_rcu(&mem->next, &mm->context.iommu_group_mem_list);
--
--unlock_exit:
--	if (locked_entries && ret)
--		mm_iommu_adjust_locked_vm(mm, locked_entries, false);
--
-+	mutex_lock(&mem_list_mutex);
-+	ret = mm_iommu_do_alloc(mm, ua, entries, MM_IOMMU_TABLE_INVALID_HPA,
-+			mem_pageshift, hpas, pmem);
- 	mutex_unlock(&mem_list_mutex);
- 
-+	if (ret)
-+		goto cleanup_exit;
-+	return 0;
-+
-+cleanup_exit:
-+	mm_iommu_adjust_locked_vm(mm, locked_entries, false);
-+	vfree(hpages);
-+
- 	return ret;
- }
--
--long mm_iommu_new(struct mm_struct *mm, unsigned long ua, unsigned long entries,
--		struct mm_iommu_table_group_mem_t **pmem)
--{
--	return mm_iommu_do_alloc(mm, ua, entries, MM_IOMMU_TABLE_INVALID_HPA,
--			pmem);
--}
- EXPORT_SYMBOL_GPL(mm_iommu_new);
- 
- long mm_iommu_newdev(struct mm_struct *mm, unsigned long ua,
- 		unsigned long entries, unsigned long dev_hpa,
- 		struct mm_iommu_table_group_mem_t **pmem)
- {
--	return mm_iommu_do_alloc(mm, ua, entries, dev_hpa, pmem);
-+	int ret;
-+
-+	mutex_lock(&mem_list_mutex);
-+	ret = mm_iommu_do_alloc(mm, ua, entries, dev_hpa,
-+			__ffs(dev_hpa | (entries << PAGE_SHIFT)), NULL, pmem);
-+	mutex_unlock(&mem_list_mutex);
-+
-+	return ret;
- }
- EXPORT_SYMBOL_GPL(mm_iommu_newdev);
- 
-@@ -270,10 +271,13 @@ static void mm_iommu_release(struct mm_iommu_table_group_mem_t *mem)
- long mm_iommu_put(struct mm_struct *mm, struct mm_iommu_table_group_mem_t *mem)
- {
- 	long ret = 0;
--	unsigned long entries, dev_hpa;
-+	unsigned long unlock_entries = 0;
- 
- 	mutex_lock(&mem_list_mutex);
- 
-+	if (mem->dev_hpa == MM_IOMMU_TABLE_INVALID_HPA)
-+		unlock_entries = mem->entries;
-+
- 	if (mem->used == 0) {
- 		ret = -ENOENT;
- 		goto unlock_exit;
-@@ -292,16 +296,14 @@ long mm_iommu_put(struct mm_struct *mm, struct mm_iommu_table_group_mem_t *mem)
- 	}
- 
- 	/* @mapped became 0 so now mappings are disabled, release the region */
--	entries = mem->entries;
--	dev_hpa = mem->dev_hpa;
- 	mm_iommu_release(mem);
- 
--	if (dev_hpa == MM_IOMMU_TABLE_INVALID_HPA)
--		mm_iommu_adjust_locked_vm(mm, entries, false);
--
- unlock_exit:
- 	mutex_unlock(&mem_list_mutex);
- 
-+	if (!ret)
-+		mm_iommu_adjust_locked_vm(mm, unlock_entries, false);
-+
- 	return ret;
- }
- EXPORT_SYMBOL_GPL(mm_iommu_put);
+ /*
+  * Init sections discarded at runtime
 -- 
-2.17.1
+2.20.1
 
