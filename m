@@ -3,40 +3,40 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
 X-Spam-Status: No, score=-3.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,
-	URIBL_BLOCKED autolearn=ham autolearn_force=no version=3.4.0
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D387BC43381
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Mar 2019 15:45:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3D5F6C43381
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Mar 2019 15:48:09 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 4F7BD21871
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Mar 2019 15:45:59 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id ADBDD21871
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Mar 2019 15:48:07 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="OUiC5tfO"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4F7BD21871
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="TX0iOggF"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org ADBDD21871
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linuxfoundation.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44W5g86bQhzDqRr
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 30 Mar 2019 02:45:56 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+	by lists.ozlabs.org (Postfix) with ESMTP id 44W5jd5Q4hzDqSV
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 30 Mar 2019 02:48:05 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44W4Yn6mR9zDqQd
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Mar 2019 01:56:13 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44W4Ys163pzDqQh
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Mar 2019 01:56:17 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=linuxfoundation.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="OUiC5tfO"; 
+ unprotected) header.d=kernel.org header.i=@kernel.org header.b="TX0iOggF"; 
  dkim-atps=neutral
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 44W4Yn4zfkz8t23
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Mar 2019 01:56:13 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 44W4Yr6qSrz8t23
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Mar 2019 01:56:16 +1100 (AEDT)
 Received: by ozlabs.org (Postfix)
- id 44W4Yn4Gsnz9sQq; Sat, 30 Mar 2019 01:56:13 +1100 (AEDT)
+ id 44W4Yr6Q6Cz9sQq; Sat, 30 Mar 2019 01:56:16 +1100 (AEDT)
 Authentication-Results: ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=linuxfoundation.org
  (client-ip=198.145.29.99; helo=mail.kernel.org;
@@ -44,34 +44,34 @@ Authentication-Results: ozlabs.org;
 Authentication-Results: ozlabs.org; dmarc=none (p=none dis=none)
  header.from=linuxfoundation.org
 Authentication-Results: ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="OUiC5tfO"; 
+ unprotected) header.d=kernel.org header.i=@kernel.org header.b="TX0iOggF"; 
  dkim-atps=neutral
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 44W4Yn09Vwz9sPp
- for <linuxppc-dev@ozlabs.org>; Sat, 30 Mar 2019 01:56:13 +1100 (AEDT)
+ by ozlabs.org (Postfix) with ESMTPS id 44W4Yr2s0Wz9sPx
+ for <linuxppc-dev@ozlabs.org>; Sat, 30 Mar 2019 01:56:16 +1100 (AEDT)
 Received: from localhost (83-86-89-107.cable.dynamic.v4.ziggo.nl
  [83.86.89.107])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id 10431206C0;
- Fri, 29 Mar 2019 14:56:10 +0000 (UTC)
+ by mail.kernel.org (Postfix) with ESMTPSA id C1DB82184C;
+ Fri, 29 Mar 2019 14:56:13 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1553871371;
- bh=/yf9RpAUZA5GY8nfQPMTLfsx696BTsFauLUDFAKYQ8w=;
+ s=default; t=1553871374;
+ bh=nqd2yJFaHnL4GaK13NyxLvaFXoCyL0q/FTz80XAl+C0=;
  h=Subject:To:Cc:From:Date:In-Reply-To:From;
- b=OUiC5tfONQSLFO0qFoZzdLMWGKMQgB/JrQ9RFwLfithXgzUHacGJ7QLWCEfjD0Se/
- cdmBZ/yvfSHMElAjWBXM6595a1ZYO/rvhkKOE6bqzXIHTtb+kG1DcmSPg6dhX3lM/r
- j2q0mQzPwgXzpJ72XVPAfnp+bkRmbhCXR2b8wN28=
-Subject: Patch "[PATCH stable v4.14 29/32] powerpc/fsl: Update Spectre v2
- reporting" has been added to the 4.14-stable tree
+ b=TX0iOggFGZ6lyjU0kdqbu4GM4DcBmxZG7tPLa7hOBI26FF9Vh9WLOmM52+qxFhEDo
+ FP/LSIdNIKNvPqDtRx+zvsyEijx8KKcJBajpBeCvxV9A0x86XzgS4LTOPm6ZQfTNJS
+ P8CN5JKp0dQQMVGeQhhk53XXvCJ11WKFsD1yoUFI=
+Subject: Patch "[PATCH stable v4.14 23/32] powerpc/fsl: Emulate SPRN_BUCSR
+ register" has been added to the 4.14-stable tree
 To: christophe.leroy@c-s.fr, diana.craciun@nxp.com, gregkh@linuxfoundation.org,
  linuxppc-dev@ozlabs.org, mpe@ellerman.id.au, msuchanek@suse.de
 From: <gregkh@linuxfoundation.org>
 Date: Fri, 29 Mar 2019 15:54:47 +0100
-In-Reply-To: <20190329112620.14489-30-mpe@ellerman.id.au>
-Message-ID: <155387128717248@kroah.com>
+In-Reply-To: <20190329112620.14489-24-mpe@ellerman.id.au>
+Message-ID: <155387128711464@kroah.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ANSI_X3.4-1968
 Content-Transfer-Encoding: 8bit
@@ -96,13 +96,13 @@ Sender: "Linuxppc-dev"
 
 This is a note to let you know that I've just added the patch titled
 
-    [PATCH stable v4.14 29/32] powerpc/fsl: Update Spectre v2 reporting
+    [PATCH stable v4.14 23/32] powerpc/fsl: Emulate SPRN_BUCSR register
 
 to the 4.14-stable tree which can be found at:
     http://www.kernel.org/git/?p=linux/kernel/git/stable/stable-queue.git;a=summary
 
 The filename of the patch is:
-     powerpc-fsl-update-spectre-v2-reporting.patch
+     powerpc-fsl-emulate-sprn_bucsr-register.patch
 and it can be found in the queue-4.14 subdirectory.
 
 If you, or anyone else, feels it should not be added to the stable tree,
@@ -111,43 +111,48 @@ please let <stable@vger.kernel.org> know about it.
 
 From foo@baz Fri Mar 29 15:53:50 CET 2019
 From: Michael Ellerman <mpe@ellerman.id.au>
-Date: Fri, 29 Mar 2019 22:26:17 +1100
-Subject: [PATCH stable v4.14 29/32] powerpc/fsl: Update Spectre v2 reporting
+Date: Fri, 29 Mar 2019 22:26:11 +1100
+Subject: [PATCH stable v4.14 23/32] powerpc/fsl: Emulate SPRN_BUCSR register
 To: stable@vger.kernel.org, gregkh@linuxfoundation.org
 Cc: linuxppc-dev@ozlabs.org, diana.craciun@nxp.com, msuchanek@suse.de, christophe.leroy@c-s.fr
-Message-ID: <20190329112620.14489-30-mpe@ellerman.id.au>
+Message-ID: <20190329112620.14489-24-mpe@ellerman.id.au>
 
 From: Michael Ellerman <mpe@ellerman.id.au>
 
 From: Diana Craciun <diana.craciun@nxp.com>
 
-commit dfa88658fb0583abb92e062c7a9cd5a5b94f2a46 upstream.
+commit 98518c4d8728656db349f875fcbbc7c126d4c973 upstream.
 
-Report branch predictor state flush as a mitigation for
-Spectre variant 2.
+In order to flush the branch predictor the guest kernel performs
+writes to the BUCSR register which is hypervisor privilleged. However,
+the branch predictor is flushed at each KVM entry, so the branch
+predictor has been already flushed, so just return as soon as possible
+to guest.
 
 Signed-off-by: Diana Craciun <diana.craciun@nxp.com>
+[mpe: Tweak comment formatting]
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 ---
- arch/powerpc/kernel/security.c |    5 ++++-
- 1 file changed, 4 insertions(+), 1 deletion(-)
+ arch/powerpc/kvm/e500_emulate.c |    7 +++++++
+ 1 file changed, 7 insertions(+)
 
---- a/arch/powerpc/kernel/security.c
-+++ b/arch/powerpc/kernel/security.c
-@@ -212,8 +212,11 @@ ssize_t cpu_show_spectre_v2(struct devic
+--- a/arch/powerpc/kvm/e500_emulate.c
++++ b/arch/powerpc/kvm/e500_emulate.c
+@@ -277,6 +277,13 @@ int kvmppc_core_emulate_mtspr_e500(struc
+ 		vcpu->arch.pwrmgtcr0 = spr_val;
+ 		break;
  
- 		if (count_cache_flush_type == COUNT_CACHE_FLUSH_HW)
- 			seq_buf_printf(&s, "(hardware accelerated)");
--	} else
-+	} else if (btb_flush_enabled) {
-+		seq_buf_printf(&s, "Mitigation: Branch predictor state flush");
-+	} else {
- 		seq_buf_printf(&s, "Vulnerable");
-+	}
- 
- 	seq_buf_printf(&s, "\n");
- 
++	case SPRN_BUCSR:
++		/*
++		 * If we are here, it means that we have already flushed the
++		 * branch predictor, so just return to guest.
++		 */
++		break;
++
+ 	/* extra exceptions */
+ #ifdef CONFIG_SPE_POSSIBLE
+ 	case SPRN_IVOR32:
 
 
 Patches currently in stable-queue which might be from mpe@ellerman.id.au are
