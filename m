@@ -6,21 +6,21 @@ X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
 	SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 055BAC43381
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Mar 2019 17:04:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DA089C43381
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Mar 2019 17:06:19 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 71BBB2184D
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Mar 2019 17:04:44 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 50F2F2184D
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Mar 2019 17:06:19 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="pNsn2/Er"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 71BBB2184D
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="J3BB55Bn"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 50F2F2184D
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44W7Q23jxZzDqTs
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 30 Mar 2019 04:04:42 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44W7Rs1gY4zDqXV
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 30 Mar 2019 04:06:17 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=c-s.fr
  (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
@@ -28,56 +28,56 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="pNsn2/Er"; 
+ unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="J3BB55Bn"; 
  dkim-atps=neutral
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44W6r00qh2zDqPZ
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Mar 2019 03:38:40 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44W6r12TBQzDqP1
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Mar 2019 03:38:41 +1100 (AEDT)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 44W6qv3pRRz9tyQP;
- Fri, 29 Mar 2019 17:38:35 +0100 (CET)
+ by localhost (Postfix) with ESMTP id 44W6qw3syVz9tyQk;
+ Fri, 29 Mar 2019 17:38:36 +0100 (CET)
 Authentication-Results: localhost; dkim=pass
  reason="1024-bit key; insecure key"
- header.d=c-s.fr header.i=@c-s.fr header.b=pNsn2/Er; dkim-adsp=pass;
+ header.d=c-s.fr header.i=@c-s.fr header.b=J3BB55Bn; dkim-adsp=pass;
  dkim-atps=neutral
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id hYB81AQxeEDZ; Fri, 29 Mar 2019 17:38:35 +0100 (CET)
+ with ESMTP id r23YF4bCDfgV; Fri, 29 Mar 2019 17:38:36 +0100 (CET)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 44W6qv2gbgz9tyQj;
- Fri, 29 Mar 2019 17:38:35 +0100 (CET)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
- t=1553877515; bh=+ZQXST6DXIV8Tl51sB/rpKMO4T/8+yTR7rxoJ/n5OQ4=;
- h=In-Reply-To:References:From:Subject:To:Cc:Date:From;
- b=pNsn2/ErAWNRzUcTrBZzvisn4BR2X5RgIaIUCkFyd/1XQkoyZ1bHCnA8ApDrHKW5T
- x2VPg7Cx481KbVIVlCnXS7/Fh0w3hzyr5Fi8QmPrGD0X7tRu5RW/MLOSDU3mAMbHWo
- x3V6bE601+fndhYM0j1FFkb3wSgjYLM0VQlFtkiE=
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id ECA388B93D;
+ by pegase1.c-s.fr (Postfix) with ESMTP id 44W6qw2ltGz9tyQj;
  Fri, 29 Mar 2019 17:38:36 +0100 (CET)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
+ t=1553877516; bh=TaoVG5wFwEOIUvsGtqDN/H3S1+EG59HmBbnH3nVKmnQ=;
+ h=In-Reply-To:References:From:Subject:To:Cc:Date:From;
+ b=J3BB55BnINJ5JzvbPrXrf6UP293bSBNNIaIcEuzXRZ4SXj69csedyypA+P9ChtW65
+ cbPg97vTJBiWLNEBkF17dYsosXmpSymkqCIxBh6ekSknXCSPBKYmk96K0IMAed00EZ
+ G8IaYQtLnp3acQDnFzvrHzkU6kHy7gJjD4QX13wg=
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id F0D8A8B93D;
+ Fri, 29 Mar 2019 17:38:37 +0100 (CET)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id CpWYtwLei3_Y; Fri, 29 Mar 2019 17:38:36 +0100 (CET)
+ with ESMTP id qtcEeWdHfKcq; Fri, 29 Mar 2019 17:38:37 +0100 (CET)
 Received: from po16846vm.idsi0.si.c-s.fr (po15451.idsi0.si.c-s.fr
  [172.25.231.2])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id C8BA28B938;
- Fri, 29 Mar 2019 17:38:36 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id D93698B938;
+ Fri, 29 Mar 2019 17:38:37 +0100 (CET)
 Received: by po16846vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id AC1526FC56; Fri, 29 Mar 2019 16:38:36 +0000 (UTC)
-Message-Id: <2e060691a4762bb0615a1c7606dbce22d13ab111.1553877076.git.christophe.leroy@c-s.fr>
+ id B4F5D6FC56; Fri, 29 Mar 2019 16:38:37 +0000 (UTC)
+Message-Id: <f51cbb60271f8f85164cb172c4ec9b986f468953.1553877076.git.christophe.leroy@c-s.fr>
 In-Reply-To: <cover.1553877076.git.christophe.leroy@c-s.fr>
 References: <cover.1553877076.git.christophe.leroy@c-s.fr>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v2 14/17] powerpc/32: implement fast entry for syscalls on
- BOOKE
+Subject: [PATCH v2 15/17] powerpc/32: Remove MSR_PR test when returning from
+ syscall
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
  Nicholas Piggin <npiggin@gmail.com>
-Date: Fri, 29 Mar 2019 16:38:36 +0000 (UTC)
+Date: Fri, 29 Mar 2019 16:38:37 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -94,222 +94,31 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This patch implements a fast entry for syscalls.
-
-Syscalls don't have to preserve non volatile registers except LR.
-
-This patch then implement a fast entry for syscalls, where
-volatile registers get clobbered.
-
-As this entry is dedicated to syscall it always sets MSR_EE
-and warns in case MSR_EE was previously off
-
-It also assumes that the call is always from user, system calls are
-unexpected from kernel.
+syscalls are from user only, so we can account time without checking
+whether returning to kernel or user as it will only be user.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
- arch/powerpc/kernel/entry_32.S       |   7 ---
- arch/powerpc/kernel/head_44x.S       |   3 +-
- arch/powerpc/kernel/head_booke.h     | 103 +++++++++++++++++++++++++++++++++--
- arch/powerpc/kernel/head_fsl_booke.S |   3 +-
- 4 files changed, 100 insertions(+), 16 deletions(-)
+ arch/powerpc/kernel/entry_32.S | 5 -----
+ 1 file changed, 5 deletions(-)
 
 diff --git a/arch/powerpc/kernel/entry_32.S b/arch/powerpc/kernel/entry_32.S
-index 71a101600428..5f52a71c2838 100644
+index 5f52a71c2838..edd119d3c52b 100644
 --- a/arch/powerpc/kernel/entry_32.S
 +++ b/arch/powerpc/kernel/entry_32.S
-@@ -335,7 +335,6 @@ stack_ovf:
- 	SYNC
- 	RFI
- 
--#ifndef CONFIG_BOOKE	/* to be removed once BOOKE uses fast syscall entry */
- #ifdef CONFIG_TRACE_IRQFLAGS
- trace_syscall_entry_irq_off:
- 	/*
-@@ -362,7 +361,6 @@ transfer_to_syscall:
- 	andi.	r12,r9,MSR_EE
- 	beq-	trace_syscall_entry_irq_off
- #endif /* CONFIG_TRACE_IRQFLAGS */
--#endif /* !CONFIG_BOOKE */
- 
- /*
-  * Handle a system call.
-@@ -375,11 +373,6 @@ _GLOBAL(DoSyscall)
- 	stw	r3,ORIG_GPR3(r1)
- 	li	r12,0
- 	stw	r12,RESULT(r1)
--#ifdef CONFIG_BOOKE	/* to be removed once BOOKE uses fast syscall entry */
--	lwz	r11,_CCR(r1)	/* Clear SO bit in CR */
--	rlwinm	r11,r11,0,4,2
--	stw	r11,_CCR(r1)
+@@ -463,12 +463,7 @@ BEGIN_FTR_SECTION
+ 	lwarx	r7,0,r1
+ END_FTR_SECTION_IFSET(CPU_FTR_NEED_PAIRED_STWCX)
+ 	stwcx.	r0,0,r1			/* to clear the reservation */
+-#ifdef CONFIG_VIRT_CPU_ACCOUNTING_NATIVE
+-	andi.	r4,r8,MSR_PR
+-	beq	3f
+ 	ACCOUNT_CPU_USER_EXIT(r2, r5, r7)
+-3:
 -#endif
- #ifdef CONFIG_TRACE_IRQFLAGS
- 	/* Make sure interrupts are enabled */
- 	mfmsr	r11
-diff --git a/arch/powerpc/kernel/head_44x.S b/arch/powerpc/kernel/head_44x.S
-index e06cb1c84951..7d73c7e39afe 100644
---- a/arch/powerpc/kernel/head_44x.S
-+++ b/arch/powerpc/kernel/head_44x.S
-@@ -282,8 +282,7 @@ interrupt_base:
- #endif
- 	/* System Call Interrupt */
- 	START_EXCEPTION(SystemCall)
--	NORMAL_EXCEPTION_PROLOG(BOOKE_INTERRUPT_SYSCALL)
--	EXC_XFER_SYS(0x0c00, DoSyscall)
-+	SYSCALL_ENTRY   0xc00 BOOKE_INTERRUPT_SYSCALL
- 
- 	/* Auxiliary Processor Unavailable Interrupt */
- 	EXCEPTION(0x2020, BOOKE_INTERRUPT_AP_UNAVAIL, \
-diff --git a/arch/powerpc/kernel/head_booke.h b/arch/powerpc/kernel/head_booke.h
-index 56dd1341eb3d..bfeb469e8106 100644
---- a/arch/powerpc/kernel/head_booke.h
-+++ b/arch/powerpc/kernel/head_booke.h
-@@ -6,6 +6,8 @@
- #include <asm/kvm_asm.h>
- #include <asm/kvm_booke_hv_asm.h>
- 
-+#ifdef __ASSEMBLY__
-+
- /*
-  * Macros used for common Book-e exception handling
-  */
-@@ -81,6 +83,101 @@ END_BTB_FLUSH_SECTION
- 	SAVE_4GPRS(3, r11);						     \
- 	SAVE_2GPRS(7, r11)
- 
-+.macro SYSCALL_ENTRY trapno intno
-+	mfspr	r10, SPRN_SPRG_THREAD
-+#ifdef CONFIG_KVM_BOOKE_HV
-+BEGIN_FTR_SECTION
-+	mtspr	SPRN_SPRG_WSCRATCH0, r10
-+	stw	r11, THREAD_NORMSAVE(0)(r10)
-+	stw	r13, THREAD_NORMSAVE(2)(r10)
-+	mfcr	r13			/* save CR in r13 for now	   */
-+	mfspr	r11, SPRN_SRR1
-+	mtocrf	0x80, r11	/* check MSR[GS] without clobbering reg */
-+	bf	3, 1975f
-+	b	kvmppc_handler_BOOKE_INTERRUPT_\intno\()_SPRN_SRR1
-+1975:
-+	mr	r12, r13
-+	lwz	r13, THREAD_NORMSAVE(2)(r10)
-+FTR_SECTION_ELSE
-+#endif
-+	mfcr	r12
-+#ifdef CONFIG_KVM_BOOKE_HV
-+ALT_FTR_SECTION_END_IFSET(CPU_FTR_EMB_HV)
-+#endif
-+	BOOKE_CLEAR_BTB(r11)
-+	lwz	r11, TASK_STACK - THREAD(r10)
-+	rlwinm	r12,r12,0,4,2	/* Clear SO bit in CR */
-+	ALLOC_STACK_FRAME(r11, THREAD_SIZE - INT_FRAME_SIZE)
-+	stw	r12, _CCR(r11)		/* save various registers */
-+	mflr	r12
-+	stw	r12,_LINK(r11)
-+	mfspr	r12,SPRN_SRR0
-+	stw	r1, GPR1(r11)
-+	mfspr	r9,SPRN_SRR1
-+	stw	r1, 0(r11)
-+	mr	r1, r11
-+	stw	r12,_NIP(r11)
-+	rlwinm	r9,r9,0,14,12		/* clear MSR_WE (necessary?)	   */
-+	lis	r12, STACK_FRAME_REGS_MARKER@ha /* exception frame marker */
-+	stw	r2,GPR2(r11)
-+	addi	r12, r12, STACK_FRAME_REGS_MARKER@l
-+	stw	r9,_MSR(r11)
-+	li	r2, \trapno + 1
-+	stw	r12, 8(r11)
-+	stw	r2,_TRAP(r11)
-+	SAVE_GPR(0, r11)
-+	SAVE_4GPRS(3, r11)
-+	SAVE_2GPRS(7, r11)
-+
-+	addi	r11,r1,STACK_FRAME_OVERHEAD
-+	addi	r2,r10,-THREAD
-+	stw	r11,PT_REGS(r10)
-+	/* Check to see if the dbcr0 register is set up to debug.  Use the
-+	   internal debug mode bit to do this. */
-+	lwz	r12,THREAD_DBCR0(r10)
-+	andis.	r12,r12,DBCR0_IDM@h
-+	ACCOUNT_CPU_USER_ENTRY(r2, r11, r12)
-+	beq+	3f
-+	/* From user and task is ptraced - load up global dbcr0 */
-+	li	r12,-1			/* clear all pending debug events */
-+	mtspr	SPRN_DBSR,r12
-+	lis	r11,global_dbcr0@ha
-+	tophys(r11,r11)
-+	addi	r11,r11,global_dbcr0@l
-+#ifdef CONFIG_SMP
-+	lwz	r9,TASK_CPU(r2)
-+	slwi	r9,r9,3
-+	add	r11,r11,r9
-+#endif
-+	lwz	r12,0(r11)
-+	mtspr	SPRN_DBCR0,r12
-+	lwz	r12,4(r11)
-+	addi	r12,r12,-1
-+	stw	r12,4(r11)
-+
-+3:
-+	tovirt(r2, r2)			/* set r2 to current */
-+	lis	r11, transfer_to_syscall@h
-+	ori	r11, r11, transfer_to_syscall@l
-+#ifdef CONFIG_TRACE_IRQFLAGS
-+	/*
-+	 * If MSR is changing we need to keep interrupts disabled at this point
-+	 * otherwise we might risk taking an interrupt before we tell lockdep
-+	 * they are enabled.
-+	 */
-+	lis	r10, MSR_KERNEL@h
-+	ori	r10, r10, MSR_KERNEL@l
-+	rlwimi	r10, r9, 0, MSR_EE
-+#else
-+	lis	r10, (MSR_KERNEL | MSR_EE)@h
-+	ori	r10, r10, (MSR_KERNEL | MSR_EE)@l
-+#endif
-+	mtspr	SPRN_SRR1,r10
-+	mtspr	SPRN_SRR0,r11
-+	SYNC
-+	RFI				/* jump to handler, enable MMU */
-+.endm
-+
- /* To handle the additional exception priority levels on 40x and Book-E
-  * processors we allocate a stack per additional priority level.
-  *
-@@ -245,10 +342,6 @@ END_BTB_FLUSH_SECTION
- 	EXC_XFER_TEMPLATE(hdlr, n+1, MSR_KERNEL, transfer_to_handler, \
- 			  ret_from_except)
- 
--#define EXC_XFER_SYS(n, hdlr)						\
--	EXC_XFER_TEMPLATE(hdlr, n+1, MSR_KERNEL | MSR_EE, transfer_to_handler, \
--			  ret_from_except)
--
- /* Check for a single step debug exception while in an exception
-  * handler before state has been saved.  This is to catch the case
-  * where an instruction that we are trying to single step causes
-@@ -418,7 +511,7 @@ END_BTB_FLUSH_SECTION
- 1:	addi	r3,r1,STACK_FRAME_OVERHEAD;				      \
- 	EXC_XFER_STD(0x800, kernel_fp_unavailable_exception)
- 
--#ifndef __ASSEMBLY__
-+#else /* __ASSEMBLY__ */
- struct exception_regs {
- 	unsigned long mas0;
- 	unsigned long mas1;
-diff --git a/arch/powerpc/kernel/head_fsl_booke.S b/arch/powerpc/kernel/head_fsl_booke.S
-index b351851dc73d..a757be4f1cb5 100644
---- a/arch/powerpc/kernel/head_fsl_booke.S
-+++ b/arch/powerpc/kernel/head_fsl_booke.S
-@@ -410,8 +410,7 @@ interrupt_base:
- 
- 	/* System Call Interrupt */
- 	START_EXCEPTION(SystemCall)
--	NORMAL_EXCEPTION_PROLOG(SYSCALL)
--	EXC_XFER_SYS(0x0c00, DoSyscall)
-+	SYSCALL_ENTRY   0xc00 SYSCALL
- 
- 	/* Auxiliary Processor Unavailable Interrupt */
- 	EXCEPTION(0x2900, AP_UNAVAIL, AuxillaryProcessorUnavailable, \
+ 	lwz	r4,_LINK(r1)
+ 	lwz	r5,_CCR(r1)
+ 	mtlr	r4
 -- 
 2.13.3
 
