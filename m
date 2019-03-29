@@ -2,52 +2,56 @@ Return-Path: <SRS0=YrVw=SA=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B5861C43381
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Mar 2019 14:16:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E234CC43381
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Mar 2019 14:18:16 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3702E206C0
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Mar 2019 14:16:43 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3702E206C0
+	by mail.kernel.org (Postfix) with ESMTPS id 66483206C0
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Mar 2019 14:18:16 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 66483206C0
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nxp.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44W3h92RFdzDqCc
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 30 Mar 2019 01:16:41 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44W3jy2wHwzDqTd
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 30 Mar 2019 01:18:14 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=nxp.com
  (client-ip=92.121.34.21; helo=inva021.nxp.com;
  envelope-from=laurentiu.tudor@nxp.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=nxp.com
+X-Greylist: delayed 341 seconds by postgrey-1.36 at bilbo;
+ Sat, 30 Mar 2019 01:06:05 AEDT
 Received: from inva021.nxp.com (inva021.nxp.com [92.121.34.21])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44W3Rx6XRWzDqSH
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44W3Rx6V3TzDqS5
  for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Mar 2019 01:06:04 +1100 (AEDT)
 Received: from inva021.nxp.com (localhost [127.0.0.1])
- by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id 3A4112001E2;
- Fri, 29 Mar 2019 15:00:17 +0100 (CET)
+ by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id C5399200268;
+ Fri, 29 Mar 2019 15:00:23 +0100 (CET)
 Received: from inva024.eu-rdc02.nxp.com (inva024.eu-rdc02.nxp.com
  [134.27.226.22])
- by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id 2DDB8200034;
- Fri, 29 Mar 2019 15:00:17 +0100 (CET)
+ by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id B8D6620019E;
+ Fri, 29 Mar 2019 15:00:23 +0100 (CET)
 Received: from fsr-ub1864-101.ea.freescale.net
  (fsr-ub1864-101.ea.freescale.net [10.171.74.120])
- by inva024.eu-rdc02.nxp.com (Postfix) with ESMTP id A101320606;
- Fri, 29 Mar 2019 15:00:16 +0100 (CET)
+ by inva024.eu-rdc02.nxp.com (Postfix) with ESMTP id 381B52060C;
+ Fri, 29 Mar 2019 15:00:23 +0100 (CET)
 From: laurentiu.tudor@nxp.com
 To: netdev@vger.kernel.org, madalin.bucur@nxp.com, roy.pledge@nxp.com,
  camelia.groza@nxp.com, leoyang.li@nxp.com
-Subject: [PATCH 00/13] Prerequisites for NXP LS104xA SMMU enablement
-Date: Fri, 29 Mar 2019 16:00:01 +0200
-Message-Id: <20190329140014.8126-1-laurentiu.tudor@nxp.com>
+Subject: [PATCH 10/13] dpaa_eth: base dma mappings on the fman rx port
+Date: Fri, 29 Mar 2019 16:00:11 +0200
+Message-Id: <20190329140014.8126-11-laurentiu.tudor@nxp.com>
 X-Mailer: git-send-email 2.17.1
+In-Reply-To: <20190329140014.8126-1-laurentiu.tudor@nxp.com>
+References: <20190329140014.8126-1-laurentiu.tudor@nxp.com>
 X-Virus-Scanned: ClamAV using ClamSMTP
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -70,49 +74,63 @@ Sender: "Linuxppc-dev"
 
 From: Laurentiu Tudor <laurentiu.tudor@nxp.com>
 
-This patch series contains several fixes in preparation for SMMU
-support on NXP LS1043A and LS1046A chips. Once these get picked up,
-I'll submit the actual SMMU enablement patches consisting in the
-required device tree changes.
+The dma transactions initiator is the rx fman port so that's the device
+that the dma mappings should be done. Previously the mappings were done
+through the MAC device which makes no sense because it's neither dma-able
+nor connected in any way to smmu.
 
-This patch series contains only part of the previously submitted one,
-(including also the device tree changes) available here:
+Signed-off-by: Laurentiu Tudor <laurentiu.tudor@nxp.com>
+Acked-by: Madalin Bucur <madalin.bucur@nxp.com>
+---
+ drivers/net/ethernet/freescale/dpaa/dpaa_eth.c | 18 +++++++++---------
+ 1 file changed, 9 insertions(+), 9 deletions(-)
 
-https://patchwork.kernel.org/cover/10634443/
-
-There are a couple of changes/fixes since then:
- - for consistency, renamed mmu node to smmu
- - new patch page aligning the sizes of the qbman reserved memory
- - rebased on 5.1.0-rc2
-
-Laurentiu Tudor (13):
-  soc/fsl/qman: fixup liodns only on ppc targets
-  soc/fsl/bman: map FBPR area in the iommu
-  soc/fsl/qman: map FQD and PFDR areas in the iommu
-  soc/fsl/qman-portal: map CENA area in the iommu
-  soc/fsl/bqman: page align iommu mapping sizes
-  soc/fsl/qbman_portals: add APIs to retrieve the probing status
-  fsl/fman: backup and restore ICID registers
-  fsl/fman: add API to get the device behind a fman port
-  dpaa_eth: defer probing after qbman
-  dpaa_eth: base dma mappings on the fman rx port
-  dpaa_eth: fix iova handling for contiguous frames
-  dpaa_eth: fix iova handling for sg frames
-  dpaa_eth: fix SG frame cleanup
-
- .../net/ethernet/freescale/dpaa/dpaa_eth.c    | 136 ++++++++++++------
- drivers/net/ethernet/freescale/fman/fman.c    |  35 ++++-
- drivers/net/ethernet/freescale/fman/fman.h    |   4 +
- .../net/ethernet/freescale/fman/fman_port.c   |  14 ++
- .../net/ethernet/freescale/fman/fman_port.h   |   2 +
- drivers/soc/fsl/qbman/bman_ccsr.c             |  11 ++
- drivers/soc/fsl/qbman/bman_portal.c           |  22 ++-
- drivers/soc/fsl/qbman/qman_ccsr.c             |  17 +++
- drivers/soc/fsl/qbman/qman_portal.c           |  40 +++++-
- include/soc/fsl/bman.h                        |   8 ++
- include/soc/fsl/qman.h                        |   9 ++
- 11 files changed, 242 insertions(+), 56 deletions(-)
-
+diff --git a/drivers/net/ethernet/freescale/dpaa/dpaa_eth.c b/drivers/net/ethernet/freescale/dpaa/dpaa_eth.c
+index 647e90e7434f..cdc7e6d83f77 100644
+--- a/drivers/net/ethernet/freescale/dpaa/dpaa_eth.c
++++ b/drivers/net/ethernet/freescale/dpaa/dpaa_eth.c
+@@ -2805,8 +2805,15 @@ static int dpaa_eth_probe(struct platform_device *pdev)
+ 		return -ENODEV;
+ 	}
+ 
++	mac_dev = dpaa_mac_dev_get(pdev);
++	if (IS_ERR(mac_dev)) {
++		dev_err(&pdev->dev, "dpaa_mac_dev_get() failed\n");
++		err = PTR_ERR(mac_dev);
++		goto probe_err;
++	}
++
+ 	/* device used for DMA mapping */
+-	dev = pdev->dev.parent;
++	dev = fman_port_get_device(mac_dev->port[RX]);
+ 	err = dma_coerce_mask_and_coherent(dev, DMA_BIT_MASK(40));
+ 	if (err) {
+ 		dev_err(dev, "dma_coerce_mask_and_coherent() failed\n");
+@@ -2831,13 +2838,6 @@ static int dpaa_eth_probe(struct platform_device *pdev)
+ 
+ 	priv->msg_enable = netif_msg_init(debug, DPAA_MSG_DEFAULT);
+ 
+-	mac_dev = dpaa_mac_dev_get(pdev);
+-	if (IS_ERR(mac_dev)) {
+-		dev_err(dev, "dpaa_mac_dev_get() failed\n");
+-		err = PTR_ERR(mac_dev);
+-		goto free_netdev;
+-	}
+-
+ 	/* If fsl_fm_max_frm is set to a higher value than the all-common 1500,
+ 	 * we choose conservatively and let the user explicitly set a higher
+ 	 * MTU via ifconfig. Otherwise, the user may end up with different MTUs
+@@ -2973,9 +2973,9 @@ static int dpaa_eth_probe(struct platform_device *pdev)
+ 	qman_release_cgrid(priv->cgr_data.cgr.cgrid);
+ free_dpaa_bps:
+ 	dpaa_bps_free(priv);
+-free_netdev:
+ 	dev_set_drvdata(dev, NULL);
+ 	free_netdev(net_dev);
++probe_err:
+ 
+ 	return err;
+ }
 -- 
 2.17.1
 
