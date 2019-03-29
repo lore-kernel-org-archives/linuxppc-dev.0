@@ -2,48 +2,48 @@ Return-Path: <SRS0=YrVw=SA=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-4.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_PASS autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1ABDDC43381
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Mar 2019 00:24:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 384AEC43381
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Mar 2019 01:33:34 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 9074C21871
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Mar 2019 00:24:58 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9074C21871
+	by mail.kernel.org (Postfix) with ESMTPS id 73F1821773
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Mar 2019 01:33:33 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 73F1821773
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44VjDS10j5zDqRZ
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Mar 2019 11:24:56 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+	by lists.ozlabs.org (Postfix) with ESMTP id 44VklZ6wqTzDqRt
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Mar 2019 12:33:30 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44VjBh3Zp0zDqBd
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Mar 2019 11:23:24 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44Vkjq0VyZzDqLv
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Mar 2019 12:31:59 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: by ozlabs.org (Postfix)
- id 44VjBh2Sv6z9sSf; Fri, 29 Mar 2019 11:23:24 +1100 (AEDT)
+ id 44Vkjp5PYdz9sSc; Fri, 29 Mar 2019 12:31:58 +1100 (AEDT)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
  SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 44VjBh1VJvz9sSc;
- Fri, 29 Mar 2019 11:23:24 +1100 (AEDT)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 44Vkjp3VmZz9sR3;
+ Fri, 29 Mar 2019 12:31:58 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>,
  linuxppc-dev <linuxppc-dev@ozlabs.org>
-Subject: Re: [RFC PATCH 2/3] powernv/mce: Print correct severity for mce error.
-In-Reply-To: <155324739171.7819.1095626412782166400.stgit@jupiter.in.ibm.com>
+Subject: Re: [RFC PATCH 3/3] powenv/mce: print additional information about
+ mce error.
+In-Reply-To: <155324740037.7819.10748646728863055152.stgit@jupiter.in.ibm.com>
 References: <155324738319.7819.17982472592795327790.stgit@jupiter.in.ibm.com>
- <155324739171.7819.1095626412782166400.stgit@jupiter.in.ibm.com>
-Date: Fri, 29 Mar 2019 11:23:23 +1100
-Message-ID: <878swyo7es.fsf@concordia.ellerman.id.au>
+ <155324740037.7819.10748646728863055152.stgit@jupiter.in.ibm.com>
+Date: Fri, 29 Mar 2019 12:31:57 +1100
+Message-ID: <875zs2o48i.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -63,69 +63,54 @@ Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
 Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com> writes:
-> diff --git a/arch/powerpc/include/asm/mce.h b/arch/powerpc/include/asm/mce.h
-> index 8d0b1c24c636..314ed3f13d59 100644
-> --- a/arch/powerpc/include/asm/mce.h
-> +++ b/arch/powerpc/include/asm/mce.h
-> @@ -110,17 +110,18 @@ enum MCE_LinkErrorType {
->  };
->  
->  struct machine_check_event {
-> -	enum MCE_Version	version:8;	/* 0x00 */
-> -	uint8_t			in_use;		/* 0x01 */
-> -	enum MCE_Severity	severity:8;	/* 0x02 */
-> -	enum MCE_Initiator	initiator:8;	/* 0x03 */
-> -	enum MCE_ErrorType	error_type:8;	/* 0x04 */
-> -	enum MCE_Disposition	disposition:8;	/* 0x05 */
-> -	uint16_t		cpu;		/* 0x06 */
-> -	uint64_t		gpr3;		/* 0x08 */
-> -	uint64_t		srr0;		/* 0x10 */
-> -	uint64_t		srr1;		/* 0x18 */
-> -	union {					/* 0x20 */
-> +	enum MCE_Version	version:8;
-> +	uint8_t			in_use;
-> +	enum MCE_Severity	severity:8;
-> +	enum MCE_Initiator	initiator:8;
-> +	enum MCE_ErrorType	error_type:8;
-> +	enum MCE_Disposition	disposition:8;
-> +	uint8_t			sync_error;
-> +	uint16_t		cpu;
-> +	uint64_t		gpr3;
-> +	uint64_t		srr0;
-> +	uint64_t		srr1;
+> From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+>
+> Print more information about mce error whether it is an hardware or
+> software error.
+>
+> Some of the mce errors can be easily categorized as hardware or software
+> errors e.g. UEs are due to hardware error, where as error triggered due to
+> invalid usage of tlbie is a pure software bug. But not all the mce errors
+> can be easily categorize into either software or hardware. There are errors
+> like multihit errors which are usually result of a software bug, but in
+> some rare cases a hardware failure can cause a multihit error. In past, we
+> have seen case where after replacing faulty chip, multihit errors stopped
+> occurring. Same with parity errors, which are usually due to faulty hardware
+> but there are chances where multihit can also cause an parity error. Such
+> errors are difficult to determine what really caused it. Hence this patch
+> classifies mce errors into following four categorize:
+> 	1. Hardware error:
+> 		UE and Link timeout failure errors.
+> 	2. Hardware error, small probability of software cause:
+> 		SLB/ERAT/TLB Parity errors.
+> 	3. Software error
+> 		Invalid tlbie form.
+> 	4. Software error, small probability of hardware failure
+> 		SLB/ERAT/TLB Multihit errors.
 
-Can you switch these to use kernel types while you're at it, ie. u8, u64 etc.
+I like the idea, but I think the phrasing is a little confusing.
 
-> @@ -194,6 +195,7 @@ struct mce_error_info {
->  	} u;
->  	enum MCE_Severity	severity:8;
->  	enum MCE_Initiator	initiator:8;
-> +	uint8_t			sync_error;
+> Sample o/p:
+>
+> [ 1259.331319] MCE: CPU40: (Warning) Guest SLB Multihit at 00007fff9a59dc60 DAR: 000001003d740320 [Recovered]
+> [ 1259.331324] MCE: CPU40: PID: 24051 Comm: qemu-system-ppc
+> [ 1259.331345] MCE: CPU40: Software error, small probability of hardware failure
 
-u8 here but bool later?
+"Software error, small probability of hardware failure"
 
-> diff --git a/arch/powerpc/kernel/mce_power.c b/arch/powerpc/kernel/mce_power.c
-> index 6b800eec31f2..06161de19060 100644
-> --- a/arch/powerpc/kernel/mce_power.c
-> +++ b/arch/powerpc/kernel/mce_power.c
-> @@ -133,106 +133,107 @@ struct mce_ierror_table {
->  	unsigned int error_subtype;
->  	unsigned int initiator;
->  	unsigned int severity;
-> +	bool sync_error;
->  };
+That can be read as "there has been a software error, *and now* there is
+a small probability of a hardware failure".
 
-ie. here it's a bool?
+I also think "probability" suggests we actually know the mathematical
+probability of it being a hardware failure, which is not true.
 
-> @@ -539,8 +543,9 @@ static int mce_handle_derror(struct pt_regs *regs,
->  		return handled;
->  
->  	mce_err->error_type = MCE_ERROR_TYPE_UNKNOWN;
-> -	mce_err->severity = MCE_SEV_ERROR_SYNC;
-> +	mce_err->severity = MCE_SEV_SEVERE;
->  	mce_err->initiator = MCE_INITIATOR_CPU;
-> +	mce_err->sync_error = 1;
+Instead maybe we use:
 
-u8 or bool?
+	"Hardware error",
+	"Probable hardware error (some chance of software cause)",
+	"Software error",
+	"Probable software error (some chance of hardware cause)",
+
+??
 
 cheers
