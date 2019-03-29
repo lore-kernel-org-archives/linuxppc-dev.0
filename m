@@ -6,37 +6,37 @@ X-Spam-Status: No, score=-3.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,
 	URIBL_BLOCKED autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C3CE8C43381
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Mar 2019 15:37:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 80DEEC43381
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Mar 2019 15:39:06 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 438A120693
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Mar 2019 15:37:04 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id EF95320693
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Mar 2019 15:39:05 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="aO01LSgy"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 438A120693
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="o0ZVUvnD"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EF95320693
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linuxfoundation.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44W5St16GNzDqR7
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 30 Mar 2019 02:37:02 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44W5WC5f5fzDqSx
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 30 Mar 2019 02:39:03 +1100 (AEDT)
 Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44W4YY4ZVPzDqGW
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Mar 2019 01:56:01 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44W4Yb107NzDqM0
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Mar 2019 01:56:03 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=linuxfoundation.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="aO01LSgy"; 
+ unprotected) header.d=kernel.org header.i=@kernel.org header.b="o0ZVUvnD"; 
  dkim-atps=neutral
 Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 44W4YY2Bf9z8t23
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Mar 2019 01:56:01 +1100 (AEDT)
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 44W4YZ5qHYz8t23
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Mar 2019 01:56:02 +1100 (AEDT)
 Received: by ozlabs.org (Postfix)
- id 44W4YY02GWz9sQq; Sat, 30 Mar 2019 01:56:01 +1100 (AEDT)
+ id 44W4YZ3xyTz9sPx; Sat, 30 Mar 2019 01:56:02 +1100 (AEDT)
 Authentication-Results: ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=linuxfoundation.org
  (client-ip=198.145.29.99; helo=mail.kernel.org;
@@ -44,34 +44,34 @@ Authentication-Results: ozlabs.org;
 Authentication-Results: ozlabs.org; dmarc=none (p=none dis=none)
  header.from=linuxfoundation.org
 Authentication-Results: ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="aO01LSgy"; 
+ unprotected) header.d=kernel.org header.i=@kernel.org header.b="o0ZVUvnD"; 
  dkim-atps=neutral
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 44W4YW2GNVz9sPp
- for <linuxppc-dev@ozlabs.org>; Sat, 30 Mar 2019 01:55:58 +1100 (AEDT)
+ by ozlabs.org (Postfix) with ESMTPS id 44W4YY6LL3z9sQq
+ for <linuxppc-dev@ozlabs.org>; Sat, 30 Mar 2019 01:56:01 +1100 (AEDT)
 Received: from localhost (83-86-89-107.cable.dynamic.v4.ziggo.nl
  [83.86.89.107])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id 9029F206C0;
- Fri, 29 Mar 2019 14:55:56 +0000 (UTC)
+ by mail.kernel.org (Postfix) with ESMTPSA id 384FF2184C;
+ Fri, 29 Mar 2019 14:55:59 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1553871357;
- bh=O3VNcnEgr4RgsHS6S1dvA5bebdVuYK9n+II37E+uZb4=;
+ s=default; t=1553871359;
+ bh=jMA4JoEdhwm2PLjr5FXbv82IQ9mX6lslFGBJzl1CodY=;
  h=Subject:To:Cc:From:Date:In-Reply-To:From;
- b=aO01LSgydCWa/Gm8cZFtMPV51J5I6ZnThyYe4cH3OAjYij/2BRgMcZ8UW1eEPiWPC
- 6nFV1qsqCHvCkkfbYeD+uijYsmHa7Y6VgSO3H5N1n54zodtNEa6L1arDtWnltiKTXg
- Qaoq2P0EWKSvKBzcIIg9F8tWqHaG3ogyH36xCKqQ=
-Subject: Patch "[PATCH stable v4.14 30/32] powerpc/fsl: Fixed warning: orphan
- section `__btb_flush_fixup'" has been added to the 4.14-stable tree
+ b=o0ZVUvnDVjVhdPsvb9hSHDXff4wPCr9Gi+GfzETJV7RUbcwV0cSf3A3fOTKaF3rpw
+ AgrCCI+pzw8LPD0z6q1RjW0hB0jWpKSpuuddxsvk54tQ5rQ/Q6ZU4XJIqqlGfI8lmX
+ Vzc8Yzbn5gbyaXYKLu+yhFxdrvTFB+dE7wtVMHzc=
+Subject: Patch "[PATCH stable v4.14 27/32] powerpc/fsl: Flush branch predictor
+ when entering KVM" has been added to the 4.14-stable tree
 To: christophe.leroy@c-s.fr, diana.craciun@nxp.com, gregkh@linuxfoundation.org,
  linuxppc-dev@ozlabs.org, mpe@ellerman.id.au, msuchanek@suse.de
 From: <gregkh@linuxfoundation.org>
 Date: Fri, 29 Mar 2019 15:54:47 +0100
-In-Reply-To: <20190329112620.14489-31-mpe@ellerman.id.au>
-Message-ID: <15538712872257@kroah.com>
+In-Reply-To: <20190329112620.14489-28-mpe@ellerman.id.au>
+Message-ID: <155387128791240@kroah.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ANSI_X3.4-1968
 Content-Transfer-Encoding: 8bit
@@ -96,13 +96,13 @@ Sender: "Linuxppc-dev"
 
 This is a note to let you know that I've just added the patch titled
 
-    [PATCH stable v4.14 30/32] powerpc/fsl: Fixed warning: orphan section `__btb_flush_fixup'
+    [PATCH stable v4.14 27/32] powerpc/fsl: Flush branch predictor when entering KVM
 
 to the 4.14-stable tree which can be found at:
     http://www.kernel.org/git/?p=linux/kernel/git/stable/stable-queue.git;a=summary
 
 The filename of the patch is:
-     powerpc-fsl-fixed-warning-orphan-section-__btb_flush_fixup.patch
+     powerpc-fsl-flush-branch-predictor-when-entering-kvm.patch
 and it can be found in the queue-4.14 subdirectory.
 
 If you, or anyone else, feels it should not be added to the stable tree,
@@ -111,71 +111,42 @@ please let <stable@vger.kernel.org> know about it.
 
 From foo@baz Fri Mar 29 15:53:50 CET 2019
 From: Michael Ellerman <mpe@ellerman.id.au>
-Date: Fri, 29 Mar 2019 22:26:18 +1100
-Subject: [PATCH stable v4.14 30/32] powerpc/fsl: Fixed warning: orphan section `__btb_flush_fixup'
+Date: Fri, 29 Mar 2019 22:26:15 +1100
+Subject: [PATCH stable v4.14 27/32] powerpc/fsl: Flush branch predictor when entering KVM
 To: stable@vger.kernel.org, gregkh@linuxfoundation.org
 Cc: linuxppc-dev@ozlabs.org, diana.craciun@nxp.com, msuchanek@suse.de, christophe.leroy@c-s.fr
-Message-ID: <20190329112620.14489-31-mpe@ellerman.id.au>
+Message-ID: <20190329112620.14489-28-mpe@ellerman.id.au>
 
 From: Michael Ellerman <mpe@ellerman.id.au>
 
 From: Diana Craciun <diana.craciun@nxp.com>
 
-commit 039daac5526932ec731e4499613018d263af8b3e upstream.
+commit e7aa61f47b23afbec41031bc47ca8d6cb6516abc upstream.
 
-Fixed the following build warning:
-powerpc-linux-gnu-ld: warning: orphan section `__btb_flush_fixup' from
-`arch/powerpc/kernel/head_44x.o' being placed in section
-`__btb_flush_fixup'.
+Switching from the guest to host is another place
+where the speculative accesses can be exploited.
+Flush the branch predictor when entering KVM.
 
 Signed-off-by: Diana Craciun <diana.craciun@nxp.com>
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 ---
- arch/powerpc/kernel/head_booke.h |   18 ++++++++++++------
- 1 file changed, 12 insertions(+), 6 deletions(-)
+ arch/powerpc/kvm/bookehv_interrupts.S |    4 ++++
+ 1 file changed, 4 insertions(+)
 
---- a/arch/powerpc/kernel/head_booke.h
-+++ b/arch/powerpc/kernel/head_booke.h
-@@ -32,6 +32,16 @@
-  */
- #define THREAD_NORMSAVE(offset)	(THREAD_NORMSAVES + (offset * 4))
+--- a/arch/powerpc/kvm/bookehv_interrupts.S
++++ b/arch/powerpc/kvm/bookehv_interrupts.S
+@@ -75,6 +75,10 @@
+ 	PPC_LL	r1, VCPU_HOST_STACK(r4)
+ 	PPC_LL	r2, HOST_R2(r1)
  
-+#ifdef CONFIG_PPC_FSL_BOOK3E
-+#define BOOKE_CLEAR_BTB(reg)									\
-+START_BTB_FLUSH_SECTION								\
-+	BTB_FLUSH(reg)									\
++START_BTB_FLUSH_SECTION
++	BTB_FLUSH(r10)
 +END_BTB_FLUSH_SECTION
-+#else
-+#define BOOKE_CLEAR_BTB(reg)
-+#endif
 +
-+
- #define NORMAL_EXCEPTION_PROLOG(intno)						     \
- 	mtspr	SPRN_SPRG_WSCRATCH0, r10;	/* save one register */	     \
- 	mfspr	r10, SPRN_SPRG_THREAD;					     \
-@@ -43,9 +53,7 @@
- 	andi.	r11, r11, MSR_PR;	/* check whether user or kernel    */\
- 	mr	r11, r1;						     \
- 	beq	1f;							     \
--START_BTB_FLUSH_SECTION					\
--	BTB_FLUSH(r11)						\
--END_BTB_FLUSH_SECTION					\
-+	BOOKE_CLEAR_BTB(r11)						\
- 	/* if from user, start at top of this thread's kernel stack */       \
- 	lwz	r11, THREAD_INFO-THREAD(r10);				     \
- 	ALLOC_STACK_FRAME(r11, THREAD_SIZE);				     \
-@@ -131,9 +139,7 @@ END_BTB_FLUSH_SECTION					\
- 	stw	r9,_CCR(r8);		/* save CR on stack		   */\
- 	mfspr	r11,exc_level_srr1;	/* check whether user or kernel    */\
- 	DO_KVM	BOOKE_INTERRUPT_##intno exc_level_srr1;		             \
--START_BTB_FLUSH_SECTION								\
--	BTB_FLUSH(r10)									\
--END_BTB_FLUSH_SECTION								\
-+	BOOKE_CLEAR_BTB(r10)						\
- 	andi.	r11,r11,MSR_PR;						     \
- 	mfspr	r11,SPRN_SPRG_THREAD;	/* if from user, start at top of   */\
- 	lwz	r11,THREAD_INFO-THREAD(r11); /* this thread's kernel stack */\
+ 	mfspr	r10, SPRN_PID
+ 	lwz	r8, VCPU_HOST_PID(r4)
+ 	PPC_LL	r11, VCPU_SHARED(r4)
 
 
 Patches currently in stable-queue which might be from mpe@ellerman.id.au are
