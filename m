@@ -6,38 +6,38 @@ X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
 	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E94F6C43381
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Mar 2019 11:38:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C5668C43381
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Mar 2019 11:40:06 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 991682070B
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Mar 2019 11:38:19 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 991682070B
+	by mail.kernel.org (Postfix) with ESMTPS id 745C22070B
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Mar 2019 11:40:06 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 745C22070B
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44W09P1Y8xzDqT3
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Mar 2019 22:38:17 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+	by lists.ozlabs.org (Postfix) with ESMTP id 44W0CS3xJ9zDqX2
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Mar 2019 22:40:04 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44Vzvs1VqyzDqSC
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Mar 2019 22:26:33 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44Vzvt27v0zDqSH
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Mar 2019 22:26:34 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: by ozlabs.org (Postfix)
- id 44Vzvs0K2Mz9sRY; Fri, 29 Mar 2019 22:26:33 +1100 (AEDT)
+ id 44Vzvt0t2Xz9sPB; Fri, 29 Mar 2019 22:26:34 +1100 (AEDT)
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 44Vzvr70Mgz9sR7; Fri, 29 Mar 2019 22:26:32 +1100 (AEDT)
+ id 44Vzvs6nn0z9sRj; Fri, 29 Mar 2019 22:26:33 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: stable@vger.kernel.org,
 	gregkh@linuxfoundation.org
-Subject: [PATCH stable v4.14 05/32] powerpc/64: Use barrier_nospec in syscall
- entry
-Date: Fri, 29 Mar 2019 22:25:53 +1100
-Message-Id: <20190329112620.14489-6-mpe@ellerman.id.au>
+Subject: [PATCH stable v4.14 06/32] powerpc/64s: Enhance the information in
+ cpu_show_spectre_v1()
+Date: Fri, 29 Mar 2019 22:25:54 +1100
+Message-Id: <20190329112620.14489-7-mpe@ellerman.id.au>
 X-Mailer: git-send-email 2.20.1
 In-Reply-To: <20190329112620.14489-1-mpe@ellerman.id.au>
 References: <20190329112620.14489-1-mpe@ellerman.id.au>
@@ -59,47 +59,33 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-commit 51973a815c6b46d7b23b68d6af371ad1c9d503ca upstream.
+From: Michal Suchanek <msuchanek@suse.de>
 
-Our syscall entry is done in assembly so patch in an explicit
-barrier_nospec.
+commit a377514519b9a20fa1ea9adddbb4129573129cef upstream.
 
-Based on a patch by Michal Suchanek.
+We now have barrier_nospec as mitigation so print it in
+cpu_show_spectre_v1() when enabled.
 
 Signed-off-by: Michal Suchanek <msuchanek@suse.de>
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- arch/powerpc/kernel/entry_64.S | 10 ++++++++++
- 1 file changed, 10 insertions(+)
+ arch/powerpc/kernel/security.c | 3 +++
+ 1 file changed, 3 insertions(+)
 
-diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
-index c194f4c8e66b..7a43b27dc6e0 100644
---- a/arch/powerpc/kernel/entry_64.S
-+++ b/arch/powerpc/kernel/entry_64.S
-@@ -36,6 +36,7 @@
- #include <asm/context_tracking.h>
- #include <asm/tm.h>
- #include <asm/ppc-opcode.h>
-+#include <asm/barrier.h>
- #include <asm/export.h>
- #ifdef CONFIG_PPC_BOOK3S
- #include <asm/exception-64s.h>
-@@ -179,6 +180,15 @@ system_call:			/* label this so stack traces look sane */
- 	clrldi	r8,r8,32
- 15:
- 	slwi	r0,r0,4
+diff --git a/arch/powerpc/kernel/security.c b/arch/powerpc/kernel/security.c
+index 7553951b500a..a8b277362931 100644
+--- a/arch/powerpc/kernel/security.c
++++ b/arch/powerpc/kernel/security.c
+@@ -120,6 +120,9 @@ ssize_t cpu_show_spectre_v1(struct device *dev, struct device_attribute *attr, c
+ 	if (!security_ftr_enabled(SEC_FTR_BNDS_CHK_SPEC_BAR))
+ 		return sprintf(buf, "Not affected\n");
+ 
++	if (barrier_nospec_enabled)
++		return sprintf(buf, "Mitigation: __user pointer sanitization\n");
 +
-+	barrier_nospec_asm
-+	/*
-+	 * Prevent the load of the handler below (based on the user-passed
-+	 * system call number) being speculatively executed until the test
-+	 * against NR_syscalls and branch to .Lsyscall_enosys above has
-+	 * committed.
-+	 */
-+
- 	ldx	r12,r11,r0	/* Fetch system call handler [ptr] */
- 	mtctr   r12
- 	bctrl			/* Call handler */
+ 	return sprintf(buf, "Vulnerable\n");
+ }
+ 
 -- 
 2.20.1
 
