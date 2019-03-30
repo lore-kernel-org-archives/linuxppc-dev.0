@@ -2,78 +2,57 @@ Return-Path: <SRS0=BcJT=SB=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 114F7C43381
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 30 Mar 2019 15:35:00 +0000 (UTC)
-Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C8A0AC43381
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 30 Mar 2019 17:20:24 +0000 (UTC)
+Received: from lists.ozlabs.org (unknown [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 23B25218A6
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 30 Mar 2019 15:34:59 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=intel-com.20150623.gappssmtp.com header.i=@intel-com.20150623.gappssmtp.com header.b="OTcZC1+D"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 23B25218A6
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=intel.com
+	by mail.kernel.org (Postfix) with ESMTPS id 1B4E7218CD
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 30 Mar 2019 17:20:23 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1B4E7218CD
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=sdf.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44WjN059lZzDqVs
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 31 Mar 2019 02:34:56 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44Wljc64XkzDqSc
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 31 Mar 2019 04:20:20 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=intel.com
- (client-ip=2607:f8b0:4864:20::244; helo=mail-oi1-x244.google.com;
- envelope-from=dan.j.williams@intel.com; receiver=<UNKNOWN>)
+ spf=none (mailfrom) smtp.mailfrom=sdf.org
+ (client-ip=205.166.94.20; helo=mx.sdf.org; envelope-from=lkml@sdf.org;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=intel.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=intel-com.20150623.gappssmtp.com
- header.i=@intel-com.20150623.gappssmtp.com header.b="OTcZC1+D"; 
- dkim-atps=neutral
-Received: from mail-oi1-x244.google.com (mail-oi1-x244.google.com
- [IPv6:2607:f8b0:4864:20::244])
+ dmarc=none (p=none dis=none) header.from=sdf.org
+Received: from mx.sdf.org (mx.sdf.org [205.166.94.20])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44WjLG1RshzDqNp
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 31 Mar 2019 02:33:20 +1100 (AEDT)
-Received: by mail-oi1-x244.google.com with SMTP id l203so3339955oia.3
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Mar 2019 08:33:20 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=intel-com.20150623.gappssmtp.com; s=20150623;
- h=mime-version:references:in-reply-to:from:date:message-id:subject:to
- :cc; bh=4GAUNn1jlLkHDaow21lIHTP+Puz2N/vLdbErLotRvmA=;
- b=OTcZC1+Dt6ADlK4IHQNx0ywCtFYFyG3aSyhIdIIkTnbYvgCqUDXgR7a0/kZjfTMTgV
- UnULf3uZMjUQFPBtxNWHJjiTiLWdo9BY7I3W8zBY+3Q1YpsFg/yMJzfflNCs+LUl39M2
- Bg3rKuRl4Ly/wKbIE3BFXgfu/nq7fGGKrjYQCHKqBqMOsfxEOBtYOdlG7rZC+DUuFpT2
- B9JU/LLUR2aBjjfB1UoVR/vEt+zgRhgYgNPtedsOGKZN1/QRY/KOhcFqV7Zt58z1Zu+B
- N8Q5Z6mymxjd3DJPq3vjf5ZQxaY6znI64vrd0HCKEIEK5tJ+i+Otzv2jezGInmZsaKCk
- 12Yw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:mime-version:references:in-reply-to:from:date
- :message-id:subject:to:cc;
- bh=4GAUNn1jlLkHDaow21lIHTP+Puz2N/vLdbErLotRvmA=;
- b=Y5nne7WdkPSQE6MDOtLo5/GCs1NARJTvm2yJzTegU71nNZJiHi6qBgwh+gAonEFovx
- RRVI3OjdiDNN5suUgWjQdG8NSCg2h3FKwiw8KbMnD2ZbYgs2WthX0PoQ4m2HLV/iWFTG
- zPTZ5ngCXiJf+exLDaTzhw8O0XrLytJyEm8Aav9Iyy/2FBmrakvzlKPs3rbIOUcD+w9W
- XQ21pF7IoZ8tSKXCOBflkuYqb+iDKESI+SdjedFWXc9Ma0hL5zeD3gBtMXxGXPTJHZGS
- WpMYLf1J9e6sbgS0UWHJ5RtepUEzTEOIKnidHXOeV0KNTw4TfMlHZnDj0OFX3kPUGYqW
- 9RYQ==
-X-Gm-Message-State: APjAAAUqLPeXDcgnUY2t0FnQX92EdV4lnwaPww3jxKjRqOWW4Ng2RlUv
- 1kDNtrtPJz8YSEOdGLk1ykHYR9MCFr4u1pSXpnKfSOCJ+4M=
-X-Google-Smtp-Source: APXvYqyTSOpqIN7uIlKFUYlk5hlpF2z/2pdp+qirv56Y99XuV3yvIMDZKwXw04w36vdc1cu+n8LNwnd45GHpTlNqydQ=
-X-Received: by 2002:aca:d513:: with SMTP id m19mr7133565oig.73.1553959997075; 
- Sat, 30 Mar 2019 08:33:17 -0700 (PDT)
-MIME-Version: 1.0
-References: <20190330054205.28005-1-aneesh.kumar@linux.ibm.com>
-In-Reply-To: <20190330054205.28005-1-aneesh.kumar@linux.ibm.com>
-From: Dan Williams <dan.j.williams@intel.com>
-Date: Sat, 30 Mar 2019 08:33:05 -0700
-Message-ID: <CAPcyv4h60V+1pnsF28AJQrFjNbU2jp6G+wVeEucxVbo-RETXOg@mail.gmail.com>
-Subject: Re: [RFC PATCH] drivers/dax: Allow to include DEV_DAX_PMEM as builtin
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44Wlgw4rJ0zDqB5
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 31 Mar 2019 04:18:51 +1100 (AEDT)
+Received: from sdf.org (IDENT:lkml@sdf.lonestar.org [205.166.94.16])
+ by mx.sdf.org (8.15.2/8.14.5) with ESMTPS id x2UHG5GI011346
+ (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256 bits) verified NO); 
+ Sat, 30 Mar 2019 17:16:06 GMT
+Received: (from lkml@localhost)
+ by sdf.org (8.15.2/8.12.8/Submit) id x2UHG23t020732;
+ Sat, 30 Mar 2019 17:16:02 GMT
+Date: Sat, 30 Mar 2019 17:16:02 GMT
+From: George Spelvin <lkml@sdf.org>
+Message-Id: <201903301716.x2UHG23t020732@sdf.org>
+To: adrian.hunter@intel.com, ard.biesheuvel@linaro.org,
+ benh@kernel.crashing.org, bp@alien8.de, darrick.wong@oracle.com,
+ dchinner@redhat.com, dedekind1@gmail.com, gregkh@linuxfoundation.org,
+ hpa@zytor.com, jlbec@evilplan.org, jpoimboe@redhat.com,
+ linux-kernel@vger.kernel.org, linux-mtd@lists.infradead.org,
+ linux-snps-arc@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
+ lkml@sdf.org, mark@fasheh.com, mingo@redhat.com, mpe@ellerman.id.au,
+ naveen.n.rao@linux.vnet.ibm.com, ocfs2-devel@oss.oracle.com,
+ paulus@samba.org, richard@nod.at, sfr@canb.auug.org.au,
+ st5pub@yandex.ru, tglx@linutronix.de, vgupta@synopsys.com, x86@kernel.org
+Subject: Re: [PATCH 0/5] simple sort swap function usage improvements
+In-Reply-To: <18626931553963861@sas1-b3ec53dbc12b.qloud-c.yandex.net>
+References: <18626931553963861@sas1-b3ec53dbc12b.qloud-c.yandex.net>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -85,44 +64,41 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Linux MM <linux-mm@kvack.org>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- linux-nvdimm <linux-nvdimm@lists.01.org>
+Cc: mhocko@suse.com, gustavo@embeddedor.com, peterz@infradead.org,
+ amir73il@gmail.com, linux@rasmusvillemoes.dk, kamalesh@linux.vnet.ibm.com,
+ piaojun@huawei.com, yamada.masahiro@socionext.com, jiang.biao2@zte.com.cn,
+ jslaby@suse.cz, yuehaibing@huawei.com, rppt@linux.ibm.com, ge.changwei@h3c.com,
+ keescook@chromium.org, jannh@google.com, ashish.samant@oracle.com,
+ npiggin@gmail.com, jiangyiwen@huawei.com, andriy.shevchenko@linux.intel.com,
+ lchen@suse.com, malat@debian.org, akpm@linux-foundation.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, Mar 29, 2019 at 10:42 PM Aneesh Kumar K.V
-<aneesh.kumar@linux.ibm.com> wrote:
->
-> This move the dependency to DEV_DAX_PMEM_COMPAT such that only
-> if DEV_DAX_PMEM is built as module we can allow the compat support.
->
-> This allows to test the new code easily in a emulation setup where we
-> often build things without module support.
->
-> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
-> ---
->  drivers/dax/Kconfig | 3 +--
->  1 file changed, 1 insertion(+), 2 deletions(-)
->
-> diff --git a/drivers/dax/Kconfig b/drivers/dax/Kconfig
-> index 5ef624fe3934..e582e088b48c 100644
-> --- a/drivers/dax/Kconfig
-> +++ b/drivers/dax/Kconfig
-> @@ -23,7 +23,6 @@ config DEV_DAX
->  config DEV_DAX_PMEM
->         tristate "PMEM DAX: direct access to persistent memory"
->         depends on LIBNVDIMM && NVDIMM_DAX && DEV_DAX
-> -       depends on m # until we can kill DEV_DAX_PMEM_COMPAT
->         default DEV_DAX
->         help
->           Support raw access to persistent memory.  Note that this
-> @@ -50,7 +49,7 @@ config DEV_DAX_KMEM
->
->  config DEV_DAX_PMEM_COMPAT
->         tristate "PMEM DAX: support the deprecated /sys/class/dax interface"
-> -       depends on DEV_DAX_PMEM
-> +       depends on DEV_DAX_PMEM=m
+Great work; that is indeed a logical follow-on.
 
-Looks ok, just also a needs a "depends on m" here, because
-DEV_DAX_PMEM_COMPAT=y is an invalid config.
+Reviewed by: George Spelvin <lkml@sdf.org>
+
+I you feel even more ambitious, you could try impementing Rasmus
+Villemoes' idea of having generic *compare* functions.  (It's on
+my to-do list, but I haven't made meaningful progress yet, and I'm
+happy to pawn it off.)
+
+A significant fraction of the time, the sort key is a 4- or 8-byte
+integer field in a structure at a small offset from the base or
+list_head.
+
+A function pointer < 4096 could be interpreted as encoding:
+- Key size (1 bit)
+- Key signedness (1 bit)
+- Sort direction (1 bit)
+- Offset (9 bits; +/-256 words = +/-1024 bytes, or 0..511 words from start)
+
+With the correct level of preprocessor hackery,
+SIMPLE_CMP_ASCENDING(struct type, key_field)
+SIMPLE_LIST_CMP_ASCENDING(struct type, list_field, key_field)
+SIMPLE_CMP_DESCENDING(struct type, key_field)
+SIMPLE_LIST_CMP_DESCENDING(struct type, list_field, key_field)
+
+could encode all that and cause a compile-time error if the key
+is the wrong type or the offset is out of range.
