@@ -7,53 +7,55 @@ X-Spam-Status: No, score=-6.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3AE89C43381
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 31 Mar 2019 03:31:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 072C7C43381
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 31 Mar 2019 03:33:12 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id A98EE2173C
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 31 Mar 2019 03:31:40 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 78BDC2173C
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 31 Mar 2019 03:33:11 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=yandex.ru header.i=@yandex.ru header.b="r2yLcjas"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A98EE2173C
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=yandex.ru header.i=@yandex.ru header.b="XQbJE7yQ"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 78BDC2173C
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=yandex.ru
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44X1Gy4lb1zDqS7
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 31 Mar 2019 14:31:38 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44X1Jj1sZQzDqDZ
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 31 Mar 2019 14:33:09 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=yandex.ru
- (client-ip=5.45.198.251; helo=forward501j.mail.yandex.net;
+ (client-ip=2a02:6b8:0:1a2d::611; helo=forward501o.mail.yandex.net;
  envelope-from=st5pub@yandex.ru; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=yandex.ru
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=yandex.ru header.i=@yandex.ru header.b="r2yLcjas"; 
+ unprotected) header.d=yandex.ru header.i=@yandex.ru header.b="XQbJE7yQ"; 
  dkim-atps=neutral
-Received: from forward501j.mail.yandex.net (forward501j.mail.yandex.net
- [5.45.198.251])
+X-Greylist: delayed 448 seconds by postgrey-1.36 at bilbo;
+ Sun, 31 Mar 2019 03:48:12 AEDT
+Received: from forward501o.mail.yandex.net (forward501o.mail.yandex.net
+ [IPv6:2a02:6b8:0:1a2d::611])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44Wl081Ds0zDqDq
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 31 Mar 2019 03:47:51 +1100 (AEDT)
-Received: from mxback15o.mail.yandex.net (mxback15o.mail.yandex.net
- [IPv6:2a02:6b8:0:1a2d::66])
- by forward501j.mail.yandex.net (Yandex) with ESMTP id 0A0063380055;
- Sat, 30 Mar 2019 19:41:38 +0300 (MSK)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44Wl0X0d1tzDqM3
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 31 Mar 2019 03:48:10 +1100 (AEDT)
+Received: from mxback21g.mail.yandex.net (mxback21g.mail.yandex.net
+ [IPv6:2a02:6b8:0:1472:2741:0:8b7:321])
+ by forward501o.mail.yandex.net (Yandex) with ESMTP id 1458A1E80077;
+ Sat, 30 Mar 2019 19:40:32 +0300 (MSK)
 Received: from localhost (localhost [::1])
- by mxback15o.mail.yandex.net (nwsmtp/Yandex) with ESMTP id FwYt6bfWhz-fUuGwdtu;
- Sat, 30 Mar 2019 19:41:37 +0300
+ by mxback21g.mail.yandex.net (nwsmtp/Yandex) with ESMTP id ppVQJ39iEk-eObCmM4j;
+ Sat, 30 Mar 2019 19:40:31 +0300
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=yandex.ru; s=mail;
- t=1553964097; bh=BAGuq6aY41vQoMTVybblCDo6g+wTKuB5ZkNrCMXNEeI=;
+ t=1553964031; bh=wUFI0A/Hfi2T5Xw16erqiqcqWUAYT1HNRh6fD4qBsQ0=;
  h=Message-Id:Cc:Subject:In-Reply-To:Date:References:To:From;
- b=r2yLcjasL66jIafN59BUK+sNyksLUyMg6rcLPmogPy/2DlS0P/jSubx07PiOJqTv4
- UrX91bPScueQ2KihFcebl6F7npigS0F0/mtjTfsIKZ3lZYvTmqBZ1MzsKkxVLCINhx
- CLR56e2I5oHl+LwxkL8NnPLdj6sMk5V+40LdDaG8=
-Authentication-Results: mxback15o.mail.yandex.net;
+ b=XQbJE7yQ6mIuKw2yugAYZR4wXvmTRE+PODfLC6c8Gx/2w5sW5SVvbS5WFC7jygiey
+ PvB7DrToo02sJhGmCMZKW4gTBCVJ+nZV6g/Z6kOFe/+WAciTXjjpfCtCNX+cTC/IAl
+ Ds7vDi7SOO1L7UjXwrnzuz24o1XzlbE5kl1t48No=
+Authentication-Results: mxback21g.mail.yandex.net;
  dkim=pass header.i=@yandex.ru
-Received: by iva7-8a22bc446c12.qloud-c.yandex.net with HTTP;
- Sat, 30 Mar 2019 19:41:30 +0300
+Received: by myt2-dc4bba9bb23c.qloud-c.yandex.net with HTTP;
+ Sat, 30 Mar 2019 19:40:24 +0300
 From: Andrey Abramov <st5pub@yandex.ru>
 To: "vgupta@synopsys.com" <vgupta@synopsys.com>,
  "benh@kernel.crashing.org" <benh@kernel.crashing.org>,
@@ -82,12 +84,12 @@ To: "vgupta@synopsys.com" <vgupta@synopsys.com>,
  "sfr@canb.auug.org.au" <sfr@canb.auug.org.au>
 In-Reply-To: <18626931553963861@sas1-b3ec53dbc12b.qloud-c.yandex.net>
 References: <18626931553963861@sas1-b3ec53dbc12b.qloud-c.yandex.net>
-Subject: [PATCH 2/5] powerpc: module_[32|64].c: replace swap function with
- built-in one
+Subject: [PATCH 1/5] arch/arc: unwind.c: replace swap function with built-in
+ one
 MIME-Version: 1.0
 X-Mailer: Yamail [ http://yandex.ru ] 5.0
-Date: Sat, 30 Mar 2019 19:41:30 +0300
-Message-Id: <21287961553964090@iva7-8a22bc446c12.qloud-c.yandex.net>
+Date: Sat, 30 Mar 2019 19:40:24 +0300
+Message-Id: <20170071553964024@myt2-dc4bba9bb23c.qloud-c.yandex.net>
 Content-Transfer-Encoding: 7bit
 Content-Type: text/plain
 X-Mailman-Approved-At: Sun, 31 Mar 2019 14:25:41 +1100
@@ -127,85 +129,52 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Replace relaswap with built-in one, because of relaswap
-does a simple byte to byte swap.
+Replace swap_eh_frame_hdr_table_entries with built-in one, because
+swap_eh_frame_hdr_table_entries does a simple byte to byte swap.
 
 Signed-off-by: Andrey Abramov <st5pub@yandex.ru>
 ---
- arch/powerpc/kernel/module_32.c | 17 +----------------
- arch/powerpc/kernel/module_64.c | 17 +----------------
- 2 files changed, 2 insertions(+), 32 deletions(-)
+ arch/arc/kernel/unwind.c | 20 ++------------------
+ 1 file changed, 2 insertions(+), 18 deletions(-)
 
-diff --git a/arch/powerpc/kernel/module_32.c b/arch/powerpc/kernel/module_32.c
-index 88d83771f462..c311e8575d10 100644
---- a/arch/powerpc/kernel/module_32.c
-+++ b/arch/powerpc/kernel/module_32.c
-@@ -79,21 +79,6 @@ static int relacmp(const void *_x, const void *_y)
- 		return 0;
+diff --git a/arch/arc/kernel/unwind.c b/arch/arc/kernel/unwind.c
+index 271e9fafa479..7610fe84afea 100644
+--- a/arch/arc/kernel/unwind.c
++++ b/arch/arc/kernel/unwind.c
+@@ -248,20 +248,6 @@ static int cmp_eh_frame_hdr_table_entries(const void *p1, const void *p2)
+ 	return (e1->start > e2->start) - (e1->start < e2->start);
  }
  
--static void relaswap(void *_x, void *_y, int size)
+-static void swap_eh_frame_hdr_table_entries(void *p1, void *p2, int size)
 -{
--	uint32_t *x, *y, tmp;
--	int i;
+-	struct eh_frame_hdr_table_entry *e1 = p1;
+-	struct eh_frame_hdr_table_entry *e2 = p2;
+-	unsigned long v;
 -
--	y = (uint32_t *)_x;
--	x = (uint32_t *)_y;
--
--	for (i = 0; i < sizeof(Elf32_Rela) / sizeof(uint32_t); i++) {
--		tmp = x[i];
--		x[i] = y[i];
--		y[i] = tmp;
--	}
+-	v = e1->start;
+-	e1->start = e2->start;
+-	e2->start = v;
+-	v = e1->fde;
+-	e1->fde = e2->fde;
+-	e2->fde = v;
 -}
 -
- /* Get the potential trampolines size required of the init and
-    non-init sections */
- static unsigned long get_plt_size(const Elf32_Ehdr *hdr,
-@@ -130,7 +115,7 @@ static unsigned long get_plt_size(const Elf32_Ehdr *hdr,
- 			 */
- 			sort((void *)hdr + sechdrs[i].sh_offset,
- 			     sechdrs[i].sh_size / sizeof(Elf32_Rela),
--			     sizeof(Elf32_Rela), relacmp, relaswap);
-+			     sizeof(Elf32_Rela), relacmp, NULL);
+ static void init_unwind_hdr(struct unwind_table *table,
+ 			    void *(*alloc) (unsigned long))
+ {
+@@ -354,10 +340,8 @@ static void init_unwind_hdr(struct unwind_table *table,
+ 	}
+ 	WARN_ON(n != header->fde_count);
  
- 			ret += count_relocs((void *)hdr
- 					     + sechdrs[i].sh_offset,
-diff --git a/arch/powerpc/kernel/module_64.c b/arch/powerpc/kernel/module_64.c
-index 8661eea78503..0c833d7f36f1 100644
---- a/arch/powerpc/kernel/module_64.c
-+++ b/arch/powerpc/kernel/module_64.c
-@@ -231,21 +231,6 @@ static int relacmp(const void *_x, const void *_y)
- 		return 0;
- }
+-	sort(header->table,
+-	     n,
+-	     sizeof(*header->table),
+-	     cmp_eh_frame_hdr_table_entries, swap_eh_frame_hdr_table_entries);
++	sort(header->table, n,
++	     sizeof(*header->table), cmp_eh_frame_hdr_table_entries, NULL);
  
--static void relaswap(void *_x, void *_y, int size)
--{
--	uint64_t *x, *y, tmp;
--	int i;
--
--	y = (uint64_t *)_x;
--	x = (uint64_t *)_y;
--
--	for (i = 0; i < sizeof(Elf64_Rela) / sizeof(uint64_t); i++) {
--		tmp = x[i];
--		x[i] = y[i];
--		y[i] = tmp;
--	}
--}
--
- /* Get size of potential trampolines required. */
- static unsigned long get_stubs_size(const Elf64_Ehdr *hdr,
- 				    const Elf64_Shdr *sechdrs)
-@@ -269,7 +254,7 @@ static unsigned long get_stubs_size(const Elf64_Ehdr *hdr,
- 			 */
- 			sort((void *)sechdrs[i].sh_addr,
- 			     sechdrs[i].sh_size / sizeof(Elf64_Rela),
--			     sizeof(Elf64_Rela), relacmp, relaswap);
-+			     sizeof(Elf64_Rela), relacmp, NULL);
- 
- 			relocs += count_relocs((void *)sechdrs[i].sh_addr,
- 					       sechdrs[i].sh_size
+ 	table->hdrsz = hdrSize;
+ 	smp_wmb();
 -- 
 2.21.0
 
