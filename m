@@ -3,24 +3,24 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
 X-Spam-Status: No, score=-8.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 88F0CC4360F
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 30 Mar 2019 01:32:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 077A8C43381
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 30 Mar 2019 01:35:19 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C58EE218A6
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 30 Mar 2019 01:32:26 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 77B18217F5
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 30 Mar 2019 01:35:18 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="Iv1xI+zO"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C58EE218A6
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="MigLZByn"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 77B18217F5
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44WLgr4XhWzDqLB
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 30 Mar 2019 12:32:24 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44WLl76y9TzDqXl
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 30 Mar 2019 12:35:15 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=kernel.org
  (client-ip=198.145.29.99; helo=mail.kernel.org;
@@ -28,35 +28,35 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="Iv1xI+zO"; 
+ unprotected) header.d=kernel.org header.i=@kernel.org header.b="MigLZByn"; 
  dkim-atps=neutral
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44WLc80fV1zDqW2
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Mar 2019 12:29:11 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44WLdk02wDzDqXD
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Mar 2019 12:30:34 +1100 (AEDT)
 Received: from sasha-vm.mshome.net (c-73-47-72-35.hsd1.nh.comcast.net
  [73.47.72.35])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id 0FB5C218A6;
- Sat, 30 Mar 2019 01:29:07 +0000 (UTC)
+ by mail.kernel.org (Postfix) with ESMTPSA id C88B3217F5;
+ Sat, 30 Mar 2019 01:30:30 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1553909349;
- bh=u827Z5qV59wRGxFKo7Q9MOJ2WcAVe/6HFKVPTQrBQ94=;
+ s=default; t=1553909431;
+ bh=e7ZSB9s9gm4PEnbWboVa0D4RVkZKRCur+BOERyRqKls=;
  h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=Iv1xI+zOCKbm1qEUXfpqlKqxWKuoV1Joev7Y5S//542lNw8LQsF+SmznVlqGKEoZQ
- NoIy+eXtT7T0Izck1wlmwuRvD/8ioTo0EyQmenGS+ViMu/occdnrLAXKL8nv4s3gLt
- 5VL1kpDPxK7RVJrPPAJ7LXlV6EdMmATO9O62YJ24=
+ b=MigLZBynNuVePug8ACg3Gl/5BD8IO5S3LguEzIyXvgyyQpMyuGRqrxkXUl4jCZg+P
+ jQB4ftT24D6Cia9tqllWqQ58GS6BzNItPWgh/vhll/ssvXyyAkzZ4KFMhZgPbtWfcr
+ FiSPrrDQVh3BGXzne8PKCrYrFQG2AoFSu1N5CNng=
 From: Sasha Levin <sashal@kernel.org>
 To: linux-kernel@vger.kernel.org,
 	stable@vger.kernel.org
-Subject: [PATCH AUTOSEL 4.19 11/57] powerpc/pseries: Remove prrn_work workqueue
-Date: Fri, 29 Mar 2019 21:28:04 -0400
-Message-Id: <20190330012854.32212-11-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 4.14 08/37] powerpc/pseries: Remove prrn_work workqueue
+Date: Fri, 29 Mar 2019 21:29:51 -0400
+Message-Id: <20190330013020.379-8-sashal@kernel.org>
 X-Mailer: git-send-email 2.19.1
-In-Reply-To: <20190330012854.32212-1-sashal@kernel.org>
-References: <20190330012854.32212-1-sashal@kernel.org>
+In-Reply-To: <20190330013020.379-1-sashal@kernel.org>
+References: <20190330013020.379-1-sashal@kernel.org>
 MIME-Version: 1.0
 X-stable: review
 X-Patchwork-Hint: Ignore
@@ -155,7 +155,7 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  1 file changed, 3 insertions(+), 14 deletions(-)
 
 diff --git a/arch/powerpc/kernel/rtasd.c b/arch/powerpc/kernel/rtasd.c
-index 44d66c33d59d..23b88b923f06 100644
+index 0f0b1b2f3b60..7caeae73348d 100644
 --- a/arch/powerpc/kernel/rtasd.c
 +++ b/arch/powerpc/kernel/rtasd.c
 @@ -274,27 +274,16 @@ void pSeries_log_error(char *buf, unsigned int err_type, int fatal)
