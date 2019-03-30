@@ -2,91 +2,86 @@ Return-Path: <SRS0=BcJT=SB=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AABB0C43381
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 30 Mar 2019 09:44:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 011F9C43381
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 30 Mar 2019 10:00:32 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id DEF42218AC
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 30 Mar 2019 09:44:31 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DEF42218AC
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=de.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 227EF2184D
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 30 Mar 2019 10:00:30 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="key not found in DNS" (0-bit key) header.d=codeaurora.org header.i=@codeaurora.org header.b="AhVy7jLO";
+	dkim=fail reason="key not found in DNS" (0-bit key) header.d=codeaurora.org header.i=@codeaurora.org header.b="fHhtajqJ"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 227EF2184D
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=codeaurora.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44WYbd49xczDqTm
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 30 Mar 2019 20:44:29 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44WYy46mnJzDqWw
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 30 Mar 2019 21:00:28 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=de.ibm.com
- (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=heiko.carstens@de.ibm.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=de.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+ spf=pass (mailfrom) smtp.mailfrom=codeaurora.org
+ (client-ip=198.145.29.96; helo=smtp.codeaurora.org;
+ envelope-from=mojha@codeaurora.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=codeaurora.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=codeaurora.org header.i=@codeaurora.org
+ header.b="AhVy7jLO"; 
+ dkim=pass (1024-bit key) header.d=codeaurora.org header.i=@codeaurora.org
+ header.b="fHhtajqJ"; dkim-atps=neutral
+Received: from smtp.codeaurora.org (smtp.codeaurora.org [198.145.29.96])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44WYYr16wjzDqT9
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Mar 2019 20:42:55 +1100 (AEDT)
-Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x2U9cvXC089063
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Mar 2019 05:42:52 -0400
-Received: from e06smtp03.uk.ibm.com (e06smtp03.uk.ibm.com [195.75.94.99])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2rj4qaj7kc-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Mar 2019 05:42:52 -0400
-Received: from localhost
- by e06smtp03.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <heiko.carstens@de.ibm.com>;
- Sat, 30 Mar 2019 09:42:49 -0000
-Received: from b06cxnps3074.portsmouth.uk.ibm.com (9.149.109.194)
- by e06smtp03.uk.ibm.com (192.168.101.133) with IBM ESMTP SMTP Gateway:
- Authorized Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Sat, 30 Mar 2019 09:42:39 -0000
-Received: from d06av22.portsmouth.uk.ibm.com (d06av22.portsmouth.uk.ibm.com
- [9.149.105.58])
- by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x2U9gcKe43778232
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Sat, 30 Mar 2019 09:42:38 GMT
-Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id AD1AE4C04A;
- Sat, 30 Mar 2019 09:42:38 +0000 (GMT)
-Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 6CB7F4C040;
- Sat, 30 Mar 2019 09:42:37 +0000 (GMT)
-Received: from osiris (unknown [9.152.212.21])
- by d06av22.portsmouth.uk.ibm.com (Postfix) with ESMTPS;
- Sat, 30 Mar 2019 09:42:37 +0000 (GMT)
-Date: Sat, 30 Mar 2019 10:42:36 +0100
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
-To: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [PATCH 2/2] arch: add pidfd and io_uring syscalls everywhere
-References: <20190325143521.34928-1-arnd@arndb.de>
- <20190325144737.703921-1-arnd@arndb.de>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44WYwL6D6RzDqTk
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Mar 2019 20:58:58 +1100 (AEDT)
+Received: by smtp.codeaurora.org (Postfix, from userid 1000)
+ id 175D260A4E; Sat, 30 Mar 2019 09:58:54 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=codeaurora.org;
+ s=default; t=1553939936;
+ bh=YwPPQXD8Nw0XqGJWkHPsI/ayS6Fml0waQceWOVmBq7g=;
+ h=Subject:To:Cc:References:From:Date:In-Reply-To:From;
+ b=AhVy7jLO/OgxuR+KJM764g/0XWr4OqhYfpfUu0jQjSQ+WfFG5V3WC/hXObKdkNnnw
+ RenQoBoI5TGREoIP/SAZif0nzQiCNZMk/qKK1OIFYk2nMGOrJ2c6cXJ+yI4jLfvmQt
+ WoPj9vv2jdgaTvvOhuZA7w8oKahccDGVA02is/HQ=
+Received: from [10.79.174.164]
+ (blr-bdr-fw-01_globalnat_allzones-outside.qualcomm.com [103.229.18.19])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ (Authenticated sender: mojha@smtp.codeaurora.org)
+ by smtp.codeaurora.org (Postfix) with ESMTPSA id 08ECD60A4E;
+ Sat, 30 Mar 2019 09:58:42 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=codeaurora.org;
+ s=default; t=1553939933;
+ bh=YwPPQXD8Nw0XqGJWkHPsI/ayS6Fml0waQceWOVmBq7g=;
+ h=Subject:To:Cc:References:From:Date:In-Reply-To:From;
+ b=fHhtajqJxIZweByZZgH71N/dxy2Qt+DHpoMZoeyDgeg76yBAgiF2Fe+C6eHYtcqgh
+ OzleMOW3ZJYPKjm5Yn9XVUg2Sd7QXnlpS+HuMAQa4C1KPoeP/gNlAr+lHsyAs6k1EM
+ wME2XoddP/fxZZVMWMEnioMGuay8JJpgtWpynu3o=
+DMARC-Filter: OpenDMARC Filter v1.3.2 smtp.codeaurora.org 08ECD60A4E
+Authentication-Results: pdx-caf-mail.web.codeaurora.org;
+ dmarc=none (p=none dis=none) header.from=codeaurora.org
+Authentication-Results: pdx-caf-mail.web.codeaurora.org;
+ spf=none smtp.mailfrom=mojha@codeaurora.org
+Subject: Re: [PATCH -next] crypto: nx842 - remove set but not used variables
+ 'dpadding' and 'max_sync_size'
+To: Yue Haibing <yuehaibing@huawei.com>, haren@us.ibm.com,
+ herbert@gondor.apana.org.au, davem@davemloft.net, benh@kernel.crashing.org,
+ paulus@samba.org, mpe@ellerman.id.au
+References: <20190330055429.25848-1-yuehaibing@huawei.com>
+From: Mukesh Ojha <mojha@codeaurora.org>
+Message-ID: <e69b2afd-8697-f51c-af4a-89b262f4d3d9@codeaurora.org>
+Date: Sat, 30 Mar 2019 15:28:39 +0530
+User-Agent: Mozilla/5.0 (Windows NT 10.0; WOW64; rv:60.0) Gecko/20100101
+ Thunderbird/60.6.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20190325144737.703921-1-arnd@arndb.de>
-X-TM-AS-GCONF: 00
-x-cbid: 19033009-0012-0000-0000-0000030927FD
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19033009-0013-0000-0000-000021406030
-Message-Id: <20190330094236.GB3801@osiris>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2019-03-30_03:, , signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- malwarescore=0 suspectscore=1 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=491 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1810050000 definitions=main-1903300070
+In-Reply-To: <20190330055429.25848-1-yuehaibing@huawei.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Language: en-US
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -98,55 +93,93 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Rich Felker <dalias@libc.org>, linux-ia64@vger.kernel.org,
- linux-sh@vger.kernel.org, Will Deacon <will.deacon@arm.com>,
- linux-mips@vger.kernel.org,
- "James E . J . Bottomley" <James.Bottomley@HansenPartnership.com>,
- Max Filippov <jcmvbkbc@gmail.com>, Paul Mackerras <paulus@samba.org>,
- sparclinux@vger.kernel.org, linux-s390@vger.kernel.org,
- Helge Deller <deller@gmx.de>, Russell King <linux@armlinux.org.uk>,
- Geert Uytterhoeven <geert@linux-m68k.org>,
- Catalin Marinas <catalin.marinas@arm.com>, James Hogan <jhogan@kernel.org>,
- Firoz Khan <firoz.khan@linaro.org>, Matt Turner <mattst88@gmail.com>,
- Fenghua Yu <fenghua.yu@intel.com>, linux-m68k@lists.linux-m68k.org,
- Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
- linux-arm-kernel@lists.infradead.org, Richard Henderson <rth@twiddle.net>,
- Michal Simek <monstr@monstr.eu>, Tony Luck <tony.luck@intel.com>,
- linux-parisc@vger.kernel.org, linux-kernel@vger.kernel.org,
- Ralf Baechle <ralf@linux-mips.org>, Paul Burton <paul.burton@mips.com>,
- linux-alpha@vger.kernel.org, Martin Schwidefsky <schwidefsky@de.ibm.com>,
- Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
- "David S . Miller" <davem@davemloft.net>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ linux-crypto@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, Mar 25, 2019 at 03:47:37PM +0100, Arnd Bergmann wrote:
-> Add the io_uring and pidfd_send_signal system calls to all architectures.
-> 
-> These system calls are designed to handle both native and compat tasks,
-> so all entries are the same across architectures, only arm-compat and
-> the generic tale still use an old format.
-> 
-> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 
-> diff --git a/arch/s390/kernel/syscalls/syscall.tbl b/arch/s390/kernel/syscalls/syscall.tbl
-> index 02579f95f391..3eb56e639b96 100644
-> --- a/arch/s390/kernel/syscalls/syscall.tbl
-> +++ b/arch/s390/kernel/syscalls/syscall.tbl
-> @@ -426,3 +426,7 @@
->  421	32	rt_sigtimedwait_time64	-				compat_sys_rt_sigtimedwait_time64
->  422	32	futex_time64		-				sys_futex
->  423	32	sched_rr_get_interval_time64	-			sys_sched_rr_get_interval
-> +424	common	pidfd_send_signal		sys_pidfd_send_signal
-> +425	common	io_uring_setup			sys_io_uring_setup
-> +426	common	io_uring_enter			sys_io_uring_enter
-> +427	common	io_uring_register		sys_io_uring_register
+On 3/30/2019 11:24 AM, Yue Haibing wrote:
+> From: YueHaibing <yuehaibing@huawei.com>
+>
+> Fixes gcc '-Wunused-but-set-variable' warning:
+>
+> drivers/crypto/nx/nx-842.c: In function 'decompress':
+> drivers/crypto/nx/nx-842.c:356:25: warning: variable 'dpadding' set but not used [-Wunused-but-set-variable]
+> drivers/crypto/nx/nx-842-pseries.c: In function 'nx842_pseries_compress':
+> drivers/crypto/nx/nx-842-pseries.c:299:15: warning: variable 'max_sync_size' set but not used [-Wunused-but-set-variable]
+> drivers/crypto/nx/nx-842-pseries.c: In function 'nx842_pseries_decompress':
+> drivers/crypto/nx/nx-842-pseries.c:430:15: warning: variable 'max_sync_size' set but not used [-Wunused-but-set-variable]
+>
+> They are not used any more and can be removed.
+>
+> Signed-off-by: YueHaibing <yuehaibing@huawei.com>
+Reviewed-by: Mukesh Ojha <mojha@codeaurora.org>
 
-I was just about to write that io_uring_enter is missing compat
-handling, but your first patch actually fixes that. Would have been
-good to be cc'ed on both patches :)
-
-For s390:
-Acked-by: Heiko Carstens <heiko.carstens@de.ibm.com>
-
+Cheers,
+-Mukesh
+> ---
+>   drivers/crypto/nx/nx-842-pseries.c | 6 ++----
+>   drivers/crypto/nx/nx-842.c         | 3 +--
+>   2 files changed, 3 insertions(+), 6 deletions(-)
+>
+> diff --git a/drivers/crypto/nx/nx-842-pseries.c b/drivers/crypto/nx/nx-842-pseries.c
+> index 6686997..5793284 100644
+> --- a/drivers/crypto/nx/nx-842-pseries.c
+> +++ b/drivers/crypto/nx/nx-842-pseries.c
+> @@ -296,7 +296,7 @@ static int nx842_pseries_compress(const unsigned char *in, unsigned int inlen,
+>   	struct nx842_workmem *workmem;
+>   	struct nx842_scatterlist slin, slout;
+>   	struct nx_csbcpb *csbcpb;
+> -	int ret = 0, max_sync_size;
+> +	int ret = 0;
+>   	unsigned long inbuf, outbuf;
+>   	struct vio_pfo_op op = {
+>   		.done = NULL,
+> @@ -319,7 +319,6 @@ static int nx842_pseries_compress(const unsigned char *in, unsigned int inlen,
+>   		rcu_read_unlock();
+>   		return -ENODEV;
+>   	}
+> -	max_sync_size = local_devdata->max_sync_size;
+>   	dev = local_devdata->dev;
+>   
+>   	/* Init scatterlist */
+> @@ -427,7 +426,7 @@ static int nx842_pseries_decompress(const unsigned char *in, unsigned int inlen,
+>   	struct nx842_workmem *workmem;
+>   	struct nx842_scatterlist slin, slout;
+>   	struct nx_csbcpb *csbcpb;
+> -	int ret = 0, max_sync_size;
+> +	int ret = 0;
+>   	unsigned long inbuf, outbuf;
+>   	struct vio_pfo_op op = {
+>   		.done = NULL,
+> @@ -451,7 +450,6 @@ static int nx842_pseries_decompress(const unsigned char *in, unsigned int inlen,
+>   		rcu_read_unlock();
+>   		return -ENODEV;
+>   	}
+> -	max_sync_size = local_devdata->max_sync_size;
+>   	dev = local_devdata->dev;
+>   
+>   	workmem = PTR_ALIGN(wmem, WORKMEM_ALIGN);
+> diff --git a/drivers/crypto/nx/nx-842.c b/drivers/crypto/nx/nx-842.c
+> index d94e25d..f06565d 100644
+> --- a/drivers/crypto/nx/nx-842.c
+> +++ b/drivers/crypto/nx/nx-842.c
+> @@ -353,7 +353,7 @@ static int decompress(struct nx842_crypto_ctx *ctx,
+>   	unsigned int adj_slen = slen;
+>   	u8 *src = p->in, *dst = p->out;
+>   	u16 padding = be16_to_cpu(g->padding);
+> -	int ret, spadding = 0, dpadding = 0;
+> +	int ret, spadding = 0;
+>   	ktime_t timeout;
+>   
+>   	if (!slen || !required_len)
+> @@ -413,7 +413,6 @@ static int decompress(struct nx842_crypto_ctx *ctx,
+>   		spadding = 0;
+>   		dst = p->out;
+>   		dlen = p->oremain;
+> -		dpadding = 0;
+>   		if (dlen < required_len) { /* have ignore bytes */
+>   			dst = ctx->dbounce;
+>   			dlen = BOUNCE_BUFFER_SIZE;
