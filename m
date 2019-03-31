@@ -2,85 +2,86 @@ Return-Path: <SRS0=rJbe=SC=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8D432C43381
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 31 Mar 2019 18:54:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 57709C43381
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 31 Mar 2019 19:20:20 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 08312206BA
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 31 Mar 2019 18:54:27 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=yandex.ru header.i=@yandex.ru header.b="m1ZKNlBm"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 08312206BA
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=yandex.ru
+	by mail.kernel.org (Postfix) with ESMTPS id 372F120870
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 31 Mar 2019 19:20:19 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 372F120870
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44XPlj5qBCzDqN6
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Apr 2019 05:54:25 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44XQKX4mctzDqPX
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Apr 2019 06:20:16 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=yandex.ru
- (client-ip=2a02:6b8:0:1472:2741:0:8b7:120; helo=forward501p.mail.yandex.net;
- envelope-from=st5pub@yandex.ru; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=yandex.ru
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=yandex.ru header.i=@yandex.ru header.b="m1ZKNlBm"; 
- dkim-atps=neutral
-Received: from forward501p.mail.yandex.net (forward501p.mail.yandex.net
- [IPv6:2a02:6b8:0:1472:2741:0:8b7:120])
+ spf=none (mailfrom) smtp.mailfrom=linux.vnet.ibm.com
+ (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
+ envelope-from=maddy@linux.vnet.ibm.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=linux.vnet.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44XPk55KtWzDqLg
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  1 Apr 2019 05:53:01 +1100 (AEDT)
-Received: from mxback23g.mail.yandex.net (mxback23g.mail.yandex.net
- [IPv6:2a02:6b8:0:1472:2741:0:8b7:323])
- by forward501p.mail.yandex.net (Yandex) with ESMTP id B8DD13500132;
- Sun, 31 Mar 2019 21:52:54 +0300 (MSK)
-Received: from localhost (localhost [::1])
- by mxback23g.mail.yandex.net (nwsmtp/Yandex) with ESMTP id BbpgY54qw3-qosKPq2X;
- Sun, 31 Mar 2019 21:52:53 +0300
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=yandex.ru; s=mail;
- t=1554058373; bh=BQnnxR4kw87jVTS35+ERA5CJJaS0IljnV5U8+ck2PQU=;
- h=Message-Id:Cc:Subject:In-Reply-To:Date:References:To:From;
- b=m1ZKNlBmFV8ctF8j6bjoTFrFSn0UtgikD63it6jMejB19orfSdk915I7IaNeF4LjC
- xaXVECjsM2dfwW+2iqxz4lAWIng+1r0dEq5q19VGfniLoEs6cgD55YqbeX2EwI3IXw
- gY2Y1px8cetyVCIQk2WAOXEhrYAMvQNd/kfL4aTY=
-Authentication-Results: mxback23g.mail.yandex.net;
- dkim=pass header.i=@yandex.ru
-Received: by iva6-3ac3de5fcc31.qloud-c.yandex.net with HTTP;
- Sun, 31 Mar 2019 21:52:50 +0300
-From: Andrey Abramov <st5pub@yandex.ru>
-To: vgupta <vgupta@synopsys.com>, benh <benh@kernel.crashing.org>,
- paulus <paulus@samba.org>, mpe <mpe@ellerman.id.au>,
- tglx <tglx@linutronix.de>, mingo <mingo@redhat.com>, bp <bp@alien8.de>,
- hpa <hpa@zytor.com>, x86 <x86@kernel.org>, mark <mark@fasheh.com>,
- jlbec <jlbec@evilplan.org>, richard <richard@nod.at>,
- dedekind1 <dedekind1@gmail.com>, adrian.hunter <adrian.hunter@intel.com>,
- gregkh <gregkh@linuxfoundation.org>,
- naveen.n.rao <naveen.n.rao@linux.vnet.ibm.com>,
- jpoimboe <jpoimboe@redhat.com>, Dave Chinner <dchinner@redhat.com>,
- darrick.wong <darrick.wong@oracle.com>,
- ard.biesheuvel <ard.biesheuvel@linaro.org>, George Spelvin <lkml@sdf.org>,
- linux-snps-arc <linux-snps-arc@lists.infradead.org>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- ocfs2-devel <ocfs2-devel@oss.oracle.com>,
- linux-mtd <linux-mtd@lists.infradead.org>, sfr <sfr@canb.auug.org.au>
-In-Reply-To: <19606671554056883@myt3-1179f584969c.qloud-c.yandex.net>
-References: <19606671554056883@myt3-1179f584969c.qloud-c.yandex.net>
-Subject: [PATCH v2 5/5] Lib: sort.h: replace int size with size_t size in the
- swap function
-MIME-Version: 1.0
-X-Mailer: Yamail [ http://yandex.ru ] 5.0
-Date: Sun, 31 Mar 2019 21:52:50 +0300
-Message-Id: <23051461554058370@iva6-3ac3de5fcc31.qloud-c.yandex.net>
-Content-Transfer-Encoding: 7bit
-Content-Type: text/plain
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44XQHr6WgqzDqM3
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  1 Apr 2019 06:18:48 +1100 (AEDT)
+Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
+ x2VJIjp9005652
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 31 Mar 2019 15:18:45 -0400
+Received: from e06smtp01.uk.ibm.com (e06smtp01.uk.ibm.com [195.75.94.97])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2rk2gs9tu2-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 31 Mar 2019 15:18:44 -0400
+Received: from localhost
+ by e06smtp01.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <maddy@linux.vnet.ibm.com>;
+ Sun, 31 Mar 2019 20:18:43 +0100
+Received: from b06cxnps4074.portsmouth.uk.ibm.com (9.149.109.196)
+ by e06smtp01.uk.ibm.com (192.168.101.131) with IBM ESMTP SMTP Gateway:
+ Authorized Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Sun, 31 Mar 2019 20:18:42 +0100
+Received: from d06av25.portsmouth.uk.ibm.com (d06av25.portsmouth.uk.ibm.com
+ [9.149.105.61])
+ by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x2VJIfsx43647206
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Sun, 31 Mar 2019 19:18:41 GMT
+Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 36BD611C04C;
+ Sun, 31 Mar 2019 19:18:41 +0000 (GMT)
+Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 163DD11C04A;
+ Sun, 31 Mar 2019 19:18:40 +0000 (GMT)
+Received: from SrihariSrinidhi.in.ibm.com (unknown [9.124.214.21])
+ by d06av25.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Sun, 31 Mar 2019 19:18:39 +0000 (GMT)
+From: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+To: mpe@ellerman.id.au
+Subject: [PATCH 1/2] powerpc/perf: init platform pmu driver from core-book3s
+Date: Mon,  1 Apr 2019 00:48:32 +0530
+X-Mailer: git-send-email 2.7.4
+X-TM-AS-GCONF: 00
+x-cbid: 19033119-4275-0000-0000-00000321F30A
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 19033119-4276-0000-0000-00003830F9D7
+Message-Id: <1554059913-20335-1-git-send-email-maddy@linux.vnet.ibm.com>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
+ definitions=2019-03-31_11:, , signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ malwarescore=0 suspectscore=1 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1011 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1810050000 definitions=main-1903310147
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -92,115 +93,211 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: jannh <jannh@google.com>, peterz <peterz@infradead.org>,
- Rasmus Villemoes <linux@rasmusvillemoes.dk>,
- "yamada.masahiro" <yamada.masahiro@socionext.com>,
- Morton Andrew <akpm@linux-foundation.org>,
- Andy Shevchenko <andriy.shevchenko@linux.intel.com>, jslaby <jslaby@suse.cz>
+Cc: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Replace int type with size_t type of the size argument
-in the swap function, also affect all its dependencies.
+Currenty pmu driver file for each ppc64 generation processor
+has a __init call in itself. Refactor the code by moving the
+__init call to core-books.c. This also clean's up compat mode
+pmu driver registration.
 
-It's always been weird that sort() takes a size_t element size,
-but passes an int size to (*swap)(). Not a bug because we don't
-sort objects >2GB large, but it's ugly.
-
-Signed-off-by: Andrey Abramov <st5pub@yandex.ru>
-Reviewed by: George Spelvin <lkml@sdf.org>
+Suggested-by: Michael Ellerman <mpe@ellerman.id.au>
+Signed-off-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
 ---
- arch/x86/kernel/unwind_orc.c | 2 +-
- include/linux/sort.h         | 2 +-
- kernel/jump_label.c          | 2 +-
- lib/extable.c                | 2 +-
- lib/sort.c                   | 6 +++---
- 5 files changed, 7 insertions(+), 7 deletions(-)
+ arch/powerpc/include/asm/perf_event_server.h |  8 ++++++++
+ arch/powerpc/perf/core-book3s.c              | 22 ++++++++++++++++++++++
+ arch/powerpc/perf/power5+-pmu.c              |  4 +---
+ arch/powerpc/perf/power5-pmu.c               |  4 +---
+ arch/powerpc/perf/power6-pmu.c               |  4 +---
+ arch/powerpc/perf/power7-pmu.c               |  4 +---
+ arch/powerpc/perf/power8-pmu.c               |  3 +--
+ arch/powerpc/perf/power9-pmu.c               |  3 +--
+ arch/powerpc/perf/ppc970-pmu.c               |  4 +---
+ 9 files changed, 37 insertions(+), 19 deletions(-)
 
-diff --git a/arch/x86/kernel/unwind_orc.c b/arch/x86/kernel/unwind_orc.c
-index 89be1be1790c..1078c287198c 100644
---- a/arch/x86/kernel/unwind_orc.c
-+++ b/arch/x86/kernel/unwind_orc.c
-@@ -176,7 +176,7 @@ static struct orc_entry *orc_find(unsigned long ip)
- 	return orc_ftrace_find(ip);
- }
- 
--static void orc_sort_swap(void *_a, void *_b, int size)
-+static void orc_sort_swap(void *_a, void *_b, size_t size)
- {
- 	struct orc_entry *orc_a, *orc_b;
- 	struct orc_entry orc_tmp;
-diff --git a/include/linux/sort.h b/include/linux/sort.h
-index 2b99a5dd073d..aea39d552ff7 100644
---- a/include/linux/sort.h
-+++ b/include/linux/sort.h
-@@ -6,6 +6,6 @@
- 
- void sort(void *base, size_t num, size_t size,
- 	  int (*cmp)(const void *, const void *),
--	  void (*swap)(void *, void *, int));
-+	  void (*swap)(void *, void *, size_t));
- 
- #endif
-diff --git a/kernel/jump_label.c b/kernel/jump_label.c
-index bad96b476eb6..340b788571fb 100644
---- a/kernel/jump_label.c
-+++ b/kernel/jump_label.c
-@@ -45,7 +45,7 @@ static int jump_label_cmp(const void *a, const void *b)
- 	return 0;
- }
- 
--static void jump_label_swap(void *a, void *b, int size)
-+static void jump_label_swap(void *a, void *b, size_t size)
- {
- 	long delta = (unsigned long)a - (unsigned long)b;
- 	struct jump_entry *jea = a;
-diff --git a/lib/extable.c b/lib/extable.c
-index f54996fdd0b8..db2888342cd7 100644
---- a/lib/extable.c
-+++ b/lib/extable.c
-@@ -28,7 +28,7 @@ static inline unsigned long ex_to_insn(const struct exception_table_entry *x)
- #ifndef ARCH_HAS_RELATIVE_EXTABLE
- #define swap_ex		NULL
- #else
--static void swap_ex(void *a, void *b, int size)
-+static void swap_ex(void *a, void *b, size_t size)
- {
- 	struct exception_table_entry *x = a, *y = b, tmp;
- 	int delta = b - a;
-diff --git a/lib/sort.c b/lib/sort.c
-index 50855ea8c262..60fbbc29104a 100644
---- a/lib/sort.c
-+++ b/lib/sort.c
-@@ -114,7 +114,7 @@ static void swap_bytes(void *a, void *b, size_t n)
- 	} while (n);
- }
- 
--typedef void (*swap_func_t)(void *a, void *b, int size);
-+typedef void (*swap_func_t)(void *a, void *b, size_t size);
+diff --git a/arch/powerpc/include/asm/perf_event_server.h b/arch/powerpc/include/asm/perf_event_server.h
+index e60aeb46d6a0..c5022f2c62a4 100644
+--- a/arch/powerpc/include/asm/perf_event_server.h
++++ b/arch/powerpc/include/asm/perf_event_server.h
+@@ -87,6 +87,14 @@ struct pt_regs;
+ extern unsigned long perf_misc_flags(struct pt_regs *regs);
+ extern unsigned long perf_instruction_pointer(struct pt_regs *regs);
+ extern unsigned long int read_bhrb(int n);
++extern int init_ppc970_pmu(void);
++extern int init_power5_pmu(void);
++extern int init_power5p_pmu(void);
++extern int init_power6_pmu(void);
++extern int init_power7_pmu(void);
++extern int init_power8_pmu(void);
++extern int init_power9_pmu(void);
++
  
  /*
-  * The values are arbitrary as long as they can't be confused with
-@@ -138,7 +138,7 @@ static void do_swap(void *a, void *b, size_t size, swap_func_t swap_func)
- 	else if (swap_func == SWAP_BYTES)
- 		swap_bytes(a, b, size);
- 	else
--		swap_func(a, b, (int)size);
-+		swap_func(a, b, size);
+  * Only override the default definitions in include/linux/perf_event.h
+diff --git a/arch/powerpc/perf/core-book3s.c b/arch/powerpc/perf/core-book3s.c
+index b0723002a396..9ba39a69b0ec 100644
+--- a/arch/powerpc/perf/core-book3s.c
++++ b/arch/powerpc/perf/core-book3s.c
+@@ -2294,3 +2294,25 @@ int register_power_pmu(struct power_pmu *pmu)
+ 			  power_pmu_prepare_cpu, NULL);
+ 	return 0;
  }
++
++static int __init init_ppc64_pmu(void)
++{
++	/* run through all the pmu drivers one at a time */
++	if (!init_power5_pmu())
++		return 0;
++	else if (!init_power5p_pmu())
++		return 0;
++	else if (!init_power6_pmu())
++		return 0;
++	else if (!init_power7_pmu())
++		return 0;
++	else if (!init_power8_pmu())
++		return 0;
++	else if (!init_power9_pmu())
++		return 0;
++	else if (!init_ppc970_pmu())
++		return 0;
++	else
++		return -ENODEV;
++}
++early_initcall(init_ppc64_pmu);
+diff --git a/arch/powerpc/perf/power5+-pmu.c b/arch/powerpc/perf/power5+-pmu.c
+index 0526dac66007..9aa803504cb2 100644
+--- a/arch/powerpc/perf/power5+-pmu.c
++++ b/arch/powerpc/perf/power5+-pmu.c
+@@ -677,7 +677,7 @@ static struct power_pmu power5p_pmu = {
+ 	.cache_events		= &power5p_cache_events,
+ };
  
- /**
-@@ -187,7 +187,7 @@ static size_t parent(size_t i, unsigned int lsbit, size_t size)
-  */
- void sort(void *base, size_t num, size_t size,
- 	  int (*cmp_func)(const void *, const void *),
--	  void (*swap_func)(void *, void *, int size))
-+	  void (*swap_func)(void *, void *, size_t size))
+-static int __init init_power5p_pmu(void)
++int init_power5p_pmu(void)
  {
- 	/* pre-scale counters for performance */
- 	size_t n = num * size, a = (num/2) * size;
+ 	if (!cur_cpu_spec->oprofile_cpu_type ||
+ 	    (strcmp(cur_cpu_spec->oprofile_cpu_type, "ppc64/power5+")
+@@ -686,5 +686,3 @@ static int __init init_power5p_pmu(void)
+ 
+ 	return register_power_pmu(&power5p_pmu);
+ }
+-
+-early_initcall(init_power5p_pmu);
+diff --git a/arch/powerpc/perf/power5-pmu.c b/arch/powerpc/perf/power5-pmu.c
+index 4dc99f9f7962..30cb13d081a9 100644
+--- a/arch/powerpc/perf/power5-pmu.c
++++ b/arch/powerpc/perf/power5-pmu.c
+@@ -618,7 +618,7 @@ static struct power_pmu power5_pmu = {
+ 	.flags			= PPMU_HAS_SSLOT,
+ };
+ 
+-static int __init init_power5_pmu(void)
++int init_power5_pmu(void)
+ {
+ 	if (!cur_cpu_spec->oprofile_cpu_type ||
+ 	    strcmp(cur_cpu_spec->oprofile_cpu_type, "ppc64/power5"))
+@@ -626,5 +626,3 @@ static int __init init_power5_pmu(void)
+ 
+ 	return register_power_pmu(&power5_pmu);
+ }
+-
+-early_initcall(init_power5_pmu);
+diff --git a/arch/powerpc/perf/power6-pmu.c b/arch/powerpc/perf/power6-pmu.c
+index 9c9d646b68a1..80ec48632cfe 100644
+--- a/arch/powerpc/perf/power6-pmu.c
++++ b/arch/powerpc/perf/power6-pmu.c
+@@ -540,7 +540,7 @@ static struct power_pmu power6_pmu = {
+ 	.cache_events		= &power6_cache_events,
+ };
+ 
+-static int __init init_power6_pmu(void)
++int init_power6_pmu(void)
+ {
+ 	if (!cur_cpu_spec->oprofile_cpu_type ||
+ 	    strcmp(cur_cpu_spec->oprofile_cpu_type, "ppc64/power6"))
+@@ -548,5 +548,3 @@ static int __init init_power6_pmu(void)
+ 
+ 	return register_power_pmu(&power6_pmu);
+ }
+-
+-early_initcall(init_power6_pmu);
+diff --git a/arch/powerpc/perf/power7-pmu.c b/arch/powerpc/perf/power7-pmu.c
+index 6dbae9884ec4..bb6efd5d2530 100644
+--- a/arch/powerpc/perf/power7-pmu.c
++++ b/arch/powerpc/perf/power7-pmu.c
+@@ -445,7 +445,7 @@ static struct power_pmu power7_pmu = {
+ 	.cache_events		= &power7_cache_events,
+ };
+ 
+-static int __init init_power7_pmu(void)
++int init_power7_pmu(void)
+ {
+ 	if (!cur_cpu_spec->oprofile_cpu_type ||
+ 	    strcmp(cur_cpu_spec->oprofile_cpu_type, "ppc64/power7"))
+@@ -456,5 +456,3 @@ static int __init init_power7_pmu(void)
+ 
+ 	return register_power_pmu(&power7_pmu);
+ }
+-
+-early_initcall(init_power7_pmu);
+diff --git a/arch/powerpc/perf/power8-pmu.c b/arch/powerpc/perf/power8-pmu.c
+index d12a2db26353..bcc3409a06de 100644
+--- a/arch/powerpc/perf/power8-pmu.c
++++ b/arch/powerpc/perf/power8-pmu.c
+@@ -379,7 +379,7 @@ static struct power_pmu power8_pmu = {
+ 	.bhrb_nr		= 32,
+ };
+ 
+-static int __init init_power8_pmu(void)
++int init_power8_pmu(void)
+ {
+ 	int rc;
+ 
+@@ -399,4 +399,3 @@ static int __init init_power8_pmu(void)
+ 
+ 	return 0;
+ }
+-early_initcall(init_power8_pmu);
+diff --git a/arch/powerpc/perf/power9-pmu.c b/arch/powerpc/perf/power9-pmu.c
+index 030544e35959..3a31ac6f4805 100644
+--- a/arch/powerpc/perf/power9-pmu.c
++++ b/arch/powerpc/perf/power9-pmu.c
+@@ -437,7 +437,7 @@ static struct power_pmu power9_pmu = {
+ 	.bhrb_nr		= 32,
+ };
+ 
+-static int __init init_power9_pmu(void)
++int init_power9_pmu(void)
+ {
+ 	int rc = 0;
+ 	unsigned int pvr = mfspr(SPRN_PVR);
+@@ -467,4 +467,3 @@ static int __init init_power9_pmu(void)
+ 
+ 	return 0;
+ }
+-early_initcall(init_power9_pmu);
+diff --git a/arch/powerpc/perf/ppc970-pmu.c b/arch/powerpc/perf/ppc970-pmu.c
+index 8b6a8a36fa38..1d3370914022 100644
+--- a/arch/powerpc/perf/ppc970-pmu.c
++++ b/arch/powerpc/perf/ppc970-pmu.c
+@@ -490,7 +490,7 @@ static struct power_pmu ppc970_pmu = {
+ 	.flags			= PPMU_NO_SIPR | PPMU_NO_CONT_SAMPLING,
+ };
+ 
+-static int __init init_ppc970_pmu(void)
++int init_ppc970_pmu(void)
+ {
+ 	if (!cur_cpu_spec->oprofile_cpu_type ||
+ 	    (strcmp(cur_cpu_spec->oprofile_cpu_type, "ppc64/970")
+@@ -499,5 +499,3 @@ static int __init init_ppc970_pmu(void)
+ 
+ 	return register_power_pmu(&ppc970_pmu);
+ }
+-
+-early_initcall(init_ppc970_pmu);
 -- 
-2.21.0
-
+2.7.4
 
