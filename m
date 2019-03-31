@@ -3,45 +3,43 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
 X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_PASS
-	autolearn=unavailable autolearn_force=no version=3.4.0
+	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id F2747C43381
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 31 Mar 2019 10:14:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C0C47C43381
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 31 Mar 2019 10:16:03 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 5891F20882
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 31 Mar 2019 10:14:36 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5891F20882
+	by mail.kernel.org (Postfix) with ESMTPS id 49D5120882
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 31 Mar 2019 10:16:03 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 49D5120882
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44XBCs71hVzDqPg
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 31 Mar 2019 21:14:33 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44XBFY5V0YzDqNS
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 31 Mar 2019 21:16:01 +1100 (AEDT)
 Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44XBB6759ZzDqNS
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 31 Mar 2019 21:13:02 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44XBB81cnxzDqNS
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 31 Mar 2019 21:13:04 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
+Received: by ozlabs.org (Postfix)
+ id 44XBB80d8xz9sRJ; Sun, 31 Mar 2019 21:13:04 +1100 (AEDT)
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 44XBB65zQyz9sRW; Sun, 31 Mar 2019 21:13:02 +1100 (AEDT)
+ id 44XBB75Znmz9sRf; Sun, 31 Mar 2019 21:13:03 +1100 (AEDT)
 X-powerpc-patch-notification: thanks
-X-powerpc-patch-commit: ce9afe08e71e3f7d64f337a6e932e50849230fc2
+X-powerpc-patch-commit: d9470757398a700d9450a43508000bcfd010c7a4
 X-Patchwork-Hint: ignore
-In-Reply-To: <1552059204-18626-1-git-send-email-ego@linux.vnet.ibm.com>
-To: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>,
- Michael Bringmann <mwb@linux.vnet.ibm.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>,
- Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+In-Reply-To: <20190322123724.28435-1-mpe@ellerman.id.au>
+To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Subject: Re: pseries/energy: Use OF accessor functions to read ibm, drc-indexes
-Message-Id: <44XBB65zQyz9sRW@ozlabs.org>
-Date: Sun, 31 Mar 2019 21:13:02 +1100 (AEDT)
+Subject: Re: [v3] powerpc/64: Fix memcmp reading past the end of src/dest
+Message-Id: <44XBB75Znmz9sRf@ozlabs.org>
+Date: Sun, 31 Mar 2019 21:13:03 +1100 (AEDT)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -53,33 +51,88 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "Pavithra R. Prakash" <pavrampu@in.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, stable@vger.kernel.org,
- "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+Cc: chandan@linux.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, 2019-03-08 at 15:33:24 UTC, "Gautham R. Shenoy" wrote:
-> From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+On Fri, 2019-03-22 at 12:37:24 UTC, Michael Ellerman wrote:
+> Chandan reported that fstests' generic/026 test hit a crash:
 > 
-> In cpu_to_drc_index() in the case when FW_FEATURE_DRC_INFO is absent,
-> we currently use of_read_property() to obtain the pointer to the array
-> corresponding to the property "ibm,drc-indexes". The elements of this
-> array are of type __be32, but are accessed without any conversion to
-> the OS-endianness, which is buggy on a Little Endian OS.
+>   BUG: Unable to handle kernel data access at 0xc00000062ac40000
+>   Faulting instruction address: 0xc000000000092240
+>   Oops: Kernel access of bad area, sig: 11 [#1]
+>   LE SMP NR_CPUS=2048 DEBUG_PAGEALLOC NUMA pSeries
+>   CPU: 0 PID: 27828 Comm: chacl Not tainted 5.0.0-rc2-next-20190115-00001-g6de6dba64dda #1
+>   NIP:  c000000000092240 LR: c00000000066a55c CTR: 0000000000000000
+>   REGS: c00000062c0c3430 TRAP: 0300   Not tainted  (5.0.0-rc2-next-20190115-00001-g6de6dba64dda)
+>   MSR:  8000000002009033 <SF,VEC,EE,ME,IR,DR,RI,LE>  CR: 44000842  XER: 20000000
+>   CFAR: 00007fff7f3108ac DAR: c00000062ac40000 DSISR: 40000000 IRQMASK: 0
+>   GPR00: 0000000000000000 c00000062c0c36c0 c0000000017f4c00 c00000000121a660
+>   GPR04: c00000062ac3fff9 0000000000000004 0000000000000020 00000000275b19c4
+>   GPR08: 000000000000000c 46494c4500000000 5347495f41434c5f c0000000026073a0
+>   GPR12: 0000000000000000 c0000000027a0000 0000000000000000 0000000000000000
+>   GPR16: 0000000000000000 0000000000000000 0000000000000000 0000000000000000
+>   GPR20: c00000062ea70020 c00000062c0c38d0 0000000000000002 0000000000000002
+>   GPR24: c00000062ac3ffe8 00000000275b19c4 0000000000000001 c00000062ac30000
+>   GPR28: c00000062c0c38d0 c00000062ac30050 c00000062ac30058 0000000000000000
+>   NIP memcmp+0x120/0x690
+>   LR  xfs_attr3_leaf_lookup_int+0x53c/0x5b0
+>   Call Trace:
+>     xfs_attr3_leaf_lookup_int+0x78/0x5b0 (unreliable)
+>     xfs_da3_node_lookup_int+0x32c/0x5a0
+>     xfs_attr_node_addname+0x170/0x6b0
+>     xfs_attr_set+0x2ac/0x340
+>     __xfs_set_acl+0xf0/0x230
+>     xfs_set_acl+0xd0/0x160
+>     set_posix_acl+0xc0/0x130
+>     posix_acl_xattr_set+0x68/0x110
+>     __vfs_setxattr+0xa4/0x110
+>     __vfs_setxattr_noperm+0xac/0x240
+>     vfs_setxattr+0x128/0x130
+>     setxattr+0x248/0x600
+>     path_setxattr+0x108/0x120
+>     sys_setxattr+0x28/0x40
+>     system_call+0x5c/0x70
+>   Instruction dump:
+>   7d201c28 7d402428 7c295040 38630008 38840008 408201f0 4200ffe8 2c050000
+>   4182ff6c 20c50008 54c61838 7d201c28 <7d402428> 7d293436 7d4a3436 7c295040
 > 
-> Fix this by using of_property_read_u32_index() accessor function to
-> safely read the elements of the array.
+> The instruction dump decodes as:
+>   subfic  r6,r5,8
+>   rlwinm  r6,r6,3,0,28
+>   ldbrx   r9,0,r3
+>   ldbrx   r10,0,r4      <-
 > 
-> Fixes: commit e83636ac3334 ("pseries/drc-info: Search DRC properties for CPU indexes")
-> Cc: <stable@vger.kernel.org> #v4.16+
-> Reported-by: Pavithra R. Prakash <pavrampu@in.ibm.com>
-> Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
-> Reviewed-by: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+> Which shows us doing an 8 byte load from c00000062ac3fff9, which
+> crosses the page boundary at c00000062ac40000 and faults.
+> 
+> It's not OK for memcmp to read past the end of the source or
+> destination buffers if that would cross a page boundary, because we
+> don't know that the next page is mapped.
+> 
+> As pointed out by Segher, we can read past the end of the source or
+> destination as long as we don't cross a 4K boundary, because that's
+> our minimum page size on all platforms.
+> 
+> The bug is in the code at the .Lcmp_rest_lt8bytes label. When we get
+> there we know that s1 is 8-byte aligned and we have at least 1 byte to
+> read, so a single 8-byte load won't read past the end of s1 and cross
+> a page boundary.
+> 
+> But we have to be more careful with s2. So check if it's within 8
+> bytes of a 4K boundary and if so go to the byte-by-byte loop.
+> 
+> Fixes: 2d9ee327adce ("powerpc/64: Align bytes before fall back to .Lshort in powerpc64 memcmp()")
+> Cc: stable@vger.kernel.org # v4.19+
+> Reported-by: Chandan Rajendra <chandan@linux.ibm.com>
+> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+> Reviewed-by: Segher Boessenkool <segher@kernel.crashing.org>
+> Tested-by: Chandan Rajendra <chandan@linux.ibm.com>
+> Tested-by: Chandan Rajendra <chandan@linux.ibm.com>
 
-Applied to powerpc fixes, thanks.
+Applied to powerpc fixes.
 
-https://git.kernel.org/powerpc/c/ce9afe08e71e3f7d64f337a6e932e508
+https://git.kernel.org/powerpc/c/d9470757398a700d9450a43508000bcf
 
 cheers
