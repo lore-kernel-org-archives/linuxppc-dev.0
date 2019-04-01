@@ -2,62 +2,51 @@ Return-Path: <SRS0=9RGo=SD=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_MUTT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 444F2C43381
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Apr 2019 09:59:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 34592C43381
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Apr 2019 10:05:00 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id AB533206B8
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Apr 2019 09:59:35 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=sdf.org header.i=@sdf.org header.b="SVHocj+q"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org AB533206B8
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=sdf.org
+	by mail.kernel.org (Postfix) with ESMTPS id B16712086C
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Apr 2019 10:04:59 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B16712086C
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44Xnr60kv3zDq67
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Apr 2019 20:59:34 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44XnyK49pYzDqFK
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Apr 2019 21:04:57 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=sdf.org
- (client-ip=205.166.94.20; helo=mx.sdf.org; envelope-from=lkml@sdf.org;
- receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=arm.com
+ (client-ip=217.140.101.70; helo=foss.arm.com;
+ envelope-from=lorenzo.pieralisi@arm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=sdf.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=sdf.org header.i=@sdf.org header.b="SVHocj+q"; 
- dkim-atps=neutral
-Received: from mx.sdf.org (ol.sdf.org [205.166.94.20])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44XnpC6NZHzDqLF
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  1 Apr 2019 20:57:55 +1100 (AEDT)
-Received: from sdf.org (IDENT:lkml@sdf.lonestar.org [205.166.94.16])
- by mx.sdf.org (8.15.2/8.14.5) with ESMTPS id x319u8Fl017367
- (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256 bits) verified NO); 
- Mon, 1 Apr 2019 09:56:09 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=sdf.org; s=default;
- t=1554112582; bh=nfyrQ8GwYN1dR+36K+w2KJmeeTK++gvNmVw4hbCgtQ4=;
- h=Date:From:To:Subject:Cc:In-Reply-To:References;
- b=SVHocj+qYv7EIPnLIfPgOVaNlCkoSdLXLVw6GFrl9DCOnxhLWUjOM9vbGSgCCoGcp
- D1nD66gIhO4CU+TNaRxHv3p9OlqQMQLiL6LH5yenIMo9bJvE6E7MQYstcxd8XbGkjb
- GywuxAxfIpYFvEK00nepx2+Z/kokFUYZ+IxaQyMI=
-Received: (from lkml@localhost)
- by sdf.org (8.15.2/8.12.8/Submit) id x319u70q021113;
- Mon, 1 Apr 2019 09:56:07 GMT
-Date: Mon, 1 Apr 2019 09:56:07 GMT
-From: George Spelvin <lkml@sdf.org>
-Message-Id: <201904010956.x319u70q021113@sdf.org>
-To: andriy.shevchenko@linux.intel.com, st5pub@yandex.ru
-Subject: Re: [PATCH v2 5/5] Lib: sort.h: replace int size with size_t size in
- the swap function
-In-Reply-To: <20190401093555.GD9224@smile.fi.intel.com>
-References: <19606671554056883@myt3-1179f584969c.qloud-c.yandex.net>,
- <23051461554058370@iva6-3ac3de5fcc31.qloud-c.yandex.net>,
- <20190401093555.GD9224@smile.fi.intel.com>
+ dmarc=none (p=none dis=none) header.from=arm.com
+Received: from foss.arm.com (foss.arm.com [217.140.101.70])
+ by lists.ozlabs.org (Postfix) with ESMTP id 44Xnwj3lR7zDq5W
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  1 Apr 2019 21:03:28 +1100 (AEDT)
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.72.51.249])
+ by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 7F7E6A78;
+ Mon,  1 Apr 2019 03:03:26 -0700 (PDT)
+Received: from e107981-ln.cambridge.arm.com (e107981-ln.cambridge.arm.com
+ [10.1.197.40])
+ by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id CCC163F690;
+ Mon,  1 Apr 2019 03:03:21 -0700 (PDT)
+Date: Mon, 1 Apr 2019 11:03:18 +0100
+From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+To: Wen Yang <wen.yang99@zte.com.cn>
+Subject: Re: [PATCH 1/8] PCI: dwc: pci-dra7xx: fix a leaked reference by
+ adding missing of_node_put
+Message-ID: <20190401100318.GB30501@e107981-ln.cambridge.arm.com>
+References: <1551242443-27300-1-git-send-email-wen.yang99@zte.com.cn>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1551242443-27300-1-git-send-email-wen.yang99@zte.com.cn>
+User-Agent: Mutt/1.5.24 (2015-08-30)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -69,36 +58,58 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: peterz@infradead.org, dchinner@redhat.com, linux-kernel@vger.kernel.org,
- linux-mtd@lists.infradead.org, hpa@zytor.com, jslaby@suse.cz,
- sfr@canb.auug.org.au, darrick.wong@oracle.com, mark@fasheh.com, x86@kernel.org,
- mingo@redhat.com, naveen.n.rao@linux.vnet.ibm.com,
- linux-snps-arc@lists.infradead.org, jannh@google.com, bp@alien8.de,
- jlbec@evilplan.org, jpoimboe@redhat.com, tglx@linutronix.de, lkml@sdf.org,
- ard.biesheuvel@linaro.org, gregkh@linuxfoundation.org, dedekind1@gmail.com,
- adrian.hunter@intel.com, vgupta@synopsys.com, richard@nod.at, paulus@samba.org,
- linuxppc-dev@lists.ozlabs.org, ocfs2-devel@oss.oracle.com
+Cc: heiko@sntech.de, hayashi.kunihiko@socionext.com, shawn.lin@rock-chips.com,
+ minghuan.Lian@nxp.com, paulus@samba.org, thomas.petazzoni@bootlin.com,
+ ryder.lee@mediatek.com, kishon@ti.com, linux-rockchip@lists.infradead.org,
+ bcm-kernel-feedback-list@broadcom.com, linux-arm-kernel@lists.infradead.org,
+ linux-pci@vger.kernel.org, wang.yi59@zte.com.cn, rjui@broadcom.com,
+ linux-mediatek@lists.infradead.org, tyreld@linux.vnet.ibm.com,
+ matthias.bgg@gmail.com, linux-omap@vger.kernel.org, mingkai.hu@nxp.com,
+ roy.zang@nxp.com, sbranden@broadcom.com, yamada.masahiro@socionext.com,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ bhelgaas@google.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, 1 Apr 2019 at 12:35:55 +0300, Andy Shevchenko wrote:
-> Hmm... If (*swap)() is called recursively it means the change might increase
-> stack usage on 64-bit platforms.
+On Wed, Feb 27, 2019 at 12:40:36PM +0800, Wen Yang wrote:
+> The call to of_get_next_child returns a node pointer with refcount
+> incremented thus it must be explicitly decremented after the last
+> usage.
+> irq_domain_add_linear also calls of_node_get to increase refcount,
+> so irq_domain will not be affected when it is released.
 > 
-> Am I missing something?
+> Detected by coccinelle with the following warnings:
+> ./drivers/pci/controller/dwc/pci-dra7xx.c:252:2-8: ERROR: missing of_node_put; acquired a node pointer with refcount incremented on line 241, but without a corresponding object release within this function.
+> ./drivers/pci/controller/dwc/pci-dra7xx.c:255:1-7: ERROR: missing of_node_put; acquired a node pointer with refcount incremented on line 241, but without a corresponding object release within this function.
+> 
+> Signed-off-by: Wen Yang <wen.yang99@zte.com.cn>
+> Cc: Kishon Vijay Abraham I <kishon@ti.com>
+> Cc: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+> Cc: Bjorn Helgaas <bhelgaas@google.com>
+> Cc: linux-omap@vger.kernel.org
+> Cc: linux-pci@vger.kernel.org
+> Cc: linux-kernel@vger.kernel.org
+> ---
+>  drivers/pci/controller/dwc/pci-dra7xx.c | 1 +
+>  1 file changed, 1 insertion(+)
 
-Under what conceivable circumstance would someone write a recursive
-(*swap)() function?
+Applied the series to pci/misc for v5.2, thanks.
 
-You're technically right, but the precondition is more fantastical
-than "if the U.K.'s parliament get their shit together before the
-12th", so I have a hard time worrying about it.
+Lorenzo
 
-But you did make me think of something: the whole reason swap()
-takes a size argument is for the benefit of the (no longer existing)
-generic swap functions.  All of the custom swap functions ignore
-it.
-
-So how about *deleting* the parameter instead?  That simplifies
-everything.
+> diff --git a/drivers/pci/controller/dwc/pci-dra7xx.c b/drivers/pci/controller/dwc/pci-dra7xx.c
+> index ae84a69..627c91d 100644
+> --- a/drivers/pci/controller/dwc/pci-dra7xx.c
+> +++ b/drivers/pci/controller/dwc/pci-dra7xx.c
+> @@ -247,6 +247,7 @@ static int dra7xx_pcie_init_irq_domain(struct pcie_port *pp)
+>  
+>  	dra7xx->irq_domain = irq_domain_add_linear(pcie_intc_node, PCI_NUM_INTX,
+>  						   &intx_domain_ops, pp);
+> +	of_node_put(pcie_intc_node);
+>  	if (!dra7xx->irq_domain) {
+>  		dev_err(dev, "Failed to get a INTx IRQ domain\n");
+>  		return -ENODEV;
+> -- 
+> 2.9.5
+> 
