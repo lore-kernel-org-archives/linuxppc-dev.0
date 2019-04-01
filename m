@@ -2,63 +2,51 @@ Return-Path: <SRS0=9RGo=SD=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-8.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_MUTT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 27274C43381
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Apr 2019 06:24:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6E186C43381
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Apr 2019 08:16:29 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 7CA2C2070B
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Apr 2019 06:24:07 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=neuling.org header.i=@neuling.org header.b="TWw5SZak"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7CA2C2070B
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=neuling.org
+	by mail.kernel.org (Postfix) with ESMTPS id 962742084B
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Apr 2019 08:16:28 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 962742084B
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=suse.cz
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44Xj3T44LhzDqNJ
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Apr 2019 17:24:05 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44Xj0d5SPxzDqMW
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  1 Apr 2019 17:21:37 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44XlY614QVzDqLt
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Apr 2019 19:16:26 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=neuling.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=neuling.org header.i=@neuling.org header.b="TWw5SZak"; 
- dkim-atps=neutral
-Received: from spoke.localdomain (localhost [127.0.0.1])
- by ozlabs.org (Postfix) with ESMTP id 44Xj0d3SsGz9sQw;
- Mon,  1 Apr 2019 17:21:37 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=neuling.org;
- s=201811; t=1554099697;
- bh=07q8tXMo88WI7t77jFF7qGxdsavc2yv3LQLXa8qvsTg=;
- h=Subject:From:To:Cc:Date:In-Reply-To:References:From;
- b=TWw5SZakcuTVHPsCiwox2cRwlDaiUoTEZ5LE86NCrvdUeXpleRTVuG7UtHeU9VKMK
- Oxoq0BjEj1gakvJAQx6FbXbnIbCOSLMB30QJC3pSK5YmR0iHFTDpAO91Nhksco64dK
- M1kWDLQUSdxsYmEgdHoKx7/G73MtqZQXJWTqWypwqmwkL+ELM+aTMZTI9qtWkjuZLq
- PV0Kf0tu5Om7svdL2KKRbnc6oTtpkhS4L5ucAjoMRE1Xnw1PTiXN5ifq1Wj4OCtFAA
- pHm2Dc8ijneVXje/lRAu0hXKaz6dScnNP1oqIpPZ3RPlAuwFyTYrMbDhnEM4LNHMkT
- mDVIFPlZbj2Ww==
-Received: by spoke.localdomain (Postfix, from userid 1000)
- id 6B8992A0352; Mon,  1 Apr 2019 17:21:37 +1100 (AEDT)
-Message-ID: <282f7310ef16e0d37161b0bb2d03baa57c40db69.camel@neuling.org>
-Subject: Re: [PATCH] Documentation: powerpc: Expand the DAWR acronym
-From: Michael Neuling <mikey@neuling.org>
-To: Joel Stanley <joel@jms.id.au>, linuxppc-dev@lists.ozlabs.org
-Date: Mon, 01 Apr 2019 17:21:37 +1100
-In-Reply-To: <20190401061156.31366-1-joel@jms.id.au>
-References: <20190401061156.31366-1-joel@jms.id.au>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-User-Agent: Evolution 3.30.5 (3.30.5-1.fc29) 
+ spf=pass (mailfrom) smtp.mailfrom=suse.cz
+ (client-ip=195.135.220.15; helo=mx1.suse.de; envelope-from=jack@suse.cz;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=suse.cz
+Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44XlW93M4XzDqLn
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  1 Apr 2019 19:14:45 +1100 (AEDT)
+X-Virus-Scanned: by amavisd-new at test-mx.suse.de
+Received: from relay2.suse.de (unknown [195.135.220.254])
+ by mx1.suse.de (Postfix) with ESMTP id 48BE9ACB1;
+ Mon,  1 Apr 2019 08:14:42 +0000 (UTC)
+Received: by quack2.suse.cz (Postfix, from userid 1000)
+ id DD5AC1E42C7; Mon,  1 Apr 2019 10:14:41 +0200 (CEST)
+Date: Mon, 1 Apr 2019 10:14:41 +0200
+From: Jan Kara <jack@suse.cz>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
+Subject: Re: [PATCH] mm: Fix modifying of page protection by insert_pfn_pmd()
+Message-ID: <20190401081441.GD4826@quack2.suse.cz>
+References: <20190330054121.27831-1-aneesh.kumar@linux.ibm.com>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20190330054121.27831-1-aneesh.kumar@linux.ibm.com>
+User-Agent: Mutt/1.10.1 (2018-07-13)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -70,45 +58,105 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-doc@vger.kernel.org
+Cc: Jan Kara <jack@suse.cz>, linux-nvdimm@lists.01.org, stable@vger.kernel.org,
+ linux-mm@kvack.org, dan.j.williams@intel.com, linuxppc-dev@lists.ozlabs.org,
+ akpm@linux-foundation.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, 2019-04-01 at 16:41 +1030, Joel Stanley wrote:
-> Those not of us not drowning in POWER might not know what this means.
+On Sat 30-03-19 11:11:21, Aneesh Kumar K.V wrote:
+> With some architectures like ppc64, set_pmd_at() cannot cope with
+> a situation where there is already some (different) valid entry present.
+> 
+> Use pmdp_set_access_flags() instead to modify the pfn which is built to
+> deal with modifying existing PMD entries.
+> 
+> This is similar to
+> commit cae85cb8add3 ("mm/memory.c: fix modifying of page protection by insert_pfn()")
+> 
+> We also do similar update w.r.t insert_pfn_pud eventhough ppc64 don't support
+> pud pfn entries now.
+> 
+> CC: stable@vger.kernel.org
+> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
 
-Hehe... thanks!
+Thanks for fixing this! The patch looks good to me. Feel free to add:
 
-> Signed-off-by: Joel Stanley <joel@jms.id.au>
+Reviewed-by: Jan Kara <jack@suse.cz>
 
-Acked-by: Michael Neuling <mikey@neuling.org>
+								Honza
 
 > ---
->  Documentation/powerpc/DAWR-POWER9.txt | 8 ++++----
->  1 file changed, 4 insertions(+), 4 deletions(-)
->=20
-> diff --git a/Documentation/powerpc/DAWR-POWER9.txt
-> b/Documentation/powerpc/DAWR-POWER9.txt
-> index 2feaa6619658..f6c24e54ce83 100644
-> --- a/Documentation/powerpc/DAWR-POWER9.txt
-> +++ b/Documentation/powerpc/DAWR-POWER9.txt
-> @@ -1,10 +1,10 @@
->  DAWR issues on POWER9
->  =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D
-> =20
-> -On POWER9 the DAWR can cause a checkstop if it points to cache
-> -inhibited (CI) memory. Currently Linux has no way to disinguish CI
-> -memory when configuring the DAWR, so (for now) the DAWR is disabled by
-> -this commit:
-> +On POWER9 the Data Address Watchpoint Register (DAWR) can cause a checks=
-top
-> +if it points to cache inhibited (CI) memory. Currently Linux has no way =
-to
-> +disinguish CI memory when configuring the DAWR, so (for now) the DAWR is
-> +disabled by this commit:
-> =20
->      commit 9654153158d3e0684a1bdb76dbababdb7111d5a0
->      Author: Michael Neuling <mikey@neuling.org>
-
+>  mm/huge_memory.c | 31 +++++++++++++++++++++++++++++++
+>  1 file changed, 31 insertions(+)
+> 
+> diff --git a/mm/huge_memory.c b/mm/huge_memory.c
+> index 404acdcd0455..f7dca413c4b2 100644
+> --- a/mm/huge_memory.c
+> +++ b/mm/huge_memory.c
+> @@ -755,6 +755,20 @@ static void insert_pfn_pmd(struct vm_area_struct *vma, unsigned long addr,
+>  	spinlock_t *ptl;
+>  
+>  	ptl = pmd_lock(mm, pmd);
+> +	if (!pmd_none(*pmd)) {
+> +		if (write) {
+> +			if (pmd_pfn(*pmd) != pfn_t_to_pfn(pfn)) {
+> +				WARN_ON_ONCE(!is_huge_zero_pmd(*pmd));
+> +				goto out_unlock;
+> +			}
+> +			entry = pmd_mkyoung(*pmd);
+> +			entry = maybe_pmd_mkwrite(pmd_mkdirty(entry), vma);
+> +			if (pmdp_set_access_flags(vma, addr, pmd, entry, 1))
+> +				update_mmu_cache_pmd(vma, addr, pmd);
+> +		}
+> +		goto out_unlock;
+> +	}
+> +
+>  	entry = pmd_mkhuge(pfn_t_pmd(pfn, prot));
+>  	if (pfn_t_devmap(pfn))
+>  		entry = pmd_mkdevmap(entry);
+> @@ -770,6 +784,7 @@ static void insert_pfn_pmd(struct vm_area_struct *vma, unsigned long addr,
+>  
+>  	set_pmd_at(mm, addr, pmd, entry);
+>  	update_mmu_cache_pmd(vma, addr, pmd);
+> +out_unlock:
+>  	spin_unlock(ptl);
+>  }
+>  
+> @@ -821,6 +836,20 @@ static void insert_pfn_pud(struct vm_area_struct *vma, unsigned long addr,
+>  	spinlock_t *ptl;
+>  
+>  	ptl = pud_lock(mm, pud);
+> +	if (!pud_none(*pud)) {
+> +		if (write) {
+> +			if (pud_pfn(*pud) != pfn_t_to_pfn(pfn)) {
+> +				WARN_ON_ONCE(!is_huge_zero_pud(*pud));
+> +				goto out_unlock;
+> +			}
+> +			entry = pud_mkyoung(*pud);
+> +			entry = maybe_pud_mkwrite(pud_mkdirty(entry), vma);
+> +			if (pudp_set_access_flags(vma, addr, pud, entry, 1))
+> +				update_mmu_cache_pud(vma, addr, pud);
+> +		}
+> +		goto out_unlock;
+> +	}
+> +
+>  	entry = pud_mkhuge(pfn_t_pud(pfn, prot));
+>  	if (pfn_t_devmap(pfn))
+>  		entry = pud_mkdevmap(entry);
+> @@ -830,6 +859,8 @@ static void insert_pfn_pud(struct vm_area_struct *vma, unsigned long addr,
+>  	}
+>  	set_pud_at(mm, addr, pud, entry);
+>  	update_mmu_cache_pud(vma, addr, pud);
+> +
+> +out_unlock:
+>  	spin_unlock(ptl);
+>  }
+>  
+> -- 
+> 2.20.1
+> 
+-- 
+Jan Kara <jack@suse.com>
+SUSE Labs, CR
