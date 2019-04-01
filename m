@@ -2,51 +2,48 @@ Return-Path: <SRS0=9RGo=SD=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_MUTT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 34592C43381
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Apr 2019 10:05:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AB07AC43381
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Apr 2019 10:12:51 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B16712086C
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Apr 2019 10:04:59 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B16712086C
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 0397B20830
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Apr 2019 10:12:50 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0397B20830
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44XnyK49pYzDqFK
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Apr 2019 21:04:57 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=arm.com
- (client-ip=217.140.101.70; helo=foss.arm.com;
- envelope-from=lorenzo.pieralisi@arm.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=arm.com
-Received: from foss.arm.com (foss.arm.com [217.140.101.70])
- by lists.ozlabs.org (Postfix) with ESMTP id 44Xnwj3lR7zDq5W
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  1 Apr 2019 21:03:28 +1100 (AEDT)
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.72.51.249])
- by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 7F7E6A78;
- Mon,  1 Apr 2019 03:03:26 -0700 (PDT)
-Received: from e107981-ln.cambridge.arm.com (e107981-ln.cambridge.arm.com
- [10.1.197.40])
- by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id CCC163F690;
- Mon,  1 Apr 2019 03:03:21 -0700 (PDT)
-Date: Mon, 1 Apr 2019 11:03:18 +0100
-From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-To: Wen Yang <wen.yang99@zte.com.cn>
-Subject: Re: [PATCH 1/8] PCI: dwc: pci-dra7xx: fix a leaked reference by
- adding missing of_node_put
-Message-ID: <20190401100318.GB30501@e107981-ln.cambridge.arm.com>
-References: <1551242443-27300-1-git-send-email-wen.yang99@zte.com.cn>
+	by lists.ozlabs.org (Postfix) with ESMTP id 44Xp7N4F4MzDqLP
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Apr 2019 21:12:48 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44Xp5h64NfzDqFS
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  1 Apr 2019 21:11:20 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=ellerman.id.au
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
+ SHA256) (No client certificate requested)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 44Xp5h2VYmz9sPS;
+ Mon,  1 Apr 2019 21:11:19 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Andrey Abramov <st5pub@yandex.ru>,
+Subject: Re: [PATCH 2/5] powerpc: module_[32|64].c: replace swap function with
+ built-in one
+In-Reply-To: <21287961553964090@iva7-8a22bc446c12.qloud-c.yandex.net>
+References: <18626931553963861@sas1-b3ec53dbc12b.qloud-c.yandex.net>
+ <21287961553964090@iva7-8a22bc446c12.qloud-c.yandex.net>
+Date: Mon, 01 Apr 2019 21:11:19 +1100
+Message-ID: <87zhpaox14.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1551242443-27300-1-git-send-email-wen.yang99@zte.com.cn>
-User-Agent: Mutt/1.5.24 (2015-08-30)
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -58,58 +55,102 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: heiko@sntech.de, hayashi.kunihiko@socionext.com, shawn.lin@rock-chips.com,
- minghuan.Lian@nxp.com, paulus@samba.org, thomas.petazzoni@bootlin.com,
- ryder.lee@mediatek.com, kishon@ti.com, linux-rockchip@lists.infradead.org,
- bcm-kernel-feedback-list@broadcom.com, linux-arm-kernel@lists.infradead.org,
- linux-pci@vger.kernel.org, wang.yi59@zte.com.cn, rjui@broadcom.com,
- linux-mediatek@lists.infradead.org, tyreld@linux.vnet.ibm.com,
- matthias.bgg@gmail.com, linux-omap@vger.kernel.org, mingkai.hu@nxp.com,
- roy.zang@nxp.com, sbranden@broadcom.com, yamada.masahiro@socionext.com,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- bhelgaas@google.com
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, Feb 27, 2019 at 12:40:36PM +0800, Wen Yang wrote:
-> The call to of_get_next_child returns a node pointer with refcount
-> incremented thus it must be explicitly decremented after the last
-> usage.
-> irq_domain_add_linear also calls of_node_get to increase refcount,
-> so irq_domain will not be affected when it is released.
-> 
-> Detected by coccinelle with the following warnings:
-> ./drivers/pci/controller/dwc/pci-dra7xx.c:252:2-8: ERROR: missing of_node_put; acquired a node pointer with refcount incremented on line 241, but without a corresponding object release within this function.
-> ./drivers/pci/controller/dwc/pci-dra7xx.c:255:1-7: ERROR: missing of_node_put; acquired a node pointer with refcount incremented on line 241, but without a corresponding object release within this function.
-> 
-> Signed-off-by: Wen Yang <wen.yang99@zte.com.cn>
-> Cc: Kishon Vijay Abraham I <kishon@ti.com>
-> Cc: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-> Cc: Bjorn Helgaas <bhelgaas@google.com>
-> Cc: linux-omap@vger.kernel.org
-> Cc: linux-pci@vger.kernel.org
-> Cc: linux-kernel@vger.kernel.org
+Andrey Abramov <st5pub@yandex.ru> writes:
+
+> Replace relaswap with built-in one, because of relaswap
+> does a simple byte to byte swap.
+>
+> Signed-off-by: Andrey Abramov <st5pub@yandex.ru>
 > ---
->  drivers/pci/controller/dwc/pci-dra7xx.c | 1 +
->  1 file changed, 1 insertion(+)
+>  arch/powerpc/kernel/module_32.c | 17 +----------------
+>  arch/powerpc/kernel/module_64.c | 17 +----------------
+>  2 files changed, 2 insertions(+), 32 deletions(-)
 
-Applied the series to pci/misc for v5.2, thanks.
+This looks OK. It's a bit of a pity to replace the 8-byte-at-a-time copy
+with a byte-at-a-time copy, but I suspect it's insignificant compared to
+the overhead of calling the comparison and swap functions.
 
-Lorenzo
+And we could always add a generic 8-byte-at-a-time swap function if it's
+a bottleneck.
 
-> diff --git a/drivers/pci/controller/dwc/pci-dra7xx.c b/drivers/pci/controller/dwc/pci-dra7xx.c
-> index ae84a69..627c91d 100644
-> --- a/drivers/pci/controller/dwc/pci-dra7xx.c
-> +++ b/drivers/pci/controller/dwc/pci-dra7xx.c
-> @@ -247,6 +247,7 @@ static int dra7xx_pcie_init_irq_domain(struct pcie_port *pp)
+Acked-by: Michael Ellerman <mpe@ellerman.id.au> (powerpc)
+
+cheers
+
+> diff --git a/arch/powerpc/kernel/module_32.c b/arch/powerpc/kernel/module_32.c
+> index 88d83771f462..c311e8575d10 100644
+> --- a/arch/powerpc/kernel/module_32.c
+> +++ b/arch/powerpc/kernel/module_32.c
+> @@ -79,21 +79,6 @@ static int relacmp(const void *_x, const void *_y)
+>  		return 0;
+>  }
 >  
->  	dra7xx->irq_domain = irq_domain_add_linear(pcie_intc_node, PCI_NUM_INTX,
->  						   &intx_domain_ops, pp);
-> +	of_node_put(pcie_intc_node);
->  	if (!dra7xx->irq_domain) {
->  		dev_err(dev, "Failed to get a INTx IRQ domain\n");
->  		return -ENODEV;
+> -static void relaswap(void *_x, void *_y, int size)
+> -{
+> -	uint32_t *x, *y, tmp;
+> -	int i;
+> -
+> -	y = (uint32_t *)_x;
+> -	x = (uint32_t *)_y;
+> -
+> -	for (i = 0; i < sizeof(Elf32_Rela) / sizeof(uint32_t); i++) {
+> -		tmp = x[i];
+> -		x[i] = y[i];
+> -		y[i] = tmp;
+> -	}
+> -}
+> -
+>  /* Get the potential trampolines size required of the init and
+>     non-init sections */
+>  static unsigned long get_plt_size(const Elf32_Ehdr *hdr,
+> @@ -130,7 +115,7 @@ static unsigned long get_plt_size(const Elf32_Ehdr *hdr,
+>  			 */
+>  			sort((void *)hdr + sechdrs[i].sh_offset,
+>  			     sechdrs[i].sh_size / sizeof(Elf32_Rela),
+> -			     sizeof(Elf32_Rela), relacmp, relaswap);
+> +			     sizeof(Elf32_Rela), relacmp, NULL);
+>  
+>  			ret += count_relocs((void *)hdr
+>  					     + sechdrs[i].sh_offset,
+> diff --git a/arch/powerpc/kernel/module_64.c b/arch/powerpc/kernel/module_64.c
+> index 8661eea78503..0c833d7f36f1 100644
+> --- a/arch/powerpc/kernel/module_64.c
+> +++ b/arch/powerpc/kernel/module_64.c
+> @@ -231,21 +231,6 @@ static int relacmp(const void *_x, const void *_y)
+>  		return 0;
+>  }
+>  
+> -static void relaswap(void *_x, void *_y, int size)
+> -{
+> -	uint64_t *x, *y, tmp;
+> -	int i;
+> -
+> -	y = (uint64_t *)_x;
+> -	x = (uint64_t *)_y;
+> -
+> -	for (i = 0; i < sizeof(Elf64_Rela) / sizeof(uint64_t); i++) {
+> -		tmp = x[i];
+> -		x[i] = y[i];
+> -		y[i] = tmp;
+> -	}
+> -}
+> -
+>  /* Get size of potential trampolines required. */
+>  static unsigned long get_stubs_size(const Elf64_Ehdr *hdr,
+>  				    const Elf64_Shdr *sechdrs)
+> @@ -269,7 +254,7 @@ static unsigned long get_stubs_size(const Elf64_Ehdr *hdr,
+>  			 */
+>  			sort((void *)sechdrs[i].sh_addr,
+>  			     sechdrs[i].sh_size / sizeof(Elf64_Rela),
+> -			     sizeof(Elf64_Rela), relacmp, relaswap);
+> +			     sizeof(Elf64_Rela), relacmp, NULL);
+>  
+>  			relocs += count_relocs((void *)sechdrs[i].sh_addr,
+>  					       sechdrs[i].sh_size
 > -- 
-> 2.9.5
-> 
+> 2.21.0
