@@ -2,51 +2,84 @@ Return-Path: <SRS0=9RGo=SD=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-7.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C5814C43381
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Apr 2019 11:13:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AEFD5C43381
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Apr 2019 11:16:17 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 4CB6F20870
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Apr 2019 11:13:27 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4CB6F20870
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+	by mail.kernel.org (Postfix) with ESMTPS id 2BE0220870
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Apr 2019 11:16:17 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="i0+z0gOY"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2BE0220870
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44XqTJ5d17zDqMy
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Apr 2019 22:13:24 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44XqXZ3jD1zDqNX
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Apr 2019 22:16:14 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+ spf=pass (mailfrom) smtp.mailfrom=c-s.fr
+ (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=c-s.fr
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="i0+z0gOY"; 
+ dkim-atps=neutral
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44XqRQ0mYkzDqL4
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  1 Apr 2019 22:11:46 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=ellerman.id.au
-Received: by ozlabs.org (Postfix)
- id 44XqRP64BXz9sRJ; Mon,  1 Apr 2019 22:11:45 +1100 (AEDT)
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
- SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 44XqRP0wNTz9sR0;
- Mon,  1 Apr 2019 22:11:45 +1100 (AEDT)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Mark Brown <broonie@kernel.org>
-Subject: Re: linux-next: build failure after merge of the sound-asoc tree
-In-Reply-To: <20190327115745.GA11404@sirena.org.uk>
-References: <20190326133349.3d9427dc@canb.auug.org.au>
- <20190326131550.GB10898@sirena.org.uk>
- <87pnqdndmk.fsf@concordia.ellerman.id.au>
- <20190327115745.GA11404@sirena.org.uk>
-Date: Mon, 01 Apr 2019 22:11:44 +1100
-Message-ID: <87tvfiou8f.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44XqVP1M1czDqLh
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  1 Apr 2019 22:14:21 +1100 (AEDT)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 44XqV96HgSz9tyfn;
+ Mon,  1 Apr 2019 13:14:09 +0200 (CEST)
+Authentication-Results: localhost; dkim=pass
+ reason="1024-bit key; insecure key"
+ header.d=c-s.fr header.i=@c-s.fr header.b=i0+z0gOY; dkim-adsp=pass;
+ dkim-atps=neutral
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id Xqopo6qslUS8; Mon,  1 Apr 2019 13:14:09 +0200 (CEST)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 44XqV955Zlz9tyfB;
+ Mon,  1 Apr 2019 13:14:09 +0200 (CEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
+ t=1554117249; bh=t8JxzHNnysGN5V5loKvGifZRjTCZPzfpZTeMykqXsHA=;
+ h=Subject:From:To:Cc:References:Date:In-Reply-To:From;
+ b=i0+z0gOYpUl3h8iC7LwW5M/BmSffYCp7liEXJ9anK06n2uppP8ZxTgKCXmGEHkATp
+ sO+KZaldbOvvfoMkZ3R/thcBdiUOXInX04nECgKC+9Pga3JsTxA5RzuTY0Vqe0zTLW
+ KY8fhRsa+Qmg6L3IFGR1DPIjd5PL2mTdAcXxomQs=
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 716E08B8A7;
+ Mon,  1 Apr 2019 13:14:14 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id cjT4FUAP7nAG; Mon,  1 Apr 2019 13:14:14 +0200 (CEST)
+Received: from PO15451 (po15451.idsi0.si.c-s.fr [172.25.231.2])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 4D5418B841;
+ Mon,  1 Apr 2019 13:14:14 +0200 (CEST)
+Subject: Re: [PATCH] powerpc/rtas: fix early boot failure.
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Larry Finger <Larry.Finger@lwfinger.net>
+References: <aab41779cac995ebdc03e700a9dc7cfc30a28770.1553503163.git.christophe.leroy@c-s.fr>
+Message-ID: <558fbb7e-a454-055e-ca29-a2e4dfb6cf6a@c-s.fr>
+Date: Mon, 1 Apr 2019 13:14:13 +0200
+User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:60.0) Gecko/20100101
+ Thunderbird/60.6.1
 MIME-Version: 1.0
-Content-Type: text/plain
+In-Reply-To: <aab41779cac995ebdc03e700a9dc7cfc30a28770.1553503163.git.christophe.leroy@c-s.fr>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: fr
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -58,42 +91,63 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
- Liam Girdwood <lgirdwood@gmail.com>, Annaliese McDermond <nh6z@nh6z.net>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- linuxppc-dev@ozlabs.org, Linux Next Mailing List <linux-next@vger.kernel.org>,
- Paul Mackerras <paulus@samba.org>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Mark Brown <broonie@kernel.org> writes:
-> On Wed, Mar 27, 2019 at 03:29:55PM +1100, Michael Ellerman wrote:
->> Mark Brown <broonie@kernel.org> writes:
->
->> > Hrm, seems PowerPC is still not using the common clock API - is there
->> > any plan for that?  There are some ASoC PowerPC uses so it's going to be
->> > a bit of an issue as we expand our use of the clock API.
->
->> I don't know anything about the common clock API. What would it involve
->> for powerpc to use it?
->
-> It's what's in drivers/clk - you'd have to provide clock drivers for all
-> the clocks that are current supported by arch-specific code, make sure
-> that those drivers can be instantiated and then remove the custom
-> implementation of the clock API in arch/powerpc in favour of those.
+Michael,
 
-OK. I realise we do have some support for the common clock API, but only
-on certain sub-platforms (PPC_MPC512x, PPC_MPC52xx, PPC_E500MC).
+Looks like you missed this fix for rc3.
 
-On other platforms we have nothing at all AFAICS.
+Christophe
 
-Seems Ben posted an RFC to support it in 2009, but nothing since:
-  http://patchwork.ozlabs.org/patch/31551/
-
-
-Anyway I think what you've done in next, make the code depend on
-COMMON_CLOCK, is the best option. If anyone cares about that driver on
-powerpc platforms that don't support COMMON_CLOCK they should speak up.
-
-cheers
+Le 25/03/2019 à 09:43, Christophe Leroy a écrit :
+> Commit 0df977eafc79 ("powerpc/6xx: Don't use SPRN_SPRG2 for storing
+> stack pointer while in RTAS") changes the code to use a field in
+> thread struct to store the stack pointer while in RTAS instead of
+> using SPRN_SPRG2. It therefore converts all places which were
+> manipulating SPRN_SPRG2 to use that field. During early startup,
+> the zeroing of SPRN_SPRG2 has been replaced by a zeroing of that
+> field in thread struct. But at least in start_here, that's done
+> wrongly because it used the physical address of the fields while
+> MMU is on at that time.
+> 
+> So the virtual address of the field should be used instead, but in
+> the meantime, thread struct has already been zeroised and initialised
+> so we can just drop this initialisation.
+> 
+> Reported-by: Larry Finger <Larry.Finger@lwfinger.net>
+> Fixes: 0df977eafc79 ("powerpc/6xx: Don't use SPRN_SPRG2 for storing stack pointer while in RTAS")
+> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+> ---
+>   arch/powerpc/kernel/head_32.S | 8 --------
+>   1 file changed, 8 deletions(-)
+> 
+> diff --git a/arch/powerpc/kernel/head_32.S b/arch/powerpc/kernel/head_32.S
+> index 48051c8977c5..e25b615e9f9e 100644
+> --- a/arch/powerpc/kernel/head_32.S
+> +++ b/arch/powerpc/kernel/head_32.S
+> @@ -851,10 +851,6 @@ __secondary_start:
+>   	tophys(r4,r2)
+>   	addi	r4,r4,THREAD	/* phys address of our thread_struct */
+>   	mtspr	SPRN_SPRG_THREAD,r4
+> -#ifdef CONFIG_PPC_RTAS
+> -	li	r3,0
+> -	stw	r3, RTAS_SP(r4)		/* 0 => not in RTAS */
+> -#endif
+>   	lis	r4, (swapper_pg_dir - PAGE_OFFSET)@h
+>   	ori	r4, r4, (swapper_pg_dir - PAGE_OFFSET)@l
+>   	mtspr	SPRN_SPRG_PGDIR, r4
+> @@ -941,10 +937,6 @@ start_here:
+>   	tophys(r4,r2)
+>   	addi	r4,r4,THREAD	/* init task's THREAD */
+>   	mtspr	SPRN_SPRG_THREAD,r4
+> -#ifdef CONFIG_PPC_RTAS
+> -	li	r3,0
+> -	stw	r3, RTAS_SP(r4)		/* 0 => not in RTAS */
+> -#endif
+>   	lis	r4, (swapper_pg_dir - PAGE_OFFSET)@h
+>   	ori	r4, r4, (swapper_pg_dir - PAGE_OFFSET)@l
+>   	mtspr	SPRN_SPRG_PGDIR, r4
+> 
