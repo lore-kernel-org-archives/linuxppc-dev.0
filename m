@@ -2,93 +2,96 @@ Return-Path: <SRS0=xrHL=SE=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A2469C4360F
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Apr 2019 11:53:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D9C2AC4360F
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Apr 2019 12:59:06 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E7E7720856
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Apr 2019 11:53:19 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E7E7720856
+	by mail.kernel.org (Postfix) with ESMTPS id 5C205206BA
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Apr 2019 12:59:06 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5C205206BA
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44YSJs6qtrzDqQ5
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Apr 2019 22:53:17 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44YTml3y5kzDqPv
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Apr 2019 23:59:03 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
- (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
+ (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
  envelope-from=aneesh.kumar@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44YSGy2tyqzDqHH
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Apr 2019 22:51:37 +1100 (AEDT)
-Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x32BecIj017051
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 2 Apr 2019 07:51:35 -0400
-Received: from e13.ny.us.ibm.com (e13.ny.us.ibm.com [129.33.205.203])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2rm5hee56f-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44YTkj4Z6kzDqM5
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Apr 2019 23:57:16 +1100 (AEDT)
+Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
+ x32Cs6ge135941
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 2 Apr 2019 08:57:14 -0400
+Received: from e06smtp01.uk.ibm.com (e06smtp01.uk.ibm.com [195.75.94.97])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2rm835rc52-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 02 Apr 2019 07:51:35 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 02 Apr 2019 08:57:13 -0400
 Received: from localhost
- by e13.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp01.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.ibm.com>;
- Tue, 2 Apr 2019 12:51:34 +0100
-Received: from b01cxnp22036.gho.pok.ibm.com (9.57.198.26)
- by e13.ny.us.ibm.com (146.89.104.200) with IBM ESMTP SMTP Gateway: Authorized
- Use Only! Violators will be prosecuted; 
+ Tue, 2 Apr 2019 13:57:11 +0100
+Received: from b06cxnps3074.portsmouth.uk.ibm.com (9.149.109.194)
+ by e06smtp01.uk.ibm.com (192.168.101.131) with IBM ESMTP SMTP Gateway:
+ Authorized Use Only! Violators will be prosecuted; 
  (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Tue, 2 Apr 2019 12:51:32 +0100
-Received: from b01ledav003.gho.pok.ibm.com (b01ledav003.gho.pok.ibm.com
- [9.57.199.108])
- by b01cxnp22036.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x32BpV3L19464358
+ Tue, 2 Apr 2019 13:57:09 +0100
+Received: from d06av21.portsmouth.uk.ibm.com (d06av21.portsmouth.uk.ibm.com
+ [9.149.105.232])
+ by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x32Cv8MR61931594
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Tue, 2 Apr 2019 11:51:31 GMT
-Received: from b01ledav003.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 8678FB2067;
- Tue,  2 Apr 2019 11:51:31 +0000 (GMT)
-Received: from b01ledav003.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 5801DB2068;
- Tue,  2 Apr 2019 11:51:28 +0000 (GMT)
-Received: from skywalker.ibmuc.com (unknown [9.85.118.252])
- by b01ledav003.gho.pok.ibm.com (Postfix) with ESMTP;
- Tue,  2 Apr 2019 11:51:27 +0000 (GMT)
+ Tue, 2 Apr 2019 12:57:08 GMT
+Received: from d06av21.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 849F452050;
+ Tue,  2 Apr 2019 12:57:08 +0000 (GMT)
+Received: from skywalker.linux.ibm.com (unknown [9.85.72.143])
+ by d06av21.portsmouth.uk.ibm.com (Postfix) with ESMTP id 416D452051;
+ Tue,  2 Apr 2019 12:57:07 +0000 (GMT)
+X-Mailer: emacs 26.1 (via feedmail 11-beta-1 I)
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
-To: dan.j.williams@intel.com, akpm@linux-foundation.org,
- Jan Kara <jack@suse.cz>
-Subject: [PATCH v2] mm: Fix modifying of page protection by insert_pfn_pmd()
-Date: Tue,  2 Apr 2019 17:21:25 +0530
-X-Mailer: git-send-email 2.20.1
+To: Michael Ellerman <mpe@ellerman.id.au>, Ben Hutchings <ben@decadent.org.uk>,
+ Andreas Schwab <schwab@linux-m68k.org>
+Subject: Re: powerpc/mm: Only define MAX_PHYSMEM_BITS in SPARSEMEM
+ configurations
+In-Reply-To: <87a7hjp4oi.fsf@concordia.ellerman.id.au>
+References: <20190317011756.abjylw3nzfnc6gnh@decadent.org.uk>
+ <44QjSh4zGhz9sV2__48832.6491251186$1553257542$gmane$org@ozlabs.org>
+ <87k1gnq5lp.fsf@igel.home>
+ <eb21be1ac183dd206da3a389b426707c535c463c.camel@decadent.org.uk>
+ <87ftrbq0qe.fsf@igel.home>
+ <cf9154f1812e0e9a328a1e21ef13d80a46e5feb6.camel@decadent.org.uk>
+ <87a7hjp4oi.fsf@concordia.ellerman.id.au>
+Date: Tue, 02 Apr 2019 18:27:05 +0530
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 X-TM-AS-GCONF: 00
-x-cbid: 19040211-0064-0000-0000-000003C55D6F
-X-IBM-SpamModules-Scores: 
-X-IBM-SpamModules-Versions: BY=3.00010860; HX=3.00000242; KW=3.00000007;
- PH=3.00000004; SC=3.00000284; SDB=6.01183232; UDB=6.00619446; IPR=6.00963980; 
- MB=3.00026260; MTD=3.00000008; XFM=3.00000015; UTC=2019-04-02 11:51:34
+x-cbid: 19040212-4275-0000-0000-000003236085
 X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19040211-0065-0000-0000-00003CEC1A00
-Message-Id: <20190402115125.18803-1-aneesh.kumar@linux.ibm.com>
+x-cbparentid: 19040212-4276-0000-0000-000038326395
+Message-Id: <87zhp8pntq.fsf@linux.ibm.com>
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2019-04-02_04:, , signatures=0
+ definitions=2019-04-02_05:, , signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
  priorityscore=1501
- malwarescore=0 suspectscore=2 phishscore=0 bulkscore=0 spamscore=0
+ malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
  clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=834 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1810050000 definitions=main-1904020081
+ mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1810050000 definitions=main-1904020087
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -100,111 +103,150 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-nvdimm@lists.01.org, "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
- stable@vger.kernel.org, linux-mm@kvack.org,
- Chandan Rajendra <chandan@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-With some architectures like ppc64, set_pmd_at() cannot cope with
-a situation where there is already some (different) valid entry present.
+Michael Ellerman <mpe@ellerman.id.au> writes:
 
-Use pmdp_set_access_flags() instead to modify the pfn which is built to
-deal with modifying existing PMD entries.
+> Ben Hutchings <ben@decadent.org.uk> writes:
+>> On Mon, 2019-03-25 at 01:03 +0100, Andreas Schwab wrote:
+>>> On M=C3=A4r 24 2019, Ben Hutchings <ben@decadent.org.uk> wrote:
+>>>=20
+>>> > Presumably you have CONFIG_PPC_BOOK3S_64 enabled and
+>>> > CONFIG_SPARSEMEM
+>>> > disabled?  Was this configuration actually usable?
+>>>=20
+>>> Why not?
+>>
+>> I assume that CONFIG_SPARSEMEM is the default for a good reason.
+>> What I don't know is how strong that reason is (I am not a Power expert
+>> at all).  Looking a bit further, it seems to be related to CONFIG_NUMA
+>> in that you can enable CONFIG_FLATMEM if and only if that's disabled.=20
+>> So I suppose the configuration you used works for non-NUMA systems.
+>
+> Aneesh pointed out this fix would break FLATMEM after I'd merged it, but
+> it didn't break any of our defconfigs so I wondered if anyone would
+> notice.
+>
+> I checked today and a G5 will boot with FLATMEM, which I assume is what
+> Andreas is using.
+>
+> I guess we should fix this build break for now.
+>
+> Even some G5's have discontiguous memory, so FLATMEM is not clearly a
+> good choice even for all G5's, and actually a fresh g5_defconfig uses
+> SPARSEMEM.
+>
+> So I'm inclined to just switch to always using SPARSEMEM on 64-bit
+> Book3S, because that's what's well tested and we hardly need more code
+> paths to test. Unless anyone has a strong objection, I haven't actually
+> benchmarked FLATMEM vs SPARSEMEM on a G5.
+>
 
-This is similar to
-commit cae85cb8add3 ("mm/memory.c: fix modifying of page protection by insert_pfn()")
+How about
 
-We also do similar update w.r.t insert_pfn_pud eventhough ppc64 don't support
-pud pfn entries now.
+From 207fb0036065d8db44853e63bb858c4fd9952106 Mon Sep 17 00:00:00 2001
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
+Date: Mon, 1 Apr 2019 17:51:17 +0530
+Subject: [PATCH] powerpc/mm: Fix build error=20
 
-Without this patch we also see the below message in kernel log
-"BUG: non-zero pgtables_bytes on freeing mm:"
+The current value of MAX_PHYSMEM_BITS cannot work with 32 bit configs.
+We used to have MAX_PHYSMEM_BITS not defined without SPARSEMEM and 32
+bit configs never expected a value to be set for MAX_PHYSMEM_BITS.
 
-CC: stable@vger.kernel.org
-Reported-by: Chandan Rajendra <chandan@linux.ibm.com>
+Dependent code such as zsmalloc derived the right values based on other
+fields. Instead of finding a value that works with different configs,
+use new values only for book3s_64. For 64 bit booke, use the definition
+of MAX_PHYSMEM_BITS as per commit a7df61a0e2b6 ("[PATCH] ppc64: Increase sp=
+arsemem defaults")
+That change was done in 2005 and hopefully will work with book3e 64.
+
+Fixes: 4ffe713b7587 ("powerpc/mm: Increase the max addressable memory to 2P=
+B")
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
 ---
-Changes from v1:
-* Fix the pgtable leak 
+ arch/powerpc/include/asm/book3s/64/mmu.h | 15 +++++++++++++++
+ arch/powerpc/include/asm/mmu.h           | 15 ---------------
+ arch/powerpc/include/asm/nohash/64/mmu.h |  2 ++
+ 3 files changed, 17 insertions(+), 15 deletions(-)
 
- mm/huge_memory.c | 36 ++++++++++++++++++++++++++++++++++++
- 1 file changed, 36 insertions(+)
-
-diff --git a/mm/huge_memory.c b/mm/huge_memory.c
-index 404acdcd0455..165ea46bf149 100644
---- a/mm/huge_memory.c
-+++ b/mm/huge_memory.c
-@@ -755,6 +755,21 @@ static void insert_pfn_pmd(struct vm_area_struct *vma, unsigned long addr,
- 	spinlock_t *ptl;
- 
- 	ptl = pmd_lock(mm, pmd);
-+	if (!pmd_none(*pmd)) {
-+		if (write) {
-+			if (pmd_pfn(*pmd) != pfn_t_to_pfn(pfn)) {
-+				WARN_ON_ONCE(!is_huge_zero_pmd(*pmd));
-+				goto out_unlock;
-+			}
-+			entry = pmd_mkyoung(*pmd);
-+			entry = maybe_pmd_mkwrite(pmd_mkdirty(entry), vma);
-+			if (pmdp_set_access_flags(vma, addr, pmd, entry, 1))
-+				update_mmu_cache_pmd(vma, addr, pmd);
-+		}
+diff --git a/arch/powerpc/include/asm/book3s/64/mmu.h b/arch/powerpc/includ=
+e/asm/book3s/64/mmu.h
+index 1ceee000c18d..a809bdd77322 100644
+--- a/arch/powerpc/include/asm/book3s/64/mmu.h
++++ b/arch/powerpc/include/asm/book3s/64/mmu.h
+@@ -35,6 +35,21 @@ typedef pte_t *pgtable_t;
+=20
+ #endif /* __ASSEMBLY__ */
+=20
++/*
++ * If we store section details in page->flags we can't increase the MAX_PH=
+YSMEM_BITS
++ * if we increase SECTIONS_WIDTH we will not store node details in page->f=
+lags and
++ * page_to_nid does a page->section->node lookup
++ * Hence only increase for VMEMMAP. Further depending on SPARSEMEM_EXTREME=
+ reduce
++ * memory requirements with large number of sections.
++ * 51 bits is the max physical real address on POWER9
++ */
++#if defined(CONFIG_SPARSEMEM_VMEMMAP) && defined(CONFIG_SPARSEMEM_EXTREME)=
+ &&  \
++	defined(CONFIG_PPC_64K_PAGES)
++#define MAX_PHYSMEM_BITS 51
++#else
++#define MAX_PHYSMEM_BITS 46
++#endif
 +
-+		goto out_unlock;
-+	}
+ /* 64-bit classic hash table MMU */
+ #include <asm/book3s/64/mmu-hash.h>
+=20
+diff --git a/arch/powerpc/include/asm/mmu.h b/arch/powerpc/include/asm/mmu.h
+index 598cdcdd1355..78d53c4396ac 100644
+--- a/arch/powerpc/include/asm/mmu.h
++++ b/arch/powerpc/include/asm/mmu.h
+@@ -341,21 +341,6 @@ static inline bool strict_kernel_rwx_enabled(void)
+  */
+ #define MMU_PAGE_COUNT	16
+=20
+-/*
+- * If we store section details in page->flags we can't increase the MAX_PH=
+YSMEM_BITS
+- * if we increase SECTIONS_WIDTH we will not store node details in page->f=
+lags and
+- * page_to_nid does a page->section->node lookup
+- * Hence only increase for VMEMMAP. Further depending on SPARSEMEM_EXTREME=
+ reduce
+- * memory requirements with large number of sections.
+- * 51 bits is the max physical real address on POWER9
+- */
+-#if defined(CONFIG_SPARSEMEM_VMEMMAP) && defined(CONFIG_SPARSEMEM_EXTREME)=
+ &&	\
+-	defined (CONFIG_PPC_64K_PAGES)
+-#define MAX_PHYSMEM_BITS        51
+-#elif defined(CONFIG_SPARSEMEM)
+-#define MAX_PHYSMEM_BITS        46
+-#endif
+-
+ #ifdef CONFIG_PPC_BOOK3S_64
+ #include <asm/book3s/64/mmu.h>
+ #else /* CONFIG_PPC_BOOK3S_64 */
+diff --git a/arch/powerpc/include/asm/nohash/64/mmu.h b/arch/powerpc/includ=
+e/asm/nohash/64/mmu.h
+index e6585480dfc4..81cf30c370e5 100644
+--- a/arch/powerpc/include/asm/nohash/64/mmu.h
++++ b/arch/powerpc/include/asm/nohash/64/mmu.h
+@@ -2,6 +2,8 @@
+ #ifndef _ASM_POWERPC_NOHASH_64_MMU_H_
+ #define _ASM_POWERPC_NOHASH_64_MMU_H_
+=20
++#define MAX_PHYSMEM_BITS        44
 +
- 	entry = pmd_mkhuge(pfn_t_pmd(pfn, prot));
- 	if (pfn_t_devmap(pfn))
- 		entry = pmd_mkdevmap(entry);
-@@ -766,11 +781,16 @@ static void insert_pfn_pmd(struct vm_area_struct *vma, unsigned long addr,
- 	if (pgtable) {
- 		pgtable_trans_huge_deposit(mm, pmd, pgtable);
- 		mm_inc_nr_ptes(mm);
-+		pgtable = NULL;
- 	}
- 
- 	set_pmd_at(mm, addr, pmd, entry);
- 	update_mmu_cache_pmd(vma, addr, pmd);
-+
-+out_unlock:
- 	spin_unlock(ptl);
-+	if (pgtable)
-+		pte_free(mm, pgtable);
- }
- 
- vm_fault_t vmf_insert_pfn_pmd(struct vm_area_struct *vma, unsigned long addr,
-@@ -821,6 +841,20 @@ static void insert_pfn_pud(struct vm_area_struct *vma, unsigned long addr,
- 	spinlock_t *ptl;
- 
- 	ptl = pud_lock(mm, pud);
-+	if (!pud_none(*pud)) {
-+		if (write) {
-+			if (pud_pfn(*pud) != pfn_t_to_pfn(pfn)) {
-+				WARN_ON_ONCE(!is_huge_zero_pud(*pud));
-+				goto out_unlock;
-+			}
-+			entry = pud_mkyoung(*pud);
-+			entry = maybe_pud_mkwrite(pud_mkdirty(entry), vma);
-+			if (pudp_set_access_flags(vma, addr, pud, entry, 1))
-+				update_mmu_cache_pud(vma, addr, pud);
-+		}
-+		goto out_unlock;
-+	}
-+
- 	entry = pud_mkhuge(pfn_t_pud(pfn, prot));
- 	if (pfn_t_devmap(pfn))
- 		entry = pud_mkdevmap(entry);
-@@ -830,6 +864,8 @@ static void insert_pfn_pud(struct vm_area_struct *vma, unsigned long addr,
- 	}
- 	set_pud_at(mm, addr, pud, entry);
- 	update_mmu_cache_pud(vma, addr, pud);
-+
-+out_unlock:
- 	spin_unlock(ptl);
- }
- 
--- 
+ /* Freescale Book-E software loaded TLB or Book-3e (ISA 2.06+) MMU */
+ #include <asm/nohash/mmu-book3e.h>
+=20
+--=20
 2.20.1
 
