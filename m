@@ -2,98 +2,104 @@ Return-Path: <SRS0=xrHL=SE=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 71794C4360F
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Apr 2019 10:18:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 34839C4360F
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Apr 2019 11:24:58 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id AC9092082C
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Apr 2019 10:18:28 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=nxp.com header.i=@nxp.com header.b="h17PGEwQ"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org AC9092082C
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nxp.com
+	by mail.kernel.org (Postfix) with ESMTPS id 6DF4320883
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Apr 2019 11:24:57 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6DF4320883
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44YQCQ0Lc8zDqGn
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Apr 2019 21:18:26 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=nxp.com
- (client-ip=40.107.13.85; helo=eur01-he1-obe.outbound.protection.outlook.com;
- envelope-from=shengjiu.wang@nxp.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=nxp.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=nxp.com header.i=@nxp.com header.b="h17PGEwQ"; 
- dkim-atps=neutral
-Received: from EUR01-HE1-obe.outbound.protection.outlook.com
- (mail-eopbgr130085.outbound.protection.outlook.com [40.107.13.85])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 44YRh64XZmzDqPQ
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Apr 2019 22:24:54 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44YQ9b33ppzDq69
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Apr 2019 21:16:47 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nxp.com; s=selector1; 
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=K0qIr+D+Lso3QoYvzTMU63dvhspd1KfkVxts9SMq8I4=;
- b=h17PGEwQel6488VW9oGvFdRnqi8dPuvDuUNyJ1Edk/5g8rtjKHzUGUaEBz0JA53MOLF+obC9xP1okPsiw4CdQRQ7ntQfBrtgL3qTwTuL/GNEsgxX8r8zppTtAZIBIXF4Hr0DqFvv7yVZtrNWoIuhINKhoQDH5l/2uKpMMnr1fVM=
-Received: from VE1PR04MB6479.eurprd04.prod.outlook.com (20.179.233.80) by
- VE1PR04MB6384.eurprd04.prod.outlook.com (20.179.232.15) with Microsoft SMTP
- Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.20.1750.17; Tue, 2 Apr 2019 10:16:41 +0000
-Received: from VE1PR04MB6479.eurprd04.prod.outlook.com
- ([fe80::59c9:fbfe:c41a:59ef]) by VE1PR04MB6479.eurprd04.prod.outlook.com
- ([fe80::59c9:fbfe:c41a:59ef%4]) with mapi id 15.20.1750.017; Tue, 2 Apr 2019
- 10:16:41 +0000
-From: "S.j. Wang" <shengjiu.wang@nxp.com>
-To: Nicolin Chen <nicoleotsuka@gmail.com>
-Subject: RE: [PATCH] ASoC: fsl_esai: Support synchronous mode
-Thread-Topic: [PATCH] ASoC: fsl_esai: Support synchronous mode
-Thread-Index: AQHU6H+FV+jTCNs14EK84w0THEahmaYnnWcAgAD/3/A=
-Date: Tue, 2 Apr 2019 10:16:41 +0000
-Message-ID: <VE1PR04MB64799B3261D1F9F63E441769E3560@VE1PR04MB6479.eurprd04.prod.outlook.com>
-References: <1554118759-2403-1-git-send-email-shengjiu.wang@nxp.com>
- <20190401181742.GA21288@Asurada-Nvidia>
-In-Reply-To: <20190401181742.GA21288@Asurada-Nvidia>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-authentication-results: spf=none (sender IP is )
- smtp.mailfrom=shengjiu.wang@nxp.com; 
-x-originating-ip: [119.31.174.66]
-x-ms-publictraffictype: Email
-x-ms-office365-filtering-correlation-id: 873948ca-9d68-4925-d948-08d6b7544d0d
-x-ms-office365-filtering-ht: Tenant
-x-microsoft-antispam: BCL:0; PCL:0;
- RULEID:(2390118)(7020095)(4652040)(8989299)(5600139)(711020)(4605104)(4618075)(4534185)(4627221)(201703031133081)(201702281549075)(8990200)(2017052603328)(7193020);
- SRVR:VE1PR04MB6384; 
-x-ms-traffictypediagnostic: VE1PR04MB6384:
-x-microsoft-antispam-prvs: <VE1PR04MB6384929BFA1A81E3C80653B8E3560@VE1PR04MB6384.eurprd04.prod.outlook.com>
-x-forefront-prvs: 0995196AA2
-x-forefront-antispam-report: SFV:NSPM;
- SFS:(10009020)(39860400002)(376002)(366004)(136003)(346002)(396003)(199004)(189003)(26005)(33656002)(229853002)(6436002)(14444005)(53936002)(52536014)(6246003)(9686003)(102836004)(1411001)(55016002)(6916009)(106356001)(3846002)(6506007)(5660300002)(4326008)(86362001)(7696005)(97736004)(25786009)(186003)(68736007)(105586002)(2906002)(8936002)(11346002)(54906003)(76176011)(8676002)(476003)(81156014)(6116002)(14454004)(99286004)(7736002)(486006)(256004)(81166006)(446003)(305945005)(71190400001)(316002)(74316002)(71200400001)(478600001)(66066001);
- DIR:OUT; SFP:1101; SCL:1; SRVR:VE1PR04MB6384;
- H:VE1PR04MB6479.eurprd04.prod.outlook.com; FPR:; SPF:None; LANG:en;
- PTR:InfoNoRecords; A:1; MX:1; 
-received-spf: None (protection.outlook.com: nxp.com does not designate
- permitted sender hosts)
-x-ms-exchange-senderadcheck: 1
-x-microsoft-antispam-message-info: nZlQ1W2jBQa32iheJZSNjC+ZLn2hgfVE+g2v8RF76X6qUvkYn6Hyeg6YEgpR4fG+gn4r1E7kgGvSz5RHSwSxufkKJpTwcyG9eQsvciOVP7R5cQYMYBNO5Q2CcMLxBUImpZ087Fmc7GiZtDjyfRdWG9PK7KnjA1FxtyMyjXbGHY18vTnxlI0ypUR/WrwjwL1OUBGyAZLweMdxPUVgqtZ/1nRY0Ro87hFOpTTol+x7ybS9LR9t9O93F+QMmWB1LehBcgPjqvlRrBLEEJbv23cFWvz1vSJScQ8OMoHgUBZkSD18Po/VjMCFosfmFJTS74OIEIHQwHuqqEhL162bEHWm2q0xFJSC09WIKFzeNYUBGl5xsL/8bI/USsleGBQCh/WaTbHMtA/tHFJ338SHJ3nj/hQvnkb2GEKls2C3eyzXXpw=
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44YRdv20bQzDqMC
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Apr 2019 22:22:59 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=linux.vnet.ibm.com
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 44YRds30zPz8t7s
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Apr 2019 22:22:57 +1100 (AEDT)
+Received: by ozlabs.org (Postfix)
+ id 44YRds0x3gz9sT9; Tue,  2 Apr 2019 22:22:57 +1100 (AEDT)
+Authentication-Results: ozlabs.org;
+ spf=none (mailfrom) smtp.mailfrom=linux.vnet.ibm.com
+ (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
+ envelope-from=mahesh@linux.vnet.ibm.com; receiver=<UNKNOWN>)
+Authentication-Results: ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=linux.vnet.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 44YRdq6D3Xz9sTK
+ for <linuxppc-dev@ozlabs.org>; Tue,  2 Apr 2019 22:22:54 +1100 (AEDT)
+Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
+ x32BM3m7026058
+ for <linuxppc-dev@ozlabs.org>; Tue, 2 Apr 2019 07:22:51 -0400
+Received: from e06smtp01.uk.ibm.com (e06smtp01.uk.ibm.com [195.75.94.97])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2rm6t500j6-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@ozlabs.org>; Tue, 02 Apr 2019 07:22:51 -0400
+Received: from localhost
+ by e06smtp01.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <mahesh@linux.vnet.ibm.com>;
+ Tue, 2 Apr 2019 12:22:49 +0100
+Received: from b06cxnps3075.portsmouth.uk.ibm.com (9.149.109.195)
+ by e06smtp01.uk.ibm.com (192.168.101.131) with IBM ESMTP SMTP Gateway:
+ Authorized Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Tue, 2 Apr 2019 12:22:47 +0100
+Received: from d06av26.portsmouth.uk.ibm.com (d06av26.portsmouth.uk.ibm.com
+ [9.149.105.62])
+ by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x32BMkE454132770
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Tue, 2 Apr 2019 11:22:46 GMT
+Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 025DFAE05F;
+ Tue,  2 Apr 2019 11:22:46 +0000 (GMT)
+Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 28951AE05D;
+ Tue,  2 Apr 2019 11:22:45 +0000 (GMT)
+Received: from [192.168.0.24] (unknown [9.102.1.170])
+ by d06av26.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Tue,  2 Apr 2019 11:22:44 +0000 (GMT)
+Subject: [PATCH v2 2/3] powernv/mce: Print correct severity for mce error.
+From: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
+To: linuxppc-dev <linuxppc-dev@ozlabs.org>
+Date: Tue, 02 Apr 2019 16:52:44 +0530
+In-Reply-To: <155420413881.2300.2285674976773307106.stgit@jupiter>
+References: <155420413881.2300.2285674976773307106.stgit@jupiter>
+User-Agent: StGit/unknown-version
 MIME-Version: 1.0
-X-OriginatorOrg: nxp.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 873948ca-9d68-4925-d948-08d6b7544d0d
-X-MS-Exchange-CrossTenant-originalarrivaltime: 02 Apr 2019 10:16:41.6572 (UTC)
-X-MS-Exchange-CrossTenant-fromentityheader: Hosted
-X-MS-Exchange-CrossTenant-id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
-X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: VE1PR04MB6384
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-TM-AS-GCONF: 00
+x-cbid: 19040211-4275-0000-0000-000003235396
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 19040211-4276-0000-0000-000038325638
+Message-Id: <155420415789.2300.8427682500724279291.stgit@jupiter>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
+ definitions=2019-04-02_04:, , signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1810050000 definitions=main-1904020079
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -105,118 +111,532 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
- "timur@kernel.org" <timur@kernel.org>,
- "Xiubo.Lee@gmail.com" <Xiubo.Lee@gmail.com>,
- "festevam@gmail.com" <festevam@gmail.com>,
- "broonie@kernel.org" <broonie@kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Cc: Paul Mackerras <paulus@samba.org>, Nicholas Piggin <npiggin@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi
+From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
 
->=20
-> Shengjiu,
->=20
-> On Mon, Apr 01, 2019 at 11:39:10AM +0000, S.j. Wang wrote:
-> > In ESAI synchronous mode, the clock is generated by Tx, So we should
-> > always set registers of Tx which relate with the bit clock and frame
-> > clock generation (TCCR, TCR, ECR), even there is only Rx is working.
-> >
-> > Signed-off-by: Shengjiu Wang <shengjiu.wang@nxp.com>
-> > ---
-> >  sound/soc/fsl/fsl_esai.c | 28 +++++++++++++++++++++++++++-
-> >  1 file changed, 27 insertions(+), 1 deletion(-)
-> >
-> > diff --git a/sound/soc/fsl/fsl_esai.c b/sound/soc/fsl/fsl_esai.c index
-> > 3623aa9a6f2e..d9fcddd55c02 100644
-> > --- a/sound/soc/fsl/fsl_esai.c
-> > +++ b/sound/soc/fsl/fsl_esai.c
-> > @@ -230,6 +230,21 @@ static int fsl_esai_set_dai_sysclk(struct
-> snd_soc_dai *dai, int clk_id,
-> >  		return -EINVAL;
-> >  	}
-> >
-> > +	if (esai_priv->synchronous && !tx) {
-> > +		switch (clk_id) {
-> > +		case ESAI_HCKR_FSYS:
-> > +			fsl_esai_set_dai_sysclk(dai, ESAI_HCKT_FSYS,
-> > +								freq, dir);
-> > +			break;
-> > +		case ESAI_HCKR_EXTAL:
-> > +			fsl_esai_set_dai_sysclk(dai, ESAI_HCKT_EXTAL,
-> > +								freq, dir);
->=20
-> Not sure why you call set_dai_sysclk inside set_dai_sysclk again. It feel=
-s very
-> confusing to do so, especially without a comments.
+Currently all machine check errors are printed as severe errors which isn't
+correct. Print soft errors as warning instead of severe errors.
 
-For sync mode, only RX is enabled,  the register of tx should be set, so ca=
-ll the
-Set_dai_sysclk again.
+Signed-off-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+---
+change in v2:
+- Use kernel types i.e. u8, u64 etc.
+- Define sync_error as bool.
+---
+ arch/powerpc/include/asm/mce.h        |   86 ++++++++++----------
+ arch/powerpc/kernel/mce.c             |    5 +
+ arch/powerpc/kernel/mce_power.c       |  144 +++++++++++++++++----------------
+ arch/powerpc/platforms/powernv/opal.c |    2 
+ 4 files changed, 123 insertions(+), 114 deletions(-)
 
->=20
-> > +			break;
-> > +		default:
-> > +			return -EINVAL;
-> > +		}
-> > +	}
-> > +
-> >  	/* Bypass divider settings if the requirement doesn't change */
-> >  	if (freq =3D=3D esai_priv->hck_rate[tx] && dir =3D=3D esai_priv->hck_=
-dir[tx])
-> >  		return 0;
-> > @@ -537,10 +552,21 @@ static int fsl_esai_hw_params(struct
-> > snd_pcm_substream *substream,
-> >
-> >  	bclk =3D params_rate(params) * slot_width * esai_priv->slots;
-> >
-> > -	ret =3D fsl_esai_set_bclk(dai, tx, bclk);
-> > +	ret =3D fsl_esai_set_bclk(dai, esai_priv->synchronous ? true : tx,
-> > +bclk);
-> >  	if (ret)
-> >  		return ret;
-> >
-> > +	if (esai_priv->synchronous && !tx) {
-> > +		/* Use Normal mode to support monaural audio */
-> > +		regmap_update_bits(esai_priv->regmap, REG_ESAI_TCR,
-> > +			   ESAI_xCR_xMOD_MASK,
-> params_channels(params) > 1 ?
-> > +			   ESAI_xCR_xMOD_NETWORK : 0);
-> > +
-> > +		mask =3D ESAI_xCR_xSWS_MASK | ESAI_xCR_PADC;
-> > +		val =3D ESAI_xCR_xSWS(slot_width, width) | ESAI_xCR_PADC;
-> > +		regmap_update_bits(esai_priv->regmap, REG_ESAI_TCR,
-> mask, val);
-> > +	}
->=20
-> Does synchronous mode require to set both TCR and RCR? or just TCR?
-> The code behind this part is doing the same setting to RCR. If that is no=
-t
-> needed any more for a synchronous recording, we should reuse it instead
-> of inserting a piece of redundant code. Otherwise, if we need to set both=
-,
-> we should have two regmap_update_bits operations back-to-back for TCR
-> and RCR (and other registers too).
+diff --git a/arch/powerpc/include/asm/mce.h b/arch/powerpc/include/asm/mce.h
+index 8d0b1c24c636..b1f4bf863c95 100644
+--- a/arch/powerpc/include/asm/mce.h
++++ b/arch/powerpc/include/asm/mce.h
+@@ -31,7 +31,7 @@ enum MCE_Version {
+ enum MCE_Severity {
+ 	MCE_SEV_NO_ERROR = 0,
+ 	MCE_SEV_WARNING = 1,
+-	MCE_SEV_ERROR_SYNC = 2,
++	MCE_SEV_SEVERE = 2,
+ 	MCE_SEV_FATAL = 3,
+ };
+ 
+@@ -110,73 +110,74 @@ enum MCE_LinkErrorType {
+ };
+ 
+ struct machine_check_event {
+-	enum MCE_Version	version:8;	/* 0x00 */
+-	uint8_t			in_use;		/* 0x01 */
+-	enum MCE_Severity	severity:8;	/* 0x02 */
+-	enum MCE_Initiator	initiator:8;	/* 0x03 */
+-	enum MCE_ErrorType	error_type:8;	/* 0x04 */
+-	enum MCE_Disposition	disposition:8;	/* 0x05 */
+-	uint16_t		cpu;		/* 0x06 */
+-	uint64_t		gpr3;		/* 0x08 */
+-	uint64_t		srr0;		/* 0x10 */
+-	uint64_t		srr1;		/* 0x18 */
+-	union {					/* 0x20 */
++	enum MCE_Version	version:8;
++	u8			in_use;
++	enum MCE_Severity	severity:8;
++	enum MCE_Initiator	initiator:8;
++	enum MCE_ErrorType	error_type:8;
++	enum MCE_Disposition	disposition:8;
++	bool			sync_error;
++	u16			cpu;
++	u64			gpr3;
++	u64			srr0;
++	u64			srr1;
++	union {
+ 		struct {
+ 			enum MCE_UeErrorType ue_error_type:8;
+-			uint8_t		effective_address_provided;
+-			uint8_t		physical_address_provided;
+-			uint8_t		reserved_1[5];
+-			uint64_t	effective_address;
+-			uint64_t	physical_address;
+-			uint8_t		reserved_2[8];
++			u8		effective_address_provided;
++			u8		physical_address_provided;
++			u8		reserved_1[5];
++			u64		effective_address;
++			u64		physical_address;
++			u8		reserved_2[8];
+ 		} ue_error;
+ 
+ 		struct {
+ 			enum MCE_SlbErrorType slb_error_type:8;
+-			uint8_t		effective_address_provided;
+-			uint8_t		reserved_1[6];
+-			uint64_t	effective_address;
+-			uint8_t		reserved_2[16];
++			u8		effective_address_provided;
++			u8		reserved_1[6];
++			u64		effective_address;
++			u8		reserved_2[16];
+ 		} slb_error;
+ 
+ 		struct {
+ 			enum MCE_EratErrorType erat_error_type:8;
+-			uint8_t		effective_address_provided;
+-			uint8_t		reserved_1[6];
+-			uint64_t	effective_address;
+-			uint8_t		reserved_2[16];
++			u8		effective_address_provided;
++			u8		reserved_1[6];
++			u64		effective_address;
++			u8		reserved_2[16];
+ 		} erat_error;
+ 
+ 		struct {
+ 			enum MCE_TlbErrorType tlb_error_type:8;
+-			uint8_t		effective_address_provided;
+-			uint8_t		reserved_1[6];
+-			uint64_t	effective_address;
+-			uint8_t		reserved_2[16];
++			u8		effective_address_provided;
++			u8		reserved_1[6];
++			u64		effective_address;
++			u8		reserved_2[16];
+ 		} tlb_error;
+ 
+ 		struct {
+ 			enum MCE_UserErrorType user_error_type:8;
+-			uint8_t		effective_address_provided;
+-			uint8_t		reserved_1[6];
+-			uint64_t	effective_address;
+-			uint8_t		reserved_2[16];
++			u8		effective_address_provided;
++			u8		reserved_1[6];
++			u64		effective_address;
++			u8		reserved_2[16];
+ 		} user_error;
+ 
+ 		struct {
+ 			enum MCE_RaErrorType ra_error_type:8;
+-			uint8_t		effective_address_provided;
+-			uint8_t		reserved_1[6];
+-			uint64_t	effective_address;
+-			uint8_t		reserved_2[16];
++			u8		effective_address_provided;
++			u8		reserved_1[6];
++			u64		effective_address;
++			u8		reserved_2[16];
+ 		} ra_error;
+ 
+ 		struct {
+ 			enum MCE_LinkErrorType link_error_type:8;
+-			uint8_t		effective_address_provided;
+-			uint8_t		reserved_1[6];
+-			uint64_t	effective_address;
+-			uint8_t		reserved_2[16];
++			u8		effective_address_provided;
++			u8		reserved_1[6];
++			u64		effective_address;
++			u8		reserved_2[16];
+ 		} link_error;
+ 	} u;
+ };
+@@ -194,6 +195,7 @@ struct mce_error_info {
+ 	} u;
+ 	enum MCE_Severity	severity:8;
+ 	enum MCE_Initiator	initiator:8;
++	bool			sync_error;
+ };
+ 
+ #define MAX_MC_EVT	100
+diff --git a/arch/powerpc/kernel/mce.c b/arch/powerpc/kernel/mce.c
+index d3ee099e0981..0f961583bd51 100644
+--- a/arch/powerpc/kernel/mce.c
++++ b/arch/powerpc/kernel/mce.c
+@@ -122,6 +122,7 @@ void save_mce_event(struct pt_regs *regs, long handled,
+ 
+ 	mce->initiator = mce_err->initiator;
+ 	mce->severity = mce_err->severity;
++	mce->sync_error = mce_err->sync_error;
+ 
+ 	/*
+ 	 * Populate the mce error_type and type-specific error_type.
+@@ -374,9 +375,9 @@ void machine_check_print_event_info(struct machine_check_event *evt,
+ 		break;
+ 	case MCE_SEV_WARNING:
+ 		level = KERN_WARNING;
+-		sevstr = "";
++		sevstr = "Warning";
+ 		break;
+-	case MCE_SEV_ERROR_SYNC:
++	case MCE_SEV_SEVERE:
+ 		level = KERN_ERR;
+ 		sevstr = "Severe";
+ 		break;
+diff --git a/arch/powerpc/kernel/mce_power.c b/arch/powerpc/kernel/mce_power.c
+index 6b800eec31f2..606af87a4dda 100644
+--- a/arch/powerpc/kernel/mce_power.c
++++ b/arch/powerpc/kernel/mce_power.c
+@@ -133,106 +133,107 @@ struct mce_ierror_table {
+ 	unsigned int error_subtype;
+ 	unsigned int initiator;
+ 	unsigned int severity;
++	bool sync_error;
+ };
+ 
+ static const struct mce_ierror_table mce_p7_ierror_table[] = {
+ { 0x00000000001c0000, 0x0000000000040000, true,
+   MCE_ERROR_TYPE_UE,  MCE_UE_ERROR_IFETCH,
+-  MCE_INITIATOR_CPU,  MCE_SEV_ERROR_SYNC, },
++  MCE_INITIATOR_CPU,  MCE_SEV_SEVERE, true },
+ { 0x00000000001c0000, 0x0000000000080000, true,
+   MCE_ERROR_TYPE_SLB, MCE_SLB_ERROR_PARITY,
+-  MCE_INITIATOR_CPU,  MCE_SEV_ERROR_SYNC, },
++  MCE_INITIATOR_CPU,  MCE_SEV_SEVERE, true },
+ { 0x00000000001c0000, 0x00000000000c0000, true,
+   MCE_ERROR_TYPE_SLB, MCE_SLB_ERROR_MULTIHIT,
+-  MCE_INITIATOR_CPU,  MCE_SEV_ERROR_SYNC, },
++  MCE_INITIATOR_CPU,  MCE_SEV_WARNING, true },
+ { 0x00000000001c0000, 0x0000000000100000, true,
+   MCE_ERROR_TYPE_SLB, MCE_SLB_ERROR_INDETERMINATE, /* BOTH */
+-  MCE_INITIATOR_CPU,  MCE_SEV_ERROR_SYNC, },
++  MCE_INITIATOR_CPU,  MCE_SEV_WARNING, true },
+ { 0x00000000001c0000, 0x0000000000140000, true,
+   MCE_ERROR_TYPE_TLB, MCE_TLB_ERROR_MULTIHIT,
+-  MCE_INITIATOR_CPU,  MCE_SEV_ERROR_SYNC, },
++  MCE_INITIATOR_CPU,  MCE_SEV_WARNING, true },
+ { 0x00000000001c0000, 0x0000000000180000, true,
+   MCE_ERROR_TYPE_UE,  MCE_UE_ERROR_PAGE_TABLE_WALK_IFETCH,
+-  MCE_INITIATOR_CPU,  MCE_SEV_ERROR_SYNC, },
++  MCE_INITIATOR_CPU,  MCE_SEV_SEVERE, true },
+ { 0x00000000001c0000, 0x00000000001c0000, true,
+   MCE_ERROR_TYPE_UE,  MCE_UE_ERROR_IFETCH,
+-  MCE_INITIATOR_CPU,  MCE_SEV_ERROR_SYNC, },
+-{ 0, 0, 0, 0, 0, 0 } };
++  MCE_INITIATOR_CPU,  MCE_SEV_SEVERE, true },
++{ 0, 0, 0, 0, 0, 0, 0 } };
+ 
+ static const struct mce_ierror_table mce_p8_ierror_table[] = {
+ { 0x00000000081c0000, 0x0000000000040000, true,
+   MCE_ERROR_TYPE_UE,  MCE_UE_ERROR_IFETCH,
+-  MCE_INITIATOR_CPU,  MCE_SEV_ERROR_SYNC, },
++  MCE_INITIATOR_CPU,  MCE_SEV_SEVERE, true },
+ { 0x00000000081c0000, 0x0000000000080000, true,
+   MCE_ERROR_TYPE_SLB, MCE_SLB_ERROR_PARITY,
+-  MCE_INITIATOR_CPU,  MCE_SEV_ERROR_SYNC, },
++  MCE_INITIATOR_CPU,  MCE_SEV_SEVERE, true },
+ { 0x00000000081c0000, 0x00000000000c0000, true,
+   MCE_ERROR_TYPE_SLB, MCE_SLB_ERROR_MULTIHIT,
+-  MCE_INITIATOR_CPU,  MCE_SEV_ERROR_SYNC, },
++  MCE_INITIATOR_CPU,  MCE_SEV_WARNING, true },
+ { 0x00000000081c0000, 0x0000000000100000, true,
+   MCE_ERROR_TYPE_ERAT,MCE_ERAT_ERROR_MULTIHIT,
+-  MCE_INITIATOR_CPU,  MCE_SEV_ERROR_SYNC, },
++  MCE_INITIATOR_CPU,  MCE_SEV_WARNING, true },
+ { 0x00000000081c0000, 0x0000000000140000, true,
+   MCE_ERROR_TYPE_TLB, MCE_TLB_ERROR_MULTIHIT,
+-  MCE_INITIATOR_CPU,  MCE_SEV_ERROR_SYNC, },
++  MCE_INITIATOR_CPU,  MCE_SEV_WARNING, true },
+ { 0x00000000081c0000, 0x0000000000180000, true,
+   MCE_ERROR_TYPE_UE,  MCE_UE_ERROR_PAGE_TABLE_WALK_IFETCH,
+-  MCE_INITIATOR_CPU,  MCE_SEV_ERROR_SYNC, },
++  MCE_INITIATOR_CPU,  MCE_SEV_SEVERE, true },
+ { 0x00000000081c0000, 0x00000000001c0000, true,
+   MCE_ERROR_TYPE_UE,  MCE_UE_ERROR_IFETCH,
+-  MCE_INITIATOR_CPU,  MCE_SEV_ERROR_SYNC, },
++  MCE_INITIATOR_CPU,  MCE_SEV_SEVERE, true },
+ { 0x00000000081c0000, 0x0000000008000000, true,
+   MCE_ERROR_TYPE_LINK,MCE_LINK_ERROR_IFETCH_TIMEOUT,
+-  MCE_INITIATOR_CPU,  MCE_SEV_ERROR_SYNC, },
++  MCE_INITIATOR_CPU,  MCE_SEV_SEVERE, true },
+ { 0x00000000081c0000, 0x0000000008040000, true,
+   MCE_ERROR_TYPE_LINK,MCE_LINK_ERROR_PAGE_TABLE_WALK_IFETCH_TIMEOUT,
+-  MCE_INITIATOR_CPU,  MCE_SEV_ERROR_SYNC, },
+-{ 0, 0, 0, 0, 0, 0 } };
++  MCE_INITIATOR_CPU,  MCE_SEV_SEVERE, true },
++{ 0, 0, 0, 0, 0, 0, 0 } };
+ 
+ static const struct mce_ierror_table mce_p9_ierror_table[] = {
+ { 0x00000000081c0000, 0x0000000000040000, true,
+   MCE_ERROR_TYPE_UE,  MCE_UE_ERROR_IFETCH,
+-  MCE_INITIATOR_CPU,  MCE_SEV_ERROR_SYNC, },
++  MCE_INITIATOR_CPU,  MCE_SEV_SEVERE, true },
+ { 0x00000000081c0000, 0x0000000000080000, true,
+   MCE_ERROR_TYPE_SLB, MCE_SLB_ERROR_PARITY,
+-  MCE_INITIATOR_CPU,  MCE_SEV_ERROR_SYNC, },
++  MCE_INITIATOR_CPU,  MCE_SEV_SEVERE, true },
+ { 0x00000000081c0000, 0x00000000000c0000, true,
+   MCE_ERROR_TYPE_SLB, MCE_SLB_ERROR_MULTIHIT,
+-  MCE_INITIATOR_CPU,  MCE_SEV_ERROR_SYNC, },
++  MCE_INITIATOR_CPU,  MCE_SEV_WARNING, true },
+ { 0x00000000081c0000, 0x0000000000100000, true,
+   MCE_ERROR_TYPE_ERAT,MCE_ERAT_ERROR_MULTIHIT,
+-  MCE_INITIATOR_CPU,  MCE_SEV_ERROR_SYNC, },
++  MCE_INITIATOR_CPU,  MCE_SEV_WARNING, true },
+ { 0x00000000081c0000, 0x0000000000140000, true,
+   MCE_ERROR_TYPE_TLB, MCE_TLB_ERROR_MULTIHIT,
+-  MCE_INITIATOR_CPU,  MCE_SEV_ERROR_SYNC, },
++  MCE_INITIATOR_CPU,  MCE_SEV_WARNING, true },
+ { 0x00000000081c0000, 0x0000000000180000, true,
+   MCE_ERROR_TYPE_UE,  MCE_UE_ERROR_PAGE_TABLE_WALK_IFETCH,
+-  MCE_INITIATOR_CPU,  MCE_SEV_ERROR_SYNC, },
++  MCE_INITIATOR_CPU,  MCE_SEV_SEVERE, true },
+ { 0x00000000081c0000, 0x00000000001c0000, true,
+   MCE_ERROR_TYPE_RA,  MCE_RA_ERROR_IFETCH_FOREIGN,
+-  MCE_INITIATOR_CPU,  MCE_SEV_ERROR_SYNC, },
++  MCE_INITIATOR_CPU,  MCE_SEV_SEVERE, true },
+ { 0x00000000081c0000, 0x0000000008000000, true,
+   MCE_ERROR_TYPE_LINK,MCE_LINK_ERROR_IFETCH_TIMEOUT,
+-  MCE_INITIATOR_CPU,  MCE_SEV_ERROR_SYNC, },
++  MCE_INITIATOR_CPU,  MCE_SEV_SEVERE, true },
+ { 0x00000000081c0000, 0x0000000008040000, true,
+   MCE_ERROR_TYPE_LINK,MCE_LINK_ERROR_PAGE_TABLE_WALK_IFETCH_TIMEOUT,
+-  MCE_INITIATOR_CPU,  MCE_SEV_ERROR_SYNC, },
++  MCE_INITIATOR_CPU,  MCE_SEV_SEVERE, true },
+ { 0x00000000081c0000, 0x00000000080c0000, true,
+   MCE_ERROR_TYPE_RA,  MCE_RA_ERROR_IFETCH,
+-  MCE_INITIATOR_CPU,  MCE_SEV_ERROR_SYNC, },
++  MCE_INITIATOR_CPU,  MCE_SEV_SEVERE, true },
+ { 0x00000000081c0000, 0x0000000008100000, true,
+   MCE_ERROR_TYPE_RA,  MCE_RA_ERROR_PAGE_TABLE_WALK_IFETCH,
+-  MCE_INITIATOR_CPU,  MCE_SEV_ERROR_SYNC, },
++  MCE_INITIATOR_CPU,  MCE_SEV_SEVERE, true },
+ { 0x00000000081c0000, 0x0000000008140000, false,
+   MCE_ERROR_TYPE_RA,  MCE_RA_ERROR_STORE,
+-  MCE_INITIATOR_CPU,  MCE_SEV_FATAL, }, /* ASYNC is fatal */
++  MCE_INITIATOR_CPU,  MCE_SEV_FATAL, false }, /* ASYNC is fatal */
+ { 0x00000000081c0000, 0x0000000008180000, false,
+   MCE_ERROR_TYPE_LINK,MCE_LINK_ERROR_STORE_TIMEOUT,
+-  MCE_INITIATOR_CPU,  MCE_SEV_FATAL, }, /* ASYNC is fatal */
++  MCE_INITIATOR_CPU,  MCE_SEV_FATAL, false }, /* ASYNC is fatal */
+ { 0x00000000081c0000, 0x00000000081c0000, true,
+   MCE_ERROR_TYPE_RA,  MCE_RA_ERROR_PAGE_TABLE_WALK_IFETCH_FOREIGN,
+-  MCE_INITIATOR_CPU,  MCE_SEV_ERROR_SYNC, },
+-{ 0, 0, 0, 0, 0, 0 } };
++  MCE_INITIATOR_CPU,  MCE_SEV_SEVERE, true },
++{ 0, 0, 0, 0, 0, 0, 0 } };
+ 
+ struct mce_derror_table {
+ 	unsigned long dsisr_value;
+@@ -241,103 +242,104 @@ struct mce_derror_table {
+ 	unsigned int error_subtype;
+ 	unsigned int initiator;
+ 	unsigned int severity;
++	bool sync_error;
+ };
+ 
+ static const struct mce_derror_table mce_p7_derror_table[] = {
+ { 0x00008000, false,
+   MCE_ERROR_TYPE_UE,   MCE_UE_ERROR_LOAD_STORE,
+-  MCE_INITIATOR_CPU,   MCE_SEV_ERROR_SYNC, },
++  MCE_INITIATOR_CPU,   MCE_SEV_SEVERE, true },
+ { 0x00004000, true,
+   MCE_ERROR_TYPE_UE,   MCE_UE_ERROR_PAGE_TABLE_WALK_LOAD_STORE,
+-  MCE_INITIATOR_CPU,   MCE_SEV_ERROR_SYNC, },
++  MCE_INITIATOR_CPU,   MCE_SEV_SEVERE, true },
+ { 0x00000800, true,
+   MCE_ERROR_TYPE_ERAT, MCE_ERAT_ERROR_MULTIHIT,
+-  MCE_INITIATOR_CPU,   MCE_SEV_ERROR_SYNC, },
++  MCE_INITIATOR_CPU,   MCE_SEV_WARNING, true },
+ { 0x00000400, true,
+   MCE_ERROR_TYPE_TLB,  MCE_TLB_ERROR_MULTIHIT,
+-  MCE_INITIATOR_CPU,   MCE_SEV_ERROR_SYNC, },
++  MCE_INITIATOR_CPU,   MCE_SEV_WARNING, true },
+ { 0x00000080, true,
+   MCE_ERROR_TYPE_SLB,  MCE_SLB_ERROR_MULTIHIT,	/* Before PARITY */
+-  MCE_INITIATOR_CPU,   MCE_SEV_ERROR_SYNC, },
++  MCE_INITIATOR_CPU,   MCE_SEV_WARNING, true },
+ { 0x00000100, true,
+   MCE_ERROR_TYPE_SLB,  MCE_SLB_ERROR_PARITY,
+-  MCE_INITIATOR_CPU,   MCE_SEV_ERROR_SYNC, },
++  MCE_INITIATOR_CPU,   MCE_SEV_SEVERE, true },
+ { 0x00000040, true,
+   MCE_ERROR_TYPE_SLB,  MCE_SLB_ERROR_INDETERMINATE, /* BOTH */
+-  MCE_INITIATOR_CPU,   MCE_SEV_ERROR_SYNC, },
+-{ 0, false, 0, 0, 0, 0 } };
++  MCE_INITIATOR_CPU,   MCE_SEV_WARNING, true },
++{ 0, false, 0, 0, 0, 0, 0 } };
+ 
+ static const struct mce_derror_table mce_p8_derror_table[] = {
+ { 0x00008000, false,
+   MCE_ERROR_TYPE_UE,   MCE_UE_ERROR_LOAD_STORE,
+-  MCE_INITIATOR_CPU,   MCE_SEV_ERROR_SYNC, },
++  MCE_INITIATOR_CPU,   MCE_SEV_SEVERE, true },
+ { 0x00004000, true,
+   MCE_ERROR_TYPE_UE,   MCE_UE_ERROR_PAGE_TABLE_WALK_LOAD_STORE,
+-  MCE_INITIATOR_CPU,   MCE_SEV_ERROR_SYNC, },
++  MCE_INITIATOR_CPU,   MCE_SEV_SEVERE, true },
+ { 0x00002000, true,
+   MCE_ERROR_TYPE_LINK, MCE_LINK_ERROR_LOAD_TIMEOUT,
+-  MCE_INITIATOR_CPU,   MCE_SEV_ERROR_SYNC, },
++  MCE_INITIATOR_CPU,   MCE_SEV_SEVERE, true },
+ { 0x00001000, true,
+   MCE_ERROR_TYPE_LINK, MCE_LINK_ERROR_PAGE_TABLE_WALK_LOAD_STORE_TIMEOUT,
+-  MCE_INITIATOR_CPU,   MCE_SEV_ERROR_SYNC, },
++  MCE_INITIATOR_CPU,   MCE_SEV_SEVERE, true },
+ { 0x00000800, true,
+   MCE_ERROR_TYPE_ERAT, MCE_ERAT_ERROR_MULTIHIT,
+-  MCE_INITIATOR_CPU,   MCE_SEV_ERROR_SYNC, },
++  MCE_INITIATOR_CPU,   MCE_SEV_WARNING, true },
+ { 0x00000400, true,
+   MCE_ERROR_TYPE_TLB,  MCE_TLB_ERROR_MULTIHIT,
+-  MCE_INITIATOR_CPU,   MCE_SEV_ERROR_SYNC, },
++  MCE_INITIATOR_CPU,   MCE_SEV_WARNING, true },
+ { 0x00000200, true,
+   MCE_ERROR_TYPE_ERAT, MCE_ERAT_ERROR_MULTIHIT, /* SECONDARY ERAT */
+-  MCE_INITIATOR_CPU,   MCE_SEV_ERROR_SYNC, },
++  MCE_INITIATOR_CPU,   MCE_SEV_WARNING, true },
+ { 0x00000080, true,
+   MCE_ERROR_TYPE_SLB,  MCE_SLB_ERROR_MULTIHIT,	/* Before PARITY */
+-  MCE_INITIATOR_CPU,   MCE_SEV_ERROR_SYNC, },
++  MCE_INITIATOR_CPU,   MCE_SEV_WARNING, true },
+ { 0x00000100, true,
+   MCE_ERROR_TYPE_SLB,  MCE_SLB_ERROR_PARITY,
+-  MCE_INITIATOR_CPU,   MCE_SEV_ERROR_SYNC, },
+-{ 0, false, 0, 0, 0, 0 } };
++  MCE_INITIATOR_CPU,   MCE_SEV_SEVERE, true },
++{ 0, false, 0, 0, 0, 0, 0 } };
+ 
+ static const struct mce_derror_table mce_p9_derror_table[] = {
+ { 0x00008000, false,
+   MCE_ERROR_TYPE_UE,   MCE_UE_ERROR_LOAD_STORE,
+-  MCE_INITIATOR_CPU,   MCE_SEV_ERROR_SYNC, },
++  MCE_INITIATOR_CPU,   MCE_SEV_SEVERE, true },
+ { 0x00004000, true,
+   MCE_ERROR_TYPE_UE,   MCE_UE_ERROR_PAGE_TABLE_WALK_LOAD_STORE,
+-  MCE_INITIATOR_CPU,   MCE_SEV_ERROR_SYNC, },
++  MCE_INITIATOR_CPU,   MCE_SEV_SEVERE, true },
+ { 0x00002000, true,
+   MCE_ERROR_TYPE_LINK, MCE_LINK_ERROR_LOAD_TIMEOUT,
+-  MCE_INITIATOR_CPU,   MCE_SEV_ERROR_SYNC, },
++  MCE_INITIATOR_CPU,   MCE_SEV_SEVERE, true },
+ { 0x00001000, true,
+   MCE_ERROR_TYPE_LINK, MCE_LINK_ERROR_PAGE_TABLE_WALK_LOAD_STORE_TIMEOUT,
+-  MCE_INITIATOR_CPU,   MCE_SEV_ERROR_SYNC, },
++  MCE_INITIATOR_CPU,   MCE_SEV_SEVERE, true },
+ { 0x00000800, true,
+   MCE_ERROR_TYPE_ERAT, MCE_ERAT_ERROR_MULTIHIT,
+-  MCE_INITIATOR_CPU,   MCE_SEV_ERROR_SYNC, },
++  MCE_INITIATOR_CPU,   MCE_SEV_WARNING, true },
+ { 0x00000400, true,
+   MCE_ERROR_TYPE_TLB,  MCE_TLB_ERROR_MULTIHIT,
+-  MCE_INITIATOR_CPU,   MCE_SEV_ERROR_SYNC, },
++  MCE_INITIATOR_CPU,   MCE_SEV_WARNING, true },
+ { 0x00000200, false,
+   MCE_ERROR_TYPE_USER, MCE_USER_ERROR_TLBIE,
+-  MCE_INITIATOR_CPU,   MCE_SEV_ERROR_SYNC, },
++  MCE_INITIATOR_CPU,   MCE_SEV_WARNING, true },
+ { 0x00000080, true,
+   MCE_ERROR_TYPE_SLB,  MCE_SLB_ERROR_MULTIHIT,	/* Before PARITY */
+-  MCE_INITIATOR_CPU,   MCE_SEV_ERROR_SYNC, },
++  MCE_INITIATOR_CPU,   MCE_SEV_WARNING, true },
+ { 0x00000100, true,
+   MCE_ERROR_TYPE_SLB,  MCE_SLB_ERROR_PARITY,
+-  MCE_INITIATOR_CPU,   MCE_SEV_ERROR_SYNC, },
++  MCE_INITIATOR_CPU,   MCE_SEV_SEVERE, true },
+ { 0x00000040, true,
+   MCE_ERROR_TYPE_RA,   MCE_RA_ERROR_LOAD,
+-  MCE_INITIATOR_CPU,   MCE_SEV_ERROR_SYNC, },
++  MCE_INITIATOR_CPU,   MCE_SEV_SEVERE, true },
+ { 0x00000020, false,
+   MCE_ERROR_TYPE_RA,   MCE_RA_ERROR_PAGE_TABLE_WALK_LOAD_STORE,
+-  MCE_INITIATOR_CPU,   MCE_SEV_ERROR_SYNC, },
++  MCE_INITIATOR_CPU,   MCE_SEV_SEVERE, true },
+ { 0x00000010, false,
+   MCE_ERROR_TYPE_RA,   MCE_RA_ERROR_PAGE_TABLE_WALK_LOAD_STORE_FOREIGN,
+-  MCE_INITIATOR_CPU,   MCE_SEV_ERROR_SYNC, },
++  MCE_INITIATOR_CPU,   MCE_SEV_SEVERE, true },
+ { 0x00000008, false,
+   MCE_ERROR_TYPE_RA,   MCE_RA_ERROR_LOAD_STORE_FOREIGN,
+-  MCE_INITIATOR_CPU,   MCE_SEV_ERROR_SYNC, },
+-{ 0, false, 0, 0, 0, 0 } };
++  MCE_INITIATOR_CPU,   MCE_SEV_SEVERE, true },
++{ 0, false, 0, 0, 0, 0, 0 } };
+ 
+ static int mce_find_instr_ea_and_pfn(struct pt_regs *regs, uint64_t *addr,
+ 					uint64_t *phys_addr)
+@@ -427,11 +429,12 @@ static int mce_handle_ierror(struct pt_regs *regs,
+ 			mce_err->u.link_error_type = table[i].error_subtype;
+ 			break;
+ 		}
++		mce_err->sync_error = table[i].sync_error;
+ 		mce_err->severity = table[i].severity;
+ 		mce_err->initiator = table[i].initiator;
+ 		if (table[i].nip_valid) {
+ 			*addr = regs->nip;
+-			if (mce_err->severity == MCE_SEV_ERROR_SYNC &&
++			if (mce_err->sync_error &&
+ 				table[i].error_type == MCE_ERROR_TYPE_UE) {
+ 				unsigned long pfn;
+ 
+@@ -448,8 +451,9 @@ static int mce_handle_ierror(struct pt_regs *regs,
+ 	}
+ 
+ 	mce_err->error_type = MCE_ERROR_TYPE_UNKNOWN;
+-	mce_err->severity = MCE_SEV_ERROR_SYNC;
++	mce_err->severity = MCE_SEV_SEVERE;
+ 	mce_err->initiator = MCE_INITIATOR_CPU;
++	mce_err->sync_error = true;
+ 
+ 	return 0;
+ }
+@@ -519,11 +523,12 @@ static int mce_handle_derror(struct pt_regs *regs,
+ 			mce_err->u.link_error_type = table[i].error_subtype;
+ 			break;
+ 		}
++		mce_err->sync_error = table[i].sync_error;
+ 		mce_err->severity = table[i].severity;
+ 		mce_err->initiator = table[i].initiator;
+ 		if (table[i].dar_valid)
+ 			*addr = regs->dar;
+-		else if (mce_err->severity == MCE_SEV_ERROR_SYNC &&
++		else if (mce_err->sync_error &&
+ 				table[i].error_type == MCE_ERROR_TYPE_UE) {
+ 			/*
+ 			 * We do a maximum of 4 nested MCE calls, see
+@@ -539,8 +544,9 @@ static int mce_handle_derror(struct pt_regs *regs,
+ 		return handled;
+ 
+ 	mce_err->error_type = MCE_ERROR_TYPE_UNKNOWN;
+-	mce_err->severity = MCE_SEV_ERROR_SYNC;
++	mce_err->severity = MCE_SEV_SEVERE;
+ 	mce_err->initiator = MCE_INITIATOR_CPU;
++	mce_err->sync_error = true;
+ 
+ 	return 0;
+ }
+diff --git a/arch/powerpc/platforms/powernv/opal.c b/arch/powerpc/platforms/powernv/opal.c
+index 77552e525e33..f2b063b027f0 100644
+--- a/arch/powerpc/platforms/powernv/opal.c
++++ b/arch/powerpc/platforms/powernv/opal.c
+@@ -505,7 +505,7 @@ static int opal_recover_mce(struct pt_regs *regs,
+ 		recovered = 0;
+ 	}
+ 
+-	if (!recovered && evt->severity == MCE_SEV_ERROR_SYNC) {
++	if (!recovered && evt->sync_error) {
+ 		/*
+ 		 * Try to kill processes if we get a synchronous machine check
+ 		 * (e.g., one caused by execution of this instruction). This
 
-Both TCR and RCR.  RCR will be set in normal flow.
->=20
-> > +
-> >  	/* Use Normal mode to support monaural audio */
-> >  	regmap_update_bits(esai_priv->regmap, REG_ESAI_xCR(tx),
-> >  			   ESAI_xCR_xMOD_MASK,
-> params_channels(params) > 1 ?
->=20
-> In case that we only need to set TCR (more likely I feel), it would feel =
-less
-> confusing to me, if we changed REG_ESAI_xCR(tx) here, for example, to
-> REG_ESAI_xCR(tx || sync). Yea, please add to the top a 'bool sync =3D
-> esai_priv->synchronous;'.
->=20
-> Similarly, for ECR_ETO and ECR_ERO:
-> 	(tx || sync) ? ESAI_ECR_ETO : ESAI_ECR_ERO;
-
-Both TCR and RCR should be set.
-=20
