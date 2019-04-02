@@ -2,112 +2,52 @@ Return-Path: <SRS0=xrHL=SE=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,
-	URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_MUTT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CDBD4C4360F
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Apr 2019 15:23:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 18CBCC4360F
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Apr 2019 15:25:51 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 137F720830
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Apr 2019 15:23:03 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=nxp.com header.i=@nxp.com header.b="aYXJeLF0"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 137F720830
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nxp.com
+	by mail.kernel.org (Postfix) with ESMTPS id 9789320830
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Apr 2019 15:25:50 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9789320830
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=suse.cz
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44YXyr4GXqzDqNd
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Apr 2019 02:23:00 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44YXwt5cdvzDqDq
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Apr 2019 02:21:18 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44YY243cMnzDqFL
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Apr 2019 02:25:48 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=nxp.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=nxp.com header.i=@nxp.com header.b="aYXJeLF0"; 
- dkim-atps=neutral
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 44YXwt22LGz8tQ0
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Apr 2019 02:21:18 +1100 (AEDT)
-Received: by ozlabs.org (Postfix)
- id 44YXwt1cSTz9sTb; Wed,  3 Apr 2019 02:21:18 +1100 (AEDT)
-Authentication-Results: ozlabs.org; spf=pass (mailfrom) smtp.mailfrom=nxp.com
- (client-ip=40.107.1.65; helo=eur02-he1-obe.outbound.protection.outlook.com;
- envelope-from=diana.craciun@nxp.com; receiver=<UNKNOWN>)
-Authentication-Results: ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=nxp.com
-Authentication-Results: ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=nxp.com header.i=@nxp.com header.b="aYXJeLF0"; 
- dkim-atps=neutral
-Received: from EUR02-HE1-obe.outbound.protection.outlook.com
- (mail-eopbgr10065.outbound.protection.outlook.com [40.107.1.65])
+ spf=pass (mailfrom) smtp.mailfrom=suse.cz
+ (client-ip=195.135.220.15; helo=mx1.suse.de; envelope-from=jack@suse.cz;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=suse.cz
+Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 44YXws4kjxz9sTY
- for <linuxppc-dev@ozlabs.org>; Wed,  3 Apr 2019 02:21:13 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nxp.com; s=selector1; 
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=8D6InYnTytlnQHlPBcTR3k/aa+l9DkgSTwK1dCKlPlk=;
- b=aYXJeLF0GquCAnjdchpUvAUPmB1yE9uy5fOyp70+tkijiA0VtK5RTzfeoA2BwL0Cu1KLHstb0lNWrS+pEGaofCFP7TMeqKqEInZ9LwQpJrLTPhAEJFVEtfDH4jQbSxvUTxiVbDkGKNCQFBMQggkkyoJJSrHEYXJiArO1rGIS5CQ=
-Received: from VI1PR0401MB2463.eurprd04.prod.outlook.com (10.168.64.146) by
- VI1PR0401MB2253.eurprd04.prod.outlook.com (10.169.133.22) with Microsoft SMTP
- Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.20.1750.16; Tue, 2 Apr 2019 15:21:09 +0000
-Received: from VI1PR0401MB2463.eurprd04.prod.outlook.com
- ([fe80::f0ff:e4cf:6d0d:ea88]) by VI1PR0401MB2463.eurprd04.prod.outlook.com
- ([fe80::f0ff:e4cf:6d0d:ea88%3]) with mapi id 15.20.1750.014; Tue, 2 Apr 2019
- 15:21:09 +0000
-From: Diana Madalina Craciun <diana.craciun@nxp.com>
-To: Michael Ellerman <mpe@ellerman.id.au>, Greg KH <gregkh@linuxfoundation.org>
-Subject: Re: [PATCH stable v4.14 00/32] powerpc spectre backports for 4.14
-Thread-Topic: [PATCH stable v4.14 00/32] powerpc spectre backports for 4.14
-Thread-Index: AQHU5iJE+XDajggcgUe1OnYfZIGbfg==
-Date: Tue, 2 Apr 2019 15:21:09 +0000
-Message-ID: <VI1PR0401MB246396C22088623F2971A0DCFF560@VI1PR0401MB2463.eurprd04.prod.outlook.com>
-References: <20190329112620.14489-1-mpe@ellerman.id.au>
- <20190329145116.GA23019@kroah.com> <20190329150921.GA1002@kroah.com>
- <87v9zzl68u.fsf@concordia.ellerman.id.au>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-authentication-results: spf=none (sender IP is )
- smtp.mailfrom=diana.craciun@nxp.com; 
-x-originating-ip: [212.146.100.6]
-x-ms-publictraffictype: Email
-x-ms-office365-filtering-correlation-id: 2fe1bd17-2ece-4be8-5268-08d6b77ed596
-x-ms-office365-filtering-ht: Tenant
-x-microsoft-antispam: BCL:0; PCL:0;
- RULEID:(2390118)(7020095)(4652040)(8989299)(5600139)(711020)(4605104)(4618075)(4534185)(4627221)(201703031133081)(201702281549075)(8990200)(2017052603328)(7193020);
- SRVR:VI1PR0401MB2253; 
-x-ms-traffictypediagnostic: VI1PR0401MB2253:
-x-microsoft-antispam-prvs: <VI1PR0401MB2253BE06DD8295A2FDF5AD3BFF560@VI1PR0401MB2253.eurprd04.prod.outlook.com>
-x-forefront-prvs: 0995196AA2
-x-forefront-antispam-report: SFV:NSPM;
- SFS:(10009020)(366004)(346002)(376002)(396003)(39860400002)(136003)(189003)(199004)(54524002)(9686003)(2906002)(229853002)(186003)(305945005)(6116002)(6436002)(99286004)(8936002)(105586002)(478600001)(93886005)(66066001)(33656002)(55016002)(4326008)(316002)(52536014)(486006)(7736002)(3846002)(25786009)(446003)(86362001)(14454004)(5660300002)(106356001)(74316002)(54906003)(97736004)(26005)(81166006)(8676002)(476003)(81156014)(68736007)(6506007)(14444005)(7696005)(4744005)(6246003)(102836004)(53546011)(71200400001)(256004)(71190400001)(76176011)(53936002)(110136005);
- DIR:OUT; SFP:1101; SCL:1; SRVR:VI1PR0401MB2253;
- H:VI1PR0401MB2463.eurprd04.prod.outlook.com; FPR:; SPF:None; LANG:en;
- PTR:InfoNoRecords; MX:1; A:1; 
-received-spf: None (protection.outlook.com: nxp.com does not designate
- permitted sender hosts)
-x-ms-exchange-senderadcheck: 1
-x-microsoft-antispam-message-info: X6Kg9DPgMf2+Db2u/pDSLrMJUtEPgOHvwmTzSUgC0KwkaYUKWKDkoAk6utV66Rmf1cFPD6/xdYevU4bCea6vR5ZvwhlDopkzxfzspiQbk46jrsM7ggCXtZ8gzHYVt6nhFJwEQpS3AQYrE146Kuv8ryYj9DotB1Sqk8agnxRcmn2YB/4g30n4TodF16rH3GuAUCoGnpHpg9J2gGmq43E9QPEBS8RM+T8Wzvpo8FDqX4q0y0Vb2CBwzqekyHFz1lUQrJJzSRLO4ef0ZNNK/6uA2L6uA/iYZVuzl91cZ69nxWLBTrA2jE3Y+oNEZw8Cp3p6owdyyWuuWqTl5xXzHOnetryeW/R/ukcBsKUs47GD4MbuN49lq+vLOiDZvcaoAmv4iY64Nl2vYS/qfw/5CAywgz00w2kIsTGixfYh842ciYw=
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44YY0B3X3kzDq6W
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Apr 2019 02:24:09 +1100 (AEDT)
+X-Virus-Scanned: by amavisd-new at test-mx.suse.de
+Received: from relay2.suse.de (unknown [195.135.220.254])
+ by mx1.suse.de (Postfix) with ESMTP id EF995AFD3;
+ Tue,  2 Apr 2019 15:24:05 +0000 (UTC)
+Received: by quack2.suse.cz (Postfix, from userid 1000)
+ id 7E39E1E3FD4; Tue,  2 Apr 2019 17:24:05 +0200 (CEST)
+Date: Tue, 2 Apr 2019 17:24:05 +0200
+From: Jan Kara <jack@suse.cz>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
+Subject: Re: [PATCH v2] mm: Fix modifying of page protection by
+ insert_pfn_pmd()
+Message-ID: <20190402152405.GC25668@quack2.suse.cz>
+References: <20190402115125.18803-1-aneesh.kumar@linux.ibm.com>
 MIME-Version: 1.0
-X-OriginatorOrg: nxp.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 2fe1bd17-2ece-4be8-5268-08d6b77ed596
-X-MS-Exchange-CrossTenant-originalarrivaltime: 02 Apr 2019 15:21:09.5863 (UTC)
-X-MS-Exchange-CrossTenant-fromentityheader: Hosted
-X-MS-Exchange-CrossTenant-id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
-X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: VI1PR0401MB2253
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20190402115125.18803-1-aneesh.kumar@linux.ibm.com>
+User-Agent: Mutt/1.10.1 (2018-07-13)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -119,29 +59,123 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
- "msuchanek@suse.de" <msuchanek@suse.de>,
- "stable@vger.kernel.org" <stable@vger.kernel.org>
+Cc: Jan Kara <jack@suse.cz>, linux-nvdimm@lists.01.org, stable@vger.kernel.org,
+ linux-mm@kvack.org, Chandan Rajendra <chandan@linux.ibm.com>,
+ dan.j.williams@intel.com, linuxppc-dev@lists.ozlabs.org,
+ akpm@linux-foundation.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 3/31/2019 12:53 PM, Michael Ellerman wrote:=0A=
-> Greg KH <gregkh@linuxfoundation.org> writes:=0A=
->> On Fri, Mar 29, 2019 at 03:51:16PM +0100, Greg KH wrote:=0A=
->>> On Fri, Mar 29, 2019 at 10:25:48PM +1100, Michael Ellerman wrote:=0A=
->>>> -----BEGIN PGP SIGNED MESSAGE----- Hash: SHA1 Hi Greg, Please queue=0A=
->>>> up these powerpc patches for 4.14 if you have no objections. =0A=
->>> Some of these also need to go to 4.19, right? Want me to add them=0A=
->>> there, or are you going to provide a backported series? =0A=
-> Yes some of them do, but I wasn't sure if they'd go cleanly.=0A=
->> Nevermind, I've queued up the missing ones to 4.19.y, and one missing=0A=
->> one to 5.0.y. If I've missed anything, please let me know. =0A=
-> Thanks. I'll check everything's working as expected.=0A=
-=0A=
-I have validated on NXP PowerPC and worked as expected on both kernel=0A=
-4.14 and kernel 4.19.=0A=
-=0A=
-Thanks,=0A=
-Diana=0A=
-=0A=
+On Tue 02-04-19 17:21:25, Aneesh Kumar K.V wrote:
+> With some architectures like ppc64, set_pmd_at() cannot cope with
+> a situation where there is already some (different) valid entry present.
+> 
+> Use pmdp_set_access_flags() instead to modify the pfn which is built to
+> deal with modifying existing PMD entries.
+> 
+> This is similar to
+> commit cae85cb8add3 ("mm/memory.c: fix modifying of page protection by insert_pfn()")
+> 
+> We also do similar update w.r.t insert_pfn_pud eventhough ppc64 don't support
+> pud pfn entries now.
+> 
+> Without this patch we also see the below message in kernel log
+> "BUG: non-zero pgtables_bytes on freeing mm:"
+> 
+> CC: stable@vger.kernel.org
+> Reported-by: Chandan Rajendra <chandan@linux.ibm.com>
+> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
+
+Looks good to me. You can add:
+
+Reviewed-by: Jan Kara <jack@suse.cz>
+
+								Honza
+
+> ---
+> Changes from v1:
+> * Fix the pgtable leak 
+> 
+>  mm/huge_memory.c | 36 ++++++++++++++++++++++++++++++++++++
+>  1 file changed, 36 insertions(+)
+> 
+> diff --git a/mm/huge_memory.c b/mm/huge_memory.c
+> index 404acdcd0455..165ea46bf149 100644
+> --- a/mm/huge_memory.c
+> +++ b/mm/huge_memory.c
+> @@ -755,6 +755,21 @@ static void insert_pfn_pmd(struct vm_area_struct *vma, unsigned long addr,
+>  	spinlock_t *ptl;
+>  
+>  	ptl = pmd_lock(mm, pmd);
+> +	if (!pmd_none(*pmd)) {
+> +		if (write) {
+> +			if (pmd_pfn(*pmd) != pfn_t_to_pfn(pfn)) {
+> +				WARN_ON_ONCE(!is_huge_zero_pmd(*pmd));
+> +				goto out_unlock;
+> +			}
+> +			entry = pmd_mkyoung(*pmd);
+> +			entry = maybe_pmd_mkwrite(pmd_mkdirty(entry), vma);
+> +			if (pmdp_set_access_flags(vma, addr, pmd, entry, 1))
+> +				update_mmu_cache_pmd(vma, addr, pmd);
+> +		}
+> +
+> +		goto out_unlock;
+> +	}
+> +
+>  	entry = pmd_mkhuge(pfn_t_pmd(pfn, prot));
+>  	if (pfn_t_devmap(pfn))
+>  		entry = pmd_mkdevmap(entry);
+> @@ -766,11 +781,16 @@ static void insert_pfn_pmd(struct vm_area_struct *vma, unsigned long addr,
+>  	if (pgtable) {
+>  		pgtable_trans_huge_deposit(mm, pmd, pgtable);
+>  		mm_inc_nr_ptes(mm);
+> +		pgtable = NULL;
+>  	}
+>  
+>  	set_pmd_at(mm, addr, pmd, entry);
+>  	update_mmu_cache_pmd(vma, addr, pmd);
+> +
+> +out_unlock:
+>  	spin_unlock(ptl);
+> +	if (pgtable)
+> +		pte_free(mm, pgtable);
+>  }
+>  
+>  vm_fault_t vmf_insert_pfn_pmd(struct vm_area_struct *vma, unsigned long addr,
+> @@ -821,6 +841,20 @@ static void insert_pfn_pud(struct vm_area_struct *vma, unsigned long addr,
+>  	spinlock_t *ptl;
+>  
+>  	ptl = pud_lock(mm, pud);
+> +	if (!pud_none(*pud)) {
+> +		if (write) {
+> +			if (pud_pfn(*pud) != pfn_t_to_pfn(pfn)) {
+> +				WARN_ON_ONCE(!is_huge_zero_pud(*pud));
+> +				goto out_unlock;
+> +			}
+> +			entry = pud_mkyoung(*pud);
+> +			entry = maybe_pud_mkwrite(pud_mkdirty(entry), vma);
+> +			if (pudp_set_access_flags(vma, addr, pud, entry, 1))
+> +				update_mmu_cache_pud(vma, addr, pud);
+> +		}
+> +		goto out_unlock;
+> +	}
+> +
+>  	entry = pud_mkhuge(pfn_t_pud(pfn, prot));
+>  	if (pfn_t_devmap(pfn))
+>  		entry = pud_mkdevmap(entry);
+> @@ -830,6 +864,8 @@ static void insert_pfn_pud(struct vm_area_struct *vma, unsigned long addr,
+>  	}
+>  	set_pud_at(mm, addr, pud, entry);
+>  	update_mmu_cache_pud(vma, addr, pud);
+> +
+> +out_unlock:
+>  	spin_unlock(ptl);
+>  }
+>  
+> -- 
+> 2.20.1
+> 
+-- 
+Jan Kara <jack@suse.com>
+SUSE Labs, CR
