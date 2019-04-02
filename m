@@ -2,75 +2,113 @@ Return-Path: <SRS0=xrHL=SE=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_PASS autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7083EC4360F
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Apr 2019 23:07:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6E2DDC4360F
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Apr 2019 23:33:05 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E857D207E0
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Apr 2019 23:07:29 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E857D207E0
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nxp.com
+	by mail.kernel.org (Postfix) with ESMTPS id E620B2084B
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Apr 2019 23:33:04 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E620B2084B
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44YlGk0TFyzDqM6
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Apr 2019 10:07:26 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44YlrG3WS7zDqRS
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Apr 2019 10:33:02 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44YlpZ5pr5zDqLl
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Apr 2019 10:31:34 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=209.85.210.67; helo=mail-ot1-f67.google.com;
- envelope-from=pku.leo@gmail.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=fail (p=none dis=none) header.from=nxp.com
-Received: from mail-ot1-f67.google.com (mail-ot1-f67.google.com
- [209.85.210.67])
+ dmarc=none (p=none dis=none) header.from=linux.ibm.com
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 44YlpZ3kwFz8t7s
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Apr 2019 10:31:34 +1100 (AEDT)
+Received: by ozlabs.org (Postfix)
+ id 44YlpZ3Pt9z9sSd; Wed,  3 Apr 2019 10:31:34 +1100 (AEDT)
+Authentication-Results: ozlabs.org;
+ spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
+ (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
+ envelope-from=cclaudio@linux.ibm.com; receiver=<UNKNOWN>)
+Authentication-Results: ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=linux.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44YlDb1RDFzDqLg
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Apr 2019 10:05:32 +1100 (AEDT)
-Received: by mail-ot1-f67.google.com with SMTP id f10so6048484otb.6
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 02 Apr 2019 16:05:32 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:mime-version:references:in-reply-to:from:date
- :message-id:subject:to:cc;
- bh=FNGeNmpMXmbmbGQ8XUlYBSMpsJzpAXQAXL/ACI9Obp8=;
- b=bemuiMNqprk277anU9Ir/6F+WP5edfrUZvhA64vM+a8NIfc1TuRo5rlvX+BokAeZca
- lpbZXUevXvaxgQ2wwXB0NB30XqRCUfzelUN/l55h5DZwOz+IFCWYH189LoxsJi8XDZKD
- bbsuswXXF6gTCsRd/gTKb0aGajWay9oZIz4NCiUUvCNK7k4scNtXrNTTiuiFj5EUkbdv
- cdIDPj9wGsZB1m+MRDssy382suPP4aS9fD6kdaTQoTtPOxZxKTiiXIy71Q6pb0/rln+d
- BSwLEtInPqGY9BTOTL/Arr3mAOp9qf+nH/6ZLrHpe702+iy4IOjNnHJ626Q/GxIA3UwT
- sYXQ==
-X-Gm-Message-State: APjAAAWks0mFTqi5nMmcHmLmMlerc/JGzoRp7jSODE2x8POVwASAIrbv
- 6rZ5ZZurwZJ2Auz2wKQTMutylsQePio=
-X-Google-Smtp-Source: APXvYqzZWCuouBLJoDCFNwMfl4WQOXcvAAo8yCI7VaHzLYE+ZWcQyXC3IyppnhmvHWlIvbbiNaRM0A==
-X-Received: by 2002:a9d:454b:: with SMTP id p11mr21555386oti.111.1554246330515; 
- Tue, 02 Apr 2019 16:05:30 -0700 (PDT)
-Received: from mail-oi1-f174.google.com (mail-oi1-f174.google.com.
- [209.85.167.174])
- by smtp.gmail.com with ESMTPSA id a131sm6031023oif.23.2019.04.02.16.05.29
- for <linuxppc-dev@lists.ozlabs.org>
- (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
- Tue, 02 Apr 2019 16:05:30 -0700 (PDT)
-Received: by mail-oi1-f174.google.com with SMTP id i21so11957043oib.11
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 02 Apr 2019 16:05:29 -0700 (PDT)
-X-Received: by 2002:aca:d984:: with SMTP id
- q126mr12607185oig.108.1554246329538; 
- Tue, 02 Apr 2019 16:05:29 -0700 (PDT)
+ by ozlabs.org (Postfix) with ESMTPS id 44YlpY6L7zz9sSJ
+ for <linuxppc-dev@ozlabs.org>; Wed,  3 Apr 2019 10:31:33 +1100 (AEDT)
+Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
+ x32NSjH0049103
+ for <linuxppc-dev@ozlabs.org>; Tue, 2 Apr 2019 19:31:30 -0400
+Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2rmg3fkdsa-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@ozlabs.org>; Tue, 02 Apr 2019 19:31:30 -0400
+Received: from localhost
+ by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <cclaudio@linux.ibm.com>;
+ Wed, 3 Apr 2019 00:31:29 +0100
+Received: from b03cxnp08025.gho.boulder.ibm.com (9.17.130.17)
+ by e31.co.us.ibm.com (192.168.1.131) with IBM ESMTP SMTP Gateway: Authorized
+ Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Wed, 3 Apr 2019 00:31:24 +0100
+Received: from b03ledav005.gho.boulder.ibm.com
+ (b03ledav005.gho.boulder.ibm.com [9.17.130.236])
+ by b03cxnp08025.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x32NVNwT30867688
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Tue, 2 Apr 2019 23:31:24 GMT
+Received: from b03ledav005.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id D8B87BE056;
+ Tue,  2 Apr 2019 23:31:23 +0000 (GMT)
+Received: from b03ledav005.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 49305BE058;
+ Tue,  2 Apr 2019 23:31:21 +0000 (GMT)
+Received: from [9.18.235.111] (unknown [9.18.235.111])
+ by b03ledav005.gho.boulder.ibm.com (Postfix) with ESMTP;
+ Tue,  2 Apr 2019 23:31:20 +0000 (GMT)
+Subject: Re: [PATCH 0/4] Enabling secure boot on PowerNV systems
+To: Matthew Garrett <mjg59@google.com>
+References: <20190402181505.25037-1-cclaudio@linux.ibm.com>
+ <CACdnJuumhkqTb4+1=QBiLmbW4xd3wW=MZu6Tj_KdaoTMhCN+Tg@mail.gmail.com>
+ <4ce5e057-0702-b0d5-7bb2-cea5b22e2efa@linux.ibm.com>
+ <CACdnJusBm93zwDqTXTx_QYsg1-aGUAAHm_qq8Lcx3TvGTxdmbg@mail.gmail.com>
+From: Claudio Carvalho <cclaudio@linux.ibm.com>
+Date: Tue, 2 Apr 2019 20:31:19 -0300
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.6.0
 MIME-Version: 1.0
-References: <1551132245-6089-1-git-send-email-vabhav.sharma@nxp.com>
- <1551132245-6089-3-git-send-email-vabhav.sharma@nxp.com>
-In-Reply-To: <1551132245-6089-3-git-send-email-vabhav.sharma@nxp.com>
-From: Li Yang <leoyang.li@nxp.com>
-Date: Tue, 2 Apr 2019 18:05:18 -0500
-X-Gmail-Original-Message-ID: <CADRPPNTcY6fMJZDmsWzPzkn1hMzsoJh15-Gchepg_vJLxL=zcw@mail.gmail.com>
-Message-ID: <CADRPPNTcY6fMJZDmsWzPzkn1hMzsoJh15-Gchepg_vJLxL=zcw@mail.gmail.com>
-Subject: Re: [PATCH v1 2/4] soc/fsl/guts: Add definition for LX2160A
-To: Vabhav Sharma <vabhav.sharma@nxp.com>
-Content-Type: text/plain; charset="UTF-8"
+In-Reply-To: <CACdnJusBm93zwDqTXTx_QYsg1-aGUAAHm_qq8Lcx3TvGTxdmbg@mail.gmail.com>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+Content-Language: en-US
+X-TM-AS-GCONF: 00
+x-cbid: 19040223-8235-0000-0000-00000E78A12B
+X-IBM-SpamModules-Scores: 
+X-IBM-SpamModules-Versions: BY=3.00010863; HX=3.00000242; KW=3.00000007;
+ PH=3.00000004; SC=3.00000284; SDB=6.01183465; UDB=6.00619586; IPR=6.00964213; 
+ MB=3.00026266; MTD=3.00000008; XFM=3.00000015; UTC=2019-04-02 23:31:28
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 19040223-8236-0000-0000-00004500EEB7
+Message-Id: <2208f156-d441-3082-2f4c-8030c84ef788@linux.ibm.com>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
+ definitions=2019-04-02_10:, , signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1810050000 definitions=main-1904020153
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -82,79 +120,49 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "mark.rutland@arm.com" <mark.rutland@arm.com>,
- "kstewart@linuxfoundation.org" <kstewart@linuxfoundation.org>,
- "ulf.hansson@linaro.org" <ulf.hansson@linaro.org>,
- "linux-kernel-owner@vger.kernel.org" <linux-kernel-owner@vger.kernel.org>,
- "catalin.marinas@arm.com" <catalin.marinas@arm.com>,
- "mturquette@baylibre.com" <mturquette@baylibre.com>,
- "will.deacon@arm.com" <will.deacon@arm.com>,
- "adrian.hunter@intel.com" <adrian.hunter@intel.com>,
- "yamada.masahiro@socionext.com" <yamada.masahiro@socionext.com>,
- "linux-clk@vger.kernel.org" <linux-clk@vger.kernel.org>,
- "linux@armlinux.org.uk" <linux@armlinux.org.uk>,
- "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>,
- Yinbo Zhu <yinbo.zhu@nxp.com>,
- "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- "arnd@arndb.de" <arnd@arndb.de>,
- "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "oss@buserror.net" <oss@buserror.net>,
- "robh+dt@kernel.org" <robh+dt@kernel.org>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
- "sboyd@kernel.org" <sboyd@kernel.org>,
- "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>,
- "rjw@rjwysocki.net" <rjw@rjwysocki.net>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "sudeep.holla@arm.com" <sudeep.holla@arm.com>,
- "shawnguo@kernel.org" <shawnguo@kernel.org>
+Cc: linux-efi <linux-efi@vger.kernel.org>,
+ Ard Biesheuvel <ard.biesheuvel@linaro.org>, Nayna Jain <nayna@linux.ibm.com>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ Matthew Garret <matthew.garret@nebula.com>, linuxppc-dev@ozlabs.org,
+ Paul Mackerras <paulus@samba.org>, Jeremy Kerr <jk@ozlabs.org>,
+ linux-integrity <linux-integrity@vger.kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, Feb 26, 2019 at 4:12 AM Vabhav Sharma <vabhav.sharma@nxp.com> wrote:
->
-> Adding compatible string "lx2160a-dcfg" to
-> initialize guts driver for lx2160 and SoC die
-> attribute definition for LX2160A
+
+On 4/2/19 6:51 PM, Matthew Garrett wrote:
+> On Tue, Apr 2, 2019 at 2:11 PM Claudio Carvalho <cclaudio@linux.ibm.com> wrote:
+>> We want to use the efivarfs for compatibility with existing userspace
+>> tools. We will track and match any EFI changes that affect us.
+> So you implement the full PK/KEK/db/dbx/dbt infrastructure, and
+> updates are signed in the same way?
+
+For the first version, our firmware will implement a simplistic PK, KEK and
+db infrastructure (without dbx and dbt) where only the Setup and User modes
+will be supported.
+
+PK, KEK and db updates will be signed the same way, that is, using
+userspace tooling like efitools in PowerNV. As for the authentication
+descriptors, only the EFI_VARIABLE_AUTHENTICATION_2 descriptor will be
+supported.
 
 
-Applied to branch next.  Thanks.
+>> Our use case is restricted to secure boot - this is not going to be a
+>> general purpose EFI variable implementation.
+> In that case we might be better off with a generic interface for this
+> purpose that we can expose on all platforms that implement a secure
+> boot key hierarchy. Having an efivarfs that doesn't allow the creation
+> of arbitrary attributes may break other existing userland
+> expectations.
+>
+For what it's worth, gsmi uses the efivars infrastructure for EFI-like
+variables.
 
-Regards,
-Leo
->
-> Signed-off-by: Vabhav Sharma <vabhav.sharma@nxp.com>
-> Signed-off-by: Yinbo Zhu <yinbo.zhu@nxp.com>
-> Acked-by: Li Yang <leoyang.li@nxp.com>
-> ---
->  drivers/soc/fsl/guts.c | 6 ++++++
->  1 file changed, 6 insertions(+)
->
-> diff --git a/drivers/soc/fsl/guts.c b/drivers/soc/fsl/guts.c
-> index 302e0c8..bcab1ee 100644
-> --- a/drivers/soc/fsl/guts.c
-> +++ b/drivers/soc/fsl/guts.c
-> @@ -100,6 +100,11 @@ static const struct fsl_soc_die_attr fsl_soc_die[] = {
->           .svr          = 0x87000000,
->           .mask         = 0xfff70000,
->         },
-> +       /* Die: LX2160A, SoC: LX2160A/LX2120A/LX2080A */
-> +       { .die          = "LX2160A",
-> +         .svr          = 0x87360000,
-> +         .mask         = 0xff3f0000,
-> +       },
->         { },
->  };
->
-> @@ -222,6 +227,7 @@ static const struct of_device_id fsl_guts_of_match[] = {
->         { .compatible = "fsl,ls1088a-dcfg", },
->         { .compatible = "fsl,ls1012a-dcfg", },
->         { .compatible = "fsl,ls1046a-dcfg", },
-> +       { .compatible = "fsl,lx2160a-dcfg", },
->         {}
->  };
->  MODULE_DEVICE_TABLE(of, fsl_guts_of_match);
-> --
-> 2.7.4
->
+What might a generic interface look like?  It would have to work for
+existing secure boot solutions - including EFI - which would seem to imply
+changes to userspace tools.
+
+Claudio
+
+
