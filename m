@@ -2,79 +2,82 @@ Return-Path: <SRS0=xrHL=SE=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.5 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
+X-Spam-Status: No, score=-8.5 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
 	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id F1AF6C43381
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Apr 2019 06:33:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D60A7C43381
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Apr 2019 06:35:00 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3B0FE2084C
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Apr 2019 06:33:18 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 264452070B
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Apr 2019 06:35:00 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="J3KMmyUR"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3B0FE2084C
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="hPMERnP1"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 264452070B
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44YKCb3mN2zDqLg
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Apr 2019 17:33:15 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44YKFZ18pjzDqND
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Apr 2019 17:34:58 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=2607:f8b0:4864:20::543; helo=mail-pg1-x543.google.com;
+ (client-ip=2607:f8b0:4864:20::544; helo=mail-pg1-x544.google.com;
  envelope-from=vilhelm.gray@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="J3KMmyUR"; 
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="hPMERnP1"; 
  dkim-atps=neutral
-Received: from mail-pg1-x543.google.com (mail-pg1-x543.google.com
- [IPv6:2607:f8b0:4864:20::543])
+Received: from mail-pg1-x544.google.com (mail-pg1-x544.google.com
+ [IPv6:2607:f8b0:4864:20::544])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44YK880TL5zDqJs
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Apr 2019 17:30:15 +1100 (AEDT)
-Received: by mail-pg1-x543.google.com with SMTP id z9so6009853pgu.10
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 01 Apr 2019 23:30:15 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44YK8K2D0BzDqLd
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Apr 2019 17:30:25 +1100 (AEDT)
+Received: by mail-pg1-x544.google.com with SMTP id v12so6034491pgq.1
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 01 Apr 2019 23:30:25 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=from:to:cc:subject:date:message-id:mime-version
- :content-transfer-encoding;
- bh=9BsIkZBYglgWK6GSpo0aZ/aTtxs6mxHN7TKHXjgH19w=;
- b=J3KMmyURzg8DeGMM5fCBb5O7IQPLqTE8ub/+e9g46rgM4dWjPbrr622Ll/K7l2kx3L
- hiRECEl2fztLifmV5Aw3FsFGshcfrLdlgHoQXqEGgO0uVlFLdz4w3S2GnMUKT0HPhPP2
- 3Vji6Bxk5MwrUYUPbwRs6/0Cn+Y5ac3pUDVg5bWmJrEKzX2cub3jXqU0VT6DyTrElb0r
- S3GgLiBF2fXjwnRLnZLm4SGlBlqRcOpIVQ26fXVnfjp00hWE6PYjSM/h5szHhNAlNGxs
- cU65ms9pRRf5wE2wAbsScI4pgkERCUks4kPtGB+dzxxucfWH+yRtQ50WFZXaqKRR3290
- EGFQ==
+ h=from:to:cc:subject:date:message-id:in-reply-to:references
+ :mime-version:content-transfer-encoding;
+ bh=8JdZnA7sCFwx4YD2hF0Sf9LT7tcz/uSFvWr5rljxoVM=;
+ b=hPMERnP15ZNe7Wj663VRYWR7PjVBGI1s2MOj/QyFiFcxKuX1JIS4utNEI5SfAiAcs7
+ hpTXncHw3i/l52rONX7EgmVGA8RYcWhsNwiOYos5Xc+2KGqlZvuTJLNrGIfcbHCJstO0
+ wRNkKA3TzdNkEIPGqA5l9omZq0zMoqoMzc+sfI8bWubzQY/aH+FqVRlsV9K1iuF8jeoU
+ ekyA3s4RmGy0gkqWIiqz/5wLNXWCPXhPx0z01LykQ3R5Qp3jiiy+YdkGfauuadBLYtFt
+ JuJEIrOz20nOc+IJJcRDhntZqzoMrJX9zC6imYlnc4UmlcqjEPetCp1yyXOpaL2FOx/I
+ ps0g==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
- h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
- :content-transfer-encoding;
- bh=9BsIkZBYglgWK6GSpo0aZ/aTtxs6mxHN7TKHXjgH19w=;
- b=Wu/XImPBtMnp2jlRhk1OW7HDIUsJ4hwLoDehYcZnX5e97ZhnQBdw0bLVeJgW63VkHY
- /SMkhd9KprMZAtR6qQHOUQNDxx4ugwcE5LT7B6sDNRyGmgdIjqOOzz3YB09K8bISg46u
- nFDM+zJKfI/2LJOSSM0uoW8pOfOo6ysQV2jh0AYq1702KnTOUST3kBTxahiz46sCB0AK
- CDTnjM2pLO3R308fpMxALfz3fgK0lyPeO76m81gNWuz4m8AWgoM8GpAOefneb6n854sV
- kqBllksbI2bum16KhiWrSOFhvBXpQ09zZ47KABvU6wGko43D0gV6p89I2R80n/x00voW
- A7nQ==
-X-Gm-Message-State: APjAAAVAKF5No6xeI+s9JxPzPQRN6uVLUfJBiez0sxf5Vr9ixdB9GX0K
- /RQfdazrWYhMjeKKvX5iAyM=
-X-Google-Smtp-Source: APXvYqx0obJ8Ofk/95VNnfqwJ+f0hgu5fXiFV5AoyB+rJy+OxFNtuGvsiF99EFeuOhGjc5ANiU5clA==
-X-Received: by 2002:a63:ff18:: with SMTP id k24mr66050078pgi.140.1554186610293; 
- Mon, 01 Apr 2019 23:30:10 -0700 (PDT)
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+ :references:mime-version:content-transfer-encoding;
+ bh=8JdZnA7sCFwx4YD2hF0Sf9LT7tcz/uSFvWr5rljxoVM=;
+ b=I8SohwdfpVs1f1f4JX3ym0bGaMNqd1t5vAO20mc4ENoK6sO5ZuvDPB1UTTr/7OY5Ob
+ 80dNfyUVluyQadm5ueMGj/2t0UFTORJ+VQu4t02YxloEl4j5M2gVenvwFdPHsz++RLzq
+ BkAQeSZFC+EtkJeVidoMkVsmfhA+YMpMbOr5nslV3lgXadD92LQqTHkC6ryUVCKmpDy5
+ NP0nXtAuNKq05oR9qQKZypt/D1w6NR0t7XwNI1S51IOreDsi4bkCz5YloldKpqIWks7O
+ dAv2sABtZirG6MXIDzeTr2+8jW6qqnkPro2PCWoUAVPRYeLJ0sqH7kJJ8rtLCaFJ/cY8
+ LXMQ==
+X-Gm-Message-State: APjAAAW9XkK6vpByjLfH2sk0SmUxl4ATHbHpMvy1nLjsgVPlE2mVJt7F
+ 2SKw0buRN9avEdA5hIszC/M=
+X-Google-Smtp-Source: APXvYqwisUoeZGDMXDYuoBDQfJ7ZFZC4l05G6tg6mrEsmwuYe3hG9lVvtTs3/TbEH/bp1BeIqjI7eA==
+X-Received: by 2002:aa7:8212:: with SMTP id k18mr11475470pfi.50.1554186621447; 
+ Mon, 01 Apr 2019 23:30:21 -0700 (PDT)
 Received: from localhost.localdomain ([2001:268:c0a5:4ce0:c70:4af9:86e2:2])
- by smtp.gmail.com with ESMTPSA id a17sm19327289pfj.123.2019.04.01.23.30.00
+ by smtp.gmail.com with ESMTPSA id a17sm19327289pfj.123.2019.04.01.23.30.10
  (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
- Mon, 01 Apr 2019 23:30:09 -0700 (PDT)
+ Mon, 01 Apr 2019 23:30:20 -0700 (PDT)
 From: William Breathitt Gray <vilhelm.gray@gmail.com>
 To: gregkh@linuxfoundation.org
-Subject: [PATCH v10 00/18] Introduce the Counter subsystem
-Date: Tue,  2 Apr 2019 15:30:35 +0900
-Message-Id: <cover.1554184734.git.vilhelm.gray@gmail.com>
+Subject: [PATCH v10 01/18] counter: Introduce the Generic Counter interface
+Date: Tue,  2 Apr 2019 15:30:36 +0900
+Message-Id: <ad3a8c427a911848373eae1c08e89353ffb6cb6d.1554184734.git.vilhelm.gray@gmail.com>
 X-Mailer: git-send-email 2.21.0
+In-Reply-To: <cover.1554184734.git.vilhelm.gray@gmail.com>
+References: <cover.1554184734.git.vilhelm.gray@gmail.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -94,109 +97,2271 @@ Cc: mark.rutland@arm.com, benjamin.gaignard@st.com, linux-pwm@vger.kernel.org,
  daniel.lezcano@linaro.org, linux-arm-kernel@lists.infradead.org,
  devicetree@vger.kernel.org, david@lechnology.com,
  William Breathitt Gray <vilhelm.gray@gmail.com>, robh+dt@kernel.org,
- tglx@linutronix.de, fabrice.gasnier@st.com, esben@haabendal.dk,
- shawnguo@kernel.org, linux-kernel@vger.kernel.org, leoyang.li@nxp.com,
- knaack.h@gmx.de, akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org,
- jic23@kernel.org
+ Jonathan Cameron <Jonathan.Cameron@huawei.com>, tglx@linutronix.de,
+ fabrice.gasnier@st.com, esben@haabendal.dk, shawnguo@kernel.org,
+ linux-kernel@vger.kernel.org, leoyang.li@nxp.com, knaack.h@gmx.de,
+ akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org, jic23@kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Changes in v10:
-  - Fix minor typographical errors in documentation
-  - Merge the FlexTimer Module Quadrature decoder counter driver patches
+This patch introduces the Generic Counter interface for supporting
+counter devices.
 
-This revision is functionally identical to the last; changes in this
-version were made to fix minor typos in the documentation files and also
-to pull in the new FTM quadrature decoder counter driver.
+In the context of the Generic Counter interface, a counter is defined as
+a device that reports one or more "counts" based on the state changes of
+one or more "signals" as evaluated by a defined "count function."
 
-The Generic Counter API has been and is still in a feature freeze until
-it is merged into the mainline. The following features will be
-investigated after the merge: interrupt support for counter devices, and
-a character device interface for low-latency applications.
+Driver callbacks should be provided to communicate with the device: to
+read and write various Signals and Counts, and to set and get the
+"action mode" and "count function" for various Synapses and Counts
+respectively.
 
-Benjamin Gaignard (2):
-  counter: Add STM32 Timer quadrature encoder
-  dt-bindings: counter: Document stm32 quadrature encoder
+To support a counter device, a driver must first allocate the available
+Counter Signals via counter_signal structures. These Signals should
+be stored as an array and set to the signals array member of an
+allocated counter_device structure before the Counter is registered to
+the system.
 
-Fabrice Gasnier (2):
-  counter: stm32-lptimer: add counter device
-  dt-bindings: counter: Adjust dt-bindings for STM32 lptimer move
+Counter Counts may be allocated via counter_count structures, and
+respective Counter Signal associations (Synapses) made via
+counter_synapse structures. Associated counter_synapse structures are
+stored as an array and set to the the synapses array member of the
+respective counter_count structure. These counter_count structures are
+set to the counts array member of an allocated counter_device structure
+before the Counter is registered to the system.
 
-Patrick Havelange (7):
-  include/fsl: add common FlexTimer #defines in a separate header.
-  drivers/pwm: pwm-fsl-ftm: use common header for FlexTimer #defines
-  drivers/clocksource: timer-fsl-ftm: use common header for FlexTimer
-    #defines
-  dt-bindings: counter: ftm-quaddec
-  counter: add FlexTimer Module Quadrature decoder counter driver
-  counter: ftm-quaddec: Documentation: Add specific counter sysfs
-    documentation
-  LS1021A: dtsi: add ftm quad decoder entries
+A counter device is registered to the system by passing the respective
+initialized counter_device structure to the counter_register function;
+similarly, the counter_unregister function unregisters the respective
+Counter. The devm_counter_register and devm_counter_unregister functions
+serve as device memory-managed versions of the counter_register and
+counter_unregister functions respectively.
 
-William Breathitt Gray (7):
-  counter: Introduce the Generic Counter interface
-  counter: Documentation: Add Generic Counter sysfs documentation
-  docs: Add Generic Counter interface documentation
-  iio: 104-quad-8: Update license boilerplate
-  counter: 104-quad-8: Add Generic Counter interface support
-  counter: 104-quad-8: Documentation: Add Generic Counter sysfs
-    documentation
-  iio: counter: Add deprecation markings for IIO Counter attributes
-
- Documentation/ABI/testing/sysfs-bus-counter   |  230 +++
- .../ABI/testing/sysfs-bus-counter-104-quad-8  |   36 +
- .../ABI/testing/sysfs-bus-counter-ftm-quaddec |   16 +
- Documentation/ABI/testing/sysfs-bus-iio       |    8 +
- .../testing/sysfs-bus-iio-counter-104-quad-8  |   16 +
- .../bindings/counter/ftm-quaddec.txt          |   18 +
- .../{iio => }/counter/stm32-lptimer-cnt.txt   |    0
- .../bindings/counter/stm32-timer-cnt.txt      |   31 +
- .../devicetree/bindings/mfd/stm32-lptimer.txt |    2 +-
- .../devicetree/bindings/mfd/stm32-timers.txt  |    7 +
- Documentation/driver-api/generic-counter.rst  |  342 ++++
- Documentation/driver-api/index.rst            |    1 +
- MAINTAINERS                                   |   15 +-
- arch/arm/boot/dts/ls1021a.dtsi                |   28 +
- drivers/Kconfig                               |    2 +
- drivers/Makefile                              |    1 +
- drivers/clocksource/timer-fsl-ftm.c           |   15 +-
- drivers/{iio => }/counter/104-quad-8.c        |  782 +++++++-
- drivers/counter/Kconfig                       |   60 +
- drivers/counter/Makefile                      |   10 +
- drivers/counter/counter.c                     | 1567 +++++++++++++++++
- drivers/counter/ftm-quaddec.c                 |  356 ++++
- drivers/{iio => }/counter/stm32-lptimer-cnt.c |  361 +++-
- drivers/counter/stm32-timer-cnt.c             |  390 ++++
- drivers/iio/Kconfig                           |    1 -
- drivers/iio/Makefile                          |    1 -
- drivers/iio/counter/Kconfig                   |   34 -
- drivers/iio/counter/Makefile                  |    8 -
- drivers/pwm/pwm-fsl-ftm.c                     |   44 +-
- include/linux/counter.h                       |  510 ++++++
- include/linux/counter_enum.h                  |   45 +
- include/linux/fsl/ftm.h                       |   88 +
- 32 files changed, 4877 insertions(+), 148 deletions(-)
- create mode 100644 Documentation/ABI/testing/sysfs-bus-counter
- create mode 100644 Documentation/ABI/testing/sysfs-bus-counter-104-quad-8
- create mode 100644 Documentation/ABI/testing/sysfs-bus-counter-ftm-quaddec
- create mode 100644 Documentation/devicetree/bindings/counter/ftm-quaddec.txt
- rename Documentation/devicetree/bindings/{iio => }/counter/stm32-lptimer-cnt.txt (100%)
- create mode 100644 Documentation/devicetree/bindings/counter/stm32-timer-cnt.txt
- create mode 100644 Documentation/driver-api/generic-counter.rst
- rename drivers/{iio => }/counter/104-quad-8.c (44%)
+Reviewed-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+Signed-off-by: William Breathitt Gray <vilhelm.gray@gmail.com>
+---
+ MAINTAINERS                  |    8 +
+ drivers/Kconfig              |    2 +
+ drivers/Makefile             |    1 +
+ drivers/counter/Kconfig      |   10 +
+ drivers/counter/Makefile     |    5 +
+ drivers/counter/counter.c    | 1567 ++++++++++++++++++++++++++++++++++
+ include/linux/counter.h      |  510 +++++++++++
+ include/linux/counter_enum.h |   45 +
+ 8 files changed, 2148 insertions(+)
  create mode 100644 drivers/counter/Kconfig
  create mode 100644 drivers/counter/Makefile
  create mode 100644 drivers/counter/counter.c
- create mode 100644 drivers/counter/ftm-quaddec.c
- rename drivers/{iio => }/counter/stm32-lptimer-cnt.c (51%)
- create mode 100644 drivers/counter/stm32-timer-cnt.c
- delete mode 100644 drivers/iio/counter/Kconfig
- delete mode 100644 drivers/iio/counter/Makefile
  create mode 100644 include/linux/counter.h
  create mode 100644 include/linux/counter_enum.h
- create mode 100644 include/linux/fsl/ftm.h
 
+diff --git a/MAINTAINERS b/MAINTAINERS
+index ff2c2f2e6da3..ef497d470501 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -3966,6 +3966,14 @@ W:	http://www.fi.muni.cz/~kas/cosa/
+ S:	Maintained
+ F:	drivers/net/wan/cosa*
+ 
++COUNTER SUBSYSTEM
++M:	William Breathitt Gray <vilhelm.gray@gmail.com>
++L:	linux-iio@vger.kernel.org
++S:	Maintained
++F:	drivers/counter/
++F:	include/linux/counter.h
++F:	include/linux/counter_enum.h
++
+ CPMAC ETHERNET DRIVER
+ M:	Florian Fainelli <f.fainelli@gmail.com>
+ L:	netdev@vger.kernel.org
+diff --git a/drivers/Kconfig b/drivers/Kconfig
+index 4f9f99057ff8..e1fd5d783e39 100644
+--- a/drivers/Kconfig
++++ b/drivers/Kconfig
+@@ -228,4 +228,6 @@ source "drivers/siox/Kconfig"
+ 
+ source "drivers/slimbus/Kconfig"
+ 
++source "drivers/counter/Kconfig"
++
+ endmenu
+diff --git a/drivers/Makefile b/drivers/Makefile
+index e1ce029d28fd..7ea509ad6d43 100644
+--- a/drivers/Makefile
++++ b/drivers/Makefile
+@@ -186,3 +186,4 @@ obj-$(CONFIG_MULTIPLEXER)	+= mux/
+ obj-$(CONFIG_UNISYS_VISORBUS)	+= visorbus/
+ obj-$(CONFIG_SIOX)		+= siox/
+ obj-$(CONFIG_GNSS)		+= gnss/
++obj-$(CONFIG_COUNTER)		+= counter/
+diff --git a/drivers/counter/Kconfig b/drivers/counter/Kconfig
+new file mode 100644
+index 000000000000..a74998400282
+--- /dev/null
++++ b/drivers/counter/Kconfig
+@@ -0,0 +1,10 @@
++#
++# Counter devices
++#
++
++menuconfig COUNTER
++	tristate "Counter support"
++	help
++	  This enables counter device support through the Generic Counter
++	  interface. You only need to enable this, if you also want to enable
++	  one or more of the counter device drivers below.
+diff --git a/drivers/counter/Makefile b/drivers/counter/Makefile
+new file mode 100644
+index 000000000000..b1464604bdbe
+--- /dev/null
++++ b/drivers/counter/Makefile
+@@ -0,0 +1,5 @@
++#
++# Makefile for Counter devices
++#
++
++obj-$(CONFIG_COUNTER) += counter.o
+diff --git a/drivers/counter/counter.c b/drivers/counter/counter.c
+new file mode 100644
+index 000000000000..106bc7180cd8
+--- /dev/null
++++ b/drivers/counter/counter.c
+@@ -0,0 +1,1567 @@
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * Generic Counter interface
++ * Copyright (C) 2018 William Breathitt Gray
++ */
++#include <linux/counter.h>
++#include <linux/device.h>
++#include <linux/err.h>
++#include <linux/export.h>
++#include <linux/fs.h>
++#include <linux/gfp.h>
++#include <linux/idr.h>
++#include <linux/init.h>
++#include <linux/kernel.h>
++#include <linux/list.h>
++#include <linux/module.h>
++#include <linux/printk.h>
++#include <linux/slab.h>
++#include <linux/string.h>
++#include <linux/sysfs.h>
++#include <linux/types.h>
++
++const char *const counter_count_direction_str[2] = {
++	[COUNTER_COUNT_DIRECTION_FORWARD] = "forward",
++	[COUNTER_COUNT_DIRECTION_BACKWARD] = "backward"
++};
++EXPORT_SYMBOL_GPL(counter_count_direction_str);
++
++const char *const counter_count_mode_str[4] = {
++	[COUNTER_COUNT_MODE_NORMAL] = "normal",
++	[COUNTER_COUNT_MODE_RANGE_LIMIT] = "range limit",
++	[COUNTER_COUNT_MODE_NON_RECYCLE] = "non-recycle",
++	[COUNTER_COUNT_MODE_MODULO_N] = "modulo-n"
++};
++EXPORT_SYMBOL_GPL(counter_count_mode_str);
++
++ssize_t counter_signal_enum_read(struct counter_device *counter,
++				 struct counter_signal *signal, void *priv,
++				 char *buf)
++{
++	const struct counter_signal_enum_ext *const e = priv;
++	int err;
++	size_t index;
++
++	if (!e->get)
++		return -EINVAL;
++
++	err = e->get(counter, signal, &index);
++	if (err)
++		return err;
++
++	if (index >= e->num_items)
++		return -EINVAL;
++
++	return sprintf(buf, "%s\n", e->items[index]);
++}
++EXPORT_SYMBOL_GPL(counter_signal_enum_read);
++
++ssize_t counter_signal_enum_write(struct counter_device *counter,
++				  struct counter_signal *signal, void *priv,
++				  const char *buf, size_t len)
++{
++	const struct counter_signal_enum_ext *const e = priv;
++	ssize_t index;
++	int err;
++
++	if (!e->set)
++		return -EINVAL;
++
++	index = __sysfs_match_string(e->items, e->num_items, buf);
++	if (index < 0)
++		return index;
++
++	err = e->set(counter, signal, index);
++	if (err)
++		return err;
++
++	return len;
++}
++EXPORT_SYMBOL_GPL(counter_signal_enum_write);
++
++ssize_t counter_signal_enum_available_read(struct counter_device *counter,
++					   struct counter_signal *signal,
++					   void *priv, char *buf)
++{
++	const struct counter_signal_enum_ext *const e = priv;
++	size_t i;
++	size_t len = 0;
++
++	if (!e->num_items)
++		return 0;
++
++	for (i = 0; i < e->num_items; i++)
++		len += sprintf(buf + len, "%s\n", e->items[i]);
++
++	return len;
++}
++EXPORT_SYMBOL_GPL(counter_signal_enum_available_read);
++
++ssize_t counter_count_enum_read(struct counter_device *counter,
++				struct counter_count *count, void *priv,
++				char *buf)
++{
++	const struct counter_count_enum_ext *const e = priv;
++	int err;
++	size_t index;
++
++	if (!e->get)
++		return -EINVAL;
++
++	err = e->get(counter, count, &index);
++	if (err)
++		return err;
++
++	if (index >= e->num_items)
++		return -EINVAL;
++
++	return sprintf(buf, "%s\n", e->items[index]);
++}
++EXPORT_SYMBOL_GPL(counter_count_enum_read);
++
++ssize_t counter_count_enum_write(struct counter_device *counter,
++				 struct counter_count *count, void *priv,
++				 const char *buf, size_t len)
++{
++	const struct counter_count_enum_ext *const e = priv;
++	ssize_t index;
++	int err;
++
++	if (!e->set)
++		return -EINVAL;
++
++	index = __sysfs_match_string(e->items, e->num_items, buf);
++	if (index < 0)
++		return index;
++
++	err = e->set(counter, count, index);
++	if (err)
++		return err;
++
++	return len;
++}
++EXPORT_SYMBOL_GPL(counter_count_enum_write);
++
++ssize_t counter_count_enum_available_read(struct counter_device *counter,
++					  struct counter_count *count,
++					  void *priv, char *buf)
++{
++	const struct counter_count_enum_ext *const e = priv;
++	size_t i;
++	size_t len = 0;
++
++	if (!e->num_items)
++		return 0;
++
++	for (i = 0; i < e->num_items; i++)
++		len += sprintf(buf + len, "%s\n", e->items[i]);
++
++	return len;
++}
++EXPORT_SYMBOL_GPL(counter_count_enum_available_read);
++
++ssize_t counter_device_enum_read(struct counter_device *counter, void *priv,
++				 char *buf)
++{
++	const struct counter_device_enum_ext *const e = priv;
++	int err;
++	size_t index;
++
++	if (!e->get)
++		return -EINVAL;
++
++	err = e->get(counter, &index);
++	if (err)
++		return err;
++
++	if (index >= e->num_items)
++		return -EINVAL;
++
++	return sprintf(buf, "%s\n", e->items[index]);
++}
++EXPORT_SYMBOL_GPL(counter_device_enum_read);
++
++ssize_t counter_device_enum_write(struct counter_device *counter, void *priv,
++				  const char *buf, size_t len)
++{
++	const struct counter_device_enum_ext *const e = priv;
++	ssize_t index;
++	int err;
++
++	if (!e->set)
++		return -EINVAL;
++
++	index = __sysfs_match_string(e->items, e->num_items, buf);
++	if (index < 0)
++		return index;
++
++	err = e->set(counter, index);
++	if (err)
++		return err;
++
++	return len;
++}
++EXPORT_SYMBOL_GPL(counter_device_enum_write);
++
++ssize_t counter_device_enum_available_read(struct counter_device *counter,
++					   void *priv, char *buf)
++{
++	const struct counter_device_enum_ext *const e = priv;
++	size_t i;
++	size_t len = 0;
++
++	if (!e->num_items)
++		return 0;
++
++	for (i = 0; i < e->num_items; i++)
++		len += sprintf(buf + len, "%s\n", e->items[i]);
++
++	return len;
++}
++EXPORT_SYMBOL_GPL(counter_device_enum_available_read);
++
++static const char *const counter_signal_level_str[] = {
++	[COUNTER_SIGNAL_LEVEL_LOW] = "low",
++	[COUNTER_SIGNAL_LEVEL_HIGH] = "high"
++};
++
++/**
++ * counter_signal_read_value_set - set counter_signal_read_value data
++ * @val:	counter_signal_read_value structure to set
++ * @type:	property Signal data represents
++ * @data:	Signal data
++ *
++ * This function sets an opaque counter_signal_read_value structure with the
++ * provided Signal data.
++ */
++void counter_signal_read_value_set(struct counter_signal_read_value *const val,
++				   const enum counter_signal_value_type type,
++				   void *const data)
++{
++	if (type == COUNTER_SIGNAL_LEVEL)
++		val->len = sprintf(val->buf, "%s\n",
++				   counter_signal_level_str[*(enum counter_signal_level *)data]);
++	else
++		val->len = 0;
++}
++EXPORT_SYMBOL_GPL(counter_signal_read_value_set);
++
++/**
++ * counter_count_read_value_set - set counter_count_read_value data
++ * @val:	counter_count_read_value structure to set
++ * @type:	property Count data represents
++ * @data:	Count data
++ *
++ * This function sets an opaque counter_count_read_value structure with the
++ * provided Count data.
++ */
++void counter_count_read_value_set(struct counter_count_read_value *const val,
++				  const enum counter_count_value_type type,
++				  void *const data)
++{
++	switch (type) {
++	case COUNTER_COUNT_POSITION:
++		val->len = sprintf(val->buf, "%lu\n", *(unsigned long *)data);
++		break;
++	default:
++		val->len = 0;
++	}
++}
++EXPORT_SYMBOL_GPL(counter_count_read_value_set);
++
++/**
++ * counter_count_write_value_get - get counter_count_write_value data
++ * @data:	Count data
++ * @type:	property Count data represents
++ * @val:	counter_count_write_value structure containing data
++ *
++ * This function extracts Count data from the provided opaque
++ * counter_count_write_value structure and stores it at the address provided by
++ * @data.
++ *
++ * RETURNS:
++ * 0 on success, negative error number on failure.
++ */
++int counter_count_write_value_get(void *const data,
++				  const enum counter_count_value_type type,
++				  const struct counter_count_write_value *const val)
++{
++	int err;
++
++	switch (type) {
++	case COUNTER_COUNT_POSITION:
++		err = kstrtoul(val->buf, 0, data);
++		if (err)
++			return err;
++		break;
++	}
++
++	return 0;
++}
++EXPORT_SYMBOL_GPL(counter_count_write_value_get);
++
++struct counter_attr_parm {
++	struct counter_device_attr_group *group;
++	const char *prefix;
++	const char *name;
++	ssize_t (*show)(struct device *dev, struct device_attribute *attr,
++			char *buf);
++	ssize_t (*store)(struct device *dev, struct device_attribute *attr,
++			 const char *buf, size_t len);
++	void *component;
++};
++
++struct counter_device_attr {
++	struct device_attribute dev_attr;
++	struct list_head l;
++	void *component;
++};
++
++static int counter_attribute_create(const struct counter_attr_parm *const parm)
++{
++	struct counter_device_attr *counter_attr;
++	struct device_attribute *dev_attr;
++	int err;
++	struct list_head *const attr_list = &parm->group->attr_list;
++
++	/* Allocate a Counter device attribute */
++	counter_attr = kzalloc(sizeof(*counter_attr), GFP_KERNEL);
++	if (!counter_attr)
++		return -ENOMEM;
++	dev_attr = &counter_attr->dev_attr;
++
++	sysfs_attr_init(&dev_attr->attr);
++
++	/* Configure device attribute */
++	dev_attr->attr.name = kasprintf(GFP_KERNEL, "%s%s", parm->prefix,
++					parm->name);
++	if (!dev_attr->attr.name) {
++		err = -ENOMEM;
++		goto err_free_counter_attr;
++	}
++	if (parm->show) {
++		dev_attr->attr.mode |= 0444;
++		dev_attr->show = parm->show;
++	}
++	if (parm->store) {
++		dev_attr->attr.mode |= 0200;
++		dev_attr->store = parm->store;
++	}
++
++	/* Store associated Counter component with attribute */
++	counter_attr->component = parm->component;
++
++	/* Keep track of the attribute for later cleanup */
++	list_add(&counter_attr->l, attr_list);
++	parm->group->num_attr++;
++
++	return 0;
++
++err_free_counter_attr:
++	kfree(counter_attr);
++	return err;
++}
++
++#define to_counter_attr(_dev_attr) \
++	container_of(_dev_attr, struct counter_device_attr, dev_attr)
++
++struct counter_signal_unit {
++	struct counter_signal *signal;
++};
++
++static ssize_t counter_signal_show(struct device *dev,
++				   struct device_attribute *attr, char *buf)
++{
++	struct counter_device *const counter = dev_get_drvdata(dev);
++	const struct counter_device_attr *const devattr = to_counter_attr(attr);
++	const struct counter_signal_unit *const component = devattr->component;
++	struct counter_signal *const signal = component->signal;
++	int err;
++	struct counter_signal_read_value val = { .buf = buf };
++
++	err = counter->ops->signal_read(counter, signal, &val);
++	if (err)
++		return err;
++
++	return val.len;
++}
++
++struct counter_name_unit {
++	const char *name;
++};
++
++static ssize_t counter_device_attr_name_show(struct device *dev,
++					     struct device_attribute *attr,
++					     char *buf)
++{
++	const struct counter_name_unit *const comp = to_counter_attr(attr)->component;
++
++	return sprintf(buf, "%s\n", comp->name);
++}
++
++static int counter_name_attribute_create(
++	struct counter_device_attr_group *const group,
++	const char *const name)
++{
++	struct counter_name_unit *name_comp;
++	struct counter_attr_parm parm;
++	int err;
++
++	/* Skip if no name */
++	if (!name)
++		return 0;
++
++	/* Allocate name attribute component */
++	name_comp = kmalloc(sizeof(*name_comp), GFP_KERNEL);
++	if (!name_comp)
++		return -ENOMEM;
++	name_comp->name = name;
++
++	/* Allocate Signal name attribute */
++	parm.group = group;
++	parm.prefix = "";
++	parm.name = "name";
++	parm.show = counter_device_attr_name_show;
++	parm.store = NULL;
++	parm.component = name_comp;
++	err = counter_attribute_create(&parm);
++	if (err)
++		goto err_free_name_comp;
++
++	return 0;
++
++err_free_name_comp:
++	kfree(name_comp);
++	return err;
++}
++
++struct counter_signal_ext_unit {
++	struct counter_signal *signal;
++	const struct counter_signal_ext *ext;
++};
++
++static ssize_t counter_signal_ext_show(struct device *dev,
++				       struct device_attribute *attr, char *buf)
++{
++	const struct counter_device_attr *const devattr = to_counter_attr(attr);
++	const struct counter_signal_ext_unit *const comp = devattr->component;
++	const struct counter_signal_ext *const ext = comp->ext;
++
++	return ext->read(dev_get_drvdata(dev), comp->signal, ext->priv, buf);
++}
++
++static ssize_t counter_signal_ext_store(struct device *dev,
++					struct device_attribute *attr,
++					const char *buf, size_t len)
++{
++	const struct counter_device_attr *const devattr = to_counter_attr(attr);
++	const struct counter_signal_ext_unit *const comp = devattr->component;
++	const struct counter_signal_ext *const ext = comp->ext;
++
++	return ext->write(dev_get_drvdata(dev), comp->signal, ext->priv, buf,
++		len);
++}
++
++static void counter_device_attr_list_free(struct list_head *attr_list)
++{
++	struct counter_device_attr *p, *n;
++
++	list_for_each_entry_safe(p, n, attr_list, l) {
++		/* free attribute name and associated component memory */
++		kfree(p->dev_attr.attr.name);
++		kfree(p->component);
++		list_del(&p->l);
++		kfree(p);
++	}
++}
++
++static int counter_signal_ext_register(
++	struct counter_device_attr_group *const group,
++	struct counter_signal *const signal)
++{
++	const size_t num_ext = signal->num_ext;
++	size_t i;
++	const struct counter_signal_ext *ext;
++	struct counter_signal_ext_unit *signal_ext_comp;
++	struct counter_attr_parm parm;
++	int err;
++
++	/* Create an attribute for each extension */
++	for (i = 0 ; i < num_ext; i++) {
++		ext = signal->ext + i;
++
++		/* Allocate signal_ext attribute component */
++		signal_ext_comp = kmalloc(sizeof(*signal_ext_comp), GFP_KERNEL);
++		if (!signal_ext_comp) {
++			err = -ENOMEM;
++			goto err_free_attr_list;
++		}
++		signal_ext_comp->signal = signal;
++		signal_ext_comp->ext = ext;
++
++		/* Allocate a Counter device attribute */
++		parm.group = group;
++		parm.prefix = "";
++		parm.name = ext->name;
++		parm.show = (ext->read) ? counter_signal_ext_show : NULL;
++		parm.store = (ext->write) ? counter_signal_ext_store : NULL;
++		parm.component = signal_ext_comp;
++		err = counter_attribute_create(&parm);
++		if (err) {
++			kfree(signal_ext_comp);
++			goto err_free_attr_list;
++		}
++	}
++
++	return 0;
++
++err_free_attr_list:
++	counter_device_attr_list_free(&group->attr_list);
++	return err;
++}
++
++static int counter_signal_attributes_create(
++	struct counter_device_attr_group *const group,
++	const struct counter_device *const counter,
++	struct counter_signal *const signal)
++{
++	struct counter_signal_unit *signal_comp;
++	struct counter_attr_parm parm;
++	int err;
++
++	/* Allocate Signal attribute component */
++	signal_comp = kmalloc(sizeof(*signal_comp), GFP_KERNEL);
++	if (!signal_comp)
++		return -ENOMEM;
++	signal_comp->signal = signal;
++
++	/* Create main Signal attribute */
++	parm.group = group;
++	parm.prefix = "";
++	parm.name = "signal";
++	parm.show = (counter->ops->signal_read) ? counter_signal_show : NULL;
++	parm.store = NULL;
++	parm.component = signal_comp;
++	err = counter_attribute_create(&parm);
++	if (err) {
++		kfree(signal_comp);
++		return err;
++	}
++
++	/* Create Signal name attribute */
++	err = counter_name_attribute_create(group, signal->name);
++	if (err)
++		goto err_free_attr_list;
++
++	/* Register Signal extension attributes */
++	err = counter_signal_ext_register(group, signal);
++	if (err)
++		goto err_free_attr_list;
++
++	return 0;
++
++err_free_attr_list:
++	counter_device_attr_list_free(&group->attr_list);
++	return err;
++}
++
++static int counter_signals_register(
++	struct counter_device_attr_group *const groups_list,
++	const struct counter_device *const counter)
++{
++	const size_t num_signals = counter->num_signals;
++	size_t i;
++	struct counter_signal *signal;
++	const char *name;
++	int err;
++
++	/* Register each Signal */
++	for (i = 0; i < num_signals; i++) {
++		signal = counter->signals + i;
++
++		/* Generate Signal attribute directory name */
++		name = kasprintf(GFP_KERNEL, "signal%d", signal->id);
++		if (!name) {
++			err = -ENOMEM;
++			goto err_free_attr_groups;
++		}
++		groups_list[i].attr_group.name = name;
++
++		/* Create all attributes associated with Signal */
++		err = counter_signal_attributes_create(groups_list + i, counter,
++						       signal);
++		if (err)
++			goto err_free_attr_groups;
++	}
++
++	return 0;
++
++err_free_attr_groups:
++	do {
++		kfree(groups_list[i].attr_group.name);
++		counter_device_attr_list_free(&groups_list[i].attr_list);
++	} while (i--);
++	return err;
++}
++
++static const char *const counter_synapse_action_str[] = {
++	[COUNTER_SYNAPSE_ACTION_NONE] = "none",
++	[COUNTER_SYNAPSE_ACTION_RISING_EDGE] = "rising edge",
++	[COUNTER_SYNAPSE_ACTION_FALLING_EDGE] = "falling edge",
++	[COUNTER_SYNAPSE_ACTION_BOTH_EDGES] = "both edges"
++};
++
++struct counter_action_unit {
++	struct counter_synapse *synapse;
++	struct counter_count *count;
++};
++
++static ssize_t counter_action_show(struct device *dev,
++				   struct device_attribute *attr, char *buf)
++{
++	const struct counter_device_attr *const devattr = to_counter_attr(attr);
++	int err;
++	struct counter_device *const counter = dev_get_drvdata(dev);
++	const struct counter_action_unit *const component = devattr->component;
++	struct counter_count *const count = component->count;
++	struct counter_synapse *const synapse = component->synapse;
++	size_t action_index;
++	enum counter_synapse_action action;
++
++	err = counter->ops->action_get(counter, count, synapse, &action_index);
++	if (err)
++		return err;
++
++	synapse->action = action_index;
++
++	action = synapse->actions_list[action_index];
++	return sprintf(buf, "%s\n", counter_synapse_action_str[action]);
++}
++
++static ssize_t counter_action_store(struct device *dev,
++				    struct device_attribute *attr,
++				    const char *buf, size_t len)
++{
++	const struct counter_device_attr *const devattr = to_counter_attr(attr);
++	const struct counter_action_unit *const component = devattr->component;
++	struct counter_synapse *const synapse = component->synapse;
++	size_t action_index;
++	const size_t num_actions = synapse->num_actions;
++	enum counter_synapse_action action;
++	int err;
++	struct counter_device *const counter = dev_get_drvdata(dev);
++	struct counter_count *const count = component->count;
++
++	/* Find requested action mode */
++	for (action_index = 0; action_index < num_actions; action_index++) {
++		action = synapse->actions_list[action_index];
++		if (sysfs_streq(buf, counter_synapse_action_str[action]))
++			break;
++	}
++	/* If requested action mode not found */
++	if (action_index >= num_actions)
++		return -EINVAL;
++
++	err = counter->ops->action_set(counter, count, synapse, action_index);
++	if (err)
++		return err;
++
++	synapse->action = action_index;
++
++	return len;
++}
++
++struct counter_action_avail_unit {
++	const enum counter_synapse_action *actions_list;
++	size_t num_actions;
++};
++
++static ssize_t counter_synapse_action_available_show(struct device *dev,
++	struct device_attribute *attr, char *buf)
++{
++	const struct counter_device_attr *const devattr = to_counter_attr(attr);
++	const struct counter_action_avail_unit *const component = devattr->component;
++	size_t i;
++	enum counter_synapse_action action;
++	ssize_t len = 0;
++
++	for (i = 0; i < component->num_actions; i++) {
++		action = component->actions_list[i];
++		len += sprintf(buf + len, "%s\n",
++			       counter_synapse_action_str[action]);
++	}
++
++	return len;
++}
++
++static int counter_synapses_register(
++	struct counter_device_attr_group *const group,
++	const struct counter_device *const counter,
++	struct counter_count *const count, const char *const count_attr_name)
++{
++	size_t i;
++	struct counter_synapse *synapse;
++	const char *prefix;
++	struct counter_action_unit *action_comp;
++	struct counter_attr_parm parm;
++	int err;
++	struct counter_action_avail_unit *avail_comp;
++
++	/* Register each Synapse */
++	for (i = 0; i < count->num_synapses; i++) {
++		synapse = count->synapses + i;
++
++		/* Generate attribute prefix */
++		prefix = kasprintf(GFP_KERNEL, "signal%d_",
++				   synapse->signal->id);
++		if (!prefix) {
++			err = -ENOMEM;
++			goto err_free_attr_list;
++		}
++
++		/* Allocate action attribute component */
++		action_comp = kmalloc(sizeof(*action_comp), GFP_KERNEL);
++		if (!action_comp) {
++			err = -ENOMEM;
++			goto err_free_prefix;
++		}
++		action_comp->synapse = synapse;
++		action_comp->count = count;
++
++		/* Create action attribute */
++		parm.group = group;
++		parm.prefix = prefix;
++		parm.name = "action";
++		parm.show = (counter->ops->action_get) ? counter_action_show : NULL;
++		parm.store = (counter->ops->action_set) ? counter_action_store : NULL;
++		parm.component = action_comp;
++		err = counter_attribute_create(&parm);
++		if (err) {
++			kfree(action_comp);
++			goto err_free_prefix;
++		}
++
++		/* Allocate action available attribute component */
++		avail_comp = kmalloc(sizeof(*avail_comp), GFP_KERNEL);
++		if (!avail_comp) {
++			err = -ENOMEM;
++			goto err_free_prefix;
++		}
++		avail_comp->actions_list = synapse->actions_list;
++		avail_comp->num_actions = synapse->num_actions;
++
++		/* Create action_available attribute */
++		parm.group = group;
++		parm.prefix = prefix;
++		parm.name = "action_available";
++		parm.show = counter_synapse_action_available_show;
++		parm.store = NULL;
++		parm.component = avail_comp;
++		err = counter_attribute_create(&parm);
++		if (err) {
++			kfree(avail_comp);
++			goto err_free_prefix;
++		}
++
++		kfree(prefix);
++	}
++
++	return 0;
++
++err_free_prefix:
++	kfree(prefix);
++err_free_attr_list:
++	counter_device_attr_list_free(&group->attr_list);
++	return err;
++}
++
++struct counter_count_unit {
++	struct counter_count *count;
++};
++
++static ssize_t counter_count_show(struct device *dev,
++				  struct device_attribute *attr,
++				  char *buf)
++{
++	struct counter_device *const counter = dev_get_drvdata(dev);
++	const struct counter_device_attr *const devattr = to_counter_attr(attr);
++	const struct counter_count_unit *const component = devattr->component;
++	struct counter_count *const count = component->count;
++	int err;
++	struct counter_count_read_value val = { .buf = buf };
++
++	err = counter->ops->count_read(counter, count, &val);
++	if (err)
++		return err;
++
++	return val.len;
++}
++
++static ssize_t counter_count_store(struct device *dev,
++				   struct device_attribute *attr,
++				   const char *buf, size_t len)
++{
++	struct counter_device *const counter = dev_get_drvdata(dev);
++	const struct counter_device_attr *const devattr = to_counter_attr(attr);
++	const struct counter_count_unit *const component = devattr->component;
++	struct counter_count *const count = component->count;
++	int err;
++	struct counter_count_write_value val = { .buf = buf };
++
++	err = counter->ops->count_write(counter, count, &val);
++	if (err)
++		return err;
++
++	return len;
++}
++
++static const char *const counter_count_function_str[] = {
++	[COUNTER_COUNT_FUNCTION_INCREASE] = "increase",
++	[COUNTER_COUNT_FUNCTION_DECREASE] = "decrease",
++	[COUNTER_COUNT_FUNCTION_PULSE_DIRECTION] = "pulse-direction",
++	[COUNTER_COUNT_FUNCTION_QUADRATURE_X1_A] = "quadrature x1 a",
++	[COUNTER_COUNT_FUNCTION_QUADRATURE_X1_B] = "quadrature x1 b",
++	[COUNTER_COUNT_FUNCTION_QUADRATURE_X2_A] = "quadrature x2 a",
++	[COUNTER_COUNT_FUNCTION_QUADRATURE_X2_B] = "quadrature x2 b",
++	[COUNTER_COUNT_FUNCTION_QUADRATURE_X4] = "quadrature x4"
++};
++
++static ssize_t counter_function_show(struct device *dev,
++				     struct device_attribute *attr, char *buf)
++{
++	int err;
++	struct counter_device *const counter = dev_get_drvdata(dev);
++	const struct counter_device_attr *const devattr = to_counter_attr(attr);
++	const struct counter_count_unit *const component = devattr->component;
++	struct counter_count *const count = component->count;
++	size_t func_index;
++	enum counter_count_function function;
++
++	err = counter->ops->function_get(counter, count, &func_index);
++	if (err)
++		return err;
++
++	count->function = func_index;
++
++	function = count->functions_list[func_index];
++	return sprintf(buf, "%s\n", counter_count_function_str[function]);
++}
++
++static ssize_t counter_function_store(struct device *dev,
++				      struct device_attribute *attr,
++				      const char *buf, size_t len)
++{
++	const struct counter_device_attr *const devattr = to_counter_attr(attr);
++	const struct counter_count_unit *const component = devattr->component;
++	struct counter_count *const count = component->count;
++	const size_t num_functions = count->num_functions;
++	size_t func_index;
++	enum counter_count_function function;
++	int err;
++	struct counter_device *const counter = dev_get_drvdata(dev);
++
++	/* Find requested Count function mode */
++	for (func_index = 0; func_index < num_functions; func_index++) {
++		function = count->functions_list[func_index];
++		if (sysfs_streq(buf, counter_count_function_str[function]))
++			break;
++	}
++	/* Return error if requested Count function mode not found */
++	if (func_index >= num_functions)
++		return -EINVAL;
++
++	err = counter->ops->function_set(counter, count, func_index);
++	if (err)
++		return err;
++
++	count->function = func_index;
++
++	return len;
++}
++
++struct counter_count_ext_unit {
++	struct counter_count *count;
++	const struct counter_count_ext *ext;
++};
++
++static ssize_t counter_count_ext_show(struct device *dev,
++				      struct device_attribute *attr, char *buf)
++{
++	const struct counter_device_attr *const devattr = to_counter_attr(attr);
++	const struct counter_count_ext_unit *const comp = devattr->component;
++	const struct counter_count_ext *const ext = comp->ext;
++
++	return ext->read(dev_get_drvdata(dev), comp->count, ext->priv, buf);
++}
++
++static ssize_t counter_count_ext_store(struct device *dev,
++				       struct device_attribute *attr,
++				       const char *buf, size_t len)
++{
++	const struct counter_device_attr *const devattr = to_counter_attr(attr);
++	const struct counter_count_ext_unit *const comp = devattr->component;
++	const struct counter_count_ext *const ext = comp->ext;
++
++	return ext->write(dev_get_drvdata(dev), comp->count, ext->priv, buf,
++		len);
++}
++
++static int counter_count_ext_register(
++	struct counter_device_attr_group *const group,
++	struct counter_count *const count)
++{
++	size_t i;
++	const struct counter_count_ext *ext;
++	struct counter_count_ext_unit *count_ext_comp;
++	struct counter_attr_parm parm;
++	int err;
++
++	/* Create an attribute for each extension */
++	for (i = 0 ; i < count->num_ext; i++) {
++		ext = count->ext + i;
++
++		/* Allocate count_ext attribute component */
++		count_ext_comp = kmalloc(sizeof(*count_ext_comp), GFP_KERNEL);
++		if (!count_ext_comp) {
++			err = -ENOMEM;
++			goto err_free_attr_list;
++		}
++		count_ext_comp->count = count;
++		count_ext_comp->ext = ext;
++
++		/* Allocate count_ext attribute */
++		parm.group = group;
++		parm.prefix = "";
++		parm.name = ext->name;
++		parm.show = (ext->read) ? counter_count_ext_show : NULL;
++		parm.store = (ext->write) ? counter_count_ext_store : NULL;
++		parm.component = count_ext_comp;
++		err = counter_attribute_create(&parm);
++		if (err) {
++			kfree(count_ext_comp);
++			goto err_free_attr_list;
++		}
++	}
++
++	return 0;
++
++err_free_attr_list:
++	counter_device_attr_list_free(&group->attr_list);
++	return err;
++}
++
++struct counter_func_avail_unit {
++	const enum counter_count_function *functions_list;
++	size_t num_functions;
++};
++
++static ssize_t counter_count_function_available_show(struct device *dev,
++	struct device_attribute *attr, char *buf)
++{
++	const struct counter_device_attr *const devattr = to_counter_attr(attr);
++	const struct counter_func_avail_unit *const component = devattr->component;
++	const enum counter_count_function *const func_list = component->functions_list;
++	const size_t num_functions = component->num_functions;
++	size_t i;
++	enum counter_count_function function;
++	ssize_t len = 0;
++
++	for (i = 0; i < num_functions; i++) {
++		function = func_list[i];
++		len += sprintf(buf + len, "%s\n",
++			       counter_count_function_str[function]);
++	}
++
++	return len;
++}
++
++static int counter_count_attributes_create(
++	struct counter_device_attr_group *const group,
++	const struct counter_device *const counter,
++	struct counter_count *const count)
++{
++	struct counter_count_unit *count_comp;
++	struct counter_attr_parm parm;
++	int err;
++	struct counter_count_unit *func_comp;
++	struct counter_func_avail_unit *avail_comp;
++
++	/* Allocate count attribute component */
++	count_comp = kmalloc(sizeof(*count_comp), GFP_KERNEL);
++	if (!count_comp)
++		return -ENOMEM;
++	count_comp->count = count;
++
++	/* Create main Count attribute */
++	parm.group = group;
++	parm.prefix = "";
++	parm.name = "count";
++	parm.show = (counter->ops->count_read) ? counter_count_show : NULL;
++	parm.store = (counter->ops->count_write) ? counter_count_store : NULL;
++	parm.component = count_comp;
++	err = counter_attribute_create(&parm);
++	if (err) {
++		kfree(count_comp);
++		return err;
++	}
++
++	/* Allocate function attribute component */
++	func_comp = kmalloc(sizeof(*func_comp), GFP_KERNEL);
++	if (!func_comp) {
++		err = -ENOMEM;
++		goto err_free_attr_list;
++	}
++	func_comp->count = count;
++
++	/* Create Count function attribute */
++	parm.group = group;
++	parm.prefix = "";
++	parm.name = "function";
++	parm.show = (counter->ops->function_get) ? counter_function_show : NULL;
++	parm.store = (counter->ops->function_set) ? counter_function_store : NULL;
++	parm.component = func_comp;
++	err = counter_attribute_create(&parm);
++	if (err) {
++		kfree(func_comp);
++		goto err_free_attr_list;
++	}
++
++	/* Allocate function available attribute component */
++	avail_comp = kmalloc(sizeof(*avail_comp), GFP_KERNEL);
++	if (!avail_comp) {
++		err = -ENOMEM;
++		goto err_free_attr_list;
++	}
++	avail_comp->functions_list = count->functions_list;
++	avail_comp->num_functions = count->num_functions;
++
++	/* Create Count function_available attribute */
++	parm.group = group;
++	parm.prefix = "";
++	parm.name = "function_available";
++	parm.show = counter_count_function_available_show;
++	parm.store = NULL;
++	parm.component = avail_comp;
++	err = counter_attribute_create(&parm);
++	if (err) {
++		kfree(avail_comp);
++		goto err_free_attr_list;
++	}
++
++	/* Create Count name attribute */
++	err = counter_name_attribute_create(group, count->name);
++	if (err)
++		goto err_free_attr_list;
++
++	/* Register Count extension attributes */
++	err = counter_count_ext_register(group, count);
++	if (err)
++		goto err_free_attr_list;
++
++	return 0;
++
++err_free_attr_list:
++	counter_device_attr_list_free(&group->attr_list);
++	return err;
++}
++
++static int counter_counts_register(
++	struct counter_device_attr_group *const groups_list,
++	const struct counter_device *const counter)
++{
++	size_t i;
++	struct counter_count *count;
++	const char *name;
++	int err;
++
++	/* Register each Count */
++	for (i = 0; i < counter->num_counts; i++) {
++		count = counter->counts + i;
++
++		/* Generate Count attribute directory name */
++		name = kasprintf(GFP_KERNEL, "count%d", count->id);
++		if (!name) {
++			err = -ENOMEM;
++			goto err_free_attr_groups;
++		}
++		groups_list[i].attr_group.name = name;
++
++		/* Register the Synapses associated with each Count */
++		err = counter_synapses_register(groups_list + i, counter, count,
++						name);
++		if (err)
++			goto err_free_attr_groups;
++
++		/* Create all attributes associated with Count */
++		err = counter_count_attributes_create(groups_list + i, counter,
++						      count);
++		if (err)
++			goto err_free_attr_groups;
++	}
++
++	return 0;
++
++err_free_attr_groups:
++	do {
++		kfree(groups_list[i].attr_group.name);
++		counter_device_attr_list_free(&groups_list[i].attr_list);
++	} while (i--);
++	return err;
++}
++
++struct counter_size_unit {
++	size_t size;
++};
++
++static ssize_t counter_device_attr_size_show(struct device *dev,
++					     struct device_attribute *attr,
++					     char *buf)
++{
++	const struct counter_size_unit *const comp = to_counter_attr(attr)->component;
++
++	return sprintf(buf, "%zu\n", comp->size);
++}
++
++static int counter_size_attribute_create(
++	struct counter_device_attr_group *const group,
++	const size_t size, const char *const name)
++{
++	struct counter_size_unit *size_comp;
++	struct counter_attr_parm parm;
++	int err;
++
++	/* Allocate size attribute component */
++	size_comp = kmalloc(sizeof(*size_comp), GFP_KERNEL);
++	if (!size_comp)
++		return -ENOMEM;
++	size_comp->size = size;
++
++	parm.group = group;
++	parm.prefix = "";
++	parm.name = name;
++	parm.show = counter_device_attr_size_show;
++	parm.store = NULL;
++	parm.component = size_comp;
++	err = counter_attribute_create(&parm);
++	if (err)
++		goto err_free_size_comp;
++
++	return 0;
++
++err_free_size_comp:
++	kfree(size_comp);
++	return err;
++}
++
++struct counter_ext_unit {
++	const struct counter_device_ext *ext;
++};
++
++static ssize_t counter_device_ext_show(struct device *dev,
++				       struct device_attribute *attr, char *buf)
++{
++	const struct counter_device_attr *const devattr = to_counter_attr(attr);
++	const struct counter_ext_unit *const component = devattr->component;
++	const struct counter_device_ext *const ext = component->ext;
++
++	return ext->read(dev_get_drvdata(dev), ext->priv, buf);
++}
++
++static ssize_t counter_device_ext_store(struct device *dev,
++					struct device_attribute *attr,
++					const char *buf, size_t len)
++{
++	const struct counter_device_attr *const devattr = to_counter_attr(attr);
++	const struct counter_ext_unit *const component = devattr->component;
++	const struct counter_device_ext *const ext = component->ext;
++
++	return ext->write(dev_get_drvdata(dev), ext->priv, buf, len);
++}
++
++static int counter_device_ext_register(
++	struct counter_device_attr_group *const group,
++	struct counter_device *const counter)
++{
++	size_t i;
++	struct counter_ext_unit *ext_comp;
++	struct counter_attr_parm parm;
++	int err;
++
++	/* Create an attribute for each extension */
++	for (i = 0 ; i < counter->num_ext; i++) {
++		/* Allocate extension attribute component */
++		ext_comp = kmalloc(sizeof(*ext_comp), GFP_KERNEL);
++		if (!ext_comp) {
++			err = -ENOMEM;
++			goto err_free_attr_list;
++		}
++
++		ext_comp->ext = counter->ext + i;
++
++		/* Allocate extension attribute */
++		parm.group = group;
++		parm.prefix = "";
++		parm.name = counter->ext[i].name;
++		parm.show = (counter->ext[i].read) ? counter_device_ext_show : NULL;
++		parm.store = (counter->ext[i].write) ? counter_device_ext_store : NULL;
++		parm.component = ext_comp;
++		err = counter_attribute_create(&parm);
++		if (err) {
++			kfree(ext_comp);
++			goto err_free_attr_list;
++		}
++	}
++
++	return 0;
++
++err_free_attr_list:
++	counter_device_attr_list_free(&group->attr_list);
++	return err;
++}
++
++static int counter_global_attr_register(
++	struct counter_device_attr_group *const group,
++	struct counter_device *const counter)
++{
++	int err;
++
++	/* Create name attribute */
++	err = counter_name_attribute_create(group, counter->name);
++	if (err)
++		return err;
++
++	/* Create num_counts attribute */
++	err = counter_size_attribute_create(group, counter->num_counts,
++					    "num_counts");
++	if (err)
++		goto err_free_attr_list;
++
++	/* Create num_signals attribute */
++	err = counter_size_attribute_create(group, counter->num_signals,
++					    "num_signals");
++	if (err)
++		goto err_free_attr_list;
++
++	/* Register Counter device extension attributes */
++	err = counter_device_ext_register(group, counter);
++	if (err)
++		goto err_free_attr_list;
++
++	return 0;
++
++err_free_attr_list:
++	counter_device_attr_list_free(&group->attr_list);
++	return err;
++}
++
++static void counter_device_groups_list_free(
++	struct counter_device_attr_group *const groups_list,
++	const size_t num_groups)
++{
++	struct counter_device_attr_group *group;
++	size_t i;
++
++	/* loop through all attribute groups (signals, counts, global, etc.) */
++	for (i = 0; i < num_groups; i++) {
++		group = groups_list + i;
++
++		/* free all attribute group and associated attributes memory */
++		kfree(group->attr_group.name);
++		kfree(group->attr_group.attrs);
++		counter_device_attr_list_free(&group->attr_list);
++	}
++
++	kfree(groups_list);
++}
++
++static int counter_device_groups_list_prepare(
++	struct counter_device *const counter)
++{
++	const size_t total_num_groups =
++		counter->num_signals + counter->num_counts + 1;
++	struct counter_device_attr_group *groups_list;
++	size_t i;
++	int err;
++	size_t num_groups = 0;
++
++	/* Allocate space for attribute groups (signals, counts, and ext) */
++	groups_list = kcalloc(total_num_groups, sizeof(*groups_list),
++			      GFP_KERNEL);
++	if (!groups_list)
++		return -ENOMEM;
++
++	/* Initialize attribute lists */
++	for (i = 0; i < total_num_groups; i++)
++		INIT_LIST_HEAD(&groups_list[i].attr_list);
++
++	/* Register Signals */
++	err = counter_signals_register(groups_list, counter);
++	if (err)
++		goto err_free_groups_list;
++	num_groups += counter->num_signals;
++
++	/* Register Counts and respective Synapses */
++	err = counter_counts_register(groups_list + num_groups, counter);
++	if (err)
++		goto err_free_groups_list;
++	num_groups += counter->num_counts;
++
++	/* Register Counter global attributes */
++	err = counter_global_attr_register(groups_list + num_groups, counter);
++	if (err)
++		goto err_free_groups_list;
++	num_groups++;
++
++	/* Store groups_list in device_state */
++	counter->device_state->groups_list = groups_list;
++	counter->device_state->num_groups = num_groups;
++
++	return 0;
++
++err_free_groups_list:
++	counter_device_groups_list_free(groups_list, num_groups);
++	return err;
++}
++
++static int counter_device_groups_prepare(
++	struct counter_device_state *const device_state)
++{
++	size_t i, j;
++	struct counter_device_attr_group *group;
++	int err;
++	struct counter_device_attr *p;
++
++	/* Allocate attribute groups for association with device */
++	device_state->groups = kcalloc(device_state->num_groups + 1,
++				       sizeof(*device_state->groups),
++				       GFP_KERNEL);
++	if (!device_state->groups)
++		return -ENOMEM;
++
++	/* Prepare each group of attributes for association */
++	for (i = 0; i < device_state->num_groups; i++) {
++		group = device_state->groups_list + i;
++
++		/* Allocate space for attribute pointers in attribute group */
++		group->attr_group.attrs = kcalloc(group->num_attr + 1,
++			sizeof(*group->attr_group.attrs), GFP_KERNEL);
++		if (!group->attr_group.attrs) {
++			err = -ENOMEM;
++			goto err_free_groups;
++		}
++
++		/* Add attribute pointers to attribute group */
++		j = 0;
++		list_for_each_entry(p, &group->attr_list, l)
++			group->attr_group.attrs[j++] = &p->dev_attr.attr;
++
++		/* Group attributes in attribute group */
++		device_state->groups[i] = &group->attr_group;
++	}
++	/* Associate attributes with device */
++	device_state->dev.groups = device_state->groups;
++
++	return 0;
++
++err_free_groups:
++	do {
++		group = device_state->groups_list + i;
++		kfree(group->attr_group.attrs);
++		group->attr_group.attrs = NULL;
++	} while (i--);
++	kfree(device_state->groups);
++	return err;
++}
++
++/* Provides a unique ID for each counter device */
++static DEFINE_IDA(counter_ida);
++
++static void counter_device_release(struct device *dev)
++{
++	struct counter_device *const counter = dev_get_drvdata(dev);
++	struct counter_device_state *const device_state = counter->device_state;
++
++	kfree(device_state->groups);
++	counter_device_groups_list_free(device_state->groups_list,
++					device_state->num_groups);
++	ida_simple_remove(&counter_ida, device_state->id);
++	kfree(device_state);
++}
++
++static struct device_type counter_device_type = {
++	.name = "counter_device",
++	.release = counter_device_release
++};
++
++static struct bus_type counter_bus_type = {
++	.name = "counter"
++};
++
++/**
++ * counter_register - register Counter to the system
++ * @counter:	pointer to Counter to register
++ *
++ * This function registers a Counter to the system. A sysfs "counter" directory
++ * will be created and populated with sysfs attributes correlating with the
++ * Counter Signals, Synapses, and Counts respectively.
++ */
++int counter_register(struct counter_device *const counter)
++{
++	struct counter_device_state *device_state;
++	int err;
++
++	/* Allocate internal state container for Counter device */
++	device_state = kzalloc(sizeof(*device_state), GFP_KERNEL);
++	if (!device_state)
++		return -ENOMEM;
++	counter->device_state = device_state;
++
++	/* Acquire unique ID */
++	device_state->id = ida_simple_get(&counter_ida, 0, 0, GFP_KERNEL);
++	if (device_state->id < 0) {
++		err = device_state->id;
++		goto err_free_device_state;
++	}
++
++	/* Configure device structure for Counter */
++	device_state->dev.type = &counter_device_type;
++	device_state->dev.bus = &counter_bus_type;
++	if (counter->parent) {
++		device_state->dev.parent = counter->parent;
++		device_state->dev.of_node = counter->parent->of_node;
++	}
++	dev_set_name(&device_state->dev, "counter%d", device_state->id);
++	device_initialize(&device_state->dev);
++	dev_set_drvdata(&device_state->dev, counter);
++
++	/* Prepare device attributes */
++	err = counter_device_groups_list_prepare(counter);
++	if (err)
++		goto err_free_id;
++
++	/* Organize device attributes to groups and match to device */
++	err = counter_device_groups_prepare(device_state);
++	if (err)
++		goto err_free_groups_list;
++
++	/* Add device to system */
++	err = device_add(&device_state->dev);
++	if (err)
++		goto err_free_groups;
++
++	return 0;
++
++err_free_groups:
++	kfree(device_state->groups);
++err_free_groups_list:
++	counter_device_groups_list_free(device_state->groups_list,
++					device_state->num_groups);
++err_free_id:
++	ida_simple_remove(&counter_ida, device_state->id);
++err_free_device_state:
++	kfree(device_state);
++	return err;
++}
++EXPORT_SYMBOL_GPL(counter_register);
++
++/**
++ * counter_unregister - unregister Counter from the system
++ * @counter:	pointer to Counter to unregister
++ *
++ * The Counter is unregistered from the system; all allocated memory is freed.
++ */
++void counter_unregister(struct counter_device *const counter)
++{
++	if (counter)
++		device_del(&counter->device_state->dev);
++}
++EXPORT_SYMBOL_GPL(counter_unregister);
++
++static void devm_counter_unreg(struct device *dev, void *res)
++{
++	counter_unregister(*(struct counter_device **)res);
++}
++
++/**
++ * devm_counter_register - Resource-managed counter_register
++ * @dev:	device to allocate counter_device for
++ * @counter:	pointer to Counter to register
++ *
++ * Managed counter_register. The Counter registered with this function is
++ * automatically unregistered on driver detach. This function calls
++ * counter_register internally. Refer to that function for more information.
++ *
++ * If an Counter registered with this function needs to be unregistered
++ * separately, devm_counter_unregister must be used.
++ *
++ * RETURNS:
++ * 0 on success, negative error number on failure.
++ */
++int devm_counter_register(struct device *dev,
++			  struct counter_device *const counter)
++{
++	struct counter_device **ptr;
++	int ret;
++
++	ptr = devres_alloc(devm_counter_unreg, sizeof(*ptr), GFP_KERNEL);
++	if (!ptr)
++		return -ENOMEM;
++
++	ret = counter_register(counter);
++	if (!ret) {
++		*ptr = counter;
++		devres_add(dev, ptr);
++	} else {
++		devres_free(ptr);
++	}
++
++	return ret;
++}
++EXPORT_SYMBOL_GPL(devm_counter_register);
++
++static int devm_counter_match(struct device *dev, void *res, void *data)
++{
++	struct counter_device **r = res;
++
++	if (!r || !*r) {
++		WARN_ON(!r || !*r);
++		return 0;
++	}
++
++	return *r == data;
++}
++
++/**
++ * devm_counter_unregister - Resource-managed counter_unregister
++ * @dev:	device this counter_device belongs to
++ * @counter:	pointer to Counter associated with the device
++ *
++ * Unregister Counter registered with devm_counter_register.
++ */
++void devm_counter_unregister(struct device *dev,
++			     struct counter_device *const counter)
++{
++	int rc;
++
++	rc = devres_release(dev, devm_counter_unreg, devm_counter_match,
++			    counter);
++	WARN_ON(rc);
++}
++EXPORT_SYMBOL_GPL(devm_counter_unregister);
++
++static int __init counter_init(void)
++{
++	return bus_register(&counter_bus_type);
++}
++
++static void __exit counter_exit(void)
++{
++	bus_unregister(&counter_bus_type);
++}
++
++subsys_initcall(counter_init);
++module_exit(counter_exit);
++
++MODULE_AUTHOR("William Breathitt Gray <vilhelm.gray@gmail.com>");
++MODULE_DESCRIPTION("Generic Counter interface");
++MODULE_LICENSE("GPL v2");
+diff --git a/include/linux/counter.h b/include/linux/counter.h
+new file mode 100644
+index 000000000000..a061cdcdef7c
+--- /dev/null
++++ b/include/linux/counter.h
+@@ -0,0 +1,510 @@
++/* SPDX-License-Identifier: GPL-2.0 */
++/*
++ * Counter interface
++ * Copyright (C) 2018 William Breathitt Gray
++ */
++#ifndef _COUNTER_H_
++#define _COUNTER_H_
++
++#include <linux/counter_enum.h>
++#include <linux/device.h>
++#include <linux/types.h>
++
++enum counter_count_direction {
++	COUNTER_COUNT_DIRECTION_FORWARD = 0,
++	COUNTER_COUNT_DIRECTION_BACKWARD
++};
++extern const char *const counter_count_direction_str[2];
++
++enum counter_count_mode {
++	COUNTER_COUNT_MODE_NORMAL = 0,
++	COUNTER_COUNT_MODE_RANGE_LIMIT,
++	COUNTER_COUNT_MODE_NON_RECYCLE,
++	COUNTER_COUNT_MODE_MODULO_N
++};
++extern const char *const counter_count_mode_str[4];
++
++struct counter_device;
++struct counter_signal;
++
++/**
++ * struct counter_signal_ext - Counter Signal extensions
++ * @name:	attribute name
++ * @read:	read callback for this attribute; may be NULL
++ * @write:	write callback for this attribute; may be NULL
++ * @priv:	data private to the driver
++ */
++struct counter_signal_ext {
++	const char *name;
++	ssize_t (*read)(struct counter_device *counter,
++			struct counter_signal *signal, void *priv, char *buf);
++	ssize_t (*write)(struct counter_device *counter,
++			 struct counter_signal *signal, void *priv,
++			 const char *buf, size_t len);
++	void *priv;
++};
++
++/**
++ * struct counter_signal - Counter Signal node
++ * @id:		unique ID used to identify signal
++ * @name:	device-specific Signal name; ideally, this should match the name
++ *		as it appears in the datasheet documentation
++ * @ext:	optional array of Counter Signal extensions
++ * @num_ext:	number of Counter Signal extensions specified in @ext
++ * @priv:	optional private data supplied by driver
++ */
++struct counter_signal {
++	int id;
++	const char *name;
++
++	const struct counter_signal_ext *ext;
++	size_t num_ext;
++
++	void *priv;
++};
++
++/**
++ * struct counter_signal_enum_ext - Signal enum extension attribute
++ * @items:	Array of strings
++ * @num_items:	Number of items specified in @items
++ * @set:	Set callback function; may be NULL
++ * @get:	Get callback function; may be NULL
++ *
++ * The counter_signal_enum_ext structure can be used to implement enum style
++ * Signal extension attributes. Enum style attributes are those which have a set
++ * of strings that map to unsigned integer values. The Generic Counter Signal
++ * enum extension helper code takes care of mapping between value and string, as
++ * well as generating a "_available" file which contains a list of all available
++ * items. The get callback is used to query the currently active item; the index
++ * of the item within the respective items array is returned via the 'item'
++ * parameter. The set callback is called when the attribute is updated; the
++ * 'item' parameter contains the index of the newly activated item within the
++ * respective items array.
++ */
++struct counter_signal_enum_ext {
++	const char * const *items;
++	size_t num_items;
++	int (*get)(struct counter_device *counter,
++		   struct counter_signal *signal, size_t *item);
++	int (*set)(struct counter_device *counter,
++		   struct counter_signal *signal, size_t item);
++};
++
++/**
++ * COUNTER_SIGNAL_ENUM() - Initialize Signal enum extension
++ * @_name:	Attribute name
++ * @_e:		Pointer to a counter_signal_enum_ext structure
++ *
++ * This should usually be used together with COUNTER_SIGNAL_ENUM_AVAILABLE()
++ */
++#define COUNTER_SIGNAL_ENUM(_name, _e) \
++{ \
++	.name = (_name), \
++	.read = counter_signal_enum_read, \
++	.write = counter_signal_enum_write, \
++	.priv = (_e) \
++}
++
++/**
++ * COUNTER_SIGNAL_ENUM_AVAILABLE() - Initialize Signal enum available extension
++ * @_name:	Attribute name ("_available" will be appended to the name)
++ * @_e:		Pointer to a counter_signal_enum_ext structure
++ *
++ * Creates a read only attribute that lists all the available enum items in a
++ * newline separated list. This should usually be used together with
++ * COUNTER_SIGNAL_ENUM()
++ */
++#define COUNTER_SIGNAL_ENUM_AVAILABLE(_name, _e) \
++{ \
++	.name = (_name "_available"), \
++	.read = counter_signal_enum_available_read, \
++	.priv = (_e) \
++}
++
++enum counter_synapse_action {
++	COUNTER_SYNAPSE_ACTION_NONE = 0,
++	COUNTER_SYNAPSE_ACTION_RISING_EDGE,
++	COUNTER_SYNAPSE_ACTION_FALLING_EDGE,
++	COUNTER_SYNAPSE_ACTION_BOTH_EDGES
++};
++
++/**
++ * struct counter_synapse - Counter Synapse node
++ * @action:		index of current action mode
++ * @actions_list:	array of available action modes
++ * @num_actions:	number of action modes specified in @actions_list
++ * @signal:		pointer to associated signal
++ */
++struct counter_synapse {
++	size_t action;
++	const enum counter_synapse_action *actions_list;
++	size_t num_actions;
++
++	struct counter_signal *signal;
++};
++
++struct counter_count;
++
++/**
++ * struct counter_count_ext - Counter Count extension
++ * @name:	attribute name
++ * @read:	read callback for this attribute; may be NULL
++ * @write:	write callback for this attribute; may be NULL
++ * @priv:	data private to the driver
++ */
++struct counter_count_ext {
++	const char *name;
++	ssize_t (*read)(struct counter_device *counter,
++			struct counter_count *count, void *priv, char *buf);
++	ssize_t (*write)(struct counter_device *counter,
++			 struct counter_count *count, void *priv,
++			 const char *buf, size_t len);
++	void *priv;
++};
++
++enum counter_count_function {
++	COUNTER_COUNT_FUNCTION_INCREASE = 0,
++	COUNTER_COUNT_FUNCTION_DECREASE,
++	COUNTER_COUNT_FUNCTION_PULSE_DIRECTION,
++	COUNTER_COUNT_FUNCTION_QUADRATURE_X1_A,
++	COUNTER_COUNT_FUNCTION_QUADRATURE_X1_B,
++	COUNTER_COUNT_FUNCTION_QUADRATURE_X2_A,
++	COUNTER_COUNT_FUNCTION_QUADRATURE_X2_B,
++	COUNTER_COUNT_FUNCTION_QUADRATURE_X4
++};
++
++/**
++ * struct counter_count - Counter Count node
++ * @id:			unique ID used to identify Count
++ * @name:		device-specific Count name; ideally, this should match
++ *			the name as it appears in the datasheet documentation
++ * @function:		index of current function mode
++ * @functions_list:	array available function modes
++ * @num_functions:	number of function modes specified in @functions_list
++ * @synapses:		array of synapses for initialization
++ * @num_synapses:	number of synapses specified in @synapses
++ * @ext:		optional array of Counter Count extensions
++ * @num_ext:		number of Counter Count extensions specified in @ext
++ * @priv:		optional private data supplied by driver
++ */
++struct counter_count {
++	int id;
++	const char *name;
++
++	size_t function;
++	const enum counter_count_function *functions_list;
++	size_t num_functions;
++
++	struct counter_synapse *synapses;
++	size_t num_synapses;
++
++	const struct counter_count_ext *ext;
++	size_t num_ext;
++
++	void *priv;
++};
++
++/**
++ * struct counter_count_enum_ext - Count enum extension attribute
++ * @items:	Array of strings
++ * @num_items:	Number of items specified in @items
++ * @set:	Set callback function; may be NULL
++ * @get:	Get callback function; may be NULL
++ *
++ * The counter_count_enum_ext structure can be used to implement enum style
++ * Count extension attributes. Enum style attributes are those which have a set
++ * of strings that map to unsigned integer values. The Generic Counter Count
++ * enum extension helper code takes care of mapping between value and string, as
++ * well as generating a "_available" file which contains a list of all available
++ * items. The get callback is used to query the currently active item; the index
++ * of the item within the respective items array is returned via the 'item'
++ * parameter. The set callback is called when the attribute is updated; the
++ * 'item' parameter contains the index of the newly activated item within the
++ * respective items array.
++ */
++struct counter_count_enum_ext {
++	const char * const *items;
++	size_t num_items;
++	int (*get)(struct counter_device *counter, struct counter_count *count,
++		   size_t *item);
++	int (*set)(struct counter_device *counter, struct counter_count *count,
++		   size_t item);
++};
++
++/**
++ * COUNTER_COUNT_ENUM() - Initialize Count enum extension
++ * @_name:	Attribute name
++ * @_e:		Pointer to a counter_count_enum_ext structure
++ *
++ * This should usually be used together with COUNTER_COUNT_ENUM_AVAILABLE()
++ */
++#define COUNTER_COUNT_ENUM(_name, _e) \
++{ \
++	.name = (_name), \
++	.read = counter_count_enum_read, \
++	.write = counter_count_enum_write, \
++	.priv = (_e) \
++}
++
++/**
++ * COUNTER_COUNT_ENUM_AVAILABLE() - Initialize Count enum available extension
++ * @_name:	Attribute name ("_available" will be appended to the name)
++ * @_e:		Pointer to a counter_count_enum_ext structure
++ *
++ * Creates a read only attribute that lists all the available enum items in a
++ * newline separated list. This should usually be used together with
++ * COUNTER_COUNT_ENUM()
++ */
++#define COUNTER_COUNT_ENUM_AVAILABLE(_name, _e) \
++{ \
++	.name = (_name "_available"), \
++	.read = counter_count_enum_available_read, \
++	.priv = (_e) \
++}
++
++/**
++ * struct counter_device_attr_group - internal container for attribute group
++ * @attr_group:	Counter sysfs attributes group
++ * @attr_list:	list to keep track of created Counter sysfs attributes
++ * @num_attr:	number of Counter sysfs attributes
++ */
++struct counter_device_attr_group {
++	struct attribute_group attr_group;
++	struct list_head attr_list;
++	size_t num_attr;
++};
++
++/**
++ * struct counter_device_state - internal state container for a Counter device
++ * @id:			unique ID used to identify the Counter
++ * @dev:		internal device structure
++ * @groups_list:	attribute groups list (for Signals, Counts, and ext)
++ * @num_groups:		number of attribute groups containers
++ * @groups:		Counter sysfs attribute groups (to populate @dev.groups)
++ */
++struct counter_device_state {
++	int id;
++	struct device dev;
++	struct counter_device_attr_group *groups_list;
++	size_t num_groups;
++	const struct attribute_group **groups;
++};
++
++/**
++ * struct counter_signal_read_value - Opaque Signal read value
++ * @buf:	string representation of Signal read value
++ * @len:	length of string in @buf
++ */
++struct counter_signal_read_value {
++	char *buf;
++	size_t len;
++};
++
++/**
++ * struct counter_count_read_value - Opaque Count read value
++ * @buf:	string representation of Count read value
++ * @len:	length of string in @buf
++ */
++struct counter_count_read_value {
++	char *buf;
++	size_t len;
++};
++
++/**
++ * struct counter_count_write_value - Opaque Count write value
++ * @buf:	string representation of Count write value
++ */
++struct counter_count_write_value {
++	const char *buf;
++};
++
++/**
++ * struct counter_ops - Callbacks from driver
++ * @signal_read:	optional read callback for Signal attribute. The read
++ *			value of the respective Signal should be passed back via
++ *			the val parameter. val points to an opaque type which
++ *			should be set only by calling the
++ *			counter_signal_read_value_set function from within the
++ *			signal_read callback.
++ * @count_read:		optional read callback for Count attribute. The read
++ *			value of the respective Count should be passed back via
++ *			the val parameter. val points to an opaque type which
++ *			should be set only by calling the
++ *			counter_count_read_value_set function from within the
++ *			count_read callback.
++ * @count_write:	optional write callback for Count attribute. The write
++ *			value for the respective Count is passed in via the val
++ *			parameter. val points to an opaque type which should be
++ *			accessed only by calling the
++ *			counter_count_write_value_get function.
++ * @function_get:	function to get the current count function mode. Returns
++ *			0 on success and negative error code on error. The index
++ *			of the respective Count's returned function mode should
++ *			be passed back via the function parameter.
++ * @function_set:	function to set the count function mode. function is the
++ *			index of the requested function mode from the respective
++ *			Count's functions_list array.
++ * @action_get:		function to get the current action mode. Returns 0 on
++ *			success and negative error code on error. The index of
++ *			the respective Signal's returned action mode should be
++ *			passed back via the action parameter.
++ * @action_set:		function to set the action mode. action is the index of
++ *			the requested action mode from the respective Synapse's
++ *			actions_list array.
++ */
++struct counter_ops {
++	int (*signal_read)(struct counter_device *counter,
++			   struct counter_signal *signal,
++			   struct counter_signal_read_value *val);
++	int (*count_read)(struct counter_device *counter,
++			  struct counter_count *count,
++			  struct counter_count_read_value *val);
++	int (*count_write)(struct counter_device *counter,
++			   struct counter_count *count,
++			   struct counter_count_write_value *val);
++	int (*function_get)(struct counter_device *counter,
++			    struct counter_count *count, size_t *function);
++	int (*function_set)(struct counter_device *counter,
++			    struct counter_count *count, size_t function);
++	int (*action_get)(struct counter_device *counter,
++			  struct counter_count *count,
++			  struct counter_synapse *synapse, size_t *action);
++	int (*action_set)(struct counter_device *counter,
++			  struct counter_count *count,
++			  struct counter_synapse *synapse, size_t action);
++};
++
++/**
++ * struct counter_device_ext - Counter device extension
++ * @name:	attribute name
++ * @read:	read callback for this attribute; may be NULL
++ * @write:	write callback for this attribute; may be NULL
++ * @priv:	data private to the driver
++ */
++struct counter_device_ext {
++	const char *name;
++	ssize_t (*read)(struct counter_device *counter, void *priv, char *buf);
++	ssize_t (*write)(struct counter_device *counter, void *priv,
++			 const char *buf, size_t len);
++	void *priv;
++};
++
++/**
++ * struct counter_device_enum_ext - Counter enum extension attribute
++ * @items:	Array of strings
++ * @num_items:	Number of items specified in @items
++ * @set:	Set callback function; may be NULL
++ * @get:	Get callback function; may be NULL
++ *
++ * The counter_device_enum_ext structure can be used to implement enum style
++ * Counter extension attributes. Enum style attributes are those which have a
++ * set of strings that map to unsigned integer values. The Generic Counter enum
++ * extension helper code takes care of mapping between value and string, as well
++ * as generating a "_available" file which contains a list of all available
++ * items. The get callback is used to query the currently active item; the index
++ * of the item within the respective items array is returned via the 'item'
++ * parameter. The set callback is called when the attribute is updated; the
++ * 'item' parameter contains the index of the newly activated item within the
++ * respective items array.
++ */
++struct counter_device_enum_ext {
++	const char * const *items;
++	size_t num_items;
++	int (*get)(struct counter_device *counter, size_t *item);
++	int (*set)(struct counter_device *counter, size_t item);
++};
++
++/**
++ * COUNTER_DEVICE_ENUM() - Initialize Counter enum extension
++ * @_name:	Attribute name
++ * @_e:		Pointer to a counter_device_enum_ext structure
++ *
++ * This should usually be used together with COUNTER_DEVICE_ENUM_AVAILABLE()
++ */
++#define COUNTER_DEVICE_ENUM(_name, _e) \
++{ \
++	.name = (_name), \
++	.read = counter_device_enum_read, \
++	.write = counter_device_enum_write, \
++	.priv = (_e) \
++}
++
++/**
++ * COUNTER_DEVICE_ENUM_AVAILABLE() - Initialize Counter enum available extension
++ * @_name:	Attribute name ("_available" will be appended to the name)
++ * @_e:		Pointer to a counter_device_enum_ext structure
++ *
++ * Creates a read only attribute that lists all the available enum items in a
++ * newline separated list. This should usually be used together with
++ * COUNTER_DEVICE_ENUM()
++ */
++#define COUNTER_DEVICE_ENUM_AVAILABLE(_name, _e) \
++{ \
++	.name = (_name "_available"), \
++	.read = counter_device_enum_available_read, \
++	.priv = (_e) \
++}
++
++/**
++ * struct counter_device - Counter data structure
++ * @name:		name of the device as it appears in the datasheet
++ * @parent:		optional parent device providing the counters
++ * @device_state:	internal device state container
++ * @ops:		callbacks from driver
++ * @signals:		array of Signals
++ * @num_signals:	number of Signals specified in @signals
++ * @counts:		array of Counts
++ * @num_counts:		number of Counts specified in @counts
++ * @ext:		optional array of Counter device extensions
++ * @num_ext:		number of Counter device extensions specified in @ext
++ * @priv:		optional private data supplied by driver
++ */
++struct counter_device {
++	const char *name;
++	struct device *parent;
++	struct counter_device_state *device_state;
++
++	const struct counter_ops *ops;
++
++	struct counter_signal *signals;
++	size_t num_signals;
++	struct counter_count *counts;
++	size_t num_counts;
++
++	const struct counter_device_ext *ext;
++	size_t num_ext;
++
++	void *priv;
++};
++
++enum counter_signal_level {
++	COUNTER_SIGNAL_LEVEL_LOW = 0,
++	COUNTER_SIGNAL_LEVEL_HIGH
++};
++
++enum counter_signal_value_type {
++	COUNTER_SIGNAL_LEVEL = 0
++};
++
++enum counter_count_value_type {
++	COUNTER_COUNT_POSITION = 0,
++};
++
++void counter_signal_read_value_set(struct counter_signal_read_value *const val,
++				   const enum counter_signal_value_type type,
++				   void *const data);
++void counter_count_read_value_set(struct counter_count_read_value *const val,
++				  const enum counter_count_value_type type,
++				  void *const data);
++int counter_count_write_value_get(void *const data,
++				  const enum counter_count_value_type type,
++				  const struct counter_count_write_value *const val);
++
++int counter_register(struct counter_device *const counter);
++void counter_unregister(struct counter_device *const counter);
++int devm_counter_register(struct device *dev,
++			  struct counter_device *const counter);
++void devm_counter_unregister(struct device *dev,
++			     struct counter_device *const counter);
++
++#endif /* _COUNTER_H_ */
+diff --git a/include/linux/counter_enum.h b/include/linux/counter_enum.h
+new file mode 100644
+index 000000000000..9f917298a88f
+--- /dev/null
++++ b/include/linux/counter_enum.h
+@@ -0,0 +1,45 @@
++/* SPDX-License-Identifier: GPL-2.0 */
++/*
++ * Counter interface enum functions
++ * Copyright (C) 2018 William Breathitt Gray
++ */
++#ifndef _COUNTER_ENUM_H_
++#define _COUNTER_ENUM_H_
++
++#include <linux/types.h>
++
++struct counter_device;
++struct counter_signal;
++struct counter_count;
++
++ssize_t counter_signal_enum_read(struct counter_device *counter,
++				 struct counter_signal *signal, void *priv,
++				 char *buf);
++ssize_t counter_signal_enum_write(struct counter_device *counter,
++				  struct counter_signal *signal, void *priv,
++				  const char *buf, size_t len);
++
++ssize_t counter_signal_enum_available_read(struct counter_device *counter,
++					   struct counter_signal *signal,
++					   void *priv, char *buf);
++
++ssize_t counter_count_enum_read(struct counter_device *counter,
++				struct counter_count *count, void *priv,
++				char *buf);
++ssize_t counter_count_enum_write(struct counter_device *counter,
++				 struct counter_count *count, void *priv,
++				 const char *buf, size_t len);
++
++ssize_t counter_count_enum_available_read(struct counter_device *counter,
++					  struct counter_count *count,
++					  void *priv, char *buf);
++
++ssize_t counter_device_enum_read(struct counter_device *counter, void *priv,
++				 char *buf);
++ssize_t counter_device_enum_write(struct counter_device *counter, void *priv,
++				  const char *buf, size_t len);
++
++ssize_t counter_device_enum_available_read(struct counter_device *counter,
++					   void *priv, char *buf);
++
++#endif /* _COUNTER_ENUM_H_ */
 -- 
 2.21.0
 
