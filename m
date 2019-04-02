@@ -2,111 +2,95 @@ Return-Path: <SRS0=xrHL=SE=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-8.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_PASS,UNPARSEABLE_RELAY,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2B5FDC4360F
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Apr 2019 21:13:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E3E08C4360F
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Apr 2019 21:53:59 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 69A302075E
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Apr 2019 21:13:38 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 69A302075E
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id E8FE520674
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Apr 2019 21:53:58 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=oracle.com header.i=@oracle.com header.b="xBffgtoj"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E8FE520674
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=oracle.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44YhlN0WDZzDqR0
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Apr 2019 08:13:36 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44YhjT2rNmzDqKH
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Apr 2019 08:11:57 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44Yjdw3w2FzDqRx
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Apr 2019 08:53:56 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 44YhjT1D2Yz8sw2
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Apr 2019 08:11:57 +1100 (AEDT)
-Received: by ozlabs.org (Postfix)
- id 44YhjT0Fz2z9sSS; Wed,  3 Apr 2019 08:11:57 +1100 (AEDT)
-Authentication-Results: ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
- (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=cclaudio@linux.ibm.com; receiver=<UNKNOWN>)
-Authentication-Results: ozlabs.org;
- dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+ spf=pass (mailfrom) smtp.mailfrom=oracle.com
+ (client-ip=141.146.126.78; helo=aserp2120.oracle.com;
+ envelope-from=daniel.m.jordan@oracle.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=oracle.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=oracle.com header.i=@oracle.com header.b="xBffgtoj"; 
+ dkim-atps=neutral
+Received: from aserp2120.oracle.com (aserp2120.oracle.com [141.146.126.78])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 44YhjS3Mq8z9sSQ
- for <linuxppc-dev@ozlabs.org>; Wed,  3 Apr 2019 08:11:56 +1100 (AEDT)
-Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x32L9GTq055124
- for <linuxppc-dev@ozlabs.org>; Tue, 2 Apr 2019 17:11:54 -0400
-Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2rmdx0vepk-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@ozlabs.org>; Tue, 02 Apr 2019 17:11:53 -0400
-Received: from localhost
- by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <cclaudio@linux.ibm.com>;
- Tue, 2 Apr 2019 22:11:53 +0100
-Received: from b03cxnp07028.gho.boulder.ibm.com (9.17.130.15)
- by e35.co.us.ibm.com (192.168.1.135) with IBM ESMTP SMTP Gateway: Authorized
- Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Tue, 2 Apr 2019 22:11:49 +0100
-Received: from b03ledav005.gho.boulder.ibm.com
- (b03ledav005.gho.boulder.ibm.com [9.17.130.236])
- by b03cxnp07028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x32LBmMW22741002
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Tue, 2 Apr 2019 21:11:48 GMT
-Received: from b03ledav005.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 2683BBE058;
- Tue,  2 Apr 2019 21:11:48 +0000 (GMT)
-Received: from b03ledav005.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id B240EBE051;
- Tue,  2 Apr 2019 21:11:45 +0000 (GMT)
-Received: from [9.18.235.111] (unknown [9.18.235.111])
- by b03ledav005.gho.boulder.ibm.com (Postfix) with ESMTP;
- Tue,  2 Apr 2019 21:11:45 +0000 (GMT)
-Subject: Re: [PATCH 0/4] Enabling secure boot on PowerNV systems
-To: Matthew Garrett <mjg59@google.com>
-References: <20190402181505.25037-1-cclaudio@linux.ibm.com>
- <CACdnJuumhkqTb4+1=QBiLmbW4xd3wW=MZu6Tj_KdaoTMhCN+Tg@mail.gmail.com>
-From: Claudio Carvalho <cclaudio@linux.ibm.com>
-Date: Tue, 2 Apr 2019 18:11:44 -0300
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
- Thunderbird/60.6.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44YjcB455mzDqQ4
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Apr 2019 08:52:26 +1100 (AEDT)
+Received: from pps.filterd (aserp2120.oracle.com [127.0.0.1])
+ by aserp2120.oracle.com (8.16.0.27/8.16.0.27) with SMTP id x32Kd3X1163998;
+ Tue, 2 Apr 2019 20:42:26 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com;
+ h=from : to : cc :
+ subject : date : message-id : in-reply-to : references : mime-version :
+ content-transfer-encoding; s=corp-2018-07-02;
+ bh=sUcjXY3uzftbRPA/qx9LGu6+ef2CXjVd6ceZM9+b18U=;
+ b=xBffgtojFULgQywk6dg++phJ4dRh6ZFh7wsyFjoG1MnC+TBYtmtYjJElPMLapMw7cm8c
+ VErNSijyy6Pj+8n4yE9yB/x8mMPgiR2/kTuoakitYDqe98KORwjyj0/R2IX7F7kwJfuS
+ 35MlOD9NugPRLgKZF+gPHWJCVtOk/RiUVaDNeVrsrVRH3bJCwL/Oa8L7vMS1F5iukMRh
+ EoCVrL95xhmbuHu7GtL70vFi58jRPIMVnNuSTNy8PI6N34JZS3qvld0+RTBNxhy9t/AR
+ loky0Zi2Y94RsT48wmNjpC2uJc3HpzEyMRCi3pu1G0E5UgmKcN0G/stq5GDGiP6E6oxt IQ== 
+Received: from aserp3020.oracle.com (aserp3020.oracle.com [141.146.126.70])
+ by aserp2120.oracle.com with ESMTP id 2rj0dnkywp-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Tue, 02 Apr 2019 20:42:26 +0000
+Received: from pps.filterd (aserp3020.oracle.com [127.0.0.1])
+ by aserp3020.oracle.com (8.16.0.27/8.16.0.27) with SMTP id x32KfI3M103083;
+ Tue, 2 Apr 2019 20:42:25 GMT
+Received: from aserv0121.oracle.com (aserv0121.oracle.com [141.146.126.235])
+ by aserp3020.oracle.com with ESMTP id 2rm9mhp3nq-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Tue, 02 Apr 2019 20:42:25 +0000
+Received: from abhmp0009.oracle.com (abhmp0009.oracle.com [141.146.116.15])
+ by aserv0121.oracle.com (8.14.4/8.13.8) with ESMTP id x32KgPpX030145;
+ Tue, 2 Apr 2019 20:42:25 GMT
+Received: from localhost.localdomain (/73.60.114.248)
+ by default (Oracle Beehive Gateway v4.0)
+ with ESMTP ; Tue, 02 Apr 2019 13:42:25 -0700
+From: Daniel Jordan <daniel.m.jordan@oracle.com>
+To: akpm@linux-foundation.org
+Subject: [PATCH 6/6] kvm/book3s: drop mmap_sem now that locked_vm is atomic
+Date: Tue,  2 Apr 2019 16:41:58 -0400
+Message-Id: <20190402204158.27582-7-daniel.m.jordan@oracle.com>
+X-Mailer: git-send-email 2.21.0
+In-Reply-To: <20190402204158.27582-1-daniel.m.jordan@oracle.com>
+References: <20190402204158.27582-1-daniel.m.jordan@oracle.com>
 MIME-Version: 1.0
-In-Reply-To: <CACdnJuumhkqTb4+1=QBiLmbW4xd3wW=MZu6Tj_KdaoTMhCN+Tg@mail.gmail.com>
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
-Content-Language: en-US
-X-TM-AS-GCONF: 00
-x-cbid: 19040221-0012-0000-0000-0000172198AF
-X-IBM-SpamModules-Scores: 
-X-IBM-SpamModules-Versions: BY=3.00010863; HX=3.00000242; KW=3.00000007;
- PH=3.00000004; SC=3.00000284; SDB=6.01183418; UDB=6.00619558; IPR=6.00964167; 
- MB=3.00026265; MTD=3.00000008; XFM=3.00000015; UTC=2019-04-02 21:11:52
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19040221-0013-0000-0000-000056BAB681
-Message-Id: <4ce5e057-0702-b0d5-7bb2-cea5b22e2efa@linux.ibm.com>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2019-04-02_09:, , signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1810050000 definitions=main-1904020141
+Content-Transfer-Encoding: 8bit
+X-Proofpoint-Virus-Version: vendor=nai engine=5900 definitions=9215
+ signatures=668685
+X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 suspectscore=29
+ malwarescore=0
+ phishscore=0 bulkscore=0 spamscore=0 mlxscore=0 mlxlogscore=999
+ adultscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.0.1-1810050000 definitions=main-1904020138
+X-Proofpoint-Virus-Version: vendor=nai engine=5900 definitions=9215
+ signatures=668685
+X-Proofpoint-Spam-Details: rule=notspam policy=default score=0
+ priorityscore=1501 malwarescore=0
+ suspectscore=29 phishscore=0 bulkscore=0 spamscore=0 clxscore=1011
+ lowpriorityscore=0 mlxscore=0 impostorscore=0 mlxlogscore=999 adultscore=0
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.0.1-1810050000
+ definitions=main-1904020138
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -118,36 +102,91 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-efi <linux-efi@vger.kernel.org>,
- Ard Biesheuvel <ard.biesheuvel@linaro.org>, Nayna Jain <nayna@linux.ibm.com>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Matthew Garret <matthew.garret@nebula.com>, linuxppc-dev@ozlabs.org,
- Paul Mackerras <paulus@samba.org>, Jeremy Kerr <jk@ozlabs.org>,
- linux-integrity <linux-integrity@vger.kernel.org>
+Cc: Davidlohr Bueso <dave@stgolabs.net>, Alexey Kardashevskiy <aik@ozlabs.ru>,
+ linux-kernel@vger.kernel.org, kvm-ppc@vger.kernel.org,
+ daniel.m.jordan@oracle.com, linux-mm@kvack.org,
+ Christoph Lameter <cl@linux.com>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+With locked_vm now an atomic, there is no need to take mmap_sem as
+writer.  Delete and refactor accordingly.
 
-On 4/2/19 4:36 PM, Matthew Garrett wrote:
-> On Tue, Apr 2, 2019 at 11:15 AM Claudio Carvalho <cclaudio@linux.ibm.com> wrote:
->> 1. Enable efivarfs by selecting CONFIG_EFI in the CONFIG_OPAL_SECVAR
->>    introduced in this patch set. With CONFIG_EFIVAR_FS, userspace tools can
->>    be used to manage the secure variables.
-> efivarfs has some pretty significant behavioural semantics that
-> directly reflect the EFI specification. Using it to expose non-EFI
-> variable data feels like it's going to increase fragility - there's a
-> risk that we'll change things in a way that makes sense for the EFI
-> spec but breaks your use case. Is the desire to use efivarfs to
-> maintain consistency with existing userland tooling, or just to avoid
-> having a separate filesystem?
->
-We want to use the efivarfs for compatibility with existing userspace
-tools. We will track and match any EFI changes that affect us.
+Signed-off-by: Daniel Jordan <daniel.m.jordan@oracle.com>
+Cc: Alexey Kardashevskiy <aik@ozlabs.ru>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Christoph Lameter <cl@linux.com>
+Cc: Davidlohr Bueso <dave@stgolabs.net>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Paul Mackerras <paulus@ozlabs.org>
+Cc: <linux-mm@kvack.org>
+Cc: <kvm-ppc@vger.kernel.org>
+Cc: <linuxppc-dev@lists.ozlabs.org>
+Cc: <linux-kernel@vger.kernel.org>
+---
+ arch/powerpc/kvm/book3s_64_vio.c | 34 +++++++++++---------------------
+ 1 file changed, 12 insertions(+), 22 deletions(-)
 
-Our use case is restricted to secure boot - this is not going to be a
-general purpose EFI variable implementation.
-
-Claudio
-
+diff --git a/arch/powerpc/kvm/book3s_64_vio.c b/arch/powerpc/kvm/book3s_64_vio.c
+index e7fdb6d10eeb..8e034c3a5d25 100644
+--- a/arch/powerpc/kvm/book3s_64_vio.c
++++ b/arch/powerpc/kvm/book3s_64_vio.c
+@@ -56,7 +56,7 @@ static unsigned long kvmppc_stt_pages(unsigned long tce_pages)
+ 	return tce_pages + ALIGN(stt_bytes, PAGE_SIZE) / PAGE_SIZE;
+ }
+ 
+-static long kvmppc_account_memlimit(unsigned long stt_pages, bool inc)
++static long kvmppc_account_memlimit(unsigned long pages, bool inc)
+ {
+ 	long ret = 0;
+ 	s64 locked_vm;
+@@ -64,33 +64,23 @@ static long kvmppc_account_memlimit(unsigned long stt_pages, bool inc)
+ 	if (!current || !current->mm)
+ 		return ret; /* process exited */
+ 
+-	down_write(&current->mm->mmap_sem);
+-
+-	locked_vm = atomic64_read(&current->mm->locked_vm);
+ 	if (inc) {
+-		unsigned long locked, lock_limit;
++		unsigned long lock_limit = rlimit(RLIMIT_MEMLOCK) >> PAGE_SHIFT;
+ 
+-		locked = locked_vm + stt_pages;
+-		lock_limit = rlimit(RLIMIT_MEMLOCK) >> PAGE_SHIFT;
+-		if (locked > lock_limit && !capable(CAP_IPC_LOCK))
++		locked_vm = atomic64_add_return(pages, &current->mm->locked_vm);
++		if (locked_vm > lock_limit && !capable(CAP_IPC_LOCK)) {
+ 			ret = -ENOMEM;
+-		else
+-			atomic64_add(stt_pages, &current->mm->locked_vm);
++			atomic64_sub(pages, &current->mm->locked_vm);
++		}
+ 	} else {
+-		if (WARN_ON_ONCE(stt_pages > locked_vm))
+-			stt_pages = locked_vm;
+-
+-		atomic64_sub(stt_pages, &current->mm->locked_vm);
++		locked_vm = atomic64_sub_return(pages, &current->mm->locked_vm);
++		WARN_ON_ONCE(locked_vm < 0);
+ 	}
+ 
+-	pr_debug("[%d] RLIMIT_MEMLOCK KVM %c%ld %ld/%ld%s\n", current->pid,
+-			inc ? '+' : '-',
+-			stt_pages << PAGE_SHIFT,
+-			atomic64_read(&current->mm->locked_vm) << PAGE_SHIFT,
+-			rlimit(RLIMIT_MEMLOCK),
+-			ret ? " - exceeded" : "");
+-
+-	up_write(&current->mm->mmap_sem);
++	pr_debug("[%d] RLIMIT_MEMLOCK KVM %c%lu %lld/%lu%s\n", current->pid,
++			inc ? '+' : '-', pages << PAGE_SHIFT,
++			locked_vm << PAGE_SHIFT,
++			rlimit(RLIMIT_MEMLOCK), ret ? " - exceeded" : "");
+ 
+ 	return ret;
+ }
+-- 
+2.21.0
 
