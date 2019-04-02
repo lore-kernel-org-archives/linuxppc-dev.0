@@ -2,86 +2,77 @@ Return-Path: <SRS0=xrHL=SE=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9B32FC43381
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Apr 2019 05:56:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2D0A4C43381
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Apr 2019 06:09:49 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id BAC5D2084C
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Apr 2019 05:56:56 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 988D22082C
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Apr 2019 06:09:48 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="uZ+KbF/E"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BAC5D2084C
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="C4eR2Tw5"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 988D22082C
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44YJPf0Wm9zDqLx
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Apr 2019 16:56:54 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44YJhV431FzDqMP
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Apr 2019 17:09:46 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=c-s.fr
- (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
- envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=gmail.com
+ (client-ip=2607:f8b0:4864:20::144; helo=mail-it1-x144.google.com;
+ envelope-from=oohall@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=c-s.fr
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="uZ+KbF/E"; 
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="C4eR2Tw5"; 
  dkim-atps=neutral
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+Received: from mail-it1-x144.google.com (mail-it1-x144.google.com
+ [IPv6:2607:f8b0:4864:20::144])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44YJMs079lzDqKg
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Apr 2019 16:55:19 +1100 (AEDT)
-Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 44YJMj4mQXz9v0ZF;
- Tue,  2 Apr 2019 07:55:13 +0200 (CEST)
-Authentication-Results: localhost; dkim=pass
- reason="1024-bit key; insecure key"
- header.d=c-s.fr header.i=@c-s.fr header.b=uZ+KbF/E; dkim-adsp=pass;
- dkim-atps=neutral
-X-Virus-Scanned: Debian amavisd-new at c-s.fr
-Received: from pegase1.c-s.fr ([192.168.12.234])
- by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id jK8cQk-DTFSq; Tue,  2 Apr 2019 07:55:13 +0200 (CEST)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 44YJMj3Svyz9v0ZD;
- Tue,  2 Apr 2019 07:55:13 +0200 (CEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
- t=1554184513; bh=btgYLqam9AT9uDTaicr/MjJse3NQ51gX9t0b5Fc89aY=;
- h=Subject:To:Cc:References:From:Date:In-Reply-To:From;
- b=uZ+KbF/EnPeutUs6YD83qAlTofTLypIrwBK3rvVZ8l9kw6dNHcAI0Wy0Z8TTfVO3s
- qddb1P+BkE9mXRcGmONuamFQitEKwN0b61a4T+E/L78AyT3Os1L7SXl/SWdmI8bW6o
- kiz7oAp4VABEFjfMj9HHyyuFrvafRa4epJ6Q24T0=
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 584D68B852;
- Tue,  2 Apr 2019 07:55:14 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id SmJ68KkyxGtz; Tue,  2 Apr 2019 07:55:14 +0200 (CEST)
-Received: from po16846vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 850868B75A;
- Tue,  2 Apr 2019 07:55:13 +0200 (CEST)
-Subject: Re: [PATCH 2/5] powerpc: Fix vDSO clock_getres()
-To: Vincenzo Frascino <vincenzo.frascino@arm.com>,
- linux-arch@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org
-References: <20190401115152.32751-1-vincenzo.frascino@arm.com>
- <20190401115152.32751-3-vincenzo.frascino@arm.com>
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Message-ID: <f54a24fe-f893-10c9-9177-4985bad2e745@c-s.fr>
-Date: Tue, 2 Apr 2019 05:54:47 +0000
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:52.0) Gecko/20100101
- Thunderbird/52.7.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44YJfg19CLzDqKq
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Apr 2019 17:08:10 +1100 (AEDT)
+Received: by mail-it1-x144.google.com with SMTP id f22so3247702ita.3
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 01 Apr 2019 23:08:10 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+ :cc; bh=2AGo5oTI2Yfj7Uhl2QLHbccss+tDPjaUu5FzxEc5YqE=;
+ b=C4eR2Tw5sXCjH8eJKkVQd3ET5lU3Hm0j7L5H1VLvrXwjI+Bz23NL8yeWu4pKlxfMRb
+ VPmlIRowurSL+d0xERO7IqvlrDr/mjvQv/ssiiSLbO/w3bQ+foW3e4lowNwSqhb29TQj
+ MFAc933oR19KnnCeqtXbUvhulFbTYAtcj1uaoaKdtrcQRiAKPhQFsbjNbx3EnIwI7fTL
+ JiM2490hva+DT+cjTgDhqFod4YoPWPsDAGWPAgZMTCvwDzecO+AhviMcxzY0qGjFyTqG
+ A5nR6ZHeQuzAj9JGhluse37flAruN3bJoCBe6FTtigjnsA3TB6Zu6eNwh0c5mIr2CnVc
+ KPAw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+ :message-id:subject:to:cc;
+ bh=2AGo5oTI2Yfj7Uhl2QLHbccss+tDPjaUu5FzxEc5YqE=;
+ b=dcIE/zeE6qTGsAokJ11VpbwRkz6peRsenyTBXhjUJgsrDsc061425lbVjtkDV9951f
+ xpfGA2vw8ow5FNDUe9odjOf8al+YHILQw3/Xl4FVm2HSlWIyuVfBYuB8mgaEo32+QccU
+ 4b5ve315tx6CpDHNovJEjIEjoxFpoXKwTgC83AGxdgT0m9mREmqtfG3yN4oiL0abL295
+ gBqyuDfqtVob+7T6YMATn6M/emhKKJFdb0iwyH5wOM4aWMmW462zu60G+Y8jh+UtuG+k
+ dS3i90EzWEUwPrFZtPPmdYXK5MiREb9R1CsMuAB3cJsMAGADmBEQcQDjYytHae/CVe/0
+ b9Pg==
+X-Gm-Message-State: APjAAAUqvs91FWDfnBKJPeeSAaXPUnz7MoRisXnyvDL+C22PV8uVgyiv
+ KpnfLbAf8wv/6rzQzRrIbcg+OtYW4vf50Esp4Lw=
+X-Google-Smtp-Source: APXvYqz9EYfqtjcbZH24cRXOInatM2RF6K4Z1G380ozqptjE5/UXnJxZELiKFWI5H7X8oaGFwSOVFW8lvfeBZs7LvZw=
+X-Received: by 2002:a24:5e06:: with SMTP id h6mr2504143itb.107.1554185287199; 
+ Mon, 01 Apr 2019 23:08:07 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <20190401115152.32751-3-vincenzo.frascino@arm.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
+References: <20190315005420.20212-1-jniethe5@gmail.com>
+In-Reply-To: <20190315005420.20212-1-jniethe5@gmail.com>
+From: Oliver <oohall@gmail.com>
+Date: Tue, 2 Apr 2019 17:07:55 +1100
+Message-ID: <CAOSf1CFfhoTzmvOHrQG6zrpLs4L92F9Mnyw7Muuyi8Py-TAuLw@mail.gmail.com>
+Subject: Re: [PATCH] powerpc/powernv: Add mmap to opal export sysfs nodes
+To: Jordan Niethe <jniethe5@gmail.com>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -93,183 +84,74 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Arnd Bergmann <arnd@arndb.de>, Heiko Carstens <heiko.carstens@de.ibm.com>,
- Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>,
- Paul Mackerras <paulus@samba.org>, Greentime Hu <green.hu@gmail.com>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>,
- Thomas Gleixner <tglx@linutronix.de>, Vincent Chen <deanbo422@gmail.com>,
- Shuah Khan <shuah@kernel.org>
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-
-
-On 04/01/2019 11:51 AM, Vincenzo Frascino wrote:
-> clock_getres in the vDSO library has to preserve the same behaviour
-> of posix_get_hrtimer_res().
-> 
-> In particular, posix_get_hrtimer_res() does:
->      sec = 0;
->      ns = hrtimer_resolution;
-> and hrtimer_resolution depends on the enablement of the high
-> resolution timers that can happen either at compile or at run time.
-> 
-> Fix the powerpc vdso implementation of clock_getres keeping a copy of
-> hrtimer_resolution in vdso data and using that directly.
-> 
-> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Cc: Paul Mackerras <paulus@samba.org>
-> Cc: Michael Ellerman <mpe@ellerman.id.au>
-> Signed-off-by: Vincenzo Frascino <vincenzo.frascino@arm.com>
+On Fri, Mar 15, 2019 at 11:55 AM Jordan Niethe <jniethe5@gmail.com> wrote:
+>
+> The sysfs nodes created under /opal/exports/ do not currently support
+> mmap. Skiboot trace buffers are not yet added to this location but
+> this is a suitable for them to be exported to. Adding mmap support makes
+> using these trace buffers more convenient. The state in the header of
+> the trace buffer is needed to ensure the read position has not been
+> overwritten. Thus the header of the buffer must be read, then the
+> read position itself. Using lseek/read to do this introduces a delay
+> that could result in incorrect reads if the read position is overwritten
+> after the header is read.
+>
+> Signed-off-by: Jordan Niethe <jniethe5@gmail.com>
 > ---
->   arch/powerpc/include/asm/vdso_datapage.h  |  2 ++
-
-Conflicts with commit b5b4453e7912 ("powerpc/vdso64: Fix CLOCK_MONOTONIC 
-inconsistencies across Y2038")
-
-Christophe
-
-
-
->   arch/powerpc/kernel/asm-offsets.c         |  2 +-
->   arch/powerpc/kernel/time.c                |  1 +
->   arch/powerpc/kernel/vdso32/gettimeofday.S | 22 +++++++++++++++-------
->   arch/powerpc/kernel/vdso64/gettimeofday.S | 22 +++++++++++++++-------
->   5 files changed, 34 insertions(+), 15 deletions(-)
-> 
-> diff --git a/arch/powerpc/include/asm/vdso_datapage.h b/arch/powerpc/include/asm/vdso_datapage.h
-> index 1afe90ade595..4ae43fc77fe9 100644
-> --- a/arch/powerpc/include/asm/vdso_datapage.h
-> +++ b/arch/powerpc/include/asm/vdso_datapage.h
-> @@ -86,6 +86,7 @@ struct vdso_data {
->   	__s32 wtom_clock_nsec;
->   	struct timespec stamp_xtime;	/* xtime as at tb_orig_stamp */
->   	__u32 stamp_sec_fraction;	/* fractional seconds of stamp_xtime */
-> +	__u32 hrtimer_res;		/* hrtimer resolution */
->      	__u32 syscall_map_64[SYSCALL_MAP_SIZE]; /* map of syscalls  */
->      	__u32 syscall_map_32[SYSCALL_MAP_SIZE]; /* map of syscalls */
->   };
-> @@ -107,6 +108,7 @@ struct vdso_data {
->   	__s32 wtom_clock_nsec;
->   	struct timespec stamp_xtime;	/* xtime as at tb_orig_stamp */
->   	__u32 stamp_sec_fraction;	/* fractional seconds of stamp_xtime */
-> +	__u32 hrtimer_res;		/* hrtimer resolution */
->      	__u32 syscall_map_32[SYSCALL_MAP_SIZE]; /* map of syscalls */
->   	__u32 dcache_block_size;	/* L1 d-cache block size     */
->   	__u32 icache_block_size;	/* L1 i-cache block size     */
-> diff --git a/arch/powerpc/kernel/asm-offsets.c b/arch/powerpc/kernel/asm-offsets.c
-> index 86a61e5f8285..52e4b98a8492 100644
-> --- a/arch/powerpc/kernel/asm-offsets.c
-> +++ b/arch/powerpc/kernel/asm-offsets.c
-> @@ -383,6 +383,7 @@ int main(void)
->   	OFFSET(WTOM_CLOCK_NSEC, vdso_data, wtom_clock_nsec);
->   	OFFSET(STAMP_XTIME, vdso_data, stamp_xtime);
->   	OFFSET(STAMP_SEC_FRAC, vdso_data, stamp_sec_fraction);
-> +	OFFSET(CLOCK_REALTIME_RES, vdso_data, hrtimer_res);
->   	OFFSET(CFG_ICACHE_BLOCKSZ, vdso_data, icache_block_size);
->   	OFFSET(CFG_DCACHE_BLOCKSZ, vdso_data, dcache_block_size);
->   	OFFSET(CFG_ICACHE_LOGBLOCKSZ, vdso_data, icache_log_block_size);
-> @@ -413,7 +414,6 @@ int main(void)
->   	DEFINE(CLOCK_REALTIME_COARSE, CLOCK_REALTIME_COARSE);
->   	DEFINE(CLOCK_MONOTONIC_COARSE, CLOCK_MONOTONIC_COARSE);
->   	DEFINE(NSEC_PER_SEC, NSEC_PER_SEC);
-> -	DEFINE(CLOCK_REALTIME_RES, MONOTONIC_RES_NSEC);
->   
->   #ifdef CONFIG_BUG
->   	DEFINE(BUG_ENTRY_SIZE, sizeof(struct bug_entry));
-> diff --git a/arch/powerpc/kernel/time.c b/arch/powerpc/kernel/time.c
-> index bc0503ef9c9c..62c04a6746d8 100644
-> --- a/arch/powerpc/kernel/time.c
-> +++ b/arch/powerpc/kernel/time.c
-> @@ -955,6 +955,7 @@ void update_vsyscall(struct timekeeper *tk)
->   	vdso_data->wtom_clock_nsec = tk->wall_to_monotonic.tv_nsec;
->   	vdso_data->stamp_xtime = xt;
->   	vdso_data->stamp_sec_fraction = frac_sec;
-> +	vdso_data->hrtimer_res = hrtimer_resolution;
->   	smp_wmb();
->   	++(vdso_data->tb_update_count);
->   }
-> diff --git a/arch/powerpc/kernel/vdso32/gettimeofday.S b/arch/powerpc/kernel/vdso32/gettimeofday.S
-> index 1e0bc5955a40..b21630079496 100644
-> --- a/arch/powerpc/kernel/vdso32/gettimeofday.S
-> +++ b/arch/powerpc/kernel/vdso32/gettimeofday.S
-> @@ -160,14 +160,21 @@ V_FUNCTION_BEGIN(__kernel_clock_getres)
->   	cror	cr0*4+eq,cr0*4+eq,cr1*4+eq
->   	bne	cr0,99f
->   
-> -	li	r3,0
-> -	cmpli	cr0,r4,0
-> +	mflr	r12
-> +  .cfi_register lr,r12
-> +	mr	r11,r4
-> +	bl	__get_datapage@local
-> +	lwz	r5,CLOCK_REALTIME_RES(r3)
-> +	li	r4,0
-> +	cmplwi	r11,0		/* check if res is NULL */
-> +	beq	1f
+>  arch/powerpc/platforms/powernv/opal.c | 10 ++++++++++
+>  1 file changed, 10 insertions(+)
+>
+> diff --git a/arch/powerpc/platforms/powernv/opal.c b/arch/powerpc/platforms/powernv/opal.c
+> index 2b0eca104f86..3cfc683bb060 100644
+> --- a/arch/powerpc/platforms/powernv/opal.c
+> +++ b/arch/powerpc/platforms/powernv/opal.c
+> @@ -714,6 +714,15 @@ static ssize_t export_attr_read(struct file *fp, struct kobject *kobj,
+>                                        bin_attr->size);
+>  }
+>
+> +static int export_attr_mmap(struct file *fp, struct kobject *kobj,
+> +                               struct bin_attribute *attr,
+> +                               struct vm_area_struct *vma)
+> +{
+> +       return remap_pfn_range(vma, vma->vm_start,
+> +                               __pa(attr->private) >> PAGE_SHIFT,
+> +                               attr->size, PAGE_READONLY);
+> +}
 > +
-> +	stw	r4,TSPC32_TV_SEC(r11)
-> +	stw	r5,TSPC32_TV_NSEC(r11)
-> +
-> +1:	mtlr	r12
->   	crclr	cr0*4+so
-> -	beqlr
-> -	lis	r5,CLOCK_REALTIME_RES@h
-> -	ori	r5,r5,CLOCK_REALTIME_RES@l
-> -	stw	r3,TSPC32_TV_SEC(r4)
-> -	stw	r5,TSPC32_TV_NSEC(r4)
-> +	li	r3,0
->   	blr
->   
->   	/*
-> @@ -175,6 +182,7 @@ V_FUNCTION_BEGIN(__kernel_clock_getres)
->   	 */
->   99:
->   	li	r0,__NR_clock_getres
-> +  .cfi_restore lr
->   	sc
->   	blr
->     .cfi_endproc
-> diff --git a/arch/powerpc/kernel/vdso64/gettimeofday.S b/arch/powerpc/kernel/vdso64/gettimeofday.S
-> index a4ed9edfd5f0..a7e49bddd475 100644
-> --- a/arch/powerpc/kernel/vdso64/gettimeofday.S
-> +++ b/arch/powerpc/kernel/vdso64/gettimeofday.S
-> @@ -190,14 +190,21 @@ V_FUNCTION_BEGIN(__kernel_clock_getres)
->   	cror	cr0*4+eq,cr0*4+eq,cr1*4+eq
->   	bne	cr0,99f
->   
-> -	li	r3,0
-> -	cmpldi	cr0,r4,0
-> +	mflr	r12
-> +  .cfi_register lr,r12
-> +	mr	r11, r4
-> +	bl	V_LOCAL_FUNC(__get_datapage)
-> +	lwz	r5,CLOCK_REALTIME_RES(r3)
-> +	li	r4,0
-> +	cmpldi	r11,0		/* check if res is NULL */
-> +	beq	1f
-> +
-> +	std	r4,TSPC64_TV_SEC(r11)
-> +	std	r5,TSPC64_TV_NSEC(r11)
-> +
-> +1:	mtlr	r12
->   	crclr	cr0*4+so
-> -	beqlr
-> -	lis	r5,CLOCK_REALTIME_RES@h
-> -	ori	r5,r5,CLOCK_REALTIME_RES@l
-> -	std	r3,TSPC64_TV_SEC(r4)
-> -	std	r5,TSPC64_TV_NSEC(r4)
-> +	li	r3,0
->   	blr
->   
->   	/*
-> @@ -205,6 +212,7 @@ V_FUNCTION_BEGIN(__kernel_clock_getres)
->   	 */
->   99:
->   	li	r0,__NR_clock_getres
-> +  .cfi_restore lr
->   	sc
->   	blr
->     .cfi_endproc
-> 
+>  /*
+>   * opal_export_attrs: creates a sysfs node for each property listed in
+>   * the device-tree under /ibm,opal/firmware/exports/
+> @@ -759,6 +768,7 @@ static void opal_export_attrs(void)
+>                 attr->attr.name = kstrdup(prop->name, GFP_KERNEL);
+>                 attr->attr.mode = 0400;
+>                 attr->read = export_attr_read;
+> +               attr->mmap = export_attr_mmap;
+
+You are assuming that it's safe to allow the export to be mmap()ed
+here and that's not always the case. e.g.
+
+[16:56 oliveroh@localhost .../firmware/exports]$ lsprop
+symbol_map       00000000 30125640 00000000 0003598d
+hdat_map         00000000 31200000 00000000 00800000
+phandle          100002e8 (268436200)
+name             "exports"
+
+The symbol_map export there does not start (or end) at a page
+boundary. If you allow user programs to mmap() that export it will
+make everything from 0x30120000 to 0x30160000 and the additional space
+might contain internal firmware data structures that we'd rather not
+allow userspace to access.You can protect against that by validating
+the export starts and ends on a page boundary and only populating the
+.mmap when it's safe to do so.
+
+>                 attr->private = __va(vals[0]);
+>                 attr->size = vals[1];
+>
+> --
+> 2.20.1
+>
