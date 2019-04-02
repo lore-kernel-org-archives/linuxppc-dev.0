@@ -2,86 +2,112 @@ Return-Path: <SRS0=xrHL=SE=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-1.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,
+	URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3B791C4360F
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Apr 2019 14:59:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CDBD4C4360F
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Apr 2019 15:23:03 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 76F55204EC
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Apr 2019 14:59:47 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 137F720830
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Apr 2019 15:23:03 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="e+ZqMlJO"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 76F55204EC
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
+	dkim=pass (1024-bit key) header.d=nxp.com header.i=@nxp.com header.b="aYXJeLF0"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 137F720830
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nxp.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44YXS11fxczDqQ1
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Apr 2019 01:59:45 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44YXyr4GXqzDqNd
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Apr 2019 02:23:00 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44YXwt5cdvzDqDq
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Apr 2019 02:21:18 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=c-s.fr
- (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
- envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=c-s.fr
+ dmarc=pass (p=none dis=none) header.from=nxp.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="e+ZqMlJO"; 
+ unprotected) header.d=nxp.com header.i=@nxp.com header.b="aYXJeLF0"; 
  dkim-atps=neutral
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 44YXwt22LGz8tQ0
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Apr 2019 02:21:18 +1100 (AEDT)
+Received: by ozlabs.org (Postfix)
+ id 44YXwt1cSTz9sTb; Wed,  3 Apr 2019 02:21:18 +1100 (AEDT)
+Authentication-Results: ozlabs.org; spf=pass (mailfrom) smtp.mailfrom=nxp.com
+ (client-ip=40.107.1.65; helo=eur02-he1-obe.outbound.protection.outlook.com;
+ envelope-from=diana.craciun@nxp.com; receiver=<UNKNOWN>)
+Authentication-Results: ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=nxp.com
+Authentication-Results: ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=nxp.com header.i=@nxp.com header.b="aYXJeLF0"; 
+ dkim-atps=neutral
+Received: from EUR02-HE1-obe.outbound.protection.outlook.com
+ (mail-eopbgr10065.outbound.protection.outlook.com [40.107.1.65])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44YXPy6jjtzDqMh
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Apr 2019 01:57:56 +1100 (AEDT)
-Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 44YXPp33s4z9tytF;
- Tue,  2 Apr 2019 16:57:50 +0200 (CEST)
-Authentication-Results: localhost; dkim=pass
- reason="1024-bit key; insecure key"
- header.d=c-s.fr header.i=@c-s.fr header.b=e+ZqMlJO; dkim-adsp=pass;
- dkim-atps=neutral
-X-Virus-Scanned: Debian amavisd-new at c-s.fr
-Received: from pegase1.c-s.fr ([192.168.12.234])
- by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id ed2igWe31gvZ; Tue,  2 Apr 2019 16:57:50 +0200 (CEST)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 44YXPp1njFz9tytC;
- Tue,  2 Apr 2019 16:57:50 +0200 (CEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
- t=1554217070; bh=CM9HCFvK0RJH9Ha0RMH2NwK6R4phldsAq8ZUmReVzRs=;
- h=Subject:To:Cc:References:From:Date:In-Reply-To:From;
- b=e+ZqMlJOslM6TeygxiVpApst2Dfi/3iZSbag4AXG660B42aZTiGEDdzhcDqtoBYWt
- BCOtemTW0xvc+Sv5SxiFZuF8Ersmrt7RlertVZOfBiMxmJZ4Kx4i34O68n9a9yRwAN
- 3WxULSKjSaOLGbOiWWJamlpFBwIaGC34LKzOFM/A=
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id C198F8B8CF;
- Tue,  2 Apr 2019 16:57:51 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id VVU33_ySrRje; Tue,  2 Apr 2019 16:57:51 +0200 (CEST)
-Received: from PO15451 (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id E3C358B8CD;
- Tue,  2 Apr 2019 16:57:50 +0200 (CEST)
-Subject: Re: [RFC PATCH v2 3/3] kasan: add interceptors for all string
- functions
-To: Dmitry Vyukov <dvyukov@google.com>
-References: <f13944c4e99ec2cef6d93d762e6b526e0335877f.1553785019.git.christophe.leroy@c-s.fr>
- <51a6d9d7185de310f37ccbd7e4ebfdd6c7e9791f.1553785020.git.christophe.leroy@c-s.fr>
- <3211b0f8-7b52-01b7-8208-65d746969248@c-s.fr>
- <CACT4Y+YYMJX-PKZhOkjDFnhaC1wcC0h_DzhhgxEwtffNNUh_Nw@mail.gmail.com>
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Message-ID: <1f24d2ff-ea36-e3f9-113f-69dfff293c3d@c-s.fr>
-Date: Tue, 2 Apr 2019 16:57:50 +0200
-User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:60.0) Gecko/20100101
- Thunderbird/60.6.1
+ by ozlabs.org (Postfix) with ESMTPS id 44YXws4kjxz9sTY
+ for <linuxppc-dev@ozlabs.org>; Wed,  3 Apr 2019 02:21:13 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nxp.com; s=selector1; 
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=8D6InYnTytlnQHlPBcTR3k/aa+l9DkgSTwK1dCKlPlk=;
+ b=aYXJeLF0GquCAnjdchpUvAUPmB1yE9uy5fOyp70+tkijiA0VtK5RTzfeoA2BwL0Cu1KLHstb0lNWrS+pEGaofCFP7TMeqKqEInZ9LwQpJrLTPhAEJFVEtfDH4jQbSxvUTxiVbDkGKNCQFBMQggkkyoJJSrHEYXJiArO1rGIS5CQ=
+Received: from VI1PR0401MB2463.eurprd04.prod.outlook.com (10.168.64.146) by
+ VI1PR0401MB2253.eurprd04.prod.outlook.com (10.169.133.22) with Microsoft SMTP
+ Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.20.1750.16; Tue, 2 Apr 2019 15:21:09 +0000
+Received: from VI1PR0401MB2463.eurprd04.prod.outlook.com
+ ([fe80::f0ff:e4cf:6d0d:ea88]) by VI1PR0401MB2463.eurprd04.prod.outlook.com
+ ([fe80::f0ff:e4cf:6d0d:ea88%3]) with mapi id 15.20.1750.014; Tue, 2 Apr 2019
+ 15:21:09 +0000
+From: Diana Madalina Craciun <diana.craciun@nxp.com>
+To: Michael Ellerman <mpe@ellerman.id.au>, Greg KH <gregkh@linuxfoundation.org>
+Subject: Re: [PATCH stable v4.14 00/32] powerpc spectre backports for 4.14
+Thread-Topic: [PATCH stable v4.14 00/32] powerpc spectre backports for 4.14
+Thread-Index: AQHU5iJE+XDajggcgUe1OnYfZIGbfg==
+Date: Tue, 2 Apr 2019 15:21:09 +0000
+Message-ID: <VI1PR0401MB246396C22088623F2971A0DCFF560@VI1PR0401MB2463.eurprd04.prod.outlook.com>
+References: <20190329112620.14489-1-mpe@ellerman.id.au>
+ <20190329145116.GA23019@kroah.com> <20190329150921.GA1002@kroah.com>
+ <87v9zzl68u.fsf@concordia.ellerman.id.au>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+authentication-results: spf=none (sender IP is )
+ smtp.mailfrom=diana.craciun@nxp.com; 
+x-originating-ip: [212.146.100.6]
+x-ms-publictraffictype: Email
+x-ms-office365-filtering-correlation-id: 2fe1bd17-2ece-4be8-5268-08d6b77ed596
+x-ms-office365-filtering-ht: Tenant
+x-microsoft-antispam: BCL:0; PCL:0;
+ RULEID:(2390118)(7020095)(4652040)(8989299)(5600139)(711020)(4605104)(4618075)(4534185)(4627221)(201703031133081)(201702281549075)(8990200)(2017052603328)(7193020);
+ SRVR:VI1PR0401MB2253; 
+x-ms-traffictypediagnostic: VI1PR0401MB2253:
+x-microsoft-antispam-prvs: <VI1PR0401MB2253BE06DD8295A2FDF5AD3BFF560@VI1PR0401MB2253.eurprd04.prod.outlook.com>
+x-forefront-prvs: 0995196AA2
+x-forefront-antispam-report: SFV:NSPM;
+ SFS:(10009020)(366004)(346002)(376002)(396003)(39860400002)(136003)(189003)(199004)(54524002)(9686003)(2906002)(229853002)(186003)(305945005)(6116002)(6436002)(99286004)(8936002)(105586002)(478600001)(93886005)(66066001)(33656002)(55016002)(4326008)(316002)(52536014)(486006)(7736002)(3846002)(25786009)(446003)(86362001)(14454004)(5660300002)(106356001)(74316002)(54906003)(97736004)(26005)(81166006)(8676002)(476003)(81156014)(68736007)(6506007)(14444005)(7696005)(4744005)(6246003)(102836004)(53546011)(71200400001)(256004)(71190400001)(76176011)(53936002)(110136005);
+ DIR:OUT; SFP:1101; SCL:1; SRVR:VI1PR0401MB2253;
+ H:VI1PR0401MB2463.eurprd04.prod.outlook.com; FPR:; SPF:None; LANG:en;
+ PTR:InfoNoRecords; MX:1; A:1; 
+received-spf: None (protection.outlook.com: nxp.com does not designate
+ permitted sender hosts)
+x-ms-exchange-senderadcheck: 1
+x-microsoft-antispam-message-info: X6Kg9DPgMf2+Db2u/pDSLrMJUtEPgOHvwmTzSUgC0KwkaYUKWKDkoAk6utV66Rmf1cFPD6/xdYevU4bCea6vR5ZvwhlDopkzxfzspiQbk46jrsM7ggCXtZ8gzHYVt6nhFJwEQpS3AQYrE146Kuv8ryYj9DotB1Sqk8agnxRcmn2YB/4g30n4TodF16rH3GuAUCoGnpHpg9J2gGmq43E9QPEBS8RM+T8Wzvpo8FDqX4q0y0Vb2CBwzqekyHFz1lUQrJJzSRLO4ef0ZNNK/6uA2L6uA/iYZVuzl91cZ69nxWLBTrA2jE3Y+oNEZw8Cp3p6owdyyWuuWqTl5xXzHOnetryeW/R/ukcBsKUs47GD4MbuN49lq+vLOiDZvcaoAmv4iY64Nl2vYS/qfw/5CAywgz00w2kIsTGixfYh842ciYw=
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 MIME-Version: 1.0
-In-Reply-To: <CACT4Y+YYMJX-PKZhOkjDFnhaC1wcC0h_DzhhgxEwtffNNUh_Nw@mail.gmail.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: fr
-Content-Transfer-Encoding: 8bit
+X-OriginatorOrg: nxp.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 2fe1bd17-2ece-4be8-5268-08d6b77ed596
+X-MS-Exchange-CrossTenant-originalarrivaltime: 02 Apr 2019 15:21:09.5863 (UTC)
+X-MS-Exchange-CrossTenant-fromentityheader: Hosted
+X-MS-Exchange-CrossTenant-id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
+X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: VI1PR0401MB2253
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -93,754 +119,29 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: LKML <linux-kernel@vger.kernel.org>, Nicholas Piggin <npiggin@gmail.com>,
- Linux-MM <linux-mm@kvack.org>, Paul Mackerras <paulus@samba.org>,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
- Andrey Ryabinin <aryabinin@virtuozzo.com>,
- Alexander Potapenko <glider@google.com>,
- kasan-dev <kasan-dev@googlegroups.com>, linuxppc-dev@lists.ozlabs.org,
- Daniel Axtens <dja@axtens.net>
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+ "msuchanek@suse.de" <msuchanek@suse.de>,
+ "stable@vger.kernel.org" <stable@vger.kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-
-
-Le 02/04/2019 à 14:58, Dmitry Vyukov a écrit :
-> On Tue, Apr 2, 2019 at 11:43 AM Christophe Leroy
-> <christophe.leroy@c-s.fr> wrote:
->>
->> Hi Dmitry, Andrey and others,
->>
->> Do you have any comments to this series ?
->>
->> I'd like to know if this approach is ok or if it is better to keep doing
->> as in https://patchwork.ozlabs.org/patch/1055788/
-> 
-> Hi Christophe,
-> 
-> Forking every kernel function does not look like a scalable approach
-> to me. There is not much special about str* functions. There is
-> something a bit special about memset/memcpy as compiler emits them for
-> struct set/copy.
-> Could powerpc do the same as x86 and map some shadow early enough
-> (before "prom")? Then we would not need anything of this? Sorry if we
-> already discussed this, I am losing context quickly.
-
-Hi Dmitry,
-
-I'm afraid we can't map shadow ram that early. This code gets run by 
-third party BIOS SW which manages the MMU and provides a 1:1 mapping, so 
-there is no way we can map shadow memory.
-
-If you feel providing interceptors for the string functions is not a 
-good idea, I'm ok with it, I'll keep the necessary string functions in 
-prom_init.c
-
-I was proposing the interceptor's approach because behind the specific 
-need for handling early prom_init code, I thought it was also a way to 
-limit KASAN performance impact on string functions, and it was also a 
-way to handle all the optimised string functions provided by architectures.
-In my series I have a patch that disables powerpc's optimised string 
-functions (https://patchwork.ozlabs.org/patch/1055780/). The 
-interceptor's approach was a way to avoid that. As far as I can see, at 
-the time being the other arches don't disable their optimised string 
-functions, meaning the KASAN checks are skipped.
-
-Thanks
-Christophe
-
-> 
-> 
-> 
-> 
->> Thanks
->> Christophe
->>
->> Le 28/03/2019 à 16:00, Christophe Leroy a écrit :
->>> In the same spirit as commit 393f203f5fd5 ("x86_64: kasan: add
->>> interceptors for memset/memmove/memcpy functions"), this patch
->>> adds interceptors for string manipulation functions so that we
->>> can compile lib/string.o without kasan support hence allow the
->>> string functions to also be used from places where kasan has
->>> to be disabled.
->>>
->>> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
->>> ---
->>>    v2: Fixed a few checkpatch stuff and added missing EXPORT_SYMBOL() and missing #undefs
->>>
->>>    include/linux/string.h |  79 ++++++++++
->>>    lib/Makefile           |   2 +
->>>    lib/string.c           |   8 +
->>>    mm/kasan/string.c      | 394 +++++++++++++++++++++++++++++++++++++++++++++++++
->>>    4 files changed, 483 insertions(+)
->>>
->>> diff --git a/include/linux/string.h b/include/linux/string.h
->>> index 7927b875f80c..3d2aff2ed402 100644
->>> --- a/include/linux/string.h
->>> +++ b/include/linux/string.h
->>> @@ -19,54 +19,117 @@ extern void *memdup_user_nul(const void __user *, size_t);
->>>     */
->>>    #include <asm/string.h>
->>>
->>> +#if defined(CONFIG_KASAN) && !defined(__SANITIZE_ADDRESS__)
->>> +/*
->>> + * For files that are not instrumented (e.g. mm/slub.c) we
->>> + * should use not instrumented version of mem* functions.
->>> + */
->>> +#define memset16     __memset16
->>> +#define memset32     __memset32
->>> +#define memset64     __memset64
->>> +#define memzero_explicit     __memzero_explicit
->>> +#define strcpy               __strcpy
->>> +#define strncpy              __strncpy
->>> +#define strlcpy              __strlcpy
->>> +#define strscpy              __strscpy
->>> +#define strcat               __strcat
->>> +#define strncat              __strncat
->>> +#define strlcat              __strlcat
->>> +#define strcmp               __strcmp
->>> +#define strncmp              __strncmp
->>> +#define strcasecmp   __strcasecmp
->>> +#define strncasecmp  __strncasecmp
->>> +#define strchr               __strchr
->>> +#define strchrnul    __strchrnul
->>> +#define strrchr              __strrchr
->>> +#define strnchr              __strnchr
->>> +#define skip_spaces  __skip_spaces
->>> +#define strim                __strim
->>> +#define strstr               __strstr
->>> +#define strnstr              __strnstr
->>> +#define strlen               __strlen
->>> +#define strnlen              __strnlen
->>> +#define strpbrk              __strpbrk
->>> +#define strsep               __strsep
->>> +#define strspn               __strspn
->>> +#define strcspn              __strcspn
->>> +#define memscan              __memscan
->>> +#define memcmp               __memcmp
->>> +#define memchr               __memchr
->>> +#define memchr_inv   __memchr_inv
->>> +#define strreplace   __strreplace
->>> +
->>> +#ifndef __NO_FORTIFY
->>> +#define __NO_FORTIFY /* FORTIFY_SOURCE uses __builtin_memcpy, etc. */
->>> +#endif
->>> +
->>> +#endif
->>> +
->>>    #ifndef __HAVE_ARCH_STRCPY
->>>    extern char * strcpy(char *,const char *);
->>> +char *__strcpy(char *, const char *);
->>>    #endif
->>>    #ifndef __HAVE_ARCH_STRNCPY
->>>    extern char * strncpy(char *,const char *, __kernel_size_t);
->>> +char *__strncpy(char *, const char *, __kernel_size_t);
->>>    #endif
->>>    #ifndef __HAVE_ARCH_STRLCPY
->>>    size_t strlcpy(char *, const char *, size_t);
->>> +size_t __strlcpy(char *, const char *, size_t);
->>>    #endif
->>>    #ifndef __HAVE_ARCH_STRSCPY
->>>    ssize_t strscpy(char *, const char *, size_t);
->>> +ssize_t __strscpy(char *, const char *, size_t);
->>>    #endif
->>>    #ifndef __HAVE_ARCH_STRCAT
->>>    extern char * strcat(char *, const char *);
->>> +char *__strcat(char *, const char *);
->>>    #endif
->>>    #ifndef __HAVE_ARCH_STRNCAT
->>>    extern char * strncat(char *, const char *, __kernel_size_t);
->>> +char *__strncat(char *, const char *, __kernel_size_t);
->>>    #endif
->>>    #ifndef __HAVE_ARCH_STRLCAT
->>>    extern size_t strlcat(char *, const char *, __kernel_size_t);
->>> +size_t __strlcat(char *, const char *, __kernel_size_t);
->>>    #endif
->>>    #ifndef __HAVE_ARCH_STRCMP
->>>    extern int strcmp(const char *,const char *);
->>> +int __strcmp(const char *, const char *);
->>>    #endif
->>>    #ifndef __HAVE_ARCH_STRNCMP
->>>    extern int strncmp(const char *,const char *,__kernel_size_t);
->>> +int __strncmp(const char *, const char *, __kernel_size_t);
->>>    #endif
->>>    #ifndef __HAVE_ARCH_STRCASECMP
->>>    extern int strcasecmp(const char *s1, const char *s2);
->>> +int __strcasecmp(const char *s1, const char *s2);
->>>    #endif
->>>    #ifndef __HAVE_ARCH_STRNCASECMP
->>>    extern int strncasecmp(const char *s1, const char *s2, size_t n);
->>> +int __strncasecmp(const char *s1, const char *s2, size_t n);
->>>    #endif
->>>    #ifndef __HAVE_ARCH_STRCHR
->>>    extern char * strchr(const char *,int);
->>> +char *__strchr(const char *, int);
->>>    #endif
->>>    #ifndef __HAVE_ARCH_STRCHRNUL
->>>    extern char * strchrnul(const char *,int);
->>> +char *__strchrnul(const char *, int);
->>>    #endif
->>>    #ifndef __HAVE_ARCH_STRNCHR
->>>    extern char * strnchr(const char *, size_t, int);
->>> +char *__strnchr(const char *, size_t, int);
->>>    #endif
->>>    #ifndef __HAVE_ARCH_STRRCHR
->>>    extern char * strrchr(const char *,int);
->>> +char *__strrchr(const char *, int);
->>>    #endif
->>>    extern char * __must_check skip_spaces(const char *);
->>> +char * __must_check __skip_spaces(const char *);
->>>
->>>    extern char *strim(char *);
->>> +char *__strim(char *);
->>>
->>>    static inline __must_check char *strstrip(char *str)
->>>    {
->>> @@ -75,27 +138,35 @@ static inline __must_check char *strstrip(char *str)
->>>
->>>    #ifndef __HAVE_ARCH_STRSTR
->>>    extern char * strstr(const char *, const char *);
->>> +char *__strstr(const char *, const char *);
->>>    #endif
->>>    #ifndef __HAVE_ARCH_STRNSTR
->>>    extern char * strnstr(const char *, const char *, size_t);
->>> +char *__strnstr(const char *, const char *, size_t);
->>>    #endif
->>>    #ifndef __HAVE_ARCH_STRLEN
->>>    extern __kernel_size_t strlen(const char *);
->>> +__kernel_size_t __strlen(const char *);
->>>    #endif
->>>    #ifndef __HAVE_ARCH_STRNLEN
->>>    extern __kernel_size_t strnlen(const char *,__kernel_size_t);
->>> +__kernel_size_t __strnlen(const char *, __kernel_size_t);
->>>    #endif
->>>    #ifndef __HAVE_ARCH_STRPBRK
->>>    extern char * strpbrk(const char *,const char *);
->>> +char *__strpbrk(const char *, const char *);
->>>    #endif
->>>    #ifndef __HAVE_ARCH_STRSEP
->>>    extern char * strsep(char **,const char *);
->>> +char *__strsep(char **, const char *);
->>>    #endif
->>>    #ifndef __HAVE_ARCH_STRSPN
->>>    extern __kernel_size_t strspn(const char *,const char *);
->>> +__kernel_size_t __strspn(const char *, const char *);
->>>    #endif
->>>    #ifndef __HAVE_ARCH_STRCSPN
->>>    extern __kernel_size_t strcspn(const char *,const char *);
->>> +__kernel_size_t __strcspn(const char *, const char *);
->>>    #endif
->>>
->>>    #ifndef __HAVE_ARCH_MEMSET
->>> @@ -104,14 +175,17 @@ extern void * memset(void *,int,__kernel_size_t);
->>>
->>>    #ifndef __HAVE_ARCH_MEMSET16
->>>    extern void *memset16(uint16_t *, uint16_t, __kernel_size_t);
->>> +void *__memset16(uint16_t *, uint16_t, __kernel_size_t);
->>>    #endif
->>>
->>>    #ifndef __HAVE_ARCH_MEMSET32
->>>    extern void *memset32(uint32_t *, uint32_t, __kernel_size_t);
->>> +void *__memset32(uint32_t *, uint32_t, __kernel_size_t);
->>>    #endif
->>>
->>>    #ifndef __HAVE_ARCH_MEMSET64
->>>    extern void *memset64(uint64_t *, uint64_t, __kernel_size_t);
->>> +void *__memset64(uint64_t *, uint64_t, __kernel_size_t);
->>>    #endif
->>>
->>>    static inline void *memset_l(unsigned long *p, unsigned long v,
->>> @@ -146,12 +220,15 @@ extern void * memmove(void *,const void *,__kernel_size_t);
->>>    #endif
->>>    #ifndef __HAVE_ARCH_MEMSCAN
->>>    extern void * memscan(void *,int,__kernel_size_t);
->>> +void *__memscan(void *, int, __kernel_size_t);
->>>    #endif
->>>    #ifndef __HAVE_ARCH_MEMCMP
->>>    extern int memcmp(const void *,const void *,__kernel_size_t);
->>> +int __memcmp(const void *, const void *, __kernel_size_t);
->>>    #endif
->>>    #ifndef __HAVE_ARCH_MEMCHR
->>>    extern void * memchr(const void *,int,__kernel_size_t);
->>> +void *__memchr(const void *, int, __kernel_size_t);
->>>    #endif
->>>    #ifndef __HAVE_ARCH_MEMCPY_MCSAFE
->>>    static inline __must_check unsigned long memcpy_mcsafe(void *dst,
->>> @@ -168,7 +245,9 @@ static inline void memcpy_flushcache(void *dst, const void *src, size_t cnt)
->>>    }
->>>    #endif
->>>    void *memchr_inv(const void *s, int c, size_t n);
->>> +void *__memchr_inv(const void *s, int c, size_t n);
->>>    char *strreplace(char *s, char old, char new);
->>> +char *__strreplace(char *s, char old, char new);
->>>
->>>    extern void kfree_const(const void *x);
->>>
->>> diff --git a/lib/Makefile b/lib/Makefile
->>> index 30b9b0bfbba9..19d0237f9b9c 100644
->>> --- a/lib/Makefile
->>> +++ b/lib/Makefile
->>> @@ -18,6 +18,8 @@ KCOV_INSTRUMENT_list_debug.o := n
->>>    KCOV_INSTRUMENT_debugobjects.o := n
->>>    KCOV_INSTRUMENT_dynamic_debug.o := n
->>>
->>> +KASAN_SANITIZE_string.o := n
->>> +
->>>    lib-y := ctype.o string.o string_sysfs.o vsprintf.o cmdline.o \
->>>         rbtree.o radix-tree.o timerqueue.o xarray.o \
->>>         idr.o int_sqrt.o extable.o \
->>> diff --git a/lib/string.c b/lib/string.c
->>> index f3886c5175ac..31a253201bba 100644
->>> --- a/lib/string.c
->>> +++ b/lib/string.c
->>> @@ -85,7 +85,9 @@ EXPORT_SYMBOL(strcasecmp);
->>>     * @dest: Where to copy the string to
->>>     * @src: Where to copy the string from
->>>     */
->>> +#ifndef CONFIG_KASAN
->>>    #undef strcpy
->>> +#endif
->>>    char *strcpy(char *dest, const char *src)
->>>    {
->>>        char *tmp = dest;
->>> @@ -243,7 +245,9 @@ EXPORT_SYMBOL(strscpy);
->>>     * @dest: The string to be appended to
->>>     * @src: The string to append to it
->>>     */
->>> +#ifndef CONFIG_KASAN
->>>    #undef strcat
->>> +#endif
->>>    char *strcat(char *dest, const char *src)
->>>    {
->>>        char *tmp = dest;
->>> @@ -319,7 +323,9 @@ EXPORT_SYMBOL(strlcat);
->>>     * @cs: One string
->>>     * @ct: Another string
->>>     */
->>> +#ifndef CONFIG_KASAN
->>>    #undef strcmp
->>> +#endif
->>>    int strcmp(const char *cs, const char *ct)
->>>    {
->>>        unsigned char c1, c2;
->>> @@ -773,7 +779,9 @@ EXPORT_SYMBOL(memmove);
->>>     * @ct: Another area of memory
->>>     * @count: The size of the area.
->>>     */
->>> +#ifndef CONFIG_KASAN
->>>    #undef memcmp
->>> +#endif
->>>    __visible int memcmp(const void *cs, const void *ct, size_t count)
->>>    {
->>>        const unsigned char *su1, *su2;
->>> diff --git a/mm/kasan/string.c b/mm/kasan/string.c
->>> index 083b967255a2..0db31bbbf643 100644
->>> --- a/mm/kasan/string.c
->>> +++ b/mm/kasan/string.c
->>> @@ -35,6 +35,42 @@ void *memset(void *addr, int c, size_t len)
->>>        return __memset(addr, c, len);
->>>    }
->>>
->>> +#undef memset16
->>> +void *memset16(uint16_t *s, uint16_t v, size_t count)
->>> +{
->>> +     check_memory_region((unsigned long)s, count << 1, true, _RET_IP_);
->>> +
->>> +     return __memset16(s, v, count);
->>> +}
->>> +EXPORT_SYMBOL(memset16);
->>> +
->>> +#undef memset32
->>> +void *memset32(uint32_t *s, uint32_t v, size_t count)
->>> +{
->>> +     check_memory_region((unsigned long)s, count << 2, true, _RET_IP_);
->>> +
->>> +     return __memset32(s, v, count);
->>> +}
->>> +EXPORT_SYMBOL(memset32);
->>> +
->>> +#undef memset64
->>> +void *memset64(uint64_t *s, uint64_t v, size_t count)
->>> +{
->>> +     check_memory_region((unsigned long)s, count << 3, true, _RET_IP_);
->>> +
->>> +     return __memset64(s, v, count);
->>> +}
->>> +EXPORT_SYMBOL(memset64);
->>> +
->>> +#undef memzero_explicit
->>> +void memzero_explicit(void *s, size_t count)
->>> +{
->>> +     check_memory_region((unsigned long)s, count, true, _RET_IP_);
->>> +
->>> +     return __memzero_explicit(s, count);
->>> +}
->>> +EXPORT_SYMBOL(memzero_explicit);
->>> +
->>>    #undef memmove
->>>    void *memmove(void *dest, const void *src, size_t len)
->>>    {
->>> @@ -52,3 +88,361 @@ void *memcpy(void *dest, const void *src, size_t len)
->>>
->>>        return __memcpy(dest, src, len);
->>>    }
->>> +
->>> +#undef strcpy
->>> +char *strcpy(char *dest, const char *src)
->>> +{
->>> +     size_t len = __strlen(src) + 1;
->>> +
->>> +     check_memory_region((unsigned long)src, len, false, _RET_IP_);
->>> +     check_memory_region((unsigned long)dest, len, true, _RET_IP_);
->>> +
->>> +     return __strcpy(dest, src);
->>> +}
->>> +EXPORT_SYMBOL(strcpy);
->>> +
->>> +#undef strncpy
->>> +char *strncpy(char *dest, const char *src, size_t count)
->>> +{
->>> +     size_t len = min(__strlen(src) + 1, count);
->>> +
->>> +     check_memory_region((unsigned long)src, len, false, _RET_IP_);
->>> +     check_memory_region((unsigned long)dest, count, true, _RET_IP_);
->>> +
->>> +     return __strncpy(dest, src, count);
->>> +}
->>> +EXPORT_SYMBOL(strncpy);
->>> +
->>> +#undef strlcpy
->>> +size_t strlcpy(char *dest, const char *src, size_t size)
->>> +{
->>> +     size_t len = __strlen(src) + 1;
->>> +
->>> +     check_memory_region((unsigned long)src, len, false, _RET_IP_);
->>> +     check_memory_region((unsigned long)dest, min(len, size), true, _RET_IP_);
->>> +
->>> +     return __strlcpy(dest, src, size);
->>> +}
->>> +EXPORT_SYMBOL(strlcpy);
->>> +
->>> +#undef strscpy
->>> +ssize_t strscpy(char *dest, const char *src, size_t count)
->>> +{
->>> +     int len = min(__strlen(src) + 1, count);
->>> +
->>> +     check_memory_region((unsigned long)src, len, false, _RET_IP_);
->>> +     check_memory_region((unsigned long)dest, len, true, _RET_IP_);
->>> +
->>> +     return __strscpy(dest, src, count);
->>> +}
->>> +EXPORT_SYMBOL(strscpy);
->>> +
->>> +#undef strcat
->>> +char *strcat(char *dest, const char *src)
->>> +{
->>> +     size_t slen = __strlen(src) + 1;
->>> +     size_t dlen = __strlen(dest);
->>> +
->>> +     check_memory_region((unsigned long)src, slen, false, _RET_IP_);
->>> +     check_memory_region((unsigned long)dest, dlen, false, _RET_IP_);
->>> +     check_memory_region((unsigned long)(dest + dlen), slen, true, _RET_IP_);
->>> +
->>> +     return __strcat(dest, src);
->>> +}
->>> +EXPORT_SYMBOL(strcat);
->>> +
->>> +#undef strncat
->>> +char *strncat(char *dest, const char *src, size_t count)
->>> +{
->>> +     size_t slen = min(__strlen(src) + 1, count);
->>> +     size_t dlen = __strlen(dest);
->>> +
->>> +     check_memory_region((unsigned long)src, slen, false, _RET_IP_);
->>> +     check_memory_region((unsigned long)dest, dlen, false, _RET_IP_);
->>> +     check_memory_region((unsigned long)(dest + dlen), slen, true, _RET_IP_);
->>> +
->>> +     return __strncat(dest, src, count);
->>> +}
->>> +EXPORT_SYMBOL(strncat);
->>> +
->>> +#undef strlcat
->>> +size_t strlcat(char *dest, const char *src, size_t count)
->>> +{
->>> +     size_t slen = min(__strlen(src) + 1, count);
->>> +     size_t dlen = __strlen(dest);
->>> +
->>> +     check_memory_region((unsigned long)src, slen, false, _RET_IP_);
->>> +     check_memory_region((unsigned long)dest, dlen, false, _RET_IP_);
->>> +     check_memory_region((unsigned long)(dest + dlen), slen, true, _RET_IP_);
->>> +
->>> +     return __strlcat(dest, src, count);
->>> +}
->>> +EXPORT_SYMBOL(strlcat);
->>> +
->>> +#undef strcmp
->>> +int strcmp(const char *cs, const char *ct)
->>> +{
->>> +     size_t len = min(__strlen(cs) + 1, __strlen(ct) + 1);
->>> +
->>> +     check_memory_region((unsigned long)cs, len, false, _RET_IP_);
->>> +     check_memory_region((unsigned long)ct, len, false, _RET_IP_);
->>> +
->>> +     return __strcmp(cs, ct);
->>> +}
->>> +EXPORT_SYMBOL(strcmp);
->>> +
->>> +#undef strncmp
->>> +int strncmp(const char *cs, const char *ct, size_t count)
->>> +{
->>> +     size_t len = min3(__strlen(cs) + 1, __strlen(ct) + 1, count);
->>> +
->>> +     check_memory_region((unsigned long)cs, len, false, _RET_IP_);
->>> +     check_memory_region((unsigned long)ct, len, false, _RET_IP_);
->>> +
->>> +     return __strncmp(cs, ct, count);
->>> +}
->>> +EXPORT_SYMBOL(strncmp);
->>> +
->>> +#undef strcasecmp
->>> +int strcasecmp(const char *s1, const char *s2)
->>> +{
->>> +     size_t len = min(__strlen(s1) + 1, __strlen(s2) + 1);
->>> +
->>> +     check_memory_region((unsigned long)s1, len, false, _RET_IP_);
->>> +     check_memory_region((unsigned long)s2, len, false, _RET_IP_);
->>> +
->>> +     return __strcasecmp(s1, s2);
->>> +}
->>> +EXPORT_SYMBOL(strcasecmp);
->>> +
->>> +#undef strncasecmp
->>> +int strncasecmp(const char *s1, const char *s2, size_t len)
->>> +{
->>> +     size_t sz = min3(__strlen(s1) + 1, __strlen(s2) + 1, len);
->>> +
->>> +     check_memory_region((unsigned long)s1, sz, false, _RET_IP_);
->>> +     check_memory_region((unsigned long)s2, sz, false, _RET_IP_);
->>> +
->>> +     return __strncasecmp(s1, s2, len);
->>> +}
->>> +EXPORT_SYMBOL(strncasecmp);
->>> +
->>> +#undef strchr
->>> +char *strchr(const char *s, int c)
->>> +{
->>> +     size_t len = __strlen(s) + 1;
->>> +
->>> +     check_memory_region((unsigned long)s, len, false, _RET_IP_);
->>> +
->>> +     return __strchr(s, c);
->>> +}
->>> +EXPORT_SYMBOL(strchr);
->>> +
->>> +#undef strchrnul
->>> +char *strchrnul(const char *s, int c)
->>> +{
->>> +     size_t len = __strlen(s) + 1;
->>> +
->>> +     check_memory_region((unsigned long)s, len, false, _RET_IP_);
->>> +
->>> +     return __strchrnul(s, c);
->>> +}
->>> +EXPORT_SYMBOL(strchrnul);
->>> +
->>> +#undef strrchr
->>> +char *strrchr(const char *s, int c)
->>> +{
->>> +     size_t len = __strlen(s) + 1;
->>> +
->>> +     check_memory_region((unsigned long)s, len, false, _RET_IP_);
->>> +
->>> +     return __strrchr(s, c);
->>> +}
->>> +EXPORT_SYMBOL(strrchr);
->>> +
->>> +#undef strnchr
->>> +char *strnchr(const char *s, size_t count, int c)
->>> +{
->>> +     size_t len = __strlen(s) + 1;
->>> +
->>> +     check_memory_region((unsigned long)s, len, false, _RET_IP_);
->>> +
->>> +     return __strnchr(s, count, c);
->>> +}
->>> +EXPORT_SYMBOL(strnchr);
->>> +
->>> +#undef skip_spaces
->>> +char *skip_spaces(const char *str)
->>> +{
->>> +     size_t len = __strlen(str) + 1;
->>> +
->>> +     check_memory_region((unsigned long)str, len, false, _RET_IP_);
->>> +
->>> +     return __skip_spaces(str);
->>> +}
->>> +EXPORT_SYMBOL(skip_spaces);
->>> +
->>> +#undef strim
->>> +char *strim(char *s)
->>> +{
->>> +     size_t len = __strlen(s) + 1;
->>> +
->>> +     check_memory_region((unsigned long)s, len, false, _RET_IP_);
->>> +
->>> +     return __strim(s);
->>> +}
->>> +EXPORT_SYMBOL(strim);
->>> +
->>> +#undef strstr
->>> +char *strstr(const char *s1, const char *s2)
->>> +{
->>> +     size_t l1 = __strlen(s1) + 1;
->>> +     size_t l2 = __strlen(s2) + 1;
->>> +
->>> +     check_memory_region((unsigned long)s1, l1, false, _RET_IP_);
->>> +     check_memory_region((unsigned long)s2, l2, false, _RET_IP_);
->>> +
->>> +     return __strstr(s1, s2);
->>> +}
->>> +EXPORT_SYMBOL(strstr);
->>> +
->>> +#undef strnstr
->>> +char *strnstr(const char *s1, const char *s2, size_t len)
->>> +{
->>> +     size_t l1 = min(__strlen(s1) + 1, len);
->>> +     size_t l2 = __strlen(s2) + 1;
->>> +
->>> +     check_memory_region((unsigned long)s1, l1, false, _RET_IP_);
->>> +     check_memory_region((unsigned long)s2, l2, false, _RET_IP_);
->>> +
->>> +     return __strnstr(s1, s2, len);
->>> +}
->>> +EXPORT_SYMBOL(strnstr);
->>> +
->>> +#undef strlen
->>> +size_t strlen(const char *s)
->>> +{
->>> +     size_t len = __strlen(s);
->>> +
->>> +     check_memory_region((unsigned long)s, len + 1, false, _RET_IP_);
->>> +
->>> +     return len;
->>> +}
->>> +EXPORT_SYMBOL(strlen);
->>> +
->>> +#undef strnlen
->>> +size_t strnlen(const char *s, size_t count)
->>> +{
->>> +     size_t len = __strnlen(s, count);
->>> +
->>> +     check_memory_region((unsigned long)s, min(len + 1, count), false, _RET_IP_);
->>> +
->>> +     return len;
->>> +}
->>> +EXPORT_SYMBOL(strnlen);
->>> +
->>> +#undef strpbrk
->>> +char *strpbrk(const char *cs, const char *ct)
->>> +{
->>> +     size_t ls = __strlen(cs) + 1;
->>> +     size_t lt = __strlen(ct) + 1;
->>> +
->>> +     check_memory_region((unsigned long)cs, ls, false, _RET_IP_);
->>> +     check_memory_region((unsigned long)ct, lt, false, _RET_IP_);
->>> +
->>> +     return __strpbrk(cs, ct);
->>> +}
->>> +EXPORT_SYMBOL(strpbrk);
->>> +
->>> +#undef strsep
->>> +char *strsep(char **s, const char *ct)
->>> +{
->>> +     char *cs = *s;
->>> +
->>> +     check_memory_region((unsigned long)s, sizeof(*s), true, _RET_IP_);
->>> +
->>> +     if (cs) {
->>> +             int ls = __strlen(cs) + 1;
->>> +             int lt = __strlen(ct) + 1;
->>> +
->>> +             check_memory_region((unsigned long)cs, ls, false, _RET_IP_);
->>> +             check_memory_region((unsigned long)ct, lt, false, _RET_IP_);
->>> +     }
->>> +
->>> +     return __strsep(s, ct);
->>> +}
->>> +EXPORT_SYMBOL(strsep);
->>> +
->>> +#undef strspn
->>> +size_t strspn(const char *s, const char *accept)
->>> +{
->>> +     size_t ls = __strlen(s) + 1;
->>> +     size_t la = __strlen(accept) + 1;
->>> +
->>> +     check_memory_region((unsigned long)s, ls, false, _RET_IP_);
->>> +     check_memory_region((unsigned long)accept, la, false, _RET_IP_);
->>> +
->>> +     return __strspn(s, accept);
->>> +}
->>> +EXPORT_SYMBOL(strspn);
->>> +
->>> +#undef strcspn
->>> +size_t strcspn(const char *s, const char *reject)
->>> +{
->>> +     size_t ls = __strlen(s) + 1;
->>> +     size_t lr = __strlen(reject) + 1;
->>> +
->>> +     check_memory_region((unsigned long)s, ls, false, _RET_IP_);
->>> +     check_memory_region((unsigned long)reject, lr, false, _RET_IP_);
->>> +
->>> +     return __strcspn(s, reject);
->>> +}
->>> +EXPORT_SYMBOL(strcspn);
->>> +
->>> +#undef memscan
->>> +void *memscan(void *addr, int c, size_t size)
->>> +{
->>> +     check_memory_region((unsigned long)addr, size, false, _RET_IP_);
->>> +
->>> +     return __memscan(addr, c, size);
->>> +}
->>> +EXPORT_SYMBOL(memscan);
->>> +
->>> +#undef memcmp
->>> +int memcmp(const void *cs, const void *ct, size_t count)
->>> +{
->>> +     check_memory_region((unsigned long)cs, count, false, _RET_IP_);
->>> +     check_memory_region((unsigned long)ct, count, false, _RET_IP_);
->>> +
->>> +     return __memcmp(cs, ct, count);
->>> +}
->>> +EXPORT_SYMBOL(memcmp);
->>> +
->>> +#undef memchr
->>> +void *memchr(const void *s, int c, size_t n)
->>> +{
->>> +     check_memory_region((unsigned long)s, n, false, _RET_IP_);
->>> +
->>> +     return __memchr(s, c, n);
->>> +}
->>> +EXPORT_SYMBOL(memchr);
->>> +
->>> +#undef memchr_inv
->>> +void *memchr_inv(const void *start, int c, size_t bytes)
->>> +{
->>> +     check_memory_region((unsigned long)start, bytes, false, _RET_IP_);
->>> +
->>> +     return __memchr_inv(start, c, bytes);
->>> +}
->>> +EXPORT_SYMBOL(memchr_inv);
->>> +
->>> +#undef strreplace
->>> +char *strreplace(char *s, char old, char new)
->>> +{
->>> +     size_t len = __strlen(s) + 1;
->>> +
->>> +     check_memory_region((unsigned long)s, len, true, _RET_IP_);
->>> +
->>> +     return __strreplace(s, old, new);
->>> +}
->>> +EXPORT_SYMBOL(strreplace);
->>>
+On 3/31/2019 12:53 PM, Michael Ellerman wrote:=0A=
+> Greg KH <gregkh@linuxfoundation.org> writes:=0A=
+>> On Fri, Mar 29, 2019 at 03:51:16PM +0100, Greg KH wrote:=0A=
+>>> On Fri, Mar 29, 2019 at 10:25:48PM +1100, Michael Ellerman wrote:=0A=
+>>>> -----BEGIN PGP SIGNED MESSAGE----- Hash: SHA1 Hi Greg, Please queue=0A=
+>>>> up these powerpc patches for 4.14 if you have no objections. =0A=
+>>> Some of these also need to go to 4.19, right? Want me to add them=0A=
+>>> there, or are you going to provide a backported series? =0A=
+> Yes some of them do, but I wasn't sure if they'd go cleanly.=0A=
+>> Nevermind, I've queued up the missing ones to 4.19.y, and one missing=0A=
+>> one to 5.0.y. If I've missed anything, please let me know. =0A=
+> Thanks. I'll check everything's working as expected.=0A=
+=0A=
+I have validated on NXP PowerPC and worked as expected on both kernel=0A=
+4.14 and kernel 4.19.=0A=
+=0A=
+Thanks,=0A=
+Diana=0A=
+=0A=
