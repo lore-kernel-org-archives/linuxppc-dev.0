@@ -8,74 +8,74 @@ X-Spam-Status: No, score=-8.5 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
 	SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 66B17C43381
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Apr 2019 07:02:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B7E99C43381
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Apr 2019 07:03:50 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id D8C21206BA
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Apr 2019 07:02:04 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 371C1206BA
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Apr 2019 07:03:50 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="FX6JIZqz"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D8C21206BA
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="fhk+UoUS"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 371C1206BA
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44YKrp2XtgzDq9p
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Apr 2019 18:02:02 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44YKtq710bzDq5j
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Apr 2019 18:03:47 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=2607:f8b0:4864:20::441; helo=mail-pf1-x441.google.com;
+ (client-ip=2607:f8b0:4864:20::644; helo=mail-pl1-x644.google.com;
  envelope-from=vilhelm.gray@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="FX6JIZqz"; 
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="fhk+UoUS"; 
  dkim-atps=neutral
-Received: from mail-pf1-x441.google.com (mail-pf1-x441.google.com
- [IPv6:2607:f8b0:4864:20::441])
+Received: from mail-pl1-x644.google.com (mail-pl1-x644.google.com
+ [IPv6:2607:f8b0:4864:20::644])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44YKCN3JynzDqLX
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Apr 2019 17:33:04 +1100 (AEDT)
-Received: by mail-pf1-x441.google.com with SMTP id 8so5838835pfr.4
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 01 Apr 2019 23:33:04 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44YKCY6jNNzDqL4
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Apr 2019 17:33:13 +1100 (AEDT)
+Received: by mail-pl1-x644.google.com with SMTP id b65so5729229plb.6
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 01 Apr 2019 23:33:13 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
  h=from:to:cc:subject:date:message-id:in-reply-to:references
  :mime-version:content-transfer-encoding;
- bh=dHZ0ys7QT6DS6LbvlqKk410H9kGaWEJZlcsSa1/ZJoE=;
- b=FX6JIZqz0xEX86ficCeBVsIIY/NYiOZpzl/XHvjJ6TU8RYpOvRwUlwPkKEFUL9uOR/
- moSQzqJ5yuOrjJAYZeym+ZuP9M3TPlLGgtRtvEwF1lngzxMM/4SF6R68O8+LweVtSCK6
- hq0Dv6XVHuw2EXQ2Iduf1MctTp41niv4mFVEGRR5V2mSNK2s6o4dbCzkRG4wdDmV0RgO
- Okbavz9RaJc/Vn7fTxoLfkMdVPcAuJp+zVs8N1pqSx+nMoHVAOiecRJQ23BMlsCnN71d
- xcwhGHgckkSshU9sUBZqhd86yQk+TLDvcK6Gpc/O2MdIth2kFA2ymvxtS8JZH0+zqaNM
- reDA==
+ bh=/SViyYrS1FftN56nFj/LUBMdZmL6citnsb/V8UFB/zw=;
+ b=fhk+UoUSzOrDtXSxqqb3QYerakbuvYA/XLrrnRu2go7f0rY0KK4Eq1j0EjG7l9mctI
+ MPxxWV45JWRPcRASmeIznO0nXcm03KnfzZIlpzxUQXbf7l16Hd6RPPb8fFP9ikw+FlYm
+ zuVVSEVUzzyy52gVcfrI7d9qL5FBr/mp2ww+ig67ad/9j4RzixtxIoB20uGkiMK1pgRd
+ p5O/1phRXB9Gmr64ZC26q8zE7rMt9QcfbIVZL5oZ+LbdGKR4b7y+9le3b6mdTmYKLEns
+ 6bpNwg2lE1x01CDTK9Ok/tirWTdKP02Et/Ym+o8xHkCN5xWXYmITdCHZmtUSyZqXVfwS
+ D6EA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
  :references:mime-version:content-transfer-encoding;
- bh=dHZ0ys7QT6DS6LbvlqKk410H9kGaWEJZlcsSa1/ZJoE=;
- b=VojGPDQCfMuw6AO0xsUrYlH7n9rK/imBU8izRgHO/AxbNrUV5Sn8eY6GegsfDmSS7v
- naX2SmEAjXwBHCKqAExk9IUIMRc49eCc8zCAt2PFpz9ZglP8h8322bJsVKHxwCwNZuLw
- WeKj4Kj6cxmb98gQZut+4z3c0ZPWKil9Q5TLq0uEMPOXZ8gIvvuxfkUpw6FO4mcd/TkE
- 5oanTn+6E55eFC8jmy6CDvLnThCO9ppwdz1KYPmdDtFepBVum1YtLgyiWVTBlMDmbtqB
- Sa+oIXcQ39nkWr4whxAvB1Xqi40BDhlZtAdd9HoSqLRaKGOmdDXamg5sn23+wUbRfK2y
- M9xw==
-X-Gm-Message-State: APjAAAUfjfDDmWTzsF7y95Pnuv9c5AXXcrTvlBMt5osddMFwZnqvecr6
- /jee0zAdTCtM6fbsy2szJQY=
-X-Google-Smtp-Source: APXvYqzxU/1cn6HqqwqwGRcNz4T2n8y3agd6WUAA5BYTS+jULwsi9YHs0mVX43LpBeAFRJ3Mo+hlOA==
-X-Received: by 2002:a63:7444:: with SMTP id e4mr46906923pgn.261.1554186782569; 
- Mon, 01 Apr 2019 23:33:02 -0700 (PDT)
+ bh=/SViyYrS1FftN56nFj/LUBMdZmL6citnsb/V8UFB/zw=;
+ b=lue5TPyMs7IK0pozImS57lN8170RZy0UeU0rjKhG9BpiQWBoQE80P3Yq+ElR9GlzRe
+ /pp9Zush4LXo/Gga+4caxuBkLh9wWZ94ffyCq8SADlp0oe0eKSfiWjuUxOKvxUMjH/Uw
+ FBMQKgldaHW64ipmpb9j3FLB54m5QsUt/sH70kPrxLax04J8/MX+GWSF3jI7AacD+Wjy
+ awXksKsMoHfL2Yuc+JPkEfidE+qevtabKChyy4zQLvB/EJ3LgvKDcEpMssvE4lvk1MNQ
+ tubr850icb+qwGK5jFyEGQ3reevdWO+vmzkw1Z4KlF1YzyMyvJt8tbJ96YAGJdRK87Tk
+ YObQ==
+X-Gm-Message-State: APjAAAXUumNc6I0XOa3TdBLy+zxUYCV8dE1NM9Er8x+9O0vSCSmnyqIM
+ CjGVZTqi82a2Oy0jKestPTk=
+X-Google-Smtp-Source: APXvYqx+LDaXvVGOMIPeO233vrs3m+tOzvhaXEMY4h32Y28CavB8ya4LXqA/dRJssrqtXHZkbEdfaw==
+X-Received: by 2002:a17:902:2a29:: with SMTP id
+ i38mr70041345plb.22.1554186790652; 
+ Mon, 01 Apr 2019 23:33:10 -0700 (PDT)
 Received: from localhost.localdomain ([2001:268:c0a5:4ce0:c70:4af9:86e2:2])
- by smtp.gmail.com with ESMTPSA id a17sm19327289pfj.123.2019.04.01.23.32.53
+ by smtp.gmail.com with ESMTPSA id a17sm19327289pfj.123.2019.04.01.23.33.02
  (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
- Mon, 01 Apr 2019 23:33:02 -0700 (PDT)
+ Mon, 01 Apr 2019 23:33:10 -0700 (PDT)
 From: William Breathitt Gray <vilhelm.gray@gmail.com>
 To: gregkh@linuxfoundation.org
-Subject: [PATCH v10 17/18] counter: ftm-quaddec: Documentation: Add specific
- counter sysfs documentation
-Date: Tue,  2 Apr 2019 15:30:52 +0900
-Message-Id: <3273619b1e22d8dbcd0beccd9a887f14a8aa38e0.1554184734.git.vilhelm.gray@gmail.com>
+Subject: [PATCH v10 18/18] LS1021A: dtsi: add ftm quad decoder entries
+Date: Tue,  2 Apr 2019 15:30:53 +0900
+Message-Id: <58aec84fb201e7ba2e24ff51f8fd1b4261d6b895.1554184734.git.vilhelm.gray@gmail.com>
 X-Mailer: git-send-email 2.21.0
 In-Reply-To: <cover.1554184734.git.vilhelm.gray@gmail.com>
 References: <cover.1554184734.git.vilhelm.gray@gmail.com>
@@ -108,37 +108,54 @@ Sender: "Linuxppc-dev"
 
 From: Patrick Havelange <patrick.havelange@essensium.com>
 
-This adds documentation for the specific prescaler entry.
+Add the 4 Quadrature counters for this board.
 
+Reviewed-by: Esben Haabendal <esben@haabendal.dk>
 Signed-off-by: Patrick Havelange <patrick.havelange@essensium.com>
 Signed-off-by: William Breathitt Gray <vilhelm.gray@gmail.com>
 ---
- .../ABI/testing/sysfs-bus-counter-ftm-quaddec    | 16 ++++++++++++++++
- 1 file changed, 16 insertions(+)
- create mode 100644 Documentation/ABI/testing/sysfs-bus-counter-ftm-quaddec
+ arch/arm/boot/dts/ls1021a.dtsi | 28 ++++++++++++++++++++++++++++
+ 1 file changed, 28 insertions(+)
 
-diff --git a/Documentation/ABI/testing/sysfs-bus-counter-ftm-quaddec b/Documentation/ABI/testing/sysfs-bus-counter-ftm-quaddec
-new file mode 100644
-index 000000000000..7d2e7b363467
---- /dev/null
-+++ b/Documentation/ABI/testing/sysfs-bus-counter-ftm-quaddec
-@@ -0,0 +1,16 @@
-+What:		/sys/bus/counter/devices/counterX/countY/prescaler_available
-+KernelVersion:	5.2
-+Contact:	linux-iio@vger.kernel.org
-+Description:
-+		Discrete set of available values for the respective Count Y
-+		configuration are listed in this file. Values are delimited by
-+		newline characters.
+diff --git a/arch/arm/boot/dts/ls1021a.dtsi b/arch/arm/boot/dts/ls1021a.dtsi
+index ed0941292172..0168fb62590a 100644
+--- a/arch/arm/boot/dts/ls1021a.dtsi
++++ b/arch/arm/boot/dts/ls1021a.dtsi
+@@ -433,6 +433,34 @@
+ 			status = "disabled";
+ 		};
+ 
++		counter0: counter@29d0000 {
++			compatible = "fsl,ftm-quaddec";
++			reg = <0x0 0x29d0000 0x0 0x10000>;
++			big-endian;
++			status = "disabled";
++		};
 +
-+What:		/sys/bus/counter/devices/counterX/countY/prescaler
-+KernelVersion:	5.2
-+Contact:	linux-iio@vger.kernel.org
-+Description:
-+		Configure the prescaler value associated with Count Y.
-+		On the FlexTimer, the counter clock source passes through a
-+		prescaler (i.e. a counter). This acts like a clock
-+		divider.
++		counter1: counter@29e0000 {
++			compatible = "fsl,ftm-quaddec";
++			reg = <0x0 0x29e0000 0x0 0x10000>;
++			big-endian;
++			status = "disabled";
++		};
++
++		counter2: counter@29f0000 {
++			compatible = "fsl,ftm-quaddec";
++			reg = <0x0 0x29f0000 0x0 0x10000>;
++			big-endian;
++			status = "disabled";
++		};
++
++		counter3: counter@2a00000 {
++			compatible = "fsl,ftm-quaddec";
++			reg = <0x0 0x2a00000 0x0 0x10000>;
++			big-endian;
++			status = "disabled";
++		};
++
+ 		gpio0: gpio@2300000 {
+ 			compatible = "fsl,ls1021a-gpio", "fsl,qoriq-gpio";
+ 			reg = <0x0 0x2300000 0x0 0x10000>;
 -- 
 2.21.0
 
