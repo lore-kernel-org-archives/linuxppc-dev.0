@@ -2,89 +2,92 @@ Return-Path: <SRS0=xrHL=SE=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.0 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_PASS,URIBL_BLOCKED,USER_AGENT_MUTT autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-1.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,
+	URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5DD49C4360F
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Apr 2019 20:03:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 97DBDC4360F
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Apr 2019 20:38:23 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 761E12082C
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Apr 2019 20:03:00 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id D20A42075E
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Apr 2019 20:38:22 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="esPxa2W/"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 761E12082C
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	dkim=pass (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="XwSO9UiH"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D20A42075E
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44Yg9s5fjPzDqP7
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Apr 2019 07:02:57 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44Ygyh1VDCzDqPk
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Apr 2019 07:38:20 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=2607:f8b0:4864:20::641; helo=mail-pl1-x641.google.com;
- envelope-from=nicoleotsuka@gmail.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=c-s.fr
+ (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="esPxa2W/"; 
+ dmarc=none (p=none dis=none) header.from=c-s.fr
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="XwSO9UiH"; 
  dkim-atps=neutral
-Received: from mail-pl1-x641.google.com (mail-pl1-x641.google.com
- [IPv6:2607:f8b0:4864:20::641])
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44Yg853jxLzDqNS
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Apr 2019 07:01:24 +1100 (AEDT)
-Received: by mail-pl1-x641.google.com with SMTP id ck15so5603744plb.3
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 02 Apr 2019 13:01:24 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=date:from:to:cc:subject:message-id:references:mime-version
- :content-disposition:in-reply-to:user-agent;
- bh=BZrsfbJnGGHE7yX2nty63WcoORFbVoNY29o2ec/m3sU=;
- b=esPxa2W/ZlYPnHz2bO7xYRKyYfshtm7XsdDfe0mj/Zx1gz4y8OxFw/6gCYTwbuFgZh
- gvHJdoH2bnICkk/vN6dX1fH4ZW4rcx57pL+59Muo+wVAqvUBso2IEPMc829el4j/SAh2
- fMNm3ORYW3z1LdX0jpY9235SiUYaZoKYY9mMeaabCGDhkd/U6jYaX+Jyv84dFcbHuxTZ
- e+HHtjmbL+E/MFfcA+8qWsuY5kw+/F9RS+/1aK75nAy1EjUEH7dySzi++3BaruiJsLQO
- Y8jccx5fS92h4GjC6H5JwNkWx7UUtHtxKrGDBaiakECY6HNEOJgwmV9yCPwml72DaUNN
- TCnw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:date:from:to:cc:subject:message-id:references
- :mime-version:content-disposition:in-reply-to:user-agent;
- bh=BZrsfbJnGGHE7yX2nty63WcoORFbVoNY29o2ec/m3sU=;
- b=ShdsWvDQ+JVHeNlsJHFqaWWL8g7S3PrU6nuEq5dukx6soxEjC9HQ2PrTVuHQqRofJP
- f49TZ52xJRBK+Q5mSd+AqC/Gwv26DBwsPLW+2sHbn5d5CwydTeDXv+fmO7EnoAP5cbSb
- ycqJ7PoTeDmtwaqgDX3sOe8LkesPDOoOoTT8dfmAdflSR80Asqp+NEL2Ggu84RgyVs86
- X5SMG1HuGkySdBZdRmLEdFXhTNNHrdlvBQO6qwkBfw8Yx2n2DP3qD7ENrOCQONaJOKXY
- YVmpsOdNhaIq4tyfpSGN+8HuaNPS024+oHv8WdWgTB6lZ6iPTjr2Pt9nrsi9L6rF0in0
- 0GAA==
-X-Gm-Message-State: APjAAAV52siAJDzsS3kLl/3tz6ynl2uySjlyO49QTUgytgiKnD3qFHZS
- 7TBwzfEer1CSsdjdU5SMtcU=
-X-Google-Smtp-Source: APXvYqwcQbY3bu2Uk9w2b6fcoX27CwYjRHl3EXIhUoo5rE8vuzIfAfGRVpOgB6TIoUi/tgtwY8Sh5w==
-X-Received: by 2002:a17:902:f83:: with SMTP id
- 3mr74994214plz.125.1554235281650; 
- Tue, 02 Apr 2019 13:01:21 -0700 (PDT)
-Received: from Asurada-Nvidia.nvidia.com (thunderhill.nvidia.com.
- [216.228.112.22])
- by smtp.gmail.com with ESMTPSA id r145sm5468687pgr.84.2019.04.02.13.01.20
- (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
- Tue, 02 Apr 2019 13:01:21 -0700 (PDT)
-Date: Tue, 2 Apr 2019 13:01:16 -0700
-From: Nicolin Chen <nicoleotsuka@gmail.com>
-To: "S.j. Wang" <shengjiu.wang@nxp.com>
-Subject: Re: [PATCH] ASoC: fsl_esai: Support synchronous mode
-Message-ID: <20190402200115.GA22168@Asurada-Nvidia.nvidia.com>
-References: <1554118759-2403-1-git-send-email-shengjiu.wang@nxp.com>
- <20190401181742.GA21288@Asurada-Nvidia>
- <VE1PR04MB64799B3261D1F9F63E441769E3560@VE1PR04MB6479.eurprd04.prod.outlook.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44Ygwy3xWhzDqDf
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Apr 2019 07:36:49 +1100 (AEDT)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 44Ygwr5PLKz9v0Vr;
+ Tue,  2 Apr 2019 22:36:44 +0200 (CEST)
+Authentication-Results: localhost; dkim=pass
+ reason="1024-bit key; insecure key"
+ header.d=c-s.fr header.i=@c-s.fr header.b=XwSO9UiH; dkim-adsp=pass;
+ dkim-atps=neutral
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id yyUnmaIc8DNn; Tue,  2 Apr 2019 22:36:44 +0200 (CEST)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 44Ygwr3nJYz9v0Vq;
+ Tue,  2 Apr 2019 22:36:44 +0200 (CEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
+ t=1554237404; bh=BwooMA22qN5MVKhV+b35SP+1LDZWopZGd8mOz82SGGY=;
+ h=Subject:To:Cc:References:From:Date:In-Reply-To:From;
+ b=XwSO9UiHs7eDKhbgCafzeJv3wWzgWvMT2DlYlpZEUflcR82p5RjBXhqv1B+ZBZ/qz
+ PoHCRyburOnl9/TcAZbdfUDX10m3l+OZInCgSAJ3kqvNEXuvVWndlKUIWdEw59AzAH
+ 3Tipq4va5XI4jqdbpACigBrudGGvi4yNapNBGy+4=
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id ACB2C8B8D2;
+ Tue,  2 Apr 2019 22:36:44 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id x1CuPvs9w0Vs; Tue,  2 Apr 2019 22:36:44 +0200 (CEST)
+Received: from PO15451 (unknown [192.168.4.90])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 6B8D38B8CD;
+ Tue,  2 Apr 2019 22:36:43 +0200 (CEST)
+Subject: Re: [RFC PATCH v2 3/3] kasan: add interceptors for all string
+ functions
+To: Andrey Ryabinin <aryabinin@virtuozzo.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Nicholas Piggin <npiggin@gmail.com>,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
+ Alexander Potapenko <glider@google.com>, Dmitry Vyukov <dvyukov@google.com>,
+ Daniel Axtens <dja@axtens.net>
+References: <f13944c4e99ec2cef6d93d762e6b526e0335877f.1553785019.git.christophe.leroy@c-s.fr>
+ <51a6d9d7185de310f37ccbd7e4ebfdd6c7e9791f.1553785020.git.christophe.leroy@c-s.fr>
+ <3211b0f8-7b52-01b7-8208-65d746969248@c-s.fr>
+ <ae9262e5-0917-b7c9-52c7-fe21db2ecacb@virtuozzo.com>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Message-ID: <d5d2fa6f-c2ba-8234-e412-9c4ccd6cc4c6@c-s.fr>
+Date: Tue, 2 Apr 2019 22:36:43 +0200
+User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:60.0) Gecko/20100101
+ Thunderbird/60.6.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <VE1PR04MB64799B3261D1F9F63E441769E3560@VE1PR04MB6479.eurprd04.prod.outlook.com>
-User-Agent: Mutt/1.9.4 (2018-02-28)
+In-Reply-To: <ae9262e5-0917-b7c9-52c7-fe21db2ecacb@virtuozzo.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: fr
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -96,133 +99,86 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
- "timur@kernel.org" <timur@kernel.org>,
- "Xiubo.Lee@gmail.com" <Xiubo.Lee@gmail.com>,
- "festevam@gmail.com" <festevam@gmail.com>,
- "broonie@kernel.org" <broonie@kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Cc: linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, kasan-dev@googlegroups.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-> > On Mon, Apr 01, 2019 at 11:39:10AM +0000, S.j. Wang wrote:
-> > > In ESAI synchronous mode, the clock is generated by Tx, So we should
-> > > always set registers of Tx which relate with the bit clock and frame
-> > > clock generation (TCCR, TCR, ECR), even there is only Rx is working.
-> > >
-> > > Signed-off-by: Shengjiu Wang <shengjiu.wang@nxp.com>
-> > > ---
-> > >  sound/soc/fsl/fsl_esai.c | 28 +++++++++++++++++++++++++++-
-> > >  1 file changed, 27 insertions(+), 1 deletion(-)
-> > >
-> > > diff --git a/sound/soc/fsl/fsl_esai.c b/sound/soc/fsl/fsl_esai.c index
-> > > 3623aa9a6f2e..d9fcddd55c02 100644
-> > > --- a/sound/soc/fsl/fsl_esai.c
-> > > +++ b/sound/soc/fsl/fsl_esai.c
-> > > @@ -230,6 +230,21 @@ static int fsl_esai_set_dai_sysclk(struct
-> > snd_soc_dai *dai, int clk_id,
-> > >  		return -EINVAL;
-> > >  	}
-> > >
-> > > +	if (esai_priv->synchronous && !tx) {
-> > > +		switch (clk_id) {
-> > > +		case ESAI_HCKR_FSYS:
-> > > +			fsl_esai_set_dai_sysclk(dai, ESAI_HCKT_FSYS,
-> > > +								freq, dir);
-> > > +			break;
-> > > +		case ESAI_HCKR_EXTAL:
-> > > +			fsl_esai_set_dai_sysclk(dai, ESAI_HCKT_EXTAL,
-> > > +								freq, dir);
-> > 
-> > Not sure why you call set_dai_sysclk inside set_dai_sysclk again. It feels very
-> > confusing to do so, especially without a comments.
+
+
+Le 02/04/2019 à 18:14, Andrey Ryabinin a écrit :
 > 
-> For sync mode, only RX is enabled,  the register of tx should be set, so call the
-> Set_dai_sysclk again.
+> 
+> On 4/2/19 12:43 PM, Christophe Leroy wrote:
+>> Hi Dmitry, Andrey and others,
+>>
+>> Do you have any comments to this series ?
+>>
+> 
+> I don't see justification for adding all these non-instrumented functions. We need only some subset of these functions
+> and only on powerpc so far. Arches that don't use str*() that early simply doesn't need not-instrumented __str*() variant.
+> 
+> Also I don't think that auto-replace str* to __str* for all not instrumented files is a good idea, as this will reduce KASAN coverage.
+> E.g. we don't instrument slub.c but there is no reason to use non-instrumented __str*() functions there.
 
-Yea, I understood that. But why not just replace RX with TX on the
-register-writing level? Do we need to set both TCCR and RCCR? Your
-change in hw_params() only sets TCCR inside fsl_esai_set_bclk(), so
-we probably only need to change TCCR for recordings running in sync
-mode, right?
+Ok, I didn't see it that way.
 
-From the commit message, it feels like that only the clock-related
-fields in the TX registers need to be set. Things like calculation
-and setting the direction of HCKx pin don't need to run again.
+In fact I was seeing the opposite and was considering it as an 
+opportunity to increase KASAN coverage. E.g.: at the time being things 
+like the above (from arch/xtensa/include/asm/string.h) are not covered 
+at all I believe:
 
-> > > @@ -537,10 +552,21 @@ static int fsl_esai_hw_params(struct
-> > > snd_pcm_substream *substream,
-> > >
-> > >  	bclk = params_rate(params) * slot_width * esai_priv->slots;
-> > >
-> > > -	ret = fsl_esai_set_bclk(dai, tx, bclk);
-> > > +	ret = fsl_esai_set_bclk(dai, esai_priv->synchronous ? true : tx,
-> > > +bclk);
-> > >  	if (ret)
-> > >  		return ret;
-> > >
-> > > +	if (esai_priv->synchronous && !tx) {
-> > > +		/* Use Normal mode to support monaural audio */
-> > > +		regmap_update_bits(esai_priv->regmap, REG_ESAI_TCR,
-> > > +			   ESAI_xCR_xMOD_MASK,
-> > params_channels(params) > 1 ?
-> > > +			   ESAI_xCR_xMOD_NETWORK : 0);
-> > > +
-> > > +		mask = ESAI_xCR_xSWS_MASK | ESAI_xCR_PADC;
-> > > +		val = ESAI_xCR_xSWS(slot_width, width) | ESAI_xCR_PADC;
-> > > +		regmap_update_bits(esai_priv->regmap, REG_ESAI_TCR,
-> > mask, val);
-> > > +	}
-> > 
-> > Does synchronous mode require to set both TCR and RCR? or just TCR?
+#define __HAVE_ARCH_STRCPY
+static inline char *strcpy(char *__dest, const char *__src)
+{
+	register char *__xdest = __dest;
+	unsigned long __dummy;
 
-> Both TCR and RCR.  RCR will be set in normal flow.
+	__asm__ __volatile__("1:\n\t"
+		"l8ui	%2, %1, 0\n\t"
+		"s8i	%2, %0, 0\n\t"
+		"addi	%1, %1, 1\n\t"
+		"addi	%0, %0, 1\n\t"
+		"bnez	%2, 1b\n\t"
+		: "=r" (__dest), "=r" (__src), "=&r" (__dummy)
+		: "0" (__dest), "1" (__src)
+		: "memory");
 
-OK. Settings both xCRs makes sense. Would you please try this:
+	return __xdest;
+}
 
-===============
-@@ -537,14 +552,20 @@ static int fsl_esai_hw_params(struct snd_pcm_substream *substream,
+In my series, I have deactivated optimised string functions when KASAN 
+is selected like arm64 do. See https://patchwork.ozlabs.org/patch/1055780/
+But not every arch does that, meaning that some string functions remains 
+not instrumented at all.
 
-        bclk = params_rate(params) * slot_width * esai_priv->slots;
+Also, I was seeing it as a way to reduce impact on performance with 
+KASAN. Because instrumenting each byte access of the non-optimised 
+string functions is a performance genocide.
 
--       ret = fsl_esai_set_bclk(dai, tx, bclk);
-+       /* Synchronous mode uses TX clock generator */
-+       ret = fsl_esai_set_bclk(dai, esai_priv->synchronous || tx, bclk);
-        if (ret)
-                return ret;
+> 
+> And finally, this series make bug reporting slightly worse. E.g. let's look at strcpy():
+> 
+> +char *strcpy(char *dest, const char *src)
+> +{
+> +	size_t len = __strlen(src) + 1;
+> +
+> +	check_memory_region((unsigned long)src, len, false, _RET_IP_);
+> +	check_memory_region((unsigned long)dest, len, true, _RET_IP_);
+> +
+> +	return __strcpy(dest, src);
+> +}
+> 
+> If src is not-null terminated string we might not see proper out-of-bounds report from KASAN only a crash in __strlen().
+> Which might make harder to identify where 'src' comes from, where it was allocated and what's the size of allocated area.
+> 
+> 
+>> I'd like to know if this approach is ok or if it is better to keep doing as in https://patchwork.ozlabs.org/patch/1055788/
+>>
+> I think the patch from link is a better solution to the problem.
+> 
 
-+       mask = ESAI_xCR_xMOD_MASK | ESAI_xCR_xSWS_MASK;
-+       val = ESAI_xCR_xSWS(slot_width, width);
-        /* Use Normal mode to support monaural audio */
--       regmap_update_bits(esai_priv->regmap, REG_ESAI_xCR(tx),
--                          ESAI_xCR_xMOD_MASK, params_channels(params) > 1 ?
--                          ESAI_xCR_xMOD_NETWORK : 0);
-+       val |= params_channels(params) > 1 ? ESAI_xCR_xMOD_NETWORK : 0;
-+
-+       regmap_update_bits(esai_priv->regmap, REG_ESAI_xCR(tx), mask, val);
-+       /* Recording in synchronous mode needs to set TCR also */
-+       if (!tx && esai_priv->synchronous)
-+               regmap_update_bits(esai_priv->regmap, REG_ESAI_TCR, mask, val);
+Ok, I'll stick with it then. Thanks for your feedback
 
-        regmap_update_bits(esai_priv->regmap, REG_ESAI_xFCR(tx),
-                           ESAI_xFCR_xFR_MASK, ESAI_xFCR_xFR);
-@@ -556,10 +577,10 @@ static int fsl_esai_hw_params(struct snd_pcm_substream *substream,
-
-        regmap_update_bits(esai_priv->regmap, REG_ESAI_xFCR(tx), mask, val);
-
--       mask = ESAI_xCR_xSWS_MASK | (tx ? ESAI_xCR_PADC : 0);
--       val = ESAI_xCR_xSWS(slot_width, width) | (tx ? ESAI_xCR_PADC : 0);
--
--       regmap_update_bits(esai_priv->regmap, REG_ESAI_xCR(tx), mask, val);
-+       /* Only TCR has padding bit and needs to be set for synchronous mode */
-+       if (tx || esai_priv->synchronous)
-+               regmap_update_bits(esai_priv->regmap, REG_ESAI_TCR,
-+                                  ESAI_xCR_PADC, ESAI_xCR_PADC);
-
-        /* Remove ESAI personal reset by configuring ESAI_PCRC and ESAI_PRRC */
-        regmap_update_bits(esai_priv->regmap, REG_ESAI_PRRC,
-===============
-
-It merges those plain settings so we won't need to change both
-sides if there's a modification of xCR settings in the future.
+Christophe
