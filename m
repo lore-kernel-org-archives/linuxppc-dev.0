@@ -2,89 +2,86 @@ Return-Path: <SRS0=xrHL=SE=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_MUTT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8BC11C43381
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Apr 2019 05:16:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9B32FC43381
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Apr 2019 05:56:57 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id BB6A52075E
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Apr 2019 05:16:13 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id BAC5D2084C
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Apr 2019 05:56:56 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=sirena.org.uk header.i=@sirena.org.uk header.b="c3GIf+NZ"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BB6A52075E
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	dkim=pass (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="uZ+KbF/E"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BAC5D2084C
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44YHVf5ry4zDq69
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Apr 2019 16:16:10 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44YHSZ6ryRzDq69
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Apr 2019 16:14:22 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44YJPf0Wm9zDqLx
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Apr 2019 16:56:54 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- dmarc=fail (p=none dis=none) header.from=kernel.org
+ spf=pass (mailfrom) smtp.mailfrom=c-s.fr
+ (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=sirena.org.uk header.i=@sirena.org.uk
- header.b="c3GIf+NZ"; dkim-atps=neutral
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 44YHSZ5ZQ3z8t7s
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Apr 2019 16:14:22 +1100 (AEDT)
-Received: by ozlabs.org (Postfix)
- id 44YHSZ55BJz9sTS; Tue,  2 Apr 2019 16:14:22 +1100 (AEDT)
-Authentication-Results: ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=sirena.org.uk
- (client-ip=2a01:7e01::f03c:91ff:fed4:a3b6; helo=heliosphere.sirena.org.uk;
- envelope-from=broonie@sirena.org.uk; receiver=<UNKNOWN>)
-Authentication-Results: ozlabs.org;
- dmarc=fail (p=none dis=none) header.from=kernel.org
-Authentication-Results: ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=sirena.org.uk header.i=@sirena.org.uk
- header.b="c3GIf+NZ"; dkim-atps=neutral
-Received: from heliosphere.sirena.org.uk (heliosphere.sirena.org.uk
- [IPv6:2a01:7e01::f03c:91ff:fed4:a3b6])
+ unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="uZ+KbF/E"; 
+ dkim-atps=neutral
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 44YHSY5yWHz9sTQ;
- Tue,  2 Apr 2019 16:14:21 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
- d=sirena.org.uk; s=20170815-heliosphere; h=In-Reply-To:Content-Type:
- MIME-Version:References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
- Content-Transfer-Encoding:Content-ID:Content-Description:Resent-Date:
- Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:
- List-Help:List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
- bh=X2u9oqRsEaAuQVXF2Wpq4Ocm5o+1E/B+V/Q2GGD21eo=; b=c3GIf+NZb/k/NQoA+eoUba3kb
- DXsmA8M4ZlEPE92aZR4ZLBFbkyP+uYjTmDgQHpKTbTRNo9U+4yqVP8SPmdxLXzZScKRB1YCIPlXeY
- qjLqIrB34As3EQFTszRgj+cXCfjbAEPvD7nmsEWQ6qFj0hToepE80SY+U6UFjuWFA+F/M=;
-Received: from [147.50.13.10] (helo=finisterre.ee.mobilebroadband)
- by heliosphere.sirena.org.uk with esmtpsa
- (TLS1.2:ECDHE_RSA_AES_256_GCM_SHA384:256) (Exim 4.89)
- (envelope-from <broonie@sirena.org.uk>)
- id 1hBBkQ-0005rr-Tv; Tue, 02 Apr 2019 05:14:11 +0000
-Received: by finisterre.ee.mobilebroadband (Postfix, from userid 1000)
- id 59221440082; Tue,  2 Apr 2019 06:14:07 +0100 (BST)
-Date: Tue, 2 Apr 2019 12:14:07 +0700
-From: Mark Brown <broonie@kernel.org>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: linux-next: build failure after merge of the sound-asoc tree
-Message-ID: <20190402051407.GX2059@sirena.org.uk>
-References: <20190326133349.3d9427dc@canb.auug.org.au>
- <20190326131550.GB10898@sirena.org.uk>
- <87pnqdndmk.fsf@concordia.ellerman.id.au>
- <20190327115745.GA11404@sirena.org.uk>
- <87tvfiou8f.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44YJMs079lzDqKg
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Apr 2019 16:55:19 +1100 (AEDT)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 44YJMj4mQXz9v0ZF;
+ Tue,  2 Apr 2019 07:55:13 +0200 (CEST)
+Authentication-Results: localhost; dkim=pass
+ reason="1024-bit key; insecure key"
+ header.d=c-s.fr header.i=@c-s.fr header.b=uZ+KbF/E; dkim-adsp=pass;
+ dkim-atps=neutral
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id jK8cQk-DTFSq; Tue,  2 Apr 2019 07:55:13 +0200 (CEST)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 44YJMj3Svyz9v0ZD;
+ Tue,  2 Apr 2019 07:55:13 +0200 (CEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
+ t=1554184513; bh=btgYLqam9AT9uDTaicr/MjJse3NQ51gX9t0b5Fc89aY=;
+ h=Subject:To:Cc:References:From:Date:In-Reply-To:From;
+ b=uZ+KbF/EnPeutUs6YD83qAlTofTLypIrwBK3rvVZ8l9kw6dNHcAI0Wy0Z8TTfVO3s
+ qddb1P+BkE9mXRcGmONuamFQitEKwN0b61a4T+E/L78AyT3Os1L7SXl/SWdmI8bW6o
+ kiz7oAp4VABEFjfMj9HHyyuFrvafRa4epJ6Q24T0=
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 584D68B852;
+ Tue,  2 Apr 2019 07:55:14 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id SmJ68KkyxGtz; Tue,  2 Apr 2019 07:55:14 +0200 (CEST)
+Received: from po16846vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 850868B75A;
+ Tue,  2 Apr 2019 07:55:13 +0200 (CEST)
+Subject: Re: [PATCH 2/5] powerpc: Fix vDSO clock_getres()
+To: Vincenzo Frascino <vincenzo.frascino@arm.com>,
+ linux-arch@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org
+References: <20190401115152.32751-1-vincenzo.frascino@arm.com>
+ <20190401115152.32751-3-vincenzo.frascino@arm.com>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Message-ID: <f54a24fe-f893-10c9-9177-4985bad2e745@c-s.fr>
+Date: Tue, 2 Apr 2019 05:54:47 +0000
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:52.0) Gecko/20100101
+ Thunderbird/52.7.0
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
- protocol="application/pgp-signature"; boundary="xd9y+pRso0hzCdjI"
-Content-Disposition: inline
-In-Reply-To: <87tvfiou8f.fsf@concordia.ellerman.id.au>
-X-Cookie: Use extra care when cleaning on stairs.
-User-Agent: Mutt/1.10.1 (2018-07-13)
+In-Reply-To: <20190401115152.32751-3-vincenzo.frascino@arm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -96,44 +93,183 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
- Liam Girdwood <lgirdwood@gmail.com>, Annaliese McDermond <nh6z@nh6z.net>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- linuxppc-dev@ozlabs.org, Linux Next Mailing List <linux-next@vger.kernel.org>,
- Paul Mackerras <paulus@samba.org>
+Cc: Arnd Bergmann <arnd@arndb.de>, Heiko Carstens <heiko.carstens@de.ibm.com>,
+ Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>,
+ Paul Mackerras <paulus@samba.org>, Greentime Hu <green.hu@gmail.com>,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>,
+ Thomas Gleixner <tglx@linutronix.de>, Vincent Chen <deanbo422@gmail.com>,
+ Shuah Khan <shuah@kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
 
---xd9y+pRso0hzCdjI
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-On Mon, Apr 01, 2019 at 10:11:44PM +1100, Michael Ellerman wrote:
+On 04/01/2019 11:51 AM, Vincenzo Frascino wrote:
+> clock_getres in the vDSO library has to preserve the same behaviour
+> of posix_get_hrtimer_res().
+> 
+> In particular, posix_get_hrtimer_res() does:
+>      sec = 0;
+>      ns = hrtimer_resolution;
+> and hrtimer_resolution depends on the enablement of the high
+> resolution timers that can happen either at compile or at run time.
+> 
+> Fix the powerpc vdso implementation of clock_getres keeping a copy of
+> hrtimer_resolution in vdso data and using that directly.
+> 
+> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Cc: Paul Mackerras <paulus@samba.org>
+> Cc: Michael Ellerman <mpe@ellerman.id.au>
+> Signed-off-by: Vincenzo Frascino <vincenzo.frascino@arm.com>
+> ---
+>   arch/powerpc/include/asm/vdso_datapage.h  |  2 ++
 
-> Anyway I think what you've done in next, make the code depend on
-> COMMON_CLOCK, is the best option. If anyone cares about that driver on
-> powerpc platforms that don't support COMMON_CLOCK they should speak up.
+Conflicts with commit b5b4453e7912 ("powerpc/vdso64: Fix CLOCK_MONOTONIC 
+inconsistencies across Y2038")
 
-It's probably fine for now for this one driver but it's going to cause
-issues going forwards since we're trying to make the framework's clock
-handling more standard. =20
+Christophe
 
---xd9y+pRso0hzCdjI
-Content-Type: application/pgp-signature; name="signature.asc"
 
------BEGIN PGP SIGNATURE-----
 
-iQEzBAABCgAdFiEEreZoqmdXGLWf4p/qJNaLcl1Uh9AFAlyi754ACgkQJNaLcl1U
-h9BMxQf/VrR/8FAWEVz+p5IAVWhEp/5r8gGBQzY33Bg6n8m4Wx0mFHVfDDxORd/L
-SYSWqWbDGTk1AwbZ59dzTXaGEhh/9YX9/g5v6INunPhClb7NMBIvddfzvFv8pDTd
-nI6DbaUyOnQzFtXTMF+ClhtKHxRBVbT6MwFKFOLcoPRjkhU9ebaiaVmBrzOoaq6N
-dqDF7ukc0T15k/qvZ38kKczZA6m4DsGhVoSvpXxe5MucSHe7wphRFwyaJ8+S2AFR
-AYvOQJNcYPi4pJYpcQ8i6cX4lJecezofZkVbj+b8WBCjndlieq5CZtB76qLevleN
-WB8m8oAwM1GH+wdKRlWDmJWIOgRb3A==
-=JFD3
------END PGP SIGNATURE-----
-
---xd9y+pRso0hzCdjI--
+>   arch/powerpc/kernel/asm-offsets.c         |  2 +-
+>   arch/powerpc/kernel/time.c                |  1 +
+>   arch/powerpc/kernel/vdso32/gettimeofday.S | 22 +++++++++++++++-------
+>   arch/powerpc/kernel/vdso64/gettimeofday.S | 22 +++++++++++++++-------
+>   5 files changed, 34 insertions(+), 15 deletions(-)
+> 
+> diff --git a/arch/powerpc/include/asm/vdso_datapage.h b/arch/powerpc/include/asm/vdso_datapage.h
+> index 1afe90ade595..4ae43fc77fe9 100644
+> --- a/arch/powerpc/include/asm/vdso_datapage.h
+> +++ b/arch/powerpc/include/asm/vdso_datapage.h
+> @@ -86,6 +86,7 @@ struct vdso_data {
+>   	__s32 wtom_clock_nsec;
+>   	struct timespec stamp_xtime;	/* xtime as at tb_orig_stamp */
+>   	__u32 stamp_sec_fraction;	/* fractional seconds of stamp_xtime */
+> +	__u32 hrtimer_res;		/* hrtimer resolution */
+>      	__u32 syscall_map_64[SYSCALL_MAP_SIZE]; /* map of syscalls  */
+>      	__u32 syscall_map_32[SYSCALL_MAP_SIZE]; /* map of syscalls */
+>   };
+> @@ -107,6 +108,7 @@ struct vdso_data {
+>   	__s32 wtom_clock_nsec;
+>   	struct timespec stamp_xtime;	/* xtime as at tb_orig_stamp */
+>   	__u32 stamp_sec_fraction;	/* fractional seconds of stamp_xtime */
+> +	__u32 hrtimer_res;		/* hrtimer resolution */
+>      	__u32 syscall_map_32[SYSCALL_MAP_SIZE]; /* map of syscalls */
+>   	__u32 dcache_block_size;	/* L1 d-cache block size     */
+>   	__u32 icache_block_size;	/* L1 i-cache block size     */
+> diff --git a/arch/powerpc/kernel/asm-offsets.c b/arch/powerpc/kernel/asm-offsets.c
+> index 86a61e5f8285..52e4b98a8492 100644
+> --- a/arch/powerpc/kernel/asm-offsets.c
+> +++ b/arch/powerpc/kernel/asm-offsets.c
+> @@ -383,6 +383,7 @@ int main(void)
+>   	OFFSET(WTOM_CLOCK_NSEC, vdso_data, wtom_clock_nsec);
+>   	OFFSET(STAMP_XTIME, vdso_data, stamp_xtime);
+>   	OFFSET(STAMP_SEC_FRAC, vdso_data, stamp_sec_fraction);
+> +	OFFSET(CLOCK_REALTIME_RES, vdso_data, hrtimer_res);
+>   	OFFSET(CFG_ICACHE_BLOCKSZ, vdso_data, icache_block_size);
+>   	OFFSET(CFG_DCACHE_BLOCKSZ, vdso_data, dcache_block_size);
+>   	OFFSET(CFG_ICACHE_LOGBLOCKSZ, vdso_data, icache_log_block_size);
+> @@ -413,7 +414,6 @@ int main(void)
+>   	DEFINE(CLOCK_REALTIME_COARSE, CLOCK_REALTIME_COARSE);
+>   	DEFINE(CLOCK_MONOTONIC_COARSE, CLOCK_MONOTONIC_COARSE);
+>   	DEFINE(NSEC_PER_SEC, NSEC_PER_SEC);
+> -	DEFINE(CLOCK_REALTIME_RES, MONOTONIC_RES_NSEC);
+>   
+>   #ifdef CONFIG_BUG
+>   	DEFINE(BUG_ENTRY_SIZE, sizeof(struct bug_entry));
+> diff --git a/arch/powerpc/kernel/time.c b/arch/powerpc/kernel/time.c
+> index bc0503ef9c9c..62c04a6746d8 100644
+> --- a/arch/powerpc/kernel/time.c
+> +++ b/arch/powerpc/kernel/time.c
+> @@ -955,6 +955,7 @@ void update_vsyscall(struct timekeeper *tk)
+>   	vdso_data->wtom_clock_nsec = tk->wall_to_monotonic.tv_nsec;
+>   	vdso_data->stamp_xtime = xt;
+>   	vdso_data->stamp_sec_fraction = frac_sec;
+> +	vdso_data->hrtimer_res = hrtimer_resolution;
+>   	smp_wmb();
+>   	++(vdso_data->tb_update_count);
+>   }
+> diff --git a/arch/powerpc/kernel/vdso32/gettimeofday.S b/arch/powerpc/kernel/vdso32/gettimeofday.S
+> index 1e0bc5955a40..b21630079496 100644
+> --- a/arch/powerpc/kernel/vdso32/gettimeofday.S
+> +++ b/arch/powerpc/kernel/vdso32/gettimeofday.S
+> @@ -160,14 +160,21 @@ V_FUNCTION_BEGIN(__kernel_clock_getres)
+>   	cror	cr0*4+eq,cr0*4+eq,cr1*4+eq
+>   	bne	cr0,99f
+>   
+> -	li	r3,0
+> -	cmpli	cr0,r4,0
+> +	mflr	r12
+> +  .cfi_register lr,r12
+> +	mr	r11,r4
+> +	bl	__get_datapage@local
+> +	lwz	r5,CLOCK_REALTIME_RES(r3)
+> +	li	r4,0
+> +	cmplwi	r11,0		/* check if res is NULL */
+> +	beq	1f
+> +
+> +	stw	r4,TSPC32_TV_SEC(r11)
+> +	stw	r5,TSPC32_TV_NSEC(r11)
+> +
+> +1:	mtlr	r12
+>   	crclr	cr0*4+so
+> -	beqlr
+> -	lis	r5,CLOCK_REALTIME_RES@h
+> -	ori	r5,r5,CLOCK_REALTIME_RES@l
+> -	stw	r3,TSPC32_TV_SEC(r4)
+> -	stw	r5,TSPC32_TV_NSEC(r4)
+> +	li	r3,0
+>   	blr
+>   
+>   	/*
+> @@ -175,6 +182,7 @@ V_FUNCTION_BEGIN(__kernel_clock_getres)
+>   	 */
+>   99:
+>   	li	r0,__NR_clock_getres
+> +  .cfi_restore lr
+>   	sc
+>   	blr
+>     .cfi_endproc
+> diff --git a/arch/powerpc/kernel/vdso64/gettimeofday.S b/arch/powerpc/kernel/vdso64/gettimeofday.S
+> index a4ed9edfd5f0..a7e49bddd475 100644
+> --- a/arch/powerpc/kernel/vdso64/gettimeofday.S
+> +++ b/arch/powerpc/kernel/vdso64/gettimeofday.S
+> @@ -190,14 +190,21 @@ V_FUNCTION_BEGIN(__kernel_clock_getres)
+>   	cror	cr0*4+eq,cr0*4+eq,cr1*4+eq
+>   	bne	cr0,99f
+>   
+> -	li	r3,0
+> -	cmpldi	cr0,r4,0
+> +	mflr	r12
+> +  .cfi_register lr,r12
+> +	mr	r11, r4
+> +	bl	V_LOCAL_FUNC(__get_datapage)
+> +	lwz	r5,CLOCK_REALTIME_RES(r3)
+> +	li	r4,0
+> +	cmpldi	r11,0		/* check if res is NULL */
+> +	beq	1f
+> +
+> +	std	r4,TSPC64_TV_SEC(r11)
+> +	std	r5,TSPC64_TV_NSEC(r11)
+> +
+> +1:	mtlr	r12
+>   	crclr	cr0*4+so
+> -	beqlr
+> -	lis	r5,CLOCK_REALTIME_RES@h
+> -	ori	r5,r5,CLOCK_REALTIME_RES@l
+> -	std	r3,TSPC64_TV_SEC(r4)
+> -	std	r5,TSPC64_TV_NSEC(r4)
+> +	li	r3,0
+>   	blr
+>   
+>   	/*
+> @@ -205,6 +212,7 @@ V_FUNCTION_BEGIN(__kernel_clock_getres)
+>   	 */
+>   99:
+>   	li	r0,__NR_clock_getres
+> +  .cfi_restore lr
+>   	sc
+>   	blr
+>     .cfi_endproc
+> 
