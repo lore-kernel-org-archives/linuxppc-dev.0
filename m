@@ -2,85 +2,97 @@ Return-Path: <SRS0=xrHL=SE=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_PASS,UNPARSEABLE_RELAY,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5CFAEC4360F
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Apr 2019 20:50:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CE975C4360F
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Apr 2019 20:52:20 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id D11492082C
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Apr 2019 20:50:50 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 3D2012082C
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Apr 2019 20:52:20 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=yandex.ru header.i=@yandex.ru header.b="DLoJcPMR"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D11492082C
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=yandex.ru
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=oracle.com header.i=@oracle.com header.b="myGa/v1+"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3D2012082C
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=oracle.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44YhF424vhzDqMb
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Apr 2019 07:50:48 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44YhGn61blzDqMh
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Apr 2019 07:52:17 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=yandex.ru
- (client-ip=2a02:6b8:0:1a2d::611; helo=forward501o.mail.yandex.net;
- envelope-from=st5pub@yandex.ru; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=oracle.com
+ (client-ip=141.146.126.78; helo=aserp2120.oracle.com;
+ envelope-from=daniel.m.jordan@oracle.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=yandex.ru
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=yandex.ru header.i=@yandex.ru header.b="DLoJcPMR"; 
+ dmarc=pass (p=none dis=none) header.from=oracle.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=oracle.com header.i=@oracle.com header.b="myGa/v1+"; 
  dkim-atps=neutral
-Received: from forward501o.mail.yandex.net (forward501o.mail.yandex.net
- [IPv6:2a02:6b8:0:1a2d::611])
+X-Greylist: delayed 365 seconds by postgrey-1.36 at bilbo;
+ Wed, 03 Apr 2019 07:50:33 AEDT
+Received: from aserp2120.oracle.com (aserp2120.oracle.com [141.146.126.78])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44YhCJ5pKVzDqQX
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Apr 2019 07:49:16 +1100 (AEDT)
-Received: from mxback10g.mail.yandex.net (mxback10g.mail.yandex.net
- [IPv6:2a02:6b8:0:1472:2741:0:8b7:171])
- by forward501o.mail.yandex.net (Yandex) with ESMTP id 2D9EA1E80142;
- Tue,  2 Apr 2019 23:49:10 +0300 (MSK)
-Received: from localhost (localhost [::1])
- by mxback10g.mail.yandex.net (nwsmtp/Yandex) with ESMTP id EsnsabeoON-n5eekYLx;
- Tue, 02 Apr 2019 23:49:08 +0300
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=yandex.ru; s=mail;
- t=1554238148; bh=2ZV98BLNghSssR4O/9lKlyMcwk8YdD7+9Xj4TOwjHnU=;
- h=Message-Id:Cc:Subject:In-Reply-To:Date:References:To:From;
- b=DLoJcPMR3g/id0pnSHUv1qrrT6M/Tt1MqO+MW679Q11+ZDuBscwrbJdgFnLRbC15A
- iay6w2zIAwndfdlWpmHcb8bA0SViGvx6RQPgBKxjUBDUZPn2VKtT+vLhdqLiBytl5e
- GDFGQ4oVdmdhczEzIgOgUP/1cB8RJy4iBRoXzBrE=
-Authentication-Results: mxback10g.mail.yandex.net;
- dkim=pass header.i=@yandex.ru
-Received: by iva8-b333b7f98ab0.qloud-c.yandex.net with HTTP;
- Tue, 02 Apr 2019 23:49:05 +0300
-From: Andrey Abramov <st5pub@yandex.ru>
-To: vgupta <vgupta@synopsys.com>, benh <benh@kernel.crashing.org>,
- paulus <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- tglx <tglx@linutronix.de>, mingo <mingo@redhat.com>, bp <bp@alien8.de>,
- hpa <hpa@zytor.com>, x86 <x86@kernel.org>, mark <mark@fasheh.com>,
- jlbec <jlbec@evilplan.org>, richard <richard@nod.at>,
- dedekind1 <dedekind1@gmail.com>, adrian.hunter <adrian.hunter@intel.com>,
- gregkh <gregkh@linuxfoundation.org>,
- naveen.n.rao <naveen.n.rao@linux.vnet.ibm.com>,
- jpoimboe <jpoimboe@redhat.com>, Dave Chinner <dchinner@redhat.com>,
- darrick.wong <darrick.wong@oracle.com>,
- ard.biesheuvel <ard.biesheuvel@linaro.org>, George Spelvin <lkml@sdf.org>,
- linux-snps-arc <linux-snps-arc@lists.infradead.org>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- ocfs2-devel <ocfs2-devel@oss.oracle.com>,
- linux-mtd <linux-mtd@lists.infradead.org>, sfr <sfr@canb.auug.org.au>
-In-Reply-To: <824481554237711@sas1-23a37bc8251c.qloud-c.yandex.net>
-References: <824481554237711@sas1-23a37bc8251c.qloud-c.yandex.net>
-Subject: [PATCH v3 3/5] ocfs2: dir, refcounttree,
- xattr: replace swap functions with built-in one
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44YhDn3M6yzDqQ3
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Apr 2019 07:50:33 +1100 (AEDT)
+Received: from pps.filterd (aserp2120.oracle.com [127.0.0.1])
+ by aserp2120.oracle.com (8.16.0.27/8.16.0.27) with SMTP id x32Kd5vJ164029;
+ Tue, 2 Apr 2019 20:48:18 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com;
+ h=from : to : cc :
+ subject : date : message-id : in-reply-to : references : mime-version :
+ content-transfer-encoding; s=corp-2018-07-02;
+ bh=QrP2gOWfQDscn5FJYkHkueLx9eSDmR294rMG9/wfMMc=;
+ b=myGa/v1+cXj9m6AltRx8x8N/Ns8VESUwT2Hc85+ihYiT5eC9brN+i+WnjTDEwVy1pYLn
+ reN1Et2KHRyu3dwotNeaDwjahLaZ8mNrnn7GRFzF9B/j+MgAc7woMB4xsARkV/Yh0WAj
+ 5AiIL7M3X+jgYeyLklCN86BBH0o1K06JROTDOe+CT7WdsmmgIzc0VVmKRoMa8tx3BEMv
+ siJcvxFym81a3hQr36vYyL2jdIKr/FStDIeU+nJsAxTll+TOOM22gWMA7onCf9nEQ5Q5
+ 5LE6WU5aUdfUl8VBml2GiCpsHLnB2fHhWdbddvvlT0XzudJEaCFeAxRI9CzOEoqTAd42 2w== 
+Received: from aserp3020.oracle.com (aserp3020.oracle.com [141.146.126.70])
+ by aserp2120.oracle.com with ESMTP id 2rj0dnm18u-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Tue, 02 Apr 2019 20:48:18 +0000
+Received: from pps.filterd (aserp3020.oracle.com [127.0.0.1])
+ by aserp3020.oracle.com (8.16.0.27/8.16.0.27) with SMTP id x32KfJvu103109;
+ Tue, 2 Apr 2019 20:42:18 GMT
+Received: from userv0122.oracle.com (userv0122.oracle.com [156.151.31.75])
+ by aserp3020.oracle.com with ESMTP id 2rm9mhp3mn-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Tue, 02 Apr 2019 20:42:18 +0000
+Received: from abhmp0009.oracle.com (abhmp0009.oracle.com [141.146.116.15])
+ by userv0122.oracle.com (8.14.4/8.14.4) with ESMTP id x32KgFHa030189;
+ Tue, 2 Apr 2019 20:42:15 GMT
+Received: from localhost.localdomain (/73.60.114.248)
+ by default (Oracle Beehive Gateway v4.0)
+ with ESMTP ; Tue, 02 Apr 2019 13:42:14 -0700
+From: Daniel Jordan <daniel.m.jordan@oracle.com>
+To: akpm@linux-foundation.org
+Subject: [PATCH 1/6] mm: change locked_vm's type from unsigned long to
+ atomic64_t
+Date: Tue,  2 Apr 2019 16:41:53 -0400
+Message-Id: <20190402204158.27582-2-daniel.m.jordan@oracle.com>
+X-Mailer: git-send-email 2.21.0
+In-Reply-To: <20190402204158.27582-1-daniel.m.jordan@oracle.com>
+References: <20190402204158.27582-1-daniel.m.jordan@oracle.com>
 MIME-Version: 1.0
-X-Mailer: Yamail [ http://yandex.ru ] 5.0
-Date: Tue, 02 Apr 2019 23:49:05 +0300
-Message-Id: <997661554238145@iva8-b333b7f98ab0.qloud-c.yandex.net>
-Content-Transfer-Encoding: 7bit
-Content-Type: text/plain
+Content-Transfer-Encoding: 8bit
+X-Proofpoint-Virus-Version: vendor=nai engine=5900 definitions=9215
+ signatures=668685
+X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 suspectscore=29
+ malwarescore=0
+ phishscore=0 bulkscore=0 spamscore=0 mlxscore=0 mlxlogscore=999
+ adultscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.0.1-1810050000 definitions=main-1904020138
+X-Proofpoint-Virus-Version: vendor=nai engine=5900 definitions=9215
+ signatures=668685
+X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 suspectscore=29
+ malwarescore=0
+ phishscore=0 bulkscore=0 spamscore=0 mlxscore=0 lowpriorityscore=0
+ mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1810050000 definitions=main-1904020138
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -92,152 +104,489 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: amir73il <amir73il@gmail.com>, yuehaibing <yuehaibing@huawei.com>,
- "ge.changwei" <ge.changwei@h3c.com>,
- "ashish.samant" <ashish.samant@oracle.com>, piaojun <piaojun@huawei.com>,
- jiangyiwen <jiangyiwen@huawei.com>
+Cc: Davidlohr Bueso <dave@stgolabs.net>, kvm@vger.kernel.org,
+ Alan Tull <atull@kernel.org>, Alexey Kardashevskiy <aik@ozlabs.ru>,
+ linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org,
+ kvm-ppc@vger.kernel.org, daniel.m.jordan@oracle.com, linux-mm@kvack.org,
+ Alex Williamson <alex.williamson@redhat.com>, Moritz Fischer <mdf@kernel.org>,
+ Christoph Lameter <cl@linux.com>, linuxppc-dev@lists.ozlabs.org,
+ Wu Hao <hao.wu@intel.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Replace dx_leaf_sort_swap, swap_refcount_rec and swap_xe functions
-with built-in one, because they do only a simple byte to byte swap.
+Taking and dropping mmap_sem to modify a single counter, locked_vm, is
+overkill when the counter could be synchronized separately.
 
-Since Spectre mitigations have made indirect function calls more
-expensive, and the default simple byte copies swap is implemented
-without them, an "optimized" custom swap function is now
-a waste of time as well as code.
+Make mmap_sem a little less coarse by changing locked_vm to an atomic,
+the 64-bit variety to avoid issues with overflow on 32-bit systems.
 
-Signed-off-by: Andrey Abramov <st5pub@yandex.ru>
-Reviewed by: George Spelvin <lkml@sdf.org>
+Signed-off-by: Daniel Jordan <daniel.m.jordan@oracle.com>
+Cc: Alan Tull <atull@kernel.org>
+Cc: Alexey Kardashevskiy <aik@ozlabs.ru>
+Cc: Alex Williamson <alex.williamson@redhat.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Christoph Lameter <cl@linux.com>
+Cc: Davidlohr Bueso <dave@stgolabs.net>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Moritz Fischer <mdf@kernel.org>
+Cc: Paul Mackerras <paulus@ozlabs.org>
+Cc: Wu Hao <hao.wu@intel.com>
+Cc: <linux-mm@kvack.org>
+Cc: <kvm@vger.kernel.org>
+Cc: <kvm-ppc@vger.kernel.org>
+Cc: <linuxppc-dev@lists.ozlabs.org>
+Cc: <linux-fpga@vger.kernel.org>
+Cc: <linux-kernel@vger.kernel.org>
 ---
-v2->v3: nothing changed
+ arch/powerpc/kvm/book3s_64_vio.c    | 14 ++++++++------
+ arch/powerpc/mm/mmu_context_iommu.c | 15 ++++++++-------
+ drivers/fpga/dfl-afu-dma-region.c   | 18 ++++++++++--------
+ drivers/vfio/vfio_iommu_spapr_tce.c | 17 +++++++++--------
+ drivers/vfio/vfio_iommu_type1.c     | 10 ++++++----
+ fs/proc/task_mmu.c                  |  2 +-
+ include/linux/mm_types.h            |  2 +-
+ kernel/fork.c                       |  2 +-
+ mm/debug.c                          |  5 +++--
+ mm/mlock.c                          |  4 ++--
+ mm/mmap.c                           | 18 +++++++++---------
+ mm/mremap.c                         |  6 +++---
+ 12 files changed, 61 insertions(+), 52 deletions(-)
 
- fs/ocfs2/dir.c          | 13 +------------
- fs/ocfs2/refcounttree.c | 13 +++----------
- fs/ocfs2/xattr.c        | 15 +++------------
- 3 files changed, 7 insertions(+), 34 deletions(-)
-
-diff --git a/fs/ocfs2/dir.c b/fs/ocfs2/dir.c
-index c121abbdfc7d..4b86b181df0a 100644
---- a/fs/ocfs2/dir.c
-+++ b/fs/ocfs2/dir.c
-@@ -3529,16 +3529,6 @@ static int dx_leaf_sort_cmp(const void *a, const void *b)
- 	return 0;
- }
- 
--static void dx_leaf_sort_swap(void *a, void *b, int size)
--{
--	struct ocfs2_dx_entry *entry1 = a;
--	struct ocfs2_dx_entry *entry2 = b;
--
--	BUG_ON(size != sizeof(*entry1));
--
--	swap(*entry1, *entry2);
--}
--
- static int ocfs2_dx_leaf_same_major(struct ocfs2_dx_leaf *dx_leaf)
+diff --git a/arch/powerpc/kvm/book3s_64_vio.c b/arch/powerpc/kvm/book3s_64_vio.c
+index f02b04973710..e7fdb6d10eeb 100644
+--- a/arch/powerpc/kvm/book3s_64_vio.c
++++ b/arch/powerpc/kvm/book3s_64_vio.c
+@@ -59,32 +59,34 @@ static unsigned long kvmppc_stt_pages(unsigned long tce_pages)
+ static long kvmppc_account_memlimit(unsigned long stt_pages, bool inc)
  {
- 	struct ocfs2_dx_entry_list *dl_list = &dx_leaf->dl_list;
-@@ -3799,8 +3789,7 @@ static int ocfs2_dx_dir_rebalance(struct ocfs2_super *osb, struct inode *dir,
- 	 * This block is changing anyway, so we can sort it in place.
+ 	long ret = 0;
++	s64 locked_vm;
+ 
+ 	if (!current || !current->mm)
+ 		return ret; /* process exited */
+ 
+ 	down_write(&current->mm->mmap_sem);
+ 
++	locked_vm = atomic64_read(&current->mm->locked_vm);
+ 	if (inc) {
+ 		unsigned long locked, lock_limit;
+ 
+-		locked = current->mm->locked_vm + stt_pages;
++		locked = locked_vm + stt_pages;
+ 		lock_limit = rlimit(RLIMIT_MEMLOCK) >> PAGE_SHIFT;
+ 		if (locked > lock_limit && !capable(CAP_IPC_LOCK))
+ 			ret = -ENOMEM;
+ 		else
+-			current->mm->locked_vm += stt_pages;
++			atomic64_add(stt_pages, &current->mm->locked_vm);
+ 	} else {
+-		if (WARN_ON_ONCE(stt_pages > current->mm->locked_vm))
+-			stt_pages = current->mm->locked_vm;
++		if (WARN_ON_ONCE(stt_pages > locked_vm))
++			stt_pages = locked_vm;
+ 
+-		current->mm->locked_vm -= stt_pages;
++		atomic64_sub(stt_pages, &current->mm->locked_vm);
+ 	}
+ 
+ 	pr_debug("[%d] RLIMIT_MEMLOCK KVM %c%ld %ld/%ld%s\n", current->pid,
+ 			inc ? '+' : '-',
+ 			stt_pages << PAGE_SHIFT,
+-			current->mm->locked_vm << PAGE_SHIFT,
++			atomic64_read(&current->mm->locked_vm) << PAGE_SHIFT,
+ 			rlimit(RLIMIT_MEMLOCK),
+ 			ret ? " - exceeded" : "");
+ 
+diff --git a/arch/powerpc/mm/mmu_context_iommu.c b/arch/powerpc/mm/mmu_context_iommu.c
+index e7a9c4f6bfca..8038ac24a312 100644
+--- a/arch/powerpc/mm/mmu_context_iommu.c
++++ b/arch/powerpc/mm/mmu_context_iommu.c
+@@ -55,30 +55,31 @@ static long mm_iommu_adjust_locked_vm(struct mm_struct *mm,
+ 		unsigned long npages, bool incr)
+ {
+ 	long ret = 0, locked, lock_limit;
++	s64 locked_vm;
+ 
+ 	if (!npages)
+ 		return 0;
+ 
+ 	down_write(&mm->mmap_sem);
+-
++	locked_vm = atomic64_read(&mm->locked_vm);
+ 	if (incr) {
+-		locked = mm->locked_vm + npages;
++		locked = locked_vm + npages;
+ 		lock_limit = rlimit(RLIMIT_MEMLOCK) >> PAGE_SHIFT;
+ 		if (locked > lock_limit && !capable(CAP_IPC_LOCK))
+ 			ret = -ENOMEM;
+ 		else
+-			mm->locked_vm += npages;
++			atomic64_add(npages, &mm->locked_vm);
+ 	} else {
+-		if (WARN_ON_ONCE(npages > mm->locked_vm))
+-			npages = mm->locked_vm;
+-		mm->locked_vm -= npages;
++		if (WARN_ON_ONCE(npages > locked_vm))
++			npages = locked_vm;
++		atomic64_sub(npages, &mm->locked_vm);
+ 	}
+ 
+ 	pr_debug("[%d] RLIMIT_MEMLOCK HASH64 %c%ld %ld/%ld\n",
+ 			current ? current->pid : 0,
+ 			incr ? '+' : '-',
+ 			npages << PAGE_SHIFT,
+-			mm->locked_vm << PAGE_SHIFT,
++			atomic64_read(&mm->locked_vm) << PAGE_SHIFT,
+ 			rlimit(RLIMIT_MEMLOCK));
+ 	up_write(&mm->mmap_sem);
+ 
+diff --git a/drivers/fpga/dfl-afu-dma-region.c b/drivers/fpga/dfl-afu-dma-region.c
+index e18a786fc943..08132fd9b6b7 100644
+--- a/drivers/fpga/dfl-afu-dma-region.c
++++ b/drivers/fpga/dfl-afu-dma-region.c
+@@ -45,6 +45,7 @@ void afu_dma_region_init(struct dfl_feature_platform_data *pdata)
+ static int afu_dma_adjust_locked_vm(struct device *dev, long npages, bool incr)
+ {
+ 	unsigned long locked, lock_limit;
++	s64 locked_vm;
+ 	int ret = 0;
+ 
+ 	/* the task is exiting. */
+@@ -53,24 +54,25 @@ static int afu_dma_adjust_locked_vm(struct device *dev, long npages, bool incr)
+ 
+ 	down_write(&current->mm->mmap_sem);
+ 
++	locked_vm = atomic64_read(&current->mm->locked_vm);
+ 	if (incr) {
+-		locked = current->mm->locked_vm + npages;
++		locked = locked_vm + npages;
+ 		lock_limit = rlimit(RLIMIT_MEMLOCK) >> PAGE_SHIFT;
+ 
+ 		if (locked > lock_limit && !capable(CAP_IPC_LOCK))
+ 			ret = -ENOMEM;
+ 		else
+-			current->mm->locked_vm += npages;
++			atomic64_add(npages, &current->mm->locked_vm);
+ 	} else {
+-		if (WARN_ON_ONCE(npages > current->mm->locked_vm))
+-			npages = current->mm->locked_vm;
+-		current->mm->locked_vm -= npages;
++		if (WARN_ON_ONCE(npages > locked_vm))
++			npages = locked_vm;
++		atomic64_sub(npages, &current->mm->locked_vm);
+ 	}
+ 
+-	dev_dbg(dev, "[%d] RLIMIT_MEMLOCK %c%ld %ld/%ld%s\n", current->pid,
++	dev_dbg(dev, "[%d] RLIMIT_MEMLOCK %c%ld %lld/%lu%s\n", current->pid,
+ 		incr ? '+' : '-', npages << PAGE_SHIFT,
+-		current->mm->locked_vm << PAGE_SHIFT, rlimit(RLIMIT_MEMLOCK),
+-		ret ? "- exceeded" : "");
++		(s64)atomic64_read(&current->mm->locked_vm) << PAGE_SHIFT,
++		rlimit(RLIMIT_MEMLOCK), ret ? "- exceeded" : "");
+ 
+ 	up_write(&current->mm->mmap_sem);
+ 
+diff --git a/drivers/vfio/vfio_iommu_spapr_tce.c b/drivers/vfio/vfio_iommu_spapr_tce.c
+index 8dbb270998f4..e7d787e5d839 100644
+--- a/drivers/vfio/vfio_iommu_spapr_tce.c
++++ b/drivers/vfio/vfio_iommu_spapr_tce.c
+@@ -36,7 +36,8 @@ static void tce_iommu_detach_group(void *iommu_data,
+ 
+ static long try_increment_locked_vm(struct mm_struct *mm, long npages)
+ {
+-	long ret = 0, locked, lock_limit;
++	long ret = 0, lock_limit;
++	s64 locked;
+ 
+ 	if (WARN_ON_ONCE(!mm))
+ 		return -EPERM;
+@@ -45,16 +46,16 @@ static long try_increment_locked_vm(struct mm_struct *mm, long npages)
+ 		return 0;
+ 
+ 	down_write(&mm->mmap_sem);
+-	locked = mm->locked_vm + npages;
++	locked = atomic64_read(&mm->locked_vm) + npages;
+ 	lock_limit = rlimit(RLIMIT_MEMLOCK) >> PAGE_SHIFT;
+ 	if (locked > lock_limit && !capable(CAP_IPC_LOCK))
+ 		ret = -ENOMEM;
+ 	else
+-		mm->locked_vm += npages;
++		atomic64_add(npages, &mm->locked_vm);
+ 
+ 	pr_debug("[%d] RLIMIT_MEMLOCK +%ld %ld/%ld%s\n", current->pid,
+ 			npages << PAGE_SHIFT,
+-			mm->locked_vm << PAGE_SHIFT,
++			atomic64_read(&mm->locked_vm) << PAGE_SHIFT,
+ 			rlimit(RLIMIT_MEMLOCK),
+ 			ret ? " - exceeded" : "");
+ 
+@@ -69,12 +70,12 @@ static void decrement_locked_vm(struct mm_struct *mm, long npages)
+ 		return;
+ 
+ 	down_write(&mm->mmap_sem);
+-	if (WARN_ON_ONCE(npages > mm->locked_vm))
+-		npages = mm->locked_vm;
+-	mm->locked_vm -= npages;
++	if (WARN_ON_ONCE(npages > atomic64_read(&mm->locked_vm)))
++		npages = atomic64_read(&mm->locked_vm);
++	atomic64_sub(npages, &mm->locked_vm);
+ 	pr_debug("[%d] RLIMIT_MEMLOCK -%ld %ld/%ld\n", current->pid,
+ 			npages << PAGE_SHIFT,
+-			mm->locked_vm << PAGE_SHIFT,
++			atomic64_read(&mm->locked_vm) << PAGE_SHIFT,
+ 			rlimit(RLIMIT_MEMLOCK));
+ 	up_write(&mm->mmap_sem);
+ }
+diff --git a/drivers/vfio/vfio_iommu_type1.c b/drivers/vfio/vfio_iommu_type1.c
+index 73652e21efec..5b2878697286 100644
+--- a/drivers/vfio/vfio_iommu_type1.c
++++ b/drivers/vfio/vfio_iommu_type1.c
+@@ -270,18 +270,19 @@ static int vfio_lock_acct(struct vfio_dma *dma, long npage, bool async)
+ 	if (!ret) {
+ 		if (npage > 0) {
+ 			if (!dma->lock_cap) {
++				s64 locked_vm = atomic64_read(&mm->locked_vm);
+ 				unsigned long limit;
+ 
+ 				limit = task_rlimit(dma->task,
+ 						RLIMIT_MEMLOCK) >> PAGE_SHIFT;
+ 
+-				if (mm->locked_vm + npage > limit)
++				if (locked_vm + npage > limit)
+ 					ret = -ENOMEM;
+ 			}
+ 		}
+ 
+ 		if (!ret)
+-			mm->locked_vm += npage;
++			atomic64_add(npage, &mm->locked_vm);
+ 
+ 		up_write(&mm->mmap_sem);
+ 	}
+@@ -401,6 +402,7 @@ static long vfio_pin_pages_remote(struct vfio_dma *dma, unsigned long vaddr,
+ 	long ret, pinned = 0, lock_acct = 0;
+ 	bool rsvd;
+ 	dma_addr_t iova = vaddr - dma->vaddr + dma->iova;
++	atomic64_t *locked_vm = &current->mm->locked_vm;
+ 
+ 	/* This code path is only user initiated */
+ 	if (!current->mm)
+@@ -418,7 +420,7 @@ static long vfio_pin_pages_remote(struct vfio_dma *dma, unsigned long vaddr,
+ 	 * pages are already counted against the user.
  	 */
- 	sort(dx_leaf->dl_list.de_entries, num_used,
--	     sizeof(struct ocfs2_dx_entry), dx_leaf_sort_cmp,
--	     dx_leaf_sort_swap);
-+	     sizeof(struct ocfs2_dx_entry), dx_leaf_sort_cmp, NULL);
+ 	if (!rsvd && !vfio_find_vpfn(dma, iova)) {
+-		if (!dma->lock_cap && current->mm->locked_vm + 1 > limit) {
++		if (!dma->lock_cap && atomic64_read(locked_vm) + 1 > limit) {
+ 			put_pfn(*pfn_base, dma->prot);
+ 			pr_warn("%s: RLIMIT_MEMLOCK (%ld) exceeded\n", __func__,
+ 					limit << PAGE_SHIFT);
+@@ -445,7 +447,7 @@ static long vfio_pin_pages_remote(struct vfio_dma *dma, unsigned long vaddr,
  
- 	ocfs2_journal_dirty(handle, dx_leaf_bh);
+ 		if (!rsvd && !vfio_find_vpfn(dma, iova)) {
+ 			if (!dma->lock_cap &&
+-			    current->mm->locked_vm + lock_acct + 1 > limit) {
++			    atomic64_read(locked_vm) + lock_acct + 1 > limit) {
+ 				put_pfn(pfn, dma->prot);
+ 				pr_warn("%s: RLIMIT_MEMLOCK (%ld) exceeded\n",
+ 					__func__, limit << PAGE_SHIFT);
+diff --git a/fs/proc/task_mmu.c b/fs/proc/task_mmu.c
+index 92a91e7816d8..61da4b24d0e0 100644
+--- a/fs/proc/task_mmu.c
++++ b/fs/proc/task_mmu.c
+@@ -58,7 +58,7 @@ void task_mem(struct seq_file *m, struct mm_struct *mm)
+ 	swap = get_mm_counter(mm, MM_SWAPENTS);
+ 	SEQ_PUT_DEC("VmPeak:\t", hiwater_vm);
+ 	SEQ_PUT_DEC(" kB\nVmSize:\t", total_vm);
+-	SEQ_PUT_DEC(" kB\nVmLck:\t", mm->locked_vm);
++	SEQ_PUT_DEC(" kB\nVmLck:\t", atomic64_read(&mm->locked_vm));
+ 	SEQ_PUT_DEC(" kB\nVmPin:\t", atomic64_read(&mm->pinned_vm));
+ 	SEQ_PUT_DEC(" kB\nVmHWM:\t", hiwater_rss);
+ 	SEQ_PUT_DEC(" kB\nVmRSS:\t", total_rss);
+diff --git a/include/linux/mm_types.h b/include/linux/mm_types.h
+index 7eade9132f02..5059b99a0827 100644
+--- a/include/linux/mm_types.h
++++ b/include/linux/mm_types.h
+@@ -410,7 +410,7 @@ struct mm_struct {
+ 		unsigned long hiwater_vm;  /* High-water virtual memory usage */
  
-diff --git a/fs/ocfs2/refcounttree.c b/fs/ocfs2/refcounttree.c
-index 1dc9a08e8bdc..7bbc94d23a0c 100644
---- a/fs/ocfs2/refcounttree.c
-+++ b/fs/ocfs2/refcounttree.c
-@@ -1400,13 +1400,6 @@ static int cmp_refcount_rec_by_cpos(const void *a, const void *b)
+ 		unsigned long total_vm;	   /* Total pages mapped */
+-		unsigned long locked_vm;   /* Pages that have PG_mlocked set */
++		atomic64_t    locked_vm;   /* Pages that have PG_mlocked set */
+ 		atomic64_t    pinned_vm;   /* Refcount permanently increased */
+ 		unsigned long data_vm;	   /* VM_WRITE & ~VM_SHARED & ~VM_STACK */
+ 		unsigned long exec_vm;	   /* VM_EXEC & ~VM_WRITE & ~VM_STACK */
+diff --git a/kernel/fork.c b/kernel/fork.c
+index 9dcd18aa210b..56be8cdc7b4a 100644
+--- a/kernel/fork.c
++++ b/kernel/fork.c
+@@ -979,7 +979,7 @@ static struct mm_struct *mm_init(struct mm_struct *mm, struct task_struct *p,
+ 	mm->core_state = NULL;
+ 	mm_pgtables_bytes_init(mm);
+ 	mm->map_count = 0;
+-	mm->locked_vm = 0;
++	atomic64_set(&mm->locked_vm, 0);
+ 	atomic64_set(&mm->pinned_vm, 0);
+ 	memset(&mm->rss_stat, 0, sizeof(mm->rss_stat));
+ 	spin_lock_init(&mm->page_table_lock);
+diff --git a/mm/debug.c b/mm/debug.c
+index eee9c221280c..b9cd71927d3c 100644
+--- a/mm/debug.c
++++ b/mm/debug.c
+@@ -136,7 +136,7 @@ void dump_mm(const struct mm_struct *mm)
+ #endif
+ 		"mmap_base %lu mmap_legacy_base %lu highest_vm_end %lu\n"
+ 		"pgd %px mm_users %d mm_count %d pgtables_bytes %lu map_count %d\n"
+-		"hiwater_rss %lx hiwater_vm %lx total_vm %lx locked_vm %lx\n"
++		"hiwater_rss %lx hiwater_vm %lx total_vm %lx locked_vm %llx\n"
+ 		"pinned_vm %llx data_vm %lx exec_vm %lx stack_vm %lx\n"
+ 		"start_code %lx end_code %lx start_data %lx end_data %lx\n"
+ 		"start_brk %lx brk %lx start_stack %lx\n"
+@@ -167,7 +167,8 @@ void dump_mm(const struct mm_struct *mm)
+ 		atomic_read(&mm->mm_count),
+ 		mm_pgtables_bytes(mm),
+ 		mm->map_count,
+-		mm->hiwater_rss, mm->hiwater_vm, mm->total_vm, mm->locked_vm,
++		mm->hiwater_rss, mm->hiwater_vm, mm->total_vm,
++		(u64)atomic64_read(&mm->locked_vm),
+ 		(u64)atomic64_read(&mm->pinned_vm),
+ 		mm->data_vm, mm->exec_vm, mm->stack_vm,
+ 		mm->start_code, mm->end_code, mm->start_data, mm->end_data,
+diff --git a/mm/mlock.c b/mm/mlock.c
+index 080f3b36415b..e492a155c51a 100644
+--- a/mm/mlock.c
++++ b/mm/mlock.c
+@@ -562,7 +562,7 @@ static int mlock_fixup(struct vm_area_struct *vma, struct vm_area_struct **prev,
+ 		nr_pages = -nr_pages;
+ 	else if (old_flags & VM_LOCKED)
+ 		nr_pages = 0;
+-	mm->locked_vm += nr_pages;
++	atomic64_add(nr_pages, &mm->locked_vm);
+ 
+ 	/*
+ 	 * vm_flags is protected by the mmap_sem held in write mode.
+@@ -687,7 +687,7 @@ static __must_check int do_mlock(unsigned long start, size_t len, vm_flags_t fla
+ 	if (down_write_killable(&current->mm->mmap_sem))
+ 		return -EINTR;
+ 
+-	locked += current->mm->locked_vm;
++	locked += atomic64_read(&current->mm->locked_vm);
+ 	if ((locked > lock_limit) && (!capable(CAP_IPC_LOCK))) {
+ 		/*
+ 		 * It is possible that the regions requested intersect with
+diff --git a/mm/mmap.c b/mm/mmap.c
+index 41eb48d9b527..03576c1d530c 100644
+--- a/mm/mmap.c
++++ b/mm/mmap.c
+@@ -1339,7 +1339,7 @@ static inline int mlock_future_check(struct mm_struct *mm,
+ 	/*  mlock MCL_FUTURE? */
+ 	if (flags & VM_LOCKED) {
+ 		locked = len >> PAGE_SHIFT;
+-		locked += mm->locked_vm;
++		locked += atomic64_read(&mm->locked_vm);
+ 		lock_limit = rlimit(RLIMIT_MEMLOCK);
+ 		lock_limit >>= PAGE_SHIFT;
+ 		if (locked > lock_limit && !capable(CAP_IPC_LOCK))
+@@ -1825,7 +1825,7 @@ unsigned long mmap_region(struct file *file, unsigned long addr,
+ 					vma == get_gate_vma(current->mm))
+ 			vma->vm_flags &= VM_LOCKED_CLEAR_MASK;
+ 		else
+-			mm->locked_vm += (len >> PAGE_SHIFT);
++			atomic64_add(len >> PAGE_SHIFT, &mm->locked_vm);
+ 	}
+ 
+ 	if (file)
+@@ -2301,7 +2301,7 @@ static int acct_stack_growth(struct vm_area_struct *vma,
+ 	if (vma->vm_flags & VM_LOCKED) {
+ 		unsigned long locked;
+ 		unsigned long limit;
+-		locked = mm->locked_vm + grow;
++		locked = atomic64_read(&mm->locked_vm) + grow;
+ 		limit = rlimit(RLIMIT_MEMLOCK);
+ 		limit >>= PAGE_SHIFT;
+ 		if (locked > limit && !capable(CAP_IPC_LOCK))
+@@ -2395,7 +2395,7 @@ int expand_upwards(struct vm_area_struct *vma, unsigned long address)
+ 				 */
+ 				spin_lock(&mm->page_table_lock);
+ 				if (vma->vm_flags & VM_LOCKED)
+-					mm->locked_vm += grow;
++					atomic64_add(grow, &mm->locked_vm);
+ 				vm_stat_account(mm, vma->vm_flags, grow);
+ 				anon_vma_interval_tree_pre_update_vma(vma);
+ 				vma->vm_end = address;
+@@ -2475,7 +2475,7 @@ int expand_downwards(struct vm_area_struct *vma,
+ 				 */
+ 				spin_lock(&mm->page_table_lock);
+ 				if (vma->vm_flags & VM_LOCKED)
+-					mm->locked_vm += grow;
++					atomic64_add(grow, &mm->locked_vm);
+ 				vm_stat_account(mm, vma->vm_flags, grow);
+ 				anon_vma_interval_tree_pre_update_vma(vma);
+ 				vma->vm_start = address;
+@@ -2796,11 +2796,11 @@ int __do_munmap(struct mm_struct *mm, unsigned long start, size_t len,
+ 	/*
+ 	 * unlock any mlock()ed ranges before detaching vmas
+ 	 */
+-	if (mm->locked_vm) {
++	if (atomic64_read(&mm->locked_vm)) {
+ 		struct vm_area_struct *tmp = vma;
+ 		while (tmp && tmp->vm_start < end) {
+ 			if (tmp->vm_flags & VM_LOCKED) {
+-				mm->locked_vm -= vma_pages(tmp);
++				atomic64_sub(vma_pages(tmp), &mm->locked_vm);
+ 				munlock_vma_pages_all(tmp);
+ 			}
+ 
+@@ -3043,7 +3043,7 @@ static int do_brk_flags(unsigned long addr, unsigned long len, unsigned long fla
+ 	mm->total_vm += len >> PAGE_SHIFT;
+ 	mm->data_vm += len >> PAGE_SHIFT;
+ 	if (flags & VM_LOCKED)
+-		mm->locked_vm += (len >> PAGE_SHIFT);
++		atomic64_add(len >> PAGE_SHIFT, &mm->locked_vm);
+ 	vma->vm_flags |= VM_SOFTDIRTY;
  	return 0;
  }
+@@ -3115,7 +3115,7 @@ void exit_mmap(struct mm_struct *mm)
+ 		up_write(&mm->mmap_sem);
+ 	}
  
--static void swap_refcount_rec(void *a, void *b, int size)
--{
--	struct ocfs2_refcount_rec *l = a, *r = b;
--
--	swap(*l, *r);
--}
--
- /*
-  * The refcount cpos are ordered by their 64bit cpos,
-  * But we will use the low 32 bit to be the e_cpos in the b-tree.
-@@ -1482,7 +1475,7 @@ static int ocfs2_divide_leaf_refcount_block(struct buffer_head *ref_leaf_bh,
- 	 */
- 	sort(&rl->rl_recs, le16_to_cpu(rl->rl_used),
- 	     sizeof(struct ocfs2_refcount_rec),
--	     cmp_refcount_rec_by_low_cpos, swap_refcount_rec);
-+	     cmp_refcount_rec_by_low_cpos, NULL);
+-	if (mm->locked_vm) {
++	if (atomic64_read(&mm->locked_vm)) {
+ 		vma = mm->mmap;
+ 		while (vma) {
+ 			if (vma->vm_flags & VM_LOCKED)
+diff --git a/mm/mremap.c b/mm/mremap.c
+index e3edef6b7a12..9a4046bb2875 100644
+--- a/mm/mremap.c
++++ b/mm/mremap.c
+@@ -422,7 +422,7 @@ static unsigned long move_vma(struct vm_area_struct *vma,
+ 	}
  
- 	ret = ocfs2_find_refcount_split_pos(rl, &cpos, &split_index);
- 	if (ret) {
-@@ -1507,11 +1500,11 @@ static int ocfs2_divide_leaf_refcount_block(struct buffer_head *ref_leaf_bh,
+ 	if (vm_flags & VM_LOCKED) {
+-		mm->locked_vm += new_len >> PAGE_SHIFT;
++		atomic64_add(new_len >> PAGE_SHIFT, &mm->locked_vm);
+ 		*locked = true;
+ 	}
  
- 	sort(&rl->rl_recs, le16_to_cpu(rl->rl_used),
- 	     sizeof(struct ocfs2_refcount_rec),
--	     cmp_refcount_rec_by_cpos, swap_refcount_rec);
-+	     cmp_refcount_rec_by_cpos, NULL);
+@@ -473,7 +473,7 @@ static struct vm_area_struct *vma_to_resize(unsigned long addr,
  
- 	sort(&new_rl->rl_recs, le16_to_cpu(new_rl->rl_used),
- 	     sizeof(struct ocfs2_refcount_rec),
--	     cmp_refcount_rec_by_cpos, swap_refcount_rec);
-+	     cmp_refcount_rec_by_cpos, NULL);
+ 	if (vma->vm_flags & VM_LOCKED) {
+ 		unsigned long locked, lock_limit;
+-		locked = mm->locked_vm << PAGE_SHIFT;
++		locked = atomic64_read(&mm->locked_vm) << PAGE_SHIFT;
+ 		lock_limit = rlimit(RLIMIT_MEMLOCK);
+ 		locked += new_len - old_len;
+ 		if (locked > lock_limit && !capable(CAP_IPC_LOCK))
+@@ -679,7 +679,7 @@ SYSCALL_DEFINE5(mremap, unsigned long, addr, unsigned long, old_len,
  
- 	*split_cpos = cpos;
- 	return 0;
-diff --git a/fs/ocfs2/xattr.c b/fs/ocfs2/xattr.c
-index 3a24ce3deb01..b3e6f42baf78 100644
---- a/fs/ocfs2/xattr.c
-+++ b/fs/ocfs2/xattr.c
-@@ -4175,15 +4175,6 @@ static int cmp_xe(const void *a, const void *b)
- 	return 0;
- }
- 
--static void swap_xe(void *a, void *b, int size)
--{
--	struct ocfs2_xattr_entry *l = a, *r = b, tmp;
--
--	tmp = *l;
--	memcpy(l, r, sizeof(struct ocfs2_xattr_entry));
--	memcpy(r, &tmp, sizeof(struct ocfs2_xattr_entry));
--}
--
- /*
-  * When the ocfs2_xattr_block is filled up, new bucket will be created
-  * and all the xattr entries will be moved to the new bucket.
-@@ -4249,7 +4240,7 @@ static void ocfs2_cp_xattr_block_to_bucket(struct inode *inode,
- 	trace_ocfs2_cp_xattr_block_to_bucket_end(offset, size, off_change);
- 
- 	sort(target + offset, count, sizeof(struct ocfs2_xattr_entry),
--	     cmp_xe, swap_xe);
-+	     cmp_xe, NULL);
- }
- 
- /*
-@@ -4444,7 +4435,7 @@ static int ocfs2_defrag_xattr_bucket(struct inode *inode,
- 	 */
- 	sort(entries, le16_to_cpu(xh->xh_count),
- 	     sizeof(struct ocfs2_xattr_entry),
--	     cmp_xe_offset, swap_xe);
-+	     cmp_xe_offset, NULL);
- 
- 	/* Move all name/values to the end of the bucket. */
- 	xe = xh->xh_entries;
-@@ -4486,7 +4477,7 @@ static int ocfs2_defrag_xattr_bucket(struct inode *inode,
- 	/* sort the entries by their name_hash. */
- 	sort(entries, le16_to_cpu(xh->xh_count),
- 	     sizeof(struct ocfs2_xattr_entry),
--	     cmp_xe, swap_xe);
-+	     cmp_xe, NULL);
- 
- 	buf = bucket_buf;
- 	for (i = 0; i < bucket->bu_blocks; i++, buf += blocksize)
+ 			vm_stat_account(mm, vma->vm_flags, pages);
+ 			if (vma->vm_flags & VM_LOCKED) {
+-				mm->locked_vm += pages;
++				atomic64_add(pages, &mm->locked_vm);
+ 				locked = true;
+ 				new_addr = addr;
+ 			}
 -- 
 2.21.0
-
 
