@@ -2,81 +2,102 @@ Return-Path: <SRS0=xrHL=SE=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.5 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,UPPERCASE_50_75
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9CF41C4360F
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Apr 2019 11:28:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BAA8AC4360F
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Apr 2019 11:30:37 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 10B3A20856
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Apr 2019 11:28:53 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Ayjpd5EA"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 10B3A20856
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	by mail.kernel.org (Postfix) with ESMTPS id 3B40520856
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Apr 2019 11:30:37 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3B40520856
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44YRmh0Fp7zDqMP
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Apr 2019 22:28:52 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=2607:f8b0:4864:20::541; helo=mail-pg1-x541.google.com;
- envelope-from=npiggin@gmail.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="Ayjpd5EA"; 
- dkim-atps=neutral
-Received: from mail-pg1-x541.google.com (mail-pg1-x541.google.com
- [IPv6:2607:f8b0:4864:20::541])
+	by lists.ozlabs.org (Postfix) with ESMTP id 44YRpg1NxtzDqMW
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Apr 2019 22:30:35 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44YRj52f2LzDqMP
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Apr 2019 22:25:45 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=linux.vnet.ibm.com
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 44YRj51k81z8tSm
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Apr 2019 22:25:45 +1100 (AEDT)
+Received: by ozlabs.org (Postfix)
+ id 44YRj50q91z9sTV; Tue,  2 Apr 2019 22:25:45 +1100 (AEDT)
+Authentication-Results: ozlabs.org;
+ spf=none (mailfrom) smtp.mailfrom=linux.vnet.ibm.com
+ (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
+ envelope-from=mahesh@linux.vnet.ibm.com; receiver=<UNKNOWN>)
+Authentication-Results: ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=linux.vnet.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44YRhv6V17zDqNw
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Apr 2019 22:25:35 +1100 (AEDT)
-Received: by mail-pg1-x541.google.com with SMTP id f6so6414737pgs.8
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 02 Apr 2019 04:25:35 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=from:to:cc:subject:date:message-id:mime-version
- :content-transfer-encoding;
- bh=rI3ImivKzMQF1kcjpqnGuwJFTTXKk+PJLrZEuKwdA20=;
- b=Ayjpd5EABKEjd7etj9lc5flADVd/67AwWhuwQI22O/bAKMWzf3qxXxUECioNwqVTMn
- uV1l1uGR5jcr6Ap4KGIUYKLbd4qj6rUQ58SaCilStTF2Ju3LrjwFF8Ai+b/ENIcWgwK8
- CtdlN6ssw9W1eiNElo4OebPlz8ooeNyJqXVejrfDb/6pAUtZts5DmYRYzQu+dolh8HeN
- X8HFX1Av/Hv5ZYTNF5+krm/Rot1FD0GI7Zk8a7MGkMKvBrWhFPKcEved6rLw0aUVGwwU
- decd0r8mjTvwgBQF2B9HMTJD3kxEgHqzTTIlObMrszw2vAfDu1hWBQpes3X+UcH2V86J
- 5SPQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
- :content-transfer-encoding;
- bh=rI3ImivKzMQF1kcjpqnGuwJFTTXKk+PJLrZEuKwdA20=;
- b=iZDflive1o0D9juVm2cBVyVIfcWc7QpqwgwbwAlf28IHWQ0GnKTS+oNA/JKk0eeCP1
- 5WgUebNo+ptc7WA4rRizGCirnsGpqGtzfwfuh0kM2+76Hfxr3Tq2UGbbfWpDvGWZaSf9
- rB91m2ybTr1u3U1SyHQPVVgDpIaNpzsvJuYYjTsSOVgX/tWEEcFHaiGSA4BYIND/cFtB
- 6Q15VEacR71N5xxluotlch6AgaIFEWsw3IUR8M2VxOz0IlMyyG7nPlW3JggnFgQocHPo
- Bk5nE8kPZ6RpJUGacHx/Fy00EUdgLPXnKS6pZyZpC12qqbFTXKzcRmtS3/C4Vg6O741N
- t7Mw==
-X-Gm-Message-State: APjAAAWWpxxE0RMSxXdTpYdAs8p80CF5HggmGr8WpecNpN8K2dbhc8XY
- jv8p6hESzIqPPdaDLclFNuqFCZRI
-X-Google-Smtp-Source: APXvYqxWB7keanW1DSznM2ezqKdIqOHrmZrKY60h+5EpgMjGVQtcbr6PjnHGuBncEdFNaqqUhhxFdA==
-X-Received: by 2002:a62:1f92:: with SMTP id l18mr26976440pfj.180.1554204332170; 
- Tue, 02 Apr 2019 04:25:32 -0700 (PDT)
-Received: from bobo.local0.net ([61.69.158.3])
- by smtp.gmail.com with ESMTPSA id w3sm29611873pfn.179.2019.04.02.04.25.29
- (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
- Tue, 02 Apr 2019 04:25:31 -0700 (PDT)
-From: Nicholas Piggin <npiggin@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] powerpc/watchdog: Use hrtimers for per-CPU heartbeat
-Date: Tue,  2 Apr 2019 21:25:21 +1000
-Message-Id: <20190402112521.24888-1-npiggin@gmail.com>
-X-Mailer: git-send-email 2.20.1
+ by ozlabs.org (Postfix) with ESMTPS id 44YRj44KKvz9sTQ
+ for <linuxppc-dev@ozlabs.org>; Tue,  2 Apr 2019 22:25:44 +1100 (AEDT)
+Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
+ x32BMEDF173484
+ for <linuxppc-dev@ozlabs.org>; Tue, 2 Apr 2019 07:25:42 -0400
+Received: from e06smtp07.uk.ibm.com (e06smtp07.uk.ibm.com [195.75.94.103])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2rm6n3gs0h-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@ozlabs.org>; Tue, 02 Apr 2019 07:25:41 -0400
+Received: from localhost
+ by e06smtp07.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <mahesh@linux.vnet.ibm.com>;
+ Tue, 2 Apr 2019 12:23:13 +0100
+Received: from b06cxnps4074.portsmouth.uk.ibm.com (9.149.109.196)
+ by e06smtp07.uk.ibm.com (192.168.101.137) with IBM ESMTP SMTP Gateway:
+ Authorized Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Tue, 2 Apr 2019 12:23:10 +0100
+Received: from d06av21.portsmouth.uk.ibm.com (d06av21.portsmouth.uk.ibm.com
+ [9.149.105.232])
+ by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x32BN9dP52428974
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Tue, 2 Apr 2019 11:23:09 GMT
+Received: from d06av21.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 2A8AF52065;
+ Tue,  2 Apr 2019 11:23:09 +0000 (GMT)
+Received: from [192.168.0.24] (unknown [9.102.1.170])
+ by d06av21.portsmouth.uk.ibm.com (Postfix) with ESMTP id 5E9AE52054;
+ Tue,  2 Apr 2019 11:23:08 +0000 (GMT)
+Subject: [PATCH v2 3/3] powernv/mce: print additional information about mce
+ error.
+From: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
+To: linuxppc-dev <linuxppc-dev@ozlabs.org>
+Date: Tue, 02 Apr 2019 16:53:07 +0530
+In-Reply-To: <155420413881.2300.2285674976773307106.stgit@jupiter>
+References: <155420413881.2300.2285674976773307106.stgit@jupiter>
+User-Agent: StGit/unknown-version
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-TM-AS-GCONF: 00
+x-cbid: 19040211-0028-0000-0000-0000035C53DF
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 19040211-0029-0000-0000-0000241B57EA
+Message-Id: <155420417119.2300.17389035280436920339.stgit@jupiter>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
+ definitions=2019-04-02_04:, , signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1810050000 definitions=main-1904020079
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -88,100 +109,430 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Ravikumar Bangoria <ravi.bangoria@in.ibm.com>,
- Nicholas Piggin <npiggin@gmail.com>
+Cc: Paul Mackerras <paulus@samba.org>, Nicholas Piggin <npiggin@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Using a jiffies timer creates a dependency on the tick_do_timer_cpu
-incrementing jiffies. If that CPU has locked up and jiffies is not
-incrementing, the watchdog heartbeat timer for all CPUs stops and
-creates false positives and confusing warnings on local CPUs, and
-also causes the SMP detector to stop, so the root cause is never
-detected.
+From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
 
-Fix this by using hrtimer based timers for the watchdog heartbeat,
-like the generic kernel hardlockup detector.
+Print more information about mce error whether it is an hardware or
+software error.
 
-Reported-by: Ravikumar Bangoria <ravi.bangoria@in.ibm.com>
-Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+Some of the mce errors can be easily categorized as hardware or software
+errors e.g. UEs are due to hardware error, where as error triggered due to
+invalid usage of tlbie is a pure software bug. But not all the mce errors
+can be easily categorize into either software or hardware. There are errors
+like multihit errors which are usually result of a software bug, but in
+some rare cases a hardware failure can cause a multihit error. In past, we
+have seen case where after replacing faulty chip, multihit errors stopped
+occurring. Same with parity errors, which are usually due to faulty hardware
+but there are chances where multihit can also cause an parity error. Such
+errors are difficult to determine what really caused it. Hence this patch
+classifies mce errors into following four categorize:
+	1. Hardware error:
+		UE and Link timeout failure errors.
+	2. Probable hardware error (some chance of software cause)
+		SLB/ERAT/TLB Parity errors.
+	3. Software error
+		Invalid tlbie form.
+	4. Probable software error (some chance of hardware cause)
+		SLB/ERAT/TLB Multihit errors.
+
+Sample o/p:
+
+[ 1289.447571] MCE: CPU80: machine check (Warning) Guest SLB Multihit DAR: 000001001b6e0320 [Recovered]
+[ 1289.447615] MCE: CPU80: PID: 24765 Comm: qemu-system-ppc Guest NIP: [00007fffa309dc60]
+[ 1289.447634] MCE: CPU80: Probable Software error (some chance of hardware cause)
+
+Signed-off-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
 ---
- arch/powerpc/kernel/watchdog.c | 34 ++++++++++++++++++----------------
- 1 file changed, 18 insertions(+), 16 deletions(-)
+Change in v2:
+- Rephrase the wording for error class as suggested by Michael.
+---
+ arch/powerpc/include/asm/mce.h  |   10 ++++
+ arch/powerpc/kernel/mce.c       |   12 ++++
+ arch/powerpc/kernel/mce_power.c |  107 +++++++++++++++++++++++----------------
+ 3 files changed, 86 insertions(+), 43 deletions(-)
 
-diff --git a/arch/powerpc/kernel/watchdog.c b/arch/powerpc/kernel/watchdog.c
-index 3c6ab22a0c4e..59a0e5942f6b 100644
---- a/arch/powerpc/kernel/watchdog.c
-+++ b/arch/powerpc/kernel/watchdog.c
-@@ -77,7 +77,7 @@ static u64 wd_smp_panic_timeout_tb __read_mostly; /* panic other CPUs */
+diff --git a/arch/powerpc/include/asm/mce.h b/arch/powerpc/include/asm/mce.h
+index b1f4bf863c95..8741f4c21a1a 100644
+--- a/arch/powerpc/include/asm/mce.h
++++ b/arch/powerpc/include/asm/mce.h
+@@ -56,6 +56,14 @@ enum MCE_ErrorType {
+ 	MCE_ERROR_TYPE_LINK = 7,
+ };
  
- static u64 wd_timer_period_ms __read_mostly;  /* interval between heartbeat */
- 
--static DEFINE_PER_CPU(struct timer_list, wd_timer);
-+static DEFINE_PER_CPU(struct hrtimer, wd_hrtimer);
- static DEFINE_PER_CPU(u64, wd_timer_tb);
- 
- /* SMP checker bits */
-@@ -293,21 +293,21 @@ void soft_nmi_interrupt(struct pt_regs *regs)
- 	nmi_exit();
- }
- 
--static void wd_timer_reset(unsigned int cpu, struct timer_list *t)
--{
--	t->expires = jiffies + msecs_to_jiffies(wd_timer_period_ms);
--	if (wd_timer_period_ms > 1000)
--		t->expires = __round_jiffies_up(t->expires, cpu);
--	add_timer_on(t, cpu);
--}
--
--static void wd_timer_fn(struct timer_list *t)
-+static enum hrtimer_restart watchdog_timer_fn(struct hrtimer *hrtimer)
- {
- 	int cpu = smp_processor_id();
- 
-+	if (!(watchdog_enabled & NMI_WATCHDOG_ENABLED))
-+		return HRTIMER_NORESTART;
++enum MCE_ErrorClass {
++	MCE_ECLASS_UNKNOWN = 0,
++	MCE_ECLASS_HARDWARE,
++	MCE_ECLASS_HARD_INDETERMINATE,
++	MCE_ECLASS_SOFTWARE,
++	MCE_ECLASS_SOFT_INDETERMINATE,
++};
 +
-+	if (!cpumask_test_cpu(cpu, &watchdog_cpumask))
-+		return HRTIMER_NORESTART;
+ enum MCE_UeErrorType {
+ 	MCE_UE_ERROR_INDETERMINATE = 0,
+ 	MCE_UE_ERROR_IFETCH = 1,
+@@ -115,6 +123,7 @@ struct machine_check_event {
+ 	enum MCE_Severity	severity:8;
+ 	enum MCE_Initiator	initiator:8;
+ 	enum MCE_ErrorType	error_type:8;
++	enum MCE_ErrorClass	error_class:8;
+ 	enum MCE_Disposition	disposition:8;
+ 	bool			sync_error;
+ 	u16			cpu;
+@@ -195,6 +204,7 @@ struct mce_error_info {
+ 	} u;
+ 	enum MCE_Severity	severity:8;
+ 	enum MCE_Initiator	initiator:8;
++	enum MCE_ErrorClass	error_class:8;
+ 	bool			sync_error;
+ };
+ 
+diff --git a/arch/powerpc/kernel/mce.c b/arch/powerpc/kernel/mce.c
+index 0f961583bd51..1d978c3477a0 100644
+--- a/arch/powerpc/kernel/mce.c
++++ b/arch/powerpc/kernel/mce.c
+@@ -123,6 +123,7 @@ void save_mce_event(struct pt_regs *regs, long handled,
+ 	mce->initiator = mce_err->initiator;
+ 	mce->severity = mce_err->severity;
+ 	mce->sync_error = mce_err->sync_error;
++	mce->error_class = mce_err->error_class;
+ 
+ 	/*
+ 	 * Populate the mce error_type and type-specific error_type.
+@@ -361,6 +362,13 @@ void machine_check_print_event_info(struct machine_check_event *evt,
+ 		"Store (timeout)",
+ 		"Page table walk Load/Store (timeout)",
+ 	};
++	static const char *mc_error_class[] = {
++		"Unknown",
++		"Hardware error",
++		"Probable Hardware error (some chance of software cause)",
++		"Software error",
++		"Probable Software error (some chance of hardware cause)",
++	};
+ 
+ 	/* Print things out */
+ 	if (evt->version != MCE_V1) {
+@@ -478,6 +486,10 @@ void machine_check_print_event_info(struct machine_check_event *evt,
+ 		printk("%sMCE: CPU%d: NIP: [%016llx] %pS\n",
+ 			level, evt->cpu, evt->srr0, (void *)evt->srr0);
+ 	}
 +
- 	watchdog_timer_interrupt(cpu);
- 
--	wd_timer_reset(cpu, t);
-+	hrtimer_forward_now(hrtimer, ms_to_ktime(wd_timer_period_ms));
-+
-+	return HRTIMER_RESTART;
++	subtype = evt->error_class < ARRAY_SIZE(mc_error_class) ?
++		mc_error_class[evt->error_class] : "Unknown";
++	printk("%sMCE: CPU%d: %s\n", level, evt->cpu, subtype);
  }
+ EXPORT_SYMBOL_GPL(machine_check_print_event_info);
  
- void arch_touch_nmi_watchdog(void)
-@@ -325,19 +325,21 @@ EXPORT_SYMBOL(arch_touch_nmi_watchdog);
+diff --git a/arch/powerpc/kernel/mce_power.c b/arch/powerpc/kernel/mce_power.c
+index 606af87a4dda..3658af85e48a 100644
+--- a/arch/powerpc/kernel/mce_power.c
++++ b/arch/powerpc/kernel/mce_power.c
+@@ -131,6 +131,7 @@ struct mce_ierror_table {
+ 	bool nip_valid; /* nip is a valid indicator of faulting address */
+ 	unsigned int error_type;
+ 	unsigned int error_subtype;
++	unsigned int error_class;
+ 	unsigned int initiator;
+ 	unsigned int severity;
+ 	bool sync_error;
+@@ -138,99 +139,103 @@ struct mce_ierror_table {
  
- static void start_watchdog_timer_on(unsigned int cpu)
- {
--	struct timer_list *t = per_cpu_ptr(&wd_timer, cpu);
-+	struct hrtimer *hrtimer = this_cpu_ptr(&wd_hrtimer);
+ static const struct mce_ierror_table mce_p7_ierror_table[] = {
+ { 0x00000000001c0000, 0x0000000000040000, true,
+-  MCE_ERROR_TYPE_UE,  MCE_UE_ERROR_IFETCH,
++  MCE_ERROR_TYPE_UE,  MCE_UE_ERROR_IFETCH, MCE_ECLASS_HARDWARE,
+   MCE_INITIATOR_CPU,  MCE_SEV_SEVERE, true },
+ { 0x00000000001c0000, 0x0000000000080000, true,
+-  MCE_ERROR_TYPE_SLB, MCE_SLB_ERROR_PARITY,
++  MCE_ERROR_TYPE_SLB, MCE_SLB_ERROR_PARITY, MCE_ECLASS_HARD_INDETERMINATE,
+   MCE_INITIATOR_CPU,  MCE_SEV_SEVERE, true },
+ { 0x00000000001c0000, 0x00000000000c0000, true,
+-  MCE_ERROR_TYPE_SLB, MCE_SLB_ERROR_MULTIHIT,
++  MCE_ERROR_TYPE_SLB, MCE_SLB_ERROR_MULTIHIT, MCE_ECLASS_SOFT_INDETERMINATE,
+   MCE_INITIATOR_CPU,  MCE_SEV_WARNING, true },
+ { 0x00000000001c0000, 0x0000000000100000, true,
+   MCE_ERROR_TYPE_SLB, MCE_SLB_ERROR_INDETERMINATE, /* BOTH */
++  MCE_ECLASS_SOFT_INDETERMINATE,
+   MCE_INITIATOR_CPU,  MCE_SEV_WARNING, true },
+ { 0x00000000001c0000, 0x0000000000140000, true,
+-  MCE_ERROR_TYPE_TLB, MCE_TLB_ERROR_MULTIHIT,
++  MCE_ERROR_TYPE_TLB, MCE_TLB_ERROR_MULTIHIT, MCE_ECLASS_SOFT_INDETERMINATE,
+   MCE_INITIATOR_CPU,  MCE_SEV_WARNING, true },
+ { 0x00000000001c0000, 0x0000000000180000, true,
+-  MCE_ERROR_TYPE_UE,  MCE_UE_ERROR_PAGE_TABLE_WALK_IFETCH,
++  MCE_ERROR_TYPE_UE,  MCE_UE_ERROR_PAGE_TABLE_WALK_IFETCH, MCE_ECLASS_HARDWARE,
+   MCE_INITIATOR_CPU,  MCE_SEV_SEVERE, true },
+ { 0x00000000001c0000, 0x00000000001c0000, true,
+-  MCE_ERROR_TYPE_UE,  MCE_UE_ERROR_IFETCH,
++  MCE_ERROR_TYPE_UE,  MCE_UE_ERROR_IFETCH, MCE_ECLASS_HARDWARE,
+   MCE_INITIATOR_CPU,  MCE_SEV_SEVERE, true },
+ { 0, 0, 0, 0, 0, 0, 0 } };
  
- 	per_cpu(wd_timer_tb, cpu) = get_tb();
+ static const struct mce_ierror_table mce_p8_ierror_table[] = {
+ { 0x00000000081c0000, 0x0000000000040000, true,
+-  MCE_ERROR_TYPE_UE,  MCE_UE_ERROR_IFETCH,
++  MCE_ERROR_TYPE_UE,  MCE_UE_ERROR_IFETCH, MCE_ECLASS_HARDWARE,
+   MCE_INITIATOR_CPU,  MCE_SEV_SEVERE, true },
+ { 0x00000000081c0000, 0x0000000000080000, true,
+-  MCE_ERROR_TYPE_SLB, MCE_SLB_ERROR_PARITY,
++  MCE_ERROR_TYPE_SLB, MCE_SLB_ERROR_PARITY, MCE_ECLASS_HARD_INDETERMINATE,
+   MCE_INITIATOR_CPU,  MCE_SEV_SEVERE, true },
+ { 0x00000000081c0000, 0x00000000000c0000, true,
+-  MCE_ERROR_TYPE_SLB, MCE_SLB_ERROR_MULTIHIT,
++  MCE_ERROR_TYPE_SLB, MCE_SLB_ERROR_MULTIHIT, MCE_ECLASS_SOFT_INDETERMINATE,
+   MCE_INITIATOR_CPU,  MCE_SEV_WARNING, true },
+ { 0x00000000081c0000, 0x0000000000100000, true,
+-  MCE_ERROR_TYPE_ERAT,MCE_ERAT_ERROR_MULTIHIT,
++  MCE_ERROR_TYPE_ERAT, MCE_ERAT_ERROR_MULTIHIT, MCE_ECLASS_SOFT_INDETERMINATE,
+   MCE_INITIATOR_CPU,  MCE_SEV_WARNING, true },
+ { 0x00000000081c0000, 0x0000000000140000, true,
+-  MCE_ERROR_TYPE_TLB, MCE_TLB_ERROR_MULTIHIT,
++  MCE_ERROR_TYPE_TLB, MCE_TLB_ERROR_MULTIHIT, MCE_ECLASS_SOFT_INDETERMINATE,
+   MCE_INITIATOR_CPU,  MCE_SEV_WARNING, true },
+ { 0x00000000081c0000, 0x0000000000180000, true,
+   MCE_ERROR_TYPE_UE,  MCE_UE_ERROR_PAGE_TABLE_WALK_IFETCH,
++  MCE_ECLASS_HARDWARE,
+   MCE_INITIATOR_CPU,  MCE_SEV_SEVERE, true },
+ { 0x00000000081c0000, 0x00000000001c0000, true,
+-  MCE_ERROR_TYPE_UE,  MCE_UE_ERROR_IFETCH,
++  MCE_ERROR_TYPE_UE,  MCE_UE_ERROR_IFETCH, MCE_ECLASS_HARDWARE,
+   MCE_INITIATOR_CPU,  MCE_SEV_SEVERE, true },
+ { 0x00000000081c0000, 0x0000000008000000, true,
+-  MCE_ERROR_TYPE_LINK,MCE_LINK_ERROR_IFETCH_TIMEOUT,
++  MCE_ERROR_TYPE_LINK, MCE_LINK_ERROR_IFETCH_TIMEOUT, MCE_ECLASS_HARDWARE,
+   MCE_INITIATOR_CPU,  MCE_SEV_SEVERE, true },
+ { 0x00000000081c0000, 0x0000000008040000, true,
+   MCE_ERROR_TYPE_LINK,MCE_LINK_ERROR_PAGE_TABLE_WALK_IFETCH_TIMEOUT,
++  MCE_ECLASS_HARDWARE,
+   MCE_INITIATOR_CPU,  MCE_SEV_SEVERE, true },
+ { 0, 0, 0, 0, 0, 0, 0 } };
  
--	timer_setup(t, wd_timer_fn, TIMER_PINNED);
--	wd_timer_reset(cpu, t);
-+	hrtimer_init(hrtimer, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
-+	hrtimer->function = watchdog_timer_fn;
-+	hrtimer_start(hrtimer, ms_to_ktime(wd_timer_period_ms),
-+		      HRTIMER_MODE_REL_PINNED);
- }
+ static const struct mce_ierror_table mce_p9_ierror_table[] = {
+ { 0x00000000081c0000, 0x0000000000040000, true,
+-  MCE_ERROR_TYPE_UE,  MCE_UE_ERROR_IFETCH,
++  MCE_ERROR_TYPE_UE,  MCE_UE_ERROR_IFETCH, MCE_ECLASS_HARDWARE,
+   MCE_INITIATOR_CPU,  MCE_SEV_SEVERE, true },
+ { 0x00000000081c0000, 0x0000000000080000, true,
+-  MCE_ERROR_TYPE_SLB, MCE_SLB_ERROR_PARITY,
++  MCE_ERROR_TYPE_SLB, MCE_SLB_ERROR_PARITY, MCE_ECLASS_HARD_INDETERMINATE,
+   MCE_INITIATOR_CPU,  MCE_SEV_SEVERE, true },
+ { 0x00000000081c0000, 0x00000000000c0000, true,
+-  MCE_ERROR_TYPE_SLB, MCE_SLB_ERROR_MULTIHIT,
++  MCE_ERROR_TYPE_SLB, MCE_SLB_ERROR_MULTIHIT, MCE_ECLASS_SOFT_INDETERMINATE,
+   MCE_INITIATOR_CPU,  MCE_SEV_WARNING, true },
+ { 0x00000000081c0000, 0x0000000000100000, true,
+-  MCE_ERROR_TYPE_ERAT,MCE_ERAT_ERROR_MULTIHIT,
++  MCE_ERROR_TYPE_ERAT, MCE_ERAT_ERROR_MULTIHIT, MCE_ECLASS_SOFT_INDETERMINATE,
+   MCE_INITIATOR_CPU,  MCE_SEV_WARNING, true },
+ { 0x00000000081c0000, 0x0000000000140000, true,
+-  MCE_ERROR_TYPE_TLB, MCE_TLB_ERROR_MULTIHIT,
++  MCE_ERROR_TYPE_TLB, MCE_TLB_ERROR_MULTIHIT, MCE_ECLASS_SOFT_INDETERMINATE,
+   MCE_INITIATOR_CPU,  MCE_SEV_WARNING, true },
+ { 0x00000000081c0000, 0x0000000000180000, true,
+-  MCE_ERROR_TYPE_UE,  MCE_UE_ERROR_PAGE_TABLE_WALK_IFETCH,
++  MCE_ERROR_TYPE_UE,  MCE_UE_ERROR_PAGE_TABLE_WALK_IFETCH, MCE_ECLASS_HARDWARE,
+   MCE_INITIATOR_CPU,  MCE_SEV_SEVERE, true },
+ { 0x00000000081c0000, 0x00000000001c0000, true,
+-  MCE_ERROR_TYPE_RA,  MCE_RA_ERROR_IFETCH_FOREIGN,
++  MCE_ERROR_TYPE_RA,  MCE_RA_ERROR_IFETCH_FOREIGN, MCE_ECLASS_SOFTWARE,
+   MCE_INITIATOR_CPU,  MCE_SEV_SEVERE, true },
+ { 0x00000000081c0000, 0x0000000008000000, true,
+-  MCE_ERROR_TYPE_LINK,MCE_LINK_ERROR_IFETCH_TIMEOUT,
++  MCE_ERROR_TYPE_LINK, MCE_LINK_ERROR_IFETCH_TIMEOUT, MCE_ECLASS_HARDWARE,
+   MCE_INITIATOR_CPU,  MCE_SEV_SEVERE, true },
+ { 0x00000000081c0000, 0x0000000008040000, true,
+   MCE_ERROR_TYPE_LINK,MCE_LINK_ERROR_PAGE_TABLE_WALK_IFETCH_TIMEOUT,
++  MCE_ECLASS_HARDWARE,
+   MCE_INITIATOR_CPU,  MCE_SEV_SEVERE, true },
+ { 0x00000000081c0000, 0x00000000080c0000, true,
+-  MCE_ERROR_TYPE_RA,  MCE_RA_ERROR_IFETCH,
++  MCE_ERROR_TYPE_RA,  MCE_RA_ERROR_IFETCH, MCE_ECLASS_SOFTWARE,
+   MCE_INITIATOR_CPU,  MCE_SEV_SEVERE, true },
+ { 0x00000000081c0000, 0x0000000008100000, true,
+-  MCE_ERROR_TYPE_RA,  MCE_RA_ERROR_PAGE_TABLE_WALK_IFETCH,
++  MCE_ERROR_TYPE_RA,  MCE_RA_ERROR_PAGE_TABLE_WALK_IFETCH, MCE_ECLASS_SOFTWARE,
+   MCE_INITIATOR_CPU,  MCE_SEV_SEVERE, true },
+ { 0x00000000081c0000, 0x0000000008140000, false,
+-  MCE_ERROR_TYPE_RA,  MCE_RA_ERROR_STORE,
++  MCE_ERROR_TYPE_RA,  MCE_RA_ERROR_STORE, MCE_ECLASS_HARDWARE,
+   MCE_INITIATOR_CPU,  MCE_SEV_FATAL, false }, /* ASYNC is fatal */
+ { 0x00000000081c0000, 0x0000000008180000, false,
+   MCE_ERROR_TYPE_LINK,MCE_LINK_ERROR_STORE_TIMEOUT,
+   MCE_INITIATOR_CPU,  MCE_SEV_FATAL, false }, /* ASYNC is fatal */
+-{ 0x00000000081c0000, 0x00000000081c0000, true,
++{ 0x00000000081c0000, 0x00000000081c0000, true, MCE_ECLASS_HARDWARE,
+   MCE_ERROR_TYPE_RA,  MCE_RA_ERROR_PAGE_TABLE_WALK_IFETCH_FOREIGN,
+   MCE_INITIATOR_CPU,  MCE_SEV_SEVERE, true },
+ { 0, 0, 0, 0, 0, 0, 0 } };
+@@ -240,6 +245,7 @@ struct mce_derror_table {
+ 	bool dar_valid; /* dar is a valid indicator of faulting address */
+ 	unsigned int error_type;
+ 	unsigned int error_subtype;
++	unsigned int error_class;
+ 	unsigned int initiator;
+ 	unsigned int severity;
+ 	bool sync_error;
+@@ -247,97 +253,108 @@ struct mce_derror_table {
  
- static void stop_watchdog_timer_on(unsigned int cpu)
- {
--	struct timer_list *t = per_cpu_ptr(&wd_timer, cpu);
-+	struct hrtimer *hrtimer = this_cpu_ptr(&wd_hrtimer);
+ static const struct mce_derror_table mce_p7_derror_table[] = {
+ { 0x00008000, false,
+-  MCE_ERROR_TYPE_UE,   MCE_UE_ERROR_LOAD_STORE,
++  MCE_ERROR_TYPE_UE,   MCE_UE_ERROR_LOAD_STORE, MCE_ECLASS_HARDWARE,
+   MCE_INITIATOR_CPU,   MCE_SEV_SEVERE, true },
+ { 0x00004000, true,
+   MCE_ERROR_TYPE_UE,   MCE_UE_ERROR_PAGE_TABLE_WALK_LOAD_STORE,
++  MCE_ECLASS_HARDWARE,
+   MCE_INITIATOR_CPU,   MCE_SEV_SEVERE, true },
+ { 0x00000800, true,
+-  MCE_ERROR_TYPE_ERAT, MCE_ERAT_ERROR_MULTIHIT,
++  MCE_ERROR_TYPE_ERAT, MCE_ERAT_ERROR_MULTIHIT, MCE_ECLASS_SOFT_INDETERMINATE,
+   MCE_INITIATOR_CPU,   MCE_SEV_WARNING, true },
+ { 0x00000400, true,
+-  MCE_ERROR_TYPE_TLB,  MCE_TLB_ERROR_MULTIHIT,
++  MCE_ERROR_TYPE_TLB,  MCE_TLB_ERROR_MULTIHIT, MCE_ECLASS_SOFT_INDETERMINATE,
+   MCE_INITIATOR_CPU,   MCE_SEV_WARNING, true },
+ { 0x00000080, true,
+-  MCE_ERROR_TYPE_SLB,  MCE_SLB_ERROR_MULTIHIT,	/* Before PARITY */
++  MCE_ERROR_TYPE_SLB,  MCE_SLB_ERROR_MULTIHIT, MCE_ECLASS_SOFT_INDETERMINATE,
+   MCE_INITIATOR_CPU,   MCE_SEV_WARNING, true },
+ { 0x00000100, true,
+-  MCE_ERROR_TYPE_SLB,  MCE_SLB_ERROR_PARITY,
++  MCE_ERROR_TYPE_SLB,  MCE_SLB_ERROR_PARITY, MCE_ECLASS_HARD_INDETERMINATE,
+   MCE_INITIATOR_CPU,   MCE_SEV_SEVERE, true },
+ { 0x00000040, true,
+   MCE_ERROR_TYPE_SLB,  MCE_SLB_ERROR_INDETERMINATE, /* BOTH */
++  MCE_ECLASS_HARD_INDETERMINATE,
+   MCE_INITIATOR_CPU,   MCE_SEV_WARNING, true },
+ { 0, false, 0, 0, 0, 0, 0 } };
  
--	del_timer_sync(t);
-+	hrtimer_cancel(hrtimer);
- }
+ static const struct mce_derror_table mce_p8_derror_table[] = {
+ { 0x00008000, false,
+-  MCE_ERROR_TYPE_UE,   MCE_UE_ERROR_LOAD_STORE,
++  MCE_ERROR_TYPE_UE,   MCE_UE_ERROR_LOAD_STORE, MCE_ECLASS_HARDWARE,
+   MCE_INITIATOR_CPU,   MCE_SEV_SEVERE, true },
+ { 0x00004000, true,
+   MCE_ERROR_TYPE_UE,   MCE_UE_ERROR_PAGE_TABLE_WALK_LOAD_STORE,
++  MCE_ECLASS_HARDWARE,
+   MCE_INITIATOR_CPU,   MCE_SEV_SEVERE, true },
+ { 0x00002000, true,
+-  MCE_ERROR_TYPE_LINK, MCE_LINK_ERROR_LOAD_TIMEOUT,
++  MCE_ERROR_TYPE_LINK, MCE_LINK_ERROR_LOAD_TIMEOUT, MCE_ECLASS_HARDWARE,
+   MCE_INITIATOR_CPU,   MCE_SEV_SEVERE, true },
+ { 0x00001000, true,
+   MCE_ERROR_TYPE_LINK, MCE_LINK_ERROR_PAGE_TABLE_WALK_LOAD_STORE_TIMEOUT,
++  MCE_ECLASS_HARDWARE,
+   MCE_INITIATOR_CPU,   MCE_SEV_SEVERE, true },
+ { 0x00000800, true,
+-  MCE_ERROR_TYPE_ERAT, MCE_ERAT_ERROR_MULTIHIT,
++  MCE_ERROR_TYPE_ERAT, MCE_ERAT_ERROR_MULTIHIT, MCE_ECLASS_SOFT_INDETERMINATE,
+   MCE_INITIATOR_CPU,   MCE_SEV_WARNING, true },
+ { 0x00000400, true,
+-  MCE_ERROR_TYPE_TLB,  MCE_TLB_ERROR_MULTIHIT,
++  MCE_ERROR_TYPE_TLB,  MCE_TLB_ERROR_MULTIHIT, MCE_ECLASS_SOFT_INDETERMINATE,
+   MCE_INITIATOR_CPU,   MCE_SEV_WARNING, true },
+ { 0x00000200, true,
+   MCE_ERROR_TYPE_ERAT, MCE_ERAT_ERROR_MULTIHIT, /* SECONDARY ERAT */
++  MCE_ECLASS_SOFT_INDETERMINATE,
+   MCE_INITIATOR_CPU,   MCE_SEV_WARNING, true },
+ { 0x00000080, true,
+   MCE_ERROR_TYPE_SLB,  MCE_SLB_ERROR_MULTIHIT,	/* Before PARITY */
++  MCE_ECLASS_SOFT_INDETERMINATE,
+   MCE_INITIATOR_CPU,   MCE_SEV_WARNING, true },
+ { 0x00000100, true,
+-  MCE_ERROR_TYPE_SLB,  MCE_SLB_ERROR_PARITY,
++  MCE_ERROR_TYPE_SLB,  MCE_SLB_ERROR_PARITY, MCE_ECLASS_HARD_INDETERMINATE,
+   MCE_INITIATOR_CPU,   MCE_SEV_SEVERE, true },
+ { 0, false, 0, 0, 0, 0, 0 } };
  
- static int start_wd_on_cpu(unsigned int cpu)
--- 
-2.20.1
+ static const struct mce_derror_table mce_p9_derror_table[] = {
+ { 0x00008000, false,
+-  MCE_ERROR_TYPE_UE,   MCE_UE_ERROR_LOAD_STORE,
++  MCE_ERROR_TYPE_UE,   MCE_UE_ERROR_LOAD_STORE, MCE_ECLASS_HARDWARE,
+   MCE_INITIATOR_CPU,   MCE_SEV_SEVERE, true },
+ { 0x00004000, true,
+   MCE_ERROR_TYPE_UE,   MCE_UE_ERROR_PAGE_TABLE_WALK_LOAD_STORE,
++  MCE_ECLASS_HARDWARE,
+   MCE_INITIATOR_CPU,   MCE_SEV_SEVERE, true },
+ { 0x00002000, true,
+-  MCE_ERROR_TYPE_LINK, MCE_LINK_ERROR_LOAD_TIMEOUT,
++  MCE_ERROR_TYPE_LINK, MCE_LINK_ERROR_LOAD_TIMEOUT, MCE_ECLASS_HARDWARE,
+   MCE_INITIATOR_CPU,   MCE_SEV_SEVERE, true },
+ { 0x00001000, true,
+   MCE_ERROR_TYPE_LINK, MCE_LINK_ERROR_PAGE_TABLE_WALK_LOAD_STORE_TIMEOUT,
++  MCE_ECLASS_HARDWARE,
+   MCE_INITIATOR_CPU,   MCE_SEV_SEVERE, true },
+ { 0x00000800, true,
+-  MCE_ERROR_TYPE_ERAT, MCE_ERAT_ERROR_MULTIHIT,
++  MCE_ERROR_TYPE_ERAT, MCE_ERAT_ERROR_MULTIHIT, MCE_ECLASS_SOFT_INDETERMINATE,
+   MCE_INITIATOR_CPU,   MCE_SEV_WARNING, true },
+ { 0x00000400, true,
+-  MCE_ERROR_TYPE_TLB,  MCE_TLB_ERROR_MULTIHIT,
++  MCE_ERROR_TYPE_TLB,  MCE_TLB_ERROR_MULTIHIT, MCE_ECLASS_SOFT_INDETERMINATE,
+   MCE_INITIATOR_CPU,   MCE_SEV_WARNING, true },
+ { 0x00000200, false,
+-  MCE_ERROR_TYPE_USER, MCE_USER_ERROR_TLBIE,
++  MCE_ERROR_TYPE_USER, MCE_USER_ERROR_TLBIE, MCE_ECLASS_SOFTWARE,
+   MCE_INITIATOR_CPU,   MCE_SEV_WARNING, true },
+ { 0x00000080, true,
+   MCE_ERROR_TYPE_SLB,  MCE_SLB_ERROR_MULTIHIT,	/* Before PARITY */
++  MCE_ECLASS_SOFT_INDETERMINATE,
+   MCE_INITIATOR_CPU,   MCE_SEV_WARNING, true },
+ { 0x00000100, true,
+-  MCE_ERROR_TYPE_SLB,  MCE_SLB_ERROR_PARITY,
++  MCE_ERROR_TYPE_SLB,  MCE_SLB_ERROR_PARITY, MCE_ECLASS_HARD_INDETERMINATE,
+   MCE_INITIATOR_CPU,   MCE_SEV_SEVERE, true },
+ { 0x00000040, true,
+-  MCE_ERROR_TYPE_RA,   MCE_RA_ERROR_LOAD,
++  MCE_ERROR_TYPE_RA,   MCE_RA_ERROR_LOAD, MCE_ECLASS_HARDWARE,
+   MCE_INITIATOR_CPU,   MCE_SEV_SEVERE, true },
+ { 0x00000020, false,
+   MCE_ERROR_TYPE_RA,   MCE_RA_ERROR_PAGE_TABLE_WALK_LOAD_STORE,
++  MCE_ECLASS_HARDWARE,
+   MCE_INITIATOR_CPU,   MCE_SEV_SEVERE, true },
+ { 0x00000010, false,
+   MCE_ERROR_TYPE_RA,   MCE_RA_ERROR_PAGE_TABLE_WALK_LOAD_STORE_FOREIGN,
++  MCE_ECLASS_HARDWARE,
+   MCE_INITIATOR_CPU,   MCE_SEV_SEVERE, true },
+ { 0x00000008, false,
+-  MCE_ERROR_TYPE_RA,   MCE_RA_ERROR_LOAD_STORE_FOREIGN,
++  MCE_ERROR_TYPE_RA,   MCE_RA_ERROR_LOAD_STORE_FOREIGN, MCE_ECLASS_HARDWARE,
+   MCE_INITIATOR_CPU,   MCE_SEV_SEVERE, true },
+ { 0, false, 0, 0, 0, 0, 0 } };
+ 
+@@ -406,6 +423,7 @@ static int mce_handle_ierror(struct pt_regs *regs,
+ 
+ 		/* now fill in mce_error_info */
+ 		mce_err->error_type = table[i].error_type;
++		mce_err->error_class = table[i].error_class;
+ 		switch (table[i].error_type) {
+ 		case MCE_ERROR_TYPE_UE:
+ 			mce_err->u.ue_error_type = table[i].error_subtype;
+@@ -451,6 +469,7 @@ static int mce_handle_ierror(struct pt_regs *regs,
+ 	}
+ 
+ 	mce_err->error_type = MCE_ERROR_TYPE_UNKNOWN;
++	mce_err->error_class = MCE_ECLASS_UNKNOWN;
+ 	mce_err->severity = MCE_SEV_SEVERE;
+ 	mce_err->initiator = MCE_INITIATOR_CPU;
+ 	mce_err->sync_error = true;
+@@ -500,6 +519,7 @@ static int mce_handle_derror(struct pt_regs *regs,
+ 
+ 		/* now fill in mce_error_info */
+ 		mce_err->error_type = table[i].error_type;
++		mce_err->error_class = table[i].error_class;
+ 		switch (table[i].error_type) {
+ 		case MCE_ERROR_TYPE_UE:
+ 			mce_err->u.ue_error_type = table[i].error_subtype;
+@@ -544,6 +564,7 @@ static int mce_handle_derror(struct pt_regs *regs,
+ 		return handled;
+ 
+ 	mce_err->error_type = MCE_ERROR_TYPE_UNKNOWN;
++	mce_err->error_class = MCE_ECLASS_UNKNOWN;
+ 	mce_err->severity = MCE_SEV_SEVERE;
+ 	mce_err->initiator = MCE_INITIATOR_CPU;
+ 	mce_err->sync_error = true;
 
