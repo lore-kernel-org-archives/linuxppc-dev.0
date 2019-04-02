@@ -2,71 +2,60 @@ Return-Path: <SRS0=xrHL=SE=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-4.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7CB4EC10F0B
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Apr 2019 13:45:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 75043C4360F
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Apr 2019 13:48:21 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 02F0F2133D
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Apr 2019 13:45:53 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=xenosoft.de header.i=@xenosoft.de header.b="bCzj/iy4"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 02F0F2133D
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=xenosoft.de
+	by mail.kernel.org (Postfix) with ESMTPS id F274821473
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Apr 2019 13:48:20 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org F274821473
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=decadent.org.uk
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44YVpl47QqzDqNy
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Apr 2019 00:45:51 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44YVsZ74knzDqN5
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Apr 2019 00:48:18 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (helo) smtp.helo=mo6-p00-ob.smtp.rzone.de
- (client-ip=2a01:238:20a:202:5300::3; helo=mo6-p00-ob.smtp.rzone.de;
- envelope-from=chzigotzky@xenosoft.de; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=xenosoft.de
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=xenosoft.de header.i=@xenosoft.de header.b="bCzj/iy4"; 
- dkim-atps=neutral
-Received: from mo6-p00-ob.smtp.rzone.de (mo6-p00-ob.smtp.rzone.de
- [IPv6:2a01:238:20a:202:5300::3])
+ spf=pass (mailfrom) smtp.mailfrom=decadent.org.uk
+ (client-ip=88.96.1.126; helo=shadbolt.e.decadent.org.uk;
+ envelope-from=ben@decadent.org.uk; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=decadent.org.uk
+Received: from shadbolt.e.decadent.org.uk (shadbolt.e.decadent.org.uk
+ [88.96.1.126])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44YVd027qSzDqKv
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Apr 2019 00:37:20 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; t=1554212231;
- s=strato-dkim-0002; d=xenosoft.de;
- h=Date:Message-ID:Subject:From:To:X-RZG-CLASS-ID:X-RZG-AUTH:From:
- Subject:Sender;
- bh=OSaMoaorNBzz+ZOfBefeB5jg9FTzakG5/mv1SUv3Ksg=;
- b=bCzj/iy4xeYWVjdudfU7J87cGJN8HYRVy6YfUoN6wI3yV5DRZQEcV3xte/CfbcLOBJ
- e4kziItfjQoS8tjU6n9iujlpd3wz3feXpqNu7P+G5Bo6ZFe1APYWdG6GOFX7nm3YG3zG
- e8tJNqOU9nXidzipNX0CBDYPNqgVZO/q2fa26tf5PfKBXChVd14JDa06FCHsUboDFbln
- lC2CLuTx0pLt/D/t5Vl+I4imL7ntx7+FubdQFOoK0cDR1bgeipfsUD3athXBc2ElT3O+
- ILs36w7/e5q6DnSSWajMsE2HP5lkF6AEU+FglizSD0POEwr/qq4KVpDLiqao8T+PLyH1
- AExw==
-X-RZG-AUTH: ":L2QefEenb+UdBJSdRCXu93KJ1bmSGnhMdmOod1DhGM4l4Hio94KKxRySfLxnHfJ+Dkjp5G5MdirQj0WG7CkHjmyKKK/rcXR1ZP82+wn/3rw0jQ=="
-X-RZG-CLASS-ID: mo00
-Received: from [IPv6:2a02:8109:a400:162c:80df:9973:4a42:68b5]
- by smtp.strato.de (RZmta 44.18 AUTH) with ESMTPSA id k00e1ev32Db9pzv
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (curve secp521r1 with
- 521 ECDH bits, eq. 15360 bits RSA))
- (Client did not present a certificate)
- for <linuxppc-dev@lists.ozlabs.org>;
- Tue, 2 Apr 2019 15:37:09 +0200 (CEST)
-To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-From: Christian Zigotzky <chzigotzky@xenosoft.de>
-Subject: VLC doesn't play videos anymore since the PowerPC fixes 5.1-3
-Message-ID: <be5cd01d-30d0-8e06-fc63-b17d6da4a098@xenosoft.de>
-Date: Tue, 2 Apr 2019 15:37:09 +0200
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
- Thunderbird/60.6.1
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44YVhL0Hs3zDqNZ
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Apr 2019 00:40:17 +1100 (AEDT)
+Received: from [167.98.27.226] (helo=deadeye)
+ by shadbolt.decadent.org.uk with esmtps
+ (TLS1.2:ECDHE_RSA_AES_256_GCM_SHA384:256) (Exim 4.89)
+ (envelope-from <ben@decadent.org.uk>)
+ id 1hBJe4-0002p6-4f; Tue, 02 Apr 2019 14:40:08 +0100
+Received: from ben by deadeye with local (Exim 4.92)
+ (envelope-from <ben@decadent.org.uk>)
+ id 1hBJdy-0004xt-2s; Tue, 02 Apr 2019 14:40:02 +0100
+Content-Type: text/plain; charset="UTF-8"
+Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-Content-Language: de-DE
+MIME-Version: 1.0
+From: Ben Hutchings <ben@decadent.org.uk>
+To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
+Date: Tue, 02 Apr 2019 14:38:28 +0100
+Message-ID: <lsq.1554212308.904763800@decadent.org.uk>
+X-Mailer: LinuxStableQueue (scripts by bwh)
+X-Patchwork-Hint: ignore
+Subject: [PATCH 3.16 92/99] block/swim3: Fix -EBUSY error when re-opening
+ device after unmount
+In-Reply-To: <lsq.1554212307.17110877@decadent.org.uk>
+X-SA-Exim-Connect-IP: 167.98.27.226
+X-SA-Exim-Mail-From: ben@decadent.org.uk
+X-SA-Exim-Scanned: No (on shadbolt.decadent.org.uk);
+ SAEximRunCond expanded to false
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -78,65 +67,49 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: Jens Axboe <axboe@kernel.dk>, akpm@linux-foundation.org,
+ linuxppc-dev@lists.ozlabs.org, Denis Kirjanov <kda@linux-powerpc.org>,
+ Finn Thain <fthain@telegraphics.com.au>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi All,
+3.16.65-rc1 review patch.  If anyone has any objections, please let me know.
 
-I figured out, that the VLC player doesn't play videos anymore since the 
-PowerPC fixes 5.1-3 [1]. VLC plays videos with the RC1 of kernel 5.1 
-without any problems.
+------------------
 
-VLC error messages:
+From: Finn Thain <fthain@telegraphics.com.au>
 
-[100ea580] ts demux warning: first packet for pid=1104 cc=0xe
-[100ea580] ts demux warning: first packet for pid=1102 cc=0x4
-[100ea580] ts demux warning: first packet for pid=1101 cc=0x8
-[10109218] core decoder warning: can't get output picture
-[10109218] avcodec decoder warning: disabling direct rendering
-[10109218] core decoder warning: can't get output picture
+commit 296dcc40f2f2e402facf7cd26cf3f2c8f4b17d47 upstream.
 
-----
-dmesg: https://bugs.freedesktop.org/attachment.cgi?id=143840
+When the block device is opened with FMODE_EXCL, ref_count is set to -1.
+This value doesn't get reset when the device is closed which means the
+device cannot be opened again. Fix this by checking for refcount <= 0
+in the release method.
 
-I created a bug report because of the VLC issue with the kernel 5.1-rc2 
-and higher today [2]. I got an answer from Michel Dänzer today.
+Reported-and-tested-by: Stan Johnson <userm57@yahoo.com>
+Fixes: 1da177e4c3f4 ("Linux-2.6.12-rc2")
+Cc: linuxppc-dev@lists.ozlabs.org
+Signed-off-by: Finn Thain <fthain@telegraphics.com.au>
+Signed-off-by: Jens Axboe <axboe@kernel.dk>
+Signed-off-by: Ben Hutchings <ben@decadent.org.uk>
+---
+ drivers/block/swim3.c | 6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
 
-Quote Michel Dänzer:
+--- a/drivers/block/swim3.c
++++ b/drivers/block/swim3.c
+@@ -1027,7 +1027,11 @@ static void floppy_release(struct gendis
+ 	struct swim3 __iomem *sw = fs->swim3;
+ 
+ 	mutex_lock(&swim3_mutex);
+-	if (fs->ref_count > 0 && --fs->ref_count == 0) {
++	if (fs->ref_count > 0)
++		--fs->ref_count;
++	else if (fs->ref_count == -1)
++		fs->ref_count = 0;
++	if (fs->ref_count == 0) {
+ 		swim3_action(fs, MOTOR_OFF);
+ 		out_8(&sw->control_bic, 0xff);
+ 		swim3_select(fs, RELAX);
 
-None of them directly affect the radeon driver.
-
-It's quite likely that this is a PPC specific issue. Your best bet is 
-bisecting between rc1 and rc2.
-
-I haven't seen any other similar reports.
-
-----
-
-I was able to remove the PowerPC fixes 5.1-4 and 5.1-3 with the 
-following commands:
-
-git revert 6536c5f2c8cf79db0d37e79afcdb227dc854509c -m 1
-
-Output: [master 4b4a8cf] Revert "Merge tag 'powerpc-5.1-4' of 
-git://git.kernel.org/pub/scm/linux/kern ... erpc/linux"
-
-git revert a5ed1e96cafde5ba48638f486bfca0685dc6ddc9 -m 1
-
-Output: [master 0c70b7b] Revert "Merge tag 'powerpc-5.1-3' of 
-git://git.kernel.org/pub/scm/linux/kern ... erpc/linux"
-
-The removing of the PowerPC fixes 5.1-4 and 5.1-3 has solved the VLC issue.
-
-The problematic code is definitely in the PowerPC fixes 5.1-3 [1].
-
-Please check the PowerPC fixes 5.1-3 [1].
-
-Thanks,
-
-Christian
-
-[1] 
-https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?h=v5.1-rc2&id=a5ed1e96cafde5ba48638f486bfca0685dc6ddc9
-[2] https://bugs.freedesktop.org/show_bug.cgi?id=110304
