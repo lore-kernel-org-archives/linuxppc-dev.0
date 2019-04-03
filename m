@@ -2,93 +2,62 @@ Return-Path: <SRS0=3bX/=SF=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT
+X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
 	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 44472C4360F
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Apr 2019 06:07:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6458BC4360F
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Apr 2019 07:13:48 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6B9972084B
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Apr 2019 06:07:13 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6B9972084B
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id A63A521473
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Apr 2019 07:13:46 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A63A521473
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=debian.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44Ywb272nYzDqLd
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Apr 2019 17:07:10 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44Yy3q4l6YzDqQG
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Apr 2019 18:13:43 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
- (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=aneesh.kumar@linux.ibm.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=gmail.com
+ (client-ip=209.85.167.195; helo=mail-oi1-f195.google.com;
+ envelope-from=mathieu.malaterre@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+ dmarc=none (p=none dis=none) header.from=debian.org
+Received: from mail-oi1-f195.google.com (mail-oi1-f195.google.com
+ [209.85.167.195])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44YwY61P3kzDqQy
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Apr 2019 17:05:30 +1100 (AEDT)
-Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x335xo6K098590
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 3 Apr 2019 02:05:27 -0400
-Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2rmn9m4g8h-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 03 Apr 2019 02:05:27 -0400
-Received: from localhost
- by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.ibm.com>;
- Wed, 3 Apr 2019 07:05:26 +0100
-Received: from b03cxnp07029.gho.boulder.ibm.com (9.17.130.16)
- by e35.co.us.ibm.com (192.168.1.135) with IBM ESMTP SMTP Gateway: Authorized
- Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Wed, 3 Apr 2019 07:05:23 +0100
-Received: from b03ledav004.gho.boulder.ibm.com
- (b03ledav004.gho.boulder.ibm.com [9.17.130.235])
- by b03cxnp07029.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x3365MCu16646286
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Wed, 3 Apr 2019 06:05:22 GMT
-Received: from b03ledav004.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 5A93F78066;
- Wed,  3 Apr 2019 06:05:22 +0000 (GMT)
-Received: from b03ledav004.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id C419678060;
- Wed,  3 Apr 2019 06:05:19 +0000 (GMT)
-Received: from skywalker.ibmuc.com (unknown [9.199.57.68])
- by b03ledav004.gho.boulder.ibm.com (Postfix) with ESMTP;
- Wed,  3 Apr 2019 06:05:19 +0000 (GMT)
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
-To: npiggin@gmail.com, benh@kernel.crashing.org, paulus@samba.org,
- mpe@ellerman.id.au, Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH] powerpc/mm: Fix build error with FLATMEM book3s64 config
-Date: Wed,  3 Apr 2019 11:35:14 +0530
-X-Mailer: git-send-email 2.20.1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44Yy2F1K3bzDq7N
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Apr 2019 18:12:18 +1100 (AEDT)
+Received: by mail-oi1-f195.google.com with SMTP id v10so12735405oib.1
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 03 Apr 2019 00:12:18 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+ :message-id:subject:to:cc;
+ bh=af+iDysYGFwrA9DVKGh8trI5d2JTogfnCaNqTuD0aRk=;
+ b=nHzOBbMjzl/JfXfEuVviu1LrZaLHG2tWw/Wnr08X+eT/QhJbkzynzp9mXw8EfH5Rx4
+ g8v7005vayvhYgkYkifQ2RPzDrN7YZBI5ClKx+chJAkjGHN8ZtIcQ28vhB/95+mFas/g
+ XM/RJQ88WKDIF9ihKo58l2JSmpAAbvjIhYDjgr7bzi+6e7KN7S1ULaFqo6V5FlWHtTY6
+ UIgJMKPpfg8mmWBZOhlHtjUf3ZFe8NyQL0gGgDgYx7PL1T1wt2Mmdl9bqwvrn78LF88i
+ BW6QkvKGTZjim29HgROhJriYsYnYR21UH7DnGkrxo+VZfzBUQcbFls532S/1iG54yCli
+ 4S1Q==
+X-Gm-Message-State: APjAAAVjq0bOpIUCC908Jwc9ZY/zs/F0/AGeDJ2bq4if4XSBQ2AOnHDe
+ QRqGehBYSp9x/OPSCC8ws67Is3y0iNvhBaWIpkb50nRk
+X-Google-Smtp-Source: APXvYqyeoGClQERYVgaUm7UOmnKDldu0ZXylF0Ps1KwwfOoIpswLjjWI/elMx4ymkNffUMA8ahnTXqa3dymadtT9UaY=
+X-Received: by 2002:aca:72c6:: with SMTP id p189mr721538oic.107.1554275536598; 
+ Wed, 03 Apr 2019 00:12:16 -0700 (PDT)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-x-cbid: 19040306-0012-0000-0000-00001721BCE8
-X-IBM-SpamModules-Scores: 
-X-IBM-SpamModules-Versions: BY=3.00010865; HX=3.00000242; KW=3.00000007;
- PH=3.00000004; SC=3.00000284; SDB=6.01183593; UDB=6.00619665; IPR=6.00964344; 
- MB=3.00026271; MTD=3.00000008; XFM=3.00000015; UTC=2019-04-03 06:05:26
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19040306-0013-0000-0000-000056BBB823
-Message-Id: <20190403060514.26119-1-aneesh.kumar@linux.ibm.com>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2019-04-03_03:, , signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=690 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1810050000 definitions=main-1904030040
+References: <20190403004926.6702-1-joel@jms.id.au>
+In-Reply-To: <20190403004926.6702-1-joel@jms.id.au>
+From: Mathieu Malaterre <malat@debian.org>
+Date: Wed, 3 Apr 2019 09:12:04 +0200
+Message-ID: <CA+7wUsymTA6XO21KRdwD9Pouv1e8w6VUKSA2wbaPHN7Bz215rw@mail.gmail.com>
+Subject: Re: [PATCH] powerpc: config: skiroot: Add (back) MLX5 ethernet support
+To: Joel Stanley <joel@jms.id.au>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -100,95 +69,45 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
- linuxppc-dev@lists.ozlabs.org
+Cc: Carol L Soto <clsoto@us.ibm.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Stewart Smith <stewart@linux.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The current value of MAX_PHYSMEM_BITS cannot work with 32 bit configs.
-We used to have MAX_PHYSMEM_BITS not defined without SPARSEMEM and 32
-bit configs never expected a value to be set for MAX_PHYSMEM_BITS.
+On Wed, Apr 3, 2019 at 2:51 AM Joel Stanley <joel@jms.id.au> wrote:
+>
+> It turns out that some defconfig changes and kernel config option
+> changes meant we accidentally dropped Ethernet support for Mellanox CLX5
+> cards.
+>
+> Reported-by: Carol L Soto <clsoto@us.ibm.com>
+> Suggested-by: Carol L Soto <clsoto@us.ibm.com>
+> Signed-off-by: Stewart Smith <stewart@linux.ibm.com>
+> Signed-off-by: Joel Stanley <joel@jms.id.au>
 
-Dependent code such as zsmalloc derived the right values based on other
-fields. Instead of finding a value that works with different configs,
-use new values only for book3s_64. For 64 bit booke, use the definition
-of MAX_PHYSMEM_BITS as per commit a7df61a0e2b6 ("[PATCH] ppc64: Increase sparsemem defaults")
-That change was done in 2005 and hopefully will work with book3e 64.
+Fixes: cbc39809a398 ("powerpc/configs: Update skiroot defconfig")
 
-Fixes: 8bc086899816 ("powerpc/mm: Only define MAX_PHYSMEM_BITS in SPARSEMEM configurations")
-Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
----
- arch/powerpc/include/asm/book3s/64/mmu.h | 15 +++++++++++++++
- arch/powerpc/include/asm/mmu.h           | 15 ---------------
- arch/powerpc/include/asm/nohash/64/mmu.h |  2 ++
- 3 files changed, 17 insertions(+), 15 deletions(-)
+?
 
-diff --git a/arch/powerpc/include/asm/book3s/64/mmu.h b/arch/powerpc/include/asm/book3s/64/mmu.h
-index 1ceee000c18d..a809bdd77322 100644
---- a/arch/powerpc/include/asm/book3s/64/mmu.h
-+++ b/arch/powerpc/include/asm/book3s/64/mmu.h
-@@ -35,6 +35,21 @@ typedef pte_t *pgtable_t;
- 
- #endif /* __ASSEMBLY__ */
- 
-+/*
-+ * If we store section details in page->flags we can't increase the MAX_PHYSMEM_BITS
-+ * if we increase SECTIONS_WIDTH we will not store node details in page->flags and
-+ * page_to_nid does a page->section->node lookup
-+ * Hence only increase for VMEMMAP. Further depending on SPARSEMEM_EXTREME reduce
-+ * memory requirements with large number of sections.
-+ * 51 bits is the max physical real address on POWER9
-+ */
-+#if defined(CONFIG_SPARSEMEM_VMEMMAP) && defined(CONFIG_SPARSEMEM_EXTREME) &&  \
-+	defined(CONFIG_PPC_64K_PAGES)
-+#define MAX_PHYSMEM_BITS 51
-+#else
-+#define MAX_PHYSMEM_BITS 46
-+#endif
-+
- /* 64-bit classic hash table MMU */
- #include <asm/book3s/64/mmu-hash.h>
- 
-diff --git a/arch/powerpc/include/asm/mmu.h b/arch/powerpc/include/asm/mmu.h
-index 598cdcdd1355..78d53c4396ac 100644
---- a/arch/powerpc/include/asm/mmu.h
-+++ b/arch/powerpc/include/asm/mmu.h
-@@ -341,21 +341,6 @@ static inline bool strict_kernel_rwx_enabled(void)
-  */
- #define MMU_PAGE_COUNT	16
- 
--/*
-- * If we store section details in page->flags we can't increase the MAX_PHYSMEM_BITS
-- * if we increase SECTIONS_WIDTH we will not store node details in page->flags and
-- * page_to_nid does a page->section->node lookup
-- * Hence only increase for VMEMMAP. Further depending on SPARSEMEM_EXTREME reduce
-- * memory requirements with large number of sections.
-- * 51 bits is the max physical real address on POWER9
-- */
--#if defined(CONFIG_SPARSEMEM_VMEMMAP) && defined(CONFIG_SPARSEMEM_EXTREME) &&	\
--	defined (CONFIG_PPC_64K_PAGES)
--#define MAX_PHYSMEM_BITS        51
--#elif defined(CONFIG_SPARSEMEM)
--#define MAX_PHYSMEM_BITS        46
--#endif
--
- #ifdef CONFIG_PPC_BOOK3S_64
- #include <asm/book3s/64/mmu.h>
- #else /* CONFIG_PPC_BOOK3S_64 */
-diff --git a/arch/powerpc/include/asm/nohash/64/mmu.h b/arch/powerpc/include/asm/nohash/64/mmu.h
-index e6585480dfc4..81cf30c370e5 100644
---- a/arch/powerpc/include/asm/nohash/64/mmu.h
-+++ b/arch/powerpc/include/asm/nohash/64/mmu.h
-@@ -2,6 +2,8 @@
- #ifndef _ASM_POWERPC_NOHASH_64_MMU_H_
- #define _ASM_POWERPC_NOHASH_64_MMU_H_
- 
-+#define MAX_PHYSMEM_BITS        44
-+
- /* Freescale Book-E software loaded TLB or Book-3e (ISA 2.06+) MMU */
- #include <asm/nohash/mmu-book3e.h>
- 
--- 
-2.20.1
-
+> ---
+>  arch/powerpc/configs/skiroot_defconfig | 2 ++
+>  1 file changed, 2 insertions(+)
+>
+> diff --git a/arch/powerpc/configs/skiroot_defconfig b/arch/powerpc/configs/skiroot_defconfig
+> index 5ba131c30f6b..6038b9347d9e 100644
+> --- a/arch/powerpc/configs/skiroot_defconfig
+> +++ b/arch/powerpc/configs/skiroot_defconfig
+> @@ -163,6 +163,8 @@ CONFIG_S2IO=m
+>  CONFIG_MLX4_EN=m
+>  # CONFIG_MLX4_CORE_GEN2 is not set
+>  CONFIG_MLX5_CORE=m
+> +CONFIG_MLX5_CORE_EN=y
+> +# CONFIG_MLX5_EN_RXNFC is not set
+>  # CONFIG_NET_VENDOR_MICREL is not set
+>  # CONFIG_NET_VENDOR_MICROSEMI is not set
+>  CONFIG_MYRI10GE=m
+> --
+> 2.20.1
+>
