@@ -2,58 +2,96 @@ Return-Path: <SRS0=3bX/=SF=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_MUTT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,UNPARSEABLE_RELAY,
+	USER_AGENT_NEOMUTT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2E9BAC4360F
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Apr 2019 16:52:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 06A5CC4360F
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Apr 2019 16:54:23 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id A626F206DF
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Apr 2019 16:52:28 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A626F206DF
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 76443206B8
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Apr 2019 16:54:22 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=oracle.com header.i=@oracle.com header.b="eMKx8OvZ"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 76443206B8
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=oracle.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44ZBvZ3N5YzDqJL
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Apr 2019 03:52:26 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44ZBxm4YJDzDqKt
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Apr 2019 03:54:20 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=arm.com
- (client-ip=217.140.101.70; helo=foss.arm.com;
- envelope-from=will.deacon@arm.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=oracle.com
+ (client-ip=156.151.31.86; helo=userp2130.oracle.com;
+ envelope-from=daniel.m.jordan@oracle.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=arm.com
-Received: from foss.arm.com (foss.arm.com [217.140.101.70])
- by lists.ozlabs.org (Postfix) with ESMTP id 44ZBsr3gSTzDqGx
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Apr 2019 03:50:55 +1100 (AEDT)
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.72.51.249])
- by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id B9501EBD;
- Wed,  3 Apr 2019 09:50:52 -0700 (PDT)
-Received: from fuggles.cambridge.arm.com (usa-sjc-imap-foss1.foss.arm.com
- [10.72.51.249])
- by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id E7B9E3F68F;
- Wed,  3 Apr 2019 09:50:49 -0700 (PDT)
-Date: Wed, 3 Apr 2019 17:50:42 +0100
-From: Will Deacon <will.deacon@arm.com>
-To: Oleg Nesterov <oleg@redhat.com>
-Subject: Re: [PATCH v2 4/6] powerpc: use common ptrace_syscall_enter hook to
- handle _TIF_SYSCALL_EMU
-Message-ID: <20190403165042.GB17500@fuggles.cambridge.arm.com>
-References: <20190318104925.16600-1-sudeep.holla@arm.com>
- <20190318104925.16600-5-sudeep.holla@arm.com>
- <20190318172024.GB23521@redhat.com>
- <20190318172457.GD18196@e107155-lin>
- <20190318173341.GD23521@redhat.com>
- <20190318174028.GE18196@e107155-lin>
- <20190319170804.GA11525@redhat.com>
- <20190319173233.GB11525@redhat.com>
+ dmarc=pass (p=none dis=none) header.from=oracle.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=oracle.com header.i=@oracle.com header.b="eMKx8OvZ"; 
+ dkim-atps=neutral
+Received: from userp2130.oracle.com (userp2130.oracle.com [156.151.31.86])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44ZBw630L5zDq5h
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Apr 2019 03:52:54 +1100 (AEDT)
+Received: from pps.filterd (userp2130.oracle.com [127.0.0.1])
+ by userp2130.oracle.com (8.16.0.27/8.16.0.27) with SMTP id x33Ghk6g131470;
+ Wed, 3 Apr 2019 16:52:42 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com;
+ h=date : from : to : cc
+ : subject : message-id : references : mime-version : content-type :
+ in-reply-to; s=corp-2018-07-02;
+ bh=iGxxtIVqEzp1RVOI6u7Mj+o50/tLE0xJ0apojvzIrxc=;
+ b=eMKx8OvZ6FoDYDKsbasn8MIS6dsh0biicj8fxmGWOf8mjW29OUno93FDZ+rwFoQ85kYt
+ T/w9UyqLWqtHrhEhQ1YaB1x0M4THLsgjrYQYKu3hxaBpDSXmilQ9jphwop3MwmoeEu/L
+ rC5FLKD33mFhSnenXyKKUUiyDizZOeTD9lkgtKHC3kQJewpFfzX30mP1u3tJ9tbdJkEq
+ wtKkTB0L4y1OdbAyedKLuGO/ltNYiHEPNgQF1kXtWt94CUFtzgQtRVhNTqxnDmE3EP86
+ 7YuQtJEC/ZNWVS+2eBwZ2vAUB9yB1AhAbxmkfPuTXEkmQA2yyvagoaSwygzGz0FLI1UX NQ== 
+Received: from userp3030.oracle.com (userp3030.oracle.com [156.151.31.80])
+ by userp2130.oracle.com with ESMTP id 2rhyvtaa5s-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Wed, 03 Apr 2019 16:52:41 +0000
+Received: from pps.filterd (userp3030.oracle.com [127.0.0.1])
+ by userp3030.oracle.com (8.16.0.27/8.16.0.27) with SMTP id x33GqBLc168298;
+ Wed, 3 Apr 2019 16:52:41 GMT
+Received: from userv0121.oracle.com (userv0121.oracle.com [156.151.31.72])
+ by userp3030.oracle.com with ESMTP id 2rm8f579tn-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Wed, 03 Apr 2019 16:52:41 +0000
+Received: from abhmp0022.oracle.com (abhmp0022.oracle.com [141.146.116.28])
+ by userv0121.oracle.com (8.14.4/8.13.8) with ESMTP id x33GqcFo004355;
+ Wed, 3 Apr 2019 16:52:38 GMT
+Received: from ca-dmjordan1.us.oracle.com (/10.211.9.48)
+ by default (Oracle Beehive Gateway v4.0)
+ with ESMTP ; Wed, 03 Apr 2019 09:52:37 -0700
+Date: Wed, 3 Apr 2019 12:52:57 -0400
+From: Daniel Jordan <daniel.m.jordan@oracle.com>
+To: Steven Sistare <steven.sistare@oracle.com>
+Subject: Re: [PATCH 0/6] convert locked_vm from unsigned long to atomic64_t
+Message-ID: <20190403165257.prekuppqbcempuxo@ca-dmjordan1.us.oracle.com>
+References: <20190402204158.27582-1-daniel.m.jordan@oracle.com>
+ <abe31bae-1bdf-b763-c4d1-5e4ea2ccda13@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20190319173233.GB11525@redhat.com>
-User-Agent: Mutt/1.11.1+86 (6f28e57d73f2) ()
+In-Reply-To: <abe31bae-1bdf-b763-c4d1-5e4ea2ccda13@oracle.com>
+User-Agent: NeoMutt/20180323-268-5a959c
+X-Proofpoint-Virus-Version: vendor=nai engine=5900 definitions=9216
+ signatures=668685
+X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 suspectscore=0
+ malwarescore=0
+ phishscore=0 bulkscore=0 spamscore=0 mlxscore=0 mlxlogscore=999
+ adultscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.0.1-1810050000 definitions=main-1904030114
+X-Proofpoint-Virus-Version: vendor=nai engine=5900 definitions=9216
+ signatures=668685
+X-Proofpoint-Spam-Details: rule=notspam policy=default score=0
+ priorityscore=1501 malwarescore=0
+ suspectscore=0 phishscore=0 bulkscore=0 spamscore=0 clxscore=1015
+ lowpriorityscore=0 mlxscore=0 impostorscore=0 mlxlogscore=999 adultscore=0
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.0.1-1810050000
+ definitions=main-1904030114
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -65,58 +103,29 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Haibo Xu <haibo.xu@arm.com>, Steve Capper <Steve.Capper@arm.com>,
- Catalin Marinas <catalin.marinas@arm.com>, jdike@addtoit.com, x86@kernel.org,
- linux-kernel@vger.kernel.org, Bin Lu <bin.lu@arm.com>,
- Richard Weinberger <richard@nod.at>, Ingo Molnar <mingo@redhat.com>,
- Paul Mackerras <paulus@samba.org>, Andy Lutomirski <luto@kernel.org>,
- Sudeep Holla <sudeep.holla@arm.com>, Thomas Gleixner <tglx@linutronix.de>,
- linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
+Cc: Davidlohr Bueso <dave@stgolabs.net>, linux_lkml_grp@oracle.com,
+ kvm@vger.kernel.org, Alan Tull <atull@kernel.org>,
+ Alexey Kardashevskiy <aik@ozlabs.ru>, linux-fpga@vger.kernel.org,
+ linux-kernel@vger.kernel.org, kvm-ppc@vger.kernel.org,
+ Daniel Jordan <daniel.m.jordan@oracle.com>, linux-mm@kvack.org,
+ Alex Williamson <alex.williamson@redhat.com>, Moritz Fischer <mdf@kernel.org>,
+ akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org,
+ Christoph Lameter <cl@linux.com>, Wu Hao <hao.wu@intel.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi Oleg,
-
-On Tue, Mar 19, 2019 at 06:32:33PM +0100, Oleg Nesterov wrote:
-> On 03/19, Oleg Nesterov wrote:
-> >
-> > Well, personally I see no point... Again, after the trivial simplification
-> > x86 does
-> >
-> > 	if (work & (_TIF_SYSCALL_EMU | _TIF_SYSCALL_TRACE)) {
-> > 		ret = tracehook_report_syscall_entry(regs);
-> > 		if (ret || (work & _TIF_SYSCALL_EMU))
-> > 			return -1L;
-> > 	}
-> >
-> > this looks simple enough for copy-and-paste.
-> >
-> > > If there's a better way to achieve the same
-> >
-> > I can only say that if we add a common helper, I think it should absorb
-> > tracehook_report_syscall_entry() and handle both TIF's just like the code
-> > above does. Not sure this makes any sense.
+On Wed, Apr 03, 2019 at 08:51:13AM -0400, Steven Sistare wrote:
+> On 4/2/2019 4:41 PM, Daniel Jordan wrote:
+> > [1] https://lore.kernel.org/linux-mm/20190211224437.25267-1-daniel.m.jordan@oracle.com/
 > 
-> this won't work, looking at 6/6 I see that arm64 needs to distinguish
-> _TRACE and _EMU ... I don't understand this code, but it looks suspicious.
-> If tracehook_report_syscall_entry() returns nonzero the tracee was killed,
-> syscall_trace_enter() should just return.
-> 
-> To me this is another indication that consolidation makes no sense ;)
+>   You could clean all 6 patches up nicely with a common subroutine that
+> increases locked_vm subject to the rlimit.  Pass a bool arg that is true if
+> the  limit should be enforced, !dma->lock_cap for one call site, and
+> !capable(CAP_IPC_LOCK) for the rest.  Push the warnings and debug statements
+> to the subroutine as well.  One patch could refactor, and a second could
+> change the locking method.
 
-The reason I'm pushing for consolidation here is because I think it's the
-only sane way to maintain the tracing and debug hooks on the syscall
-entry/exit paths. Having to look at all the different arch implementations
-and distil the portable semantics is a nightmare and encourages gradual
-divergence over time. Given that we don't support this SYSCALL_EMU stuff
-on arm64 today, we have the opportunity to make this generic and allow other
-architectures (e.g. riscv) to hook in the same way that we do. It clearly
-shouldn't affect the behaviour of existing architectures which already
-support the functionality.
-
-However, I also agree that this patch series looks dodgy as it stands -- we
-shouldn't have code paths that can result in calling
-tracehook_report_syscall_entry() twice.
-
-Will
+Yes, I tried writing, but didn't end up including, such a subroutine for [1].
+The devil was in the details, but with the cmpxchg business, it's more
+worthwhile to iron all those out.  I'll give it a try.
