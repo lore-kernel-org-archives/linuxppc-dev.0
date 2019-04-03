@@ -6,21 +6,21 @@ X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
 	SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A4A45C4360F
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Apr 2019 20:29:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A8878C4360F
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Apr 2019 20:31:33 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 184342082C
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Apr 2019 20:29:45 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 1CE302082C
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Apr 2019 20:31:33 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="WQIns6iB"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 184342082C
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="JHnJQ6ye"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1CE302082C
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44ZHkJ0hlRzDqFs
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Apr 2019 07:29:44 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44ZHmL6G2tzDqFm
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Apr 2019 07:31:30 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=c-s.fr
  (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
@@ -28,54 +28,55 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="WQIns6iB"; 
+ unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="JHnJQ6ye"; 
  dkim-atps=neutral
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44ZHCV0ZSDzDqHl
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Apr 2019 07:06:30 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44ZHCW1MgDzDqHr
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Apr 2019 07:06:31 +1100 (AEDT)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 44ZHCQ6gHgz9v3pp;
- Wed,  3 Apr 2019 22:06:26 +0200 (CEST)
+ by localhost (Postfix) with ESMTP id 44ZHCR7092z9v3q1;
+ Wed,  3 Apr 2019 22:06:27 +0200 (CEST)
 Authentication-Results: localhost; dkim=pass
  reason="1024-bit key; insecure key"
- header.d=c-s.fr header.i=@c-s.fr header.b=WQIns6iB; dkim-adsp=pass;
+ header.d=c-s.fr header.i=@c-s.fr header.b=JHnJQ6ye; dkim-adsp=pass;
  dkim-atps=neutral
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id OrLqd6ybMcLt; Wed,  3 Apr 2019 22:06:26 +0200 (CEST)
+ with ESMTP id vdEa6pStQStb; Wed,  3 Apr 2019 22:06:27 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 44ZHCQ5ZgCz9v3pn;
- Wed,  3 Apr 2019 22:06:26 +0200 (CEST)
+ by pegase1.c-s.fr (Postfix) with ESMTP id 44ZHCR5vbHz9v3pn;
+ Wed,  3 Apr 2019 22:06:27 +0200 (CEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
- t=1554321986; bh=83xPdMubQ9TI2dV0cl8TnZ18eHRoYYi1ptzaynCcobI=;
+ t=1554321987; bh=KMLQNS656LPk8TrOzEewpXov97NObk8UyA43BCDWep8=;
  h=In-Reply-To:References:From:Subject:To:Cc:Date:From;
- b=WQIns6iBWdE6jaOdm6Br9B/S4i3OeM3sV/3QOf8F/xsl7fF4L6GPp3kQfuI7vyZic
- ar809nFi6DsbH/0wTD2xbmgom1f/F5P9j7rlwLaqIjR9zoVysNoHjRUVaG4PE6iC3L
- Ml2h/ybhO5uSQn5wO0Ov5K+g4ollJs1AiERPHa5Y=
+ b=JHnJQ6yeF3lB+dmZJgeHtK+d0dz67U8hcQ5dPMl9KcLSzx0nlZStOXw3kx4DUFfRW
+ 4boyDSLGvgHEGQwKZg1bgoqzPimxYVgIfQ9CHSr2wUV6nQLMYAG2SLRL4x6GEtNi8F
+ mJ3PuPWapdwQOhu8/BFw6NJfEmygfSuMVGg9oKNY=
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id E34BF8B905;
- Wed,  3 Apr 2019 22:06:26 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id ECBDC8B905;
+ Wed,  3 Apr 2019 22:06:27 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id T-Z8-pTgKXSC; Wed,  3 Apr 2019 22:06:26 +0200 (CEST)
+ with ESMTP id Ejl1dJDN_uOx; Wed,  3 Apr 2019 22:06:27 +0200 (CEST)
 Received: from po16846vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id BD5DE8B902;
- Wed,  3 Apr 2019 22:06:26 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id C5BFF8B902;
+ Wed,  3 Apr 2019 22:06:27 +0200 (CEST)
 Received: by po16846vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id 97461655EC; Wed,  3 Apr 2019 20:06:26 +0000 (UTC)
-Message-Id: <48d8eb7326806e7f6e4d1eb210adb95a2c9f6ff5.1554321743.git.christophe.leroy@c-s.fr>
+ id 9D87E655EC; Wed,  3 Apr 2019 20:06:27 +0000 (UTC)
+Message-Id: <427a67a11b408839062dbf2677964d0bd4bb1886.1554321743.git.christophe.leroy@c-s.fr>
 In-Reply-To: <cover.1554321743.git.christophe.leroy@c-s.fr>
 References: <cover.1554321743.git.christophe.leroy@c-s.fr>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v1 14/15] powerpc/mm: refactor pmd_pgtable()
+Subject: [PATCH v1 15/15] powerpc/mm: refactor pgd_alloc() and pgd_free() on
+ nohash
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, 
  aneesh.kumar@linux.ibm.com
-Date: Wed,  3 Apr 2019 20:06:26 +0000 (UTC)
+Date: Wed,  3 Apr 2019 20:06:27 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -92,84 +93,89 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-pmd_pgtable() is identical on the 4 subarches, refactor it.
+pgd_alloc() and pgd_free() are identical on nohash 32 and 64.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
- arch/powerpc/include/asm/book3s/32/pgalloc.h | 2 --
- arch/powerpc/include/asm/book3s/64/pgalloc.h | 5 -----
- arch/powerpc/include/asm/nohash/32/pgalloc.h | 2 --
- arch/powerpc/include/asm/nohash/64/pgalloc.h | 2 --
- arch/powerpc/include/asm/pgalloc.h           | 5 +++++
- 5 files changed, 5 insertions(+), 11 deletions(-)
+ arch/powerpc/include/asm/nohash/32/pgalloc.h | 11 -----------
+ arch/powerpc/include/asm/nohash/64/pgalloc.h | 11 -----------
+ arch/powerpc/include/asm/nohash/pgalloc.h    | 12 ++++++++++++
+ 3 files changed, 12 insertions(+), 22 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/book3s/32/pgalloc.h b/arch/powerpc/include/asm/book3s/32/pgalloc.h
-index 1b9b5c228230..998317702630 100644
---- a/arch/powerpc/include/asm/book3s/32/pgalloc.h
-+++ b/arch/powerpc/include/asm/book3s/32/pgalloc.h
-@@ -37,8 +37,6 @@ static inline void pmd_populate(struct mm_struct *mm, pmd_t *pmdp,
- 	*pmdp = __pmd(__pa(pte_page) | _PMD_PRESENT);
- }
- 
--#define pmd_pgtable(pmd) ((pgtable_t)pmd_page_vaddr(pmd))
--
- static inline void pgtable_free(void *table, unsigned index_size)
- {
- 	if (!index_size) {
-diff --git a/arch/powerpc/include/asm/book3s/64/pgalloc.h b/arch/powerpc/include/asm/book3s/64/pgalloc.h
-index df2dce6afe14..053a7940504e 100644
---- a/arch/powerpc/include/asm/book3s/64/pgalloc.h
-+++ b/arch/powerpc/include/asm/book3s/64/pgalloc.h
-@@ -163,11 +163,6 @@ static inline void pmd_populate(struct mm_struct *mm, pmd_t *pmd,
- 	*pmd = __pmd(__pgtable_ptr_val(pte_page) | PMD_VAL_BITS);
- }
- 
--static inline pgtable_t pmd_pgtable(pmd_t pmd)
--{
--	return (pgtable_t)pmd_page_vaddr(pmd);
--}
--
- static inline void __pte_free_tlb(struct mmu_gather *tlb, pgtable_t table,
- 				  unsigned long address)
- {
 diff --git a/arch/powerpc/include/asm/nohash/32/pgalloc.h b/arch/powerpc/include/asm/nohash/32/pgalloc.h
-index 6c0f5151dc1d..137761b01588 100644
+index 137761b01588..11eac371e7e0 100644
 --- a/arch/powerpc/include/asm/nohash/32/pgalloc.h
 +++ b/arch/powerpc/include/asm/nohash/32/pgalloc.h
-@@ -43,6 +43,4 @@ static inline void pmd_populate(struct mm_struct *mm, pmd_t *pmdp,
- 		*pmdp = __pmd(__pa(pte_page) | _PMD_USER | _PMD_PRESENT);
- }
+@@ -5,17 +5,6 @@
+ #include <linux/threads.h>
+ #include <linux/slab.h>
  
--#define pmd_pgtable(pmd) ((pgtable_t)pmd_page_vaddr(pmd))
+-static inline pgd_t *pgd_alloc(struct mm_struct *mm)
+-{
+-	return kmem_cache_alloc(PGT_CACHE(PGD_INDEX_SIZE),
+-			pgtable_gfp_flags(mm, GFP_KERNEL));
+-}
 -
- #endif /* _ASM_POWERPC_PGALLOC_32_H */
+-static inline void pgd_free(struct mm_struct *mm, pgd_t *pgd)
+-{
+-	kmem_cache_free(PGT_CACHE(PGD_INDEX_SIZE), pgd);
+-}
+-
+ /*
+  * We don't have any real pmd's, and this code never triggers because
+  * the pgd will always be present..
 diff --git a/arch/powerpc/include/asm/nohash/64/pgalloc.h b/arch/powerpc/include/asm/nohash/64/pgalloc.h
-index c636feced1ff..5a0ea63c77c7 100644
+index 5a0ea63c77c7..62321cd12da9 100644
 --- a/arch/powerpc/include/asm/nohash/64/pgalloc.h
 +++ b/arch/powerpc/include/asm/nohash/64/pgalloc.h
-@@ -59,8 +59,6 @@ static inline void pmd_populate(struct mm_struct *mm, pmd_t *pmd,
- 	pmd_set(pmd, (unsigned long)pte_page);
- }
+@@ -18,17 +18,6 @@ struct vmemmap_backing {
+ };
+ extern struct vmemmap_backing *vmemmap_list;
  
--#define pmd_pgtable(pmd) ((pgtable_t)pmd_page_vaddr(pmd))
+-static inline pgd_t *pgd_alloc(struct mm_struct *mm)
+-{
+-	return kmem_cache_alloc(PGT_CACHE(PGD_INDEX_SIZE),
+-			pgtable_gfp_flags(mm, GFP_KERNEL));
+-}
 -
- static inline pmd_t *pmd_alloc_one(struct mm_struct *mm, unsigned long addr)
- {
- 	return kmem_cache_alloc(PGT_CACHE(PMD_CACHE_INDEX),
-diff --git a/arch/powerpc/include/asm/pgalloc.h b/arch/powerpc/include/asm/pgalloc.h
-index 5761bee0f004..2b2c60a1a66d 100644
---- a/arch/powerpc/include/asm/pgalloc.h
-+++ b/arch/powerpc/include/asm/pgalloc.h
-@@ -72,4 +72,9 @@ static inline void check_pgt_cache(void) { }
- #include <asm/nohash/pgalloc.h>
- #endif
+-static inline void pgd_free(struct mm_struct *mm, pgd_t *pgd)
+-{
+-	kmem_cache_free(PGT_CACHE(PGD_INDEX_SIZE), pgd);
+-}
+-
+ #define pgd_populate(MM, PGD, PUD)	pgd_set(PGD, (unsigned long)PUD)
  
-+static inline pgtable_t pmd_pgtable(pmd_t pmd)
+ static inline pud_t *pud_alloc_one(struct mm_struct *mm, unsigned long addr)
+diff --git a/arch/powerpc/include/asm/nohash/pgalloc.h b/arch/powerpc/include/asm/nohash/pgalloc.h
+index 4fccac6af3ad..332b13b4ecdb 100644
+--- a/arch/powerpc/include/asm/nohash/pgalloc.h
++++ b/arch/powerpc/include/asm/nohash/pgalloc.h
+@@ -3,6 +3,7 @@
+ #define _ASM_POWERPC_NOHASH_PGALLOC_H
+ 
+ #include <linux/mm.h>
++#include <linux/slab.h>
+ 
+ extern void tlb_remove_table(struct mmu_gather *tlb, void *table);
+ #ifdef CONFIG_PPC64
+@@ -16,6 +17,17 @@ static inline void tlb_flush_pgtable(struct mmu_gather *tlb,
+ }
+ #endif /* !CONFIG_PPC_BOOK3E */
+ 
++static inline pgd_t *pgd_alloc(struct mm_struct *mm)
 +{
-+	return (pgtable_t)pmd_page_vaddr(pmd);
++	return kmem_cache_alloc(PGT_CACHE(PGD_INDEX_SIZE),
++			pgtable_gfp_flags(mm, GFP_KERNEL));
 +}
 +
- #endif /* _ASM_POWERPC_PGALLOC_H */
++static inline void pgd_free(struct mm_struct *mm, pgd_t *pgd)
++{
++	kmem_cache_free(PGT_CACHE(PGD_INDEX_SIZE), pgd);
++}
++
+ #ifdef CONFIG_PPC64
+ #include <asm/nohash/64/pgalloc.h>
+ #else
 -- 
 2.13.3
 
