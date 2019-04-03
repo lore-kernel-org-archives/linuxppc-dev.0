@@ -2,98 +2,94 @@ Return-Path: <SRS0=3bX/=SF=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SPF_PASS,UNPARSEABLE_RELAY,USER_AGENT_MUTT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_PASS
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 63EF0C4360F
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Apr 2019 15:33:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 72A2DC4360F
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Apr 2019 15:41:54 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 8819A206DD
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Apr 2019 15:33:27 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id E42682054F
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Apr 2019 15:41:53 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=oracle.com header.i=@oracle.com header.b="u9ynQVtm"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8819A206DD
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=oracle.com
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=kernel-dk.20150623.gappssmtp.com header.i=@kernel-dk.20150623.gappssmtp.com header.b="yYh/eTur"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E42682054F
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kernel.dk
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44Z98P25FRzDqKT
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Apr 2019 02:33:25 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44Z9L74fThzDqMy
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Apr 2019 02:41:51 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=oracle.com
- (client-ip=156.151.31.86; helo=userp2130.oracle.com;
- envelope-from=dan.carpenter@oracle.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=kernel.dk
+ (client-ip=2607:f8b0:4864:20::643; helo=mail-pl1-x643.google.com;
+ envelope-from=axboe@kernel.dk; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=oracle.com
+ dmarc=none (p=none dis=none) header.from=kernel.dk
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=oracle.com header.i=@oracle.com header.b="u9ynQVtm"; 
+ unprotected) header.d=kernel-dk.20150623.gappssmtp.com
+ header.i=@kernel-dk.20150623.gappssmtp.com header.b="yYh/eTur"; 
  dkim-atps=neutral
-Received: from userp2130.oracle.com (userp2130.oracle.com [156.151.31.86])
+Received: from mail-pl1-x643.google.com (mail-pl1-x643.google.com
+ [IPv6:2607:f8b0:4864:20::643])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44Z96R21yjzDq7n
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Apr 2019 02:31:42 +1100 (AEDT)
-Received: from pps.filterd (userp2130.oracle.com [127.0.0.1])
- by userp2130.oracle.com (8.16.0.27/8.16.0.27) with SMTP id x33FOCjh057518;
- Wed, 3 Apr 2019 15:31:38 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com;
- h=date : from : to : cc
- : subject : message-id : references : mime-version : content-type :
- content-transfer-encoding : in-reply-to; s=corp-2018-07-02;
- bh=4QXh81wR3zsoqLqoDnsS51MdvvcQecl6/5L4N60e6ZE=;
- b=u9ynQVtmgVdcm53I/mev912u4CDFKjfTfSTrig7jDC4oITLQDQVtuoE9bKtF+6Ae+g1B
- Tv/cwptKziwwL4kWsFt9ODe/ZOenMrfAB+b5KM5zXeI7t3wmbEW3rQhnvZm9Z+LdeM0C
- ssqz70JDqFzry+bO3QR/zPu9y4wA9/6kCNSW0xLxe1RwJjLFrN4ixBuiwNL9iKAwI7My
- UKymPmcB4lH7yGGpbKNPQiy3kjHN78yf+DmxLqTHFQqI05vUWu45R7OaOdBkFqaHPa2H
- SYOZdTxYcQ/i4Bnpw/2gLf31bYYQHGChD5Txpl2XhhkVrQRqCsv4bFnXnmkZLQzHrVeN pQ== 
-Received: from userp3020.oracle.com (userp3020.oracle.com [156.151.31.79])
- by userp2130.oracle.com with ESMTP id 2rhyvt9u40-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Wed, 03 Apr 2019 15:31:38 +0000
-Received: from pps.filterd (userp3020.oracle.com [127.0.0.1])
- by userp3020.oracle.com (8.16.0.27/8.16.0.27) with SMTP id x33FVbqt117679;
- Wed, 3 Apr 2019 15:31:37 GMT
-Received: from userv0122.oracle.com (userv0122.oracle.com [156.151.31.75])
- by userp3020.oracle.com with ESMTP id 2rm8f65ma3-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Wed, 03 Apr 2019 15:31:37 +0000
-Received: from abhmp0010.oracle.com (abhmp0010.oracle.com [141.146.116.16])
- by userv0122.oracle.com (8.14.4/8.14.4) with ESMTP id x33FVQAC015423;
- Wed, 3 Apr 2019 15:31:26 GMT
-Received: from kadam (/41.202.241.37) by default (Oracle Beehive Gateway v4.0)
- with ESMTP ; Wed, 03 Apr 2019 08:31:25 -0700
-Date: Wed, 3 Apr 2019 18:31:15 +0300
-From: Dan Carpenter <dan.carpenter@oracle.com>
-To: Markus Elfring <Markus.Elfring@web.de>
-Subject: Re: [5/7] cpufreq/pasemi: Checking implementation of
- pas_cpufreq_cpu_init()
-Message-ID: <20190403153115.GA22624@kadam>
-References: <1554082674-2049-6-git-send-email-wen.yang99@zte.com.cn>
- <c0c9c429-a09f-41ba-611d-123b64e410c8@web.de>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44Z9J41GDmzDq7n
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Apr 2019 02:40:01 +1100 (AEDT)
+Received: by mail-pl1-x643.google.com with SMTP id b3so5251337plr.7
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 03 Apr 2019 08:40:01 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=kernel-dk.20150623.gappssmtp.com; s=20150623;
+ h=subject:to:cc:references:from:message-id:date:user-agent
+ :mime-version:in-reply-to:content-language:content-transfer-encoding;
+ bh=6NFYgu8LYAIEMT2NkIHo6xQunCeTdqwADUvaKw9GfVk=;
+ b=yYh/eTur7DnMoVUVTSWQfaSeue1eEXSo/n7C2icw4HxjDhi+HHbAsz1NzhY/6S43pW
+ uvz+olJ3ULS9b4pRtf90ExpxLmmfuxFGHT7xSbYtW9eweV9fM1eg6mmgdVY/hpY6IFBX
+ 9jUw7pKvw0/982EixG07i8NGFfUIQMuaX0lAlZKrLlcjvbEISfJ0NdI94cP3XSBPUScS
+ QLXbTrriXFmfdRttmFTpJJGdO9bkM8pgIAVmsKKQ4DHXCRwaZQYLU7qO3GQOi/589HwF
+ 5kpIXUlhuL8SU6MVkxLS4/OX0DfQ8SEmxBfiNRTr234UTITD+0gpetb350R52ZSYvo4S
+ 3LGg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:subject:to:cc:references:from:message-id:date
+ :user-agent:mime-version:in-reply-to:content-language
+ :content-transfer-encoding;
+ bh=6NFYgu8LYAIEMT2NkIHo6xQunCeTdqwADUvaKw9GfVk=;
+ b=bLHA3xIlCQNPExrBaz2M42ojevymzRgF5Xw41r3WSuQPKcZKLO7OHQf+txL0XW/AGM
+ xSlMqkpKOok4ZTSzBhWGH0KJo+VSUJ8+7J99zgJvSLFxEJMVUhHdzMOiFFXYiuKHRxhR
+ hm9Bfjdz9kOj+cS15ec0evDWmdBCXGBKMkt79zFIktEyHQ+jVW//rWl7TMbVCkWBdcr+
+ Athj0Zra9hZcCNt6+rcO9McyTjEbqPYksf7fejYLdJtqs7TtyhaG6NzLPeCyxTmBmF8C
+ oP8pOwJMQvbNQQLFNTvKVhkZ6TkJWsnMgfKmNSGxBJpVOSbLXPknS0cJCglauTZFtoGd
+ 233g==
+X-Gm-Message-State: APjAAAXdNDnyS7MjHfAkthgfKPPWvC8aXFVCVhNj/SUVIgNzWkX72XJJ
+ yoi2LrNs3ISC15I7IV9TopjQng==
+X-Google-Smtp-Source: APXvYqzycRW2VojtP5LF1yvo3lG3IC+xbeykL2TsFBA8Q8gIGqsWRIRitt07fuIUhTAnfK053d9mSQ==
+X-Received: by 2002:a17:902:31c3:: with SMTP id
+ x61mr565590plb.143.1554305997967; 
+ Wed, 03 Apr 2019 08:39:57 -0700 (PDT)
+Received: from [192.168.1.121] (66.29.188.166.static.utbb.net. [66.29.188.166])
+ by smtp.gmail.com with ESMTPSA id j14sm12974386pfa.57.2019.04.03.08.39.53
+ (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
+ Wed, 03 Apr 2019 08:39:56 -0700 (PDT)
+Subject: Re: [PATCH 2/2] arch: add pidfd and io_uring syscalls everywhere
+To: Will Deacon <will.deacon@arm.com>
+References: <20190325143521.34928-1-arnd@arndb.de>
+ <20190325144737.703921-1-arnd@arndb.de>
+ <87tvff24a1.fsf@concordia.ellerman.id.au>
+ <20190403111134.GA7159@fuggles.cambridge.arm.com>
+ <9d673dfd-0051-3676-653e-6376430d73dd@kernel.dk>
+ <20190403151932.GA16866@fuggles.cambridge.arm.com>
+From: Jens Axboe <axboe@kernel.dk>
+Message-ID: <032faa2f-6317-75b6-8514-076ef1a244e8@kernel.dk>
+Date: Wed, 3 Apr 2019 09:39:52 -0600
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.6.1
 MIME-Version: 1.0
+In-Reply-To: <20190403151932.GA16866@fuggles.cambridge.arm.com>
 Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <c0c9c429-a09f-41ba-611d-123b64e410c8@web.de>
-User-Agent: Mutt/1.9.4 (2018-02-28)
-X-Proofpoint-Virus-Version: vendor=nai engine=5900 definitions=9216
- signatures=668685
-X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 suspectscore=0
- malwarescore=0
- phishscore=0 bulkscore=0 spamscore=0 mlxscore=0 mlxlogscore=967
- adultscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.0.1-1810050000 definitions=main-1904030104
-X-Proofpoint-Virus-Version: vendor=nai engine=5900 definitions=9216
- signatures=668685
-X-Proofpoint-Spam-Details: rule=notspam policy=default score=0
- priorityscore=1501 malwarescore=0
- suspectscore=0 phishscore=0 bulkscore=0 spamscore=0 clxscore=1011
- lowpriorityscore=0 mlxscore=0 impostorscore=0 mlxlogscore=999 adultscore=0
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.0.1-1810050000
- definitions=main-1904030104
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -105,34 +101,76 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Yi Wang <wang.yi59@zte.com.cn>, "Rafael J. Wysocki" <rjw@rjwysocki.net>,
- linux-pm@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>,
- kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, Wen Yang <wen.yang99@zte.com.cn>
+Cc: Rich Felker <dalias@libc.org>, linux-ia64@vger.kernel.org,
+ linux-sh@vger.kernel.org, Heiko Carstens <heiko.carstens@de.ibm.com>,
+ linux-mips@vger.kernel.org,
+ "James E . J . Bottomley" <James.Bottomley@HansenPartnership.com>,
+ Max Filippov <jcmvbkbc@gmail.com>, Paul Mackerras <paulus@samba.org>,
+ sparclinux@vger.kernel.org, linux-s390@vger.kernel.org,
+ Helge Deller <deller@gmx.de>, Russell King <linux@armlinux.org.uk>,
+ Geert Uytterhoeven <geert@linux-m68k.org>,
+ Catalin Marinas <catalin.marinas@arm.com>, James Hogan <jhogan@kernel.org>,
+ Firoz Khan <firoz.khan@linaro.org>, Matt Turner <mattst88@gmail.com>,
+ Fenghua Yu <fenghua.yu@intel.com>, Arnd Bergmann <arnd@arndb.de>,
+ linux-m68k@lists.linux-m68k.org, Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
+ linux-arm-kernel@lists.infradead.org, Richard Henderson <rth@twiddle.net>,
+ Michal Simek <monstr@monstr.eu>, Tony Luck <tony.luck@intel.com>,
+ linux-parisc@vger.kernel.org, linux-kernel@vger.kernel.org,
+ Ralf Baechle <ralf@linux-mips.org>, Paul Burton <paul.burton@mips.com>,
+ linux-alpha@vger.kernel.org, Martin Schwidefsky <schwidefsky@de.ibm.com>,
+ Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
+ "David S . Miller" <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, Apr 03, 2019 at 04:23:54PM +0200, Markus Elfring wrote:
-> > @@ -146,6 +146,7 @@  static int pas_cpufreq_cpu_init(struct cpufreq_policy *policy)
-> >
-> >  	cpu = of_get_cpu_node(policy->cpu, NULL);
-> >
-> > +	of_node_put(cpu);
-> >  	if (!cpu)
-> >  		goto out;
+On 4/3/19 9:19 AM, Will Deacon wrote:
+> Hi Jens,
 > 
-> Can the statement “return -ENODEV” be nicer as exception handling
-> in the if branch of this source code place?
-> https://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git/tree/drivers/cpufreq/pasemi-cpufreq.c?id=bf97b82f37c6d90e16de001d0659644c57fa490d#n137
+> On Wed, Apr 03, 2019 at 07:49:26AM -0600, Jens Axboe wrote:
+>> On 4/3/19 5:11 AM, Will Deacon wrote:
+>>> will@autoplooker:~/liburing/test$ ./io_uring_register 
+>>> RELIMIT_MEMLOCK: 67108864 (67108864)
+>>> [   35.477875] Unable to handle kernel NULL pointer dereference at virtual address 0000000000000070
+>>> [   35.478969] Mem abort info:
+>>> [   35.479296]   ESR = 0x96000004
+>>> [   35.479785]   Exception class = DABT (current EL), IL = 32 bits
+>>> [   35.480528]   SET = 0, FnV = 0
+>>> [   35.480980]   EA = 0, S1PTW = 0
+>>> [   35.481345] Data abort info:
+>>> [   35.481680]   ISV = 0, ISS = 0x00000004
+>>> [   35.482267]   CM = 0, WnR = 0
+>>> [   35.482618] user pgtable: 4k pages, 48-bit VAs, pgdp = (____ptrval____)
+>>> [   35.483486] [0000000000000070] pgd=0000000000000000
+>>> [   35.484041] Internal error: Oops: 96000004 [#1] PREEMPT SMP
+>>> [   35.484788] Modules linked in:
+>>> [   35.485311] CPU: 113 PID: 3973 Comm: io_uring_regist Not tainted 5.1.0-rc3-00012-g40b114779944 #1
+>>> [   35.486712] Hardware name: linux,dummy-virt (DT)
+>>> [   35.487450] pstate: 20400005 (nzCv daif +PAN -UAO)
+>>> [   35.488228] pc : link_pwq+0x10/0x60
+>>> [   35.488794] lr : apply_wqattrs_commit+0xe0/0x118
+>>> [   35.489550] sp : ffff000017e2bbc0
+>>
+>> Huh, this looks odd, it's crashing inside the wq setup.
 > 
+> Enabling KASAN seems to indicate a double-free, which may well be related.
 
-Why am I only receiving only one side of this conversation?
+Does this help?
 
-I don't know why you're responding to...  It's not required to fix/change
-unrelated style choices.  If people want, they can just focus on their
-own thing.
 
-regards,
-dan carpenter
+diff --git a/fs/io_uring.c b/fs/io_uring.c
+index bbdbd56cf2ac..07d6ef195d05 100644
+--- a/fs/io_uring.c
++++ b/fs/io_uring.c
+@@ -2215,6 +2215,7 @@ static int io_sqe_files_register(struct io_ring_ctx *ctx, void __user *arg,
+ 			fput(ctx->user_files[i]);
+ 
+ 		kfree(ctx->user_files);
++		ctx->user_files = NULL;
+ 		ctx->nr_user_files = 0;
+ 		return ret;
+ 	}
+
+-- 
+Jens Axboe
 
