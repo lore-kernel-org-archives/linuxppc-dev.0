@@ -2,61 +2,98 @@ Return-Path: <SRS0=3bX/=SF=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_MUTT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6E630C4360F
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Apr 2019 11:35:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 88CA5C4360F
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Apr 2019 12:55:39 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B31B4206BA
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Apr 2019 11:35:26 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B31B4206BA
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.intel.com
+	by mail.kernel.org (Postfix) with ESMTPS id C4DCF20830
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Apr 2019 12:55:38 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=oracle.com header.i=@oracle.com header.b="Ul68qe+l"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C4DCF20830
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=oracle.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44Z3sm5rcyzDqSg
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Apr 2019 22:35:24 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44Z5fJ1jfhzDqRX
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Apr 2019 23:55:36 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=linux.intel.com
- (client-ip=192.55.52.93; helo=mga11.intel.com;
- envelope-from=andriy.shevchenko@linux.intel.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=linux.intel.com
-Received: from mga11.intel.com (mga11.intel.com [192.55.52.93])
+ spf=pass (mailfrom) smtp.mailfrom=oracle.com
+ (client-ip=156.151.31.86; helo=userp2130.oracle.com;
+ envelope-from=steven.sistare@oracle.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=oracle.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=oracle.com header.i=@oracle.com header.b="Ul68qe+l"; 
+ dkim-atps=neutral
+Received: from userp2130.oracle.com (userp2130.oracle.com [156.151.31.86])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44Z3qb2lwvzDqP1
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Apr 2019 22:33:29 +1100 (AEDT)
-X-Amp-Result: UNKNOWN
-X-Amp-Original-Verdict: FILE UNKNOWN
-X-Amp-File-Uploaded: False
-Received: from fmsmga003.fm.intel.com ([10.253.24.29])
- by fmsmga102.fm.intel.com with ESMTP/TLS/DHE-RSA-AES256-GCM-SHA384;
- 03 Apr 2019 04:33:25 -0700
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.60,304,1549958400"; d="scan'208";a="146236271"
-Received: from smile.fi.intel.com (HELO smile) ([10.237.72.86])
- by FMSMGA003.fm.intel.com with ESMTP; 03 Apr 2019 04:33:19 -0700
-Received: from andy by smile with local (Exim 4.92)
- (envelope-from <andriy.shevchenko@linux.intel.com>)
- id 1hBe8p-0001jQ-Nk; Wed, 03 Apr 2019 14:33:15 +0300
-Date: Wed, 3 Apr 2019 14:33:15 +0300
-From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-To: Andrey Abramov <st5pub@yandex.ru>
-Subject: Re: [PATCH v3 5/5] Lib: sort.h: remove the size argument from the
- swap function
-Message-ID: <20190403113315.GW9224@smile.fi.intel.com>
-References: <824481554237711@sas1-23a37bc8251c.qloud-c.yandex.net>
- <793311554238525@sas1-87f9feb8d943.qloud-c.yandex.net>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44Z5cJ4JKkzDqFM
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Apr 2019 23:53:46 +1100 (AEDT)
+Received: from pps.filterd (userp2130.oracle.com [127.0.0.1])
+ by userp2130.oracle.com (8.16.0.27/8.16.0.27) with SMTP id x33ChXe2100938;
+ Wed, 3 Apr 2019 12:51:22 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com;
+ h=subject : to : cc :
+ references : from : message-id : date : mime-version : in-reply-to :
+ content-type : content-transfer-encoding; s=corp-2018-07-02;
+ bh=NHT9PqacVbcb+iEdSEkiTY4KiJSA+ruLSKxJflNrU5g=;
+ b=Ul68qe+lCVRnB8QxIbkSLnknGO8ENEkGNFXBYcdNdl49HLsfdL7wxQGQtZVnqZxRnrHt
+ mOw3455ycB8dfibQLUWzKyx60JJCSBmHpcBd8VYj9vk2bbSpthszKkxhWxUTZJnAGavK
+ pr4/QDDvWxsSiDFQVVmeOJosIbw4NG1hl3h29ap6VBUGtu4AgJxL1ckkTTdVXdrb+d1p
+ EenRHGIcBO4W52S1FCoIoFgTJt9ubJ8eE8gg3I80gxVw3gHqLqHMSMscwfxVg73NczAP
+ ZqEoI5ilfojmvKUJ5yhSJzowimyc801vAD377rzf4zdeBlXz+bPq9kcK211+i4ZEcpkV 7g== 
+Received: from userp3030.oracle.com (userp3030.oracle.com [156.151.31.80])
+ by userp2130.oracle.com with ESMTP id 2rhyvt8swk-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Wed, 03 Apr 2019 12:51:22 +0000
+Received: from pps.filterd (userp3030.oracle.com [127.0.0.1])
+ by userp3030.oracle.com (8.16.0.27/8.16.0.27) with SMTP id x33Co47M064129;
+ Wed, 3 Apr 2019 12:51:22 GMT
+Received: from userv0121.oracle.com (userv0121.oracle.com [156.151.31.72])
+ by userp3030.oracle.com with ESMTP id 2rm8f52vra-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Wed, 03 Apr 2019 12:51:22 +0000
+Received: from abhmp0019.oracle.com (abhmp0019.oracle.com [141.146.116.25])
+ by userv0121.oracle.com (8.14.4/8.13.8) with ESMTP id x33CpEC3031705;
+ Wed, 3 Apr 2019 12:51:15 GMT
+Received: from [10.152.35.85] (/10.152.35.85)
+ by default (Oracle Beehive Gateway v4.0)
+ with ESMTP ; Wed, 03 Apr 2019 05:51:14 -0700
+Subject: Re: [PATCH 0/6] convert locked_vm from unsigned long to atomic64_t
+To: Daniel Jordan <daniel.m.jordan@oracle.com>
+References: <20190402204158.27582-1-daniel.m.jordan@oracle.com>
+From: Steven Sistare <steven.sistare@oracle.com>
+Organization: Oracle Corporation
+Message-ID: <abe31bae-1bdf-b763-c4d1-5e4ea2ccda13@oracle.com>
+Date: Wed, 3 Apr 2019 08:51:13 -0400
+User-Agent: Mozilla/5.0 (Windows NT 10.0; WOW64; rv:60.0) Gecko/20100101
+ Thunderbird/60.6.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <793311554238525@sas1-87f9feb8d943.qloud-c.yandex.net>
-Organization: Intel Finland Oy - BIC 0357606-4 - Westendinkatu 7, 02160 Espoo
-User-Agent: Mutt/1.10.1 (2018-07-13)
+In-Reply-To: <20190402204158.27582-1-daniel.m.jordan@oracle.com>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
+X-Proofpoint-Virus-Version: vendor=nai engine=5900 definitions=9215
+ signatures=668685
+X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 suspectscore=0
+ malwarescore=0
+ phishscore=0 bulkscore=0 spamscore=0 mlxscore=0 mlxlogscore=999
+ adultscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.0.1-1810050000 definitions=main-1904030088
+X-Proofpoint-Virus-Version: vendor=nai engine=5900 definitions=9215
+ signatures=668685
+X-Proofpoint-Spam-Details: rule=notspam policy=default score=0
+ priorityscore=1501 malwarescore=0
+ suspectscore=0 phishscore=0 bulkscore=0 spamscore=0 clxscore=1011
+ lowpriorityscore=0 mlxscore=0 impostorscore=0 mlxlogscore=999 adultscore=0
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.0.1-1810050000
+ definitions=main-1904030088
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -68,138 +105,79 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: peterz <peterz@infradead.org>, Dave Chinner <dchinner@redhat.com>,
- Rasmus Villemoes <linux@rasmusvillemoes.dk>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- "yamada.masahiro" <yamada.masahiro@socionext.com>, paulus <paulus@samba.org>,
- hpa <hpa@zytor.com>, jslaby <jslaby@suse.cz>, sfr <sfr@canb.auug.org.au>,
- "darrick.wong" <darrick.wong@oracle.com>, richard <richard@nod.at>,
- mark <mark@fasheh.com>, x86 <x86@kernel.org>, mingo <mingo@redhat.com>,
- "naveen.n.rao" <naveen.n.rao@linux.vnet.ibm.com>,
- linux-snps-arc <linux-snps-arc@lists.infradead.org>, jannh <jannh@google.com>,
- bp <bp@alien8.de>, jlbec <jlbec@evilplan.org>, jpoimboe <jpoimboe@redhat.com>,
- tglx <tglx@linutronix.de>, George Spelvin <lkml@sdf.org>,
- dedekind1 <dedekind1@gmail.com>, vgupta <vgupta@synopsys.com>,
- "ard.biesheuvel" <ard.biesheuvel@linaro.org>,
- "adrian.hunter" <adrian.hunter@intel.com>, gregkh <gregkh@linuxfoundation.org>,
- linux-mtd <linux-mtd@lists.infradead.org>,
- Morton Andrew <akpm@linux-foundation.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- ocfs2-devel <ocfs2-devel@oss.oracle.com>
+Cc: Davidlohr Bueso <dave@stgolabs.net>, linux_lkml_grp@oracle.com,
+ kvm@vger.kernel.org, Alan Tull <atull@kernel.org>,
+ Alexey Kardashevskiy <aik@ozlabs.ru>, linux-fpga@vger.kernel.org,
+ linux-kernel@vger.kernel.org, kvm-ppc@vger.kernel.org, linux-mm@kvack.org,
+ Alex Williamson <alex.williamson@redhat.com>, Moritz Fischer <mdf@kernel.org>,
+ akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org,
+ Christoph Lameter <cl@linux.com>, Wu Hao <hao.wu@intel.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, Apr 02, 2019 at 11:55:25PM +0300, Andrey Abramov wrote:
-> Removes size argument from the swap function because:
-> 	1) It wasn't used.
-> 	2) Custom swap function knows what kind of objects it swaps,
-> 		so it already knows their sizes.
+On 4/2/2019 4:41 PM, Daniel Jordan wrote:
+> Hi,
 > 
-> Signed-off-by: Andrey Abramov <st5pub@yandex.ru>
-> Reviewed by: George Spelvin <lkml@sdf.org>
-
-FWIW,
-Reviewed-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-
-> ---
->  arch/x86/kernel/unwind_orc.c | 2 +-
->  include/linux/sort.h         | 2 +-
->  kernel/jump_label.c          | 2 +-
->  lib/extable.c                | 2 +-
->  lib/sort.c                   | 7 +++----
->  5 files changed, 7 insertions(+), 8 deletions(-)
+> From patch 1:
 > 
-> diff --git a/arch/x86/kernel/unwind_orc.c b/arch/x86/kernel/unwind_orc.c
-> index 89be1be1790c..dc410b567189 100644
-> --- a/arch/x86/kernel/unwind_orc.c
-> +++ b/arch/x86/kernel/unwind_orc.c
-> @@ -176,7 +176,7 @@ static struct orc_entry *orc_find(unsigned long ip)
->  	return orc_ftrace_find(ip);
->  }
->  
-> -static void orc_sort_swap(void *_a, void *_b, int size)
-> +static void orc_sort_swap(void *_a, void *_b)
->  {
->  	struct orc_entry *orc_a, *orc_b;
->  	struct orc_entry orc_tmp;
-> diff --git a/include/linux/sort.h b/include/linux/sort.h
-> index 2b99a5dd073d..13bb4635b5f1 100644
-> --- a/include/linux/sort.h
-> +++ b/include/linux/sort.h
-> @@ -6,6 +6,6 @@
->  
->  void sort(void *base, size_t num, size_t size,
->  	  int (*cmp)(const void *, const void *),
-> -	  void (*swap)(void *, void *, int));
-> +	  void (*swap)(void *, void *));
->  
->  #endif
-> diff --git a/kernel/jump_label.c b/kernel/jump_label.c
-> index bad96b476eb6..6b1187b8a060 100644
-> --- a/kernel/jump_label.c
-> +++ b/kernel/jump_label.c
-> @@ -45,7 +45,7 @@ static int jump_label_cmp(const void *a, const void *b)
->  	return 0;
->  }
->  
-> -static void jump_label_swap(void *a, void *b, int size)
-> +static void jump_label_swap(void *a, void *b)
->  {
->  	long delta = (unsigned long)a - (unsigned long)b;
->  	struct jump_entry *jea = a;
-> diff --git a/lib/extable.c b/lib/extable.c
-> index f54996fdd0b8..0515a94538ca 100644
-> --- a/lib/extable.c
-> +++ b/lib/extable.c
-> @@ -28,7 +28,7 @@ static inline unsigned long ex_to_insn(const struct exception_table_entry *x)
->  #ifndef ARCH_HAS_RELATIVE_EXTABLE
->  #define swap_ex		NULL
->  #else
-> -static void swap_ex(void *a, void *b, int size)
-> +static void swap_ex(void *a, void *b)
->  {
->  	struct exception_table_entry *x = a, *y = b, tmp;
->  	int delta = b - a;
-> diff --git a/lib/sort.c b/lib/sort.c
-> index 50855ea8c262..8704750e6bde 100644
-> --- a/lib/sort.c
-> +++ b/lib/sort.c
-> @@ -114,7 +114,7 @@ static void swap_bytes(void *a, void *b, size_t n)
->  	} while (n);
->  }
->  
-> -typedef void (*swap_func_t)(void *a, void *b, int size);
-> +typedef void (*swap_func_t)(void *a, void *b);
->  
->  /*
->   * The values are arbitrary as long as they can't be confused with
-> @@ -138,7 +138,7 @@ static void do_swap(void *a, void *b, size_t size, swap_func_t swap_func)
->  	else if (swap_func == SWAP_BYTES)
->  		swap_bytes(a, b, size);
->  	else
-> -		swap_func(a, b, (int)size);
-> +		swap_func(a, b);
->  }
->  
->  /**
-> @@ -186,8 +186,7 @@ static size_t parent(size_t i, unsigned int lsbit, size_t size)
->   * it less suitable for kernel use.
->   */
->  void sort(void *base, size_t num, size_t size,
-> -	  int (*cmp_func)(const void *, const void *),
-> -	  void (*swap_func)(void *, void *, int size))
-> +	  int (*cmp_func)(const void *, const void *), swap_func_t swap_func)
->  {
->  	/* pre-scale counters for performance */
->  	size_t n = num * size, a = (num/2) * size;
-> -- 
-> 2.21.0
+>   Taking and dropping mmap_sem to modify a single counter, locked_vm, is
+>   overkill when the counter could be synchronized separately.
+>   
+>   Make mmap_sem a little less coarse by changing locked_vm to an atomic,
+>   the 64-bit variety to avoid issues with overflow on 32-bit systems.
 > 
+> This is a more conservative alternative to [1] with no user-visible
+> effects.  Thanks to Alexey Kardashevskiy for pointing out the racy
+> atomics and to Alex Williamson, Christoph Lameter, Ira Weiny, and Jason
+> Gunthorpe for their comments on [1].
 > 
+> Davidlohr Bueso recently did a similar conversion for pinned_vm[2].
+> 
+> Testing
+>  1. passes LTP mlock[all], munlock[all], fork, mmap, and mremap tests in an
+>     x86 kvm guest
+>  2. a VFIO-enabled x86 kvm guest shows the same VmLck in
+>     /proc/pid/status before and after this change
+>  3. cross-compiles on powerpc
+> 
+> The series is based on v5.1-rc3.  Please consider for 5.2.
+> 
+> Daniel
+> 
+> [1] https://lore.kernel.org/linux-mm/20190211224437.25267-1-daniel.m.jordan@oracle.com/
+> [2] https://lore.kernel.org/linux-mm/20190206175920.31082-1-dave@stgolabs.net/
+> 
+> Daniel Jordan (6):
+>   mm: change locked_vm's type from unsigned long to atomic64_t
+>   vfio/type1: drop mmap_sem now that locked_vm is atomic
+>   vfio/spapr_tce: drop mmap_sem now that locked_vm is atomic
+>   fpga/dlf/afu: drop mmap_sem now that locked_vm is atomic
+>   powerpc/mmu: drop mmap_sem now that locked_vm is atomic
+>   kvm/book3s: drop mmap_sem now that locked_vm is atomic
+> 
+>  arch/powerpc/kvm/book3s_64_vio.c    | 34 ++++++++++--------------
+>  arch/powerpc/mm/mmu_context_iommu.c | 28 +++++++++-----------
+>  drivers/fpga/dfl-afu-dma-region.c   | 40 ++++++++++++-----------------
+>  drivers/vfio/vfio_iommu_spapr_tce.c | 37 ++++++++++++--------------
+>  drivers/vfio/vfio_iommu_type1.c     | 31 +++++++++-------------
+>  fs/proc/task_mmu.c                  |  2 +-
+>  include/linux/mm_types.h            |  2 +-
+>  kernel/fork.c                       |  2 +-
+>  mm/debug.c                          |  5 ++--
+>  mm/mlock.c                          |  4 +--
+>  mm/mmap.c                           | 18 ++++++-------
+>  mm/mremap.c                         |  6 ++---
+>  12 files changed, 89 insertions(+), 120 deletions(-)
+> 
+> base-commit: 79a3aaa7b82e3106be97842dedfd8429248896e6
 
--- 
-With Best Regards,
-Andy Shevchenko
+Hi Daniel,
+  You could clean all 6 patches up nicely with a common subroutine that
+increases locked_vm subject to the rlimit.  Pass a bool arg that is true if
+the  limit should be enforced, !dma->lock_cap for one call site, and
+!capable(CAP_IPC_LOCK) for the rest.  Push the warnings and debug statements
+to the subroutine as well.  One patch could refactor, and a second could
+change the locking method.
 
-
+- Steve
