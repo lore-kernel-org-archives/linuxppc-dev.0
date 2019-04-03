@@ -6,21 +6,21 @@ X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
 	SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 432E7C4360F
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Apr 2019 20:13:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 02078C4360F
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Apr 2019 20:14:57 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B2A6420700
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Apr 2019 20:13:22 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 749F020700
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Apr 2019 20:14:56 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="pvHlkcLf"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B2A6420700
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="e3XUR79k"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 749F020700
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44ZHMN5JNgzDqJ5
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Apr 2019 07:13:20 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44ZHPB4V01zDqK3
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Apr 2019 07:14:54 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=c-s.fr
  (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
@@ -28,54 +28,54 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="pvHlkcLf"; 
+ unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="e3XUR79k"; 
  dkim-atps=neutral
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44ZHCH3KqSzDqHd
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Apr 2019 07:06:18 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44ZHCH1y4CzDqHb
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Apr 2019 07:06:17 +1100 (AEDT)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 44ZHCC3drfz9v9xx;
- Wed,  3 Apr 2019 22:06:15 +0200 (CEST)
+ by localhost (Postfix) with ESMTP id 44ZHC939Pcz9v9xs;
+ Wed,  3 Apr 2019 22:06:13 +0200 (CEST)
 Authentication-Results: localhost; dkim=pass
  reason="1024-bit key; insecure key"
- header.d=c-s.fr header.i=@c-s.fr header.b=pvHlkcLf; dkim-adsp=pass;
+ header.d=c-s.fr header.i=@c-s.fr header.b=e3XUR79k; dkim-adsp=pass;
  dkim-atps=neutral
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id YMMiyZlEWv_o; Wed,  3 Apr 2019 22:06:15 +0200 (CEST)
+ with ESMTP id njmphAoaq_Ch; Wed,  3 Apr 2019 22:06:13 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 44ZHCC2WFRz9v6Km;
- Wed,  3 Apr 2019 22:06:15 +0200 (CEST)
+ by pegase1.c-s.fr (Postfix) with ESMTP id 44ZHC91Zyhz9v6Km;
+ Wed,  3 Apr 2019 22:06:13 +0200 (CEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
- t=1554321975; bh=Z6Xi+6cGeVBRWlgUNUjqixJVcTd2PrvuIF/HFN2ubVQ=;
+ t=1554321973; bh=C2Z1JuB327icEvR5qtvCdFCYWUJoN96aYqgB9CFVtK0=;
  h=In-Reply-To:References:From:Subject:To:Cc:Date:From;
- b=pvHlkcLfScj03YOwqqeci4O1lfWEzd20W73mTw03IksszOcqLkcC2pmAq8RvvoPvp
- ZNlUxFmrhNooIXQkffaDbOM+ed1FJrf7q+q1m3j7ZNC4kgM/bxPxXHwPCvOrnSUywR
- ufYHKtDN2Nx6xVmL7cAQ9htkwhzWqW1JFRYETqMU=
+ b=e3XUR79kq0iUYBCGJt32XYUUHF9izsjKDP1wcu/5hPO8yI13QzEHmXH1ZrpMRihVM
+ NalGDorK9DLFXLzjs9R/ZtZuL00Kka6GMYGKF149IG7FoWAmdQj8ucCPDT1TDK2UF3
+ IrQKb+tILlYO+SFLKNxTAByNmPTtyOCt8Z+/bETE=
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 7BE718B905;
- Wed,  3 Apr 2019 22:06:15 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 550758B905;
+ Wed,  3 Apr 2019 22:06:13 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id r5hb_W0CY6-b; Wed,  3 Apr 2019 22:06:15 +0200 (CEST)
+ with ESMTP id P67zKlWfYnUm; Wed,  3 Apr 2019 22:06:13 +0200 (CEST)
 Received: from po16846vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 3BB118B902;
- Wed,  3 Apr 2019 22:06:15 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 2BB8F8B902;
+ Wed,  3 Apr 2019 22:06:13 +0200 (CEST)
 Received: by po16846vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id 2835B655EC; Wed,  3 Apr 2019 20:06:15 +0000 (UTC)
-Message-Id: <335ece977c0eaf02e561774c836e92b80e285fc0.1554321743.git.christophe.leroy@c-s.fr>
+ id 1C08C655EC; Wed,  3 Apr 2019 20:06:13 +0000 (UTC)
+Message-Id: <0c8d706a693b0ca957be8ac1061a9b5ad10c03be.1554321743.git.christophe.leroy@c-s.fr>
 In-Reply-To: <cover.1554321743.git.christophe.leroy@c-s.fr>
 References: <cover.1554321743.git.christophe.leroy@c-s.fr>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v1 03/15] powerpc/mm: convert Book3E 64 to pte_fragment
+Subject: [PATCH v1 01/15] powerpc/mm: drop __bad_pte()
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, 
  aneesh.kumar@linux.ibm.com
-Date: Wed,  3 Apr 2019 20:06:15 +0000 (UTC)
+Date: Wed,  3 Apr 2019 20:06:13 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -92,170 +92,41 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Book3E 64 is the only subarch not using pte_fragment. In order
-to allow refactorisation, this patch converts it to pte_fragment.
+This has never been called (since Kernel has been in git at least),
+drop it.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
- arch/powerpc/include/asm/mmu_context.h       |  6 -----
- arch/powerpc/include/asm/nohash/64/mmu.h     |  4 +++-
- arch/powerpc/include/asm/nohash/64/pgalloc.h | 33 ++++++++++------------------
- arch/powerpc/mm/Makefile                     |  4 ++--
- arch/powerpc/mm/mmu_context.c                |  2 +-
- 5 files changed, 18 insertions(+), 31 deletions(-)
+ arch/powerpc/include/asm/book3s/32/pgalloc.h | 2 --
+ arch/powerpc/include/asm/nohash/32/pgalloc.h | 2 --
+ 2 files changed, 4 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/mmu_context.h b/arch/powerpc/include/asm/mmu_context.h
-index 6ee8195a2ffb..66a3805dc935 100644
---- a/arch/powerpc/include/asm/mmu_context.h
-+++ b/arch/powerpc/include/asm/mmu_context.h
-@@ -228,13 +228,7 @@ static inline void enter_lazy_tlb(struct mm_struct *mm,
- #endif
- }
+diff --git a/arch/powerpc/include/asm/book3s/32/pgalloc.h b/arch/powerpc/include/asm/book3s/32/pgalloc.h
+index 3633502e102c..645af86cd072 100644
+--- a/arch/powerpc/include/asm/book3s/32/pgalloc.h
++++ b/arch/powerpc/include/asm/book3s/32/pgalloc.h
+@@ -22,8 +22,6 @@
+  */
+ #define MAX_PGTABLE_INDEX_SIZE	0xf
  
--#ifdef CONFIG_PPC_BOOK3E_64
--static inline void arch_exit_mmap(struct mm_struct *mm)
--{
--}
--#else
- extern void arch_exit_mmap(struct mm_struct *mm);
--#endif
- 
- static inline void arch_unmap(struct mm_struct *mm,
- 			      struct vm_area_struct *vma,
-diff --git a/arch/powerpc/include/asm/nohash/64/mmu.h b/arch/powerpc/include/asm/nohash/64/mmu.h
-index e6585480dfc4..3376f5222d24 100644
---- a/arch/powerpc/include/asm/nohash/64/mmu.h
-+++ b/arch/powerpc/include/asm/nohash/64/mmu.h
-@@ -2,11 +2,13 @@
- #ifndef _ASM_POWERPC_NOHASH_64_MMU_H_
- #define _ASM_POWERPC_NOHASH_64_MMU_H_
- 
-+#include <asm/page.h>
-+
- /* Freescale Book-E software loaded TLB or Book-3e (ISA 2.06+) MMU */
- #include <asm/nohash/mmu-book3e.h>
- 
- #ifndef __ASSEMBLY__
--typedef struct page *pgtable_t;
-+typedef pte_t *pgtable_t;
- #endif
- 
- #endif /* _ASM_POWERPC_NOHASH_64_MMU_H_ */
-diff --git a/arch/powerpc/include/asm/nohash/64/pgalloc.h b/arch/powerpc/include/asm/nohash/64/pgalloc.h
-index ded453f9b5a8..7fb87235f845 100644
---- a/arch/powerpc/include/asm/nohash/64/pgalloc.h
-+++ b/arch/powerpc/include/asm/nohash/64/pgalloc.h
-@@ -76,10 +76,10 @@ static inline void pmd_populate_kernel(struct mm_struct *mm, pmd_t *pmd,
- static inline void pmd_populate(struct mm_struct *mm, pmd_t *pmd,
- 				pgtable_t pte_page)
- {
--	pmd_set(pmd, (unsigned long)page_address(pte_page));
-+	pmd_set(pmd, (unsigned long)pte_page);
- }
- 
--#define pmd_pgtable(pmd) pmd_page(pmd)
-+#define pmd_pgtable(pmd) ((pgtable_t)pmd_page_vaddr(pmd))
- 
- static inline pmd_t *pmd_alloc_one(struct mm_struct *mm, unsigned long addr)
- {
-@@ -92,44 +92,35 @@ static inline void pmd_free(struct mm_struct *mm, pmd_t *pmd)
- 	kmem_cache_free(PGT_CACHE(PMD_CACHE_INDEX), pmd);
- }
- 
-+pte_t *pte_fragment_alloc(struct mm_struct *mm, int kernel);
- 
- static inline pte_t *pte_alloc_one_kernel(struct mm_struct *mm)
- {
--	return (pte_t *)__get_free_page(GFP_KERNEL | __GFP_ZERO);
-+	return (pte_t *)pte_fragment_alloc(mm, 1);
- }
- 
- static inline pgtable_t pte_alloc_one(struct mm_struct *mm)
- {
--	struct page *page;
--	pte_t *pte;
+-extern void __bad_pte(pmd_t *pmd);
 -
--	pte = (pte_t *)__get_free_page(GFP_KERNEL | __GFP_ZERO | __GFP_ACCOUNT);
--	if (!pte)
--		return NULL;
--	page = virt_to_page(pte);
--	if (!pgtable_page_ctor(page)) {
--		__free_page(page);
--		return NULL;
--	}
--	return page;
-+	return (pgtable_t)pte_fragment_alloc(mm, 0);
- }
+ extern struct kmem_cache *pgtable_cache[];
+ #define PGT_CACHE(shift) pgtable_cache[shift]
  
-+void pte_frag_destroy(void *pte_frag);
-+void pte_fragment_free(unsigned long *table, int kernel);
-+
- static inline void pte_free_kernel(struct mm_struct *mm, pte_t *pte)
- {
--	free_page((unsigned long)pte);
-+	pte_fragment_free((unsigned long *)pte, 1);
- }
+diff --git a/arch/powerpc/include/asm/nohash/32/pgalloc.h b/arch/powerpc/include/asm/nohash/32/pgalloc.h
+index bd186e85b4f7..ea265a578eb0 100644
+--- a/arch/powerpc/include/asm/nohash/32/pgalloc.h
++++ b/arch/powerpc/include/asm/nohash/32/pgalloc.h
+@@ -22,8 +22,6 @@
+  */
+ #define MAX_PGTABLE_INDEX_SIZE	0xf
  
- static inline void pte_free(struct mm_struct *mm, pgtable_t ptepage)
- {
--	pgtable_page_dtor(ptepage);
--	__free_page(ptepage);
-+	pte_fragment_free((unsigned long *)ptepage, 0);
- }
+-extern void __bad_pte(pmd_t *pmd);
+-
+ extern struct kmem_cache *pgtable_cache[];
+ #define PGT_CACHE(shift) pgtable_cache[shift]
  
- static inline void pgtable_free(void *table, int shift)
- {
- 	if (!shift) {
--		pgtable_page_dtor(virt_to_page(table));
--		free_page((unsigned long)table);
-+		pte_fragment_free((unsigned long *)table, 0);
- 	} else {
- 		BUG_ON(shift > MAX_PGTABLE_INDEX_SIZE);
- 		kmem_cache_free(PGT_CACHE(shift), table);
-@@ -166,7 +157,7 @@ static inline void __pte_free_tlb(struct mmu_gather *tlb, pgtable_t table,
- 				  unsigned long address)
- {
- 	tlb_flush_pgtable(tlb, address);
--	pgtable_free_tlb(tlb, page_address(table), 0);
-+	pgtable_free_tlb(tlb, table, 0);
- }
- 
- #define __pmd_free_tlb(tlb, pmd, addr)		      \
-diff --git a/arch/powerpc/mm/Makefile b/arch/powerpc/mm/Makefile
-index 3c1bd9fa23cd..138c772d58d1 100644
---- a/arch/powerpc/mm/Makefile
-+++ b/arch/powerpc/mm/Makefile
-@@ -9,6 +9,7 @@ CFLAGS_REMOVE_slb.o = $(CC_FLAGS_FTRACE)
- 
- obj-y				:= fault.o mem.o pgtable.o mmap.o \
- 				   init_$(BITS).o pgtable_$(BITS).o \
-+				   pgtable-frag.o \
- 				   init-common.o mmu_context.o drmem.o
- obj-$(CONFIG_PPC_MMU_NOHASH)	+= mmu_context_nohash.o tlb_nohash.o \
- 				   tlb_nohash_low.o
-@@ -17,8 +18,7 @@ hash64-$(CONFIG_PPC_NATIVE)	:= hash_native_64.o
- obj-$(CONFIG_PPC_BOOK3E_64)   += pgtable-book3e.o
- obj-$(CONFIG_PPC_BOOK3S_64)	+= pgtable-hash64.o hash_utils_64.o slb.o \
- 				   $(hash64-y) mmu_context_book3s64.o \
--				   pgtable-book3s64.o pgtable-frag.o
--obj-$(CONFIG_PPC32)		+= pgtable-frag.o
-+				   pgtable-book3s64.o
- obj-$(CONFIG_PPC_RADIX_MMU)	+= pgtable-radix.o tlb-radix.o
- obj-$(CONFIG_PPC_BOOK3S_32)	+= ppc_mmu_32.o hash_low_32.o mmu_context_hash32.o
- obj-$(CONFIG_PPC_BOOK3S)	+= tlb_hash$(BITS).o
-diff --git a/arch/powerpc/mm/mmu_context.c b/arch/powerpc/mm/mmu_context.c
-index bb52320b7369..6b049d82b98a 100644
---- a/arch/powerpc/mm/mmu_context.c
-+++ b/arch/powerpc/mm/mmu_context.c
-@@ -98,7 +98,7 @@ void switch_mm_irqs_off(struct mm_struct *prev, struct mm_struct *next,
- 	switch_mmu_context(prev, next, tsk);
- }
- 
--#ifdef CONFIG_PPC32
-+#ifndef CONFIG_PPC_BOOK3S_64
- void arch_exit_mmap(struct mm_struct *mm)
- {
- 	void *frag = pte_frag_get(&mm->context);
 -- 
 2.13.3
 
