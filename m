@@ -2,133 +2,54 @@ Return-Path: <SRS0=3bX/=SF=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_PASS autolearn=unavailable
+X-Spam-Status: No, score=-2.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_MUTT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E0F11C4360F
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Apr 2019 15:19:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B1B93C4360F
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Apr 2019 15:21:27 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 532432075E
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Apr 2019 15:19:39 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=web.de header.i=@web.de header.b="VtXF0QKv"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 532432075E
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=web.de
+	by mail.kernel.org (Postfix) with ESMTPS id 3C02D2075E
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Apr 2019 15:21:27 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3C02D2075E
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44Z8rT14P6zDqKf
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Apr 2019 02:19:37 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44Z8tY4Z6nzDqKK
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Apr 2019 02:21:25 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=web.de
- (client-ip=217.72.192.78; helo=mout.web.de;
- envelope-from=markus.elfring@web.de; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=arm.com
+ (client-ip=217.140.101.70; helo=foss.arm.com;
+ envelope-from=will.deacon@arm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=web.de
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- secure) header.d=web.de header.i=@web.de header.b="VtXF0QKv"; 
- dkim-atps=neutral
-X-Greylist: delayed 325 seconds by postgrey-1.36 at bilbo;
- Thu, 04 Apr 2019 01:29:39 AEDT
-Received: from mout.web.de (mout.web.de [217.72.192.78])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44Z7kq2CY9zDqLM
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Apr 2019 01:29:38 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=web.de;
- s=dbaedf251592; t=1554301774;
- bh=yLanSsWQDAbT24V98EHzftp/emW8dqpvJFH9gryEI5g=;
- h=X-UI-Sender-Class:Cc:References:Subject:To:From:Date:In-Reply-To;
- b=VtXF0QKvD6MUGfj3zC/GlpysB+oijZqvRoQqLCukd5yNq16BYfkOmdktXSzmGESP0
- eO9gIZurd1g+3vZVKyO/DnHJOHnTnNNQ1z9tokRLDpiMt7A+Pfp2sKsN+QUm9YeOmb
- dhN+b/toVFExtqPP/zPxemonbkMprrYrjQb6QBck=
-X-UI-Sender-Class: c548c8c5-30a9-4db5-a2e7-cb6cb037b8f9
-Received: from [192.168.1.2] ([93.135.115.60]) by smtp.web.de (mrweb101
- [213.165.67.124]) with ESMTPSA (Nemesis) id 0MNcV4-1hIrnr2KWQ-007FNl; Wed, 03
- Apr 2019 16:23:57 +0200
-References: <1554082674-2049-6-git-send-email-wen.yang99@zte.com.cn>
-Subject: Re: [5/7] cpufreq/pasemi: Checking implementation of
- pas_cpufreq_cpu_init()
-To: Wen Yang <wen.yang99@zte.com.cn>, "Rafael J. Wysocki"
- <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>,
- kernel-janitors@vger.kernel.org
-From: Markus Elfring <Markus.Elfring@web.de>
-Openpgp: preference=signencrypt
-Autocrypt: addr=Markus.Elfring@web.de; prefer-encrypt=mutual; keydata=
- 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 FEE=
-Message-ID: <c0c9c429-a09f-41ba-611d-123b64e410c8@web.de>
-Date: Wed, 3 Apr 2019 16:23:54 +0200
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
- Thunderbird/60.6.1
+ dmarc=none (p=none dis=none) header.from=arm.com
+Received: from foss.arm.com (foss.arm.com [217.140.101.70])
+ by lists.ozlabs.org (Postfix) with ESMTP id 44Z8rg1gWnzDqBb
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Apr 2019 02:19:45 +1100 (AEDT)
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.72.51.249])
+ by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 721BFA78;
+ Wed,  3 Apr 2019 08:19:43 -0700 (PDT)
+Received: from fuggles.cambridge.arm.com (usa-sjc-imap-foss1.foss.arm.com
+ [10.72.51.249])
+ by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id B88453F68F;
+ Wed,  3 Apr 2019 08:19:37 -0700 (PDT)
+Date: Wed, 3 Apr 2019 16:19:32 +0100
+From: Will Deacon <will.deacon@arm.com>
+To: Jens Axboe <axboe@kernel.dk>
+Subject: Re: [PATCH 2/2] arch: add pidfd and io_uring syscalls everywhere
+Message-ID: <20190403151932.GA16866@fuggles.cambridge.arm.com>
+References: <20190325143521.34928-1-arnd@arndb.de>
+ <20190325144737.703921-1-arnd@arndb.de>
+ <87tvff24a1.fsf@concordia.ellerman.id.au>
+ <20190403111134.GA7159@fuggles.cambridge.arm.com>
+ <9d673dfd-0051-3676-653e-6376430d73dd@kernel.dk>
 MIME-Version: 1.0
-In-Reply-To: <1554082674-2049-6-git-send-email-wen.yang99@zte.com.cn>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:3s/asdTdcxZ1lSGA/kR668i/m0CEywgCZlQOwvwZo4Hh9XSQCuY
- mJvCUhPpP9MraubGwRF8XG8Z2ugPn5bgLOs5u9/GXtrwlnaT83mV3KcURPdf+fiGPtenD7b
- ObletnjW3BV7lQvWMVm+PXYS2k3Iok3yU3+QTr+g9191FtnIrhjlubdZB4UR2jGbojVvP7V
- p8+7Bcz7HULFySZacWJ/w==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:e/QK2+ARoko=:ltND8cKzTB8X3ClUpkbnT/
- U7DRPlfE29DUxeK/C6zLkZAftGhDs5XrEAzCCqOsOjAF+BjhVLqOO22QeNwKiWuFvsWKcWE5B
- WHGFD05h9BxiOd+FDRmVP6lFIOo0AsChVisZ88BYwHoScRmuBuOIGSFKmBEHiCHGRNlFzTn8E
- Nvj6WNSsi3ZvfFsY+mMbhGXAD/3/Clf1lto/63ywBLBst745bBY8bPmF0gM0M/jgt+Ku33yTB
- lY4X9FpBnCG3usYvQR4/Wtc+gxM/Q8ONFJzvo/4uwgb98FnqvsXNmS1FrW6d6XiH0vgfgcbv+
- jajXt2XE24jZo9EVSRQOfChvwKyJMoBWci4OhdDdal/tGOyBcrzL3FIXxN3J7k1uSoRbEsfzm
- t3WDUrlwOXCm681b3BeJTCNTiiXJFnEOq2iOV90qhDQ619p1rfhopzotkMZ5kt/XoiKmUBJvL
- S+CMc8mwFuo+wU/rxv3i/N+AOhAjQ5fvtXRRxmu7L4TremDlYO8nCPSG0rBEeF9yCBYd7kP5P
- wnIYkhUt1HWMvpz3Vm6sfXu85TiCWk6O88XIp+CWwOCFS0kQXs9/qAWUOcnI5PaHo5l8tv+Cg
- QU2YiGwpAXRTiuStUOa1yptc7xK1DXF71vPxTcfqN250/HPk/GjD8s4yuaPgA1ng1YRhuExvC
- Jm+PTAl/zZ4eJZPWp1JC7wP8wDkxr0d3Dt2STJ6Jnuv7EQTv/Pan5TlxPCBc+DfgOpFIyCS2D
- wCXCwMmrcmN1Ra7rbjj4nfu7YO40x+xROQhu1FtWs19hzUvAuOxyLmMCKKKuxIV8kn2sNXSwJ
- HVLfymlKRIlUAQ2kyjy1j60eVGWOfW12ZPtkAHDTXpMt4T+uYDYKv2Et8SWWbQgN/3iWhphC8
- f08xjJIeL9JRJIvr39/scrUba4tkBAY6GEusy/Wsd7pGmtvEpp+9ne1IYXsTcnc7CSpwWTD8P
- dIru2UjCKoQ==
-X-Mailman-Approved-At: Thu, 04 Apr 2019 02:18:13 +1100
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <9d673dfd-0051-3676-653e-6376430d73dd@kernel.dk>
+User-Agent: Mutt/1.11.1+86 (6f28e57d73f2) ()
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -140,27 +61,119 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Yi Wang <wang.yi59@zte.com.cn>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Cc: Rich Felker <dalias@libc.org>, linux-ia64@vger.kernel.org,
+ linux-sh@vger.kernel.org, Heiko Carstens <heiko.carstens@de.ibm.com>,
+ linux-mips@vger.kernel.org,
+ "James E . J . Bottomley" <James.Bottomley@HansenPartnership.com>,
+ Max Filippov <jcmvbkbc@gmail.com>, Paul Mackerras <paulus@samba.org>,
+ sparclinux@vger.kernel.org, linux-s390@vger.kernel.org,
+ Helge Deller <deller@gmx.de>, Russell King <linux@armlinux.org.uk>,
+ Geert Uytterhoeven <geert@linux-m68k.org>,
+ Catalin Marinas <catalin.marinas@arm.com>, James Hogan <jhogan@kernel.org>,
+ Firoz Khan <firoz.khan@linaro.org>, Matt Turner <mattst88@gmail.com>,
+ Fenghua Yu <fenghua.yu@intel.com>, Arnd Bergmann <arnd@arndb.de>,
+ linux-m68k@lists.linux-m68k.org, Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
+ linux-arm-kernel@lists.infradead.org, Richard Henderson <rth@twiddle.net>,
+ Michal Simek <monstr@monstr.eu>, Tony Luck <tony.luck@intel.com>,
+ linux-parisc@vger.kernel.org, linux-kernel@vger.kernel.org,
+ Ralf Baechle <ralf@linux-mips.org>, Paul Burton <paul.burton@mips.com>,
+ linux-alpha@vger.kernel.org, Martin Schwidefsky <schwidefsky@de.ibm.com>,
+ Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
+ "David S . Miller" <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-> @@ -146,6 +146,7 @@  static int pas_cpufreq_cpu_init(struct cpufreq_poli=
-cy *policy)
->
->  	cpu =3D of_get_cpu_node(policy->cpu, NULL);
->
-> +	of_node_put(cpu);
->  	if (!cpu)
->  		goto out;
+Hi Jens,
 
-Can the statement =E2=80=9Creturn -ENODEV=E2=80=9D be nicer as exception h=
-andling
-in the if branch of this source code place?
-https://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git/tree/d=
-rivers/cpufreq/pasemi-cpufreq.c?id=3Dbf97b82f37c6d90e16de001d0659644c57fa4=
-90d#n137
+On Wed, Apr 03, 2019 at 07:49:26AM -0600, Jens Axboe wrote:
+> On 4/3/19 5:11 AM, Will Deacon wrote:
+> > will@autoplooker:~/liburing/test$ ./io_uring_register 
+> > RELIMIT_MEMLOCK: 67108864 (67108864)
+> > [   35.477875] Unable to handle kernel NULL pointer dereference at virtual address 0000000000000070
+> > [   35.478969] Mem abort info:
+> > [   35.479296]   ESR = 0x96000004
+> > [   35.479785]   Exception class = DABT (current EL), IL = 32 bits
+> > [   35.480528]   SET = 0, FnV = 0
+> > [   35.480980]   EA = 0, S1PTW = 0
+> > [   35.481345] Data abort info:
+> > [   35.481680]   ISV = 0, ISS = 0x00000004
+> > [   35.482267]   CM = 0, WnR = 0
+> > [   35.482618] user pgtable: 4k pages, 48-bit VAs, pgdp = (____ptrval____)
+> > [   35.483486] [0000000000000070] pgd=0000000000000000
+> > [   35.484041] Internal error: Oops: 96000004 [#1] PREEMPT SMP
+> > [   35.484788] Modules linked in:
+> > [   35.485311] CPU: 113 PID: 3973 Comm: io_uring_regist Not tainted 5.1.0-rc3-00012-g40b114779944 #1
+> > [   35.486712] Hardware name: linux,dummy-virt (DT)
+> > [   35.487450] pstate: 20400005 (nzCv daif +PAN -UAO)
+> > [   35.488228] pc : link_pwq+0x10/0x60
+> > [   35.488794] lr : apply_wqattrs_commit+0xe0/0x118
+> > [   35.489550] sp : ffff000017e2bbc0
+> 
+> Huh, this looks odd, it's crashing inside the wq setup.
 
-Regards,
-Markus
+Enabling KASAN seems to indicate a double-free, which may well be related.
+
+Will
+
+[  149.890370] ==================================================================
+[  149.891266] BUG: KASAN: double-free or invalid-free in io_sqe_files_unregister+0xa8/0x140
+[  149.892218] 
+[  149.892411] CPU: 113 PID: 3974 Comm: io_uring_regist Tainted: G    B             5.1.0-rc3-00012-g40b114779944 #3
+[  149.893623] Hardware name: linux,dummy-virt (DT)
+[  149.894169] Call trace:
+[  149.894539]  dump_backtrace+0x0/0x228
+[  149.895172]  show_stack+0x14/0x20
+[  149.895747]  dump_stack+0xe8/0x124
+[  149.896335]  print_address_description+0x60/0x258
+[  149.897148]  kasan_report_invalid_free+0x78/0xb8
+[  149.897936]  __kasan_slab_free+0x1fc/0x228
+[  149.898641]  kasan_slab_free+0x10/0x18
+[  149.899283]  kfree+0x70/0x1f8
+[  149.899798]  io_sqe_files_unregister+0xa8/0x140
+[  149.900574]  io_ring_ctx_wait_and_kill+0x190/0x3c0
+[  149.901402]  io_uring_release+0x2c/0x48
+[  149.902068]  __fput+0x18c/0x510
+[  149.902612]  ____fput+0xc/0x18
+[  149.903146]  task_work_run+0xf0/0x148
+[  149.903778]  do_notify_resume+0x554/0x748
+[  149.904467]  work_pending+0x8/0x10
+[  149.905060] 
+[  149.905331] Allocated by task 3974:
+[  149.905934]  __kasan_kmalloc.isra.0.part.1+0x48/0xf8
+[  149.906786]  __kasan_kmalloc.isra.0+0xb8/0xd8
+[  149.907531]  kasan_kmalloc+0xc/0x18
+[  149.908134]  __kmalloc+0x168/0x248
+[  149.908724]  __arm64_sys_io_uring_register+0x2b8/0x15a8
+[  149.909622]  el0_svc_common+0x100/0x258
+[  149.910281]  el0_svc_handler+0x48/0xc0
+[  149.910928]  el0_svc+0x8/0xc
+[  149.911425] 
+[  149.911696] Freed by task 3974:
+[  149.912242]  __kasan_slab_free+0x114/0x228
+[  149.912955]  kasan_slab_free+0x10/0x18
+[  149.913602]  kfree+0x70/0x1f8
+[  149.914118]  __arm64_sys_io_uring_register+0xc2c/0x15a8
+[  149.915009]  el0_svc_common+0x100/0x258
+[  149.915670]  el0_svc_handler+0x48/0xc0
+[  149.916317]  el0_svc+0x8/0xc
+[  149.916817] 
+[  149.917101] The buggy address belongs to the object at ffff8004ce07ed00
+[  149.917101]  which belongs to the cache kmalloc-128 of size 128
+[  149.919197] The buggy address is located 0 bytes inside of
+[  149.919197]  128-byte region [ffff8004ce07ed00, ffff8004ce07ed80)
+[  149.921142] The buggy address belongs to the page:
+[  149.921953] page:ffff7e0013381f00 count:1 mapcount:0 mapping:ffff800503417c00 index:0x0 compound_mapcount: 0
+[  149.923595] flags: 0x1ffff00000010200(slab|head)
+[  149.924388] raw: 1ffff00000010200 dead000000000100 dead000000000200 ffff800503417c00
+[  149.925706] raw: 0000000000000000 0000000080400040 00000001ffffffff 0000000000000000
+[  149.927011] page dumped because: kasan: bad access detected
+[  149.927956] 
+[  149.928224] Memory state around the buggy address:
+[  149.929054]  ffff8004ce07ec00: 00 00 00 00 00 00 00 00 fc fc fc fc fc fc fc fc
+[  149.930274]  ffff8004ce07ec80: fc fc fc fc fc fc fc fc fc fc fc fc fc fc fc fc
+[  149.931494] >ffff8004ce07ed00: fb fb fb fb fb fb fb fb fb fb fb fb fb fb fb fb
+[  149.932712]                    ^
+[  149.933281]  ffff8004ce07ed80: fc fc fc fc fc fc fc fc fc fc fc fc fc fc fc fc
+[  149.934508]  ffff8004ce07ee00: fc fc fc fc fc fc fc fc fc fc fc fc fc fc fc fc
+[  149.935725] ==================================================================
