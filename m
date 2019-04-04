@@ -2,104 +2,91 @@ Return-Path: <SRS0=99u2=SG=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-0.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AB88BC10F0E
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Apr 2019 09:43:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A6829C4360F
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Apr 2019 10:23:31 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id CCA1A20693
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Apr 2019 09:43:57 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id DC77B20882
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Apr 2019 10:23:30 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=nxp.com header.i=@nxp.com header.b="W74ExDUr"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CCA1A20693
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nxp.com
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="Y7Z4if8s"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DC77B20882
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linaro.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44ZdLg3rWyzDqC9
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Apr 2019 20:43:55 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44ZfDJ19TjzDqKK
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Apr 2019 21:23:28 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=nxp.com
- (client-ip=40.107.15.78; helo=eur01-db5-obe.outbound.protection.outlook.com;
- envelope-from=shengjiu.wang@nxp.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=linaro.org
+ (client-ip=2607:f8b0:4864:20::444; helo=mail-pf1-x444.google.com;
+ envelope-from=daniel.lezcano@linaro.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=nxp.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=nxp.com header.i=@nxp.com header.b="W74ExDUr"; 
+ dmarc=pass (p=none dis=none) header.from=linaro.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=linaro.org header.i=@linaro.org header.b="Y7Z4if8s"; 
  dkim-atps=neutral
-Received: from EUR01-DB5-obe.outbound.protection.outlook.com
- (mail-eopbgr150078.outbound.protection.outlook.com [40.107.15.78])
+Received: from mail-pf1-x444.google.com (mail-pf1-x444.google.com
+ [IPv6:2607:f8b0:4864:20::444])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44ZdHS2YjCzDqFv
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Apr 2019 20:41:03 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nxp.com; s=selector1; 
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=dU4KxQD7u8yoGgoDpzUgUWJzznuQJJ50HgVGw3v0DiM=;
- b=W74ExDUrMkyxIfs3t/Clh7I4pD6wd7V2RRfZHDIeo1JPJzYKM1yBmuncRIIJ6GQyQ13iKo+pQ3I19PzXdW/HSr/Q0VfGcvqcjqmqeAypVIb5fWnL3WGWx+dsVnCXT07XTNgzYeTfGmSOtruR0MHefERl3sfldyFqQbdVYJ/46BU=
-Received: from VE1PR04MB6479.eurprd04.prod.outlook.com (20.179.233.80) by
- VE1PR04MB6719.eurprd04.prod.outlook.com (20.179.235.208) with Microsoft SMTP
- Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.20.1750.17; Thu, 4 Apr 2019 09:40:57 +0000
-Received: from VE1PR04MB6479.eurprd04.prod.outlook.com
- ([fe80::59c9:fbfe:c41a:59ef]) by VE1PR04MB6479.eurprd04.prod.outlook.com
- ([fe80::59c9:fbfe:c41a:59ef%4]) with mapi id 15.20.1750.017; Thu, 4 Apr 2019
- 09:40:57 +0000
-From: "S.j. Wang" <shengjiu.wang@nxp.com>
-To: "timur@kernel.org" <timur@kernel.org>, "nicoleotsuka@gmail.com"
- <nicoleotsuka@gmail.com>, "Xiubo.Lee@gmail.com" <Xiubo.Lee@gmail.com>,
- "festevam@gmail.com" <festevam@gmail.com>, "broonie@kernel.org"
- <broonie@kernel.org>, "alsa-devel@alsa-project.org"
- <alsa-devel@alsa-project.org>
-Subject: [PATCH V3] ASoC: fsl_esai: Support synchronous mode
-Thread-Topic: [PATCH V3] ASoC: fsl_esai: Support synchronous mode
-Thread-Index: AQHU6sqBPAjM1VYiq06aHRLyPL2amg==
-Date: Thu, 4 Apr 2019 09:40:56 +0000
-Message-ID: <a24d5493c392d39aefc6239e3dd97f9dd5fff1a1.1554370750.git.shengjiu.wang@nxp.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-x-mailer: git-send-email 1.9.1
-x-clientproxiedby: HK0PR01CA0048.apcprd01.prod.exchangelabs.com
- (2603:1096:203:3e::36) To VE1PR04MB6479.eurprd04.prod.outlook.com
- (2603:10a6:803:11e::16)
-authentication-results: spf=none (sender IP is )
- smtp.mailfrom=shengjiu.wang@nxp.com; 
-x-ms-exchange-messagesentrepresentingtype: 1
-x-originating-ip: [119.31.174.66]
-x-ms-publictraffictype: Email
-x-ms-office365-filtering-correlation-id: b1b58ea0-7961-4b71-8eb1-08d6b8e1a348
-x-ms-office365-filtering-ht: Tenant
-x-microsoft-antispam: BCL:0; PCL:0;
- RULEID:(2390118)(7020095)(4652040)(8989299)(5600139)(711020)(4605104)(4618075)(4534185)(4627221)(201703031133081)(201702281549075)(8990200)(2017052603328)(7193020);
- SRVR:VE1PR04MB6719; 
-x-ms-traffictypediagnostic: VE1PR04MB6719:
-x-microsoft-antispam-prvs: <VE1PR04MB6719A5CF7BFC8C6867B51F68E3500@VE1PR04MB6719.eurprd04.prod.outlook.com>
-x-forefront-prvs: 0997523C40
-x-forefront-antispam-report: SFV:NSPM;
- SFS:(10009020)(366004)(396003)(136003)(346002)(376002)(39860400002)(189003)(199004)(50226002)(81166006)(305945005)(106356001)(478600001)(6116002)(6486002)(8936002)(25786009)(71190400001)(6512007)(2201001)(68736007)(86362001)(7736002)(4326008)(118296001)(3846002)(2906002)(186003)(81156014)(105586002)(97736004)(386003)(66066001)(14454004)(14444005)(26005)(110136005)(53936002)(52116002)(316002)(8676002)(2501003)(99286004)(102836004)(476003)(2616005)(71200400001)(5660300002)(486006)(6506007)(6436002)(256004)(36756003);
- DIR:OUT; SFP:1101; SCL:1; SRVR:VE1PR04MB6719;
- H:VE1PR04MB6479.eurprd04.prod.outlook.com; FPR:; SPF:None; LANG:en;
- PTR:InfoNoRecords; MX:1; A:1; 
-received-spf: None (protection.outlook.com: nxp.com does not designate
- permitted sender hosts)
-x-ms-exchange-senderadcheck: 1
-x-microsoft-antispam-message-info: JSrJnueYdPbxwqq4rpsu0ISR+yfRr62hkgBNUR5RL0PrCBCBe0weOm4Uo+1EQkjtcUKbutHmLZIj/fePyTeSBYll/TTKqGflAjnO+q93B3Zp8Z9a3081M08FsaclK5UXWll+duE0lCQ6HBWzA1piDYTnlVUlvPNw4Yna9YfL2+F9i1PqJupMvOOv0/+7jRffVQwQf2mRJ0//2mJMd45aiAev2A3v7GAJEMCudGx5ZiFrjMBfw5CnmuDmo7tWzYPj6TgRJbb9M/QRQO/z+4VE4dwt1myGNfQeAEt94nJYzHK+Fw+XZs2x9gnWZRlAyH7ZMozwD/h5ne4XSAHiFeorMzaVWy0wYLtkloGG/cIbePiHTFsoWIircturmYuokHObeTeWyt4npySaEkRjIRoHIY6qGJLZ+Asl9oq5JNTOmoU=
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44ZfBK2V1dzDqHk
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Apr 2019 21:21:44 +1100 (AEDT)
+Received: by mail-pf1-x444.google.com with SMTP id r15so1133237pfn.9
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 04 Apr 2019 03:21:44 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linaro.org; s=google;
+ h=subject:to:cc:references:from:message-id:date:user-agent
+ :mime-version:in-reply-to:content-language:content-transfer-encoding;
+ bh=rkJOt1RN0QTbcsQKoY/n8mPh1lUPyoQR0HE26224PvM=;
+ b=Y7Z4if8sBTFRUJp2VmdFCP2z1GsyxdOUmYthhir4QqjyWBlPl4HwBYw1BnHpaeHRKa
+ 2V8mKDo+duY7cZTI/1O2SdWNp4pvATB7pf+x+OnlrbzvphB1wFabh/UzxlrW3q9iz6Ot
+ /hfNBIRvIuKLvAFBOjQJaucYcgfZv5STrcWp3liAVZbeMQzQBPQiqKSVETq7CYVNwo3Q
+ dVaNAntsWC08KIAkTXMnwIwNDhvqafTvVtKnKbPVZghSWE6Zy1ee62RByiZwItxSJwjj
+ 0la8cXyydi/qrX+1XXxBxKawQ/IWF3KD7qAgEfC8ya/fmaRoc6L7k/gyAD1J53Vur9Pe
+ 9HNQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:subject:to:cc:references:from:message-id:date
+ :user-agent:mime-version:in-reply-to:content-language
+ :content-transfer-encoding;
+ bh=rkJOt1RN0QTbcsQKoY/n8mPh1lUPyoQR0HE26224PvM=;
+ b=auO1mLphFoRBU8uSwxqQuqjoboQXs8HvGJfhfrTjXNDuVc/D2iiu3mdQjJDfqqyvaY
+ 3wo1bwhURUM+4q+/mHgPebM/is75nZxQcyB17Q7+PxwlwReW9ipDM/0Xo6vpGxPbFk4u
+ 4KpKAl/ktPo9RKk4lcOHIMgI4CYkwdp5yqkLc0x3R0j5Xp0l32ffpS82qhZXQCVrdh0o
+ W2g+jPTOxH3J4YOyz2RMCn4/7Z22wAPhPvSi/NUI3ulInLjnMuNX1hNTaQnsg9lhhWw/
+ F4AtT6qE/yXsSgReAykDWgC5qV0UOEC3TYIamn0NvIvDCrb7MkPHyRm7me+kunuRunK8
+ 3EZA==
+X-Gm-Message-State: APjAAAVJ77LDIOTB7aX8VRG8nU5dGS3upegzcIfyn7QkEQdkmtHiD8i+
+ QRHwXyCe2dCyDVUt8NYez28b4w==
+X-Google-Smtp-Source: APXvYqy7iktDC+hyNWdXabASJpXCqyQZSD/NbSQGGET0Q7iKkhZyzt6PZn4ewSoDP8SyvH21oJ6ugQ==
+X-Received: by 2002:a65:414a:: with SMTP id x10mr5039636pgp.237.1554373300974; 
+ Thu, 04 Apr 2019 03:21:40 -0700 (PDT)
+Received: from [10.71.14.66] ([147.50.13.10])
+ by smtp.googlemail.com with ESMTPSA id z6sm36816853pgo.31.2019.04.04.03.21.38
+ (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
+ Thu, 04 Apr 2019 03:21:40 -0700 (PDT)
+Subject: Re: [PATCH 1/2] cpuidle : auto-promotion for cpuidle states
+To: Abhishek <huntbag@linux.vnet.ibm.com>,
+ "Rafael J. Wysocki" <rafael@kernel.org>
+References: <20190322072942.8038-1-huntbag@linux.vnet.ibm.com>
+ <20190322072942.8038-2-huntbag@linux.vnet.ibm.com>
+ <CAJZ5v0gY-theHng=bQQpw-33jHGe++iEigEM5j6Ls7vEuewuSQ@mail.gmail.com>
+ <cfb0076f-0b56-f12c-a736-469a3d11ab83@linaro.org>
+ <50f62972-dfce-52bf-d26b-32e6d2a367e2@linux.vnet.ibm.com>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Message-ID: <9e542011-df6d-9b84-823b-2af6a6ef9e94@linaro.org>
+Date: Thu, 4 Apr 2019 12:21:36 +0200
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.5.1
 MIME-Version: 1.0
-X-OriginatorOrg: nxp.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: b1b58ea0-7961-4b71-8eb1-08d6b8e1a348
-X-MS-Exchange-CrossTenant-originalarrivaltime: 04 Apr 2019 09:40:56.9990 (UTC)
-X-MS-Exchange-CrossTenant-fromentityheader: Hosted
-X-MS-Exchange-CrossTenant-id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
-X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: VE1PR04MB6719
+In-Reply-To: <50f62972-dfce-52bf-d26b-32e6d2a367e2@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -111,85 +98,139 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ Linux PM <linux-pm@vger.kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-In ESAI synchronous mode, the clock is generated by Tx, So
-we should always set registers of Tx which relate with the
-bit clock and frame clock generation (TCCR, TCR, ECR), even
-there is only Rx is working.
 
-Signed-off-by: Shengjiu Wang <shengjiu.wang@nxp.com>
-Acked-by: Nicolin Chen <nicoleotsuka@gmail.com>
----
-Changes in v3
-- fix the indentation
+Hi Abhishek,
 
- sound/soc/fsl/fsl_esai.c | 21 ++++++++++++++-------
- 1 file changed, 14 insertions(+), 7 deletions(-)
+thanks for taking the time to test the different scenario and give us
+the numbers.
 
-diff --git a/sound/soc/fsl/fsl_esai.c b/sound/soc/fsl/fsl_esai.c
-index 3623aa9a6f2e..c7410bbfd2af 100644
---- a/sound/soc/fsl/fsl_esai.c
-+++ b/sound/soc/fsl/fsl_esai.c
-@@ -218,7 +218,7 @@ static int fsl_esai_set_dai_sysclk(struct snd_soc_dai *=
-dai, int clk_id,
- {
- 	struct fsl_esai *esai_priv =3D snd_soc_dai_get_drvdata(dai);
- 	struct clk *clksrc =3D esai_priv->extalclk;
--	bool tx =3D clk_id <=3D ESAI_HCKT_EXTAL;
-+	bool tx =3D (clk_id <=3D ESAI_HCKT_EXTAL || esai_priv->synchronous);
- 	bool in =3D dir =3D=3D SND_SOC_CLOCK_IN;
- 	u32 ratio, ecr =3D 0;
- 	unsigned long clk_rate;
-@@ -253,7 +253,7 @@ static int fsl_esai_set_dai_sysclk(struct snd_soc_dai *=
-dai, int clk_id,
- 		ecr |=3D ESAI_ECR_ETI;
- 		/* fall through */
- 	case ESAI_HCKR_EXTAL:
--		ecr |=3D ESAI_ECR_ERI;
-+		ecr |=3D esai_priv->synchronous ? ESAI_ECR_ETI : ESAI_ECR_ERI;
- 		break;
- 	default:
- 		return -EINVAL;
-@@ -537,10 +537,18 @@ static int fsl_esai_hw_params(struct snd_pcm_substrea=
-m *substream,
-=20
- 	bclk =3D params_rate(params) * slot_width * esai_priv->slots;
-=20
--	ret =3D fsl_esai_set_bclk(dai, tx, bclk);
-+	ret =3D fsl_esai_set_bclk(dai, esai_priv->synchronous || tx, bclk);
- 	if (ret)
- 		return ret;
-=20
-+	mask =3D ESAI_xCR_xSWS_MASK;
-+	val =3D ESAI_xCR_xSWS(slot_width, width);
-+
-+	regmap_update_bits(esai_priv->regmap, REG_ESAI_xCR(tx), mask, val);
-+	/* Recording in synchronous mode needs to set TCR also */
-+	if (!tx && esai_priv->synchronous)
-+		regmap_update_bits(esai_priv->regmap, REG_ESAI_TCR, mask, val);
-+
- 	/* Use Normal mode to support monaural audio */
- 	regmap_update_bits(esai_priv->regmap, REG_ESAI_xCR(tx),
- 			   ESAI_xCR_xMOD_MASK, params_channels(params) > 1 ?
-@@ -556,10 +564,9 @@ static int fsl_esai_hw_params(struct snd_pcm_substream=
- *substream,
-=20
- 	regmap_update_bits(esai_priv->regmap, REG_ESAI_xFCR(tx), mask, val);
-=20
--	mask =3D ESAI_xCR_xSWS_MASK | (tx ? ESAI_xCR_PADC : 0);
--	val =3D ESAI_xCR_xSWS(slot_width, width) | (tx ? ESAI_xCR_PADC : 0);
--
--	regmap_update_bits(esai_priv->regmap, REG_ESAI_xCR(tx), mask, val);
-+	if (tx)
-+		regmap_update_bits(esai_priv->regmap, REG_ESAI_TCR,
-+				ESAI_xCR_PADC, ESAI_xCR_PADC);
-=20
- 	/* Remove ESAI personal reset by configuring ESAI_PCRC and ESAI_PRRC */
- 	regmap_update_bits(esai_priv->regmap, REG_ESAI_PRRC,
---=20
-1.9.1
+On 01/04/2019 07:11, Abhishek wrote:
+> 
+> 
+> On 03/22/2019 06:56 PM, Daniel Lezcano wrote:
+>> On 22/03/2019 10:45, Rafael J. Wysocki wrote:
+>>> On Fri, Mar 22, 2019 at 8:31 AM Abhishek Goel
+>>> <huntbag@linux.vnet.ibm.com> wrote:
+>>>> Currently, the cpuidle governors (menu /ladder) determine what idle
+>>>> state
+>>>> an idling CPU should enter into based on heuristics that depend on the
+>>>> idle history on that CPU. Given that no predictive heuristic is
+>>>> perfect,
+>>>> there are cases where the governor predicts a shallow idle state,
+>>>> hoping
+>>>> that the CPU will be busy soon. However, if no new workload is
+>>>> scheduled
+>>>> on that CPU in the near future, the CPU will end up in the shallow
+>>>> state.
+>>>>
+>>>> In case of POWER, this is problematic, when the predicted state in the
+>>>> aforementioned scenario is a lite stop state, as such lite states will
+>>>> inhibit SMT folding, thereby depriving the other threads in the core
+>>>> from
+>>>> using the core resources.
+
+I can understand an idle state can prevent other threads to use the core
+resources. But why a deeper idle state does not prevent this also?
+
+
+>>>> To address this, such lite states need to be autopromoted. The cpuidle-
+>>>> core can queue timer to correspond with the residency value of the next
+>>>> available state. Thus leading to auto-promotion to a deeper idle
+>>>> state as
+>>>> soon as possible.
+>>> Isn't the tick stopping avoidance sufficient for that?
+>> I was about to ask the same :)
+>>
+>>
+>>
+>>
+> Thanks for the review.
+> I performed experiments for three scenarios to collect some data.
+> 
+> case 1 :
+> Without this patch and without tick retained, i.e. in a upstream kernel,
+> It would spend more than even a second to get out of stop0_lite.
+> 
+> case 2 : With tick retained(as suggested) -
+> 
+> Generally, we have a sched tick at 4ms(CONF_HZ = 250). Ideally I expected
+> it to take 8 sched tick to get out of stop0_lite. Experimentally,
+> observation was
+> 
+> ===================================
+> min            max            99percentile
+> 4ms            12ms          4ms
+> ===================================
+> *ms = milliseconds
+> 
+> It would take atleast one sched tick to get out of stop0_lite.
+> 
+> case 2 :  With this patch (not stopping tick, but explicitly queuing a
+> timer)
+> 
+> min            max              99.5percentile
+> ===============================
+> 144us       192us              144us
+> ===============================
+> *us = microseconds
+> 
+> In this patch, we queue a timer just before entering into a stop0_lite
+> state. The timer fires at (residency of next available state + exit
+> latency of next available state * 2).
+
+So for the context, we have a similar issue but from the power
+management point of view where a CPU can stay in a shallow state for a
+long period, thus consuming a lot of energy.
+
+The window was reduced by preventing stopping the tick when a shallow
+state is selected. Unfortunately, if the tick is stopped and we
+exit/enter again and we select a shallow state, the situation is the same.
+
+A solution was previously proposed with a timer some years ago, like
+this patch does, and merged but there were complains about bad
+performance impact, so it has been reverted.
+
+> Let's say if next state(stop0) is available which has residency of 20us, it
+> should get out in as low as (20+2*2)*8 [Based on the forumla (residency +
+> 2xlatency)*history length] microseconds = 192us. Ideally we would expect 8
+> iterations, it was observed to get out in 6-7 iterations.
+
+Can you explain the formula? I don't get the rational. Why using the
+exit latency and why multiply it by 2?
+
+Why the timer is not set to the next state's target residency value ?
+
+> Even if let's say stop2 is next available state(stop0 and stop1 both are
+> unavailable), it would take (100+2*10)*8 = 960us to get into stop2.
+> 
+> So, We are able to get out of stop0_lite generally in 150us(with this
+> patch) as
+> compared to 4ms(with tick retained). As stated earlier, we do not want
+> to get
+> stuck into stop0_lite as it inhibits SMT folding for other sibling
+> threads, depriving
+> them of core resources. Current patch is using auto-promotion only for
+> stop0_lite,
+> as it gives performance benefit(primary reason) along with lowering down
+> power
+> consumption. We may extend this model for other states in future.
+> 
+> --Abhishek
+> 
+
+
+-- 
+ <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
+
+Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
 
