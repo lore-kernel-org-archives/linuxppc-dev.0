@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 29F39C4360F
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Apr 2019 07:55:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0F5FEC4360F
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Apr 2019 07:56:52 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6E43120674
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Apr 2019 07:55:25 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6E43120674
+	by mail.kernel.org (Postfix) with ESMTPS id 885EB20674
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Apr 2019 07:56:50 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 885EB20674
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linutronix.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44ZZxQ623BzDqKK
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Apr 2019 18:55:22 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44ZZz44c5zzDqFM
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Apr 2019 18:56:48 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=none (mailfrom) smtp.mailfrom=linutronix.de
  (client-ip=2a01:7a0:2:106d:700::1; helo=galois.linutronix.de;
@@ -29,21 +29,21 @@ Received: from Galois.linutronix.de (Galois.linutronix.de
  [IPv6:2a01:7a0:2:106d:700::1])
  (using TLSv1.2 with cipher DHE-RSA-AES256-SHA256 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44ZZvd2dHRzDqJ8
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Apr 2019 18:53:48 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44ZZvh6wLTzDqJ8
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Apr 2019 18:53:52 +1100 (AEDT)
 Received: from p5492e2fc.dip0.t-ipconnect.de ([84.146.226.252] helo=nanos)
  by Galois.linutronix.de with esmtpsa (TLS1.2:DHE_RSA_AES_256_CBC_SHA256:256)
  (Exim 4.80) (envelope-from <tglx@linutronix.de>)
- id 1hBxBB-0000UO-Aj; Thu, 04 Apr 2019 09:52:57 +0200
-Date: Thu, 4 Apr 2019 09:52:56 +0200 (CEST)
+ id 1hBxBV-0000WH-Bj; Thu, 04 Apr 2019 09:53:17 +0200
+Date: Thu, 4 Apr 2019 09:53:16 +0200 (CEST)
 From: Thomas Gleixner <tglx@linutronix.de>
 To: Steven Rostedt <rostedt@goodmis.org>
-Subject: Re: [PATCH 5/6 v3] syscalls: Remove start and number from
- syscall_get_arguments() args
-In-Reply-To: <20190401134421.278590567@goodmis.org>
-Message-ID: <alpine.DEB.2.21.1904040952280.1833@nanos.tec.linutronix.de>
+Subject: Re: [PATCH 6/6 v3] syscalls: Remove start and number from
+ syscall_set_arguments() args
+In-Reply-To: <20190401134421.442323029@goodmis.org>
+Message-ID: <alpine.DEB.2.21.1904040953040.1833@nanos.tec.linutronix.de>
 References: <20190401134104.676620247@goodmis.org>
- <20190401134421.278590567@goodmis.org>
+ <20190401134421.442323029@goodmis.org>
 User-Agent: Alpine 2.21 (DEB 202 2017-01-01)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -88,21 +88,15 @@ Sender: "Linuxppc-dev"
 
 On Mon, 1 Apr 2019, Steven Rostedt wrote:
 
-> From: "Steven Rostedt (Red Hat)" <rostedt@goodmis.org>
+> From: "Steven Rostedt (VMware)" <rostedt@goodmis.org>
 > 
-> At Linux Plumbers, Andy Lutomirski approached me and pointed out that the
-> function call syscall_get_arguments() implemented in x86 was horribly
-> written and not optimized for the standard case of passing in 0 and 6 for
-> the starting index and the number of system calls to get. When looking at
-> all the users of this function, I discovered that all instances pass in only
-> 0 and 6 for these arguments. Instead of having this function handle
-> different cases that are never used, simply rewrite it to return the first 6
-> arguments of a system call.
+> After removing the start and count arguments of syscall_get_arguments() it
+> seems reasonable to remove them from syscall_set_arguments(). Note, as of
+> today, there are no users of syscall_set_arguments(). But we are told that
+> there will be soon. But for now, at least make it consistent with
+> syscall_get_arguments().
 > 
-> This should help out the performance of tracing system calls by ptrace,
-> ftrace and perf.
-> 
-> Link: http://lkml.kernel.org/r/20161107213233.754809394@goodmis.org
+> Link: http://lkml.kernel.org/r/20190327222014.GA32540@altlinux.org
 
 For x86:
 
