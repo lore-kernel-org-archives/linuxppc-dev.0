@@ -2,55 +2,77 @@ Return-Path: <SRS0=99u2=SG=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	MENTIONS_GIT_HOSTING,SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0F5FEC4360F
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Apr 2019 07:56:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C8BA6C10F0C
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Apr 2019 08:46:18 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 885EB20674
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Apr 2019 07:56:50 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 885EB20674
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linutronix.de
+	by mail.kernel.org (Postfix) with ESMTPS id 08F2520855
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Apr 2019 08:46:16 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=xenosoft.de header.i=@xenosoft.de header.b="h4dXUeo4"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 08F2520855
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=xenosoft.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44ZZz44c5zzDqFM
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Apr 2019 18:56:48 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44Zc46443nzDqPG
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Apr 2019 19:46:14 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=linutronix.de
- (client-ip=2a01:7a0:2:106d:700::1; helo=galois.linutronix.de;
- envelope-from=tglx@linutronix.de; receiver=<UNKNOWN>)
+ spf=pass (helo) smtp.helo=mo6-p00-ob.smtp.rzone.de
+ (client-ip=2a01:238:20a:202:5300::8; helo=mo6-p00-ob.smtp.rzone.de;
+ envelope-from=chzigotzky@xenosoft.de; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=linutronix.de
-Received: from Galois.linutronix.de (Galois.linutronix.de
- [IPv6:2a01:7a0:2:106d:700::1])
- (using TLSv1.2 with cipher DHE-RSA-AES256-SHA256 (256/256 bits))
+ dmarc=none (p=none dis=none) header.from=xenosoft.de
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=xenosoft.de header.i=@xenosoft.de header.b="h4dXUeo4"; 
+ dkim-atps=neutral
+Received: from mo6-p00-ob.smtp.rzone.de (mo6-p00-ob.smtp.rzone.de
+ [IPv6:2a01:238:20a:202:5300::8])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44ZZvh6wLTzDqJ8
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Apr 2019 18:53:52 +1100 (AEDT)
-Received: from p5492e2fc.dip0.t-ipconnect.de ([84.146.226.252] helo=nanos)
- by Galois.linutronix.de with esmtpsa (TLS1.2:DHE_RSA_AES_256_CBC_SHA256:256)
- (Exim 4.80) (envelope-from <tglx@linutronix.de>)
- id 1hBxBV-0000WH-Bj; Thu, 04 Apr 2019 09:53:17 +0200
-Date: Thu, 4 Apr 2019 09:53:16 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Steven Rostedt <rostedt@goodmis.org>
-Subject: Re: [PATCH 6/6 v3] syscalls: Remove start and number from
- syscall_set_arguments() args
-In-Reply-To: <20190401134421.442323029@goodmis.org>
-Message-ID: <alpine.DEB.2.21.1904040953040.1833@nanos.tec.linutronix.de>
-References: <20190401134104.676620247@goodmis.org>
- <20190401134421.442323029@goodmis.org>
-User-Agent: Alpine 2.21 (DEB 202 2017-01-01)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44Zc261vd5zDqGv
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Apr 2019 19:44:26 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; t=1554367458;
+ s=strato-dkim-0002; d=xenosoft.de;
+ h=In-Reply-To:Date:Message-ID:From:References:To:Subject:
+ X-RZG-CLASS-ID:X-RZG-AUTH:From:Subject:Sender;
+ bh=A4PQkv1MXITBe5qfxDmair+xDjlNBE4ZSXXMqR/s5Jw=;
+ b=h4dXUeo4jnhBdqeNNKPPQX/PDKij8oyLODiuXzOPVd5KtBMe56L+1Ylr3vcamF/Jfl
+ slxYGoM/jyTQJdtKQukZoXWMB3Gd49OazLqovkoM65UjpIt837RcWaTymp69d9yEOdma
+ 0vawFQrgCoPHB/PmQPV0ogFIWi91Bv2/x3Twp5BzrWNWiEVs4Kds9TeuCeBJW8FnQqd1
+ +Lqh/4H/3l4btpX9+Z+jhvStJt7EA/PLE2RSWu4CTNdfj7MLzw3dnymeqeIfXp1fDAEt
+ EtMAuZBuZUzgCyDWQUzCW3nkYjolmz7jfFpevoAg1OZzi/JVuejPFXeytm9xsOYC0ROM
+ cLNA==
+X-RZG-AUTH: ":L2QefEenb+UdBJSdRCXu93KJ1bmSGnhMdmOod1DhGM4l4Hio94KKxRySfLxnHfJ+Dkjp5G5MdirQj0WG7CkNjlBPV/3IdB0Je2K2M1gQpcht"
+X-RZG-CLASS-ID: mo00
+Received: from [IPv6:2a02:8109:a400:162c:2057:f49:8d2c:44ac]
+ by smtp.strato.de (RZmta 44.18 AUTH) with ESMTPSA id k00e1ev348iD24j
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (curve secp521r1 with
+ 521 ECDH bits, eq. 15360 bits RSA))
+ (Client did not present a certificate);
+ Thu, 4 Apr 2019 10:44:13 +0200 (CEST)
+Subject: VLC doesn't play videos anymore since the PowerPC fixes 5.1-3
+To: Christophe Leroy <christophe.leroy@c-s.fr>,
+ linuxppc-dev@lists.ozlabs.org, Michael Ellerman <mpe@ellerman.id.au>
+References: <19FEC425-987D-4B95-AEFD-FF7C05990242@xenosoft.de>
+ <79a9370a-7c4b-80be-adab-6dcf3b0fa6f2@c-s.fr>
+ <0f0403a0-476a-6129-8dc6-866d894c9adc@xenosoft.de>
+ <5726a634-25ca-d267-17fd-af88436edf1f@c-s.fr>
+From: Christian Zigotzky <chzigotzky@xenosoft.de>
+Message-ID: <99ff68a4-3aef-47ad-99f8-433b181afe3f@xenosoft.de>
+Date: Thu, 4 Apr 2019 10:44:13 +0200
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.6.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-X-Linutronix-Spam-Score: -1.0
-X-Linutronix-Spam-Level: -
-X-Linutronix-Spam-Status: No , -1.0 points, 5.0 required, ALL_TRUSTED=-1,
- SHORTCIRCUIT=-0.0001
+In-Reply-To: <5726a634-25ca-d267-17fd-af88436edf1f@c-s.fr>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 8bit
+Content-Language: de-DE
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -62,42 +84,128 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-ia64@vger.kernel.org, "Gustavo A. R. Silva" <gustavo@embeddedor.com>,
- Peter Zijlstra <peterz@infradead.org>, Palmer Dabbelt <palmer@sifive.com>,
- Dominik Brodowski <linux@dominikbrodowski.net>,
- Oleg Nesterov <oleg@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
- sparclinux@vger.kernel.org, linux-riscv@lists.infradead.org,
- Ingo Molnar <mingo@kernel.org>, linux-arch@vger.kernel.org,
- linux-s390@vger.kernel.org, linux-c6x-dev@linux-c6x.org,
- linux-sh@vger.kernel.org, linux-hexagon@vger.kernel.org, x86@kernel.org,
- Ingo Molnar <mingo@redhat.com>, linux-snps-arc@lists.infradead.org,
- Dave Martin <dave.martin@arm.com>, uclinux-h8-devel@lists.sourceforge.jp,
- linux-xtensa@linux-xtensa.org, Kees Cook <keescook@chromium.org>,
- Roland McGrath <roland@hack.frob.com>, linux-um@lists.infradead.org,
- linux-mips@vger.kernel.org, openrisc@lists.librecores.org,
- Borislav Petkov <bp@alien8.de>, Andy Lutomirski <luto@kernel.org>,
- "Dmitry V. Levin" <ldv@altlinux.org>, linux-arm-kernel@lists.infradead.org,
- linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, Andy Lutomirski <luto@amacapital.net>,
- "Eric W. Biederman" <ebiederm@xmission.com>, nios2-dev@lists.rocketboards.org,
- Andrew Morton <akpm@linux-foundation.org>,
- Linus Torvalds <torvalds@linux-foundation.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, 1 Apr 2019, Steven Rostedt wrote:
+On 04 April 2019 at 06:00AM, Christophe Leroy wrote:
+>
+>
+> Le 04/04/2019 à 02:58, Christian Zigotzky a écrit :
+>> On 03 April 2019 at 07:05AM, Christophe Leroy wrote:
+>>> Le 03/04/2019 à 05:52, Christian Zigotzky a écrit :
+>>>> Please test VLC with the RC3 of kernel 5.1.
+>>>>
+>>>> The removing of the PowerPC fixes 5.1-3 has solved the VLC issue. 
+>>>> Another user has already confirmed that [1]. This isn’t an April 
+>>>> Fool‘s. ;-)
+>>>
+>>> Could you bisect to identify the guilty commit ?
+>>>
+>>> Thanks
+>>> Christophe
+>>>
+>>>>
+>>>> Thanks
+>>>>
+>>>> [1] 
+>>>> http://forum.hyperion-entertainment.com/viewtopic.php?f=58&t=4256&start=20#p47561 
+>>>>
+>>>>
+>>>
+>> Hello Christophe,
+>>
+>> I have found the problematic patch. The following patch from the 
+>> PowerPC fixes 5.1-3 is responsible for the VLC issue.
+>
+> That change is part of the following commit:
+>
+> https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?h=v5.1-rc2&id=b5b4453e7912f056da1ca7572574cada32ecb60c 
+>
+>
+> Just changing back the type of wtom_clock_sec to 32 bits without 
+> changing back the loading instruction is likely to give unexpected 
+> results on PPC64.
+>
+> Are you using 32 bits or 64 bits powerpc ?
+>
+> Christophe
+64-bit kernel + 32-bit userland for example:
 
-> From: "Steven Rostedt (VMware)" <rostedt@goodmis.org>
-> 
-> After removing the start and count arguments of syscall_get_arguments() it
-> seems reasonable to remove them from syscall_set_arguments(). Note, as of
-> today, there are no users of syscall_set_arguments(). But we are told that
-> there will be soon. But for now, at least make it consistent with
-> syscall_get_arguments().
-> 
-> Link: http://lkml.kernel.org/r/20190327222014.GA32540@altlinux.org
+- ubuntu MATE 16.04.6 LTS 32-bit PowerPC with a 64-bit kernel
+- Fienix (Debian Sid) 32-bit PowerPC with a 64-bit kernel
+- MATE PowerPC Remix (ubuntu MATE 17.04) 32-bit PowerPC with a 64-bit kernel
 
-For x86:
+-- Christian
+>
+>
+>>
+>> diff --git a/arch/powerpc/include/asm/vdso_datapage.h 
+>> b/arch/powerpc/include/asm/vdso_datapage.h
+>> index 1afe90ade595..bbc06bd72b1f 100644
+>> --- a/arch/powerpc/include/asm/vdso_datapage.h
+>> +++ b/arch/powerpc/include/asm/vdso_datapage.h
+>> @@ -82,10 +82,10 @@ struct vdso_data {
+>>      __u32 icache_block_size;      /* L1 i-cache block size */
+>>      __u32 dcache_log_block_size;      /* L1 d-cache log block size */
+>>      __u32 icache_log_block_size;      /* L1 i-cache log block size */
+>> -   __s32 wtom_clock_sec;         /* Wall to monotonic clock */
+>> -   __s32 wtom_clock_nsec;
+>> -   struct timespec stamp_xtime;   /* xtime as at tb_orig_stamp */
+>> -   __u32 stamp_sec_fraction;   /* fractional seconds of stamp_xtime */
+>> +   __u32 stamp_sec_fraction;      /* fractional seconds of 
+>> stamp_xtime */
+>> +   __s32 wtom_clock_nsec;         /* Wall to monotonic clock nsec */
+>> +   __s64 wtom_clock_sec;         /* Wall to monotonic clock sec */
+>> +   struct timespec stamp_xtime;      /* xtime as at tb_orig_stamp */
+>>         __u32 syscall_map_64[SYSCALL_MAP_SIZE]; /* map of syscalls */
+>>         __u32 syscall_map_32[SYSCALL_MAP_SIZE]; /* map of syscalls */
+>>   };
+>>
+>> -----
+>>
+>> Link: 
+>> https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/diff/arch/powerpc/include/asm/vdso_datapage.h?h=v5.1-rc2&id=a5ed1e96cafde5ba48638f486bfca0685dc6ddc9 
+>>
+>>
+>> I created a patch for solving the VLC issue today.
+>>
+>> vdso_datapage_vlc.patch:
+>>
+>> diff -rupN a/arch/powerpc/include/asm/vdso_datapage.h 
+>> b/arch/powerpc/include/asm/vdso_datapage.h
+>> --- a/arch/powerpc/include/asm/vdso_datapage.h  2019-04-03 
+>> 22:56:44.560645936 +0200
+>> +++ b/arch/powerpc/include/asm/vdso_datapage.h  2019-04-04 
+>> 02:20:09.479361827 +0200
+>> @@ -82,10 +82,10 @@ struct vdso_data {
+>>          __u32 icache_block_size;                /* L1 i-cache block 
+>> size     */
+>>          __u32 dcache_log_block_size;            /* L1 d-cache log 
+>> block size */
+>>          __u32 icache_log_block_size;            /* L1 i-cache log 
+>> block size */
+>> -       __u32 stamp_sec_fraction;               /* fractional seconds 
+>> of stamp_xtime */
+>> -       __s32 wtom_clock_nsec;                  /* Wall to monotonic 
+>> clock nsec */
+>> -       __s64 wtom_clock_sec;                   /* Wall to monotonic 
+>> clock sec */
+>> -       struct timespec stamp_xtime;            /* xtime as at 
+>> tb_orig_stamp */
+>> +       __s32 wtom_clock_sec;                   /* Wall to monotonic 
+>> clock */
+>> +       __s32 wtom_clock_nsec;
+>> +       struct timespec stamp_xtime;    /* xtime as at tb_orig_stamp */
+>> +       __u32 stamp_sec_fraction;       /* fractional seconds of 
+>> stamp_xtime */
+>>          __u32 syscall_map_64[SYSCALL_MAP_SIZE]; /* map of syscalls */
+>>          __u32 syscall_map_32[SYSCALL_MAP_SIZE]; /* map of syscalls */
+>>   };
+>>
+>> -----
+>>
+>> Cheers,
+>> Christian
+>
 
-Reviewed-by: Thomas Gleixner <tglx@linutronix.de>
