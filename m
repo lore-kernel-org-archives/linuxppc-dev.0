@@ -2,98 +2,78 @@ Return-Path: <SRS0=99u2=SG=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-3.5 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
+	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DE9D2C4360F
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Apr 2019 11:12:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4B210C4360F
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Apr 2019 11:21:49 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 1787520820
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Apr 2019 11:12:44 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1787520820
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id B22F820855
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Apr 2019 11:21:48 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="CRDLM1+x"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B22F820855
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44ZgK55JVZzDqQH
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Apr 2019 22:12:41 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44ZgWZ3MMnzDqL0
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Apr 2019 22:21:46 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=linux.vnet.ibm.com
- (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=huntbag@linux.vnet.ibm.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=linux.vnet.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+ spf=pass (mailfrom) smtp.mailfrom=gmail.com
+ (client-ip=2607:f8b0:4864:20::343; helo=mail-ot1-x343.google.com;
+ envelope-from=ego.lkml@gmail.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="CRDLM1+x"; 
+ dkim-atps=neutral
+Received: from mail-ot1-x343.google.com (mail-ot1-x343.google.com
+ [IPv6:2607:f8b0:4864:20::343])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44ZgH91c0QzDqG8
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Apr 2019 22:11:00 +1100 (AEDT)
-Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x34At43l101723
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 4 Apr 2019 07:10:57 -0400
-Received: from e06smtp03.uk.ibm.com (e06smtp03.uk.ibm.com [195.75.94.99])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2rneg1g0c8-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 04 Apr 2019 07:10:56 -0400
-Received: from localhost
- by e06smtp03.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <huntbag@linux.vnet.ibm.com>;
- Thu, 4 Apr 2019 12:10:49 +0100
-Received: from b06cxnps4076.portsmouth.uk.ibm.com (9.149.109.198)
- by e06smtp03.uk.ibm.com (192.168.101.133) with IBM ESMTP SMTP Gateway:
- Authorized Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Thu, 4 Apr 2019 12:10:46 +0100
-Received: from d06av26.portsmouth.uk.ibm.com (d06av26.portsmouth.uk.ibm.com
- [9.149.105.62])
- by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x34BAjOB46792794
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Thu, 4 Apr 2019 11:10:45 GMT
-Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 2A629AE045;
- Thu,  4 Apr 2019 11:10:45 +0000 (GMT)
-Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id EC380AE051;
- Thu,  4 Apr 2019 11:10:43 +0000 (GMT)
-Received: from oc0383214508.ibm.com (unknown [9.124.35.71])
- by d06av26.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Thu,  4 Apr 2019 11:10:43 +0000 (GMT)
-Subject: Re: [PATCH 1/2] cpuidle : auto-promotion for cpuidle states
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-References: <20190322072942.8038-1-huntbag@linux.vnet.ibm.com>
- <20190322072942.8038-2-huntbag@linux.vnet.ibm.com>
- <CAJZ5v0gY-theHng=bQQpw-33jHGe++iEigEM5j6Ls7vEuewuSQ@mail.gmail.com>
- <cfb0076f-0b56-f12c-a736-469a3d11ab83@linaro.org>
- <50f62972-dfce-52bf-d26b-32e6d2a367e2@linux.vnet.ibm.com>
- <9e542011-df6d-9b84-823b-2af6a6ef9e94@linaro.org>
-From: Abhishek <huntbag@linux.vnet.ibm.com>
-Date: Thu, 4 Apr 2019 16:40:43 +0530
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:52.0) Gecko/20100101
- Thunderbird/52.9.1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44ZgTZ6zSvzDqHW
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Apr 2019 22:20:02 +1100 (AEDT)
+Received: by mail-ot1-x343.google.com with SMTP id j10so1995110otq.0
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 04 Apr 2019 04:20:02 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=mime-version:references:in-reply-to:reply-to:from:date:message-id
+ :subject:to:cc;
+ bh=DzhjJoSnLxIhQ7soO3X1gaZNI2IHmC7vLUvM+M3gfuc=;
+ b=CRDLM1+x+pp8lHeQjB5pzRO6JHCI9IaH9CUe6oQ7Nt6m4LjrIk0N+aySDso29KYvEW
+ S1UJwg8Yu5WnRhcRlbfNbaS/RAW6N0beeJ6ydSbFc9ScWOmTmvfiX+h7G9He2bz9c0C+
+ Oz+ykHUEwgMbiPPpob0Qwks94iCmnFhW+TA42N8GT/ZUb1COYlWwVESuR7jL+qz3rjQ7
+ AIxXFPAHKWBEkICLGqYUQ5345qRbPJdmGyhWosfoU9HfuBPLgL80CRWXTzE7/XpbV+/T
+ 7iBcyowySHGXi9CwH1Nc7izIWTVtqlt2bPZR5PIWMpFrG7dgciF43THhA9IcZVFfbDS0
+ MwZw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:mime-version:references:in-reply-to:reply-to
+ :from:date:message-id:subject:to:cc;
+ bh=DzhjJoSnLxIhQ7soO3X1gaZNI2IHmC7vLUvM+M3gfuc=;
+ b=oSZLOxR9IKDpSn+iVHq9dNbs5Ieb5B/KRJ/55HOM2n0iWeu58/N/zcc9Z7+LFL4WnW
+ QWcYvZIDKem22ZpnJd+iJIJ2+gV6jzdWgAeN0VDUAL1nnt/XiyYnUCSXNcTP0SWWRuT8
+ oixwgyv62bBry1PjzHcvpGjlFSwdXEu/hjgaT7otK1zx6Fupa25C06u8t5HrViVoG76r
+ cCdGUfNlzTsC1HGvduPdRwdVwZbMZe9ub7yHIYWTIYqPfY/SeCfhuGHsutrXQMMAo2Km
+ 6LiABlYmMFN8p9ROKl4g6lUq7zvqKD5nMzpaYbwfI3Ut+ippeJyQ/ukX2oKuIL2rk1Jj
+ 8jOA==
+X-Gm-Message-State: APjAAAX7Ut9fBS0wngvAanJLaB23dzMnUqph8TiBh5+nj7TO7jsBPn/k
+ +IpiyQZZz9Aj3UiwvBLdkdfyCxRcfLW2SzmCt0s=
+X-Google-Smtp-Source: APXvYqxlF/jPLcozu6bYMITuPbHs5shSHleQS3lMTCxKI8h3+2mD6FmvtsNzx0+wGRp4lZjGzuP2bUVEE8S51YnKV+A=
+X-Received: by 2002:a9d:4804:: with SMTP id c4mr3837584otf.0.1554376799036;
+ Thu, 04 Apr 2019 04:19:59 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <9e542011-df6d-9b84-823b-2af6a6ef9e94@linaro.org>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 8bit
-Content-Language: en-US
-X-TM-AS-GCONF: 00
-x-cbid: 19040411-0012-0000-0000-0000030B32F1
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19040411-0013-0000-0000-000021434178
-Message-Id: <f535b21a-2441-70c3-e51d-28ec8843de66@linux.vnet.ibm.com>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2019-04-04_06:, , signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1810050000 definitions=main-1904040076
+References: <20190402112521.24888-1-npiggin@gmail.com>
+In-Reply-To: <20190402112521.24888-1-npiggin@gmail.com>
+From: Gautham R Shenoy <ego.lkml@gmail.com>
+Date: Thu, 4 Apr 2019 16:49:47 +0530
+Message-ID: <CAHZ_5WzckrKg=D+joA_JJU0riObA4bb7oQj-bfBNna5y22wQ+Q@mail.gmail.com>
+Subject: Re: [PATCH] powerpc/watchdog: Use hrtimers for per-CPU heartbeat
+To: Nicholas Piggin <npiggin@gmail.com>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -105,124 +85,80 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: ego@linux.vnet.ibm.com, Linux PM <linux-pm@vger.kernel.org>,
- "Rafael J. Wysocki" <rjw@rjwysocki.net>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+Reply-To: ego@linux.vnet.ibm.com
+Cc: Ravikumar Bangoria <ravi.bangoria@in.ibm.com>,
  linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+Hello Nicholas,
+
+On Tue, Apr 2, 2019 at 4:57 PM Nicholas Piggin <npiggin@gmail.com> wrote:
+>
+> Using a jiffies timer creates a dependency on the tick_do_timer_cpu
+> incrementing jiffies. If that CPU has locked up and jiffies is not
+> incrementing, the watchdog heartbeat timer for all CPUs stops and
+> creates false positives and confusing warnings on local CPUs, and
+> also causes the SMP detector to stop, so the root cause is never
+> detected.
+>
+> Fix this by using hrtimer based timers for the watchdog heartbeat,
+> like the generic kernel hardlockup detector.
+>
+> Reported-by: Ravikumar Bangoria <ravi.bangoria@in.ibm.com>
+> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+
+[..snip..]
+
+> @@ -325,19 +325,21 @@ EXPORT_SYMBOL(arch_touch_nmi_watchdog);
+>
+>  static void start_watchdog_timer_on(unsigned int cpu)
+>  {
+> -       struct timer_list *t = per_cpu_ptr(&wd_timer, cpu);
+> +       struct hrtimer *hrtimer = this_cpu_ptr(&wd_hrtimer);
+
+This function can be called during the initialization via
+
+watchdog_nmi_start -->
+    for_each_online_cpu(cpu)
+           start_wd_on_cpu(cpu) -->
+                   start_watchdog_timer_on(cpu)
+
+Thus, it is not guarateed that we are always calling
+start_watchdog_timer_on() from the CPU where
+we want to start the watchdog timer.
+
+Thus, should we be calling this function from start_wd_on_cpu() via an
+smp_call_function_single() ?
 
 
-On 04/04/2019 03:51 PM, Daniel Lezcano wrote:
-> Hi Abhishek,
 >
-> thanks for taking the time to test the different scenario and give us
-> the numbers.
+>         per_cpu(wd_timer_tb, cpu) = get_tb();
 >
-> On 01/04/2019 07:11, Abhishek wrote:
->>
->> On 03/22/2019 06:56 PM, Daniel Lezcano wrote:
->>> On 22/03/2019 10:45, Rafael J. Wysocki wrote:
->>>> On Fri, Mar 22, 2019 at 8:31 AM Abhishek Goel
->>>> <huntbag@linux.vnet.ibm.com> wrote:
->>>>> Currently, the cpuidle governors (menu /ladder) determine what idle
->>>>> state
->>>>> an idling CPU should enter into based on heuristics that depend on the
->>>>> idle history on that CPU. Given that no predictive heuristic is
->>>>> perfect,
->>>>> there are cases where the governor predicts a shallow idle state,
->>>>> hoping
->>>>> that the CPU will be busy soon. However, if no new workload is
->>>>> scheduled
->>>>> on that CPU in the near future, the CPU will end up in the shallow
->>>>> state.
->>>>>
->>>>> In case of POWER, this is problematic, when the predicted state in the
->>>>> aforementioned scenario is a lite stop state, as such lite states will
->>>>> inhibit SMT folding, thereby depriving the other threads in the core
->>>>> from
->>>>> using the core resources.
-> I can understand an idle state can prevent other threads to use the core
-> resources. But why a deeper idle state does not prevent this also?
+> -       timer_setup(t, wd_timer_fn, TIMER_PINNED);
+> -       wd_timer_reset(cpu, t);
+> +       hrtimer_init(hrtimer, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
+> +       hrtimer->function = watchdog_timer_fn;
+> +       hrtimer_start(hrtimer, ms_to_ktime(wd_timer_period_ms),
+> +                     HRTIMER_MODE_REL_PINNED);
+>  }
 >
+>  static void stop_watchdog_timer_on(unsigned int cpu)
+>  {
+> -       struct timer_list *t = per_cpu_ptr(&wd_timer, cpu);
+> +       struct hrtimer *hrtimer = this_cpu_ptr(&wd_hrtimer);
 >
->>>>> To address this, such lite states need to be autopromoted. The cpuidle-
->>>>> core can queue timer to correspond with the residency value of the next
->>>>> available state. Thus leading to auto-promotion to a deeper idle
->>>>> state as
->>>>> soon as possible.
->>>> Isn't the tick stopping avoidance sufficient for that?
->>> I was about to ask the same :)
->>>
->>>
->>>
->>>
->> Thanks for the review.
->> I performed experiments for three scenarios to collect some data.
->>
->> case 1 :
->> Without this patch and without tick retained, i.e. in a upstream kernel,
->> It would spend more than even a second to get out of stop0_lite.
->>
->> case 2 : With tick retained(as suggested) -
->>
->> Generally, we have a sched tick at 4ms(CONF_HZ = 250). Ideally I expected
->> it to take 8 sched tick to get out of stop0_lite. Experimentally,
->> observation was
->>
->> ===================================
->> min            max            99percentile
->> 4ms            12ms          4ms
->> ===================================
->> *ms = milliseconds
->>
->> It would take atleast one sched tick to get out of stop0_lite.
->>
->> case 2 :  With this patch (not stopping tick, but explicitly queuing a
->> timer)
->>
->> min            max              99.5percentile
->> ===============================
->> 144us       192us              144us
->> ===============================
->> *us = microseconds
->>
->> In this patch, we queue a timer just before entering into a stop0_lite
->> state. The timer fires at (residency of next available state + exit
->> latency of next available state * 2).
-> So for the context, we have a similar issue but from the power
-> management point of view where a CPU can stay in a shallow state for a
-> long period, thus consuming a lot of energy.
+> -       del_timer_sync(t);
+> +       hrtimer_cancel(hrtimer);
+>  }
 >
-> The window was reduced by preventing stopping the tick when a shallow
-> state is selected. Unfortunately, if the tick is stopped and we
-> exit/enter again and we select a shallow state, the situation is the same.
+>  static int start_wd_on_cpu(unsigned int cpu)
+> --
+> 2.20.1
 >
-> A solution was previously proposed with a timer some years ago, like
-> this patch does, and merged but there were complains about bad
-> performance impact, so it has been reverted.
->
->> Let's say if next state(stop0) is available which has residency of 20us, it
->> should get out in as low as (20+2*2)*8 [Based on the forumla (residency +
->> 2xlatency)*history length] microseconds = 192us. Ideally we would expect 8
->> iterations, it was observed to get out in 6-7 iterations.
-> Can you explain the formula? I don't get the rational. Why using the
-> exit latency and why multiply it by 2?
->
-> Why the timer is not set to the next state's target residency value ?
->
-The idea behind multiplying by 2 is, entry latency + exit latency = 2* 
-exit latency, i.e.,
-using exit latency = entry latency
-So in effect, we are using target residency + 2 * exit latency for 
-timeout of timer.
-Latency is generally <=10% of residency. I have tried to be conservative 
-by including latency
-factor in computation for timeout. Thus, this formula will give slightly 
-greater value compared
-to directly using residency of target state.
 
---Abhishek
 
+-- 
+Thanks and Regards
+gautham.
