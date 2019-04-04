@@ -2,78 +2,78 @@ Return-Path: <SRS0=99u2=SG=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.5 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	MENTIONS_GIT_HOSTING,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4B210C4360F
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Apr 2019 11:21:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5DB83C4360F
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Apr 2019 11:26:30 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B22F820855
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Apr 2019 11:21:48 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 1EE2C20820
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Apr 2019 11:26:28 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="CRDLM1+x"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B22F820855
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=xenosoft.de header.i=@xenosoft.de header.b="jHein/hr"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1EE2C20820
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=xenosoft.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44ZgWZ3MMnzDqL0
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Apr 2019 22:21:46 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44Zgcy557NzDqP1
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Apr 2019 22:26:26 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=2607:f8b0:4864:20::343; helo=mail-ot1-x343.google.com;
- envelope-from=ego.lkml@gmail.com; receiver=<UNKNOWN>)
+ spf=pass (helo) smtp.helo=mo6-p00-ob.smtp.rzone.de
+ (client-ip=2a01:238:20a:202:5300::3; helo=mo6-p00-ob.smtp.rzone.de;
+ envelope-from=chzigotzky@xenosoft.de; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
+ dmarc=none (p=none dis=none) header.from=xenosoft.de
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="CRDLM1+x"; 
+ unprotected) header.d=xenosoft.de header.i=@xenosoft.de header.b="jHein/hr"; 
  dkim-atps=neutral
-Received: from mail-ot1-x343.google.com (mail-ot1-x343.google.com
- [IPv6:2607:f8b0:4864:20::343])
+Received: from mo6-p00-ob.smtp.rzone.de (mo6-p00-ob.smtp.rzone.de
+ [IPv6:2a01:238:20a:202:5300::3])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44ZgTZ6zSvzDqHW
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Apr 2019 22:20:02 +1100 (AEDT)
-Received: by mail-ot1-x343.google.com with SMTP id j10so1995110otq.0
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 04 Apr 2019 04:20:02 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=mime-version:references:in-reply-to:reply-to:from:date:message-id
- :subject:to:cc;
- bh=DzhjJoSnLxIhQ7soO3X1gaZNI2IHmC7vLUvM+M3gfuc=;
- b=CRDLM1+x+pp8lHeQjB5pzRO6JHCI9IaH9CUe6oQ7Nt6m4LjrIk0N+aySDso29KYvEW
- S1UJwg8Yu5WnRhcRlbfNbaS/RAW6N0beeJ6ydSbFc9ScWOmTmvfiX+h7G9He2bz9c0C+
- Oz+ykHUEwgMbiPPpob0Qwks94iCmnFhW+TA42N8GT/ZUb1COYlWwVESuR7jL+qz3rjQ7
- AIxXFPAHKWBEkICLGqYUQ5345qRbPJdmGyhWosfoU9HfuBPLgL80CRWXTzE7/XpbV+/T
- 7iBcyowySHGXi9CwH1Nc7izIWTVtqlt2bPZR5PIWMpFrG7dgciF43THhA9IcZVFfbDS0
- MwZw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:mime-version:references:in-reply-to:reply-to
- :from:date:message-id:subject:to:cc;
- bh=DzhjJoSnLxIhQ7soO3X1gaZNI2IHmC7vLUvM+M3gfuc=;
- b=oSZLOxR9IKDpSn+iVHq9dNbs5Ieb5B/KRJ/55HOM2n0iWeu58/N/zcc9Z7+LFL4WnW
- QWcYvZIDKem22ZpnJd+iJIJ2+gV6jzdWgAeN0VDUAL1nnt/XiyYnUCSXNcTP0SWWRuT8
- oixwgyv62bBry1PjzHcvpGjlFSwdXEu/hjgaT7otK1zx6Fupa25C06u8t5HrViVoG76r
- cCdGUfNlzTsC1HGvduPdRwdVwZbMZe9ub7yHIYWTIYqPfY/SeCfhuGHsutrXQMMAo2Km
- 6LiABlYmMFN8p9ROKl4g6lUq7zvqKD5nMzpaYbwfI3Ut+ippeJyQ/ukX2oKuIL2rk1Jj
- 8jOA==
-X-Gm-Message-State: APjAAAX7Ut9fBS0wngvAanJLaB23dzMnUqph8TiBh5+nj7TO7jsBPn/k
- +IpiyQZZz9Aj3UiwvBLdkdfyCxRcfLW2SzmCt0s=
-X-Google-Smtp-Source: APXvYqxlF/jPLcozu6bYMITuPbHs5shSHleQS3lMTCxKI8h3+2mD6FmvtsNzx0+wGRp4lZjGzuP2bUVEE8S51YnKV+A=
-X-Received: by 2002:a9d:4804:: with SMTP id c4mr3837584otf.0.1554376799036;
- Thu, 04 Apr 2019 04:19:59 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44ZgZC6z9fzDq60
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Apr 2019 22:24:01 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; t=1554377031;
+ s=strato-dkim-0002; d=xenosoft.de;
+ h=In-Reply-To:Date:Message-ID:From:References:To:Subject:
+ X-RZG-CLASS-ID:X-RZG-AUTH:From:Subject:Sender;
+ bh=W5/Zvpko5JayqAsOeMB+BbiICMee4WHV9+GYgpybUDc=;
+ b=jHein/hrupb72OoqNKKBfsBjSYYwRH5LnjAVpOKPwhTd/V/FL2lnMMMtC7eIilKuG/
+ a7+/Pxdtb3Bjrt8ZkII/j48ikgJ0A4jWZETWpjNYrEtpwDYQpsZpvDD1GGYvhMP0saaT
+ 35hGAlBeho9ohEGt7IySd1zAgwD+j0Y+CMPl9Hz9/rXmDahVZWBAXIVET/iB/9qRefE+
+ 23EHhxWTznIsXcOlqgT5T0+cdX6nI4uzR4HMbnN6Ew8IBlX2UX72ehe+9RDZ4Jzjenig
+ cut8COxhrQ+G9d9vyGQoNgoDFy5G9okeFAIra0Wiujqpu6VKHHZZfBsH30QPZ6O+VLHg
+ 2IZg==
+X-RZG-AUTH: ":L2QefEenb+UdBJSdRCXu93KJ1bmSGnhMdmOod1DhGM4l4Hio94KKxRySfLxnHfJ+Dkjp5G5MdirQj0WG7CkNjlBPV/3IdB0Je2K2M1gQpcht"
+X-RZG-CLASS-ID: mo00
+Received: from [IPv6:2a02:8109:a400:162c:2057:f49:8d2c:44ac]
+ by smtp.strato.de (RZmta 44.18 AUTH) with ESMTPSA id k00e1ev34BNl3Al
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (curve secp521r1 with
+ 521 ECDH bits, eq. 15360 bits RSA))
+ (Client did not present a certificate);
+ Thu, 4 Apr 2019 13:23:47 +0200 (CEST)
+Subject: VLC doesn't play videos anymore since the PowerPC fixes 5.1-3
+To: Christophe Leroy <christophe.leroy@c-s.fr>,
+ linuxppc-dev@lists.ozlabs.org, Michael Ellerman <mpe@ellerman.id.au>
+References: <19FEC425-987D-4B95-AEFD-FF7C05990242@xenosoft.de>
+ <79a9370a-7c4b-80be-adab-6dcf3b0fa6f2@c-s.fr>
+ <0f0403a0-476a-6129-8dc6-866d894c9adc@xenosoft.de>
+ <5726a634-25ca-d267-17fd-af88436edf1f@c-s.fr>
+ <99ff68a4-3aef-47ad-99f8-433b181afe3f@xenosoft.de>
+ <84668be2-94ff-19f6-3b12-56ac545b92bd@c-s.fr>
+From: Christian Zigotzky <chzigotzky@xenosoft.de>
+Message-ID: <0617ec18-e5a9-c430-3c66-9f1c95a1ef8e@xenosoft.de>
+Date: Thu, 4 Apr 2019 13:23:47 +0200
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.6.1
 MIME-Version: 1.0
-References: <20190402112521.24888-1-npiggin@gmail.com>
-In-Reply-To: <20190402112521.24888-1-npiggin@gmail.com>
-From: Gautham R Shenoy <ego.lkml@gmail.com>
-Date: Thu, 4 Apr 2019 16:49:47 +0530
-Message-ID: <CAHZ_5WzckrKg=D+joA_JJU0riObA4bb7oQj-bfBNna5y22wQ+Q@mail.gmail.com>
-Subject: Re: [PATCH] powerpc/watchdog: Use hrtimers for per-CPU heartbeat
-To: Nicholas Piggin <npiggin@gmail.com>
-Content-Type: text/plain; charset="UTF-8"
+In-Reply-To: <84668be2-94ff-19f6-3b12-56ac545b92bd@c-s.fr>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 8bit
+Content-Language: de-DE
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -85,80 +85,86 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Reply-To: ego@linux.vnet.ibm.com
-Cc: Ravikumar Bangoria <ravi.bangoria@in.ibm.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hello Nicholas,
-
-On Tue, Apr 2, 2019 at 4:57 PM Nicholas Piggin <npiggin@gmail.com> wrote:
+On 04 April 2019 at 11:07AM, Christophe Leroy wrote:
 >
-> Using a jiffies timer creates a dependency on the tick_do_timer_cpu
-> incrementing jiffies. If that CPU has locked up and jiffies is not
-> incrementing, the watchdog heartbeat timer for all CPUs stops and
-> creates false positives and confusing warnings on local CPUs, and
-> also causes the SMP detector to stop, so the root cause is never
-> detected.
 >
-> Fix this by using hrtimer based timers for the watchdog heartbeat,
-> like the generic kernel hardlockup detector.
+> On 04/04/2019 08:44 AM, Christian Zigotzky wrote:
+>> On 04 April 2019 at 06:00AM, Christophe Leroy wrote:
+>>>
+>>>
+>>> Le 04/04/2019 à 02:58, Christian Zigotzky a écrit :
+>>>> On 03 April 2019 at 07:05AM, Christophe Leroy wrote:
+>>>>> Le 03/04/2019 à 05:52, Christian Zigotzky a écrit :
+>>>>>> Please test VLC with the RC3 of kernel 5.1.
+>>>>>>
+>>>>>> The removing of the PowerPC fixes 5.1-3 has solved the VLC issue. 
+>>>>>> Another user has already confirmed that [1]. This isn’t an April 
+>>>>>> Fool‘s. ;-)
+>>>>>
+>>>>> Could you bisect to identify the guilty commit ?
+>>>>>
+>>>>> Thanks
+>>>>> Christophe
+>>>>>
+>>>>>>
+>>>>>> Thanks
+>>>>>>
+>>>>>> [1] 
+>>>>>> http://forum.hyperion-entertainment.com/viewtopic.php?f=58&t=4256&start=20#p47561 
+>>>>>>
+>>>>>>
+>>>>>
+>>>> Hello Christophe,
+>>>>
+>>>> I have found the problematic patch. The following patch from the 
+>>>> PowerPC fixes 5.1-3 is responsible for the VLC issue.
+>>>
+>>> That change is part of the following commit:
+>>>
+>>> https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?h=v5.1-rc2&id=b5b4453e7912f056da1ca7572574cada32ecb60c 
+>>>
+>>>
+>>> Just changing back the type of wtom_clock_sec to 32 bits without 
+>>> changing back the loading instruction is likely to give unexpected 
+>>> results on PPC64.
+>>>
+>>> Are you using 32 bits or 64 bits powerpc ?
+>>>
+>>> Christophe
+>> 64-bit kernel + 32-bit userland for example:
+>>
+>> - ubuntu MATE 16.04.6 LTS 32-bit PowerPC with a 64-bit kernel
+>> - Fienix (Debian Sid) 32-bit PowerPC with a 64-bit kernel
+>> - MATE PowerPC Remix (ubuntu MATE 17.04) 32-bit PowerPC with a 64-bit 
+>> kernel
 >
-> Reported-by: Ravikumar Bangoria <ravi.bangoria@in.ibm.com>
-> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
-
-[..snip..]
-
-> @@ -325,19 +325,21 @@ EXPORT_SYMBOL(arch_touch_nmi_watchdog);
+> Ok, thanks. Can you please try below change:
 >
->  static void start_watchdog_timer_on(unsigned int cpu)
->  {
-> -       struct timer_list *t = per_cpu_ptr(&wd_timer, cpu);
-> +       struct hrtimer *hrtimer = this_cpu_ptr(&wd_hrtimer);
-
-This function can be called during the initialization via
-
-watchdog_nmi_start -->
-    for_each_online_cpu(cpu)
-           start_wd_on_cpu(cpu) -->
-                   start_watchdog_timer_on(cpu)
-
-Thus, it is not guarateed that we are always calling
-start_watchdog_timer_on() from the CPU where
-we want to start the watchdog timer.
-
-Thus, should we be calling this function from start_wd_on_cpu() via an
-smp_call_function_single() ?
-
-
+> diff --git a/arch/powerpc/kernel/vdso32/gettimeofday.S 
+> b/arch/powerpc/kernel/vdso32/gettimeofday.S
+> index 1e0bc5955a40..afd516b572f8 100644
+> --- a/arch/powerpc/kernel/vdso32/gettimeofday.S
+> +++ b/arch/powerpc/kernel/vdso32/gettimeofday.S
+> @@ -98,7 +98,7 @@ V_FUNCTION_BEGIN(__kernel_clock_gettime)
+>       * can be used, r7 contains NSEC_PER_SEC.
+>       */
 >
->         per_cpu(wd_timer_tb, cpu) = get_tb();
+> -    lwz    r5,WTOM_CLOCK_SEC(r9)
+> +    lwz    r5,(WTOM_CLOCK_SEC+LOPART)(r9)
+>      lwz    r6,WTOM_CLOCK_NSEC(r9)
 >
-> -       timer_setup(t, wd_timer_fn, TIMER_PINNED);
-> -       wd_timer_reset(cpu, t);
-> +       hrtimer_init(hrtimer, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
-> +       hrtimer->function = watchdog_timer_fn;
-> +       hrtimer_start(hrtimer, ms_to_ktime(wd_timer_period_ms),
-> +                     HRTIMER_MODE_REL_PINNED);
->  }
+>      /* We now have our offset in r5,r6. We create a fake dependency
 >
->  static void stop_watchdog_timer_on(unsigned int cpu)
->  {
-> -       struct timer_list *t = per_cpu_ptr(&wd_timer, cpu);
-> +       struct hrtimer *hrtimer = this_cpu_ptr(&wd_hrtimer);
 >
-> -       del_timer_sync(t);
-> +       hrtimer_cancel(hrtimer);
->  }
+> Christophe
 >
->  static int start_wd_on_cpu(unsigned int cpu)
-> --
-> 2.20.1
->
+Hello Christophe,
 
+Your patch works! VLC plays videos without any problems! Thank you!
 
--- 
-Thanks and Regards
-gautham.
+Cheers,
+Christian
