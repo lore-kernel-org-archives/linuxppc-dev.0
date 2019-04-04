@@ -6,21 +6,21 @@ X-Spam-Status: No, score=-8.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
 	SPF_PASS,USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8F484C10F05
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Apr 2019 09:13:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 30FADC4360F
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Apr 2019 09:16:16 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 0FEB72184E
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Apr 2019 09:13:08 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id A322420652
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Apr 2019 09:16:15 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="IEBVyolg"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0FEB72184E
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="FUnJdeeP"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A322420652
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linuxfoundation.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44Zcg66LpczDqR3
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Apr 2019 20:13:06 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44Zckj38D9zDqGb
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Apr 2019 20:16:13 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=linuxfoundation.org
  (client-ip=198.145.29.99; helo=mail.kernel.org;
@@ -28,32 +28,31 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=linuxfoundation.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="IEBVyolg"; 
+ unprotected) header.d=kernel.org header.i=@kernel.org header.b="FUnJdeeP"; 
  dkim-atps=neutral
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44ZcbN5ftHzDqPR
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Apr 2019 20:09:52 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44Zcff04PCzDqS0
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Apr 2019 20:12:42 +1100 (AEDT)
 Received: from localhost (83-86-89-107.cable.dynamic.v4.ziggo.nl
  [83.86.89.107])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id 40D4A20652;
- Thu,  4 Apr 2019 09:09:50 +0000 (UTC)
+ by mail.kernel.org (Postfix) with ESMTPSA id 403912054F;
+ Thu,  4 Apr 2019 09:12:39 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1554368990;
- bh=/nIV/fGH+CgcQy8+EIi55FqpZEINdruxAOGABvN50jE=;
+ s=default; t=1554369159;
+ bh=4yhN77EOLYFcGkjfV+IALldrkCmuquQJZIuLaHIOxiI=;
  h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=IEBVyolg8sZ/+bImPxBfu7KDDMvjcI5GaYWCb6QDVZtkTwHb9ugBhv1JVvR5JVtnA
- Tb5a1d16b/JPeiSIHX0RhU8F3SWLmCGxbV95Jk0H2DI0OMp+hQEL3O4is6EgI96y98
- IN3XE2H7h/dUDhe7ioh7+gEzDCKU/TsYnzWcqmVo=
+ b=FUnJdeeP2auqKa5lhLSdjDp+9Kgztt8RZpQYA3WTCEGewtJ8M3WMtAyjeQlczoHCU
+ IZD5FJY4VbKrO9xrfppZblrKoGHAKZGPT+aygTu2nHIj+w4VV6dpXslrheRVjir0n8
+ mA+lmJWgbFCS4iKTYuzl1yOzS5xyH0EQQkKTfLpM=
 From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH 5.0 057/246] mm/resource: Return real error codes from walk
- failures
-Date: Thu,  4 Apr 2019 10:45:57 +0200
-Message-Id: <20190404084621.174666333@linuxfoundation.org>
+Subject: [PATCH 5.0 111/246] SoC: imx-sgtl5000: add missing put_device()
+Date: Thu,  4 Apr 2019 10:46:51 +0200
+Message-Id: <20190404084623.036295138@linuxfoundation.org>
 X-Mailer: git-send-email 2.21.0
 In-Reply-To: <20190404084619.236418459@linuxfoundation.org>
 References: <20190404084619.236418459@linuxfoundation.org>
@@ -74,18 +73,17 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Michal Hocko <mhocko@suse.com>, Takashi Iwai <tiwai@suse.de>,
- Dave Hansen <dave.hansen@linux.intel.com>, Keith Busch <keith.busch@intel.com>,
- linux-mm@kvack.org, Paul Mackerras <paulus@samba.org>,
- Yaowei Bai <baiyaowei@cmss.chinamobile.com>, Ross Zwisler <zwisler@kernel.org>,
- Sasha Levin <sashal@kernel.org>, Dave Jiang <dave.jiang@intel.com>,
- linux-nvdimm@lists.01.org, Vishal Verma <vishal.l.verma@intel.com>,
- Huang Ying <ying.huang@intel.com>, Borislav Petkov <bp@suse.de>,
- Tom Lendacky <thomas.lendacky@amd.com>, Jerome Glisse <jglisse@redhat.com>,
- Bjorn Helgaas <bhelgaas@google.com>, Dan Williams <dan.j.williams@intel.com>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>, stable@vger.kernel.org,
- Andrew Morton <akpm@linux-foundation.org>,
- Fengguang Wu <fengguang.wu@intel.com>, linuxppc-dev@lists.ozlabs.org
+Cc: Sasha Levin <sashal@kernel.org>, alsa-devel@alsa-project.org,
+ linuxppc-dev@lists.ozlabs.org, Timur Tabi <timur@kernel.org>,
+ Xiubo Li <Xiubo.Lee@gmail.com>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Sascha Hauer <s.hauer@pengutronix.de>, Takashi Iwai <tiwai@suse.com>,
+ Liam Girdwood <lgirdwood@gmail.com>, stable@vger.kernel.org,
+ Jaroslav Kysela <perex@perex.cz>, Nicolin Chen <nicoleotsuka@gmail.com>,
+ Mark Brown <broonie@kernel.org>, NXP Linux Team <linux-imx@nxp.com>,
+ Pengutronix Kernel Team <kernel@pengutronix.de>,
+ Wen Yang <yellowriver2010@hotmail.com>, Shawn Guo <shawnguo@kernel.org>,
+ Fabio Estevam <festevam@gmail.com>, linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
@@ -94,78 +92,54 @@ Sender: "Linuxppc-dev"
 
 ------------------
 
-[ Upstream commit 5cd401ace914dc68556c6d2fcae0c349444d5f86 ]
+[ Upstream commit 8fa857da9744f513036df1c43ab57f338941ae7d ]
 
-walk_system_ram_range() can return an error code either becuase
-*it* failed, or because the 'func' that it calls returned an
-error.  The memory hotplug does the following:
+The of_find_device_by_node() takes a reference to the underlying device
+structure, we should release that reference.
 
-	ret = walk_system_ram_range(..., func);
-        if (ret)
-		return ret;
+Detected by coccinelle with the following warnings:
+./sound/soc/fsl/imx-sgtl5000.c:169:1-7: ERROR: missing put_device;
+call of_find_device_by_node on line 105, but without a corresponding
+object release within this function.
+./sound/soc/fsl/imx-sgtl5000.c:177:1-7: ERROR: missing put_device;
+call of_find_device_by_node on line 105, but without a corresponding
+object release within this function.
 
-and 'ret' makes it out to userspace, eventually.  The problem
-s, walk_system_ram_range() failues that result from *it* failing
-(as opposed to 'func') return -1.  That leads to a very odd
--EPERM (-1) return code out to userspace.
-
-Make walk_system_ram_range() return -EINVAL for internal
-failures to keep userspace less confused.
-
-This return code is compatible with all the callers that I
-audited.
-
-Signed-off-by: Dave Hansen <dave.hansen@linux.intel.com>
-Reviewed-by: Bjorn Helgaas <bhelgaas@google.com>
-Acked-by: Michael Ellerman <mpe@ellerman.id.au> (powerpc)
-Cc: Dan Williams <dan.j.williams@intel.com>
-Cc: Dave Jiang <dave.jiang@intel.com>
-Cc: Ross Zwisler <zwisler@kernel.org>
-Cc: Vishal Verma <vishal.l.verma@intel.com>
-Cc: Tom Lendacky <thomas.lendacky@amd.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Cc: Michal Hocko <mhocko@suse.com>
-Cc: linux-nvdimm@lists.01.org
-Cc: linux-kernel@vger.kernel.org
-Cc: linux-mm@kvack.org
-Cc: Huang Ying <ying.huang@intel.com>
-Cc: Fengguang Wu <fengguang.wu@intel.com>
-Cc: Borislav Petkov <bp@suse.de>
-Cc: Yaowei Bai <baiyaowei@cmss.chinamobile.com>
-Cc: Takashi Iwai <tiwai@suse.de>
-Cc: Jerome Glisse <jglisse@redhat.com>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>
+Signed-off-by: Wen Yang <yellowriver2010@hotmail.com>
+Cc: Timur Tabi <timur@kernel.org>
+Cc: Nicolin Chen <nicoleotsuka@gmail.com>
+Cc: Xiubo Li <Xiubo.Lee@gmail.com>
+Cc: Fabio Estevam <festevam@gmail.com>
+Cc: Liam Girdwood <lgirdwood@gmail.com>
+Cc: Mark Brown <broonie@kernel.org>
+Cc: Jaroslav Kysela <perex@perex.cz>
+Cc: Takashi Iwai <tiwai@suse.com>
+Cc: Shawn Guo <shawnguo@kernel.org>
+Cc: Sascha Hauer <s.hauer@pengutronix.de>
+Cc: Pengutronix Kernel Team <kernel@pengutronix.de>
+Cc: NXP Linux Team <linux-imx@nxp.com>
+Cc: alsa-devel@alsa-project.org
 Cc: linuxppc-dev@lists.ozlabs.org
-Cc: Keith Busch <keith.busch@intel.com>
-Signed-off-by: Dan Williams <dan.j.williams@intel.com>
+Cc: linux-arm-kernel@lists.infradead.org
+Cc: linux-kernel@vger.kernel.org
+Signed-off-by: Mark Brown <broonie@kernel.org>
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- kernel/resource.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ sound/soc/fsl/imx-sgtl5000.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/kernel/resource.c b/kernel/resource.c
-index 915c02e8e5dd..ca7ed5158cff 100644
---- a/kernel/resource.c
-+++ b/kernel/resource.c
-@@ -382,7 +382,7 @@ static int __walk_iomem_res_desc(resource_size_t start, resource_size_t end,
- 				 int (*func)(struct resource *, void *))
- {
- 	struct resource res;
--	int ret = -1;
-+	int ret = -EINVAL;
- 
- 	while (start < end &&
- 	       !find_next_iomem_res(start, end, flags, desc, first_lvl, &res)) {
-@@ -462,7 +462,7 @@ int walk_system_ram_range(unsigned long start_pfn, unsigned long nr_pages,
- 	unsigned long flags;
- 	struct resource res;
- 	unsigned long pfn, end_pfn;
--	int ret = -1;
-+	int ret = -EINVAL;
- 
- 	start = (u64) start_pfn << PAGE_SHIFT;
- 	end = ((u64)(start_pfn + nr_pages) << PAGE_SHIFT) - 1;
+diff --git a/sound/soc/fsl/imx-sgtl5000.c b/sound/soc/fsl/imx-sgtl5000.c
+index c29200cf755a..9b9a7ec52905 100644
+--- a/sound/soc/fsl/imx-sgtl5000.c
++++ b/sound/soc/fsl/imx-sgtl5000.c
+@@ -108,6 +108,7 @@ static int imx_sgtl5000_probe(struct platform_device *pdev)
+ 		ret = -EPROBE_DEFER;
+ 		goto fail;
+ 	}
++	put_device(&ssi_pdev->dev);
+ 	codec_dev = of_find_i2c_device_by_node(codec_np);
+ 	if (!codec_dev) {
+ 		dev_err(&pdev->dev, "failed to find codec platform device\n");
 -- 
 2.19.1
 
