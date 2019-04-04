@@ -2,74 +2,78 @@ Return-Path: <SRS0=99u2=SG=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D5074C4360F
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Apr 2019 12:19:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3BCB2C4360F
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Apr 2019 12:23:33 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3AE3C206C0
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Apr 2019 12:19:53 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id AB2DE206C0
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Apr 2019 12:23:32 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=jms.id.au header.i=@jms.id.au header.b="bN5wfQWJ"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3AE3C206C0
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=jms.id.au
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="M5Pxf4lV"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org AB2DE206C0
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44Zhpb18V8zDqMs
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Apr 2019 23:19:51 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44Zhtn5vSmzDqMH
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Apr 2019 23:23:29 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=2607:f8b0:4864:20::743; helo=mail-qk1-x743.google.com;
- envelope-from=joel.stan@gmail.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=c-s.fr
+ (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=jms.id.au
+ dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- secure) header.d=jms.id.au header.i=@jms.id.au header.b="bN5wfQWJ"; 
+ unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="M5Pxf4lV"; 
  dkim-atps=neutral
-Received: from mail-qk1-x743.google.com (mail-qk1-x743.google.com
- [IPv6:2607:f8b0:4864:20::743])
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44ZhmQ2GYpzDq7d
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Apr 2019 23:17:56 +1100 (AEDT)
-Received: by mail-qk1-x743.google.com with SMTP id a71so1457828qkg.2
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 04 Apr 2019 05:17:56 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=jms.id.au; s=google;
- h=mime-version:references:in-reply-to:from:date:message-id:subject:to
- :cc; bh=mJ9lyu9lgje97o92Z/sLGDTR3ug4FpzQgmmTePE7M2M=;
- b=bN5wfQWJwWYhwVaiLOffEZC/Trcwg05e6QaxWtvDTZ7a0tHjRBHRxZB9rnbZ8q6VSU
- TlkVw5rYHr/iiUw1U3wtYwbcxku9H9+J3UcEwDi83TtsiPiD2WFDezR3PX8Jl+KHCxlZ
- viCT14mz9QFmq80u1JAlJ+i6F38UE1Ge7tH3g=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:mime-version:references:in-reply-to:from:date
- :message-id:subject:to:cc;
- bh=mJ9lyu9lgje97o92Z/sLGDTR3ug4FpzQgmmTePE7M2M=;
- b=cBKsO2bqM6uTqzs52P8rzW7Iq1fmYyXtwmvEeo9YZo+8ADACuonP9jxOF/AtFHpXnr
- EkjE+DryECkmSl4bdAbvBTcEzVihxP2heQn+cmbFTsT3XrrKeCJQ8RPLGvGXOhd8zFOq
- CMvmlaURBeD+yHVnfTXDiB/nJ42xFOuu7cDKHx9e28LRDQFMo/nYKnVuoXHqepBCIlvq
- ESMaaZVbC6Uxveh/vkzTibZdDY8Ajq4moPR1EdOjBZIwICrweujonN5DszCJGV1rwaYG
- NcPXmvNC6lA0dyiL9v5r1L5eO/hExdoL0OKnmjlJ0AIXM4tdORe2CyhEtWTiQPcNhkOz
- gkng==
-X-Gm-Message-State: APjAAAW78QYDnt7evax6zSO2qoQbJuwj7aLs0RjDDOdtfyhfWdIvdeQw
- 1p2zlgoElflwLDB5r9gqipZG4Bu/LD+z5bCt7MY=
-X-Google-Smtp-Source: APXvYqySRDvX0dIEGt55Sb+eYa0+NlPRvEpqafI8y23L+fPVZ10v6zgjtgW5Qd7t0ixA4xS7CaTSsZQpE2hYJys9pTs=
-X-Received: by 2002:a37:9fc6:: with SMTP id i189mr4931623qke.246.1554380272617; 
- Thu, 04 Apr 2019 05:17:52 -0700 (PDT)
-MIME-Version: 1.0
-References: <20190329064453.12761-1-joel@jms.id.au>
- <20190329095318.GJ3969@gate.crashing.org>
-In-Reply-To: <20190329095318.GJ3969@gate.crashing.org>
-From: Joel Stanley <joel@jms.id.au>
-Date: Thu, 4 Apr 2019 12:17:40 +0000
-Message-ID: <CACPK8Xes6+j+bjCbqwBLJpvP-Hi_WzbtEwfUSzJjeAW9jwFRKA@mail.gmail.com>
-Subject: Re: [PATCH v2] powerpc/vmlinux.lds: Drop binutils < 2.18 workarounds
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Content-Type: text/plain; charset="UTF-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44Zhq00zggzDq8X
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Apr 2019 23:20:11 +1100 (AEDT)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 44Zhps1vMKz9v0gQ;
+ Thu,  4 Apr 2019 14:20:05 +0200 (CEST)
+Authentication-Results: localhost; dkim=pass
+ reason="1024-bit key; insecure key"
+ header.d=c-s.fr header.i=@c-s.fr header.b=M5Pxf4lV; dkim-adsp=pass;
+ dkim-atps=neutral
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id lvE3JP5egYrE; Thu,  4 Apr 2019 14:20:05 +0200 (CEST)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 44Zhps0bWfz9v0gP;
+ Thu,  4 Apr 2019 14:20:05 +0200 (CEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
+ t=1554380405; bh=qVAsrHjgcFhyoqX0iHv0EYygZp1BM3I6QKY+IS8H7mA=;
+ h=From:Subject:To:Cc:Date:From;
+ b=M5Pxf4lVxJCK7gy+lp6kuokyNnDe49B9TFT4Odp3Fa8Up6CE/gdx1AOCrz2fIxcwD
+ xjgGmffz1Snavb6TXa9fFYzwfXcnQ9Z6HHCw6fcrR00lmDsseaUyxkv4IFdYABckWN
+ 47Lm/19pVFz8EypeknfK9C8S5o8PXshdjg2gSaB0=
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 620278B920;
+ Thu,  4 Apr 2019 14:20:06 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id HK5_7w3khueB; Thu,  4 Apr 2019 14:20:06 +0200 (CEST)
+Received: from po16846vm.idsi0.si.c-s.fr (unknown [192.168.204.43])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 07EF58B917;
+ Thu,  4 Apr 2019 14:20:06 +0200 (CEST)
+Received: by po16846vm.idsi0.si.c-s.fr (Postfix, from userid 0)
+ id B1D8166280; Thu,  4 Apr 2019 12:20:05 +0000 (UTC)
+Message-Id: <0d8c9cb7fb43bde8663333bb6a69d16380a219a5.1554380255.git.christophe.leroy@c-s.fr>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Subject: [PATCH] powerpc/vdso32: fix CLOCK_MONOTONIC on PPC64
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Christian Zigotzky <chzigotzky@xenosoft.de>
+Date: Thu,  4 Apr 2019 12:20:05 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -81,34 +85,36 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, 29 Mar 2019 at 09:53, Segher Boessenkool
-<segher@kernel.crashing.org> wrote:
->
-> Hi!
->
-> On Fri, Mar 29, 2019 at 05:14:53PM +1030, Joel Stanley wrote:
-> > -     NOTES :kernel :notes
-> > +     NOTES
->
-> I think this still need to be
->
->         NOTES :kernel
->
-> or the linker will complain.  Did you try to build ppc64_defconfig?
+Commit b5b4453e7912 ("powerpc/vdso64: Fix CLOCK_MONOTONIC
+inconsistencies across Y2038") changed the type of wtom_clock_sec
+to s64 on PPC64. Therefore, VDSO32 needs to read it with a 4 bytes
+shift in order to retrieve the lower part of it.
 
-Yeah, I did build (and boot, in qemu) the ppc64_defconfig. I tried
-leaving in/removing the :kernel annotation in a bunch of places and as
-long as I had it in the first spot, the kernel linked.
+Fixes: b5b4453e7912 ("powerpc/vdso64: Fix CLOCK_MONOTONIC inconsistencies across Y2038")
+Reported-by: Christian Zigotzky <chzigotzky@xenosoft.de>
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+---
+ arch/powerpc/kernel/vdso32/gettimeofday.S | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Shall I respin with this added?
+diff --git a/arch/powerpc/kernel/vdso32/gettimeofday.S b/arch/powerpc/kernel/vdso32/gettimeofday.S
+index 1e0bc5955a40..afd516b572f8 100644
+--- a/arch/powerpc/kernel/vdso32/gettimeofday.S
++++ b/arch/powerpc/kernel/vdso32/gettimeofday.S
+@@ -98,7 +98,7 @@ V_FUNCTION_BEGIN(__kernel_clock_gettime)
+ 	 * can be used, r7 contains NSEC_PER_SEC.
+ 	 */
+ 
+-	lwz	r5,WTOM_CLOCK_SEC(r9)
++	lwz	r5,(WTOM_CLOCK_SEC+LOPART)(r9)
+ 	lwz	r6,WTOM_CLOCK_NSEC(r9)
+ 
+ 	/* We now have our offset in r5,r6. We create a fake dependency
+-- 
+2.13.3
 
-> (And I do not know if there are any tools that expect the notes in a phdr,
-> or even specifically the second phdr).
->
->
-> Segher
