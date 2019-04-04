@@ -2,105 +2,88 @@ Return-Path: <SRS0=99u2=SG=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS autolearn=unavailable autolearn_force=no
+X-Spam-Status: No, score=-7.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 77E41C4360F
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Apr 2019 16:58:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3899EC4360F
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Apr 2019 17:00:02 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id F2FBA206DD
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Apr 2019 16:58:39 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org F2FBA206DD
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
+	by mail.kernel.org (Postfix) with ESMTPS id 877F9206DD
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Apr 2019 17:00:01 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="Rvx+Vllp"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 877F9206DD
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44Zq0F5MlqzDqDK
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Apr 2019 03:58:37 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44Zq1q4y8rzDqDK
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Apr 2019 03:59:59 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=redhat.com
- (client-ip=209.132.183.28; helo=mx1.redhat.com;
- envelope-from=longman@redhat.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=c-s.fr
+ (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=redhat.com
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ dmarc=none (p=none dis=none) header.from=c-s.fr
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="Rvx+Vllp"; 
+ dkim-atps=neutral
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44Zpql3TvDzDqF1
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Apr 2019 03:51:15 +1100 (AEDT)
-Received: from smtp.corp.redhat.com (int-mx01.intmail.prod.int.phx2.redhat.com
- [10.5.11.11])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by mx1.redhat.com (Postfix) with ESMTPS id 74AADC0703A6;
- Thu,  4 Apr 2019 16:51:13 +0000 (UTC)
-Received: from llong.remote.csb (dhcp-17-19.bos.redhat.com [10.18.17.19])
- by smtp.corp.redhat.com (Postfix) with ESMTP id AF5A460143;
- Thu,  4 Apr 2019 16:50:54 +0000 (UTC)
-Subject: Re: [PATCH RFC 0/5] cpu/speculation: Add 'cpu_spec_mitigations='
- cmdline options
-To: Josh Poimboeuf <jpoimboe@redhat.com>, linux-kernel@vger.kernel.org
-References: <cover.1554396090.git.jpoimboe@redhat.com>
-From: Waiman Long <longman@redhat.com>
-Openpgp: preference=signencrypt
-Autocrypt: addr=longman@redhat.com; prefer-encrypt=mutual; keydata=
- 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
- weim8xU=
-Organization: Red Hat
-Message-ID: <ee83d3b8-d74a-dbeb-c838-0297b3c342c0@redhat.com>
-Date: Thu, 4 Apr 2019 12:50:54 -0400
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:52.0) Gecko/20100101
- Thunderbird/52.9.1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44Zpx43NkKzDqC9
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Apr 2019 03:55:51 +1100 (AEDT)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 44Zpwx27qQz9tyP5;
+ Thu,  4 Apr 2019 18:55:45 +0200 (CEST)
+Authentication-Results: localhost; dkim=pass
+ reason="1024-bit key; insecure key"
+ header.d=c-s.fr header.i=@c-s.fr header.b=Rvx+Vllp; dkim-adsp=pass;
+ dkim-atps=neutral
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id RHEzvQwztqBp; Thu,  4 Apr 2019 18:55:45 +0200 (CEST)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 44Zpwx131qz9tyP4;
+ Thu,  4 Apr 2019 18:55:45 +0200 (CEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
+ t=1554396945; bh=v7COA/1RLLUwkFQvnQteQnpYRPqepGhm1mFnHoinGYM=;
+ h=Subject:To:Cc:References:From:Date:In-Reply-To:From;
+ b=Rvx+Vllp1ljPrdejuJDm/tmbjy6F9tf1aqh316KRCKXZQIbOmYpOj1RFJjsbF+oYi
+ B5doPuGSVcb1DukocuiKKDX4qYaIHgqK7YvTdmkjFif1BFQ9+Rz48dchPSFKt4w8uL
+ IlQmJ/NgzegtUraLgpnGL1rRf3+GvLlAqBa5bzFw=
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id C92A28B92A;
+ Thu,  4 Apr 2019 18:55:46 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id 1o3zpKexUQAf; Thu,  4 Apr 2019 18:55:46 +0200 (CEST)
+Received: from PO15451 (unknown [192.168.4.90])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 5D3298B917;
+ Thu,  4 Apr 2019 18:55:46 +0200 (CEST)
+Subject: Re: [RFC PATCH] powerpc/mm: Reduce memory usage for mm_context_t for
+ radix
+To: Nicholas Piggin <npiggin@gmail.com>,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>, benh@kernel.crashing.org,
+ mpe@ellerman.id.au, paulus@samba.org
+References: <20190402143424.7075-1-aneesh.kumar@linux.ibm.com>
+ <88b8b995-87d3-e264-e0d6-a99c3e8e098b@c-s.fr>
+ <1554393943.3joom3btwy.astroid@bobo.none>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Message-ID: <8f28647d-8b4c-e001-a2ac-dd254d883bd5@c-s.fr>
+Date: Thu, 4 Apr 2019 18:55:45 +0200
+User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:60.0) Gecko/20100101
+ Thunderbird/60.6.1
 MIME-Version: 1.0
-In-Reply-To: <cover.1554396090.git.jpoimboe@redhat.com>
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
-Content-Language: en-US
-X-Scanned-By: MIMEDefang 2.79 on 10.5.11.11
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.5.16
- (mx1.redhat.com [10.5.110.32]); Thu, 04 Apr 2019 16:51:13 +0000 (UTC)
+In-Reply-To: <1554393943.3joom3btwy.astroid@bobo.none>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: fr
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -112,30 +95,107 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Peter Zijlstra <peterz@infradead.org>,
- Heiko Carstens <heiko.carstens@de.ibm.com>, Paul Mackerras <paulus@samba.org>,
- "H . Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@kernel.org>,
- Andrea Arcangeli <aarcange@redhat.com>, linux-s390@vger.kernel.org,
- x86@kernel.org, Will Deacon <will.deacon@arm.com>,
- Linus Torvalds <torvalds@linux-foundation.org>,
- Catalin Marinas <catalin.marinas@arm.com>, linux-arch@vger.kernel.org,
- Jon Masters <jcm@redhat.com>, Jiri Kosina <jikos@kernel.org>,
- Borislav Petkov <bp@alien8.de>, Andy Lutomirski <luto@kernel.org>,
- Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Tyler Hicks <tyhicks@canonical.com>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 04/04/2019 12:44 PM, Josh Poimboeuf wrote:
-> Keeping track of the number of mitigations for all the CPU speculation
-> bugs has become overwhelming for many users.  It's getting more and more
-> complicated to decide which mitigations are needed for a given
-> architecture.  Complicating matters is the fact that each arch tends to
-> it own custom way to mitigate the same vulnerability.
 
-... tends to "have its" own ... ?
 
--Longman
+Le 04/04/2019 à 18:13, Nicholas Piggin a écrit :
+> Christophe Leroy's on April 3, 2019 4:31 am:
+>>
+>>
+>> Le 02/04/2019 à 16:34, Aneesh Kumar K.V a écrit :
+>>> Currently, our mm_context_t on book3s64 include all hash specific
+>>> context details like slice mask, subpage protection details. We
+>>> can skip allocating those on radix. This will help us to save
+>>> 8K per mm_context with radix translation.
+>>>
+>>> With the patch applied we have
+>>>
+>>> sizeof(mm_context_t)  = 136
+>>> sizeof(struct hash_mm_context)  = 8288
+>>>
+>>> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
+>>> ---
+>>> NOTE:
+>>>
+>>> If we want to do this, I am still trying to figure out how best we can do this
+>>> without all the #ifdef and other overhead for 8xx book3e
+>>>
+>>>
+>>>    arch/powerpc/include/asm/book3s/64/mmu-hash.h |  2 +-
+>>>    arch/powerpc/include/asm/book3s/64/mmu.h      | 48 +++++++++++--------
+>>>    arch/powerpc/include/asm/book3s/64/slice.h    |  6 +--
+>>>    arch/powerpc/kernel/paca.c                    |  9 ++--
+>>>    arch/powerpc/kernel/setup-common.c            |  7 ++-
+>>>    arch/powerpc/mm/hash_utils_64.c               | 10 ++--
+>>>    arch/powerpc/mm/mmu_context_book3s64.c        | 16 ++++++-
+>>>    arch/powerpc/mm/slb.c                         |  2 +-
+>>>    arch/powerpc/mm/slice.c                       | 48 +++++++++----------
+>>>    arch/powerpc/mm/subpage-prot.c                |  8 ++--
+>>>    10 files changed, 91 insertions(+), 65 deletions(-)
+>>>
+>>> diff --git a/arch/powerpc/include/asm/book3s/64/mmu-hash.h b/arch/powerpc/include/asm/book3s/64/mmu-hash.h
+>>> index a28a28079edb..d801be977623 100644
+>>> --- a/arch/powerpc/include/asm/book3s/64/mmu-hash.h
+>>> +++ b/arch/powerpc/include/asm/book3s/64/mmu-hash.h
+>>> @@ -657,7 +657,7 @@ extern void slb_set_size(u16 size);
+>>>    
+>>>    /* 4 bits per slice and we have one slice per 1TB */
+>>>    #define SLICE_ARRAY_SIZE	(H_PGTABLE_RANGE >> 41)
+>>> -#define TASK_SLICE_ARRAY_SZ(x)	((x)->context.slb_addr_limit >> 41)
+>>> +#define TASK_SLICE_ARRAY_SZ(x)	((x)->context.hash_context->slb_addr_limit >> 41)
+>>>    
+>>>    #ifndef __ASSEMBLY__
+>>>    
+>>> diff --git a/arch/powerpc/include/asm/book3s/64/mmu.h b/arch/powerpc/include/asm/book3s/64/mmu.h
+>>> index a809bdd77322..07e76e304a3b 100644
+>>> --- a/arch/powerpc/include/asm/book3s/64/mmu.h
+>>> +++ b/arch/powerpc/include/asm/book3s/64/mmu.h
+>>> @@ -114,6 +114,33 @@ struct slice_mask {
+>>>    	DECLARE_BITMAP(high_slices, SLICE_NUM_HIGH);
+>>>    };
+>>>    
+>>> +struct hash_mm_context {
+>>> +
+>>> +	u16 user_psize; /* page size index */
+>>
+>> Could we keep that in mm_context_t ?
+> 
+> Why do you want it there?
+
+It was just to avoid so many changes and also the pointer complexity for 
+just saving 2 bytes. But your suggestion below seems good.
+
+> 
+> 
+>>> @@ -155,15 +155,15 @@ static struct slice_mask *slice_mask_for_size(struct mm_struct *mm, int psize)
+>>>    {
+>>>    #ifdef CONFIG_PPC_64K_PAGES
+>>>    	if (psize == MMU_PAGE_64K)
+>>> -		return &mm->context.mask_64k;
+>>> +		return &mm->context.hash_context->mask_64k;
+>>
+>> You should take the two patches below, that would help:
+>> https://patchwork.ozlabs.org/patch/1059056/
+>> https://patchwork.ozlabs.org/patch/1059058/
+> 
+> Above patches seem good I think. What I think Aneesh should have is
+> is a macro or inline that gives a pointer to the hash_mm_context from
+> an mm_context pointer.
+
+Good idea. But please call it something else, as it has nothing to do 
+with hash outside of book3s64 (ie the 8xx is a nohash32).
+
+Christophe
+
+> 
+> Architectures which always want it should just put the hash struct
+> in their mm_context struct and that avoids the pointer overhead
+> completely.
+> 
+> Thanks,
+> Nick
+> 
