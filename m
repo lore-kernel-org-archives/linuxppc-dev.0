@@ -4,23 +4,24 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-8.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+	SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D8298C10F05
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Apr 2019 08:53:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 29D92C10F05
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Apr 2019 08:56:51 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 581D4217D7
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Apr 2019 08:53:56 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 9E3BB21855
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Apr 2019 08:56:50 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="HmWW4Bng"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 581D4217D7
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="Ydi6QKWC"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9E3BB21855
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linuxfoundation.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44ZcDy0sdHzDqHb
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Apr 2019 19:53:54 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44ZcJJ5msKzDqB3
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Apr 2019 19:56:48 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=linuxfoundation.org
  (client-ip=198.145.29.99; helo=mail.kernel.org;
@@ -28,31 +29,32 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=linuxfoundation.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="HmWW4Bng"; 
+ unprotected) header.d=kernel.org header.i=@kernel.org header.b="Ydi6QKWC"; 
  dkim-atps=neutral
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44Zc9v6KXfzDqGN
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Apr 2019 19:51:13 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44ZcC00bqXzDqH1
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Apr 2019 19:52:11 +1100 (AEDT)
 Received: from localhost (83-86-89-107.cable.dynamic.v4.ziggo.nl
  [83.86.89.107])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id 27E5F217D7;
- Thu,  4 Apr 2019 08:51:11 +0000 (UTC)
+ by mail.kernel.org (Postfix) with ESMTPSA id 3975720855;
+ Thu,  4 Apr 2019 08:52:09 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1554367871;
- bh=eN/gQAv0J7NE2cnOczyQDSlN52+KXtRRbTRUYc6QtZY=;
+ s=default; t=1554367929;
+ bh=acG2swO987h0hEnlWLELDhy7gaNlHmgK+TKDY+AFgog=;
  h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=HmWW4BngEylvBviQnKZj5/AwxxUtZ/orjroK/KSo156RrRVMTSIxBa872M5E+Ke//
- vDPdAEGh+UdH20MQuRDPT8PxAKajlSViShS9anbzE6n8+OcpwK1QG+PKqR0aFiGfMt
- +2O/IbkvG6dwUSEIkxJOYBZCruJTwivEYOkCQZd4=
+ b=Ydi6QKWCsVrPCafrNlaFIrZsABeiKJBTIP/ohOuIPVUHdr3tU2HsEaPbgDg2ZI/+8
+ B5VtArYPa+2BUytifbBdCVRot+VWrXYYoSBOOkkS73lTI1Cd2BTYJ38Zx41z8zo33b
+ Fxf42yFi+/M80zeAEYIBtElV4VbyRmFQvnAtYfbg=
 From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH 4.9 44/91] SoC: imx-sgtl5000: add missing put_device()
-Date: Thu,  4 Apr 2019 10:47:28 +0200
-Message-Id: <20190404084538.023440514@linuxfoundation.org>
+Subject: [PATCH 4.9 66/91] ASoC: fsl-asoc-card: fix object reference leaks in
+ fsl_asoc_card_probe
+Date: Thu,  4 Apr 2019 10:47:50 +0200
+Message-Id: <20190404084539.276503412@linuxfoundation.org>
 X-Mailer: git-send-email 2.21.0
 In-Reply-To: <20190404084535.450029272@linuxfoundation.org>
 References: <20190404084535.450029272@linuxfoundation.org>
@@ -76,14 +78,11 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 Cc: Sasha Levin <sashal@kernel.org>, alsa-devel@alsa-project.org,
  linuxppc-dev@lists.ozlabs.org, Timur Tabi <timur@kernel.org>,
  Xiubo Li <Xiubo.Lee@gmail.com>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Sascha Hauer <s.hauer@pengutronix.de>, Takashi Iwai <tiwai@suse.com>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Takashi Iwai <tiwai@suse.com>,
  Liam Girdwood <lgirdwood@gmail.com>, stable@vger.kernel.org,
  Jaroslav Kysela <perex@perex.cz>, Nicolin Chen <nicoleotsuka@gmail.com>,
- Mark Brown <broonie@kernel.org>, NXP Linux Team <linux-imx@nxp.com>,
- Pengutronix Kernel Team <kernel@pengutronix.de>,
- Wen Yang <yellowriver2010@hotmail.com>, Shawn Guo <shawnguo@kernel.org>,
- Fabio Estevam <festevam@gmail.com>, linux-arm-kernel@lists.infradead.org
+ Mark Brown <broonie@kernel.org>, Wen Yang <yellowriver2010@hotmil.com>,
+ Fabio Estevam <festevam@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
@@ -92,20 +91,12 @@ Sender: "Linuxppc-dev"
 
 ------------------
 
-[ Upstream commit 8fa857da9744f513036df1c43ab57f338941ae7d ]
+[ Upstream commit 11907e9d3533648615db08140e3045b829d2c141 ]
 
 The of_find_device_by_node() takes a reference to the underlying device
 structure, we should release that reference.
 
-Detected by coccinelle with the following warnings:
-./sound/soc/fsl/imx-sgtl5000.c:169:1-7: ERROR: missing put_device;
-call of_find_device_by_node on line 105, but without a corresponding
-object release within this function.
-./sound/soc/fsl/imx-sgtl5000.c:177:1-7: ERROR: missing put_device;
-call of_find_device_by_node on line 105, but without a corresponding
-object release within this function.
-
-Signed-off-by: Wen Yang <yellowriver2010@hotmail.com>
+Signed-off-by: Wen Yang <yellowriver2010@hotmil.com>
 Cc: Timur Tabi <timur@kernel.org>
 Cc: Nicolin Chen <nicoleotsuka@gmail.com>
 Cc: Xiubo Li <Xiubo.Lee@gmail.com>
@@ -114,32 +105,27 @@ Cc: Liam Girdwood <lgirdwood@gmail.com>
 Cc: Mark Brown <broonie@kernel.org>
 Cc: Jaroslav Kysela <perex@perex.cz>
 Cc: Takashi Iwai <tiwai@suse.com>
-Cc: Shawn Guo <shawnguo@kernel.org>
-Cc: Sascha Hauer <s.hauer@pengutronix.de>
-Cc: Pengutronix Kernel Team <kernel@pengutronix.de>
-Cc: NXP Linux Team <linux-imx@nxp.com>
 Cc: alsa-devel@alsa-project.org
 Cc: linuxppc-dev@lists.ozlabs.org
-Cc: linux-arm-kernel@lists.infradead.org
 Cc: linux-kernel@vger.kernel.org
 Signed-off-by: Mark Brown <broonie@kernel.org>
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- sound/soc/fsl/imx-sgtl5000.c | 1 +
+ sound/soc/fsl/fsl-asoc-card.c | 1 +
  1 file changed, 1 insertion(+)
 
-diff --git a/sound/soc/fsl/imx-sgtl5000.c b/sound/soc/fsl/imx-sgtl5000.c
-index b99e0b5e00e9..8e525f7ac08d 100644
---- a/sound/soc/fsl/imx-sgtl5000.c
-+++ b/sound/soc/fsl/imx-sgtl5000.c
-@@ -115,6 +115,7 @@ static int imx_sgtl5000_probe(struct platform_device *pdev)
- 		ret = -EPROBE_DEFER;
- 		goto fail;
- 	}
-+	put_device(&ssi_pdev->dev);
- 	codec_dev = of_find_i2c_device_by_node(codec_np);
- 	if (!codec_dev) {
- 		dev_err(&pdev->dev, "failed to find codec platform device\n");
+diff --git a/sound/soc/fsl/fsl-asoc-card.c b/sound/soc/fsl/fsl-asoc-card.c
+index dffd549a0e2a..705d2524ec31 100644
+--- a/sound/soc/fsl/fsl-asoc-card.c
++++ b/sound/soc/fsl/fsl-asoc-card.c
+@@ -689,6 +689,7 @@ static int fsl_asoc_card_probe(struct platform_device *pdev)
+ asrc_fail:
+ 	of_node_put(asrc_np);
+ 	of_node_put(codec_np);
++	put_device(&cpu_pdev->dev);
+ fail:
+ 	of_node_put(cpu_np);
+ 
 -- 
 2.19.1
 
