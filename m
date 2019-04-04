@@ -2,58 +2,54 @@ Return-Path: <SRS0=99u2=SG=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A38E7C4360F
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Apr 2019 20:24:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id F0C55C4360F
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Apr 2019 21:07:51 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 2778C20882
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Apr 2019 20:24:05 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2778C20882
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
+	by mail.kernel.org (Postfix) with ESMTPS id 65F832171F
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Apr 2019 21:07:51 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 65F832171F
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=goodmis.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44ZvYG5bDFzDqRf
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Apr 2019 07:24:02 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44ZwWn10tdzDqSW
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Apr 2019 08:07:49 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=redhat.com
- (client-ip=209.132.183.28; helo=mx1.redhat.com;
- envelope-from=alex.williamson@redhat.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=kernel.org
+ (client-ip=198.145.29.99; helo=mail.kernel.org;
+ envelope-from=srs0=v+sf=sg=goodmis.org=rostedt@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=redhat.com
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ dmarc=none (p=none dis=none) header.from=goodmis.org
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44ZvWT6HmrzDqQM
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Apr 2019 07:22:29 +1100 (AEDT)
-Received: from smtp.corp.redhat.com (int-mx04.intmail.prod.int.phx2.redhat.com
- [10.5.11.14])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44ZwTz66MJzDqPR
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Apr 2019 08:06:15 +1100 (AEDT)
+Received: from gandalf.local.home (cpe-66-24-58-225.stny.res.rr.com
+ [66.24.58.225])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by mx1.redhat.com (Postfix) with ESMTPS id ECDE4356F6;
- Thu,  4 Apr 2019 20:22:26 +0000 (UTC)
-Received: from x1.home (ovpn-116-99.phx2.redhat.com [10.3.116.99])
- by smtp.corp.redhat.com (Postfix) with ESMTP id D422B5DE65;
- Thu,  4 Apr 2019 20:22:25 +0000 (UTC)
-Date: Thu, 4 Apr 2019 14:22:25 -0600
-From: Alex Williamson <alex.williamson@redhat.com>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>
-Subject: Re: [RFC PATCH kernel v2] powerpc/powernv: Isolate NVLinks between
- GV100GL on Witherspoon
-Message-ID: <20190404142225.371fe38a@x1.home>
-In-Reply-To: <20190404052324.90501-1-aik@ozlabs.ru>
-References: <20190404052324.90501-1-aik@ozlabs.ru>
-Organization: Red Hat
+ by mail.kernel.org (Postfix) with ESMTPSA id A42092082E;
+ Thu,  4 Apr 2019 21:06:09 +0000 (UTC)
+Date: Thu, 4 Apr 2019 17:06:08 -0400
+From: Steven Rostedt <rostedt@goodmis.org>
+To: "Dmitry V. Levin" <ldv@altlinux.org>
+Subject: Re: [PATCH 5/6 v3] syscalls: Remove start and number from
+ syscall_get_arguments() args
+Message-ID: <20190404170608.25cadc7d@gandalf.local.home>
+In-Reply-To: <20190404181758.GA8071@altlinux.org>
+References: <20190401134104.676620247@goodmis.org>
+ <20190401134421.278590567@goodmis.org>
+ <20190404181758.GA8071@altlinux.org>
+X-Mailer: Claws Mail 3.17.3 (GTK+ 2.24.32; x86_64-pc-linux-gnu)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Scanned-By: MIMEDefang 2.79 on 10.5.11.14
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.5.16
- (mx1.redhat.com [10.5.110.30]); Thu, 04 Apr 2019 20:22:27 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -65,285 +61,39 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Jose Ricardo Ziviani <joserz@linux.ibm.com>, kvm@vger.kernel.org,
- Sam Bobroff <sbobroff@linux.ibm.com>,
- Daniel Henrique Barboza <danielhb413@gmail.com>, kvm-ppc@vger.kernel.org,
- Piotr Jaroszynski <pjaroszynski@nvidia.com>,
- Leonardo Augusto =?UTF-8?B?R3Vp?= =?UTF-8?B?bWFyw6Nlcw==?= Garcia
- <lagarcia@br.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- David Gibson <david@gibson.dropbear.id.au>
+Cc: linux-ia64@vger.kernel.org, "Gustavo A. R. Silva" <gustavo@embeddedor.com>,
+ Peter Zijlstra <peterz@infradead.org>, Palmer Dabbelt <palmer@sifive.com>,
+ Dominik Brodowski <linux@dominikbrodowski.net>,
+ Oleg Nesterov <oleg@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
+ sparclinux@vger.kernel.org, linux-riscv@lists.infradead.org,
+ Ingo Molnar <mingo@kernel.org>, linux-arch@vger.kernel.org,
+ linux-s390@vger.kernel.org, linux-c6x-dev@linux-c6x.org,
+ linux-sh@vger.kernel.org, linux-hexagon@vger.kernel.org, x86@kernel.org,
+ Ingo Molnar <mingo@redhat.com>, linux-snps-arc@lists.infradead.org,
+ Dave Martin <dave.martin@arm.com>, uclinux-h8-devel@lists.sourceforge.jp,
+ linux-xtensa@linux-xtensa.org, Kees Cook <keescook@chromium.org>,
+ Roland McGrath <roland@hack.frob.com>, linux-um@lists.infradead.org,
+ linux-mips@vger.kernel.org, openrisc@lists.librecores.org,
+ Borislav Petkov <bp@alien8.de>, Andy Lutomirski <luto@kernel.org>,
+ Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org,
+ linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, Andy Lutomirski <luto@amacapital.net>,
+ "Eric W. Biederman" <ebiederm@xmission.com>, nios2-dev@lists.rocketboards.org,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Linus Torvalds <torvalds@linux-foundation.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu,  4 Apr 2019 16:23:24 +1100
-Alexey Kardashevskiy <aik@ozlabs.ru> wrote:
+On Thu, 4 Apr 2019 21:17:58 +0300
+"Dmitry V. Levin" <ldv@altlinux.org> wrote:
 
-> The NVIDIA V100 SXM2 GPUs are connected to the CPU via PCIe links and
-> (on POWER9) NVLinks. In addition to that, GPUs themselves have direct
-> peer to peer NVLinks in groups of 2 to 4 GPUs. At the moment the POWERNV
-> platform puts all interconnected GPUs to the same IOMMU group.
-> 
-> However the user may want to pass individual GPUs to the userspace so
-> in order to do so we need to put them into separate IOMMU groups and
-> cut off the interconnects.
-> 
-> Thankfully V100 GPUs implement an interface to do by programming link
-> disabling mask to BAR0 of a GPU. Once a link is disabled in a GPU using
-> this interface, it cannot be re-enabled until the secondary bus reset is
-> issued to the GPU.
-> 
-> This adds an extra step to the secondary bus reset handler (the one used
-> for such GPUs) to block NVLinks to GPUs which do not belong to the same
-> group as the GPU being reset.
-> 
-> This adds a new "isolate_nvlink" kernel parameter to allow GPU isolation;
-> when enabled, every GPU gets its own IOMMU group. The new parameter is off
-> by default to preserve the existing behaviour.
-> 
-> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
-> ---
-> Changes:
-> v2:
-> * this is rework of [PATCH kernel RFC 0/2] vfio, powerpc/powernv: Isolate GV100GL
-> but this time it is contained in the powernv platform
-> ---
->  arch/powerpc/platforms/powernv/Makefile      |   2 +-
->  arch/powerpc/platforms/powernv/pci.h         |   1 +
->  arch/powerpc/platforms/powernv/eeh-powernv.c |   1 +
->  arch/powerpc/platforms/powernv/npu-dma.c     |  24 +++-
->  arch/powerpc/platforms/powernv/nvlinkgpu.c   | 131 +++++++++++++++++++
->  5 files changed, 156 insertions(+), 3 deletions(-)
->  create mode 100644 arch/powerpc/platforms/powernv/nvlinkgpu.c
-> 
-> diff --git a/arch/powerpc/platforms/powernv/Makefile b/arch/powerpc/platforms/powernv/Makefile
-> index da2e99efbd04..60a10d3b36eb 100644
-> --- a/arch/powerpc/platforms/powernv/Makefile
-> +++ b/arch/powerpc/platforms/powernv/Makefile
-> @@ -6,7 +6,7 @@ obj-y			+= opal-msglog.o opal-hmi.o opal-power.o opal-irqchip.o
->  obj-y			+= opal-kmsg.o opal-powercap.o opal-psr.o opal-sensor-groups.o
->  
->  obj-$(CONFIG_SMP)	+= smp.o subcore.o subcore-asm.o
-> -obj-$(CONFIG_PCI)	+= pci.o pci-ioda.o npu-dma.o pci-ioda-tce.o
-> +obj-$(CONFIG_PCI)	+= pci.o pci-ioda.o npu-dma.o pci-ioda-tce.o nvlinkgpu.o
->  obj-$(CONFIG_CXL_BASE)	+= pci-cxl.o
->  obj-$(CONFIG_EEH)	+= eeh-powernv.o
->  obj-$(CONFIG_PPC_SCOM)	+= opal-xscom.o
-> diff --git a/arch/powerpc/platforms/powernv/pci.h b/arch/powerpc/platforms/powernv/pci.h
-> index 8e36da379252..9fd3f391482c 100644
-> --- a/arch/powerpc/platforms/powernv/pci.h
-> +++ b/arch/powerpc/platforms/powernv/pci.h
-> @@ -250,5 +250,6 @@ extern void pnv_pci_unlink_table_and_group(struct iommu_table *tbl,
->  extern void pnv_pci_setup_iommu_table(struct iommu_table *tbl,
->  		void *tce_mem, u64 tce_size,
->  		u64 dma_offset, unsigned int page_shift);
-> +extern void pnv_try_isolate_nvidia_v100(struct pci_dev *gpdev);
->  
->  #endif /* __POWERNV_PCI_H */
-> diff --git a/arch/powerpc/platforms/powernv/eeh-powernv.c b/arch/powerpc/platforms/powernv/eeh-powernv.c
-> index f38078976c5d..464b097d9635 100644
-> --- a/arch/powerpc/platforms/powernv/eeh-powernv.c
-> +++ b/arch/powerpc/platforms/powernv/eeh-powernv.c
-> @@ -937,6 +937,7 @@ void pnv_pci_reset_secondary_bus(struct pci_dev *dev)
->  		pnv_eeh_bridge_reset(dev, EEH_RESET_HOT);
->  		pnv_eeh_bridge_reset(dev, EEH_RESET_DEACTIVATE);
->  	}
-> +	pnv_try_isolate_nvidia_v100(dev);
->  }
->  
->  static void pnv_eeh_wait_for_pending(struct pci_dn *pdn, const char *type,
-> diff --git a/arch/powerpc/platforms/powernv/npu-dma.c b/arch/powerpc/platforms/powernv/npu-dma.c
-> index dc23d9d2a7d9..017eae8197e7 100644
-> --- a/arch/powerpc/platforms/powernv/npu-dma.c
-> +++ b/arch/powerpc/platforms/powernv/npu-dma.c
-> @@ -529,6 +529,23 @@ static void pnv_comp_attach_table_group(struct npu_comp *npucomp,
->  	++npucomp->pe_num;
->  }
->  
-> +static bool isolate_nvlink;
-> +
-> +static int __init parse_isolate_nvlink(char *p)
-> +{
-> +	bool val;
-> +
-> +	if (!p)
-> +		val = true;
-> +	else if (kstrtobool(p, &val))
-> +		return -EINVAL;
-> +
-> +	isolate_nvlink = val;
-> +
-> +	return 0;
-> +}
-> +early_param("isolate_nvlink", parse_isolate_nvlink);
-> +
->  struct iommu_table_group *pnv_try_setup_npu_table_group(struct pnv_ioda_pe *pe)
->  {
->  	struct iommu_table_group *table_group;
-> @@ -549,7 +566,7 @@ struct iommu_table_group *pnv_try_setup_npu_table_group(struct pnv_ioda_pe *pe)
->  
->  	hose = pci_bus_to_host(npdev->bus);
->  
-> -	if (hose->npu) {
-> +	if (hose->npu && !isolate_nvlink) {
->  		table_group = &hose->npu->npucomp.table_group;
->  
->  		if (!table_group->group) {
-> @@ -559,7 +576,10 @@ struct iommu_table_group *pnv_try_setup_npu_table_group(struct pnv_ioda_pe *pe)
->  					pe->pe_number);
->  		}
->  	} else {
-> -		/* Create a group for 1 GPU and attached NPUs for POWER8 */
-> +		/*
-> +		 * Create a group for 1 GPU and attached NPUs for
-> +		 * POWER8 (always) or POWER9 (when isolate_nvlink).
-> +		 */
->  		pe->npucomp = kzalloc(sizeof(*pe->npucomp), GFP_KERNEL);
->  		table_group = &pe->npucomp->table_group;
->  		table_group->ops = &pnv_npu_peers_ops;
-> diff --git a/arch/powerpc/platforms/powernv/nvlinkgpu.c b/arch/powerpc/platforms/powernv/nvlinkgpu.c
-> new file mode 100644
-> index 000000000000..dbd8e9d47a05
-> --- /dev/null
-> +++ b/arch/powerpc/platforms/powernv/nvlinkgpu.c
-> @@ -0,0 +1,131 @@
-> +// SPDX-License-Identifier: GPL-2.0+
-> +/*
-> + * A helper to disable NVLinks between GPUs on IBM Withersponn platform.
-> + *
-> + * Copyright (C) 2019 IBM Corp.  All rights reserved.
-> + *     Author: Alexey Kardashevskiy <aik@ozlabs.ru>
-> + *
-> + * This program is free software; you can redistribute it and/or modify
-> + * it under the terms of the GNU General Public License version 2 as
-> + * published by the Free Software Foundation.
-> + */
-> +
-> +#include <linux/module.h>
-> +#include <linux/device.h>
-> +#include <linux/of.h>
-> +#include <linux/iommu.h>
-> +#include <linux/pci.h>
-> +
-> +static int nvlinkgpu_is_ph_in_group(struct device *dev, void *data)
-> +{
-> +	return dev->of_node->phandle == *(phandle *) data;
-> +}
-> +
-> +static u32 nvlinkgpu_get_disable_mask(struct device *dev)
-> +{
-> +	int npu, peer;
-> +	u32 mask;
-> +	struct device_node *dn;
-> +	struct iommu_group *group;
-> +
-> +	dn = dev->of_node;
-> +	if (!of_find_property(dn, "ibm,nvlink-peers", NULL))
-> +		return 0;
-> +
-> +	group = iommu_group_get(dev);
-> +	if (!group)
-> +		return 0;
-> +
-> +	/*
-> +	 * Collect links to keep which includes links to NPU and links to
-> +	 * other GPUs in the same IOMMU group.
-> +	 */
-> +	for (npu = 0, mask = 0; ; ++npu) {
-> +		u32 npuph = 0;
-> +
-> +		if (of_property_read_u32_index(dn, "ibm,npu", npu, &npuph))
-> +			break;
-> +
-> +		for (peer = 0; ; ++peer) {
-> +			u32 peerph = 0;
-> +
-> +			if (of_property_read_u32_index(dn, "ibm,nvlink-peers",
-> +					peer, &peerph))
-> +				break;
-> +
-> +			if (peerph != npuph &&
-> +				!iommu_group_for_each_dev(group, &peerph,
-> +					nvlinkgpu_is_ph_in_group))
-> +				continue;
-> +
-> +			mask |= 1 << (peer + 16);
-> +		}
-> +	}
-> +	iommu_group_put(group);
-> +
-> +	/* Disabling mechanism takes links to disable so invert it here */
-> +	mask = ~mask & 0x3F0000;
-> +
-> +	return mask;
-> +}
-> +
-> +void pnv_try_isolate_nvidia_v100(struct pci_dev *bridge)
-> +{
-> +	u32 mask;
-> +	void __iomem *bar0_0, *bar0_120000, *bar0_a00000;
-> +	struct pci_dev *pdev;
-> +
-> +	if (!bridge->subordinate)
-> +		return;
-> +
-> +	pdev = list_first_entry_or_null(&bridge->subordinate->devices,
-> +			struct pci_dev, bus_list);
-> +	if (!pdev)
-> +		return;
-> +
-> +	if (pdev->vendor != PCI_VENDOR_ID_NVIDIA)
-> +		return;
-> +
-> +	mask = nvlinkgpu_get_disable_mask(&pdev->dev);
-> +	if (!mask)
-> +		return;
-> +
-> +	bar0_0 = pci_iomap_range(pdev, 0, 0, 0x10000);
-> +	bar0_120000 = pci_iomap_range(pdev, 0, 0x120000, 0x10000);
-> +	bar0_a00000 = pci_iomap_range(pdev, 0, 0xA00000, 0x10000);
-> +
-> +	if (bar0_120000 && bar0_0 && bar0_a00000) {
-> +		u32 val;
-> +		u16 cmd = 0, cmdmask = PCI_COMMAND_MEMORY;
-> +
-> +		pci_restore_state(pdev);
-> +		pci_read_config_word(pdev, PCI_COMMAND, &cmd);
-> +		if ((cmd & cmdmask) != cmdmask)
-> +			pci_write_config_word(pdev, PCI_COMMAND, cmd | cmdmask);
-> +
-> +		/*
-> +		 * The sequence is from "Tesla P100 and V100 SXM2 NVLink
-> +		 * Isolation on Multi-Tenant Systems".
-> +		 * The register names are not provided there either,
-> +		 * hence raw values.
-> +		 */
-> +		iowrite32(0x4, bar0_120000 + 0x4C);
-> +		iowrite32(0x2, bar0_120000 + 0x2204);
-> +		val = ioread32(bar0_0 + 0x200);
-> +		val |= 0x02000000;
-> +		iowrite32(val, bar0_0 + 0x200);
-> +		val = ioread32(bar0_a00000 + 0x148);
-> +		val |= mask;
-> +		iowrite32(val, bar0_a00000 + 0x148);
-> +
-> +		if ((cmd | cmdmask) != cmd)
-> +			pci_write_config_word(pdev, PCI_COMMAND, cmd);
-> +	}
-> +
+> There are several places listed below where I'd prefer to see more readable
+> equivalents, but feel free to leave it to respective arch maintainers.
 
+I was going to do similar changes, but figured I'd do just that (let
+the arch maintainers further optimize the code). I made this more about
+fixing the interface and less about the optimization and clean ups that
+it can allow.
 
-It's a little troubling that if something goes wrong with an iomap
-we'll silently fail to re-enable the expected isolation.  Seems worthy
-of at least a pci_warn/err.  Thanks,
-
-Alex
-
-> +	if (bar0_0)
-> +		pci_iounmap(pdev, bar0_0);
-> +	if (bar0_120000)
-> +		pci_iounmap(pdev, bar0_120000);
-> +	if (bar0_a00000)
-> +		pci_iounmap(pdev, bar0_a00000);
-> +}
-
+-- Steve
