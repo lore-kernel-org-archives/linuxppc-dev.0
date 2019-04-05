@@ -6,66 +6,64 @@ X-Spam-Status: No, score=-2.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_MUTT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 84695C4360F
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Apr 2019 15:22:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B4155C4360F
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Apr 2019 15:28:28 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 05954217D4
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Apr 2019 15:22:48 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 34DC621726
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Apr 2019 15:28:28 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=alien8.de header.i=@alien8.de header.b="n0DSYxNG"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 05954217D4
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=alien8.de header.i=@alien8.de header.b="kPnz31QV"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 34DC621726
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=alien8.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44bNqB5MC1zDqCM
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  6 Apr 2019 02:22:46 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44bNxk0MDyzDqHW
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  6 Apr 2019 02:28:26 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=alien8.de
- (client-ip=5.9.137.197; helo=mail.skyhub.de; envelope-from=bp@alien8.de;
- receiver=<UNKNOWN>)
+ (client-ip=2a01:4f8:190:11c2::b:1457; helo=mail.skyhub.de;
+ envelope-from=bp@alien8.de; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=alien8.de
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=alien8.de header.i=@alien8.de header.b="n0DSYxNG"; 
+ unprotected) header.d=alien8.de header.i=@alien8.de header.b="kPnz31QV"; 
  dkim-atps=neutral
-X-Greylist: delayed 7724 seconds by postgrey-1.36 at bilbo;
- Sat, 06 Apr 2019 02:21:11 AEDT
-Received: from mail.skyhub.de (mail.skyhub.de [5.9.137.197])
+Received: from mail.skyhub.de (mail.skyhub.de [IPv6:2a01:4f8:190:11c2::b:1457])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44bNnM3RDKzDq5t
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  6 Apr 2019 02:21:10 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44bNw25w87zDqF0
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  6 Apr 2019 02:26:58 +1100 (AEDT)
 Received: from zn.tnic (p200300EC2F148A00329C23FFFEA6A903.dip0.t-ipconnect.de
  [IPv6:2003:ec:2f14:8a00:329c:23ff:fea6:a903])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by mail.skyhub.de (SuperMail on ZX Spectrum 128k) with ESMTPSA id 7E7261EC0573;
- Fri,  5 Apr 2019 17:21:06 +0200 (CEST)
+ by mail.skyhub.de (SuperMail on ZX Spectrum 128k) with ESMTPSA id E9B8D1EC037C;
+ Fri,  5 Apr 2019 17:26:52 +0200 (CEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=alien8.de; s=dkim;
- t=1554477666;
+ t=1554478013;
  h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
  to:to:cc:cc:mime-version:mime-version:content-type:content-type:
  content-transfer-encoding:in-reply-to:in-reply-to:  references:references;
- bh=iDAYjkAyIWnha+hRrIioKjCAQIv1rTI/qLj+vcxwcpc=;
- b=n0DSYxNGilBQhjNQm/CXDBONub8/fMd8HxV9dhI62sXIUWk3SEpBBwZWpwxFkvBD+CdJfW
- BNgaXDMF0VYgiIHrpMtDQT/NReIRo8u/Oa58ELGifLTM7SAQCqSDzB5IZpNMcJHF7aLShq
- 1ouepG5+1j9HYlF479TkyBJI4VdU6Vo=
-Date: Fri, 5 Apr 2019 17:20:59 +0200
+ bh=O0cTCgEX36c/m5EFCMWGNXRJyyFq2WbwhodTsWiALgI=;
+ b=kPnz31QV8uhWtABEfU/bzWN08N6g06VYZQKpLw/d60BAas9iufZP6+ugGuHLDNatjI+Bxk
+ O01LlJ/jGQp0X14n6OZiEPvLxxZbpo7/16SEDIpNKgXFq4wRRaLUH38BbzWuzSLKjTJpEG
+ EmWaFNLgoHbV8753hjlVcLKkmLlALqo=
+Date: Fri, 5 Apr 2019 17:26:50 +0200
 From: Borislav Petkov <bp@alien8.de>
 To: Josh Poimboeuf <jpoimboe@redhat.com>
-Subject: Re: [PATCH RFC 1/5] cpu/speculation: Add 'cpu_spec_mitigations='
- cmdline options
-Message-ID: <20190405152059.GG23348@zn.tnic>
+Subject: Re: [PATCH RFC 2/5] x86/speculation: Add support for
+ 'cpu_spec_mitigations=' cmdline options
+Message-ID: <20190405152650.GH23348@zn.tnic>
 References: <cover.1554396090.git.jpoimboe@redhat.com>
- <f0bd17358ab478eaca52f3b1da8305c150911b40.1554396090.git.jpoimboe@redhat.com>
- <20190405131211.GE23348@zn.tnic>
- <20190405142048.burthk2jnpcvi2om@treble>
+ <78c63cb08f36f55407f534d49cc2543079e44dbb.1554396090.git.jpoimboe@redhat.com>
+ <20190405135712.GF23348@zn.tnic>
+ <20190405143101.ksj7ayjis4p52dgt@treble>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20190405142048.burthk2jnpcvi2om@treble>
+In-Reply-To: <20190405143101.ksj7ayjis4p52dgt@treble>
 User-Agent: Mutt/1.10.1 (2018-07-13)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -95,17 +93,31 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, Apr 05, 2019 at 09:20:48AM -0500, Josh Poimboeuf wrote:
-> In your scenario, the fact that it's so easy to remember would save the
-> day, since you wouldn't have to go look up some obscure shortened option
-> name in the documentation :-)
+On Fri, Apr 05, 2019 at 09:31:01AM -0500, Josh Poimboeuf wrote:
+> My thinking was that the individual options could be used to override
+> the global option.  But maybe that's overkill?  I dunno.
 
-No no, the idea is for the short option to be memorable.
+You mean if the user deliberately types:
 
-> Suggestions are welcome but I couldn't come up with a reasonable shorter
-> option.
+"cpu_spec_mitigations=off spectre_v2=auto"
 
-Same here.
+on the cmdline to turn off all and then enable only one?
+
+Hmm, yap, sounds like an overkill to me. Then I'd probably do:
+
+	pr_err("Make up your mind already!\n");
+	return;
+
+:-))
+
+I'd say let's do the simpler and cleaner thing now and think about
+supporting this overkill when it really turns out that it is needed.
+
+> I assume you mean just the part where L1TF_MITIGATION_DEFAULT is added?
+
+Yap.
+
+Thx.
 
 -- 
 Regards/Gruss,
