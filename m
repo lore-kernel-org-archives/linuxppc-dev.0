@@ -2,87 +2,83 @@ Return-Path: <SRS0=OBm5=SH=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED
+X-Spam-Status: No, score=-0.5 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
+	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 44F93C4360F
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Apr 2019 13:27:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0C510C4360F
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Apr 2019 13:30:15 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B4B1B2184B
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Apr 2019 13:27:58 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 691502184B
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Apr 2019 13:30:14 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="key not found in DNS" (0-bit key) header.d=codeaurora.org header.i=@codeaurora.org header.b="nbJyPnXb";
-	dkim=fail reason="key not found in DNS" (0-bit key) header.d=codeaurora.org header.i=@codeaurora.org header.b="S4TrKCN7"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B4B1B2184B
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=codeaurora.org
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="YRHdnaFW"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 691502184B
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44bLGg35LfzDqSw
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  6 Apr 2019 00:27:55 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44bLKJ2mfVzDqSS
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  6 Apr 2019 00:30:12 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=codeaurora.org
- (client-ip=198.145.29.96; helo=smtp.codeaurora.org;
- envelope-from=mojha@codeaurora.org; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=codeaurora.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=codeaurora.org header.i=@codeaurora.org
- header.b="nbJyPnXb"; 
- dkim=pass (1024-bit key) header.d=codeaurora.org header.i=@codeaurora.org
- header.b="S4TrKCN7"; dkim-atps=neutral
-Received: from smtp.codeaurora.org (smtp.codeaurora.org [198.145.29.96])
+ spf=pass (mailfrom) smtp.mailfrom=gmail.com
+ (client-ip=2a00:1450:4864:20::143; helo=mail-lf1-x143.google.com;
+ envelope-from=festevam@gmail.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="YRHdnaFW"; 
+ dkim-atps=neutral
+Received: from mail-lf1-x143.google.com (mail-lf1-x143.google.com
+ [IPv6:2a00:1450:4864:20::143])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44bLBs3SgxzDq6B
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  6 Apr 2019 00:24:37 +1100 (AEDT)
-Received: by smtp.codeaurora.org (Postfix, from userid 1000)
- id BE42A60909; Fri,  5 Apr 2019 13:24:34 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=codeaurora.org;
- s=default; t=1554470674;
- bh=l1rMlczADJF5ioAJjMYIOt5EEHLsyvkesND+4wZ/JmI=;
- h=Subject:To:Cc:References:From:Date:In-Reply-To:From;
- b=nbJyPnXb3lUsHdVSR1dt7+jmjuqoxAAibngdvSzngWoFN3Xv+ruO9bLchTAeMAWCn
- ZudvKrKQGD51cuI0Rg0YPVBCUic+uzGKqVpwtituwLQuLprFrPwt/Ylj79PdP71esP
- kxcG/3DXZD9xCM+m4bwrfzjP/kD35oeNv32XeIZo=
-Received: from [10.204.79.83]
- (blr-c-bdr-fw-01_globalnat_allzones-outside.qualcomm.com [103.229.19.19])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- (Authenticated sender: mojha@smtp.codeaurora.org)
- by smtp.codeaurora.org (Postfix) with ESMTPSA id 88F8260452;
- Fri,  5 Apr 2019 13:24:28 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=codeaurora.org;
- s=default; t=1554470673;
- bh=l1rMlczADJF5ioAJjMYIOt5EEHLsyvkesND+4wZ/JmI=;
- h=Subject:To:Cc:References:From:Date:In-Reply-To:From;
- b=S4TrKCN7qtz76RQOqbOMJuawlVLuy7YR0b/pIM9bzbXJBUO8SQvTGo5I9iIfJWbvL
- r+cPm+xgXZDkTi8eb/wrJmdYGN3UT1v01PM33lMgCpVkwb6xvimDr2VUeOSioUH3vl
- MPWMP+D0tXvcJmA+WfGNy1zXie0Zh5q+O7Nr2cgI=
-DMARC-Filter: OpenDMARC Filter v1.3.2 smtp.codeaurora.org 88F8260452
-Authentication-Results: pdx-caf-mail.web.codeaurora.org;
- dmarc=none (p=none dis=none) header.from=codeaurora.org
-Authentication-Results: pdx-caf-mail.web.codeaurora.org;
- spf=none smtp.mailfrom=mojha@codeaurora.org
-Subject: Re: [PATCH 02/20] ASoC: efika-audio-fabric.c: Switch to SPDX
- identifier
-To: Fabio Estevam <festevam@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44bLFk4HcYzDqT7
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  6 Apr 2019 00:27:06 +1100 (AEDT)
+Received: by mail-lf1-x143.google.com with SMTP id 10so4380577lfr.8
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 05 Apr 2019 06:27:05 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+ :cc; bh=/S9ER+mMybWHdrmSHFBHrML8i6W0dz5O78OM+5/knRw=;
+ b=YRHdnaFWUodEuWeUARP+rCdwZq8XcbPwq6g3QPYEnW2NWNSY8HvzUBfBZ2EldlbzvE
+ atkdXtwm828V1OXDc3dGTHImD4wISmIlN8Tuz5unD4PdcE5m5M+yrzfNT45Cat765zKo
+ Poewd9j6gEC1MKEQ7GH2VLsz7AuvVpsPzwKXklWcgR8xnTa5qh17lX9BUvBOPBWtJLJ7
+ 5+ub6EvUDXe50QS7/gF++BCk2FlTm8TSDZa2v/SfXgN9GikzqIwv+S1R5kN4q4oMm+5+
+ p3/SA2sa6rWIpbFVDAvILsyWZRfGemNWREUK6SV6eZrJ6rWUv4hUGL3FXjpoUGNOeHET
+ wYfQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+ :message-id:subject:to:cc;
+ bh=/S9ER+mMybWHdrmSHFBHrML8i6W0dz5O78OM+5/knRw=;
+ b=MUeDR6sX4qElyqGP/ceIQKdI09YRA5TW5VMQ3tSNnx/e26v/yiMi4yj3CQC1RIYcKt
+ tPbndmPS8w3MSayo/dSpsjEjqoux9AxqSJWtGVzQDw3jOePU8jfr/2w9Ij+kfsWyrrUl
+ tfapifdw3pN2D1fav6a6Abj633JKVSHmbJ0RFzA7Ir6Z+siax1vO3UTtyjMS0ChhXgRo
+ p6nL6fRnquus0BmKebmE8MTrl3x9C9HDZHd7m7nvOcOYz6NCTLuuCNitnQADvzlpIxih
+ hOSTV9G/T15+rUqp3Ln0R3Qj5ve8jQuIJ6cdTNIt+quV+fN/rAf2AbLx6VRJ+8hnOJ+/
+ 5fFA==
+X-Gm-Message-State: APjAAAUP9L+Svm1cOMcdC4NdN1ieKgKDO/JPuIVJW+eXONvYwElVVw1i
+ 5tN1E9v+1WENB3Z+QdMqtr5tVRSrob2EK18lHBA=
+X-Google-Smtp-Source: APXvYqyQxeNzbKtqpj7/NPLBVJQZrRZSeOLzYPb/XlFGrzcjjerB6SdvwGPfCDCLEBqsNuxHHbJhTuydaUEBqoJP00g=
+X-Received: by 2002:a05:6512:c1:: with SMTP id
+ c1mr1918814lfp.132.1554470820773; 
+ Fri, 05 Apr 2019 06:27:00 -0700 (PDT)
+MIME-Version: 1.0
 References: <20190405115010.28838-1-andradanciu1997@gmail.com>
  <20190405115010.28838-3-andradanciu1997@gmail.com>
  <8e16e9f5-2c0f-a1e6-df0d-67b982db294a@codeaurora.org>
  <CAOMZO5CZtJq65iUDN2Ao9zt=0_L0iXy-5eRCrHAzQb+3s5rxBA@mail.gmail.com>
-From: Mukesh Ojha <mojha@codeaurora.org>
-Message-ID: <e3bc6c00-d88d-d30a-28a1-a8c4e520ec5a@codeaurora.org>
-Date: Fri, 5 Apr 2019 18:54:26 +0530
-User-Agent: Mozilla/5.0 (Windows NT 10.0; WOW64; rv:60.0) Gecko/20100101
- Thunderbird/60.6.1
-MIME-Version: 1.0
-In-Reply-To: <CAOMZO5CZtJq65iUDN2Ao9zt=0_L0iXy-5eRCrHAzQb+3s5rxBA@mail.gmail.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Language: en-US
+ <e3bc6c00-d88d-d30a-28a1-a8c4e520ec5a@codeaurora.org>
+In-Reply-To: <e3bc6c00-d88d-d30a-28a1-a8c4e520ec5a@codeaurora.org>
+From: Fabio Estevam <festevam@gmail.com>
+Date: Fri, 5 Apr 2019 10:26:49 -0300
+Message-ID: <CAOMZO5Aa_z5V03hYG+=A2zgMNKU5kEPHU=uYH1v_6VD-47s9kg@mail.gmail.com>
+Subject: Re: [PATCH 02/20] ASoC: efika-audio-fabric.c: Switch to SPDX
+ identifier
+To: Mukesh Ojha <mojha@codeaurora.org>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -109,23 +105,9 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+On Fri, Apr 5, 2019 at 10:24 AM Mukesh Ojha <mojha@codeaurora.org> wrote:
 
-On 4/5/2019 6:20 PM, Fabio Estevam wrote:
-> On Fri, Apr 5, 2019 at 9:47 AM Mukesh Ojha <mojha@codeaurora.org> wrote:
->
->> Don't change entire thing with //. only above line with the license is
->> enough.
->>
->> Please apply this rule every patch of yours.
-> Not really. This is the style preferred in this subsystem.
+> you mean all lines to start with //, does not it look to noisy to eyes ?
 
-
-you mean all lines to start with //, does not it look to noisy to eyes ?
-
--Mukesh
-
->
-> _______________________________________________
-> linux-arm-kernel mailing list
-> linux-arm-kernel@lists.infradead.org
-> http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
+Mark Brown's recommendation is to use // in all the initial block
+lines instead of only in the SPDX one.
