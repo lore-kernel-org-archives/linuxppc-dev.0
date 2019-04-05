@@ -7,68 +7,67 @@ X-Spam-Status: No, score=-8.5 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
 	SPF_PASS,USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 095BEC4360F
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Apr 2019 12:34:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C8A81C4360F
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Apr 2019 12:36:39 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 74FD5217D4
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Apr 2019 12:34:34 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 4531B21738
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Apr 2019 12:36:39 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="ODHTVfm8"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 74FD5217D4
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="SkB1Jmea"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4531B21738
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44bK5417dlzDq9V
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Apr 2019 23:34:32 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44bK7T1kR0zDq77
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Apr 2019 23:36:37 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=2a00:1450:4864:20::444; helo=mail-wr1-x444.google.com;
+ (client-ip=2a00:1450:4864:20::443; helo=mail-wr1-x443.google.com;
  envelope-from=andradanciu1997@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="ODHTVfm8"; 
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="SkB1Jmea"; 
  dkim-atps=neutral
-Received: from mail-wr1-x444.google.com (mail-wr1-x444.google.com
- [IPv6:2a00:1450:4864:20::444])
+Received: from mail-wr1-x443.google.com (mail-wr1-x443.google.com
+ [IPv6:2a00:1450:4864:20::443])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44bJ7P5774zDqQQ
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Apr 2019 22:51:29 +1100 (AEDT)
-Received: by mail-wr1-x444.google.com with SMTP id y13so7657581wrd.3
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 05 Apr 2019 04:51:29 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44bJ7S68B3zDqQq
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Apr 2019 22:51:32 +1100 (AEDT)
+Received: by mail-wr1-x443.google.com with SMTP id k17so7599688wrx.10
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 05 Apr 2019 04:51:32 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
  h=from:to:cc:subject:date:message-id:in-reply-to:references;
- bh=dxBrociOZFoM+5+G6/1SJONXjwRav3ZwO+z6b4WcMWY=;
- b=ODHTVfm8phZ6v28JJZiATVCm9BSw0H0lhSWvNOSudoXCOldCxzzbibC7riYnccRfOx
- RUmAOj8XWobuMfVfNu+o1LT7G5kcuRi5SEHBUbqgiVCguYODXgH+BTpXTx5sWl4W/L6j
- DzAZwmjJ1P8fHQPAC7xwP/tCKmxv6lFvHuYPCwTgZYsQGM6gxpcUiB33lOIQC/aAUb66
- Z+KHEOQ2JOYGAwQgwP2thPWZOt2y6ha3BcDvkGNzBEvZR32hamtiT8voNV5VGN360Uft
- tnJ/aZqC1WQQpTUuQwB+6UwLLwX3Vziy3uzKgejwjnH1bzwBUJlNiYx6WEaly7n6Nx3G
- h+Og==
+ bh=W+OTpVZBA8uEEjVrhe1iZlVCIOZYr2qeStkCdhTpd78=;
+ b=SkB1JmeavbeT/kTYfi6qOrpvDBimlKj4KDGXksXabW1ICIC7apPTZIiMAG33Wiz4bI
+ IOHJANsNqGrY3SbYCcCSYI2/fSkx95TaZTPXS+Nsf7V3DTZjvguJlMQgyQgHa6nmJCTc
+ SsJuqX1ZBxXo0Mv+1Cr6GNeyanJxYNZ05tAH5FRztqFehOTA4nq/xLPcIWBoT0sdNoiz
+ UUULkWWlSqDKhdymFVh7XruwJmIEVZz/xaF6CfK4K/G9DcUrEcn73sR0ulpV1JuMesAe
+ KHQX928kMa5IdIfW4R/4fFE0o3xPLaxLgcU+Zi09QDFtFGXLB6WVno4Exu4v9BHcw8s1
+ m3qA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
  :references;
- bh=dxBrociOZFoM+5+G6/1SJONXjwRav3ZwO+z6b4WcMWY=;
- b=MBoDwHP+ts8V5Tcu3L+QxQKlMUkkwVsd5uCnbFnkjwpVR4juxjDMQ3T8XzVhuq6gKx
- AVL6346sHqLBywsBQcqRxXxgXrLw9YGlhzhlcnxE8ZcrsDs0gwpjStUbV9a/uimumwgZ
- yBp6gSTFB3czAdH3cPlfiVboGpmH4noo2pIVaHwKf0shZNXSk3nHSBJeSf/ccArhTjWE
- Y5skww8xu1JVeweWcXItWVPUjo3By2fWl9P4GaAP6CjFzND8/VOAkQkF9ceuUMfiAFly
- RlEFeeMJE0OsCRLvnlOQHt6IkkhZPjx6z2DRbW8nywG6DJi2qBryPXY/4qW9yQrthFdT
- gSfg==
-X-Gm-Message-State: APjAAAWNTFPmf2tic3Ksjs/WlyqJkmLXRmsXEGnNHho2paaaSEfN+xQ5
- piSkME7ycBN5yvY6JPjSZXI=
-X-Google-Smtp-Source: APXvYqxTRIMzJY6NWNsw0vEX//ook9rzUfILFZxglnXL9GEtBRN5aVlR1vCok6kytBZ+7Y8AH4IaAA==
-X-Received: by 2002:a05:6000:1111:: with SMTP id
- z17mr5474588wrw.103.1554465087193; 
- Fri, 05 Apr 2019 04:51:27 -0700 (PDT)
+ bh=W+OTpVZBA8uEEjVrhe1iZlVCIOZYr2qeStkCdhTpd78=;
+ b=fIkmxVkEjeirneEDKgRdlcN+JrN3oQARFDW913XpMBbZwQ+/iksvdXHwPfoiqEknxo
+ dloBJ3jugHZ2Enf6cq0J+8hIlMKOctPuv9A+fZnfl/kQs+3dYK0FcpP76qg1BF0S+qv6
+ 8Useo4WXZQFYTUWdngDtYs48QUzd64esO0Q5W2pHzTXdH6IqXaUSofPLvmFhv6V2lU6o
+ qjZFxPbcpyUQ5NWlFMjP98NzZhJ8Jkz2osc+PByYsITcJ87R5xj6CXdsWLKGBhWG9OIx
+ jmZECzwS/rv85jJqI+No8LPiqn8dsvARhzDKiv3kAMQWuJrpuNa7C/nChke+TYcv+ggJ
+ 59VQ==
+X-Gm-Message-State: APjAAAUJb/axNxiKzIMX9gSWGW8VLAUFzhJO2Du3R/V6mLw6CecXX1KS
+ rRjlHlZxlJVkxzUJexWFsyY=
+X-Google-Smtp-Source: APXvYqxE3rwFGHbzDjKb2cE59TTOK+BEkT/DHYg9VnVuBEFYoT+927OS9xrZVXgngpKGGf7W2qIcbQ==
+X-Received: by 2002:a5d:5401:: with SMTP id g1mr7890715wrv.70.1554465089746;
+ Fri, 05 Apr 2019 04:51:29 -0700 (PDT)
 Received: from localhost.localdomain ([178.138.34.252])
- by smtp.gmail.com with ESMTPSA id s203sm2881479wmf.14.2019.04.05.04.51.24
+ by smtp.gmail.com with ESMTPSA id s203sm2881479wmf.14.2019.04.05.04.51.27
  (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
- Fri, 05 Apr 2019 04:51:26 -0700 (PDT)
+ Fri, 05 Apr 2019 04:51:29 -0700 (PDT)
 From: Andra Danciu <andradanciu1997@gmail.com>
 To: timur@kernel.org, nicoleotsuka@gmail.com, Xiubo.Lee@gmail.com,
  festevam@gmail.com, lgirdwood@gmail.com, broonie@kernel.org,
@@ -76,9 +75,9 @@ To: timur@kernel.org, nicoleotsuka@gmail.com, Xiubo.Lee@gmail.com,
  s.hauer@pengutronix.de, kernel@pengutronix.de, linux-imx@nxp.com,
  alsa-devel@alsa-project.org, linuxppc-dev@lists.ozlabs.org,
  linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 19/20] ASoC: phycore-ac97: Switch to SPDX identifier
-Date: Fri,  5 Apr 2019 14:50:09 +0300
-Message-Id: <20190405115010.28838-20-andradanciu1997@gmail.com>
+Subject: [PATCH 20/20] ASoC: wm1133-ev1: Switch to SPDX identifier
+Date: Fri,  5 Apr 2019 14:50:10 +0300
+Message-Id: <20190405115010.28838-21-andradanciu1997@gmail.com>
 X-Mailer: git-send-email 2.11.0
 In-Reply-To: <20190405115010.28838-1-andradanciu1997@gmail.com>
 References: <20190405115010.28838-1-andradanciu1997@gmail.com>
@@ -103,33 +102,38 @@ management.
 
 Signed-off-by: Andra Danciu <andradanciu1997@gmail.com>
 ---
- sound/soc/fsl/phycore-ac97.c | 16 +++++-----------
- 1 file changed, 5 insertions(+), 11 deletions(-)
+ sound/soc/fsl/wm1133-ev1.c | 21 ++++++++-------------
+ 1 file changed, 8 insertions(+), 13 deletions(-)
 
-diff --git a/sound/soc/fsl/phycore-ac97.c b/sound/soc/fsl/phycore-ac97.c
-index 66fb6c4614d2..fe7ba6db7c96 100644
---- a/sound/soc/fsl/phycore-ac97.c
-+++ b/sound/soc/fsl/phycore-ac97.c
-@@ -1,14 +1,8 @@
+diff --git a/sound/soc/fsl/wm1133-ev1.c b/sound/soc/fsl/wm1133-ev1.c
+index 2f80b21b2921..aad24ccbef90 100644
+--- a/sound/soc/fsl/wm1133-ev1.c
++++ b/sound/soc/fsl/wm1133-ev1.c
+@@ -1,16 +1,11 @@
 -/*
-- * phycore-ac97.c  --  SoC audio for imx_phycore in AC97 mode
+- *  wm1133-ev1.c - Audio for WM1133-EV1 on i.MX31ADS
 - *
-- * Copyright 2009 Sascha Hauer, Pengutronix <s.hauer@pengutronix.de>
+- *  Copyright (c) 2010 Wolfson Microelectronics plc
+- *  Author: Mark Brown <broonie@opensource.wolfsonmicro.com>
+- *
+- *  Based on an earlier driver for the same hardware by Liam Girdwood.
 - *
 - *  This program is free software; you can redistribute  it and/or modify it
 - *  under  the terms of  the GNU General  Public License as published by the
 - *  Free Software Foundation;  either version 2 of the  License, or (at your
 - *  option) any later version.
-- *
 - */
 +// SPDX-License-Identifier: GPL-2.0+
 +//
-+// phycore-ac97.c  --  SoC audio for imx_phycore in AC97 mode
++//  wm1133-ev1.c - Audio for WM1133-EV1 on i.MX31ADS
 +//
-+// Copyright 2009 Sascha Hauer, Pengutronix <s.hauer@pengutronix.de>
++//  Copyright (c) 2010 Wolfson Microelectronics plc
++//  Author: Mark Brown <broonie@opensource.wolfsonmicro.com>
++//
++//  Based on an earlier driver for the same hardware by Liam Girdwood.
  
- #include <linux/module.h>
- #include <linux/moduleparam.h>
+ #include <linux/platform_device.h>
+ #include <linux/clk.h>
 -- 
 2.11.0
 
