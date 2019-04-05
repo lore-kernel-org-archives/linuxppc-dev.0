@@ -2,80 +2,70 @@ Return-Path: <SRS0=OBm5=SH=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.5 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_PASS,URIBL_BLOCKED,USER_AGENT_MUTT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 36290C4360F
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Apr 2019 12:53:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1A9B7C4360F
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Apr 2019 13:20:35 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id A582520700
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Apr 2019 12:53:44 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 563EC21850
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Apr 2019 13:20:33 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="gy7P4AjA"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A582520700
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=alien8.de header.i=@alien8.de header.b="W/hHlYqT"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 563EC21850
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=alien8.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44bKWB4kBtzDqPP
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Apr 2019 23:53:42 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44bL674rzBzDqSR
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  6 Apr 2019 00:20:31 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=2a00:1450:4864:20::144; helo=mail-lf1-x144.google.com;
- envelope-from=festevam@gmail.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=alien8.de
+ (client-ip=2a01:4f8:190:11c2::b:1457; helo=mail.skyhub.de;
+ envelope-from=bp@alien8.de; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="gy7P4AjA"; 
+ dmarc=pass (p=none dis=none) header.from=alien8.de
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=alien8.de header.i=@alien8.de header.b="W/hHlYqT"; 
  dkim-atps=neutral
-Received: from mail-lf1-x144.google.com (mail-lf1-x144.google.com
- [IPv6:2a00:1450:4864:20::144])
+X-Greylist: delayed 362 seconds by postgrey-1.36 at bilbo;
+ Sat, 06 Apr 2019 00:18:39 AEDT
+Received: from mail.skyhub.de (mail.skyhub.de [IPv6:2a01:4f8:190:11c2::b:1457])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44bKRV6z9zzDqCW
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Apr 2019 23:50:30 +1100 (AEDT)
-Received: by mail-lf1-x144.google.com with SMTP id r25so4276009lfn.13
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 05 Apr 2019 05:50:30 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=mime-version:references:in-reply-to:from:date:message-id:subject:to
- :cc; bh=q30enJ9r4hJQLvpL7crdhRUM7DMqIQDzCsUD5EV14XU=;
- b=gy7P4AjAAE3Uj6i5QXZhwe9nTdcgY9sJM0lYXLBNy1wIlBZ36wyPv7qhToVSV7lOMi
- DDqbSPQ7zIN3amcvztHnB4NALPmyip8WE1RauhnWhmHZyJIXm0HAgN5n9AGvLmGAVAaL
- tmdp3iWbWMNiR1VmJHQdOiI8n6pxCDYFiEMrSykbLDxqpDKvqVu2rB42r4TJd5tsCOri
- cv2WWVGfiyjbrRcXYF0euO41YTnG4Gvl4xhsxMw2KC107ocmJiKVbDEWxLGHUHkgRCmW
- Wt6RtmrkrlkOxjMKNW90v7JfrRWQS0wRbX7NSeYa17tp7oCVUEi+ieqDDzIPV4+6m4WJ
- JiaA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:mime-version:references:in-reply-to:from:date
- :message-id:subject:to:cc;
- bh=q30enJ9r4hJQLvpL7crdhRUM7DMqIQDzCsUD5EV14XU=;
- b=btRSct/K8bCHDQom1VnrMmad0xrWYPpJ5fZdc6+kOxhPK4BDEJeO9bbF4eOg2kOERe
- X29+KmaEwErgtbNdVdQfZopil2YspPFHiqS0ySUKYDxhfS7hYwnC54o9Zn4KvOKz2805
- iGebL042l9dNBsEemEuUvQB/vVAoOW8VpEb2ciDfJN1o4nKBsmbPsPflxsg+NbBKKQUh
- ootO07+jeyJaIgz/um9nh3c6z+agSWnFep19rVx1zX4f/eMQumeIA5ZMzEOQ27U1zMNY
- 7W3JQBYLc556XugcnMsgk7mm/w8OZnSrR84GEvZCqsXxXqb+aYnA6USyH1ZLolT5bd0V
- q0wg==
-X-Gm-Message-State: APjAAAVErIqLs3q243zphsj0W3GFamWqcGlZUneN+piCIKWVH1iEb9om
- 7GxYAOI8QbbtxSofabHFsDtiWm41FKaZ9zWY1iY=
-X-Google-Smtp-Source: APXvYqzHXbc6MbD809ZAR4zrh5oBvA+uQDxbdiZIi2xUV+hpgfO8tb9Y848HNjRqC4FQ/NrqugJrhFLVCEaHcEPznTg=
-X-Received: by 2002:a19:c51a:: with SMTP id w26mr6497268lfe.59.1554468625958; 
- Fri, 05 Apr 2019 05:50:25 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44bL3z31gtzDqRJ
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  6 Apr 2019 00:18:39 +1100 (AEDT)
+Received: from zn.tnic (p200300EC2F148A00329C23FFFEA6A903.dip0.t-ipconnect.de
+ [IPv6:2003:ec:2f14:8a00:329c:23ff:fea6:a903])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by mail.skyhub.de (SuperMail on ZX Spectrum 128k) with ESMTPSA id 9ED3F1EC0104;
+ Fri,  5 Apr 2019 15:12:19 +0200 (CEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=alien8.de; s=dkim;
+ t=1554469939;
+ h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+ to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+ content-transfer-encoding:in-reply-to:in-reply-to:  references:references;
+ bh=0PtObtUbIUtRj5xTEtTQd7chnLlXqEY1n/Wt3CU011Q=;
+ b=W/hHlYqTe/u/bUCJGIvbWrNUBfT1HO1LNiFSjZdUVC8wz0HByWEeFVSXK1hzBTacd9I2X4
+ CuOsWOEgE3IX7gT6Btm9nvNpXAcu0//CcwP4Ih8Jf6DC69+VKEGH6tcQyB5uAR3mrw4/eK
+ AjfjimryC8XXbwofPlxDno66fGvsXdw=
+Date: Fri, 5 Apr 2019 15:12:11 +0200
+From: Borislav Petkov <bp@alien8.de>
+To: Josh Poimboeuf <jpoimboe@redhat.com>
+Subject: Re: [PATCH RFC 1/5] cpu/speculation: Add 'cpu_spec_mitigations='
+ cmdline options
+Message-ID: <20190405131211.GE23348@zn.tnic>
+References: <cover.1554396090.git.jpoimboe@redhat.com>
+ <f0bd17358ab478eaca52f3b1da8305c150911b40.1554396090.git.jpoimboe@redhat.com>
 MIME-Version: 1.0
-References: <20190405115010.28838-1-andradanciu1997@gmail.com>
- <20190405115010.28838-3-andradanciu1997@gmail.com>
- <8e16e9f5-2c0f-a1e6-df0d-67b982db294a@codeaurora.org>
-In-Reply-To: <8e16e9f5-2c0f-a1e6-df0d-67b982db294a@codeaurora.org>
-From: Fabio Estevam <festevam@gmail.com>
-Date: Fri, 5 Apr 2019 09:50:17 -0300
-Message-ID: <CAOMZO5CZtJq65iUDN2Ao9zt=0_L0iXy-5eRCrHAzQb+3s5rxBA@mail.gmail.com>
-Subject: Re: [PATCH 02/20] ASoC: efika-audio-fabric.c: Switch to SPDX
- identifier
-To: Mukesh Ojha <mojha@codeaurora.org>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <f0bd17358ab478eaca52f3b1da8305c150911b40.1554396090.git.jpoimboe@redhat.com>
+User-Agent: Mutt/1.10.1 (2018-07-13)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -87,26 +77,119 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Daniel Baluta <daniel.baluta@nxp.com>,
- Andra Danciu <andradanciu1997@gmail.com>,
- linux-kernel <linux-kernel@vger.kernel.org>, timur@kernel.org,
- Xiubo Li <Xiubo.Lee@gmail.com>, linuxppc-dev@lists.ozlabs.org,
- Sascha Hauer <s.hauer@pengutronix.de>, Takashi Iwai <tiwai@suse.com>,
- Liam Girdwood <lgirdwood@gmail.com>, Jaroslav Kysela <perex@perex.cz>,
- Nicolin Chen <nicoleotsuka@gmail.com>, Mark Brown <broonie@kernel.org>,
- NXP Linux Team <linux-imx@nxp.com>, Sascha Hauer <kernel@pengutronix.de>,
- Linux-ALSA <alsa-devel@alsa-project.org>, Shawn Guo <shawnguo@kernel.org>,
- "moderated list:ARM/FREESCALE IMX / MXC ARM ARCHITECTURE"
- <linux-arm-kernel@lists.infradead.org>
+Cc: Peter Zijlstra <peterz@infradead.org>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>, Paul Mackerras <paulus@samba.org>,
+ "H . Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@kernel.org>,
+ Andrea Arcangeli <aarcange@redhat.com>, linux-s390@vger.kernel.org,
+ x86@kernel.org, Will Deacon <will.deacon@arm.com>,
+ Linus Torvalds <torvalds@linux-foundation.org>,
+ Catalin Marinas <catalin.marinas@arm.com>, Waiman Long <longman@redhat.com>,
+ linux-arch@vger.kernel.org, Jon Masters <jcm@redhat.com>,
+ Jiri Kosina <jikos@kernel.org>, Andy Lutomirski <luto@kernel.org>,
+ Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org,
+ Tyler Hicks <tyhicks@canonical.com>,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, Apr 5, 2019 at 9:47 AM Mukesh Ojha <mojha@codeaurora.org> wrote:
+On Thu, Apr 04, 2019 at 11:44:11AM -0500, Josh Poimboeuf wrote:
+> Keeping track of the number of mitigations for all the CPU speculation
+> bugs has become overwhelming for many users.  It's getting more and more
+> complicated to decide which mitigations are needed for a given
+> architecture.  Complicating matters is the fact that each arch tends to
+> their own custom way to mitigate the same vulnerability.
 
-> Don't change entire thing with //. only above line with the license is
-> enough.
->
-> Please apply this rule every patch of yours.
+Yap, we definitely need something like that.
 
-Not really. This is the style preferred in this subsystem.
+> Most users fall into a few basic categories:
+> 
+> a) they want all mitigations off;
+> 
+> b) they want all reasonable mitigations on, with SMT enabled even if
+>    it's vulnerable; or
+
+Uff, "reasonable" - there's the bikeshed waiting to happen.
+
+> c) they want all reasonable mitigations on, with SMT disabled if
+>    vulnerable.
+> 
+> Define a set of curated, arch-independent options, each of which is an
+> aggregation of existing options:
+> 
+> - cpu_spec_mitigations=off: Disable all mitigations.
+
+"cpu_spec_mitigations" is too long, TBH.
+
+Imagine yourself in a loud, noisy data center - you basically can't wait
+to leave - crouched over a keyboard in an impossible position, having
+to type that thing and then making a typo. Whoops, too late, already
+pressed Enter. Shiiiit!
+
+Now you have to wait at least 15 mins for the damn single-threaded added
+value BIOS crap to noodle through all the cores just so you can try
+again, because you just rebooted the box.
+
+And I know, my ideas for shorter cmdline options are crazy, like
+
+cpu_spec_mtg=
+
+which people would say, yuck, unreadable...
+
+Oh, I know! How about
+
+cpu_vulns=
+
+?
+
+We already have /sys/devices/system/cpu/vulnerabilities so it'll be the
+same as that. Less things to remember.
+
+> - cpu_spec_mitigations=auto: [default] Enable all the default
+>   mitigations, but leave SMT enabled, even if it's vulnerable.
+> 
+> - cpu_spec_mitigations=auto,nosmt: Enable all the default mitigations,
+>   disabling SMT if needed by a mitigation.
+
+Yah, the suboption choices make sense to me.
+
+> 
+> Currently, these options are placeholders which don't actually do
+> anything.  They will be fleshed out in upcoming patches.
+> 
+> Signed-off-by: Josh Poimboeuf <jpoimboe@redhat.com>
+> ---
+>  .../admin-guide/kernel-parameters.txt         | 23 +++++++++++++++++++
+>  include/linux/cpu.h                           |  8 +++++++
+>  kernel/cpu.c                                  | 15 ++++++++++++
+>  3 files changed, 46 insertions(+)
+> 
+> diff --git a/Documentation/admin-guide/kernel-parameters.txt b/Documentation/admin-guide/kernel-parameters.txt
+> index c4d830003b21..ac42e510bd6e 100644
+> --- a/Documentation/admin-guide/kernel-parameters.txt
+> +++ b/Documentation/admin-guide/kernel-parameters.txt
+> @@ -2544,6 +2544,29 @@
+>  			in the "bleeding edge" mini2440 support kernel at
+>  			http://repo.or.cz/w/linux-2.6/mini2440.git
+>  
+> +	cpu_spec_mitigations=
+> +			[KNL] Control mitigations for CPU speculation
+> +			vulnerabilities on affected CPUs.  This is a set of
+> +			curated, arch-independent options, each of which is an
+> +			aggregation of existing options.
+> +
+> +			off
+> +				Disable all speculative CPU mitigations.
+
+Alias to
+
+cpu_vulns=make_linux_fast_again
+
+:-P
+
+-- 
+Regards/Gruss,
+    Boris.
+
+Good mailing practices for 400: avoid top-posting and trim the reply.
