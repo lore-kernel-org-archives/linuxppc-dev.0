@@ -8,68 +8,68 @@ X-Spam-Status: No, score=-8.5 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
 	SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B6813C10F00
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Apr 2019 12:00:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BD174C4360F
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Apr 2019 12:02:30 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 36F9B21871
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Apr 2019 12:00:01 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 3EAED21871
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Apr 2019 12:02:30 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="u7WJ5lCS"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 36F9B21871
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="EbHDLtbW"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3EAED21871
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44bJKC1B6TzDqDb
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Apr 2019 22:59:59 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44bJN44mfHzDqCX
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Apr 2019 23:02:28 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=2a00:1450:4864:20::441; helo=mail-wr1-x441.google.com;
+ (client-ip=2a00:1450:4864:20::341; helo=mail-wm1-x341.google.com;
  envelope-from=andradanciu1997@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="u7WJ5lCS"; 
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="EbHDLtbW"; 
  dkim-atps=neutral
-Received: from mail-wr1-x441.google.com (mail-wr1-x441.google.com
- [IPv6:2a00:1450:4864:20::441])
+Received: from mail-wm1-x341.google.com (mail-wm1-x341.google.com
+ [IPv6:2a00:1450:4864:20::341])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44bJ6X2ZNXzDqQ6
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Apr 2019 22:50:44 +1100 (AEDT)
-Received: by mail-wr1-x441.google.com with SMTP id k11so7649555wro.5
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 05 Apr 2019 04:50:44 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44bJ6c3lbSzDqQ6
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Apr 2019 22:50:48 +1100 (AEDT)
+Received: by mail-wm1-x341.google.com with SMTP id r186so9551185wmf.1
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 05 Apr 2019 04:50:48 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=from:to:cc:subject:date:message-id:in-reply-to:references
- :mime-version:content-transfer-encoding;
- bh=95CAJLAF/PMh3aeIKltAlThBxHYZ7/UK1SaFatHO998=;
- b=u7WJ5lCS7iL4lqzM3ecwPPol6uZTsc7v7KTXVWiciGyixt9FpS4PoywAhrXFrJWhOa
- WReiXf3shgTK5AB3fYs7eLGzO1ZosLvTjFLyli7sdGkqk/JEH4zjA0GEZXzxGOgE9r1S
- CYMUHqlAJuwOUTGpeXdD3YxUcvWMjMBNocKn4tuFRDT0ARxlH5KqfC2rIpxVEgl3Igle
- TaBB7Efs1SLjxaweWRhyV7QBtS9eVjECqdGgIpROtrLi3J9Nc7U8WNB+D5GYB0TMtlVl
- aqQ0ryTGfkEziO+ThyheDASjpCCJb55WeAMYtxACZMHRPEKuPI/c/v2QN9VNb0Y+I3Ku
- k/dw==
+ h=from:to:cc:subject:date:message-id:in-reply-to:references;
+ bh=shxp5QccDgvm7RtJoZA9C9TvzP7d0bo8vYGaOaufb+8=;
+ b=EbHDLtbWQQPwQ5+zVtN5sPff0W0FDb8kf4if9Jhhndqtf0OV2p47KxUYLisTCXkhnh
+ uHbbEiKhhIC/KMF1HBkX+iFCdexPC3k8xEnAKn78Cwx31hLzvd7Ukx5oLkIRUc+z/3nS
+ 2Q81fNc8S5rLG1xNa5dZDcf4Z+I1TNxLK07qjFVwjzJuCvFUNvitsenoZiwbqNI9cVCG
+ Aeyt61aQz6P3W+rUJJ0Jmu6c8pASb2YBJZ1u6yy32g02ndY/afgIvwiHO/RoctAMLh7b
+ tfFOigxNdTrgpsRwzOgcFYjS9RxVKFturDIzH9n42oi0p991iJWLhZNfUcl2ehvIDvTA
+ eHXQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
- :references:mime-version:content-transfer-encoding;
- bh=95CAJLAF/PMh3aeIKltAlThBxHYZ7/UK1SaFatHO998=;
- b=UvGLkygSgskQgq26XrFNpI1W7cG+uIUgHAJ+hIJONl6JC0VM+gNTBc2x3qtMpnHB4g
- ee+K2p+mKzN2FRlH4iJdUXcmnXMkb8rXMVaQWsH5u2enTwjP2MKMhrg7EuXOl4U3tpvg
- KAUMMahLcXH4WN+7N/rgbXNYsAmjrmnBkKtqI9pVl9Cl18CcqpwzuiFWnJmL6mW8I6uM
- lsFFFTmvPLkWpLGe4Zd0U3yia1LXvUtEDKgt/ij7mXbJnDpJpczX03WmBiG6z9SH1Y2T
- 3ixrxxQ272HFXBLpS4R0+HQlgCwvnE2waTv7O8vaw7WlvWLn1kdWmKQWo/sQ6LTtjbcs
- IapQ==
-X-Gm-Message-State: APjAAAXZHPynd4763HcmtvLwNQV7xbWGQ0RgFKHTJ+UhnY7wwgs6QJgI
- 2fqNVgVTsKB0Wo9ZO2fqW48=
-X-Google-Smtp-Source: APXvYqxuFJwAJF+0VqitwVMow9oRZU7BpMGSQ8snglUrvCMtCwk1TGPZIjFoQdZzmKvcJszT9eAgQA==
-X-Received: by 2002:a5d:6883:: with SMTP id h3mr8339985wru.215.1554465041835; 
- Fri, 05 Apr 2019 04:50:41 -0700 (PDT)
+ :references;
+ bh=shxp5QccDgvm7RtJoZA9C9TvzP7d0bo8vYGaOaufb+8=;
+ b=O82tFCNDD6MiQUq33u9W7U2ZBhyjb5d/toYtrO0nulhXWQ8XrT9lSPeCTKtfZvbBzO
+ gMBfGlhXCzRPKQn/8DV3z+MjlrI/B7HO0muimNfnbWPakyaj8h0Cd6RsRcv79CXEKeLP
+ ZYn7AvnbCueKPNjAENupUulSukfd1Co4nYhsBST70arSaOqgHXJ5CEPIACmoumtHnCWI
+ knYAjs4HVrgo2usn6A4E8JAzyZ/P5fQISi+P4sXUZpMJ6nJSsJjYzzpfHwM1pmkELw6g
+ OvlOwpsfBWMiyTM92JVVN6Mz7GiwmgZ+Y5u/iwZOXt50MXqI7rChElCfsekmk4IN1y8u
+ jyMQ==
+X-Gm-Message-State: APjAAAVP/vYDIPttRDY+E6GkwVpR6SfsbxA8hX7X6sLeayMJe9LX2ojp
+ 9UzUoxvLUU0yXt26fbRb3pM=
+X-Google-Smtp-Source: APXvYqx9gP4WQb4WHpGF+ef+aOaJ/jWklMyCaVluOZumL8v3mJ9HlAbHFbKHZo6NDqiHE2x3gszVWg==
+X-Received: by 2002:a05:600c:2118:: with SMTP id
+ u24mr7732009wml.24.1554465045260; 
+ Fri, 05 Apr 2019 04:50:45 -0700 (PDT)
 Received: from localhost.localdomain ([178.138.34.252])
- by smtp.gmail.com with ESMTPSA id s203sm2881479wmf.14.2019.04.05.04.50.38
+ by smtp.gmail.com with ESMTPSA id s203sm2881479wmf.14.2019.04.05.04.50.41
  (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
- Fri, 05 Apr 2019 04:50:41 -0700 (PDT)
+ Fri, 05 Apr 2019 04:50:44 -0700 (PDT)
 From: Andra Danciu <andradanciu1997@gmail.com>
 To: timur@kernel.org, nicoleotsuka@gmail.com, Xiubo.Lee@gmail.com,
  festevam@gmail.com, lgirdwood@gmail.com, broonie@kernel.org,
@@ -77,15 +77,12 @@ To: timur@kernel.org, nicoleotsuka@gmail.com, Xiubo.Lee@gmail.com,
  s.hauer@pengutronix.de, kernel@pengutronix.de, linux-imx@nxp.com,
  alsa-devel@alsa-project.org, linuxppc-dev@lists.ozlabs.org,
  linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 03/20] ASoC: eukrea-tlv320: Switch to SPDX identifier
-Date: Fri,  5 Apr 2019 14:49:53 +0300
-Message-Id: <20190405115010.28838-4-andradanciu1997@gmail.com>
+Subject: [PATCH 04/20] ASoC: fsl-dma: Switch to SPDX identifier
+Date: Fri,  5 Apr 2019 14:49:54 +0300
+Message-Id: <20190405115010.28838-5-andradanciu1997@gmail.com>
 X-Mailer: git-send-email 2.11.0
 In-Reply-To: <20190405115010.28838-1-andradanciu1997@gmail.com>
 References: <20190405115010.28838-1-andradanciu1997@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -107,43 +104,59 @@ management.
 
 Signed-off-by: Andra Danciu <andradanciu1997@gmail.com>
 ---
- sound/soc/fsl/eukrea-tlv320.c | 26 ++++++++++----------------
- 1 file changed, 10 insertions(+), 16 deletions(-)
+ sound/soc/fsl/fsl_dma.c | 26 +++++++++++---------------
+ sound/soc/fsl/fsl_dma.h |  5 +----
+ 2 files changed, 12 insertions(+), 19 deletions(-)
 
-diff --git a/sound/soc/fsl/eukrea-tlv320.c b/sound/soc/fsl/eukrea-tlv320.c
-index 30a3d68b5c03..d648268cb454 100644
---- a/sound/soc/fsl/eukrea-tlv320.c
-+++ b/sound/soc/fsl/eukrea-tlv320.c
-@@ -1,19 +1,13 @@
+diff --git a/sound/soc/fsl/fsl_dma.c b/sound/soc/fsl/fsl_dma.c
+index 78871de35086..e22508301412 100644
+--- a/sound/soc/fsl/fsl_dma.c
++++ b/sound/soc/fsl/fsl_dma.c
+@@ -1,18 +1,14 @@
 -/*
-- * eukrea-tlv320.c  --  SoC audio for eukrea_cpuimxXX in I2S mode
+- * Freescale DMA ALSA SoC PCM driver
 - *
-- * Copyright 2010 Eric Bénard, Eukréa Electromatique <eric@eukrea.com>
+- * Author: Timur Tabi <timur@freescale.com>
 - *
-- * based on sound/soc/s3c24xx/s3c24xx_simtec_tlv320aic23.c
-- * which is Copyright 2009 Simtec Electronics
-- * and on sound/soc/imx/phycore-ac97.c which is
-- * Copyright 2009 Sascha Hauer, Pengutronix <s.hauer@pengutronix.de>
+- * Copyright 2007-2010 Freescale Semiconductor, Inc.
 - *
-- *  This program is free software; you can redistribute  it and/or modify it
-- *  under  the terms of  the GNU General  Public License as published by the
-- *  Free Software Foundation;  either version 2 of the  License, or (at your
-- *  option) any later version.
+- * This file is licensed under the terms of the GNU General Public License
+- * version 2.  This program is licensed "as is" without any warranty of any
+- * kind, whether express or implied.
 - *
+- * This driver implements ASoC support for the Elo DMA controller, which is
+- * the DMA controller on Freescale 83xx, 85xx, and 86xx SOCs. In ALSA terms,
+- * the PCM driver is what handles the DMA buffer.
 - */
-+// SPDX-License-Identifier: GPL-2.0+
++// SPDX-License-Identifier: GPL-2.0
 +//
-+// eukrea-tlv320.c  --  SoC audio for eukrea_cpuimxXX in I2S mode
++// Freescale DMA ALSA SoC PCM driver
 +//
-+// Copyright 2010 Eric Bénard, Eukréa Electromatique <eric@eukrea.com>
++// Author: Timur Tabi <timur@freescale.com>
 +//
-+// based on sound/soc/s3c24xx/s3c24xx_simtec_tlv320aic23.c
-+// which is Copyright 2009 Simtec Electronics
-+// and on sound/soc/imx/phycore-ac97.c which is
-+// Copyright 2009 Sascha Hauer, Pengutronix <s.hauer@pengutronix.de>
++// Copyright 2007-2010 Freescale Semiconductor, Inc.
++//
++// This driver implements ASoC support for the Elo DMA controller, which is
++// the DMA controller on Freescale 83xx, 85xx, and 86xx SOCs. In ALSA terms,
++// the PCM driver is what handles the DMA buffer.
  
- #include <linux/errno.h>
  #include <linux/module.h>
+ #include <linux/init.h>
+diff --git a/sound/soc/fsl/fsl_dma.h b/sound/soc/fsl/fsl_dma.h
+index 78fee97e8036..f19ae765b656 100644
+--- a/sound/soc/fsl/fsl_dma.h
++++ b/sound/soc/fsl/fsl_dma.h
+@@ -1,9 +1,6 @@
++/* SPDX-License-Identifier: GPL-2.0 */
+ /*
+  * mpc8610-pcm.h - ALSA PCM interface for the Freescale MPC8610 SoC
+- *
+- * This program is free software; you can redistribute it and/or modify
+- * it under the terms of the GNU General Public License version 2 as
+- * published by the Free Software Foundation.
+  */
+ 
+ #ifndef _MPC8610_PCM_H
 -- 
 2.11.0
 
