@@ -8,67 +8,67 @@ X-Spam-Status: No, score=-8.5 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
 	SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D47B7C4360F
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Apr 2019 12:24:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 52FC4C4360F
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Apr 2019 12:26:03 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 521C8218AE
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Apr 2019 12:24:08 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 6EA83218A6
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Apr 2019 12:26:02 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="uTLf8ikW"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 521C8218AE
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="nDFmTs46"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6EA83218A6
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44bJs228t5zDq7n
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Apr 2019 23:24:06 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44bJvD40Y3zDq6N
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Apr 2019 23:26:00 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=2a00:1450:4864:20::444; helo=mail-wr1-x444.google.com;
+ (client-ip=2a00:1450:4864:20::342; helo=mail-wm1-x342.google.com;
  envelope-from=andradanciu1997@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="uTLf8ikW"; 
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="nDFmTs46"; 
  dkim-atps=neutral
-Received: from mail-wr1-x444.google.com (mail-wr1-x444.google.com
- [IPv6:2a00:1450:4864:20::444])
+Received: from mail-wm1-x342.google.com (mail-wm1-x342.google.com
+ [IPv6:2a00:1450:4864:20::342])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44bJ7B02BGzDqQq
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Apr 2019 22:51:17 +1100 (AEDT)
-Received: by mail-wr1-x444.google.com with SMTP id h4so7633578wre.7
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 05 Apr 2019 04:51:17 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44bJ7C4vl0zDqQK
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Apr 2019 22:51:19 +1100 (AEDT)
+Received: by mail-wm1-x342.google.com with SMTP id z24so6899422wmi.5
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 05 Apr 2019 04:51:19 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
  h=from:to:cc:subject:date:message-id:in-reply-to:references;
- bh=z4hOLEy1KAA39sFWNk89CJxULZaItnMmPfy0ZrsUguQ=;
- b=uTLf8ikWgZGaU5U704onyfDUodYw6lCqifcV6omsTrKn4JHBdcCZAZLs5gpSrH6twO
- 4EjX+jRArj24uk1brErJRDIG4EN/cx05I+NdmSAfe5uKOsFUKhUdFLhMnEeEYR6XSDID
- IeKbRIGSwopflQDoyfj1SLCLXwtw7NhEWiYA3vww9V/xPmvsrPnFEEUvkYo6KumHCvso
- vkSG63fdjibxtbBTGyoCMn4wQn7nUXEASDSEL0PKl8qJM6jxmkMW2HdNN+XxskN3IAbX
- KSHoYDihVRStp+vKqC2EEo7wTdVDdcEIOSekPMfpdJAfRj1LTs8UXqdghcsOxganz87W
- cOSA==
+ bh=2x51jPIH0NpTAZwd31yHCUn90dvk+fsja0ZQlVXpmSo=;
+ b=nDFmTs46L0+WI6A3YT9/47BbL7eFFMUPGOridJqHcPWw7SzJkXp+Lja6JlMdsrxceP
+ sNR0NtVKOyTm52rxqvnvhuB2GxwevorkKoFFLwYvr0wOHB1E2IWNesH08sT9ZM7h4ivy
+ ciQwK99X6VH3MsF8YoUZDBljHIEoJaGvFwiF5vvQeaz6kZefdBbZtgeQYQKJqSnmsR1+
+ 3VqeXSNpBoTASHm/VY51ktLNFJHKfN47RWD3F0VnnOhK3wMBgd0mJ3gFCkQlsGcbiLbx
+ nonwov5GXgpeL9rj55uyKCmDZ/HcfhLspYSseGR7/NBLQNvnPtLt9LPn1xa7bm+B6yQF
+ 89Mg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
  :references;
- bh=z4hOLEy1KAA39sFWNk89CJxULZaItnMmPfy0ZrsUguQ=;
- b=kx7Qv9WLorJLB7fDjsiY1S4n6Zjgly9qkrISXKREldjwKqPbLr9CnnrZITJmYHqDRX
- EQA0gcn0OKPO8VsUdQ0HvY7bLUJk51zumR3IF3PSJVCWaJheid3rAfS/RF1r7viLJS75
- fPxnjpkpXrd+tFq4c8/l3u9dBligVKn3Un74GWidYxBeQ/GPzE/eZHKC/Y/+TUrNDXmx
- 8LiLUkkH3G8DRKFy/1aE8oOBzFbyKrX+rfFrJuxBkv/w4AA1E9v/2tzGB/dYUTqaBwJ/
- i1Jvxmajg5nVCIio2PVz2xDhLaQZAFnBz+SS6npQjXgkiFtNQ+Mr3TmDRTcKQyCrjvr+
- vrvQ==
-X-Gm-Message-State: APjAAAV3WtQdnFJzLZw8sjIk13m5LJt67GtgJbFfLWM4T7RkIldojt1p
- mLgjKAm441sDh7dvTZY1Vs8=
-X-Google-Smtp-Source: APXvYqzXXzPbcrL114rjzAe/hUC5/G0u+3qzwTXWsA6V4W4RWDRI+5ISLM+d1K9vaj7I6i0v+FmTbw==
-X-Received: by 2002:adf:f10c:: with SMTP id r12mr8008718wro.216.1554465074869; 
- Fri, 05 Apr 2019 04:51:14 -0700 (PDT)
+ bh=2x51jPIH0NpTAZwd31yHCUn90dvk+fsja0ZQlVXpmSo=;
+ b=o8y5RGpf8MnBjjaAWYp7/dcztzW97QfyqEhTAdJ0AXk9KV3g7z3OQfFdbRjjF14m5p
+ Mkgt+3oWD8vt3RQfiUguSvsJ/a502uCQZAZ51n2OpT2DjaQ56fl0oUmSgvWNVhAuOfJ1
+ kyL9vD/zvJPZx2cY/s/xKF0l6jDWUdZXMvFyxrZWOJ+T57TY9PlCrNz8bZGlSeSmMOdE
+ gLfwJ8+cKAgAO7iSeqPkpAEWPZcZEwuywi/rE30ZoKmcV0ZEgOhuWixXz6uDMZxX5TbX
+ zZiNGejcvBsL9RtOWz2WmpAL3TFXCcHqXQmoa6gwNhW+AbbX3PKvdECrJMkJXVvza0Yh
+ pJxA==
+X-Gm-Message-State: APjAAAUCn0WLhqroXNNybYypr5Buv7eioYN5rhpVPKsxGK7S9o8D2b1O
+ O/ijOkdnLpzTnKtUvjFkKbU=
+X-Google-Smtp-Source: APXvYqwUdMHMsHxcn6/slTQiQuYvpjaiOMopOrkv83+I9j98fnppMMtAfD9bfMu3zYD2K0jK4Yrh9g==
+X-Received: by 2002:a1c:a00a:: with SMTP id j10mr8063071wme.15.1554465077155; 
+ Fri, 05 Apr 2019 04:51:17 -0700 (PDT)
 Received: from localhost.localdomain ([178.138.34.252])
- by smtp.gmail.com with ESMTPSA id s203sm2881479wmf.14.2019.04.05.04.51.12
+ by smtp.gmail.com with ESMTPSA id s203sm2881479wmf.14.2019.04.05.04.51.14
  (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
- Fri, 05 Apr 2019 04:51:14 -0700 (PDT)
+ Fri, 05 Apr 2019 04:51:16 -0700 (PDT)
 From: Andra Danciu <andradanciu1997@gmail.com>
 To: timur@kernel.org, nicoleotsuka@gmail.com, Xiubo.Lee@gmail.com,
  festevam@gmail.com, lgirdwood@gmail.com, broonie@kernel.org,
@@ -76,9 +76,9 @@ To: timur@kernel.org, nicoleotsuka@gmail.com, Xiubo.Lee@gmail.com,
  s.hauer@pengutronix.de, kernel@pengutronix.de, linux-imx@nxp.com,
  alsa-devel@alsa-project.org, linuxppc-dev@lists.ozlabs.org,
  linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 14/20] ASoC: mpc8610_hpcd: Switch to SPDX identifier
-Date: Fri,  5 Apr 2019 14:50:04 +0300
-Message-Id: <20190405115010.28838-15-andradanciu1997@gmail.com>
+Subject: [PATCH 15/20] ASoC: mx27vis-aic32x4: Switch to SPDX identifier
+Date: Fri,  5 Apr 2019 14:50:05 +0300
+Message-Id: <20190405115010.28838-16-andradanciu1997@gmail.com>
 X-Mailer: git-send-email 2.11.0
 In-Reply-To: <20190405115010.28838-1-andradanciu1997@gmail.com>
 References: <20190405115010.28838-1-andradanciu1997@gmail.com>
@@ -103,35 +103,46 @@ management.
 
 Signed-off-by: Andra Danciu <andradanciu1997@gmail.com>
 ---
- sound/soc/fsl/mpc8610_hpcd.c | 18 +++++++-----------
- 1 file changed, 7 insertions(+), 11 deletions(-)
+ sound/soc/fsl/mx27vis-aic32x4.c | 29 +++++++----------------------
+ 1 file changed, 7 insertions(+), 22 deletions(-)
 
-diff --git a/sound/soc/fsl/mpc8610_hpcd.c b/sound/soc/fsl/mpc8610_hpcd.c
-index a639b52c16f6..f6261a3eeb0f 100644
---- a/sound/soc/fsl/mpc8610_hpcd.c
-+++ b/sound/soc/fsl/mpc8610_hpcd.c
-@@ -1,14 +1,10 @@
--/**
-- * Freescale MPC8610HPCD ALSA SoC Machine driver
+diff --git a/sound/soc/fsl/mx27vis-aic32x4.c b/sound/soc/fsl/mx27vis-aic32x4.c
+index d7ec3d20065c..37a4520aef62 100644
+--- a/sound/soc/fsl/mx27vis-aic32x4.c
++++ b/sound/soc/fsl/mx27vis-aic32x4.c
+@@ -1,25 +1,10 @@
+-/*
+- * mx27vis-aic32x4.c
 - *
-- * Author: Timur Tabi <timur@freescale.com>
+- * Copyright 2011 Vista Silicon S.L.
 - *
-- * Copyright 2007-2010 Freescale Semiconductor, Inc.
+- * Author: Javier Martin <javier.martin@vista-silicon.com>
 - *
-- * This file is licensed under the terms of the GNU General Public License
-- * version 2.  This program is licensed "as is" without any warranty of any
-- * kind, whether express or implied.
+- * This program is free software; you can redistribute  it and/or modify it
+- * under  the terms of  the GNU General  Public License as published by the
+- * Free Software Foundation;  either version 2 of the  License, or (at your
+- * option) any later version.
+- *
+- * This program is distributed in the hope that it will be useful,
+- * but WITHOUT ANY WARRANTY; without even the implied warranty of
+- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+- * GNU General Public License for more details.
+- *
+- * You should have received a copy of the GNU General Public License
+- * along with this program; if not, write to the Free Software
+- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+- * MA 02110-1301, USA.
 - */
-+// SPDX-License-Identifier: GPL-2.0
++// SPDX-License-Identifier: GPL-2.0+
 +//
-+// Freescale MPC8610HPCD ALSA SoC Machine driver
++// mx27vis-aic32x4.c
 +//
-+// Author: Timur Tabi <timur@freescale.com>
++// Copyright 2011 Vista Silicon S.L.
 +//
-+// Copyright 2007-2010 Freescale Semiconductor, Inc.
++// Author: Javier Martin <javier.martin@vista-silicon.com>
  
  #include <linux/module.h>
- #include <linux/interrupt.h>
+ #include <linux/moduleparam.h>
 -- 
 2.11.0
 
