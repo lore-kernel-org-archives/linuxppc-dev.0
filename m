@@ -2,64 +2,97 @@ Return-Path: <SRS0=OBm5=SH=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-11.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_PASS,
-	URIBL_BLOCKED autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 85DF8C4360F
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Apr 2019 03:28:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 15063C4360F
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Apr 2019 07:07:22 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id BACD02171F
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Apr 2019 03:28:19 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=sirena.org.uk header.i=@sirena.org.uk header.b="h+wUWTtz"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BACD02171F
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	by mail.kernel.org (Postfix) with ESMTPS id 4E1D121850
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Apr 2019 07:07:21 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4E1D121850
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=au1.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44b4ym6vjyzDqSD
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Apr 2019 14:28:16 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44b9qV5K2VzDqSD
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Apr 2019 18:07:18 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=sirena.org.uk
- (client-ip=2a01:7e01::f03c:91ff:fed4:a3b6; helo=heliosphere.sirena.org.uk;
- envelope-from=broonie@sirena.org.uk; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=au1.ibm.com
+ (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
+ envelope-from=andrew.donnellan@au1.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=fail (p=none dis=none) header.from=kernel.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=sirena.org.uk header.i=@sirena.org.uk
- header.b="h+wUWTtz"; dkim-atps=neutral
-Received: from heliosphere.sirena.org.uk (heliosphere.sirena.org.uk
- [IPv6:2a01:7e01::f03c:91ff:fed4:a3b6])
+ dmarc=none (p=none dis=none) header.from=au1.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44b4wg6NqKzDqQt
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Apr 2019 14:26:27 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
- d=sirena.org.uk; s=20170815-heliosphere; h=Date:Message-Id:In-Reply-To:
- Subject:Cc:To:From:Sender:Reply-To:MIME-Version:Content-Type:
- Content-Transfer-Encoding:Content-ID:Content-Description:Resent-Date:
- Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:References:
- List-Id:List-Help:List-Unsubscribe:List-Subscribe:List-Post:List-Owner:
- List-Archive; bh=isHyb2il+Ag94Qt74WcAtX5KXJrltPfq4KJ4zvpLROk=; b=h+wUWTtzHh/K
- 6+zQZCSFNGsd9jGz1ik5a0un2aDCt50/idXq05ONb0sU7gumJNwZ3+AQePF9/eaiUPa0ZaZz8OIpZ
- 8Lmss0eMcL1Xhi/IRwBlHRLYOLHmD3ccg8NidAOLkZkDBMdnx+fjxdlE/Lwy3jlNAG8blyADU3LOi
- KwgcI=;
-Received: from [147.50.13.10] (helo=finisterre.ee.mobilebroadband)
- by heliosphere.sirena.org.uk with esmtpsa
- (TLS1.2:ECDHE_RSA_AES_256_GCM_SHA384:256) (Exim 4.89)
- (envelope-from <broonie@sirena.org.uk>)
- id 1hCFUe-0005fQ-GE; Fri, 05 Apr 2019 03:26:16 +0000
-Received: by finisterre.ee.mobilebroadband (Postfix, from userid 1000)
- id 6CFE7441D3C; Fri,  5 Apr 2019 10:26:13 +0700 (+07)
-From: Mark Brown <broonie@kernel.org>
-To: S.j. Wang <shengjiu.wang@nxp.com>
-Subject: Applied "ASoC: fsl_esai: Support synchronous mode" to the asoc tree
-In-Reply-To: <a24d5493c392d39aefc6239e3dd97f9dd5fff1a1.1554370750.git.shengjiu.wang@nxp.com>
-X-Patchwork-Hint: ignore
-Message-Id: <20190405032613.6CFE7441D3C@finisterre.ee.mobilebroadband>
-Date: Fri,  5 Apr 2019 10:26:13 +0700 (+07)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44b9nl288hzDqQQ
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Apr 2019 18:05:46 +1100 (AEDT)
+Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
+ x356xM6g014877
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 5 Apr 2019 03:05:42 -0400
+Received: from e06smtp01.uk.ibm.com (e06smtp01.uk.ibm.com [195.75.94.97])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2rp0vsu7eh-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 05 Apr 2019 03:05:42 -0400
+Received: from localhost
+ by e06smtp01.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
+ Fri, 5 Apr 2019 08:05:40 +0100
+Received: from b06cxnps4074.portsmouth.uk.ibm.com (9.149.109.196)
+ by e06smtp01.uk.ibm.com (192.168.101.131) with IBM ESMTP SMTP Gateway:
+ Authorized Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Fri, 5 Apr 2019 08:05:37 +0100
+Received: from d06av21.portsmouth.uk.ibm.com (d06av21.portsmouth.uk.ibm.com
+ [9.149.105.232])
+ by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x3575aYq38273066
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Fri, 5 Apr 2019 07:05:36 GMT
+Received: from d06av21.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id E0B465204E;
+ Fri,  5 Apr 2019 07:05:35 +0000 (GMT)
+Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
+ by d06av21.portsmouth.uk.ibm.com (Postfix) with ESMTP id 5003E52052;
+ Fri,  5 Apr 2019 07:05:35 +0000 (GMT)
+Received: from [9.81.192.72] (unknown [9.81.192.72])
+ (using TLSv1.2 with cipher AES128-SHA (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.au.ibm.com (Postfix) with ESMTPSA id 934BEA0195;
+ Fri,  5 Apr 2019 18:05:33 +1100 (AEDT)
+Subject: Re: [PATCH v4 1/4] ocxl: Rename struct link to ocxl_link
+To: "Alastair D'Silva" <alastair@au1.ibm.com>, alastair@d-silva.org
+References: <20190320053448.2098-1-alastair@au1.ibm.com>
+ <20190325053456.14599-1-alastair@au1.ibm.com>
+ <20190325053456.14599-2-alastair@au1.ibm.com>
+From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+Date: Fri, 5 Apr 2019 18:05:32 +1100
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.6.1
+MIME-Version: 1.0
+In-Reply-To: <20190325053456.14599-2-alastair@au1.ibm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: en-AU
+Content-Transfer-Encoding: 7bit
+X-TM-AS-GCONF: 00
+x-cbid: 19040507-4275-0000-0000-0000032486D1
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 19040507-4276-0000-0000-00003833955E
+Message-Id: <327f4cc9-4c1b-a44c-3f61-d6363d73574d@au1.ibm.com>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
+ definitions=2019-04-05_04:, , signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ malwarescore=0 suspectscore=2 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1810050000 definitions=main-1904050052
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -71,117 +104,205 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: alsa-devel@alsa-project.org, "timur@kernel.org" <timur@kernel.org>,
- "Xiubo.Lee@gmail.com" <Xiubo.Lee@gmail.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Shengjiu Wang <shengjiu.wang@nxp.com>,
- "nicoleotsuka@gmail.com" <nicoleotsuka@gmail.com>,
- "broonie@kernel.org" <broonie@kernel.org>,
- "festevam@gmail.com" <festevam@gmail.com>
+Cc: Arnd Bergmann <arnd@arndb.de>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Greg Kurz <groug@kaod.org>,
+ linux-kernel@vger.kernel.org, Frederic Barrat <fbarrat@linux.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The patch
+On 25/3/19 4:34 pm, Alastair D'Silva wrote:
+> From: Alastair D'Silva <alastair@d-silva.org>
+> 
+> The term 'link' is ambiguous (especially when the struct is used for a
+> list), so rename it for clarity.
+> 
+> Signed-off-by: Alastair D'Silva <alastair@d-silva.org>
+> Reviewed-by: Greg Kurz <groug@kaod.org>
 
-   ASoC: fsl_esai: Support synchronous mode
+Acked-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
 
-has been applied to the asoc tree at
+> ---
+>   drivers/misc/ocxl/file.c |  5 ++---
+>   drivers/misc/ocxl/link.c | 36 ++++++++++++++++++------------------
+>   2 files changed, 20 insertions(+), 21 deletions(-)
+> 
+> diff --git a/drivers/misc/ocxl/file.c b/drivers/misc/ocxl/file.c
+> index e6a607488f8a..009e09b7ded5 100644
+> --- a/drivers/misc/ocxl/file.c
+> +++ b/drivers/misc/ocxl/file.c
+> @@ -151,10 +151,9 @@ static long afu_ioctl_enable_p9_wait(struct ocxl_context *ctx,
+>   		mutex_unlock(&ctx->status_mutex);
+>   
+>   		if (status == ATTACHED) {
+> -			int rc;
+> -			struct link *link = ctx->afu->fn->link;
+> +			int rc = ocxl_link_update_pe(ctx->afu->fn->link,
+> +				ctx->pasid, ctx->tidr);
+>   
+> -			rc = ocxl_link_update_pe(link, ctx->pasid, ctx->tidr);
+>   			if (rc)
+>   				return rc;
+>   		}
+> diff --git a/drivers/misc/ocxl/link.c b/drivers/misc/ocxl/link.c
+> index d50b861d7e57..8d2690a1a9de 100644
+> --- a/drivers/misc/ocxl/link.c
+> +++ b/drivers/misc/ocxl/link.c
+> @@ -76,7 +76,7 @@ struct spa {
+>    * limited number of opencapi slots on a system and lookup is only
+>    * done when the device is probed
+>    */
+> -struct link {
+> +struct ocxl_link {
+>   	struct list_head list;
+>   	struct kref ref;
+>   	int domain;
+> @@ -179,7 +179,7 @@ static void xsl_fault_handler_bh(struct work_struct *fault_work)
+>   
+>   static irqreturn_t xsl_fault_handler(int irq, void *data)
+>   {
+> -	struct link *link = (struct link *) data;
+> +	struct ocxl_link *link = (struct ocxl_link *) data;
+>   	struct spa *spa = link->spa;
+>   	u64 dsisr, dar, pe_handle;
+>   	struct pe_data *pe_data;
+> @@ -256,7 +256,7 @@ static int map_irq_registers(struct pci_dev *dev, struct spa *spa)
+>   				&spa->reg_tfc, &spa->reg_pe_handle);
+>   }
+>   
+> -static int setup_xsl_irq(struct pci_dev *dev, struct link *link)
+> +static int setup_xsl_irq(struct pci_dev *dev, struct ocxl_link *link)
+>   {
+>   	struct spa *spa = link->spa;
+>   	int rc;
+> @@ -311,7 +311,7 @@ static int setup_xsl_irq(struct pci_dev *dev, struct link *link)
+>   	return rc;
+>   }
+>   
+> -static void release_xsl_irq(struct link *link)
+> +static void release_xsl_irq(struct ocxl_link *link)
+>   {
+>   	struct spa *spa = link->spa;
+>   
+> @@ -323,7 +323,7 @@ static void release_xsl_irq(struct link *link)
+>   	unmap_irq_registers(spa);
+>   }
+>   
+> -static int alloc_spa(struct pci_dev *dev, struct link *link)
+> +static int alloc_spa(struct pci_dev *dev, struct ocxl_link *link)
+>   {
+>   	struct spa *spa;
+>   
+> @@ -350,7 +350,7 @@ static int alloc_spa(struct pci_dev *dev, struct link *link)
+>   	return 0;
+>   }
+>   
+> -static void free_spa(struct link *link)
+> +static void free_spa(struct ocxl_link *link)
+>   {
+>   	struct spa *spa = link->spa;
+>   
+> @@ -364,12 +364,12 @@ static void free_spa(struct link *link)
+>   	}
+>   }
+>   
+> -static int alloc_link(struct pci_dev *dev, int PE_mask, struct link **out_link)
+> +static int alloc_link(struct pci_dev *dev, int PE_mask, struct ocxl_link **out_link)
+>   {
+> -	struct link *link;
+> +	struct ocxl_link *link;
+>   	int rc;
+>   
+> -	link = kzalloc(sizeof(struct link), GFP_KERNEL);
+> +	link = kzalloc(sizeof(struct ocxl_link), GFP_KERNEL);
+>   	if (!link)
+>   		return -ENOMEM;
+>   
+> @@ -405,7 +405,7 @@ static int alloc_link(struct pci_dev *dev, int PE_mask, struct link **out_link)
+>   	return rc;
+>   }
+>   
+> -static void free_link(struct link *link)
+> +static void free_link(struct ocxl_link *link)
+>   {
+>   	release_xsl_irq(link);
+>   	free_spa(link);
+> @@ -415,7 +415,7 @@ static void free_link(struct link *link)
+>   int ocxl_link_setup(struct pci_dev *dev, int PE_mask, void **link_handle)
+>   {
+>   	int rc = 0;
+> -	struct link *link;
+> +	struct ocxl_link *link;
+>   
+>   	mutex_lock(&links_list_lock);
+>   	list_for_each_entry(link, &links_list, list) {
+> @@ -442,7 +442,7 @@ EXPORT_SYMBOL_GPL(ocxl_link_setup);
+>   
+>   static void release_xsl(struct kref *ref)
+>   {
+> -	struct link *link = container_of(ref, struct link, ref);
+> +	struct ocxl_link *link = container_of(ref, struct ocxl_link, ref);
+>   
+>   	list_del(&link->list);
+>   	/* call platform code before releasing data */
+> @@ -452,7 +452,7 @@ static void release_xsl(struct kref *ref)
+>   
+>   void ocxl_link_release(struct pci_dev *dev, void *link_handle)
+>   {
+> -	struct link *link = (struct link *) link_handle;
+> +	struct ocxl_link *link = (struct ocxl_link *) link_handle;
+>   
+>   	mutex_lock(&links_list_lock);
+>   	kref_put(&link->ref, release_xsl);
+> @@ -488,7 +488,7 @@ int ocxl_link_add_pe(void *link_handle, int pasid, u32 pidr, u32 tidr,
+>   		void (*xsl_err_cb)(void *data, u64 addr, u64 dsisr),
+>   		void *xsl_err_data)
+>   {
+> -	struct link *link = (struct link *) link_handle;
+> +	struct ocxl_link *link = (struct ocxl_link *) link_handle;
+>   	struct spa *spa = link->spa;
+>   	struct ocxl_process_element *pe;
+>   	int pe_handle, rc = 0;
+> @@ -558,7 +558,7 @@ EXPORT_SYMBOL_GPL(ocxl_link_add_pe);
+>   
+>   int ocxl_link_update_pe(void *link_handle, int pasid, __u16 tid)
+>   {
+> -	struct link *link = (struct link *) link_handle;
+> +	struct ocxl_link *link = (struct ocxl_link *) link_handle;
+>   	struct spa *spa = link->spa;
+>   	struct ocxl_process_element *pe;
+>   	int pe_handle, rc;
+> @@ -594,7 +594,7 @@ int ocxl_link_update_pe(void *link_handle, int pasid, __u16 tid)
+>   
+>   int ocxl_link_remove_pe(void *link_handle, int pasid)
+>   {
+> -	struct link *link = (struct link *) link_handle;
+> +	struct ocxl_link *link = (struct ocxl_link *) link_handle;
+>   	struct spa *spa = link->spa;
+>   	struct ocxl_process_element *pe;
+>   	struct pe_data *pe_data;
+> @@ -666,7 +666,7 @@ EXPORT_SYMBOL_GPL(ocxl_link_remove_pe);
+>   
+>   int ocxl_link_irq_alloc(void *link_handle, int *hw_irq, u64 *trigger_addr)
+>   {
+> -	struct link *link = (struct link *) link_handle;
+> +	struct ocxl_link *link = (struct ocxl_link *) link_handle;
+>   	int rc, irq;
+>   	u64 addr;
+>   
+> @@ -687,7 +687,7 @@ EXPORT_SYMBOL_GPL(ocxl_link_irq_alloc);
+>   
+>   void ocxl_link_free_irq(void *link_handle, int hw_irq)
+>   {
+> -	struct link *link = (struct link *) link_handle;
+> +	struct ocxl_link *link = (struct ocxl_link *) link_handle;
+>   
+>   	pnv_ocxl_free_xive_irq(hw_irq);
+>   	atomic_inc(&link->irq_available);
+> 
 
-   https://git.kernel.org/pub/scm/linux/kernel/git/broonie/sound.git 
-
-All being well this means that it will be integrated into the linux-next
-tree (usually sometime in the next 24 hours) and sent to Linus during
-the next merge window (or sooner if it is a bug fix), however if
-problems are discovered then the patch may be dropped or reverted.  
-
-You may get further e-mails resulting from automated or manual testing
-and review of the tree, please engage with people reporting problems and
-send followup patches addressing any issues that are reported if needed.
-
-If any updates are required or you are submitting further changes they
-should be sent as incremental updates against current git, existing
-patches will not be replaced.
-
-Please add any relevant lists and maintainers to the CCs when replying
-to this mail.
-
-Thanks,
-Mark
-
-From 1997ee89f36da906efb8e700f1d08368c73883be Mon Sep 17 00:00:00 2001
-From: "S.j. Wang" <shengjiu.wang@nxp.com>
-Date: Thu, 4 Apr 2019 09:40:56 +0000
-Subject: [PATCH] ASoC: fsl_esai: Support synchronous mode
-
-In ESAI synchronous mode, the clock is generated by Tx, So
-we should always set registers of Tx which relate with the
-bit clock and frame clock generation (TCCR, TCR, ECR), even
-there is only Rx is working.
-
-Signed-off-by: Shengjiu Wang <shengjiu.wang@nxp.com>
-Acked-by: Nicolin Chen <nicoleotsuka@gmail.com>
-Signed-off-by: Mark Brown <broonie@kernel.org>
----
- sound/soc/fsl/fsl_esai.c | 21 ++++++++++++++-------
- 1 file changed, 14 insertions(+), 7 deletions(-)
-
-diff --git a/sound/soc/fsl/fsl_esai.c b/sound/soc/fsl/fsl_esai.c
-index 3623aa9a6f2e..c7410bbfd2af 100644
---- a/sound/soc/fsl/fsl_esai.c
-+++ b/sound/soc/fsl/fsl_esai.c
-@@ -218,7 +218,7 @@ static int fsl_esai_set_dai_sysclk(struct snd_soc_dai *dai, int clk_id,
- {
- 	struct fsl_esai *esai_priv = snd_soc_dai_get_drvdata(dai);
- 	struct clk *clksrc = esai_priv->extalclk;
--	bool tx = clk_id <= ESAI_HCKT_EXTAL;
-+	bool tx = (clk_id <= ESAI_HCKT_EXTAL || esai_priv->synchronous);
- 	bool in = dir == SND_SOC_CLOCK_IN;
- 	u32 ratio, ecr = 0;
- 	unsigned long clk_rate;
-@@ -253,7 +253,7 @@ static int fsl_esai_set_dai_sysclk(struct snd_soc_dai *dai, int clk_id,
- 		ecr |= ESAI_ECR_ETI;
- 		/* fall through */
- 	case ESAI_HCKR_EXTAL:
--		ecr |= ESAI_ECR_ERI;
-+		ecr |= esai_priv->synchronous ? ESAI_ECR_ETI : ESAI_ECR_ERI;
- 		break;
- 	default:
- 		return -EINVAL;
-@@ -537,10 +537,18 @@ static int fsl_esai_hw_params(struct snd_pcm_substream *substream,
- 
- 	bclk = params_rate(params) * slot_width * esai_priv->slots;
- 
--	ret = fsl_esai_set_bclk(dai, tx, bclk);
-+	ret = fsl_esai_set_bclk(dai, esai_priv->synchronous || tx, bclk);
- 	if (ret)
- 		return ret;
- 
-+	mask = ESAI_xCR_xSWS_MASK;
-+	val = ESAI_xCR_xSWS(slot_width, width);
-+
-+	regmap_update_bits(esai_priv->regmap, REG_ESAI_xCR(tx), mask, val);
-+	/* Recording in synchronous mode needs to set TCR also */
-+	if (!tx && esai_priv->synchronous)
-+		regmap_update_bits(esai_priv->regmap, REG_ESAI_TCR, mask, val);
-+
- 	/* Use Normal mode to support monaural audio */
- 	regmap_update_bits(esai_priv->regmap, REG_ESAI_xCR(tx),
- 			   ESAI_xCR_xMOD_MASK, params_channels(params) > 1 ?
-@@ -556,10 +564,9 @@ static int fsl_esai_hw_params(struct snd_pcm_substream *substream,
- 
- 	regmap_update_bits(esai_priv->regmap, REG_ESAI_xFCR(tx), mask, val);
- 
--	mask = ESAI_xCR_xSWS_MASK | (tx ? ESAI_xCR_PADC : 0);
--	val = ESAI_xCR_xSWS(slot_width, width) | (tx ? ESAI_xCR_PADC : 0);
--
--	regmap_update_bits(esai_priv->regmap, REG_ESAI_xCR(tx), mask, val);
-+	if (tx)
-+		regmap_update_bits(esai_priv->regmap, REG_ESAI_TCR,
-+				ESAI_xCR_PADC, ESAI_xCR_PADC);
- 
- 	/* Remove ESAI personal reset by configuring ESAI_PCRC and ESAI_PRRC */
- 	regmap_update_bits(esai_priv->regmap, REG_ESAI_PRRC,
 -- 
-2.20.1
+Andrew Donnellan              OzLabs, ADL Canberra
+andrew.donnellan@au1.ibm.com  IBM Australia Limited
 
