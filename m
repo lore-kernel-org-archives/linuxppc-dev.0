@@ -8,67 +8,67 @@ X-Spam-Status: No, score=-8.5 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
 	SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A3BE9C4360F
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Apr 2019 12:04:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 00728C10F00
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Apr 2019 12:06:46 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 1E73220663
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Apr 2019 12:04:25 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 6A14E218A6
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Apr 2019 12:06:45 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="eCConTvS"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1E73220663
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="js6wQDtV"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6A14E218A6
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44bJQG5yRbzDqCD
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Apr 2019 23:04:22 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44bJSz0rGPzDq8M
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Apr 2019 23:06:43 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=2a00:1450:4864:20::344; helo=mail-wm1-x344.google.com;
+ (client-ip=2a00:1450:4864:20::441; helo=mail-wr1-x441.google.com;
  envelope-from=andradanciu1997@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="eCConTvS"; 
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="js6wQDtV"; 
  dkim-atps=neutral
-Received: from mail-wm1-x344.google.com (mail-wm1-x344.google.com
- [IPv6:2a00:1450:4864:20::344])
+Received: from mail-wr1-x441.google.com (mail-wr1-x441.google.com
+ [IPv6:2a00:1450:4864:20::441])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44bJ6g2LDHzDqQB
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Apr 2019 22:50:51 +1100 (AEDT)
-Received: by mail-wm1-x344.google.com with SMTP id a184so6324694wma.2
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 05 Apr 2019 04:50:51 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44bJ6m6gyMzDqQw
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Apr 2019 22:50:56 +1100 (AEDT)
+Received: by mail-wr1-x441.google.com with SMTP id q1so7666989wrp.0
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 05 Apr 2019 04:50:56 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
  h=from:to:cc:subject:date:message-id:in-reply-to:references;
- bh=5asv/MMYgaT3vlOnBG4Dw1w/S6VrgPjfjegRPmtGsPM=;
- b=eCConTvSb7AtK58n0Df+uaIqd4+v8mj3krxRh+M1NjPa3BIXzvJC0lKUikEFLPu9c/
- u/3ZNVP1G6+MJve5Hj8UDyaWxAZ14UfYj+vEuyRrKwz5FIyDGQn4APYxFyjyjz3QmvPg
- TThMVPReH6VZKhwZeUm/vUG5KRcgxRBeukfOZ2EQrGQbT+gbE8KmHrqUSnk6OYCEYuHa
- A6/iBmlME3RfBeHwK5k9kp8CSvsva860jHBmKebcwi8um93NAiLe21p3y8R+Fbagt2L8
- tJBb+1JGndrZBWRnEWtFfTnekqSHlxRFooRsqtKnhW8qIXcW6kaJR/5RXIebUzchHLKm
- rgHw==
+ bh=j/G+Q6ryO5QD2klIAN3tHHLuG2QV/gS3koPfNp4bcRs=;
+ b=js6wQDtVU2nDddmV7dXvCTKNRa/y/ndS4+ea9fmqr/w5sg6eMJZVW7rbeXQmGks7t3
+ DbEtUuQOrWw/Lz7jVoeU3MG71AUYz9RN9ClxkYYqnvdclL0+1xN8NNZ4NiMFzuvWw45m
+ 53Y2RCXSnh4WIaBRWYybjqvYHy/WLSJt7ws9SxB8b5EowrDOS5g1ZHJ8H+78D0LIi79/
+ PaPAl2TqPfa7tSemODxMoWaW5Sn15nRz9tgfc8gkA0YPMy9FPpgkgfFi9BgzC0ER4Eld
+ UeasmiJDwRZq5HUxF+m6mho6y5zdjiPINjoYkMHuOdxBs1HEwsK4a5Ld7qEPvcSclf+Q
+ Jyxw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
  :references;
- bh=5asv/MMYgaT3vlOnBG4Dw1w/S6VrgPjfjegRPmtGsPM=;
- b=V9LFAV9Bg0NTVaYvkgDJI5QkQe7eqB6cN6yIiQzxeWY23LpQclV9HKerrRuj8BwwQ9
- cI0ssuKs0fMrzLWyrKsCdEKSxjqqcZ0hjt5BhVBexuuKZiTq6sLlcVst6G7Xoq/TwtRT
- APj/W7DgXFg2n/XjNlpSv0t+gu/vYO0ZI78nAdYb/zBPKyLgDo2jvilg+F9YFzf64g6r
- +EHaco1Y1lNdrj8HdsWjDc59ER6GFccNQ9qwIenKUlg0203nhswsxMdYnUaMWe2dUP2I
- n/peqTL3SpDbFpNyfwMYzkD4BN45tjAmobhXNkJ7JTb/2paaW/PhvMp3NJjREqbVffR3
- wcbw==
-X-Gm-Message-State: APjAAAVOTyctpFlPOcCwB5by1MPLFZwe4tUMbVS/cB8ykw6tggFxWxLB
- q636P8kKjWr6DQF6LroKgGs=
-X-Google-Smtp-Source: APXvYqw8hkwRw3wCb1GQ+HDlwT/I55ykrChmpfn2wnpPr+ajoYDMDFk263jAmBxPUG8SKiK0Ppz8ig==
-X-Received: by 2002:a7b:cb16:: with SMTP id u22mr7549383wmj.60.1554465048087; 
- Fri, 05 Apr 2019 04:50:48 -0700 (PDT)
+ bh=j/G+Q6ryO5QD2klIAN3tHHLuG2QV/gS3koPfNp4bcRs=;
+ b=n/1ebMJjEqHaKWENw6Lj6p1AhcGB/nUjwJusB7mjVnQPtpIH4Cz3YaNXcyMj8dhAV/
+ jm9g0Od4TvXoEmier5VovwrxmQhwFvmqZt1M7x92Omk7PHdXnBsJ7BCzdoCtPoZYAdlU
+ AzpKGctt06HiAy6udiLJUHj/rQy1z5qhZEyIQ+s5gsicmaSdJIGNxfBkzlVdwwIgIneV
+ F5k0h3XQyZ5LDDPxqhwTKhwrX6RQmsk9kYnv6gIC6GAZPggaEMP59KR9xy2hCpbVGKX2
+ HzPjIl3oMFmLK16TN++NlgZA8IbqoKLVmlWYmdnNqWnBQA3xYeDxPis0Fr583t5mCrRw
+ SILw==
+X-Gm-Message-State: APjAAAUxP79d8FwF6T4Km6buSivJvkP7x0cYg+UV2LHOIa5k3XmBdDUN
+ IpvMQoc0kfxWRxDHfxm7e6w=
+X-Google-Smtp-Source: APXvYqzDUpZcwDBcQbPYSpsa5G5tlghd4vZrHUHPbGiJZws4jMXKgcJbhOiwhWclw9PLaKPzP8M9HA==
+X-Received: by 2002:adf:eed1:: with SMTP id a17mr8341942wrp.268.1554465054410; 
+ Fri, 05 Apr 2019 04:50:54 -0700 (PDT)
 Received: from localhost.localdomain ([178.138.34.252])
- by smtp.gmail.com with ESMTPSA id s203sm2881479wmf.14.2019.04.05.04.50.45
+ by smtp.gmail.com with ESMTPSA id s203sm2881479wmf.14.2019.04.05.04.50.48
  (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
- Fri, 05 Apr 2019 04:50:47 -0700 (PDT)
+ Fri, 05 Apr 2019 04:50:53 -0700 (PDT)
 From: Andra Danciu <andradanciu1997@gmail.com>
 To: timur@kernel.org, nicoleotsuka@gmail.com, Xiubo.Lee@gmail.com,
  festevam@gmail.com, lgirdwood@gmail.com, broonie@kernel.org,
@@ -76,9 +76,9 @@ To: timur@kernel.org, nicoleotsuka@gmail.com, Xiubo.Lee@gmail.com,
  s.hauer@pengutronix.de, kernel@pengutronix.de, linux-imx@nxp.com,
  alsa-devel@alsa-project.org, linuxppc-dev@lists.ozlabs.org,
  linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 05/20] ASoC: imx-audmux: Switch to SPDX identifier
-Date: Fri,  5 Apr 2019 14:49:55 +0300
-Message-Id: <20190405115010.28838-6-andradanciu1997@gmail.com>
+Subject: [PATCH 06/20] ASoC: imx-es8328: Switch to SPDX identifier
+Date: Fri,  5 Apr 2019 14:49:56 +0300
+Message-Id: <20190405115010.28838-7-andradanciu1997@gmail.com>
 X-Mailer: git-send-email 2.11.0
 In-Reply-To: <20190405115010.28838-1-andradanciu1997@gmail.com>
 References: <20190405115010.28838-1-andradanciu1997@gmail.com>
@@ -103,43 +103,32 @@ management.
 
 Signed-off-by: Andra Danciu <andradanciu1997@gmail.com>
 ---
- sound/soc/fsl/imx-audmux.c | 26 ++++++++------------------
- 1 file changed, 8 insertions(+), 18 deletions(-)
+ sound/soc/fsl/imx-es8328.c | 15 ++++-----------
+ 1 file changed, 4 insertions(+), 11 deletions(-)
 
-diff --git a/sound/soc/fsl/imx-audmux.c b/sound/soc/fsl/imx-audmux.c
-index 99e07b01a2ce..04e59e66711d 100644
---- a/sound/soc/fsl/imx-audmux.c
-+++ b/sound/soc/fsl/imx-audmux.c
-@@ -1,21 +1,11 @@
+diff --git a/sound/soc/fsl/imx-es8328.c b/sound/soc/fsl/imx-es8328.c
+index 9953438086e4..c9d8739b04a9 100644
+--- a/sound/soc/fsl/imx-es8328.c
++++ b/sound/soc/fsl/imx-es8328.c
+@@ -1,14 +1,7 @@
 -/*
 - * Copyright 2012 Freescale Semiconductor, Inc.
 - * Copyright 2012 Linaro Ltd.
-- * Copyright 2009 Pengutronix, Sascha Hauer <s.hauer@pengutronix.de>
 - *
-- * Initial development of this code was funded by
-- * Phytec Messtechnik GmbH, http://www.phytec.de
+- * The code contained herein is licensed under the GNU General Public
+- * License. You may obtain a copy of the GNU General Public License
+- * Version 2 or later at the following locations:
 - *
-- * This program is free software; you can redistribute it and/or modify
-- * it under the terms of the GNU General Public License as published by
-- * the Free Software Foundation; either version 2 of the License, or
-- * (at your option) any later version.
-- *
-- * This program is distributed in the hope that it will be useful,
-- * but WITHOUT ANY WARRANTY; without even the implied warranty of
-- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-- * GNU General Public License for more details.
+- * http://www.opensource.org/licenses/gpl-license.html
+- * http://www.gnu.org/copyleft/gpl.html
 - */
 +// SPDX-License-Identifier: GPL-2.0+
 +//
 +// Copyright 2012 Freescale Semiconductor, Inc.
 +// Copyright 2012 Linaro Ltd.
-+// Copyright 2009 Pengutronix, Sascha Hauer <s.hauer@pengutronix.de>
-+//
-+// Initial development of this code was funded by
-+// Phytec Messtechnik GmbH, http://www.phytec.de
  
- #include <linux/clk.h>
- #include <linux/debugfs.h>
+ #include <linux/gpio.h>
+ #include <linux/module.h>
 -- 
 2.11.0
 
