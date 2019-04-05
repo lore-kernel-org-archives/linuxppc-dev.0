@@ -2,23 +2,23 @@ Return-Path: <SRS0=OBm5=SH=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_NEOMUTT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_NEOMUTT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8FA79C4360F
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Apr 2019 14:22:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 87019C4360F
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Apr 2019 14:32:47 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id D25FA205F4
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Apr 2019 14:22:36 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D25FA205F4
+	by mail.kernel.org (Postfix) with ESMTPS id 07DAD206DD
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Apr 2019 14:32:46 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 07DAD206DD
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44bMTk0yn2zDqSy
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  6 Apr 2019 01:22:34 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44bMjS6936zDqSj
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  6 Apr 2019 01:32:44 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=redhat.com
  (client-ip=209.132.183.28; helo=mx1.redhat.com;
@@ -28,34 +28,34 @@ Authentication-Results: lists.ozlabs.org;
 Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44bMRt5FsVzDqQK
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  6 Apr 2019 01:20:58 +1100 (AEDT)
-Received: from smtp.corp.redhat.com (int-mx05.intmail.prod.int.phx2.redhat.com
- [10.5.11.15])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44bMgm4SzBzDqRj
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  6 Apr 2019 01:31:15 +1100 (AEDT)
+Received: from smtp.corp.redhat.com (int-mx02.intmail.prod.int.phx2.redhat.com
+ [10.5.11.12])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by mx1.redhat.com (Postfix) with ESMTPS id BEC5C308FF32;
- Fri,  5 Apr 2019 14:20:55 +0000 (UTC)
+ by mx1.redhat.com (Postfix) with ESMTPS id E645E308FF30;
+ Fri,  5 Apr 2019 14:31:12 +0000 (UTC)
 Received: from treble (ovpn-123-87.rdu2.redhat.com [10.10.123.87])
- by smtp.corp.redhat.com (Postfix) with ESMTPS id 92E925D705;
- Fri,  5 Apr 2019 14:20:50 +0000 (UTC)
-Date: Fri, 5 Apr 2019 09:20:48 -0500
+ by smtp.corp.redhat.com (Postfix) with ESMTPS id AFB2F60C7A;
+ Fri,  5 Apr 2019 14:31:03 +0000 (UTC)
+Date: Fri, 5 Apr 2019 09:31:01 -0500
 From: Josh Poimboeuf <jpoimboe@redhat.com>
 To: Borislav Petkov <bp@alien8.de>
-Subject: Re: [PATCH RFC 1/5] cpu/speculation: Add 'cpu_spec_mitigations='
- cmdline options
-Message-ID: <20190405142048.burthk2jnpcvi2om@treble>
+Subject: Re: [PATCH RFC 2/5] x86/speculation: Add support for
+ 'cpu_spec_mitigations=' cmdline options
+Message-ID: <20190405143101.ksj7ayjis4p52dgt@treble>
 References: <cover.1554396090.git.jpoimboe@redhat.com>
- <f0bd17358ab478eaca52f3b1da8305c150911b40.1554396090.git.jpoimboe@redhat.com>
- <20190405131211.GE23348@zn.tnic>
+ <78c63cb08f36f55407f534d49cc2543079e44dbb.1554396090.git.jpoimboe@redhat.com>
+ <20190405135712.GF23348@zn.tnic>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20190405131211.GE23348@zn.tnic>
+In-Reply-To: <20190405135712.GF23348@zn.tnic>
 User-Agent: NeoMutt/20180716
-X-Scanned-By: MIMEDefang 2.79 on 10.5.11.15
+X-Scanned-By: MIMEDefang 2.79 on 10.5.11.12
 X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.5.16
- (mx1.redhat.com [10.5.110.49]); Fri, 05 Apr 2019 14:20:56 +0000 (UTC)
+ (mx1.redhat.com [10.5.110.49]); Fri, 05 Apr 2019 14:31:13 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -84,83 +84,128 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, Apr 05, 2019 at 03:12:11PM +0200, Borislav Petkov wrote:
-> On Thu, Apr 04, 2019 at 11:44:11AM -0500, Josh Poimboeuf wrote:
-> > Keeping track of the number of mitigations for all the CPU speculation
-> > bugs has become overwhelming for many users.  It's getting more and more
-> > complicated to decide which mitigations are needed for a given
-> > architecture.  Complicating matters is the fact that each arch tends to
-> > their own custom way to mitigate the same vulnerability.
+On Fri, Apr 05, 2019 at 03:57:12PM +0200, Borislav Petkov wrote:
+> > diff --git a/arch/x86/include/asm/processor.h b/arch/x86/include/asm/processor.h
+> > index 2bb3a648fc12..7e95b310f869 100644
+> > --- a/arch/x86/include/asm/processor.h
+> > +++ b/arch/x86/include/asm/processor.h
+> > @@ -982,6 +982,7 @@ void microcode_check(void);
+> >  
+> >  enum l1tf_mitigations {
+> >  	L1TF_MITIGATION_OFF,
+> > +	L1TF_MITIGATION_DEFAULT,
+> >  	L1TF_MITIGATION_FLUSH_NOWARN,
+> >  	L1TF_MITIGATION_FLUSH,
+> >  	L1TF_MITIGATION_FLUSH_NOSMT,
+> > diff --git a/arch/x86/kernel/cpu/bugs.c b/arch/x86/kernel/cpu/bugs.c
+> > index 2da82eff0eb4..65b95fb95ba5 100644
+> > --- a/arch/x86/kernel/cpu/bugs.c
+> > +++ b/arch/x86/kernel/cpu/bugs.c
+> > @@ -308,8 +308,11 @@ spectre_v2_parse_user_cmdline(enum spectre_v2_mitigation_cmd v2_cmd)
+> >  
+> >  	ret = cmdline_find_option(boot_command_line, "spectre_v2_user",
+> >  				  arg, sizeof(arg));
+> > -	if (ret < 0)
+> > +	if (ret < 0) {
+> > +		if (cpu_spec_mitigations == CPU_SPEC_MITIGATIONS_OFF)
+> > +			return SPECTRE_V2_USER_CMD_NONE;
 > 
-> Yap, we definitely need something like that.
+> Instead of sprinkling that test in those three functions, just do it
+> once above in check_bugs(), before those *_select_mitigation() functions
+> get to run and depending on the value, you either run them or use the
+> default settings, for the OFF case, for example.
+
+My thinking was that the individual options could be used to override
+the global option.  But maybe that's overkill?  I dunno.
+
+> >  		return SPECTRE_V2_USER_CMD_AUTO;
+> > +	}
+> >  
+> >  	for (i = 0; i < ARRAY_SIZE(v2_user_options); i++) {
+> >  		if (match_option(arg, ret, v2_user_options[i].option)) {
+> > @@ -444,8 +447,11 @@ static enum spectre_v2_mitigation_cmd __init spectre_v2_parse_cmdline(void)
+> >  		return SPECTRE_V2_CMD_NONE;
+> >  
+> >  	ret = cmdline_find_option(boot_command_line, "spectre_v2", arg, sizeof(arg));
+> > -	if (ret < 0)
+> > +	if (ret < 0) {
+> > +		if (cpu_spec_mitigations == CPU_SPEC_MITIGATIONS_OFF)
+> > +			return SPECTRE_V2_CMD_NONE;
+> >  		return SPECTRE_V2_CMD_AUTO;
+> > +	}
+> >  
+> >  	for (i = 0; i < ARRAY_SIZE(mitigation_options); i++) {
+> >  		if (!match_option(arg, ret, mitigation_options[i].option))
+> > @@ -677,8 +683,11 @@ static enum ssb_mitigation_cmd __init ssb_parse_cmdline(void)
+> >  	} else {
+> >  		ret = cmdline_find_option(boot_command_line, "spec_store_bypass_disable",
+> >  					  arg, sizeof(arg));
+> > -		if (ret < 0)
+> > +		if (ret < 0) {
+> > +			if (cpu_spec_mitigations == CPU_SPEC_MITIGATIONS_OFF)
+> > +				return SPEC_STORE_BYPASS_CMD_NONE;
+> >  			return SPEC_STORE_BYPASS_CMD_AUTO;
+> > +		}
+> >  
+> >  		for (i = 0; i < ARRAY_SIZE(ssb_mitigation_options); i++) {
+> >  			if (!match_option(arg, ret, ssb_mitigation_options[i].option))
+> > @@ -955,7 +964,7 @@ void x86_spec_ctrl_setup_ap(void)
+> >  #define pr_fmt(fmt)	"L1TF: " fmt
+> >  
+> >  /* Default mitigation for L1TF-affected CPUs */
+> > -enum l1tf_mitigations l1tf_mitigation __ro_after_init = L1TF_MITIGATION_FLUSH;
+> > +enum l1tf_mitigations l1tf_mitigation __ro_after_init = L1TF_MITIGATION_DEFAULT;
+> >  #if IS_ENABLED(CONFIG_KVM_INTEL)
+> >  EXPORT_SYMBOL_GPL(l1tf_mitigation);
+> >  #endif
+> > @@ -1010,8 +1019,23 @@ static void __init l1tf_select_mitigation(void)
+> >  
+> >  	override_cache_bits(&boot_cpu_data);
+> >  
+> > +	if (l1tf_mitigation == L1TF_MITIGATION_DEFAULT) {
+> > +		switch (cpu_spec_mitigations) {
+> > +		case CPU_SPEC_MITIGATIONS_OFF:
+> > +			l1tf_mitigation = L1TF_MITIGATION_OFF;
+> > +			break;
+> > +		case CPU_SPEC_MITIGATIONS_AUTO:
+> > +			l1tf_mitigation = L1TF_MITIGATION_FLUSH;
+> > +			break;
+> > +		case CPU_SPEC_MITIGATIONS_AUTO_NOSMT:
+> > +			l1tf_mitigation = L1TF_MITIGATION_FLUSH_NOSMT;
+> > +			break;
+> > +		}
+> > +	}
+> > +
+> >  	switch (l1tf_mitigation) {
+> >  	case L1TF_MITIGATION_OFF:
+> > +	case L1TF_MITIGATION_DEFAULT:
+> >  	case L1TF_MITIGATION_FLUSH_NOWARN:
+> >  	case L1TF_MITIGATION_FLUSH:
+> >  		break;
+> > diff --git a/arch/x86/kvm/vmx/vmx.c b/arch/x86/kvm/vmx/vmx.c
+> > index ab432a930ae8..83b5bdc3c777 100644
+> > --- a/arch/x86/kvm/vmx/vmx.c
+> > +++ b/arch/x86/kvm/vmx/vmx.c
+> > @@ -233,6 +233,7 @@ static int vmx_setup_l1d_flush(enum vmx_l1d_flush_state l1tf)
+> >  		case L1TF_MITIGATION_FLUSH_NOWARN:
+> >  		case L1TF_MITIGATION_FLUSH:
+> >  		case L1TF_MITIGATION_FLUSH_NOSMT:
+> > +		case L1TF_MITIGATION_DEFAULT:
+> >  			l1tf = VMENTER_L1D_FLUSH_COND;
+> >  			break;
+> >  		case L1TF_MITIGATION_FULL:
+> > @@ -6686,6 +6687,7 @@ static int vmx_vm_init(struct kvm *kvm)
+> >  		case L1TF_MITIGATION_FLUSH:
+> >  		case L1TF_MITIGATION_FLUSH_NOSMT:
+> >  		case L1TF_MITIGATION_FULL:
+> > +		case L1TF_MITIGATION_DEFAULT:
+> >  			/*
+> >  			 * Warn upon starting the first VM in a potentially
+> >  			 * insecure environment.
 > 
-> > Most users fall into a few basic categories:
-> > 
-> > a) they want all mitigations off;
-> > 
-> > b) they want all reasonable mitigations on, with SMT enabled even if
-> >    it's vulnerable; or
-> 
-> Uff, "reasonable" - there's the bikeshed waiting to happen.
+> The L1TF bits need to be a separate patch.
 
-Luckily the defaults have already been chosen.  So "reasonable" just
-means to use the defaults.
-
-> > c) they want all reasonable mitigations on, with SMT disabled if
-> >    vulnerable.
-> > 
-> > Define a set of curated, arch-independent options, each of which is an
-> > aggregation of existing options:
-> > 
-> > - cpu_spec_mitigations=off: Disable all mitigations.
-> 
-> "cpu_spec_mitigations" is too long, TBH.
-> 
-> Imagine yourself in a loud, noisy data center - you basically can't wait
-> to leave - crouched over a keyboard in an impossible position, having
-> to type that thing and then making a typo. Whoops, too late, already
-> pressed Enter. Shiiiit!
-
-Sure, it's a bit long.  But it's also easier to remember and more
-self-documenting than any shortened option I could come up with.
-
-In your scenario, the fact that it's so easy to remember would save the
-day, since you wouldn't have to go look up some obscure shortened option
-name in the documentation :-)
-
-Suggestions are welcome but I couldn't come up with a reasonable shorter
-option.
-
-> Now you have to wait at least 15 mins for the damn single-threaded added
-> value BIOS crap to noodle through all the cores just so you can try
-> again, because you just rebooted the box.
-> 
-> And I know, my ideas for shorter cmdline options are crazy, like
-> 
-> cpu_spec_mtg=
-> 
-> which people would say, yuck, unreadable...
-
-I agree with those people.  In my world "mtg" is short for meeting.
-
-> Oh, I know! How about
-> 
-> cpu_vulns=
-> 
-> ?
-
-No, because
-
-a) We aren't enabling/disabling *vulnerabilities*, but rather
-   mitigations;
-
-b) We aren't enabling/disabling *all* CPU mitigations, only the
-   speculative ones.
-
-> We already have /sys/devices/system/cpu/vulnerabilities so it'll be the
-> same as that. Less things to remember.
-
-Except that it's not called "cpu_vulns"...
+I assume you mean just the part where L1TF_MITIGATION_DEFAULT is added?
 
 -- 
 Josh
