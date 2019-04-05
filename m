@@ -8,67 +8,67 @@ X-Spam-Status: No, score=-8.5 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
 	SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E90F4C4360F
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Apr 2019 12:13:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7A985C4360F
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Apr 2019 12:15:57 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6592E20449
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Apr 2019 12:13:35 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id EAC4721871
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Apr 2019 12:15:56 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="MWOBojNR"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6592E20449
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="p+ttkZ2i"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EAC4721871
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44bJcs0n7szDqLv
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Apr 2019 23:13:33 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44bJgZ5bWNzDqSD
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Apr 2019 23:15:54 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=2a00:1450:4864:20::442; helo=mail-wr1-x442.google.com;
+ (client-ip=2a00:1450:4864:20::342; helo=mail-wm1-x342.google.com;
  envelope-from=andradanciu1997@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="MWOBojNR"; 
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="p+ttkZ2i"; 
  dkim-atps=neutral
-Received: from mail-wr1-x442.google.com (mail-wr1-x442.google.com
- [IPv6:2a00:1450:4864:20::442])
+Received: from mail-wm1-x342.google.com (mail-wm1-x342.google.com
+ [IPv6:2a00:1450:4864:20::342])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44bJ6w6jcWzDqQb
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Apr 2019 22:51:04 +1100 (AEDT)
-Received: by mail-wr1-x442.google.com with SMTP id h4so7632821wre.7
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 05 Apr 2019 04:51:04 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44bJ6z2lRgzDqQB
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Apr 2019 22:51:07 +1100 (AEDT)
+Received: by mail-wm1-x342.google.com with SMTP id y197so6887240wmd.0
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 05 Apr 2019 04:51:07 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
  h=from:to:cc:subject:date:message-id:in-reply-to:references;
- bh=BeL1g4bbVVRk0NSIcnI5lqtabiN5icdMHgTYrfaRgdc=;
- b=MWOBojNRBOQnXZn9gwu5L+RaMvmE5KeVWfJW+4FgzUoO5SFHtiVo8GetomTjphJXe/
- e2j7Qo01PUgu4WdtI4yVpRfaEMfSJnWiWZpVLBwXP7uA6NoR5xvq2uV+9hxbnfmRRwdV
- dfvhzDlTzh9wn5cn3YY/+CUwHBSTN+HdoFRA1XXEbbKBZ8DAYjS8eQt9E+xo82HGEV2v
- H37yqLNIP8r3CvRkQtYxoUhsVYysXnLg1Rg7FAfSB6Ukp/dpkmXcUaVfRXNmcWNx6oI9
- gC82e5675B/Jof+VQKgCSJF9B8wtoWLiNMwCsL0N6mCHTpIJXDpI6Cq+tsHDHkj8ON5M
- Vxsw==
+ bh=fGwHro2dMoRJktZIztlEg/HLmc2ioAxEn6YwGJJIAe4=;
+ b=p+ttkZ2iTmUqeyAG8wRxS3F2vwmPs92k6+h4dDHEJgKv+5/nSMJTwlRqgLrcvQ7nip
+ kez0X+xlBiiY2bfj4USqavJQBm7a0QMiFmqyBKhwzpE9u3qeTAM8FedVsq1uLDj6Foe3
+ W03EBqSrIv4bWPs/OMrWdNTLbowNjIlLjpkLV0J+WsN4jUjrmKMmk7/21zVf+pP83B5V
+ hZVQlFvJj36zkFe8NBkfVcYwl60ZewFpjUL8Ue3ff/Oy7QLS/N+C5SRWpui5b1E+LZob
+ 9nVVuEW+x8dWnqhK4VT+aZcidtj2D1KLwDsPwbJ16iRlexh6kesEt7P+btLNQcpK+mcX
+ CYcQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
  :references;
- bh=BeL1g4bbVVRk0NSIcnI5lqtabiN5icdMHgTYrfaRgdc=;
- b=FY1JWKXMoi8UoIyRXEDph6RxX184NC/GTj1cg/h8SE/ugU00ATDa/Vd/UyOjbFhLSb
- ItZsgoHhRHdHMhtplENg/284bmDsGORlF6UXXeZYjiuk0BgIwI+zKbwvAOvVgQ7MFAZL
- eTM4vtb68MKhZlv5mtbXE2RljnDYHpm6FGMjFNCXiMJlTeNLf8FnvbLpJSA989SN9XSv
- GiV/ki2TpHn+FALCVPtLsdNB5gE4iqiiQrhWCB6OPe4ZUql+tVzy8HFoB2aaTCRU6hTA
- +Cn/bAU/fMaU5MokSoahqJHkbLA3VwMHHLceBPX50CRdq0J7wdIeEbIvpPA4Imdah+XD
- bHMQ==
-X-Gm-Message-State: APjAAAX2qk+zn9wjdMQSPoP1kftUxMi0QyOkF2lHpTaeERpic8x1g/6F
- Xru7imS+T7/jA5VUNk6PmpE=
-X-Google-Smtp-Source: APXvYqyELna0ZxQmwoCxXIuHdwnj0hHGcki9RhhBcD9pj35dmjw7DJaeek0IVPuiT92eBM8vhWD1uA==
-X-Received: by 2002:adf:e9c1:: with SMTP id l1mr8045901wrn.270.1554465062410; 
- Fri, 05 Apr 2019 04:51:02 -0700 (PDT)
+ bh=fGwHro2dMoRJktZIztlEg/HLmc2ioAxEn6YwGJJIAe4=;
+ b=lr2OzLfewNgG0PwTjIJG5dsH14e3mTp7kFb6n+IKsDJWPK4mRwyXvyGRRmV/bIachL
+ aZJ+6UTN4yys8RrM0RWwGE3QxrqmfMaJOyvrF1xXOmCxzgB5NuIbqrhUiF+ubsvLjHCw
+ FQcRBHClbVIv+WWufAdSRBq1EeG/GMV6b/nDNlS3tsloK8G3drAxpNR2EW6r0Tj4rzHP
+ zyKrU49/5RZgjl9JTlsmliUtuUUyb9j/8jLjYQ9n5+uC3a2wwswlbTH4sd1NtaGYNo7t
+ UOH7CXoWPuE3NLVLI/Xj0C+Ew0uNV4DDMTSCESlYrjy7E6jUa9JMsWugS5VQu7tjJafi
+ nRnQ==
+X-Gm-Message-State: APjAAAV7ocy3qirKThMoCKsp5lL1Oycso4S2Rq0oyol0GRNwMoqLP0Xl
+ GjxaWgMQ2zDrYrcEmGlN+Nk=
+X-Google-Smtp-Source: APXvYqwTxQoV8/3pyKFUCoyJyb4EkBUy1Ykw1fAOP2b69z1oMyiShjZDTglykHyUZBnKxSX0YkMpDA==
+X-Received: by 2002:a1c:4105:: with SMTP id o5mr7202571wma.35.1554465064815;
+ Fri, 05 Apr 2019 04:51:04 -0700 (PDT)
 Received: from localhost.localdomain ([178.138.34.252])
- by smtp.gmail.com with ESMTPSA id s203sm2881479wmf.14.2019.04.05.04.51.00
+ by smtp.gmail.com with ESMTPSA id s203sm2881479wmf.14.2019.04.05.04.51.02
  (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
- Fri, 05 Apr 2019 04:51:01 -0700 (PDT)
+ Fri, 05 Apr 2019 04:51:04 -0700 (PDT)
 From: Andra Danciu <andradanciu1997@gmail.com>
 To: timur@kernel.org, nicoleotsuka@gmail.com, Xiubo.Lee@gmail.com,
  festevam@gmail.com, lgirdwood@gmail.com, broonie@kernel.org,
@@ -76,9 +76,9 @@ To: timur@kernel.org, nicoleotsuka@gmail.com, Xiubo.Lee@gmail.com,
  s.hauer@pengutronix.de, kernel@pengutronix.de, linux-imx@nxp.com,
  alsa-devel@alsa-project.org, linuxppc-dev@lists.ozlabs.org,
  linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 09/20] ASoC: imx-spdif: Switch to SPDX identifier
-Date: Fri,  5 Apr 2019 14:49:59 +0300
-Message-Id: <20190405115010.28838-10-andradanciu1997@gmail.com>
+Subject: [PATCH 10/20] ASoC: imx-ssi: Switch to SPDX identifier
+Date: Fri,  5 Apr 2019 14:50:00 +0300
+Message-Id: <20190405115010.28838-11-andradanciu1997@gmail.com>
 X-Mailer: git-send-email 2.11.0
 In-Reply-To: <20190405115010.28838-1-andradanciu1997@gmail.com>
 References: <20190405115010.28838-1-andradanciu1997@gmail.com>
@@ -103,30 +103,89 @@ management.
 
 Signed-off-by: Andra Danciu <andradanciu1997@gmail.com>
 ---
- sound/soc/fsl/imx-spdif.c | 13 +++----------
- 1 file changed, 3 insertions(+), 10 deletions(-)
+ sound/soc/fsl/imx-ssi.c | 57 ++++++++++++++++++++++---------------------------
+ sound/soc/fsl/imx-ssi.h |  6 +-----
+ 2 files changed, 26 insertions(+), 37 deletions(-)
 
-diff --git a/sound/soc/fsl/imx-spdif.c b/sound/soc/fsl/imx-spdif.c
-index 797d66e43d49..4f7f210beb18 100644
---- a/sound/soc/fsl/imx-spdif.c
-+++ b/sound/soc/fsl/imx-spdif.c
-@@ -1,13 +1,6 @@
+diff --git a/sound/soc/fsl/imx-ssi.c b/sound/soc/fsl/imx-ssi.c
+index 06790615e04e..9038b61317be 100644
+--- a/sound/soc/fsl/imx-ssi.c
++++ b/sound/soc/fsl/imx-ssi.c
+@@ -1,35 +1,28 @@
 -/*
-- * Copyright (C) 2013 Freescale Semiconductor, Inc.
+- * imx-ssi.c  --  ALSA Soc Audio Layer
 - *
-- * The code contained herein is licensed under the GNU General Public
-- * License. You may obtain a copy of the GNU General Public License
-- * Version 2 or later at the following locations:
+- * Copyright 2009 Sascha Hauer <s.hauer@pengutronix.de>
 - *
-- * http://www.opensource.org/licenses/gpl-license.html
-- * http://www.gnu.org/copyleft/gpl.html
+- * This code is based on code copyrighted by Freescale,
+- * Liam Girdwood, Javier Martin and probably others.
+- *
+- *  This program is free software; you can redistribute  it and/or modify it
+- *  under  the terms of  the GNU General  Public License as published by the
+- *  Free Software Foundation;  either version 2 of the  License, or (at your
+- *  option) any later version.
+- *
+- *
+- * The i.MX SSI core has some nasty limitations in AC97 mode. While most
+- * sane processor vendors have a FIFO per AC97 slot, the i.MX has only
+- * one FIFO which combines all valid receive slots. We cannot even select
+- * which slots we want to receive. The WM9712 with which this driver
+- * was developed with always sends GPIO status data in slot 12 which
+- * we receive in our (PCM-) data stream. The only chance we have is to
+- * manually skip this data in the FIQ handler. With sampling rates different
+- * from 48000Hz not every frame has valid receive data, so the ratio
+- * between pcm data and GPIO status data changes. Our FIQ handler is not
+- * able to handle this, hence this driver only works with 48000Hz sampling
+- * rate.
+- * Reading and writing AC97 registers is another challenge. The core
+- * provides us status bits when the read register is updated with *another*
+- * value. When we read the same register two times (and the register still
+- * contains the same value) these status bits are not set. We work
+- * around this by not polling these bits but only wait a fixed delay.
+- *
 - */
 +// SPDX-License-Identifier: GPL-2.0+
 +//
-+// Copyright (C) 2013 Freescale Semiconductor, Inc.
++// imx-ssi.c  --  ALSA Soc Audio Layer
++//
++// Copyright 2009 Sascha Hauer <s.hauer@pengutronix.de>
++//
++// This code is based on code copyrighted by Freescale,
++// Liam Girdwood, Javier Martin and probably others.
++//
++// The i.MX SSI core has some nasty limitations in AC97 mode. While most
++// sane processor vendors have a FIFO per AC97 slot, the i.MX has only
++// one FIFO which combines all valid receive slots. We cannot even select
++// which slots we want to receive. The WM9712 with which this driver
++// was developed with always sends GPIO status data in slot 12 which
++// we receive in our (PCM-) data stream. The only chance we have is to
++// manually skip this data in the FIQ handler. With sampling rates different
++// from 48000Hz not every frame has valid receive data, so the ratio
++// between pcm data and GPIO status data changes. Our FIQ handler is not
++// able to handle this, hence this driver only works with 48000Hz sampling
++// rate.
++// Reading and writing AC97 registers is another challenge. The core
++// provides us status bits when the read register is updated with *another*
++// value. When we read the same register two times (and the register still
++// contains the same value) these status bits are not set. We work
++// around this by not polling these bits but only wait a fixed delay.
  
- #include <linux/module.h>
- #include <linux/of_platform.h>
+ #include <linux/clk.h>
+ #include <linux/delay.h>
+diff --git a/sound/soc/fsl/imx-ssi.h b/sound/soc/fsl/imx-ssi.h
+index be6562365b6a..19cd0937e740 100644
+--- a/sound/soc/fsl/imx-ssi.h
++++ b/sound/soc/fsl/imx-ssi.h
+@@ -1,8 +1,4 @@
+-/*
+- * This program is free software; you can redistribute it and/or modify
+- * it under the terms of the GNU General Public License version 2 as
+- * published by the Free Software Foundation.
+- */
++/* SPDX-License-Identifier: GPL-2.0 */
+ 
+ #ifndef _IMX_SSI_H
+ #define _IMX_SSI_H
 -- 
 2.11.0
 
