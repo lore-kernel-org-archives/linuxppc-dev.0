@@ -2,62 +2,115 @@ Return-Path: <SRS0=OBm5=SH=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_NEOMUTT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_PASS autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A5E4CC4360F
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Apr 2019 16:20:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 80CB2C282CE
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Apr 2019 21:13:23 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id ED1ED206C0
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Apr 2019 16:20:38 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org ED1ED206C0
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
+	by mail.kernel.org (Postfix) with ESMTPS id 068E82173C
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Apr 2019 21:13:22 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 068E82173C
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44bQ5w5RbbzDqJP
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  6 Apr 2019 03:20:36 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44bXbh6lsNzDqT3
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  6 Apr 2019 08:13:20 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44bXYx3XzMzDqRw
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  6 Apr 2019 08:11:49 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=redhat.com
- (client-ip=209.132.183.28; helo=mx1.redhat.com;
- envelope-from=jpoimboe@redhat.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=redhat.com
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ dmarc=none (p=none dis=none) header.from=linux.ibm.com
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 44bXYx1r91z8tDC
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  6 Apr 2019 08:11:49 +1100 (AEDT)
+Received: by ozlabs.org (Postfix)
+ id 44bXYx1NLhz9sSV; Sat,  6 Apr 2019 08:11:49 +1100 (AEDT)
+Authentication-Results: ozlabs.org;
+ spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
+ (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
+ envelope-from=cclaudio@linux.ibm.com; receiver=<UNKNOWN>)
+Authentication-Results: ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=linux.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44bQ461czhzDqSf
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  6 Apr 2019 03:19:02 +1100 (AEDT)
-Received: from smtp.corp.redhat.com (int-mx06.intmail.prod.int.phx2.redhat.com
- [10.5.11.16])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by mx1.redhat.com (Postfix) with ESMTPS id 7F3B6307E040;
- Fri,  5 Apr 2019 16:18:59 +0000 (UTC)
-Received: from treble (ovpn-123-87.rdu2.redhat.com [10.10.123.87])
- by smtp.corp.redhat.com (Postfix) with ESMTPS id B17EE5C1B4;
- Fri,  5 Apr 2019 16:18:54 +0000 (UTC)
-Date: Fri, 5 Apr 2019 11:18:52 -0500
-From: Josh Poimboeuf <jpoimboe@redhat.com>
-To: Borislav Petkov <bp@alien8.de>
-Subject: Re: [PATCH RFC 1/5] cpu/speculation: Add 'cpu_spec_mitigations='
- cmdline options
-Message-ID: <20190405161852.nmpk22omgiety4df@treble>
-References: <cover.1554396090.git.jpoimboe@redhat.com>
- <f0bd17358ab478eaca52f3b1da8305c150911b40.1554396090.git.jpoimboe@redhat.com>
- <20190405131211.GE23348@zn.tnic>
- <20190405142048.burthk2jnpcvi2om@treble>
- <20190405152059.GG23348@zn.tnic> <20190405160136.GI23348@zn.tnic>
+ by ozlabs.org (Postfix) with ESMTPS id 44bXYw1y3Zz9sRV
+ for <linuxppc-dev@ozlabs.org>; Sat,  6 Apr 2019 08:11:47 +1100 (AEDT)
+Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
+ x35L8n7V144025
+ for <linuxppc-dev@ozlabs.org>; Fri, 5 Apr 2019 17:11:45 -0400
+Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2rpedy8qj8-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@ozlabs.org>; Fri, 05 Apr 2019 17:11:44 -0400
+Received: from localhost
+ by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <cclaudio@linux.ibm.com>;
+ Fri, 5 Apr 2019 22:11:44 +0100
+Received: from b03cxnp08026.gho.boulder.ibm.com (9.17.130.18)
+ by e34.co.us.ibm.com (192.168.1.134) with IBM ESMTP SMTP Gateway: Authorized
+ Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Fri, 5 Apr 2019 22:11:40 +0100
+Received: from b03ledav004.gho.boulder.ibm.com
+ (b03ledav004.gho.boulder.ibm.com [9.17.130.235])
+ by b03cxnp08026.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x35LBd7q55312562
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Fri, 5 Apr 2019 21:11:39 GMT
+Received: from b03ledav004.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 3309A7805E;
+ Fri,  5 Apr 2019 21:11:39 +0000 (GMT)
+Received: from b03ledav004.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 270367805C;
+ Fri,  5 Apr 2019 21:11:36 +0000 (GMT)
+Received: from [9.85.129.145] (unknown [9.85.129.145])
+ by b03ledav004.gho.boulder.ibm.com (Postfix) with ESMTP;
+ Fri,  5 Apr 2019 21:11:35 +0000 (GMT)
+Subject: Re: [PATCH 0/4] Enabling secure boot on PowerNV systems
+To: Matthew Garrett <mjg59@google.com>
+References: <20190402181505.25037-1-cclaudio@linux.ibm.com>
+ <CACdnJuumhkqTb4+1=QBiLmbW4xd3wW=MZu6Tj_KdaoTMhCN+Tg@mail.gmail.com>
+ <4ce5e057-0702-b0d5-7bb2-cea5b22e2efa@linux.ibm.com>
+ <CACdnJusBm93zwDqTXTx_QYsg1-aGUAAHm_qq8Lcx3TvGTxdmbg@mail.gmail.com>
+ <2208f156-d441-3082-2f4c-8030c84ef788@linux.ibm.com>
+ <CACdnJuu8OqMrSs0esOmf=ro9n00aYEQ-nikAh6v6sk+YAQw4cQ@mail.gmail.com>
+From: Claudio Carvalho <cclaudio@linux.ibm.com>
+Date: Fri, 5 Apr 2019 18:11:34 -0300
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.6.0
 MIME-Version: 1.0
+In-Reply-To: <CACdnJuu8OqMrSs0esOmf=ro9n00aYEQ-nikAh6v6sk+YAQw4cQ@mail.gmail.com>
 Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20190405160136.GI23348@zn.tnic>
-User-Agent: NeoMutt/20180716
-X-Scanned-By: MIMEDefang 2.79 on 10.5.11.16
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.5.16
- (mx1.redhat.com [10.5.110.42]); Fri, 05 Apr 2019 16:18:59 +0000 (UTC)
+Content-Transfer-Encoding: 8bit
+Content-Language: en-US
+X-TM-AS-GCONF: 00
+x-cbid: 19040521-0016-0000-0000-0000099D0EF5
+X-IBM-SpamModules-Scores: 
+X-IBM-SpamModules-Versions: BY=3.00010875; HX=3.00000242; KW=3.00000007;
+ PH=3.00000004; SC=3.00000284; SDB=6.01184848; UDB=6.00620420; IPR=6.00965590; 
+ MB=3.00026311; MTD=3.00000008; XFM=3.00000015; UTC=2019-04-05 21:11:43
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 19040521-0017-0000-0000-000042B5C1F8
+Message-Id: <d79f47f8-9006-3a47-2bdc-58012cef5c7e@linux.ibm.com>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
+ definitions=2019-04-05_15:, , signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1810050000 definitions=main-1904050140
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -69,33 +122,98 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Peter Zijlstra <peterz@infradead.org>,
- Heiko Carstens <heiko.carstens@de.ibm.com>, Paul Mackerras <paulus@samba.org>,
- "H . Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@kernel.org>,
- Andrea Arcangeli <aarcange@redhat.com>, linux-s390@vger.kernel.org,
- x86@kernel.org, Will Deacon <will.deacon@arm.com>,
- Linus Torvalds <torvalds@linux-foundation.org>,
- Catalin Marinas <catalin.marinas@arm.com>, Waiman Long <longman@redhat.com>,
- linux-arch@vger.kernel.org, Jon Masters <jcm@redhat.com>,
- Jiri Kosina <jikos@kernel.org>, Andy Lutomirski <luto@kernel.org>,
- Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org,
- Tyler Hicks <tyhicks@canonical.com>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Cc: linux-efi <linux-efi@vger.kernel.org>,
+ Ard Biesheuvel <ard.biesheuvel@linaro.org>, Nayna Jain <nayna@linux.ibm.com>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ Matthew Garret <matthew.garret@nebula.com>, linuxppc-dev@ozlabs.org,
+ Paul Mackerras <paulus@samba.org>, Jeremy Kerr <jk@ozlabs.org>,
+ linux-integrity <linux-integrity@vger.kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, Apr 05, 2019 at 06:01:36PM +0200, Borislav Petkov wrote:
-> Thinking about this more, we can shave off the first 4 chars and have it
-> be:
-> 
-> spec_mitigations=
-> 
-> I think it is painfully clear which speculation mitigations we mean. And
-> the other switches don't have "cpu_" prefixes too so...
 
-Sure, I'm ok with renaming it to that, if there are no objections.
+On 4/3/19 7:27 PM, Matthew Garrett wrote:
+> On Tue, Apr 2, 2019 at 4:31 PM Claudio Carvalho <cclaudio@linux.ibm.com> wrote:
+>>
+>> On 4/2/19 6:51 PM, Matthew Garrett wrote:
+>>> So you implement the full PK/KEK/db/dbx/dbt infrastructure, and
+>>> updates are signed in the same way?
+>> For the first version, our firmware will implement a simplistic PK, KEK and
+>> db infrastructure (without dbx and dbt) where only the Setup and User modes
+>> will be supported.
+> Not supporting dbx seems like a pretty significant shortcoming. How
+> are signatures meant to be revoked?
 
--- 
-Josh
+
+We began by focusing on certificates for keys that can be added at
+runtime.  Before adding support for revocation, we plan to gather
+additional use cases.  In the meantime, unwanted certificates can be
+removed by the administrator.
+
+
+>
+>> PK, KEK and db updates will be signed the same way, that is, using
+>> userspace tooling like efitools in PowerNV. As for the authentication
+>> descriptors, only the EFI_VARIABLE_AUTHENTICATION_2 descriptor will be
+>> supported.
+> Is this API documented?
+
+
+The API is still a work in progress.  We are planning to publish a document
+describing the current API and overall design shortly.
+
+Perhaps the biggest departure is that the secure variables are stored in
+flash memory that is not lockable.  In order to protect the secure
+variables, hashes of the flash regions where they're stored are written to
+TPM NVRAM indices.  The TPM NVRAM indices we use are write locked at
+runtime.  The sysadmin enqueues update commands in flash.  During the next
+boot, the firmware verifies and processes the commands to update the
+certificate store and accompanying integrity hashes in the TPM NVRAM
+indices and write locks them.  Before certificates read from flash are
+used, the certificate store is hashed and compared against the hashes
+stored from the TPM.  The one exception is the PK. We store it in a TPM
+NVRAM index by itself rather than flash because updates to it must be
+guaranteed to be atomic.
+
+
+>>> In that case we might be better off with a generic interface for this
+>>> purpose that we can expose on all platforms that implement a secure
+>>> boot key hierarchy. Having an efivarfs that doesn't allow the creation
+>>> of arbitrary attributes may break other existing userland
+>>> expectations.
+>>>
+>> For what it's worth, gsmi uses the efivars infrastructure for EFI-like
+>> variables.
+> My recollection is that at the time the Chromebook firmware still had
+> EFI underpinnings and the gsmi code was largely just an alternate
+> mechanism for calling into something that was fundamentally the EFI
+> variable store. With hindsight I don't think layering this was the
+> right move - we've adjusted the semantics of efivarfs on more than one
+> occasion to deal with the behaviour of real-world EFI platforms, and I
+> don't think it's helpful to end up in a situation where we're trying
+> to keep behaviour consistent among entirely different firmware
+> interfaces.
+>
+>> What might a generic interface look like?  It would have to work for
+>> existing secure boot solutions - including EFI - which would seem to imply
+>> changes to userspace tools.
+> I think that depends on exactly what problem you're trying to solve.
+> Some aspects of the EFI secure boot design end up mirroring the
+> economics of the PC ecosystem rather than being inherently good design
+> goals, so it'd be helpful to know whether you're taking this solution
+> because you want the same three-level key infrastructure or because
+> that just leaves you compatible with the tooling.
+
+
+In our use case,  the three-level key hierarchy conveniently supports the
+concept of (1) an administrator authority, who authorizes (2) other
+organizations, e.g., distros, to provide (3) certificates for their code
+signing keys.   By using efivars, we leverage pre-existing userspace EFI
+tools to generate authenticated updates and certificates.  Additionally,
+pre-existing kernel infrastructure simplifies efivars processing.  
+
+
+Thanks,
+Claudio
+
