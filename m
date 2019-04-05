@@ -2,83 +2,68 @@ Return-Path: <SRS0=OBm5=SH=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.5 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_PASS,USER_AGENT_MUTT autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0C510C4360F
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Apr 2019 13:30:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AC80AC4360F
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Apr 2019 14:00:14 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 691502184B
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Apr 2019 13:30:14 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id E98C521871
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Apr 2019 14:00:13 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="YRHdnaFW"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 691502184B
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=alien8.de header.i=@alien8.de header.b="Ei8Tz4yR"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E98C521871
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=alien8.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44bLKJ2mfVzDqSS
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  6 Apr 2019 00:30:12 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44bLzr5xsxzDqB5
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  6 Apr 2019 01:00:08 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=2a00:1450:4864:20::143; helo=mail-lf1-x143.google.com;
- envelope-from=festevam@gmail.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=alien8.de
+ (client-ip=2a01:4f8:190:11c2::b:1457; helo=mail.skyhub.de;
+ envelope-from=bp@alien8.de; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="YRHdnaFW"; 
+ dmarc=pass (p=none dis=none) header.from=alien8.de
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=alien8.de header.i=@alien8.de header.b="Ei8Tz4yR"; 
  dkim-atps=neutral
-Received: from mail-lf1-x143.google.com (mail-lf1-x143.google.com
- [IPv6:2a00:1450:4864:20::143])
+Received: from mail.skyhub.de (mail.skyhub.de [IPv6:2a01:4f8:190:11c2::b:1457])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44bLFk4HcYzDqT7
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  6 Apr 2019 00:27:06 +1100 (AEDT)
-Received: by mail-lf1-x143.google.com with SMTP id 10so4380577lfr.8
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 05 Apr 2019 06:27:05 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=mime-version:references:in-reply-to:from:date:message-id:subject:to
- :cc; bh=/S9ER+mMybWHdrmSHFBHrML8i6W0dz5O78OM+5/knRw=;
- b=YRHdnaFWUodEuWeUARP+rCdwZq8XcbPwq6g3QPYEnW2NWNSY8HvzUBfBZ2EldlbzvE
- atkdXtwm828V1OXDc3dGTHImD4wISmIlN8Tuz5unD4PdcE5m5M+yrzfNT45Cat765zKo
- Poewd9j6gEC1MKEQ7GH2VLsz7AuvVpsPzwKXklWcgR8xnTa5qh17lX9BUvBOPBWtJLJ7
- 5+ub6EvUDXe50QS7/gF++BCk2FlTm8TSDZa2v/SfXgN9GikzqIwv+S1R5kN4q4oMm+5+
- p3/SA2sa6rWIpbFVDAvILsyWZRfGemNWREUK6SV6eZrJ6rWUv4hUGL3FXjpoUGNOeHET
- wYfQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:mime-version:references:in-reply-to:from:date
- :message-id:subject:to:cc;
- bh=/S9ER+mMybWHdrmSHFBHrML8i6W0dz5O78OM+5/knRw=;
- b=MUeDR6sX4qElyqGP/ceIQKdI09YRA5TW5VMQ3tSNnx/e26v/yiMi4yj3CQC1RIYcKt
- tPbndmPS8w3MSayo/dSpsjEjqoux9AxqSJWtGVzQDw3jOePU8jfr/2w9Ij+kfsWyrrUl
- tfapifdw3pN2D1fav6a6Abj633JKVSHmbJ0RFzA7Ir6Z+siax1vO3UTtyjMS0ChhXgRo
- p6nL6fRnquus0BmKebmE8MTrl3x9C9HDZHd7m7nvOcOYz6NCTLuuCNitnQADvzlpIxih
- hOSTV9G/T15+rUqp3Ln0R3Qj5ve8jQuIJ6cdTNIt+quV+fN/rAf2AbLx6VRJ+8hnOJ+/
- 5fFA==
-X-Gm-Message-State: APjAAAUP9L+Svm1cOMcdC4NdN1ieKgKDO/JPuIVJW+eXONvYwElVVw1i
- 5tN1E9v+1WENB3Z+QdMqtr5tVRSrob2EK18lHBA=
-X-Google-Smtp-Source: APXvYqyQxeNzbKtqpj7/NPLBVJQZrRZSeOLzYPb/XlFGrzcjjerB6SdvwGPfCDCLEBqsNuxHHbJhTuydaUEBqoJP00g=
-X-Received: by 2002:a05:6512:c1:: with SMTP id
- c1mr1918814lfp.132.1554470820773; 
- Fri, 05 Apr 2019 06:27:00 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44bLwd667dzDqKD
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  6 Apr 2019 00:57:21 +1100 (AEDT)
+Received: from zn.tnic (p200300EC2F148A00329C23FFFEA6A903.dip0.t-ipconnect.de
+ [IPv6:2003:ec:2f14:8a00:329c:23ff:fea6:a903])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by mail.skyhub.de (SuperMail on ZX Spectrum 128k) with ESMTPSA id 6E5271EC05A6;
+ Fri,  5 Apr 2019 15:57:18 +0200 (CEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=alien8.de; s=dkim;
+ t=1554472638;
+ h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+ to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+ content-transfer-encoding:in-reply-to:in-reply-to:  references:references;
+ bh=O4UcyGkVKqjCMDV4RKEHL/ZfLzZq+tk55TxsL4ffLco=;
+ b=Ei8Tz4yR7zuJn7CJE0n6hAz17WJzl2w7nRekqRrJkkwm9Sz/RvpX4BO771fbchCcS0Et2t
+ LPkAwY8rKoOxG2rez//jKqS+1a0Yshr6pQN01btrJJLe9aI8+l1VGgaMdUHr7qYzPwRFQn
+ kO/gruRXjd/9x1fQyut47HXgp08BeYs=
+Date: Fri, 5 Apr 2019 15:57:12 +0200
+From: Borislav Petkov <bp@alien8.de>
+To: Josh Poimboeuf <jpoimboe@redhat.com>
+Subject: Re: [PATCH RFC 2/5] x86/speculation: Add support for
+ 'cpu_spec_mitigations=' cmdline options
+Message-ID: <20190405135712.GF23348@zn.tnic>
+References: <cover.1554396090.git.jpoimboe@redhat.com>
+ <78c63cb08f36f55407f534d49cc2543079e44dbb.1554396090.git.jpoimboe@redhat.com>
 MIME-Version: 1.0
-References: <20190405115010.28838-1-andradanciu1997@gmail.com>
- <20190405115010.28838-3-andradanciu1997@gmail.com>
- <8e16e9f5-2c0f-a1e6-df0d-67b982db294a@codeaurora.org>
- <CAOMZO5CZtJq65iUDN2Ao9zt=0_L0iXy-5eRCrHAzQb+3s5rxBA@mail.gmail.com>
- <e3bc6c00-d88d-d30a-28a1-a8c4e520ec5a@codeaurora.org>
-In-Reply-To: <e3bc6c00-d88d-d30a-28a1-a8c4e520ec5a@codeaurora.org>
-From: Fabio Estevam <festevam@gmail.com>
-Date: Fri, 5 Apr 2019 10:26:49 -0300
-Message-ID: <CAOMZO5Aa_z5V03hYG+=A2zgMNKU5kEPHU=uYH1v_6VD-47s9kg@mail.gmail.com>
-Subject: Re: [PATCH 02/20] ASoC: efika-audio-fabric.c: Switch to SPDX
- identifier
-To: Mukesh Ojha <mojha@codeaurora.org>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <78c63cb08f36f55407f534d49cc2543079e44dbb.1554396090.git.jpoimboe@redhat.com>
+User-Agent: Mutt/1.10.1 (2018-07-13)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -90,24 +75,202 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Linux-ALSA <alsa-devel@alsa-project.org>,
- Andra Danciu <andradanciu1997@gmail.com>, Liam Girdwood <lgirdwood@gmail.com>,
- timur@kernel.org, Xiubo Li <Xiubo.Lee@gmail.com>,
- Daniel Baluta <daniel.baluta@nxp.com>, Sascha Hauer <s.hauer@pengutronix.de>,
- linux-kernel <linux-kernel@vger.kernel.org>, Takashi Iwai <tiwai@suse.com>,
- Nicolin Chen <nicoleotsuka@gmail.com>, Mark Brown <broonie@kernel.org>,
- NXP Linux Team <linux-imx@nxp.com>, Sascha Hauer <kernel@pengutronix.de>,
- Shawn Guo <shawnguo@kernel.org>, Jaroslav Kysela <perex@perex.cz>,
- linuxppc-dev@lists.ozlabs.org,
- "moderated list:ARM/FREESCALE IMX / MXC ARM ARCHITECTURE"
- <linux-arm-kernel@lists.infradead.org>
+Cc: Peter Zijlstra <peterz@infradead.org>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>, Paul Mackerras <paulus@samba.org>,
+ "H . Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@kernel.org>,
+ Andrea Arcangeli <aarcange@redhat.com>, linux-s390@vger.kernel.org,
+ x86@kernel.org, Will Deacon <will.deacon@arm.com>,
+ Linus Torvalds <torvalds@linux-foundation.org>,
+ Catalin Marinas <catalin.marinas@arm.com>, Waiman Long <longman@redhat.com>,
+ linux-arch@vger.kernel.org, Jon Masters <jcm@redhat.com>,
+ Jiri Kosina <jikos@kernel.org>, Andy Lutomirski <luto@kernel.org>,
+ Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org,
+ Tyler Hicks <tyhicks@canonical.com>,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, Apr 5, 2019 at 10:24 AM Mukesh Ojha <mojha@codeaurora.org> wrote:
+On Thu, Apr 04, 2019 at 11:44:12AM -0500, Josh Poimboeuf wrote:
+> Configure x86 runtime CPU speculation bug mitigations in accordance with
+> the 'cpu_spec_mitigations=' cmdline options.  This affects Meltdown,
+> Spectre v2, Speculative Store Bypass, and L1TF.
+> 
+> The default behavior is unchanged.
+> 
+> Signed-off-by: Josh Poimboeuf <jpoimboe@redhat.com>
+> ---
+>  .../admin-guide/kernel-parameters.txt         | 15 +++++++++
+>  arch/x86/include/asm/processor.h              |  1 +
+>  arch/x86/kernel/cpu/bugs.c                    | 32 ++++++++++++++++---
+>  arch/x86/kvm/vmx/vmx.c                        |  2 ++
+>  arch/x86/mm/pti.c                             |  4 ++-
+>  5 files changed, 49 insertions(+), 5 deletions(-)
+> 
+> diff --git a/Documentation/admin-guide/kernel-parameters.txt b/Documentation/admin-guide/kernel-parameters.txt
+> index ac42e510bd6e..29dc03971630 100644
+> --- a/Documentation/admin-guide/kernel-parameters.txt
+> +++ b/Documentation/admin-guide/kernel-parameters.txt
+> @@ -2552,6 +2552,11 @@
+>  
+>  			off
+>  				Disable all speculative CPU mitigations.
+> +				Equivalent to: nopti [x86]
+> +					       nospectre_v2 [x86]
+> +					       spectre_v2_user=off [x86]
+> +					       spec_store_bypass_disable=off [x86]
+> +					       l1tf=off [x86]
+>  
+>  			auto (default)
+>  				Mitigate all speculative CPU vulnerabilities,
+> @@ -2560,12 +2565,22 @@
+>  				surprised by SMT getting disabled across kernel
+>  				upgrades, or who have other ways of avoiding
+>  				SMT-based attacks.
+> +				Equivalent to: pti=auto [x86]
+> +					       spectre_v2=auto [x86]
+> +					       spectre_v2_user=auto [x86]
+> +					       spec_store_bypass_disable=auto [x86]
+> +					       l1tf=flush [x86]
+>  
+>  			auto,nosmt
+>  				Mitigate all speculative CPU vulnerabilities,
+>  				disabling SMT if needed.  This is for users who
+>  				always want to be fully mitigated, even if it
+>  				means losing SMT.
+> +				Equivalent to: pti=auto [x86]
+> +					       spectre_v2=auto [x86]
+> +					       spectre_v2_user=auto [x86]
+> +					       spec_store_bypass_disable=auto [x86]
+> +					       l1tf=flush,nosmt [x86]
+>  
+>  	mminit_loglevel=
+>  			[KNL] When CONFIG_DEBUG_MEMORY_INIT is set, this
 
-> you mean all lines to start with //, does not it look to noisy to eyes ?
+Yap, those sets look ok.
 
-Mark Brown's recommendation is to use // in all the initial block
-lines instead of only in the SPDX one.
+> diff --git a/arch/x86/include/asm/processor.h b/arch/x86/include/asm/processor.h
+> index 2bb3a648fc12..7e95b310f869 100644
+> --- a/arch/x86/include/asm/processor.h
+> +++ b/arch/x86/include/asm/processor.h
+> @@ -982,6 +982,7 @@ void microcode_check(void);
+>  
+>  enum l1tf_mitigations {
+>  	L1TF_MITIGATION_OFF,
+> +	L1TF_MITIGATION_DEFAULT,
+>  	L1TF_MITIGATION_FLUSH_NOWARN,
+>  	L1TF_MITIGATION_FLUSH,
+>  	L1TF_MITIGATION_FLUSH_NOSMT,
+> diff --git a/arch/x86/kernel/cpu/bugs.c b/arch/x86/kernel/cpu/bugs.c
+> index 2da82eff0eb4..65b95fb95ba5 100644
+> --- a/arch/x86/kernel/cpu/bugs.c
+> +++ b/arch/x86/kernel/cpu/bugs.c
+> @@ -308,8 +308,11 @@ spectre_v2_parse_user_cmdline(enum spectre_v2_mitigation_cmd v2_cmd)
+>  
+>  	ret = cmdline_find_option(boot_command_line, "spectre_v2_user",
+>  				  arg, sizeof(arg));
+> -	if (ret < 0)
+> +	if (ret < 0) {
+> +		if (cpu_spec_mitigations == CPU_SPEC_MITIGATIONS_OFF)
+> +			return SPECTRE_V2_USER_CMD_NONE;
+
+Instead of sprinkling that test in those three functions, just do it
+once above in check_bugs(), before those *_select_mitigation() functions
+get to run and depending on the value, you either run them or use the
+default settings, for the OFF case, for example.
+
+>  		return SPECTRE_V2_USER_CMD_AUTO;
+> +	}
+>  
+>  	for (i = 0; i < ARRAY_SIZE(v2_user_options); i++) {
+>  		if (match_option(arg, ret, v2_user_options[i].option)) {
+> @@ -444,8 +447,11 @@ static enum spectre_v2_mitigation_cmd __init spectre_v2_parse_cmdline(void)
+>  		return SPECTRE_V2_CMD_NONE;
+>  
+>  	ret = cmdline_find_option(boot_command_line, "spectre_v2", arg, sizeof(arg));
+> -	if (ret < 0)
+> +	if (ret < 0) {
+> +		if (cpu_spec_mitigations == CPU_SPEC_MITIGATIONS_OFF)
+> +			return SPECTRE_V2_CMD_NONE;
+>  		return SPECTRE_V2_CMD_AUTO;
+> +	}
+>  
+>  	for (i = 0; i < ARRAY_SIZE(mitigation_options); i++) {
+>  		if (!match_option(arg, ret, mitigation_options[i].option))
+> @@ -677,8 +683,11 @@ static enum ssb_mitigation_cmd __init ssb_parse_cmdline(void)
+>  	} else {
+>  		ret = cmdline_find_option(boot_command_line, "spec_store_bypass_disable",
+>  					  arg, sizeof(arg));
+> -		if (ret < 0)
+> +		if (ret < 0) {
+> +			if (cpu_spec_mitigations == CPU_SPEC_MITIGATIONS_OFF)
+> +				return SPEC_STORE_BYPASS_CMD_NONE;
+>  			return SPEC_STORE_BYPASS_CMD_AUTO;
+> +		}
+>  
+>  		for (i = 0; i < ARRAY_SIZE(ssb_mitigation_options); i++) {
+>  			if (!match_option(arg, ret, ssb_mitigation_options[i].option))
+> @@ -955,7 +964,7 @@ void x86_spec_ctrl_setup_ap(void)
+>  #define pr_fmt(fmt)	"L1TF: " fmt
+>  
+>  /* Default mitigation for L1TF-affected CPUs */
+> -enum l1tf_mitigations l1tf_mitigation __ro_after_init = L1TF_MITIGATION_FLUSH;
+> +enum l1tf_mitigations l1tf_mitigation __ro_after_init = L1TF_MITIGATION_DEFAULT;
+>  #if IS_ENABLED(CONFIG_KVM_INTEL)
+>  EXPORT_SYMBOL_GPL(l1tf_mitigation);
+>  #endif
+> @@ -1010,8 +1019,23 @@ static void __init l1tf_select_mitigation(void)
+>  
+>  	override_cache_bits(&boot_cpu_data);
+>  
+> +	if (l1tf_mitigation == L1TF_MITIGATION_DEFAULT) {
+> +		switch (cpu_spec_mitigations) {
+> +		case CPU_SPEC_MITIGATIONS_OFF:
+> +			l1tf_mitigation = L1TF_MITIGATION_OFF;
+> +			break;
+> +		case CPU_SPEC_MITIGATIONS_AUTO:
+> +			l1tf_mitigation = L1TF_MITIGATION_FLUSH;
+> +			break;
+> +		case CPU_SPEC_MITIGATIONS_AUTO_NOSMT:
+> +			l1tf_mitigation = L1TF_MITIGATION_FLUSH_NOSMT;
+> +			break;
+> +		}
+> +	}
+> +
+>  	switch (l1tf_mitigation) {
+>  	case L1TF_MITIGATION_OFF:
+> +	case L1TF_MITIGATION_DEFAULT:
+>  	case L1TF_MITIGATION_FLUSH_NOWARN:
+>  	case L1TF_MITIGATION_FLUSH:
+>  		break;
+> diff --git a/arch/x86/kvm/vmx/vmx.c b/arch/x86/kvm/vmx/vmx.c
+> index ab432a930ae8..83b5bdc3c777 100644
+> --- a/arch/x86/kvm/vmx/vmx.c
+> +++ b/arch/x86/kvm/vmx/vmx.c
+> @@ -233,6 +233,7 @@ static int vmx_setup_l1d_flush(enum vmx_l1d_flush_state l1tf)
+>  		case L1TF_MITIGATION_FLUSH_NOWARN:
+>  		case L1TF_MITIGATION_FLUSH:
+>  		case L1TF_MITIGATION_FLUSH_NOSMT:
+> +		case L1TF_MITIGATION_DEFAULT:
+>  			l1tf = VMENTER_L1D_FLUSH_COND;
+>  			break;
+>  		case L1TF_MITIGATION_FULL:
+> @@ -6686,6 +6687,7 @@ static int vmx_vm_init(struct kvm *kvm)
+>  		case L1TF_MITIGATION_FLUSH:
+>  		case L1TF_MITIGATION_FLUSH_NOSMT:
+>  		case L1TF_MITIGATION_FULL:
+> +		case L1TF_MITIGATION_DEFAULT:
+>  			/*
+>  			 * Warn upon starting the first VM in a potentially
+>  			 * insecure environment.
+
+The L1TF bits need to be a separate patch.
+
+Thx.
+
+-- 
+Regards/Gruss,
+    Boris.
+
+Good mailing practices for 400: avoid top-posting and trim the reply.
