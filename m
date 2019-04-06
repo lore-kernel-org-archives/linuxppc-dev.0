@@ -1,65 +1,73 @@
-Return-Path: <SRS0=OBm5=SH=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
+Return-Path: <SRS0=xYH3=SI=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.6 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_PASS,USER_AGENT_MUTT autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-5.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_MUTT autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E0604C282DC
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Apr 2019 23:06:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A9C63C282CE
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  6 Apr 2019 00:54:46 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 19A7F2186A
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Apr 2019 23:06:31 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id B6F012175B
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  6 Apr 2019 00:54:45 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="ZqhWLj8u"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 19A7F2186A
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="keNRm2Fy"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B6F012175B
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44bb6F4jC7zDqV4
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  6 Apr 2019 10:06:29 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44bdW72ScNzDqTw
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  6 Apr 2019 11:54:43 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=kernel.org
  (client-ip=198.145.29.99; helo=mail.kernel.org;
- envelope-from=helgaas@kernel.org; receiver=<UNKNOWN>)
+ envelope-from=frederic@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="ZqhWLj8u"; 
+ unprotected) header.d=kernel.org header.i=@kernel.org header.b="keNRm2Fy"; 
  dkim-atps=neutral
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44bb4K3LrpzDqQh
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  6 Apr 2019 10:04:48 +1100 (AEDT)
-Received: from localhost (unknown [69.71.4.100])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44bcRH0HCDzDqPy
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  6 Apr 2019 11:06:18 +1100 (AEDT)
+Received: from localhost (lfbn-1-18355-218.w90-101.abo.wanadoo.fr
+ [90.101.143.218])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id 0A7192175B;
- Fri,  5 Apr 2019 23:04:45 +0000 (UTC)
+ by mail.kernel.org (Postfix) with ESMTPSA id 46DDC2175B;
+ Sat,  6 Apr 2019 00:06:15 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1554505486;
- bh=B/VUhNvhr91k6lbYbAfhAz7J78aF270M2nTme/nZQfM=;
+ s=default; t=1554509175;
+ bh=2XBGba5wbr40ZhGObvVDKBaLQIRBMHmzLnyImY9X07g=;
  h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=ZqhWLj8uOAwlcKN+ANFOCpxxDXW6uV3ip2PtIdEPhd+9jbUAmRHBDUWFQ7+8EFsF/
- z1bMZUy4i3R5ZSXWIs+DW2ABn8QiWdTU7bsUYyuYvgOrq9fhVsn9oGc8R2Z7oz2OMV
- xpC6FMF518Jzk3qExZHI+tsWVvUZz3+STC/u1lT4=
-Date: Fri, 5 Apr 2019 18:04:43 -0500
-From: Bjorn Helgaas <helgaas@kernel.org>
-To: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
-Subject: Re: [PATCH 1/2] pci: rpadlpar: fix leaked device_node references in
- add/remove paths
-Message-ID: <20190405230443.GA200379@google.com>
-References: <20190322182722.8255-1-tyreld@linux.vnet.ibm.com>
+ b=keNRm2FyDSLMBgtmUGjedJt5U7gvYYE/EBjbNnlapst4b+GKj5lv302kc8GJpbGOI
+ BuZt0opcMwAlct1LSkBbaXpzocP2xPdMeWpy9eiIVw99/oU7x4zhWXpr3V3pC+gvMS
+ WDDZP2AkrpidbDMeQ+jQZfE8DJmmFczw0ZALLLnA=
+Date: Sat, 6 Apr 2019 02:06:12 +0200
+From: Frederic Weisbecker <frederic@kernel.org>
+To: Peter Zijlstra <peterz@infradead.org>, Nicholas Piggin <npiggin@gmail.com>
+Subject: Re: [Qemu-ppc] pseries on qemu-system-ppc64le crashes in
+ doorbell_core_ipi()
+Message-ID: <20190406000611.GA27782@lenoir>
+References: <20190327123615.rwhk6h3ayfurvapf@linutronix.de>
+ <7d97f3c6-4614-ead7-179a-e7e223ea3997@kaod.org>
+ <2bbc1490-400d-585e-d74b-924c570b4236@kaod.org>
+ <1553836851.2264.2.camel@gmail.com>
+ <1553850306.nyv11r9iej.astroid@bobo.none>
+ <20190329113109.3a9bd24e@gandalf.local.home>
+ <1553912871.ce5mzizoek.astroid@bobo.none>
+ <20190401083827.GE11158@hirez.programming.kicks-ass.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20190322182722.8255-1-tyreld@linux.vnet.ibm.com>
-User-Agent: Mutt/1.10.1 (2018-07-13)
+In-Reply-To: <20190401083827.GE11158@hirez.programming.kicks-ass.net>
+User-Agent: Mutt/1.9.4 (2018-02-28)
+X-Mailman-Approved-At: Sat, 06 Apr 2019 11:53:08 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -71,67 +79,77 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-pci@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+Cc: Sebastian Andrzej Siewior <bigeasy@linutronix.de>,
+ Steven Rostedt <rostedt@goodmis.org>, Paul Mackerras <paulus@samba.org>,
+ =?iso-8859-1?Q?C=E9dric?= Le Goater <clg@kaod.org>,
+ Suraj Jitindar Singh <sjitindarsingh@gmail.com>,
+ Frederic Weisbecker <fweisbec@gmail.com>, qemu-ppc@nongnu.org,
+ tglx@linutronix.de, linuxppc-dev@lists.ozlabs.org,
+ David? Gibson <david@gibson.dropbear.id.au>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, Mar 22, 2019 at 01:27:21PM -0500, Tyrel Datwyler wrote:
-> The find_dlpar_node() helper returns a device node with its reference
-> incremented. Both the add and remove paths use this helper for find the
-> appropriate node, but fail to release the reference when done.
+On Mon, Apr 01, 2019 at 10:38:27AM +0200, Peter Zijlstra wrote:
 > 
-> Annotate the find_dlpar_node() helper with a comment about the incremented
-> reference count, and call of_node_put() on the obtained device_node in the
-> add and remove paths. Also, fixup a reference leak in the find_vio_slot()
-> helper where we fail to call of_node_put() on the vdevice node after we
-> iterate over its children.
+> + fweisbec, who did the remote bits
 > 
-> Signed-off-by: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
+> On Sat, Mar 30, 2019 at 01:10:28PM +1000, Nicholas Piggin wrote:
+> > diff --git a/kernel/irq_work.c b/kernel/irq_work.c
+> > index 6b7cdf17ccf8..f0e539d0f879 100644
+> > --- a/kernel/irq_work.c
+> > +++ b/kernel/irq_work.c
+> > -/* Enqueue the irq work @work on the current CPU */
+> > -bool irq_work_queue(struct irq_work *work)
+> > +/*
+> > + * Enqueue the irq_work @work on @cpu unless it's already pending
+> > + * somewhere.
+> > + *
+> > + * Can be re-enqueued while the callback is still in progress.
+> > + */
+> > +bool irq_work_queue_on(struct irq_work *work, int cpu)
+> >  {
+> > +#ifndef CONFIG_SMP
+> > +	return irq_work_queue(work);
+> > +
 
-Both applied to pci/hotplug for v5.2, thanks!
+I'd suggest to use "if (!IS_ENABLED(CONFIG_SMP))" here to avoid the large
+ifdeffery.
 
-> ---
->  drivers/pci/hotplug/rpadlpar_core.c | 4 ++++
->  1 file changed, 4 insertions(+)
-> 
-> diff --git a/drivers/pci/hotplug/rpadlpar_core.c b/drivers/pci/hotplug/rpadlpar_core.c
-> index e2356a9c7088..182f9e3443ee 100644
-> --- a/drivers/pci/hotplug/rpadlpar_core.c
-> +++ b/drivers/pci/hotplug/rpadlpar_core.c
-> @@ -51,6 +51,7 @@ static struct device_node *find_vio_slot_node(char *drc_name)
->  		if (rc == 0)
->  			break;
->  	}
-> +	of_node_put(parent);
->  
->  	return dn;
->  }
-> @@ -71,6 +72,7 @@ static struct device_node *find_php_slot_pci_node(char *drc_name,
->  	return np;
->  }
->  
-> +/* Returns a device_node with its reference count incremented */
->  static struct device_node *find_dlpar_node(char *drc_name, int *node_type)
->  {
->  	struct device_node *dn;
-> @@ -306,6 +308,7 @@ int dlpar_add_slot(char *drc_name)
->  			rc = dlpar_add_phb(drc_name, dn);
->  			break;
->  	}
-> +	of_node_put(dn);
->  
->  	printk(KERN_INFO "%s: slot %s added\n", DLPAR_MODULE_NAME, drc_name);
->  exit:
-> @@ -439,6 +442,7 @@ int dlpar_remove_slot(char *drc_name)
->  			rc = dlpar_remove_pci_slot(drc_name, dn);
->  			break;
->  	}
-> +	of_node_put(dn);
->  	vm_unmap_aliases();
->  
->  	printk(KERN_INFO "%s: slot %s removed\n", DLPAR_MODULE_NAME, drc_name);
-> -- 
-> 2.12.3
-> 
+> > +#else /* #ifndef CONFIG_SMP */
+> > +	/* All work should have been flushed before going offline */
+> > +	WARN_ON_ONCE(cpu_is_offline(cpu));
+> > +
+> >  	/* Only queue if not already pending */
+> >  	if (!irq_work_claim(work))
+> >  		return false;
+> >  
+> > -	/* Queue the entry and raise the IPI if needed. */
+> >  	preempt_disable();
+> > -
+> > -	/* If the work is "lazy", handle it from next tick if any */
+> > -	if (work->flags & IRQ_WORK_LAZY) {
+> > -		if (llist_add(&work->llnode, this_cpu_ptr(&lazy_list)) &&
+> > -		    tick_nohz_tick_stopped())
+> > -			arch_irq_work_raise();
+> > -	} else {
+> > -		if (llist_add(&work->llnode, this_cpu_ptr(&raised_list)))
+> > -			arch_irq_work_raise();
+> > -	}
+> > -
+> > +	if (cpu != smp_processor_id()) {
+> > +		/* Arch remote IPI send/receive backend aren't NMI safe */
+> > +		WARN_ON_ONCE(in_nmi());
+> > +		if (llist_add(&work->llnode, &per_cpu(raised_list, cpu)))
+> > +			arch_send_call_function_single_ipi(cpu);
+> > +	} else
+> > +		__irq_work_queue(work);
+
+Also perhaps rename __irq_work_queue() to irq_work_queue_local() to make it
+instantly clearer to reviewers.
+
+Other than those cosmetic changes,
+
+  Reviewed-by: Frederic Weisbecker <frederic@kernel.org>
+
+Thanks.
