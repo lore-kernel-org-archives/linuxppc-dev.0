@@ -2,79 +2,82 @@ Return-Path: <SRS0=nZGU=SK=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_PASS
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.5 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
+	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_PASS,USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B4D83C10F13
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Apr 2019 14:27:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 85BE2C10F13
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Apr 2019 14:56:51 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 2F42020663
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Apr 2019 14:27:53 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id BAD332147A
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Apr 2019 14:56:50 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=axtens.net header.i=@axtens.net header.b="qY5Aj+jj"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2F42020663
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=axtens.net
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="rBKVd9DP"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BAD332147A
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44dCSR0L1CzDqMT
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Apr 2019 00:27:51 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44dD5r5gntzDqLW
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Apr 2019 00:56:48 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=axtens.net
- (client-ip=2607:f8b0:4864:20::443; helo=mail-pf1-x443.google.com;
- envelope-from=dja@axtens.net; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=gmail.com
+ (client-ip=2a00:1450:4864:20::344; helo=mail-wm1-x344.google.com;
+ envelope-from=jonas.gorski@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=axtens.net
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=axtens.net header.i=@axtens.net header.b="qY5Aj+jj"; 
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="rBKVd9DP"; 
  dkim-atps=neutral
-Received: from mail-pf1-x443.google.com (mail-pf1-x443.google.com
- [IPv6:2607:f8b0:4864:20::443])
+Received: from mail-wm1-x344.google.com (mail-wm1-x344.google.com
+ [IPv6:2a00:1450:4864:20::344])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44dCQ55YlQzDqDf
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Apr 2019 00:25:49 +1000 (AEST)
-Received: by mail-pf1-x443.google.com with SMTP id i17so4595681pfo.6
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 08 Apr 2019 07:25:49 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=axtens.net; s=google;
- h=from:to:cc:subject:in-reply-to:references:date:message-id
- :mime-version; bh=P4vKQmbK14vtbIuUEndCl5MfnUaB3hSyiz0CQzCAQZw=;
- b=qY5Aj+jjp/s1OSKgwZzU3l7+6LRruW6kkAAmrM7wKfUAdxwjQQxdeNZ/RTPhazCg3J
- H+cnE0oznA7ZjQ86s8U5XSbCO9iuZBNwagfDSqpGOeGZQ2AnyTGLShNvbaQaPBb+iw/K
- Hdkouht+z8nSthWNBPdK2PD3K/MmxfyYTaxsY=
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44d5zf1J4YzDqD9
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Apr 2019 20:21:01 +1000 (AEST)
+Received: by mail-wm1-x344.google.com with SMTP id c1so13660734wml.4
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 08 Apr 2019 03:21:01 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=from:to:cc:subject:date:message-id:in-reply-to:references;
+ bh=AefBW/AvMar/umpkSgBRCO6SDsmqV5F3Ia9cimceqxI=;
+ b=rBKVd9DPN9C+GpT4mA+99KIovJ/1lf/0okwLnzSckfuq9z+AlsO3MVB80fkDjmZfyp
+ 18yWGCqSSFJZpykilQm/w+KHTVOYmtOefiKgFUgS8pUf7Fze69TT3Up0HqrTOX5cq9f7
+ j63WmBuk6Zw8bIlkIc4Nz4JNiSRS30SNfeHKdW37JH41FbowYzPfVmkUvqjCk4BUdzzC
+ pi3Cmhqwg4gt5Q4eh6qTsDLjb5fQqtwuCz88sEjREWSJ6dzC+ROhvPo0UGOar5EcwKZT
+ bxlHYp/n76TDy6XpwOwyJMOXKwSz9NgyHzj49odmJt2LD35JjJuMQZoVuZ61Rue4rc4l
+ w+Jg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
- h=x-gm-message-state:from:to:cc:subject:in-reply-to:references:date
- :message-id:mime-version;
- bh=P4vKQmbK14vtbIuUEndCl5MfnUaB3hSyiz0CQzCAQZw=;
- b=t1JbWMNhmdQ/xKsry//UBofhFlS7F8GObqc38gjh5u/cHYZkerLg0GYnrfPRGcpwTZ
- BGlSPSNdMzR5uFDTSfALzYXUuMpu5cuBRVCO1yb4tJUAkG4WTXSTBE2u5rV8OGuOti7x
- vIQYzpJfREaH6ZrakZvfEIc3tZhrklhD5TPtUIAyL1p+Bq/AV+SVnK3KzZe/0KVrUzqI
- bnk0FpJbMQT2tgBzNh3Xlx3KmjEY9TG7wI3+5OisjZwUseQW2yeh4pwDlRh7ifFRN1uG
- tfBIn/o+zKKbTZYsU1PbcQt2obMWj1I2divmXf4A8JjwC1on4ob7pGzDiyv0mf4X/fUo
- gb0g==
-X-Gm-Message-State: APjAAAXIUKlOFtbvwRlvZJBH19qQWomJLYZtwihshp4dh2aFcTl+CVoa
- xNLn/vjr4Vvh3GRo0sA2YHPrrA==
-X-Google-Smtp-Source: APXvYqzsA1AXiPykN+pw3sx+WRcap8ev3d4GcOkTSI8xZZNomj0hdsu8k/FPqteD9t9mt5/PsBrx4A==
-X-Received: by 2002:a63:f212:: with SMTP id v18mr27873814pgh.231.1554733547282; 
- Mon, 08 Apr 2019 07:25:47 -0700 (PDT)
-Received: from localhost (124-171-136-51.dyn.iinet.net.au. [124.171.136.51])
- by smtp.gmail.com with ESMTPSA id z13sm43143504pgc.25.2019.04.08.07.25.45
- (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
- Mon, 08 Apr 2019 07:25:46 -0700 (PDT)
-From: Daniel Axtens <dja@axtens.net>
-To: Abhishek Goel <huntbag@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-pm@vger.kernel.org
-Subject: Re: [PATCH v2 1/2] cpuidle : auto-promotion for cpuidle states
-In-Reply-To: <20190405091647.4169-2-huntbag@linux.vnet.ibm.com>
-References: <20190405091647.4169-1-huntbag@linux.vnet.ibm.com>
- <20190405091647.4169-2-huntbag@linux.vnet.ibm.com>
-Date: Tue, 09 Apr 2019 00:25:42 +1000
-Message-ID: <87lg0kwp3t.fsf@dja-thinkpad.axtens.net>
-MIME-Version: 1.0
-Content-Type: text/plain
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+ :references;
+ bh=AefBW/AvMar/umpkSgBRCO6SDsmqV5F3Ia9cimceqxI=;
+ b=pvmogJmnRxrTzFwsQy1/Cn+AFPVMIbXaDpqIfe9kK6n8IOwitimmVDQH4tgmmvmxiB
+ oE/59FEO79Bd5SOOcRaFaGSfUi0GEDGH46u67Zd6PkTS2+k5T8/wR+ZqlK1UQ3KtDiWt
+ 7e3wYuIGM26Q8VyRuUg1TI+ez6B6UJmgIsbfG6uh3yYfGpD7/3wzAyMUI6jT47eHPsW/
+ cpB6x7F11WfluGExS6XbDBgeaTw59sp8j5DnXjs3olOWbtX389KtolOpa5+EYtAHXClG
+ 3D3yAt5gkpt+zE+jaLzMoyu7p6yREiKA5hwiRAS5QxQPEfxVv4ife87KUfwB58noLjRw
+ jOyA==
+X-Gm-Message-State: APjAAAUMIvYMRy7X7VicSxlw/w1UgslCk4ASKKk4xG4Z/SSQRtEz4c1H
+ RF7eUCScj8dN7w+GMns0FR4=
+X-Google-Smtp-Source: APXvYqyV30JZzAhFnNQyJv71EJs1kxMjta4LpfNnB+rvTsETu8FlIbM5jEnyxcRN8oeWMEaWfdqT2A==
+X-Received: by 2002:a1c:be0e:: with SMTP id o14mr15950501wmf.11.1554718858833; 
+ Mon, 08 Apr 2019 03:20:58 -0700 (PDT)
+Received: from localhost.localdomain ([2001:470:9e39::64])
+ by smtp.gmail.com with ESMTPSA id d6sm39336069wrx.62.2019.04.08.03.20.57
+ (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
+ Mon, 08 Apr 2019 03:20:58 -0700 (PDT)
+From: Jonas Gorski <jonas.gorski@gmail.com>
+To: linux-clk@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH RFC/RFT 5/6] powerpc/512x: mark clocks as big endian
+Date: Mon,  8 Apr 2019 12:20:38 +0200
+Message-Id: <20190408102039.6366-6-jonas.gorski@gmail.com>
+X-Mailer: git-send-email 2.13.2
+In-Reply-To: <20190408102039.6366-1-jonas.gorski@gmail.com>
+References: <20190408102039.6366-1-jonas.gorski@gmail.com>
+X-Mailman-Approved-At: Tue, 09 Apr 2019 00:55:08 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -86,80 +89,69 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Abhishek Goel <huntbag@linux.vnet.ibm.com>, daniel.lezcano@linaro.org,
- rjw@rjwysocki.net, ego@linux.vnet.ibm.com
+Cc: Stephen Boyd <sboyd@kernel.org>,
+ Michael Turquette <mturquette@baylibre.com>, Paul Mackerras <paulus@samba.org>,
+ Anatolij Gustschin <agust@denx.de>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi,
+These clocks' registers are accessed as big endian, so mark them as
+such.
 
-Sorry, just realised another thing I wanted to ask:
+Signed-off-by: Jonas Gorski <jonas.gorski@gmail.com>
+---
+ arch/powerpc/platforms/512x/clock-commonclk.c | 13 ++++++++-----
+ 1 file changed, 8 insertions(+), 5 deletions(-)
 
-> @@ -442,6 +442,26 @@ static int menu_select(struct cpuidle_driver *drv, struct cpuidle_device *dev,
->  		}
->  	}
->
->
-> +#ifdef CPUIDLE_FLAG_AUTO_PROMOTION
+diff --git a/arch/powerpc/platforms/512x/clock-commonclk.c b/arch/powerpc/platforms/512x/clock-commonclk.c
+index b3097fe6441b..af86a65128f1 100644
+--- a/arch/powerpc/platforms/512x/clock-commonclk.c
++++ b/arch/powerpc/platforms/512x/clock-commonclk.c
+@@ -239,8 +239,9 @@ static inline struct clk *mpc512x_clk_divider(
+ 	const char *name, const char *parent_name, u8 clkflags,
+ 	u32 __iomem *reg, u8 pos, u8 len, int divflags)
+ {
+-	return clk_register_divider(NULL, name, parent_name, clkflags,
+-				    reg, pos, len, divflags, &clklock);
++	return clk_register_divider(NULL, name, parent_name,
++				    clkflags | CLK_IS_BIG_ENDIAN, reg, pos, len,
++				    divflags, &clklock);
+ }
+ 
+ static inline struct clk *mpc512x_clk_divtable(
+@@ -248,10 +249,12 @@ static inline struct clk *mpc512x_clk_divtable(
+ 	u32 __iomem *reg, u8 pos, u8 len,
+ 	const struct clk_div_table *divtab)
+ {
++	int clkflags;
+ 	u8 divflags;
+ 
++	clkflags = CLK_IS_BIG_ENDIAN;
+ 	divflags = 0;
+-	return clk_register_divider_table(NULL, name, parent_name, 0,
++	return clk_register_divider_table(NULL, name, parent_name, clkflags,
+ 					  reg, pos, len, divflags,
+ 					  divtab, &clklock);
+ }
+@@ -262,7 +265,7 @@ static inline struct clk *mpc512x_clk_gated(
+ {
+ 	int clkflags;
+ 
+-	clkflags = CLK_SET_RATE_PARENT;
++	clkflags = CLK_SET_RATE_PARENT | CLK_IS_BIG_ENDIAN;
+ 	return clk_register_gate(NULL, name, parent_name, clkflags,
+ 				 reg, pos, 0, &clklock);
+ }
+@@ -274,7 +277,7 @@ static inline struct clk *mpc512x_clk_muxed(const char *name,
+ 	int clkflags;
+ 	u8 muxflags;
+ 
+-	clkflags = CLK_SET_RATE_PARENT;
++	clkflags = CLK_SET_RATE_PARENT | CLK_IS_BIG_ENDIAN;
+ 	muxflags = 0;
+ 	return clk_register_mux(NULL, name,
+ 				parent_names, parent_count, clkflags,
+-- 
+2.13.2
 
-Why is this based on CPUIDLE_FLAG_ rather than CONFIG_CPU_IDLE_? Won't
-this always be true, given that the flag is defined regardless of the
-config option in the header?
-
-> +	if (drv->states[idx].flags & CPUIDLE_FLAG_AUTO_PROMOTION) {
-> +		/*
-> +		 * Timeout is intended to be defined as sum of target residency
-> +		 * of next available state, entry latency and exit latency. If
-> +		 * time interval equal to timeout is spent in current state,
-> +		 * and if it is a shallow lite state, we may want to auto-
-> +		 * promote from such state.
-> +		 */
-
-Regards,
-Daniel
-
-> +		for (i = idx + 1; i < drv->state_count; i++) {
-> +			if (drv->states[i].disabled ||
-> +					dev->states_usage[i].disable)
-> +				continue;
-> +			*timeout = drv->states[i].target_residency +
-> +					2 * drv->states[i].exit_latency;
-> +			break;
-> +		}
-> +	}
-> +#endif
-> +
->  	return idx;
->  }
->  
-> diff --git a/include/linux/cpuidle.h b/include/linux/cpuidle.h
-> index 3b3947232..84d76d1ec 100644
-> --- a/include/linux/cpuidle.h
-> +++ b/include/linux/cpuidle.h
-> @@ -72,6 +72,13 @@ struct cpuidle_state {
->  #define CPUIDLE_FLAG_POLLING	BIT(0) /* polling state */
->  #define CPUIDLE_FLAG_COUPLED	BIT(1) /* state applies to multiple cpus */
->  #define CPUIDLE_FLAG_TIMER_STOP BIT(2) /* timer is stopped on this state */
-> +/*
-> + * State with only and only fast state bit set don't even lose user context.
-> + * But such states prevent other sibling threads from thread folding benefits.
-> + * And hence we don't want to stay for too long in such states and want to
-> + * auto-promote from it.
-> + */
-> +#define CPUIDLE_FLAG_AUTO_PROMOTION	BIT(3)
->  
->  struct cpuidle_device_kobj;
->  struct cpuidle_state_kobj;
-> @@ -243,7 +250,8 @@ struct cpuidle_governor {
->  
->  	int  (*select)		(struct cpuidle_driver *drv,
->  					struct cpuidle_device *dev,
-> -					bool *stop_tick);
-> +					bool *stop_tick, unsigned long
-> +					*timeout);
->  	void (*reflect)		(struct cpuidle_device *dev, int index);
->  };
->  
-> -- 
-> 2.17.1
