@@ -2,85 +2,111 @@ Return-Path: <SRS0=nZGU=SK=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.5 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_PASS,
-	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D853FC282CE
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Apr 2019 06:38:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 946ECC282CE
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Apr 2019 06:40:33 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 57FB020833
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Apr 2019 06:38:43 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="uabwwveT"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 57FB020833
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	by mail.kernel.org (Postfix) with ESMTPS id B14392084F
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Apr 2019 06:40:32 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B14392084F
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=au1.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44d1351Sy3zDqJM
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Apr 2019 16:38:41 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44d15B5z9TzDqCY
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Apr 2019 16:40:30 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44d11b5rVjzDqHj
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Apr 2019 16:37:23 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=2607:f8b0:4864:20::542; helo=mail-pg1-x542.google.com;
- envelope-from=npiggin@gmail.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="uabwwveT"; 
- dkim-atps=neutral
-Received: from mail-pg1-x542.google.com (mail-pg1-x542.google.com
- [IPv6:2607:f8b0:4864:20::542])
+ dmarc=none (p=none dis=none) header.from=au1.ibm.com
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 44d11b4F5mz8tDC
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Apr 2019 16:37:23 +1000 (AEST)
+Received: by ozlabs.org (Postfix)
+ id 44d11b3j38z9sQr; Mon,  8 Apr 2019 16:37:23 +1000 (AEST)
+Authentication-Results: ozlabs.org;
+ spf=pass (mailfrom) smtp.mailfrom=au1.ibm.com
+ (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
+ envelope-from=andrew.donnellan@au1.ibm.com; receiver=<UNKNOWN>)
+Authentication-Results: ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=au1.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44d0yd2GLwzDqJ3
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Apr 2019 16:34:49 +1000 (AEST)
-Received: by mail-pg1-x542.google.com with SMTP id p6so6696003pgh.9
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 07 Apr 2019 23:34:49 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=from:to:cc:subject:date:message-id:in-reply-to:references
- :mime-version:content-transfer-encoding;
- bh=ub7aU9s/lgkLdqNRn0vaK6lpw7GokDE9zdCSQ+f/jnc=;
- b=uabwwveTA3YQhusy+KQezXAqJEIjRILBrbMHxgF0aujOM8aCgLlOGnTZkHccnVI4Ki
- DIN1A82g2iSHEMvbWd99IWUm0ElLbdv6CJU2iJ/OWDU7gFlTXiYmIKOIyBHngImTKiq/
- 8ulUfC6K3xZbwq6tsU3Er2UQ0RbeYKkZqQ/hM9yjhtkBcf8UirTfmu9VuZRhf0Pp3j09
- YvAWVEQUw00OpGVl96RcbhOW+g/O4rayFaNIwXc0qHxf7w4HK4axRPAuyFKrUIEOZCW9
- nTuAYPMas3NaBpZ0lenGbh/pq9X2RdoFHUFTEUqojz5zCbKKGMsKyLVx9/tVtqd2Oyp3
- WNFA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
- :references:mime-version:content-transfer-encoding;
- bh=ub7aU9s/lgkLdqNRn0vaK6lpw7GokDE9zdCSQ+f/jnc=;
- b=Xn5tYNnC3AIqunVPQ2VNDcDoafY38nLaVql1/27hDgxKYu6AkSrSeXb32Q8drp7YLc
- wzYyXTHkwvL7MNP+yWnCsdOFXb5XnZM432ZwEbt0UDcbtHcTjVRHXh3rzQFT9V9owRu1
- v5KSg+ZUpHwy0G8cQWMFFsEhntOllDUaBpP8GtDW1ThESDq4iTUHUKFdKudfJLcL6sEU
- enmghHoTEWcUbtSFbs1PEpHh3bpO//clHRZec0QhatZGmF+DzcQXqmLhdjJPusYYlocJ
- L8WVlC4C+LXLlUveaDTUQ3ts9k6n5/LS0RSJWS/w4l0vZw336jLNqh36Mk3exYGgIrdK
- EIFw==
-X-Gm-Message-State: APjAAAXiwfjsWJB1tCcuomaXsysQhJzBGfidd6tAhD14QesT63MKoTGm
- mPo1KtwM8ykV07sTev1udVnVVVw0
-X-Google-Smtp-Source: APXvYqxru4cK9mldWwnE3lUD1JRX1l04XhybEXcSTx1Icm0RVxpnXEB0dcn6QNZIRHZcPPMDt8Js6w==
-X-Received: by 2002:a05:6a00:c1:: with SMTP id
- e1mr21818237pfj.143.1554705286585; 
- Sun, 07 Apr 2019 23:34:46 -0700 (PDT)
-Received: from bobo.local0.net ([58.84.107.218])
- by smtp.gmail.com with ESMTPSA id f71sm30654502pfc.109.2019.04.07.23.34.43
- (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
- Sun, 07 Apr 2019 23:34:46 -0700 (PDT)
-From: Nicholas Piggin <npiggin@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v8 2/2] powerpc/64s: KVM update for reimplement book3s idle
- code in C
-Date: Mon,  8 Apr 2019 16:34:31 +1000
-Message-Id: <20190408063431.23948-2-npiggin@gmail.com>
-X-Mailer: git-send-email 2.20.1
-In-Reply-To: <20190408063431.23948-1-npiggin@gmail.com>
-References: <20190408063431.23948-1-npiggin@gmail.com>
+ by ozlabs.org (Postfix) with ESMTPS id 44d11Z5ydHz9sQq
+ for <linuxppc-dev@ozlabs.org>; Mon,  8 Apr 2019 16:37:22 +1000 (AEST)
+Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
+ x386YCFe143956
+ for <linuxppc-dev@ozlabs.org>; Mon, 8 Apr 2019 02:37:20 -0400
+Received: from e06smtp04.uk.ibm.com (e06smtp04.uk.ibm.com [195.75.94.100])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2rqv5v3xkq-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@ozlabs.org>; Mon, 08 Apr 2019 02:37:19 -0400
+Received: from localhost
+ by e06smtp04.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
+ Mon, 8 Apr 2019 07:37:17 +0100
+Received: from b06cxnps4075.portsmouth.uk.ibm.com (9.149.109.197)
+ by e06smtp04.uk.ibm.com (192.168.101.134) with IBM ESMTP SMTP Gateway:
+ Authorized Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Mon, 8 Apr 2019 07:37:14 +0100
+Received: from d06av25.portsmouth.uk.ibm.com (d06av25.portsmouth.uk.ibm.com
+ [9.149.105.61])
+ by b06cxnps4075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x386bDeF19923158
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Mon, 8 Apr 2019 06:37:14 GMT
+Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id CB53211C04A;
+ Mon,  8 Apr 2019 06:37:13 +0000 (GMT)
+Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 40EAB11C054;
+ Mon,  8 Apr 2019 06:37:13 +0000 (GMT)
+Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
+ by d06av25.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Mon,  8 Apr 2019 06:37:13 +0000 (GMT)
+Received: from [9.102.53.223] (unknown [9.102.53.223])
+ (using TLSv1.2 with cipher AES128-SHA (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.au.ibm.com (Postfix) with ESMTPSA id 96F52A0190;
+ Mon,  8 Apr 2019 16:37:11 +1000 (AEST)
+Subject: Re: [PATCH v2] powerpc/xmon: add read-only mode
+To: "Christopher M. Riedl" <cmr@informatik.wtf>, linuxppc-dev@ozlabs.org
+References: <20190408030804.5805-1-cmr@informatik.wtf>
+From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+Date: Mon, 8 Apr 2019 16:37:02 +1000
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.6.1
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+In-Reply-To: <20190408030804.5805-1-cmr@informatik.wtf>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: en-AU
+Content-Transfer-Encoding: 7bit
+X-TM-AS-GCONF: 00
+x-cbid: 19040806-0016-0000-0000-0000026C5E60
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 19040806-0017-0000-0000-000032C87F7A
+Message-Id: <f7a3d198-235d-b38c-e7a8-0ed103d7366d@au1.ibm.com>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
+ definitions=2019-04-08_04:, , signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1810050000 definitions=main-1904080061
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -92,389 +118,259 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "Gautham R . Shenoy" <ego@linux.vnet.ibm.com>, kvm-ppc@vger.kernel.org,
- Nicholas Piggin <npiggin@gmail.com>
+Cc: Oliver O'Halloran <oohall@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This is the KVM update to the new idle code. A few improvements:
+On 8/4/19 1:08 pm, Christopher M. Riedl wrote:
+> Operations which write to memory and special purpose registers should be
+> restricted on systems with integrity guarantees (such as Secure Boot)
+> and, optionally, to avoid self-destructive behaviors.
+> 
+> Add a config option, XMON_RW, to control default xmon behavior along
+> with kernel cmdline options xmon=ro and xmon=rw for explicit control.
+> Use XMON_RW instead of XMON in the condition to set PAGE_KERNEL_TEXT to
+> allow xmon in read-only mode alongside write-protected kernel text.
+> XMON_RW defaults to !STRICT_KERNEL_RWX.
+> 
+> The following xmon operations are affected:
+> memops:
+> 	disable memmove
+> 	disable memset
+> 	disable memzcan
+> memex:
+> 	no-op'd mwrite
+> super_regs:
+> 	no-op'd write_spr
+> bpt_cmds:
+> 	disable
+> proc_call:
+> 	disable
+> 
+> Signed-off-by: Christopher M. Riedl <cmr@informatik.wtf>
+> ---
+> v1->v2:
+> 	Use bool type for xmon_is_ro flag
+> 	Replace XMON_RO with XMON_RW config option
+> 	Make XMON_RW dependent on STRICT_KERNEL_RWX
+> 	Use XMON_RW to control PAGE_KERNEL_TEXT
+> 	Add printf in xmon read-only mode when dropping/skipping writes
+> 	Disable memzcan (zero-fill memop) in xmon read-only mode
+> 
+>   arch/powerpc/Kconfig.debug                   | 10 +++++
+>   arch/powerpc/include/asm/book3s/32/pgtable.h |  5 ++-
+>   arch/powerpc/include/asm/book3s/64/pgtable.h |  5 ++-
+>   arch/powerpc/include/asm/nohash/pgtable.h    |  5 ++-
+>   arch/powerpc/xmon/xmon.c                     | 42 ++++++++++++++++++++
+>   5 files changed, 61 insertions(+), 6 deletions(-)
+> 
+> diff --git a/arch/powerpc/Kconfig.debug b/arch/powerpc/Kconfig.debug
+> index 4e00cb0a5464..0c7f21476018 100644
+> --- a/arch/powerpc/Kconfig.debug
+> +++ b/arch/powerpc/Kconfig.debug
+> @@ -117,6 +117,16 @@ config XMON_DISASSEMBLY
+>   	  to say Y here, unless you're building for a memory-constrained
+>   	  system.
+>   
+> +config XMON_RW
+> +	bool "Allow xmon read and write operations"
 
-- Idle sleepers now always return to caller rather than branch out
-  to KVM first.
-- This allows optimisations like very fast return to caller when no
-  state has been lost.
-- KVM no longer requires nap_state_lost because it controls NVGPR
-  save/restore itself on the way in and out.
-- The heavy idle wakeup KVM request check can be moved out of the
-  normal host idle code and into the not-performance-critical offline
-  code.
-- KVM nap code now returns from where it is called, which makes the
-  flow a bit easier to follow.
----
- arch/powerpc/include/asm/paca.h         |   1 -
- arch/powerpc/kernel/asm-offsets.c       |   1 -
- arch/powerpc/kernel/exceptions-64s.S    |   4 -
- arch/powerpc/kernel/idle_book3s.S       |  22 -----
- arch/powerpc/kvm/book3s_hv_rmhandlers.S | 119 ++++++++++++++----------
- arch/powerpc/platforms/powernv/idle.c   |  15 +++
- arch/powerpc/xmon/xmon.c                |   3 -
- 7 files changed, 87 insertions(+), 78 deletions(-)
+"Allow xmon write operations" would be clearer. This option has no 
+impact on read operations.
 
-diff --git a/arch/powerpc/include/asm/paca.h b/arch/powerpc/include/asm/paca.h
-index e55dedd7ee3e..245d11a71784 100644
---- a/arch/powerpc/include/asm/paca.h
-+++ b/arch/powerpc/include/asm/paca.h
-@@ -174,7 +174,6 @@ struct paca_struct {
- 	u8 io_sync;			/* writel() needs spin_unlock sync */
- 	u8 irq_work_pending;		/* IRQ_WORK interrupt while soft-disable */
- #ifdef CONFIG_KVM_BOOK3S_HV_POSSIBLE
--	u8 nap_state_lost;		/* NV GPR values lost in power7_idle */
- 	u8 pmcregs_in_use;		/* pseries puts this in lppaca */
- #endif
- 	u64 sprg_vdso;			/* Saved user-visible sprg */
-diff --git a/arch/powerpc/kernel/asm-offsets.c b/arch/powerpc/kernel/asm-offsets.c
-index 167a59fda12e..83ad99f9f05d 100644
---- a/arch/powerpc/kernel/asm-offsets.c
-+++ b/arch/powerpc/kernel/asm-offsets.c
-@@ -268,7 +268,6 @@ int main(void)
- 	OFFSET(ACCOUNT_USER_TIME, paca_struct, accounting.utime);
- 	OFFSET(ACCOUNT_SYSTEM_TIME, paca_struct, accounting.stime);
- 	OFFSET(PACA_TRAP_SAVE, paca_struct, trap_save);
--	OFFSET(PACA_NAPSTATELOST, paca_struct, nap_state_lost);
- 	OFFSET(PACA_SPRG_VDSO, paca_struct, sprg_vdso);
- #else /* CONFIG_PPC64 */
- #ifdef CONFIG_VIRT_CPU_ACCOUNTING_NATIVE
-diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
-index 7d54cfa5ca84..c8033c03fc1e 100644
---- a/arch/powerpc/kernel/exceptions-64s.S
-+++ b/arch/powerpc/kernel/exceptions-64s.S
-@@ -145,9 +145,7 @@ TRAMP_KVM(PACA_EXNMI, 0x100)
- #ifdef CONFIG_PPC_P7_NAP
- EXC_COMMON_BEGIN(system_reset_idle_common)
- 	mfspr	r3,SPRN_SRR1
--#ifndef CONFIG_KVM_BOOK3S_HV_POSSIBLE
- 	bltlr	cr3	/* no state loss, return to idle caller */
--#endif
- 	b	idle_return_gpr_loss
- #endif
- 
-@@ -439,9 +437,7 @@ EXC_COMMON_BEGIN(machine_check_idle_common)
- 	mtlr	r4
- 	rlwinm	r10,r3,47-31,30,31
- 	cmpwi	cr3,r10,2
--#ifndef CONFIG_KVM_BOOK3S_HV_POSSIBLE
- 	bltlr	cr3	/* no state loss, return to idle caller */
--#endif
- 	b	idle_return_gpr_loss
- #endif
- 	/*
-diff --git a/arch/powerpc/kernel/idle_book3s.S b/arch/powerpc/kernel/idle_book3s.S
-index af002b82145d..ebd1093d3ac3 100644
---- a/arch/powerpc/kernel/idle_book3s.S
-+++ b/arch/powerpc/kernel/idle_book3s.S
-@@ -19,9 +19,6 @@
- #include <asm/asm-offsets.h>
- #include <asm/ppc-opcode.h>
- #include <asm/cpuidle.h>
--#ifdef CONFIG_KVM_BOOK3S_HV_POSSIBLE
--#include <asm/kvm_book3s_asm.h>
--#endif
- 
- /*
-  * Desired PSSCR in r3
-@@ -93,25 +90,6 @@ _GLOBAL(isa300_idle_stop_mayloss)
-  * a simple blr instead).
-  */
- _GLOBAL(idle_return_gpr_loss)
--#ifdef CONFIG_KVM_BOOK3S_HV_POSSIBLE
--	lbz	r0,HSTATE_HWTHREAD_STATE(r13)
--	cmpwi	r0,KVM_HWTHREAD_IN_KERNEL
--	beq	0f
--	li	r0,KVM_HWTHREAD_IN_KERNEL
--	stb	r0,HSTATE_HWTHREAD_STATE(r13)
--	/* Order setting hwthread_state vs. testing hwthread_req */
--	sync
--0:	lbz	r0,HSTATE_HWTHREAD_REQ(r13)
--	cmpwi	r0,0
--	beq	1f
--	b	kvm_start_guest
--1:
--	lbz	r0,PACA_NAPSTATELOST(r13)
--	cmpwi	r0,0
--	bne	2f
--	bltlr	cr3
--2:
--#endif
- 	ld	r1,PACAR1(r13)
- 	ld	r4,-8*19(r1)
- 	ld	r5,-8*20(r1)
-diff --git a/arch/powerpc/kvm/book3s_hv_rmhandlers.S b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-index 58d0f1ba845d..e9c69089080a 100644
---- a/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-+++ b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-@@ -35,6 +35,7 @@
- #include <asm/thread_info.h>
- #include <asm/asm-compat.h>
- #include <asm/feature-fixups.h>
-+#include <asm/cpuidle.h>
- 
- /* Sign-extend HDEC if not on POWER9 */
- #define EXTEND_HDEC(reg)			\
-@@ -45,6 +46,7 @@ END_FTR_SECTION_IFCLR(CPU_FTR_ARCH_300)
- /* Values in HSTATE_NAPPING(r13) */
- #define NAPPING_CEDE	1
- #define NAPPING_NOVCPU	2
-+#define NAPPING_UNSPLIT	3
- 
- /* Stack frame offsets for kvmppc_hv_entry */
- #define SFS			208
-@@ -290,17 +292,20 @@ kvm_novcpu_exit:
- 	b	kvmhv_switch_to_host
- 
- /*
-- * We come in here when wakened from nap mode.
-- * Relocation is off and most register values are lost.
-- * r13 points to the PACA.
-+ * We come in here when wakened from Linux offline idle code.
-+ * Relocation is off
-  * r3 contains the SRR1 wakeup value, SRR1 is trashed.
-  */
--	.globl	kvm_start_guest
--kvm_start_guest:
--	/* Set runlatch bit the minute you wake up from nap */
--	mfspr	r0, SPRN_CTRLF
--	ori 	r0, r0, 1
--	mtspr	SPRN_CTRLT, r0
-+	.globl	idle_kvm_start_guest
-+idle_kvm_start_guest:
-+	ld	r4,PACAEMERGSP(r13)
-+	mfcr	r5
-+	mflr	r0
-+	std	r1,0(r4)
-+	std	r5,8(r4)
-+	std	r0,16(r4)
-+	subi	r1,r4,STACK_FRAME_OVERHEAD
-+	SAVE_NVGPRS(r1)
- 
- 	/*
- 	 * Could avoid this and pass it through in r3. For now,
-@@ -308,27 +313,23 @@ kvm_start_guest:
- 	 */
- 	mtspr	SPRN_SRR1,r3
- 
--	ld	r2,PACATOC(r13)
--
- 	li	r0,0
- 	stb	r0,PACA_FTRACE_ENABLED(r13)
- 
- 	li	r0,KVM_HWTHREAD_IN_KVM
- 	stb	r0,HSTATE_HWTHREAD_STATE(r13)
- 
--	/* NV GPR values from power7_idle() will no longer be valid */
--	li	r0,1
--	stb	r0,PACA_NAPSTATELOST(r13)
--
--	/* were we napping due to cede? */
-+	/* kvm cede / napping does not come through here */
- 	lbz	r0,HSTATE_NAPPING(r13)
--	cmpwi	r0,NAPPING_CEDE
--	beq	kvm_end_cede
--	cmpwi	r0,NAPPING_NOVCPU
--	beq	kvm_novcpu_wakeup
-+	twnei	r0,0
-+
-+	b	1f
- 
--	ld	r1,PACAEMERGSP(r13)
--	subi	r1,r1,STACK_FRAME_OVERHEAD
-+kvm_unsplit_wakeup:
-+	li	r0, 0
-+	stb	r0, HSTATE_NAPPING(r13)
-+
-+1:
- 
- 	/*
- 	 * We weren't napping due to cede, so this must be a secondary
-@@ -437,21 +438,25 @@ kvm_no_guest:
- 	lbz	r3, HSTATE_HWTHREAD_REQ(r13)
- 	cmpwi	r3, 0
- 	bne	54f
--/*
-- * We jump to pnv_wakeup_loss, which will return to the caller
-- * of power7_nap in the powernv cpu offline loop.  The value we
-- * put in r3 becomes the return value for power7_nap. pnv_wakeup_loss
-- * requires SRR1 in r12.
-- */
-+
-+	/*
-+	 * Jump to idle_return_gpr_loss, which returns to the
-+	 * idle_kvm_start_guest caller.
-+	 */
- 	li	r3, LPCR_PECE0
- 	mfspr	r4, SPRN_LPCR
- 	rlwimi	r4, r3, 0, LPCR_PECE0 | LPCR_PECE1
- 	mtspr	SPRN_LPCR, r4
--	li	r3, 0
--	/* set up cr3 and r3 for return */
--	cmpdi	cr3, r3, 0
-+	/* set up r3 for return */
- 	mfspr	r3,SPRN_SRR1
--	b	idle_return_gpr_loss
-+	REST_NVGPRS(r1)
-+	addi	r1, r1, STACK_FRAME_OVERHEAD
-+	ld	r0, 16(r1)
-+	ld	r5, 8(r1)
-+	ld	r1, 0(r1)
-+	mtlr	r0
-+	mtcr	r5
-+	blr
- 
- 53:	HMT_LOW
- 	ld	r5, HSTATE_KVM_VCORE(r13)
-@@ -536,6 +541,8 @@ END_FTR_SECTION_IFSET(CPU_FTR_ARCH_207S)
- 	lbz	r0, KVM_SPLIT_DO_NAP(r3)
- 	cmpwi	r0, 0
- 	beq	57f
-+	li	r3, NAPPING_UNSPLIT
-+	stb	r3, HSTATE_NAPPING(r13)
- 	li	r3, (LPCR_PECEDH | LPCR_PECE0) >> 4
- 	mfspr	r5, SPRN_LPCR
- 	rlwimi	r5, r3, 4, (LPCR_PECEDP | LPCR_PECEDH | LPCR_PECE0 | LPCR_PECE1)
-@@ -2656,6 +2663,9 @@ END_FTR_SECTION_IFSET(CPU_FTR_ARCH_300)
- 
- 	lis	r3, LPCR_PECEDP@h	/* Do wake on privileged doorbell */
- 
-+	/* Go back to host stack */
-+	ld	r1, HSTATE_HOST_R1(r13)
-+
- 	/*
- 	 * Take a nap until a decrementer or external or doobell interrupt
- 	 * occurs, with PECE1 and PECE0 set in LPCR.
-@@ -2684,26 +2694,42 @@ BEGIN_FTR_SECTION
- 	 *		requested level = 0 (just stop dispatching)
- 	 */
- 	lis	r3, (PSSCR_EC | PSSCR_ESL)@h
--	mtspr	SPRN_PSSCR, r3
- 	/* Set LPCR_PECE_HVEE bit to enable wakeup by HV interrupts */
- 	li	r4, LPCR_PECE_HVEE@higher
- 	sldi	r4, r4, 32
- 	or	r5, r5, r4
--END_FTR_SECTION_IFSET(CPU_FTR_ARCH_300)
-+FTR_SECTION_ELSE
-+	li	r3, PNV_THREAD_NAP
-+ALT_FTR_SECTION_END_IFSET(CPU_FTR_ARCH_300)
- 	mtspr	SPRN_LPCR,r5
- 	isync
--	li	r0, 0
--	std	r0, HSTATE_SCRATCH0(r13)
--	ptesync
--	ld	r0, HSTATE_SCRATCH0(r13)
--1:	cmpd	r0, r0
--	bne	1b
-+
- BEGIN_FTR_SECTION
--	nap
-+	bl	isa300_idle_stop_mayloss
- FTR_SECTION_ELSE
--	PPC_STOP
--ALT_FTR_SECTION_END_IFCLR(CPU_FTR_ARCH_300)
--	b	.
-+	bl	isa206_idle_insn_mayloss
-+ALT_FTR_SECTION_END_IFSET(CPU_FTR_ARCH_300)
-+
-+	mfspr	r0, SPRN_CTRLF
-+	ori	r0, r0, 1
-+	mtspr	SPRN_CTRLT, r0
-+
-+	mtspr	SPRN_SRR1, r3
-+
-+	li	r0, 0
-+	stb	r0, PACA_FTRACE_ENABLED(r13)
-+
-+	li	r0, KVM_HWTHREAD_IN_KVM
-+	stb	r0, HSTATE_HWTHREAD_STATE(r13)
-+
-+	lbz	r0, HSTATE_NAPPING(r13)
-+	cmpwi	r0, NAPPING_CEDE
-+	beq	kvm_end_cede
-+	cmpwi	r0, NAPPING_NOVCPU
-+	beq	kvm_novcpu_wakeup
-+	cmpwi	r0, NAPPING_UNSPLIT
-+	beq	kvm_unsplit_wakeup
-+	twi	31,0,0 /* Nap state must not be zero */
- 
- 33:	mr	r4, r3
- 	li	r3, 0
-@@ -2711,12 +2737,11 @@ ALT_FTR_SECTION_END_IFCLR(CPU_FTR_ARCH_300)
- 	b	34f
- 
- kvm_end_cede:
-+	/* Woken by external or decrementer interrupt */
-+
- 	/* get vcpu pointer */
- 	ld	r4, HSTATE_KVM_VCPU(r13)
- 
--	/* Woken by external or decrementer interrupt */
--	ld	r1, HSTATE_HOST_R1(r13)
--
- #ifdef CONFIG_KVM_BOOK3S_HV_EXIT_TIMING
- 	addi	r3, r4, VCPU_TB_RMINTR
- 	bl	kvmhv_accumulate_time
-diff --git a/arch/powerpc/platforms/powernv/idle.c b/arch/powerpc/platforms/powernv/idle.c
-index 6ea1543c2d6d..523d6326b936 100644
---- a/arch/powerpc/platforms/powernv/idle.c
-+++ b/arch/powerpc/platforms/powernv/idle.c
-@@ -484,6 +484,8 @@ static unsigned long power7_idle_insn(unsigned long type)
- 	return srr1;
- }
- 
-+extern unsigned long idle_kvm_start_guest(unsigned long srr1);
-+
- #ifdef CONFIG_HOTPLUG_CPU
- static unsigned long power7_offline(void)
- {
-@@ -515,6 +517,14 @@ static unsigned long power7_offline(void)
- 	srr1 = power7_idle_insn(power7_offline_type);
- 	__ppc64_runlatch_on();
- 
-+#ifdef CONFIG_KVM_BOOK3S_HV_POSSIBLE
-+	local_paca->kvm_hstate.hwthread_state = KVM_HWTHREAD_IN_KERNEL;
-+	/* Order setting hwthread_state vs. testing hwthread_req */
-+	smp_mb();
-+	if (local_paca->kvm_hstate.hwthread_req)
-+		srr1 = idle_kvm_start_guest(srr1);
-+#endif
-+
- 	mtmsr(MSR_KERNEL);
- 
- 	return srr1;
-@@ -798,6 +808,11 @@ static unsigned long power9_offline_stop(unsigned long psscr)
- 	srr1 = power9_idle_stop(psscr, false);
- 	__ppc64_runlatch_on();
- 
-+	local_paca->kvm_hstate.hwthread_state = KVM_HWTHREAD_IN_KERNEL;
-+	/* Order setting hwthread_state vs. testing hwthread_req */
-+	smp_mb();
-+	if (local_paca->kvm_hstate.hwthread_req)
-+		srr1 = idle_kvm_start_guest(srr1);
- 	mtmsr(MSR_KERNEL);
- #endif
- 
-diff --git a/arch/powerpc/xmon/xmon.c b/arch/powerpc/xmon/xmon.c
-index 77197110e900..e583ed3f6b93 100644
---- a/arch/powerpc/xmon/xmon.c
-+++ b/arch/powerpc/xmon/xmon.c
-@@ -2431,9 +2431,6 @@ static void dump_one_paca(int cpu)
- 	DUMP(p, irq_happened, "%#-*x");
- 	DUMP(p, io_sync, "%#-*x");
- 	DUMP(p, irq_work_pending, "%#-*x");
--#ifdef CONFIG_KVM_BOOK3S_HV_POSSIBLE
--	DUMP(p, nap_state_lost, "%#-*x");
--#endif
- 	DUMP(p, sprg_vdso, "%#-*llx");
- 
- #ifdef CONFIG_PPC_TRANSACTIONAL_MEM
+> +	depends on XMON
+> +	default !STRICT_KERNEL_RWX
+> +	help
+> +	  Allow xmon to read and write to memory and special-purpose registers.
+> +          Conversely, prevent xmon write access when set to N. Read and write
+> +          access can also be explicitly controlled with 'xmon=rw' or 'xmon=ro'
+> +          (read-only) cmdline options. Default is !STRICT_KERNEL_RWX.
+
+This is an improvement but still doesn't clearly explain the 
+relationship between selecting this option and using the cmdline options.
+
+
+> +
+>   config DEBUGGER
+>   	bool
+>   	depends on KGDB || XMON
+> diff --git a/arch/powerpc/include/asm/book3s/32/pgtable.h b/arch/powerpc/include/asm/book3s/32/pgtable.h
+> index aa8406b8f7ba..615144ad667d 100644
+> --- a/arch/powerpc/include/asm/book3s/32/pgtable.h
+> +++ b/arch/powerpc/include/asm/book3s/32/pgtable.h
+> @@ -86,8 +86,9 @@ static inline bool pte_user(pte_t pte)
+>    * set breakpoints anywhere, so don't write protect the kernel text
+>    * on platforms where such control is possible.
+>    */
+> -#if defined(CONFIG_KGDB) || defined(CONFIG_XMON) || defined(CONFIG_BDI_SWITCH) ||\
+> -	defined(CONFIG_KPROBES) || defined(CONFIG_DYNAMIC_FTRACE)
+> +#if defined(CONFIG_KGDB) || defined(CONFIG_XMON_RW) || \
+> +	defined(CONFIG_BDI_SWITCH) || defined(CONFIG_KPROBES) || \
+> +	defined(CONFIG_DYNAMIC_FTRACE)
+>   #define PAGE_KERNEL_TEXT	PAGE_KERNEL_X
+>   #else
+>   #define PAGE_KERNEL_TEXT	PAGE_KERNEL_ROX
+> diff --git a/arch/powerpc/include/asm/book3s/64/pgtable.h b/arch/powerpc/include/asm/book3s/64/pgtable.h
+> index 581f91be9dd4..bc4655122f6b 100644
+> --- a/arch/powerpc/include/asm/book3s/64/pgtable.h
+> +++ b/arch/powerpc/include/asm/book3s/64/pgtable.h
+> @@ -168,8 +168,9 @@
+>    * set breakpoints anywhere, so don't write protect the kernel text
+>    * on platforms where such control is possible.
+>    */
+> -#if defined(CONFIG_KGDB) || defined(CONFIG_XMON) || defined(CONFIG_BDI_SWITCH) || \
+> -	defined(CONFIG_KPROBES) || defined(CONFIG_DYNAMIC_FTRACE)
+> +#if defined(CONFIG_KGDB) || defined(CONFIG_XMON_RW) || \
+> +	defined(CONFIG_BDI_SWITCH) || defined(CONFIG_KPROBES) || \
+> +	defined(CONFIG_DYNAMIC_FTRACE)
+
+We might need to rethink how the cmdline options work.
+
+What happens if CONFIG_XMON_RW=n, but "xmon=rw" on the command line?
+
+I think I agree with Oliver that we're not being clear whether this 
+config option is selecting code to be compiled in, or whether it's just 
+setting a default.
+
+>   #define PAGE_KERNEL_TEXT	PAGE_KERNEL_X
+>   #else
+>   #define PAGE_KERNEL_TEXT	PAGE_KERNEL_ROX
+> diff --git a/arch/powerpc/include/asm/nohash/pgtable.h b/arch/powerpc/include/asm/nohash/pgtable.h
+> index 1ca1c1864b32..c052931bd243 100644
+> --- a/arch/powerpc/include/asm/nohash/pgtable.h
+> +++ b/arch/powerpc/include/asm/nohash/pgtable.h
+> @@ -22,8 +22,9 @@
+>    * set breakpoints anywhere, so don't write protect the kernel text
+>    * on platforms where such control is possible.
+>    */
+> -#if defined(CONFIG_KGDB) || defined(CONFIG_XMON) || defined(CONFIG_BDI_SWITCH) ||\
+> -	defined(CONFIG_KPROBES) || defined(CONFIG_DYNAMIC_FTRACE)
+> +#if defined(CONFIG_KGDB) || defined(CONFIG_XMON_RW) || \
+> +	defined(CONFIG_BDI_SWITCH) || defined(CONFIG_KPROBES) || \
+> +	defined(CONFIG_DYNAMIC_FTRACE)
+>   #define PAGE_KERNEL_TEXT	PAGE_KERNEL_X
+>   #else
+>   #define PAGE_KERNEL_TEXT	PAGE_KERNEL_ROX
+> diff --git a/arch/powerpc/xmon/xmon.c b/arch/powerpc/xmon/xmon.c
+> index a0f44f992360..224ca0b3506b 100644
+> --- a/arch/powerpc/xmon/xmon.c
+> +++ b/arch/powerpc/xmon/xmon.c
+> @@ -80,6 +80,7 @@ static int set_indicator_token = RTAS_UNKNOWN_SERVICE;
+>   #endif
+>   static unsigned long in_xmon __read_mostly = 0;
+>   static int xmon_on = IS_ENABLED(CONFIG_XMON_DEFAULT);
+> +static bool xmon_is_ro = !IS_ENABLED(CONFIG_XMON_RW);
+>   
+>   static unsigned long adrs;
+>   static int size = 1;
+> @@ -202,6 +203,8 @@ static void dump_tlb_book3e(void);
+>   #define GETWORD(v)	(((v)[0] << 24) + ((v)[1] << 16) + ((v)[2] << 8) + (v)[3])
+>   #endif
+>   
+> +static const char *xmon_is_ro_warn = "xmon read-only mode: skipping write\n";
+
+Yay, error messages! Though something like: "Operation disabled: xmon is 
+in read-only mode" would be clearer.
+
+> +
+>   static char *help_string = "\
+>   Commands:\n\
+>     b	show breakpoints\n\
+> @@ -989,6 +992,10 @@ cmds(struct pt_regs *excp)
+>   				memlocate();
+>   				break;
+>   			case 'z':
+> +				if (xmon_is_ro) {
+> +					printf(xmon_is_ro_warn);
+> +					break;
+> +				}
+>   				memzcan();
+>   				break;
+>   			case 'i':
+> @@ -1042,6 +1049,10 @@ cmds(struct pt_regs *excp)
+>   			set_lpp_cmd();
+>   			break;
+>   		case 'b':
+> +			if (xmon_is_ro) {
+> +				printf(xmon_is_ro_warn);
+> +				break;
+> +			}
+>   			bpt_cmds();
+>   			break;
+>   		case 'C':
+> @@ -1055,6 +1066,10 @@ cmds(struct pt_regs *excp)
+>   			bootcmds();
+>   			break;
+>   		case 'p':
+> +			if (xmon_is_ro) {
+> +				printf(xmon_is_ro_warn);
+> +				break;
+> +			}
+>   			proccall();
+>   			break;
+>   		case 'P':
+> @@ -1777,6 +1792,11 @@ read_spr(int n, unsigned long *vp)
+>   static void
+>   write_spr(int n, unsigned long val)
+>   {
+> +	if (xmon_is_ro) {
+> +		printf(xmon_is_ro_warn);
+> +		return;
+> +	}
+> +
+>   	if (setjmp(bus_error_jmp) == 0) {
+>   		catch_spr_faults = 1;
+>   		sync();
+> @@ -2016,6 +2036,12 @@ mwrite(unsigned long adrs, void *buf, int size)
+>   	char *p, *q;
+>   
+>   	n = 0;
+> +
+> +	if (xmon_is_ro) {
+> +		printf(xmon_is_ro_warn);
+> +		return n;
+> +	}
+> +
+>   	if (setjmp(bus_error_jmp) == 0) {
+>   		catch_memory_errors = 1;
+>   		sync();
+> @@ -2884,9 +2910,17 @@ memops(int cmd)
+>   	scanhex((void *)&mcount);
+>   	switch( cmd ){
+>   	case 'm':
+> +		if (xmon_is_ro) {
+> +			printf(xmon_is_ro_warn);
+> +			break;
+> +		}
+>   		memmove((void *)mdest, (void *)msrc, mcount);
+>   		break;
+>   	case 's':
+> +		if (xmon_is_ro) {
+> +			printf(xmon_is_ro_warn);
+> +			break;
+> +		}
+>   		memset((void *)mdest, mval, mcount);
+>   		break;
+>   	case 'd':
+> @@ -3796,6 +3830,14 @@ static int __init early_parse_xmon(char *p)
+>   	} else if (strncmp(p, "on", 2) == 0) {
+>   		xmon_init(1);
+>   		xmon_on = 1;
+> +	} else if (strncmp(p, "rw", 2) == 0) {
+> +		xmon_init(1);
+> +		xmon_on = 1;
+> +		xmon_is_ro = false;
+> +	} else if (strncmp(p, "ro", 2) == 0) {
+> +		xmon_init(1);
+> +		xmon_on = 1;
+> +		xmon_is_ro = true;
+>   	} else if (strncmp(p, "off", 3) == 0)
+>   		xmon_on = 0;
+>   	else
+> 
+
 -- 
-2.20.1
+Andrew Donnellan              OzLabs, ADL Canberra
+andrew.donnellan@au1.ibm.com  IBM Australia Limited
 
