@@ -7,73 +7,74 @@ X-Spam-Status: No, score=-8.5 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
 	SPF_PASS,USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E8ADFC10F13
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Apr 2019 15:02:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 85425C10F13
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Apr 2019 15:04:12 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id CB98221473
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Apr 2019 15:02:21 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id F2E8421473
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Apr 2019 15:04:11 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="nYqtbsFv"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CB98221473
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="DywZhTaQ"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org F2E8421473
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44dDDC4ll6zDqDc
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Apr 2019 01:02:19 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44dDGL01sfzDqM1
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Apr 2019 01:04:10 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=2a00:1450:4864:20::442; helo=mail-wr1-x442.google.com;
+ (client-ip=2a00:1450:4864:20::444; helo=mail-wr1-x444.google.com;
  envelope-from=jonas.gorski@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="nYqtbsFv"; 
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="DywZhTaQ"; 
  dkim-atps=neutral
-Received: from mail-wr1-x442.google.com (mail-wr1-x442.google.com
- [IPv6:2a00:1450:4864:20::442])
+Received: from mail-wr1-x444.google.com (mail-wr1-x444.google.com
+ [IPv6:2a00:1450:4864:20::444])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44d5zf5cd4zDqJ3
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44d5zf68LGzDqD9
  for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Apr 2019 20:20:57 +1000 (AEST)
-Received: by mail-wr1-x442.google.com with SMTP id q1so15712970wrp.0
+Received: by mail-wr1-x444.google.com with SMTP id s15so15619117wra.12
  for <linuxppc-dev@lists.ozlabs.org>; Mon, 08 Apr 2019 03:20:57 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
  h=from:to:cc:subject:date:message-id:in-reply-to:references;
- bh=NVmL03g/69kkqfLIzfzWYuQgrBWQBk/oveRzpCawG2w=;
- b=nYqtbsFvdqDaq9Z+dgV59ADFSXuYziC+nnDk/gC9YK7sOXzQalG4+KhNAqMGbdqdpJ
- 7v1vjGkoVujw8LdBQ2qY95RvmZ5YXGvExwxivsWMmb3aoy2IhOXVRguF0+8pUdEXSZq7
- daRFWAiZn9765pb+UIvLuRN5vET5cAU6sDLLj4K/fLSE7Inm4l4iIC8QCxglHBVclUMF
- S/x8a/nvsZYnsZ4KCnlqL+2QUzfNQuGBQb9+IElq4iyk/1sVzLGlJMaEisxf1Qdk/mmS
- w+BnI2cdN1HuJJbSY1oyHnZXm/4PxMmrbgeIVeN9AftjKaS/PPUUuep7TFlY6t6aosfI
- f3SA==
+ bh=8mnGAkNqcxuZE1d5o1rT7GTZ86DBLiU2npJH1dz7dSo=;
+ b=DywZhTaQ+ZX7cqT81xN4buH8CasFserd6KDvdKG/o8+XYFMWVMR4VaUVPq3i24vkQW
+ boUgCf3jqQTRGP7snfdkIaPyQf3jGFL7zFTFmt8mW03h5H98DukFtCInlQRjbmon0IpT
+ cCq1bdnosnbzdC3HQVj9+py+dXK0et1nJw4gPDIZvgySyXHYZqsytjJitNo2WgulUr9q
+ QWnPyNK6ESkbX9zrfUHLr/wfQsZ2dxr06btQ/ixUoZEmOGuLIVMvzDt8TjAn/xuxFu+d
+ q98nNSzMOqqnMANit2i33EU8fSiWfHNotDuQoayHo+Kut/lAQ6zDSRzCwreKEvkunbch
+ 2New==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
  :references;
- bh=NVmL03g/69kkqfLIzfzWYuQgrBWQBk/oveRzpCawG2w=;
- b=PUSlKTngKTycEDJe1P/WL3e/t/b9HltMj6qnv+KlK29XXMRSHPLR/gLlH+7/NKATaw
- ETRF8wDV8fB1pCH0wKT3eqNS2f0iyqWb+e98X+mVSf1N7gqnb6RcF/jBCwHhChsh17Rv
- 4i6arAGZ+g38Dp/tLtM/Qx9Nbg+0tlLPwtm+fenX6dE4wuTtkprfQmqlLDmdeavdQ2wB
- JD44hgKFgvP6A6WGL3XP1hRjqaAGkK9bAopiuL3iFuECzuo3Ki3kg1CaykmqTwAcvO33
- /mR3LWHqsK1LYGIKuWrZX7EV1UDxN6Xq7lnbzBjXZHiBVoJ/vrMU0pBML81+aQKD0tBw
- CZNA==
-X-Gm-Message-State: APjAAAU0hPjTz6dVS9D7wK7zYyXRiSY3FTD17wSCo0YJSOvBuxiNTD8r
- gmFYn0oURdh20gx64/BozT4=
-X-Google-Smtp-Source: APXvYqx3A5BPmwdS6ZMo6XnxwIg+1qK1eBDHM0Dzs76vfsGvc2VF4UbzvmXgRS+JM/YGZpdcNUDp7A==
-X-Received: by 2002:adf:f70e:: with SMTP id r14mr18094535wrp.37.1554718854753; 
- Mon, 08 Apr 2019 03:20:54 -0700 (PDT)
+ bh=8mnGAkNqcxuZE1d5o1rT7GTZ86DBLiU2npJH1dz7dSo=;
+ b=XySt6bM6kaPPCP5R71ON2nHlEr32Mqu0hwEhqNTiFnJNz7m6RIWsYp5GZ0ujrNRQg8
+ UhKeYVGU1cZ0lEFQnG9B8+1cLipOpY75OGryZO1weO7Ehq3xQPSek/HO+1Q9THWQFEUC
+ DRbv/sq4rOZl80NoVddFRKI5YfhHbxeVMMReaxA4VbDx3v1I6uwv6/BEsVWT29AzyH20
+ CQ5n5CEd8EGV5bs9nkMZW1UCG+OXsQTUV3WurfyrkQearaWDnceAccVjmAWHgmwcivpN
+ 927hYZ1V0S/HLsMSa3sQMJDARaNwaegl+yt2O6DrgyUhIh2zn4QL3LQ56hCt9qhzt9eF
+ EYyA==
+X-Gm-Message-State: APjAAAUXlnB7x0k5FTo0y7D30r89nIp385iZsI+5QP0UlQJrtD+CKjiH
+ k8id3yydMeX7P+N2kRdffQw=
+X-Google-Smtp-Source: APXvYqw5kDHRzKsb+PuXwdGRHw4C2MsjbCzF5y22PTMSaLYmQHuGk8fBCcINMiKlb6tWmaPbtU9Cow==
+X-Received: by 2002:adf:f7d0:: with SMTP id a16mr17629386wrq.94.1554718853687; 
+ Mon, 08 Apr 2019 03:20:53 -0700 (PDT)
 Received: from localhost.localdomain ([2001:470:9e39::64])
- by smtp.gmail.com with ESMTPSA id d6sm39336069wrx.62.2019.04.08.03.20.53
+ by smtp.gmail.com with ESMTPSA id d6sm39336069wrx.62.2019.04.08.03.20.52
  (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
- Mon, 08 Apr 2019 03:20:54 -0700 (PDT)
+ Mon, 08 Apr 2019 03:20:53 -0700 (PDT)
 From: Jonas Gorski <jonas.gorski@gmail.com>
 To: linux-clk@vger.kernel.org,
 	linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH RFC/RFT 2/6] clk: gate: make endian-aware
-Date: Mon,  8 Apr 2019 12:20:35 +0200
-Message-Id: <20190408102039.6366-3-jonas.gorski@gmail.com>
+Subject: [PATCH RFC/RFT 1/6] clk: core: add support for generic big endian
+ accesses
+Date: Mon,  8 Apr 2019 12:20:34 +0200
+Message-Id: <20190408102039.6366-2-jonas.gorski@gmail.com>
 X-Mailer: git-send-email 2.13.2
 In-Reply-To: <20190408102039.6366-1-jonas.gorski@gmail.com>
 References: <20190408102039.6366-1-jonas.gorski@gmail.com>
@@ -96,45 +97,72 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Switch clk-gate to the endianness aware accessors to allow big endian
-gated clocks on a per device level.
+Add a generic flag to mark a clock as big endian register based, and add
+accessors following these.
 
 Signed-off-by: Jonas Gorski <jonas.gorski@gmail.com>
 ---
- drivers/clk/clk-gate.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+ drivers/clk/clk.c            |  1 +
+ include/linux/clk-provider.h | 27 +++++++++++++++++++++++++++
+ 2 files changed, 28 insertions(+)
 
-diff --git a/drivers/clk/clk-gate.c b/drivers/clk/clk-gate.c
-index f05823cd9b21..0e585ac133c7 100644
---- a/drivers/clk/clk-gate.c
-+++ b/drivers/clk/clk-gate.c
-@@ -55,7 +55,7 @@ static void clk_gate_endisable(struct clk_hw *hw, int enable)
- 		if (set)
- 			reg |= BIT(gate->bit_idx);
- 	} else {
--		reg = clk_readl(gate->reg);
-+		reg = clk_hw_readl(hw, gate->reg);
+diff --git a/drivers/clk/clk.c b/drivers/clk/clk.c
+index 96053a96fe2f..b706022bb83d 100644
+--- a/drivers/clk/clk.c
++++ b/drivers/clk/clk.c
+@@ -2859,6 +2859,7 @@ static const struct {
+ 	ENTRY(CLK_IS_CRITICAL),
+ 	ENTRY(CLK_OPS_PARENT_ENABLE),
+ 	ENTRY(CLK_DUTY_CYCLE_PARENT),
++	ENTRY(CLK_IS_BIG_ENDIAN),
+ #undef ENTRY
+ };
  
- 		if (set)
- 			reg |= BIT(gate->bit_idx);
-@@ -63,7 +63,7 @@ static void clk_gate_endisable(struct clk_hw *hw, int enable)
- 			reg &= ~BIT(gate->bit_idx);
- 	}
+diff --git a/include/linux/clk-provider.h b/include/linux/clk-provider.h
+index b7cf80a71293..2c7c17652d75 100644
+--- a/include/linux/clk-provider.h
++++ b/include/linux/clk-provider.h
+@@ -35,6 +35,7 @@
+ #define CLK_OPS_PARENT_ENABLE	BIT(12)
+ /* duty cycle call may be forwarded to the parent clock */
+ #define CLK_DUTY_CYCLE_PARENT	BIT(13)
++#define CLK_IS_BIG_ENDIAN	BIT(14) /* clk registers are big endian */
  
--	clk_writel(reg, gate->reg);
-+	clk_hw_writel(hw, reg, gate->reg);
+ struct clk;
+ struct clk_hw;
+@@ -1024,6 +1025,32 @@ static inline void clk_writel(u32 val, u32 __iomem *reg)
  
- 	if (gate->lock)
- 		spin_unlock_irqrestore(gate->lock, flags);
-@@ -88,7 +88,7 @@ int clk_gate_is_enabled(struct clk_hw *hw)
- 	u32 reg;
- 	struct clk_gate *gate = to_clk_gate(hw);
+ #endif	/* platform dependent I/O accessors */
  
--	reg = clk_readl(gate->reg);
-+	reg = clk_hw_readl(hw, gate->reg);
++static inline u32 clk_readl_be(u32 __iomem *reg)
++{
++	return ioread32be(reg);
++}
++
++static inline void clk_writel_be(u32 val, u32 __iomem *reg)
++{
++	iowrite32be(val, reg);
++}
++
++static inline u32 clk_hw_readl(struct clk_hw *clk, u32 __iomem *reg)
++{
++	if (clk_hw_get_flags(clk) & CLK_IS_BIG_ENDIAN)
++		return clk_readl_be(reg);
++	else
++		return clk_readl(reg);
++}
++
++static inline void clk_hw_writel(struct clk_hw *clk, u32 val, u32 __iomem *reg)
++{
++	if (clk_hw_get_flags(clk) & CLK_IS_BIG_ENDIAN)
++		clk_writel_be(val, reg);
++	else
++		clk_writel(val, reg);
++}
++
+ void clk_gate_restore_context(struct clk_hw *hw);
  
- 	/* if a set bit disables this clk, flip it before masking */
- 	if (gate->flags & CLK_GATE_SET_TO_DISABLE)
+ #endif /* CONFIG_COMMON_CLK */
 -- 
 2.13.2
 
