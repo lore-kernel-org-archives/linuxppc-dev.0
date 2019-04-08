@@ -6,21 +6,21 @@ X-Spam-Status: No, score=-11.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_PASS
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A74AEC282CE
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Apr 2019 07:28:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9B823C282CE
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Apr 2019 07:29:40 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id D219620870
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Apr 2019 07:28:00 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 12FD620870
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Apr 2019 07:29:39 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=sirena.org.uk header.i=@sirena.org.uk header.b="mRud1YL0"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D219620870
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=sirena.org.uk header.i=@sirena.org.uk header.b="H7gjx6c9"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 12FD620870
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44d27y3Bq0zDqK5
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Apr 2019 17:27:58 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44d29t05dJzDqJS
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Apr 2019 17:29:38 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=none (mailfrom) smtp.mailfrom=sirena.org.uk
  (client-ip=2a01:7e01::f03c:91ff:fed4:a3b6; helo=heliosphere.sirena.org.uk;
@@ -29,37 +29,38 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=sirena.org.uk header.i=@sirena.org.uk
- header.b="mRud1YL0"; dkim-atps=neutral
+ header.b="H7gjx6c9"; dkim-atps=neutral
 Received: from heliosphere.sirena.org.uk (heliosphere.sirena.org.uk
  [IPv6:2a01:7e01::f03c:91ff:fed4:a3b6])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44d24v6RW6zDqFH
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Apr 2019 17:25:19 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44d2531BPkzDqFH
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Apr 2019 17:25:27 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
  d=sirena.org.uk; s=20170815-heliosphere; h=Date:Message-Id:In-Reply-To:
  Subject:Cc:To:From:Sender:Reply-To:MIME-Version:Content-Type:
  Content-Transfer-Encoding:Content-ID:Content-Description:Resent-Date:
  Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:References:
  List-Id:List-Help:List-Unsubscribe:List-Subscribe:List-Post:List-Owner:
- List-Archive; bh=L0x3uXSWAj7XZcmb7SUkPLJUz8kz6EsQHNdd2tiDlbM=; b=mRud1YL0cDNy
- oL/ExvurLT7u8HTOflw7pLHf0fIlahGuUboq3gdbxWDeUGDrKMYNN37xQAH5RRqaU3DLwZlj9Rh+0
- Zvm+GCZopya44Ydv9kTKQ4SQak4eApEYcSw6UiBJn4n3oWhZxe7hRuYUl9HP8TJl08VUkgxf+yqfW
- pNV6A=;
+ List-Archive; bh=Wx2t0+FZlVxmVBuluxB9XOJO8ULQ2GwUSmtdL0zyvvM=; b=H7gjx6c9+OB2
+ AAShSB1yA3tKaV/Vlm84IlNA9FUrESFYypWYt8Ztn3bYJknRizZPnwwHsDdUM7/UBedzQ1yDQ3lny
+ HaNc/8Ds+hWClC83LfmVI7EZMuzkqg1w0oQ5W/ERm+rqgMbBkDjezBPMRZbkIpZk/G2RHbKe9nHiL
+ Vvs34=;
 Received: from [8.46.76.46] (helo=finisterre.ee.mobilebroadband)
  by heliosphere.sirena.org.uk with esmtpsa
  (TLS1.2:ECDHE_RSA_AES_256_GCM_SHA384:256) (Exim 4.89)
  (envelope-from <broonie@sirena.org.uk>)
- id 1hDOeM-0003oN-U6; Mon, 08 Apr 2019 07:25:04 +0000
+ id 1hDOeX-0003oV-PZ; Mon, 08 Apr 2019 07:25:14 +0000
 Received: by finisterre.ee.mobilebroadband (Postfix, from userid 1000)
- id 5F08F441D3B; Mon,  8 Apr 2019 14:24:48 +0700 (+07)
+ id AA9A5441D3C; Mon,  8 Apr 2019 14:24:57 +0700 (+07)
 From: Mark Brown <broonie@kernel.org>
 To: Andra Danciu <andradanciu1997@gmail.com>
-Subject: Applied "ASoC: wm1133-ev1: Switch to SPDX identifier" to the asoc tree
-In-Reply-To: <20190405115010.28838-21-andradanciu1997@gmail.com>
+Subject: Applied "ASoC: phycore-ac97: Switch to SPDX identifier" to the asoc
+ tree
+In-Reply-To: <20190405115010.28838-20-andradanciu1997@gmail.com>
 X-Patchwork-Hint: ignore
-Message-Id: <20190408072448.5F08F441D3B@finisterre.ee.mobilebroadband>
-Date: Mon,  8 Apr 2019 14:24:48 +0700 (+07)
+Message-Id: <20190408072457.AA9A5441D3C@finisterre.ee.mobilebroadband>
+Date: Mon,  8 Apr 2019 14:24:57 +0700 (+07)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -83,7 +84,7 @@ Sender: "Linuxppc-dev"
 
 The patch
 
-   ASoC: wm1133-ev1: Switch to SPDX identifier
+   ASoC: phycore-ac97: Switch to SPDX identifier
 
 has been applied to the asoc tree at
 
@@ -108,10 +109,10 @@ to this mail.
 Thanks,
 Mark
 
-From a03584b75a28450a2a64646e3c1b3d6c48aacf3b Mon Sep 17 00:00:00 2001
+From e5eec5ee98a6379b6a515beb27db4f9a80bd9276 Mon Sep 17 00:00:00 2001
 From: Andra Danciu <andradanciu1997@gmail.com>
-Date: Fri, 5 Apr 2019 14:50:10 +0300
-Subject: [PATCH] ASoC: wm1133-ev1: Switch to SPDX identifier
+Date: Fri, 5 Apr 2019 14:50:09 +0300
+Subject: [PATCH] ASoC: phycore-ac97: Switch to SPDX identifier
 
 Adopt the SPDX license identifier headers to ease license compliance
 management.
@@ -119,38 +120,33 @@ management.
 Signed-off-by: Andra Danciu <andradanciu1997@gmail.com>
 Signed-off-by: Mark Brown <broonie@kernel.org>
 ---
- sound/soc/fsl/wm1133-ev1.c | 21 ++++++++-------------
- 1 file changed, 8 insertions(+), 13 deletions(-)
+ sound/soc/fsl/phycore-ac97.c | 16 +++++-----------
+ 1 file changed, 5 insertions(+), 11 deletions(-)
 
-diff --git a/sound/soc/fsl/wm1133-ev1.c b/sound/soc/fsl/wm1133-ev1.c
-index 2f80b21b2921..aad24ccbef90 100644
---- a/sound/soc/fsl/wm1133-ev1.c
-+++ b/sound/soc/fsl/wm1133-ev1.c
-@@ -1,16 +1,11 @@
+diff --git a/sound/soc/fsl/phycore-ac97.c b/sound/soc/fsl/phycore-ac97.c
+index 66fb6c4614d2..fe7ba6db7c96 100644
+--- a/sound/soc/fsl/phycore-ac97.c
++++ b/sound/soc/fsl/phycore-ac97.c
+@@ -1,14 +1,8 @@
 -/*
-- *  wm1133-ev1.c - Audio for WM1133-EV1 on i.MX31ADS
+- * phycore-ac97.c  --  SoC audio for imx_phycore in AC97 mode
 - *
-- *  Copyright (c) 2010 Wolfson Microelectronics plc
-- *  Author: Mark Brown <broonie@opensource.wolfsonmicro.com>
-- *
-- *  Based on an earlier driver for the same hardware by Liam Girdwood.
+- * Copyright 2009 Sascha Hauer, Pengutronix <s.hauer@pengutronix.de>
 - *
 - *  This program is free software; you can redistribute  it and/or modify it
 - *  under  the terms of  the GNU General  Public License as published by the
 - *  Free Software Foundation;  either version 2 of the  License, or (at your
 - *  option) any later version.
+- *
 - */
 +// SPDX-License-Identifier: GPL-2.0+
 +//
-+//  wm1133-ev1.c - Audio for WM1133-EV1 on i.MX31ADS
++// phycore-ac97.c  --  SoC audio for imx_phycore in AC97 mode
 +//
-+//  Copyright (c) 2010 Wolfson Microelectronics plc
-+//  Author: Mark Brown <broonie@opensource.wolfsonmicro.com>
-+//
-+//  Based on an earlier driver for the same hardware by Liam Girdwood.
++// Copyright 2009 Sascha Hauer, Pengutronix <s.hauer@pengutronix.de>
  
- #include <linux/platform_device.h>
- #include <linux/clk.h>
+ #include <linux/module.h>
+ #include <linux/moduleparam.h>
 -- 
 2.20.1
 
