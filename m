@@ -2,51 +2,102 @@ Return-Path: <SRS0=nZGU=SK=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_MUTT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2B211C10F13
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Apr 2019 22:04:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6AFFDC10F13
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Apr 2019 23:19:45 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id A55AE20880
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Apr 2019 22:04:37 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A55AE20880
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ucw.cz
+	by mail.kernel.org (Postfix) with ESMTPS id 9D773206C0
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Apr 2019 23:19:44 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9D773206C0
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44dPbQ5MYNzDqJk
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Apr 2019 08:04:34 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44dRG62vHZzDqJk
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Apr 2019 09:19:42 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44dQgB0NjfzDqDZ
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Apr 2019 08:52:54 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=ucw.cz
- (client-ip=195.113.26.193; helo=atrey.karlin.mff.cuni.cz;
- envelope-from=pavel@ucw.cz; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=ucw.cz
-Received: from atrey.karlin.mff.cuni.cz (atrey.karlin.mff.cuni.cz
- [195.113.26.193])
+ dmarc=none (p=none dis=none) header.from=linux.ibm.com
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 44dQg939Sjz8sxQ
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Apr 2019 08:52:53 +1000 (AEST)
+Received: by ozlabs.org (Postfix)
+ id 44dQg92Y9fz9sRC; Tue,  9 Apr 2019 08:52:53 +1000 (AEST)
+Authentication-Results: ozlabs.org;
+ spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
+ (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
+ envelope-from=nayna@linux.ibm.com; receiver=<UNKNOWN>)
+Authentication-Results: ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=linux.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44dPWl1NKNzDqHd
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Apr 2019 08:01:23 +1000 (AEST)
-Received: by atrey.karlin.mff.cuni.cz (Postfix, from userid 512)
- id 41158806A6; Mon,  8 Apr 2019 23:55:24 +0200 (CEST)
-Date: Mon, 8 Apr 2019 23:55:31 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: William Breathitt Gray <vilhelm.gray@gmail.com>
-Subject: Re: [PATCH v10 02/18] counter: Documentation: Add Generic Counter
- sysfs documentation
-Message-ID: <20190408215531.GB27592@amd>
-References: <cover.1554184734.git.vilhelm.gray@gmail.com>
- <bd8362f23b99af938c7bced2104eca29888253b3.1554184734.git.vilhelm.gray@gmail.com>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="JP+T4n/bALQSJXh8"
-Content-Disposition: inline
-In-Reply-To: <bd8362f23b99af938c7bced2104eca29888253b3.1554184734.git.vilhelm.gray@gmail.com>
-User-Agent: Mutt/1.5.23 (2014-03-12)
+ by ozlabs.org (Postfix) with ESMTPS id 44dQg81w0Jz9sR6
+ for <linuxppc-dev@ozlabs.org>; Tue,  9 Apr 2019 08:52:51 +1000 (AEST)
+Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
+ x38MnA4P078955
+ for <linuxppc-dev@ozlabs.org>; Mon, 8 Apr 2019 18:52:48 -0400
+Received: from e06smtp01.uk.ibm.com (e06smtp01.uk.ibm.com [195.75.94.97])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2rrckqxcku-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@ozlabs.org>; Mon, 08 Apr 2019 18:52:48 -0400
+Received: from localhost
+ by e06smtp01.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <nayna@linux.ibm.com>;
+ Mon, 8 Apr 2019 23:52:46 +0100
+Received: from b06cxnps3075.portsmouth.uk.ibm.com (9.149.109.195)
+ by e06smtp01.uk.ibm.com (192.168.101.131) with IBM ESMTP SMTP Gateway:
+ Authorized Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Mon, 8 Apr 2019 23:52:43 +0100
+Received: from d06av22.portsmouth.uk.ibm.com (d06av22.portsmouth.uk.ibm.com
+ [9.149.105.58])
+ by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x38MqfAQ55509016
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Mon, 8 Apr 2019 22:52:41 GMT
+Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id B1D7D4C04A;
+ Mon,  8 Apr 2019 22:52:41 +0000 (GMT)
+Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 059964C040;
+ Mon,  8 Apr 2019 22:52:40 +0000 (GMT)
+Received: from swastik.ibm.com (unknown [9.85.157.39])
+ by d06av22.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Mon,  8 Apr 2019 22:52:39 +0000 (GMT)
+From: Nayna Jain <nayna@linux.ibm.com>
+To: linuxppc-dev@ozlabs.org, linux-efi@vger.kernel.org,
+ linux-integrity@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH v2 0/3] powerpc: Enabling secure boot on powernv systems -
+ Part 1
+Date: Mon,  8 Apr 2019 18:52:31 -0400
+X-Mailer: git-send-email 1.8.3.1
+X-TM-AS-GCONF: 00
+x-cbid: 19040822-4275-0000-0000-00000325B110
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 19040822-4276-0000-0000-00003834C80A
+Message-Id: <1554763954-11795-1-git-send-email-nayna@linux.ibm.com>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
+ definitions=2019-04-08_10:, , signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1011 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1810050000 definitions=main-1904080164
+X-Mailman-Approved-At: Tue, 09 Apr 2019 09:18:13 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -58,147 +109,89 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: mark.rutland@arm.com, benjamin.gaignard@st.com, linux-pwm@vger.kernel.org,
- linux-iio@vger.kernel.org, patrick.havelange@essensium.com,
- thierry.reding@gmail.com, pmeerw@pmeerw.net, lars@metafoo.de,
- daniel.lezcano@linaro.org, linux-arm-kernel@lists.infradead.org,
- devicetree@vger.kernel.org, david@lechnology.com,
- linuxppc-dev@lists.ozlabs.org, robh+dt@kernel.org,
- Jonathan Cameron <Jonathan.Cameron@huawei.com>, tglx@linutronix.de,
- fabrice.gasnier@st.com, esben@haabendal.dk, gregkh@linuxfoundation.org,
- linux-kernel@vger.kernel.org, leoyang.li@nxp.com, knaack.h@gmx.de,
- akpm@linux-foundation.org, shawnguo@kernel.org, jic23@kernel.org
+Cc: Ard Biesheuvel <ard.biesheuvel@linaro.org>,
+ Nayna Jain <nayna@linux.ibm.com>, Claudio Carvalho <cclaudio@linux.ibm.com>,
+ Mimi Zohar <zohar@linux.ibm.com>, Matthew Garret <matthew.garret@nebula.com>,
+ Paul Mackerras <paulus@samba.org>, Jeremy Kerr <jk@ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+This patch set is part of a series that implements secure boot on PowerNV
+systems.
 
---JP+T4n/bALQSJXh8
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+In order to verify the OS kernel on PowerNV, secure boot requires X.509
+certificates trusted by the platform, the secure boot modes, and several
+other pieces of information. These are stored in secure variables
+controlled by OPAL, also known as OPAL secure variables.
 
-On Tue 2019-04-02 15:30:37, William Breathitt Gray wrote:
-> This patch adds standard documentation for the userspace sysfs
-> attributes of the Generic Counter interface.
->=20
-> Reviewed-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
-> Signed-off-by: William Breathitt Gray <vilhelm.gray@gmail.com>
-> ---
->  Documentation/ABI/testing/sysfs-bus-counter | 230 ++++++++++++++++++++
->  MAINTAINERS                                 |   1 +
->  2 files changed, 231 insertions(+)
->  create mode 100644 Documentation/ABI/testing/sysfs-bus-counter
->=20
-> diff --git a/Documentation/ABI/testing/sysfs-bus-counter b/Documentation/=
-ABI/testing/sysfs-bus-counter
-> new file mode 100644
-> index 000000000000..566bd99fe0a5
-> --- /dev/null
-> +++ b/Documentation/ABI/testing/sysfs-bus-counter
-> @@ -0,0 +1,230 @@
-> +What:		/sys/bus/counter/devices/counterX/countY/count
-> +KernelVersion:	5.2
-> +Contact:	linux-iio@vger.kernel.org
-> +Description:
-> +		Count data of Count Y represented as a string.
-> +
-> +What:		/sys/bus/counter/devices/counterX/countY/ceiling
-> +KernelVersion:	5.2
-> +Contact:	linux-iio@vger.kernel.org
-> +Description:
-> +		Count value ceiling for Count Y. This is the upper limit for the
-> +		respective counter.
-> +
-> +What:		/sys/bus/counter/devices/counterX/countY/floor
-> +KernelVersion:	5.2
-> +Contact:	linux-iio@vger.kernel.org
-> +Description:
-> +		Count value floor for Count Y. This is the lower limit for the
-> +		respective counter.
-> +
-> +What:		/sys/bus/counter/devices/counterX/countY/count_mode
-> +KernelVersion:	5.2
-> +Contact:	linux-iio@vger.kernel.org
-> +Description:
-> +		Count mode for channel Y. The ceiling and floor values for
-> +		Count Y are used by the count mode where required. The following
-> +		count modes are available:
-> +
-> +		normal:
-> +			Counting is continuous in either direction.
-> +
-> +		range limit:
-> +			An upper or lower limit is set, mimicking limit switches
-> +			in the mechanical counterpart. The upper limit is set to
-> +			the Count Y ceiling value, while the lower limit is set
-> +			to the Count Y floor value. The counter freezes at
-> +			count =3D ceiling when counting up, and at count =3D floor
-> +			when counting down. At either of these limits, the
-> +			counting is resumed only when the count direction is
-> +			reversed.
-> +
-> +		non-recycle:
-> +			The counter is disabled whenever a counter overflow or
-> +			underflow takes place. The counter is re-enabled when a
-> +			new count value is loaded to the counter via a preset
-> +			operation or direct write.
-> +
-> +		modulo-n:
-> +			A count value boundary is set between the Count Y floor
-> +			value and the Count Y ceiling value. The counter is
-> +			reset to the Count Y floor value at count =3D ceiling when
-> +			counting up, while the counter is set to the Count Y
-> +			ceiling value at count =3D floor when counting down; the
-> +			counter does not freeze at the boundary points, but
-> +			counts continuously throughout.
-> +
-> +What:		/sys/bus/counter/devices/counterX/countY/count_mode_available
-> +What:		/sys/bus/counter/devices/counterX/countY/error_noise_available
-> +What:		/sys/bus/counter/devices/counterX/countY/function_available
-> +What:		/sys/bus/counter/devices/counterX/countY/signalZ_action_available
-> +KernelVersion:	5.2
-> +Contact:	linux-iio@vger.kernel.org
-> +Description:
-> +		Discrete set of available values for the respective Count Y
-> +		configuration are listed in this file. Values are delimited by
-> +		newline characters.
+The IMA architecture specific policy support on Power is dependent on OPAL
+runtime services to access secure variables. Instead of directly accessing
+the OPAL runtime services, version 1[1] of this patch set relied upon the
+EFI hooks. This version drops that dependency and calls the OPAL runtime
+services directly.
 
-Elsewhere in sysfs we do space-separated:
+Exposing the OPAL secure variables to userspace will be posted as a
+separate patch set, allowing the IMA architecture specific policy on Power
+to be upstreamed independently.
 
-pavel@amd:~$ cat /sys/power/state
-freeze mem disk
+This patch set adds the following features:
 
-And we use [] to mark current selection:
+1. Add support for OPAL Runtime API to access secure variables controlled
+by OPAL.
+2. Define IMA arch-specific policies based on the secure boot state and
+mode of the system. On secure boot enabled powernv systems, the OS kernel
+signature will be verified by IMA appraisal.
 
-pavel@amd:~$ cat /sys/class/leds/tpacpi\:\:thinkvantage/trigger
-[none] bluetooth-power rfkill-any rfkill-none kbd-scrolllock
-kbd-numlock kbd-capslock kbd-kanalock kbd-shiftlock kbd-altgrlock
-kbd-ctrllock kbd-altlock kbd-shiftllock kbd-shiftrlock kbd-ctrlllock
-kbd-ctrlrlock AC-online BAT0-charging-or-full BAT0-charging BAT0-full
-BAT0-charging-blink-full-solid rfkill0 phy0rx phy0tx phy0assoc
-phy0radio phy0tpt mmc0 timer heartbeat audio-mute audio-micmute
-rfkill1
+[1] https://patchwork.kernel.org/cover/10882149/
 
-Note this only works if you have less than PAGE_SIZE of entries... and
-will never have more.
+Changelog:
 
-									Pavel
---=20
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
-g.html
+v2:
 
---JP+T4n/bALQSJXh8
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
+* Removed Patch 1: powerpc/include: Override unneeded early ioremap
+functions
+* Updated Subject line and patch description of the Patch 1 of this series
+* Removed dependency of OPAL_SECVAR on EFI, CPU_BIG_ENDIAN and UCS2_STRING
+* Changed OPAL APIs from static to non-static. Added opal-secvar.h for the
+same
+* Removed EFI hooks from opal_secvar.c 
+* Removed opal_secvar_get_next(), opal_secvar_enqueue() and
+opal_query_variable_info() function
+* get_powerpc_sb_mode() in secboot.c now directly calls OPAL Runtime API
+rather than via EFI hooks.
+* Fixed log messages in get_powerpc_sb_mode() function.
+* Added dependency for PPC_SECURE_BOOT on configs PPC64 and OPAL_SECVAR
+* Replaced obj-$(CONFIG_IMA) with obj-$(CONFIG_PPC_SECURE_BOOT) in
+arch/powerpc/kernel/Makefile
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
+Claudio Carvalho (1):
+  powerpc/powernv: Add support for OPAL_SECVAR_GET
 
-iEYEARECAAYFAlyrw1MACgkQMOfwapXb+vIrJACdGzny2kYErlj2vHsj5g0+nisf
-vFUAn2r0eo4ejc8ifXJmGFrOjikVszOA
-=36BY
------END PGP SIGNATURE-----
+Nayna Jain (2):
+  powerpc/powernv: detect the secure boot mode of the system
+  powerpc: Add support to initialize ima policy rules
 
---JP+T4n/bALQSJXh8--
+ arch/powerpc/Kconfig                         |  14 +++
+ arch/powerpc/include/asm/opal-api.h          |   3 +-
+ arch/powerpc/include/asm/opal-secvar.h       |  18 ++++
+ arch/powerpc/include/asm/opal.h              |   2 +
+ arch/powerpc/include/asm/secboot.h           |  21 ++++
+ arch/powerpc/kernel/Makefile                 |   1 +
+ arch/powerpc/kernel/ima_arch.c               |  54 ++++++++++
+ arch/powerpc/platforms/powernv/Kconfig       |   6 ++
+ arch/powerpc/platforms/powernv/Makefile      |   2 +
+ arch/powerpc/platforms/powernv/opal-call.c   |   1 +
+ arch/powerpc/platforms/powernv/opal-secvar.c | 107 +++++++++++++++++++
+ arch/powerpc/platforms/powernv/secboot.c     |  54 ++++++++++
+ include/linux/ima.h                          |   3 +-
+ 13 files changed, 284 insertions(+), 2 deletions(-)
+ create mode 100644 arch/powerpc/include/asm/opal-secvar.h
+ create mode 100644 arch/powerpc/include/asm/secboot.h
+ create mode 100644 arch/powerpc/kernel/ima_arch.c
+ create mode 100644 arch/powerpc/platforms/powernv/opal-secvar.c
+ create mode 100644 arch/powerpc/platforms/powernv/secboot.c
+
+-- 
+2.20.1
+
