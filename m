@@ -6,40 +6,40 @@ X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_PASS
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 04535C10F13
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Apr 2019 13:06:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 28D21C10F13
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Apr 2019 13:09:20 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id AE5FA213F2
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Apr 2019 13:06:39 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org AE5FA213F2
+	by mail.kernel.org (Postfix) with ESMTPS id D09F2213F2
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Apr 2019 13:09:18 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D09F2213F2
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44d9fj33TbzDq9n
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Apr 2019 23:06:37 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+	by lists.ozlabs.org (Postfix) with ESMTP id 44d9jn10SXzDqDP
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Apr 2019 23:09:17 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44d9bH17NqzDq9V
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44d9bH1nqQzDq9n
  for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Apr 2019 23:03:39 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 44d9bF3KVHz9sQq; Mon,  8 Apr 2019 23:03:36 +1000 (AEST)
+ id 44d9bG6lLhz9sQr; Mon,  8 Apr 2019 23:03:38 +1000 (AEST)
 X-powerpc-patch-notification: thanks
-X-powerpc-patch-commit: fd427103e8dfcb4b438269afd710b63e7af61463
+X-powerpc-patch-commit: dd9a994fc68d196a052b73747e3366c57d14a09e
 X-Patchwork-Hint: ignore
-In-Reply-To: <aab41779cac995ebdc03e700a9dc7cfc30a28770.1553503163.git.christophe.leroy@c-s.fr>
+In-Reply-To: <0d8c9cb7fb43bde8663333bb6a69d16380a219a5.1554380255.git.christophe.leroy@c-s.fr>
 To: Christophe Leroy <christophe.leroy@c-s.fr>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Larry Finger <Larry.Finger@lwfinger.net>
+ Paul Mackerras <paulus@samba.org>, Christian Zigotzky <chzigotzky@xenosoft.de>
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Subject: Re: powerpc/rtas: fix early boot failure.
-Message-Id: <44d9bF3KVHz9sQq@ozlabs.org>
-Date: Mon,  8 Apr 2019 23:03:36 +1000 (AEST)
+Subject: Re: powerpc/vdso32: fix CLOCK_MONOTONIC on PPC64
+Message-Id: <44d9bG6lLhz9sQr@ozlabs.org>
+Date: Mon,  8 Apr 2019 23:03:38 +1000 (AEST)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -56,28 +56,18 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, 2019-03-25 at 08:43:33 UTC, Christophe Leroy wrote:
-> Commit 0df977eafc79 ("powerpc/6xx: Don't use SPRN_SPRG2 for storing
-> stack pointer while in RTAS") changes the code to use a field in
-> thread struct to store the stack pointer while in RTAS instead of
-> using SPRN_SPRG2. It therefore converts all places which were
-> manipulating SPRN_SPRG2 to use that field. During early startup,
-> the zeroing of SPRN_SPRG2 has been replaced by a zeroing of that
-> field in thread struct. But at least in start_here, that's done
-> wrongly because it used the physical address of the fields while
-> MMU is on at that time.
+On Thu, 2019-04-04 at 12:20:05 UTC, Christophe Leroy wrote:
+> Commit b5b4453e7912 ("powerpc/vdso64: Fix CLOCK_MONOTONIC
+> inconsistencies across Y2038") changed the type of wtom_clock_sec
+> to s64 on PPC64. Therefore, VDSO32 needs to read it with a 4 bytes
+> shift in order to retrieve the lower part of it.
 > 
-> So the virtual address of the field should be used instead, but in
-> the meantime, thread struct has already been zeroised and initialised
-> so we can just drop this initialisation.
-> 
-> Reported-by: Larry Finger <Larry.Finger@lwfinger.net>
-> Fixes: 0df977eafc79 ("powerpc/6xx: Don't use SPRN_SPRG2 for storing stack pointer while in RTAS")
+> Fixes: b5b4453e7912 ("powerpc/vdso64: Fix CLOCK_MONOTONIC inconsistencies across Y2038")
+> Reported-by: Christian Zigotzky <chzigotzky@xenosoft.de>
 > Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
-> Tested-by: Larry Finger <Larry.Finger@lwfinger.net>
 
 Applied to powerpc fixes, thanks.
 
-https://git.kernel.org/powerpc/c/fd427103e8dfcb4b438269afd710b63e
+https://git.kernel.org/powerpc/c/dd9a994fc68d196a052b73747e3366c5
 
 cheers
