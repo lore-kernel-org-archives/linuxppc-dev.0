@@ -6,21 +6,21 @@ X-Spam-Status: No, score=-11.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_PASS,
 	URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E56A4C282CE
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Apr 2019 07:49:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A1E79C282CE
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Apr 2019 07:51:29 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 67AC620833
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Apr 2019 07:49:50 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 1C4FE20833
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Apr 2019 07:51:29 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=sirena.org.uk header.i=@sirena.org.uk header.b="TPzsz2VD"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 67AC620833
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=sirena.org.uk header.i=@sirena.org.uk header.b="gwOOuMAq"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1C4FE20833
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44d2d84JstzDq9W
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Apr 2019 17:49:48 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44d2g31KxnzDqGl
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Apr 2019 17:51:27 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=none (mailfrom) smtp.mailfrom=sirena.org.uk
  (client-ip=2a01:7e01::f03c:91ff:fed4:a3b6; helo=heliosphere.sirena.org.uk;
@@ -29,37 +29,38 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=sirena.org.uk header.i=@sirena.org.uk
- header.b="TPzsz2VD"; dkim-atps=neutral
+ header.b="gwOOuMAq"; dkim-atps=neutral
 Received: from heliosphere.sirena.org.uk (heliosphere.sirena.org.uk
  [IPv6:2a01:7e01::f03c:91ff:fed4:a3b6])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44d2966f0szDqJC
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Apr 2019 17:28:58 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44d29F07FJzDqFD
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Apr 2019 17:29:04 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
  d=sirena.org.uk; s=20170815-heliosphere; h=Date:Message-Id:In-Reply-To:
  Subject:Cc:To:From:Sender:Reply-To:MIME-Version:Content-Type:
  Content-Transfer-Encoding:Content-ID:Content-Description:Resent-Date:
  Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:References:
  List-Id:List-Help:List-Unsubscribe:List-Subscribe:List-Post:List-Owner:
- List-Archive; bh=XR9ayC+yP7VTg7FNAonmE5/A0IO8JmccmzqBhgRk2uo=; b=TPzsz2VDKdYe
- aQpXY8zlioZ136D7mDInz0VyB0766zDs62hv014nx+9etYlOqf7VazFRAATeal9wGxTHhCyeA9JI3
- OlXs3n9nkI7mPIu93kD/t48x5Ch+R+SXkqnkl37rfmq3dTLPN6y15PTml2j2cBwbqUaKbcl8K+l5B
- 6TcF0=;
+ List-Archive; bh=q8Ofp7sdG0xezMKpmabKc9T7nuzU4iRyyX2aw1ZN22c=; b=gwOOuMAq52pT
+ WD9ia+f+KIilHkgwTS9r84LMZSjLaFNZnJi4uB8HRMDzAo/JsUgaP2VWZiJeldILaumGaFxOmby2I
+ r8L3Youw63K0Jq88XqwnBQAghfGG+gOGUb7b9jXmv8CvZYGizNZak3BvrSacWm8YeFLR+zUNBa3Rg
+ YyFW8=;
 Received: from [8.46.76.46] (helo=finisterre.ee.mobilebroadband)
  by heliosphere.sirena.org.uk with esmtpsa
  (TLS1.2:ECDHE_RSA_AES_256_GCM_SHA384:256) (Exim 4.89)
  (envelope-from <broonie@sirena.org.uk>)
- id 1hDOi3-0003rt-GK; Mon, 08 Apr 2019 07:28:52 +0000
+ id 1hDOi9-0003s9-TR; Mon, 08 Apr 2019 07:28:59 +0000
 Received: by finisterre.ee.mobilebroadband (Postfix, from userid 1000)
- id 99F2E441D3C; Mon,  8 Apr 2019 14:28:35 +0700 (+07)
+ id 92A7D441D3B; Mon,  8 Apr 2019 14:28:47 +0700 (+07)
 From: Mark Brown <broonie@kernel.org>
 To: Andra Danciu <andradanciu1997@gmail.com>
-Subject: Applied "ASoC: imx-spdif: Switch to SPDX identifier" to the asoc tree
-In-Reply-To: <20190405115010.28838-10-andradanciu1997@gmail.com>
+Subject: Applied "ASoC: imx-pcm-fiq: Switch to SPDX identifier" to the asoc
+ tree
+In-Reply-To: <20190405115010.28838-9-andradanciu1997@gmail.com>
 X-Patchwork-Hint: ignore
-Message-Id: <20190408072835.99F2E441D3C@finisterre.ee.mobilebroadband>
-Date: Mon,  8 Apr 2019 14:28:35 +0700 (+07)
+Message-Id: <20190408072847.92A7D441D3B@finisterre.ee.mobilebroadband>
+Date: Mon,  8 Apr 2019 14:28:47 +0700 (+07)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -83,7 +84,7 @@ Sender: "Linuxppc-dev"
 
 The patch
 
-   ASoC: imx-spdif: Switch to SPDX identifier
+   ASoC: imx-pcm-fiq: Switch to SPDX identifier
 
 has been applied to the asoc tree at
 
@@ -108,10 +109,10 @@ to this mail.
 Thanks,
 Mark
 
-From 58dbd1015d3ed47d53a99e7c4da0bbd3543177da Mon Sep 17 00:00:00 2001
+From d4451c159a0b63efd5028d62cae501737d8679fa Mon Sep 17 00:00:00 2001
 From: Andra Danciu <andradanciu1997@gmail.com>
-Date: Fri, 5 Apr 2019 14:49:59 +0300
-Subject: [PATCH] ASoC: imx-spdif: Switch to SPDX identifier
+Date: Fri, 5 Apr 2019 14:49:58 +0300
+Subject: [PATCH] ASoC: imx-pcm-fiq: Switch to SPDX identifier
 
 Adopt the SPDX license identifier headers to ease license compliance
 management.
@@ -119,30 +120,38 @@ management.
 Signed-off-by: Andra Danciu <andradanciu1997@gmail.com>
 Signed-off-by: Mark Brown <broonie@kernel.org>
 ---
- sound/soc/fsl/imx-spdif.c | 13 +++----------
- 1 file changed, 3 insertions(+), 10 deletions(-)
+ sound/soc/fsl/imx-pcm-fiq.c | 21 ++++++++-------------
+ 1 file changed, 8 insertions(+), 13 deletions(-)
 
-diff --git a/sound/soc/fsl/imx-spdif.c b/sound/soc/fsl/imx-spdif.c
-index 797d66e43d49..4f7f210beb18 100644
---- a/sound/soc/fsl/imx-spdif.c
-+++ b/sound/soc/fsl/imx-spdif.c
-@@ -1,13 +1,6 @@
+diff --git a/sound/soc/fsl/imx-pcm-fiq.c b/sound/soc/fsl/imx-pcm-fiq.c
+index 0578f3486847..c49aea4fba56 100644
+--- a/sound/soc/fsl/imx-pcm-fiq.c
++++ b/sound/soc/fsl/imx-pcm-fiq.c
+@@ -1,16 +1,11 @@
 -/*
-- * Copyright (C) 2013 Freescale Semiconductor, Inc.
+- * imx-pcm-fiq.c  --  ALSA Soc Audio Layer
 - *
-- * The code contained herein is licensed under the GNU General Public
-- * License. You may obtain a copy of the GNU General Public License
-- * Version 2 or later at the following locations:
+- * Copyright 2009 Sascha Hauer <s.hauer@pengutronix.de>
 - *
-- * http://www.opensource.org/licenses/gpl-license.html
-- * http://www.gnu.org/copyleft/gpl.html
+- * This code is based on code copyrighted by Freescale,
+- * Liam Girdwood, Javier Martin and probably others.
+- *
+- *  This program is free software; you can redistribute  it and/or modify it
+- *  under  the terms of  the GNU General  Public License as published by the
+- *  Free Software Foundation;  either version 2 of the  License, or (at your
+- *  option) any later version.
 - */
 +// SPDX-License-Identifier: GPL-2.0+
++// imx-pcm-fiq.c  --  ALSA Soc Audio Layer
 +//
-+// Copyright (C) 2013 Freescale Semiconductor, Inc.
- 
- #include <linux/module.h>
- #include <linux/of_platform.h>
++// Copyright 2009 Sascha Hauer <s.hauer@pengutronix.de>
++//
++// This code is based on code copyrighted by Freescale,
++// Liam Girdwood, Javier Martin and probably others.
++
+ #include <linux/clk.h>
+ #include <linux/delay.h>
+ #include <linux/device.h>
 -- 
 2.20.1
 
