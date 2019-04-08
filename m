@@ -2,25 +2,25 @@ Return-Path: <SRS0=nZGU=SK=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.1 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+X-Spam-Status: No, score=-11.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_PASS,
-	URIBL_BLACK autolearn=unavailable autolearn_force=no version=3.4.0
+	URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 389BDC282CE
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Apr 2019 08:00:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 42039C282CE
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Apr 2019 08:03:01 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 63DEA20883
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Apr 2019 08:00:41 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id A509A20883
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Apr 2019 08:03:00 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=sirena.org.uk header.i=@sirena.org.uk header.b="jeF3xs9F"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 63DEA20883
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=sirena.org.uk header.i=@sirena.org.uk header.b="ePIDvHEN"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A509A20883
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44d2sf61k1zDqGP
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Apr 2019 18:00:38 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44d2wL5dKRzDq60
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Apr 2019 18:02:58 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=none (mailfrom) smtp.mailfrom=sirena.org.uk
  (client-ip=2a01:7e01::f03c:91ff:fed4:a3b6; helo=heliosphere.sirena.org.uk;
@@ -29,38 +29,37 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=sirena.org.uk header.i=@sirena.org.uk
- header.b="jeF3xs9F"; dkim-atps=neutral
+ header.b="ePIDvHEN"; dkim-atps=neutral
 Received: from heliosphere.sirena.org.uk (heliosphere.sirena.org.uk
  [IPv6:2a01:7e01::f03c:91ff:fed4:a3b6])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44d2BD6YV4zDqJS
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Apr 2019 17:29:56 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44d2BQ3y9SzDqGh
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Apr 2019 17:30:06 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
  d=sirena.org.uk; s=20170815-heliosphere; h=Date:Message-Id:In-Reply-To:
  Subject:Cc:To:From:Sender:Reply-To:MIME-Version:Content-Type:
  Content-Transfer-Encoding:Content-ID:Content-Description:Resent-Date:
  Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:References:
  List-Id:List-Help:List-Unsubscribe:List-Subscribe:List-Post:List-Owner:
- List-Archive; bh=mct+e0HiaPQS+MrRvE7XzXrHGFRBrnGgY2EsefpFgmQ=; b=jeF3xs9FdIcM
- 0GH6PCV3Zfn5utQTISmp4MtLA691YmOreLGBHSs/dIEE7PUjI161n44mxUkWDhO4qxHfoL54njDOb
- vDzizOa60R5/jeYAC4xlPmHZJXWlrXAe71VcATCH0tcQvG10RqbcXkACMNWBWxTp44GlcMa9sqiUt
- fRjgM=;
+ List-Archive; bh=VQsj8TlyqpPEUdjLgicK+e4dY7Alb6XE3coJsvJL+zU=; b=ePIDvHENjp/j
+ q+j//6YPcNNQRALot/yMMasIrZBUVjPHFqMPOKmYxAalAT/FCKVt8+8zZiRst/jV8yczJq6uTx5zV
+ 9dBSe7e9emPQm+dNElyHRrpxKtfb+k2CIVZ5LaIorQ75JQ1qCILW/v7A0vFi3Djh7cTMOJLpcwdQN
+ UrrJ4=;
 Received: from [8.46.76.46] (helo=finisterre.ee.mobilebroadband)
  by heliosphere.sirena.org.uk with esmtpsa
  (TLS1.2:ECDHE_RSA_AES_256_GCM_SHA384:256) (Exim 4.89)
  (envelope-from <broonie@sirena.org.uk>)
- id 1hDOiz-0003tr-Jb; Mon, 08 Apr 2019 07:29:50 +0000
+ id 1hDOj9-0003uC-85; Mon, 08 Apr 2019 07:30:00 +0000
 Received: by finisterre.ee.mobilebroadband (Postfix, from userid 1000)
- id 725D5441D3C; Mon,  8 Apr 2019 14:29:39 +0700 (+07)
+ id 0B2BA441D3B; Mon,  8 Apr 2019 14:29:49 +0700 (+07)
 From: Mark Brown <broonie@kernel.org>
 To: Andra Danciu <andradanciu1997@gmail.com>
-Subject: Applied "ASoC: eukrea-tlv320: Switch to SPDX identifier" to the asoc
- tree
-In-Reply-To: <20190405115010.28838-4-andradanciu1997@gmail.com>
+Subject: Applied "ASoC: imx-pcm: Switch to SPDX identifier" to the asoc tree
+In-Reply-To: <20190405115010.28838-2-andradanciu1997@gmail.com>
 X-Patchwork-Hint: ignore
-Message-Id: <20190408072939.725D5441D3C@finisterre.ee.mobilebroadband>
-Date: Mon,  8 Apr 2019 14:29:39 +0700 (+07)
+Message-Id: <20190408072949.0B2BA441D3B@finisterre.ee.mobilebroadband>
+Date: Mon,  8 Apr 2019 14:29:48 +0700 (+07)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -84,7 +83,7 @@ Sender: "Linuxppc-dev"
 
 The patch
 
-   ASoC: eukrea-tlv320: Switch to SPDX identifier
+   ASoC: imx-pcm: Switch to SPDX identifier
 
 has been applied to the asoc tree at
 
@@ -109,10 +108,10 @@ to this mail.
 Thanks,
 Mark
 
-From ecf4630f1b9857141e38ea798bc30b8fd7c11dfc Mon Sep 17 00:00:00 2001
+From 1c05c1ed6f4dd267a2ca30bacd63870cd5ecc860 Mon Sep 17 00:00:00 2001
 From: Andra Danciu <andradanciu1997@gmail.com>
-Date: Fri, 5 Apr 2019 14:49:53 +0300
-Subject: [PATCH] ASoC: eukrea-tlv320: Switch to SPDX identifier
+Date: Fri, 5 Apr 2019 14:49:51 +0300
+Subject: [PATCH] ASoC: imx-pcm: Switch to SPDX identifier
 
 Adopt the SPDX license identifier headers to ease license compliance
 management.
@@ -120,43 +119,28 @@ management.
 Signed-off-by: Andra Danciu <andradanciu1997@gmail.com>
 Signed-off-by: Mark Brown <broonie@kernel.org>
 ---
- sound/soc/fsl/eukrea-tlv320.c | 26 ++++++++++----------------
- 1 file changed, 10 insertions(+), 16 deletions(-)
+ sound/soc/fsl/imx-pcm.h | 6 +-----
+ 1 file changed, 1 insertion(+), 5 deletions(-)
 
-diff --git a/sound/soc/fsl/eukrea-tlv320.c b/sound/soc/fsl/eukrea-tlv320.c
-index 30a3d68b5c03..d648268cb454 100644
---- a/sound/soc/fsl/eukrea-tlv320.c
-+++ b/sound/soc/fsl/eukrea-tlv320.c
-@@ -1,19 +1,13 @@
--/*
-- * eukrea-tlv320.c  --  SoC audio for eukrea_cpuimxXX in I2S mode
+diff --git a/sound/soc/fsl/imx-pcm.h b/sound/soc/fsl/imx-pcm.h
+index 133c4470acad..5dd406774d3e 100644
+--- a/sound/soc/fsl/imx-pcm.h
++++ b/sound/soc/fsl/imx-pcm.h
+@@ -1,13 +1,9 @@
++/* SPDX-License-Identifier: GPL-2.0+ */
+ /*
+  * Copyright 2009 Sascha Hauer <s.hauer@pengutronix.de>
+  *
+  * This code is based on code copyrighted by Freescale,
+  * Liam Girdwood, Javier Martin and probably others.
 - *
-- * Copyright 2010 Eric Bénard, Eukréa Electromatique <eric@eukrea.com>
-- *
-- * based on sound/soc/s3c24xx/s3c24xx_simtec_tlv320aic23.c
-- * which is Copyright 2009 Simtec Electronics
-- * and on sound/soc/imx/phycore-ac97.c which is
-- * Copyright 2009 Sascha Hauer, Pengutronix <s.hauer@pengutronix.de>
-- *
-- *  This program is free software; you can redistribute  it and/or modify it
-- *  under  the terms of  the GNU General  Public License as published by the
-- *  Free Software Foundation;  either version 2 of the  License, or (at your
-- *  option) any later version.
-- *
-- */
-+// SPDX-License-Identifier: GPL-2.0+
-+//
-+// eukrea-tlv320.c  --  SoC audio for eukrea_cpuimxXX in I2S mode
-+//
-+// Copyright 2010 Eric Bénard, Eukréa Electromatique <eric@eukrea.com>
-+//
-+// based on sound/soc/s3c24xx/s3c24xx_simtec_tlv320aic23.c
-+// which is Copyright 2009 Simtec Electronics
-+// and on sound/soc/imx/phycore-ac97.c which is
-+// Copyright 2009 Sascha Hauer, Pengutronix <s.hauer@pengutronix.de>
+- * This program is free software; you can redistribute  it and/or modify it
+- * under  the terms of  the GNU General  Public License as published by the
+- * Free Software Foundation;  either version 2 of the  License, or (at your
+- * option) any later version.
+  */
  
- #include <linux/errno.h>
- #include <linux/module.h>
+ #ifndef _IMX_PCM_H
 -- 
 2.20.1
 
