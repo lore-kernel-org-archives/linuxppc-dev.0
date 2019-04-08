@@ -2,80 +2,52 @@ Return-Path: <SRS0=nZGU=SK=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.8 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_MUTT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 60B71C10F13
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Apr 2019 20:25:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 40D0AC10F13
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Apr 2019 22:03:01 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id CFED721841
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Apr 2019 20:25:19 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=google.com header.i=@google.com header.b="XzoQ5uk9"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CFED721841
-Authentication-Results: mail.kernel.org; dmarc=fail (p=reject dis=none) header.from=google.com
+	by mail.kernel.org (Postfix) with ESMTPS id 6C1B120880
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Apr 2019 22:03:00 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6C1B120880
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ucw.cz
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44dMNs2dGMzDqK6
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Apr 2019 06:25:17 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44dPYY2rXPzDqKN
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Apr 2019 08:02:57 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=google.com
- (client-ip=2607:f8b0:4864:20::431; helo=mail-pf1-x431.google.com;
- envelope-from=hughd@google.com; receiver=<UNKNOWN>)
+ spf=none (mailfrom) smtp.mailfrom=ucw.cz
+ (client-ip=195.113.26.193; helo=atrey.karlin.mff.cuni.cz;
+ envelope-from=pavel@ucw.cz; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=reject dis=none) header.from=google.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=google.com header.i=@google.com header.b="XzoQ5uk9"; 
- dkim-atps=neutral
-Received: from mail-pf1-x431.google.com (mail-pf1-x431.google.com
- [IPv6:2607:f8b0:4864:20::431])
+ dmarc=none (p=none dis=none) header.from=ucw.cz
+X-Greylist: delayed 355 seconds by postgrey-1.36 at bilbo;
+ Tue, 09 Apr 2019 08:01:23 AEST
+Received: from atrey.karlin.mff.cuni.cz (atrey.karlin.mff.cuni.cz
+ [195.113.26.193])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44dMM00KxdzDqK9
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Apr 2019 06:23:33 +1000 (AEST)
-Received: by mail-pf1-x431.google.com with SMTP id 188so8270685pfd.8
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 08 Apr 2019 13:23:32 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=20161025;
- h=date:from:to:cc:subject:message-id:user-agent:mime-version;
- bh=2/plURz0O/kvp62nzrIaAO156gML2Ck7ZIjU/iprOVA=;
- b=XzoQ5uk96KHSveBdJCs6H+S8Cp4n1TIcFB5ojCBkIQ1v9BNXA5eT3zkNLe0uWMF6W1
- DYCXkfW2stKlrr1nIsb+DwUu+/CDdtKGSYQWnIany7ygqybu2TLsonSy1Ib+KMUhrQ4O
- EO+0JXVG5sM6dgep35nMvk5t5JmUwd5XauEWRdzYGUz/LnluiizJp/WqUqra/l4M5RcD
- qzjPg07l2rgfRJnUflE89o5B3pSTRtoITW1tWecsNFs7ijiDVwPoEjWcdEcqUvR7DL4C
- VZAjmoBNZTk/cMre1XjEaOESlW+ShUtXIa6Dnk8IqNUh1as6da/kapBHTvufPxnepD1Y
- /aQA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:date:from:to:cc:subject:message-id:user-agent
- :mime-version;
- bh=2/plURz0O/kvp62nzrIaAO156gML2Ck7ZIjU/iprOVA=;
- b=KjPaZIB/G6Jku9vl65/mf5C8yZT7eC7Mqg1l0OAlI8HUPRd3AgvyZjqWfUMcBgGrLG
- f7A6sTGWFDeUncKUDavQaLHNimTBmkZO1L3qwHq6RCJkiyouueilg/lpGlF6aJEEoupJ
- 2GNE1FggFu+Kri4COwfCDvuDjDR1v19gpocnFX0ms0pZqVGdKtSwBGQw3lBRLZCe2wI3
- niaaS4vTYCiV+TXTqTW11Qwr5F0mus0Uhv50lOQYCq8bMcaqi9LN8pyHyTe6PBe+iiwa
- Qg0Imm8jv0pRgoIV/F9yrrkYjPrni5wqRYtZg9CFUBWniPrkpPPBmfqDXj6gaagZKhBx
- NufQ==
-X-Gm-Message-State: APjAAAUtb5mqh+UW5A6ZFTOWJY5XlAolnn4MF9TkqB87QSmsauRik2l4
- BP0akknd3Ejf1fsMm0Cq9qCJlg==
-X-Google-Smtp-Source: APXvYqwMUipIgX4gLd9oCEzoY3Q+Rqc4f36bfR714GeDU8O5vxj7ObU5MMNI+5jZITZgYokSvXIeSg==
-X-Received: by 2002:a63:2b0d:: with SMTP id r13mr30002742pgr.400.1554755009311; 
- Mon, 08 Apr 2019 13:23:29 -0700 (PDT)
-Received: from [100.112.89.103] ([104.133.8.103])
- by smtp.gmail.com with ESMTPSA id 4sm49396590pgx.68.2019.04.08.13.23.27
- (version=TLS1 cipher=ECDHE-RSA-AES128-SHA bits=128/128);
- Mon, 08 Apr 2019 13:23:28 -0700 (PDT)
-Date: Mon, 8 Apr 2019 13:23:10 -0700 (PDT)
-From: Hugh Dickins <hughd@google.com>
-X-X-Sender: hugh@eggly.anvils
-To: Ben Hutchings <ben@decadent.org.uk>
-Subject: ppc64 4kB: MAX_PHYSMEM_BITS undefined
-Message-ID: <alpine.LSU.2.11.1904081305030.1656@eggly.anvils>
-User-Agent: Alpine 2.11 (LSU 23 2013-08-11)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44dPWl118xzDqHZ
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Apr 2019 08:01:22 +1000 (AEST)
+Received: by atrey.karlin.mff.cuni.cz (Postfix, from userid 512)
+ id 02D5380569; Mon,  8 Apr 2019 23:55:07 +0200 (CEST)
+Date: Mon, 8 Apr 2019 23:55:15 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: William Breathitt Gray <vilhelm.gray@gmail.com>
+Subject: Re: [PATCH v10 01/18] counter: Introduce the Generic Counter interface
+Message-ID: <20190408215515.GA27592@amd>
+References: <cover.1554184734.git.vilhelm.gray@gmail.com>
+ <ad3a8c427a911848373eae1c08e89353ffb6cb6d.1554184734.git.vilhelm.gray@gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="0OAP2g/MAC+5xKAE"
+Content-Disposition: inline
+In-Reply-To: <ad3a8c427a911848373eae1c08e89353ffb6cb6d.1554184734.git.vilhelm.gray@gmail.com>
+User-Agent: Mutt/1.5.23 (2014-03-12)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -87,42 +59,60 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Hugh Dickins <hughd@google.com>, linuxppc-dev@lists.ozlabs.org
+Cc: mark.rutland@arm.com, benjamin.gaignard@st.com, linux-pwm@vger.kernel.org,
+ linux-iio@vger.kernel.org, patrick.havelange@essensium.com,
+ thierry.reding@gmail.com, pmeerw@pmeerw.net, lars@metafoo.de,
+ daniel.lezcano@linaro.org, linux-arm-kernel@lists.infradead.org,
+ devicetree@vger.kernel.org, david@lechnology.com,
+ linuxppc-dev@lists.ozlabs.org, robh+dt@kernel.org,
+ Jonathan Cameron <Jonathan.Cameron@huawei.com>, tglx@linutronix.de,
+ fabrice.gasnier@st.com, esben@haabendal.dk, gregkh@linuxfoundation.org,
+ linux-kernel@vger.kernel.org, leoyang.li@nxp.com, knaack.h@gmx.de,
+ akpm@linux-foundation.org, shawnguo@kernel.org, jic23@kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi Ben,
 
-5.1-rc's 8bc086899816 ("powerpc/mm: Only define MAX_PHYSMEM_BITS in
-SPARSEMEM configurations") has sadly broken the build for my config
-on the G5, which has (amongst a few other options):
+--0OAP2g/MAC+5xKAE
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-CONFIG_PPC_BOOK3S_64=y
-CONFIG_PPC_BOOK3S=y
-CONFIG_ARCH_SPARSEMEM_ENABLE=y
-CONFIG_ARCH_SPARSEMEM_DEFAULT=y
-CONFIG_PPC_4K_PAGES=y
-# CONFIG_PPC_64K_PAGES is not set
-# CONFIG_SPARSEMEM_MANUAL is not set
-CONFIG_SPARSEMEM_VMEMMAP_ENABLE=y
+Hi!
 
-Easily enough worked around for me by...
+> +const char *const counter_count_direction_str[2] =3D {
+> +	[COUNTER_COUNT_DIRECTION_FORWARD] =3D "forward",
+> +	[COUNTER_COUNT_DIRECTION_BACKWARD] =3D "backward"
+> +};
+> +EXPORT_SYMBOL_GPL(counter_count_direction_str);
+> +
+> +const char *const counter_count_mode_str[4] =3D {
+> +	[COUNTER_COUNT_MODE_NORMAL] =3D "normal",
+> +	[COUNTER_COUNT_MODE_RANGE_LIMIT] =3D "range limit",
+> +	[COUNTER_COUNT_MODE_NON_RECYCLE] =3D "non-recycle",
+> +	[COUNTER_COUNT_MODE_MODULO_N] =3D "modulo-n"
+> +};
+> +EXPORT_SYMBOL_GPL(counter_count_mode_str);
 
---- 5.1-rc4/arch/powerpc/include/asm/mmu.h	2019-03-24 15:40:26.833378215 -0700
-+++ linux/arch/powerpc/include/asm/mmu.h	2019-04-07 19:51:11.419295089 -0700
-@@ -352,7 +352,7 @@ static inline bool strict_kernel_rwx_ena
- #if defined(CONFIG_SPARSEMEM_VMEMMAP) && defined(CONFIG_SPARSEMEM_EXTREME) &&	\
- 	defined (CONFIG_PPC_64K_PAGES)
- #define MAX_PHYSMEM_BITS        51
--#elif defined(CONFIG_SPARSEMEM)
-+#else
- #define MAX_PHYSMEM_BITS        46
- #endif
+Dunno. Exporting const tables saying "forward" and "backward". Can we
+=2E.. somehow make it work without need to export this?
 
-...but I don't suppose that's what you want to do.
+--=20
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
+g.html
 
-I wonder if there was a momentary mixup between 64 bits and 64kB pages -
-I'm a non-conformist using 4kB pages on ppc64.
+--0OAP2g/MAC+5xKAE
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
 
-Hugh
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iEYEARECAAYFAlyrw0MACgkQMOfwapXb+vI0fQCeOVJVU9FSIbeRA4WSFP7n6OI7
+dq8AnR+Ykf6BWrqHixl+oRJ+LYhLlFau
+=/6R+
+-----END PGP SIGNATURE-----
+
+--0OAP2g/MAC+5xKAE--
