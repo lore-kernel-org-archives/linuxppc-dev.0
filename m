@@ -3,24 +3,24 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
 X-Spam-Status: No, score=-11.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_PASS,
-	URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
+	INCLUDES_PATCH,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_PASS
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 363FFC282CE
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Apr 2019 07:36:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 21149C282CE
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Apr 2019 07:37:41 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id AB14C20870
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Apr 2019 07:36:14 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 902D020870
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Apr 2019 07:37:40 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=sirena.org.uk header.i=@sirena.org.uk header.b="nvMENv5t"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org AB14C20870
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=sirena.org.uk header.i=@sirena.org.uk header.b="pKFhx9Mc"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 902D020870
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44d2KS2wb1zDqFt
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Apr 2019 17:36:12 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44d2M63X8qzDqKw
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Apr 2019 17:37:38 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=none (mailfrom) smtp.mailfrom=sirena.org.uk
  (client-ip=2a01:7e01::f03c:91ff:fed4:a3b6; helo=heliosphere.sirena.org.uk;
@@ -29,37 +29,38 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=sirena.org.uk header.i=@sirena.org.uk
- header.b="nvMENv5t"; dkim-atps=neutral
+ header.b="pKFhx9Mc"; dkim-atps=neutral
 Received: from heliosphere.sirena.org.uk (heliosphere.sirena.org.uk
  [IPv6:2a01:7e01::f03c:91ff:fed4:a3b6])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44d25X6PDhzDqHW
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Apr 2019 17:25:52 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44d25f3My7zDqGN
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Apr 2019 17:25:58 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
  d=sirena.org.uk; s=20170815-heliosphere; h=Date:Message-Id:In-Reply-To:
  Subject:Cc:To:From:Sender:Reply-To:MIME-Version:Content-Type:
  Content-Transfer-Encoding:Content-ID:Content-Description:Resent-Date:
  Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:References:
  List-Id:List-Help:List-Unsubscribe:List-Subscribe:List-Post:List-Owner:
- List-Archive; bh=w9DGT1UQQsVAWJAyzkkYAvbrtKDK5tI7UM9utKcgM50=; b=nvMENv5tzbGQ
- /Y5QCpcBDLar59OcWKlqjmanrDQ+bmJwgf30gRPrV9bbvwNiSx5XQFkb1m0/ERuFqLx6fznjeKADy
- Cu8KTGfy8F71fqK93ocOnP+GVoPczaA0S1qhNPrg4ovY7fm3+/GBI5hg6xBYs/i2nUr3iryofUDlF
- ZSBq0=;
+ List-Archive; bh=OF32AdMGz9qGno4Sq2WPCUNbV3+0lXRDGQsy2yMrCU8=; b=pKFhx9McYbqy
+ YZ96m1vmDg9P+4PGg+uq416594UM3nsuI6KeKEYjozdQeVCDbz9tCOHETmP41IM1yiZ7Ys7c4bXl4
+ +Niegg6O4ipvSf2sglqnNm0t7bHRKaoUFla91XkS0XcIqZzXd4rkziHZ4usqSoLOY7eCpyC2AYwc0
+ Q4mAM=;
 Received: from [8.46.76.46] (helo=finisterre.ee.mobilebroadband)
  by heliosphere.sirena.org.uk with esmtpsa
  (TLS1.2:ECDHE_RSA_AES_256_GCM_SHA384:256) (Exim 4.89)
  (envelope-from <broonie@sirena.org.uk>)
- id 1hDOey-0003pH-I0; Mon, 08 Apr 2019 07:25:41 +0000
+ id 1hDOf8-0003pT-BZ; Mon, 08 Apr 2019 07:25:51 +0000
 Received: by finisterre.ee.mobilebroadband (Postfix, from userid 1000)
- id B08DA441D3B; Mon,  8 Apr 2019 14:25:30 +0700 (+07)
+ id 20432441D3C; Mon,  8 Apr 2019 14:25:40 +0700 (+07)
 From: Mark Brown <broonie@kernel.org>
 To: Andra Danciu <andradanciu1997@gmail.com>
-Subject: Applied "ASoC: p1022_ds: Switch to SPDX identifier" to the asoc tree
-In-Reply-To: <20190405115010.28838-17-andradanciu1997@gmail.com>
+Subject: Applied "ASoC: mx27vis-aic32x4: Switch to SPDX identifier" to the
+ asoc tree
+In-Reply-To: <20190405115010.28838-16-andradanciu1997@gmail.com>
 X-Patchwork-Hint: ignore
-Message-Id: <20190408072530.B08DA441D3B@finisterre.ee.mobilebroadband>
-Date: Mon,  8 Apr 2019 14:25:30 +0700 (+07)
+Message-Id: <20190408072540.20432441D3C@finisterre.ee.mobilebroadband>
+Date: Mon,  8 Apr 2019 14:25:40 +0700 (+07)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -83,7 +84,7 @@ Sender: "Linuxppc-dev"
 
 The patch
 
-   ASoC: p1022_ds: Switch to SPDX identifier
+   ASoC: mx27vis-aic32x4: Switch to SPDX identifier
 
 has been applied to the asoc tree at
 
@@ -108,10 +109,10 @@ to this mail.
 Thanks,
 Mark
 
-From ab78529cfec09bf1a4327d48c4ba6d3d159a1540 Mon Sep 17 00:00:00 2001
+From 1021ec41a909ee7961f63f38afd90b5ccc592c49 Mon Sep 17 00:00:00 2001
 From: Andra Danciu <andradanciu1997@gmail.com>
-Date: Fri, 5 Apr 2019 14:50:06 +0300
-Subject: [PATCH] ASoC: p1022_ds: Switch to SPDX identifier
+Date: Fri, 5 Apr 2019 14:50:05 +0300
+Subject: [PATCH] ASoC: mx27vis-aic32x4: Switch to SPDX identifier
 
 Adopt the SPDX license identifier headers to ease license compliance
 management.
@@ -119,35 +120,46 @@ management.
 Signed-off-by: Andra Danciu <andradanciu1997@gmail.com>
 Signed-off-by: Mark Brown <broonie@kernel.org>
 ---
- sound/soc/fsl/p1022_ds.c | 18 +++++++-----------
- 1 file changed, 7 insertions(+), 11 deletions(-)
+ sound/soc/fsl/mx27vis-aic32x4.c | 29 +++++++----------------------
+ 1 file changed, 7 insertions(+), 22 deletions(-)
 
-diff --git a/sound/soc/fsl/p1022_ds.c b/sound/soc/fsl/p1022_ds.c
-index 41c623c55c16..80384f70878d 100644
---- a/sound/soc/fsl/p1022_ds.c
-+++ b/sound/soc/fsl/p1022_ds.c
-@@ -1,14 +1,10 @@
--/**
-- * Freescale P1022DS ALSA SoC Machine driver
+diff --git a/sound/soc/fsl/mx27vis-aic32x4.c b/sound/soc/fsl/mx27vis-aic32x4.c
+index d7ec3d20065c..37a4520aef62 100644
+--- a/sound/soc/fsl/mx27vis-aic32x4.c
++++ b/sound/soc/fsl/mx27vis-aic32x4.c
+@@ -1,25 +1,10 @@
+-/*
+- * mx27vis-aic32x4.c
 - *
-- * Author: Timur Tabi <timur@freescale.com>
+- * Copyright 2011 Vista Silicon S.L.
 - *
-- * Copyright 2010 Freescale Semiconductor, Inc.
+- * Author: Javier Martin <javier.martin@vista-silicon.com>
 - *
-- * This file is licensed under the terms of the GNU General Public License
-- * version 2.  This program is licensed "as is" without any warranty of any
-- * kind, whether express or implied.
+- * This program is free software; you can redistribute  it and/or modify it
+- * under  the terms of  the GNU General  Public License as published by the
+- * Free Software Foundation;  either version 2 of the  License, or (at your
+- * option) any later version.
+- *
+- * This program is distributed in the hope that it will be useful,
+- * but WITHOUT ANY WARRANTY; without even the implied warranty of
+- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+- * GNU General Public License for more details.
+- *
+- * You should have received a copy of the GNU General Public License
+- * along with this program; if not, write to the Free Software
+- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+- * MA 02110-1301, USA.
 - */
-+// SPDX-License-Identifier: GPL-2.0
++// SPDX-License-Identifier: GPL-2.0+
 +//
-+// Freescale P1022DS ALSA SoC Machine driver
++// mx27vis-aic32x4.c
 +//
-+// Author: Timur Tabi <timur@freescale.com>
++// Copyright 2011 Vista Silicon S.L.
 +//
-+// Copyright 2010 Freescale Semiconductor, Inc.
++// Author: Javier Martin <javier.martin@vista-silicon.com>
  
  #include <linux/module.h>
- #include <linux/fsl/guts.h>
+ #include <linux/moduleparam.h>
 -- 
 2.20.1
 
