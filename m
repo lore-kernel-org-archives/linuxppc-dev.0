@@ -1,104 +1,66 @@
-Return-Path: <SRS0=nZGU=SK=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
+Return-Path: <SRS0=YLyy=SL=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT
+X-Spam-Status: No, score=-2.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED,USER_AGENT_MUTT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0B735C10F13
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Apr 2019 23:24:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4BA2DC10F13
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Apr 2019 00:15:25 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 84F3B20863
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Apr 2019 23:24:43 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 84F3B20863
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 1D00C20883
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Apr 2019 00:15:24 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1D00C20883
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=intel.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44dRMs3ht2zDqHh
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Apr 2019 09:24:41 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44dQgT00JMzDqDZ
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Apr 2019 08:53:09 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44dSVK69sszDqKK
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Apr 2019 10:15:21 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 44dQgS4phyz8sxQ
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Apr 2019 08:53:08 +1000 (AEST)
-Received: by ozlabs.org (Postfix)
- id 44dQgS3x6Fz9sRH; Tue,  9 Apr 2019 08:53:08 +1000 (AEST)
-Authentication-Results: ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
- (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=nayna@linux.ibm.com; receiver=<UNKNOWN>)
-Authentication-Results: ozlabs.org;
- dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+ spf=pass (mailfrom) smtp.mailfrom=intel.com
+ (client-ip=134.134.136.126; helo=mga18.intel.com;
+ envelope-from=ira.weiny@intel.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=intel.com
+Received: from mga18.intel.com (mga18.intel.com [134.134.136.126])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 44dQgR6wZ0z9sRC
- for <linuxppc-dev@ozlabs.org>; Tue,  9 Apr 2019 08:53:07 +1000 (AEST)
-Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x38MnBJC139343
- for <linuxppc-dev@ozlabs.org>; Mon, 8 Apr 2019 18:53:06 -0400
-Received: from e06smtp01.uk.ibm.com (e06smtp01.uk.ibm.com [195.75.94.97])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2rrd1157s0-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@ozlabs.org>; Mon, 08 Apr 2019 18:53:06 -0400
-Received: from localhost
- by e06smtp01.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <nayna@linux.ibm.com>;
- Mon, 8 Apr 2019 23:53:03 +0100
-Received: from b06cxnps4075.portsmouth.uk.ibm.com (9.149.109.197)
- by e06smtp01.uk.ibm.com (192.168.101.131) with IBM ESMTP SMTP Gateway:
- Authorized Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Mon, 8 Apr 2019 23:52:59 +0100
-Received: from d06av22.portsmouth.uk.ibm.com (d06av22.portsmouth.uk.ibm.com
- [9.149.105.58])
- by b06cxnps4075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x38MqwdX56492210
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Mon, 8 Apr 2019 22:52:58 GMT
-Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 5A3E54C040;
- Mon,  8 Apr 2019 22:52:58 +0000 (GMT)
-Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 9C90A4C044;
- Mon,  8 Apr 2019 22:52:56 +0000 (GMT)
-Received: from swastik.ibm.com (unknown [9.85.157.39])
- by d06av22.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Mon,  8 Apr 2019 22:52:56 +0000 (GMT)
-From: Nayna Jain <nayna@linux.ibm.com>
-To: linuxppc-dev@ozlabs.org, linux-efi@vger.kernel.org,
- linux-integrity@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH v2 3/3] powerpc: Add support to initialize ima policy rules
-Date: Mon,  8 Apr 2019 18:52:34 -0400
-X-Mailer: git-send-email 1.8.3.1
-In-Reply-To: <1554763954-11795-1-git-send-email-nayna@linux.ibm.com>
-References: <1554763954-11795-1-git-send-email-nayna@linux.ibm.com>
-X-TM-AS-GCONF: 00
-x-cbid: 19040822-4275-0000-0000-00000325B113
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19040822-4276-0000-0000-00003834C80D
-Message-Id: <1554763954-11795-4-git-send-email-nayna@linux.ibm.com>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2019-04-08_10:, , signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1810050000 definitions=main-1904080164
-X-Mailman-Approved-At: Tue, 09 Apr 2019 09:18:13 +1000
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44dSSb6CBnzDqHJ
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Apr 2019 10:13:45 +1000 (AEST)
+X-Amp-Result: UNSCANNABLE
+X-Amp-File-Uploaded: False
+Received: from fmsmga004.fm.intel.com ([10.253.24.48])
+ by orsmga106.jf.intel.com with ESMTP/TLS/DHE-RSA-AES256-GCM-SHA384;
+ 08 Apr 2019 17:13:43 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="5.60,327,1549958400"; d="scan'208";a="159915232"
+Received: from iweiny-desk2.sc.intel.com ([10.3.52.157])
+ by fmsmga004.fm.intel.com with ESMTP; 08 Apr 2019 17:13:42 -0700
+Date: Mon, 8 Apr 2019 17:13:36 -0700
+From: Ira Weiny <ira.weiny@intel.com>
+To: Andrew Morton <akpm@linux-foundation.org>,
+ John Hubbard <jhubbard@nvidia.com>, Michal Hocko <mhocko@suse.com>,
+ "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>,
+ Peter Zijlstra <peterz@infradead.org>, Jason Gunthorpe <jgg@ziepe.ca>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, "David S. Miller" <davem@davemloft.net>,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>, Rich Felker <dalias@libc.org>,
+ Yoshinori Sato <ysato@users.sourceforge.jp>,
+ Thomas Gleixner <tglx@linutronix.de>,
+ Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>,
+ Ralf Baechle <ralf@linux-mips.org>, James Hogan <jhogan@kernel.org>
+Subject: Re: [PATCH V3 0/7] Add FOLL_LONGTERM to GUP fast and use it
+Message-ID: <20190409001336.GB2049@iweiny-DESK2.sc.intel.com>
+References: <20190328084422.29911-1-ira.weiny@intel.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20190328084422.29911-1-ira.weiny@intel.com>
+User-Agent: Mutt/1.11.1 (2018-12-01)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -110,149 +72,109 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Ard Biesheuvel <ard.biesheuvel@linaro.org>,
- Nayna Jain <nayna@linux.ibm.com>, Claudio Carvalho <cclaudio@linux.ibm.com>,
- Mimi Zohar <zohar@linux.ibm.com>, Matthew Garret <matthew.garret@nebula.com>,
- Paul Mackerras <paulus@samba.org>, Jeremy Kerr <jk@ozlabs.org>
+Cc: linux-s390@vger.kernel.org, linux-sh@vger.kernel.org,
+ linux-rdma@vger.kernel.org, netdev@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-mips@vger.kernel.org, linux-mm@kvack.org,
+ sparclinux@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-PowerNV secure boot relies on the kernel IMA security subsystem to
-perform the OS kernel image signature verification. Since each secure
-boot mode has different IMA policy requirements, dynamic definition of
-the policy rules based on the runtime secure boot mode of the system is
-required. On systems that support secure boot, but have it disabled,
-only measurement policy rules of the kernel image and modules are
-defined.
+On Thu, Mar 28, 2019 at 01:44:15AM -0700, 'Ira Weiny' wrote:
+> From: Ira Weiny <ira.weiny@intel.com>
+> 
+> Following discussion and review[1] here are the cleanups requested.
+> 
+> The biggest change for V3 was the disabling of the ability to use FOLL_LONGTERM
+> in get_user_pages[unlocked|locked|remote]
+> 
+> Comments were also enhanced throughout to show potential users what
+> FOLL_LONGTERM is all about and limitations it has.
 
-This patch defines the arch-specific implementation to retrieve the
-secure boot mode of the system and accordingly configures the IMA policy
-rules.
+Does anyone have any problems with these changes?
 
-This patch provides arch-specific IMA policies if PPC_SECURE_BOOT
-config is enabled.
+I would like to get official Reviewed-by tags if possible.
 
-Signed-off-by: Nayna Jain <nayna@linux.ibm.com>
----
- arch/powerpc/Kconfig           | 14 +++++++++
- arch/powerpc/kernel/Makefile   |  1 +
- arch/powerpc/kernel/ima_arch.c | 54 ++++++++++++++++++++++++++++++++++
- include/linux/ima.h            |  3 +-
- 4 files changed, 71 insertions(+), 1 deletion(-)
- create mode 100644 arch/powerpc/kernel/ima_arch.c
+Thanks,
+Ira
 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 2d0be82c3061..7407af79ed8a 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -901,6 +901,20 @@ config PPC_MEM_KEYS
- 
- 	  If unsure, say y.
- 
-+config PPC_SECURE_BOOT
-+	prompt "Enable PowerPC Secure Boot"
-+	bool
-+	default n
-+	depends on PPC64
-+	depends on OPAL_SECVAR
-+	depends on IMA
-+	depends on IMA_ARCH_POLICY
-+	help
-+	  Linux on POWER with firmware secure boot enabled needs to define
-+	  security policies to extend secure boot to the OS.
-+	  This config allows user to enable OS Secure Boot on PowerPC systems
-+	  that have firmware secure boot support.
-+
- endmenu
- 
- config ISA_DMA_API
-diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
-index cddadccf551d..fcbc7a94888b 100644
---- a/arch/powerpc/kernel/Makefile
-+++ b/arch/powerpc/kernel/Makefile
-@@ -119,6 +119,7 @@ ifdef CONFIG_IMA
- obj-y				+= ima_kexec.o
- endif
- endif
-+obj-$(CONFIG_PPC_SECURE_BOOT)	+= ima_arch.o
- 
- obj-$(CONFIG_AUDIT)		+= audit.o
- obj64-$(CONFIG_AUDIT)		+= compat_audit.o
-diff --git a/arch/powerpc/kernel/ima_arch.c b/arch/powerpc/kernel/ima_arch.c
-new file mode 100644
-index 000000000000..871b321656fb
---- /dev/null
-+++ b/arch/powerpc/kernel/ima_arch.c
-@@ -0,0 +1,54 @@
-+// SPDX-License-Identifier: GPL-2.0
-+/*
-+ * Copyright (C) 2019 IBM Corporation
-+ * Author: Nayna Jain <nayna@linux.ibm.com>
-+ *
-+ * ima_arch.c
-+ *      - initialize ima policies for PowerPC Secure Boot
-+ */
-+
-+#include <linux/ima.h>
-+#include <asm/secboot.h>
-+
-+bool arch_ima_get_secureboot(void)
-+{
-+	bool sb_mode;
-+
-+	sb_mode = get_powerpc_sb_mode();
-+	if (sb_mode)
-+		return true;
-+	else
-+		return false;
-+}
-+
-+/*
-+ * File signature verification is not needed, include only measurements
-+ */
-+static const char *const default_arch_rules[] = {
-+	"measure func=KEXEC_KERNEL_CHECK",
-+	"measure func=MODULE_CHECK",
-+	NULL
-+};
-+
-+/* Both file signature verification and measurements are needed */
-+static const char *const sb_arch_rules[] = {
-+	"measure func=KEXEC_KERNEL_CHECK",
-+	"measure func=MODULE_CHECK",
-+	"appraise func=KEXEC_KERNEL_CHECK appraise_type=imasig",
-+#if !IS_ENABLED(CONFIG_MODULE_SIG)
-+	"appraise func=MODULE_CHECK appraise_type=imasig",
-+#endif
-+	NULL
-+};
-+
-+/*
-+ * On PowerPC, file measurements are to be added to the IMA measurement list
-+ * irrespective of the secure boot state of the system. Signature verification
-+ * is conditionally enabled based on the secure boot state.
-+ */
-+const char *const *arch_get_ima_policy(void)
-+{
-+	if (IS_ENABLED(CONFIG_IMA_ARCH_POLICY) && arch_ima_get_secureboot())
-+		return sb_arch_rules;
-+	return default_arch_rules;
-+}
-diff --git a/include/linux/ima.h b/include/linux/ima.h
-index dc12fbcf484c..ab81a204cf4c 100644
---- a/include/linux/ima.h
-+++ b/include/linux/ima.h
-@@ -31,7 +31,8 @@ extern void ima_post_path_mknod(struct dentry *dentry);
- extern void ima_add_kexec_buffer(struct kimage *image);
- #endif
- 
--#if defined(CONFIG_X86) && defined(CONFIG_EFI)
-+#if (defined(CONFIG_X86) && defined(CONFIG_EFI)) \
-+			 || defined(CONFIG_PPC_SECURE_BOOT)
- extern bool arch_ima_get_secureboot(void);
- extern const char * const *arch_get_ima_policy(void);
- #else
--- 
-2.20.1
-
+> 
+> Minor review comments were fixed
+> 
+> Original cover letter:
+> 
+> HFI1, qib, and mthca, use get_user_pages_fast() due to it performance
+> advantages.  These pages can be held for a significant time.  But
+> get_user_pages_fast() does not protect against mapping FS DAX pages.
+> 
+> Introduce FOLL_LONGTERM and use this flag in get_user_pages_fast() which
+> retains the performance while also adding the FS DAX checks.  XDP has also
+> shown interest in using this functionality.[1]
+> 
+> In addition we change get_user_pages() to use the new FOLL_LONGTERM flag and
+> remove the specialized get_user_pages_longterm call.
+> 
+> [1] https://lkml.org/lkml/2019/3/19/939
+> 
+> 
+> 
+> Ira Weiny (7):
+>   mm/gup: Replace get_user_pages_longterm() with FOLL_LONGTERM
+>   mm/gup: Change write parameter to flags in fast walk
+>   mm/gup: Change GUP fast to use flags rather than a write 'bool'
+>   mm/gup: Add FOLL_LONGTERM capability to GUP fast
+>   IB/hfi1: Use the new FOLL_LONGTERM flag to get_user_pages_fast()
+>   IB/qib: Use the new FOLL_LONGTERM flag to get_user_pages_fast()
+>   IB/mthca: Use the new FOLL_LONGTERM flag to get_user_pages_fast()
+> 
+>  arch/mips/mm/gup.c                          |  11 +-
+>  arch/powerpc/kvm/book3s_64_mmu_hv.c         |   4 +-
+>  arch/powerpc/kvm/e500_mmu.c                 |   2 +-
+>  arch/powerpc/mm/mmu_context_iommu.c         |   3 +-
+>  arch/s390/kvm/interrupt.c                   |   2 +-
+>  arch/s390/mm/gup.c                          |  12 +-
+>  arch/sh/mm/gup.c                            |  11 +-
+>  arch/sparc/mm/gup.c                         |   9 +-
+>  arch/x86/kvm/paging_tmpl.h                  |   2 +-
+>  arch/x86/kvm/svm.c                          |   2 +-
+>  drivers/fpga/dfl-afu-dma-region.c           |   2 +-
+>  drivers/gpu/drm/via/via_dmablit.c           |   3 +-
+>  drivers/infiniband/core/umem.c              |   5 +-
+>  drivers/infiniband/hw/hfi1/user_pages.c     |   3 +-
+>  drivers/infiniband/hw/mthca/mthca_memfree.c |   3 +-
+>  drivers/infiniband/hw/qib/qib_user_pages.c  |   8 +-
+>  drivers/infiniband/hw/qib/qib_user_sdma.c   |   2 +-
+>  drivers/infiniband/hw/usnic/usnic_uiom.c    |   9 +-
+>  drivers/media/v4l2-core/videobuf-dma-sg.c   |   6 +-
+>  drivers/misc/genwqe/card_utils.c            |   2 +-
+>  drivers/misc/vmw_vmci/vmci_host.c           |   2 +-
+>  drivers/misc/vmw_vmci/vmci_queue_pair.c     |   6 +-
+>  drivers/platform/goldfish/goldfish_pipe.c   |   3 +-
+>  drivers/rapidio/devices/rio_mport_cdev.c    |   4 +-
+>  drivers/sbus/char/oradax.c                  |   2 +-
+>  drivers/scsi/st.c                           |   3 +-
+>  drivers/staging/gasket/gasket_page_table.c  |   4 +-
+>  drivers/tee/tee_shm.c                       |   2 +-
+>  drivers/vfio/vfio_iommu_spapr_tce.c         |   3 +-
+>  drivers/vfio/vfio_iommu_type1.c             |   3 +-
+>  drivers/vhost/vhost.c                       |   2 +-
+>  drivers/video/fbdev/pvr2fb.c                |   2 +-
+>  drivers/virt/fsl_hypervisor.c               |   2 +-
+>  drivers/xen/gntdev.c                        |   2 +-
+>  fs/io_uring.c                               |   5 +-
+>  fs/orangefs/orangefs-bufmap.c               |   2 +-
+>  include/linux/mm.h                          |  45 ++-
+>  kernel/futex.c                              |   2 +-
+>  lib/iov_iter.c                              |   7 +-
+>  mm/gup.c                                    | 288 +++++++++++++-------
+>  mm/gup_benchmark.c                          |   5 +-
+>  mm/util.c                                   |   8 +-
+>  net/ceph/pagevec.c                          |   2 +-
+>  net/rds/info.c                              |   2 +-
+>  net/rds/rdma.c                              |   3 +-
+>  net/xdp/xdp_umem.c                          |   4 +-
+>  46 files changed, 314 insertions(+), 200 deletions(-)
+> 
+> -- 
+> 2.20.1
+> 
