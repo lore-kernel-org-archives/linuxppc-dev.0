@@ -2,100 +2,131 @@ Return-Path: <SRS0=YLyy=SL=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_MUTT autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0BB5CC10F13
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Apr 2019 03:34:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0573AC10F0E
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Apr 2019 03:46:35 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 4D34421473
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Apr 2019 03:33:59 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4D34421473
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 762CA20883
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Apr 2019 03:46:34 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 762CA20883
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=embeddedor.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44dXvS6pzNzDqFS
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Apr 2019 13:33:56 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44dYB00N8yzDqKW
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Apr 2019 13:46:32 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
- (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=sbobroff@linux.ibm.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+ spf=permerror (mailfrom) smtp.mailfrom=embeddedor.com
+ (client-ip=192.185.47.206; helo=gateway22.websitewelcome.com;
+ envelope-from=gustavo@embeddedor.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=embeddedor.com
+X-Greylist: delayed 1443 seconds by postgrey-1.36 at bilbo;
+ Tue, 09 Apr 2019 13:44:34 AEST
+Received: from gateway22.websitewelcome.com (gateway22.websitewelcome.com
+ [192.185.47.206])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44dXrh6RfPzDqJR
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Apr 2019 13:31:32 +1000 (AEST)
-Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x393SlVS110762
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 8 Apr 2019 23:31:30 -0400
-Received: from e06smtp04.uk.ibm.com (e06smtp04.uk.ibm.com [195.75.94.100])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2rrhbwv3af-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 08 Apr 2019 23:31:29 -0400
-Received: from localhost
- by e06smtp04.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <sbobroff@linux.ibm.com>;
- Tue, 9 Apr 2019 04:31:28 +0100
-Received: from b06cxnps4075.portsmouth.uk.ibm.com (9.149.109.197)
- by e06smtp04.uk.ibm.com (192.168.101.134) with IBM ESMTP SMTP Gateway:
- Authorized Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Tue, 9 Apr 2019 04:31:25 +0100
-Received: from d06av25.portsmouth.uk.ibm.com (d06av25.portsmouth.uk.ibm.com
- [9.149.105.61])
- by b06cxnps4075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x393VOxo58261668
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Tue, 9 Apr 2019 03:31:24 GMT
-Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 719AA11C058;
- Tue,  9 Apr 2019 03:31:24 +0000 (GMT)
-Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id C8EC911C050;
- Tue,  9 Apr 2019 03:31:23 +0000 (GMT)
-Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
- by d06av25.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Tue,  9 Apr 2019 03:31:23 +0000 (GMT)
-Received: from tungsten.ozlabs.ibm.com (haven.au.ibm.com [9.192.254.114])
- (using TLSv1.2 with cipher AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by ozlabs.au.ibm.com (Postfix) with ESMTPSA id BD0BAA01C9;
- Tue,  9 Apr 2019 13:31:22 +1000 (AEST)
-Date: Tue, 9 Apr 2019 13:31:21 +1000
-From: Sam Bobroff <sbobroff@linux.ibm.com>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>
-Subject: Re: [PATCH 8/8] powerpc/eeh: Remove eeh_probe_devices() and
- eeh_addr_cache_build()
-References: <cover.1553050609.git.sbobroff@linux.ibm.com>
- <f43eac2b2adf92848afc3304cabd770c9bc976ce.1553050609.git.sbobroff@linux.ibm.com>
- <f3acd337-3222-0cdd-4784-b71cbaa44566@ozlabs.ru>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44dY7k1zJdzDqJR
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Apr 2019 13:44:33 +1000 (AEST)
+Received: from cm16.websitewelcome.com (cm16.websitewelcome.com [100.42.49.19])
+ by gateway22.websitewelcome.com (Postfix) with ESMTP id 80D0DACA8
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Apr 2019 22:20:27 -0500 (CDT)
+Received: from gator4166.hostgator.com ([108.167.133.22]) by cmsmtp with SMTP
+ id DhJDhkxN14FKpDhJDhFiBj; Mon, 08 Apr 2019 22:20:27 -0500
+X-Authority-Reason: nr=8
+Received: from [189.250.139.70] (port=33500 helo=[192.168.1.76])
+ by gator4166.hostgator.com with esmtpsa
+ (TLSv1.2:ECDHE-RSA-AES128-GCM-SHA256:128) (Exim 4.91)
+ (envelope-from <gustavo@embeddedor.com>)
+ id 1hDhJC-001La1-S9; Mon, 08 Apr 2019 22:20:27 -0500
+To: "S.j. Wang" <shengjiu.wang@nxp.com>, "timur@kernel.org"
+ <timur@kernel.org>, "nicoleotsuka@gmail.com" <nicoleotsuka@gmail.com>,
+ "Xiubo.Lee@gmail.com" <Xiubo.Lee@gmail.com>,
+ "festevam@gmail.com" <festevam@gmail.com>,
+ "broonie@kernel.org" <broonie@kernel.org>,
+ "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>
+References: <66c117128f300b0ec5f278f538412789c78b60a6.1554715589.git.shengjiu.wang@nxp.com>
+ <38a6d36e-0f8e-fe3d-202b-30371042e248@embeddedor.com>
+ <VE1PR04MB6479C16BB1C92E1AE291BB12E32D0@VE1PR04MB6479.eurprd04.prod.outlook.com>
+From: "Gustavo A. R. Silva" <gustavo@embeddedor.com>
+Openpgp: preference=signencrypt
+Autocrypt: addr=gustavo@embeddedor.com; keydata=
+ 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
+ VtSixD1uOgytAP7RWS474w==
+Subject: Re: [EXT] Re: [PATCH V1] ASoC: fsl_esai: replace fall-through with
+ break
+Message-ID: <eba6372b-618c-4633-f0a9-06c034cf2f9c@embeddedor.com>
+Date: Mon, 8 Apr 2019 22:20:25 -0500
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.6.1
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="5QAgd0e35j3NYeGe"
-Content-Disposition: inline
-In-Reply-To: <f3acd337-3222-0cdd-4784-b71cbaa44566@ozlabs.ru>
-User-Agent: Mutt/1.9.3 (2018-01-21)
-X-TM-AS-GCONF: 00
-x-cbid: 19040903-0016-0000-0000-0000026CBDE9
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19040903-0017-0000-0000-000032C8E3C3
-Message-Id: <20190409033121.GC11437@tungsten.ozlabs.ibm.com>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2019-04-09_02:, , signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- malwarescore=0 suspectscore=18 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1810050000 definitions=main-1904090023
+In-Reply-To: <VE1PR04MB6479C16BB1C92E1AE291BB12E32D0@VE1PR04MB6479.eurprd04.prod.outlook.com>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 8bit
+X-AntiAbuse: This header was added to track abuse,
+ please include it with any abuse report
+X-AntiAbuse: Primary Hostname - gator4166.hostgator.com
+X-AntiAbuse: Original Domain - lists.ozlabs.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - embeddedor.com
+X-BWhitelist: no
+X-Source-IP: 189.250.139.70
+X-Source-L: No
+X-Exim-ID: 1hDhJC-001La1-S9
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
+X-Source-Sender: ([192.168.1.76]) [189.250.139.70]:33500
+X-Source-Auth: gustavo@embeddedor.com
+X-Email-Count: 8
+X-Source-Cap: Z3V6aWRpbmU7Z3V6aWRpbmU7Z2F0b3I0MTY2Lmhvc3RnYXRvci5jb20=
+X-Local-Domain: yes
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -107,216 +138,81 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+Hi Shengjiu,
 
---5QAgd0e35j3NYeGe
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On 4/8/19 9:54 PM, S.j. Wang wrote:
+> Hi Gustavo
+> 
+>>
+>>
+>> On 4/8/19 4:28 AM, S.j. Wang wrote:
+>>> case ESAI_HCKT_EXTAL and case ESAI_HCKR_EXTAL should be
+>> independent of
+>>> each other, so replace fall-through with break.
+>>>
+>> If this is correct, then you should use the following "Fixes" tag instead,
+>> which is the one that introduced the bug:
+>>
+>> Fixes: 43d24e76b698 ("ASoC: fsl_esai: Add ESAI CPU DAI driver")
+>>
+>>> Fixes: 16bbeb2b43c3 ("ASoC: fsl_esai: Mark expected switch
+>>> fall-through")
+>>>
+>>         ^^^^
+>> because this didn't change any functionality.
+> 
+> Ok, this will be updated.
+> 
+>>
+>>> Signed-off-by: Shengjiu Wang <shengjiu.wang@nxp.com>
+>>> ---
+>>>  sound/soc/fsl/fsl_esai.c | 2 +-
+>>>  1 file changed, 1 insertion(+), 1 deletion(-)
+>>>
+>>> diff --git a/sound/soc/fsl/fsl_esai.c b/sound/soc/fsl/fsl_esai.c index
+>>> c7410bbfd2af..bad0dfed6b68 100644
+>>> --- a/sound/soc/fsl/fsl_esai.c
+>>> +++ b/sound/soc/fsl/fsl_esai.c
+>>> @@ -251,7 +251,7 @@ static int fsl_esai_set_dai_sysclk(struct
+>> snd_soc_dai *dai, int clk_id,
+>>>               break;
+>>>       case ESAI_HCKT_EXTAL:
+>>>               ecr |= ESAI_ECR_ETI;
+>>
+>> Also, you should use a simple assignment operator "=" instead of "|=" in
+>> both cases.
+> 
+> The result is same for "=" and "|=", because there is "ecr = 0" in beginning of
+> This function. 
+> 
 
-On Wed, Mar 20, 2019 at 05:05:49PM +1100, Alexey Kardashevskiy wrote:
->=20
->=20
-> On 20/03/2019 13:58, Sam Bobroff wrote:
-> > Now that EEH support for all devices (on PowerNV and pSeries) is
-> > provided by the pcibios bus add device hooks, eeh_probe_devices() and
-> > eeh_addr_cache_build() are redundant and can be removed.
-> >=20
-> > Note that previously on pSeries, useless EEH sysfs files were created
-> > for some devices that did not have EEH support and this change
-> > prevents them from being created.
-> >=20
-> > Signed-off-by: Sam Bobroff <sbobroff@linux.ibm.com>
-> > ---
-> >  arch/powerpc/include/asm/eeh.h               |  6 ----
-> >  arch/powerpc/kernel/eeh.c                    | 13 --------
-> >  arch/powerpc/kernel/eeh_cache.c              | 32 --------------------
-> >  arch/powerpc/platforms/powernv/eeh-powernv.c |  5 ++-
-> >  arch/powerpc/platforms/pseries/pci.c         |  3 +-
-> >  5 files changed, 3 insertions(+), 56 deletions(-)
-> >=20
-> > diff --git a/arch/powerpc/include/asm/eeh.h b/arch/powerpc/include/asm/=
-eeh.h
-> > index 791b9e6fcc45..f1eca1757cbc 100644
-> > --- a/arch/powerpc/include/asm/eeh.h
-> > +++ b/arch/powerpc/include/asm/eeh.h
-> > @@ -290,13 +290,11 @@ struct pci_bus *eeh_pe_bus_get(struct eeh_pe *pe);
-> >  struct eeh_dev *eeh_dev_init(struct pci_dn *pdn);
-> >  void eeh_dev_phb_init_dynamic(struct pci_controller *phb);
-> >  void eeh_show_enabled(void);
-> > -void eeh_probe_devices(void);
-> >  int __init eeh_ops_register(struct eeh_ops *ops);
-> >  int __exit eeh_ops_unregister(const char *name);
-> >  int eeh_check_failure(const volatile void __iomem *token);
-> >  int eeh_dev_check_failure(struct eeh_dev *edev);
-> >  void eeh_addr_cache_init(void);
-> > -void eeh_addr_cache_build(void);
-> >  void eeh_add_device_early(struct pci_dn *);
-> >  void eeh_add_device_tree_early(struct pci_dn *);
-> >  void eeh_add_device_late(struct pci_dev *);
-> > @@ -347,8 +345,6 @@ static inline bool eeh_phb_enabled(void)
-> >  	return false;
-> >  }
-> > =20
-> > -static inline void eeh_probe_devices(void) { }
-> > -
-> >  static inline void *eeh_dev_init(struct pci_dn *pdn, void *data)
-> >  {
-> >  	return NULL;
-> > @@ -365,8 +361,6 @@ static inline int eeh_check_failure(const volatile =
-void __iomem *token)
-> > =20
-> >  static inline void eeh_addr_cache_init(void) { }
-> > =20
-> > -static inline void eeh_addr_cache_build(void) { }
-> > -
-> >  static inline void eeh_add_device_early(struct pci_dn *pdn) { }
-> > =20
-> >  static inline void eeh_add_device_tree_early(struct pci_dn *pdn) { }
-> > diff --git a/arch/powerpc/kernel/eeh.c b/arch/powerpc/kernel/eeh.c
-> > index 217e14bb1fb6..cd2abbe41497 100644
-> > --- a/arch/powerpc/kernel/eeh.c
-> > +++ b/arch/powerpc/kernel/eeh.c
-> > @@ -1166,19 +1166,6 @@ static struct notifier_block eeh_reboot_nb =3D {
-> >  	.notifier_call =3D eeh_reboot_notifier,
-> >  };
-> > =20
-> > -void eeh_probe_devices(void)
-> > -{
-> > -	struct pci_controller *hose, *tmp;
-> > -	struct pci_dn *pdn;
-> > -
-> > -	/* Enable EEH for all adapters */
-> > -	list_for_each_entry_safe(hose, tmp, &hose_list, list_node) {
-> > -		pdn =3D hose->pci_data;
-> > -		traverse_pci_dn(pdn, eeh_ops->probe, NULL);
-> > -	}
-> > -	eeh_show_enabled();
-> > -}
-> > -
-> >  /**
-> >   * eeh_init - EEH initialization
-> >   *
-> > diff --git a/arch/powerpc/kernel/eeh_cache.c b/arch/powerpc/kernel/eeh_=
-cache.c
-> > index f93dd5cf6a39..c40078d036af 100644
-> > --- a/arch/powerpc/kernel/eeh_cache.c
-> > +++ b/arch/powerpc/kernel/eeh_cache.c
-> > @@ -278,38 +278,6 @@ void eeh_addr_cache_init(void)
-> >  	spin_lock_init(&pci_io_addr_cache_root.piar_lock);
-> >  }
-> > =20
-> > -/**
-> > - * eeh_addr_cache_build - Build a cache of I/O addresses
-> > - *
-> > - * Build a cache of pci i/o addresses.  This cache will be used to
-> > - * find the pci device that corresponds to a given address.
-> > - * This routine scans all pci busses to build the cache.
-> > - * Must be run late in boot process, after the pci controllers
-> > - * have been scanned for devices (after all device resources are known=
-).
-> > - */
-> > -void eeh_addr_cache_build(void)
-> > -{
-> > -	struct pci_dn *pdn;
-> > -	struct eeh_dev *edev;
-> > -	struct pci_dev *dev =3D NULL;
-> > -
-> > -	for_each_pci_dev(dev) {
-> > -		pdn =3D pci_get_pdn_by_devfn(dev->bus, dev->devfn);
-> > -		if (!pdn)
-> > -			continue;
-> > -
-> > -		edev =3D pdn_to_eeh_dev(pdn);
-> > -		if (!edev)
-> > -			continue;
-> > -
-> > -		dev->dev.archdata.edev =3D edev;
-> > -		edev->pdev =3D dev;
-> > -
-> > -		eeh_addr_cache_insert_dev(dev);
-> > -		eeh_sysfs_add_device(dev);
-> > -	}
-> > -}
-> > -
-> >  static int eeh_addr_cache_show(struct seq_file *s, void *v)
-> >  {
-> >  	struct pci_io_addr_range *piar;
-> > diff --git a/arch/powerpc/platforms/powernv/eeh-powernv.c b/arch/powerp=
-c/platforms/powernv/eeh-powernv.c
-> > index 81b0923cc55f..6a08f4fab255 100644
-> > --- a/arch/powerpc/platforms/powernv/eeh-powernv.c
-> > +++ b/arch/powerpc/platforms/powernv/eeh-powernv.c
-> > @@ -240,9 +240,7 @@ int pnv_eeh_post_init(void)
-> >  	struct pnv_phb *phb;
-> >  	int ret =3D 0;
-> > =20
-> > -	/* Probe devices & build address cache */
-> > -	eeh_probe_devices();
-> > -	eeh_addr_cache_build();
-> > +	eeh_show_enabled();
-> > =20
-> >  	/* Register OPAL event notifier */
-> >  	eeh_event_irq =3D opal_event_request(ilog2(OPAL_EVENT_PCI_ERROR));
-> > @@ -360,6 +358,7 @@ static int pnv_eeh_find_ecap(struct pci_dn *pdn, in=
-t cap)
-> >  	return 0;
-> >  }
-> > =20
-> > +
->=20
-> Unrelated new line. Otherwise
+Following that same logic, then why not use "+=" instead?
 
-Thanks, I'll fix it as part of merging in patch #5.
+The point is: is "|=" or any other assignment operator other than "=" necessary?
+The answer in this case is: no, it is not.  So, go for the simple one and avoid
+any unnecessary confusion.
 
->=20
-> Reviewed-by: Alexey Kardashevskiy <aik@ozlabs.ru>
->=20
->=20
->=20
->=20
-> >  /**
-> >   * pnv_eeh_probe - Do probe on PCI device
-> >   * @pdn: PCI device node
-> > diff --git a/arch/powerpc/platforms/pseries/pci.c b/arch/powerpc/platfo=
-rms/pseries/pci.c
-> > index 7be80882c08d..7c781b04fb15 100644
-> > --- a/arch/powerpc/platforms/pseries/pci.c
-> > +++ b/arch/powerpc/platforms/pseries/pci.c
-> > @@ -242,8 +242,7 @@ void __init pSeries_final_fixup(void)
-> > =20
-> >  	pSeries_request_regions();
-> > =20
-> > -	eeh_probe_devices();
-> > -	eeh_addr_cache_build();
-> > +	eeh_show_enabled();
-> >  #ifdef CONFIG_EEH
-> >  	if (eeh_enabled())
-> >  		eeh_add_flag(EEH_PHB_ENABLED);
-> >=20
->=20
-> --=20
-> Alexey
->=20
+Also, there is no need for versioning a patch for it's first revision.  If you
+receive feedback on a patch and are asked to update it, then you do need to
+version the patches that you re-send.
 
---5QAgd0e35j3NYeGe
-Content-Type: application/pgp-signature; name="signature.asc"
+Thanks
+--
+Gustavo
 
------BEGIN PGP SIGNATURE-----
-
-iQEzBAABCAAdFiEELWWF8pdtWK5YQRohMX8w6AQl/iIFAlysEggACgkQMX8w6AQl
-/iLcwQgAlwGCacxjJbsP7HCXFgzC6IMyUz8M8psCWiYAgxK1tmU2OkJkwyRrCQtE
-FJqtV+xdE9IKLdaQGlEQdE/9Z5b70LIlD2hh9As+lO2lyE/OXLn0KQGe/QuH+E8m
-p2XmPmT/HR6YPf4L5H9FaspeF2/RI9XVq8sEDnyXZ9p2iEbRESfg6Q6cAnxHApoj
-hn8u6jKl6DAUYwM7zeYTLrgXPwI4yFt+RbFzYPF7ujugaI4HCd1qgZuRh3iUAsPd
-hE5yaPj0xRBqJ60PsmBULcJQe1h6Auf1R1NxyPwzP+c64ocuUUvQHyjDERm5XjZ6
-FqcUNv6mhJlBk3+Esj8wXUUSCl3wDA==
-=vO66
------END PGP SIGNATURE-----
-
---5QAgd0e35j3NYeGe--
-
+>>
+>>> -             /* fall through */
+>>> +             break;
+>>>       case ESAI_HCKR_EXTAL:
+>>>               ecr |= esai_priv->synchronous ? ESAI_ECR_ETI : ESAI_ECR_ERI;
+>>>               break;
+>>>
+>>
+>> Thanks
+>> --
+>> Gustavo
