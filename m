@@ -2,54 +2,79 @@ Return-Path: <SRS0=YLyy=SL=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS
+X-Spam-Status: No, score=-0.5 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
+	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AB8CAC10F0E
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Apr 2019 10:05:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2F0FCC10F0E
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Apr 2019 10:07:40 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 30C8B2083E
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Apr 2019 10:05:55 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 30C8B2083E
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
+	by mail.kernel.org (Postfix) with ESMTPS id 9D4BA2083E
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Apr 2019 10:07:39 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="n/04Eq/7"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9D4BA2083E
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44djbj14xSzDqLM
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Apr 2019 20:05:53 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44djdj1CDszDqB4
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Apr 2019 20:07:37 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=redhat.com
- (client-ip=209.132.183.28; helo=mx1.redhat.com; envelope-from=david@redhat.com;
- receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=gmail.com
+ (client-ip=2a00:1450:4864:20::543; helo=mail-ed1-x543.google.com;
+ envelope-from=daniel.baluta@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=redhat.com
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="n/04Eq/7"; 
+ dkim-atps=neutral
+Received: from mail-ed1-x543.google.com (mail-ed1-x543.google.com
+ [IPv6:2a00:1450:4864:20::543])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44djWh44xzzDqJR
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Apr 2019 20:02:24 +1000 (AEST)
-Received: from smtp.corp.redhat.com (int-mx05.intmail.prod.int.phx2.redhat.com
- [10.5.11.15])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by mx1.redhat.com (Postfix) with ESMTPS id DE6FB30018EA;
- Tue,  9 Apr 2019 10:02:21 +0000 (UTC)
-Received: from t460s.redhat.com (ovpn-117-49.ams2.redhat.com [10.36.117.49])
- by smtp.corp.redhat.com (Postfix) with ESMTP id 67F095D71F;
- Tue,  9 Apr 2019 10:02:13 +0000 (UTC)
-From: David Hildenbrand <david@redhat.com>
-To: linux-mm@kvack.org
-Subject: [PATCH v1 4/4] mm/memory_hotplug: Make __remove_pages() and
- arch_remove_memory() never fail
-Date: Tue,  9 Apr 2019 12:01:48 +0200
-Message-Id: <20190409100148.24703-5-david@redhat.com>
-In-Reply-To: <20190409100148.24703-1-david@redhat.com>
-References: <20190409100148.24703-1-david@redhat.com>
-X-Scanned-By: MIMEDefang 2.79 on 10.5.11.15
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.5.16
- (mx1.redhat.com [10.5.110.46]); Tue, 09 Apr 2019 10:02:22 +0000 (UTC)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44djbf6MkhzDqLh
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Apr 2019 20:05:47 +1000 (AEST)
+Received: by mail-ed1-x543.google.com with SMTP id h22so14379622edw.7
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 09 Apr 2019 03:05:47 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+ :cc; bh=nZdxuF7Yo4b5TWKbKMBtG1jI5YiJkeFgii/BbUNDMEo=;
+ b=n/04Eq/7sjNaVUFVSweAFYHb2hBJwd2JX+O8YcPYcv++PWVWc+CfXKgOT9z7f59xoK
+ dXGmAM6O4zIlwL294nRr+yp+XQCuHbMfeaYheFqYWkexDFK1DkFXRdcVxKH34fL5Qw35
+ nllW+NxOrdud8oKWw9Vff+s0BW3Bv+xlfvj3o/LwrdadLNMmy11jAvtj/WwwmtyZKonN
+ uTWQoVPM2hpsub1ht1vyLEEjFFpr4RV1XB2qmZ6fmNOHp3AVLJPjacfMXGcAx5tdFiw9
+ F4TfxV+yDadQTe+ApCK78urZm8mvFXywayklmIPzUZvII0zZUXgGfubHWPf6Rq5kv1N2
+ NtVg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+ :message-id:subject:to:cc;
+ bh=nZdxuF7Yo4b5TWKbKMBtG1jI5YiJkeFgii/BbUNDMEo=;
+ b=oU09+IQqbvF4dNsHFhgjJLCXKDL0EotkmuCkWQ1QyBS9EWZD4pCzsIwLo3AO291M58
+ 9Gy3BCk09bsmfdD2hfCVcPsLrrprtWkL8GEuMI6YfhWTE0tn0IgZrGwvgl7GiTx+eT5e
+ vJqYfa4cEmLKHcwSvzGcJo7P6qpSnnjnp2FIyV18jHaY7SzFYej8ZBzXlFqhiiUAwjh+
+ 5dAXY9c4zvAwJRKXeFIGJHj6aJb0KdxxiTwNYJfSzqeCIZvD0qXcN72KPKdSeXW6a9gE
+ il29k4rXt17LospejZD6eSvZZvoFI0ue/m1gyPF6sfpCJyQYqBithS241qkmjxyc89SN
+ 65wQ==
+X-Gm-Message-State: APjAAAVhPLBqZ8qZi2THKl60zzXVeHJl3jUASxFhOwhAUCy89rKYi9UO
+ 32FCqGMzSMHc9rvn1DS07Q2X4B6INu9WIqBD8t0=
+X-Google-Smtp-Source: APXvYqzvej5fXE1PGyV2IQBupSDP0/N82QVQTCC4Q1QJEJ6tJB04URbGmmmNIE8coNueavwzh072JWrxvzYfJwh/Olo=
+X-Received: by 2002:a17:906:4b10:: with SMTP id
+ y16mr20454872eju.19.1554804343290; 
+ Tue, 09 Apr 2019 03:05:43 -0700 (PDT)
+MIME-Version: 1.0
+References: <1554798876-20653-1-git-send-email-viorel.suman@nxp.com>
+ <1554798876-20653-2-git-send-email-viorel.suman@nxp.com>
+In-Reply-To: <1554798876-20653-2-git-send-email-viorel.suman@nxp.com>
+From: Daniel Baluta <daniel.baluta@gmail.com>
+Date: Tue, 9 Apr 2019 13:05:31 +0300
+Message-ID: <CAEnQRZB8ub6tyuputU51Ev9d6USg4idcXW6P6tkfuhHECAuGUA@mail.gmail.com>
+Subject: Re: [PATCH 1/2] ASoC: fsl_audmix: remove "model" attribute
+To: Viorel Suman <viorel.suman@nxp.com>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -61,304 +86,43 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Oscar Salvador <osalvador@suse.com>, Michal Hocko <mhocko@suse.com>,
- linux-ia64@vger.kernel.org, David Hildenbrand <david@redhat.com>,
- Peter Zijlstra <peterz@infradead.org>,
- Dave Hansen <dave.hansen@linux.intel.com>,
- Heiko Carstens <heiko.carstens@de.ibm.com>, Stefan Agner <stefan@agner.ch>,
- Wei Yang <richard.weiyang@gmail.com>,
- Masahiro Yamada <yamada.masahiro@socionext.com>, Rich Felker <dalias@libc.org>,
- Paul Mackerras <paulus@samba.org>, "H. Peter Anvin" <hpa@zytor.com>,
- Qian Cai <cai@lca.pw>, Rob Herring <robh@kernel.org>,
- Yoshinori Sato <ysato@users.sourceforge.jp>, linux-sh@vger.kernel.org,
- x86@kernel.org, Mike Rapoport <rppt@linux.ibm.com>,
- Ingo Molnar <mingo@redhat.com>, Geert Uytterhoeven <geert@linux-m68k.org>,
- Fenghua Yu <fenghua.yu@intel.com>, Pavel Tatashin <pasha.tatashin@soleen.com>,
- Vasily Gorbik <gor@linux.ibm.com>, linux-s390@vger.kernel.org,
- Nicholas Piggin <npiggin@gmail.com>, Borislav Petkov <bp@alien8.de>,
- Andy Lutomirski <luto@kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
- Joonsoo Kim <iamjoonsoo.kim@lge.com>, Tony Luck <tony.luck@intel.com>,
- Mathieu Malaterre <malat@debian.org>, linux-kernel@vger.kernel.org,
- Martin Schwidefsky <schwidefsky@de.ibm.com>, Arun KS <arunks@codeaurora.org>,
- Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
- "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>
+Cc: "linux-arm-kernel@lists.infradead.org"
+ <linux-arm-kernel@lists.infradead.org>, Viorel Suman <viorel.suman@gmail.com>,
+ "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Timur Tabi <timur@kernel.org>, Xiubo Li <Xiubo.Lee@gmail.com>,
+ Shawn Guo <shawnguo@kernel.org>, Sascha Hauer <s.hauer@pengutronix.de>,
+ Takashi Iwai <tiwai@suse.com>, Liam Girdwood <lgirdwood@gmail.com>,
+ Jaroslav Kysela <perex@perex.cz>, Nicolin Chen <nicoleotsuka@gmail.com>,
+ Julia Lawall <Julia.Lawall@lip6.fr>, Mark Brown <broonie@kernel.org>,
+ dl-linux-imx <linux-imx@nxp.com>,
+ Pengutronix Kernel Team <kernel@pengutronix.de>,
+ Fabio Estevam <festevam@gmail.com>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-All callers of arch_remove_memory() ignore errors. And we should really
-try to remove any errors from the memory removal path.
-No more errors are reported from __remove_pages(). BUG() in s390x code
-in case arch_remove_memory() is triggered. We may implement that properly
-later. WARN in case powerpc code failed to remove the section mapping,
-which is better than ignoring the error completely right now.
+Hi Viorel,
 
-Cc: Tony Luck <tony.luck@intel.com>
-Cc: Fenghua Yu <fenghua.yu@intel.com>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Cc: Heiko Carstens <heiko.carstens@de.ibm.com>
-Cc: Yoshinori Sato <ysato@users.sourceforge.jp>
-Cc: Rich Felker <dalias@libc.org>
-Cc: Dave Hansen <dave.hansen@linux.intel.com>
-Cc: Andy Lutomirski <luto@kernel.org>
-Cc: Peter Zijlstra <peterz@infradead.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Ingo Molnar <mingo@redhat.com>
-Cc: Borislav Petkov <bp@alien8.de>
-Cc: "H. Peter Anvin" <hpa@zytor.com>
-Cc: x86@kernel.org
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Cc: Michal Hocko <mhocko@suse.com>
-Cc: Mike Rapoport <rppt@linux.ibm.com>
-Cc: Oscar Salvador <osalvador@suse.com>
-Cc: "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>
-Cc: Christophe Leroy <christophe.leroy@c-s.fr>
-Cc: Stefan Agner <stefan@agner.ch>
-Cc: Nicholas Piggin <npiggin@gmail.com>
-Cc: Pavel Tatashin <pasha.tatashin@soleen.com>
-Cc: Vasily Gorbik <gor@linux.ibm.com>
-Cc: Arun KS <arunks@codeaurora.org>
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Masahiro Yamada <yamada.masahiro@socionext.com>
-Cc: Rob Herring <robh@kernel.org>
-Cc: Joonsoo Kim <iamjoonsoo.kim@lge.com>
-Cc: Wei Yang <richard.weiyang@gmail.com>
-Cc: Qian Cai <cai@lca.pw>
-Cc: Mathieu Malaterre <malat@debian.org>
-Cc: linux-ia64@vger.kernel.org
-Cc: linuxppc-dev@lists.ozlabs.org
-Cc: linux-sh@vger.kernel.org
-Cc: linux-s390@vger.kernel.org
-Signed-off-by: David Hildenbrand <david@redhat.com>
----
- arch/ia64/mm/init.c            | 11 +++--------
- arch/powerpc/mm/mem.c          | 11 ++++-------
- arch/s390/mm/init.c            |  5 +++--
- arch/sh/mm/init.c              | 11 +++--------
- arch/x86/mm/init_32.c          |  5 +++--
- arch/x86/mm/init_64.c          | 10 +++-------
- include/linux/memory_hotplug.h |  8 ++++----
- mm/memory_hotplug.c            |  5 ++---
- 8 files changed, 25 insertions(+), 41 deletions(-)
+Few comments inline.
 
-diff --git a/arch/ia64/mm/init.c b/arch/ia64/mm/init.c
-index 379eb1f9adc9..d28e29103bdb 100644
---- a/arch/ia64/mm/init.c
-+++ b/arch/ia64/mm/init.c
-@@ -682,20 +682,15 @@ int arch_add_memory(int nid, u64 start, u64 size,
- }
- 
- #ifdef CONFIG_MEMORY_HOTREMOVE
--int arch_remove_memory(int nid, u64 start, u64 size, struct vmem_altmap *altmap)
-+void arch_remove_memory(int nid, u64 start, u64 size,
-+			struct vmem_altmap *altmap)
- {
- 	unsigned long start_pfn = start >> PAGE_SHIFT;
- 	unsigned long nr_pages = size >> PAGE_SHIFT;
- 	struct zone *zone;
--	int ret;
- 
- 	zone = page_zone(pfn_to_page(start_pfn));
--	ret = __remove_pages(zone, start_pfn, nr_pages, altmap);
--	if (ret)
--		pr_warn("%s: Problem encountered in __remove_pages() as"
--			" ret=%d\n", __func__,  ret);
--
--	return ret;
-+	__remove_pages(zone, start_pfn, nr_pages, altmap);
- }
- #endif
- #endif
-diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
-index 76deaa8525db..cc9425fb9056 100644
---- a/arch/powerpc/mm/mem.c
-+++ b/arch/powerpc/mm/mem.c
-@@ -131,8 +131,8 @@ int __meminit arch_add_memory(int nid, u64 start, u64 size,
- }
- 
- #ifdef CONFIG_MEMORY_HOTREMOVE
--int __meminit arch_remove_memory(int nid, u64 start, u64 size,
--					struct vmem_altmap *altmap)
-+void __meminit arch_remove_memory(int nid, u64 start, u64 size,
-+				  struct vmem_altmap *altmap)
- {
- 	unsigned long start_pfn = start >> PAGE_SHIFT;
- 	unsigned long nr_pages = size >> PAGE_SHIFT;
-@@ -147,14 +147,13 @@ int __meminit arch_remove_memory(int nid, u64 start, u64 size,
- 	if (altmap)
- 		page += vmem_altmap_offset(altmap);
- 
--	ret = __remove_pages(page_zone(page), start_pfn, nr_pages, altmap);
--	if (ret)
--		return ret;
-+	__remove_pages(page_zone(page), start_pfn, nr_pages, altmap);
- 
- 	/* Remove htab bolted mappings for this section of memory */
- 	start = (unsigned long)__va(start);
- 	flush_inval_dcache_range(start, start + size);
- 	ret = remove_section_mapping(start, start + size);
-+	WARN_ON_ONCE(ret);
- 
- 	/* Ensure all vmalloc mappings are flushed in case they also
- 	 * hit that section of memory
-@@ -162,8 +161,6 @@ int __meminit arch_remove_memory(int nid, u64 start, u64 size,
- 	vm_unmap_aliases();
- 
- 	resize_hpt_for_hotplug(memblock_phys_mem_size());
--
--	return ret;
- }
- #endif
- #endif /* CONFIG_MEMORY_HOTPLUG */
-diff --git a/arch/s390/mm/init.c b/arch/s390/mm/init.c
-index f5db961ad792..31b1071315d7 100644
---- a/arch/s390/mm/init.c
-+++ b/arch/s390/mm/init.c
-@@ -234,14 +234,15 @@ int arch_add_memory(int nid, u64 start, u64 size,
- }
- 
- #ifdef CONFIG_MEMORY_HOTREMOVE
--int arch_remove_memory(int nid, u64 start, u64 size, struct vmem_altmap *altmap)
-+void arch_remove_memory(int nid, u64 start, u64 size,
-+			struct vmem_altmap *altmap)
- {
- 	/*
- 	 * There is no hardware or firmware interface which could trigger a
- 	 * hot memory remove on s390. So there is nothing that needs to be
- 	 * implemented.
- 	 */
--	return -EBUSY;
-+	BUG();
- }
- #endif
- #endif /* CONFIG_MEMORY_HOTPLUG */
-diff --git a/arch/sh/mm/init.c b/arch/sh/mm/init.c
-index 168d3a6b9358..5aeb4d7099a1 100644
---- a/arch/sh/mm/init.c
-+++ b/arch/sh/mm/init.c
-@@ -429,20 +429,15 @@ EXPORT_SYMBOL_GPL(memory_add_physaddr_to_nid);
- #endif
- 
- #ifdef CONFIG_MEMORY_HOTREMOVE
--int arch_remove_memory(int nid, u64 start, u64 size, struct vmem_altmap *altmap)
-+void arch_remove_memory(int nid, u64 start, u64 size,
-+			struct vmem_altmap *altmap)
- {
- 	unsigned long start_pfn = PFN_DOWN(start);
- 	unsigned long nr_pages = size >> PAGE_SHIFT;
- 	struct zone *zone;
--	int ret;
- 
- 	zone = page_zone(pfn_to_page(start_pfn));
--	ret = __remove_pages(zone, start_pfn, nr_pages, altmap);
--	if (unlikely(ret))
--		pr_warn("%s: Failed, __remove_pages() == %d\n", __func__,
--			ret);
--
--	return ret;
-+	__remove_pages(zone, start_pfn, nr_pages, altmap);
- }
- #endif
- #endif /* CONFIG_MEMORY_HOTPLUG */
-diff --git a/arch/x86/mm/init_32.c b/arch/x86/mm/init_32.c
-index 755dbed85531..075e568098f2 100644
---- a/arch/x86/mm/init_32.c
-+++ b/arch/x86/mm/init_32.c
-@@ -860,14 +860,15 @@ int arch_add_memory(int nid, u64 start, u64 size,
- }
- 
- #ifdef CONFIG_MEMORY_HOTREMOVE
--int arch_remove_memory(int nid, u64 start, u64 size, struct vmem_altmap *altmap)
-+void arch_remove_memory(int nid, u64 start, u64 size,
-+			struct vmem_altmap *altmap)
- {
- 	unsigned long start_pfn = start >> PAGE_SHIFT;
- 	unsigned long nr_pages = size >> PAGE_SHIFT;
- 	struct zone *zone;
- 
- 	zone = page_zone(pfn_to_page(start_pfn));
--	return __remove_pages(zone, start_pfn, nr_pages, altmap);
-+	__remove_pages(zone, start_pfn, nr_pages, altmap);
- }
- #endif
- #endif
-diff --git a/arch/x86/mm/init_64.c b/arch/x86/mm/init_64.c
-index db42c11b48fb..20d14254b686 100644
---- a/arch/x86/mm/init_64.c
-+++ b/arch/x86/mm/init_64.c
-@@ -1141,24 +1141,20 @@ kernel_physical_mapping_remove(unsigned long start, unsigned long end)
- 	remove_pagetable(start, end, true, NULL);
- }
- 
--int __ref arch_remove_memory(int nid, u64 start, u64 size,
--				struct vmem_altmap *altmap)
-+void __ref arch_remove_memory(int nid, u64 start, u64 size,
-+			      struct vmem_altmap *altmap)
- {
- 	unsigned long start_pfn = start >> PAGE_SHIFT;
- 	unsigned long nr_pages = size >> PAGE_SHIFT;
- 	struct page *page = pfn_to_page(start_pfn);
- 	struct zone *zone;
--	int ret;
- 
- 	/* With altmap the first mapped page is offset from @start */
- 	if (altmap)
- 		page += vmem_altmap_offset(altmap);
- 	zone = page_zone(page);
--	ret = __remove_pages(zone, start_pfn, nr_pages, altmap);
--	WARN_ON_ONCE(ret);
-+	__remove_pages(zone, start_pfn, nr_pages, altmap);
- 	kernel_physical_mapping_remove(start, start + size);
--
--	return ret;
- }
- #endif
- #endif /* CONFIG_MEMORY_HOTPLUG */
-diff --git a/include/linux/memory_hotplug.h b/include/linux/memory_hotplug.h
-index d0a145ffa4fe..9d0efac902ec 100644
---- a/include/linux/memory_hotplug.h
-+++ b/include/linux/memory_hotplug.h
-@@ -112,10 +112,10 @@ static inline bool movable_node_is_enabled(void)
- }
- 
- #ifdef CONFIG_MEMORY_HOTREMOVE
--extern int arch_remove_memory(int nid, u64 start, u64 size,
--				struct vmem_altmap *altmap);
--extern int __remove_pages(struct zone *zone, unsigned long start_pfn,
--	unsigned long nr_pages, struct vmem_altmap *altmap);
-+extern void arch_remove_memory(int nid, u64 start, u64 size,
-+			       struct vmem_altmap *altmap);
-+extern void __remove_pages(struct zone *zone, unsigned long start_pfn,
-+			   unsigned long nr_pages, struct vmem_altmap *altmap);
- #endif /* CONFIG_MEMORY_HOTREMOVE */
- 
- /*
-diff --git a/mm/memory_hotplug.c b/mm/memory_hotplug.c
-index 17a60281c36f..52fef4a81e4c 100644
---- a/mm/memory_hotplug.c
-+++ b/mm/memory_hotplug.c
-@@ -548,8 +548,8 @@ static void __remove_section(struct zone *zone, struct mem_section *ms,
-  * sure that pages are marked reserved and zones are adjust properly by
-  * calling offline_pages().
-  */
--int __remove_pages(struct zone *zone, unsigned long phys_start_pfn,
--		 unsigned long nr_pages, struct vmem_altmap *altmap)
-+void __remove_pages(struct zone *zone, unsigned long phys_start_pfn,
-+		    unsigned long nr_pages, struct vmem_altmap *altmap)
- {
- 	unsigned long i;
- 	unsigned long map_offset = 0;
-@@ -580,7 +580,6 @@ int __remove_pages(struct zone *zone, unsigned long phys_start_pfn,
- 	}
- 
- 	set_zone_contiguous(zone);
--	return 0;
- }
- #endif /* CONFIG_MEMORY_HOTREMOVE */
- 
--- 
-2.17.2
+On Tue, Apr 9, 2019 at 11:36 AM Viorel Suman <viorel.suman@nxp.com> wrote:
+>
+> Use "of_device_id.data" to specify the machine driver,
+> instead of "model" DTS attribute.
 
+<snip>
+
+>  static int fsl_audmix_probe(struct platform_device *pdev)
+>  {
+> +       struct device *dev = &pdev->dev;
+
+You might want to remove this change from the patch because it touches
+a lot of lines
+and it makes the review harder.
+
+I don't see any reason to have it at all.
+
+thanks,
+Daniel.
