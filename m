@@ -2,108 +2,71 @@ Return-Path: <SRS0=YLyy=SL=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_PASS,
+	USER_AGENT_MUTT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8B035C10F0E
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Apr 2019 11:34:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 58FA6C282CE
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Apr 2019 11:36:41 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id F403C20857
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Apr 2019 11:34:29 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id C97BB20883
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Apr 2019 11:36:40 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=nxp.com header.i=@nxp.com header.b="QjQ67Dno"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org F403C20857
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nxp.com
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="sOS3EzK0"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C97BB20883
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44dlYw2L2GzDqLs
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Apr 2019 21:34:28 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44dlcQ3zZdzDqJj
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Apr 2019 21:36:38 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=nxp.com
- (client-ip=40.107.0.49; helo=eur02-am5-obe.outbound.protection.outlook.com;
- envelope-from=viorel.suman@nxp.com; receiver=<UNKNOWN>)
+ spf=none (mailfrom) smtp.mailfrom=infradead.org
+ (client-ip=2607:7c80:54:e::133; helo=bombadil.infradead.org;
+ envelope-from=peterz@infradead.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=nxp.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=nxp.com header.i=@nxp.com header.b="QjQ67Dno"; 
- dkim-atps=neutral
-Received: from EUR02-AM5-obe.outbound.protection.outlook.com
- (mail-eopbgr00049.outbound.protection.outlook.com [40.107.0.49])
+ dmarc=none (p=none dis=none) header.from=infradead.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=infradead.org header.i=@infradead.org
+ header.b="sOS3EzK0"; dkim-atps=neutral
+Received: from bombadil.infradead.org (bombadil.infradead.org
+ [IPv6:2607:7c80:54:e::133])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44dlQL0wpXzDqJk
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Apr 2019 21:27:54 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nxp.com; s=selector1; 
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=c6NrgQhMOQwwBdEIxmvg14af3hG4jnoZ5T+SkoB+wJU=;
- b=QjQ67DnorCPSJWbXEtwoigWTK9kuD6looLJVxLKrUV1g9b4xr0PF1LqzY85AekMYcThox3O/kttfxuDgqjQ7KWXlSPH+FY3PZiEOZZLExgdbKbL7can01PoSeato1mZl5kWfqSrz589gQZJiCiL6JtCBFRnwkkJQGBbrpj4loxc=
-Received: from VI1PR04MB4704.eurprd04.prod.outlook.com (20.177.48.157) by
- VI1PR04MB3086.eurprd04.prod.outlook.com (10.170.228.160) with Microsoft SMTP
- Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.20.1771.16; Tue, 9 Apr 2019 11:27:41 +0000
-Received: from VI1PR04MB4704.eurprd04.prod.outlook.com
- ([fe80::2594:3cf0:20a2:8888]) by VI1PR04MB4704.eurprd04.prod.outlook.com
- ([fe80::2594:3cf0:20a2:8888%3]) with mapi id 15.20.1792.009; Tue, 9 Apr 2019
- 11:27:40 +0000
-From: Viorel Suman <viorel.suman@nxp.com>
-To: Timur Tabi <timur@kernel.org>, Nicolin Chen <nicoleotsuka@gmail.com>,
- Xiubo Li <Xiubo.Lee@gmail.com>, Fabio Estevam <festevam@gmail.com>, Liam
- Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, Jaroslav
- Kysela <perex@perex.cz>, Rob Herring <robh+dt@kernel.org>, Mark Rutland
- <mark.rutland@arm.com>, Takashi Iwai <tiwai@suse.com>, Shawn Guo
- <shawnguo@kernel.org>, Sascha Hauer <s.hauer@pengutronix.de>, Julia Lawall
- <Julia.Lawall@lip6.fr>
-Subject: [PATCH v2 2/3] dt-bindings: fsl,audmix: remove "model" attribute
-Thread-Topic: [PATCH v2 2/3] dt-bindings: fsl, audmix: remove "model" attribute
-Thread-Index: AQHU7sc+tBzccqTIbEGI7+Z1sKouvQ==
-Date: Tue, 9 Apr 2019 11:27:40 +0000
-Message-ID: <1554809242-27475-3-git-send-email-viorel.suman@nxp.com>
-References: <1554809242-27475-1-git-send-email-viorel.suman@nxp.com>
-In-Reply-To: <1554809242-27475-1-git-send-email-viorel.suman@nxp.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-x-clientproxiedby: VI1PR08CA0187.eurprd08.prod.outlook.com
- (2603:10a6:800:d2::17) To VI1PR04MB4704.eurprd04.prod.outlook.com
- (2603:10a6:803:52::29)
-authentication-results: spf=none (sender IP is )
- smtp.mailfrom=viorel.suman@nxp.com; 
-x-ms-exchange-messagesentrepresentingtype: 1
-x-mailer: git-send-email 2.7.4
-x-originating-ip: [212.146.100.6]
-x-ms-publictraffictype: Email
-x-ms-office365-filtering-correlation-id: c86c69e9-90f9-4da6-9e10-08d6bcde606f
-x-ms-office365-filtering-ht: Tenant
-x-microsoft-antispam: BCL:0; PCL:0;
- RULEID:(2390118)(7020095)(4652040)(8989299)(5600139)(711020)(4605104)(4618075)(4534185)(4627221)(201703031133081)(201702281549075)(8990200)(2017052603328)(7193020);
- SRVR:VI1PR04MB3086; 
-x-ms-traffictypediagnostic: VI1PR04MB3086:
-x-microsoft-antispam-prvs: <VI1PR04MB30866BA84614C77C0EEE5851922D0@VI1PR04MB3086.eurprd04.prod.outlook.com>
-x-forefront-prvs: 000227DA0C
-x-forefront-antispam-report: SFV:NSPM;
- SFS:(10009020)(346002)(136003)(39860400002)(366004)(396003)(376002)(189003)(199004)(106356001)(71200400001)(71190400001)(256004)(68736007)(5660300002)(8676002)(81156014)(81166006)(105586002)(478600001)(97736004)(66066001)(36756003)(102836004)(6506007)(7416002)(486006)(476003)(2616005)(11346002)(446003)(4326008)(8936002)(386003)(6512007)(26005)(186003)(14454004)(50226002)(25786009)(6436002)(53936002)(76176011)(2906002)(54906003)(3846002)(6116002)(99286004)(44832011)(52116002)(305945005)(316002)(110136005)(4744005)(86362001)(6486002)(7736002)(921003)(142933001)(1121003);
- DIR:OUT; SFP:1101; SCL:1; SRVR:VI1PR04MB3086;
- H:VI1PR04MB4704.eurprd04.prod.outlook.com; FPR:; SPF:None; LANG:en;
- PTR:InfoNoRecords; MX:1; A:1; 
-received-spf: None (protection.outlook.com: nxp.com does not designate
- permitted sender hosts)
-x-ms-exchange-senderadcheck: 1
-x-microsoft-antispam-message-info: Nafi6YjdUjjf5he3lyG7UWSij61zj9CkDA8daQK8yNbl7uaMhI7fti3WZCKV224s3786ZXWkzuHMrkD27I3mKpwfc+nWcNqDXT+Fq5gpfVHoBZ1GrwBX9EjYudccJiu7UW2h9ID/vq90vis6NU/9jHNr5fT9fTx5D5gMbwz9rELYh/dorQ/TbSKExHHgjyZlCQpYskAYpm6nPEV/OAAGb+zraR5cK555FKa8VsBxFnWxSFduAY2x5lcWOT9i0opR/huzqznmll7sviBGiYlIOb4/pPSHvoniBM7b5119WEDrPy3UTmEHxImqknap5RuXtfgSNoGt2VTjxzoMGx+e4Uy9RiBh7D+r24IvftWW+rmhFAzuEspbqjD/1XmTEQNfF5kRXcXS/L6FSh9UO7/3HjCVpy/nWMU5DTb9QYMmP14=
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44dlZB48VqzDqLp
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Apr 2019 21:34:42 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+ d=infradead.org; s=bombadil.20170209; h=In-Reply-To:Content-Type:MIME-Version
+ :References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
+ Content-Transfer-Encoding:Content-ID:Content-Description:Resent-Date:
+ Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:
+ List-Help:List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
+ bh=9As9lymReqB8M1UxoTk2pigPZNCxLpfhb2NVImuLGIE=; b=sOS3EzK0ZSN+9uc66v3iaMF0S
+ qnydfgGdrI7Jgn20mjQnaZdsLPiNJd7fKK49/5Uk7p9CNKahKsMfcUZ1MnWOTJ/dpgzadtsDWvCbj
+ Ln4R1AHmtgWQU/2/Bs0uSsyqFwInv5xe8Adjh7KQaMjV4vwK2XJT4GpXVM5M1TPdfK+c+oUq9hbTy
+ OGOVoEjTyakYFggHdmEaxMyvbDDLoLpuOnm8Oi2kGrKuA3lhZnC45EIkpOE468QG1KpvaWgLJquuZ
+ bcdRM5nvN4EhMxrstktt4VwiaM26o9WXeK1QBYX9DfO7LiKLBXJjBLwPs+OM12ua8KKy3gep+qXTM
+ R57jUR3+Q==;
+Received: from j217100.upc-j.chello.nl ([24.132.217.100]
+ helo=hirez.programming.kicks-ass.net)
+ by bombadil.infradead.org with esmtpsa (Exim 4.90_1 #2 (Red Hat Linux))
+ id 1hDp1C-0007ta-T2; Tue, 09 Apr 2019 11:34:23 +0000
+Received: by hirez.programming.kicks-ass.net (Postfix, from userid 1000)
+ id 400B429B1224C; Tue,  9 Apr 2019 13:34:21 +0200 (CEST)
+Date: Tue, 9 Apr 2019 13:34:21 +0200
+From: Peter Zijlstra <peterz@infradead.org>
+To: Ricardo Neri <ricardo.neri-calderon@linux.intel.com>
+Subject: Re: [RFC PATCH v2 10/14] kernel/watchdog: Add a function to obtain
+ the watchdog_allowed_mask
+Message-ID: <20190409113421.GU4038@hirez.programming.kicks-ass.net>
+References: <1551283518-18922-1-git-send-email-ricardo.neri-calderon@linux.intel.com>
+ <1551283518-18922-11-git-send-email-ricardo.neri-calderon@linux.intel.com>
 MIME-Version: 1.0
-X-OriginatorOrg: nxp.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: c86c69e9-90f9-4da6-9e10-08d6bcde606f
-X-MS-Exchange-CrossTenant-originalarrivaltime: 09 Apr 2019 11:27:40.8654 (UTC)
-X-MS-Exchange-CrossTenant-fromentityheader: Hosted
-X-MS-Exchange-CrossTenant-id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
-X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: VI1PR04MB3086
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1551283518-18922-11-git-send-email-ricardo.neri-calderon@linux.intel.com>
+User-Agent: Mutt/1.10.1 (2018-07-13)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -115,34 +78,50 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
- Viorel Suman <viorel.suman@nxp.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Viorel Suman <viorel.suman@gmail.com>, dl-linux-imx <linux-imx@nxp.com>,
- Pengutronix Kernel Team <kernel@pengutronix.de>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Cc: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>,
+ Alexei Starovoitov <ast@kernel.org>,
+ Kai-Heng Feng <kai.heng.feng@canonical.com>, Paul Mackerras <paulus@samba.org>,
+ "H. Peter Anvin" <hpa@zytor.com>, sparclinux@vger.kernel.org,
+ Ingo Molnar <mingo@kernel.org>, Christoffer Dall <cdall@linaro.org>,
+ Davidlohr Bueso <dave@stgolabs.net>, Ashok Raj <ashok.raj@intel.com>,
+ x86@kernel.org, David Rientjes <rientjes@google.com>,
+ Andi Kleen <andi.kleen@intel.com>, Waiman Long <longman@redhat.com>,
+ Borislav Petkov <bp@suse.de>, Don Zickus <dzickus@redhat.com>,
+ "Ravi V. Shankar" <ravi.v.shankar@intel.com>,
+ Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>,
+ Marc Zyngier <marc.zyngier@arm.com>, Frederic Weisbecker <frederic@kernel.org>,
+ Nicholas Piggin <npiggin@gmail.com>, Ricardo Neri <ricardo.neri@intel.com>,
+ Byungchul Park <byungchul.park@lge.com>,
+ Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
+ Josh Poimboeuf <jpoimboe@redhat.com>,
+ "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+ Thomas Gleixner <tglx@linutronix.de>, Tony Luck <tony.luck@intel.com>,
+ Babu Moger <babu.moger@oracle.com>, Randy Dunlap <rdunlap@infradead.org>,
+ linux-kernel@vger.kernel.org, "Luis R. Rodriguez" <mcgrof@kernel.org>,
+ Masami Hiramatsu <mhiramat@kernel.org>,
+ Philippe Ombredanne <pombredanne@nexb.com>,
+ Colin Ian King <colin.king@canonical.com>,
+ Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
+ "David S. Miller" <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-UmVtb3ZlICJtb2RlbCIgYXR0cmlidXRlLg0KDQpTaWduZWQtb2ZmLWJ5OiBWaW9yZWwgU3VtYW4g
-PHZpb3JlbC5zdW1hbkBueHAuY29tPg0KLS0tDQogRG9jdW1lbnRhdGlvbi9kZXZpY2V0cmVlL2Jp
-bmRpbmdzL3NvdW5kL2ZzbCxhdWRtaXgudHh0IHwgNCAtLS0tDQogMSBmaWxlIGNoYW5nZWQsIDQg
-ZGVsZXRpb25zKC0pDQoNCmRpZmYgLS1naXQgYS9Eb2N1bWVudGF0aW9uL2RldmljZXRyZWUvYmlu
-ZGluZ3Mvc291bmQvZnNsLGF1ZG1peC50eHQgYi9Eb2N1bWVudGF0aW9uL2RldmljZXRyZWUvYmlu
-ZGluZ3Mvc291bmQvZnNsLGF1ZG1peC50eHQNCmluZGV4IDQ1ZjgwN2UuLjg0MGI3ZTAgMTAwNjQ0
-DQotLS0gYS9Eb2N1bWVudGF0aW9uL2RldmljZXRyZWUvYmluZGluZ3Mvc291bmQvZnNsLGF1ZG1p
-eC50eHQNCisrKyBiL0RvY3VtZW50YXRpb24vZGV2aWNldHJlZS9iaW5kaW5ncy9zb3VuZC9mc2ws
-YXVkbWl4LnR4dA0KQEAgLTM4LDkgKzM4LDYgQEAgRGV2aWNlIGRyaXZlciByZXF1aXJlZCBwcm9w
-ZXJ0aWVzOg0KIAkJCSAgdG8gU0FJIGludGVyZmFjZXMgdG8gYmUgcHJvdmlkZWQsIHRoZSBmaXJz
-dCBTQUkgaW4gdGhlDQogCQkJICBsaXN0IGJlaW5nIHVzZWQgdG8gcm91dGUgdGhlIEFVRE1JWCBv
-dXRwdXQuDQogDQotICAtIG1vZGVsCQk6IE11c3QgY29udGFpbiBtYWNoaW5lIGRyaXZlciBuYW1l
-IHdoaWNoIHdpbGwgY29uZmlndXJlDQotCQkJICBhbmQgaW5zdGFudGlhdGUgdGhlIGFwcHJvcHJp
-YXRlIGF1ZGlvIGNhcmQuDQotDQogRGV2aWNlIGRyaXZlciBjb25maWd1cmF0aW9uIGV4YW1wbGU6
-DQogPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0NCiAgIGF1ZG1peDogYXVk
-bWl4QDU5ODQwMDAwIHsNCkBAIC01MCw1ICs0Nyw0IEBAIERldmljZSBkcml2ZXIgY29uZmlndXJh
-dGlvbiBleGFtcGxlOg0KICAgICBjbG9jay1uYW1lcyA9ICJpcGciOw0KICAgICBwb3dlci1kb21h
-aW5zID0gPCZwZF9hdWRtaXg+Ow0KICAgICBkYWlzID0gPCZzYWk0PiwgPCZzYWk1PjsNCi0gICAg
-bW9kZWwgPSAiaW14LWF1ZG1peCI7DQogICB9Ow0KLS0gDQoyLjcuNA0KDQo=
+On Wed, Feb 27, 2019 at 08:05:14AM -0800, Ricardo Neri wrote:
+> diff --git a/kernel/watchdog.c b/kernel/watchdog.c
+> index 8fbfda94a67b..367aa81294ef 100644
+> --- a/kernel/watchdog.c
+> +++ b/kernel/watchdog.c
+> @@ -44,7 +44,7 @@ int __read_mostly soft_watchdog_user_enabled = 1;
+>  int __read_mostly watchdog_thresh = 10;
+>  int __read_mostly nmi_watchdog_available;
+>  
+> -struct cpumask watchdog_allowed_mask __read_mostly;
+> +static struct cpumask watchdog_allowed_mask __read_mostly;
+>  
+>  struct cpumask watchdog_cpumask __read_mostly;
+>  unsigned long *watchdog_cpumask_bits = cpumask_bits(&watchdog_cpumask);
+
+Hurmph, more struct cpumask, ideally this would get converted to
+cpumask_var_t, I don't think we need this before the allocators work, do
+we?
