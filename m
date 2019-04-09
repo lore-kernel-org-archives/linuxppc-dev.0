@@ -2,82 +2,99 @@ Return-Path: <SRS0=YLyy=SL=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.5 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-8.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_MUTT
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 10167C10F13
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Apr 2019 03:18:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C17BAC10F13
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Apr 2019 03:32:36 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 44C0720880
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Apr 2019 03:18:29 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="eXe08+ZY"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 44C0720880
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	by mail.kernel.org (Postfix) with ESMTPS id 47BF0213F2
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Apr 2019 03:32:36 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 47BF0213F2
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44dXYb0mrkzDqKb
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Apr 2019 13:18:27 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44dXss71FVzDqJh
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Apr 2019 13:32:33 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=2607:f8b0:4864:20::442; helo=mail-pf1-x442.google.com;
- envelope-from=npiggin@gmail.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
+ (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
+ envelope-from=sbobroff@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="eXe08+ZY"; 
- dkim-atps=neutral
-Received: from mail-pf1-x442.google.com (mail-pf1-x442.google.com
- [IPv6:2607:f8b0:4864:20::442])
+ dmarc=none (p=none dis=none) header.from=linux.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44dXWr3xXmzDqGL
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Apr 2019 13:16:56 +1000 (AEST)
-Received: by mail-pf1-x442.google.com with SMTP id 9so8803407pfj.13
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 08 Apr 2019 20:16:56 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=from:to:cc:subject:date:message-id:mime-version
- :content-transfer-encoding;
- bh=9czcuJTzb1cs81udvniLfVb22jjd1dYS4/+gZe7hE5I=;
- b=eXe08+ZYU7N+Fd0ML/xQF+ywoAkHNWPme4SBH6dgqyjX0aWBt5Ijj6HPsLtMvW0MN/
- 2kAuoFttZQnaPsbCACHInicqXqnkKdYzNbOpVp2AKT+cXhrb3tXbEWQILyl+cmAcYY0d
- OZgYIRpBKkNJNjfhU2TlsvSluIV/wNx2e2tMExpxLeOUevY+nQskQGTftzFWvC9swgDm
- S/Qg/kWKEiZcJxnPp5ly/p0vOQ69fScF8+8DqrKG6ZxFzZlgNsW3r9MVNSCQUVVXQCvO
- npyR0F7IRHJZRZqK8JpuNgsz0693+PgnBtfOEAw4m9MGwhFdw8Aq7hHdHXMIFhf2BTPC
- uAiw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
- :content-transfer-encoding;
- bh=9czcuJTzb1cs81udvniLfVb22jjd1dYS4/+gZe7hE5I=;
- b=IsTOUHsQ241hQXnN1tyO76prKfEIu3KwTPa7U/Qv1UaaaGb+25kvL8AZf8OwfSS45c
- S+PKtebOz0UlMqeBbkoZgH6fNjKqE3XXQ/iLEtwj620u/Ef9GKrNH2OIb8SXU2DgBwNS
- Nx4mrLBrb/WLYvQeuq697GxUldOytUrvm1RVJK1ieIiLgmLmoj0amz7J0/4idL+rFvGi
- Z22LMjGRZRfraGWiJyWH2M7C8VlIaHBGLyxA05P9LIk8w9gc+nOxSgRd1VtoluCtugSj
- APrWwZ+utSCAoD83IPA8yU6EFJ0wWPNs1Iv01Bi+9aQZ4s9r7VlQaFuXkJZDb3z87DMQ
- RjFQ==
-X-Gm-Message-State: APjAAAVleTVfIIscU5TSS91CmA9E/6a6tiPIxqgbdsPZcjiMsPveupVW
- z4lCgFhKkBk3fNPoOzpNK26uSgDR
-X-Google-Smtp-Source: APXvYqywn12ZI6MJ3h/tRi3zDP2EUDh33mktwhIy+xnxpUthb1RCHPROv8mpweX0uTTAPXjTjDWDTA==
-X-Received: by 2002:a63:494f:: with SMTP id y15mr32462977pgk.56.1554779813696; 
- Mon, 08 Apr 2019 20:16:53 -0700 (PDT)
-Received: from bobo.local0.net ([58.84.107.218])
- by smtp.gmail.com with ESMTPSA id p20sm41522858pgh.83.2019.04.08.20.16.50
- (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
- Mon, 08 Apr 2019 20:16:53 -0700 (PDT)
-From: Nicholas Piggin <npiggin@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v2] powerpc/64s/radix: Fix radix segment exception handling
-Date: Tue,  9 Apr 2019 13:16:43 +1000
-Message-Id: <20190409031643.20405-1-npiggin@gmail.com>
-X-Mailer: git-send-email 2.20.1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44dXr53t9XzDq9R
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Apr 2019 13:31:00 +1000 (AEST)
+Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
+ x393SmUW080874
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 8 Apr 2019 23:30:56 -0400
+Received: from e06smtp07.uk.ibm.com (e06smtp07.uk.ibm.com [195.75.94.103])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2rrgw8mwdf-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 08 Apr 2019 23:30:56 -0400
+Received: from localhost
+ by e06smtp07.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <sbobroff@linux.ibm.com>;
+ Tue, 9 Apr 2019 04:30:54 +0100
+Received: from b06cxnps4075.portsmouth.uk.ibm.com (9.149.109.197)
+ by e06smtp07.uk.ibm.com (192.168.101.137) with IBM ESMTP SMTP Gateway:
+ Authorized Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Tue, 9 Apr 2019 04:30:53 +0100
+Received: from d06av23.portsmouth.uk.ibm.com (d06av23.portsmouth.uk.ibm.com
+ [9.149.105.59])
+ by b06cxnps4075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x393UqkA47972458
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Tue, 9 Apr 2019 03:30:52 GMT
+Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 20A53A4040;
+ Tue,  9 Apr 2019 03:30:52 +0000 (GMT)
+Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 82577A4059;
+ Tue,  9 Apr 2019 03:30:51 +0000 (GMT)
+Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
+ by d06av23.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Tue,  9 Apr 2019 03:30:51 +0000 (GMT)
+Received: from tungsten.ozlabs.ibm.com (haven.au.ibm.com [9.192.254.114])
+ (using TLSv1.2 with cipher AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.au.ibm.com (Postfix) with ESMTPSA id 05A60A01C9;
+ Tue,  9 Apr 2019 13:30:48 +1000 (AEST)
+Date: Tue, 9 Apr 2019 13:30:46 +1000
+From: Sam Bobroff <sbobroff@linux.ibm.com>
+To: Alexey Kardashevskiy <aik@ozlabs.ru>
+Subject: Re: [PATCH 5/8] powerpc/eeh: Add eeh_show_enabled()
+References: <cover.1553050609.git.sbobroff@linux.ibm.com>
+ <ad8cf11e3151fd39c6a9deedc0098d50274c75e4.1553050609.git.sbobroff@linux.ibm.com>
+ <26b7c0de-4192-eae5-f8aa-94073b3e768e@ozlabs.ru>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature"; boundary="hQiwHBbRI9kgIhsi"
+Content-Disposition: inline
+In-Reply-To: <26b7c0de-4192-eae5-f8aa-94073b3e768e@ozlabs.ru>
+User-Agent: Mutt/1.9.3 (2018-01-21)
+X-TM-AS-GCONF: 00
+x-cbid: 19040903-0028-0000-0000-0000035EBC53
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 19040903-0029-0000-0000-0000241DD860
+Message-Id: <20190409033046.GB11437@tungsten.ozlabs.ibm.com>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
+ definitions=2019-04-09_02:, , signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ malwarescore=0 suspectscore=18 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1810050000 definitions=main-1904090023
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -89,198 +106,133 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "Aneesh Kumar K . V" <aneesh.kumar@linux.vnet.ibm.com>,
- Nicholas Piggin <npiggin@gmail.com>, Anton Blanchard <anton@samba.org>
+Cc: linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Commit 48e7b76957 ("powerpc/64s/hash: Convert SLB miss handlers to C")
-broke the radix-mode segment exception handler. In radix mode, this is
-exception is not an SLB miss, rather it signals that the EA is outside
-the range translated by any page table.
 
-The commit lost the radix feature alternate code patch, which can
-cause faults to some EAs to kernel BUG at arch/powerpc/mm/slb.c:639!
+--hQiwHBbRI9kgIhsi
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-The original radix code would send faults to slb_miss_large_addr,
-which would end up faulting due to slb_addr_limit being 0. This patch
-sends radix directly to do_bad_slb_fault, which is a bit clearer.
+On Wed, Mar 20, 2019 at 05:02:23PM +1100, Alexey Kardashevskiy wrote:
+>=20
+>=20
+> On 20/03/2019 13:58, Sam Bobroff wrote:
+> > Move the EEH enabled message into it's own function so that future
+> > work can call it from multiple places.
+> >=20
+> > Signed-off-by: Sam Bobroff <sbobroff@linux.ibm.com>
+> > ---
+> >  arch/powerpc/include/asm/eeh.h |  3 +++
+> >  arch/powerpc/kernel/eeh.c      | 16 +++++++++++-----
+> >  2 files changed, 14 insertions(+), 5 deletions(-)
+> >=20
+> > diff --git a/arch/powerpc/include/asm/eeh.h b/arch/powerpc/include/asm/=
+eeh.h
+> > index fe4cf7208890..e217ccda55d0 100644
+> > --- a/arch/powerpc/include/asm/eeh.h
+> > +++ b/arch/powerpc/include/asm/eeh.h
+> > @@ -289,6 +289,7 @@ struct pci_bus *eeh_pe_bus_get(struct eeh_pe *pe);
+> > =20
+> >  struct eeh_dev *eeh_dev_init(struct pci_dn *pdn);
+> >  void eeh_dev_phb_init_dynamic(struct pci_controller *phb);
+> > +void eeh_show_enabled(void);
+> >  void eeh_probe_devices(void);
+> >  int __init eeh_ops_register(struct eeh_ops *ops);
+> >  int __exit eeh_ops_unregister(const char *name);
+> > @@ -338,6 +339,8 @@ static inline bool eeh_enabled(void)
+> >          return false;
+> >  }
+> > =20
+> > +static inline void eeh_show_enabled(void) { }
+> > +
+> >  static inline bool eeh_phb_enabled(void)
+> >  {
+> >  	return false;
+> > diff --git a/arch/powerpc/kernel/eeh.c b/arch/powerpc/kernel/eeh.c
+> > index b14d89547895..3dcff29cb9b3 100644
+> > --- a/arch/powerpc/kernel/eeh.c
+> > +++ b/arch/powerpc/kernel/eeh.c
+> > @@ -163,6 +163,16 @@ static int __init eeh_setup(char *str)
+> >  }
+> >  __setup("eeh=3D", eeh_setup);
+> > =20
+> > +void eeh_show_enabled(void)
+> > +{
+> > +	if (eeh_has_flag(EEH_FORCE_DISABLED))
+> > +		pr_info("EEH: PCI Enhanced I/O Error Handling DISABLED (by eeh=3Doff=
+)\n");
+> > +	else if (eeh_enabled())
+>=20
+>=20
+> I'd make it eeh_has_flag(EEH_ENABLED) for clarity.
 
-Fixes: 48e7b76957 ("powerpc/64s/hash: Convert SLB miss handlers to C")
-Cc: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-Reported-by: Anton Blanchard <anton@samba.org>
-Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
----
-- Add a selftests that triggers the crash
+OK, sounds good.
 
- arch/powerpc/kernel/exceptions-64s.S          | 12 +++
- tools/testing/selftests/powerpc/mm/Makefile   |  3 +-
- .../selftests/powerpc/mm/access_tests.c       | 94 +++++++++++++++++++
- 3 files changed, 108 insertions(+), 1 deletion(-)
- create mode 100644 tools/testing/selftests/powerpc/mm/access_tests.c
+>=20
+> > +		pr_info("EEH: PCI Enhanced I/O Error Handling ENABLED (capable adapt=
+er found)\n");
+> > +	else
+> > +		pr_info("EEH: PCI Enhanced I/O Error Handling DISABLED (no capable a=
+dapter found)\n");
+> > +}
+> > +
+> >  /*
+> >   * This routine captures assorted PCI configuration space data
+> >   * for the indicated PCI device, and puts them into a buffer
+> > @@ -1166,11 +1176,7 @@ void eeh_probe_devices(void)
+> >  		pdn =3D hose->pci_data;
+> >  		traverse_pci_dn(pdn, eeh_ops->probe, NULL);
+> >  	}
+> > -	if (eeh_enabled())
+> > -		pr_info("EEH: PCI Enhanced I/O Error Handling Enabled\n");
+> > -	else
+> > -		pr_info("EEH: No capable adapters found\n");
+> > -
+> > +	eeh_show_enabled();
+>=20
+>=20
+> This line moves later in the series so I'd just merge this patch into
+> 8/8 to reduce number of lines moving withing the patchset.
 
-diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
-index a5b8fbae56a0..9481a117e242 100644
---- a/arch/powerpc/kernel/exceptions-64s.S
-+++ b/arch/powerpc/kernel/exceptions-64s.S
-@@ -656,11 +656,17 @@ EXC_COMMON_BEGIN(data_access_slb_common)
- 	ld	r4,PACA_EXSLB+EX_DAR(r13)
- 	std	r4,_DAR(r1)
- 	addi	r3,r1,STACK_FRAME_OVERHEAD
-+BEGIN_MMU_FTR_SECTION
-+	/* HPT case, do SLB fault */
- 	bl	do_slb_fault
- 	cmpdi	r3,0
- 	bne-	1f
- 	b	fast_exception_return
- 1:	/* Error case */
-+MMU_FTR_SECTION_ELSE
-+	/* Radix case, access is outside page table range */
-+	li	r3,-EFAULT
-+ALT_MMU_FTR_SECTION_END_IFCLR(MMU_FTR_TYPE_RADIX)
- 	std	r3,RESULT(r1)
- 	bl	save_nvgprs
- 	RECONCILE_IRQ_STATE(r10, r11)
-@@ -705,11 +711,17 @@ EXC_COMMON_BEGIN(instruction_access_slb_common)
- 	EXCEPTION_PROLOG_COMMON(0x480, PACA_EXSLB)
- 	ld	r4,_NIP(r1)
- 	addi	r3,r1,STACK_FRAME_OVERHEAD
-+BEGIN_MMU_FTR_SECTION
-+	/* HPT case, do SLB fault */
- 	bl	do_slb_fault
- 	cmpdi	r3,0
- 	bne-	1f
- 	b	fast_exception_return
- 1:	/* Error case */
-+MMU_FTR_SECTION_ELSE
-+	/* Radix case, access is outside page table range */
-+	li	r3,-EFAULT
-+ALT_MMU_FTR_SECTION_END_IFCLR(MMU_FTR_TYPE_RADIX)
- 	std	r3,RESULT(r1)
- 	bl	save_nvgprs
- 	RECONCILE_IRQ_STATE(r10, r11)
-diff --git a/tools/testing/selftests/powerpc/mm/Makefile b/tools/testing/selftests/powerpc/mm/Makefile
-index 43d68420e363..68b7add5086d 100644
---- a/tools/testing/selftests/powerpc/mm/Makefile
-+++ b/tools/testing/selftests/powerpc/mm/Makefile
-@@ -2,7 +2,7 @@
- noarg:
- 	$(MAKE) -C ../
- 
--TEST_GEN_PROGS := hugetlb_vs_thp_test subpage_prot prot_sao segv_errors wild_bctr
-+TEST_GEN_PROGS := hugetlb_vs_thp_test subpage_prot prot_sao segv_errors wild_bctr access_tests
- TEST_GEN_FILES := tempfile
- 
- top_srcdir = ../../../../..
-@@ -13,6 +13,7 @@ $(TEST_GEN_PROGS): ../harness.c
- $(OUTPUT)/prot_sao: ../utils.c
- 
- $(OUTPUT)/wild_bctr: CFLAGS += -m64
-+$(OUTPUT)/access_tests: CFLAGS += -m64
- 
- $(OUTPUT)/tempfile:
- 	dd if=/dev/zero of=$@ bs=64k count=1
-diff --git a/tools/testing/selftests/powerpc/mm/access_tests.c b/tools/testing/selftests/powerpc/mm/access_tests.c
-new file mode 100644
-index 000000000000..ad300d7d9d43
---- /dev/null
-+++ b/tools/testing/selftests/powerpc/mm/access_tests.c
-@@ -0,0 +1,94 @@
-+// SPDX-License-Identifier: GPL-2.0
-+
-+/*
-+ * Copyright 2017 John Sperbeck
-+ *
-+ * Test faults to "interesting" locations.
-+ */
-+
-+#include <stdbool.h>
-+#include <stdio.h>
-+#include <stdlib.h>
-+#include <string.h>
-+#include <unistd.h>
-+#include <signal.h>
-+#include <sys/mman.h>
-+#include <assert.h>
-+#include <ucontext.h>
-+
-+#include "utils.h"
-+
-+#define PAGE_SIZE	(64*1024)
-+#define TB		(1024ULL*1024*1024*1024)
-+static volatile bool faulted;
-+static volatile int si_code;
-+
-+static void segv_handler(int n, siginfo_t *info, void *ctxt_v)
-+{
-+	ucontext_t *ctxt = (ucontext_t *)ctxt_v;
-+	struct pt_regs *regs = ctxt->uc_mcontext.regs;
-+
-+	faulted = true;
-+	si_code = info->si_code;
-+	regs->nip += 4;
-+}
-+
-+int test_segv_errors(void)
-+{
-+	struct sigaction act = {
-+		.sa_sigaction = segv_handler,
-+		.sa_flags = SA_SIGINFO,
-+	};
-+	static unsigned long ptrs[] = {
-+		0x0f00000000000000ULL, /* Radix Q0 out of pgtable range */
-+		0x4000000000000000ULL, /* Radix Q1 */
-+		0x4f00000000000000ULL, /* Radix Q1 out of pgtable range */
-+		0x8000000000000000ULL, /* Radix Q2 */
-+		0x8f00000000000000ULL, /* Radix Q2 out of pgtable range */
-+		0xc000000000000000ULL, /* Radix Q3 */
-+		0xcf00000000000000ULL, /* Radix Q3 out of pgtable range */
-+		0xc000000000000000ULL, /* Hash kernel region */
-+		0xc000000000000000ULL + TB, /* Hash kernel region + 1 segment */
-+		0xc000000000000000ULL + TB - 1,
-+		0xd000000000000000ULL, /* Hash vmalloc region */
-+		0xd000000000000000ULL + TB,
-+		0xd000000000000000ULL + TB - 1,
-+		0xe000000000000000ULL,
-+		0xe000000000000000ULL + TB,
-+		0xe000000000000000ULL + TB - 1,
-+		0xf000000000000000ULL, /* Hash vmemmap region */
-+		0xf000000000000000ULL + TB,
-+		0xf000000000000000ULL + TB - 1,
-+	};
-+	size_t i;
-+
-+	FAIL_IF(sigaction(SIGSEGV, &act, NULL) != 0);
-+
-+	for (i = 0; i < sizeof(ptrs)/sizeof(ptrs[0]); i++) {
-+		volatile char *p = (void *)ptrs[i];
-+
-+		/*
-+		 * We just need a compiler barrier, but mb() works and has the
-+		 * nice property of being easy to spot in the disassembly.
-+		 */
-+		printf("testing %p...\n", p);
-+		faulted = false;
-+		si_code = 0;
-+		mb();
-+		(void)*p;
-+		mb();
-+		FAIL_IF(!faulted);
-+		FAIL_IF(si_code != SEGV_MAPERR && si_code != SEGV_BNDERR);
-+		/*
-+		 * Some accesses throw MAPERR, others BNDERR. Possibly all
-+		 * Q>0 accesses should cause BNDERR.
-+		 */
-+	}
-+
-+	return 0;
-+}
-+
-+int main(void)
-+{
-+	return test_harness(test_segv_errors, "segv_errors");
-+}
--- 
-2.20.1
+Oh, good idea. I'll do it.
+
+> In general the whole point of the EEH_ENABLED flag is fading away. Its
+> meaning now is that "at least somewhere in the box for at least one
+> device with enabled EEH" which does not seem extremely useful as we have
+> a pci_dev or pe pretty much everywhere we look at eeh_enabled() and
+> pdev->dev.archdata.edev can tell if eeh is enabled for a device.
+> Although I am pretty sure this is in your list already :)
+
+Yes. :-)
+
+>=20
+> >  }
+> > =20
+> >  /**
+> >=20
+>=20
+> --=20
+> Alexey
+>=20
+
+--hQiwHBbRI9kgIhsi
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQEzBAABCAAdFiEELWWF8pdtWK5YQRohMX8w6AQl/iIFAlysEd4ACgkQMX8w6AQl
+/iK+DAf/SMZtzd98JgRmDPCS0dTnv9SdW8sqL4mXmVuTPkEnfXduuoQgzj8Sbkbc
+qWLj0+xR42rx/cCUHWWY2uDd9hDZDxkSZY4OAOOGBJnSC2J6ebBMGk3tSuFNnw6Q
+LEnU8WUKGwX2sUW/tlgeAmHtdV3HpMIObL2tNbd3q5fZe2Yu+iOOdV8whsWZMuyR
+83OxyQQ0vyfg80Z41VoWJi3NWiM5LUtlZlDQP85tckviNU4HHgdS+fYnNjXe5NaV
+GJYryIIHGKStAgk2WmIxTcZ7IsjXPPf9PEKfqJbaz+3fHn4Asx7Gq0QSdG3EMtwy
+KYsT0D92SewdnJOt7B/Q04G7CoDFpg==
+=fc7G
+-----END PGP SIGNATURE-----
+
+--hQiwHBbRI9kgIhsi--
 
