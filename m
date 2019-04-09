@@ -2,88 +2,54 @@ Return-Path: <SRS0=YLyy=SL=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-4.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C4E7DC10F0E
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Apr 2019 16:56:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DBE06C10F0E
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Apr 2019 17:26:52 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 4DE712084C
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Apr 2019 16:56:03 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4DE712084C
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 30EFD2084F
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Apr 2019 17:26:52 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 30EFD2084F
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=zytor.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44dthx0HLCzDqLC
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Apr 2019 02:56:01 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44dvNV0TSWzDqGp
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Apr 2019 03:26:50 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=linux.vnet.ibm.com
- (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=hegdevasant@linux.vnet.ibm.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=linux.vnet.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ spf=pass (mailfrom) smtp.mailfrom=zytor.com
+ (client-ip=198.137.202.136; helo=mail.zytor.com; envelope-from=hpa@zytor.com;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=zytor.com
+Received: from mail.zytor.com (terminus.zytor.com [198.137.202.136])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44dtcq3XbszDq6k
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Apr 2019 02:52:27 +1000 (AEST)
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x39GniTh039083
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 9 Apr 2019 12:52:24 -0400
-Received: from e06smtp01.uk.ibm.com (e06smtp01.uk.ibm.com [195.75.94.97])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2rrx313r28-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 09 Apr 2019 12:52:24 -0400
-Received: from localhost
- by e06smtp01.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <hegdevasant@linux.vnet.ibm.com>;
- Tue, 9 Apr 2019 17:52:22 +0100
-Received: from b06cxnps3074.portsmouth.uk.ibm.com (9.149.109.194)
- by e06smtp01.uk.ibm.com (192.168.101.131) with IBM ESMTP SMTP Gateway:
- Authorized Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Tue, 9 Apr 2019 17:52:20 +0100
-Received: from d06av23.portsmouth.uk.ibm.com (d06av23.portsmouth.uk.ibm.com
- [9.149.105.59])
- by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x39GqJJT61472954
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Tue, 9 Apr 2019 16:52:19 GMT
-Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id A263BA4053;
- Tue,  9 Apr 2019 16:52:19 +0000 (GMT)
-Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 9C1EFA4040;
- Tue,  9 Apr 2019 16:52:18 +0000 (GMT)
-Received: from hegdevasant.in.ibm.com (unknown [9.102.1.232])
- by d06av23.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Tue,  9 Apr 2019 16:52:18 +0000 (GMT)
-From: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 2/2] powerpc/powernv: Add new opal message type
-Date: Tue,  9 Apr 2019 22:22:02 +0530
-X-Mailer: git-send-email 2.14.3
-In-Reply-To: <20190409165202.30187-1-hegdevasant@linux.vnet.ibm.com>
-References: <20190409165202.30187-1-hegdevasant@linux.vnet.ibm.com>
-X-TM-AS-GCONF: 00
-x-cbid: 19040916-4275-0000-0000-000003260254
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19040916-4276-0000-0000-000038351C4E
-Message-Id: <20190409165202.30187-2-hegdevasant@linux.vnet.ibm.com>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2019-04-09_08:, , signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- malwarescore=0 suspectscore=1 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1011 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1810050000 definitions=main-1904090107
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44dvKD1hXTzDqFL
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Apr 2019 03:23:59 +1000 (AEST)
+Received: from [IPv6:2607:fb90:6e34:dae1:acf5:df97:1f3d:b079]
+ ([IPv6:2607:fb90:6e34:dae1:acf5:df97:1f3d:b079])
+ (authenticated bits=0)
+ by mail.zytor.com (8.15.2/8.15.2) with ESMTPSA id x39HNtJP416979
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128 verify=NO);
+ Tue, 9 Apr 2019 10:23:56 -0700
+Date: Tue, 09 Apr 2019 09:02:06 -0600
+User-Agent: K-9 Mail for Android
+In-Reply-To: <875zrnlakd.fsf@oldenburg2.str.redhat.com>
+References: <875zrnlakd.fsf@oldenburg2.str.redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+ charset=utf-8
+Content-Transfer-Encoding: quoted-printable
+Subject: Re: [PATCH] Linux: Define struct termios2 in <termios.h> under
+ _GNU_SOURCE [BZ #10339]
+To: Florian Weimer <fweimer@redhat.com>, libc-alpha@sourceware.org
+From: hpa@zytor.com
+Message-ID: <EF5CE34B-1A82-4391-B07E-DB832814AD1C@zytor.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -95,62 +61,272 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>, Jeremy Kerr <jk@ozlabs.org>
+Cc: linux-api@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ adhemerval.zanella@linaro.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-We have OPAL_MSG_PRD message type to pass prd related messages from OPAL
-to `opal-prd`. It can handle messages upto 64 bytes. We have a requirement
-to send bigger than 64 bytes of data from OPAL to `opal-prd`. Lets add new
-message type (OPAL_MSG_PRD2) to pass bigger data.
+On April 9, 2019 4:47:30 AM MDT, Florian Weimer <fweimer@redhat=2Ecom> wrot=
+e:
+>struct termios2 is required for setting arbitrary baud rates on serial
+>ports=2E  <sys/ioctl=2Eh> and <linux/termios=2Eh> have conflicting
+>definitions in the existing termios definitions, which means that it
+>is currently very difficult to use TCGETS2/TCSETS2 and struct termios2
+>with glibc=2E  Providing a definition within glibc resolves this problem=
+=2E
+>
+>This does not completely address bug 10339, but it at least exposes
+>the current kernel functionality in this area=2E
+>
+>Support for struct termios2 is architecture-specific in the kernel=2E
+>Support on alpha was only added in Linux 4=2E20=2E  POWER support is
+>currently missing=2E  The expectation is that the kernel will eventually
+>use the generic UAPI definition for struct termios2=2E
+>
+>2019-04-09  Florian Weimer  <fweimer@redhat=2Ecom>
+>
+>	[BZ #10339]
+>	Linux: Define struct termios2 in <termios=2Eh> under _GNU_SOURCE=2E
+>	* sysdeps/unix/sysv/linux/Makefile [$(subdir) =3D=3D termios] (tests):
+>	Add tst-termios2=2E
+>	* sysdeps/unix/sysv/linux/tst-termios2=2Ec: New file=2E
+>	* sysdeps/unix/sysv/linux/bits/termios2-struct=2Eh: Likewise=2E
+>	* sysdeps/unix/sysv/linux/bits/termios=2Eh [__USE_GNU]: Include it=2E
+>	* sysdeps/unix/sysv/linux/alpha/bits/termios2-struct=2Eh: New file=2E
+>	* sysdeps/unix/sysv/linux/sparc/bits/termios2-struct=2Eh: Likewise=2E
+>
+>diff --git a/NEWS b/NEWS
+>index b58e2469d4=2E=2E5e6ecb9c7d 100644
+>--- a/NEWS
+>+++ b/NEWS
+>@@ -18,6 +18,9 @@ Major new features:
+>=20
+> * On Linux, the gettid function has been added=2E
+>=20
+>+* On Linux, <termios=2Eh> now provides a definition of struct termios2
+>with
+>+  the _GNU_SOURCE feature test macro=2E
+>+
+> * Minguo (Republic of China) calendar support has been added as an
+> alternative calendar for the following locales: zh_TW, cmn_TW, hak_TW,
+>   nan_TW, lzh_TW=2E
+>diff --git a/sysdeps/unix/sysv/linux/Makefile
+>b/sysdeps/unix/sysv/linux/Makefile
+>index 52ac6ad484=2E=2E4cb5e4f0d2 100644
+>--- a/sysdeps/unix/sysv/linux/Makefile
+>+++ b/sysdeps/unix/sysv/linux/Makefile
+>@@ -156,6 +156,7 @@ endif
+>=20
+> ifeq ($(subdir),termios)
+> sysdep_headers +=3D termio=2Eh
+>+tests +=3D tst-termios2
+> endif
+>=20
+> ifeq ($(subdir),posix)
+>diff --git a/sysdeps/unix/sysv/linux/alpha/bits/termios2-struct=2Eh
+>b/sysdeps/unix/sysv/linux/alpha/bits/termios2-struct=2Eh
+>new file mode 100644
+>index 0000000000=2E=2E5f09445e23
+>--- /dev/null
+>+++ b/sysdeps/unix/sysv/linux/alpha/bits/termios2-struct=2Eh
+>@@ -0,0 +1,33 @@
+>+/* struct termios2 definition=2E  Linux/alpha version=2E
+>+   Copyright (C) 2019 Free Software Foundation, Inc=2E
+>+   This file is part of the GNU C Library=2E
+>+
+>+   The GNU C Library is free software; you can redistribute it and/or
+>+   modify it under the terms of the GNU Lesser General Public
+>+   License as published by the Free Software Foundation; either
+>+   version 2=2E1 of the License, or (at your option) any later version=
+=2E
+>+
+>+   The GNU C Library is distributed in the hope that it will be
+>useful,
+>+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+>+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE=2E  See the GNU
+>+   Lesser General Public License for more details=2E
+>+
+>+   You should have received a copy of the GNU Lesser General Public
+>+   License along with the GNU C Library=2E  If not, see
+>+   <http://www=2Egnu=2Eorg/licenses/>=2E  */
+>+
+>+#ifndef _TERMIOS_H
+>+# error "Never include <bits/termios2-struct=2Eh> directly; use
+><termios=2Eh> instead=2E"
+>+#endif
+>+
+>+struct termios2
+>+{
+>+  tcflag_t c_iflag;
+>+  tcflag_t c_oflag;
+>+  tcflag_t c_cflag;
+>+  tcflag_t c_lflag;
+>+  cc_t c_cc[NCCS];
+>+  cc_t c_line;
+>+  speed_t c_ispeed;
+>+  speed_t c_ospeed;
+>+};
+>diff --git a/sysdeps/unix/sysv/linux/bits/termios=2Eh
+>b/sysdeps/unix/sysv/linux/bits/termios=2Eh
+>index 997231cd03=2E=2E45ac7affdf 100644
+>--- a/sysdeps/unix/sysv/linux/bits/termios=2Eh
+>+++ b/sysdeps/unix/sysv/linux/bits/termios=2Eh
+>@@ -25,6 +25,10 @@ typedef unsigned int	speed_t;
+> typedef unsigned int	tcflag_t;
+>=20
+> #include <bits/termios-struct=2Eh>
+>+#ifdef __USE_GNU
+>+# include <bits/termios2-struct=2Eh>
+>+#endif
+>+
+> #include <bits/termios-c_cc=2Eh>
+> #include <bits/termios-c_iflag=2Eh>
+> #include <bits/termios-c_oflag=2Eh>
+>diff --git a/sysdeps/unix/sysv/linux/bits/termios2-struct=2Eh
+>b/sysdeps/unix/sysv/linux/bits/termios2-struct=2Eh
+>new file mode 100644
+>index 0000000000=2E=2E5a48e45ef3
+>--- /dev/null
+>+++ b/sysdeps/unix/sysv/linux/bits/termios2-struct=2Eh
+>@@ -0,0 +1,33 @@
+>+/* struct termios2 definition=2E  Linux/generic version=2E
+>+   Copyright (C) 2019 Free Software Foundation, Inc=2E
+>+   This file is part of the GNU C Library=2E
+>+
+>+   The GNU C Library is free software; you can redistribute it and/or
+>+   modify it under the terms of the GNU Lesser General Public
+>+   License as published by the Free Software Foundation; either
+>+   version 2=2E1 of the License, or (at your option) any later version=
+=2E
+>+
+>+   The GNU C Library is distributed in the hope that it will be
+>useful,
+>+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+>+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE=2E  See the GNU
+>+   Lesser General Public License for more details=2E
+>+
+>+   You should have received a copy of the GNU Lesser General Public
+>+   License along with the GNU C Library=2E  If not, see
+>+   <http://www=2Egnu=2Eorg/licenses/>=2E  */
+>+
+>+#ifndef _TERMIOS_H
+>+# error "Never include <bits/termios2-struct=2Eh> directly; use
+><termios=2Eh> instead=2E"
+>+#endif
+>+
+>+struct termios2
+>+{
+>+  tcflag_t c_iflag;
+>+  tcflag_t c_oflag;
+>+  tcflag_t c_cflag;
+>+  tcflag_t c_lflag;
+>+  cc_t c_line;
+>+  cc_t c_cc[NCCS];
+>+  speed_t c_ispeed;
+>+  speed_t c_ospeed;
+>+};
+>diff --git a/sysdeps/unix/sysv/linux/sparc/bits/termios2-struct=2Eh
+>b/sysdeps/unix/sysv/linux/sparc/bits/termios2-struct=2Eh
+>new file mode 100644
+>index 0000000000=2E=2E7c889e575c
+>--- /dev/null
+>+++ b/sysdeps/unix/sysv/linux/sparc/bits/termios2-struct=2Eh
+>@@ -0,0 +1,33 @@
+>+/* struct termios2 definition=2E  Linux/sparc version=2E
+>+   Copyright (C) 2019 Free Software Foundation, Inc=2E
+>+   This file is part of the GNU C Library=2E
+>+
+>+   The GNU C Library is free software; you can redistribute it and/or
+>+   modify it under the terms of the GNU Lesser General Public
+>+   License as published by the Free Software Foundation; either
+>+   version 2=2E1 of the License, or (at your option) any later version=
+=2E
+>+
+>+   The GNU C Library is distributed in the hope that it will be
+>useful,
+>+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+>+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE=2E  See the GNU
+>+   Lesser General Public License for more details=2E
+>+
+>+   You should have received a copy of the GNU Lesser General Public
+>+   License along with the GNU C Library=2E  If not, see
+>+   <http://www=2Egnu=2Eorg/licenses/>=2E  */
+>+
+>+#ifndef _TERMIOS_H
+>+# error "Never include <bits/termios2-struct=2Eh> directly; use
+><termios=2Eh> instead=2E"
+>+#endif
+>+
+>+struct termios2
+>+{
+>+  tcflag_t c_iflag;
+>+  tcflag_t c_oflag;
+>+  tcflag_t c_cflag;
+>+  tcflag_t c_lflag;
+>+  cc_t c_line;
+>+  cc_t c_cc[NCCS + 2];
+>+  speed_t c_ispeed;
+>+  speed_t c_ospeed;
+>+};
+>diff --git a/sysdeps/unix/sysv/linux/tst-termios2=2Ec
+>b/sysdeps/unix/sysv/linux/tst-termios2=2Ec
+>new file mode 100644
+>index 0000000000=2E=2E82326a1288
+>--- /dev/null
+>+++ b/sysdeps/unix/sysv/linux/tst-termios2=2Ec
+>@@ -0,0 +1,48 @@
+>+/* Minimal test of struct termios2 definition=2E
+>+   Copyright (C) 2019 Free Software Foundation, Inc=2E
+>+   This file is part of the GNU C Library=2E
+>+
+>+   The GNU C Library is free software; you can redistribute it and/or
+>+   modify it under the terms of the GNU Lesser General Public
+>+   License as published by the Free Software Foundation; either
+>+   version 2=2E1 of the License, or (at your option) any later version=
+=2E
+>+
+>+   The GNU C Library is distributed in the hope that it will be
+>useful,
+>+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+>+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE=2E  See the GNU
+>+   Lesser General Public License for more details=2E
+>+
+>+   You should have received a copy of the GNU Lesser General Public
+>+   License along with the GNU C Library=2E  If not, see
+>+   <http://www=2Egnu=2Eorg/licenses/>=2E  */
+>+
+>+#include <termios=2Eh>
+>+#include <sys/ioctl=2Eh>
+>+
+>+/* This function is never executed, but must be compiled successfully=2E
+>+   Accessing serial ports in the test suite is problematic because
+>+   they likely correspond with low-level system functionality=2E  */
+>+void
+>+not_executed (int fd)
+>+{
+>+  /* Avoid a compilation failure if TCGETS2, TCSETS2 are not
+>+     defined=2E  */
+>+#if defined (TCGETS2) && defined (TCSETS2)
+>+  struct termios2 ti;
+>+  ioctl (fd, TCGETS2, &ti);
+>+  ioctl (fd, TCSETS2, &ti);
+>+#endif
+>+}
+>+
+>+static int
+>+do_test (void)
+>+{
+>+  /* Fail at run time if TCGETS2 or TCSETS2 is not defined=2E  */
+>+#if defined (TCGETS2) && defined (TCSETS2)
+>+  return 0;
+>+#else
+>+  return 1;
+>+#endif
+>+}
+>+
+>+#include <support/test-driver=2Ec>
 
-Cc: Jeremy Kerr <jk@ozlabs.org>
-Signed-off-by: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>
----
- arch/powerpc/include/asm/opal-api.h       | 1 +
- arch/powerpc/platforms/powernv/opal-prd.c | 9 ++++++++-
- 2 files changed, 9 insertions(+), 1 deletion(-)
-
-diff --git a/arch/powerpc/include/asm/opal-api.h b/arch/powerpc/include/asm/opal-api.h
-index 821ed4fa95ad..79272e145281 100644
---- a/arch/powerpc/include/asm/opal-api.h
-+++ b/arch/powerpc/include/asm/opal-api.h
-@@ -455,6 +455,7 @@ enum opal_msg_type {
- 	OPAL_MSG_DPO		= 5,
- 	OPAL_MSG_PRD		= 6,
- 	OPAL_MSG_OCC		= 7,
-+	OPAL_MSG_PRD2		= 8,
- 	OPAL_MSG_TYPE_MAX,
- };
- 
-diff --git a/arch/powerpc/platforms/powernv/opal-prd.c b/arch/powerpc/platforms/powernv/opal-prd.c
-index 4070bb4e9da4..ef9a19de7cca 100644
---- a/arch/powerpc/platforms/powernv/opal-prd.c
-+++ b/arch/powerpc/platforms/powernv/opal-prd.c
-@@ -350,7 +350,7 @@ static int opal_prd_msg_notifier(struct notifier_block *nb,
- 	int msg_size, item_size;
- 	unsigned long flags;
- 
--	if (msg_type != OPAL_MSG_PRD)
-+	if (msg_type != OPAL_MSG_PRD && msg_type != OPAL_MSG_PRD2)
- 		return 0;
- 
- 	/* Calculate total size of the message and item we need to store. The
-@@ -401,6 +401,13 @@ static int opal_prd_probe(struct platform_device *pdev)
- 		return rc;
- 	}
- 
-+	rc = opal_message_notifier_register(OPAL_MSG_PRD2, &opal_prd_event_nb);
-+	if (rc) {
-+		pr_err("%s: Couldn't register event notifier (%d)\n",
-+		       __func__, OPAL_MSG_PRD2);
-+		return rc;
-+	}
-+
- 	rc = misc_register(&opal_prd_dev);
- 	if (rc) {
- 		pr_err("failed to register miscdev\n");
--- 
-2.14.3
-
+PowerPC doesn't need it at all=2E
+--=20
+Sent from my Android device with K-9 Mail=2E Please excuse my brevity=2E
