@@ -2,54 +2,80 @@ Return-Path: <SRS0=YLyy=SL=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-4.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DBE06C10F0E
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Apr 2019 17:26:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C56A8C10F0E
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Apr 2019 21:28:16 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 30EFD2084F
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Apr 2019 17:26:52 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 30EFD2084F
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=zytor.com
+	by mail.kernel.org (Postfix) with ESMTPS id D03C620883
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Apr 2019 21:28:15 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=rasmusvillemoes.dk header.i=@rasmusvillemoes.dk header.b="ApftFrBp"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D03C620883
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=rasmusvillemoes.dk
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44dvNV0TSWzDqGp
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Apr 2019 03:26:50 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44f0l06FwtzDqJR
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Apr 2019 07:28:12 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=zytor.com
- (client-ip=198.137.202.136; helo=mail.zytor.com; envelope-from=hpa@zytor.com;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=zytor.com
-Received: from mail.zytor.com (terminus.zytor.com [198.137.202.136])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ spf=pass (mailfrom) smtp.mailfrom=rasmusvillemoes.dk
+ (client-ip=2a00:1450:4864:20::541; helo=mail-ed1-x541.google.com;
+ envelope-from=linux@rasmusvillemoes.dk; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=rasmusvillemoes.dk
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=rasmusvillemoes.dk header.i=@rasmusvillemoes.dk
+ header.b="ApftFrBp"; dkim-atps=neutral
+Received: from mail-ed1-x541.google.com (mail-ed1-x541.google.com
+ [IPv6:2a00:1450:4864:20::541])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44dvKD1hXTzDqFL
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Apr 2019 03:23:59 +1000 (AEST)
-Received: from [IPv6:2607:fb90:6e34:dae1:acf5:df97:1f3d:b079]
- ([IPv6:2607:fb90:6e34:dae1:acf5:df97:1f3d:b079])
- (authenticated bits=0)
- by mail.zytor.com (8.15.2/8.15.2) with ESMTPSA id x39HNtJP416979
- (version=TLSv1.2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128 verify=NO);
- Tue, 9 Apr 2019 10:23:56 -0700
-Date: Tue, 09 Apr 2019 09:02:06 -0600
-User-Agent: K-9 Mail for Android
-In-Reply-To: <875zrnlakd.fsf@oldenburg2.str.redhat.com>
-References: <875zrnlakd.fsf@oldenburg2.str.redhat.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44f0hT1xwqzDqJH
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Apr 2019 07:25:56 +1000 (AEST)
+Received: by mail-ed1-x541.google.com with SMTP id k45so126105edb.6
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 09 Apr 2019 14:25:56 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=rasmusvillemoes.dk; s=google;
+ h=from:to:cc:subject:date:message-id:mime-version
+ :content-transfer-encoding;
+ bh=DEibYvnJOT/AXrEykbQH+ZEm0O+Co96okaAqfEd0oe0=;
+ b=ApftFrBp2GKWzpizNkRot6/E2kafAeHEayvgCvWkzyqFMUHkPv0Puo84qIaJIvHuOG
+ 7E9HbLIukZFDuX/ZSXdx8fRQYnraVsKdfurUV90y8HiVkho++04I5EJjBUUhLwH5lUUX
+ GrcQFZwHiCD34KHgRUcacicW+Gf80EXMJVX90=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+ :content-transfer-encoding;
+ bh=DEibYvnJOT/AXrEykbQH+ZEm0O+Co96okaAqfEd0oe0=;
+ b=AqU00GbkP51QWD+b8saqTUgHiQwgz/dtFRIVM7z+bER72DpOlYuA7+Bihs7KCXRIK6
+ AMqxk9puqqtUhsGXZQdW9gZ3zQ+JwE9YT5O2EZ7Aw+cE5D2lqVcNor0Gj7STfjp7X0PD
+ kwkntcmDH/e/IbVyhRfUtJvCf2aBLlLNqqXcDsRqmoR/lmJAZm3Agk4W1BtJdNXVveYt
+ nt63SnWyChLVn+HhRJVF7z0nTjs30LrFO84CzMPT2PhKHg//H6L3GRmi1Q7ZmTwmMEvl
+ MGMjcxYNbX8TwYDpBv0pIgxRvWZi5V00f5WL+7QVjx//M+DdHs6FX5txqoYG1I9fpU+I
+ 4IeA==
+X-Gm-Message-State: APjAAAU8aaWaA0D1DnG9deL4p6spWSylru8F8DnVidYR5bd3w7dL3S+a
+ k8kcLWDuAWguC/Zd0FEeiGvBwg==
+X-Google-Smtp-Source: APXvYqwRRQpYse2JKy7O0+MQPpjToIC2KiJl10KZ5FIj1p46BJAckzLHtv1USMyNV6zx14fgC0GcCQ==
+X-Received: by 2002:a17:906:5149:: with SMTP id
+ s9mr21353914ejl.25.1554845151506; 
+ Tue, 09 Apr 2019 14:25:51 -0700 (PDT)
+Received: from prevas-ravi.prevas.se (ip-5-186-118-63.cgn.fibianet.dk.
+ [5.186.118.63])
+ by smtp.gmail.com with ESMTPSA id i26sm3477986ejc.51.2019.04.09.14.25.50
+ (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
+ Tue, 09 Apr 2019 14:25:50 -0700 (PDT)
+From: Rasmus Villemoes <linux@rasmusvillemoes.dk>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH 00/10] implement DYNAMIC_DEBUG_RELATIVE_POINTERS
+Date: Tue,  9 Apr 2019 23:25:07 +0200
+Message-Id: <20190409212517.7321-1-linux@rasmusvillemoes.dk>
+X-Mailer: git-send-email 2.20.1
 MIME-Version: 1.0
-Content-Type: text/plain;
- charset=utf-8
-Content-Transfer-Encoding: quoted-printable
-Subject: Re: [PATCH] Linux: Define struct termios2 in <termios.h> under
- _GNU_SOURCE [BZ #10339]
-To: Florian Weimer <fweimer@redhat.com>, libc-alpha@sourceware.org
-From: hpa@zytor.com
-Message-ID: <EF5CE34B-1A82-4391-B07E-DB832814AD1C@zytor.com>
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -61,272 +87,67 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-api@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- adhemerval.zanella@linaro.org
+Cc: x86@kernel.org, Rasmus Villemoes <linux@rasmusvillemoes.dk>,
+ linux-kernel@vger.kernel.org, Will Deacon <will.deacon@arm.com>,
+ Jason Baron <jbaron@akamai.com>, Ingo Molnar <mingo@redhat.com>,
+ linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On April 9, 2019 4:47:30 AM MDT, Florian Weimer <fweimer@redhat=2Ecom> wrot=
-e:
->struct termios2 is required for setting arbitrary baud rates on serial
->ports=2E  <sys/ioctl=2Eh> and <linux/termios=2Eh> have conflicting
->definitions in the existing termios definitions, which means that it
->is currently very difficult to use TCGETS2/TCSETS2 and struct termios2
->with glibc=2E  Providing a definition within glibc resolves this problem=
-=2E
->
->This does not completely address bug 10339, but it at least exposes
->the current kernel functionality in this area=2E
->
->Support for struct termios2 is architecture-specific in the kernel=2E
->Support on alpha was only added in Linux 4=2E20=2E  POWER support is
->currently missing=2E  The expectation is that the kernel will eventually
->use the generic UAPI definition for struct termios2=2E
->
->2019-04-09  Florian Weimer  <fweimer@redhat=2Ecom>
->
->	[BZ #10339]
->	Linux: Define struct termios2 in <termios=2Eh> under _GNU_SOURCE=2E
->	* sysdeps/unix/sysv/linux/Makefile [$(subdir) =3D=3D termios] (tests):
->	Add tst-termios2=2E
->	* sysdeps/unix/sysv/linux/tst-termios2=2Ec: New file=2E
->	* sysdeps/unix/sysv/linux/bits/termios2-struct=2Eh: Likewise=2E
->	* sysdeps/unix/sysv/linux/bits/termios=2Eh [__USE_GNU]: Include it=2E
->	* sysdeps/unix/sysv/linux/alpha/bits/termios2-struct=2Eh: New file=2E
->	* sysdeps/unix/sysv/linux/sparc/bits/termios2-struct=2Eh: Likewise=2E
->
->diff --git a/NEWS b/NEWS
->index b58e2469d4=2E=2E5e6ecb9c7d 100644
->--- a/NEWS
->+++ b/NEWS
->@@ -18,6 +18,9 @@ Major new features:
->=20
-> * On Linux, the gettid function has been added=2E
->=20
->+* On Linux, <termios=2Eh> now provides a definition of struct termios2
->with
->+  the _GNU_SOURCE feature test macro=2E
->+
-> * Minguo (Republic of China) calendar support has been added as an
-> alternative calendar for the following locales: zh_TW, cmn_TW, hak_TW,
->   nan_TW, lzh_TW=2E
->diff --git a/sysdeps/unix/sysv/linux/Makefile
->b/sysdeps/unix/sysv/linux/Makefile
->index 52ac6ad484=2E=2E4cb5e4f0d2 100644
->--- a/sysdeps/unix/sysv/linux/Makefile
->+++ b/sysdeps/unix/sysv/linux/Makefile
->@@ -156,6 +156,7 @@ endif
->=20
-> ifeq ($(subdir),termios)
-> sysdep_headers +=3D termio=2Eh
->+tests +=3D tst-termios2
-> endif
->=20
-> ifeq ($(subdir),posix)
->diff --git a/sysdeps/unix/sysv/linux/alpha/bits/termios2-struct=2Eh
->b/sysdeps/unix/sysv/linux/alpha/bits/termios2-struct=2Eh
->new file mode 100644
->index 0000000000=2E=2E5f09445e23
->--- /dev/null
->+++ b/sysdeps/unix/sysv/linux/alpha/bits/termios2-struct=2Eh
->@@ -0,0 +1,33 @@
->+/* struct termios2 definition=2E  Linux/alpha version=2E
->+   Copyright (C) 2019 Free Software Foundation, Inc=2E
->+   This file is part of the GNU C Library=2E
->+
->+   The GNU C Library is free software; you can redistribute it and/or
->+   modify it under the terms of the GNU Lesser General Public
->+   License as published by the Free Software Foundation; either
->+   version 2=2E1 of the License, or (at your option) any later version=
-=2E
->+
->+   The GNU C Library is distributed in the hope that it will be
->useful,
->+   but WITHOUT ANY WARRANTY; without even the implied warranty of
->+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE=2E  See the GNU
->+   Lesser General Public License for more details=2E
->+
->+   You should have received a copy of the GNU Lesser General Public
->+   License along with the GNU C Library=2E  If not, see
->+   <http://www=2Egnu=2Eorg/licenses/>=2E  */
->+
->+#ifndef _TERMIOS_H
->+# error "Never include <bits/termios2-struct=2Eh> directly; use
-><termios=2Eh> instead=2E"
->+#endif
->+
->+struct termios2
->+{
->+  tcflag_t c_iflag;
->+  tcflag_t c_oflag;
->+  tcflag_t c_cflag;
->+  tcflag_t c_lflag;
->+  cc_t c_cc[NCCS];
->+  cc_t c_line;
->+  speed_t c_ispeed;
->+  speed_t c_ospeed;
->+};
->diff --git a/sysdeps/unix/sysv/linux/bits/termios=2Eh
->b/sysdeps/unix/sysv/linux/bits/termios=2Eh
->index 997231cd03=2E=2E45ac7affdf 100644
->--- a/sysdeps/unix/sysv/linux/bits/termios=2Eh
->+++ b/sysdeps/unix/sysv/linux/bits/termios=2Eh
->@@ -25,6 +25,10 @@ typedef unsigned int	speed_t;
-> typedef unsigned int	tcflag_t;
->=20
-> #include <bits/termios-struct=2Eh>
->+#ifdef __USE_GNU
->+# include <bits/termios2-struct=2Eh>
->+#endif
->+
-> #include <bits/termios-c_cc=2Eh>
-> #include <bits/termios-c_iflag=2Eh>
-> #include <bits/termios-c_oflag=2Eh>
->diff --git a/sysdeps/unix/sysv/linux/bits/termios2-struct=2Eh
->b/sysdeps/unix/sysv/linux/bits/termios2-struct=2Eh
->new file mode 100644
->index 0000000000=2E=2E5a48e45ef3
->--- /dev/null
->+++ b/sysdeps/unix/sysv/linux/bits/termios2-struct=2Eh
->@@ -0,0 +1,33 @@
->+/* struct termios2 definition=2E  Linux/generic version=2E
->+   Copyright (C) 2019 Free Software Foundation, Inc=2E
->+   This file is part of the GNU C Library=2E
->+
->+   The GNU C Library is free software; you can redistribute it and/or
->+   modify it under the terms of the GNU Lesser General Public
->+   License as published by the Free Software Foundation; either
->+   version 2=2E1 of the License, or (at your option) any later version=
-=2E
->+
->+   The GNU C Library is distributed in the hope that it will be
->useful,
->+   but WITHOUT ANY WARRANTY; without even the implied warranty of
->+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE=2E  See the GNU
->+   Lesser General Public License for more details=2E
->+
->+   You should have received a copy of the GNU Lesser General Public
->+   License along with the GNU C Library=2E  If not, see
->+   <http://www=2Egnu=2Eorg/licenses/>=2E  */
->+
->+#ifndef _TERMIOS_H
->+# error "Never include <bits/termios2-struct=2Eh> directly; use
-><termios=2Eh> instead=2E"
->+#endif
->+
->+struct termios2
->+{
->+  tcflag_t c_iflag;
->+  tcflag_t c_oflag;
->+  tcflag_t c_cflag;
->+  tcflag_t c_lflag;
->+  cc_t c_line;
->+  cc_t c_cc[NCCS];
->+  speed_t c_ispeed;
->+  speed_t c_ospeed;
->+};
->diff --git a/sysdeps/unix/sysv/linux/sparc/bits/termios2-struct=2Eh
->b/sysdeps/unix/sysv/linux/sparc/bits/termios2-struct=2Eh
->new file mode 100644
->index 0000000000=2E=2E7c889e575c
->--- /dev/null
->+++ b/sysdeps/unix/sysv/linux/sparc/bits/termios2-struct=2Eh
->@@ -0,0 +1,33 @@
->+/* struct termios2 definition=2E  Linux/sparc version=2E
->+   Copyright (C) 2019 Free Software Foundation, Inc=2E
->+   This file is part of the GNU C Library=2E
->+
->+   The GNU C Library is free software; you can redistribute it and/or
->+   modify it under the terms of the GNU Lesser General Public
->+   License as published by the Free Software Foundation; either
->+   version 2=2E1 of the License, or (at your option) any later version=
-=2E
->+
->+   The GNU C Library is distributed in the hope that it will be
->useful,
->+   but WITHOUT ANY WARRANTY; without even the implied warranty of
->+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE=2E  See the GNU
->+   Lesser General Public License for more details=2E
->+
->+   You should have received a copy of the GNU Lesser General Public
->+   License along with the GNU C Library=2E  If not, see
->+   <http://www=2Egnu=2Eorg/licenses/>=2E  */
->+
->+#ifndef _TERMIOS_H
->+# error "Never include <bits/termios2-struct=2Eh> directly; use
-><termios=2Eh> instead=2E"
->+#endif
->+
->+struct termios2
->+{
->+  tcflag_t c_iflag;
->+  tcflag_t c_oflag;
->+  tcflag_t c_cflag;
->+  tcflag_t c_lflag;
->+  cc_t c_line;
->+  cc_t c_cc[NCCS + 2];
->+  speed_t c_ispeed;
->+  speed_t c_ospeed;
->+};
->diff --git a/sysdeps/unix/sysv/linux/tst-termios2=2Ec
->b/sysdeps/unix/sysv/linux/tst-termios2=2Ec
->new file mode 100644
->index 0000000000=2E=2E82326a1288
->--- /dev/null
->+++ b/sysdeps/unix/sysv/linux/tst-termios2=2Ec
->@@ -0,0 +1,48 @@
->+/* Minimal test of struct termios2 definition=2E
->+   Copyright (C) 2019 Free Software Foundation, Inc=2E
->+   This file is part of the GNU C Library=2E
->+
->+   The GNU C Library is free software; you can redistribute it and/or
->+   modify it under the terms of the GNU Lesser General Public
->+   License as published by the Free Software Foundation; either
->+   version 2=2E1 of the License, or (at your option) any later version=
-=2E
->+
->+   The GNU C Library is distributed in the hope that it will be
->useful,
->+   but WITHOUT ANY WARRANTY; without even the implied warranty of
->+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE=2E  See the GNU
->+   Lesser General Public License for more details=2E
->+
->+   You should have received a copy of the GNU Lesser General Public
->+   License along with the GNU C Library=2E  If not, see
->+   <http://www=2Egnu=2Eorg/licenses/>=2E  */
->+
->+#include <termios=2Eh>
->+#include <sys/ioctl=2Eh>
->+
->+/* This function is never executed, but must be compiled successfully=2E
->+   Accessing serial ports in the test suite is problematic because
->+   they likely correspond with low-level system functionality=2E  */
->+void
->+not_executed (int fd)
->+{
->+  /* Avoid a compilation failure if TCGETS2, TCSETS2 are not
->+     defined=2E  */
->+#if defined (TCGETS2) && defined (TCSETS2)
->+  struct termios2 ti;
->+  ioctl (fd, TCGETS2, &ti);
->+  ioctl (fd, TCSETS2, &ti);
->+#endif
->+}
->+
->+static int
->+do_test (void)
->+{
->+  /* Fail at run time if TCGETS2 or TCSETS2 is not defined=2E  */
->+#if defined (TCGETS2) && defined (TCSETS2)
->+  return 0;
->+#else
->+  return 1;
->+#endif
->+}
->+
->+#include <support/test-driver=2Ec>
+Similar to CONFIG_GENERIC_BUG_RELATIVE_POINTERS that replaces (8 byte)
+const char* members by (4 byte) signed offsets from the bug_entry,
+this implements the similar thing for struct _ddebug, the descriptors
+underlying pr_debug() and friends in a CONFIG_DYNAMIC_DEBUG kernel.
 
-PowerPC doesn't need it at all=2E
---=20
-Sent from my Android device with K-9 Mail=2E Please excuse my brevity=2E
+Since struct _ddebug has four string members, we save 16 byte per
+instance. The total savings seem to be comparable to what is saved by
+an architecture selecting GENERIC_BUG_RELATIVE_POINTERS (see patch 8
+for some numbers for a common distro config).
+
+While refreshing these patches, which were orignally just targeted at
+x86-64, it occured to me that despite the implementation relying on
+inline asm, there's nothing x86 specific about it, and indeed it seems
+to work out-of-the-box for ppc64 and arm64 as well, but those have
+only been compile-tested.
+
+The first 6 patches are rather pedestrian preparations. The fun stuff
+is in patch 7, and the remaining three patches are just the minimal
+boilerplate to hook up the config option and asm-generic header on the
+three architectures.
+
+Rasmus Villemoes (10):
+  linux/device.h: use unique identifier for each struct _ddebug
+  linux/net.h: use unique identifier for each struct _ddebug
+  linux/printk.h: use unique identifier for each struct _ddebug
+  dynamic_debug: introduce accessors for string members of struct
+    _ddebug
+  dynamic_debug: drop use of bitfields in struct _ddebug
+  dynamic_debug: introduce CONFIG_DYNAMIC_DEBUG_RELATIVE_POINTERS
+  dynamic_debug: add asm-generic implementation for
+    DYNAMIC_DEBUG_RELATIVE_POINTERS
+  x86-64: select DYNAMIC_DEBUG_RELATIVE_POINTERS
+  arm64: select DYNAMIC_DEBUG_RELATIVE_POINTERS
+  powerpc: select DYNAMIC_DEBUG_RELATIVE_POINTERS for PPC64
+
+ arch/arm64/Kconfig                          |   1 +
+ arch/arm64/include/asm/Kbuild               |   1 +
+ arch/powerpc/Kconfig                        |   1 +
+ arch/powerpc/include/asm/Kbuild             |   1 +
+ arch/x86/Kconfig                            |   1 +
+ arch/x86/entry/vdso/vdso32/vclock_gettime.c |   1 +
+ arch/x86/include/asm/Kbuild                 |   1 +
+ include/asm-generic/dynamic_debug.h         | 116 ++++++++++++++++++++
+ include/linux/device.h                      |   4 +-
+ include/linux/dynamic_debug.h               |  26 +++--
+ include/linux/jump_label.h                  |   2 +
+ include/linux/net.h                         |   4 +-
+ include/linux/printk.h                      |   4 +-
+ lib/Kconfig.debug                           |   3 +
+ lib/dynamic_debug.c                         | 111 ++++++++++++++-----
+ 15 files changed, 237 insertions(+), 40 deletions(-)
+ create mode 100644 include/asm-generic/dynamic_debug.h
+
+-- 
+2.20.1
+
