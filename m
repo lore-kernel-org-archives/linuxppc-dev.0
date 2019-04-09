@@ -6,84 +6,97 @@ X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
 	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DB589C10F0E
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Apr 2019 08:18:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 910CFC10F0E
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Apr 2019 08:20:33 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3B8262084F
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Apr 2019 08:18:01 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3B8262084F
+	by mail.kernel.org (Postfix) with ESMTPS id 0FA7C20880
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Apr 2019 08:20:33 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0FA7C20880
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44dgCB5zNGzDqJc
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Apr 2019 18:17:58 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44dgG66XNQzDqH6
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Apr 2019 18:20:30 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44dgCw74LqzDqGW
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Apr 2019 18:18:36 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=linux.ibm.com
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 44dgCw3j6Mz8tGY
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Apr 2019 18:18:36 +1000 (AEST)
+Received: by ozlabs.org (Postfix)
+ id 44dgCw2ns7z9sRC; Tue,  9 Apr 2019 18:18:36 +1000 (AEST)
+Authentication-Results: ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
  (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
  envelope-from=aneesh.kumar@linux.ibm.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
+Authentication-Results: ozlabs.org;
  dmarc=none (p=none dis=none) header.from=linux.ibm.com
 Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44dg8v30JCzDqGZ
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Apr 2019 18:15:57 +1000 (AEST)
-Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
+ by ozlabs.org (Postfix) with ESMTPS id 44dgCv5lyFz9sDQ
+ for <linuxppc-dev@ozlabs.org>; Tue,  9 Apr 2019 18:18:35 +1000 (AEST)
+Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
  by mx0b-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x3989cdS079856
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 9 Apr 2019 04:15:53 -0400
-Received: from e06smtp07.uk.ibm.com (e06smtp07.uk.ibm.com [195.75.94.103])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2rrng6dfas-1
+ x398B6Iw082789
+ for <linuxppc-dev@ozlabs.org>; Tue, 9 Apr 2019 04:18:33 -0400
+Received: from e06smtp04.uk.ibm.com (e06smtp04.uk.ibm.com [195.75.94.100])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2rrnuvmtja-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 09 Apr 2019 04:15:53 -0400
+ for <linuxppc-dev@ozlabs.org>; Tue, 09 Apr 2019 04:18:33 -0400
 Received: from localhost
- by e06smtp07.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp04.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.ibm.com>;
- Tue, 9 Apr 2019 09:15:51 +0100
-Received: from b06cxnps4076.portsmouth.uk.ibm.com (9.149.109.198)
- by e06smtp07.uk.ibm.com (192.168.101.137) with IBM ESMTP SMTP Gateway:
+ for <linuxppc-dev@ozlabs.org> from <aneesh.kumar@linux.ibm.com>;
+ Tue, 9 Apr 2019 09:18:31 +0100
+Received: from b06cxnps4074.portsmouth.uk.ibm.com (9.149.109.196)
+ by e06smtp04.uk.ibm.com (192.168.101.134) with IBM ESMTP SMTP Gateway:
  Authorized Use Only! Violators will be prosecuted; 
  (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Tue, 9 Apr 2019 09:15:49 +0100
-Received: from d06av26.portsmouth.uk.ibm.com (d06av26.portsmouth.uk.ibm.com
- [9.149.105.62])
- by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x398FnRO41746522
+ Tue, 9 Apr 2019 09:18:27 +0100
+Received: from b06wcsmtp001.portsmouth.uk.ibm.com
+ (b06wcsmtp001.portsmouth.uk.ibm.com [9.149.105.160])
+ by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x398IQmH42467398
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Tue, 9 Apr 2019 08:15:49 GMT
-Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id D9E4AAE057;
- Tue,  9 Apr 2019 08:15:48 +0000 (GMT)
-Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id D45DCAE05D;
- Tue,  9 Apr 2019 08:15:47 +0000 (GMT)
+ Tue, 9 Apr 2019 08:18:26 GMT
+Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id B9CE0A4062;
+ Tue,  9 Apr 2019 08:18:26 +0000 (GMT)
+Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 4CF57A405C;
+ Tue,  9 Apr 2019 08:18:25 +0000 (GMT)
 Received: from skywalker.linux.ibm.com (unknown [9.85.92.227])
- by d06av26.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Tue,  9 Apr 2019 08:15:47 +0000 (GMT)
+ by b06wcsmtp001.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Tue,  9 Apr 2019 08:18:25 +0000 (GMT)
 X-Mailer: emacs 26.1 (via feedmail 11-beta-1 I)
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
-To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH v2] powerpc/64s/radix: Fix radix segment exception handling
-In-Reply-To: <20190409031643.20405-1-npiggin@gmail.com>
-References: <20190409031643.20405-1-npiggin@gmail.com>
-Date: Tue, 09 Apr 2019 13:45:46 +0530
+To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH] powerpc/mm: Define MAX_PHYSMEM_BITS for all 64-bit configs
+In-Reply-To: <20190409060324.16941-1-mpe@ellerman.id.au>
+References: <20190409060324.16941-1-mpe@ellerman.id.au>
+Date: Tue, 09 Apr 2019 13:48:23 +0530
 MIME-Version: 1.0
 Content-Type: text/plain
 X-TM-AS-GCONF: 00
-x-cbid: 19040908-0028-0000-0000-0000035ED2A8
+x-cbid: 19040908-0016-0000-0000-0000026CD47E
 X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19040908-0029-0000-0000-0000241DEF79
-Message-Id: <87lg0jmw5p.fsf@linux.ibm.com>
+x-cbparentid: 19040908-0017-0000-0000-000032C8FB9F
+Message-Id: <87imvnmw1c.fsf@linux.ibm.com>
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
  definitions=2019-04-09_03:, , signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
  priorityscore=1501
  malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ clxscore=1011 lowpriorityscore=0 mlxscore=0 impostorscore=0
  mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
  scancount=1 engine=8.0.1-1810050000 definitions=main-1904090055
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -97,203 +110,55 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "Aneesh Kumar K . V" <aneesh.kumar@linux.vnet.ibm.com>,
- Nicholas Piggin <npiggin@gmail.com>, Anton Blanchard <anton@samba.org>
+Cc: schwab@linux-m68k.org, hughd@google.com, aneesh.kumar@linux.vnet.ibm.com,
+ ben@decadent.org.uk
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Nicholas Piggin <npiggin@gmail.com> writes:
+Michael Ellerman <mpe@ellerman.id.au> writes:
 
-> Commit 48e7b76957 ("powerpc/64s/hash: Convert SLB miss handlers to C")
-> broke the radix-mode segment exception handler. In radix mode, this is
-> exception is not an SLB miss, rather it signals that the EA is outside
-> the range translated by any page table.
+> The recent commit 8bc086899816 ("powerpc/mm: Only define
+> MAX_PHYSMEM_BITS in SPARSEMEM configurations") removed our definition
+> of MAX_PHYSMEM_BITS when SPARSEMEM is disabled.
 >
-> The commit lost the radix feature alternate code patch, which can
-> cause faults to some EAs to kernel BUG at arch/powerpc/mm/slb.c:639!
+> This inadvertently broke some 64-bit FLATMEM using configs with eg:
 >
-> The original radix code would send faults to slb_miss_large_addr,
-> which would end up faulting due to slb_addr_limit being 0. This patch
-> sends radix directly to do_bad_slb_fault, which is a bit clearer.
+>   arch/powerpc/include/asm/book3s/64/mmu-hash.h:584:6: error: "MAX_PHYSMEM_BITS" is not defined, evaluates to 0
+>    #if (MAX_PHYSMEM_BITS > MAX_EA_BITS_PER_CONTEXT)
+>         ^~~~~~~~~~~~~~~~
 >
+> Fix it by making sure we define MAX_PHYSMEM_BITS for all 64-bit
+> configs regardless of SPARSEMEM.
+
 
 Reviewed-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
 
-> Fixes: 48e7b76957 ("powerpc/64s/hash: Convert SLB miss handlers to C")
-> Cc: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-> Reported-by: Anton Blanchard <anton@samba.org>
-> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+But I still like the patch I posted which move this to the correct
+platform header.
+
+>
+> Fixes: 8bc086899816 ("powerpc/mm: Only define MAX_PHYSMEM_BITS in SPARSEMEM configurations")
+> Reported-by: Andreas Schwab <schwab@linux-m68k.org>
+> Reported-by: Hugh Dickins <hughd@google.com>
+> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 > ---
-> - Add a selftests that triggers the crash
+>  arch/powerpc/include/asm/mmu.h | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 >
->  arch/powerpc/kernel/exceptions-64s.S          | 12 +++
->  tools/testing/selftests/powerpc/mm/Makefile   |  3 +-
->  .../selftests/powerpc/mm/access_tests.c       | 94 +++++++++++++++++++
->  3 files changed, 108 insertions(+), 1 deletion(-)
->  create mode 100644 tools/testing/selftests/powerpc/mm/access_tests.c
+> diff --git a/arch/powerpc/include/asm/mmu.h b/arch/powerpc/include/asm/mmu.h
+> index 598cdcdd1355..8ddd4a91bdc1 100644
+> --- a/arch/powerpc/include/asm/mmu.h
+> +++ b/arch/powerpc/include/asm/mmu.h
+> @@ -352,7 +352,7 @@ static inline bool strict_kernel_rwx_enabled(void)
+>  #if defined(CONFIG_SPARSEMEM_VMEMMAP) && defined(CONFIG_SPARSEMEM_EXTREME) &&	\
+>  	defined (CONFIG_PPC_64K_PAGES)
+>  #define MAX_PHYSMEM_BITS        51
+> -#elif defined(CONFIG_SPARSEMEM)
+> +#elif defined(CONFIG_PPC64)
+>  #define MAX_PHYSMEM_BITS        46
+>  #endif
 >
-> diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
-> index a5b8fbae56a0..9481a117e242 100644
-> --- a/arch/powerpc/kernel/exceptions-64s.S
-> +++ b/arch/powerpc/kernel/exceptions-64s.S
-> @@ -656,11 +656,17 @@ EXC_COMMON_BEGIN(data_access_slb_common)
->  	ld	r4,PACA_EXSLB+EX_DAR(r13)
->  	std	r4,_DAR(r1)
->  	addi	r3,r1,STACK_FRAME_OVERHEAD
-> +BEGIN_MMU_FTR_SECTION
-> +	/* HPT case, do SLB fault */
->  	bl	do_slb_fault
->  	cmpdi	r3,0
->  	bne-	1f
->  	b	fast_exception_return
->  1:	/* Error case */
-> +MMU_FTR_SECTION_ELSE
-> +	/* Radix case, access is outside page table range */
-> +	li	r3,-EFAULT
-> +ALT_MMU_FTR_SECTION_END_IFCLR(MMU_FTR_TYPE_RADIX)
->  	std	r3,RESULT(r1)
->  	bl	save_nvgprs
->  	RECONCILE_IRQ_STATE(r10, r11)
-> @@ -705,11 +711,17 @@ EXC_COMMON_BEGIN(instruction_access_slb_common)
->  	EXCEPTION_PROLOG_COMMON(0x480, PACA_EXSLB)
->  	ld	r4,_NIP(r1)
->  	addi	r3,r1,STACK_FRAME_OVERHEAD
-> +BEGIN_MMU_FTR_SECTION
-> +	/* HPT case, do SLB fault */
->  	bl	do_slb_fault
->  	cmpdi	r3,0
->  	bne-	1f
->  	b	fast_exception_return
->  1:	/* Error case */
-> +MMU_FTR_SECTION_ELSE
-> +	/* Radix case, access is outside page table range */
-> +	li	r3,-EFAULT
-> +ALT_MMU_FTR_SECTION_END_IFCLR(MMU_FTR_TYPE_RADIX)
->  	std	r3,RESULT(r1)
->  	bl	save_nvgprs
->  	RECONCILE_IRQ_STATE(r10, r11)
-> diff --git a/tools/testing/selftests/powerpc/mm/Makefile b/tools/testing/selftests/powerpc/mm/Makefile
-> index 43d68420e363..68b7add5086d 100644
-> --- a/tools/testing/selftests/powerpc/mm/Makefile
-> +++ b/tools/testing/selftests/powerpc/mm/Makefile
-> @@ -2,7 +2,7 @@
->  noarg:
->  	$(MAKE) -C ../
->  
-> -TEST_GEN_PROGS := hugetlb_vs_thp_test subpage_prot prot_sao segv_errors wild_bctr
-> +TEST_GEN_PROGS := hugetlb_vs_thp_test subpage_prot prot_sao segv_errors wild_bctr access_tests
->  TEST_GEN_FILES := tempfile
->  
->  top_srcdir = ../../../../..
-> @@ -13,6 +13,7 @@ $(TEST_GEN_PROGS): ../harness.c
->  $(OUTPUT)/prot_sao: ../utils.c
->  
->  $(OUTPUT)/wild_bctr: CFLAGS += -m64
-> +$(OUTPUT)/access_tests: CFLAGS += -m64
->  
->  $(OUTPUT)/tempfile:
->  	dd if=/dev/zero of=$@ bs=64k count=1
-> diff --git a/tools/testing/selftests/powerpc/mm/access_tests.c b/tools/testing/selftests/powerpc/mm/access_tests.c
-> new file mode 100644
-> index 000000000000..ad300d7d9d43
-> --- /dev/null
-> +++ b/tools/testing/selftests/powerpc/mm/access_tests.c
-> @@ -0,0 +1,94 @@
-> +// SPDX-License-Identifier: GPL-2.0
-> +
-> +/*
-> + * Copyright 2017 John Sperbeck
-> + *
-> + * Test faults to "interesting" locations.
-> + */
-> +
-> +#include <stdbool.h>
-> +#include <stdio.h>
-> +#include <stdlib.h>
-> +#include <string.h>
-> +#include <unistd.h>
-> +#include <signal.h>
-> +#include <sys/mman.h>
-> +#include <assert.h>
-> +#include <ucontext.h>
-> +
-> +#include "utils.h"
-> +
-> +#define PAGE_SIZE	(64*1024)
-> +#define TB		(1024ULL*1024*1024*1024)
-> +static volatile bool faulted;
-> +static volatile int si_code;
-> +
-> +static void segv_handler(int n, siginfo_t *info, void *ctxt_v)
-> +{
-> +	ucontext_t *ctxt = (ucontext_t *)ctxt_v;
-> +	struct pt_regs *regs = ctxt->uc_mcontext.regs;
-> +
-> +	faulted = true;
-> +	si_code = info->si_code;
-> +	regs->nip += 4;
-> +}
-> +
-> +int test_segv_errors(void)
-> +{
-> +	struct sigaction act = {
-> +		.sa_sigaction = segv_handler,
-> +		.sa_flags = SA_SIGINFO,
-> +	};
-> +	static unsigned long ptrs[] = {
-> +		0x0f00000000000000ULL, /* Radix Q0 out of pgtable range */
-> +		0x4000000000000000ULL, /* Radix Q1 */
-> +		0x4f00000000000000ULL, /* Radix Q1 out of pgtable range */
-> +		0x8000000000000000ULL, /* Radix Q2 */
-> +		0x8f00000000000000ULL, /* Radix Q2 out of pgtable range */
-> +		0xc000000000000000ULL, /* Radix Q3 */
-> +		0xcf00000000000000ULL, /* Radix Q3 out of pgtable range */
-> +		0xc000000000000000ULL, /* Hash kernel region */
-> +		0xc000000000000000ULL + TB, /* Hash kernel region + 1 segment */
-> +		0xc000000000000000ULL + TB - 1,
-> +		0xd000000000000000ULL, /* Hash vmalloc region */
-> +		0xd000000000000000ULL + TB,
-> +		0xd000000000000000ULL + TB - 1,
-> +		0xe000000000000000ULL,
-> +		0xe000000000000000ULL + TB,
-> +		0xe000000000000000ULL + TB - 1,
-> +		0xf000000000000000ULL, /* Hash vmemmap region */
-> +		0xf000000000000000ULL + TB,
-> +		0xf000000000000000ULL + TB - 1,
-> +	};
-> +	size_t i;
-> +
-> +	FAIL_IF(sigaction(SIGSEGV, &act, NULL) != 0);
-> +
-> +	for (i = 0; i < sizeof(ptrs)/sizeof(ptrs[0]); i++) {
-> +		volatile char *p = (void *)ptrs[i];
-> +
-> +		/*
-> +		 * We just need a compiler barrier, but mb() works and has the
-> +		 * nice property of being easy to spot in the disassembly.
-> +		 */
-> +		printf("testing %p...\n", p);
-> +		faulted = false;
-> +		si_code = 0;
-> +		mb();
-> +		(void)*p;
-> +		mb();
-> +		FAIL_IF(!faulted);
-> +		FAIL_IF(si_code != SEGV_MAPERR && si_code != SEGV_BNDERR);
-> +		/*
-> +		 * Some accesses throw MAPERR, others BNDERR. Possibly all
-> +		 * Q>0 accesses should cause BNDERR.
-> +		 */
-> +	}
-> +
-> +	return 0;
-> +}
-> +
-> +int main(void)
-> +{
-> +	return test_harness(test_segv_errors, "segv_errors");
-> +}
 > -- 
 > 2.20.1
 
