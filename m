@@ -2,23 +2,23 @@ Return-Path: <SRS0=YLyy=SL=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4AB5EC10F0E
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Apr 2019 13:01:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B51C9C10F0E
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Apr 2019 13:05:22 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C43372084F
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Apr 2019 13:01:53 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C43372084F
+	by mail.kernel.org (Postfix) with ESMTPS id E91C72084F
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Apr 2019 13:05:21 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E91C72084F
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=huawei.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44dnVl4sJnzDqLM
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Apr 2019 23:01:51 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44dnZl5TbVzDqLH
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Apr 2019 23:05:19 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=huawei.com
  (client-ip=45.249.212.32; helo=huawei.com;
@@ -28,14 +28,14 @@ Authentication-Results: lists.ozlabs.org;
 Received: from huawei.com (szxga06-in.huawei.com [45.249.212.32])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44dnLW5y9RzDqKN
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Apr 2019 22:54:43 +1000 (AEST)
-Received: from DGGEMS414-HUB.china.huawei.com (unknown [172.30.72.59])
- by Forcepoint Email with ESMTP id 823FDAAE4A19D360CC03;
- Tue,  9 Apr 2019 20:54:15 +0800 (CST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44dnMs2b80zDqKN
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Apr 2019 22:55:53 +1000 (AEST)
+Received: from DGGEMS414-HUB.china.huawei.com (unknown [172.30.72.60])
+ by Forcepoint Email with ESMTP id 3EDFBC03F55BB5BE4CE8;
+ Tue,  9 Apr 2019 20:54:10 +0800 (CST)
 Received: from HGHY1l002753561.china.huawei.com (10.177.23.164) by
  DGGEMS414-HUB.china.huawei.com (10.3.19.214) with Microsoft SMTP Server id
- 14.3.408.0; Tue, 9 Apr 2019 20:54:04 +0800
+ 14.3.408.0; Tue, 9 Apr 2019 20:54:00 +0800
 From: Zhen Lei <thunder.leizhen@huawei.com>
 To: Jean-Philippe Brucker <jean-philippe.brucker@arm.com>, John Garry
  <john.garry@huawei.com>, Robin Murphy <robin.murphy@arm.com>, Will Deacon
@@ -53,12 +53,10 @@ To: Jean-Philippe Brucker <jean-philippe.brucker@arm.com>, John Garry
  <linux-kernel@vger.kernel.org>, linux-s390 <linux-s390@vger.kernel.org>,
  linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, x86 <x86@kernel.org>,
  linux-ia64 <linux-ia64@vger.kernel.org>
-Subject: [PATCH v5 3/6] iommu: add iommu_default_dma_mode_get/set() helper
-Date: Tue, 9 Apr 2019 20:53:05 +0800
-Message-ID: <20190409125308.18304-4-thunder.leizhen@huawei.com>
+Subject: [PATCH v5 0/6] add generic boot option for IOMMU dma mode
+Date: Tue, 9 Apr 2019 20:53:02 +0800
+Message-ID: <20190409125308.18304-1-thunder.leizhen@huawei.com>
 X-Mailer: git-send-email 2.19.2.windows.1
-In-Reply-To: <20190409125308.18304-1-thunder.leizhen@huawei.com>
-References: <20190409125308.18304-1-thunder.leizhen@huawei.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Content-Type: text/plain
@@ -80,103 +78,49 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Also add IOMMU_DMA_MODE_IS_{STRICT|LAZT|PASSTHROUGH}() to make the code
-looks cleaner.
+v4 --> v5:
+As Hanjun and Thomas Gleixner's suggestion:
+1. Keep the old ARCH specific boot options no change.
+2. Keep build option CONFIG_IOMMU_DEFAULT_PASSTHROUGH no change.
 
-There is no functional change, just prepare for the following patches.
+v4:
+As Robin Murphy's suggestion:
+"It's also not necessarily obvious to the user how this interacts with
+IOMMU_DEFAULT_PASSTHROUGH, so if we really do go down this route, maybe it
+would be better to refactor the whole lot into a single selection of something
+like IOMMU_DEFAULT_MODE anyway."
 
-Signed-off-by: Zhen Lei <thunder.leizhen@huawei.com>
----
- drivers/iommu/iommu.c | 18 ++++++++++++++----
- include/linux/iommu.h | 18 ++++++++++++++++++
- 2 files changed, 32 insertions(+), 4 deletions(-)
+In this version, I tried to normalize the IOMMU dma mode boot options for all
+ARCHs. When IOMMU is enabled, there are 3 dma modes: paasthrough(bypass),
+lazy(mapping but defer the IOTLB invalidation), strict. But currently each
+ARCHs defined their private boot options, different with each other. For
+example, to enable/disable "passthrough", ARM64 use iommu.passthrough=1/0,
+X86 use iommu=pt/nopt, PPC/POWERNV use iommu=nobypass.
 
-diff --git a/drivers/iommu/iommu.c b/drivers/iommu/iommu.c
-index f4171bf4b46eaeb..86239dd46003fd4 100644
---- a/drivers/iommu/iommu.c
-+++ b/drivers/iommu/iommu.c
-@@ -195,6 +195,17 @@ static int __init iommu_dma_mode_setup(char *str)
- }
- early_param("iommu.dma_mode", iommu_dma_mode_setup);
- 
-+int iommu_default_dma_mode_get(void)
-+{
-+	return iommu_default_dma_mode;
-+}
-+
-+void iommu_default_dma_mode_set(int mode)
-+{
-+	WARN_ON(mode > IOMMU_DMA_MODE_PASSTHROUGH);
-+	iommu_default_dma_mode = mode;
-+}
-+
- static ssize_t iommu_group_attr_show(struct kobject *kobj,
- 				     struct attribute *__attr, char *buf)
- {
-@@ -1136,9 +1147,8 @@ struct iommu_group *iommu_group_get_for_dev(struct device *dev)
- 	 */
- 	if (!group->default_domain) {
- 		struct iommu_domain *dom;
--		int def_domain_type =
--			(iommu_default_dma_mode == IOMMU_DMA_MODE_PASSTHROUGH)
--			? IOMMU_DOMAIN_IDENTITY : IOMMU_DOMAIN_DMA;
-+		int def_domain_type = IOMMU_DMA_MODE_IS_PASSTHROUGH() ?
-+				IOMMU_DOMAIN_IDENTITY : IOMMU_DOMAIN_DMA;
- 
- 		dom = __iommu_domain_alloc(dev->bus, def_domain_type);
- 		if (!dom && def_domain_type != IOMMU_DOMAIN_DMA) {
-@@ -1154,7 +1164,7 @@ struct iommu_group *iommu_group_get_for_dev(struct device *dev)
- 		if (!group->domain)
- 			group->domain = dom;
- 
--		if (dom && (iommu_default_dma_mode == IOMMU_DMA_MODE_LAZY)) {
-+		if (dom && IOMMU_DMA_MODE_IS_LAZY()) {
- 			int attr = 1;
- 			iommu_domain_set_attr(dom,
- 					      DOMAIN_ATTR_DMA_USE_FLUSH_QUEUE,
-diff --git a/include/linux/iommu.h b/include/linux/iommu.h
-index c3f4e3416176496..3668a8b3846996a 100644
---- a/include/linux/iommu.h
-+++ b/include/linux/iommu.h
-@@ -46,6 +46,12 @@
- #define IOMMU_DMA_MODE_STRICT		0x0
- #define IOMMU_DMA_MODE_LAZY		0x1
- #define IOMMU_DMA_MODE_PASSTHROUGH	0x2
-+#define IOMMU_DMA_MODE_IS_STRICT() \
-+		(iommu_default_dma_mode_get() == IOMMU_DMA_MODE_STRICT)
-+#define IOMMU_DMA_MODE_IS_LAZY() \
-+		(iommu_default_dma_mode_get() == IOMMU_DMA_MODE_LAZY)
-+#define IOMMU_DMA_MODE_IS_PASSTHROUGH() \
-+		(iommu_default_dma_mode_get() == IOMMU_DMA_MODE_PASSTHROUGH)
- 
- struct iommu_ops;
- struct iommu_group;
-@@ -421,6 +427,9 @@ static inline void dev_iommu_fwspec_set(struct device *dev,
- int iommu_probe_device(struct device *dev);
- void iommu_release_device(struct device *dev);
- 
-+extern int iommu_default_dma_mode_get(void);
-+extern void iommu_default_dma_mode_set(int mode);
-+
- #else /* CONFIG_IOMMU_API */
- 
- struct iommu_ops {};
-@@ -705,6 +714,15 @@ const struct iommu_ops *iommu_ops_from_fwnode(struct fwnode_handle *fwnode)
- 	return NULL;
- }
- 
-+static inline int iommu_default_dma_mode_get(void)
-+{
-+	return IOMMU_DMA_MODE_PASSTHROUGH;
-+}
-+
-+static inline void iommu_default_dma_mode_set(int mode)
-+{
-+}
-+
- #endif /* CONFIG_IOMMU_API */
- 
- #ifdef CONFIG_IOMMU_DEBUGFS
+Zhen Lei (6):
+  iommu: add generic boot option iommu.dma_mode
+  iommu: add build options corresponding to iommu.dma_mode
+  iommu: add iommu_default_dma_mode_get/set() helper
+  s390/pci: add support for generic boot option iommu.dma_mode
+  powernv/iommu: add support for generic boot option iommu.dma_mode
+  x86/iommu: add support for generic boot option iommu.dma_mode
+
+ Documentation/admin-guide/kernel-parameters.txt | 19 +++++++
+ arch/ia64/include/asm/iommu.h                   |  2 -
+ arch/ia64/kernel/pci-dma.c                      |  2 -
+ arch/powerpc/platforms/powernv/pci-ioda.c       |  5 +-
+ arch/s390/pci/pci_dma.c                         | 14 ++---
+ arch/x86/include/asm/iommu.h                    |  1 -
+ arch/x86/kernel/pci-dma.c                       | 35 ++++++------
+ drivers/iommu/Kconfig                           | 45 ++++++++++++---
+ drivers/iommu/amd_iommu.c                       | 10 ++--
+ drivers/iommu/amd_iommu_init.c                  |  4 +-
+ drivers/iommu/amd_iommu_types.h                 |  6 --
+ drivers/iommu/intel-iommu.c                     |  9 ++-
+ drivers/iommu/iommu.c                           | 73 ++++++++++++++++++++-----
+ include/linux/iommu.h                           | 23 ++++++++
+ 14 files changed, 176 insertions(+), 72 deletions(-)
+
 -- 
 1.8.3
 
