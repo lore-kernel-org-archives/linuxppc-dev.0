@@ -2,104 +2,82 @@ Return-Path: <SRS0=YLyy=SL=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no
+X-Spam-Status: No, score=-8.5 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
+	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id F10BCC10F13
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Apr 2019 02:56:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 10167C10F13
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Apr 2019 03:18:30 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 301C6213F2
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Apr 2019 02:56:11 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 44C0720880
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Apr 2019 03:18:29 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=nxp.com header.i=@nxp.com header.b="gaO4r5wj"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 301C6213F2
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nxp.com
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="eXe08+ZY"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 44C0720880
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44dX3r3q9VzDqHZ
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Apr 2019 12:56:08 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44dXYb0mrkzDqKb
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Apr 2019 13:18:27 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=nxp.com
- (client-ip=40.107.2.57; helo=eur02-ve1-obe.outbound.protection.outlook.com;
- envelope-from=shengjiu.wang@nxp.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=gmail.com
+ (client-ip=2607:f8b0:4864:20::442; helo=mail-pf1-x442.google.com;
+ envelope-from=npiggin@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=nxp.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=nxp.com header.i=@nxp.com header.b="gaO4r5wj"; 
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="eXe08+ZY"; 
  dkim-atps=neutral
-Received: from EUR02-VE1-obe.outbound.protection.outlook.com
- (mail-eopbgr20057.outbound.protection.outlook.com [40.107.2.57])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Received: from mail-pf1-x442.google.com (mail-pf1-x442.google.com
+ [IPv6:2607:f8b0:4864:20::442])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44dX1x4pLNzDqHX
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Apr 2019 12:54:26 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nxp.com; s=selector1; 
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=lLMDOReDQAQLCGVZ5IhtJ0RdUKY/8vRGa+L2lRsWCfo=;
- b=gaO4r5wjG+Ud/hwtXjyBhB5luZFN0RHu3CPIAhzfPwJzPet6Z3kQ0wZb0ve7U9yEtg2w/Wd9e0CWg4c7iIFxSJMyLQQtBQTpyRi4YTJdq1X5WHV1QuagJ/jPvJ+BzlFZTInva7vIZybfrtz12XiiMklMzsKEzMHWy40VbdHNfkQ=
-Received: from VE1PR04MB6479.eurprd04.prod.outlook.com (20.179.233.80) by
- VE1PR04MB6464.eurprd04.prod.outlook.com (20.179.233.21) with Microsoft SMTP
- Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.20.1771.21; Tue, 9 Apr 2019 02:54:19 +0000
-Received: from VE1PR04MB6479.eurprd04.prod.outlook.com
- ([fe80::6c03:86ad:729d:e311]) by VE1PR04MB6479.eurprd04.prod.outlook.com
- ([fe80::6c03:86ad:729d:e311%6]) with mapi id 15.20.1771.016; Tue, 9 Apr 2019
- 02:54:19 +0000
-From: "S.j. Wang" <shengjiu.wang@nxp.com>
-To: "Gustavo A. R. Silva" <gustavo@embeddedor.com>, "timur@kernel.org"
- <timur@kernel.org>, "nicoleotsuka@gmail.com" <nicoleotsuka@gmail.com>,
- "Xiubo.Lee@gmail.com" <Xiubo.Lee@gmail.com>, "festevam@gmail.com"
- <festevam@gmail.com>, "broonie@kernel.org" <broonie@kernel.org>,
- "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>
-Subject: RE: [EXT] Re: [PATCH V1] ASoC: fsl_esai: replace fall-through with
- break
-Thread-Topic: [EXT] Re: [PATCH V1] ASoC: fsl_esai: replace fall-through with
- break
-Thread-Index: AQHU7e1fLmmYRIJqIECtUR/V3RQ9hKYyaxcAgAC3L4A=
-Date: Tue, 9 Apr 2019 02:54:19 +0000
-Message-ID: <VE1PR04MB6479C16BB1C92E1AE291BB12E32D0@VE1PR04MB6479.eurprd04.prod.outlook.com>
-References: <66c117128f300b0ec5f278f538412789c78b60a6.1554715589.git.shengjiu.wang@nxp.com>
- <38a6d36e-0f8e-fe3d-202b-30371042e248@embeddedor.com>
-In-Reply-To: <38a6d36e-0f8e-fe3d-202b-30371042e248@embeddedor.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-authentication-results: spf=none (sender IP is )
- smtp.mailfrom=shengjiu.wang@nxp.com; 
-x-originating-ip: [119.31.174.66]
-x-ms-publictraffictype: Email
-x-ms-office365-filtering-correlation-id: 0b35f420-b1f0-4346-5e01-08d6bc96a980
-x-ms-office365-filtering-ht: Tenant
-x-microsoft-antispam: BCL:0; PCL:0;
- RULEID:(2390118)(7020095)(4652040)(8989299)(4534185)(4627221)(201703031133081)(201702281549075)(8990200)(5600139)(711020)(4605104)(4618075)(2017052603328)(7193020);
- SRVR:VE1PR04MB6464; 
-x-ms-traffictypediagnostic: VE1PR04MB6464:
-x-microsoft-antispam-prvs: <VE1PR04MB64641F1A0C68A9CC43C461B4E32D0@VE1PR04MB6464.eurprd04.prod.outlook.com>
-x-forefront-prvs: 000227DA0C
-x-forefront-antispam-report: SFV:NSPM;
- SFS:(10009020)(366004)(39860400002)(346002)(376002)(396003)(136003)(189003)(199004)(52536014)(229853002)(3846002)(2201001)(81166006)(76176011)(74316002)(6116002)(186003)(68736007)(86362001)(102836004)(2906002)(66066001)(7736002)(81156014)(26005)(53546011)(6506007)(8936002)(305945005)(8676002)(5660300002)(14444005)(4326008)(14454004)(25786009)(478600001)(6436002)(7696005)(71190400001)(71200400001)(53936002)(105586002)(110136005)(97736004)(446003)(11346002)(486006)(476003)(33656002)(2501003)(55016002)(106356001)(316002)(256004)(99286004)(9686003)(6246003);
- DIR:OUT; SFP:1101; SCL:1; SRVR:VE1PR04MB6464;
- H:VE1PR04MB6479.eurprd04.prod.outlook.com; FPR:; SPF:None; LANG:en;
- PTR:InfoNoRecords; MX:1; A:1; 
-received-spf: None (protection.outlook.com: nxp.com does not designate
- permitted sender hosts)
-x-ms-exchange-senderadcheck: 1
-x-microsoft-antispam-message-info: kARwyNKKs5TqnvJNmsQ5GMggrJD1VHPoahGmVSDuBzGNZDa/RVs9oXT9oK/dMFwEUZo7Je0PJw9Ge9I4PEXee3DGC1wDiAQx7rYK49L3VBGesj/DEKJTHlyjydEES3IeBa1y/31ZLcNR2cDrsH2JxM/eqydn4yU7Wa4M1D2aa51RPXtjnlNWd0yFgasRIWIEJ9aoq2XKmv5V2zsboHZpERJMWkTvlIg0tYkaXiTAWSrU8rqLUSN31IV/JGdrcs/geWmU+MBqVx+byGRlAGZs9r3KtThSpbVqUr9PRp2Cq7VDmOl0wtqoxi2Ymc6kGKTwNSZZr5/RGaLf5pCHnoSQvF22InuJ+AeWfP64HxBZ7ZzMB2j0z4rwKPEr0KOv+Lij4kDrxf/rpZRBLHj3EcaOT564cMZlJugxAnNYBLhOmPw=
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44dXWr3xXmzDqGL
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Apr 2019 13:16:56 +1000 (AEST)
+Received: by mail-pf1-x442.google.com with SMTP id 9so8803407pfj.13
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 08 Apr 2019 20:16:56 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=from:to:cc:subject:date:message-id:mime-version
+ :content-transfer-encoding;
+ bh=9czcuJTzb1cs81udvniLfVb22jjd1dYS4/+gZe7hE5I=;
+ b=eXe08+ZYU7N+Fd0ML/xQF+ywoAkHNWPme4SBH6dgqyjX0aWBt5Ijj6HPsLtMvW0MN/
+ 2kAuoFttZQnaPsbCACHInicqXqnkKdYzNbOpVp2AKT+cXhrb3tXbEWQILyl+cmAcYY0d
+ OZgYIRpBKkNJNjfhU2TlsvSluIV/wNx2e2tMExpxLeOUevY+nQskQGTftzFWvC9swgDm
+ S/Qg/kWKEiZcJxnPp5ly/p0vOQ69fScF8+8DqrKG6ZxFzZlgNsW3r9MVNSCQUVVXQCvO
+ npyR0F7IRHJZRZqK8JpuNgsz0693+PgnBtfOEAw4m9MGwhFdw8Aq7hHdHXMIFhf2BTPC
+ uAiw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+ :content-transfer-encoding;
+ bh=9czcuJTzb1cs81udvniLfVb22jjd1dYS4/+gZe7hE5I=;
+ b=IsTOUHsQ241hQXnN1tyO76prKfEIu3KwTPa7U/Qv1UaaaGb+25kvL8AZf8OwfSS45c
+ S+PKtebOz0UlMqeBbkoZgH6fNjKqE3XXQ/iLEtwj620u/Ef9GKrNH2OIb8SXU2DgBwNS
+ Nx4mrLBrb/WLYvQeuq697GxUldOytUrvm1RVJK1ieIiLgmLmoj0amz7J0/4idL+rFvGi
+ Z22LMjGRZRfraGWiJyWH2M7C8VlIaHBGLyxA05P9LIk8w9gc+nOxSgRd1VtoluCtugSj
+ APrWwZ+utSCAoD83IPA8yU6EFJ0wWPNs1Iv01Bi+9aQZ4s9r7VlQaFuXkJZDb3z87DMQ
+ RjFQ==
+X-Gm-Message-State: APjAAAVleTVfIIscU5TSS91CmA9E/6a6tiPIxqgbdsPZcjiMsPveupVW
+ z4lCgFhKkBk3fNPoOzpNK26uSgDR
+X-Google-Smtp-Source: APXvYqywn12ZI6MJ3h/tRi3zDP2EUDh33mktwhIy+xnxpUthb1RCHPROv8mpweX0uTTAPXjTjDWDTA==
+X-Received: by 2002:a63:494f:: with SMTP id y15mr32462977pgk.56.1554779813696; 
+ Mon, 08 Apr 2019 20:16:53 -0700 (PDT)
+Received: from bobo.local0.net ([58.84.107.218])
+ by smtp.gmail.com with ESMTPSA id p20sm41522858pgh.83.2019.04.08.20.16.50
+ (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
+ Mon, 08 Apr 2019 20:16:53 -0700 (PDT)
+From: Nicholas Piggin <npiggin@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH v2] powerpc/64s/radix: Fix radix segment exception handling
+Date: Tue,  9 Apr 2019 13:16:43 +1000
+Message-Id: <20190409031643.20405-1-npiggin@gmail.com>
+X-Mailer: git-send-email 2.20.1
 MIME-Version: 1.0
-X-OriginatorOrg: nxp.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 0b35f420-b1f0-4346-5e01-08d6bc96a980
-X-MS-Exchange-CrossTenant-originalarrivaltime: 09 Apr 2019 02:54:19.4012 (UTC)
-X-MS-Exchange-CrossTenant-fromentityheader: Hosted
-X-MS-Exchange-CrossTenant-id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
-X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: VE1PR04MB6464
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -111,36 +89,198 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Cc: "Aneesh Kumar K . V" <aneesh.kumar@linux.vnet.ibm.com>,
+ Nicholas Piggin <npiggin@gmail.com>, Anton Blanchard <anton@samba.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-SGkgR3VzdGF2bw0KDQo+IA0KPiANCj4gT24gNC84LzE5IDQ6MjggQU0sIFMuai4gV2FuZyB3cm90
-ZToNCj4gPiBjYXNlIEVTQUlfSENLVF9FWFRBTCBhbmQgY2FzZSBFU0FJX0hDS1JfRVhUQUwgc2hv
-dWxkIGJlDQo+IGluZGVwZW5kZW50IG9mDQo+ID4gZWFjaCBvdGhlciwgc28gcmVwbGFjZSBmYWxs
-LXRocm91Z2ggd2l0aCBicmVhay4NCj4gPg0KPiBJZiB0aGlzIGlzIGNvcnJlY3QsIHRoZW4geW91
-IHNob3VsZCB1c2UgdGhlIGZvbGxvd2luZyAiRml4ZXMiIHRhZyBpbnN0ZWFkLA0KPiB3aGljaCBp
-cyB0aGUgb25lIHRoYXQgaW50cm9kdWNlZCB0aGUgYnVnOg0KPiANCj4gRml4ZXM6IDQzZDI0ZTc2
-YjY5OCAoIkFTb0M6IGZzbF9lc2FpOiBBZGQgRVNBSSBDUFUgREFJIGRyaXZlciIpDQo+IA0KPiA+
-IEZpeGVzOiAxNmJiZWIyYjQzYzMgKCJBU29DOiBmc2xfZXNhaTogTWFyayBleHBlY3RlZCBzd2l0
-Y2gNCj4gPiBmYWxsLXRocm91Z2giKQ0KPiA+DQo+ICAgICAgICAgXl5eXg0KPiBiZWNhdXNlIHRo
-aXMgZGlkbid0IGNoYW5nZSBhbnkgZnVuY3Rpb25hbGl0eS4NCg0KT2ssIHRoaXMgd2lsbCBiZSB1
-cGRhdGVkLg0KDQo+IA0KPiA+IFNpZ25lZC1vZmYtYnk6IFNoZW5naml1IFdhbmcgPHNoZW5naml1
-LndhbmdAbnhwLmNvbT4NCj4gPiAtLS0NCj4gPiAgc291bmQvc29jL2ZzbC9mc2xfZXNhaS5jIHwg
-MiArLQ0KPiA+ICAxIGZpbGUgY2hhbmdlZCwgMSBpbnNlcnRpb24oKyksIDEgZGVsZXRpb24oLSkN
-Cj4gPg0KPiA+IGRpZmYgLS1naXQgYS9zb3VuZC9zb2MvZnNsL2ZzbF9lc2FpLmMgYi9zb3VuZC9z
-b2MvZnNsL2ZzbF9lc2FpLmMgaW5kZXgNCj4gPiBjNzQxMGJiZmQyYWYuLmJhZDBkZmVkNmI2OCAx
-MDA2NDQNCj4gPiAtLS0gYS9zb3VuZC9zb2MvZnNsL2ZzbF9lc2FpLmMNCj4gPiArKysgYi9zb3Vu
-ZC9zb2MvZnNsL2ZzbF9lc2FpLmMNCj4gPiBAQCAtMjUxLDcgKzI1MSw3IEBAIHN0YXRpYyBpbnQg
-ZnNsX2VzYWlfc2V0X2RhaV9zeXNjbGsoc3RydWN0DQo+IHNuZF9zb2NfZGFpICpkYWksIGludCBj
-bGtfaWQsDQo+ID4gICAgICAgICAgICAgICBicmVhazsNCj4gPiAgICAgICBjYXNlIEVTQUlfSENL
-VF9FWFRBTDoNCj4gPiAgICAgICAgICAgICAgIGVjciB8PSBFU0FJX0VDUl9FVEk7DQo+IA0KPiBB
-bHNvLCB5b3Ugc2hvdWxkIHVzZSBhIHNpbXBsZSBhc3NpZ25tZW50IG9wZXJhdG9yICI9IiBpbnN0
-ZWFkIG9mICJ8PSIgaW4NCj4gYm90aCBjYXNlcy4NCg0KVGhlIHJlc3VsdCBpcyBzYW1lIGZvciAi
-PSIgYW5kICJ8PSIsIGJlY2F1c2UgdGhlcmUgaXMgImVjciA9IDAiIGluIGJlZ2lubmluZyBvZg0K
-VGhpcyBmdW5jdGlvbi4gDQoNCj4gDQo+ID4gLSAgICAgICAgICAgICAvKiBmYWxsIHRocm91Z2gg
-Ki8NCj4gPiArICAgICAgICAgICAgIGJyZWFrOw0KPiA+ICAgICAgIGNhc2UgRVNBSV9IQ0tSX0VY
-VEFMOg0KPiA+ICAgICAgICAgICAgICAgZWNyIHw9IGVzYWlfcHJpdi0+c3luY2hyb25vdXMgPyBF
-U0FJX0VDUl9FVEkgOiBFU0FJX0VDUl9FUkk7DQo+ID4gICAgICAgICAgICAgICBicmVhazsNCj4g
-Pg0KPiANCj4gVGhhbmtzDQo+IC0tDQo+IEd1c3Rhdm8NCg==
+Commit 48e7b76957 ("powerpc/64s/hash: Convert SLB miss handlers to C")
+broke the radix-mode segment exception handler. In radix mode, this is
+exception is not an SLB miss, rather it signals that the EA is outside
+the range translated by any page table.
+
+The commit lost the radix feature alternate code patch, which can
+cause faults to some EAs to kernel BUG at arch/powerpc/mm/slb.c:639!
+
+The original radix code would send faults to slb_miss_large_addr,
+which would end up faulting due to slb_addr_limit being 0. This patch
+sends radix directly to do_bad_slb_fault, which is a bit clearer.
+
+Fixes: 48e7b76957 ("powerpc/64s/hash: Convert SLB miss handlers to C")
+Cc: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+Reported-by: Anton Blanchard <anton@samba.org>
+Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+---
+- Add a selftests that triggers the crash
+
+ arch/powerpc/kernel/exceptions-64s.S          | 12 +++
+ tools/testing/selftests/powerpc/mm/Makefile   |  3 +-
+ .../selftests/powerpc/mm/access_tests.c       | 94 +++++++++++++++++++
+ 3 files changed, 108 insertions(+), 1 deletion(-)
+ create mode 100644 tools/testing/selftests/powerpc/mm/access_tests.c
+
+diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
+index a5b8fbae56a0..9481a117e242 100644
+--- a/arch/powerpc/kernel/exceptions-64s.S
++++ b/arch/powerpc/kernel/exceptions-64s.S
+@@ -656,11 +656,17 @@ EXC_COMMON_BEGIN(data_access_slb_common)
+ 	ld	r4,PACA_EXSLB+EX_DAR(r13)
+ 	std	r4,_DAR(r1)
+ 	addi	r3,r1,STACK_FRAME_OVERHEAD
++BEGIN_MMU_FTR_SECTION
++	/* HPT case, do SLB fault */
+ 	bl	do_slb_fault
+ 	cmpdi	r3,0
+ 	bne-	1f
+ 	b	fast_exception_return
+ 1:	/* Error case */
++MMU_FTR_SECTION_ELSE
++	/* Radix case, access is outside page table range */
++	li	r3,-EFAULT
++ALT_MMU_FTR_SECTION_END_IFCLR(MMU_FTR_TYPE_RADIX)
+ 	std	r3,RESULT(r1)
+ 	bl	save_nvgprs
+ 	RECONCILE_IRQ_STATE(r10, r11)
+@@ -705,11 +711,17 @@ EXC_COMMON_BEGIN(instruction_access_slb_common)
+ 	EXCEPTION_PROLOG_COMMON(0x480, PACA_EXSLB)
+ 	ld	r4,_NIP(r1)
+ 	addi	r3,r1,STACK_FRAME_OVERHEAD
++BEGIN_MMU_FTR_SECTION
++	/* HPT case, do SLB fault */
+ 	bl	do_slb_fault
+ 	cmpdi	r3,0
+ 	bne-	1f
+ 	b	fast_exception_return
+ 1:	/* Error case */
++MMU_FTR_SECTION_ELSE
++	/* Radix case, access is outside page table range */
++	li	r3,-EFAULT
++ALT_MMU_FTR_SECTION_END_IFCLR(MMU_FTR_TYPE_RADIX)
+ 	std	r3,RESULT(r1)
+ 	bl	save_nvgprs
+ 	RECONCILE_IRQ_STATE(r10, r11)
+diff --git a/tools/testing/selftests/powerpc/mm/Makefile b/tools/testing/selftests/powerpc/mm/Makefile
+index 43d68420e363..68b7add5086d 100644
+--- a/tools/testing/selftests/powerpc/mm/Makefile
++++ b/tools/testing/selftests/powerpc/mm/Makefile
+@@ -2,7 +2,7 @@
+ noarg:
+ 	$(MAKE) -C ../
+ 
+-TEST_GEN_PROGS := hugetlb_vs_thp_test subpage_prot prot_sao segv_errors wild_bctr
++TEST_GEN_PROGS := hugetlb_vs_thp_test subpage_prot prot_sao segv_errors wild_bctr access_tests
+ TEST_GEN_FILES := tempfile
+ 
+ top_srcdir = ../../../../..
+@@ -13,6 +13,7 @@ $(TEST_GEN_PROGS): ../harness.c
+ $(OUTPUT)/prot_sao: ../utils.c
+ 
+ $(OUTPUT)/wild_bctr: CFLAGS += -m64
++$(OUTPUT)/access_tests: CFLAGS += -m64
+ 
+ $(OUTPUT)/tempfile:
+ 	dd if=/dev/zero of=$@ bs=64k count=1
+diff --git a/tools/testing/selftests/powerpc/mm/access_tests.c b/tools/testing/selftests/powerpc/mm/access_tests.c
+new file mode 100644
+index 000000000000..ad300d7d9d43
+--- /dev/null
++++ b/tools/testing/selftests/powerpc/mm/access_tests.c
+@@ -0,0 +1,94 @@
++// SPDX-License-Identifier: GPL-2.0
++
++/*
++ * Copyright 2017 John Sperbeck
++ *
++ * Test faults to "interesting" locations.
++ */
++
++#include <stdbool.h>
++#include <stdio.h>
++#include <stdlib.h>
++#include <string.h>
++#include <unistd.h>
++#include <signal.h>
++#include <sys/mman.h>
++#include <assert.h>
++#include <ucontext.h>
++
++#include "utils.h"
++
++#define PAGE_SIZE	(64*1024)
++#define TB		(1024ULL*1024*1024*1024)
++static volatile bool faulted;
++static volatile int si_code;
++
++static void segv_handler(int n, siginfo_t *info, void *ctxt_v)
++{
++	ucontext_t *ctxt = (ucontext_t *)ctxt_v;
++	struct pt_regs *regs = ctxt->uc_mcontext.regs;
++
++	faulted = true;
++	si_code = info->si_code;
++	regs->nip += 4;
++}
++
++int test_segv_errors(void)
++{
++	struct sigaction act = {
++		.sa_sigaction = segv_handler,
++		.sa_flags = SA_SIGINFO,
++	};
++	static unsigned long ptrs[] = {
++		0x0f00000000000000ULL, /* Radix Q0 out of pgtable range */
++		0x4000000000000000ULL, /* Radix Q1 */
++		0x4f00000000000000ULL, /* Radix Q1 out of pgtable range */
++		0x8000000000000000ULL, /* Radix Q2 */
++		0x8f00000000000000ULL, /* Radix Q2 out of pgtable range */
++		0xc000000000000000ULL, /* Radix Q3 */
++		0xcf00000000000000ULL, /* Radix Q3 out of pgtable range */
++		0xc000000000000000ULL, /* Hash kernel region */
++		0xc000000000000000ULL + TB, /* Hash kernel region + 1 segment */
++		0xc000000000000000ULL + TB - 1,
++		0xd000000000000000ULL, /* Hash vmalloc region */
++		0xd000000000000000ULL + TB,
++		0xd000000000000000ULL + TB - 1,
++		0xe000000000000000ULL,
++		0xe000000000000000ULL + TB,
++		0xe000000000000000ULL + TB - 1,
++		0xf000000000000000ULL, /* Hash vmemmap region */
++		0xf000000000000000ULL + TB,
++		0xf000000000000000ULL + TB - 1,
++	};
++	size_t i;
++
++	FAIL_IF(sigaction(SIGSEGV, &act, NULL) != 0);
++
++	for (i = 0; i < sizeof(ptrs)/sizeof(ptrs[0]); i++) {
++		volatile char *p = (void *)ptrs[i];
++
++		/*
++		 * We just need a compiler barrier, but mb() works and has the
++		 * nice property of being easy to spot in the disassembly.
++		 */
++		printf("testing %p...\n", p);
++		faulted = false;
++		si_code = 0;
++		mb();
++		(void)*p;
++		mb();
++		FAIL_IF(!faulted);
++		FAIL_IF(si_code != SEGV_MAPERR && si_code != SEGV_BNDERR);
++		/*
++		 * Some accesses throw MAPERR, others BNDERR. Possibly all
++		 * Q>0 accesses should cause BNDERR.
++		 */
++	}
++
++	return 0;
++}
++
++int main(void)
++{
++	return test_harness(test_segv_errors, "segv_errors");
++}
+-- 
+2.20.1
+
