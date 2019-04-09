@@ -2,82 +2,86 @@ Return-Path: <SRS0=YLyy=SL=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.5 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
+X-Spam-Status: No, score=-2.0 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
 	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_MUTT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5D8D3C10F0E
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Apr 2019 04:41:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 08607C10F0E
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Apr 2019 04:58:15 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 5DEA220883
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Apr 2019 04:41:54 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 2DEAE2084F
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Apr 2019 04:58:14 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="b3pPvxMj"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5DEA220883
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Culiuvlb"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2DEAE2084F
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44dZPr0fzHzDqJg
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Apr 2019 14:41:52 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44dZmg5NBrzDqHj
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Apr 2019 14:58:11 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=2607:f8b0:4864:20::643; helo=mail-pl1-x643.google.com;
- envelope-from=npiggin@gmail.com; receiver=<UNKNOWN>)
+ (client-ip=2607:f8b0:4864:20::542; helo=mail-pg1-x542.google.com;
+ envelope-from=vilhelm.gray@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="b3pPvxMj"; 
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="Culiuvlb"; 
  dkim-atps=neutral
-Received: from mail-pl1-x643.google.com (mail-pl1-x643.google.com
- [IPv6:2607:f8b0:4864:20::643])
+Received: from mail-pg1-x542.google.com (mail-pg1-x542.google.com
+ [IPv6:2607:f8b0:4864:20::542])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44dZN36qg1zDqHG
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Apr 2019 14:40:19 +1000 (AEST)
-Received: by mail-pl1-x643.google.com with SMTP id ck15so8620315plb.3
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 08 Apr 2019 21:40:19 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44dZl00PLDzDqGX
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Apr 2019 14:56:43 +1000 (AEST)
+Received: by mail-pg1-x542.google.com with SMTP id k19so8590649pgh.0
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 08 Apr 2019 21:56:43 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=from:to:cc:subject:date:message-id:mime-version
- :content-transfer-encoding;
- bh=4M5ZtubRWFyCdwdRoEL48LsxdaC6/O057JSNX2puPOQ=;
- b=b3pPvxMjPFzDPT3X68EQkFY0YDMu6ZoIYHTotLZKnQNHELzEx+0j06iQcJWAYsIvKp
- mZXCxBHY/XQfbIlLWzjP1j2+yKqXvVHsJmSQg3DyzKtiGJjfld27wc6nIYS0GEl3Y58l
- 9diIQbxBAKomTSNYZMWi3IbHRjGHkjTRJV20pNSZkdFxyBBM7ogoSUP3flWu3EbVCvru
- X1JcAefka+jUkzCDEenWuGrMLZR+lfmVJgiTivNmbOqCnSamx1qc+Ky0taY4aOKPyRnq
- sI9/k80CTXA+CpKNuB7JNedGbXknNsBEvjT5MuPI4QOBCGiUBsfaKycNTzHVAB34RN9O
- zpUA==
+ h=date:from:to:cc:subject:message-id:references:mime-version
+ :content-disposition:in-reply-to:user-agent;
+ bh=fSbzNkjsSwkHQttu+TEGQLmXcM0+AN4d0v8/VJDirT0=;
+ b=Culiuvlbppghdx3mpcnmXq4pzQXD5BxfSCgJKFEUMLy2pfANurqs3aMveGuAU+//Sd
+ C+HkR2TId1a65C+Bo6ktfpH6qtezABxMeWdi3IU4yxdHOMX7CRbwtNVqVQtGFydqlqY7
+ J4tA52veE1Z4EaI+8fPOA13dAMVMWacUydP6vlOr0ZFcaDJgDFjZQYFNCevaLZ6D62A/
+ tA3Ifbn7eRJHLljSTd4MnV015V0Y+o5bLCLfTqzo4ObooBELVzIPxaTivrRIsWe3PSQu
+ 29mm7qT0SQn+xhx4bh4fKQ48FF7Z9PTbrFcfy9kHalvV2kkQOxpVOSB1se0uqwyjeovy
+ lNQQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
- h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
- :content-transfer-encoding;
- bh=4M5ZtubRWFyCdwdRoEL48LsxdaC6/O057JSNX2puPOQ=;
- b=OgWN480Gb/0tCQ0EN1EWNoafxWZgjz2vsuMZYleYtAaGYpoVmHBAL4yS/94++1HgNT
- M2PpBFEn+ZRMu8pYMSGhblgvbKEtQXNRGfArCpKpCI+1wJsZ5EB/qb+mvgfcFJpfRtTJ
- sU05h8dNg1ZUJc1smwlM1T5WFBBNTfhAoBKQQ96iJ/S4iig7HwUvGUbR2MWalJt0GgXb
- yWS7aRm/Ai30xns+Oi5lNcewPgQF6dcG0j6MUb2rlWMhHn6IPi8n7fS7wvV9pNwQ7ULh
- pBfV1NLumh8VGBjq9141nCBSZmjxAmAPQJXLYT3XCna894Xiw7t3ypEZ/ZFti66HgEMh
- xhhQ==
-X-Gm-Message-State: APjAAAU2MqbHjiwMuOlOVdvUik3sL8EVkOt0KIcAxuL/cz+UbhylbWmw
- Nx5bllXsAvePXaEFe4wkM+umpkOC
-X-Google-Smtp-Source: APXvYqwUDYKNh9R1lb4Dw2U7p5K6tMlJ+sg/2+hZpcBgDX1av+NDEi68pQO4dBpg7LL9tDCWglUb0Q==
-X-Received: by 2002:a17:902:110b:: with SMTP id
- d11mr7439371pla.275.1554784815749; 
- Mon, 08 Apr 2019 21:40:15 -0700 (PDT)
-Received: from bobo.local0.net ([58.84.107.218])
- by smtp.gmail.com with ESMTPSA id x66sm19972001pfb.78.2019.04.08.21.40.12
- (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
- Mon, 08 Apr 2019 21:40:15 -0700 (PDT)
-From: Nicholas Piggin <npiggin@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v2] powerpc/watchdog: Use hrtimers for per-CPU heartbeat
-Date: Tue,  9 Apr 2019 14:40:05 +1000
-Message-Id: <20190409044005.26446-1-npiggin@gmail.com>
-X-Mailer: git-send-email 2.20.1
+ h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+ :mime-version:content-disposition:in-reply-to:user-agent;
+ bh=fSbzNkjsSwkHQttu+TEGQLmXcM0+AN4d0v8/VJDirT0=;
+ b=MLyce1qPSflCIg0VYexpQv18NyG7kh2//jIlONhQ9LrKkO3OjiUXX+A+krwn+KOzt0
+ KZeSZ+Jk/JmEUNcavzIJtqjR9lp77SJXVsEhbc6cSrlJZW8vGB4KhYfhoFCQCIB1ZMz2
+ LfoiPnDHFZXDxMKT5Z8ySa/6cGD8UvMRGo440yOijux4mUJuWPx3JTdDivLV0F1BvvJY
+ QeOTmEwxlXRWxCHVx4e9MijCcy3vOcbJRoYrSQeUGQAw9stM5lGkjXJAJ5FnbTHERxa6
+ gEPPCFFYLncMMNEtLzp2R0ph75w/ayF5bDm6ZZ6q+bV0yS3aVTlLSLh+M2lVlQyEeQIr
+ hlGw==
+X-Gm-Message-State: APjAAAXCXvLxJZkE4uU4fkAkFi9ZyMzQApo9wwsHKUQnKQM3a0z9KwC7
+ p8c4R5K9D2p6URL+Cf1CjCg=
+X-Google-Smtp-Source: APXvYqzVtYQ7/TWepFOzztOXYsTBLeJbErgA6c9WPKnHOmXfWudaRv0t8mDaEzmknLvq8tWARXeHxg==
+X-Received: by 2002:a63:195e:: with SMTP id 30mr32256554pgz.312.1554785800471; 
+ Mon, 08 Apr 2019 21:56:40 -0700 (PDT)
+Received: from icarus ([2001:268:c1c0:11e:c70:4af9:86e2:2])
+ by smtp.gmail.com with ESMTPSA id c189sm48847177pfg.24.2019.04.08.21.56.29
+ (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
+ Mon, 08 Apr 2019 21:56:39 -0700 (PDT)
+Date: Tue, 9 Apr 2019 13:57:28 +0900
+From: William Breathitt Gray <vilhelm.gray@gmail.com>
+To: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH v10 01/18] counter: Introduce the Generic Counter interface
+Message-ID: <20190409045728.GA2842@icarus>
+References: <cover.1554184734.git.vilhelm.gray@gmail.com>
+ <ad3a8c427a911848373eae1c08e89353ffb6cb6d.1554184734.git.vilhelm.gray@gmail.com>
+ <20190408215515.GA27592@amd>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20190408215515.GA27592@amd>
+User-Agent: Mutt/1.11.4 (2019-03-13)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -89,196 +93,71 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "Gautham R . Shenoy" <ego@linux.vnet.ibm.com>,
- Ravikumar Bangoria <ravi.bangoria@in.ibm.com>,
- Nicholas Piggin <npiggin@gmail.com>
+Cc: mark.rutland@arm.com, benjamin.gaignard@st.com, linux-pwm@vger.kernel.org,
+ linux-iio@vger.kernel.org, patrick.havelange@essensium.com,
+ thierry.reding@gmail.com, pmeerw@pmeerw.net, lars@metafoo.de,
+ daniel.lezcano@linaro.org, linux-arm-kernel@lists.infradead.org,
+ devicetree@vger.kernel.org, david@lechnology.com,
+ linuxppc-dev@lists.ozlabs.org, robh+dt@kernel.org,
+ Jonathan Cameron <Jonathan.Cameron@huawei.com>, tglx@linutronix.de,
+ fabrice.gasnier@st.com, esben@haabendal.dk, gregkh@linuxfoundation.org,
+ linux-kernel@vger.kernel.org, leoyang.li@nxp.com, knaack.h@gmx.de,
+ akpm@linux-foundation.org, shawnguo@kernel.org, jic23@kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Using a jiffies timer creates a dependency on the tick_do_timer_cpu
-incrementing jiffies. If that CPU has locked up and jiffies is not
-incrementing, the watchdog heartbeat timer for all CPUs stops and
-creates false positives and confusing warnings on local CPUs, and
-also causes the SMP detector to stop, so the root cause is never
-detected.
+On Mon, Apr 08, 2019 at 11:55:15PM +0200, Pavel Machek wrote:
+> Hi!
+> 
+> > +const char *const counter_count_direction_str[2] = {
+> > +	[COUNTER_COUNT_DIRECTION_FORWARD] = "forward",
+> > +	[COUNTER_COUNT_DIRECTION_BACKWARD] = "backward"
+> > +};
+> > +EXPORT_SYMBOL_GPL(counter_count_direction_str);
+> > +
+> > +const char *const counter_count_mode_str[4] = {
+> > +	[COUNTER_COUNT_MODE_NORMAL] = "normal",
+> > +	[COUNTER_COUNT_MODE_RANGE_LIMIT] = "range limit",
+> > +	[COUNTER_COUNT_MODE_NON_RECYCLE] = "non-recycle",
+> > +	[COUNTER_COUNT_MODE_MODULO_N] = "modulo-n"
+> > +};
+> > +EXPORT_SYMBOL_GPL(counter_count_mode_str);
+> 
+> Dunno. Exporting const tables saying "forward" and "backward". Can we
+> ... somehow make it work without need to export this?
+> 
+> -- 
+> (english) http://www.livejournal.com/~pavelmachek
+> (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
 
-Fix this by using hrtimer based timers for the watchdog heartbeat,
-like the generic kernel hardlockup detector.
+Right now there are only have 4 counter devices supported in this
+patchset, but it is expected that support for a greater variety of
+devices will be added. For these future cases, new count directions will
+be added to match their functionality.
 
-Cc: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
-Reported-by: Ravikumar Bangoria <ravi.bangoria@in.ibm.com>
-Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
----
-v2: Fix per-CPU hrtimer startup noticed by Gautham
+For example, suppose support for a rotary encoder device is added. These
+type of devices do not move forward/backward but rather rotate. In these
+cases, the following count directions may be added:
 
- arch/powerpc/kernel/watchdog.c | 81 +++++++++++++++++-----------------
- 1 file changed, 40 insertions(+), 41 deletions(-)
+    [COUNTER_COUNT_DIRECTION_CLOCKWISE] = "clockwise",
+    [COUNTER_COUNT_DIRECTION_COUNTERCLOCKWISE] = "counterclockwise"
 
-diff --git a/arch/powerpc/kernel/watchdog.c b/arch/powerpc/kernel/watchdog.c
-index 3c6ab22a0c4e..af3c15a1d41e 100644
---- a/arch/powerpc/kernel/watchdog.c
-+++ b/arch/powerpc/kernel/watchdog.c
-@@ -77,7 +77,7 @@ static u64 wd_smp_panic_timeout_tb __read_mostly; /* panic other CPUs */
- 
- static u64 wd_timer_period_ms __read_mostly;  /* interval between heartbeat */
- 
--static DEFINE_PER_CPU(struct timer_list, wd_timer);
-+static DEFINE_PER_CPU(struct hrtimer, wd_hrtimer);
- static DEFINE_PER_CPU(u64, wd_timer_tb);
- 
- /* SMP checker bits */
-@@ -293,21 +293,21 @@ void soft_nmi_interrupt(struct pt_regs *regs)
- 	nmi_exit();
- }
- 
--static void wd_timer_reset(unsigned int cpu, struct timer_list *t)
--{
--	t->expires = jiffies + msecs_to_jiffies(wd_timer_period_ms);
--	if (wd_timer_period_ms > 1000)
--		t->expires = __round_jiffies_up(t->expires, cpu);
--	add_timer_on(t, cpu);
--}
--
--static void wd_timer_fn(struct timer_list *t)
-+static enum hrtimer_restart watchdog_timer_fn(struct hrtimer *hrtimer)
- {
- 	int cpu = smp_processor_id();
- 
-+	if (!(watchdog_enabled & NMI_WATCHDOG_ENABLED))
-+		return HRTIMER_NORESTART;
-+
-+	if (!cpumask_test_cpu(cpu, &watchdog_cpumask))
-+		return HRTIMER_NORESTART;
-+
- 	watchdog_timer_interrupt(cpu);
- 
--	wd_timer_reset(cpu, t);
-+	hrtimer_forward_now(hrtimer, ms_to_ktime(wd_timer_period_ms));
-+
-+	return HRTIMER_RESTART;
- }
- 
- void arch_touch_nmi_watchdog(void)
-@@ -323,37 +323,22 @@ void arch_touch_nmi_watchdog(void)
- }
- EXPORT_SYMBOL(arch_touch_nmi_watchdog);
- 
--static void start_watchdog_timer_on(unsigned int cpu)
--{
--	struct timer_list *t = per_cpu_ptr(&wd_timer, cpu);
--
--	per_cpu(wd_timer_tb, cpu) = get_tb();
--
--	timer_setup(t, wd_timer_fn, TIMER_PINNED);
--	wd_timer_reset(cpu, t);
--}
--
--static void stop_watchdog_timer_on(unsigned int cpu)
--{
--	struct timer_list *t = per_cpu_ptr(&wd_timer, cpu);
--
--	del_timer_sync(t);
--}
--
--static int start_wd_on_cpu(unsigned int cpu)
-+static void start_watchdog(void *arg)
- {
-+	struct hrtimer *hrtimer = this_cpu_ptr(&wd_hrtimer);
-+	int cpu = smp_processor_id();
- 	unsigned long flags;
- 
- 	if (cpumask_test_cpu(cpu, &wd_cpus_enabled)) {
- 		WARN_ON(1);
--		return 0;
-+		return;
- 	}
- 
- 	if (!(watchdog_enabled & NMI_WATCHDOG_ENABLED))
--		return 0;
-+		return;
- 
- 	if (!cpumask_test_cpu(cpu, &watchdog_cpumask))
--		return 0;
-+		return;
- 
- 	wd_smp_lock(&flags);
- 	cpumask_set_cpu(cpu, &wd_cpus_enabled);
-@@ -363,27 +348,40 @@ static int start_wd_on_cpu(unsigned int cpu)
- 	}
- 	wd_smp_unlock(&flags);
- 
--	start_watchdog_timer_on(cpu);
-+	*this_cpu_ptr(&wd_timer_tb) = get_tb();
- 
--	return 0;
-+	hrtimer_init(hrtimer, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
-+	hrtimer->function = watchdog_timer_fn;
-+	hrtimer_start(hrtimer, ms_to_ktime(wd_timer_period_ms),
-+		      HRTIMER_MODE_REL_PINNED);
- }
- 
--static int stop_wd_on_cpu(unsigned int cpu)
-+static int start_watchdog_on_cpu(unsigned int cpu)
- {
-+	return smp_call_function_single(cpu, start_watchdog, NULL, true);
-+}
-+
-+static void stop_watchdog(void *arg)
-+{
-+	struct hrtimer *hrtimer = this_cpu_ptr(&wd_hrtimer);
-+	int cpu = smp_processor_id();
- 	unsigned long flags;
- 
- 	if (!cpumask_test_cpu(cpu, &wd_cpus_enabled))
--		return 0; /* Can happen in CPU unplug case */
-+		return; /* Can happen in CPU unplug case */
- 
--	stop_watchdog_timer_on(cpu);
-+	hrtimer_cancel(hrtimer);
- 
- 	wd_smp_lock(&flags);
- 	cpumask_clear_cpu(cpu, &wd_cpus_enabled);
- 	wd_smp_unlock(&flags);
- 
- 	wd_smp_clear_cpu_pending(cpu, get_tb());
-+}
- 
--	return 0;
-+static int stop_watchdog_on_cpu(unsigned int cpu)
-+{
-+	return smp_call_function_single(cpu, stop_watchdog, NULL, true);
- }
- 
- static void watchdog_calc_timeouts(void)
-@@ -402,7 +400,7 @@ void watchdog_nmi_stop(void)
- 	int cpu;
- 
- 	for_each_cpu(cpu, &wd_cpus_enabled)
--		stop_wd_on_cpu(cpu);
-+		stop_watchdog_on_cpu(cpu);
- }
- 
- void watchdog_nmi_start(void)
-@@ -411,7 +409,7 @@ void watchdog_nmi_start(void)
- 
- 	watchdog_calc_timeouts();
- 	for_each_cpu_and(cpu, cpu_online_mask, &watchdog_cpumask)
--		start_wd_on_cpu(cpu);
-+		start_watchdog_on_cpu(cpu);
- }
- 
- /*
-@@ -423,7 +421,8 @@ int __init watchdog_nmi_probe(void)
- 
- 	err = cpuhp_setup_state_nocalls(CPUHP_AP_ONLINE_DYN,
- 					"powerpc/watchdog:online",
--					start_wd_on_cpu, stop_wd_on_cpu);
-+					start_watchdog_on_cpu,
-+					stop_watchdog_on_cpu);
- 	if (err < 0) {
- 		pr_warn("could not be initialized");
- 		return err;
--- 
-2.20.1
+Or as another example, suppose support for a two-axis precision
+positioning table is added. These devices support positioning in a
+cartesian coordinate system. In these cases, spatial direction may serve
+as useful count directions:
 
+    [COUNTER_COUNT_DIRECTION_NORTH] = "north",
+    [COUNTER_COUNT_DIRECTION_NORTHEAST] = "northeast",
+    [COUNTER_COUNT_DIRECTION_EAST] = "east",
+    [COUNTER_COUNT_DIRECTION_SOUTHEAST] = "southeast",
+    [COUNTER_COUNT_DIRECTION_SOUTH] = "south",
+    [COUNTER_COUNT_DIRECTION_SOUTHWEST] = "southwest",
+    [COUNTER_COUNT_DIRECTION_WEST] = "west",
+    [COUNTER_COUNT_DIRECTION_NORTHWEST] = "northwest"
+
+A const table is conveinent in these scenarios because support for new
+count directions may be easily added by simple entry into the table.
+
+William Breathitt Gray
