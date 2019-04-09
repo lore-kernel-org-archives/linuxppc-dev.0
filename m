@@ -2,53 +2,52 @@ Return-Path: <SRS0=YLyy=SL=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3F44DC10F0E
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Apr 2019 11:29:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 88EF6C10F0E
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Apr 2019 11:31:26 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 7BF1720857
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Apr 2019 11:29:36 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 07B7A20857
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Apr 2019 11:31:26 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=nxp.com header.i=@nxp.com header.b="OSNiQCGG"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7BF1720857
+	dkim=pass (1024-bit key) header.d=nxp.com header.i=@nxp.com header.b="XTiH67AP"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 07B7A20857
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nxp.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44dlSG0W5BzDqMT
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Apr 2019 21:29:34 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44dlVM11RzzDqLD
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Apr 2019 21:31:23 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=nxp.com
- (client-ip=40.107.6.51; helo=eur04-db3-obe.outbound.protection.outlook.com;
+ (client-ip=40.107.0.49; helo=eur02-am5-obe.outbound.protection.outlook.com;
  envelope-from=viorel.suman@nxp.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=nxp.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=nxp.com header.i=@nxp.com header.b="OSNiQCGG"; 
+ unprotected) header.d=nxp.com header.i=@nxp.com header.b="XTiH67AP"; 
  dkim-atps=neutral
-Received: from EUR04-DB3-obe.outbound.protection.outlook.com
- (mail-eopbgr60051.outbound.protection.outlook.com [40.107.6.51])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Received: from EUR02-AM5-obe.outbound.protection.outlook.com
+ (mail-eopbgr00049.outbound.protection.outlook.com [40.107.0.49])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44dlQG72MbzDqJk
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Apr 2019 21:27:50 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44dlQF1lsqzDqJj
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Apr 2019 21:27:45 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nxp.com; s=selector1; 
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=1CN2h3kDeze9CrlUJZ2HyX75qCHNNCF8VcNChwJhJM8=;
- b=OSNiQCGGIOHvnDhu2EOGaREzSJv2dA5tKL8ZubRnq4Iv24Aink61y+tLfcOPgCQ9Ld4Jpv9gQD0xk4H2pfPM5P2h/FavNbocW9oknbnIH+wKZVAxqKtXBL4W9Hec214Sk4ZU6qkjFCOPXBFbGuj/8ENcNZKVVHmNZJrtYc2G9lQ=
+ bh=OKHYWzD+YWUXtLfdQvkryqgwTZ0PgPWa0f+13fPJW5I=;
+ b=XTiH67APd8zJsPLxVXsoE3rCvRPOVl0ZF534uFrlCP06q1XHD93WLuWgbI/Z/yEuiTHMVDfuqhhsbQJoNkvzVoPNa0xefLbf3ZrzVhzjm1GH+u8hW2Rd+6LWdoBzPR0gRvArUFUdCoBIGpOQLc0YMi7dnC8J17/CU/vUzCbHnL4=
 Received: from VI1PR04MB4704.eurprd04.prod.outlook.com (20.177.48.157) by
- VI1PR04MB5216.eurprd04.prod.outlook.com (20.177.51.205) with Microsoft SMTP
+ VI1PR04MB3086.eurprd04.prod.outlook.com (10.170.228.160) with Microsoft SMTP
  Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.20.1771.16; Tue, 9 Apr 2019 11:27:42 +0000
+ 15.20.1771.16; Tue, 9 Apr 2019 11:27:38 +0000
 Received: from VI1PR04MB4704.eurprd04.prod.outlook.com
  ([fe80::2594:3cf0:20a2:8888]) by VI1PR04MB4704.eurprd04.prod.outlook.com
  ([fe80::2594:3cf0:20a2:8888%3]) with mapi id 15.20.1792.009; Tue, 9 Apr 2019
- 11:27:42 +0000
+ 11:27:38 +0000
 From: Viorel Suman <viorel.suman@nxp.com>
 To: Timur Tabi <timur@kernel.org>, Nicolin Chen <nicoleotsuka@gmail.com>,
  Xiubo Li <Xiubo.Lee@gmail.com>, Fabio Estevam <festevam@gmail.com>, Liam
@@ -57,14 +56,13 @@ To: Timur Tabi <timur@kernel.org>, Nicolin Chen <nicoleotsuka@gmail.com>,
  <mark.rutland@arm.com>, Takashi Iwai <tiwai@suse.com>, Shawn Guo
  <shawnguo@kernel.org>, Sascha Hauer <s.hauer@pengutronix.de>, Julia Lawall
  <Julia.Lawall@lip6.fr>
-Subject: [PATCH v2 3/3] ASoC: imx-audmix: fix object reference leaks in probe
-Thread-Topic: [PATCH v2 3/3] ASoC: imx-audmix: fix object reference leaks in
- probe
-Thread-Index: AQHU7sc+9q6sLFqPvEazfy9Py2lM7g==
-Date: Tue, 9 Apr 2019 11:27:42 +0000
-Message-ID: <1554809242-27475-4-git-send-email-viorel.suman@nxp.com>
-References: <1554809242-27475-1-git-send-email-viorel.suman@nxp.com>
-In-Reply-To: <1554809242-27475-1-git-send-email-viorel.suman@nxp.com>
+Subject: [PATCH v2 0/3] ASoC: fsl: audmix: remove "model" attribute and fix
+ ref leaks
+Thread-Topic: [PATCH v2 0/3] ASoC: fsl: audmix: remove "model" attribute and
+ fix ref leaks
+Thread-Index: AQHU7sc8h0omtYu4aEyCmk0WvWJxAg==
+Date: Tue, 9 Apr 2019 11:27:38 +0000
+Message-ID: <1554809242-27475-1-git-send-email-viorel.suman@nxp.com>
 Accept-Language: en-US
 Content-Language: en-US
 X-MS-Has-Attach: 
@@ -78,33 +76,33 @@ x-ms-exchange-messagesentrepresentingtype: 1
 x-mailer: git-send-email 2.7.4
 x-originating-ip: [212.146.100.6]
 x-ms-publictraffictype: Email
-x-ms-office365-filtering-correlation-id: 98b606a0-705f-46a2-15c5-08d6bcde6131
+x-ms-office365-filtering-correlation-id: 42c632c8-64d7-4b27-7595-08d6bcde5f0a
 x-ms-office365-filtering-ht: Tenant
 x-microsoft-antispam: BCL:0; PCL:0;
- RULEID:(2390118)(7020095)(4652040)(8989299)(4534185)(4627221)(201703031133081)(201702281549075)(8990200)(5600139)(711020)(4605104)(4618075)(2017052603328)(7193020);
- SRVR:VI1PR04MB5216; 
-x-ms-traffictypediagnostic: VI1PR04MB5216:
-x-microsoft-antispam-prvs: <VI1PR04MB5216DE47F1358549609A82BC922D0@VI1PR04MB5216.eurprd04.prod.outlook.com>
+ RULEID:(2390118)(7020095)(4652040)(8989299)(5600139)(711020)(4605104)(4618075)(4534185)(4627221)(201703031133081)(201702281549075)(8990200)(2017052603328)(7193020);
+ SRVR:VI1PR04MB3086; 
+x-ms-traffictypediagnostic: VI1PR04MB3086:
+x-microsoft-antispam-prvs: <VI1PR04MB308685E8FA3FF56549D27129922D0@VI1PR04MB3086.eurprd04.prod.outlook.com>
 x-forefront-prvs: 000227DA0C
 x-forefront-antispam-report: SFV:NSPM;
- SFS:(10009020)(136003)(366004)(396003)(346002)(39860400002)(376002)(189003)(199004)(386003)(6486002)(106356001)(5660300002)(6512007)(26005)(76176011)(44832011)(8936002)(7416002)(8676002)(81156014)(81166006)(3846002)(71190400001)(71200400001)(6506007)(105586002)(97736004)(86362001)(6116002)(68736007)(66066001)(102836004)(14454004)(99286004)(316002)(11346002)(2616005)(110136005)(486006)(478600001)(54906003)(256004)(36756003)(305945005)(7736002)(53936002)(476003)(4326008)(6436002)(446003)(2906002)(50226002)(25786009)(186003)(52116002)(921003)(1121003);
- DIR:OUT; SFP:1101; SCL:1; SRVR:VI1PR04MB5216;
+ SFS:(10009020)(346002)(136003)(39860400002)(366004)(396003)(376002)(189003)(199004)(106356001)(71200400001)(71190400001)(256004)(68736007)(5660300002)(8676002)(81156014)(81166006)(105586002)(478600001)(97736004)(66066001)(36756003)(102836004)(6506007)(7416002)(486006)(476003)(2616005)(4326008)(8936002)(386003)(6512007)(26005)(186003)(14454004)(50226002)(25786009)(6436002)(53936002)(2906002)(54906003)(3846002)(6116002)(99286004)(44832011)(52116002)(305945005)(316002)(110136005)(4744005)(86362001)(6486002)(7736002)(921003)(1121003);
+ DIR:OUT; SFP:1101; SCL:1; SRVR:VI1PR04MB3086;
  H:VI1PR04MB4704.eurprd04.prod.outlook.com; FPR:; SPF:None; LANG:en;
  PTR:InfoNoRecords; MX:1; A:1; 
 received-spf: None (protection.outlook.com: nxp.com does not designate
  permitted sender hosts)
 x-ms-exchange-senderadcheck: 1
-x-microsoft-antispam-message-info: FWC/57vLScyCH9XwTHP4ash9QthHXueBXNaCJ8KwqwrPhdqLNyJuStOaDHNbc0EtaiDGSS78OKgpV6fNUDNXtncjmICfKvvN+Vof+krr7gnfxPgYX1kPsm3PtCvuKX/TM+jdMHWoiNuBJUZXIrtNRMAWesUjQ/hp+mOESPPP0VbOKoRyM/Pg64pOJErO87ewSRVGrJ8fGtJHYHj6twfumEmmgytBHz+JxOluO942h2E3ZHJVkSpm+3rfeCRgWGh3xcThzbnHjOlENfPu5JhQ9DL5WK93dzhNy/YfCDr6/G19V2tb0iTzPoG6q4SwkXRL3cG8KhBHslv9bdiJQyvunFk229Aq+iJZQGvxjhA5A6IRispFSeWm2TioKNR/7JpWnG28vH4GZfZ0qOfIqNDLzndY0fPG7BksrfMaLhKy7lg=
+x-microsoft-antispam-message-info: 13uS4xd4e4PgpCH/lGYxoqeyFm14YsSUv6nXnnhC3vJPaCC1v5sIyINniatv1MIVH6l+hHyX5ewUGIIftEiDT16sRXoduT3wvrLEhcwcT5NMib5O8Azt4mmQsCL6nOOGd7UV1oRxC721JsvbLh3U5ONyrJ+so0m6HL/ZnepjdDkdCMxguaRw8bcTOHJm0AuNyCTcz42r5DkfFCzNjQOUpdI/NodsB9aCLO0xX8EMkf63hRQRsVLm+WFR84vHLq+6lcAco6nLj9oc1JEWXJXRo6MEyfoZWWTs+4jzr4ghRDmBRfkbWMCf0PBEPaaK28/TJo5Vf/bRML/8uwAggAuG6nf0dFQVZnUMx11dp94uVUcLH6Xjf9da0IyK90PbilkJY3zQhoYK6fURQ/6fUgMLU84yrWxan9qFQiEN0ArLx8A=
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: base64
 MIME-Version: 1.0
 X-OriginatorOrg: nxp.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 98b606a0-705f-46a2-15c5-08d6bcde6131
-X-MS-Exchange-CrossTenant-originalarrivaltime: 09 Apr 2019 11:27:42.2755 (UTC)
+X-MS-Exchange-CrossTenant-Network-Message-Id: 42c632c8-64d7-4b27-7595-08d6bcde5f0a
+X-MS-Exchange-CrossTenant-originalarrivaltime: 09 Apr 2019 11:27:38.6619 (UTC)
 X-MS-Exchange-CrossTenant-fromentityheader: Hosted
 X-MS-Exchange-CrossTenant-id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
 X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: VI1PR04MB5216
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: VI1PR04MB3086
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -128,28 +126,19 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-UmVsZWFzZSB0aGUgcmVmZXJlbmNlIHRvIHRoZSB1bmRlcmx5aW5nIGRldmljZSB0YWtlbg0KYnkg
-b2ZfZmluZF9kZXZpY2VfYnlfbm9kZSgpIGNhbGwuDQoNClNpZ25lZC1vZmYtYnk6IFZpb3JlbCBT
-dW1hbiA8dmlvcmVsLnN1bWFuQG54cC5jb20+DQpSZXBvcnRlZC1ieTogSnVsaWEgTGF3YWxsIDxK
-dWxpYS5MYXdhbGxAbGlwNi5mcj4NCi0tLQ0KIHNvdW5kL3NvYy9mc2wvaW14LWF1ZG1peC5jIHwg
-NCArKysrDQogMSBmaWxlIGNoYW5nZWQsIDQgaW5zZXJ0aW9ucygrKQ0KDQpkaWZmIC0tZ2l0IGEv
-c291bmQvc29jL2ZzbC9pbXgtYXVkbWl4LmMgYi9zb3VuZC9zb2MvZnNsL2lteC1hdWRtaXguYw0K
-aW5kZXggNzk4M2JkMy4uOWFhZjNlNSAxMDA2NDQNCi0tLSBhL3NvdW5kL3NvYy9mc2wvaW14LWF1
-ZG1peC5jDQorKysgYi9zb3VuZC9zb2MvZnNsL2lteC1hdWRtaXguYw0KQEAgLTE3MSw2ICsxNzEs
-NyBAQCBzdGF0aWMgaW50IGlteF9hdWRtaXhfcHJvYmUoc3RydWN0IHBsYXRmb3JtX2RldmljZSAq
-cGRldikNCiAJCQlucC0+ZnVsbF9uYW1lKTsNCiAJCXJldHVybiAtRUlOVkFMOw0KIAl9DQorCXB1
-dF9kZXZpY2UoJmF1ZG1peF9wZGV2LT5kZXYpOw0KIA0KIAludW1fZGFpID0gb2ZfY291bnRfcGhh
-bmRsZV93aXRoX2FyZ3MoYXVkbWl4X25wLCAiZGFpcyIsIE5VTEwpOw0KIAlpZiAobnVtX2RhaSAh
-PSBGU0xfQVVETUlYX01BWF9EQUlTKSB7DQpAQCAtMjE2LDYgKzIxNyw3IEBAIHN0YXRpYyBpbnQg
-aW14X2F1ZG1peF9wcm9iZShzdHJ1Y3QgcGxhdGZvcm1fZGV2aWNlICpwZGV2KQ0KIAkJCWRldl9l
-cnIoJnBkZXYtPmRldiwgImZhaWxlZCB0byBmaW5kIFNBSSBwbGF0Zm9ybSBkZXZpY2VcbiIpOw0K
-IAkJCXJldHVybiAtRUlOVkFMOw0KIAkJfQ0KKwkJcHV0X2RldmljZSgmY3B1X3BkZXYtPmRldik7
-DQogDQogCQlkYWlfbmFtZSA9IGRldm1fa2FzcHJpbnRmKCZwZGV2LT5kZXYsIEdGUF9LRVJORUws
-ICIlcyVzIiwNCiAJCQkJCSAgZmVfbmFtZV9wcmVmLCBhcmdzLm5wLT5mdWxsX25hbWUgKyAxKTsN
-CkBAIC0yODAsNiArMjgyLDggQEAgc3RhdGljIGludCBpbXhfYXVkbWl4X3Byb2JlKHN0cnVjdCBw
-bGF0Zm9ybV9kZXZpY2UgKnBkZXYpDQogCQlkZXZfZXJyKCZwZGV2LT5kZXYsICJmYWlsZWQgdG8g
-ZmluZCBTQUkgcGxhdGZvcm0gZGV2aWNlXG4iKTsNCiAJCXJldHVybiAtRUlOVkFMOw0KIAl9DQor
-CXB1dF9kZXZpY2UoJmNwdV9wZGV2LT5kZXYpOw0KKw0KIAlwcml2LT5jcHVfbWNsayA9IGRldm1f
-Y2xrX2dldCgmY3B1X3BkZXYtPmRldiwgIm1jbGsxIik7DQogCWlmIChJU19FUlIocHJpdi0+Y3B1
-X21jbGspKSB7DQogCQlyZXQgPSBQVFJfRVJSKHByaXYtPmNwdV9tY2xrKTsNCi0tIA0KMi43LjQN
-Cg0K
+VGhlIGxhdGVzdCBhdWRtaXggcGF0Y2gtc2V0ICh2NSkgaGFkIHRoZSAibW9kZWwiIGF0dHJpYnV0
+ZSByZW1vdmVkIGFzDQpyZXF1ZXN0ZWQgYnkgTmljb2xpbiBDaGVuLCBidXQgbG9va3MgbGlrZSAo
+djQpIHZlcnNpb24gb2YgREFJIGRyaXZlcg0KcmVhY2hlZCAiZm9yLW5leHQiIGJyYW5jaCAtIGZp
+eCB0aGlzIGJ5IHJlbW92aW5nICJtb2RlbCIgYXR0cmlidXRlLg0KQXNzaWRlIG9mIHRoaXMgZml4
+IG9iamVjdCByZWZlcmVuY2UgbGVha3MgaW4gbWFjaGluZSBwcm9iZSByZXBvcnRlZCBieQ0KSnVs
+aWEgTGF3YWxsLg0KDQpWaW9yZWwgU3VtYW4gKDMpOg0KICBBU29DOiBmc2xfYXVkbWl4OiByZW1v
+dmUgIm1vZGVsIiBhdHRyaWJ1dGUNCiAgZHQtYmluZGluZ3M6IGZzbCxhdWRtaXg6IHJlbW92ZSAi
+bW9kZWwiIGF0dHJpYnV0ZQ0KICBBU29DOiBpbXgtYXVkbWl4OiBmaXggb2JqZWN0IHJlZmVyZW5j
+ZSBsZWFrcyBpbiBwcm9iZQ0KDQpDaGFuZ2VzIHNpbmNlIFYxOg0KICBhKSBSZW1vdmVkICJtb2Rl
+bCIgYXR0cmlidXRlIGZyb20gZHQtYmluZGluZ3MgZG9jdW1lbnRhdGlvbg0KICBiKSBBZHJlc3Nl
+ZCBEYW5pZWwncyBjb21tZW50cw0KDQogLi4uL2RldmljZXRyZWUvYmluZGluZ3Mvc291bmQvZnNs
+LGF1ZG1peC50eHQgICAgICAgfCAgNCAtLQ0KIHNvdW5kL3NvYy9mc2wvZnNsX2F1ZG1peC5jICAg
+ICAgICAgICAgICAgICAgICAgICAgIHwgNDMgKysrKysrKysrKysrLS0tLS0tLS0tLQ0KIHNvdW5k
+L3NvYy9mc2wvaW14LWF1ZG1peC5jICAgICAgICAgICAgICAgICAgICAgICAgIHwgIDQgKysNCiAz
+IGZpbGVzIGNoYW5nZWQsIDI3IGluc2VydGlvbnMoKyksIDI0IGRlbGV0aW9ucygtKQ0KDQotLSAN
+CjIuNy40DQoNCg==
