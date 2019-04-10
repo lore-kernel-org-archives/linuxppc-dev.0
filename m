@@ -8,81 +8,80 @@ X-Spam-Status: No, score=-5.0 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
 	URIBL_BLOCKED,USER_AGENT_MUTT autolearn=unavailable autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 463A0C10F14
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Apr 2019 04:31:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9D486C10F11
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Apr 2019 04:32:45 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B8CE320854
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Apr 2019 04:31:07 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 1066720854
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Apr 2019 04:32:44 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="d5zH16cO"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B8CE320854
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="R+0tnqUs"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1066720854
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44fB6x5k8WzDqGb
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Apr 2019 14:31:05 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44fB8q1NHlzDqM1
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Apr 2019 14:32:43 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=2607:f8b0:4864:20::641; helo=mail-pl1-x641.google.com;
+ (client-ip=2607:f8b0:4864:20::543; helo=mail-pg1-x543.google.com;
  envelope-from=nicoleotsuka@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="d5zH16cO"; 
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="R+0tnqUs"; 
  dkim-atps=neutral
-Received: from mail-pl1-x641.google.com (mail-pl1-x641.google.com
- [IPv6:2607:f8b0:4864:20::641])
+Received: from mail-pg1-x543.google.com (mail-pg1-x543.google.com
+ [IPv6:2607:f8b0:4864:20::543])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44fB4p4W78zDqJk
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Apr 2019 14:29:14 +1000 (AEST)
-Received: by mail-pl1-x641.google.com with SMTP id y6so591048plt.1
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 09 Apr 2019 21:29:14 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44fB5Y4P3wzDqM4
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Apr 2019 14:29:53 +1000 (AEST)
+Received: by mail-pg1-x543.google.com with SMTP id k3so723723pga.6
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 09 Apr 2019 21:29:53 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
  h=date:from:to:cc:subject:message-id:references:mime-version
  :content-disposition:in-reply-to:user-agent;
- bh=hg+vFG8Wc2AnyBt417MjCD1cA4puKAPw8Dp8WcpXUwY=;
- b=d5zH16cOgagXTRWao1Drpafdr5F1jPtn68THcAdHmYphnhHH79uNFPAY2NdyJwx5+E
- c1Iu6AMmt3ebhcifAkhbTrUKVs6Y6na26WReQL22HaC5JHKSRy9OaYU3+fsYXMZl9EE3
- AZ+WB9LXKyHpuc5ScrufnXJNq0s2Eq1jJ4V6QtzAW7K7FrS+na0Ab6pT1hqsZiPexr/B
- VyHePZRDiAi2SRZwkGGR4pD2zqtvoKlRcSkfiIY4s4MBc/HAD68MeAcsZxRNO3MBFIsV
- vgsECk6ATQJYKcbbSIxiYwI1OFFeIKVZMZFHwKI8xa1od8EccsKNNwXELaQksrwpkSn5
- rMEw==
+ bh=VdZvdqQbly2GoV2VZDP1pA/PSw3bIDCmLQVWa6Yk5Gk=;
+ b=R+0tnqUsekcm2vwKrlIEpRE2SVXQg6xzizRoIy7QYlwO0Oo8GP9airmKXyeZUllEic
+ LpCe5O1ph5QZmThq4R5kNa4Ep0m5J9xaDj+215CdmBpVHzK5h9DbOzd4Z+3hKvYJm1pq
+ UAoGcaO7IyPsPv6tss0qwzR9JrA8JSGjpiGVvBMJElv1m/GKjICeN0hTHUeHY6LGe/EQ
+ yxP5CzVt84vwZeNbuZKmSRh1+BnazcgmgaBDn0YzixUpsLb6gfHLlQ+0xScVzbiaEyF4
+ BbLqb2NF2vwBeiCLJXVo1S0h7goNJS4EN1DKgjTlTpgwWYOm7ayl0DHxFMj2TAED1dEE
+ hWBQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:date:from:to:cc:subject:message-id:references
  :mime-version:content-disposition:in-reply-to:user-agent;
- bh=hg+vFG8Wc2AnyBt417MjCD1cA4puKAPw8Dp8WcpXUwY=;
- b=kSfl0IpdVeUmJkmIi0ciCijQMOeDak9jSf/96Ldh4kWSOXu1kvTitrEk8H9xUz/oNV
- GhacJjM7O5j+auYNQgaKfTUyj6ui57/LsKXgG3P6nFyx4t6OV0+HO7XUlX1ig0/hbHT+
- 4n5fQqRELGct1EBgSvve2zgkmWVzs38NRowTCBhMQa1VZmKxQFlXL6cOcWQaejO/gTP3
- oiVsOn0Ral0m/mKR07jIXCbMvI9r9eXEiEfXQs20lOsb+HzWuX3nqT4n6+n8A+YglMYt
- NyLyykHjxNXBNQSBXM8bwNfjFt8Zlxgg1L4w/97Xwf74Hv2gsI5wL47CVA3DPZpRl0Zk
- RACw==
-X-Gm-Message-State: APjAAAUtttTEUum+F2CDizf+G4BFuglNOXswYFm1pSDZtzbeoNUvmxuM
- +JzMWM8/ZLE6/wvYBUdZzsM=
-X-Google-Smtp-Source: APXvYqzTIZZiXzM02bx8TqtJKxpOHo+96RkG1lcMyQ+na5eSpfNRZeMjXs0lIfKgMzjDbuFr2Ssmxw==
-X-Received: by 2002:a17:902:a583:: with SMTP id
- az3mr41728742plb.205.1554870550774; 
- Tue, 09 Apr 2019 21:29:10 -0700 (PDT)
+ bh=VdZvdqQbly2GoV2VZDP1pA/PSw3bIDCmLQVWa6Yk5Gk=;
+ b=hSQ4vSE9lc9mgFzPaotTwzdSLyOwV6jUv5cQ1E9k8qpSUuWWSxK6f1SQ8fKO09dMy3
+ mqTqku+dAnINYhOPWuH+VLYTA7B4pg6lrE1yi+sieEgVNPS6AOXE26dbzaImgbKwucRC
+ rUJ+iRWEuVqYE1lXKfA1ZyatJOhPldBDpq6oYj4rxokq2cJiRodhz69JtFq0M2VN+P5W
+ 5r1ZJAAwItqd4d9JeKH/QsqT/8Ld3pR/EzXIWY3waQlpm7JQPyqzB6Yp/D6RK9bm1Ma0
+ Cs9DK4PGzhI7SQf+4GaAe4ZEbZ4t8Dy3mDF7iMH2x9t8nYUNZqmO6zPefIVhisebqSYs
+ u39A==
+X-Gm-Message-State: APjAAAVFmEfcoL1H+bmBF8FOb0AtAzdcDX+N0wabSAVptsKOQWjQixrC
+ BtPuRYAHj2wiZO4a63Ftda0uIEan
+X-Google-Smtp-Source: APXvYqytZvgU6i31AKx4F+iaDTgAuy3kkHWv5rZ5/XHnUekJxP8fZTGRhfIo8NZZiULekhMlWhp0qA==
+X-Received: by 2002:a65:6105:: with SMTP id z5mr39437569pgu.378.1554870590961; 
+ Tue, 09 Apr 2019 21:29:50 -0700 (PDT)
 Received: from Asurada (c-98-248-47-108.hsd1.ca.comcast.net. [98.248.47.108])
  by smtp.gmail.com with ESMTPSA id
- y23sm49258200pfn.25.2019.04.09.21.29.09
+ s21sm12520228pfm.3.2019.04.09.21.29.49
  (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
- Tue, 09 Apr 2019 21:29:10 -0700 (PDT)
-Date: Tue, 9 Apr 2019 21:29:07 -0700
+ Tue, 09 Apr 2019 21:29:50 -0700 (PDT)
+Date: Tue, 9 Apr 2019 21:29:47 -0700
 From: Nicolin Chen <nicoleotsuka@gmail.com>
 To: Viorel Suman <viorel.suman@nxp.com>
-Subject: Re: [PATCH v2 1/3] ASoC: fsl_audmix: remove "model" attribute
-Message-ID: <20190410042906.GC3032@Asurada>
+Subject: Re: [PATCH v2 2/3] dt-bindings: fsl,audmix: remove "model" attribute
+Message-ID: <20190410042946.GD3032@Asurada>
 References: <1554809242-27475-1-git-send-email-viorel.suman@nxp.com>
- <1554809242-27475-2-git-send-email-viorel.suman@nxp.com>
+ <1554809242-27475-3-git-send-email-viorel.suman@nxp.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1554809242-27475-2-git-send-email-viorel.suman@nxp.com>
+In-Reply-To: <1554809242-27475-3-git-send-email-viorel.suman@nxp.com>
 User-Agent: Mutt/1.5.22 (2013-10-16)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -113,19 +112,9 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, Apr 09, 2019 at 11:27:39AM +0000, Viorel Suman wrote:
-> Use "of_device_id.data" to specify the machine driver
-> instead of "model" DTS attribute.
+On Tue, Apr 09, 2019 at 11:27:40AM +0000, Viorel Suman wrote:
+> Remove "model" attribute.
 > 
 > Signed-off-by: Viorel Suman <viorel.suman@nxp.com>
 
 Acked-by: Nicolin Chen <nicoleotsuka@gmail.com>
-
-> ---
->  sound/soc/fsl/fsl_audmix.c | 43 +++++++++++++++++++++++--------------------
->  1 file changed, 23 insertions(+), 20 deletions(-)
-
-> +	priv->pdev = platform_device_register_data(&pdev->dev, mdrv, 0, NULL,
-> +						   0);
-
-Would you please send a separate patch to replace "pdev->dev"?
