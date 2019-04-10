@@ -2,89 +2,51 @@ Return-Path: <SRS0=mr1i=SM=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.0 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_MUTT autolearn=unavailable autolearn_force=no
+X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_PASS autolearn=unavailable autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7BC9BC10F11
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Apr 2019 04:34:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 52591C10F11
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Apr 2019 05:50:36 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E96712133D
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Apr 2019 04:34:18 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="qXyxBPU7"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E96712133D
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	by mail.kernel.org (Postfix) with ESMTPS id 8C6432084B
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Apr 2019 05:50:35 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8C6432084B
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44fBBc6QjdzDqMv
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Apr 2019 14:34:16 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=2607:f8b0:4864:20::641; helo=mail-pl1-x641.google.com;
- envelope-from=nicoleotsuka@gmail.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="qXyxBPU7"; 
- dkim-atps=neutral
-Received: from mail-pl1-x641.google.com (mail-pl1-x641.google.com
- [IPv6:2607:f8b0:4864:20::641])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 44fCtd1ffqzDqLC
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Apr 2019 15:50:33 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44fB6J0229zDqM9
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Apr 2019 14:30:31 +1000 (AEST)
-Received: by mail-pl1-x641.google.com with SMTP id y6so554148pll.13
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 09 Apr 2019 21:30:31 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=date:from:to:cc:subject:message-id:references:mime-version
- :content-disposition:in-reply-to:user-agent;
- bh=1qlgnPrUH7CcuLuQLu7vBTzEUvbkD9aeMWyD3vveT+4=;
- b=qXyxBPU7BHhilFmVEbZfMkvsD6Xk0iNcscnlDbOunNg6fvIdP+x8DKtkP/950QXqJ1
- b7Q0iRPWfbajK3XwuaPBCFzWHBFD3+rZ5pgUl2dEEUtOlhImeFqQkQ0PvYMegyPYLeFD
- RP3NVqLrtLxQlKDoWxC5JaAKncIAxyRiuTyhwHIqYchF5Wts8nPw1eY6m4WviT4P1AVw
- cF3cZfKffe+KHonaySuCHZkSEV4f5LuW8GnCRkWjC2UQN5JvRIj9c/HybgoQbYqpCB/d
- NdO65vqlCs9hqqDYdcO97q9bK0IcRT/PJ3E5CIPnFRY8W+DnBQPnhV4/hnOFOFplBgNk
- M2hw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:date:from:to:cc:subject:message-id:references
- :mime-version:content-disposition:in-reply-to:user-agent;
- bh=1qlgnPrUH7CcuLuQLu7vBTzEUvbkD9aeMWyD3vveT+4=;
- b=ASIVy7Iv5WfcRpeg+y2Y6XVC1SuQ48aGwpax67GtzDYTdQ1XVw8sH0BZw1kJ0pDKSc
- 02/YXjVTVVmPWwMtd08XasRVVcBVK3vzJo26ARuYHyE3FITlFnWoVHv4Utfe747l7QWW
- s37kWMyBdKLgIcc/sypSKXtn9iuYvnj4Gjc6vYHEEM9rNBEhNA1qtr1sn+3bdaZZaABw
- qHvLSpi8l3JicrfdMbr4hxHyPM/CjtzeAUif1wywxwbu+g9GB+LdKZI24au0E5krrm7J
- 79+NLU2jcBkA87MiGPNxDHbxYd1DAIVtX4IoWa33w+rYYqm7lxAglI/V6o4QIEFlUopB
- Hv6A==
-X-Gm-Message-State: APjAAAXa8WWxjI9nmHUtS/dHwaHfmSZqw+cYzKv2KPCvg9uNQgiF0PSw
- qriEMZcUBu1aMtALQafujns=
-X-Google-Smtp-Source: APXvYqwH20ZmJQ2gaiJXYjc0Iq3X29OvYiq+lfIZnE1lCDPYOKhCvZBnluXA+60IMJlj9bR6XoDP2A==
-X-Received: by 2002:a17:902:9881:: with SMTP id
- s1mr39581544plp.99.1554870630020; 
- Tue, 09 Apr 2019 21:30:30 -0700 (PDT)
-Received: from Asurada (c-98-248-47-108.hsd1.ca.comcast.net. [98.248.47.108])
- by smtp.gmail.com with ESMTPSA id
- g4sm121025pfc.75.2019.04.09.21.30.28
- (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
- Tue, 09 Apr 2019 21:30:29 -0700 (PDT)
-Date: Tue, 9 Apr 2019 21:30:26 -0700
-From: Nicolin Chen <nicoleotsuka@gmail.com>
-To: Viorel Suman <viorel.suman@nxp.com>
-Subject: Re: [PATCH v2 3/3] ASoC: imx-audmix: fix object reference leaks in
- probe
-Message-ID: <20190410043025.GE3032@Asurada>
-References: <1554809242-27475-1-git-send-email-viorel.suman@nxp.com>
- <1554809242-27475-4-git-send-email-viorel.suman@nxp.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44fCrm6wNgzDqKg
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Apr 2019 15:48:56 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=ellerman.id.au
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
+ SHA256) (No client certificate requested)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 44fCrj1l6Nz9s4V;
+ Wed, 10 Apr 2019 15:48:53 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Josh Poimboeuf <jpoimboe@redhat.com>, Borislav Petkov <bp@alien8.de>
+Subject: Re: [PATCH RFC 1/5] cpu/speculation: Add 'cpu_spec_mitigations='
+ cmdline options
+In-Reply-To: <20190405161852.nmpk22omgiety4df@treble>
+References: <cover.1554396090.git.jpoimboe@redhat.com>
+ <f0bd17358ab478eaca52f3b1da8305c150911b40.1554396090.git.jpoimboe@redhat.com>
+ <20190405131211.GE23348@zn.tnic> <20190405142048.burthk2jnpcvi2om@treble>
+ <20190405152059.GG23348@zn.tnic> <20190405160136.GI23348@zn.tnic>
+ <20190405161852.nmpk22omgiety4df@treble>
+Date: Wed, 10 Apr 2019 15:48:48 +1000
+Message-ID: <87sguqwgu7.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1554809242-27475-4-git-send-email-viorel.suman@nxp.com>
-User-Agent: Mutt/1.5.22 (2013-10-16)
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -96,29 +58,40 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Mark Rutland <mark.rutland@arm.com>,
- "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Timur Tabi <timur@kernel.org>, Xiubo Li <Xiubo.Lee@gmail.com>,
- Shawn Guo <shawnguo@kernel.org>, Sascha Hauer <s.hauer@pengutronix.de>,
- Takashi Iwai <tiwai@suse.com>, Liam Girdwood <lgirdwood@gmail.com>,
- Rob Herring <robh+dt@kernel.org>, Jaroslav Kysela <perex@perex.cz>,
- Viorel Suman <viorel.suman@gmail.com>, Julia Lawall <Julia.Lawall@lip6.fr>,
- Mark Brown <broonie@kernel.org>, dl-linux-imx <linux-imx@nxp.com>,
- Pengutronix Kernel Team <kernel@pengutronix.de>,
- Fabio Estevam <festevam@gmail.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Cc: Peter Zijlstra <peterz@infradead.org>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>, Paul Mackerras <paulus@samba.org>,
+ "H . Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@kernel.org>,
+ Andrea Arcangeli <aarcange@redhat.com>, linux-s390@vger.kernel.org,
+ x86@kernel.org, Will Deacon <will.deacon@arm.com>,
+ Linus Torvalds <torvalds@linux-foundation.org>,
+ Catalin Marinas <catalin.marinas@arm.com>, Waiman Long <longman@redhat.com>,
+ linux-arch@vger.kernel.org, Jon Masters <jcm@redhat.com>,
+ Jiri Kosina <jikos@kernel.org>, Andy Lutomirski <luto@kernel.org>,
+ Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org,
+ Tyler Hicks <tyhicks@canonical.com>,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, Apr 09, 2019 at 11:27:42AM +0000, Viorel Suman wrote:
-> Release the reference to the underlying device taken
-> by of_find_device_by_node() call.
-> 
-> Signed-off-by: Viorel Suman <viorel.suman@nxp.com>
-> Reported-by: Julia Lawall <Julia.Lawall@lip6.fr>
+Josh Poimboeuf <jpoimboe@redhat.com> writes:
 
-Acked-by: Nicolin Chen <nicoleotsuka@gmail.com>
+> On Fri, Apr 05, 2019 at 06:01:36PM +0200, Borislav Petkov wrote:
+>> Thinking about this more, we can shave off the first 4 chars and have it
+>> be:
+>> 
+>> spec_mitigations=
+>> 
+>> I think it is painfully clear which speculation mitigations we mean. And
+>> the other switches don't have "cpu_" prefixes too so...
+>
+> Sure, I'm ok with renaming it to that, if there are no objections.
+
+What about when we have a mitigation for a non-speculation related bug :)
+
+mitigations=xxx
+
+?
+
+cheers
