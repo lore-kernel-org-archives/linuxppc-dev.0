@@ -2,108 +2,58 @@ Return-Path: <SRS0=mr1i=SM=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E8944C10F11
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Apr 2019 16:10:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 566DAC10F11
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Apr 2019 17:07:29 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 39FE6206B6
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Apr 2019 16:10:45 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 39FE6206B6
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
+	by mail.kernel.org (Postfix) with ESMTPS id 7B4982082E
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Apr 2019 17:07:28 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7B4982082E
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44fTfC2NQWzDqGx
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Apr 2019 02:10:43 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44fVvd5xfmzDqMh
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Apr 2019 03:07:25 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=redhat.com
- (client-ip=209.132.183.28; helo=mx1.redhat.com;
- envelope-from=longman@redhat.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=kaod.org
+ (client-ip=87.98.165.232; helo=10.mo3.mail-out.ovh.net;
+ envelope-from=clg@kaod.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=redhat.com
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ dmarc=none (p=none dis=none) header.from=kaod.org
+Received: from 10.mo3.mail-out.ovh.net (10.mo3.mail-out.ovh.net
+ [87.98.165.232])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44fTc96bFWzDqNg
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Apr 2019 02:08:57 +1000 (AEST)
-Received: from smtp.corp.redhat.com (int-mx02.intmail.prod.int.phx2.redhat.com
- [10.5.11.12])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by mx1.redhat.com (Postfix) with ESMTPS id 43E9281257;
- Wed, 10 Apr 2019 16:08:55 +0000 (UTC)
-Received: from llong.remote.csb (ovpn-120-189.rdu2.redhat.com [10.10.120.189])
- by smtp.corp.redhat.com (Postfix) with ESMTP id CBDC860FB4;
- Wed, 10 Apr 2019 16:08:48 +0000 (UTC)
-Subject: Re: [PATCH-tip 00/22] locking/rwsem: Rework rwsem-xadd & enable new
- rwsem features
-To: huang ying <huang.ying.caritas@gmail.com>
-References: <1549566446-27967-1-git-send-email-longman@redhat.com>
- <20190213091936.GA22829@shao2-debian>
- <CAHk-=wiF2qv4TdKOTaTYeMnmsn4h6z9ot+MRj1=s7dm5y1FUwQ@mail.gmail.com>
- <CAC=cRTM5=e7rJX80m0vL10aQoLawK_VTnQubH8A7_sUO2VUCNA@mail.gmail.com>
-From: Waiman Long <longman@redhat.com>
-Openpgp: preference=signencrypt
-Autocrypt: addr=longman@redhat.com; prefer-encrypt=mutual; keydata=
- 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
- weim8xU=
-Organization: Red Hat
-Message-ID: <cc8af095-50e0-cd3e-e498-8c3350d314b7@redhat.com>
-Date: Wed, 10 Apr 2019 12:08:48 -0400
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:52.0) Gecko/20100101
- Thunderbird/52.9.1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44fVs80cQ6zDqKM
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Apr 2019 03:05:14 +1000 (AEST)
+Received: from player157.ha.ovh.net (unknown [10.109.143.72])
+ by mo3.mail-out.ovh.net (Postfix) with ESMTP id D318D20769F
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Apr 2019 19:05:08 +0200 (CEST)
+Received: from kaod.org (lfbn-tou-1-40-22.w86-201.abo.wanadoo.fr
+ [86.201.133.22]) (Authenticated sender: clg@kaod.org)
+ by player157.ha.ovh.net (Postfix) with ESMTPSA id 81928492A2A2;
+ Wed, 10 Apr 2019 17:05:00 +0000 (UTC)
+From: =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>
+To: kvm-ppc@vger.kernel.org
+Subject: [PATCH v5 01/16] powerpc/xive: add OPAL extensions for the XIVE
+ native exploitation support
+Date: Wed, 10 Apr 2019 19:04:33 +0200
+Message-Id: <20190410170448.3923-2-clg@kaod.org>
+X-Mailer: git-send-email 2.20.1
+In-Reply-To: <20190410170448.3923-1-clg@kaod.org>
+References: <20190410170448.3923-1-clg@kaod.org>
 MIME-Version: 1.0
-In-Reply-To: <CAC=cRTM5=e7rJX80m0vL10aQoLawK_VTnQubH8A7_sUO2VUCNA@mail.gmail.com>
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
-Content-Language: en-US
-X-Scanned-By: MIMEDefang 2.79 on 10.5.11.12
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.5.16
- (mx1.redhat.com [10.5.110.25]); Wed, 10 Apr 2019 16:08:55 +0000 (UTC)
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-Ovh-Tracer-Id: 2469098496476154839
+X-VR-SPAMSTATE: OK
+X-VR-SPAMSCORE: -100
+X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgeduuddrudejgdduudduucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecuqfggjfdpvefjgfevmfevgfenuceurghilhhouhhtmecuhedttdenucesvcftvggtihhpihgvnhhtshculddquddttddm
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -115,35 +65,229 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-ia64@vger.kernel.org, Linux-sh list <linux-sh@vger.kernel.org>,
- Peter Zijlstra <peterz@infradead.org>, Will Deacon <will.deacon@arm.com>,
- "H. Peter Anvin" <hpa@zytor.com>, sparclinux@vger.kernel.org,
- linux-arch <linux-arch@vger.kernel.org>, Davidlohr Bueso <dave@stgolabs.net>,
- Chen Rong <rong.a.chen@intel.com>, linux-hexagon@vger.kernel.org,
- the arch/x86 maintainers <x86@kernel.org>,
- "IngoMolnar@shao2-debian" <mingo@redhat.com>, linux-xtensa@linux-xtensa.org,
- Arnd Bergmann <arnd@arndb.de>, linuxppc-dev@lists.ozlabs.org,
- Borislav Petkov <bp@alien8.de>, Thomas Gleixner <tglx@linutronix.de>,
- "linux-alpha@vger.kernel.org" <linux-arm-kernel@lists.infradead.org>,
- Linus Torvalds <torvalds@linux-foundation.org>,
- Linux List Kernel Mailing <linux-kernel@vger.kernel.org>,
- Andrew Morton <akpm@linux-foundation.org>,
- Tim Chen <tim.c.chen@linux.intel.com>
+Cc: kvm@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+ =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>,
+ linuxppc-dev@lists.ozlabs.org, David Gibson <david@gibson.dropbear.id.au>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 04/10/2019 04:15 AM, huang ying wrote:
-> Hi, Waiman,
->
-> What's the status of this patchset?  And its merging plan?
->
-> Best Regards,
-> Huang, Ying
+The support for XIVE native exploitation mode in Linux/KVM needs a
+couple more OPAL calls to get and set the state of the XIVE internal
+structures being used by a sPAPR guest.
 
-I have broken the patch into 3 parts (0/1/2) and rewritten some of them.
-Part 0 has been merged into tip. Parts 1 and 2 are still under testing.
+Signed-off-by: Cédric Le Goater <clg@kaod.org>
+Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
+---
+ arch/powerpc/include/asm/opal-api.h        |  7 +-
+ arch/powerpc/include/asm/opal.h            |  7 ++
+ arch/powerpc/include/asm/xive.h            | 14 +++
+ arch/powerpc/platforms/powernv/opal-call.c |  3 +
+ arch/powerpc/sysdev/xive/native.c          | 99 ++++++++++++++++++++++
+ 5 files changed, 127 insertions(+), 3 deletions(-)
 
-Cheers,
-Longman
+diff --git a/arch/powerpc/include/asm/opal-api.h b/arch/powerpc/include/asm/opal-api.h
+index 870fb7b239ea..e1d118ac61dc 100644
+--- a/arch/powerpc/include/asm/opal-api.h
++++ b/arch/powerpc/include/asm/opal-api.h
+@@ -186,8 +186,8 @@
+ #define OPAL_XIVE_FREE_IRQ			140
+ #define OPAL_XIVE_SYNC				141
+ #define OPAL_XIVE_DUMP				142
+-#define OPAL_XIVE_RESERVED3			143
+-#define OPAL_XIVE_RESERVED4			144
++#define OPAL_XIVE_GET_QUEUE_STATE		143
++#define OPAL_XIVE_SET_QUEUE_STATE		144
+ #define OPAL_SIGNAL_SYSTEM_RESET		145
+ #define OPAL_NPU_INIT_CONTEXT			146
+ #define OPAL_NPU_DESTROY_CONTEXT		147
+@@ -210,7 +210,8 @@
+ #define OPAL_PCI_GET_PBCQ_TUNNEL_BAR		164
+ #define OPAL_PCI_SET_PBCQ_TUNNEL_BAR		165
+ #define	OPAL_NX_COPROC_INIT			167
+-#define OPAL_LAST				167
++#define OPAL_XIVE_GET_VP_STATE			170
++#define OPAL_LAST				170
+ 
+ #define QUIESCE_HOLD			1 /* Spin all calls at entry */
+ #define QUIESCE_REJECT			2 /* Fail all calls with OPAL_BUSY */
+diff --git a/arch/powerpc/include/asm/opal.h b/arch/powerpc/include/asm/opal.h
+index a55b01c90bb1..4e978d4dea5c 100644
+--- a/arch/powerpc/include/asm/opal.h
++++ b/arch/powerpc/include/asm/opal.h
+@@ -279,6 +279,13 @@ int64_t opal_xive_allocate_irq(uint32_t chip_id);
+ int64_t opal_xive_free_irq(uint32_t girq);
+ int64_t opal_xive_sync(uint32_t type, uint32_t id);
+ int64_t opal_xive_dump(uint32_t type, uint32_t id);
++int64_t opal_xive_get_queue_state(uint64_t vp, uint32_t prio,
++				  __be32 *out_qtoggle,
++				  __be32 *out_qindex);
++int64_t opal_xive_set_queue_state(uint64_t vp, uint32_t prio,
++				  uint32_t qtoggle,
++				  uint32_t qindex);
++int64_t opal_xive_get_vp_state(uint64_t vp, __be64 *out_w01);
+ int64_t opal_pci_set_p2p(uint64_t phb_init, uint64_t phb_target,
+ 			uint64_t desc, uint16_t pe_number);
+ 
+diff --git a/arch/powerpc/include/asm/xive.h b/arch/powerpc/include/asm/xive.h
+index 3c704f5dd3ae..b579a943407b 100644
+--- a/arch/powerpc/include/asm/xive.h
++++ b/arch/powerpc/include/asm/xive.h
+@@ -109,12 +109,26 @@ extern int xive_native_configure_queue(u32 vp_id, struct xive_q *q, u8 prio,
+ extern void xive_native_disable_queue(u32 vp_id, struct xive_q *q, u8 prio);
+ 
+ extern void xive_native_sync_source(u32 hw_irq);
++extern void xive_native_sync_queue(u32 hw_irq);
+ extern bool is_xive_irq(struct irq_chip *chip);
+ extern int xive_native_enable_vp(u32 vp_id, bool single_escalation);
+ extern int xive_native_disable_vp(u32 vp_id);
+ extern int xive_native_get_vp_info(u32 vp_id, u32 *out_cam_id, u32 *out_chip_id);
+ extern bool xive_native_has_single_escalation(void);
+ 
++extern int xive_native_get_queue_info(u32 vp_id, uint32_t prio,
++				      u64 *out_qpage,
++				      u64 *out_qsize,
++				      u64 *out_qeoi_page,
++				      u32 *out_escalate_irq,
++				      u64 *out_qflags);
++
++extern int xive_native_get_queue_state(u32 vp_id, uint32_t prio, u32 *qtoggle,
++				       u32 *qindex);
++extern int xive_native_set_queue_state(u32 vp_id, uint32_t prio, u32 qtoggle,
++				       u32 qindex);
++extern int xive_native_get_vp_state(u32 vp_id, u64 *out_state);
++
+ #else
+ 
+ static inline bool xive_enabled(void) { return false; }
+diff --git a/arch/powerpc/platforms/powernv/opal-call.c b/arch/powerpc/platforms/powernv/opal-call.c
+index daad8c45c8e7..7472244e7f30 100644
+--- a/arch/powerpc/platforms/powernv/opal-call.c
++++ b/arch/powerpc/platforms/powernv/opal-call.c
+@@ -260,6 +260,9 @@ OPAL_CALL(opal_xive_get_vp_info,		OPAL_XIVE_GET_VP_INFO);
+ OPAL_CALL(opal_xive_set_vp_info,		OPAL_XIVE_SET_VP_INFO);
+ OPAL_CALL(opal_xive_sync,			OPAL_XIVE_SYNC);
+ OPAL_CALL(opal_xive_dump,			OPAL_XIVE_DUMP);
++OPAL_CALL(opal_xive_get_queue_state,		OPAL_XIVE_GET_QUEUE_STATE);
++OPAL_CALL(opal_xive_set_queue_state,		OPAL_XIVE_SET_QUEUE_STATE);
++OPAL_CALL(opal_xive_get_vp_state,		OPAL_XIVE_GET_VP_STATE);
+ OPAL_CALL(opal_signal_system_reset,		OPAL_SIGNAL_SYSTEM_RESET);
+ OPAL_CALL(opal_npu_init_context,		OPAL_NPU_INIT_CONTEXT);
+ OPAL_CALL(opal_npu_destroy_context,		OPAL_NPU_DESTROY_CONTEXT);
+diff --git a/arch/powerpc/sysdev/xive/native.c b/arch/powerpc/sysdev/xive/native.c
+index 1ca127d052a6..0c037e933e55 100644
+--- a/arch/powerpc/sysdev/xive/native.c
++++ b/arch/powerpc/sysdev/xive/native.c
+@@ -437,6 +437,12 @@ void xive_native_sync_source(u32 hw_irq)
+ }
+ EXPORT_SYMBOL_GPL(xive_native_sync_source);
+ 
++void xive_native_sync_queue(u32 hw_irq)
++{
++	opal_xive_sync(XIVE_SYNC_QUEUE, hw_irq);
++}
++EXPORT_SYMBOL_GPL(xive_native_sync_queue);
++
+ static const struct xive_ops xive_native_ops = {
+ 	.populate_irq_data	= xive_native_populate_irq_data,
+ 	.configure_irq		= xive_native_configure_irq,
+@@ -711,3 +717,96 @@ bool xive_native_has_single_escalation(void)
+ 	return xive_has_single_esc;
+ }
+ EXPORT_SYMBOL_GPL(xive_native_has_single_escalation);
++
++int xive_native_get_queue_info(u32 vp_id, u32 prio,
++			       u64 *out_qpage,
++			       u64 *out_qsize,
++			       u64 *out_qeoi_page,
++			       u32 *out_escalate_irq,
++			       u64 *out_qflags)
++{
++	__be64 qpage;
++	__be64 qsize;
++	__be64 qeoi_page;
++	__be32 escalate_irq;
++	__be64 qflags;
++	s64 rc;
++
++	rc = opal_xive_get_queue_info(vp_id, prio, &qpage, &qsize,
++				      &qeoi_page, &escalate_irq, &qflags);
++	if (rc) {
++		pr_err("OPAL failed to get queue info for VCPU %d/%d : %lld\n",
++		       vp_id, prio, rc);
++		return -EIO;
++	}
++
++	if (out_qpage)
++		*out_qpage = be64_to_cpu(qpage);
++	if (out_qsize)
++		*out_qsize = be32_to_cpu(qsize);
++	if (out_qeoi_page)
++		*out_qeoi_page = be64_to_cpu(qeoi_page);
++	if (out_escalate_irq)
++		*out_escalate_irq = be32_to_cpu(escalate_irq);
++	if (out_qflags)
++		*out_qflags = be64_to_cpu(qflags);
++
++	return 0;
++}
++EXPORT_SYMBOL_GPL(xive_native_get_queue_info);
++
++int xive_native_get_queue_state(u32 vp_id, u32 prio, u32 *qtoggle, u32 *qindex)
++{
++	__be32 opal_qtoggle;
++	__be32 opal_qindex;
++	s64 rc;
++
++	rc = opal_xive_get_queue_state(vp_id, prio, &opal_qtoggle,
++				       &opal_qindex);
++	if (rc) {
++		pr_err("OPAL failed to get queue state for VCPU %d/%d : %lld\n",
++		       vp_id, prio, rc);
++		return -EIO;
++	}
++
++	if (qtoggle)
++		*qtoggle = be32_to_cpu(opal_qtoggle);
++	if (qindex)
++		*qindex = be32_to_cpu(opal_qindex);
++
++	return 0;
++}
++EXPORT_SYMBOL_GPL(xive_native_get_queue_state);
++
++int xive_native_set_queue_state(u32 vp_id, u32 prio, u32 qtoggle, u32 qindex)
++{
++	s64 rc;
++
++	rc = opal_xive_set_queue_state(vp_id, prio, qtoggle, qindex);
++	if (rc) {
++		pr_err("OPAL failed to set queue state for VCPU %d/%d : %lld\n",
++		       vp_id, prio, rc);
++		return -EIO;
++	}
++
++	return 0;
++}
++EXPORT_SYMBOL_GPL(xive_native_set_queue_state);
++
++int xive_native_get_vp_state(u32 vp_id, u64 *out_state)
++{
++	__be64 state;
++	s64 rc;
++
++	rc = opal_xive_get_vp_state(vp_id, &state);
++	if (rc) {
++		pr_err("OPAL failed to get vp state for VCPU %d : %lld\n",
++		       vp_id, rc);
++		return -EIO;
++	}
++
++	if (out_state)
++		*out_state = be64_to_cpu(state);
++	return 0;
++}
++EXPORT_SYMBOL_GPL(xive_native_get_vp_state);
+-- 
+2.20.1
 
