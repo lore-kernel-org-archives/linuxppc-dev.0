@@ -6,51 +6,50 @@ X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
 	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AF983C10F11
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Apr 2019 17:19:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3D929C10F11
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Apr 2019 17:20:58 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3C20120674
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Apr 2019 17:19:26 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3C20120674
+	by mail.kernel.org (Postfix) with ESMTPS id BE1E520693
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Apr 2019 17:20:57 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BE1E520693
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44fW9S1HYkzDqQF
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Apr 2019 03:19:24 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44fWCB6KYCzDq9H
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Apr 2019 03:20:54 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=kaod.org
- (client-ip=46.105.43.140; helo=5.mo179.mail-out.ovh.net;
+ (client-ip=87.98.173.157; helo=11.mo7.mail-out.ovh.net;
  envelope-from=clg@kaod.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=kaod.org
-Received: from 5.mo179.mail-out.ovh.net (5.mo179.mail-out.ovh.net
- [46.105.43.140])
+Received: from 11.mo7.mail-out.ovh.net (11.mo7.mail-out.ovh.net
+ [87.98.173.157])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44fVtw1yMjzDqNg
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Apr 2019 03:06:46 +1000 (AEST)
-Received: from player157.ha.ovh.net (unknown [10.109.159.157])
- by mo179.mail-out.ovh.net (Postfix) with ESMTP id 23672124A83
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Apr 2019 19:06:42 +0200 (CEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44fVv3719DzDqP7
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Apr 2019 03:06:54 +1000 (AEST)
+Received: from player157.ha.ovh.net (unknown [10.109.159.132])
+ by mo7.mail-out.ovh.net (Postfix) with ESMTP id 5358510D7C5
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Apr 2019 19:06:50 +0200 (CEST)
 Received: from kaod.org (lfbn-tou-1-40-22.w86-201.abo.wanadoo.fr
  [86.201.133.22]) (Authenticated sender: clg@kaod.org)
- by player157.ha.ovh.net (Postfix) with ESMTPSA id 740C0492A540;
- Wed, 10 Apr 2019 17:06:34 +0000 (UTC)
+ by player157.ha.ovh.net (Postfix) with ESMTPSA id 24C88492A5AF;
+ Wed, 10 Apr 2019 17:06:42 +0000 (UTC)
 From: =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>
 To: kvm-ppc@vger.kernel.org
-Subject: [PATCH v5 13/16] KVM: PPC: Book3S HV: XIVE: add a mapping for the
- source ESB pages
-Date: Wed, 10 Apr 2019 19:04:45 +0200
-Message-Id: <20190410170448.3923-14-clg@kaod.org>
+Subject: [PATCH v5 14/16] KVM: PPC: Book3S HV: XIVE: add passthrough support
+Date: Wed, 10 Apr 2019 19:04:46 +0200
+Message-Id: <20190410170448.3923-15-clg@kaod.org>
 X-Mailer: git-send-email 2.20.1
 In-Reply-To: <20190410170448.3923-1-clg@kaod.org>
 References: <20190410170448.3923-1-clg@kaod.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
-X-Ovh-Tracer-Id: 2495557144996711383
+X-Ovh-Tracer-Id: 2497808945320201175
 X-VR-SPAMSTATE: OK
 X-VR-SPAMSCORE: -100
 X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgeduuddrudejgdduudduucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecuqfggjfdpvefjgfevmfevgfenuceurghilhhouhhtmecuhedttdenucesvcftvggtihhpihgvnhhtshculddquddttddm
@@ -72,123 +71,231 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Each source is associated with an Event State Buffer (ESB) with a
-even/odd pair of pages which provides commands to manage the source:
-to trigger, to EOI, to turn off the source for instance.
+The KVM XICS-over-XIVE device and the proposed KVM XIVE native device
+implement an IRQ space for the guest using the generic IPI interrupts
+of the XIVE IC controller. These interrupts are allocated at the OPAL
+level and "mapped" into the guest IRQ number space in the range 0-0x1FFF.
+Interrupt management is performed in the XIVE way: using loads and
+stores on the addresses of the XIVE IPI interrupt ESB pages.
 
-The custom VM fault handler will deduce the guest IRQ number from the
-offset of the fault, and the ESB page of the associated XIVE interrupt
-will be inserted into the VMA using the internal structure caching
-information on the interrupts.
+Both KVM devices share the same internal structure caching information
+on the interrupts, among which the xive_irq_data struct containing the
+addresses of the IPI ESB pages and an extra one in case of pass-through.
+The later contains the addresses of the ESB pages of the underlying HW
+controller interrupts, PHB4 in all cases for now.
+
+A guest, when running in the XICS legacy interrupt mode, lets the KVM
+XICS-over-XIVE device "handle" interrupt management, that is to
+perform the loads and stores on the addresses of the ESB pages of the
+guest interrupts. However, when running in XIVE native exploitation
+mode, the KVM XIVE native device exposes the interrupt ESB pages to
+the guest and lets the guest perform directly the loads and stores.
+
+The VMA exposing the ESB pages make use of a custom VM fault handler
+which role is to populate the VMA with appropriate pages. When a fault
+occurs, the guest IRQ number is deduced from the offset, and the ESB
+pages of associated XIVE IPI interrupt are inserted in the VMA (using
+the internal structure caching information on the interrupts).
+
+Supporting device passthrough in the guest running in XIVE native
+exploitation mode adds some extra refinements because the ESB pages
+of a different HW controller (PHB4) need to be exposed to the guest
+along with the initial IPI ESB pages of the XIVE IC controller. But
+the overall mechanic is the same.
+
+When the device HW irqs are mapped into or unmapped from the guest
+IRQ number space, the passthru_irq helpers, kvmppc_xive_set_mapped()
+and kvmppc_xive_clr_mapped(), are called to record or clear the
+passthrough interrupt information and to perform the switch.
+
+The approach taken by this patch is to clear the ESB pages of the
+guest IRQ number being mapped and let the VM fault handler repopulate.
+The handler will insert the ESB page corresponding to the HW interrupt
+of the device being passed-through or the initial IPI ESB page if the
+device is being removed.
 
 Signed-off-by: Cédric Le Goater <clg@kaod.org>
 Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
 ---
- arch/powerpc/include/uapi/asm/kvm.h        |  1 +
- arch/powerpc/kvm/book3s_xive_native.c      | 57 ++++++++++++++++++++++
- Documentation/virtual/kvm/devices/xive.txt |  7 +++
- 3 files changed, 65 insertions(+)
+ arch/powerpc/kvm/book3s_xive.h             |  9 +++++
+ arch/powerpc/kvm/book3s_xive.c             | 15 ++++++++
+ arch/powerpc/kvm/book3s_xive_native.c      | 41 ++++++++++++++++++++++
+ Documentation/virtual/kvm/devices/xive.txt | 19 ++++++++++
+ 4 files changed, 84 insertions(+)
 
-diff --git a/arch/powerpc/include/uapi/asm/kvm.h b/arch/powerpc/include/uapi/asm/kvm.h
-index 0998e8edc91a..b0f72dea8b11 100644
---- a/arch/powerpc/include/uapi/asm/kvm.h
-+++ b/arch/powerpc/include/uapi/asm/kvm.h
-@@ -721,5 +721,6 @@ struct kvm_ppc_xive_eq {
- #define KVM_XIVE_EQ_ALWAYS_NOTIFY	0x00000001
+diff --git a/arch/powerpc/kvm/book3s_xive.h b/arch/powerpc/kvm/book3s_xive.h
+index 622f594d93e1..e011622dc038 100644
+--- a/arch/powerpc/kvm/book3s_xive.h
++++ b/arch/powerpc/kvm/book3s_xive.h
+@@ -94,6 +94,11 @@ struct kvmppc_xive_src_block {
+ 	struct kvmppc_xive_irq_state irq_state[KVMPPC_XICS_IRQ_PER_ICS];
+ };
  
- #define KVM_XIVE_TIMA_PAGE_OFFSET	0
-+#define KVM_XIVE_ESB_PAGE_OFFSET	4
++struct kvmppc_xive;
++
++struct kvmppc_xive_ops {
++	int (*reset_mapped)(struct kvm *kvm, unsigned long guest_irq);
++};
  
- #endif /* __LINUX_KVM_POWERPC_H */
+ struct kvmppc_xive {
+ 	struct kvm *kvm;
+@@ -132,6 +137,10 @@ struct kvmppc_xive {
+ 
+ 	/* Flags */
+ 	u8	single_escalation;
++
++	struct kvmppc_xive_ops *ops;
++	struct address_space   *mapping;
++	struct mutex mapping_lock;
+ };
+ 
+ #define KVMPPC_XIVE_Q_COUNT	8
+diff --git a/arch/powerpc/kvm/book3s_xive.c b/arch/powerpc/kvm/book3s_xive.c
+index c1b7aa7dbc28..480a3fc6b9fd 100644
+--- a/arch/powerpc/kvm/book3s_xive.c
++++ b/arch/powerpc/kvm/book3s_xive.c
+@@ -937,6 +937,13 @@ int kvmppc_xive_set_mapped(struct kvm *kvm, unsigned long guest_irq,
+ 	/* Turn the IPI hard off */
+ 	xive_vm_esb_load(&state->ipi_data, XIVE_ESB_SET_PQ_01);
+ 
++	/*
++	 * Reset ESB guest mapping. Needed when ESB pages are exposed
++	 * to the guest in XIVE native mode
++	 */
++	if (xive->ops && xive->ops->reset_mapped)
++		xive->ops->reset_mapped(kvm, guest_irq);
++
+ 	/* Grab info about irq */
+ 	state->pt_number = hw_irq;
+ 	state->pt_data = irq_data_get_irq_handler_data(host_data);
+@@ -1022,6 +1029,14 @@ int kvmppc_xive_clr_mapped(struct kvm *kvm, unsigned long guest_irq,
+ 	state->pt_number = 0;
+ 	state->pt_data = NULL;
+ 
++	/*
++	 * Reset ESB guest mapping. Needed when ESB pages are exposed
++	 * to the guest in XIVE native mode
++	 */
++	if (xive->ops && xive->ops->reset_mapped) {
++		xive->ops->reset_mapped(kvm, guest_irq);
++	}
++
+ 	/* Reconfigure the IPI */
+ 	xive_native_configure_irq(state->ipi_number,
+ 				  kvmppc_xive_vp(xive, state->act_server),
 diff --git a/arch/powerpc/kvm/book3s_xive_native.c b/arch/powerpc/kvm/book3s_xive_native.c
-index f5314da0cb45..465eb90ff23e 100644
+index 465eb90ff23e..62648f833adf 100644
 --- a/arch/powerpc/kvm/book3s_xive_native.c
 +++ b/arch/powerpc/kvm/book3s_xive_native.c
-@@ -165,6 +165,59 @@ int kvmppc_xive_native_connect_vcpu(struct kvm_device *dev,
+@@ -11,6 +11,7 @@
+ #include <linux/gfp.h>
+ #include <linux/spinlock.h>
+ #include <linux/delay.h>
++#include <linux/file.h>
+ #include <asm/uaccess.h>
+ #include <asm/kvm_book3s.h>
+ #include <asm/kvm_ppc.h>
+@@ -165,6 +166,35 @@ int kvmppc_xive_native_connect_vcpu(struct kvm_device *dev,
  	return rc;
  }
  
-+static vm_fault_t xive_native_esb_fault(struct vm_fault *vmf)
++/*
++ * Device passthrough support
++ */
++static int kvmppc_xive_native_reset_mapped(struct kvm *kvm, unsigned long irq)
 +{
-+	struct vm_area_struct *vma = vmf->vma;
-+	struct kvm_device *dev = vma->vm_file->private_data;
-+	struct kvmppc_xive *xive = dev->private;
-+	struct kvmppc_xive_src_block *sb;
-+	struct kvmppc_xive_irq_state *state;
-+	struct xive_irq_data *xd;
-+	u32 hw_num;
-+	u16 src;
-+	u64 page;
-+	unsigned long irq;
-+	u64 page_offset;
++	struct kvmppc_xive *xive = kvm->arch.xive;
++
++	if (irq >= KVMPPC_XIVE_NR_IRQS)
++		return -EINVAL;
 +
 +	/*
-+	 * Linux/KVM uses a two pages ESB setting, one for trigger and
-+	 * one for EOI
++	 * Clear the ESB pages of the IRQ number being mapped (or
++	 * unmapped) into the guest and let the the VM fault handler
++	 * repopulate with the appropriate ESB pages (device or IC)
 +	 */
-+	page_offset = vmf->pgoff - vma->vm_pgoff;
-+	irq = page_offset / 2;
-+
-+	sb = kvmppc_xive_find_source(xive, irq, &src);
-+	if (!sb) {
-+		pr_devel("%s: source %lx not found !\n", __func__, irq);
-+		return VM_FAULT_SIGBUS;
-+	}
-+
-+	state = &sb->irq_state[src];
-+	kvmppc_xive_select_irq(state, &hw_num, &xd);
-+
-+	arch_spin_lock(&sb->lock);
-+
-+	/*
-+	 * first/even page is for trigger
-+	 * second/odd page is for EOI and management.
-+	 */
-+	page = page_offset % 2 ? xd->eoi_page : xd->trig_page;
-+	arch_spin_unlock(&sb->lock);
-+
-+	if (WARN_ON(!page)) {
-+		pr_err("%s: acessing invalid ESB page for source %lx !\n",
-+		       __func__, irq);
-+		return VM_FAULT_SIGBUS;
-+	}
-+
-+	vmf_insert_pfn(vma, vmf->address, page >> PAGE_SHIFT);
-+	return VM_FAULT_NOPAGE;
++	pr_debug("clearing esb pages for girq 0x%lx\n", irq);
++	mutex_lock(&xive->mapping_lock);
++	if (xive->mapping)
++		unmap_mapping_range(xive->mapping,
++				    irq * (2ull << PAGE_SHIFT),
++				    2ull << PAGE_SHIFT, 1);
++	mutex_unlock(&xive->mapping_lock);
++	return 0;
 +}
 +
-+static const struct vm_operations_struct xive_native_esb_vmops = {
-+	.fault = xive_native_esb_fault,
++static struct kvmppc_xive_ops kvmppc_xive_native_ops =  {
++	.reset_mapped = kvmppc_xive_native_reset_mapped,
 +};
 +
- static vm_fault_t xive_native_tima_fault(struct vm_fault *vmf)
+ static vm_fault_t xive_native_esb_fault(struct vm_fault *vmf)
  {
  	struct vm_area_struct *vma = vmf->vma;
-@@ -194,6 +247,10 @@ static int kvmppc_xive_native_mmap(struct kvm_device *dev,
+@@ -242,6 +272,8 @@ static const struct vm_operations_struct xive_native_tima_vmops = {
+ static int kvmppc_xive_native_mmap(struct kvm_device *dev,
+ 				   struct vm_area_struct *vma)
+ {
++	struct kvmppc_xive *xive = dev->private;
++
+ 	/* We only allow mappings at fixed offset for now */
+ 	if (vma->vm_pgoff == KVM_XIVE_TIMA_PAGE_OFFSET) {
  		if (vma_pages(vma) > 4)
- 			return -EINVAL;
- 		vma->vm_ops = &xive_native_tima_vmops;
-+	} else if (vma->vm_pgoff == KVM_XIVE_ESB_PAGE_OFFSET) {
-+		if (vma_pages(vma) > KVMPPC_XIVE_NR_IRQS * 2)
-+			return -EINVAL;
-+		vma->vm_ops = &xive_native_esb_vmops;
- 	} else {
- 		return -EINVAL;
- 	}
+@@ -257,6 +289,13 @@ static int kvmppc_xive_native_mmap(struct kvm_device *dev,
+ 
+ 	vma->vm_flags |= VM_IO | VM_PFNMAP;
+ 	vma->vm_page_prot = pgprot_noncached_wc(vma->vm_page_prot);
++
++	/*
++	 * Grab the KVM device file address_space to be able to clear
++	 * the ESB pages mapping when a device is passed-through into
++	 * the guest.
++	 */
++	xive->mapping = vma->vm_file->f_mapping;
+ 	return 0;
+ }
+ 
+@@ -971,6 +1010,7 @@ static int kvmppc_xive_native_create(struct kvm_device *dev, u32 type)
+ 	xive->dev = dev;
+ 	xive->kvm = kvm;
+ 	kvm->arch.xive = xive;
++	mutex_init(&xive->mapping_lock);
+ 
+ 	/*
+ 	 * Allocate a bunch of VPs. KVM_MAX_VCPUS is a large value for
+@@ -984,6 +1024,7 @@ static int kvmppc_xive_native_create(struct kvm_device *dev, u32 type)
+ 		ret = -ENXIO;
+ 
+ 	xive->single_escalation = xive_native_has_single_escalation();
++	xive->ops = &kvmppc_xive_native_ops;
+ 
+ 	if (ret)
+ 		kfree(xive);
 diff --git a/Documentation/virtual/kvm/devices/xive.txt b/Documentation/virtual/kvm/devices/xive.txt
-index 0cd7847ec38a..69ee62d3d4dc 100644
+index 69ee62d3d4dc..9a24a4525253 100644
 --- a/Documentation/virtual/kvm/devices/xive.txt
 +++ b/Documentation/virtual/kvm/devices/xive.txt
-@@ -36,6 +36,13 @@ the legacy interrupt mode, referred as XICS (POWER7/8).
-   third (operating system) and the fourth (user level) are exposed the
-   guest.
+@@ -43,6 +43,25 @@ the legacy interrupt mode, referred as XICS (POWER7/8).
+   manage the source: to trigger, to EOI, to turn off the source for
+   instance.
  
-+  2. Event State Buffer (ESB)
++  3. Device pass-through
 +
-+  Each source is associated with an Event State Buffer (ESB) with
-+  either a pair of even/odd pair of pages which provides commands to
-+  manage the source: to trigger, to EOI, to turn off the source for
-+  instance.
++  When a device is passed-through into the guest, the source
++  interrupts are from a different HW controller (PHB4) and the ESB
++  pages exposed to the guest should accommadate this change.
++
++  The passthru_irq helpers, kvmppc_xive_set_mapped() and
++  kvmppc_xive_clr_mapped() are called when the device HW irqs are
++  mapped into or unmapped from the guest IRQ number space. The KVM
++  device extends these helpers to clear the ESB pages of the guest IRQ
++  number being mapped and then lets the VM fault handler repopulate.
++  The handler will insert the ESB page corresponding to the HW
++  interrupt of the device being passed-through or the initial IPI ESB
++  page if the device has being removed.
++
++  The ESB remapping is fully transparent to the guest and the OS
++  device driver. All handling is done within VFIO and the above
++  helpers in KVM-PPC.
 +
  * Groups:
  
