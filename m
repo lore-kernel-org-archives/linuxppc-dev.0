@@ -2,69 +2,99 @@ Return-Path: <SRS0=mr1i=SM=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_MUTT autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-4.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 66866C10F11
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Apr 2019 11:30:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A7C5FC10F11
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Apr 2019 11:48:41 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 978A92083E
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Apr 2019 11:30:02 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=sirena.org.uk header.i=@sirena.org.uk header.b="BXcx810s"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 978A92083E
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	by mail.kernel.org (Postfix) with ESMTPS id CA69B2054F
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Apr 2019 11:48:39 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CA69B2054F
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44fMQJ2xh3zDqRR
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Apr 2019 21:30:00 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44fMqn3G9jzDqQQ
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Apr 2019 21:48:37 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=sirena.org.uk
- (client-ip=2a01:7e01::f03c:91ff:fed4:a3b6; helo=heliosphere.sirena.org.uk;
- envelope-from=broonie@sirena.org.uk; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
+ (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
+ envelope-from=sebott@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=fail (p=none dis=none) header.from=kernel.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=sirena.org.uk header.i=@sirena.org.uk
- header.b="BXcx810s"; dkim-atps=neutral
-Received: from heliosphere.sirena.org.uk (heliosphere.sirena.org.uk
- [IPv6:2a01:7e01::f03c:91ff:fed4:a3b6])
+ dmarc=none (p=none dis=none) header.from=linux.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44fMNT125BzDqDy
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Apr 2019 21:28:23 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
- d=sirena.org.uk; s=20170815-heliosphere; h=In-Reply-To:Content-Type:
- MIME-Version:References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
- Content-Transfer-Encoding:Content-ID:Content-Description:Resent-Date:
- Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:
- List-Help:List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
- bh=hzHY+yWxoFLKkX2IrYFOIJWz330UtHJLgBnpLoTSZD4=; b=BXcx810sFcTXkseSlFE1JrjVu
- e32cAjPEdWJBR3HQFdsMqe41f4aS7bArjNRjBxvjoTlOw0SbLehpTQtTKoBiNtyAF+ZDUG67xKErv
- LsDk4zlBogb9oM9HSymHGQ0ewGKF/JgYShLGcz2PMe5Gf04eEUS/+EDpqbw4fJT2ghiYk=;
-Received: from cpc102320-sgyl38-2-0-cust46.18-2.cable.virginm.net
- ([82.37.168.47] helo=debutante.sirena.org.uk)
- by heliosphere.sirena.org.uk with esmtpa (Exim 4.89)
- (envelope-from <broonie@sirena.org.uk>)
- id 1hEBOn-00089u-WC; Wed, 10 Apr 2019 11:28:14 +0000
-Received: by debutante.sirena.org.uk (Postfix, from userid 1000)
- id 5097F1128ED3; Wed, 10 Apr 2019 12:28:13 +0100 (BST)
-Date: Wed, 10 Apr 2019 12:28:13 +0100
-From: Mark Brown <broonie@kernel.org>
-To: "S.j. Wang" <shengjiu.wang@nxp.com>
-Subject: Re: [PATCH V2] ASoC: fsl_esai: replace fall-through with break
-Message-ID: <20190410112813.GL6106@sirena.org.uk>
-References: <46e9b55edb223894392a90c7cdb6241a43cb9cff.1554864022.git.shengjiu.wang@nxp.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44fMp61DK4zDqNW
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Apr 2019 21:47:03 +1000 (AEST)
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
+ x3ABU2SX020568
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Apr 2019 07:46:59 -0400
+Received: from e06smtp07.uk.ibm.com (e06smtp07.uk.ibm.com [195.75.94.103])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2rsf9rspx6-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Apr 2019 07:46:58 -0400
+Received: from localhost
+ by e06smtp07.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <sebott@linux.ibm.com>;
+ Wed, 10 Apr 2019 12:46:56 +0100
+Received: from b06cxnps4076.portsmouth.uk.ibm.com (9.149.109.198)
+ by e06smtp07.uk.ibm.com (192.168.101.137) with IBM ESMTP SMTP Gateway:
+ Authorized Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Wed, 10 Apr 2019 12:46:50 +0100
+Received: from d06av22.portsmouth.uk.ibm.com (d06av22.portsmouth.uk.ibm.com
+ [9.149.105.58])
+ by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x3ABkn5J47710432
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Wed, 10 Apr 2019 11:46:49 GMT
+Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 55DE84C040;
+ Wed, 10 Apr 2019 11:46:49 +0000 (GMT)
+Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 7D7E74C044;
+ Wed, 10 Apr 2019 11:46:48 +0000 (GMT)
+Received: from dyn-9-152-212-73.boeblingen.de.ibm.com (unknown [9.152.212.73])
+ by d06av22.portsmouth.uk.ibm.com (Postfix) with ESMTPS;
+ Wed, 10 Apr 2019 11:46:48 +0000 (GMT)
+Date: Wed, 10 Apr 2019 13:46:48 +0200 (CEST)
+From: Sebastian Ott <sebott@linux.ibm.com>
+X-X-Sender: sebott@schleppi
+To: Zhen Lei <thunder.leizhen@huawei.com>
+Subject: Re: [PATCH v5 4/6] s390/pci: add support for generic boot option
+ iommu.dma_mode
+In-Reply-To: <20190409125308.18304-5-thunder.leizhen@huawei.com>
+References: <20190409125308.18304-1-thunder.leizhen@huawei.com>
+ <20190409125308.18304-5-thunder.leizhen@huawei.com>
+User-Agent: Alpine 2.21 (LFD 202 2017-01-01)
+Organization: =?ISO-8859-15?Q?=22IBM_Deutschland_Research_&_Development_GmbH?=
+ =?ISO-8859-15?Q?_=2F_Vorsitzende_des_Aufsichtsrats=3A_Matthias?=
+ =?ISO-8859-15?Q?_Hartmann_Gesch=E4ftsf=FChrung=3A_Dirk_Wittkopp?=
+ =?ISO-8859-15?Q?_Sitz_der_Gesellschaft=3A_B=F6blingen_=2F_Reg?=
+ =?ISO-8859-15?Q?istergericht=3A_Amtsgericht_Stuttgart=2C_HRB_2432?=
+ =?ISO-8859-15?Q?94=22?=
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
- protocol="application/pgp-signature"; boundary="IuJpT0rwbUevm2bB"
-Content-Disposition: inline
-In-Reply-To: <46e9b55edb223894392a90c7cdb6241a43cb9cff.1554864022.git.shengjiu.wang@nxp.com>
-X-Cookie: teamwork, n.:
-User-Agent: Mutt/1.10.1 (2018-07-13)
+Content-Type: text/plain; charset=US-ASCII
+X-TM-AS-GCONF: 00
+x-cbid: 19041011-0028-0000-0000-0000035F4B8B
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 19041011-0029-0000-0000-0000241E6DB2
+Message-Id: <alpine.LFD.2.21.1904101346060.1774@schleppi>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
+ definitions=2019-04-10_06:, , signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ malwarescore=0 suspectscore=3 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1011 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=756 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1810050000 definitions=main-1904100083
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -76,41 +106,31 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
- "timur@kernel.org" <timur@kernel.org>,
- "gustavo@embeddedor.com" <gustavo@embeddedor.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "Xiubo.Lee@gmail.com" <Xiubo.Lee@gmail.com>,
- "nicoleotsuka@gmail.com" <nicoleotsuka@gmail.com>,
- "festevam@gmail.com" <festevam@gmail.com>
+Cc: linux-ia64 <linux-ia64@vger.kernel.org>,
+ linux-doc <linux-doc@vger.kernel.org>, Hanjun Guo <guohanjun@huawei.com>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>, Paul Mackerras <paulus@samba.org>,
+ "H . Peter Anvin" <hpa@zytor.com>, linux-s390 <linux-s390@vger.kernel.org>,
+ Jonathan Corbet <corbet@lwn.net>,
+ Jean-Philippe Brucker <jean-philippe.brucker@arm.com>,
+ Joerg Roedel <joro@8bytes.org>, x86 <x86@kernel.org>,
+ Ingo Molnar <mingo@redhat.com>, Fenghua Yu <fenghua.yu@intel.com>,
+ Will Deacon <will.deacon@arm.com>, John Garry <john.garry@huawei.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Borislav Petkov <bp@alien8.de>,
+ Thomas Gleixner <tglx@linutronix.de>,
+ Gerald Schaefer <gerald.schaefer@de.ibm.com>, Tony Luck <tony.luck@intel.com>,
+ David Woodhouse <dwmw2@infradead.org>,
+ linux-kernel <linux-kernel@vger.kernel.org>,
+ iommu <iommu@lists.linux-foundation.org>,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>,
+ Robin Murphy <robin.murphy@arm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+On Tue, 9 Apr 2019, Zhen Lei wrote:
+> s390_iommu=strict is equivalent to iommu.dma_mode=strict.
+> 
+> Signed-off-by: Zhen Lei <thunder.leizhen@huawei.com>
 
---IuJpT0rwbUevm2bB
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Acked-by: Sebastian Ott <sebott@linux.ibm.com>
 
-On Wed, Apr 10, 2019 at 02:42:45AM +0000, S.j. Wang wrote:
-> case ESAI_HCKT_EXTAL and case ESAI_HCKR_EXTAL should be independent of
-> each other, so replace fall-through with break.
-
-This doesn't apply against current code, please check and resend.
-
---IuJpT0rwbUevm2bB
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQEzBAABCgAdFiEEreZoqmdXGLWf4p/qJNaLcl1Uh9AFAlyt00wACgkQJNaLcl1U
-h9Ap2gf/fsXIkGithok8vTTKsIpkN7F3/tDXAUWIYdrO/+lBlspwg0g/6AuutiqV
-nnmrg9ht56Q//Pz5mzfjvsBK6xoQPJqfy0vIwStg87JcbvH/W2Ov13N51XLLgRtv
-iP1ukin4sYDjbxYTcHWWkdL/K4e0cg4fByGAcxFEZjMTf96DTzskOng+G0EnpnVB
-cLnBMF+p/OHLXbvgWQHCIlQCmUnpHxUX+gtMNu9lFjYlWHtbQZL0mNVcpoDpF3zO
-dbenEFMwWjj7Re1G7pX/ZT/EdlK3KyKqaswiTbLMHzV98JpuGYhWKadtYCLth2JM
-AstY9cZP8epOQhG+yE5pPXAUVVGX9g==
-=xtq+
------END PGP SIGNATURE-----
-
---IuJpT0rwbUevm2bB--
