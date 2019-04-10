@@ -2,102 +2,58 @@ Return-Path: <SRS0=mr1i=SM=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.8 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_PASS,USER_AGENT_GIT autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1261AC10F11
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Apr 2019 17:38:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5B9F8C10F11
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Apr 2019 17:44:26 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 4A1702077C
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Apr 2019 17:38:39 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=google.com header.i=@google.com header.b="bSJRSo5M"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4A1702077C
-Authentication-Results: mail.kernel.org; dmarc=fail (p=reject dis=none) header.from=google.com
+	by mail.kernel.org (Postfix) with ESMTPS id DE6952082E
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Apr 2019 17:44:25 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DE6952082E
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44fWbc66nbzDqFh
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Apr 2019 03:38:36 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44fWYd5KP4zDqBj
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Apr 2019 03:36:53 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44fWkH4CbNzDqJL
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Apr 2019 03:44:23 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=reject dis=none) header.from=google.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=google.com header.i=@google.com header.b="bSJRSo5M"; 
- dkim-atps=neutral
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 44fWYd2snFz8sxQ
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Apr 2019 03:36:53 +1000 (AEST)
-Received: by ozlabs.org (Postfix)
- id 44fWYd2NxSz9sBr; Thu, 11 Apr 2019 03:36:53 +1000 (AEST)
-Authentication-Results: ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=google.com
- (client-ip=2607:f8b0:4864:20::144; helo=mail-it1-x144.google.com;
- envelope-from=matthewgarrett@google.com; receiver=<UNKNOWN>)
-Authentication-Results: ozlabs.org;
- dmarc=pass (p=reject dis=none) header.from=google.com
-Authentication-Results: ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=google.com header.i=@google.com header.b="bSJRSo5M"; 
- dkim-atps=neutral
-Received: from mail-it1-x144.google.com (mail-it1-x144.google.com
- [IPv6:2607:f8b0:4864:20::144])
+ spf=pass (mailfrom) smtp.mailfrom=kaod.org
+ (client-ip=46.105.56.76; helo=6.mo179.mail-out.ovh.net;
+ envelope-from=clg@kaod.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=kaod.org
+X-Greylist: delayed 1203 seconds by postgrey-1.36 at bilbo;
+ Thu, 11 Apr 2019 03:42:41 AEST
+Received: from 6.mo179.mail-out.ovh.net (6.mo179.mail-out.ovh.net
+ [46.105.56.76])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 44fWYd0DgDz9sBV
- for <linuxppc-dev@ozlabs.org>; Thu, 11 Apr 2019 03:36:52 +1000 (AEST)
-Received: by mail-it1-x144.google.com with SMTP id u65so4818169itc.2
- for <linuxppc-dev@ozlabs.org>; Wed, 10 Apr 2019 10:36:52 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=20161025;
- h=mime-version:references:in-reply-to:from:date:message-id:subject:to
- :cc:content-transfer-encoding;
- bh=fsdwxzllgm3TZiNS2RBUzUWgv7Kl8/L4XW2AecOXicU=;
- b=bSJRSo5MsFgno1KgFsAA0YK3rrv031WHLUUGrO3xbQk7/2nDnoqhvqCJ15Ey02vmDN
- Hxk/8IqQAkGzzQ3RlVdOSQn4H8INleO5W/ThQpK7vUqwbxb2+jCr7keiDXwFtAWpkfNg
- 4hD9j7FmHX7letmuEOZ4IDSOF/QivdG51ubmLFeGqbYbQ9clMSR1PhFfW/qE8KibK+8n
- SoWGBelTt+/DKTHDgSuq1WRucP6zbuqnPF2e3eqSAq4rMjWweTMpOp4pCDSu6FCEESOu
- cWqbWQeM5QscA0I5BMqRgU6XQnly8tSmYOXLaNcPtKQvF6my5Rx67jZ5R2MBRepNeR4B
- dMEw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:mime-version:references:in-reply-to:from:date
- :message-id:subject:to:cc:content-transfer-encoding;
- bh=fsdwxzllgm3TZiNS2RBUzUWgv7Kl8/L4XW2AecOXicU=;
- b=NPO2OBSCbi4e8tVrDzkh43LsBLxx7BQ94NGRYcI+5kiR3UVHqXtxV3B2wjc2tYX7u+
- cWpiY6y13b6BvVyoUyq/7eE/LvWdphL7aS8JqffV1gWArOxg7kl+X0wiiSW9GzIlAKbs
- 4ATSRQOrvADbb6DB5ml7Pay4ataiBWKK588hVMPqEVe7Yp0X1CkA2T3+KmeF/OK6EOnj
- d/mQMB3Bp2XwQaZGxXghKYk6hpC4Lrf32DYlil3WES/rUCXqkewhHUQbnQd+yiT8G1o1
- s1VfFgEk3lh4/2yHDusd1oKP6wychVzelFANrapbUS++ep5Qlz96xgWuXe76XCkpJfkN
- 09qA==
-X-Gm-Message-State: APjAAAWoMBVyYQYmUi1VCo5kv5MwP44TdqAJS1vJJWw67E+6DWkeq2VF
- /3rRUg+ibWjLF5dJF+fR5cOlKRxU9RjzykoyqLCEuQ==
-X-Google-Smtp-Source: APXvYqwcxj9ETT2fC97ngGmh7CcsBy2+YL6kB6AnKQJasNCbUVIV8fGBdWEIhNBMFR1OZOiEkz1I6DPnF3iTkLVIYjE=
-X-Received: by 2002:a24:7294:: with SMTP id x142mr4445023itc.7.1554917808975; 
- Wed, 10 Apr 2019 10:36:48 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44fWhK5CnMzDqFh
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Apr 2019 03:42:38 +1000 (AEST)
+Received: from player157.ha.ovh.net (unknown [10.109.160.253])
+ by mo179.mail-out.ovh.net (Postfix) with ESMTP id D43161226DF
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Apr 2019 19:05:00 +0200 (CEST)
+Received: from kaod.org (lfbn-tou-1-40-22.w86-201.abo.wanadoo.fr
+ [86.201.133.22]) (Authenticated sender: clg@kaod.org)
+ by player157.ha.ovh.net (Postfix) with ESMTPSA id 6C931492A23D;
+ Wed, 10 Apr 2019 17:04:52 +0000 (UTC)
+From: =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>
+To: kvm-ppc@vger.kernel.org
+Subject: [PATCH v5 00/16] KVM: PPC: Book3S HV: add XIVE native exploitation
+ mode
+Date: Wed, 10 Apr 2019 19:04:32 +0200
+Message-Id: <20190410170448.3923-1-clg@kaod.org>
+X-Mailer: git-send-email 2.20.1
 MIME-Version: 1.0
-References: <20190402181505.25037-1-cclaudio@linux.ibm.com>
- <CACdnJuumhkqTb4+1=QBiLmbW4xd3wW=MZu6Tj_KdaoTMhCN+Tg@mail.gmail.com>
- <4ce5e057-0702-b0d5-7bb2-cea5b22e2efa@linux.ibm.com>
- <CACdnJusBm93zwDqTXTx_QYsg1-aGUAAHm_qq8Lcx3TvGTxdmbg@mail.gmail.com>
- <2208f156-d441-3082-2f4c-8030c84ef788@linux.ibm.com>
- <CACdnJuu8OqMrSs0esOmf=ro9n00aYEQ-nikAh6v6sk+YAQw4cQ@mail.gmail.com>
- <d79f47f8-9006-3a47-2bdc-58012cef5c7e@linux.ibm.com>
- <CACdnJuv_5A1_6CH1+Jn7SCrmW8Y6JuzsMmJoc1=_vn0nKdYMjQ@mail.gmail.com>
- <28bfc0a7-9ae5-2c99-e472-ea53f856bafc@linux.ibm.com>
-In-Reply-To: <28bfc0a7-9ae5-2c99-e472-ea53f856bafc@linux.ibm.com>
-From: Matthew Garrett <mjg59@google.com>
-Date: Wed, 10 Apr 2019 10:36:36 -0700
-Message-ID: <CACdnJuvpUKiX5UgSOrzh+B9y68zKm+Bzu1c8KFJHd8diz=sm2Q@mail.gmail.com>
-Subject: Re: [PATCH 0/4] Enabling secure boot on PowerNV systems
-To: Claudio Carvalho <cclaudio@linux.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-Ovh-Tracer-Id: 2466846699187768279
+X-VR-SPAMSTATE: OK
+X-VR-SPAMSCORE: -100
+X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgeduuddrudejgdduuddtucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecuqfggjfdpvefjgfevmfevgfenuceurghilhhouhhtmecuhedttdenucesvcftvggtihhpihgvnhhtshculddquddttddm
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -109,119 +65,182 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-efi <linux-efi@vger.kernel.org>,
- Ard Biesheuvel <ard.biesheuvel@linaro.org>, Nayna Jain <nayna@linux.ibm.com>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Matthew Garret <matthew.garret@nebula.com>, linuxppc-dev@ozlabs.org,
- Peter Jones <pjones@redhat.com>, Paul Mackerras <paulus@samba.org>,
- Jeremy Kerr <jk@ozlabs.org>, linux-integrity <linux-integrity@vger.kernel.org>
+Cc: kvm@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+ =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>,
+ linuxppc-dev@lists.ozlabs.org, David Gibson <david@gibson.dropbear.id.au>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-(Cc:ing Peter Jones)
+Hello,
 
-On Tue, Apr 9, 2019 at 3:55 PM Claudio Carvalho <cclaudio@linux.ibm.com> wr=
-ote:
->
->
-> On 4/5/19 7:19 PM, Matthew Garrett wrote:
-> > Based on our experience doing this in UEFI, that's insufficient - you
-> > want to be able to block individual binaries or leaf certificates
-> > without dropping trust in an intermediate certificate entirely.
->
->
-> We agree that a dbx would be useful for blacklisting particular kernels
-> signed with given certificate. However, we have been avoiding doing so fo=
-r
-> the initial release of secure boot on OpenPOWER. We don't have individual
-> firmware binaries in OpenPOWER. Kernels are currently the only concern fo=
-r
-> the OS secure boot certificates we're discussing here. Also, we have a ve=
-ry
-> limited keystore space in POWER9.
->
-> Petitboot doesn't have standardized OS kernel verification at all right
-> now.  Having the capability even without dbx seems valuable.
+On the POWER9 processor, the XIVE interrupt controller can control
+interrupt sources using MMIOs to trigger events, to EOI or to turn off
+the sources. Priority management and interrupt acknowledgment is also
+controlled by MMIO in the CPU presenter sub-engine.
 
-I don't see the benefit in attempting to maintain compatibility with
-existing tooling unless you're going to be *completely* compatible
-with existing tooling. That means supporting dbx and dbt.
+PowerNV/baremetal Linux runs natively under XIVE but sPAPR guests need
+special support from the hypervisor to do the same. This is called the
+XIVE native exploitation mode and today, it can be activated under the
+PowerPC Hypervisor, pHyp. However, Linux/KVM lacks XIVE native support
+and still offers the old interrupt mode interface using a KVM device
+implementing the XICS hcalls over XIVE.
 
-> >> The API is still a work in progress.  We are planning to publish a doc=
-ument
-> >> describing the current API and overall design shortly.
-> > Ok. How are the attributes interpreted by the API?
->
->
-> We support a subset of standard EFI variable attributes, and we only use
-> EFI variables that relate to secure boot. Our goal is not to implement
-> UEFI.  However, we do seek to be compatible with user space tooling and
-> reuse as much existing infrastructure as possible. We don=E2=80=99t suppo=
-rt the
-> following: EFI_VARIABLE_HARDWARE_ERROR_RECORD,
-> EFI_VARIABLE_AUTHENTICATED_WRITE_ACCESS and
-> EFI_VARIABLE_ENHANCED_AUTHENTICATED_ACCESS.
+The following series is proposal to add the same support under KVM.
 
-Ok. I think that's realistically fine.
+A new KVM device is introduced for the XIVE native exploitation
+mode. It reuses most of the XICS-over-XIVE glue implementation
+structures which are internal to KVM but has a completely different
+interface. A set of KVM device ioctls provide support for the
+hypervisor calls, all handled in QEMU, to configure the sources and
+the event queues. From there, all interrupt control is transferred to
+the guest which can use MMIOs.
 
->
-> >
-> >> Perhaps the biggest departure is that the secure variables are stored =
-in
-> >> flash memory that is not lockable.  In order to protect the secure
-> >> variables, hashes of the flash regions where they're stored are writte=
-n to
-> >> TPM NVRAM indices.  The TPM NVRAM indices we use are write locked at
-> >> runtime.  The sysadmin enqueues update commands in flash.  During the =
-next
-> >> boot, the firmware verifies and processes the commands to update the
-> >> certificate store and accompanying integrity hashes in the TPM NVRAM
-> >> indices and write locks them.  Before certificates read from flash are
-> >> used, the certificate store is hashed and compared against the hashes
-> >> stored from the TPM.  The one exception is the PK. We store it in a TP=
-M
-> >> NVRAM index by itself rather than flash because updates to it must be
-> >> guaranteed to be atomic.
-> > What's the behaviour if multiple updates are enqueued? Does reading
-> > back show a mocked up updated variable or the original state?
->
->
-> Our secure variable updates are only applied at boot time. If any one of
-> them fails, they all fail.
+These MMIO regions (ESB and TIMA) are exposed to guests in QEMU,
+similarly to VFIO, and the associated VMAs are populated dynamically
+with the appropriate pages using a fault handler. These are now
+implemented using mmap()s of the KVM device fd.
 
-So I do the following:
+Migration has its own specific needs regarding memory. The patchset
+provides a specific control to quiesce XIVE before capturing the
+memory. The save and restore of the internal state is based on the
+same ioctls used for the hcalls.
 
-1) Boot
-2) Extend the contents of db
-3) Extend the contents of db again
-4) Read back the contents of db through efivarfs
-5) Reboot
-6) Read back the contents of db through efivarfs
+On a POWER9 sPAPR machine, the Client Architecture Support (CAS)
+negotiation process determines whether the guest operates with a
+interrupt controller using the XICS legacy model, as found on POWER8,
+or in XIVE exploitation mode. Which means that the KVM interrupt
+device should be created at run-time, after the machine has started.
+This requires extra support from KVM to destroy KVM devices. It is
+introduced at the end of the patchset and requires some attention.
 
-Is what I see in (4) and (6) the same? Does it contain the values form
-both extensions?
+This is based on Linux 5.1-rc4 and is a candidate for 5.2. The OPAL
+patches have been merged now.
 
-> > I'm not really clear on the workflow here. Who's the administrator
-> > authority? When would they be updating the second level of keys? If
-> > there's no support for revocation, why would distributions need two
-> > levels of key in the system database rather than just distributing a
-> > single intermediate and signing their actual signing certs with that?
->
->
-> In OpenPOWER systems, we enable our customers and business partners to
-> establish and manage the platform key certificate, which is the root of o=
-ur
-> key hierarchy. From there, through the KEK, they can delegate authority t=
-o
-> intermediate level organizations, e.g. distros or IT departments or
-> business operations. Those intermediate level organizations then manage t=
-he
-> code signing certificates in the DB. If this answer doesn=E2=80=99t addre=
-ss your
-> question, can you please rephrase?
 
-Why would the intermediate level organisations not just have entries
-in db? The main reason we don't do it this way in UEFI is because we
-need to support dbx, and if you're not supporting dbx I'm not sure I
-see the benefit.
+GitHub trees available here :
+ 
+QEMU sPAPR:
+
+  https://github.com/legoater/qemu/commits/xive-next
+  
+Linux/KVM:
+
+  https://github.com/legoater/linux/commits/xive-5.1
+
+Thanks,
+
+C.
+
+Caveats :
+
+ - We should introduce a set of definitions common to XIVE and XICS
+ - The XICS-over-XIVE device file book3s_xive.c could be renamed to
+   book3s_xics_on_xive.c or book3s_xics_p9.c
+ - The XICS-over-XIVE device still has locking issues in the setup.
+ - xc->valid is not useful
+ - xc->xive is not very useful either
+
+Changes since v4:
+
+ - add check on EQ page alignment
+ - add requirement on KVM_XIVE_EQ_ALWAYS_NOTIFY
+ - add documentation in Documentation/virtual/kvm/api.txt
+ - remove 'destroy' method
+ - introduce a 'release' device operation called when device fd is
+   closed.
+ - introduce a 'xive_devices' array under the VM to store kvmppc_xive
+   objects until VM is destroyed.
+ 
+Changes since v3:
+
+ - removed a couple of useless includes
+ - fix the test ont the initial setting of the EQ toggle bit : 0 -> 1
+ - renamed qsize to qshift
+ - renamed qpage to qaddr
+ - checked host page size
+ - limited flags to KVM_XIVE_EQ_ALWAYS_NOTIFY to fit sPAPR specs
+ - Fixed xive_timaval description in documentation
+
+Changes since v2:
+
+ - removed extra OPAL call definitions
+ - removed ->q_order setting. Only useful in the XICS-on-XIVE KVM
+   device which allocates the EQs on behalf of the guest.
+ - returned -ENXIO when VP base is invalid
+ - made use of the xive_vp() macro to compute VP identifiers
+ - reworked locking in kvmppc_xive_native_connect_vcpu() to fix races 
+ - stop advertising KVM_CAP_PPC_IRQ_XIVE as support is not fully
+   available yet
+ - fixed comment on XIVE IRQ number space
+ - removed usage of the __x_* macros
+ - fixed locking on source block
+ - fixed comments on the KVM device attribute definitions
+ - handled MASKED EAS configuration
+ - fixed check on supported EQ size to restrict to 64K pages
+ - checked kvm_eq.flags that need to be zero
+ - removed the OPAL call when EQ qtoggle bit and index are zero. 
+ - reduced the size of kvmppc_one_reg timaval attribute to two u64s
+ - stopped returning of the OS CAM line value
+ 
+Changes since v1:
+
+ - Better documentation (was missing)
+ - Nested support. XIVE not advertised on non PowerNV platforms. This
+   is a good way to test the fallback on QEMU emulated devices.
+ - ESB and TIMA special mapping done using the KVM device fd
+ - All hcalls moved to QEMU. Dropped the patch moving the hcall flags.
+ - Reworked of the KVM device ioctl controls to support hcalls and
+   migration needs to capture/save states
+ - Merged the control syncing XIVE and marking the EQ page dirty
+ - Fixed passthrough support using the KVM device file address_space
+   to clear the ESB pages from the mapping
+ - Misc enhancements and fixes 
+
+Cédric Le Goater (16):
+  powerpc/xive: add OPAL extensions for the XIVE native exploitation
+    support
+  KVM: PPC: Book3S HV: add a new KVM device for the XIVE native
+    exploitation mode
+  KVM: PPC: Book3S HV: XIVE: introduce a new capability
+    KVM_CAP_PPC_IRQ_XIVE
+  KVM: PPC: Book3S HV: XIVE: add a control to initialize a source
+  KVM: PPC: Book3S HV: XIVE: add a control to configure a source
+  KVM: PPC: Book3S HV: XIVE: add controls for the EQ configuration
+  KVM: PPC: Book3S HV: XIVE: add a global reset control
+  KVM: PPC: Book3S HV: XIVE: add a control to sync the sources
+  KVM: PPC: Book3S HV: XIVE: add a control to dirty the XIVE EQ pages
+  KVM: PPC: Book3S HV: XIVE: add get/set accessors for the VP XIVE state
+  KVM: introduce a 'mmap' method for KVM devices
+  KVM: PPC: Book3S HV: XIVE: add a TIMA mapping
+  KVM: PPC: Book3S HV: XIVE: add a mapping for the source ESB pages
+  KVM: PPC: Book3S HV: XIVE: add passthrough support
+  KVM: PPC: Book3S HV: XIVE: activate XIVE exploitation mode
+  KVM: PPC: Book3S HV: XIVE: introduce a 'release' device operation
+
+ arch/powerpc/include/asm/kvm_host.h        |    3 +
+ arch/powerpc/include/asm/kvm_ppc.h         |   32 +
+ arch/powerpc/include/asm/opal-api.h        |    7 +-
+ arch/powerpc/include/asm/opal.h            |    7 +
+ arch/powerpc/include/asm/xive.h            |   17 +
+ arch/powerpc/include/uapi/asm/kvm.h        |   46 +
+ arch/powerpc/kvm/book3s_xive.h             |   37 +
+ include/linux/kvm_host.h                   |    2 +
+ include/uapi/linux/kvm.h                   |    3 +
+ arch/powerpc/kvm/book3s.c                  |   31 +-
+ arch/powerpc/kvm/book3s_xive.c             |  230 +++-
+ arch/powerpc/kvm/book3s_xive_native.c      | 1243 ++++++++++++++++++++
+ arch/powerpc/kvm/powerpc.c                 |   37 +
+ arch/powerpc/platforms/powernv/opal-call.c |    3 +
+ arch/powerpc/sysdev/xive/native.c          |  110 ++
+ virt/kvm/kvm_main.c                        |   24 +
+ Documentation/virtual/kvm/api.txt          |   10 +
+ Documentation/virtual/kvm/devices/xive.txt |  197 ++++
+ arch/powerpc/kvm/Makefile                  |    2 +-
+ 19 files changed, 1980 insertions(+), 61 deletions(-)
+ create mode 100644 arch/powerpc/kvm/book3s_xive_native.c
+ create mode 100644 Documentation/virtual/kvm/devices/xive.txt
+
+-- 
+2.20.1
+
