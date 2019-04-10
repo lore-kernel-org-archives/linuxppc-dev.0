@@ -2,83 +2,108 @@ Return-Path: <SRS0=mr1i=SM=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.1 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_MUTT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_PASS autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6055BC10F11
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Apr 2019 15:35:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E8944C10F11
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Apr 2019 16:10:45 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id CF10E20818
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Apr 2019 15:35:15 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=gmx.net header.i=@gmx.net header.b="VO833lIu"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CF10E20818
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=gmx.net
+	by mail.kernel.org (Postfix) with ESMTPS id 39FE6206B6
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Apr 2019 16:10:45 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 39FE6206B6
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44fSsF2VGFzDqP9
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Apr 2019 01:35:13 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44fTfC2NQWzDqGx
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Apr 2019 02:10:43 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=gmx.net
- (client-ip=212.227.17.22; helo=mout.gmx.net;
- envelope-from=j.neuschaefer@gmx.net; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=redhat.com
+ (client-ip=209.132.183.28; helo=mx1.redhat.com;
+ envelope-from=longman@redhat.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=gmx.net
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- secure) header.d=gmx.net header.i=@gmx.net header.b="VO833lIu"; 
- dkim-atps=neutral
-Received: from mout.gmx.net (mout.gmx.net [212.227.17.22])
+ dmarc=pass (p=none dis=none) header.from=redhat.com
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44fSpF3cJlzDqQ1;
- Thu, 11 Apr 2019 01:32:37 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.net;
- s=badeba3b8450; t=1554910344;
- bh=xA/BnWtun4BOCtmmVM/Q6GGeuQ7oR+arBXiulO7kTmI=;
- h=X-UI-Sender-Class:Date:From:To:Cc:Subject:References:In-Reply-To;
- b=VO833lIu4P21uf5TC1WdpXoUowLH2jsF+4HgMeza5cVqMXrKwQb8mqmMAp17CTvnz
- imbY4ub9KUvuoP+plJzhvz4pmmLhbxJAXP8PSaDqXYYZkmGTklro51C1ZtUJUK52EC
- DUufRiOX+xMNBGvqh5Hofoz52XsVgdojoXBUmE5o=
-X-UI-Sender-Class: 01bb95c1-4bf8-414a-932a-4f6e2808ef9c
-Received: from longitude ([109.90.232.48]) by mail.gmx.com (mrgmx103
- [212.227.17.168]) with ESMTPSA (Nemesis) id 0LnPnu-1gfk561V8w-00hh9T; Wed, 10
- Apr 2019 17:24:34 +0200
-Date: Wed, 10 Apr 2019 17:24:24 +0200
-From: Jonathan =?utf-8?Q?Neusch=C3=A4fer?= <j.neuschaefer@gmx.net>
-To: Mauro Carvalho Chehab <mchehab+samsung@kernel.org>
-Subject: Re: [PATCH 21/21] docs: hwmon: Add an index file and rename docs to
- *.rst
-Message-ID: <20190410152424.GA11536@latitude>
-References: <cover.1554893881.git.mchehab+samsung@kernel.org>
- <5ac1fbc7f19192dcd30a184e62e3f7989a5437a4.1554893882.git.mchehab+samsung@kernel.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44fTc96bFWzDqNg
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Apr 2019 02:08:57 +1000 (AEST)
+Received: from smtp.corp.redhat.com (int-mx02.intmail.prod.int.phx2.redhat.com
+ [10.5.11.12])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by mx1.redhat.com (Postfix) with ESMTPS id 43E9281257;
+ Wed, 10 Apr 2019 16:08:55 +0000 (UTC)
+Received: from llong.remote.csb (ovpn-120-189.rdu2.redhat.com [10.10.120.189])
+ by smtp.corp.redhat.com (Postfix) with ESMTP id CBDC860FB4;
+ Wed, 10 Apr 2019 16:08:48 +0000 (UTC)
+Subject: Re: [PATCH-tip 00/22] locking/rwsem: Rework rwsem-xadd & enable new
+ rwsem features
+To: huang ying <huang.ying.caritas@gmail.com>
+References: <1549566446-27967-1-git-send-email-longman@redhat.com>
+ <20190213091936.GA22829@shao2-debian>
+ <CAHk-=wiF2qv4TdKOTaTYeMnmsn4h6z9ot+MRj1=s7dm5y1FUwQ@mail.gmail.com>
+ <CAC=cRTM5=e7rJX80m0vL10aQoLawK_VTnQubH8A7_sUO2VUCNA@mail.gmail.com>
+From: Waiman Long <longman@redhat.com>
+Openpgp: preference=signencrypt
+Autocrypt: addr=longman@redhat.com; prefer-encrypt=mutual; keydata=
+ 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
+ weim8xU=
+Organization: Red Hat
+Message-ID: <cc8af095-50e0-cd3e-e498-8c3350d314b7@redhat.com>
+Date: Wed, 10 Apr 2019 12:08:48 -0400
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:52.0) Gecko/20100101
+ Thunderbird/52.9.1
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
- protocol="application/pgp-signature"; boundary="1yeeQ81UyVL57Vl7"
-Content-Disposition: inline
-In-Reply-To: <5ac1fbc7f19192dcd30a184e62e3f7989a5437a4.1554893882.git.mchehab+samsung@kernel.org>
-User-Agent: Mutt/1.10.1 (2018-07-13)
-X-Provags-ID: V03:K1:TLAu39kAkvV+JyJofEtse/6D/K/biPwb9iYGF66/M1pJjOfHjSl
- 5Gvn9F/iX0LVkfahejNon6kcT3qms/6ipAdpwzk/bcp4CJrO2+ikn2UVt5DmS72xmQYbgAm
- Fwh59tkKvyzys0LmnxFnI4MCbOHN9hjVtoafK6B2JMU0kM0HkZOw/KRixn01devzi7mS8qk
- oGfwAeMn0j3k8kz+gF+Jg==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:GLY0oH3C36g=:bNX/uH3NFKtT9so51D6n/1
- +nUOZrNqd98OA9t18e0aVMNuTaQjCYd7jQThbhsaZLOqn7ZPHcGg5umopwSuJvObJJk6uSSgU
- jMQPe8eq5rDCArt6nlQWaR4hSu+YJhZp6K9g9NSmblC/ezKKU8LaazOXJ33YZ/mjiooNsvJCv
- LwNS5jc8SEH5kxEXWhRE/N+G4qBxIxMFdmATrWK2F/9bVZ2LIkVpcqwRvEltXkHPxy+R7FBqa
- qWciPvuTG/CTlw3aHDjRLRyc0g81HQxLrHy3PedUhZTWp0uKXm+Kod52ub1FDP17ND99GEWC/
- 6994u/HoCpW4zy3TfNC2jdBk6c+pvBIQJN7dGor4LGvCGKJWHPi0QpGAOa/54Wybmph0mpm7L
- iO7GC47IhuJo0TaYmMH9xukLtwixlGiB+RJK3R5k3McvHfKzy4xfVFAbIx1gjrBafjK+awfE+
- 42AvDWHNqcAnNjn31/IV+xUpzsX7Q7D5SbI+UCIm9AztAKITSOVuD9IeZd0vzZPxzaA11OQf1
- EMdZVXTckfwc2KrKqmuMrM7aUwhXnZivlE1mtLeIRV98tWZ2ZYekTVUBpVbeCZnIdXCLp/Y3P
- HqMtmL194jaddEW38zKmirNVrSuOD8dvIEMSuXxSm+OlfoHltmAZZ2cgJYIc1zwIUxshmpACe
- h2v0r9On0YUJDLZIv3yNCTyFkIWuPxA37qaIbvbuT5QMGbTxcKO5klTjcdtntSHew0oa1oA2n
- bYt0xLeQcxMc6Ivfw0Si8641Xw1sNuLsKWVr2UPTIi7PGy7J5RehLEtmpwCk0r7UmOW9KSASb
- mEMRYWJ2EiBZSo/S/v5mQJTuRGVeaGH2lqVnmqoj/jxMVxaKnI+3n7Hn/Ym6pE1RlsPOKjQR8
- IGbJtkcrNlwZrgj2iouY4ErgRdMEtuHUcxTihA6KlgJa8+2zy8vzkwSZWEef+l
+In-Reply-To: <CAC=cRTM5=e7rJX80m0vL10aQoLawK_VTnQubH8A7_sUO2VUCNA@mail.gmail.com>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
+Content-Language: en-US
+X-Scanned-By: MIMEDefang 2.79 on 10.5.11.12
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.5.16
+ (mx1.redhat.com [10.5.110.25]); Wed, 10 Apr 2019 16:08:55 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -90,106 +115,35 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Mark Rutland <mark.rutland@arm.com>, Dirk Eibach <eibach@gdsys.de>,
- linux-aspeed@lists.ozlabs.org,
- Linux Doc Mailing List <linux-doc@vger.kernel.org>,
- Clemens Ladisch <clemens@ladisch.de>, Kamil Debski <kamil@wypas.org>,
- Marc Hulsman <m.hulsman@tudelft.nl>, devicetree@vger.kernel.org,
- Huang Rui <ray.huang@amd.com>, Paul Mackerras <paulus@samba.org>,
- Jim Cromie <jim.cromie@gmail.com>,
- Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>,
- Jonathan Corbet <corbet@lwn.net>, Joel Stanley <joel@jms.id.au>,
- Guenter Roeck <linux@roeck-us.net>,
- Steve Glendinning <steve.glendinning@shawell.net>,
- Fenghua Yu <fenghua.yu@intel.com>, Jean Delvare <jdelvare@suse.com>,
- Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
- Liviu Dudau <liviu.dudau@arm.com>,
- Mauro Carvalho Chehab <mchehab@infradead.org>,
- Hans de Goede <hdegoede@redhat.com>, Rob Herring <robh+dt@kernel.org>,
- Rudolf Marek <r.marek@assembler.cz>, linux-arm-kernel@lists.infradead.org,
- linux-hwmon@vger.kernel.org,
- Support Opensource <support.opensource@diasemi.com>,
- George Joseph <george.joseph@fairview5.com>,
- Andreas Werner <andreas.werner@men.de>, Andrew Jeffery <andrew@aj.id.au>,
- patches@opensource.cirrus.com, linux-kernel@vger.kernel.org,
- Juerg Haefliger <juergh@gmail.com>, Sudeep Holla <sudeep.holla@arm.com>,
- linuxppc-dev@lists.ozlabs.org
+Cc: linux-ia64@vger.kernel.org, Linux-sh list <linux-sh@vger.kernel.org>,
+ Peter Zijlstra <peterz@infradead.org>, Will Deacon <will.deacon@arm.com>,
+ "H. Peter Anvin" <hpa@zytor.com>, sparclinux@vger.kernel.org,
+ linux-arch <linux-arch@vger.kernel.org>, Davidlohr Bueso <dave@stgolabs.net>,
+ Chen Rong <rong.a.chen@intel.com>, linux-hexagon@vger.kernel.org,
+ the arch/x86 maintainers <x86@kernel.org>,
+ "IngoMolnar@shao2-debian" <mingo@redhat.com>, linux-xtensa@linux-xtensa.org,
+ Arnd Bergmann <arnd@arndb.de>, linuxppc-dev@lists.ozlabs.org,
+ Borislav Petkov <bp@alien8.de>, Thomas Gleixner <tglx@linutronix.de>,
+ "linux-alpha@vger.kernel.org" <linux-arm-kernel@lists.infradead.org>,
+ Linus Torvalds <torvalds@linux-foundation.org>,
+ Linux List Kernel Mailing <linux-kernel@vger.kernel.org>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Tim Chen <tim.c.chen@linux.intel.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+On 04/10/2019 04:15 AM, huang ying wrote:
+> Hi, Waiman,
+>
+> What's the status of this patchset?  And its merging plan?
+>
+> Best Regards,
+> Huang, Ying
 
---1yeeQ81UyVL57Vl7
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+I have broken the patch into 3 parts (0/1/2) and rewritten some of them.
+Part 0 has been merged into tip. Parts 1 and 2 are still under testing.
 
-Hello,
+Cheers,
+Longman
 
-On Wed, Apr 10, 2019 at 08:12:11AM -0300, Mauro Carvalho Chehab wrote:
-> Now that all files were converted to ReST format, rename them
-> and add an index.
->=20
-> Signed-off-by: Mauro Carvalho Chehab <mchehab+samsung@kernel.org>
-> ---
-[...]
-> diff --git a/Documentation/hwmon/submitting-patches b/Documentation/hwmon=
-/submitting-patches.rst
-> similarity index 99%
-> rename from Documentation/hwmon/submitting-patches
-> rename to Documentation/hwmon/submitting-patches.rst
-> index 12540b7d9b50..6120db7556aa 100644
-> --- a/Documentation/hwmon/submitting-patches
-> +++ b/Documentation/hwmon/submitting-patches.rst
-
-I'd additionally suggest:
-
-diff --git a/Documentation/hwmon/submitting-patches b/Documentation/hwmon/s=
-ubmitting-patches.rst
-index f88221b46153..0000a86be4b9 100644
---- a/Documentation/hwmon/submitting-patches
-+++ b/Documentation/hwmon/submitting-patches.rst
-@@ -38,7 +38,7 @@ increase the chances of your change being accepted.
- 2. Adding functionality to existing drivers
- -------------------------------------------
-=20
--* Make sure the documentation in Documentation/hwmon/<driver_name> is up to
-+* Make sure the documentation in Documentation/hwmon/<driver_name>.rst is =
-up to
-   date.
-=20
- * Make sure the information in Kconfig is up to date.
-@@ -60,7 +60,7 @@ increase the chances of your change being accepted.
-=20
- * Consider adding yourself to MAINTAINERS.
-=20
--* Document the driver in Documentation/hwmon/<driver_name>.
-+* Document the driver in Documentation/hwmon/<driver_name>.rst.
-=20
- * Add the driver to Kconfig and Makefile in alphabetical order.
-=20
-
-Thanks,
-Jonathan Neusch=C3=A4fer
-
---1yeeQ81UyVL57Vl7
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCgAdFiEEvHAHGBBjQPVy+qvDCDBEmo7zX9sFAlyuCqAACgkQCDBEmo7z
-X9ssgw//ZmPBGq00gnKgIkdptmktJsCCdbRKqAnKS97nKt6Ad54+llNhFidFR3ij
-Owq03OnpCXcu+3rc9qn/bOEv9QHjUmJ9aBysxuMCjbp5Wm69ItkylykWH6DPik8b
-BhloTUt0lnoweWJjZ4qtHyp5xuUlsQ2q6RbGR+BQwgvPA3y3FMuMYnvqi4BmuJs4
-B2DHhAUQnwgy+CMGBq62WTLZsWU6O4xAGnPRepoEIP4yf3ikOn5uiyYXeJt9sWmB
-7TyiXuM+noRFv5qyyiR695nBSlRZN0W690W2au5d8o1d1zp2tnuNTtljFGPv18S9
-gxxRiAzJRiXIGlg9cPZuyu/LD+4NbGwbRv8AfYYTcXyf1ZwLU6/y2VYRt9riJ/Ul
-1k5LFmFhHlxicwFJmobOor+AxJYtkb6fXCwJ2fSclBgP5tMYiKz3SjMlFxsiAczd
-x5uS/ABnXpJXEy3aOKlF3/GLI2ehMXegPLntmgUYGPHybPxTPgMf4ThsKLN0uovd
-f5ZeHCR5EtdFtJuECRIbvAeTs7MyawkdRzABA0dVUXmAxRzNxaU5tpFT8S9/AN1I
-wHTaekePAAReHn5G87/nu1RwsRWoLe8TyGkpy3IFCPmcYgGzZSF63tM2X0/eHuPi
-Q6PdjLqczbpT3X31fJdJ3q9BEWwy+zsHmKCHB81cYGY1F5fAYIY=
-=QA5J
------END PGP SIGNATURE-----
-
---1yeeQ81UyVL57Vl7--
