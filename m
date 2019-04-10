@@ -2,128 +2,83 @@ Return-Path: <SRS0=mr1i=SM=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.1 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_MUTT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E0D12C10F14
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Apr 2019 14:56:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6055BC10F11
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Apr 2019 15:35:16 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6736B20693
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Apr 2019 14:56:07 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6736B20693
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=embeddedor.com
+	by mail.kernel.org (Postfix) with ESMTPS id CF10E20818
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Apr 2019 15:35:15 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=gmx.net header.i=@gmx.net header.b="VO833lIu"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CF10E20818
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=gmx.net
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44fS051VpRzDqNg
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Apr 2019 00:56:05 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44fSsF2VGFzDqP9
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Apr 2019 01:35:13 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=permerror (mailfrom) smtp.mailfrom=embeddedor.com
- (client-ip=192.185.179.26; helo=gateway36.websitewelcome.com;
- envelope-from=gustavo@embeddedor.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=embeddedor.com
-X-Greylist: delayed 1381 seconds by postgrey-1.36 at bilbo;
- Thu, 11 Apr 2019 00:54:10 AEST
-Received: from gateway36.websitewelcome.com (gateway36.websitewelcome.com
- [192.185.179.26])
+ spf=pass (mailfrom) smtp.mailfrom=gmx.net
+ (client-ip=212.227.17.22; helo=mout.gmx.net;
+ envelope-from=j.neuschaefer@gmx.net; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=gmx.net
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ secure) header.d=gmx.net header.i=@gmx.net header.b="VO833lIu"; 
+ dkim-atps=neutral
+Received: from mout.gmx.net (mout.gmx.net [212.227.17.22])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44fRxt0nsFzDqJh
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Apr 2019 00:54:10 +1000 (AEST)
-Received: from cm13.websitewelcome.com (cm13.websitewelcome.com [100.42.49.6])
- by gateway36.websitewelcome.com (Postfix) with ESMTP id 84A86400D263A
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Apr 2019 08:48:38 -0500 (CDT)
-Received: from gator4166.hostgator.com ([108.167.133.22]) by cmsmtp with SMTP
- id EEFmhxM5WYTGMEEFmh64RB; Wed, 10 Apr 2019 09:31:06 -0500
-X-Authority-Reason: nr=8
-Received: from [189.250.139.70] (port=60822 helo=[192.168.1.76])
- by gator4166.hostgator.com with esmtpsa
- (TLSv1.2:ECDHE-RSA-AES128-GCM-SHA256:128) (Exim 4.91)
- (envelope-from <gustavo@embeddedor.com>)
- id 1hEEFl-002Xx7-PU; Wed, 10 Apr 2019 09:31:05 -0500
-To: "S.j. Wang" <shengjiu.wang@nxp.com>, "timur@kernel.org"
- <timur@kernel.org>, "nicoleotsuka@gmail.com" <nicoleotsuka@gmail.com>,
- "Xiubo.Lee@gmail.com" <Xiubo.Lee@gmail.com>,
- "festevam@gmail.com" <festevam@gmail.com>,
- "broonie@kernel.org" <broonie@kernel.org>,
- "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>
-References: <46e9b55edb223894392a90c7cdb6241a43cb9cff.1554864022.git.shengjiu.wang@nxp.com>
-From: "Gustavo A. R. Silva" <gustavo@embeddedor.com>
-Openpgp: preference=signencrypt
-Autocrypt: addr=gustavo@embeddedor.com; keydata=
- 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
- VtSixD1uOgytAP7RWS474w==
-Subject: Re: [PATCH V2] ASoC: fsl_esai: replace fall-through with break
-Message-ID: <b68a4e3a-8568-0c6e-aa3a-947e62e4f0f5@embeddedor.com>
-Date: Wed, 10 Apr 2019 09:31:03 -0500
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
- Thunderbird/60.6.1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44fSpF3cJlzDqQ1;
+ Thu, 11 Apr 2019 01:32:37 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.net;
+ s=badeba3b8450; t=1554910344;
+ bh=xA/BnWtun4BOCtmmVM/Q6GGeuQ7oR+arBXiulO7kTmI=;
+ h=X-UI-Sender-Class:Date:From:To:Cc:Subject:References:In-Reply-To;
+ b=VO833lIu4P21uf5TC1WdpXoUowLH2jsF+4HgMeza5cVqMXrKwQb8mqmMAp17CTvnz
+ imbY4ub9KUvuoP+plJzhvz4pmmLhbxJAXP8PSaDqXYYZkmGTklro51C1ZtUJUK52EC
+ DUufRiOX+xMNBGvqh5Hofoz52XsVgdojoXBUmE5o=
+X-UI-Sender-Class: 01bb95c1-4bf8-414a-932a-4f6e2808ef9c
+Received: from longitude ([109.90.232.48]) by mail.gmx.com (mrgmx103
+ [212.227.17.168]) with ESMTPSA (Nemesis) id 0LnPnu-1gfk561V8w-00hh9T; Wed, 10
+ Apr 2019 17:24:34 +0200
+Date: Wed, 10 Apr 2019 17:24:24 +0200
+From: Jonathan =?utf-8?Q?Neusch=C3=A4fer?= <j.neuschaefer@gmx.net>
+To: Mauro Carvalho Chehab <mchehab+samsung@kernel.org>
+Subject: Re: [PATCH 21/21] docs: hwmon: Add an index file and rename docs to
+ *.rst
+Message-ID: <20190410152424.GA11536@latitude>
+References: <cover.1554893881.git.mchehab+samsung@kernel.org>
+ <5ac1fbc7f19192dcd30a184e62e3f7989a5437a4.1554893882.git.mchehab+samsung@kernel.org>
 MIME-Version: 1.0
-In-Reply-To: <46e9b55edb223894392a90c7cdb6241a43cb9cff.1554864022.git.shengjiu.wang@nxp.com>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: 8bit
-X-AntiAbuse: This header was added to track abuse,
- please include it with any abuse report
-X-AntiAbuse: Primary Hostname - gator4166.hostgator.com
-X-AntiAbuse: Original Domain - lists.ozlabs.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - embeddedor.com
-X-BWhitelist: no
-X-Source-IP: 189.250.139.70
-X-Source-L: No
-X-Exim-ID: 1hEEFl-002Xx7-PU
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
-X-Source-Sender: ([192.168.1.76]) [189.250.139.70]:60822
-X-Source-Auth: gustavo@embeddedor.com
-X-Email-Count: 8
-X-Source-Cap: Z3V6aWRpbmU7Z3V6aWRpbmU7Z2F0b3I0MTY2Lmhvc3RnYXRvci5jb20=
-X-Local-Domain: yes
+Content-Type: multipart/signed; micalg=pgp-sha512;
+ protocol="application/pgp-signature"; boundary="1yeeQ81UyVL57Vl7"
+Content-Disposition: inline
+In-Reply-To: <5ac1fbc7f19192dcd30a184e62e3f7989a5437a4.1554893882.git.mchehab+samsung@kernel.org>
+User-Agent: Mutt/1.10.1 (2018-07-13)
+X-Provags-ID: V03:K1:TLAu39kAkvV+JyJofEtse/6D/K/biPwb9iYGF66/M1pJjOfHjSl
+ 5Gvn9F/iX0LVkfahejNon6kcT3qms/6ipAdpwzk/bcp4CJrO2+ikn2UVt5DmS72xmQYbgAm
+ Fwh59tkKvyzys0LmnxFnI4MCbOHN9hjVtoafK6B2JMU0kM0HkZOw/KRixn01devzi7mS8qk
+ oGfwAeMn0j3k8kz+gF+Jg==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:GLY0oH3C36g=:bNX/uH3NFKtT9so51D6n/1
+ +nUOZrNqd98OA9t18e0aVMNuTaQjCYd7jQThbhsaZLOqn7ZPHcGg5umopwSuJvObJJk6uSSgU
+ jMQPe8eq5rDCArt6nlQWaR4hSu+YJhZp6K9g9NSmblC/ezKKU8LaazOXJ33YZ/mjiooNsvJCv
+ LwNS5jc8SEH5kxEXWhRE/N+G4qBxIxMFdmATrWK2F/9bVZ2LIkVpcqwRvEltXkHPxy+R7FBqa
+ qWciPvuTG/CTlw3aHDjRLRyc0g81HQxLrHy3PedUhZTWp0uKXm+Kod52ub1FDP17ND99GEWC/
+ 6994u/HoCpW4zy3TfNC2jdBk6c+pvBIQJN7dGor4LGvCGKJWHPi0QpGAOa/54Wybmph0mpm7L
+ iO7GC47IhuJo0TaYmMH9xukLtwixlGiB+RJK3R5k3McvHfKzy4xfVFAbIx1gjrBafjK+awfE+
+ 42AvDWHNqcAnNjn31/IV+xUpzsX7Q7D5SbI+UCIm9AztAKITSOVuD9IeZd0vzZPxzaA11OQf1
+ EMdZVXTckfwc2KrKqmuMrM7aUwhXnZivlE1mtLeIRV98tWZ2ZYekTVUBpVbeCZnIdXCLp/Y3P
+ HqMtmL194jaddEW38zKmirNVrSuOD8dvIEMSuXxSm+OlfoHltmAZZ2cgJYIc1zwIUxshmpACe
+ h2v0r9On0YUJDLZIv3yNCTyFkIWuPxA37qaIbvbuT5QMGbTxcKO5klTjcdtntSHew0oa1oA2n
+ bYt0xLeQcxMc6Ivfw0Si8641Xw1sNuLsKWVr2UPTIi7PGy7J5RehLEtmpwCk0r7UmOW9KSASb
+ mEMRYWJ2EiBZSo/S/v5mQJTuRGVeaGH2lqVnmqoj/jxMVxaKnI+3n7Hn/Ym6pE1RlsPOKjQR8
+ IGbJtkcrNlwZrgj2iouY4ErgRdMEtuHUcxTihA6KlgJa8+2zy8vzkwSZWEef+l
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -135,52 +90,106 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Cc: Mark Rutland <mark.rutland@arm.com>, Dirk Eibach <eibach@gdsys.de>,
+ linux-aspeed@lists.ozlabs.org,
+ Linux Doc Mailing List <linux-doc@vger.kernel.org>,
+ Clemens Ladisch <clemens@ladisch.de>, Kamil Debski <kamil@wypas.org>,
+ Marc Hulsman <m.hulsman@tudelft.nl>, devicetree@vger.kernel.org,
+ Huang Rui <ray.huang@amd.com>, Paul Mackerras <paulus@samba.org>,
+ Jim Cromie <jim.cromie@gmail.com>,
+ Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>,
+ Jonathan Corbet <corbet@lwn.net>, Joel Stanley <joel@jms.id.au>,
+ Guenter Roeck <linux@roeck-us.net>,
+ Steve Glendinning <steve.glendinning@shawell.net>,
+ Fenghua Yu <fenghua.yu@intel.com>, Jean Delvare <jdelvare@suse.com>,
+ Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
+ Liviu Dudau <liviu.dudau@arm.com>,
+ Mauro Carvalho Chehab <mchehab@infradead.org>,
+ Hans de Goede <hdegoede@redhat.com>, Rob Herring <robh+dt@kernel.org>,
+ Rudolf Marek <r.marek@assembler.cz>, linux-arm-kernel@lists.infradead.org,
+ linux-hwmon@vger.kernel.org,
+ Support Opensource <support.opensource@diasemi.com>,
+ George Joseph <george.joseph@fairview5.com>,
+ Andreas Werner <andreas.werner@men.de>, Andrew Jeffery <andrew@aj.id.au>,
+ patches@opensource.cirrus.com, linux-kernel@vger.kernel.org,
+ Juerg Haefliger <juergh@gmail.com>, Sudeep Holla <sudeep.holla@arm.com>,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
 
-On 4/9/19 9:42 PM, S.j. Wang wrote:
-> case ESAI_HCKT_EXTAL and case ESAI_HCKR_EXTAL should be independent of
-> each other, so replace fall-through with break.
->
-I think you should change the subject line to:
+--1yeeQ81UyVL57Vl7
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-fix missing break in switch statement
+Hello,
 
-...because you are fixing a bug, and it's important to put emphasis on
-that in the subject line.
-
-Also, notice that this bug has been out there for more than 5 years now,
-so you should also tag this for stable.
-
-Thanks
---
-Gustavo
-
-
-> Fixes: 43d24e76b698 ("ASoC: fsl_esai: Add ESAI CPU DAI driver")
-> 
-> Signed-off-by: Shengjiu Wang <shengjiu.wang@nxp.com>
+On Wed, Apr 10, 2019 at 08:12:11AM -0300, Mauro Carvalho Chehab wrote:
+> Now that all files were converted to ReST format, rename them
+> and add an index.
+>=20
+> Signed-off-by: Mauro Carvalho Chehab <mchehab+samsung@kernel.org>
 > ---
-> Changes in v2
-> - fix the fixes tag.
-> 
->  sound/soc/fsl/fsl_esai.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/sound/soc/fsl/fsl_esai.c b/sound/soc/fsl/fsl_esai.c
-> index c7410bbfd2af..bad0dfed6b68 100644
-> --- a/sound/soc/fsl/fsl_esai.c
-> +++ b/sound/soc/fsl/fsl_esai.c
-> @@ -251,7 +251,7 @@ static int fsl_esai_set_dai_sysclk(struct snd_soc_dai *dai, int clk_id,
->  		break;
->  	case ESAI_HCKT_EXTAL:
->  		ecr |= ESAI_ECR_ETI;
-> -		/* fall through */
-> +		break;
->  	case ESAI_HCKR_EXTAL:
->  		ecr |= esai_priv->synchronous ? ESAI_ECR_ETI : ESAI_ECR_ERI;
->  		break;
-> 
+[...]
+> diff --git a/Documentation/hwmon/submitting-patches b/Documentation/hwmon=
+/submitting-patches.rst
+> similarity index 99%
+> rename from Documentation/hwmon/submitting-patches
+> rename to Documentation/hwmon/submitting-patches.rst
+> index 12540b7d9b50..6120db7556aa 100644
+> --- a/Documentation/hwmon/submitting-patches
+> +++ b/Documentation/hwmon/submitting-patches.rst
+
+I'd additionally suggest:
+
+diff --git a/Documentation/hwmon/submitting-patches b/Documentation/hwmon/s=
+ubmitting-patches.rst
+index f88221b46153..0000a86be4b9 100644
+--- a/Documentation/hwmon/submitting-patches
++++ b/Documentation/hwmon/submitting-patches.rst
+@@ -38,7 +38,7 @@ increase the chances of your change being accepted.
+ 2. Adding functionality to existing drivers
+ -------------------------------------------
+=20
+-* Make sure the documentation in Documentation/hwmon/<driver_name> is up to
++* Make sure the documentation in Documentation/hwmon/<driver_name>.rst is =
+up to
+   date.
+=20
+ * Make sure the information in Kconfig is up to date.
+@@ -60,7 +60,7 @@ increase the chances of your change being accepted.
+=20
+ * Consider adding yourself to MAINTAINERS.
+=20
+-* Document the driver in Documentation/hwmon/<driver_name>.
++* Document the driver in Documentation/hwmon/<driver_name>.rst.
+=20
+ * Add the driver to Kconfig and Makefile in alphabetical order.
+=20
+
+Thanks,
+Jonathan Neusch=C3=A4fer
+
+--1yeeQ81UyVL57Vl7
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCgAdFiEEvHAHGBBjQPVy+qvDCDBEmo7zX9sFAlyuCqAACgkQCDBEmo7z
+X9ssgw//ZmPBGq00gnKgIkdptmktJsCCdbRKqAnKS97nKt6Ad54+llNhFidFR3ij
+Owq03OnpCXcu+3rc9qn/bOEv9QHjUmJ9aBysxuMCjbp5Wm69ItkylykWH6DPik8b
+BhloTUt0lnoweWJjZ4qtHyp5xuUlsQ2q6RbGR+BQwgvPA3y3FMuMYnvqi4BmuJs4
+B2DHhAUQnwgy+CMGBq62WTLZsWU6O4xAGnPRepoEIP4yf3ikOn5uiyYXeJt9sWmB
+7TyiXuM+noRFv5qyyiR695nBSlRZN0W690W2au5d8o1d1zp2tnuNTtljFGPv18S9
+gxxRiAzJRiXIGlg9cPZuyu/LD+4NbGwbRv8AfYYTcXyf1ZwLU6/y2VYRt9riJ/Ul
+1k5LFmFhHlxicwFJmobOor+AxJYtkb6fXCwJ2fSclBgP5tMYiKz3SjMlFxsiAczd
+x5uS/ABnXpJXEy3aOKlF3/GLI2ehMXegPLntmgUYGPHybPxTPgMf4ThsKLN0uovd
+f5ZeHCR5EtdFtJuECRIbvAeTs7MyawkdRzABA0dVUXmAxRzNxaU5tpFT8S9/AN1I
+wHTaekePAAReHn5G87/nu1RwsRWoLe8TyGkpy3IFCPmcYgGzZSF63tM2X0/eHuPi
+Q6PdjLqczbpT3X31fJdJ3q9BEWwy+zsHmKCHB81cYGY1F5fAYIY=
+=QA5J
+-----END PGP SIGNATURE-----
+
+--1yeeQ81UyVL57Vl7--
