@@ -2,59 +2,79 @@ Return-Path: <SRS0=mr1i=SM=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-0.5 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
+	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A1B61C282DA
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Apr 2019 12:12:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 28DB6C10F11
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Apr 2019 14:28:03 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id D29C02054F
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Apr 2019 12:12:31 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D29C02054F
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linutronix.de
+	by mail.kernel.org (Postfix) with ESMTPS id 5D96720830
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Apr 2019 14:28:02 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="hxvZOSVX"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5D96720830
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44fNMK4mBpzDqHv
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Apr 2019 22:12:29 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44fRMg6pgwzDqQ4
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Apr 2019 00:27:59 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=linutronix.de
- (client-ip=2a01:7a0:2:106d:700::1; helo=galois.linutronix.de;
- envelope-from=tglx@linutronix.de; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=gmail.com
+ (client-ip=2a00:1450:4864:20::242; helo=mail-lj1-x242.google.com;
+ envelope-from=festevam@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=linutronix.de
-Received: from Galois.linutronix.de (Galois.linutronix.de
- [IPv6:2a01:7a0:2:106d:700::1])
- (using TLSv1.2 with cipher DHE-RSA-AES256-SHA256 (256/256 bits))
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="hxvZOSVX"; 
+ dkim-atps=neutral
+Received: from mail-lj1-x242.google.com (mail-lj1-x242.google.com
+ [IPv6:2a00:1450:4864:20::242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44fNJz4wQczDqPG
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Apr 2019 22:10:27 +1000 (AEST)
-Received: from [147.83.201.128] (helo=nanos)
- by Galois.linutronix.de with esmtpsa (TLS1.2:DHE_RSA_AES_256_CBC_SHA256:256)
- (Exim 4.80) (envelope-from <tglx@linutronix.de>)
- id 1hEC3M-0006wO-EA; Wed, 10 Apr 2019 14:10:08 +0200
-Date: Wed, 10 Apr 2019 14:10:01 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [PATCH RFC 1/5] cpu/speculation: Add 'cpu_spec_mitigations='
- cmdline options
-In-Reply-To: <87sguqwgu7.fsf@concordia.ellerman.id.au>
-Message-ID: <alpine.DEB.2.21.1904101408580.3479@nanos.tec.linutronix.de>
-References: <cover.1554396090.git.jpoimboe@redhat.com>
- <f0bd17358ab478eaca52f3b1da8305c150911b40.1554396090.git.jpoimboe@redhat.com>
- <20190405131211.GE23348@zn.tnic> <20190405142048.burthk2jnpcvi2om@treble>
- <20190405152059.GG23348@zn.tnic> <20190405160136.GI23348@zn.tnic>
- <20190405161852.nmpk22omgiety4df@treble>
- <87sguqwgu7.fsf@concordia.ellerman.id.au>
-User-Agent: Alpine 2.21 (DEB 202 2017-01-01)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44fRKg2sNMzDqBY
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Apr 2019 00:26:15 +1000 (AEST)
+Received: by mail-lj1-x242.google.com with SMTP id t4so2342750ljc.2
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Apr 2019 07:26:14 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+ :cc; bh=eNT8cKVfeIi7uAkEe1ZbC3EOVjlhbfRiqWYvgGhOSpU=;
+ b=hxvZOSVXLpGJNzR/H4f9Gz91udtTQtL3pLwAum6no4hIHKAfCWMPLqTxlnU15oLf6N
+ Qh4GV5NbbOp+zkWnubOICh6csky4HsdginEzcvKqnKm+rLubBCz5lhd5WpwEwwyrm0aK
+ xu+geq0OyR21JmiMtJ6tkO1HNudtM5eN6E7VBN30sjtTtBu1kesNKpxIyGwTjc/5xM7y
+ RlqHCq5rCW+0hZtXGDEz6pxEWRJJmuoNQwFr/W7LdHf8ISA8ZDUpAKtkQ/W8iNu8KhrD
+ rGsPjf7h3ZX232vDRcEZd6fbSiVF+S1W7Kzo4TVbB0BCUONoVMI99FnHlAjGm8BwPs/v
+ /tAg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+ :message-id:subject:to:cc;
+ bh=eNT8cKVfeIi7uAkEe1ZbC3EOVjlhbfRiqWYvgGhOSpU=;
+ b=WNrURyUhMLHCviPMypbXux/xX1jMsdxzZ4rK0TO1Cc6JxE+r49ZF248eFtke5sFLhS
+ gMKcvBJy0oTxflMpLRkc3yTvt6UUD+HzNHh/MN1EihhbQ1RYYB9hFZ6d9QUDAIGew7/h
+ C7yicUTKeYMfEDLYcdW+q/oxyRhnDcalShjVNWUA7lEzGQSCpnWTi3U5r+kQZG2D4ZS/
+ 2G++jEtjzmKPnovmXA8NSRWibiIfYdfcxVhF1eU4OsFFy5e4c9WJ4MEy5xS++s0oQ24c
+ qcVpKiaPSLPXiz1gylTIDKvWdBN+P3ALM8NdzkJgbCuxTlvuWHVPC2U2BFdHC/Z28k1m
+ jRXg==
+X-Gm-Message-State: APjAAAWO6oloeVBbjbCHgvZg4G1akHc0dAy+p/WmfBeGY3PXSPsZyD6i
+ S/GvLnVFcji91np0Q08x+DFjfrIkHrbtPHBA+yo=
+X-Google-Smtp-Source: APXvYqxHd755icfvww8fjK4Q1wSOaGRHRC+OMoeABHe27VJHeKhddhShRkz0ROeDCtpxUMloeEdgGPQRNSXS/l3sPEo=
+X-Received: by 2002:a2e:5d94:: with SMTP id v20mr23144071lje.138.1554906370195; 
+ Wed, 10 Apr 2019 07:26:10 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-X-Linutronix-Spam-Score: -1.0
-X-Linutronix-Spam-Level: -
-X-Linutronix-Spam-Status: No , -1.0 points, 5.0 required, ALL_TRUSTED=-1,
- SHORTCIRCUIT=-0.0001
+References: <1554894380-25153-1-git-send-email-viorel.suman@nxp.com>
+ <1554894380-25153-3-git-send-email-viorel.suman@nxp.com>
+In-Reply-To: <1554894380-25153-3-git-send-email-viorel.suman@nxp.com>
+From: Fabio Estevam <festevam@gmail.com>
+Date: Wed, 10 Apr 2019 11:26:04 -0300
+Message-ID: <CAOMZO5Aw=Z1-jKkG07mHCTmVhFE6GLG90-qiuMQfNUXAoze_xw@mail.gmail.com>
+Subject: Re: [PATCH v4 2/4] ASoC: fsl_audmix: remove "model" attribute from DT
+ document
+To: Viorel Suman <viorel.suman@nxp.com>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -66,42 +86,26 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Peter Zijlstra <peterz@infradead.org>,
- Heiko Carstens <heiko.carstens@de.ibm.com>, Paul Mackerras <paulus@samba.org>,
- "H . Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@kernel.org>,
- Andrea Arcangeli <aarcange@redhat.com>, linux-s390@vger.kernel.org,
- x86@kernel.org, Will Deacon <will.deacon@arm.com>,
- Linus Torvalds <torvalds@linux-foundation.org>,
- Catalin Marinas <catalin.marinas@arm.com>, Waiman Long <longman@redhat.com>,
- linux-arch@vger.kernel.org, Jon Masters <jcm@redhat.com>,
- Jiri Kosina <jikos@kernel.org>, Borislav Petkov <bp@alien8.de>,
- Andy Lutomirski <luto@kernel.org>, Josh Poimboeuf <jpoimboe@redhat.com>,
- linux-arm-kernel@lists.infradead.org,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org,
- Tyler Hicks <tyhicks@canonical.com>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Cc: Mark Rutland <mark.rutland@arm.com>, Viorel Suman <viorel.suman@gmail.com>,
+ "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Timur Tabi <timur@kernel.org>, Xiubo Li <Xiubo.Lee@gmail.com>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Sascha Hauer <s.hauer@pengutronix.de>, Takashi Iwai <tiwai@suse.com>,
+ Liam Girdwood <lgirdwood@gmail.com>, Rob Herring <robh+dt@kernel.org>,
+ Jaroslav Kysela <perex@perex.cz>, Nicolin Chen <nicoleotsuka@gmail.com>,
+ Julia Lawall <Julia.Lawall@lip6.fr>,
+ "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ Mark Brown <broonie@kernel.org>, dl-linux-imx <linux-imx@nxp.com>,
+ Pengutronix Kernel Team <kernel@pengutronix.de>,
+ Shawn Guo <shawnguo@kernel.org>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, 10 Apr 2019, Michael Ellerman wrote:
-> Josh Poimboeuf <jpoimboe@redhat.com> writes:
-> 
-> > On Fri, Apr 05, 2019 at 06:01:36PM +0200, Borislav Petkov wrote:
-> >> Thinking about this more, we can shave off the first 4 chars and have it
-> >> be:
-> >> 
-> >> spec_mitigations=
-> >> 
-> >> I think it is painfully clear which speculation mitigations we mean. And
-> >> the other switches don't have "cpu_" prefixes too so...
-> >
-> > Sure, I'm ok with renaming it to that, if there are no objections.
-> 
-> What about when we have a mitigation for a non-speculation related bug :)
+On Wed, Apr 10, 2019 at 8:06 AM Viorel Suman <viorel.suman@nxp.com> wrote:
+>
+> Remove "model" attribute from fsl_audmix DT document.
 
-Those kind of silicon bugs are usually mitigated unconditionally.
-
-Thanks,
-
-	tglx
+Please provide the reasoning.
