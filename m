@@ -2,46 +2,61 @@ Return-Path: <SRS0=HNI+=SN=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-4.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CCAAAC10F13
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Apr 2019 12:58:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2EEF5C10F13
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Apr 2019 13:00:27 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 4B9F22133D
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Apr 2019 12:58:01 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4B9F22133D
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+	by mail.kernel.org (Postfix) with ESMTPS id AE2052133D
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Apr 2019 13:00:26 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org AE2052133D
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44g1KM0rGDzDqSh
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Apr 2019 22:57:59 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 44g1N85fMbzDqSV
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Apr 2019 23:00:24 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+ spf=pass (mailfrom) smtp.mailfrom=kaod.org
+ (client-ip=178.32.97.206; helo=19.mo1.mail-out.ovh.net;
+ envelope-from=clg@kaod.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=kaod.org
+Received: from 19.mo1.mail-out.ovh.net (19.mo1.mail-out.ovh.net
+ [178.32.97.206])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44fzm03HyQzDqQs
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Apr 2019 21:47:28 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=ellerman.id.au
-Received: by ozlabs.org (Postfix)
- id 44fzm01KbQz9sND; Thu, 11 Apr 2019 21:47:28 +1000 (AEST)
-Received: by ozlabs.org (Postfix, from userid 1034)
- id 44fzlz5y5Dz9s70; Thu, 11 Apr 2019 21:47:27 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: stable@vger.kernel.org,
-	gregkh@linuxfoundation.org
-Subject: [PATCH stable v4.9 35/35] powerpc/security: Fix spectre_v2 reporting
-Date: Thu, 11 Apr 2019 21:46:30 +1000
-Message-Id: <20190411114630.4042-36-mpe@ellerman.id.au>
-X-Mailer: git-send-email 2.20.1
-In-Reply-To: <20190411114630.4042-1-mpe@ellerman.id.au>
-References: <20190411114630.4042-1-mpe@ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44fznK1cjVzDqQY
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Apr 2019 21:48:33 +1000 (AEST)
+Received: from player798.ha.ovh.net (unknown [10.109.159.136])
+ by mo1.mail-out.ovh.net (Postfix) with ESMTP id 0B2F4169FD6
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Apr 2019 13:48:28 +0200 (CEST)
+Received: from kaod.org (lfbn-tou-1-40-22.w86-201.abo.wanadoo.fr
+ [86.201.133.22]) (Authenticated sender: clg@kaod.org)
+ by player798.ha.ovh.net (Postfix) with ESMTPSA id B2C8B4C1E100;
+ Thu, 11 Apr 2019 11:48:19 +0000 (UTC)
+Subject: Re: [PATCH v5 16/16] KVM: PPC: Book3S HV: XIVE: introduce a 'release'
+ device operation
+To: Paul Mackerras <paulus@ozlabs.org>
+References: <20190410170448.3923-1-clg@kaod.org>
+ <20190410170448.3923-17-clg@kaod.org> <20190411102710.GD21252@blackberry>
+From: =?UTF-8?Q?C=c3=a9dric_Le_Goater?= <clg@kaod.org>
+Message-ID: <ddcbb686-c273-a478-1f64-d1b54c0e5aa3@kaod.org>
+Date: Thu, 11 Apr 2019 13:48:19 +0200
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.6.1
 MIME-Version: 1.0
+In-Reply-To: <20190411102710.GD21252@blackberry>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
 Content-Transfer-Encoding: 8bit
+X-Ovh-Tracer-Id: 2993767856400927694
+X-VR-SPAMSTATE: OK
+X-VR-SPAMSCORE: -100
+X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgeduuddrudelgdeggecutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfqggfjpdevjffgvefmvefgnecuuegrihhlohhuthemucehtddtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmd
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -53,91 +68,69 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: diana.craciun@nxp.com, linuxppc-dev@ozlabs.org, msuchanek@suse.de
+Cc: kvm@vger.kernel.org, kvm-ppc@vger.kernel.org,
+ Paolo Bonzini <pbonzini@redhat.com>, linuxppc-dev@lists.ozlabs.org,
+ David Gibson <david@gibson.dropbear.id.au>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-commit 92edf8df0ff2ae86cc632eeca0e651fd8431d40d upstream.
+On 4/11/19 12:27 PM, Paul Mackerras wrote:
+> On Wed, Apr 10, 2019 at 07:04:48PM +0200, Cédric Le Goater wrote:
+>> When a P9 sPAPR VM boots, the CAS negotiation process determines which
+>> interrupt mode to use (XICS legacy or XIVE native) and invokes a
+>> machine reset to activate the chosen mode.
+>>
+>> To be able to switch from one mode to another, we introduce the
+>> capability to release a KVM device without destroying the VM. The KVM
+>> device interface is extended with a new 'release' operation which is
+>> called when the file descriptor of the device is closed.
+> 
+> Unfortunately, I think there is now a memory leak:
+> 
+>> diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
+>> index ea2018ae1cd7..ea2619d5ca98 100644
+>> --- a/virt/kvm/kvm_main.c
+>> +++ b/virt/kvm/kvm_main.c
+>> @@ -2938,6 +2938,19 @@ static int kvm_device_release(struct inode *inode, struct file *filp)
+>>  	struct kvm_device *dev = filp->private_data;
+>>  	struct kvm *kvm = dev->kvm;
+>>  
+>> +	if (!dev)
+>> +		return -ENODEV;
+>> +
+>> +	if (dev->kvm != kvm)
+>> +		return -EPERM;
+>> +
+>> +	if (dev->ops->release) {
+>> +		mutex_lock(&kvm->lock);
+>> +		list_del(&dev->vm_node);
+> 
+> Because the device is now no longer in the kvm->devices list,
+> kvm_destroy_devices() won't find it there and therefore won't call the
+> device's destroy method.  In fact now the device's destroy method will
+> never get called; I can't see how kvmppc_xive_free() or
+> kvmppc_xive_native_free() will ever get called.  Thus the memory for
+> the kvmppc_xive structs will never get freed as far as I can see.
 
-When I updated the spectre_v2 reporting to handle software count cache
-flush I got the logic wrong when there's no software count cache
-enabled at all.
+ah yes. indeed ...
 
-The result is that on systems with the software count cache flush
-disabled we print:
+> We could fix that by freeing both of the kvm->arch.xive_devices
+> entries at VM destruction time.
 
-  Mitigation: Indirect branch cache disabled, Software count cache flush
+That is what I was doing in the first patch I sent : 
 
-Which correctly indicates that the count cache is disabled, but
-incorrectly says the software count cache flush is enabled.
+    http://patchwork.ozlabs.org/patch/1082303/
 
-The root of the problem is that we are trying to handle all
-combinations of options. But we know now that we only expect to see
-the software count cache flush enabled if the other options are false.
-
-So split the two cases, which simplifies the logic and fixes the bug.
-We were also missing a space before "(hardware accelerated)".
-
-The result is we see one of:
-
-  Mitigation: Indirect branch serialisation (kernel only)
-  Mitigation: Indirect branch cache disabled
-  Mitigation: Software count cache flush
-  Mitigation: Software count cache flush (hardware accelerated)
-
-Fixes: ee13cb249fab ("powerpc/64s: Add support for software count cache flush")
-Cc: stable@vger.kernel.org # v4.19+
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
-Reviewed-by: Michael Neuling <mikey@neuling.org>
-Reviewed-by: Diana Craciun <diana.craciun@nxp.com>
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
----
- arch/powerpc/kernel/security.c | 23 ++++++++---------------
- 1 file changed, 8 insertions(+), 15 deletions(-)
-
-diff --git a/arch/powerpc/kernel/security.c b/arch/powerpc/kernel/security.c
-index 43ce800e73bf..30542e833ebe 100644
---- a/arch/powerpc/kernel/security.c
-+++ b/arch/powerpc/kernel/security.c
-@@ -190,29 +190,22 @@ ssize_t cpu_show_spectre_v2(struct device *dev, struct device_attribute *attr, c
- 	bcs = security_ftr_enabled(SEC_FTR_BCCTRL_SERIALISED);
- 	ccd = security_ftr_enabled(SEC_FTR_COUNT_CACHE_DISABLED);
+It worked fine and then, I had this better (worse) idea which I included 
+in v5. 
  
--	if (bcs || ccd || count_cache_flush_type != COUNT_CACHE_FLUSH_NONE) {
--		bool comma = false;
-+	if (bcs || ccd) {
- 		seq_buf_printf(&s, "Mitigation: ");
- 
--		if (bcs) {
-+		if (bcs)
- 			seq_buf_printf(&s, "Indirect branch serialisation (kernel only)");
--			comma = true;
--		}
- 
--		if (ccd) {
--			if (comma)
--				seq_buf_printf(&s, ", ");
--			seq_buf_printf(&s, "Indirect branch cache disabled");
--			comma = true;
--		}
--
--		if (comma)
-+		if (bcs && ccd)
- 			seq_buf_printf(&s, ", ");
- 
--		seq_buf_printf(&s, "Software count cache flush");
-+		if (ccd)
-+			seq_buf_printf(&s, "Indirect branch cache disabled");
-+	} else if (count_cache_flush_type != COUNT_CACHE_FLUSH_NONE) {
-+		seq_buf_printf(&s, "Mitigation: Software count cache flush");
- 
- 		if (count_cache_flush_type == COUNT_CACHE_FLUSH_HW)
--			seq_buf_printf(&s, "(hardware accelerated)");
-+			seq_buf_printf(&s, " (hardware accelerated)");
- 	} else if (btb_flush_enabled) {
- 		seq_buf_printf(&s, "Mitigation: Branch predictor state flush");
- 	} else {
--- 
-2.20.1
+> If it is true that any device that has a release method will never see
+> its destroy method being called, then that needs to be documented
+> clearly somewhere.
 
+Yes. Closing the fd should take care of it. I have to rework that patch.
+
+Thanks,
+
+C.
