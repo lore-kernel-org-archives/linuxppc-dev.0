@@ -2,42 +2,83 @@ Return-Path: <SRS0=HNI+=SN=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
+	SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 40E79C10F13
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Apr 2019 06:51:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 046DDC10F13
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Apr 2019 08:15:47 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 65DDC20873
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Apr 2019 06:51:25 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 65DDC20873
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ozlabs.ru
+	by mail.kernel.org (Postfix) with ESMTPS id 0401B20873
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Apr 2019 08:15:45 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=alliedtelesis.co.nz header.i=@alliedtelesis.co.nz header.b="fiVNTUt4"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0401B20873
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=alliedtelesis.co.nz
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44fsBM0SH8zDqDV
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Apr 2019 16:51:23 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44fv3g3DW0zDqQZ
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Apr 2019 18:15:43 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=ozlabs.ru
- (client-ip=107.173.13.209; helo=ozlabs.ru; envelope-from=aik@ozlabs.ru;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=ozlabs.ru
-Received: from ozlabs.ru (ozlabs.ru [107.173.13.209])
- by lists.ozlabs.org (Postfix) with ESMTP id 44fs7W0rL8zDqPK
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Apr 2019 16:48:52 +1000 (AEST)
-Received: from fstn1-p1.ozlabs.ibm.com (localhost [IPv6:::1])
- by ozlabs.ru (Postfix) with ESMTP id B780BAE80062;
- Thu, 11 Apr 2019 02:48:47 -0400 (EDT)
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH kernel v3] powerpc/powernv: Isolate NVLinks between GV100GL on
- Witherspoon
-Date: Thu, 11 Apr 2019 16:48:44 +1000
-Message-Id: <20190411064844.8241-1-aik@ozlabs.ru>
-X-Mailer: git-send-email 2.17.1
+ spf=pass (mailfrom) smtp.mailfrom=alliedtelesis.co.nz
+ (client-ip=202.36.163.20; helo=gate2.alliedtelesis.co.nz;
+ envelope-from=hamish.martin@alliedtelesis.co.nz; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none)
+ header.from=alliedtelesis.co.nz
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=alliedtelesis.co.nz header.i=@alliedtelesis.co.nz
+ header.b="fiVNTUt4"; dkim-atps=neutral
+Received: from gate2.alliedtelesis.co.nz (gate2.alliedtelesis.co.nz
+ [202.36.163.20])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44fv1m4JwDzDqPM
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Apr 2019 18:14:03 +1000 (AEST)
+Received: from mmarshal3.atlnz.lc (mmarshal3.atlnz.lc [10.32.18.43])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (Client did not present a certificate)
+ by gate2.alliedtelesis.co.nz (Postfix) with ESMTPS id 669B8806AC;
+ Thu, 11 Apr 2019 15:28:11 +1200 (NZST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=alliedtelesis.co.nz;
+ s=mail181024; t=1554953291;
+ bh=J3lrMsxPFbCfmkIv/OghdQDaJ4xqzoVrL2tATR3m9cY=;
+ h=From:To:CC:Subject:Date;
+ b=fiVNTUt4DEDprMx5TVvAgf9unlyPL2dG3SY3AIqYq8dpOW5rjVDVUewd+Vl5H461Q
+ ScnnXlwoufr/ttST+ZzslSakL1u70jvqBSAMRFyOund54pw73AMFzBpXNA8V9aQcwh
+ 6UKfNdw3gYtYcBvkkNFEILu0+RjyGN/gIJBR3hVyDk2N7a2i0Seul6/8xHIh0//iLJ
+ Kk/sGWL02zYHuoO3vegwd9vi4Hr/AhgbpdFF0rQuAw4eYq7in3KURovedA2xl9Vfqz
+ OKsHpEHVZ/XLYDvpLWHQcKKi/bdOw+BFRgyDqwB+8Bi7A6l9YF10hqopp0KEPp7nS4
+ 70uIR2t0ZuaGg==
+Received: from svr-chch-ex1.atlnz.lc (Not Verified[10.32.16.77]) by
+ mmarshal3.atlnz.lc with Trustwave SEG (v7, 5, 8, 10121)
+ id <B5caeb44b0000>; Thu, 11 Apr 2019 15:28:11 +1200
+Received: from svr-chch-ex1.atlnz.lc (2001:df5:b000:bc8::77) by
+ svr-chch-ex1.atlnz.lc (2001:df5:b000:bc8::77) with Microsoft SMTP Server
+ (TLS) id 15.0.1156.6; Thu, 11 Apr 2019 15:28:11 +1200
+Received: from svr-chch-ex1.atlnz.lc ([fe80::409d:36f5:8899:92e8]) by
+ svr-chch-ex1.atlnz.lc ([fe80::409d:36f5:8899:92e8%12]) with mapi id
+ 15.00.1156.000; Thu, 11 Apr 2019 15:28:11 +1200
+From: Hamish Martin <Hamish.Martin@alliedtelesis.co.nz>
+To: "mark.rutland@arm.com" <mark.rutland@arm.com>, "robh+dt@kernel.org"
+ <robh+dt@kernel.org>
+Subject: Backwards compatiblity for QorIQ FMAN LIODN entries
+Thread-Topic: Backwards compatiblity for QorIQ FMAN LIODN entries
+Thread-Index: AQHU8BaWI/C4NayY00yPFjy8afmlPg==
+Date: Thu, 11 Apr 2019 03:28:10 +0000
+Message-ID: <1554953290.3747.66.camel@alliedtelesis.co.nz>
+Accept-Language: en-NZ, en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+x-mailer: Evolution 3.18.5.2-0ubuntu3.2 
+x-ms-exchange-transport-fromentityheader: Hosted
+x-originating-ip: [2001:df5:b000:24:3a2c:4aff:fe70:2ab9]
+Content-Type: text/plain; charset="utf-8"
+Content-ID: <67A1AA396ADF3348A0C67EB6174FC3FE@atlnz.lc>
+Content-Transfer-Encoding: base64
+MIME-Version: 1.0
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -49,306 +90,34 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Jose Ricardo Ziviani <joserz@linux.ibm.com>, kvm@vger.kernel.org,
- Alexey Kardashevskiy <aik@ozlabs.ru>,
- Daniel Henrique Barboza <danielhb413@gmail.com>,
- Alex Williamson <alex.williamson@redhat.com>, kvm-ppc@vger.kernel.org,
- Sam Bobroff <sbobroff@linux.ibm.com>,
- Piotr Jaroszynski <pjaroszynski@nvidia.com>,
- =?UTF-8?q?Leonardo=20Augusto=20Guimar=C3=A3es=20Garcia?= <lagarcia@br.ibm.com>,
- Reza Arbab <arbab@linux.ibm.com>, David Gibson <david@gibson.dropbear.id.au>
+Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ Chris Packham <Chris.Packham@alliedtelesis.co.nz>,
+ "paulus@samba.org" <paulus@samba.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The NVIDIA V100 SXM2 GPUs are connected to the CPU via PCIe links and
-(on POWER9) NVLinks. In addition to that, GPUs themselves have direct
-peer-to-peer NVLinks in groups of 2 to 4 GPUs with no buffers/latches
-between GPUs.
-
-Because of these interconnected NVLinks, the POWERNV platform puts such
-interconnected GPUs to the same IOMMU group. However users want to pass
-GPUs through individually which requires separate IOMMU groups.
-
-Thankfully V100 GPUs implement an interface to disable arbitrary links
-by programming link disabling mask via the GPU's BAR0. Once a link is
-disabled, it only can be enabled after performing the secondary bus reset
-(SBR) on the GPU. Since these GPUs do not advertise any other type of
-reset, it is reset by the platform's SBR handler.
-
-This adds an extra step to the POWERNV's SBR handler to block NVLinks to
-GPUs which do not belong to the same group as the GPU being reset.
-
-This adds a new "isolate_nvlink" kernel parameter to force GPU isolation;
-when enabled, every GPU gets placed in its own IOMMU group. The new
-parameter is off by default to preserve the existing behaviour.
-
-Before isolating:
-[nvdbg ~]$ nvidia-smi topo -m
-        GPU0    GPU1    GPU2    CPU Affinity
-GPU0     X      NV2     NV2     0-0
-GPU1    NV2      X      NV2     0-0
-GPU2    NV2     NV2      X      0-0
-
-After isolating:
-[nvdbg ~]$ nvidia-smi topo -m
-        GPU0    GPU1    GPU2    CPU Affinity
-GPU0     X      PHB     PHB     0-0
-GPU1    PHB      X      PHB     0-0
-GPU2    PHB     PHB      X      0-0
-
-Where:
-  X    = Self
-  PHB  = Connection traversing PCIe as well as a PCIe Host Bridge (typically the CPU)
-  NV#  = Connection traversing a bonded set of # NVLinks
-
-Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
----
-Changes:
-v3:
-* added pci_err() for failed ioremap
-* reworked commit log
-
-v2:
-* this is rework of [PATCH kernel RFC 0/2] vfio, powerpc/powernv: Isolate GV100GL
-but this time it is contained in the powernv platform
----
- arch/powerpc/platforms/powernv/Makefile      |   2 +-
- arch/powerpc/platforms/powernv/pci.h         |   1 +
- arch/powerpc/platforms/powernv/eeh-powernv.c |   1 +
- arch/powerpc/platforms/powernv/npu-dma.c     |  24 +++-
- arch/powerpc/platforms/powernv/nvlinkgpu.c   | 137 +++++++++++++++++++
- 5 files changed, 162 insertions(+), 3 deletions(-)
- create mode 100644 arch/powerpc/platforms/powernv/nvlinkgpu.c
-
-diff --git a/arch/powerpc/platforms/powernv/Makefile b/arch/powerpc/platforms/powernv/Makefile
-index da2e99efbd04..60a10d3b36eb 100644
---- a/arch/powerpc/platforms/powernv/Makefile
-+++ b/arch/powerpc/platforms/powernv/Makefile
-@@ -6,7 +6,7 @@ obj-y			+= opal-msglog.o opal-hmi.o opal-power.o opal-irqchip.o
- obj-y			+= opal-kmsg.o opal-powercap.o opal-psr.o opal-sensor-groups.o
- 
- obj-$(CONFIG_SMP)	+= smp.o subcore.o subcore-asm.o
--obj-$(CONFIG_PCI)	+= pci.o pci-ioda.o npu-dma.o pci-ioda-tce.o
-+obj-$(CONFIG_PCI)	+= pci.o pci-ioda.o npu-dma.o pci-ioda-tce.o nvlinkgpu.o
- obj-$(CONFIG_CXL_BASE)	+= pci-cxl.o
- obj-$(CONFIG_EEH)	+= eeh-powernv.o
- obj-$(CONFIG_PPC_SCOM)	+= opal-xscom.o
-diff --git a/arch/powerpc/platforms/powernv/pci.h b/arch/powerpc/platforms/powernv/pci.h
-index 8e36da379252..9fd3f391482c 100644
---- a/arch/powerpc/platforms/powernv/pci.h
-+++ b/arch/powerpc/platforms/powernv/pci.h
-@@ -250,5 +250,6 @@ extern void pnv_pci_unlink_table_and_group(struct iommu_table *tbl,
- extern void pnv_pci_setup_iommu_table(struct iommu_table *tbl,
- 		void *tce_mem, u64 tce_size,
- 		u64 dma_offset, unsigned int page_shift);
-+extern void pnv_try_isolate_nvidia_v100(struct pci_dev *gpdev);
- 
- #endif /* __POWERNV_PCI_H */
-diff --git a/arch/powerpc/platforms/powernv/eeh-powernv.c b/arch/powerpc/platforms/powernv/eeh-powernv.c
-index f38078976c5d..464b097d9635 100644
---- a/arch/powerpc/platforms/powernv/eeh-powernv.c
-+++ b/arch/powerpc/platforms/powernv/eeh-powernv.c
-@@ -937,6 +937,7 @@ void pnv_pci_reset_secondary_bus(struct pci_dev *dev)
- 		pnv_eeh_bridge_reset(dev, EEH_RESET_HOT);
- 		pnv_eeh_bridge_reset(dev, EEH_RESET_DEACTIVATE);
- 	}
-+	pnv_try_isolate_nvidia_v100(dev);
- }
- 
- static void pnv_eeh_wait_for_pending(struct pci_dn *pdn, const char *type,
-diff --git a/arch/powerpc/platforms/powernv/npu-dma.c b/arch/powerpc/platforms/powernv/npu-dma.c
-index dc23d9d2a7d9..d4f9ee6222b5 100644
---- a/arch/powerpc/platforms/powernv/npu-dma.c
-+++ b/arch/powerpc/platforms/powernv/npu-dma.c
-@@ -22,6 +22,23 @@
- 
- #include "pci.h"
- 
-+static bool isolate_nvlink;
-+
-+static int __init parse_isolate_nvlink(char *p)
-+{
-+	bool val;
-+
-+	if (!p)
-+		val = true;
-+	else if (kstrtobool(p, &val))
-+		return -EINVAL;
-+
-+	isolate_nvlink = val;
-+
-+	return 0;
-+}
-+early_param("isolate_nvlink", parse_isolate_nvlink);
-+
- /*
-  * spinlock to protect initialisation of an npu_context for a particular
-  * mm_struct.
-@@ -549,7 +566,7 @@ struct iommu_table_group *pnv_try_setup_npu_table_group(struct pnv_ioda_pe *pe)
- 
- 	hose = pci_bus_to_host(npdev->bus);
- 
--	if (hose->npu) {
-+	if (hose->npu && !isolate_nvlink) {
- 		table_group = &hose->npu->npucomp.table_group;
- 
- 		if (!table_group->group) {
-@@ -559,7 +576,10 @@ struct iommu_table_group *pnv_try_setup_npu_table_group(struct pnv_ioda_pe *pe)
- 					pe->pe_number);
- 		}
- 	} else {
--		/* Create a group for 1 GPU and attached NPUs for POWER8 */
-+		/*
-+		 * Create a group for 1 GPU and attached NPUs for
-+		 * POWER8 (always) or POWER9 (when isolate_nvlink).
-+		 */
- 		pe->npucomp = kzalloc(sizeof(*pe->npucomp), GFP_KERNEL);
- 		table_group = &pe->npucomp->table_group;
- 		table_group->ops = &pnv_npu_peers_ops;
-diff --git a/arch/powerpc/platforms/powernv/nvlinkgpu.c b/arch/powerpc/platforms/powernv/nvlinkgpu.c
-new file mode 100644
-index 000000000000..2a97cb15b6d0
---- /dev/null
-+++ b/arch/powerpc/platforms/powernv/nvlinkgpu.c
-@@ -0,0 +1,137 @@
-+// SPDX-License-Identifier: GPL-2.0+
-+/*
-+ * A helper to disable NVLinks between GPUs on IBM Withersponn platform.
-+ *
-+ * Copyright (C) 2019 IBM Corp.  All rights reserved.
-+ *     Author: Alexey Kardashevskiy <aik@ozlabs.ru>
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ */
-+
-+#include <linux/module.h>
-+#include <linux/device.h>
-+#include <linux/of.h>
-+#include <linux/iommu.h>
-+#include <linux/pci.h>
-+
-+static int nvlinkgpu_is_ph_in_group(struct device *dev, void *data)
-+{
-+	return dev->of_node->phandle == *(phandle *) data;
-+}
-+
-+static u32 nvlinkgpu_get_disable_mask(struct device *dev)
-+{
-+	int npu, peer;
-+	u32 mask;
-+	struct device_node *dn;
-+	struct iommu_group *group;
-+
-+	dn = dev->of_node;
-+	if (!of_find_property(dn, "ibm,nvlink-peers", NULL))
-+		return 0;
-+
-+	group = iommu_group_get(dev);
-+	if (!group)
-+		return 0;
-+
-+	/*
-+	 * Collect links to keep which includes links to NPU and links to
-+	 * other GPUs in the same IOMMU group.
-+	 */
-+	for (npu = 0, mask = 0; ; ++npu) {
-+		u32 npuph = 0;
-+
-+		if (of_property_read_u32_index(dn, "ibm,npu", npu, &npuph))
-+			break;
-+
-+		for (peer = 0; ; ++peer) {
-+			u32 peerph = 0;
-+
-+			if (of_property_read_u32_index(dn, "ibm,nvlink-peers",
-+					peer, &peerph))
-+				break;
-+
-+			if (peerph != npuph &&
-+				!iommu_group_for_each_dev(group, &peerph,
-+					nvlinkgpu_is_ph_in_group))
-+				continue;
-+
-+			mask |= 1 << (peer + 16);
-+		}
-+	}
-+	iommu_group_put(group);
-+
-+	/* Disabling mechanism takes links to disable so invert it here */
-+	mask = ~mask & 0x3F0000;
-+
-+	return mask;
-+}
-+
-+void pnv_try_isolate_nvidia_v100(struct pci_dev *bridge)
-+{
-+	u32 mask, val;
-+	void __iomem *bar0_0, *bar0_120000, *bar0_a00000;
-+	struct pci_dev *pdev;
-+	u16 cmd = 0, cmdmask = PCI_COMMAND_MEMORY;
-+
-+	if (!bridge->subordinate)
-+		return;
-+
-+	pdev = list_first_entry_or_null(&bridge->subordinate->devices,
-+			struct pci_dev, bus_list);
-+	if (!pdev)
-+		return;
-+
-+	if (pdev->vendor != PCI_VENDOR_ID_NVIDIA)
-+		return;
-+
-+	mask = nvlinkgpu_get_disable_mask(&pdev->dev);
-+	if (!mask)
-+		return;
-+
-+	bar0_0 = pci_iomap_range(pdev, 0, 0, 0x10000);
-+	if (!bar0_0) {
-+		pci_err(pdev, "Error mapping BAR0 @0\n");
-+		return;
-+	}
-+	bar0_120000 = pci_iomap_range(pdev, 0, 0x120000, 0x10000);
-+	if (!bar0_120000) {
-+		pci_err(pdev, "Error mapping BAR0 @120000\n");
-+		goto bar0_0_unmap;
-+	}
-+	bar0_a00000 = pci_iomap_range(pdev, 0, 0xA00000, 0x10000);
-+	if (!bar0_a00000) {
-+		pci_err(pdev, "Error mapping BAR0 @A00000\n");
-+		goto bar0_120000_unmap;
-+	}
-+
-+	pci_restore_state(pdev);
-+	pci_read_config_word(pdev, PCI_COMMAND, &cmd);
-+	if ((cmd & cmdmask) != cmdmask)
-+		pci_write_config_word(pdev, PCI_COMMAND, cmd | cmdmask);
-+
-+	/*
-+	 * The sequence is from "Tesla P100 and V100 SXM2 NVLink Isolation on
-+	 * Multi-Tenant Systems".
-+	 * The register names are not provided there either, hence raw values.
-+	 */
-+	iowrite32(0x4, bar0_120000 + 0x4C);
-+	iowrite32(0x2, bar0_120000 + 0x2204);
-+	val = ioread32(bar0_0 + 0x200);
-+	val |= 0x02000000;
-+	iowrite32(val, bar0_0 + 0x200);
-+	val = ioread32(bar0_a00000 + 0x148);
-+	val |= mask;
-+	iowrite32(val, bar0_a00000 + 0x148);
-+
-+	if ((cmd | cmdmask) != cmd)
-+		pci_write_config_word(pdev, PCI_COMMAND, cmd);
-+
-+	pci_iounmap(pdev, bar0_a00000);
-+bar0_120000_unmap:
-+	pci_iounmap(pdev, bar0_120000);
-+bar0_0_unmap:
-+	pci_iounmap(pdev, bar0_0);
-+}
--- 
-2.17.1
-
+SGkgUm9iIGFuZCBNYXJrLA0KDQpJIGFtIHVwZ3JhZGluZyB0aGUga2VybmVsIG9uIGEgRnJlZXNj
+YWxlIFAyMDQwIGJhc2VkIHN5c3RlbSBhbmQgaGF2ZQ0Kc3RydWNrIGFuIGlzc3VlIHdpdGggTElP
+RE5zIG5vdCBiZWluZyB1cGRhdGVkIGJ5IHVib290IGZvciBhbiBGTUFODQpldGhlcm5ldCBwb3J0
+Lg0KDQpNeSBzeXN0ZW0gaGFzIGFuIG9sZCB1Ym9vdCBydW5uaW5nIHdoaWNoIGZhaWxzIGluIGl0
+cyBhdHRlbXB0IHRvIHVwZGF0ZQ0KdGhlIGZtYW4gcnggcG9ydCBub2RlIHdpdGggdGhlIHJlcXVp
+cmVkIExJT0ROIGVudHJ5LiBUaGlzIGlzIGJlY2F1c2UgbXkNCm9sZCB1Ym9vdCBpbnN0YWxsYXRp
+b24gaXMgbG9va2luZyBmb3IgY29tcGF0aWJpbGl0eSB2YWx1ZSAiZnNsLGZtYW4tDQpwb3J0LTFn
+LXJ4IiB3aGlsZSB0aGUgbGF0ZXN0IGtlcm5lbCBkZWZpbmVzIHRoZSBjb21wYXRpYmxlIHZhbHVl
+IGFzDQoiZnNsLGZtYW4tdjItcG9ydC1yeCIgKHNlZSBmb3INCmluc3RhbmNlwqBhcmNoL3Bvd2Vy
+cGMvYm9vdC9kdHMvZnNsL3FvcmlxLWZtYW4tMC0xZy0zLmR0c2kpLg0KTmV3ZXIgdWJvb3QgbG9v
+a3MgZm9yIGJvdGggdmFsdWVzIHBlciB0aGlzIGNvbW1pdDoNCmh0dHBzOi8vZ2l0aHViLmNvbS91
+LWJvb3QvdS1ib290L2NvbW1pdC85N2E4ZDAxMGUwMjkxMTFlNTcxMWE0NTI2NGE3MjZiDQplZGJl
+YjI0YzQjZGlmZi00MzI0M2I5MTA4MzcyODNiYjFkNWQ2MjZmNGQ4OWQ3NQ0KDQpJIGFtIHVuYWJs
+ZSB0byB1cGRhdGUgYm9vdGxvYWRlcnMgZm9yIGRldmljZXMgb2YgdGhpcyB0eXBlIGluIHRoZSBm
+aWVsZA0Kc28gSSBhbSB3b25kZXJpbmcgaWYgdGhlIGNvcnJlY3QgYXBwcm9hY2ggaXMgdG8gYWRq
+dXN0IG15IERUUyBmaWxlDQpsb2NhbGx5IHRvIGFkZCB0aGUgY29tcGF0aWJsZSBzdHJpbmcgbXkg
+b2xkIHVib290IGlzIHNlYXJjaGluZyBmb3IsIG9yDQppZiB3ZSBzaG91bGQgYWRkIHRoaXMgdG8g
+dGhlIHZhcmlvdXMgcW9yaXEtZm1hbiBkdHNpIGZpbGVzIGluIHRoZQ0Ka2VybmVsIHRvIG1ha2Ug
+dGhpcyB3b3JrIGluIGEgbmljZSBiYWNrd2FyZHMgY29tcGF0aWJsZSB3YXkuDQoNCkxldCBtZSBr
+bm93IHlvdXIgb3Bpbmlvbi4gSSdtIGhhcHB5IHRvIHdvcmsgdXAgYSBwYXRjaCBpZiB5b3UnZCBs
+aWtlIHRvDQptYWtlIHRoZSBjaGFuZ2UgaW4gdGhlIGtlcm5lbCwgb3RoZXJ3aXNlIEknbGwgaGFu
+ZGxlIGl0IGxvY2FsbHkgYnkNCm92ZXJyaWRpbmcgdGhlIGNvbXBhdGlibGUgc3RyaW5nIGluIG15
+IHN5c3RlbSdzIGR0cyBmaWxlLg0KDQpUaGFua3MsDQpIYW1pc2ggTQ==
