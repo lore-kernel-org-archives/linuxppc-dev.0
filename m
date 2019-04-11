@@ -2,65 +2,82 @@ Return-Path: <SRS0=HNI+=SN=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_NEOMUTT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
+	SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 46072C10F13
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Apr 2019 13:20:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5E227C10F13
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Apr 2019 14:49:12 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id BFFB7206B7
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Apr 2019 13:20:26 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BFFB7206B7
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
+	by mail.kernel.org (Postfix) with ESMTPS id 86798206BA
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Apr 2019 14:49:11 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=axtens.net header.i=@axtens.net header.b="fInuLOzo"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 86798206BA
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=axtens.net
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44g1qD5cXLzDqYM
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Apr 2019 23:20:24 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44g3nc2sFXzDqSl
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Apr 2019 00:49:08 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=redhat.com
- (client-ip=209.132.183.28; helo=mx1.redhat.com;
- envelope-from=jpoimboe@redhat.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=axtens.net
+ (client-ip=2607:f8b0:4864:20::429; helo=mail-pf1-x429.google.com;
+ envelope-from=dja@axtens.net; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=redhat.com
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ dmarc=none (p=none dis=none) header.from=axtens.net
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=axtens.net header.i=@axtens.net header.b="fInuLOzo"; 
+ dkim-atps=neutral
+Received: from mail-pf1-x429.google.com (mail-pf1-x429.google.com
+ [IPv6:2607:f8b0:4864:20::429])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44g1jy0KkczDqY7
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Apr 2019 23:15:49 +1000 (AEST)
-Received: from smtp.corp.redhat.com (int-mx02.intmail.prod.int.phx2.redhat.com
- [10.5.11.12])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by mx1.redhat.com (Postfix) with ESMTPS id B4BDE30832DE;
- Thu, 11 Apr 2019 13:15:47 +0000 (UTC)
-Received: from treble (ovpn-120-231.rdu2.redhat.com [10.10.120.231])
- by smtp.corp.redhat.com (Postfix) with ESMTPS id 3AA9061998;
- Thu, 11 Apr 2019 13:15:42 +0000 (UTC)
-Date: Thu, 11 Apr 2019 08:15:40 -0500
-From: Josh Poimboeuf <jpoimboe@redhat.com>
-To: Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH RFC 1/5] cpu/speculation: Add 'cpu_spec_mitigations='
- cmdline options
-Message-ID: <20190411131540.754t5t4tp55i6vjq@treble>
-References: <cover.1554396090.git.jpoimboe@redhat.com>
- <f0bd17358ab478eaca52f3b1da8305c150911b40.1554396090.git.jpoimboe@redhat.com>
- <20190405131211.GE23348@zn.tnic>
- <20190405142048.burthk2jnpcvi2om@treble>
- <20190405152059.GG23348@zn.tnic> <20190405160136.GI23348@zn.tnic>
- <20190405161852.nmpk22omgiety4df@treble>
- <87sguqwgu7.fsf@concordia.ellerman.id.au>
- <alpine.DEB.2.21.1904101408580.3479@nanos.tec.linutronix.de>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44g3lp71jwzDqSc
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Apr 2019 00:47:32 +1000 (AEST)
+Received: by mail-pf1-x429.google.com with SMTP id c8so3554578pfd.10
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Apr 2019 07:47:31 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=axtens.net; s=google;
+ h=from:to:cc:subject:in-reply-to:references:date:message-id
+ :mime-version; bh=zp6Q/Y68BYTeE7T9SUFNkX3FL9mBezuutY6a0rQMjqw=;
+ b=fInuLOzoiqDBCH4uFPPOO+Tazakc+UjFBe8d2l61/3ZaV2IwtXR2KlcQJEDSYxqU82
+ 9EU4tfx3XjSFP+d0R8Bn/nH3Xk3wYn1d0cAuZLeNORqUyqCT+j8nDVLxjGOjFgf85rDT
+ 0go2tyaDzA2258lpwGPSCQDgY8fxA2rIoKHzQ=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:from:to:cc:subject:in-reply-to:references:date
+ :message-id:mime-version;
+ bh=zp6Q/Y68BYTeE7T9SUFNkX3FL9mBezuutY6a0rQMjqw=;
+ b=BCgEwqQX7+unagY9d8UPEkmZEiOZOIZOaN30J4I1js0Tf/gsQ53jYQNkN+EJs+tRPZ
+ ZH4L9cyr6Vjj5GPcNROi3lKrQVtHnQUCC8btN74WeIUj+KoqTenT9+0+Jh19FW2DHd4D
+ Aq2/GI1PZyyfSbF7nPUT3xqcU4VfPFY+tx/yW10B/Sw8mAW0ilC87el0jAFkN1ecCguj
+ mRatsaUI0YRJ03js53OLQ5KM2Py2aRD/JubS+BfNlkvYD1Fz7lJtQFkUZA7FKitSfmn4
+ oCBuMXUAlRMYmLUBLKjh7E9qLj3cJiudU9VNSeE5t0V0oqbKMNYNrulR4qNeL6tlbvXQ
+ iatA==
+X-Gm-Message-State: APjAAAXxnVueDZj0hTvVkTeuohE3hfvMg+KLVTA9lCdhbO7+fPJ+UP23
+ pglvVa23qq4uL9HxU/ofEbbgxw==
+X-Google-Smtp-Source: APXvYqwEJqahLrU1YyR56rULJ8BC07JHMa9D8Y/hEj3sxNiOJwh/6ikQST/MpwiqMNjSa+w2Ep5Znw==
+X-Received: by 2002:a63:8143:: with SMTP id t64mr46518636pgd.301.1554994048994; 
+ Thu, 11 Apr 2019 07:47:28 -0700 (PDT)
+Received: from localhost (124-171-136-51.dyn.iinet.net.au. [124.171.136.51])
+ by smtp.gmail.com with ESMTPSA id e21sm53062402pfd.177.2019.04.11.07.47.25
+ (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
+ Thu, 11 Apr 2019 07:47:26 -0700 (PDT)
+From: Daniel Axtens <dja@axtens.net>
+To: Eric Biggers <ebiggers@kernel.org>
+Subject: Re: [PATCH] crypto: vmx - fix copy-paste error in CTR mode
+In-Reply-To: <20190410070234.GA12406@sol.localdomain>
+References: <20190315020901.16509-1-dja@axtens.net>
+ <20190315022414.GA1671@sol.localdomain>
+ <875zsku5mk.fsf@dja-thinkpad.axtens.net>
+ <20190315043433.GC1671@sol.localdomain>
+ <8736nou2x5.fsf@dja-thinkpad.axtens.net>
+ <20190410070234.GA12406@sol.localdomain>
+Date: Fri, 12 Apr 2019 00:47:22 +1000
+Message-ID: <87imvkwqdh.fsf@dja-thinkpad.axtens.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.21.1904101408580.3479@nanos.tec.linutronix.de>
-User-Agent: NeoMutt/20180716
-X-Scanned-By: MIMEDefang 2.79 on 10.5.11.12
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.5.16
- (mx1.redhat.com [10.5.110.44]); Thu, 11 Apr 2019 13:15:48 +0000 (UTC)
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -72,52 +89,86 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Peter Zijlstra <peterz@infradead.org>,
- Heiko Carstens <heiko.carstens@de.ibm.com>, Paul Mackerras <paulus@samba.org>,
- "H . Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@kernel.org>,
- Andrea Arcangeli <aarcange@redhat.com>, linux-s390@vger.kernel.org,
- x86@kernel.org, Linus Torvalds <torvalds@linux-foundation.org>,
- linux-arm-kernel@lists.infradead.org,
- Catalin Marinas <catalin.marinas@arm.com>, Waiman Long <longman@redhat.com>,
- linux-arch@vger.kernel.org, Will Deacon <will.deacon@arm.com>,
- Jiri Kosina <jikos@kernel.org>, Borislav Petkov <bp@alien8.de>,
- Andy Lutomirski <luto@kernel.org>, Jon Masters <jcm@redhat.com>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org,
- Tyler Hicks <tyhicks@canonical.com>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Cc: leo.barbosa@canonical.com, Herbert Xu <herbert@gondor.apana.org.au>,
+ Stephan Mueller <smueller@chronox.de>, nayna@linux.ibm.com,
+ omosnacek@gmail.com, leitao@debian.org, pfsmorigo@gmail.com,
+ linux-crypto@vger.kernel.org, marcelo.cerri@canonical.com,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, Apr 10, 2019 at 02:10:01PM +0200, Thomas Gleixner wrote:
-> On Wed, 10 Apr 2019, Michael Ellerman wrote:
-> > Josh Poimboeuf <jpoimboe@redhat.com> writes:
-> > 
-> > > On Fri, Apr 05, 2019 at 06:01:36PM +0200, Borislav Petkov wrote:
-> > >> Thinking about this more, we can shave off the first 4 chars and have it
-> > >> be:
-> > >> 
-> > >> spec_mitigations=
-> > >> 
-> > >> I think it is painfully clear which speculation mitigations we mean. And
-> > >> the other switches don't have "cpu_" prefixes too so...
-> > >
-> > > Sure, I'm ok with renaming it to that, if there are no objections.
-> > 
-> > What about when we have a mitigation for a non-speculation related bug :)
-> 
-> Those kind of silicon bugs are usually mitigated unconditionally.
+Eric Biggers <ebiggers@kernel.org> writes:
 
-Right.
+> Hi Daniel,
+>
+> On Fri, Mar 15, 2019 at 04:23:02PM +1100, Daniel Axtens wrote:
+>> Eric Biggers <ebiggers@kernel.org> writes:
+>> 
+>> > Hi Daniel,
+>> >
+>> > On Fri, Mar 15, 2019 at 03:24:35PM +1100, Daniel Axtens wrote:
+>> >> Hi Eric,
+>> >> 
+>> >> >> The original assembly imported from OpenSSL has two copy-paste
+>> >> >> errors in handling CTR mode. When dealing with a 2 or 3 block tail,
+>> >> >> the code branches to the CBC decryption exit path, rather than to
+>> >> >> the CTR exit path.
+>> >> >
+>> >> > So does this need to be fixed in OpenSSL too?
+>> >> 
+>> >> Yes, I'm getting in touch with some people internally (at IBM) about
+>> >> doing that.
+>> >> 
+>> >> >> This leads to corruption of the IV, which leads to subsequent blocks
+>> >> >> being corrupted.
+>> >> >> 
+>> >> >> This can be detected with libkcapi test suite, which is available at
+>> >> >> https://github.com/smuellerDD/libkcapi
+>> >> >> 
+>> >> >
+>> >> > Is this also detected by the kernel's crypto self-tests, and if not why not?
+>> >> > What about with the new option CONFIG_CRYPTO_MANAGER_EXTRA_TESTS=y?
+>> >> 
+>> >> It seems the self-tests do not catch it. To catch it, there has to be a
+>> >> test where the blkcipher_walk creates a walk.nbytes such that
+>> >> [(the number of AES blocks) mod 8] is either 2 or 3. This happens with
+>> >> AF_ALG pretty frequently, but when I booted with self-tests it only hit
+>> >> 1, 4, 5, 6 and 7 - it missed 0, 2 and 3.
+>> >> 
+>> >> I don't have the EXTRA_TESTS option - I'm testing with 5.0-rc6. Is it in
+>> >> -next?
+>> >> 
+>> >> Regards,
+>> >> Daniel
+>> >
+>> > The improvements I recently made to the self-tests are intended to catch exactly
+>> > this sort of bug.  They were just merged for v5.1, so try the latest mainline.
+>> > This almost certainly would be caught by EXTRA_TESTS (and if not I'd want to
+>> > know), but it may be caught by the regular self-tests now too.
+>> 
+>> Well, even the patched code fails with the new self-tests, so clearly
+>> they're catching something! I'll investigate in more detail next week.
+>> 
+>> Regards,
+>> Daniel
+>> 
+>> >
+>> > - Eric
 
-But at least "mitigations=" is nice and short.  We could clarify in the
-documentation that it doesn't apply to *all* mitigations, only the ones
-which are optional and which can affect performance.
+Hi Eric,
 
-And it would give us the freedom to include any future "optional"
-mitigations, spec or not.
+>
+> Are you still planning to fix the remaining bug?  I booted a ppc64le VM, and I
+> see the same test failure (I think) you were referring to:
+>
+> alg: skcipher: p8_aes_ctr encryption test failed (wrong result) on test vector 3, cfg="uneven misaligned splits, may sleep"
+>
 
-I kind of like it.  But I could go either way.
+Yes, that's the one I saw. I don't have time to follow it up at the
+moment, but Nayna is aware of it.
 
--- 
-Josh
+Regards,
+Daniel
+
+> - Eric
