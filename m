@@ -6,37 +6,38 @@ X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
 	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EA1F8C282CE
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Apr 2019 11:57:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 61D29C10F13
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Apr 2019 11:58:27 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6E1AF2073F
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Apr 2019 11:57:01 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6E1AF2073F
+	by mail.kernel.org (Postfix) with ESMTPS id DA516217F4
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Apr 2019 11:58:26 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DA516217F4
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44fzyz4MXrzDqHl
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Apr 2019 21:56:59 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+	by lists.ozlabs.org (Postfix) with ESMTP id 44g00c6ycKzDqRb
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Apr 2019 21:58:24 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44fzl51l55zDqQf
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44fzl51MVPzDq8X
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Apr 2019 21:46:41 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: by ozlabs.org (Postfix)
- id 44fzl503z7z9sDn; Thu, 11 Apr 2019 21:46:41 +1000 (AEST)
+ id 44fzl36tjRz9s71; Thu, 11 Apr 2019 21:46:39 +1000 (AEST)
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 44fzl456lRz9sDX; Thu, 11 Apr 2019 21:46:40 +1000 (AEST)
+ id 44fzl33Dtjz9sCF; Thu, 11 Apr 2019 21:46:38 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: stable@vger.kernel.org,
 	gregkh@linuxfoundation.org
-Subject: [PATCH stable v4.9 05/35] powerpc/64s: Patch barrier_nospec in modules
-Date: Thu, 11 Apr 2019 21:46:00 +1000
-Message-Id: <20190411114630.4042-6-mpe@ellerman.id.au>
+Subject: [PATCH stable v4.9 04/35] powerpc: Avoid code patching freed init
+ sections
+Date: Thu, 11 Apr 2019 21:45:59 +1000
+Message-Id: <20190411114630.4042-5-mpe@ellerman.id.au>
 X-Mailer: git-send-email 2.20.1
 In-Reply-To: <20190411114630.4042-1-mpe@ellerman.id.au>
 References: <20190411114630.4042-1-mpe@ellerman.id.au>
@@ -58,114 +59,100 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Michal Suchanek <msuchanek@suse.de>
+From: Michael Neuling <mikey@neuling.org>
 
-commit 815069ca57c142eb71d27439bc27f41a433a67b3 upstream.
+commit 51c3c62b58b357e8d35e4cc32f7b4ec907426fe3 upstream.
 
-Note that unlike RFI which is patched only in kernel the nospec state
-reflects settings at the time the module was loaded.
+This stops us from doing code patching in init sections after they've
+been freed.
 
-Iterating all modules and re-patching every time the settings change
-is not implemented.
+In this chain:
+  kvm_guest_init() ->
+    kvm_use_magic_page() ->
+      fault_in_pages_readable() ->
+	 __get_user() ->
+	   __get_user_nocheck() ->
+	     barrier_nospec();
 
-Based on lwsync patching.
+We have a code patching location at barrier_nospec() and
+kvm_guest_init() is an init function. This whole chain gets inlined,
+so when we free the init section (hence kvm_guest_init()), this code
+goes away and hence should no longer be patched.
 
-Signed-off-by: Michal Suchanek <msuchanek@suse.de>
+We seen this as userspace memory corruption when using a memory
+checker while doing partition migration testing on powervm (this
+starts the code patching post migration via
+/sys/kernel/mobility/migration). In theory, it could also happen when
+using /sys/kernel/debug/powerpc/barrier_nospec.
+
+Cc: stable@vger.kernel.org # 4.13+
+Signed-off-by: Michael Neuling <mikey@neuling.org>
+Reviewed-by: Nicholas Piggin <npiggin@gmail.com>
+Reviewed-by: Christophe Leroy <christophe.leroy@c-s.fr>
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- arch/powerpc/include/asm/setup.h  |  7 +++++++
- arch/powerpc/kernel/module.c      |  6 ++++++
- arch/powerpc/kernel/security.c    |  2 +-
- arch/powerpc/lib/feature-fixups.c | 16 +++++++++++++---
- 4 files changed, 27 insertions(+), 4 deletions(-)
+ arch/powerpc/include/asm/setup.h | 1 +
+ arch/powerpc/lib/code-patching.c | 8 ++++++++
+ arch/powerpc/mm/mem.c            | 2 ++
+ 3 files changed, 11 insertions(+)
 
 diff --git a/arch/powerpc/include/asm/setup.h b/arch/powerpc/include/asm/setup.h
-index 709f4e739ae8..a225b5c42e76 100644
+index 703ddf752516..709f4e739ae8 100644
 --- a/arch/powerpc/include/asm/setup.h
 +++ b/arch/powerpc/include/asm/setup.h
-@@ -52,6 +52,13 @@ enum l1d_flush_type {
- void setup_rfi_flush(enum l1d_flush_type, bool enable);
- void do_rfi_flush_fixups(enum l1d_flush_type types);
- void do_barrier_nospec_fixups(bool enable);
-+extern bool barrier_nospec_enabled;
-+
-+#ifdef CONFIG_PPC_BOOK3S_64
-+void do_barrier_nospec_fixups_range(bool enable, void *start, void *end);
-+#else
-+static inline void do_barrier_nospec_fixups_range(bool enable, void *start, void *end) { };
-+#endif
+@@ -8,6 +8,7 @@ extern void ppc_printk_progress(char *s, unsigned short hex);
  
- #endif /* !__ASSEMBLY__ */
+ extern unsigned int rtas_data;
+ extern unsigned long long memory_limit;
++extern bool init_mem_is_free;
+ extern unsigned long klimit;
+ extern void *zalloc_maybe_bootmem(size_t size, gfp_t mask);
  
-diff --git a/arch/powerpc/kernel/module.c b/arch/powerpc/kernel/module.c
-index 30b89d5cbb03..d30f0626dcd0 100644
---- a/arch/powerpc/kernel/module.c
-+++ b/arch/powerpc/kernel/module.c
-@@ -72,6 +72,12 @@ int module_finalize(const Elf_Ehdr *hdr,
- 		do_feature_fixups(powerpc_firmware_features,
- 				  (void *)sect->sh_addr,
- 				  (void *)sect->sh_addr + sect->sh_size);
+diff --git a/arch/powerpc/lib/code-patching.c b/arch/powerpc/lib/code-patching.c
+index 753d591f1b52..c77c486fbf24 100644
+--- a/arch/powerpc/lib/code-patching.c
++++ b/arch/powerpc/lib/code-patching.c
+@@ -14,12 +14,20 @@
+ #include <asm/page.h>
+ #include <asm/code-patching.h>
+ #include <asm/uaccess.h>
++#include <asm/setup.h>
++#include <asm/sections.h>
+ 
+ 
+ int patch_instruction(unsigned int *addr, unsigned int instr)
+ {
+ 	int err;
+ 
++	/* Make sure we aren't patching a freed init section */
++	if (init_mem_is_free && init_section_contains(addr, 4)) {
++		pr_debug("Skipping init section patching addr: 0x%px\n", addr);
++		return 0;
++	}
 +
-+	sect = find_section(hdr, sechdrs, "__spec_barrier_fixup");
-+	if (sect != NULL)
-+		do_barrier_nospec_fixups_range(barrier_nospec_enabled,
-+				  (void *)sect->sh_addr,
-+				  (void *)sect->sh_addr + sect->sh_size);
+ 	__put_user_size(instr, addr, 4, err);
+ 	if (err)
+ 		return err;
+diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
+index 5f844337de21..1e93dbc88e80 100644
+--- a/arch/powerpc/mm/mem.c
++++ b/arch/powerpc/mm/mem.c
+@@ -62,6 +62,7 @@
  #endif
  
- 	sect = find_section(hdr, sechdrs, "__lwsync_fixup");
-diff --git a/arch/powerpc/kernel/security.c b/arch/powerpc/kernel/security.c
-index 8b1cf9c81b82..34d436fe2498 100644
---- a/arch/powerpc/kernel/security.c
-+++ b/arch/powerpc/kernel/security.c
-@@ -15,7 +15,7 @@
+ unsigned long long memory_limit;
++bool init_mem_is_free;
  
- unsigned long powerpc_security_features __read_mostly = SEC_FTR_DEFAULT;
- 
--static bool barrier_nospec_enabled;
-+bool barrier_nospec_enabled;
- 
- static void enable_barrier_nospec(bool enable)
+ #ifdef CONFIG_HIGHMEM
+ pte_t *kmap_pte;
+@@ -396,6 +397,7 @@ void __init mem_init(void)
+ void free_initmem(void)
  {
-diff --git a/arch/powerpc/lib/feature-fixups.c b/arch/powerpc/lib/feature-fixups.c
-index f82ae6bb2365..a1222c441df5 100644
---- a/arch/powerpc/lib/feature-fixups.c
-+++ b/arch/powerpc/lib/feature-fixups.c
-@@ -278,14 +278,14 @@ void do_rfi_flush_fixups(enum l1d_flush_type types)
- 						: "unknown");
+ 	ppc_md.progress = ppc_printk_progress;
++	init_mem_is_free = true;
+ 	free_initmem_default(POISON_FREE_INITMEM);
  }
  
--void do_barrier_nospec_fixups(bool enable)
-+void do_barrier_nospec_fixups_range(bool enable, void *fixup_start, void *fixup_end)
- {
- 	unsigned int instr, *dest;
- 	long *start, *end;
- 	int i;
- 
--	start = PTRRELOC(&__start___barrier_nospec_fixup),
--	end = PTRRELOC(&__stop___barrier_nospec_fixup);
-+	start = fixup_start;
-+	end = fixup_end;
- 
- 	instr = 0x60000000; /* nop */
- 
-@@ -304,6 +304,16 @@ void do_barrier_nospec_fixups(bool enable)
- 	printk(KERN_DEBUG "barrier-nospec: patched %d locations\n", i);
- }
- 
-+void do_barrier_nospec_fixups(bool enable)
-+{
-+	void *start, *end;
-+
-+	start = PTRRELOC(&__start___barrier_nospec_fixup),
-+	end = PTRRELOC(&__stop___barrier_nospec_fixup);
-+
-+	do_barrier_nospec_fixups_range(enable, start, end);
-+}
-+
- #endif /* CONFIG_PPC_BOOK3S_64 */
- 
- void do_lwsync_fixups(unsigned long value, void *fixup_start, void *fixup_end)
 -- 
 2.20.1
 
