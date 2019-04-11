@@ -6,38 +6,38 @@ X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
 	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EFD32C10F13
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Apr 2019 12:34:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DFDDBC10F13
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Apr 2019 12:36:28 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id A1CBA2073F
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Apr 2019 12:34:33 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A1CBA2073F
+	by mail.kernel.org (Postfix) with ESMTPS id 9462D2073F
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Apr 2019 12:36:28 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9462D2073F
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44g0pH5ypwzDqCs
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Apr 2019 22:34:31 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+	by lists.ozlabs.org (Postfix) with ESMTP id 44g0rV3gkqzDqMX
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Apr 2019 22:36:26 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44fzld1MLnzDq8X
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Apr 2019 21:47:09 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44fzlf6BdVzDqQY
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Apr 2019 21:47:10 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: by ozlabs.org (Postfix)
- id 44fzld01Xxz9sNx; Thu, 11 Apr 2019 21:47:09 +1000 (AEST)
+ id 44fzlf17zKz9sNp; Thu, 11 Apr 2019 21:47:10 +1000 (AEST)
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 44fzlc57ljz9sNt; Thu, 11 Apr 2019 21:47:08 +1000 (AEST)
+ id 44fzld60k1z9sNy; Thu, 11 Apr 2019 21:47:09 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: stable@vger.kernel.org,
 	gregkh@linuxfoundation.org
-Subject: [PATCH stable v4.9 24/35] powerpc/fsl: Add macro to flush the branch
- predictor
-Date: Thu, 11 Apr 2019 21:46:19 +1000
-Message-Id: <20190411114630.4042-25-mpe@ellerman.id.au>
+Subject: [PATCH stable v4.9 25/35] powerpc/fsl: Fix spectre_v2 mitigations
+ reporting
+Date: Thu, 11 Apr 2019 21:46:20 +1000
+Message-Id: <20190411114630.4042-26-mpe@ellerman.id.au>
 X-Mailer: git-send-email 2.20.1
 In-Reply-To: <20190411114630.4042-1-mpe@ellerman.id.au>
 References: <20190411114630.4042-1-mpe@ellerman.id.au>
@@ -61,47 +61,36 @@ Sender: "Linuxppc-dev"
 
 From: Diana Craciun <diana.craciun@nxp.com>
 
-commit 1cbf8990d79ff69da8ad09e8a3df014e1494462b upstream.
+commit 7d8bad99ba5a22892f0cad6881289fdc3875a930 upstream.
 
-The BUCSR register can be used to invalidate the entries in the
-branch prediction mechanisms.
+Currently for CONFIG_PPC_FSL_BOOK3E the spectre_v2 file is incorrect:
 
+  $ cat /sys/devices/system/cpu/vulnerabilities/spectre_v2
+  "Mitigation: Software count cache flush"
+
+Which is wrong. Fix it to report vulnerable for now.
+
+Fixes: ee13cb249fab ("powerpc/64s: Add support for software count cache flush")
+Cc: stable@vger.kernel.org # v4.19+
 Signed-off-by: Diana Craciun <diana.craciun@nxp.com>
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- arch/powerpc/include/asm/ppc_asm.h | 21 +++++++++++++++++++++
- 1 file changed, 21 insertions(+)
+ arch/powerpc/kernel/security.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/include/asm/ppc_asm.h b/arch/powerpc/include/asm/ppc_asm.h
-index 24e95be3bfaf..bbd35ba36a22 100644
---- a/arch/powerpc/include/asm/ppc_asm.h
-+++ b/arch/powerpc/include/asm/ppc_asm.h
-@@ -780,4 +780,25 @@ END_FTR_SECTION_IFCLR(CPU_FTR_601)
- 	.long 0x2400004c  /* rfid				*/
- #endif /* !CONFIG_PPC_BOOK3E */
- #endif /*  __ASSEMBLY__ */
-+
-+/*
-+ * Helper macro for exception table entries
-+ */
-+#define EX_TABLE(_fault, _target)		\
-+	stringify_in_c(.section __ex_table,"a";)\
-+	stringify_in_c(.balign 4;)		\
-+	stringify_in_c(.long (_fault) - . ;)	\
-+	stringify_in_c(.long (_target) - . ;)	\
-+	stringify_in_c(.previous)
-+
-+#ifdef CONFIG_PPC_FSL_BOOK3E
-+#define BTB_FLUSH(reg)			\
-+	lis reg,BUCSR_INIT@h;		\
-+	ori reg,reg,BUCSR_INIT@l;	\
-+	mtspr SPRN_BUCSR,reg;		\
-+	isync;
-+#else
-+#define BTB_FLUSH(reg)
-+#endif /* CONFIG_PPC_FSL_BOOK3E */
-+
- #endif /* _ASM_POWERPC_PPC_ASM_H */
+diff --git a/arch/powerpc/kernel/security.c b/arch/powerpc/kernel/security.c
+index fd4703b6ddc0..fc41bccd9ab6 100644
+--- a/arch/powerpc/kernel/security.c
++++ b/arch/powerpc/kernel/security.c
+@@ -23,7 +23,7 @@ enum count_cache_flush_type {
+ 	COUNT_CACHE_FLUSH_SW	= 0x2,
+ 	COUNT_CACHE_FLUSH_HW	= 0x4,
+ };
+-static enum count_cache_flush_type count_cache_flush_type;
++static enum count_cache_flush_type count_cache_flush_type = COUNT_CACHE_FLUSH_NONE;
+ 
+ bool barrier_nospec_enabled;
+ static bool no_nospec;
 -- 
 2.20.1
 
