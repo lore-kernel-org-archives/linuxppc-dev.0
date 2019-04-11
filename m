@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 77E21C10F13
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Apr 2019 05:43:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E2785C10F14
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Apr 2019 05:44:42 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id F11472083E
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Apr 2019 05:43:10 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org F11472083E
+	by mail.kernel.org (Postfix) with ESMTPS id 6D4EE2083E
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Apr 2019 05:44:42 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6D4EE2083E
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44fqgd1FkgzDqNL
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Apr 2019 15:43:09 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44fqjN3w1HzDqP8
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Apr 2019 15:44:40 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
  (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
@@ -29,58 +29,58 @@ Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44fqdc6gp3zDqNR
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Apr 2019 15:41:24 +1000 (AEST)
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44fqf72CP4zDqPS
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Apr 2019 15:41:51 +1000 (AEST)
+Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
  by mx0b-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x3B5cwWl078740
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Apr 2019 01:41:21 -0400
-Received: from e06smtp02.uk.ibm.com (e06smtp02.uk.ibm.com [195.75.94.98])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2rsvvse7aa-1
+ x3B5dspe128742
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Apr 2019 01:41:48 -0400
+Received: from e06smtp04.uk.ibm.com (e06smtp04.uk.ibm.com [195.75.94.100])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2rsy8yguth-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Apr 2019 01:41:21 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Apr 2019 01:41:48 -0400
 Received: from localhost
- by e06smtp02.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp04.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.ibm.com>;
- Thu, 11 Apr 2019 06:41:19 +0100
-Received: from b06cxnps4074.portsmouth.uk.ibm.com (9.149.109.196)
- by e06smtp02.uk.ibm.com (192.168.101.132) with IBM ESMTP SMTP Gateway:
+ Thu, 11 Apr 2019 06:41:46 +0100
+Received: from b06cxnps4076.portsmouth.uk.ibm.com (9.149.109.198)
+ by e06smtp04.uk.ibm.com (192.168.101.134) with IBM ESMTP SMTP Gateway:
  Authorized Use Only! Violators will be prosecuted; 
  (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Thu, 11 Apr 2019 06:41:17 +0100
-Received: from d06av22.portsmouth.uk.ibm.com (d06av22.portsmouth.uk.ibm.com
- [9.149.105.58])
- by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x3B5fG6S28311608
+ Thu, 11 Apr 2019 06:41:43 +0100
+Received: from d06av23.portsmouth.uk.ibm.com (d06av23.portsmouth.uk.ibm.com
+ [9.149.105.59])
+ by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x3B5fgAT51642474
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Thu, 11 Apr 2019 05:41:16 GMT
-Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 39CCF4C040;
- Thu, 11 Apr 2019 05:41:16 +0000 (GMT)
-Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id C7EBF4C058;
- Thu, 11 Apr 2019 05:41:14 +0000 (GMT)
+ Thu, 11 Apr 2019 05:41:42 GMT
+Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 5EDE1A4059;
+ Thu, 11 Apr 2019 05:41:42 +0000 (GMT)
+Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id F22A7A404D;
+ Thu, 11 Apr 2019 05:41:40 +0000 (GMT)
 Received: from skywalker.linux.ibm.com (unknown [9.85.73.26])
- by d06av22.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Thu, 11 Apr 2019 05:41:14 +0000 (GMT)
+ by d06av23.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Thu, 11 Apr 2019 05:41:40 +0000 (GMT)
 X-Mailer: emacs 26.1 (via feedmail 11-beta-1 I)
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
 To: Christophe Leroy <christophe.leroy@c-s.fr>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [PATCH v1 02/27] powerpc/mm: don't BUG in add_huge_page_size()
-In-Reply-To: <02e312b13129a9bf96f0cd4a30b1802be0644900.1553076180.git.christophe.leroy@c-s.fr>
+Subject: Re: [PATCH v1 03/27] powerpc/mm: don't BUG() in slice_mask_for_size()
+In-Reply-To: <f67363798e1ffb7603cd6619cb867563e4126d9a.1553076180.git.christophe.leroy@c-s.fr>
 References: <cover.1553076180.git.christophe.leroy@c-s.fr>
- <02e312b13129a9bf96f0cd4a30b1802be0644900.1553076180.git.christophe.leroy@c-s.fr>
-Date: Thu, 11 Apr 2019 11:11:13 +0530
+ <f67363798e1ffb7603cd6619cb867563e4126d9a.1553076180.git.christophe.leroy@c-s.fr>
+Date: Thu, 11 Apr 2019 11:11:39 +0530
 MIME-Version: 1.0
 Content-Type: text/plain
 X-TM-AS-GCONF: 00
-x-cbid: 19041105-0008-0000-0000-000002D894F0
+x-cbid: 19041105-0016-0000-0000-0000026D9812
 X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19041105-0009-0000-0000-00002244BB2A
-Message-Id: <87o95d3xqe.fsf@linux.ibm.com>
+x-cbparentid: 19041105-0017-0000-0000-000032C9CAE7
+Message-Id: <87lg0h3xpo.fsf@linux.ibm.com>
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
  definitions=2019-04-11_04:, , signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
@@ -107,34 +107,45 @@ Sender: "Linuxppc-dev"
 
 Christophe Leroy <christophe.leroy@c-s.fr> writes:
 
-> No reason to BUG() in add_huge_page_size(). Just WARN and
-> reject the add.
+> When no mask is found for the page size, WARN() and return NULL
+> instead of BUG()ing.
 >
 > Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 > ---
->  arch/powerpc/mm/hugetlbpage.c | 3 ++-
->  1 file changed, 2 insertions(+), 1 deletion(-)
+>  arch/powerpc/mm/slice.c | 6 ++++--
+>  1 file changed, 4 insertions(+), 2 deletions(-)
 >
-> diff --git a/arch/powerpc/mm/hugetlbpage.c b/arch/powerpc/mm/hugetlbpage.c
-> index 9e732bb2c84a..cf2978e235f3 100644
-> --- a/arch/powerpc/mm/hugetlbpage.c
-> +++ b/arch/powerpc/mm/hugetlbpage.c
-> @@ -634,7 +634,8 @@ static int __init add_huge_page_size(unsigned long long size)
->  	}
+> diff --git a/arch/powerpc/mm/slice.c b/arch/powerpc/mm/slice.c
+> index aec91dbcdc0b..011d470ea340 100644
+> --- a/arch/powerpc/mm/slice.c
+> +++ b/arch/powerpc/mm/slice.c
+> @@ -165,7 +165,8 @@ static struct slice_mask *slice_mask_for_size(struct mm_struct *mm, int psize)
+>  	if (psize == MMU_PAGE_16G)
+>  		return &mm->context.mask_16g;
 >  #endif
->  
-> -	BUG_ON(mmu_psize_defs[mmu_psize].shift != shift);
-> +	if (WARN_ON(mmu_psize_defs[mmu_psize].shift != shift))
-> +		return -EINVAL;
+> -	BUG();
+> +	WARN_ON(true);
+> +	return NULL;
+>  }
+
 
 Same here. There are not catching runtime errors. We should never find
 that true. This is to catch mistakes during development changes. Switch
 to VM_BUG_ON?
 
 
->  
->  	/* Return if huge page size has already been setup */
->  	if (size_to_hstate(size))
+>  #elif defined(CONFIG_PPC_8xx)
+>  static struct slice_mask *slice_mask_for_size(struct mm_struct *mm, int psize)
+> @@ -178,7 +179,8 @@ static struct slice_mask *slice_mask_for_size(struct mm_struct *mm, int psize)
+>  	if (psize == MMU_PAGE_8M)
+>  		return &mm->context.mask_8m;
+>  #endif
+> -	BUG();
+> +	WARN_ON(true);
+> +	return NULL;
+>  }
+>  #else
+>  #error "Must define the slice masks for page sizes supported by the platform"
 > -- 
 > 2.13.3
 
