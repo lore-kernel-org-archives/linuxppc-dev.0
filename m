@@ -2,60 +2,167 @@ Return-Path: <SRS0=HNI+=SN=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_NEOMUTT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.1 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_PASS,URIBL_BLACK,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 55F8DC10F13
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Apr 2019 04:04:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9240CC10F13
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Apr 2019 04:24:11 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id CFB062064B
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Apr 2019 04:04:12 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CFB062064B
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
+	by mail.kernel.org (Postfix) with ESMTPS id C880020850
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Apr 2019 04:24:10 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ozlabs-ru.20150623.gappssmtp.com header.i=@ozlabs-ru.20150623.gappssmtp.com header.b="HTcFkVg3"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C880020850
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ozlabs.ru
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44fnTQ4FNhzDqNK
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Apr 2019 14:04:10 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44fnwS3PNWzDqQ6
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Apr 2019 14:24:08 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=redhat.com
- (client-ip=209.132.183.28; helo=mx1.redhat.com;
- envelope-from=jpoimboe@redhat.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=ozlabs.ru
+ (client-ip=2607:f8b0:4864:20::643; helo=mail-pl1-x643.google.com;
+ envelope-from=aik@ozlabs.ru; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=redhat.com
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ dmarc=none (p=none dis=none) header.from=ozlabs.ru
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=ozlabs-ru.20150623.gappssmtp.com
+ header.i=@ozlabs-ru.20150623.gappssmtp.com header.b="HTcFkVg3"; 
+ dkim-atps=neutral
+Received: from mail-pl1-x643.google.com (mail-pl1-x643.google.com
+ [IPv6:2607:f8b0:4864:20::643])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44fnRc5HXhzDqLZ
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Apr 2019 14:02:35 +1000 (AEST)
-Received: from smtp.corp.redhat.com (int-mx03.intmail.prod.int.phx2.redhat.com
- [10.5.11.13])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by mx1.redhat.com (Postfix) with ESMTPS id C339E85546;
- Thu, 11 Apr 2019 04:02:32 +0000 (UTC)
-Received: from treble (ovpn-120-231.rdu2.redhat.com [10.10.120.231])
- by smtp.corp.redhat.com (Postfix) with ESMTPS id 303CC608A4;
- Thu, 11 Apr 2019 04:02:24 +0000 (UTC)
-Date: Wed, 10 Apr 2019 23:02:22 -0500
-From: Josh Poimboeuf <jpoimboe@redhat.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [PATCH RFC 3/5] powerpc/speculation: Add support for
- 'cpu_spec_mitigations=' cmdline options
-Message-ID: <20190411040222.p6yslvypbe6lq5cm@treble>
-References: <cover.1554396090.git.jpoimboe@redhat.com>
- <91b92d8182d2f114d92c95689fcd4bb1a8dda1b0.1554396090.git.jpoimboe@redhat.com>
- <87pnpuwg05.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44fntf2RBfzDqN9
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Apr 2019 14:22:33 +1000 (AEST)
+Received: by mail-pl1-x643.google.com with SMTP id n8so2705478plp.10
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Apr 2019 21:22:33 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=ozlabs-ru.20150623.gappssmtp.com; s=20150623;
+ h=subject:to:cc:references:from:openpgp:autocrypt:message-id:date
+ :user-agent:mime-version:in-reply-to:content-language
+ :content-transfer-encoding;
+ bh=HSLvlisSEjMVI0TWIDGbvhFmw9CUylYqc/pMmCcKknE=;
+ b=HTcFkVg3K7kmY6O6qox46/sY5gPPi8i12muuthVqt3UedzuPE4Owz/5OVeZVU3vrp6
+ 0hcOTUBI7gRWaEEX+D5HrLjcytjaLoqTdrSvmBP/iQvd48JHEP9M3eXbh073Wpf1Y70F
+ iOi5Qg1Yjf15JUmmLU1A92mqI8INnmuhitpFNlvRMG4Ope+BqpGr/rkTX3fThmsS3D2s
+ RuQ5pxQGJDEJAWAou0vEysYjT06427y3zr2wTwjdpJ4tGgaJie+10fdRr0SIBJzqldh1
+ jxHReYmV1ofo8pwHb9/CRSf90tLolokdsiIM40zqjwZKTKp5aQ8k84TawT9Ai0+kmL3s
+ fzhw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:subject:to:cc:references:from:openpgp:autocrypt
+ :message-id:date:user-agent:mime-version:in-reply-to
+ :content-language:content-transfer-encoding;
+ bh=HSLvlisSEjMVI0TWIDGbvhFmw9CUylYqc/pMmCcKknE=;
+ b=BQS4dA80kwp4JdrAofKV/I+6pkFCaTXM7ZhdzW15K82dTV7inSThdWm9GIYm2qU3/l
+ yaxXJjjCyqEqssIhO+adUzqY7MoKeHJY1X/yPAkXkqQfhGCmYrh2ktq461rOixoGFcRg
+ oZSoLtiznAqmSKDb2jHBFbe/QSEGQak6I/yOfkwiQ1oql1cV3oY2z5kynucnkK/QNJ94
+ BULtomKeSH60uzv9iGalV876MWCTkKDqP66tiSHlqJYLUztDELen+4r19M8Sgvyk7HRy
+ gASCZD6xtG3+c5snzIi/zApwOJAjAKSMjfMqqlyM+cJCuZ90ZQ8Pakt1+21N1PNuZvKL
+ YEJg==
+X-Gm-Message-State: APjAAAV+1TIY6vmD8UPCUqn1+IoG8Ky5b3xL+NVdvPwuwqnDGXuI90GM
+ Pwm3nKKBzsdGZVW8PH96R1OTlw==
+X-Google-Smtp-Source: APXvYqyVVmFeaU11fKHraPnclXmWQrnDP73emlH/hS/iiUnoLohSQsMUd+tohG1KYkBOyP4wwnZM/A==
+X-Received: by 2002:a17:902:9a03:: with SMTP id
+ v3mr23558373plp.27.1554956551126; 
+ Wed, 10 Apr 2019 21:22:31 -0700 (PDT)
+Received: from [10.61.2.175] ([122.99.82.10])
+ by smtp.gmail.com with ESMTPSA id n3sm64976997pfa.99.2019.04.10.21.22.25
+ (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
+ Wed, 10 Apr 2019 21:22:30 -0700 (PDT)
+Subject: Re: [PATCH 1/6] mm: change locked_vm's type from unsigned long to
+ atomic64_t
+To: Daniel Jordan <daniel.m.jordan@oracle.com>, akpm@linux-foundation.org
+References: <20190402204158.27582-1-daniel.m.jordan@oracle.com>
+ <20190402204158.27582-2-daniel.m.jordan@oracle.com>
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+Openpgp: preference=signencrypt
+Autocrypt: addr=aik@ozlabs.ru; keydata=
+ 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
+Message-ID: <614ea07a-dd1e-2561-b6f4-2d698bf55f5b@ozlabs.ru>
+Date: Thu, 11 Apr 2019 14:22:23 +1000
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.6.1
 MIME-Version: 1.0
+In-Reply-To: <20190402204158.27582-2-daniel.m.jordan@oracle.com>
 Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <87pnpuwg05.fsf@concordia.ellerman.id.au>
-User-Agent: NeoMutt/20180716
-X-Scanned-By: MIMEDefang 2.79 on 10.5.11.13
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.5.16
- (mx1.redhat.com [10.5.110.28]); Thu, 11 Apr 2019 04:02:33 +0000 (UTC)
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -67,104 +174,195 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Peter Zijlstra <peterz@infradead.org>,
- Heiko Carstens <heiko.carstens@de.ibm.com>, Paul Mackerras <paulus@samba.org>,
- "H . Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@kernel.org>,
- Andrea Arcangeli <aarcange@redhat.com>, linux-s390@vger.kernel.org,
- x86@kernel.org, Will Deacon <will.deacon@arm.com>,
- Linus Torvalds <torvalds@linux-foundation.org>,
- Catalin Marinas <catalin.marinas@arm.com>, Waiman Long <longman@redhat.com>,
- linux-arch@vger.kernel.org, Jon Masters <jcm@redhat.com>,
- Jiri Kosina <jikos@kernel.org>, Borislav Petkov <bp@alien8.de>,
- Andy Lutomirski <luto@kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
- linux-arm-kernel@lists.infradead.org,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org,
- Tyler Hicks <tyhicks@canonical.com>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Cc: Davidlohr Bueso <dave@stgolabs.net>, kvm@vger.kernel.org,
+ Alan Tull <atull@kernel.org>, linux-fpga@vger.kernel.org,
+ linux-kernel@vger.kernel.org, kvm-ppc@vger.kernel.org, linux-mm@kvack.org,
+ Alex Williamson <alex.williamson@redhat.com>, Moritz Fischer <mdf@kernel.org>,
+ Christoph Lameter <cl@linux.com>, linuxppc-dev@lists.ozlabs.org,
+ Wu Hao <hao.wu@intel.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, Apr 10, 2019 at 04:06:50PM +1000, Michael Ellerman wrote:
-> Josh Poimboeuf <jpoimboe@redhat.com> writes:
-> > Configure powerpc CPU runtime speculation bug mitigations in accordance
-> > with the 'cpu_spec_mitigations=' cmdline options.  This affects
-> > Meltdown, Spectre v1, Spectre v2, and Speculative Store Bypass.
-> >
-> > The default behavior is unchanged.
-> >
-> > Signed-off-by: Josh Poimboeuf <jpoimboe@redhat.com>
-> > ---
-> >  Documentation/admin-guide/kernel-parameters.txt | 9 +++++----
-> >  arch/powerpc/kernel/security.c                  | 6 +++---
-> >  arch/powerpc/kernel/setup_64.c                  | 2 +-
-> >  3 files changed, 9 insertions(+), 8 deletions(-)
-> >
-> > diff --git a/Documentation/admin-guide/kernel-parameters.txt b/Documentation/admin-guide/kernel-parameters.txt
-> > index 29dc03971630..0e8eae1e8a25 100644
-> > --- a/Documentation/admin-guide/kernel-parameters.txt
-> > +++ b/Documentation/admin-guide/kernel-parameters.txt
-> > @@ -2552,10 +2552,11 @@
-> >  
-> >  			off
-> >  				Disable all speculative CPU mitigations.
-> > -				Equivalent to: nopti [x86]
-> > +				Equivalent to: nopti [x86, powerpc]
-> > +					       nospectre_v1 [powerpc]
-> >  					       nospectre_v2 [x86]
-> 
-> Not sure if you meant to omit powerpc from nospectre_v2?
-> 
-> You have patched it in the code below.
 
-Oops.  I'll update the documentation.
 
-> >  					       spectre_v2_user=off [x86]
-> > -					       spec_store_bypass_disable=off [x86]
-> > +					       spec_store_bypass_disable=off [x86, powerpc]
-> >  					       l1tf=off [x86]
-> >  
-> >  			auto (default)
-> > @@ -2568,7 +2569,7 @@
-> >  				Equivalent to: pti=auto [x86]
-> >  					       spectre_v2=auto [x86]
-> >  					       spectre_v2_user=auto [x86]
-> > -					       spec_store_bypass_disable=auto [x86]
-> > +					       spec_store_bypass_disable=auto [x86, powerpc]
-> >  					       l1tf=flush [x86]
-> >  
-> >  			auto,nosmt
-> > @@ -2579,7 +2580,7 @@
-> >  				Equivalent to: pti=auto [x86]
-> >  					       spectre_v2=auto [x86]
-> >  					       spectre_v2_user=auto [x86]
-> > -					       spec_store_bypass_disable=auto [x86]
-> > +					       spec_store_bypass_disable=auto [x86, powerpc]
-> >  					       l1tf=flush,nosmt [x86]
-> >  
-> >  	mminit_loglevel=
-> > diff --git a/arch/powerpc/kernel/security.c b/arch/powerpc/kernel/security.c
-> > index b33bafb8fcea..5aed4ad729ba 100644
-> > --- a/arch/powerpc/kernel/security.c
-> > +++ b/arch/powerpc/kernel/security.c
-> > @@ -57,7 +57,7 @@ void setup_barrier_nospec(void)
-> >  	enable = security_ftr_enabled(SEC_FTR_FAVOUR_SECURITY) &&
-> >  		 security_ftr_enabled(SEC_FTR_BNDS_CHK_SPEC_BAR);
-> >  
-> > -	if (!no_nospec)
-> > +	if (!no_nospec && cpu_spec_mitigations != CPU_SPEC_MITIGATIONS_OFF)
-> >  		enable_barrier_nospec(enable);
+On 03/04/2019 07:41, Daniel Jordan wrote:
+> Taking and dropping mmap_sem to modify a single counter, locked_vm, is
+> overkill when the counter could be synchronized separately.
 > 
-> Adding a wrapper func that checks for CPU_SPEC_MITIGATIONS_OFF would
-> make these a little less verbose, eg:
+> Make mmap_sem a little less coarse by changing locked_vm to an atomic,
+> the 64-bit variety to avoid issues with overflow on 32-bit systems.
 > 
-> 	if (!no_nospec && !cpu_spec_mitigations_off())
->   		enable_barrier_nospec(enable);
+> Signed-off-by: Daniel Jordan <daniel.m.jordan@oracle.com>
+> Cc: Alan Tull <atull@kernel.org>
+> Cc: Alexey Kardashevskiy <aik@ozlabs.ru>
+> Cc: Alex Williamson <alex.williamson@redhat.com>
+> Cc: Andrew Morton <akpm@linux-foundation.org>
+> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Cc: Christoph Lameter <cl@linux.com>
+> Cc: Davidlohr Bueso <dave@stgolabs.net>
+> Cc: Michael Ellerman <mpe@ellerman.id.au>
+> Cc: Moritz Fischer <mdf@kernel.org>
+> Cc: Paul Mackerras <paulus@ozlabs.org>
+> Cc: Wu Hao <hao.wu@intel.com>
+> Cc: <linux-mm@kvack.org>
+> Cc: <kvm@vger.kernel.org>
+> Cc: <kvm-ppc@vger.kernel.org>
+> Cc: <linuxppc-dev@lists.ozlabs.org>
+> Cc: <linux-fpga@vger.kernel.org>
+> Cc: <linux-kernel@vger.kernel.org>
+> ---
+>  arch/powerpc/kvm/book3s_64_vio.c    | 14 ++++++++------
+>  arch/powerpc/mm/mmu_context_iommu.c | 15 ++++++++-------
+>  drivers/fpga/dfl-afu-dma-region.c   | 18 ++++++++++--------
+>  drivers/vfio/vfio_iommu_spapr_tce.c | 17 +++++++++--------
+>  drivers/vfio/vfio_iommu_type1.c     | 10 ++++++----
+>  fs/proc/task_mmu.c                  |  2 +-
+>  include/linux/mm_types.h            |  2 +-
+>  kernel/fork.c                       |  2 +-
+>  mm/debug.c                          |  5 +++--
+>  mm/mlock.c                          |  4 ++--
+>  mm/mmap.c                           | 18 +++++++++---------
+>  mm/mremap.c                         |  6 +++---
+>  12 files changed, 61 insertions(+), 52 deletions(-)
 > 
-> But that's a nitpick.
+> diff --git a/arch/powerpc/kvm/book3s_64_vio.c b/arch/powerpc/kvm/book3s_64_vio.c
+> index f02b04973710..e7fdb6d10eeb 100644
+> --- a/arch/powerpc/kvm/book3s_64_vio.c
+> +++ b/arch/powerpc/kvm/book3s_64_vio.c
+> @@ -59,32 +59,34 @@ static unsigned long kvmppc_stt_pages(unsigned long tce_pages)
+>  static long kvmppc_account_memlimit(unsigned long stt_pages, bool inc)
+>  {
+>  	long ret = 0;
+> +	s64 locked_vm;
+>  
+>  	if (!current || !current->mm)
+>  		return ret; /* process exited */
+>  
+>  	down_write(&current->mm->mmap_sem);
+>  
+> +	locked_vm = atomic64_read(&current->mm->locked_vm);
+>  	if (inc) {
+>  		unsigned long locked, lock_limit;
+>  
+> -		locked = current->mm->locked_vm + stt_pages;
+> +		locked = locked_vm + stt_pages;
+>  		lock_limit = rlimit(RLIMIT_MEMLOCK) >> PAGE_SHIFT;
+>  		if (locked > lock_limit && !capable(CAP_IPC_LOCK))
+>  			ret = -ENOMEM;
+>  		else
+> -			current->mm->locked_vm += stt_pages;
+> +			atomic64_add(stt_pages, &current->mm->locked_vm);
+>  	} else {
+> -		if (WARN_ON_ONCE(stt_pages > current->mm->locked_vm))
+> -			stt_pages = current->mm->locked_vm;
+> +		if (WARN_ON_ONCE(stt_pages > locked_vm))
+> +			stt_pages = locked_vm;
+>  
+> -		current->mm->locked_vm -= stt_pages;
+> +		atomic64_sub(stt_pages, &current->mm->locked_vm);
+>  	}
+>  
+>  	pr_debug("[%d] RLIMIT_MEMLOCK KVM %c%ld %ld/%ld%s\n", current->pid,
+>  			inc ? '+' : '-',
+>  			stt_pages << PAGE_SHIFT,
+> -			current->mm->locked_vm << PAGE_SHIFT,
+> +			atomic64_read(&current->mm->locked_vm) << PAGE_SHIFT,
+>  			rlimit(RLIMIT_MEMLOCK),
+>  			ret ? " - exceeded" : "");
+>  
+> diff --git a/arch/powerpc/mm/mmu_context_iommu.c b/arch/powerpc/mm/mmu_context_iommu.c
+> index e7a9c4f6bfca..8038ac24a312 100644
+> --- a/arch/powerpc/mm/mmu_context_iommu.c
+> +++ b/arch/powerpc/mm/mmu_context_iommu.c
+> @@ -55,30 +55,31 @@ static long mm_iommu_adjust_locked_vm(struct mm_struct *mm,
+>  		unsigned long npages, bool incr)
+>  {
+>  	long ret = 0, locked, lock_limit;
+> +	s64 locked_vm;
+>  
+>  	if (!npages)
+>  		return 0;
+>  
+>  	down_write(&mm->mmap_sem);
+> -
+> +	locked_vm = atomic64_read(&mm->locked_vm);
+>  	if (incr) {
+> -		locked = mm->locked_vm + npages;
+> +		locked = locked_vm + npages;
+>  		lock_limit = rlimit(RLIMIT_MEMLOCK) >> PAGE_SHIFT;
+>  		if (locked > lock_limit && !capable(CAP_IPC_LOCK))
+>  			ret = -ENOMEM;
+>  		else
+> -			mm->locked_vm += npages;
+> +			atomic64_add(npages, &mm->locked_vm);
+>  	} else {
+> -		if (WARN_ON_ONCE(npages > mm->locked_vm))
+> -			npages = mm->locked_vm;
+> -		mm->locked_vm -= npages;
+> +		if (WARN_ON_ONCE(npages > locked_vm))
+> +			npages = locked_vm;
+> +		atomic64_sub(npages, &mm->locked_vm);
+>  	}
+>  
+>  	pr_debug("[%d] RLIMIT_MEMLOCK HASH64 %c%ld %ld/%ld\n",
+>  			current ? current->pid : 0,
+>  			incr ? '+' : '-',
+>  			npages << PAGE_SHIFT,
+> -			mm->locked_vm << PAGE_SHIFT,
+> +			atomic64_read(&mm->locked_vm) << PAGE_SHIFT,
+>  			rlimit(RLIMIT_MEMLOCK));
+>  	up_write(&mm->mmap_sem);
+>  
+> diff --git a/drivers/fpga/dfl-afu-dma-region.c b/drivers/fpga/dfl-afu-dma-region.c
+> index e18a786fc943..08132fd9b6b7 100644
+> --- a/drivers/fpga/dfl-afu-dma-region.c
+> +++ b/drivers/fpga/dfl-afu-dma-region.c
+> @@ -45,6 +45,7 @@ void afu_dma_region_init(struct dfl_feature_platform_data *pdata)
+>  static int afu_dma_adjust_locked_vm(struct device *dev, long npages, bool incr)
+>  {
+>  	unsigned long locked, lock_limit;
+> +	s64 locked_vm;
+>  	int ret = 0;
+>  
+>  	/* the task is exiting. */
+> @@ -53,24 +54,25 @@ static int afu_dma_adjust_locked_vm(struct device *dev, long npages, bool incr)
+>  
+>  	down_write(&current->mm->mmap_sem);
+>  
+> +	locked_vm = atomic64_read(&current->mm->locked_vm);
+>  	if (incr) {
+> -		locked = current->mm->locked_vm + npages;
+> +		locked = locked_vm + npages;
+>  		lock_limit = rlimit(RLIMIT_MEMLOCK) >> PAGE_SHIFT;
+>  
+>  		if (locked > lock_limit && !capable(CAP_IPC_LOCK))
+>  			ret = -ENOMEM;
+>  		else
+> -			current->mm->locked_vm += npages;
+> +			atomic64_add(npages, &current->mm->locked_vm);
+>  	} else {
+> -		if (WARN_ON_ONCE(npages > current->mm->locked_vm))
+> -			npages = current->mm->locked_vm;
+> -		current->mm->locked_vm -= npages;
+> +		if (WARN_ON_ONCE(npages > locked_vm))
+> +			npages = locked_vm;
+> +		atomic64_sub(npages, &current->mm->locked_vm);
+>  	}
+>  
+> -	dev_dbg(dev, "[%d] RLIMIT_MEMLOCK %c%ld %ld/%ld%s\n", current->pid,
+> +	dev_dbg(dev, "[%d] RLIMIT_MEMLOCK %c%ld %lld/%lu%s\n", current->pid,
+>  		incr ? '+' : '-', npages << PAGE_SHIFT,
+> -		current->mm->locked_vm << PAGE_SHIFT, rlimit(RLIMIT_MEMLOCK),
+> -		ret ? "- exceeded" : "");
+> +		(s64)atomic64_read(&current->mm->locked_vm) << PAGE_SHIFT,
+> +		rlimit(RLIMIT_MEMLOCK), ret ? "- exceeded" : "");
 
-Yes, that would be much nicer.  I'll probably do something like that in
-the next version.  Thanks.
+
+
+atomic64_read() returns "long" which matches "%ld", why this change (and
+similar below)? You did not do this in the two pr_debug()s above anyway.
+
 
 -- 
-Josh
+Alexey
