@@ -2,101 +2,65 @@ Return-Path: <SRS0=HNI+=SN=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED,USER_AGENT_MUTT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_NEOMUTT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B2523C10F13
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Apr 2019 13:18:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 46072C10F13
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Apr 2019 13:20:27 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 389FB2077C
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Apr 2019 13:18:46 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 389FB2077C
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id BFFB7206B7
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Apr 2019 13:20:26 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BFFB7206B7
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44g1nJ05ByzDqYn
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Apr 2019 23:18:44 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44g1qD5cXLzDqYM
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Apr 2019 23:20:24 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=linux.vnet.ibm.com
- (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=paulmck@linux.vnet.ibm.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=redhat.com
+ (client-ip=209.132.183.28; helo=mx1.redhat.com;
+ envelope-from=jpoimboe@redhat.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+ dmarc=pass (p=none dis=none) header.from=redhat.com
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44g1jp2sHfzDqTl
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Apr 2019 23:15:42 +1000 (AEST)
-Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x3BDFcsi058214
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Apr 2019 09:15:39 -0400
-Received: from e11.ny.us.ibm.com (e11.ny.us.ibm.com [129.33.205.201])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2rt2uxuaby-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Apr 2019 09:12:55 -0400
-Received: from localhost
- by e11.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <paulmck@linux.vnet.ibm.com>;
- Thu, 11 Apr 2019 14:12:25 +0100
-Received: from b01cxnp22034.gho.pok.ibm.com (9.57.198.24)
- by e11.ny.us.ibm.com (146.89.104.198) with IBM ESMTP SMTP Gateway: Authorized
- Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Thu, 11 Apr 2019 14:12:22 +0100
-Received: from b01ledav003.gho.pok.ibm.com (b01ledav003.gho.pok.ibm.com
- [9.57.199.108])
- by b01cxnp22034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x3BDCLBL30605472
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Thu, 11 Apr 2019 13:12:21 GMT
-Received: from b01ledav003.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id D002AB205F;
- Thu, 11 Apr 2019 13:12:21 +0000 (GMT)
-Received: from b01ledav003.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id B2764B2064;
- Thu, 11 Apr 2019 13:12:21 +0000 (GMT)
-Received: from paulmck-ThinkPad-W541 (unknown [9.70.82.188])
- by b01ledav003.gho.pok.ibm.com (Postfix) with ESMTP;
- Thu, 11 Apr 2019 13:12:21 +0000 (GMT)
-Received: by paulmck-ThinkPad-W541 (Postfix, from userid 1000)
- id B0FBE16C5E7B; Thu, 11 Apr 2019 06:12:22 -0700 (PDT)
-Date: Thu, 11 Apr 2019 06:12:22 -0700
-From: "Paul E. McKenney" <paulmck@linux.ibm.com>
-To: Joe Perches <joe@perches.com>
-Subject: Re: [PATCH] MAINTAINERS: Update remaining @linux.vnet.ibm.com
- addresses
-References: <20190411042752.22039-1-lukas.bulwahn@gmail.com>
- <0702bc9a10703d53a46f27468b2c9ef2463e1c0b.camel@perches.com>
- <87k1g0vj7f.fsf@concordia.ellerman.id.au>
- <921408ed6a19d9c6fed18182f03a6dac5ea42aae.camel@perches.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44g1jy0KkczDqY7
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Apr 2019 23:15:49 +1000 (AEST)
+Received: from smtp.corp.redhat.com (int-mx02.intmail.prod.int.phx2.redhat.com
+ [10.5.11.12])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by mx1.redhat.com (Postfix) with ESMTPS id B4BDE30832DE;
+ Thu, 11 Apr 2019 13:15:47 +0000 (UTC)
+Received: from treble (ovpn-120-231.rdu2.redhat.com [10.10.120.231])
+ by smtp.corp.redhat.com (Postfix) with ESMTPS id 3AA9061998;
+ Thu, 11 Apr 2019 13:15:42 +0000 (UTC)
+Date: Thu, 11 Apr 2019 08:15:40 -0500
+From: Josh Poimboeuf <jpoimboe@redhat.com>
+To: Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH RFC 1/5] cpu/speculation: Add 'cpu_spec_mitigations='
+ cmdline options
+Message-ID: <20190411131540.754t5t4tp55i6vjq@treble>
+References: <cover.1554396090.git.jpoimboe@redhat.com>
+ <f0bd17358ab478eaca52f3b1da8305c150911b40.1554396090.git.jpoimboe@redhat.com>
+ <20190405131211.GE23348@zn.tnic>
+ <20190405142048.burthk2jnpcvi2om@treble>
+ <20190405152059.GG23348@zn.tnic> <20190405160136.GI23348@zn.tnic>
+ <20190405161852.nmpk22omgiety4df@treble>
+ <87sguqwgu7.fsf@concordia.ellerman.id.au>
+ <alpine.DEB.2.21.1904101408580.3479@nanos.tec.linutronix.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <921408ed6a19d9c6fed18182f03a6dac5ea42aae.camel@perches.com>
-User-Agent: Mutt/1.5.21 (2010-09-15)
-X-TM-AS-GCONF: 00
-x-cbid: 19041113-2213-0000-0000-00000374FE0F
-X-IBM-SpamModules-Scores: 
-X-IBM-SpamModules-Versions: BY=3.00010908; HX=3.00000242; KW=3.00000007;
- PH=3.00000004; SC=3.00000284; SDB=6.01187541; UDB=6.00622051; IPR=6.00968304; 
- MB=3.00026393; MTD=3.00000008; XFM=3.00000015; UTC=2019-04-11 13:12:25
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19041113-2214-0000-0000-00005DFC0248
-Message-Id: <20190411131222.GW14111@linux.ibm.com>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2019-04-11_08:, , signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1810050000 definitions=main-1904110091
+In-Reply-To: <alpine.DEB.2.21.1904101408580.3479@nanos.tec.linutronix.de>
+User-Agent: NeoMutt/20180716
+X-Scanned-By: MIMEDefang 2.79 on 10.5.11.12
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.5.16
+ (mx1.redhat.com [10.5.110.44]); Thu, 11 Apr 2019 13:15:48 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -108,67 +72,52 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Reply-To: paulmck@linux.ibm.com
-Cc: Tyrel Datwyler <tyreld@linux.ibm.com>, Josh Boyer <jwboyer@kernel.org>,
- linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
- Lukas Bulwahn <lukas.bulwahn@gmail.com>, linuxppc-dev@lists.ozlabs.org
+Cc: Peter Zijlstra <peterz@infradead.org>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>, Paul Mackerras <paulus@samba.org>,
+ "H . Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@kernel.org>,
+ Andrea Arcangeli <aarcange@redhat.com>, linux-s390@vger.kernel.org,
+ x86@kernel.org, Linus Torvalds <torvalds@linux-foundation.org>,
+ linux-arm-kernel@lists.infradead.org,
+ Catalin Marinas <catalin.marinas@arm.com>, Waiman Long <longman@redhat.com>,
+ linux-arch@vger.kernel.org, Will Deacon <will.deacon@arm.com>,
+ Jiri Kosina <jikos@kernel.org>, Borislav Petkov <bp@alien8.de>,
+ Andy Lutomirski <luto@kernel.org>, Jon Masters <jcm@redhat.com>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org,
+ Tyler Hicks <tyhicks@canonical.com>,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, Apr 11, 2019 at 05:27:31AM -0700, Joe Perches wrote:
-> On Thu, 2019-04-11 at 22:07 +1000, Michael Ellerman wrote:
-> > Joe Perches <joe@perches.com> writes:
-> > > On Thu, 2019-04-11 at 06:27 +0200, Lukas Bulwahn wrote:
-> > > > Paul McKenney attempted to update all email addresses @linux.vnet.ibm.com
-> > > > to @linux.ibm.com in commit 1dfddcdb95c4
-> > > > ("MAINTAINERS: Update from @linux.vnet.ibm.com to @linux.ibm.com"), but
-> > > > some still remained.
-> > > > 
-> > > > We update the remaining email addresses in MAINTAINERS, hopefully finally
-> > > > catching all cases for good.
-> > > 
-> > > Perhaps update all the similar addresses in other files too
-> > > 
-> > > $ git grep --name-only 'linux\.vnet\.ibm\.com' | wc -l
-> > > 315
+On Wed, Apr 10, 2019 at 02:10:01PM +0200, Thomas Gleixner wrote:
+> On Wed, 10 Apr 2019, Michael Ellerman wrote:
+> > Josh Poimboeuf <jpoimboe@redhat.com> writes:
 > > 
-> > A good number of them are no longer valid. So I'm not sure it's worth
-> > updating them en masse to addresses that won't ever work.
+> > > On Fri, Apr 05, 2019 at 06:01:36PM +0200, Borislav Petkov wrote:
+> > >> Thinking about this more, we can shave off the first 4 chars and have it
+> > >> be:
+> > >> 
+> > >> spec_mitigations=
+> > >> 
+> > >> I think it is painfully clear which speculation mitigations we mean. And
+> > >> the other switches don't have "cpu_" prefixes too so...
+> > >
+> > > Sure, I'm ok with renaming it to that, if there are no objections.
 > > 
-> > We have git now, we don't need email addresses in files, they're just
-> > prone to bitrot like this.
-> > 
-> > Should we just change them all like so?
-> > 
-> >   -arch/powerpc/boot/dts/bamboo.dts: * Josh Boyer <jwboyer@linux.vnet.ibm.com>
-> >   +arch/powerpc/boot/dts/bamboo.dts: * Josh Boyer (IBM)
-> > 
-> > To indicate the author was at IBM when they wrote it?
+> > What about when we have a mitigation for a non-speculation related bug :)
 > 
-> If that's desired, perhaps:
-> 
-> $ git grep -P --name-only '<?[\w\.]+(?:@| at )linux\.vnet\.ibm\.com>?' | \
->   grep -vP '\.mailmap|MAINTAINERS' | \
->   xargs perl -p -i -e 's/<?[\w\.]+(?:@|\ at\ )linux\.vnet\.ibm\.com>?/(IBM)/g'
-> 
-> > Or should we try and update them with current addresses? Though then the
-> > authors might start getting mails they don't want.
-> 
-> That'd be my preference.
-> 
-> If authors get emails they don't want, then those contact
-> emails should be removed.
+> Those kind of silicon bugs are usually mitigated unconditionally.
 
-I have updated most of mine, with one more installment of patches to go
-into the next merge window and another into the merge window after that.
-More churn than I would have expected, though.  If my email address were
-to change again, I would instead go with the "(IBM)" approach and let
-the git log and MAINTAINERS file keep the contact information.  Not that
-we get to update the git log, of course.  ;-)
+Right.
 
-I might not have bothered except for combining with the SPDX-tag
-commits.
+But at least "mitigations=" is nice and short.  We could clarify in the
+documentation that it doesn't apply to *all* mitigations, only the ones
+which are optional and which can affect performance.
 
-							Thanx, Paul
+And it would give us the freedom to include any future "optional"
+mitigations, spec or not.
 
+I kind of like it.  But I could go either way.
+
+-- 
+Josh
