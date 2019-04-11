@@ -2,93 +2,83 @@ Return-Path: <SRS0=HNI+=SN=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-4.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-2.5 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
+	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1A5D7C10F11
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Apr 2019 03:24:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C6F0BC10F11
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Apr 2019 03:37:03 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 4C46120873
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Apr 2019 03:24:57 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4C46120873
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 45C7B2084D
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Apr 2019 03:37:03 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="m25urrAi"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 45C7B2084D
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44fmc70MtqzDqMg
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Apr 2019 13:24:55 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44fmt503ZfzDqNs
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Apr 2019 13:37:01 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
- (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=ravi.bangoria@linux.ibm.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=gmail.com
+ (client-ip=2607:f8b0:4864:20::643; helo=mail-pl1-x643.google.com;
+ envelope-from=npiggin@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="m25urrAi"; 
+ dkim-atps=neutral
+Received: from mail-pl1-x643.google.com (mail-pl1-x643.google.com
+ [IPv6:2607:f8b0:4864:20::643])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44fmZL3H7rzDqG8
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Apr 2019 13:23:21 +1000 (AEST)
-Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x3B3KsH4120721
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Apr 2019 23:23:17 -0400
-Received: from e06smtp04.uk.ibm.com (e06smtp04.uk.ibm.com [195.75.94.100])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2rst297upv-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Apr 2019 23:23:17 -0400
-Received: from localhost
- by e06smtp04.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <ravi.bangoria@linux.ibm.com>;
- Thu, 11 Apr 2019 04:23:16 +0100
-Received: from b06cxnps4075.portsmouth.uk.ibm.com (9.149.109.197)
- by e06smtp04.uk.ibm.com (192.168.101.134) with IBM ESMTP SMTP Gateway:
- Authorized Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Thu, 11 Apr 2019 04:23:14 +0100
-Received: from d06av22.portsmouth.uk.ibm.com (d06av22.portsmouth.uk.ibm.com
- [9.149.105.58])
- by b06cxnps4075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x3B3NDVr18481342
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Thu, 11 Apr 2019 03:23:13 GMT
-Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 050E34C04E;
- Thu, 11 Apr 2019 03:23:13 +0000 (GMT)
-Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 426074C04A;
- Thu, 11 Apr 2019 03:23:12 +0000 (GMT)
-Received: from [9.124.31.167] (unknown [9.124.31.167])
- by d06av22.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Thu, 11 Apr 2019 03:23:12 +0000 (GMT)
-Subject: Re: [PATCH v2] powerpc/watchdog: Use hrtimers for per-CPU heartbeat
-To: Nicholas Piggin <npiggin@gmail.com>
-References: <20190409044005.26446-1-npiggin@gmail.com>
-From: Ravi Bangoria <ravi.bangoria@linux.ibm.com>
-Date: Thu, 11 Apr 2019 08:53:11 +0530
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
- Thunderbird/60.6.1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44fmqt3Xv1zDqGk
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Apr 2019 13:35:06 +1000 (AEST)
+Received: by mail-pl1-x643.google.com with SMTP id a96so2660712pla.6
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Apr 2019 20:35:06 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=from:to:cc:subject:date:message-id:mime-version
+ :content-transfer-encoding;
+ bh=mfPce7oGCKplZgC5wXkTyuZmmh+XEXF/RZVOfDV3eos=;
+ b=m25urrAi+4xkiJ1CsLzM2apRGya51y7qwjJc5REkCjz4D+TyX1l1LYGQKvtosh77RZ
+ sq94kLAAMjlYnNTTPTYouQxeUQuXn7z/o9b5erowiqk6PWtnt8RjhNXSgL0t1bLCIWOM
+ 5KlWXorybfGXnxz1Z3NpdB32Wpwf0zxBU0QFfGU8O9brs67wY1T3OfhWRWoY2TRssr0n
+ Ov6gQJgxWw23Cde35hvR12HiX4aWT1q9gynTOOgljdVREIdSctJVuz4/3fcxo3y41NWC
+ 09ZNZHtDRDfj9008TgUDSy4p/WXItsW0aeIH4VJIOE76ILtkij16gkNamBkeCcL7O54/
+ ll0Q==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+ :content-transfer-encoding;
+ bh=mfPce7oGCKplZgC5wXkTyuZmmh+XEXF/RZVOfDV3eos=;
+ b=Zd5vwl94QpqAXMJ3R9oaF3QIIbCKBADHzZfz0Qt8Ze7Tfc6CeGgS1rAb0Ba46TCj6o
+ DQ4ZfKi8Qxwg9OknLT9XZng277+MIOHb7FarGWBtKQx81GKR5mujEsUzicLr1VxUaNsK
+ 6nyYEh+3Yfq6qP+D0SUa8g9FdhRiJdJzK6ejwByNZQYco7R6mQO8nObhWafIhfbdJSib
+ C+rv/AJphxk8ynJ7aTcgrcL2VJleeokCcbhzrOHNHKLHh7cu67ZalPlwWQYafa8SESpq
+ dGn/ascYpxG4xHr/2xIX4zfbO9v5BQg37y6epH60ZNtVyXt+b+xLyXE9M0CodpypAIeR
+ 2QgQ==
+X-Gm-Message-State: APjAAAXnq0/97rPoJWW+w94P3yfKaBdqEB5iLEEi7WjgAI70Tz7mUQZQ
+ /LTD15KDfjm5SJBchCCBCM0=
+X-Google-Smtp-Source: APXvYqyICp4HbALhnA3SbAwWILmej0/qeGjvG1lnDwsLQ7HXwWDLdgTW/8U6whyjVhne8GwPzireTg==
+X-Received: by 2002:a17:902:bd0c:: with SMTP id
+ p12mr21998494pls.50.1554953702774; 
+ Wed, 10 Apr 2019 20:35:02 -0700 (PDT)
+Received: from bobo.local0.net ([203.63.188.231])
+ by smtp.gmail.com with ESMTPSA id b9sm37231416pfd.32.2019.04.10.20.34.57
+ (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
+ Wed, 10 Apr 2019 20:35:01 -0700 (PDT)
+From: Nicholas Piggin <npiggin@gmail.com>
+To: Thomas Gleixner <tglx@linutronix.de>,
+ Frederic Weisbecker <fweisbec@gmail.com>
+Subject: [PATCH v2 0/5] Allow CPU0 to be nohz full
+Date: Thu, 11 Apr 2019 13:34:43 +1000
+Message-Id: <20190411033448.20842-1-npiggin@gmail.com>
+X-Mailer: git-send-email 2.20.1
 MIME-Version: 1.0
-In-Reply-To: <20190409044005.26446-1-npiggin@gmail.com>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
-X-TM-AS-GCONF: 00
-x-cbid: 19041103-0016-0000-0000-0000026D8E21
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19041103-0017-0000-0000-000032C9C070
-Message-Id: <558e8f44-ff88-76c3-4f9a-72c3157a9234@linux.ibm.com>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2019-04-11_02:, , signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=877 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1810050000 definitions=main-1904110023
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -100,33 +90,49 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "Gautham R . Shenoy" <ego@linux.vnet.ibm.com>,
- Ravikumar Bangoria <ravi.bangoria@in.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Cc: linux-arch@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>,
+ "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>,
+ linux-kernel@vger.kernel.org, Nicholas Piggin <npiggin@gmail.com>,
+ Ingo Molnar <mingo@redhat.com>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+Since last time, I added a compile time option to opt-out of this
+if the platform does not support suspend on non-zero, and tried to
+improve legibility of changelogs and explain the justification
+better.
 
+I have been testing this on powerpc/pseries and it seems to work
+fine (the firmware call to suspend can be called on any CPU and
+resumes where it left off), but not included here because the
+code has some bitrot unrelated to this series which I hacked to
+fix. I will discuss it and either send an acked patch to go with
+this series if it is small, or fix it in powerpc tree.
 
-On 4/9/19 10:10 AM, Nicholas Piggin wrote:
-> Using a jiffies timer creates a dependency on the tick_do_timer_cpu
-> incrementing jiffies. If that CPU has locked up and jiffies is not
-> incrementing, the watchdog heartbeat timer for all CPUs stops and
-> creates false positives and confusing warnings on local CPUs, and
-> also causes the SMP detector to stop, so the root cause is never
-> detected.
-> 
-> Fix this by using hrtimer based timers for the watchdog heartbeat,
-> like the generic kernel hardlockup detector.
-> 
-> Cc: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
-> Reported-by: Ravikumar Bangoria <ravi.bangoria@in.ibm.com>
-> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+Thanks,
+Nick
 
-This one is giving me a proper backtrace when hardlockup happens
-with perf_fuzzer so,
-Tested-by: Ravi Bangoria <ravi.bangoria@linux.ibm.com>
+Nicholas Piggin (5):
+  sched/core: allow the remote scheduler tick to be started on CPU0
+  PM / suspend: add function to disable secondaries for suspend
+  kernel/cpu: Allow non-zero CPU to be primary for suspend / kexec
+    freeze
+  kernel/sched/isolation: require a present CPU in housekeeping mask
+  nohz_full: Allow the boot CPU to be nohz_full
 
-Neat:
-Reported-by: Ravi Bangoria <ravi.bangoria@linux.ibm.com>
+ include/linux/cpu.h       | 15 ++++++++++++
+ kernel/cpu.c              | 10 +++++++-
+ kernel/kexec_core.c       |  4 ++--
+ kernel/power/Kconfig      |  9 +++++++
+ kernel/power/hibernate.c  | 12 +++++-----
+ kernel/power/suspend.c    |  4 ++--
+ kernel/sched/core.c       |  2 +-
+ kernel/sched/isolation.c  | 18 ++++++++++----
+ kernel/time/tick-common.c | 50 +++++++++++++++++++++++++++++++++++----
+ kernel/time/tick-sched.c  | 34 ++++++++++++++++++--------
+ 11 files changed, 131 insertions(+), 31 deletions(-)
+
+-- 
+2.20.1
 
