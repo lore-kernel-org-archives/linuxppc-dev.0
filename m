@@ -2,61 +2,50 @@ Return-Path: <SRS0=HNI+=SN=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
+X-Spam-Status: No, score=-4.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 257F4C10F13
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Apr 2019 13:06:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3E401C10F13
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Apr 2019 13:09:21 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6B2652133D
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Apr 2019 13:06:32 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6B2652133D
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=perches.com
+	by mail.kernel.org (Postfix) with ESMTPS id BD22520693
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Apr 2019 13:09:20 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BD22520693
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44g1WB46QgzDqD9
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Apr 2019 23:06:30 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=perches.com
- (client-ip=216.40.44.113; helo=smtprelay.hostedemail.com;
- envelope-from=joe@perches.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=perches.com
-Received: from smtprelay.hostedemail.com (smtprelay0113.hostedemail.com
- [216.40.44.113])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 44g1ZQ4dQbzDqSw
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Apr 2019 23:09:18 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44g0fN2BbfzDqN0
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Apr 2019 22:27:38 +1000 (AEST)
-Received: from filter.hostedemail.com (clb03-v110.bra.tucows.net
- [216.40.38.60])
- by smtprelay04.hostedemail.com (Postfix) with ESMTP id C5EC2180A8123;
- Thu, 11 Apr 2019 12:27:34 +0000 (UTC)
-X-Session-Marker: 6A6F6540706572636865732E636F6D
-X-HE-Tag: coast83_5f0e5b204912b
-X-Filterd-Recvd-Size: 2769
-Received: from XPS-9350.home (cpe-23-242-196-136.socal.res.rr.com
- [23.242.196.136]) (Authenticated sender: joe@perches.com)
- by omf20.hostedemail.com (Postfix) with ESMTPA;
- Thu, 11 Apr 2019 12:27:33 +0000 (UTC)
-Message-ID: <921408ed6a19d9c6fed18182f03a6dac5ea42aae.camel@perches.com>
-Subject: Re: [PATCH] MAINTAINERS: Update remaining @linux.vnet.ibm.com
- addresses
-From: Joe Perches <joe@perches.com>
-To: Michael Ellerman <mpe@ellerman.id.au>, Lukas Bulwahn
- <lukas.bulwahn@gmail.com>, Tyrel Datwyler <tyreld@linux.ibm.com>
-Date: Thu, 11 Apr 2019 05:27:31 -0700
-In-Reply-To: <87k1g0vj7f.fsf@concordia.ellerman.id.au>
-References: <20190411042752.22039-1-lukas.bulwahn@gmail.com>
- <0702bc9a10703d53a46f27468b2c9ef2463e1c0b.camel@perches.com>
- <87k1g0vj7f.fsf@concordia.ellerman.id.au>
-Content-Type: text/plain; charset="ISO-8859-1"
-User-Agent: Evolution 3.30.1-1build1 
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44g0sk6nC8zDqSm
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Apr 2019 22:37:30 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=ellerman.id.au
+Received: by ozlabs.org (Postfix)
+ id 44g0sk3sZYz9s70; Thu, 11 Apr 2019 22:37:30 +1000 (AEST)
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
+ SHA256) (No client certificate requested)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 44g0sk1pyhz9s0W;
+ Thu, 11 Apr 2019 22:37:30 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Christopher M Riedl <cmr@informatik.wtf>, Oliver <oohall@gmail.com>
+Subject: Re: [PATCH v2] powerpc/xmon: add read-only mode
+In-Reply-To: <864072306.101924.1554863718473@privateemail.com>
+References: <20190408030804.5805-1-cmr@informatik.wtf>
+ <CAOSf1CEZgHtz5u6F+N7egf3B+MiquFcsopm1yiMZvdYvKcip1w@mail.gmail.com>
+ <864072306.101924.1554863718473@privateemail.com>
+Date: Thu, 11 Apr 2019 22:37:29 +1000
+Message-ID: <87h8b4vhti.fsf@concordia.ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -68,54 +57,88 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-pci@vger.kernel.org, "Paul E . McKenney" <paulmck@linux.ibm.com>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- Josh Boyer <jwboyer@kernel.org>
+Cc: linuxppc-dev@ozlabs.org, Andrew Donnellan <andrew.donnellan@au1.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, 2019-04-11 at 22:07 +1000, Michael Ellerman wrote:
-> Joe Perches <joe@perches.com> writes:
-> > On Thu, 2019-04-11 at 06:27 +0200, Lukas Bulwahn wrote:
-> > > Paul McKenney attempted to update all email addresses @linux.vnet.ibm.com
-> > > to @linux.ibm.com in commit 1dfddcdb95c4
-> > > ("MAINTAINERS: Update from @linux.vnet.ibm.com to @linux.ibm.com"), but
-> > > some still remained.
-> > > 
-> > > We update the remaining email addresses in MAINTAINERS, hopefully finally
-> > > catching all cases for good.
-> > 
-> > Perhaps update all the similar addresses in other files too
-> > 
-> > $ git grep --name-only 'linux\.vnet\.ibm\.com' | wc -l
-> > 315
-> 
-> A good number of them are no longer valid. So I'm not sure it's worth
-> updating them en masse to addresses that won't ever work.
-> 
-> We have git now, we don't need email addresses in files, they're just
-> prone to bitrot like this.
-> 
-> Should we just change them all like so?
-> 
->   -arch/powerpc/boot/dts/bamboo.dts: * Josh Boyer <jwboyer@linux.vnet.ibm.com>
->   +arch/powerpc/boot/dts/bamboo.dts: * Josh Boyer (IBM)
-> 
-> To indicate the author was at IBM when they wrote it?
+Christopher M Riedl <cmr@informatik.wtf> writes:
+>> On April 8, 2019 at 1:34 AM Oliver <oohall@gmail.com> wrote:
+>> On Mon, Apr 8, 2019 at 1:06 PM Christopher M. Riedl <cmr@informatik.wtf> wrote:
+...
+>> >
+>> > diff --git a/arch/powerpc/Kconfig.debug b/arch/powerpc/Kconfig.debug
+>> > index 4e00cb0a5464..0c7f21476018 100644
+>> > --- a/arch/powerpc/Kconfig.debug
+>> > +++ b/arch/powerpc/Kconfig.debug
+>> > @@ -117,6 +117,16 @@ config XMON_DISASSEMBLY
+>> >           to say Y here, unless you're building for a memory-constrained
+>> >           system.
+>> >
+>> 
+>> > +config XMON_RW
+>> > +       bool "Allow xmon read and write operations"
+>> > +       depends on XMON
+>> > +       default !STRICT_KERNEL_RWX
+>> > +       help
+>> > +         Allow xmon to read and write to memory and special-purpose registers.
+>> > +          Conversely, prevent xmon write access when set to N. Read and write
+>> > +          access can also be explicitly controlled with 'xmon=rw' or 'xmon=ro'
+>> > +          (read-only) cmdline options. Default is !STRICT_KERNEL_RWX.
+>> 
+>> Maybe I am a dumb, but I found this *extremely* confusing.
+>> Conventionally Kconfig options will control what code is and is not
+>> included in the kernel (see XMON_DISASSEMBLY) rather than changing the
+>> default behaviour of code. It's not wrong to do so and I'm going to
+>> assume that you were following the pattern of XMON_DEFAULT, but I
+>> think you need to be a little more clear about what option actually
+>> does. Renaming it to XMON_DEFAULT_RO_MODE and re-wording the
+>> description to indicate it's a only a mode change would help a lot.
+>> 
+>> Sorry if this comes across as pointless bikeshedding since it's the
+>> opposite of what Christophe said in the last patch, but this was a bit
+>> of a head scratcher.
+>
+> If anyone is dumb here it's me for making this confusing :)
+> I chatted with Michael Ellerman about this, so let me try to explain this more clearly.
 
-If that's desired, perhaps:
+Yeah it's my fault :)
 
-$ git grep -P --name-only '<?[\w\.]+(?:@| at )linux\.vnet\.ibm\.com>?' | \
-  grep -vP '\.mailmap|MAINTAINERS' | \
-  xargs perl -p -i -e 's/<?[\w\.]+(?:@|\ at\ )linux\.vnet\.ibm\.com>?/(IBM)/g'
+> There are two things I am trying to address with XMON_RW:
+> 1) provide a default access mode for xmon based on system "security"
 
-> Or should we try and update them with current addresses? Though then the
-> authors might start getting mails they don't want.
+I think I've gone off this idea. Tying them together is just enforcing a
+linkage that people may not want.
 
-That'd be my preference.
+I think XMON_RW should just be an option that stands on its own. It
+should probably be default n, to give people a safe default.
 
-If authors get emails they don't want, then those contact
-emails should be removed.
+> 2) replace XMON in the decision to write-protect kernel text at compile-time
+
+We should do that as a separate patch. That's actually a bug in the
+current STRICT_KERNEL_RWX support.
+
+ie. STRICT_KERNEL_RWX should always give you PAGE_KERNEL_ROX, regardless
+of XMON or anything else.
+
+> I think a single Kconfig for both of those things is sensible as ultimately the
+> point is to allow xmon to operate in read-only mode on "secure" systems -- without
+> violating any integrity/security guarantees (such as write-protected kernel text).
+>
+> Christophe suggested looking at STRICT_KERNEL_RWX and I think that option makes the
+> most sense to base XMON_RW on since the description for STRICT_KERNEL_RWX states:
+
+Once we fix the bugs in STRICT_KERNEL_RWX people are going to enable
+that by default, so it will essentially be always on in future.
 
 
+> With that said, I will remove the 'xmon=rw' cmdline option as it really doesn't work
+> since kernel text is write-protected at compile time.
+
+I think 'xmon=rw' still makes sense. Only some of the RW functionality
+relies on being able to patch kernel text.
+
+And once you have proccall() you can just call a function to make it
+read/write anyway, or use memex to manually frob the page tables.
+
+cheers
