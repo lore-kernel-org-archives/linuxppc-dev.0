@@ -2,53 +2,61 @@ Return-Path: <SRS0=HNI+=SN=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_PASS,USER_AGENT_MUTT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_PASS,
+	USER_AGENT_MUTT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D28B0C10F14
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Apr 2019 09:57:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5487DC10F13
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Apr 2019 10:28:54 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 24AE6217D4
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Apr 2019 09:57:49 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 24AE6217D4
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arm.com
+	by mail.kernel.org (Postfix) with ESMTPS id B83262084D
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Apr 2019 10:28:53 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ozlabs.org header.i=@ozlabs.org header.b="rBgkoiWN"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B83262084D
+Authentication-Results: mail.kernel.org; dmarc=pass (p=none dis=none) header.from=ozlabs.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44fxKR5HRRzDqRM
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Apr 2019 19:57:47 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44fy1H1nhyzDqQx
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Apr 2019 20:28:51 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44fxzR6vcCzDqNx
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Apr 2019 20:27:15 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=arm.com
- (client-ip=217.140.101.70; helo=foss.arm.com;
- envelope-from=mark.rutland@arm.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=arm.com
-Received: from foss.arm.com (foss.arm.com [217.140.101.70])
- by lists.ozlabs.org (Postfix) with ESMTP id 44fxHh35tyzDqMB
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Apr 2019 19:56:11 +1000 (AEST)
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.72.51.249])
- by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id E81FE374;
- Thu, 11 Apr 2019 02:56:08 -0700 (PDT)
-Received: from lakrids.cambridge.arm.com (usa-sjc-imap-foss1.foss.arm.com
- [10.72.51.249])
- by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id F17F73F59C;
- Thu, 11 Apr 2019 02:56:05 -0700 (PDT)
-Date: Thu, 11 Apr 2019 10:55:43 +0100
-From: Mark Rutland <mark.rutland@arm.com>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>
-Subject: Re: [PATCH 1/6] mm: change locked_vm's type from unsigned long to
- atomic64_t
-Message-ID: <20190411095543.GA55197@lakrids.cambridge.arm.com>
-References: <20190402204158.27582-1-daniel.m.jordan@oracle.com>
- <20190402204158.27582-2-daniel.m.jordan@oracle.com>
- <614ea07a-dd1e-2561-b6f4-2d698bf55f5b@ozlabs.ru>
+ dmarc=pass (p=none dis=none) header.from=ozlabs.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ secure) header.d=ozlabs.org header.i=@ozlabs.org header.b="rBgkoiWN"; 
+ dkim-atps=neutral
+Received: by ozlabs.org (Postfix, from userid 1003)
+ id 44fxzR2Jt2z9s71; Thu, 11 Apr 2019 20:27:15 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ozlabs.org; s=201707;
+ t=1554978435; bh=ppqUwnkzsxm0Z2Fzw4KgjrLdBsT6oyRWP9hNqLrvASY=;
+ h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+ b=rBgkoiWNEAkrJwLNXBPbCcNULiSnUyBa3zErTbSNm58z9hqqBNPsLxBRwQc3HwOiY
+ 5CcLRiR8p3VIMbRL3OHuTs6tg4UX+yGYURJ02ekFtLkJT2xaNVHTTHyNv7tqDD4ok/
+ VkNG01CI5Z/AZdqmy17gxkUdw0WxV6QwbpAZlETlV6H+vlmZdF0t0DWORiKH5ei1iv
+ +xlCjBpJK2p+vTVmiEVdRkIffyrKrOzwA21YaabVpXhNlNSIWqHULIa6/pTYrxO439
+ 4ckvaXV1/kujuxCmSomDZ9pFVaMA056BgZ34UYg3Uvb1kJCxTdhHt4geD4Ukpw8jQM
+ B6p1eyobtvi6Q==
+Date: Thu, 11 Apr 2019 20:27:10 +1000
+From: Paul Mackerras <paulus@ozlabs.org>
+To: =?iso-8859-1?Q?C=E9dric?= Le Goater <clg@kaod.org>
+Subject: Re: [PATCH v5 16/16] KVM: PPC: Book3S HV: XIVE: introduce a
+ 'release' device operation
+Message-ID: <20190411102710.GD21252@blackberry>
+References: <20190410170448.3923-1-clg@kaod.org>
+ <20190410170448.3923-17-clg@kaod.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <614ea07a-dd1e-2561-b6f4-2d698bf55f5b@ozlabs.ru>
-User-Agent: Mutt/1.11.1+11 (2f07cb52) (2018-12-01)
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20190410170448.3923-17-clg@kaod.org>
+User-Agent: Mutt/1.5.24 (2015-08-30)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -60,44 +68,55 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Davidlohr Bueso <dave@stgolabs.net>, kvm@vger.kernel.org,
- Alan Tull <atull@kernel.org>, linux-fpga@vger.kernel.org,
- linux-kernel@vger.kernel.org, kvm-ppc@vger.kernel.org,
- Daniel Jordan <daniel.m.jordan@oracle.com>, linux-mm@kvack.org,
- Alex Williamson <alex.williamson@redhat.com>, Moritz Fischer <mdf@kernel.org>,
- akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org,
- Christoph Lameter <cl@linux.com>, Wu Hao <hao.wu@intel.com>
+Cc: kvm@vger.kernel.org, kvm-ppc@vger.kernel.org,
+ Paolo Bonzini <pbonzini@redhat.com>, linuxppc-dev@lists.ozlabs.org,
+ David Gibson <david@gibson.dropbear.id.au>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, Apr 11, 2019 at 02:22:23PM +1000, Alexey Kardashevskiy wrote:
-> On 03/04/2019 07:41, Daniel Jordan wrote:
-
-> > -	dev_dbg(dev, "[%d] RLIMIT_MEMLOCK %c%ld %ld/%ld%s\n", current->pid,
-> > +	dev_dbg(dev, "[%d] RLIMIT_MEMLOCK %c%ld %lld/%lu%s\n", current->pid,
-> >  		incr ? '+' : '-', npages << PAGE_SHIFT,
-> > -		current->mm->locked_vm << PAGE_SHIFT, rlimit(RLIMIT_MEMLOCK),
-> > -		ret ? "- exceeded" : "");
-> > +		(s64)atomic64_read(&current->mm->locked_vm) << PAGE_SHIFT,
-> > +		rlimit(RLIMIT_MEMLOCK), ret ? "- exceeded" : "");
+On Wed, Apr 10, 2019 at 07:04:48PM +0200, Cédric Le Goater wrote:
+> When a P9 sPAPR VM boots, the CAS negotiation process determines which
+> interrupt mode to use (XICS legacy or XIVE native) and invokes a
+> machine reset to activate the chosen mode.
 > 
-> 
-> 
-> atomic64_read() returns "long" which matches "%ld", why this change (and
-> similar below)? You did not do this in the two pr_debug()s above anyway.
+> To be able to switch from one mode to another, we introduce the
+> capability to release a KVM device without destroying the VM. The KVM
+> device interface is extended with a new 'release' operation which is
+> called when the file descriptor of the device is closed.
 
-Unfortunately, architectures return inconsistent types for atomic64 ops.
+Unfortunately, I think there is now a memory leak:
 
-Some return long (e..g. powerpc), some return long long (e.g. arc), and
-some return s64 (e.g. x86).
+> diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
+> index ea2018ae1cd7..ea2619d5ca98 100644
+> --- a/virt/kvm/kvm_main.c
+> +++ b/virt/kvm/kvm_main.c
+> @@ -2938,6 +2938,19 @@ static int kvm_device_release(struct inode *inode, struct file *filp)
+>  	struct kvm_device *dev = filp->private_data;
+>  	struct kvm *kvm = dev->kvm;
+>  
+> +	if (!dev)
+> +		return -ENODEV;
+> +
+> +	if (dev->kvm != kvm)
+> +		return -EPERM;
+> +
+> +	if (dev->ops->release) {
+> +		mutex_lock(&kvm->lock);
+> +		list_del(&dev->vm_node);
 
-I'm currently trying to clean things up so that all use s64 [1], but in
-the mean time it's necessary for generic code use a cast or temporarly
-variable to ensure a consistent type. Once that's cleaned up, we can
-remove the redundant casts.
+Because the device is now no longer in the kvm->devices list,
+kvm_destroy_devices() won't find it there and therefore won't call the
+device's destroy method.  In fact now the device's destroy method will
+never get called; I can't see how kvmppc_xive_free() or
+kvmppc_xive_native_free() will ever get called.  Thus the memory for
+the kvmppc_xive structs will never get freed as far as I can see.
 
-Thanks,
-Mark.
+We could fix that by freeing both of the kvm->arch.xive_devices
+entries at VM destruction time.
 
-[1] https://git.kernel.org/pub/scm/linux/kernel/git/mark/linux.git/log/?h=atomics/type-cleanup
+If it is true that any device that has a release method will never see
+its destroy method being called, then that needs to be documented
+clearly somewhere.
+
+Paul.
