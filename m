@@ -2,80 +2,98 @@ Return-Path: <SRS0=HNI+=SN=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.5 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_MUTT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id F2CA8C10F13
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Apr 2019 11:17:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 65409C10F13
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Apr 2019 11:35:06 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6F2002084D
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Apr 2019 11:17:15 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="aIzBGpzE"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6F2002084D
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	by mail.kernel.org (Postfix) with ESMTPS id A784220818
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Apr 2019 11:35:05 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A784220818
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44fz55211XzDqRJ
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Apr 2019 21:17:13 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44fzTg3bcJzDqQd
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Apr 2019 21:35:03 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=2a00:1450:4864:20::543; helo=mail-ed1-x543.google.com;
- envelope-from=daniel.baluta@gmail.com; receiver=<UNKNOWN>)
+ spf=none (mailfrom) smtp.mailfrom=linux.vnet.ibm.com
+ (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
+ envelope-from=paulmck@linux.vnet.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="aIzBGpzE"; 
- dkim-atps=neutral
-Received: from mail-ed1-x543.google.com (mail-ed1-x543.google.com
- [IPv6:2a00:1450:4864:20::543])
+ dmarc=none (p=none dis=none) header.from=linux.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44fz3N4xsqzDqQP
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Apr 2019 21:15:43 +1000 (AEST)
-Received: by mail-ed1-x543.google.com with SMTP id s39so4868301edb.2
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Apr 2019 04:15:43 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=mime-version:references:in-reply-to:from:date:message-id:subject:to
- :cc; bh=vMzOF4uSDEO2czI0u54xXAsMS0XJszj2itVS4kGxliE=;
- b=aIzBGpzEc+WkohNa9Z2aqEpD+O1b6cnlEt1JZ42UBLnEPAK5ueo66UUwQ/3uDaeSxt
- CAv2HaWP/4BrjgujYwvqBHpvBGVdlhfbPFql+Z+kidt4EmeC9c3R5JWjhJwCZq6vvVsV
- NMGmkGZGS/pJIs9cLnp70uyDsdBbaUJ6FO99Z9J6H0rHhGTVTQm1WauPAj3TkDZzt+1P
- +sZNna9PN0nRvNcrayjq8YJqAp48Y8GJatpCKBuqbyzvKiDiPq+zhDnrqkVUe8smF7jN
- +iRWRhJJ+ypexp5qB6xmmLttXirrM1lU/AuZY3UD+lL0P9Ptzvk7BX7pF3A5h1IY3K8z
- Jvuw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:mime-version:references:in-reply-to:from:date
- :message-id:subject:to:cc;
- bh=vMzOF4uSDEO2czI0u54xXAsMS0XJszj2itVS4kGxliE=;
- b=oin5YR9+uKPY88UpdAalh1lurioBE6cLWPfF3+k9QpA64Q6EMDIqw5WHhtA+HRyy8e
- xrVXLWZBJAzW5IELV07dZs28YJuhxX6Jma5oLvoKldmIs75gAFqmVMjrylUeOFZXrjF7
- LGtgTzsZAWzB4SBm8iO1nL1aSCVZcmgWbhXp/tb28Wcaw0/g0Qg3jsnvfWnZuGuRkRId
- SqrWinFaIZCP+zw1QeTpgRIIYtkYYKLO+988Doqr307rw2jCPX9EJPIvmZM0+WoZpf5D
- mb4VOS1GCTuTGey4nva+5tlFAvdwkxpq9Z0JGEYn4rCaW/lCzJWBxQZwGLcvoq496JM+
- KrnA==
-X-Gm-Message-State: APjAAAUfrmiEu5+ee2fk6hu2tinF3MZD1WSfvtpEoUfqLU8SHY8p4OLr
- rswCpsg3tLIE9UPuw2aEmedZzdt8ozDCf+e8JJg=
-X-Google-Smtp-Source: APXvYqwtFkdXzzznOt+LGqMT+WWQHuvaK5bL+8ulM1daZktTxcAkO+p9DA5+QKyNnw1BtNmN9qlbJ53aybHPgPqK3GI=
-X-Received: by 2002:a05:6402:12d5:: with SMTP id
- k21mr16320470edx.75.1554981339790; 
- Thu, 11 Apr 2019 04:15:39 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44fzS26CX4zDqQP
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Apr 2019 21:33:34 +1000 (AEST)
+Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
+ x3BBTmkM140796
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Apr 2019 07:33:31 -0400
+Received: from e11.ny.us.ibm.com (e11.ny.us.ibm.com [129.33.205.201])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2rt1dwk2qc-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Apr 2019 07:33:30 -0400
+Received: from localhost
+ by e11.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <paulmck@linux.vnet.ibm.com>;
+ Thu, 11 Apr 2019 12:33:30 +0100
+Received: from b01cxnp23034.gho.pok.ibm.com (9.57.198.29)
+ by e11.ny.us.ibm.com (146.89.104.198) with IBM ESMTP SMTP Gateway: Authorized
+ Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Thu, 11 Apr 2019 12:33:28 +0100
+Received: from b01ledav003.gho.pok.ibm.com (b01ledav003.gho.pok.ibm.com
+ [9.57.199.108])
+ by b01cxnp23034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x3BBXRfs25428214
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Thu, 11 Apr 2019 11:33:27 GMT
+Received: from b01ledav003.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id ACFDDB2064;
+ Thu, 11 Apr 2019 11:33:27 +0000 (GMT)
+Received: from b01ledav003.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 8CEDEB205F;
+ Thu, 11 Apr 2019 11:33:27 +0000 (GMT)
+Received: from paulmck-ThinkPad-W541 (unknown [9.80.233.240])
+ by b01ledav003.gho.pok.ibm.com (Postfix) with ESMTP;
+ Thu, 11 Apr 2019 11:33:27 +0000 (GMT)
+Received: by paulmck-ThinkPad-W541 (Postfix, from userid 1000)
+ id 0BD2A16C2940; Thu, 11 Apr 2019 04:33:28 -0700 (PDT)
+Date: Thu, 11 Apr 2019 04:33:28 -0700
+From: "Paul E. McKenney" <paulmck@linux.ibm.com>
+To: Lukas Bulwahn <lukas.bulwahn@gmail.com>
+Subject: Re: [PATCH] MAINTAINERS: Update remaining @linux.vnet.ibm.com
+ addresses
+References: <20190411042752.22039-1-lukas.bulwahn@gmail.com>
 MIME-Version: 1.0
-References: <cover.1554975348.git.shengjiu.wang@nxp.com>
- <a04859bff36ba26cb4cb51ff092a3f2e2eca455d.1554975348.git.shengjiu.wang@nxp.com>
-In-Reply-To: <a04859bff36ba26cb4cb51ff092a3f2e2eca455d.1554975348.git.shengjiu.wang@nxp.com>
-From: Daniel Baluta <daniel.baluta@gmail.com>
-Date: Thu, 11 Apr 2019 14:15:28 +0300
-Message-ID: <CAEnQRZAQk1w79uqFCBCkFy=4_FQvxetfPsS10c+AMddJpc1VNg@mail.gmail.com>
-Subject: Re: [PATCH V2 1/2] ASoC: fsl_asrc: replace the process_option table
- with function
-To: "S.j. Wang" <shengjiu.wang@nxp.com>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20190411042752.22039-1-lukas.bulwahn@gmail.com>
+User-Agent: Mutt/1.5.21 (2010-09-15)
+X-TM-AS-GCONF: 00
+x-cbid: 19041111-2213-0000-0000-00000374F133
+X-IBM-SpamModules-Scores: 
+X-IBM-SpamModules-Versions: BY=3.00010908; HX=3.00000242; KW=3.00000007;
+ PH=3.00000004; SC=3.00000284; SDB=6.01187508; UDB=6.00622031; IPR=6.00968271; 
+ MB=3.00026392; MTD=3.00000008; XFM=3.00000015; UTC=2019-04-11 11:33:29
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 19041111-2214-0000-0000-00005DFBC336
+Message-Id: <20190411113328.GV14111@linux.ibm.com>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
+ definitions=2019-04-11_07:, , signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1011 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1810050000 definitions=main-1904110081
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -87,128 +105,67 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
- "timur@kernel.org" <timur@kernel.org>,
- "Xiubo.Lee@gmail.com" <Xiubo.Lee@gmail.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "nicoleotsuka@gmail.com" <nicoleotsuka@gmail.com>,
- "broonie@kernel.org" <broonie@kernel.org>,
- "festevam@gmail.com" <festevam@gmail.com>
+Reply-To: paulmck@linux.ibm.com
+Cc: Tyrel Datwyler <tyreld@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi Shengjiu,
+On Thu, Apr 11, 2019 at 06:27:52AM +0200, Lukas Bulwahn wrote:
+> Paul McKenney attempted to update all email addresses @linux.vnet.ibm.com
+> to @linux.ibm.com in commit 1dfddcdb95c4
+> ("MAINTAINERS: Update from @linux.vnet.ibm.com to @linux.ibm.com"), but
+> some still remained.
+> 
+> We update the remaining email addresses in MAINTAINERS, hopefully finally
+> catching all cases for good.
+> 
+> Fixes: 1dfddcdb95c4 ("MAINTAINERS: Update from @linux.vnet.ibm.com to @linux.ibm.com")
+> Signed-off-by: Lukas Bulwahn <lukas.bulwahn@gmail.com>
 
-Mostly looking good. See few comments inline:
+For whatever it is worth:
 
-<snip>
+Acked-by: Paul E. McKenney <paulmck@linux.ibm.com>
 
-> +/*
-> + * Select the pre-processing and post-processing options
-> + *
-> + * Fsin: input sample rate
-> + * Fsout: output sample rate
-> + * pre_proc: return value for pre-processing option
-> + * post_proc: return value for post-processing option
-> + */
-> +static int fsl_asrc_sel_proc(int Fsin, int Fsout, int *pre_proc, int *post_proc)
+> ---
+> 
+> Tyrel, please take this patch. Thanks.
+> 
+>  MAINTAINERS | 6 +++---
+>  1 file changed, 3 insertions(+), 3 deletions(-)
+> 
+> diff --git a/MAINTAINERS b/MAINTAINERS
+> index 2359e12e4c41..454b3cf36aa4 100644
+> --- a/MAINTAINERS
+> +++ b/MAINTAINERS
+> @@ -7439,14 +7439,14 @@ F:	drivers/crypto/vmx/ghash*
+>  F:	drivers/crypto/vmx/ppc-xlate.pl
+>  
+>  IBM Power PCI Hotplug Driver for RPA-compliant PPC64 platform
+> -M:	Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
+> +M:	Tyrel Datwyler <tyreld@linux.ibm.com>
+>  L:	linux-pci@vger.kernel.org
+>  L:	linuxppc-dev@lists.ozlabs.org
+>  S:	Supported
+>  F:	drivers/pci/hotplug/rpaphp*
+>  
+>  IBM Power IO DLPAR Driver for RPA-compliant PPC64 platform
+> -M:	Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
+> +M:	Tyrel Datwyler <tyreld@linux.ibm.com>
+>  L:	linux-pci@vger.kernel.org
+>  L:	linuxppc-dev@lists.ozlabs.org
+>  S:	Supported
+> @@ -10388,7 +10388,7 @@ F:	arch/arm/mach-mmp/
+>  
+>  MMU GATHER AND TLB INVALIDATION
+>  M:	Will Deacon <will.deacon@arm.com>
+> -M:	"Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+> +M:	"Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
+>  M:	Andrew Morton <akpm@linux-foundation.org>
+>  M:	Nick Piggin <npiggin@gmail.com>
+>  M:	Peter Zijlstra <peterz@infradead.org>
+> -- 
+> 2.17.1
+> 
 
-Lets be naming consistent here: Fsin -> fs_in, Fsout -> fs_out.
-
-> +{
-> +       bool det_out_op2_cond;
-> +       bool det_out_op0_cond;
-> +
-> +       /* Codition for selection of post-processing */
-> +       det_out_op2_cond = (((Fsin * 15 > Fsout * 16) & (Fsout < 56000)) |
-> +                                       ((Fsin > 56000) & (Fsout < 56000)));
-Remove outer parenthesis. Also should here be a logical or (||)
-instead of bitwise or (|)?
-Same for && vs &.
-
-> +       det_out_op0_cond = (Fsin * 23 < Fsout * 8);
-
-Remove outer parenthesis.
-> +
-> +       /*
-> +        * unsupported case: Tsout>16.125*Tsin, and Tsout>8.125*Tsin.
-> +        * Tsout>16.125*Tsin -> Fsin * 8 > 129 * Fsout
-> +        * Tsout>8.125*Tsin  -> Fsin * 8 > 65 * Fsout
-> +        * Tsout>4.125*Tsin  -> Fsin * 8 > 33 * Fsout
-> +        * Tsout>1.875*Tsin  -> Fsin * 8 > 15 * Fsout
-> +        */
-> +       if (Fsin * 8 > 129 * Fsout)
-> +               *pre_proc = 5;
-> +       else if (Fsin * 8 > 65 * Fsout)
-> +               *pre_proc = 4;
-> +       else if (Fsin * 8 > 33 * Fsout)
-> +               *pre_proc = 2;
-> +       else if (Fsin * 8 > 15 * Fsout) {
-> +               if (Fsin > 152000)
-> +                       *pre_proc = 2;
-> +               else
-> +                       *pre_proc = 1;
-> +       } else if (Fsin < 76000)
-> +               *pre_proc = 0;
-> +       else if (Fsin > 152000)
-> +               *pre_proc = 2;
-> +       else
-> +               *pre_proc = 1;
-> +
-> +       if (det_out_op2_cond)
-> +               *post_proc = 2;
-> +       else if (det_out_op0_cond)
-> +               *post_proc = 0;
-> +       else
-> +               *post_proc = 1;
-> +
-> +       /* unsupported options */
-> +       if (*pre_proc == 4 || *pre_proc == 5)
-> +               return -EINVAL;
-> +
-> +       return 0;
-> +}
-> +
->  /**
->   * Request ASRC pair
->   *
-> @@ -239,8 +278,10 @@ static int fsl_asrc_config_pair(struct fsl_asrc_pair *pair)
->         u32 inrate, outrate, indiv, outdiv;
->         u32 clk_index[2], div[2];
->         int in, out, channels;
-> +       int pre_proc, post_proc;
->         struct clk *clk;
->         bool ideal;
-> +       int ret;
->
->         if (!config) {
->                 pair_err("invalid pair config\n");
-> @@ -289,6 +330,12 @@ static int fsl_asrc_config_pair(struct fsl_asrc_pair *pair)
->                 return -EINVAL;
->         }
->
-> +       ret = fsl_asrc_sel_proc(inrate, outrate, &pre_proc, &post_proc);
-> +       if (ret) {
-> +               pair_err("No supported pre-processing options\n");
-> +               return ret;
-> +       }
-> +
->         /* Validate input and output clock sources */
->         clk_index[IN] = clk_map[IN][config->inclk];
->         clk_index[OUT] = clk_map[OUT][config->outclk];
-> @@ -380,8 +427,8 @@ static int fsl_asrc_config_pair(struct fsl_asrc_pair *pair)
->         /* Apply configurations for pre- and post-processing */
->         regmap_update_bits(asrc_priv->regmap, REG_ASRCFG,
->                            ASRCFG_PREMODi_MASK(index) | ASRCFG_POSTMODi_MASK(index),
-> -                          ASRCFG_PREMOD(index, process_option[in][out][0]) |
-> -                          ASRCFG_POSTMOD(index, process_option[in][out][1]));
-> +                          ASRCFG_PREMOD(index, pre_proc) |
-> +                          ASRCFG_POSTMOD(index, post_proc));
->
->         return fsl_asrc_set_ideal_ratio(pair, inrate, outrate);
->  }
-> --
-> 1.9.1
->
