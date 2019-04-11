@@ -7,21 +7,21 @@ X-Spam-Status: No, score=-8.5 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
 	SPF_PASS,USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4A3C4C10F11
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Apr 2019 03:42:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DF8EBC10F11
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Apr 2019 03:43:43 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id A26C32084D
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Apr 2019 03:42:09 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 57FD820818
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Apr 2019 03:43:43 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="OLl9hNwt"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A26C32084D
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="WH+pvqRX"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 57FD820818
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44fmzz20dVzDqFF
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Apr 2019 13:42:07 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44fn1n4YrgzDqBm
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Apr 2019 13:43:41 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=gmail.com
  (client-ip=2607:f8b0:4864:20::441; helo=mail-pf1-x441.google.com;
@@ -29,53 +29,53 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="OLl9hNwt"; 
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="WH+pvqRX"; 
  dkim-atps=neutral
 Received: from mail-pf1-x441.google.com (mail-pf1-x441.google.com
  [IPv6:2607:f8b0:4864:20::441])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44fmr63HBQzDqMk
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Apr 2019 13:35:18 +1000 (AEST)
-Received: by mail-pf1-x441.google.com with SMTP id 10so2718891pfo.5
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Apr 2019 20:35:18 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44fmrC04QMzDqHv
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Apr 2019 13:35:23 +1000 (AEST)
+Received: by mail-pf1-x441.google.com with SMTP id c8so2701765pfd.10
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Apr 2019 20:35:22 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
  h=from:to:cc:subject:date:message-id:in-reply-to:references
  :mime-version:content-transfer-encoding;
- bh=BNWp/JYAk75hC4HoWk0MvjkPFwZd8/2hFPRLSvOXOzA=;
- b=OLl9hNwtQd2tB2gY61TlRWKsYN1lJrQaRCJPgoKV/o/v19h1MGYYtfn3hqMDcMiDv7
- MlKokVZ7JhzBXCEOi7CCWEQOBLnCFiSgFc2gzOWEVuu0nS6wcvgMMSUUT11hgdzYTmpn
- vFH9Uj5fgfzYwWF619iOjKD/l3KdB0lD9yVxnhqkJNv2gpbUNk+wCj5AY4tjJxUc5itU
- 25EsAujPh5U/3AFe0WWBbw+I8or9RlVbH8n3VQ+mk1hiRkZDoSX4zT9ApFaUv7js1JzW
- Go6Fnfvy7y1ArMpTZBHhCUZSesr/PenYyTJMdl4/8znL0E6RHDd8c5Dp3EsubPuUTqeV
- Df6g==
+ bh=++5Kahm69pfih1hlK32V2CQsRTIBHswnoEuweJf+4FY=;
+ b=WH+pvqRX3E2xh2rFecOyDRCL/X74JCuPg/LesGHhNgXVZDyFJA0pQLS9Vy3VdLRxvP
+ vTSlK0Zk5yKDB7vLIIUxly10b8IO+D989VVDom5iZ7qDXy3L5dW65+HleAdiQodR7A+2
+ Md3pdYPS+GqAam57HbHSogR6EqZEN81o8OR03KxxXDccb/s5bQki31tJb7gGL+5Yr0t6
+ EePjGtlxj/m/LDQ47/STaqzMd40vfqCO3/gVetZjVvVOqTrm2kh6XqKyGnpWMxj+6bbZ
+ FXEiBQtOxW1hn5hzUuVUz+tgJ21i9wa8d77Yd/AusxdfZpjw8qF2Jo2BBguFKMaz02Sw
+ xlXw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
  :references:mime-version:content-transfer-encoding;
- bh=BNWp/JYAk75hC4HoWk0MvjkPFwZd8/2hFPRLSvOXOzA=;
- b=dc1vdKDcW1Nhogd201IOTKgwAkJh++9k5WFVtYtwrcmPFKISjrwV6hRa3I4X6dicDY
- AsUgIadh/1zghkG/G4cXzH1Bkg/i6k1f3ENFdjpBAgGOqrk4VFuTBjSVMizNi211kmpa
- /CjxQDsioOcoaXjIv/VfXWLyupLwEvqaV3n4rpclAe+mvoFEypJxllveTnu7ZmPRgwYD
- TNc+JLAI4kLF0uq46up/10hNXh75r1DOYrjfPG1AkzNJHh/sLvwlFqY3P5c6SwsuY2/u
- Mpj28oX7CqqxD2hS74Ykrdsh+OJbCyy61ILBlLhC4S0vrNVGY4Mo9p0oxqzDIM862rwo
- bayA==
-X-Gm-Message-State: APjAAAWkm06fcOEWfRqOoSzIUCVz3ceiYupghfObzkQbXGVezrYyOemN
- fE679XUXP/Ale/BYupRtgtY=
-X-Google-Smtp-Source: APXvYqyDgWG4ci3RtiypzLC3Kgjv3A2jZhQBoW86sUX8p83WdFga8vK543Il4hpAUUzCUxz68qhcrQ==
-X-Received: by 2002:a63:2b41:: with SMTP id r62mr42647693pgr.403.1554953716793; 
- Wed, 10 Apr 2019 20:35:16 -0700 (PDT)
+ bh=++5Kahm69pfih1hlK32V2CQsRTIBHswnoEuweJf+4FY=;
+ b=gSq8hLEe594xmaxcC+spYe0XcpFVu42TkHVEAid4OUjoBm8YiO5hegywblu4bcKz6i
+ 8RdExHb3SOJTxpjfJ22LJFGfOtxab76VIgB7LAIqwqBcnku6qMSBXoSX8qe0hPMNwSnj
+ OQjE2V2XKu4KZmvUhM4ekxc2pZpIncmJFQr5TMH1V/LiRt1swO+PEFAsLWj5+WpAVmq4
+ ML+6G2q8e5lfS0ZZz0BJ3w1Zy0HT6WM5X3oUDmXh7V/ubDXH6M3urGCio1o2q0czzewM
+ W3H4NsBmh4JJoKsrIBCKeWrCvDO+0/cQtk0R6wRsePy/xW9/G24PTGk+4tbtaQeDoWF+
+ KPog==
+X-Gm-Message-State: APjAAAXA1TDarDuqI+DuAIMuhjUofu0YwPOeYS0TOo8X5QpDBqIPRCsi
+ BHn858NWBL56OLwbSBk/DS4=
+X-Google-Smtp-Source: APXvYqwTHeF65/Hp98rNuZyayD9mE9HdJHFhhwJYBomZ+S1ESXIs7o+WkVag66TeJ4YVjbnqclZNJA==
+X-Received: by 2002:a63:115c:: with SMTP id 28mr15643940pgr.270.1554953721421; 
+ Wed, 10 Apr 2019 20:35:21 -0700 (PDT)
 Received: from bobo.local0.net ([203.63.188.231])
- by smtp.gmail.com with ESMTPSA id b9sm37231416pfd.32.2019.04.10.20.35.12
+ by smtp.gmail.com with ESMTPSA id b9sm37231416pfd.32.2019.04.10.20.35.17
  (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
- Wed, 10 Apr 2019 20:35:16 -0700 (PDT)
+ Wed, 10 Apr 2019 20:35:20 -0700 (PDT)
 From: Nicholas Piggin <npiggin@gmail.com>
 To: Thomas Gleixner <tglx@linutronix.de>,
  Frederic Weisbecker <fweisbec@gmail.com>
-Subject: [PATCH v2 3/5] kernel/cpu: Allow non-zero CPU to be primary for
- suspend / kexec freeze
-Date: Thu, 11 Apr 2019 13:34:46 +1000
-Message-Id: <20190411033448.20842-4-npiggin@gmail.com>
+Subject: [PATCH v2 4/5] kernel/sched/isolation: require a present CPU in
+ housekeeping mask
+Date: Thu, 11 Apr 2019 13:34:47 +1000
+Message-Id: <20190411033448.20842-5-npiggin@gmail.com>
 X-Mailer: git-send-email 2.20.1
 In-Reply-To: <20190411033448.20842-1-npiggin@gmail.com>
 References: <20190411033448.20842-1-npiggin@gmail.com>
@@ -100,108 +100,65 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This patch provides an arch option, ARCH_SUSPEND_NONZERO_CPU, to
-opt-in to allowing suspend to occur on one of the housekeeping CPUs
-rather than hardcoded CPU0.
-
-This will allow CPU0 to be a nohz_full CPU with a later change.
-
-It may be possible for platforms with hardware/firmware restrictions
-on suspend/wake effectively support this by handing off the final
-stage to CPU0 when kernel housekeeping is no longer required. Another
-option is to make housekeeping / nohz_full mask dynamic at runtime,
-but the complexity could not be justified at this time.
+During housekeeping mask setup, currently a possible CPU is required.
+That does not guarantee the CPU would be available at boot time, so
+check to ensure that at least one present CPU is in the mask.
 
 Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 ---
- arch/powerpc/Kconfig |  4 ++++
- include/linux/cpu.h  |  7 ++++++-
- kernel/cpu.c         | 10 +++++++++-
- kernel/power/Kconfig |  9 +++++++++
- 4 files changed, 28 insertions(+), 2 deletions(-)
+ kernel/sched/isolation.c | 18 +++++++++++++-----
+ 1 file changed, 13 insertions(+), 5 deletions(-)
 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 2d0be82c3061..bc98b0e37a10 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -318,6 +318,10 @@ config ARCH_SUSPEND_POSSIBLE
- 		   (PPC_85xx && !PPC_E500MC) || PPC_86xx || PPC_PSERIES \
- 		   || 44x || 40x
- 
-+config ARCH_SUSPEND_NONZERO_CPU
-+	def_bool y
-+	depends on PPC_POWERNV || PPC_PSERIES
-+
- config PPC_DCR_NATIVE
- 	bool
- 
-diff --git a/include/linux/cpu.h b/include/linux/cpu.h
-index 563e697e7779..dd3813959d62 100644
---- a/include/linux/cpu.h
-+++ b/include/linux/cpu.h
-@@ -140,7 +140,12 @@ extern void enable_nonboot_cpus(void);
- 
- static inline int suspend_disable_secondary_cpus(void)
+diff --git a/kernel/sched/isolation.c b/kernel/sched/isolation.c
+index b02d148e7672..687302051a27 100644
+--- a/kernel/sched/isolation.c
++++ b/kernel/sched/isolation.c
+@@ -65,6 +65,7 @@ void __init housekeeping_init(void)
+ static int __init housekeeping_setup(char *str, enum hk_flags flags)
  {
--	return freeze_secondary_cpus(0);
-+	int cpu = 0;
-+
-+	if (IS_ENABLED(CONFIG_PM_SLEEP_SMP_NONZERO_CPU))
-+		cpu = -1;
-+
-+	return freeze_secondary_cpus(cpu);
- }
- static inline void suspend_enable_secondary_cpus(void)
- {
-diff --git a/kernel/cpu.c b/kernel/cpu.c
-index 6754f3ecfd94..d1bf6e2b4752 100644
---- a/kernel/cpu.c
-+++ b/kernel/cpu.c
-@@ -9,6 +9,7 @@
- #include <linux/notifier.h>
- #include <linux/sched/signal.h>
- #include <linux/sched/hotplug.h>
-+#include <linux/sched/isolation.h>
- #include <linux/sched/task.h>
- #include <linux/sched/smt.h>
- #include <linux/unistd.h>
-@@ -1199,8 +1200,15 @@ int freeze_secondary_cpus(int primary)
- 	int cpu, error = 0;
+ 	cpumask_var_t non_housekeeping_mask;
++	cpumask_var_t tmp;
+ 	int err;
  
- 	cpu_maps_update_begin();
--	if (!cpu_online(primary))
-+	if (primary == -1) {
- 		primary = cpumask_first(cpu_online_mask);
-+		if (!housekeeping_cpu(primary, HK_FLAG_TIMER))
-+			primary = housekeeping_any_cpu(HK_FLAG_TIMER);
-+	} else {
-+		if (!cpu_online(primary))
-+			primary = cpumask_first(cpu_online_mask);
-+	}
-+
- 	/*
- 	 * We take down all of the non-boot CPUs in one shot to avoid races
- 	 * with the userspace trying to use the CPU hotplug at the same time
-diff --git a/kernel/power/Kconfig b/kernel/power/Kconfig
-index f8fe57d1022e..9bbaaab14b36 100644
---- a/kernel/power/Kconfig
-+++ b/kernel/power/Kconfig
-@@ -114,6 +114,15 @@ config PM_SLEEP_SMP
- 	depends on PM_SLEEP
- 	select HOTPLUG_CPU
+ 	alloc_bootmem_cpumask_var(&non_housekeeping_mask);
+@@ -75,16 +76,23 @@ static int __init housekeeping_setup(char *str, enum hk_flags flags)
+ 		return 0;
+ 	}
  
-+config PM_SLEEP_SMP_NONZERO_CPU
-+	def_bool y
-+	depends on PM_SLEEP_SMP
-+	depends on ARCH_SUSPEND_NONZERO_CPU
-+	---help---
-+	If an arch can suspend (for suspend, hibernate, kexec, etc) on a
-+	non-zero numbered CPU, it may define ARCH_SUSPEND_NONZERO_CPU. This
-+	will allow nohz_full mask to include CPU0.
++	alloc_bootmem_cpumask_var(&tmp);
+ 	if (!housekeeping_flags) {
+ 		alloc_bootmem_cpumask_var(&housekeeping_mask);
+ 		cpumask_andnot(housekeeping_mask,
+ 			       cpu_possible_mask, non_housekeeping_mask);
+-		if (cpumask_empty(housekeeping_mask))
 +
- config PM_AUTOSLEEP
- 	bool "Opportunistic sleep"
- 	depends on PM_SLEEP
++		cpumask_andnot(tmp, cpu_present_mask, non_housekeeping_mask);
++		if (cpumask_empty(tmp)) {
++			pr_warn("Housekeeping: must include one present CPU, "
++				"using boot CPU:%d\n", smp_processor_id());
+ 			__cpumask_set_cpu(smp_processor_id(), housekeeping_mask);
++			__cpumask_clear_cpu(smp_processor_id(), non_housekeeping_mask);
++		}
+ 	} else {
+-		cpumask_var_t tmp;
+-
+-		alloc_bootmem_cpumask_var(&tmp);
++		cpumask_andnot(tmp, cpu_present_mask, non_housekeeping_mask);
++		if (cpumask_empty(tmp))
++			__cpumask_clear_cpu(smp_processor_id(), non_housekeeping_mask);
+ 		cpumask_andnot(tmp, cpu_possible_mask, non_housekeeping_mask);
+ 		if (!cpumask_equal(tmp, housekeeping_mask)) {
+ 			pr_warn("Housekeeping: nohz_full= must match isolcpus=\n");
+@@ -92,8 +100,8 @@ static int __init housekeeping_setup(char *str, enum hk_flags flags)
+ 			free_bootmem_cpumask_var(non_housekeeping_mask);
+ 			return 0;
+ 		}
+-		free_bootmem_cpumask_var(tmp);
+ 	}
++	free_bootmem_cpumask_var(tmp);
+ 
+ 	if ((flags & HK_FLAG_TICK) && !(housekeeping_flags & HK_FLAG_TICK)) {
+ 		if (IS_ENABLED(CONFIG_NO_HZ_FULL)) {
 -- 
 2.20.1
 
