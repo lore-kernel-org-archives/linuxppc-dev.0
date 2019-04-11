@@ -2,87 +2,99 @@ Return-Path: <SRS0=HNI+=SN=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.0 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_MUTT autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-2.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,UNPARSEABLE_RELAY,
+	USER_AGENT_NEOMUTT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B51FBC10F14
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Apr 2019 20:24:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 28A4DC10F13
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Apr 2019 20:35:44 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id D95782146F
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Apr 2019 20:24:57 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 92BEB2075B
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Apr 2019 20:35:43 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="W9/pFtSS"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D95782146F
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=oracle.com header.i=@oracle.com header.b="G8uviIkL"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 92BEB2075B
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=oracle.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44gCF16TNZzDqSV
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Apr 2019 06:24:53 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44gCTR4Kn4zDqNx
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Apr 2019 06:35:39 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=2607:f8b0:4864:20::544; helo=mail-pg1-x544.google.com;
- envelope-from=nicoleotsuka@gmail.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=oracle.com
+ (client-ip=141.146.126.79; helo=aserp2130.oracle.com;
+ envelope-from=daniel.m.jordan@oracle.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
+ dmarc=pass (p=none dis=none) header.from=oracle.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="W9/pFtSS"; 
+ unprotected) header.d=oracle.com header.i=@oracle.com header.b="G8uviIkL"; 
  dkim-atps=neutral
-Received: from mail-pg1-x544.google.com (mail-pg1-x544.google.com
- [IPv6:2607:f8b0:4864:20::544])
+Received: from aserp2130.oracle.com (aserp2130.oracle.com [141.146.126.79])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44gC915q6tzDqSP
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Apr 2019 06:21:25 +1000 (AEST)
-Received: by mail-pg1-x544.google.com with SMTP id y3so4020347pgk.12
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Apr 2019 13:21:25 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=date:from:to:cc:subject:message-id:references:mime-version
- :content-disposition:in-reply-to:user-agent;
- bh=Xp9AgRoZndC7bkDV//vOOG9+Mf8ePglt50CAM+1RJMI=;
- b=W9/pFtSSQ6NWmfFVCpZVS5nKewRIFCLJ9VgQ7IZ/urSc8yRQqsfmU6ezvX8SS8hfY6
- Cj1trB06YklVEmLtdaCw5Mz1eWLAYp5tWB9vXmhZ45+oLn+E+MtIVW0ohQ9n28GKMjWF
- Q2/A1P0uRjbZkvlLxsYWXIY5DpIXKSi0A+IRrBACED5X3St0UnIBspxPX6bZlT1as1qj
- 33tERJDrBEwIoIT2lWlarBqNEI/EebBUPE+bN+w/Yd5Pyy+KTqrzJMct8KdcVQJfcsxk
- t4OEyZpp5Ny1eqE1DhVbHg70j3KdaXfMTulUbwOatmADjpsiC5yOPCGBHCsbJQPGD/8U
- xiiQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:date:from:to:cc:subject:message-id:references
- :mime-version:content-disposition:in-reply-to:user-agent;
- bh=Xp9AgRoZndC7bkDV//vOOG9+Mf8ePglt50CAM+1RJMI=;
- b=UKnuH05al+CCKvZhmyYyeyV/s7pSyJmX7gx2NXOPCMXPQOPPvD56Q9jNW6IGq5DpY3
- wFA+Mlbd8MFrUDsPC6vNB4W8hlxsbPzK7jtePPdK6whjg8VKrs5GAW4g2WH2ZV4R/EWb
- IFQ7Q26z+Gdc//ZDvIeXZjrOQ58v0TtbG+VVaOjvV+008C3BPifm/c9aRyTjpdCi5B0C
- 7jwIzwpEFkfuxz7vvzbrJC+BzomkryjPv2L6+j/w4rUBVsxlGE2b5utmqG0dsDztGY6D
- iISj02YTM4m2PH5rWjHuMXp0K5nq3hbizdsonjvqBVrd0FY0RT7nIkw6PRpSeLxGPdDJ
- zDmw==
-X-Gm-Message-State: APjAAAXbSeV9PmEP3wEZJWkL+VeAquOz/9y+SxsbI1dVWMqqJANDQeQW
- E9/qpoN4p4LRhUkP9vXWjv4=
-X-Google-Smtp-Source: APXvYqy4LjSsy9ejijyKGtdcWG/rQY1lFzAVMVk1df/xdr5tnsQ2cfx2YR6A/D8qgX4oi0eesa3RFg==
-X-Received: by 2002:a65:4802:: with SMTP id h2mr45613207pgs.98.1555014081510; 
- Thu, 11 Apr 2019 13:21:21 -0700 (PDT)
-Received: from Asurada-Nvidia.nvidia.com (thunderhill.nvidia.com.
- [216.228.112.22])
- by smtp.gmail.com with ESMTPSA id 19sm44641413pga.88.2019.04.11.13.21.20
- (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
- Thu, 11 Apr 2019 13:21:20 -0700 (PDT)
-Date: Thu, 11 Apr 2019 13:21:18 -0700
-From: Nicolin Chen <nicoleotsuka@gmail.com>
-To: Viorel Suman <viorel.suman@nxp.com>
-Subject: Re: [PATCH v4 4/4] ASoC: fsl_audmix: cache pdev->dev pointer
-Message-ID: <20190411202117.GC13170@Asurada-Nvidia.nvidia.com>
-References: <1554894380-25153-1-git-send-email-viorel.suman@nxp.com>
- <1554894380-25153-5-git-send-email-viorel.suman@nxp.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44gCJt469VzDqSZ
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Apr 2019 06:28:14 +1000 (AEST)
+Received: from pps.filterd (aserp2130.oracle.com [127.0.0.1])
+ by aserp2130.oracle.com (8.16.0.27/8.16.0.27) with SMTP id x3BK9esF173636;
+ Thu, 11 Apr 2019 20:27:53 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com;
+ h=date : from : to : cc
+ : subject : message-id : references : mime-version : content-type :
+ in-reply-to; s=corp-2018-07-02;
+ bh=woVzfZGcSwnBxxuUFWVwRSs3kH2EYlIWop6DF6lHv4A=;
+ b=G8uviIkLAA9Z4UISLkf/C4W8xdBmwKfeekBgf+eUf/T5l7j3aBysnlTWaWmUuNpMucs9
+ 1/Xw5m4YJisDnkHWyx0hLuB6TE92uqt0brXoo7VB0MhawF7UH6Olx59SC+IGyGdj6/Lg
+ dAIEQDF2iVN82OwwzNmODFuBqQ3uKmOO0BQUigXwCAp6krbDL1QyEB/VL5llFQgynlGK
+ KQyE7Ba+3NE4HA4uNTIp4IWevgLZUJV5vmEP0hn+vWzuG1/MEbPHc9ZTSftVo5oqttk7
+ tt4g+WH1/b82cIp/1eAyFcHj5O2mpMG7O3pjLbU6wSEVHsRZ5mhvxnITl7B5aNRNeXyZ fg== 
+Received: from aserp3030.oracle.com (aserp3030.oracle.com [141.146.126.71])
+ by aserp2130.oracle.com with ESMTP id 2rphmeuat5-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Thu, 11 Apr 2019 20:27:53 +0000
+Received: from pps.filterd (aserp3030.oracle.com [127.0.0.1])
+ by aserp3030.oracle.com (8.16.0.27/8.16.0.27) with SMTP id x3BKRf6p072214;
+ Thu, 11 Apr 2019 20:27:52 GMT
+Received: from aserv0122.oracle.com (aserv0122.oracle.com [141.146.126.236])
+ by aserp3030.oracle.com with ESMTP id 2rt9upu0ak-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Thu, 11 Apr 2019 20:27:52 +0000
+Received: from abhmp0012.oracle.com (abhmp0012.oracle.com [141.146.116.18])
+ by aserv0122.oracle.com (8.14.4/8.14.4) with ESMTP id x3BKRix9020217;
+ Thu, 11 Apr 2019 20:27:44 GMT
+Received: from ca-dmjordan1.us.oracle.com (/10.211.9.48)
+ by default (Oracle Beehive Gateway v4.0)
+ with ESMTP ; Thu, 11 Apr 2019 13:27:43 -0700
+Date: Thu, 11 Apr 2019 16:28:07 -0400
+From: Daniel Jordan <daniel.m.jordan@oracle.com>
+To: Mark Rutland <mark.rutland@arm.com>
+Subject: Re: [PATCH 1/6] mm: change locked_vm's type from unsigned long to
+ atomic64_t
+Message-ID: <20190411202807.q2fge33uoduhtehq@ca-dmjordan1.us.oracle.com>
+References: <20190402204158.27582-1-daniel.m.jordan@oracle.com>
+ <20190402204158.27582-2-daniel.m.jordan@oracle.com>
+ <614ea07a-dd1e-2561-b6f4-2d698bf55f5b@ozlabs.ru>
+ <20190411095543.GA55197@lakrids.cambridge.arm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1554894380-25153-5-git-send-email-viorel.suman@nxp.com>
-User-Agent: Mutt/1.9.4 (2018-02-28)
+In-Reply-To: <20190411095543.GA55197@lakrids.cambridge.arm.com>
+User-Agent: NeoMutt/20180323-268-5a959c
+X-Proofpoint-Virus-Version: vendor=nai engine=5900 definitions=9224
+ signatures=668685
+X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 suspectscore=18
+ malwarescore=0
+ phishscore=0 bulkscore=0 spamscore=0 mlxscore=0 mlxlogscore=867
+ adultscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.0.1-1810050000 definitions=main-1904110133
+X-Proofpoint-Virus-Version: vendor=nai engine=5900 definitions=9224
+ signatures=668685
+X-Proofpoint-Spam-Details: rule=notspam policy=default score=0
+ priorityscore=1501 malwarescore=0
+ suspectscore=18 phishscore=0 bulkscore=0 spamscore=0 clxscore=1011
+ lowpriorityscore=0 mlxscore=0 impostorscore=0 mlxlogscore=894 adultscore=0
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.0.1-1810050000
+ definitions=main-1904110133
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -94,38 +106,41 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Mark Rutland <mark.rutland@arm.com>,
- "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Timur Tabi <timur@kernel.org>, Xiubo Li <Xiubo.Lee@gmail.com>,
- Shawn Guo <shawnguo@kernel.org>, Sascha Hauer <s.hauer@pengutronix.de>,
- Takashi Iwai <tiwai@suse.com>, Liam Girdwood <lgirdwood@gmail.com>,
- Rob Herring <robh+dt@kernel.org>, Jaroslav Kysela <perex@perex.cz>,
- Viorel Suman <viorel.suman@gmail.com>, Julia Lawall <Julia.Lawall@lip6.fr>,
- Mark Brown <broonie@kernel.org>, dl-linux-imx <linux-imx@nxp.com>,
- Pengutronix Kernel Team <kernel@pengutronix.de>,
- Fabio Estevam <festevam@gmail.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Cc: Davidlohr Bueso <dave@stgolabs.net>, kvm@vger.kernel.org,
+ Alan Tull <atull@kernel.org>, Alexey Kardashevskiy <aik@ozlabs.ru>,
+ linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org,
+ kvm-ppc@vger.kernel.org, Daniel Jordan <daniel.m.jordan@oracle.com>,
+ linux-mm@kvack.org, Alex Williamson <alex.williamson@redhat.com>,
+ Moritz Fischer <mdf@kernel.org>, akpm@linux-foundation.org,
+ linuxppc-dev@lists.ozlabs.org, Christoph Lameter <cl@linux.com>,
+ Wu Hao <hao.wu@intel.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, Apr 10, 2019 at 11:06:39AM +0000, Viorel Suman wrote:
-> There should be no trouble to understand dev = pdev->dev.
-> This can save some space to have more print info or save
-> some wrapped lines.
+On Thu, Apr 11, 2019 at 10:55:43AM +0100, Mark Rutland wrote:
+> On Thu, Apr 11, 2019 at 02:22:23PM +1000, Alexey Kardashevskiy wrote:
+> > On 03/04/2019 07:41, Daniel Jordan wrote:
+> 
+> > > -	dev_dbg(dev, "[%d] RLIMIT_MEMLOCK %c%ld %ld/%ld%s\n", current->pid,
+> > > +	dev_dbg(dev, "[%d] RLIMIT_MEMLOCK %c%ld %lld/%lu%s\n", current->pid,
+> > >  		incr ? '+' : '-', npages << PAGE_SHIFT,
+> > > -		current->mm->locked_vm << PAGE_SHIFT, rlimit(RLIMIT_MEMLOCK),
+> > > -		ret ? "- exceeded" : "");
+> > > +		(s64)atomic64_read(&current->mm->locked_vm) << PAGE_SHIFT,
+> > > +		rlimit(RLIMIT_MEMLOCK), ret ? "- exceeded" : "");
+> > 
+> > 
+> > 
+> > atomic64_read() returns "long" which matches "%ld", why this change (and
+> > similar below)? You did not do this in the two pr_debug()s above anyway.
+> 
+> Unfortunately, architectures return inconsistent types for atomic64 ops.
+> 
+> Some return long (e..g. powerpc), some return long long (e.g. arc), and
+> some return s64 (e.g. x86).
 
-Change looks fine. Ack.
+Yes, Mark said it all, I'm just chiming in to confirm that's why I added the
+cast.
 
-> Signed-off-by: Viorel Suman <viorel.suman@nxp.com>
-> Suggested-by: Nicolin Chen <nicoleotsuka@gmail.com>
-
-I think usually Suggested-by comes above Signed-off-by.
-
-This was originally in your change already, so you can replace:
--Suggested-by: Nicolin Chen <nicoleotsuka@gmail.com>
--Acked-by: Nicolin Chen <nicoleotsuka@gmail.com>
-
-Just a chance for it to get resent without being a noise :)
+Btw, thanks for doing this, Mark.
