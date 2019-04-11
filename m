@@ -6,38 +6,37 @@ X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
 	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DFDDBC10F13
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Apr 2019 12:36:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 54114C10F13
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Apr 2019 12:38:30 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 9462D2073F
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Apr 2019 12:36:28 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9462D2073F
+	by mail.kernel.org (Postfix) with ESMTPS id AEA8D2073F
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Apr 2019 12:38:29 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org AEA8D2073F
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44g0rV3gkqzDqMX
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Apr 2019 22:36:26 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+	by lists.ozlabs.org (Postfix) with ESMTP id 44g0tq46PMzDqSf
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Apr 2019 22:38:27 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44fzlf6BdVzDqQY
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Apr 2019 21:47:10 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44fzlg5SLWzDqQh
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Apr 2019 21:47:11 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: by ozlabs.org (Postfix)
- id 44fzlf17zKz9sNp; Thu, 11 Apr 2019 21:47:10 +1000 (AEST)
+ id 44fzlg3CHcz9sNp; Thu, 11 Apr 2019 21:47:11 +1000 (AEST)
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 44fzld60k1z9sNy; Thu, 11 Apr 2019 21:47:09 +1000 (AEST)
+ id 44fzlg195rz9sP4; Thu, 11 Apr 2019 21:47:10 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: stable@vger.kernel.org,
 	gregkh@linuxfoundation.org
-Subject: [PATCH stable v4.9 25/35] powerpc/fsl: Fix spectre_v2 mitigations
- reporting
-Date: Thu, 11 Apr 2019 21:46:20 +1000
-Message-Id: <20190411114630.4042-26-mpe@ellerman.id.au>
+Subject: [PATCH stable v4.9 26/35] powerpc/fsl: Emulate SPRN_BUCSR register
+Date: Thu, 11 Apr 2019 21:46:21 +1000
+Message-Id: <20190411114630.4042-27-mpe@ellerman.id.au>
 X-Mailer: git-send-email 2.20.1
 In-Reply-To: <20190411114630.4042-1-mpe@ellerman.id.au>
 References: <20190411114630.4042-1-mpe@ellerman.id.au>
@@ -61,36 +60,39 @@ Sender: "Linuxppc-dev"
 
 From: Diana Craciun <diana.craciun@nxp.com>
 
-commit 7d8bad99ba5a22892f0cad6881289fdc3875a930 upstream.
+commit 98518c4d8728656db349f875fcbbc7c126d4c973 upstream.
 
-Currently for CONFIG_PPC_FSL_BOOK3E the spectre_v2 file is incorrect:
+In order to flush the branch predictor the guest kernel performs
+writes to the BUCSR register which is hypervisor privilleged. However,
+the branch predictor is flushed at each KVM entry, so the branch
+predictor has been already flushed, so just return as soon as possible
+to guest.
 
-  $ cat /sys/devices/system/cpu/vulnerabilities/spectre_v2
-  "Mitigation: Software count cache flush"
-
-Which is wrong. Fix it to report vulnerable for now.
-
-Fixes: ee13cb249fab ("powerpc/64s: Add support for software count cache flush")
-Cc: stable@vger.kernel.org # v4.19+
 Signed-off-by: Diana Craciun <diana.craciun@nxp.com>
+[mpe: Tweak comment formatting]
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- arch/powerpc/kernel/security.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/powerpc/kvm/e500_emulate.c | 7 +++++++
+ 1 file changed, 7 insertions(+)
 
-diff --git a/arch/powerpc/kernel/security.c b/arch/powerpc/kernel/security.c
-index fd4703b6ddc0..fc41bccd9ab6 100644
---- a/arch/powerpc/kernel/security.c
-+++ b/arch/powerpc/kernel/security.c
-@@ -23,7 +23,7 @@ enum count_cache_flush_type {
- 	COUNT_CACHE_FLUSH_SW	= 0x2,
- 	COUNT_CACHE_FLUSH_HW	= 0x4,
- };
--static enum count_cache_flush_type count_cache_flush_type;
-+static enum count_cache_flush_type count_cache_flush_type = COUNT_CACHE_FLUSH_NONE;
+diff --git a/arch/powerpc/kvm/e500_emulate.c b/arch/powerpc/kvm/e500_emulate.c
+index 990db69a1d0b..fa88f641ac03 100644
+--- a/arch/powerpc/kvm/e500_emulate.c
++++ b/arch/powerpc/kvm/e500_emulate.c
+@@ -277,6 +277,13 @@ int kvmppc_core_emulate_mtspr_e500(struct kvm_vcpu *vcpu, int sprn, ulong spr_va
+ 		vcpu->arch.pwrmgtcr0 = spr_val;
+ 		break;
  
- bool barrier_nospec_enabled;
- static bool no_nospec;
++	case SPRN_BUCSR:
++		/*
++		 * If we are here, it means that we have already flushed the
++		 * branch predictor, so just return to guest.
++		 */
++		break;
++
+ 	/* extra exceptions */
+ #ifdef CONFIG_SPE_POSSIBLE
+ 	case SPRN_IVOR32:
 -- 
 2.20.1
 
