@@ -6,44 +6,46 @@ X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DA65DC10F11
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Apr 2019 03:48:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 46BBFC10F13
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Apr 2019 03:54:37 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6213A217D4
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Apr 2019 03:48:43 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6213A217D4
+	by mail.kernel.org (Postfix) with ESMTPS id C2CE6217D4
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Apr 2019 03:54:36 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C2CE6217D4
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=embeddedor.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44fn7X2wLgzDqP0
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Apr 2019 13:48:40 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44fnGL2YZwzDqQC
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Apr 2019 13:54:34 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=permerror (mailfrom) smtp.mailfrom=embeddedor.com
- (client-ip=192.185.188.18; helo=gateway36.websitewelcome.com;
+ (client-ip=192.185.45.228; helo=gateway21.websitewelcome.com;
  envelope-from=gustavo@embeddedor.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=embeddedor.com
-X-Greylist: delayed 1373 seconds by postgrey-1.36 at bilbo;
- Thu, 11 Apr 2019 13:47:07 AEST
-Received: from gateway36.websitewelcome.com (gateway36.websitewelcome.com
- [192.185.188.18])
+X-Greylist: delayed 1231 seconds by postgrey-1.36 at bilbo;
+ Thu, 11 Apr 2019 13:53:05 AEST
+Received: from gateway21.websitewelcome.com (gateway21.websitewelcome.com
+ [192.185.45.228])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44fn5l5r4qzDqBm
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Apr 2019 13:47:07 +1000 (AEST)
-Received: from cm11.websitewelcome.com (cm11.websitewelcome.com [100.42.49.5])
- by gateway36.websitewelcome.com (Postfix) with ESMTP id AC21E400C8264
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Apr 2019 21:41:45 -0500 (CDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44fnDd6FXCzDqKN
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Apr 2019 13:53:05 +1000 (AEST)
+Received: from cm16.websitewelcome.com (cm16.websitewelcome.com [100.42.49.19])
+ by gateway21.websitewelcome.com (Postfix) with ESMTP id 643FA400CC019
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Apr 2019 22:32:32 -0500 (CDT)
 Received: from gator4166.hostgator.com ([108.167.133.22]) by cmsmtp with SMTP
- id EQJvhC0WidnCeEQJvhzxoq; Wed, 10 Apr 2019 22:24:11 -0500
+ id EQS0hbS6k4FKpEQS0h5pY2; Wed, 10 Apr 2019 22:32:32 -0500
 X-Authority-Reason: nr=8
-Received: from [189.250.139.70] (port=46020 helo=[192.168.1.76])
+Received: from [189.250.139.70] (port=46568 helo=[192.168.1.76])
  by gator4166.hostgator.com with esmtpsa
  (TLSv1.2:ECDHE-RSA-AES128-GCM-SHA256:128) (Exim 4.91)
  (envelope-from <gustavo@embeddedor.com>)
- id 1hEQJt-0016ma-KV; Wed, 10 Apr 2019 22:24:10 -0500
+ id 1hEQRz-001BYB-Pk; Wed, 10 Apr 2019 22:32:31 -0500
+Subject: Re: [PATCH V4] ASoC: fsl_esai: Fix missing break in switch statement
+From: "Gustavo A. R. Silva" <gustavo@embeddedor.com>
 To: "S.j. Wang" <shengjiu.wang@nxp.com>, "timur@kernel.org"
  <timur@kernel.org>, "nicoleotsuka@gmail.com" <nicoleotsuka@gmail.com>,
  "Xiubo.Lee@gmail.com" <Xiubo.Lee@gmail.com>,
@@ -51,7 +53,7 @@ To: "S.j. Wang" <shengjiu.wang@nxp.com>, "timur@kernel.org"
  "broonie@kernel.org" <broonie@kernel.org>,
  "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>
 References: <6b953e991b303a26791facbb680efe25d3cc33c3.1554951841.git.shengjiu.wang@nxp.com>
-From: "Gustavo A. R. Silva" <gustavo@embeddedor.com>
+ <d211785c-1b0f-45ea-ae08-e5d92424ba1f@embeddedor.com>
 Openpgp: preference=signencrypt
 Autocrypt: addr=gustavo@embeddedor.com; keydata=
  mQINBFssHAwBEADIy3ZoPq3z5UpsUknd2v+IQud4TMJnJLTeXgTf4biSDSrXn73JQgsISBwG
@@ -96,16 +98,15 @@ Autocrypt: addr=gustavo@embeddedor.com; keydata=
  YJWH93PN+ZUh6i6Rd2U/i8jH5WvzR57UeWxE4P8bQc0hNGrUsHQH6bpHV2lbuhDdqo+cM9eh
  GZEO3+gCDFmKrjspZjkJbB5Gadzvts5fcWGOXEvuT8uQSvl+vEL0g6vczsyPBtqoBLa9SNrS
  VtSixD1uOgytAP7RWS474w==
-Subject: Re: [PATCH V4] ASoC: fsl_esai: Fix missing break in switch statement
-Message-ID: <d211785c-1b0f-45ea-ae08-e5d92424ba1f@embeddedor.com>
-Date: Wed, 10 Apr 2019 22:24:07 -0500
+Message-ID: <4ec7c626-b012-ea5a-4162-1cbec7fc77f3@embeddedor.com>
+Date: Wed, 10 Apr 2019 22:32:30 -0500
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
  Thunderbird/60.6.1
 MIME-Version: 1.0
-In-Reply-To: <6b953e991b303a26791facbb680efe25d3cc33c3.1554951841.git.shengjiu.wang@nxp.com>
+In-Reply-To: <d211785c-1b0f-45ea-ae08-e5d92424ba1f@embeddedor.com>
 Content-Type: text/plain; charset=utf-8
 Content-Language: en-US
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7bit
 X-AntiAbuse: This header was added to track abuse,
  please include it with any abuse report
 X-AntiAbuse: Primary Hostname - gator4166.hostgator.com
@@ -115,13 +116,13 @@ X-AntiAbuse: Sender Address Domain - embeddedor.com
 X-BWhitelist: no
 X-Source-IP: 189.250.139.70
 X-Source-L: No
-X-Exim-ID: 1hEQJt-0016ma-KV
+X-Exim-ID: 1hEQRz-001BYB-Pk
 X-Source: 
 X-Source-Args: 
 X-Source-Dir: 
-X-Source-Sender: ([192.168.1.76]) [189.250.139.70]:46020
+X-Source-Sender: ([192.168.1.76]) [189.250.139.70]:46568
 X-Source-Auth: gustavo@embeddedor.com
-X-Email-Count: 8
+X-Email-Count: 17
 X-Source-Cap: Z3V6aWRpbmU7Z3V6aWRpbmU7Z2F0b3I0MTY2Lmhvc3RnYXRvci5jb20=
 X-Local-Domain: yes
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -141,54 +142,74 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-[+cc lkml]
 
-On 4/10/19 10:05 PM, S.j. Wang wrote:
-> case ESAI_HCKT_EXTAL and case ESAI_HCKR_EXTAL should be
-> independent of each other, so replace fall-through with break.
+
+On 4/10/19 10:24 PM, Gustavo A. R. Silva wrote:
+> [+cc lkml]
 > 
-> Fixes: 43d24e76b698 ("ASoC: fsl_esai: Add ESAI CPU DAI driver")
+> On 4/10/19 10:05 PM, S.j. Wang wrote:
+>> case ESAI_HCKT_EXTAL and case ESAI_HCKR_EXTAL should be
+>> independent of each other, so replace fall-through with break.
+>>
+>> Fixes: 43d24e76b698 ("ASoC: fsl_esai: Add ESAI CPU DAI driver")
+>>
+>> Signed-off-by: Shengjiu Wang <shengjiu.wang@nxp.com>
+>> Acked-by: Nicolin Chen <nicoleotsuka@gmail.com>
+>> Cc: <stable@vger.kernel.org>
+>> ---
+>> Change in v4
+>> - Add Acked-by and cc stable
+>> - change the subject
+>>
 > 
-> Signed-off-by: Shengjiu Wang <shengjiu.wang@nxp.com>
-> Acked-by: Nicolin Chen <nicoleotsuka@gmail.com>
-> Cc: <stable@vger.kernel.org>
-> ---
-> Change in v4
-> - Add Acked-by and cc stable
-> - change the subject
+> You should preserve the changelog of what has changed in each version, not only
+> the last changes, so that there is a logical flow and the maintainers do not
+> have to dig up previous versions:
+> 
+> Changes in v3:
+> - Update subject line.
+> 
+> Changes in v2:
+> - Fix "Fixes" tag.
+> 
+> 
+> Also, for this type of fixes, make sure to always Cc lkml: linux-kernel@vger.kernel.org
 > 
 
-You should preserve the changelog of what has changed in each version, not only
-the last changes, so that there is a logical flow and the maintainers do not
-have to dig up previous versions:
+See, these are all the people and lists you should Cc:
 
-Changes in v3:
-- Update subject line.
-
-Changes in v2:
-- Fix "Fixes" tag.
-
-
-Also, for this type of fixes, make sure to always Cc lkml: linux-kernel@vger.kernel.org
+$ scripts/get_maintainer.pl --nokeywords --nogit --nogit-fallback -f sound/soc/fsl/fsl_esai.c
+Timur Tabi <timur@kernel.org> (maintainer:FREESCALE SOC SOUND DRIVERS)
+Nicolin Chen <nicoleotsuka@gmail.com> (maintainer:FREESCALE SOC SOUND DRIVERS)
+Xiubo Li <Xiubo.Lee@gmail.com> (maintainer:FREESCALE SOC SOUND DRIVERS)
+Fabio Estevam <festevam@gmail.com> (reviewer:FREESCALE SOC SOUND DRIVERS)
+Liam Girdwood <lgirdwood@gmail.com> (supporter:SOUND - SOC LAYER / DYNAMIC AUDIO POWER MANAGEM...)
+Mark Brown <broonie@kernel.org> (supporter:SOUND - SOC LAYER / DYNAMIC AUDIO POWER MANAGEM...)
+Jaroslav Kysela <perex@perex.cz> (maintainer:SOUND)
+Takashi Iwai <tiwai@suse.com> (maintainer:SOUND)
+alsa-devel@alsa-project.org (moderated list:FREESCALE SOC SOUND DRIVERS)
+linuxppc-dev@lists.ozlabs.org (open list:FREESCALE SOC SOUND DRIVERS)
+linux-kernel@vger.kernel.org (open list)
 
 Thanks
 --
 Gustavo
 
->  sound/soc/fsl/fsl_esai.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
 > 
-> diff --git a/sound/soc/fsl/fsl_esai.c b/sound/soc/fsl/fsl_esai.c
-> index 3623aa9a6f2e..15202a637197 100644
-> --- a/sound/soc/fsl/fsl_esai.c
-> +++ b/sound/soc/fsl/fsl_esai.c
-> @@ -251,7 +251,7 @@ static int fsl_esai_set_dai_sysclk(struct snd_soc_dai *dai, int clk_id,
->  		break;
->  	case ESAI_HCKT_EXTAL:
->  		ecr |= ESAI_ECR_ETI;
-> -		/* fall through */
-> +		break;
->  	case ESAI_HCKR_EXTAL:
->  		ecr |= ESAI_ECR_ERI;
->  		break;
-> 
+>>  sound/soc/fsl/fsl_esai.c | 2 +-
+>>  1 file changed, 1 insertion(+), 1 deletion(-)
+>>
+>> diff --git a/sound/soc/fsl/fsl_esai.c b/sound/soc/fsl/fsl_esai.c
+>> index 3623aa9a6f2e..15202a637197 100644
+>> --- a/sound/soc/fsl/fsl_esai.c
+>> +++ b/sound/soc/fsl/fsl_esai.c
+>> @@ -251,7 +251,7 @@ static int fsl_esai_set_dai_sysclk(struct snd_soc_dai *dai, int clk_id,
+>>  		break;
+>>  	case ESAI_HCKT_EXTAL:
+>>  		ecr |= ESAI_ECR_ETI;
+>> -		/* fall through */
+>> +		break;
+>>  	case ESAI_HCKR_EXTAL:
+>>  		ecr |= ESAI_ECR_ERI;
+>>  		break;
+>>
