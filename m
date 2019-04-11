@@ -2,85 +2,128 @@ Return-Path: <SRS0=HNI+=SN=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.5 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_PASS,USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6377AC10F11
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Apr 2019 03:45:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DA65DC10F11
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Apr 2019 03:48:43 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id D06AE217D4
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Apr 2019 03:45:18 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="o2CJjcit"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D06AE217D4
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	by mail.kernel.org (Postfix) with ESMTPS id 6213A217D4
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Apr 2019 03:48:43 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6213A217D4
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=embeddedor.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44fn3c5GtkzDqPW
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Apr 2019 13:45:16 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44fn7X2wLgzDqP0
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Apr 2019 13:48:40 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=2607:f8b0:4864:20::641; helo=mail-pl1-x641.google.com;
- envelope-from=npiggin@gmail.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="o2CJjcit"; 
- dkim-atps=neutral
-Received: from mail-pl1-x641.google.com (mail-pl1-x641.google.com
- [IPv6:2607:f8b0:4864:20::641])
+ spf=permerror (mailfrom) smtp.mailfrom=embeddedor.com
+ (client-ip=192.185.188.18; helo=gateway36.websitewelcome.com;
+ envelope-from=gustavo@embeddedor.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=embeddedor.com
+X-Greylist: delayed 1373 seconds by postgrey-1.36 at bilbo;
+ Thu, 11 Apr 2019 13:47:07 AEST
+Received: from gateway36.websitewelcome.com (gateway36.websitewelcome.com
+ [192.185.188.18])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44fmrJ1WZ1zDqGk
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Apr 2019 13:35:28 +1000 (AEST)
-Received: by mail-pl1-x641.google.com with SMTP id bf11so2639920plb.12
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Apr 2019 20:35:28 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=from:to:cc:subject:date:message-id:in-reply-to:references
- :mime-version:content-transfer-encoding;
- bh=UpRg7geaI+sWEyGZepnH29ISOYwE+XLjV9k/cfsCiuY=;
- b=o2CJjcitwO6wtJumeOLIWIub9KrwU4jm2I0w2cXbOuJZY00RCSlCWBF2hlS/LCqFwo
- GJzDCLga3utOB9Rj7VXj41vD5AdLfm+uZ61hB+8BsP60YHo+oyZbgtti+htyZxrPQJPU
- TBybDPzy0GCp7Lhhu6rd9HINhbZxSh6QiZgfvnY27n+LeMP0O/a5SgP5Io647Hjag7Zc
- EPNFrJpMtce1w7be7OptoalHJpOukogTux0ZNDRfpt9gNWQ8HOJAKbZDMJHsT6kVr9nf
- fGg3J20z0aSquozH9ecnFGulBLcxpKVUPb6BRQuRcm9p0iUrzNZG6LoVPY0XktdPBJrM
- bNBw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
- :references:mime-version:content-transfer-encoding;
- bh=UpRg7geaI+sWEyGZepnH29ISOYwE+XLjV9k/cfsCiuY=;
- b=fWwBmiAoxnFUV0WTPZdHvPst253ETge8opJiRytiJgbVNULRQazc+4cAmrqIcaeO+O
- GJjqHAGFjkep4ePLWenodACVWCKvPFxCefVC+2h9bPXPFE9XrxCP9j1Y/H7riEEPuRhH
- aw78AOK6KCqZoE2XIdprNPJfUecI5U0LLIdMxJK8Jq5pub5dwvWrOZ8+pUVvSfkkEL8e
- A1mjoqPTYYuSzttUC4srhhyTtku+d577FSGDYZW99RHKlPg0JPCfJUWbl7rUI8Kg9to8
- MP3eI3Ly8mOGF+ObDDWguLXiiyK3aHuoFlmdNdQS6BmJWtYw7k4eTwx754YOtvQ86luf
- W9Bg==
-X-Gm-Message-State: APjAAAXyuUXBoGN8nJXvZVtYTMZzoD2PEjtdG9POETkEEI3nwZsEJYkF
- QPINvk6ycUArBSoWa4t7tGnjKhyNtcA=
-X-Google-Smtp-Source: APXvYqzHm5C8szaxszwf4LH9CmoFhQYt3+sIDLhVmTUw/W6VqM+UxaJ3ACZETByRUvwVV+JLTX67AQ==
-X-Received: by 2002:a17:902:441:: with SMTP id
- 59mr18094723ple.242.1554953726019; 
- Wed, 10 Apr 2019 20:35:26 -0700 (PDT)
-Received: from bobo.local0.net ([203.63.188.231])
- by smtp.gmail.com with ESMTPSA id b9sm37231416pfd.32.2019.04.10.20.35.21
- (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
- Wed, 10 Apr 2019 20:35:25 -0700 (PDT)
-From: Nicholas Piggin <npiggin@gmail.com>
-To: Thomas Gleixner <tglx@linutronix.de>,
- Frederic Weisbecker <fweisbec@gmail.com>
-Subject: [PATCH v2 5/5] nohz_full: Allow the boot CPU to be nohz_full
-Date: Thu, 11 Apr 2019 13:34:48 +1000
-Message-Id: <20190411033448.20842-6-npiggin@gmail.com>
-X-Mailer: git-send-email 2.20.1
-In-Reply-To: <20190411033448.20842-1-npiggin@gmail.com>
-References: <20190411033448.20842-1-npiggin@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44fn5l5r4qzDqBm
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Apr 2019 13:47:07 +1000 (AEST)
+Received: from cm11.websitewelcome.com (cm11.websitewelcome.com [100.42.49.5])
+ by gateway36.websitewelcome.com (Postfix) with ESMTP id AC21E400C8264
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Apr 2019 21:41:45 -0500 (CDT)
+Received: from gator4166.hostgator.com ([108.167.133.22]) by cmsmtp with SMTP
+ id EQJvhC0WidnCeEQJvhzxoq; Wed, 10 Apr 2019 22:24:11 -0500
+X-Authority-Reason: nr=8
+Received: from [189.250.139.70] (port=46020 helo=[192.168.1.76])
+ by gator4166.hostgator.com with esmtpsa
+ (TLSv1.2:ECDHE-RSA-AES128-GCM-SHA256:128) (Exim 4.91)
+ (envelope-from <gustavo@embeddedor.com>)
+ id 1hEQJt-0016ma-KV; Wed, 10 Apr 2019 22:24:10 -0500
+To: "S.j. Wang" <shengjiu.wang@nxp.com>, "timur@kernel.org"
+ <timur@kernel.org>, "nicoleotsuka@gmail.com" <nicoleotsuka@gmail.com>,
+ "Xiubo.Lee@gmail.com" <Xiubo.Lee@gmail.com>,
+ "festevam@gmail.com" <festevam@gmail.com>,
+ "broonie@kernel.org" <broonie@kernel.org>,
+ "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>
+References: <6b953e991b303a26791facbb680efe25d3cc33c3.1554951841.git.shengjiu.wang@nxp.com>
+From: "Gustavo A. R. Silva" <gustavo@embeddedor.com>
+Openpgp: preference=signencrypt
+Autocrypt: addr=gustavo@embeddedor.com; keydata=
+ mQINBFssHAwBEADIy3ZoPq3z5UpsUknd2v+IQud4TMJnJLTeXgTf4biSDSrXn73JQgsISBwG
+ 2Pm4wnOyEgYUyJd5tRWcIbsURAgei918mck3tugT7AQiTUN3/5aAzqe/4ApDUC+uWNkpNnSV
+ tjOx1hBpla0ifywy4bvFobwSh5/I3qohxDx+c1obd8Bp/B/iaOtnq0inli/8rlvKO9hp6Z4e
+ DXL3PlD0QsLSc27AkwzLEc/D3ZaqBq7ItvT9Pyg0z3Q+2dtLF00f9+663HVC2EUgP25J3xDd
+ 496SIeYDTkEgbJ7WYR0HYm9uirSET3lDqOVh1xPqoy+U9zTtuA9NQHVGk+hPcoazSqEtLGBk
+ YE2mm2wzX5q2uoyptseSNceJ+HE9L+z1KlWW63HhddgtRGhbP8pj42bKaUSrrfDUsicfeJf6
+ m1iJRu0SXYVlMruGUB1PvZQ3O7TsVfAGCv85pFipdgk8KQnlRFkYhUjLft0u7CL1rDGZWDDr
+ NaNj54q2CX9zuSxBn9XDXvGKyzKEZ4NY1Jfw+TAMPCp4buawuOsjONi2X0DfivFY+ZsjAIcx
+ qQMglPtKk/wBs7q2lvJ+pHpgvLhLZyGqzAvKM1sVtRJ5j+ARKA0w4pYs5a5ufqcfT7dN6TBk
+ LXZeD9xlVic93Ju08JSUx2ozlcfxq+BVNyA+dtv7elXUZ2DrYwARAQABtCxHdXN0YXZvIEEu
+ IFIuIFNpbHZhIDxndXN0YXZvQGVtYmVkZGVkb3IuY29tPokCPQQTAQgAJwUCWywcDAIbIwUJ
+ CWYBgAULCQgHAgYVCAkKCwIEFgIDAQIeAQIXgAAKCRBHBbTLRwbbMZ6tEACk0hmmZ2FWL1Xi
+ l/bPqDGFhzzexrdkXSfTTZjBV3a+4hIOe+jl6Rci/CvRicNW4H9yJHKBrqwwWm9fvKqOBAg9
+ obq753jydVmLwlXO7xjcfyfcMWyx9QdYLERTeQfDAfRqxir3xMeOiZwgQ6dzX3JjOXs6jHBP
+ cgry90aWbaMpQRRhaAKeAS14EEe9TSIly5JepaHoVdASuxklvOC0VB0OwNblVSR2S5i5hSsh
+ ewbOJtwSlonsYEj4EW1noQNSxnN/vKuvUNegMe+LTtnbbocFQ7dGMsT3kbYNIyIsp42B5eCu
+ JXnyKLih7rSGBtPgJ540CjoPBkw2mCfhj2p5fElRJn1tcX2McsjzLFY5jK9RYFDavez5w3lx
+ JFgFkla6sQHcrxH62gTkb9sUtNfXKucAfjjCMJ0iuQIHRbMYCa9v2YEymc0k0RvYr43GkA3N
+ PJYd/vf9vU7VtZXaY4a/dz1d9dwIpyQARFQpSyvt++R74S78eY/+lX8wEznQdmRQ27kq7BJS
+ R20KI/8knhUNUJR3epJu2YFT/JwHbRYC4BoIqWl+uNvDf+lUlI/D1wP+lCBSGr2LTkQRoU8U
+ 64iK28BmjJh2K3WHmInC1hbUucWT7Swz/+6+FCuHzap/cjuzRN04Z3Fdj084oeUNpP6+b9yW
+ e5YnLxF8ctRAp7K4yVlvA7kCDQRbLBwMARAAsHCE31Ffrm6uig1BQplxMV8WnRBiZqbbsVJB
+ H1AAh8tq2ULl7udfQo1bsPLGGQboJSVN9rckQQNahvHAIK8ZGfU4Qj8+CER+fYPp/MDZj+t0
+ DbnWSOrG7z9HIZo6PR9z4JZza3Hn/35jFggaqBtuydHwwBANZ7A6DVY+W0COEU4of7CAahQo
+ 5NwYiwS0lGisLTqks5R0Vh+QpvDVfuaF6I8LUgQR/cSgLkR//V1uCEQYzhsoiJ3zc1HSRyOP
+ otJTApqGBq80X0aCVj1LOiOF4rrdvQnj6iIlXQssdb+WhSYHeuJj1wD0ZlC7ds5zovXh+FfF
+ l5qH5RFY/qVn3mNIVxeO987WSF0jh+T5ZlvUNdhedGndRmwFTxq2Li6GNMaolgnpO/CPcFpD
+ jKxY/HBUSmaE9rNdAa1fCd4RsKLlhXda+IWpJZMHlmIKY8dlUybP+2qDzP2lY7kdFgPZRU+e
+ zS/pzC/YTzAvCWM3tDgwoSl17vnZCr8wn2/1rKkcLvTDgiJLPCevqpTb6KFtZosQ02EGMuHQ
+ I6Zk91jbx96nrdsSdBLGH3hbvLvjZm3C+fNlVb9uvWbdznObqcJxSH3SGOZ7kCHuVmXUcqoz
+ ol6ioMHMb+InrHPP16aVDTBTPEGwgxXI38f7SUEn+NpbizWdLNz2hc907DvoPm6HEGCanpcA
+ EQEAAYkCJQQYAQgADwUCWywcDAIbDAUJCWYBgAAKCRBHBbTLRwbbMdsZEACUjmsJx2CAY+QS
+ UMebQRFjKavwXB/xE7fTt2ahuhHT8qQ/lWuRQedg4baInw9nhoPE+VenOzhGeGlsJ0Ys52sd
+ XvUjUocKgUQq6ekOHbcw919nO5L9J2ejMf/VC/quN3r3xijgRtmuuwZjmmi8ct24TpGeoBK4
+ WrZGh/1hAYw4ieARvKvgjXRstcEqM5thUNkOOIheud/VpY+48QcccPKbngy//zNJWKbRbeVn
+ imua0OpqRXhCrEVm/xomeOvl1WK1BVO7z8DjSdEBGzbV76sPDJb/fw+y+VWrkEiddD/9CSfg
+ fBNOb1p1jVnT2mFgGneIWbU0zdDGhleI9UoQTr0e0b/7TU+Jo6TqwosP9nbk5hXw6uR5k5PF
+ 8ieyHVq3qatJ9K1jPkBr8YWtI5uNwJJjTKIA1jHlj8McROroxMdI6qZ/wZ1ImuylpJuJwCDC
+ ORYf5kW61fcrHEDlIvGc371OOvw6ejF8ksX5+L2zwh43l/pKkSVGFpxtMV6d6J3eqwTafL86
+ YJWH93PN+ZUh6i6Rd2U/i8jH5WvzR57UeWxE4P8bQc0hNGrUsHQH6bpHV2lbuhDdqo+cM9eh
+ GZEO3+gCDFmKrjspZjkJbB5Gadzvts5fcWGOXEvuT8uQSvl+vEL0g6vczsyPBtqoBLa9SNrS
+ VtSixD1uOgytAP7RWS474w==
+Subject: Re: [PATCH V4] ASoC: fsl_esai: Fix missing break in switch statement
+Message-ID: <d211785c-1b0f-45ea-ae08-e5d92424ba1f@embeddedor.com>
+Date: Wed, 10 Apr 2019 22:24:07 -0500
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.6.1
 MIME-Version: 1.0
+In-Reply-To: <6b953e991b303a26791facbb680efe25d3cc33c3.1554951841.git.shengjiu.wang@nxp.com>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
 Content-Transfer-Encoding: 8bit
+X-AntiAbuse: This header was added to track abuse,
+ please include it with any abuse report
+X-AntiAbuse: Primary Hostname - gator4166.hostgator.com
+X-AntiAbuse: Original Domain - lists.ozlabs.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - embeddedor.com
+X-BWhitelist: no
+X-Source-IP: 189.250.139.70
+X-Source-L: No
+X-Exim-ID: 1hEQJt-0016ma-KV
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
+X-Source-Sender: ([192.168.1.76]) [189.250.139.70]:46020
+X-Source-Auth: gustavo@embeddedor.com
+X-Email-Count: 8
+X-Source-Cap: Z3V6aWRpbmU7Z3V6aWRpbmU7Z2F0b3I0MTY2Lmhvc3RnYXRvci5jb20=
+X-Local-Domain: yes
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -92,182 +135,60 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-arch@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>,
- "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>,
- linux-kernel@vger.kernel.org, Nicholas Piggin <npiggin@gmail.com>,
- Ingo Molnar <mingo@redhat.com>, linuxppc-dev@lists.ozlabs.org
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Allow the boot CPU / CPU0 to be nohz_full. Have the boot CPU take the
-do_timer duty during boot until a housekeeping CPU can take over.
+[+cc lkml]
 
-This is supported when CONFIG_PM_SLEEP_SMP is not configured, or when
-it is configured and the arch allows suspend on non-zero CPUs.
+On 4/10/19 10:05 PM, S.j. Wang wrote:
+> case ESAI_HCKT_EXTAL and case ESAI_HCKR_EXTAL should be
+> independent of each other, so replace fall-through with break.
+> 
+> Fixes: 43d24e76b698 ("ASoC: fsl_esai: Add ESAI CPU DAI driver")
+> 
+> Signed-off-by: Shengjiu Wang <shengjiu.wang@nxp.com>
+> Acked-by: Nicolin Chen <nicoleotsuka@gmail.com>
+> Cc: <stable@vger.kernel.org>
+> ---
+> Change in v4
+> - Add Acked-by and cc stable
+> - change the subject
+> 
 
-nohz_full has been trialed at a large supercomputer site and found to
-significantly reduce jitter. In order to deploy it in production, they
-need CPU0 to be nohz_full because their job control system requires
-the application CPUs to start from 0, and the housekeeping CPUs are
-placed higher. An equivalent job scheduling that uses CPU0 for
-housekeeping could be achieved by modifying their system, but it is
-preferable if nohz_full can support their environment without
-modification.
+You should preserve the changelog of what has changed in each version, not only
+the last changes, so that there is a logical flow and the maintainers do not
+have to dig up previous versions:
 
-Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
----
- kernel/time/tick-common.c | 50 +++++++++++++++++++++++++++++++++++----
- kernel/time/tick-sched.c  | 34 ++++++++++++++++++--------
- 2 files changed, 70 insertions(+), 14 deletions(-)
+Changes in v3:
+- Update subject line.
 
-diff --git a/kernel/time/tick-common.c b/kernel/time/tick-common.c
-index 529143b4c8d2..31146c13226e 100644
---- a/kernel/time/tick-common.c
-+++ b/kernel/time/tick-common.c
-@@ -46,6 +46,14 @@ ktime_t tick_period;
-  *    procedure also covers cpu hotplug.
-  */
- int tick_do_timer_cpu __read_mostly = TICK_DO_TIMER_BOOT;
-+#ifdef CONFIG_NO_HZ_FULL
-+/*
-+ * tick_do_timer_boot_cpu indicates the boot CPU temporarily owns
-+ * tick_do_timer_cpu and it should be taken over by an eligible secondary
-+ * when one comes online.
-+ */
-+static int tick_do_timer_boot_cpu __read_mostly = -1;
-+#endif
- 
- /*
-  * Debugging: see timer_list.c
-@@ -167,6 +175,26 @@ void tick_setup_periodic(struct clock_event_device *dev, int broadcast)
- 	}
- }
- 
-+#ifdef CONFIG_NO_HZ_FULL
-+static void giveup_do_timer(void *info)
-+{
-+	int cpu = *(unsigned int *)info;
-+
-+	WARN_ON(tick_do_timer_cpu != smp_processor_id());
-+
-+	tick_do_timer_cpu = cpu;
-+}
-+
-+static void tick_take_do_timer_from_boot(void)
-+{
-+	int cpu = smp_processor_id();
-+	int from = tick_do_timer_boot_cpu;
-+
-+	if (from >= 0 && from != cpu)
-+		smp_call_function_single(from, giveup_do_timer, &cpu, 1);
-+}
-+#endif
-+
- /*
-  * Setup the tick device
-  */
-@@ -186,12 +214,26 @@ static void tick_setup_device(struct tick_device *td,
- 		 * this cpu:
- 		 */
- 		if (tick_do_timer_cpu == TICK_DO_TIMER_BOOT) {
--			if (!tick_nohz_full_cpu(cpu))
--				tick_do_timer_cpu = cpu;
--			else
--				tick_do_timer_cpu = TICK_DO_TIMER_NONE;
-+			tick_do_timer_cpu = cpu;
-+
- 			tick_next_period = ktime_get();
- 			tick_period = NSEC_PER_SEC / HZ;
-+#ifdef CONFIG_NO_HZ_FULL
-+			/*
-+			 * The boot CPU may be nohz_full, in which case set
-+			 * tick_do_timer_boot_cpu so the first housekeeping
-+			 * secondary that comes up will take do_timer from
-+			 * us.
-+			 */
-+			if (tick_nohz_full_cpu(cpu))
-+				tick_do_timer_boot_cpu = cpu;
-+
-+		} else if (tick_do_timer_boot_cpu != -1 &&
-+						!tick_nohz_full_cpu(cpu)) {
-+			tick_take_do_timer_from_boot();
-+			tick_do_timer_boot_cpu = -1;
-+			WARN_ON(tick_do_timer_cpu != cpu);
-+#endif
- 		}
- 
- 		/*
-diff --git a/kernel/time/tick-sched.c b/kernel/time/tick-sched.c
-index 6fa52cd6df0b..4aa917acbe1c 100644
---- a/kernel/time/tick-sched.c
-+++ b/kernel/time/tick-sched.c
-@@ -121,10 +121,16 @@ static void tick_sched_do_timer(struct tick_sched *ts, ktime_t now)
- 	 * into a long sleep. If two CPUs happen to assign themselves to
- 	 * this duty, then the jiffies update is still serialized by
- 	 * jiffies_lock.
-+	 *
-+	 * If nohz_full is enabled, this should not happen because the
-+	 * tick_do_timer_cpu never relinquishes.
- 	 */
--	if (unlikely(tick_do_timer_cpu == TICK_DO_TIMER_NONE)
--	    && !tick_nohz_full_cpu(cpu))
-+	if (unlikely(tick_do_timer_cpu == TICK_DO_TIMER_NONE)) {
-+#ifdef CONFIG_NO_HZ_FULL
-+		WARN_ON(tick_nohz_full_running);
-+#endif
- 		tick_do_timer_cpu = cpu;
-+	}
- #endif
- 
- 	/* Check, if the jiffies need an update */
-@@ -395,8 +401,8 @@ void __init tick_nohz_full_setup(cpumask_var_t cpumask)
- static int tick_nohz_cpu_down(unsigned int cpu)
- {
- 	/*
--	 * The boot CPU handles housekeeping duty (unbound timers,
--	 * workqueues, timekeeping, ...) on behalf of full dynticks
-+	 * The tick_do_timer_cpu CPU handles housekeeping duty (unbound
-+	 * timers, workqueues, timekeeping, ...) on behalf of full dynticks
- 	 * CPUs. It must remain online when nohz full is enabled.
- 	 */
- 	if (tick_nohz_full_running && tick_do_timer_cpu == cpu)
-@@ -423,12 +429,15 @@ void __init tick_nohz_init(void)
- 		return;
- 	}
- 
--	cpu = smp_processor_id();
-+	if (IS_ENABLED(CONFIG_PM_SLEEP_SMP) &&
-+			!IS_ENABLED(CONFIG_PM_SLEEP_SMP_NONZERO_CPU)) {
-+		cpu = smp_processor_id();
- 
--	if (cpumask_test_cpu(cpu, tick_nohz_full_mask)) {
--		pr_warn("NO_HZ: Clearing %d from nohz_full range for timekeeping\n",
--			cpu);
--		cpumask_clear_cpu(cpu, tick_nohz_full_mask);
-+		if (cpumask_test_cpu(cpu, tick_nohz_full_mask)) {
-+			pr_warn("NO_HZ: Clearing %d from nohz_full range "
-+				"for timekeeping\n", cpu);
-+			cpumask_clear_cpu(cpu, tick_nohz_full_mask);
-+		}
- 	}
- 
- 	for_each_cpu(cpu, tick_nohz_full_mask)
-@@ -904,8 +913,13 @@ static bool can_stop_idle_tick(int cpu, struct tick_sched *ts)
- 		/*
- 		 * Boot safety: make sure the timekeeping duty has been
- 		 * assigned before entering dyntick-idle mode,
-+		 * tick_do_timer_cpu is TICK_DO_TIMER_BOOT
- 		 */
--		if (tick_do_timer_cpu == TICK_DO_TIMER_NONE)
-+		if (unlikely(tick_do_timer_cpu == TICK_DO_TIMER_BOOT))
-+			return false;
-+
-+		/* Should not happen for nohz-full */
-+		if (WARN_ON_ONCE(tick_do_timer_cpu == TICK_DO_TIMER_NONE))
- 			return false;
- 	}
- 
--- 
-2.20.1
+Changes in v2:
+- Fix "Fixes" tag.
 
+
+Also, for this type of fixes, make sure to always Cc lkml: linux-kernel@vger.kernel.org
+
+Thanks
+--
+Gustavo
+
+>  sound/soc/fsl/fsl_esai.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/sound/soc/fsl/fsl_esai.c b/sound/soc/fsl/fsl_esai.c
+> index 3623aa9a6f2e..15202a637197 100644
+> --- a/sound/soc/fsl/fsl_esai.c
+> +++ b/sound/soc/fsl/fsl_esai.c
+> @@ -251,7 +251,7 @@ static int fsl_esai_set_dai_sysclk(struct snd_soc_dai *dai, int clk_id,
+>  		break;
+>  	case ESAI_HCKT_EXTAL:
+>  		ecr |= ESAI_ECR_ETI;
+> -		/* fall through */
+> +		break;
+>  	case ESAI_HCKR_EXTAL:
+>  		ecr |= ESAI_ECR_ERI;
+>  		break;
+> 
