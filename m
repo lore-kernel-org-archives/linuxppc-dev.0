@@ -2,103 +2,70 @@ Return-Path: <SRS0=HNI+=SN=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-5.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_PASS,URIBL_BLOCKED
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3CBB6C10F13
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Apr 2019 23:10:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3F4F3C10F13
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Apr 2019 23:56:57 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id AD3092146F
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Apr 2019 23:10:11 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org AD3092146F
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 587B020869
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Apr 2019 23:56:56 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="ePP6Db/D"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 587B020869
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44gGvh6snVzDqT9
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Apr 2019 09:10:08 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44gHxf2WcFzDqT3
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Apr 2019 09:56:54 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=linux.vnet.ibm.com
- (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=nayna@linux.vnet.ibm.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=linux.vnet.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+ spf=permerror (mailfrom) smtp.mailfrom=kernel.org
+ (client-ip=2001:8b0:10b:1236::1; helo=casper.infradead.org;
+ envelope-from=mchehab+samsung@kernel.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=fail (p=none dis=none) header.from=kernel.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=infradead.org header.i=@infradead.org
+ header.b="ePP6Db/D"; dkim-atps=neutral
+Received: from casper.infradead.org (casper.infradead.org
+ [IPv6:2001:8b0:10b:1236::1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44g7c12PtHzDqDX
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Apr 2019 03:41:01 +1000 (AEST)
-Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x3BHde4V107548
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Apr 2019 13:40:59 -0400
-Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2rt9v4s31k-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Apr 2019 13:40:58 -0400
-Received: from localhost
- by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <nayna@linux.vnet.ibm.com>;
- Thu, 11 Apr 2019 18:40:57 +0100
-Received: from b03cxnp08027.gho.boulder.ibm.com (9.17.130.19)
- by e34.co.us.ibm.com (192.168.1.134) with IBM ESMTP SMTP Gateway: Authorized
- Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Thu, 11 Apr 2019 18:40:53 +0100
-Received: from b03ledav002.gho.boulder.ibm.com
- (b03ledav002.gho.boulder.ibm.com [9.17.130.233])
- by b03cxnp08027.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x3BHeqf658458334
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Thu, 11 Apr 2019 17:40:52 GMT
-Received: from b03ledav002.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id EA3E2136061;
- Thu, 11 Apr 2019 17:40:51 +0000 (GMT)
-Received: from b03ledav002.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 03B7E136063;
- Thu, 11 Apr 2019 17:40:49 +0000 (GMT)
-Received: from swastik.ibm.com (unknown [9.80.221.85])
- by b03ledav002.gho.boulder.ibm.com (Postfix) with ESMTP;
- Thu, 11 Apr 2019 17:40:49 +0000 (GMT)
-Subject: Re: [PATCH] crypto: vmx - fix copy-paste error in CTR mode
-To: Daniel Axtens <dja@axtens.net>, Eric Biggers <ebiggers@kernel.org>
-References: <20190315020901.16509-1-dja@axtens.net>
- <20190315022414.GA1671@sol.localdomain>
- <875zsku5mk.fsf@dja-thinkpad.axtens.net>
- <20190315043433.GC1671@sol.localdomain>
- <8736nou2x5.fsf@dja-thinkpad.axtens.net>
- <20190410070234.GA12406@sol.localdomain>
- <87imvkwqdh.fsf@dja-thinkpad.axtens.net>
-From: Nayna <nayna@linux.vnet.ibm.com>
-Date: Thu, 11 Apr 2019 13:40:49 -0400
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:52.0) Gecko/20100101
- Thunderbird/52.9.1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44gHvJ3ysjzDqSl;
+ Fri, 12 Apr 2019 09:54:51 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+ d=infradead.org; s=casper.20170209; h=Content-Transfer-Encoding:Content-Type:
+ MIME-Version:References:In-Reply-To:Message-ID:Subject:Cc:To:From:Date:Sender
+ :Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
+ Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:List-Help:
+ List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
+ bh=5+tH/MOpUFSidIY9WhSFyEPUDHOXXaJKp7Fz0cd8hdM=; b=ePP6Db/DLudz1vlMEo/ff/KUH5
+ OqIIhxDmQ5npakBG0WwaLJRr/hxePnhmsXGFwPXcxVRFB2xCAa1wjqQFPEgJ8E4iFw+Z3OmsG3tVQ
+ FRti79d0KGc3O0/B1/F1j3HZk8C/gWPCHLOlyVvkbEJ3Wel9ntoME3ghT9JVauUcmnTu7Bo1SlJPP
+ 8KF0sbpgUTXpRCaDIUl9dfzF1WMVTubdsMz0W9ACuGbff+7jKZ2hQHvRheIRgivLzVJtqUHfgghuD
+ K9eFeM+TdFLYi9bZ1i2IOC559xIxUykO5u/frgkzO6gFr0YH3TeZ7iQynn2f2tU5Rs3d7wyZlDJqO
+ 82tOS35Q==;
+Received: from 201.86.162.146.dynamic.adsl.gvt.net.br ([201.86.162.146]
+ helo=coco.lan)
+ by casper.infradead.org with esmtpsa (Exim 4.90_1 #2 (Red Hat Linux))
+ id 1hEjWT-0006at-9F; Thu, 11 Apr 2019 23:54:25 +0000
+Date: Thu, 11 Apr 2019 20:54:17 -0300
+From: Mauro Carvalho Chehab <mchehab+samsung@kernel.org>
+To: Guenter Roeck <linux@roeck-us.net>
+Subject: Re: [PATCH v2 00/21] Convert hwmon documentation to ReST
+Message-ID: <20190411205417.187f9565@coco.lan>
+In-Reply-To: <20190411210731.GA29378@roeck-us.net>
+References: <cover.1554923967.git.mchehab+samsung@kernel.org>
+ <20190411124324.3ed62fad@lwn.net>
+ <20190411174357.251904f5@coco.lan>
+ <20190411210731.GA29378@roeck-us.net>
+X-Mailer: Claws Mail 3.17.3 (GTK+ 2.24.32; x86_64-redhat-linux-gnu)
 MIME-Version: 1.0
-In-Reply-To: <87imvkwqdh.fsf@dja-thinkpad.axtens.net>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 8bit
-Content-Language: en-US
-X-TM-AS-GCONF: 00
-x-cbid: 19041117-0016-0000-0000-0000099F7DBD
-X-IBM-SpamModules-Scores: 
-X-IBM-SpamModules-Versions: BY=3.00010910; HX=3.00000242; KW=3.00000007;
- PH=3.00000004; SC=3.00000284; SDB=6.01187630; UDB=6.00622104; IPR=6.00968393; 
- MB=3.00026396; MTD=3.00000008; XFM=3.00000015; UTC=2019-04-11 17:40:56
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19041117-0017-0000-0000-000042C712BD
-Message-Id: <2c8b042f-c7df-cb8b-3fcd-15d6bb274d08@linux.vnet.ibm.com>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2019-04-11_11:, , signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- suspectscore=0 malwarescore=0
- phishscore=0 bulkscore=0 spamscore=0 mlxscore=0 lowpriorityscore=0
- mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1810050000 definitions=main-1904110118
-X-Mailman-Approved-At: Fri, 12 Apr 2019 09:08:36 +1000
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -110,31 +77,93 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: leo.barbosa@canonical.com, Herbert Xu <herbert@gondor.apana.org.au>,
- Stephan Mueller <smueller@chronox.de>, nayna@linux.ibm.com,
- omosnacek@gmail.com, leitao@debian.org, pfsmorigo@gmail.com,
- linux-crypto@vger.kernel.org, marcelo.cerri@canonical.com,
- George Wilson <gcwilson@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Cc: linux-hwmon@vger.kernel.org, Jean Delvare <jdelvare@suse.com>,
+ linux-aspeed@lists.ozlabs.org,
+ Linux Doc Mailing List <linux-doc@vger.kernel.org>,
+ Andrew Jeffery <andrew@aj.id.au>, Jonathan Corbet <corbet@lwn.net>,
+ Liviu Dudau <liviu.dudau@arm.com>, linux-kernel@vger.kernel.org,
+ Mauro Carvalho Chehab <mchehab@infradead.org>,
+ Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>,
+ Paul Mackerras <paulus@samba.org>, Joel Stanley <joel@jms.id.au>,
+ linuxppc-dev@lists.ozlabs.org, Sudeep Holla <sudeep.holla@arm.com>,
+ linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+Em Thu, 11 Apr 2019 14:07:31 -0700
+Guenter Roeck <linux@roeck-us.net> escreveu:
 
-On 04/11/2019 10:47 AM, Daniel Axtens wrote:
-> Eric Biggers <ebiggers@kernel.org> writes:
->
->> Are you still planning to fix the remaining bug?  I booted a ppc64le VM, and I
->> see the same test failure (I think) you were referring to:
->>
->> alg: skcipher: p8_aes_ctr encryption test failed (wrong result) on test vector 3, cfg="uneven misaligned splits, may sleep"
->>
-> Yes, that's the one I saw. I don't have time to follow it up at the
-> moment, but Nayna is aware of it.
->
+> On Thu, Apr 11, 2019 at 05:43:57PM -0300, Mauro Carvalho Chehab wrote:
+> > Em Thu, 11 Apr 2019 12:43:24 -0600
+> > Jonathan Corbet <corbet@lwn.net> escreveu:
+> >   
+> > > On Wed, 10 Apr 2019 16:22:37 -0300
+> > > Mauro Carvalho Chehab <mchehab+samsung@kernel.org> wrote:
+> > >   
+> > > > This series converts the contents of Documentation/hwmon to ReST
+> > > > format.
+> > > > 
+> > > > PS.: I opted to group the conversion files per groups of maintainer
+> > > > set, as, if I were to generate one patch per file, it would give around
+> > > > 160 patches.
+> > > > 
+> > > > I also added those patches to my development tree at:
+> > > > 	https://git.linuxtv.org/mchehab/experimental.git/log/?h=hwmon
+> > > > 
+> > > > If you want to see the results, they're at:
+> > > > 	https://www.infradead.org/~mchehab/hwmon/    
+> > > 
+> > > This set seems generally good and could probably be applied as-is.  But I
+> > > have to ask...is there a reason to not take the last step and actually
+> > > bring this stuff into the Sphinx doc tree?
+> > > 
+> > > We seem to be mostly documenting sysfs files and such.  I am *guessing*
+> > > that perhaps the set should move to Documentation/admin-guide/hwmon?  Or
+> > > have I misunderstood the intended audience here?  
+> > 
+> > :-)
+> > 
+> > Yeah, I'd say that 80% of the contents there are user-faced.
+> > 
+> > Yet, the main issue with this (and other driver subsystems) is that there's
+> > a mix of userspace and Kernelspace stuff. One somewhat simple case is
+> > the abituguru: it has a "datasheet" file:
+> > 
+> > 	abituguru-datasheet
+> > 
+> > This contains programming information for the corresponding drivers,
+> > while abituguru and abituguru3 contains mostly userspace
+> > stuff (still, it also contains the I2C address, with shouldn't mean
+> > anything for the user).
+> > 
+> > However, if you take a look at w83781d, you'll see a mix of both
+> > userspace and driver developer info there... it has a chapter called
+> > "Data sheet updates", for example, with is probably meaningless for
+> > anyone but the hwmon driver developers.
+> > 
+> > That's, btw, a pattern that happens a lot inside device driver
+> > documents on almost all subsystems I checked: driver-specific
+> > documentation is usually not split into user-facing/kernel-facing.
+> > 
+> > While nobody does such split, IMHO, the best would be to keep the
+> > information outside Documentation/admin-guide. But hey! You're
+> > the Doc maintainer. If you prefer to move, I'm perfectly fine
+> > with that.
+> >   
+> 
+> Same here, but please don't move the files which are kernel facing only.
+> 
+> How do you want to handle this series ? Do you expect it to be pushed
+> through hwmon, or through Documentation, or do you plan to push yourself ?
+> 
+> If the series isn't pushed through hwmon, we'll likely have a couple of
+> conflicts against hwmon-next.
 
-Yes Eric, we identified this as a separate issue of misalignment and 
-plan to post a separate patch to address it.
+Guenter,
 
-Thanks & Regards,
-       - Nayna
+I won't be pushing it myself. IMO, it makes more sense to apply it at
+hwmon-next, except if it would cause some conflicts against docs-next.
 
+Regards,
+Mauro
