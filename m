@@ -2,50 +2,134 @@ Return-Path: <SRS0=HNI+=SN=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-4.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3E401C10F13
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Apr 2019 13:09:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D7B2BC10F13
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Apr 2019 13:12:05 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id BD22520693
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Apr 2019 13:09:20 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BD22520693
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+	by mail.kernel.org (Postfix) with ESMTPS id 1A0712133D
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Apr 2019 13:12:04 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="IeiT86ok"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1A0712133D
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linaro.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44g1ZQ4dQbzDqSw
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Apr 2019 23:09:18 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 44g1dZ5Nt3zDqWY
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Apr 2019 23:12:02 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+ spf=pass (mailfrom) smtp.mailfrom=linaro.org
+ (client-ip=2607:f8b0:4864:20::a42; helo=mail-vk1-xa42.google.com;
+ envelope-from=adhemerval.zanella@linaro.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=linaro.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=linaro.org header.i=@linaro.org header.b="IeiT86ok"; 
+ dkim-atps=neutral
+Received: from mail-vk1-xa42.google.com (mail-vk1-xa42.google.com
+ [IPv6:2607:f8b0:4864:20::a42])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44g0sk6nC8zDqSm
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Apr 2019 22:37:30 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=ellerman.id.au
-Received: by ozlabs.org (Postfix)
- id 44g0sk3sZYz9s70; Thu, 11 Apr 2019 22:37:30 +1000 (AEST)
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
- SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 44g0sk1pyhz9s0W;
- Thu, 11 Apr 2019 22:37:30 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Christopher M Riedl <cmr@informatik.wtf>, Oliver <oohall@gmail.com>
-Subject: Re: [PATCH v2] powerpc/xmon: add read-only mode
-In-Reply-To: <864072306.101924.1554863718473@privateemail.com>
-References: <20190408030804.5805-1-cmr@informatik.wtf>
- <CAOSf1CEZgHtz5u6F+N7egf3B+MiquFcsopm1yiMZvdYvKcip1w@mail.gmail.com>
- <864072306.101924.1554863718473@privateemail.com>
-Date: Thu, 11 Apr 2019 22:37:29 +1000
-Message-ID: <87h8b4vhti.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44g1DK1tgWzDqBh
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Apr 2019 22:53:36 +1000 (AEST)
+Received: by mail-vk1-xa42.google.com with SMTP id x84so1340700vkd.1
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Apr 2019 05:53:36 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linaro.org; s=google;
+ h=to:cc:references:from:openpgp:autocrypt:subject:message-id:date
+ :user-agent:mime-version:in-reply-to:content-language
+ :content-transfer-encoding;
+ bh=3JTEDfvkvPHmwWxHWf7JMlZv7oLMArA6TK0bmFzpDzQ=;
+ b=IeiT86ok9LDT6p7M1/jmkCAnK/jCCMC8uANR7IwxU2K3Mc1nSw/2Y+GW6xSlx7pmLw
+ lL103utLPeGLkdd+gVUo4DH0/dnEwg/l8NO1fgE+CMn5A8YjVVX4H7ebBbhXk8Ve1ici
+ 1Czr4zB/RLUHUAtlYMupLeeAW4jjZsjhKzmwVGQayWj07asG7+hah/MtjXnTT/oFcHIr
+ +BqSz2CQNd04RlQ2kG7/xTv9qO4OBcBzsEdcC0ndxKyBFKNfNaXjCAMQwcJjcIg2gIY6
+ WL4NvdwAB5GnK1SSnuhC8Df5IlFsxUTOZCSc5+B+5fPjoDkYzLnJ/KDafxrGtGy05Aax
+ acZw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:to:cc:references:from:openpgp:autocrypt:subject
+ :message-id:date:user-agent:mime-version:in-reply-to
+ :content-language:content-transfer-encoding;
+ bh=3JTEDfvkvPHmwWxHWf7JMlZv7oLMArA6TK0bmFzpDzQ=;
+ b=EUcR7Vf91hm2mXLyS5duIRC0msXkUm2IZxNRVBh9iV6YJpYdwTWtLK+ABAqmUW5ovw
+ WqsRu99qswLUMwlz4g8KPCGa7AGNb63w2d47CKdlDFp5cHzvsHhz9q5vgKZe+ND2CnjM
+ 6b3uCPZZ5+GhAHK817LAdovUYgnSRRxFEBEmsDl2QErDRqN4/crU6tU2ybDR9UDwFblj
+ kEbmmHQKamsa7Gg+/Q/tLNXIiJUtdHWX9EIDFy/b+OiVPBVr0kbnCIb2OsAwnMxzlUXW
+ ELu3+XIhlkFkhL6AXi6ro8ymswojUCaRnveX+lqLaSXfeYE7R31dERu5GJksf3kU8oJk
+ GRUQ==
+X-Gm-Message-State: APjAAAWWvDiTGFgSVbnYE8E8zvYmJxLA1c444+WpikVnqMxDuixNyt0j
+ eOU9prLKXyXdBFofC+feQXHLQ0tT57M=
+X-Google-Smtp-Source: APXvYqx4Wnx439L3eCSqXia05LHSMv2s5NKBtUyKPJG5UVw2p8QJPj+Plz7aKjQ/o9PCY1pWsrGJHQ==
+X-Received: by 2002:a1f:28d7:: with SMTP id o206mr26835348vko.36.1554987212637; 
+ Thu, 11 Apr 2019 05:53:32 -0700 (PDT)
+Received: from [192.168.1.132] ([177.194.125.152])
+ by smtp.googlemail.com with ESMTPSA id d133sm8689180vke.19.2019.04.11.05.53.31
+ (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
+ Thu, 11 Apr 2019 05:53:32 -0700 (PDT)
+To: Florian Weimer <fweimer@redhat.com>
+References: <875zrnlakd.fsf@oldenburg2.str.redhat.com>
+ <284e9c76-2411-b8f4-c4bc-c25c60c04cf7@linaro.org>
+ <87imvker6t.fsf@oldenburg2.str.redhat.com>
+From: Adhemerval Zanella <adhemerval.zanella@linaro.org>
+Openpgp: preference=signencrypt
+Autocrypt: addr=adhemerval.zanella@linaro.org; prefer-encrypt=mutual; keydata=
+ mQINBFcVGkoBEADiQU2x/cBBmAVf5C2d1xgz6zCnlCefbqaflUBw4hB/bEME40QsrVzWZ5Nq
+ 8kxkEczZzAOKkkvv4pRVLlLn/zDtFXhlcvQRJ3yFMGqzBjofucOrmdYkOGo0uCaoJKPT186L
+ NWp53SACXguFJpnw4ODI64ziInzXQs/rUJqrFoVIlrPDmNv/LUv1OVPKz20ETjgfpg8MNwG6
+ iMizMefCl+RbtXbIEZ3TE/IaDT/jcOirjv96lBKrc/pAL0h/O71Kwbbp43fimW80GhjiaN2y
+ WGByepnkAVP7FyNarhdDpJhoDmUk9yfwNuIuESaCQtfd3vgKKuo6grcKZ8bHy7IXX1XJj2X/
+ BgRVhVgMHAnDPFIkXtP+SiarkUaLjGzCz7XkUn4XAGDskBNfbizFqYUQCaL2FdbW3DeZqNIa
+ nSzKAZK7Dm9+0VVSRZXP89w71Y7JUV56xL/PlOE+YKKFdEw+gQjQi0e+DZILAtFjJLoCrkEX
+ w4LluMhYX/X8XP6/C3xW0yOZhvHYyn72sV4yJ1uyc/qz3OY32CRy+bwPzAMAkhdwcORA3JPb
+ kPTlimhQqVgvca8m+MQ/JFZ6D+K7QPyvEv7bQ7M+IzFmTkOCwCJ3xqOD6GjX3aphk8Sr0dq3
+ 4Awlf5xFDAG8dn8Uuutb7naGBd/fEv6t8dfkNyzj6yvc4jpVxwARAQABtElBZGhlbWVydmFs
+ IFphbmVsbGEgTmV0dG8gKExpbmFybyBWUE4gS2V5KSA8YWRoZW1lcnZhbC56YW5lbGxhQGxp
+ bmFyby5vcmc+iQI3BBMBCAAhBQJXFRpKAhsDBQsJCAcDBRUKCQgLBRYCAwEAAh4BAheAAAoJ
+ EKqx7BSnlIjv0e8P/1YOYoNkvJ+AJcNUaM5a2SA9oAKjSJ/M/EN4Id5Ow41ZJS4lUA0apSXW
+ NjQg3VeVc2RiHab2LIB4MxdJhaWTuzfLkYnBeoy4u6njYcaoSwf3g9dSsvsl3mhtuzm6aXFH
+ /Qsauav77enJh99tI4T+58rp0EuLhDsQbnBic/ukYNv7sQV8dy9KxA54yLnYUFqH6pfH8Lly
+ sTVAMyi5Fg5O5/hVV+Z0Kpr+ZocC1YFJkTsNLAW5EIYSP9ftniqaVsim7MNmodv/zqK0IyDB
+ GLLH1kjhvb5+6ySGlWbMTomt/or/uvMgulz0bRS+LUyOmlfXDdT+t38VPKBBVwFMarNuREU2
+ 69M3a3jdTfScboDd2ck1u7l+QbaGoHZQ8ZNUrzgObltjohiIsazqkgYDQzXIMrD9H19E+8fw
+ kCNUlXxjEgH/Kg8DlpoYJXSJCX0fjMWfXywL6ZXc2xyG/hbl5hvsLNmqDpLpc1CfKcA0BkK+
+ k8R57fr91mTCppSwwKJYO9T+8J+o4ho/CJnK/jBy1pWKMYJPvvrpdBCWq3MfzVpXYdahRKHI
+ ypk8m4QlRlbOXWJ3TDd/SKNfSSrWgwRSg7XCjSlR7PNzNFXTULLB34sZhjrN6Q8NQZsZnMNs
+ TX8nlGOVrKolnQPjKCLwCyu8PhllU8OwbSMKskcD1PSkG6h3r0AquQINBFcVGkoBEACgAdbR
+ Ck+fsfOVwT8zowMiL3l9a2DP3Eeak23ifdZG+8Avb/SImpv0UMSbRfnw/N81IWwlbjkjbGTu
+ oT37iZHLRwYUFmA8fZX0wNDNKQUUTjN6XalJmvhdz9l71H3WnE0wneEM5ahu5V1L1utUWTyh
+ VUwzX1lwJeV3vyrNgI1kYOaeuNVvq7npNR6t6XxEpqPsNc6O77I12XELic2+36YibyqlTJIQ
+ V1SZEbIy26AbC2zH9WqaKyGyQnr/IPbTJ2Lv0dM3RaXoVf+CeK7gB2B+w1hZummD21c1Laua
+ +VIMPCUQ+EM8W9EtX+0iJXxI+wsztLT6vltQcm+5Q7tY+HFUucizJkAOAz98YFucwKefbkTp
+ eKvCfCwiM1bGatZEFFKIlvJ2QNMQNiUrqJBlW9nZp/k7pbG3oStOjvawD9ZbP9e0fnlWJIsj
+ 6c7pX354Yi7kxIk/6gREidHLLqEb/otuwt1aoMPg97iUgDV5mlNef77lWE8vxmlY0FBWIXuZ
+ yv0XYxf1WF6dRizwFFbxvUZzIJp3spAao7jLsQj1DbD2s5+S1BW09A0mI/1DjB6EhNN+4bDB
+ SJCOv/ReK3tFJXuj/HbyDrOdoMt8aIFbe7YFLEExHpSk+HgN05Lg5TyTro8oW7TSMTk+8a5M
+ kzaH4UGXTTBDP/g5cfL3RFPl79ubXwARAQABiQIfBBgBCAAJBQJXFRpKAhsMAAoJEKqx7BSn
+ lIjvI/8P/jg0jl4Tbvg3B5kT6PxJOXHYu9OoyaHLcay6Cd+ZrOd1VQQCbOcgLFbf4Yr+rE9l
+ mYsY67AUgq2QKmVVbn9pjvGsEaz8UmfDnz5epUhDxC6yRRvY4hreMXZhPZ1pbMa6A0a/WOSt
+ AgFj5V6Z4dXGTM/lNManr0HjXxbUYv2WfbNt3/07Db9T+GZkpUotC6iknsTA4rJi6u2ls0W9
+ 1UIvW4o01vb4nZRCj4rni0g6eWoQCGoVDk/xFfy7ZliR5B+3Z3EWRJcQskip/QAHjbLa3pml
+ xAZ484fVxgeESOoaeC9TiBIp0NfH8akWOI0HpBCiBD5xaCTvR7ujUWMvhsX2n881r/hNlR9g
+ fcE6q00qHSPAEgGr1bnFv74/1vbKtjeXLCcRKk3Ulw0bY1OoDxWQr86T2fZGJ/HIZuVVBf3+
+ gaYJF92GXFynHnea14nFFuFgOni0Mi1zDxYH/8yGGBXvo14KWd8JOW0NJPaCDFJkdS5hu0VY
+ 7vJwKcyHJGxsCLU+Et0mryX8qZwqibJIzu7kUJQdQDljbRPDFd/xmGUFCQiQAncSilYOcxNU
+ EMVCXPAQTteqkvA+gNqSaK1NM9tY0eQ4iJpo+aoX8HAcn4sZzt2pfUB9vQMTBJ2d4+m/qO6+
+ cFTAceXmIoFsN8+gFN3i8Is3u12u8xGudcBPvpoy4OoG
+Subject: Re: [PATCH] Linux: Define struct termios2 in <termios.h> under
+ _GNU_SOURCE [BZ #10339]
+Message-ID: <db468a0f-4a7b-d251-601f-428885275d08@linaro.org>
+Date: Thu, 11 Apr 2019 09:53:30 -0300
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.6.1
 MIME-Version: 1.0
-Content-Type: text/plain
+In-Reply-To: <87imvker6t.fsf@oldenburg2.str.redhat.com>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-GB
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -57,88 +141,40 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@ozlabs.org, Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+Cc: linux-api@vger.kernel.org, libc-alpha@sourceware.org,
+ linuxppc-dev@lists.ozlabs.org, hpa@zytor.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Christopher M Riedl <cmr@informatik.wtf> writes:
->> On April 8, 2019 at 1:34 AM Oliver <oohall@gmail.com> wrote:
->> On Mon, Apr 8, 2019 at 1:06 PM Christopher M. Riedl <cmr@informatik.wtf> wrote:
-...
->> >
->> > diff --git a/arch/powerpc/Kconfig.debug b/arch/powerpc/Kconfig.debug
->> > index 4e00cb0a5464..0c7f21476018 100644
->> > --- a/arch/powerpc/Kconfig.debug
->> > +++ b/arch/powerpc/Kconfig.debug
->> > @@ -117,6 +117,16 @@ config XMON_DISASSEMBLY
->> >           to say Y here, unless you're building for a memory-constrained
->> >           system.
->> >
->> 
->> > +config XMON_RW
->> > +       bool "Allow xmon read and write operations"
->> > +       depends on XMON
->> > +       default !STRICT_KERNEL_RWX
->> > +       help
->> > +         Allow xmon to read and write to memory and special-purpose registers.
->> > +          Conversely, prevent xmon write access when set to N. Read and write
->> > +          access can also be explicitly controlled with 'xmon=rw' or 'xmon=ro'
->> > +          (read-only) cmdline options. Default is !STRICT_KERNEL_RWX.
->> 
->> Maybe I am a dumb, but I found this *extremely* confusing.
->> Conventionally Kconfig options will control what code is and is not
->> included in the kernel (see XMON_DISASSEMBLY) rather than changing the
->> default behaviour of code. It's not wrong to do so and I'm going to
->> assume that you were following the pattern of XMON_DEFAULT, but I
->> think you need to be a little more clear about what option actually
->> does. Renaming it to XMON_DEFAULT_RO_MODE and re-wording the
->> description to indicate it's a only a mode change would help a lot.
->> 
->> Sorry if this comes across as pointless bikeshedding since it's the
->> opposite of what Christophe said in the last patch, but this was a bit
->> of a head scratcher.
->
-> If anyone is dumb here it's me for making this confusing :)
-> I chatted with Michael Ellerman about this, so let me try to explain this more clearly.
-
-Yeah it's my fault :)
-
-> There are two things I am trying to address with XMON_RW:
-> 1) provide a default access mode for xmon based on system "security"
-
-I think I've gone off this idea. Tying them together is just enforcing a
-linkage that people may not want.
-
-I think XMON_RW should just be an option that stands on its own. It
-should probably be default n, to give people a safe default.
-
-> 2) replace XMON in the decision to write-protect kernel text at compile-time
-
-We should do that as a separate patch. That's actually a bug in the
-current STRICT_KERNEL_RWX support.
-
-ie. STRICT_KERNEL_RWX should always give you PAGE_KERNEL_ROX, regardless
-of XMON or anything else.
-
-> I think a single Kconfig for both of those things is sensible as ultimately the
-> point is to allow xmon to operate in read-only mode on "secure" systems -- without
-> violating any integrity/security guarantees (such as write-protected kernel text).
->
-> Christophe suggested looking at STRICT_KERNEL_RWX and I think that option makes the
-> most sense to base XMON_RW on since the description for STRICT_KERNEL_RWX states:
-
-Once we fix the bugs in STRICT_KERNEL_RWX people are going to enable
-that by default, so it will essentially be always on in future.
 
 
-> With that said, I will remove the 'xmon=rw' cmdline option as it really doesn't work
-> since kernel text is write-protected at compile time.
+On 11/04/2019 08:07, Florian Weimer wrote:
+> * Adhemerval Zanella:
+> 
+>> This allows us to adjust the baud rates to non-standard values using termios
+>> interfaces without to resorting to add new headers and use a different API
+>> (ioctl).
+> 
+> How much symbol versioning will be required for this change?
 
-I think 'xmon=rw' still makes sense. Only some of the RW functionality
-relies on being able to patch kernel text.
+I think all interfaces that have termios as input for sparc and mips 
+(tcgetattr, tcsetattr, cfmakeraw, cfgetispeed, cfgetospeed, cfsetispeed,
+cfsetospeed, cfsetspeed).
 
-And once you have proccall() you can just call a function to make it
-read/write anyway, or use memex to manually frob the page tables.
+Alpha will also need to use termios1 for pre-4.20 kernels.
 
-cheers
+> 
+>> As Peter Anvin has indicated, he create a POC [1] with the aforementioned
+>> new interfaces.  It has not been rebased against master, more specially against
+>> my termios refactor to simplify the multiple architecture header definitions,
+>> but I intend to use as a base.
+> 
+> Reference [1] is still missing. 8-(
+
+Oops... it is https://git.zytor.com/users/hpa/glibc/termbaud.git/log/?h=wip.termbaud
+
+> 
+> Thanks,
+> Florian
+> 
