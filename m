@@ -1,96 +1,58 @@
-Return-Path: <SRS0=mr1i=SM=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
+Return-Path: <SRS0=HNI+=SN=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS
+X-Spam-Status: No, score=-5.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_MUTT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 32C89C10F11
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Apr 2019 23:10:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A46B2C10F11
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Apr 2019 01:18:22 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E04BE20850
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Apr 2019 23:10:47 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E04BE20850
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id E8DA720873
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Apr 2019 01:18:21 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E8DA720873
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.intel.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44ffyr6GPCzDqJc
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Apr 2019 09:10:44 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44fjp33blGzDqLn
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Apr 2019 11:18:19 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
- (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=bauerman@linux.ibm.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+ spf=none (mailfrom) smtp.mailfrom=linux.intel.com
+ (client-ip=134.134.136.31; helo=mga06.intel.com;
+ envelope-from=ricardo.neri-calderon@linux.intel.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=linux.intel.com
+Received: from mga06.intel.com (mga06.intel.com [134.134.136.31])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44ffwq5w9WzDqHm
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Apr 2019 09:08:58 +1000 (AEST)
-Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x3AMwuJO004865
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Apr 2019 19:08:54 -0400
-Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2rsr63uqh4-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Apr 2019 19:08:54 -0400
-Received: from localhost
- by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <bauerman@linux.ibm.com>;
- Thu, 11 Apr 2019 00:08:53 +0100
-Received: from b03cxnp08026.gho.boulder.ibm.com (9.17.130.18)
- by e34.co.us.ibm.com (192.168.1.134) with IBM ESMTP SMTP Gateway: Authorized
- Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Thu, 11 Apr 2019 00:08:52 +0100
-Received: from b03ledav005.gho.boulder.ibm.com
- (b03ledav005.gho.boulder.ibm.com [9.17.130.236])
- by b03cxnp08026.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x3AN8pN960096662
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Wed, 10 Apr 2019 23:08:51 GMT
-Received: from b03ledav005.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 1BE86BE053;
- Wed, 10 Apr 2019 23:08:51 +0000 (GMT)
-Received: from b03ledav005.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 9A8CEBE056;
- Wed, 10 Apr 2019 23:08:49 +0000 (GMT)
-Received: from morokweng.localdomain (unknown [9.80.229.52])
- by b03ledav005.gho.boulder.ibm.com (Postfix) with ESMTPS;
- Wed, 10 Apr 2019 23:08:49 +0000 (GMT)
-References: <20190311193517.23756-1-bauerman@linux.ibm.com>
-User-agent: mu4e 1.0; emacs 26.1
-From: Thiago Jung Bauermann <bauerman@linux.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH v3] powerpc/pseries: Only wait for dying CPU after call to
- rtas_stop_self()
-In-reply-to: <20190311193517.23756-1-bauerman@linux.ibm.com>
-Date: Wed, 10 Apr 2019 20:08:43 -0300
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44fjm43x79zDqLn
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Apr 2019 11:16:35 +1000 (AEST)
+X-Amp-Result: UNSCANNABLE
+X-Amp-File-Uploaded: False
+Received: from fmsmga002.fm.intel.com ([10.253.24.26])
+ by orsmga104.jf.intel.com with ESMTP/TLS/DHE-RSA-AES256-GCM-SHA384;
+ 10 Apr 2019 18:16:32 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="5.60,335,1549958400"; d="scan'208";a="160127386"
+Received: from ranerica-svr.sc.intel.com ([172.25.110.23])
+ by fmsmga002.fm.intel.com with ESMTP; 10 Apr 2019 18:16:32 -0700
+Date: Wed, 10 Apr 2019 18:15:21 -0700
+From: Ricardo Neri <ricardo.neri-calderon@linux.intel.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [RFC PATCH v2 10/14] kernel/watchdog: Add a function to obtain
+ the watchdog_allowed_mask
+Message-ID: <20190411011521.GB9936@ranerica-svr.sc.intel.com>
+References: <1551283518-18922-1-git-send-email-ricardo.neri-calderon@linux.intel.com>
+ <1551283518-18922-11-git-send-email-ricardo.neri-calderon@linux.intel.com>
+ <20190409113421.GU4038@hirez.programming.kicks-ass.net>
 MIME-Version: 1.0
-Content-Type: text/plain
-X-TM-AS-GCONF: 00
-x-cbid: 19041023-0016-0000-0000-0000099F18F8
-X-IBM-SpamModules-Scores: 
-X-IBM-SpamModules-Versions: BY=3.00010905; HX=3.00000242; KW=3.00000007;
- PH=3.00000004; SC=3.00000284; SDB=6.01187265; UDB=6.00621883; IPR=6.00968028; 
- MB=3.00026383; MTD=3.00000008; XFM=3.00000015; UTC=2019-04-10 23:08:53
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19041023-0017-0000-0000-000042C48EB0
-Message-Id: <87bm1dfog4.fsf@morokweng.localdomain>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2019-04-10_10:, , signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- malwarescore=0 suspectscore=1 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1810050000 definitions=main-1904100150
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20190409113421.GU4038@hirez.programming.kicks-ass.net>
+User-Agent: Mutt/1.9.4 (2018-02-28)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -102,125 +64,57 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Gautham R Shenoy <ego@linux.vnet.ibm.com>,
- Michael Bringmann <mwb@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
- Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
+Cc: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>,
+ Alexei Starovoitov <ast@kernel.org>,
+ Kai-Heng Feng <kai.heng.feng@canonical.com>, Paul Mackerras <paulus@samba.org>,
+ "H. Peter Anvin" <hpa@zytor.com>, sparclinux@vger.kernel.org,
+ Ingo Molnar <mingo@kernel.org>, Christoffer Dall <cdall@linaro.org>,
+ Davidlohr Bueso <dave@stgolabs.net>, Ashok Raj <ashok.raj@intel.com>,
+ x86@kernel.org, David Rientjes <rientjes@google.com>,
+ Andi Kleen <andi.kleen@intel.com>, Waiman Long <longman@redhat.com>,
+ Borislav Petkov <bp@suse.de>, Don Zickus <dzickus@redhat.com>,
+ "Ravi V. Shankar" <ravi.v.shankar@intel.com>,
+ Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>,
+ Marc Zyngier <marc.zyngier@arm.com>, Frederic Weisbecker <frederic@kernel.org>,
+ Nicholas Piggin <npiggin@gmail.com>, Ricardo Neri <ricardo.neri@intel.com>,
+ Byungchul Park <byungchul.park@lge.com>,
+ Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
+ Josh Poimboeuf <jpoimboe@redhat.com>,
+ "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+ Thomas Gleixner <tglx@linutronix.de>, Tony Luck <tony.luck@intel.com>,
+ Babu Moger <babu.moger@oracle.com>, Randy Dunlap <rdunlap@infradead.org>,
+ linux-kernel@vger.kernel.org, "Luis R. Rodriguez" <mcgrof@kernel.org>,
+ Masami Hiramatsu <mhiramat@kernel.org>,
+ Philippe Ombredanne <pombredanne@nexb.com>,
+ Colin Ian King <colin.king@canonical.com>,
+ Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
+ "David S. Miller" <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+On Tue, Apr 09, 2019 at 01:34:21PM +0200, Peter Zijlstra wrote:
+> On Wed, Feb 27, 2019 at 08:05:14AM -0800, Ricardo Neri wrote:
+> > diff --git a/kernel/watchdog.c b/kernel/watchdog.c
+> > index 8fbfda94a67b..367aa81294ef 100644
+> > --- a/kernel/watchdog.c
+> > +++ b/kernel/watchdog.c
+> > @@ -44,7 +44,7 @@ int __read_mostly soft_watchdog_user_enabled = 1;
+> >  int __read_mostly watchdog_thresh = 10;
+> >  int __read_mostly nmi_watchdog_available;
+> >  
+> > -struct cpumask watchdog_allowed_mask __read_mostly;
+> > +static struct cpumask watchdog_allowed_mask __read_mostly;
+> >  
+> >  struct cpumask watchdog_cpumask __read_mostly;
+> >  unsigned long *watchdog_cpumask_bits = cpumask_bits(&watchdog_cpumask);
+> 
+> Hurmph, more struct cpumask, ideally this would get converted to
+> cpumask_var_t, I don't think we need this before the allocators work, do
+> we?
 
-Hello,
+I see mm_init() is called before lockup_detector_init(); both from start_kernel().
+Thus, IMHO, kzalloc should work at this point.
 
-Ping?
-
--- 
-Thiago Jung Bauermann
-IBM Linux Technology Center
-
-
-Thiago Jung Bauermann <bauerman@linux.ibm.com> writes:
-
-> When testing DLPAR CPU add/remove on a system under stress,
-> pseries_cpu_die() doesn't wait long enough for a CPU to die:
->
-> [  446.983944] cpu 148 (hwid 148) Ready to die...
-> [  446.984062] cpu 149 (hwid 149) Ready to die...
-> [  446.993518] cpu 150 (hwid 150) Ready to die...
-> [  446.993543] Querying DEAD? cpu 150 (150) shows 2
-> [  446.994098] cpu 151 (hwid 151) Ready to die...
-> [  447.133726] cpu 136 (hwid 136) Ready to die...
-> [  447.403532] cpu 137 (hwid 137) Ready to die...
-> [  447.403772] cpu 138 (hwid 138) Ready to die...
-> [  447.403839] cpu 139 (hwid 139) Ready to die...
-> [  447.403887] cpu 140 (hwid 140) Ready to die...
-> [  447.403937] cpu 141 (hwid 141) Ready to die...
-> [  447.403979] cpu 142 (hwid 142) Ready to die...
-> [  447.404038] cpu 143 (hwid 143) Ready to die...
-> [  447.513546] cpu 128 (hwid 128) Ready to die...
-> [  447.693533] cpu 129 (hwid 129) Ready to die...
-> [  447.693999] cpu 130 (hwid 130) Ready to die...
-> [  447.703530] cpu 131 (hwid 131) Ready to die...
-> [  447.704087] Querying DEAD? cpu 132 (132) shows 2
-> [  447.704102] cpu 132 (hwid 132) Ready to die...
-> [  447.713534] cpu 133 (hwid 133) Ready to die...
-> [  447.714064] Querying DEAD? cpu 134 (134) shows 2
->
-> This is a race between one CPU stopping and another one calling
-> pseries_cpu_die() to wait for it to stop. That function does a short busy
-> loop calling RTAS query-cpu-stopped-state on the stopping CPU to verify
-> that it is stopped, but I think there's a lot for the stopping CPU to do
-> which may take longer than this loop allows.
->
-> As can be seen in the dmesg right before or after the "Querying DEAD?"
-> messages, if pseries_cpu_die() waited a little longer it would have seen
-> the CPU in the stopped state.
->
-> What I think is going on is that CPU 134 was inactive at the time it was
-> unplugged. In that case, dlpar_offline_cpu() calls H_PROD on that CPU and
-> immediately calls pseries_cpu_die(). Meanwhile, the prodded CPU activates
-> and start the process of stopping itself. The busy loop is not long enough
-> to allow for the CPU to wake up and complete the stopping process.
->
-> This can be a problem because if the busy loop finishes too early, then the
-> kernel may offline another CPU before the previous one finished dying,
-> which would lead to two concurrent calls to rtas-stop-self, which is
-> prohibited by the PAPR.
->
-> We can make the race a lot more even if we only start querying if the CPU
-> is stopped when the stopping CPU is close to call rtas_stop_self(). Since
-> pseries_mach_cpu_die() sets the CPU current state to offline almost
-> immediately before calling rtas_stop_self(), we use that as a signal that
-> it is either already stopped or very close to that point, and we can start
-> the busy loop.
->
-> As suggested by Michael Ellerman, this patch also changes the busy loop to
-> wait for a fixed amount of wall time. Based on the measurements that
-> Gautham did on a POWER9 system, in successful cases of
-> smp_query_cpu_stopped(cpu) returning affirmative, the maximum time spent
-> inside the loop was was 10 ms. This patch loops for 20 ms just be sure.
->
-> Signed-off-by: Thiago Jung Bauermann <bauerman@linux.ibm.com>
-> Analyzed-by: Gautham R Shenoy <ego@linux.vnet.ibm.com>
-> ---
->  arch/powerpc/platforms/pseries/hotplug-cpu.c | 13 +++++++++++--
->  1 file changed, 11 insertions(+), 2 deletions(-)
->
-> I have seen this problem since v4.8. Should this patch go to stable as
-> well?
->
-> Changes since v2:
-> - Increaded busy loop to 200 iterations so that it can last up to 20 ms
->   (suggested by Gautham).
-> - Changed commit message to include Gautham's remarks.
->
-> diff --git a/arch/powerpc/platforms/pseries/hotplug-cpu.c b/arch/powerpc/platforms/pseries/hotplug-cpu.c
-> index 97feb6e79f1a..ac6dc35ab829 100644
-> --- a/arch/powerpc/platforms/pseries/hotplug-cpu.c
-> +++ b/arch/powerpc/platforms/pseries/hotplug-cpu.c
-> @@ -214,13 +214,22 @@ static void pseries_cpu_die(unsigned int cpu)
->  			msleep(1);
->  		}
->  	} else if (get_preferred_offline_state(cpu) == CPU_STATE_OFFLINE) {
-> +		/*
-> +		 * If the current state is not offline yet, it means that the
-> +		 * dying CPU (which is either in pseries_mach_cpu_die() or in
-> +		 * the process of getting there) didn't have a chance yet to
-> +		 * call rtas_stop_self() and therefore it's too early to query
-> +		 * if the CPU is stopped.
-> +		 */
-> +		spin_event_timeout(get_cpu_current_state(cpu) == CPU_STATE_OFFLINE,
-> +				   100000, 100);
->  
-> -		for (tries = 0; tries < 25; tries++) {
-> +		for (tries = 0; tries < 200; tries++) {
->  			cpu_status = smp_query_cpu_stopped(pcpu);
->  			if (cpu_status == QCSS_STOPPED ||
->  			    cpu_status == QCSS_HARDWARE_ERROR)
->  				break;
-> -			cpu_relax();
-> +			udelay(100);
->  		}
->  	}
->  
-
+Thanks and BR,
+Ricardo
