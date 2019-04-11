@@ -3,41 +3,41 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
 X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 00788C10F13
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Apr 2019 12:19:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 889ACC282CE
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Apr 2019 12:20:45 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id A22702133D
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Apr 2019 12:19:01 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A22702133D
+	by mail.kernel.org (Postfix) with ESMTPS id 102D72083E
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Apr 2019 12:20:44 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 102D72083E
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44g0SM2vzGzDqGp
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Apr 2019 22:18:59 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+	by lists.ozlabs.org (Postfix) with ESMTP id 44g0VK71NdzDqBy
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Apr 2019 22:20:41 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44fzlS70CJzDqQm
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Apr 2019 21:47:00 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44fzlV109PzDqQn
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Apr 2019 21:47:02 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: by ozlabs.org (Postfix)
- id 44fzlS4rKgz9s71; Thu, 11 Apr 2019 21:47:00 +1000 (AEST)
+ id 44fzlT6LK8z9sNN; Thu, 11 Apr 2019 21:47:01 +1000 (AEST)
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 44fzlS2BHsz9sNM; Thu, 11 Apr 2019 21:47:00 +1000 (AEST)
+ id 44fzlT4R8Nz9s71; Thu, 11 Apr 2019 21:47:01 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: stable@vger.kernel.org,
 	gregkh@linuxfoundation.org
-Subject: [PATCH stable v4.9 17/35] powerpc/fsl: Sanitize the syscall table for
- NXP PowerPC 32 bit platforms
-Date: Thu, 11 Apr 2019 21:46:12 +1000
-Message-Id: <20190411114630.4042-18-mpe@ellerman.id.au>
+Subject: [PATCH stable v4.9 18/35] powerpc/asm: Add a patch_site macro &
+ helpers for patching instructions
+Date: Thu, 11 Apr 2019 21:46:13 +1000
+Message-Id: <20190411114630.4042-19-mpe@ellerman.id.au>
 X-Mailer: git-send-email 2.20.1
 In-Reply-To: <20190411114630.4042-1-mpe@ellerman.id.au>
 References: <20190411114630.4042-1-mpe@ellerman.id.au>
@@ -59,46 +59,95 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Diana Craciun <diana.craciun@nxp.com>
+commit 06d0bbc6d0f56dacac3a79900e9a9a0d5972d818 upstream.
 
-commit c28218d4abbf4f2035495334d8bfcba64bda4787 upstream.
+Add a macro and some helper C functions for patching single asm
+instructions.
 
-Used barrier_nospec to sanitize the syscall table.
+The gas macro means we can do something like:
 
-Signed-off-by: Diana Craciun <diana.craciun@nxp.com>
+  1:	nop
+  	patch_site 1b, patch__foo
+
+Which is less visually distracting than defining a GLOBAL symbol at 1,
+and also doesn't pollute the symbol table which can confuse eg. perf.
+
+These are obviously similar to our existing feature sections, but are
+not automatically patched based on CPU/MMU features, rather they are
+designed to be manually patched by C code at some arbitrary point.
+
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- arch/powerpc/kernel/entry_32.S | 10 ++++++++++
- 1 file changed, 10 insertions(+)
+ arch/powerpc/include/asm/code-patching-asm.h | 18 ++++++++++++++++++
+ arch/powerpc/include/asm/code-patching.h     |  2 ++
+ arch/powerpc/lib/code-patching.c             | 16 ++++++++++++++++
+ 3 files changed, 36 insertions(+)
+ create mode 100644 arch/powerpc/include/asm/code-patching-asm.h
 
-diff --git a/arch/powerpc/kernel/entry_32.S b/arch/powerpc/kernel/entry_32.S
-index 370645687cc7..bdd88f9d7926 100644
---- a/arch/powerpc/kernel/entry_32.S
-+++ b/arch/powerpc/kernel/entry_32.S
-@@ -34,6 +34,7 @@
- #include <asm/ftrace.h>
- #include <asm/ptrace.h>
- #include <asm/export.h>
-+#include <asm/barrier.h>
+diff --git a/arch/powerpc/include/asm/code-patching-asm.h b/arch/powerpc/include/asm/code-patching-asm.h
+new file mode 100644
+index 000000000000..ed7b1448493a
+--- /dev/null
++++ b/arch/powerpc/include/asm/code-patching-asm.h
+@@ -0,0 +1,18 @@
++/* SPDX-License-Identifier: GPL-2.0+ */
++/*
++ * Copyright 2018, Michael Ellerman, IBM Corporation.
++ */
++#ifndef _ASM_POWERPC_CODE_PATCHING_ASM_H
++#define _ASM_POWERPC_CODE_PATCHING_ASM_H
++
++/* Define a "site" that can be patched */
++.macro patch_site label name
++	.pushsection ".rodata"
++	.balign 4
++	.global \name
++\name:
++	.4byte	\label - .
++	.popsection
++.endm
++
++#endif /* _ASM_POWERPC_CODE_PATCHING_ASM_H */
+diff --git a/arch/powerpc/include/asm/code-patching.h b/arch/powerpc/include/asm/code-patching.h
+index b4ab1f497335..ab934f8232bd 100644
+--- a/arch/powerpc/include/asm/code-patching.h
++++ b/arch/powerpc/include/asm/code-patching.h
+@@ -28,6 +28,8 @@ unsigned int create_cond_branch(const unsigned int *addr,
+ 				unsigned long target, int flags);
+ int patch_branch(unsigned int *addr, unsigned long target, int flags);
+ int patch_instruction(unsigned int *addr, unsigned int instr);
++int patch_instruction_site(s32 *addr, unsigned int instr);
++int patch_branch_site(s32 *site, unsigned long target, int flags);
  
- /*
-  * MSR_KERNEL is > 0x10000 on 4xx/Book-E since it include MSR_CE.
-@@ -347,6 +348,15 @@ _GLOBAL(DoSyscall)
- 	ori	r10,r10,sys_call_table@l
- 	slwi	r0,r0,2
- 	bge-	66f
+ int instr_is_relative_branch(unsigned int instr);
+ int instr_is_relative_link_branch(unsigned int instr);
+diff --git a/arch/powerpc/lib/code-patching.c b/arch/powerpc/lib/code-patching.c
+index c77c486fbf24..14535ad4cdd1 100644
+--- a/arch/powerpc/lib/code-patching.c
++++ b/arch/powerpc/lib/code-patching.c
+@@ -40,6 +40,22 @@ int patch_branch(unsigned int *addr, unsigned long target, int flags)
+ 	return patch_instruction(addr, create_branch(addr, target, flags));
+ }
+ 
++int patch_branch_site(s32 *site, unsigned long target, int flags)
++{
++	unsigned int *addr;
 +
-+	barrier_nospec_asm
-+	/*
-+	 * Prevent the load of the handler below (based on the user-passed
-+	 * system call number) being speculatively executed until the test
-+	 * against NR_syscalls and branch to .66f above has
-+	 * committed.
-+	 */
++	addr = (unsigned int *)((unsigned long)site + *site);
++	return patch_instruction(addr, create_branch(addr, target, flags));
++}
 +
- 	lwzx	r10,r10,r0	/* Fetch system call handler [ptr] */
- 	mtlr	r10
- 	addi	r9,r1,STACK_FRAME_OVERHEAD
++int patch_instruction_site(s32 *site, unsigned int instr)
++{
++	unsigned int *addr;
++
++	addr = (unsigned int *)((unsigned long)site + *site);
++	return patch_instruction(addr, instr);
++}
++
+ unsigned int create_branch(const unsigned int *addr,
+ 			   unsigned long target, int flags)
+ {
 -- 
 2.20.1
 
