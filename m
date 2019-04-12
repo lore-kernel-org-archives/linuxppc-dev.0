@@ -2,82 +2,97 @@ Return-Path: <SRS0=dpXp=SO=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.5 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=0.6 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_PASS,SUBJ_ALL_CAPS autolearn=no autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 89333C10F13
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Apr 2019 00:51:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 74CF9C10F13
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Apr 2019 00:57:23 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C460121850
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Apr 2019 00:51:33 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="rxG5Lfvm"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C460121850
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	by mail.kernel.org (Postfix) with ESMTPS id EB6312084D
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Apr 2019 00:57:22 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EB6312084D
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44gK8g0qjgzDqTR
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Apr 2019 10:51:31 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44gKHN4k6pzDqS8
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Apr 2019 10:57:20 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=2607:f8b0:4864:20::e41; helo=mail-vs1-xe41.google.com;
- envelope-from=huang.ying.caritas@gmail.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="rxG5Lfvm"; 
- dkim-atps=neutral
-Received: from mail-vs1-xe41.google.com (mail-vs1-xe41.google.com
- [IPv6:2607:f8b0:4864:20::e41])
+ spf=none (mailfrom) smtp.mailfrom=linux.vnet.ibm.com
+ (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
+ envelope-from=tyreld@linux.vnet.ibm.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=linux.vnet.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44gK6W1h5hzDqSm
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Apr 2019 10:49:37 +1000 (AEST)
-Received: by mail-vs1-xe41.google.com with SMTP id j184so4578769vsd.11
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Apr 2019 17:49:36 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=mime-version:references:in-reply-to:from:date:message-id:subject:to
- :cc; bh=aWBpR9dyC+xLnfEFgXj9tuZsVDw3WOnEHHAmffrI+OI=;
- b=rxG5LfvmG1C32HozkkLevSvbpCrrv685/jmZpjprMmyNxtE2Q31fL6G9UOlE4AIO3h
- NrV1UtIwHzrDNoSm9wNa54wKqjSKHrlb0DovQGCQ87iw+Al7LUaZidbJHwF8rRpx3oue
- xTdo6CXkjvHkapqQtTAVywV3eZS+iUgyK3IhBCmyRJd9RW6papq6LEn0RyqBlYnp2j8/
- +/3GqT4QR0cF3gWvmGWA5DC9pILZPFqeC2PilE9b+aVAesqUS7aCXbRqokBYBRQc4bKx
- 7DQafVtU8z2UkkIDUFuK5khaHkMOxSZzvHYXlROdjoMJIvWj0qfHvj/gEDzLQvfxDu7V
- Fg5g==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:mime-version:references:in-reply-to:from:date
- :message-id:subject:to:cc;
- bh=aWBpR9dyC+xLnfEFgXj9tuZsVDw3WOnEHHAmffrI+OI=;
- b=U2J4bUQaoy2zSFXHp7r54Hq/tUELB8qnKZ+jwGtFTFCgNHZUKbI35VKlNhIn4UDR0Z
- DFQq5lT0B5pmpNKClLrbcZUHqErqCUaYhLSn4mmUje01F+bDfTLCtHDyTpLXJvK6IjpL
- wQRHBVf2F8yfb1kThohC3owjPqsTA2qLmDYHaXoSSo9zIctZKblnF0vGa31t3Ui6+ZN0
- U5OvSGPDYqSGYbzjwjeICoIpfZnGYQEk8PbePvsp8x2yadaYEksS5bHjL7l6W8ogZ8ai
- Qm+HFSIarsB7rt99AZKbOqlrbJHk+8BraT0aKw5hYVJmEVy2w64p5DxlAB3G1pnf2OWa
- 0MZg==
-X-Gm-Message-State: APjAAAVVvAnIX5LRDdv/bZfbsIx0q/WRyQEmF9C9kzWYc4STqT7/PL3X
- TblTM/XzKVVuvC0W6dEEamSj8xqL2c+IG/9lGZw=
-X-Google-Smtp-Source: APXvYqyJYVcb+/w0X0buIFBGIPHkKGOSh2HGwtbXkVBvxd/Bn2yJI3+LXBSdxM/cuDO+GUiEgeLRt9DWYAM/7TVnp8A=
-X-Received: by 2002:a67:b106:: with SMTP id w6mr30490948vsl.16.1555030172978; 
- Thu, 11 Apr 2019 17:49:32 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44gKFY2dvQzDqQs
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Apr 2019 10:55:43 +1000 (AEST)
+Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
+ x3C0sU8Y009074
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Apr 2019 20:55:39 -0400
+Received: from e12.ny.us.ibm.com (e12.ny.us.ibm.com [129.33.205.202])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2rtd7uptg5-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Apr 2019 20:55:39 -0400
+Received: from localhost
+ by e12.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <tyreld@linux.vnet.ibm.com>;
+ Fri, 12 Apr 2019 01:55:37 +0100
+Received: from b01cxnp23032.gho.pok.ibm.com (9.57.198.27)
+ by e12.ny.us.ibm.com (146.89.104.199) with IBM ESMTP SMTP Gateway: Authorized
+ Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Fri, 12 Apr 2019 01:55:35 +0100
+Received: from b01ledav006.gho.pok.ibm.com (b01ledav006.gho.pok.ibm.com
+ [9.57.199.111])
+ by b01cxnp23032.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x3C0tY7w35979442
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Fri, 12 Apr 2019 00:55:34 GMT
+Received: from b01ledav006.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id B200EAC059;
+ Fri, 12 Apr 2019 00:55:34 +0000 (GMT)
+Received: from b01ledav006.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 49CECAC05B;
+ Fri, 12 Apr 2019 00:55:34 +0000 (GMT)
+Received: from oc6857751186.ibm.com (unknown [9.85.238.207])
+ by b01ledav006.gho.pok.ibm.com (Postfix) with ESMTP;
+ Fri, 12 Apr 2019 00:55:34 +0000 (GMT)
+Subject: Re: [PATCH 0/8]
+To: Sam Bobroff <sbobroff@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
+References: <cover.1553050609.git.sbobroff@linux.ibm.com>
+From: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
+Date: Thu, 11 Apr 2019 17:55:33 -0700
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:52.0) Gecko/20100101
+ Thunderbird/52.9.1
 MIME-Version: 1.0
-References: <1549566446-27967-1-git-send-email-longman@redhat.com>
- <20190213091936.GA22829@shao2-debian>
- <CAHk-=wiF2qv4TdKOTaTYeMnmsn4h6z9ot+MRj1=s7dm5y1FUwQ@mail.gmail.com>
- <CAC=cRTM5=e7rJX80m0vL10aQoLawK_VTnQubH8A7_sUO2VUCNA@mail.gmail.com>
- <cc8af095-50e0-cd3e-e498-8c3350d314b7@redhat.com>
-In-Reply-To: <cc8af095-50e0-cd3e-e498-8c3350d314b7@redhat.com>
-From: huang ying <huang.ying.caritas@gmail.com>
-Date: Fri, 12 Apr 2019 08:49:21 +0800
-Message-ID: <CAC=cRTP38JmFWe8C=y6ew_m1Lswb8DghnqLtdiMc0EW_fyPH7g@mail.gmail.com>
-Subject: Re: [PATCH-tip 00/22] locking/rwsem: Rework rwsem-xadd & enable new
- rwsem features
-To: Waiman Long <longman@redhat.com>
-Content-Type: text/plain; charset="UTF-8"
+In-Reply-To: <cover.1553050609.git.sbobroff@linux.ibm.com>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
+X-TM-AS-GCONF: 00
+x-cbid: 19041200-0060-0000-0000-0000032BD786
+X-IBM-SpamModules-Scores: 
+X-IBM-SpamModules-Versions: BY=3.00010911; HX=3.00000242; KW=3.00000007;
+ PH=3.00000004; SC=3.00000284; SDB=6.01187775; UDB=6.00622192; IPR=6.00968538; 
+ MB=3.00026401; MTD=3.00000008; XFM=3.00000015; UTC=2019-04-12 00:55:36
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 19041200-0061-0000-0000-000048EB462F
+Message-Id: <b0406238-9480-3423-20ef-27c29c31b313@linux.vnet.ibm.com>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
+ definitions=2019-04-12_01:, , signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1810050000 definitions=main-1904120005
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -89,42 +104,101 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-ia64@vger.kernel.org, Linux-sh list <linux-sh@vger.kernel.org>,
- Peter Zijlstra <peterz@infradead.org>, Will Deacon <will.deacon@arm.com>,
- "H. Peter Anvin" <hpa@zytor.com>, sparclinux@vger.kernel.org,
- linux-arch <linux-arch@vger.kernel.org>, Davidlohr Bueso <dave@stgolabs.net>,
- Chen Rong <rong.a.chen@intel.com>, linux-hexagon@vger.kernel.org,
- the arch/x86 maintainers <x86@kernel.org>,
- "IngoMolnar@shao2-debian" <mingo@redhat.com>, linux-xtensa@linux-xtensa.org,
- Arnd Bergmann <arnd@arndb.de>, linuxppc-dev@lists.ozlabs.org,
- Borislav Petkov <bp@alien8.de>, Thomas Gleixner <tglx@linutronix.de>,
- "linux-alpha@vger.kernel.org" <linux-arm-kernel@lists.infradead.org>,
- Linus Torvalds <torvalds@linux-foundation.org>,
- Linux List Kernel Mailing <linux-kernel@vger.kernel.org>,
- Andrew Morton <akpm@linux-foundation.org>,
- Tim Chen <tim.c.chen@linux.intel.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, Apr 11, 2019 at 12:08 AM Waiman Long <longman@redhat.com> wrote:
->
-> On 04/10/2019 04:15 AM, huang ying wrote:
-> > Hi, Waiman,
-> >
-> > What's the status of this patchset?  And its merging plan?
-> >
-> > Best Regards,
-> > Huang, Ying
->
-> I have broken the patch into 3 parts (0/1/2) and rewritten some of them.
-> Part 0 has been merged into tip. Parts 1 and 2 are still under testing.
+On 03/19/2019 07:58 PM, Sam Bobroff wrote:
+> Hi all,
+> 
+> This patch set adds support for EEH recovery of hot plugged devices on pSeries
+> machines. Specifically, devices discovered by PCI rescanning using
+> /sys/bus/pci/rescan, which includes devices hotplugged by QEMU's device_add
+> command. (pSeries doesn't currently use slot power control for hotplugging.)
 
-Thanks!  Please keep me updated!
+Slight nit that its not that pSeries doesn't support slot power control
+hotplugging, its that QEMU pSeries guests don't support it. We most definitely
+use the slot power control for hotplugging in PowerVM pSeries Linux guests. More
+specifically we had to work around short comings in the rpaphp driver when
+dealing with QEMU. This being that while at initial glance the design implies
+that it had multiple devices per PHB in mind, it didn't, and only actually
+supported a single slot per PHB. Further, when we developed the QEMU pci hotplug
+feature we had to deal with only having a single PHB per QEMU guest and as a
+result needed a way to plug multiple pci devices into a single PHB. Hence, came
+the pci rescan work around in drmgr.
 
-Best Regards,
-Huang, Ying
+Mike Roth and I have had discussions over the years to get the slot power
+control hotplugging working properly with QEMU, and while I did get the RPA
+hotplug driver fixed to register all available slots associated with a PHB, EEH
+remained an issue. So, I'm very happy to see this patchset get that working with
+the rescan work around.
 
+> 
+> As a side effect this also provides EEH support for devices removed by
+> /sys/bus/pci/devices/*/remove and re-discovered by writing to /sys/bus/pci/rescan,
+> on all platforms.
+
++1, this seems like icing on the cake. ;)
+
+> 
+> The approach I've taken is to use the fact that the existing
+> pcibios_bus_add_device() platform hooks (which are used to set up EEH on
+> Virtual Function devices (VFs)) are actually called for all devices, so I've
+> widened their scope and made other adjustments necessary to allow them to work
+> for hotplugged and boot-time devices as well.
+> 
+> Because some of the changes are in generic PowerPC code, it's
+> possible that I've disturbed something for another PowerPC platform. I've tried
+> to minimize this by leaving that code alone as much as possible and so there
+> are a few cases where eeh_add_device_{early,late}() or eeh_add_sysfs_files() is
+> called more than once. I think these can be looked at later, as duplicate calls
+> are not harmful.
+> 
+> The patch "Convert PNV_PHB_FLAG_EEH" isn't strictly necessary and I'm not sure
+> if it's better to keep it, because it simplifies the code or drop it, because
+> we may need a separate flag per PHB later on. Thoughts anyone?
+> 
+> The first patch is a rework of the pcibios_init reordering patch I posted
+> earlier, which I've included here because it's necessary for this set.
+> 
+> I have done some testing for PowerNV on Power9 using a modified pnv_php module
+> and some testing on pSeries with slot power control using a modified rpaphp
+> module, and the EEH-related parts seem to work.
+
+I'm interested in what modifications with rpaphp. Its unclear if you are saying
+rpaphp modified so that slot power hotplug works with a QEMU pSeries guest? If
+thats the case it would be optimal to get that upstream and remove the work
+rescan workaround for guests that don't need it.
+
+-Tyrel
+
+> 
 > Cheers,
-> Longman
->
+> Sam.
+> 
+> Sam Bobroff (8):
+>   powerpc/64: Adjust order in pcibios_init()
+>   powerpc/eeh: Clear stale EEH_DEV_NO_HANDLER flag
+>   powerpc/eeh: Convert PNV_PHB_FLAG_EEH to global flag
+>   powerpc/eeh: Improve debug messages around device addition
+>   powerpc/eeh: Add eeh_show_enabled()
+>   powerpc/eeh: Initialize EEH address cache earlier
+>   powerpc/eeh: EEH for pSeries hot plug
+>   powerpc/eeh: Remove eeh_probe_devices() and eeh_addr_cache_build()
+> 
+>  arch/powerpc/include/asm/eeh.h               | 19 +++--
+>  arch/powerpc/kernel/eeh.c                    | 33 ++++-----
+>  arch/powerpc/kernel/eeh_cache.c              | 29 +-------
+>  arch/powerpc/kernel/eeh_driver.c             |  4 ++
+>  arch/powerpc/kernel/of_platform.c            |  3 +-
+>  arch/powerpc/kernel/pci-common.c             |  4 --
+>  arch/powerpc/kernel/pci_32.c                 |  4 ++
+>  arch/powerpc/kernel/pci_64.c                 | 12 +++-
+>  arch/powerpc/platforms/powernv/eeh-powernv.c | 41 +++++------
+>  arch/powerpc/platforms/powernv/pci.c         |  7 +-
+>  arch/powerpc/platforms/powernv/pci.h         |  2 -
+>  arch/powerpc/platforms/pseries/eeh_pseries.c | 75 +++++++++++---------
+>  arch/powerpc/platforms/pseries/pci.c         |  7 +-
+>  13 files changed, 122 insertions(+), 118 deletions(-)
+> 
+
