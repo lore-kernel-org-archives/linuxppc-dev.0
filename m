@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
 	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1B9AAC10F0E
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Apr 2019 19:07:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D94B4C10F0E
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Apr 2019 19:08:34 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 9B45420818
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Apr 2019 19:07:06 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9B45420818
+	by mail.kernel.org (Postfix) with ESMTPS id 5920E20818
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Apr 2019 19:08:34 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5920E20818
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44gnSn0kpyzDqKs
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 13 Apr 2019 05:07:05 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44gnVS1D8CzDqVm
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 13 Apr 2019 05:08:32 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=arm.com
  (client-ip=217.140.101.70; helo=foss.arm.com;
@@ -26,21 +26,21 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=arm.com
 Received: from foss.arm.com (usa-sjc-mx-foss1.foss.arm.com [217.140.101.70])
- by lists.ozlabs.org (Postfix) with ESMTP id 44gnM36GYzzDqLk
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 13 Apr 2019 05:02:06 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTP id 44gnM53dQvzDqKs
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 13 Apr 2019 05:02:09 +1000 (AEST)
 Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.72.51.249])
- by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id D6D9115AD;
- Fri, 12 Apr 2019 12:02:05 -0700 (PDT)
+ by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id C004A374;
+ Fri, 12 Apr 2019 12:02:07 -0700 (PDT)
 Received: from e110467-lin.cambridge.arm.com (e110467-lin.cambridge.arm.com
  [10.1.196.75])
- by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id 3843C3F718;
- Fri, 12 Apr 2019 12:02:04 -0700 (PDT)
+ by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id 2069E3F718;
+ Fri, 12 Apr 2019 12:02:05 -0700 (PDT)
 From: Robin Murphy <robin.murphy@arm.com>
 To: linux-mm@kvack.org
-Subject: [PATCH RESEND 1/3] mm/memremap: Rename and consolidate SECTION_SIZE
-Date: Fri, 12 Apr 2019 20:01:56 +0100
+Subject: [PATCH RESEND 2/3] mm: clean up is_device_*_page() definitions
+Date: Fri, 12 Apr 2019 20:01:57 +0100
 Message-Id:
- <029d4af64642019a6d73c804d362d840f4eb0941.1555093412.git.robin.murphy@arm.com>
+ <2adb3982a790078fe49fd454414a7b9c0fd60bcb.1555093412.git.robin.murphy@arm.com>
 X-Mailer: git-send-email 2.21.0.dirty
 In-Reply-To: <cover.1555093412.git.robin.murphy@arm.com>
 References: <cover.1555093412.git.robin.murphy@arm.com>
@@ -64,90 +64,93 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 Content-Type: text/plain; charset="UTF-8"
-Message-ID: <20190412190156.wFkDUa8Cr0jUfhmvOXa5AIIzE5xkWDAMTpSBw3_mRgg@z>
+Message-ID: <20190412190157.8s04gf2QQqQnXhZKsIWL0rBnRB3_YZgvl-mNco-0-gE@z>
 
-Trying to activatee ZONE_DEVICE for arm64 reveals that memremap's
-internal helpers for sparsemem sections conflict with and arm64's
-definitions for hugepages, which inherit the name of "sections" from
-earlier versions of the ARM architecture.
+Refactor is_device_{public,private}_page() with is_pci_p2pdma_page()
+to make them all consistent in depending on their respective config
+options even when CONFIG_DEV_PAGEMAP_OPS is enabled for other reasons.
+This allows a little more compile-time optimisation as well as the
+conceptual and cosmetic cleanup.
 
-Disambiguate memremap (and now HMM too) by propagating sparsemem's PA_
-prefix, to clarify that these values are in terms of addresses rather
-than PFNs (and because it's a heck of a lot easier than changing all the
-arch code). SECTION_MASK is unused, so it can just go.
-
-[anshuman: Consolidated mm/hmm.c instance and updated the commit message]
-
-Acked-by: Michal Hocko <mhocko@suse.com>
-Reviewed-by: David Hildenbrand <david@redhat.com>
+Suggested-by: Jerome Glisse <jglisse@redhat.com>
 Signed-off-by: Robin Murphy <robin.murphy@arm.com>
-Signed-off-by: Anshuman Khandual <anshuman.khandual@arm.com>
 ---
- include/linux/mmzone.h |  1 +
- kernel/memremap.c      | 10 ++++------
- mm/hmm.c               |  2 --
- 3 files changed, 5 insertions(+), 8 deletions(-)
+ include/linux/mm.h | 43 +++++++++++++------------------------------
+ 1 file changed, 13 insertions(+), 30 deletions(-)
 
-diff --git a/include/linux/mmzone.h b/include/linux/mmzone.h
-index fba7741533be..ed7dd27ee94a 100644
---- a/include/linux/mmzone.h
-+++ b/include/linux/mmzone.h
-@@ -1081,6 +1081,7 @@ static inline unsigned long early_pfn_to_nid(unsigned long pfn)
-  * PFN_SECTION_SHIFT		pfn to/from section number
-  */
- #define PA_SECTION_SHIFT	(SECTION_SIZE_BITS)
-+#define PA_SECTION_SIZE		(1UL << PA_SECTION_SHIFT)
- #define PFN_SECTION_SHIFT	(SECTION_SIZE_BITS - PAGE_SHIFT)
- 
- #define NR_MEM_SECTIONS		(1UL << SECTIONS_SHIFT)
-diff --git a/kernel/memremap.c b/kernel/memremap.c
-index a856cb5ff192..dda1367b385d 100644
---- a/kernel/memremap.c
-+++ b/kernel/memremap.c
-@@ -14,8 +14,6 @@
- #include <linux/hmm.h>
- 
- static DEFINE_XARRAY(pgmap_array);
--#define SECTION_MASK ~((1UL << PA_SECTION_SHIFT) - 1)
--#define SECTION_SIZE (1UL << PA_SECTION_SHIFT)
- 
- #if IS_ENABLED(CONFIG_DEVICE_PRIVATE)
- vm_fault_t device_private_entry_fault(struct vm_area_struct *vma,
-@@ -98,8 +96,8 @@ static void devm_memremap_pages_release(void *data)
- 		put_page(pfn_to_page(pfn));
- 
- 	/* pages are dead and unused, undo the arch mapping */
--	align_start = res->start & ~(SECTION_SIZE - 1);
--	align_size = ALIGN(res->start + resource_size(res), SECTION_SIZE)
-+	align_start = res->start & ~(PA_SECTION_SIZE - 1);
-+	align_size = ALIGN(res->start + resource_size(res), PA_SECTION_SIZE)
- 		- align_start;
- 
- 	nid = page_to_nid(pfn_to_page(align_start >> PAGE_SHIFT));
-@@ -154,8 +152,8 @@ void *devm_memremap_pages(struct device *dev, struct dev_pagemap *pgmap)
- 	if (!pgmap->ref || !pgmap->kill)
- 		return ERR_PTR(-EINVAL);
- 
--	align_start = res->start & ~(SECTION_SIZE - 1);
--	align_size = ALIGN(res->start + resource_size(res), SECTION_SIZE)
-+	align_start = res->start & ~(PA_SECTION_SIZE - 1);
-+	align_size = ALIGN(res->start + resource_size(res), PA_SECTION_SIZE)
- 		- align_start;
- 	align_end = align_start + align_size - 1;
- 
-diff --git a/mm/hmm.c b/mm/hmm.c
-index fe1cd87e49ac..ef9e4e6c9f92 100644
---- a/mm/hmm.c
-+++ b/mm/hmm.c
-@@ -33,8 +33,6 @@
- #include <linux/mmu_notifier.h>
- #include <linux/memory_hotplug.h>
- 
--#define PA_SECTION_SIZE (1UL << PA_SECTION_SHIFT)
+diff --git a/include/linux/mm.h b/include/linux/mm.h
+index 76769749b5a5..d76dfb7ac617 100644
+--- a/include/linux/mm.h
++++ b/include/linux/mm.h
+@@ -910,32 +910,6 @@ static inline bool put_devmap_managed_page(struct page *page)
+ 	}
+ 	return false;
+ }
 -
- #if IS_ENABLED(CONFIG_HMM_MIRROR)
- static const struct mmu_notifier_ops hmm_mmu_notifier_ops;
+-static inline bool is_device_private_page(const struct page *page)
+-{
+-	return is_zone_device_page(page) &&
+-		page->pgmap->type == MEMORY_DEVICE_PRIVATE;
+-}
+-
+-static inline bool is_device_public_page(const struct page *page)
+-{
+-	return is_zone_device_page(page) &&
+-		page->pgmap->type == MEMORY_DEVICE_PUBLIC;
+-}
+-
+-#ifdef CONFIG_PCI_P2PDMA
+-static inline bool is_pci_p2pdma_page(const struct page *page)
+-{
+-	return is_zone_device_page(page) &&
+-		page->pgmap->type == MEMORY_DEVICE_PCI_P2PDMA;
+-}
+-#else /* CONFIG_PCI_P2PDMA */
+-static inline bool is_pci_p2pdma_page(const struct page *page)
+-{
+-	return false;
+-}
+-#endif /* CONFIG_PCI_P2PDMA */
+-
+ #else /* CONFIG_DEV_PAGEMAP_OPS */
+ static inline void dev_pagemap_get_ops(void)
+ {
+@@ -949,22 +923,31 @@ static inline bool put_devmap_managed_page(struct page *page)
+ {
+ 	return false;
+ }
++#endif /* CONFIG_DEV_PAGEMAP_OPS */
  
+ static inline bool is_device_private_page(const struct page *page)
+ {
+-	return false;
++	return IS_ENABLED(CONFIG_DEV_PAGEMAP_OPS) &&
++		IS_ENABLED(CONFIG_DEVICE_PRIVATE) &&
++		is_zone_device_page(page) &&
++		page->pgmap->type == MEMORY_DEVICE_PRIVATE;
+ }
+ 
+ static inline bool is_device_public_page(const struct page *page)
+ {
+-	return false;
++	return IS_ENABLED(CONFIG_DEV_PAGEMAP_OPS) &&
++		IS_ENABLED(CONFIG_DEVICE_PUBLIC) &&
++		is_zone_device_page(page) &&
++		page->pgmap->type == MEMORY_DEVICE_PUBLIC;
+ }
+ 
+ static inline bool is_pci_p2pdma_page(const struct page *page)
+ {
+-	return false;
++	return IS_ENABLED(CONFIG_DEV_PAGEMAP_OPS) &&
++		IS_ENABLED(CONFIG_PCI_P2PDMA) &&
++		is_zone_device_page(page) &&
++		page->pgmap->type == MEMORY_DEVICE_PCI_P2PDMA;
+ }
+-#endif /* CONFIG_DEV_PAGEMAP_OPS */
+ 
+ static inline void get_page(struct page *page)
+ {
 -- 
 2.21.0.dirty
 
