@@ -1,71 +1,83 @@
-Return-Path: <SRS0=HNI+=SN=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
+Return-Path: <SRS0=dpXp=SO=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_PASS,URIBL_BLOCKED
+X-Spam-Status: No, score=-0.5 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
+	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3F4F3C10F13
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Apr 2019 23:56:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 89333C10F13
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Apr 2019 00:51:34 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 587B020869
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Apr 2019 23:56:56 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id C460121850
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Apr 2019 00:51:33 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="ePP6Db/D"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 587B020869
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="rxG5Lfvm"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C460121850
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44gHxf2WcFzDqT3
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Apr 2019 09:56:54 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44gK8g0qjgzDqTR
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Apr 2019 10:51:31 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=permerror (mailfrom) smtp.mailfrom=kernel.org
- (client-ip=2001:8b0:10b:1236::1; helo=casper.infradead.org;
- envelope-from=mchehab+samsung@kernel.org; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=gmail.com
+ (client-ip=2607:f8b0:4864:20::e41; helo=mail-vs1-xe41.google.com;
+ envelope-from=huang.ying.caritas@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=fail (p=none dis=none) header.from=kernel.org
+ dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=infradead.org header.i=@infradead.org
- header.b="ePP6Db/D"; dkim-atps=neutral
-Received: from casper.infradead.org (casper.infradead.org
- [IPv6:2001:8b0:10b:1236::1])
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="rxG5Lfvm"; 
+ dkim-atps=neutral
+Received: from mail-vs1-xe41.google.com (mail-vs1-xe41.google.com
+ [IPv6:2607:f8b0:4864:20::e41])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44gHvJ3ysjzDqSl;
- Fri, 12 Apr 2019 09:54:51 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
- d=infradead.org; s=casper.20170209; h=Content-Transfer-Encoding:Content-Type:
- MIME-Version:References:In-Reply-To:Message-ID:Subject:Cc:To:From:Date:Sender
- :Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
- Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:List-Help:
- List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
- bh=5+tH/MOpUFSidIY9WhSFyEPUDHOXXaJKp7Fz0cd8hdM=; b=ePP6Db/DLudz1vlMEo/ff/KUH5
- OqIIhxDmQ5npakBG0WwaLJRr/hxePnhmsXGFwPXcxVRFB2xCAa1wjqQFPEgJ8E4iFw+Z3OmsG3tVQ
- FRti79d0KGc3O0/B1/F1j3HZk8C/gWPCHLOlyVvkbEJ3Wel9ntoME3ghT9JVauUcmnTu7Bo1SlJPP
- 8KF0sbpgUTXpRCaDIUl9dfzF1WMVTubdsMz0W9ACuGbff+7jKZ2hQHvRheIRgivLzVJtqUHfgghuD
- K9eFeM+TdFLYi9bZ1i2IOC559xIxUykO5u/frgkzO6gFr0YH3TeZ7iQynn2f2tU5Rs3d7wyZlDJqO
- 82tOS35Q==;
-Received: from 201.86.162.146.dynamic.adsl.gvt.net.br ([201.86.162.146]
- helo=coco.lan)
- by casper.infradead.org with esmtpsa (Exim 4.90_1 #2 (Red Hat Linux))
- id 1hEjWT-0006at-9F; Thu, 11 Apr 2019 23:54:25 +0000
-Date: Thu, 11 Apr 2019 20:54:17 -0300
-From: Mauro Carvalho Chehab <mchehab+samsung@kernel.org>
-To: Guenter Roeck <linux@roeck-us.net>
-Subject: Re: [PATCH v2 00/21] Convert hwmon documentation to ReST
-Message-ID: <20190411205417.187f9565@coco.lan>
-In-Reply-To: <20190411210731.GA29378@roeck-us.net>
-References: <cover.1554923967.git.mchehab+samsung@kernel.org>
- <20190411124324.3ed62fad@lwn.net>
- <20190411174357.251904f5@coco.lan>
- <20190411210731.GA29378@roeck-us.net>
-X-Mailer: Claws Mail 3.17.3 (GTK+ 2.24.32; x86_64-redhat-linux-gnu)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44gK6W1h5hzDqSm
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Apr 2019 10:49:37 +1000 (AEST)
+Received: by mail-vs1-xe41.google.com with SMTP id j184so4578769vsd.11
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Apr 2019 17:49:36 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+ :cc; bh=aWBpR9dyC+xLnfEFgXj9tuZsVDw3WOnEHHAmffrI+OI=;
+ b=rxG5LfvmG1C32HozkkLevSvbpCrrv685/jmZpjprMmyNxtE2Q31fL6G9UOlE4AIO3h
+ NrV1UtIwHzrDNoSm9wNa54wKqjSKHrlb0DovQGCQ87iw+Al7LUaZidbJHwF8rRpx3oue
+ xTdo6CXkjvHkapqQtTAVywV3eZS+iUgyK3IhBCmyRJd9RW6papq6LEn0RyqBlYnp2j8/
+ +/3GqT4QR0cF3gWvmGWA5DC9pILZPFqeC2PilE9b+aVAesqUS7aCXbRqokBYBRQc4bKx
+ 7DQafVtU8z2UkkIDUFuK5khaHkMOxSZzvHYXlROdjoMJIvWj0qfHvj/gEDzLQvfxDu7V
+ Fg5g==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+ :message-id:subject:to:cc;
+ bh=aWBpR9dyC+xLnfEFgXj9tuZsVDw3WOnEHHAmffrI+OI=;
+ b=U2J4bUQaoy2zSFXHp7r54Hq/tUELB8qnKZ+jwGtFTFCgNHZUKbI35VKlNhIn4UDR0Z
+ DFQq5lT0B5pmpNKClLrbcZUHqErqCUaYhLSn4mmUje01F+bDfTLCtHDyTpLXJvK6IjpL
+ wQRHBVf2F8yfb1kThohC3owjPqsTA2qLmDYHaXoSSo9zIctZKblnF0vGa31t3Ui6+ZN0
+ U5OvSGPDYqSGYbzjwjeICoIpfZnGYQEk8PbePvsp8x2yadaYEksS5bHjL7l6W8ogZ8ai
+ Qm+HFSIarsB7rt99AZKbOqlrbJHk+8BraT0aKw5hYVJmEVy2w64p5DxlAB3G1pnf2OWa
+ 0MZg==
+X-Gm-Message-State: APjAAAVVvAnIX5LRDdv/bZfbsIx0q/WRyQEmF9C9kzWYc4STqT7/PL3X
+ TblTM/XzKVVuvC0W6dEEamSj8xqL2c+IG/9lGZw=
+X-Google-Smtp-Source: APXvYqyJYVcb+/w0X0buIFBGIPHkKGOSh2HGwtbXkVBvxd/Bn2yJI3+LXBSdxM/cuDO+GUiEgeLRt9DWYAM/7TVnp8A=
+X-Received: by 2002:a67:b106:: with SMTP id w6mr30490948vsl.16.1555030172978; 
+ Thu, 11 Apr 2019 17:49:32 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+References: <1549566446-27967-1-git-send-email-longman@redhat.com>
+ <20190213091936.GA22829@shao2-debian>
+ <CAHk-=wiF2qv4TdKOTaTYeMnmsn4h6z9ot+MRj1=s7dm5y1FUwQ@mail.gmail.com>
+ <CAC=cRTM5=e7rJX80m0vL10aQoLawK_VTnQubH8A7_sUO2VUCNA@mail.gmail.com>
+ <cc8af095-50e0-cd3e-e498-8c3350d314b7@redhat.com>
+In-Reply-To: <cc8af095-50e0-cd3e-e498-8c3350d314b7@redhat.com>
+From: huang ying <huang.ying.caritas@gmail.com>
+Date: Fri, 12 Apr 2019 08:49:21 +0800
+Message-ID: <CAC=cRTP38JmFWe8C=y6ew_m1Lswb8DghnqLtdiMc0EW_fyPH7g@mail.gmail.com>
+Subject: Re: [PATCH-tip 00/22] locking/rwsem: Rework rwsem-xadd & enable new
+ rwsem features
+To: Waiman Long <longman@redhat.com>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -77,93 +89,42 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-hwmon@vger.kernel.org, Jean Delvare <jdelvare@suse.com>,
- linux-aspeed@lists.ozlabs.org,
- Linux Doc Mailing List <linux-doc@vger.kernel.org>,
- Andrew Jeffery <andrew@aj.id.au>, Jonathan Corbet <corbet@lwn.net>,
- Liviu Dudau <liviu.dudau@arm.com>, linux-kernel@vger.kernel.org,
- Mauro Carvalho Chehab <mchehab@infradead.org>,
- Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>,
- Paul Mackerras <paulus@samba.org>, Joel Stanley <joel@jms.id.au>,
- linuxppc-dev@lists.ozlabs.org, Sudeep Holla <sudeep.holla@arm.com>,
- linux-arm-kernel@lists.infradead.org
+Cc: linux-ia64@vger.kernel.org, Linux-sh list <linux-sh@vger.kernel.org>,
+ Peter Zijlstra <peterz@infradead.org>, Will Deacon <will.deacon@arm.com>,
+ "H. Peter Anvin" <hpa@zytor.com>, sparclinux@vger.kernel.org,
+ linux-arch <linux-arch@vger.kernel.org>, Davidlohr Bueso <dave@stgolabs.net>,
+ Chen Rong <rong.a.chen@intel.com>, linux-hexagon@vger.kernel.org,
+ the arch/x86 maintainers <x86@kernel.org>,
+ "IngoMolnar@shao2-debian" <mingo@redhat.com>, linux-xtensa@linux-xtensa.org,
+ Arnd Bergmann <arnd@arndb.de>, linuxppc-dev@lists.ozlabs.org,
+ Borislav Petkov <bp@alien8.de>, Thomas Gleixner <tglx@linutronix.de>,
+ "linux-alpha@vger.kernel.org" <linux-arm-kernel@lists.infradead.org>,
+ Linus Torvalds <torvalds@linux-foundation.org>,
+ Linux List Kernel Mailing <linux-kernel@vger.kernel.org>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Tim Chen <tim.c.chen@linux.intel.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Em Thu, 11 Apr 2019 14:07:31 -0700
-Guenter Roeck <linux@roeck-us.net> escreveu:
+On Thu, Apr 11, 2019 at 12:08 AM Waiman Long <longman@redhat.com> wrote:
+>
+> On 04/10/2019 04:15 AM, huang ying wrote:
+> > Hi, Waiman,
+> >
+> > What's the status of this patchset?  And its merging plan?
+> >
+> > Best Regards,
+> > Huang, Ying
+>
+> I have broken the patch into 3 parts (0/1/2) and rewritten some of them.
+> Part 0 has been merged into tip. Parts 1 and 2 are still under testing.
 
-> On Thu, Apr 11, 2019 at 05:43:57PM -0300, Mauro Carvalho Chehab wrote:
-> > Em Thu, 11 Apr 2019 12:43:24 -0600
-> > Jonathan Corbet <corbet@lwn.net> escreveu:
-> >   
-> > > On Wed, 10 Apr 2019 16:22:37 -0300
-> > > Mauro Carvalho Chehab <mchehab+samsung@kernel.org> wrote:
-> > >   
-> > > > This series converts the contents of Documentation/hwmon to ReST
-> > > > format.
-> > > > 
-> > > > PS.: I opted to group the conversion files per groups of maintainer
-> > > > set, as, if I were to generate one patch per file, it would give around
-> > > > 160 patches.
-> > > > 
-> > > > I also added those patches to my development tree at:
-> > > > 	https://git.linuxtv.org/mchehab/experimental.git/log/?h=hwmon
-> > > > 
-> > > > If you want to see the results, they're at:
-> > > > 	https://www.infradead.org/~mchehab/hwmon/    
-> > > 
-> > > This set seems generally good and could probably be applied as-is.  But I
-> > > have to ask...is there a reason to not take the last step and actually
-> > > bring this stuff into the Sphinx doc tree?
-> > > 
-> > > We seem to be mostly documenting sysfs files and such.  I am *guessing*
-> > > that perhaps the set should move to Documentation/admin-guide/hwmon?  Or
-> > > have I misunderstood the intended audience here?  
-> > 
-> > :-)
-> > 
-> > Yeah, I'd say that 80% of the contents there are user-faced.
-> > 
-> > Yet, the main issue with this (and other driver subsystems) is that there's
-> > a mix of userspace and Kernelspace stuff. One somewhat simple case is
-> > the abituguru: it has a "datasheet" file:
-> > 
-> > 	abituguru-datasheet
-> > 
-> > This contains programming information for the corresponding drivers,
-> > while abituguru and abituguru3 contains mostly userspace
-> > stuff (still, it also contains the I2C address, with shouldn't mean
-> > anything for the user).
-> > 
-> > However, if you take a look at w83781d, you'll see a mix of both
-> > userspace and driver developer info there... it has a chapter called
-> > "Data sheet updates", for example, with is probably meaningless for
-> > anyone but the hwmon driver developers.
-> > 
-> > That's, btw, a pattern that happens a lot inside device driver
-> > documents on almost all subsystems I checked: driver-specific
-> > documentation is usually not split into user-facing/kernel-facing.
-> > 
-> > While nobody does such split, IMHO, the best would be to keep the
-> > information outside Documentation/admin-guide. But hey! You're
-> > the Doc maintainer. If you prefer to move, I'm perfectly fine
-> > with that.
-> >   
-> 
-> Same here, but please don't move the files which are kernel facing only.
-> 
-> How do you want to handle this series ? Do you expect it to be pushed
-> through hwmon, or through Documentation, or do you plan to push yourself ?
-> 
-> If the series isn't pushed through hwmon, we'll likely have a couple of
-> conflicts against hwmon-next.
+Thanks!  Please keep me updated!
 
-Guenter,
+Best Regards,
+Huang, Ying
 
-I won't be pushing it myself. IMO, it makes more sense to apply it at
-hwmon-next, except if it would cause some conflicts against docs-next.
-
-Regards,
-Mauro
+> Cheers,
+> Longman
+>
