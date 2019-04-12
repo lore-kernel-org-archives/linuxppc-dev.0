@@ -3,22 +3,22 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
 X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3C0FFC10F0E
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Apr 2019 20:47:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5948DC10F0E
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Apr 2019 20:49:03 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B1E8F20850
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Apr 2019 20:47:37 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B1E8F20850
+	by mail.kernel.org (Postfix) with ESMTPS id D67CF20850
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Apr 2019 20:49:02 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D67CF20850
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44gqhl5bYTzDqWT
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 13 Apr 2019 06:47:35 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44gqkN6PQfzDqQW
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 13 Apr 2019 06:49:00 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=redhat.com
  (client-ip=209.132.183.28; helo=mx1.redhat.com;
@@ -28,27 +28,28 @@ Authentication-Results: lists.ozlabs.org;
 Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44gqWz6xzVzDqVR
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 13 Apr 2019 06:39:59 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44gqX65MltzDqVT
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 13 Apr 2019 06:40:06 +1000 (AEST)
 Received: from smtp.corp.redhat.com (int-mx01.intmail.prod.int.phx2.redhat.com
  [10.5.11.11])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by mx1.redhat.com (Postfix) with ESMTPS id 20362C0524FB;
- Fri, 12 Apr 2019 20:39:58 +0000 (UTC)
+ by mx1.redhat.com (Postfix) with ESMTPS id BC8F530842D1;
+ Fri, 12 Apr 2019 20:40:04 +0000 (UTC)
 Received: from treble.redhat.com (ovpn-120-231.rdu2.redhat.com [10.10.120.231])
- by smtp.corp.redhat.com (Postfix) with ESMTP id 815DE600D4;
- Fri, 12 Apr 2019 20:39:55 +0000 (UTC)
+ by smtp.corp.redhat.com (Postfix) with ESMTP id 40DEE601A5;
+ Fri, 12 Apr 2019 20:39:58 +0000 (UTC)
 From: Josh Poimboeuf <jpoimboe@redhat.com>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH v2 4/5] s390/speculation: Support 'mitigations=' cmdline option
-Date: Fri, 12 Apr 2019 15:39:31 -0500
-Message-Id: <e4a161805458a5ec88812aac0307ae3908a030fc.1555085500.git.jpoimboe@redhat.com>
+Subject: [PATCH v2 5/5] arm64/speculation: Support 'mitigations=' cmdline
+ option
+Date: Fri, 12 Apr 2019 15:39:32 -0500
+Message-Id: <24039e1370ed57e8075730c0b88c505afd9e0ab7.1555085500.git.jpoimboe@redhat.com>
 In-Reply-To: <cover.1555085500.git.jpoimboe@redhat.com>
 References: <cover.1555085500.git.jpoimboe@redhat.com>
 X-Scanned-By: MIMEDefang 2.79 on 10.5.11.11
 X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.5.16
- (mx1.redhat.com [10.5.110.31]); Fri, 12 Apr 2019 20:39:58 +0000 (UTC)
+ (mx1.redhat.com [10.5.110.40]); Fri, 12 Apr 2019 20:40:05 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -79,62 +80,116 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Configure s390 runtime CPU speculation bug mitigations in accordance
-with the 'mitigations=' cmdline option.  This affects Spectre v1 and
-Spectre v2.
+Configure arm64 runtime CPU speculation bug mitigations in accordance
+with the 'mitigations=' cmdline option.  This affects Meltdown, Spectre
+v2, and Speculative Store Bypass.
 
 The default behavior is unchanged.
 
 Signed-off-by: Josh Poimboeuf <jpoimboe@redhat.com>
 ---
- Documentation/admin-guide/kernel-parameters.txt | 5 +++--
- arch/s390/kernel/nospec-branch.c                | 3 ++-
- 2 files changed, 5 insertions(+), 3 deletions(-)
+NOTE: This is based on top of Jeremy Linton's patches:
+      https://lkml.kernel.org/r/20190410231237.52506-1-jeremy.linton@arm.com
+
+ Documentation/admin-guide/kernel-parameters.txt | 8 +++++---
+ arch/arm64/kernel/cpu_errata.c                  | 6 +++++-
+ arch/arm64/kernel/cpufeature.c                  | 8 +++++++-
+ 3 files changed, 17 insertions(+), 5 deletions(-)
 
 diff --git a/Documentation/admin-guide/kernel-parameters.txt b/Documentation/admin-guide/kernel-parameters.txt
-index a03ab62b69af..e84a01d90e92 100644
+index e84a01d90e92..79bfc755defe 100644
 --- a/Documentation/admin-guide/kernel-parameters.txt
 +++ b/Documentation/admin-guide/kernel-parameters.txt
-@@ -2545,7 +2545,7 @@
+@@ -2545,8 +2545,8 @@
  			http://repo.or.cz/w/linux-2.6/mini2440.git
  
  	mitigations=
--			[X86,PPC] Control optional mitigations for CPU
-+			[X86,PPC,S390] Control optional mitigations for CPU
- 			vulnerabilities.  This is a set of curated,
+-			[X86,PPC,S390] Control optional mitigations for CPU
+-			vulnerabilities.  This is a set of curated,
++			[X86,PPC,S390,ARM64] Control optional mitigations for
++			CPU vulnerabilities.  This is a set of curated,
  			arch-independent options, each of which is an
  			aggregation of existing arch-specific options.
-@@ -2556,7 +2556,8 @@
+ 
+@@ -2555,11 +2555,13 @@
+ 				improves system performance, but it may also
  				expose users to several CPU vulnerabilities.
  				Equivalent to: nopti [X86,PPC]
++					       kpti=0 [ARM64]
  					       nospectre_v1 [PPC]
--					       nospectre_v2 [X86,PPC]
-+					       nobp=0 [S390]
-+					       nospectre_v2 [X86,PPC,S390]
+ 					       nobp=0 [S390]
+-					       nospectre_v2 [X86,PPC,S390]
++					       nospectre_v2 [X86,PPC,S390,ARM64]
  					       spectre_v2_user=off [X86]
  					       spec_store_bypass_disable=off [X86,PPC]
++					       ssbd=force-off [ARM64]
  					       l1tf=off [X86]
-diff --git a/arch/s390/kernel/nospec-branch.c b/arch/s390/kernel/nospec-branch.c
-index bdddaae96559..649135cbedd5 100644
---- a/arch/s390/kernel/nospec-branch.c
-+++ b/arch/s390/kernel/nospec-branch.c
-@@ -1,6 +1,7 @@
- // SPDX-License-Identifier: GPL-2.0
- #include <linux/module.h>
- #include <linux/device.h>
+ 
+ 			auto (default)
+diff --git a/arch/arm64/kernel/cpu_errata.c b/arch/arm64/kernel/cpu_errata.c
+index a1f3188c7be0..65bcd7f0cca1 100644
+--- a/arch/arm64/kernel/cpu_errata.c
++++ b/arch/arm64/kernel/cpu_errata.c
+@@ -19,6 +19,7 @@
+ #include <linux/arm-smccc.h>
+ #include <linux/psci.h>
+ #include <linux/types.h>
 +#include <linux/cpu.h>
- #include <asm/nospec-branch.h>
+ #include <asm/cpu.h>
+ #include <asm/cputype.h>
+ #include <asm/cpufeature.h>
+@@ -405,6 +406,9 @@ static bool has_ssbd_mitigation(const struct arm64_cpu_capabilities *entry,
+ 		this_cpu_safe = true;
+ 	}
  
- static int __init nobp_setup_early(char *str)
-@@ -58,7 +59,7 @@ early_param("nospectre_v2", nospectre_v2_setup_early);
++	if (cpu_mitigations_off())
++		ssbd_state = ARM64_SSBD_FORCE_DISABLE;
++
+ 	if (psci_ops.smccc_version == SMCCC_VERSION_1_0) {
+ 		ssbd_state = ARM64_SSBD_UNKNOWN;
+ 		if (!this_cpu_safe)
+@@ -599,7 +603,7 @@ check_branch_predictor(const struct arm64_cpu_capabilities *entry, int scope)
+ 	}
  
- void __init nospec_auto_detect(void)
- {
--	if (test_facility(156)) {
-+	if (test_facility(156) || cpu_mitigations_off()) {
- 		/*
- 		 * The machine supports etokens.
- 		 * Disable expolines and disable nobp.
+ 	/* forced off */
+-	if (__nospectre_v2) {
++	if (__nospectre_v2 || cpu_mitigations_off()) {
+ 		pr_info_once("spectrev2 mitigation disabled by command line option\n");
+ 		__hardenbp_enab = false;
+ 		return false;
+diff --git a/arch/arm64/kernel/cpufeature.c b/arch/arm64/kernel/cpufeature.c
+index 6b7e1556460a..d826b17f7820 100644
+--- a/arch/arm64/kernel/cpufeature.c
++++ b/arch/arm64/kernel/cpufeature.c
+@@ -25,6 +25,7 @@
+ #include <linux/stop_machine.h>
+ #include <linux/types.h>
+ #include <linux/mm.h>
++#include <linux/cpu.h>
+ #include <asm/cpu.h>
+ #include <asm/cpufeature.h>
+ #include <asm/cpu_ops.h>
+@@ -966,7 +967,7 @@ static bool unmap_kernel_at_el0(const struct arm64_cpu_capabilities *entry,
+ 		MIDR_ALL_VERSIONS(MIDR_HISI_TSV110),
+ 		{ /* sentinel */ }
+ 	};
+-	char const *str = "command line option";
++	char const *str = "kpti command line option";
+ 	bool meltdown_safe;
+ 
+ 	meltdown_safe = is_midr_in_range_list(read_cpuid_id(), kpti_safe_list);
+@@ -988,6 +989,11 @@ static bool unmap_kernel_at_el0(const struct arm64_cpu_capabilities *entry,
+ 		__kpti_forced = -1;
+ 	}
+ 
++	if (cpu_mitigations_off() && !__kpti_forced) {
++		str = "mitigations=off";
++		__kpti_forced = -1;
++	}
++
+ 	/* Useful for KASLR robustness */
+ 	if (IS_ENABLED(CONFIG_RANDOMIZE_BASE) && kaslr_offset() > 0) {
+ 		if (!__kpti_forced) {
 -- 
 2.17.2
 
