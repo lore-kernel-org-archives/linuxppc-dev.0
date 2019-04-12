@@ -2,62 +2,54 @@ Return-Path: <SRS0=dpXp=SO=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 03906C10F0E
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Apr 2019 07:52:26 +0000 (UTC)
-Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 662EBC10F0E
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Apr 2019 10:52:00 +0000 (UTC)
+Received: from lists.ozlabs.org (unknown [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 372A6206BA
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Apr 2019 07:52:25 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 372A6206BA
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
+	by mail.kernel.org (Postfix) with ESMTPS id C58EC2084D
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Apr 2019 10:51:59 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C58EC2084D
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nxp.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44gVVG32T5zDqRj
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Apr 2019 17:52:22 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44gZTT3lxjzDqG9
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Apr 2019 20:51:57 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=redhat.com
- (client-ip=209.132.183.28; helo=mx1.redhat.com;
- envelope-from=fweimer@redhat.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=nxp.com
+ (client-ip=92.121.34.21; helo=inva021.nxp.com;
+ envelope-from=laurentiu.tudor@nxp.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=redhat.com
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ dmarc=pass (p=none dis=none) header.from=nxp.com
+Received: from inva021.nxp.com (inva021.nxp.com [92.121.34.21])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44gVSR1fFGzDqGM
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Apr 2019 17:50:46 +1000 (AEST)
-Received: from smtp.corp.redhat.com (int-mx02.intmail.prod.int.phx2.redhat.com
- [10.5.11.12])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by mx1.redhat.com (Postfix) with ESMTPS id 1F15A356F1;
- Fri, 12 Apr 2019 07:50:44 +0000 (UTC)
-Received: from oldenburg2.str.redhat.com (ovpn-116-63.ams2.redhat.com
- [10.36.116.63])
- by smtp.corp.redhat.com (Postfix) with ESMTPS id C98EC60C97;
- Fri, 12 Apr 2019 07:50:42 +0000 (UTC)
-From: Florian Weimer <fweimer@redhat.com>
-To: Adhemerval Zanella <adhemerval.zanella@linaro.org>
-Subject: Re: [PATCH] Linux: Define struct termios2 in <termios.h> under
- _GNU_SOURCE [BZ #10339]
-References: <875zrnlakd.fsf@oldenburg2.str.redhat.com>
- <284e9c76-2411-b8f4-c4bc-c25c60c04cf7@linaro.org>
- <87imvker6t.fsf@oldenburg2.str.redhat.com>
- <db468a0f-4a7b-d251-601f-428885275d08@linaro.org>
-Date: Fri, 12 Apr 2019 09:50:41 +0200
-In-Reply-To: <db468a0f-4a7b-d251-601f-428885275d08@linaro.org> (Adhemerval
- Zanella's message of "Thu, 11 Apr 2019 09:53:30 -0300")
-Message-ID: <87lg0fbr1q.fsf@oldenburg2.str.redhat.com>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/26.1 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
-X-Scanned-By: MIMEDefang 2.79 on 10.5.11.12
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.5.16
- (mx1.redhat.com [10.5.110.30]); Fri, 12 Apr 2019 07:50:44 +0000 (UTC)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44gZRf02WYzDqTP
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Apr 2019 20:50:19 +1000 (AEST)
+Received: from inva021.nxp.com (localhost [127.0.0.1])
+ by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id 9D42E2000CE;
+ Fri, 12 Apr 2019 12:50:15 +0200 (CEST)
+Received: from inva024.eu-rdc02.nxp.com (inva024.eu-rdc02.nxp.com
+ [134.27.226.22])
+ by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id 910EA200006;
+ Fri, 12 Apr 2019 12:50:15 +0200 (CEST)
+Received: from fsr-ub1864-101.ea.freescale.net
+ (fsr-ub1864-101.ea.freescale.net [10.171.82.13])
+ by inva024.eu-rdc02.nxp.com (Postfix) with ESMTP id 343D120601;
+ Fri, 12 Apr 2019 12:50:15 +0200 (CEST)
+From: laurentiu.tudor@nxp.com
+To: linuxppc-dev@lists.ozlabs.org,
+	oss@buserror.net,
+	mpe@ellerman.id.au
+Subject: [PATCH] powerpc/booke64: set RI in default MSR
+Date: Fri, 12 Apr 2019 13:50:09 +0300
+Message-Id: <20190412105009.14221-1-laurentiu.tudor@nxp.com>
+X-Mailer: git-send-email 2.17.1
+X-Virus-Scanned: ClamAV using ClamSMTP
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -69,60 +61,38 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-api@vger.kernel.org, libc-alpha@sourceware.org,
- linuxppc-dev@lists.ozlabs.org, hpa@zytor.com
+Cc: linux-kernel@vger.kernel.org, stable@vger.kernel.org,
+ Laurentiu Tudor <laurentiu.tudor@nxp.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-* Adhemerval Zanella:
+From: Laurentiu Tudor <laurentiu.tudor@nxp.com>
 
-> On 11/04/2019 08:07, Florian Weimer wrote:
->> * Adhemerval Zanella:
->>=20
->>> This allows us to adjust the baud rates to non-standard values using te=
-rmios
->>> interfaces without to resorting to add new headers and use a different =
-API
->>> (ioctl).
->>=20
->> How much symbol versioning will be required for this change?
->
-> I think all interfaces that have termios as input for sparc and mips=20
-> (tcgetattr, tcsetattr, cfmakeraw, cfgetispeed, cfgetospeed, cfsetispeed,
-> cfsetospeed, cfsetspeed).
->
-> Alpha will also need to use termios1 for pre-4.20 kernels.
+Set SI in the default kernel's MSR so that the architected way of
+detecting unrecoverable machine check interrupts has a chance to work.
+This is inline with the MSR setup of the rest of booke powerpc
+architectures configured here.
 
-So only new symbol versions there?  Hmm.
+Signed-off-by: Laurentiu Tudor <laurentiu.tudor@nxp.com>
+Cc: stable@vger.kernel.org
+---
+ arch/powerpc/include/asm/reg_booke.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
->>> As Peter Anvin has indicated, he create a POC [1] with the aforemention=
-ed
->>> new interfaces.  It has not been rebased against master, more specially=
- against
->>> my termios refactor to simplify the multiple architecture header defini=
-tions,
->>> but I intend to use as a base.
->>=20
->> Reference [1] is still missing. 8-(
->
-> Oops... it is https://git.zytor.com/users/hpa/glibc/termbaud.git/log/?h=
-=3Dwip.termbaud
+diff --git a/arch/powerpc/include/asm/reg_booke.h b/arch/powerpc/include/asm/reg_booke.h
+index eb2a33d5df26..e382bd6ede84 100644
+--- a/arch/powerpc/include/asm/reg_booke.h
++++ b/arch/powerpc/include/asm/reg_booke.h
+@@ -41,7 +41,7 @@
+ #if defined(CONFIG_PPC_BOOK3E_64)
+ #define MSR_64BIT	MSR_CM
+ 
+-#define MSR_		(MSR_ME | MSR_CE)
++#define MSR_		(MSR_ME | MSR_RI | MSR_CE)
+ #define MSR_KERNEL	(MSR_ | MSR_64BIT)
+ #define MSR_USER32	(MSR_ | MSR_PR | MSR_EE)
+ #define MSR_USER64	(MSR_USER32 | MSR_64BIT)
+-- 
+2.17.1
 
-This doesn't really illuminate things.  =E2=80=9CDrop explicit baud setting
-interfaces in favor of cfenc|decspeed()=E2=80=9D removes the new symbol ver=
-sion
-for the cf* functions.
-
-My gut feeling is that it's safer to add new interfaces, based on the
-actual kernel/userspace interface, rather than trying to fix up existing
-interfaces with symbol versioning.  The main reason is that code
-involving serial interfaces is difficult to test, so it will take years
-until we find the last application broken by the glibc interface bump.
-
-I don't feel strongly about this.  This came out of a request for
-enabling TCGETS2 support downstream.  If I can't fix this upstream, I
-will just reject that request.
-
-Thanks,
-Florian
