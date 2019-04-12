@@ -2,54 +2,51 @@ Return-Path: <SRS0=dpXp=SO=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_MUTT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 662EBC10F0E
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Apr 2019 10:52:00 +0000 (UTC)
-Received: from lists.ozlabs.org (unknown [203.11.71.2])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C7D7FC10F0E
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Apr 2019 11:24:50 +0000 (UTC)
+Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C58EC2084D
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Apr 2019 10:51:59 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C58EC2084D
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nxp.com
+	by mail.kernel.org (Postfix) with ESMTPS id 1A6B22082E
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Apr 2019 11:24:50 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1A6B22082E
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=8bytes.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44gZTT3lxjzDqG9
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Apr 2019 20:51:57 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44gbCM3SxhzDqTY
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Apr 2019 21:24:47 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=nxp.com
- (client-ip=92.121.34.21; helo=inva021.nxp.com;
- envelope-from=laurentiu.tudor@nxp.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=8bytes.org
+ (client-ip=2a01:238:4383:600:38bc:a715:4b6d:a889; helo=theia.8bytes.org;
+ envelope-from=joro@8bytes.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=nxp.com
-Received: from inva021.nxp.com (inva021.nxp.com [92.121.34.21])
+ dmarc=pass (p=none dis=none) header.from=8bytes.org
+X-Greylist: delayed 379 seconds by postgrey-1.36 at bilbo;
+ Fri, 12 Apr 2019 21:23:18 AEST
+Received: from theia.8bytes.org (8bytes.org
+ [IPv6:2a01:238:4383:600:38bc:a715:4b6d:a889])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44gZRf02WYzDqTP
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Apr 2019 20:50:19 +1000 (AEST)
-Received: from inva021.nxp.com (localhost [127.0.0.1])
- by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id 9D42E2000CE;
- Fri, 12 Apr 2019 12:50:15 +0200 (CEST)
-Received: from inva024.eu-rdc02.nxp.com (inva024.eu-rdc02.nxp.com
- [134.27.226.22])
- by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id 910EA200006;
- Fri, 12 Apr 2019 12:50:15 +0200 (CEST)
-Received: from fsr-ub1864-101.ea.freescale.net
- (fsr-ub1864-101.ea.freescale.net [10.171.82.13])
- by inva024.eu-rdc02.nxp.com (Postfix) with ESMTP id 343D120601;
- Fri, 12 Apr 2019 12:50:15 +0200 (CEST)
-From: laurentiu.tudor@nxp.com
-To: linuxppc-dev@lists.ozlabs.org,
-	oss@buserror.net,
-	mpe@ellerman.id.au
-Subject: [PATCH] powerpc/booke64: set RI in default MSR
-Date: Fri, 12 Apr 2019 13:50:09 +0300
-Message-Id: <20190412105009.14221-1-laurentiu.tudor@nxp.com>
-X-Mailer: git-send-email 2.17.1
-X-Virus-Scanned: ClamAV using ClamSMTP
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44gb9f2HH2zDqSh
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Apr 2019 21:23:18 +1000 (AEST)
+Received: by theia.8bytes.org (Postfix, from userid 1000)
+ id 5249D21D; Fri, 12 Apr 2019 13:16:51 +0200 (CEST)
+Date: Fri, 12 Apr 2019 13:16:50 +0200
+From: Joerg Roedel <joro@8bytes.org>
+To: Zhen Lei <thunder.leizhen@huawei.com>
+Subject: Re: [PATCH v5 1/6] iommu: add generic boot option iommu.dma_mode
+Message-ID: <20190412111649.GK4518@8bytes.org>
+References: <20190409125308.18304-1-thunder.leizhen@huawei.com>
+ <20190409125308.18304-2-thunder.leizhen@huawei.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20190409125308.18304-2-thunder.leizhen@huawei.com>
+User-Agent: Mutt/1.10.1 (2018-07-13)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -61,38 +58,47 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-kernel@vger.kernel.org, stable@vger.kernel.org,
- Laurentiu Tudor <laurentiu.tudor@nxp.com>
+Cc: linux-ia64 <linux-ia64@vger.kernel.org>,
+ Sebastian Ott <sebott@linux.ibm.com>, linux-doc <linux-doc@vger.kernel.org>,
+ Hanjun Guo <guohanjun@huawei.com>, Heiko Carstens <heiko.carstens@de.ibm.com>,
+ Paul Mackerras <paulus@samba.org>, "H . Peter Anvin" <hpa@zytor.com>,
+ linux-s390 <linux-s390@vger.kernel.org>, Jonathan Corbet <corbet@lwn.net>,
+ Jean-Philippe Brucker <jean-philippe.brucker@arm.com>, x86 <x86@kernel.org>,
+ Ingo Molnar <mingo@redhat.com>, Fenghua Yu <fenghua.yu@intel.com>,
+ Will Deacon <will.deacon@arm.com>, John Garry <john.garry@huawei.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Borislav Petkov <bp@alien8.de>,
+ Thomas Gleixner <tglx@linutronix.de>,
+ Gerald Schaefer <gerald.schaefer@de.ibm.com>, Tony Luck <tony.luck@intel.com>,
+ David Woodhouse <dwmw2@infradead.org>,
+ linux-kernel <linux-kernel@vger.kernel.org>,
+ iommu <iommu@lists.linux-foundation.org>,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>,
+ Robin Murphy <robin.murphy@arm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Laurentiu Tudor <laurentiu.tudor@nxp.com>
+On Tue, Apr 09, 2019 at 08:53:03PM +0800, Zhen Lei wrote:
+> +static int __init iommu_dma_mode_setup(char *str)
+> +{
+> +	if (!str)
+> +		goto fail;
+> +
+> +	if (!strncmp(str, "passthrough", 11))
+> +		iommu_default_dma_mode = IOMMU_DMA_MODE_PASSTHROUGH;
+> +	else if (!strncmp(str, "lazy", 4))
+> +		iommu_default_dma_mode = IOMMU_DMA_MODE_LAZY;
+> +	else if (!strncmp(str, "strict", 6))
+> +		iommu_default_dma_mode = IOMMU_DMA_MODE_STRICT;
+> +	else
+> +		goto fail;
+> +
+> +	pr_info("Force dma mode to be %d\n", iommu_default_dma_mode);
 
-Set SI in the default kernel's MSR so that the architected way of
-detecting unrecoverable machine check interrupts has a chance to work.
-This is inline with the MSR setup of the rest of booke powerpc
-architectures configured here.
+Printing a number is not very desriptive or helpful to the user. Please
+print the name of the mode instead.
 
-Signed-off-by: Laurentiu Tudor <laurentiu.tudor@nxp.com>
-Cc: stable@vger.kernel.org
----
- arch/powerpc/include/asm/reg_booke.h | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/include/asm/reg_booke.h b/arch/powerpc/include/asm/reg_booke.h
-index eb2a33d5df26..e382bd6ede84 100644
---- a/arch/powerpc/include/asm/reg_booke.h
-+++ b/arch/powerpc/include/asm/reg_booke.h
-@@ -41,7 +41,7 @@
- #if defined(CONFIG_PPC_BOOK3E_64)
- #define MSR_64BIT	MSR_CM
- 
--#define MSR_		(MSR_ME | MSR_CE)
-+#define MSR_		(MSR_ME | MSR_RI | MSR_CE)
- #define MSR_KERNEL	(MSR_ | MSR_64BIT)
- #define MSR_USER32	(MSR_ | MSR_PR | MSR_EE)
- #define MSR_USER64	(MSR_USER32 | MSR_64BIT)
--- 
-2.17.1
+Regards,
 
+	Joerg
