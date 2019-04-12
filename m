@@ -2,166 +2,60 @@ Return-Path: <SRS0=dpXp=SO=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+X-Spam-Status: No, score=-8.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
+	SPF_PASS,URIBL_BLOCKED,USER_AGENT_MUTT autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 89B28C10F0E
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Apr 2019 03:50:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BC869C10F0E
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Apr 2019 05:43:00 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E0F9B2084D
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Apr 2019 03:50:16 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id D588120818
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Apr 2019 05:42:59 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ozlabs-ru.20150623.gappssmtp.com header.i=@ozlabs-ru.20150623.gappssmtp.com header.b="SOIhRjPq"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E0F9B2084D
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ozlabs.ru
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au header.b="C9cspdux"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D588120818
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=gibson.dropbear.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44gP6t5v2rzDqT6
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Apr 2019 13:50:14 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=ozlabs.ru
- (client-ip=2607:f8b0:4864:20::543; helo=mail-pg1-x543.google.com;
- envelope-from=aik@ozlabs.ru; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=ozlabs.ru
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ozlabs-ru.20150623.gappssmtp.com
- header.i=@ozlabs-ru.20150623.gappssmtp.com header.b="SOIhRjPq"; 
- dkim-atps=neutral
-Received: from mail-pg1-x543.google.com (mail-pg1-x543.google.com
- [IPv6:2607:f8b0:4864:20::543])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 44gRcx2grMzDqTv
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Apr 2019 15:42:57 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44gP565wBczDqSP
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Apr 2019 13:48:41 +1000 (AEST)
-Received: by mail-pg1-x543.google.com with SMTP id y3so4492451pgk.12
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Apr 2019 20:48:41 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=ozlabs-ru.20150623.gappssmtp.com; s=20150623;
- h=subject:to:cc:references:from:openpgp:autocrypt:message-id:date
- :user-agent:mime-version:in-reply-to:content-language
- :content-transfer-encoding;
- bh=QWq65WdTuw0cU+zjbpayZJNG9j+U+Kt7etpKG8S5d28=;
- b=SOIhRjPqc0DTq04LY6rk4eAymEia06cvevmv/oxrekq4dI9vub3GOnB8IliFjI/slT
- C3uElPVrfoXPV0O8r3Hckqe2X0DZmJgXutyhU40wbkkJ7bIiYsV0rnx1zGuBhbyaTu+l
- 7zj/+gtc5C/0qlp/6NifZ4rqTV5aWHNEP/cLmRdOfm0MB4FtOdjH6A3+gk3ESR5N1cKv
- 5+Au2G0CkWkfYXZajNgfLrZPpLjJrQvzOlgtNYMBQml7YTyp0aTXCZnfRye/XLX74XDz
- 3y3rJAmA/oXSxySQvFqxCnZFsxf/1ea/V4ZbtErwGaICju79iB60BdQlhrk9HBpnUeFH
- HxpA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:subject:to:cc:references:from:openpgp:autocrypt
- :message-id:date:user-agent:mime-version:in-reply-to
- :content-language:content-transfer-encoding;
- bh=QWq65WdTuw0cU+zjbpayZJNG9j+U+Kt7etpKG8S5d28=;
- b=HqlFakvGRKQw/MPBF3qwoYUwrBUGUUpViPWDgJ7P1WoERjP3pMDfMDAUyyQlwxqbZ6
- 9J7ge6EWN1+vG8D1X//6tq9322DSsxcDtg085eO1F3kAN0tAdRsvgdUR3A/X1sHtAgUl
- MyUGjUTRfcAfNCUGRWY1fX4I/AS4i1Ud2UVB1UYvyHzRWCsWoF63P3VC0YWbYE3CSKRk
- XcSBmg/UJDM4DZom7ClTcMwCoVpP8TMODPB1IcNmIg5d5T9PoTYqU9OA1ybiwTX6+VRJ
- CiSVmJGsiy5YZkbSANlH/H0WmYtIiKZohK6ODQdq8QNgIrCQaHaV1jVtaIwpoZ8KcyZi
- xyXg==
-X-Gm-Message-State: APjAAAUjCkxp6lcRpUTxeKXT9xH1eByQZQCvplSMwbDjGLR4sVKLOoIi
- g8t5XXtMUHBkyDfqpX6CKUzVNQ==
-X-Google-Smtp-Source: APXvYqw6tTgzFolJr+OcePjHkp5yHc0zn8rIOd34+RtyOlXh4E9aGk0t8jGmmEBFrApx2ut5RffToQ==
-X-Received: by 2002:a63:2e87:: with SMTP id
- u129mr49937894pgu.321.1555040918639; 
- Thu, 11 Apr 2019 20:48:38 -0700 (PDT)
-Received: from [10.61.2.175] ([122.99.82.10])
- by smtp.gmail.com with ESMTPSA id g2sm60156502pfd.134.2019.04.11.20.48.34
- (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
- Thu, 11 Apr 2019 20:48:37 -0700 (PDT)
-Subject: Re: [PATCH kernel v3] powerpc/powernv: Isolate NVLinks between
- GV100GL on Witherspoon
-To: Alex Williamson <alex.williamson@redhat.com>
-References: <20190411064844.8241-1-aik@ozlabs.ru>
- <20190411105251.20165f1d@x1.home>
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
-Openpgp: preference=signencrypt
-Autocrypt: addr=aik@ozlabs.ru; keydata=
- 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
-Message-ID: <4f7069cf-8c25-6fe1-42df-3b4af2d52172@ozlabs.ru>
-Date: Fri, 12 Apr 2019 13:48:31 +1000
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
- Thunderbird/60.6.1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44gRbC3qmwzDqT9
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Apr 2019 15:41:27 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=gibson.dropbear.id.au
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au
+ header.b="C9cspdux"; dkim-atps=neutral
+Received: by ozlabs.org (Postfix, from userid 1007)
+ id 44gRbB6kfTz9s4V; Fri, 12 Apr 2019 15:41:26 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+ d=gibson.dropbear.id.au; s=201602; t=1555047686;
+ bh=37v+hbo4g2a45ABH9HMQWtoGqBIVItnynd8XcAIs5sQ=;
+ h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+ b=C9cspduxRfrNPc2WYPpba0CywhdY+gfcdbW82W+ijXaz/CFfD0McOgpb6IvedyqBd
+ xmVOQ9hFgTXX8bmcSYETqYa+3IRELXgAMt3hNMpfFfJ1ZFaDnIZWNbobJragAWZtXw
+ og3gwlkROq0gE9fjOS24BWwStyBZsmHB2N/XquLk=
+Date: Fri, 12 Apr 2019 15:19:52 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: =?iso-8859-1?Q?C=E9dric?= Le Goater <clg@kaod.org>
+Subject: Re: [PATCH v5 06/16] KVM: PPC: Book3S HV: XIVE: add controls for the
+ EQ configuration
+Message-ID: <20190412051952.GA8005@umbus.fritz.box>
+References: <20190410170448.3923-1-clg@kaod.org>
+ <20190410170448.3923-7-clg@kaod.org>
 MIME-Version: 1.0
-In-Reply-To: <20190411105251.20165f1d@x1.home>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature"; boundary="LZvS9be/3tNcYl/X"
+Content-Disposition: inline
+In-Reply-To: <20190410170448.3923-7-clg@kaod.org>
+User-Agent: Mutt/1.11.3 (2019-02-01)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -173,330 +67,540 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Jose Ricardo Ziviani <joserz@linux.ibm.com>, kvm@vger.kernel.org,
- Sam Bobroff <sbobroff@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- Daniel Henrique Barboza <danielhb413@gmail.com>, kvm-ppc@vger.kernel.org,
- Piotr Jaroszynski <pjaroszynski@nvidia.com>,
- =?UTF-8?Q?Leonardo_Augusto_Guimar=c3=a3es_Garcia?= <lagarcia@br.ibm.com>,
- Reza Arbab <arbab@linux.ibm.com>, David Gibson <david@gibson.dropbear.id.au>
+Cc: linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>,
+ kvm@vger.kernel.org, kvm-ppc@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
 
+--LZvS9be/3tNcYl/X
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-On 12/04/2019 02:52, Alex Williamson wrote:
-> On Thu, 11 Apr 2019 16:48:44 +1000
-> Alexey Kardashevskiy <aik@ozlabs.ru> wrote:
-> 
->> The NVIDIA V100 SXM2 GPUs are connected to the CPU via PCIe links and
->> (on POWER9) NVLinks. In addition to that, GPUs themselves have direct
->> peer-to-peer NVLinks in groups of 2 to 4 GPUs with no buffers/latches
->> between GPUs.
->>
->> Because of these interconnected NVLinks, the POWERNV platform puts such
->> interconnected GPUs to the same IOMMU group. However users want to pass
->> GPUs through individually which requires separate IOMMU groups.
->>
->> Thankfully V100 GPUs implement an interface to disable arbitrary links
->> by programming link disabling mask via the GPU's BAR0. Once a link is
->> disabled, it only can be enabled after performing the secondary bus reset
->> (SBR) on the GPU. Since these GPUs do not advertise any other type of
->> reset, it is reset by the platform's SBR handler.
->>
->> This adds an extra step to the POWERNV's SBR handler to block NVLinks to
->> GPUs which do not belong to the same group as the GPU being reset.
->>
->> This adds a new "isolate_nvlink" kernel parameter to force GPU isolation;
->> when enabled, every GPU gets placed in its own IOMMU group. The new
->> parameter is off by default to preserve the existing behaviour.
->>
->> Before isolating:
->> [nvdbg ~]$ nvidia-smi topo -m
->>         GPU0    GPU1    GPU2    CPU Affinity
->> GPU0     X      NV2     NV2     0-0
->> GPU1    NV2      X      NV2     0-0
->> GPU2    NV2     NV2      X      0-0
->>
->> After isolating:
->> [nvdbg ~]$ nvidia-smi topo -m
->>         GPU0    GPU1    GPU2    CPU Affinity
->> GPU0     X      PHB     PHB     0-0
->> GPU1    PHB      X      PHB     0-0
->> GPU2    PHB     PHB      X      0-0
->>
->> Where:
->>   X    = Self
->>   PHB  = Connection traversing PCIe as well as a PCIe Host Bridge (typically the CPU)
->>   NV#  = Connection traversing a bonded set of # NVLinks
->>
->> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
->> ---
->> Changes:
->> v3:
->> * added pci_err() for failed ioremap
->> * reworked commit log
->>
->> v2:
->> * this is rework of [PATCH kernel RFC 0/2] vfio, powerpc/powernv: Isolate GV100GL
->> but this time it is contained in the powernv platform
->> ---
->>  arch/powerpc/platforms/powernv/Makefile      |   2 +-
->>  arch/powerpc/platforms/powernv/pci.h         |   1 +
->>  arch/powerpc/platforms/powernv/eeh-powernv.c |   1 +
->>  arch/powerpc/platforms/powernv/npu-dma.c     |  24 +++-
->>  arch/powerpc/platforms/powernv/nvlinkgpu.c   | 137 +++++++++++++++++++
->>  5 files changed, 162 insertions(+), 3 deletions(-)
->>  create mode 100644 arch/powerpc/platforms/powernv/nvlinkgpu.c
->>
->> diff --git a/arch/powerpc/platforms/powernv/Makefile b/arch/powerpc/platforms/powernv/Makefile
->> index da2e99efbd04..60a10d3b36eb 100644
->> --- a/arch/powerpc/platforms/powernv/Makefile
->> +++ b/arch/powerpc/platforms/powernv/Makefile
->> @@ -6,7 +6,7 @@ obj-y			+= opal-msglog.o opal-hmi.o opal-power.o opal-irqchip.o
->>  obj-y			+= opal-kmsg.o opal-powercap.o opal-psr.o opal-sensor-groups.o
->>  
->>  obj-$(CONFIG_SMP)	+= smp.o subcore.o subcore-asm.o
->> -obj-$(CONFIG_PCI)	+= pci.o pci-ioda.o npu-dma.o pci-ioda-tce.o
->> +obj-$(CONFIG_PCI)	+= pci.o pci-ioda.o npu-dma.o pci-ioda-tce.o nvlinkgpu.o
->>  obj-$(CONFIG_CXL_BASE)	+= pci-cxl.o
->>  obj-$(CONFIG_EEH)	+= eeh-powernv.o
->>  obj-$(CONFIG_PPC_SCOM)	+= opal-xscom.o
->> diff --git a/arch/powerpc/platforms/powernv/pci.h b/arch/powerpc/platforms/powernv/pci.h
->> index 8e36da379252..9fd3f391482c 100644
->> --- a/arch/powerpc/platforms/powernv/pci.h
->> +++ b/arch/powerpc/platforms/powernv/pci.h
->> @@ -250,5 +250,6 @@ extern void pnv_pci_unlink_table_and_group(struct iommu_table *tbl,
->>  extern void pnv_pci_setup_iommu_table(struct iommu_table *tbl,
->>  		void *tce_mem, u64 tce_size,
->>  		u64 dma_offset, unsigned int page_shift);
->> +extern void pnv_try_isolate_nvidia_v100(struct pci_dev *gpdev);
->>  
->>  #endif /* __POWERNV_PCI_H */
->> diff --git a/arch/powerpc/platforms/powernv/eeh-powernv.c b/arch/powerpc/platforms/powernv/eeh-powernv.c
->> index f38078976c5d..464b097d9635 100644
->> --- a/arch/powerpc/platforms/powernv/eeh-powernv.c
->> +++ b/arch/powerpc/platforms/powernv/eeh-powernv.c
->> @@ -937,6 +937,7 @@ void pnv_pci_reset_secondary_bus(struct pci_dev *dev)
->>  		pnv_eeh_bridge_reset(dev, EEH_RESET_HOT);
->>  		pnv_eeh_bridge_reset(dev, EEH_RESET_DEACTIVATE);
->>  	}
->> +	pnv_try_isolate_nvidia_v100(dev);
->>  }
->>  
->>  static void pnv_eeh_wait_for_pending(struct pci_dn *pdn, const char *type,
->> diff --git a/arch/powerpc/platforms/powernv/npu-dma.c b/arch/powerpc/platforms/powernv/npu-dma.c
->> index dc23d9d2a7d9..d4f9ee6222b5 100644
->> --- a/arch/powerpc/platforms/powernv/npu-dma.c
->> +++ b/arch/powerpc/platforms/powernv/npu-dma.c
->> @@ -22,6 +22,23 @@
->>  
->>  #include "pci.h"
->>  
->> +static bool isolate_nvlink;
->> +
->> +static int __init parse_isolate_nvlink(char *p)
->> +{
->> +	bool val;
->> +
->> +	if (!p)
->> +		val = true;
->> +	else if (kstrtobool(p, &val))
->> +		return -EINVAL;
->> +
->> +	isolate_nvlink = val;
->> +
->> +	return 0;
->> +}
->> +early_param("isolate_nvlink", parse_isolate_nvlink);
->> +
->>  /*
->>   * spinlock to protect initialisation of an npu_context for a particular
->>   * mm_struct.
->> @@ -549,7 +566,7 @@ struct iommu_table_group *pnv_try_setup_npu_table_group(struct pnv_ioda_pe *pe)
->>  
->>  	hose = pci_bus_to_host(npdev->bus);
->>  
->> -	if (hose->npu) {
->> +	if (hose->npu && !isolate_nvlink) {
->>  		table_group = &hose->npu->npucomp.table_group;
->>  
->>  		if (!table_group->group) {
->> @@ -559,7 +576,10 @@ struct iommu_table_group *pnv_try_setup_npu_table_group(struct pnv_ioda_pe *pe)
->>  					pe->pe_number);
->>  		}
->>  	} else {
->> -		/* Create a group for 1 GPU and attached NPUs for POWER8 */
->> +		/*
->> +		 * Create a group for 1 GPU and attached NPUs for
->> +		 * POWER8 (always) or POWER9 (when isolate_nvlink).
->> +		 */
->>  		pe->npucomp = kzalloc(sizeof(*pe->npucomp), GFP_KERNEL);
->>  		table_group = &pe->npucomp->table_group;
->>  		table_group->ops = &pnv_npu_peers_ops;
->> diff --git a/arch/powerpc/platforms/powernv/nvlinkgpu.c b/arch/powerpc/platforms/powernv/nvlinkgpu.c
->> new file mode 100644
->> index 000000000000..2a97cb15b6d0
->> --- /dev/null
->> +++ b/arch/powerpc/platforms/powernv/nvlinkgpu.c
->> @@ -0,0 +1,137 @@
->> +// SPDX-License-Identifier: GPL-2.0+
->> +/*
->> + * A helper to disable NVLinks between GPUs on IBM Withersponn platform.
->> + *
->> + * Copyright (C) 2019 IBM Corp.  All rights reserved.
->> + *     Author: Alexey Kardashevskiy <aik@ozlabs.ru>
->> + *
->> + * This program is free software; you can redistribute it and/or modify
->> + * it under the terms of the GNU General Public License version 2 as
->> + * published by the Free Software Foundation.
->> + */
->> +
->> +#include <linux/module.h>
->> +#include <linux/device.h>
->> +#include <linux/of.h>
->> +#include <linux/iommu.h>
->> +#include <linux/pci.h>
->> +
->> +static int nvlinkgpu_is_ph_in_group(struct device *dev, void *data)
->> +{
->> +	return dev->of_node->phandle == *(phandle *) data;
->> +}
->> +
->> +static u32 nvlinkgpu_get_disable_mask(struct device *dev)
->> +{
->> +	int npu, peer;
->> +	u32 mask;
->> +	struct device_node *dn;
->> +	struct iommu_group *group;
->> +
->> +	dn = dev->of_node;
->> +	if (!of_find_property(dn, "ibm,nvlink-peers", NULL))
->> +		return 0;
->> +
->> +	group = iommu_group_get(dev);
->> +	if (!group)
->> +		return 0;
->> +
->> +	/*
->> +	 * Collect links to keep which includes links to NPU and links to
->> +	 * other GPUs in the same IOMMU group.
->> +	 */
->> +	for (npu = 0, mask = 0; ; ++npu) {
->> +		u32 npuph = 0;
->> +
->> +		if (of_property_read_u32_index(dn, "ibm,npu", npu, &npuph))
->> +			break;
->> +
->> +		for (peer = 0; ; ++peer) {
->> +			u32 peerph = 0;
->> +
->> +			if (of_property_read_u32_index(dn, "ibm,nvlink-peers",
->> +					peer, &peerph))
->> +				break;
->> +
->> +			if (peerph != npuph &&
->> +				!iommu_group_for_each_dev(group, &peerph,
->> +					nvlinkgpu_is_ph_in_group))
->> +				continue;
->> +
->> +			mask |= 1 << (peer + 16);
->> +		}
->> +	}
->> +	iommu_group_put(group);
->> +
->> +	/* Disabling mechanism takes links to disable so invert it here */
->> +	mask = ~mask & 0x3F0000;
->> +
->> +	return mask;
->> +}
->> +
->> +void pnv_try_isolate_nvidia_v100(struct pci_dev *bridge)
->> +{
->> +	u32 mask, val;
->> +	void __iomem *bar0_0, *bar0_120000, *bar0_a00000;
->> +	struct pci_dev *pdev;
->> +	u16 cmd = 0, cmdmask = PCI_COMMAND_MEMORY;
->> +
->> +	if (!bridge->subordinate)
->> +		return;
->> +
->> +	pdev = list_first_entry_or_null(&bridge->subordinate->devices,
->> +			struct pci_dev, bus_list);
->> +	if (!pdev)
->> +		return;
->> +
->> +	if (pdev->vendor != PCI_VENDOR_ID_NVIDIA)
->> +		return;
->> +
->> +	mask = nvlinkgpu_get_disable_mask(&pdev->dev);
->> +	if (!mask)
->> +		return;
->> +
->> +	bar0_0 = pci_iomap_range(pdev, 0, 0, 0x10000);
->> +	if (!bar0_0) {
->> +		pci_err(pdev, "Error mapping BAR0 @0\n");
->> +		return;
->> +	}
->> +	bar0_120000 = pci_iomap_range(pdev, 0, 0x120000, 0x10000);
->> +	if (!bar0_120000) {
->> +		pci_err(pdev, "Error mapping BAR0 @120000\n");
->> +		goto bar0_0_unmap;
->> +	}
->> +	bar0_a00000 = pci_iomap_range(pdev, 0, 0xA00000, 0x10000);
->> +	if (!bar0_a00000) {
->> +		pci_err(pdev, "Error mapping BAR0 @A00000\n");
->> +		goto bar0_120000_unmap;
->> +	}
-> 
-> Is it really necessary to do three separate ioremaps vs one that would
-> cover them all here?  I suspect you're just sneaking in PAGE_SIZE with
-> the 0x10000 size mappings anyway.  Seems like it would simplify setup,
-> error reporting, and cleanup to to ioremap to the PAGE_ALIGN'd range
-> of the highest register accessed. Thanks,
+On Wed, Apr 10, 2019 at 07:04:38PM +0200, C=E9dric Le Goater wrote:
+> These controls will be used by the H_INT_SET_QUEUE_CONFIG and
+> H_INT_GET_QUEUE_CONFIG hcalls from QEMU to configure the underlying
+> Event Queue in the XIVE IC. They will also be used to restore the
+> configuration of the XIVE EQs and to capture the internal run-time
+> state of the EQs. Both 'get' and 'set' rely on an OPAL call to access
+> the EQ toggle bit and EQ index which are updated by the XIVE IC when
+> event notifications are enqueued in the EQ.
+>=20
+> The value of the guest physical address of the event queue is saved in
+> the XIVE internal xive_q structure for later use. That is when
+> migration needs to mark the EQ pages dirty to capture a consistent
+> memory state of the VM.
+>=20
+> To be noted that H_INT_SET_QUEUE_CONFIG does not require the extra
+> OPAL call setting the EQ toggle bit and EQ index to configure the EQ,
+> but restoring the EQ state will.
+>=20
+> Signed-off-by: C=E9dric Le Goater <clg@kaod.org>
 
+Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
 
-Sure I can map it once, I just do not see the point in mapping/unmapping
-all 0xa10000>>16=161 system pages for a very short period of time while
-we know precisely that we need just 3 pages.
+> ---
+>=20
+>  Changes since v4 :
+>=20
+>  - add check on EQ page alignment
+>  - add requirement on KVM_XIVE_EQ_ALWAYS_NOTIFY
+>=20
+>  arch/powerpc/include/asm/xive.h            |   2 +
+>  arch/powerpc/include/uapi/asm/kvm.h        |  19 ++
+>  arch/powerpc/kvm/book3s_xive.h             |   2 +
+>  arch/powerpc/kvm/book3s_xive.c             |  15 +-
+>  arch/powerpc/kvm/book3s_xive_native.c      | 249 +++++++++++++++++++++
+>  Documentation/virtual/kvm/devices/xive.txt |  34 +++
+>  6 files changed, 315 insertions(+), 6 deletions(-)
+>=20
+> diff --git a/arch/powerpc/include/asm/xive.h b/arch/powerpc/include/asm/x=
+ive.h
+> index b579a943407b..c4e88abd3b67 100644
+> --- a/arch/powerpc/include/asm/xive.h
+> +++ b/arch/powerpc/include/asm/xive.h
+> @@ -73,6 +73,8 @@ struct xive_q {
+>  	u32			esc_irq;
+>  	atomic_t		count;
+>  	atomic_t		pending_count;
+> +	u64			guest_qaddr;
+> +	u32			guest_qshift;
+>  };
+> =20
+>  /* Global enable flags for the XIVE support */
+> diff --git a/arch/powerpc/include/uapi/asm/kvm.h b/arch/powerpc/include/u=
+api/asm/kvm.h
+> index e8161e21629b..85005400fd86 100644
+> --- a/arch/powerpc/include/uapi/asm/kvm.h
+> +++ b/arch/powerpc/include/uapi/asm/kvm.h
+> @@ -681,6 +681,7 @@ struct kvm_ppc_cpu_char {
+>  #define KVM_DEV_XIVE_GRP_CTRL		1
+>  #define KVM_DEV_XIVE_GRP_SOURCE		2	/* 64-bit source identifier */
+>  #define KVM_DEV_XIVE_GRP_SOURCE_CONFIG	3	/* 64-bit source identifier */
+> +#define KVM_DEV_XIVE_GRP_EQ_CONFIG	4	/* 64-bit EQ identifier */
+> =20
+>  /* Layout of 64-bit XIVE source attribute values */
+>  #define KVM_XIVE_LEVEL_SENSITIVE	(1ULL << 0)
+> @@ -696,4 +697,22 @@ struct kvm_ppc_cpu_char {
+>  #define KVM_XIVE_SOURCE_EISN_SHIFT	33
+>  #define KVM_XIVE_SOURCE_EISN_MASK	0xfffffffe00000000ULL
+> =20
+> +/* Layout of 64-bit EQ identifier */
+> +#define KVM_XIVE_EQ_PRIORITY_SHIFT	0
+> +#define KVM_XIVE_EQ_PRIORITY_MASK	0x7
+> +#define KVM_XIVE_EQ_SERVER_SHIFT	3
+> +#define KVM_XIVE_EQ_SERVER_MASK		0xfffffff8ULL
+> +
+> +/* Layout of EQ configuration values (64 bytes) */
+> +struct kvm_ppc_xive_eq {
+> +	__u32 flags;
+> +	__u32 qshift;
+> +	__u64 qaddr;
+> +	__u32 qtoggle;
+> +	__u32 qindex;
+> +	__u8  pad[40];
+> +};
+> +
+> +#define KVM_XIVE_EQ_ALWAYS_NOTIFY	0x00000001
+> +
+>  #endif /* __LINUX_KVM_POWERPC_H */
+> diff --git a/arch/powerpc/kvm/book3s_xive.h b/arch/powerpc/kvm/book3s_xiv=
+e.h
+> index ae26fe653d98..622f594d93e1 100644
+> --- a/arch/powerpc/kvm/book3s_xive.h
+> +++ b/arch/powerpc/kvm/book3s_xive.h
+> @@ -272,6 +272,8 @@ struct kvmppc_xive_src_block *kvmppc_xive_create_src_=
+block(
+>  	struct kvmppc_xive *xive, int irq);
+>  void kvmppc_xive_free_sources(struct kvmppc_xive_src_block *sb);
+>  int kvmppc_xive_select_target(struct kvm *kvm, u32 *server, u8 prio);
+> +int kvmppc_xive_attach_escalation(struct kvm_vcpu *vcpu, u8 prio,
+> +				  bool single_escalation);
+> =20
+>  #endif /* CONFIG_KVM_XICS */
+>  #endif /* _KVM_PPC_BOOK3S_XICS_H */
+> diff --git a/arch/powerpc/kvm/book3s_xive.c b/arch/powerpc/kvm/book3s_xiv=
+e.c
+> index e09f3addffe5..c1b7aa7dbc28 100644
+> --- a/arch/powerpc/kvm/book3s_xive.c
+> +++ b/arch/powerpc/kvm/book3s_xive.c
+> @@ -166,7 +166,8 @@ static irqreturn_t xive_esc_irq(int irq, void *data)
+>  	return IRQ_HANDLED;
+>  }
+> =20
+> -static int xive_attach_escalation(struct kvm_vcpu *vcpu, u8 prio)
+> +int kvmppc_xive_attach_escalation(struct kvm_vcpu *vcpu, u8 prio,
+> +				  bool single_escalation)
+>  {
+>  	struct kvmppc_xive_vcpu *xc =3D vcpu->arch.xive_vcpu;
+>  	struct xive_q *q =3D &xc->queues[prio];
+> @@ -185,7 +186,7 @@ static int xive_attach_escalation(struct kvm_vcpu *vc=
+pu, u8 prio)
+>  		return -EIO;
+>  	}
+> =20
+> -	if (xc->xive->single_escalation)
+> +	if (single_escalation)
+>  		name =3D kasprintf(GFP_KERNEL, "kvm-%d-%d",
+>  				 vcpu->kvm->arch.lpid, xc->server_num);
+>  	else
+> @@ -217,7 +218,7 @@ static int xive_attach_escalation(struct kvm_vcpu *vc=
+pu, u8 prio)
+>  	 * interrupt, thus leaving it effectively masked after
+>  	 * it fires once.
+>  	 */
+> -	if (xc->xive->single_escalation) {
+> +	if (single_escalation) {
+>  		struct irq_data *d =3D irq_get_irq_data(xc->esc_virq[prio]);
+>  		struct xive_irq_data *xd =3D irq_data_get_irq_handler_data(d);
+> =20
+> @@ -291,7 +292,8 @@ static int xive_check_provisioning(struct kvm *kvm, u=
+8 prio)
+>  			continue;
+>  		rc =3D xive_provision_queue(vcpu, prio);
+>  		if (rc =3D=3D 0 && !xive->single_escalation)
+> -			xive_attach_escalation(vcpu, prio);
+> +			kvmppc_xive_attach_escalation(vcpu, prio,
+> +						      xive->single_escalation);
+>  		if (rc)
+>  			return rc;
+>  	}
+> @@ -1214,7 +1216,8 @@ int kvmppc_xive_connect_vcpu(struct kvm_device *dev,
+>  		if (xive->qmap & (1 << i)) {
+>  			r =3D xive_provision_queue(vcpu, i);
+>  			if (r =3D=3D 0 && !xive->single_escalation)
+> -				xive_attach_escalation(vcpu, i);
+> +				kvmppc_xive_attach_escalation(
+> +					vcpu, i, xive->single_escalation);
+>  			if (r)
+>  				goto bail;
+>  		} else {
+> @@ -1229,7 +1232,7 @@ int kvmppc_xive_connect_vcpu(struct kvm_device *dev,
+>  	}
+> =20
+>  	/* If not done above, attach priority 0 escalation */
+> -	r =3D xive_attach_escalation(vcpu, 0);
+> +	r =3D kvmppc_xive_attach_escalation(vcpu, 0, xive->single_escalation);
+>  	if (r)
+>  		goto bail;
+> =20
+> diff --git a/arch/powerpc/kvm/book3s_xive_native.c b/arch/powerpc/kvm/boo=
+k3s_xive_native.c
+> index 492825a35958..3e7cdcacc932 100644
+> --- a/arch/powerpc/kvm/book3s_xive_native.c
+> +++ b/arch/powerpc/kvm/book3s_xive_native.c
+> @@ -335,6 +335,243 @@ static int kvmppc_xive_native_set_source_config(str=
+uct kvmppc_xive *xive,
+>  						       priority, masked, eisn);
+>  }
+> =20
+> +static int xive_native_validate_queue_size(u32 qshift)
+> +{
+> +	/*
+> +	 * We only support 64K pages for the moment. This is also
+> +	 * advertised in the DT property "ibm,xive-eq-sizes"
+> +	 */
+> +	switch (qshift) {
+> +	case 0: /* EQ reset */
+> +	case 16:
+> +		return 0;
+> +	case 12:
+> +	case 21:
+> +	case 24:
+> +	default:
+> +		return -EINVAL;
+> +	}
+> +}
+> +
+> +static int kvmppc_xive_native_set_queue_config(struct kvmppc_xive *xive,
+> +					       long eq_idx, u64 addr)
+> +{
+> +	struct kvm *kvm =3D xive->kvm;
+> +	struct kvm_vcpu *vcpu;
+> +	struct kvmppc_xive_vcpu *xc;
+> +	void __user *ubufp =3D (void __user *) addr;
+> +	u32 server;
+> +	u8 priority;
+> +	struct kvm_ppc_xive_eq kvm_eq;
+> +	int rc;
+> +	__be32 *qaddr =3D 0;
+> +	struct page *page;
+> +	struct xive_q *q;
+> +	gfn_t gfn;
+> +	unsigned long page_size;
+> +
+> +	/*
+> +	 * Demangle priority/server tuple from the EQ identifier
+> +	 */
+> +	priority =3D (eq_idx & KVM_XIVE_EQ_PRIORITY_MASK) >>
+> +		KVM_XIVE_EQ_PRIORITY_SHIFT;
+> +	server =3D (eq_idx & KVM_XIVE_EQ_SERVER_MASK) >>
+> +		KVM_XIVE_EQ_SERVER_SHIFT;
+> +
+> +	if (copy_from_user(&kvm_eq, ubufp, sizeof(kvm_eq)))
+> +		return -EFAULT;
+> +
+> +	vcpu =3D kvmppc_xive_find_server(kvm, server);
+> +	if (!vcpu) {
+> +		pr_err("Can't find server %d\n", server);
+> +		return -ENOENT;
+> +	}
+> +	xc =3D vcpu->arch.xive_vcpu;
+> +
+> +	if (priority !=3D xive_prio_from_guest(priority)) {
+> +		pr_err("Trying to restore invalid queue %d for VCPU %d\n",
+> +		       priority, server);
+> +		return -EINVAL;
+> +	}
+> +	q =3D &xc->queues[priority];
+> +
+> +	pr_devel("%s VCPU %d priority %d fl:%x shift:%d addr:%llx g:%d idx:%d\n=
+",
+> +		 __func__, server, priority, kvm_eq.flags,
+> +		 kvm_eq.qshift, kvm_eq.qaddr, kvm_eq.qtoggle, kvm_eq.qindex);
+> +
+> +	/*
+> +	 * sPAPR specifies a "Unconditional Notify (n) flag" for the
+> +	 * H_INT_SET_QUEUE_CONFIG hcall which forces notification
+> +	 * without using the coalescing mechanisms provided by the
+> +	 * XIVE END ESBs. This is required on KVM as notification
+> +	 * using the END ESBs is not supported.
+> +	 */
+> +	if (kvm_eq.flags !=3D KVM_XIVE_EQ_ALWAYS_NOTIFY) {
+> +		pr_err("invalid flags %d\n", kvm_eq.flags);
+> +		return -EINVAL;
+> +	}
+> +
+> +	rc =3D xive_native_validate_queue_size(kvm_eq.qshift);
+> +	if (rc) {
+> +		pr_err("invalid queue size %d\n", kvm_eq.qshift);
+> +		return rc;
+> +	}
+> +
+> +	/* reset queue and disable queueing */
+> +	if (!kvm_eq.qshift) {
+> +		q->guest_qaddr  =3D 0;
+> +		q->guest_qshift =3D 0;
+> +
+> +		rc =3D xive_native_configure_queue(xc->vp_id, q, priority,
+> +						 NULL, 0, true);
+> +		if (rc) {
+> +			pr_err("Failed to reset queue %d for VCPU %d: %d\n",
+> +			       priority, xc->server_num, rc);
+> +			return rc;
+> +		}
+> +
+> +		if (q->qpage) {
+> +			put_page(virt_to_page(q->qpage));
+> +			q->qpage =3D NULL;
+> +		}
+> +
+> +		return 0;
+> +	}
+> +
+> +	if (kvm_eq.qaddr & ((1ull << kvm_eq.qshift) - 1)) {
+> +		pr_err("queue page is not aligned %llx/%llx\n", kvm_eq.qaddr,
+> +		       1ull << kvm_eq.qshift);
+> +		return -EINVAL;
+> +	}
+> +
+> +	gfn =3D gpa_to_gfn(kvm_eq.qaddr);
+> +	page =3D gfn_to_page(kvm, gfn);
+> +	if (is_error_page(page)) {
+> +		pr_err("Couldn't get queue page %llx!\n", kvm_eq.qaddr);
+> +		return -EINVAL;
+> +	}
+> +	page_size =3D kvm_host_page_size(kvm, gfn);
+> +	if (1ull << kvm_eq.qshift > page_size) {
+> +		pr_warn("Incompatible host page size %lx!\n", page_size);
+> +		return -EINVAL;
+> +	}
+> +
+> +	qaddr =3D page_to_virt(page) + (kvm_eq.qaddr & ~PAGE_MASK);
+> +
+> +	/*
+> +	 * Backup the queue page guest address to the mark EQ page
+> +	 * dirty for migration.
+> +	 */
+> +	q->guest_qaddr  =3D kvm_eq.qaddr;
+> +	q->guest_qshift =3D kvm_eq.qshift;
+> +
+> +	 /*
+> +	  * Unconditional Notification is forced by default at the
+> +	  * OPAL level because the use of END ESBs is not supported by
+> +	  * Linux.
+> +	  */
+> +	rc =3D xive_native_configure_queue(xc->vp_id, q, priority,
+> +					 (__be32 *) qaddr, kvm_eq.qshift, true);
+> +	if (rc) {
+> +		pr_err("Failed to configure queue %d for VCPU %d: %d\n",
+> +		       priority, xc->server_num, rc);
+> +		put_page(page);
+> +		return rc;
+> +	}
+> +
+> +	/*
+> +	 * Only restore the queue state when needed. When doing the
+> +	 * H_INT_SET_SOURCE_CONFIG hcall, it should not.
+> +	 */
+> +	if (kvm_eq.qtoggle !=3D 1 || kvm_eq.qindex !=3D 0) {
+> +		rc =3D xive_native_set_queue_state(xc->vp_id, priority,
+> +						 kvm_eq.qtoggle,
+> +						 kvm_eq.qindex);
+> +		if (rc)
+> +			goto error;
+> +	}
+> +
+> +	rc =3D kvmppc_xive_attach_escalation(vcpu, priority,
+> +					   xive->single_escalation);
+> +error:
+> +	if (rc)
+> +		kvmppc_xive_native_cleanup_queue(vcpu, priority);
+> +	return rc;
+> +}
+> +
+> +static int kvmppc_xive_native_get_queue_config(struct kvmppc_xive *xive,
+> +					       long eq_idx, u64 addr)
+> +{
+> +	struct kvm *kvm =3D xive->kvm;
+> +	struct kvm_vcpu *vcpu;
+> +	struct kvmppc_xive_vcpu *xc;
+> +	struct xive_q *q;
+> +	void __user *ubufp =3D (u64 __user *) addr;
+> +	u32 server;
+> +	u8 priority;
+> +	struct kvm_ppc_xive_eq kvm_eq;
+> +	u64 qaddr;
+> +	u64 qshift;
+> +	u64 qeoi_page;
+> +	u32 escalate_irq;
+> +	u64 qflags;
+> +	int rc;
+> +
+> +	/*
+> +	 * Demangle priority/server tuple from the EQ identifier
+> +	 */
+> +	priority =3D (eq_idx & KVM_XIVE_EQ_PRIORITY_MASK) >>
+> +		KVM_XIVE_EQ_PRIORITY_SHIFT;
+> +	server =3D (eq_idx & KVM_XIVE_EQ_SERVER_MASK) >>
+> +		KVM_XIVE_EQ_SERVER_SHIFT;
+> +
+> +	vcpu =3D kvmppc_xive_find_server(kvm, server);
+> +	if (!vcpu) {
+> +		pr_err("Can't find server %d\n", server);
+> +		return -ENOENT;
+> +	}
+> +	xc =3D vcpu->arch.xive_vcpu;
+> +
+> +	if (priority !=3D xive_prio_from_guest(priority)) {
+> +		pr_err("invalid priority for queue %d for VCPU %d\n",
+> +		       priority, server);
+> +		return -EINVAL;
+> +	}
+> +	q =3D &xc->queues[priority];
+> +
+> +	memset(&kvm_eq, 0, sizeof(kvm_eq));
+> +
+> +	if (!q->qpage)
+> +		return 0;
+> +
+> +	rc =3D xive_native_get_queue_info(xc->vp_id, priority, &qaddr, &qshift,
+> +					&qeoi_page, &escalate_irq, &qflags);
+> +	if (rc)
+> +		return rc;
+> +
+> +	kvm_eq.flags =3D 0;
+> +	if (qflags & OPAL_XIVE_EQ_ALWAYS_NOTIFY)
+> +		kvm_eq.flags |=3D KVM_XIVE_EQ_ALWAYS_NOTIFY;
+> +
+> +	kvm_eq.qshift =3D q->guest_qshift;
+> +	kvm_eq.qaddr  =3D q->guest_qaddr;
+> +
+> +	rc =3D xive_native_get_queue_state(xc->vp_id, priority, &kvm_eq.qtoggle,
+> +					 &kvm_eq.qindex);
+> +	if (rc)
+> +		return rc;
+> +
+> +	pr_devel("%s VCPU %d priority %d fl:%x shift:%d addr:%llx g:%d idx:%d\n=
+",
+> +		 __func__, server, priority, kvm_eq.flags,
+> +		 kvm_eq.qshift, kvm_eq.qaddr, kvm_eq.qtoggle, kvm_eq.qindex);
+> +
+> +	if (copy_to_user(ubufp, &kvm_eq, sizeof(kvm_eq)))
+> +		return -EFAULT;
+> +
+> +	return 0;
+> +}
+> +
+>  static int kvmppc_xive_native_set_attr(struct kvm_device *dev,
+>  				       struct kvm_device_attr *attr)
+>  {
+> @@ -349,6 +586,9 @@ static int kvmppc_xive_native_set_attr(struct kvm_dev=
+ice *dev,
+>  	case KVM_DEV_XIVE_GRP_SOURCE_CONFIG:
+>  		return kvmppc_xive_native_set_source_config(xive, attr->attr,
+>  							    attr->addr);
+> +	case KVM_DEV_XIVE_GRP_EQ_CONFIG:
+> +		return kvmppc_xive_native_set_queue_config(xive, attr->attr,
+> +							   attr->addr);
+>  	}
+>  	return -ENXIO;
+>  }
+> @@ -356,6 +596,13 @@ static int kvmppc_xive_native_set_attr(struct kvm_de=
+vice *dev,
+>  static int kvmppc_xive_native_get_attr(struct kvm_device *dev,
+>  				       struct kvm_device_attr *attr)
+>  {
+> +	struct kvmppc_xive *xive =3D dev->private;
+> +
+> +	switch (attr->group) {
+> +	case KVM_DEV_XIVE_GRP_EQ_CONFIG:
+> +		return kvmppc_xive_native_get_queue_config(xive, attr->attr,
+> +							   attr->addr);
+> +	}
+>  	return -ENXIO;
+>  }
+> =20
+> @@ -371,6 +618,8 @@ static int kvmppc_xive_native_has_attr(struct kvm_dev=
+ice *dev,
+>  		    attr->attr < KVMPPC_XIVE_NR_IRQS)
+>  			return 0;
+>  		break;
+> +	case KVM_DEV_XIVE_GRP_EQ_CONFIG:
+> +		return 0;
+>  	}
+>  	return -ENXIO;
+>  }
+> diff --git a/Documentation/virtual/kvm/devices/xive.txt b/Documentation/v=
+irtual/kvm/devices/xive.txt
+> index 33c64b2cdbe8..cc13bfd5cf53 100644
+> --- a/Documentation/virtual/kvm/devices/xive.txt
+> +++ b/Documentation/virtual/kvm/devices/xive.txt
+> @@ -53,3 +53,37 @@ the legacy interrupt mode, referred as XICS (POWER7/8).
+>      -ENXIO:  CPU event queues not configured or configuration of the
+>               underlying HW interrupt failed
+>      -EBUSY:  No CPU available to serve interrupt
+> +
+> +  4. KVM_DEV_XIVE_GRP_EQ_CONFIG (read-write)
+> +  Configures an event queue of a CPU
+> +  Attributes:
+> +    EQ descriptor identifier (64-bit)
+> +  The EQ descriptor identifier is a tuple (server, priority) :
+> +  bits:     | 63   ....  32 | 31 .. 3 |  2 .. 0
+> +  values:   |    unused     |  server | priority
+> +  The kvm_device_attr.addr points to :
+> +    struct kvm_ppc_xive_eq {
+> +	__u32 flags;
+> +	__u32 qshift;
+> +	__u64 qaddr;
+> +	__u32 qtoggle;
+> +	__u32 qindex;
+> +	__u8  pad[40];
+> +    };
+> +  - flags: queue flags
+> +    KVM_XIVE_EQ_ALWAYS_NOTIFY (required)
+> +	forces notification without using the coalescing mechanism
+> +	provided by the XIVE END ESBs.
+> +  - qshift: queue size (power of 2)
+> +  - qaddr: real address of queue
+> +  - qtoggle: current queue toggle bit
+> +  - qindex: current queue index
+> +  - pad: reserved for future use
+> +  Errors:
+> +    -ENOENT: Invalid CPU number
+> +    -EINVAL: Invalid priority
+> +    -EINVAL: Invalid flags
+> +    -EINVAL: Invalid queue size
+> +    -EINVAL: Invalid queue address
+> +    -EFAULT: Invalid user pointer for attr->addr.
+> +    -EIO:    Configuration of the underlying HW failed
 
-Repost?
+--=20
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
 
+--LZvS9be/3tNcYl/X
+Content-Type: application/pgp-signature; name="signature.asc"
 
+-----BEGIN PGP SIGNATURE-----
 
-> 
-> Alex
-> 
->> +
->> +	pci_restore_state(pdev);
->> +	pci_read_config_word(pdev, PCI_COMMAND, &cmd);
->> +	if ((cmd & cmdmask) != cmdmask)
->> +		pci_write_config_word(pdev, PCI_COMMAND, cmd | cmdmask);
->> +
->> +	/*
->> +	 * The sequence is from "Tesla P100 and V100 SXM2 NVLink Isolation on
->> +	 * Multi-Tenant Systems".
->> +	 * The register names are not provided there either, hence raw values.
->> +	 */
->> +	iowrite32(0x4, bar0_120000 + 0x4C);
->> +	iowrite32(0x2, bar0_120000 + 0x2204);
->> +	val = ioread32(bar0_0 + 0x200);
->> +	val |= 0x02000000;
->> +	iowrite32(val, bar0_0 + 0x200);
->> +	val = ioread32(bar0_a00000 + 0x148);
->> +	val |= mask;
->> +	iowrite32(val, bar0_a00000 + 0x148);
->> +
->> +	if ((cmd | cmdmask) != cmd)
->> +		pci_write_config_word(pdev, PCI_COMMAND, cmd);
->> +
->> +	pci_iounmap(pdev, bar0_a00000);
->> +bar0_120000_unmap:
->> +	pci_iounmap(pdev, bar0_120000);
->> +bar0_0_unmap:
->> +	pci_iounmap(pdev, bar0_0);
->> +}
-> 
+iQIzBAEBCAAdFiEEdfRlhq5hpmzETofcbDjKyiDZs5IFAlywH/UACgkQbDjKyiDZ
+s5JmGRAAr9RGtQNKP4p/yvOg9pBRO10u+QWx/naTV//49fKIa51H6chgy/6wJW28
+YIb/wH+ULzzWB6GoW8R9S+YCOmSmE2JRauPCfA2fxttLcy9OjoXOAFCufKzsiY6w
+BBY17PBBscSu9JTN6ShDO07mngpA5gXeo0ssIw1MrxDC8AR971Pjls1Ni52nx3TK
+pe1TYbStl07t3SUn9q/eyYYMOm+QpkUxaFcUFy9XJdPTXA8VyMieCtpsEEfp31et
+mHfigtDgzwD/YJQWzopelXKiDqcGO1W3T7QyWqpQ3WRIln9IzuIzj03DSVNKCD8P
+fwLsU3O3mo5LbgDPI3pWbRWaZVizgnA6VgZ0gBzVOL3Dm2yWAwVIqWhRjewMBg6N
+tn3o0wyLDTlep4/QLHeOzaVUnhB9jjBDXcJOfL8M3zAitdcSOaJrUsPYySXJmzoA
+yemwZIvsUAU+NI/YbNPEZjIGYok/J4iw1OwC1I88WF3o7OK0BMG6nBZZMOTgQNw7
+F9lYNwpuUKDkde0jibNT1ZMNuV6U5Vz5HKBngiHTk2Pi3l9b1/avUo7/AvFEJ/c1
+jddtgIyITGD7L1D4WwjA+AO0glVpaT/0MAHit+5AcNvoPlIVFYjsO7ASGB9Y15Jz
+RxlvIlS9v+LsgPK36GvCKp/PsQfJFRc831b/iXUYxQeJpIIVOuo=
+=gxMX
+-----END PGP SIGNATURE-----
 
--- 
-Alexey
+--LZvS9be/3tNcYl/X--
