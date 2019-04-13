@@ -2,61 +2,88 @@ Return-Path: <SRS0=KSz9=SP=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
+	SIGNED_OFF_BY,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8CBEFC10F11
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 13 Apr 2019 05:38:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2D97EC10F11
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 13 Apr 2019 06:01:48 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3D8FA20869
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 13 Apr 2019 05:38:02 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 64BBB2084D
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 13 Apr 2019 06:01:47 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="RLg4N31c"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3D8FA20869
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="PtsmaQ4r"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 64BBB2084D
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44h3Sm0FVczDqWm
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 13 Apr 2019 15:38:00 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44h40862LbzDqVJ
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 13 Apr 2019 16:01:44 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=kernel.org
- (client-ip=198.145.29.99; helo=mail.kernel.org;
- envelope-from=ebiggers@kernel.org; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=gmail.com
+ (client-ip=2607:f8b0:4864:20::543; helo=mail-pg1-x543.google.com;
+ envelope-from=npiggin@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=kernel.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="RLg4N31c"; 
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="PtsmaQ4r"; 
  dkim-atps=neutral
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+Received: from mail-pg1-x543.google.com (mail-pg1-x543.google.com
+ [IPv6:2607:f8b0:4864:20::543])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44h3R16lFPzDqTY
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 13 Apr 2019 15:36:29 +1000 (AEST)
-Received: from sol.localdomain (c-24-5-143-220.hsd1.ca.comcast.net
- [24.5.143.220])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id 4FA3520869;
- Sat, 13 Apr 2019 05:36:26 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1555133786;
- bh=/KnHRO3/tJl3wMTTK1G75rpHxym3GpLsnK8cCceY7Po=;
- h=From:To:Cc:Subject:Date:From;
- b=RLg4N31cABzH96APR8tlKL81ehan3WuKRaMEdZnq7lzlk5ECgeVZLFLFGlh8E+VO+
- oXBgpTqO9ls3XZ8xoOFpGEgxNYXE3OD1b0/NESh5T0Jcnnmadmn0zKgOvsBX+bVtiq
- er32cRdWgo1YTKvGzVDJhhC1z2uuI+69A1H8d7jE=
-From: Eric Biggers <ebiggers@kernel.org>
-To: linux-crypto@vger.kernel.org,
-	Herbert Xu <herbert@gondor.apana.org.au>
-Subject: [PATCH] crypto: powerpc - convert to use crypto_simd_usable()
-Date: Fri, 12 Apr 2019 22:33:12 -0700
-Message-Id: <20190413053312.8783-1-ebiggers@kernel.org>
-X-Mailer: git-send-email 2.21.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44h3y36z8yzDqMk
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 13 Apr 2019 15:59:55 +1000 (AEST)
+Received: by mail-pg1-x543.google.com with SMTP id q1so6153488pgv.13
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Apr 2019 22:59:55 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=date:from:subject:to:cc:references:in-reply-to:mime-version
+ :user-agent:message-id:content-transfer-encoding;
+ bh=p+U3XZNBYlCXAicNKjwVX4CXpOasBU+Dlni3eRlZkXo=;
+ b=PtsmaQ4rHHBJthYP50CrZl+uDhvb4y/qwbvf35AApWewtWd0pS51nE/roLeeoLnHrM
+ E4omP5C0H74cAUvwsgSXYxRPAc8ua3ViYcL/T/FzlwNifr05l2Nj9rL/hbXsKaKw+Ae/
+ b8YHtoQ9tTZEyvVUsE/cLfvEOcYbiRhLbFdNH0HlE4VJD5Lz/FLG6C2ARvN9m1VL/r0x
+ exaT1aJdni7NhwVM0F8st+vRYLeKnLgYcZRV383U9181sLlh/fRAflDnaK0aYTf4dn9/
+ IdHhSxeTEbunM2f+vNd4D27sX1YBGiGLlzKK1uo9uqBQ7aDndgNnRlKcLIsirUr/KAnt
+ 9pYQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:date:from:subject:to:cc:references:in-reply-to
+ :mime-version:user-agent:message-id:content-transfer-encoding;
+ bh=p+U3XZNBYlCXAicNKjwVX4CXpOasBU+Dlni3eRlZkXo=;
+ b=S0KoxKU6UvC5xWLfrhoGvMLkvnXdHmvH8k9xJwEEjnLu3Gen472cqHwIfgYSP8+aCU
+ zP8v7ozBF2N2SCP5vWMArxi/IAX/YA1a2SXRk0tCgauciqvvjiLFkG+/rp/4DESgVxLc
+ pNcPBV1b8a91jH+7O6K4iMFfNEkKTFnzmF7An8tF3eCdePVnG34L1+IkwRB0KzCcd6vx
+ ZsDoEtX+iUQE+xtL2O70Hjvu/AsDyqLw6PAJQq3LLpW8J503XQOAYlJirbr+NYOJpuVQ
+ lpB8nqgiST45ug/WpnCscpyrB6NaKUgQ9FwKPC2NP9WunsWe04/x91VwcmXKiUx8d31p
+ x+Jw==
+X-Gm-Message-State: APjAAAVWjXv4FUxWmbhjiSALTtN9Nj4uv/Npo0yvuFNCkHzpAmTomnzc
+ Hx6gnEiWKHWIIFECA3M3D0XEIgNd
+X-Google-Smtp-Source: APXvYqwApaLLV9DpiDusJhEDf5BdiYZXRwb4l0jJ/dvXFeoOumgziS71IG4j1vgBzcJDthqGJdGTKg==
+X-Received: by 2002:a63:3dc8:: with SMTP id
+ k191mr57392600pga.286.1555135192166; 
+ Fri, 12 Apr 2019 22:59:52 -0700 (PDT)
+Received: from localhost (115-64-237-195.tpgi.com.au. [115.64.237.195])
+ by smtp.gmail.com with ESMTPSA id v82sm98170065pfa.170.2019.04.12.22.59.49
+ (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
+ Fri, 12 Apr 2019 22:59:50 -0700 (PDT)
+Date: Sat, 13 Apr 2019 15:59:43 +1000
+From: Nicholas Piggin <npiggin@gmail.com>
+Subject: Re: powerpc/64s/radix: Fix radix segment exception handling
+To: linuxppc-dev@lists.ozlabs.org, Michael Ellerman <mpe@ellerman.id.au>,
+ Michael Ellerman <patch-notifications@ellerman.id.au>
+References: <44fRrx4BVsz9s70@ozlabs.org>
+ <1555040097.sqg9j51don.astroid@bobo.none>
+ <875zrivaip.fsf@concordia.ellerman.id.au>
+In-Reply-To: <875zrivaip.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+User-Agent: astroid/0.14.0 (https://github.com/astroidmail/astroid)
+Message-Id: <1555134809.jkd67z5287.astroid@bobo.none>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -68,254 +95,53 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Nayna <nayna@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- Daniel Axtens <dja@axtens.net>
+Cc: "Aneesh Kumar K . V" <aneesh.kumar@linux.vnet.ibm.com>,
+ Anton Blanchard <anton@samba.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Eric Biggers <ebiggers@google.com>
+Michael Ellerman's on April 13, 2019 1:39 pm:
+> Nicholas Piggin <npiggin@gmail.com> writes:
+>> Michael Ellerman's on April 11, 2019 12:49 am:
+>>> On Fri, 2019-03-29 at 07:42:57 UTC, Nicholas Piggin wrote:
+>>>> Commit 48e7b76957 ("powerpc/64s/hash: Convert SLB miss handlers to C")
+>>>> broke the radix-mode segment exception handler. In radix mode, this is
+>>>> exception is not an SLB miss, rather it signals that the EA is outside
+>>>> the range translated by any page table.
+>>>>=20
+>>>> The commit lost the radix feature alternate code patch, which can
+>>>> cause faults to some EAs to kernel BUG at arch/powerpc/mm/slb.c:639!
+>>>>=20
+>>>> The original radix code would send faults to slb_miss_large_addr,
+>>>> which would end up faulting due to slb_addr_limit being 0. This patch
+>>>> sends radix directly to do_bad_slb_fault, which is a bit clearer.
+>>>>=20
+>>>> Fixes: 48e7b76957 ("powerpc/64s/hash: Convert SLB miss handlers to C")
+>>>> Cc: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+>>>> Reported-by: Anton Blanchard <anton@samba.org>
+>>>> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+>>>> Reviewed-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
+>>>=20
+>>> Applied to powerpc fixes, thanks.
+>>>=20
+>>> https://git.kernel.org/powerpc/c/7100e8704b61247649c50551b965e71d
+>>
+>> I sent a v2 with a selftests that triggers the crash if you want it.
+>> Code was unchanged to no big deal there.
+>=20
+> Yeah I checked the kernel part was unchanged so stuck with v1.
+>=20
+> I also sent a self test, which is similar but slightly different to
+> yours, though yours is better in general. I'll try and merge them into
+> one test.
 
-Replace all calls to in_interrupt() in the PowerPC crypto code with
-!crypto_simd_usable().  This causes the crypto self-tests to test the
-no-SIMD code paths when CONFIG_CRYPTO_MANAGER_EXTRA_TESTS=y.
+If you don't mind that would be good. The siglongjmp handler is
+cleaner though, and should make it simpler to test ifetch accesses.
+We just need to get the sig info into yours, and an array of
+interesting addresses.
 
-The p8_ghash algorithm is currently failing and needs to be fixed, as it
-produces the wrong digest when no-SIMD updates are mixed with SIMD ones.
+Thanks,
+Nick
 
-Signed-off-by: Eric Biggers <ebiggers@google.com>
----
- arch/powerpc/crypto/crc32c-vpmsum_glue.c    | 4 +++-
- arch/powerpc/crypto/crct10dif-vpmsum_glue.c | 4 +++-
- arch/powerpc/include/asm/Kbuild             | 1 +
- drivers/crypto/vmx/aes.c                    | 7 ++++---
- drivers/crypto/vmx/aes_cbc.c                | 7 ++++---
- drivers/crypto/vmx/aes_ctr.c                | 5 +++--
- drivers/crypto/vmx/aes_xts.c                | 5 +++--
- drivers/crypto/vmx/ghash.c                  | 9 ++++-----
- 8 files changed, 25 insertions(+), 17 deletions(-)
-
-diff --git a/arch/powerpc/crypto/crc32c-vpmsum_glue.c b/arch/powerpc/crypto/crc32c-vpmsum_glue.c
-index fd1d6c83f0c02..c4fa242dd652d 100644
---- a/arch/powerpc/crypto/crc32c-vpmsum_glue.c
-+++ b/arch/powerpc/crypto/crc32c-vpmsum_glue.c
-@@ -1,10 +1,12 @@
- #include <linux/crc32.h>
- #include <crypto/internal/hash.h>
-+#include <crypto/internal/simd.h>
- #include <linux/init.h>
- #include <linux/module.h>
- #include <linux/string.h>
- #include <linux/kernel.h>
- #include <linux/cpufeature.h>
-+#include <asm/simd.h>
- #include <asm/switch_to.h>
- 
- #define CHKSUM_BLOCK_SIZE	1
-@@ -22,7 +24,7 @@ static u32 crc32c_vpmsum(u32 crc, unsigned char const *p, size_t len)
- 	unsigned int prealign;
- 	unsigned int tail;
- 
--	if (len < (VECTOR_BREAKPOINT + VMX_ALIGN) || in_interrupt())
-+	if (len < (VECTOR_BREAKPOINT + VMX_ALIGN) || !crypto_simd_usable())
- 		return __crc32c_le(crc, p, len);
- 
- 	if ((unsigned long)p & VMX_ALIGN_MASK) {
-diff --git a/arch/powerpc/crypto/crct10dif-vpmsum_glue.c b/arch/powerpc/crypto/crct10dif-vpmsum_glue.c
-index 02ea277863d15..e27ff16573b5b 100644
---- a/arch/powerpc/crypto/crct10dif-vpmsum_glue.c
-+++ b/arch/powerpc/crypto/crct10dif-vpmsum_glue.c
-@@ -12,11 +12,13 @@
- 
- #include <linux/crc-t10dif.h>
- #include <crypto/internal/hash.h>
-+#include <crypto/internal/simd.h>
- #include <linux/init.h>
- #include <linux/module.h>
- #include <linux/string.h>
- #include <linux/kernel.h>
- #include <linux/cpufeature.h>
-+#include <asm/simd.h>
- #include <asm/switch_to.h>
- 
- #define VMX_ALIGN		16
-@@ -32,7 +34,7 @@ static u16 crct10dif_vpmsum(u16 crci, unsigned char const *p, size_t len)
- 	unsigned int tail;
- 	u32 crc = crci;
- 
--	if (len < (VECTOR_BREAKPOINT + VMX_ALIGN) || in_interrupt())
-+	if (len < (VECTOR_BREAKPOINT + VMX_ALIGN) || !crypto_simd_usable())
- 		return crc_t10dif_generic(crc, p, len);
- 
- 	if ((unsigned long)p & VMX_ALIGN_MASK) {
-diff --git a/arch/powerpc/include/asm/Kbuild b/arch/powerpc/include/asm/Kbuild
-index a0c132bedfae8..5ac3dead69523 100644
---- a/arch/powerpc/include/asm/Kbuild
-+++ b/arch/powerpc/include/asm/Kbuild
-@@ -11,3 +11,4 @@ generic-y += preempt.h
- generic-y += rwsem.h
- generic-y += vtime.h
- generic-y += msi.h
-+generic-y += simd.h
-diff --git a/drivers/crypto/vmx/aes.c b/drivers/crypto/vmx/aes.c
-index b00d6947e02f4..603a620819941 100644
---- a/drivers/crypto/vmx/aes.c
-+++ b/drivers/crypto/vmx/aes.c
-@@ -23,9 +23,10 @@
- #include <linux/err.h>
- #include <linux/crypto.h>
- #include <linux/delay.h>
--#include <linux/hardirq.h>
-+#include <asm/simd.h>
- #include <asm/switch_to.h>
- #include <crypto/aes.h>
-+#include <crypto/internal/simd.h>
- 
- #include "aesp8-ppc.h"
- 
-@@ -92,7 +93,7 @@ static void p8_aes_encrypt(struct crypto_tfm *tfm, u8 *dst, const u8 *src)
- {
- 	struct p8_aes_ctx *ctx = crypto_tfm_ctx(tfm);
- 
--	if (in_interrupt()) {
-+	if (!crypto_simd_usable()) {
- 		crypto_cipher_encrypt_one(ctx->fallback, dst, src);
- 	} else {
- 		preempt_disable();
-@@ -109,7 +110,7 @@ static void p8_aes_decrypt(struct crypto_tfm *tfm, u8 *dst, const u8 *src)
- {
- 	struct p8_aes_ctx *ctx = crypto_tfm_ctx(tfm);
- 
--	if (in_interrupt()) {
-+	if (!crypto_simd_usable()) {
- 		crypto_cipher_decrypt_one(ctx->fallback, dst, src);
- 	} else {
- 		preempt_disable();
-diff --git a/drivers/crypto/vmx/aes_cbc.c b/drivers/crypto/vmx/aes_cbc.c
-index fbe882ef1bc5d..a1a9a6f0d42cf 100644
---- a/drivers/crypto/vmx/aes_cbc.c
-+++ b/drivers/crypto/vmx/aes_cbc.c
-@@ -23,9 +23,10 @@
- #include <linux/err.h>
- #include <linux/crypto.h>
- #include <linux/delay.h>
--#include <linux/hardirq.h>
-+#include <asm/simd.h>
- #include <asm/switch_to.h>
- #include <crypto/aes.h>
-+#include <crypto/internal/simd.h>
- #include <crypto/scatterwalk.h>
- #include <crypto/skcipher.h>
- 
-@@ -100,7 +101,7 @@ static int p8_aes_cbc_encrypt(struct blkcipher_desc *desc,
- 	struct p8_aes_cbc_ctx *ctx =
- 		crypto_tfm_ctx(crypto_blkcipher_tfm(desc->tfm));
- 
--	if (in_interrupt()) {
-+	if (!crypto_simd_usable()) {
- 		SYNC_SKCIPHER_REQUEST_ON_STACK(req, ctx->fallback);
- 		skcipher_request_set_sync_tfm(req, ctx->fallback);
- 		skcipher_request_set_callback(req, desc->flags, NULL, NULL);
-@@ -139,7 +140,7 @@ static int p8_aes_cbc_decrypt(struct blkcipher_desc *desc,
- 	struct p8_aes_cbc_ctx *ctx =
- 		crypto_tfm_ctx(crypto_blkcipher_tfm(desc->tfm));
- 
--	if (in_interrupt()) {
-+	if (!crypto_simd_usable()) {
- 		SYNC_SKCIPHER_REQUEST_ON_STACK(req, ctx->fallback);
- 		skcipher_request_set_sync_tfm(req, ctx->fallback);
- 		skcipher_request_set_callback(req, desc->flags, NULL, NULL);
-diff --git a/drivers/crypto/vmx/aes_ctr.c b/drivers/crypto/vmx/aes_ctr.c
-index 214c69db9ebdf..192a53512f5e8 100644
---- a/drivers/crypto/vmx/aes_ctr.c
-+++ b/drivers/crypto/vmx/aes_ctr.c
-@@ -23,9 +23,10 @@
- #include <linux/err.h>
- #include <linux/crypto.h>
- #include <linux/delay.h>
--#include <linux/hardirq.h>
-+#include <asm/simd.h>
- #include <asm/switch_to.h>
- #include <crypto/aes.h>
-+#include <crypto/internal/simd.h>
- #include <crypto/scatterwalk.h>
- #include <crypto/skcipher.h>
- 
-@@ -119,7 +120,7 @@ static int p8_aes_ctr_crypt(struct blkcipher_desc *desc,
- 	struct p8_aes_ctr_ctx *ctx =
- 		crypto_tfm_ctx(crypto_blkcipher_tfm(desc->tfm));
- 
--	if (in_interrupt()) {
-+	if (!crypto_simd_usable()) {
- 		SYNC_SKCIPHER_REQUEST_ON_STACK(req, ctx->fallback);
- 		skcipher_request_set_sync_tfm(req, ctx->fallback);
- 		skcipher_request_set_callback(req, desc->flags, NULL, NULL);
-diff --git a/drivers/crypto/vmx/aes_xts.c b/drivers/crypto/vmx/aes_xts.c
-index 5bf4c38566502..00d412d811ae6 100644
---- a/drivers/crypto/vmx/aes_xts.c
-+++ b/drivers/crypto/vmx/aes_xts.c
-@@ -23,9 +23,10 @@
- #include <linux/err.h>
- #include <linux/crypto.h>
- #include <linux/delay.h>
--#include <linux/hardirq.h>
-+#include <asm/simd.h>
- #include <asm/switch_to.h>
- #include <crypto/aes.h>
-+#include <crypto/internal/simd.h>
- #include <crypto/scatterwalk.h>
- #include <crypto/xts.h>
- #include <crypto/skcipher.h>
-@@ -109,7 +110,7 @@ static int p8_aes_xts_crypt(struct blkcipher_desc *desc,
- 	struct p8_aes_xts_ctx *ctx =
- 		crypto_tfm_ctx(crypto_blkcipher_tfm(desc->tfm));
- 
--	if (in_interrupt()) {
-+	if (!crypto_simd_usable()) {
- 		SYNC_SKCIPHER_REQUEST_ON_STACK(req, ctx->fallback);
- 		skcipher_request_set_sync_tfm(req, ctx->fallback);
- 		skcipher_request_set_callback(req, desc->flags, NULL, NULL);
-diff --git a/drivers/crypto/vmx/ghash.c b/drivers/crypto/vmx/ghash.c
-index dd8b8716467a2..611ff591410ea 100644
---- a/drivers/crypto/vmx/ghash.c
-+++ b/drivers/crypto/vmx/ghash.c
-@@ -23,16 +23,15 @@
- #include <linux/err.h>
- #include <linux/crypto.h>
- #include <linux/delay.h>
--#include <linux/hardirq.h>
-+#include <asm/simd.h>
- #include <asm/switch_to.h>
- #include <crypto/aes.h>
- #include <crypto/ghash.h>
- #include <crypto/scatterwalk.h>
- #include <crypto/internal/hash.h>
-+#include <crypto/internal/simd.h>
- #include <crypto/b128ops.h>
- 
--#define IN_INTERRUPT in_interrupt()
--
- void gcm_init_p8(u128 htable[16], const u64 Xi[2]);
- void gcm_gmult_p8(u64 Xi[2], const u128 htable[16]);
- void gcm_ghash_p8(u64 Xi[2], const u128 htable[16],
-@@ -131,7 +130,7 @@ static int p8_ghash_update(struct shash_desc *desc,
- 	struct p8_ghash_ctx *ctx = crypto_tfm_ctx(crypto_shash_tfm(desc->tfm));
- 	struct p8_ghash_desc_ctx *dctx = shash_desc_ctx(desc);
- 
--	if (IN_INTERRUPT) {
-+	if (!crypto_simd_usable()) {
- 		return crypto_shash_update(&dctx->fallback_desc, src,
- 					   srclen);
- 	} else {
-@@ -182,7 +181,7 @@ static int p8_ghash_final(struct shash_desc *desc, u8 *out)
- 	struct p8_ghash_ctx *ctx = crypto_tfm_ctx(crypto_shash_tfm(desc->tfm));
- 	struct p8_ghash_desc_ctx *dctx = shash_desc_ctx(desc);
- 
--	if (IN_INTERRUPT) {
-+	if (!crypto_simd_usable()) {
- 		return crypto_shash_final(&dctx->fallback_desc, out);
- 	} else {
- 		if (dctx->bytes) {
--- 
-2.21.0
-
+=
