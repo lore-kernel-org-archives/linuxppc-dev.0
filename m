@@ -2,46 +2,52 @@ Return-Path: <SRS0=KSz9=SP=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_PASS autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 02F1DC10F0E
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 13 Apr 2019 03:41:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BFD58C10F0E
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 13 Apr 2019 03:43:04 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 20E4820848
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 13 Apr 2019 03:41:10 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 20E4820848
+	by mail.kernel.org (Postfix) with ESMTPS id 6156F20850
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 13 Apr 2019 03:43:04 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6156F20850
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44h0sw4H76zDqSh
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 13 Apr 2019 13:41:08 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+	by lists.ozlabs.org (Postfix) with ESMTP id 44h0w61phQzDqVB
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 13 Apr 2019 13:43:02 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44h0rG068nzDqBN
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 13 Apr 2019 13:39:42 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44h0tT4NmrzDqMx
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 13 Apr 2019 13:41:37 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
  SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 44h0rF2cmXz9s4V;
- Sat, 13 Apr 2019 13:39:41 +1000 (AEST)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 44h0tR58h4z9s4V;
+ Sat, 13 Apr 2019 13:41:35 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org,
- Michael Ellerman <patch-notifications@ellerman.id.au>
-Subject: Re: powerpc/64s/radix: Fix radix segment exception handling
-In-Reply-To: <1555040097.sqg9j51don.astroid@bobo.none>
-References: <44fRrx4BVsz9s70@ozlabs.org>
- <1555040097.sqg9j51don.astroid@bobo.none>
-Date: Sat, 13 Apr 2019 13:39:42 +1000
-Message-ID: <875zrivaip.fsf@concordia.ellerman.id.au>
+To: Nayna <nayna@linux.vnet.ibm.com>, Daniel Axtens <dja@axtens.net>,
+ Eric Biggers <ebiggers@kernel.org>
+Subject: Re: [PATCH] crypto: vmx - fix copy-paste error in CTR mode
+In-Reply-To: <2c8b042f-c7df-cb8b-3fcd-15d6bb274d08@linux.vnet.ibm.com>
+References: <20190315020901.16509-1-dja@axtens.net>
+ <20190315022414.GA1671@sol.localdomain>
+ <875zsku5mk.fsf@dja-thinkpad.axtens.net>
+ <20190315043433.GC1671@sol.localdomain>
+ <8736nou2x5.fsf@dja-thinkpad.axtens.net>
+ <20190410070234.GA12406@sol.localdomain>
+ <87imvkwqdh.fsf@dja-thinkpad.axtens.net>
+ <2c8b042f-c7df-cb8b-3fcd-15d6bb274d08@linux.vnet.ibm.com>
+Date: Sat, 13 Apr 2019 13:41:36 +1000
+Message-ID: <8736mmvafj.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -55,44 +61,35 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "Aneesh Kumar K . V" <aneesh.kumar@linux.vnet.ibm.com>,
- Anton Blanchard <anton@samba.org>
+Cc: leo.barbosa@canonical.com, Herbert Xu <herbert@gondor.apana.org.au>,
+ Stephan Mueller <smueller@chronox.de>, nayna@linux.ibm.com,
+ omosnacek@gmail.com, marcelo.cerri@canonical.com, pfsmorigo@gmail.com,
+ linux-crypto@vger.kernel.org, leitao@debian.org,
+ George Wilson <gcwilson@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Nicholas Piggin <npiggin@gmail.com> writes:
-> Michael Ellerman's on April 11, 2019 12:49 am:
->> On Fri, 2019-03-29 at 07:42:57 UTC, Nicholas Piggin wrote:
->>> Commit 48e7b76957 ("powerpc/64s/hash: Convert SLB miss handlers to C")
->>> broke the radix-mode segment exception handler. In radix mode, this is
->>> exception is not an SLB miss, rather it signals that the EA is outside
->>> the range translated by any page table.
->>> 
->>> The commit lost the radix feature alternate code patch, which can
->>> cause faults to some EAs to kernel BUG at arch/powerpc/mm/slb.c:639!
->>> 
->>> The original radix code would send faults to slb_miss_large_addr,
->>> which would end up faulting due to slb_addr_limit being 0. This patch
->>> sends radix directly to do_bad_slb_fault, which is a bit clearer.
->>> 
->>> Fixes: 48e7b76957 ("powerpc/64s/hash: Convert SLB miss handlers to C")
->>> Cc: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
->>> Reported-by: Anton Blanchard <anton@samba.org>
->>> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
->>> Reviewed-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
->> 
->> Applied to powerpc fixes, thanks.
->> 
->> https://git.kernel.org/powerpc/c/7100e8704b61247649c50551b965e71d
+Nayna <nayna@linux.vnet.ibm.com> writes:
+
+> On 04/11/2019 10:47 AM, Daniel Axtens wrote:
+>> Eric Biggers <ebiggers@kernel.org> writes:
+>>
+>>> Are you still planning to fix the remaining bug?  I booted a ppc64le VM, and I
+>>> see the same test failure (I think) you were referring to:
+>>>
+>>> alg: skcipher: p8_aes_ctr encryption test failed (wrong result) on test vector 3, cfg="uneven misaligned splits, may sleep"
+>>>
+>> Yes, that's the one I saw. I don't have time to follow it up at the
+>> moment, but Nayna is aware of it.
+>>
 >
-> I sent a v2 with a selftests that triggers the crash if you want it.
-> Code was unchanged to no big deal there.
+> Yes Eric, we identified this as a separate issue of misalignment and 
+> plan to post a separate patch to address it.
 
-Yeah I checked the kernel part was unchanged so stuck with v1.
+I also wrote it down in my write-only TODO list here:
 
-I also sent a self test, which is similar but slightly different to
-yours, though yours is better in general. I'll try and merge them into
-one test.
+  https://github.com/linuxppc/issues/issues/238
+
 
 cheers
