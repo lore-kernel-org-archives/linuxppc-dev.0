@@ -2,85 +2,95 @@ Return-Path: <SRS0=tcMx=SQ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_PASS,USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_PASS autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5FF95C10F13
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 14 Apr 2019 19:19:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A0E41C10F13
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 14 Apr 2019 20:06:19 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id CFCE420850
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 14 Apr 2019 19:19:42 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="E2kwauP9"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CFCE420850
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	by mail.kernel.org (Postfix) with ESMTPS id AE85D2190A
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 14 Apr 2019 20:06:18 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org AE85D2190A
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44j1fN6l45zDqL2
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Apr 2019 05:19:40 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44j2h84rp0zDqKr
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Apr 2019 06:06:16 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=2a00:1450:4864:20::344; helo=mail-wm1-x344.google.com;
- envelope-from=andradanciu1997@gmail.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="E2kwauP9"; 
- dkim-atps=neutral
-Received: from mail-wm1-x344.google.com (mail-wm1-x344.google.com
- [IPv6:2a00:1450:4864:20::344])
+ spf=none (mailfrom) smtp.mailfrom=linux.vnet.ibm.com
+ (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
+ envelope-from=huntbag@linux.vnet.ibm.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=linux.vnet.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44j1YG1MpmzDqJm
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Apr 2019 05:15:14 +1000 (AEST)
-Received: by mail-wm1-x344.google.com with SMTP id r186so4582944wmf.1
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 14 Apr 2019 12:15:13 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=from:to:cc:subject:date:message-id:in-reply-to:references;
- bh=IVWF5VbXq88Oe2XailmJT797hCzhKaf4Udl5bCUersw=;
- b=E2kwauP9kAv6Vek9iveRlBPfygNSsknEEmkxfwpoNpkp1USB3nYhRie3JcVP6mBEcU
- OvsC7buj8sI7kYXo9BEXOakenYHbfqh6FWNyy6NsKdu1cVMhIfa9gypEvuy19tpO8iV4
- 2m0Zw+FVVadWO0rION1dJrwpHk4sLsSf/4BtHVpa15w5t+1WWTHS5/y8UIdih9pTxK7q
- vwfig9RJKrR9ur3xucSvMAmQJOIyxyvtYcviBytgn/mDiHfq5WsPewnH2xWoxR8Zjsze
- t3rUzbucj7QFRoThDY3I8fN+k8SDbFhyY5PffDPyqGZH+slLdW4ctPNOfmY0HWA+59AJ
- UsIA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
- :references;
- bh=IVWF5VbXq88Oe2XailmJT797hCzhKaf4Udl5bCUersw=;
- b=ZCGZBOPFsi1Or/PMBo4gVik6O36K2lz1TU6wVwsTm/G9cWxsCiXyeftdKVh/w93wIz
- 7d5IZfn6x/yBWOfMtuDGbGlxYntvIOFR1iUvNFfm2bqzWZ3EWBFsVO4PzzcNvD0Ne6jC
- dsXSTHH9BcFRxHh03eQo5vykMa2NnPlq1GQGpQrwjmeV2Ju4j1zZw+xBYTcR43MooZLl
- eAmCFsRTWt4iT826szJcBD1HWsFj073601fk9Eoq8SuAbih2vKmisaUjyQ3F6G0tDMbg
- LTc9pg58U+EMNlFUQwuudRpcX9QWduRH9vQ4xYjNBtsT35xVJfPlzVRgJ7DwxsFYqL19
- cudg==
-X-Gm-Message-State: APjAAAVZO8c6ZPr4z2M11FX83isfpCsppqbvL2Wfb58rMoGFpuuowgbC
- 92e6xwYvI4k78HwK2ZJdCPY=
-X-Google-Smtp-Source: APXvYqw9xtJOlYdm8kIIjs3GPTe1nPDZwu8LxNodAniOJpc5iVOjx7iA8wLMBdWjxLBImhYSqo6AHg==
-X-Received: by 2002:a1c:a742:: with SMTP id q63mr18522874wme.133.1555269311048; 
- Sun, 14 Apr 2019 12:15:11 -0700 (PDT)
-Received: from localhost.localdomain (p12.eregie.pub.ro. [141.85.0.112])
- by smtp.gmail.com with ESMTPSA id v16sm96654246wro.48.2019.04.14.12.15.09
- (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
- Sun, 14 Apr 2019 12:15:10 -0700 (PDT)
-From: Andra Danciu <andradanciu1997@gmail.com>
-To: timur@kernel.org, nicoleotsuka@gmail.com, Xiubo.Lee@gmail.com,
- festevam@gmail.com, lgirdwood@gmail.com, broonie@kernel.org,
- perex@perex.cz, tiwai@suse.com, shawnguo@kernel.org,
- s.hauer@pengutronix.de, kernel@pengutronix.de, linux-imx@nxp.com,
- alsa-devel@alsa-project.org, linuxppc-dev@lists.ozlabs.org,
- linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 2/2] ASoC: mpc5200_psc_i2s: Fix invalid license ID
-Date: Sun, 14 Apr 2019 22:14:50 +0300
-Message-Id: <20190414191450.18377-3-andradanciu1997@gmail.com>
-X-Mailer: git-send-email 2.11.0
-In-Reply-To: <20190414191450.18377-1-andradanciu1997@gmail.com>
-References: <20190414191450.18377-1-andradanciu1997@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44j2fM57hvzDqJq
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Apr 2019 06:04:43 +1000 (AEST)
+Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
+ x3EJwuuq118272
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 14 Apr 2019 16:04:39 -0400
+Received: from e06smtp03.uk.ibm.com (e06smtp03.uk.ibm.com [195.75.94.99])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2ruw71fq02-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 14 Apr 2019 16:04:38 -0400
+Received: from localhost
+ by e06smtp03.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <huntbag@linux.vnet.ibm.com>;
+ Sun, 14 Apr 2019 21:04:37 +0100
+Received: from b06cxnps3074.portsmouth.uk.ibm.com (9.149.109.194)
+ by e06smtp03.uk.ibm.com (192.168.101.133) with IBM ESMTP SMTP Gateway:
+ Authorized Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Sun, 14 Apr 2019 21:04:35 +0100
+Received: from d06av26.portsmouth.uk.ibm.com (d06av26.portsmouth.uk.ibm.com
+ [9.149.105.62])
+ by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x3EK4YR647513638
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Sun, 14 Apr 2019 20:04:34 GMT
+Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 510EBAE053;
+ Sun, 14 Apr 2019 20:04:34 +0000 (GMT)
+Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id EE4B8AE045;
+ Sun, 14 Apr 2019 20:04:30 +0000 (GMT)
+Received: from oc0383214508.ibm.com (unknown [9.85.73.3])
+ by d06av26.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Sun, 14 Apr 2019 20:04:30 +0000 (GMT)
+Subject: Re: [PATCH v2 1/2] cpuidle : auto-promotion for cpuidle states
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+References: <20190405091647.4169-1-huntbag@linux.vnet.ibm.com>
+ <20190405091647.4169-2-huntbag@linux.vnet.ibm.com>
+ <CAJZ5v0h+jyPQ=NofwV4ha6zBqk7E1gF1xE9CoBfKYfb3jBTbig@mail.gmail.com>
+From: Abhishek <huntbag@linux.vnet.ibm.com>
+Date: Mon, 15 Apr 2019 01:34:29 +0530
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:52.0) Gecko/20100101
+ Thunderbird/52.9.1
+MIME-Version: 1.0
+In-Reply-To: <CAJZ5v0h+jyPQ=NofwV4ha6zBqk7E1gF1xE9CoBfKYfb3jBTbig@mail.gmail.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Language: en-US
+X-TM-AS-GCONF: 00
+x-cbid: 19041420-0012-0000-0000-0000030EB42E
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 19041420-0013-0000-0000-00002146E62F
+Message-Id: <32cdf163-32b7-1011-16aa-8b40332832db@linux.vnet.ibm.com>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
+ definitions=2019-04-14_07:, , signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1810050000 definitions=main-1904140152
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -92,32 +102,72 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: tglx@linutronix.de, daniel.baluta@gmail.com
+Cc: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>,
+ Linux PM <linux-pm@vger.kernel.org>,
+ Daniel Lezcano <daniel.lezcano@linaro.org>,
+ "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-As the file had no other license notice/reference, it falls under the
-project license and therefore the proper SPDX id is: GPL-2.0-only
+Hi Rafael,
 
-Cc: Daniel Baluta <daniel.baluta@nxp.com>
-Fixes: 864a8472c4412 ("ASoC: mpc5200_psc_i2s: Switch to SPDX identifier")
-Reported-by: Thomas Gleixner <tglx@linutronix.de>
-Signed-off-by: Andra Danciu <andradanciu1997@gmail.com>
----
- sound/soc/fsl/mpc5200_psc_i2s.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Thanks for the Review. Few inline replies below.
 
-diff --git a/sound/soc/fsl/mpc5200_psc_i2s.c b/sound/soc/fsl/mpc5200_psc_i2s.c
-index 6de97461ba25..9bc01f374b39 100644
---- a/sound/soc/fsl/mpc5200_psc_i2s.c
-+++ b/sound/soc/fsl/mpc5200_psc_i2s.c
-@@ -1,4 +1,4 @@
--// SPDX-License-Identifier: GPL
-+// SPDX-License-Identifier: GPL-2.0-only
- //
- // Freescale MPC5200 PSC in I2S mode
- // ALSA SoC Digital Audio Interface (DAI) driver
--- 
-2.11.0
+
+On 04/09/2019 03:31 PM, Rafael J. Wysocki wrote:
+> On Fri, Apr 5, 2019 at 11:17 AM Abhishek Goel
+> <huntbag@linux.vnet.ibm.com> wrote:
+>> Currently, the cpuidle governors (menu /ladder) determine what idle state
+> There are three governors in 5.1-rc.
+>
+>> an idling CPU should enter into based on heuristics that depend on the
+>> idle history on that CPU. Given that no predictive heuristic is perfect,
+>> there are cases where the governor predicts a shallow idle state, hoping
+>> that the CPU will be busy soon. However, if no new workload is scheduled
+>> on that CPU in the near future, the CPU will end up in the shallow state.
+>>
+>> In case of POWER, this is problematic, when the predicted state in the
+>> aforementioned scenario is a lite stop state, as such lite states will
+>> inhibit SMT folding, thereby depriving the other threads in the core from
+>> using the core resources.
+>>
+>> To address this, such lite states need to be autopromoted.
+> I don't quite agree with this statement and it doesn't even match what
+> the patch does AFAICS.  "Autopromotion" would be going from the given
+> state to a deeper one without running state selection in between, but
+> that's not what's going on here.
+Thinking to call it "timed-exit". Is that good?
+>> The cpuidle-core can queue timer to correspond with the residency value of the next
+>> available state. Thus leading to auto-promotion to a deeper idle state as
+>> soon as possible.
+> No, it doesn't automatically cause a deeper state to be used next
+> time.  It simply kicks the CPU out of the idle state and one more
+> iteration of the idle loop runs on it.  Whether or not a deeper state
+> will be selected in that iteration depends on the governor
+> computations carried out in it.
+I did not mean that next state is chosen automatically. I should have been
+more descriptive here instead of just using "as soon as possible"
+> Now, this appears to be almost analogous to the "polling" state used
+> on x86 which uses the next idle state's target residency as a timeout.
+>
+> While generally I'm not a big fan of setting up timers in the idle
+> loop (it sort of feels like pulling your own hair in order to get
+> yourself out of a swamp), if idle states like these are there in your
+> platform, setting up a timer to get out of them in the driver's
+> ->enter() routine might not be particularly objectionable.  Doing that
+> in the core is a whole different story, though.
+>
+> Generally, this adds quite a bit of complexity (on the "ugly" side of
+> things IMO) to the core to cover a corner case present in one
+> platform, while IMO it can be covered in the driver for that platform
+> directly.
+As of now, since this code doesn't add any benefit to the other platform,
+I will post a patch with this implementation covered in platform-specific
+driver code.
+You are right that all the information needed for this implementation 
+are also
+available there in platform driver code, so we should be good to go.
 
