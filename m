@@ -2,49 +2,54 @@ Return-Path: <SRS0=spRZ=SR=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.5 required=3.0 tests=MAILING_LIST_MULTI,SPF_PASS,
-	USER_AGENT_MUTT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 11418C10F0E
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Apr 2019 11:43:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3B95EC10F12
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Apr 2019 11:54:08 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 86ADF2073F
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Apr 2019 11:43:55 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 86ADF2073F
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	by mail.kernel.org (Postfix) with ESMTPS id E46C220674
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Apr 2019 11:54:07 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E46C220674
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nxp.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44jRV13wz5zDqHr
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Apr 2019 21:43:53 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44jRjn5n1RzDqKK
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Apr 2019 21:54:05 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=softfail (mailfrom) smtp.mailfrom=kernel.org
- (client-ip=195.135.220.15; helo=mx1.suse.de; envelope-from=mhocko@kernel.org;
- receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=nxp.com
+ (client-ip=92.121.34.21; helo=inva021.nxp.com;
+ envelope-from=laurentiu.tudor@nxp.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=fail (p=none dis=none) header.from=kernel.org
-Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
+ dmarc=pass (p=none dis=none) header.from=nxp.com
+Received: from inva021.nxp.com (inva021.nxp.com [92.121.34.21])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44jRSF0tLmzDqFG
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Apr 2019 21:42:16 +1000 (AEST)
-X-Virus-Scanned: by amavisd-new at test-mx.suse.de
-Received: from relay2.suse.de (unknown [195.135.220.254])
- by mx1.suse.de (Postfix) with ESMTP id 1C86CAF2F;
- Mon, 15 Apr 2019 11:42:13 +0000 (UTC)
-Date: Mon, 15 Apr 2019 13:42:09 +0200
-From: Michal Hocko <mhocko@kernel.org>
-To: linux-mm@kvack.org
-Subject: Re: [PATCH 0/2] x86, numa: always initialize all possible nodes
-Message-ID: <20190415114209.GJ3366@dhcp22.suse.cz>
-References: <20190212095343.23315-1-mhocko@kernel.org>
- <20190226131201.GA10588@dhcp22.suse.cz>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20190226131201.GA10588@dhcp22.suse.cz>
-User-Agent: Mutt/1.10.1 (2018-07-13)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44jRh471pPzDqDy
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Apr 2019 21:52:35 +1000 (AEST)
+Received: from inva021.nxp.com (localhost [127.0.0.1])
+ by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id 5EC2C200080;
+ Mon, 15 Apr 2019 13:52:31 +0200 (CEST)
+Received: from inva024.eu-rdc02.nxp.com (inva024.eu-rdc02.nxp.com
+ [134.27.226.22])
+ by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id 51AE5200067;
+ Mon, 15 Apr 2019 13:52:31 +0200 (CEST)
+Received: from fsr-ub1864-101.ea.freescale.net
+ (fsr-ub1864-101.ea.freescale.net [10.171.82.13])
+ by inva024.eu-rdc02.nxp.com (Postfix) with ESMTP id E9DD5205FE;
+ Mon, 15 Apr 2019 13:52:30 +0200 (CEST)
+From: laurentiu.tudor@nxp.com
+To: linuxppc-dev@lists.ozlabs.org,
+	oss@buserror.net,
+	mpe@ellerman.id.au
+Subject: [PATCH v2] powerpc/booke64: set RI in default MSR
+Date: Mon, 15 Apr 2019 14:52:11 +0300
+Message-Id: <20190415115211.16374-1-laurentiu.tudor@nxp.com>
+X-Mailer: git-send-email 2.17.1
+X-Virus-Scanned: ClamAV using ClamSMTP
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -56,32 +61,41 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Tony Luck <tony.luck@intel.com>, linux-ia64@vger.kernel.org,
- Peter Zijlstra <peterz@infradead.org>, x86@kernel.org,
- LKML <linux-kernel@vger.kernel.org>, Pingfan Liu <kernelfans@gmail.com>,
- Dave Hansen <dave.hansen@intel.com>, Ingo Molnar <mingo@elte.hu>,
- linuxppc-dev@lists.ozlabs.org
+Cc: linux-kernel@vger.kernel.org, stable@vger.kernel.org,
+ Laurentiu Tudor <laurentiu.tudor@nxp.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue 26-02-19 14:12:01, Michal Hocko wrote:
-> On Tue 12-02-19 10:53:41, Michal Hocko wrote:
-> > Hi,
-> > this has been posted as an RFC previously [1]. There didn't seem to be
-> > any objections so I am reposting this for inclusion. I have added a
-> > debugging patch which prints the zonelist setup for each numa node
-> > for an easier debugging of a broken zonelist setup.
-> > 
-> > [1] http://lkml.kernel.org/r/20190114082416.30939-1-mhocko@kernel.org
-> 
-> Friendly ping. I haven't heard any complains so can we route this via
-> tip/x86/mm or should we go via mmotm.
+From: Laurentiu Tudor <laurentiu.tudor@nxp.com>
 
-It seems that Dave is busy. Let's add Andrew. Can we get this [1] merged
-finally, please?
+Set RI in the default kernel's MSR so that the architected way of
+detecting unrecoverable machine check interrupts has a chance to work.
+This is inline with the MSR setup of the rest of booke powerpc
+architectures configured here.
 
-[1] http://lkml.kernel.org/r/20190212095343.23315-1-mhocko@kernel.org
+Signed-off-by: Laurentiu Tudor <laurentiu.tudor@nxp.com>
+Cc: stable@vger.kernel.org
+---
+Changes in v2:
+ - fixed typo - s/SI/RI
+
+ arch/powerpc/include/asm/reg_booke.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/arch/powerpc/include/asm/reg_booke.h b/arch/powerpc/include/asm/reg_booke.h
+index eb2a33d5df26..e382bd6ede84 100644
+--- a/arch/powerpc/include/asm/reg_booke.h
++++ b/arch/powerpc/include/asm/reg_booke.h
+@@ -41,7 +41,7 @@
+ #if defined(CONFIG_PPC_BOOK3E_64)
+ #define MSR_64BIT	MSR_CM
+ 
+-#define MSR_		(MSR_ME | MSR_CE)
++#define MSR_		(MSR_ME | MSR_RI | MSR_CE)
+ #define MSR_KERNEL	(MSR_ | MSR_64BIT)
+ #define MSR_USER32	(MSR_ | MSR_PR | MSR_EE)
+ #define MSR_USER64	(MSR_USER32 | MSR_64BIT)
 -- 
-Michal Hocko
-SUSE Labs
+2.17.1
+
