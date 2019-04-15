@@ -2,54 +2,61 @@ Return-Path: <SRS0=spRZ=SR=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3B95EC10F12
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Apr 2019 11:54:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E4E7EC10F0E
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Apr 2019 12:31:02 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E46C220674
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Apr 2019 11:54:07 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E46C220674
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nxp.com
+	by mail.kernel.org (Postfix) with ESMTPS id 50CDF2073F
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Apr 2019 12:31:02 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 50CDF2073F
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44jRjn5n1RzDqKK
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Apr 2019 21:54:05 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44jSXM564HzDqHG
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Apr 2019 22:30:59 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=nxp.com
- (client-ip=92.121.34.21; helo=inva021.nxp.com;
- envelope-from=laurentiu.tudor@nxp.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=redhat.com
+ (client-ip=209.132.183.28; helo=mx1.redhat.com;
+ envelope-from=fweimer@redhat.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=nxp.com
-Received: from inva021.nxp.com (inva021.nxp.com [92.121.34.21])
+ dmarc=pass (p=none dis=none) header.from=redhat.com
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44jRh471pPzDqDy
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Apr 2019 21:52:35 +1000 (AEST)
-Received: from inva021.nxp.com (localhost [127.0.0.1])
- by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id 5EC2C200080;
- Mon, 15 Apr 2019 13:52:31 +0200 (CEST)
-Received: from inva024.eu-rdc02.nxp.com (inva024.eu-rdc02.nxp.com
- [134.27.226.22])
- by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id 51AE5200067;
- Mon, 15 Apr 2019 13:52:31 +0200 (CEST)
-Received: from fsr-ub1864-101.ea.freescale.net
- (fsr-ub1864-101.ea.freescale.net [10.171.82.13])
- by inva024.eu-rdc02.nxp.com (Postfix) with ESMTP id E9DD5205FE;
- Mon, 15 Apr 2019 13:52:30 +0200 (CEST)
-From: laurentiu.tudor@nxp.com
-To: linuxppc-dev@lists.ozlabs.org,
-	oss@buserror.net,
-	mpe@ellerman.id.au
-Subject: [PATCH v2] powerpc/booke64: set RI in default MSR
-Date: Mon, 15 Apr 2019 14:52:11 +0300
-Message-Id: <20190415115211.16374-1-laurentiu.tudor@nxp.com>
-X-Mailer: git-send-email 2.17.1
-X-Virus-Scanned: ClamAV using ClamSMTP
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44jSV661bZzDqDx
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Apr 2019 22:29:01 +1000 (AEST)
+Received: from smtp.corp.redhat.com (int-mx08.intmail.prod.int.phx2.redhat.com
+ [10.5.11.23])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by mx1.redhat.com (Postfix) with ESMTPS id 2904A4627A;
+ Mon, 15 Apr 2019 12:28:57 +0000 (UTC)
+Received: from oldenburg2.str.redhat.com (unknown [10.36.118.24])
+ by smtp.corp.redhat.com (Postfix) with ESMTPS id BE7AB19C79;
+ Mon, 15 Apr 2019 12:28:55 +0000 (UTC)
+From: Florian Weimer <fweimer@redhat.com>
+To: Adhemerval Zanella <adhemerval.zanella@linaro.org>
+Subject: Re: [PATCH] Linux: Define struct termios2 in <termios.h> under
+ _GNU_SOURCE [BZ #10339]
+References: <875zrnlakd.fsf@oldenburg2.str.redhat.com>
+ <284e9c76-2411-b8f4-c4bc-c25c60c04cf7@linaro.org>
+ <87imvker6t.fsf@oldenburg2.str.redhat.com>
+ <db468a0f-4a7b-d251-601f-428885275d08@linaro.org>
+ <87lg0fbr1q.fsf@oldenburg2.str.redhat.com>
+Date: Mon, 15 Apr 2019 14:28:48 +0200
+In-Reply-To: <87lg0fbr1q.fsf@oldenburg2.str.redhat.com> (Florian Weimer's
+ message of "Fri, 12 Apr 2019 09:50:41 +0200")
+Message-ID: <87lg0b311b.fsf@oldenburg2.str.redhat.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/26.1 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain
+X-Scanned-By: MIMEDefang 2.84 on 10.5.11.23
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.5.16
+ (mx1.redhat.com [10.5.110.29]); Mon, 15 Apr 2019 12:28:57 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -61,41 +68,25 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-kernel@vger.kernel.org, stable@vger.kernel.org,
- Laurentiu Tudor <laurentiu.tudor@nxp.com>
+Cc: linux-api@vger.kernel.org, libc-alpha@sourceware.org,
+ linuxppc-dev@lists.ozlabs.org, hpa@zytor.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Laurentiu Tudor <laurentiu.tudor@nxp.com>
+* Florian Weimer:
 
-Set RI in the default kernel's MSR so that the architected way of
-detecting unrecoverable machine check interrupts has a chance to work.
-This is inline with the MSR setup of the rest of booke powerpc
-architectures configured here.
+> My gut feeling is that it's safer to add new interfaces, based on the
+> actual kernel/userspace interface, rather than trying to fix up existing
+> interfaces with symbol versioning.  The main reason is that code
+> involving serial interfaces is difficult to test, so it will take years
+> until we find the last application broken by the glibc interface bump.
+>
+> I don't feel strongly about this.  This came out of a request for
+> enabling TCGETS2 support downstream.  If I can't fix this upstream, I
+> will just reject that request.
 
-Signed-off-by: Laurentiu Tudor <laurentiu.tudor@nxp.com>
-Cc: stable@vger.kernel.org
----
-Changes in v2:
- - fixed typo - s/SI/RI
+Any further comments on this matter?
 
- arch/powerpc/include/asm/reg_booke.h | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/arch/powerpc/include/asm/reg_booke.h b/arch/powerpc/include/asm/reg_booke.h
-index eb2a33d5df26..e382bd6ede84 100644
---- a/arch/powerpc/include/asm/reg_booke.h
-+++ b/arch/powerpc/include/asm/reg_booke.h
-@@ -41,7 +41,7 @@
- #if defined(CONFIG_PPC_BOOK3E_64)
- #define MSR_64BIT	MSR_CM
- 
--#define MSR_		(MSR_ME | MSR_CE)
-+#define MSR_		(MSR_ME | MSR_RI | MSR_CE)
- #define MSR_KERNEL	(MSR_ | MSR_64BIT)
- #define MSR_USER32	(MSR_ | MSR_PR | MSR_EE)
- #define MSR_USER64	(MSR_USER32 | MSR_64BIT)
--- 
-2.17.1
-
+Thanks,
+Florian
