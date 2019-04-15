@@ -2,80 +2,80 @@ Return-Path: <SRS0=spRZ=SR=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.7 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
+X-Spam-Status: No, score=-6.3 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
 	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_PASS,UNWANTED_LANGUAGE_BODY,USER_AGENT_GIT autolearn=unavailable
+	SPF_PASS,TVD_SUBJ_WIPE_DEBT,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EDB46C10F0E
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Apr 2019 10:22:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 109DBC10F12
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Apr 2019 10:24:17 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 68BAC2075B
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Apr 2019 10:22:52 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id F3A9020652
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Apr 2019 10:24:15 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Qi8BP0Az"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 68BAC2075B
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="V+yvan/Z"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org F3A9020652
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44jPhV41qczDqH6
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Apr 2019 20:22:50 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44jPk62qypzDqJm
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Apr 2019 20:24:14 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=2a00:1450:4864:20::444; helo=mail-wr1-x444.google.com;
+ (client-ip=2a00:1450:4864:20::341; helo=mail-wm1-x341.google.com;
  envelope-from=jonas.gorski@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="Qi8BP0Az"; 
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="V+yvan/Z"; 
  dkim-atps=neutral
-Received: from mail-wr1-x444.google.com (mail-wr1-x444.google.com
- [IPv6:2a00:1450:4864:20::444])
+Received: from mail-wm1-x341.google.com (mail-wm1-x341.google.com
+ [IPv6:2a00:1450:4864:20::341])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44jPQw5QbwzDqGv
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Apr 2019 20:11:04 +1000 (AEST)
-Received: by mail-wr1-x444.google.com with SMTP id y7so21104254wrn.11
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Apr 2019 03:11:04 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44jPQy55jczDqH4
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Apr 2019 20:11:06 +1000 (AEST)
+Received: by mail-wm1-x341.google.com with SMTP id y197so7815852wmd.0
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Apr 2019 03:11:06 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
  h=from:to:cc:subject:date:message-id:in-reply-to:references;
- bh=1utUG9oo11jNXQpQkS4fRJ6SG9XxN3l3dVfTXDmhkww=;
- b=Qi8BP0AzvIj0CLEGzLnz/Oj66x7Dup5/AB4St3neDWs+l/i0yiEZGoj2S4lnmAo91j
- 6/Qv4T6XF36DDGNKBw+wk0oFjNaEZQipRQAFa25p/OHpCu/QtsYR1hcziqSoKRGMFM9K
- LCDXH/dTI5b0GTYpzcbOvk4ZRiG/pKpdi7ZvbIEGE5ISd8pPn04AmqjSYmOwOHhQ/pyo
- iSrtKlnKUuDzZUg6NFMOpDFbl737JjXPmWD/NW671VrdazNDzygD6zM8hh+3A1v2/wy8
- MYN6yFc7198iiPRhhsd3HyhW8VLm+sFt6x6mgoeq7p7W2zSzm99BSUO+VEsNocKqwZ/m
- 08Eg==
+ bh=Sj0AUTH1hVgf3wNwVxaR3FGot08SzGps4WY/S0Hmy/E=;
+ b=V+yvan/Zm0HTn2scxhSs9EmCYDAt39Twv0oMrtdz/oOUUBDuKQbPtb7FemAjsHjS2P
+ X996fb5pDqSUxCSQBxW9CrzN40m9/dOEcY9U/QK7kXH4B6Kx9XzVTgzRZpxf47T65hhu
+ U0rM11acTkeBNEgr+u6oyjLo0+JZvaeVQ5RZLgbFQqBOiwT1CnIHU8ZB3CeLy6JrKLsC
+ 2pFMc6xo8d0tuRJYiGdMdbTsqpxZ30/XnGaf6c/P8UdejTFa+z0Brhum8FiKNp1760J5
+ 6KvCdxnSdyK5A/d5XeNa1WS5uRNZfFjkWJAsLpy7qcc4BXt4rxAzOVM2R6+fR4LjeARj
+ wTGw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
  :references;
- bh=1utUG9oo11jNXQpQkS4fRJ6SG9XxN3l3dVfTXDmhkww=;
- b=BxxFjZiltPiTqLqCewPfssRv9Nk0e/GmrmFldN3vDISzhSiWZLTjfU/mcIYsIlyMsv
- 96v+9BslOheHHumRdOxsdKOxf6wHglkmzoeUdN6ITk7LVmEggjpU33WyqEV1wvqr4WZV
- 0MiJsXEbs+Lki+OQk0+NZpIkC3DVOrjGccZiZ0sMPTSU2SQj8bUdSljpShvkN8PFDesm
- F20VerOuwlInq5lspQAhFu6SJipzGbKBNhRgw9xZDIz3vzmqcdwbmN5agzuBRPZuanLo
- qyn3Co/9yFNTgwVo9kYCmP20HBiBedyJJIYpNMinZCyxPFnosyM7e8Fqj8DIMw+Te/at
- Xkag==
-X-Gm-Message-State: APjAAAXSrIJoDzHR25WtUfH2L3kCwN9btPz87vPn3JHUVRToSgJAJxhm
- Yp3I67ZbbAQV+C2dzhVV8Ao=
-X-Google-Smtp-Source: APXvYqzDXCPaXtO/0J6yWiR1mbQTpGNquiOsxi0UOZGLzVVoYvpAf+tZqDLVoX6afIm4E1NjyaPrJQ==
-X-Received: by 2002:a5d:6646:: with SMTP id f6mr25387wrw.68.1555323062247;
- Mon, 15 Apr 2019 03:11:02 -0700 (PDT)
+ bh=Sj0AUTH1hVgf3wNwVxaR3FGot08SzGps4WY/S0Hmy/E=;
+ b=g77WTRY9ZOP6Yr7EZE0mKFoFbaQYbp3fg0n5LtDNXklvJodw3UIGDtqEVAea0rUx1I
+ 1CnTWiu6tmaIuP0cDncEb9PeOA79j85HR2f1Mlg/9JXafy5ppRwMK9r5K3uYbTc53XDm
+ FGWZZ5D79EJPGW04Er2iguw3cwoJ1H1b02/xfQanh1KmMXZYF5EN38GVzdAHXrFP2z5l
+ yKNDRdV0g6a4cRMxh49IFz/dsknfHypK7cDIdGplOvb+6F9v533dyohCU2YT+k/f242h
+ PWs4QvtWhGZodQ7sTIDaxXAoKlhAEBFAwrdxz91YLzvolt+oqbCjHygpCc42xIZeJHoy
+ gyOA==
+X-Gm-Message-State: APjAAAUyI/Bi1wV/FuAJknhE40RPqOAJHYhSnmojmXwuRlb5gSCRoCxr
+ h8uGfZeBZD/a3X/NAbz3sWE=
+X-Google-Smtp-Source: APXvYqw2zXF9I3SOjK4eDyXT/3JKr8GdVdxfKwB3FDSG/F11qD5sT964dRm277f+oBYa2U14U3zytw==
+X-Received: by 2002:a1c:a9cb:: with SMTP id s194mr22219969wme.62.1555323064237; 
+ Mon, 15 Apr 2019 03:11:04 -0700 (PDT)
 Received: from localhost.localdomain ([2001:470:9e39::64])
- by smtp.gmail.com with ESMTPSA id d6sm11592214wrp.9.2019.04.15.03.11.00
+ by smtp.gmail.com with ESMTPSA id d6sm11592214wrp.9.2019.04.15.03.11.02
  (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
- Mon, 15 Apr 2019 03:11:01 -0700 (PDT)
+ Mon, 15 Apr 2019 03:11:03 -0700 (PDT)
 From: Jonas Gorski <jonas.gorski@gmail.com>
 To: linux-clk@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
  linux-arm-kernel@lists.infradead.org, linux-rockchip@lists.infradead.org,
  linux-tegra@vger.kernel.org
-Subject: [PATCH RFT V2 6/8] powerpc/512x: mark clocks as big endian
-Date: Mon, 15 Apr 2019 12:10:44 +0200
-Message-Id: <20190415101046.5872-7-jonas.gorski@gmail.com>
+Subject: [PATCH RFT V2 7/8] clk: core: remove powerpc special handling
+Date: Mon, 15 Apr 2019 12:10:45 +0200
+Message-Id: <20190415101046.5872-8-jonas.gorski@gmail.com>
 X-Mailer: git-send-email 2.13.2
 In-Reply-To: <20190415101046.5872-1-jonas.gorski@gmail.com>
 References: <20190415101046.5872-1-jonas.gorski@gmail.com>
@@ -103,63 +103,51 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-These clocks' registers are accessed as big endian, so mark them as
-such.
+Now that the powerpc clocks are properly marked as big endian, we can
+remove the special handling for PowerPC.
 
 Signed-off-by: Jonas Gorski <jonas.gorski@gmail.com>
 ---
 V1 -> V2:
- * switch from global to local flags
+ * no actual changes
 
- arch/powerpc/platforms/512x/clock-commonclk.c | 11 +++++++----
- 1 file changed, 7 insertions(+), 4 deletions(-)
+ include/linux/clk-provider.h | 16 ----------------
+ 1 file changed, 16 deletions(-)
 
-diff --git a/arch/powerpc/platforms/512x/clock-commonclk.c b/arch/powerpc/platforms/512x/clock-commonclk.c
-index b3097fe6441b..0072330350fa 100644
---- a/arch/powerpc/platforms/512x/clock-commonclk.c
-+++ b/arch/powerpc/platforms/512x/clock-commonclk.c
-@@ -240,7 +240,8 @@ static inline struct clk *mpc512x_clk_divider(
- 	u32 __iomem *reg, u8 pos, u8 len, int divflags)
+diff --git a/include/linux/clk-provider.h b/include/linux/clk-provider.h
+index f82cda41e1a8..479e616ce7f5 100644
+--- a/include/linux/clk-provider.h
++++ b/include/linux/clk-provider.h
+@@ -1001,20 +1001,6 @@ static inline int of_clk_detect_critical(struct device_node *np, int index,
+  * for improved portability across platforms
+  */
+ 
+-#if IS_ENABLED(CONFIG_PPC)
+-
+-static inline u32 clk_readl(u32 __iomem *reg)
+-{
+-	return ioread32be(reg);
+-}
+-
+-static inline void clk_writel(u32 val, u32 __iomem *reg)
+-{
+-	iowrite32be(val, reg);
+-}
+-
+-#else	/* platform dependent I/O accessors */
+-
+ static inline u32 clk_readl(u32 __iomem *reg)
  {
- 	return clk_register_divider(NULL, name, parent_name, clkflags,
--				    reg, pos, len, divflags, &clklock);
-+				    reg, pos, len,
-+				    divflags | CLK_DIVIDER_BIG_ENDIAN, &clklock);
+ 	return readl(reg);
+@@ -1025,8 +1011,6 @@ static inline void clk_writel(u32 val, u32 __iomem *reg)
+ 	writel(val, reg);
  }
  
- static inline struct clk *mpc512x_clk_divtable(
-@@ -250,7 +251,7 @@ static inline struct clk *mpc512x_clk_divtable(
- {
- 	u8 divflags;
+-#endif	/* platform dependent I/O accessors */
+-
+ void clk_gate_restore_context(struct clk_hw *hw);
  
--	divflags = 0;
-+	divflags = CLK_DIVIDER_BIG_ENDIAN;
- 	return clk_register_divider_table(NULL, name, parent_name, 0,
- 					  reg, pos, len, divflags,
- 					  divtab, &clklock);
-@@ -261,10 +262,12 @@ static inline struct clk *mpc512x_clk_gated(
- 	u32 __iomem *reg, u8 pos)
- {
- 	int clkflags;
-+	u8 gateflags;
- 
- 	clkflags = CLK_SET_RATE_PARENT;
-+	gateflags = CLK_GATE_BIG_ENDIAN;
- 	return clk_register_gate(NULL, name, parent_name, clkflags,
--				 reg, pos, 0, &clklock);
-+				 reg, pos, gateflags, &clklock);
- }
- 
- static inline struct clk *mpc512x_clk_muxed(const char *name,
-@@ -275,7 +278,7 @@ static inline struct clk *mpc512x_clk_muxed(const char *name,
- 	u8 muxflags;
- 
- 	clkflags = CLK_SET_RATE_PARENT;
--	muxflags = 0;
-+	muxflags = CLK_MUX_BIG_ENDIAN;
- 	return clk_register_mux(NULL, name,
- 				parent_names, parent_count, clkflags,
- 				reg, pos, len, muxflags, &clklock);
+ #endif /* CONFIG_COMMON_CLK */
 -- 
 2.13.2
 
