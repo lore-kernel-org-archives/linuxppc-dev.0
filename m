@@ -2,86 +2,103 @@ Return-Path: <SRS0=spRZ=SR=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.0 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,
+	USER_AGENT_NEOMUTT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4C09EC10F0E
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Apr 2019 16:19:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 328F9C10F0E
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Apr 2019 17:20:58 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 7248E2075B
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Apr 2019 16:19:08 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 6E1302183F
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Apr 2019 17:20:57 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=linux-foundation.org header.i=@linux-foundation.org header.b="Rc7qx6n5"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7248E2075B
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linux-foundation.org
+	dkim=pass (1024-bit key) header.d=wavesemi.onmicrosoft.com header.i=@wavesemi.onmicrosoft.com header.b="GSy7QBTo"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6E1302183F
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=mips.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44jYbZ1B4PzDqJ7
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Apr 2019 02:19:06 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44jZyv12LMzDqHf
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Apr 2019 03:20:55 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=linuxfoundation.org
- (client-ip=2a00:1450:4864:20::22d; helo=mail-lj1-x22d.google.com;
- envelope-from=torvalds@linuxfoundation.org; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=linux-foundation.org
+ spf=pass (mailfrom) smtp.mailfrom=wavecomp.com
+ (client-ip=40.107.74.119; helo=nam01-bn3-obe.outbound.protection.outlook.com;
+ envelope-from=pburton@wavecomp.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=mips.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=linux-foundation.org header.i=@linux-foundation.org
- header.b="Rc7qx6n5"; dkim-atps=neutral
-Received: from mail-lj1-x22d.google.com (mail-lj1-x22d.google.com
- [IPv6:2a00:1450:4864:20::22d])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ unprotected) header.d=wavesemi.onmicrosoft.com
+ header.i=@wavesemi.onmicrosoft.com header.b="GSy7QBTo"; 
+ dkim-atps=neutral
+Received: from NAM01-BN3-obe.outbound.protection.outlook.com
+ (mail-eopbgr740119.outbound.protection.outlook.com [40.107.74.119])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44jYYq23nwzDqJ5
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Apr 2019 02:17:34 +1000 (AEST)
-Received: by mail-lj1-x22d.google.com with SMTP id j89so16241823ljb.1
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Apr 2019 09:17:34 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44jZx44WB7zDqJ5
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Apr 2019 03:19:19 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=linux-foundation.org; s=google;
- h=mime-version:references:in-reply-to:from:date:message-id:subject:to
- :cc; bh=bIPBn1U+SX8uD02iY/mmWBCji2/lm4uOVe9yraoEo7o=;
- b=Rc7qx6n5VTgrZU3031/RnX2VNuY4cSqBXxxLOtf8sa4GGy81UrF6cIh23W8HCjbplk
- eei3JXRMEKl88UBMcF12ggFhbCViCFtKDRzEbath5Yr0VuirMta8TVNm5ksL/lQZkU9L
- gDNJ1M+ReVvsXKP7zNx4xxobRNztNHRC10AkI=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:mime-version:references:in-reply-to:from:date
- :message-id:subject:to:cc;
- bh=bIPBn1U+SX8uD02iY/mmWBCji2/lm4uOVe9yraoEo7o=;
- b=AJEQUpM0J0iakGOTuxozn2I4KeScgH4VDK8KMRPaZ0Ultr0A+cGCidzAuYZNUvQtwd
- GliLtrRaCi5x8h45PVOxVL/9dQo7miKE5jqZzFY7q1EzmFqIDJ1Hyq0hRN+CtrfUVr/t
- eaMX4wGKC8J9FbuKi3VjyOQCOfMg98aCzcEQriD8sBYtdJ1UKE30pW05PYRRxwT/wq5d
- 2ovqAnKm4VCcIh2KrZh1FAN3+xNOBtAJf5kV4lykPAVaCEvw1D0aUEQYakCjx1Gt41i0
- aclFki9dYGEC87xt/+Wll6WHvl3v9zeYZAIkIxbGKVm2Q3ZVW3BNTRtjK8KAOzs8uvYF
- jSGA==
-X-Gm-Message-State: APjAAAU2Czt4xvA8rVRqV7hJlfMYXcs4cNzZ+wk0oCbcIAVBPrV0NlLa
- Ie1A833GN7OX2Ek0P/c/9VJ1OvK5Tc0=
-X-Google-Smtp-Source: APXvYqyypYZB2K2/J38X9j77rt3LYtdNgVaSDdiBVSNv9Opjf5KeRsL4TUwtYyQJidCh83a1Nl5hXg==
-X-Received: by 2002:a2e:8507:: with SMTP id j7mr231583lji.85.1555345047838;
- Mon, 15 Apr 2019 09:17:27 -0700 (PDT)
-Received: from mail-lj1-f176.google.com (mail-lj1-f176.google.com.
- [209.85.208.176])
- by smtp.gmail.com with ESMTPSA id y17sm10928002ljd.54.2019.04.15.09.17.26
- for <linuxppc-dev@lists.ozlabs.org>
- (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
- Mon, 15 Apr 2019 09:17:26 -0700 (PDT)
-Received: by mail-lj1-f176.google.com with SMTP id q66so1138559ljq.7
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Apr 2019 09:17:26 -0700 (PDT)
-X-Received: by 2002:a2e:88c1:: with SMTP id a1mr14718777ljk.78.1555345046432; 
- Mon, 15 Apr 2019 09:17:26 -0700 (PDT)
+ d=wavesemi.onmicrosoft.com; s=selector1-wavecomp-com;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=R0LkaZmIAoSPOG2sRgQfljHs///NujAgFS3mww58ebs=;
+ b=GSy7QBTorNHx7h1o9R7BBTfbPWD5W0Hh4sk9HweHDaKDieGzXtOa6UV9/aOCPBL6QbIOnkl/FCf0GwTx0XomV547kMBtrK+ZKTH+Pn8jd3dV1qydvJtoX3ObhZ1r78hP1HcNGMNvx6IBDE/MPGzo+2zQT85jh8v1fhPUrLWX/FU=
+Received: from MWHPR2201MB1277.namprd22.prod.outlook.com (10.174.162.17) by
+ MWHPR2201MB1646.namprd22.prod.outlook.com (10.174.167.35) with Microsoft SMTP
+ Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.20.1792.17; Mon, 15 Apr 2019 17:19:12 +0000
+Received: from MWHPR2201MB1277.namprd22.prod.outlook.com
+ ([fe80::b9d6:bf19:ec58:2765]) by MWHPR2201MB1277.namprd22.prod.outlook.com
+ ([fe80::b9d6:bf19:ec58:2765%7]) with mapi id 15.20.1792.018; Mon, 15 Apr 2019
+ 17:19:12 +0000
+From: Paul Burton <paul.burton@mips.com>
+To: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [PATCH] [v2] arch: add pidfd and io_uring syscalls everywhere
+Thread-Topic: [PATCH] [v2] arch: add pidfd and io_uring syscalls everywhere
+Thread-Index: AQHU85fL+gHE1wPf2UOG9gtYUzAhTqY9d30A
+Date: Mon, 15 Apr 2019 17:19:11 +0000
+Message-ID: <20190415171910.ezhsqmncj2eiw7cc@pburton-laptop>
+References: <20190415143007.2989285-1-arnd@arndb.de>
+In-Reply-To: <20190415143007.2989285-1-arnd@arndb.de>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+x-clientproxiedby: BYAPR06CA0047.namprd06.prod.outlook.com
+ (2603:10b6:a03:14b::24) To MWHPR2201MB1277.namprd22.prod.outlook.com
+ (2603:10b6:301:24::17)
+user-agent: NeoMutt/20180716
+authentication-results: spf=none (sender IP is )
+ smtp.mailfrom=pburton@wavecomp.com; 
+x-ms-exchange-messagesentrepresentingtype: 1
+x-originating-ip: [67.207.99.198]
+x-ms-publictraffictype: Email
+x-ms-office365-filtering-correlation-id: 23d9f8d4-b650-473a-1b69-08d6c1c679ef
+x-microsoft-antispam: BCL:0; PCL:0;
+ RULEID:(2390118)(7020095)(4652040)(8989299)(5600140)(711020)(4605104)(4534185)(4627221)(201703031133081)(201702281549075)(8990200)(2017052603328)(7193020);
+ SRVR:MWHPR2201MB1646; 
+x-ms-traffictypediagnostic: MWHPR2201MB1646:
+x-microsoft-antispam-prvs: <MWHPR2201MB1646ADBF62B1169D5E73A3E1C12B0@MWHPR2201MB1646.namprd22.prod.outlook.com>
+x-forefront-prvs: 000800954F
+x-forefront-antispam-report: SFV:NSPM;
+ SFS:(10019020)(7916004)(136003)(376002)(346002)(39840400004)(366004)(396003)(189003)(199004)(6916009)(58126008)(6116002)(478600001)(3846002)(33716001)(99286004)(4744005)(476003)(4326008)(486006)(1076003)(316002)(68736007)(44832011)(106356001)(256004)(229853002)(305945005)(7406005)(7416002)(97736004)(54906003)(14454004)(2906002)(105586002)(52116002)(6486002)(6436002)(7736002)(9686003)(71200400001)(71190400001)(5660300002)(81156014)(81166006)(8936002)(26005)(102836004)(8676002)(386003)(6506007)(186003)(76176011)(25786009)(6246003)(446003)(66066001)(42882007)(111086002)(53936002)(6512007)(11346002);
+ DIR:OUT; SFP:1102; SCL:1; SRVR:MWHPR2201MB1646;
+ H:MWHPR2201MB1277.namprd22.prod.outlook.com; FPR:; SPF:None; LANG:en;
+ PTR:InfoNoRecords; MX:1; A:1; 
+received-spf: None (protection.outlook.com: wavecomp.com does not designate
+ permitted sender hosts)
+x-ms-exchange-senderadcheck: 1
+x-microsoft-antispam-message-info: hpBqeD+nrjxZrmDBgVYdlzMv3Ori84Z8WZXFjtdtBEY4O/gMbjknOXRN27CYFaEIO5eG6P5vRwzaydf5wY4HmzBN1l/aD+qU55yo2pKuHEB6shPbJOcEB1rgVNiQREayqm0Yt/ZHCLdhPNHJpG3ObmUHYme2UwlNPbhm/28/KG/TcZYmZAkDY1n4HfL1m1yzRCThBShIndORvvNJ3+0jN6vFtYzEy5yXQyd80es6PgnMqfnIn14Nhi2L9mW10gi/FpldSr8TQdPDyrmZrkBGvVqxB4Qqa4Lac/V/aBMvczHQ5lyAhs+LKkS0rY5f56rcVofw/V9x82q3sa77wdShen4rp7/P8B57G7/abKImYLHuY6gUqxDNZ3YrGcjdfqsPzmr8w2F7tkV5CPNH4J8CY2v1+97I+s641jrpbVQgt0M=
+Content-Type: text/plain; charset="us-ascii"
+Content-ID: <0BFCBE85B6EE3C42A598251C8BA649BF@namprd22.prod.outlook.com>
+Content-Transfer-Encoding: quoted-printable
 MIME-Version: 1.0
-References: <CAHk-=wjvcuyCQGnfOhooaL1H4H63qXO=xgo+9yncSOG=eK+kbA@mail.gmail.com>
- <20190415051919.GA31481@infradead.org>
-In-Reply-To: <20190415051919.GA31481@infradead.org>
-From: Linus Torvalds <torvalds@linux-foundation.org>
-Date: Mon, 15 Apr 2019 09:17:10 -0700
-X-Gmail-Original-Message-ID: <CAHk-=wj7jgMOVFW0tiU-X+zhg6+Rn7mEBTej+f26rV3zXezOSA@mail.gmail.com>
-Message-ID: <CAHk-=wj7jgMOVFW0tiU-X+zhg6+Rn7mEBTej+f26rV3zXezOSA@mail.gmail.com>
-Subject: Re: Linux 5.1-rc5
-To: Christoph Hellwig <hch@infradead.org>
-Content-Type: text/plain; charset="UTF-8"
+X-OriginatorOrg: mips.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 23d9f8d4-b650-473a-1b69-08d6c1c679ef
+X-MS-Exchange-CrossTenant-originalarrivaltime: 15 Apr 2019 17:19:11.9918 (UTC)
+X-MS-Exchange-CrossTenant-fromentityheader: Hosted
+X-MS-Exchange-CrossTenant-id: 463607d3-1db3-40a0-8a29-970c56230104
+X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: MWHPR2201MB1646
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -93,38 +110,59 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- Linux List Kernel Mailing <linux-kernel@vger.kernel.org>,
- linux-s390 <linux-s390@vger.kernel.org>
+Cc: Rich Felker <dalias@libc.org>,
+ "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
+ "linux-sh@vger.kernel.org" <linux-sh@vger.kernel.org>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>,
+ "linux-mips@vger.kernel.org" <linux-mips@vger.kernel.org>,
+ "James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>,
+ Max Filippov <jcmvbkbc@gmail.com>,
+ "sparclinux@vger.kernel.org" <sparclinux@vger.kernel.org>,
+ "linux-arch@vger.kernel.org" <linux-arch@vger.kernel.org>,
+ "linux-s390@vger.kernel.org" <linux-s390@vger.kernel.org>,
+ Yoshinori Sato <ysato@users.sourceforge.jp>, Helge Deller <deller@gmx.de>,
+ Russell King <linux@armlinux.org.uk>,
+ Geert Uytterhoeven <geert@linux-m68k.org>,
+ Catalin Marinas <catalin.marinas@arm.com>, James Hogan <jhogan@kernel.org>,
+ Firoz Khan <firoz.khan@linaro.org>, Matt Turner <mattst88@gmail.com>,
+ Fenghua Yu <fenghua.yu@intel.com>, Will Deacon <will.deacon@arm.com>,
+ "linux-m68k@lists.linux-m68k.org" <linux-m68k@lists.linux-m68k.org>,
+ Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
+ Richard Henderson <rth@twiddle.net>, Chris Zankel <chris@zankel.net>,
+ Michal Simek <monstr@monstr.eu>, Tony Luck <tony.luck@intel.com>,
+ "linux-parisc@vger.kernel.org" <linux-parisc@vger.kernel.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Ralf Baechle <ralf@linux-mips.org>,
+ "linux-alpha@vger.kernel.org" <linux-alpha@vger.kernel.org>,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "David S. Miller" <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Sun, Apr 14, 2019 at 10:19 PM Christoph Hellwig <hch@infradead.org> wrote:
->
-> Can we please have the page refcount overflow fixes out on the list
-> for review, even if it is after the fact?
+Hi Arnd,
 
-They were actually on a list for review long before the fact, but it
-was the security mailing list. The issue actually got discussed back
-in January along with early versions of the patches, but then we
-dropped the ball because it just wasn't on anybody's radar and it got
-resurrected late March. Willy wrote a rather bigger patch-series, and
-review of that is what then resulted in those commits. So they may
-look recent, but that's just because the original patches got
-seriously edited down and rewritten.
+On Mon, Apr 15, 2019 at 04:22:57PM +0200, Arnd Bergmann wrote:
+> Add the io_uring and pidfd_send_signal system calls to all architectures.
+>=20
+> These system calls are designed to handle both native and compat tasks,
+> so all entries are the same across architectures, only arm-compat and
+> the generic tale still use an old format.
+>=20
+> Acked-by: Michael Ellerman <mpe@ellerman.id.au> (powerpc)
+> Acked-by: Heiko Carstens <heiko.carstens@de.ibm.com> (s390)
+> Acked-by: Geert Uytterhoeven <geert@linux-m68k.org>
+> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+> ---
+> Changes since v1:
+> - fix s390 table
+> - use 'n64' tag in mips-n64 instead of common.
 
-That said, powerpc and s390 should at least look at maybe adding a
-check for the page ref in their gup paths too. Powerpc has the special
-gup_hugepte() case, and s390 has its own version of gup entirely. I
-was actually hoping the s390 guys would look at using the generic gup
-code.
+Thanks for taking care of this:
 
-I ruthlessly also entirely ignored MIPS, SH and sparc, since they seem
-largely irrelevant, partly since even theoretically this whole issue
-needs a _lot_ of memory.
+  Acked-by: Paul Burton <paul.burton@mips.com> # MIPS
 
-Michael, Martin, see commit 6b3a70773630 ("Merge branch 'page-refs'
-(page ref overflow)"). You may or may not really care.
-
-                 Linus
+Thanks,
+    Paul
