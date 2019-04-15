@@ -3,101 +3,58 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
 X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS autolearn=unavailable autolearn_force=no
+	MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 13845C10F0E
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Apr 2019 15:45:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B78EAC10F12
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Apr 2019 15:54:55 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 8BCC720880
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Apr 2019 15:45:00 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8BCC720880
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=intel.com
+	by mail.kernel.org (Postfix) with ESMTPS id 0BEFF20825
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Apr 2019 15:54:54 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0BEFF20825
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=zytor.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44jXr96mdXzDqLM
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Apr 2019 01:44:57 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44jY3c6jDHzDqKf
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Apr 2019 01:54:52 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=intel.com
- (client-ip=192.55.52.93; helo=mga11.intel.com;
- envelope-from=dave.hansen@intel.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=zytor.com
+ (client-ip=198.137.202.136; helo=mail.zytor.com; envelope-from=hpa@zytor.com;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=intel.com
-Received: from mga11.intel.com (mga11.intel.com [192.55.52.93])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ dmarc=none (p=none dis=none) header.from=zytor.com
+Received: from mail.zytor.com (terminus.zytor.com [198.137.202.136])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44jXpQ2rQyzDqF7
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Apr 2019 01:43:21 +1000 (AEST)
-X-Amp-Result: SKIPPED(no attachment in message)
-X-Amp-File-Uploaded: False
-Received: from orsmga003.jf.intel.com ([10.7.209.27])
- by fmsmga102.fm.intel.com with ESMTP/TLS/DHE-RSA-AES256-GCM-SHA384;
- 15 Apr 2019 08:43:18 -0700
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.60,354,1549958400"; d="scan'208";a="142906558"
-Received: from unknown (HELO [10.7.201.126]) ([10.7.201.126])
- by orsmga003.jf.intel.com with ESMTP; 15 Apr 2019 08:43:18 -0700
-Subject: Re: [PATCH 0/2] x86, numa: always initialize all possible nodes
-To: Michal Hocko <mhocko@kernel.org>, linux-mm@kvack.org
-References: <20190212095343.23315-1-mhocko@kernel.org>
- <20190226131201.GA10588@dhcp22.suse.cz>
- <20190415114209.GJ3366@dhcp22.suse.cz>
-From: Dave Hansen <dave.hansen@intel.com>
-Openpgp: preference=signencrypt
-Autocrypt: addr=dave.hansen@intel.com; keydata=
- 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
-Message-ID: <77b364e5-a30c-964a-6985-00b759dac128@intel.com>
-Date: Mon, 15 Apr 2019 08:43:18 -0700
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
- Thunderbird/60.6.1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44jY1k4cx7zDqGx
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Apr 2019 01:53:13 +1000 (AEST)
+Received: from [IPv6:2607:fb90:86d7:2c0d:f984:e141:407b:6a78]
+ ([IPv6:2607:fb90:86d7:2c0d:f984:e141:407b:6a78])
+ (authenticated bits=0)
+ by mail.zytor.com (8.15.2/8.15.2) with ESMTPSA id x3FFr7ap3036194
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128 verify=NO);
+ Mon, 15 Apr 2019 08:53:08 -0700
+Date: Mon, 15 Apr 2019 08:53:02 -0700
+User-Agent: K-9 Mail for Android
+In-Reply-To: <87lg0fbr1q.fsf@oldenburg2.str.redhat.com>
+References: <875zrnlakd.fsf@oldenburg2.str.redhat.com>
+ <284e9c76-2411-b8f4-c4bc-c25c60c04cf7@linaro.org>
+ <87imvker6t.fsf@oldenburg2.str.redhat.com>
+ <db468a0f-4a7b-d251-601f-428885275d08@linaro.org>
+ <87lg0fbr1q.fsf@oldenburg2.str.redhat.com>
 MIME-Version: 1.0
-In-Reply-To: <20190415114209.GJ3366@dhcp22.suse.cz>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain;
+ charset=utf-8
+Content-Transfer-Encoding: quoted-printable
+Subject: Re: [PATCH] Linux: Define struct termios2 in <termios.h> under
+ _GNU_SOURCE [BZ #10339]
+To: Florian Weimer <fweimer@redhat.com>,
+ Adhemerval Zanella <adhemerval.zanella@linaro.org>
+From: hpa@zytor.com
+Message-ID: <A278227C-039B-49F4-B80D-650B785AE225@zytor.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -109,24 +66,86 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Tony Luck <tony.luck@intel.com>, linux-ia64@vger.kernel.org,
- Peter Zijlstra <peterz@infradead.org>, x86@kernel.org,
- LKML <linux-kernel@vger.kernel.org>, Pingfan Liu <kernelfans@gmail.com>,
- Ingo Molnar <mingo@elte.hu>, linuxppc-dev@lists.ozlabs.org
+Cc: linux-api@vger.kernel.org, libc-alpha@sourceware.org,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 4/15/19 4:42 AM, Michal Hocko wrote:
->> Friendly ping. I haven't heard any complains so can we route this via
->> tip/x86/mm or should we go via mmotm.
-> It seems that Dave is busy. Let's add Andrew. Can we get this [1] merged
-> finally, please?
+On April 12, 2019 12:50:41 AM PDT, Florian Weimer <fweimer@redhat=2Ecom> wr=
+ote:
+>* Adhemerval Zanella:
+>
+>> On 11/04/2019 08:07, Florian Weimer wrote:
+>>> * Adhemerval Zanella:
+>>>=20
+>>>> This allows us to adjust the baud rates to non-standard values
+>using termios
+>>>> interfaces without to resorting to add new headers and use a
+>different API
+>>>> (ioctl)=2E
+>>>=20
+>>> How much symbol versioning will be required for this change?
+>>
+>> I think all interfaces that have termios as input for sparc and mips=20
+>> (tcgetattr, tcsetattr, cfmakeraw, cfgetispeed, cfgetospeed,
+>cfsetispeed,
+>> cfsetospeed, cfsetspeed)=2E
+>>
+>> Alpha will also need to use termios1 for pre-4=2E20 kernels=2E
+>
+>So only new symbol versions there?  Hmm=2E
+>
+>>>> As Peter Anvin has indicated, he create a POC [1] with the
+>aforementioned
+>>>> new interfaces=2E  It has not been rebased against master, more
+>specially against
+>>>> my termios refactor to simplify the multiple architecture header
+>definitions,
+>>>> but I intend to use as a base=2E
+>>>=20
+>>> Reference [1] is still missing=2E 8-(
+>>
+>> Oops=2E=2E=2E it is
+>https://git=2Ezytor=2Ecom/users/hpa/glibc/termbaud=2Egit/log/?h=3Dwip=2Et=
+ermbaud
+>
+>This doesn't really illuminate things=2E  =E2=80=9CDrop explicit baud set=
+ting
+>interfaces in favor of cfenc|decspeed()=E2=80=9D removes the new symbol v=
+ersion
+>for the cf* functions=2E
+>
+>My gut feeling is that it's safer to add new interfaces, based on the
+>actual kernel/userspace interface, rather than trying to fix up
+>existing
+>interfaces with symbol versioning=2E  The main reason is that code
+>involving serial interfaces is difficult to test, so it will take years
+>until we find the last application broken by the glibc interface bump=2E
+>
+>I don't feel strongly about this=2E  This came out of a request for
+>enabling TCGETS2 support downstream=2E  If I can't fix this upstream, I
+>will just reject that request=2E
+>
+>Thanks,
+>Florian
 
-Sorry these slipped through the cracks.
+New interfaces are only necessary for the handful of architectures that do=
+n't have the speed fields *and* to space to put them in=2E=20
 
-These look sane to me.  Because it pokes around mm/page_alloc.c a bit,
-and could impact other architectures, my preference would be for Andrew
-to pick these up for -mm.  But, I don't feel that strongly about it.
+Using symbol versioning doesn't really help much since the real problem is=
+ that struct termios can be passed around in userspace, and the interfaces =
+between user space libraries don't have any versioning=2E However, my POC c=
+ode deals with that too by only seeing BOTHER when necessary, so if the str=
+ucture is extended garbage in the extra fields will be ignored unless new b=
+aud rates are in use=2E
 
-Reviewed-by: Dave Hansen <dave.hansen@intel.com>
+My POC code deals with Alpha as well by falling back to the old interfaces=
+ if necessary and possible, otherwise return error=2E
+
+Exporting termios2 to user space feels a bit odd at this stage as it would=
+ only be usable as a fallback on old glibc=2E Call it kernel_termios2 at le=
+ast=2E ioctls using struct termios *must* be changed to kernel_termios anyw=
+ay!
+--=20
+Sent from my Android device with K-9 Mail=2E Please excuse my brevity=2E
