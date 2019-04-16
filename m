@@ -2,53 +2,87 @@ Return-Path: <SRS0=rc36=SS=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-4.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.9 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_PASS
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CFF1EC10F13
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Apr 2019 12:45:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E36CDC10F13
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Apr 2019 14:05:41 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 90288205ED
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Apr 2019 12:45:04 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 90288205ED
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 28802223C0
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Apr 2019 14:05:41 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="WUvt/fc8"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 28802223C0
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44k4p56SLszDqLM
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Apr 2019 22:45:01 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44k6b61xfGzDqHm
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Apr 2019 00:05:38 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=arm.com
- (client-ip=217.140.101.70; helo=foss.arm.com;
- envelope-from=vincenzo.frascino@arm.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=gmail.com
+ (client-ip=2607:f8b0:4864:20::443; helo=mail-pf1-x443.google.com;
+ envelope-from=npiggin@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=arm.com
-Received: from foss.arm.com (foss.arm.com [217.140.101.70])
- by lists.ozlabs.org (Postfix) with ESMTP id 44k4lt1Dr6zDqCp
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Apr 2019 22:43:05 +1000 (AEST)
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.72.51.249])
- by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 77EEAEBD;
- Tue, 16 Apr 2019 05:43:02 -0700 (PDT)
-Received: from [10.1.196.72] (e119884-lin.cambridge.arm.com [10.1.196.72])
- by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id ECF423F706;
- Tue, 16 Apr 2019 05:42:59 -0700 (PDT)
-Subject: Re: [PATCH 1/5] arm64: Fix vDSO clock_getres()
-To: Catalin Marinas <catalin.marinas@arm.com>
-References: <20190401115152.32751-1-vincenzo.frascino@arm.com>
- <20190401115152.32751-2-vincenzo.frascino@arm.com>
- <20190415173521.GA901@arrakis.emea.arm.com>
-From: Vincenzo Frascino <vincenzo.frascino@arm.com>
-Message-ID: <efaafc72-79da-b25a-78b7-36424d9350ad@arm.com>
-Date: Tue, 16 Apr 2019 13:42:58 +0100
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
- Thunderbird/60.6.1
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="WUvt/fc8"; 
+ dkim-atps=neutral
+Received: from mail-pf1-x443.google.com (mail-pf1-x443.google.com
+ [IPv6:2607:f8b0:4864:20::443])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44k6Xf1vtGzDqD2
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Apr 2019 00:03:29 +1000 (AEST)
+Received: by mail-pf1-x443.google.com with SMTP id t21so10477573pfh.2
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Apr 2019 07:03:29 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=date:from:subject:to:cc:references:in-reply-to:mime-version
+ :user-agent:message-id:content-transfer-encoding;
+ bh=VoCge1zxoq0LWPQmc6JunEZt9p/ILjPmwwgbcM0AAFE=;
+ b=WUvt/fc80aspGvsgdB269dJdr2kWBVnjaB8IUxbBjvAQzwh6MjcE0qwPFg0heIZciA
+ zNHP+uedJMk2akIW/iI+zfDdSRqqPJ0pIcFNwv/54BbGSG5nEppMjioohh/xz0mpVn97
+ loaKEauM5KmZccQuP2df7EJ67QnVJQB/TBBxVtRrLN0Uq2iCTFUBg/Ad6/x6tkxw20YJ
+ wpCeHbh1anoTDV9nSbSy8jMqfDZe8grO6L2yLxoD/nEGHASuV/Co1XZMQweILWYtIaPp
+ qtPnFIy6eGaaVl7n+OhsBP3qPxl0+brqHkSLaCS+y3Obtl7c6LHJ/YKXBCthKepABv6t
+ OjhA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:date:from:subject:to:cc:references:in-reply-to
+ :mime-version:user-agent:message-id:content-transfer-encoding;
+ bh=VoCge1zxoq0LWPQmc6JunEZt9p/ILjPmwwgbcM0AAFE=;
+ b=QKA0ySjRsGsq3v042kLtUiFlrfJBKZVDvVFf7cQSEe0jC3gVZRCj+pRbvNckD0oQtt
+ JjInFmu7+0G5+ai/PDYazdK268ImYK/r6DHv8hZUPXhuADg05c6Su0uKqzSFNDN2uy0C
+ 5pV075mtczGp39W+ZI9KI/+zfsT07TKoer0vGwioo2OCj3zZwUGRWDtAl0UzhDFoqjvF
+ romgsAEG3ryiwCoCRGBIN0uaDtk4Cs5WxJh4v2+TrtNUm9ht/RvDnYpUXqqvMwuvyJjD
+ lf4yLoV+Q6jpa/9g8gtnqNeTPpNloQPYeO6ha18x6/39QIaJveDUXuMISMjnmABQ4gRp
+ wjqQ==
+X-Gm-Message-State: APjAAAUZH6lXnK3z2WiLVgig35dB4QqObfsVhZeEbPuchkEs+knWZMgk
+ Ow3KKdhiQkK7aQEyVnvUvj8=
+X-Google-Smtp-Source: APXvYqwqH8TKdYi+NPb+XypgkYBeat9jJGp2bz3VkNeQJlCDrlIl5j6fpKVPPi5vvzuq32XQFXmeHQ==
+X-Received: by 2002:aa7:8b4c:: with SMTP id i12mr76593283pfd.189.1555423406838; 
+ Tue, 16 Apr 2019 07:03:26 -0700 (PDT)
+Received: from localhost (61-68-62-84.tpgi.com.au. [61.68.62.84])
+ by smtp.gmail.com with ESMTPSA id k79sm76856371pfj.28.2019.04.16.07.03.24
+ (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
+ Tue, 16 Apr 2019 07:03:25 -0700 (PDT)
+Date: Wed, 17 Apr 2019 00:03:18 +1000
+From: Nicholas Piggin <npiggin@gmail.com>
+Subject: Re: [PATCH v3 7/8] powerpc/mm: Consolidate radix and hash address map
+ details
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>, mpe@ellerman.id.au,
+ paulus@samba.org
+References: <20190416100722.10324-1-aneesh.kumar@linux.ibm.com>
+ <20190416100722.10324-8-aneesh.kumar@linux.ibm.com>
+In-Reply-To: <20190416100722.10324-8-aneesh.kumar@linux.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <20190415173521.GA901@arrakis.emea.arm.com>
+User-Agent: astroid/0.14.0 (https://github.com/astroidmail/astroid)
+Message-Id: <1555422365.eio3zgx55b.astroid@bobo.none>
 Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -60,110 +94,69 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-arch@vger.kernel.org, linux-s390@vger.kernel.org,
- Shuah Khan <shuah@kernel.org>, Arnd Bergmann <arnd@arndb.de>,
- Heiko Carstens <heiko.carstens@de.ibm.com>, Will Deacon <will.deacon@arm.com>,
- Paul Mackerras <paulus@samba.org>, Greentime Hu <green.hu@gmail.com>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>,
- Thomas Gleixner <tglx@linutronix.de>, Vincent Chen <deanbo422@gmail.com>,
- linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
+Cc: linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi Catalin,
+Aneesh Kumar K.V's on April 16, 2019 8:07 pm:
+> We now have
+>=20
+> 4K page size config
+>=20
+>  kernel_region_map_size =3D 16TB
+>  kernel vmalloc start   =3D 0xc000100000000000
+>  kernel IO start        =3D 0xc000200000000000
+>  kernel vmemmap start   =3D 0xc000300000000000
+>=20
+> with 64K page size config:
+>=20
+>  kernel_region_map_size =3D 512TB
+>  kernel vmalloc start   =3D 0xc008000000000000
+>  kernel IO start        =3D 0xc00a000000000000
+>  kernel vmemmap start   =3D 0xc00c000000000000
 
-On 15/04/2019 18:35, Catalin Marinas wrote:
-> On Mon, Apr 01, 2019 at 12:51:48PM +0100, Vincenzo Frascino wrote:
->> diff --git a/arch/arm64/kernel/vdso.c b/arch/arm64/kernel/vdso.c
->> index 2d419006ad43..47ba72345739 100644
->> --- a/arch/arm64/kernel/vdso.c
->> +++ b/arch/arm64/kernel/vdso.c
->> @@ -245,6 +245,8 @@ void update_vsyscall(struct timekeeper *tk)
->>  		vdso_data->cs_shift		= tk->tkr_mono.shift;
->>  	}
->>  
->> +	vdso_data->hrtimer_res			= hrtimer_resolution;
->> +
->>  	smp_wmb();
->>  	++vdso_data->tb_seq_count;
->>  }
->> diff --git a/arch/arm64/kernel/vdso/gettimeofday.S b/arch/arm64/kernel/vdso/gettimeofday.S
->> index c39872a7b03c..7a2cd2f8e13a 100644
->> --- a/arch/arm64/kernel/vdso/gettimeofday.S
->> +++ b/arch/arm64/kernel/vdso/gettimeofday.S
->> @@ -296,32 +296,35 @@ ENDPROC(__kernel_clock_gettime)
->>  /* int __kernel_clock_getres(clockid_t clock_id, struct timespec *res); */
->>  ENTRY(__kernel_clock_getres)
->>  	.cfi_startproc
->> +	adr	vdso_data, _vdso_data
->>  	cmp	w0, #CLOCK_REALTIME
->>  	ccmp	w0, #CLOCK_MONOTONIC, #0x4, ne
->>  	ccmp	w0, #CLOCK_MONOTONIC_RAW, #0x4, ne
->> -	b.ne	1f
->> +	b.ne	2f
->>  
->> -	ldr	x2, 5f
->> -	b	2f
->> -1:
->> +1:	/* Get hrtimer_res */
->> +	seqcnt_acquire
->> +	syscall_check fail=5f
->> +	ldr	x2, [vdso_data, #CLOCK_REALTIME_RES]
->> +	seqcnt_check fail=1b
->> +	b	3f
->> +2:
-> 
-> We talked briefly but I'm still confused why we need the fallback to the
-> syscall here if archdata.vdso_direct is false. Is it because if the
-> timer driver code sets vdso_direct to false, we don't don't support
-> highres timers? If my understanding is correct, you may want to move the
-> hrtimer_res setting in update_vsyscall() to the !use_syscall block.
-> 
+Hey Aneesh,
 
-Ok, so let me try to provide more details on what I mentioned yesterday:
-- clock_getres syscall follows the rules of what defined in posix-timers.c
-- based on the clock_id that, for this purpose, can be separated in coarse and
-non-coarse calls either posix_get_coarse_res() or posix_get_hrtimer_res().
-- if clock id is set to a coarse clock and posix_get_coarse_res() is invoked,
-happens what follows:
+I like the series, I like consolidating the address spaces into 0xc,
+and making the layouts match or similar isn't a bad thing. I don't
+see any real reason to force limitations on one layout or another --
+you could make the argument that 4k radix should match 64k radix
+as much as matching 4k hash IMO.
 
-static int posix_get_coarse_res(const clockid_t which_clock,
-				struct timespec64 *tp)
-{
-	*tp = ktime_to_timespec64(KTIME_LOW_RES);
-	return 0;
-}
+I wouldn't like to tie them too strongly to the same base defines
+that force them to stay in sync.
 
-Note that since CONFIG_1HZ seems not supported (jiffies.h) by the kernel in this
-case we do not need rounding in our vDSO implementation.
+Can we drop this patch? Or at least keep the users of the H_ and R_
+defines and set them to the same thing in map.h?
 
-- if clock id is set to non-coarse and posix_get_hrtimer_res() is invoked,
-happens the following:
 
-static int posix_get_hrtimer_res(clockid_t which_clock, struct timespec64 *tp)
-{
-	tp->tv_sec = 0;
-	tp->tv_nsec = hrtimer_resolution;
-	return 0;
-}
+> diff --git a/arch/powerpc/include/asm/book3s/64/map.h b/arch/powerpc/incl=
+ude/asm/book3s/64/map.h
+> new file mode 100644
+> index 000000000000..5c01f8c18d61
+> --- /dev/null
+> +++ b/arch/powerpc/include/asm/book3s/64/map.h
+> @@ -0,0 +1,80 @@
+> +/* SPDX-License-Identifier: GPL-2.0 */
+> +#ifndef _ASM_POWERPC_BOOK3S_64_MAP_H_
+> +#define _ASM_POWERPC_BOOK3S_64_MAP_H_
+> +
+> +/*
+> + * We use MAX_EA_BITS_PER_CONTEXT (hash specific) here just to make sure=
+ we pick
+> + * the same value for hash and radix.
+> + */
+> +#ifdef CONFIG_PPC_64K_PAGES
+> +
+> +/*
+> + * Each context is 512TB size. SLB miss for first context/default contex=
+t
+> + * is handled in the hotpath.
 
-hrtimer_resolution can be high res or low res depending on the call of
-hrtimer_switch_to_hres(). For us the only way to preserve the correct value is
-to keep it in the vdso data page.
+Now everything is handled in the slowpath :P I guess that's a copy
+paste of the comment which my SLB miss patch should have fixed it.
 
-- The assembly code mimics exactly the same behaviour detailed above, with one
-difference: the one related to the use_syscall parameter which is specific to arm64.
-The use_syscall parameter is set by arm_arch_timer and consumed by
-update_vsyscall(). To mirror what update_vsyscall does in update_vsyscall() I
-check "syscall_check fail=5f" in clock_getres vdso function.
-
-Said that, even if functionally it is the same thing, I think it is logically
-more correct to have hrtimer_res setting inside the !use_syscall block, hence I
-am going to change it in the next iteration.
-
-Please let me know your thoughts.
-
--- 
-Regards,
-Vincenzo
+Thanks,
+Nick
+=
