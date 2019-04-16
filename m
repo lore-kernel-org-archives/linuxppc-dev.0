@@ -2,95 +2,99 @@ Return-Path: <SRS0=rc36=SS=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 482C3C282DA
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Apr 2019 10:27:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3DA1CC10F13
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Apr 2019 10:34:31 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id BFFFA20693
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Apr 2019 10:27:16 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BFFFA20693
+	by mail.kernel.org (Postfix) with ESMTPS id 7EB6D206BA
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Apr 2019 10:34:30 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7EB6D206BA
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44k1l716cmzDqFF
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Apr 2019 20:27:15 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
- (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=aneesh.kumar@linux.ibm.com; receiver=<UNKNOWN>)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44k1vS31s6zDqKy
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Apr 2019 20:34:28 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44k1sQ6TDFzDqF6
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Apr 2019 20:32:42 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 44k1sP58GFz8t5T
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Apr 2019 20:32:41 +1000 (AEST)
+Received: by ozlabs.org (Postfix)
+ id 44k1sP4YWrz9s4V; Tue, 16 Apr 2019 20:32:41 +1000 (AEST)
+Authentication-Results: ozlabs.org;
+ spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
+ (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
+ envelope-from=hbathini@linux.ibm.com; receiver=<UNKNOWN>)
+Authentication-Results: ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=linux.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44k1KC3HbpzDqDT
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Apr 2019 20:08:15 +1000 (AEST)
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x3GA6gYo137305
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Apr 2019 06:08:13 -0400
-Received: from e17.ny.us.ibm.com (e17.ny.us.ibm.com [129.33.205.207])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2rwavv5jtu-1
+ by ozlabs.org (Postfix) with ESMTPS id 44k1sP1KMkz9s3q
+ for <linuxppc-dev@ozlabs.org>; Tue, 16 Apr 2019 20:32:40 +1000 (AEST)
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
+ x3GAUpTX084678
+ for <linuxppc-dev@ozlabs.org>; Tue, 16 Apr 2019 06:32:37 -0400
+Received: from e06smtp01.uk.ibm.com (e06smtp01.uk.ibm.com [195.75.94.97])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2rwcb52kp9-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Apr 2019 06:08:10 -0400
+ for <linuxppc-dev@ozlabs.org>; Tue, 16 Apr 2019 06:32:37 -0400
 Received: from localhost
- by e17.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp01.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.ibm.com>;
- Tue, 16 Apr 2019 11:07:57 +0100
-Received: from b01cxnp22034.gho.pok.ibm.com (9.57.198.24)
- by e17.ny.us.ibm.com (146.89.104.204) with IBM ESMTP SMTP Gateway: Authorized
- Use Only! Violators will be prosecuted; 
+ for <linuxppc-dev@ozlabs.org> from <hbathini@linux.ibm.com>;
+ Tue, 16 Apr 2019 11:32:35 +0100
+Received: from b06cxnps3074.portsmouth.uk.ibm.com (9.149.109.194)
+ by e06smtp01.uk.ibm.com (192.168.101.131) with IBM ESMTP SMTP Gateway:
+ Authorized Use Only! Violators will be prosecuted; 
  (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Tue, 16 Apr 2019 11:07:54 +0100
-Received: from b01ledav006.gho.pok.ibm.com (b01ledav006.gho.pok.ibm.com
- [9.57.199.111])
- by b01cxnp22034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x3GA7rdh35520556
+ Tue, 16 Apr 2019 11:32:31 +0100
+Received: from d06av21.portsmouth.uk.ibm.com (d06av21.portsmouth.uk.ibm.com
+ [9.149.105.232])
+ by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x3GAWUZe57933858
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Tue, 16 Apr 2019 10:07:53 GMT
-Received: from b01ledav006.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 791A0AC064;
- Tue, 16 Apr 2019 10:07:53 +0000 (GMT)
-Received: from b01ledav006.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id EF2A8AC05B;
- Tue, 16 Apr 2019 10:07:51 +0000 (GMT)
-Received: from skywalker.in.ibm.com (unknown [9.124.31.209])
- by b01ledav006.gho.pok.ibm.com (Postfix) with ESMTP;
- Tue, 16 Apr 2019 10:07:51 +0000 (GMT)
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
-To: npiggin@gmail.com, paulus@samba.org, mpe@ellerman.id.au
-Subject: [PATCH v3 8/8] powerpc/mm/hash: Rename KERNEL_REGION_ID to
- LINEAR_MAP_REGION_ID
-Date: Tue, 16 Apr 2019 15:37:22 +0530
-X-Mailer: git-send-email 2.20.1
-In-Reply-To: <20190416100722.10324-1-aneesh.kumar@linux.ibm.com>
-References: <20190416100722.10324-1-aneesh.kumar@linux.ibm.com>
+ Tue, 16 Apr 2019 10:32:30 GMT
+Received: from d06av21.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 0971852057;
+ Tue, 16 Apr 2019 10:32:30 +0000 (GMT)
+Received: from hbathini.in.ibm.com (unknown [9.184.183.117])
+ by d06av21.portsmouth.uk.ibm.com (Postfix) with ESMTP id BAC0A5204E;
+ Tue, 16 Apr 2019 10:32:28 +0000 (GMT)
+Subject: [PATCH v2 00/16] Add FADump support on PowerNV platform
+From: Hari Bathini <hbathini@linux.ibm.com>
+To: linuxppc-dev <linuxppc-dev@ozlabs.org>
+Date: Tue, 16 Apr 2019 16:02:27 +0530
+User-Agent: StGit/0.17.1-dirty
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 X-TM-AS-GCONF: 00
-x-cbid: 19041610-0040-0000-0000-000004E1A07F
-X-IBM-SpamModules-Scores: 
-X-IBM-SpamModules-Versions: BY=3.00010937; HX=3.00000242; KW=3.00000007;
- PH=3.00000004; SC=3.00000284; SDB=6.01189843; UDB=6.00623449; IPR=6.00970634; 
- MB=3.00026465; MTD=3.00000008; XFM=3.00000015; UTC=2019-04-16 10:07:56
+x-cbid: 19041610-4275-0000-0000-00000328641F
 X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19041610-0041-0000-0000-000008ECAAC6
-Message-Id: <20190416100722.10324-9-aneesh.kumar@linux.ibm.com>
+x-cbparentid: 19041610-4276-0000-0000-00003837946F
+Message-Id: <155541065470.812.7120798773144842076.stgit@hbathini.in.ibm.com>
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2019-04-16_03:, , signatures=0
+ definitions=2019-04-16_04:, , signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
  priorityscore=1501
  malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ clxscore=1011 lowpriorityscore=0 mlxscore=0 impostorscore=0
  mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1810050000 definitions=main-1904160069
+ scancount=1 engine=8.0.1-1810050000 definitions=main-1904160072
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -102,109 +106,88 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
- linuxppc-dev@lists.ozlabs.org
+Cc: Ananth N Mavinakayanahalli <ananth@linux.ibm.com>,
+ Mahesh J Salgaonkar <mahesh@linux.ibm.com>,
+ Vasant Hegde <hegdevasant@linux.ibm.com>, Nicholas Piggin <npiggin@gmail.com>,
+ Stewart Smith <stewart@linux.ibm.com>, Daniel Axtens <dja@axtens.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The region actually point to linear map. Rename the #define to
-clarify thati.
+Firmware-Assisted Dump (FADump) is currently supported only on pseries
+platform. This patch series adds support for powernv platform too.
 
-Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
+The first and third patches refactor the FADump code to make use of common
+code across multiple platforms. The fifth patch adds basic FADump support
+for powernv platform. Patches seven & eight honour reserved-ranges DT node
+while reserving/releasing memory used by FADump. The next patch processes
+CPU state data provided by firmware to create and append core notes to the
+ELF core file. The tenth patch adds support for preserving crash data for
+subsequent boots (useful in cases like petitboot). Patch twelve provides
+support to export opalcore. This is to make debugging of failures in OPAL
+code easier. The subsequent patch ensures vmcore processing is skipped
+when only OPAL core is exported by f/w. The next patch provides option to
+release the kernel memory used to export opalcore. The remaining patches
+update Firmware-Assisted Dump documentation appropriately.
+
+The patch series is tested with the latest firmware plus the below skiboot
+changes for MPIPL support:
+
+    https://patchwork.ozlabs.org/project/skiboot/list/?series=102588
+    ("MPIPL support")
+
+
+Changes in v2:
+  * Rebased to latest upstream kernel version.
+  * Updated according to latest OPAL changes.
+  * Dropped patch seventeen from previous version as the quantam of increase
+    in robustness due it doesn't seem worth breaking backward compatibility
+    for older kernel versions.
 ---
- arch/powerpc/include/asm/book3s/64/hash.h     | 4 ++--
- arch/powerpc/include/asm/book3s/64/mmu-hash.h | 2 +-
- arch/powerpc/mm/copro_fault.c                 | 4 ++--
- arch/powerpc/mm/slb.c                         | 4 ++--
- arch/powerpc/platforms/cell/spu_base.c        | 2 +-
- 5 files changed, 8 insertions(+), 8 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/book3s/64/hash.h b/arch/powerpc/include/asm/book3s/64/hash.h
-index c6850a5a931d..e86c338f3ad7 100644
---- a/arch/powerpc/include/asm/book3s/64/hash.h
-+++ b/arch/powerpc/include/asm/book3s/64/hash.h
-@@ -77,7 +77,7 @@
-  * Region IDs
-  */
- #define USER_REGION_ID		0
--#define KERNEL_REGION_ID	1
-+#define LINEAR_MAP_REGION_ID	1
- #define VMALLOC_REGION_ID	NON_LINEAR_REGION_ID(VMALLOC_START)
- #define IO_REGION_ID		NON_LINEAR_REGION_ID(KERN_IO_START)
- #define VMEMMAP_REGION_ID	NON_LINEAR_REGION_ID(VMEMMAP_BASE)
-@@ -108,7 +108,7 @@ static inline int get_region_id(unsigned long ea)
- 		return USER_REGION_ID;
- 
- 	if (ea < KERN_VIRT_START)
--		return KERNEL_REGION_ID;
-+		return LINEAR_MAP_REGION_ID;
- 
- 	VM_BUG_ON(id != 0xc);
- 	BUILD_BUG_ON(NON_LINEAR_REGION_ID(VMALLOC_START) != 2);
-diff --git a/arch/powerpc/include/asm/book3s/64/mmu-hash.h b/arch/powerpc/include/asm/book3s/64/mmu-hash.h
-index b146448109fd..5d2adf3c1325 100644
---- a/arch/powerpc/include/asm/book3s/64/mmu-hash.h
-+++ b/arch/powerpc/include/asm/book3s/64/mmu-hash.h
-@@ -788,7 +788,7 @@ static inline unsigned long get_kernel_context(unsigned long ea)
- 	 * Depending on Kernel config, kernel region can have one context
- 	 * or more.
- 	 */
--	if (region_id == KERNEL_REGION_ID) {
-+	if (region_id == LINEAR_MAP_REGION_ID) {
- 		/*
- 		 * We already verified ea to be not beyond the addr limit.
- 		 */
-diff --git a/arch/powerpc/mm/copro_fault.c b/arch/powerpc/mm/copro_fault.c
-index 9b0321061bc8..f137286740cb 100644
---- a/arch/powerpc/mm/copro_fault.c
-+++ b/arch/powerpc/mm/copro_fault.c
-@@ -129,8 +129,8 @@ int copro_calculate_slb(struct mm_struct *mm, u64 ea, struct copro_slb *slb)
- 		vsid = get_kernel_vsid(ea, mmu_kernel_ssize);
- 		vsidkey = SLB_VSID_KERNEL;
- 		break;
--	case KERNEL_REGION_ID:
--		pr_devel("%s: 0x%llx -- KERNEL_REGION_ID\n", __func__, ea);
-+	case LINEAR_MAP_REGION_ID:
-+		pr_devel("%s: 0x%llx -- LINEAR_MAP_REGION_ID\n", __func__, ea);
- 		psize = mmu_linear_psize;
- 		ssize = mmu_kernel_ssize;
- 		vsid = get_kernel_vsid(ea, mmu_kernel_ssize);
-diff --git a/arch/powerpc/mm/slb.c b/arch/powerpc/mm/slb.c
-index 508573c56411..756cf087590b 100644
---- a/arch/powerpc/mm/slb.c
-+++ b/arch/powerpc/mm/slb.c
-@@ -691,7 +691,7 @@ static long slb_allocate_kernel(unsigned long ea, unsigned long id)
- 	unsigned long flags;
- 	int ssize;
- 
--	if (id == KERNEL_REGION_ID) {
-+	if (id == LINEAR_MAP_REGION_ID) {
- 
- 		/* We only support upto MAX_PHYSMEM_BITS */
- 		if ((ea & EA_MASK) > (1UL << MAX_PHYSMEM_BITS))
-@@ -790,7 +790,7 @@ long do_slb_fault(struct pt_regs *regs, unsigned long ea)
- 	 * first class kernel code. But for performance it's probably nicer
- 	 * if they go via fast_exception_return too.
- 	 */
--	if (id >= KERNEL_REGION_ID) {
-+	if (id >= LINEAR_MAP_REGION_ID) {
- 		long err;
- #ifdef CONFIG_DEBUG_VM
- 		/* Catch recursive kernel SLB faults. */
-diff --git a/arch/powerpc/platforms/cell/spu_base.c b/arch/powerpc/platforms/cell/spu_base.c
-index 4770cce1bfe2..6646f152d57b 100644
---- a/arch/powerpc/platforms/cell/spu_base.c
-+++ b/arch/powerpc/platforms/cell/spu_base.c
-@@ -224,7 +224,7 @@ static void __spu_kernel_slb(void *addr, struct copro_slb *slb)
- 	unsigned long ea = (unsigned long)addr;
- 	u64 llp;
- 
--	if (get_region_id(ea) == KERNEL_REGION_ID)
-+	if (get_region_id(ea) == LINEAR_MAP_REGION_ID)
- 		llp = mmu_psize_defs[mmu_linear_psize].sllp;
- 	else
- 		llp = mmu_psize_defs[mmu_virtual_psize].sllp;
--- 
-2.20.1
+Hari Bathini (16):
+      powerpc/fadump: move internal fadump code to a new file
+      powerpc/fadump: Improve fadump documentation
+      pseries/fadump: move out platform specific support from generic code
+      powerpc/fadump: use FADump instead of fadump for how it is pronounced
+      powerpc/fadump: enable fadump support on OPAL based POWER platform
+      powerpc/fadump: Update documentation about OPAL platform support
+      powerpc/fadump: consider reserved ranges while reserving memory
+      powerpc/fadump: consider reserved ranges while releasing memory
+      powernv/fadump: process architected register state data provided by firmware
+      powernv/fadump: add support to preserve crash data on FADUMP disabled kernel
+      powerpc/fadump: update documentation about CONFIG_PRESERVE_FA_DUMP
+      powerpc/powernv: export /proc/opalcore for analysing opal crashes
+      powernv/fadump: Skip processing /proc/vmcore when only OPAL core exists
+      powernv/opalcore: provide an option to invalidate /proc/opalcore file
+      powernv/fadump: consider f/w load area
+      powernv/fadump: update documentation about option to release opalcore
+
+
+ Documentation/powerpc/firmware-assisted-dump.txt |  193 ++--
+ arch/powerpc/Kconfig                             |   23 
+ arch/powerpc/include/asm/fadump.h                |  190 ----
+ arch/powerpc/include/asm/opal-api.h              |   58 +
+ arch/powerpc/include/asm/opal.h                  |    1 
+ arch/powerpc/kernel/Makefile                     |    6 
+ arch/powerpc/kernel/fadump-common.c              |  205 ++++
+ arch/powerpc/kernel/fadump-common.h              |  222 ++++
+ arch/powerpc/kernel/fadump.c                     | 1163 ++++++++--------------
+ arch/powerpc/kernel/prom.c                       |    4 
+ arch/powerpc/platforms/powernv/Makefile          |    3 
+ arch/powerpc/platforms/powernv/opal-call.c       |    1 
+ arch/powerpc/platforms/powernv/opal-core.c       |  602 +++++++++++
+ arch/powerpc/platforms/powernv/opal-fadump.c     |  562 +++++++++++
+ arch/powerpc/platforms/powernv/opal-fadump.h     |  116 ++
+ arch/powerpc/platforms/pseries/Makefile          |    1 
+ arch/powerpc/platforms/pseries/rtas-fadump.c     |  534 ++++++++++
+ arch/powerpc/platforms/pseries/rtas-fadump.h     |   96 ++
+ 18 files changed, 2998 insertions(+), 982 deletions(-)
+ create mode 100644 arch/powerpc/kernel/fadump-common.c
+ create mode 100644 arch/powerpc/kernel/fadump-common.h
+ create mode 100644 arch/powerpc/platforms/powernv/opal-core.c
+ create mode 100644 arch/powerpc/platforms/powernv/opal-fadump.c
+ create mode 100644 arch/powerpc/platforms/powernv/opal-fadump.h
+ create mode 100644 arch/powerpc/platforms/pseries/rtas-fadump.c
+ create mode 100644 arch/powerpc/platforms/pseries/rtas-fadump.h
 
