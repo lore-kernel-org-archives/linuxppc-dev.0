@@ -2,23 +2,23 @@ Return-Path: <SRS0=rc36=SS=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_MUTT
+X-Spam-Status: No, score=-5.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_MUTT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0F381C10F13
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Apr 2019 14:29:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7CF94C10F13
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Apr 2019 14:43:45 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 87618205F4
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Apr 2019 14:29:43 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 87618205F4
+	by mail.kernel.org (Postfix) with ESMTPS id BCFE520693
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Apr 2019 14:43:44 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BCFE520693
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44k76s2C1wzDqNQ
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Apr 2019 00:29:41 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44k7R21lsVzDqMd
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Apr 2019 00:43:42 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=arm.com
  (client-ip=217.140.101.70; helo=foss.arm.com;
@@ -26,27 +26,30 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=arm.com
 Received: from foss.arm.com (foss.arm.com [217.140.101.70])
- by lists.ozlabs.org (Postfix) with ESMTP id 44k74G6Th0zDqMk
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Apr 2019 00:27:24 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTP id 44k7PD0ztMzDqLc
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Apr 2019 00:42:06 +1000 (AEST)
 Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.72.51.249])
- by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id D695EEBD;
- Tue, 16 Apr 2019 07:27:23 -0700 (PDT)
+ by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id AEB1780D;
+ Tue, 16 Apr 2019 07:42:05 -0700 (PDT)
 Received: from lakrids.cambridge.arm.com (usa-sjc-imap-foss1.foss.arm.com
  [10.72.51.249])
- by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 24F113F59C;
- Tue, 16 Apr 2019 07:27:17 -0700 (PDT)
-Date: Tue, 16 Apr 2019 15:27:10 +0100
+ by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id EFAB83F59C;
+ Tue, 16 Apr 2019 07:41:58 -0700 (PDT)
+Date: Tue, 16 Apr 2019 15:41:56 +0100
 From: Mark Rutland <mark.rutland@arm.com>
 To: Laurent Dufour <ldufour@linux.ibm.com>
 Subject: Re: [PATCH v12 04/31] arm64/mm: define
  ARCH_SUPPORTS_SPECULATIVE_PAGE_FAULT
-Message-ID: <20190416142710.GA54515@lakrids.cambridge.arm.com>
+Message-ID: <20190416144156.GB54708@lakrids.cambridge.arm.com>
 References: <20190416134522.17540-1-ldufour@linux.ibm.com>
  <20190416134522.17540-5-ldufour@linux.ibm.com>
+ <20190416142710.GA54515@lakrids.cambridge.arm.com>
+ <4ef9ff4b-2230-0644-2254-c1de22d41e6c@linux.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20190416134522.17540-5-ldufour@linux.ibm.com>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <4ef9ff4b-2230-0644-2254-c1de22d41e6c@linux.ibm.com>
 User-Agent: Mutt/1.11.1+11 (2f07cb52) (2018-12-01)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -83,41 +86,32 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, Apr 16, 2019 at 03:44:55PM +0200, Laurent Dufour wrote:
-> From: Mahendran Ganesh <opensource.ganesh@gmail.com>
+On Tue, Apr 16, 2019 at 04:31:27PM +0200, Laurent Dufour wrote:
+> Le 16/04/2019 à 16:27, Mark Rutland a écrit :
+> > On Tue, Apr 16, 2019 at 03:44:55PM +0200, Laurent Dufour wrote:
+> > > From: Mahendran Ganesh <opensource.ganesh@gmail.com>
+> > > 
+> > > Set ARCH_SUPPORTS_SPECULATIVE_PAGE_FAULT for arm64. This
+> > > enables Speculative Page Fault handler.
+> > > 
+> > > Signed-off-by: Ganesh Mahendran <opensource.ganesh@gmail.com>
+> > 
+> > This is missing your S-o-B.
 > 
-> Set ARCH_SUPPORTS_SPECULATIVE_PAGE_FAULT for arm64. This
-> enables Speculative Page Fault handler.
+> You're right, I missed that...
 > 
-> Signed-off-by: Ganesh Mahendran <opensource.ganesh@gmail.com>
+> > The first patch noted that the ARCH_SUPPORTS_* option was there because
+> > the arch code had to make an explicit call to try to handle the fault
+> > speculatively, but that isn't addeed until patch 30.
+> > 
+> > Why is this separate from that code?
+> 
+> Andrew was recommended this a long time ago for bisection purpose. This
+> allows to build the code with CONFIG_SPECULATIVE_PAGE_FAULT before the code
+> that trigger the spf handler is added to the per architecture's code.
 
-This is missing your S-o-B.
-
-The first patch noted that the ARCH_SUPPORTS_* option was there because
-the arch code had to make an explicit call to try to handle the fault
-speculatively, but that isn't addeed until patch 30.
-
-Why is this separate from that code?
+Ok. I think it would be worth noting that in the commit message, to
+avoid anyone else asking the same question. :)
 
 Thanks,
 Mark.
-
-> ---
->  arch/arm64/Kconfig | 1 +
->  1 file changed, 1 insertion(+)
-> 
-> diff --git a/arch/arm64/Kconfig b/arch/arm64/Kconfig
-> index 870ef86a64ed..8e86934d598b 100644
-> --- a/arch/arm64/Kconfig
-> +++ b/arch/arm64/Kconfig
-> @@ -174,6 +174,7 @@ config ARM64
->  	select SWIOTLB
->  	select SYSCTL_EXCEPTION_TRACE
->  	select THREAD_INFO_IN_TASK
-> +	select ARCH_SUPPORTS_SPECULATIVE_PAGE_FAULT
->  	help
->  	  ARM 64-bit (AArch64) Linux support.
->  
-> -- 
-> 2.21.0
-> 
