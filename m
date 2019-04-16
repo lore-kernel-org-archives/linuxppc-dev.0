@@ -2,64 +2,90 @@ Return-Path: <SRS0=rc36=SS=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_MUTT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C9AC0C10F13
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Apr 2019 20:27:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AF06FC10F13
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Apr 2019 20:33:38 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 5375E20868
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Apr 2019 20:27:47 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5375E20868
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arndb.de
+	by mail.kernel.org (Postfix) with ESMTPS id 3027520880
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Apr 2019 20:33:38 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="J+SPwpl3"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3027520880
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=roeck-us.net
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44kH411T7qzDq7n
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Apr 2019 06:27:45 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44kHBl6pkMzDqG1
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Apr 2019 06:33:35 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=arndb.de
- (client-ip=212.227.126.134; helo=mout.kundenserver.de;
- envelope-from=arnd@arndb.de; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=gmail.com
+ (client-ip=2607:f8b0:4864:20::641; helo=mail-pl1-x641.google.com;
+ envelope-from=groeck7@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=arndb.de
-Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.126.134])
+ dmarc=none (p=none dis=none) header.from=roeck-us.net
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="J+SPwpl3"; 
+ dkim-atps=neutral
+Received: from mail-pl1-x641.google.com (mail-pl1-x641.google.com
+ [IPv6:2607:f8b0:4864:20::641])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44kGyP2K2DzDqDM
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Apr 2019 06:22:52 +1000 (AEST)
-Received: from threadripper.lan ([149.172.19.189]) by mrelayeu.kundenserver.de
- (mreue012 [212.227.15.129]) with ESMTPA (Nemesis) id
- 1MYLqs-1hKMVj2DQ2-00VROG; Tue, 16 Apr 2019 22:22:29 +0200
-From: Arnd Bergmann <arnd@arndb.de>
-To: Alexander Viro <viro@zeniv.linux.org.uk>
-Subject: [PATCH v3 10/26] compat_ioctl: use correct compat_ptr() translation
- in drivers
-Date: Tue, 16 Apr 2019 22:19:48 +0200
-Message-Id: <20190416202013.4034148-11-arnd@arndb.de>
-X-Mailer: git-send-email 2.20.0
-In-Reply-To: <20190416202013.4034148-1-arnd@arndb.de>
-References: <20190416202013.4034148-1-arnd@arndb.de>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44kH871F4wzDqDS;
+ Wed, 17 Apr 2019 06:31:18 +1000 (AEST)
+Received: by mail-pl1-x641.google.com with SMTP id g12so10869041pll.11;
+ Tue, 16 Apr 2019 13:31:18 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=sender:date:from:to:cc:subject:message-id:references:mime-version
+ :content-disposition:in-reply-to:user-agent;
+ bh=kCyaUCGVc/V6ZyQOKtuzykzGifqfq9ikv6LcWKWTfVU=;
+ b=J+SPwpl35yPvHJvJZ07r8o1l2k8iBLdOLSUgh3hA52oOCQvnOmI/UtNV7IcX+wYfkE
+ ENWd7wa2xE9c9wXvpgX+FqcJYCa5LtEB+0ZGfd/lBqbPLZhPUnItDgM42vg/wwFzFI/3
+ 0KGQQHYgl/IJutFNMyNnnitvjHPrnXrkMfK256Bwj25KM8TpjQCDleaNq1aTiW921Ts+
+ FF3phjjQQ0b29KLaMt5BORp7Fgrym9NeT6rlbak8owR83BkYtHJiq6muO9Pg9p5aG4PD
+ KreMwl56PPQm0avEhhwEWmr2+mrYBxuFT3vi6sS5o3Nmp/l2gMIeH6gVxOA6F2oEbVC+
+ NidQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:sender:date:from:to:cc:subject:message-id
+ :references:mime-version:content-disposition:in-reply-to:user-agent;
+ bh=kCyaUCGVc/V6ZyQOKtuzykzGifqfq9ikv6LcWKWTfVU=;
+ b=OudiP6KA/YwMI+ED25gYlcqkDVgnPe5UqcfL+t8hsUKwwURiwm/ETsZD0nvvLziOGC
+ FBtZ7xAquINosNwWZTVJNQY/PN3SuBU4kW9s7kNZLayNhvLdPNbicxnpE5Jkw2Ezc2lp
+ xhjOp6be10BXpe/iQ9Ai25Zdif/t43mYyQXpaFQeWhAGjh3+VZMT5TRYQivYyV0oL2eG
+ T9+UVhorPGBniVvrHjrsoIdlIz7sBqcXKYH/C54E13xW7I8Y2opOYH8wqGpVn8V+mmv0
+ HYRFY6EcdgNqAVAZLUVt+rM5ETyGyN7ZXtPi2O/Vp2jPrMyPr+Na3XG4Z1JSRkMjekAt
+ fpBw==
+X-Gm-Message-State: APjAAAUKKXv4bdL48ApBv/ASdW1336KJIjsLcqVUmkV8+EnCd8osDAI2
+ H4we9/GIEYwB4fdnS0CXcmc=
+X-Google-Smtp-Source: APXvYqzUOhZnFUrYJ3CgrX3jDbq+IXxjHEH7hysLbncDjc6qCSVo+371FJ8CPB/OYsHBPFtMOU/9pA==
+X-Received: by 2002:a17:902:2b88:: with SMTP id
+ l8mr80447832plb.262.1555446675674; 
+ Tue, 16 Apr 2019 13:31:15 -0700 (PDT)
+Received: from localhost ([2600:1700:e321:62f0:329c:23ff:fee3:9d7c])
+ by smtp.gmail.com with ESMTPSA id j12sm65163698pgg.79.2019.04.16.13.31.14
+ (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
+ Tue, 16 Apr 2019 13:31:14 -0700 (PDT)
+Date: Tue, 16 Apr 2019 13:31:14 -0700
+From: Guenter Roeck <linux@roeck-us.net>
+To: Jonathan Corbet <corbet@lwn.net>
+Subject: Re: [PATCH v2 00/21] Convert hwmon documentation to ReST
+Message-ID: <20190416203114.GB25517@roeck-us.net>
+References: <cover.1554923967.git.mchehab+samsung@kernel.org>
+ <20190411124324.3ed62fad@lwn.net>
+ <20190411174357.251904f5@coco.lan>
+ <20190411210731.GA29378@roeck-us.net>
+ <20190412100451.6fe49de7@lwn.net>
+ <f900adea-d231-c00d-847c-33e66e79ea30@roeck-us.net>
+ <20190416141949.09b48789@lwn.net>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-Provags-ID: V03:K1:dhXxVwlF+OTv8zTau2mq8cW9se+5+L4XB4D+BXwtDLVtt1eHtvH
- 9j0eCYXXgpxChG2e+3m5sp1o66pwBmHIM2FHcEPi9zE0BZKkLHbZNmHnn2+GcU+w9KKJ0Xr
- +OSW2NH8h1S951PFymOn/9mrd2neAmTVkxmgkRDwiI2y7EQMG12TYsIUTnf0SUxFMAktcKM
- /O02KIxJdbN27u4CGMA4g==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:p/lEhNyfi0M=:BGMO+DqJh9KBHQtwPEOwGx
- ZvFHFvMvfly9/nfku2neA5EJJ0wA/7lYo2R92uQbDZ4RSunLr4T3lNgvwy8J2miL4ONveNol0
- NO0TBQCQ+Kv4Lr9VnORrI9XV8IR9huTtI9Kkz+kuzHZWlivbFJwQxgX7hGtYwV3fJxnY1rWn3
- 1UYFA/0oowmuOdzjvn1K8BEwz2lOGQz/TMc+yv5UuJQ2v3iaXL8fqpOg7oM/SGBngGL9Zq3QJ
- 76Lo3SUQuBgoBwW3vyukwEHw363Va2GXlPbbF4mPDzOGRpDBunS1ghS2gYU9ZjTbDlc6FHtDf
- XuZCgJ1WkglsDHhbegTdCIgzhRz9CY8MLOarplHlUkrqVjxKIo+EQDw3rlUWdxSIjutMjadMp
- Q5d+sYXmL5nxc41yjTr6IEy+FRb8M/gFRpiCrqHKh6lV7IF6OwfDFLuXN64Od+s/YCQ4yze1S
- 4NGTx3sJiDXUXsY0G7E+ne1X2DSfvtoF6PbZzOcWGUvYNKcz6GzPB9eoA4hgO5JXXgu8OP4GH
- 9mvOERN3xpBwk409vs3LKwMiNar3EdDF75tVcEQEzX8WPIJ+deJwS44rhZ4pSp8usbPjrGC8c
- EsfY+Ftfu9ngwxbRw5lLYuN8AsTEl/BSELPDew5KLKLNBkfVq54qhM3qs654jfrPJyWhnArQN
- FRh2ekxvl5xRzxrw9VCHRmLcdkyamf/BKexhZefiopdVuK7TmkF3IyUBtt1Tbrr4LAmGWj4Rv
- 60qC4WULwufY42ykZcHrTiyfzlUZFbScqwLLkA==
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20190416141949.09b48789@lwn.net>
+User-Agent: Mutt/1.5.24 (2015-08-30)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -71,200 +97,49 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Shen Jing <jingx.shen@intel.com>, Arnd Bergmann <arnd@arndb.de>,
- linux-scsi@vger.kernel.org, y2038@lists.linaro.org,
- Frank Haverkamp <haver@linux.ibm.com>,
- Kashyap Desai <kashyap.desai@broadcom.com>,
- Felipe Balbi <felipe.balbi@linux.intel.com>,
- Jerry Zhang <zhangjerry@google.com>,
- "James E.J. Bottomley" <jejb@linux.ibm.com>, linux-fsdevel@vger.kernel.org,
- Vincent Pelletier <plr.vincent@gmail.com>, megaraidlinux.pdl@broadcom.com,
- Felipe Balbi <balbi@kernel.org>,
- "Martin K. Petersen" <martin.petersen@oracle.com>,
- Shivasharan S <shivasharan.srikanteshwara@broadcom.com>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-usb@vger.kernel.org,
- linux-kernel@vger.kernel.org, Andrzej Pietrasiewicz <andrzej.p@collabora.com>,
- Sumit Saxena <sumit.saxena@broadcom.com>,
- Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
- Frederic Barrat <fbarrat@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Cc: linux-hwmon@vger.kernel.org, Jean Delvare <jdelvare@suse.com>,
+ linux-aspeed@lists.ozlabs.org,
+ Linux Doc Mailing List <linux-doc@vger.kernel.org>,
+ Andrew Jeffery <andrew@aj.id.au>, Sudeep Holla <sudeep.holla@arm.com>,
+ Liviu Dudau <liviu.dudau@arm.com>, linux-kernel@vger.kernel.org,
+ Mauro Carvalho Chehab <mchehab@infradead.org>,
+ Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>,
+ Paul Mackerras <paulus@samba.org>, Joel Stanley <joel@jms.id.au>,
+ Mauro Carvalho Chehab <mchehab+samsung@kernel.org>,
+ linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-A handful of drivers all have a trivial wrapper around their ioctl
-handler, but don't call the compat_ptr() conversion function at the
-moment. In practice this does not matter, since none of them are used
-on the s390 architecture and for all other architectures, compat_ptr()
-does not do anything, but using the new compat_ptr_ioctl()
-helper makes it more correct in theory, and simplifies the code.
+On Tue, Apr 16, 2019 at 02:19:49PM -0600, Jonathan Corbet wrote:
+> On Fri, 12 Apr 2019 20:09:16 -0700
+> Guenter Roeck <linux@roeck-us.net> wrote:
+> 
+> > The big real-world question is: Is the series good enough for you to accept,
+> > or do you expect some level of user/kernel separation ?
+> 
+> I guess it can go in; it's forward progress, even if it doesn't make the
+> improvements I would like to see.
+> 
+> The real question, I guess, is who should take it.  I've been seeing a
+> fair amount of activity on hwmon, so I suspect that the potential for
+> conflicts is real.  Perhaps things would go smoother if it went through
+> your tree?
+> 
+We'll see a number of conflicts, yes. In terms of timing, this is probably
+the worst release in the last few years to make such a change. I currently
+have 9 patches queued in hwmon-next which touch Documentation/hwmon.
+Of course the changes made in those are all not ReST compatible, and I have
+no idea what to look out for to make it compatible. So this is going to be
+fun (in a negative sense) either way.
 
-Acked-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Acked-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
-Acked-by: Felipe Balbi <felipe.balbi@linux.intel.com>
-Signed-off-by: Arnd Bergmann <arnd@arndb.de>
----
- drivers/misc/cxl/flash.c            |  8 +-------
- drivers/misc/genwqe/card_dev.c      | 23 +----------------------
- drivers/scsi/megaraid/megaraid_mm.c | 28 +---------------------------
- drivers/usb/gadget/function/f_fs.c  | 12 +-----------
- 4 files changed, 4 insertions(+), 67 deletions(-)
+I don't really have a recommendation at this point; I think the best I could
+do to take the patches which don't generate conflicts and leave the rest
+alone. But that would also be bad, since the new index file would not match
+reality. No idea, really, what the best or even a useful approach would be.
 
-diff --git a/drivers/misc/cxl/flash.c b/drivers/misc/cxl/flash.c
-index 4d6836f19489..cb9cca35a226 100644
---- a/drivers/misc/cxl/flash.c
-+++ b/drivers/misc/cxl/flash.c
-@@ -473,12 +473,6 @@ static long device_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
- 		return -EINVAL;
- }
- 
--static long device_compat_ioctl(struct file *file, unsigned int cmd,
--				unsigned long arg)
--{
--	return device_ioctl(file, cmd, arg);
--}
--
- static int device_close(struct inode *inode, struct file *file)
- {
- 	struct cxl *adapter = file->private_data;
-@@ -514,7 +508,7 @@ static const struct file_operations fops = {
- 	.owner		= THIS_MODULE,
- 	.open		= device_open,
- 	.unlocked_ioctl	= device_ioctl,
--	.compat_ioctl	= device_compat_ioctl,
-+	.compat_ioctl	= compat_ptr_ioctl,
- 	.release	= device_close,
- };
- 
-diff --git a/drivers/misc/genwqe/card_dev.c b/drivers/misc/genwqe/card_dev.c
-index 8c1b63a4337b..5de0796f2786 100644
---- a/drivers/misc/genwqe/card_dev.c
-+++ b/drivers/misc/genwqe/card_dev.c
-@@ -1221,34 +1221,13 @@ static long genwqe_ioctl(struct file *filp, unsigned int cmd,
- 	return rc;
- }
- 
--#if defined(CONFIG_COMPAT)
--/**
-- * genwqe_compat_ioctl() - Compatibility ioctl
-- *
-- * Called whenever a 32-bit process running under a 64-bit kernel
-- * performs an ioctl on /dev/genwqe<n>_card.
-- *
-- * @filp:        file pointer.
-- * @cmd:         command.
-- * @arg:         user argument.
-- * Return:       zero on success or negative number on failure.
-- */
--static long genwqe_compat_ioctl(struct file *filp, unsigned int cmd,
--				unsigned long arg)
--{
--	return genwqe_ioctl(filp, cmd, arg);
--}
--#endif /* defined(CONFIG_COMPAT) */
--
- static const struct file_operations genwqe_fops = {
- 	.owner		= THIS_MODULE,
- 	.open		= genwqe_open,
- 	.fasync		= genwqe_fasync,
- 	.mmap		= genwqe_mmap,
- 	.unlocked_ioctl	= genwqe_ioctl,
--#if defined(CONFIG_COMPAT)
--	.compat_ioctl   = genwqe_compat_ioctl,
--#endif
-+	.compat_ioctl   = compat_ptr_ioctl,
- 	.release	= genwqe_release,
- };
- 
-diff --git a/drivers/scsi/megaraid/megaraid_mm.c b/drivers/scsi/megaraid/megaraid_mm.c
-index 3ce837e4b24c..21ee5751c04e 100644
---- a/drivers/scsi/megaraid/megaraid_mm.c
-+++ b/drivers/scsi/megaraid/megaraid_mm.c
-@@ -45,10 +45,6 @@ static int mraid_mm_setup_dma_pools(mraid_mmadp_t *);
- static void mraid_mm_free_adp_resources(mraid_mmadp_t *);
- static void mraid_mm_teardown_dma_pools(mraid_mmadp_t *);
- 
--#ifdef CONFIG_COMPAT
--static long mraid_mm_compat_ioctl(struct file *, unsigned int, unsigned long);
--#endif
--
- MODULE_AUTHOR("LSI Logic Corporation");
- MODULE_DESCRIPTION("LSI Logic Management Module");
- MODULE_LICENSE("GPL");
-@@ -72,9 +68,7 @@ static wait_queue_head_t wait_q;
- static const struct file_operations lsi_fops = {
- 	.open	= mraid_mm_open,
- 	.unlocked_ioctl = mraid_mm_unlocked_ioctl,
--#ifdef CONFIG_COMPAT
--	.compat_ioctl = mraid_mm_compat_ioctl,
--#endif
-+	.compat_ioctl = compat_ptr_ioctl,
- 	.owner	= THIS_MODULE,
- 	.llseek = noop_llseek,
- };
-@@ -228,7 +222,6 @@ mraid_mm_unlocked_ioctl(struct file *filep, unsigned int cmd,
- {
- 	int err;
- 
--	/* inconsistent: mraid_mm_compat_ioctl doesn't take the BKL */
- 	mutex_lock(&mraid_mm_mutex);
- 	err = mraid_mm_ioctl(filep, cmd, arg);
- 	mutex_unlock(&mraid_mm_mutex);
-@@ -1232,25 +1225,6 @@ mraid_mm_init(void)
- }
- 
- 
--#ifdef CONFIG_COMPAT
--/**
-- * mraid_mm_compat_ioctl	- 32bit to 64bit ioctl conversion routine
-- * @filep	: file operations pointer (ignored)
-- * @cmd		: ioctl command
-- * @arg		: user ioctl packet
-- */
--static long
--mraid_mm_compat_ioctl(struct file *filep, unsigned int cmd,
--		      unsigned long arg)
--{
--	int err;
--
--	err = mraid_mm_ioctl(filep, cmd, arg);
--
--	return err;
--}
--#endif
--
- /**
-  * mraid_mm_exit	- Module exit point
-  */
-diff --git a/drivers/usb/gadget/function/f_fs.c b/drivers/usb/gadget/function/f_fs.c
-index 20413c276c61..addc210d198a 100644
---- a/drivers/usb/gadget/function/f_fs.c
-+++ b/drivers/usb/gadget/function/f_fs.c
-@@ -1347,14 +1347,6 @@ static long ffs_epfile_ioctl(struct file *file, unsigned code,
- 	return ret;
- }
- 
--#ifdef CONFIG_COMPAT
--static long ffs_epfile_compat_ioctl(struct file *file, unsigned code,
--		unsigned long value)
--{
--	return ffs_epfile_ioctl(file, code, value);
--}
--#endif
--
- static const struct file_operations ffs_epfile_operations = {
- 	.llseek =	no_llseek,
- 
-@@ -1363,9 +1355,7 @@ static const struct file_operations ffs_epfile_operations = {
- 	.read_iter =	ffs_epfile_read_iter,
- 	.release =	ffs_epfile_release,
- 	.unlocked_ioctl =	ffs_epfile_ioctl,
--#ifdef CONFIG_COMPAT
--	.compat_ioctl = ffs_epfile_compat_ioctl,
--#endif
-+	.compat_ioctl = compat_ptr_ioctl,
- };
- 
- 
--- 
-2.20.0
+Maybe automated changes like this (assuming they are indeed automated)
+can be generated and pushed right after a commit window closes. Would
+that by any chance be possible ?
 
+Guenter
