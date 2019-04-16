@@ -2,51 +2,88 @@ Return-Path: <SRS0=rc36=SS=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B9C52C10F13
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Apr 2019 16:26:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EEB4FC10F13
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Apr 2019 16:28:55 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3B35320868
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Apr 2019 16:26:49 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3B35320868
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 5D65C20821
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Apr 2019 16:28:55 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=linux-foundation.org header.i=@linux-foundation.org header.b="XzbrhfFZ"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5D65C20821
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linux-foundation.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44k9jz2fHDzDqKD
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Apr 2019 02:26:47 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44k9mP1MLgzDqMq
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Apr 2019 02:28:53 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=arm.com
- (client-ip=217.140.101.70; helo=foss.arm.com;
- envelope-from=vincenzo.frascino@arm.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=arm.com
-Received: from foss.arm.com (foss.arm.com [217.140.101.70])
- by lists.ozlabs.org (Postfix) with ESMTP id 44k9SX4kMGzDqKy
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Apr 2019 02:15:07 +1000 (AEST)
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.72.51.249])
- by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id D111515A2;
- Tue, 16 Apr 2019 09:15:06 -0700 (PDT)
-Received: from e119884-lin.cambridge.arm.com (e119884-lin.cambridge.arm.com
- [10.1.196.72])
- by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id A86733F59C;
- Tue, 16 Apr 2019 09:15:03 -0700 (PDT)
-From: Vincenzo Frascino <vincenzo.frascino@arm.com>
-To: linux-arch@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
- linux-kselftest@vger.kernel.org
-Subject: [PATCH v2 5/5] kselftest: Extend vDSO selftest to clock_getres
-Date: Tue, 16 Apr 2019 17:14:34 +0100
-Message-Id: <20190416161434.32691-6-vincenzo.frascino@arm.com>
-X-Mailer: git-send-email 2.21.0
-In-Reply-To: <20190416161434.32691-1-vincenzo.frascino@arm.com>
-References: <20190416161434.32691-1-vincenzo.frascino@arm.com>
+ spf=pass (mailfrom) smtp.mailfrom=linuxfoundation.org
+ (client-ip=2a00:1450:4864:20::143; helo=mail-lf1-x143.google.com;
+ envelope-from=torvalds@linuxfoundation.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=linux-foundation.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=linux-foundation.org header.i=@linux-foundation.org
+ header.b="XzbrhfFZ"; dkim-atps=neutral
+Received: from mail-lf1-x143.google.com (mail-lf1-x143.google.com
+ [IPv6:2a00:1450:4864:20::143])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44k9W13zXPzDqNJ
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Apr 2019 02:17:16 +1000 (AEST)
+Received: by mail-lf1-x143.google.com with SMTP id i68so5564522lfi.10
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Apr 2019 09:17:16 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=linux-foundation.org; s=google;
+ h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+ :cc; bh=V2Gvpl6BGIA50/J1TX+cezdKN7xZ09Bpr+WtIIhOiv4=;
+ b=XzbrhfFZ8OS7iWU4+Ot2qCi8GDzOl8LZ+PFEFwbbzp+ZEfUBCTsRIpNXElHDgsIV2L
+ /GZceDRcsSgDdjbXqwKZCKwqhqI6RM1jNizxdsPnFcPXot7htZ3epCEvP28wpbOGCkjM
+ nPkDoXjHG1od/d361Iu2znwwPWcNKfzjg4IFA=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+ :message-id:subject:to:cc;
+ bh=V2Gvpl6BGIA50/J1TX+cezdKN7xZ09Bpr+WtIIhOiv4=;
+ b=SaMAuuBFFENQxNv4YKu2/hnOz0q8efjKphmLJPYOAi9/vRmJhWP/NbwiZKouFX/a9l
+ th3pP6ilAcAwAQsXiRNu6XPYzawPhZ7P5eCkkOGHHqmkNQgJZY5UUXbyUI8xKI6/YqRt
+ DLowpft292qOiv2vWGIrkN4CtAi3KcIZUqPy37WVmsIO7fQHfxlTDnJo9CSFpxjes7zD
+ 43n/oxNdJ6nRlinsU+TGCFGhF5iL7YzblWz/nt/CKh/tlnIWHLJzat301X7OFTe6zGkb
+ Rg3w0Ttc2f8qK5GznvpWjJY+AFe2+N9vwXh5JNpdnIr2gzLd1hhXcUiXm8w9s3nVd3cn
+ M2RA==
+X-Gm-Message-State: APjAAAU2eL2frvzh9vZYJuJikXKcIhZLzaqbatgUhs1R/AA3yLjWBpUA
+ 0R2eAVqytkGOKv+y+ERLFznO4BdPLsk=
+X-Google-Smtp-Source: APXvYqyxpBZWrMO3zwXYnLztnp6krq9M86oIV2uK4FywN1x9vblTFhCY8ml0x0RZ6nJpNhB5Kt61tQ==
+X-Received: by 2002:a19:6619:: with SMTP id a25mr45375363lfc.21.1555431433407; 
+ Tue, 16 Apr 2019 09:17:13 -0700 (PDT)
+Received: from mail-lj1-f175.google.com (mail-lj1-f175.google.com.
+ [209.85.208.175])
+ by smtp.gmail.com with ESMTPSA id n4sm1420958lfe.15.2019.04.16.09.17.11
+ for <linuxppc-dev@lists.ozlabs.org>
+ (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
+ Tue, 16 Apr 2019 09:17:12 -0700 (PDT)
+Received: by mail-lj1-f175.google.com with SMTP id p14so19652128ljg.5
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Apr 2019 09:17:11 -0700 (PDT)
+X-Received: by 2002:a2e:8108:: with SMTP id d8mr18152714ljg.57.1555431431532; 
+ Tue, 16 Apr 2019 09:17:11 -0700 (PDT)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+References: <CAHk-=wjvcuyCQGnfOhooaL1H4H63qXO=xgo+9yncSOG=eK+kbA@mail.gmail.com>
+ <20190415051919.GA31481@infradead.org>
+ <CAHk-=wj7jgMOVFW0tiU-X+zhg6+Rn7mEBTej+f26rV3zXezOSA@mail.gmail.com>
+ <20190416110906.6c773aff@mschwideX1> <20190416140658.2cb73a3f@mschwideX1>
+In-Reply-To: <20190416140658.2cb73a3f@mschwideX1>
+From: Linus Torvalds <torvalds@linux-foundation.org>
+Date: Tue, 16 Apr 2019 09:16:55 -0700
+X-Gmail-Original-Message-ID: <CAHk-=wjKi5C+Onhp5Vs5BQxHbaBud9M3cTS-S6Tr9yDY4dS-Sw@mail.gmail.com>
+Message-ID: <CAHk-=wjKi5C+Onhp5Vs5BQxHbaBud9M3cTS-S6Tr9yDY4dS-Sw@mail.gmail.com>
+Subject: Re: Linux 5.1-rc5
+To: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -58,166 +95,25 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Arnd Bergmann <arnd@arndb.de>, Heiko Carstens <heiko.carstens@de.ibm.com>,
- Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>,
- Paul Mackerras <paulus@samba.org>, Greentime Hu <green.hu@gmail.com>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>,
- Thomas Gleixner <tglx@linutronix.de>, Vincent Chen <deanbo422@gmail.com>,
- Shuah Khan <shuah@kernel.org>
+Cc: Christoph Hellwig <hch@infradead.org>, linuxppc-dev@lists.ozlabs.org,
+ Linux List Kernel Mailing <linux-kernel@vger.kernel.org>,
+ linux-s390 <linux-s390@vger.kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The current version of the multiarch vDSO selftest verifies only
-gettimeofday.
+On Tue, Apr 16, 2019 at 5:08 AM Martin Schwidefsky
+<schwidefsky@de.ibm.com> wrote:
+>
+> This is not nice, would a patch like the following be acceptable?
 
-Extend the vDSO selftest to clock_getres, to verify that the
-syscall and the vDSO library function return the same information.
+Umm.
 
-The extension has been used to verify the hrtimer_resoltion fix.
+We actually already *have* this function.
 
-Cc: Shuah Khan <shuah@kernel.org>
-Signed-off-by: Vincenzo Frascino <vincenzo.frascino@arm.com>
----
- tools/testing/selftests/vDSO/Makefile         |   2 +
- .../selftests/vDSO/vdso_clock_getres.c        | 108 ++++++++++++++++++
- 2 files changed, 110 insertions(+)
- create mode 100644 tools/testing/selftests/vDSO/vdso_clock_getres.c
+It's called "gup_fast_permitted()" and it's used by x86-64 to verify
+the proper address range. Exactly like s390 needs..
 
-diff --git a/tools/testing/selftests/vDSO/Makefile b/tools/testing/selftests/vDSO/Makefile
-index 9e03d61f52fd..d5c5bfdf1ac1 100644
---- a/tools/testing/selftests/vDSO/Makefile
-+++ b/tools/testing/selftests/vDSO/Makefile
-@@ -5,6 +5,7 @@ uname_M := $(shell uname -m 2>/dev/null || echo not)
- ARCH ?= $(shell echo $(uname_M) | sed -e s/i.86/x86/ -e s/x86_64/x86/)
- 
- TEST_GEN_PROGS := $(OUTPUT)/vdso_test
-+TEST_GEN_PROGS += $(OUTPUT)/vdso_clock_getres
- ifeq ($(ARCH),x86)
- TEST_GEN_PROGS += $(OUTPUT)/vdso_standalone_test_x86
- endif
-@@ -18,6 +19,7 @@ endif
- 
- all: $(TEST_GEN_PROGS)
- $(OUTPUT)/vdso_test: parse_vdso.c vdso_test.c
-+$(OUTPUT)/vdso_clock_getres: vdso_clock_getres.c
- $(OUTPUT)/vdso_standalone_test_x86: vdso_standalone_test_x86.c parse_vdso.c
- 	$(CC) $(CFLAGS) $(CFLAGS_vdso_standalone_test_x86) \
- 		vdso_standalone_test_x86.c parse_vdso.c \
-diff --git a/tools/testing/selftests/vDSO/vdso_clock_getres.c b/tools/testing/selftests/vDSO/vdso_clock_getres.c
-new file mode 100644
-index 000000000000..b1b9652972eb
---- /dev/null
-+++ b/tools/testing/selftests/vDSO/vdso_clock_getres.c
-@@ -0,0 +1,108 @@
-+// SPDX-License-Identifier: GPL-2.0
-+/*
-+ * vdso_clock_getres.c: Sample code to test clock_getres.
-+ * Copyright (c) 2019 Arm Ltd.
-+ *
-+ * Compile with:
-+ * gcc -std=gnu99 vdso_clock_getres.c
-+ *
-+ * Tested on ARM, ARM64, MIPS32, x86 (32-bit and 64-bit),
-+ * Power (32-bit and 64-bit), S390x (32-bit and 64-bit).
-+ * Might work on other architectures.
-+ */
-+
-+#define _GNU_SOURCE
-+#include <elf.h>
-+#include <err.h>
-+#include <fcntl.h>
-+#include <stdint.h>
-+#include <stdio.h>
-+#include <stdlib.h>
-+#include <time.h>
-+#include <sys/auxv.h>
-+#include <sys/mman.h>
-+#include <sys/time.h>
-+#include <unistd.h>
-+#include <sys/syscall.h>
-+
-+#include "../kselftest.h"
-+
-+static long syscall_clock_getres(clockid_t _clkid, struct timespec *_ts)
-+{
-+	long ret;
-+
-+	ret = syscall(SYS_clock_getres, _clkid, _ts);
-+
-+	return ret;
-+}
-+
-+const char *vdso_clock_name[12] = {
-+	"CLOCK_REALTIME",
-+	"CLOCK_MONOTONIC",
-+	"CLOCK_PROCESS_CPUTIME_ID",
-+	"CLOCK_THREAD_CPUTIME_ID",
-+	"CLOCK_MONOTONIC_RAW",
-+	"CLOCK_REALTIME_COARSE",
-+	"CLOCK_MONOTONIC_COARSE",
-+	"CLOCK_BOOTTIME",
-+	"CLOCK_REALTIME_ALARM",
-+	"CLOCK_BOOTTIME_ALARM",
-+	"CLOCK_SGI_CYCLE",
-+	"CLOCK_TAI",
-+};
-+
-+/*
-+ * Macro to call clock_getres in vdso and by system call
-+ * with different values for clock_id.
-+ */
-+#define vdso_test_clock(clock_id)				\
-+do {								\
-+	struct timespec x, y;					\
-+	printf("clock_id: %s", vdso_clock_name[clock_id]);	\
-+	clock_getres(clock_id, &x);				\
-+	syscall_clock_getres(clock_id, &y);			\
-+	if ((x.tv_sec != y.tv_sec) || (x.tv_sec != y.tv_sec)) {	\
-+		printf(" [FAIL]\n");				\
-+		return KSFT_SKIP;				\
-+	} else {						\
-+		printf(" [PASS]\n");				\
-+	}							\
-+} while (0)
-+
-+int main(int argc, char **argv)
-+{
-+
-+#if _POSIX_TIMERS > 0
-+
-+#ifdef CLOCK_REALTIME
-+	vdso_test_clock(CLOCK_REALTIME);
-+#endif
-+
-+#ifdef CLOCK_BOOTTIME
-+	vdso_test_clock(CLOCK_BOOTTIME);
-+#endif
-+
-+#ifdef CLOCK_TAI
-+	vdso_test_clock(CLOCK_TAI);
-+#endif
-+
-+#ifdef CLOCK_REALTIME_COARSE
-+	vdso_test_clock(CLOCK_REALTIME_COARSE);
-+#endif
-+
-+#ifdef CLOCK_MONOTONIC
-+	vdso_test_clock(CLOCK_MONOTONIC);
-+#endif
-+
-+#ifdef CLOCK_MONOTONIC_RAW
-+	vdso_test_clock(CLOCK_MONOTONIC_RAW);
-+#endif
-+
-+#ifdef CLOCK_MONOTONIC_COARSE
-+	vdso_test_clock(CLOCK_MONOTONIC_COARSE);
-+#endif
-+
-+#endif
-+
-+	return 0;
-+}
--- 
-2.21.0
+Could you please use that instead?
 
+            Linus
