@@ -6,64 +6,64 @@ X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4215AC10F13
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Apr 2019 21:20:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8B631C10F13
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Apr 2019 21:21:44 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id BE43D20821
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Apr 2019 21:20:04 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BE43D20821
+	by mail.kernel.org (Postfix) with ESMTPS id 096FB2075B
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Apr 2019 21:21:43 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 096FB2075B
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44kJDL3vDYzDqBS
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Apr 2019 07:20:02 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44kJGF2SMczDqL5
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Apr 2019 07:21:41 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
- (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
+ (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
  envelope-from=ldufour@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44k6Fk5brpzDqDN
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Apr 2019 23:50:34 +1000 (AEST)
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x3GDkfYu176035
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Apr 2019 09:47:07 -0400
-Received: from e06smtp01.uk.ibm.com (e06smtp01.uk.ibm.com [195.75.94.97])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2rwfbats1m-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44k6Rp3S57zDqC0
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Apr 2019 23:59:17 +1000 (AEST)
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
+ x3GDkUh6113099
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Apr 2019 09:46:57 -0400
+Received: from e06smtp05.uk.ibm.com (e06smtp05.uk.ibm.com [195.75.94.101])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2rwentmutm-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Apr 2019 09:46:55 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Apr 2019 09:46:56 -0400
 Received: from localhost
- by e06smtp01.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp05.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <ldufour@linux.ibm.com>;
- Tue, 16 Apr 2019 14:45:50 +0100
+ Tue, 16 Apr 2019 14:46:52 +0100
 Received: from b06cxnps4076.portsmouth.uk.ibm.com (9.149.109.198)
- by e06smtp01.uk.ibm.com (192.168.101.131) with IBM ESMTP SMTP Gateway:
+ by e06smtp05.uk.ibm.com (192.168.101.135) with IBM ESMTP SMTP Gateway:
  Authorized Use Only! Violators will be prosecuted; 
  (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Tue, 16 Apr 2019 14:45:41 +0100
+ Tue, 16 Apr 2019 14:46:42 +0100
 Received: from d06av22.portsmouth.uk.ibm.com (d06av22.portsmouth.uk.ibm.com
  [9.149.105.58])
  by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x3GDjdqX46661836
+ x3GDkeG417104934
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Tue, 16 Apr 2019 13:45:39 GMT
+ Tue, 16 Apr 2019 13:46:41 GMT
 Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 4BA094C052;
- Tue, 16 Apr 2019 13:45:39 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id CF1644C05C;
+ Tue, 16 Apr 2019 13:46:39 +0000 (GMT)
 Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id D1B344C046;
- Tue, 16 Apr 2019 13:45:37 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 60C684C058;
+ Tue, 16 Apr 2019 13:46:38 +0000 (GMT)
 Received: from nimbus.lab.toulouse-stg.fr.ibm.com (unknown [9.101.4.33])
  by d06av22.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Tue, 16 Apr 2019 13:45:37 +0000 (GMT)
+ Tue, 16 Apr 2019 13:46:38 +0000 (GMT)
 From: Laurent Dufour <ldufour@linux.ibm.com>
 To: akpm@linux-foundation.org, mhocko@kernel.org, peterz@infradead.org,
  kirill@shutemov.name, ak@linux.intel.com, dave@stgolabs.net,
@@ -84,23 +84,23 @@ To: akpm@linux-foundation.org, mhocko@kernel.org, peterz@infradead.org,
  Haiyan Song <haiyanx.song@intel.com>,
  Balbir Singh <bsingharora@gmail.com>, sj38.park@gmail.com,
  Michel Lespinasse <walken@google.com>, Mike Rapoport <rppt@linux.ibm.com>
-Subject: [PATCH v12 05/31] mm: prepare for FAULT_FLAG_SPECULATIVE
-Date: Tue, 16 Apr 2019 15:44:56 +0200
+Subject: [PATCH v12 26/31] perf tools: add support for the SPF perf event
+Date: Tue, 16 Apr 2019 15:45:17 +0200
 X-Mailer: git-send-email 2.21.0
 In-Reply-To: <20190416134522.17540-1-ldufour@linux.ibm.com>
 References: <20190416134522.17540-1-ldufour@linux.ibm.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-x-cbid: 19041613-4275-0000-0000-00000328764E
+x-cbid: 19041613-0020-0000-0000-00000330705D
 X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19041613-4276-0000-0000-00003837A74F
-Message-Id: <20190416134522.17540-6-ldufour@linux.ibm.com>
+x-cbparentid: 19041613-0021-0000-0000-00002182B50A
+Message-Id: <20190416134522.17540-27-ldufour@linux.ibm.com>
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
  definitions=2019-04-16_05:, , signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
  priorityscore=1501
- malwarescore=0 suspectscore=2 phishscore=0 bulkscore=0 spamscore=0
+ malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
  clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
  mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
  scancount=1 engine=8.0.1-1810050000 definitions=main-1904160093
@@ -123,240 +123,81 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Peter Zijlstra <peterz@infradead.org>
+Add support for the new speculative faults event.
 
-When speculating faults (without holding mmap_sem) we need to validate
-that the vma against which we loaded pages is still valid when we're
-ready to install the new PTE.
-
-Therefore, replace the pte_offset_map_lock() calls that (re)take the
-PTL with pte_map_lock() which can fail in case we find the VMA changed
-since we started the fault.
-
-Signed-off-by: Peter Zijlstra (Intel) <peterz@infradead.org>
-
-[Port to 4.12 kernel]
-[Remove the comment about the fault_env structure which has been
- implemented as the vm_fault structure in the kernel]
-[move pte_map_lock()'s definition upper in the file]
-[move the define of FAULT_FLAG_SPECULATIVE later in the series]
-[review error path in do_swap_page(), do_anonymous_page() and
- wp_page_copy()]
+Acked-by: David Rientjes <rientjes@google.com>
 Signed-off-by: Laurent Dufour <ldufour@linux.ibm.com>
 ---
- mm/memory.c | 87 +++++++++++++++++++++++++++++++++++------------------
- 1 file changed, 58 insertions(+), 29 deletions(-)
+ tools/include/uapi/linux/perf_event.h | 1 +
+ tools/perf/util/evsel.c               | 1 +
+ tools/perf/util/parse-events.c        | 4 ++++
+ tools/perf/util/parse-events.l        | 1 +
+ tools/perf/util/python.c              | 1 +
+ 5 files changed, 8 insertions(+)
 
-diff --git a/mm/memory.c b/mm/memory.c
-index c6ddadd9d2b7..fc3698d13cb5 100644
---- a/mm/memory.c
-+++ b/mm/memory.c
-@@ -2073,6 +2073,13 @@ int apply_to_page_range(struct mm_struct *mm, unsigned long addr,
- }
- EXPORT_SYMBOL_GPL(apply_to_page_range);
+diff --git a/tools/include/uapi/linux/perf_event.h b/tools/include/uapi/linux/perf_event.h
+index 7198ddd0c6b1..3b4356c55caa 100644
+--- a/tools/include/uapi/linux/perf_event.h
++++ b/tools/include/uapi/linux/perf_event.h
+@@ -112,6 +112,7 @@ enum perf_sw_ids {
+ 	PERF_COUNT_SW_EMULATION_FAULTS		= 8,
+ 	PERF_COUNT_SW_DUMMY			= 9,
+ 	PERF_COUNT_SW_BPF_OUTPUT		= 10,
++	PERF_COUNT_SW_SPF			= 11,
  
-+static inline bool pte_map_lock(struct vm_fault *vmf)
-+{
-+	vmf->pte = pte_offset_map_lock(vmf->vma->vm_mm, vmf->pmd,
-+				       vmf->address, &vmf->ptl);
-+	return true;
-+}
-+
- /*
-  * handle_pte_fault chooses page fault handler according to an entry which was
-  * read non-atomically.  Before making any commitment, on those architectures
-@@ -2261,25 +2268,26 @@ static vm_fault_t wp_page_copy(struct vm_fault *vmf)
- 	int page_copied = 0;
- 	struct mem_cgroup *memcg;
- 	struct mmu_notifier_range range;
-+	int ret = VM_FAULT_OOM;
+ 	PERF_COUNT_SW_MAX,			/* non-ABI */
+ };
+diff --git a/tools/perf/util/evsel.c b/tools/perf/util/evsel.c
+index 66d066f18b5b..1f3bea4379b2 100644
+--- a/tools/perf/util/evsel.c
++++ b/tools/perf/util/evsel.c
+@@ -435,6 +435,7 @@ const char *perf_evsel__sw_names[PERF_COUNT_SW_MAX] = {
+ 	"alignment-faults",
+ 	"emulation-faults",
+ 	"dummy",
++	"speculative-faults",
+ };
  
- 	if (unlikely(anon_vma_prepare(vma)))
--		goto oom;
-+		goto out;
+ static const char *__perf_evsel__sw_name(u64 config)
+diff --git a/tools/perf/util/parse-events.c b/tools/perf/util/parse-events.c
+index 5ef4939408f2..effa8929cc90 100644
+--- a/tools/perf/util/parse-events.c
++++ b/tools/perf/util/parse-events.c
+@@ -140,6 +140,10 @@ struct event_symbol event_symbols_sw[PERF_COUNT_SW_MAX] = {
+ 		.symbol = "bpf-output",
+ 		.alias  = "",
+ 	},
++	[PERF_COUNT_SW_SPF] = {
++		.symbol = "speculative-faults",
++		.alias	= "spf",
++	},
+ };
  
- 	if (is_zero_pfn(pte_pfn(vmf->orig_pte))) {
- 		new_page = alloc_zeroed_user_highpage_movable(vma,
- 							      vmf->address);
- 		if (!new_page)
--			goto oom;
-+			goto out;
- 	} else {
- 		new_page = alloc_page_vma(GFP_HIGHUSER_MOVABLE, vma,
- 				vmf->address);
- 		if (!new_page)
--			goto oom;
-+			goto out;
- 		cow_user_page(new_page, old_page, vmf->address, vma);
- 	}
- 
- 	if (mem_cgroup_try_charge_delay(new_page, mm, GFP_KERNEL, &memcg, false))
--		goto oom_free_new;
-+		goto out_free_new;
- 
- 	__SetPageUptodate(new_page);
- 
-@@ -2291,7 +2299,10 @@ static vm_fault_t wp_page_copy(struct vm_fault *vmf)
- 	/*
- 	 * Re-check the pte - we dropped the lock
- 	 */
--	vmf->pte = pte_offset_map_lock(mm, vmf->pmd, vmf->address, &vmf->ptl);
-+	if (!pte_map_lock(vmf)) {
-+		ret = VM_FAULT_RETRY;
-+		goto out_uncharge;
-+	}
- 	if (likely(pte_same(*vmf->pte, vmf->orig_pte))) {
- 		if (old_page) {
- 			if (!PageAnon(old_page)) {
-@@ -2378,12 +2389,14 @@ static vm_fault_t wp_page_copy(struct vm_fault *vmf)
- 		put_page(old_page);
- 	}
- 	return page_copied ? VM_FAULT_WRITE : 0;
--oom_free_new:
-+out_uncharge:
-+	mem_cgroup_cancel_charge(new_page, memcg, false);
-+out_free_new:
- 	put_page(new_page);
--oom:
-+out:
- 	if (old_page)
- 		put_page(old_page);
--	return VM_FAULT_OOM;
-+	return ret;
- }
- 
- /**
-@@ -2405,8 +2418,8 @@ static vm_fault_t wp_page_copy(struct vm_fault *vmf)
- vm_fault_t finish_mkwrite_fault(struct vm_fault *vmf)
- {
- 	WARN_ON_ONCE(!(vmf->vma->vm_flags & VM_SHARED));
--	vmf->pte = pte_offset_map_lock(vmf->vma->vm_mm, vmf->pmd, vmf->address,
--				       &vmf->ptl);
-+	if (!pte_map_lock(vmf))
-+		return VM_FAULT_RETRY;
- 	/*
- 	 * We might have raced with another page fault while we released the
- 	 * pte_offset_map_lock.
-@@ -2527,8 +2540,11 @@ static vm_fault_t do_wp_page(struct vm_fault *vmf)
- 			get_page(vmf->page);
- 			pte_unmap_unlock(vmf->pte, vmf->ptl);
- 			lock_page(vmf->page);
--			vmf->pte = pte_offset_map_lock(vma->vm_mm, vmf->pmd,
--					vmf->address, &vmf->ptl);
-+			if (!pte_map_lock(vmf)) {
-+				unlock_page(vmf->page);
-+				put_page(vmf->page);
-+				return VM_FAULT_RETRY;
-+			}
- 			if (!pte_same(*vmf->pte, vmf->orig_pte)) {
- 				unlock_page(vmf->page);
- 				pte_unmap_unlock(vmf->pte, vmf->ptl);
-@@ -2744,11 +2760,15 @@ vm_fault_t do_swap_page(struct vm_fault *vmf)
- 
- 		if (!page) {
- 			/*
--			 * Back out if somebody else faulted in this pte
--			 * while we released the pte lock.
-+			 * Back out if the VMA has changed in our back during
-+			 * a speculative page fault or if somebody else
-+			 * faulted in this pte while we released the pte lock.
- 			 */
--			vmf->pte = pte_offset_map_lock(vma->vm_mm, vmf->pmd,
--					vmf->address, &vmf->ptl);
-+			if (!pte_map_lock(vmf)) {
-+				delayacct_clear_flag(DELAYACCT_PF_SWAPIN);
-+				ret = VM_FAULT_RETRY;
-+				goto out;
-+			}
- 			if (likely(pte_same(*vmf->pte, vmf->orig_pte)))
- 				ret = VM_FAULT_OOM;
- 			delayacct_clear_flag(DELAYACCT_PF_SWAPIN);
-@@ -2801,10 +2821,13 @@ vm_fault_t do_swap_page(struct vm_fault *vmf)
- 	}
+ #define __PERF_EVENT_FIELD(config, name) \
+diff --git a/tools/perf/util/parse-events.l b/tools/perf/util/parse-events.l
+index 7805c71aaae2..d28a6edd0a95 100644
+--- a/tools/perf/util/parse-events.l
++++ b/tools/perf/util/parse-events.l
+@@ -324,6 +324,7 @@ emulation-faults				{ return sym(yyscanner, PERF_TYPE_SOFTWARE, PERF_COUNT_SW_EM
+ dummy						{ return sym(yyscanner, PERF_TYPE_SOFTWARE, PERF_COUNT_SW_DUMMY); }
+ duration_time					{ return sym(yyscanner, PERF_TYPE_SOFTWARE, PERF_COUNT_SW_DUMMY); }
+ bpf-output					{ return sym(yyscanner, PERF_TYPE_SOFTWARE, PERF_COUNT_SW_BPF_OUTPUT); }
++speculative-faults|spf				{ return sym(yyscanner, PERF_TYPE_SOFTWARE, PERF_COUNT_SW_SPF); }
  
  	/*
--	 * Back out if somebody else already faulted in this pte.
-+	 * Back out if the VMA has changed in our back during a speculative
-+	 * page fault or if somebody else already faulted in this pte.
- 	 */
--	vmf->pte = pte_offset_map_lock(vma->vm_mm, vmf->pmd, vmf->address,
--			&vmf->ptl);
-+	if (!pte_map_lock(vmf)) {
-+		ret = VM_FAULT_RETRY;
-+		goto out_cancel_cgroup;
-+	}
- 	if (unlikely(!pte_same(*vmf->pte, vmf->orig_pte)))
- 		goto out_nomap;
+ 	 * We have to handle the kernel PMU event cycles-ct/cycles-t/mem-loads/mem-stores separately.
+diff --git a/tools/perf/util/python.c b/tools/perf/util/python.c
+index dda0ac978b1e..c617a4751549 100644
+--- a/tools/perf/util/python.c
++++ b/tools/perf/util/python.c
+@@ -1200,6 +1200,7 @@ static struct {
+ 	PERF_CONST(COUNT_SW_ALIGNMENT_FAULTS),
+ 	PERF_CONST(COUNT_SW_EMULATION_FAULTS),
+ 	PERF_CONST(COUNT_SW_DUMMY),
++	PERF_CONST(COUNT_SW_SPF),
  
-@@ -2882,8 +2905,9 @@ vm_fault_t do_swap_page(struct vm_fault *vmf)
- out:
- 	return ret;
- out_nomap:
--	mem_cgroup_cancel_charge(page, memcg, false);
- 	pte_unmap_unlock(vmf->pte, vmf->ptl);
-+out_cancel_cgroup:
-+	mem_cgroup_cancel_charge(page, memcg, false);
- out_page:
- 	unlock_page(page);
- out_release:
-@@ -2934,8 +2958,8 @@ static vm_fault_t do_anonymous_page(struct vm_fault *vmf)
- 			!mm_forbids_zeropage(vma->vm_mm)) {
- 		entry = pte_mkspecial(pfn_pte(my_zero_pfn(vmf->address),
- 						vma->vm_page_prot));
--		vmf->pte = pte_offset_map_lock(vma->vm_mm, vmf->pmd,
--				vmf->address, &vmf->ptl);
-+		if (!pte_map_lock(vmf))
-+			return VM_FAULT_RETRY;
- 		if (!pte_none(*vmf->pte))
- 			goto unlock;
- 		ret = check_stable_address_space(vma->vm_mm);
-@@ -2971,14 +2995,16 @@ static vm_fault_t do_anonymous_page(struct vm_fault *vmf)
- 	if (vma->vm_flags & VM_WRITE)
- 		entry = pte_mkwrite(pte_mkdirty(entry));
- 
--	vmf->pte = pte_offset_map_lock(vma->vm_mm, vmf->pmd, vmf->address,
--			&vmf->ptl);
--	if (!pte_none(*vmf->pte))
-+	if (!pte_map_lock(vmf)) {
-+		ret = VM_FAULT_RETRY;
- 		goto release;
-+	}
-+	if (!pte_none(*vmf->pte))
-+		goto unlock_and_release;
- 
- 	ret = check_stable_address_space(vma->vm_mm);
- 	if (ret)
--		goto release;
-+		goto unlock_and_release;
- 
- 	/* Deliver the page fault to userland, check inside PT lock */
- 	if (userfaultfd_missing(vma)) {
-@@ -3000,10 +3026,12 @@ static vm_fault_t do_anonymous_page(struct vm_fault *vmf)
- unlock:
- 	pte_unmap_unlock(vmf->pte, vmf->ptl);
- 	return ret;
-+unlock_and_release:
-+	pte_unmap_unlock(vmf->pte, vmf->ptl);
- release:
- 	mem_cgroup_cancel_charge(page, memcg, false);
- 	put_page(page);
--	goto unlock;
-+	return ret;
- oom_free_page:
- 	put_page(page);
- oom:
-@@ -3118,8 +3146,9 @@ static vm_fault_t pte_alloc_one_map(struct vm_fault *vmf)
- 	 * pte_none() under vmf->ptl protection when we return to
- 	 * alloc_set_pte().
- 	 */
--	vmf->pte = pte_offset_map_lock(vma->vm_mm, vmf->pmd, vmf->address,
--			&vmf->ptl);
-+	if (!pte_map_lock(vmf))
-+		return VM_FAULT_RETRY;
-+
- 	return 0;
- }
- 
+ 	PERF_CONST(SAMPLE_IP),
+ 	PERF_CONST(SAMPLE_TID),
 -- 
 2.21.0
 
