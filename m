@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9ED14C10F13
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Apr 2019 21:27:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CD8B8C10F13
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Apr 2019 21:29:19 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 1C0982075B
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Apr 2019 21:27:55 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1C0982075B
+	by mail.kernel.org (Postfix) with ESMTPS id 0DD292075B
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Apr 2019 21:29:18 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0DD292075B
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44kJPP0xTKzDqL4
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Apr 2019 07:27:53 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44kJR05vB3zDqC0
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Apr 2019 07:29:16 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
  (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
@@ -29,41 +29,41 @@ Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44k6gb4DS4zDqFH
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Apr 2019 00:09:30 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44k6ky4sP0zDqGl
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Apr 2019 00:12:26 +1000 (AEST)
 Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
  by mx0b-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x3GDkRa4100039
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Apr 2019 09:47:04 -0400
-Received: from e06smtp04.uk.ibm.com (e06smtp04.uk.ibm.com [195.75.94.100])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2rwdvq70hp-1
+ x3GDkSRi100124
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Apr 2019 09:46:53 -0400
+Received: from e06smtp02.uk.ibm.com (e06smtp02.uk.ibm.com [195.75.94.98])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2rwdvq6xvb-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Apr 2019 09:47:03 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Apr 2019 09:46:50 -0400
 Received: from localhost
- by e06smtp04.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp02.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <ldufour@linux.ibm.com>;
- Tue, 16 Apr 2019 14:46:58 +0100
-Received: from b06cxnps3074.portsmouth.uk.ibm.com (9.149.109.194)
- by e06smtp04.uk.ibm.com (192.168.101.134) with IBM ESMTP SMTP Gateway:
+ Tue, 16 Apr 2019 14:45:48 +0100
+Received: from b06cxnps3075.portsmouth.uk.ibm.com (9.149.109.195)
+ by e06smtp02.uk.ibm.com (192.168.101.132) with IBM ESMTP SMTP Gateway:
  Authorized Use Only! Violators will be prosecuted; 
  (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Tue, 16 Apr 2019 14:46:47 +0100
+ Tue, 16 Apr 2019 14:45:38 +0100
 Received: from d06av22.portsmouth.uk.ibm.com (d06av22.portsmouth.uk.ibm.com
  [9.149.105.58])
- by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x3GDkjdC54067278
+ by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x3GDjaDU61276172
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Tue, 16 Apr 2019 13:46:45 GMT
+ Tue, 16 Apr 2019 13:45:36 GMT
 Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id E76AD4C05C;
- Tue, 16 Apr 2019 13:46:44 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id C18A04C052;
+ Tue, 16 Apr 2019 13:45:36 +0000 (GMT)
 Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 6053D4C052;
- Tue, 16 Apr 2019 13:46:43 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 56A644C040;
+ Tue, 16 Apr 2019 13:45:35 +0000 (GMT)
 Received: from nimbus.lab.toulouse-stg.fr.ibm.com (unknown [9.101.4.33])
  by d06av22.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Tue, 16 Apr 2019 13:46:43 +0000 (GMT)
+ Tue, 16 Apr 2019 13:45:35 +0000 (GMT)
 From: Laurent Dufour <ldufour@linux.ibm.com>
 To: akpm@linux-foundation.org, mhocko@kernel.org, peterz@infradead.org,
  kirill@shutemov.name, ak@linux.intel.com, dave@stgolabs.net,
@@ -84,25 +84,26 @@ To: akpm@linux-foundation.org, mhocko@kernel.org, peterz@infradead.org,
  Haiyan Song <haiyanx.song@intel.com>,
  Balbir Singh <bsingharora@gmail.com>, sj38.park@gmail.com,
  Michel Lespinasse <walken@google.com>, Mike Rapoport <rppt@linux.ibm.com>
-Subject: [PATCH v12 28/31] x86/mm: add speculative pagefault handling
-Date: Tue, 16 Apr 2019 15:45:19 +0200
+Subject: [PATCH v12 04/31] arm64/mm: define
+ ARCH_SUPPORTS_SPECULATIVE_PAGE_FAULT
+Date: Tue, 16 Apr 2019 15:44:55 +0200
 X-Mailer: git-send-email 2.21.0
 In-Reply-To: <20190416134522.17540-1-ldufour@linux.ibm.com>
 References: <20190416134522.17540-1-ldufour@linux.ibm.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-x-cbid: 19041613-0016-0000-0000-0000026F7281
+x-cbid: 19041613-0008-0000-0000-000002DA6FAB
 X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19041613-0017-0000-0000-000032CBBD98
-Message-Id: <20190416134522.17540-29-ldufour@linux.ibm.com>
+x-cbparentid: 19041613-0009-0000-0000-00002246A833
+Message-Id: <20190416134522.17540-5-ldufour@linux.ibm.com>
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
  definitions=2019-04-16_05:, , signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
  priorityscore=1501
  malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
  clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
+ mlxlogscore=980 adultscore=0 classifier=spam adjust=0 reason=mlx
  scancount=1 engine=8.0.1-1810050000 definitions=main-1904160093
 X-Mailman-Approved-At: Wed, 17 Apr 2019 06:55:23 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -123,57 +124,28 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Peter Zijlstra <peterz@infradead.org>
+From: Mahendran Ganesh <opensource.ganesh@gmail.com>
 
-Try a speculative fault before acquiring mmap_sem, if it returns with
-VM_FAULT_RETRY continue with the mmap_sem acquisition and do the
-traditional fault.
+Set ARCH_SUPPORTS_SPECULATIVE_PAGE_FAULT for arm64. This
+enables Speculative Page Fault handler.
 
-Signed-off-by: Peter Zijlstra (Intel) <peterz@infradead.org>
-
-[Clearing of FAULT_FLAG_ALLOW_RETRY is now done in
- handle_speculative_fault()]
-[Retry with usual fault path in the case VM_ERROR is returned by
- handle_speculative_fault(). This allows signal to be delivered]
-[Don't build SPF call if !CONFIG_SPECULATIVE_PAGE_FAULT]
-[Handle memory protection key fault]
-Signed-off-by: Laurent Dufour <ldufour@linux.ibm.com>
+Signed-off-by: Ganesh Mahendran <opensource.ganesh@gmail.com>
 ---
- arch/x86/mm/fault.c | 14 ++++++++++++++
- 1 file changed, 14 insertions(+)
+ arch/arm64/Kconfig | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/arch/x86/mm/fault.c b/arch/x86/mm/fault.c
-index 667f1da36208..4390d207a7a1 100644
---- a/arch/x86/mm/fault.c
-+++ b/arch/x86/mm/fault.c
-@@ -1401,6 +1401,18 @@ void do_user_addr_fault(struct pt_regs *regs,
- 	}
- #endif
+diff --git a/arch/arm64/Kconfig b/arch/arm64/Kconfig
+index 870ef86a64ed..8e86934d598b 100644
+--- a/arch/arm64/Kconfig
++++ b/arch/arm64/Kconfig
+@@ -174,6 +174,7 @@ config ARM64
+ 	select SWIOTLB
+ 	select SYSCTL_EXCEPTION_TRACE
+ 	select THREAD_INFO_IN_TASK
++	select ARCH_SUPPORTS_SPECULATIVE_PAGE_FAULT
+ 	help
+ 	  ARM 64-bit (AArch64) Linux support.
  
-+	/*
-+	 * Do not try to do a speculative page fault if the fault was due to
-+	 * protection keys since it can't be resolved.
-+	 */
-+	if (!(hw_error_code & X86_PF_PK)) {
-+		fault = handle_speculative_fault(mm, address, flags);
-+		if (fault != VM_FAULT_RETRY) {
-+			perf_sw_event(PERF_COUNT_SW_SPF, 1, regs, address);
-+			goto done;
-+		}
-+	}
-+
- 	/*
- 	 * Kernel-mode access to the user address space should only occur
- 	 * on well-defined single instructions listed in the exception
-@@ -1499,6 +1511,8 @@ void do_user_addr_fault(struct pt_regs *regs,
- 	}
- 
- 	up_read(&mm->mmap_sem);
-+
-+done:
- 	if (unlikely(fault & VM_FAULT_ERROR)) {
- 		mm_fault_error(regs, hw_error_code, address, fault);
- 		return;
 -- 
 2.21.0
 
