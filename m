@@ -3,22 +3,22 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
 X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D0A03C10F13
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Apr 2019 21:04:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BEED4C10F13
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Apr 2019 21:06:16 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 5B7BE2075B
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Apr 2019 21:04:43 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5B7BE2075B
+	by mail.kernel.org (Postfix) with ESMTPS id 4645520684
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Apr 2019 21:06:16 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4645520684
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44kHtd3wx1zDqBd
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Apr 2019 07:04:41 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44kHwQ1QlrzDqLd
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Apr 2019 07:06:14 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
  (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
@@ -29,41 +29,41 @@ Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44k6BH25LczDqDh
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Apr 2019 23:47:35 +1000 (AEST)
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x3GDlHkr010798
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Apr 2019 09:47:33 -0400
-Received: from e06smtp07.uk.ibm.com (e06smtp07.uk.ibm.com [195.75.94.103])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2rwe56nx14-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44k6BK4tYrzDqDN
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Apr 2019 23:47:37 +1000 (AEST)
+Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
+ x3GDlFGa060591
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Apr 2019 09:47:35 -0400
+Received: from e06smtp04.uk.ibm.com (e06smtp04.uk.ibm.com [195.75.94.100])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2rwe3k5v07-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Apr 2019 09:47:28 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Apr 2019 09:47:17 -0400
 Received: from localhost
- by e06smtp07.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp04.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <ldufour@linux.ibm.com>;
- Tue, 16 Apr 2019 14:45:46 +0100
-Received: from b06cxnps4076.portsmouth.uk.ibm.com (9.149.109.198)
- by e06smtp07.uk.ibm.com (192.168.101.137) with IBM ESMTP SMTP Gateway:
+ Tue, 16 Apr 2019 14:46:17 +0100
+Received: from b06cxnps3074.portsmouth.uk.ibm.com (9.149.109.194)
+ by e06smtp04.uk.ibm.com (192.168.101.134) with IBM ESMTP SMTP Gateway:
  Authorized Use Only! Violators will be prosecuted; 
  (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Tue, 16 Apr 2019 14:45:36 +0100
+ Tue, 16 Apr 2019 14:46:07 +0100
 Received: from d06av22.portsmouth.uk.ibm.com (d06av22.portsmouth.uk.ibm.com
  [9.149.105.58])
- by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x3GDjYou50724972
+ by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x3GDk5E642074152
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Tue, 16 Apr 2019 13:45:34 GMT
+ Tue, 16 Apr 2019 13:46:05 GMT
 Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 445334C05A;
- Tue, 16 Apr 2019 13:45:34 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 735CD4C050;
+ Tue, 16 Apr 2019 13:46:05 +0000 (GMT)
 Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id E6D874C058;
- Tue, 16 Apr 2019 13:45:31 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 8A1104C040;
+ Tue, 16 Apr 2019 13:46:01 +0000 (GMT)
 Received: from nimbus.lab.toulouse-stg.fr.ibm.com (unknown [9.101.4.33])
  by d06av22.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Tue, 16 Apr 2019 13:45:31 +0000 (GMT)
+ Tue, 16 Apr 2019 13:46:01 +0000 (GMT)
 From: Laurent Dufour <ldufour@linux.ibm.com>
 To: akpm@linux-foundation.org, mhocko@kernel.org, peterz@infradead.org,
  kirill@shutemov.name, ak@linux.intel.com, dave@stgolabs.net,
@@ -84,25 +84,26 @@ To: akpm@linux-foundation.org, mhocko@kernel.org, peterz@infradead.org,
  Haiyan Song <haiyanx.song@intel.com>,
  Balbir Singh <bsingharora@gmail.com>, sj38.park@gmail.com,
  Michel Lespinasse <walken@google.com>, Mike Rapoport <rppt@linux.ibm.com>
-Subject: [PATCH v12 03/31] powerpc/mm: set ARCH_SUPPORTS_SPECULATIVE_PAGE_FAULT
-Date: Tue, 16 Apr 2019 15:44:54 +0200
+Subject: [PATCH v12 14/31] mm/migrate: Pass vm_fault pointer to
+ migrate_misplaced_page()
+Date: Tue, 16 Apr 2019 15:45:05 +0200
 X-Mailer: git-send-email 2.21.0
 In-Reply-To: <20190416134522.17540-1-ldufour@linux.ibm.com>
 References: <20190416134522.17540-1-ldufour@linux.ibm.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-x-cbid: 19041613-0028-0000-0000-0000036170BA
+x-cbid: 19041613-0016-0000-0000-0000026F7273
 X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19041613-0029-0000-0000-00002420A853
-Message-Id: <20190416134522.17540-4-ldufour@linux.ibm.com>
+x-cbparentid: 19041613-0017-0000-0000-000032CBBD8A
+Message-Id: <20190416134522.17540-15-ldufour@linux.ibm.com>
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
  definitions=2019-04-16_05:, , signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
  priorityscore=1501
  malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
  clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=990 adultscore=0 classifier=spam adjust=0 reason=mlx
+ mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
  scancount=1 engine=8.0.1-1810050000 definitions=main-1904160093
 X-Mailman-Approved-At: Wed, 17 Apr 2019 06:55:23 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -123,33 +124,76 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Set ARCH_SUPPORTS_SPECULATIVE_PAGE_FAULT for BOOK3S_64. This enables
-the Speculative Page Fault handler.
+migrate_misplaced_page() is only called during the page fault handling so
+it's better to pass the pointer to the struct vm_fault instead of the vma.
 
-Support is only provide for BOOK3S_64 currently because:
-- require CONFIG_PPC_STD_MMU because checks done in
-  set_access_flags_filter()
-- require BOOK3S because we can't support for book3e_hugetlb_preload()
-  called by update_mmu_cache()
+This way during the speculative page fault path the saved vma->vm_flags
+could be used.
 
-Cc: Michael Ellerman <mpe@ellerman.id.au>
+Acked-by: David Rientjes <rientjes@google.com>
 Signed-off-by: Laurent Dufour <ldufour@linux.ibm.com>
 ---
- arch/powerpc/Kconfig | 1 +
- 1 file changed, 1 insertion(+)
+ include/linux/migrate.h | 4 ++--
+ mm/memory.c             | 2 +-
+ mm/migrate.c            | 4 ++--
+ 3 files changed, 5 insertions(+), 5 deletions(-)
 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 2d0be82c3061..a29887ea5383 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -238,6 +238,7 @@ config PPC
- 	select PCI_SYSCALL			if PCI
- 	select RTC_LIB
- 	select SPARSE_IRQ
-+	select ARCH_SUPPORTS_SPECULATIVE_PAGE_FAULT if PPC_BOOK3S_64
- 	select SYSCTL_EXCEPTION_TRACE
- 	select THREAD_INFO_IN_TASK
- 	select VIRT_TO_BUS			if !PPC64
+diff --git a/include/linux/migrate.h b/include/linux/migrate.h
+index e13d9bf2f9a5..0197e40325f8 100644
+--- a/include/linux/migrate.h
++++ b/include/linux/migrate.h
+@@ -125,14 +125,14 @@ static inline void __ClearPageMovable(struct page *page)
+ #ifdef CONFIG_NUMA_BALANCING
+ extern bool pmd_trans_migrating(pmd_t pmd);
+ extern int migrate_misplaced_page(struct page *page,
+-				  struct vm_area_struct *vma, int node);
++				  struct vm_fault *vmf, int node);
+ #else
+ static inline bool pmd_trans_migrating(pmd_t pmd)
+ {
+ 	return false;
+ }
+ static inline int migrate_misplaced_page(struct page *page,
+-					 struct vm_area_struct *vma, int node)
++					 struct vm_fault *vmf, int node)
+ {
+ 	return -EAGAIN; /* can't migrate now */
+ }
+diff --git a/mm/memory.c b/mm/memory.c
+index d0de58464479..56802850e72c 100644
+--- a/mm/memory.c
++++ b/mm/memory.c
+@@ -3747,7 +3747,7 @@ static vm_fault_t do_numa_page(struct vm_fault *vmf)
+ 	}
+ 
+ 	/* Migrate to the requested node */
+-	migrated = migrate_misplaced_page(page, vma, target_nid);
++	migrated = migrate_misplaced_page(page, vmf, target_nid);
+ 	if (migrated) {
+ 		page_nid = target_nid;
+ 		flags |= TNF_MIGRATED;
+diff --git a/mm/migrate.c b/mm/migrate.c
+index a9138093a8e2..633bd9abac54 100644
+--- a/mm/migrate.c
++++ b/mm/migrate.c
+@@ -1938,7 +1938,7 @@ bool pmd_trans_migrating(pmd_t pmd)
+  * node. Caller is expected to have an elevated reference count on
+  * the page that will be dropped by this function before returning.
+  */
+-int migrate_misplaced_page(struct page *page, struct vm_area_struct *vma,
++int migrate_misplaced_page(struct page *page, struct vm_fault *vmf,
+ 			   int node)
+ {
+ 	pg_data_t *pgdat = NODE_DATA(node);
+@@ -1951,7 +1951,7 @@ int migrate_misplaced_page(struct page *page, struct vm_area_struct *vma,
+ 	 * with execute permissions as they are probably shared libraries.
+ 	 */
+ 	if (page_mapcount(page) != 1 && page_is_file_cache(page) &&
+-	    (vma->vm_flags & VM_EXEC))
++	    (vmf->vma_flags & VM_EXEC))
+ 		goto out;
+ 
+ 	/*
 -- 
 2.21.0
 
