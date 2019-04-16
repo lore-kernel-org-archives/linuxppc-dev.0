@@ -2,63 +2,64 @@ Return-Path: <SRS0=rc36=SS=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BE938C10F13
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Apr 2019 20:25:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C9AC0C10F13
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Apr 2019 20:27:47 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 487B520663
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Apr 2019 20:25:48 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 487B520663
+	by mail.kernel.org (Postfix) with ESMTPS id 5375E20868
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Apr 2019 20:27:47 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5375E20868
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arndb.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44kH1j6wbbzDqLy
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Apr 2019 06:25:45 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44kH411T7qzDq7n
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Apr 2019 06:27:45 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=none (mailfrom) smtp.mailfrom=arndb.de
  (client-ip=212.227.126.134; helo=mout.kundenserver.de;
  envelope-from=arnd@arndb.de; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=arndb.de
-X-Greylist: delayed 107404 seconds by postgrey-1.36 at bilbo;
- Wed, 17 Apr 2019 06:21:48 AEST
 Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.126.134])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44kGx84QhlzDqH2
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Apr 2019 06:21:48 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44kGyP2K2DzDqDM
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Apr 2019 06:22:52 +1000 (AEST)
 Received: from threadripper.lan ([149.172.19.189]) by mrelayeu.kundenserver.de
  (mreue012 [212.227.15.129]) with ESMTPA (Nemesis) id
- 1MK5BG-1hYhwa1x9y-00LYy0; Tue, 16 Apr 2019 22:20:34 +0200
+ 1MYLqs-1hKMVj2DQ2-00VROG; Tue, 16 Apr 2019 22:22:29 +0200
 From: Arnd Bergmann <arnd@arndb.de>
 To: Alexander Viro <viro@zeniv.linux.org.uk>
-Subject: [PATCH v3 00/26] compat_ioctl: cleanups
-Date: Tue, 16 Apr 2019 22:19:38 +0200
-Message-Id: <20190416202013.4034148-1-arnd@arndb.de>
+Subject: [PATCH v3 10/26] compat_ioctl: use correct compat_ptr() translation
+ in drivers
+Date: Tue, 16 Apr 2019 22:19:48 +0200
+Message-Id: <20190416202013.4034148-11-arnd@arndb.de>
 X-Mailer: git-send-email 2.20.0
+In-Reply-To: <20190416202013.4034148-1-arnd@arndb.de>
+References: <20190416202013.4034148-1-arnd@arndb.de>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-Provags-ID: V03:K1:mvmRBVqmcY1mhupTDI+zdTPTOsWPDzdt5BCk66I7Xg6IdvERZEQ
- hRpELhbiULHqPfrFcKxAriH7V1lp/edkgqwfhvhGT7toE1JGZlBQqZQbzlO+eWCP2ER4sRI
- in0P9PUn+JskXwI/0DeODFTzggwqBwkA2RyOC6uS1Bny6OQqf072778J9AqViE858nJkb+Q
- eFCv7b9/d64u+uVjuBSrw==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:4YXF1UI2n5Q=:2lrB6KN7HwAQtli1cWDOA1
- ltGxgBmWd8Fqoc71LQ8VzLwWLaNvj+CW12qPzYpO1l8AZdyrYZyP0N4PsQEdUAbJF5uuHUksh
- n1DDxCihVRi61gQcMVsrO1pG1YPKFaPQzVTeaYOpxWoNb8K7HJ6r7ksA8P1//8F3tGpjLIpsr
- 2uGXhdguNTKZ6RC0DDjnP6sKO4k4wGK3n2+VH2IapXNqay1Rnxy7n/3KNpwoEzu7pus3KhjDx
- trDD0YdU4bzJfV+eAUb2FrbQXzjNf2xES3GuI7loJs5iR+V11xnIRGXgjJCR0qspPApVJfBmX
- neVC6QfvFYilQE6IOSF/4bAOsLC5A4r2kszz8FpAuwQjmxBVdxeXF7FMMjiFg8BnAKBbvAC1T
- xhQmG9hQmHoOtQ/Yr6HU7Tfy/zeLAVW4SVL/VydRuFf8DXue+RdSJDb3hpccGIeb63LIO0G1v
- e4XgL55OxAPj4vXQqm4d1WoYV+utT6+JgILxp13ecCuEqq3MqpBOPkc8XNWr+Ry55jDDjAt8C
- aP7iHyI2Tqmu7o1RFZ5HsozgGiVuoCefRN8AJnp/570z1fB0aVB4uY6jaGNmZfRjyOtrb1EjF
- HD/vjiujlkTbHo3Fk9GP+W2YVhzzod6JubIkdRkIipbXVKbSLHv0aXWv5TVkWWJriq1edvctS
- KJqDn2/1AHnjJ2I6pcNw1jOdZrwlt0opNSNamI11DM7UpEi4Woh+mGm9U1Ei44E6M0mpM6Xnl
- pi7O5Ccuju0WtClcha6vz7mVFLqKwYrWB1kFcA==
+X-Provags-ID: V03:K1:dhXxVwlF+OTv8zTau2mq8cW9se+5+L4XB4D+BXwtDLVtt1eHtvH
+ 9j0eCYXXgpxChG2e+3m5sp1o66pwBmHIM2FHcEPi9zE0BZKkLHbZNmHnn2+GcU+w9KKJ0Xr
+ +OSW2NH8h1S951PFymOn/9mrd2neAmTVkxmgkRDwiI2y7EQMG12TYsIUTnf0SUxFMAktcKM
+ /O02KIxJdbN27u4CGMA4g==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:p/lEhNyfi0M=:BGMO+DqJh9KBHQtwPEOwGx
+ ZvFHFvMvfly9/nfku2neA5EJJ0wA/7lYo2R92uQbDZ4RSunLr4T3lNgvwy8J2miL4ONveNol0
+ NO0TBQCQ+Kv4Lr9VnORrI9XV8IR9huTtI9Kkz+kuzHZWlivbFJwQxgX7hGtYwV3fJxnY1rWn3
+ 1UYFA/0oowmuOdzjvn1K8BEwz2lOGQz/TMc+yv5UuJQ2v3iaXL8fqpOg7oM/SGBngGL9Zq3QJ
+ 76Lo3SUQuBgoBwW3vyukwEHw363Va2GXlPbbF4mPDzOGRpDBunS1ghS2gYU9ZjTbDlc6FHtDf
+ XuZCgJ1WkglsDHhbegTdCIgzhRz9CY8MLOarplHlUkrqVjxKIo+EQDw3rlUWdxSIjutMjadMp
+ Q5d+sYXmL5nxc41yjTr6IEy+FRb8M/gFRpiCrqHKh6lV7IF6OwfDFLuXN64Od+s/YCQ4yze1S
+ 4NGTx3sJiDXUXsY0G7E+ne1X2DSfvtoF6PbZzOcWGUvYNKcz6GzPB9eoA4hgO5JXXgu8OP4GH
+ 9mvOERN3xpBwk409vs3LKwMiNar3EdDF75tVcEQEzX8WPIJ+deJwS44rhZ4pSp8usbPjrGC8c
+ EsfY+Ftfu9ngwxbRw5lLYuN8AsTEl/BSELPDew5KLKLNBkfVq54qhM3qs654jfrPJyWhnArQN
+ FRh2ekxvl5xRzxrw9VCHRmLcdkyamf/BKexhZefiopdVuK7TmkF3IyUBtt1Tbrr4LAmGWj4Rv
+ 60qC4WULwufY42ykZcHrTiyfzlUZFbScqwLLkA==
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -70,204 +71,200 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-fbdev@vger.kernel.org, linux-iio@vger.kernel.org,
- linux-remoteproc@vger.kernel.org, alsa-devel@alsa-project.org,
- dri-devel@lists.freedesktop.org, platform-driver-x86@vger.kernel.org,
- linux-ide@vger.kernel.org, linux-mtd@lists.infradead.org,
- sparclinux@vger.kernel.org, linux1394-devel@lists.sourceforge.net,
- devel@driverdev.osuosl.org, linux-s390@vger.kernel.org,
- linux-scsi@vger.kernel.org, linux-bluetooth@vger.kernel.org,
- y2038@lists.linaro.org, qat-linux@intel.com, amd-gfx@lists.freedesktop.org,
- linux-input@vger.kernel.org, Marcel Holtmann <marcel@holtmann.org>,
- linux-media@vger.kernel.org, linux-rtc@vger.kernel.org,
- Arnd Bergmann <arnd@arndb.de>, "James E.J. Bottomley" <jejb@linux.ibm.com>,
- linux-nvme@lists.infradead.org, ceph-devel@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org, Karsten Keil <isdn@linux-pingi.de>,
+Cc: Shen Jing <jingx.shen@intel.com>, Arnd Bergmann <arnd@arndb.de>,
+ linux-scsi@vger.kernel.org, y2038@lists.linaro.org,
+ Frank Haverkamp <haver@linux.ibm.com>,
+ Kashyap Desai <kashyap.desai@broadcom.com>,
+ Felipe Balbi <felipe.balbi@linux.intel.com>,
+ Jerry Zhang <zhangjerry@google.com>,
+ "James E.J. Bottomley" <jejb@linux.ibm.com>, linux-fsdevel@vger.kernel.org,
+ Vincent Pelletier <plr.vincent@gmail.com>, megaraidlinux.pdl@broadcom.com,
+ Felipe Balbi <balbi@kernel.org>,
  "Martin K. Petersen" <martin.petersen@oracle.com>,
+ Shivasharan S <shivasharan.srikanteshwara@broadcom.com>,
  Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-usb@vger.kernel.org,
- linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org,
- linux-rdma@vger.kernel.org, linux-crypto@vger.kernel.org,
- netdev@vger.kernel.org, linux-fsdevel@vger.kernel.org,
- linux-integrity@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- "David S. Miller" <davem@davemloft.net>, linux-btrfs@vger.kernel.org,
- linux-ppp@vger.kernel.org
+ linux-kernel@vger.kernel.org, Andrzej Pietrasiewicz <andrzej.p@collabora.com>,
+ Sumit Saxena <sumit.saxena@broadcom.com>,
+ Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
+ Frederic Barrat <fbarrat@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi Al,
+A handful of drivers all have a trivial wrapper around their ioctl
+handler, but don't call the compat_ptr() conversion function at the
+moment. In practice this does not matter, since none of them are used
+on the s390 architecture and for all other architectures, compat_ptr()
+does not do anything, but using the new compat_ptr_ioctl()
+helper makes it more correct in theory, and simplifies the code.
 
-It took me way longer than I had hoped to revisit this series, see
-https://lore.kernel.org/lkml/20180912150142.157913-1-arnd@arndb.de/
-for the previously posted version.
+Acked-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Acked-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+Acked-by: Felipe Balbi <felipe.balbi@linux.intel.com>
+Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+---
+ drivers/misc/cxl/flash.c            |  8 +-------
+ drivers/misc/genwqe/card_dev.c      | 23 +----------------------
+ drivers/scsi/megaraid/megaraid_mm.c | 28 +---------------------------
+ drivers/usb/gadget/function/f_fs.c  | 12 +-----------
+ 4 files changed, 4 insertions(+), 67 deletions(-)
 
-I've come to the point where all conversion handlers and most
-COMPATIBLE_IOCTL() entries are gone from this file, but for
-now, this series only has the parts that have either been reviewed
-previously, or that are simple enough to include.
-
-The main missing piece is the SG_IO/SG_GET_REQUEST_TABLE conversion.
-I'll post the patches I made for that later, as they need more
-testing and review from the scsi maintainers.
-
-I hope you can still take these for the coming merge window, unless
-new problems come up.
-
-      Arnd
-
-Arnd Bergmann (26):
-  compat_ioctl: pppoe: fix PPPOEIOCSFWD handling
-  compat_ioctl: move simple ppp command handling into driver
-  compat_ioctl: avoid unused function warning for do_ioctl
-  compat_ioctl: move PPPIOCSCOMPRESS32 to ppp-generic.c
-  compat_ioctl: move PPPIOCSPASS32/PPPIOCSACTIVE32 to ppp_generic.c
-  compat_ioctl: handle PPPIOCGIDLE for 64-bit time_t
-  compat_ioctl: move rtc handling into rtc-dev.c
-  compat_ioctl: add compat_ptr_ioctl()
-  compat_ioctl: move drivers to compat_ptr_ioctl
-  compat_ioctl: use correct compat_ptr() translation in drivers
-  ceph: fix compat_ioctl for ceph_dir_operations
-  compat_ioctl: move more drivers to compat_ptr_ioctl
-  compat_ioctl: move tape handling into drivers
-  compat_ioctl: move ATYFB_CLK handling to atyfb driver
-  compat_ioctl: move isdn/capi ioctl translation into driver
-  compat_ioctl: move rfcomm handlers into driver
-  compat_ioctl: move hci_sock handlers into driver
-  compat_ioctl: remove HCIUART handling
-  compat_ioctl: remove HIDIO translation
-  compat_ioctl: remove translation for sound ioctls
-  compat_ioctl: remove IGNORE_IOCTL()
-  compat_ioctl: remove /dev/random commands
-  compat_ioctl: remove joystick ioctl translation
-  compat_ioctl: remove PCI ioctl translation
-  compat_ioctl: remove /dev/raw ioctl translation
-  compat_ioctl: remove last RAID handling code
-
- Documentation/networking/ppp_generic.txt    |   2 +
- arch/um/drivers/hostaudio_kern.c            |   1 +
- drivers/android/binder.c                    |   2 +-
- drivers/char/ppdev.c                        |  12 +-
- drivers/char/random.c                       |   1 +
- drivers/char/tpm/tpm_vtpm_proxy.c           |  12 +-
- drivers/crypto/qat/qat_common/adf_ctl_drv.c |   2 +-
- drivers/dma-buf/dma-buf.c                   |   4 +-
- drivers/dma-buf/sw_sync.c                   |   2 +-
- drivers/dma-buf/sync_file.c                 |   2 +-
- drivers/firewire/core-cdev.c                |  12 +-
- drivers/gpu/drm/amd/amdkfd/kfd_chardev.c    |   2 +-
- drivers/hid/hidraw.c                        |   4 +-
- drivers/hid/usbhid/hiddev.c                 |  11 +-
- drivers/hwtracing/stm/core.c                |  12 +-
- drivers/ide/ide-tape.c                      |  31 +-
- drivers/iio/industrialio-core.c             |   2 +-
- drivers/infiniband/core/uverbs_main.c       |   4 +-
- drivers/isdn/capi/capi.c                    |  31 +
- drivers/isdn/i4l/isdn_ppp.c                 |  14 +-
- drivers/media/rc/lirc_dev.c                 |   4 +-
- drivers/mfd/cros_ec_dev.c                   |   4 +-
- drivers/misc/cxl/flash.c                    |   8 +-
- drivers/misc/genwqe/card_dev.c              |  23 +-
- drivers/misc/mei/main.c                     |  22 +-
- drivers/misc/vmw_vmci/vmci_host.c           |   2 +-
- drivers/mtd/ubi/cdev.c                      |  36 +-
- drivers/net/ppp/ppp_generic.c               |  99 +++-
- drivers/net/ppp/pppoe.c                     |   7 +
- drivers/net/ppp/pptp.c                      |   3 +
- drivers/net/tap.c                           |  12 +-
- drivers/nvdimm/bus.c                        |   4 +-
- drivers/nvme/host/core.c                    |   2 +-
- drivers/pci/switch/switchtec.c              |   2 +-
- drivers/platform/x86/wmi.c                  |   2 +-
- drivers/rpmsg/rpmsg_char.c                  |   4 +-
- drivers/rtc/dev.c                           |  13 +-
- drivers/rtc/rtc-vr41xx.c                    |  10 +
- drivers/s390/char/tape_char.c               |  41 +-
- drivers/sbus/char/display7seg.c             |   2 +-
- drivers/sbus/char/envctrl.c                 |   4 +-
- drivers/scsi/3w-xxxx.c                      |   4 +-
- drivers/scsi/cxlflash/main.c                |   2 +-
- drivers/scsi/esas2r/esas2r_main.c           |   2 +-
- drivers/scsi/megaraid/megaraid_mm.c         |  28 +-
- drivers/scsi/osst.c                         |  34 +-
- drivers/scsi/pmcraid.c                      |   4 +-
- drivers/scsi/st.c                           |  35 +-
- drivers/staging/android/ion/ion.c           |   4 +-
- drivers/staging/pi433/pi433_if.c            |  12 +-
- drivers/staging/vme/devices/vme_user.c      |   2 +-
- drivers/tee/tee_core.c                      |   2 +-
- drivers/usb/class/cdc-wdm.c                 |   2 +-
- drivers/usb/class/usbtmc.c                  |   4 +-
- drivers/usb/core/devio.c                    |  16 +-
- drivers/usb/gadget/function/f_fs.c          |  12 +-
- drivers/vfio/vfio.c                         |  39 +-
- drivers/vhost/net.c                         |  12 +-
- drivers/vhost/scsi.c                        |  12 +-
- drivers/vhost/test.c                        |  12 +-
- drivers/vhost/vsock.c                       |  12 +-
- drivers/video/fbdev/aty/atyfb_base.c        |  12 +-
- drivers/virt/fsl_hypervisor.c               |   2 +-
- fs/btrfs/super.c                            |   2 +-
- fs/ceph/dir.c                               |   1 +
- fs/ceph/file.c                              |   2 +-
- fs/compat_ioctl.c                           | 602 +-------------------
- fs/fat/file.c                               |  13 +-
- fs/fuse/dev.c                               |   2 +-
- fs/notify/fanotify/fanotify_user.c          |   2 +-
- fs/userfaultfd.c                            |   2 +-
- include/linux/fs.h                          |   7 +
- include/linux/if_pppox.h                    |   2 +
- include/linux/mtio.h                        |  58 ++
- include/uapi/linux/ppp-ioctl.h              |   2 +
- include/uapi/linux/ppp_defs.h               |  14 +
- net/bluetooth/hci_sock.c                    |  21 +-
- net/bluetooth/rfcomm/sock.c                 |  14 +-
- net/l2tp/l2tp_ppp.c                         |   3 +
- net/rfkill/core.c                           |   2 +-
- sound/core/oss/pcm_oss.c                    |   4 +
- sound/oss/dmasound/dmasound_core.c          |   2 +
- 82 files changed, 452 insertions(+), 1034 deletions(-)
- create mode 100644 include/linux/mtio.h
-
+diff --git a/drivers/misc/cxl/flash.c b/drivers/misc/cxl/flash.c
+index 4d6836f19489..cb9cca35a226 100644
+--- a/drivers/misc/cxl/flash.c
++++ b/drivers/misc/cxl/flash.c
+@@ -473,12 +473,6 @@ static long device_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
+ 		return -EINVAL;
+ }
+ 
+-static long device_compat_ioctl(struct file *file, unsigned int cmd,
+-				unsigned long arg)
+-{
+-	return device_ioctl(file, cmd, arg);
+-}
+-
+ static int device_close(struct inode *inode, struct file *file)
+ {
+ 	struct cxl *adapter = file->private_data;
+@@ -514,7 +508,7 @@ static const struct file_operations fops = {
+ 	.owner		= THIS_MODULE,
+ 	.open		= device_open,
+ 	.unlocked_ioctl	= device_ioctl,
+-	.compat_ioctl	= device_compat_ioctl,
++	.compat_ioctl	= compat_ptr_ioctl,
+ 	.release	= device_close,
+ };
+ 
+diff --git a/drivers/misc/genwqe/card_dev.c b/drivers/misc/genwqe/card_dev.c
+index 8c1b63a4337b..5de0796f2786 100644
+--- a/drivers/misc/genwqe/card_dev.c
++++ b/drivers/misc/genwqe/card_dev.c
+@@ -1221,34 +1221,13 @@ static long genwqe_ioctl(struct file *filp, unsigned int cmd,
+ 	return rc;
+ }
+ 
+-#if defined(CONFIG_COMPAT)
+-/**
+- * genwqe_compat_ioctl() - Compatibility ioctl
+- *
+- * Called whenever a 32-bit process running under a 64-bit kernel
+- * performs an ioctl on /dev/genwqe<n>_card.
+- *
+- * @filp:        file pointer.
+- * @cmd:         command.
+- * @arg:         user argument.
+- * Return:       zero on success or negative number on failure.
+- */
+-static long genwqe_compat_ioctl(struct file *filp, unsigned int cmd,
+-				unsigned long arg)
+-{
+-	return genwqe_ioctl(filp, cmd, arg);
+-}
+-#endif /* defined(CONFIG_COMPAT) */
+-
+ static const struct file_operations genwqe_fops = {
+ 	.owner		= THIS_MODULE,
+ 	.open		= genwqe_open,
+ 	.fasync		= genwqe_fasync,
+ 	.mmap		= genwqe_mmap,
+ 	.unlocked_ioctl	= genwqe_ioctl,
+-#if defined(CONFIG_COMPAT)
+-	.compat_ioctl   = genwqe_compat_ioctl,
+-#endif
++	.compat_ioctl   = compat_ptr_ioctl,
+ 	.release	= genwqe_release,
+ };
+ 
+diff --git a/drivers/scsi/megaraid/megaraid_mm.c b/drivers/scsi/megaraid/megaraid_mm.c
+index 3ce837e4b24c..21ee5751c04e 100644
+--- a/drivers/scsi/megaraid/megaraid_mm.c
++++ b/drivers/scsi/megaraid/megaraid_mm.c
+@@ -45,10 +45,6 @@ static int mraid_mm_setup_dma_pools(mraid_mmadp_t *);
+ static void mraid_mm_free_adp_resources(mraid_mmadp_t *);
+ static void mraid_mm_teardown_dma_pools(mraid_mmadp_t *);
+ 
+-#ifdef CONFIG_COMPAT
+-static long mraid_mm_compat_ioctl(struct file *, unsigned int, unsigned long);
+-#endif
+-
+ MODULE_AUTHOR("LSI Logic Corporation");
+ MODULE_DESCRIPTION("LSI Logic Management Module");
+ MODULE_LICENSE("GPL");
+@@ -72,9 +68,7 @@ static wait_queue_head_t wait_q;
+ static const struct file_operations lsi_fops = {
+ 	.open	= mraid_mm_open,
+ 	.unlocked_ioctl = mraid_mm_unlocked_ioctl,
+-#ifdef CONFIG_COMPAT
+-	.compat_ioctl = mraid_mm_compat_ioctl,
+-#endif
++	.compat_ioctl = compat_ptr_ioctl,
+ 	.owner	= THIS_MODULE,
+ 	.llseek = noop_llseek,
+ };
+@@ -228,7 +222,6 @@ mraid_mm_unlocked_ioctl(struct file *filep, unsigned int cmd,
+ {
+ 	int err;
+ 
+-	/* inconsistent: mraid_mm_compat_ioctl doesn't take the BKL */
+ 	mutex_lock(&mraid_mm_mutex);
+ 	err = mraid_mm_ioctl(filep, cmd, arg);
+ 	mutex_unlock(&mraid_mm_mutex);
+@@ -1232,25 +1225,6 @@ mraid_mm_init(void)
+ }
+ 
+ 
+-#ifdef CONFIG_COMPAT
+-/**
+- * mraid_mm_compat_ioctl	- 32bit to 64bit ioctl conversion routine
+- * @filep	: file operations pointer (ignored)
+- * @cmd		: ioctl command
+- * @arg		: user ioctl packet
+- */
+-static long
+-mraid_mm_compat_ioctl(struct file *filep, unsigned int cmd,
+-		      unsigned long arg)
+-{
+-	int err;
+-
+-	err = mraid_mm_ioctl(filep, cmd, arg);
+-
+-	return err;
+-}
+-#endif
+-
+ /**
+  * mraid_mm_exit	- Module exit point
+  */
+diff --git a/drivers/usb/gadget/function/f_fs.c b/drivers/usb/gadget/function/f_fs.c
+index 20413c276c61..addc210d198a 100644
+--- a/drivers/usb/gadget/function/f_fs.c
++++ b/drivers/usb/gadget/function/f_fs.c
+@@ -1347,14 +1347,6 @@ static long ffs_epfile_ioctl(struct file *file, unsigned code,
+ 	return ret;
+ }
+ 
+-#ifdef CONFIG_COMPAT
+-static long ffs_epfile_compat_ioctl(struct file *file, unsigned code,
+-		unsigned long value)
+-{
+-	return ffs_epfile_ioctl(file, code, value);
+-}
+-#endif
+-
+ static const struct file_operations ffs_epfile_operations = {
+ 	.llseek =	no_llseek,
+ 
+@@ -1363,9 +1355,7 @@ static const struct file_operations ffs_epfile_operations = {
+ 	.read_iter =	ffs_epfile_read_iter,
+ 	.release =	ffs_epfile_release,
+ 	.unlocked_ioctl =	ffs_epfile_ioctl,
+-#ifdef CONFIG_COMPAT
+-	.compat_ioctl = ffs_epfile_compat_ioctl,
+-#endif
++	.compat_ioctl = compat_ptr_ioctl,
+ };
+ 
+ 
 -- 
 2.20.0
 
-Cc: "David S. Miller" <davem@davemloft.net>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: Karsten Keil <isdn@linux-pingi.de>
-Cc: "James E.J. Bottomley" <jejb@linux.ibm.com>
-Cc: "Martin K. Petersen" <martin.petersen@oracle.com>
-Cc: Marcel Holtmann <marcel@holtmann.org>
-Cc: netdev@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
-Cc: devel@driverdev.osuosl.org
-Cc: linux-integrity@vger.kernel.org
-Cc: qat-linux@intel.com
-Cc: linux-crypto@vger.kernel.org
-Cc: linux-media@vger.kernel.org
-Cc: dri-devel@lists.freedesktop.org
-Cc: linux1394-devel@lists.sourceforge.net
-Cc: amd-gfx@lists.freedesktop.org
-Cc: linux-input@vger.kernel.org
-Cc: linux-usb@vger.kernel.org
-Cc: linux-arm-kernel@lists.infradead.org
-Cc: linux-ide@vger.kernel.org
-Cc: linux-iio@vger.kernel.org
-Cc: linux-rdma@vger.kernel.org
-Cc: linuxppc-dev@lists.ozlabs.org
-Cc: linux-mtd@lists.infradead.org
-Cc: linux-ppp@vger.kernel.org
-Cc: linux-nvme@lists.infradead.org
-Cc: platform-driver-x86@vger.kernel.org
-Cc: linux-remoteproc@vger.kernel.org
-Cc: linux-rtc@vger.kernel.org
-Cc: linux-s390@vger.kernel.org
-Cc: sparclinux@vger.kernel.org
-Cc: linux-scsi@vger.kernel.org
-Cc: linux-fbdev@vger.kernel.org
-Cc: linux-btrfs@vger.kernel.org
-Cc: ceph-devel@vger.kernel.org
-Cc: linux-fsdevel@vger.kernel.org
-Cc: linux-bluetooth@vger.kernel.org
-Cc: linux-wireless@vger.kernel.org
-Cc: alsa-devel@alsa-project.org
-Cc: y2038@lists.linaro.org
