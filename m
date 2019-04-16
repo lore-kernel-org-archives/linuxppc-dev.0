@@ -2,102 +2,49 @@ Return-Path: <SRS0=rc36=SS=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,USER_AGENT_MUTT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 55CCAC10F13
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Apr 2019 11:03:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 17DD8C10F13
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Apr 2019 11:43:11 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id CB8B92073F
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Apr 2019 11:03:18 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CB8B92073F
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 36E7B20675
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Apr 2019 11:43:10 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 36E7B20675
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44k2Xh45WPzDqGS
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Apr 2019 21:03:16 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44k1xs3q8MzDqKT
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Apr 2019 20:36:33 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44k3Qg0pbrzDqJm
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Apr 2019 21:43:07 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 44k1xs2grvz8tVP
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Apr 2019 20:36:33 +1000 (AEST)
-Received: by ozlabs.org (Postfix)
- id 44k1xs1jsXz9s5c; Tue, 16 Apr 2019 20:36:33 +1000 (AEST)
-Authentication-Results: ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
- (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=hbathini@linux.ibm.com; receiver=<UNKNOWN>)
-Authentication-Results: ozlabs.org;
- dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 44k1xr5TgZz9s00
- for <linuxppc-dev@ozlabs.org>; Tue, 16 Apr 2019 20:36:32 +1000 (AEST)
-Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x3GAWq6X030670
- for <linuxppc-dev@ozlabs.org>; Tue, 16 Apr 2019 06:36:31 -0400
-Received: from e06smtp02.uk.ibm.com (e06smtp02.uk.ibm.com [195.75.94.98])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2rwbr44vgt-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@ozlabs.org>; Tue, 16 Apr 2019 06:36:30 -0400
-Received: from localhost
- by e06smtp02.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <hbathini@linux.ibm.com>;
- Tue, 16 Apr 2019 11:36:28 +0100
-Received: from b06cxnps4074.portsmouth.uk.ibm.com (9.149.109.196)
- by e06smtp02.uk.ibm.com (192.168.101.132) with IBM ESMTP SMTP Gateway:
- Authorized Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Tue, 16 Apr 2019 11:36:26 +0100
-Received: from d06av21.portsmouth.uk.ibm.com (d06av21.portsmouth.uk.ibm.com
- [9.149.105.232])
- by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x3GAaOcU21954650
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Tue, 16 Apr 2019 10:36:24 GMT
-Received: from d06av21.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id A2B3B52050;
- Tue, 16 Apr 2019 10:36:24 +0000 (GMT)
-Received: from hbathini.in.ibm.com (unknown [9.184.183.117])
- by d06av21.portsmouth.uk.ibm.com (Postfix) with ESMTP id 533B852057;
- Tue, 16 Apr 2019 10:36:23 +0000 (GMT)
-Subject: [PATCH v2 16/16] powernv/fadump: update documentation about option
- to release opalcore
-From: Hari Bathini <hbathini@linux.ibm.com>
-To: linuxppc-dev <linuxppc-dev@ozlabs.org>
-Date: Tue, 16 Apr 2019 16:06:22 +0530
-In-Reply-To: <155541065470.812.7120798773144842076.stgit@hbathini.in.ibm.com>
-References: <155541065470.812.7120798773144842076.stgit@hbathini.in.ibm.com>
-User-Agent: StGit/0.17.1-dirty
+ spf=pass (mailfrom) smtp.mailfrom=arm.com
+ (client-ip=217.140.101.70; helo=foss.arm.com;
+ envelope-from=catalin.marinas@arm.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=arm.com
+Received: from foss.arm.com (foss.arm.com [217.140.101.70])
+ by lists.ozlabs.org (Postfix) with ESMTP id 44k3NW5BVWzDqDc
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Apr 2019 21:41:14 +1000 (AEST)
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.72.51.249])
+ by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 3AC77EBD;
+ Tue, 16 Apr 2019 04:41:12 -0700 (PDT)
+Received: from arrakis.emea.arm.com (arrakis.cambridge.arm.com [10.1.196.78])
+ by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id
+ 7FF603F68F; Tue, 16 Apr 2019 04:41:06 -0700 (PDT)
+Date: Tue, 16 Apr 2019 12:41:04 +0100
+From: Catalin Marinas <catalin.marinas@arm.com>
+To: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [PATCH] [v2] arch: add pidfd and io_uring syscalls everywhere
+Message-ID: <20190416114103.GB28994@arrakis.emea.arm.com>
+References: <20190415143007.2989285-1-arnd@arndb.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-X-TM-AS-GCONF: 00
-x-cbid: 19041610-0008-0000-0000-000002DA5E51
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19041610-0009-0000-0000-000022469613
-Message-Id: <155541098071.812.5243685114834768417.stgit@hbathini.in.ibm.com>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2019-04-16_04:, , signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1810050000 definitions=main-1904160072
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20190415143007.2989285-1-arnd@arndb.de>
+User-Agent: Mutt/1.10.1 (2018-07-13)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -109,58 +56,63 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Ananth N Mavinakayanahalli <ananth@linux.ibm.com>,
- Mahesh J Salgaonkar <mahesh@linux.ibm.com>,
- Vasant Hegde <hegdevasant@linux.ibm.com>, Nicholas Piggin <npiggin@gmail.com>,
- Stewart Smith <stewart@linux.ibm.com>, Daniel Axtens <dja@axtens.net>
+Cc: Rich Felker <dalias@libc.org>, linux-ia64@vger.kernel.org,
+ linux-sh@vger.kernel.org, Heiko Carstens <heiko.carstens@de.ibm.com>,
+ linux-mips@vger.kernel.org,
+ "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>,
+ Max Filippov <jcmvbkbc@gmail.com>, sparclinux@vger.kernel.org,
+ linux-arch@vger.kernel.org, linux-s390@vger.kernel.org,
+ Yoshinori Sato <ysato@users.sourceforge.jp>, Helge Deller <deller@gmx.de>,
+ Russell King <linux@armlinux.org.uk>,
+ Geert Uytterhoeven <geert@linux-m68k.org>, James Hogan <jhogan@kernel.org>,
+ Firoz Khan <firoz.khan@linaro.org>, Matt Turner <mattst88@gmail.com>,
+ Fenghua Yu <fenghua.yu@intel.com>, Will Deacon <will.deacon@arm.com>,
+ linux-m68k@lists.linux-m68k.org, Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
+ linux-arm-kernel@lists.infradead.org, Richard Henderson <rth@twiddle.net>,
+ Chris Zankel <chris@zankel.net>, Michal Simek <monstr@monstr.eu>,
+ Tony Luck <tony.luck@intel.com>, linux-parisc@vger.kernel.org,
+ linux-kernel@vger.kernel.org, Ralf Baechle <ralf@linux-mips.org>,
+ Paul Burton <paul.burton@mips.com>, linux-alpha@vger.kernel.org,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ "David S. Miller" <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-With /proc/opalcore support available on OPAL based machines and an
-option to release memory used by kernel in exporting /proc/opalcore,
-update FADump documentation with these details.
+On Mon, Apr 15, 2019 at 04:22:57PM +0200, Arnd Bergmann wrote:
+> Add the io_uring and pidfd_send_signal system calls to all architectures.
+> 
+> These system calls are designed to handle both native and compat tasks,
+> so all entries are the same across architectures, only arm-compat and
+> the generic tale still use an old format.
+> 
+> Acked-by: Michael Ellerman <mpe@ellerman.id.au> (powerpc)
+> Acked-by: Heiko Carstens <heiko.carstens@de.ibm.com> (s390)
+> Acked-by: Geert Uytterhoeven <geert@linux-m68k.org>
+> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+> ---
+> Changes since v1:
+> - fix s390 table
+> - use 'n64' tag in mips-n64 instead of common.
+> ---
+>  arch/alpha/kernel/syscalls/syscall.tbl      | 4 ++++
+>  arch/arm/tools/syscall.tbl                  | 4 ++++
+>  arch/arm64/include/asm/unistd.h             | 2 +-
+>  arch/arm64/include/asm/unistd32.h           | 8 ++++++++
+>  arch/ia64/kernel/syscalls/syscall.tbl       | 4 ++++
+>  arch/m68k/kernel/syscalls/syscall.tbl       | 4 ++++
+>  arch/microblaze/kernel/syscalls/syscall.tbl | 4 ++++
+>  arch/mips/kernel/syscalls/syscall_n32.tbl   | 4 ++++
+>  arch/mips/kernel/syscalls/syscall_n64.tbl   | 4 ++++
+>  arch/mips/kernel/syscalls/syscall_o32.tbl   | 4 ++++
+>  arch/parisc/kernel/syscalls/syscall.tbl     | 4 ++++
+>  arch/powerpc/kernel/syscalls/syscall.tbl    | 4 ++++
+>  arch/s390/kernel/syscalls/syscall.tbl       | 4 ++++
+>  arch/sh/kernel/syscalls/syscall.tbl         | 4 ++++
+>  arch/sparc/kernel/syscalls/syscall.tbl      | 4 ++++
+>  arch/xtensa/kernel/syscalls/syscall.tbl     | 4 ++++
+>  16 files changed, 65 insertions(+), 1 deletion(-)
 
-Signed-off-by: Hari Bathini <hbathini@linux.ibm.com>
----
- Documentation/powerpc/firmware-assisted-dump.txt |   19 +++++++++++++++++++
- 1 file changed, 19 insertions(+)
+For arm64:
 
-diff --git a/Documentation/powerpc/firmware-assisted-dump.txt b/Documentation/powerpc/firmware-assisted-dump.txt
-index fa35593..6411449 100644
---- a/Documentation/powerpc/firmware-assisted-dump.txt
-+++ b/Documentation/powerpc/firmware-assisted-dump.txt
-@@ -107,6 +107,16 @@ capture kernel boot to process this crash data. Kernel config
- option CONFIG_PRESERVE_FA_DUMP has to be enabled on such kernel
- to ensure that crash data is preserved to process later.
- 
-+-- On OPAL based machines (PowerNV), if the kernel is build with
-+   CONFIG_OPAL_CORE=y, OPAL memory at the time of crash is also
-+   exported as /proc/opalcore file. This procfs file is helpful
-+   in debugging OPAL crashes with GDB. The kernel memory used
-+   for exporting this procfs file can be released by echo'ing
-+   '1' to /sys/kernel/fadump_release_opalcore node.
-+
-+   e.g.
-+     # echo 1 > /sys/kernel/fadump_release_opalcore
-+
- Implementation details:
- ----------------------
- 
-@@ -260,6 +270,15 @@ Here is the list of files under kernel sysfs:
-     enhanced to use this interface to release the memory reserved for
-     dump and continue without 2nd reboot.
- 
-+ /sys/kernel/fadump_release_opalcore
-+
-+    This file is available only on OPAL based machines when FADump is
-+    active during capture kernel. This is used to release the memory
-+    used by the kernel to export /proc/opalcore file. To release this
-+    memory, echo '1' to it:
-+
-+    echo 1  > /sys/kernel/fadump_release_opalcore
-+
- Here is the list of files under powerpc debugfs:
- (Assuming debugfs is mounted on /sys/kernel/debug directory.)
- 
-
+Acked-by: Catalin Marinas <catalin.marinas@arm.com>
