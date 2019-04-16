@@ -2,52 +2,54 @@ Return-Path: <SRS0=rc36=SS=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_MUTT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_PASS autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A7C0CC10F13
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Apr 2019 21:51:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6C8BDC10F13
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Apr 2019 23:35:36 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3217120821
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Apr 2019 21:51:46 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3217120821
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arm.com
+	by mail.kernel.org (Postfix) with ESMTPS id B2EB720872
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Apr 2019 23:35:35 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B2EB720872
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linux-foundation.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44kJww2yYDzDqL4
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Apr 2019 07:51:44 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44kMDj2FpZzDqM1
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Apr 2019 09:35:33 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=arm.com
- (client-ip=217.140.101.70; helo=foss.arm.com;
- envelope-from=will.deacon@arm.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=arm.com
-Received: from foss.arm.com (usa-sjc-mx-foss1.foss.arm.com [217.140.101.70])
- by lists.ozlabs.org (Postfix) with ESMTP id 44kJft4c0QzDqLV
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Apr 2019 07:39:33 +1000 (AEST)
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.72.51.249])
- by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id C98EE15A2;
- Tue, 16 Apr 2019 14:39:30 -0700 (PDT)
-Received: from brain-police (usa-sjc-mx-foss1.foss.arm.com [217.140.101.70])
- by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 6781C3F59C;
- Tue, 16 Apr 2019 14:39:24 -0700 (PDT)
-Date: Tue, 16 Apr 2019 22:39:21 +0100
-From: Will Deacon <will.deacon@arm.com>
-To: Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH v2 5/5] arm64/speculation: Support 'mitigations=' cmdline
- option
-Message-ID: <20190416213920.GC11724@brain-police>
-References: <cover.1555085500.git.jpoimboe@redhat.com>
- <24039e1370ed57e8075730c0b88c505afd9e0ab7.1555085500.git.jpoimboe@redhat.com>
- <alpine.DEB.2.21.1904162124020.1780@nanos.tec.linutronix.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.21.1904162124020.1780@nanos.tec.linutronix.de>
-User-Agent: Mutt/1.9.4 (2018-02-28)
+ spf=pass (mailfrom) smtp.mailfrom=linux-foundation.org
+ (client-ip=140.211.169.12; helo=mail.linuxfoundation.org;
+ envelope-from=akpm@linux-foundation.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=linux-foundation.org
+Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
+ [140.211.169.12])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44kMBr6mPxzDqLj
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Apr 2019 09:33:54 +1000 (AEST)
+Received: from akpm3.svl.corp.google.com (unknown [104.133.8.65])
+ by mail.linuxfoundation.org (Postfix) with ESMTPSA id 5A7E4C9F;
+ Tue, 16 Apr 2019 23:33:52 +0000 (UTC)
+Date: Tue, 16 Apr 2019 16:33:51 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Daniel Jordan <daniel.m.jordan@oracle.com>
+Subject: Re: [PATCH 1/6] mm: change locked_vm's type from unsigned long to
+ atomic64_t
+Message-Id: <20190416163351.5e4e075ddfad0677239fc23a@linux-foundation.org>
+In-Reply-To: <20190411202807.q2fge33uoduhtehq@ca-dmjordan1.us.oracle.com>
+References: <20190402204158.27582-1-daniel.m.jordan@oracle.com>
+ <20190402204158.27582-2-daniel.m.jordan@oracle.com>
+ <614ea07a-dd1e-2561-b6f4-2d698bf55f5b@ozlabs.ru>
+ <20190411095543.GA55197@lakrids.cambridge.arm.com>
+ <20190411202807.q2fge33uoduhtehq@ca-dmjordan1.us.oracle.com>
+X-Mailer: Sylpheed 3.7.0 (GTK+ 2.24.31; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -59,45 +61,49 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Peter Zijlstra <peterz@infradead.org>,
- Heiko Carstens <heiko.carstens@de.ibm.com>, Paul Mackerras <paulus@samba.org>,
- "H . Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@kernel.org>,
- Andrea Arcangeli <aarcange@redhat.com>, linux-s390@vger.kernel.org,
- x86@kernel.org, Steven Price <steven.price@arm.com>,
- Linus Torvalds <torvalds@linux-foundation.org>,
- Catalin Marinas <catalin.marinas@arm.com>, Waiman Long <longman@redhat.com>,
- linux-arch@vger.kernel.org, Jon Masters <jcm@redhat.com>,
- Jiri Kosina <jikos@kernel.org>, Borislav Petkov <bp@alien8.de>,
- Andy Lutomirski <luto@kernel.org>, Josh Poimboeuf <jpoimboe@redhat.com>,
- linux-arm-kernel@lists.infradead.org, Phil Auld <pauld@redhat.com>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Randy Dunlap <rdunlap@infradead.org>, linux-kernel@vger.kernel.org,
- Tyler Hicks <tyhicks@canonical.com>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Cc: Mark Rutland <mark.rutland@arm.com>, Davidlohr Bueso <dave@stgolabs.net>,
+ kvm@vger.kernel.org, Alan Tull <atull@kernel.org>,
+ Alexey Kardashevskiy <aik@ozlabs.ru>, linux-fpga@vger.kernel.org,
+ linux-kernel@vger.kernel.org, kvm-ppc@vger.kernel.org, linux-mm@kvack.org,
+ Alex Williamson <alex.williamson@redhat.com>, Moritz Fischer <mdf@kernel.org>,
+ Christoph Lameter <cl@linux.com>, linuxppc-dev@lists.ozlabs.org,
+ Wu Hao <hao.wu@intel.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, Apr 16, 2019 at 09:26:13PM +0200, Thomas Gleixner wrote:
-> On Fri, 12 Apr 2019, Josh Poimboeuf wrote:
-> 
-> > Configure arm64 runtime CPU speculation bug mitigations in accordance
-> > with the 'mitigations=' cmdline option.  This affects Meltdown, Spectre
-> > v2, and Speculative Store Bypass.
-> > 
-> > The default behavior is unchanged.
-> > 
-> > Signed-off-by: Josh Poimboeuf <jpoimboe@redhat.com>
-> > ---
-> > NOTE: This is based on top of Jeremy Linton's patches:
-> >       https://lkml.kernel.org/r/20190410231237.52506-1-jeremy.linton@arm.com
-> 
-> So I keep that out and we have to revisit that once the ARM64 stuff hits a
-> tree, right? I can have a branch with just the 4 first patches applied
-> which ARM64 folks can pull in when they apply Jeremy's patches before te
-> merge window.
+On Thu, 11 Apr 2019 16:28:07 -0400 Daniel Jordan <daniel.m.jordan@oracle.com> wrote:
 
-Yes, that would work for us, cheers. I should get to Jeremy's latest version
-next week and I'm certainly planning to get them queued up for 5.2.
+> On Thu, Apr 11, 2019 at 10:55:43AM +0100, Mark Rutland wrote:
+> > On Thu, Apr 11, 2019 at 02:22:23PM +1000, Alexey Kardashevskiy wrote:
+> > > On 03/04/2019 07:41, Daniel Jordan wrote:
+> > 
+> > > > -	dev_dbg(dev, "[%d] RLIMIT_MEMLOCK %c%ld %ld/%ld%s\n", current->pid,
+> > > > +	dev_dbg(dev, "[%d] RLIMIT_MEMLOCK %c%ld %lld/%lu%s\n", current->pid,
+> > > >  		incr ? '+' : '-', npages << PAGE_SHIFT,
+> > > > -		current->mm->locked_vm << PAGE_SHIFT, rlimit(RLIMIT_MEMLOCK),
+> > > > -		ret ? "- exceeded" : "");
+> > > > +		(s64)atomic64_read(&current->mm->locked_vm) << PAGE_SHIFT,
+> > > > +		rlimit(RLIMIT_MEMLOCK), ret ? "- exceeded" : "");
+> > > 
+> > > 
+> > > 
+> > > atomic64_read() returns "long" which matches "%ld", why this change (and
+> > > similar below)? You did not do this in the two pr_debug()s above anyway.
+> > 
+> > Unfortunately, architectures return inconsistent types for atomic64 ops.
+> > 
+> > Some return long (e..g. powerpc), some return long long (e.g. arc), and
+> > some return s64 (e.g. x86).
+> 
+> Yes, Mark said it all, I'm just chiming in to confirm that's why I added the
+> cast.
+> 
+> Btw, thanks for doing this, Mark.
 
-Will
+What's the status of this patchset, btw?
+
+I have a note here that
+powerpc-mmu-drop-mmap_sem-now-that-locked_vm-is-atomic.patch is to be
+updated.
+
