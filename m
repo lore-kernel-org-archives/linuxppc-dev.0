@@ -2,90 +2,109 @@ Return-Path: <SRS0=rc36=SS=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_MUTT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AF06FC10F13
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Apr 2019 20:33:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6C3B2C10F13
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Apr 2019 20:57:19 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3027520880
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Apr 2019 20:33:38 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="J+SPwpl3"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3027520880
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=roeck-us.net
+	by mail.kernel.org (Postfix) with ESMTPS id AF86520684
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Apr 2019 20:57:18 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org AF86520684
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44kHBl6pkMzDqG1
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Apr 2019 06:33:35 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44kHk41dXVzDqHF
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Apr 2019 06:57:16 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=2607:f8b0:4864:20::641; helo=mail-pl1-x641.google.com;
- envelope-from=groeck7@gmail.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
+ (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
+ envelope-from=ldufour@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=roeck-us.net
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="J+SPwpl3"; 
- dkim-atps=neutral
-Received: from mail-pl1-x641.google.com (mail-pl1-x641.google.com
- [IPv6:2607:f8b0:4864:20::641])
+ dmarc=none (p=none dis=none) header.from=linux.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44kH871F4wzDqDS;
- Wed, 17 Apr 2019 06:31:18 +1000 (AEST)
-Received: by mail-pl1-x641.google.com with SMTP id g12so10869041pll.11;
- Tue, 16 Apr 2019 13:31:18 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=sender:date:from:to:cc:subject:message-id:references:mime-version
- :content-disposition:in-reply-to:user-agent;
- bh=kCyaUCGVc/V6ZyQOKtuzykzGifqfq9ikv6LcWKWTfVU=;
- b=J+SPwpl35yPvHJvJZ07r8o1l2k8iBLdOLSUgh3hA52oOCQvnOmI/UtNV7IcX+wYfkE
- ENWd7wa2xE9c9wXvpgX+FqcJYCa5LtEB+0ZGfd/lBqbPLZhPUnItDgM42vg/wwFzFI/3
- 0KGQQHYgl/IJutFNMyNnnitvjHPrnXrkMfK256Bwj25KM8TpjQCDleaNq1aTiW921Ts+
- FF3phjjQQ0b29KLaMt5BORp7Fgrym9NeT6rlbak8owR83BkYtHJiq6muO9Pg9p5aG4PD
- KreMwl56PPQm0avEhhwEWmr2+mrYBxuFT3vi6sS5o3Nmp/l2gMIeH6gVxOA6F2oEbVC+
- NidQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:sender:date:from:to:cc:subject:message-id
- :references:mime-version:content-disposition:in-reply-to:user-agent;
- bh=kCyaUCGVc/V6ZyQOKtuzykzGifqfq9ikv6LcWKWTfVU=;
- b=OudiP6KA/YwMI+ED25gYlcqkDVgnPe5UqcfL+t8hsUKwwURiwm/ETsZD0nvvLziOGC
- FBtZ7xAquINosNwWZTVJNQY/PN3SuBU4kW9s7kNZLayNhvLdPNbicxnpE5Jkw2Ezc2lp
- xhjOp6be10BXpe/iQ9Ai25Zdif/t43mYyQXpaFQeWhAGjh3+VZMT5TRYQivYyV0oL2eG
- T9+UVhorPGBniVvrHjrsoIdlIz7sBqcXKYH/C54E13xW7I8Y2opOYH8wqGpVn8V+mmv0
- HYRFY6EcdgNqAVAZLUVt+rM5ETyGyN7ZXtPi2O/Vp2jPrMyPr+Na3XG4Z1JSRkMjekAt
- fpBw==
-X-Gm-Message-State: APjAAAUKKXv4bdL48ApBv/ASdW1336KJIjsLcqVUmkV8+EnCd8osDAI2
- H4we9/GIEYwB4fdnS0CXcmc=
-X-Google-Smtp-Source: APXvYqzUOhZnFUrYJ3CgrX3jDbq+IXxjHEH7hysLbncDjc6qCSVo+371FJ8CPB/OYsHBPFtMOU/9pA==
-X-Received: by 2002:a17:902:2b88:: with SMTP id
- l8mr80447832plb.262.1555446675674; 
- Tue, 16 Apr 2019 13:31:15 -0700 (PDT)
-Received: from localhost ([2600:1700:e321:62f0:329c:23ff:fee3:9d7c])
- by smtp.gmail.com with ESMTPSA id j12sm65163698pgg.79.2019.04.16.13.31.14
- (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
- Tue, 16 Apr 2019 13:31:14 -0700 (PDT)
-Date: Tue, 16 Apr 2019 13:31:14 -0700
-From: Guenter Roeck <linux@roeck-us.net>
-To: Jonathan Corbet <corbet@lwn.net>
-Subject: Re: [PATCH v2 00/21] Convert hwmon documentation to ReST
-Message-ID: <20190416203114.GB25517@roeck-us.net>
-References: <cover.1554923967.git.mchehab+samsung@kernel.org>
- <20190411124324.3ed62fad@lwn.net>
- <20190411174357.251904f5@coco.lan>
- <20190411210731.GA29378@roeck-us.net>
- <20190412100451.6fe49de7@lwn.net>
- <f900adea-d231-c00d-847c-33e66e79ea30@roeck-us.net>
- <20190416141949.09b48789@lwn.net>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44k6B76ghzzDqDN
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Apr 2019 23:47:21 +1000 (AEST)
+Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
+ x3GDlGBZ010737
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Apr 2019 09:47:19 -0400
+Received: from e06smtp02.uk.ibm.com (e06smtp02.uk.ibm.com [195.75.94.98])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2rwe56nww7-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Apr 2019 09:47:17 -0400
+Received: from localhost
+ by e06smtp02.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <ldufour@linux.ibm.com>;
+ Tue, 16 Apr 2019 14:45:39 +0100
+Received: from b06cxnps4075.portsmouth.uk.ibm.com (9.149.109.197)
+ by e06smtp02.uk.ibm.com (192.168.101.132) with IBM ESMTP SMTP Gateway:
+ Authorized Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Tue, 16 Apr 2019 14:45:29 +0100
+Received: from d06av22.portsmouth.uk.ibm.com (d06av22.portsmouth.uk.ibm.com
+ [9.149.105.58])
+ by b06cxnps4075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x3GDjSvi36962434
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Tue, 16 Apr 2019 13:45:28 GMT
+Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 5A08D4C044;
+ Tue, 16 Apr 2019 13:45:28 +0000 (GMT)
+Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 4AD3D4C058;
+ Tue, 16 Apr 2019 13:45:26 +0000 (GMT)
+Received: from nimbus.lab.toulouse-stg.fr.ibm.com (unknown [9.101.4.33])
+ by d06av22.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Tue, 16 Apr 2019 13:45:26 +0000 (GMT)
+From: Laurent Dufour <ldufour@linux.ibm.com>
+To: akpm@linux-foundation.org, mhocko@kernel.org, peterz@infradead.org,
+ kirill@shutemov.name, ak@linux.intel.com, dave@stgolabs.net,
+ jack@suse.cz, Matthew Wilcox <willy@infradead.org>,
+ aneesh.kumar@linux.ibm.com, benh@kernel.crashing.org,
+ mpe@ellerman.id.au, paulus@samba.org,
+ Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+ hpa@zytor.com, Will Deacon <will.deacon@arm.com>,
+ Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
+ sergey.senozhatsky.work@gmail.com, Andrea Arcangeli <aarcange@redhat.com>,
+ Alexei Starovoitov <alexei.starovoitov@gmail.com>, kemi.wang@intel.com,
+ Daniel Jordan <daniel.m.jordan@oracle.com>,
+ David Rientjes <rientjes@google.com>, Jerome Glisse <jglisse@redhat.com>,
+ Ganesh Mahendran <opensource.ganesh@gmail.com>,
+ Minchan Kim <minchan@kernel.org>, Punit Agrawal <punitagrawal@gmail.com>,
+ vinayak menon <vinayakm.list@gmail.com>,
+ Yang Shi <yang.shi@linux.alibaba.com>, zhong jiang <zhongjiang@huawei.com>,
+ Haiyan Song <haiyanx.song@intel.com>,
+ Balbir Singh <bsingharora@gmail.com>, sj38.park@gmail.com,
+ Michel Lespinasse <walken@google.com>, Mike Rapoport <rppt@linux.ibm.com>
+Subject: [PATCH v12 01/31] mm: introduce CONFIG_SPECULATIVE_PAGE_FAULT
+Date: Tue, 16 Apr 2019 15:44:52 +0200
+X-Mailer: git-send-email 2.21.0
+In-Reply-To: <20190416134522.17540-1-ldufour@linux.ibm.com>
+References: <20190416134522.17540-1-ldufour@linux.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20190416141949.09b48789@lwn.net>
-User-Agent: Mutt/1.5.24 (2015-08-30)
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+x-cbid: 19041613-0008-0000-0000-000002DA6FA8
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 19041613-0009-0000-0000-00002246A82F
+Message-Id: <20190416134522.17540-2-ldufour@linux.ibm.com>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
+ definitions=2019-04-16_05:, , signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1810050000 definitions=main-1904160093
+X-Mailman-Approved-At: Wed, 17 Apr 2019 06:55:22 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -97,49 +116,65 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-hwmon@vger.kernel.org, Jean Delvare <jdelvare@suse.com>,
- linux-aspeed@lists.ozlabs.org,
- Linux Doc Mailing List <linux-doc@vger.kernel.org>,
- Andrew Jeffery <andrew@aj.id.au>, Sudeep Holla <sudeep.holla@arm.com>,
- Liviu Dudau <liviu.dudau@arm.com>, linux-kernel@vger.kernel.org,
- Mauro Carvalho Chehab <mchehab@infradead.org>,
- Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>,
- Paul Mackerras <paulus@samba.org>, Joel Stanley <joel@jms.id.au>,
- Mauro Carvalho Chehab <mchehab+samsung@kernel.org>,
- linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
+Cc: linuxppc-dev@lists.ozlabs.org, x86@kernel.org, linux-kernel@vger.kernel.org,
+ npiggin@gmail.com, linux-mm@kvack.org, paulmck@linux.vnet.ibm.com,
+ Tim Chen <tim.c.chen@linux.intel.com>, haren@linux.vnet.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, Apr 16, 2019 at 02:19:49PM -0600, Jonathan Corbet wrote:
-> On Fri, 12 Apr 2019 20:09:16 -0700
-> Guenter Roeck <linux@roeck-us.net> wrote:
-> 
-> > The big real-world question is: Is the series good enough for you to accept,
-> > or do you expect some level of user/kernel separation ?
-> 
-> I guess it can go in; it's forward progress, even if it doesn't make the
-> improvements I would like to see.
-> 
-> The real question, I guess, is who should take it.  I've been seeing a
-> fair amount of activity on hwmon, so I suspect that the potential for
-> conflicts is real.  Perhaps things would go smoother if it went through
-> your tree?
-> 
-We'll see a number of conflicts, yes. In terms of timing, this is probably
-the worst release in the last few years to make such a change. I currently
-have 9 patches queued in hwmon-next which touch Documentation/hwmon.
-Of course the changes made in those are all not ReST compatible, and I have
-no idea what to look out for to make it compatible. So this is going to be
-fun (in a negative sense) either way.
+This configuration variable will be used to build the code needed to
+handle speculative page fault.
 
-I don't really have a recommendation at this point; I think the best I could
-do to take the patches which don't generate conflicts and leave the rest
-alone. But that would also be bad, since the new index file would not match
-reality. No idea, really, what the best or even a useful approach would be.
+By default it is turned off, and activated depending on architecture
+support, ARCH_HAS_PTE_SPECIAL, SMP and MMU.
 
-Maybe automated changes like this (assuming they are indeed automated)
-can be generated and pushed right after a commit window closes. Would
-that by any chance be possible ?
+The architecture support is needed since the speculative page fault handler
+is called from the architecture's page faulting code, and some code has to
+be added there to handle the speculative handler.
 
-Guenter
+The dependency on ARCH_HAS_PTE_SPECIAL is required because vm_normal_page()
+does processing that is not compatible with the speculative handling in the
+case ARCH_HAS_PTE_SPECIAL is not set.
+
+Suggested-by: Thomas Gleixner <tglx@linutronix.de>
+Suggested-by: David Rientjes <rientjes@google.com>
+Signed-off-by: Laurent Dufour <ldufour@linux.ibm.com>
+---
+ mm/Kconfig | 22 ++++++++++++++++++++++
+ 1 file changed, 22 insertions(+)
+
+diff --git a/mm/Kconfig b/mm/Kconfig
+index 0eada3f818fa..ff278ac9978a 100644
+--- a/mm/Kconfig
++++ b/mm/Kconfig
+@@ -761,4 +761,26 @@ config GUP_BENCHMARK
+ config ARCH_HAS_PTE_SPECIAL
+ 	bool
+ 
++config ARCH_SUPPORTS_SPECULATIVE_PAGE_FAULT
++       def_bool n
++
++config SPECULATIVE_PAGE_FAULT
++	bool "Speculative page faults"
++	default y
++	depends on ARCH_SUPPORTS_SPECULATIVE_PAGE_FAULT
++	depends on ARCH_HAS_PTE_SPECIAL && MMU && SMP
++	help
++	  Try to handle user space page faults without holding the mmap_sem.
++
++	  This should allow better concurrency for massively threaded processes
++	  since the page fault handler will not wait for other thread's memory
++	  layout change to be done, assuming that this change is done in
++	  another part of the process's memory space. This type of page fault
++	  is named speculative page fault.
++
++	  If the speculative page fault fails because a concurrent modification
++	  is detected or because underlying PMD or PTE tables are not yet
++	  allocated, the speculative page fault fails and a classic page fault
++	  is then tried.
++
+ endmenu
+-- 
+2.21.0
+
