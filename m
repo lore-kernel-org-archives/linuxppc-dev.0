@@ -3,22 +3,22 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
 X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CF163C10F13
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Apr 2019 21:03:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D0A03C10F13
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Apr 2019 21:04:43 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 54E3020684
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Apr 2019 21:03:13 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 54E3020684
+	by mail.kernel.org (Postfix) with ESMTPS id 5B7BE2075B
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Apr 2019 21:04:43 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5B7BE2075B
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44kHrv2zNNzDqN1
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Apr 2019 07:03:11 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44kHtd3wx1zDqBd
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Apr 2019 07:04:41 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
  (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
@@ -29,41 +29,41 @@ Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44k6BG0HW1zDqDZ
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Apr 2019 23:47:33 +1000 (AEST)
-Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44k6BH25LczDqDh
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Apr 2019 23:47:35 +1000 (AEST)
+Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x3GDlRfm048583
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Apr 2019 09:47:31 -0400
+ x3GDlHkr010798
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Apr 2019 09:47:33 -0400
 Received: from e06smtp07.uk.ibm.com (e06smtp07.uk.ibm.com [195.75.94.103])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2rweue4545-1
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2rwe56nx14-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Apr 2019 09:47:29 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Apr 2019 09:47:28 -0400
 Received: from localhost
  by e06smtp07.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <ldufour@linux.ibm.com>;
- Tue, 16 Apr 2019 14:46:22 +0100
-Received: from b06cxnps4074.portsmouth.uk.ibm.com (9.149.109.196)
+ Tue, 16 Apr 2019 14:45:46 +0100
+Received: from b06cxnps4076.portsmouth.uk.ibm.com (9.149.109.198)
  by e06smtp07.uk.ibm.com (192.168.101.137) with IBM ESMTP SMTP Gateway:
  Authorized Use Only! Violators will be prosecuted; 
  (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Tue, 16 Apr 2019 14:46:13 +0100
+ Tue, 16 Apr 2019 14:45:36 +0100
 Received: from d06av22.portsmouth.uk.ibm.com (d06av22.portsmouth.uk.ibm.com
  [9.149.105.58])
- by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x3GDkCpF41353468
+ by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x3GDjYou50724972
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Tue, 16 Apr 2019 13:46:12 GMT
+ Tue, 16 Apr 2019 13:45:34 GMT
 Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 0FEDD4C04E;
- Tue, 16 Apr 2019 13:46:12 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 445334C05A;
+ Tue, 16 Apr 2019 13:45:34 +0000 (GMT)
 Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id A69A94C04A;
- Tue, 16 Apr 2019 13:46:10 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id E6D874C058;
+ Tue, 16 Apr 2019 13:45:31 +0000 (GMT)
 Received: from nimbus.lab.toulouse-stg.fr.ibm.com (unknown [9.101.4.33])
  by d06av22.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Tue, 16 Apr 2019 13:46:10 +0000 (GMT)
+ Tue, 16 Apr 2019 13:45:31 +0000 (GMT)
 From: Laurent Dufour <ldufour@linux.ibm.com>
 To: akpm@linux-foundation.org, mhocko@kernel.org, peterz@infradead.org,
  kirill@shutemov.name, ak@linux.intel.com, dave@stgolabs.net,
@@ -84,27 +84,27 @@ To: akpm@linux-foundation.org, mhocko@kernel.org, peterz@infradead.org,
  Haiyan Song <haiyanx.song@intel.com>,
  Balbir Singh <bsingharora@gmail.com>, sj38.park@gmail.com,
  Michel Lespinasse <walken@google.com>, Mike Rapoport <rppt@linux.ibm.com>
-Subject: [PATCH v12 16/31] mm: introduce __vm_normal_page()
-Date: Tue, 16 Apr 2019 15:45:07 +0200
+Subject: [PATCH v12 03/31] powerpc/mm: set ARCH_SUPPORTS_SPECULATIVE_PAGE_FAULT
+Date: Tue, 16 Apr 2019 15:44:54 +0200
 X-Mailer: git-send-email 2.21.0
 In-Reply-To: <20190416134522.17540-1-ldufour@linux.ibm.com>
 References: <20190416134522.17540-1-ldufour@linux.ibm.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-x-cbid: 19041613-0028-0000-0000-0000036170BF
+x-cbid: 19041613-0028-0000-0000-0000036170BA
 X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19041613-0029-0000-0000-00002420A85F
-Message-Id: <20190416134522.17540-17-ldufour@linux.ibm.com>
+x-cbparentid: 19041613-0029-0000-0000-00002420A853
+Message-Id: <20190416134522.17540-4-ldufour@linux.ibm.com>
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
  definitions=2019-04-16_05:, , signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
  priorityscore=1501
  malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
  clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
+ mlxlogscore=990 adultscore=0 classifier=spam adjust=0 reason=mlx
  scancount=1 engine=8.0.1-1810050000 definitions=main-1904160093
-X-Mailman-Approved-At: Wed, 17 Apr 2019 06:55:22 +1000
+X-Mailman-Approved-At: Wed, 17 Apr 2019 06:55:23 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -123,126 +123,33 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-When dealing with the speculative fault path we should use the VMA's field
-cached value stored in the vm_fault structure.
+Set ARCH_SUPPORTS_SPECULATIVE_PAGE_FAULT for BOOK3S_64. This enables
+the Speculative Page Fault handler.
 
-Currently vm_normal_page() is using the pointer to the VMA to fetch the
-vm_flags value. This patch provides a new __vm_normal_page() which is
-receiving the vm_flags flags value as parameter.
+Support is only provide for BOOK3S_64 currently because:
+- require CONFIG_PPC_STD_MMU because checks done in
+  set_access_flags_filter()
+- require BOOK3S because we can't support for book3e_hugetlb_preload()
+  called by update_mmu_cache()
 
-Note: The speculative path is turned on for architecture providing support
-for special PTE flag. So only the first block of vm_normal_page is used
-during the speculative path.
-
+Cc: Michael Ellerman <mpe@ellerman.id.au>
 Signed-off-by: Laurent Dufour <ldufour@linux.ibm.com>
 ---
- include/linux/mm.h | 18 +++++++++++++++---
- mm/memory.c        | 21 ++++++++++++---------
- 2 files changed, 27 insertions(+), 12 deletions(-)
+ arch/powerpc/Kconfig | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/include/linux/mm.h b/include/linux/mm.h
-index f465bb2b049e..f14b2c9ddfd4 100644
---- a/include/linux/mm.h
-+++ b/include/linux/mm.h
-@@ -1421,9 +1421,21 @@ static inline void INIT_VMA(struct vm_area_struct *vma)
- #endif
- }
- 
--struct page *_vm_normal_page(struct vm_area_struct *vma, unsigned long addr,
--			     pte_t pte, bool with_public_device);
--#define vm_normal_page(vma, addr, pte) _vm_normal_page(vma, addr, pte, false)
-+struct page *__vm_normal_page(struct vm_area_struct *vma, unsigned long addr,
-+			      pte_t pte, bool with_public_device,
-+			      unsigned long vma_flags);
-+static inline struct page *_vm_normal_page(struct vm_area_struct *vma,
-+					    unsigned long addr, pte_t pte,
-+					    bool with_public_device)
-+{
-+	return __vm_normal_page(vma, addr, pte, with_public_device,
-+				vma->vm_flags);
-+}
-+static inline struct page *vm_normal_page(struct vm_area_struct *vma,
-+					  unsigned long addr, pte_t pte)
-+{
-+	return _vm_normal_page(vma, addr, pte, false);
-+}
- 
- struct page *vm_normal_page_pmd(struct vm_area_struct *vma, unsigned long addr,
- 				pmd_t pmd);
-diff --git a/mm/memory.c b/mm/memory.c
-index 85ec5ce5c0a8..be93f2c8ebe0 100644
---- a/mm/memory.c
-+++ b/mm/memory.c
-@@ -533,7 +533,8 @@ static void print_bad_pte(struct vm_area_struct *vma, unsigned long addr,
- }
- 
- /*
-- * vm_normal_page -- This function gets the "struct page" associated with a pte.
-+ * __vm_normal_page -- This function gets the "struct page" associated with
-+ * a pte.
-  *
-  * "Special" mappings do not wish to be associated with a "struct page" (either
-  * it doesn't exist, or it exists but they don't want to touch it). In this
-@@ -574,8 +575,9 @@ static void print_bad_pte(struct vm_area_struct *vma, unsigned long addr,
-  * PFNMAP mappings in order to support COWable mappings.
-  *
-  */
--struct page *_vm_normal_page(struct vm_area_struct *vma, unsigned long addr,
--			     pte_t pte, bool with_public_device)
-+struct page *__vm_normal_page(struct vm_area_struct *vma, unsigned long addr,
-+			      pte_t pte, bool with_public_device,
-+			      unsigned long vma_flags)
- {
- 	unsigned long pfn = pte_pfn(pte);
- 
-@@ -584,7 +586,7 @@ struct page *_vm_normal_page(struct vm_area_struct *vma, unsigned long addr,
- 			goto check_pfn;
- 		if (vma->vm_ops && vma->vm_ops->find_special_page)
- 			return vma->vm_ops->find_special_page(vma, addr);
--		if (vma->vm_flags & (VM_PFNMAP | VM_MIXEDMAP))
-+		if (vma_flags & (VM_PFNMAP | VM_MIXEDMAP))
- 			return NULL;
- 		if (is_zero_pfn(pfn))
- 			return NULL;
-@@ -620,8 +622,8 @@ struct page *_vm_normal_page(struct vm_area_struct *vma, unsigned long addr,
- 
- 	/* !CONFIG_ARCH_HAS_PTE_SPECIAL case follows: */
- 
--	if (unlikely(vma->vm_flags & (VM_PFNMAP|VM_MIXEDMAP))) {
--		if (vma->vm_flags & VM_MIXEDMAP) {
-+	if (unlikely(vma_flags & (VM_PFNMAP|VM_MIXEDMAP))) {
-+		if (vma_flags & VM_MIXEDMAP) {
- 			if (!pfn_valid(pfn))
- 				return NULL;
- 			goto out;
-@@ -630,7 +632,7 @@ struct page *_vm_normal_page(struct vm_area_struct *vma, unsigned long addr,
- 			off = (addr - vma->vm_start) >> PAGE_SHIFT;
- 			if (pfn == vma->vm_pgoff + off)
- 				return NULL;
--			if (!is_cow_mapping(vma->vm_flags))
-+			if (!is_cow_mapping(vma_flags))
- 				return NULL;
- 		}
- 	}
-@@ -2532,7 +2534,8 @@ static vm_fault_t do_wp_page(struct vm_fault *vmf)
- {
- 	struct vm_area_struct *vma = vmf->vma;
- 
--	vmf->page = vm_normal_page(vma, vmf->address, vmf->orig_pte);
-+	vmf->page = __vm_normal_page(vma, vmf->address, vmf->orig_pte, false,
-+				     vmf->vma_flags);
- 	if (!vmf->page) {
- 		/*
- 		 * VM_MIXEDMAP !pfn_valid() case, or VM_SOFTDIRTY clear on a
-@@ -3706,7 +3709,7 @@ static vm_fault_t do_numa_page(struct vm_fault *vmf)
- 	ptep_modify_prot_commit(vma, vmf->address, vmf->pte, old_pte, pte);
- 	update_mmu_cache(vma, vmf->address, vmf->pte);
- 
--	page = vm_normal_page(vma, vmf->address, pte);
-+	page = __vm_normal_page(vma, vmf->address, pte, false, vmf->vma_flags);
- 	if (!page) {
- 		pte_unmap_unlock(vmf->pte, vmf->ptl);
- 		return 0;
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index 2d0be82c3061..a29887ea5383 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -238,6 +238,7 @@ config PPC
+ 	select PCI_SYSCALL			if PCI
+ 	select RTC_LIB
+ 	select SPARSE_IRQ
++	select ARCH_SUPPORTS_SPECULATIVE_PAGE_FAULT if PPC_BOOK3S_64
+ 	select SYSCTL_EXCEPTION_TRACE
+ 	select THREAD_INFO_IN_TASK
+ 	select VIRT_TO_BUS			if !PPC64
 -- 
 2.21.0
 
