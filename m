@@ -3,57 +3,98 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
 X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS autolearn=unavailable autolearn_force=no
-	version=3.4.0
+	MAILING_LIST_MULTI,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C2FF9C10F14
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Apr 2019 02:38:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2452FC10F14
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Apr 2019 03:02:44 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 4A53720872
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Apr 2019 02:38:52 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4A53720872
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=huawei.com
+	by mail.kernel.org (Postfix) with ESMTPS id 3C23F21773
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Apr 2019 03:02:43 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3C23F21773
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44kRJ96ZB9zDqN9
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Apr 2019 12:38:49 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44kRqh6tt2zDqNv
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Apr 2019 13:02:40 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=huawei.com
- (client-ip=45.249.212.32; helo=huawei.com;
- envelope-from=thunder.leizhen@huawei.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
+ (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
+ envelope-from=aneesh.kumar@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=huawei.com
-Received: from huawei.com (szxga06-in.huawei.com [45.249.212.32])
+ dmarc=none (p=none dis=none) header.from=linux.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44kRGN6zwkzDqMW
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Apr 2019 12:37:16 +1000 (AEST)
-Received: from DGGEMS401-HUB.china.huawei.com (unknown [172.30.72.58])
- by Forcepoint Email with ESMTP id 051CDC13ADFA5248D7C5;
- Wed, 17 Apr 2019 10:37:10 +0800 (CST)
-Received: from [127.0.0.1] (10.177.23.164) by DGGEMS401-HUB.china.huawei.com
- (10.3.19.201) with Microsoft SMTP Server id 14.3.408.0; Wed, 17 Apr 2019
- 10:37:00 +0800
-Subject: Re: [PATCH v5 1/6] iommu: add generic boot option iommu.dma_mode
-To: Will Deacon <will.deacon@arm.com>, Robin Murphy <robin.murphy@arm.com>
-References: <20190409125308.18304-1-thunder.leizhen@huawei.com>
- <20190409125308.18304-2-thunder.leizhen@huawei.com>
- <010d3cbd-ef74-ad21-c735-0af8b18955e6@huawei.com>
- <222946ee-adcc-1311-82a7-6afc9ffbc846@arm.com>
- <20190416152100.GB4187@fuggles.cambridge.arm.com>
-From: "Leizhen (ThunderTown)" <thunder.leizhen@huawei.com>
-Message-ID: <5CB6914A.8050308@huawei.com>
-Date: Wed, 17 Apr 2019 10:36:58 +0800
-User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:38.0) Gecko/20100101
- Thunderbird/38.5.1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44kRnm02BMzDq8X
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Apr 2019 13:00:59 +1000 (AEST)
+Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
+ x3H2tYee100663
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Apr 2019 23:00:56 -0400
+Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2rwr247akm-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Apr 2019 23:00:56 -0400
+Received: from localhost
+ by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.ibm.com>;
+ Wed, 17 Apr 2019 04:00:55 +0100
+Received: from b03cxnp08027.gho.boulder.ibm.com (9.17.130.19)
+ by e36.co.us.ibm.com (192.168.1.136) with IBM ESMTP SMTP Gateway: Authorized
+ Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Wed, 17 Apr 2019 04:00:54 +0100
+Received: from b03ledav003.gho.boulder.ibm.com
+ (b03ledav003.gho.boulder.ibm.com [9.17.130.234])
+ by b03cxnp08027.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x3H30quC45678668
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Wed, 17 Apr 2019 03:00:53 GMT
+Received: from b03ledav003.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 8EAB36A054;
+ Wed, 17 Apr 2019 03:00:52 +0000 (GMT)
+Received: from b03ledav003.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 33E496A057;
+ Wed, 17 Apr 2019 03:00:51 +0000 (GMT)
+Received: from [9.199.40.202] (unknown [9.199.40.202])
+ by b03ledav003.gho.boulder.ibm.com (Postfix) with ESMTP;
+ Wed, 17 Apr 2019 03:00:50 +0000 (GMT)
+Subject: Re: [PATCH v3 7/8] powerpc/mm: Consolidate radix and hash address map
+ details
+To: Nicholas Piggin <npiggin@gmail.com>, mpe@ellerman.id.au, paulus@samba.org
+References: <20190416100722.10324-1-aneesh.kumar@linux.ibm.com>
+ <20190416100722.10324-8-aneesh.kumar@linux.ibm.com>
+ <1555422365.eio3zgx55b.astroid@bobo.none>
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
+Date: Wed, 17 Apr 2019 08:30:49 +0530
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.6.1
 MIME-Version: 1.0
-In-Reply-To: <20190416152100.GB4187@fuggles.cambridge.arm.com>
-Content-Type: text/plain; charset="windows-1252"
+In-Reply-To: <1555422365.eio3zgx55b.astroid@bobo.none>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: en-US
 Content-Transfer-Encoding: 7bit
-X-Originating-IP: [10.177.23.164]
-X-CFilter-Loop: Reflected
+X-TM-AS-GCONF: 00
+x-cbid: 19041703-0020-0000-0000-00000ED89E4C
+X-IBM-SpamModules-Scores: 
+X-IBM-SpamModules-Versions: BY=3.00010941; HX=3.00000242; KW=3.00000007;
+ PH=3.00000004; SC=3.00000284; SDB=6.01190175; UDB=6.00623652; IPR=6.00970972; 
+ MB=3.00026475; MTD=3.00000008; XFM=3.00000015; UTC=2019-04-17 03:00:55
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 19041703-0021-0000-0000-00006575F9D8
+Message-Id: <b6cc2965-27ab-5ee6-0e57-a6ed9122ee08@linux.ibm.com>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
+ definitions=2019-04-17_02:, , signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=822 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1810050000 definitions=main-1904170017
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -65,97 +106,54 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-ia64 <linux-ia64@vger.kernel.org>,
- Sebastian Ott <sebott@linux.ibm.com>, linux-doc <linux-doc@vger.kernel.org>,
- Hanjun Guo <guohanjun@huawei.com>, Heiko Carstens <heiko.carstens@de.ibm.com>,
- Paul Mackerras <paulus@samba.org>, "H . Peter Anvin" <hpa@zytor.com>,
- linux-s390 <linux-s390@vger.kernel.org>, Jonathan
- Corbet <corbet@lwn.net>, Jean-Philippe Brucker <jean-philippe.brucker@arm.com>,
- Joerg Roedel <joro@8bytes.org>, x86 <x86@kernel.org>,
- Ingo Molnar <mingo@redhat.com>, Fenghua Yu <fenghua.yu@intel.com>,
- John Garry <john.garry@huawei.com>, Borislav Petkov <bp@alien8.de>,
- Thomas Gleixner <tglx@linutronix.de>,
- Gerald Schaefer <gerald.schaefer@de.ibm.com>, Tony Luck <tony.luck@intel.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- linux-kernel <linux-kernel@vger.kernel.org>,
- iommu <iommu@lists.linux-foundation.org>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>,
- David Woodhouse <dwmw2@infradead.org>
+Cc: linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-
-
-On 2019/4/16 23:21, Will Deacon wrote:
-> On Fri, Apr 12, 2019 at 02:11:31PM +0100, Robin Murphy wrote:
->> On 12/04/2019 11:26, John Garry wrote:
->>> On 09/04/2019 13:53, Zhen Lei wrote:
->>>> +static int __init iommu_dma_mode_setup(char *str)
->>>> +{
->>>> +    if (!str)
->>>> +        goto fail;
->>>> +
->>>> +    if (!strncmp(str, "passthrough", 11))
->>>> +        iommu_default_dma_mode = IOMMU_DMA_MODE_PASSTHROUGH;
->>>> +    else if (!strncmp(str, "lazy", 4))
->>>> +        iommu_default_dma_mode = IOMMU_DMA_MODE_LAZY;
->>>> +    else if (!strncmp(str, "strict", 6))
->>>> +        iommu_default_dma_mode = IOMMU_DMA_MODE_STRICT;
->>>> +    else
->>>> +        goto fail;
->>>> +
->>>> +    pr_info("Force dma mode to be %d\n", iommu_default_dma_mode);
->>>
->>> What happens if the cmdline option iommu.dma_mode is passed multiple
->>> times? We get mutliple - possibily conflicting - prints, right?
+On 4/16/19 7:33 PM, Nicholas Piggin wrote:
+> Aneesh Kumar K.V's on April 16, 2019 8:07 pm:
+>> We now have
 >>
->> Indeed; we ended up removing such prints for the existing options here,
->> specifically because multiple messages seemed more likely to be confusing
->> than useful.
-
-I originally intended to be compatible with X86 printing.
-
- 		} else if (!strncmp(str, "strict", 6)) {
- 			pr_info("Disable batched IOTLB flush\n");
-			intel_iommu_strict = 1;
- 		}
-
+>> 4K page size config
 >>
->>> And do we need to have backwards compatibility, such that the setting
->>> for iommu.strict or iommu.passthrough trumps iommu.dma_mode, regardless
->>> of order?
+>>   kernel_region_map_size = 16TB
+>>   kernel vmalloc start   = 0xc000100000000000
+>>   kernel IO start        = 0xc000200000000000
+>>   kernel vmemmap start   = 0xc000300000000000
 >>
->> As above I think it would be preferable to just keep using the existing
->> options anyway. The current behaviour works out as:
+>> with 64K page size config:
 >>
->> iommu.passthrough |      Y	|	  N
->> iommu.strict	  |      x	|    Y         N
->> ------------------|-------------|---------|--------
->> MODE		  | PASSTHROUGH | STRICT  |  LAZY
->>
->> which seems intuitive enough that a specific dma_mode option doesn't add
->> much value, and would more likely just overcomplicate things for users as
->> well as our implementation.
+>>   kernel_region_map_size = 512TB
+>>   kernel vmalloc start   = 0xc008000000000000
+>>   kernel IO start        = 0xc00a000000000000
+>>   kernel vmemmap start   = 0xc00c000000000000
 > 
-> Agreed. We can't remove the existing options, and they do the job perfectly
-> well so I don't see the need to add more options on top.
-
-OK, I will remove the iommu.dma_mode option in the next version. Thanks for you three.
-
-I didn't want to add it at first, but later found that the boot options on
-each ARCH are different, then want to normalize it.
-
-In addition, do we need to compatible the build option name IOMMU_DEFAULT_PASSTHROUGH? or
-change it to IOMMU_DEFAULT_DMA_MODE_PASSTHROUGH or IOMMU_DEFAULT_MODE_PASSTHROUGH?
-
+> Hey Aneesh,
 > 
-> Will
+> I like the series, I like consolidating the address spaces into 0xc,
+> and making the layouts match or similar isn't a bad thing. I don't
+> see any real reason to force limitations on one layout or another --
+> you could make the argument that 4k radix should match 64k radix
+> as much as matching 4k hash IMO.
 > 
-> .
+> I wouldn't like to tie them too strongly to the same base defines
+> that force them to stay in sync.
+> 
+> Can we drop this patch? Or at least keep the users of the H_ and R_
+> defines and set them to the same thing in map.h?
+> 
 > 
 
--- 
-Thanks!
-BestRegards
+I did that based on the suggestion from Michael Ellerman. I guess he 
+wanted the VMALLOC_START to match. I am not sure whether we should match 
+the kernel_region_map_size too. I did mention that in the cover letter.
+
+I agree with your suggestion above. I still can keep the VMALLOC_START 
+at 16TB and keep the region_map_size as 512TB for radix 4k. I am not 
+sure we want to do that.
+
+I will wait for feedback from Michael to make the suggested changes.
+
+-aneesh
 
