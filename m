@@ -3,94 +3,93 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
 X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B5482C282DA
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Apr 2019 13:38:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E11F0C282DA
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Apr 2019 13:41:22 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3B189206B6
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Apr 2019 13:38:51 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3B189206B6
+	by mail.kernel.org (Postfix) with ESMTPS id 68C1C204EC
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Apr 2019 13:41:22 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 68C1C204EC
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44kjxh5vtgzDqNV
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Apr 2019 23:38:48 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44kk0c432NzDqNg
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Apr 2019 23:41:20 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
- (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
+ (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
  envelope-from=aneesh.kumar@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44kjB11ChXzDqKD
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Apr 2019 23:04:25 +1000 (AEST)
-Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44kjB454bgzDq6K
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Apr 2019 23:04:28 +1000 (AEST)
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x3HCjBqG068767
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Apr 2019 09:04:23 -0400
-Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2rx3h1u8tp-1
+ x3HCjFA7064126
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Apr 2019 09:04:26 -0400
+Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2rx3j8kbc7-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Apr 2019 09:04:22 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Apr 2019 09:04:25 -0400
 Received: from localhost
- by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.ibm.com>;
- Wed, 17 Apr 2019 14:04:21 +0100
-Received: from b03cxnp08025.gho.boulder.ibm.com (9.17.130.17)
- by e31.co.us.ibm.com (192.168.1.131) with IBM ESMTP SMTP Gateway: Authorized
+ Wed, 17 Apr 2019 14:04:25 +0100
+Received: from b03cxnp08028.gho.boulder.ibm.com (9.17.130.20)
+ by e32.co.us.ibm.com (192.168.1.132) with IBM ESMTP SMTP Gateway: Authorized
  Use Only! Violators will be prosecuted; 
  (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Wed, 17 Apr 2019 14:04:17 +0100
+ Wed, 17 Apr 2019 14:04:21 +0100
 Received: from b03ledav006.gho.boulder.ibm.com
  (b03ledav006.gho.boulder.ibm.com [9.17.130.237])
- by b03cxnp08025.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x3HD4GLT28639270
+ by b03cxnp08028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x3HD4KPI27721892
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Wed, 17 Apr 2019 13:04:17 GMT
+ Wed, 17 Apr 2019 13:04:20 GMT
 Received: from b03ledav006.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id CFB72C6057;
- Wed, 17 Apr 2019 13:04:16 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 92499C6066;
+ Wed, 17 Apr 2019 13:04:20 +0000 (GMT)
 Received: from b03ledav006.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 8B484C605A;
- Wed, 17 Apr 2019 13:04:14 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 600C2C6055;
+ Wed, 17 Apr 2019 13:04:18 +0000 (GMT)
 Received: from skywalker.ibmuc.com (unknown [9.199.40.202])
  by b03ledav006.gho.boulder.ibm.com (Postfix) with ESMTP;
- Wed, 17 Apr 2019 13:04:14 +0000 (GMT)
+ Wed, 17 Apr 2019 13:04:18 +0000 (GMT)
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
 To: npiggin@gmail.com, paulus@samba.org, mpe@ellerman.id.au,
  Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v3 5/6] powerpc/mm: Reduce memory usage for mm_context_t for
- radix
-Date: Wed, 17 Apr 2019 18:33:50 +0530
+Subject: [PATCH v3 6/6] powerc/mm/hash: Reduce hash_mm_context size
+Date: Wed, 17 Apr 2019 18:33:51 +0530
 X-Mailer: git-send-email 2.20.1
 In-Reply-To: <20190417130351.3805-1-aneesh.kumar@linux.ibm.com>
 References: <20190417130351.3805-1-aneesh.kumar@linux.ibm.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-x-cbid: 19041713-8235-0000-0000-00000E81592D
+x-cbid: 19041713-0004-0000-0000-000014FE9B7A
 X-IBM-SpamModules-Scores: 
 X-IBM-SpamModules-Versions: BY=3.00010943; HX=3.00000242; KW=3.00000007;
  PH=3.00000004; SC=3.00000284; SDB=6.01190371; UDB=6.00623771; IPR=6.00971169; 
- MB=3.00026484; MTD=3.00000008; XFM=3.00000015; UTC=2019-04-17 13:04:19
+ MB=3.00026484; MTD=3.00000008; XFM=3.00000015; UTC=2019-04-17 13:04:23
 X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19041713-8236-0000-0000-0000452E5E3D
-Message-Id: <20190417130351.3805-6-aneesh.kumar@linux.ibm.com>
+x-cbparentid: 19041713-0005-0000-0000-00008B4B1046
+Message-Id: <20190417130351.3805-7-aneesh.kumar@linux.ibm.com>
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
  definitions=2019-04-17_05:, , signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
  priorityscore=1501
  malwarescore=0 suspectscore=2 phishscore=0 bulkscore=0 spamscore=0
  clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
+ mlxlogscore=969 adultscore=0 classifier=spam adjust=0 reason=mlx
  scancount=1 engine=8.0.1-1810050000 definitions=main-1904170089
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -109,292 +108,173 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Currently, our mm_context_t on book3s64 include all hash specific
-context details like slice mask and subpage protection details. We
-can skip allocating these with radix translation. This will help us to save
-8K per mm_context with radix translation.
+Allocate subpage protect related variables only if we use the feature.
+This helps in reducing the hash related mm context struct by around 4K
 
-With the patch applied we have
-
-sizeof(mm_context_t)  = 136
+Before the patch
 sizeof(struct hash_mm_context)  = 8288
+
+After the patch
+sizeof(struct hash_mm_context) = 4160
 
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
 ---
- arch/powerpc/include/asm/book3s/64/mmu-hash.h | 33 ++++++++++++-
- arch/powerpc/include/asm/book3s/64/mmu.h      | 49 +++++--------------
- arch/powerpc/kernel/setup-common.c            |  6 +++
- arch/powerpc/mm/hash_utils_64.c               |  4 +-
- arch/powerpc/mm/mmu_context_book3s64.c        | 16 +++++-
- 5 files changed, 68 insertions(+), 40 deletions(-)
+ arch/powerpc/include/asm/book3s/64/mmu-hash.h |  4 +--
+ arch/powerpc/include/asm/book3s/64/mmu.h      |  2 +-
+ arch/powerpc/mm/hash_utils_64.c               |  3 ++
+ arch/powerpc/mm/mmu_context_book3s64.c        | 17 +++++++++--
+ arch/powerpc/mm/subpage-prot.c                | 28 ++++++++++++++-----
+ 5 files changed, 40 insertions(+), 14 deletions(-)
 
 diff --git a/arch/powerpc/include/asm/book3s/64/mmu-hash.h b/arch/powerpc/include/asm/book3s/64/mmu-hash.h
-index eb36fbfe4ef5..4481bedbb5be 100644
+index 4481bedbb5be..eeb40091b46b 100644
 --- a/arch/powerpc/include/asm/book3s/64/mmu-hash.h
 +++ b/arch/powerpc/include/asm/book3s/64/mmu-hash.h
-@@ -658,7 +658,7 @@ extern void slb_set_size(u16 size);
- /* 4 bits per slice and we have one slice per 1TB */
- #define SLICE_ARRAY_SIZE	(H_PGTABLE_RANGE >> 41)
- #define LOW_SLICE_ARRAY_SZ	(BITS_PER_LONG / BITS_PER_BYTE)
--#define TASK_SLICE_ARRAY_SZ(x)	((x)->slb_addr_limit >> 41)
-+#define TASK_SLICE_ARRAY_SZ(x)	((x)->hash_context->slb_addr_limit >> 41)
- #ifndef __ASSEMBLY__
+@@ -687,10 +687,8 @@ struct subpage_prot_table {
+ #define SBP_L3_SHIFT		(SBP_L2_SHIFT + SBP_L2_BITS)
  
- #ifdef CONFIG_PPC_SUBPAGE_PROT
-@@ -693,6 +693,37 @@ static inline void subpage_prot_free(struct mm_struct *mm) {}
- static inline void subpage_prot_init_new_context(struct mm_struct *mm) { }
+ extern void subpage_prot_free(struct mm_struct *mm);
+-extern void subpage_prot_init_new_context(struct mm_struct *mm);
+ #else
+ static inline void subpage_prot_free(struct mm_struct *mm) {}
+-static inline void subpage_prot_init_new_context(struct mm_struct *mm) { }
  #endif /* CONFIG_PPC_SUBPAGE_PROT */
  
-+/*
-+ * One bit per slice. We have lower slices which cover 256MB segments
-+ * upto 4G range. That gets us 16 low slices. For the rest we track slices
-+ * in 1TB size.
-+ */
-+struct slice_mask {
-+	u64 low_slices;
-+	DECLARE_BITMAP(high_slices, SLICE_NUM_HIGH);
-+};
-+
-+struct hash_mm_context {
-+	u16 user_psize; /* page size index */
-+
-+	/* SLB page size encodings*/
-+	unsigned char low_slices_psize[LOW_SLICE_ARRAY_SZ];
-+	unsigned char high_slices_psize[SLICE_ARRAY_SIZE];
-+	unsigned long slb_addr_limit;
-+#ifdef CONFIG_PPC_64K_PAGES
-+	struct slice_mask mask_64k;
-+#endif
-+	struct slice_mask mask_4k;
-+#ifdef CONFIG_HUGETLB_PAGE
-+	struct slice_mask mask_16m;
-+	struct slice_mask mask_16g;
-+#endif
-+
-+#ifdef CONFIG_PPC_SUBPAGE_PROT
-+	struct subpage_prot_table spt;
-+#endif /* CONFIG_PPC_SUBPAGE_PROT */
-+};
-+
- #if 0
  /*
-  * The code below is equivalent to this function for arguments
+@@ -720,7 +718,7 @@ struct hash_mm_context {
+ #endif
+ 
+ #ifdef CONFIG_PPC_SUBPAGE_PROT
+-	struct subpage_prot_table spt;
++	struct subpage_prot_table *spt;
+ #endif /* CONFIG_PPC_SUBPAGE_PROT */
+ };
+ 
 diff --git a/arch/powerpc/include/asm/book3s/64/mmu.h b/arch/powerpc/include/asm/book3s/64/mmu.h
-index 28213a36fef7..3bc94baf5ed5 100644
+index 3bc94baf5ed5..62ae73df93d2 100644
 --- a/arch/powerpc/include/asm/book3s/64/mmu.h
 +++ b/arch/powerpc/include/asm/book3s/64/mmu.h
-@@ -89,16 +89,6 @@ struct spinlock;
- /* Maximum possible number of NPUs in a system. */
- #define NV_MAX_NPUS 8
- 
--/*
-- * One bit per slice. We have lower slices which cover 256MB segments
-- * upto 4G range. That gets us 16 low slices. For the rest we track slices
-- * in 1TB size.
-- */
--struct slice_mask {
--	u64 low_slices;
--	DECLARE_BITMAP(high_slices, SLICE_NUM_HIGH);
--};
--
- typedef struct {
- 	union {
- 		/*
-@@ -112,7 +102,6 @@ typedef struct {
- 		mm_context_id_t id;
- 		mm_context_id_t extended_id[TASK_SIZE_USER64/TASK_CONTEXT_SIZE];
- 	};
--	u16 user_psize;		/* page size index */
- 
- 	/* Number of bits in the mm_cpumask */
- 	atomic_t active_cpus;
-@@ -122,23 +111,9 @@ typedef struct {
- 
- 	/* NPU NMMU context */
- 	struct npu_context *npu_context;
-+	struct hash_mm_context *hash_context;
- 
--	 /* SLB page size encodings*/
--	unsigned char low_slices_psize[LOW_SLICE_ARRAY_SZ];
--	unsigned char high_slices_psize[SLICE_ARRAY_SIZE];
--	unsigned long slb_addr_limit;
--# ifdef CONFIG_PPC_64K_PAGES
--	struct slice_mask mask_64k;
--# endif
--	struct slice_mask mask_4k;
--# ifdef CONFIG_HUGETLB_PAGE
--	struct slice_mask mask_16m;
--	struct slice_mask mask_16g;
--# endif
- 	unsigned long vdso_base;
--#ifdef CONFIG_PPC_SUBPAGE_PROT
--	struct subpage_prot_table spt;
--#endif /* CONFIG_PPC_SUBPAGE_PROT */
- 	/*
- 	 * pagetable fragment support
- 	 */
-@@ -161,62 +136,62 @@ typedef struct {
- 
- static inline u16 mm_ctx_user_psize(mm_context_t *ctx)
- {
--	return ctx->user_psize;
-+	return ctx->hash_context->user_psize;
- }
- 
- static inline void mm_ctx_set_user_psize(mm_context_t *ctx, u16 user_psize)
- {
--	ctx->user_psize = user_psize;
-+	ctx->hash_context->user_psize = user_psize;
- }
- 
- static inline unsigned char *mm_ctx_low_slices(mm_context_t *ctx)
- {
--	return ctx->low_slices_psize;
-+	return ctx->hash_context->low_slices_psize;
- }
- 
- static inline unsigned char *mm_ctx_high_slices(mm_context_t *ctx)
- {
--	return ctx->high_slices_psize;
-+	return ctx->hash_context->high_slices_psize;
- }
- 
- static inline unsigned long mm_ctx_slb_addr_limit(mm_context_t *ctx)
- {
--	return ctx->slb_addr_limit;
-+	return ctx->hash_context->slb_addr_limit;
- }
- 
- static inline void mm_ctx_set_slb_addr_limit(mm_context_t *ctx, unsigned long limit)
- {
--	ctx->slb_addr_limit = limit;
-+	ctx->hash_context->slb_addr_limit = limit;
- }
- 
- #ifdef CONFIG_PPC_64K_PAGES
- static inline struct slice_mask *mm_ctx_slice_mask_64k(mm_context_t *ctx)
- {
--	return &ctx->mask_64k;
-+	return &ctx->hash_context->mask_64k;
- }
- #endif
- 
- static inline struct slice_mask *mm_ctx_slice_mask_4k(mm_context_t *ctx)
- {
--	return &ctx->mask_4k;
-+	return &ctx->hash_context->mask_4k;
- }
- 
- #ifdef CONFIG_HUGETLB_PAGE
- static inline struct slice_mask *mm_ctx_slice_mask_16m(mm_context_t *ctx)
- {
--	return &ctx->mask_16m;
-+	return &ctx->hash_context->mask_16m;
- }
- 
- static inline struct slice_mask *mm_ctx_slice_mask_16g(mm_context_t *ctx)
- {
--	return &ctx->mask_16g;
-+	return &ctx->hash_context->mask_16g;
- }
- #endif
- 
+@@ -191,7 +191,7 @@ static inline struct slice_mask *mm_ctx_slice_mask_16g(mm_context_t *ctx)
  #ifdef CONFIG_PPC_SUBPAGE_PROT
  static inline struct subpage_prot_table *mm_ctx_subpage_prot(mm_context_t *ctx)
  {
--	return &ctx->spt;
-+	return &ctx->hash_context->spt;
+-	return &ctx->hash_context->spt;
++	return ctx->hash_context->spt;
  }
  #endif
  
-diff --git a/arch/powerpc/kernel/setup-common.c b/arch/powerpc/kernel/setup-common.c
-index a07de8608484..21b1ce200b22 100644
---- a/arch/powerpc/kernel/setup-common.c
-+++ b/arch/powerpc/kernel/setup-common.c
-@@ -947,6 +947,12 @@ void __init setup_arch(char **cmdline_p)
- 	init_mm.end_data = (unsigned long) _edata;
- 	init_mm.brk = klimit;
- 
-+#ifdef CONFIG_PPC_MM_SLICES
-+#if defined(CONFIG_PPC_8xx)
-+	init_mm.context.slb_addr_limit = DEFAULT_MAP_WINDOW;
-+#endif
-+#endif
-+
- #ifdef CONFIG_SPAPR_TCE_IOMMU
- 	mm_iommu_init(&init_mm);
- #endif
 diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
-index 2cb3a456f5b5..04ac7c36d380 100644
+index 04ac7c36d380..33bd4a1b4d75 100644
 --- a/arch/powerpc/mm/hash_utils_64.c
 +++ b/arch/powerpc/mm/hash_utils_64.c
-@@ -968,6 +968,7 @@ void __init hash__early_init_devtree(void)
- 	htab_scan_page_sizes();
- }
+@@ -1155,6 +1155,9 @@ static int subpage_protection(struct mm_struct *mm, unsigned long ea)
+ 	u32 spp = 0;
+ 	u32 **sbpm, *sbpp;
  
-+struct hash_mm_context init_hash_mm_context;
- void __init hash__early_init_mmu(void)
- {
- #ifndef CONFIG_PPC_64K_PAGES
-@@ -1041,7 +1042,8 @@ void __init hash__early_init_mmu(void)
- 	 */
- 	htab_initialize();
- 
--	init_mm.context.slb_addr_limit = DEFAULT_MAP_WINDOW_USER64;
-+	init_mm.context.hash_context = &init_hash_mm_context;
-+	init_mm.context.hash_context->slb_addr_limit = DEFAULT_MAP_WINDOW_USER64;
- 
- 	pr_info("Initializing hash mmu with SLB\n");
- 	/* Initialize SLB management */
++	if (!spt)
++		return 0;
++
+ 	if (ea >= spt->maxaddr)
+ 		return 0;
+ 	if (ea < 0x100000000UL) {
 diff --git a/arch/powerpc/mm/mmu_context_book3s64.c b/arch/powerpc/mm/mmu_context_book3s64.c
-index f720c5cc0b5e..6eef5a36b2e9 100644
+index 6eef5a36b2e9..cb2b08635508 100644
 --- a/arch/powerpc/mm/mmu_context_book3s64.c
 +++ b/arch/powerpc/mm/mmu_context_book3s64.c
-@@ -63,6 +63,12 @@ static int hash__init_new_context(struct mm_struct *mm)
+@@ -63,7 +63,8 @@ static int hash__init_new_context(struct mm_struct *mm)
  	if (index < 0)
  		return index;
  
-+	mm->context.hash_context = kmalloc(sizeof(struct hash_mm_context), GFP_KERNEL);
-+	if (!mm->context.hash_context) {
-+		ida_free(&mmu_context_ida, index);
-+		return -ENOMEM;
-+	}
-+
- 	/*
- 	 * The old code would re-promote on fork, we don't do that when using
- 	 * slices as it could cause problem promoting slices that have been
-@@ -77,8 +83,14 @@ static int hash__init_new_context(struct mm_struct *mm)
- 	 * We should not be calling init_new_context() on init_mm. Hence a
- 	 * check against 0 is OK.
- 	 */
--	if (mm->context.id == 0)
-+	if (mm->context.id == 0) {
-+		memset(mm->context.hash_context, 0, sizeof(struct hash_mm_context));
- 		slice_init_new_context_exec(mm);
-+	} else {
-+		/* This is fork. Copy hash_context details from current->mm */
-+		memcpy(mm->context.hash_context, current->mm->context.hash_context, sizeof(struct hash_mm_context));
-+
-+	}
+-	mm->context.hash_context = kmalloc(sizeof(struct hash_mm_context), GFP_KERNEL);
++	mm->context.hash_context = kmalloc(sizeof(struct hash_mm_context),
++					   GFP_KERNEL);
+ 	if (!mm->context.hash_context) {
+ 		ida_free(&mmu_context_ida, index);
+ 		return -ENOMEM;
+@@ -89,11 +90,21 @@ static int hash__init_new_context(struct mm_struct *mm)
+ 	} else {
+ 		/* This is fork. Copy hash_context details from current->mm */
+ 		memcpy(mm->context.hash_context, current->mm->context.hash_context, sizeof(struct hash_mm_context));
++#ifdef CONFIG_PPC_SUBPAGE_PROT
++		/* inherit subpage prot detalis if we have one. */
++		if (current->mm->context.hash_context->spt) {
++			mm->context.hash_context->spt = kmalloc(sizeof(struct subpage_prot_table),
++								GFP_KERNEL);
++			if (!mm->context.hash_context->spt) {
++				ida_free(&mmu_context_ida, index);
++				kfree(mm->context.hash_context);
++				return -ENOMEM;
++			}
++		}
++#endif
  
- 	subpage_prot_init_new_context(mm);
+ 	}
  
-@@ -118,6 +130,7 @@ static int radix__init_new_context(struct mm_struct *mm)
- 	asm volatile("ptesync;isync" : : : "memory");
- 
- 	mm->context.npu_context = NULL;
-+	mm->context.hash_context = NULL;
- 
+-	subpage_prot_init_new_context(mm);
+-
+ 	pkey_mm_init(mm);
  	return index;
  }
-@@ -162,6 +175,7 @@ static void destroy_contexts(mm_context_t *ctx)
- 		if (context_id)
- 			ida_free(&mmu_context_ida, context_id);
+diff --git a/arch/powerpc/mm/subpage-prot.c b/arch/powerpc/mm/subpage-prot.c
+index c72252542210..c9dff4e1f295 100644
+--- a/arch/powerpc/mm/subpage-prot.c
++++ b/arch/powerpc/mm/subpage-prot.c
+@@ -29,6 +29,9 @@ void subpage_prot_free(struct mm_struct *mm)
+ 	unsigned long i, j, addr;
+ 	u32 **p;
+ 
++	if (!spt)
++		return;
++
+ 	for (i = 0; i < 4; ++i) {
+ 		if (spt->low_prot[i]) {
+ 			free_page((unsigned long)spt->low_prot[i]);
+@@ -48,13 +51,7 @@ void subpage_prot_free(struct mm_struct *mm)
+ 		free_page((unsigned long)p);
  	}
-+	kfree(ctx->hash_context);
+ 	spt->maxaddr = 0;
+-}
+-
+-void subpage_prot_init_new_context(struct mm_struct *mm)
+-{
+-	struct subpage_prot_table *spt = mm_ctx_subpage_prot(&mm->context);
+-
+-	memset(spt, 0, sizeof(*spt));
++	kfree(spt);
  }
  
- static void pmd_frag_destroy(void *pmd_frag)
+ static void hpte_flush_range(struct mm_struct *mm, unsigned long addr,
+@@ -99,6 +96,9 @@ static void subpage_prot_clear(unsigned long addr, unsigned long len)
+ 	size_t nw;
+ 	unsigned long next, limit;
+ 
++	if (!spt)
++		return ;
++
+ 	down_write(&mm->mmap_sem);
+ 	limit = addr + len;
+ 	if (limit > spt->maxaddr)
+@@ -218,6 +218,20 @@ SYSCALL_DEFINE3(subpage_prot, unsigned long, addr,
+ 		return -EFAULT;
+ 
+ 	down_write(&mm->mmap_sem);
++
++	if (!spt) {
++		/*
++		 * Allocate subpage prot table if not already done.
++		 * Do this with mmap_sem held
++		 */
++		spt = kzalloc(sizeof(struct subpage_prot_table), GFP_KERNEL);
++		if (!spt) {
++			err = -ENOMEM;
++			goto out;
++		}
++		mm->context.hash_context->spt = spt;
++	}
++
+ 	subpage_mark_vma_nohuge(mm, addr, len);
+ 	for (limit = addr + len; addr < limit; addr = next) {
+ 		next = pmd_addr_end(addr, limit);
 -- 
 2.20.1
 
