@@ -2,93 +2,88 @@ Return-Path: <SRS0=iZn8=ST=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_PASS,
+	URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 171EFC10F12
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Apr 2019 03:51:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CF4ECC282DD
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Apr 2019 04:15:09 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 8447420835
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Apr 2019 03:51:18 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 0172B21773
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Apr 2019 04:15:08 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="i5Svs29E"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8447420835
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=roeck-us.net
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=linux-foundation.org header.i=@linux-foundation.org header.b="f5LPUMyd"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0172B21773
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linux-foundation.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44kSvm3CBhzDqDY
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Apr 2019 13:51:16 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44kTRG4P34zDqKP
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Apr 2019 14:15:06 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=2607:f8b0:4864:20::642; helo=mail-pl1-x642.google.com;
- envelope-from=groeck7@gmail.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=roeck-us.net
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="i5Svs29E"; 
- dkim-atps=neutral
-Received: from mail-pl1-x642.google.com (mail-pl1-x642.google.com
- [IPv6:2607:f8b0:4864:20::642])
+ spf=pass (mailfrom) smtp.mailfrom=linuxfoundation.org
+ (client-ip=2a00:1450:4864:20::143; helo=mail-lf1-x143.google.com;
+ envelope-from=torvalds@linuxfoundation.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=linux-foundation.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=linux-foundation.org header.i=@linux-foundation.org
+ header.b="f5LPUMyd"; dkim-atps=neutral
+Received: from mail-lf1-x143.google.com (mail-lf1-x143.google.com
+ [IPv6:2a00:1450:4864:20::143])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44kSsv00D0zDqHF;
- Wed, 17 Apr 2019 13:49:36 +1000 (AEST)
-Received: by mail-pl1-x642.google.com with SMTP id y6so11326908pll.13;
- Tue, 16 Apr 2019 20:49:36 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=sender:subject:to:cc:references:from:message-id:date:user-agent
- :mime-version:in-reply-to:content-language:content-transfer-encoding;
- bh=9DHw/jF/PpaNCEANBTI+YbvaJ8TD0OFM8JDdklRcth0=;
- b=i5Svs29EgAr2DT9P09QaoVU5+hOc0bgN5mwiBbanAN45k97dkdovK/BlS4fOKZC3Lr
- lwf9mNnTuN85I1jny6pgpwEjB5IEWO5Kuj8Eos4vxVpkpO0Gzb3Z0FSH/Xq1HoiJufN8
- A+Swa3wFGVw0QlSyztXIkU6kYy+tkAvR5If2u2s27jGst+A+D9Td3d73uoAmTRKY7pAY
- LG1UFuWZInis7uxvtPYGuo64+eT0/prmK488l0MnP9Io6koZpzOGyRP3RA+e4TYymYGH
- nesH8Daw9NImmUEtkD+FXXdyszoAcEe2fXkhrZvPJr/EJl4yoUAJI5zn/r7VXSm8urgX
- TdDg==
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44kTPg3KkszDqJ8
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Apr 2019 14:13:41 +1000 (AEST)
+Received: by mail-lf1-x143.google.com with SMTP id u17so17752295lfi.3
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Apr 2019 21:13:41 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=linux-foundation.org; s=google;
+ h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+ :cc; bh=Scd0mxLNvddMA/EuL7KgAfLfPq4A2d2A+jt31P9MYwQ=;
+ b=f5LPUMydRgoieOXcslgprAzTIXLGrkdJ4t2S8woBSwJXvjjtlVT8iDFx/1ghkcZUGh
+ TZTtsQjCJGNB//d2GFXCDvOKk5h8AXP8fCW1qGx8gml+SB2p8iffhIOQtqwHfr/8Ndxv
+ Z0QzY8plk8LPA73p03U7k1H7fhKlySUGyOuzw=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
- h=x-gm-message-state:sender:subject:to:cc:references:from:message-id
- :date:user-agent:mime-version:in-reply-to:content-language
- :content-transfer-encoding;
- bh=9DHw/jF/PpaNCEANBTI+YbvaJ8TD0OFM8JDdklRcth0=;
- b=Mi8CerHxDg0NbkvR/eh0xvqvq3Ln+vxA8ZTjZaa5cgsj+9Jj+yRvk/7DS0YK2gJPi+
- Y5R4AK2j5Ui6TusqeqqjaRuLoPbXCA/J3ftbbNsTmTgNZuVWK3SIHxBgKXOdPsN+Cr95
- AVnysxmC/kMcXvsNn0P5ghh/VwFoXsY2wQwjW8IWmY8gaoZkbujk3m32HlkjYk9j8R/J
- F8ZXAFINalC7RW9W9eVlTbF1dPRFrEtXPoZpZQpXh9iHRg42+Ry2aQxAkzxYzim6yUTw
- 1h2QsXxscX7TL/JmlGSnLFUeodRyNRkB+X4X8WILbDsAqgAZ2zZMCkfWBr3D7sgm3g+9
- A6EA==
-X-Gm-Message-State: APjAAAWp01WujlCRL5A89krHwuUoRBlYHi55JcBXPJWznTatLvRKbmKz
- 8VIylqlm/Qvba1CmvAu44v8=
-X-Google-Smtp-Source: APXvYqyhKYuRN96dQStz/269gpggAMU/dgElpUC3S3KlvGPU1e8KeWXhFOkxAmLa26o5YbPxKOnMcw==
-X-Received: by 2002:a17:902:9341:: with SMTP id
- g1mr49225182plp.81.1555472973777; 
- Tue, 16 Apr 2019 20:49:33 -0700 (PDT)
-Received: from server.roeck-us.net ([2600:1700:e321:62f0:329c:23ff:fee3:9d7c])
- by smtp.gmail.com with ESMTPSA id
- a17sm96997965pfj.123.2019.04.16.20.49.32
+ h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+ :message-id:subject:to:cc;
+ bh=Scd0mxLNvddMA/EuL7KgAfLfPq4A2d2A+jt31P9MYwQ=;
+ b=ZRSfdDWk6SpduRWsRJbAjQjKKf1xzzotIozInfxYqvZxSQ9IDc2aEl84sXzAH+nAZa
+ GQfoIGBo6hHJs259nr7tCATpEVZO3T+xcqARxJpr1ngOJ6i9wlHWV9e5DykSr7+DM/ZA
+ Ylw6/L0/ihmgZNGrNNuQOj2EbMGrWE0RLPS6j7sBFX52LgQaWvUT/DDisSbpqF2g57gV
+ oCziiZUoRM8SFPXe1eUDbmS4vszfq6DSiboF8jDx80wzgLvBwz7pyvJDt38HjmailFrY
+ yTkmMRR/NiwPNqbYfDhixauObloPE1dJqH6beXaByeGogcwWKyOlod2iQEEJncQ8LYFs
+ SNUQ==
+X-Gm-Message-State: APjAAAUgI+uTaMRxGimRRbUWLWn2D3cogSHozbN8g/NetEsOKpUt8W8F
+ +KRMQYlztSKLwdzP+n1Il3X0j0FWjqc=
+X-Google-Smtp-Source: APXvYqws03EX6arUH0clyqBbkc/60A1S+nW9Wk3z+VCy1C55v3QPWveUH4GR3eOKo3EwaSsuay/FJw==
+X-Received: by 2002:ac2:4a86:: with SMTP id l6mr35291278lfp.51.1555474415480; 
+ Tue, 16 Apr 2019 21:13:35 -0700 (PDT)
+Received: from mail-lf1-f43.google.com (mail-lf1-f43.google.com.
+ [209.85.167.43])
+ by smtp.gmail.com with ESMTPSA id s26sm10783417ljj.52.2019.04.16.21.13.33
+ for <linuxppc-dev@lists.ozlabs.org>
  (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
- Tue, 16 Apr 2019 20:49:32 -0700 (PDT)
-Subject: Re: [PATCH v2 00/21] Convert hwmon documentation to ReST
-To: Mauro Carvalho Chehab <mchehab+samsung@kernel.org>
-References: <cover.1554923967.git.mchehab+samsung@kernel.org>
- <20190411124324.3ed62fad@lwn.net> <20190411174357.251904f5@coco.lan>
- <20190411210731.GA29378@roeck-us.net> <20190412100451.6fe49de7@lwn.net>
- <f900adea-d231-c00d-847c-33e66e79ea30@roeck-us.net>
- <20190416141949.09b48789@lwn.net> <20190416203114.GB25517@roeck-us.net>
- <20190416225836.1d5953bc@coco.lan>
-From: Guenter Roeck <linux@roeck-us.net>
-Message-ID: <1d8a4410-4a8c-7b7a-141d-d2495cc66749@roeck-us.net>
-Date: Tue, 16 Apr 2019 20:49:31 -0700
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
- Thunderbird/60.6.1
+ Tue, 16 Apr 2019 21:13:34 -0700 (PDT)
+Received: by mail-lf1-f43.google.com with SMTP id t30so17712417lfd.8
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Apr 2019 21:13:33 -0700 (PDT)
+X-Received: by 2002:ac2:495e:: with SMTP id o30mr24639187lfi.35.1555474413536; 
+ Tue, 16 Apr 2019 21:13:33 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <20190416225836.1d5953bc@coco.lan>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
+References: <CAHk-=wjvcuyCQGnfOhooaL1H4H63qXO=xgo+9yncSOG=eK+kbA@mail.gmail.com>
+ <20190415051919.GA31481@infradead.org>
+ <CAHk-=wj7jgMOVFW0tiU-X+zhg6+Rn7mEBTej+f26rV3zXezOSA@mail.gmail.com>
+ <87sguhti6e.fsf@concordia.ellerman.id.au>
+In-Reply-To: <87sguhti6e.fsf@concordia.ellerman.id.au>
+From: Linus Torvalds <torvalds@linux-foundation.org>
+Date: Tue, 16 Apr 2019 21:13:17 -0700
+X-Gmail-Original-Message-ID: <CAHk-=wi2HxyJoH3xhr_ytM3gf1mkvq8Dq9Do+EdNZrm8KjV_6w@mail.gmail.com>
+Message-ID: <CAHk-=wi2HxyJoH3xhr_ytM3gf1mkvq8Dq9Do+EdNZrm8KjV_6w@mail.gmail.com>
+Subject: Re: Linux 5.1-rc5
+To: Michael Ellerman <mpe@ellerman.id.au>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -100,62 +95,68 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-hwmon@vger.kernel.org, Jean Delvare <jdelvare@suse.com>,
- linux-aspeed@lists.ozlabs.org,
- Linux Doc Mailing List <linux-doc@vger.kernel.org>,
- Andrew Jeffery <andrew@aj.id.au>, Jonathan Corbet <corbet@lwn.net>,
- Liviu Dudau <liviu.dudau@arm.com>, linux-kernel@vger.kernel.org,
- Mauro Carvalho Chehab <mchehab@infradead.org>,
- Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>,
- Paul Mackerras <paulus@samba.org>, Joel Stanley <joel@jms.id.au>,
- linuxppc-dev@lists.ozlabs.org, Sudeep Holla <sudeep.holla@arm.com>,
- linux-arm-kernel@lists.infradead.org
+Cc: linux-s390 <linux-s390@vger.kernel.org>,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
+ Linux List Kernel Mailing <linux-kernel@vger.kernel.org>,
+ Nicholas Piggin <npiggin@gmail.com>, Christoph Hellwig <hch@infradead.org>,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 4/16/19 6:58 PM, Mauro Carvalho Chehab wrote:
-> Em Tue, 16 Apr 2019 13:31:14 -0700
-> Guenter Roeck <linux@roeck-us.net> escreveu:
-> 
->> On Tue, Apr 16, 2019 at 02:19:49PM -0600, Jonathan Corbet wrote:
->>> On Fri, 12 Apr 2019 20:09:16 -0700
->>> Guenter Roeck <linux@roeck-us.net> wrote:
->>>    
->>>> The big real-world question is: Is the series good enough for you to accept,
->>>> or do you expect some level of user/kernel separation ?
->>>
->>> I guess it can go in; it's forward progress, even if it doesn't make the
->>> improvements I would like to see.
->>>
->>> The real question, I guess, is who should take it.  I've been seeing a
->>> fair amount of activity on hwmon, so I suspect that the potential for
->>> conflicts is real.  Perhaps things would go smoother if it went through
->>> your tree?
->>>    
->> We'll see a number of conflicts, yes. In terms of timing, this is probably
->> the worst release in the last few years to make such a change. I currently
->> have 9 patches queued in hwmon-next which touch Documentation/hwmon.
->> Of course the changes made in those are all not ReST compatible, and I have
->> no idea what to look out for to make it compatible. So this is going to be
->> fun (in a negative sense) either way.
->>
->> I don't really have a recommendation at this point; I think the best I could
->> do to take the patches which don't generate conflicts and leave the rest
->> alone. But that would also be bad, since the new index file would not match
->> reality. No idea, really, what the best or even a useful approach would be.
->>
->> Maybe automated changes like this (assuming they are indeed automated)
->> can be generated and pushed right after a commit window closes. Would
->> that by any chance be possible ?
-> 
-> No, those patches are hand-maid, but I can surely rebase it on the top of
-> your tree. Is your tree already merged at linux-next, or should I use some
-> other branch/tree for rebase?
-> 
+On Tue, Apr 16, 2019 at 8:38 PM Michael Ellerman <mpe@ellerman.id.au> wrote:
+>
+> > That said, powerpc and s390 should at least look at maybe adding a
+> > check for the page ref in their gup paths too. Powerpc has the special
+> > gup_hugepte() case
+>
+> Which uses page_cache_add_speculative(), which handles the case of the
+> refcount being zero but not overflow. So that looks like it needs
+> fixing.
 
-linux-next merges hwmon-next. next-20190416 is missing one patch which touches
-Documentation/hwmon, but that should be easy to deal with.
+Note that unlike the zero check, the "too many refs" check does _not_
+need to be atomic.
 
-Thanks,
-Guenter
+Because it's not a correctness issue right at some magical exact
+point, it's a much more ambiguous a "the refcount is now so large that
+I'm not going to do GUP on this page any more". Being off by a number
+of pages in case there's a race is just fine.
+
+So you could do something like this (TOTALLY UNTESTED, and
+whitespace-damaged on purpose - I don't want you to apply it blindly)
+appended patch.
+
+> And we have a few uses of bare get_page() in KVM code which might be
+> subject to the same attack.
+
+Note that you really have to have not just a get_page(), but some way
+of lining up *billions* of them. Which really tends to be pretty hard.
+
+            Linus
+
+----
+
+diff --git a/arch/powerpc/mm/hugetlbpage.c b/arch/powerpc/mm/hugetlbpage.c
+index 9e732bb2c84a..52db7ff7c756 100644
+--- a/arch/powerpc/mm/hugetlbpage.c
++++ b/arch/powerpc/mm/hugetlbpage.c
+@@ -523,7 +523,8 @@ struct page *follow_huge_pd(struct vm_area_struct *vma,
+                page = pte_page(*ptep);
+                page += ((address & mask) >> PAGE_SHIFT);
+                if (flags & FOLL_GET)
+-                       get_page(page);
++                       if (!try_get_page(page))
++                               page = NULL;
+        } else {
+                if (is_hugetlb_entry_migration(*ptep)) {
+                        spin_unlock(ptl);
+@@ -883,6 +884,8 @@ int gup_hugepte(pte_t *ptep, unsigned long sz,
+unsigned long addr,
+
+        refs = 0;
+        head = pte_page(pte);
++       if (page_ref_count(head) < 0)
++               return 0;
+
+        page = head + ((addr & (sz-1)) >> PAGE_SHIFT);
+        do {
