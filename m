@@ -2,89 +2,66 @@ Return-Path: <SRS0=iZn8=ST=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.5 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_PASS
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_PASS autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C613EC282DA
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Apr 2019 22:31:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3F59FC282DA
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Apr 2019 23:32:32 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 2F413217FA
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Apr 2019 22:31:50 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 58CE42183F
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Apr 2019 23:32:31 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="uz3AChrE"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2F413217FA
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="RyPwUqk4"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 58CE42183F
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44kxmh2bqlzDqQJ
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Apr 2019 08:31:48 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44kz6j0TfMzDqQn
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Apr 2019 09:32:29 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=2a00:1450:4864:20::442; helo=mail-wr1-x442.google.com;
- envelope-from=gabrielcsmo@gmail.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=kernel.org
+ (client-ip=198.145.29.99; helo=mail.kernel.org; envelope-from=sboyd@kernel.org;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="uz3AChrE"; 
+ dmarc=pass (p=none dis=none) header.from=kernel.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=kernel.org header.i=@kernel.org header.b="RyPwUqk4"; 
  dkim-atps=neutral
-Received: from mail-wr1-x442.google.com (mail-wr1-x442.google.com
- [IPv6:2a00:1450:4864:20::442])
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44ks2w0mmVzDq7d
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Apr 2019 04:58:44 +1000 (AEST)
-Received: by mail-wr1-x442.google.com with SMTP id o12so3896108wrn.2
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Apr 2019 11:58:44 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=message-id:subject:from:to:cc:date:in-reply-to:references
- :user-agent:mime-version:content-transfer-encoding;
- bh=FojubWmNMeB2V9f+sYtEMSMYaZHbBpTkgkUdpBzRNAI=;
- b=uz3AChrE6WTGUUS90yK+Jl6V8CvwV571cgcUpAcvjL8EODOPr5nO+1S0V9bKf4QysJ
- 0qs8DrL1D3D38eRC7iFbVLkuVgtXNt407glB4C1CLwGO/VhZ7v5WAcCJZAofcpor5AkU
- 48TJE1Tqv5x8JxN2iIbbvpp9cK4na/y0Z7OI295Mi7uoOqmQzaNwYrMwACGaa849CGui
- B0w52cKoem0Q7BPpXj3TRryCyxLRON1Smydrrdcr+AJGhngJJO+lCVKjtCUoffXxefjO
- eqM8qGWlkYnEdCZUeCApMXhx5w3KMfZF6L7gxExyR1LcuctUMR8Q4XQ9PBwdEc63jXOV
- ChRw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:message-id:subject:from:to:cc:date:in-reply-to
- :references:user-agent:mime-version:content-transfer-encoding;
- bh=FojubWmNMeB2V9f+sYtEMSMYaZHbBpTkgkUdpBzRNAI=;
- b=Xj96FZwnGhOphHs8G+EfqcemK6sthaGO2/6p1WxGlWctlFyZMScOtueIVrmCkKTUgh
- c60BWdSMQl2dal+yHwhjWXfdjJMYHGjkFFuJGDqU/h0qtW/gD4UrKYMZ2T45Rgfoo6k2
- ykCizoYyd6P5M/Eu9WWa9Y2lxQmzds+kb0D6TWb4hQPlCV0PO1R9fKgOwn9sVQoVh8yD
- xM/8JzVstUio4dB2XcZWX+GQuBduP+TBPdzYlmVXBCv0rKmNN4sSsktAMV1wyyfhINTB
- /7DUk5v55Oi/U8/LtAlmrGbjn1EoPjOZHkNH9/qvESRpGjuiv7jVtiKDrWG6E5wjhp84
- uliQ==
-X-Gm-Message-State: APjAAAXobYZhkCHWauiNL6S7d+AnKfcl6cRuajX4Ra5fqYDDnUh4zXtB
- SQbtOw8DUbCHDpLaSt0o6O4=
-X-Google-Smtp-Source: APXvYqxr87NnY9ACQSi5NG7YjfxvsOwxQzuKXUm7IYG4vCKYqXBPorS5UZ2B4AUbatjtaeV7vsL57g==
-X-Received: by 2002:adf:f488:: with SMTP id l8mr56198802wro.213.1555527520482; 
- Wed, 17 Apr 2019 11:58:40 -0700 (PDT)
-Received: from localhost.localdomain ([86.124.23.100])
- by smtp.gmail.com with ESMTPSA id s21sm36034617wra.45.2019.04.17.11.58.38
- (version=TLS1_3 cipher=AEAD-AES256-GCM-SHA384 bits=256/256);
- Wed, 17 Apr 2019 11:58:39 -0700 (PDT)
-Message-ID: <3228ff50862b0bad95561bd5276cbfcad5d6213c.camel@gmail.com>
-Subject: Re: [PATCH -next] ASoC: fsl_micfil: Remove set but not used
- variable 'osr'
-From: gabrielcsmo@gmail.com
-To: Nicolin Chen <nicoleotsuka@gmail.com>, Daniel Baluta
- <daniel.baluta@gmail.com>
-Date: Wed, 17 Apr 2019 21:58:37 +0300
-In-Reply-To: <20190417183518.GA5073@Asurada-Nvidia.nvidia.com>
-References: <20190417150915.37968-1-yuehaibing@huawei.com>
- <CAEnQRZAug2kQoFTN6W47URBKwHcU5Zmmy=04smOtMomuzz6_TA@mail.gmail.com>
- <20190417183518.GA5073@Asurada-Nvidia.nvidia.com>
-Content-Type: text/plain; charset="UTF-8"
-User-Agent: Evolution 3.30.5 (3.30.5-1.fc29) 
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44kz4x53HPzDqP0
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Apr 2019 09:30:57 +1000 (AEST)
+Received: from localhost (unknown [104.132.0.74])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by mail.kernel.org (Postfix) with ESMTPSA id 427D42183F;
+ Wed, 17 Apr 2019 23:30:54 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+ s=default; t=1555543854;
+ bh=Isl+vqpMeZZ+yoHua+CHjKEXO4JgH2YxGu8WEXXbaHE=;
+ h=In-Reply-To:References:Cc:From:Subject:To:Date:From;
+ b=RyPwUqk4je9ZQBwiO8OZnUdwZI1p7XCfgvkWmy4oMUfxDiC3+5b9xCXXaMWPjsqA/
+ yoO/E3fs7TWZhXQKPVgGxFEYbUjThcgk9i5GcYjmm7TWlFrDRwMA2IcDovl5xiJgfX
+ e5AEeLcKL7t5PemiZ3Acgcny9gnr1k4L/+B/A1pc=
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-X-Mailman-Approved-At: Thu, 18 Apr 2019 08:30:22 +1000
+Content-Transfer-Encoding: quoted-printable
+In-Reply-To: <20190415101046.5872-3-jonas.gorski@gmail.com>
+References: <20190415101046.5872-1-jonas.gorski@gmail.com>
+ <20190415101046.5872-3-jonas.gorski@gmail.com>
+From: Stephen Boyd <sboyd@kernel.org>
+Subject: Re: [PATCH RFT V2 2/8] clk: fractional-divider: add explicit big
+ endian support
+To: Jonas Gorski <jonas.gorski@gmail.com>, linux-arm-kernel@lists.infradead.org,
+ linux-clk@vger.kernel.org, linux-rockchip@lists.infradead.org,
+ linux-tegra@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Message-ID: <155554385335.15276.1472868812556796901@swboyd.mtv.corp.google.com>
+User-Agent: alot/0.8
+Date: Wed, 17 Apr 2019 16:30:53 -0700
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -96,59 +73,42 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Linux-ALSA <alsa-devel@alsa-project.org>, linuxppc-dev@lists.ozlabs.org,
- Timur Tabi <timur@kernel.org>, Xiubo Li <Xiubo.Lee@gmail.com>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Takashi Iwai <tiwai@suse.com>, Yue Haibing <yuehaibing@huawei.com>,
- Liam Girdwood <lgirdwood@gmail.com>, Jaroslav Kysela <perex@perex.cz>,
- Mark Brown <broonie@kernel.org>, Fabio Estevam <festevam@gmail.com>
+Cc: Peter De Schrijver <pdeschrijver@nvidia.com>,
+ Fabio Estevam <festevam@gmail.com>, Heiko Stuebner <heiko@sntech.de>,
+ Michael Turquette <mturquette@baylibre.com>,
+ Michal Simek <michal.simek@xilinx.com>, Jonathan Hunter <jonathanh@nvidia.com>,
+ Prashant Gaikwad <pgaikwad@nvidia.com>, Paul Mackerras <paulus@samba.org>,
+ NXP Linux Team <linux-imx@nxp.com>,
+ Pengutronix Kernel Team <kernel@pengutronix.de>,
+ Thierry Reding <thierry.reding@gmail.com>, Anatolij Gustschin <agust@denx.de>,
+ Shawn Guo <shawnguo@kernel.org>, Sascha Hauer <s.hauer@pengutronix.de>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, 2019-04-17 at 11:35 -0700, Nicolin Chen wrote:
-> On Wed, Apr 17, 2019 at 06:25:11PM +0300, Daniel Baluta wrote:
-> 
-> > Looks good to me. Just one question for Cosmin:
-> > > diff --git a/sound/soc/fsl/fsl_micfil.c
-> > > b/sound/soc/fsl/fsl_micfil.c
-> > > index 40c07e7..f7f2d29 100644
-> > > --- a/sound/soc/fsl/fsl_micfil.c
-> > > +++ b/sound/soc/fsl/fsl_micfil.c
-> > > @@ -151,12 +151,9 @@ static inline int get_clk_div(struct
-> > > fsl_micfil *micfil,
-> > >  {
-> > >         u32 ctrl2_reg;
-> > >         long mclk_rate;
-> > > -       int osr;
-> > >         int clk_div;
-> > > 
-> > >         regmap_read(micfil->regmap, REG_MICFIL_CTRL2,
-> > > &ctrl2_reg);
-> > 
-> > I noticed now that we also read ctrl2_reg without using it. Is this
-> > as intended?
-> 
-> For Cosmin,
-> 
-> Same question here.
-> 
-> Btw, I just noticed that the initial patch of adding this driver
-> did not seemly include most of FSL maintainers/reviewers. Please
-> run get_maintainer.pl to add all listed reviewers when sending a
-> change to the maillist.
-> 
-> Thanks
-> Nicolin
+Quoting Jonas Gorski (2019-04-15 03:10:40)
+> diff --git a/drivers/clk/clk-fractional-divider.c b/drivers/clk/clk-fract=
+ional-divider.c
+> index fdfe2e423d15..b9988d3b3828 100644
+> --- a/drivers/clk/clk-fractional-divider.c
+> +++ b/drivers/clk/clk-fractional-divider.c
+> @@ -13,6 +13,22 @@
+>  #include <linux/slab.h>
+>  #include <linux/rational.h>
+> =20
+> +static inline u32 clk_fd_readl(struct clk_fractional_divider *fd)
+> +{
+> +       if (fd->flags & CLK_FRAC_DIVIDER_BIG_ENDIAN)
+> +               return ioread32be(fd->reg);
+> +       else
+> +               return clk_readl(fd->reg);
 
-Hello,
+Can you write it without the else?
 
-The regmap_read is not used anymore in this implementation and I've
-forgot to remove it - it can be safetly removed.
+       if (fd->flags & CLK_FRAC_DIVIDER_BIG_ENDIAN)
+               return ioread32be(fd->reg);
 
-Nicolin, I am pretty sure I've ran the get_maintainer.pl script but
-I will pay more attention next time... sorry if I forgot to add you.
+       return clk_readl(fd->reg);
 
-Best regards,
-Cosmin
+This same comment applies to all the basic clk types.
 
