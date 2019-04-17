@@ -2,79 +2,52 @@ Return-Path: <SRS0=iZn8=ST=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.5 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_PASS,USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 61C70C282DA
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Apr 2019 14:54:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BC0E8C282DA
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Apr 2019 14:59:36 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 7634221773
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Apr 2019 14:54:17 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="MOAWLP+o"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7634221773
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	by mail.kernel.org (Postfix) with ESMTPS id 45EAE217FA
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Apr 2019 14:59:36 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 45EAE217FA
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=huawei.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44klck6qsgzDqRR
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Apr 2019 00:54:14 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44klkt0Qz4zDqMr
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Apr 2019 00:59:34 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=2a00:1450:4864:20::144; helo=mail-lf1-x144.google.com;
- envelope-from=mohankumar718@gmail.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=huawei.com
+ (client-ip=45.249.212.35; helo=huawei.com; envelope-from=yuehaibing@huawei.com;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="MOAWLP+o"; 
- dkim-atps=neutral
-Received: from mail-lf1-x144.google.com (mail-lf1-x144.google.com
- [IPv6:2a00:1450:4864:20::144])
+ dmarc=none (p=none dis=none) header.from=huawei.com
+Received: from huawei.com (szxga07-in.huawei.com [45.249.212.35])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44klb25K9GzDqBt
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Apr 2019 00:52:44 +1000 (AEST)
-Received: by mail-lf1-x144.google.com with SMTP id a28so19124723lfo.7
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Apr 2019 07:52:44 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=from:to:cc:subject:date:message-id;
- bh=9nw/YK2zJ58Ci60J7XUCFlBEGHNW1WY/eWuxgJxN48E=;
- b=MOAWLP+oVF13oVbQKCqJNZCj0rPLe6oVjHHqNl/hcUt+7843hetUTORZslrCY2PHfa
- 35T3UnVsRfB3dOZV4MqbSrnXanbh9q2dRaQvtk4eAruZ0s3fp/8a3punwYrhzXjuI2kR
- jvb0kVfaGKj9AZg9+UTX7aa8oYt+bp5TnKFmS2vFHicsBDWn36H1URJ/LpBn6ROAL73N
- j4Qd3v1oJ3NhpxsQ8K0YqeRqpPYbluR6eaJIKjPbBqyqSeEK1RkWDSzGtpS/W4hGwQK+
- 6WpptlslivEjbvGX3yrees2EVY5mP0VDEzX66ayhekw/3ExgNi+9EEn6kJYrFRSBCHC2
- AnQw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:from:to:cc:subject:date:message-id;
- bh=9nw/YK2zJ58Ci60J7XUCFlBEGHNW1WY/eWuxgJxN48E=;
- b=NzTxXE4CvFRH7XzS5A+MSUtti9j5p6igCLOufbP3KW4EbxbxDGnZyvz9snIMrQ6f1/
- yhJ3JX95Jl/S9/jI7mfnHodmde+Vi+jxSxWQ96X8nWSD7JmaCcjUxVZIbX14cp6KvbFp
- Op7qnFOtJI7ZjGV0sj5lRkzaWxr5KC6SD/wOd8wO18rPS4JFOkYK6ybgKs/K0IF+jije
- hG06tHScJCQvfYkQIJRa9FR/l4j1LJk6TmJimxo8jASQKUHAB9GIfkuN8aWZXatVAndl
- oFa9c4N/FvS4apeS0RUsef+22IwR4Wk6XUwI7S5NZaPMtfDhQWiTcgVRqbPge/E5BmG2
- mpIQ==
-X-Gm-Message-State: APjAAAXPn1L0JbsQFhvifRe7Y/yWKw1Icb5AhcgC9iz+YdPreeLD1C+y
- 2VuVaeXfYtKTIBtDG/YM72Q=
-X-Google-Smtp-Source: APXvYqxp9farvHtIdCO6ULBc84FlV+QVJbJ0w8usdf1jsQV2DkmHlzQ3AwOGsE/KHFT7WiuXO5J2xA==
-X-Received: by 2002:ac2:41d8:: with SMTP id d24mr32478657lfi.56.1555512760453; 
- Wed, 17 Apr 2019 07:52:40 -0700 (PDT)
-Received: from localhost.localdomain (62-167-31.netrun.cytanet.com.cy.
- [62.228.167.31])
- by smtp.gmail.com with ESMTPSA id d16sm5490407lfi.75.2019.04.17.07.52.37
- (version=TLS1_2 cipher=ECDHE-RSA-AES128-SHA bits=128/128);
- Wed, 17 Apr 2019 07:52:39 -0700 (PDT)
-From: Mohan Kumar <mohankumar718@gmail.com>
-To: rjw@rjwysocki.net
-Subject: [PATCH] drivers: cpuidle: This patch fix the following checkpatch
- warning.
-Date: Wed, 17 Apr 2019 17:52:34 +0300
-Message-Id: <1555512754-6450-1-git-send-email-mohankumar718@gmail.com>
-X-Mailer: git-send-email 2.7.4
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44klj36WglzDqBt
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Apr 2019 00:57:59 +1000 (AEST)
+Received: from DGGEMS411-HUB.china.huawei.com (unknown [172.30.72.59])
+ by Forcepoint Email with ESMTP id 2CB14854AF18FB4DA879;
+ Wed, 17 Apr 2019 22:57:55 +0800 (CST)
+Received: from localhost (10.177.31.96) by DGGEMS411-HUB.china.huawei.com
+ (10.3.19.211) with Microsoft SMTP Server id 14.3.408.0; Wed, 17 Apr 2019
+ 22:57:48 +0800
+From: Yue Haibing <yuehaibing@huawei.com>
+To: <geoff@infradead.org>, <perex@perex.cz>, <tiwai@suse.com>,
+ <benh@kernel.crashing.org>, <paulus@samba.org>, <mpe@ellerman.id.au>
+Subject: [PATCH -next] ALSA: ps3: Remove set but not used variables
+ 'start_vaddr' and 'pcm_index'
+Date: Wed, 17 Apr 2019 22:57:22 +0800
+Message-ID: <20190417145722.20448-1-yuehaibing@huawei.com>
+X-Mailer: git-send-email 2.10.2.windows.1
+MIME-Version: 1.0
+Content-Type: text/plain
+X-Originating-IP: [10.177.31.96]
+X-CFilter-Loop: Reflected
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -86,44 +59,60 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: daniel.lezcano@linaro.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Cc: YueHaibing <yuehaibing@huawei.com>, alsa-devel@alsa-project.org,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Use pr_debug instead of printk
+From: YueHaibing <yuehaibing@huawei.com>
 
-WARNING: Prefer [subsystem eg: netdev]_dbg([subsystem]dev, ... then
-dev_dbg(dev, ... then pr_debug(...  to printk(KERN_DEBUG ...
+Fixes gcc '-Wunused-but-set-variable' warnings:
 
-Signed-off-by: Mohan Kumar <mohankumar718@gmail.com>
+sound/ppc/snd_ps3.c: In function 'snd_ps3_program_dma':
+sound/ppc/snd_ps3.c:236:8: warning: variable 'start_vaddr' set but not used [-Wunused-but-set-variable]
+sound/ppc/snd_ps3.c: In function 'snd_ps3_pcm_open':
+sound/ppc/snd_ps3.c:529:6: warning: variable 'pcm_index' set but not used [-Wunused-but-set-variable]
+
+They are never used and can be removed.
+
+Reported-by: Hulk Robot <hulkci@huawei.com>
+Signed-off-by: YueHaibing <yuehaibing@huawei.com>
 ---
- drivers/cpuidle/cpuidle-powernv.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ sound/ppc/snd_ps3.c | 4 ----
+ 1 file changed, 4 deletions(-)
 
-diff --git a/drivers/cpuidle/cpuidle-powernv.c b/drivers/cpuidle/cpuidle-powernv.c
-index 84b1ebe..7cf9835 100644
---- a/drivers/cpuidle/cpuidle-powernv.c
-+++ b/drivers/cpuidle/cpuidle-powernv.c
-@@ -401,7 +401,7 @@ static int __init powernv_processor_idle_init(void)
- 	powernv_cpuidle_driver_init();
- 	retval = cpuidle_register(&powernv_idle_driver, NULL);
- 	if (retval) {
--		printk(KERN_DEBUG "Registration of powernv driver failed.\n");
-+		pr_debug("Registration of powernv driver failed.\n");
- 		return retval;
- 	}
+diff --git a/sound/ppc/snd_ps3.c b/sound/ppc/snd_ps3.c
+index 521236e..f77a0d5 100644
+--- a/sound/ppc/snd_ps3.c
++++ b/sound/ppc/snd_ps3.c
+@@ -233,7 +233,6 @@ static int snd_ps3_program_dma(struct snd_ps3_card_info *card,
+ 	int fill_stages, dma_ch, stage;
+ 	enum snd_ps3_ch ch;
+ 	uint32_t ch0_kick_event = 0; /* initialize to mute gcc */
+-	void *start_vaddr;
+ 	unsigned long irqsave;
+ 	int silent = 0;
  
-@@ -413,7 +413,7 @@ static int __init powernv_processor_idle_init(void)
- 					   "cpuidle/powernv:dead", NULL,
- 					   powernv_cpuidle_cpu_dead);
- 	WARN_ON(retval < 0);
--	printk(KERN_DEBUG "powernv_idle_driver registered\n");
-+	pr_debug("powernv_idle_driver registered\n");
- 	return 0;
- }
+@@ -257,7 +256,6 @@ static int snd_ps3_program_dma(struct snd_ps3_card_info *card,
+ 	fill_stages = 4;
+ 	spin_lock_irqsave(&card->dma_lock, irqsave);
+ 	for (ch = 0; ch < 2; ch++) {
+-		start_vaddr = card->dma_next_transfer_vaddr[0];
+ 		for (stage = 0; stage < fill_stages; stage++) {
+ 			dma_ch = stage * 2 + ch;
+ 			if (silent)
+@@ -526,9 +524,7 @@ static int snd_ps3_pcm_open(struct snd_pcm_substream *substream)
+ {
+ 	struct snd_pcm_runtime *runtime = substream->runtime;
+ 	struct snd_ps3_card_info *card = snd_pcm_substream_chip(substream);
+-	int pcm_index;
+ 
+-	pcm_index = substream->pcm->device;
+ 	/* to retrieve substream/runtime in interrupt handler */
+ 	card->substream = substream;
  
 -- 
 2.7.4
+
 
