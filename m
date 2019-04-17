@@ -2,51 +2,79 @@ Return-Path: <SRS0=iZn8=ST=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-4.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.5 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
+	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_PASS,USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3884DC282DA
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Apr 2019 13:54:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 61C70C282DA
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Apr 2019 14:54:18 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B50C420872
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Apr 2019 13:54:38 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B50C420872
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+	by mail.kernel.org (Postfix) with ESMTPS id 7634221773
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Apr 2019 14:54:17 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="MOAWLP+o"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7634221773
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44kkHw5wzgzDqPf
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Apr 2019 23:54:36 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 44klck6qsgzDqRR
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Apr 2019 00:54:14 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+ spf=pass (mailfrom) smtp.mailfrom=gmail.com
+ (client-ip=2a00:1450:4864:20::144; helo=mail-lf1-x144.google.com;
+ envelope-from=mohankumar718@gmail.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="MOAWLP+o"; 
+ dkim-atps=neutral
+Received: from mail-lf1-x144.google.com (mail-lf1-x144.google.com
+ [IPv6:2a00:1450:4864:20::144])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44kjyY0DDjzDqCT
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Apr 2019 23:39:33 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=ellerman.id.au
-Received: by ozlabs.org (Postfix)
- id 44kjyX3mkhz9s71; Wed, 17 Apr 2019 23:39:32 +1000 (AEST)
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
- SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 44kjyX0R3lz9s5c;
- Wed, 17 Apr 2019 23:39:32 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Christophe Leroy <christophe.leroy@c-s.fr>, linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH v5 09/10] powerpc/64s: Implement KUAP for Radix MMU
-In-Reply-To: <fff6b7e5-1b97-85ad-defa-c429b9746f04@c-s.fr>
-References: <20190308011619.22402-1-mpe@ellerman.id.au>
- <20190308011619.22402-9-mpe@ellerman.id.au>
- <fff6b7e5-1b97-85ad-defa-c429b9746f04@c-s.fr>
-Date: Wed, 17 Apr 2019 23:39:29 +1000
-Message-ID: <87zhoou4xa.fsf@concordia.ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44klb25K9GzDqBt
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Apr 2019 00:52:44 +1000 (AEST)
+Received: by mail-lf1-x144.google.com with SMTP id a28so19124723lfo.7
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Apr 2019 07:52:44 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=from:to:cc:subject:date:message-id;
+ bh=9nw/YK2zJ58Ci60J7XUCFlBEGHNW1WY/eWuxgJxN48E=;
+ b=MOAWLP+oVF13oVbQKCqJNZCj0rPLe6oVjHHqNl/hcUt+7843hetUTORZslrCY2PHfa
+ 35T3UnVsRfB3dOZV4MqbSrnXanbh9q2dRaQvtk4eAruZ0s3fp/8a3punwYrhzXjuI2kR
+ jvb0kVfaGKj9AZg9+UTX7aa8oYt+bp5TnKFmS2vFHicsBDWn36H1URJ/LpBn6ROAL73N
+ j4Qd3v1oJ3NhpxsQ8K0YqeRqpPYbluR6eaJIKjPbBqyqSeEK1RkWDSzGtpS/W4hGwQK+
+ 6WpptlslivEjbvGX3yrees2EVY5mP0VDEzX66ayhekw/3ExgNi+9EEn6kJYrFRSBCHC2
+ AnQw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:from:to:cc:subject:date:message-id;
+ bh=9nw/YK2zJ58Ci60J7XUCFlBEGHNW1WY/eWuxgJxN48E=;
+ b=NzTxXE4CvFRH7XzS5A+MSUtti9j5p6igCLOufbP3KW4EbxbxDGnZyvz9snIMrQ6f1/
+ yhJ3JX95Jl/S9/jI7mfnHodmde+Vi+jxSxWQ96X8nWSD7JmaCcjUxVZIbX14cp6KvbFp
+ Op7qnFOtJI7ZjGV0sj5lRkzaWxr5KC6SD/wOd8wO18rPS4JFOkYK6ybgKs/K0IF+jije
+ hG06tHScJCQvfYkQIJRa9FR/l4j1LJk6TmJimxo8jASQKUHAB9GIfkuN8aWZXatVAndl
+ oFa9c4N/FvS4apeS0RUsef+22IwR4Wk6XUwI7S5NZaPMtfDhQWiTcgVRqbPge/E5BmG2
+ mpIQ==
+X-Gm-Message-State: APjAAAXPn1L0JbsQFhvifRe7Y/yWKw1Icb5AhcgC9iz+YdPreeLD1C+y
+ 2VuVaeXfYtKTIBtDG/YM72Q=
+X-Google-Smtp-Source: APXvYqxp9farvHtIdCO6ULBc84FlV+QVJbJ0w8usdf1jsQV2DkmHlzQ3AwOGsE/KHFT7WiuXO5J2xA==
+X-Received: by 2002:ac2:41d8:: with SMTP id d24mr32478657lfi.56.1555512760453; 
+ Wed, 17 Apr 2019 07:52:40 -0700 (PDT)
+Received: from localhost.localdomain (62-167-31.netrun.cytanet.com.cy.
+ [62.228.167.31])
+ by smtp.gmail.com with ESMTPSA id d16sm5490407lfi.75.2019.04.17.07.52.37
+ (version=TLS1_2 cipher=ECDHE-RSA-AES128-SHA bits=128/128);
+ Wed, 17 Apr 2019 07:52:39 -0700 (PDT)
+From: Mohan Kumar <mohankumar718@gmail.com>
+To: rjw@rjwysocki.net
+Subject: [PATCH] drivers: cpuidle: This patch fix the following checkpatch
+ warning.
+Date: Wed, 17 Apr 2019 17:52:34 +0300
+Message-Id: <1555512754-6450-1-git-send-email-mohankumar718@gmail.com>
+X-Mailer: git-send-email 2.7.4
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -58,168 +86,44 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: npiggin@gmail.com
+Cc: daniel.lezcano@linaro.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Christophe Leroy <christophe.leroy@c-s.fr> writes:
-> Le 08/03/2019 =C3=A0 02:16, Michael Ellerman a =C3=A9crit=C2=A0:
-...
->> diff --git a/arch/powerpc/include/asm/book3s/64/kup-radix.h b/arch/power=
-pc/include/asm/book3s/64/kup-radix.h
->> new file mode 100644
->> index 000000000000..3d60b04fc3f6
->> --- /dev/null
->> +++ b/arch/powerpc/include/asm/book3s/64/kup-radix.h
->> @@ -0,0 +1,107 @@
->> +/* SPDX-License-Identifier: GPL-2.0 */
->> +#ifndef _ASM_POWERPC_BOOK3S_64_KUP_RADIX_H
->> +#define _ASM_POWERPC_BOOK3S_64_KUP_RADIX_H
->> +
->> +#include <linux/const.h>
->> +
->> +#define AMR_KUAP_BLOCK_READ	UL(0x4000000000000000)
->> +#define AMR_KUAP_BLOCK_WRITE	UL(0x8000000000000000)
->> +#define AMR_KUAP_BLOCKED	(AMR_KUAP_BLOCK_READ | AMR_KUAP_BLOCK_WRITE)
->> +#define AMR_KUAP_SHIFT		62
->> +
->> +#ifdef __ASSEMBLY__
->> +
->> +.macro kuap_restore_amr	gpr
->
-> What about calling it just kuap_restore (kuap_check and=20
-> kuap_save_and_lock) , for the day we add an different implementation for=
-=20
-> non RADIX ?
+Use pr_debug instead of printk
 
-I don't think we have any plan to use anything other than AMR. We can
-always rename them if we do.
+WARNING: Prefer [subsystem eg: netdev]_dbg([subsystem]dev, ... then
+dev_dbg(dev, ... then pr_debug(...  to printk(KERN_DEBUG ...
 
->> +#ifdef CONFIG_PPC_KUAP
->> +	BEGIN_MMU_FTR_SECTION_NESTED(67)
->> +	ld	\gpr, STACK_REGS_KUAP(r1)
->> +	mtspr	SPRN_AMR, \gpr
->> +	END_MMU_FTR_SECTION_NESTED_IFSET(MMU_FTR_RADIX_KUAP, 67)
->> +#endif
->> +.endm
->> +
->> +.macro kuap_check_amr gpr1 gpr2
->
-> What about using .macro kuap_check_amr gpr1, gpr2 instead to have a=20
-> standard form with a ',' like kuap_save_amr_and_lock
+Signed-off-by: Mohan Kumar <mohankumar718@gmail.com>
+---
+ drivers/cpuidle/cpuidle-powernv.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-Yep, that was not intentional.
+diff --git a/drivers/cpuidle/cpuidle-powernv.c b/drivers/cpuidle/cpuidle-powernv.c
+index 84b1ebe..7cf9835 100644
+--- a/drivers/cpuidle/cpuidle-powernv.c
++++ b/drivers/cpuidle/cpuidle-powernv.c
+@@ -401,7 +401,7 @@ static int __init powernv_processor_idle_init(void)
+ 	powernv_cpuidle_driver_init();
+ 	retval = cpuidle_register(&powernv_idle_driver, NULL);
+ 	if (retval) {
+-		printk(KERN_DEBUG "Registration of powernv driver failed.\n");
++		pr_debug("Registration of powernv driver failed.\n");
+ 		return retval;
+ 	}
+ 
+@@ -413,7 +413,7 @@ static int __init powernv_processor_idle_init(void)
+ 					   "cpuidle/powernv:dead", NULL,
+ 					   powernv_cpuidle_cpu_dead);
+ 	WARN_ON(retval < 0);
+-	printk(KERN_DEBUG "powernv_idle_driver registered\n");
++	pr_debug("powernv_idle_driver registered\n");
+ 	return 0;
+ }
+ 
+-- 
+2.7.4
 
->> +#ifdef CONFIG_PPC_KUAP_DEBUG
->> +	BEGIN_MMU_FTR_SECTION_NESTED(67)
->> +	mfspr	\gpr1, SPRN_AMR
->> +	li	\gpr2, (AMR_KUAP_BLOCKED >> AMR_KUAP_SHIFT)
->> +	sldi	\gpr2, \gpr2, AMR_KUAP_SHIFT
->> +999:	tdne	\gpr1, \gpr2
->> +	EMIT_BUG_ENTRY 999b,__FILE__,__LINE__, \
->> +		(BUGFLAG_WARNING|BUGFLAG_ONCE)
->
-> This should fit on a single line.
-> Also add space after , and around |
-
-Yep, copy/pasted from elsewhere.
-
->> +.macro kuap_save_amr_and_lock gpr1, gpr2, use_cr, msr_pr_cr
->> +#ifdef CONFIG_PPC_KUAP
->> +	BEGIN_MMU_FTR_SECTION_NESTED(67)
->> +	.ifnb \msr_pr_cr
->> +	bne	\msr_pr_cr, 99f
->> +	.endif
->> +	mfspr	\gpr1, SPRN_AMR
->> +	std	\gpr1, STACK_REGS_KUAP(r1)
->> +	li	\gpr2, (AMR_KUAP_BLOCKED >> AMR_KUAP_SHIFT)
->> +	sldi	\gpr2, \gpr2, AMR_KUAP_SHIFT
->> +	cmpd	\use_cr, \gpr1, \gpr2
->
-> On ppc32, I would have used rlwinm. to do the test. Is there an=20
-> equivalent rldinm. (unless we need to preserve cr0) ?
-
-I prefer to have the CR field specified, so we don't accidentally
-clobber cr0 in some path where it is live.
-
->> +	beq	\use_cr, 99f
->> +	// We don't isync here because we very recently entered via rfid
->
-> Is this form of comment acceptable now ? It used to be /* */ only.
-
-Yeah it is, at least in powerpc code :)
-
->> diff --git a/arch/powerpc/include/asm/exception-64s.h b/arch/powerpc/inc=
-lude/asm/exception-64s.h
->> index 937bb630093f..bef4e05a6823 100644
->> --- a/arch/powerpc/include/asm/exception-64s.h
->> +++ b/arch/powerpc/include/asm/exception-64s.h
->> @@ -497,6 +497,7 @@ END_FTR_SECTION_NESTED(ftr,ftr,943)
->>   	RESTORE_CTR(r1, area);						   \
->>   	b	bad_stack;						   \
->>   3:	EXCEPTION_PROLOG_COMMON_1();					   \
->> +	kuap_save_amr_and_lock r9, r10, cr1, cr0;			   \
->
-> What about moving this to 4f, to avoid the cr test and branch in=20
-> kuap_save_amr_and_lock  ?
-
-Moving it there wouldn't help, because user & kernel entry both go
-through 4f. So we'd still need to check if we're coming from user.
-
-Or did I misunderstand?
-
->>   	beq	4f;			/* if from kernel mode		*/ \
->>   	ACCOUNT_CPU_USER_ENTRY(r13, r9, r10);				   \
->>   	SAVE_PPR(area, r9);						   \
-
->> diff --git a/arch/powerpc/mm/pgtable-radix.c b/arch/powerpc/mm/pgtable-r=
-adix.c
->> index 224bcd4be5ae..0c87832ddd6c 100644
->> --- a/arch/powerpc/mm/pgtable-radix.c
->> +++ b/arch/powerpc/mm/pgtable-radix.c
->> @@ -553,6 +554,23 @@ void __init setup_kuep(bool disabled)
->>   }
->>   #endif
->>=20=20=20
->> +#ifdef CONFIG_PPC_KUAP
->> +void __init setup_kuap(bool disabled)
->> +{
->> +	if (disabled || !early_radix_enabled())
->> +		return;
->> +
->> +	if (smp_processor_id() =3D=3D boot_cpuid) {
->> +		pr_info("Activating Kernel Userspace Access Prevention\n");
->> +		cur_cpu_spec->mmu_features |=3D MMU_FTR_RADIX_KUAP;
->> +	}
->> +
->> +	/* Make sure userspace can't change the AMR */
->> +	mtspr(SPRN_UAMOR, 0);
->> +	mtspr(SPRN_AMR, AMR_KUAP_BLOCKED);
->
-> No isync() needed here ?
-
-Will add.
-
->> diff --git a/arch/powerpc/platforms/Kconfig.cputype b/arch/powerpc/platf=
-orms/Kconfig.cputype
->> index 60371784c9f1..5e53b9fd62aa 100644
->> --- a/arch/powerpc/platforms/Kconfig.cputype
->> +++ b/arch/powerpc/platforms/Kconfig.cputype
->> @@ -370,6 +371,13 @@ config PPC_KUAP
->>=20=20=20
->>   	  If you're unsure, say Y.
->>=20=20=20
->> +config PPC_KUAP_DEBUG
->> +	bool "Extra debugging for Kernel Userspace Access Protection"
->> +	depends on PPC_HAVE_KUAP && PPC_RADIX_MMU
->
-> Why only PPC_RADIX_MMU ?
-
-Because it doesn't do anything useful unless radix is enabled.
-
-We can remove it when another platform wants it.
-
-Thanks for the review.
-
-cheers
