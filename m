@@ -2,91 +2,51 @@ Return-Path: <SRS0=iZn8=ST=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-4.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4CF11C282DA
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Apr 2019 13:52:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3884DC282DA
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Apr 2019 13:54:39 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C65DC20872
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Apr 2019 13:52:33 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C65DC20872
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id B50C420872
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Apr 2019 13:54:38 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B50C420872
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44kkFV4nCZzDqFK
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Apr 2019 23:52:30 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
- (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=fbarrat@linux.ibm.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 44kkHw5wzgzDqPf
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Apr 2019 23:54:36 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44kjkY5hBlzDqFt
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Apr 2019 23:29:09 +1000 (AEST)
-Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x3HDKFHD031554
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Apr 2019 09:29:07 -0400
-Received: from e06smtp03.uk.ibm.com (e06smtp03.uk.ibm.com [195.75.94.99])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2rx3wrk9cj-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Apr 2019 09:29:06 -0400
-Received: from localhost
- by e06smtp03.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <fbarrat@linux.ibm.com>;
- Wed, 17 Apr 2019 14:29:05 +0100
-Received: from b06cxnps4076.portsmouth.uk.ibm.com (9.149.109.198)
- by e06smtp03.uk.ibm.com (192.168.101.133) with IBM ESMTP SMTP Gateway:
- Authorized Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Wed, 17 Apr 2019 14:29:03 +0100
-Received: from d06av21.portsmouth.uk.ibm.com (d06av21.portsmouth.uk.ibm.com
- [9.149.105.232])
- by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x3HDT1gw45940836
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Wed, 17 Apr 2019 13:29:01 GMT
-Received: from d06av21.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id ACF5452094;
- Wed, 17 Apr 2019 13:29:01 +0000 (GMT)
-Received: from [9.145.163.137] (unknown [9.145.163.137])
- by d06av21.portsmouth.uk.ibm.com (Postfix) with ESMTP id 2A0A75209C;
- Wed, 17 Apr 2019 13:29:01 +0000 (GMT)
-Subject: Re: [PATCH v4 2/7] ocxl: Don't pass pci_dev around
-To: "Alastair D'Silva" <alastair@au1.ibm.com>, alastair@d-silva.org
-References: <20190327053137.15173-1-alastair@au1.ibm.com>
- <20190327053137.15173-3-alastair@au1.ibm.com>
-From: Frederic Barrat <fbarrat@linux.ibm.com>
-Date: Wed, 17 Apr 2019 15:29:00 +0200
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
- Thunderbird/60.6.1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44kjyY0DDjzDqCT
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Apr 2019 23:39:33 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=ellerman.id.au
+Received: by ozlabs.org (Postfix)
+ id 44kjyX3mkhz9s71; Wed, 17 Apr 2019 23:39:32 +1000 (AEST)
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
+ SHA256) (No client certificate requested)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 44kjyX0R3lz9s5c;
+ Wed, 17 Apr 2019 23:39:32 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Christophe Leroy <christophe.leroy@c-s.fr>, linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH v5 09/10] powerpc/64s: Implement KUAP for Radix MMU
+In-Reply-To: <fff6b7e5-1b97-85ad-defa-c429b9746f04@c-s.fr>
+References: <20190308011619.22402-1-mpe@ellerman.id.au>
+ <20190308011619.22402-9-mpe@ellerman.id.au>
+ <fff6b7e5-1b97-85ad-defa-c429b9746f04@c-s.fr>
+Date: Wed, 17 Apr 2019 23:39:29 +1000
+Message-ID: <87zhoou4xa.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-In-Reply-To: <20190327053137.15173-3-alastair@au1.ibm.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: fr
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-x-cbid: 19041713-0012-0000-0000-0000030FDA70
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19041713-0013-0000-0000-0000214818D0
-Message-Id: <6e662291-3e2a-bd98-5c3a-eaa3e79588a9@linux.ibm.com>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2019-04-17_06:, , signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- malwarescore=0 suspectscore=2 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1810050000 definitions=main-1904170092
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -98,181 +58,168 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- linuxppc-dev@lists.ozlabs.org, Arnd Bergmann <arnd@arndb.de>,
- Andrew Donnellan <andrew.donnellan@au1.ibm.com>, linux-kernel@vger.kernel.org
+Cc: npiggin@gmail.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+Christophe Leroy <christophe.leroy@c-s.fr> writes:
+> Le 08/03/2019 =C3=A0 02:16, Michael Ellerman a =C3=A9crit=C2=A0:
+...
+>> diff --git a/arch/powerpc/include/asm/book3s/64/kup-radix.h b/arch/power=
+pc/include/asm/book3s/64/kup-radix.h
+>> new file mode 100644
+>> index 000000000000..3d60b04fc3f6
+>> --- /dev/null
+>> +++ b/arch/powerpc/include/asm/book3s/64/kup-radix.h
+>> @@ -0,0 +1,107 @@
+>> +/* SPDX-License-Identifier: GPL-2.0 */
+>> +#ifndef _ASM_POWERPC_BOOK3S_64_KUP_RADIX_H
+>> +#define _ASM_POWERPC_BOOK3S_64_KUP_RADIX_H
+>> +
+>> +#include <linux/const.h>
+>> +
+>> +#define AMR_KUAP_BLOCK_READ	UL(0x4000000000000000)
+>> +#define AMR_KUAP_BLOCK_WRITE	UL(0x8000000000000000)
+>> +#define AMR_KUAP_BLOCKED	(AMR_KUAP_BLOCK_READ | AMR_KUAP_BLOCK_WRITE)
+>> +#define AMR_KUAP_SHIFT		62
+>> +
+>> +#ifdef __ASSEMBLY__
+>> +
+>> +.macro kuap_restore_amr	gpr
+>
+> What about calling it just kuap_restore (kuap_check and=20
+> kuap_save_and_lock) , for the day we add an different implementation for=
+=20
+> non RADIX ?
 
+I don't think we have any plan to use anything other than AMR. We can
+always rename them if we do.
 
-Le 27/03/2019 à 06:31, Alastair D'Silva a écrit :
-> From: Alastair D'Silva <alastair@d-silva.org>
-> 
-> This data is already available in a struct
-> 
-> Signed-off-by: Alastair D'Silva <alastair@d-silva.org>
-> ---
+>> +#ifdef CONFIG_PPC_KUAP
+>> +	BEGIN_MMU_FTR_SECTION_NESTED(67)
+>> +	ld	\gpr, STACK_REGS_KUAP(r1)
+>> +	mtspr	SPRN_AMR, \gpr
+>> +	END_MMU_FTR_SECTION_NESTED_IFSET(MMU_FTR_RADIX_KUAP, 67)
+>> +#endif
+>> +.endm
+>> +
+>> +.macro kuap_check_amr gpr1 gpr2
+>
+> What about using .macro kuap_check_amr gpr1, gpr2 instead to have a=20
+> standard form with a ',' like kuap_save_amr_and_lock
 
-Acked-by: Frederic Barrat <fbarrat@linux.ibm.com>
+Yep, that was not intentional.
 
+>> +#ifdef CONFIG_PPC_KUAP_DEBUG
+>> +	BEGIN_MMU_FTR_SECTION_NESTED(67)
+>> +	mfspr	\gpr1, SPRN_AMR
+>> +	li	\gpr2, (AMR_KUAP_BLOCKED >> AMR_KUAP_SHIFT)
+>> +	sldi	\gpr2, \gpr2, AMR_KUAP_SHIFT
+>> +999:	tdne	\gpr1, \gpr2
+>> +	EMIT_BUG_ENTRY 999b,__FILE__,__LINE__, \
+>> +		(BUGFLAG_WARNING|BUGFLAG_ONCE)
+>
+> This should fit on a single line.
+> Also add space after , and around |
 
->   drivers/misc/ocxl/core.c | 38 +++++++++++++++++++++-----------------
->   1 file changed, 21 insertions(+), 17 deletions(-)
-> 
-> diff --git a/drivers/misc/ocxl/core.c b/drivers/misc/ocxl/core.c
-> index 1a4411b72d35..2f2fe12eac1e 100644
-> --- a/drivers/misc/ocxl/core.c
-> +++ b/drivers/misc/ocxl/core.c
-> @@ -66,10 +66,11 @@ static int set_afu_device(struct ocxl_afu *afu, const char *location)
->   	return rc;
->   }
->   
-> -static int assign_afu_actag(struct ocxl_afu *afu, struct pci_dev *dev)
-> +static int assign_afu_actag(struct ocxl_afu *afu)
->   {
->   	struct ocxl_fn *fn = afu->fn;
->   	int actag_count, actag_offset;
-> +	struct pci_dev *pci_dev = to_pci_dev(fn->dev.parent);
->   
->   	/*
->   	 * if there were not enough actags for the function, each afu
-> @@ -79,16 +80,16 @@ static int assign_afu_actag(struct ocxl_afu *afu, struct pci_dev *dev)
->   		fn->actag_enabled / fn->actag_supported;
->   	actag_offset = ocxl_actag_afu_alloc(fn, actag_count);
->   	if (actag_offset < 0) {
-> -		dev_err(&afu->dev, "Can't allocate %d actags for AFU: %d\n",
-> +		dev_err(&pci_dev->dev, "Can't allocate %d actags for AFU: %d\n",
->   			actag_count, actag_offset);
->   		return actag_offset;
->   	}
->   	afu->actag_base = fn->actag_base + actag_offset;
->   	afu->actag_enabled = actag_count;
->   
-> -	ocxl_config_set_afu_actag(dev, afu->config.dvsec_afu_control_pos,
-> +	ocxl_config_set_afu_actag(pci_dev, afu->config.dvsec_afu_control_pos,
->   				afu->actag_base, afu->actag_enabled);
-> -	dev_dbg(&afu->dev, "actag base=%d enabled=%d\n",
-> +	dev_dbg(&pci_dev->dev, "actag base=%d enabled=%d\n",
->   		afu->actag_base, afu->actag_enabled);
->   	return 0;
->   }
-> @@ -103,10 +104,11 @@ static void reclaim_afu_actag(struct ocxl_afu *afu)
->   	ocxl_actag_afu_free(afu->fn, start_offset, size);
->   }
->   
-> -static int assign_afu_pasid(struct ocxl_afu *afu, struct pci_dev *dev)
-> +static int assign_afu_pasid(struct ocxl_afu *afu)
->   {
->   	struct ocxl_fn *fn = afu->fn;
->   	int pasid_count, pasid_offset;
-> +	struct pci_dev *pci_dev = to_pci_dev(fn->dev.parent);
->   
->   	/*
->   	 * We only support the case where the function configuration
-> @@ -115,7 +117,7 @@ static int assign_afu_pasid(struct ocxl_afu *afu, struct pci_dev *dev)
->   	pasid_count = 1 << afu->config.pasid_supported_log;
->   	pasid_offset = ocxl_pasid_afu_alloc(fn, pasid_count);
->   	if (pasid_offset < 0) {
-> -		dev_err(&afu->dev, "Can't allocate %d PASIDs for AFU: %d\n",
-> +		dev_err(&pci_dev->dev, "Can't allocate %d PASIDs for AFU: %d\n",
->   			pasid_count, pasid_offset);
->   		return pasid_offset;
->   	}
-> @@ -123,10 +125,10 @@ static int assign_afu_pasid(struct ocxl_afu *afu, struct pci_dev *dev)
->   	afu->pasid_count = 0;
->   	afu->pasid_max = pasid_count;
->   
-> -	ocxl_config_set_afu_pasid(dev, afu->config.dvsec_afu_control_pos,
-> +	ocxl_config_set_afu_pasid(pci_dev, afu->config.dvsec_afu_control_pos,
->   				afu->pasid_base,
->   				afu->config.pasid_supported_log);
-> -	dev_dbg(&afu->dev, "PASID base=%d, enabled=%d\n",
-> +	dev_dbg(&pci_dev->dev, "PASID base=%d, enabled=%d\n",
->   		afu->pasid_base, pasid_count);
->   	return 0;
->   }
-> @@ -172,9 +174,10 @@ static void release_fn_bar(struct ocxl_fn *fn, int bar)
->   	WARN_ON(fn->bar_used[idx] < 0);
->   }
->   
-> -static int map_mmio_areas(struct ocxl_afu *afu, struct pci_dev *dev)
-> +static int map_mmio_areas(struct ocxl_afu *afu)
->   {
->   	int rc;
-> +	struct pci_dev *pci_dev = to_pci_dev(afu->fn->dev.parent);
->   
->   	rc = reserve_fn_bar(afu->fn, afu->config.global_mmio_bar);
->   	if (rc)
-> @@ -187,10 +190,10 @@ static int map_mmio_areas(struct ocxl_afu *afu, struct pci_dev *dev)
->   	}
->   
->   	afu->global_mmio_start =
-> -		pci_resource_start(dev, afu->config.global_mmio_bar) +
-> +		pci_resource_start(pci_dev, afu->config.global_mmio_bar) +
->   		afu->config.global_mmio_offset;
->   	afu->pp_mmio_start =
-> -		pci_resource_start(dev, afu->config.pp_mmio_bar) +
-> +		pci_resource_start(pci_dev, afu->config.pp_mmio_bar) +
->   		afu->config.pp_mmio_offset;
->   
->   	afu->global_mmio_ptr = ioremap(afu->global_mmio_start,
-> @@ -198,7 +201,7 @@ static int map_mmio_areas(struct ocxl_afu *afu, struct pci_dev *dev)
->   	if (!afu->global_mmio_ptr) {
->   		release_fn_bar(afu->fn, afu->config.pp_mmio_bar);
->   		release_fn_bar(afu->fn, afu->config.global_mmio_bar);
-> -		dev_err(&dev->dev, "Error mapping global mmio area\n");
-> +		dev_err(&pci_dev->dev, "Error mapping global mmio area\n");
->   		return -ENOMEM;
->   	}
->   
-> @@ -234,17 +237,17 @@ static int configure_afu(struct ocxl_afu *afu, u8 afu_idx, struct pci_dev *dev)
->   	if (rc)
->   		return rc;
->   
-> -	rc = assign_afu_actag(afu, dev);
-> +	rc = assign_afu_actag(afu);
->   	if (rc)
->   		return rc;
->   
-> -	rc = assign_afu_pasid(afu, dev);
-> +	rc = assign_afu_pasid(afu);
->   	if (rc) {
->   		reclaim_afu_actag(afu);
->   		return rc;
->   	}
->   
-> -	rc = map_mmio_areas(afu, dev);
-> +	rc = map_mmio_areas(afu);
->   	if (rc) {
->   		reclaim_afu_pasid(afu);
->   		reclaim_afu_actag(afu);
-> @@ -331,7 +334,7 @@ void remove_afu(struct ocxl_afu *afu)
->   	device_unregister(&afu->dev);
->   }
->   
-> -static struct ocxl_fn *alloc_function(struct pci_dev *dev)
-> +static struct ocxl_fn *alloc_function(void)
->   {
->   	struct ocxl_fn *fn;
->   
-> @@ -342,6 +345,7 @@ static struct ocxl_fn *alloc_function(struct pci_dev *dev)
->   	INIT_LIST_HEAD(&fn->afu_list);
->   	INIT_LIST_HEAD(&fn->pasid_list);
->   	INIT_LIST_HEAD(&fn->actag_list);
-> +
->   	return fn;
->   }
->   
-> @@ -491,7 +495,7 @@ struct ocxl_fn *init_function(struct pci_dev *dev)
->   	struct ocxl_fn *fn;
->   	int rc;
->   
-> -	fn = alloc_function(dev);
-> +	fn = alloc_function();
->   	if (!fn)
->   		return ERR_PTR(-ENOMEM);
->   
-> 
+Yep, copy/pasted from elsewhere.
 
+>> +.macro kuap_save_amr_and_lock gpr1, gpr2, use_cr, msr_pr_cr
+>> +#ifdef CONFIG_PPC_KUAP
+>> +	BEGIN_MMU_FTR_SECTION_NESTED(67)
+>> +	.ifnb \msr_pr_cr
+>> +	bne	\msr_pr_cr, 99f
+>> +	.endif
+>> +	mfspr	\gpr1, SPRN_AMR
+>> +	std	\gpr1, STACK_REGS_KUAP(r1)
+>> +	li	\gpr2, (AMR_KUAP_BLOCKED >> AMR_KUAP_SHIFT)
+>> +	sldi	\gpr2, \gpr2, AMR_KUAP_SHIFT
+>> +	cmpd	\use_cr, \gpr1, \gpr2
+>
+> On ppc32, I would have used rlwinm. to do the test. Is there an=20
+> equivalent rldinm. (unless we need to preserve cr0) ?
+
+I prefer to have the CR field specified, so we don't accidentally
+clobber cr0 in some path where it is live.
+
+>> +	beq	\use_cr, 99f
+>> +	// We don't isync here because we very recently entered via rfid
+>
+> Is this form of comment acceptable now ? It used to be /* */ only.
+
+Yeah it is, at least in powerpc code :)
+
+>> diff --git a/arch/powerpc/include/asm/exception-64s.h b/arch/powerpc/inc=
+lude/asm/exception-64s.h
+>> index 937bb630093f..bef4e05a6823 100644
+>> --- a/arch/powerpc/include/asm/exception-64s.h
+>> +++ b/arch/powerpc/include/asm/exception-64s.h
+>> @@ -497,6 +497,7 @@ END_FTR_SECTION_NESTED(ftr,ftr,943)
+>>   	RESTORE_CTR(r1, area);						   \
+>>   	b	bad_stack;						   \
+>>   3:	EXCEPTION_PROLOG_COMMON_1();					   \
+>> +	kuap_save_amr_and_lock r9, r10, cr1, cr0;			   \
+>
+> What about moving this to 4f, to avoid the cr test and branch in=20
+> kuap_save_amr_and_lock  ?
+
+Moving it there wouldn't help, because user & kernel entry both go
+through 4f. So we'd still need to check if we're coming from user.
+
+Or did I misunderstand?
+
+>>   	beq	4f;			/* if from kernel mode		*/ \
+>>   	ACCOUNT_CPU_USER_ENTRY(r13, r9, r10);				   \
+>>   	SAVE_PPR(area, r9);						   \
+
+>> diff --git a/arch/powerpc/mm/pgtable-radix.c b/arch/powerpc/mm/pgtable-r=
+adix.c
+>> index 224bcd4be5ae..0c87832ddd6c 100644
+>> --- a/arch/powerpc/mm/pgtable-radix.c
+>> +++ b/arch/powerpc/mm/pgtable-radix.c
+>> @@ -553,6 +554,23 @@ void __init setup_kuep(bool disabled)
+>>   }
+>>   #endif
+>>=20=20=20
+>> +#ifdef CONFIG_PPC_KUAP
+>> +void __init setup_kuap(bool disabled)
+>> +{
+>> +	if (disabled || !early_radix_enabled())
+>> +		return;
+>> +
+>> +	if (smp_processor_id() =3D=3D boot_cpuid) {
+>> +		pr_info("Activating Kernel Userspace Access Prevention\n");
+>> +		cur_cpu_spec->mmu_features |=3D MMU_FTR_RADIX_KUAP;
+>> +	}
+>> +
+>> +	/* Make sure userspace can't change the AMR */
+>> +	mtspr(SPRN_UAMOR, 0);
+>> +	mtspr(SPRN_AMR, AMR_KUAP_BLOCKED);
+>
+> No isync() needed here ?
+
+Will add.
+
+>> diff --git a/arch/powerpc/platforms/Kconfig.cputype b/arch/powerpc/platf=
+orms/Kconfig.cputype
+>> index 60371784c9f1..5e53b9fd62aa 100644
+>> --- a/arch/powerpc/platforms/Kconfig.cputype
+>> +++ b/arch/powerpc/platforms/Kconfig.cputype
+>> @@ -370,6 +371,13 @@ config PPC_KUAP
+>>=20=20=20
+>>   	  If you're unsure, say Y.
+>>=20=20=20
+>> +config PPC_KUAP_DEBUG
+>> +	bool "Extra debugging for Kernel Userspace Access Protection"
+>> +	depends on PPC_HAVE_KUAP && PPC_RADIX_MMU
+>
+> Why only PPC_RADIX_MMU ?
+
+Because it doesn't do anything useful unless radix is enabled.
+
+We can remove it when another platform wants it.
+
+Thanks for the review.
+
+cheers
