@@ -2,74 +2,58 @@ Return-Path: <SRS0=iZn8=ST=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_PASS autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id ACCC5C10F14
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Apr 2019 02:01:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C2FF9C10F14
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Apr 2019 02:38:52 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E5A7220872
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Apr 2019 02:01:05 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="TfIZ0rh1"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E5A7220872
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	by mail.kernel.org (Postfix) with ESMTPS id 4A53720872
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Apr 2019 02:38:52 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4A53720872
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=huawei.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44kQSb61nGzDqCH
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Apr 2019 12:01:03 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44kRJ96ZB9zDqN9
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Apr 2019 12:38:49 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=permerror (mailfrom) smtp.mailfrom=kernel.org
- (client-ip=2001:8b0:10b:1236::1; helo=casper.infradead.org;
- envelope-from=mchehab+samsung@kernel.org; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=huawei.com
+ (client-ip=45.249.212.32; helo=huawei.com;
+ envelope-from=thunder.leizhen@huawei.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=fail (p=none dis=none) header.from=kernel.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=infradead.org header.i=@infradead.org
- header.b="TfIZ0rh1"; dkim-atps=neutral
-Received: from casper.infradead.org (casper.infradead.org
- [IPv6:2001:8b0:10b:1236::1])
+ dmarc=none (p=none dis=none) header.from=huawei.com
+Received: from huawei.com (szxga06-in.huawei.com [45.249.212.32])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44kQQd5F27zDqJT;
- Wed, 17 Apr 2019 11:59:20 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
- d=infradead.org; s=casper.20170209; h=Content-Transfer-Encoding:Content-Type:
- MIME-Version:References:In-Reply-To:Message-ID:Subject:Cc:To:From:Date:Sender
- :Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
- Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:List-Help:
- List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
- bh=S8RInvAC69V+yULWzOSPTpkgsKgagKqSc8vWonnjHdk=; b=TfIZ0rh1l4cXZFpNZv5pLWq/aa
- 00bwFyRhCo/rUaf0DQmBAzNWvSho3F5md0vYacEWBt9jTHMweaoFU3+zfwBVhAFObFu1aZfctthgq
- FIp+7WTw+GM2+UBqEVOyR//5QNPwwj43J63I2Lvp3G6rrqkLhhBlUiw5iwil2i67DtB7NR136hVjo
- QFNCr4u5cx5K0vt/69EVOUjss9vRm8mSdV+ahE+Fqi1pAcXIKKHiv0BIyV/8Um1ji++crImiONxSo
- D0Q1GFEVsF++Ntfe8WScX1q1pdHzRPtjewDKAheKk54iPVINNgGydp46Cjrh92ofgWp1mJnpQrH7L
- wda/oiCA==;
-Received: from 177.205.118.176.dynamic.adsl.gvt.net.br ([177.205.118.176]
- helo=coco.lan)
- by casper.infradead.org with esmtpsa (Exim 4.90_1 #2 (Red Hat Linux))
- id 1hGZqV-0002ww-Uz; Wed, 17 Apr 2019 01:58:44 +0000
-Date: Tue, 16 Apr 2019 22:58:36 -0300
-From: Mauro Carvalho Chehab <mchehab+samsung@kernel.org>
-To: Guenter Roeck <linux@roeck-us.net>
-Subject: Re: [PATCH v2 00/21] Convert hwmon documentation to ReST
-Message-ID: <20190416225836.1d5953bc@coco.lan>
-In-Reply-To: <20190416203114.GB25517@roeck-us.net>
-References: <cover.1554923967.git.mchehab+samsung@kernel.org>
- <20190411124324.3ed62fad@lwn.net>
- <20190411174357.251904f5@coco.lan>
- <20190411210731.GA29378@roeck-us.net>
- <20190412100451.6fe49de7@lwn.net>
- <f900adea-d231-c00d-847c-33e66e79ea30@roeck-us.net>
- <20190416141949.09b48789@lwn.net>
- <20190416203114.GB25517@roeck-us.net>
-X-Mailer: Claws Mail 3.17.3 (GTK+ 2.24.32; x86_64-redhat-linux-gnu)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44kRGN6zwkzDqMW
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Apr 2019 12:37:16 +1000 (AEST)
+Received: from DGGEMS401-HUB.china.huawei.com (unknown [172.30.72.58])
+ by Forcepoint Email with ESMTP id 051CDC13ADFA5248D7C5;
+ Wed, 17 Apr 2019 10:37:10 +0800 (CST)
+Received: from [127.0.0.1] (10.177.23.164) by DGGEMS401-HUB.china.huawei.com
+ (10.3.19.201) with Microsoft SMTP Server id 14.3.408.0; Wed, 17 Apr 2019
+ 10:37:00 +0800
+Subject: Re: [PATCH v5 1/6] iommu: add generic boot option iommu.dma_mode
+To: Will Deacon <will.deacon@arm.com>, Robin Murphy <robin.murphy@arm.com>
+References: <20190409125308.18304-1-thunder.leizhen@huawei.com>
+ <20190409125308.18304-2-thunder.leizhen@huawei.com>
+ <010d3cbd-ef74-ad21-c735-0af8b18955e6@huawei.com>
+ <222946ee-adcc-1311-82a7-6afc9ffbc846@arm.com>
+ <20190416152100.GB4187@fuggles.cambridge.arm.com>
+From: "Leizhen (ThunderTown)" <thunder.leizhen@huawei.com>
+Message-ID: <5CB6914A.8050308@huawei.com>
+Date: Wed, 17 Apr 2019 10:36:58 +0800
+User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:38.0) Gecko/20100101
+ Thunderbird/38.5.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+In-Reply-To: <20190416152100.GB4187@fuggles.cambridge.arm.com>
+Content-Type: text/plain; charset="windows-1252"
 Content-Transfer-Encoding: 7bit
+X-Originating-IP: [10.177.23.164]
+X-CFilter-Loop: Reflected
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -81,57 +65,97 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-hwmon@vger.kernel.org, Jean Delvare <jdelvare@suse.com>,
- linux-aspeed@lists.ozlabs.org,
- Linux Doc Mailing List <linux-doc@vger.kernel.org>,
- Andrew Jeffery <andrew@aj.id.au>, Jonathan Corbet <corbet@lwn.net>,
- Liviu Dudau <liviu.dudau@arm.com>, linux-kernel@vger.kernel.org,
- Mauro Carvalho Chehab <mchehab@infradead.org>,
- Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>,
- Paul Mackerras <paulus@samba.org>, Joel Stanley <joel@jms.id.au>,
- linuxppc-dev@lists.ozlabs.org, Sudeep Holla <sudeep.holla@arm.com>,
- linux-arm-kernel@lists.infradead.org
+Cc: linux-ia64 <linux-ia64@vger.kernel.org>,
+ Sebastian Ott <sebott@linux.ibm.com>, linux-doc <linux-doc@vger.kernel.org>,
+ Hanjun Guo <guohanjun@huawei.com>, Heiko Carstens <heiko.carstens@de.ibm.com>,
+ Paul Mackerras <paulus@samba.org>, "H . Peter Anvin" <hpa@zytor.com>,
+ linux-s390 <linux-s390@vger.kernel.org>, Jonathan
+ Corbet <corbet@lwn.net>, Jean-Philippe Brucker <jean-philippe.brucker@arm.com>,
+ Joerg Roedel <joro@8bytes.org>, x86 <x86@kernel.org>,
+ Ingo Molnar <mingo@redhat.com>, Fenghua Yu <fenghua.yu@intel.com>,
+ John Garry <john.garry@huawei.com>, Borislav Petkov <bp@alien8.de>,
+ Thomas Gleixner <tglx@linutronix.de>,
+ Gerald Schaefer <gerald.schaefer@de.ibm.com>, Tony Luck <tony.luck@intel.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ linux-kernel <linux-kernel@vger.kernel.org>,
+ iommu <iommu@lists.linux-foundation.org>,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>,
+ David Woodhouse <dwmw2@infradead.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Em Tue, 16 Apr 2019 13:31:14 -0700
-Guenter Roeck <linux@roeck-us.net> escreveu:
 
-> On Tue, Apr 16, 2019 at 02:19:49PM -0600, Jonathan Corbet wrote:
-> > On Fri, 12 Apr 2019 20:09:16 -0700
-> > Guenter Roeck <linux@roeck-us.net> wrote:
-> >   
-> > > The big real-world question is: Is the series good enough for you to accept,
-> > > or do you expect some level of user/kernel separation ?  
-> > 
-> > I guess it can go in; it's forward progress, even if it doesn't make the
-> > improvements I would like to see.
-> > 
-> > The real question, I guess, is who should take it.  I've been seeing a
-> > fair amount of activity on hwmon, so I suspect that the potential for
-> > conflicts is real.  Perhaps things would go smoother if it went through
-> > your tree?
-> >   
-> We'll see a number of conflicts, yes. In terms of timing, this is probably
-> the worst release in the last few years to make such a change. I currently
-> have 9 patches queued in hwmon-next which touch Documentation/hwmon.
-> Of course the changes made in those are all not ReST compatible, and I have
-> no idea what to look out for to make it compatible. So this is going to be
-> fun (in a negative sense) either way.
+
+On 2019/4/16 23:21, Will Deacon wrote:
+> On Fri, Apr 12, 2019 at 02:11:31PM +0100, Robin Murphy wrote:
+>> On 12/04/2019 11:26, John Garry wrote:
+>>> On 09/04/2019 13:53, Zhen Lei wrote:
+>>>> +static int __init iommu_dma_mode_setup(char *str)
+>>>> +{
+>>>> +    if (!str)
+>>>> +        goto fail;
+>>>> +
+>>>> +    if (!strncmp(str, "passthrough", 11))
+>>>> +        iommu_default_dma_mode = IOMMU_DMA_MODE_PASSTHROUGH;
+>>>> +    else if (!strncmp(str, "lazy", 4))
+>>>> +        iommu_default_dma_mode = IOMMU_DMA_MODE_LAZY;
+>>>> +    else if (!strncmp(str, "strict", 6))
+>>>> +        iommu_default_dma_mode = IOMMU_DMA_MODE_STRICT;
+>>>> +    else
+>>>> +        goto fail;
+>>>> +
+>>>> +    pr_info("Force dma mode to be %d\n", iommu_default_dma_mode);
+>>>
+>>> What happens if the cmdline option iommu.dma_mode is passed multiple
+>>> times? We get mutliple - possibily conflicting - prints, right?
+>>
+>> Indeed; we ended up removing such prints for the existing options here,
+>> specifically because multiple messages seemed more likely to be confusing
+>> than useful.
+
+I originally intended to be compatible with X86 printing.
+
+ 		} else if (!strncmp(str, "strict", 6)) {
+ 			pr_info("Disable batched IOTLB flush\n");
+			intel_iommu_strict = 1;
+ 		}
+
+>>
+>>> And do we need to have backwards compatibility, such that the setting
+>>> for iommu.strict or iommu.passthrough trumps iommu.dma_mode, regardless
+>>> of order?
+>>
+>> As above I think it would be preferable to just keep using the existing
+>> options anyway. The current behaviour works out as:
+>>
+>> iommu.passthrough |      Y	|	  N
+>> iommu.strict	  |      x	|    Y         N
+>> ------------------|-------------|---------|--------
+>> MODE		  | PASSTHROUGH | STRICT  |  LAZY
+>>
+>> which seems intuitive enough that a specific dma_mode option doesn't add
+>> much value, and would more likely just overcomplicate things for users as
+>> well as our implementation.
 > 
-> I don't really have a recommendation at this point; I think the best I could
-> do to take the patches which don't generate conflicts and leave the rest
-> alone. But that would also be bad, since the new index file would not match
-> reality. No idea, really, what the best or even a useful approach would be.
+> Agreed. We can't remove the existing options, and they do the job perfectly
+> well so I don't see the need to add more options on top.
+
+OK, I will remove the iommu.dma_mode option in the next version. Thanks for you three.
+
+I didn't want to add it at first, but later found that the boot options on
+each ARCH are different, then want to normalize it.
+
+In addition, do we need to compatible the build option name IOMMU_DEFAULT_PASSTHROUGH? or
+change it to IOMMU_DEFAULT_DMA_MODE_PASSTHROUGH or IOMMU_DEFAULT_MODE_PASSTHROUGH?
+
 > 
-> Maybe automated changes like this (assuming they are indeed automated)
-> can be generated and pushed right after a commit window closes. Would
-> that by any chance be possible ?
+> Will
+> 
+> .
+> 
 
-No, those patches are hand-maid, but I can surely rebase it on the top of
-your tree. Is your tree already merged at linux-next, or should I use some
-other branch/tree for rebase?
+-- 
+Thanks!
+BestRegards
 
-Thanks,
-Mauro
