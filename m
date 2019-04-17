@@ -2,94 +2,65 @@ Return-Path: <SRS0=iZn8=ST=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
+X-Spam-Status: No, score=-11.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_PASS
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 14B7DC282DA
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Apr 2019 15:40:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DC6D0C282DA
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Apr 2019 16:44:51 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 8F22C20674
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Apr 2019 15:40:30 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8F22C20674
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 1C68A20835
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Apr 2019 16:44:50 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=sirena.org.uk header.i=@sirena.org.uk header.b="n2tZ9J8z"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1C68A20835
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44kmf44QRgzDqKj
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Apr 2019 01:40:28 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44kp4J4B3ZzDqPQ
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Apr 2019 02:44:48 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
- (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=fbarrat@linux.ibm.com; receiver=<UNKNOWN>)
+ spf=none (mailfrom) smtp.mailfrom=sirena.org.uk
+ (client-ip=2a01:7e01::f03c:91ff:fed4:a3b6; helo=heliosphere.sirena.org.uk;
+ envelope-from=broonie@sirena.org.uk; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+ dmarc=fail (p=none dis=none) header.from=kernel.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=sirena.org.uk header.i=@sirena.org.uk
+ header.b="n2tZ9J8z"; dkim-atps=neutral
+Received: from heliosphere.sirena.org.uk (heliosphere.sirena.org.uk
+ [IPv6:2a01:7e01::f03c:91ff:fed4:a3b6])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44kmXn69dXzDqNk
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Apr 2019 01:35:53 +1000 (AEST)
-Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x3HFWNAC097102
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Apr 2019 11:35:51 -0400
-Received: from e06smtp02.uk.ibm.com (e06smtp02.uk.ibm.com [195.75.94.98])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2rx4j37afh-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Apr 2019 11:35:50 -0400
-Received: from localhost
- by e06smtp02.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <fbarrat@linux.ibm.com>;
- Wed, 17 Apr 2019 16:35:48 +0100
-Received: from b06cxnps4074.portsmouth.uk.ibm.com (9.149.109.196)
- by e06smtp02.uk.ibm.com (192.168.101.132) with IBM ESMTP SMTP Gateway:
- Authorized Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Wed, 17 Apr 2019 16:35:44 +0100
-Received: from d06av24.portsmouth.uk.ibm.com (mk.ibm.com [9.149.105.60])
- by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x3HFZhFD51052714
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Wed, 17 Apr 2019 15:35:43 GMT
-Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 2C98B42047;
- Wed, 17 Apr 2019 15:35:43 +0000 (GMT)
-Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id B200842049;
- Wed, 17 Apr 2019 15:35:42 +0000 (GMT)
-Received: from [9.145.35.200] (unknown [9.145.35.200])
- by d06av24.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Wed, 17 Apr 2019 15:35:42 +0000 (GMT)
-Subject: Re: [PATCH v4 7/7] ocxl: Provide global MMIO accessors for external
- drivers
-To: "Alastair D'Silva" <alastair@au1.ibm.com>, alastair@d-silva.org
-References: <20190327053137.15173-1-alastair@au1.ibm.com>
- <20190327053137.15173-8-alastair@au1.ibm.com>
-From: Frederic Barrat <fbarrat@linux.ibm.com>
-Date: Wed, 17 Apr 2019 17:35:42 +0200
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
- Thunderbird/60.6.1
-MIME-Version: 1.0
-In-Reply-To: <20190327053137.15173-8-alastair@au1.ibm.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: fr
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-x-cbid: 19041715-0008-0000-0000-000002DAE8E9
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19041715-0009-0000-0000-000022472680
-Message-Id: <aba561f2-dd6f-6bde-a551-3d37c835a8a1@linux.ibm.com>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2019-04-17_07:, , signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1810050000 definitions=main-1904170104
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44kp1c1s6CzDqM9
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Apr 2019 02:42:27 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+ d=sirena.org.uk; s=20170815-heliosphere; h=Date:Message-Id:In-Reply-To:
+ Subject:Cc:To:From:Sender:Reply-To:MIME-Version:Content-Type:
+ Content-Transfer-Encoding:Content-ID:Content-Description:Resent-Date:
+ Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:References:
+ List-Id:List-Help:List-Unsubscribe:List-Subscribe:List-Post:List-Owner:
+ List-Archive; bh=oswjkdkJXh6MhzI3kDJxBh8JCJUqRfWbh8eCr/sXW+k=; b=n2tZ9J8zn5Di
+ m/QS34P/b+bGNrH1hOmJbL6plXjVNBSLlf67UIEwyxEQuW3J+cPmAshw8TGYutz0dzlF4t4U2IHJH
+ 4LunVZmepw2kdoAP5se5SyxHc9XrfY1VwJH0K6vTHxwOsoJaCDtAvRZKAByQo+ee5+TOe+Pd7iqoM
+ +l5DY=;
+Received: from cpc102320-sgyl38-2-0-cust46.18-2.cable.virginm.net
+ ([82.37.168.47] helo=debutante.sirena.org.uk)
+ by heliosphere.sirena.org.uk with esmtpa (Exim 4.89)
+ (envelope-from <broonie@sirena.org.uk>)
+ id 1hGndW-000151-PF; Wed, 17 Apr 2019 16:42:14 +0000
+Received: by debutante.sirena.org.uk (Postfix, from userid 1000)
+ id 546461128FC8; Wed, 17 Apr 2019 17:42:14 +0100 (BST)
+From: Mark Brown <broonie@kernel.org>
+To: YueHaibing <yuehaibing@huawei.com>
+Subject: Applied "ASoC: fsl_micfil: Remove set but not used variable 'osr'" to
+ the asoc tree
+In-Reply-To: <20190417150915.37968-1-yuehaibing@huawei.com>
+X-Patchwork-Hint: ignore
+Message-Id: <20190417164214.546461128FC8@debutante.sirena.org.uk>
+Date: Wed, 17 Apr 2019 17:42:14 +0100 (BST)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -101,422 +72,77 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Arnd Bergmann <arnd@arndb.de>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Greg Kurz <groug@kaod.org>,
- linux-kernel@vger.kernel.org, Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
- linuxppc-dev@lists.ozlabs.org
+Cc: alsa-devel@alsa-project.org, timur@kernel.org, Xiubo.Lee@gmail.com,
+ festevam@gmail.com, tiwai@suse.com, lgirdwood@gmail.com,
+ linux-kernel@vger.kernel.org, nicoleotsuka@gmail.com,
+ Mark Brown <broonie@kernel.org>, perex@perex.cz, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+The patch
 
+   ASoC: fsl_micfil: Remove set but not used variable 'osr'
 
-Le 27/03/2019 à 06:31, Alastair D'Silva a écrit :
-> From: Alastair D'Silva <alastair@d-silva.org>
-> 
-> External drivers that communicate via OpenCAPI will need to make
-> MMIO calls to interact with the devices.
-> 
-> Signed-off-by: Alastair D'Silva <alastair@d-silva.org>
-> Reviewed-by: Greg Kurz <groug@kaod.org>
-> ---
+has been applied to the asoc tree at
 
+   https://git.kernel.org/pub/scm/linux/kernel/git/broonie/sound.git for-5.2
 
-Acked-by: Frederic Barrat <fbarrat@linux.ibm.com>
+All being well this means that it will be integrated into the linux-next
+tree (usually sometime in the next 24 hours) and sent to Linus during
+the next merge window (or sooner if it is a bug fix), however if
+problems are discovered then the patch may be dropped or reverted.  
 
-And that's the final one! Thanks a lot Alastair, that took some effort, 
-but I'm quite happy with the result.
+You may get further e-mails resulting from automated or manual testing
+and review of the tree, please engage with people reporting problems and
+send followup patches addressing any issues that are reported if needed.
 
-   Fred
+If any updates are required or you are submitting further changes they
+should be sent as incremental updates against current git, existing
+patches will not be replaced.
 
+Please add any relevant lists and maintainers to the CCs when replying
+to this mail.
 
+Thanks,
+Mark
 
->   drivers/misc/ocxl/Makefile |   2 +-
->   drivers/misc/ocxl/mmio.c   | 234 +++++++++++++++++++++++++++++++++++++
->   include/misc/ocxl.h        | 110 +++++++++++++++++
->   3 files changed, 345 insertions(+), 1 deletion(-)
->   create mode 100644 drivers/misc/ocxl/mmio.c
-> 
-> diff --git a/drivers/misc/ocxl/Makefile b/drivers/misc/ocxl/Makefile
-> index bc4e39bfda7b..d07d1bb8e8d4 100644
-> --- a/drivers/misc/ocxl/Makefile
-> +++ b/drivers/misc/ocxl/Makefile
-> @@ -1,7 +1,7 @@
->   # SPDX-License-Identifier: GPL-2.0+
->   ccflags-$(CONFIG_PPC_WERROR)	+= -Werror
->   
-> -ocxl-y				+= main.o pci.o config.o file.o pasid.o
-> +ocxl-y				+= main.o pci.o config.o file.o pasid.o mmio.o
->   ocxl-y				+= link.o context.o afu_irq.o sysfs.o trace.o
->   ocxl-y				+= core.o
->   obj-$(CONFIG_OCXL)		+= ocxl.o
-> diff --git a/drivers/misc/ocxl/mmio.c b/drivers/misc/ocxl/mmio.c
-> new file mode 100644
-> index 000000000000..aae713db4ebe
-> --- /dev/null
-> +++ b/drivers/misc/ocxl/mmio.c
-> @@ -0,0 +1,234 @@
-> +// SPDX-License-Identifier: GPL-2.0+
-> +// Copyright 2019 IBM Corp.
-> +#include <linux/sched/mm.h>
-> +#include "trace.h"
-> +#include "ocxl_internal.h"
-> +
-> +int ocxl_global_mmio_read32(struct ocxl_afu *afu, size_t offset,
-> +				enum ocxl_endian endian, u32 *val)
-> +{
-> +	if (offset > afu->config.global_mmio_size - 4)
-> +		return -EINVAL;
-> +
-> +#ifdef __BIG_ENDIAN__
-> +	if (endian == OCXL_HOST_ENDIAN)
-> +		endian = OCXL_BIG_ENDIAN;
-> +#endif
-> +
-> +	switch (endian) {
-> +	case OCXL_BIG_ENDIAN:
-> +		*val = readl_be((char *)afu->global_mmio_ptr + offset);
-> +		break;
-> +
-> +	default:
-> +		*val = readl((char *)afu->global_mmio_ptr + offset);
-> +		break;
-> +	}
-> +
-> +	return 0;
-> +}
-> +EXPORT_SYMBOL_GPL(ocxl_global_mmio_read32);
-> +
-> +int ocxl_global_mmio_read64(struct ocxl_afu *afu, size_t offset,
-> +				enum ocxl_endian endian, u64 *val)
-> +{
-> +	if (offset > afu->config.global_mmio_size - 8)
-> +		return -EINVAL;
-> +
-> +#ifdef __BIG_ENDIAN__
-> +	if (endian == OCXL_HOST_ENDIAN)
-> +		endian = OCXL_BIG_ENDIAN;
-> +#endif
-> +
-> +	switch (endian) {
-> +	case OCXL_BIG_ENDIAN:
-> +		*val = readq_be((char *)afu->global_mmio_ptr + offset);
-> +		break;
-> +
-> +	default:
-> +		*val = readq((char *)afu->global_mmio_ptr + offset);
-> +		break;
-> +	}
-> +
-> +	return 0;
-> +}
-> +EXPORT_SYMBOL_GPL(ocxl_global_mmio_read64);
-> +
-> +int ocxl_global_mmio_write32(struct ocxl_afu *afu, size_t offset,
-> +				enum ocxl_endian endian, u32 val)
-> +{
-> +	if (offset > afu->config.global_mmio_size - 4)
-> +		return -EINVAL;
-> +
-> +#ifdef __BIG_ENDIAN__
-> +	if (endian == OCXL_HOST_ENDIAN)
-> +		endian = OCXL_BIG_ENDIAN;
-> +#endif
-> +
-> +	switch (endian) {
-> +	case OCXL_BIG_ENDIAN:
-> +		writel_be(val, (char *)afu->global_mmio_ptr + offset);
-> +		break;
-> +
-> +	default:
-> +		writel(val, (char *)afu->global_mmio_ptr + offset);
-> +		break;
-> +	}
-> +
-> +
-> +	return 0;
-> +}
-> +EXPORT_SYMBOL_GPL(ocxl_global_mmio_write32);
-> +
-> +int ocxl_global_mmio_write64(struct ocxl_afu *afu, size_t offset,
-> +				enum ocxl_endian endian, u64 val)
-> +{
-> +	if (offset > afu->config.global_mmio_size - 8)
-> +		return -EINVAL;
-> +
-> +#ifdef __BIG_ENDIAN__
-> +	if (endian == OCXL_HOST_ENDIAN)
-> +		endian = OCXL_BIG_ENDIAN;
-> +#endif
-> +
-> +	switch (endian) {
-> +	case OCXL_BIG_ENDIAN:
-> +		writeq_be(val, (char *)afu->global_mmio_ptr + offset);
-> +		break;
-> +
-> +	default:
-> +		writeq(val, (char *)afu->global_mmio_ptr + offset);
-> +		break;
-> +	}
-> +
-> +
-> +	return 0;
-> +}
-> +EXPORT_SYMBOL_GPL(ocxl_global_mmio_write64);
-> +
-> +int ocxl_global_mmio_set32(struct ocxl_afu *afu, size_t offset,
-> +				enum ocxl_endian endian, u32 mask)
-> +{
-> +	u32 tmp;
-> +
-> +	if (offset > afu->config.global_mmio_size - 4)
-> +		return -EINVAL;
-> +
-> +#ifdef __BIG_ENDIAN__
-> +	if (endian == OCXL_HOST_ENDIAN)
-> +		endian = OCXL_BIG_ENDIAN;
-> +#endif
-> +
-> +	switch (endian) {
-> +	case OCXL_BIG_ENDIAN:
-> +		tmp = readl_be((char *)afu->global_mmio_ptr + offset);
-> +		tmp |= mask;
-> +		writel_be(tmp, (char *)afu->global_mmio_ptr + offset);
-> +		break;
-> +
-> +	default:
-> +		tmp = readl((char *)afu->global_mmio_ptr + offset);
-> +		tmp |= mask;
-> +		writel(tmp, (char *)afu->global_mmio_ptr + offset);
-> +		break;
-> +	}
-> +
-> +	return 0;
-> +}
-> +EXPORT_SYMBOL_GPL(ocxl_global_mmio_set32);
-> +
-> +int ocxl_global_mmio_set64(struct ocxl_afu *afu, size_t offset,
-> +				enum ocxl_endian endian, u64 mask)
-> +{
-> +	u64 tmp;
-> +
-> +	if (offset > afu->config.global_mmio_size - 8)
-> +		return -EINVAL;
-> +
-> +#ifdef __BIG_ENDIAN__
-> +	if (endian == OCXL_HOST_ENDIAN)
-> +		endian = OCXL_BIG_ENDIAN;
-> +#endif
-> +
-> +	switch (endian) {
-> +	case OCXL_BIG_ENDIAN:
-> +		tmp = readq_be((char *)afu->global_mmio_ptr + offset);
-> +		tmp |= mask;
-> +		writeq_be(tmp, (char *)afu->global_mmio_ptr + offset);
-> +		break;
-> +
-> +	default:
-> +		tmp = readq((char *)afu->global_mmio_ptr + offset);
-> +		tmp |= mask;
-> +		writeq(tmp, (char *)afu->global_mmio_ptr + offset);
-> +		break;
-> +	}
-> +
-> +	return 0;
-> +}
-> +EXPORT_SYMBOL_GPL(ocxl_global_mmio_set64);
-> +
-> +int ocxl_global_mmio_clear32(struct ocxl_afu *afu, size_t offset,
-> +				enum ocxl_endian endian, u32 mask)
-> +{
-> +	u32 tmp;
-> +
-> +	if (offset > afu->config.global_mmio_size - 4)
-> +		return -EINVAL;
-> +
-> +#ifdef __BIG_ENDIAN__
-> +	if (endian == OCXL_HOST_ENDIAN)
-> +		endian = OCXL_BIG_ENDIAN;
-> +#endif
-> +
-> +	switch (endian) {
-> +	case OCXL_BIG_ENDIAN:
-> +		tmp = readl_be((char *)afu->global_mmio_ptr + offset);
-> +		tmp &= ~mask;
-> +		writel_be(tmp, (char *)afu->global_mmio_ptr + offset);
-> +		break;
-> +
-> +	default:
-> +		tmp = readl((char *)afu->global_mmio_ptr + offset);
-> +		tmp &= ~mask;
-> +		writel(tmp, (char *)afu->global_mmio_ptr + offset);
-> +		break;
-> +	}
-> +
-> +
-> +	return 0;
-> +}
-> +EXPORT_SYMBOL_GPL(ocxl_global_mmio_clear32);
-> +
-> +int ocxl_global_mmio_clear64(struct ocxl_afu *afu, size_t offset,
-> +				enum ocxl_endian endian, u64 mask)
-> +{
-> +	u64 tmp;
-> +
-> +	if (offset > afu->config.global_mmio_size - 8)
-> +		return -EINVAL;
-> +
-> +#ifdef __BIG_ENDIAN__
-> +	if (endian == OCXL_HOST_ENDIAN)
-> +		endian = OCXL_BIG_ENDIAN;
-> +#endif
-> +
-> +	switch (endian) {
-> +	case OCXL_BIG_ENDIAN:
-> +		tmp = readq_be((char *)afu->global_mmio_ptr + offset);
-> +		tmp &= ~mask;
-> +		writeq_be(tmp, (char *)afu->global_mmio_ptr + offset);
-> +		break;
-> +
-> +	default:
-> +		tmp = readq((char *)afu->global_mmio_ptr + offset);
-> +		tmp &= ~mask;
-> +		writeq(tmp, (char *)afu->global_mmio_ptr + offset);
-> +		break;
-> +	}
-> +
-> +	writeq(tmp, (char *)afu->global_mmio_ptr + offset);
-> +
-> +	return 0;
-> +}
-> +EXPORT_SYMBOL_GPL(ocxl_global_mmio_clear64);
-> diff --git a/include/misc/ocxl.h b/include/misc/ocxl.h
-> index dea93885a839..5c4b4916e6be 100644
-> --- a/include/misc/ocxl.h
-> +++ b/include/misc/ocxl.h
-> @@ -45,6 +45,12 @@ struct ocxl_fn_config {
->   	s8 max_afu_index;
->   };
->   
-> +enum ocxl_endian {
-> +	OCXL_BIG_ENDIAN = 0,    /**< AFU data is big-endian */
-> +	OCXL_LITTLE_ENDIAN = 1, /**< AFU data is little-endian */
-> +	OCXL_HOST_ENDIAN = 2,   /**< AFU data is the same endianness as the host */
-> +};
-> +
->   // These are opaque outside the ocxl driver
->   struct ocxl_afu;
->   struct ocxl_fn;
-> @@ -230,6 +236,110 @@ void ocxl_afu_set_private(struct ocxl_afu *afu, void *private);
->    */
->   void *ocxl_afu_get_private(struct ocxl_afu *dev);
->   
-> +// Global MMIO
-> +/**
-> + * Read a 32 bit value from global MMIO
-> + *
-> + * @afu: The AFU
-> + * @offset: The Offset from the start of MMIO
-> + * @endian: the endianness that the MMIO data is in
-> + * @val: returns the value
-> + *
-> + * Returns 0 for success, negative on error
-> + */
-> +int ocxl_global_mmio_read32(struct ocxl_afu *afu, size_t offset,
-> +				enum ocxl_endian endian, u32 *val);
-> +
-> +/**
-> + * Read a 64 bit value from global MMIO
-> + *
-> + * @afu: The AFU
-> + * @offset: The Offset from the start of MMIO
-> + * @endian: the endianness that the MMIO data is in
-> + * @val: returns the value
-> + *
-> + * Returns 0 for success, negative on error
-> + */
-> +int ocxl_global_mmio_read64(struct ocxl_afu *afu, size_t offset,
-> +				enum ocxl_endian endian, u64 *val);
-> +
-> +/**
-> + * Write a 32 bit value to global MMIO
-> + *
-> + * @afu: The AFU
-> + * @offset: The Offset from the start of MMIO
-> + * @endian: the endianness that the MMIO data is in
-> + * @val: The value to write
-> + *
-> + * Returns 0 for success, negative on error
-> + */
-> +int ocxl_global_mmio_write32(struct ocxl_afu *afu, size_t offset,
-> +				enum ocxl_endian endian, u32 val);
-> +
-> +/**
-> + * Write a 64 bit value to global MMIO
-> + *
-> + * @afu: The AFU
-> + * @offset: The Offset from the start of MMIO
-> + * @endian: the endianness that the MMIO data is in
-> + * @val: The value to write
-> + *
-> + * Returns 0 for success, negative on error
-> + */
-> +int ocxl_global_mmio_write64(struct ocxl_afu *afu, size_t offset,
-> +				enum ocxl_endian endian, u64 val);
-> +
-> +/**
-> + * Set bits in a 32 bit global MMIO register
-> + *
-> + * @afu: The AFU
-> + * @offset: The Offset from the start of MMIO
-> + * @endian: the endianness that the MMIO data is in
-> + * @mask: a mask of the bits to set
-> + *
-> + * Returns 0 for success, negative on error
-> + */
-> +int ocxl_global_mmio_set32(struct ocxl_afu *afu, size_t offset,
-> +				enum ocxl_endian endian, u32 mask);
-> +
-> +/**
-> + * Set bits in a 64 bit global MMIO register
-> + *
-> + * @afu: The AFU
-> + * @offset: The Offset from the start of MMIO
-> + * @endian: the endianness that the MMIO data is in
-> + * @mask: a mask of the bits to set
-> + *
-> + * Returns 0 for success, negative on error
-> + */
-> +int ocxl_global_mmio_set64(struct ocxl_afu *afu, size_t offset,
-> +				enum ocxl_endian endian, u64 mask);
-> +
-> +/**
-> + * Set bits in a 32 bit global MMIO register
-> + *
-> + * @afu: The AFU
-> + * @offset: The Offset from the start of MMIO
-> + * @endian: the endianness that the MMIO data is in
-> + * @mask: a mask of the bits to set
-> + *
-> + * Returns 0 for success, negative on error
-> + */
-> +int ocxl_global_mmio_clear32(struct ocxl_afu *afu, size_t offset,
-> +				enum ocxl_endian endian, u32 mask);
-> +
-> +/**
-> + * Set bits in a 64 bit global MMIO register
-> + *
-> + * @afu: The AFU
-> + * @offset: The Offset from the start of MMIO
-> + * @endian: the endianness that the MMIO data is in
-> + * @mask: a mask of the bits to set
-> + *
-> + * Returns 0 for success, negative on error
-> + */
-> +int ocxl_global_mmio_clear64(struct ocxl_afu *afu, size_t offset,
-> +				enum ocxl_endian endian, u64 mask);
->   
->   // Functions left here are for compatibility with the cxlflash driver
->   
-> 
+From fd30e17e4f7a499635bd4e3a5d83534afcaaa9a8 Mon Sep 17 00:00:00 2001
+From: YueHaibing <yuehaibing@huawei.com>
+Date: Wed, 17 Apr 2019 23:09:15 +0800
+Subject: [PATCH] ASoC: fsl_micfil: Remove set but not used variable 'osr'
+
+Fixes gcc '-Wunused-but-set-variable' warning:
+
+sound/soc/fsl/fsl_micfil.c: In function 'get_clk_div':
+sound/soc/fsl/fsl_micfil.c:154:6: warning: variable 'osr' set but not used [-Wunused-but-set-variable]
+
+It is never used since introduction in
+commit 47a70e6fc9a8 ("ASoC: Add MICFIL SoC Digital Audio Interface driver.")
+
+Signed-off-by: YueHaibing <yuehaibing@huawei.com>
+Signed-off-by: Mark Brown <broonie@kernel.org>
+---
+ sound/soc/fsl/fsl_micfil.c | 3 ---
+ 1 file changed, 3 deletions(-)
+
+diff --git a/sound/soc/fsl/fsl_micfil.c b/sound/soc/fsl/fsl_micfil.c
+index 40c07e756481..f7f2d29f1bfe 100644
+--- a/sound/soc/fsl/fsl_micfil.c
++++ b/sound/soc/fsl/fsl_micfil.c
+@@ -151,12 +151,9 @@ static inline int get_clk_div(struct fsl_micfil *micfil,
+ {
+ 	u32 ctrl2_reg;
+ 	long mclk_rate;
+-	int osr;
+ 	int clk_div;
+ 
+ 	regmap_read(micfil->regmap, REG_MICFIL_CTRL2, &ctrl2_reg);
+-	osr = 16 - ((ctrl2_reg & MICFIL_CTRL2_CICOSR_MASK)
+-		    >> MICFIL_CTRL2_CICOSR_SHIFT);
+ 
+ 	mclk_rate = clk_get_rate(micfil->mclk);
+ 
+-- 
+2.20.1
 
