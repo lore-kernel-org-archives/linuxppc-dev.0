@@ -7,21 +7,21 @@ X-Spam-Status: No, score=-8.5 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
 	SPF_PASS,USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A0B9DC10F0E
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Apr 2019 11:16:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 58D7DC10F0E
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Apr 2019 11:18:26 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 1E0D4214DA
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Apr 2019 11:16:51 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id C8309214DA
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Apr 2019 11:18:25 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Y0dp+VAQ"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1E0D4214DA
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="ha7eC9dC"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C8309214DA
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44lGlQ1ChSzDqRX
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Apr 2019 21:16:50 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44lGnC46RFzDqR7
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Apr 2019 21:18:23 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=gmail.com
  (client-ip=2a00:1450:4864:20::341; helo=mail-wm1-x341.google.com;
@@ -29,53 +29,54 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="Y0dp+VAQ"; 
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="ha7eC9dC"; 
  dkim-atps=neutral
 Received: from mail-wm1-x341.google.com (mail-wm1-x341.google.com
  [IPv6:2a00:1450:4864:20::341])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44lGfD0LTyzDqQl
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Apr 2019 21:12:18 +1000 (AEST)
-Received: by mail-wm1-x341.google.com with SMTP id z11so2345002wmi.0
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Apr 2019 04:12:18 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44lGfF1jXQzDqQh
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Apr 2019 21:12:21 +1000 (AEST)
+Received: by mail-wm1-x341.google.com with SMTP id z11so2345151wmi.0
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Apr 2019 04:12:21 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
  h=from:to:cc:subject:date:message-id:in-reply-to:references;
- bh=KT4IxCbsdb20vxjXV3Yb4q905/4eUjLcCpAjIqK4bV0=;
- b=Y0dp+VAQWLfpErhF5KeNWFfcBtdaMQvfr9DnX6fKs/x/daooxvyFFobx/p0lK4b1su
- sL3/oMGDNvEAQDpMWWoSMgYLEAs8HzpjSQH8Oa4cHmI9qOUN1VRi9QqSScgfCArJud6+
- OjuhRAikaH4eI+ba1oTlYRBm68ubvsAJEYgHe+0u7Ob7hB3F1ipgC3nGw1GsHjsQ8sCM
- eQdfS55oeRT/OxLSmob0RZUskqtAMwiFDQiR2ONAhTLL2ZPBWr4jKLLytpon1nX4K90s
- 3geEjI7yvYIxF8SiuwTIg0Vszc/6KJzlKwPCd6EIjh9XCkSn37wVEFOaSdky5ipCyvyp
- amrg==
+ bh=1+9nJK1Db2lO9Wy+wl5d5tDXTM6Ik02w576iY7MCnxU=;
+ b=ha7eC9dC9yJ9uOyYhddr+sfovKYz+R1+Pml66seQaXCE7mLV/rsMJgccTUEnqDkGI2
+ 7XK8TmlfXSvYCzNz+f5bGZXSSYr7qGUcvuZuPbQ66rR1At1NkWLF4LWsXouPRDVyqKv5
+ O1IrxOq6QOig6eExpNlSQd/Q4RB5znyCbqiL7uyuoWlW1bNjF9kvmCqhnPxZxhdC3nWu
+ iWAMgBwYg9iP9i0POH5G9+RZoT0QpNoJ+fyy0/08vCHl6JR2Ws94b+d6ayAlWsAjOTJw
+ /GHCT1hN1aVyJQJhslI/5SPB/YifrC3VvtQpjvEyYLlacODMOJYc2Nr5gHiH6bcrkdJa
+ drhA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
  :references;
- bh=KT4IxCbsdb20vxjXV3Yb4q905/4eUjLcCpAjIqK4bV0=;
- b=NrRcAtdfzT2bNj8lljYQwQxwRlH32OwFXJEEMZqP3DgggiAAfUkCTpNtunBDZPDT6R
- weAtAVxSX8SopYfBHEuG61mEMEPCYLZ1eEZR0/a+5CjAgwcJwUNttHPCS+epAPkWhATz
- /WX+11rnbshfhUnfhSZNlqFsy2Y8zuFck4jBqzqSxzqyLs7BQpsQmcdvLg6dqxgu/AgD
- TPfXZyxzGWOXGQSNGgEc0bcoaouARsxq8ab9V1CWBROux4UCy+kYOqzIsNDObNElWs2y
- BtXxNKvfa/GMEofekeIU9fVGiO21OFhMQztkZrZQMdJcqYmjqWmVkHcwOonesjwwcI1j
- luww==
-X-Gm-Message-State: APjAAAW7DJ8TNepl+lNSsElpivHw2nnVM9Uah0YTkTgvmDQZzVO1g4Gs
- U0u2XE+mGHPcSBS/t7x6NZY=
-X-Google-Smtp-Source: APXvYqxs6Cf3sKJNDaD7WXuqSj31uua0iWy7oJoeMqG8rWXkMXo9aCMr9fbPBHKpXW7mg3Uayp8TLg==
-X-Received: by 2002:a1c:1b10:: with SMTP id b16mr2760179wmb.90.1555585935442; 
- Thu, 18 Apr 2019 04:12:15 -0700 (PDT)
+ bh=1+9nJK1Db2lO9Wy+wl5d5tDXTM6Ik02w576iY7MCnxU=;
+ b=XnKLwr/M4tD33FA7taEGALgqhBdAPg4FLQNjyXVp58nmsuoD8KU+rQj+6pC1iv6ZPP
+ WBwWcg8saT3WmPv20o/+ghpnXpCEekgaeMiOHRVkBSfp2IpihMIDW2qcawtSfU9wYn84
+ QYDJhqJ/QmS1WVMzljRwM625l28U7dGQBq4J10u9f9ftxqSm1qxEQOalPtKZ5HpHeSQU
+ RxnpkkDOEenRvHzSpYAF2I0cRQy5mJIXxZD0KsoMxEXJbD8wjVYnDBn9IcYDVyGzuruh
+ 4BqiTS271+5vMwumvugXntd/zX24ZpRWBrfsytq8XjilGkXMlOK6O+q5bf/4rh1rtkTi
+ a9dQ==
+X-Gm-Message-State: APjAAAW2X+VYAACV8iGDQhPyUgdGJ+CTCUzcw4hAoLA9JGj8i6r5kKbp
+ qURelx2j+e8mDlvP3ZZYhhE=
+X-Google-Smtp-Source: APXvYqxJs+G3NOyqcEh489pdgO7urfXXmfd1Hav4NVN4L0GbWSK0G3CZBbUOhXitaAImb+p9xxUdVw==
+X-Received: by 2002:a05:600c:2055:: with SMTP id
+ p21mr2771224wmg.118.1555585938600; 
+ Thu, 18 Apr 2019 04:12:18 -0700 (PDT)
 Received: from localhost.localdomain ([2001:470:9e39::64])
- by smtp.gmail.com with ESMTPSA id z63sm2005594wme.30.2019.04.18.04.12.13
+ by smtp.gmail.com with ESMTPSA id z63sm2005594wme.30.2019.04.18.04.12.17
  (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
- Thu, 18 Apr 2019 04:12:14 -0700 (PDT)
+ Thu, 18 Apr 2019 04:12:18 -0700 (PDT)
 From: Jonas Gorski <jonas.gorski@gmail.com>
 To: linux-clk@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
  linux-arm-kernel@lists.infradead.org, linux-rockchip@lists.infradead.org,
  linux-tegra@vger.kernel.org
-Subject: [PATCH RFT V3 1/8] clk: divider: add explicit big endian support
-Date: Thu, 18 Apr 2019 13:12:04 +0200
-Message-Id: <20190418111211.10474-2-jonas.gorski@gmail.com>
+Subject: [PATCH RFT V3 3/8] clk: gate: add explicit big endian support
+Date: Thu, 18 Apr 2019 13:12:06 +0200
+Message-Id: <20190418111211.10474-4-jonas.gorski@gmail.com>
 X-Mailer: git-send-email 2.13.2
 In-Reply-To: <20190418111211.10474-1-jonas.gorski@gmail.com>
 References: <20190418111211.10474-1-jonas.gorski@gmail.com>
@@ -104,103 +105,95 @@ Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
 Add a clock specific flag to switch register accesses to big endian, to
-allow runtime configuration of big endian divider clocks.
+allow runtime configuration of big endian gated clocks.
 
 Signed-off-by: Jonas Gorski <jonas.gorski@gmail.com>
 ---
 V2 -> V3:
- * fix passed arguments to clk_div_readl found by kbuild
- * drop unneeded else in clk_div_readl
+ * drop unneeded else in clk_gate_readl
 V1 -> V2:
  * switch from global to local flag
 
- drivers/clk/clk-divider.c    | 26 ++++++++++++++++++++++----
+ drivers/clk/clk-gate.c       | 22 +++++++++++++++++++---
  include/linux/clk-provider.h |  4 ++++
- 2 files changed, 26 insertions(+), 4 deletions(-)
+ 2 files changed, 23 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/clk/clk-divider.c b/drivers/clk/clk-divider.c
-index e5a17265cfaf..25c7404e376c 100644
---- a/drivers/clk/clk-divider.c
-+++ b/drivers/clk/clk-divider.c
-@@ -25,6 +25,24 @@
+diff --git a/drivers/clk/clk-gate.c b/drivers/clk/clk-gate.c
+index f05823cd9b21..6ced7b1f5585 100644
+--- a/drivers/clk/clk-gate.c
++++ b/drivers/clk/clk-gate.c
+@@ -23,6 +23,22 @@
   * parent - fixed parent.  No clk_set_parent support
   */
  
-+static inline u32 clk_div_readl(struct clk_divider *divider)
++static inline u32 clk_gate_readl(struct clk_gate *gate)
 +{
-+	if (divider->flags & CLK_DIVIDER_BIG_ENDIAN)
-+		return ioread32be(divider->reg);
++	if (gate->flags & CLK_GATE_BIG_ENDIAN)
++		return ioread32be(gate->reg);
 +
-+	return clk_readl(divider->reg);
++	return clk_readl(gate->reg);
 +}
 +
-+static inline void clk_div_writel(struct clk_divider *divider, u32 val)
++static inline void clk_gate_writel(struct clk_gate *gate, u32 val)
 +{
-+	if (divider->flags & CLK_DIVIDER_BIG_ENDIAN)
-+		iowrite32be(val, divider->reg);
++	if (gate->flags & CLK_GATE_BIG_ENDIAN)
++		iowrite32be(val, gate->reg);
 +	else
-+		clk_writel(val, divider->reg);
++		clk_writel(val, gate->reg);
 +}
 +
-+#define div_mask(width)	((1 << (width)) - 1)
-+
- static unsigned int _get_table_maxdiv(const struct clk_div_table *table,
- 				      u8 width)
- {
-@@ -135,7 +153,7 @@ static unsigned long clk_divider_recalc_rate(struct clk_hw *hw,
- 	struct clk_divider *divider = to_clk_divider(hw);
- 	unsigned int val;
- 
--	val = clk_readl(divider->reg) >> divider->shift;
-+	val = clk_div_readl(divider) >> divider->shift;
- 	val &= clk_div_mask(divider->width);
- 
- 	return divider_recalc_rate(hw, parent_rate, val, divider->table,
-@@ -370,7 +388,7 @@ static long clk_divider_round_rate(struct clk_hw *hw, unsigned long rate,
- 	if (divider->flags & CLK_DIVIDER_READ_ONLY) {
- 		u32 val;
- 
--		val = clk_readl(divider->reg) >> divider->shift;
-+		val = clk_div_readl(divider) >> divider->shift;
- 		val &= clk_div_mask(divider->width);
- 
- 		return divider_ro_round_rate(hw, rate, prate, divider->table,
-@@ -420,11 +438,11 @@ static int clk_divider_set_rate(struct clk_hw *hw, unsigned long rate,
- 	if (divider->flags & CLK_DIVIDER_HIWORD_MASK) {
- 		val = clk_div_mask(divider->width) << (divider->shift + 16);
+ /*
+  * It works on following logic:
+  *
+@@ -55,7 +71,7 @@ static void clk_gate_endisable(struct clk_hw *hw, int enable)
+ 		if (set)
+ 			reg |= BIT(gate->bit_idx);
  	} else {
--		val = clk_readl(divider->reg);
-+		val = clk_div_readl(divider);
- 		val &= ~(clk_div_mask(divider->width) << divider->shift);
- 	}
- 	val |= (u32)value << divider->shift;
--	clk_writel(val, divider->reg);
-+	clk_div_writel(divider, val);
+-		reg = clk_readl(gate->reg);
++		reg = clk_gate_readl(gate);
  
- 	if (divider->lock)
- 		spin_unlock_irqrestore(divider->lock, flags);
+ 		if (set)
+ 			reg |= BIT(gate->bit_idx);
+@@ -63,7 +79,7 @@ static void clk_gate_endisable(struct clk_hw *hw, int enable)
+ 			reg &= ~BIT(gate->bit_idx);
+ 	}
+ 
+-	clk_writel(reg, gate->reg);
++	clk_gate_writel(gate, reg);
+ 
+ 	if (gate->lock)
+ 		spin_unlock_irqrestore(gate->lock, flags);
+@@ -88,7 +104,7 @@ int clk_gate_is_enabled(struct clk_hw *hw)
+ 	u32 reg;
+ 	struct clk_gate *gate = to_clk_gate(hw);
+ 
+-	reg = clk_readl(gate->reg);
++	reg = clk_gate_readl(gate);
+ 
+ 	/* if a set bit disables this clk, flip it before masking */
+ 	if (gate->flags & CLK_GATE_SET_TO_DISABLE)
 diff --git a/include/linux/clk-provider.h b/include/linux/clk-provider.h
-index db21437c77e2..7117b8cc0c0c 100644
+index 8c07d810acf5..8576c2dbc639 100644
 --- a/include/linux/clk-provider.h
 +++ b/include/linux/clk-provider.h
-@@ -416,6 +416,9 @@ struct clk_div_table {
-  * CLK_DIVIDER_MAX_AT_ZERO - For dividers which are like CLK_DIVIDER_ONE_BASED
-  *	except when the value read from the register is zero, the divisor is
-  *	2^width of the field.
-+ * CLK_DIVIDER_BIG_ENDIAN - By default little endian register accesses are used
-+ *	for the divider register.  Setting this flag makes the register accesses
-+ *	big endian.
+@@ -348,6 +348,9 @@ void of_fixed_clk_setup(struct device_node *np);
+  *	of this register, and mask of gate bits are in higher 16-bit of this
+  *	register.  While setting the gate bits, higher 16-bit should also be
+  *	updated to indicate changing gate bits.
++ * CLK_GATE_BIG_ENDIAN - by default little endian register accesses are used for
++ *	the gate register.  Setting this flag makes the register accesses big
++ *	endian.
   */
- struct clk_divider {
- 	struct clk_hw	hw;
-@@ -437,6 +440,7 @@ struct clk_divider {
- #define CLK_DIVIDER_ROUND_CLOSEST	BIT(4)
- #define CLK_DIVIDER_READ_ONLY		BIT(5)
- #define CLK_DIVIDER_MAX_AT_ZERO		BIT(6)
-+#define CLK_DIVIDER_BIG_ENDIAN		BIT(7)
+ struct clk_gate {
+ 	struct clk_hw hw;
+@@ -361,6 +364,7 @@ struct clk_gate {
  
- extern const struct clk_ops clk_divider_ops;
- extern const struct clk_ops clk_divider_ro_ops;
+ #define CLK_GATE_SET_TO_DISABLE		BIT(0)
+ #define CLK_GATE_HIWORD_MASK		BIT(1)
++#define CLK_GATE_BIG_ENDIAN		BIT(2)
+ 
+ extern const struct clk_ops clk_gate_ops;
+ struct clk *clk_register_gate(struct device *dev, const char *name,
 -- 
 2.13.2
 
