@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-8.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_MUTT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1CCDCC10F14
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Apr 2019 21:50:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B222BC282E0
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Apr 2019 21:52:46 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 9975B21479
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Apr 2019 21:50:33 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9975B21479
+	by mail.kernel.org (Postfix) with ESMTPS id 2E295217D7
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Apr 2019 21:52:46 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2E295217D7
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44lXpb4Qm6zDqDt
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Apr 2019 07:50:31 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44lXs76ZswzDqSy
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Apr 2019 07:52:43 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=redhat.com
  (client-ip=209.132.183.28; helo=mx1.redhat.com;
@@ -28,34 +28,34 @@ Authentication-Results: lists.ozlabs.org;
 Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44lXmk1c2RzDqTx
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Apr 2019 07:48:54 +1000 (AEST)
-Received: from smtp.corp.redhat.com (int-mx06.intmail.prod.int.phx2.redhat.com
- [10.5.11.16])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44lXnj4L6xzDqV6
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Apr 2019 07:49:45 +1000 (AEST)
+Received: from smtp.corp.redhat.com (int-mx05.intmail.prod.int.phx2.redhat.com
+ [10.5.11.15])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by mx1.redhat.com (Postfix) with ESMTPS id 03D1E7EBB1;
- Thu, 18 Apr 2019 21:48:52 +0000 (UTC)
+ by mx1.redhat.com (Postfix) with ESMTPS id 6E6B0300414C;
+ Thu, 18 Apr 2019 21:49:43 +0000 (UTC)
 Received: from redhat.com (unknown [10.20.6.236])
- by smtp.corp.redhat.com (Postfix) with ESMTPS id 6A6F05C224;
- Thu, 18 Apr 2019 21:48:48 +0000 (UTC)
-Date: Thu, 18 Apr 2019 17:48:46 -0400
+ by smtp.corp.redhat.com (Postfix) with ESMTPS id F0AC25D70A;
+ Thu, 18 Apr 2019 21:49:37 +0000 (UTC)
+Date: Thu, 18 Apr 2019 17:49:36 -0400
 From: Jerome Glisse <jglisse@redhat.com>
 To: Laurent Dufour <ldufour@linux.ibm.com>
-Subject: Re: [PATCH v12 02/31] x86/mm: define
+Subject: Re: [PATCH v12 03/31] powerpc/mm: set
  ARCH_SUPPORTS_SPECULATIVE_PAGE_FAULT
-Message-ID: <20190418214846.GB11645@redhat.com>
+Message-ID: <20190418214936.GC11645@redhat.com>
 References: <20190416134522.17540-1-ldufour@linux.ibm.com>
- <20190416134522.17540-3-ldufour@linux.ibm.com>
+ <20190416134522.17540-4-ldufour@linux.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <20190416134522.17540-3-ldufour@linux.ibm.com>
+In-Reply-To: <20190416134522.17540-4-ldufour@linux.ibm.com>
 User-Agent: Mutt/1.11.3 (2019-02-01)
-X-Scanned-By: MIMEDefang 2.79 on 10.5.11.16
+X-Scanned-By: MIMEDefang 2.79 on 10.5.11.15
 X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.5.16
- (mx1.redhat.com [10.5.110.27]); Thu, 18 Apr 2019 21:48:52 +0000 (UTC)
+ (mx1.redhat.com [10.5.110.46]); Thu, 18 Apr 2019 21:49:44 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -90,36 +90,39 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, Apr 16, 2019 at 03:44:53PM +0200, Laurent Dufour wrote:
-> Set ARCH_SUPPORTS_SPECULATIVE_PAGE_FAULT which turns on the
-> Speculative Page Fault handler when building for 64bit.
+On Tue, Apr 16, 2019 at 03:44:54PM +0200, Laurent Dufour wrote:
+> Set ARCH_SUPPORTS_SPECULATIVE_PAGE_FAULT for BOOK3S_64. This enables
+> the Speculative Page Fault handler.
 > 
-> Cc: Thomas Gleixner <tglx@linutronix.de>
+> Support is only provide for BOOK3S_64 currently because:
+> - require CONFIG_PPC_STD_MMU because checks done in
+>   set_access_flags_filter()
+> - require BOOK3S because we can't support for book3e_hugetlb_preload()
+>   called by update_mmu_cache()
+> 
+> Cc: Michael Ellerman <mpe@ellerman.id.au>
 > Signed-off-by: Laurent Dufour <ldufour@linux.ibm.com>
 
-I think this patch should be move as last patch in the serie so that
-the feature is not enabled mid-way without all the pieces ready if
-someone bisect. But i have not review everything yet so maybe it is
-fine.
+Same comment as for x86.
 
 Reviewed-by: Jérôme Glisse <jglisse@redhat.com>
 
 > ---
->  arch/x86/Kconfig | 1 +
+>  arch/powerpc/Kconfig | 1 +
 >  1 file changed, 1 insertion(+)
 > 
-> diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
-> index 0f2ab09da060..8bd575184d0b 100644
-> --- a/arch/x86/Kconfig
-> +++ b/arch/x86/Kconfig
-> @@ -30,6 +30,7 @@ config X86_64
->  	select SWIOTLB
->  	select X86_DEV_DMA_OPS
->  	select ARCH_HAS_SYSCALL_WRAPPER
-> +	select ARCH_SUPPORTS_SPECULATIVE_PAGE_FAULT
->  
->  #
->  # Arch settings
+> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+> index 2d0be82c3061..a29887ea5383 100644
+> --- a/arch/powerpc/Kconfig
+> +++ b/arch/powerpc/Kconfig
+> @@ -238,6 +238,7 @@ config PPC
+>  	select PCI_SYSCALL			if PCI
+>  	select RTC_LIB
+>  	select SPARSE_IRQ
+> +	select ARCH_SUPPORTS_SPECULATIVE_PAGE_FAULT if PPC_BOOK3S_64
+>  	select SYSCTL_EXCEPTION_TRACE
+>  	select THREAD_INFO_IN_TASK
+>  	select VIRT_TO_BUS			if !PPC64
 > -- 
 > 2.21.0
 > 
