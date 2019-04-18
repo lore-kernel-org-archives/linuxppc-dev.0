@@ -2,66 +2,52 @@ Return-Path: <SRS0=10v2=SU=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 65F50C282DD
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Apr 2019 14:04:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 47296C10F0E
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Apr 2019 14:08:08 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E2C4A217D7
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Apr 2019 14:04:29 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E2C4A217D7
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=huawei.com
+	by mail.kernel.org (Postfix) with ESMTPS id BFF952083D
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Apr 2019 14:08:07 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BFF952083D
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44lLSq5BwdzDqPR
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Apr 2019 00:04:27 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44lLY11p7ZzDqP0
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Apr 2019 00:08:05 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=huawei.com
- (client-ip=45.249.212.35; helo=huawei.com;
- envelope-from=thunder.leizhen@huawei.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=rjwysocki.net
+ (client-ip=79.96.170.134; helo=cloudserver094114.home.pl;
+ envelope-from=rjw@rjwysocki.net; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=huawei.com
-Received: from huawei.com (szxga07-in.huawei.com [45.249.212.35])
+ dmarc=none (p=none dis=none) header.from=rjwysocki.net
+X-Greylist: delayed 398 seconds by postgrey-1.36 at bilbo;
+ Fri, 19 Apr 2019 00:03:44 AEST
+Received: from cloudserver094114.home.pl (cloudserver094114.home.pl
+ [79.96.170.134])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44lLMw57YdzDqS0
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Apr 2019 00:00:12 +1000 (AEST)
-Received: from DGGEMS408-HUB.china.huawei.com (unknown [172.30.72.60])
- by Forcepoint Email with ESMTP id 88937F67DDE42C3BF8C7;
- Thu, 18 Apr 2019 22:00:02 +0800 (CST)
-Received: from HGHY1l002753561.china.huawei.com (10.177.23.164) by
- DGGEMS408-HUB.china.huawei.com (10.3.19.208) with Microsoft SMTP Server id
- 14.3.408.0; Thu, 18 Apr 2019 21:59:56 +0800
-From: Zhen Lei <thunder.leizhen@huawei.com>
-To: Jean-Philippe Brucker <jean-philippe.brucker@arm.com>, John Garry
- <john.garry@huawei.com>, Robin Murphy <robin.murphy@arm.com>, Will Deacon
- <will.deacon@arm.com>, Joerg Roedel <joro@8bytes.org>, Jonathan Corbet
- <corbet@lwn.net>, linux-doc <linux-doc@vger.kernel.org>, Sebastian Ott
- <sebott@linux.ibm.com>, Gerald Schaefer <gerald.schaefer@de.ibm.com>,
- "Martin Schwidefsky" <schwidefsky@de.ibm.com>, Heiko Carstens
- <heiko.carstens@de.ibm.com>, Benjamin Herrenschmidt
- <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, "Michael
- Ellerman" <mpe@ellerman.id.au>, Tony Luck <tony.luck@intel.com>, Fenghua Yu
- <fenghua.yu@intel.com>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar
- <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, "H . Peter Anvin"
- <hpa@zytor.com>, David Woodhouse <dwmw2@infradead.org>, iommu
- <iommu@lists.linux-foundation.org>, linux-kernel
- <linux-kernel@vger.kernel.org>, linux-s390 <linux-s390@vger.kernel.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, x86 <x86@kernel.org>,
- linux-ia64 <linux-ia64@vger.kernel.org>
-Subject: [PATCH v6 0/1] iommu: enhance IOMMU dma mode build options
-Date: Thu, 18 Apr 2019 21:57:00 +0800
-Message-ID: <20190418135701.24668-1-thunder.leizhen@huawei.com>
-X-Mailer: git-send-email 2.19.2.windows.1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44lLS04X1xzDqSP
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Apr 2019 00:03:44 +1000 (AEST)
+Received: from 79.184.254.18.ipv4.supernova.orange.pl (79.184.254.18) (HELO
+ kreacher.localnet)
+ by serwer1319399.home.pl (79.96.170.134) with SMTP (IdeaSmtpServer 0.83.213)
+ id 04777e2c5748a5fc; Thu, 18 Apr 2019 15:57:00 +0200
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+To: Mohan Kumar <mohankumar718@gmail.com>
+Subject: Re: [PATCH] drivers: cpuidle: This patch fix the following checkpatch
+ warning.
+Date: Thu, 18 Apr 2019 15:57:00 +0200
+Message-ID: <4392665.MNVv1Oa0lS@kreacher>
+In-Reply-To: <1555512754-6450-1-git-send-email-mohankumar718@gmail.com>
+References: <1555512754-6450-1-git-send-email-mohankumar718@gmail.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-Originating-IP: [10.177.23.164]
-X-CFilter-Loop: Reflected
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -73,47 +59,55 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Hanjun Guo <guohanjun@huawei.com>, Zhen Lei <thunder.leizhen@huawei.com>
+Cc: daniel.lezcano@linaro.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-v5 --> v6:
-1. give up adding boot option iommu.dma_mode
+On Wednesday, April 17, 2019 4:52:34 PM CEST Mohan Kumar wrote:
+> Use pr_debug instead of printk
+> 
+> WARNING: Prefer [subsystem eg: netdev]_dbg([subsystem]dev, ... then
+> dev_dbg(dev, ... then pr_debug(...  to printk(KERN_DEBUG ...
+> 
+> Signed-off-by: Mohan Kumar <mohankumar718@gmail.com>
+> ---
+>  drivers/cpuidle/cpuidle-powernv.c | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/cpuidle/cpuidle-powernv.c b/drivers/cpuidle/cpuidle-powernv.c
+> index 84b1ebe..7cf9835 100644
+> --- a/drivers/cpuidle/cpuidle-powernv.c
+> +++ b/drivers/cpuidle/cpuidle-powernv.c
+> @@ -401,7 +401,7 @@ static int __init powernv_processor_idle_init(void)
+>  	powernv_cpuidle_driver_init();
+>  	retval = cpuidle_register(&powernv_idle_driver, NULL);
+>  	if (retval) {
+> -		printk(KERN_DEBUG "Registration of powernv driver failed.\n");
+> +		pr_debug("Registration of powernv driver failed.\n");
+>  		return retval;
+>  	}
+>  
+> @@ -413,7 +413,7 @@ static int __init powernv_processor_idle_init(void)
+>  					   "cpuidle/powernv:dead", NULL,
+>  					   powernv_cpuidle_cpu_dead);
+>  	WARN_ON(retval < 0);
+> -	printk(KERN_DEBUG "powernv_idle_driver registered\n");
+> +	pr_debug("powernv_idle_driver registered\n");
+>  	return 0;
+>  }
+>  
+> 
 
-v4 --> v5:
-As Hanjun and Thomas Gleixner's suggestion:
-1. Keep the old ARCH specific boot options no change.
-2. Keep build option CONFIG_IOMMU_DEFAULT_PASSTHROUGH no change.
+Recently, you've sent two different patches against two different drivers with the same subject.
 
-v4:
-As Robin Murphy's suggestion:
-"It's also not necessarily obvious to the user how this interacts with
-IOMMU_DEFAULT_PASSTHROUGH, so if we really do go down this route, maybe it
-would be better to refactor the whole lot into a single selection of something
-like IOMMU_DEFAULT_MODE anyway."
+IMO it is fair enough to call that "confusing".
 
-In this version, I tried to normalize the IOMMU dma mode boot options for all
-ARCHs. When IOMMU is enabled, there are 3 dma modes: paasthrough(bypass),
-lazy(mapping but defer the IOTLB invalidation), strict. But currently each
-ARCHs defined their private boot options, different with each other. For
-example, to enable/disable "passthrough", ARM64 use iommu.passthrough=1/0,
-X86 use iommu=pt/nopt, PPC/POWERNV use iommu=nobypass.
+Moreover, pr_debug() is not a direct replacement for printk(KERN_DEBUG ) as the latter does
+not require dynamic debug to be enabled and I'm not really sure if you are aware of that
+difference.
 
-Zhen Lei (1):
-  iommu: enhance IOMMU dma mode build options
 
- arch/ia64/kernel/pci-dma.c                |  2 +-
- arch/powerpc/platforms/powernv/pci-ioda.c |  3 ++-
- arch/s390/pci/pci_dma.c                   |  2 +-
- arch/x86/kernel/pci-dma.c                 |  7 ++---
- drivers/iommu/Kconfig                     | 44 ++++++++++++++++++++++++++-----
- drivers/iommu/amd_iommu_init.c            |  3 ++-
- drivers/iommu/intel-iommu.c               |  2 +-
- drivers/iommu/iommu.c                     |  3 ++-
- 8 files changed, 48 insertions(+), 18 deletions(-)
-
--- 
-1.8.3
 
 
