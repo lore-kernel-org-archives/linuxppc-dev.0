@@ -6,21 +6,21 @@ X-Spam-Status: No, score=-3.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 31598C10F0E
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Apr 2019 22:00:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3ABC1C10F0E
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Apr 2019 22:02:18 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id A43FE205ED
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Apr 2019 22:00:23 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id B10B9205ED
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Apr 2019 22:02:17 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="KL6HrGpA"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A43FE205ED
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="qETLHH/H"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B10B9205ED
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44lY1x4rjWzDqPR
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Apr 2019 08:00:21 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44lY476THjzDqNT
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Apr 2019 08:02:15 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=kernel.org
  (client-ip=198.145.29.99; helo=mail.kernel.org; envelope-from=sboyd@kernel.org;
@@ -28,40 +28,39 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="KL6HrGpA"; 
+ unprotected) header.d=kernel.org header.i=@kernel.org header.b="qETLHH/H"; 
  dkim-atps=neutral
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44lXqp0dl0zDqNV
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Apr 2019 07:51:34 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44lXqt1DgvzDqNR
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Apr 2019 07:51:38 +1000 (AEST)
 Received: from localhost (unknown [104.132.0.74])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id 47B1C2087F;
- Thu, 18 Apr 2019 21:51:32 +0000 (UTC)
+ by mail.kernel.org (Postfix) with ESMTPSA id ECE3121479;
+ Thu, 18 Apr 2019 21:51:35 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1555624292;
- bh=RdOZitzLTqqL0tJdZGDzjnECoQsdymfk4S6v7K8r0QY=;
+ s=default; t=1555624296;
+ bh=OfrAIilwBxcwvH7bEB24Mvzf40MswWRz3hGqmsbYuvc=;
  h=In-Reply-To:References:Cc:From:Subject:To:Date:From;
- b=KL6HrGpABTT9Ks1gt2M3/Alr447pmtgQMDNIdb3aDFWRG+WRfp3XdNnZir/K8IR/l
- GFG0ozD6F4wpnWwkFWKsAhD5ZMtyVQCxd1dZO0vr33DweuqaJvxDVadS+AI3D3gQkE
- UITlWvU3l/b623Q/cLWivXHaOXmDqQkC+wafXEtM=
+ b=qETLHH/HCJiRKd+mW8WWzSpRWyEIHAU1hpESWfG9mUnr15kBTpMv3K/gZ4ka1D+MF
+ /+J5QYDK8q/2f5yRnSsrJcYS7wqkR3hb571xcMk7Z/xEE/e6Z/Q6ey9sNTu/lolgAw
+ fVig/4nqkPu9QW41E8Cz90qLV+ruwClXIY0Kn8/Y=
 Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
-In-Reply-To: <20190418111211.10474-5-jonas.gorski@gmail.com>
+In-Reply-To: <20190418111211.10474-6-jonas.gorski@gmail.com>
 References: <20190418111211.10474-1-jonas.gorski@gmail.com>
- <20190418111211.10474-5-jonas.gorski@gmail.com>
+ <20190418111211.10474-6-jonas.gorski@gmail.com>
 From: Stephen Boyd <sboyd@kernel.org>
-Subject: Re: [PATCH RFT V3 4/8] clk: multiplier: add explicit big endian
- support
+Subject: Re: [PATCH RFT V3 5/8] clk: mux: add explicit big endian support
 To: Jonas Gorski <jonas.gorski@gmail.com>, linux-arm-kernel@lists.infradead.org,
  linux-clk@vger.kernel.org, linux-rockchip@lists.infradead.org,
  linux-tegra@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Message-ID: <155562429161.15276.10802620738708355753@swboyd.mtv.corp.google.com>
+Message-ID: <155562429512.15276.9444181979694803946@swboyd.mtv.corp.google.com>
 User-Agent: alot/0.8
-Date: Thu, 18 Apr 2019 14:51:31 -0700
+Date: Thu, 18 Apr 2019 14:51:35 -0700
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -86,9 +85,9 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Quoting Jonas Gorski (2019-04-18 04:12:07)
+Quoting Jonas Gorski (2019-04-18 04:12:08)
 > Add a clock specific flag to switch register accesses to big endian, to
-> allow runtime configuration of big endian multiplier clocks.
+> allow runtime configuration of big endian mux clocks.
 >=20
 > Signed-off-by: Jonas Gorski <jonas.gorski@gmail.com>
 > ---
