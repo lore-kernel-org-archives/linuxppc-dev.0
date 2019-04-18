@@ -2,93 +2,68 @@ Return-Path: <SRS0=10v2=SU=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,
-	URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CCEA3C10F14
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Apr 2019 13:39:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AB0F9C10F0E
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Apr 2019 14:02:39 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 14CA42083D
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Apr 2019 13:39:26 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="UG9xiBJu"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 14CA42083D
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=roeck-us.net
+	by mail.kernel.org (Postfix) with ESMTPS id EAB072083D
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Apr 2019 14:02:38 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EAB072083D
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=huawei.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44lKvv6Yh9zDqSG
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Apr 2019 23:39:23 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44lLQh5FxgzDqTF
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Apr 2019 00:02:36 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=2607:f8b0:4864:20::443; helo=mail-pf1-x443.google.com;
- envelope-from=groeck7@gmail.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=huawei.com
+ (client-ip=45.249.212.35; helo=huawei.com;
+ envelope-from=thunder.leizhen@huawei.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=roeck-us.net
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="UG9xiBJu"; 
- dkim-atps=neutral
-Received: from mail-pf1-x443.google.com (mail-pf1-x443.google.com
- [IPv6:2607:f8b0:4864:20::443])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ dmarc=none (p=none dis=none) header.from=huawei.com
+Received: from huawei.com (szxga07-in.huawei.com [45.249.212.35])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44lKrj2G5pzDqR7;
- Thu, 18 Apr 2019 23:36:36 +1000 (AEST)
-Received: by mail-pf1-x443.google.com with SMTP id e24so1116807pfi.12;
- Thu, 18 Apr 2019 06:36:36 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=sender:subject:to:cc:references:from:message-id:date:user-agent
- :mime-version:in-reply-to:content-language:content-transfer-encoding;
- bh=A3qEJxG71mV/MtOf4z6uQrRXkxG1lxjXuCfRlYLAv7A=;
- b=UG9xiBJuTZdQiPCaf+FajXBT+7nZRfAoNmTX8g9dpC0/oC1LH9qxdyWT1MKLanTzpA
- FLhx3F7qFv2MgUnwLoemztMXLFxSC5+O36L4177m1gLxkolhNuuTbqi242SbWgqAr5L/
- Dd67KQvZ3ISY24w3qmmdK1Sx+29U3Z0CCUXZCnUHVbFFy0GKDbeQKmmFy/Iglmgi13Ov
- 1UYcd+VPeKavqGbHLvG339Cbp4i9PW+gXa0jp7lMY8S+QfKmeVvYTa7vYwmqEdokxblc
- 3LgqA70Bzt//aNMD3l31CjJzynXzKLwBdbsDr8/nXTcAkh+2blUbU+MCxKDoW9qDugWS
- j81Q==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:sender:subject:to:cc:references:from:message-id
- :date:user-agent:mime-version:in-reply-to:content-language
- :content-transfer-encoding;
- bh=A3qEJxG71mV/MtOf4z6uQrRXkxG1lxjXuCfRlYLAv7A=;
- b=c0CUGfs3v4MfPLXU0DvbYyJV4K58qxmn7kmpFt8zClNuuVQnuYidrbBglllcO+HFma
- cpMgAGEPX5wqPnNHOtjplzJtd8/Fs/f5An1kxC6Bq9Vz2Bw6/CiV1AozrJ77+fQA/WCi
- 5kCS0/xNJ1SiokkI+dTnVGBxXYjTVSpRA3V6uV7dpIO3V8DQV8n8TiIVKRD9f3ro0Z+O
- S7rHfhQpzyUKfY3WZguNnMujUnFvwUrsdpH9DxRyfQFOf1rPhwYyabyTpEl8K+iJRMix
- 3c1UXRxPZ12/Q5GP6aCRW0SmC9BZcupWyBBWfyBCQZguHV6tEx5a9RCEDV2ajFPhfUWK
- /Cyg==
-X-Gm-Message-State: APjAAAXArRn1TUSIVBTW2MGXhet7B542Y+/O7N/wHHSA0IAPj+CChX4J
- jkN8Sq1pt/bX6aPTU2fwNNA=
-X-Google-Smtp-Source: APXvYqzgjypd+v1qREA+odD5pdg0Ei3jnzbcdRlqFEDNryZG+QNyXDJ8tKREvIl5Fa1doKkjK6qipA==
-X-Received: by 2002:a65:44c6:: with SMTP id g6mr37427292pgs.157.1555594593200; 
- Thu, 18 Apr 2019 06:36:33 -0700 (PDT)
-Received: from server.roeck-us.net ([2600:1700:e321:62f0:329c:23ff:fee3:9d7c])
- by smtp.gmail.com with ESMTPSA id
- a17sm5416860pfj.123.2019.04.18.06.36.29
- (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
- Thu, 18 Apr 2019 06:36:31 -0700 (PDT)
-Subject: Re: [PATCH v3 21/21] docs: hwmon: Add an index file and rename docs
- to *.rst
-To: Mauro Carvalho Chehab <mchehab@infradead.org>
-References: <cover.1555494108.git.mchehab+samsung@kernel.org>
- <efbe0a2b5be35026c3a2dbdb9090c4fbd932c9a2.1555494108.git.mchehab+samsung@kernel.org>
- <20190417164741.GA12147@roeck-us.net> <20190417141352.3225bbb3@coco.lan>
- <20190417142215.791df5e7@coco.lan> <20190417174337.GA16749@roeck-us.net>
- <20190417174728.GA17706@roeck-us.net> <20190418064436.1803bf3a@coco.lan>
-From: Guenter Roeck <linux@roeck-us.net>
-Message-ID: <55790eec-a81e-75af-dbab-e4f15ad14274@roeck-us.net>
-Date: Thu, 18 Apr 2019 06:36:28 -0700
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
- Thunderbird/60.6.1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44lLMw5Pp5zDqS1
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Apr 2019 00:00:11 +1000 (AEST)
+Received: from DGGEMS408-HUB.china.huawei.com (unknown [172.30.72.59])
+ by Forcepoint Email with ESMTP id 4D6D927C1B49D1288B7F;
+ Thu, 18 Apr 2019 22:00:07 +0800 (CST)
+Received: from HGHY1l002753561.china.huawei.com (10.177.23.164) by
+ DGGEMS408-HUB.china.huawei.com (10.3.19.208) with Microsoft SMTP Server id
+ 14.3.408.0; Thu, 18 Apr 2019 21:59:57 +0800
+From: Zhen Lei <thunder.leizhen@huawei.com>
+To: Jean-Philippe Brucker <jean-philippe.brucker@arm.com>, John Garry
+ <john.garry@huawei.com>, Robin Murphy <robin.murphy@arm.com>, Will Deacon
+ <will.deacon@arm.com>, Joerg Roedel <joro@8bytes.org>, Jonathan Corbet
+ <corbet@lwn.net>, linux-doc <linux-doc@vger.kernel.org>, Sebastian Ott
+ <sebott@linux.ibm.com>, Gerald Schaefer <gerald.schaefer@de.ibm.com>,
+ "Martin Schwidefsky" <schwidefsky@de.ibm.com>, Heiko Carstens
+ <heiko.carstens@de.ibm.com>, Benjamin Herrenschmidt
+ <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, "Michael
+ Ellerman" <mpe@ellerman.id.au>, Tony Luck <tony.luck@intel.com>, Fenghua Yu
+ <fenghua.yu@intel.com>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar
+ <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, "H . Peter Anvin"
+ <hpa@zytor.com>, David Woodhouse <dwmw2@infradead.org>, iommu
+ <iommu@lists.linux-foundation.org>, linux-kernel
+ <linux-kernel@vger.kernel.org>, linux-s390 <linux-s390@vger.kernel.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, x86 <x86@kernel.org>,
+ linux-ia64 <linux-ia64@vger.kernel.org>
+Subject: [PATCH v6 1/1] iommu: enhance IOMMU dma mode build options
+Date: Thu, 18 Apr 2019 21:57:01 +0800
+Message-ID: <20190418135701.24668-2-thunder.leizhen@huawei.com>
+X-Mailer: git-send-email 2.19.2.windows.1
+In-Reply-To: <20190418135701.24668-1-thunder.leizhen@huawei.com>
+References: <20190418135701.24668-1-thunder.leizhen@huawei.com>
 MIME-Version: 1.0
-In-Reply-To: <20190418064436.1803bf3a@coco.lan>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-Originating-IP: [10.177.23.164]
+X-CFilter-Loop: Reflected
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -100,84 +75,189 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Mark Rutland <mark.rutland@arm.com>, Dirk Eibach <eibach@gdsys.de>,
- linux-aspeed@lists.ozlabs.org,
- Linux Doc Mailing List <linux-doc@vger.kernel.org>,
- Clemens Ladisch <clemens@ladisch.de>, Kamil Debski <kamil@wypas.org>,
- Marc Hulsman <m.hulsman@tudelft.nl>, devicetree@vger.kernel.org,
- Huang Rui <ray.huang@amd.com>, Paul Mackerras <paulus@samba.org>,
- Jim Cromie <jim.cromie@gmail.com>,
- Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>,
- Jonathan Corbet <corbet@lwn.net>, Joel Stanley <joel@jms.id.au>,
- Steve Glendinning <steve.glendinning@shawell.net>,
- Fenghua Yu <fenghua.yu@intel.com>, Jean Delvare <jdelvare@suse.com>,
- Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
- Liviu Dudau <liviu.dudau@arm.com>, Hans de Goede <hdegoede@redhat.com>,
- Rob Herring <robh+dt@kernel.org>, Rudolf Marek <r.marek@assembler.cz>,
- linux-arm-kernel@lists.infradead.org, linux-hwmon@vger.kernel.org,
- Support Opensource <support.opensource@diasemi.com>,
- George Joseph <george.joseph@fairview5.com>,
- Andreas Werner <andreas.werner@men.de>, Andrew Jeffery <andrew@aj.id.au>,
- patches@opensource.cirrus.com, linux-kernel@vger.kernel.org,
- Juerg Haefliger <juergh@gmail.com>, Sudeep Holla <sudeep.holla@arm.com>,
- linuxppc-dev@lists.ozlabs.org
+Cc: Hanjun Guo <guohanjun@huawei.com>, Zhen Lei <thunder.leizhen@huawei.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 4/18/19 2:44 AM, Mauro Carvalho Chehab wrote:
-> Em Wed, 17 Apr 2019 10:47:28 -0700
-> Guenter Roeck <linux@roeck-us.net> escreveu:
-> 
->> On Wed, Apr 17, 2019 at 10:43:37AM -0700, Guenter Roeck wrote:
->>> On Wed, Apr 17, 2019 at 02:22:15PM -0300, Mauro Carvalho Chehab wrote:
->>>> Em Wed, 17 Apr 2019 14:13:52 -0300
->>>> Mauro Carvalho Chehab <mchehab+samsung@kernel.org> escreveu:
->>>>    
->>>>> Em Wed, 17 Apr 2019 09:47:41 -0700
->>>>> Guenter Roeck <linux@roeck-us.net> escreveu:
->>>>>    
->>>>>> On Wed, Apr 17, 2019 at 06:46:29AM -0300, Mauro Carvalho Chehab wrote:
->>>>>>> Now that all files were converted to ReST format, rename them
->>>>>>> and add an index.
->>>>>>>
->>>>>>> Signed-off-by: Mauro Carvalho Chehab <mchehab+samsung@kernel.org>
->>>>>>> Acked-by: Liviu Dudau <liviu.dudau@arm.com>
->>>>>>
->>>>>> I applied all patches except this one, which fails due to a conflict in
->>>>>> ab8500. I also notice that this file has not been touched by your series,
->>>>>> which is odd. At the same time, patch 20/21 is missing from your series,
->>>>>> and has been missing all along. Does the missing patch possibly touch
->>>>>> Documentation/hwmon/ab8500 ?
->>>>>
->>>>> Patch 20/21 is the biggest one. Maybe vger rejected it either due to
->>>>> its size or due to the number of c/c.
->>>>>
->>>>> Just bounced it to you. Please let me know if you didn't receive it
->>>>> yet.
->>>>
->>>> Btw, LKML got it:
->>>>
->>>> https://lore.kernel.org/lkml/cccc2a52363a5aaeea10e186ead8570503ea648e.1555494108.git.mchehab+samsung@kernel.org/
->>>>    
->>> patchwork didn't get it (or didn't accept it). I got it now.
->>> All patches applied, and pushed out to hwmon-next.
->>>
->>> We have one (new) unconverted file left - Documentation/hwmon/lochnagar.
->>
->> Plus ir38064 and isl68137. Lots of new drivers recently.
-> 
-> Ok, just sent a patch for those three new files. I wrote a more
-> detailed description about what steps I followed at the conversion
-> of those tree files, and why I did it.
-> 
-Did the patches get lost ?
+First, add build option IOMMU_DEFAULT_{LAZY|STRICT}, so that we have the
+opportunity to set {lazy|strict} mode as default at build time. Then put
+the three config options in an choice, make people can only choose one of
+the three at a time.
 
-> Hopefully, this would help hwmon developers
-> that may already be preparing a new driver for submission.
-> 
+The default IOMMU dma modes on each ARCHs have no change.
 
-That would be very useful.
+Signed-off-by: Zhen Lei <thunder.leizhen@huawei.com>
+---
+ arch/ia64/kernel/pci-dma.c                |  2 +-
+ arch/powerpc/platforms/powernv/pci-ioda.c |  3 ++-
+ arch/s390/pci/pci_dma.c                   |  2 +-
+ arch/x86/kernel/pci-dma.c                 |  7 ++---
+ drivers/iommu/Kconfig                     | 44 ++++++++++++++++++++++++++-----
+ drivers/iommu/amd_iommu_init.c            |  3 ++-
+ drivers/iommu/intel-iommu.c               |  2 +-
+ drivers/iommu/iommu.c                     |  3 ++-
+ 8 files changed, 48 insertions(+), 18 deletions(-)
 
-Thanks,
-Guenter
+diff --git a/arch/ia64/kernel/pci-dma.c b/arch/ia64/kernel/pci-dma.c
+index fe988c49f01ce6a..655511dbf3c3b34 100644
+--- a/arch/ia64/kernel/pci-dma.c
++++ b/arch/ia64/kernel/pci-dma.c
+@@ -22,7 +22,7 @@
+ int force_iommu __read_mostly;
+ #endif
+
+-int iommu_pass_through;
++int iommu_pass_through = IS_ENABLED(CONFIG_IOMMU_DEFAULT_PASSTHROUGH);
+
+ static int __init pci_iommu_init(void)
+ {
+diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+index 3ead4c237ed0ec9..383e082a9bb985c 100644
+--- a/arch/powerpc/platforms/powernv/pci-ioda.c
++++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+@@ -85,7 +85,8 @@ void pe_level_printk(const struct pnv_ioda_pe *pe, const char *level,
+ 	va_end(args);
+ }
+
+-static bool pnv_iommu_bypass_disabled __read_mostly;
++static bool pnv_iommu_bypass_disabled __read_mostly =
++			!IS_ENABLED(CONFIG_IOMMU_DEFAULT_PASSTHROUGH);
+ static bool pci_reset_phbs __read_mostly;
+
+ static int __init iommu_setup(char *str)
+diff --git a/arch/s390/pci/pci_dma.c b/arch/s390/pci/pci_dma.c
+index 9e52d1527f71495..784ad1e0acecfb1 100644
+--- a/arch/s390/pci/pci_dma.c
++++ b/arch/s390/pci/pci_dma.c
+@@ -17,7 +17,7 @@
+
+ static struct kmem_cache *dma_region_table_cache;
+ static struct kmem_cache *dma_page_table_cache;
+-static int s390_iommu_strict;
++static int s390_iommu_strict = IS_ENABLED(CONFIG_IOMMU_DEFAULT_STRICT);
+
+ static int zpci_refresh_global(struct zpci_dev *zdev)
+ {
+diff --git a/arch/x86/kernel/pci-dma.c b/arch/x86/kernel/pci-dma.c
+index d460998ae828514..fb2bab42a0a3173 100644
+--- a/arch/x86/kernel/pci-dma.c
++++ b/arch/x86/kernel/pci-dma.c
+@@ -43,11 +43,8 @@
+  * It is also possible to disable by default in kernel config, and enable with
+  * iommu=nopt at boot time.
+  */
+-#ifdef CONFIG_IOMMU_DEFAULT_PASSTHROUGH
+-int iommu_pass_through __read_mostly = 1;
+-#else
+-int iommu_pass_through __read_mostly;
+-#endif
++int iommu_pass_through __read_mostly =
++			IS_ENABLED(CONFIG_IOMMU_DEFAULT_PASSTHROUGH);
+
+ extern struct iommu_table_entry __iommu_table[], __iommu_table_end[];
+
+diff --git a/drivers/iommu/Kconfig b/drivers/iommu/Kconfig
+index 6f07f3b21816c64..8a1f1793cde76b4 100644
+--- a/drivers/iommu/Kconfig
++++ b/drivers/iommu/Kconfig
+@@ -74,17 +74,47 @@ config IOMMU_DEBUGFS
+ 	  debug/iommu directory, and then populate a subdirectory with
+ 	  entries as required.
+
+-config IOMMU_DEFAULT_PASSTHROUGH
+-	bool "IOMMU passthrough by default"
++choice
++	prompt "IOMMU dma mode"
+ 	depends on IOMMU_API
+-        help
+-	  Enable passthrough by default, removing the need to pass in
+-	  iommu.passthrough=on or iommu=pt through command line. If this
+-	  is enabled, you can still disable with iommu.passthrough=off
+-	  or iommu=nopt depending on the architecture.
++	default IOMMU_DEFAULT_PASSTHROUGH if (PPC_POWERNV && PCI)
++	default IOMMU_DEFAULT_LAZY if (AMD_IOMMU || INTEL_IOMMU || S390_IOMMU)
++	default IOMMU_DEFAULT_STRICT
++	help
++	  This option allows IOMMU dma mode to be chose at build time, to
++	  override the default dma mode of each ARCHs, removing the need to
++	  pass in kernel parameters through command line. You can still use
++	  ARCHs specific boot options to override this option again.
++
++config IOMMU_DEFAULT_PASSTHROUGH
++	bool "passthrough"
++	help
++	  In this mode, the dma access through IOMMU without any addresses
++	  transformation. That means, the wrong or illegal dma access can not
++	  be caught, no error information will be reported.
+
+ 	  If unsure, say N here.
+
++config IOMMU_DEFAULT_LAZY
++	bool "lazy"
++	help
++	  Support lazy mode, where for every IOMMU DMA unmap operation, the
++	  flush operation of IOTLB and the free operation of IOVA are deferred.
++	  They are only guaranteed to be done before the related IOVA will be
++	  reused.
++
++config IOMMU_DEFAULT_STRICT
++	bool "strict"
++	help
++	  For every IOMMU DMA unmap operation, the flush operation of IOTLB and
++	  the free operation of IOVA are guaranteed to be done in the unmap
++	  function.
++
++	  This mode is safer than the two above, but it maybe slow in some high
++	  performace scenarios.
++
++endchoice
++
+ config OF_IOMMU
+        def_bool y
+        depends on OF && IOMMU_API
+diff --git a/drivers/iommu/amd_iommu_init.c b/drivers/iommu/amd_iommu_init.c
+index ff40ba758cf365e..16c02b08adb4cb2 100644
+--- a/drivers/iommu/amd_iommu_init.c
++++ b/drivers/iommu/amd_iommu_init.c
+@@ -166,7 +166,8 @@ struct ivmd_header {
+ 					   to handle */
+ LIST_HEAD(amd_iommu_unity_map);		/* a list of required unity mappings
+ 					   we find in ACPI */
+-bool amd_iommu_unmap_flush;		/* if true, flush on every unmap */
++bool amd_iommu_unmap_flush = IS_ENABLED(CONFIG_IOMMU_DEFAULT_STRICT);
++					/* if true, flush on every unmap */
+
+ LIST_HEAD(amd_iommu_list);		/* list of all AMD IOMMUs in the
+ 					   system */
+diff --git a/drivers/iommu/intel-iommu.c b/drivers/iommu/intel-iommu.c
+index 28cb713d728ceef..0c3cc716210f35a 100644
+--- a/drivers/iommu/intel-iommu.c
++++ b/drivers/iommu/intel-iommu.c
+@@ -362,7 +362,7 @@ static int domain_detach_iommu(struct dmar_domain *domain,
+
+ static int dmar_map_gfx = 1;
+ static int dmar_forcedac;
+-static int intel_iommu_strict;
++static int intel_iommu_strict = IS_ENABLED(CONFIG_IOMMU_DEFAULT_STRICT);
+ static int intel_iommu_superpage = 1;
+ static int intel_iommu_sm;
+ static int iommu_identity_mapping;
+diff --git a/drivers/iommu/iommu.c b/drivers/iommu/iommu.c
+index 109de67d5d727c2..0ec5952ac60e2a3 100644
+--- a/drivers/iommu/iommu.c
++++ b/drivers/iommu/iommu.c
+@@ -43,7 +43,8 @@
+ #else
+ static unsigned int iommu_def_domain_type = IOMMU_DOMAIN_DMA;
+ #endif
+-static bool iommu_dma_strict __read_mostly = true;
++static bool iommu_dma_strict __read_mostly =
++			IS_ENABLED(CONFIG_IOMMU_DEFAULT_STRICT);
+
+ struct iommu_callback_data {
+ 	const struct iommu_ops *ops;
+--
+1.8.3
+
+
