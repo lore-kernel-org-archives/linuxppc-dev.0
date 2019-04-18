@@ -6,37 +6,37 @@ X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
 	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2847CC10F0B
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Apr 2019 06:56:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 77111C10F0B
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Apr 2019 06:57:24 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 4B9FD20821
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Apr 2019 06:55:59 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4B9FD20821
+	by mail.kernel.org (Postfix) with ESMTPS id F196F20821
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Apr 2019 06:57:23 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org F196F20821
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44l8yP2PKvzDqHn
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Apr 2019 16:55:57 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+	by lists.ozlabs.org (Postfix) with ESMTP id 44l9016LK6zDqPP
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Apr 2019 16:57:21 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44l8sJ63QJzDqNH
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Apr 2019 16:51:32 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44l8sK1w8ZzDqNn
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Apr 2019 16:51:33 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: by ozlabs.org (Postfix)
- id 44l8sJ2LNXz9s4Y; Thu, 18 Apr 2019 16:51:32 +1000 (AEST)
+ id 44l8sK0vqCz9s4V; Thu, 18 Apr 2019 16:51:33 +1000 (AEST)
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 44l8sJ1h0Yz9s55; Thu, 18 Apr 2019 16:51:32 +1000 (AEST)
+ id 44l8sK02s2z9s9y; Thu, 18 Apr 2019 16:51:32 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH v6 02/10] powerpc/powernv/idle: Restore AMR/UAMOR/AMOR after
- idle
-Date: Thu, 18 Apr 2019 16:51:17 +1000
-Message-Id: <20190418065125.2687-2-mpe@ellerman.id.au>
+Subject: [PATCH v6 04/10] powerpc: Add skeleton for Kernel Userspace Execution
+ Prevention
+Date: Thu, 18 Apr 2019 16:51:19 +1000
+Message-Id: <20190418065125.2687-4-mpe@ellerman.id.au>
 X-Mailer: git-send-email 2.20.1
 In-Reply-To: <20190418065125.2687-1-mpe@ellerman.id.au>
 References: <20190418065125.2687-1-mpe@ellerman.id.au>
@@ -57,79 +57,125 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-In order to implement KUAP (Kernel Userspace Access Protection) on
-Power9 we will be using the AMR, and therefore indirectly the
-UAMOR/AMOR.
+From: Christophe Leroy <christophe.leroy@c-s.fr>
 
-So save/restore these regs in the idle code.
+This patch adds a skeleton for Kernel Userspace Execution Prevention.
 
+Then subarches implementing it have to define CONFIG_PPC_HAVE_KUEP
+and provide setup_kuep() function.
+
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+[mpe: Don't split strings, use pr_crit_ratelimited()]
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
 v6: Unchanged.
 v5: Unchanged.
-v4: New.
+v4: mpe: Don't split strings, use pr_crit_ratelimited()
 ---
- arch/powerpc/kernel/idle_book3s.S | 27 +++++++++++++++++++++++----
- 1 file changed, 23 insertions(+), 4 deletions(-)
+ Documentation/admin-guide/kernel-parameters.txt |  2 +-
+ arch/powerpc/include/asm/kup.h                  |  6 ++++++
+ arch/powerpc/mm/fault.c                         |  9 ++++-----
+ arch/powerpc/mm/init-common.c                   | 11 +++++++++++
+ arch/powerpc/platforms/Kconfig.cputype          | 12 ++++++++++++
+ 5 files changed, 34 insertions(+), 6 deletions(-)
 
-diff --git a/arch/powerpc/kernel/idle_book3s.S b/arch/powerpc/kernel/idle_book3s.S
-index 36178000a2f2..4a860d3b9229 100644
---- a/arch/powerpc/kernel/idle_book3s.S
-+++ b/arch/powerpc/kernel/idle_book3s.S
-@@ -170,8 +170,11 @@ END_FTR_SECTION_IFCLR(CPU_FTR_ARCH_300)
- 	bne-	core_idle_lock_held
- 	blr
+diff --git a/Documentation/admin-guide/kernel-parameters.txt b/Documentation/admin-guide/kernel-parameters.txt
+index 2b8ee90bb644..a53df74589e5 100644
+--- a/Documentation/admin-guide/kernel-parameters.txt
++++ b/Documentation/admin-guide/kernel-parameters.txt
+@@ -2843,7 +2843,7 @@
+ 			Disable SMAP (Supervisor Mode Access Prevention)
+ 			even if it is supported by processor.
  
--/* Reuse an unused pt_regs slot for IAMR */
-+/* Reuse some unused pt_regs slots for AMR/IAMR/UAMOR/UAMOR */
-+#define PNV_POWERSAVE_AMR	_TRAP
- #define PNV_POWERSAVE_IAMR	_DAR
-+#define PNV_POWERSAVE_UAMOR	_DSISR
-+#define PNV_POWERSAVE_AMOR	RESULT
+-	nosmep		[X86]
++	nosmep		[X86,PPC]
+ 			Disable SMEP (Supervisor Mode Execution Prevention)
+ 			even if it is supported by processor.
  
- /*
-  * Pass requested state in r3:
-@@ -205,8 +208,16 @@ END_FTR_SECTION_IFCLR(CPU_FTR_ARCH_300)
- 	SAVE_NVGPRS(r1)
+diff --git a/arch/powerpc/include/asm/kup.h b/arch/powerpc/include/asm/kup.h
+index 7a88b8b9b54d..a2a959cb4e36 100644
+--- a/arch/powerpc/include/asm/kup.h
++++ b/arch/powerpc/include/asm/kup.h
+@@ -6,6 +6,12 @@
  
- BEGIN_FTR_SECTION
-+	mfspr	r4, SPRN_AMR
- 	mfspr	r5, SPRN_IAMR
-+	mfspr	r6, SPRN_UAMOR
-+	std	r4, PNV_POWERSAVE_AMR(r1)
- 	std	r5, PNV_POWERSAVE_IAMR(r1)
-+	std	r6, PNV_POWERSAVE_UAMOR(r1)
-+BEGIN_FTR_SECTION_NESTED(42)
-+	mfspr	r7, SPRN_AMOR
-+	std	r7, PNV_POWERSAVE_AMOR(r1)
-+END_FTR_SECTION_NESTED_IFSET(CPU_FTR_HVMODE, 42)
- END_FTR_SECTION_IFSET(CPU_FTR_ARCH_207S)
+ void setup_kup(void);
  
- 	mfcr	r5
-@@ -935,12 +946,20 @@ END_FTR_SECTION_IFSET(CPU_FTR_HVMODE)
- 	REST_GPR(2, r1)
++#ifdef CONFIG_PPC_KUEP
++void setup_kuep(bool disabled);
++#else
++static inline void setup_kuep(bool disabled) { }
++#endif /* CONFIG_PPC_KUEP */
++
+ #endif /* !__ASSEMBLY__ */
  
- BEGIN_FTR_SECTION
--	/* IAMR was saved in pnv_powersave_common() */
-+	/* These regs were saved in pnv_powersave_common() */
-+	ld	r4, PNV_POWERSAVE_AMR(r1)
- 	ld	r5, PNV_POWERSAVE_IAMR(r1)
-+	ld	r6, PNV_POWERSAVE_UAMOR(r1)
-+	mtspr	SPRN_AMR, r4
- 	mtspr	SPRN_IAMR, r5
-+	mtspr	SPRN_UAMOR, r6
-+BEGIN_FTR_SECTION_NESTED(42)
-+	ld	r7, PNV_POWERSAVE_AMOR(r1)
-+	mtspr	SPRN_AMOR, r7
-+END_FTR_SECTION_NESTED_IFSET(CPU_FTR_HVMODE, 42)
- 	/*
--	 * We don't need an isync here because the upcoming mtmsrd is
--	 * execution synchronizing.
-+	 * We don't need an isync here after restoring IAMR because the upcoming
-+	 * mtmsrd is execution synchronizing.
- 	 */
- END_FTR_SECTION_IFSET(CPU_FTR_ARCH_207S)
+ #endif /* _ASM_POWERPC_KUP_H_ */
+diff --git a/arch/powerpc/mm/fault.c b/arch/powerpc/mm/fault.c
+index 887f11bcf330..3384354abc1d 100644
+--- a/arch/powerpc/mm/fault.c
++++ b/arch/powerpc/mm/fault.c
+@@ -229,11 +229,10 @@ static bool bad_kernel_fault(bool is_exec, unsigned long error_code,
+ 	/* NX faults set DSISR_PROTFAULT on the 8xx, DSISR_NOEXEC_OR_G on others */
+ 	if (is_exec && (error_code & (DSISR_NOEXEC_OR_G | DSISR_KEYFAULT |
+ 				      DSISR_PROTFAULT))) {
+-		printk_ratelimited(KERN_CRIT "kernel tried to execute"
+-				   " exec-protected page (%lx) -"
+-				   "exploit attempt? (uid: %d)\n",
+-				   address, from_kuid(&init_user_ns,
+-						      current_uid()));
++		pr_crit_ratelimited("kernel tried to execute %s page (%lx) - exploit attempt? (uid: %d)\n",
++				    address >= TASK_SIZE ? "exec-protected" : "user",
++				    address,
++				    from_kuid(&init_user_ns, current_uid()));
+ 	}
+ 	return is_exec || (address >= TASK_SIZE);
+ }
+diff --git a/arch/powerpc/mm/init-common.c b/arch/powerpc/mm/init-common.c
+index 36d28e872289..83f95a5565d6 100644
+--- a/arch/powerpc/mm/init-common.c
++++ b/arch/powerpc/mm/init-common.c
+@@ -26,8 +26,19 @@
+ #include <asm/pgtable.h>
+ #include <asm/kup.h>
  
++static bool disable_kuep = !IS_ENABLED(CONFIG_PPC_KUEP);
++
++static int __init parse_nosmep(char *p)
++{
++	disable_kuep = true;
++	pr_warn("Disabling Kernel Userspace Execution Prevention\n");
++	return 0;
++}
++early_param("nosmep", parse_nosmep);
++
+ void __init setup_kup(void)
+ {
++	setup_kuep(disable_kuep);
+ }
+ 
+ #define CTOR(shift) static void ctor_##shift(void *addr) \
+diff --git a/arch/powerpc/platforms/Kconfig.cputype b/arch/powerpc/platforms/Kconfig.cputype
+index 842b2c7e156a..7d30bbbaa3c1 100644
+--- a/arch/powerpc/platforms/Kconfig.cputype
++++ b/arch/powerpc/platforms/Kconfig.cputype
+@@ -345,6 +345,18 @@ config PPC_RADIX_MMU_DEFAULT
+ 
+ 	  If you're unsure, say Y.
+ 
++config PPC_HAVE_KUEP
++	bool
++
++config PPC_KUEP
++	bool "Kernel Userspace Execution Prevention"
++	depends on PPC_HAVE_KUEP
++	default y
++	help
++	  Enable support for Kernel Userspace Execution Prevention (KUEP)
++
++	  If you're unsure, say Y.
++
+ config ARCH_ENABLE_HUGEPAGE_MIGRATION
+ 	def_bool y
+ 	depends on PPC_BOOK3S_64 && HUGETLB_PAGE && MIGRATION
 -- 
 2.20.1
 
