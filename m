@@ -2,89 +2,96 @@ Return-Path: <SRS0=10v2=SU=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.5 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_PASS
+X-Spam-Status: No, score=-1.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 615FCC282DA
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Apr 2019 01:56:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3077FC282DC
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Apr 2019 02:38:41 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 7C6C9217F9
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Apr 2019 01:56:50 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 662B9217F9
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Apr 2019 02:38:40 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="HfTkhjmi"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7C6C9217F9
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	dkim=pass (1024-bit key) header.d=nxp.com header.i=@nxp.com header.b="COSZw5im"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 662B9217F9
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nxp.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44l2KD0kSFzDqPG
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Apr 2019 11:56:48 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44l3FT64gbzDqPG
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Apr 2019 12:38:37 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=2607:f8b0:4864:20::541; helo=mail-pg1-x541.google.com;
- envelope-from=npiggin@gmail.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=nxp.com
+ (client-ip=40.107.14.44; helo=eur01-ve1-obe.outbound.protection.outlook.com;
+ envelope-from=shengjiu.wang@nxp.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="HfTkhjmi"; 
+ dmarc=pass (p=none dis=none) header.from=nxp.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=nxp.com header.i=@nxp.com header.b="COSZw5im"; 
  dkim-atps=neutral
-Received: from mail-pg1-x541.google.com (mail-pg1-x541.google.com
- [IPv6:2607:f8b0:4864:20::541])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Received: from EUR01-VE1-obe.outbound.protection.outlook.com
+ (mail-eopbgr140044.outbound.protection.outlook.com [40.107.14.44])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44l2HR0JmlzDqP1
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Apr 2019 11:55:14 +1000 (AEST)
-Received: by mail-pg1-x541.google.com with SMTP id v12so414939pgq.1
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Apr 2019 18:55:14 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=date:from:subject:to:cc:references:in-reply-to:mime-version
- :user-agent:message-id:content-transfer-encoding;
- bh=hRag2r+cRQClvnbXFRGifKjpch/VB6yXiPd+MKpC/OI=;
- b=HfTkhjmiPibg78nX7rz+t//QBE0dtUWyFpG2qsbR+7T6k1NxDW7Wcww4EkaWRCwWuI
- 4t6n/XR7YKhU6Ip7uJcS4Jdp4v4O8QR5IUOTsz+r/qXNIEDlQwFbRg8VjOrBAvrbMowj
- vNF3b94lIHyNeJlcYW5YZfYNzTEbtLl6feJXmZaGePfGHM/2HTnSu/YQIgENM99PENOn
- 55rH17hWB9tNbF3xJYl9HZfeXhTZIT72G09/zQMsggdmQdruuSaEwxvhrZ5NXoe85lWQ
- bWjIUCHNNMSgsjXAB2ssI31LELp8oh6A9v83Jmuj9cOTzkkY4FubJvXYsobUdFCvcWd+
- Dm2A==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:date:from:subject:to:cc:references:in-reply-to
- :mime-version:user-agent:message-id:content-transfer-encoding;
- bh=hRag2r+cRQClvnbXFRGifKjpch/VB6yXiPd+MKpC/OI=;
- b=pEfnLgkrUzSHtQYKPlnzIeo2B8vhSksrGF5+qGDN76g89hDzv0qJmJ4GGlj4yDK87D
- ra+uxYPMKytlQQMYEEapHsJzAHxsR6xHpKkAuMrR2KcqG4A1uQ3vuWBjhwbMKf0wPCnb
- 00oh1oskklQaxvELP/mdMGEKh54a5fErM+w5sQDYKevgyObMqvqNsymirpYG2QK+DW2v
- a2qIFhTvsQGbD7P6K6LNY5sPlqGKgofXf8bUb1BNzxJ7XCeUKHMBZ4DK43LVVLoVqwPJ
- bDNmaaGYdNDiUyYTc+3c0mmGsbmZAmx+ILnVmZKyefFtr4Jd7lWrQa66/veYv/jfGd9z
- fO0Q==
-X-Gm-Message-State: APjAAAUb796drXDxsqcKWu27aFQHQBETQxb/+ycei1OqqG0jUDpsyA2n
- TcQdga25vJbghNIftwUFDKs=
-X-Google-Smtp-Source: APXvYqyHjfF93x3cbVWeXKbtshSYY17+rtsxNfJ8sSQorfiydS6oA2SxUH+sZLHd4xB5kswQ1rmvdQ==
-X-Received: by 2002:a63:195e:: with SMTP id 30mr85422621pgz.312.1555552512900; 
- Wed, 17 Apr 2019 18:55:12 -0700 (PDT)
-Received: from localhost (14-202-58-58.tpgi.com.au. [14.202.58.58])
- by smtp.gmail.com with ESMTPSA id k79sm791108pfj.28.2019.04.17.18.55.11
- (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
- Wed, 17 Apr 2019 18:55:11 -0700 (PDT)
-Date: Thu, 18 Apr 2019 11:55:06 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
-Subject: Re: [PATCH v3] powerpc/pseries: Only wait for dying CPU after call to
- rtas_stop_self()
-To: Thiago Jung Bauermann <bauerman@linux.ibm.com>
-References: <20190311193517.23756-1-bauerman@linux.ibm.com>
- <87bm1dfog4.fsf@morokweng.localdomain>
- <1555389147.okxbj1prw2.astroid@bobo.none>
- <87r2a0jffq.fsf@morokweng.localdomain>
-In-Reply-To: <87r2a0jffq.fsf@morokweng.localdomain>
-MIME-Version: 1.0
-User-Agent: astroid/0.14.0 (https://github.com/astroidmail/astroid)
-Message-Id: <1555552271.zy2w4ddjqe.astroid@bobo.none>
-Content-Type: text/plain; charset=utf-8
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44l3Ct2Hx6zDqP2
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Apr 2019 12:37:10 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nxp.com; s=selector1; 
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=DHxfu+2lLbwHeIlygkUdc+reAiscBK3q8wKz6XkrjdU=;
+ b=COSZw5im5xuMU3nlyDRChCALWTT9v2niMcU+O7YIpXGr5kfhxP/CbJQCYLHTNzCyeRUzgUpmS862MTbc/o2ejE9TQoGWdvpNc4oZMZoLoSC32LPV3shgVes4/7QGQpfKMz21W3TwWjxfy6zWNTmS8bmYdlBkY2i1mw61y264ODQ=
+Received: from AM6PR04MB6470.eurprd04.prod.outlook.com (20.179.245.79) by
+ AM6PR04MB6037.eurprd04.prod.outlook.com (20.179.4.204) with Microsoft SMTP
+ Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.20.1813.12; Thu, 18 Apr 2019 02:37:03 +0000
+Received: from AM6PR04MB6470.eurprd04.prod.outlook.com
+ ([fe80::bc8d:21be:2cd6:f549]) by AM6PR04MB6470.eurprd04.prod.outlook.com
+ ([fe80::bc8d:21be:2cd6:f549%3]) with mapi id 15.20.1813.011; Thu, 18 Apr 2019
+ 02:37:03 +0000
+From: "S.j. Wang" <shengjiu.wang@nxp.com>
+To: Nicolin Chen <nicoleotsuka@gmail.com>
+Subject: Re: [PATCH V3 1/2] ASoC: fsl_asrc: replace the process_option table
+ with function
+Thread-Topic: [PATCH V3 1/2] ASoC: fsl_asrc: replace the process_option table
+ with function
+Thread-Index: AdT1jzb7LgzlzFMpSj6UhpjGM3i6rQ==
+Date: Thu, 18 Apr 2019 02:37:03 +0000
+Message-ID: <AM6PR04MB647093DB49BB13E09B0F181DE3260@AM6PR04MB6470.eurprd04.prod.outlook.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+authentication-results: spf=none (sender IP is )
+ smtp.mailfrom=shengjiu.wang@nxp.com; 
+x-originating-ip: [119.31.174.66]
+x-ms-publictraffictype: Email
+x-ms-office365-filtering-correlation-id: f0d8b31d-f7de-4b9c-fa44-08d6c3a6bdd8
+x-ms-office365-filtering-ht: Tenant
+x-microsoft-antispam: BCL:0; PCL:0;
+ RULEID:(2390118)(7020095)(4652040)(8989299)(4534185)(4627221)(201703031133081)(201702281549075)(8990200)(5600141)(711020)(4605104)(4618075)(2017052603328)(7193020);
+ SRVR:AM6PR04MB6037; 
+x-ms-traffictypediagnostic: AM6PR04MB6037:
+x-microsoft-antispam-prvs: <AM6PR04MB60371E6C29F6A7CEC7B279B3E3260@AM6PR04MB6037.eurprd04.prod.outlook.com>
+x-forefront-prvs: 0011612A55
+x-forefront-antispam-report: SFV:NSPM;
+ SFS:(10009020)(346002)(396003)(39850400004)(366004)(376002)(136003)(189003)(199004)(81166006)(81156014)(6246003)(66066001)(8936002)(8676002)(4326008)(6436002)(71200400001)(71190400001)(1411001)(229853002)(2906002)(6916009)(486006)(97736004)(53936002)(316002)(55016002)(476003)(86362001)(9686003)(25786009)(14454004)(6116002)(3846002)(54906003)(7736002)(478600001)(33656002)(305945005)(99286004)(74316002)(68736007)(7696005)(52536014)(256004)(186003)(26005)(6506007)(102836004)(5660300002);
+ DIR:OUT; SFP:1101; SCL:1; SRVR:AM6PR04MB6037;
+ H:AM6PR04MB6470.eurprd04.prod.outlook.com; FPR:; SPF:None; LANG:en;
+ PTR:InfoNoRecords; MX:1; A:1; 
+received-spf: None (protection.outlook.com: nxp.com does not designate
+ permitted sender hosts)
+x-ms-exchange-senderadcheck: 1
+x-microsoft-antispam-message-info: oeo3SeJDYz4NMUUIGW9ZTeSgJRgqeTFk4Izbbgw0RHH1YkGvsFpG+nO31uXf0NzAPeui5jfHh3lZsUmswoodwW/TsDFwlXCXpNm2V7lIKNkmIerpnGBOTf4aoYhH/3ZvsNGXrCcUWWbBg8XATLJuF2wmv0Jy7K37NcsPhO+jJoOjafF+Uj8OaVVWyikxiNOItNKt06bdqhoczw4cIMiZeyQID/hzKy+rY4Y3zi+KAxPtqW1fYqWyM/YMATJ/RnSYy+sI/2TUq2zFsovPTf7bm8TFnNXd28wwE8zX9WcRDDDVNV6VG4yyG2NweYI4npXbTn2q71y5DViC7uZTMEJj4mP06bxk0vodEHK/R3X/NZi6A3uicj1qF3EwOwP5Jadin7uZy6aIu8BwUGzelOoU2kvkCYoDJ6+vN20z86TDodI=
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+X-OriginatorOrg: nxp.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: f0d8b31d-f7de-4b9c-fa44-08d6c3a6bdd8
+X-MS-Exchange-CrossTenant-originalarrivaltime: 18 Apr 2019 02:37:03.5274 (UTC)
+X-MS-Exchange-CrossTenant-fromentityheader: Hosted
+X-MS-Exchange-CrossTenant-id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
+X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: AM6PR04MB6037
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -96,92 +103,66 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Gautham R Shenoy <ego@linux.vnet.ibm.com>,
- Michael Bringmann <mwb@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
+Cc: "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
+ "timur@kernel.org" <timur@kernel.org>,
+ "Xiubo.Lee@gmail.com" <Xiubo.Lee@gmail.com>,
+ "festevam@gmail.com" <festevam@gmail.com>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "broonie@kernel.org" <broonie@kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Thiago Jung Bauermann's on April 18, 2019 11:00 am:
->=20
-> Hello Nick,
->=20
-> Thank you very much for reviewing this patch!
->=20
-> Nicholas Piggin <npiggin@gmail.com> writes:
->=20
->> Thiago Jung Bauermann's on April 11, 2019 9:08 am:
->>>
->>> Thiago Jung Bauermann <bauerman@linux.ibm.com> writes:
->>>
->>>> diff --git a/arch/powerpc/platforms/pseries/hotplug-cpu.c b/arch/power=
-pc/platforms/pseries/hotplug-cpu.c
->>>> index 97feb6e79f1a..ac6dc35ab829 100644
->>>> --- a/arch/powerpc/platforms/pseries/hotplug-cpu.c
->>>> +++ b/arch/powerpc/platforms/pseries/hotplug-cpu.c
->>>> @@ -214,13 +214,22 @@ static void pseries_cpu_die(unsigned int cpu)
->>>>  			msleep(1);
->>>>  		}
->>>>  	} else if (get_preferred_offline_state(cpu) =3D=3D CPU_STATE_OFFLINE=
-) {
->>>> +		/*
->>>> +		 * If the current state is not offline yet, it means that the
->>>> +		 * dying CPU (which is either in pseries_mach_cpu_die() or in
->>>> +		 * the process of getting there) didn't have a chance yet to
->>>> +		 * call rtas_stop_self() and therefore it's too early to query
->>>> +		 * if the CPU is stopped.
->>>> +		 */
->>>> +		spin_event_timeout(get_cpu_current_state(cpu) =3D=3D CPU_STATE_OFFL=
-INE,
->>>> +				   100000, 100);
->>
->> If the CPU state does not go to offline here, you should give up and
->> return online, right? Otherwise I think query-cpu-stopped-state can
->> get confused by CPUs in idle and you get a false positive.
->=20
-> Can it get confused? My impression from reading the definition for
-> query-cpu-stopped-state in the PAPR is that it will simply return a
-> CPU_status value of 2 in that case, meaning that "the processor thread
-> is not in the RTAS stopped state", but I don't know much about this.
+Hi
 
-In QEMU (non-KVM) mode, qcss I think may get confused between H_CEDE
-and rtas-stop-self. KVM mode may be okay because H_CEDE is handled in
-the kernel.
+>=20
+> Hi Shengjiu,
+>=20
+> This looks better. Just a couple of more small comments inline.
+>=20
+> On Wed, Apr 17, 2019 at 09:06:18AM +0000, S.j. Wang wrote:
+>=20
+> > +static int fsl_asrc_sel_proc(int inrate, int outrate, int *pre_proc,
+> > +                          int *post_proc)
+>=20
+> Just a nit: it looks better by grouping them two-two.
+>=20
+> static int fsl_asrc_sel_proc(int inrate, int outrate,
+>                              int *pre_proc, int *post_proc)
+>=20
+> > +     /* Condition for selection of post-processing */
+> > +     post_proc_cond2 =3D (inrate * 15 > outrate * 16 && outrate < 5600=
+0) ||
+> > +             (inrate > 56000 && outrate < 56000);
+>=20
+> Could align the indentation:
+>         post_proc_cond2 =3D (inrate * 15 > outrate * 16 && outrate < 5600=
+0) ||
+>                           (inrate > 56000 && outrate < 56000);
+>=20
+> Here:
+> > +     /* Does not support cases: Tsout > 8.125 * Tsin */
+> > +     if (inrate * 8 > 65 * outrate)
+> > +             return -EINVAL;
+> And here:
+> > +     ret =3D fsl_asrc_sel_proc(inrate, outrate, &pre_proc, &post_proc)=
+;
+> > +     if (ret) {
+> > +             pair_err("No supported pre-processing options\n");
+> > +             return ret;
+> > +     }
+>=20
+> Instead of a general message, I was thinking of a more specific one by
+> telling users that the ratio between the two rates isn't supported --
+> something similar to what I suggested previously:
+>=20
+>         pair_err("Does not support %d (input) > 8.125 * %d (output)\n",
+>                  outrate, inrate);
+>=20
+In fsl_asrc_sel_proc,  we can't call the pair_err for there is no
+struct fsl_asrc_pair *pair in the argument. Do you think we need to
+add this argument?
 
->> That race can still happen, we would really need a sequence count check
->> over current CPU state to ensure we got a race-free qcss value, but at
->> least a check here should make the race implausible to hit.
->=20
-> Actually, since rtas_stop_self() panics if the processor fails to stop
-> and also since callers of pseries_cpu_die()=C2=B9 already assume that it =
-is
-> going to succeed in stopping the CPU (given that the function returns
-> void and can't signal an error), a more straightforward way of
-> eliminating the race is to simply do this:
->=20
-> diff --git a/arch/powerpc/platforms/pseries/hotplug-cpu.c b/arch/powerpc/=
-platforms/pseries/hotplug-cpu.c
-> index 97feb6e79f1a..2331a609f48f 100644
-> --- a/arch/powerpc/platforms/pseries/hotplug-cpu.c
-> +++ b/arch/powerpc/platforms/pseries/hotplug-cpu.c
-> @@ -215,7 +215,7 @@ static void pseries_cpu_die(unsigned int cpu)
->                 }
->         } else if (get_preferred_offline_state(cpu) =3D=3D CPU_STATE_OFFL=
-INE) {
->=20
-> -               for (tries =3D 0; tries < 25; tries++) {
-> +               while (true) {
->                         cpu_status =3D smp_query_cpu_stopped(pcpu);
->                         if (cpu_status =3D=3D QCSS_STOPPED ||
->                             cpu_status =3D=3D QCSS_HARDWARE_ERROR)
->=20
->=20
-> What do you think?
-
-Yeah I think that may be a good idea, just makes things much simpler.
-
-Thanks,
-Nick
-
-=
+> Thanks
+> Nicolin
