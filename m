@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-8.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_MUTT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 91F77C10F0E
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Apr 2019 22:08:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6D7DEC10F0E
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Apr 2019 22:09:59 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 0F64620693
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Apr 2019 22:08:34 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0F64620693
+	by mail.kernel.org (Postfix) with ESMTPS id E2F2520693
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Apr 2019 22:09:58 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E2F2520693
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44lYCP0gkjzDqMw
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Apr 2019 08:08:33 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44lYF12RQpzDqPR
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Apr 2019 08:09:57 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=redhat.com
  (client-ip=209.132.183.28; helo=mx1.redhat.com;
@@ -28,33 +28,34 @@ Authentication-Results: lists.ozlabs.org;
 Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44lY6b5jFzzDqTs
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Apr 2019 08:04:23 +1000 (AEST)
-Received: from smtp.corp.redhat.com (int-mx03.intmail.prod.int.phx2.redhat.com
- [10.5.11.13])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44lY8K1mllzDq9Z
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Apr 2019 08:05:53 +1000 (AEST)
+Received: from smtp.corp.redhat.com (int-mx01.intmail.prod.int.phx2.redhat.com
+ [10.5.11.11])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by mx1.redhat.com (Postfix) with ESMTPS id F159830832D8;
- Thu, 18 Apr 2019 22:04:20 +0000 (UTC)
+ by mx1.redhat.com (Postfix) with ESMTPS id F3EE7301EA88;
+ Thu, 18 Apr 2019 22:05:50 +0000 (UTC)
 Received: from redhat.com (unknown [10.20.6.236])
- by smtp.corp.redhat.com (Postfix) with ESMTPS id 1648D60851;
- Thu, 18 Apr 2019 22:04:17 +0000 (UTC)
-Date: Thu, 18 Apr 2019 18:04:15 -0400
+ by smtp.corp.redhat.com (Postfix) with ESMTPS id 46F5A600C5;
+ Thu, 18 Apr 2019 22:05:47 +0000 (UTC)
+Date: Thu, 18 Apr 2019 18:05:45 -0400
 From: Jerome Glisse <jglisse@redhat.com>
 To: Laurent Dufour <ldufour@linux.ibm.com>
-Subject: Re: [PATCH v12 05/31] mm: prepare for FAULT_FLAG_SPECULATIVE
-Message-ID: <20190418220415.GE11645@redhat.com>
+Subject: Re: [PATCH v12 06/31] mm: introduce pte_spinlock for
+ FAULT_FLAG_SPECULATIVE
+Message-ID: <20190418220545.GF11645@redhat.com>
 References: <20190416134522.17540-1-ldufour@linux.ibm.com>
- <20190416134522.17540-6-ldufour@linux.ibm.com>
+ <20190416134522.17540-7-ldufour@linux.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <20190416134522.17540-6-ldufour@linux.ibm.com>
+In-Reply-To: <20190416134522.17540-7-ldufour@linux.ibm.com>
 User-Agent: Mutt/1.11.3 (2019-02-01)
-X-Scanned-By: MIMEDefang 2.79 on 10.5.11.13
+X-Scanned-By: MIMEDefang 2.79 on 10.5.11.11
 X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.5.16
- (mx1.redhat.com [10.5.110.44]); Thu, 18 Apr 2019 22:04:21 +0000 (UTC)
+ (mx1.redhat.com [10.5.110.47]); Thu, 18 Apr 2019 22:05:51 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -89,54 +90,62 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, Apr 16, 2019 at 03:44:56PM +0200, Laurent Dufour wrote:
-> From: Peter Zijlstra <peterz@infradead.org>
+On Tue, Apr 16, 2019 at 03:44:57PM +0200, Laurent Dufour wrote:
+> When handling page fault without holding the mmap_sem the fetch of the
+> pte lock pointer and the locking will have to be done while ensuring
+> that the VMA is not touched in our back.
 > 
-> When speculating faults (without holding mmap_sem) we need to validate
-> that the vma against which we loaded pages is still valid when we're
-> ready to install the new PTE.
+> So move the fetch and locking operations in a dedicated function.
 > 
-> Therefore, replace the pte_offset_map_lock() calls that (re)take the
-> PTL with pte_map_lock() which can fail in case we find the VMA changed
-> since we started the fault.
-> 
-> Signed-off-by: Peter Zijlstra (Intel) <peterz@infradead.org>
-> 
-> [Port to 4.12 kernel]
-> [Remove the comment about the fault_env structure which has been
->  implemented as the vm_fault structure in the kernel]
-> [move pte_map_lock()'s definition upper in the file]
-> [move the define of FAULT_FLAG_SPECULATIVE later in the series]
-> [review error path in do_swap_page(), do_anonymous_page() and
->  wp_page_copy()]
 > Signed-off-by: Laurent Dufour <ldufour@linux.ibm.com>
 
 Reviewed-by: Jérôme Glisse <jglisse@redhat.com>
 
+
 > ---
->  mm/memory.c | 87 +++++++++++++++++++++++++++++++++++------------------
->  1 file changed, 58 insertions(+), 29 deletions(-)
+>  mm/memory.c | 15 +++++++++++----
+>  1 file changed, 11 insertions(+), 4 deletions(-)
 > 
 > diff --git a/mm/memory.c b/mm/memory.c
-> index c6ddadd9d2b7..fc3698d13cb5 100644
+> index fc3698d13cb5..221ccdf34991 100644
 > --- a/mm/memory.c
 > +++ b/mm/memory.c
 > @@ -2073,6 +2073,13 @@ int apply_to_page_range(struct mm_struct *mm, unsigned long addr,
 >  }
 >  EXPORT_SYMBOL_GPL(apply_to_page_range);
 >  
-> +static inline bool pte_map_lock(struct vm_fault *vmf)
-
-I am not fan of the name maybe pte_offset_map_lock_if_valid() ? But
-that just a taste thing. So feel free to ignore this comment.
-
-
+> +static inline bool pte_spinlock(struct vm_fault *vmf)
 > +{
-> +	vmf->pte = pte_offset_map_lock(vmf->vma->vm_mm, vmf->pmd,
-> +				       vmf->address, &vmf->ptl);
+> +	vmf->ptl = pte_lockptr(vmf->vma->vm_mm, vmf->pmd);
+> +	spin_lock(vmf->ptl);
 > +	return true;
 > +}
 > +
->  /*
->   * handle_pte_fault chooses page fault handler according to an entry which was
->   * read non-atomically.  Before making any commitment, on those architectures
+>  static inline bool pte_map_lock(struct vm_fault *vmf)
+>  {
+>  	vmf->pte = pte_offset_map_lock(vmf->vma->vm_mm, vmf->pmd,
+> @@ -3656,8 +3663,8 @@ static vm_fault_t do_numa_page(struct vm_fault *vmf)
+>  	 * validation through pte_unmap_same(). It's of NUMA type but
+>  	 * the pfn may be screwed if the read is non atomic.
+>  	 */
+> -	vmf->ptl = pte_lockptr(vma->vm_mm, vmf->pmd);
+> -	spin_lock(vmf->ptl);
+> +	if (!pte_spinlock(vmf))
+> +		return VM_FAULT_RETRY;
+>  	if (unlikely(!pte_same(*vmf->pte, vmf->orig_pte))) {
+>  		pte_unmap_unlock(vmf->pte, vmf->ptl);
+>  		goto out;
+> @@ -3850,8 +3857,8 @@ static vm_fault_t handle_pte_fault(struct vm_fault *vmf)
+>  	if (pte_protnone(vmf->orig_pte) && vma_is_accessible(vmf->vma))
+>  		return do_numa_page(vmf);
+>  
+> -	vmf->ptl = pte_lockptr(vmf->vma->vm_mm, vmf->pmd);
+> -	spin_lock(vmf->ptl);
+> +	if (!pte_spinlock(vmf))
+> +		return VM_FAULT_RETRY;
+>  	entry = vmf->orig_pte;
+>  	if (unlikely(!pte_same(*vmf->pte, entry)))
+>  		goto unlock;
+> -- 
+> 2.21.0
+> 
