@@ -2,66 +2,59 @@ Return-Path: <SRS0=10v2=SU=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_MUTT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D1692C10F14
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Apr 2019 22:07:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 91F77C10F0E
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Apr 2019 22:08:35 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 4B9E320693
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Apr 2019 22:07:04 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="qAldq5r3"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4B9E320693
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	by mail.kernel.org (Postfix) with ESMTPS id 0F64620693
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Apr 2019 22:08:34 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0F64620693
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44lY9f0gd2zDqN5
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Apr 2019 08:07:02 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44lYCP0gkjzDqMw
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Apr 2019 08:08:33 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=kernel.org
- (client-ip=198.145.29.99; helo=mail.kernel.org; envelope-from=sboyd@kernel.org;
- receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=redhat.com
+ (client-ip=209.132.183.28; helo=mx1.redhat.com;
+ envelope-from=jglisse@redhat.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=kernel.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="qAldq5r3"; 
- dkim-atps=neutral
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ dmarc=pass (p=none dis=none) header.from=redhat.com
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44lXrF6fsdzDqSh
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Apr 2019 07:51:57 +1000 (AEST)
-Received: from localhost (unknown [104.132.0.74])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44lY6b5jFzzDqTs
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Apr 2019 08:04:23 +1000 (AEST)
+Received: from smtp.corp.redhat.com (int-mx03.intmail.prod.int.phx2.redhat.com
+ [10.5.11.13])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id 1F6D520693;
- Thu, 18 Apr 2019 21:51:56 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1555624316;
- bh=VAqFt+2Slug5K3L/Eo9QbummplIkeF6rHU/h3vWz1ug=;
- h=In-Reply-To:References:Cc:From:Subject:To:Date:From;
- b=qAldq5r39DfPiO9w5qtoj2DSKnNUVFNXUFcT3nttX5PEdkv+ttYK8Je09lIUlX4rr
- G5dtG4mddSuqxnQaF+KuCdyqzXXj2OzV4ndTqx+umpNNKWVF8FtyjXU4nHK9jU9qoT
- vQCdhx3sdg1YAG1A/KcTjxGFvjd2VkU8bEs3lA14=
-Content-Type: text/plain; charset="utf-8"
+ by mx1.redhat.com (Postfix) with ESMTPS id F159830832D8;
+ Thu, 18 Apr 2019 22:04:20 +0000 (UTC)
+Received: from redhat.com (unknown [10.20.6.236])
+ by smtp.corp.redhat.com (Postfix) with ESMTPS id 1648D60851;
+ Thu, 18 Apr 2019 22:04:17 +0000 (UTC)
+Date: Thu, 18 Apr 2019 18:04:15 -0400
+From: Jerome Glisse <jglisse@redhat.com>
+To: Laurent Dufour <ldufour@linux.ibm.com>
+Subject: Re: [PATCH v12 05/31] mm: prepare for FAULT_FLAG_SPECULATIVE
+Message-ID: <20190418220415.GE11645@redhat.com>
+References: <20190416134522.17540-1-ldufour@linux.ibm.com>
+ <20190416134522.17540-6-ldufour@linux.ibm.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-In-Reply-To: <20190418111211.10474-9-jonas.gorski@gmail.com>
-References: <20190418111211.10474-1-jonas.gorski@gmail.com>
- <20190418111211.10474-9-jonas.gorski@gmail.com>
-From: Stephen Boyd <sboyd@kernel.org>
-Subject: Re: [PATCH RFT V3 8/8] clk: core: replace clk_{readl,
- writel} with {readl, writel}
-To: Jonas Gorski <jonas.gorski@gmail.com>, linux-arm-kernel@lists.infradead.org,
- linux-clk@vger.kernel.org, linux-rockchip@lists.infradead.org,
- linux-tegra@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Message-ID: <155562431544.15276.5634748612989968529@swboyd.mtv.corp.google.com>
-User-Agent: alot/0.8
-Date: Thu, 18 Apr 2019 14:51:55 -0700
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20190416134522.17540-6-ldufour@linux.ibm.com>
+User-Agent: Mutt/1.11.3 (2019-02-01)
+X-Scanned-By: MIMEDefang 2.79 on 10.5.11.13
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.5.16
+ (mx1.redhat.com [10.5.110.44]); Thu, 18 Apr 2019 22:04:21 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -73,26 +66,77 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Peter De Schrijver <pdeschrijver@nvidia.com>,
- Fabio Estevam <festevam@gmail.com>, Heiko Stuebner <heiko@sntech.de>,
- Michael Turquette <mturquette@baylibre.com>,
- Michal Simek <michal.simek@xilinx.com>, Jonathan Hunter <jonathanh@nvidia.com>,
- Prashant Gaikwad <pgaikwad@nvidia.com>, Paul Mackerras <paulus@samba.org>,
- NXP Linux Team <linux-imx@nxp.com>,
- Pengutronix Kernel Team <kernel@pengutronix.de>,
- Thierry Reding <thierry.reding@gmail.com>, Anatolij Gustschin <agust@denx.de>,
- Shawn Guo <shawnguo@kernel.org>, Sascha Hauer <s.hauer@pengutronix.de>
+Cc: jack@suse.cz, sergey.senozhatsky.work@gmail.com, peterz@infradead.org,
+ Will Deacon <will.deacon@arm.com>, mhocko@kernel.org, linux-mm@kvack.org,
+ paulus@samba.org, Punit Agrawal <punitagrawal@gmail.com>, hpa@zytor.com,
+ Michel Lespinasse <walken@google.com>,
+ Alexei Starovoitov <alexei.starovoitov@gmail.com>,
+ Andrea Arcangeli <aarcange@redhat.com>, ak@linux.intel.com,
+ Minchan Kim <minchan@kernel.org>, aneesh.kumar@linux.ibm.com, x86@kernel.org,
+ Matthew Wilcox <willy@infradead.org>,
+ Daniel Jordan <daniel.m.jordan@oracle.com>, Ingo Molnar <mingo@redhat.com>,
+ David Rientjes <rientjes@google.com>, paulmck@linux.vnet.ibm.com,
+ Haiyan Song <haiyanx.song@intel.com>, npiggin@gmail.com, sj38.park@gmail.com,
+ dave@stgolabs.net, kemi.wang@intel.com, kirill@shutemov.name,
+ Thomas Gleixner <tglx@linutronix.de>, zhong jiang <zhongjiang@huawei.com>,
+ Ganesh Mahendran <opensource.ganesh@gmail.com>,
+ Yang Shi <yang.shi@linux.alibaba.com>, Mike Rapoport <rppt@linux.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
+ vinayak menon <vinayakm.list@gmail.com>, akpm@linux-foundation.org,
+ Tim Chen <tim.c.chen@linux.intel.com>, haren@linux.vnet.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Quoting Jonas Gorski (2019-04-18 04:12:11)
-> Now that clk_{readl,writel} is just an alias for {readl,writel}, we can
-> switch all users of clk_* to use the accessors directly and remove the
-> helpers.
->=20
-> Signed-off-by: Jonas Gorski <jonas.gorski@gmail.com>
+On Tue, Apr 16, 2019 at 03:44:56PM +0200, Laurent Dufour wrote:
+> From: Peter Zijlstra <peterz@infradead.org>
+> 
+> When speculating faults (without holding mmap_sem) we need to validate
+> that the vma against which we loaded pages is still valid when we're
+> ready to install the new PTE.
+> 
+> Therefore, replace the pte_offset_map_lock() calls that (re)take the
+> PTL with pte_map_lock() which can fail in case we find the VMA changed
+> since we started the fault.
+> 
+> Signed-off-by: Peter Zijlstra (Intel) <peterz@infradead.org>
+> 
+> [Port to 4.12 kernel]
+> [Remove the comment about the fault_env structure which has been
+>  implemented as the vm_fault structure in the kernel]
+> [move pte_map_lock()'s definition upper in the file]
+> [move the define of FAULT_FLAG_SPECULATIVE later in the series]
+> [review error path in do_swap_page(), do_anonymous_page() and
+>  wp_page_copy()]
+> Signed-off-by: Laurent Dufour <ldufour@linux.ibm.com>
+
+Reviewed-by: Jérôme Glisse <jglisse@redhat.com>
+
 > ---
+>  mm/memory.c | 87 +++++++++++++++++++++++++++++++++++------------------
+>  1 file changed, 58 insertions(+), 29 deletions(-)
+> 
+> diff --git a/mm/memory.c b/mm/memory.c
+> index c6ddadd9d2b7..fc3698d13cb5 100644
+> --- a/mm/memory.c
+> +++ b/mm/memory.c
+> @@ -2073,6 +2073,13 @@ int apply_to_page_range(struct mm_struct *mm, unsigned long addr,
+>  }
+>  EXPORT_SYMBOL_GPL(apply_to_page_range);
+>  
+> +static inline bool pte_map_lock(struct vm_fault *vmf)
 
-Applied to clk-next
+I am not fan of the name maybe pte_offset_map_lock_if_valid() ? But
+that just a taste thing. So feel free to ignore this comment.
 
+
+> +{
+> +	vmf->pte = pte_offset_map_lock(vmf->vma->vm_mm, vmf->pmd,
+> +				       vmf->address, &vmf->ptl);
+> +	return true;
+> +}
+> +
+>  /*
+>   * handle_pte_fault chooses page fault handler according to an entry which was
+>   * read non-atomically.  Before making any commitment, on those architectures
