@@ -2,45 +2,50 @@ Return-Path: <SRS0=10v2=SU=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-4.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 32193C10F0B
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Apr 2019 07:06:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A212CC10F0B
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Apr 2019 07:08:12 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id A2639217D7
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Apr 2019 07:06:19 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A2639217D7
+	by mail.kernel.org (Postfix) with ESMTPS id 2B387217D7
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Apr 2019 07:08:12 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2B387217D7
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44l9BL0q2NzDqPK
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Apr 2019 17:06:18 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+	by lists.ozlabs.org (Postfix) with ESMTP id 44l9DT61YJzDqLy
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Apr 2019 17:08:09 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44l8sM5TvfzDqNH
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Apr 2019 16:51:35 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44l8vn2dKbzDqPG
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Apr 2019 16:53:41 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
-Received: by ozlabs.org (Postfix)
- id 44l8sM4L4yz9s9h; Thu, 18 Apr 2019 16:51:35 +1000 (AEST)
-Received: by ozlabs.org (Postfix, from userid 1034)
- id 44l8sM3qg5z9s55; Thu, 18 Apr 2019 16:51:35 +1000 (AEST)
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
+ SHA256) (No client certificate requested)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 44l8vm6N9Gz9s4V;
+ Thu, 18 Apr 2019 16:53:40 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH v6 10/10] powerpc/mm: Detect bad KUAP faults
-Date: Thu, 18 Apr 2019 16:51:25 +1000
-Message-Id: <20190418065125.2687-10-mpe@ellerman.id.au>
-X-Mailer: git-send-email 2.20.1
-In-Reply-To: <20190418065125.2687-1-mpe@ellerman.id.au>
-References: <20190418065125.2687-1-mpe@ellerman.id.au>
+To: Christophe Leroy <christophe.leroy@c-s.fr>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, ruscur@russell.cc
+Subject: Re: [PATCH v2 07/10] powerpc/8xx: Add Kernel Userspace Access
+ Protection
+In-Reply-To: <bac688f0f7f60d6862d839982c9cccbeda6fec3c.1552292207.git.christophe.leroy@c-s.fr>
+References: <cover.1552292207.git.christophe.leroy@c-s.fr>
+ <bac688f0f7f60d6862d839982c9cccbeda6fec3c.1552292207.git.christophe.leroy@c-s.fr>
+Date: Thu, 18 Apr 2019 16:53:40 +1000
+Message-ID: <87k1fru7m3.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -52,138 +57,75 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-When KUAP is enabled we have logic to detect page faults that occur
-outside of a valid user access region and are blocked by the AMR.
+Christophe Leroy <christophe.leroy@c-s.fr> writes:
+> diff --git a/arch/powerpc/include/asm/nohash/32/kup-8xx.h b/arch/powerpc/include/asm/nohash/32/kup-8xx.h
+> new file mode 100644
+> index 000000000000..a44cc6c1b901
+> --- /dev/null
+> +++ b/arch/powerpc/include/asm/nohash/32/kup-8xx.h
+> @@ -0,0 +1,68 @@
+> +/* SPDX-License-Identifier: GPL-2.0 */
+> +#ifndef _ASM_POWERPC_KUP_8XX_H_
+> +#define _ASM_POWERPC_KUP_8XX_H_
+> +
+> +#include <asm/bug.h>
+> +
+> +#ifdef CONFIG_PPC_KUAP
+> +
+> +#ifdef __ASSEMBLY__
+> +
+> +.macro kuap_save_and_lock	sp, thread, gpr1, gpr2, gpr3
+> +	lis	\gpr2, MD_APG_KUAP@h	/* only APG0 and APG1 are used */
+> +	mfspr	\gpr1, SPRN_MD_AP
+> +	mtspr	SPRN_MD_AP, \gpr2
+> +	stw	\gpr1, STACK_REGS_KUAP(\sp)
+> +.endm
+> +
+> +.macro kuap_restore	sp, current, gpr1, gpr2, gpr3
+> +	lwz	\gpr1, STACK_REGS_KUAP(\sp)
+> +	mtspr	SPRN_MD_AP, \gpr1
+> +.endm
+> +
+> +.macro kuap_check	current, gpr
+> +#ifdef CONFIG_PPC_KUAP_DEBUG
+> +	mfspr	\gpr, SPRN_MD_AP
+> +	rlwinm	\gpr, \gpr, 16, 0xffff
+> +999:	twnei	\gpr, MD_APG_KUAP@h
+> +	EMIT_BUG_ENTRY 999b, __FILE__, __LINE__, (BUGFLAG_WARNING | BUGFLAG_ONCE)
+> +#endif
+> +.endm
+> +
+> +#else /* !__ASSEMBLY__ */
+> +
+> +#include <asm/reg.h>
+> +
+> +static inline void allow_user_access(void __user *to, const void __user *from,
+> +				     unsigned long size)
+> +{
+> +	mtspr(SPRN_MD_AP, MD_APG_INIT);
+> +}
+> +
+> +static inline void prevent_user_access(void __user *to, const void __user *from,
+> +				       unsigned long size)
+> +{
+> +	mtspr(SPRN_MD_AP, MD_APG_KUAP);
+> +}
+> +
+> +static inline void allow_read_from_user(const void __user *from, unsigned long size)
+> +{
+> +	allow_user_access(NULL, from, size);
+> +}
+> +
+> +static inline void allow_write_to_user(void __user *to, unsigned long size)
+> +{
+> +	allow_user_access(to, NULL, size);
+> +}
 
-What we don't have at the moment is logic to detect a fault *within* a
-valid user access region, that has been incorrectly blocked by AMR.
-This is not meant to ever happen, but it can if we incorrectly
-save/restore the AMR, or if the AMR was overwritten for some other
-reason.
+I dropped the two above functions when rebasing on my v6.
 
-Currently if that happens we assume it's just a regular fault that
-will be corrected by handling the fault normally, so we just return.
-But there is nothing the fault handling code can do to fix it, so the
-fault just happens again and we spin forever, leading to soft lockups.
-
-So add some logic to detect that case and WARN() if we ever see it.
-Arguably it should be a BUG(), but it's more polite to fail the access
-and let the kernel continue, rather than taking down the box. There
-should be no data integrity issue with failing the fault rather than
-BUG'ing, as we're just going to disallow an access that should have
-been allowed.
-
-To make the code a little easier to follow, unroll the condition at
-the end of bad_kernel_fault() and comment each case, before adding the
-call to bad_kuap_fault().
-
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
----
-
-v6: Simplify bad_kuap_fault() as suggested by Christophe.
----
- .../powerpc/include/asm/book3s/64/kup-radix.h |  6 +++++
- arch/powerpc/include/asm/kup.h                |  1 +
- arch/powerpc/mm/fault.c                       | 25 ++++++++++++++++---
- 3 files changed, 29 insertions(+), 3 deletions(-)
-
-diff --git a/arch/powerpc/include/asm/book3s/64/kup-radix.h b/arch/powerpc/include/asm/book3s/64/kup-radix.h
-index 6d6628424134..7679bd0c5af0 100644
---- a/arch/powerpc/include/asm/book3s/64/kup-radix.h
-+++ b/arch/powerpc/include/asm/book3s/64/kup-radix.h
-@@ -95,6 +95,12 @@ static inline void prevent_user_access(void __user *to, const void __user *from,
- 	set_kuap(AMR_KUAP_BLOCKED);
- }
- 
-+static inline bool bad_kuap_fault(struct pt_regs *regs, bool is_write)
-+{
-+	return WARN(mmu_has_feature(MMU_FTR_RADIX_KUAP) &&
-+		    (regs->kuap & (is_write ? AMR_KUAP_BLOCK_WRITE : AMR_KUAP_BLOCK_READ)),
-+		    "Bug: %s fault blocked by AMR!", is_write ? "Write" : "Read");
-+}
- #endif /* CONFIG_PPC_KUAP */
- 
- #endif /* __ASSEMBLY__ */
-diff --git a/arch/powerpc/include/asm/kup.h b/arch/powerpc/include/asm/kup.h
-index d7312defbe1c..28ad4654eed2 100644
---- a/arch/powerpc/include/asm/kup.h
-+++ b/arch/powerpc/include/asm/kup.h
-@@ -26,6 +26,7 @@ static inline void allow_user_access(void __user *to, const void __user *from,
- 				     unsigned long size) { }
- static inline void prevent_user_access(void __user *to, const void __user *from,
- 				       unsigned long size) { }
-+static inline bool bad_kuap_fault(struct pt_regs *regs, bool is_write) { return false; }
- #endif /* CONFIG_PPC_KUAP */
- 
- static inline void allow_read_from_user(const void __user *from, unsigned long size)
-diff --git a/arch/powerpc/mm/fault.c b/arch/powerpc/mm/fault.c
-index 463d1e9d026e..b5d3578d9f65 100644
---- a/arch/powerpc/mm/fault.c
-+++ b/arch/powerpc/mm/fault.c
-@@ -44,6 +44,7 @@
- #include <asm/mmu_context.h>
- #include <asm/siginfo.h>
- #include <asm/debug.h>
-+#include <asm/kup.h>
- 
- static inline bool notify_page_fault(struct pt_regs *regs)
- {
-@@ -224,7 +225,7 @@ static int mm_fault_error(struct pt_regs *regs, unsigned long addr,
- 
- /* Is this a bad kernel fault ? */
- static bool bad_kernel_fault(struct pt_regs *regs, unsigned long error_code,
--			     unsigned long address)
-+			     unsigned long address, bool is_write)
- {
- 	int is_exec = TRAP(regs) == 0x400;
- 
-@@ -235,6 +236,9 @@ static bool bad_kernel_fault(struct pt_regs *regs, unsigned long error_code,
- 				    address >= TASK_SIZE ? "exec-protected" : "user",
- 				    address,
- 				    from_kuid(&init_user_ns, current_uid()));
-+
-+		// Kernel exec fault is always bad
-+		return true;
- 	}
- 
- 	if (!is_exec && address < TASK_SIZE && (error_code & DSISR_PROTFAULT) &&
-@@ -244,7 +248,22 @@ static bool bad_kernel_fault(struct pt_regs *regs, unsigned long error_code,
- 				    from_kuid(&init_user_ns, current_uid()));
- 	}
- 
--	return is_exec || (address >= TASK_SIZE) || !search_exception_tables(regs->nip);
-+	// Kernel fault on kernel address is bad
-+	if (address >= TASK_SIZE)
-+		return true;
-+
-+	// Fault on user outside of certain regions (eg. copy_tofrom_user()) is bad
-+	if (!search_exception_tables(regs->nip))
-+		return true;
-+
-+	// Read/write fault in a valid region (the exception table search passed
-+	// above), but blocked by KUAP is bad, it can never succeed.
-+	if (bad_kuap_fault(regs, is_write))
-+		return true;
-+
-+	// What's left? Kernel fault on user in well defined regions (extable
-+	// matched), and allowed by KUAP in the faulting context.
-+	return false;
- }
- 
- static bool bad_stack_expansion(struct pt_regs *regs, unsigned long address,
-@@ -467,7 +486,7 @@ static int __do_page_fault(struct pt_regs *regs, unsigned long address,
- 	 * take a page fault to a kernel address or a page fault to a user
- 	 * address outside of dedicated places
- 	 */
--	if (unlikely(!is_user && bad_kernel_fault(regs, error_code, address)))
-+	if (unlikely(!is_user && bad_kernel_fault(regs, error_code, address, is_write)))
- 		return SIGSEGV;
- 
- 	/*
--- 
-2.20.1
-
+cheers
