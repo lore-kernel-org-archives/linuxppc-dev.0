@@ -6,81 +6,81 @@ X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 453CAC10F0E
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Apr 2019 04:04:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 66933C10F0E
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Apr 2019 04:06:21 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 0110E2183E
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Apr 2019 04:04:31 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0110E2183E
+	by mail.kernel.org (Postfix) with ESMTPS id DF6C32183E
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Apr 2019 04:06:20 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DF6C32183E
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44l58Y73FxzDqRP
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Apr 2019 14:04:29 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44l5Bf41kpzDq63
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Apr 2019 14:06:18 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
- (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
+ (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
  envelope-from=bauerman@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44l4tj6nqBzDqP9
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Apr 2019 13:52:29 +1000 (AEST)
-Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x3I3o8FX075588
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Apr 2019 23:52:27 -0400
-Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2rxgd7thex-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44l4tr3VnNzDqPW
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Apr 2019 13:52:36 +1000 (AEST)
+Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
+ x3I3oAqR123824
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Apr 2019 23:52:34 -0400
+Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2rxfgcv6s9-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Apr 2019 23:52:27 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Apr 2019 23:52:34 -0400
 Received: from localhost
- by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <bauerman@linux.ibm.com>;
- Thu, 18 Apr 2019 04:52:26 +0100
+ Thu, 18 Apr 2019 04:52:33 +0100
 Received: from b03cxnp07029.gho.boulder.ibm.com (9.17.130.16)
- by e33.co.us.ibm.com (192.168.1.133) with IBM ESMTP SMTP Gateway: Authorized
+ by e36.co.us.ibm.com (192.168.1.136) with IBM ESMTP SMTP Gateway: Authorized
  Use Only! Violators will be prosecuted; 
  (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Thu, 18 Apr 2019 04:52:20 +0100
+ Thu, 18 Apr 2019 04:52:26 +0100
 Received: from b03ledav004.gho.boulder.ibm.com
  (b03ledav004.gho.boulder.ibm.com [9.17.130.235])
  by b03cxnp07029.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x3I3qJD220643894
+ x3I3qPF128377250
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Thu, 18 Apr 2019 03:52:19 GMT
+ Thu, 18 Apr 2019 03:52:25 GMT
 Received: from b03ledav004.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 3573178066;
- Thu, 18 Apr 2019 03:52:19 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 21EA27805F;
+ Thu, 18 Apr 2019 03:52:25 +0000 (GMT)
 Received: from b03ledav004.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id F09E87805C;
- Thu, 18 Apr 2019 03:52:14 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 95D297805C;
+ Thu, 18 Apr 2019 03:52:20 +0000 (GMT)
 Received: from morokweng.localdomain.com (unknown [9.85.230.182])
  by b03ledav004.gho.boulder.ibm.com (Postfix) with ESMTP;
- Thu, 18 Apr 2019 03:52:14 +0000 (GMT)
+ Thu, 18 Apr 2019 03:52:20 +0000 (GMT)
 From: Thiago Jung Bauermann <bauerman@linux.ibm.com>
 To: linux-integrity@vger.kernel.org
-Subject: [PATCH v10 07/12] ima: Add modsig appraise_type option for
- module-style appended signatures
-Date: Thu, 18 Apr 2019 00:51:15 -0300
+Subject: [PATCH v10 08/12] ima: Factor xattr_verify() out of
+ ima_appraise_measurement()
+Date: Thu, 18 Apr 2019 00:51:16 -0300
 X-Mailer: git-send-email 2.17.2
 In-Reply-To: <20190418035120.2354-1-bauerman@linux.ibm.com>
 References: <20190418035120.2354-1-bauerman@linux.ibm.com>
 X-TM-AS-GCONF: 00
-x-cbid: 19041803-0036-0000-0000-00000AAA1A1D
+x-cbid: 19041803-0020-0000-0000-00000ED91E0F
 X-IBM-SpamModules-Scores: 
 X-IBM-SpamModules-Versions: BY=3.00010947; HX=3.00000242; KW=3.00000007;
  PH=3.00000004; SC=3.00000284; SDB=6.01190666; UDB=6.00623948; IPR=6.00971462; 
- MB=3.00026492; MTD=3.00000008; XFM=3.00000015; UTC=2019-04-18 03:52:24
+ MB=3.00026493; MTD=3.00000008; XFM=3.00000015; UTC=2019-04-18 03:52:31
 X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19041803-0037-0000-0000-00004B6E4471
-Message-Id: <20190418035120.2354-8-bauerman@linux.ibm.com>
+x-cbparentid: 19041803-0021-0000-0000-000065794A41
+Message-Id: <20190418035120.2354-9-bauerman@linux.ibm.com>
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
  definitions=2019-04-18_03:, , signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
@@ -115,181 +115,184 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Introduce the modsig keyword to the IMA policy syntax to specify that
-a given hook should expect the file to have the IMA signature appended
-to it. Here is how it can be used in a rule:
+Verify xattr signature in a separate function so that the logic in
+ima_appraise_measurement() remains clear when it gains the ability to also
+verify an appended module signature.
 
-appraise func=KEXEC_KERNEL_CHECK appraise_type=imasig|modsig
-
-With this rule, IMA will accept either a signature stored in the extended
-attribute or an appended signature.
-
-For now, the rule above will behave exactly the same as if
-appraise_type=imasig was specified. The actual modsig implementation
-will be introduced separately.
+The code in the switch statement is unchanged except for having to
+dereference the status and cause variables (since they're now pointers),
+and fixing the style of a block comment to appease checkpatch.
 
 Suggested-by: Mimi Zohar <zohar@linux.ibm.com>
 Signed-off-by: Thiago Jung Bauermann <bauerman@linux.ibm.com>
 ---
- Documentation/ABI/testing/ima_policy |  6 +++++-
- security/integrity/ima/Kconfig       | 10 +++++++++
- security/integrity/ima/Makefile      |  1 +
- security/integrity/ima/ima.h         |  9 ++++++++
- security/integrity/ima/ima_modsig.c  | 31 ++++++++++++++++++++++++++++
- security/integrity/ima/ima_policy.c  | 12 +++++++++--
- security/integrity/integrity.h       |  1 +
- 7 files changed, 67 insertions(+), 3 deletions(-)
+ security/integrity/ima/ima_appraise.c | 141 +++++++++++++++-----------
+ 1 file changed, 81 insertions(+), 60 deletions(-)
 
-diff --git a/Documentation/ABI/testing/ima_policy b/Documentation/ABI/testing/ima_policy
-index 74c6702de74e..9d1dfd0a8891 100644
---- a/Documentation/ABI/testing/ima_policy
-+++ b/Documentation/ABI/testing/ima_policy
-@@ -37,7 +37,7 @@ Description:
- 			euid:= decimal value
- 			fowner:= decimal value
- 		lsm:  	are LSM specific
--		option:	appraise_type:= [imasig]
-+		option:	appraise_type:= [imasig] [imasig|modsig]
- 			pcr:= decimal value
+diff --git a/security/integrity/ima/ima_appraise.c b/security/integrity/ima/ima_appraise.c
+index ea8fa29f07d3..b3837e26bb27 100644
+--- a/security/integrity/ima/ima_appraise.c
++++ b/security/integrity/ima/ima_appraise.c
+@@ -202,6 +202,83 @@ int ima_read_xattr(struct dentry *dentry,
+ 	return ret;
+ }
  
- 		default policy:
-@@ -103,3 +103,7 @@ Description:
- 
- 			measure func=KEXEC_KERNEL_CHECK pcr=4
- 			measure func=KEXEC_INITRAMFS_CHECK pcr=5
-+
-+		Example of appraise rule allowing modsig appended signatures:
-+
-+			appraise func=KEXEC_KERNEL_CHECK appraise_type=imasig|modsig
-diff --git a/security/integrity/ima/Kconfig b/security/integrity/ima/Kconfig
-index a18f8c6d13b5..bba19f9ea184 100644
---- a/security/integrity/ima/Kconfig
-+++ b/security/integrity/ima/Kconfig
-@@ -231,6 +231,16 @@ config IMA_APPRAISE_BOOTPARAM
- 	  This option enables the different "ima_appraise=" modes
- 	  (eg. fix, log) from the boot command line.
- 
-+config IMA_APPRAISE_MODSIG
-+	bool "Support module-style signatures for appraisal"
-+	depends on IMA_APPRAISE
-+	default n
-+	help
-+	   Adds support for signatures appended to files. The format of the
-+	   appended signature is the same used for signed kernel modules.
-+	   The modsig keyword can be used in the IMA policy to allow a hook
-+	   to accept such signatures.
-+
- config IMA_TRUSTED_KEYRING
- 	bool "Require all keys on the .ima keyring be signed (deprecated)"
- 	depends on IMA_APPRAISE && SYSTEM_TRUSTED_KEYRING
-diff --git a/security/integrity/ima/Makefile b/security/integrity/ima/Makefile
-index d921dc4f9eb0..31d57cdf2421 100644
---- a/security/integrity/ima/Makefile
-+++ b/security/integrity/ima/Makefile
-@@ -9,5 +9,6 @@ obj-$(CONFIG_IMA) += ima.o
- ima-y := ima_fs.o ima_queue.o ima_init.o ima_main.o ima_crypto.o ima_api.o \
- 	 ima_policy.o ima_template.o ima_template_lib.o
- ima-$(CONFIG_IMA_APPRAISE) += ima_appraise.o
-+ima-$(CONFIG_IMA_APPRAISE_MODSIG) += ima_modsig.o
- ima-$(CONFIG_HAVE_IMA_KEXEC) += ima_kexec.o
- obj-$(CONFIG_IMA_BLACKLIST_KEYRING) += ima_mok.o
-diff --git a/security/integrity/ima/ima.h b/security/integrity/ima/ima.h
-index d213e835c498..0c3e5a59270f 100644
---- a/security/integrity/ima/ima.h
-+++ b/security/integrity/ima/ima.h
-@@ -293,6 +293,15 @@ static inline int ima_read_xattr(struct dentry *dentry,
- 
- #endif /* CONFIG_IMA_APPRAISE */
- 
-+#ifdef CONFIG_IMA_APPRAISE_MODSIG
-+bool ima_hook_supports_modsig(enum ima_hooks func);
-+#else
-+static inline bool ima_hook_supports_modsig(enum ima_hooks func)
-+{
-+	return false;
-+}
-+#endif /* CONFIG_IMA_APPRAISE_MODSIG */
-+
- /* LSM based policy rules require audit */
- #ifdef CONFIG_IMA_LSM_RULES
- 
-diff --git a/security/integrity/ima/ima_modsig.c b/security/integrity/ima/ima_modsig.c
-new file mode 100644
-index 000000000000..87503bfe8c8b
---- /dev/null
-+++ b/security/integrity/ima/ima_modsig.c
-@@ -0,0 +1,31 @@
-+// SPDX-License-Identifier: GPL-2.0+
 +/*
-+ * IMA support for appraising module-style appended signatures.
++ * xattr_verify - verify xattr digest or signature
 + *
-+ * Copyright (C) 2019  IBM Corporation
++ * Verify whether the hash or signature matches the file contents.
 + *
-+ * Author:
-+ * Thiago Jung Bauermann <bauerman@linux.ibm.com>
++ * Return 0 on success, error code otherwise.
 + */
-+
-+#include "ima.h"
-+
-+/**
-+ * ima_hook_supports_modsig - can the policy allow modsig for this hook?
-+ *
-+ * modsig is only supported by hooks using ima_post_read_file(), because only
-+ * they preload the contents of the file in a buffer. FILE_CHECK does that in
-+ * some cases, but not when reached from vfs_open(). POLICY_CHECK can support
-+ * it, but it's not useful in practice because it's a text file so deny.
-+ */
-+bool ima_hook_supports_modsig(enum ima_hooks func)
++static int xattr_verify(enum ima_hooks func, struct integrity_iint_cache *iint,
++			struct evm_ima_xattr_data *xattr_value, int xattr_len,
++			enum integrity_status *status, const char **cause)
 +{
-+	switch (func) {
-+	case KEXEC_KERNEL_CHECK:
-+	case KEXEC_INITRAMFS_CHECK:
-+	case MODULE_CHECK:
-+		return true;
-+	default:
-+		return false;
-+	}
-+}
-diff --git a/security/integrity/ima/ima_policy.c b/security/integrity/ima/ima_policy.c
-index e0cc323f948f..fca7a3f23321 100644
---- a/security/integrity/ima/ima_policy.c
-+++ b/security/integrity/ima/ima_policy.c
-@@ -1038,6 +1038,10 @@ static int ima_parse_rule(char *rule, struct ima_rule_entry *entry)
- 			ima_log_string(ab, "appraise_type", args[0].from);
- 			if ((strcmp(args[0].from, "imasig")) == 0)
- 				entry->flags |= IMA_DIGSIG_REQUIRED;
-+			else if (ima_hook_supports_modsig(entry->func) &&
-+				 strcmp(args[0].from, "imasig|modsig") == 0)
-+				entry->flags |= IMA_DIGSIG_REQUIRED
-+						| IMA_MODSIG_ALLOWED;
- 			else
- 				result = -EINVAL;
- 			break;
-@@ -1330,8 +1334,12 @@ int ima_policy_show(struct seq_file *m, void *v)
- 			}
- 		}
- 	}
--	if (entry->flags & IMA_DIGSIG_REQUIRED)
--		seq_puts(m, "appraise_type=imasig ");
-+	if (entry->flags & IMA_DIGSIG_REQUIRED) {
-+		if (entry->flags & IMA_MODSIG_ALLOWED)
-+			seq_puts(m, "appraise_type=imasig|modsig ");
++	int rc = -EINVAL, hash_start = 0;
++
++	switch (xattr_value->type) {
++	case IMA_XATTR_DIGEST_NG:
++		/* first byte contains algorithm id */
++		hash_start = 1;
++		/* fall through */
++	case IMA_XATTR_DIGEST:
++		if (iint->flags & IMA_DIGSIG_REQUIRED) {
++			*cause = "IMA-signature-required";
++			*status = INTEGRITY_FAIL;
++			break;
++		}
++		clear_bit(IMA_DIGSIG, &iint->atomic_flags);
++		if (xattr_len - sizeof(xattr_value->type) - hash_start >=
++				iint->ima_hash->length)
++			/*
++			 * xattr length may be longer. md5 hash in previous
++			 * version occupied 20 bytes in xattr, instead of 16
++			 */
++			rc = memcmp(&xattr_value->data[hash_start],
++				    iint->ima_hash->digest,
++				    iint->ima_hash->length);
 +		else
-+			seq_puts(m, "appraise_type=imasig ");
++			rc = -EINVAL;
++		if (rc) {
++			*cause = "invalid-hash";
++			*status = INTEGRITY_FAIL;
++			break;
++		}
++		*status = INTEGRITY_PASS;
++		break;
++	case EVM_IMA_XATTR_DIGSIG:
++		set_bit(IMA_DIGSIG, &iint->atomic_flags);
++		rc = integrity_digsig_verify(INTEGRITY_KEYRING_IMA,
++					     (const char *)xattr_value,
++					     xattr_len,
++					     iint->ima_hash->digest,
++					     iint->ima_hash->length);
++		if (rc == -EOPNOTSUPP) {
++			*status = INTEGRITY_UNKNOWN;
++			break;
++		}
++		if (IS_ENABLED(CONFIG_INTEGRITY_PLATFORM_KEYRING) && rc &&
++		    func == KEXEC_KERNEL_CHECK)
++			rc = integrity_digsig_verify(INTEGRITY_KEYRING_PLATFORM,
++						     (const char *)xattr_value,
++						     xattr_len,
++						     iint->ima_hash->digest,
++						     iint->ima_hash->length);
++		if (rc) {
++			*cause = "invalid-signature";
++			*status = INTEGRITY_FAIL;
++		} else {
++			*status = INTEGRITY_PASS;
++		}
++		break;
++	default:
++		*status = INTEGRITY_UNKNOWN;
++		*cause = "unknown-ima-data";
++		break;
 +	}
- 	if (entry->flags & IMA_PERMIT_DIRECTIO)
- 		seq_puts(m, "permit_directio ");
- 	rcu_read_unlock();
-diff --git a/security/integrity/integrity.h b/security/integrity/integrity.h
-index 88a29f72a74f..0e7330a36a9d 100644
---- a/security/integrity/integrity.h
-+++ b/security/integrity/integrity.h
-@@ -36,6 +36,7 @@
- #define IMA_NEW_FILE		0x04000000
- #define EVM_IMMUTABLE_DIGSIG	0x08000000
- #define IMA_FAIL_UNVERIFIABLE_SIGS	0x10000000
-+#define IMA_MODSIG_ALLOWED	0x20000000
++
++	return rc;
++}
++
+ /*
+  * ima_appraise_measurement - appraise file measurement
+  *
+@@ -221,7 +298,7 @@ int ima_appraise_measurement(enum ima_hooks func,
+ 	struct dentry *dentry = file_dentry(file);
+ 	struct inode *inode = d_backing_inode(dentry);
+ 	enum integrity_status status = INTEGRITY_UNKNOWN;
+-	int rc = xattr_len, hash_start = 0;
++	int rc = xattr_len;
  
- #define IMA_DO_MASK		(IMA_MEASURE | IMA_APPRAISE | IMA_AUDIT | \
- 				 IMA_HASH | IMA_APPRAISE_SUBMASK)
+ 	if (!(inode->i_opflags & IOP_XATTR))
+ 		return INTEGRITY_UNKNOWN;
+@@ -259,65 +336,9 @@ int ima_appraise_measurement(enum ima_hooks func,
+ 		WARN_ONCE(true, "Unexpected integrity status %d\n", status);
+ 	}
+ 
+-	switch (xattr_value->type) {
+-	case IMA_XATTR_DIGEST_NG:
+-		/* first byte contains algorithm id */
+-		hash_start = 1;
+-		/* fall through */
+-	case IMA_XATTR_DIGEST:
+-		if (iint->flags & IMA_DIGSIG_REQUIRED) {
+-			cause = "IMA-signature-required";
+-			status = INTEGRITY_FAIL;
+-			break;
+-		}
+-		clear_bit(IMA_DIGSIG, &iint->atomic_flags);
+-		if (xattr_len - sizeof(xattr_value->type) - hash_start >=
+-				iint->ima_hash->length)
+-			/* xattr length may be longer. md5 hash in previous
+-			   version occupied 20 bytes in xattr, instead of 16
+-			 */
+-			rc = memcmp(&xattr_value->data[hash_start],
+-				    iint->ima_hash->digest,
+-				    iint->ima_hash->length);
+-		else
+-			rc = -EINVAL;
+-		if (rc) {
+-			cause = "invalid-hash";
+-			status = INTEGRITY_FAIL;
+-			break;
+-		}
+-		status = INTEGRITY_PASS;
+-		break;
+-	case EVM_IMA_XATTR_DIGSIG:
+-		set_bit(IMA_DIGSIG, &iint->atomic_flags);
+-		rc = integrity_digsig_verify(INTEGRITY_KEYRING_IMA,
+-					     (const char *)xattr_value,
+-					     xattr_len,
+-					     iint->ima_hash->digest,
+-					     iint->ima_hash->length);
+-		if (rc == -EOPNOTSUPP) {
+-			status = INTEGRITY_UNKNOWN;
+-			break;
+-		}
+-		if (IS_ENABLED(CONFIG_INTEGRITY_PLATFORM_KEYRING) && rc &&
+-		    func == KEXEC_KERNEL_CHECK)
+-			rc = integrity_digsig_verify(INTEGRITY_KEYRING_PLATFORM,
+-						     (const char *)xattr_value,
+-						     xattr_len,
+-						     iint->ima_hash->digest,
+-						     iint->ima_hash->length);
+-		if (rc) {
+-			cause = "invalid-signature";
+-			status = INTEGRITY_FAIL;
+-		} else {
+-			status = INTEGRITY_PASS;
+-		}
+-		break;
+-	default:
+-		status = INTEGRITY_UNKNOWN;
+-		cause = "unknown-ima-data";
+-		break;
+-	}
++	if (xattr_value)
++		rc = xattr_verify(func, iint, xattr_value, xattr_len, &status,
++				  &cause);
+ 
+ out:
+ 	/*
 
