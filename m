@@ -3,39 +3,40 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
 X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT
-	autolearn=ham autolearn_force=no version=3.4.0
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4ECCEC10F0B
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Apr 2019 07:01:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5CB7AC10F0B
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Apr 2019 07:03:22 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C1D01217D7
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Apr 2019 07:01:46 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C1D01217D7
+	by mail.kernel.org (Postfix) with ESMTPS id 112AE217D7
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Apr 2019 07:03:21 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 112AE217D7
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44l95458L2zDqDF
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Apr 2019 17:01:44 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+	by lists.ozlabs.org (Postfix) with ESMTP id 44l96v6HQvzDq96
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Apr 2019 17:03:19 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44l8sL4r4mzDqNH
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Apr 2019 16:51:34 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44l8sM01lGzDqHm
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Apr 2019 16:51:35 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: by ozlabs.org (Postfix)
- id 44l8sL3LZ5z9s55; Thu, 18 Apr 2019 16:51:34 +1000 (AEST)
+ id 44l8sL5nqFz9s3l; Thu, 18 Apr 2019 16:51:34 +1000 (AEST)
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 44l8sL0mNlz9s4Y; Thu, 18 Apr 2019 16:51:33 +1000 (AEST)
+ id 44l8sL56v7z9s4V; Thu, 18 Apr 2019 16:51:34 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH v6 07/10] powerpc/mm/radix: Use KUEP API for Radix MMU
-Date: Thu, 18 Apr 2019 16:51:22 +1000
-Message-Id: <20190418065125.2687-7-mpe@ellerman.id.au>
+Subject: [PATCH v6 08/10] powerpc/lib: Refactor __patch_instruction() to use
+ __put_user_asm()
+Date: Thu, 18 Apr 2019 16:51:23 +1000
+Message-Id: <20190418065125.2687-8-mpe@ellerman.id.au>
 X-Mailer: git-send-email 2.20.1
 In-Reply-To: <20190418065125.2687-1-mpe@ellerman.id.au>
 References: <20190418065125.2687-1-mpe@ellerman.id.au>
@@ -58,78 +59,51 @@ Sender: "Linuxppc-dev"
 
 From: Russell Currey <ruscur@russell.cc>
 
-Execution protection already exists on radix, this just refactors
-the radix init to provide the KUEP setup function instead.
+__patch_instruction() is called in early boot, and uses
+__put_user_size(), which includes the allow/prevent calls to enforce
+KUAP, which could either be called too early, or in the Radix case,
+forced to use "early_" versions of functions just to safely handle
+this one case.
 
-Thus, the only functional change is that it can now be disabled.
+__put_user_asm() does not do this, and thus is safe to use both in
+early boot, and later on since in this case it should only ever be
+touching kernel memory.
+
+__patch_instruction() was previously refactored to use
+__put_user_size() in order to be able to return -EFAULT, which would
+allow the kernel to patch instructions in userspace, which should
+never happen. This has the functional change of causing faults on
+userspace addresses if KUAP is turned on, which should never happen in
+practice.
+
+A future enhancement could be to double check the patch address is
+definitely allowed to be tampered with by the kernel.
 
 Signed-off-by: Russell Currey <ruscur@russell.cc>
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
-
-v6: setup_kuep() can't be __init.
+v6: Unchanged.
+v5: Unchanged.
 ---
- arch/powerpc/mm/pgtable-radix.c        | 12 +++++++++---
- arch/powerpc/platforms/Kconfig.cputype |  1 +
- 2 files changed, 10 insertions(+), 3 deletions(-)
+ arch/powerpc/lib/code-patching.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/mm/pgtable-radix.c b/arch/powerpc/mm/pgtable-radix.c
-index 154472a28c77..8616b291bcec 100644
---- a/arch/powerpc/mm/pgtable-radix.c
-+++ b/arch/powerpc/mm/pgtable-radix.c
-@@ -531,8 +531,15 @@ static void radix_init_amor(void)
- 	mtspr(SPRN_AMOR, (3ul << 62));
- }
- 
--static void radix_init_iamr(void)
-+#ifdef CONFIG_PPC_KUEP
-+void setup_kuep(bool disabled)
+diff --git a/arch/powerpc/lib/code-patching.c b/arch/powerpc/lib/code-patching.c
+index 506413a2c25e..42fdadac6587 100644
+--- a/arch/powerpc/lib/code-patching.c
++++ b/arch/powerpc/lib/code-patching.c
+@@ -26,9 +26,9 @@
+ static int __patch_instruction(unsigned int *exec_addr, unsigned int instr,
+ 			       unsigned int *patch_addr)
  {
-+	if (disabled || !early_radix_enabled())
-+		return;
-+
-+	if (smp_processor_id() == boot_cpuid)
-+		pr_info("Activating Kernel Userspace Execution Prevention\n");
-+
- 	/*
- 	 * Radix always uses key0 of the IAMR to determine if an access is
- 	 * allowed. We set bit 0 (IBM bit 1) of key0, to prevent instruction
-@@ -540,6 +547,7 @@ static void radix_init_iamr(void)
- 	 */
- 	mtspr(SPRN_IAMR, (1ul << 62));
- }
-+#endif
+-	int err;
++	int err = 0;
  
- void __init radix__early_init_mmu(void)
- {
-@@ -601,7 +609,6 @@ void __init radix__early_init_mmu(void)
+-	__put_user_size(instr, patch_addr, 4, err);
++	__put_user_asm(instr, patch_addr, err, "stw");
+ 	if (err)
+ 		return err;
  
- 	memblock_set_current_limit(MEMBLOCK_ALLOC_ANYWHERE);
- 
--	radix_init_iamr();
- 	radix_init_pgtable();
- 	/* Switch to the guard PID before turning on MMU */
- 	radix__switch_mmu_context(NULL, &init_mm);
-@@ -623,7 +630,6 @@ void radix__early_init_mmu_secondary(void)
- 		      __pa(partition_tb) | (PATB_SIZE_SHIFT - 12));
- 		radix_init_amor();
- 	}
--	radix_init_iamr();
- 
- 	radix__switch_mmu_context(NULL, &init_mm);
- 	if (cpu_has_feature(CPU_FTR_HVMODE))
-diff --git a/arch/powerpc/platforms/Kconfig.cputype b/arch/powerpc/platforms/Kconfig.cputype
-index 457fc3a5ed93..60371784c9f1 100644
---- a/arch/powerpc/platforms/Kconfig.cputype
-+++ b/arch/powerpc/platforms/Kconfig.cputype
-@@ -326,6 +326,7 @@ config PPC_RADIX_MMU
- 	bool "Radix MMU Support"
- 	depends on PPC_BOOK3S_64
- 	select ARCH_HAS_GIGANTIC_PAGE if (MEMORY_ISOLATION && COMPACTION) || CMA
-+	select PPC_HAVE_KUEP
- 	default y
- 	help
- 	  Enable support for the Power ISA 3.0 Radix style MMU. Currently this
 -- 
 2.20.1
 
