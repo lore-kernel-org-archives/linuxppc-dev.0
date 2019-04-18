@@ -2,86 +2,80 @@ Return-Path: <SRS0=10v2=SU=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.0 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
+X-Spam-Status: No, score=-0.5 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
 	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_MUTT
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A8C8BC10F0E
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Apr 2019 09:02:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D1A58C10F14
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Apr 2019 09:03:37 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 2566C206B6
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Apr 2019 09:02:02 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 50E64206B6
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Apr 2019 09:03:37 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="d45XVkiB"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2566C206B6
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="DxjmOoYA"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 50E64206B6
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44lClr4yjSzDqR7
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Apr 2019 19:02:00 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44lCng2WX5zDqRB
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Apr 2019 19:03:35 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=2607:f8b0:4864:20::543; helo=mail-pg1-x543.google.com;
- envelope-from=nicoleotsuka@gmail.com; receiver=<UNKNOWN>)
+ (client-ip=2a00:1450:4864:20::341; helo=mail-wm1-x341.google.com;
+ envelope-from=jonas.gorski@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="d45XVkiB"; 
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="DxjmOoYA"; 
  dkim-atps=neutral
-Received: from mail-pg1-x543.google.com (mail-pg1-x543.google.com
- [IPv6:2607:f8b0:4864:20::543])
+Received: from mail-wm1-x341.google.com (mail-wm1-x341.google.com
+ [IPv6:2a00:1450:4864:20::341])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44lCk0081jzDqQP
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Apr 2019 19:00:23 +1000 (AEST)
-Received: by mail-pg1-x543.google.com with SMTP id 85so899836pgc.3
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Apr 2019 02:00:23 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44lCk25TBfzDqQT
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Apr 2019 19:00:26 +1000 (AEST)
+Received: by mail-wm1-x341.google.com with SMTP id v14so1943909wmf.2
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Apr 2019 02:00:26 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=date:from:to:cc:subject:message-id:references:mime-version
- :content-disposition:in-reply-to:user-agent;
- bh=AR1RP7f6kZifZ7FeB0P9Q2kh0p04YoT/2fg9i6FFRjE=;
- b=d45XVkiBIHj4d50vGS6UL25afAP+GwNkW1AT4uquixx64Bkbkxtg+qchQxRY0yfcib
- WnEQAf+YRh2PP/StgKkC++L2w3Dn8uzkN6tpKKlE44ZQk6gDmg22ebPBEWl47M/wkVMd
- R926WMDAUrwrJTGVNGcevasOORF6WfPbThgZ0SmKYVqIiY5eW78q718X7woBxj+Xc/J0
- rdDEvFYgsKdymHxppa9sncmUU3lvXXP2XqfM+FuYr1IQS0RiR5LGUE+kHA+lRB5QGV1b
- BGwqPU2TGLcr8QSdWBl1562TJkl+sxaD77CZXH/Uqwu29q/+/6cZ43e2zb7v0p8Zka9w
- rvFA==
+ h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+ :cc; bh=pw1FAqykH+UF3fjtfJ6Mf6wdF0exFztFvJZAXvxyVKg=;
+ b=DxjmOoYA5FR/fxL2GlrgwGjwPyKtTP/YcrqtSZmwfzz7IFCtkHI1TUoNZGLvt6Jrrx
+ OJ+Uz5tuK+DVJIzMU7nK8P6pEfLwwNdnQ7yCLAeMVtAz6fV1pUhHfDCFlPLTF+pAL6uh
+ XEKAyV40QSXBLcOc1+5/T+TaGhfwEBdQUL7b+koJNCSMXaEFd10SukQbyuqLIVh/oy58
+ 3H+CUy9HFk/xPZr43wgjUVGqaaVxxYz6sXGXq4fRQakoqi6qUgdVstNtxuYIHVQ3FkQP
+ FDpKmA8yEMmLCl2IuQSQDlsXul1lmGohaQpYQjq1SXmCZbV7K0tjx8hFTMXQ2UB+ziG3
+ EYtw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
- h=x-gm-message-state:date:from:to:cc:subject:message-id:references
- :mime-version:content-disposition:in-reply-to:user-agent;
- bh=AR1RP7f6kZifZ7FeB0P9Q2kh0p04YoT/2fg9i6FFRjE=;
- b=mjP1pYrX0hVxvM8cr5tas0DFQ5PDhYUB0ZpEC0jdv+12kj5HNpMgQdU+XbiE92EN9p
- L71RnTOn1z1QauczjO8ND7WEhB2DSKKeY+nwQkGqHdRuIXMY6vs7WKCe2FTrlAAwD+t5
- 38wLv2Z+UIMgA1/KJYNccADM15ljI4mKAjLzyAEX/eamPKnzQqKBnZize02KGXpJMa+1
- 7DIYX//+vCnwX++59ETSDWtp6eT9GR/1OZq/0VDgsDa+LmFYcjBpC19RKu4HKTUial1a
- Cy/TnNOmG9b6cX3U5UQehGmkb8gHuJllhFj+InBA4culyQQcZBJePUQxcyGbNPFBwNEO
- 3i0g==
-X-Gm-Message-State: APjAAAWkGUW+d/nOOxT95GFtBnMyRCm7t487aEwR76p7zZVBjJYEHAZB
- gGLRmELZ7864rQW0oudi82g=
-X-Google-Smtp-Source: APXvYqzNMmtMyDebuNNZgKECpUn3goSspWHCCs8OulR0f1awwQxvw5m0sIpcxmT/6vQQhlyE43um0Q==
-X-Received: by 2002:a63:c104:: with SMTP id w4mr88228953pgf.409.1555578020180; 
- Thu, 18 Apr 2019 02:00:20 -0700 (PDT)
-Received: from Asurada (c-98-248-47-108.hsd1.ca.comcast.net. [98.248.47.108])
- by smtp.gmail.com with ESMTPSA id
- y8sm2377070pgk.20.2019.04.18.02.00.19
- (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
- Thu, 18 Apr 2019 02:00:19 -0700 (PDT)
-Date: Thu, 18 Apr 2019 02:00:12 -0700
-From: Nicolin Chen <nicoleotsuka@gmail.com>
-To: "S.j. Wang" <shengjiu.wang@nxp.com>
-Subject: Re: [PATCH] ASoC: fsl_esai: Add pm runtime function
-Message-ID: <20190418090011.GA4028@Asurada>
-References: <1555558152-32196-1-git-send-email-shengjiu.wang@nxp.com>
+ h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+ :message-id:subject:to:cc;
+ bh=pw1FAqykH+UF3fjtfJ6Mf6wdF0exFztFvJZAXvxyVKg=;
+ b=YPKqb0e2ZMq2kA/UYZAmRrHtlWatNiDWS7eZ5fGM3qTyZU+/3ArDKNd6vs8lj/EY0c
+ GNOqnCjoGwmR6R9m2SWdi+dytZ0zXSIqupCccTx757ESdSfUxir22H9FOEk+gaIClG/p
+ hvdu4Vm6YN6Lmcj6gvVIxvPO46uN433nkSjemHbTBxPKKU9qeRknZFaAW6p37TytLjAa
+ 1MZzjg0tMXi7mu9KWwG9DxxBa3pJnzrPb4gx4TBuqB6RhAxiXUq9cAGaP5s39u1pSoKW
+ Puu0/aXAILSNi8PtleeKp8B7pQuN+WtKiR6cy/UAslCWckbdJQmgDxOTH0C9T7r60EeY
+ Gdjg==
+X-Gm-Message-State: APjAAAXYBP7VzIi/iQQ3fYaBOhR1jWKNUF/iKAWwePYByUcvNOpknA5J
+ z6yMcj6QX4BCT8dB80kbjx3yAXRt5rt/FfIfY90=
+X-Google-Smtp-Source: APXvYqxUMeQRyOVazc5Uz46XVpBJSOKQ6ZFOR6P6n+hVm64dZztoOKs+Xqs13J0NQk+GKCgnYKiHlkrwZga7h8tXC/E=
+X-Received: by 2002:a1c:81c9:: with SMTP id c192mr2149650wmd.124.1555578022703; 
+ Thu, 18 Apr 2019 02:00:22 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1555558152-32196-1-git-send-email-shengjiu.wang@nxp.com>
-User-Agent: Mutt/1.5.22 (2013-10-16)
+References: <20190415101046.5872-1-jonas.gorski@gmail.com>
+ <20190415101046.5872-2-jonas.gorski@gmail.com>
+ <155554397723.15276.10863024281240089015@swboyd.mtv.corp.google.com>
+In-Reply-To: <155554397723.15276.10863024281240089015@swboyd.mtv.corp.google.com>
+From: Jonas Gorski <jonas.gorski@gmail.com>
+Date: Thu, 18 Apr 2019 11:00:21 +0200
+Message-ID: <CAOiHx==vJ7ss3G8poddKpdDA_3U9bh9LtBaaFZ2EcxxGF4nNGA@mail.gmail.com>
+Subject: Re: [PATCH RFT V2 1/8] clk: divider: add explicit big endian support
+To: Stephen Boyd <sboyd@kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -93,45 +87,43 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
- "timur@kernel.org" <timur@kernel.org>,
- "Xiubo.Lee@gmail.com" <Xiubo.Lee@gmail.com>,
- "festevam@gmail.com" <festevam@gmail.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "broonie@kernel.org" <broonie@kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Cc: Thierry Reding <thierry.reding@gmail.com>,
+ Peter De Schrijver <pdeschrijver@nvidia.com>,
+ Fabio Estevam <festevam@gmail.com>, Sascha Hauer <s.hauer@pengutronix.de>,
+ Heiko Stuebner <heiko@sntech.de>, Michael Turquette <mturquette@baylibre.com>,
+ Michal Simek <michal.simek@xilinx.com>, Jonathan Hunter <jonathanh@nvidia.com>,
+ linux-rockchip@lists.infradead.org, Prashant Gaikwad <pgaikwad@nvidia.com>,
+ Paul Mackerras <paulus@samba.org>, NXP Linux Team <linux-imx@nxp.com>,
+ Pengutronix Kernel Team <kernel@pengutronix.de>, linux-tegra@vger.kernel.org,
+ Shawn Guo <shawnguo@kernel.org>, Anatolij Gustschin <agust@denx.de>,
+ linuxppc-dev@lists.ozlabs.org, linux-clk@vger.kernel.org,
+ "moderated list:ARM/FREESCALE IMX / MXC ARM ARCHITECTURE"
+ <linux-arm-kernel@lists.infradead.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, Apr 18, 2019 at 03:29:09AM +0000, S.j. Wang wrote:
-> In imx8 when systerm enter suspend state, the power of subsystem will
-> be off, the clock enable state will be lost and register configuration
+On Thu, 18 Apr 2019 at 01:32, Stephen Boyd <sboyd@kernel.org> wrote:
+>
+> Quoting Jonas Gorski (2019-04-15 03:10:39)
+> > @@ -370,7 +388,7 @@ static long clk_divider_round_rate(struct clk_hw *hw, unsigned long rate,
+> >         if (divider->flags & CLK_DIVIDER_READ_ONLY) {
+> >                 u32 val;
+> >
+> > -               val = clk_readl(divider->reg) >> divider->shift;
+> > +               val = clk_div_readl(divider->reg) >> divider->shift;
+>
+> Good deal that kbuild running sparse found that this was supposed to be
+> divider and not divider->reg. If you can fix that and remove the else in
+> all the basic type readl wrappers then this series looks good to merge
+> for me.
 
-Just for curiosity, we had similar situation on imx6sx, so we
-added suspend/resume with regcache. Why will the clock enable
-state be lost too? Does CCM on imx8 (might not be called CCM
-though) have any difference? What about clock rate settings?
-
-> will be lost. So the driver need to enter runtime suspend state in
-> suspend.
-
-> With this implementation the suspend function almost same as runtime
-> suspend function, so remove the suspend function, just use
-> pm_runtime_force_suspend instead, and same for the resume function.
-> 
-> And also need to move clock enablement to runtime resume and clock
-> disablement to runtime suspend.
+Yeah, I'm quite glad about that. I was first confused why I didn't
+catch it in my test build, but then remembered only C++ complains
+about implicit void* casts (IIRC). I have it already fixed locally and
+did a sparse build myself, was just waiting for at least one non-bot
+comment before resending the series.
 
 
-> -static int fsl_esai_suspend(struct device *dev)
-> -	regcache_cache_only(esai->regmap, true);
-> -	regcache_mark_dirty(esai->regmap);
-
-> +static int fsl_esai_runtime_resume(struct device *dev)
->  	regcache_cache_only(esai->regmap, false);
-> +	regcache_mark_dirty(esai->regmap);
-
-Why move the regcache_mark_dirty from suspend to resume?
-(I am not saying it's wrong but wondering if this is the
- preferable way.)
+Regards
+Jonas
