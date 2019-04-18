@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-8.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_MUTT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1C8E3C10F0E
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Apr 2019 22:12:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2E894C10F0E
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Apr 2019 22:23:56 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 8E8B120693
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Apr 2019 22:12:02 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8E8B120693
+	by mail.kernel.org (Postfix) with ESMTPS id 52EFD2064A
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Apr 2019 22:23:55 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 52EFD2064A
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44lYHN1r9RzDqTs
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Apr 2019 08:12:00 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44lYY4205LzDqRR
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Apr 2019 08:23:52 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=redhat.com
  (client-ip=209.132.183.28; helo=mx1.redhat.com;
@@ -28,33 +28,32 @@ Authentication-Results: lists.ozlabs.org;
 Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44lYFJ65GnzDqNH
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Apr 2019 08:10:12 +1000 (AEST)
-Received: from smtp.corp.redhat.com (int-mx05.intmail.prod.int.phx2.redhat.com
- [10.5.11.15])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44lYWK6yFnzDqQW
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Apr 2019 08:22:21 +1000 (AEST)
+Received: from smtp.corp.redhat.com (int-mx04.intmail.prod.int.phx2.redhat.com
+ [10.5.11.14])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by mx1.redhat.com (Postfix) with ESMTPS id 7F87370D6B;
- Thu, 18 Apr 2019 22:10:10 +0000 (UTC)
+ by mx1.redhat.com (Postfix) with ESMTPS id 05FE4C066462;
+ Thu, 18 Apr 2019 22:22:19 +0000 (UTC)
 Received: from redhat.com (unknown [10.20.6.236])
- by smtp.corp.redhat.com (Postfix) with ESMTPS id A571C5D70A;
- Thu, 18 Apr 2019 22:10:06 +0000 (UTC)
-Date: Thu, 18 Apr 2019 18:10:04 -0400
+ by smtp.corp.redhat.com (Postfix) with ESMTPS id ED5475D9CC;
+ Thu, 18 Apr 2019 22:22:14 +0000 (UTC)
+Date: Thu, 18 Apr 2019 18:22:13 -0400
 From: Jerome Glisse <jglisse@redhat.com>
 To: Laurent Dufour <ldufour@linux.ibm.com>
-Subject: Re: [PATCH v12 07/31] mm: make pte_unmap_same compatible with SPF
-Message-ID: <20190418221004.GG11645@redhat.com>
+Subject: Re: [PATCH v12 08/31] mm: introduce INIT_VMA()
+Message-ID: <20190418222212.GH11645@redhat.com>
 References: <20190416134522.17540-1-ldufour@linux.ibm.com>
- <20190416134522.17540-8-ldufour@linux.ibm.com>
+ <20190416134522.17540-9-ldufour@linux.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20190416134522.17540-8-ldufour@linux.ibm.com>
+In-Reply-To: <20190416134522.17540-9-ldufour@linux.ibm.com>
 User-Agent: Mutt/1.11.3 (2019-02-01)
-X-Scanned-By: MIMEDefang 2.79 on 10.5.11.15
+X-Scanned-By: MIMEDefang 2.79 on 10.5.11.14
 X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.5.16
- (mx1.redhat.com [10.5.110.28]); Thu, 18 Apr 2019 22:10:11 +0000 (UTC)
+ (mx1.redhat.com [10.5.110.31]); Thu, 18 Apr 2019 22:22:19 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -89,135 +88,121 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, Apr 16, 2019 at 03:44:58PM +0200, Laurent Dufour wrote:
-> pte_unmap_same() is making the assumption that the page table are still
-> around because the mmap_sem is held.
-> This is no more the case when running a speculative page fault and
-> additional check must be made to ensure that the final page table are still
-> there.
+On Tue, Apr 16, 2019 at 03:44:59PM +0200, Laurent Dufour wrote:
+> Some VMA struct fields need to be initialized once the VMA structure is
+> allocated.
+> Currently this only concerns anon_vma_chain field but some other will be
+> added to support the speculative page fault.
 > 
-> This is now done by calling pte_spinlock() to check for the VMA's
-> consistency while locking for the page tables.
+> Instead of spreading the initialization calls all over the code, let's
+> introduce a dedicated inline function.
 > 
-> This is requiring passing a vm_fault structure to pte_unmap_same() which is
-> containing all the needed parameters.
-> 
-> As pte_spinlock() may fail in the case of a speculative page fault, if the
-> VMA has been touched in our back, pte_unmap_same() should now return 3
-> cases :
-> 	1. pte are the same (0)
-> 	2. pte are different (VM_FAULT_PTNOTSAME)
-> 	3. a VMA's changes has been detected (VM_FAULT_RETRY)
-> 
-> The case 2 is handled by the introduction of a new VM_FAULT flag named
-> VM_FAULT_PTNOTSAME which is then trapped in cow_user_page().
-> If VM_FAULT_RETRY is returned, it is passed up to the callers to retry the
-> page fault while holding the mmap_sem.
-> 
-> Acked-by: David Rientjes <rientjes@google.com>
 > Signed-off-by: Laurent Dufour <ldufour@linux.ibm.com>
-
-Reviewed-by: Jérôme Glisse <jglisse@redhat.com>
-
-
 > ---
->  include/linux/mm_types.h |  6 +++++-
->  mm/memory.c              | 37 +++++++++++++++++++++++++++----------
->  2 files changed, 32 insertions(+), 11 deletions(-)
+>  fs/exec.c          | 1 +
+>  include/linux/mm.h | 5 +++++
+>  kernel/fork.c      | 2 +-
+>  mm/mmap.c          | 3 +++
+>  mm/nommu.c         | 1 +
+>  5 files changed, 11 insertions(+), 1 deletion(-)
 > 
-> diff --git a/include/linux/mm_types.h b/include/linux/mm_types.h
-> index 8ec38b11b361..fd7d38ee2e33 100644
-> --- a/include/linux/mm_types.h
-> +++ b/include/linux/mm_types.h
-> @@ -652,6 +652,8 @@ typedef __bitwise unsigned int vm_fault_t;
->   * @VM_FAULT_NEEDDSYNC:		->fault did not modify page tables and needs
->   *				fsync() to complete (for synchronous page faults
->   *				in DAX)
-> + * @VM_FAULT_PTNOTSAME		Page table entries have changed during a
-> + *				speculative page fault handling.
->   * @VM_FAULT_HINDEX_MASK:	mask HINDEX value
->   *
->   */
-> @@ -669,6 +671,7 @@ enum vm_fault_reason {
->  	VM_FAULT_FALLBACK       = (__force vm_fault_t)0x000800,
->  	VM_FAULT_DONE_COW       = (__force vm_fault_t)0x001000,
->  	VM_FAULT_NEEDDSYNC      = (__force vm_fault_t)0x002000,
-> +	VM_FAULT_PTNOTSAME	= (__force vm_fault_t)0x004000,
->  	VM_FAULT_HINDEX_MASK    = (__force vm_fault_t)0x0f0000,
+> diff --git a/fs/exec.c b/fs/exec.c
+> index 2e0033348d8e..9762e060295c 100644
+> --- a/fs/exec.c
+> +++ b/fs/exec.c
+> @@ -266,6 +266,7 @@ static int __bprm_mm_init(struct linux_binprm *bprm)
+>  	vma->vm_start = vma->vm_end - PAGE_SIZE;
+>  	vma->vm_flags = VM_SOFTDIRTY | VM_STACK_FLAGS | VM_STACK_INCOMPLETE_SETUP;
+>  	vma->vm_page_prot = vm_get_page_prot(vma->vm_flags);
+> +	INIT_VMA(vma);
+>  
+>  	err = insert_vm_struct(mm, vma);
+>  	if (err)
+> diff --git a/include/linux/mm.h b/include/linux/mm.h
+> index 4ba2f53f9d60..2ceb1d2869a6 100644
+> --- a/include/linux/mm.h
+> +++ b/include/linux/mm.h
+> @@ -1407,6 +1407,11 @@ struct zap_details {
+>  	pgoff_t last_index;			/* Highest page->index to unmap */
 >  };
 >  
-> @@ -693,7 +696,8 @@ enum vm_fault_reason {
->  	{ VM_FAULT_RETRY,               "RETRY" },	\
->  	{ VM_FAULT_FALLBACK,            "FALLBACK" },	\
->  	{ VM_FAULT_DONE_COW,            "DONE_COW" },	\
-> -	{ VM_FAULT_NEEDDSYNC,           "NEEDDSYNC" }
-> +	{ VM_FAULT_NEEDDSYNC,           "NEEDDSYNC" },	\
-> +	{ VM_FAULT_PTNOTSAME,		"PTNOTSAME" }
->  
->  struct vm_special_mapping {
->  	const char *name;	/* The name, e.g. "[vdso]". */
-> diff --git a/mm/memory.c b/mm/memory.c
-> index 221ccdf34991..d5bebca47d98 100644
-> --- a/mm/memory.c
-> +++ b/mm/memory.c
-> @@ -2094,21 +2094,29 @@ static inline bool pte_map_lock(struct vm_fault *vmf)
->   * parts, do_swap_page must check under lock before unmapping the pte and
->   * proceeding (but do_wp_page is only called after already making such a check;
->   * and do_anonymous_page can safely check later on).
-> + *
-> + * pte_unmap_same() returns:
-> + *	0			if the PTE are the same
-> + *	VM_FAULT_PTNOTSAME	if the PTE are different
-> + *	VM_FAULT_RETRY		if the VMA has changed in our back during
-> + *				a speculative page fault handling.
->   */
-> -static inline int pte_unmap_same(struct mm_struct *mm, pmd_t *pmd,
-> -				pte_t *page_table, pte_t orig_pte)
-> +static inline vm_fault_t pte_unmap_same(struct vm_fault *vmf)
->  {
-> -	int same = 1;
-> +	int ret = 0;
+> +static inline void INIT_VMA(struct vm_area_struct *vma)
+
+Can we leave capital names for macro ? Also i prefer vma_init_struct() (the
+one thing i like in C++ is namespace and thus i like namespace_action() for
+function name).
+
+Also why not doing a coccinelle patch for this:
+
+@@
+struct vm_area_struct *vma;
+@@
+-INIT_LIST_HEAD(&vma->anon_vma_chain);
++vma_init_struct(vma);
+
+
+Untested ...
+
+> +{
+> +	INIT_LIST_HEAD(&vma->anon_vma_chain);
+> +}
 > +
->  #if defined(CONFIG_SMP) || defined(CONFIG_PREEMPT)
->  	if (sizeof(pte_t) > sizeof(unsigned long)) {
-> -		spinlock_t *ptl = pte_lockptr(mm, pmd);
-> -		spin_lock(ptl);
-> -		same = pte_same(*page_table, orig_pte);
-> -		spin_unlock(ptl);
-> +		if (pte_spinlock(vmf)) {
-> +			if (!pte_same(*vmf->pte, vmf->orig_pte))
-> +				ret = VM_FAULT_PTNOTSAME;
-> +			spin_unlock(vmf->ptl);
-> +		} else
-> +			ret = VM_FAULT_RETRY;
+>  struct page *_vm_normal_page(struct vm_area_struct *vma, unsigned long addr,
+>  			     pte_t pte, bool with_public_device);
+>  #define vm_normal_page(vma, addr, pte) _vm_normal_page(vma, addr, pte, false)
+> diff --git a/kernel/fork.c b/kernel/fork.c
+> index 915be4918a2b..f8dae021c2e5 100644
+> --- a/kernel/fork.c
+> +++ b/kernel/fork.c
+> @@ -341,7 +341,7 @@ struct vm_area_struct *vm_area_dup(struct vm_area_struct *orig)
+>  
+>  	if (new) {
+>  		*new = *orig;
+> -		INIT_LIST_HEAD(&new->anon_vma_chain);
+> +		INIT_VMA(new);
 >  	}
->  #endif
-> -	pte_unmap(page_table);
-> -	return same;
-> +	pte_unmap(vmf->pte);
-> +	return ret;
+>  	return new;
 >  }
+> diff --git a/mm/mmap.c b/mm/mmap.c
+> index bd7b9f293b39..5ad3a3228d76 100644
+> --- a/mm/mmap.c
+> +++ b/mm/mmap.c
+> @@ -1765,6 +1765,7 @@ unsigned long mmap_region(struct file *file, unsigned long addr,
+>  	vma->vm_flags = vm_flags;
+>  	vma->vm_page_prot = vm_get_page_prot(vm_flags);
+>  	vma->vm_pgoff = pgoff;
+> +	INIT_VMA(vma);
 >  
->  static inline void cow_user_page(struct page *dst, struct page *src, unsigned long va, struct vm_area_struct *vma)
-> @@ -2714,8 +2722,17 @@ vm_fault_t do_swap_page(struct vm_fault *vmf)
->  	int exclusive = 0;
->  	vm_fault_t ret = 0;
+>  	if (file) {
+>  		if (vm_flags & VM_DENYWRITE) {
+> @@ -3037,6 +3038,7 @@ static int do_brk_flags(unsigned long addr, unsigned long len, unsigned long fla
+>  	}
 >  
-> -	if (!pte_unmap_same(vma->vm_mm, vmf->pmd, vmf->pte, vmf->orig_pte))
-> +	ret = pte_unmap_same(vmf);
-> +	if (ret) {
-> +		/*
-> +		 * If pte != orig_pte, this means another thread did the
-> +		 * swap operation in our back.
-> +		 * So nothing else to do.
-> +		 */
-> +		if (ret == VM_FAULT_PTNOTSAME)
-> +			ret = 0;
->  		goto out;
-> +	}
+>  	vma_set_anonymous(vma);
+> +	INIT_VMA(vma);
+>  	vma->vm_start = addr;
+>  	vma->vm_end = addr + len;
+>  	vma->vm_pgoff = pgoff;
+> @@ -3395,6 +3397,7 @@ static struct vm_area_struct *__install_special_mapping(
+>  	if (unlikely(vma == NULL))
+>  		return ERR_PTR(-ENOMEM);
 >  
->  	entry = pte_to_swp_entry(vmf->orig_pte);
->  	if (unlikely(non_swap_entry(entry))) {
+> +	INIT_VMA(vma);
+>  	vma->vm_start = addr;
+>  	vma->vm_end = addr + len;
+>  
+> diff --git a/mm/nommu.c b/mm/nommu.c
+> index 749276beb109..acf7ca72ca90 100644
+> --- a/mm/nommu.c
+> +++ b/mm/nommu.c
+> @@ -1210,6 +1210,7 @@ unsigned long do_mmap(struct file *file,
+>  	region->vm_flags = vm_flags;
+>  	region->vm_pgoff = pgoff;
+>  
+> +	INIT_VMA(vma);
+>  	vma->vm_flags = vm_flags;
+>  	vma->vm_pgoff = pgoff;
+>  
 > -- 
 > 2.21.0
 > 
