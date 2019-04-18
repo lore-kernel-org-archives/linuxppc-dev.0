@@ -6,37 +6,40 @@ X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
 	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7DE20C10F0B
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Apr 2019 06:54:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2847CC10F0B
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Apr 2019 06:56:00 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id EFB9920643
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Apr 2019 06:54:30 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EFB9920643
+	by mail.kernel.org (Postfix) with ESMTPS id 4B9FD20821
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Apr 2019 06:55:59 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4B9FD20821
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44l8wj0K3jzDqPP
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Apr 2019 16:54:29 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44l8yP2PKvzDqHn
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Apr 2019 16:55:57 +1000 (AEST)
 Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44l8sJ5v76zDqHm
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44l8sJ63QJzDqNH
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Apr 2019 16:51:32 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: by ozlabs.org (Postfix)
- id 44l8sJ01dtz9s3l; Thu, 18 Apr 2019 16:51:32 +1000 (AEST)
+ id 44l8sJ2LNXz9s4Y; Thu, 18 Apr 2019 16:51:32 +1000 (AEST)
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 44l8sH6gnKz9s4V; Thu, 18 Apr 2019 16:51:31 +1000 (AEST)
+ id 44l8sJ1h0Yz9s55; Thu, 18 Apr 2019 16:51:32 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH v6 01/10] powerpc/powernv/idle: Restore IAMR after idle
-Date: Thu, 18 Apr 2019 16:51:16 +1000
-Message-Id: <20190418065125.2687-1-mpe@ellerman.id.au>
+Subject: [PATCH v6 02/10] powerpc/powernv/idle: Restore AMR/UAMOR/AMOR after
+ idle
+Date: Thu, 18 Apr 2019 16:51:17 +1000
+Message-Id: <20190418065125.2687-2-mpe@ellerman.id.au>
 X-Mailer: git-send-email 2.20.1
+In-Reply-To: <20190418065125.2687-1-mpe@ellerman.id.au>
+References: <20190418065125.2687-1-mpe@ellerman.id.au>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -54,82 +57,79 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Russell Currey <ruscur@russell.cc>
+In order to implement KUAP (Kernel Userspace Access Protection) on
+Power9 we will be using the AMR, and therefore indirectly the
+UAMOR/AMOR.
 
-Without restoring the IAMR after idle, execution prevention on POWER9
-with Radix MMU is overwritten and the kernel can freely execute
-userspace without faulting.
+So save/restore these regs in the idle code.
 
-This is necessary when returning from any stop state that modifies
-user state, as well as hypervisor state.
-
-To test how this fails without this patch, load the lkdtm driver and
-do the following:
-
-  $ echo EXEC_USERSPACE > /sys/kernel/debug/provoke-crash/DIRECT
-
-which won't fault, then boot the kernel with powersave=off, where it
-will fault. Applying this patch will fix this.
-
-Fixes: 3b10d0095a1e ("powerpc/mm/radix: Prevent kernel execution of user space")
-Cc: stable@vger.kernel.org # v4.10+
-Signed-off-by: Russell Currey <ruscur@russell.cc>
-Reviewed-by: Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>
-Reviewed-by: Nicholas Piggin <npiggin@gmail.com>
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
 v6: Unchanged.
 v5: Unchanged.
-v4: mpe: Use a #define for the stack slot.
+v4: New.
 ---
- arch/powerpc/kernel/idle_book3s.S | 20 ++++++++++++++++++++
- 1 file changed, 20 insertions(+)
+ arch/powerpc/kernel/idle_book3s.S | 27 +++++++++++++++++++++++----
+ 1 file changed, 23 insertions(+), 4 deletions(-)
 
 diff --git a/arch/powerpc/kernel/idle_book3s.S b/arch/powerpc/kernel/idle_book3s.S
-index 7f5ac2e8581b..36178000a2f2 100644
+index 36178000a2f2..4a860d3b9229 100644
 --- a/arch/powerpc/kernel/idle_book3s.S
 +++ b/arch/powerpc/kernel/idle_book3s.S
-@@ -170,6 +170,9 @@ END_FTR_SECTION_IFCLR(CPU_FTR_ARCH_300)
+@@ -170,8 +170,11 @@ END_FTR_SECTION_IFCLR(CPU_FTR_ARCH_300)
  	bne-	core_idle_lock_held
  	blr
  
-+/* Reuse an unused pt_regs slot for IAMR */
-+#define PNV_POWERSAVE_IAMR	_DAR
-+
+-/* Reuse an unused pt_regs slot for IAMR */
++/* Reuse some unused pt_regs slots for AMR/IAMR/UAMOR/UAMOR */
++#define PNV_POWERSAVE_AMR	_TRAP
+ #define PNV_POWERSAVE_IAMR	_DAR
++#define PNV_POWERSAVE_UAMOR	_DSISR
++#define PNV_POWERSAVE_AMOR	RESULT
+ 
  /*
   * Pass requested state in r3:
-  *	r3 - PNV_THREAD_NAP/SLEEP/WINKLE in POWER8
-@@ -200,6 +203,12 @@ END_FTR_SECTION_IFCLR(CPU_FTR_ARCH_300)
- 	/* Continue saving state */
- 	SAVE_GPR(2, r1)
+@@ -205,8 +208,16 @@ END_FTR_SECTION_IFCLR(CPU_FTR_ARCH_300)
  	SAVE_NVGPRS(r1)
-+
-+BEGIN_FTR_SECTION
-+	mfspr	r5, SPRN_IAMR
-+	std	r5, PNV_POWERSAVE_IAMR(r1)
-+END_FTR_SECTION_IFSET(CPU_FTR_ARCH_207S)
-+
+ 
+ BEGIN_FTR_SECTION
++	mfspr	r4, SPRN_AMR
+ 	mfspr	r5, SPRN_IAMR
++	mfspr	r6, SPRN_UAMOR
++	std	r4, PNV_POWERSAVE_AMR(r1)
+ 	std	r5, PNV_POWERSAVE_IAMR(r1)
++	std	r6, PNV_POWERSAVE_UAMOR(r1)
++BEGIN_FTR_SECTION_NESTED(42)
++	mfspr	r7, SPRN_AMOR
++	std	r7, PNV_POWERSAVE_AMOR(r1)
++END_FTR_SECTION_NESTED_IFSET(CPU_FTR_HVMODE, 42)
+ END_FTR_SECTION_IFSET(CPU_FTR_ARCH_207S)
+ 
  	mfcr	r5
- 	std	r5,_CCR(r1)
- 	std	r1,PACAR1(r13)
-@@ -924,6 +933,17 @@ BEGIN_FTR_SECTION
- END_FTR_SECTION_IFSET(CPU_FTR_HVMODE)
- 	REST_NVGPRS(r1)
+@@ -935,12 +946,20 @@ END_FTR_SECTION_IFSET(CPU_FTR_HVMODE)
  	REST_GPR(2, r1)
-+
-+BEGIN_FTR_SECTION
-+	/* IAMR was saved in pnv_powersave_common() */
-+	ld	r5, PNV_POWERSAVE_IAMR(r1)
-+	mtspr	SPRN_IAMR, r5
-+	/*
-+	 * We don't need an isync here because the upcoming mtmsrd is
-+	 * execution synchronizing.
-+	 */
-+END_FTR_SECTION_IFSET(CPU_FTR_ARCH_207S)
-+
- 	ld	r4,PACAKMSR(r13)
- 	ld	r5,_LINK(r1)
- 	ld	r6,_CCR(r1)
+ 
+ BEGIN_FTR_SECTION
+-	/* IAMR was saved in pnv_powersave_common() */
++	/* These regs were saved in pnv_powersave_common() */
++	ld	r4, PNV_POWERSAVE_AMR(r1)
+ 	ld	r5, PNV_POWERSAVE_IAMR(r1)
++	ld	r6, PNV_POWERSAVE_UAMOR(r1)
++	mtspr	SPRN_AMR, r4
+ 	mtspr	SPRN_IAMR, r5
++	mtspr	SPRN_UAMOR, r6
++BEGIN_FTR_SECTION_NESTED(42)
++	ld	r7, PNV_POWERSAVE_AMOR(r1)
++	mtspr	SPRN_AMOR, r7
++END_FTR_SECTION_NESTED_IFSET(CPU_FTR_HVMODE, 42)
+ 	/*
+-	 * We don't need an isync here because the upcoming mtmsrd is
+-	 * execution synchronizing.
++	 * We don't need an isync here after restoring IAMR because the upcoming
++	 * mtmsrd is execution synchronizing.
+ 	 */
+ END_FTR_SECTION_IFSET(CPU_FTR_ARCH_207S)
+ 
 -- 
 2.20.1
 
