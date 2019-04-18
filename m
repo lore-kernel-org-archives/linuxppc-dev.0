@@ -2,104 +2,99 @@ Return-Path: <SRS0=10v2=SU=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-4.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_PASS autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 51DA5C282DA
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Apr 2019 03:30:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E6B70C10F0E
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Apr 2019 03:49:14 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 0F4B5217F4
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Apr 2019 03:30:55 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=nxp.com header.i=@nxp.com header.b="aXmav6lm"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0F4B5217F4
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nxp.com
+	by mail.kernel.org (Postfix) with ESMTPS id 9CD98214DA
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Apr 2019 03:49:13 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9CD98214DA
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44l4Pn4tL6zDqQ9
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Apr 2019 13:30:53 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44l4pv1CLLzDqPK
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Apr 2019 13:49:11 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=nxp.com
- (client-ip=40.107.13.70; helo=eur01-he1-obe.outbound.protection.outlook.com;
- envelope-from=shengjiu.wang@nxp.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
+ (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
+ envelope-from=aneesh.kumar@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=nxp.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=nxp.com header.i=@nxp.com header.b="aXmav6lm"; 
- dkim-atps=neutral
-Received: from EUR01-HE1-obe.outbound.protection.outlook.com
- (mail-eopbgr130070.outbound.protection.outlook.com [40.107.13.70])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+ dmarc=none (p=none dis=none) header.from=linux.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44l4Mz0cCyzDqP3
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Apr 2019 13:29:15 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nxp.com; s=selector1; 
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=HHhkIYpC1yG+k6UyKtZV26CwYVtQUTX3Jks5wSk1Te0=;
- b=aXmav6lmz7R4IRNgWpsmoCeHjhHssztf/ntw2Md86SOLi6nQJlB+3WhnJzWhURu+vgsPbSnenvAZj6d0neIFABi2fJmJlqLUmip4b2Sb1mJBABoAS0ZsRiFhQNHB8ejNHqB3ULMj8ZnbCJvKM/tqHm1kw37cxxm58vQRgx7QR/8=
-Received: from AM6PR04MB6470.eurprd04.prod.outlook.com (20.179.245.79) by
- AM6PR04MB6454.eurprd04.prod.outlook.com (20.179.245.19) with Microsoft SMTP
- Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.20.1792.19; Thu, 18 Apr 2019 03:29:09 +0000
-Received: from AM6PR04MB6470.eurprd04.prod.outlook.com
- ([fe80::bc8d:21be:2cd6:f549]) by AM6PR04MB6470.eurprd04.prod.outlook.com
- ([fe80::bc8d:21be:2cd6:f549%3]) with mapi id 15.20.1813.011; Thu, 18 Apr 2019
- 03:29:09 +0000
-From: "S.j. Wang" <shengjiu.wang@nxp.com>
-To: "timur@kernel.org" <timur@kernel.org>, "nicoleotsuka@gmail.com"
- <nicoleotsuka@gmail.com>, "Xiubo.Lee@gmail.com" <Xiubo.Lee@gmail.com>,
- "festevam@gmail.com" <festevam@gmail.com>, "broonie@kernel.org"
- <broonie@kernel.org>, "alsa-devel@alsa-project.org"
- <alsa-devel@alsa-project.org>
-Subject: [PATCH] ASoC: fsl_esai: Add pm runtime function
-Thread-Topic: [PATCH] ASoC: fsl_esai: Add pm runtime function
-Thread-Index: AQHU9ZbiZU/zXTBSIUWbqTWj8Owr4Q==
-Date: Thu, 18 Apr 2019 03:29:09 +0000
-Message-ID: <1555558152-32196-1-git-send-email-shengjiu.wang@nxp.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-x-mailer: git-send-email 1.9.1
-x-clientproxiedby: HK2PR04CA0067.apcprd04.prod.outlook.com
- (2603:1096:202:15::11) To AM6PR04MB6470.eurprd04.prod.outlook.com
- (2603:10a6:20b:f6::15)
-authentication-results: spf=none (sender IP is )
- smtp.mailfrom=shengjiu.wang@nxp.com; 
-x-ms-exchange-messagesentrepresentingtype: 1
-x-originating-ip: [119.31.174.66]
-x-ms-publictraffictype: Email
-x-ms-office365-filtering-correlation-id: 6ba0427b-7ad3-453e-daf2-08d6c3ae04be
-x-ms-office365-filtering-ht: Tenant
-x-microsoft-antispam: BCL:0; PCL:0;
- RULEID:(2390118)(7020095)(4652040)(8989299)(5600141)(711020)(4605104)(4618075)(4534185)(4627221)(201703031133081)(201702281549075)(8990200)(2017052603328)(7193020);
- SRVR:AM6PR04MB6454; 
-x-ms-traffictypediagnostic: AM6PR04MB6454:
-x-microsoft-antispam-prvs: <AM6PR04MB6454B17246B5B01931D8414BE3260@AM6PR04MB6454.eurprd04.prod.outlook.com>
-x-forefront-prvs: 0011612A55
-x-forefront-antispam-report: SFV:NSPM;
- SFS:(10009020)(396003)(376002)(346002)(366004)(136003)(39860400002)(189003)(199004)(86362001)(8936002)(53936002)(4326008)(6512007)(50226002)(66066001)(36756003)(478600001)(97736004)(110136005)(71190400001)(71200400001)(14444005)(14454004)(256004)(54906003)(305945005)(25786009)(476003)(81166006)(6436002)(2201001)(68736007)(7736002)(386003)(81156014)(99286004)(6506007)(102836004)(5660300002)(186003)(6486002)(2616005)(6116002)(52116002)(316002)(8676002)(26005)(2501003)(3846002)(2906002)(486006);
- DIR:OUT; SFP:1101; SCL:1; SRVR:AM6PR04MB6454;
- H:AM6PR04MB6470.eurprd04.prod.outlook.com; FPR:; SPF:None; LANG:en;
- PTR:InfoNoRecords; MX:1; A:1; 
-received-spf: None (protection.outlook.com: nxp.com does not designate
- permitted sender hosts)
-x-ms-exchange-senderadcheck: 1
-x-microsoft-antispam-message-info: 8tNB371X6dBgoN15ZUbN5mRTEkX77hU7rj02XgRLMCOakpUVTobXKbRXF6x8ZzEBsLteQPdZ7EY2CS5qre4M3+jTios8iZboffG/QbRuJPfj8f8sGJHBT3EsCkazC7GzWtSE3eWztnuze2uGKEz+2y12Hgu9OBQtCMZjTnG3+V3feXxk7Wib1Arccoe3JXL1hMK+HJpMHKQkWBMxJk9tK0nLGxNqbs3YMKD6hllzZ5a84EpCi14Vvyetbw82cZGnyUj1HB6cXxmHuz0GfrPJJGJp6Re1qqeAO5XGMYB6cgsPXacoAsavqYnV8cSU4hHOfrAJkscYlOIDG2SP1UVoZxkmNUrdneqCo9jeLxAErOmiylEl1qTduDAbBLQIxMhNcEfVwSUxRAESKwwgf1RCEsqPSq6bLCtHinthh57W2Bo=
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44l4n45T5yzDqP5
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Apr 2019 13:47:35 +1000 (AEST)
+Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
+ x3I3fjO6069066
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Apr 2019 23:47:32 -0400
+Received: from e15.ny.us.ibm.com (e15.ny.us.ibm.com [129.33.205.205])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2rxegqx10j-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Apr 2019 23:47:32 -0400
+Received: from localhost
+ by e15.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.ibm.com>;
+ Thu, 18 Apr 2019 04:47:31 +0100
+Received: from b01cxnp23032.gho.pok.ibm.com (9.57.198.27)
+ by e15.ny.us.ibm.com (146.89.104.202) with IBM ESMTP SMTP Gateway: Authorized
+ Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Thu, 18 Apr 2019 04:47:27 +0100
+Received: from b01ledav005.gho.pok.ibm.com (b01ledav005.gho.pok.ibm.com
+ [9.57.199.110])
+ by b01cxnp23032.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x3I3lQ9w36241604
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Thu, 18 Apr 2019 03:47:26 GMT
+Received: from b01ledav005.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 9A1A7AE05F;
+ Thu, 18 Apr 2019 03:47:26 +0000 (GMT)
+Received: from b01ledav005.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 69692AE05C;
+ Thu, 18 Apr 2019 03:47:25 +0000 (GMT)
+Received: from [9.102.0.54] (unknown [9.102.0.54])
+ by b01ledav005.gho.pok.ibm.com (Postfix) with ESMTP;
+ Thu, 18 Apr 2019 03:47:25 +0000 (GMT)
+Subject: Re: [PATCH v4 2/8] powerpc/mm/hash64: Map all the kernel regions in
+ the same 0xc range
+To: npiggin@gmail.com, paulus@samba.org, mpe@ellerman.id.au
+References: <20190417125920.785-1-aneesh.kumar@linux.ibm.com>
+ <20190417125920.785-3-aneesh.kumar@linux.ibm.com>
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
+Date: Thu, 18 Apr 2019 09:17:24 +0530
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.6.1
 MIME-Version: 1.0
-X-OriginatorOrg: nxp.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 6ba0427b-7ad3-453e-daf2-08d6c3ae04be
-X-MS-Exchange-CrossTenant-originalarrivaltime: 18 Apr 2019 03:29:09.5960 (UTC)
-X-MS-Exchange-CrossTenant-fromentityheader: Hosted
-X-MS-Exchange-CrossTenant-id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
-X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: AM6PR04MB6454
+In-Reply-To: <20190417125920.785-3-aneesh.kumar@linux.ibm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
+X-TM-AS-GCONF: 00
+x-cbid: 19041803-0068-0000-0000-000003B6E0EA
+X-IBM-SpamModules-Scores: 
+X-IBM-SpamModules-Versions: BY=3.00010947; HX=3.00000242; KW=3.00000007;
+ PH=3.00000004; SC=3.00000284; SDB=6.01190664; UDB=6.00623947; IPR=6.00971460; 
+ MB=3.00026493; MTD=3.00000008; XFM=3.00000015; UTC=2019-04-18 03:47:29
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 19041803-0069-0000-0000-00004833B107
+Message-Id: <52d533ea-b9c4-e0c8-d7eb-719d1b05028a@linux.ibm.com>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
+ definitions=2019-04-18_03:, , signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1810050000 definitions=main-1904180022
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -111,136 +106,54 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Cc: linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-SW4gaW14OCB3aGVuIHN5c3Rlcm0gZW50ZXIgc3VzcGVuZCBzdGF0ZSwgdGhlIHBvd2VyIG9mIHN1
-YnN5c3RlbSB3aWxsDQpiZSBvZmYsIHRoZSBjbG9jayBlbmFibGUgc3RhdGUgd2lsbCBiZSBsb3N0
-IGFuZCByZWdpc3RlciBjb25maWd1cmF0aW9uDQp3aWxsIGJlIGxvc3QuIFNvIHRoZSBkcml2ZXIg
-bmVlZCB0byBlbnRlciBydW50aW1lIHN1c3BlbmQgc3RhdGUgaW4NCnN1c3BlbmQuDQoNCldpdGgg
-dGhpcyBpbXBsZW1lbnRhdGlvbiB0aGUgc3VzcGVuZCBmdW5jdGlvbiBhbG1vc3Qgc2FtZSBhcyBy
-dW50aW1lDQpzdXNwZW5kIGZ1bmN0aW9uLCBzbyByZW1vdmUgdGhlIHN1c3BlbmQgZnVuY3Rpb24s
-IGp1c3QgdXNlDQpwbV9ydW50aW1lX2ZvcmNlX3N1c3BlbmQgaW5zdGVhZCwgYW5kIHNhbWUgZm9y
-IHRoZSByZXN1bWUgZnVuY3Rpb24uDQoNCkFuZCBhbHNvIG5lZWQgdG8gbW92ZSBjbG9jayBlbmFi
-bGVtZW50IHRvIHJ1bnRpbWUgcmVzdW1lIGFuZCBjbG9jaw0KZGlzYWJsZW1lbnQgdG8gcnVudGlt
-ZSBzdXNwZW5kLg0KDQpTaWduZWQtb2ZmLWJ5OiBTaGVuZ2ppdSBXYW5nIDxzaGVuZ2ppdS53YW5n
-QG54cC5jb20+DQotLS0NCiBzb3VuZC9zb2MvZnNsL2ZzbF9lc2FpLmMgfCAxNDEgKysrKysrKysr
-KysrKysrKysrKysrKysrKystLS0tLS0tLS0tLS0tLS0tLS0tLS0NCiAxIGZpbGUgY2hhbmdlZCwg
-NzcgaW5zZXJ0aW9ucygrKSwgNjQgZGVsZXRpb25zKC0pDQoNCmRpZmYgLS1naXQgYS9zb3VuZC9z
-b2MvZnNsL2ZzbF9lc2FpLmMgYi9zb3VuZC9zb2MvZnNsL2ZzbF9lc2FpLmMNCmluZGV4IGJhZDBk
-ZmVkNmI2OC4uYjFlMjdkYjM3NTJiIDEwMDY0NA0KLS0tIGEvc291bmQvc29jL2ZzbC9mc2xfZXNh
-aS5jDQorKysgYi9zb3VuZC9zb2MvZnNsL2ZzbF9lc2FpLmMNCkBAIC05LDYgKzksNyBAQA0KICNp
-bmNsdWRlIDxsaW51eC9tb2R1bGUuaD4NCiAjaW5jbHVkZSA8bGludXgvb2ZfaXJxLmg+DQogI2lu
-Y2x1ZGUgPGxpbnV4L29mX3BsYXRmb3JtLmg+DQorI2luY2x1ZGUgPGxpbnV4L3BtX3J1bnRpbWUu
-aD4NCiAjaW5jbHVkZSA8c291bmQvZG1hZW5naW5lX3BjbS5oPg0KICNpbmNsdWRlIDxzb3VuZC9w
-Y21fcGFyYW1zLmg+DQogDQpAQCAtNDY2LDMwICs0NjcsNiBAQCBzdGF0aWMgaW50IGZzbF9lc2Fp
-X3N0YXJ0dXAoc3RydWN0IHNuZF9wY21fc3Vic3RyZWFtICpzdWJzdHJlYW0sDQogCQkJICAgIHN0
-cnVjdCBzbmRfc29jX2RhaSAqZGFpKQ0KIHsNCiAJc3RydWN0IGZzbF9lc2FpICplc2FpX3ByaXYg
-PSBzbmRfc29jX2RhaV9nZXRfZHJ2ZGF0YShkYWkpOw0KLQlpbnQgcmV0Ow0KLQ0KLQkvKg0KLQkg
-KiBTb21lIHBsYXRmb3JtcyBtaWdodCB1c2UgdGhlIHNhbWUgYml0IHRvIGdhdGUgYWxsIHRocmVl
-IG9yIHR3byBvZg0KLQkgKiBjbG9ja3MsIHNvIGtlZXAgYWxsIGNsb2NrcyBvcGVuL2Nsb3NlIGF0
-IHRoZSBzYW1lIHRpbWUgZm9yIHNhZmV0eQ0KLQkgKi8NCi0JcmV0ID0gY2xrX3ByZXBhcmVfZW5h
-YmxlKGVzYWlfcHJpdi0+Y29yZWNsayk7DQotCWlmIChyZXQpDQotCQlyZXR1cm4gcmV0Ow0KLQlp
-ZiAoIUlTX0VSUihlc2FpX3ByaXYtPnNwYmFjbGspKSB7DQotCQlyZXQgPSBjbGtfcHJlcGFyZV9l
-bmFibGUoZXNhaV9wcml2LT5zcGJhY2xrKTsNCi0JCWlmIChyZXQpDQotCQkJZ290byBlcnJfc3Bi
-YWNsazsNCi0JfQ0KLQlpZiAoIUlTX0VSUihlc2FpX3ByaXYtPmV4dGFsY2xrKSkgew0KLQkJcmV0
-ID0gY2xrX3ByZXBhcmVfZW5hYmxlKGVzYWlfcHJpdi0+ZXh0YWxjbGspOw0KLQkJaWYgKHJldCkN
-Ci0JCQlnb3RvIGVycl9leHRhbGNrOw0KLQl9DQotCWlmICghSVNfRVJSKGVzYWlfcHJpdi0+ZnN5
-c2NsaykpIHsNCi0JCXJldCA9IGNsa19wcmVwYXJlX2VuYWJsZShlc2FpX3ByaXYtPmZzeXNjbGsp
-Ow0KLQkJaWYgKHJldCkNCi0JCQlnb3RvIGVycl9mc3lzY2xrOw0KLQl9DQogDQogCWlmICghZGFp
-LT5hY3RpdmUpIHsNCiAJCS8qIFNldCBzeW5jaHJvbm91cyBtb2RlICovDQpAQCAtNTA2LDE2ICs0
-ODMsNiBAQCBzdGF0aWMgaW50IGZzbF9lc2FpX3N0YXJ0dXAoc3RydWN0IHNuZF9wY21fc3Vic3Ry
-ZWFtICpzdWJzdHJlYW0sDQogDQogCXJldHVybiAwOw0KIA0KLWVycl9mc3lzY2xrOg0KLQlpZiAo
-IUlTX0VSUihlc2FpX3ByaXYtPmV4dGFsY2xrKSkNCi0JCWNsa19kaXNhYmxlX3VucHJlcGFyZShl
-c2FpX3ByaXYtPmV4dGFsY2xrKTsNCi1lcnJfZXh0YWxjazoNCi0JaWYgKCFJU19FUlIoZXNhaV9w
-cml2LT5zcGJhY2xrKSkNCi0JCWNsa19kaXNhYmxlX3VucHJlcGFyZShlc2FpX3ByaXYtPnNwYmFj
-bGspOw0KLWVycl9zcGJhY2xrOg0KLQljbGtfZGlzYWJsZV91bnByZXBhcmUoZXNhaV9wcml2LT5j
-b3JlY2xrKTsNCi0NCi0JcmV0dXJuIHJldDsNCiB9DQogDQogc3RhdGljIGludCBmc2xfZXNhaV9o
-d19wYXJhbXMoc3RydWN0IHNuZF9wY21fc3Vic3RyZWFtICpzdWJzdHJlYW0sDQpAQCAtNTc2LDIw
-ICs1NDMsNiBAQCBzdGF0aWMgaW50IGZzbF9lc2FpX2h3X3BhcmFtcyhzdHJ1Y3Qgc25kX3BjbV9z
-dWJzdHJlYW0gKnN1YnN0cmVhbSwNCiAJcmV0dXJuIDA7DQogfQ0KIA0KLXN0YXRpYyB2b2lkIGZz
-bF9lc2FpX3NodXRkb3duKHN0cnVjdCBzbmRfcGNtX3N1YnN0cmVhbSAqc3Vic3RyZWFtLA0KLQkJ
-CSAgICAgIHN0cnVjdCBzbmRfc29jX2RhaSAqZGFpKQ0KLXsNCi0Jc3RydWN0IGZzbF9lc2FpICpl
-c2FpX3ByaXYgPSBzbmRfc29jX2RhaV9nZXRfZHJ2ZGF0YShkYWkpOw0KLQ0KLQlpZiAoIUlTX0VS
-Uihlc2FpX3ByaXYtPmZzeXNjbGspKQ0KLQkJY2xrX2Rpc2FibGVfdW5wcmVwYXJlKGVzYWlfcHJp
-di0+ZnN5c2Nsayk7DQotCWlmICghSVNfRVJSKGVzYWlfcHJpdi0+ZXh0YWxjbGspKQ0KLQkJY2xr
-X2Rpc2FibGVfdW5wcmVwYXJlKGVzYWlfcHJpdi0+ZXh0YWxjbGspOw0KLQlpZiAoIUlTX0VSUihl
-c2FpX3ByaXYtPnNwYmFjbGspKQ0KLQkJY2xrX2Rpc2FibGVfdW5wcmVwYXJlKGVzYWlfcHJpdi0+
-c3BiYWNsayk7DQotCWNsa19kaXNhYmxlX3VucHJlcGFyZShlc2FpX3ByaXYtPmNvcmVjbGspOw0K
-LX0NCi0NCiBzdGF0aWMgaW50IGZzbF9lc2FpX3RyaWdnZXIoc3RydWN0IHNuZF9wY21fc3Vic3Ry
-ZWFtICpzdWJzdHJlYW0sIGludCBjbWQsDQogCQkJICAgIHN0cnVjdCBzbmRfc29jX2RhaSAqZGFp
-KQ0KIHsNCkBAIC02NTgsNyArNjExLDYgQEAgc3RhdGljIGludCBmc2xfZXNhaV90cmlnZ2VyKHN0
-cnVjdCBzbmRfcGNtX3N1YnN0cmVhbSAqc3Vic3RyZWFtLCBpbnQgY21kLA0KIA0KIHN0YXRpYyBj
-b25zdCBzdHJ1Y3Qgc25kX3NvY19kYWlfb3BzIGZzbF9lc2FpX2RhaV9vcHMgPSB7DQogCS5zdGFy
-dHVwID0gZnNsX2VzYWlfc3RhcnR1cCwNCi0JLnNodXRkb3duID0gZnNsX2VzYWlfc2h1dGRvd24s
-DQogCS50cmlnZ2VyID0gZnNsX2VzYWlfdHJpZ2dlciwNCiAJLmh3X3BhcmFtcyA9IGZzbF9lc2Fp
-X2h3X3BhcmFtcywNCiAJLnNldF9zeXNjbGsgPSBmc2xfZXNhaV9zZXRfZGFpX3N5c2NsaywNCkBA
-IC05NDcsNiArODk5LDEwIEBAIHN0YXRpYyBpbnQgZnNsX2VzYWlfcHJvYmUoc3RydWN0IHBsYXRm
-b3JtX2RldmljZSAqcGRldikNCiAJCXJldHVybiByZXQ7DQogCX0NCiANCisJcG1fcnVudGltZV9l
-bmFibGUoJnBkZXYtPmRldik7DQorDQorCXJlZ2NhY2hlX2NhY2hlX29ubHkoZXNhaV9wcml2LT5y
-ZWdtYXAsIHRydWUpOw0KKw0KIAlyZXQgPSBpbXhfcGNtX2RtYV9pbml0KHBkZXYsIElNWF9FU0FJ
-X0RNQUJVRl9TSVpFKTsNCiAJaWYgKHJldCkNCiAJCWRldl9lcnIoJnBkZXYtPmRldiwgImZhaWxl
-ZCB0byBpbml0IGlteCBwY20gZG1hOiAlZFxuIiwgcmV0KTsNCkBAIC05NTQsNiArOTEwLDEzIEBA
-IHN0YXRpYyBpbnQgZnNsX2VzYWlfcHJvYmUoc3RydWN0IHBsYXRmb3JtX2RldmljZSAqcGRldikN
-CiAJcmV0dXJuIHJldDsNCiB9DQogDQorc3RhdGljIGludCBmc2xfZXNhaV9yZW1vdmUoc3RydWN0
-IHBsYXRmb3JtX2RldmljZSAqcGRldikNCit7DQorCXBtX3J1bnRpbWVfZGlzYWJsZSgmcGRldi0+
-ZGV2KTsNCisNCisJcmV0dXJuIDA7DQorfQ0KKw0KIHN0YXRpYyBjb25zdCBzdHJ1Y3Qgb2ZfZGV2
-aWNlX2lkIGZzbF9lc2FpX2R0X2lkc1tdID0gew0KIAl7IC5jb21wYXRpYmxlID0gImZzbCxpbXgz
-NS1lc2FpIiwgfSwNCiAJeyAuY29tcGF0aWJsZSA9ICJmc2wsdmY2MTAtZXNhaSIsIH0sDQpAQCAt
-OTYxLDIzICs5MjQsMzcgQEAgc3RhdGljIGludCBmc2xfZXNhaV9wcm9iZShzdHJ1Y3QgcGxhdGZv
-cm1fZGV2aWNlICpwZGV2KQ0KIH07DQogTU9EVUxFX0RFVklDRV9UQUJMRShvZiwgZnNsX2VzYWlf
-ZHRfaWRzKTsNCiANCi0jaWZkZWYgQ09ORklHX1BNX1NMRUVQDQotc3RhdGljIGludCBmc2xfZXNh
-aV9zdXNwZW5kKHN0cnVjdCBkZXZpY2UgKmRldikNCi17DQotCXN0cnVjdCBmc2xfZXNhaSAqZXNh
-aSA9IGRldl9nZXRfZHJ2ZGF0YShkZXYpOw0KLQ0KLQlyZWdjYWNoZV9jYWNoZV9vbmx5KGVzYWkt
-PnJlZ21hcCwgdHJ1ZSk7DQotCXJlZ2NhY2hlX21hcmtfZGlydHkoZXNhaS0+cmVnbWFwKTsNCi0N
-Ci0JcmV0dXJuIDA7DQotfQ0KLQ0KLXN0YXRpYyBpbnQgZnNsX2VzYWlfcmVzdW1lKHN0cnVjdCBk
-ZXZpY2UgKmRldikNCisjaWZkZWYgQ09ORklHX1BNDQorc3RhdGljIGludCBmc2xfZXNhaV9ydW50
-aW1lX3Jlc3VtZShzdHJ1Y3QgZGV2aWNlICpkZXYpDQogew0KIAlzdHJ1Y3QgZnNsX2VzYWkgKmVz
-YWkgPSBkZXZfZ2V0X2RydmRhdGEoZGV2KTsNCiAJaW50IHJldDsNCiANCisJLyoNCisJICogU29t
-ZSBwbGF0Zm9ybXMgbWlnaHQgdXNlIHRoZSBzYW1lIGJpdCB0byBnYXRlIGFsbCB0aHJlZSBvciB0
-d28gb2YNCisJICogY2xvY2tzLCBzbyBrZWVwIGFsbCBjbG9ja3Mgb3Blbi9jbG9zZSBhdCB0aGUg
-c2FtZSB0aW1lIGZvciBzYWZldHkNCisJICovDQorCXJldCA9IGNsa19wcmVwYXJlX2VuYWJsZShl
-c2FpLT5jb3JlY2xrKTsNCisJaWYgKHJldCkNCisJCXJldHVybiByZXQ7DQorCWlmICghSVNfRVJS
-KGVzYWktPnNwYmFjbGspKSB7DQorCQlyZXQgPSBjbGtfcHJlcGFyZV9lbmFibGUoZXNhaS0+c3Bi
-YWNsayk7DQorCQlpZiAocmV0KQ0KKwkJCWdvdG8gZXJyX3NwYmFjbGs7DQorCX0NCisJaWYgKCFJ
-U19FUlIoZXNhaS0+ZXh0YWxjbGspKSB7DQorCQlyZXQgPSBjbGtfcHJlcGFyZV9lbmFibGUoZXNh
-aS0+ZXh0YWxjbGspOw0KKwkJaWYgKHJldCkNCisJCQlnb3RvIGVycl9leHRhbGNsazsNCisJfQ0K
-KwlpZiAoIUlTX0VSUihlc2FpLT5mc3lzY2xrKSkgew0KKwkJcmV0ID0gY2xrX3ByZXBhcmVfZW5h
-YmxlKGVzYWktPmZzeXNjbGspOw0KKwkJaWYgKHJldCkNCisJCQlnb3RvIGVycl9mc3lzY2xrOw0K
-Kwl9DQorDQogCXJlZ2NhY2hlX2NhY2hlX29ubHkoZXNhaS0+cmVnbWFwLCBmYWxzZSk7DQorCXJl
-Z2NhY2hlX21hcmtfZGlydHkoZXNhaS0+cmVnbWFwKTsNCiANCiAJLyogRklGTyByZXNldCBmb3Ig
-c2FmZXR5ICovDQogCXJlZ21hcF91cGRhdGVfYml0cyhlc2FpLT5yZWdtYXAsIFJFR19FU0FJX1RG
-Q1IsDQpAQCAtOTg3LDIyICs5NjQsNTggQEAgc3RhdGljIGludCBmc2xfZXNhaV9yZXN1bWUoc3Ry
-dWN0IGRldmljZSAqZGV2KQ0KIA0KIAlyZXQgPSByZWdjYWNoZV9zeW5jKGVzYWktPnJlZ21hcCk7
-DQogCWlmIChyZXQpDQotCQlyZXR1cm4gcmV0Ow0KKwkJZ290byBlcnJfcmVnY2FjaGVfc3luYzsN
-CiANCiAJLyogRklGTyByZXNldCBkb25lICovDQogCXJlZ21hcF91cGRhdGVfYml0cyhlc2FpLT5y
-ZWdtYXAsIFJFR19FU0FJX1RGQ1IsIEVTQUlfeEZDUl94RlIsIDApOw0KIAlyZWdtYXBfdXBkYXRl
-X2JpdHMoZXNhaS0+cmVnbWFwLCBSRUdfRVNBSV9SRkNSLCBFU0FJX3hGQ1JfeEZSLCAwKTsNCiAN
-CiAJcmV0dXJuIDA7DQorDQorZXJyX3JlZ2NhY2hlX3N5bmM6DQorCWlmICghSVNfRVJSKGVzYWkt
-PmZzeXNjbGspKQ0KKwkJY2xrX2Rpc2FibGVfdW5wcmVwYXJlKGVzYWktPmZzeXNjbGspOw0KK2Vy
-cl9mc3lzY2xrOg0KKwlpZiAoIUlTX0VSUihlc2FpLT5leHRhbGNsaykpDQorCQljbGtfZGlzYWJs
-ZV91bnByZXBhcmUoZXNhaS0+ZXh0YWxjbGspOw0KK2Vycl9leHRhbGNsazoNCisJaWYgKCFJU19F
-UlIoZXNhaS0+c3BiYWNsaykpDQorCQljbGtfZGlzYWJsZV91bnByZXBhcmUoZXNhaS0+c3BiYWNs
-ayk7DQorZXJyX3NwYmFjbGs6DQorCWNsa19kaXNhYmxlX3VucHJlcGFyZShlc2FpLT5jb3JlY2xr
-KTsNCisNCisJcmV0dXJuIHJldDsNCit9DQorDQorc3RhdGljIGludCBmc2xfZXNhaV9ydW50aW1l
-X3N1c3BlbmQoc3RydWN0IGRldmljZSAqZGV2KQ0KK3sNCisJc3RydWN0IGZzbF9lc2FpICplc2Fp
-ID0gZGV2X2dldF9kcnZkYXRhKGRldik7DQorDQorCXJlZ2NhY2hlX2NhY2hlX29ubHkoZXNhaS0+
-cmVnbWFwLCB0cnVlKTsNCisNCisJaWYgKCFJU19FUlIoZXNhaS0+ZnN5c2NsaykpDQorCQljbGtf
-ZGlzYWJsZV91bnByZXBhcmUoZXNhaS0+ZnN5c2Nsayk7DQorCWlmICghSVNfRVJSKGVzYWktPmV4
-dGFsY2xrKSkNCisJCWNsa19kaXNhYmxlX3VucHJlcGFyZShlc2FpLT5leHRhbGNsayk7DQorCWlm
-ICghSVNfRVJSKGVzYWktPnNwYmFjbGspKQ0KKwkJY2xrX2Rpc2FibGVfdW5wcmVwYXJlKGVzYWkt
-PnNwYmFjbGspOw0KKwljbGtfZGlzYWJsZV91bnByZXBhcmUoZXNhaS0+Y29yZWNsayk7DQorDQor
-CXJldHVybiAwOw0KIH0NCi0jZW5kaWYgLyogQ09ORklHX1BNX1NMRUVQICovDQorI2VuZGlmIC8q
-IENPTkZJR19QTSAqLw0KIA0KIHN0YXRpYyBjb25zdCBzdHJ1Y3QgZGV2X3BtX29wcyBmc2xfZXNh
-aV9wbV9vcHMgPSB7DQotCVNFVF9TWVNURU1fU0xFRVBfUE1fT1BTKGZzbF9lc2FpX3N1c3BlbmQs
-IGZzbF9lc2FpX3Jlc3VtZSkNCisJU0VUX1JVTlRJTUVfUE1fT1BTKGZzbF9lc2FpX3J1bnRpbWVf
-c3VzcGVuZCwNCisJCQkgICBmc2xfZXNhaV9ydW50aW1lX3Jlc3VtZSwNCisJCQkgICBOVUxMKQ0K
-KwlTRVRfU1lTVEVNX1NMRUVQX1BNX09QUyhwbV9ydW50aW1lX2ZvcmNlX3N1c3BlbmQsDQorCQkJ
-CXBtX3J1bnRpbWVfZm9yY2VfcmVzdW1lKQ0KIH07DQogDQogc3RhdGljIHN0cnVjdCBwbGF0Zm9y
-bV9kcml2ZXIgZnNsX2VzYWlfZHJpdmVyID0gew0KIAkucHJvYmUgPSBmc2xfZXNhaV9wcm9iZSwN
-CisJLnJlbW92ZSA9IGZzbF9lc2FpX3JlbW92ZSwNCiAJLmRyaXZlciA9IHsNCiAJCS5uYW1lID0g
-ImZzbC1lc2FpLWRhaSIsDQogCQkucG0gPSAmZnNsX2VzYWlfcG1fb3BzLA0KLS0gDQoxLjkuMQ0K
-DQo=
+On 4/17/19 6:29 PM, Aneesh Kumar K.V wrote:
+> This patch maps vmalloc, IO and vmemap regions in the 0xc address range
+> instead of the current 0xd and 0xf range. This brings the mapping closer
+> to radix translation mode.
+> 
+> With hash 64K page size each of this region is 512TB whereas with 4K config
+> we are limited by the max page table range of 64TB and hence there regions
+> are of 16TB size.
+> 
+> The kernel mapping is now:
+> 
+>   On 4K hash
+> 
+>       kernel_region_map_size = 16TB
+>       kernel vmalloc start   = 0xc000100000000000
+>       kernel IO start        = 0xc000200000000000
+>       kernel vmemmap start   = 0xc000300000000000
+> 
+> 64K hash, 64K radix and 4k radix:
+> 
+>       kernel_region_map_size = 512TB
+>       kernel vmalloc start   = 0xc008000000000000
+>       kernel IO start        = 0xc00a000000000000
+>       kernel vmemmap start   = 0xc00c000000000000
+
+I missed this when sending out the patch.
+
+diff --git a/arch/powerpc/mm/pgtable-radix.c 
+b/arch/powerpc/mm/pgtable-radix.c
+index 263c3ff662c3..30fc0909f1d8 100644
+--- a/arch/powerpc/mm/pgtable-radix.c
++++ b/arch/powerpc/mm/pgtable-radix.c
+@@ -136,7 +136,7 @@ static int __map_kernel_page(unsigned long ea, 
+unsigned long pa,
+         BUILD_BUG_ON(TASK_SIZE_USER64 > RADIX_PGTABLE_RANGE);
+
+  #ifdef CONFIG_PPC_64K_PAGES
+-       BUILD_BUG_ON(RADIX_KERN_MAP_SIZE != MAX_EA_BITS_PER_CONTEXT);
++       BUILD_BUG_ON(RADIX_KERN_MAP_SIZE != (1UL << 
+MAX_EA_BITS_PER_CONTEXT));
+  #endif
+
+         if (unlikely(!slab_is_available()))
+
+
+
