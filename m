@@ -6,37 +6,36 @@ X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
 	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6CFA7C10F0B
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Apr 2019 06:58:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6DD2AC10F0B
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Apr 2019 07:00:10 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id DE21D20821
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Apr 2019 06:58:45 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DE21D20821
+	by mail.kernel.org (Postfix) with ESMTPS id 18DA0217D7
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Apr 2019 07:00:10 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 18DA0217D7
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44l91c0LMfzDqPW
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Apr 2019 16:58:44 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44l93D08DQzDqNr
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Apr 2019 17:00:08 +1000 (AEST)
 Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44l8sK0pBCzDqNm
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Apr 2019 16:51:33 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44l8sL3kP7zDqHm
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Apr 2019 16:51:34 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: by ozlabs.org (Postfix)
- id 44l8sJ5BVWz9s5c; Thu, 18 Apr 2019 16:51:32 +1000 (AEST)
+ id 44l8sL0mcCz9s4V; Thu, 18 Apr 2019 16:51:34 +1000 (AEST)
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 44l8sJ4CjDz9s9G; Thu, 18 Apr 2019 16:51:32 +1000 (AEST)
+ id 44l8sK4QhZz9sBb; Thu, 18 Apr 2019 16:51:33 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH v6 03/10] powerpc: Add framework for Kernel Userspace
- Protection
-Date: Thu, 18 Apr 2019 16:51:18 +1000
-Message-Id: <20190418065125.2687-3-mpe@ellerman.id.au>
+Subject: [PATCH v6 06/10] powerpc/64: Setup KUP on secondary CPUs
+Date: Thu, 18 Apr 2019 16:51:21 +1000
+Message-Id: <20190418065125.2687-6-mpe@ellerman.id.au>
 X-Mailer: git-send-email 2.20.1
 In-Reply-To: <20190418065125.2687-1-mpe@ellerman.id.au>
 References: <20190418065125.2687-1-mpe@ellerman.id.au>
@@ -57,114 +56,53 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Christophe Leroy <christophe.leroy@c-s.fr>
+From: Russell Currey <ruscur@russell.cc>
 
-This patch adds a skeleton for Kernel Userspace Protection
-functionnalities like Kernel Userspace Access Protection and Kernel
-Userspace Execution Prevention
+Some platforms (i.e. Radix MMU) need per-CPU initialisation for KUP.
 
-The subsequent implementation of KUAP for radix makes use of a MMU
-feature in order to patch out assembly when KUAP is disabled or
-unsupported. This won't work unless there's an entry point for KUP
-support before the feature magic happens, so for PPC64 setup_kup() is
-called early in setup.
+Any platforms that only want to do KUP initialisation once
+globally can just check to see if they're running on the boot CPU, or
+check if whatever setup they need has already been performed.
 
-On PPC32, feature_fixup() is done too early to allow the same.
+Note that this is only for 64-bit.
 
-Suggested-by: Russell Currey <ruscur@russell.cc>
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+Signed-off-by: Russell Currey <ruscur@russell.cc>
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
-v6: Unchanged.
-v5: Unchanged.
-v4: Unchanged.
----
- arch/powerpc/include/asm/kup.h | 11 +++++++++++
- arch/powerpc/kernel/setup_64.c |  7 +++++++
- arch/powerpc/mm/init-common.c  |  5 +++++
- arch/powerpc/mm/init_32.c      |  3 +++
- 4 files changed, 26 insertions(+)
- create mode 100644 arch/powerpc/include/asm/kup.h
 
-diff --git a/arch/powerpc/include/asm/kup.h b/arch/powerpc/include/asm/kup.h
-new file mode 100644
-index 000000000000..7a88b8b9b54d
---- /dev/null
-+++ b/arch/powerpc/include/asm/kup.h
-@@ -0,0 +1,11 @@
-+/* SPDX-License-Identifier: GPL-2.0 */
-+#ifndef _ASM_POWERPC_KUP_H_
-+#define _ASM_POWERPC_KUP_H_
-+
-+#ifndef __ASSEMBLY__
-+
-+void setup_kup(void);
-+
-+#endif /* !__ASSEMBLY__ */
-+
-+#endif /* _ASM_POWERPC_KUP_H_ */
+v6: setup_kup() can't be __init anymore.
+---
+ arch/powerpc/kernel/setup_64.c | 3 +++
+ arch/powerpc/mm/init-common.c  | 2 +-
+ 2 files changed, 4 insertions(+), 1 deletion(-)
+
 diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
-index ba404dd9ce1d..6179c4200339 100644
+index 6179c4200339..684e34493bf5 100644
 --- a/arch/powerpc/kernel/setup_64.c
 +++ b/arch/powerpc/kernel/setup_64.c
-@@ -68,6 +68,7 @@
- #include <asm/cputhreads.h>
- #include <asm/hw_irq.h>
- #include <asm/feature-fixups.h>
-+#include <asm/kup.h>
+@@ -390,6 +390,9 @@ void early_setup_secondary(void)
+ 	/* Initialize the hash table or TLB handling */
+ 	early_init_mmu_secondary();
  
- #include "setup.h"
- 
-@@ -331,6 +332,12 @@ void __init early_setup(unsigned long dt_ptr)
- 	 */
- 	configure_exceptions();
- 
-+	/*
-+	 * Configure Kernel Userspace Protection. This needs to happen before
-+	 * feature fixups for platforms that implement this using features.
-+	 */
++	/* Perform any KUP setup that is per-cpu */
 +	setup_kup();
 +
- 	/* Apply all the dynamic patching */
- 	apply_feature_fixups();
- 	setup_feature_keys();
+ 	/*
+ 	 * At this point, we can let interrupts switch to virtual mode
+ 	 * (the MMU has been setup), so adjust the MSR in the PACA to
 diff --git a/arch/powerpc/mm/init-common.c b/arch/powerpc/mm/init-common.c
-index 1e6910eb70ed..36d28e872289 100644
+index ecaedfff9992..6ea5607fc564 100644
 --- a/arch/powerpc/mm/init-common.c
 +++ b/arch/powerpc/mm/init-common.c
-@@ -24,6 +24,11 @@
- #include <linux/string.h>
- #include <asm/pgalloc.h>
- #include <asm/pgtable.h>
-+#include <asm/kup.h>
-+
-+void __init setup_kup(void)
-+{
-+}
- 
- #define CTOR(shift) static void ctor_##shift(void *addr) \
- {							\
-diff --git a/arch/powerpc/mm/init_32.c b/arch/powerpc/mm/init_32.c
-index 41a3513cadc9..80cc97cd8878 100644
---- a/arch/powerpc/mm/init_32.c
-+++ b/arch/powerpc/mm/init_32.c
-@@ -45,6 +45,7 @@
- #include <asm/tlb.h>
- #include <asm/sections.h>
- #include <asm/hugetlb.h>
-+#include <asm/kup.h>
- 
- #include "mmu_decl.h"
- 
-@@ -178,6 +179,8 @@ void __init MMU_init(void)
- 	btext_unmap();
- #endif
- 
-+	setup_kup();
-+
- 	/* Shortly after that, the entire linear mapping will be available */
- 	memblock_set_current_limit(lowmem_end_addr);
+@@ -45,7 +45,7 @@ static int __init parse_nosmap(char *p)
  }
+ early_param("nosmap", parse_nosmap);
+ 
+-void __init setup_kup(void)
++void setup_kup(void)
+ {
+ 	setup_kuep(disable_kuep);
+ 	setup_kuap(disable_kuap);
 -- 
 2.20.1
 
