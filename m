@@ -4,24 +4,24 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-8.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham autolearn_force=no
-	version=3.4.0
+	SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9F042C282DA
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Apr 2019 10:06:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 70ECFC282DA
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Apr 2019 10:08:01 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id BC719218FF
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Apr 2019 10:06:20 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id DCA79218FD
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Apr 2019 10:08:00 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=nifty.com header.i=@nifty.com header.b="LZ5W5Sbt"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BC719218FF
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=nifty.com header.i=@nifty.com header.b="PydnGSji"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DCA79218FD
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=socionext.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44ls7Z4t0bzDqST
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Apr 2019 20:06:18 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44ls9V5L4jzDqS5
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Apr 2019 20:07:58 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=softfail (mailfrom) smtp.mailfrom=socionext.com
  (client-ip=210.131.2.75; helo=conuserg-08.nifty.com;
@@ -29,35 +29,36 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=socionext.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=nifty.com header.i=@nifty.com header.b="LZ5W5Sbt"; 
+ unprotected) header.d=nifty.com header.i=@nifty.com header.b="PydnGSji"; 
  dkim-atps=neutral
 Received: from conuserg-08.nifty.com (conuserg-08.nifty.com [210.131.2.75])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44lrlt68HgzDqTV
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Apr 2019 19:49:14 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44lrmS237XzDqTy
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Apr 2019 19:49:43 +1000 (AEST)
 Received: from localhost.localdomain (p14092-ipngnfx01kyoto.kyoto.ocn.ne.jp
  [153.142.97.92]) (authenticated)
- by conuserg-08.nifty.com with ESMTP id x3J9mDiR012304;
- Fri, 19 Apr 2019 18:48:22 +0900
-DKIM-Filter: OpenDKIM Filter v2.10.3 conuserg-08.nifty.com x3J9mDiR012304
+ by conuserg-08.nifty.com with ESMTP id x3J9mDiW012304;
+ Fri, 19 Apr 2019 18:48:29 +0900
+DKIM-Filter: OpenDKIM Filter v2.10.3 conuserg-08.nifty.com x3J9mDiW012304
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nifty.com;
- s=dec2015msa; t=1555667303;
- bh=may15rFpYiMjCv7Gx5d6Hnsbnx9+yCkdoijkrZ87+8A=;
+ s=dec2015msa; t=1555667311;
+ bh=DZH3ndX+jwPMXyZB1kQ4OHEY2QeZuXlzmLdAIaBcM6M=;
  h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=LZ5W5SbtA5B2oGV0h5lwznB9JKhiilqmHNUldJhrjUQTSZY9vxebvU3V7wW56NkbJ
- Rnc6SQfGcsB1yMXTT+NdVLIhmHL7U1Z4tH9i+YXCl33cqFQ7SJd9WsB/oZJXRgygOI
- YKzZqdsmMW2A3uMDwjeooQdN420x/jTTBNIWOjFmEDNg1gF3/PyTiLDOXwX8pu7ByU
- lEDznHHJXJN1BHX3WLczN7spS778ABE8MnFmpxa63+ccInS3ZWvDEHfu0ez4+mDf8B
- 8Xtzq+72fPoa1Remq9MZ6OTJJTm0MBQ7h8USCIRhuHh5oWB6nWd5uVtKxJPxM9yyu6
- FUEmIviUowLIg==
+ b=PydnGSjiKyIo14J4fAKaV6koaZeZ0EuTcw4Tq4V8uwNBifRf97/8NMU4AZxYotm6W
+ h/czkyZ7MDVZ2xZhy6Byuv6Z4Ztq0jvEL+1rHQtL3Fe/LMX4RBELdDA3ZegwXjdj4m
+ UqJDwhBzKD/pptPsi5aw/KnB/EONfPoQF8eebdfHJaMgBG170Y/dNM8a4ryp4EVyLX
+ Js9Op5+csNk9r2v3z6G8n18zKMuFlHT/YDZazi9Kv9zGOPV9qNMg9QJWzNAvml8NMc
+ aNwXmMoinYdq9Px4fC8i7300TKOZmLWc7fLIBYNhAM/kMZlHf9tWKsM00pZIZMM8B/
+ CMFiRyUCM3+HA==
 X-Nifty-SrcIP: [153.142.97.92]
 From: Masahiro Yamada <yamada.masahiro@socionext.com>
 To: Andrew Morton <akpm@linux-foundation.org>,
  linux-arch <linux-arch@vger.kernel.org>
-Subject: [PATCH v2 06/11] MIPS: mark __fls() as __always_inline
-Date: Fri, 19 Apr 2019 18:47:49 +0900
-Message-Id: <20190419094754.24667-7-yamada.masahiro@socionext.com>
+Subject: [PATCH v2 11/11] compiler: allow all arches to enable
+ CONFIG_OPTIMIZE_INLINING
+Date: Fri, 19 Apr 2019 18:47:54 +0900
+Message-Id: <20190419094754.24667-12-yamada.masahiro@socionext.com>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20190419094754.24667-1-yamada.masahiro@socionext.com>
 References: <20190419094754.24667-1-yamada.masahiro@socionext.com>
@@ -81,41 +82,116 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This prepares to move CONFIG_OPTIMIZE_INLINING from x86 to a common
-place. We need to eliminate potential issues beforehand.
+Commit 60a3cdd06394 ("x86: add optimized inlining") introduced
+CONFIG_OPTIMIZE_INLINING, but it has been available only for x86.
 
-If it is enabled for mips, the following errors are reported:
+The idea is obviously arch-agnostic. This commit moves the config
+entry from arch/x86/Kconfig.debug to lib/Kconfig.debug so that all
+architectures can benefit from it.
 
-arch/mips/mm/sc-mips.o: In function `mips_sc_prefetch_enable.part.2':
-sc-mips.c:(.text+0x98): undefined reference to `mips_gcr_base'
-sc-mips.c:(.text+0x9c): undefined reference to `mips_gcr_base'
-sc-mips.c:(.text+0xbc): undefined reference to `mips_gcr_base'
-sc-mips.c:(.text+0xc8): undefined reference to `mips_gcr_base'
-sc-mips.c:(.text+0xdc): undefined reference to `mips_gcr_base'
-arch/mips/mm/sc-mips.o:sc-mips.c:(.text.unlikely+0x44): more undefined references to `mips_gcr_base'
+This can make a huge difference in kernel image size especially when
+CONFIG_OPTIMIZE_FOR_SIZE is enabled.
+
+For example, I got 3.5% smaller arm64 kernel for v5.1-rc1.
+
+  dec       file
+  18983424  arch/arm64/boot/Image.before
+  18321920  arch/arm64/boot/Image.after
+
+This also slightly improves the "Kernel hacking" Kconfig menu as
+e61aca5158a8 ("Merge branch 'kconfig-diet' from Dave Hansen') suggested;
+this config option would be a good fit in the "compiler option" menu.
 
 Signed-off-by: Masahiro Yamada <yamada.masahiro@socionext.com>
 ---
 
 Changes in v2:
-  - new patch
+  - split into a separate patch
 
- arch/mips/include/asm/bitops.h | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/x86/Kconfig               |  3 ---
+ arch/x86/Kconfig.debug         | 14 --------------
+ include/linux/compiler_types.h |  3 +--
+ lib/Kconfig.debug              | 14 ++++++++++++++
+ 4 files changed, 15 insertions(+), 19 deletions(-)
 
-diff --git a/arch/mips/include/asm/bitops.h b/arch/mips/include/asm/bitops.h
-index 830c93a010c3..6a26ead1c2b6 100644
---- a/arch/mips/include/asm/bitops.h
-+++ b/arch/mips/include/asm/bitops.h
-@@ -482,7 +482,7 @@ static inline void __clear_bit_unlock(unsigned long nr, volatile unsigned long *
-  * Return the bit position (0..63) of the most significant 1 bit in a word
-  * Returns -1 if no 1 bit exists
-  */
--static inline unsigned long __fls(unsigned long word)
-+static __always_inline unsigned long __fls(unsigned long word)
- {
- 	int num;
+diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
+index 5ad92419be19..9e93d109a6cb 100644
+--- a/arch/x86/Kconfig
++++ b/arch/x86/Kconfig
+@@ -310,9 +310,6 @@ config ZONE_DMA32
+ config AUDIT_ARCH
+ 	def_bool y if X86_64
  
+-config ARCH_SUPPORTS_OPTIMIZED_INLINING
+-	def_bool y
+-
+ config ARCH_SUPPORTS_DEBUG_PAGEALLOC
+ 	def_bool y
+ 
+diff --git a/arch/x86/Kconfig.debug b/arch/x86/Kconfig.debug
+index 15d0fbe27872..f730680dc818 100644
+--- a/arch/x86/Kconfig.debug
++++ b/arch/x86/Kconfig.debug
+@@ -266,20 +266,6 @@ config CPA_DEBUG
+ 	---help---
+ 	  Do change_page_attr() self-tests every 30 seconds.
+ 
+-config OPTIMIZE_INLINING
+-	bool "Allow gcc to uninline functions marked 'inline'"
+-	---help---
+-	  This option determines if the kernel forces gcc to inline the functions
+-	  developers have marked 'inline'. Doing so takes away freedom from gcc to
+-	  do what it thinks is best, which is desirable for the gcc 3.x series of
+-	  compilers. The gcc 4.x series have a rewritten inlining algorithm and
+-	  enabling this option will generate a smaller kernel there. Hopefully
+-	  this algorithm is so good that allowing gcc 4.x and above to make the
+-	  decision will become the default in the future. Until then this option
+-	  is there to test gcc for this.
+-
+-	  If unsure, say N.
+-
+ config DEBUG_ENTRY
+ 	bool "Debug low-level entry code"
+ 	depends on DEBUG_KERNEL
+diff --git a/include/linux/compiler_types.h b/include/linux/compiler_types.h
+index ba814f18cb4c..19e58b9138a0 100644
+--- a/include/linux/compiler_types.h
++++ b/include/linux/compiler_types.h
+@@ -140,8 +140,7 @@ struct ftrace_likely_data {
+  * Do not use __always_inline here, since currently it expands to inline again
+  * (which would break users of __always_inline).
+  */
+-#if !defined(CONFIG_ARCH_SUPPORTS_OPTIMIZED_INLINING) || \
+-	!defined(CONFIG_OPTIMIZE_INLINING)
++#if !defined(CONFIG_OPTIMIZE_INLINING)
+ #define inline inline __attribute__((__always_inline__)) __gnu_inline \
+ 	__maybe_unused notrace
+ #else
+diff --git a/lib/Kconfig.debug b/lib/Kconfig.debug
+index 0d9e81779e37..f8f284f46c85 100644
+--- a/lib/Kconfig.debug
++++ b/lib/Kconfig.debug
+@@ -310,6 +310,20 @@ config HEADERS_CHECK
+ 	  exported to $(INSTALL_HDR_PATH) (usually 'usr/include' in
+ 	  your build tree), to make sure they're suitable.
+ 
++config OPTIMIZE_INLINING
++	bool "Allow compiler to uninline functions marked 'inline'"
++	help
++	  This option determines if the kernel forces gcc to inline the functions
++	  developers have marked 'inline'. Doing so takes away freedom from gcc to
++	  do what it thinks is best, which is desirable for the gcc 3.x series of
++	  compilers. The gcc 4.x series have a rewritten inlining algorithm and
++	  enabling this option will generate a smaller kernel there. Hopefully
++	  this algorithm is so good that allowing gcc 4.x and above to make the
++	  decision will become the default in the future. Until then this option
++	  is there to test gcc for this.
++
++	  If unsure, say N.
++
+ config DEBUG_SECTION_MISMATCH
+ 	bool "Enable full Section mismatch analysis"
+ 	help
 -- 
 2.17.1
 
