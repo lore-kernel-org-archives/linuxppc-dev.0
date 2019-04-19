@@ -2,96 +2,89 @@ Return-Path: <SRS0=ts8b=SV=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.0 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
+	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_PASS,URIBL_BLOCKED,USER_AGENT_MUTT autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1A2ACC282DA
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Apr 2019 17:29:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 93674C282DA
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Apr 2019 18:11:52 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3F748222DE
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Apr 2019 17:29:12 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id CA2B2222E6
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Apr 2019 18:11:51 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=linux-foundation.org header.i=@linux-foundation.org header.b="O6Q5+GrA"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3F748222DE
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linux-foundation.org
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="SwCw9SHk"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CA2B2222E6
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44m2yY5np0zDqW7
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 20 Apr 2019 03:29:09 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44m3vn4tfvzDqWc
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 20 Apr 2019 04:11:49 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=linuxfoundation.org
- (client-ip=2a00:1450:4864:20::143; helo=mail-lf1-x143.google.com;
- envelope-from=torvalds@linuxfoundation.org; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=linux-foundation.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=linux-foundation.org header.i=@linux-foundation.org
- header.b="O6Q5+GrA"; dkim-atps=neutral
-Received: from mail-lf1-x143.google.com (mail-lf1-x143.google.com
- [IPv6:2a00:1450:4864:20::143])
+ spf=pass (mailfrom) smtp.mailfrom=gmail.com
+ (client-ip=2607:f8b0:4864:20::541; helo=mail-pg1-x541.google.com;
+ envelope-from=nicoleotsuka@gmail.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="SwCw9SHk"; 
+ dkim-atps=neutral
+Received: from mail-pg1-x541.google.com (mail-pg1-x541.google.com
+ [IPv6:2607:f8b0:4864:20::541])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44m2wt1dylzDqVQ
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 20 Apr 2019 03:27:40 +1000 (AEST)
-Received: by mail-lf1-x143.google.com with SMTP id w23so4479554lfc.9
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Apr 2019 10:27:40 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=linux-foundation.org; s=google;
- h=mime-version:references:in-reply-to:from:date:message-id:subject:to
- :cc; bh=j4Pa6AaD11YFWbmWnx+oyTpQprnUAPqORvuUTpM5Xuw=;
- b=O6Q5+GrAK7AxKAU6R3bcr5tL2B2L81VIjsIgmsOOhsZVD8iJ86wAGcqox7QC0zGGm1
- W9L53HaLy/EVleG8CNrqtDGYiTHd8nr/LevmYFsuM9BgGpzLymCavDN+bBC9M/z6DcVF
- g3axT4iMKotCNYPdxBtlwANC2CxFrlsBybWog=
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44m3sz0ZglzDqVT
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 20 Apr 2019 04:10:12 +1000 (AEST)
+Received: by mail-pg1-x541.google.com with SMTP id p6so2963317pgh.9
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Apr 2019 11:10:12 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=date:from:to:cc:subject:message-id:references:mime-version
+ :content-disposition:in-reply-to:user-agent;
+ bh=8DHK4rYDwWPVNuuRQozpzQhPs53i6eTIw/NWHTPBpUw=;
+ b=SwCw9SHkBEdf0FNwY3ddHfVt/5MXgvQz8yLP6w+50L7rBCJTPluD7bwwgk4+1Wl1Kz
+ 5IAjZaOb6rtGAjK9pbFCcTXW3IrwKt+9noZyd+6mQ/5kGe/c9dUp3EwlqSwS1ywQMsSD
+ QZY6XymID6Nl8Pq01a9OmT64PczfAR1cF6Xn/fM/sdubY9RfrCT6hqElx/m8RJDQkoYW
+ /iRoT07AnZ1mvW6PSt0sgl7Ab56eLwwj3lvm+lubyo65xPl+UEI1dASI32AsYQAfMKIN
+ xYLabW3+MuWY3sQHXKl+knWnBgRmj59ZaM7HhzJI6bplqm8AYTlO6tpEm0GImFXLTvKS
+ c3Fg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
- h=x-gm-message-state:mime-version:references:in-reply-to:from:date
- :message-id:subject:to:cc;
- bh=j4Pa6AaD11YFWbmWnx+oyTpQprnUAPqORvuUTpM5Xuw=;
- b=bopcYDk40Qz4JjfUFEAeaMWTvIC3sICjon9D8ci4ql49BefXL9gzl3l/wiwi4YxiAD
- 1Z99I6aRP9GDmY5jxLNH7dg1q9cmLPI3WTB0fYlz4Y1L9+PCcabeMaA6qJkGcySNAk5N
- Db8fqVZ6tcMuaS0AiruyIfdSR04NOnQKHl6QiwG+jNWXCkjnqRJg6EpWetGZIvI7qb2W
- +/X9TuGoiiBiHTEVLhcJQeIhFbW9PhZ8pj5LiOYYClWjaCT03ME8hjVUA2b5qi2SwqEL
- dFVl1utRplh1E/DaMZJnTlShOIKmKVnFfWVcFnfHE3J90eZgdY9u7bPS+UL57Im4jeSb
- sTYg==
-X-Gm-Message-State: APjAAAU/EGpN29bOpP3RaeSaaF02KopsfRf7k3JzjGdeKeo7IusCRHFA
- XLgGFK6UQx0943AnEZUwIvchSkycqfM=
-X-Google-Smtp-Source: APXvYqz5xHne5paUk0kIUQntW6md49cbqgmBQRE4AwDXkre2hC6AqSfR1k6uY6Mh15HVCHWZlFEfCg==
-X-Received: by 2002:a19:f705:: with SMTP id z5mr2862351lfe.93.1555694855926;
- Fri, 19 Apr 2019 10:27:35 -0700 (PDT)
-Received: from mail-lj1-f176.google.com (mail-lj1-f176.google.com.
- [209.85.208.176])
- by smtp.gmail.com with ESMTPSA id y20sm1269767lfe.8.2019.04.19.10.27.34
- for <linuxppc-dev@lists.ozlabs.org>
- (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
- Fri, 19 Apr 2019 10:27:34 -0700 (PDT)
-Received: by mail-lj1-f176.google.com with SMTP id q66so5202251ljq.7
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Apr 2019 10:27:34 -0700 (PDT)
-X-Received: by 2002:a2e:3e0e:: with SMTP id l14mr2872561lja.125.1555694853846; 
- Fri, 19 Apr 2019 10:27:33 -0700 (PDT)
+ h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+ :mime-version:content-disposition:in-reply-to:user-agent;
+ bh=8DHK4rYDwWPVNuuRQozpzQhPs53i6eTIw/NWHTPBpUw=;
+ b=EMLxpqD5JqTxHfsHN/qCT9SS1Djk1tDBXmDYfFL4l57LXLqYK9j5GC94d/xiVhXB63
+ m0jllcffvge6Bc9IauLFAR1JvPmF4A6r0YMvDZtTGxr1AyBQd5sm8krjl/eBC5v8/PGV
+ 9hAxHL0OT7ZXv0KaHZHmzFYXLTiu7Sb2s7xq0oVnGTOSPClqHMHCt4Pd0IPNwKHNkeps
+ g07PSV0sbsVzJCMieDrbyV5kQECFSljpX6z0U4URd35MsLXoiXbLkSWKirwjWnV6sGVU
+ E5qCwXZ0zZQ3hUa0PB9XXTBGXNQa6FtozCarpTAZcYqSH7lijLng2Wd9AORb3ER3iUyJ
+ zdng==
+X-Gm-Message-State: APjAAAXhU21IFchAMlX9IUZPmrjD2QiH3AOEnYzmj0hZnD0MX8RKWwXq
+ ufSPPUIo6QbpgeSph7n4gVM=
+X-Google-Smtp-Source: APXvYqxXTtMHqYYynxTETSbHUOU21HgptNIMEddHodFNpZQSo9L8d6bCM19EOo6YY03u1fW/a6agzg==
+X-Received: by 2002:a63:d84a:: with SMTP id k10mr5084606pgj.441.1555697409412; 
+ Fri, 19 Apr 2019 11:10:09 -0700 (PDT)
+Received: from Asurada-Nvidia.nvidia.com (thunderhill.nvidia.com.
+ [216.228.112.22])
+ by smtp.gmail.com with ESMTPSA id i129sm9382006pfc.163.2019.04.19.11.10.08
+ (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
+ Fri, 19 Apr 2019 11:10:09 -0700 (PDT)
+Date: Fri, 19 Apr 2019 11:10:03 -0700
+From: Nicolin Chen <nicoleotsuka@gmail.com>
+To: "S.j. Wang" <shengjiu.wang@nxp.com>
+Subject: Re: [PATCH V4 1/3] ASoC: fsl_asrc: Fix the issue about unsupported
+ rate
+Message-ID: <20190419181003.GA1136@Asurada-Nvidia.nvidia.com>
+References: <cover.1555669068.git.shengjiu.wang@nxp.com>
+ <06c3e420b9fabfbec67becc2f9de009ce79a1d4b.1555669068.git.shengjiu.wang@nxp.com>
 MIME-Version: 1.0
-References: <CAHk-=wjvcuyCQGnfOhooaL1H4H63qXO=xgo+9yncSOG=eK+kbA@mail.gmail.com>
- <20190415051919.GA31481@infradead.org>
- <CAHk-=wj7jgMOVFW0tiU-X+zhg6+Rn7mEBTej+f26rV3zXezOSA@mail.gmail.com>
- <20190416110906.6c773aff@mschwideX1> <20190416140658.2cb73a3f@mschwideX1>
- <CAHk-=wjKi5C+Onhp5Vs5BQxHbaBud9M3cTS-S6Tr9yDY4dS-Sw@mail.gmail.com>
- <CAHk-=wj2SW0Zno0Yn=S9wrsmHOKV0FiFPiPS4TM=Gn8yjfYXAg@mail.gmail.com>
- <20190417094637.51ad4c67@mschwideX1> <20190417100244.42e29736@mschwideX1>
- <CAHk-=wj5j-zMo7hVNxiw3+5L2d1WQVm3x4fbpg=OXLzDh8FhYg@mail.gmail.com>
- <20190418100218.0a4afd51@mschwideX1>
- <CAHk-=whajv8Fw2VcBqZUs0hfx1Dq4fYj3TEEx4yfR3E8+rLS1A@mail.gmail.com>
- <20190418204144.16adf2a0@mschwideX1> <20190419153307.4f2911b5@mschwideX1>
-In-Reply-To: <20190419153307.4f2911b5@mschwideX1>
-From: Linus Torvalds <torvalds@linux-foundation.org>
-Date: Fri, 19 Apr 2019 10:27:17 -0700
-X-Gmail-Original-Message-ID: <CAHk-=wj6yp7hkJ_wR38dhdDRkAHQaEx28v2FkVT9hDFXX_qfjA@mail.gmail.com>
-Message-ID: <CAHk-=wj6yp7hkJ_wR38dhdDRkAHQaEx28v2FkVT9hDFXX_qfjA@mail.gmail.com>
-Subject: Re: Linux 5.1-rc5
-To: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <06c3e420b9fabfbec67becc2f9de009ce79a1d4b.1555669068.git.shengjiu.wang@nxp.com>
+User-Agent: Mutt/1.9.4 (2018-02-28)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -103,59 +96,56 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Christoph Hellwig <hch@infradead.org>, linuxppc-dev@lists.ozlabs.org,
- Linux List Kernel Mailing <linux-kernel@vger.kernel.org>,
- linux-s390 <linux-s390@vger.kernel.org>
+Cc: "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
+ "timur@kernel.org" <timur@kernel.org>,
+ "Xiubo.Lee@gmail.com" <Xiubo.Lee@gmail.com>,
+ "festevam@gmail.com" <festevam@gmail.com>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "broonie@kernel.org" <broonie@kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, Apr 19, 2019 at 6:33 AM Martin Schwidefsky
-<schwidefsky@de.ibm.com> wrote:
->
-> That problem got stuck in my head and I thought more about it. Why not
-> emulate the static folding sequence in the s390 page table code?
+On Fri, Apr 19, 2019 at 10:23:50AM +0000, S.j. Wang wrote:
+> When the output sample rate is [8kHz, 30kHz], the limitation
+> of the supported ratio range is (1/24, 8). In the driver
+> we use (8kHz, 30kHz) instead of [8kHz, 30kHz].
+> So this patch is to fix this issue and the potential rounding
+> issue with divider.
+> 
+> Fixes: fff6e03c7b65 ("ASoC: fsl_asrc: add support for 8-30kHz
+> output sample rate")
+> Cc: <stable@vger.kernel.org>
+> Signed-off-by: Shengjiu Wang <shengjiu.wang@nxp.com>
+> ---
+>  sound/soc/fsl/fsl_asrc.c | 8 ++++----
+>  1 file changed, 4 insertions(+), 4 deletions(-)
+> 
+> diff --git a/sound/soc/fsl/fsl_asrc.c b/sound/soc/fsl/fsl_asrc.c
+> index 0b937924d2e4..5b8adc7fb117 100644
+> --- a/sound/soc/fsl/fsl_asrc.c
+> +++ b/sound/soc/fsl/fsl_asrc.c
+> @@ -282,10 +282,10 @@ static int fsl_asrc_config_pair(struct fsl_asrc_pair *pair)
+>  		return -EINVAL;
+>  	}
+>  
+> -	if ((outrate > 8000 && outrate < 30000) &&
+> -	    (outrate/inrate > 24 || inrate/outrate > 8)) {
+> -		pair_err("exceed supported ratio range [1/24, 8] for \
+> -				inrate/outrate: %d/%d\n", inrate, outrate);
+> +	if ((outrate >= 8000 && outrate <= 30000) &&
+> +	    (outrate > 24 * inrate || inrate > 8 * outrate)) {
+> +		pair_err("exceed supported ratio range (1/24, 8) for inrate/outrate: %d/%d\n",
 
-So this model seems much closer to what x86 does in its folding, where
-the pattern is basically
+Using one of the conditions:
+	if (inrate > 8 * outrate)
+		pair_err();
 
-> static inline pX-1d_t *pXd_offset(pXd_t *pXd, unsigned long address)
-> {
->         if (pXd_folded(pXd)
->                 return (pX-1d_t *) pXd;
->         return (pX-1d_t *) pXd_deref(*pXd) + pXd_index(address);
-> }
+This means:
+	if (inrate <= 8 * outrate)
+		/* Everything is fine */
 
-which is really how the code is designed to work (ie the folded entry
-doesn't actually do anything to the page directory pointer, it just
-says "ok, we'll use this exact page directory pointer for the next
-lower level instead".
+So the supported ratio range is still [1/24, 8] right?
 
-And that's very much what allows the generic gup code to load the
-entry once, and use a temporary, and as you walk down the chain, if it
-is folded it just then uses that (previous) temporary value for the
-next level instead. IOW, the lower level page table is hidden inside
-the upper level one, and folding just means "don't do any offsets,
-don't change any values, just use the entry as-is for the next lower
-level".
-
-So I think that's the right thing to do.
-
-Looking at the s390 code, it seems to fold things the other way,
-conceptually hiding the upper level inside the lower one, and always
-doing the offset thing (but just avoiding the dereference).
-
-Maybe there's some reason why the s390 code does it that way, but I
-think your new model is the right one, and hopefully means you can use
-the generic page table walking more easily.
-
-Of course, the s390 folding is very different from the x86 one (or the
-generic fixed 3-level of 4-level cases). The x86 folding doesn't
-depend on the contents of the page tables, it's just entirely static
-(well, the 5th level is conditional, but it's conditional on a static
-key, not on what is in the page tables). So maybe the old model of
-s390 made more sense in that context, but I look at your new suggested
-pXd_offset() functions and I go "yeah, that's the way it's supposed to
-work".
-
-                 Linus
+Thanks
