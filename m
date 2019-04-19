@@ -4,23 +4,24 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-8.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+	SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 199CAC282DA
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Apr 2019 10:00:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B4812C282DA
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Apr 2019 10:01:37 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 88EA1218FD
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Apr 2019 09:59:59 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 2C70A218FD
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Apr 2019 10:01:36 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=nifty.com header.i=@nifty.com header.b="lNyrmzkr"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 88EA1218FD
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=nifty.com header.i=@nifty.com header.b="jiH6HICA"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2C70A218FD
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=socionext.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44ls0F5JNhzDqVp
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Apr 2019 19:59:57 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44ls261m8QzDqVR
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Apr 2019 20:01:34 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=softfail (mailfrom) smtp.mailfrom=socionext.com
  (client-ip=210.131.2.75; helo=conuserg-08.nifty.com;
@@ -28,36 +29,36 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=socionext.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=nifty.com header.i=@nifty.com header.b="lNyrmzkr"; 
+ unprotected) header.d=nifty.com header.i=@nifty.com header.b="jiH6HICA"; 
  dkim-atps=neutral
 Received: from conuserg-08.nifty.com (conuserg-08.nifty.com [210.131.2.75])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44lrls1K0dzDqTG
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44lrls26f7zDqTJ
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Apr 2019 19:49:12 +1000 (AEST)
 Received: from localhost.localdomain (p14092-ipngnfx01kyoto.kyoto.ocn.ne.jp
  [153.142.97.92]) (authenticated)
- by conuserg-08.nifty.com with ESMTP id x3J9mDiS012304;
- Fri, 19 Apr 2019 18:48:24 +0900
-DKIM-Filter: OpenDKIM Filter v2.10.3 conuserg-08.nifty.com x3J9mDiS012304
+ by conuserg-08.nifty.com with ESMTP id x3J9mDiU012304;
+ Fri, 19 Apr 2019 18:48:26 +0900
+DKIM-Filter: OpenDKIM Filter v2.10.3 conuserg-08.nifty.com x3J9mDiU012304
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nifty.com;
- s=dec2015msa; t=1555667305;
- bh=anDfa6W5ONHce754PAdi2seOW7FOosRRq63TZhqjhq8=;
+ s=dec2015msa; t=1555667307;
+ bh=ZmcBGqsNIopkSvb/z9Yz7Nb+RmV19Ubtd5G31RF7cjs=;
  h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=lNyrmzkrEzGdMdwdrwqYzWssnU73a1VE4o5EHE/QGOpC5eRh1jIeLJfgHCUNbbRZf
- P4fGEzjVdDAQfOVvzk/YsYpkQSYmCLsf5To/YlPN73ztVlDU5Rh0r5JUcnC7G2OsOH
- VpYq4BJw/uwG7phH5Dp3rCKdJXd2RgEb6fCPq33mQopk0novAobnQfoJYb7nbXZnRF
- nnYQf7w/ZMmRIpCQTlT1WW5gkd5vsBLTsbmcT0wM640XY3LvoLoK5l/zP7v2pWaHEO
- dfocS5SF1QPcvAXyAd/v2vXtMjwQNe50qA+EoOFt9UiQb0LoAZmVqQz/T9z9k1Oaa2
- SCp/R5bpxgF9A==
+ b=jiH6HICApN78Kk5hFdRE9UlFB3DbHyO32Exybcj2tFMz2jpLTLwgX2JIw8K1qWK4T
+ E1O0Ew8v+k/nfXa5VI4SNERYU2iuWyUszoCaY8TIGwtXn/On+OQ6Cf6HlcF4EZFBOu
+ QDInHPQIydJH4bbzuu6Xa9Ps+zAFaqOuDnY00oHB3JgAOWUEXovFVa0xxzWMI/qUqh
+ 9sOeDdWNiIdD62ji12XR1RvY2JL7XWAKfttdTlSoHNIoaNkVqvDLCzimUvF2iPf2Z9
+ j2/vL15IZ64QIadnS1igjZWzEXPL/nGG8jrU+NfUOpmpPCXsyZoz4Ce0wDf84uAPVx
+ cNXO0eCfrYgCg==
 X-Nifty-SrcIP: [153.142.97.92]
 From: Masahiro Yamada <yamada.masahiro@socionext.com>
 To: Andrew Morton <akpm@linux-foundation.org>,
  linux-arch <linux-arch@vger.kernel.org>
-Subject: [PATCH v2 07/11] ARM: mark setup_machine_tags() stub as __init
- __noreturn
-Date: Fri, 19 Apr 2019 18:47:50 +0900
-Message-Id: <20190419094754.24667-8-yamada.masahiro@socionext.com>
+Subject: [PATCH v2 09/11] powerpc/mm/radix: mark
+ __radix__flush_tlb_range_psize() as __always_inline
+Date: Fri, 19 Apr 2019 18:47:52 +0900
+Message-Id: <20190419094754.24667-10-yamada.masahiro@socionext.com>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20190419094754.24667-1-yamada.masahiro@socionext.com>
 References: <20190419094754.24667-1-yamada.masahiro@socionext.com>
@@ -84,37 +85,36 @@ Sender: "Linuxppc-dev"
 This prepares to move CONFIG_OPTIMIZE_INLINING from x86 to a common
 place. We need to eliminate potential issues beforehand.
 
-If it is enabled for arm, Clang build results in the following modpost
-warning:
+If it is enabled for powerpc, the following error is reported:
 
-WARNING: vmlinux.o(.text+0x1124): Section mismatch in reference from the function setup_machine_tags() to the function .init.text:early_print()
-The function setup_machine_tags() references
-the function __init early_print().
-This is often because setup_machine_tags lacks a __init
-annotation or the annotation of early_print is wrong.
+arch/powerpc/mm/tlb-radix.c: In function '__radix__flush_tlb_range_psize':
+arch/powerpc/mm/tlb-radix.c:104:2: error: asm operand 3 probably doesn't match constraints [-Werror]
+  asm volatile(PPC_TLBIEL(%0, %4, %3, %2, %1)
+  ^~~
+arch/powerpc/mm/tlb-radix.c:104:2: error: impossible constraint in 'asm'
 
 Signed-off-by: Masahiro Yamada <yamada.masahiro@socionext.com>
 ---
 
 Changes in v2:
-  - new patch
+  - split into a separate patch
 
- arch/arm/kernel/atags.h | 2 +-
+ arch/powerpc/mm/tlb-radix.c | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/arch/arm/kernel/atags.h b/arch/arm/kernel/atags.h
-index 201100226301..067e12edc341 100644
---- a/arch/arm/kernel/atags.h
-+++ b/arch/arm/kernel/atags.h
-@@ -5,7 +5,7 @@ void convert_to_tag_list(struct tag *tags);
- const struct machine_desc *setup_machine_tags(phys_addr_t __atags_pointer,
- 	unsigned int machine_nr);
- #else
--static inline const struct machine_desc *
-+static inline const struct machine_desc * __init __noreturn
- setup_machine_tags(phys_addr_t __atags_pointer, unsigned int machine_nr)
+diff --git a/arch/powerpc/mm/tlb-radix.c b/arch/powerpc/mm/tlb-radix.c
+index 6a23b9ebd2a1..a2b2848f0ae3 100644
+--- a/arch/powerpc/mm/tlb-radix.c
++++ b/arch/powerpc/mm/tlb-radix.c
+@@ -928,7 +928,7 @@ void radix__tlb_flush(struct mmu_gather *tlb)
+ 	tlb->need_flush_all = 0;
+ }
+ 
+-static inline void __radix__flush_tlb_range_psize(struct mm_struct *mm,
++static __always_inline void __radix__flush_tlb_range_psize(struct mm_struct *mm,
+ 				unsigned long start, unsigned long end,
+ 				int psize, bool also_pwc)
  {
- 	early_print("no ATAGS support: can't continue\n");
 -- 
 2.17.1
 
