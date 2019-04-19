@@ -4,87 +4,62 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
-	autolearn=ham autolearn_force=no version=3.4.0
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 19383C282DA
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Apr 2019 15:39:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B76CFC282DA
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Apr 2019 15:47:19 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 91B68222D4
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Apr 2019 15:39:15 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 91B68222D4
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
+	by mail.kernel.org (Postfix) with ESMTPS id E04CC222CE
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Apr 2019 15:47:18 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E04CC222CE
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=debian.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44m0Wj2QTHzDqTj
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 20 Apr 2019 01:39:13 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44m0j046HSzDqTg
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 20 Apr 2019 01:47:16 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=softfail (mailfrom) smtp.mailfrom=kaod.org
- (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=groug@kaod.org; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=gmail.com
+ (client-ip=209.85.210.66; helo=mail-ot1-f66.google.com;
+ envelope-from=mathieu.malaterre@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=kaod.org
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ dmarc=none (p=none dis=none) header.from=debian.org
+Received: from mail-ot1-f66.google.com (mail-ot1-f66.google.com
+ [209.85.210.66])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44m0Th143hzDqTb
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 20 Apr 2019 01:37:26 +1000 (AEST)
-Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x3JFTcCU092544
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Apr 2019 11:37:24 -0400
-Received: from e06smtp07.uk.ibm.com (e06smtp07.uk.ibm.com [195.75.94.103])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2rygf69m6b-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Apr 2019 11:37:24 -0400
-Received: from localhost
- by e06smtp07.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <groug@kaod.org>;
- Fri, 19 Apr 2019 16:37:21 +0100
-Received: from b06cxnps4075.portsmouth.uk.ibm.com (9.149.109.197)
- by e06smtp07.uk.ibm.com (192.168.101.137) with IBM ESMTP SMTP Gateway:
- Authorized Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Fri, 19 Apr 2019 16:37:19 +0100
-Received: from d06av26.portsmouth.uk.ibm.com (d06av26.portsmouth.uk.ibm.com
- [9.149.105.62])
- by b06cxnps4075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x3JFbIKm59113516
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Fri, 19 Apr 2019 15:37:18 GMT
-Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 6B063AE051;
- Fri, 19 Apr 2019 15:37:18 +0000 (GMT)
-Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 34487AE057;
- Fri, 19 Apr 2019 15:37:18 +0000 (GMT)
-Received: from bahia.lan (unknown [9.145.170.150])
- by d06av26.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Fri, 19 Apr 2019 15:37:18 +0000 (GMT)
-Subject: [PATCH] vfio-pci/nvlink2: Fix potential VMA leak
-From: Greg Kurz <groug@kaod.org>
-To: linux-kernel@vger.kernel.org
-Date: Fri, 19 Apr 2019 17:37:17 +0200
-User-Agent: StGit/unknown-version
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44m0gH5pD0zDqT1
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 20 Apr 2019 01:45:45 +1000 (AEST)
+Received: by mail-ot1-f66.google.com with SMTP id c16so4655649otn.4
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Apr 2019 08:45:45 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+ :message-id:subject:to:cc;
+ bh=rgm+DlPYj4YwXD0IUlXbIhCkCaP4ItKaQlGxc47GSHs=;
+ b=e7KNZQhlIJJ2nMwEbD5JuO/qZFZovAZYh8UUPmsliK0H1n8SBbwRSbj5N440jZQz+L
+ 4L8yAh4Hh0DO8iUqR0tBJVlXFGxqn0PLmoUqAoHhqlSs11woUvPVzzFEDIcw622QIzfJ
+ Ou2qXRxFl+WV6FvQXRTF9EQ5bKpkkUuhsyq+z2vN0XeFJuHv56sUNnNzsRq50+6i0F3d
+ PaYz9APAxRH0Yo8ZkYzSEyEKBkd+TCcu3+mhvAt005URhGtIJrHYQV2/1iKnVTeyMOYm
+ zOwvHGGNtqoXTMgvP8DCmS3wwHPOcK5cClwmWR7PYCPXPi7jNgqALWjNs7QcAeuyirOm
+ GEOw==
+X-Gm-Message-State: APjAAAWOpSbmF8b9kCMJSiK5MmBHQEKEtweWB1a/WDMWr/QX5G7rio7w
+ wwBGomQ7OWYY7m4u0/bOTeZ1H8NfhUMBcPS0HqI=
+X-Google-Smtp-Source: APXvYqyzS5bhws5CT7A5nXn4OpfeWT4dvhjZS6lwiZnWt+A2qa8xQlOemhAXzlKYNBL6JXPtGyLamsLnBS+1CfuvVbc=
+X-Received: by 2002:a9d:7dda:: with SMTP id k26mr2666597otn.354.1555688742221; 
+ Fri, 19 Apr 2019 08:45:42 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-X-TM-AS-GCONF: 00
-x-cbid: 19041915-0028-0000-0000-00000362AB3C
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19041915-0029-0000-0000-00002421EF73
-Message-Id: <155568823785.601037.2151744205292679252.stgit@bahia.lan>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2019-04-19_08:, , signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- malwarescore=0 suspectscore=3 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1034 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=632 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1810050000 definitions=main-1904190114
+References: <20190419094754.24667-1-yamada.masahiro@socionext.com>
+ <20190419094754.24667-7-yamada.masahiro@socionext.com>
+In-Reply-To: <20190419094754.24667-7-yamada.masahiro@socionext.com>
+From: Mathieu Malaterre <malat@debian.org>
+Date: Fri, 19 Apr 2019 17:45:31 +0200
+Message-ID: <CA+7wUsygTo=AN_giku_X6_a4mQWdJL48RoVbVB4hBqkZSKkP0Q@mail.gmail.com>
+Subject: Re: [PATCH v2 06/11] MIPS: mark __fls() as __always_inline
+To: Masahiro Yamada <yamada.masahiro@socionext.com>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -96,31 +71,83 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Alexey Kardashevskiy <aik@ozlabs.ru>,
- Alex Williamson <alex.williamson@redhat.com>, linuxppc-dev@lists.ozlabs.org
+Cc: linux-arch <linux-arch@vger.kernel.org>, linux-s390@vger.kernel.org,
+ Arnd Bergmann <arnd@arndb.de>, x86@kernel.org,
+ Heiko Carstens <heiko.carstens@de.ibm.com>, linux-mips@vger.kernel.org,
+ LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@redhat.com>,
+ linux-mtd@lists.infradead.org, Andrew Morton <akpm@linux-foundation.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-If vfio_pci_register_dev_region() fails then we should rollback
-previous changes, ie. unmap the ATSD registers.
+Hi,
 
-Signed-off-by: Greg Kurz <groug@kaod.org>
----
- drivers/vfio/pci/vfio_pci_nvlink2.c |    2 ++
- 1 file changed, 2 insertions(+)
+On Fri, Apr 19, 2019 at 12:06 PM Masahiro Yamada
+<yamada.masahiro@socionext.com> wrote:
+>
+> This prepares to move CONFIG_OPTIMIZE_INLINING from x86 to a common
+> place. We need to eliminate potential issues beforehand.
+>
+> If it is enabled for mips, the following errors are reported:
+>
+> arch/mips/mm/sc-mips.o: In function `mips_sc_prefetch_enable.part.2':
+> sc-mips.c:(.text+0x98): undefined reference to `mips_gcr_base'
+> sc-mips.c:(.text+0x9c): undefined reference to `mips_gcr_base'
+> sc-mips.c:(.text+0xbc): undefined reference to `mips_gcr_base'
+> sc-mips.c:(.text+0xc8): undefined reference to `mips_gcr_base'
+> sc-mips.c:(.text+0xdc): undefined reference to `mips_gcr_base'
+> arch/mips/mm/sc-mips.o:sc-mips.c:(.text.unlikely+0x44): more undefined references to `mips_gcr_base'
 
-diff --git a/drivers/vfio/pci/vfio_pci_nvlink2.c b/drivers/vfio/pci/vfio_pci_nvlink2.c
-index 32f695ffe128..50fe3c4f7feb 100644
---- a/drivers/vfio/pci/vfio_pci_nvlink2.c
-+++ b/drivers/vfio/pci/vfio_pci_nvlink2.c
-@@ -472,6 +472,8 @@ int vfio_pci_ibm_npu2_init(struct vfio_pci_device *vdev)
- 	return 0;
- 
- free_exit:
-+	if (data->base)
-+		memunmap(data->base);
- 	kfree(data);
- 
- 	return ret;
+Tested with success on ppc32/G4. But on CI20 (ci20_defconfig from
+master), I get:
 
+  MODPOST vmlinux.o
+mipsel-linux-gnu-ld: arch/mips/kernel/traps.o: in function
+`addr_gcr_err_control':
+/home/mathieu/tmp/linux/linux/ci20/../arch/mips/include/asm/mips-cm.h:169:
+undefined reference to `mips_gcr_base'
+mipsel-linux-gnu-ld:
+/home/mathieu/linux/linux/ci20/../arch/mips/include/asm/mips-cm.h:169:
+undefined reference to `mips_gcr_base'
+mipsel-linux-gnu-ld: arch/mips/mm/sc-mips.o: in function
+`addr_gcr_l2_pft_control':
+/home/mathieu/linux/linux/ci20/../arch/mips/include/asm/mips-cm.h:246:
+undefined reference to `mips_gcr_base'
+mipsel-linux-gnu-ld:
+/home/mathieu/linux/linux/ci20/../arch/mips/include/asm/mips-cm.h:246:
+undefined reference to `mips_gcr_base'
+mipsel-linux-gnu-ld:
+/home/mathieu/linux/linux/ci20/../arch/mips/include/asm/mips-cm.h:246:
+undefined reference to `mips_gcr_base'
+mipsel-linux-gnu-ld:
+arch/mips/mm/sc-mips.o:/home/mathieu/linux/linux/ci20/../arch/mips/include/asm/mips-cm.h:246:
+more undefined references to `mips_gcr_base' follow
+
+
+> Signed-off-by: Masahiro Yamada <yamada.masahiro@socionext.com>
+> ---
+>
+> Changes in v2:
+>   - new patch
+>
+>  arch/mips/include/asm/bitops.h | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+>
+> diff --git a/arch/mips/include/asm/bitops.h b/arch/mips/include/asm/bitops.h
+> index 830c93a010c3..6a26ead1c2b6 100644
+> --- a/arch/mips/include/asm/bitops.h
+> +++ b/arch/mips/include/asm/bitops.h
+> @@ -482,7 +482,7 @@ static inline void __clear_bit_unlock(unsigned long nr, volatile unsigned long *
+>   * Return the bit position (0..63) of the most significant 1 bit in a word
+>   * Returns -1 if no 1 bit exists
+>   */
+> -static inline unsigned long __fls(unsigned long word)
+> +static __always_inline unsigned long __fls(unsigned long word)
+>  {
+>         int num;
+>
+> --
+> 2.17.1
+>
