@@ -2,88 +2,87 @@ Return-Path: <SRS0=ts8b=SV=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.0 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
+X-Spam-Status: No, score=-2.0 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
 	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_PASS,URIBL_BLOCKED,USER_AGENT_MUTT autolearn=ham autolearn_force=no
-	version=3.4.0
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_MUTT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 93674C282DA
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Apr 2019 18:11:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 56B49C282DA
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Apr 2019 18:25:20 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id CA2B2222E6
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Apr 2019 18:11:51 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id C9862222C5
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Apr 2019 18:25:19 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="SwCw9SHk"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CA2B2222E6
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="SeQY8qwS"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C9862222C5
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44m3vn4tfvzDqWc
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 20 Apr 2019 04:11:49 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44m4CK68FTzDqVq
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 20 Apr 2019 04:25:17 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=2607:f8b0:4864:20::541; helo=mail-pg1-x541.google.com;
+ (client-ip=2607:f8b0:4864:20::443; helo=mail-pf1-x443.google.com;
  envelope-from=nicoleotsuka@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="SwCw9SHk"; 
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="SeQY8qwS"; 
  dkim-atps=neutral
-Received: from mail-pg1-x541.google.com (mail-pg1-x541.google.com
- [IPv6:2607:f8b0:4864:20::541])
+Received: from mail-pf1-x443.google.com (mail-pf1-x443.google.com
+ [IPv6:2607:f8b0:4864:20::443])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44m3sz0ZglzDqVT
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 20 Apr 2019 04:10:12 +1000 (AEST)
-Received: by mail-pg1-x541.google.com with SMTP id p6so2963317pgh.9
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Apr 2019 11:10:12 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44m48T59DpzDqVV
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 20 Apr 2019 04:22:49 +1000 (AEST)
+Received: by mail-pf1-x443.google.com with SMTP id 188so2873592pfd.8
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Apr 2019 11:22:49 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
  h=date:from:to:cc:subject:message-id:references:mime-version
  :content-disposition:in-reply-to:user-agent;
- bh=8DHK4rYDwWPVNuuRQozpzQhPs53i6eTIw/NWHTPBpUw=;
- b=SwCw9SHkBEdf0FNwY3ddHfVt/5MXgvQz8yLP6w+50L7rBCJTPluD7bwwgk4+1Wl1Kz
- 5IAjZaOb6rtGAjK9pbFCcTXW3IrwKt+9noZyd+6mQ/5kGe/c9dUp3EwlqSwS1ywQMsSD
- QZY6XymID6Nl8Pq01a9OmT64PczfAR1cF6Xn/fM/sdubY9RfrCT6hqElx/m8RJDQkoYW
- /iRoT07AnZ1mvW6PSt0sgl7Ab56eLwwj3lvm+lubyo65xPl+UEI1dASI32AsYQAfMKIN
- xYLabW3+MuWY3sQHXKl+knWnBgRmj59ZaM7HhzJI6bplqm8AYTlO6tpEm0GImFXLTvKS
- c3Fg==
+ bh=Mwip4xZezPK38BfWEq5HR+HyqGo66D590Ox/hie+rI0=;
+ b=SeQY8qwSDlpnGOISH0mOfevIBeUOKABdZwGg58V61jewHL90Zin0piuB9cXNkucHYB
+ NjyqKWIGD8TOXK4SBfQKo//dTl5Mzrmcyex9yTzA3zlgfV7zJPF3adCqL1xLjyrDRTvQ
+ RoiMuNuDmU6tvUDSmsYO4cXoDvGObu9Vg2QTTzbH9UlK8iyDtYSe4NCur9F/7kSR5C9T
+ emJnwjm5lspYnxE9H0fk6P8AcD/iUT0VQpuBXRRULrhgdduJOsRT9KQAmBiiYem47GmO
+ Fl5WvY9lp/tjOvgc261fc/K2Hlao5xws8CHm8wJgn4vhInVhYYKKAS3MWENqay3Q2KhQ
+ t9iw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:date:from:to:cc:subject:message-id:references
  :mime-version:content-disposition:in-reply-to:user-agent;
- bh=8DHK4rYDwWPVNuuRQozpzQhPs53i6eTIw/NWHTPBpUw=;
- b=EMLxpqD5JqTxHfsHN/qCT9SS1Djk1tDBXmDYfFL4l57LXLqYK9j5GC94d/xiVhXB63
- m0jllcffvge6Bc9IauLFAR1JvPmF4A6r0YMvDZtTGxr1AyBQd5sm8krjl/eBC5v8/PGV
- 9hAxHL0OT7ZXv0KaHZHmzFYXLTiu7Sb2s7xq0oVnGTOSPClqHMHCt4Pd0IPNwKHNkeps
- g07PSV0sbsVzJCMieDrbyV5kQECFSljpX6z0U4URd35MsLXoiXbLkSWKirwjWnV6sGVU
- E5qCwXZ0zZQ3hUa0PB9XXTBGXNQa6FtozCarpTAZcYqSH7lijLng2Wd9AORb3ER3iUyJ
- zdng==
-X-Gm-Message-State: APjAAAXhU21IFchAMlX9IUZPmrjD2QiH3AOEnYzmj0hZnD0MX8RKWwXq
- ufSPPUIo6QbpgeSph7n4gVM=
-X-Google-Smtp-Source: APXvYqxXTtMHqYYynxTETSbHUOU21HgptNIMEddHodFNpZQSo9L8d6bCM19EOo6YY03u1fW/a6agzg==
-X-Received: by 2002:a63:d84a:: with SMTP id k10mr5084606pgj.441.1555697409412; 
- Fri, 19 Apr 2019 11:10:09 -0700 (PDT)
+ bh=Mwip4xZezPK38BfWEq5HR+HyqGo66D590Ox/hie+rI0=;
+ b=k0bWnMNb+/rVjzJcNQDwWTuWAmdOd1zeDng57jbWFUFWzQW9vSLhCwpzNuq0QEZWfh
+ T1Deq/Zn8RxCi8qVQ18cNphZFe4bt0cqsRkouNtR1PtMpf+ZFsBWWCaoQN1xe8ZaLnoK
+ qhVva/V0g17GLvQTMJYtNvZARkHolS04k+q9pHsb9yoSdDy+vdqpITH+jElTTz6+0YjP
+ iNKqelZ6+Kdy0omo2CS9E1veVgenJ2ME7uoAypinX6eqG28BHG5xb/VuaNLlE3lLoX8q
+ LNk1I2h6+A8bLr2NibvnYmcjTJrktsj/t31nTgpeqsZknHET1bGgys18PxI7SWXIcQjc
+ R+Xg==
+X-Gm-Message-State: APjAAAU+acuIPINzbjkqJhktlZcAuVhcVWC0Plk5r+TeSzNcRnfqeSKF
+ c/mkTZgsojt6UEgFBkcq1uM=
+X-Google-Smtp-Source: APXvYqzZB8yVOx4IzLDEk4pmvt9DS1y2/Fdc1TFsCUfUddB0JE2Q5EkxCjILiX4x3A/yUhrzhwUJ6g==
+X-Received: by 2002:a62:ee0a:: with SMTP id e10mr5392640pfi.6.1555698165677;
+ Fri, 19 Apr 2019 11:22:45 -0700 (PDT)
 Received: from Asurada-Nvidia.nvidia.com (thunderhill.nvidia.com.
  [216.228.112.22])
- by smtp.gmail.com with ESMTPSA id i129sm9382006pfc.163.2019.04.19.11.10.08
+ by smtp.gmail.com with ESMTPSA id i15sm7397966pfd.162.2019.04.19.11.22.44
  (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
- Fri, 19 Apr 2019 11:10:09 -0700 (PDT)
-Date: Fri, 19 Apr 2019 11:10:03 -0700
+ Fri, 19 Apr 2019 11:22:45 -0700 (PDT)
+Date: Fri, 19 Apr 2019 11:22:42 -0700
 From: Nicolin Chen <nicoleotsuka@gmail.com>
 To: "S.j. Wang" <shengjiu.wang@nxp.com>
-Subject: Re: [PATCH V4 1/3] ASoC: fsl_asrc: Fix the issue about unsupported
- rate
-Message-ID: <20190419181003.GA1136@Asurada-Nvidia.nvidia.com>
+Subject: Re: [PATCH V4 2/3] ASoC: fsl_asrc: replace the process_option table
+ with function
+Message-ID: <20190419182241.GB1136@Asurada-Nvidia.nvidia.com>
 References: <cover.1555669068.git.shengjiu.wang@nxp.com>
- <06c3e420b9fabfbec67becc2f9de009ce79a1d4b.1555669068.git.shengjiu.wang@nxp.com>
+ <0f7a6907c73e110c797b478fedaba2fc47b5e994.1555669068.git.shengjiu.wang@nxp.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <06c3e420b9fabfbec67becc2f9de009ce79a1d4b.1555669068.git.shengjiu.wang@nxp.com>
+In-Reply-To: <0f7a6907c73e110c797b478fedaba2fc47b5e994.1555669068.git.shengjiu.wang@nxp.com>
 User-Agent: Mutt/1.9.4 (2018-02-28)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -107,45 +106,39 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, Apr 19, 2019 at 10:23:50AM +0000, S.j. Wang wrote:
-> When the output sample rate is [8kHz, 30kHz], the limitation
-> of the supported ratio range is (1/24, 8). In the driver
-> we use (8kHz, 30kHz) instead of [8kHz, 30kHz].
-> So this patch is to fix this issue and the potential rounding
-> issue with divider.
-> 
-> Fixes: fff6e03c7b65 ("ASoC: fsl_asrc: add support for 8-30kHz
-> output sample rate")
-> Cc: <stable@vger.kernel.org>
-> Signed-off-by: Shengjiu Wang <shengjiu.wang@nxp.com>
-> ---
->  sound/soc/fsl/fsl_asrc.c | 8 ++++----
->  1 file changed, 4 insertions(+), 4 deletions(-)
-> 
-> diff --git a/sound/soc/fsl/fsl_asrc.c b/sound/soc/fsl/fsl_asrc.c
-> index 0b937924d2e4..5b8adc7fb117 100644
-> --- a/sound/soc/fsl/fsl_asrc.c
-> +++ b/sound/soc/fsl/fsl_asrc.c
-> @@ -282,10 +282,10 @@ static int fsl_asrc_config_pair(struct fsl_asrc_pair *pair)
+On Fri, Apr 19, 2019 at 10:23:53AM +0000, S.j. Wang wrote:
+
+> @@ -289,6 +318,12 @@ static int fsl_asrc_config_pair(struct fsl_asrc_pair *pair)
 >  		return -EINVAL;
 >  	}
 >  
-> -	if ((outrate > 8000 && outrate < 30000) &&
-> -	    (outrate/inrate > 24 || inrate/outrate > 8)) {
-> -		pair_err("exceed supported ratio range [1/24, 8] for \
-> -				inrate/outrate: %d/%d\n", inrate, outrate);
-> +	if ((outrate >= 8000 && outrate <= 30000) &&
-> +	    (outrate > 24 * inrate || inrate > 8 * outrate)) {
-> +		pair_err("exceed supported ratio range (1/24, 8) for inrate/outrate: %d/%d\n",
+> +	ret = fsl_asrc_sel_proc(inrate, outrate, &pre_proc, &post_proc);
 
-Using one of the conditions:
-	if (inrate > 8 * outrate)
-		pair_err();
+Since the function always return 0, I am thinking of treating
+this function as a lookup function, and then moving this call
+right before the register settings -- as we have already made
+sure that both inrate and outrate are supported.
 
-This means:
-	if (inrate <= 8 * outrate)
-		/* Everything is fine */
+> +	if (ret) {
+> +		pair_err("No supported pre-processing options\n");
+> +		return ret;
+> +	}
 
-So the supported ratio range is still [1/24, 8] right?
+And probably no longer need this error-out. If there's a new
+limitation related to this function, I believe we can add it
+to the rate validation section as we are doing now -- better
+to have rate validation code at one place.
 
-Thanks
+> @@ -380,8 +415,8 @@ static int fsl_asrc_config_pair(struct fsl_asrc_pair *pair)
+>  	/* Apply configurations for pre- and post-processing */
+
+Here:
+-  	/* Apply configurations for pre- and post-processing */
++  	/* Select and apply configurations for pre- and post-processing */
++	fsl_asrc_sel_proc(inrate, outrate, &pre_proc, &post_proc);
+>  	regmap_update_bits(asrc_priv->regmap, REG_ASRCFG,
+>  			   ASRCFG_PREMODi_MASK(index) |	ASRCFG_POSTMODi_MASK(index),
+> -			   ASRCFG_PREMOD(index, process_option[in][out][0]) |
+> -			   ASRCFG_POSTMOD(index, process_option[in][out][1]));
+> +			   ASRCFG_PREMOD(index, pre_proc) |
+> +			   ASRCFG_POSTMOD(index, post_proc));
