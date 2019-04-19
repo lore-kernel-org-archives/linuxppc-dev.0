@@ -2,70 +2,89 @@ Return-Path: <SRS0=ts8b=SV=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_MUTT autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A47B4C282DA
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Apr 2019 15:27:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7F4A5C282DA
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Apr 2019 15:36:05 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id CB289222D1
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Apr 2019 15:26:59 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=sirena.org.uk header.i=@sirena.org.uk header.b="TuVsJDeY"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CB289222D1
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	by mail.kernel.org (Postfix) with ESMTPS id D9395222D3
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Apr 2019 15:36:04 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D9395222D3
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44m0FY2VLnzDqTm
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 20 Apr 2019 01:26:57 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44m0S25zvHzDqVC
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 20 Apr 2019 01:36:02 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=sirena.org.uk
- (client-ip=2a01:7e01::f03c:91ff:fed4:a3b6; helo=heliosphere.sirena.org.uk;
- envelope-from=broonie@sirena.org.uk; receiver=<UNKNOWN>)
+ spf=softfail (mailfrom) smtp.mailfrom=kaod.org
+ (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
+ envelope-from=groug@kaod.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=fail (p=none dis=none) header.from=kernel.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=sirena.org.uk header.i=@sirena.org.uk
- header.b="TuVsJDeY"; dkim-atps=neutral
-Received: from heliosphere.sirena.org.uk (heliosphere.sirena.org.uk
- [IPv6:2a01:7e01::f03c:91ff:fed4:a3b6])
+ dmarc=none (p=none dis=none) header.from=kaod.org
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44m0Cf1MsvzDqTZ
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 20 Apr 2019 01:25:17 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
- d=sirena.org.uk; s=20170815-heliosphere; h=In-Reply-To:Content-Type:
- MIME-Version:References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
- Content-Transfer-Encoding:Content-ID:Content-Description:Resent-Date:
- Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:
- List-Help:List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
- bh=CR0l63MsMkbpSElEofDsa9+rQQWzCQ5B3utGWeqKvco=; b=TuVsJDeYTMOrdR3CxkNl30bQ1
- hpRroV5TZAolAnMG18k9U7TGYcmLHVfcPcjc75G3RsLVzrloIwlRHGUpT06dmQ46QfwrVGxnQzxfD
- 4MsEcqkkhI0Skn1hsFAxwA4d3UGFKUOYWrTzYwjCTtB6m88HwPXE1oA8TVqx2ezT6KaZc=;
-Received: from 188.29.164.213.threembb.co.uk ([188.29.164.213]
- helo=finisterre.ee.mobilebroadband)
- by heliosphere.sirena.org.uk with esmtpsa
- (TLS1.2:ECDHE_RSA_AES_256_GCM_SHA384:256) (Exim 4.89)
- (envelope-from <broonie@sirena.org.uk>)
- id 1hHVO0-0008Io-Ox; Fri, 19 Apr 2019 15:25:08 +0000
-Received: by finisterre.ee.mobilebroadband (Postfix, from userid 1000)
- id 35253441D3B; Fri, 19 Apr 2019 16:25:07 +0100 (BST)
-Date: Fri, 19 Apr 2019 16:25:07 +0100
-From: Mark Brown <broonie@kernel.org>
-To: "S.j. Wang" <shengjiu.wang@nxp.com>
-Subject: Re: [alsa-devel] [PATCH V2] ASoC: fsl_esai: Add pm runtime function
-Message-ID: <20190419152507.GU2803@sirena.org.uk>
-References: <VE1PR04MB6479A85982748088CC42901DE3270@VE1PR04MB6479.eurprd04.prod.outlook.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44m0QD14XwzDqTg
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 20 Apr 2019 01:34:24 +1000 (AEST)
+Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
+ x3JFTsqD080949
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Apr 2019 11:34:21 -0400
+Received: from e06smtp05.uk.ibm.com (e06smtp05.uk.ibm.com [195.75.94.101])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2rybt5m7ye-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Apr 2019 11:34:20 -0400
+Received: from localhost
+ by e06smtp05.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <groug@kaod.org>;
+ Fri, 19 Apr 2019 16:34:18 +0100
+Received: from b06cxnps4076.portsmouth.uk.ibm.com (9.149.109.198)
+ by e06smtp05.uk.ibm.com (192.168.101.135) with IBM ESMTP SMTP Gateway:
+ Authorized Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Fri, 19 Apr 2019 16:34:15 +0100
+Received: from b06wcsmtp001.portsmouth.uk.ibm.com
+ (b06wcsmtp001.portsmouth.uk.ibm.com [9.149.105.160])
+ by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x3JFYERa43253856
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Fri, 19 Apr 2019 15:34:14 GMT
+Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 211ACA4060;
+ Fri, 19 Apr 2019 15:34:14 +0000 (GMT)
+Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id E0DADA405B;
+ Fri, 19 Apr 2019 15:34:13 +0000 (GMT)
+Received: from bahia.lan (unknown [9.145.170.150])
+ by b06wcsmtp001.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Fri, 19 Apr 2019 15:34:13 +0000 (GMT)
+Subject: [PATCH] powerpc/powernv/npu: Fix reference leak
+From: Greg Kurz <groug@kaod.org>
+To: linux-kernel@vger.kernel.org
+Date: Fri, 19 Apr 2019 17:34:13 +0200
+User-Agent: StGit/unknown-version
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
- protocol="application/pgp-signature"; boundary="4WCFFtl4AQpQKunj"
-Content-Disposition: inline
-In-Reply-To: <VE1PR04MB6479A85982748088CC42901DE3270@VE1PR04MB6479.eurprd04.prod.outlook.com>
-X-Cookie: Shah, shah!  Ayatollah you so!
-User-Agent: Mutt/1.10.1 (2018-07-13)
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-TM-AS-GCONF: 00
+x-cbid: 19041915-0020-0000-0000-00000331A9DC
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 19041915-0021-0000-0000-00002183FFAE
+Message-Id: <155568805354.600470.13376593185688810607.stgit@bahia.lan>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
+ definitions=2019-04-19_08:, , signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ malwarescore=0 suspectscore=1 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1034 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=960 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1810050000 definitions=main-1904190114
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -77,50 +96,69 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
- "timur@kernel.org" <timur@kernel.org>,
- "Xiubo.Lee@gmail.com" <Xiubo.Lee@gmail.com>,
- "festevam@gmail.com" <festevam@gmail.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "nicoleotsuka@gmail.com" <nicoleotsuka@gmail.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Cc: Alexey Kardashevskiy <aik@ozlabs.ru>, linuxppc-dev@lists.ozlabs.org,
+ Alistair Popple <alistair@popple.id.au>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+Since 902bdc57451c, get_pci_dev() calls pci_get_domain_bus_and_slot(). This
+has the effect of incrementing the reference count of the PCI device, as
+explained in drivers/pci/search.c:
 
---4WCFFtl4AQpQKunj
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+ * Given a PCI domain, bus, and slot/function number, the desired PCI
+ * device is located in the list of PCI devices. If the device is
+ * found, its reference count is increased and this function returns a
+ * pointer to its data structure.  The caller must decrement the
+ * reference count by calling pci_dev_put().  If no device is found,
+ * %NULL is returned.
 
-On Fri, Apr 19, 2019 at 11:01:21AM +0000, S.j. Wang wrote:
+Nothing was done to call pci_dev_put() and the reference count of GPU and
+NPU PCI devices rockets up.
 
-> > fsl_esai_probe(struct platform_device *pdev)
-> >                 return ret;
-> >         }
-> >=20
-> > +       pm_runtime_enable(&pdev->dev);
-> > +
+A natural way to fix this would be to teach the callers about the change,
+so that they call pci_dev_put() when done with the pointer. This turns
+out to be quite intrusive, as it affects many paths in npu-dma.c,
+pci-ioda.c and vfio_pci_nvlink2.c. Also, the issue appeared in 4.16 and
+some affected code got moved around since then: it would be problematic
+to backport the fix to stable releases.
 
-> I just have a question, do I need to add pm_runtime_idle(&pdev->dev)?
+All that code never cared for reference counting anyway. Call pci_dev_put()
+from get_pci_dev() to revert to the previous behavior.
 
-It gets used to help drivers get into the correct state on startup, if
-you're unsure if it's 100% required it shouldn't hurt.
+Fixes: 902bdc57451c ("powerpc/powernv/idoa: Remove unnecessary pcidev from pci_dn")
+Cc: stable@vger.kernel.org # v4.16
+Signed-off-by: Greg Kurz <groug@kaod.org>
+---
+ arch/powerpc/platforms/powernv/npu-dma.c |   15 ++++++++++++++-
+ 1 file changed, 14 insertions(+), 1 deletion(-)
 
---4WCFFtl4AQpQKunj
-Content-Type: application/pgp-signature; name="signature.asc"
+diff --git a/arch/powerpc/platforms/powernv/npu-dma.c b/arch/powerpc/platforms/powernv/npu-dma.c
+index e713ade30087..d8f3647e8fb2 100644
+--- a/arch/powerpc/platforms/powernv/npu-dma.c
++++ b/arch/powerpc/platforms/powernv/npu-dma.c
+@@ -31,9 +31,22 @@ static DEFINE_SPINLOCK(npu_context_lock);
+ static struct pci_dev *get_pci_dev(struct device_node *dn)
+ {
+ 	struct pci_dn *pdn = PCI_DN(dn);
++	struct pci_dev *pdev;
+ 
+-	return pci_get_domain_bus_and_slot(pci_domain_nr(pdn->phb->bus),
++	pdev = pci_get_domain_bus_and_slot(pci_domain_nr(pdn->phb->bus),
+ 					   pdn->busno, pdn->devfn);
++
++	/*
++	 * pci_get_domain_bus_and_slot() increased the reference count of
++	 * the PCI device, but callers don't need that actually as the PE
++	 * already holds a reference to the device. Since callers aren't
++	 * aware of the reference count change, call pci_dev_put() now to
++	 * avoid leaks.
++	 */
++	if (pdev)
++		pci_dev_put(pdev);
++
++	return pdev;
+ }
+ 
+ /* Given a NPU device get the associated PCI device. */
 
------BEGIN PGP SIGNATURE-----
-
-iQEzBAABCgAdFiEEreZoqmdXGLWf4p/qJNaLcl1Uh9AFAly56FIACgkQJNaLcl1U
-h9CGCwf/V4SKmPiu420k0g+uofTrLtN6Jv9aTQuGhf7zO7AX1stWXlkVwZwj6RZK
-XC7w1TLKHMVSJUp+U5nUKH9lrbIPsldykON2Mn1cK7TQRIXMXoXgZgBZRagddQkU
-iP0RupSAma6LT4/o4RHV6pjp2qDMU8oJfIUcBqiyFQsmaEMvYK14izz7hOScKwIb
-VZMnFG60t8T7AxVCKda6cW72ikkuV1pvAENJ2j36iTNfaFA9Ufo/du99PNZK+9bW
-o34ZkH1FrcKZRgM0gQ3icbYUxQQV+WflxfFayC4M/qfCXjJiVoAbvEpLzfSSVYtW
-Irvy3o+JKq311kA8vioI3gdp9HFhUg==
-=6lYl
------END PGP SIGNATURE-----
-
---4WCFFtl4AQpQKunj--
