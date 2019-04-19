@@ -2,25 +2,26 @@ Return-Path: <SRS0=ts8b=SV=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_GIT
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A10AFC282DA
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Apr 2019 09:56:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 25C3BC282DA
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Apr 2019 09:58:18 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 17EDA218CD
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Apr 2019 09:56:44 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 8BDEB218FE
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Apr 2019 09:58:17 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=nifty.com header.i=@nifty.com header.b="XuDk5pY0"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 17EDA218CD
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=nifty.com header.i=@nifty.com header.b="xlbpCLxW"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8BDEB218FE
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=socionext.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44lrwV2422zDqKv
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Apr 2019 19:56:42 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44lryH3LLSzDqLN
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Apr 2019 19:58:15 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=softfail (mailfrom) smtp.mailfrom=socionext.com
  (client-ip=210.131.2.75; helo=conuserg-08.nifty.com;
@@ -28,40 +29,39 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=socionext.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=nifty.com header.i=@nifty.com header.b="XuDk5pY0"; 
+ unprotected) header.d=nifty.com header.i=@nifty.com header.b="xlbpCLxW"; 
  dkim-atps=neutral
 Received: from conuserg-08.nifty.com (conuserg-08.nifty.com [210.131.2.75])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44lrlm3YZxzDqTJ
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Apr 2019 19:49:06 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44lrlp1CxrzDqTQ
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Apr 2019 19:49:09 +1000 (AEST)
 Received: from localhost.localdomain (p14092-ipngnfx01kyoto.kyoto.ocn.ne.jp
  [153.142.97.92]) (authenticated)
- by conuserg-08.nifty.com with ESMTP id x3J9mDiL012304;
- Fri, 19 Apr 2019 18:48:13 +0900
-DKIM-Filter: OpenDKIM Filter v2.10.3 conuserg-08.nifty.com x3J9mDiL012304
+ by conuserg-08.nifty.com with ESMTP id x3J9mDiT012304;
+ Fri, 19 Apr 2019 18:48:25 +0900
+DKIM-Filter: OpenDKIM Filter v2.10.3 conuserg-08.nifty.com x3J9mDiT012304
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nifty.com;
- s=dec2015msa; t=1555667295;
- bh=KIJsj9BjbJCKV5d3TQJAGFjQI0UA9lTr5KAl3uaBdzI=;
- h=From:To:Cc:Subject:Date:From;
- b=XuDk5pY0o90ECZwUqGP84ppzgA6XEFU/Q8b2Wpng7fY2TlkWcTHQKCAwfKS3dEkoJ
- /wM2hrBugVAd8GDB21Y8r0JmiV1i/gqCD2bM8RPKqcOV7FCV/a2Iu+967c3DkrjItY
- prjosvSKi8xi6N93D24mp+8Bpa0LsxVR4uwfvLM6ReLlODp1Xe6kOsbWU9InjeslPy
- yjlzg2YpxqNZbvyhGr5IALaj3VQob8rd8k4t/yp4OMWFo109A06sOFx+WGB5wXNN+x
- SclFXVMgtA/pdCK17FEbRqdD8lS8YsTeJeaU6jfT33kteQIcqOupLrNvGeHjD25cCx
- DUnO5stjBOW0A==
+ s=dec2015msa; t=1555667306;
+ bh=IOsaHpZ2TEvCn87/LKuhI8uONRrcYXXxxmJ0Uzy6UC0=;
+ h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+ b=xlbpCLxWCESSMUFlvymWfpdpzfmpBy5siuyjRgmVq4MOlmuBdkmCkRFunf/87D+Au
+ 1teXLYsl6q34ChxzjyXvCzlsrJoL0QOmDdvA0PYKn2s1+aBZS8pV9I/KELak7OVTyN
+ f+VByoV8WYlJ6z4urXSwQi4RsjLCqrlJSjUWFxWAb45SNg+iZ3uNlUqnCLxkfLrQG1
+ kxiV8SvJ3aboun9kg5RdF9krWujMw6/u9rYWCOyqvYXry6TeFjPgzW0890xmD08dSR
+ elm5jorLBqWDwDRISFcXPZ/HHz5Wd55C/sWn9rwGPBvO8yd/UGH/PczDNCg0HckLw/
+ OS+qlLF7podNA==
 X-Nifty-SrcIP: [153.142.97.92]
 From: Masahiro Yamada <yamada.masahiro@socionext.com>
 To: Andrew Morton <akpm@linux-foundation.org>,
  linux-arch <linux-arch@vger.kernel.org>
-Subject: [PATCH v2 00/11] compiler: allow all arches to enable
- CONFIG_OPTIMIZE_INLINING
-Date: Fri, 19 Apr 2019 18:47:43 +0900
-Message-Id: <20190419094754.24667-1-yamada.masahiro@socionext.com>
+Subject: [PATCH v2 08/11] powerpc/prom_init: mark prom_getprop() and
+ prom_getproplen() as __init
+Date: Fri, 19 Apr 2019 18:47:51 +0900
+Message-Id: <20190419094754.24667-9-yamada.masahiro@socionext.com>
 X-Mailer: git-send-email 2.17.1
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+In-Reply-To: <20190419094754.24667-1-yamada.masahiro@socionext.com>
+References: <20190419094754.24667-1-yamada.masahiro@socionext.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -82,45 +82,55 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+This prepares to move CONFIG_OPTIMIZE_INLINING from x86 to a common
+place. We need to eliminate potential issues beforehand.
 
-Major changes in v2:
- - Eliminate more errors and warnings
- - Delete 'depends on !MIPS'
- - Split into separate patches
+If it is enabled for powerpc, the following modpost warnings are
+reported:
 
-Arnd Bergmann (1):
-  ARM: prevent tracing IPI_CPU_BACKTRACE
+WARNING: vmlinux.o(.text.unlikely+0x20): Section mismatch in reference from the function .prom_getprop() to the function .init.text:.call_prom()
+The function .prom_getprop() references
+the function __init .call_prom().
+This is often because .prom_getprop lacks a __init
+annotation or the annotation of .call_prom is wrong.
 
-Masahiro Yamada (10):
-  arm64: mark (__)cpus_have_const_cap as __always_inline
-  MIPS: mark mult_sh_align_mod() as __always_inline
-  s390/cpacf: mark scpacf_query() as __always_inline
-  mtd: rawnand: vf610_nfc: add initializer to avoid
-    -Wmaybe-uninitialized
-  MIPS: mark __fls() as __always_inline
-  ARM: mark setup_machine_tags() stub as __init __noreturn
-  powerpc/prom_init: mark prom_getprop() and prom_getproplen() as __init
-  powerpc/mm/radix: mark __radix__flush_tlb_range_psize() as
-    __always_inline
-  powerpc/mm/radix: mark as __tlbie_pid() and friends as__always_inline
-  compiler: allow all arches to enable CONFIG_OPTIMIZE_INLINING
+WARNING: vmlinux.o(.text.unlikely+0x3c): Section mismatch in reference from the function .prom_getproplen() to the function .init.text:.call_prom()
+The function .prom_getproplen() references
+the function __init .call_prom().
+This is often because .prom_getproplen lacks a __init
+annotation or the annotation of .call_prom is wrong.
 
- arch/arm/include/asm/hardirq.h      |  1 +
- arch/arm/kernel/atags.h             |  2 +-
- arch/arm/kernel/smp.c               |  6 +++++-
- arch/arm64/include/asm/cpufeature.h |  4 ++--
- arch/mips/include/asm/bitops.h      |  2 +-
- arch/mips/kernel/cpu-bugs64.c       |  4 ++--
- arch/powerpc/kernel/prom_init.c     |  6 +++---
- arch/powerpc/mm/tlb-radix.c         | 12 ++++++------
- arch/s390/include/asm/cpacf.h       |  2 +-
- arch/x86/Kconfig                    |  3 ---
- arch/x86/Kconfig.debug              | 14 --------------
- drivers/mtd/nand/raw/vf610_nfc.c    |  2 +-
- include/linux/compiler_types.h      |  3 +--
- lib/Kconfig.debug                   | 14 ++++++++++++++
- 14 files changed, 38 insertions(+), 37 deletions(-)
+Signed-off-by: Masahiro Yamada <yamada.masahiro@socionext.com>
+---
 
+Changes in v2:
+  - split into a separate patch
+
+ arch/powerpc/kernel/prom_init.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/arch/powerpc/kernel/prom_init.c b/arch/powerpc/kernel/prom_init.c
+index f33ff4163a51..241fe6b7a8cc 100644
+--- a/arch/powerpc/kernel/prom_init.c
++++ b/arch/powerpc/kernel/prom_init.c
+@@ -501,14 +501,14 @@ static int __init prom_next_node(phandle *nodep)
+ 	}
+ }
+ 
+-static inline int prom_getprop(phandle node, const char *pname,
+-			       void *value, size_t valuelen)
++static inline int __init prom_getprop(phandle node, const char *pname,
++				      void *value, size_t valuelen)
+ {
+ 	return call_prom("getprop", 4, 1, node, ADDR(pname),
+ 			 (u32)(unsigned long) value, (u32) valuelen);
+ }
+ 
+-static inline int prom_getproplen(phandle node, const char *pname)
++static inline int __init prom_getproplen(phandle node, const char *pname)
+ {
+ 	return call_prom("getproplen", 2, 1, node, ADDR(pname));
+ }
 -- 
 2.17.1
 
