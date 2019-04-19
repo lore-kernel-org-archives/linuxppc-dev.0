@@ -2,26 +2,25 @@ Return-Path: <SRS0=ts8b=SV=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_GIT
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6092DC282DA
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Apr 2019 09:55:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A10AFC282DA
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Apr 2019 09:56:44 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C9B41218CD
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Apr 2019 09:55:09 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 17EDA218CD
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Apr 2019 09:56:44 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=nifty.com header.i=@nifty.com header.b="2JQf30n2"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C9B41218CD
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=nifty.com header.i=@nifty.com header.b="XuDk5pY0"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 17EDA218CD
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=socionext.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44lrtg5BR7zDqV8
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Apr 2019 19:55:07 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44lrwV2422zDqKv
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Apr 2019 19:56:42 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=softfail (mailfrom) smtp.mailfrom=socionext.com
  (client-ip=210.131.2.75; helo=conuserg-08.nifty.com;
@@ -29,38 +28,40 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=socionext.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=nifty.com header.i=@nifty.com header.b="2JQf30n2"; 
+ unprotected) header.d=nifty.com header.i=@nifty.com header.b="XuDk5pY0"; 
  dkim-atps=neutral
 Received: from conuserg-08.nifty.com (conuserg-08.nifty.com [210.131.2.75])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44lrlm45plzDqTN
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44lrlm3YZxzDqTJ
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Apr 2019 19:49:06 +1000 (AEST)
 Received: from localhost.localdomain (p14092-ipngnfx01kyoto.kyoto.ocn.ne.jp
  [153.142.97.92]) (authenticated)
- by conuserg-08.nifty.com with ESMTP id x3J9mDiM012304;
- Fri, 19 Apr 2019 18:48:15 +0900
-DKIM-Filter: OpenDKIM Filter v2.10.3 conuserg-08.nifty.com x3J9mDiM012304
+ by conuserg-08.nifty.com with ESMTP id x3J9mDiL012304;
+ Fri, 19 Apr 2019 18:48:13 +0900
+DKIM-Filter: OpenDKIM Filter v2.10.3 conuserg-08.nifty.com x3J9mDiL012304
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nifty.com;
- s=dec2015msa; t=1555667296;
- bh=xEQiTaRJoMiIIoSSR5uW02FG6OV+z3ajZxuyDMzswK8=;
- h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=2JQf30n281jQB4d2J0PFa1uofVewZCgz9BKrQlNEnXrgFMBLbR2Zq1r6w+iBaLG45
- t3nsjO2yy9K2rayA6kAG7W5QOZXT/QC/pn2nbYfF3OTOTfF8RmCuBd5yJ5z4STfAVR
- S50CNHJXKGoZKrDOh8HkCZk629LOHn6U1lbZhC7JMhAyR3/Tr/rg3GcrCj9JDWjHAO
- UiGSppMnUWU7gB7Bziv+abekGW5t79hjFO9/SOc6KfN1rVoLYaqIJni87B3Xd6Wk7W
- H2/rg3c+1nge1l4Y9lbsm/7RvW65UIRkVG9T0d8qJA6UMAluoWZAQ17RYMK74wx8Rp
- ffTOmV/uhafAw==
+ s=dec2015msa; t=1555667295;
+ bh=KIJsj9BjbJCKV5d3TQJAGFjQI0UA9lTr5KAl3uaBdzI=;
+ h=From:To:Cc:Subject:Date:From;
+ b=XuDk5pY0o90ECZwUqGP84ppzgA6XEFU/Q8b2Wpng7fY2TlkWcTHQKCAwfKS3dEkoJ
+ /wM2hrBugVAd8GDB21Y8r0JmiV1i/gqCD2bM8RPKqcOV7FCV/a2Iu+967c3DkrjItY
+ prjosvSKi8xi6N93D24mp+8Bpa0LsxVR4uwfvLM6ReLlODp1Xe6kOsbWU9InjeslPy
+ yjlzg2YpxqNZbvyhGr5IALaj3VQob8rd8k4t/yp4OMWFo109A06sOFx+WGB5wXNN+x
+ SclFXVMgtA/pdCK17FEbRqdD8lS8YsTeJeaU6jfT33kteQIcqOupLrNvGeHjD25cCx
+ DUnO5stjBOW0A==
 X-Nifty-SrcIP: [153.142.97.92]
 From: Masahiro Yamada <yamada.masahiro@socionext.com>
 To: Andrew Morton <akpm@linux-foundation.org>,
  linux-arch <linux-arch@vger.kernel.org>
-Subject: [PATCH v2 01/11] ARM: prevent tracing IPI_CPU_BACKTRACE
-Date: Fri, 19 Apr 2019 18:47:44 +0900
-Message-Id: <20190419094754.24667-2-yamada.masahiro@socionext.com>
+Subject: [PATCH v2 00/11] compiler: allow all arches to enable
+ CONFIG_OPTIMIZE_INLINING
+Date: Fri, 19 Apr 2019 18:47:43 +0900
+Message-Id: <20190419094754.24667-1-yamada.masahiro@socionext.com>
 X-Mailer: git-send-email 2.17.1
-In-Reply-To: <20190419094754.24667-1-yamada.masahiro@socionext.com>
-References: <20190419094754.24667-1-yamada.masahiro@socionext.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -81,86 +82,45 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Arnd Bergmann <arnd@arndb.de>
 
-When function tracing for IPIs is enabled, we get a warning for an
-overflow of the ipi_types array with the IPI_CPU_BACKTRACE type
-as triggered by raise_nmi():
+Major changes in v2:
+ - Eliminate more errors and warnings
+ - Delete 'depends on !MIPS'
+ - Split into separate patches
 
-arch/arm/kernel/smp.c: In function 'raise_nmi':
-arch/arm/kernel/smp.c:489:2: error: array subscript is above array bounds [-Werror=array-bounds]
-  trace_ipi_raise(target, ipi_types[ipinr]);
+Arnd Bergmann (1):
+  ARM: prevent tracing IPI_CPU_BACKTRACE
 
-This is a correct warning as we actually overflow the array here.
+Masahiro Yamada (10):
+  arm64: mark (__)cpus_have_const_cap as __always_inline
+  MIPS: mark mult_sh_align_mod() as __always_inline
+  s390/cpacf: mark scpacf_query() as __always_inline
+  mtd: rawnand: vf610_nfc: add initializer to avoid
+    -Wmaybe-uninitialized
+  MIPS: mark __fls() as __always_inline
+  ARM: mark setup_machine_tags() stub as __init __noreturn
+  powerpc/prom_init: mark prom_getprop() and prom_getproplen() as __init
+  powerpc/mm/radix: mark __radix__flush_tlb_range_psize() as
+    __always_inline
+  powerpc/mm/radix: mark as __tlbie_pid() and friends as__always_inline
+  compiler: allow all arches to enable CONFIG_OPTIMIZE_INLINING
 
-This patch raise_nmi() to call __smp_cross_call() instead of
-smp_cross_call(), to avoid calling into ftrace. For clarification,
-I'm also adding a two new code comments describing how this one
-is special.
+ arch/arm/include/asm/hardirq.h      |  1 +
+ arch/arm/kernel/atags.h             |  2 +-
+ arch/arm/kernel/smp.c               |  6 +++++-
+ arch/arm64/include/asm/cpufeature.h |  4 ++--
+ arch/mips/include/asm/bitops.h      |  2 +-
+ arch/mips/kernel/cpu-bugs64.c       |  4 ++--
+ arch/powerpc/kernel/prom_init.c     |  6 +++---
+ arch/powerpc/mm/tlb-radix.c         | 12 ++++++------
+ arch/s390/include/asm/cpacf.h       |  2 +-
+ arch/x86/Kconfig                    |  3 ---
+ arch/x86/Kconfig.debug              | 14 --------------
+ drivers/mtd/nand/raw/vf610_nfc.c    |  2 +-
+ include/linux/compiler_types.h      |  3 +--
+ lib/Kconfig.debug                   | 14 ++++++++++++++
+ 14 files changed, 38 insertions(+), 37 deletions(-)
 
-The warning appears to have shown up after patch e7273ff49acf
-("ARM: 8488/1: Make IPI_CPU_BACKTRACE a "non-secure" SGI"), which
-changed the number assignment from '15' to '8', but as far as I can
-tell has existed since the IPI tracepoints were first introduced.
-If we decide to backport this patch to stable kernels, we probably
-need to backport e7273ff49acf as well.
-
-Fixes: e7273ff49acf ("ARM: 8488/1: Make IPI_CPU_BACKTRACE a "non-secure" SGI")
-Fixes: 365ec7b17327 ("ARM: add IPI tracepoints") # v3.17
-Signed-off-by: Arnd Bergmann <arnd@arndb.de>
-[yamada.masahiro@socionext.com: rebase on v5.0-rc1]
-Signed-off-by: Masahiro Yamada <yamada.masahiro@socionext.com>
----
-
-This is a long-standing issue, and
-Arnd posted this patch two years ago:
-http://lists.infradead.org/pipermail/linux-arm-kernel/2016-February/409393.html
-
-It is no longer applied, so I rebased it on top of the latest kernel.
-
-
-Changes in v2: None
-
- arch/arm/include/asm/hardirq.h | 1 +
- arch/arm/kernel/smp.c          | 6 +++++-
- 2 files changed, 6 insertions(+), 1 deletion(-)
-
-diff --git a/arch/arm/include/asm/hardirq.h b/arch/arm/include/asm/hardirq.h
-index cba23eaa6072..7a88f160b1fb 100644
---- a/arch/arm/include/asm/hardirq.h
-+++ b/arch/arm/include/asm/hardirq.h
-@@ -6,6 +6,7 @@
- #include <linux/threads.h>
- #include <asm/irq.h>
- 
-+/* number of IPIS _not_ including IPI_CPU_BACKTRACE */
- #define NR_IPI	7
- 
- typedef struct {
-diff --git a/arch/arm/kernel/smp.c b/arch/arm/kernel/smp.c
-index facd4240ca02..c93fe0f256de 100644
---- a/arch/arm/kernel/smp.c
-+++ b/arch/arm/kernel/smp.c
-@@ -70,6 +70,10 @@ enum ipi_msg_type {
- 	IPI_CPU_STOP,
- 	IPI_IRQ_WORK,
- 	IPI_COMPLETION,
-+	/*
-+	 * CPU_BACKTRACE is special and not included in NR_IPI
-+	 * or tracable with trace_ipi_*
-+	 */
- 	IPI_CPU_BACKTRACE,
- 	/*
- 	 * SGI8-15 can be reserved by secure firmware, and thus may
-@@ -797,7 +801,7 @@ core_initcall(register_cpufreq_notifier);
- 
- static void raise_nmi(cpumask_t *mask)
- {
--	smp_cross_call(mask, IPI_CPU_BACKTRACE);
-+	__smp_cross_call(mask, IPI_CPU_BACKTRACE);
- }
- 
- void arch_trigger_cpumask_backtrace(const cpumask_t *mask, bool exclude_self)
 -- 
 2.17.1
 
