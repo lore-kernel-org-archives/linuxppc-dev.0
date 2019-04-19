@@ -7,21 +7,21 @@ X-Spam-Status: No, score=-8.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B4812C282DA
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Apr 2019 10:01:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D77CDC282DA
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Apr 2019 10:03:08 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 2C70A218FD
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Apr 2019 10:01:36 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 4E5A1218FD
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Apr 2019 10:03:08 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=nifty.com header.i=@nifty.com header.b="jiH6HICA"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2C70A218FD
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=nifty.com header.i=@nifty.com header.b="oudVdW/d"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4E5A1218FD
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=socionext.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44ls261m8QzDqVR
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Apr 2019 20:01:34 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44ls3t3H37zDqVW
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Apr 2019 20:03:06 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=softfail (mailfrom) smtp.mailfrom=socionext.com
  (client-ip=210.131.2.75; helo=conuserg-08.nifty.com;
@@ -29,39 +29,42 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=socionext.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=nifty.com header.i=@nifty.com header.b="jiH6HICA"; 
+ unprotected) header.d=nifty.com header.i=@nifty.com header.b="oudVdW/d"; 
  dkim-atps=neutral
 Received: from conuserg-08.nifty.com (conuserg-08.nifty.com [210.131.2.75])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44lrls26f7zDqTJ
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44lrls2x2XzDqTL
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Apr 2019 19:49:12 +1000 (AEST)
 Received: from localhost.localdomain (p14092-ipngnfx01kyoto.kyoto.ocn.ne.jp
  [153.142.97.92]) (authenticated)
- by conuserg-08.nifty.com with ESMTP id x3J9mDiU012304;
- Fri, 19 Apr 2019 18:48:26 +0900
-DKIM-Filter: OpenDKIM Filter v2.10.3 conuserg-08.nifty.com x3J9mDiU012304
+ by conuserg-08.nifty.com with ESMTP id x3J9mDiQ012304;
+ Fri, 19 Apr 2019 18:48:21 +0900
+DKIM-Filter: OpenDKIM Filter v2.10.3 conuserg-08.nifty.com x3J9mDiQ012304
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nifty.com;
- s=dec2015msa; t=1555667307;
- bh=ZmcBGqsNIopkSvb/z9Yz7Nb+RmV19Ubtd5G31RF7cjs=;
+ s=dec2015msa; t=1555667302;
+ bh=i5XCWis3VrTykYK/RrX/WLSMvw74LO5onG7SxOwG69A=;
  h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=jiH6HICApN78Kk5hFdRE9UlFB3DbHyO32Exybcj2tFMz2jpLTLwgX2JIw8K1qWK4T
- E1O0Ew8v+k/nfXa5VI4SNERYU2iuWyUszoCaY8TIGwtXn/On+OQ6Cf6HlcF4EZFBOu
- QDInHPQIydJH4bbzuu6Xa9Ps+zAFaqOuDnY00oHB3JgAOWUEXovFVa0xxzWMI/qUqh
- 9sOeDdWNiIdD62ji12XR1RvY2JL7XWAKfttdTlSoHNIoaNkVqvDLCzimUvF2iPf2Z9
- j2/vL15IZ64QIadnS1igjZWzEXPL/nGG8jrU+NfUOpmpPCXsyZoz4Ce0wDf84uAPVx
- cNXO0eCfrYgCg==
+ b=oudVdW/dFWq56OuDzP6kKUzuEWhB1LghoeXto+rXOPNib4DV9Uy/SJlJzj1AbmWfp
+ mevr0XhyqB2vZq4Cz+Z1v2JvWwOv56OiugvEABew3D+o/TOnkAQFO0IulE/o2RPA/B
+ +sTZx4hUEh4VtZpZbGYRBLePR5ICQudFoYOaeslkPILaHXz1Ak62JsBLFHuo6nXW+A
+ HdImamYXzb7Yk06Xdrpl/c4BLwIZGHF/XfL1anllWbvNDOtJizhoIHVpekzfvHeQsK
+ kLoe+3N8CTYNLyxpT4B5He8gmcUsZrbdL7Q+2LWqM5b83Cr/r8gBn0MoV7tumFH5RV
+ 2DmcgtWPSyNuw==
 X-Nifty-SrcIP: [153.142.97.92]
 From: Masahiro Yamada <yamada.masahiro@socionext.com>
 To: Andrew Morton <akpm@linux-foundation.org>,
  linux-arch <linux-arch@vger.kernel.org>
-Subject: [PATCH v2 09/11] powerpc/mm/radix: mark
- __radix__flush_tlb_range_psize() as __always_inline
-Date: Fri, 19 Apr 2019 18:47:52 +0900
-Message-Id: <20190419094754.24667-10-yamada.masahiro@socionext.com>
+Subject: [PATCH v2 05/11] mtd: rawnand: vf610_nfc: add initializer to avoid
+ -Wmaybe-uninitialized
+Date: Fri, 19 Apr 2019 18:47:48 +0900
+Message-Id: <20190419094754.24667-6-yamada.masahiro@socionext.com>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20190419094754.24667-1-yamada.masahiro@socionext.com>
 References: <20190419094754.24667-1-yamada.masahiro@socionext.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -85,13 +88,21 @@ Sender: "Linuxppc-dev"
 This prepares to move CONFIG_OPTIMIZE_INLINING from x86 to a common
 place. We need to eliminate potential issues beforehand.
 
-If it is enabled for powerpc, the following error is reported:
+Kbuild test robot has never reported -Wmaybe-uninitialized warning
+for this probably because vf610_nfc_run() is inlined by the x86
+compiler's inlining heuristic.
 
-arch/powerpc/mm/tlb-radix.c: In function '__radix__flush_tlb_range_psize':
-arch/powerpc/mm/tlb-radix.c:104:2: error: asm operand 3 probably doesn't match constraints [-Werror]
-  asm volatile(PPC_TLBIEL(%0, %4, %3, %2, %1)
-  ^~~
-arch/powerpc/mm/tlb-radix.c:104:2: error: impossible constraint in 'asm'
+If CONFIG_OPTIMIZE_INLINING is enabled for a different architecture
+and vf610_nfc_run() is not inlined, the following warning is reported:
+
+drivers/mtd/nand/raw/vf610_nfc.c: In function ‘vf610_nfc_cmd’:
+drivers/mtd/nand/raw/vf610_nfc.c:455:3: warning: ‘offset’ may be used uninitialized in this function [-Wmaybe-uninitialized]
+   vf610_nfc_rd_from_sram(instr->ctx.data.buf.in + offset,
+   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+            nfc->regs + NFC_MAIN_AREA(0) + offset,
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+            trfr_sz, !nfc->data_access);
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Signed-off-by: Masahiro Yamada <yamada.masahiro@socionext.com>
 ---
@@ -99,22 +110,22 @@ Signed-off-by: Masahiro Yamada <yamada.masahiro@socionext.com>
 Changes in v2:
   - split into a separate patch
 
- arch/powerpc/mm/tlb-radix.c | 2 +-
+ drivers/mtd/nand/raw/vf610_nfc.c | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/mm/tlb-radix.c b/arch/powerpc/mm/tlb-radix.c
-index 6a23b9ebd2a1..a2b2848f0ae3 100644
---- a/arch/powerpc/mm/tlb-radix.c
-+++ b/arch/powerpc/mm/tlb-radix.c
-@@ -928,7 +928,7 @@ void radix__tlb_flush(struct mmu_gather *tlb)
- 	tlb->need_flush_all = 0;
- }
- 
--static inline void __radix__flush_tlb_range_psize(struct mm_struct *mm,
-+static __always_inline void __radix__flush_tlb_range_psize(struct mm_struct *mm,
- 				unsigned long start, unsigned long end,
- 				int psize, bool also_pwc)
+diff --git a/drivers/mtd/nand/raw/vf610_nfc.c b/drivers/mtd/nand/raw/vf610_nfc.c
+index a662ca1970e5..19792d725ec2 100644
+--- a/drivers/mtd/nand/raw/vf610_nfc.c
++++ b/drivers/mtd/nand/raw/vf610_nfc.c
+@@ -364,7 +364,7 @@ static int vf610_nfc_cmd(struct nand_chip *chip,
  {
+ 	const struct nand_op_instr *instr;
+ 	struct vf610_nfc *nfc = chip_to_nfc(chip);
+-	int op_id = -1, trfr_sz = 0, offset;
++	int op_id = -1, trfr_sz = 0, offset = 0;
+ 	u32 col = 0, row = 0, cmd1 = 0, cmd2 = 0, code = 0;
+ 	bool force8bit = false;
+ 
 -- 
 2.17.1
 
