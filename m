@@ -2,102 +2,80 @@ Return-Path: <SRS0=ts8b=SV=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-3.5 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
+	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_PASS,
+	URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CA4A7C282DA
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Apr 2019 13:44:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3855CC282DA
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Apr 2019 14:47:43 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3F1B3222A2
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Apr 2019 13:44:07 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id ADBC7222C8
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Apr 2019 14:47:42 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=nxp.com header.i=@nxp.com header.b="sb2muPTk"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3F1B3222A2
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nxp.com
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="oNsDU3SU"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org ADBC7222C8
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44lxys0CSfzDqQk
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Apr 2019 23:44:05 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44lzND0nw1zDqWC
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 20 Apr 2019 00:47:40 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=nxp.com
- (client-ip=40.107.6.81; helo=eur04-db3-obe.outbound.protection.outlook.com;
- envelope-from=laurentiu.tudor@nxp.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=gmail.com
+ (client-ip=2607:f8b0:4864:20::144; helo=mail-it1-x144.google.com;
+ envelope-from=kernelfans@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=nxp.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=nxp.com header.i=@nxp.com header.b="sb2muPTk"; 
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="oNsDU3SU"; 
  dkim-atps=neutral
-Received: from EUR04-DB3-obe.outbound.protection.outlook.com
- (mail-eopbgr60081.outbound.protection.outlook.com [40.107.6.81])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Received: from mail-it1-x144.google.com (mail-it1-x144.google.com
+ [IPv6:2607:f8b0:4864:20::144])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44lxwD3t6JzDqBL
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Apr 2019 23:41:45 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nxp.com; s=selector1; 
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=bdOMdNJmJGOVzzRDliZ13hYceqbBlu9X588oBQ/37Es=;
- b=sb2muPTk29AUFBD27Emi7Ons964JYJObjoEZ1DvRmbWMLjf7MV4IwcUIFGurqc6aW4Oe3YZfSuUHyHZ2w/WwvI2mx0r8E9zMVyhgVe2bqXnNMkhq8H8NM+9TKYr3hXz67muslkr6Ge+beLdpTieQvQDyHu/BLIdLVANcOqwRogI=
-Received: from VI1PR04MB5134.eurprd04.prod.outlook.com (20.177.50.159) by
- VI1PR04MB5919.eurprd04.prod.outlook.com (20.178.205.81) with Microsoft SMTP
- Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.20.1813.12; Fri, 19 Apr 2019 13:41:39 +0000
-Received: from VI1PR04MB5134.eurprd04.prod.outlook.com
- ([fe80::5c9b:12cc:80f2:1f42]) by VI1PR04MB5134.eurprd04.prod.outlook.com
- ([fe80::5c9b:12cc:80f2:1f42%3]) with mapi id 15.20.1813.013; Fri, 19 Apr 2019
- 13:41:39 +0000
-From: Laurentiu Tudor <laurentiu.tudor@nxp.com>
-To: Robin Murphy <robin.murphy@arm.com>, "netdev@vger.kernel.org"
- <netdev@vger.kernel.org>, Madalin-cristian Bucur <madalin.bucur@nxp.com>, Roy
- Pledge <roy.pledge@nxp.com>, Camelia Alexandra Groza <camelia.groza@nxp.com>, 
- Leo Li <leoyang.li@nxp.com>
-Subject: RE: [PATCH 02/13] soc/fsl/bman: map FBPR area in the iommu
-Thread-Topic: [PATCH 02/13] soc/fsl/bman: map FBPR area in the iommu
-Thread-Index: AQHU5je+GYAdWERgxkCiU6HsMs84n6YisRcAgCDsguA=
-Date: Fri, 19 Apr 2019 13:41:38 +0000
-Message-ID: <VI1PR04MB5134C8A672CD99F521DBFE7EEC270@VI1PR04MB5134.eurprd04.prod.outlook.com>
-References: <20190329140014.8126-1-laurentiu.tudor@nxp.com>
- <20190329140014.8126-3-laurentiu.tudor@nxp.com>
- <b747c418-a495-56e0-c106-a8ec8e82ccb9@arm.com>
-In-Reply-To: <b747c418-a495-56e0-c106-a8ec8e82ccb9@arm.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-authentication-results: spf=none (sender IP is )
- smtp.mailfrom=laurentiu.tudor@nxp.com; 
-x-originating-ip: [213.233.110.112]
-x-ms-publictraffictype: Email
-x-ms-office365-filtering-correlation-id: 8f1080e5-4da5-4fa6-733c-08d6c4ccbfd8
-x-ms-office365-filtering-ht: Tenant
-x-microsoft-antispam: BCL:0; PCL:0;
- RULEID:(2390118)(7020095)(4652040)(8989299)(4534185)(4627221)(201703031133081)(201702281549075)(8990200)(5600141)(711020)(4605104)(4618075)(2017052603328)(7193020);
- SRVR:VI1PR04MB5919; 
-x-ms-traffictypediagnostic: VI1PR04MB5919:
-x-microsoft-antispam-prvs: <VI1PR04MB591919C806B5124532B976BFEC270@VI1PR04MB5919.eurprd04.prod.outlook.com>
-x-forefront-prvs: 0012E6D357
-x-forefront-antispam-report: SFV:NSPM;
- SFS:(10009020)(376002)(346002)(136003)(39860400002)(366004)(396003)(199004)(13464003)(189003)(55016002)(73956011)(66946007)(6246003)(52536014)(99286004)(66066001)(478600001)(2906002)(9686003)(97736004)(68736007)(44832011)(76176011)(86362001)(64756008)(76116006)(66446008)(53936002)(316002)(7696005)(54906003)(6116002)(110136005)(14454004)(6636002)(256004)(229853002)(476003)(6436002)(186003)(11346002)(74316002)(81156014)(4326008)(7736002)(305945005)(25786009)(26005)(71190400001)(33656002)(71200400001)(53546011)(486006)(6506007)(81166006)(8676002)(3846002)(102836004)(446003)(8936002)(66476007)(2501003)(5660300002)(66556008);
- DIR:OUT; SFP:1101; SCL:1; SRVR:VI1PR04MB5919;
- H:VI1PR04MB5134.eurprd04.prod.outlook.com; FPR:; SPF:None; LANG:en;
- PTR:InfoNoRecords; A:1; MX:1; 
-received-spf: None (protection.outlook.com: nxp.com does not designate
- permitted sender hosts)
-x-ms-exchange-senderadcheck: 1
-x-microsoft-antispam-message-info: BeFY///qE+RmwKpRlRJcQbMDG6Ojm0ES1+M6FnlZDN7AFfwPqkRA68Yel4C5A2BZA38ZKAEfl1itecVa5l+X+os/AuRHbPYLy4ZGAxoUwRyCftMZOOmFpLLFo7yBfLSkHiI8puUkfAts9wEV92UfWF1RxW5MaBabJ5yZv/j9rI7GYMAn5aizHP+ZQTGA6ZKkstQwz8J6iXMVkT2Harme/xs49FxgfnffoYxNnsAmTL5Wc0WJahLAz7Y8rXrIoO6tNp7XOXRSwgoMRh+RX5jO57Q+5wbT31pp0pI1r5Rs91rZ4K0v2PlLJ3HN5rRT9XwITBffXN6+aZrZRbXS3TA5OFFuqf+mdvUv/kgn5bnLfi0dmt09sEwrT00SW+39HTDnRJbfJ+wSEv4TdLIinJMAhtrEpzA9DQxlzKbWvKjsPxk=
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44lzL65GZyzDqTL
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 20 Apr 2019 00:45:50 +1000 (AEST)
+Received: by mail-it1-x144.google.com with SMTP id y134so8545360itc.5
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Apr 2019 07:45:50 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+ :cc; bh=1u4P30QW5skkaJsHDqOc8QtC53uRsJT/X9i8uTHPt3k=;
+ b=oNsDU3SUvtMPq3wWJilxawt0TRthfdVa0auU66IxjEAAt/drJJeJ6i7t3XtSwQVWai
+ 852/2EwxxJaXrJmoN0JsG1Js2DfNZzmkVx6PEo/+HQOYp2tfaTo1XdtllidHV5O8jhMl
+ pZZ/IKfBrmY+D7QOYBcbHJrI14Dizjt0iUNpNcm5ZtHYPtgWs7nIwdvbjCBoJdBqtEHq
+ V6BppiqpvQsstYeIm1DL9XIsnFYsWF0rPVTXndRiE0/qtbjpH+P74XRrpMXzJ/jyIpOI
+ vjpjvre1erpAUZ9+yeXVpByPwAVg4q4K8jD55jXo2ZjjifSms9j8UmX2WC+Lm5e6Wwhk
+ c+Mw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+ :message-id:subject:to:cc;
+ bh=1u4P30QW5skkaJsHDqOc8QtC53uRsJT/X9i8uTHPt3k=;
+ b=B5Fm8uEXiLBRXZXMY2itafAqxZt/Wk7pOpLH0L4pGH9gObuT9hJbFEeOi6bHMpjw+k
+ g1r6VmX8+2Cx5a+a/vOXM/wPnDEC5tWIBjJESvFgZmBZvfGWJ0TL3MgtVHTpq2vfOQPV
+ 3MNUayPYdgJbwG32ZyPWnLXTIsXwPTBvzksFhXsqxNFB6eKeUv70quKXdQC21TFIQCf+
+ /iouaJ1inPEKcvVGoB43xnDvJVybKCtvHDI3JkHDqzhn8/geIDjyZXzCVZNdout9eb21
+ ERzMlJZ5V8h3bMPkyZF6V9J6Uu69VGhUeJ88Oc2JYmkjSAXJr1I/Kc5IdXjpkA0SR7m2
+ Vdpg==
+X-Gm-Message-State: APjAAAXkozBtdTfAgLOX/Xrci4XbRHdD9ZGmYUp4Zg//nDAgP15n26+B
+ QxKLXc2t5rQ0IWqN6HLH/mGh8InuBwHGdhAoDQ==
+X-Google-Smtp-Source: APXvYqzd/vOB2+p3xIauiqtMqq7JFZgz/Cp1XYULhBHhx/NPA18PAVgawPDXMDHQmNzSnEOPlPsL9TZ7P9GgAwAZw8o=
+X-Received: by 2002:a02:cd02:: with SMTP id g2mr2939574jaq.70.1555685146976;
+ Fri, 19 Apr 2019 07:45:46 -0700 (PDT)
 MIME-Version: 1.0
-X-OriginatorOrg: nxp.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 8f1080e5-4da5-4fa6-733c-08d6c4ccbfd8
-X-MS-Exchange-CrossTenant-originalarrivaltime: 19 Apr 2019 13:41:38.8808 (UTC)
-X-MS-Exchange-CrossTenant-fromentityheader: Hosted
-X-MS-Exchange-CrossTenant-id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
-X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: VI1PR04MB5919
+References: <1555660717-18731-1-git-send-email-kernelfans@gmail.com>
+ <alpine.DEB.2.21.1904191009040.3174@nanos.tec.linutronix.de>
+In-Reply-To: <alpine.DEB.2.21.1904191009040.3174@nanos.tec.linutronix.de>
+From: Pingfan Liu <kernelfans@gmail.com>
+Date: Fri, 19 Apr 2019 22:45:35 +0800
+Message-ID: <CAFgQCTtaP24gXUs_dh4h8qCsA-TKHc5A-vs5oiezfwuR_qjQvA@mail.gmail.com>
+Subject: Re: [PATCH] kernel/crash: make parse_crashkernel()'s return value
+ more indicant
+To: Thomas Gleixner <tglx@linutronix.de>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -109,59 +87,167 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "iommu@lists.linux-foundation.org" <iommu@lists.linux-foundation.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
- "davem@davemloft.net" <davem@davemloft.net>
+Cc: Rich Felker <dalias@libc.org>, linux-ia64@vger.kernel.org,
+ Julien Thierry <julien.thierry@arm.com>, Yangtao Li <tiny.windzz@gmail.com>,
+ Palmer Dabbelt <palmer@sifive.com>, Heiko Carstens <heiko.carstens@de.ibm.com>,
+ x86@kernel.org, Stefan Agner <stefan@agner.ch>, linux-mips@vger.kernel.org,
+ Paul Mackerras <paulus@samba.org>, "H. Peter Anvin" <hpa@zytor.com>,
+ linux-s390@vger.kernel.org, Florian Fainelli <f.fainelli@gmail.com>,
+ Yoshinori Sato <ysato@users.sourceforge.jp>, linux-sh@vger.kernel.org,
+ David Hildenbrand <david@redhat.com>, Russell King <linux@armlinux.org.uk>,
+ Ingo Molnar <mingo@redhat.com>, linux-arm-kernel@lists.infradead.org,
+ Catalin Marinas <catalin.marinas@arm.com>, James Hogan <jhogan@kernel.org>,
+ Dave Young <dyoung@redhat.com>, Fenghua Yu <fenghua.yu@intel.com>,
+ Will Deacon <will.deacon@arm.com>, linuxppc-dev@lists.ozlabs.org,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Borislav Petkov <bp@alien8.de>, Hari Bathini <hbathini@linux.ibm.com>,
+ Jens Axboe <axboe@kernel.dk>, Tony Luck <tony.luck@intel.com>,
+ Baoquan He <bhe@redhat.com>, Ard Biesheuvel <ard.biesheuvel@linaro.org>,
+ Robin Murphy <robin.murphy@arm.com>, LKML <linux-kernel@vger.kernel.org>,
+ Ralf Baechle <ralf@linux-mips.org>,
+ Thomas Bogendoerfer <tbogendoerfer@suse.de>,
+ Paul Burton <paul.burton@mips.com>, Johannes Weiner <hannes@cmpxchg.org>,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Logan Gunthorpe <logang@deltatee.com>, Greg Hackmann <ghackmann@android.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-SGkgUm9iaW4sDQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogUm9iaW4g
-TXVycGh5IDxyb2Jpbi5tdXJwaHlAYXJtLmNvbT4NCj4gU2VudDogRnJpZGF5LCBNYXJjaCAyOSwg
-MjAxOSA0OjUxIFBNDQo+IA0KPiBPbiAyOS8wMy8yMDE5IDE0OjAwLCBsYXVyZW50aXUudHVkb3JA
-bnhwLmNvbSB3cm90ZToNCj4gPiBGcm9tOiBMYXVyZW50aXUgVHVkb3IgPGxhdXJlbnRpdS50dWRv
-ckBueHAuY29tPg0KPiA+DQo+ID4gQWRkIGEgb25lLXRvLW9uZSBpb21tdSBtYXBwaW5nIGZvciBi
-bWFuIHByaXZhdGUgZGF0YSBtZW1vcnkgKEZCUFIpLg0KPiA+IFRoaXMgaXMgcmVxdWlyZWQgZm9y
-IEJNQU4gdG8gd29yayB3aXRob3V0IGZhdWx0cyBiZWhpbmQgYW4gaW9tbXUuDQo+ID4NCj4gPiBT
-aWduZWQtb2ZmLWJ5OiBMYXVyZW50aXUgVHVkb3IgPGxhdXJlbnRpdS50dWRvckBueHAuY29tPg0K
-PiA+IC0tLQ0KPiA+ICAgZHJpdmVycy9zb2MvZnNsL3FibWFuL2JtYW5fY2Nzci5jIHwgMTEgKysr
-KysrKysrKysNCj4gPiAgIDEgZmlsZSBjaGFuZ2VkLCAxMSBpbnNlcnRpb25zKCspDQo+ID4NCj4g
-PiBkaWZmIC0tZ2l0IGEvZHJpdmVycy9zb2MvZnNsL3FibWFuL2JtYW5fY2Nzci5jDQo+IGIvZHJp
-dmVycy9zb2MvZnNsL3FibWFuL2JtYW5fY2Nzci5jDQo+ID4gaW5kZXggN2MzY2M5NjgwNTNjLi5i
-MjA5Yzc5NTExYmIgMTAwNjQ0DQo+ID4gLS0tIGEvZHJpdmVycy9zb2MvZnNsL3FibWFuL2JtYW5f
-Y2Nzci5jDQo+ID4gKysrIGIvZHJpdmVycy9zb2MvZnNsL3FibWFuL2JtYW5fY2Nzci5jDQo+ID4g
-QEAgLTI5LDYgKzI5LDcgQEANCj4gPiAgICAqLw0KPiA+DQo+ID4gICAjaW5jbHVkZSAiYm1hbl9w
-cml2LmgiDQo+ID4gKyNpbmNsdWRlIDxsaW51eC9pb21tdS5oPg0KPiA+DQo+ID4gICB1MTYgYm1h
-bl9pcF9yZXY7DQo+ID4gICBFWFBPUlRfU1lNQk9MKGJtYW5faXBfcmV2KTsNCj4gPiBAQCAtMTc4
-LDYgKzE3OSw3IEBAIHN0YXRpYyBpbnQgZnNsX2JtYW5fcHJvYmUoc3RydWN0IHBsYXRmb3JtX2Rl
-dmljZQ0KPiAqcGRldikNCj4gPiAgIAlpbnQgcmV0LCBlcnJfaXJxOw0KPiA+ICAgCXN0cnVjdCBk
-ZXZpY2UgKmRldiA9ICZwZGV2LT5kZXY7DQo+ID4gICAJc3RydWN0IGRldmljZV9ub2RlICpub2Rl
-ID0gZGV2LT5vZl9ub2RlOw0KPiA+ICsJc3RydWN0IGlvbW11X2RvbWFpbiAqZG9tYWluOw0KPiA+
-ICAgCXN0cnVjdCByZXNvdXJjZSAqcmVzOw0KPiA+ICAgCXUxNiBpZCwgYm1fcG9vbF9jbnQ7DQo+
-ID4gICAJdTggbWFqb3IsIG1pbm9yOw0KPiA+IEBAIC0yMjUsNiArMjI3LDE1IEBAIHN0YXRpYyBp
-bnQgZnNsX2JtYW5fcHJvYmUoc3RydWN0IHBsYXRmb3JtX2RldmljZQ0KPiAqcGRldikNCj4gPg0K
-PiA+ICAgCWRldl9kYmcoZGV2LCAiQWxsb2NhdGVkIEZCUFIgMHglbGx4IDB4JXp4XG4iLCBmYnBy
-X2EsIGZicHJfc3opOw0KPiA+DQo+ID4gKwkvKiBDcmVhdGUgYW4gMS10by0xIGlvbW11IG1hcHBp
-bmcgZm9yIEZCUFIgYXJlYSAqLw0KPiA+ICsJZG9tYWluID0gaW9tbXVfZ2V0X2RvbWFpbl9mb3Jf
-ZGV2KGRldik7DQo+IA0KPiBJZiB0aGF0J3MgZXhwZWN0ZWQgdG8gYmUgdGhlIGRlZmF1bHQgZG9t
-YWluIHRoYXQgeW91J3JlIGdyYWJiaW5nLCB0aGVuDQo+IHRoaXMgaXMgKmluY3JlZGlibHkqIGZy
-YWdpbGUuIFRoZXJlJ3Mgbm90aGluZyB0byBzdG9wIHRoZSBJT1ZBIHRoYXQgeW91DQo+IGZvcmNp
-Ymx5IG1hcCBmcm9tIGJlaW5nIGF1dG9tYXRpY2FsbHkgYWxsb2NhdGVkIGxhdGVyIGFuZCBjYXVz
-aW5nIHNvbWUNCj4gb3RoZXIgRE1BIG1hcHBpbmcgdG8gZmFpbCBub2lzaWx5IGFuZCB1bmV4cGVj
-dGVkbHkuIEZ1cnRoZXJtb3JlLCBoYXZlDQo+IHlvdSB0cmllZCB0aGlzIHdpdGggImlvbW11LnBh
-c3N0aHJvdWdoPTEiPw0KPiANCj4gVGhhdCBzYWlkLCBJIHJlYWxseSBkb24ndCB1bmRlcnN0YW5k
-IHdoYXQncyBnb2luZyBvbiBoZXJlIGFueXdheSA6Lw0KPiANCj4gQXMgZmFyIGFzIEkgY2FuIHRl
-bGwgZnJvbSBxYm1hbl9pbml0X3ByaXZhdGVfbWVtKCksIGZicHJfYSBjb21lcyBmcm9tDQo+IGRt
-YV9hbGxvY19jb2hlcmVudCgpIGFuZCB0aHVzIHdvdWxkIGFscmVhZHkgYmUgYSBtYXBwZWQgSU9W
-QSAtIGlzbid0DQo+IHRoaXMgdGhlIHN0dWZmIHRoYXQgUm95IGNvbnZlcnRlZCB0byBuaWNlbHkg
-dXNlIHNoYXJlZC1kbWEtcG9vbCByZWdpb25zDQo+IGEgd2hpbGUgYWdvPw0KPiANCg0KRmluYWxs
-eSBmb3VuZCBzb21lIHRpbWUgdG8gbG9vayBpbnRvIHRoaXMsIHNvcnJ5IGZvciB0aGUgZGVsYXku
-IEl0IHNlZW1zIHRoYXQgb24gdGhlIGNvZGUgcGF0aCB0YWtlbiBpbiBvdXIgY2FzZSAoZG1hX2Fs
-bG9jX2NvaGVyZW50KCkgLT4gZG1hX2FsbG9jX2F0dHJzKCkgLT4gZG1hX2FsbG9jX2Zyb21fZGV2
-X2NvaGVyZW50KCkgLT4gX19kbWFfYWxsb2NfZnJvbV9jb2hlcmVudCgpKSB0aGVyZSdzIG5vIGNh
-bGwgaW50byB0aGUgaW9tbXUgbGF5ZXIsIHRodXMgbm8gbWFwcGluZyBpbiB0aGUgc21tdS4gSSBw
-bGFuIHRvIGNvbWUgdXAgd2l0aCBhIFJGQyBwYXRjaCBlYXJseSBuZXh0IHdlZWsgc28gd2UgaGF2
-ZSBzb21ldGhpbmcgY29uY3JldGUgdG8gZGlzY3VzcyBvbi4NCg0KLS0tDQpCZXN0IFJlZ2FyZHMs
-IExhdXJlbnRpdQ0K
+On Fri, Apr 19, 2019 at 4:19 PM Thomas Gleixner <tglx@linutronix.de> wrote:
+>
+> On Fri, 19 Apr 2019, Pingfan Liu wrote:
+>
+> > At present, both return and crash_size should be checked to guarantee the
+> > success of parse_crashkernel().
+> > Simplify the way by returning negative if fail, positive if success. In
+> > case of failure, -EINVAL for bad syntax, -1 for the parsing results in
+> > crash_size=0.
+>
+> I'm not entirely sure what you are trying to say here, but '-1' is not an
+> improvement at all. We surely are not short of proper error codes, right?
+>
+The different negative return values are only used by x86. The option
+"crashkernel=X,high", which is only used on x86, causes parse_kernel()
+to return -EINVAL, then let parse_crashkernel_high() have a try.
+
+When parsing crashkernel=size@offset and crashkernel=range1:size1,
+there are other cases of failure, which is not worth to call
+parse_crashkernel_high() to have a try. That is "-1" aiming for.
+
+First, in parse_crashkernel_mem(), if demanded size is bigger than
+system ram, this one looks like -ENOMEM, but -ENOMEM normally is used
+for allocation. Second, in parse_crashkernel_mem(), if system ram is
+not inside the range listed by "crashkernel=". Third, crashkernel=0MB
+is given in the option (not in practice, but can not forbid user to do
+so).
+
+All of these cases can be treated as -EINVAL, but hard to define the
+error codes.
+> Also I don't see any positive return value > 0. So what is this about:
+>
+Yes. 0 is enough for success.  I had thought about returning 1 if
+@offset is specified in crashkernel. But at present, no use case for
+it.
+
+> > --- a/arch/ia64/kernel/setup.c
+> > +++ b/arch/ia64/kernel/setup.c
+> > @@ -277,7 +277,7 @@ static void __init setup_crashkernel(unsigned long total, int *n)
+> >
+> >       ret = parse_crashkernel(boot_command_line, total,
+> >                       &size, &base);
+> > -     if (ret == 0 && size > 0) {
+> > +     if (ret >= 0) {
+>
+>   ^^^^^^^^^^^^^^^^^^^^^^^^^^^  ????
+>
+> >       if (!memory_region_available(crash_base, crash_size)) {
+> > diff --git a/arch/powerpc/kernel/fadump.c b/arch/powerpc/kernel/fadump.c
+> > index 45a8d0b..0b626e2 100644
+> > --- a/arch/powerpc/kernel/fadump.c
+> > +++ b/arch/powerpc/kernel/fadump.c
+> > @@ -376,7 +376,7 @@ static inline unsigned long fadump_calculate_reserve_size(void)
+> >        */
+> >       ret = parse_crashkernel(boot_command_line, memblock_phys_mem_size(),
+> >                               &size, &base);
+> > -     if (ret == 0 && size > 0) {
+> > +     if (ret >= 0) {
+>
+> and this ?
+>
+> >               unsigned long max_size;
+> >
+> >               if (fw_dump.reserve_bootvar)
+> > diff --git a/arch/powerpc/kernel/machine_kexec.c b/arch/powerpc/kernel/machine_kexec.c
+> > index 63f5a93..9f3e61a 100644
+> > --- a/arch/powerpc/kernel/machine_kexec.c
+> > +++ b/arch/powerpc/kernel/machine_kexec.c
+> > @@ -122,7 +122,7 @@ void __init reserve_crashkernel(void)
+> >       /* use common parsing */
+> >       ret = parse_crashkernel(boot_command_line, memblock_phys_mem_size(),
+> >                       &crash_size, &crash_base);
+> > -     if (ret == 0 && crash_size > 0) {
+> > +     if (ret >= 0) {
+>
+> Again.
+>
+> >               crashk_res.start = crash_base;
+> >               crashk_res.end = crash_base + crash_size - 1;
+> >       }
+> > --- a/arch/sh/kernel/machine_kexec.c
+> > +++ b/arch/sh/kernel/machine_kexec.c
+> > @@ -157,7 +157,7 @@ void __init reserve_crashkernel(void)
+> >
+> >       ret = parse_crashkernel(boot_command_line, memblock_phys_mem_size(),
+> >                       &crash_size, &crash_base);
+> > -     if (ret == 0 && crash_size > 0) {
+> > +     if (ret >= 0) {
+>
+> And some more.
+>
+> >               crashk_res.start = crash_base;
+> >               crashk_res.end = crash_base + crash_size - 1;
+> >       }
+> > diff --git a/arch/x86/kernel/setup.c b/arch/x86/kernel/setup.c
+> > index 3d872a5..62d07d4 100644
+> > --- a/arch/x86/kernel/setup.c
+> > +++ b/arch/x86/kernel/setup.c
+> > @@ -526,11 +526,11 @@ static void __init reserve_crashkernel(void)
+> >
+> >       /* crashkernel=XM */
+> >       ret = parse_crashkernel(boot_command_line, total_mem, &crash_size, &crash_base);
+> > -     if (ret != 0 || crash_size <= 0) {
+> > +     if (ret == -EINVAL) {
+>
+> Without an explanation why this proceedes on error codes other than EINVAL
+> this is uncomprehensible. Comments exist for a reason.
+>
+As explained above, deciding whether to let parse_crashkernel_high() try.
+
+> >               /* crashkernel=X,high */
+> >               ret = parse_crashkernel_high(boot_command_line, total_mem,
+> >                                            &crash_size, &crash_base);
+> > -             if (ret != 0 || crash_size <= 0)
+> > +             if (ret < 0)
+> >                       return;
+> >               high = true;
+>
+> > @@ -87,7 +87,7 @@ static int __init parse_crashkernel_mem(char *cmdline,
+> >               cur = tmp;
+> >               if (size >= system_ram) {
+> >                       pr_warn("crashkernel: invalid size\n");
+> > -                     return -EINVAL;
+> > +                     return -1;
+>
+> Well, this is incomprehensible as well. The pr_warn() says invalid and then
+> you change the error code to something magic.
+>
+As explained above, want to know whether worth to let
+parse_crashkernel_high() try.
+
+What about the following alternative method? Treating crash_size=0 as
+-EINVAL. Then on x86, just call parse_crashkernel_high() blindly to
+have a try. Thanks for your review.
+
+Regards,
+Pingfan
