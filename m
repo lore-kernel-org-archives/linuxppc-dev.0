@@ -1,79 +1,102 @@
-Return-Path: <SRS0=ts8b=SV=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
+Return-Path: <SRS0=K0D4=SW=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS autolearn=unavailable autolearn_force=no
+X-Spam-Status: No, score=-7.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2983EC282E2
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Apr 2019 23:10:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 049A8C282DD
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 20 Apr 2019 07:18:37 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6497A21736
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Apr 2019 23:10:58 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6497A21736
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
+	by mail.kernel.org (Postfix) with ESMTPS id 3397A2087F
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 20 Apr 2019 07:18:36 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (1024-bit key) header.d=nxp.com header.i=@nxp.com header.b="ltEyw9GS"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3397A2087F
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nxp.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44mBXv4Sn0zDqW5
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 20 Apr 2019 09:10:55 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44mPMY3mS4zDqW8
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 20 Apr 2019 17:18:33 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=redhat.com
- (client-ip=209.85.160.193; helo=mail-qt1-f193.google.com;
- envelope-from=mst@redhat.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=nxp.com
+ (client-ip=40.107.6.46; helo=eur04-db3-obe.outbound.protection.outlook.com;
+ envelope-from=shengjiu.wang@nxp.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=redhat.com
-Received: from mail-qt1-f193.google.com (mail-qt1-f193.google.com
- [209.85.160.193])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ dmarc=pass (p=none dis=none) header.from=nxp.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=nxp.com header.i=@nxp.com header.b="ltEyw9GS"; 
+ dkim-atps=neutral
+Received: from EUR04-DB3-obe.outbound.protection.outlook.com
+ (mail-eopbgr60046.outbound.protection.outlook.com [40.107.6.46])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44mBW66bBgzDqVZ
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 20 Apr 2019 09:09:21 +1000 (AEST)
-Received: by mail-qt1-f193.google.com with SMTP id i14so6802694qtr.10
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Apr 2019 16:09:21 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:date:from:to:cc:subject:message-id:references
- :mime-version:content-disposition:in-reply-to;
- bh=eiIG7Pb3xDPcfV7jEiMiHEtsXa/Lg5s5QjuoOEMCk98=;
- b=O56PaJ2dLazZpLpIY1pglx81QJXzpjKBrnavNqEbfMyKxHEMbmX+3P0z37F7Z6l9gd
- zx3XuM7hWl63M8LMBBq+yToraZUQmzIT4F6YKiEzOnYcg8whAX/a41rmYHn4uuhIOWT0
- GnkGBAno0HHvSjuku0frkNvjT+Ajxa82fu6FA8rU97+Fc9DUMIuj0/+VQQWDWuEgNoEG
- CKYI3OuHX3MudOi3Lll+QWzRxJafeyUMaD5etSDVo9wdZ4pWW2w3bamQ13HZsKzNk9fK
- 0xV+go/RHgDkSv7lIJZ4CXVMfxPh0hRdrqZzTy/Om43+M+RAMw3rkRqRV7SgaZ/65HYe
- 7lLA==
-X-Gm-Message-State: APjAAAVy/GV0XSQ4oRVaoPpVPelb6NLRE5EQ81oJu4v6rC1NbPK6VGr3
- fuVBxZ9igW2rsA7F05dEL0ZG7A==
-X-Google-Smtp-Source: APXvYqzc+Oknvzn5/bfow/gVNDiuxgawFCmjDhR4so8tN2tHXw8P82DLmcdD4cOgfhPRh23gLYZ3MA==
-X-Received: by 2002:ac8:5298:: with SMTP id s24mr3022746qtn.263.1555715358471; 
- Fri, 19 Apr 2019 16:09:18 -0700 (PDT)
-Received: from redhat.com (pool-173-76-246-42.bstnma.fios.verizon.net.
- [173.76.246.42])
- by smtp.gmail.com with ESMTPSA id f129sm2699616qkj.47.2019.04.19.16.09.16
- (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
- Fri, 19 Apr 2019 16:09:17 -0700 (PDT)
-Date: Fri, 19 Apr 2019 19:09:14 -0400
-From: "Michael S. Tsirkin" <mst@redhat.com>
-To: Thiago Jung Bauermann <bauerman@linux.ibm.com>
-Subject: Re: [RFC PATCH] virtio_ring: Use DMA API if guest memory is encrypted
-Message-ID: <20190419190258-mutt-send-email-mst@kernel.org>
-References: <87zhrj8kcp.fsf@morokweng.localdomain>
- <87womn8inf.fsf@morokweng.localdomain>
- <20190129134750-mutt-send-email-mst@kernel.org>
- <877eefxvyb.fsf@morokweng.localdomain>
- <20190204144048-mutt-send-email-mst@kernel.org>
- <87ef71seve.fsf@morokweng.localdomain>
- <20190320171027-mutt-send-email-mst@kernel.org>
- <87tvfvbwpb.fsf@morokweng.localdomain>
- <20190323165456-mutt-send-email-mst@kernel.org>
- <87a7go71hz.fsf@morokweng.localdomain>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44mPKn1R8xzDqVH
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 20 Apr 2019 17:16:57 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nxp.com; s=selector1; 
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=Ap4NekQ2+Dr/gUt/4k6TLoDIypV6WuvNvIsovKfwwB8=;
+ b=ltEyw9GSvuB+OkNCZc4rnwfD8cANx4ihzz2ZTcbdo2cMKbTwUiQpSoQmQxEQcsUYc2TJ97cISh5mTsKZyY3dka6OXBbzV/JVOb9zrxEU9MRhVxsgmpj7/QmpGzjYd/O1Rgh8AJfH+8X/E9i2vdhK6wadbfwadYNPlcLln739cfc=
+Received: from AM0PR04MB6468.eurprd04.prod.outlook.com (20.179.253.81) by
+ AM0PR04MB6434.eurprd04.prod.outlook.com (20.179.252.215) with Microsoft SMTP
+ Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.20.1813.12; Sat, 20 Apr 2019 07:16:50 +0000
+Received: from AM0PR04MB6468.eurprd04.prod.outlook.com
+ ([fe80::107:1bdc:981e:e292]) by AM0PR04MB6468.eurprd04.prod.outlook.com
+ ([fe80::107:1bdc:981e:e292%4]) with mapi id 15.20.1813.017; Sat, 20 Apr 2019
+ 07:16:50 +0000
+From: "S.j. Wang" <shengjiu.wang@nxp.com>
+To: Nicolin Chen <nicoleotsuka@gmail.com>
+Subject: RE: [EXT] Re: [PATCH V4 1/3] ASoC: fsl_asrc: Fix the issue about
+ unsupported rate
+Thread-Topic: [EXT] Re: [PATCH V4 1/3] ASoC: fsl_asrc: Fix the issue about
+ unsupported rate
+Thread-Index: AQHU9pn6besxYMR+kU6PSL+q5hShdKZDyQSAgADbVPA=
+Date: Sat, 20 Apr 2019 07:16:50 +0000
+Message-ID: <AM0PR04MB646849E3A8601038312FA9BEE3200@AM0PR04MB6468.eurprd04.prod.outlook.com>
+References: <cover.1555669068.git.shengjiu.wang@nxp.com>
+ <06c3e420b9fabfbec67becc2f9de009ce79a1d4b.1555669068.git.shengjiu.wang@nxp.com>
+ <20190419181003.GA1136@Asurada-Nvidia.nvidia.com>
+In-Reply-To: <20190419181003.GA1136@Asurada-Nvidia.nvidia.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+authentication-results: spf=none (sender IP is )
+ smtp.mailfrom=shengjiu.wang@nxp.com; 
+x-originating-ip: [119.31.174.69]
+x-ms-publictraffictype: Email
+x-ms-office365-filtering-correlation-id: d65ffded-8331-4834-9c0a-08d6c5602870
+x-ms-office365-filtering-ht: Tenant
+x-microsoft-antispam: BCL:0; PCL:0;
+ RULEID:(2390118)(7020095)(4652040)(8989299)(4534185)(4627221)(201703031133081)(201702281549075)(8990200)(5600141)(711020)(4605104)(4618075)(2017052603328)(7193020);
+ SRVR:AM0PR04MB6434; 
+x-ms-traffictypediagnostic: AM0PR04MB6434:
+x-microsoft-antispam-prvs: <AM0PR04MB6434957F6DEC74D1023F0B06E3200@AM0PR04MB6434.eurprd04.prod.outlook.com>
+x-forefront-prvs: 0013079544
+x-forefront-antispam-report: SFV:NSPM;
+ SFS:(10009020)(136003)(39860400002)(376002)(346002)(396003)(366004)(189003)(199004)(7736002)(305945005)(446003)(476003)(76176011)(74316002)(11346002)(102836004)(6506007)(14454004)(486006)(478600001)(256004)(9686003)(53936002)(4326008)(55016002)(6246003)(26005)(186003)(14444005)(229853002)(6916009)(66446008)(64756008)(66556008)(66476007)(76116006)(86362001)(66946007)(73956011)(99286004)(6436002)(316002)(54906003)(25786009)(81166006)(5660300002)(81156014)(52536014)(3846002)(66066001)(1411001)(2906002)(97736004)(68736007)(71190400001)(71200400001)(33656002)(7696005)(8676002)(6116002)(8936002);
+ DIR:OUT; SFP:1101; SCL:1; SRVR:AM0PR04MB6434;
+ H:AM0PR04MB6468.eurprd04.prod.outlook.com; FPR:; SPF:None; LANG:en;
+ PTR:InfoNoRecords; MX:1; A:1; 
+received-spf: None (protection.outlook.com: nxp.com does not designate
+ permitted sender hosts)
+x-ms-exchange-senderadcheck: 1
+x-microsoft-antispam-message-info: lDB/tHn9p3+oejZ87+I58YEiiQP0JB3y/HjuydtuBezFg/VUY6rjDge1dB3tzuIBlNXylFwv0meefSELcZ8n9nxgm8GWq8krg2POrzAtrYViVC1DJv2hpiSLjXlHySvke9xT3On3LaeIackiHisHe36OI73cJ1oyjgbqOqD+L4e3AS8TRba2f/fx+axhIRM772kPTh+JqAbqMdgHZS2F06VJLktSDsJCRojO3UqbSmtm82J4ecFOzgMFeVwoiOfqRz6+hqz4EwjBhVo1P8qFQ5GiMRoelbJb/V6BF2ssjAGuw/XNjz7Qk9xuag9HUQjSFiuXWZ7oU4NlGImTujCO9wFR9HgMM1MdwhpBf7NW88F9KDOzrc7Vfkia6ILcmUaqFBx2j3skOt47uCbySY+8ACTZkvwXfQgWU48UoJVg85Y=
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <87a7go71hz.fsf@morokweng.localdomain>
+X-OriginatorOrg: nxp.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: d65ffded-8331-4834-9c0a-08d6c5602870
+X-MS-Exchange-CrossTenant-originalarrivaltime: 20 Apr 2019 07:16:50.3943 (UTC)
+X-MS-Exchange-CrossTenant-fromentityheader: Hosted
+X-MS-Exchange-CrossTenant-id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
+X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: AM0PR04MB6434
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -85,166 +108,64 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Mike Anderson <andmike@linux.ibm.com>,
- Michael Roth <mdroth@linux.vnet.ibm.com>,
- Jean-Philippe Brucker <jean-philippe.brucker@arm.com>,
- Jason Wang <jasowang@redhat.com>, Alexey Kardashevskiy <aik@linux.ibm.com>,
- Ram Pai <linuxram@us.ibm.com>, linux-kernel@vger.kernel.org,
- virtualization@lists.linux-foundation.org, iommu@lists.linux-foundation.org,
- linuxppc-dev@lists.ozlabs.org, Christoph Hellwig <hch@lst.de>,
- David Gibson <david@gibson.dropbear.id.au>
+Cc: "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
+ "timur@kernel.org" <timur@kernel.org>,
+ "Xiubo.Lee@gmail.com" <Xiubo.Lee@gmail.com>,
+ "festevam@gmail.com" <festevam@gmail.com>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "broonie@kernel.org" <broonie@kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, Apr 17, 2019 at 06:42:00PM -0300, Thiago Jung Bauermann wrote:
-> 
-> Michael S. Tsirkin <mst@redhat.com> writes:
-> 
-> > On Thu, Mar 21, 2019 at 09:05:04PM -0300, Thiago Jung Bauermann wrote:
-> >>
-> >> Michael S. Tsirkin <mst@redhat.com> writes:
-> >>
-> >> > On Wed, Mar 20, 2019 at 01:13:41PM -0300, Thiago Jung Bauermann wrote:
-> >> >> >From what I understand of the ACCESS_PLATFORM definition, the host will
-> >> >> only ever try to access memory addresses that are supplied to it by the
-> >> >> guest, so all of the secure guest memory that the host cares about is
-> >> >> accessible:
-> >> >>
-> >> >>     If this feature bit is set to 0, then the device has same access to
-> >> >>     memory addresses supplied to it as the driver has. In particular,
-> >> >>     the device will always use physical addresses matching addresses
-> >> >>     used by the driver (typically meaning physical addresses used by the
-> >> >>     CPU) and not translated further, and can access any address supplied
-> >> >>     to it by the driver. When clear, this overrides any
-> >> >>     platform-specific description of whether device access is limited or
-> >> >>     translated in any way, e.g. whether an IOMMU may be present.
-> >> >>
-> >> >> All of the above is true for POWER guests, whether they are secure
-> >> >> guests or not.
-> >> >>
-> >> >> Or are you saying that a virtio device may want to access memory
-> >> >> addresses that weren't supplied to it by the driver?
-> >> >
-> >> > Your logic would apply to IOMMUs as well.  For your mode, there are
-> >> > specific encrypted memory regions that driver has access to but device
-> >> > does not. that seems to violate the constraint.
-> >>
-> >> Right, if there's a pre-configured 1:1 mapping in the IOMMU such that
-> >> the device can ignore the IOMMU for all practical purposes I would
-> >> indeed say that the logic would apply to IOMMUs as well. :-)
-> >>
-> >> I guess I'm still struggling with the purpose of signalling to the
-> >> driver that the host may not have access to memory addresses that it
-> >> will never try to access.
+Hi
+>=20
+>=20
+> On Fri, Apr 19, 2019 at 10:23:50AM +0000, S.j. Wang wrote:
+> > When the output sample rate is [8kHz, 30kHz], the limitation of the
+> > supported ratio range is (1/24, 8). In the driver we use (8kHz, 30kHz)
+> > instead of [8kHz, 30kHz].
+> > So this patch is to fix this issue and the potential rounding issue
+> > with divider.
 > >
-> > For example, one of the benefits is to signal to host that driver does
-> > not expect ability to access all memory. If it does, host can
-> > fail initialization gracefully.
-> 
-> But why would the ability to access all memory be necessary or even
-> useful? When would the host access memory that the driver didn't tell it
-> to access?
-
-When I say all memory I mean even memory not allowed by the IOMMU.
-
-
-> >> >> >> > But the name "sev_active" makes me scared because at least AMD guys who
-> >> >> >> > were doing the sensible thing and setting ACCESS_PLATFORM
-> >> >> >>
-> >> >> >> My understanding is, AMD guest-platform knows in advance that their
-> >> >> >> guest will run in secure mode and hence sets the flag at the time of VM
-> >> >> >> instantiation. Unfortunately we dont have that luxury on our platforms.
-> >> >> >
-> >> >> > Well you do have that luxury. It looks like that there are existing
-> >> >> > guests that already acknowledge ACCESS_PLATFORM and you are not happy
-> >> >> > with how that path is slow. So you are trying to optimize for
-> >> >> > them by clearing ACCESS_PLATFORM and then you have lost ability
-> >> >> > to invoke DMA API.
-> >> >> >
-> >> >> > For example if there was another flag just like ACCESS_PLATFORM
-> >> >> > just not yet used by anyone, you would be all fine using that right?
-> >> >>
-> >> >> Yes, a new flag sounds like a great idea. What about the definition
-> >> >> below?
-> >> >>
-> >> >> VIRTIO_F_ACCESS_PLATFORM_NO_IOMMU This feature has the same meaning as
-> >> >>     VIRTIO_F_ACCESS_PLATFORM both when set and when not set, with the
-> >> >>     exception that the IOMMU is explicitly defined to be off or bypassed
-> >> >>     when accessing memory addresses supplied to the device by the
-> >> >>     driver. This flag should be set by the guest if offered, but to
-> >> >>     allow for backward-compatibility device implementations allow for it
-> >> >>     to be left unset by the guest. It is an error to set both this flag
-> >> >>     and VIRTIO_F_ACCESS_PLATFORM.
-> >> >
-> >> > It looks kind of narrow but it's an option.
-> >>
-> >> Great!
-> >>
-> >> > I wonder how we'll define what's an iommu though.
-> >>
-> >> Hm, it didn't occur to me it could be an issue. I'll try.
-> 
-> I rephrased it in terms of address translation. What do you think of
-> this version? The flag name is slightly different too:
-> 
-> 
-> VIRTIO_F_ACCESS_PLATFORM_NO_TRANSLATION This feature has the same
->     meaning as VIRTIO_F_ACCESS_PLATFORM both when set and when not set,
->     with the exception that address translation is guaranteed to be
->     unnecessary when accessing memory addresses supplied to the device
->     by the driver. Which is to say, the device will always use physical
->     addresses matching addresses used by the driver (typically meaning
->     physical addresses used by the CPU) and not translated further. This
->     flag should be set by the guest if offered, but to allow for
->     backward-compatibility device implementations allow for it to be
->     left unset by the guest. It is an error to set both this flag and
->     VIRTIO_F_ACCESS_PLATFORM.
-
-Thanks, I'll think about this approach. Will respond next week.
-
-> >> > Another idea is maybe something like virtio-iommu?
-> >>
-> >> You mean, have legacy guests use virtio-iommu to request an IOMMU
-> >> bypass? If so, it's an interesting idea for new guests but it doesn't
-> >> help with guests that are out today in the field, which don't have A
-> >> virtio-iommu driver.
+> > Fixes: fff6e03c7b65 ("ASoC: fsl_asrc: add support for 8-30kHz output
+> > sample rate")
+> > Cc: <stable@vger.kernel.org>
+> > Signed-off-by: Shengjiu Wang <shengjiu.wang@nxp.com>
+> > ---
+> >  sound/soc/fsl/fsl_asrc.c | 8 ++++----
+> >  1 file changed, 4 insertions(+), 4 deletions(-)
 > >
-> > I presume legacy guests don't use encrypted memory so why do we
-> > worry about them at all?
-> 
-> They don't use encrypted memory, but a host machine will run a mix of
-> secure and legacy guests. And since the hypervisor doesn't know whether
-> a guest will be secure or not at the time it is launched, legacy guests
-> will have to be launched with the same configuration as secure guests.
-
-OK and so I think the issue is that hosts generally fail if they set
-ACCESS_PLATFORM and guests do not negotiate it.
-So you can not just set ACCESS_PLATFORM for everyone.
-Is that the issue here?
-
-
-> >> >> > Is there any justification to doing that beyond someone putting
-> >> >> > out slow code in the past?
-> >> >>
-> >> >> The definition of the ACCESS_PLATFORM flag is generic and captures the
-> >> >> notion of memory access restrictions for the device. Unfortunately, on
-> >> >> powerpc pSeries guests it also implies that the IOMMU is turned on
-> >> >
-> >> > IIUC that's really because on pSeries IOMMU is *always* turned on.
-> >> > Platform has no way to say what you want it to say
-> >> > which is bypass the iommu for the specific device.
-> >>
-> >> Yes, that's correct. pSeries guests running on KVM are in a gray area
-> >> where theoretically they use an IOMMU but in practice KVM ignores it.
-> >> It's unfortunate but it's the reality on the ground today. :-/
+> > diff --git a/sound/soc/fsl/fsl_asrc.c b/sound/soc/fsl/fsl_asrc.c index
+> > 0b937924d2e4..5b8adc7fb117 100644
+> > --- a/sound/soc/fsl/fsl_asrc.c
+> > +++ b/sound/soc/fsl/fsl_asrc.c
+> > @@ -282,10 +282,10 @@ static int fsl_asrc_config_pair(struct
+> fsl_asrc_pair *pair)
+> >               return -EINVAL;
+> >       }
 > >
-> > Well it's not just the reality, virt setups need something that
-> > emulated IOMMUs don't provide. That is not uncommon, e.g.
-> > intel's VTD has a "cache mode" field which AFAIK is only used for virt.
-> 
-> That's good to know. Thanks for this example.
-> 
-> --
-> Thiago Jung Bauermann
-> IBM Linux Technology Center
+> > -     if ((outrate > 8000 && outrate < 30000) &&
+> > -         (outrate/inrate > 24 || inrate/outrate > 8)) {
+> > -             pair_err("exceed supported ratio range [1/24, 8] for \
+> > -                             inrate/outrate: %d/%d\n", inrate, outrate=
+);
+> > +     if ((outrate >=3D 8000 && outrate <=3D 30000) &&
+> > +         (outrate > 24 * inrate || inrate > 8 * outrate)) {
+> > +             pair_err("exceed supported ratio range (1/24, 8) for
+> > + inrate/outrate: %d/%d\n",
+>=20
+> Using one of the conditions:
+>         if (inrate > 8 * outrate)
+>                 pair_err();
+>=20
+> This means:
+>         if (inrate <=3D 8 * outrate)
+>                 /* Everything is fine */
+>=20
+> So the supported ratio range is still [1/24, 8] right?
+>=20
+Oh, yes,  should still [1/24, 8].
+
+> Thanks
