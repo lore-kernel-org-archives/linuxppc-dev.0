@@ -2,88 +2,46 @@ Return-Path: <SRS0=K0D4=SW=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.0 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_MUTT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_PASS autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 575F1C282DD
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 20 Apr 2019 07:31:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5818DC282DD
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 20 Apr 2019 11:02:08 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C9B9A208C0
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 20 Apr 2019 07:31:38 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="KH6qtt0V"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C9B9A208C0
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	by mail.kernel.org (Postfix) with ESMTPS id 9B9A12087B
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 20 Apr 2019 11:02:07 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9B9A12087B
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44mPfc2tqJzDqVM
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 20 Apr 2019 17:31:36 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=2607:f8b0:4864:20::644; helo=mail-pl1-x644.google.com;
- envelope-from=nicoleotsuka@gmail.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="KH6qtt0V"; 
- dkim-atps=neutral
-Received: from mail-pl1-x644.google.com (mail-pl1-x644.google.com
- [IPv6:2607:f8b0:4864:20::644])
+	by lists.ozlabs.org (Postfix) with ESMTP id 44mVKT37VTzDqSl
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 20 Apr 2019 21:02:05 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44mPcr3FmkzDqRP
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 20 Apr 2019 17:30:01 +1000 (AEST)
-Received: by mail-pl1-x644.google.com with SMTP id e92so1749191plb.6
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 20 Apr 2019 00:30:01 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=date:from:to:cc:subject:message-id:references:mime-version
- :content-disposition:in-reply-to:user-agent;
- bh=g0walm6P/6efwRjWHafui6XopYt2biYmefDXoU2XjRE=;
- b=KH6qtt0VpizwpZFptxDfqcSzA2segQb7TS6O9woGE5I+aei8vBn3sLh52rlSoazVuy
- OHUNEqDVtT76eMq/M18lNCI01w/JfipEksmpPUtvh7eFreeRBLhYTgHtWNR1FVEvyQNk
- V3/BHdfPfPHyZaaXWWOlvC9hlem31FOgsgYtmE3xMtuMmBR+vTC3302lknaLV5RuAgqo
- NdNE2V2Cpv/vX7g9hrbKSxgkh3aIZrEjkWGiOl1EN4SAU3xtZOeiKndtVknLUmikXXVe
- lJgEKFH2r9ZbOX/5Nmb7DZifcRH7qYxhEfTqbwABnQBBQKpfzhKpOWuol9ey6zeb0z9h
- pJQQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:date:from:to:cc:subject:message-id:references
- :mime-version:content-disposition:in-reply-to:user-agent;
- bh=g0walm6P/6efwRjWHafui6XopYt2biYmefDXoU2XjRE=;
- b=fFyon+3pz6N07ZP2Cwk9VGkLGJE4I+PnNUtV51tInlr8vz1ckpKB4TX6AmzkAx8iCW
- 0aoWlBJQilZq7qHAcTJCaWmUPf5k4MmaOkWonJLqxTETa3OvNEXzwyunBIeZB9DPVqxh
- fZrL9a7IomTY6W+YkVbO1ZX+tGnfIEnAbrxfoTzrtCTUf9wbz6ITMOuAytATTQOY4Z/W
- 0bX+nx7U81QwCIkemLxpTm8tRmi62W3es96z3Nb4RSsZ/v5Dc7zhTj5OotnXso9l9QCt
- dGxwH74towCqZCGgaovIaJheQ43Slfic4CzuHjAc8iecA7R5+6tX3XWBc5yUfUZBX4X9
- h1jg==
-X-Gm-Message-State: APjAAAWnptpCe9LloatygphEQn6a82/UMGz39gW2vPbWW8gXbFxG0m+2
- v+UeYZgdh/QAyu3gTPlxbKY=
-X-Google-Smtp-Source: APXvYqx8WtwDlr62vGrC2txHOyb68rGmoHA3DCGoeTVnpAOYYSMuow453OJDTXCPlk0T+FwfRxuEXw==
-X-Received: by 2002:a17:902:848d:: with SMTP id
- c13mr7850119plo.279.1555745398461; 
- Sat, 20 Apr 2019 00:29:58 -0700 (PDT)
-Received: from Asurada (c-98-248-47-108.hsd1.ca.comcast.net. [98.248.47.108])
- by smtp.gmail.com with ESMTPSA id
- t13sm16299156pgo.14.2019.04.20.00.29.57
- (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
- Sat, 20 Apr 2019 00:29:57 -0700 (PDT)
-Date: Sat, 20 Apr 2019 00:29:53 -0700
-From: Nicolin Chen <nicoleotsuka@gmail.com>
-To: "S.j. Wang" <shengjiu.wang@nxp.com>
-Subject: Re: [PATCH V4 3/3] ASoC: fsl_asrc: Unify the supported input and
- output rate
-Message-ID: <20190420072952.GA10408@Asurada>
-References: <AM0PR04MB646884E539AD85971FD255AEE3200@AM0PR04MB6468.eurprd04.prod.outlook.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44mVHd1Hd2zDqRS
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 20 Apr 2019 21:00:29 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=ellerman.id.au
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
+ SHA256) (No client certificate requested)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 44mVHV0c1bz9s70;
+ Sat, 20 Apr 2019 21:00:21 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Dave Hansen <dave.hansen@linux.intel.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] [v2] x86/mpx: fix recursive munmap() corruption
+In-Reply-To: <20190419194747.5E1AD6DC@viggo.jf.intel.com>
+References: <20190419194747.5E1AD6DC@viggo.jf.intel.com>
+Date: Sat, 20 Apr 2019 21:00:21 +1000
+Message-ID: <878sw5szzu.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <AM0PR04MB646884E539AD85971FD255AEE3200@AM0PR04MB6468.eurprd04.prod.outlook.com>
-User-Agent: Mutt/1.5.22 (2013-10-16)
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -95,27 +53,68 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
- "timur@kernel.org" <timur@kernel.org>,
- "Xiubo.Lee@gmail.com" <Xiubo.Lee@gmail.com>,
- "festevam@gmail.com" <festevam@gmail.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "broonie@kernel.org" <broonie@kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Cc: linux-arch@vger.kernel.org, hjl.tools@gmail.com, mhocko@suse.com,
+ rguenther@suse.de, gxt@pku.edu.cn, jdike@addtoit.com,
+ Dave Hansen <dave.hansen@linux.intel.com>, linux-um@lists.infradead.org,
+ x86@kernel.org, stable@vger.kernel.org, luto@amacapital.net,
+ linux-mm@kvack.org, paulus@samba.org, richard@nod.at,
+ yang.shi@linux.alibaba.com, akpm@linux-foundation.org,
+ linuxppc-dev@lists.ozlabs.org, vbabka@suse.cz, anton.ivanov@cambridgegreys.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Sat, Apr 20, 2019 at 07:23:59AM +0000, S.j. Wang wrote:
-> > >       /* Validate input and output sample rates */
-> > > -     for (in = 0; in < ARRAY_SIZE(supported_input_rate); in++)
-> > > -             if (inrate == supported_input_rate[in])
-> > > +     for (in = 0; in < ARRAY_SIZE(supported_asrc_rate); in++)
-> > > +             if (inrate == supported_asrc_rate[in])
-> > >                       break;
-> > 
-> > Not sure if we still need it upon having hw_constraint. Maybe m2m needs it?
+Dave Hansen <dave.hansen@linux.intel.com> writes:
+> Changes from v1:
+>  * Fix compile errors on UML and non-x86 arches
+>  * Clarify commit message and Fixes about the origin of the
+>    bug and add the impact to powerpc / uml / unicore32
+>
+> --
+>
+> This is a bit of a mess, to put it mildly.  But, it's a bug
+> that only seems to have showed up in 4.20 but wasn't noticed
+> until now because nobody uses MPX.
+>
+> MPX has the arch_unmap() hook inside of munmap() because MPX
+> uses bounds tables that protect other areas of memory.  When
+> memory is unmapped, there is also a need to unmap the MPX
+> bounds tables.  Barring this, unused bounds tables can eat 80%
+> of the address space.
+>
+> But, the recursive do_munmap() that gets called vi arch_unmap()
+> wreaks havoc with __do_munmap()'s state.  It can result in
+> freeing populated page tables, accessing bogus VMA state,
+> double-freed VMAs and more.
+>
+> To fix this, call arch_unmap() before __do_unmap() has a chance
+> to do anything meaningful.  Also, remove the 'vma' argument
+> and force the MPX code to do its own, independent VMA lookup.
+>
+> == UML / unicore32 impact ==
+>
+> Remove unused 'vma' argument to arch_unmap().  No functional
+> change.
+>
+> I compile tested this on UML but not unicore32.
+>
+> == powerpc impact ==
+>
+> powerpc uses arch_unmap() well to watch for munmap() on the
+> VDSO and zeroes out 'current->mm->context.vdso_base'.  Moving
+> arch_unmap() makes this happen earlier in __do_munmap().  But,
+> 'vdso_base' seems to only be used in perf and in the signal
+> delivery that happens near the return to userspace.  I can not
+> find any likely impact to powerpc, other than the zeroing
+> happening a little earlier.
 
-> Yes.
+Yeah I agree.
 
-OK. Then we can leave it there. Thanks
+> powerpc does not use the 'vma' argument and is unaffected by
+> its removal.
+>
+> I compile-tested a 64-bit powerpc defconfig.
+
+Thanks.
+
+cheers
