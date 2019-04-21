@@ -6,38 +6,38 @@ X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 81A74C10F14
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 21 Apr 2019 16:17:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 46EA4C10F14
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 21 Apr 2019 16:19:17 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id F3E752077C
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 21 Apr 2019 16:17:51 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org F3E752077C
+	by mail.kernel.org (Postfix) with ESMTPS id ED41B20643
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 21 Apr 2019 16:19:16 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org ED41B20643
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44nFHL0JMKzDq7c
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Apr 2019 02:17:50 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+	by lists.ozlabs.org (Postfix) with ESMTP id 44nFJz1VZZzDqVs
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Apr 2019 02:19:15 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44nBkR1gn0zDqMg
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Apr 2019 00:22:39 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44nBkT3gMzzDqDp
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Apr 2019 00:22:41 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: by ozlabs.org (Postfix)
- id 44nBkQ3SPWz9sB3; Mon, 22 Apr 2019 00:22:38 +1000 (AEST)
+ id 44nBkS1d6Pz9sMx; Mon, 22 Apr 2019 00:22:40 +1000 (AEST)
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 44nBkP1LLhz9sML; Mon, 22 Apr 2019 00:22:36 +1000 (AEST)
+ id 44nBkR35KLz9sBZ; Mon, 22 Apr 2019 00:22:38 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: stable@vger.kernel.org,
 	gregkh@linuxfoundation.org
-Subject: [PATCH stable v4.4 45/52] powerpc/fsl: Add infrastructure to fixup
- branch predictor flush
-Date: Mon, 22 Apr 2019 00:20:30 +1000
-Message-Id: <20190421142037.21881-46-mpe@ellerman.id.au>
+Subject: [PATCH stable v4.4 46/52] powerpc/fsl: Add macro to flush the branch
+ predictor
+Date: Mon, 22 Apr 2019 00:20:31 +1000
+Message-Id: <20190421142037.21881-47-mpe@ellerman.id.au>
 X-Mailer: git-send-email 2.20.1
 In-Reply-To: <20190421142037.21881-1-mpe@ellerman.id.au>
 References: <20190421142037.21881-1-mpe@ellerman.id.au>
@@ -62,121 +62,37 @@ Sender: "Linuxppc-dev"
 
 From: Diana Craciun <diana.craciun@nxp.com>
 
-commit 76a5eaa38b15dda92cd6964248c39b5a6f3a4e9d upstream.
+commit 1cbf8990d79ff69da8ad09e8a3df014e1494462b upstream.
 
-In order to protect against speculation attacks (Spectre
-variant 2) on NXP PowerPC platforms, the branch predictor
-should be flushed when the privillege level is changed.
-This patch is adding the infrastructure to fixup at runtime
-the code sections that are performing the branch predictor flush
-depending on a boot arg parameter which is added later in a
-separate patch.
+The BUCSR register can be used to invalidate the entries in the
+branch prediction mechanisms.
 
 Signed-off-by: Diana Craciun <diana.craciun@nxp.com>
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- arch/powerpc/include/asm/feature-fixups.h | 12 ++++++++++++
- arch/powerpc/include/asm/setup.h          |  2 ++
- arch/powerpc/kernel/vmlinux.lds.S         |  8 ++++++++
- arch/powerpc/lib/feature-fixups.c         | 23 +++++++++++++++++++++++
- 4 files changed, 45 insertions(+)
+ arch/powerpc/include/asm/ppc_asm.h | 11 +++++++++++
+ 1 file changed, 11 insertions(+)
 
-diff --git a/arch/powerpc/include/asm/feature-fixups.h b/arch/powerpc/include/asm/feature-fixups.h
-index 7983390ff0a9..145a37ab2d3e 100644
---- a/arch/powerpc/include/asm/feature-fixups.h
-+++ b/arch/powerpc/include/asm/feature-fixups.h
-@@ -216,6 +216,17 @@ label##3:					       	\
- 	FTR_ENTRY_OFFSET 953b-954b;			\
- 	.popsection;
- 
-+#define START_BTB_FLUSH_SECTION			\
-+955:							\
+diff --git a/arch/powerpc/include/asm/ppc_asm.h b/arch/powerpc/include/asm/ppc_asm.h
+index 160bb2311bbb..d219816b3e19 100644
+--- a/arch/powerpc/include/asm/ppc_asm.h
++++ b/arch/powerpc/include/asm/ppc_asm.h
+@@ -821,4 +821,15 @@ END_FTR_SECTION_NESTED(CPU_FTR_HAS_PPR,CPU_FTR_HAS_PPR,945)
+ 	.long 0x2400004c  /* rfid				*/
+ #endif /* !CONFIG_PPC_BOOK3E */
+ #endif /*  __ASSEMBLY__ */
 +
-+#define END_BTB_FLUSH_SECTION			\
-+956:							\
-+	.pushsection __btb_flush_fixup,"a";	\
-+	.align 2;							\
-+957:						\
-+	FTR_ENTRY_OFFSET 955b-957b;			\
-+	FTR_ENTRY_OFFSET 956b-957b;			\
-+	.popsection;
- 
- #ifndef __ASSEMBLY__
- 
-@@ -224,6 +235,7 @@ extern long __start___stf_entry_barrier_fixup, __stop___stf_entry_barrier_fixup;
- extern long __start___stf_exit_barrier_fixup, __stop___stf_exit_barrier_fixup;
- extern long __start___rfi_flush_fixup, __stop___rfi_flush_fixup;
- extern long __start___barrier_nospec_fixup, __stop___barrier_nospec_fixup;
-+extern long __start__btb_flush_fixup, __stop__btb_flush_fixup;
- 
- #endif
- 
-diff --git a/arch/powerpc/include/asm/setup.h b/arch/powerpc/include/asm/setup.h
-index 21daee862399..4d6446408a1b 100644
---- a/arch/powerpc/include/asm/setup.h
-+++ b/arch/powerpc/include/asm/setup.h
-@@ -53,6 +53,8 @@ void do_barrier_nospec_fixups_range(bool enable, void *start, void *end);
- static inline void do_barrier_nospec_fixups_range(bool enable, void *start, void *end) { };
- #endif
- 
-+void do_btb_flush_fixups(void);
-+
- #endif /* !__ASSEMBLY__ */
- 
- #endif	/* _ASM_POWERPC_SETUP_H */
-diff --git a/arch/powerpc/kernel/vmlinux.lds.S b/arch/powerpc/kernel/vmlinux.lds.S
-index 4f9e7733e015..876ac9d52afc 100644
---- a/arch/powerpc/kernel/vmlinux.lds.S
-+++ b/arch/powerpc/kernel/vmlinux.lds.S
-@@ -104,6 +104,14 @@ SECTIONS
- 	}
- #endif /* CONFIG_PPC_BARRIER_NOSPEC */
- 
 +#ifdef CONFIG_PPC_FSL_BOOK3E
-+	. = ALIGN(8);
-+	__spec_btb_flush_fixup : AT(ADDR(__spec_btb_flush_fixup) - LOAD_OFFSET) {
-+		__start__btb_flush_fixup = .;
-+		*(__btb_flush_fixup)
-+		__stop__btb_flush_fixup = .;
-+	}
-+#endif
- 	EXCEPTION_TABLE(0)
- 
- 	NOTES :kernel :notes
-diff --git a/arch/powerpc/lib/feature-fixups.c b/arch/powerpc/lib/feature-fixups.c
-index 68e089a48b2f..7bdfc19a491d 100644
---- a/arch/powerpc/lib/feature-fixups.c
-+++ b/arch/powerpc/lib/feature-fixups.c
-@@ -344,6 +344,29 @@ void do_barrier_nospec_fixups_range(bool enable, void *fixup_start, void *fixup_
- 
- 	printk(KERN_DEBUG "barrier-nospec: patched %d locations\n", i);
- }
++#define BTB_FLUSH(reg)			\
++	lis reg,BUCSR_INIT@h;		\
++	ori reg,reg,BUCSR_INIT@l;	\
++	mtspr SPRN_BUCSR,reg;		\
++	isync;
++#else
++#define BTB_FLUSH(reg)
++#endif /* CONFIG_PPC_FSL_BOOK3E */
 +
-+static void patch_btb_flush_section(long *curr)
-+{
-+	unsigned int *start, *end;
-+
-+	start = (void *)curr + *curr;
-+	end = (void *)curr + *(curr + 1);
-+	for (; start < end; start++) {
-+		pr_devel("patching dest %lx\n", (unsigned long)start);
-+		patch_instruction(start, PPC_INST_NOP);
-+	}
-+}
-+
-+void do_btb_flush_fixups(void)
-+{
-+	long *start, *end;
-+
-+	start = PTRRELOC(&__start__btb_flush_fixup);
-+	end = PTRRELOC(&__stop__btb_flush_fixup);
-+
-+	for (; start < end; start += 2)
-+		patch_btb_flush_section(start);
-+}
- #endif /* CONFIG_PPC_FSL_BOOK3E */
- 
- void do_lwsync_fixups(unsigned long value, void *fixup_start, void *fixup_end)
+ #endif /* _ASM_POWERPC_PPC_ASM_H */
 -- 
 2.20.1
 
