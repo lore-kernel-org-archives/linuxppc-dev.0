@@ -6,38 +6,38 @@ X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3413EC10F14
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 21 Apr 2019 16:08:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 77E0FC10F14
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 21 Apr 2019 16:10:20 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B01B520821
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 21 Apr 2019 16:08:54 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B01B520821
+	by mail.kernel.org (Postfix) with ESMTPS id 2BC6D20821
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 21 Apr 2019 16:10:20 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2BC6D20821
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44nF505PT2zDqVp
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Apr 2019 02:08:52 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44nF6f0NnNzDqVp
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Apr 2019 02:10:18 +1000 (AEST)
 Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44nBkC5DV8zDqMn
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Apr 2019 00:22:27 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44nBkG27X9zDqDp
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Apr 2019 00:22:30 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: by ozlabs.org (Postfix)
- id 44nBkC2PgPz9sB3; Mon, 22 Apr 2019 00:22:27 +1000 (AEST)
+ id 44nBkF2PM3z9sB3; Mon, 22 Apr 2019 00:22:29 +1000 (AEST)
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 44nBkB2DDrz9s5c; Mon, 22 Apr 2019 00:22:25 +1000 (AEST)
+ id 44nBkD1Q1Pz9sMx; Mon, 22 Apr 2019 00:22:27 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: stable@vger.kernel.org,
 	gregkh@linuxfoundation.org
-Subject: [PATCH stable v4.4 39/52] powerpc/asm: Add a patch_site macro &
- helpers for patching instructions
-Date: Mon, 22 Apr 2019 00:20:24 +1000
-Message-Id: <20190421142037.21881-40-mpe@ellerman.id.au>
+Subject: [PATCH stable v4.4 40/52] powerpc/64s: Add new security feature flags
+ for count cache flush
+Date: Mon, 22 Apr 2019 00:20:25 +1000
+Message-Id: <20190421142037.21881-41-mpe@ellerman.id.au>
 X-Mailer: git-send-email 2.20.1
 In-Reply-To: <20190421142037.21881-1-mpe@ellerman.id.au>
 References: <20190421142037.21881-1-mpe@ellerman.id.au>
@@ -60,95 +60,41 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-commit 06d0bbc6d0f56dacac3a79900e9a9a0d5972d818 upstream.
+commit dc8c6cce9a26a51fc19961accb978217a3ba8c75 upstream.
 
-Add a macro and some helper C functions for patching single asm
-instructions.
-
-The gas macro means we can do something like:
-
-  1:	nop
-  	patch_site 1b, patch__foo
-
-Which is less visually distracting than defining a GLOBAL symbol at 1,
-and also doesn't pollute the symbol table which can confuse eg. perf.
-
-These are obviously similar to our existing feature sections, but are
-not automatically patched based on CPU/MMU features, rather they are
-designed to be manually patched by C code at some arbitrary point.
+Add security feature flags to indicate the need for software to flush
+the count cache on context switch, and for the presence of a hardware
+assisted count cache flush.
 
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- arch/powerpc/include/asm/code-patching-asm.h | 18 ++++++++++++++++++
- arch/powerpc/include/asm/code-patching.h     |  2 ++
- arch/powerpc/lib/code-patching.c             | 16 ++++++++++++++++
- 3 files changed, 36 insertions(+)
- create mode 100644 arch/powerpc/include/asm/code-patching-asm.h
+ arch/powerpc/include/asm/security_features.h | 6 ++++++
+ 1 file changed, 6 insertions(+)
 
-diff --git a/arch/powerpc/include/asm/code-patching-asm.h b/arch/powerpc/include/asm/code-patching-asm.h
-new file mode 100644
-index 000000000000..ed7b1448493a
---- /dev/null
-+++ b/arch/powerpc/include/asm/code-patching-asm.h
-@@ -0,0 +1,18 @@
-+/* SPDX-License-Identifier: GPL-2.0+ */
-+/*
-+ * Copyright 2018, Michael Ellerman, IBM Corporation.
-+ */
-+#ifndef _ASM_POWERPC_CODE_PATCHING_ASM_H
-+#define _ASM_POWERPC_CODE_PATCHING_ASM_H
-+
-+/* Define a "site" that can be patched */
-+.macro patch_site label name
-+	.pushsection ".rodata"
-+	.balign 4
-+	.global \name
-+\name:
-+	.4byte	\label - .
-+	.popsection
-+.endm
-+
-+#endif /* _ASM_POWERPC_CODE_PATCHING_ASM_H */
-diff --git a/arch/powerpc/include/asm/code-patching.h b/arch/powerpc/include/asm/code-patching.h
-index 840a5509b3f1..a734b4b34d26 100644
---- a/arch/powerpc/include/asm/code-patching.h
-+++ b/arch/powerpc/include/asm/code-patching.h
-@@ -28,6 +28,8 @@ unsigned int create_cond_branch(const unsigned int *addr,
- 				unsigned long target, int flags);
- int patch_branch(unsigned int *addr, unsigned long target, int flags);
- int patch_instruction(unsigned int *addr, unsigned int instr);
-+int patch_instruction_site(s32 *addr, unsigned int instr);
-+int patch_branch_site(s32 *site, unsigned long target, int flags);
+diff --git a/arch/powerpc/include/asm/security_features.h b/arch/powerpc/include/asm/security_features.h
+index 44989b22383c..a0d47bc18a5c 100644
+--- a/arch/powerpc/include/asm/security_features.h
++++ b/arch/powerpc/include/asm/security_features.h
+@@ -59,6 +59,9 @@ static inline bool security_ftr_enabled(unsigned long feature)
+ // Indirect branch prediction cache disabled
+ #define SEC_FTR_COUNT_CACHE_DISABLED	0x0000000000000020ull
  
- int instr_is_relative_branch(unsigned int instr);
- int instr_is_branch_to_addr(const unsigned int *instr, unsigned long addr);
-diff --git a/arch/powerpc/lib/code-patching.c b/arch/powerpc/lib/code-patching.c
-index d5edbeb8eb82..2ce6159d8983 100644
---- a/arch/powerpc/lib/code-patching.c
-+++ b/arch/powerpc/lib/code-patching.c
-@@ -32,6 +32,22 @@ int patch_branch(unsigned int *addr, unsigned long target, int flags)
- 	return patch_instruction(addr, create_branch(addr, target, flags));
- }
++// bcctr 2,0,0 triggers a hardware assisted count cache flush
++#define SEC_FTR_BCCTR_FLUSH_ASSIST	0x0000000000000800ull
++
  
-+int patch_branch_site(s32 *site, unsigned long target, int flags)
-+{
-+	unsigned int *addr;
+ // Features indicating need for Spectre/Meltdown mitigations
+ 
+@@ -74,6 +77,9 @@ static inline bool security_ftr_enabled(unsigned long feature)
+ // Firmware configuration indicates user favours security over performance
+ #define SEC_FTR_FAVOUR_SECURITY		0x0000000000000200ull
+ 
++// Software required to flush count cache on context switch
++#define SEC_FTR_FLUSH_COUNT_CACHE	0x0000000000000400ull
 +
-+	addr = (unsigned int *)((unsigned long)site + *site);
-+	return patch_instruction(addr, create_branch(addr, target, flags));
-+}
-+
-+int patch_instruction_site(s32 *site, unsigned int instr)
-+{
-+	unsigned int *addr;
-+
-+	addr = (unsigned int *)((unsigned long)site + *site);
-+	return patch_instruction(addr, instr);
-+}
-+
- unsigned int create_branch(const unsigned int *addr,
- 			   unsigned long target, int flags)
- {
+ 
+ // Features enabled by default
+ #define SEC_FTR_DEFAULT \
 -- 
 2.20.1
 
