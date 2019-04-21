@@ -6,40 +6,40 @@ X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_PASS autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9571CC10F14
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 21 Apr 2019 14:12:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 00523C10F14
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 21 Apr 2019 14:25:21 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 11F2F20857
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 21 Apr 2019 14:12:19 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 11F2F20857
+	by mail.kernel.org (Postfix) with ESMTPS id 5A0AE20857
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 21 Apr 2019 14:25:21 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5A0AE20857
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44nBVT1MhKzDqPP
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Apr 2019 00:12:17 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44nBnV6ghWzDqNL
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Apr 2019 00:25:18 +1000 (AEST)
 Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44nBNp1TLfzDqMH
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Apr 2019 00:07:22 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44nBds3Hv7zDqMH
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Apr 2019 00:18:41 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: by ozlabs.org (Postfix)
- id 44nBNp0Yg6z9s5c; Mon, 22 Apr 2019 00:07:22 +1000 (AEST)
+ id 44nBdr4nJ8z9s5c; Mon, 22 Apr 2019 00:18:40 +1000 (AEST)
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 44nBNn6lVxz9sB3; Mon, 22 Apr 2019 00:07:21 +1000 (AEST)
+ id 44nBdr33jmz9s8m; Mon, 22 Apr 2019 00:18:40 +1000 (AEST)
 X-powerpc-patch-notification: thanks
-X-powerpc-patch-commit: 8adddf349fda0d3de2f6bb41ddf838cbf36a8ad2
+X-powerpc-patch-commit: a273fa386a947612a23b0d56dcfb8823662b8606
 X-Patchwork-Hint: ignore
-In-Reply-To: <20190417074140.25130-1-mpe@ellerman.id.au>
+In-Reply-To: <20190207051652.11380-1-mpe@ellerman.id.au>
 To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Subject: Re: powerpc/mm/radix: Make Radix require HUGETLB_PAGE
-Message-Id: <44nBNn6lVxz9sB3@ozlabs.org>
-Date: Mon, 22 Apr 2019 00:07:21 +1000 (AEST)
+Subject: Re: [1/2] powerpc/32: Add ppc_defconfig
+Message-Id: <44nBdr33jmz9s8m@ozlabs.org>
+Date: Mon, 22 Apr 2019 00:18:40 +1000 (AEST)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -51,82 +51,22 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: stewart@linux.vnet.ibm.com, aneesh.kumar@linux.vnet.ibm.com, joel@jms.id.au
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, 2019-04-17 at 07:41:40 UTC, Michael Ellerman wrote:
-> Joel reported weird crashes using skiroot_defconfig, in his case we
-> jumped into an NX page:
+On Thu, 2019-02-07 at 05:16:51 UTC, Michael Ellerman wrote:
+> Add a generic 32-bit defconfig called ppc_defconfig. This means we'll
+> have a defconfig matching "uname -m" for all cases.
 > 
->   kernel tried to execute exec-protected page (c000000002bff4f0) - exploit attempt? (uid: 0)
->   BUG: Unable to handle kernel instruction fetch
->   Faulting instruction address: 0xc000000002bff4f0
+> This config is mostly intended for build testing but if someone wants
+> to tweak it to get it booting on something that would be fine too.
 > 
-> Looking at the disassembly, we had simply branched to that address:
-> 
->   c000000000c001bc  49fff335    bl     c000000002bff4f0
-> 
-> But that didn't match the original kernel image:
-> 
->   c000000000c001bc  4bfff335    bl     c000000000bff4f0 <kobject_get+0x8>
-> 
-> When STRICT_KERNEL_RWX is enabled, and we're using the radix MMU, we
-> call radix__change_memory_range() late in boot to change page
-> protections. We do that both to mark rodata read only and also to mark
-> init text no-execute. That involves walking the kernel page tables,
-> and clearing _PAGE_WRITE or _PAGE_EXEC respectively.
-> 
-> With radix we may use hugepages for the linear mapping, so the code in
-> radix__change_memory_range() uses eg. pmd_huge() to test if it has
-> found a huge mapping, and if so it stops the page table walk and
-> changes the PMD permissions.
-> 
-> However if the kernel is built without HUGETLBFS support, pmd_huge()
-> is just a #define that always returns 0. That causes the code in
-> radix__change_memory_range() to incorrectly interpret the PMD value as
-> a pointer to a PTE page rather than as a PTE at the PMD level.
-> 
-> Unfortunately the combination of _PAGE_PTE and _PAGE_PRESENT in the
-> high bits of the PMD entry give us 0xc in the top nibble which means
-> the PMD entry happens to look like a valid pointer into the linear
-> mapping.
-> 
-> We can see this using `dv` in xmon:
-> 
->   0:mon> dv c000000000000000
->   pgd  @ 0xc000000001740000
->   pgdp @ 0xc000000001740000 = 0x80000000ffffb009
->   pudp @ 0xc0000000ffffb000 = 0x80000000ffffa009
->   pmdp @ 0xc0000000ffffa000 = 0xc00000000000018f	<- not a pointer
->   ptep @ 0xc000000000000100 = 0xa64bb17da64ab07d	<- kernel text
-> 
-> The end result is we treat the value at 0xc000000000000100 as a PTE
-> and clear _PAGE_WRITE or _PAGE_EXEC, potentially corrupting the code
-> at that address.
-> 
-> In Joel's specific case we cleared the sign bit in the offset of the
-> branch, causing a backward branch to turn into a forward branch which
-> caused us to branch into a non-executable page. However the exact
-> nature of the crash depends on kernel version, compiler version, and
-> other factors.
-> 
-> We need to fix radix__change_memory_range() to not use accessors that
-> depend on HUGETLBFS, but we also have radix memory hotplug code that
-> uses pmd_huge() etc that will also need fixing. So for now just
-> disallow the broken combination of Radix with HUGETLBFS disabled.
-> 
-> The only defconfig we have that is affected is skiroot_defconfig, so
-> turn on HUGETLBFS there so that it still gets Radix.
-> 
-> Fixes: 566ca99af026 ("powerpc/mm/radix: Add dummy radix_enabled()")
-> Cc: stable@vger.kernel.org # v4.7+
-> Reported-by: Joel Stanley <joel@jms.id.au>
 > Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+> Tested-by: Mathieu Malaterre <malat@debian.org>
 
-Applied to powerpc fixes.
+Series applied to powerpc next.
 
-https://git.kernel.org/powerpc/c/8adddf349fda0d3de2f6bb41ddf838cb
+https://git.kernel.org/powerpc/c/a273fa386a947612a23b0d56dcfb8823
 
 cheers
