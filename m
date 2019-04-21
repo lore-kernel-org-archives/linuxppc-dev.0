@@ -6,41 +6,41 @@ X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_PASS autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8673DC10F14
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 21 Apr 2019 14:39:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 82108C10F14
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 21 Apr 2019 14:41:38 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3921E20859
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 21 Apr 2019 14:39:50 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3921E20859
+	by mail.kernel.org (Postfix) with ESMTPS id E5C5B20859
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 21 Apr 2019 14:41:37 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E5C5B20859
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44nC6C7045zDqHr
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Apr 2019 00:39:47 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+	by lists.ozlabs.org (Postfix) with ESMTP id 44nC8H5TZrzDqM7
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Apr 2019 00:41:35 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44nBf23sVVzDqNH
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Apr 2019 00:18:50 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44nBf66WN3zDqMH
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Apr 2019 00:18:54 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
-Received: by ozlabs.org (Postfix)
- id 44nBf15BWbz9s5c; Mon, 22 Apr 2019 00:18:49 +1000 (AEST)
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 44nBf11SrFz9sBZ; Mon, 22 Apr 2019 00:18:48 +1000 (AEST)
+ id 44nBf63L6nz9s9h; Mon, 22 Apr 2019 00:18:51 +1000 (AEST)
 X-powerpc-patch-notification: thanks
-X-powerpc-patch-commit: eea86aa4171d4960f0fcdc99dab358c224d53ffe
+X-powerpc-patch-commit: ff6d27823f619892ab96f7461764840e0d786b15
 X-Patchwork-Hint: ignore
-In-Reply-To: <20190314125453.4956-1-mpe@ellerman.id.au>
-To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
+In-Reply-To: <20190322042436.nttfgsdpdshco27y@decadent.org.uk>
+To: Ben Hutchings <ben@decadent.org.uk>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Subject: Re: powerpc/mm/64: Document the sizes of/sizes mapped by
- Pxx_INDEX_SIZE
-Message-Id: <44nBf11SrFz9sBZ@ozlabs.org>
-Date: Mon, 22 Apr 2019 00:18:48 +1000 (AEST)
+Subject: Re: powerpc: vdso: Make vdso32 installation conditional in
+ vdso_install
+Message-Id: <44nBf63L6nz9s9h@ozlabs.org>
+Date: Mon, 22 Apr 2019 00:18:50 +1000 (AEST)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -52,26 +52,22 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: aneesh.kumar@linux.vnet.ibm.com
+Cc: linuxppc-dev@lists.ozlabs.org, 785065@bugs.debian.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, 2019-03-14 at 12:54:53 UTC, Michael Ellerman wrote:
-> Add comments describing the size in bytes of the various levels of the
-> page table tree, and the size of the virtual address space mapped by
-> each level, to make it clear what the sizes are without having to also
-> look up other definitions.
+On Fri, 2019-03-22 at 04:24:37 UTC, Ben Hutchings wrote:
+> The 32-bit vDSO is not needed and not normally built for 64-bit
+> little-endian configurations.  However, the vdso_install target still
+> builds and installs it.  Add the same config condition as is normally
+> used for the build.
 > 
-> The code that calculates the sizes actually uses sizeof(pgd_t) etc.,
-> so in theory these comments could skew vs the code, but the size of
-> pgd_t etc. is unlikely to change very often.
-> 
-> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
-> Reviewed-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
+> Fixes: e0d005916994 ("powerpc/vdso: Disable building the 32-bit VDSO ...")
+> Signed-off-by: Ben Hutchings <ben@decadent.org.uk>
 
-Applied to powerpc next.
+Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/eea86aa4171d4960f0fcdc99dab358c2
+https://git.kernel.org/powerpc/c/ff6d27823f619892ab96f7461764840e
 
 cheers
