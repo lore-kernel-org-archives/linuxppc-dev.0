@@ -6,38 +6,38 @@ X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 75D95C282E3
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 21 Apr 2019 15:24:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 05E43C10F14
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 21 Apr 2019 15:26:13 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id F2E3A20651
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 21 Apr 2019 15:24:31 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org F2E3A20651
+	by mail.kernel.org (Postfix) with ESMTPS id 7F54420859
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 21 Apr 2019 15:26:12 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7F54420859
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44nD5p0TLYzDqSs
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Apr 2019 01:24:30 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44nD7k3g7bzDqCB
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Apr 2019 01:26:10 +1000 (AEST)
 Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44nBhw5KLDzDqFL
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Apr 2019 00:21:20 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44nBhy683jzDqC0
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Apr 2019 00:21:22 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: by ozlabs.org (Postfix)
- id 44nBhv2R4bz9sBZ; Mon, 22 Apr 2019 00:21:19 +1000 (AEST)
+ id 44nBhx64LBz9sB3; Mon, 22 Apr 2019 00:21:21 +1000 (AEST)
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 44nBht4tqZz9s5c; Mon, 22 Apr 2019 00:21:17 +1000 (AEST)
+ id 44nBhx1rLnz9sLt; Mon, 22 Apr 2019 00:21:19 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: stable@vger.kernel.org,
 	gregkh@linuxfoundation.org
-Subject: [PATCH stable v4.4 10/52] powerpc/rfi-flush: Call setup_rfi_flush()
- after LPM migration
-Date: Mon, 22 Apr 2019 00:19:55 +1000
-Message-Id: <20190421142037.21881-11-mpe@ellerman.id.au>
+Subject: [PATCH stable v4.4 11/52] powerpc: Add security feature flags for
+ Spectre/Meltdown
+Date: Mon, 22 Apr 2019 00:19:56 +1000
+Message-Id: <20190421142037.21881-12-mpe@ellerman.id.au>
 X-Mailer: git-send-email 2.20.1
 In-Reply-To: <20190421142037.21881-1-mpe@ellerman.id.au>
 References: <20190421142037.21881-1-mpe@ellerman.id.au>
@@ -60,58 +60,135 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-commit 921bc6cf807ceb2ab8005319cf39f33494d6b100 upstream.
+commit 9a868f634349e62922c226834aa23e3d1329ae7f upstream.
 
-We might have migrated to a machine that uses a different flush type,
-or doesn't need flushing at all.
+This commit adds security feature flags to reflect the settings we
+receive from firmware regarding Spectre/Meltdown mitigations.
 
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
-Signed-off-by: Mauricio Faria de Oliveira <mauricfo@linux.vnet.ibm.com>
+The feature names reflect the names we are given by firmware on bare
+metal machines. See the hostboot source for details.
+
+Arguably these could be firmware features, but that then requires them
+to be read early in boot so they're available prior to asm feature
+patching, but we don't actually want to use them for patching. We may
+also want to dynamically update them in future, which would be
+incompatible with the way firmware features work (at the moment at
+least). So for now just make them separate flags.
+
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- arch/powerpc/platforms/pseries/mobility.c | 3 +++
- arch/powerpc/platforms/pseries/pseries.h  | 2 ++
- arch/powerpc/platforms/pseries/setup.c    | 2 +-
- 3 files changed, 6 insertions(+), 1 deletion(-)
+ arch/powerpc/include/asm/security_features.h | 65 ++++++++++++++++++++
+ arch/powerpc/kernel/Makefile                 |  2 +-
+ arch/powerpc/kernel/security.c               | 15 +++++
+ 3 files changed, 81 insertions(+), 1 deletion(-)
+ create mode 100644 arch/powerpc/include/asm/security_features.h
+ create mode 100644 arch/powerpc/kernel/security.c
 
-diff --git a/arch/powerpc/platforms/pseries/mobility.c b/arch/powerpc/platforms/pseries/mobility.c
-index 8dd0c8edefd6..c773396d0969 100644
---- a/arch/powerpc/platforms/pseries/mobility.c
-+++ b/arch/powerpc/platforms/pseries/mobility.c
-@@ -314,6 +314,9 @@ void post_mobility_fixup(void)
- 		printk(KERN_ERR "Post-mobility device tree update "
- 			"failed: %d\n", rc);
- 
-+	/* Possibly switch to a new RFI flush type */
-+	pseries_setup_rfi_flush();
+diff --git a/arch/powerpc/include/asm/security_features.h b/arch/powerpc/include/asm/security_features.h
+new file mode 100644
+index 000000000000..db00ad2c72c2
+--- /dev/null
++++ b/arch/powerpc/include/asm/security_features.h
+@@ -0,0 +1,65 @@
++/* SPDX-License-Identifier: GPL-2.0+ */
++/*
++ * Security related feature bit definitions.
++ *
++ * Copyright 2018, Michael Ellerman, IBM Corporation.
++ */
 +
- 	return;
- }
- 
-diff --git a/arch/powerpc/platforms/pseries/pseries.h b/arch/powerpc/platforms/pseries/pseries.h
-index 8411c27293e4..e7d80797384d 100644
---- a/arch/powerpc/platforms/pseries/pseries.h
-+++ b/arch/powerpc/platforms/pseries/pseries.h
-@@ -81,4 +81,6 @@ extern struct pci_controller_ops pseries_pci_controller_ops;
- 
- unsigned long pseries_memory_block_size(void);
- 
-+void pseries_setup_rfi_flush(void);
++#ifndef _ASM_POWERPC_SECURITY_FEATURES_H
++#define _ASM_POWERPC_SECURITY_FEATURES_H
 +
- #endif /* _PSERIES_PSERIES_H */
-diff --git a/arch/powerpc/platforms/pseries/setup.c b/arch/powerpc/platforms/pseries/setup.c
-index b831044d3b7d..ab8c4c8b46bd 100644
---- a/arch/powerpc/platforms/pseries/setup.c
-+++ b/arch/powerpc/platforms/pseries/setup.c
-@@ -499,7 +499,7 @@ static void __init find_and_init_phbs(void)
- 	of_pci_check_probe_only();
- }
- 
--static void pseries_setup_rfi_flush(void)
-+void pseries_setup_rfi_flush(void)
- {
- 	struct h_cpu_char_result result;
- 	enum l1d_flush_type types;
++
++extern unsigned long powerpc_security_features;
++
++static inline void security_ftr_set(unsigned long feature)
++{
++	powerpc_security_features |= feature;
++}
++
++static inline void security_ftr_clear(unsigned long feature)
++{
++	powerpc_security_features &= ~feature;
++}
++
++static inline bool security_ftr_enabled(unsigned long feature)
++{
++	return !!(powerpc_security_features & feature);
++}
++
++
++// Features indicating support for Spectre/Meltdown mitigations
++
++// The L1-D cache can be flushed with ori r30,r30,0
++#define SEC_FTR_L1D_FLUSH_ORI30		0x0000000000000001ull
++
++// The L1-D cache can be flushed with mtspr 882,r0 (aka SPRN_TRIG2)
++#define SEC_FTR_L1D_FLUSH_TRIG2		0x0000000000000002ull
++
++// ori r31,r31,0 acts as a speculation barrier
++#define SEC_FTR_SPEC_BAR_ORI31		0x0000000000000004ull
++
++// Speculation past bctr is disabled
++#define SEC_FTR_BCCTRL_SERIALISED	0x0000000000000008ull
++
++// Entries in L1-D are private to a SMT thread
++#define SEC_FTR_L1D_THREAD_PRIV		0x0000000000000010ull
++
++// Indirect branch prediction cache disabled
++#define SEC_FTR_COUNT_CACHE_DISABLED	0x0000000000000020ull
++
++
++// Features indicating need for Spectre/Meltdown mitigations
++
++// The L1-D cache should be flushed on MSR[HV] 1->0 transition (hypervisor to guest)
++#define SEC_FTR_L1D_FLUSH_HV		0x0000000000000040ull
++
++// The L1-D cache should be flushed on MSR[PR] 0->1 transition (kernel to userspace)
++#define SEC_FTR_L1D_FLUSH_PR		0x0000000000000080ull
++
++// A speculation barrier should be used for bounds checks (Spectre variant 1)
++#define SEC_FTR_BNDS_CHK_SPEC_BAR	0x0000000000000100ull
++
++// Firmware configuration indicates user favours security over performance
++#define SEC_FTR_FAVOUR_SECURITY		0x0000000000000200ull
++
++#endif /* _ASM_POWERPC_SECURITY_FEATURES_H */
+diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
+index ba336930d448..e9b0962743b8 100644
+--- a/arch/powerpc/kernel/Makefile
++++ b/arch/powerpc/kernel/Makefile
+@@ -40,7 +40,7 @@ obj-$(CONFIG_PPC64)		+= setup_64.o sys_ppc32.o \
+ obj-$(CONFIG_VDSO32)		+= vdso32/
+ obj-$(CONFIG_HAVE_HW_BREAKPOINT)	+= hw_breakpoint.o
+ obj-$(CONFIG_PPC_BOOK3S_64)	+= cpu_setup_ppc970.o cpu_setup_pa6t.o
+-obj-$(CONFIG_PPC_BOOK3S_64)	+= cpu_setup_power.o
++obj-$(CONFIG_PPC_BOOK3S_64)	+= cpu_setup_power.o security.o
+ obj-$(CONFIG_PPC_BOOK3S_64)	+= mce.o mce_power.o
+ obj64-$(CONFIG_RELOCATABLE)	+= reloc_64.o
+ obj-$(CONFIG_PPC_BOOK3E_64)	+= exceptions-64e.o idle_book3e.o
+diff --git a/arch/powerpc/kernel/security.c b/arch/powerpc/kernel/security.c
+new file mode 100644
+index 000000000000..4ccba00d224c
+--- /dev/null
++++ b/arch/powerpc/kernel/security.c
+@@ -0,0 +1,15 @@
++// SPDX-License-Identifier: GPL-2.0+
++//
++// Security related flags and so on.
++//
++// Copyright 2018, Michael Ellerman, IBM Corporation.
++
++#include <linux/kernel.h>
++#include <asm/security_features.h>
++
++
++unsigned long powerpc_security_features __read_mostly = \
++	SEC_FTR_L1D_FLUSH_HV | \
++	SEC_FTR_L1D_FLUSH_PR | \
++	SEC_FTR_BNDS_CHK_SPEC_BAR | \
++	SEC_FTR_FAVOUR_SECURITY;
 -- 
 2.20.1
 
