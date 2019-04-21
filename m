@@ -6,38 +6,38 @@ X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B2001C10F14
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 21 Apr 2019 15:53:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D81E2C10F14
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 21 Apr 2019 15:54:51 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 5F4D42075A
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 21 Apr 2019 15:53:21 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5F4D42075A
+	by mail.kernel.org (Postfix) with ESMTPS id 63E1D2075A
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 21 Apr 2019 15:54:51 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 63E1D2075A
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44nDl348dlzDqTk
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Apr 2019 01:53:19 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44nDmn2jFNzDqJR
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Apr 2019 01:54:49 +1000 (AEST)
 Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44nBjk2RXKzDqGx
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Apr 2019 00:22:02 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44nBjm6TgpzDqGx
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Apr 2019 00:22:04 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: by ozlabs.org (Postfix)
- id 44nBjh6Ry5z9sLt; Mon, 22 Apr 2019 00:22:00 +1000 (AEST)
+ id 44nBjl4xmwz9sB3; Mon, 22 Apr 2019 00:22:03 +1000 (AEST)
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 44nBjh2X09z9sBZ; Mon, 22 Apr 2019 00:21:59 +1000 (AEST)
+ id 44nBjk1wqBz9sMx; Mon, 22 Apr 2019 00:22:01 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: stable@vger.kernel.org,
 	gregkh@linuxfoundation.org
-Subject: [PATCH stable v4.4 29/52] powerpc/64: Use barrier_nospec in syscall
- entry
-Date: Mon, 22 Apr 2019 00:20:14 +1000
-Message-Id: <20190421142037.21881-30-mpe@ellerman.id.au>
+Subject: [PATCH stable v4.4 30/52] powerpc: Use barrier_nospec in
+ copy_from_user()
+Date: Mon, 22 Apr 2019 00:20:15 +1000
+Message-Id: <20190421142037.21881-31-mpe@ellerman.id.au>
 X-Mailer: git-send-email 2.20.1
 In-Reply-To: <20190421142037.21881-1-mpe@ellerman.id.au>
 References: <20190421142037.21881-1-mpe@ellerman.id.au>
@@ -60,47 +60,114 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-commit 51973a815c6b46d7b23b68d6af371ad1c9d503ca upstream.
+commit ddf35cf3764b5a182b178105f57515b42e2634f8 upstream.
 
-Our syscall entry is done in assembly so patch in an explicit
-barrier_nospec.
+Based on the x86 commit doing the same.
 
-Based on a patch by Michal Suchanek.
+See commit 304ec1b05031 ("x86/uaccess: Use __uaccess_begin_nospec()
+and uaccess_try_nospec") and b3bbfb3fb5d2 ("x86: Introduce
+__uaccess_begin_nospec() and uaccess_try_nospec") for more detail.
+
+In all cases we are ordering the load from the potentially
+user-controlled pointer vs a previous branch based on an access_ok()
+check or similar.
+
+Base on a patch from Michal Suchanek.
 
 Signed-off-by: Michal Suchanek <msuchanek@suse.de>
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- arch/powerpc/kernel/entry_64.S | 10 ++++++++++
- 1 file changed, 10 insertions(+)
+ arch/powerpc/include/asm/uaccess.h | 18 ++++++++++++++++--
+ 1 file changed, 16 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
-index 59be96917369..9c2e58e0e55e 100644
---- a/arch/powerpc/kernel/entry_64.S
-+++ b/arch/powerpc/kernel/entry_64.S
-@@ -36,6 +36,7 @@
- #include <asm/hw_irq.h>
- #include <asm/context_tracking.h>
- #include <asm/tm.h>
-+#include <asm/barrier.h>
- #ifdef CONFIG_PPC_BOOK3S
- #include <asm/exception-64s.h>
- #else
-@@ -177,6 +178,15 @@ system_call:			/* label this so stack traces look sane */
- 	clrldi	r8,r8,32
- 15:
- 	slwi	r0,r0,4
+diff --git a/arch/powerpc/include/asm/uaccess.h b/arch/powerpc/include/asm/uaccess.h
+index 05f1389228d2..e51ce5a0e221 100644
+--- a/arch/powerpc/include/asm/uaccess.h
++++ b/arch/powerpc/include/asm/uaccess.h
+@@ -269,6 +269,7 @@ do {								\
+ 	__chk_user_ptr(ptr);					\
+ 	if (!is_kernel_addr((unsigned long)__gu_addr))		\
+ 		might_fault();					\
++	barrier_nospec();					\
+ 	__get_user_size(__gu_val, __gu_addr, (size), __gu_err);	\
+ 	(x) = (__typeof__(*(ptr)))__gu_val;			\
+ 	__gu_err;						\
+@@ -283,6 +284,7 @@ do {								\
+ 	__chk_user_ptr(ptr);					\
+ 	if (!is_kernel_addr((unsigned long)__gu_addr))		\
+ 		might_fault();					\
++	barrier_nospec();					\
+ 	__get_user_size(__gu_val, __gu_addr, (size), __gu_err);	\
+ 	(x) = (__force __typeof__(*(ptr)))__gu_val;			\
+ 	__gu_err;						\
+@@ -295,8 +297,10 @@ do {								\
+ 	unsigned long  __gu_val = 0;					\
+ 	__typeof__(*(ptr)) __user *__gu_addr = (ptr);		\
+ 	might_fault();							\
+-	if (access_ok(VERIFY_READ, __gu_addr, (size)))			\
++	if (access_ok(VERIFY_READ, __gu_addr, (size))) {		\
++		barrier_nospec();					\
+ 		__get_user_size(__gu_val, __gu_addr, (size), __gu_err);	\
++	}								\
+ 	(x) = (__force __typeof__(*(ptr)))__gu_val;				\
+ 	__gu_err;							\
+ })
+@@ -307,6 +311,7 @@ do {								\
+ 	unsigned long __gu_val;					\
+ 	__typeof__(*(ptr)) __user *__gu_addr = (ptr);	\
+ 	__chk_user_ptr(ptr);					\
++	barrier_nospec();					\
+ 	__get_user_size(__gu_val, __gu_addr, (size), __gu_err);	\
+ 	(x) = (__force __typeof__(*(ptr)))__gu_val;			\
+ 	__gu_err;						\
+@@ -323,8 +328,10 @@ extern unsigned long __copy_tofrom_user(void __user *to,
+ static inline unsigned long copy_from_user(void *to,
+ 		const void __user *from, unsigned long n)
+ {
+-	if (likely(access_ok(VERIFY_READ, from, n)))
++	if (likely(access_ok(VERIFY_READ, from, n))) {
++		barrier_nospec();
+ 		return __copy_tofrom_user((__force void __user *)to, from, n);
++	}
+ 	memset(to, 0, n);
+ 	return n;
+ }
+@@ -359,21 +366,27 @@ static inline unsigned long __copy_from_user_inatomic(void *to,
+ 
+ 		switch (n) {
+ 		case 1:
++			barrier_nospec();
+ 			__get_user_size(*(u8 *)to, from, 1, ret);
+ 			break;
+ 		case 2:
++			barrier_nospec();
+ 			__get_user_size(*(u16 *)to, from, 2, ret);
+ 			break;
+ 		case 4:
++			barrier_nospec();
+ 			__get_user_size(*(u32 *)to, from, 4, ret);
+ 			break;
+ 		case 8:
++			barrier_nospec();
+ 			__get_user_size(*(u64 *)to, from, 8, ret);
+ 			break;
+ 		}
+ 		if (ret == 0)
+ 			return 0;
+ 	}
 +
-+	barrier_nospec_asm
-+	/*
-+	 * Prevent the load of the handler below (based on the user-passed
-+	 * system call number) being speculatively executed until the test
-+	 * against NR_syscalls and branch to .Lsyscall_enosys above has
-+	 * committed.
-+	 */
++	barrier_nospec();
+ 	return __copy_tofrom_user((__force void __user *)to, from, n);
+ }
+ 
+@@ -400,6 +413,7 @@ static inline unsigned long __copy_to_user_inatomic(void __user *to,
+ 		if (ret == 0)
+ 			return 0;
+ 	}
 +
- 	ldx	r12,r11,r0	/* Fetch system call handler [ptr] */
- 	mtctr   r12
- 	bctrl			/* Call handler */
+ 	return __copy_tofrom_user(to, (__force const void __user *)from, n);
+ }
+ 
 -- 
 2.20.1
 
