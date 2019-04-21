@@ -6,38 +6,38 @@ X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8E4B6C10F14
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 21 Apr 2019 16:13:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4A44CC10F14
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 21 Apr 2019 16:14:44 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 16CED2077C
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 21 Apr 2019 16:13:15 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 16CED2077C
+	by mail.kernel.org (Postfix) with ESMTPS id BDAC82077C
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 21 Apr 2019 16:14:43 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BDAC82077C
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44nFB210qyzDqVx
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Apr 2019 02:13:14 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+	by lists.ozlabs.org (Postfix) with ESMTP id 44nFCj5YGbzDq83
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Apr 2019 02:14:41 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44nBkL34q9zDqMg
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Apr 2019 00:22:34 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44nBkM4wK0zDqMg
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Apr 2019 00:22:35 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: by ozlabs.org (Postfix)
- id 44nBkJ6kFSz9sB3; Mon, 22 Apr 2019 00:22:32 +1000 (AEST)
+ id 44nBkM2vXbz9sB3; Mon, 22 Apr 2019 00:22:35 +1000 (AEST)
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 44nBkJ2B7pz9sNG; Mon, 22 Apr 2019 00:22:31 +1000 (AEST)
+ id 44nBkL34qLz9sNF; Mon, 22 Apr 2019 00:22:33 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: stable@vger.kernel.org,
 	gregkh@linuxfoundation.org
-Subject: [PATCH stable v4.4 42/52] powerpc/pseries: Query hypervisor for count
+Subject: [PATCH stable v4.4 43/52] powerpc/powernv: Query firmware for count
  cache flush settings
-Date: Mon, 22 Apr 2019 00:20:27 +1000
-Message-Id: <20190421142037.21881-43-mpe@ellerman.id.au>
+Date: Mon, 22 Apr 2019 00:20:28 +1000
+Message-Id: <20190421142037.21881-44-mpe@ellerman.id.au>
 X-Mailer: git-send-email 2.20.1
 In-Reply-To: <20190421142037.21881-1-mpe@ellerman.id.au>
 References: <20190421142037.21881-1-mpe@ellerman.id.au>
@@ -60,60 +60,42 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-commit ba72dc171954b782a79d25e0f4b3ed91090c3b1e upstream.
+commit 99d54754d3d5f896a8f616b0b6520662bc99d66b upstream.
 
-Use the existing hypercall to determine the appropriate settings for
-the count cache flush, and then call the generic powerpc code to set
-it up based on the security feature flags.
+Look for fw-features properties to determine the appropriate settings
+for the count cache flush, and then call the generic powerpc code to
+set it up based on the security feature flags.
 
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- arch/powerpc/include/asm/hvcall.h      | 2 ++
- arch/powerpc/platforms/pseries/setup.c | 7 +++++++
- 2 files changed, 9 insertions(+)
+ arch/powerpc/platforms/powernv/setup.c | 7 +++++++
+ 1 file changed, 7 insertions(+)
 
-diff --git a/arch/powerpc/include/asm/hvcall.h b/arch/powerpc/include/asm/hvcall.h
-index 6d7938deb624..b57db9d09db9 100644
---- a/arch/powerpc/include/asm/hvcall.h
-+++ b/arch/powerpc/include/asm/hvcall.h
-@@ -295,10 +295,12 @@
- #define H_CPU_CHAR_BRANCH_HINTS_HONORED	(1ull << 58) // IBM bit 5
- #define H_CPU_CHAR_THREAD_RECONFIG_CTRL	(1ull << 57) // IBM bit 6
- #define H_CPU_CHAR_COUNT_CACHE_DISABLED	(1ull << 56) // IBM bit 7
-+#define H_CPU_CHAR_BCCTR_FLUSH_ASSIST	(1ull << 54) // IBM bit 9
- 
- #define H_CPU_BEHAV_FAVOUR_SECURITY	(1ull << 63) // IBM bit 0
- #define H_CPU_BEHAV_L1D_FLUSH_PR	(1ull << 62) // IBM bit 1
- #define H_CPU_BEHAV_BNDS_CHK_SPEC_BAR	(1ull << 61) // IBM bit 2
-+#define H_CPU_BEHAV_FLUSH_COUNT_CACHE	(1ull << 58) // IBM bit 5
- 
- #ifndef __ASSEMBLY__
- #include <linux/types.h>
-diff --git a/arch/powerpc/platforms/pseries/setup.c b/arch/powerpc/platforms/pseries/setup.c
-index 1e2b61d178b8..9cc976ff7fec 100644
---- a/arch/powerpc/platforms/pseries/setup.c
-+++ b/arch/powerpc/platforms/pseries/setup.c
-@@ -524,6 +524,12 @@ static void init_cpu_char_feature_flags(struct h_cpu_char_result *result)
- 	if (result->character & H_CPU_CHAR_COUNT_CACHE_DISABLED)
+diff --git a/arch/powerpc/platforms/powernv/setup.c b/arch/powerpc/platforms/powernv/setup.c
+index c3df9e1ad135..e14b52c7ebd8 100644
+--- a/arch/powerpc/platforms/powernv/setup.c
++++ b/arch/powerpc/platforms/powernv/setup.c
+@@ -77,6 +77,12 @@ static void init_fw_feat_flags(struct device_node *np)
+ 	if (fw_feature_is("enabled", "fw-count-cache-disabled", np))
  		security_ftr_set(SEC_FTR_COUNT_CACHE_DISABLED);
  
-+	if (result->character & H_CPU_CHAR_BCCTR_FLUSH_ASSIST)
++	if (fw_feature_is("enabled", "fw-count-cache-flush-bcctr2,0,0", np))
 +		security_ftr_set(SEC_FTR_BCCTR_FLUSH_ASSIST);
 +
-+	if (result->behaviour & H_CPU_BEHAV_FLUSH_COUNT_CACHE)
++	if (fw_feature_is("enabled", "needs-count-cache-flush-on-context-switch", np))
 +		security_ftr_set(SEC_FTR_FLUSH_COUNT_CACHE);
 +
  	/*
  	 * The features below are enabled by default, so we instead look to see
  	 * if firmware has *disabled* them, and clear them if so.
-@@ -574,6 +580,7 @@ void pseries_setup_rfi_flush(void)
- 		 security_ftr_enabled(SEC_FTR_L1D_FLUSH_PR);
+@@ -123,6 +129,7 @@ static void pnv_setup_rfi_flush(void)
+ 		  security_ftr_enabled(SEC_FTR_L1D_FLUSH_HV));
  
- 	setup_rfi_flush(types, enable);
+ 	setup_rfi_flush(type, enable);
 +	setup_count_cache_flush();
  }
  
- static void __init pSeries_setup_arch(void)
+ static void __init pnv_setup_arch(void)
 -- 
 2.20.1
 
