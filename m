@@ -6,38 +6,38 @@ X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4DDF0C10F14
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 21 Apr 2019 15:15:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AB4C9C10F14
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 21 Apr 2019 15:16:45 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 032DC20859
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 21 Apr 2019 15:15:17 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 032DC20859
+	by mail.kernel.org (Postfix) with ESMTPS id 6286D20859
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 21 Apr 2019 15:16:45 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6286D20859
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44nCv816f4zDqDY
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Apr 2019 01:15:16 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+	by lists.ozlabs.org (Postfix) with ESMTP id 44nCwq16XhzDqFG
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Apr 2019 01:16:43 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44nBhg1BYFzDqC0
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Apr 2019 00:21:07 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44nBhj12q3zDqC0
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Apr 2019 00:21:08 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: by ozlabs.org (Postfix)
- id 44nBhf3Dzrz9sLt; Mon, 22 Apr 2019 00:21:06 +1000 (AEST)
+ id 44nBhg4qbyz9s5c; Mon, 22 Apr 2019 00:21:07 +1000 (AEST)
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 44nBhd5J8lz9sBZ; Mon, 22 Apr 2019 00:21:03 +1000 (AEST)
+ id 44nBhg0rZMz9sNG; Mon, 22 Apr 2019 00:21:06 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: stable@vger.kernel.org,
 	gregkh@linuxfoundation.org
-Subject: [PATCH stable v4.4 04/52] powerpc/powernv: Support firmware disable
- of RFI flush
-Date: Mon, 22 Apr 2019 00:19:49 +1000
-Message-Id: <20190421142037.21881-5-mpe@ellerman.id.au>
+Subject: [PATCH stable v4.4 05/52] powerpc/rfi-flush: Move the logic to avoid
+ a redo into the debugfs code
+Date: Mon, 22 Apr 2019 00:19:50 +1000
+Message-Id: <20190421142037.21881-6-mpe@ellerman.id.au>
 X-Mailer: git-send-email 2.20.1
 In-Reply-To: <20190421142037.21881-1-mpe@ellerman.id.au>
 References: <20190421142037.21881-1-mpe@ellerman.id.au>
@@ -60,32 +60,59 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-commit eb0a2d2620ae431c543963c8c7f08f597366fc60 upstream.
+commit 1e2a9fc7496955faacbbed49461d611b704a7505 upstream.
 
-Some versions of firmware will have a setting that can be configured
-to disable the RFI flush, add support for it.
+rfi_flush_enable() includes a check to see if we're already
+enabled (or disabled), and in that case does nothing.
 
-Fixes: 6e032b350cd1 ("powerpc/powernv: Check device-tree for RFI flush settings")
+But that means calling setup_rfi_flush() a 2nd time doesn't actually
+work, which is a bit confusing.
+
+Move that check into the debugfs code, where it really belongs.
+
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+Signed-off-by: Mauricio Faria de Oliveira <mauricfo@linux.vnet.ibm.com>
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- arch/powerpc/platforms/powernv/setup.c | 4 ++++
- 1 file changed, 4 insertions(+)
+ arch/powerpc/kernel/setup_64.c | 13 ++++++++-----
+ 1 file changed, 8 insertions(+), 5 deletions(-)
 
-diff --git a/arch/powerpc/platforms/powernv/setup.c b/arch/powerpc/platforms/powernv/setup.c
-index c57afc619b20..fdc5f25a1b4a 100644
---- a/arch/powerpc/platforms/powernv/setup.c
-+++ b/arch/powerpc/platforms/powernv/setup.c
-@@ -79,6 +79,10 @@ static void pnv_setup_rfi_flush(void)
- 		if (np && of_property_read_bool(np, "disabled"))
- 			enable--;
+diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
+index 1d2712d628c3..5bb4a6811371 100644
+--- a/arch/powerpc/kernel/setup_64.c
++++ b/arch/powerpc/kernel/setup_64.c
+@@ -873,9 +873,6 @@ static void do_nothing(void *unused)
  
-+		np = of_get_child_by_name(fw_features, "speculation-policy-favor-security");
-+		if (np && of_property_read_bool(np, "disabled"))
-+			enable = 0;
+ void rfi_flush_enable(bool enable)
+ {
+-	if (rfi_flush == enable)
+-		return;
+-
+ 	if (enable) {
+ 		do_rfi_flush_fixups(enabled_flush_types);
+ 		on_each_cpu(do_nothing, NULL, 1);
+@@ -929,13 +926,19 @@ void __init setup_rfi_flush(enum l1d_flush_type types, bool enable)
+ #ifdef CONFIG_DEBUG_FS
+ static int rfi_flush_set(void *data, u64 val)
+ {
++	bool enable;
 +
- 		of_node_put(np);
- 		of_node_put(fw_features);
- 	}
+ 	if (val == 1)
+-		rfi_flush_enable(true);
++		enable = true;
+ 	else if (val == 0)
+-		rfi_flush_enable(false);
++		enable = false;
+ 	else
+ 		return -EINVAL;
+ 
++	/* Only do anything if we're changing state */
++	if (enable != rfi_flush)
++		rfi_flush_enable(enable);
++
+ 	return 0;
+ }
+ 
 -- 
 2.20.1
 
