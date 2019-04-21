@@ -6,38 +6,38 @@ X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4233AC10F14
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 21 Apr 2019 15:21:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 990B8C10F14
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 21 Apr 2019 15:22:57 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id BF2EF20859
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 21 Apr 2019 15:21:26 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BF2EF20859
+	by mail.kernel.org (Postfix) with ESMTPS id 4D91020859
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 21 Apr 2019 15:22:57 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4D91020859
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44nD2D71ymzDqD3
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Apr 2019 01:21:24 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+	by lists.ozlabs.org (Postfix) with ESMTP id 44nD3z34vdzDqRK
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Apr 2019 01:22:55 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44nBhs0xBMzDqC0
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Apr 2019 00:21:17 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44nBht0qFrzDqFL
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Apr 2019 00:21:18 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: by ozlabs.org (Postfix)
- id 44nBhr0rD0z9sMQ; Mon, 22 Apr 2019 00:21:16 +1000 (AEST)
+ id 44nBhs0ZsCz9sBZ; Mon, 22 Apr 2019 00:21:17 +1000 (AEST)
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 44nBhn5xW4z9sLt; Mon, 22 Apr 2019 00:21:12 +1000 (AEST)
+ id 44nBhr0qxPz9sB3; Mon, 22 Apr 2019 00:21:14 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: stable@vger.kernel.org,
 	gregkh@linuxfoundation.org
-Subject: [PATCH stable v4.4 08/52] powerpc/rfi-flush: Differentiate enabled
- and patched flush types
-Date: Mon, 22 Apr 2019 00:19:53 +1000
-Message-Id: <20190421142037.21881-9-mpe@ellerman.id.au>
+Subject: [PATCH stable v4.4 09/52] powerpc/pseries: Add new
+ H_GET_CPU_CHARACTERISTICS flags
+Date: Mon, 22 Apr 2019 00:19:54 +1000
+Message-Id: <20190421142037.21881-10-mpe@ellerman.id.au>
 X-Mailer: git-send-email 2.20.1
 In-Reply-To: <20190421142037.21881-1-mpe@ellerman.id.au>
 References: <20190421142037.21881-1-mpe@ellerman.id.au>
@@ -60,73 +60,30 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Mauricio Faria de Oliveira <mauricfo@linux.vnet.ibm.com>
+commit c4bc36628d7f8b664657d8bd6ad1c44c177880b7 upstream.
 
-commit 0063d61ccfc011f379a31acaeba6de7c926fed2c upstream.
+Add some additional values which have been defined for the
+H_GET_CPU_CHARACTERISTICS hypercall.
 
-Currently the rfi-flush messages print 'Using <type> flush' for all
-enabled_flush_types, but that is not necessarily true -- as now the
-fallback flush is always enabled on pseries, but the fixup function
-overwrites its nop/branch slot with other flush types, if available.
-
-So, replace the 'Using <type> flush' messages with '<type> flush is
-available'.
-
-Also, print the patched flush types in the fixup function, so users
-can know what is (not) being used (e.g., the slower, fallback flush,
-or no flush type at all if flush is disabled via the debugfs switch).
-
-Suggested-by: Michael Ellerman <mpe@ellerman.id.au>
-Signed-off-by: Mauricio Faria de Oliveira <mauricfo@linux.vnet.ibm.com>
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- arch/powerpc/kernel/setup_64.c    | 6 +++---
- arch/powerpc/lib/feature-fixups.c | 9 ++++++++-
- 2 files changed, 11 insertions(+), 4 deletions(-)
+ arch/powerpc/include/asm/hvcall.h | 3 +++
+ 1 file changed, 3 insertions(+)
 
-diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
-index 6e9a4c1e8a4d..e975f2533767 100644
---- a/arch/powerpc/kernel/setup_64.c
-+++ b/arch/powerpc/kernel/setup_64.c
-@@ -911,15 +911,15 @@ static void init_fallback_flush(void)
- void setup_rfi_flush(enum l1d_flush_type types, bool enable)
- {
- 	if (types & L1D_FLUSH_FALLBACK) {
--		pr_info("rfi-flush: Using fallback displacement flush\n");
-+		pr_info("rfi-flush: fallback displacement flush available\n");
- 		init_fallback_flush();
- 	}
+diff --git a/arch/powerpc/include/asm/hvcall.h b/arch/powerpc/include/asm/hvcall.h
+index 449bbb87c257..6d7938deb624 100644
+--- a/arch/powerpc/include/asm/hvcall.h
++++ b/arch/powerpc/include/asm/hvcall.h
+@@ -292,6 +292,9 @@
+ #define H_CPU_CHAR_L1D_FLUSH_ORI30	(1ull << 61) // IBM bit 2
+ #define H_CPU_CHAR_L1D_FLUSH_TRIG2	(1ull << 60) // IBM bit 3
+ #define H_CPU_CHAR_L1D_THREAD_PRIV	(1ull << 59) // IBM bit 4
++#define H_CPU_CHAR_BRANCH_HINTS_HONORED	(1ull << 58) // IBM bit 5
++#define H_CPU_CHAR_THREAD_RECONFIG_CTRL	(1ull << 57) // IBM bit 6
++#define H_CPU_CHAR_COUNT_CACHE_DISABLED	(1ull << 56) // IBM bit 7
  
- 	if (types & L1D_FLUSH_ORI)
--		pr_info("rfi-flush: Using ori type flush\n");
-+		pr_info("rfi-flush: ori type flush available\n");
- 
- 	if (types & L1D_FLUSH_MTTRIG)
--		pr_info("rfi-flush: Using mttrig type flush\n");
-+		pr_info("rfi-flush: mttrig type flush available\n");
- 
- 	enabled_flush_types = types;
- 
-diff --git a/arch/powerpc/lib/feature-fixups.c b/arch/powerpc/lib/feature-fixups.c
-index 3af014684872..b76b9b6b3a85 100644
---- a/arch/powerpc/lib/feature-fixups.c
-+++ b/arch/powerpc/lib/feature-fixups.c
-@@ -151,7 +151,14 @@ void do_rfi_flush_fixups(enum l1d_flush_type types)
- 		patch_instruction(dest + 2, instrs[2]);
- 	}
- 
--	printk(KERN_DEBUG "rfi-flush: patched %d locations\n", i);
-+	printk(KERN_DEBUG "rfi-flush: patched %d locations (%s flush)\n", i,
-+		(types == L1D_FLUSH_NONE)       ? "no" :
-+		(types == L1D_FLUSH_FALLBACK)   ? "fallback displacement" :
-+		(types &  L1D_FLUSH_ORI)        ? (types & L1D_FLUSH_MTTRIG)
-+							? "ori+mttrig type"
-+							: "ori type" :
-+		(types &  L1D_FLUSH_MTTRIG)     ? "mttrig type"
-+						: "unknown");
- }
- #endif /* CONFIG_PPC_BOOK3S_64 */
- 
+ #define H_CPU_BEHAV_FAVOUR_SECURITY	(1ull << 63) // IBM bit 0
+ #define H_CPU_BEHAV_L1D_FLUSH_PR	(1ull << 62) // IBM bit 1
 -- 
 2.20.1
 
