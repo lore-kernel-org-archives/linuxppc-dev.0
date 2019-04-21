@@ -6,38 +6,38 @@ X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 36212C10F14
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 21 Apr 2019 16:05:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 58572C10F14
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 21 Apr 2019 16:07:29 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id DEFCE20821
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 21 Apr 2019 16:05:31 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DEFCE20821
+	by mail.kernel.org (Postfix) with ESMTPS id 7ADD120821
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 21 Apr 2019 16:07:28 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7ADD120821
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44nF156sMFzDq9Z
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Apr 2019 02:05:29 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44nF3L21PJzDqVp
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Apr 2019 02:07:26 +1000 (AEST)
 Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44nBk65fnrzDqMg
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Apr 2019 00:22:22 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44nBkC2kv0zDqMH
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Apr 2019 00:22:27 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: by ozlabs.org (Postfix)
- id 44nBk61H9Pz9sBZ; Mon, 22 Apr 2019 00:22:22 +1000 (AEST)
+ id 44nBkB2FBgz9sML; Mon, 22 Apr 2019 00:22:26 +1000 (AEST)
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 44nBk54g9xz9sB3; Mon, 22 Apr 2019 00:22:21 +1000 (AEST)
+ id 44nBk874xQz9sNK; Mon, 22 Apr 2019 00:22:23 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: stable@vger.kernel.org,
 	gregkh@linuxfoundation.org
-Subject: [PATCH stable v4.4 37/52] powerpc/64: Make meltdown reporting Book3S
- 64 specific
-Date: Mon, 22 Apr 2019 00:20:22 +1000
-Message-Id: <20190421142037.21881-38-mpe@ellerman.id.au>
+Subject: [PATCH stable v4.4 38/52] powerpc/fsl: Add barrier_nospec
+ implementation for NXP PowerPC Book3E
+Date: Mon, 22 Apr 2019 00:20:23 +1000
+Message-Id: <20190421142037.21881-39-mpe@ellerman.id.au>
 X-Mailer: git-send-email 2.20.1
 In-Reply-To: <20190421142037.21881-1-mpe@ellerman.id.au>
 References: <20190421142037.21881-1-mpe@ellerman.id.au>
@@ -62,39 +62,112 @@ Sender: "Linuxppc-dev"
 
 From: Diana Craciun <diana.craciun@nxp.com>
 
-commit 406d2b6ae3420f5bb2b3db6986dc6f0b6dbb637b upstream.
+commit ebcd1bfc33c7a90df941df68a6e5d4018c022fba upstream.
 
-In a subsequent patch we will enable building security.c for Book3E.
-However the NXP platforms are not vulnerable to Meltdown, so make the
-Meltdown vulnerability reporting PPC_BOOK3S_64 specific.
+Implement the barrier_nospec as a isync;sync instruction sequence.
+The implementation uses the infrastructure built for BOOK3S 64.
 
 Signed-off-by: Diana Craciun <diana.craciun@nxp.com>
-[mpe: Split out of larger patch]
+[mpe: Add PPC_INST_ISYNC for backport]
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- arch/powerpc/kernel/security.c | 2 ++
- 1 file changed, 2 insertions(+)
+ arch/powerpc/Kconfig                  |  2 +-
+ arch/powerpc/include/asm/barrier.h    |  8 ++++++-
+ arch/powerpc/include/asm/ppc-opcode.h |  1 +
+ arch/powerpc/lib/feature-fixups.c     | 31 +++++++++++++++++++++++++++
+ 4 files changed, 40 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/kernel/security.c b/arch/powerpc/kernel/security.c
-index b5b7f047fb19..e04afd171b13 100644
---- a/arch/powerpc/kernel/security.c
-+++ b/arch/powerpc/kernel/security.c
-@@ -93,6 +93,7 @@ static __init int barrier_nospec_debugfs_init(void)
- device_initcall(barrier_nospec_debugfs_init);
- #endif /* CONFIG_DEBUG_FS */
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index 9d16459632bb..01b6c00a7060 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -165,7 +165,7 @@ config PPC
+ config PPC_BARRIER_NOSPEC
+     bool
+     default y
+-    depends on PPC_BOOK3S_64
++    depends on PPC_BOOK3S_64 || PPC_FSL_BOOK3E
+ 
+ config GENERIC_CSUM
+ 	def_bool CPU_LITTLE_ENDIAN
+diff --git a/arch/powerpc/include/asm/barrier.h b/arch/powerpc/include/asm/barrier.h
+index a422e4a69c1a..e7cb72cdb2ba 100644
+--- a/arch/powerpc/include/asm/barrier.h
++++ b/arch/powerpc/include/asm/barrier.h
+@@ -92,12 +92,18 @@ do {									\
+ #define smp_mb__after_atomic()      smp_mb()
+ #define smp_mb__before_spinlock()   smp_mb()
  
 +#ifdef CONFIG_PPC_BOOK3S_64
- ssize_t cpu_show_meltdown(struct device *dev, struct device_attribute *attr, char *buf)
- {
- 	bool thread_priv;
-@@ -125,6 +126,7 @@ ssize_t cpu_show_meltdown(struct device *dev, struct device_attribute *attr, cha
- 
- 	return sprintf(buf, "Vulnerable\n");
- }
++#define NOSPEC_BARRIER_SLOT   nop
++#elif defined(CONFIG_PPC_FSL_BOOK3E)
++#define NOSPEC_BARRIER_SLOT   nop; nop
 +#endif
++
+ #ifdef CONFIG_PPC_BARRIER_NOSPEC
+ /*
+  * Prevent execution of subsequent instructions until preceding branches have
+  * been fully resolved and are no longer executing speculatively.
+  */
+-#define barrier_nospec_asm NOSPEC_BARRIER_FIXUP_SECTION; nop
++#define barrier_nospec_asm NOSPEC_BARRIER_FIXUP_SECTION; NOSPEC_BARRIER_SLOT
  
- ssize_t cpu_show_spectre_v1(struct device *dev, struct device_attribute *attr, char *buf)
+ // This also acts as a compiler barrier due to the memory clobber.
+ #define barrier_nospec() asm (stringify_in_c(barrier_nospec_asm) ::: "memory")
+diff --git a/arch/powerpc/include/asm/ppc-opcode.h b/arch/powerpc/include/asm/ppc-opcode.h
+index 7ab04fc59e24..faf1bb045dee 100644
+--- a/arch/powerpc/include/asm/ppc-opcode.h
++++ b/arch/powerpc/include/asm/ppc-opcode.h
+@@ -147,6 +147,7 @@
+ #define PPC_INST_LWSYNC			0x7c2004ac
+ #define PPC_INST_SYNC			0x7c0004ac
+ #define PPC_INST_SYNC_MASK		0xfc0007fe
++#define PPC_INST_ISYNC			0x4c00012c
+ #define PPC_INST_LXVD2X			0x7c000698
+ #define PPC_INST_MCRXR			0x7c000400
+ #define PPC_INST_MCRXR_MASK		0xfc0007fe
+diff --git a/arch/powerpc/lib/feature-fixups.c b/arch/powerpc/lib/feature-fixups.c
+index 64f216af3c1f..68e089a48b2f 100644
+--- a/arch/powerpc/lib/feature-fixups.c
++++ b/arch/powerpc/lib/feature-fixups.c
+@@ -315,6 +315,37 @@ void do_barrier_nospec_fixups(bool enable)
+ }
+ #endif /* CONFIG_PPC_BARRIER_NOSPEC */
+ 
++#ifdef CONFIG_PPC_FSL_BOOK3E
++void do_barrier_nospec_fixups_range(bool enable, void *fixup_start, void *fixup_end)
++{
++	unsigned int instr[2], *dest;
++	long *start, *end;
++	int i;
++
++	start = fixup_start;
++	end = fixup_end;
++
++	instr[0] = PPC_INST_NOP;
++	instr[1] = PPC_INST_NOP;
++
++	if (enable) {
++		pr_info("barrier-nospec: using isync; sync as speculation barrier\n");
++		instr[0] = PPC_INST_ISYNC;
++		instr[1] = PPC_INST_SYNC;
++	}
++
++	for (i = 0; start < end; start++, i++) {
++		dest = (void *)start + *start;
++
++		pr_devel("patching dest %lx\n", (unsigned long)dest);
++		patch_instruction(dest, instr[0]);
++		patch_instruction(dest + 1, instr[1]);
++	}
++
++	printk(KERN_DEBUG "barrier-nospec: patched %d locations\n", i);
++}
++#endif /* CONFIG_PPC_FSL_BOOK3E */
++
+ void do_lwsync_fixups(unsigned long value, void *fixup_start, void *fixup_end)
  {
+ 	long *start, *end;
 -- 
 2.20.1
 
