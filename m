@@ -6,38 +6,38 @@ X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 331E1C10F14
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 21 Apr 2019 15:13:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4DDF0C10F14
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 21 Apr 2019 15:15:18 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id DFE3E20859
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 21 Apr 2019 15:13:50 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DFE3E20859
+	by mail.kernel.org (Postfix) with ESMTPS id 032DC20859
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 21 Apr 2019 15:15:17 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 032DC20859
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44nCsS6126zDqBN
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Apr 2019 01:13:48 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44nCv816f4zDqDY
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Apr 2019 01:15:16 +1000 (AEST)
 Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44nBhc2T7szDqC0
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Apr 2019 00:21:04 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44nBhg1BYFzDqC0
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Apr 2019 00:21:07 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: by ozlabs.org (Postfix)
- id 44nBhb4XpSz9sB3; Mon, 22 Apr 2019 00:21:03 +1000 (AEST)
+ id 44nBhf3Dzrz9sLt; Mon, 22 Apr 2019 00:21:06 +1000 (AEST)
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 44nBhb0Mb4z9sMQ; Mon, 22 Apr 2019 00:21:01 +1000 (AEST)
+ id 44nBhd5J8lz9sBZ; Mon, 22 Apr 2019 00:21:03 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: stable@vger.kernel.org,
 	gregkh@linuxfoundation.org
-Subject: [PATCH stable v4.4 03/52] powerpc/pseries: Support firmware disable
+Subject: [PATCH stable v4.4 04/52] powerpc/powernv: Support firmware disable
  of RFI flush
-Date: Mon, 22 Apr 2019 00:19:48 +1000
-Message-Id: <20190421142037.21881-4-mpe@ellerman.id.au>
+Date: Mon, 22 Apr 2019 00:19:49 +1000
+Message-Id: <20190421142037.21881-5-mpe@ellerman.id.au>
 X-Mailer: git-send-email 2.20.1
 In-Reply-To: <20190421142037.21881-1-mpe@ellerman.id.au>
 References: <20190421142037.21881-1-mpe@ellerman.id.au>
@@ -60,31 +60,32 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-commit 582605a429e20ae68fd0b041b2e840af296edd08 upstream.
+commit eb0a2d2620ae431c543963c8c7f08f597366fc60 upstream.
 
 Some versions of firmware will have a setting that can be configured
 to disable the RFI flush, add support for it.
 
-Fixes: 8989d56878a7 ("powerpc/pseries: Query hypervisor for RFI flush settings")
+Fixes: 6e032b350cd1 ("powerpc/powernv: Check device-tree for RFI flush settings")
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- arch/powerpc/platforms/pseries/setup.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ arch/powerpc/platforms/powernv/setup.c | 4 ++++
+ 1 file changed, 4 insertions(+)
 
-diff --git a/arch/powerpc/platforms/pseries/setup.c b/arch/powerpc/platforms/pseries/setup.c
-index dd2545fc9947..ec1d1768a799 100644
---- a/arch/powerpc/platforms/pseries/setup.c
-+++ b/arch/powerpc/platforms/pseries/setup.c
-@@ -522,7 +522,8 @@ static void pseries_setup_rfi_flush(void)
- 		if (types == L1D_FLUSH_NONE)
- 			types = L1D_FLUSH_FALLBACK;
+diff --git a/arch/powerpc/platforms/powernv/setup.c b/arch/powerpc/platforms/powernv/setup.c
+index c57afc619b20..fdc5f25a1b4a 100644
+--- a/arch/powerpc/platforms/powernv/setup.c
++++ b/arch/powerpc/platforms/powernv/setup.c
+@@ -79,6 +79,10 @@ static void pnv_setup_rfi_flush(void)
+ 		if (np && of_property_read_bool(np, "disabled"))
+ 			enable--;
  
--		if (!(result.behaviour & H_CPU_BEHAV_L1D_FLUSH_PR))
-+		if ((!(result.behaviour & H_CPU_BEHAV_L1D_FLUSH_PR)) ||
-+		    (!(result.behaviour & H_CPU_BEHAV_FAVOUR_SECURITY)))
- 			enable = false;
- 	} else {
- 		/* Default to fallback if case hcall is not available */
++		np = of_get_child_by_name(fw_features, "speculation-policy-favor-security");
++		if (np && of_property_read_bool(np, "disabled"))
++			enable = 0;
++
+ 		of_node_put(np);
+ 		of_node_put(fw_features);
+ 	}
 -- 
 2.20.1
 
