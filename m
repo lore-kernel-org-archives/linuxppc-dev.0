@@ -6,38 +6,37 @@ X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 82C00C10F14
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 21 Apr 2019 15:35:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E7C3AC10F14
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 21 Apr 2019 15:36:48 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 0F6FA2077C
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 21 Apr 2019 15:35:19 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0F6FA2077C
+	by mail.kernel.org (Postfix) with ESMTPS id 9B9282077C
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 21 Apr 2019 15:36:48 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9B9282077C
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44nDLG16d4zDqSg
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Apr 2019 01:35:18 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+	by lists.ozlabs.org (Postfix) with ESMTP id 44nDMy2ts0zDqC9
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Apr 2019 01:36:46 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44nBjH0XXfzDqFL
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Apr 2019 00:21:39 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44nBjK3n92zDqFL
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Apr 2019 00:21:41 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: by ozlabs.org (Postfix)
- id 44nBjG1X8Hz9sBZ; Mon, 22 Apr 2019 00:21:38 +1000 (AEST)
+ id 44nBjH4ZFVz9sMx; Mon, 22 Apr 2019 00:21:39 +1000 (AEST)
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 44nBjF313Wz9sB3; Mon, 22 Apr 2019 00:21:35 +1000 (AEST)
+ id 44nBjH0Bt4z9sML; Mon, 22 Apr 2019 00:21:38 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: stable@vger.kernel.org,
 	gregkh@linuxfoundation.org
-Subject: [PATCH stable v4.4 17/52] powerpc/pseries: Use the security flags in
- pseries_setup_rfi_flush()
-Date: Mon, 22 Apr 2019 00:20:02 +1000
-Message-Id: <20190421142037.21881-18-mpe@ellerman.id.au>
+Subject: [PATCH stable v4.4 18/52] powerpc/64s: Wire up cpu_show_spectre_v1()
+Date: Mon, 22 Apr 2019 00:20:03 +1000
+Message-Id: <20190421142037.21881-19-mpe@ellerman.id.au>
 X-Mailer: git-send-email 2.20.1
 In-Reply-To: <20190421142037.21881-1-mpe@ellerman.id.au>
 References: <20190421142037.21881-1-mpe@ellerman.id.au>
@@ -60,64 +59,37 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-commit 2e4a16161fcd324b1f9bf6cb6856529f7eaf0689 upstream.
+commit 56986016cb8cd9050e601831fe89f332b4e3c46e upstream.
 
-Now that we have the security flags we can simplify the code in
-pseries_setup_rfi_flush() because the security flags have pessimistic
-defaults.
+Add a definition for cpu_show_spectre_v1() to override the generic
+version. Currently this just prints "Not affected" or "Vulnerable"
+based on the firmware flag.
+
+Although the kernel does have array_index_nospec() in a few places, we
+haven't yet audited all the powerpc code to see where it's necessary,
+so for now we don't list that as a mitigation.
 
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- arch/powerpc/platforms/pseries/setup.c | 27 ++++++++++++--------------
- 1 file changed, 12 insertions(+), 15 deletions(-)
+ arch/powerpc/kernel/security.c | 8 ++++++++
+ 1 file changed, 8 insertions(+)
 
-diff --git a/arch/powerpc/platforms/pseries/setup.c b/arch/powerpc/platforms/pseries/setup.c
-index 7c7c95c00252..3462194ed329 100644
---- a/arch/powerpc/platforms/pseries/setup.c
-+++ b/arch/powerpc/platforms/pseries/setup.c
-@@ -541,30 +541,27 @@ void pseries_setup_rfi_flush(void)
- 	bool enable;
- 	long rc;
+diff --git a/arch/powerpc/kernel/security.c b/arch/powerpc/kernel/security.c
+index 865db6f8bcca..0eace3cac818 100644
+--- a/arch/powerpc/kernel/security.c
++++ b/arch/powerpc/kernel/security.c
+@@ -50,3 +50,11 @@ ssize_t cpu_show_meltdown(struct device *dev, struct device_attribute *attr, cha
  
--	/* Enable by default */
--	enable = true;
--	types = L1D_FLUSH_FALLBACK;
--
- 	rc = plpar_get_cpu_characteristics(&result);
--	if (rc == H_SUCCESS) {
-+	if (rc == H_SUCCESS)
- 		init_cpu_char_feature_flags(&result);
- 
--		if (result.character & H_CPU_CHAR_L1D_FLUSH_TRIG2)
--			types |= L1D_FLUSH_MTTRIG;
--		if (result.character & H_CPU_CHAR_L1D_FLUSH_ORI30)
--			types |= L1D_FLUSH_ORI;
--
--		if ((!(result.behaviour & H_CPU_BEHAV_L1D_FLUSH_PR)) ||
--		    (!(result.behaviour & H_CPU_BEHAV_FAVOUR_SECURITY)))
--			enable = false;
--	}
--
- 	/*
- 	 * We're the guest so this doesn't apply to us, clear it to simplify
- 	 * handling of it elsewhere.
- 	 */
- 	security_ftr_clear(SEC_FTR_L1D_FLUSH_HV);
- 
-+	types = L1D_FLUSH_FALLBACK;
-+
-+	if (security_ftr_enabled(SEC_FTR_L1D_FLUSH_TRIG2))
-+		types |= L1D_FLUSH_MTTRIG;
-+
-+	if (security_ftr_enabled(SEC_FTR_L1D_FLUSH_ORI30))
-+		types |= L1D_FLUSH_ORI;
-+
-+	enable = security_ftr_enabled(SEC_FTR_FAVOUR_SECURITY) && \
-+		 security_ftr_enabled(SEC_FTR_L1D_FLUSH_PR);
-+
- 	setup_rfi_flush(types, enable);
+ 	return sprintf(buf, "Vulnerable\n");
  }
- 
++
++ssize_t cpu_show_spectre_v1(struct device *dev, struct device_attribute *attr, char *buf)
++{
++	if (!security_ftr_enabled(SEC_FTR_BNDS_CHK_SPEC_BAR))
++		return sprintf(buf, "Not affected\n");
++
++	return sprintf(buf, "Vulnerable\n");
++}
 -- 
 2.20.1
 
