@@ -2,57 +2,59 @@ Return-Path: <SRS0=+Gyc=SY=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS,UNPARSEABLE_RELAY,URIBL_BLOCKED
+X-Spam-Status: No, score=-8.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_MUTT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 993FCC10F11
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Apr 2019 20:50:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EB019C10F11
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Apr 2019 20:58:56 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id A0B87206A3
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Apr 2019 20:50:28 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A0B87206A3
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.alibaba.com
+	by mail.kernel.org (Postfix) with ESMTPS id 292E720693
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Apr 2019 20:58:56 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 292E720693
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44nzHQ30V4zDqPG
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Apr 2019 06:50:26 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44nzT96RGMzDqQK
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Apr 2019 06:58:53 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=linux.alibaba.com
- (client-ip=115.124.30.44; helo=out30-44.freemail.mail.aliyun.com;
- envelope-from=yang.shi@linux.alibaba.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=linux.alibaba.com
-X-Greylist: delayed 313 seconds by postgrey-1.36 at bilbo;
- Tue, 23 Apr 2019 03:14:24 AEST
-Received: from out30-44.freemail.mail.aliyun.com
- (out30-44.freemail.mail.aliyun.com [115.124.30.44])
+ spf=pass (mailfrom) smtp.mailfrom=redhat.com
+ (client-ip=209.132.183.28; helo=mx1.redhat.com;
+ envelope-from=jglisse@redhat.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=redhat.com
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44ntV80mTzzDqD0
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Apr 2019 03:14:22 +1000 (AEST)
-X-Alimail-AntiSpam: AC=PASS; BC=-1|-1; BR=01201311R201e4; CH=green; DM=||false|;
- FP=0|-1|-1|-1|0|-1|-1|-1; HT=e01e04400; MF=yang.shi@linux.alibaba.com; NM=1;
- PH=DS; RN=21; SR=0; TI=SMTPD_---0TQ-sYhp_1555952928; 
-Received: from US-143344MP.local(mailfrom:yang.shi@linux.alibaba.com
- fp:SMTPD_---0TQ-sYhp_1555952928) by smtp.aliyun-inc.com(127.0.0.1);
- Tue, 23 Apr 2019 01:09:02 +0800
-Subject: Re: [PATCH] [v2] x86/mpx: fix recursive munmap() corruption
-To: Dave Hansen <dave.hansen@linux.intel.com>, linux-kernel@vger.kernel.org
-References: <20190419194747.5E1AD6DC@viggo.jf.intel.com>
-From: Yang Shi <yang.shi@linux.alibaba.com>
-Message-ID: <fe0ba8f2-ee2c-4dcc-39e8-629a02ac583c@linux.alibaba.com>
-Date: Mon, 22 Apr 2019 10:08:46 -0700
-User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.12; rv:52.0)
- Gecko/20100101 Thunderbird/52.7.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44nzRb3QjczDqJs
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Apr 2019 06:57:30 +1000 (AEST)
+Received: from smtp.corp.redhat.com (int-mx03.intmail.prod.int.phx2.redhat.com
+ [10.5.11.13])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by mx1.redhat.com (Postfix) with ESMTPS id 57A783086214;
+ Mon, 22 Apr 2019 20:57:27 +0000 (UTC)
+Received: from redhat.com (unknown [10.20.6.236])
+ by smtp.corp.redhat.com (Postfix) with ESMTPS id 2E14117F20;
+ Mon, 22 Apr 2019 20:57:23 +0000 (UTC)
+Date: Mon, 22 Apr 2019 16:57:21 -0400
+From: Jerome Glisse <jglisse@redhat.com>
+To: Laurent Dufour <ldufour@linux.ibm.com>
+Subject: Re: [PATCH v12 21/31] mm: Introduce find_vma_rcu()
+Message-ID: <20190422205721.GL14666@redhat.com>
+References: <20190416134522.17540-1-ldufour@linux.ibm.com>
+ <20190416134522.17540-22-ldufour@linux.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <20190419194747.5E1AD6DC@viggo.jf.intel.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Language: en-US
-X-Mailman-Approved-At: Tue, 23 Apr 2019 06:47:37 +1000
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20190416134522.17540-22-ldufour@linux.ibm.com>
+User-Agent: Mutt/1.11.3 (2019-02-01)
+X-Scanned-By: MIMEDefang 2.79 on 10.5.11.13
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.5.16
+ (mx1.redhat.com [10.5.110.42]); Mon, 22 Apr 2019 20:57:28 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -64,349 +66,242 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-arch@vger.kernel.org, hjl.tools@gmail.com, mhocko@suse.com,
- rguenther@suse.de, richard@nod.at, gxt@pku.edu.cn, jdike@addtoit.com,
- x86@kernel.org, linux-um@lists.infradead.org, stable@vger.kernel.org,
- luto@amacapital.net, linux-mm@kvack.org, paulus@samba.org,
- akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org, vbabka@suse.cz,
- anton.ivanov@cambridgegreys.com
+Cc: jack@suse.cz, sergey.senozhatsky.work@gmail.com, peterz@infradead.org,
+ Will Deacon <will.deacon@arm.com>, mhocko@kernel.org, linux-mm@kvack.org,
+ paulus@samba.org, Punit Agrawal <punitagrawal@gmail.com>, hpa@zytor.com,
+ Michel Lespinasse <walken@google.com>,
+ Alexei Starovoitov <alexei.starovoitov@gmail.com>,
+ Andrea Arcangeli <aarcange@redhat.com>, ak@linux.intel.com,
+ Minchan Kim <minchan@kernel.org>, aneesh.kumar@linux.ibm.com, x86@kernel.org,
+ Matthew Wilcox <willy@infradead.org>,
+ Daniel Jordan <daniel.m.jordan@oracle.com>, Ingo Molnar <mingo@redhat.com>,
+ David Rientjes <rientjes@google.com>, paulmck@linux.vnet.ibm.com,
+ Haiyan Song <haiyanx.song@intel.com>, npiggin@gmail.com, sj38.park@gmail.com,
+ dave@stgolabs.net, kemi.wang@intel.com, kirill@shutemov.name,
+ Thomas Gleixner <tglx@linutronix.de>, zhong jiang <zhongjiang@huawei.com>,
+ Ganesh Mahendran <opensource.ganesh@gmail.com>,
+ Yang Shi <yang.shi@linux.alibaba.com>, Mike Rapoport <rppt@linux.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
+ vinayak menon <vinayakm.list@gmail.com>, akpm@linux-foundation.org,
+ Tim Chen <tim.c.chen@linux.intel.com>, haren@linux.vnet.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+On Tue, Apr 16, 2019 at 03:45:12PM +0200, Laurent Dufour wrote:
+> This allows to search for a VMA structure without holding the mmap_sem.
+> 
+> The search is repeated while the mm seqlock is changing and until we found
+> a valid VMA.
+> 
+> While under the RCU protection, a reference is taken on the VMA, so the
+> caller must call put_vma() once it not more need the VMA structure.
+> 
+> At the time a VMA is inserted in the MM RB tree, in vma_rb_insert(), a
+> reference is taken to the VMA by calling get_vma().
+> 
+> When removing a VMA from the MM RB tree, the VMA is not release immediately
+> but at the end of the RCU grace period through vm_rcu_put(). This ensures
+> that the VMA remains allocated until the end the RCU grace period.
+> 
+> Since the vm_file pointer, if valid, is released in put_vma(), there is no
+> guarantee that the file pointer will be valid on the returned VMA.
+> 
+> Signed-off-by: Laurent Dufour <ldufour@linux.ibm.com>
 
+Minor comments about comment (i love recursion :)) see below.
 
-On 4/19/19 12:47 PM, Dave Hansen wrote:
-> Changes from v1:
->   * Fix compile errors on UML and non-x86 arches
->   * Clarify commit message and Fixes about the origin of the
->     bug and add the impact to powerpc / uml / unicore32
->
-> --
->
-> This is a bit of a mess, to put it mildly.  But, it's a bug
-> that only seems to have showed up in 4.20 but wasn't noticed
-> until now because nobody uses MPX.
->
-> MPX has the arch_unmap() hook inside of munmap() because MPX
-> uses bounds tables that protect other areas of memory.  When
-> memory is unmapped, there is also a need to unmap the MPX
-> bounds tables.  Barring this, unused bounds tables can eat 80%
-> of the address space.
->
-> But, the recursive do_munmap() that gets called vi arch_unmap()
-> wreaks havoc with __do_munmap()'s state.  It can result in
-> freeing populated page tables, accessing bogus VMA state,
-> double-freed VMAs and more.
->
-> To fix this, call arch_unmap() before __do_unmap() has a chance
-> to do anything meaningful.  Also, remove the 'vma' argument
-> and force the MPX code to do its own, independent VMA lookup.
->
-> == UML / unicore32 impact ==
->
-> Remove unused 'vma' argument to arch_unmap().  No functional
-> change.
->
-> I compile tested this on UML but not unicore32.
->
-> == powerpc impact ==
->
-> powerpc uses arch_unmap() well to watch for munmap() on the
-> VDSO and zeroes out 'current->mm->context.vdso_base'.  Moving
-> arch_unmap() makes this happen earlier in __do_munmap().  But,
-> 'vdso_base' seems to only be used in perf and in the signal
-> delivery that happens near the return to userspace.  I can not
-> find any likely impact to powerpc, other than the zeroing
-> happening a little earlier.
->
-> powerpc does not use the 'vma' argument and is unaffected by
-> its removal.
->
-> I compile-tested a 64-bit powerpc defconfig.
->
-> == x86 impact ==
->
-> For the common success case this is functionally identical to
-> what was there before.  For the munmap() failure case, it's
-> possible that some MPX tables will be zapped for memory that
-> continues to be in use.  But, this is an extraordinarily
-> unlikely scenario and the harm would be that MPX provides no
-> protection since the bounds table got reset (zeroed).
->
-> I can't imagine anyone doing this:
->
-> 	ptr = mmap();
-> 	// use ptr
-> 	ret = munmap(ptr);
-> 	if (ret)
-> 		// oh, there was an error, I'll
-> 		// keep using ptr.
->
-> Because if you're doing munmap(), you are *done* with the
-> memory.  There's probably no good data in there _anyway_.
->
-> This passes the original reproducer from Richard Biener as
-> well as the existing mpx selftests/.
->
-> ====
->
-> The long story:
->
-> munmap() has a couple of pieces:
-> 1. Find the affected VMA(s)
-> 2. Split the start/end one(s) if neceesary
-> 3. Pull the VMAs out of the rbtree
-> 4. Actually zap the memory via unmap_region(), including
->     freeing page tables (or queueing them to be freed).
-> 5. Fixup some of the accounting (like fput()) and actually
->     free the VMA itself.
->
-> This specific ordering was actually introduced by:
->
-> 	dd2283f2605e ("mm: mmap: zap pages with read mmap_sem in munmap")
->
-> during the 4.20 merge window.  The previous __do_munmap() code
-> was actually safe because the only thing after arch_unmap() was
-> remove_vma_list().  arch_unmap() could not see 'vma' in the
-> rbtree because it was detached, so it is not even capable of
-> doing operations unsafe for remove_vma_list()'s use of 'vma'.
->
-> Richard Biener reported a test that shows this in dmesg:
->
-> [1216548.787498] BUG: Bad rss-counter state mm:0000000017ce560b idx:1 val:551
-> [1216548.787500] BUG: non-zero pgtables_bytes on freeing mm: 24576
->
-> What triggered this was the recursive do_munmap() called via
-> arch_unmap().  It was freeing page tables that has not been
-> properly zapped.
->
-> But, the problem was bigger than this.  For one, arch_unmap()
-> can free VMAs.  But, the calling __do_munmap() has variables
-> that *point* to VMAs and obviously can't handle them just
-> getting freed while the pointer is still in use.
->
-> I tried a couple of things here.  First, I tried to fix the page
-> table freeing problem in isolation, but I then found the VMA
-> issue.  I also tried having the MPX code return a flag if it
-> modified the rbtree which would force __do_munmap() to re-walk
-> to restart.  That spiralled out of control in complexity pretty
-> fast.
->
-> Just moving arch_unmap() and accepting that the bonkers failure
-> case might eat some bounds tables seems like the simplest viable
-> fix.
->
-> This was also reported in the following kernel bugzilla entry:
->
-> 	https://bugzilla.kernel.org/show_bug.cgi?id=203123
->
-> There are some reports that dd2283f2605 ("mm: mmap: zap pages
-> with read mmap_sem in munmap") triggered this issue.  While that
-> commit certainly made the issues easier to hit, I belive the
-> fundamental issue has been with us as long as MPX itself, thus
-> the Fixes: tag below is for one of the original MPX commits.
->
-> Reported-by: Richard Biener <rguenther@suse.de>
-> Reported-by: H.J. Lu <hjl.tools@gmail.com>
-> Fixes: dd2283f2605e ("mm: mmap: zap pages with read mmap_sem in munmap")
-> Cc: Yang Shi <yang.shi@linux.alibaba.com>
-> Cc: Michal Hocko <mhocko@suse.com>
-> Cc: Vlastimil Babka <vbabka@suse.cz>
-> Cc: Andy Lutomirski <luto@amacapital.net>
-> Cc: x86@kernel.org
-> Cc: Andrew Morton <akpm@linux-foundation.org>
-> Cc: linux-kernel@vger.kernel.org
-> Cc: linux-mm@kvack.org
-> Cc: stable@vger.kernel.org
-> Cc: linuxppc-dev@lists.ozlabs.org
-> Cc: linux-um@lists.infradead.org
-> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Cc: Paul Mackerras <paulus@samba.org>
-> Cc: Michael Ellerman <mpe@ellerman.id.au>
-> Cc: linux-arch@vger.kernel.org
-> Cc: Guan Xuetao <gxt@pku.edu.cn>
-> Cc: Jeff Dike <jdike@addtoit.com>
-> Cc: Richard Weinberger <richard@nod.at>
-> Cc: Anton Ivanov <anton.ivanov@cambridgegreys.com>
->
+Reviewed-by: Jérôme Glisse <jglisse@redhat.com>
+
 > ---
->
->   b/arch/powerpc/include/asm/mmu_context.h   |    1 -
->   b/arch/um/include/asm/mmu_context.h        |    1 -
->   b/arch/unicore32/include/asm/mmu_context.h |    1 -
->   b/arch/x86/include/asm/mmu_context.h       |    6 +++---
->   b/arch/x86/include/asm/mpx.h               |    5 ++---
->   b/arch/x86/mm/mpx.c                        |   10 ++++++----
->   b/include/asm-generic/mm_hooks.h           |    1 -
->   b/mm/mmap.c                                |   15 ++++++++-------
->   8 files changed, 19 insertions(+), 21 deletions(-)
->
-> diff -puN mm/mmap.c~mpx-rss-pass-no-vma mm/mmap.c
-> --- a/mm/mmap.c~mpx-rss-pass-no-vma	2019-04-19 09:31:09.851509404 -0700
-> +++ b/mm/mmap.c	2019-04-19 09:31:09.864509404 -0700
-> @@ -2730,9 +2730,17 @@ int __do_munmap(struct mm_struct *mm, un
->   		return -EINVAL;
->   
->   	len = PAGE_ALIGN(len);
-> +	end = start + len;
->   	if (len == 0)
->   		return -EINVAL;
->   
-> +	/*
-> +	 * arch_unmap() might do unmaps itself.  It must be called
-> +	 * and finish any rbtree manipulation before this code
-> +	 * runs and also starts to manipulate the rbtree.
-> +	 */
-> +	arch_unmap(mm, start, end);
+>  include/linux/mm_types.h |  1 +
+>  mm/internal.h            |  5 ++-
+>  mm/mmap.c                | 76 ++++++++++++++++++++++++++++++++++++++--
+>  3 files changed, 78 insertions(+), 4 deletions(-)
+> 
+> diff --git a/include/linux/mm_types.h b/include/linux/mm_types.h
+> index 6a6159e11a3f..9af6694cb95d 100644
+> --- a/include/linux/mm_types.h
+> +++ b/include/linux/mm_types.h
+> @@ -287,6 +287,7 @@ struct vm_area_struct {
+>  
+>  #ifdef CONFIG_SPECULATIVE_PAGE_FAULT
+>  	atomic_t vm_ref_count;
+> +	struct rcu_head vm_rcu;
+>  #endif
+>  	struct rb_node vm_rb;
+>  
+> diff --git a/mm/internal.h b/mm/internal.h
+> index 302382bed406..1e368e4afe3c 100644
+> --- a/mm/internal.h
+> +++ b/mm/internal.h
+> @@ -55,7 +55,10 @@ static inline void put_vma(struct vm_area_struct *vma)
+>  		__free_vma(vma);
+>  }
+>  
+> -#else
+> +extern struct vm_area_struct *find_vma_rcu(struct mm_struct *mm,
+> +					   unsigned long addr);
 > +
->   	/* Find the first overlapping VMA */
->   	vma = find_vma(mm, start);
->   	if (!vma)
-> @@ -2741,7 +2749,6 @@ int __do_munmap(struct mm_struct *mm, un
->   	/* we have  start < vma->vm_end  */
->   
->   	/* if it doesn't overlap, we have nothing.. */
-> -	end = start + len;
->   	if (vma->vm_start >= end)
->   		return 0;
->   
-> @@ -2811,12 +2818,6 @@ int __do_munmap(struct mm_struct *mm, un
->   	/* Detach vmas from rbtree */
->   	detach_vmas_to_be_unmapped(mm, vma, prev, end);
->   
-> -	/*
-> -	 * mpx unmap needs to be called with mmap_sem held for write.
-> -	 * It is safe to call it before unmap_region().
-> -	 */
-> -	arch_unmap(mm, vma, start, end);
-> -
->   	if (downgrade)
->   		downgrade_write(&mm->mmap_sem);
+> +#else /* CONFIG_SPECULATIVE_PAGE_FAULT */
+>  
+>  static inline void get_vma(struct vm_area_struct *vma)
+>  {
+> diff --git a/mm/mmap.c b/mm/mmap.c
+> index c106440dcae7..34bf261dc2c8 100644
+> --- a/mm/mmap.c
+> +++ b/mm/mmap.c
+> @@ -179,6 +179,18 @@ static inline void mm_write_sequnlock(struct mm_struct *mm)
+>  {
+>  	write_sequnlock(&mm->mm_seq);
+>  }
+> +
+> +static void __vm_rcu_put(struct rcu_head *head)
+> +{
+> +	struct vm_area_struct *vma = container_of(head, struct vm_area_struct,
+> +						  vm_rcu);
+> +	put_vma(vma);
+> +}
+> +static void vm_rcu_put(struct vm_area_struct *vma)
+> +{
+> +	VM_BUG_ON_VMA(!RB_EMPTY_NODE(&vma->vm_rb), vma);
+> +	call_rcu(&vma->vm_rcu, __vm_rcu_put);
+> +}
+>  #else
+>  static inline void mm_write_seqlock(struct mm_struct *mm)
+>  {
+> @@ -190,6 +202,8 @@ static inline void mm_write_sequnlock(struct mm_struct *mm)
+>  
+>  void __free_vma(struct vm_area_struct *vma)
+>  {
+> +	if (IS_ENABLED(CONFIG_SPECULATIVE_PAGE_FAULT))
+> +		VM_BUG_ON_VMA(!RB_EMPTY_NODE(&vma->vm_rb), vma);
+>  	mpol_put(vma_policy(vma));
+>  	vm_area_free(vma);
+>  }
+> @@ -197,11 +211,24 @@ void __free_vma(struct vm_area_struct *vma)
+>  /*
+>   * Close a vm structure and free it, returning the next.
+>   */
+> -static struct vm_area_struct *remove_vma(struct vm_area_struct *vma)
+> +static struct vm_area_struct *__remove_vma(struct vm_area_struct *vma)
+>  {
+>  	struct vm_area_struct *next = vma->vm_next;
+>  
+>  	might_sleep();
+> +	if (IS_ENABLED(CONFIG_SPECULATIVE_PAGE_FAULT) &&
+> +	    !RB_EMPTY_NODE(&vma->vm_rb)) {
+> +		/*
+> +		 * If the VMA is still linked in the RB tree, we must release
+> +		 * that reference by calling put_vma().
+> +		 * This should only happen when called from exit_mmap().
+> +		 * We forcely clear the node to satisfy the chec in
+                                                        ^
+Typo: chec -> check
 
-Thanks for debugging this. The change looks good to me. Reviewed-by: 
-Yang Shi <yang.shi@linux.alibaba.com>
-
->   
-> diff -puN arch/x86/include/asm/mmu_context.h~mpx-rss-pass-no-vma arch/x86/include/asm/mmu_context.h
-> --- a/arch/x86/include/asm/mmu_context.h~mpx-rss-pass-no-vma	2019-04-19 09:31:09.853509404 -0700
-> +++ b/arch/x86/include/asm/mmu_context.h	2019-04-19 09:31:09.865509404 -0700
-> @@ -277,8 +277,8 @@ static inline void arch_bprm_mm_init(str
->   	mpx_mm_init(mm);
->   }
->   
-> -static inline void arch_unmap(struct mm_struct *mm, struct vm_area_struct *vma,
-> -			      unsigned long start, unsigned long end)
-> +static inline void arch_unmap(struct mm_struct *mm, unsigned long start,
-> +			      unsigned long end)
->   {
->   	/*
->   	 * mpx_notify_unmap() goes and reads a rarely-hot
-> @@ -298,7 +298,7 @@ static inline void arch_unmap(struct mm_
->   	 * consistently wrong.
->   	 */
->   	if (unlikely(cpu_feature_enabled(X86_FEATURE_MPX)))
-> -		mpx_notify_unmap(mm, vma, start, end);
-> +		mpx_notify_unmap(mm, start, end);
->   }
->   
->   /*
-> diff -puN include/asm-generic/mm_hooks.h~mpx-rss-pass-no-vma include/asm-generic/mm_hooks.h
-> --- a/include/asm-generic/mm_hooks.h~mpx-rss-pass-no-vma	2019-04-19 09:31:09.856509404 -0700
-> +++ b/include/asm-generic/mm_hooks.h	2019-04-19 09:31:09.865509404 -0700
-> @@ -18,7 +18,6 @@ static inline void arch_exit_mmap(struct
->   }
->   
->   static inline void arch_unmap(struct mm_struct *mm,
-> -			struct vm_area_struct *vma,
->   			unsigned long start, unsigned long end)
->   {
->   }
-> diff -puN arch/x86/mm/mpx.c~mpx-rss-pass-no-vma arch/x86/mm/mpx.c
-> --- a/arch/x86/mm/mpx.c~mpx-rss-pass-no-vma	2019-04-19 09:31:09.858509404 -0700
-> +++ b/arch/x86/mm/mpx.c	2019-04-19 09:31:09.866509404 -0700
-> @@ -881,9 +881,10 @@ static int mpx_unmap_tables(struct mm_st
->    * the virtual address region start...end have already been split if
->    * necessary, and the 'vma' is the first vma in this range (start -> end).
->    */
-> -void mpx_notify_unmap(struct mm_struct *mm, struct vm_area_struct *vma,
-> -		unsigned long start, unsigned long end)
-> +void mpx_notify_unmap(struct mm_struct *mm, unsigned long start,
-> +		      unsigned long end)
->   {
-> +       	struct vm_area_struct *vma;
->   	int ret;
->   
->   	/*
-> @@ -902,11 +903,12 @@ void mpx_notify_unmap(struct mm_struct *
->   	 * which should not occur normally. Being strict about it here
->   	 * helps ensure that we do not have an exploitable stack overflow.
->   	 */
-> -	do {
-> +	vma = find_vma(mm, start);
-> +	while (vma && vma->vm_start < end) {
->   		if (vma->vm_flags & VM_MPX)
->   			return;
->   		vma = vma->vm_next;
-> -	} while (vma && vma->vm_start < end);
+> +		 * __free_vma(). This is safe since the RB tree is not walked
+> +		 * anymore.
+> +		 */
+> +		RB_CLEAR_NODE(&vma->vm_rb);
+> +		put_vma(vma);
 > +	}
->   
->   	ret = mpx_unmap_tables(mm, start, end);
->   	if (ret)
-> diff -puN arch/x86/include/asm/mpx.h~mpx-rss-pass-no-vma arch/x86/include/asm/mpx.h
-> --- a/arch/x86/include/asm/mpx.h~mpx-rss-pass-no-vma	2019-04-19 09:31:09.860509404 -0700
-> +++ b/arch/x86/include/asm/mpx.h	2019-04-19 09:31:09.866509404 -0700
-> @@ -78,8 +78,8 @@ static inline void mpx_mm_init(struct mm
->   	 */
->   	mm->context.bd_addr = MPX_INVALID_BOUNDS_DIR;
->   }
-> -void mpx_notify_unmap(struct mm_struct *mm, struct vm_area_struct *vma,
-> -		      unsigned long start, unsigned long end);
-> +void mpx_notify_unmap(struct mm_struct *mm, unsigned long start,
-> +		unsigned long end);
->   
->   unsigned long mpx_unmapped_area_check(unsigned long addr, unsigned long len,
->   		unsigned long flags);
-> @@ -100,7 +100,6 @@ static inline void mpx_mm_init(struct mm
->   {
->   }
->   static inline void mpx_notify_unmap(struct mm_struct *mm,
-> -				    struct vm_area_struct *vma,
->   				    unsigned long start, unsigned long end)
->   {
->   }
-> diff -puN arch/um/include/asm/mmu_context.h~mpx-rss-pass-no-vma arch/um/include/asm/mmu_context.h
-> --- a/arch/um/include/asm/mmu_context.h~mpx-rss-pass-no-vma	2019-04-19 09:42:05.789507768 -0700
-> +++ b/arch/um/include/asm/mmu_context.h	2019-04-19 09:42:57.962507638 -0700
-> @@ -22,7 +22,6 @@ static inline int arch_dup_mmap(struct m
->   }
->   extern void arch_exit_mmap(struct mm_struct *mm);
->   static inline void arch_unmap(struct mm_struct *mm,
-> -			struct vm_area_struct *vma,
->   			unsigned long start, unsigned long end)
->   {
->   }
-> diff -puN arch/unicore32/include/asm/mmu_context.h~mpx-rss-pass-no-vma arch/unicore32/include/asm/mmu_context.h
-> --- a/arch/unicore32/include/asm/mmu_context.h~mpx-rss-pass-no-vma	2019-04-19 09:42:06.189507767 -0700
-> +++ b/arch/unicore32/include/asm/mmu_context.h	2019-04-19 09:43:25.425507569 -0700
-> @@ -88,7 +88,6 @@ static inline int arch_dup_mmap(struct m
->   }
->   
->   static inline void arch_unmap(struct mm_struct *mm,
-> -			struct vm_area_struct *vma,
->   			unsigned long start, unsigned long end)
->   {
->   }
-> diff -puN arch/powerpc/include/asm/mmu_context.h~mpx-rss-pass-no-vma arch/powerpc/include/asm/mmu_context.h
-> --- a/arch/powerpc/include/asm/mmu_context.h~mpx-rss-pass-no-vma	2019-04-19 09:42:06.388507766 -0700
-> +++ b/arch/powerpc/include/asm/mmu_context.h	2019-04-19 09:43:27.392507564 -0700
-> @@ -237,7 +237,6 @@ extern void arch_exit_mmap(struct mm_str
->   #endif
->   
->   static inline void arch_unmap(struct mm_struct *mm,
-> -			      struct vm_area_struct *vma,
->   			      unsigned long start, unsigned long end)
->   {
->   	if (start <= mm->context.vdso_base && mm->context.vdso_base < end)
-> _
+>  	if (vma->vm_ops && vma->vm_ops->close)
+>  		vma->vm_ops->close(vma);
+>  	if (vma->vm_file)
+> @@ -211,6 +238,13 @@ static struct vm_area_struct *remove_vma(struct vm_area_struct *vma)
+>  	return next;
+>  }
+>  
+> +static struct vm_area_struct *remove_vma(struct vm_area_struct *vma)
+> +{
+> +	if (IS_ENABLED(CONFIG_SPECULATIVE_PAGE_FAULT))
+> +		VM_BUG_ON_VMA(!RB_EMPTY_NODE(&vma->vm_rb), vma);
 
+Adding a comment here explaining the BUG_ON so people can understand
+what is wrong if that happens. For instance:
+
+/*
+ * remove_vma() should be call only once a vma have been remove from the rbtree
+ * at which point the vma->vm_rb is an empty node. The exception is when vmas
+ * are destroy through exit_mmap() in which case we do not bother updating the
+ * rbtree (see comment in __remove_vma()).
+ */
+
+> +	return __remove_vma(vma);
+> +}
+> +
+>  static int do_brk_flags(unsigned long addr, unsigned long request, unsigned long flags,
+>  		struct list_head *uf);
+>  SYSCALL_DEFINE1(brk, unsigned long, brk)
+> @@ -475,7 +509,7 @@ static inline void vma_rb_insert(struct vm_area_struct *vma,
+>  
+>  	/* All rb_subtree_gap values must be consistent prior to insertion */
+>  	validate_mm_rb(root, NULL);
+> -
+> +	get_vma(vma);
+>  	rb_insert_augmented(&vma->vm_rb, root, &vma_gap_callbacks);
+>  }
+>  
+> @@ -491,6 +525,14 @@ static void __vma_rb_erase(struct vm_area_struct *vma, struct mm_struct *mm)
+>  	mm_write_seqlock(mm);
+>  	rb_erase_augmented(&vma->vm_rb, root, &vma_gap_callbacks);
+>  	mm_write_sequnlock(mm);	/* wmb */
+> +#ifdef CONFIG_SPECULATIVE_PAGE_FAULT
+> +	/*
+> +	 * Ensure the removal is complete before clearing the node.
+> +	 * Matched by vma_has_changed()/handle_speculative_fault().
+> +	 */
+> +	RB_CLEAR_NODE(&vma->vm_rb);
+> +	vm_rcu_put(vma);
+> +#endif
+>  }
+>  
+>  static __always_inline void vma_rb_erase_ignore(struct vm_area_struct *vma,
+> @@ -2331,6 +2373,34 @@ struct vm_area_struct *find_vma(struct mm_struct *mm, unsigned long addr)
+>  
+>  EXPORT_SYMBOL(find_vma);
+>  
+> +#ifdef CONFIG_SPECULATIVE_PAGE_FAULT
+> +/*
+> + * Like find_vma() but under the protection of RCU and the mm sequence counter.
+> + * The vma returned has to be relaesed by the caller through the call to
+> + * put_vma()
+> + */
+> +struct vm_area_struct *find_vma_rcu(struct mm_struct *mm, unsigned long addr)
+> +{
+> +	struct vm_area_struct *vma = NULL;
+> +	unsigned int seq;
+> +
+> +	do {
+> +		if (vma)
+> +			put_vma(vma);
+> +
+> +		seq = read_seqbegin(&mm->mm_seq);
+> +
+> +		rcu_read_lock();
+> +		vma = find_vma(mm, addr);
+> +		if (vma)
+> +			get_vma(vma);
+> +		rcu_read_unlock();
+> +	} while (read_seqretry(&mm->mm_seq, seq));
+> +
+> +	return vma;
+> +}
+> +#endif
+> +
+>  /*
+>   * Same as find_vma, but also return a pointer to the previous VMA in *pprev.
+>   */
+> @@ -3231,7 +3301,7 @@ void exit_mmap(struct mm_struct *mm)
+>  	while (vma) {
+>  		if (vma->vm_flags & VM_ACCOUNT)
+>  			nr_accounted += vma_pages(vma);
+> -		vma = remove_vma(vma);
+> +		vma = __remove_vma(vma);
+>  	}
+>  	vm_unacct_memory(nr_accounted);
+>  }
+> -- 
+> 2.21.0
+> 
