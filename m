@@ -2,91 +2,101 @@ Return-Path: <SRS0=+Gyc=SY=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.2 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_MUTT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 609AFC10F11
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Apr 2019 18:17:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 00A75C10F11
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Apr 2019 19:04:34 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id CBFFD214AE
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Apr 2019 18:17:21 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 6E9A32177B
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Apr 2019 19:04:33 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="XtUVNGWB"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CBFFD214AE
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	dkim=pass (1024-bit key) header.d=nxp.com header.i=@nxp.com header.b="vULHCCUa"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6E9A32177B
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nxp.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44nvtl06RMzDqLx
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Apr 2019 04:17:19 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44nwxC13CLzDqHS
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Apr 2019 05:04:31 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=2607:f8b0:4864:20::541; helo=mail-pg1-x541.google.com;
- envelope-from=nicoleotsuka@gmail.com; receiver=<UNKNOWN>)
+ spf=permerror (mailfrom) smtp.mailfrom=nxp.com
+ (client-ip=2a01:111:f400:fe1f::607;
+ helo=eur01-ve1-obe.outbound.protection.outlook.com;
+ envelope-from=daniel.baluta@nxp.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="XtUVNGWB"; 
+ dmarc=pass (p=none dis=none) header.from=nxp.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=nxp.com header.i=@nxp.com header.b="vULHCCUa"; 
  dkim-atps=neutral
-Received: from mail-pg1-x541.google.com (mail-pg1-x541.google.com
- [IPv6:2607:f8b0:4864:20::541])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Received: from EUR01-VE1-obe.outbound.protection.outlook.com
+ (mail-ve1eur01on0607.outbound.protection.outlook.com
+ [IPv6:2a01:111:f400:fe1f::607])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44nvs20wVpzDqJj
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Apr 2019 04:15:49 +1000 (AEST)
-Received: by mail-pg1-x541.google.com with SMTP id k19so6226337pgh.0
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Apr 2019 11:15:49 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=date:from:to:cc:subject:message-id:references:mime-version
- :content-disposition:content-transfer-encoding:in-reply-to
- :user-agent; bh=rCa/9yPbubYEgQtxdxweEsDxXAxrOMXLbp7pFOiMKJQ=;
- b=XtUVNGWBjgKORtdbQmjprX3pnJLCAy6L+jDj4Q6qttCPmE+YEgCWN9jVtM1OW/r3yD
- 1oDNw39CZ/BqWeq9V29jHHJURCk9kAc1LYLZulgJwaJefyyGQbHfmCl5ZVUmg8/6VLFU
- B7YcbsaexSui+nD+5mQupDJEKB6w3htTcyjCgBZrpILiv4HWNjfo106VZVHUfZTbi06F
- x6huHRpMijaPkZeIsu5nfAsKJS9Yi2ajJlMc6f0NfW3R8XKTesLp2JkSRCkLR9BWMLPH
- hUoGjcl1Cc15XfXCd9Rju0d9cwbgMGFf1QU9bp+z8jsel9eAr1r4937Ii4baV8t5XreV
- 5OPw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:date:from:to:cc:subject:message-id:references
- :mime-version:content-disposition:content-transfer-encoding
- :in-reply-to:user-agent;
- bh=rCa/9yPbubYEgQtxdxweEsDxXAxrOMXLbp7pFOiMKJQ=;
- b=tN99KU6OXA9sKKI6FVqsA9rI3OErZh0uZzoThC+fsFidv1wKQHQ6PnL/crzpYdxLZJ
- 7s/npUsrdCKAbJTraPyy6apb07tnblcteBSDPPdZH05k6K5GAuxA7RcDSh2QKiw3bL8R
- mlFACelmvKJdE5iQBK7T4todOJ8ZRAfTZ4zZBejkaSeguqj9j98MYzXZr19Z0Q7CPjVx
- J8LHbN5PHhoAkgYBLC47zLaWeo7MXxF2yKbRPGGfoVRoJ/dnitdUx21MPrNOuF3c/7l7
- fZ/RpJYtE7q2LJkDGPDFoEEWJ2Tina19NFKgofHfEh8I2tIYmyIvbHM8ieKCr0CgkGXr
- ptNg==
-X-Gm-Message-State: APjAAAUrqRWsALS72OSGgi2t/JBonlc1YvxqfWoL/e5ZJEWy5d9vhh8D
- fJIx34IK/K5QijDb+Ge/ACE=
-X-Google-Smtp-Source: APXvYqy4i1a9gd2vMvwuBw/wREp8ceq+ck+H5HAXZwW37YzcNaQFJ5Fawooa4zZHDJ/6zPF+oWWWJg==
-X-Received: by 2002:a65:6105:: with SMTP id z5mr20426581pgu.378.1555956945915; 
- Mon, 22 Apr 2019 11:15:45 -0700 (PDT)
-Received: from Asurada-Nvidia.nvidia.com (thunderhill.nvidia.com.
- [216.228.112.22])
- by smtp.gmail.com with ESMTPSA id u5sm19690143pfm.121.2019.04.22.11.15.44
- (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
- Mon, 22 Apr 2019 11:15:45 -0700 (PDT)
-Date: Mon, 22 Apr 2019 11:15:40 -0700
-From: Nicolin Chen <nicoleotsuka@gmail.com>
-To: Viorel Suman <viorel.suman@nxp.com>
-Subject: Re: [PATCH 2/2] ASoC: fsl: Move clock operation to PM runtime
-Message-ID: <20190422181539.GA30867@Asurada-Nvidia.nvidia.com>
-References: <20190420155846.10027-1-daniel.baluta@nxp.com>
- <20190420155846.10027-3-daniel.baluta@nxp.com>
- <20190421055406.GC683@Asurada-Nvidia.nvidia.com>
- <1555930942.31656.4.camel@nxp.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44nwv35891zDqHK
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Apr 2019 05:02:35 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nxp.com; s=selector1; 
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=Bb82zrKmbm16xt5HL/+4W9f9Z7Emx9BUv630OvZDwmE=;
+ b=vULHCCUaHSbUNGS6uA+BgfOwc1MgqLYF1cnPE3FePciN4dZRN1zmpnebCAV3pAsmwM7KqYA2rQv22dHE1zfuJN2SonOQbPJ4KiqfoBLo4Cg09ME5sIRHCJHYgohfkKmvdbaebX34HZceph5W41xQ9vzbdsN7oiXwsE9JZGk/KX4=
+Received: from VI1PR0402MB3357.eurprd04.prod.outlook.com (52.134.1.18) by
+ VI1PR0402MB2815.eurprd04.prod.outlook.com (10.172.255.21) with Microsoft SMTP
+ Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.20.1813.14; Mon, 22 Apr 2019 19:02:27 +0000
+Received: from VI1PR0402MB3357.eurprd04.prod.outlook.com
+ ([fe80::c16b:662d:9299:6be6]) by VI1PR0402MB3357.eurprd04.prod.outlook.com
+ ([fe80::c16b:662d:9299:6be6%6]) with mapi id 15.20.1813.017; Mon, 22 Apr 2019
+ 19:02:27 +0000
+From: Daniel Baluta <daniel.baluta@nxp.com>
+To: "broonie@kernel.org" <broonie@kernel.org>
+Subject: [PATCH v3 0/3] Add runtime PM for SAI digital audio interface
+Thread-Topic: [PATCH v3 0/3] Add runtime PM for SAI digital audio interface
+Thread-Index: AQHU+T3tSn5Uzcioa0qU6cJ3oZM02Q==
+Date: Mon, 22 Apr 2019 19:02:27 +0000
+Message-ID: <20190422190213.30726-1-daniel.baluta@nxp.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+x-clientproxiedby: VI1PR06CA0114.eurprd06.prod.outlook.com
+ (2603:10a6:803:8c::43) To VI1PR0402MB3357.eurprd04.prod.outlook.com
+ (2603:10a6:803:2::18)
+authentication-results: spf=none (sender IP is )
+ smtp.mailfrom=daniel.baluta@nxp.com; 
+x-ms-exchange-messagesentrepresentingtype: 1
+x-mailer: git-send-email 2.17.1
+x-originating-ip: [212.146.100.6]
+x-ms-publictraffictype: Email
+x-ms-office365-filtering-correlation-id: 3a337b98-9158-46ca-7248-08d6c7550fc7
+x-ms-office365-filtering-ht: Tenant
+x-microsoft-antispam: BCL:0; PCL:0;
+ RULEID:(2390118)(7020095)(4652040)(8989299)(4534185)(4627221)(201703031133081)(201702281549075)(8990200)(5600141)(711020)(4605104)(4618075)(2017052603328)(7193020);
+ SRVR:VI1PR0402MB2815; 
+x-ms-traffictypediagnostic: VI1PR0402MB2815:
+x-microsoft-antispam-prvs: <VI1PR0402MB28156FE934B5EE4BD7E302C5F9220@VI1PR0402MB2815.eurprd04.prod.outlook.com>
+x-forefront-prvs: 00159D1518
+x-forefront-antispam-report: SFV:NSPM;
+ SFS:(10009020)(136003)(376002)(366004)(396003)(346002)(39860400002)(199004)(189003)(2906002)(6512007)(53936002)(7736002)(305945005)(316002)(386003)(6506007)(99286004)(102836004)(52116002)(186003)(8936002)(54906003)(50226002)(26005)(25786009)(4326008)(66066001)(8676002)(36756003)(6116002)(3846002)(6916009)(2501003)(81166006)(1730700003)(81156014)(68736007)(2351001)(5640700003)(14454004)(478600001)(71190400001)(64756008)(6486002)(66446008)(5660300002)(66556008)(97736004)(2616005)(476003)(44832011)(4744005)(256004)(14444005)(86362001)(66476007)(73956011)(66946007)(6436002)(7416002)(486006)(1076003)(71200400001);
+ DIR:OUT; SFP:1101; SCL:1; SRVR:VI1PR0402MB2815;
+ H:VI1PR0402MB3357.eurprd04.prod.outlook.com; FPR:; SPF:None; LANG:en;
+ PTR:InfoNoRecords; A:1; MX:1; 
+received-spf: None (protection.outlook.com: nxp.com does not designate
+ permitted sender hosts)
+x-ms-exchange-senderadcheck: 1
+x-microsoft-antispam-message-info: VpYRi8hyCAvg+kWCAuOb7eln1kA0CpIIEEJoxwCVMa7RCAE2BXPhgn7BYZj/DF6uAtclJQ57+ozSgHVIeL4G12k4gH+tv4HyNOEaNBUUXiPeaHSasN2t7w/Szfuz+rTggRiYEIaIM1uyzP23aclNDL9Yd+tSzHSxKJGTt5lIbrmVgEEKLbxni6tfMncy+hO7+eYg7wZPBsTa7EUpIH3Okrn412Fj3riPHp9v/i6Nss1wt6QfCKcdAiawAbzGVYsMhORs0qMSkf1ZOgolk19bKodcshhROdQVSjF1FhsHiB4MH7bL82/mr1xy50hlZzcULNsxX75GnNYzUizqDWlGMh/djeTOkFt33r/foW4f1yCkce5CYWahKXPgSPjxmq7U3Pysz41+ZV8c/a6kLwi5HF4xs9qQrduzwpKdPK8hGWA=
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <1555930942.31656.4.camel@nxp.com>
-User-Agent: Mutt/1.9.4 (2018-02-28)
+X-OriginatorOrg: nxp.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 3a337b98-9158-46ca-7248-08d6c7550fc7
+X-MS-Exchange-CrossTenant-originalarrivaltime: 22 Apr 2019 19:02:27.5053 (UTC)
+X-MS-Exchange-CrossTenant-fromentityheader: Hosted
+X-MS-Exchange-CrossTenant-id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
+X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: VI1PR0402MB2815
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -98,60 +108,33 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
- "lgirdwood@gmail.com" <lgirdwood@gmail.com>,
+Cc: Daniel Baluta <daniel.baluta@nxp.com>,
+ "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
  "timur@kernel.org" <timur@kernel.org>,
  "Xiubo.Lee@gmail.com" <Xiubo.Lee@gmail.com>,
- Daniel Baluta <daniel.baluta@nxp.com>, "S.j. Wang" <shengjiu.wang@nxp.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "tiwai@suse.com" <tiwai@suse.com>, "broonie@kernel.org" <broonie@kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "S.j. Wang" <shengjiu.wang@nxp.com>, "tiwai@suse.com" <tiwai@suse.com>,
+ "lgirdwood@gmail.com" <lgirdwood@gmail.com>, "perex@perex.cz" <perex@perex.cz>,
  dl-linux-imx <linux-imx@nxp.com>, "festevam@gmail.com" <festevam@gmail.com>,
- "perex@perex.cz" <perex@perex.cz>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, Apr 22, 2019 at 11:02:22AM +0000, Viorel Suman wrote:
-> Hi Nicolin,
-> 
-> On Sb, 2019-04-20 at 22:54 -0700, Nicolin Chen wrote:
-> > On Sat, Apr 20, 2019 at 03:59:05PM +0000, Daniel Baluta wrote:
-> > > 
-> > > Turn off/on clocks when device enters suspend/resume. This
-> > > helps saving power.
-> > > 
-> > > @@ -934,6 +933,25 @@ static int fsl_sai_runtime_suspend(struct device *dev)
-> > >  static int fsl_sai_runtime_resume(struct device *dev)
-> > >  {
-> > >  	struct fsl_sai *sai = dev_get_drvdata(dev);
-> > > +	int ret;
-> > > +
-> > > +	ret = clk_prepare_enable(sai->bus_clk);
-> > > +	if (ret) {
-> > > +		dev_err(dev, "failed to enable bus clock: %d\n", ret);
-> > > +		return ret;
-> > > +	}
-> > > +
-> > > +	if (sai->mclk_streams & BIT(SNDRV_PCM_STREAM_PLAYBACK)) {
-> > > +		ret = clk_prepare_enable(sai->mclk_clk[sai->mclk_id[1]]);
-> > > +		if (ret)
-> > > +			goto disable_bus_clk;
-> > > +	}
-> > > +
-> > > +	if (sai->mclk_streams & BIT(SNDRV_PCM_STREAM_CAPTURE)) {
-> > > +		ret = clk_prepare_enable(sai->mclk_clk[sai->mclk_id[0]]);
-> > > +		if (ret)
-> > > +			goto disable_tx_clk;
-> > > +	}
-> > The driver only enables mclk_clks for I2S master mode. But this
-> > change enables them for I2S slave mode also. It doesn't sound a
-> > right thing to me since we are supposed to save power?
-> 
-> This change does not enable them for I2S slave mode, please check "fsl_sai_hw_params"
-> and "fsl_sai_hw_free" functions: the field "sai->mclk_streams" is modified only for
-> the case when "if (!sai->is_slave_mode)";
-
-Thanks for the input. This should be fine then.
-
-Nicolin
+Rmlyc3QgcGF0Y2ggZml4ZXMgYSBidWcgYnkgY29ycmVjdGx5IHNldHRpbmcgaXNfc2xhdmVfbW9k
+ZSwgdGhlbg0Kc2Vjb25kIHBhdGNoIGFkZHMgc3VwcG9ydCBmb3IgcnVudGltZSBQTSBhbmQgZmlu
+YWxseSAzcmQgcGF0Y2ggbW92ZXMNCmNsb2NrIGhhbmRsaW5nIGZyb20gc3RhcnR1cC9zaHR1ZG93
+biBmdW5jdGlvbiB0byBydW50aW1lIFBNIGhhbmRsZXJzLg0KDQpDaGFuZ2VzIHNpbmNlIHYyOiAo
+YWZ0ZXIgVmlvcmVsJ3MgY29tbWVudHMpDQoJLSBubyBuZWVkIHRvIGNoZWNrIGZvciBpc19zbGF2
+ZV9tb2RlIHdoZW4gZW5hYmxpbmcvZGlzYWJsaW5nIHRoZSBjbG9ja3MNCgliZWNhdXNlIHNhaS0+
+bWNsa19zdHJlYW1zIGlzIG9ubHkgc2V0IHdoZW4gU0FJIGlzIGluIG1hc3RlciBtb2RlLg0KDQpD
+aGFuZ2VzIHNpbmNlIHYxOiAoYWZ0ZXIgTmljb2xpbidzIGNvbW1lbnRzKQ0KCS0gYWRkZWQgcGF0
+Y2ggMQ0KCS0gYWRkZWQgZnNsX3NhaV9yZW1vdmUgaW4gb3JkZXIgdG8gY2FsbCBwbV9ydW50aW1l
+X2Rpc2FibGUNCgktIG9ubHkgZGlzYWJsZS9lbmFibGUgbWNsayB3aGVuIFNBSSBpbiBtYXN0ZXIg
+bW9kZS4NCg0KRGFuaWVsIEJhbHV0YSAoMik6DQogIEFTb0M6IGZzbF9zYWk6IFVwZGF0ZSBpc19z
+bGF2ZV9tb2RlIHdpdGggY29ycmVjdCB2YWx1ZQ0KICBBU29DOiBmc2xfc2FpOiBBZGQgc3VwcG9y
+dCBmb3IgcnVudGltZSBwbQ0KDQpTaGVuZ2ppdSBXYW5nICgxKToNCiAgQVNvQzogZnNsX3NhaTog
+TW92ZSBjbG9jayBvcGVyYXRpb24gdG8gUE0gcnVudGltZQ0KDQogc291bmQvc29jL2ZzbC9mc2xf
+c2FpLmMgfCA3OCArKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKystLS0tLS0tLQ0KIDEg
+ZmlsZSBjaGFuZ2VkLCA2MyBpbnNlcnRpb25zKCspLCAxNSBkZWxldGlvbnMoLSkNCg0KLS0gDQoy
+LjE3LjENCg0K
