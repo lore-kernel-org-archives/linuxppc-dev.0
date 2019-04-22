@@ -2,88 +2,96 @@ Return-Path: <SRS0=+Gyc=SY=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.0 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,
-	USER_AGENT_MUTT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-4.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3ED46C10F14
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Apr 2019 03:00:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A1BEBC10F14
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Apr 2019 03:17:29 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 921C920833
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Apr 2019 03:00:35 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id DBA2920859
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Apr 2019 03:17:28 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="WMipgTXX"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 921C920833
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	dkim=pass (1024-bit key) header.d=nxp.com header.i=@nxp.com header.b="Tu9Pq/7d"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DBA2920859
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nxp.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44nWXx2H31zDqQd
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Apr 2019 13:00:33 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44nWwQ4WBMzDqQF
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Apr 2019 13:17:26 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=2607:f8b0:4864:20::441; helo=mail-pf1-x441.google.com;
- envelope-from=nicoleotsuka@gmail.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=nxp.com
+ (client-ip=40.107.2.56; helo=eur02-ve1-obe.outbound.protection.outlook.com;
+ envelope-from=shengjiu.wang@nxp.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="WMipgTXX"; 
+ dmarc=pass (p=none dis=none) header.from=nxp.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=nxp.com header.i=@nxp.com header.b="Tu9Pq/7d"; 
  dkim-atps=neutral
-Received: from mail-pf1-x441.google.com (mail-pf1-x441.google.com
- [IPv6:2607:f8b0:4864:20::441])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Received: from EUR02-VE1-obe.outbound.protection.outlook.com
+ (mail-eopbgr20056.outbound.protection.outlook.com [40.107.2.56])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44nWWF0rmhzDq6B
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Apr 2019 12:59:04 +1000 (AEST)
-Received: by mail-pf1-x441.google.com with SMTP id z5so5027474pfn.3
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 21 Apr 2019 19:59:04 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=date:from:to:cc:subject:message-id:references:mime-version
- :content-disposition:in-reply-to:user-agent;
- bh=bLTCqZP0EkEe5cTjpvrGXCdlUzTPZuSYTCe6QDTNd9Q=;
- b=WMipgTXX23x09PQjGeptEst4JHIS05wIXfC9NKFO/azh/ELjjw7eRT1JP2Xnl51o42
- F7Ew4z7pbyWDOLspFgzi79/5QSpm0C+OmtsIYtqg4EryaTngcEvHHTTHjf1jTqHmZKxf
- LYScnE8+ZmjWvHMeJUJwEKIuZjwlDn4d0hEX1dKSaigOshR1j8Wh0YUy+kt8s1ZFNNVM
- jgtnV9G3Zze+c3TlclbBRhZYvTLAsWw1dxrT8SyI5tSrgY2nD+Rm1lWlOi8QI5om60bY
- 6SiMCEZJX7hsHryQt4x2dj4CcGyjO88/plKhfgKYA/0VI7e3fHq2bRC9xLdf9mtN5R+/
- Ibtw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:date:from:to:cc:subject:message-id:references
- :mime-version:content-disposition:in-reply-to:user-agent;
- bh=bLTCqZP0EkEe5cTjpvrGXCdlUzTPZuSYTCe6QDTNd9Q=;
- b=ekIBl+RNurvbBwcOsAcyqqIR53+S3+Gmb3f24lW4nJv4hflEOR+jKfzQqef5Ugyr/k
- u0pdeX0nDbzHiZSRHfCBBjygdNuVSmLBD6KWitkCnvE58L7Yg9AE4k9AUHoZKBZZCJ2z
- sOOKP3L8fP6jvBzMTRgJyjMEBTpMFUWYNLFHuRnHTBiSxXnHrAzVA9l6pvTYdsOJvuDJ
- gVkyn8KhmBMe3MCORKnsLGHIWpdyyNfgbrpC6bEn+KWobYIDt38QrE0O0Sf+G1rl5qGV
- mWX8UeEWDuaATJx+6moslSuphUAXhUohToGOz5GEESVgh1qzbVtWtElSHhebtQFt9oC2
- 2eVg==
-X-Gm-Message-State: APjAAAVwRVA/qmRvpuIWZTci0FB6bm/nWEGe9VeM2yKPQs5FEKkaTYUd
- /BpLQUU4d9K1WHAgJg2JNSo=
-X-Google-Smtp-Source: APXvYqx/X7l9wCZA8zKnCu4okFTzhlOhU2FcDFA2JwYv8oCTRTXnlBX2TyBzxH6e/EpmwhE73FZOig==
-X-Received: by 2002:a62:5206:: with SMTP id g6mr17639111pfb.227.1555901942422; 
- Sun, 21 Apr 2019 19:59:02 -0700 (PDT)
-Received: from Asurada (c-98-248-47-108.hsd1.ca.comcast.net. [98.248.47.108])
- by smtp.gmail.com with ESMTPSA id
- b63sm30188611pfj.54.2019.04.21.19.59.01
- (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
- Sun, 21 Apr 2019 19:59:01 -0700 (PDT)
-Date: Sun, 21 Apr 2019 19:58:55 -0700
-From: Nicolin Chen <nicoleotsuka@gmail.com>
-To: "S.j. Wang" <shengjiu.wang@nxp.com>
-Subject: Re: [PATCH V5 3/3] ASoC: fsl_asrc: Unify the supported input and
- output rate
-Message-ID: <20190422025854.GA8476@Asurada>
-References: <cover.1555900078.git.shengjiu.wang@nxp.com>
- <841aa2c4256e418759422affe6c138fa55cd1785.1555900078.git.shengjiu.wang@nxp.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44nWtg0Pz8zDqNN
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Apr 2019 13:15:51 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nxp.com; s=selector1; 
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=rkMgGk+A9DdfNZmfLS/vdkCr8u4npk0R0N/pwBlC0+Q=;
+ b=Tu9Pq/7dK0NF+HOtkJKs6fLIM2AZVV3P+GI8Ol1HE3+lCWjch2Lneyfcdn/5Tr/vUpTxnpB5bEhJDBdmPspMOYx4hpsAHDcKqdTDgBhAzK3lu8EU7RT5sKD44UfE1l0DvJJLYKYhBapOcbcl51bpiANLPJTLbJRpvMgB3WsfH+c=
+Received: from VE1PR04MB6479.eurprd04.prod.outlook.com (20.179.233.80) by
+ VE1PR04MB6462.eurprd04.prod.outlook.com (20.179.233.19) with Microsoft SMTP
+ Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.20.1813.14; Mon, 22 Apr 2019 03:15:34 +0000
+Received: from VE1PR04MB6479.eurprd04.prod.outlook.com
+ ([fe80::6c03:86ad:729d:e311]) by VE1PR04MB6479.eurprd04.prod.outlook.com
+ ([fe80::6c03:86ad:729d:e311%7]) with mapi id 15.20.1813.017; Mon, 22 Apr 2019
+ 03:15:34 +0000
+From: "S.j. Wang" <shengjiu.wang@nxp.com>
+To: Nicolin Chen <nicoleotsuka@gmail.com>
+Subject: Re: [PATCH V5 2/3] ASoC: fsl_asrc: replace the process_option table
+ with function
+Thread-Topic: [PATCH V5 2/3] ASoC: fsl_asrc: replace the process_option table
+ with function
+Thread-Index: AdT4uaT1uq7daVZnSH2lrcd7+mk+DA==
+Date: Mon, 22 Apr 2019 03:15:34 +0000
+Message-ID: <VE1PR04MB6479817B69545A662FFB43B4E3220@VE1PR04MB6479.eurprd04.prod.outlook.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+authentication-results: spf=none (sender IP is )
+ smtp.mailfrom=shengjiu.wang@nxp.com; 
+x-originating-ip: [119.31.174.66]
+x-ms-publictraffictype: Email
+x-ms-office365-filtering-correlation-id: b7f6616b-dc19-4fc3-fdce-08d6c6d0c8eb
+x-ms-office365-filtering-ht: Tenant
+x-microsoft-antispam: BCL:0; PCL:0;
+ RULEID:(2390118)(7020095)(4652040)(8989299)(4534185)(4627221)(201703031133081)(201702281549075)(8990200)(5600141)(711020)(4605104)(4618075)(2017052603328)(7193020);
+ SRVR:VE1PR04MB6462; 
+x-ms-traffictypediagnostic: VE1PR04MB6462:
+x-microsoft-antispam-prvs: <VE1PR04MB6462D816AB1104F113AB6109E3220@VE1PR04MB6462.eurprd04.prod.outlook.com>
+x-forefront-prvs: 00159D1518
+x-forefront-antispam-report: SFV:NSPM;
+ SFS:(10009020)(366004)(189003)(199004)(73956011)(64756008)(66556008)(99286004)(66446008)(26005)(66476007)(186003)(4326008)(66066001)(76116006)(305945005)(74316002)(7696005)(86362001)(6506007)(14444005)(256004)(7736002)(97736004)(54906003)(66946007)(102836004)(2906002)(229853002)(25786009)(486006)(81166006)(14454004)(5660300002)(476003)(33656002)(6916009)(52536014)(55016002)(6246003)(9686003)(8676002)(68736007)(53936002)(8936002)(81156014)(71190400001)(1411001)(71200400001)(6116002)(3846002)(6436002)(498600001);
+ DIR:OUT; SFP:1101; SCL:1; SRVR:VE1PR04MB6462;
+ H:VE1PR04MB6479.eurprd04.prod.outlook.com; FPR:; SPF:None; LANG:en;
+ PTR:InfoNoRecords; MX:1; A:1; 
+received-spf: None (protection.outlook.com: nxp.com does not designate
+ permitted sender hosts)
+x-ms-exchange-senderadcheck: 1
+x-microsoft-antispam-message-info: FFGFf7JsI7kfAlKlJRctKIUOPMS+R5wsFGzevqLcQcfizKgxdGGLQUgWz2ZSOxEm4PYEkzjKc3sSLu4qRzdHBv1BvSSPhPALyAQhvbTXylwQQ7Ay4trOyFAeLPstP0slPfP7bdwgqfmh4zxclyGacN193JqvhDoSkZumW9cbNQzMW4rFspb80nRk6h48g4txgL1mUY+t1SwW53RP8631j6qh3VeqRRoSJGB1ZJgmm3CHGdkys80wtqYfs7wkvp3jnn1Ixndi9xCouP9cFbgUtbopDiU7avLlnbKl9gJmMnvGPTBwlWs7YMSERBEJCB78LDmHSnGvm+F3WufAOHJkIPJT1XnF1UJPH/YYSKNgSxjQvL9aJh860HB/1yYTtNb5GEzFNbuUkoPCfUUhU9y2dpZp1mT+Z8LCFITWPlC+BFc=
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <841aa2c4256e418759422affe6c138fa55cd1785.1555900078.git.shengjiu.wang@nxp.com>
-User-Agent: Mutt/1.5.22 (2013-10-16)
+X-OriginatorOrg: nxp.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: b7f6616b-dc19-4fc3-fdce-08d6c6d0c8eb
+X-MS-Exchange-CrossTenant-originalarrivaltime: 22 Apr 2019 03:15:34.4269 (UTC)
+X-MS-Exchange-CrossTenant-fromentityheader: Hosted
+X-MS-Exchange-CrossTenant-id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
+X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: VE1PR04MB6462
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -106,12 +114,42 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, Apr 22, 2019 at 02:32:38AM +0000, S.j. Wang wrote:
-> Unify the supported input and output rate, add the
-> 12kHz/24kHz/128kHz to the support list
-> 
-> Signed-off-by: Shengjiu Wang <shengjiu.wang@nxp.com>
+Hi
 
-Acked-by: Nicolin Chen <nicoleotsuka@gmail.com>
+>=20
+>=20
+> On Mon, Apr 22, 2019 at 02:32:35AM +0000, S.j. Wang wrote:
+> > When we want to support more sample rate, for example 12kHz/24kHz
+> we
+> > need update the process_option table, if we want to support more
+> > sample rate next time, the table need to be updated again. which is
+> > not flexible.
+> >
+> > We got a function fsl_asrc_sel_proc to replace the table, which can
+> > give the pre-processing and post-processing options according to the
+> > sample rate.
+> >
+> > Signed-off-by: Shengjiu Wang <shengjiu.wang@nxp.com>
+>=20
+> A couple of more small comments.
+>=20
+> And please add this when you resend:
+> Acked-by: Nicolin Chen <nicoleotsuka@gmail.com>
+>=20
+> > + * Unsupport cases: Tsout > 8.125 * Tsin, Tsout > 16.125 * Tsin
+>=20
+> Since we have a ratio validation somewhere else, it's okay to drop this l=
+ine -
+> - it may confuse people since the function no longer checks these
+> unsupported cases.
 
-Thank you
+I add this for may be in the future we forget the limitation. Just for a re=
+minder.
+
+Best regards
+Wang shengjiu
+>=20
+> > +static int fsl_asrc_sel_proc(int inrate, int outrate,
+>=20
+> I think "void" type should be just fine as we made sure there is no
+> unsupported cases running in this function.
