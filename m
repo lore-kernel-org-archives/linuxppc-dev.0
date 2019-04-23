@@ -2,70 +2,80 @@ Return-Path: <SRS0=/W8y=SZ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_MUTT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.6 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
+	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 15C03C282DD
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Apr 2019 09:41:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 99840C10F14
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Apr 2019 10:42:05 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 39D2A2077C
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Apr 2019 09:40:59 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id CE20F214AE
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Apr 2019 10:42:04 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="kWZNVI2H"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 39D2A2077C
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="GPpI+Wyu"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CE20F214AE
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44pJNS4gwszDqMM
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Apr 2019 19:40:56 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44pKkx71HgzDqP2
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Apr 2019 20:42:01 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=infradead.org
- (client-ip=2607:7c80:54:e::133; helo=bombadil.infradead.org;
- envelope-from=peterz@infradead.org; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=gmail.com
+ (client-ip=2a00:1450:4864:20::344; helo=mail-wm1-x344.google.com;
+ envelope-from=jonas.gorski@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=infradead.org
+ dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=infradead.org header.i=@infradead.org
- header.b="kWZNVI2H"; dkim-atps=neutral
-Received: from bombadil.infradead.org (bombadil.infradead.org
- [IPv6:2607:7c80:54:e::133])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="GPpI+Wyu"; 
+ dkim-atps=neutral
+Received: from mail-wm1-x344.google.com (mail-wm1-x344.google.com
+ [IPv6:2a00:1450:4864:20::344])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44pJLT1dFdzDqKZ
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Apr 2019 19:39:13 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
- d=infradead.org; s=bombadil.20170209; h=In-Reply-To:Content-Type:MIME-Version
- :References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
- Content-Transfer-Encoding:Content-ID:Content-Description:Resent-Date:
- Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:
- List-Help:List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
- bh=KZ1+LpzJjt1lQaO/zhhBXmd8ItG9I8H/NFkBPqdSKp4=; b=kWZNVI2H88CgPB45rHhvEagQy
- YUXAwoj4UqliNhOdCXov/GLt6lWALi4JYUG0WNlU4GGG3JAvPyBRkffyWJOG+EG0Ur9Kx1yB1ZEA+
- crqGIkZ0RR5dJvoHX2bSDFkFQfGDGgb5JKkpIhgWbRSNdH1EQU51xgOLzcuH2d142hpvgjzx2md9s
- rcVXo+iDvqNoRr/AvulifTy23sAkOmmfbsKuOe7LAQCmEVmiq9pYQuCW4a42z6Hp8dQhMHJiCING8
- JI1Nlc06RH+pKcvLROVBIO1pkNJZOFlAGmkC/NPAI0mOHNypwGzvg0dMbMU4fZTqeqtbbpL0yyKJd
- YyIrsQdsw==;
-Received: from j217100.upc-j.chello.nl ([24.132.217.100]
- helo=hirez.programming.kicks-ass.net)
- by bombadil.infradead.org with esmtpsa (Exim 4.90_1 #2 (Red Hat Linux))
- id 1hIrt8-0003WC-3I; Tue, 23 Apr 2019 09:38:55 +0000
-Received: by hirez.programming.kicks-ass.net (Postfix, from userid 1000)
- id 6922229B47DCF; Tue, 23 Apr 2019 11:38:51 +0200 (CEST)
-Date: Tue, 23 Apr 2019 11:38:51 +0200
-From: Peter Zijlstra <peterz@infradead.org>
-To: Michel Lespinasse <walken@google.com>
-Subject: Re: [PATCH v12 00/31] Speculative page faults
-Message-ID: <20190423093851.GJ11158@hirez.programming.kicks-ass.net>
-References: <20190416134522.17540-1-ldufour@linux.ibm.com>
- <CANN689F1h9XoHPzr_FQY2WfN5bb2TTd6M3HLqoJ-DQuHkNbA7g@mail.gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44pKhp1y5zzDqJ5
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Apr 2019 20:40:09 +1000 (AEST)
+Received: by mail-wm1-x344.google.com with SMTP id j13so2435644wmh.2
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Apr 2019 03:40:09 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+ :cc; bh=l1jRs+VjgKr89zOhBdbqqRIIlbputC+F8Zk2yYKbNgU=;
+ b=GPpI+WyuDh9UF5YRcVMFIyZObqeJT7d8pRfSxWxEbzxyzzD9g/f+mpHEGsKZFjyHzW
+ SJQPFd2bbh0inepg0kGnTIe/uhPn3qKZ/asAgPNLZ+VYjQ/oS9Oc3FeWV639bNQKN1ck
+ 4JcDhIaLrfyL2h9DDF/J76du516p8NyeGLpwMpGi4L58lEv/h2Xq5TFwhl/5PbkCskzN
+ P4xac557sOvWB0r4P3AuMnhwUktvbEFAkdUBM1c7jk2xyUKHcXeWkCpd66OcSAs3+CFc
+ LFxlycJm8IJushgZTkJaxWI1RX86iDBfEt9g/ydIMmosfulsQFvXS4M5VuF4oLeSXMgx
+ 8MRg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+ :message-id:subject:to:cc;
+ bh=l1jRs+VjgKr89zOhBdbqqRIIlbputC+F8Zk2yYKbNgU=;
+ b=K+s/MGzBHH84uP8kAj6xTUTRuaDvPluhlfKJuGIIfj5z/TpFkOt+OSKNeRscvTtK9n
+ uQudJWmSUTCTRXFb454iQTJDF6R+khCHYasoC3ml4I2Cr5eoBvL3C794KNpH1eNLCucc
+ rzhHM3Iw/w/6QEPk2Fam6DrgX3vxfDT3upVWDTf9e1Reypi2040ns28K1ZfEfuHrrn9X
+ vDHtgQmAxlbmYOa/PYV4Y5DlD1xfXx3bCqB7C2O3/fcPjtF7tm1fDp4SachO9rjiePTx
+ 5uhShtOaG/rRzz7yTWnr11k/xKSWDOSXsJpHPgi9a5UpYfoAjLg9QD2+dUCNyNhPOHT3
+ tZXg==
+X-Gm-Message-State: APjAAAWxcbq2EDBVX2z7CiecPh+UWXNxVmNY9ZHBy0Til6YNvNUyngSi
+ C20NO/R31a6tAKvuXrHm5PtxwTprSR+ECmaKcHo=
+X-Google-Smtp-Source: APXvYqxX3ua8Qip8sefdRbffrTTXZjOWBfJVKhjRipliVEu+qqlgPQ7lY15svXgVJ4//LFGPkaoS3e4lRfjlEplbk9A=
+X-Received: by 2002:a1c:81c9:: with SMTP id c192mr1754113wmd.124.1556016006820; 
+ Tue, 23 Apr 2019 03:40:06 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <CANN689F1h9XoHPzr_FQY2WfN5bb2TTd6M3HLqoJ-DQuHkNbA7g@mail.gmail.com>
-User-Agent: Mutt/1.10.1 (2018-07-13)
+References: <20190418111211.10474-1-jonas.gorski@gmail.com>
+ <20190418111211.10474-2-jonas.gorski@gmail.com>
+ <CAMuHMdX7E8fR+2s-gPgGLKUCdW_--YUDW7w+op3BDurgACFEmA@mail.gmail.com>
+In-Reply-To: <CAMuHMdX7E8fR+2s-gPgGLKUCdW_--YUDW7w+op3BDurgACFEmA@mail.gmail.com>
+From: Jonas Gorski <jonas.gorski@gmail.com>
+Date: Tue, 23 Apr 2019 12:39:59 +0200
+Message-ID: <CAOiHx=mjhzG-i8H5R0A+Mu3mcBXTNEaaBhC8rwCQPMWArDA+1A@mail.gmail.com>
+Subject: Re: [PATCH RFT V3 1/8] clk: divider: add explicit big endian support
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -77,49 +87,83 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Jan Kara <jack@suse.cz>, sergey.senozhatsky.work@gmail.com,
- Will Deacon <will.deacon@arm.com>, Michal Hocko <mhocko@kernel.org>,
- linux-mm <linux-mm@kvack.org>, Paul Mackerras <paulus@samba.org>,
- Punit Agrawal <punitagrawal@gmail.com>, "H. Peter Anvin" <hpa@zytor.com>,
- Mike Rapoport <rppt@linux.ibm.com>,
- Alexei Starovoitov <alexei.starovoitov@gmail.com>,
- Andrea Arcangeli <aarcange@redhat.com>, Andi Kleen <ak@linux.intel.com>,
- Minchan Kim <minchan@kernel.org>, aneesh.kumar@linux.ibm.com, x86@kernel.org,
- Matthew Wilcox <willy@infradead.org>,
- Daniel Jordan <daniel.m.jordan@oracle.com>, Ingo Molnar <mingo@redhat.com>,
- David Rientjes <rientjes@google.com>,
- "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
- Haiyan Song <haiyanx.song@intel.com>, Nick Piggin <npiggin@gmail.com>,
- sj38.park@gmail.com, Jerome Glisse <jglisse@redhat.com>, dave@stgolabs.net,
- kemi.wang@intel.com, "Kirill A. Shutemov" <kirill@shutemov.name>,
- Thomas Gleixner <tglx@linutronix.de>, Laurent Dufour <ldufour@linux.ibm.com>,
- zhong jiang <zhongjiang@huawei.com>,
- Ganesh Mahendran <opensource.ganesh@gmail.com>,
- Yang Shi <yang.shi@linux.alibaba.com>, linuxppc-dev@lists.ozlabs.org,
- LKML <linux-kernel@vger.kernel.org>,
- Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
- vinayak menon <vinayakm.list@gmail.com>,
- Andrew Morton <akpm@linux-foundation.org>,
- Tim Chen <tim.c.chen@linux.intel.com>, haren@linux.vnet.ibm.com
+Cc: Prashant Gaikwad <pgaikwad@nvidia.com>, Heiko Stuebner <heiko@sntech.de>,
+ Michael Turquette <mturquette@baylibre.com>,
+ Thierry Reding <thierry.reding@gmail.com>, Paul Mackerras <paulus@samba.org>,
+ Fabio Estevam <festevam@gmail.com>, linux-clk <linux-clk@vger.kernel.org>,
+ Michal Simek <michal.simek@xilinx.com>, Jonathan Hunter <jonathanh@nvidia.com>,
+ "open list:ARM/Rockchip SoC..." <linux-rockchip@lists.infradead.org>,
+ NXP Linux Team <linux-imx@nxp.com>, Anatolij Gustschin <agust@denx.de>,
+ Sascha Hauer <s.hauer@pengutronix.de>,
+ linux-tegra <linux-tegra@vger.kernel.org>,
+ Linux ARM <linux-arm-kernel@lists.infradead.org>,
+ Stephen Boyd <sboyd@kernel.org>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Peter De Schrijver <pdeschrijver@nvidia.com>,
+ Pengutronix Kernel Team <kernel@pengutronix.de>,
+ Shawn Guo <shawnguo@kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, Apr 22, 2019 at 02:29:16PM -0700, Michel Lespinasse wrote:
-> The proposed spf mechanism only handles anon vmas. Is there a
-> fundamental reason why it couldn't handle mapped files too ?
-> My understanding is that the mechanism of verifying the vma after
-> taking back the ptl at the end of the fault would work there too ?
-> The file has to stay referenced during the fault, but holding the vma's
-> refcount could be made to cover that ? the vm_file refcount would have
-> to be released in __free_vma() instead of remove_vma; I'm not quite sure
-> if that has more implications than I realize ?
+Hi Geert,
 
-IIRC (and I really don't remember all that much) the trickiest bit was
-vs unmount. Since files can stay open past the 'expected' duration,
-umount could be delayed.
+On Tue, 23 Apr 2019 at 09:49, Geert Uytterhoeven <geert@linux-m68k.org> wrote:
+>
+> Hi Jonas,
+>
+> On Thu, Apr 18, 2019 at 1:12 PM Jonas Gorski <jonas.gorski@gmail.com> wrote:
+> > Add a clock specific flag to switch register accesses to big endian, to
+> > allow runtime configuration of big endian divider clocks.
+> >
+> > Signed-off-by: Jonas Gorski <jonas.gorski@gmail.com>
+> > ---
+> > V2 -> V3:
+> >  * fix passed arguments to clk_div_readl found by kbuild
+> >  * drop unneeded else in clk_div_readl
+> > V1 -> V2:
+> >  * switch from global to local flag
+> >
+> >  drivers/clk/clk-divider.c    | 26 ++++++++++++++++++++++----
+> >  include/linux/clk-provider.h |  4 ++++
+> >  2 files changed, 26 insertions(+), 4 deletions(-)
+> >
+> > diff --git a/drivers/clk/clk-divider.c b/drivers/clk/clk-divider.c
+> > index e5a17265cfaf..25c7404e376c 100644
+> > --- a/drivers/clk/clk-divider.c
+> > +++ b/drivers/clk/clk-divider.c
+> > @@ -25,6 +25,24 @@
+> >   * parent - fixed parent.  No clk_set_parent support
+> >   */
+> >
+> > +static inline u32 clk_div_readl(struct clk_divider *divider)
+> > +{
+> > +       if (divider->flags & CLK_DIVIDER_BIG_ENDIAN)
+> > +               return ioread32be(divider->reg);
+> > +
+> > +       return clk_readl(divider->reg);
+> > +}
+> > +
+> > +static inline void clk_div_writel(struct clk_divider *divider, u32 val)
+> > +{
+> > +       if (divider->flags & CLK_DIVIDER_BIG_ENDIAN)
+> > +               iowrite32be(val, divider->reg);
+> > +       else
+> > +               clk_writel(val, divider->reg);
+> > +}
+> > +
+> > +#define div_mask(width)        ((1 << (width)) - 1)
+>
+> What's the purpose of adding this definition?
+> It does not seem to be used.
 
-But yes, I think I had a version that did all that just 'fine'. Like
-mentioned, I didn't keep the refcount because it sucked just as hard as
-the mmap_sem contention, but the SRCU callback did the fput() just fine
-(esp. now that we have delayed_fput).
+No purpose at all, it's an uncaught artifact from rebasing ._.
+
+Stephen, which one is your preferred way of fixing that?
+
+a) a new V4 patchset without this line
+b) a follow up patch that removes it
+c) just removing the line yourself
+
+
+Regards
+Jonas
