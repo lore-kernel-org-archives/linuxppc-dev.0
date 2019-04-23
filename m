@@ -7,21 +7,21 @@ X-Spam-Status: No, score=-8.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BBE0BC10F14
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Apr 2019 03:37:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8007CC10F14
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Apr 2019 03:39:21 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 36E1D20B1F
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Apr 2019 03:37:54 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 01AB820B1F
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Apr 2019 03:39:20 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=nifty.com header.i=@nifty.com header.b="ByF3Wmdm"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 36E1D20B1F
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=nifty.com header.i=@nifty.com header.b="mCn02M/+"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 01AB820B1F
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=socionext.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44p8KX3cKkzDqP2
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Apr 2019 13:37:52 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44p8MC1Jr6zDq8D
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Apr 2019 13:39:19 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=softfail (mailfrom) smtp.mailfrom=socionext.com
  (client-ip=210.131.2.76; helo=conuserg-09.nifty.com;
@@ -29,36 +29,36 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=socionext.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=nifty.com header.i=@nifty.com header.b="ByF3Wmdm"; 
+ unprotected) header.d=nifty.com header.i=@nifty.com header.b="mCn02M/+"; 
  dkim-atps=neutral
 Received: from conuserg-09.nifty.com (conuserg-09.nifty.com [210.131.2.76])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44p8021C6LzDqMS
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44p8022gFMzDqMT
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Apr 2019 13:22:41 +1000 (AEST)
 Received: from localhost.localdomain (p14092-ipngnfx01kyoto.kyoto.ocn.ne.jp
  [153.142.97.92]) (authenticated)
- by conuserg-09.nifty.com with ESMTP id x3N3L8LI031384;
- Tue, 23 Apr 2019 12:21:16 +0900
-DKIM-Filter: OpenDKIM Filter v2.10.3 conuserg-09.nifty.com x3N3L8LI031384
+ by conuserg-09.nifty.com with ESMTP id x3N3L8LL031384;
+ Tue, 23 Apr 2019 12:21:19 +0900
+DKIM-Filter: OpenDKIM Filter v2.10.3 conuserg-09.nifty.com x3N3L8LL031384
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nifty.com;
- s=dec2015msa; t=1555989677;
- bh=7qo1vbhArO2n/LZF4sYuHYL1/6J0V//9VqfNxacUkeY=;
+ s=dec2015msa; t=1555989680;
+ bh=YGW0gg01jtKnXbnK1Ap0mVZ9GqJOY8DcvskWgXT4tQY=;
  h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=ByF3Wmdmakc6HLxf+7sO4AecDTjocpMpuNC8cuKlErGY2yh/dUHLMuh9zSFWEGTqW
- q+KiAI+xFh2t24Ab9m1yrPP17Cyl+UhoxHAxcgFKNrCZCdOQN3cso9Mb/EXfi2daGR
- hlvySMMI/+wVS1osaiozGonKjB5tKKgqQoKy+9b/ap9neqJLqr1tga0RknQmdLF5JK
- mrAbzkbvLcAzZ1NxGJ9dZS3STvmHdygjzqiMUFvx18/R69eytCCnyKXuaz6EFMKoqG
- qZ0UXSQUDTS36O4kuT/WHJOuuDNS3UAjjBtSEpPsRvPp7tR/lkpLgjI9bHexOD5AsD
- z+jiwwsUH5rGA==
+ b=mCn02M/+Zs1tTrnfj5kcK/rIXu8Qjzpou6KA7O8+YMQxaTRIOmJiYSdn1yiI2naKt
+ MOHV0re8MJvGrURubZ52FRJWYB8BKJDCHdtm0+gi/mtbUq5QKLWZPGOju5xSwUZcWl
+ v62g+gXthE8J+NAD4NPy45+MxSmZ7tonTDzlWDzHGQzYMmZaYvOa54z3WQuT8Zuufn
+ RRLTWAFT4J9sYGariQ0SfM01A/+8PRgOu0jsL4gPe489CoMR6D8YJvBgVXCuHjnXp7
+ ss+JT31y4kchSzLW7k/zDncSQUjZSSKhKjjg3CKu47It7stLcp72/4twqXDWyaFFPZ
+ vwoBCpY9sZvjQ==
 X-Nifty-SrcIP: [153.142.97.92]
 From: Masahiro Yamada <yamada.masahiro@socionext.com>
 To: Andrew Morton <akpm@linux-foundation.org>,
  linux-arch <linux-arch@vger.kernel.org>
-Subject: [PATCH v3 07/10] powerpc/prom_init: mark prom_getprop() and
- prom_getproplen() as __init
-Date: Tue, 23 Apr 2019 12:21:03 +0900
-Message-Id: <20190423032106.11960-8-yamada.masahiro@socionext.com>
+Subject: [PATCH v3 10/10] compiler: allow all arches to enable
+ CONFIG_OPTIMIZE_INLINING
+Date: Tue, 23 Apr 2019 12:21:06 +0900
+Message-Id: <20190423032106.11960-11-yamada.masahiro@socionext.com>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20190423032106.11960-1-yamada.masahiro@socionext.com>
 References: <20190423032106.11960-1-yamada.masahiro@socionext.com>
@@ -83,56 +83,118 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This prepares to move CONFIG_OPTIMIZE_INLINING from x86 to a common
-place. We need to eliminate potential issues beforehand.
+Commit 60a3cdd06394 ("x86: add optimized inlining") introduced
+CONFIG_OPTIMIZE_INLINING, but it has been available only for x86.
 
-If it is enabled for powerpc, the following modpost warnings are
-reported:
+The idea is obviously arch-agnostic. This commit moves the config
+entry from arch/x86/Kconfig.debug to lib/Kconfig.debug so that all
+architectures can benefit from it.
 
-WARNING: vmlinux.o(.text.unlikely+0x20): Section mismatch in reference from the function .prom_getprop() to the function .init.text:.call_prom()
-The function .prom_getprop() references
-the function __init .call_prom().
-This is often because .prom_getprop lacks a __init
-annotation or the annotation of .call_prom is wrong.
+This can make a huge difference in kernel image size especially when
+CONFIG_OPTIMIZE_FOR_SIZE is enabled.
 
-WARNING: vmlinux.o(.text.unlikely+0x3c): Section mismatch in reference from the function .prom_getproplen() to the function .init.text:.call_prom()
-The function .prom_getproplen() references
-the function __init .call_prom().
-This is often because .prom_getproplen lacks a __init
-annotation or the annotation of .call_prom is wrong.
+For example, I got 3.5% smaller arm64 kernel for v5.1-rc1.
+
+  dec       file
+  18983424  arch/arm64/boot/Image.before
+  18321920  arch/arm64/boot/Image.after
+
+This also slightly improves the "Kernel hacking" Kconfig menu as
+e61aca5158a8 ("Merge branch 'kconfig-diet' from Dave Hansen') suggested;
+this config option would be a good fit in the "compiler option" menu.
 
 Signed-off-by: Masahiro Yamada <yamada.masahiro@socionext.com>
+Acked-by: Borislav Petkov <bp@suse.de>
 ---
 
 Changes in v3: None
 Changes in v2:
   - split into a separate patch
 
- arch/powerpc/kernel/prom_init.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+ arch/x86/Kconfig               |  3 ---
+ arch/x86/Kconfig.debug         | 14 --------------
+ include/linux/compiler_types.h |  3 +--
+ lib/Kconfig.debug              | 14 ++++++++++++++
+ 4 files changed, 15 insertions(+), 19 deletions(-)
 
-diff --git a/arch/powerpc/kernel/prom_init.c b/arch/powerpc/kernel/prom_init.c
-index f33ff4163a51..241fe6b7a8cc 100644
---- a/arch/powerpc/kernel/prom_init.c
-+++ b/arch/powerpc/kernel/prom_init.c
-@@ -501,14 +501,14 @@ static int __init prom_next_node(phandle *nodep)
- 	}
- }
+diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
+index 62fc3fda1a05..f214bb5d60d8 100644
+--- a/arch/x86/Kconfig
++++ b/arch/x86/Kconfig
+@@ -310,9 +310,6 @@ config ZONE_DMA32
+ config AUDIT_ARCH
+ 	def_bool y if X86_64
  
--static inline int prom_getprop(phandle node, const char *pname,
--			       void *value, size_t valuelen)
-+static inline int __init prom_getprop(phandle node, const char *pname,
-+				      void *value, size_t valuelen)
- {
- 	return call_prom("getprop", 4, 1, node, ADDR(pname),
- 			 (u32)(unsigned long) value, (u32) valuelen);
- }
+-config ARCH_SUPPORTS_OPTIMIZED_INLINING
+-	def_bool y
+-
+ config ARCH_SUPPORTS_DEBUG_PAGEALLOC
+ 	def_bool y
  
--static inline int prom_getproplen(phandle node, const char *pname)
-+static inline int __init prom_getproplen(phandle node, const char *pname)
- {
- 	return call_prom("getproplen", 2, 1, node, ADDR(pname));
- }
+diff --git a/arch/x86/Kconfig.debug b/arch/x86/Kconfig.debug
+index 15d0fbe27872..f730680dc818 100644
+--- a/arch/x86/Kconfig.debug
++++ b/arch/x86/Kconfig.debug
+@@ -266,20 +266,6 @@ config CPA_DEBUG
+ 	---help---
+ 	  Do change_page_attr() self-tests every 30 seconds.
+ 
+-config OPTIMIZE_INLINING
+-	bool "Allow gcc to uninline functions marked 'inline'"
+-	---help---
+-	  This option determines if the kernel forces gcc to inline the functions
+-	  developers have marked 'inline'. Doing so takes away freedom from gcc to
+-	  do what it thinks is best, which is desirable for the gcc 3.x series of
+-	  compilers. The gcc 4.x series have a rewritten inlining algorithm and
+-	  enabling this option will generate a smaller kernel there. Hopefully
+-	  this algorithm is so good that allowing gcc 4.x and above to make the
+-	  decision will become the default in the future. Until then this option
+-	  is there to test gcc for this.
+-
+-	  If unsure, say N.
+-
+ config DEBUG_ENTRY
+ 	bool "Debug low-level entry code"
+ 	depends on DEBUG_KERNEL
+diff --git a/include/linux/compiler_types.h b/include/linux/compiler_types.h
+index ba814f18cb4c..19e58b9138a0 100644
+--- a/include/linux/compiler_types.h
++++ b/include/linux/compiler_types.h
+@@ -140,8 +140,7 @@ struct ftrace_likely_data {
+  * Do not use __always_inline here, since currently it expands to inline again
+  * (which would break users of __always_inline).
+  */
+-#if !defined(CONFIG_ARCH_SUPPORTS_OPTIMIZED_INLINING) || \
+-	!defined(CONFIG_OPTIMIZE_INLINING)
++#if !defined(CONFIG_OPTIMIZE_INLINING)
+ #define inline inline __attribute__((__always_inline__)) __gnu_inline \
+ 	__maybe_unused notrace
+ #else
+diff --git a/lib/Kconfig.debug b/lib/Kconfig.debug
+index 00dbcdbc9a0d..37402f210115 100644
+--- a/lib/Kconfig.debug
++++ b/lib/Kconfig.debug
+@@ -310,6 +310,20 @@ config HEADERS_CHECK
+ 	  exported to $(INSTALL_HDR_PATH) (usually 'usr/include' in
+ 	  your build tree), to make sure they're suitable.
+ 
++config OPTIMIZE_INLINING
++	bool "Allow compiler to uninline functions marked 'inline'"
++	help
++	  This option determines if the kernel forces gcc to inline the functions
++	  developers have marked 'inline'. Doing so takes away freedom from gcc to
++	  do what it thinks is best, which is desirable for the gcc 3.x series of
++	  compilers. The gcc 4.x series have a rewritten inlining algorithm and
++	  enabling this option will generate a smaller kernel there. Hopefully
++	  this algorithm is so good that allowing gcc 4.x and above to make the
++	  decision will become the default in the future. Until then this option
++	  is there to test gcc for this.
++
++	  If unsure, say N.
++
+ config DEBUG_SECTION_MISMATCH
+ 	bool "Enable full Section mismatch analysis"
+ 	help
 -- 
 2.17.1
 
