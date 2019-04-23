@@ -2,95 +2,98 @@ Return-Path: <SRS0=/W8y=SZ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS
+X-Spam-Status: No, score=-0.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B173AC10F03
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Apr 2019 15:53:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C1109C10F03
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Apr 2019 16:08:14 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 21B8B2175B
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Apr 2019 15:53:21 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 21B8B2175B
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 0BAFB20693
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Apr 2019 16:08:13 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=linux-foundation.org header.i=@linux-foundation.org header.b="CZonqEvK"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0BAFB20693
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linux-foundation.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44pSf71Fv9zDqPM
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Apr 2019 01:53:19 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44pSzH72YqzDqRs
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Apr 2019 02:08:11 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
- (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=ldufour@linux.ibm.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ spf=pass (mailfrom) smtp.mailfrom=linuxfoundation.org
+ (client-ip=2a00:1450:4864:20::133; helo=mail-lf1-x133.google.com;
+ envelope-from=torvalds@linuxfoundation.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=linux-foundation.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=linux-foundation.org header.i=@linux-foundation.org
+ header.b="CZonqEvK"; dkim-atps=neutral
+Received: from mail-lf1-x133.google.com (mail-lf1-x133.google.com
+ [IPv6:2a00:1450:4864:20::133])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44pScF2YLLzDqCx
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Apr 2019 01:51:41 +1000 (AEST)
-Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x3NFnchu015723
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Apr 2019 11:51:39 -0400
-Received: from e06smtp05.uk.ibm.com (e06smtp05.uk.ibm.com [195.75.94.101])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2s24j9um7e-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Apr 2019 11:51:38 -0400
-Received: from localhost
- by e06smtp05.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <ldufour@linux.ibm.com>;
- Tue, 23 Apr 2019 16:51:35 +0100
-Received: from b06cxnps4075.portsmouth.uk.ibm.com (9.149.109.197)
- by e06smtp05.uk.ibm.com (192.168.101.135) with IBM ESMTP SMTP Gateway:
- Authorized Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Tue, 23 Apr 2019 16:51:26 +0100
-Received: from d06av24.portsmouth.uk.ibm.com (d06av24.portsmouth.uk.ibm.com
- [9.149.105.60])
- by b06cxnps4075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x3NFpOYb50856158
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Tue, 23 Apr 2019 15:51:24 GMT
-Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id C634742042;
- Tue, 23 Apr 2019 15:51:23 +0000 (GMT)
-Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 090384205E;
- Tue, 23 Apr 2019 15:51:21 +0000 (GMT)
-Received: from [9.145.7.116] (unknown [9.145.7.116])
- by d06av24.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Tue, 23 Apr 2019 15:51:20 +0000 (GMT)
-Subject: Re: [PATCH v12 11/31] mm: protect mremap() against SPF hanlder
-To: Jerome Glisse <jglisse@redhat.com>
-References: <20190416134522.17540-1-ldufour@linux.ibm.com>
- <20190416134522.17540-12-ldufour@linux.ibm.com>
- <20190422195157.GB14666@redhat.com>
-From: Laurent Dufour <ldufour@linux.ibm.com>
-Date: Tue, 23 Apr 2019 17:51:20 +0200
-User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.14; rv:60.0)
- Gecko/20100101 Thunderbird/60.6.1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44pSxW4lKVzDq9m
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Apr 2019 02:06:37 +1000 (AEST)
+Received: by mail-lf1-x133.google.com with SMTP id o16so1395676lfl.7
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Apr 2019 09:06:37 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=linux-foundation.org; s=google;
+ h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+ :cc; bh=FhckMePRJRIMKUNlCIkx3VHe63IXH0bZ3S6Gwqv5tdM=;
+ b=CZonqEvKRryr7I9kZkzaMOwuQF50UFC0DuXrN+A5A6rDj20MPF13Loj640HKBDdB/S
+ wli9FxRhQ1OX9jSEjTEapHcc+guN8oU7kWxmO0cu6zjBUv5QhZecKO1iE405PwB0TBDs
+ hqJUvZk6OvySvehOwaartA/mM+abp7YvVEyVQ=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+ :message-id:subject:to:cc;
+ bh=FhckMePRJRIMKUNlCIkx3VHe63IXH0bZ3S6Gwqv5tdM=;
+ b=ujJe4gIIdY28WWxXrNGSLZh5NDEXreSp7nRwMQfLT/CSXqUrOKKj9HW2rFgqOfiwfS
+ Dsw09HPUjS9leyI1kKqvSVcrGLCdrU/wrhVAn/s485XxZvthQSotag/jxiyvGL+bqlNc
+ Wk2BT/dswkA0NnoHTifVu8n/kFsSA2EI+QdCotJaYKMAzQG5oJjpO42mImW7ZQ6Y6HWV
+ nXiS12rOa8ZwM8PLfdlHxm35djR3m/qnNtOAIhDLm72YIz6lkryCr/mX0+t65wzWvxI7
+ djuxSq4IwB7mlFexMUclhX9Bb9rrciC8WRFkbhN/vBNG0Elss+YZDQQR6tmnfZnWlskb
+ vLaA==
+X-Gm-Message-State: APjAAAWjkZh8n64kGZQHIEGXBwIULZsT7z2Q32li7UznWmbWeaAxuqDs
+ fYYRylyPs3KslFUm5TlT5GesLtPF5DI=
+X-Google-Smtp-Source: APXvYqzhzbFTlKsPN5KYL/Bgqt2YvyKe0QDL01DL7nQrdNuBdMZH40B8VT8H6GsJ/m7ruCkqCO2XSQ==
+X-Received: by 2002:ac2:51d9:: with SMTP id u25mr3133038lfm.91.1556035592328; 
+ Tue, 23 Apr 2019 09:06:32 -0700 (PDT)
+Received: from mail-lj1-f172.google.com (mail-lj1-f172.google.com.
+ [209.85.208.172])
+ by smtp.gmail.com with ESMTPSA id c17sm1665914lff.84.2019.04.23.09.06.30
+ for <linuxppc-dev@lists.ozlabs.org>
+ (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
+ Tue, 23 Apr 2019 09:06:31 -0700 (PDT)
+Received: by mail-lj1-f172.google.com with SMTP id l7so14039762ljg.6
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Apr 2019 09:06:30 -0700 (PDT)
+X-Received: by 2002:a2e:9ac8:: with SMTP id p8mr12853071ljj.79.1556035590337; 
+ Tue, 23 Apr 2019 09:06:30 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <20190422195157.GB14666@redhat.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: en-US
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-x-cbid: 19042315-0020-0000-0000-00000332DF96
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19042315-0021-0000-0000-00002185412F
-Message-Id: <665c1e4f-cf0f-31b7-d5f9-287239f7c0d9@linux.ibm.com>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2019-04-23_05:, , signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1810050000 definitions=main-1904230107
+References: <CAHk-=wjvcuyCQGnfOhooaL1H4H63qXO=xgo+9yncSOG=eK+kbA@mail.gmail.com>
+ <20190415051919.GA31481@infradead.org>
+ <CAHk-=wj7jgMOVFW0tiU-X+zhg6+Rn7mEBTej+f26rV3zXezOSA@mail.gmail.com>
+ <20190416110906.6c773aff@mschwideX1> <20190416140658.2cb73a3f@mschwideX1>
+ <CAHk-=wjKi5C+Onhp5Vs5BQxHbaBud9M3cTS-S6Tr9yDY4dS-Sw@mail.gmail.com>
+ <CAHk-=wj2SW0Zno0Yn=S9wrsmHOKV0FiFPiPS4TM=Gn8yjfYXAg@mail.gmail.com>
+ <20190417094637.51ad4c67@mschwideX1> <20190417100244.42e29736@mschwideX1>
+ <CAHk-=wj5j-zMo7hVNxiw3+5L2d1WQVm3x4fbpg=OXLzDh8FhYg@mail.gmail.com>
+ <20190418100218.0a4afd51@mschwideX1>
+ <CAHk-=whajv8Fw2VcBqZUs0hfx1Dq4fYj3TEEx4yfR3E8+rLS1A@mail.gmail.com>
+ <20190418204144.16adf2a0@mschwideX1> <20190419153307.4f2911b5@mschwideX1>
+ <CAHk-=wj6yp7hkJ_wR38dhdDRkAHQaEx28v2FkVT9hDFXX_qfjA@mail.gmail.com>
+ <20190423173859.42d5ba8b@mschwideX1>
+In-Reply-To: <20190423173859.42d5ba8b@mschwideX1>
+From: Linus Torvalds <torvalds@linux-foundation.org>
+Date: Tue, 23 Apr 2019 09:06:14 -0700
+X-Gmail-Original-Message-ID: <CAHk-=wiCwe7Uk0P6zJnTPqz_BvkELBbnocS-0qdWxVgq9qebjg@mail.gmail.com>
+Message-ID: <CAHk-=wiCwe7Uk0P6zJnTPqz_BvkELBbnocS-0qdWxVgq9qebjg@mail.gmail.com>
+Subject: Re: Linux 5.1-rc5
+To: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -102,297 +105,29 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: jack@suse.cz, sergey.senozhatsky.work@gmail.com, peterz@infradead.org,
- Will Deacon <will.deacon@arm.com>, mhocko@kernel.org, linux-mm@kvack.org,
- paulus@samba.org, Punit Agrawal <punitagrawal@gmail.com>, hpa@zytor.com,
- Michel Lespinasse <walken@google.com>,
- Alexei Starovoitov <alexei.starovoitov@gmail.com>,
- Andrea Arcangeli <aarcange@redhat.com>, ak@linux.intel.com,
- Minchan Kim <minchan@kernel.org>, aneesh.kumar@linux.ibm.com, x86@kernel.org,
- Matthew Wilcox <willy@infradead.org>,
- Daniel Jordan <daniel.m.jordan@oracle.com>, Ingo Molnar <mingo@redhat.com>,
- David Rientjes <rientjes@google.com>, paulmck@linux.vnet.ibm.com,
- Haiyan Song <haiyanx.song@intel.com>, npiggin@gmail.com, sj38.park@gmail.com,
- dave@stgolabs.net, kirill@shutemov.name, Thomas Gleixner <tglx@linutronix.de>,
- zhong jiang <zhongjiang@huawei.com>,
- Ganesh Mahendran <opensource.ganesh@gmail.com>,
- Yang Shi <yang.shi@linux.alibaba.com>, Mike Rapoport <rppt@linux.ibm.com>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
- vinayak menon <vinayakm.list@gmail.com>, akpm@linux-foundation.org,
- Tim Chen <tim.c.chen@linux.intel.com>, haren@linux.vnet.ibm.com
+Cc: Christoph Hellwig <hch@infradead.org>, linuxppc-dev@lists.ozlabs.org,
+ Linux List Kernel Mailing <linux-kernel@vger.kernel.org>,
+ linux-s390 <linux-s390@vger.kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Le 22/04/2019 à 21:51, Jerome Glisse a écrit :
-> On Tue, Apr 16, 2019 at 03:45:02PM +0200, Laurent Dufour wrote:
->> If a thread is remapping an area while another one is faulting on the
->> destination area, the SPF handler may fetch the vma from the RB tree before
->> the pte has been moved by the other thread. This means that the moved ptes
->> will overwrite those create by the page fault handler leading to page
->> leaked.
->>
->> 	CPU 1				CPU2
->> 	enter mremap()
->> 	unmap the dest area
->> 	copy_vma()			Enter speculative page fault handler
->> 	   >> at this time the dest area is present in the RB tree
->> 					fetch the vma matching dest area
->> 					create a pte as the VMA matched
->> 					Exit the SPF handler
->> 					<data written in the new page>
->> 	move_ptes()
->> 	  > it is assumed that the dest area is empty,
->>   	  > the move ptes overwrite the page mapped by the CPU2.
->>
->> To prevent that, when the VMA matching the dest area is extended or created
->> by copy_vma(), it should be marked as non available to the SPF handler.
->> The usual way to so is to rely on vm_write_begin()/end().
->> This is already in __vma_adjust() called by copy_vma() (through
->> vma_merge()). But __vma_adjust() is calling vm_write_end() before returning
->> which create a window for another thread.
->> This patch adds a new parameter to vma_merge() which is passed down to
->> vma_adjust().
->> The assumption is that copy_vma() is returning a vma which should be
->> released by calling vm_raw_write_end() by the callee once the ptes have
->> been moved.
->>
->> Signed-off-by: Laurent Dufour <ldufour@linux.ibm.com>
-> 
-> Reviewed-by: Jérôme Glisse <jglisse@redhat.com>
-> 
-> Small comment about a comment below but can be fix as a fixup
-> patch nothing earth shattering.
-> 
->> ---
->>   include/linux/mm.h | 24 ++++++++++++++++-----
->>   mm/mmap.c          | 53 +++++++++++++++++++++++++++++++++++-----------
->>   mm/mremap.c        | 13 ++++++++++++
->>   3 files changed, 73 insertions(+), 17 deletions(-)
->>
->> diff --git a/include/linux/mm.h b/include/linux/mm.h
->> index 906b9e06f18e..5d45b7d8718d 100644
->> --- a/include/linux/mm.h
->> +++ b/include/linux/mm.h
->> @@ -2343,18 +2343,32 @@ void anon_vma_interval_tree_verify(struct anon_vma_chain *node);
->>   
->>   /* mmap.c */
->>   extern int __vm_enough_memory(struct mm_struct *mm, long pages, int cap_sys_admin);
->> +
->>   extern int __vma_adjust(struct vm_area_struct *vma, unsigned long start,
->>   	unsigned long end, pgoff_t pgoff, struct vm_area_struct *insert,
->> -	struct vm_area_struct *expand);
->> +	struct vm_area_struct *expand, bool keep_locked);
->> +
->>   static inline int vma_adjust(struct vm_area_struct *vma, unsigned long start,
->>   	unsigned long end, pgoff_t pgoff, struct vm_area_struct *insert)
->>   {
->> -	return __vma_adjust(vma, start, end, pgoff, insert, NULL);
->> +	return __vma_adjust(vma, start, end, pgoff, insert, NULL, false);
->>   }
->> -extern struct vm_area_struct *vma_merge(struct mm_struct *,
->> +
->> +extern struct vm_area_struct *__vma_merge(struct mm_struct *mm,
->> +	struct vm_area_struct *prev, unsigned long addr, unsigned long end,
->> +	unsigned long vm_flags, struct anon_vma *anon, struct file *file,
->> +	pgoff_t pgoff, struct mempolicy *mpol,
->> +	struct vm_userfaultfd_ctx uff, bool keep_locked);
->> +
->> +static inline struct vm_area_struct *vma_merge(struct mm_struct *mm,
->>   	struct vm_area_struct *prev, unsigned long addr, unsigned long end,
->> -	unsigned long vm_flags, struct anon_vma *, struct file *, pgoff_t,
->> -	struct mempolicy *, struct vm_userfaultfd_ctx);
->> +	unsigned long vm_flags, struct anon_vma *anon, struct file *file,
->> +	pgoff_t off, struct mempolicy *pol, struct vm_userfaultfd_ctx uff)
->> +{
->> +	return __vma_merge(mm, prev, addr, end, vm_flags, anon, file, off,
->> +			   pol, uff, false);
->> +}
->> +
->>   extern struct anon_vma *find_mergeable_anon_vma(struct vm_area_struct *);
->>   extern int __split_vma(struct mm_struct *, struct vm_area_struct *,
->>   	unsigned long addr, int new_below);
->> diff --git a/mm/mmap.c b/mm/mmap.c
->> index b77ec0149249..13460b38b0fb 100644
->> --- a/mm/mmap.c
->> +++ b/mm/mmap.c
->> @@ -714,7 +714,7 @@ static inline void __vma_unlink_prev(struct mm_struct *mm,
->>    */
->>   int __vma_adjust(struct vm_area_struct *vma, unsigned long start,
->>   	unsigned long end, pgoff_t pgoff, struct vm_area_struct *insert,
->> -	struct vm_area_struct *expand)
->> +	struct vm_area_struct *expand, bool keep_locked)
->>   {
->>   	struct mm_struct *mm = vma->vm_mm;
->>   	struct vm_area_struct *next = vma->vm_next, *orig_vma = vma;
->> @@ -830,8 +830,12 @@ int __vma_adjust(struct vm_area_struct *vma, unsigned long start,
->>   
->>   			importer->anon_vma = exporter->anon_vma;
->>   			error = anon_vma_clone(importer, exporter);
->> -			if (error)
->> +			if (error) {
->> +				if (next && next != vma)
->> +					vm_raw_write_end(next);
->> +				vm_raw_write_end(vma);
->>   				return error;
->> +			}
->>   		}
->>   	}
->>   again:
->> @@ -1025,7 +1029,8 @@ int __vma_adjust(struct vm_area_struct *vma, unsigned long start,
->>   
->>   	if (next && next != vma)
->>   		vm_raw_write_end(next);
->> -	vm_raw_write_end(vma);
->> +	if (!keep_locked)
->> +		vm_raw_write_end(vma);
->>   
->>   	validate_mm(mm);
->>   
->> @@ -1161,12 +1166,13 @@ can_vma_merge_after(struct vm_area_struct *vma, unsigned long vm_flags,
->>    * parameter) may establish ptes with the wrong permissions of NNNN
->>    * instead of the right permissions of XXXX.
->>    */
->> -struct vm_area_struct *vma_merge(struct mm_struct *mm,
->> +struct vm_area_struct *__vma_merge(struct mm_struct *mm,
->>   			struct vm_area_struct *prev, unsigned long addr,
->>   			unsigned long end, unsigned long vm_flags,
->>   			struct anon_vma *anon_vma, struct file *file,
->>   			pgoff_t pgoff, struct mempolicy *policy,
->> -			struct vm_userfaultfd_ctx vm_userfaultfd_ctx)
->> +			struct vm_userfaultfd_ctx vm_userfaultfd_ctx,
->> +			bool keep_locked)
->>   {
->>   	pgoff_t pglen = (end - addr) >> PAGE_SHIFT;
->>   	struct vm_area_struct *area, *next;
->> @@ -1214,10 +1220,11 @@ struct vm_area_struct *vma_merge(struct mm_struct *mm,
->>   							/* cases 1, 6 */
->>   			err = __vma_adjust(prev, prev->vm_start,
->>   					 next->vm_end, prev->vm_pgoff, NULL,
->> -					 prev);
->> +					 prev, keep_locked);
->>   		} else					/* cases 2, 5, 7 */
->>   			err = __vma_adjust(prev, prev->vm_start,
->> -					 end, prev->vm_pgoff, NULL, prev);
->> +					   end, prev->vm_pgoff, NULL, prev,
->> +					   keep_locked);
->>   		if (err)
->>   			return NULL;
->>   		khugepaged_enter_vma_merge(prev, vm_flags);
->> @@ -1234,10 +1241,12 @@ struct vm_area_struct *vma_merge(struct mm_struct *mm,
->>   					     vm_userfaultfd_ctx)) {
->>   		if (prev && addr < prev->vm_end)	/* case 4 */
->>   			err = __vma_adjust(prev, prev->vm_start,
->> -					 addr, prev->vm_pgoff, NULL, next);
->> +					 addr, prev->vm_pgoff, NULL, next,
->> +					 keep_locked);
->>   		else {					/* cases 3, 8 */
->>   			err = __vma_adjust(area, addr, next->vm_end,
->> -					 next->vm_pgoff - pglen, NULL, next);
->> +					 next->vm_pgoff - pglen, NULL, next,
->> +					 keep_locked);
->>   			/*
->>   			 * In case 3 area is already equal to next and
->>   			 * this is a noop, but in case 8 "area" has
->> @@ -3259,9 +3268,20 @@ struct vm_area_struct *copy_vma(struct vm_area_struct **vmap,
->>   
->>   	if (find_vma_links(mm, addr, addr + len, &prev, &rb_link, &rb_parent))
->>   		return NULL;	/* should never get here */
->> -	new_vma = vma_merge(mm, prev, addr, addr + len, vma->vm_flags,
->> -			    vma->anon_vma, vma->vm_file, pgoff, vma_policy(vma),
->> -			    vma->vm_userfaultfd_ctx);
->> +
->> +	/* There is 3 cases to manage here in
->> +	 *     AAAA            AAAA              AAAA              AAAA
->> +	 * PPPP....      PPPP......NNNN      PPPP....NNNN      PP........NN
->> +	 * PPPPPPPP(A)   PPPP..NNNNNNNN(B)   PPPPPPPPPPPP(1)       NULL
->> +	 *                                   PPPPPPPPNNNN(2)
->> +	 *                                   PPPPNNNNNNNN(3)
->> +	 *
->> +	 * new_vma == prev in case A,1,2
->> +	 * new_vma == next in case B,3
->> +	 */
->> +	new_vma = __vma_merge(mm, prev, addr, addr + len, vma->vm_flags,
->> +			      vma->anon_vma, vma->vm_file, pgoff,
->> +			      vma_policy(vma), vma->vm_userfaultfd_ctx, true);
->>   	if (new_vma) {
->>   		/*
->>   		 * Source vma may have been merged into new_vma
->> @@ -3299,6 +3319,15 @@ struct vm_area_struct *copy_vma(struct vm_area_struct **vmap,
->>   			get_file(new_vma->vm_file);
->>   		if (new_vma->vm_ops && new_vma->vm_ops->open)
->>   			new_vma->vm_ops->open(new_vma);
->> +		/*
->> +		 * As the VMA is linked right now, it may be hit by the
->> +		 * speculative page fault handler. But we don't want it to
->> +		 * to start mapping page in this area until the caller has
->> +		 * potentially move the pte from the moved VMA. To prevent
->> +		 * that we protect it right now, and let the caller unprotect
->> +		 * it once the move is done.
->> +		 */
-> 
-> It would be better to say:
-> 		/*
-> 		 * Block speculative page fault on the new VMA before "linking" it as
-> 		 * as once it is linked then it may be hit by speculative page fault.
-> 		 * But we don't want it to start mapping page in this area until the
-> 		 * caller has potentially move the pte from the moved VMA. To prevent
-> 		 * that we protect it before linking and let the caller unprotect it
-> 		 * once the move is done.
-> 		 */
->    
+On Tue, Apr 23, 2019 at 8:39 AM Martin Schwidefsky
+<schwidefsky@de.ibm.com> wrote:
+>
+> Ok, I added two patches for my s390/linux:features branch
+>
+> Martin Schwidefsky (2):
+>       s390/mm: make the pxd_offset functions more robust
+>       s390/mm: convert to the generic get_user_pages_fast code
+>
+> All code changes are inside arch/s390, I plan to include these patches with
+> the next merge window. That gives us a little bit of time to run our tests.
 
-I'm fine with your proposal.
+Sounds good. Thanks for looking into this all.
 
-Thanks for reviewing this.
+Now I slightly wonder about all the other random architectures that
+don't use the HAVE_GENERIC_GUP config option, but at least we'll have
+all of arm, powerpc, x86 and s390 using the generic code..
 
-
->> +		vm_raw_write_begin(new_vma);
->>   		vma_link(mm, new_vma, prev, rb_link, rb_parent);
->>   		*need_rmap_locks = false;
->>   	}
->> diff --git a/mm/mremap.c b/mm/mremap.c
->> index fc241d23cd97..ae5c3379586e 100644
->> --- a/mm/mremap.c
->> +++ b/mm/mremap.c
->> @@ -357,6 +357,14 @@ static unsigned long move_vma(struct vm_area_struct *vma,
->>   	if (!new_vma)
->>   		return -ENOMEM;
->>   
->> +	/* new_vma is returned protected by copy_vma, to prevent speculative
->> +	 * page fault to be done in the destination area before we move the pte.
->> +	 * Now, we must also protect the source VMA since we don't want pages
->> +	 * to be mapped in our back while we are copying the PTEs.
->> +	 */
->> +	if (vma != new_vma)
->> +		vm_raw_write_begin(vma);
->> +
->>   	moved_len = move_page_tables(vma, old_addr, new_vma, new_addr, old_len,
->>   				     need_rmap_locks);
->>   	if (moved_len < old_len) {
->> @@ -373,6 +381,8 @@ static unsigned long move_vma(struct vm_area_struct *vma,
->>   		 */
->>   		move_page_tables(new_vma, new_addr, vma, old_addr, moved_len,
->>   				 true);
->> +		if (vma != new_vma)
->> +			vm_raw_write_end(vma);
->>   		vma = new_vma;
->>   		old_len = new_len;
->>   		old_addr = new_addr;
->> @@ -381,7 +391,10 @@ static unsigned long move_vma(struct vm_area_struct *vma,
->>   		mremap_userfaultfd_prep(new_vma, uf);
->>   		arch_remap(mm, old_addr, old_addr + old_len,
->>   			   new_addr, new_addr + new_len);
->> +		if (vma != new_vma)
->> +			vm_raw_write_end(vma);
->>   	}
->> +	vm_raw_write_end(new_vma);
->>   
->>   	/* Conceal VM_ACCOUNT so old reservation is not undone */
->>   	if (vm_flags & VM_ACCOUNT) {
->> -- 
->> 2.21.0
->>
-> 
-
+                    Linus
