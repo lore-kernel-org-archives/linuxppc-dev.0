@@ -7,76 +7,75 @@ X-Spam-Status: No, score=-8.6 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
 	SPF_PASS,USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BE2D1C10F03
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Apr 2019 20:01:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 15E6EC10F03
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Apr 2019 20:03:10 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3D67F217D9
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Apr 2019 20:01:36 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 8686C217D9
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Apr 2019 20:03:09 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="ROeiph+5"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3D67F217D9
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Mu0mP5m7"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8686C217D9
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44pZ8Y704xzDqQh
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Apr 2019 06:01:33 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44pZBN09dSzDqQ0
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Apr 2019 06:03:08 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=2607:f8b0:4864:20::641; helo=mail-pl1-x641.google.com;
+ (client-ip=2607:f8b0:4864:20::544; helo=mail-pg1-x544.google.com;
  envelope-from=changbin.du@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="ROeiph+5"; 
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="Mu0mP5m7"; 
  dkim-atps=neutral
-Received: from mail-pl1-x641.google.com (mail-pl1-x641.google.com
- [IPv6:2607:f8b0:4864:20::641])
+Received: from mail-pg1-x544.google.com (mail-pg1-x544.google.com
+ [IPv6:2607:f8b0:4864:20::544])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44pTW317RbzDqD4
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Apr 2019 02:32:14 +1000 (AEST)
-Received: by mail-pl1-x641.google.com with SMTP id x15so3434020pln.9
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Apr 2019 09:32:14 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44pTWC54mrzDqG9
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Apr 2019 02:32:23 +1000 (AEST)
+Received: by mail-pg1-x544.google.com with SMTP id p6so7865113pgh.9
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Apr 2019 09:32:23 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
  h=from:to:cc:subject:date:message-id:in-reply-to:references
  :mime-version:content-transfer-encoding;
- bh=S70C++BhYe3LidhJGoAnqu6I0VuKIAPGUTVEYVjwoHM=;
- b=ROeiph+56zr6OCltGO24rxEzduP6Ynoe/Tizw3pWksnoaFPJPIqya9kOMnOrC8W175
- F7WVjkj67da+uo9gCYAODARDlSnsj/qs5U8Rl7SrttwvQtoNIH0IB/66yx8iAuo/0moR
- FLzV/2FNeNWE4XEyWeF8gy1yX3GQPMDKJAbjH3nqI0fBVoPD2eDpQzHfV0quCjPYCaPz
- SSbQDSS+7WPvtoE6F7RGWBTWBL4W44Be6KUiT1p19UCzmol6UkUaUI6u8A6QC3DIgrdB
- Um6UbyfiW4J/xb7WBEIWSszTE2HbVEQ2kWB/zQjVC6MLK3YKCHdCRuitMlqcHSwAoyzp
- k2AQ==
+ bh=zURDuEoWxoYh1X6ZWdl5tbkn9D0rGwA+rmThhQ/fGbw=;
+ b=Mu0mP5m7aFuDLQtifbiX28xlfPtg5O83L2NHGGaP/hTn9hhNUWBVCN+uDo5I6ukC6E
+ QI/7SfuaHcydtubX9AZoozSE+IIUAqT7fC2rKdJ1k0/Sd8cDw54vFLAlZBngu8NI1gpM
+ t1VrDEQxUwfWsDbAj1KzEtuNTOiybsMzOUFjqKVqxPHflBfeSwMcOsJL7KKDs4UQ11yW
+ WBI0PH/nN60/JdX98x4jd7ckjdOiPjTj7K5rY+dofgBlfKxcfAcMr+wAVh31jLjMBFH+
+ k3jftoHgLLTtuiKybNutBzLxOEjbcpiIDLS3BYnZ7mr+FqxK1Az6OJbwz+MYU9sbI+ja
+ xLsg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
  :references:mime-version:content-transfer-encoding;
- bh=S70C++BhYe3LidhJGoAnqu6I0VuKIAPGUTVEYVjwoHM=;
- b=ZeaaEXT83LLOGFmZQ/toJF7PJx3lZvQiW/Gwj6d2PMs38FbdxY9nk2x92fbhxYy4ht
- WvPbWX5Y/cgCq6h7mpzR+5ngJioKjDAoZNzZ7qzDBhGfmXJ/7tOn6PayUa4AVsXYjLVU
- 4vVd3eK3kdA+k/Gh6he0Hb+Lc5AmZqPzzyZNLUue4+DZmAN18bw3S0/EgM6j4CY9z7yq
- c9WHOyG4LOBMBXKh28X+PseMy7XjiuMCI8+cqOYsHx5+hLnOZ/wVXVK0tnfjTH7X+CPM
- O5blLCDU39dYLTCdGDjOzUcZ9M8bRslIBw0MBbBZw9UHXqsB2akJGWsoXz80oijaeE1n
- eCNw==
-X-Gm-Message-State: APjAAAU6olERMWfogicMKMoWjEl5AVRikrpuaLqy7W3Uzw503pxAa8lB
- t2QjGGeC7YocycshrjwiS80=
-X-Google-Smtp-Source: APXvYqwn1rodjYqifxX2JhfX2TAP5ehvlN7pDi56oVyQ7ZX5Wq0zOQ8WaH3TMxKnESYlo3TwGZFh2g==
-X-Received: by 2002:a17:902:b20f:: with SMTP id
- t15mr9214223plr.341.1556037133050; 
- Tue, 23 Apr 2019 09:32:13 -0700 (PDT)
+ bh=zURDuEoWxoYh1X6ZWdl5tbkn9D0rGwA+rmThhQ/fGbw=;
+ b=d4k+n/28W4xAcQCuyyc2Q17KD8wwYG/AI3clPBxmaIJTZHpZYtcwZicabgWQZespU0
+ ieaMUyMaw1lrWNERiYeI+3MkkvBv8JfWsiQ2w2ZDKlTSJU6FTFs4DsswNrPnyIa5mUFc
+ RBoDJMreo15MUmx7zkbIKAyRuVfLL6JMWSKTki0HWDy8goKiAG3eYl0hwQqnRnh5kZKa
+ DW6xnMwwy2yAG5oMCVlRyilbZiGG1rqZLzCalPU0bboSEolzTB47qLoG3dkJs9cIt+o6
+ MlMpsb8eZhvSY9vz4uRUnXxdJQBgtaGF5nMzpQ32c29lSXH7alYExTD5p4OiMi1PAAB4
+ +L8Q==
+X-Gm-Message-State: APjAAAVPw0LxndJuWHAXIQlV7Y3XfCGWDb+Xf4uL2xQuZ1ZPDtaxqRBy
+ OA0zuH/F1kpooQ4vzCfNXZR9MT1k
+X-Google-Smtp-Source: APXvYqzVLjc3q6kXeXagNBbV3KvWMFZrI3zJKiqQJrtQl0WXMCRY/iZYlHUuumBSqJlxTRFUa5M7xw==
+X-Received: by 2002:a62:1a06:: with SMTP id a6mr27485217pfa.18.1556037141433; 
+ Tue, 23 Apr 2019 09:32:21 -0700 (PDT)
 Received: from localhost.localdomain ([104.238.181.70])
- by smtp.gmail.com with ESMTPSA id v1sm24364801pff.81.2019.04.23.09.32.05
+ by smtp.gmail.com with ESMTPSA id v1sm24364801pff.81.2019.04.23.09.32.13
  (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
- Tue, 23 Apr 2019 09:32:12 -0700 (PDT)
+ Tue, 23 Apr 2019 09:32:20 -0700 (PDT)
 From: Changbin Du <changbin.du@gmail.com>
 To: Jonathan Corbet <corbet@lwn.net>
-Subject: [PATCH v4 12/63] Documentation: ACPI: move i2c-muxes.txt to
+Subject: [PATCH v4 13/63] Documentation: ACPI: move acpi-lid.txt to
  firmware-guide/acpi and convert to reST
-Date: Wed, 24 Apr 2019 00:28:41 +0800
-Message-Id: <20190423162932.21428-13-changbin.du@gmail.com>
+Date: Wed, 24 Apr 2019 00:28:42 +0800
+Message-Id: <20190423162932.21428-14-changbin.du@gmail.com>
 X-Mailer: git-send-email 2.20.1
 In-Reply-To: <20190423162932.21428-1-changbin.du@gmail.com>
 References: <20190423162932.21428-1-changbin.du@gmail.com>
@@ -108,156 +107,146 @@ add it to Sphinx TOC tree. No essential content change.
 
 Signed-off-by: Changbin Du <changbin.du@gmail.com>
 ---
- Documentation/acpi/i2c-muxes.txt              | 58 ------------------
- .../firmware-guide/acpi/i2c-muxes.rst         | 61 +++++++++++++++++++
- Documentation/firmware-guide/acpi/index.rst   |  3 +-
- 3 files changed, 63 insertions(+), 59 deletions(-)
- delete mode 100644 Documentation/acpi/i2c-muxes.txt
- create mode 100644 Documentation/firmware-guide/acpi/i2c-muxes.rst
+ .../acpi/acpi-lid.rst}                        | 48 ++++++++++++-------
+ Documentation/firmware-guide/acpi/index.rst   |  1 +
+ 2 files changed, 33 insertions(+), 16 deletions(-)
+ rename Documentation/{acpi/acpi-lid.txt => firmware-guide/acpi/acpi-lid.rst} (77%)
 
-diff --git a/Documentation/acpi/i2c-muxes.txt b/Documentation/acpi/i2c-muxes.txt
-deleted file mode 100644
-index 9fcc4f0b885e..000000000000
---- a/Documentation/acpi/i2c-muxes.txt
-+++ /dev/null
-@@ -1,58 +0,0 @@
--ACPI I2C Muxes
----------------
--
--Describing an I2C device hierarchy that includes I2C muxes requires an ACPI
--Device () scope per mux channel.
--
--Consider this topology:
--
--+------+   +------+
--| SMB1 |-->| MUX0 |--CH00--> i2c client A (0x50)
--|      |   | 0x70 |--CH01--> i2c client B (0x50)
--+------+   +------+
--
--which corresponds to the following ASL:
--
--Device (SMB1)
--{
--    Name (_HID, ...)
--    Device (MUX0)
--    {
--        Name (_HID, ...)
--        Name (_CRS, ResourceTemplate () {
--            I2cSerialBus (0x70, ControllerInitiated, I2C_SPEED,
--                          AddressingMode7Bit, "^SMB1", 0x00,
--                          ResourceConsumer,,)
--        }
--
--        Device (CH00)
--        {
--            Name (_ADR, 0)
--
--            Device (CLIA)
--            {
--                Name (_HID, ...)
--                Name (_CRS, ResourceTemplate () {
--                    I2cSerialBus (0x50, ControllerInitiated, I2C_SPEED,
--                                  AddressingMode7Bit, "^CH00", 0x00,
--                                  ResourceConsumer,,)
--                }
--            }
--        }
--
--        Device (CH01)
--        {
--            Name (_ADR, 1)
--
--            Device (CLIB)
--            {
--                Name (_HID, ...)
--                Name (_CRS, ResourceTemplate () {
--                    I2cSerialBus (0x50, ControllerInitiated, I2C_SPEED,
--                                  AddressingMode7Bit, "^CH01", 0x00,
--                                  ResourceConsumer,,)
--                }
--            }
--        }
--    }
--}
-diff --git a/Documentation/firmware-guide/acpi/i2c-muxes.rst b/Documentation/firmware-guide/acpi/i2c-muxes.rst
-new file mode 100644
-index 000000000000..3a8997ccd7c4
---- /dev/null
-+++ b/Documentation/firmware-guide/acpi/i2c-muxes.rst
-@@ -0,0 +1,61 @@
+diff --git a/Documentation/acpi/acpi-lid.txt b/Documentation/firmware-guide/acpi/acpi-lid.rst
+similarity index 77%
+rename from Documentation/acpi/acpi-lid.txt
+rename to Documentation/firmware-guide/acpi/acpi-lid.rst
+index effe7af3a5af..1d19e15a6945 100644
+--- a/Documentation/acpi/acpi-lid.txt
++++ b/Documentation/firmware-guide/acpi/acpi-lid.rst
+@@ -1,25 +1,29 @@
+-Special Usage Model of the ACPI Control Method Lid Device
 +.. SPDX-License-Identifier: GPL-2.0
++.. include:: <isonum.txt>
+ 
+-Copyright (C) 2016, Intel Corporation
+-Author: Lv Zheng <lv.zheng@intel.com>
++=========================================================
++Special Usage Model of the ACPI Control Method Lid Device
++=========================================================
+ 
++:Copyright: |copy| 2016, Intel Corporation
+ 
+-Abstract:
++:Author: Lv Zheng <lv.zheng@intel.com>
+ 
+-Platforms containing lids convey lid state (open/close) to OSPMs using a
+-control method lid device. To implement this, the AML tables issue
+-Notify(lid_device, 0x80) to notify the OSPMs whenever the lid state has
+-changed. The _LID control method for the lid device must be implemented to
+-report the "current" state of the lid as either "opened" or "closed".
++:Abstract: Platforms containing lids convey lid state (open/close) to OSPMs
++  using a control method lid device. To implement this, the AML tables issue
++  Notify(lid_device, 0x80) to notify the OSPMs whenever the lid state has
++  changed. The _LID control method for the lid device must be implemented to
++  report the "current" state of the lid as either "opened" or "closed".
+ 
+-For most platforms, both the _LID method and the lid notifications are
+-reliable. However, there are exceptions. In order to work with these
+-exceptional buggy platforms, special restrictions and expections should be
+-taken into account. This document describes the restrictions and the
+-expections of the Linux ACPI lid device driver.
++  For most platforms, both the _LID method and the lid notifications are
++  reliable. However, there are exceptions. In order to work with these
++  exceptional buggy platforms, special restrictions and expections should be
++  taken into account. This document describes the restrictions and the
++  expections of the Linux ACPI lid device driver.
+ 
+ 
+ 1. Restrictions of the returning value of the _LID control method
++=================================================================
+ 
+ The _LID control method is described to return the "current" lid state.
+ However the word of "current" has ambiguity, some buggy AML tables return
+@@ -31,6 +35,7 @@ with cached value, the initial returning value is likely not reliable.
+ There are platforms always retun "closed" as initial lid state.
+ 
+ 2. Restrictions of the lid state change notifications
++=====================================================
+ 
+ There are buggy AML tables never notifying when the lid device state is
+ changed to "opened". Thus the "opened" notification is not guaranteed. But
+@@ -40,17 +45,21 @@ trigger some system power saving operations on Windows. Since it is fully
+ tested, it is reliable from all AML tables.
+ 
+ 3. Expections for the userspace users of the ACPI lid device driver
++===================================================================
+ 
+ The ACPI button driver exports the lid state to the userspace via the
+-following file:
++following file::
 +
-+==============
-+ACPI I2C Muxes
-+==============
+   /proc/acpi/button/lid/LID0/state
 +
-+Describing an I2C device hierarchy that includes I2C muxes requires an ACPI
-+Device () scope per mux channel.
+ This file actually calls the _LID control method described above. And given
+ the previous explanation, it is not reliable enough on some platforms. So
+ it is advised for the userspace program to not to solely rely on this file
+ to determine the actual lid state.
+ 
+ The ACPI button driver emits the following input event to the userspace:
+-  SW_LID
++  * SW_LID
 +
-+Consider this topology::
+ The ACPI lid device driver is implemented to try to deliver the platform
+ triggered events to the userspace. However, given the fact that the buggy
+ firmware cannot make sure "opened"/"closed" events are paired, the ACPI
+@@ -59,20 +68,25 @@ button driver uses the following 3 modes in order not to trigger issues.
+ If the userspace hasn't been prepared to ignore the unreliable "opened"
+ events and the unreliable initial state notification, Linux users can use
+ the following kernel parameters to handle the possible issues:
 +
-+    +------+   +------+
-+    | SMB1 |-->| MUX0 |--CH00--> i2c client A (0x50)
-+    |      |   | 0x70 |--CH01--> i2c client B (0x50)
-+    +------+   +------+
+ A. button.lid_init_state=method:
+    When this option is specified, the ACPI button driver reports the
+    initial lid state using the returning value of the _LID control method
+    and whether the "opened"/"closed" events are paired fully relies on the
+    firmware implementation.
 +
-+which corresponds to the following ASL::
+    This option can be used to fix some platforms where the returning value
+    of the _LID control method is reliable but the initial lid state
+    notification is missing.
 +
-+    Device (SMB1)
-+    {
-+        Name (_HID, ...)
-+        Device (MUX0)
-+        {
-+            Name (_HID, ...)
-+            Name (_CRS, ResourceTemplate () {
-+                I2cSerialBus (0x70, ControllerInitiated, I2C_SPEED,
-+                            AddressingMode7Bit, "^SMB1", 0x00,
-+                            ResourceConsumer,,)
-+            }
+    This option is the default behavior during the period the userspace
+    isn't ready to handle the buggy AML tables.
 +
-+            Device (CH00)
-+            {
-+                Name (_ADR, 0)
+ B. button.lid_init_state=open:
+    When this option is specified, the ACPI button driver always reports the
+    initial lid state as "opened" and whether the "opened"/"closed" events
+    are paired fully relies on the firmware implementation.
 +
-+                Device (CLIA)
-+                {
-+                    Name (_HID, ...)
-+                    Name (_CRS, ResourceTemplate () {
-+                        I2cSerialBus (0x50, ControllerInitiated, I2C_SPEED,
-+                                    AddressingMode7Bit, "^CH00", 0x00,
-+                                    ResourceConsumer,,)
-+                    }
-+                }
-+            }
+    This may fix some platforms where the returning value of the _LID
+    control method is not reliable and the initial lid state notification is
+    missing.
+@@ -80,6 +94,7 @@ B. button.lid_init_state=open:
+ If the userspace has been prepared to ignore the unreliable "opened" events
+ and the unreliable initial state notification, Linux users should always
+ use the following kernel parameter:
 +
-+            Device (CH01)
-+            {
-+                Name (_ADR, 1)
+ C. button.lid_init_state=ignore:
+    When this option is specified, the ACPI button driver never reports the
+    initial lid state and there is a compensation mechanism implemented to
+@@ -89,6 +104,7 @@ C. button.lid_init_state=ignore:
+    notifications can be delivered to the userspace when the lid is actually
+    opens given that some AML tables do not send "opened" notifications
+    reliably.
 +
-+                Device (CLIB)
-+                {
-+                    Name (_HID, ...)
-+                    Name (_CRS, ResourceTemplate () {
-+                        I2cSerialBus (0x50, ControllerInitiated, I2C_SPEED,
-+                                    AddressingMode7Bit, "^CH01", 0x00,
-+                                    ResourceConsumer,,)
-+                    }
-+                }
-+            }
-+        }
-+    }
+    In this mode, if everything is correctly implemented by the platform
+    firmware, the old userspace programs should still work. Otherwise, the
+    new userspace programs are required to work with the ACPI button driver.
 diff --git a/Documentation/firmware-guide/acpi/index.rst b/Documentation/firmware-guide/acpi/index.rst
-index d1d069b26bbc..1c89888f6ee8 100644
+index 1c89888f6ee8..bedcb0b242a2 100644
 --- a/Documentation/firmware-guide/acpi/index.rst
 +++ b/Documentation/firmware-guide/acpi/index.rst
-@@ -12,4 +12,5 @@ ACPI Support
-    osi
-    method-customizing
+@@ -14,3 +14,4 @@ ACPI Support
     DSD-properties-rules
--   gpio-properties
+    gpio-properties
+    i2c-muxes
++   acpi-lid
 \ No newline at end of file
-+   gpio-properties
-+   i2c-muxes
 -- 
 2.20.1
 
