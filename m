@@ -4,24 +4,23 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-8.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+	SPF_PASS,USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BD992C10F14
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Apr 2019 03:57:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 262F7C10F14
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Apr 2019 03:58:54 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 2D78A20843
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Apr 2019 03:57:32 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 86A9020843
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Apr 2019 03:58:53 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=nifty.com header.i=@nifty.com header.b="JRgS6Tvy"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2D78A20843
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=nifty.com header.i=@nifty.com header.b="qQonU7ZJ"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 86A9020843
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=socionext.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44p8m96qBVzDqPk
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Apr 2019 13:57:29 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44p8nl5mpxzDqQ3
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Apr 2019 13:58:51 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=softfail (mailfrom) smtp.mailfrom=socionext.com
  (client-ip=210.131.2.74; helo=conuserg-07.nifty.com;
@@ -29,36 +28,36 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=socionext.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=nifty.com header.i=@nifty.com header.b="JRgS6Tvy"; 
+ unprotected) header.d=nifty.com header.i=@nifty.com header.b="qQonU7ZJ"; 
  dkim-atps=neutral
 Received: from conuserg-07.nifty.com (conuserg-07.nifty.com [210.131.2.74])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44p8cs1FV5zDqLx
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44p8cs0tX7zDqLs
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Apr 2019 13:51:08 +1000 (AEST)
 Received: from localhost.localdomain (p14092-ipngnfx01kyoto.kyoto.ocn.ne.jp
  [153.142.97.92]) (authenticated)
- by conuserg-07.nifty.com with ESMTP id x3N3o2cC023044;
- Tue, 23 Apr 2019 12:50:07 +0900
-DKIM-Filter: OpenDKIM Filter v2.10.3 conuserg-07.nifty.com x3N3o2cC023044
+ by conuserg-07.nifty.com with ESMTP id x3N3o2cA023044;
+ Tue, 23 Apr 2019 12:50:04 +0900
+DKIM-Filter: OpenDKIM Filter v2.10.3 conuserg-07.nifty.com x3N3o2cA023044
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nifty.com;
- s=dec2015msa; t=1555991409;
- bh=WxeGjpwIMtUh4NapkUcSoliRiI5DD/Rdf3zwHkix9l0=;
+ s=dec2015msa; t=1555991405;
+ bh=bSpCfUAcyt+UjPMgYyZQmseLNPkdMgHIhxbhwQzsBmI=;
  h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=JRgS6TvykK2VfzGREOAHkRyhk2HU8HY8tH8Qv2cO2WA0R9pxRuSnRL2l2nwF2rSl2
- uFBXOndu6Yxp30Ok+h6kuTyz1lG3PihD63BocSfvTU5n31Jo+S9vy3jMsA6nTJtEZs
- vm6Y9xJflB9iaVlWxhtuLPtePohZQGxBk6DAICJ/P8KdMoexqYceDJBLIBPcwtsL5p
- R/jAaPfkqPKMSUUT42VfBdxfmrbSbnp+alKzF5A7WCi2a92an7hfPqXb6HgnjbDNNN
- QjXdLJUq/2K/5VL0Ur5Ot1MGSdmgWZkTb+J72txXZMzvax7raUOfVsy5FUhwCuulkR
- uyV+27X02YYgg==
+ b=qQonU7ZJ8JQuK/yYFMxbIUEgpGk8t0atMGb/Xg6wfixcHjJS4ZUo9nyW+pQqWbV8T
+ OxvALrGC8d/ErgshgANG1OAY+TcpQpCqnaavYGTgwqrgaUitAzgyE/9JOFwv4BsBdG
+ wbeykQA6/Q04egSC+2R80XMzpSETZsYTxdB0oHI0xSH/b0z6nhabFnafw6cY5n9tKs
+ 0f2/DWceDLDknEENgje4LV91UluDtdJv9N5kvqx6b3GklMOHRjgjlpHvwKHOkoiQvj
+ F7yiwswgn7WygwK4jBgoIws8Okj6DQ9vW0zIHi+Rcqbu1FlYnNlSg+X3RQo8mdEc/b
+ gz8IOWt3SAfsQ==
 X-Nifty-SrcIP: [153.142.97.92]
 From: Masahiro Yamada <yamada.masahiro@socionext.com>
 To: Andrew Morton <akpm@linux-foundation.org>,
  linux-arch <linux-arch@vger.kernel.org>
-Subject: [RESEND PATCH v3 04/11] s390/cpacf: mark scpacf_query() as
+Subject: [RESEND PATCH v3 02/11] arm64: mark (__)cpus_have_const_cap as
  __always_inline
-Date: Tue, 23 Apr 2019 12:49:52 +0900
-Message-Id: <20190423034959.13525-5-yamada.masahiro@socionext.com>
+Date: Tue, 23 Apr 2019 12:49:50 +0900
+Message-Id: <20190423034959.13525-3-yamada.masahiro@socionext.com>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20190423034959.13525-1-yamada.masahiro@socionext.com>
 References: <20190423034959.13525-1-yamada.masahiro@socionext.com>
@@ -86,14 +85,23 @@ Sender: "Linuxppc-dev"
 This prepares to move CONFIG_OPTIMIZE_INLINING from x86 to a common
 place. We need to eliminate potential issues beforehand.
 
-If it is enabled for s390, the following error is reported:
+If it is enabled for arm64, the following errors are reported:
 
-In file included from arch/s390/crypto/des_s390.c:19:
-./arch/s390/include/asm/cpacf.h: In function 'cpacf_query':
-./arch/s390/include/asm/cpacf.h:170:2: warning: asm operand 3 probably doesn't match constraints
-  asm volatile(
-  ^~~
-./arch/s390/include/asm/cpacf.h:170:2: error: impossible constraint in 'asm'
+In file included from ././include/linux/compiler_types.h:68,
+                 from <command-line>:
+./arch/arm64/include/asm/jump_label.h: In function 'cpus_have_const_cap':
+./include/linux/compiler-gcc.h:120:38: warning: asm operand 0 probably doesn't match constraints
+ #define asm_volatile_goto(x...) do { asm goto(x); asm (""); } while (0)
+                                      ^~~
+./arch/arm64/include/asm/jump_label.h:32:2: note: in expansion of macro 'asm_volatile_goto'
+  asm_volatile_goto(
+  ^~~~~~~~~~~~~~~~~
+./include/linux/compiler-gcc.h:120:38: error: impossible constraint in 'asm'
+ #define asm_volatile_goto(x...) do { asm goto(x); asm (""); } while (0)
+                                      ^~~
+./arch/arm64/include/asm/jump_label.h:32:2: note: in expansion of macro 'asm_volatile_goto'
+  asm_volatile_goto(
+  ^~~~~~~~~~~~~~~~~
 
 Signed-off-by: Masahiro Yamada <yamada.masahiro@socionext.com>
 ---
@@ -102,22 +110,31 @@ Changes in v3: None
 Changes in v2:
   - split into a separate patch
 
- arch/s390/include/asm/cpacf.h | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/arm64/include/asm/cpufeature.h | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/arch/s390/include/asm/cpacf.h b/arch/s390/include/asm/cpacf.h
-index 3cc52e37b4b2..f316de40e51b 100644
---- a/arch/s390/include/asm/cpacf.h
-+++ b/arch/s390/include/asm/cpacf.h
-@@ -202,7 +202,7 @@ static inline int __cpacf_check_opcode(unsigned int opcode)
- 	}
+diff --git a/arch/arm64/include/asm/cpufeature.h b/arch/arm64/include/asm/cpufeature.h
+index e505e1fbd2b9..77d1aa57323e 100644
+--- a/arch/arm64/include/asm/cpufeature.h
++++ b/arch/arm64/include/asm/cpufeature.h
+@@ -406,7 +406,7 @@ static inline bool cpu_have_feature(unsigned int num)
  }
  
--static inline int cpacf_query(unsigned int opcode, cpacf_mask_t *mask)
-+static __always_inline int cpacf_query(unsigned int opcode, cpacf_mask_t *mask)
+ /* System capability check for constant caps */
+-static inline bool __cpus_have_const_cap(int num)
++static __always_inline bool __cpus_have_const_cap(int num)
  {
- 	if (__cpacf_check_opcode(opcode)) {
- 		__cpacf_query(opcode, mask);
+ 	if (num >= ARM64_NCAPS)
+ 		return false;
+@@ -420,7 +420,7 @@ static inline bool cpus_have_cap(unsigned int num)
+ 	return test_bit(num, cpu_hwcaps);
+ }
+ 
+-static inline bool cpus_have_const_cap(int num)
++static __always_inline bool cpus_have_const_cap(int num)
+ {
+ 	if (static_branch_likely(&arm64_const_caps_ready))
+ 		return __cpus_have_const_cap(num);
 -- 
 2.17.1
 
