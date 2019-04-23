@@ -7,74 +7,76 @@ X-Spam-Status: No, score=-8.6 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
 	SPF_PASS,USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E7C57C10F03
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Apr 2019 20:54:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 89D79C282E1
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Apr 2019 20:56:22 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 5EF35218EA
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Apr 2019 20:54:03 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id B5A13218D3
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Apr 2019 20:56:21 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Fk5NWedE"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5EF35218EA
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="eDfJLDoY"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B5A13218D3
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44pbK52pJLzDqQm
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Apr 2019 06:54:01 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44pbMl6PrFzDqRr
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Apr 2019 06:56:19 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=2607:f8b0:4864:20::442; helo=mail-pf1-x442.google.com;
+ (client-ip=2607:f8b0:4864:20::443; helo=mail-pf1-x443.google.com;
  envelope-from=changbin.du@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="Fk5NWedE"; 
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="eDfJLDoY"; 
  dkim-atps=neutral
-Received: from mail-pf1-x442.google.com (mail-pf1-x442.google.com
- [IPv6:2607:f8b0:4864:20::442])
+Received: from mail-pf1-x443.google.com (mail-pf1-x443.google.com
+ [IPv6:2607:f8b0:4864:20::443])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44pTcM18L7zDqGx
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Apr 2019 02:36:50 +1000 (AEST)
-Received: by mail-pf1-x442.google.com with SMTP id h5so7772798pfo.0
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Apr 2019 09:36:50 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44pTcZ3zCPzDqG9
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Apr 2019 02:37:02 +1000 (AEST)
+Received: by mail-pf1-x443.google.com with SMTP id 9so7750083pfj.13
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Apr 2019 09:37:02 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
  h=from:to:cc:subject:date:message-id:in-reply-to:references
  :mime-version:content-transfer-encoding;
- bh=IfqU4/UXf/Yt5Z3TsJjlHSt1Rz8r3Ba7+ENZjbN6q1Q=;
- b=Fk5NWedEJJ+GlOPXAGsf/q/eNPDZTOiqVtMQnnju8YSZAhD6Y5nhzyTq8Bqek6fG3k
- P9XYZUkkHli5T7irmeb07oJArkxZWNhwv8RlDmbqradPIkagjX1OAarVb2vprcgU41vi
- SqLoF6xbpqf2Bi8tO/seigwq88DXPWl+rQXECNwBpKARu43ZX8ez0K55f5Xo7EvwIzZS
- DBAO0emNG9DXdCBkyn9GrSYv19SB8CKsc4Q5Bgmi7i+F/QUE+lBEJcPzxocCxxiefs31
- XAUPpVGYh7f7MJityqWAu1W6No/DnTi7j8B15tqMezquxc25xdrk6HuzSifrGd6c3yAR
- IX4w==
+ bh=NZORa/d3VWeeKq780Bo75/e3acYkvPcqrS2Qo2eJpis=;
+ b=eDfJLDoYAGkwZs8keGEsROvo0jQ1uPqggirL3KBml96M5NEefGQmbncxQzfbDuL9z/
+ Q0oFZZy0BlmTH95TDkjYEls/OYsifHPgq+fFZUGLggf0JG5sK6b1Gu8BlnZPjhAd/yTD
+ 7iPHuB1Pps1IaM5ALhps15LJ6KtufJFtaM4l8Fl04oliere9NTLd+q8K8bvgoylJXs/I
+ UFZgrEjZs+vDX/qLTLAUx6jEB2IK70j47gDXjdfUYozRqKVFAduzplqUstYNU9roMF0i
+ +xq8iDSlWV/acWXlDQQwAv0eIFjTy01yFZ8mt1uwbmEQWACVnyJqwbom5surmVRj6vjp
+ 8MHw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
  :references:mime-version:content-transfer-encoding;
- bh=IfqU4/UXf/Yt5Z3TsJjlHSt1Rz8r3Ba7+ENZjbN6q1Q=;
- b=OXlrJBI2r3okjLbITYOjxmeSiHA5s7sfsgr7pTSrMbuRPWdS25EQrXaMMNyBUQZRbg
- 9TolaB0qldqXtz15ibdKGCEqB4gQOHFf7kL0ghS7KV9SF8Cr6JgN+Y9axJXqWLdNXYdF
- tl6DljjJfCdcIryzfPJ8PUnPz/gCAvejfDrcpFpO6TkknHjxRqNj2F1oC0k5/FGsKxjx
- lbj61ucCPckLDiwAubUI5PZgJjx8J6YtjgknDinYv0yUx6ivXtyzCoKiX3+ElS78ABF8
- w7yNOtOk2oav6PM+dxce5bfX4O/wRQG99ylhYnetAtVOL/2DdkX9ApLlPiEv5Q6rWRr2
- WqUQ==
-X-Gm-Message-State: APjAAAVt+eiLAQxu41+yM6165olK0UqogYe50aN7PfBfUQwV6ff/ajnm
- tcIRTSmH53xNeOsWZSnM9e8=
-X-Google-Smtp-Source: APXvYqww63zu1RyHhbwKdm/CbpTRuIE6aMSQdIsWRtzhQqQ/+oSAMu6R/9sqXI2duoovtaksFcJv+w==
-X-Received: by 2002:a63:5020:: with SMTP id e32mr12881217pgb.215.1556037409091; 
- Tue, 23 Apr 2019 09:36:49 -0700 (PDT)
+ bh=NZORa/d3VWeeKq780Bo75/e3acYkvPcqrS2Qo2eJpis=;
+ b=Fqno1u8Qe2/JnXXAHySorJtErxfxK3HFNDUiVLKi7KW8vC6kH7g+TiTrRa478WKbd6
+ E+nf0yIMtWJ16gQXQBH4OQg9iAeso5+w55vGWRZuh+zciFVgRj+2uBGQytgwu/ze0N+5
+ SJCTxKC3KWdD3QCHujcS/T5reDTYd+ibc/IRW/f9Y7T5dvwkWqv0NE8uGSdesgI3lmfs
+ eVXsKfEjdVRwzOOH0jdn+OftKqUqa1WnqHSCzDNbfo25Cr9J1oE1op/aBPk24zbGZvae
+ u/mwuCjLAO49LM5eE0KsjXpmuCoFdSyi5ltuHSmwZL0m3IqSVzFv83lzlRPqHDtS0lE9
+ FMUA==
+X-Gm-Message-State: APjAAAU7v0aNXL0jZeDLXzn3mL7Q4eSamWV301TAx+nc1Gesk2FIJZAE
+ 1Zdd1acABllWs8Czau8IxuBb9JmQ
+X-Google-Smtp-Source: APXvYqzUQlDRMfPUwrkX0kTers5v1cS+bTeK/DnK/4rtRcpmkieYCi2aUAu+t2Gyc1VpYrHrqZJtfw==
+X-Received: by 2002:a62:388d:: with SMTP id
+ f135mr28145955pfa.103.1556037420309; 
+ Tue, 23 Apr 2019 09:37:00 -0700 (PDT)
 Received: from localhost.localdomain ([104.238.181.70])
- by smtp.gmail.com with ESMTPSA id v1sm24364801pff.81.2019.04.23.09.36.40
+ by smtp.gmail.com with ESMTPSA id v1sm24364801pff.81.2019.04.23.09.36.49
  (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
- Tue, 23 Apr 2019 09:36:48 -0700 (PDT)
+ Tue, 23 Apr 2019 09:36:59 -0700 (PDT)
 From: Changbin Du <changbin.du@gmail.com>
 To: Jonathan Corbet <corbet@lwn.net>
-Subject: [PATCH v4 39/63] Documentation: x86: convert topology.txt to reST
-Date: Wed, 24 Apr 2019 00:29:08 +0800
-Message-Id: <20190423162932.21428-40-changbin.du@gmail.com>
+Subject: [PATCH v4 40/63] Documentation: x86: convert exception-tables.txt to
+ reST
+Date: Wed, 24 Apr 2019 00:29:09 +0800
+Message-Id: <20190423162932.21428-41-changbin.du@gmail.com>
 X-Mailer: git-send-email 2.20.1
 In-Reply-To: <20190423162932.21428-1-changbin.du@gmail.com>
 References: <20190423162932.21428-1-changbin.du@gmail.com>
@@ -106,479 +108,367 @@ add it to Sphinx TOC tree. No essential content change.
 
 Signed-off-by: Changbin Du <changbin.du@gmail.com>
 ---
- Documentation/x86/index.rst    |   1 +
- Documentation/x86/topology.rst | 228 +++++++++++++++++++++++++++++++++
- Documentation/x86/topology.txt | 217 -------------------------------
- 3 files changed, 229 insertions(+), 217 deletions(-)
- create mode 100644 Documentation/x86/topology.rst
- delete mode 100644 Documentation/x86/topology.txt
+ ...eption-tables.txt => exception-tables.rst} | 231 ++++++++++--------
+ Documentation/x86/index.rst                   |   1 +
+ 2 files changed, 126 insertions(+), 106 deletions(-)
+ rename Documentation/x86/{exception-tables.txt => exception-tables.rst} (67%)
 
-diff --git a/Documentation/x86/index.rst b/Documentation/x86/index.rst
-index 8f08caf4fbbb..2033791e53bc 100644
---- a/Documentation/x86/index.rst
-+++ b/Documentation/x86/index.rst
-@@ -9,3 +9,4 @@ Linux x86 Support
-    :numbered:
- 
-    boot
-+   topology
-diff --git a/Documentation/x86/topology.rst b/Documentation/x86/topology.rst
-new file mode 100644
-index 000000000000..1df5f56f4882
---- /dev/null
-+++ b/Documentation/x86/topology.rst
-@@ -0,0 +1,228 @@
+diff --git a/Documentation/x86/exception-tables.txt b/Documentation/x86/exception-tables.rst
+similarity index 67%
+rename from Documentation/x86/exception-tables.txt
+rename to Documentation/x86/exception-tables.rst
+index e396bcd8d830..2ffb096c8b58 100644
+--- a/Documentation/x86/exception-tables.txt
++++ b/Documentation/x86/exception-tables.rst
+@@ -1,5 +1,10 @@
+-     Kernel level exception handling in Linux
+-  Commentary by Joerg Pommnitz <joerg@raleigh.ibm.com>
 +.. SPDX-License-Identifier: GPL-2.0
 +
-+============
-+x86 Topology
-+============
-+
-+This documents and clarifies the main aspects of x86 topology modelling and
-+representation in the kernel. Update/change when doing changes to the
-+respective code.
-+
-+The architecture-agnostic topology definitions are in
-+Documentation/cputopology.txt. This file holds x86-specific
-+differences/specialities which must not necessarily apply to the generic
-+definitions. Thus, the way to read up on Linux topology on x86 is to start
-+with the generic one and look at this one in parallel for the x86 specifics.
-+
-+Needless to say, code should use the generic functions - this file is *only*
-+here to *document* the inner workings of x86 topology.
-+
-+Started by Thomas Gleixner <tglx@linutronix.de> and Borislav Petkov <bp@alien8.de>.
-+
-+The main aim of the topology facilities is to present adequate interfaces to
-+code which needs to know/query/use the structure of the running system wrt
-+threads, cores, packages, etc.
-+
-+The kernel does not care about the concept of physical sockets because a
-+socket has no relevance to software. It's an electromechanical component. In
-+the past a socket always contained a single package (see below), but with the
-+advent of Multi Chip Modules (MCM) a socket can hold more than one package. So
-+there might be still references to sockets in the code, but they are of
-+historical nature and should be cleaned up.
-+
-+The topology of a system is described in the units of:
-+
-+    - packages
-+    - cores
-+    - threads
-+
-+Package
-+=======
-+
-+Packages contain a number of cores plus shared resources, e.g. DRAM
-+controller, shared caches etc.
-+
-+AMD nomenclature for package is 'Node'.
-+
-+Package-related topology information in the kernel:
-+
-+  - cpuinfo_x86.x86_max_cores:
-+
-+    The number of cores in a package. This information is retrieved via CPUID.
-+
-+  - cpuinfo_x86.phys_proc_id:
-+
-+    The physical ID of the package. This information is retrieved via CPUID
-+    and deduced from the APIC IDs of the cores in the package.
-+
-+  - cpuinfo_x86.logical_id:
-+
-+    The logical ID of the package. As we do not trust BIOSes to enumerate the
-+    packages in a consistent way, we introduced the concept of logical package
-+    ID so we can sanely calculate the number of maximum possible packages in
-+    the system and have the packages enumerated linearly.
-+
-+  - topology_max_packages():
-+
-+    The maximum possible number of packages in the system. Helpful for per
-+    package facilities to preallocate per package information.
-+
-+  - cpu_llc_id:
-+
-+    A per-CPU variable containing:
-+
-+    - On Intel, the first APIC ID of the list of CPUs sharing the Last Level
-+      Cache.
-+
-+    - On AMD, the Node ID or Core Complex ID containing the Last Level
-+      Cache. In general, it is a number identifying an LLC uniquely on the
-+      system.
-+
-+Cores
-+=====
-+
-+A core consists of 1 or more threads. It does not matter whether the threads
-+are SMT- or CMT-type threads.
-+
-+AMDs nomenclature for a CMT core is "Compute Unit". The kernel always uses
-+"core".
-+
-+Core-related topology information in the kernel:
-+
-+  - smp_num_siblings:
-+
-+    The number of threads in a core. The number of threads in a package can be
-+    calculated by::
-+
-+      threads_per_package = cpuinfo_x86.x86_max_cores * smp_num_siblings
-+
-+
-+Threads
-+=======
-+
-+A thread is a single scheduling unit. It's the equivalent to a logical Linux
-+CPU.
-+
-+AMDs nomenclature for CMT threads is "Compute Unit Core". The kernel always
-+uses "thread".
-+
-+Thread-related topology information in the kernel:
-+
-+  - topology_core_cpumask():
-+
-+    The cpumask contains all online threads in the package to which a thread
-+    belongs.
-+
-+    The number of online threads is also printed in /proc/cpuinfo "siblings."
-+
-+  - topology_sibling_cpumask():
-+
-+    The cpumask contains all online threads in the core to which a thread
-+    belongs.
-+
-+  - topology_logical_package_id():
-+
-+    The logical package ID to which a thread belongs.
-+
-+  - topology_physical_package_id():
-+
-+    The physical package ID to which a thread belongs.
-+
-+  - topology_core_id();
-+
-+    The ID of the core to which a thread belongs. It is also printed in /proc/cpuinfo
-+    "core_id."
-+
-+
-+
-+System topology examples
-+========================
-+
-+.. note:: The alternative Linux CPU enumeration depends on how the BIOS
-+  enumerates the threads. Many BIOSes enumerate all threads 0 first and
-+  then all threads 1. That has the "advantage" that the logical Linux CPU
-+  numbers of threads 0 stay the same whether threads are enabled or not.
-+  That's merely an implementation detail and has no practical impact.
-+
-+1) Single Package, Single Core
-+::
-+
-+   [package 0] -> [core 0] -> [thread 0] -> Linux CPU 0
-+
-+2) Single Package, Dual Core
-+
-+  a) One thread per core
-+  ::
-+
-+    [package 0] -> [core 0] -> [thread 0] -> Linux CPU 0
-+          -> [core 1] -> [thread 0] -> Linux CPU 1
-+
-+  b) Two threads per core
-+  ::
-+
-+    [package 0] -> [core 0] -> [thread 0] -> Linux CPU 0
-+          -> [thread 1] -> Linux CPU 1
-+          -> [core 1] -> [thread 0] -> Linux CPU 2
-+          -> [thread 1] -> Linux CPU 3
-+
-+  Alternative enumeration::
-+
-+    [package 0] -> [core 0] -> [thread 0] -> Linux CPU 0
-+          -> [thread 1] -> Linux CPU 2
-+          -> [core 1] -> [thread 0] -> Linux CPU 1
-+          -> [thread 1] -> Linux CPU 3
-+
-+  AMD nomenclature for CMT systems::
-+
-+    [node 0] -> [Compute Unit 0] -> [Compute Unit Core 0] -> Linux CPU 0
-+              -> [Compute Unit Core 1] -> Linux CPU 1
-+      -> [Compute Unit 1] -> [Compute Unit Core 0] -> Linux CPU 2
-+              -> [Compute Unit Core 1] -> Linux CPU 3
-+
-+4) Dual Package, Dual Core
-+
-+  a) One thread per core
-+  ::
-+
-+    [package 0] -> [core 0] -> [thread 0] -> Linux CPU 0
-+          -> [core 1] -> [thread 0] -> Linux CPU 1
-+
-+    [package 1] -> [core 0] -> [thread 0] -> Linux CPU 2
-+          -> [core 1] -> [thread 0] -> Linux CPU 3
-+
-+  b) Two threads per core
-+  ::
-+
-+    [package 0] -> [core 0] -> [thread 0] -> Linux CPU 0
-+          -> [thread 1] -> Linux CPU 1
-+          -> [core 1] -> [thread 0] -> Linux CPU 2
-+          -> [thread 1] -> Linux CPU 3
-+
-+    [package 1] -> [core 0] -> [thread 0] -> Linux CPU 4
-+          -> [thread 1] -> Linux CPU 5
-+          -> [core 1] -> [thread 0] -> Linux CPU 6
-+          -> [thread 1] -> Linux CPU 7
-+
-+  Alternative enumeration::
-+
-+    [package 0] -> [core 0] -> [thread 0] -> Linux CPU 0
-+          -> [thread 1] -> Linux CPU 4
-+          -> [core 1] -> [thread 0] -> Linux CPU 1
-+          -> [thread 1] -> Linux CPU 5
-+
-+    [package 1] -> [core 0] -> [thread 0] -> Linux CPU 2
-+          -> [thread 1] -> Linux CPU 6
-+          -> [core 1] -> [thread 0] -> Linux CPU 3
-+          -> [thread 1] -> Linux CPU 7
-+
-+  AMD nomenclature for CMT systems::
-+
-+    [node 0] -> [Compute Unit 0] -> [Compute Unit Core 0] -> Linux CPU 0
-+              -> [Compute Unit Core 1] -> Linux CPU 1
-+      -> [Compute Unit 1] -> [Compute Unit Core 0] -> Linux CPU 2
-+              -> [Compute Unit Core 1] -> Linux CPU 3
-+
-+    [node 1] -> [Compute Unit 0] -> [Compute Unit Core 0] -> Linux CPU 4
-+              -> [Compute Unit Core 1] -> Linux CPU 5
-+      -> [Compute Unit 1] -> [Compute Unit Core 0] -> Linux CPU 6
-+              -> [Compute Unit Core 1] -> Linux CPU 7
-diff --git a/Documentation/x86/topology.txt b/Documentation/x86/topology.txt
-deleted file mode 100644
-index 2953e3ec9a02..000000000000
---- a/Documentation/x86/topology.txt
-+++ /dev/null
-@@ -1,217 +0,0 @@
--x86 Topology
--============
--
--This documents and clarifies the main aspects of x86 topology modelling and
--representation in the kernel. Update/change when doing changes to the
--respective code.
--
--The architecture-agnostic topology definitions are in
--Documentation/cputopology.txt. This file holds x86-specific
--differences/specialities which must not necessarily apply to the generic
--definitions. Thus, the way to read up on Linux topology on x86 is to start
--with the generic one and look at this one in parallel for the x86 specifics.
--
--Needless to say, code should use the generic functions - this file is *only*
--here to *document* the inner workings of x86 topology.
--
--Started by Thomas Gleixner <tglx@linutronix.de> and Borislav Petkov <bp@alien8.de>.
--
--The main aim of the topology facilities is to present adequate interfaces to
--code which needs to know/query/use the structure of the running system wrt
--threads, cores, packages, etc.
--
--The kernel does not care about the concept of physical sockets because a
--socket has no relevance to software. It's an electromechanical component. In
--the past a socket always contained a single package (see below), but with the
--advent of Multi Chip Modules (MCM) a socket can hold more than one package. So
--there might be still references to sockets in the code, but they are of
--historical nature and should be cleaned up.
--
--The topology of a system is described in the units of:
--
--    - packages
--    - cores
--    - threads
--
--* Package:
--
--  Packages contain a number of cores plus shared resources, e.g. DRAM
--  controller, shared caches etc.
--
--  AMD nomenclature for package is 'Node'.
--
--  Package-related topology information in the kernel:
--
--  - cpuinfo_x86.x86_max_cores:
--
--    The number of cores in a package. This information is retrieved via CPUID.
--
--  - cpuinfo_x86.phys_proc_id:
--
--    The physical ID of the package. This information is retrieved via CPUID
--    and deduced from the APIC IDs of the cores in the package.
--
--  - cpuinfo_x86.logical_id:
--
--    The logical ID of the package. As we do not trust BIOSes to enumerate the
--    packages in a consistent way, we introduced the concept of logical package
--    ID so we can sanely calculate the number of maximum possible packages in
--    the system and have the packages enumerated linearly.
--
--  - topology_max_packages():
--
--    The maximum possible number of packages in the system. Helpful for per
--    package facilities to preallocate per package information.
--
--  - cpu_llc_id:
--
--    A per-CPU variable containing:
--    - On Intel, the first APIC ID of the list of CPUs sharing the Last Level
--    Cache
--
--    - On AMD, the Node ID or Core Complex ID containing the Last Level
--    Cache. In general, it is a number identifying an LLC uniquely on the
--    system.
--
--* Cores:
--
--  A core consists of 1 or more threads. It does not matter whether the threads
--  are SMT- or CMT-type threads.
--
--  AMDs nomenclature for a CMT core is "Compute Unit". The kernel always uses
--  "core".
--
--  Core-related topology information in the kernel:
--
--  - smp_num_siblings:
--
--    The number of threads in a core. The number of threads in a package can be
--    calculated by:
--
--	threads_per_package = cpuinfo_x86.x86_max_cores * smp_num_siblings
--
--
--* Threads:
--
--  A thread is a single scheduling unit. It's the equivalent to a logical Linux
--  CPU.
--
--  AMDs nomenclature for CMT threads is "Compute Unit Core". The kernel always
--  uses "thread".
--
--  Thread-related topology information in the kernel:
--
--  - topology_core_cpumask():
--
--    The cpumask contains all online threads in the package to which a thread
--    belongs.
--
--    The number of online threads is also printed in /proc/cpuinfo "siblings."
--
--  - topology_sibling_cpumask():
--
--    The cpumask contains all online threads in the core to which a thread
--    belongs.
--
--   - topology_logical_package_id():
--
--    The logical package ID to which a thread belongs.
--
--   - topology_physical_package_id():
--
--    The physical package ID to which a thread belongs.
--
--   - topology_core_id();
--
--    The ID of the core to which a thread belongs. It is also printed in /proc/cpuinfo
--    "core_id."
--
--
--
--System topology examples
--
--Note:
--
--The alternative Linux CPU enumeration depends on how the BIOS enumerates the
--threads. Many BIOSes enumerate all threads 0 first and then all threads 1.
--That has the "advantage" that the logical Linux CPU numbers of threads 0 stay
--the same whether threads are enabled or not. That's merely an implementation
--detail and has no practical impact.
--
--1) Single Package, Single Core
--
--   [package 0] -> [core 0] -> [thread 0] -> Linux CPU 0
--
--2) Single Package, Dual Core
--
--   a) One thread per core
--
--	[package 0] -> [core 0] -> [thread 0] -> Linux CPU 0
--		    -> [core 1] -> [thread 0] -> Linux CPU 1
--
--   b) Two threads per core
--
--	[package 0] -> [core 0] -> [thread 0] -> Linux CPU 0
--				-> [thread 1] -> Linux CPU 1
--		    -> [core 1] -> [thread 0] -> Linux CPU 2
--				-> [thread 1] -> Linux CPU 3
--
--      Alternative enumeration:
--
--	[package 0] -> [core 0] -> [thread 0] -> Linux CPU 0
--				-> [thread 1] -> Linux CPU 2
--		    -> [core 1] -> [thread 0] -> Linux CPU 1
--				-> [thread 1] -> Linux CPU 3
--
--      AMD nomenclature for CMT systems:
--
--	[node 0] -> [Compute Unit 0] -> [Compute Unit Core 0] -> Linux CPU 0
--				     -> [Compute Unit Core 1] -> Linux CPU 1
--		 -> [Compute Unit 1] -> [Compute Unit Core 0] -> Linux CPU 2
--				     -> [Compute Unit Core 1] -> Linux CPU 3
--
--4) Dual Package, Dual Core
--
--   a) One thread per core
--
--	[package 0] -> [core 0] -> [thread 0] -> Linux CPU 0
--		    -> [core 1] -> [thread 0] -> Linux CPU 1
--
--	[package 1] -> [core 0] -> [thread 0] -> Linux CPU 2
--		    -> [core 1] -> [thread 0] -> Linux CPU 3
--
--   b) Two threads per core
--
--	[package 0] -> [core 0] -> [thread 0] -> Linux CPU 0
--				-> [thread 1] -> Linux CPU 1
--		    -> [core 1] -> [thread 0] -> Linux CPU 2
--				-> [thread 1] -> Linux CPU 3
--
--	[package 1] -> [core 0] -> [thread 0] -> Linux CPU 4
--				-> [thread 1] -> Linux CPU 5
--		    -> [core 1] -> [thread 0] -> Linux CPU 6
--				-> [thread 1] -> Linux CPU 7
--
--      Alternative enumeration:
--
--	[package 0] -> [core 0] -> [thread 0] -> Linux CPU 0
--				-> [thread 1] -> Linux CPU 4
--		    -> [core 1] -> [thread 0] -> Linux CPU 1
--				-> [thread 1] -> Linux CPU 5
--
--	[package 1] -> [core 0] -> [thread 0] -> Linux CPU 2
--				-> [thread 1] -> Linux CPU 6
--		    -> [core 1] -> [thread 0] -> Linux CPU 3
--				-> [thread 1] -> Linux CPU 7
--
--      AMD nomenclature for CMT systems:
--
--	[node 0] -> [Compute Unit 0] -> [Compute Unit Core 0] -> Linux CPU 0
--				     -> [Compute Unit Core 1] -> Linux CPU 1
--		 -> [Compute Unit 1] -> [Compute Unit Core 0] -> Linux CPU 2
--				     -> [Compute Unit Core 1] -> Linux CPU 3
--
--	[node 1] -> [Compute Unit 0] -> [Compute Unit Core 0] -> Linux CPU 4
--				     -> [Compute Unit Core 1] -> Linux CPU 5
--		 -> [Compute Unit 1] -> [Compute Unit Core 0] -> Linux CPU 6
--				     -> [Compute Unit Core 1] -> Linux CPU 7
++===============================
++Kernel level exception handling
++===============================
++
++Commentary by Joerg Pommnitz <joerg@raleigh.ibm.com>
+ 
+ When a process runs in kernel mode, it often has to access user
+ mode memory whose address has been passed by an untrusted program.
+@@ -25,9 +30,9 @@ How does this work?
+ 
+ Whenever the kernel tries to access an address that is currently not
+ accessible, the CPU generates a page fault exception and calls the
+-page fault handler
++page fault handler::
+ 
+-void do_page_fault(struct pt_regs *regs, unsigned long error_code)
++  void do_page_fault(struct pt_regs *regs, unsigned long error_code)
+ 
+ in arch/x86/mm/fault.c. The parameters on the stack are set up by
+ the low level assembly glue in arch/x86/kernel/entry_32.S. The parameter
+@@ -57,73 +62,74 @@ as an example. The definition is somewhat hard to follow, so let's peek at
+ the code generated by the preprocessor and the compiler. I selected
+ the get_user call in drivers/char/sysrq.c for a detailed examination.
+ 
+-The original code in sysrq.c line 587:
++The original code in sysrq.c line 587::
++
+         get_user(c, buf);
+ 
+-The preprocessor output (edited to become somewhat readable):
+-
+-(
+-  {
+-    long __gu_err = - 14 , __gu_val = 0;
+-    const __typeof__(*( (  buf ) )) *__gu_addr = ((buf));
+-    if (((((0 + current_set[0])->tss.segment) == 0x18 )  ||
+-       (((sizeof(*(buf))) <= 0xC0000000UL) &&
+-       ((unsigned long)(__gu_addr ) <= 0xC0000000UL - (sizeof(*(buf)))))))
+-      do {
+-        __gu_err  = 0;
+-        switch ((sizeof(*(buf)))) {
+-          case 1:
+-            __asm__ __volatile__(
+-              "1:      mov" "b" " %2,%" "b" "1\n"
+-              "2:\n"
+-              ".section .fixup,\"ax\"\n"
+-              "3:      movl %3,%0\n"
+-              "        xor" "b" " %" "b" "1,%" "b" "1\n"
+-              "        jmp 2b\n"
+-              ".section __ex_table,\"a\"\n"
+-              "        .align 4\n"
+-              "        .long 1b,3b\n"
+-              ".text"        : "=r"(__gu_err), "=q" (__gu_val): "m"((*(struct __large_struct *)
+-                            (   __gu_addr   )) ), "i"(- 14 ), "0"(  __gu_err  )) ;
+-              break;
+-          case 2:
+-            __asm__ __volatile__(
+-              "1:      mov" "w" " %2,%" "w" "1\n"
+-              "2:\n"
+-              ".section .fixup,\"ax\"\n"
+-              "3:      movl %3,%0\n"
+-              "        xor" "w" " %" "w" "1,%" "w" "1\n"
+-              "        jmp 2b\n"
+-              ".section __ex_table,\"a\"\n"
+-              "        .align 4\n"
+-              "        .long 1b,3b\n"
+-              ".text"        : "=r"(__gu_err), "=r" (__gu_val) : "m"((*(struct __large_struct *)
+-                            (   __gu_addr   )) ), "i"(- 14 ), "0"(  __gu_err  ));
+-              break;
+-          case 4:
+-            __asm__ __volatile__(
+-              "1:      mov" "l" " %2,%" "" "1\n"
+-              "2:\n"
+-              ".section .fixup,\"ax\"\n"
+-              "3:      movl %3,%0\n"
+-              "        xor" "l" " %" "" "1,%" "" "1\n"
+-              "        jmp 2b\n"
+-              ".section __ex_table,\"a\"\n"
+-              "        .align 4\n"        "        .long 1b,3b\n"
+-              ".text"        : "=r"(__gu_err), "=r" (__gu_val) : "m"((*(struct __large_struct *)
+-                            (   __gu_addr   )) ), "i"(- 14 ), "0"(__gu_err));
+-              break;
+-          default:
+-            (__gu_val) = __get_user_bad();
+-        }
+-      } while (0) ;
+-    ((c)) = (__typeof__(*((buf))))__gu_val;
+-    __gu_err;
+-  }
+-);
++The preprocessor output (edited to become somewhat readable)::
++
++  (
++    {
++      long __gu_err = - 14 , __gu_val = 0;
++      const __typeof__(*( (  buf ) )) *__gu_addr = ((buf));
++      if (((((0 + current_set[0])->tss.segment) == 0x18 )  ||
++        (((sizeof(*(buf))) <= 0xC0000000UL) &&
++        ((unsigned long)(__gu_addr ) <= 0xC0000000UL - (sizeof(*(buf)))))))
++        do {
++          __gu_err  = 0;
++          switch ((sizeof(*(buf)))) {
++            case 1:
++              __asm__ __volatile__(
++                "1:      mov" "b" " %2,%" "b" "1\n"
++                "2:\n"
++                ".section .fixup,\"ax\"\n"
++                "3:      movl %3,%0\n"
++                "        xor" "b" " %" "b" "1,%" "b" "1\n"
++                "        jmp 2b\n"
++                ".section __ex_table,\"a\"\n"
++                "        .align 4\n"
++                "        .long 1b,3b\n"
++                ".text"        : "=r"(__gu_err), "=q" (__gu_val): "m"((*(struct __large_struct *)
++                              (   __gu_addr   )) ), "i"(- 14 ), "0"(  __gu_err  )) ;
++                break;
++            case 2:
++              __asm__ __volatile__(
++                "1:      mov" "w" " %2,%" "w" "1\n"
++                "2:\n"
++                ".section .fixup,\"ax\"\n"
++                "3:      movl %3,%0\n"
++                "        xor" "w" " %" "w" "1,%" "w" "1\n"
++                "        jmp 2b\n"
++                ".section __ex_table,\"a\"\n"
++                "        .align 4\n"
++                "        .long 1b,3b\n"
++                ".text"        : "=r"(__gu_err), "=r" (__gu_val) : "m"((*(struct __large_struct *)
++                              (   __gu_addr   )) ), "i"(- 14 ), "0"(  __gu_err  ));
++                break;
++            case 4:
++              __asm__ __volatile__(
++                "1:      mov" "l" " %2,%" "" "1\n"
++                "2:\n"
++                ".section .fixup,\"ax\"\n"
++                "3:      movl %3,%0\n"
++                "        xor" "l" " %" "" "1,%" "" "1\n"
++                "        jmp 2b\n"
++                ".section __ex_table,\"a\"\n"
++                "        .align 4\n"        "        .long 1b,3b\n"
++                ".text"        : "=r"(__gu_err), "=r" (__gu_val) : "m"((*(struct __large_struct *)
++                              (   __gu_addr   )) ), "i"(- 14 ), "0"(__gu_err));
++                break;
++            default:
++              (__gu_val) = __get_user_bad();
++          }
++        } while (0) ;
++      ((c)) = (__typeof__(*((buf))))__gu_val;
++      __gu_err;
++    }
++  );
+ 
+ WOW! Black GCC/assembly magic. This is impossible to follow, so let's
+-see what code gcc generates:
++see what code gcc generates::
+ 
+  >         xorl %edx,%edx
+  >         movl current_set,%eax
+@@ -154,7 +160,7 @@ understand. Can we? The actual user access is quite obvious. Thanks
+ to the unified address space we can just access the address in user
+ memory. But what does the .section stuff do?????
+ 
+-To understand this we have to look at the final kernel:
++To understand this we have to look at the final kernel::
+ 
+  > objdump --section-headers vmlinux
+  >
+@@ -181,7 +187,7 @@ To understand this we have to look at the final kernel:
+ 
+ There are obviously 2 non standard ELF sections in the generated object
+ file. But first we want to find out what happened to our code in the
+-final kernel executable:
++final kernel executable::
+ 
+  > objdump --disassemble --section=.text vmlinux
+  >
+@@ -199,7 +205,7 @@ final kernel executable:
+ The whole user memory access is reduced to 10 x86 machine instructions.
+ The instructions bracketed in the .section directives are no longer
+ in the normal execution path. They are located in a different section
+-of the executable file:
++of the executable file::
+ 
+  > objdump --disassemble --section=.fixup vmlinux
+  >
+@@ -207,14 +213,15 @@ of the executable file:
+  > c0199ffa <.fixup+10ba> xorb   %dl,%dl
+  > c0199ffc <.fixup+10bc> jmp    c017e7a7 <do_con_write+e3>
+ 
+-And finally:
++And finally::
++
+  > objdump --full-contents --section=__ex_table vmlinux
+  >
+  >  c01aa7c4 93c017c0 e09f19c0 97c017c0 99c017c0  ................
+  >  c01aa7d4 f6c217c0 e99f19c0 a5e717c0 f59f19c0  ................
+  >  c01aa7e4 080a18c0 01a019c0 0a0a18c0 04a019c0  ................
+ 
+-or in human readable byte order:
++or in human readable byte order::
+ 
+  >  c01aa7c4 c017c093 c0199fe0 c017c097 c017c099  ................
+  >  c01aa7d4 c017c2f6 c0199fe9 c017e7a5 c0199ff5  ................
+@@ -222,18 +229,22 @@ or in human readable byte order:
+                                this is the interesting part!
+  >  c01aa7e4 c0180a08 c019a001 c0180a0a c019a004  ................
+ 
+-What happened? The assembly directives
++What happened? The assembly directives::
+ 
+-.section .fixup,"ax"
+-.section __ex_table,"a"
++  .section .fixup,"ax"
++  .section __ex_table,"a"
+ 
+ told the assembler to move the following code to the specified
+-sections in the ELF object file. So the instructions
+-3:      movl $-14,%eax
+-        xorb %dl,%dl
+-        jmp 2b
+-ended up in the .fixup section of the object file and the addresses
++sections in the ELF object file. So the instructions::
++
++  3:      movl $-14,%eax
++          xorb %dl,%dl
++          jmp 2b
++
++ended up in the .fixup section of the object file and the addresses::
++
+         .long 1b,3b
++
+ ended up in the __ex_table section of the object file. 1b and 3b
+ are local labels. The local label 1b (1b stands for next label 1
+ backward) is the address of the instruction that might fault, i.e.
+@@ -246,35 +257,39 @@ the fault, in our case the actual value is c0199ff5:
+ the original assembly code: > 3:      movl $-14,%eax
+ and linked in vmlinux     : > c0199ff5 <.fixup+10b5> movl   $0xfffffff2,%eax
+ 
+-The assembly code
++The assembly code::
++
+  > .section __ex_table,"a"
+  >         .align 4
+  >         .long 1b,3b
+ 
+-becomes the value pair
++becomes the value pair::
++
+  >  c01aa7d4 c017c2f6 c0199fe9 c017e7a5 c0199ff5  ................
+                                ^this is ^this is
+                                1b       3b
++
+ c017e7a5,c0199ff5 in the exception table of the kernel.
+ 
+ So, what actually happens if a fault from kernel mode with no suitable
+ vma occurs?
+ 
+-1.) access to invalid address:
+- > c017e7a5 <do_con_write+e1> movb   (%ebx),%dl
+-2.) MMU generates exception
+-3.) CPU calls do_page_fault
+-4.) do page fault calls search_exception_table (regs->eip == c017e7a5);
+-5.) search_exception_table looks up the address c017e7a5 in the
+-    exception table (i.e. the contents of the ELF section __ex_table)
+-    and returns the address of the associated fault handle code c0199ff5.
+-6.) do_page_fault modifies its own return address to point to the fault
+-    handle code and returns.
+-7.) execution continues in the fault handling code.
+-8.) 8a) EAX becomes -EFAULT (== -14)
+-    8b) DL  becomes zero (the value we "read" from user space)
+-    8c) execution continues at local label 2 (address of the
+-        instruction immediately after the faulting user access).
++#. access to invalid address::
++
++    > c017e7a5 <do_con_write+e1> movb   (%ebx),%dl
++#. MMU generates exception
++#. CPU calls do_page_fault
++#. do page fault calls search_exception_table (regs->eip == c017e7a5);
++#. search_exception_table looks up the address c017e7a5 in the
++   exception table (i.e. the contents of the ELF section __ex_table)
++   and returns the address of the associated fault handle code c0199ff5.
++#. do_page_fault modifies its own return address to point to the fault
++   handle code and returns.
++#. execution continues in the fault handling code.
++#. a) EAX becomes -EFAULT (== -14)
++   b) DL  becomes zero (the value we "read" from user space)
++   c) execution continues at local label 2 (address of the
++      instruction immediately after the faulting user access).
+ 
+ The steps 8a to 8c in a certain way emulate the faulting instruction.
+ 
+@@ -295,14 +310,15 @@ Things changed when 64-bit support was added to x86 Linux. Rather than
+ double the size of the exception table by expanding the two entries
+ from 32-bits to 64 bits, a clever trick was used to store addresses
+ as relative offsets from the table itself. The assembly code changed
+-from:
+-	.long 1b,3b
+-to:
+-        .long (from) - .
+-        .long (to) - .
++from::
++
++    .long 1b,3b
++  to:
++          .long (from) - .
++          .long (to) - .
+ 
+ and the C-code that uses these values converts back to absolute addresses
+-like this:
++like this::
+ 
+ 	ex_insn_addr(const struct exception_table_entry *x)
+ 	{
+@@ -313,15 +329,18 @@ In v4.6 the exception table entry was expanded with a new field "handler".
+ This is also 32-bits wide and contains a third relative function
+ pointer which points to one of:
+ 
+-1) int ex_handler_default(const struct exception_table_entry *fixup)
++1) `int ex_handler_default(const struct exception_table_entry *fixup)`
+    This is legacy case that just jumps to the fixup code
+-2) int ex_handler_fault(const struct exception_table_entry *fixup)
++
++2) `int ex_handler_fault(const struct exception_table_entry *fixup)`
+    This case provides the fault number of the trap that occurred at
+    entry->insn. It is used to distinguish page faults from machine
+    check.
+-3) int ex_handler_ext(const struct exception_table_entry *fixup)
++
++3) `int ex_handler_ext(const struct exception_table_entry *fixup)`
+    This case is used for uaccess_err ... we need to set a flag
+    in the task structure. Before the handler functions existed this
+    case was handled by adding a large offset to the fixup to tag
+    it as special.
++
+ More functions can easily be added.
+diff --git a/Documentation/x86/index.rst b/Documentation/x86/index.rst
+index 2033791e53bc..c0bfd0bd6000 100644
+--- a/Documentation/x86/index.rst
++++ b/Documentation/x86/index.rst
+@@ -10,3 +10,4 @@ Linux x86 Support
+ 
+    boot
+    topology
++   exception-tables
 -- 
 2.20.1
 
