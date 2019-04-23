@@ -7,76 +7,75 @@ X-Spam-Status: No, score=-8.6 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
 	SPF_PASS,USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3B9D1C10F03
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Apr 2019 20:28:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 176EDC10F03
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Apr 2019 20:29:39 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id AA20C21773
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Apr 2019 20:28:05 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 8496B21773
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Apr 2019 20:29:38 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="kyOLGRqj"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org AA20C21773
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="U4pAnp44"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8496B21773
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44pZl76H6gzDqQF
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Apr 2019 06:28:03 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44pZmw2ZnpzDqG6
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Apr 2019 06:29:36 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=2607:f8b0:4864:20::643; helo=mail-pl1-x643.google.com;
+ (client-ip=2607:f8b0:4864:20::441; helo=mail-pf1-x441.google.com;
  envelope-from=changbin.du@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="kyOLGRqj"; 
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="U4pAnp44"; 
  dkim-atps=neutral
-Received: from mail-pl1-x643.google.com (mail-pl1-x643.google.com
- [IPv6:2607:f8b0:4864:20::643])
+Received: from mail-pf1-x441.google.com (mail-pf1-x441.google.com
+ [IPv6:2607:f8b0:4864:20::441])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44pTYK60pQzDqH1
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Apr 2019 02:34:13 +1000 (AEST)
-Received: by mail-pl1-x643.google.com with SMTP id w23so7803921ply.4
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Apr 2019 09:34:13 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44pTYX129rzDqH2
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Apr 2019 02:34:23 +1000 (AEST)
+Received: by mail-pf1-x441.google.com with SMTP id w25so7755892pfi.9
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Apr 2019 09:34:23 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
  h=from:to:cc:subject:date:message-id:in-reply-to:references
  :mime-version:content-transfer-encoding;
- bh=+Nheobiyx/Oj/jQbmMwyJ6CcDMSw+Li7Rz9pOwmVplA=;
- b=kyOLGRqjNToGUUVIJgXkQ9lBpwbwr1Z1OzphUd1XAu+vOZuKnt1W/4VlyoUrTQ9N7t
- L2ENzC+d1HpFxuYP/B6zEfQo85LOE0Evi2EhRiC49Xo1nFzfjtTyBftNOiGiU+etwXgZ
- csgN8HUpRWRy/EMElFkMAY6brHk5mksmXYgRzW7hQyYZ5fq8t1Xxl2RpfCXlOY9j1/Xo
- vEKU1p10GeCdlbTvpoox/SRCOKCCYHWg2cSQrPo1vv0uvsDMQqRM5HLTqqHOBUh2AtbX
- 0803BNwJ6q+YJXJA1wJr9z/fnHHv6vHpFWmVa6U2B+pqa4cGonsDsUGQn8JR+3C1d7be
- 0k1A==
+ bh=YLehLOE1ABgy8jWFXPTFYcRWdLlFEjSaDVUOmHPoCTo=;
+ b=U4pAnp44P0PSsqJ98jbweSjiy67o17Pd9PsGiJzfQCnzcNqMnueTSBofSe3eHuJU9b
+ TCzZEp1720OAfACQnAfygosHxbzrQT/XrNS5CP/gIEwNq7Q+8kSigXvYCvre1DgFlGub
+ ehGR8zmyYp2r+BStZbVGvWicy5PaLfRexCF0xJqOpuxxYJjlCUv+0znoY4VHUIrEMfZa
+ xsBVpsYsTS7Vhta5FqBjgc7O+4W3GDsGJhpPpXSBpH7m1SXeAiFtOoWcyscTnL5AB7vC
+ l1RST2gQTU/CZyk97kB6T1Q1dxugH7NTA5WkvHQq2gcezxvwAyCKN+OeSbMNhGV1Z5f4
+ dqiA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
  :references:mime-version:content-transfer-encoding;
- bh=+Nheobiyx/Oj/jQbmMwyJ6CcDMSw+Li7Rz9pOwmVplA=;
- b=Dw/rGjlJX41almLbdE9tB/0N4Lwiqy4XZJE2a+Ji5LkK1MonOky7jAuUJQGrRcYSe5
- HHYijiWBPBswY5yL6KFbgZBT/9o9U0OWDcvi/nM2eC3baATJyvwjx+W8JPifWr0pqSG5
- IA+CyBKQK0Vnlp33/OaFG8or5jceVKxn1Hfuh9NAtrrPj/JpFVZL2oMyMeb77RI3W3Vf
- tl8O8rGYAenb9bFZcdlJk5KeHW8NDHBjRYFbNZfCXzRFiM6dijpGbfirZA99hyk487Q/
- qSDQwA1rCCQ6CcOzYrQ+bFj8YlPW+TnlEJ+q0Whs2sCpzEbJWIsawKYRO/wTEZkuhSP7
- U+zQ==
-X-Gm-Message-State: APjAAAUjSnFAb6nhEcZ9Ugngx1tWvD1OVbo44ynr/Rkhi+vveQ7RsaC5
- K3foAIB9RZqAPhv7RgUAT9k=
-X-Google-Smtp-Source: APXvYqwpcNA1C0AJaAn5NpKA27BO1ryqGyrsfgPDIO7XslflQRQX3HrhW/xaqo85d7Ncuz1mUxzc/g==
-X-Received: by 2002:a17:902:6949:: with SMTP id
- k9mr26560917plt.59.1556037251789; 
- Tue, 23 Apr 2019 09:34:11 -0700 (PDT)
+ bh=YLehLOE1ABgy8jWFXPTFYcRWdLlFEjSaDVUOmHPoCTo=;
+ b=VPeGmjTm55IGqUMq52Hd6uuSYCg2i6V/IDCLyB5/9wLhydALNRe8etybU84WpGXW+J
+ VwRANb6H6Ujq5+GTUxzoZe7Pcd+vgxNUEMsnJ/Lbg/jC934dZbTZys/CsqMQqjR5/oZq
+ bQjVreyRIojlI9C4c5vrGTA8F/g9pyL3woF8fub35jKCygDUUr8W8//miFsY2k5EkMLI
+ rTvRmjOtG81DmZL+TyCF/v1iqn8WTcMbCmVbTfhB7KelHDuaxhmb9nwtoEaYx4EOhWdQ
+ vQjwtZ9BPqIpZpvIqplEirTNhreLLfNCee2mNb/+TwCjOpjcFVUBD9LPckQXg7WAH7l8
+ BCAg==
+X-Gm-Message-State: APjAAAVjfkEmIFJ32PFRN9ArwZBd+EZknDsHoG5+zXd2jjwhXENtJyAG
+ OoppM9OarX7j3PJJnaBlRrY=
+X-Google-Smtp-Source: APXvYqwOnaUZCTkR7Hrbrv1qaIAVW1d7EU8d1K7h/wsG99DVbwKx3P6IvbLyZuV/vvVQ9mgc8M/mJg==
+X-Received: by 2002:a62:7089:: with SMTP id
+ l131mr28640994pfc.158.1556037261922; 
+ Tue, 23 Apr 2019 09:34:21 -0700 (PDT)
 Received: from localhost.localdomain ([104.238.181.70])
- by smtp.gmail.com with ESMTPSA id v1sm24364801pff.81.2019.04.23.09.34.03
+ by smtp.gmail.com with ESMTPSA id v1sm24364801pff.81.2019.04.23.09.34.12
  (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
- Tue, 23 Apr 2019 09:34:10 -0700 (PDT)
+ Tue, 23 Apr 2019 09:34:21 -0700 (PDT)
 From: Changbin Du <changbin.du@gmail.com>
 To: Jonathan Corbet <corbet@lwn.net>
-Subject: [PATCH v4 24/63] Documentation: ACPI: move video_extension.txt to
- firmware-guide/acpi and convert to reST
-Date: Wed, 24 Apr 2019 00:28:53 +0800
-Message-Id: <20190423162932.21428-25-changbin.du@gmail.com>
+Subject: [PATCH v4 25/63] Documentation: add Linux PCI to Sphinx TOC tree
+Date: Wed, 24 Apr 2019 00:28:54 +0800
+Message-Id: <20190423162932.21428-26-changbin.du@gmail.com>
 X-Mailer: git-send-email 2.20.1
 In-Reply-To: <20190423162932.21428-1-changbin.du@gmail.com>
 References: <20190423162932.21428-1-changbin.du@gmail.com>
@@ -103,146 +102,43 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This converts the plain text documentation to reStructuredText format and
-add it to Sphinx TOC tree. No essential content change.
+Add a index.rst for PCI subsystem. More docs will be added later.
 
 Signed-off-by: Changbin Du <changbin.du@gmail.com>
+Acked-by: Bjorn Helgaas <bhelgaas@google.com>
 ---
- Documentation/firmware-guide/acpi/index.rst   |  1 +
- .../acpi/video_extension.rst}                 | 63 ++++++++++---------
- 2 files changed, 36 insertions(+), 28 deletions(-)
- rename Documentation/{acpi/video_extension.txt => firmware-guide/acpi/video_extension.rst} (79%)
+ Documentation/PCI/index.rst | 9 +++++++++
+ Documentation/index.rst     | 1 +
+ 2 files changed, 10 insertions(+)
+ create mode 100644 Documentation/PCI/index.rst
 
-diff --git a/Documentation/firmware-guide/acpi/index.rst b/Documentation/firmware-guide/acpi/index.rst
-index 0e60f4b7129a..ae609eec4679 100644
---- a/Documentation/firmware-guide/acpi/index.rst
-+++ b/Documentation/firmware-guide/acpi/index.rst
-@@ -23,3 +23,4 @@ ACPI Support
-    i2c-muxes
-    acpi-lid
-    lpit
-+   video_extension
-diff --git a/Documentation/acpi/video_extension.txt b/Documentation/firmware-guide/acpi/video_extension.rst
-similarity index 79%
-rename from Documentation/acpi/video_extension.txt
-rename to Documentation/firmware-guide/acpi/video_extension.rst
-index 79bf6a4921be..06f7e3230b6e 100644
---- a/Documentation/acpi/video_extension.txt
-+++ b/Documentation/firmware-guide/acpi/video_extension.rst
-@@ -1,5 +1,8 @@
+diff --git a/Documentation/PCI/index.rst b/Documentation/PCI/index.rst
+new file mode 100644
+index 000000000000..c2f8728d11cf
+--- /dev/null
++++ b/Documentation/PCI/index.rst
+@@ -0,0 +1,9 @@
 +.. SPDX-License-Identifier: GPL-2.0
 +
-+=====================
- ACPI video extensions
--~~~~~~~~~~~~~~~~~~~~~
-+=====================
- 
- This driver implement the ACPI Extensions For Display Adapters for
- integrated graphics devices on motherboard, as specified in ACPI 2.0
-@@ -8,9 +11,10 @@ defining the video POST device, retrieving EDID information or to
- setup a video output, etc.  Note that this is an ref. implementation
- only.  It may or may not work for your integrated video device.
- 
--The ACPI video driver does 3 things regarding backlight control:
-+The ACPI video driver does 3 things regarding backlight control.
- 
--1 Export a sysfs interface for user space to control backlight level
-+1. Export a sysfs interface for user space to control backlight level
-+=====================================================================
- 
- If the ACPI table has a video device, and acpi_backlight=vendor kernel
- command line is not present, the driver will register a backlight device
-@@ -32,26 +36,26 @@ type: firmware
- 
- Note that ACPI video backlight driver will always use index for
- brightness, actual_brightness and max_brightness. So if we have
--the following _BCL package:
-+the following _BCL package::
- 
--Method (_BCL, 0, NotSerialized)
--{
--	Return (Package (0x0C)
-+	Method (_BCL, 0, NotSerialized)
- 	{
--		0x64,
--		0x32,
--		0x0A,
--		0x14,
--		0x1E,
--		0x28,
--		0x32,
--		0x3C,
--		0x46,
--		0x50,
--		0x5A,
--		0x64
--	})
--}
-+		Return (Package (0x0C)
-+		{
-+			0x64,
-+			0x32,
-+			0x0A,
-+			0x14,
-+			0x1E,
-+			0x28,
-+			0x32,
-+			0x3C,
-+			0x46,
-+			0x50,
-+			0x5A,
-+			0x64
-+		})
-+	}
- 
- The first two levels are for when laptop are on AC or on battery and are
- not used by Linux currently. The remaining 10 levels are supported levels
-@@ -62,13 +66,15 @@ as a "brightness level" indicator. Thus from the user space perspective
- the range of available brightness levels is from 0 to 9 (max_brightness)
- inclusive.
- 
--2 Notify user space about hotkey event
-+2. Notify user space about hotkey event
-+=======================================
- 
- There are generally two cases for hotkey event reporting:
++=======================
++Linux PCI Bus Subsystem
++=======================
 +
- i) For some laptops, when user presses the hotkey, a scancode will be
-    generated and sent to user space through the input device created by
-    the keyboard driver as a key type input event, with proper remap, the
--   following key code will appear to user space:
-+   following key code will appear to user space::
++.. toctree::
++   :maxdepth: 2
++   :numbered:
+diff --git a/Documentation/index.rst b/Documentation/index.rst
+index fdfa85c56a50..d80138284e0f 100644
+--- a/Documentation/index.rst
++++ b/Documentation/index.rst
+@@ -100,6 +100,7 @@ needed).
+    filesystems/index
+    vm/index
+    bpf/index
++   PCI/index
+    misc-devices/index
  
- 	EV_KEY, KEY_BRIGHTNESSUP
- 	EV_KEY, KEY_BRIGHTNESSDOWN
-@@ -82,7 +88,7 @@ ii) For some laptops, the press of the hotkey will not generate the
-     about the event. The event value is defined in the ACPI spec. ACPI
-     video driver will generate an key type input event according to the
-     notify value it received and send the event to user space through the
--    input device it created:
-+    input device it created::
- 
- 	event		keycode
- 	0x86		KEY_BRIGHTNESSUP
-@@ -94,13 +100,14 @@ so this would lead to the same effect as case i) now.
- Once user space tool receives this event, it can modify the backlight
- level through the sysfs interface.
- 
--3 Change backlight level in the kernel
-+3. Change backlight level in the kernel
-+=======================================
- 
- This works for machines covered by case ii) in Section 2. Once the driver
- received a notification, it will set the backlight level accordingly. This does
- not affect the sending of event to user space, they are always sent to user
- space regardless of whether or not the video module controls the backlight level
- directly. This behaviour can be controlled through the brightness_switch_enabled
--module parameter as documented in admin-guide/kernel-parameters.rst. It is recommended to
--disable this behaviour once a GUI environment starts up and wants to have full
--control of the backlight level.
-+module parameter as documented in admin-guide/kernel-parameters.rst. It is
-+recommended to disable this behaviour once a GUI environment starts up and
-+wants to have full control of the backlight level.
+ Architecture-specific documentation
 -- 
 2.20.1
 
