@@ -2,56 +2,64 @@ Return-Path: <SRS0=/W8y=SZ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED,USER_AGENT_MUTT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_MUTT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 30DBFC10F03
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Apr 2019 17:02:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 93C0DC10F03
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Apr 2019 17:38:21 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 9430D2148D
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Apr 2019 17:02:15 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9430D2148D
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=intel.com
+	by mail.kernel.org (Postfix) with ESMTPS id AAE9C214AE
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Apr 2019 17:38:20 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="RFKifiku"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org AAE9C214AE
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44pV9d27XwzDqKj
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Apr 2019 03:02:13 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44pVzG3m48zDqP6
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Apr 2019 03:38:18 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=intel.com
- (client-ip=192.55.52.93; helo=mga11.intel.com;
- envelope-from=ira.weiny@intel.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=kernel.org
+ (client-ip=198.145.29.99; helo=mail.kernel.org;
+ envelope-from=helgaas@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=intel.com
-Received: from mga11.intel.com (mga11.intel.com [192.55.52.93])
+ dmarc=pass (p=none dis=none) header.from=kernel.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=kernel.org header.i=@kernel.org header.b="RFKifiku"; 
+ dkim-atps=neutral
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44pV7s5rnYzDqKW
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Apr 2019 03:00:34 +1000 (AEST)
-X-Amp-Result: UNKNOWN
-X-Amp-Original-Verdict: FILE UNKNOWN
-X-Amp-File-Uploaded: False
-Received: from orsmga005.jf.intel.com ([10.7.209.41])
- by fmsmga102.fm.intel.com with ESMTP/TLS/DHE-RSA-AES256-GCM-SHA384;
- 23 Apr 2019 10:00:31 -0700
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.60,386,1549958400"; d="scan'208";a="318293329"
-Received: from iweiny-desk2.sc.intel.com ([10.3.52.157])
- by orsmga005.jf.intel.com with ESMTP; 23 Apr 2019 10:00:30 -0700
-Date: Tue, 23 Apr 2019 10:00:44 -0700
-From: Ira Weiny <ira.weiny@intel.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: linux-next: manual merge of the akpm-current tree with the
- powerpc-fixes tree
-Message-ID: <20190423170044.GA30084@iweiny-DESK2.sc.intel.com>
-References: <20190423190606.0fefb856@canb.auug.org.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44pVxX3tFnzDqN1
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Apr 2019 03:36:47 +1000 (AEST)
+Received: from localhost (odyssey.drury.edu [64.22.249.253])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by mail.kernel.org (Postfix) with ESMTPSA id 02F66206BA;
+ Tue, 23 Apr 2019 17:36:44 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+ s=default; t=1556041005;
+ bh=0ywx4lbgLqdcOUJmTJLQ1S0sd6blYojEzZMGaehyCq4=;
+ h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+ b=RFKifikufVAAEiYElOfFEZNBmaOX2AaURO7CJBO43uVnIm7SiUToincr0CoU5SipS
+ eq2M2g/oAiDcLtIuc216jiwUzJebwpsyrWM9ejkKSSdRE8ZRTqbu9nljumpqsQwuQ6
+ IfP1DjparUtNRl4DWKZkRDEo/m77cCe09UE43KGY=
+Date: Tue, 23 Apr 2019 12:36:44 -0500
+From: Bjorn Helgaas <helgaas@kernel.org>
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH v4 00/63] Include linux ACPI/PCI/X86 docs into Sphinx TOC
+ tree
+Message-ID: <20190423173644.GA14616@google.com>
+References: <20190423162932.21428-1-changbin.du@gmail.com>
+ <CAJZ5v0jPyaGQcDfpW5b7A-_3bvkfL78MxFmPtjwCGZ4-=KwUwg@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20190423190606.0fefb856@canb.auug.org.au>
-User-Agent: Mutt/1.11.1 (2018-12-01)
+In-Reply-To: <CAJZ5v0jPyaGQcDfpW5b7A-_3bvkfL78MxFmPtjwCGZ4-=KwUwg@mail.gmail.com>
+User-Agent: Mutt/1.10.1 (2018-07-13)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -63,96 +71,37 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Alexey Kardashevskiy <aik@ozlabs.ru>,
+Cc: Fenghua Yu <fenghua.yu@intel.com>,
+ the arch/x86 maintainers <x86@kernel.org>, Jonathan Corbet <corbet@lwn.net>,
+ Linux PCI <linux-pci@vger.kernel.org>, linux-gpio@vger.kernel.org,
+ "open list:DOCUMENTATION" <linux-doc@vger.kernel.org>,
+ "Rafael J. Wysocki" <rjw@rjwysocki.net>,
  Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Linux Next Mailing List <linux-next@vger.kernel.org>,
- Andrew Morton <akpm@linux-foundation.org>,
- PowerPC <linuxppc-dev@lists.ozlabs.org>
+ ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+ Ingo Molnar <mingo@redhat.com>,
+ Mauro Carvalho Chehab <mchehab+samsung@kernel.org>,
+ Thomas Gleixner <tglx@linutronix.de>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Changbin Du <changbin.du@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, Apr 23, 2019 at 07:06:06PM +1000, Stephen Rothwell wrote:
-> Hi all,
+On Tue, Apr 23, 2019 at 06:39:47PM +0200, Rafael J. Wysocki wrote:
+> On Tue, Apr 23, 2019 at 6:30 PM Changbin Du <changbin.du@gmail.com> wrote:
+> > Hi Corbet and All,
+> > The kernel now uses Sphinx to generate intelligent and beautiful
+> > documentation from reStructuredText files. I converted all of the Linux
+> > ACPI/PCI/X86 docs to reST format in this serias.
+> >
+> > In this version I combined ACPI and PCI docs, and added new x86 docs
+> > conversion.
 > 
-> Today's linux-next merge of the akpm-current tree got a conflict in:
-> 
->   arch/powerpc/mm/mmu_context_iommu.c
-> 
-> between commits:
-> 
->   eb9d7a62c386 ("powerpc/mm_iommu: Fix potential deadlock")
->   7a3a4d763837 ("powerpc/mm_iommu: Allow pinning large regions")
-> 
-> from the powerpc-fixes tree and commit:
-> 
->   02f506bad7af ("mm/gup: replace get_user_pages_longterm() with FOLL_LONGTERM")
-> 
-> from the akpm-current tree.
-> 
-> I fixed it up (see below) and can carry the fix as necessary. This
+> I'm not sure if combining all three into one big patch series has been
+> a good idea, honestly.
 
-Thanks Stephen
+Yeah, if you post this again, I would find it easier to deal with if
+linux-pci only got the PCI-related things.  63 patches is a little too
+much for one series.
 
-Looks good for my changes.
-
-Acked-by: Ira Weiny <ira.weiny@intel.com>
-
-> is now fixed as far as linux-next is concerned, but any non trivial
-> conflicts should be mentioned to your upstream maintainer when your tree
-> is submitted for merging.  You may also want to consider cooperating
-> with the maintainer of the conflicting tree to minimise any particularly
-> complex conflicts.
-> 
-> -- 
-> Cheers,
-> Stephen Rothwell
-> 
-> diff --cc arch/powerpc/mm/mmu_context_iommu.c
-> index 8330f135294f,755fe7adc0d8..000000000000
-> --- a/arch/powerpc/mm/mmu_context_iommu.c
-> +++ b/arch/powerpc/mm/mmu_context_iommu.c
-> @@@ -135,27 -144,18 +131,28 @@@ static long mm_iommu_do_alloc(struct mm
->   	}
->   
->   	down_read(&mm->mmap_sem);
->  -	ret = get_user_pages(ua, entries, FOLL_WRITE | FOLL_LONGTERM,
->  -			     mem->hpages, NULL);
->  +	chunk = (1UL << (PAGE_SHIFT + MAX_ORDER - 1)) /
->  +			sizeof(struct vm_area_struct *);
->  +	chunk = min(chunk, entries);
->  +	for (entry = 0; entry < entries; entry += chunk) {
->  +		unsigned long n = min(entries - entry, chunk);
->  +
-> - 		ret = get_user_pages_longterm(ua + (entry << PAGE_SHIFT), n,
-> - 				FOLL_WRITE, mem->hpages + entry, NULL);
-> ++		ret = get_user_pages(ua + (entry << PAGE_SHIFT), n,
-> ++				     FOLL_WRITE | FOLL_LONGTERM,
-> ++				     mem->hpages + entry, NULL);
->  +		if (ret == n) {
->  +			pinned += n;
->  +			continue;
->  +		}
->  +		if (ret > 0)
->  +			pinned += ret;
->  +		break;
->  +	}
->   	up_read(&mm->mmap_sem);
->  -	if (ret != entries) {
->  -		/* free the reference taken */
->  -		for (i = 0; i < ret; i++)
->  -			put_page(mem->hpages[i]);
->  -
->  -		vfree(mem->hpas);
->  -		kfree(mem);
->  -		ret = -EFAULT;
->  -		goto unlock_exit;
->  +	if (pinned != entries) {
->  +		if (!ret)
->  +			ret = -EFAULT;
->  +		goto free_exit;
->   	}
->   
->   	pageshift = PAGE_SHIFT;
-
-
+Bjorn
