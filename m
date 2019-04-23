@@ -2,63 +2,42 @@ Return-Path: <SRS0=/W8y=SZ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_MUTT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.5 required=3.0 tests=MAILING_LIST_MULTI,SPF_PASS,
+	USER_AGENT_MUTT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C43B6C10F14
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Apr 2019 12:51:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 70A63C10F14
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Apr 2019 13:46:17 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 1DBFF206A3
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Apr 2019 12:51:37 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="msYnu0kx"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1DBFF206A3
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
+	by mail.kernel.org (Postfix) with ESMTPS id B33C221773
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Apr 2019 13:46:16 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B33C221773
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44pNcQ4grZzDqM7
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Apr 2019 22:51:34 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44pPqT5xcJzDqMq
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Apr 2019 23:46:13 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=infradead.org
- (client-ip=2001:8b0:10b:1231::1; helo=merlin.infradead.org;
- envelope-from=peterz@infradead.org; receiver=<UNKNOWN>)
+ spf=softfail (mailfrom) smtp.mailfrom=kernel.org
+ (client-ip=195.135.220.15; helo=mx1.suse.de; envelope-from=mhocko@kernel.org;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=infradead.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=infradead.org header.i=@infradead.org
- header.b="msYnu0kx"; dkim-atps=neutral
-Received: from merlin.infradead.org (merlin.infradead.org
- [IPv6:2001:8b0:10b:1231::1])
+ dmarc=fail (p=none dis=none) header.from=kernel.org
+Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44pNZ55s8JzDqLw
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Apr 2019 22:49:33 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
- d=infradead.org; s=merlin.20170209; h=In-Reply-To:Content-Type:MIME-Version:
- References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
- Content-Transfer-Encoding:Content-ID:Content-Description:Resent-Date:
- Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:
- List-Help:List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
- bh=35dsPaMjiCJMbp0smPFnBa37kyiFHneebblaSoEgPnQ=; b=msYnu0kx2JON/wV/5dmMl8vxA
- dNCkZAqilQAWKgXdb+pllDgIM1dvdIRn2PTFPCpPa2rT6jXvYFDwgwJ3h3lZoIhmej0toM48+/ppr
- RohELwfLN2xCfUtByxgahp0hU50CmU7ZInrqna7acSRDLG6c3QibbucubGNFtCp9B+Y0ozgd2WT4o
- YmvDH3/dt8VwyJiZCrP/zGJP5MwJsY7HaKgut9UodsIMQT0oida9zEnUjEPcD1ArwgTEhu1ogh2g7
- uhCboq8dRcEn79wKSzqUJPyUl3ZBauPLrK9e+FM9A3107dB1aRvokG5XAdcEqf5koNpX4UdSCUGyU
- i6pxQQxMA==;
-Received: from j217100.upc-j.chello.nl ([24.132.217.100]
- helo=hirez.programming.kicks-ass.net)
- by merlin.infradead.org with esmtpsa (Exim 4.90_1 #2 (Red Hat Linux))
- id 1hIuqu-0004F8-De; Tue, 23 Apr 2019 12:48:48 +0000
-Received: by hirez.programming.kicks-ass.net (Postfix, from userid 1000)
- id A6FE829B8FE27; Tue, 23 Apr 2019 14:48:45 +0200 (CEST)
-Date: Tue, 23 Apr 2019 14:48:45 +0200
-From: Peter Zijlstra <peterz@infradead.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44pPlB3qcPzDq7F
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Apr 2019 23:42:29 +1000 (AEST)
+X-Virus-Scanned: by amavisd-new at test-mx.suse.de
+Received: from relay2.suse.de (unknown [195.135.220.254])
+ by mx1.suse.de (Postfix) with ESMTP id 6E9C4ACAC;
+ Tue, 23 Apr 2019 13:42:25 +0000 (UTC)
+Date: Tue, 23 Apr 2019 15:42:22 +0200
+From: Michal Hocko <mhocko@kernel.org>
 To: Matthew Wilcox <willy@infradead.org>
 Subject: Re: [PATCH v12 00/31] Speculative page faults
-Message-ID: <20190423124845.GS4038@hirez.programming.kicks-ass.net>
+Message-ID: <20190423134222.GL25106@dhcp22.suse.cz>
 References: <20190416134522.17540-1-ldufour@linux.ibm.com>
  <CANN689F1h9XoHPzr_FQY2WfN5bb2TTd6M3HLqoJ-DQuHkNbA7g@mail.gmail.com>
  <20190423104707.GK25106@dhcp22.suse.cz>
@@ -80,7 +59,7 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 Cc: Jan Kara <jack@suse.cz>, sergey.senozhatsky.work@gmail.com,
- Will Deacon <will.deacon@arm.com>, Michal Hocko <mhocko@kernel.org>,
+ Peter Zijlstra <peterz@infradead.org>, Will Deacon <will.deacon@arm.com>,
  linux-mm <linux-mm@kvack.org>, Paul Mackerras <paulus@samba.org>,
  Punit Agrawal <punitagrawal@gmail.com>, "H. Peter Anvin" <hpa@zytor.com>,
  Michel Lespinasse <walken@google.com>,
@@ -106,8 +85,23 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, Apr 23, 2019 at 05:41:48AM -0700, Matthew Wilcox wrote:
+On Tue 23-04-19 05:41:48, Matthew Wilcox wrote:
 > On Tue, Apr 23, 2019 at 12:47:07PM +0200, Michal Hocko wrote:
+> > On Mon 22-04-19 14:29:16, Michel Lespinasse wrote:
+> > [...]
+> > > I want to add a note about mmap_sem. In the past there has been
+> > > discussions about replacing it with an interval lock, but these never
+> > > went anywhere because, mostly, of the fact that such mechanisms were
+> > > too expensive to use in the page fault path. I think adding the spf
+> > > mechanism would invite us to revisit this issue - interval locks may
+> > > be a great way to avoid blocking between unrelated mmap_sem writers
+> > > (for example, do not delay stack creation for new threads while a
+> > > large mmap or munmap may be going on), and probably also to handle
+> > > mmap_sem readers that can't easily use the spf mechanism (for example,
+> > > gup callers which make use of the returned vmas). But again that is a
+> > > separate topic to explore which doesn't have to get resolved before
+> > > spf goes in.
+> > 
 > > Well, I believe we should _really_ re-evaluate the range locking sooner
 > > rather than later. Why? Because it looks like the most straightforward
 > > approach to the mmap_sem contention for most usecases I have heard of
@@ -119,10 +113,49 @@ On Tue, Apr 23, 2019 at 05:41:48AM -0700, Matthew Wilcox wrote:
 > in XFS and didn't like what he saw:
 > 
 > https://lore.kernel.org/linux-fsdevel/20190418031013.GX29573@dread.disaster.area/T/#md981b32c12a2557a2dd0f79ad41d6c8df1f6f27c
-> 
+
+Thank you, will have a look.
+
 > I think scaling the lock needs to be tied to the actual data structure
-> and not have a second tree on-the-side to fake-scale the locking.
+> and not have a second tree on-the-side to fake-scale the locking.  Anyway,
+> we're going to have a session on this at LSFMM, right?
 
-Right, which is how I ended up using the split PT locks. They already
-provide fine(r) grained locking.
+I thought we had something for the mmap_sem scaling but I do not see
+this in a list of proposed topics. But we can certainly add it there.
 
+> > SPF sounds like a good idea but it is a really big and intrusive surgery
+> > to the #PF path. And more importantly without any real world usecase
+> > numbers which would justify this. That being said I am not opposed to
+> > this change I just think it is a large hammer while we haven't seen
+> > attempts to tackle problems in a simpler way.
+> 
+> I don't think the "no real world usecase numbers" is fair.  Laurent quoted:
+> 
+> > Ebizzy:
+> > -------
+> > The test is counting the number of records per second it can manage, the
+> > higher is the best. I run it like this 'ebizzy -mTt <nrcpus>'. To get
+> > consistent result I repeated the test 100 times and measure the average
+> > result. The number is the record processes per second, the higher is the best.
+> > 
+> >   		BASE		SPF		delta	
+> > 24 CPUs x86	5492.69		9383.07		70.83%
+> > 1024 CPUS P8 VM 8476.74		17144.38	102%
+> 
+> and cited 30% improvement for you-know-what product from an earlier
+> version of the patch.
+
+Well, we are talking about
+45 files changed, 1277 insertions(+), 196 deletions(-)
+
+which is a _major_ surgery in my book. Having a real life workloads numbers
+is nothing unfair to ask for IMHO.
+
+And let me remind you that I am not really opposing SPF in general. I
+would just like to see a simpler approach before we go such a large
+change. If the range locking is not really a scalable approach then all
+right but from why I've see it should help a lot of most bottle-necks I
+have seen.
+-- 
+Michal Hocko
+SUSE Labs
