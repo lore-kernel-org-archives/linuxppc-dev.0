@@ -2,51 +2,77 @@ Return-Path: <SRS0=/W8y=SZ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.5 required=3.0 tests=MAILING_LIST_MULTI,SPF_PASS,
-	USER_AGENT_MUTT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 70A63C10F14
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Apr 2019 13:46:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 525C2C10F14
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Apr 2019 14:22:37 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B33C221773
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Apr 2019 13:46:16 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B33C221773
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	by mail.kernel.org (Postfix) with ESMTPS id 89828214AE
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Apr 2019 14:22:36 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="Hx+BfaS/"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 89828214AE
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44pPqT5xcJzDqMq
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Apr 2019 23:46:13 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44pQdQ1VMqzDq6K
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Apr 2019 00:22:34 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=softfail (mailfrom) smtp.mailfrom=kernel.org
- (client-ip=195.135.220.15; helo=mx1.suse.de; envelope-from=mhocko@kernel.org;
- receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=c-s.fr
+ (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=fail (p=none dis=none) header.from=kernel.org
-Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
+ dmarc=none (p=none dis=none) header.from=c-s.fr
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="Hx+BfaS/"; 
+ dkim-atps=neutral
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44pPlB3qcPzDq7F
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Apr 2019 23:42:29 +1000 (AEST)
-X-Virus-Scanned: by amavisd-new at test-mx.suse.de
-Received: from relay2.suse.de (unknown [195.135.220.254])
- by mx1.suse.de (Postfix) with ESMTP id 6E9C4ACAC;
- Tue, 23 Apr 2019 13:42:25 +0000 (UTC)
-Date: Tue, 23 Apr 2019 15:42:22 +0200
-From: Michal Hocko <mhocko@kernel.org>
-To: Matthew Wilcox <willy@infradead.org>
-Subject: Re: [PATCH v12 00/31] Speculative page faults
-Message-ID: <20190423134222.GL25106@dhcp22.suse.cz>
-References: <20190416134522.17540-1-ldufour@linux.ibm.com>
- <CANN689F1h9XoHPzr_FQY2WfN5bb2TTd6M3HLqoJ-DQuHkNbA7g@mail.gmail.com>
- <20190423104707.GK25106@dhcp22.suse.cz>
- <20190423124148.GA19031@bombadil.infradead.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20190423124148.GA19031@bombadil.infradead.org>
-User-Agent: Mutt/1.10.1 (2018-07-13)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44pQbM0LxZzDqHH
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Apr 2019 00:20:46 +1000 (AEST)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 44pQbD5pl0zB09ZV;
+ Tue, 23 Apr 2019 16:20:40 +0200 (CEST)
+Authentication-Results: localhost; dkim=pass
+ reason="1024-bit key; insecure key"
+ header.d=c-s.fr header.i=@c-s.fr header.b=Hx+BfaS/; dkim-adsp=pass;
+ dkim-atps=neutral
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id VdpRqyoSUggc; Tue, 23 Apr 2019 16:20:40 +0200 (CEST)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 44pQbD4fHrz9v08G;
+ Tue, 23 Apr 2019 16:20:40 +0200 (CEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
+ t=1556029240; bh=fNqEjI2ZoGaORHatXbuqSr7VvXw1i5InB9mRSTYkSZg=;
+ h=From:Subject:To:Cc:Date:From;
+ b=Hx+BfaS/078i1Izh+JCP9TwRlOmYEo7khlERzQM40DQ08mbDtFoXaXnx0f8pZJ7aQ
+ 23kU/vdSR7I4cDiMWT/Ed48mYoJtUNQIG/9goAqqW204Z/eW3omWR3PHX+3tuZflde
+ IZKbryBSuQlptGvdBkmuk0+RPCXQ4NVaY72lSegM=
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 062648B8E1;
+ Tue, 23 Apr 2019 16:20:42 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id Gsr_NR8wpuik; Tue, 23 Apr 2019 16:20:41 +0200 (CEST)
+Received: from po16846vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id C0F1B8B8C4;
+ Tue, 23 Apr 2019 16:20:41 +0200 (CEST)
+Received: by po16846vm.idsi0.si.c-s.fr (Postfix, from userid 0)
+ id 2176F666CF; Tue, 23 Apr 2019 14:20:40 +0000 (UTC)
+Message-Id: <2d3a59015307d368d6ac1a62fe7e47f5b39e2fe2.1556028978.git.christophe.leroy@c-s.fr>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Subject: [PATCH v2 1/4] powerpc/boot: don't force gzipped uImage
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
+Date: Tue, 23 Apr 2019 14:20:40 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -58,104 +84,81 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Jan Kara <jack@suse.cz>, sergey.senozhatsky.work@gmail.com,
- Peter Zijlstra <peterz@infradead.org>, Will Deacon <will.deacon@arm.com>,
- linux-mm <linux-mm@kvack.org>, Paul Mackerras <paulus@samba.org>,
- Punit Agrawal <punitagrawal@gmail.com>, "H. Peter Anvin" <hpa@zytor.com>,
- Michel Lespinasse <walken@google.com>,
- Alexei Starovoitov <alexei.starovoitov@gmail.com>,
- Andrea Arcangeli <aarcange@redhat.com>, Andi Kleen <ak@linux.intel.com>,
- Minchan Kim <minchan@kernel.org>, aneesh.kumar@linux.ibm.com, x86@kernel.org,
- Daniel Jordan <daniel.m.jordan@oracle.com>, Ingo Molnar <mingo@redhat.com>,
- David Rientjes <rientjes@google.com>,
- "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
- Haiyan Song <haiyanx.song@intel.com>, Nick Piggin <npiggin@gmail.com>,
- sj38.park@gmail.com, Jerome Glisse <jglisse@redhat.com>, dave@stgolabs.net,
- kemi.wang@intel.com, "Kirill A. Shutemov" <kirill@shutemov.name>,
- Thomas Gleixner <tglx@linutronix.de>, Laurent Dufour <ldufour@linux.ibm.com>,
- zhong jiang <zhongjiang@huawei.com>,
- Ganesh Mahendran <opensource.ganesh@gmail.com>,
- Yang Shi <yang.shi@linux.alibaba.com>, Mike Rapoport <rppt@linux.ibm.com>,
- linuxppc-dev@lists.ozlabs.org, LKML <linux-kernel@vger.kernel.org>,
- Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
- vinayak menon <vinayakm.list@gmail.com>,
- Andrew Morton <akpm@linux-foundation.org>,
- Tim Chen <tim.c.chen@linux.intel.com>, haren@linux.vnet.ibm.com
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue 23-04-19 05:41:48, Matthew Wilcox wrote:
-> On Tue, Apr 23, 2019 at 12:47:07PM +0200, Michal Hocko wrote:
-> > On Mon 22-04-19 14:29:16, Michel Lespinasse wrote:
-> > [...]
-> > > I want to add a note about mmap_sem. In the past there has been
-> > > discussions about replacing it with an interval lock, but these never
-> > > went anywhere because, mostly, of the fact that such mechanisms were
-> > > too expensive to use in the page fault path. I think adding the spf
-> > > mechanism would invite us to revisit this issue - interval locks may
-> > > be a great way to avoid blocking between unrelated mmap_sem writers
-> > > (for example, do not delay stack creation for new threads while a
-> > > large mmap or munmap may be going on), and probably also to handle
-> > > mmap_sem readers that can't easily use the spf mechanism (for example,
-> > > gup callers which make use of the returned vmas). But again that is a
-> > > separate topic to explore which doesn't have to get resolved before
-> > > spf goes in.
-> > 
-> > Well, I believe we should _really_ re-evaluate the range locking sooner
-> > rather than later. Why? Because it looks like the most straightforward
-> > approach to the mmap_sem contention for most usecases I have heard of
-> > (mostly a mm{unm}ap, mremap standing in the way of page faults).
-> > On a plus side it also makes us think about the current mmap (ab)users
-> > which should lead to an overall code improvements and maintainability.
-> 
-> Dave Chinner recently did evaluate the range lock for solving a problem
-> in XFS and didn't like what he saw:
-> 
-> https://lore.kernel.org/linux-fsdevel/20190418031013.GX29573@dread.disaster.area/T/#md981b32c12a2557a2dd0f79ad41d6c8df1f6f27c
+This patch modifies the generation of uImage by handing over
+the selected compression type instead of forcing gzip
 
-Thank you, will have a look.
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 
-> I think scaling the lock needs to be tied to the actual data structure
-> and not have a second tree on-the-side to fake-scale the locking.  Anyway,
-> we're going to have a session on this at LSFMM, right?
+---
+ v2: no change
+---
+ arch/powerpc/boot/wrapper | 11 ++++++++++-
+ 1 file changed, 10 insertions(+), 1 deletion(-)
 
-I thought we had something for the mmap_sem scaling but I do not see
-this in a list of proposed topics. But we can certainly add it there.
-
-> > SPF sounds like a good idea but it is a really big and intrusive surgery
-> > to the #PF path. And more importantly without any real world usecase
-> > numbers which would justify this. That being said I am not opposed to
-> > this change I just think it is a large hammer while we haven't seen
-> > attempts to tackle problems in a simpler way.
-> 
-> I don't think the "no real world usecase numbers" is fair.  Laurent quoted:
-> 
-> > Ebizzy:
-> > -------
-> > The test is counting the number of records per second it can manage, the
-> > higher is the best. I run it like this 'ebizzy -mTt <nrcpus>'. To get
-> > consistent result I repeated the test 100 times and measure the average
-> > result. The number is the record processes per second, the higher is the best.
-> > 
-> >   		BASE		SPF		delta	
-> > 24 CPUs x86	5492.69		9383.07		70.83%
-> > 1024 CPUS P8 VM 8476.74		17144.38	102%
-> 
-> and cited 30% improvement for you-know-what product from an earlier
-> version of the patch.
-
-Well, we are talking about
-45 files changed, 1277 insertions(+), 196 deletions(-)
-
-which is a _major_ surgery in my book. Having a real life workloads numbers
-is nothing unfair to ask for IMHO.
-
-And let me remind you that I am not really opposing SPF in general. I
-would just like to see a simpler approach before we go such a large
-change. If the range locking is not really a scalable approach then all
-right but from why I've see it should help a lot of most bottle-necks I
-have seen.
+diff --git a/arch/powerpc/boot/wrapper b/arch/powerpc/boot/wrapper
+index f9141eaec6ff..4e9beecf2502 100755
+--- a/arch/powerpc/boot/wrapper
++++ b/arch/powerpc/boot/wrapper
+@@ -41,6 +41,7 @@ dts=
+ cacheit=
+ binary=
+ compression=.gz
++uboot_comp=gzip
+ pie=
+ format=
+ 
+@@ -131,6 +132,7 @@ while [ "$#" -gt 0 ]; do
+ 	;;
+     -z)
+ 	compression=.gz
++	uboot_comp=gzip
+ 	;;
+     -Z)
+ 	shift
+@@ -138,15 +140,21 @@ while [ "$#" -gt 0 ]; do
+         [ "$1" != "gz" -o "$1" != "xz" -o "$1" != "none" ] || usage
+ 
+ 	compression=".$1"
++	uboot_comp=$1
+ 
+         if [ $compression = ".none" ]; then
+                 compression=
++		uboot_comp=none
+         fi
++	if [ $uboot_comp = "gz" ]; then
++		uboot_comp=gzip
++	fi
+ 	;;
+     --no-gzip)
+         # a "feature" of the the wrapper script is that it can be used outside
+         # the kernel tree. So keeping this around for backwards compatibility.
+         compression=
++	uboot_comp=none
+         ;;
+     -?)
+ 	usage
+@@ -369,6 +377,7 @@ if [ -z "$cacheit" -o ! -f "$vmz$compression" -o "$vmz$compression" -ot "$kernel
+     *)
+         # drop the compression suffix so the stripped vmlinux is used
+         compression=
++	uboot_comp=none
+ 	;;
+     esac
+ 
+@@ -412,7 +421,7 @@ membase=`${CROSS}objdump -p "$kernel" | grep -m 1 LOAD | awk '{print $7}'`
+ case "$platform" in
+ uboot)
+     rm -f "$ofile"
+-    ${MKIMAGE} -A ppc -O linux -T kernel -C gzip -a $membase -e $membase \
++    ${MKIMAGE} -A ppc -O linux -T kernel -C $uboot_comp -a $membase -e $membase \
+ 	$uboot_version -d "$vmz" "$ofile"
+     if [ -z "$cacheit" ]; then
+ 	rm -f "$vmz"
 -- 
-Michal Hocko
-SUSE Labs
+2.13.3
+
