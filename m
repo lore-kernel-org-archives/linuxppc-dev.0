@@ -7,21 +7,21 @@ X-Spam-Status: No, score=-8.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A75D2C10F14
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Apr 2019 03:27:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 92D0FC10F14
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Apr 2019 03:28:57 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 2366E20811
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Apr 2019 03:27:27 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 08BDB20811
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Apr 2019 03:28:56 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=nifty.com header.i=@nifty.com header.b="RQl+05KO"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2366E20811
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=nifty.com header.i=@nifty.com header.b="xm48M3KR"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 08BDB20811
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=socionext.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44p85T4QqxzDqNK
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Apr 2019 13:27:25 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44p87B6rgjzDqMS
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Apr 2019 13:28:54 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=softfail (mailfrom) smtp.mailfrom=socionext.com
  (client-ip=210.131.2.76; helo=conuserg-09.nifty.com;
@@ -29,35 +29,36 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=socionext.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=nifty.com header.i=@nifty.com header.b="RQl+05KO"; 
+ unprotected) header.d=nifty.com header.i=@nifty.com header.b="xm48M3KR"; 
  dkim-atps=neutral
 Received: from conuserg-09.nifty.com (conuserg-09.nifty.com [210.131.2.76])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44p7zm6pFSzDqNC
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Apr 2019 13:22:28 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44p7zt0f94zDqNd
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Apr 2019 13:22:33 +1000 (AEST)
 Received: from localhost.localdomain (p14092-ipngnfx01kyoto.kyoto.ocn.ne.jp
  [153.142.97.92]) (authenticated)
- by conuserg-09.nifty.com with ESMTP id x3N3L8LD031384;
- Tue, 23 Apr 2019 12:21:10 +0900
-DKIM-Filter: OpenDKIM Filter v2.10.3 conuserg-09.nifty.com x3N3L8LD031384
+ by conuserg-09.nifty.com with ESMTP id x3N3L8LJ031384;
+ Tue, 23 Apr 2019 12:21:17 +0900
+DKIM-Filter: OpenDKIM Filter v2.10.3 conuserg-09.nifty.com x3N3L8LJ031384
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nifty.com;
- s=dec2015msa; t=1555989671;
- bh=Uo1hU/pOzqv1Q6UwWPC8xpA1XS41uzJeh8wwHc0qw10=;
+ s=dec2015msa; t=1555989678;
+ bh=dlukBYO6sgrMJOkaTgBisXwB5sU3qv4thlZ8O2ehfGY=;
  h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=RQl+05KOKoPFyxSI2FuyZ89MGQq0gLVxtR0GWFgEWNRsXcCy0ywyMCoApyQXmEl2n
- io077/9bKRr3TeYS3JcPQpAgG+CgbDwSbEuJjT7Lmm7Jw6tR92Yz0nQViiui/FvOYz
- OHEdmjKD4ngKPNZFO6+CjberrgaPoe16v9aVfe5TB6AkQWrH8BAv1i7oqy5w8xLaj2
- RzbqB8+k+ccjgH7NZYljMP+UkT7M08F+jN4dlBRwqq5ZGhZlN6W78e7n79Ti0CPVAz
- o9Klq/jAOFriEnk7sGfoNu3h+Jeytk82FTnBT3j7jCa2JpKnKNKSS7Hd5r/0KKb6Z/
- rdh6GlVxkt4pA==
+ b=xm48M3KRfOyJ5kQVTw4Ovn149SHzUzjXnB91gR/MwjfLF0ptp5BEUN0KLVknYLbrp
+ 2X/icDCYfRB9UYEbC3NAUGKwCdyo8dDDhGSx5tTGtY5HP4wqmdSP34dZKju4n+Gge+
+ 49so/3DvgiDJ/GVfMURchnCnlw9DNnZeiui7LkTskHswqEbB0x2gtSC2rxId3AjZBR
+ GGo7gUXhxNWh5yHM3nD+kCXE9yK+n2f0qxD3hgG6HSsvsfV/vYDp6FrtitJ2VYs22S
+ 56kVXNRMf3PkQZYnDbPEP33MV+F6/q6okJweuR2UIDtfb+ST3kPAUvQaC9zZcF4djh
+ 8B1WciaXUL4Dw==
 X-Nifty-SrcIP: [153.142.97.92]
 From: Masahiro Yamada <yamada.masahiro@socionext.com>
 To: Andrew Morton <akpm@linux-foundation.org>,
  linux-arch <linux-arch@vger.kernel.org>
-Subject: [PATCH v3 02/10] MIPS: mark mult_sh_align_mod() as __always_inline
-Date: Tue, 23 Apr 2019 12:20:58 +0900
-Message-Id: <20190423032106.11960-3-yamada.masahiro@socionext.com>
+Subject: [PATCH v3 08/10] powerpc/mm/radix: mark
+ __radix__flush_tlb_range_psize() as __always_inline
+Date: Tue, 23 Apr 2019 12:21:04 +0900
+Message-Id: <20190423032106.11960-9-yamada.masahiro@socionext.com>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20190423032106.11960-1-yamada.masahiro@socionext.com>
 References: <20190423032106.11960-1-yamada.masahiro@socionext.com>
@@ -85,21 +86,13 @@ Sender: "Linuxppc-dev"
 This prepares to move CONFIG_OPTIMIZE_INLINING from x86 to a common
 place. We need to eliminate potential issues beforehand.
 
-If it is enabled for mips, the following error is reported:
+If it is enabled for powerpc, the following error is reported:
 
-arch/mips/kernel/cpu-bugs64.c: In function 'mult_sh_align_mod.constprop':
-arch/mips/kernel/cpu-bugs64.c:33:2: error: asm operand 1 probably doesn't match constraints [-Werror]
-  asm volatile(
+arch/powerpc/mm/tlb-radix.c: In function '__radix__flush_tlb_range_psize':
+arch/powerpc/mm/tlb-radix.c:104:2: error: asm operand 3 probably doesn't match constraints [-Werror]
+  asm volatile(PPC_TLBIEL(%0, %4, %3, %2, %1)
   ^~~
-arch/mips/kernel/cpu-bugs64.c:33:2: error: asm operand 1 probably doesn't match constraints [-Werror]
-  asm volatile(
-  ^~~
-arch/mips/kernel/cpu-bugs64.c:33:2: error: impossible constraint in 'asm'
-  asm volatile(
-  ^~~
-arch/mips/kernel/cpu-bugs64.c:33:2: error: impossible constraint in 'asm'
-  asm volatile(
-  ^~~
+arch/powerpc/mm/tlb-radix.c:104:2: error: impossible constraint in 'asm'
 
 Signed-off-by: Masahiro Yamada <yamada.masahiro@socionext.com>
 ---
@@ -108,24 +101,22 @@ Changes in v3: None
 Changes in v2:
   - split into a separate patch
 
- arch/mips/kernel/cpu-bugs64.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ arch/powerpc/mm/tlb-radix.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/arch/mips/kernel/cpu-bugs64.c b/arch/mips/kernel/cpu-bugs64.c
-index bada74af7641..c04b97aace4a 100644
---- a/arch/mips/kernel/cpu-bugs64.c
-+++ b/arch/mips/kernel/cpu-bugs64.c
-@@ -42,8 +42,8 @@ static inline void align_mod(const int align, const int mod)
- 		: "n"(align), "n"(mod));
+diff --git a/arch/powerpc/mm/tlb-radix.c b/arch/powerpc/mm/tlb-radix.c
+index 6a23b9ebd2a1..a2b2848f0ae3 100644
+--- a/arch/powerpc/mm/tlb-radix.c
++++ b/arch/powerpc/mm/tlb-radix.c
+@@ -928,7 +928,7 @@ void radix__tlb_flush(struct mmu_gather *tlb)
+ 	tlb->need_flush_all = 0;
  }
  
--static inline void mult_sh_align_mod(long *v1, long *v2, long *w,
--				     const int align, const int mod)
-+static __always_inline void mult_sh_align_mod(long *v1, long *v2, long *w,
-+					      const int align, const int mod)
+-static inline void __radix__flush_tlb_range_psize(struct mm_struct *mm,
++static __always_inline void __radix__flush_tlb_range_psize(struct mm_struct *mm,
+ 				unsigned long start, unsigned long end,
+ 				int psize, bool also_pwc)
  {
- 	unsigned long flags;
- 	int m1, m2;
 -- 
 2.17.1
 
