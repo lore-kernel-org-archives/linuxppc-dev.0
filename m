@@ -2,69 +2,93 @@ Return-Path: <SRS0=/W8y=SZ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS
+X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8222AC10F03
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Apr 2019 22:05:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 57A46C282DD
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Apr 2019 22:41:24 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id EE25421738
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Apr 2019 22:05:05 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="LZzBbka7"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EE25421738
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	by mail.kernel.org (Postfix) with ESMTPS id 842B9218D3
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Apr 2019 22:41:23 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 842B9218D3
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44pcv36zwJzDqKP
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Apr 2019 08:05:03 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44pdhx0psRzDqSK
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Apr 2019 08:41:21 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=permerror (mailfrom) smtp.mailfrom=kernel.org
- (client-ip=2001:8b0:10b:1236::1; helo=casper.infradead.org;
- envelope-from=mchehab+samsung@kernel.org; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
+ (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
+ envelope-from=bauerman@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=fail (p=none dis=none) header.from=kernel.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=infradead.org header.i=@infradead.org
- header.b="LZzBbka7"; dkim-atps=neutral
-Received: from casper.infradead.org (casper.infradead.org
- [IPv6:2001:8b0:10b:1236::1])
+ dmarc=none (p=none dis=none) header.from=linux.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44pbwh1pZLzDqQm
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Apr 2019 07:21:24 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
- d=infradead.org; s=casper.20170209; h=Content-Transfer-Encoding:Content-Type:
- MIME-Version:References:In-Reply-To:Message-ID:Subject:Cc:To:From:Date:Sender
- :Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
- Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:List-Help:
- List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
- bh=7bm/7cx8935u5WpEqvYAR3JJzpYWOGucTqy7o1fPnE8=; b=LZzBbka75a6LUuL7IXg4Qvs2zU
- WoOc3jHTTu4Eh+W39e++gI7j8fInLn2O62kwolUQfhjCNYo67NSSIOSmvUISBxTAXk265Djyf3r/Q
- tqNT93E8kFpx/S/4ZpU7MRTzmPNjsBp7B4IDCnYaTIdxIJ8uNfMG570kSya3Wk4QbSQTXXrXOEVFg
- 22d3e1ZT0a4I/m3X9zKMHb5DhGS6pe4yvVKDX6ktAziodE3FtZ+66vmsI6rhJN0WZpp2Dfjj7n9gR
- Pz0CXJNPEZKnCUu6spF1ahFccAwHgubWnYLJHMmRmp0w3nXY++crW65iKO8vygb9sIkBCtAkwZ8n4
- iO7jByqg==;
-Received: from 177.17.136.231.dynamic.adsl.gvt.net.br ([177.17.136.231]
- helo=coco.lan)
- by casper.infradead.org with esmtpsa (Exim 4.90_1 #2 (Red Hat Linux))
- id 1hJ2qo-0004Dc-Sx; Tue, 23 Apr 2019 21:21:15 +0000
-Date: Tue, 23 Apr 2019 18:21:08 -0300
-From: Mauro Carvalho Chehab <mchehab+samsung@kernel.org>
-To: Changbin Du <changbin.du@gmail.com>
-Subject: Re: [PATCH v4 16/63] Documentation: ACPI: move debug.txt to
- firmware-guide/acpi and convert to reST
-Message-ID: <20190423182108.2bf06960@coco.lan>
-In-Reply-To: <20190423162932.21428-17-changbin.du@gmail.com>
-References: <20190423162932.21428-1-changbin.du@gmail.com>
- <20190423162932.21428-17-changbin.du@gmail.com>
-X-Mailer: Claws Mail 3.17.3 (GTK+ 2.24.32; x86_64-redhat-linux-gnu)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44pdfx2NZqzDqS8
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Apr 2019 08:39:36 +1000 (AEST)
+Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
+ x3NMd5Pk091970
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Apr 2019 18:39:33 -0400
+Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2s2bhv8ab8-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Apr 2019 18:39:32 -0400
+Received: from localhost
+ by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <bauerman@linux.ibm.com>;
+ Tue, 23 Apr 2019 23:39:32 +0100
+Received: from b03cxnp07029.gho.boulder.ibm.com (9.17.130.16)
+ by e35.co.us.ibm.com (192.168.1.135) with IBM ESMTP SMTP Gateway: Authorized
+ Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Tue, 23 Apr 2019 23:39:30 +0100
+Received: from b03ledav005.gho.boulder.ibm.com
+ (b03ledav005.gho.boulder.ibm.com [9.17.130.236])
+ by b03cxnp07029.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x3NMdTPD25231530
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Tue, 23 Apr 2019 22:39:29 GMT
+Received: from b03ledav005.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 47599BE051;
+ Tue, 23 Apr 2019 22:39:29 +0000 (GMT)
+Received: from b03ledav005.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 3D6B4BE054;
+ Tue, 23 Apr 2019 22:39:27 +0000 (GMT)
+Received: from morokweng.localdomain.com (unknown [9.85.214.110])
+ by b03ledav005.gho.boulder.ibm.com (Postfix) with ESMTP;
+ Tue, 23 Apr 2019 22:39:26 +0000 (GMT)
+From: Thiago Jung Bauermann <bauerman@linux.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH v4] powerpc/pseries: Remove limit in wait for dying CPU
+Date: Tue, 23 Apr 2019 19:39:14 -0300
+X-Mailer: git-send-email 2.17.2
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+x-cbid: 19042322-0012-0000-0000-0000172B09B7
+X-IBM-SpamModules-Scores: 
+X-IBM-SpamModules-Versions: BY=3.00010983; HX=3.00000242; KW=3.00000007;
+ PH=3.00000004; SC=3.00000285; SDB=6.01193417; UDB=6.00625613; IPR=6.00974238; 
+ MB=3.00026564; MTD=3.00000008; XFM=3.00000015; UTC=2019-04-23 22:39:31
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 19042322-0013-0000-0000-000056FC40C0
+Message-Id: <20190423223914.3882-1-bauerman@linux.ibm.com>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
+ definitions=2019-04-23_09:, , signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ malwarescore=0 suspectscore=1 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1810050000 definitions=main-1904230162
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -76,171 +100,109 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: fenghua.yu@intel.com, x86@kernel.org, linux-doc@vger.kernel.org,
- linux-pci@vger.kernel.org, linux-gpio@vger.kernel.org,
- Jonathan Corbet <corbet@lwn.net>, rjw@rjwysocki.net,
- linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, mingo@redhat.com,
- Bjorn Helgaas <bhelgaas@google.com>, tglx@linutronix.de,
- linuxppc-dev@lists.ozlabs.org
+Cc: Gautham R Shenoy <ego@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
+ Nicholas Piggin <npiggin@gmail.com>,
+ Michael Bringmann <mwb@linux.vnet.ibm.com>,
+ Tyrel Datwyler <tyreld@linux.vnet.ibm.com>,
+ Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+ Thiago Jung Bauermann <bauerman@linux.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Em Wed, 24 Apr 2019 00:28:45 +0800
-Changbin Du <changbin.du@gmail.com> escreveu:
+When testing DLPAR CPU add/remove on a system under stress,
+pseries_cpu_die() doesn't wait long enough for a CPU to die:
 
-> This converts the plain text documentation to reStructuredText format and
-> add it to Sphinx TOC tree. No essential content change.
-> 
-> Signed-off-by: Changbin Du <changbin.du@gmail.com>
-> ---
->  .../acpi/debug.rst}                           | 31 ++++++++++---------
->  Documentation/firmware-guide/acpi/index.rst   |  3 +-
->  2 files changed, 19 insertions(+), 15 deletions(-)
->  rename Documentation/{acpi/debug.txt => firmware-guide/acpi/debug.rst} (91%)
-> 
-> diff --git a/Documentation/acpi/debug.txt b/Documentation/firmware-guide/acpi/debug.rst
-> similarity index 91%
-> rename from Documentation/acpi/debug.txt
-> rename to Documentation/firmware-guide/acpi/debug.rst
-> index 65bf47c46b6d..1a152dd1d765 100644
-> --- a/Documentation/acpi/debug.txt
-> +++ b/Documentation/firmware-guide/acpi/debug.rst
-> @@ -1,18 +1,21 @@
-> -			ACPI Debug Output
-> +.. SPDX-License-Identifier: GPL-2.0
->  
-> +=================
-> +ACPI Debug Output
-> +=================
->  
->  The ACPI CA, the Linux ACPI core, and some ACPI drivers can generate debug
->  output.  This document describes how to use this facility.
->  
->  Compile-time configuration
-> ---------------------------
-> +==========================
->  
->  ACPI debug output is globally enabled by CONFIG_ACPI_DEBUG.  If this config
->  option is turned off, the debug messages are not even built into the
->  kernel.
->  
->  Boot- and run-time configuration
-> ---------------------------------
-> +================================
->  
->  When CONFIG_ACPI_DEBUG=y, you can select the component and level of messages
->  you're interested in.  At boot-time, use the acpi.debug_layer and
-> @@ -21,7 +24,7 @@ debug_layer and debug_level files in /sys/module/acpi/parameters/ to control
->  the debug messages.
->  
->  debug_layer (component)
-> ------------------------
-> +=======================
->  
->  The "debug_layer" is a mask that selects components of interest, e.g., a
->  specific driver or part of the ACPI interpreter.  To build the debug_layer
-> @@ -33,7 +36,7 @@ to /sys/module/acpi/parameters/debug_layer.
->  
->  The possible components are defined in include/acpi/acoutput.h and
->  include/acpi/acpi_drivers.h.  Reading /sys/module/acpi/parameters/debug_layer
-> -shows the supported mask values, currently these:
-> +shows the supported mask values, currently these::
->  
->      ACPI_UTILITIES                  0x00000001
->      ACPI_HARDWARE                   0x00000002
-> @@ -65,7 +68,7 @@ shows the supported mask values, currently these:
->      ACPI_PROCESSOR_COMPONENT        0x20000000
+[  446.983944] cpu 148 (hwid 148) Ready to die...
+[  446.984062] cpu 149 (hwid 149) Ready to die...
+[  446.993518] cpu 150 (hwid 150) Ready to die...
+[  446.993543] Querying DEAD? cpu 150 (150) shows 2
+[  446.994098] cpu 151 (hwid 151) Ready to die...
+[  447.133726] cpu 136 (hwid 136) Ready to die...
+[  447.403532] cpu 137 (hwid 137) Ready to die...
+[  447.403772] cpu 138 (hwid 138) Ready to die...
+[  447.403839] cpu 139 (hwid 139) Ready to die...
+[  447.403887] cpu 140 (hwid 140) Ready to die...
+[  447.403937] cpu 141 (hwid 141) Ready to die...
+[  447.403979] cpu 142 (hwid 142) Ready to die...
+[  447.404038] cpu 143 (hwid 143) Ready to die...
+[  447.513546] cpu 128 (hwid 128) Ready to die...
+[  447.693533] cpu 129 (hwid 129) Ready to die...
+[  447.693999] cpu 130 (hwid 130) Ready to die...
+[  447.703530] cpu 131 (hwid 131) Ready to die...
+[  447.704087] Querying DEAD? cpu 132 (132) shows 2
+[  447.704102] cpu 132 (hwid 132) Ready to die...
+[  447.713534] cpu 133 (hwid 133) Ready to die...
+[  447.714064] Querying DEAD? cpu 134 (134) shows 2
 
-This is one way of doing. The other one, with would likely produce a
-better visual, would be to use tables, e. g.:
+This is a race between one CPU stopping and another one calling
+pseries_cpu_die() to wait for it to stop. That function does a short busy
+loop calling RTAS query-cpu-stopped-state on the stopping CPU to verify
+that it is stopped, but I think there's a lot for the stopping CPU to do
+which may take longer than this loop allows.
 
-     ==============                  ==========
-     ACPI_UTILITIES                  0x00000001
-     ACPI_HARDWARE                   0x00000002
-     ==============                  ==========
+As can be seen in the dmesg right before or after the "Querying DEAD?"
+messages, if pseries_cpu_die() waited a little longer it would have seen
+the CPU in the stopped state.
 
-Of course, if you use tables here, you need to be consistent along
-similar cases inside the document.
+What I think is going on is that CPU 134 was inactive at the time it was
+unplugged. In that case, dlpar_offline_cpu() calls H_PROD on that CPU and
+immediately calls pseries_cpu_die(). Meanwhile, the prodded CPU activates
+and start the process of stopping itself. The busy loop is not long enough
+to allow for the CPU to wake up and complete the stopping process.
 
-while both works, I prefer using tables on such cases.
+This can be a problem because if the busy loop finishes too early, then the
+kernel may offline another CPU before the previous one finished dying,
+which would lead to two concurrent calls to rtas-stop-self, which is
+prohibited by the PAPR.
 
-Either way:
+Since the hotplug machinery already assumes that cpu_die() is going to
+work, we can simply loop until the CPU stops.
 
-Reviewed-by: Mauro Carvalho Chehab <mchehab+samsung@kernel.org>
+Also change the loop to wait 100 µs between each call to
+smp_query_cpu_stopped() to avoid querying RTAS too often.
 
->  
->  debug_level
-> ------------
-> +===========
->  
->  The "debug_level" is a mask that selects different types of messages, e.g.,
->  those related to initialization, method execution, informational messages, etc.
-> @@ -81,7 +84,7 @@ to /sys/module/acpi/parameters/debug_level.
->  
->  The possible levels are defined in include/acpi/acoutput.h.  Reading
->  /sys/module/acpi/parameters/debug_level shows the supported mask values,
-> -currently these:
-> +currently these::
->  
->      ACPI_LV_INIT                    0x00000001
->      ACPI_LV_DEBUG_OBJECT            0x00000002
-> @@ -113,9 +116,9 @@ currently these:
->      ACPI_LV_EVENTS                  0x80000000
->  
->  Examples
-> ---------
-> +========
->  
-> -For example, drivers/acpi/bus.c contains this:
-> +For example, drivers/acpi/bus.c contains this::
->  
->      #define _COMPONENT              ACPI_BUS_COMPONENT
->      ...
-> @@ -127,22 +130,22 @@ statement uses ACPI_DB_INFO, which is macro based on the ACPI_LV_INFO
->  definition.)
->  
->  Enable all AML "Debug" output (stores to the Debug object while interpreting
-> -AML) during boot:
-> +AML) during boot::
->  
->      acpi.debug_layer=0xffffffff acpi.debug_level=0x2
->  
-> -Enable PCI and PCI interrupt routing debug messages:
-> +Enable PCI and PCI interrupt routing debug messages::
->  
->      acpi.debug_layer=0x400000 acpi.debug_level=0x4
->  
-> -Enable all ACPI hardware-related messages:
-> +Enable all ACPI hardware-related messages::
->  
->      acpi.debug_layer=0x2 acpi.debug_level=0xffffffff
->  
-> -Enable all ACPI_DB_INFO messages after boot:
-> +Enable all ACPI_DB_INFO messages after boot::
->  
->      # echo 0x4 > /sys/module/acpi/parameters/debug_level
->  
-> -Show all valid component values:
-> +Show all valid component values::
->   
->      # cat /sys/module/acpi/parameters/debug_layer
-> diff --git a/Documentation/firmware-guide/acpi/index.rst b/Documentation/firmware-guide/acpi/index.rst
-> index 6d4e0df4f063..a45fea11f998 100644
-> --- a/Documentation/firmware-guide/acpi/index.rst
-> +++ b/Documentation/firmware-guide/acpi/index.rst
-> @@ -14,6 +14,7 @@ ACPI Support
->     osi
->     method-customizing
->     DSD-properties-rules
-> +   debug
->     gpio-properties
->     i2c-muxes
-> -   acpi-lid
-> \ No newline at end of file
-> +   acpi-lid
+Signed-off-by: Thiago Jung Bauermann <bauerman@linux.ibm.com>
+Analyzed-by: Gautham R Shenoy <ego@linux.vnet.ibm.com>
+---
+ arch/powerpc/platforms/pseries/hotplug-cpu.c | 10 +++++++---
+ 1 file changed, 7 insertions(+), 3 deletions(-)
 
+I have seen this problem since v4.8. Should this patch go to stable as
+well?
 
+Changes since v3:
+- Changed to loop until the CPU stops rather than for a fixed amount
+  of time.
 
-Thanks,
-Mauro
+Changes since v2:
+- Increased busy loop to 200 iterations so that it can last up to 20 ms
+  (suggested by Gautham).
+- Changed commit message to include Gautham's remarks.
+
+diff --git a/arch/powerpc/platforms/pseries/hotplug-cpu.c b/arch/powerpc/platforms/pseries/hotplug-cpu.c
+index 97feb6e79f1a..d75cee60644c 100644
+--- a/arch/powerpc/platforms/pseries/hotplug-cpu.c
++++ b/arch/powerpc/platforms/pseries/hotplug-cpu.c
+@@ -214,13 +214,17 @@ static void pseries_cpu_die(unsigned int cpu)
+ 			msleep(1);
+ 		}
+ 	} else if (get_preferred_offline_state(cpu) == CPU_STATE_OFFLINE) {
+-
+-		for (tries = 0; tries < 25; tries++) {
++		/*
++		 * rtas_stop_self() panics if the CPU fails to stop and our
++		 * callers already assume that we are going to succeed, so we
++		 * can just loop until the CPU stops.
++		 */
++		while (true) {
+ 			cpu_status = smp_query_cpu_stopped(pcpu);
+ 			if (cpu_status == QCSS_STOPPED ||
+ 			    cpu_status == QCSS_HARDWARE_ERROR)
+ 				break;
+-			cpu_relax();
++			udelay(100);
+ 		}
+ 	}
+ 
+
