@@ -5,77 +5,76 @@ X-Spam-Level:
 X-Spam-Status: No, score=-8.6 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
 	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+	SPF_PASS,USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 184AFC10F03
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Apr 2019 21:00:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 392AAC10F03
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Apr 2019 21:02:17 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 8450121773
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Apr 2019 21:00:35 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id A67E021773
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Apr 2019 21:02:16 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="eCiNdsu6"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8450121773
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="ZCR8Yh0G"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A67E021773
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44pbSd22DBzDqTh
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Apr 2019 07:00:33 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44pbVZ24StzDqLX
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Apr 2019 07:02:14 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=2607:f8b0:4864:20::544; helo=mail-pg1-x544.google.com;
+ (client-ip=2607:f8b0:4864:20::543; helo=mail-pg1-x543.google.com;
  envelope-from=changbin.du@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="eCiNdsu6"; 
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="ZCR8Yh0G"; 
  dkim-atps=neutral
-Received: from mail-pg1-x544.google.com (mail-pg1-x544.google.com
- [IPv6:2607:f8b0:4864:20::544])
+Received: from mail-pg1-x543.google.com (mail-pg1-x543.google.com
+ [IPv6:2607:f8b0:4864:20::543])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44pTdB4yjGzDq5b
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Apr 2019 02:37:34 +1000 (AEST)
-Received: by mail-pg1-x544.google.com with SMTP id 85so7893395pgc.3
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Apr 2019 09:37:34 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44pTdJ4FVzzDq5b
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Apr 2019 02:37:40 +1000 (AEST)
+Received: by mail-pg1-x543.google.com with SMTP id f6so7865406pgs.8
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Apr 2019 09:37:40 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
  h=from:to:cc:subject:date:message-id:in-reply-to:references
  :mime-version:content-transfer-encoding;
- bh=XTxWAkITaeuXkEicHzgb86kvZ4CtkW/rQaAM31H+6pk=;
- b=eCiNdsu6+WsWsnughnjrVWSGiV78Aj4u6TzDcIJXQxaGjmBFblUZvNFfWA09+0kmL9
- 8fP6mWrIjKmuzVEygYbJPteG90WmilTSL/qi9t36gkH9YXG8prEpQ3WYP2xc8Pf9DL4P
- 0Qn57e/UltVviGuYURQcjbVbrUtn8kqZypF2CdcASLlaOjinHz8X6fewYJq9oPmrqZcb
- p0I3zdEU+FmutX6PpxW+tnXmfmUv0fW78pBTezP6rBNNiHhvVmWZkDhMq5P+p+ZZy9ov
- LzWf2S3JSyYkkCAuOpRsF5U3a9+FZEetKJ0gbL0Pr0CEzEE/mJoSoOXv3SUKbJVuENvF
- rPlw==
+ bh=o4nkW5qMBlJfhXU2XzdZiHmjUQAE2qfxhJ8o3/2mt0U=;
+ b=ZCR8Yh0G0S9MhzPKcA0kaKJiCZNVsrjniYh3f7+M87mqND/kJ3K3EoZmRwPn0MZ5ZK
+ PmWxHrvWcLryZ2VQBNbeH8+ZTyZ5tw1kwriR0leIEA8dcl+44zhDPon6srqvHpU1MRm5
+ cMI6O+ut+omWKMcIi8H4MHja1/f1wbJZSPahTGJMTyJtSbuY7cU0Xpewq5YCpma5div9
+ NPzvdJrv1yDWzDtPZiLeSukB7SJbfqxRic1TTD260Uh0cGc/TrLHrjRPMonjShkEBdYL
+ b+mtBChn94Geop0jPrDxawLmoWjKhGu/oTm8hS56sZDZTQ7OW9bi0Cqf9uWwcGAP6J4d
+ scTQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
  :references:mime-version:content-transfer-encoding;
- bh=XTxWAkITaeuXkEicHzgb86kvZ4CtkW/rQaAM31H+6pk=;
- b=hSlOTXKBvM9wkwu8GMEDIlXHPTkcU4/jrc8EFY25cL/JhCConiRTIlqRM5ew7Ih4En
- sqNaw39zvIFJYbafQbC6bV6av2B3fJovfda9udpfShnT8l81caU2cF3fdc/VNjU+FME/
- tL+wE1sP3QIJEfCJ2CPj1A11nQh9foYaF9m2mdD4KGuA5jxbPFAiTKWRd8PcNNNn7NbP
- jEe3kYIWUi5y6QyAVToMz/V62Iy97er33Zs9PSb/Xmd7az2v7AXCdNOrnHshHbKcqfuJ
- 6QVe5R+PbjdA/VC1CpIoGxgTKVKfhXfg74X4nIzWzT/pd9oyoTRu4Cy5B6cQeaAfYHmF
- lqKg==
-X-Gm-Message-State: APjAAAW0+Btw7OTzQjmcysCNjnReuNQwrDrpL4TkBEhaPZTjKVSlQy99
- a8e4wlqdVDRRHPMrAwoDDMs=
-X-Google-Smtp-Source: APXvYqwIjT4Aqw/dt4AUVuGLYUuDxUT4V1yUKq/FUkadRtEM7yUEg7aqxi/U6zQ5lVGejG97D3BMcw==
-X-Received: by 2002:a63:330e:: with SMTP id z14mr25407161pgz.4.1556037452484; 
- Tue, 23 Apr 2019 09:37:32 -0700 (PDT)
+ bh=o4nkW5qMBlJfhXU2XzdZiHmjUQAE2qfxhJ8o3/2mt0U=;
+ b=mJb237YxvCgX4Jqq+k+sIEnK44ur+/OVADz/qhrzB6BPtYVyxXFsDtAyjIf9Z2EQV3
+ eOqlovlUiKKwXpna7TtdsTizWKXVVP7otlS3OOezJ2edCRN6CJxXg2ZbyY5iCeH4mgIh
+ zlGvRv1Fa3DQoLvyTEMD8oOVLjswo+wD4t8vpsYv5O/1XdcahkUFDe8b6kNqFc0eh11H
+ +VlbSRzHZnxQggYi0z9Gu96V4G0tivIhFL+hE1BhZDU139sP5iD+3ewQ7ImJuxMN7z3U
+ wuNIW/bz/ekzZrfW+0mAuq0xEUJiEIgQxlSAz4JvS5Bmx+k7XhSaBujzbIh7o3M6QjMN
+ 0Lbg==
+X-Gm-Message-State: APjAAAVfwzWgnT1Okju84A7oHhgry+eRKgf5eQJle9T0Vb0FFNOx8ej/
+ RHhataIiRzAgX4brAXMnvyA=
+X-Google-Smtp-Source: APXvYqxrFa2o/lkJ3G96PqNTaEeM7wfvhL/FoS4hwRbeY2bEIv5FoVrZWHACnsr1tudYl838heCmdw==
+X-Received: by 2002:a63:4a45:: with SMTP id j5mr26042107pgl.426.1556037458867; 
+ Tue, 23 Apr 2019 09:37:38 -0700 (PDT)
 Received: from localhost.localdomain ([104.238.181.70])
- by smtp.gmail.com with ESMTPSA id v1sm24364801pff.81.2019.04.23.09.37.21
+ by smtp.gmail.com with ESMTPSA id v1sm24364801pff.81.2019.04.23.09.37.32
  (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
- Tue, 23 Apr 2019 09:37:31 -0700 (PDT)
+ Tue, 23 Apr 2019 09:37:38 -0700 (PDT)
 From: Changbin Du <changbin.du@gmail.com>
 To: Jonathan Corbet <corbet@lwn.net>
-Subject: [PATCH v4 43/63] Documentation: x86: convert earlyprintk.txt to reST
-Date: Wed, 24 Apr 2019 00:29:12 +0800
-Message-Id: <20190423162932.21428-44-changbin.du@gmail.com>
+Subject: [PATCH v4 44/63] Documentation: x86: convert zero-page.txt to reST
+Date: Wed, 24 Apr 2019 00:29:13 +0800
+Message-Id: <20190423162932.21428-45-changbin.du@gmail.com>
 X-Mailer: git-send-email 2.20.1
 In-Reply-To: <20190423162932.21428-1-changbin.du@gmail.com>
 References: <20190423162932.21428-1-changbin.du@gmail.com>
@@ -107,323 +106,121 @@ add it to Sphinx TOC tree. No essential content change.
 
 Signed-off-by: Changbin Du <changbin.du@gmail.com>
 ---
- Documentation/x86/earlyprintk.rst | 148 ++++++++++++++++++++++++++++++
- Documentation/x86/earlyprintk.txt | 141 ----------------------------
- Documentation/x86/index.rst       |   1 +
- 3 files changed, 149 insertions(+), 141 deletions(-)
- create mode 100644 Documentation/x86/earlyprintk.rst
- delete mode 100644 Documentation/x86/earlyprintk.txt
+ Documentation/x86/index.rst     |  1 +
+ Documentation/x86/zero-page.rst | 47 +++++++++++++++++++++++++++++++++
+ Documentation/x86/zero-page.txt | 40 ----------------------------
+ 3 files changed, 48 insertions(+), 40 deletions(-)
+ create mode 100644 Documentation/x86/zero-page.rst
+ delete mode 100644 Documentation/x86/zero-page.txt
 
-diff --git a/Documentation/x86/earlyprintk.rst b/Documentation/x86/earlyprintk.rst
-new file mode 100644
-index 000000000000..519402451f9c
---- /dev/null
-+++ b/Documentation/x86/earlyprintk.rst
-@@ -0,0 +1,148 @@
-+.. SPDX-License-Identifier: GPL-2.0
-+
-+============
-+Early Printk
-+============
-+
-+Mini-HOWTO for using the earlyprintk=dbgp boot option with a
-+USB2 Debug port key and a debug cable, on x86 systems.
-+
-+You need two computers, the 'USB debug key' special gadget and
-+and two USB cables, connected like this::
-+
-+  [host/target] <-------> [USB debug key] <-------> [client/console]
-+
-+There are a number of specific hardware requirements
-+====================================================
-+
-+ a) Host/target system needs to have USB debug port capability.
-+
-+  You can check this capability by looking at a 'Debug port' bit in
-+  the lspci -vvv output::
-+
-+    # lspci -vvv
-+    ...
-+    00:1d.7 USB Controller: Intel Corporation 82801H (ICH8 Family) USB2 EHCI Controller #1 (rev 03) (prog-if 20 [EHCI])
-+            Subsystem: Lenovo ThinkPad T61
-+            Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR+ FastB2B- DisINTx-
-+            Status: Cap+ 66MHz- UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
-+            Latency: 0
-+            Interrupt: pin D routed to IRQ 19
-+            Region 0: Memory at fe227000 (32-bit, non-prefetchable) [size=1K]
-+            Capabilities: [50] Power Management version 2
-+                    Flags: PMEClk- DSI- D1- D2- AuxCurrent=375mA PME(D0+,D1-,D2-,D3hot+,D3cold+)
-+                    Status: D0 PME-Enable- DSel=0 DScale=0 PME+
-+            Capabilities: [58] Debug port: BAR=1 offset=00a0
-+                                ^^^^^^^^^^^ <==================== [ HERE ]
-+      Kernel driver in use: ehci_hcd
-+            Kernel modules: ehci-hcd
-+    ...
-+
-+  If your system does not list a debug port capability then you probably
-+  won't be able to use the USB debug key.
-+
-+ b) You also need a NetChip USB debug cable/key:
-+
-+        http://www.plxtech.com/products/NET2000/NET20DC/default.asp
-+
-+    This is a small blue plastic connector with two USB connections;
-+    it draws power from its USB connections.
-+
-+ c) You need a second client/console system with a high speed USB 2.0 port.
-+
-+ d) The NetChip device must be plugged directly into the physical
-+    debug port on the "host/target" system.  You cannot use a USB hub in
-+    between the physical debug port and the "host/target" system.
-+
-+    The EHCI debug controller is bound to a specific physical USB
-+    port and the NetChip device will only work as an early printk
-+    device in this port.  The EHCI host controllers are electrically
-+    wired such that the EHCI debug controller is hooked up to the
-+    first physical port and there is no way to change this via software.
-+    You can find the physical port through experimentation by trying
-+    each physical port on the system and rebooting.  Or you can try
-+    and use lsusb or look at the kernel info messages emitted by the
-+    usb stack when you plug a usb device into various ports on the
-+    "host/target" system.
-+
-+    Some hardware vendors do not expose the usb debug port with a
-+    physical connector and if you find such a device send a complaint
-+    to the hardware vendor, because there is no reason not to wire
-+    this port into one of the physically accessible ports.
-+
-+ e) It is also important to note, that many versions of the NetChip
-+    device require the "client/console" system to be plugged into the
-+    right hand side of the device (with the product logo facing up and
-+    readable left to right).  The reason being is that the 5 volt
-+    power supply is taken from only one side of the device and it
-+    must be the side that does not get rebooted.
-+
-+Software requirements
-+=====================
-+
-+ a) On the host/target system:
-+
-+    You need to enable the following kernel config option::
-+
-+      CONFIG_EARLY_PRINTK_DBGP=y
-+
-+    And you need to add the boot command line: "earlyprintk=dbgp".
-+
-+    .. note:: If you are using Grub, append it to the 'kernel' line in
-+     /etc/grub.conf.  If you are using Grub2 on a BIOS firmware system,
-+     append it to the 'linux' line in /boot/grub2/grub.cfg. If you are
-+     using Grub2 on an EFI firmware system, append it to the 'linux'
-+     or 'linuxefi' line in /boot/grub2/grub.cfg or
-+     /boot/efi/EFI/<distro>/grub.cfg.)
-+
-+    On systems with more than one EHCI debug controller you must
-+    specify the correct EHCI debug controller number.  The ordering
-+    comes from the PCI bus enumeration of the EHCI controllers.  The
-+    default with no number argument is "0" or the first EHCI debug
-+    controller.  To use the second EHCI debug controller, you would
-+    use the command line: "earlyprintk=dbgp1"
-+
-+    NOTE: normally earlyprintk console gets turned off once the
-+    regular console is alive - use "earlyprintk=dbgp,keep" to keep
-+    this channel open beyond early bootup. This can be useful for
-+    debugging crashes under Xorg, etc.
-+
-+ b) On the client/console system:
-+
-+    You should enable the following kernel config option::
-+
-+      CONFIG_USB_SERIAL_DEBUG=y
-+
-+    On the next bootup with the modified kernel you should
-+    get a /dev/ttyUSBx device(s).
-+
-+    Now this channel of kernel messages is ready to be used: start
-+    your favorite terminal emulator (minicom, etc.) and set
-+    it up to use /dev/ttyUSB0 - or use a raw 'cat /dev/ttyUSBx' to
-+    see the raw output.
-+
-+ c) On Nvidia Southbridge based systems: the kernel will try to probe
-+    and find out which port has a debug device connected.
-+
-+Testing that it works fine
-+==========================
-+
-+  You can test the output by using earlyprintk=dbgp,keep and provoking
-+  kernel messages on the host/target system. You can provoke a harmless
-+  kernel message by for example doing::
-+
-+    echo h > /proc/sysrq-trigger
-+
-+  On the host/target system you should see this help line in "dmesg" output::
-+
-+    SysRq : HELP : loglevel(0-9) reBoot Crashdump terminate-all-tasks(E) memory-full-oom-kill(F) kill-all-tasks(I) saK show-backtrace-all-active-cpus(L) show-memory-usage(M) nice-all-RT-tasks(N) powerOff show-registers(P) show-all-timers(Q) unRaw Sync show-task-states(T) Unmount show-blocked-tasks(W) dump-ftrace-buffer(Z)
-+
-+  On the client/console system do::
-+
-+    cat /dev/ttyUSB0
-+
-+  And you should see the help line above displayed shortly after you've
-+  provoked it on the host system.
-+
-+If it does not work then please ask about it on the linux-kernel@vger.kernel.org
-+mailing list or contact the x86 maintainers.
-diff --git a/Documentation/x86/earlyprintk.txt b/Documentation/x86/earlyprintk.txt
-deleted file mode 100644
-index 46933e06c972..000000000000
---- a/Documentation/x86/earlyprintk.txt
-+++ /dev/null
-@@ -1,141 +0,0 @@
--
--Mini-HOWTO for using the earlyprintk=dbgp boot option with a
--USB2 Debug port key and a debug cable, on x86 systems.
--
--You need two computers, the 'USB debug key' special gadget and
--and two USB cables, connected like this:
--
--  [host/target] <-------> [USB debug key] <-------> [client/console]
--
--1. There are a number of specific hardware requirements:
--
-- a.) Host/target system needs to have USB debug port capability.
--
-- You can check this capability by looking at a 'Debug port' bit in
-- the lspci -vvv output:
--
-- # lspci -vvv
-- ...
-- 00:1d.7 USB Controller: Intel Corporation 82801H (ICH8 Family) USB2 EHCI Controller #1 (rev 03) (prog-if 20 [EHCI])
--         Subsystem: Lenovo ThinkPad T61
--         Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR+ FastB2B- DisINTx-
--         Status: Cap+ 66MHz- UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
--         Latency: 0
--         Interrupt: pin D routed to IRQ 19
--         Region 0: Memory at fe227000 (32-bit, non-prefetchable) [size=1K]
--         Capabilities: [50] Power Management version 2
--                 Flags: PMEClk- DSI- D1- D2- AuxCurrent=375mA PME(D0+,D1-,D2-,D3hot+,D3cold+)
--                 Status: D0 PME-Enable- DSel=0 DScale=0 PME+
--         Capabilities: [58] Debug port: BAR=1 offset=00a0
--                            ^^^^^^^^^^^ <==================== [ HERE ]
--	 Kernel driver in use: ehci_hcd
--         Kernel modules: ehci-hcd
-- ...
--
--( If your system does not list a debug port capability then you probably
--  won't be able to use the USB debug key. )
--
-- b.) You also need a NetChip USB debug cable/key:
--
--        http://www.plxtech.com/products/NET2000/NET20DC/default.asp
--
--     This is a small blue plastic connector with two USB connections;
--     it draws power from its USB connections.
--
-- c.) You need a second client/console system with a high speed USB 2.0
--     port.
--
-- d.) The NetChip device must be plugged directly into the physical
--     debug port on the "host/target" system.  You cannot use a USB hub in
--     between the physical debug port and the "host/target" system.
--
--     The EHCI debug controller is bound to a specific physical USB
--     port and the NetChip device will only work as an early printk
--     device in this port.  The EHCI host controllers are electrically
--     wired such that the EHCI debug controller is hooked up to the
--     first physical port and there is no way to change this via software.
--     You can find the physical port through experimentation by trying
--     each physical port on the system and rebooting.  Or you can try
--     and use lsusb or look at the kernel info messages emitted by the
--     usb stack when you plug a usb device into various ports on the
--     "host/target" system.
--
--     Some hardware vendors do not expose the usb debug port with a
--     physical connector and if you find such a device send a complaint
--     to the hardware vendor, because there is no reason not to wire
--     this port into one of the physically accessible ports.
--
-- e.) It is also important to note, that many versions of the NetChip
--     device require the "client/console" system to be plugged into the
--     right hand side of the device (with the product logo facing up and
--     readable left to right).  The reason being is that the 5 volt
--     power supply is taken from only one side of the device and it
--     must be the side that does not get rebooted.
--
--2. Software requirements:
--
-- a.) On the host/target system:
--
--    You need to enable the following kernel config option:
--
--      CONFIG_EARLY_PRINTK_DBGP=y
--
--    And you need to add the boot command line: "earlyprintk=dbgp".
--
--    (If you are using Grub, append it to the 'kernel' line in
--     /etc/grub.conf.  If you are using Grub2 on a BIOS firmware system,
--     append it to the 'linux' line in /boot/grub2/grub.cfg. If you are
--     using Grub2 on an EFI firmware system, append it to the 'linux'
--     or 'linuxefi' line in /boot/grub2/grub.cfg or
--     /boot/efi/EFI/<distro>/grub.cfg.)
--
--    On systems with more than one EHCI debug controller you must
--    specify the correct EHCI debug controller number.  The ordering
--    comes from the PCI bus enumeration of the EHCI controllers.  The
--    default with no number argument is "0" or the first EHCI debug
--    controller.  To use the second EHCI debug controller, you would
--    use the command line: "earlyprintk=dbgp1"
--
--    NOTE: normally earlyprintk console gets turned off once the
--    regular console is alive - use "earlyprintk=dbgp,keep" to keep
--    this channel open beyond early bootup. This can be useful for
--    debugging crashes under Xorg, etc.
--
-- b.) On the client/console system:
--
--    You should enable the following kernel config option:
--
--      CONFIG_USB_SERIAL_DEBUG=y
--
--    On the next bootup with the modified kernel you should
--    get a /dev/ttyUSBx device(s).
--
--    Now this channel of kernel messages is ready to be used: start
--    your favorite terminal emulator (minicom, etc.) and set
--    it up to use /dev/ttyUSB0 - or use a raw 'cat /dev/ttyUSBx' to
--    see the raw output.
--
-- c.) On Nvidia Southbridge based systems: the kernel will try to probe
--     and find out which port has a debug device connected.
--
--3. Testing that it works fine:
--
--   You can test the output by using earlyprintk=dbgp,keep and provoking
--   kernel messages on the host/target system. You can provoke a harmless
--   kernel message by for example doing:
--
--     echo h > /proc/sysrq-trigger
--
--   On the host/target system you should see this help line in "dmesg" output:
--
--     SysRq : HELP : loglevel(0-9) reBoot Crashdump terminate-all-tasks(E) memory-full-oom-kill(F) kill-all-tasks(I) saK show-backtrace-all-active-cpus(L) show-memory-usage(M) nice-all-RT-tasks(N) powerOff show-registers(P) show-all-timers(Q) unRaw Sync show-task-states(T) Unmount show-blocked-tasks(W) dump-ftrace-buffer(Z)
--
--   On the client/console system do:
--
--       cat /dev/ttyUSB0
--
--   And you should see the help line above displayed shortly after you've
--   provoked it on the host system.
--
--If it does not work then please ask about it on the linux-kernel@vger.kernel.org
--mailing list or contact the x86 maintainers.
 diff --git a/Documentation/x86/index.rst b/Documentation/x86/index.rst
-index 8a666c5abc85..7b8388ebd43d 100644
+index 7b8388ebd43d..9a0b5f38ef6b 100644
 --- a/Documentation/x86/index.rst
 +++ b/Documentation/x86/index.rst
-@@ -13,3 +13,4 @@ Linux x86 Support
-    exception-tables
+@@ -14,3 +14,4 @@ Linux x86 Support
     kernel-stacks
     entry_64
-+   earlyprintk
+    earlyprintk
++   zero-page
+diff --git a/Documentation/x86/zero-page.rst b/Documentation/x86/zero-page.rst
+new file mode 100644
+index 000000000000..deedbc84454d
+--- /dev/null
++++ b/Documentation/x86/zero-page.rst
+@@ -0,0 +1,47 @@
++.. SPDX-License-Identifier: GPL-2.0
++
++=========
++Zero Page
++=========
++
++The additional fields in struct boot_params as a part of 32-bit boot
++protocol of kernel. These should be filled by bootloader or 16-bit
++real-mode setup code of the kernel. References/settings to it mainly
++are in::
++
++  arch/x86/include/uapi/asm/bootparam.h
++
++::
++
++	Offset	Proto	Name		Meaning
++	/Size
++
++	000/040	ALL	screen_info	Text mode or frame buffer information
++					(struct screen_info)
++	040/014	ALL	apm_bios_info	APM BIOS information (struct apm_bios_info)
++	058/008	ALL	tboot_addr      Physical address of tboot shared page
++	060/010	ALL	ist_info	Intel SpeedStep (IST) BIOS support information
++					(struct ist_info)
++	080/010	ALL	hd0_info	hd0 disk parameter, OBSOLETE!!
++	090/010	ALL	hd1_info	hd1 disk parameter, OBSOLETE!!
++	0A0/010	ALL	sys_desc_table	System description table (struct sys_desc_table),
++					OBSOLETE!!
++	0B0/010	ALL	olpc_ofw_header	OLPC's OpenFirmware CIF and friends
++	0C0/004	ALL	ext_ramdisk_image ramdisk_image high 32bits
++	0C4/004	ALL	ext_ramdisk_size  ramdisk_size high 32bits
++	0C8/004	ALL	ext_cmd_line_ptr  cmd_line_ptr high 32bits
++	140/080	ALL	edid_info	Video mode setup (struct edid_info)
++	1C0/020	ALL	efi_info	EFI 32 information (struct efi_info)
++	1E0/004	ALL	alt_mem_k	Alternative mem check, in KB
++	1E4/004	ALL	scratch		Scratch field for the kernel setup code
++	1E8/001	ALL	e820_entries	Number of entries in e820_table (below)
++	1E9/001	ALL	eddbuf_entries	Number of entries in eddbuf (below)
++	1EA/001	ALL	edd_mbr_sig_buf_entries	Number of entries in edd_mbr_sig_buffer
++					(below)
++	1EB/001	ALL     kbd_status      Numlock is enabled
++	1EC/001	ALL     secure_boot	Secure boot is enabled in the firmware
++	1EF/001	ALL	sentinel	Used to detect broken bootloaders
++	290/040	ALL	edd_mbr_sig_buffer EDD MBR signatures
++	2D0/A00	ALL	e820_table	E820 memory map table
++					(array of struct e820_entry)
++	D00/1EC	ALL	eddbuf		EDD data (array of struct edd_info)
+diff --git a/Documentation/x86/zero-page.txt b/Documentation/x86/zero-page.txt
+deleted file mode 100644
+index 68aed077f7b6..000000000000
+--- a/Documentation/x86/zero-page.txt
++++ /dev/null
+@@ -1,40 +0,0 @@
+-The additional fields in struct boot_params as a part of 32-bit boot
+-protocol of kernel. These should be filled by bootloader or 16-bit
+-real-mode setup code of the kernel. References/settings to it mainly
+-are in:
+-
+-  arch/x86/include/uapi/asm/bootparam.h
+-
+-
+-Offset	Proto	Name		Meaning
+-/Size
+-
+-000/040	ALL	screen_info	Text mode or frame buffer information
+-				(struct screen_info)
+-040/014	ALL	apm_bios_info	APM BIOS information (struct apm_bios_info)
+-058/008	ALL	tboot_addr      Physical address of tboot shared page
+-060/010	ALL	ist_info	Intel SpeedStep (IST) BIOS support information
+-				(struct ist_info)
+-080/010	ALL	hd0_info	hd0 disk parameter, OBSOLETE!!
+-090/010	ALL	hd1_info	hd1 disk parameter, OBSOLETE!!
+-0A0/010	ALL	sys_desc_table	System description table (struct sys_desc_table),
+-				OBSOLETE!!
+-0B0/010	ALL	olpc_ofw_header	OLPC's OpenFirmware CIF and friends
+-0C0/004	ALL	ext_ramdisk_image ramdisk_image high 32bits
+-0C4/004	ALL	ext_ramdisk_size  ramdisk_size high 32bits
+-0C8/004	ALL	ext_cmd_line_ptr  cmd_line_ptr high 32bits
+-140/080	ALL	edid_info	Video mode setup (struct edid_info)
+-1C0/020	ALL	efi_info	EFI 32 information (struct efi_info)
+-1E0/004	ALL	alt_mem_k	Alternative mem check, in KB
+-1E4/004	ALL	scratch		Scratch field for the kernel setup code
+-1E8/001	ALL	e820_entries	Number of entries in e820_table (below)
+-1E9/001	ALL	eddbuf_entries	Number of entries in eddbuf (below)
+-1EA/001	ALL	edd_mbr_sig_buf_entries	Number of entries in edd_mbr_sig_buffer
+-				(below)
+-1EB/001	ALL     kbd_status      Numlock is enabled
+-1EC/001	ALL     secure_boot	Secure boot is enabled in the firmware
+-1EF/001	ALL	sentinel	Used to detect broken bootloaders
+-290/040	ALL	edd_mbr_sig_buffer EDD MBR signatures
+-2D0/A00	ALL	e820_table	E820 memory map table
+-				(array of struct e820_entry)
+-D00/1EC	ALL	eddbuf		EDD data (array of struct edd_info)
 -- 
 2.20.1
 
