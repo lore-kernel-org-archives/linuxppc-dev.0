@@ -5,77 +5,77 @@ X-Spam-Level:
 X-Spam-Status: No, score=-8.6 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
 	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_PASS,USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+	SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 221EDC10F03
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Apr 2019 20:34:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CB594C10F03
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Apr 2019 20:35:47 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 8E0C621773
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Apr 2019 20:34:09 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 4788A218B0
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Apr 2019 20:35:47 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="ijck6Jk5"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8E0C621773
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="q3qV1j/r"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4788A218B0
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44pZt74dnDzDqR2
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Apr 2019 06:34:07 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44pZw12lnkzDqBh
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Apr 2019 06:35:45 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=2607:f8b0:4864:20::644; helo=mail-pl1-x644.google.com;
+ (client-ip=2607:f8b0:4864:20::442; helo=mail-pf1-x442.google.com;
  envelope-from=changbin.du@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="ijck6Jk5"; 
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="q3qV1j/r"; 
  dkim-atps=neutral
-Received: from mail-pl1-x644.google.com (mail-pl1-x644.google.com
- [IPv6:2607:f8b0:4864:20::644])
+Received: from mail-pf1-x442.google.com (mail-pf1-x442.google.com
+ [IPv6:2607:f8b0:4864:20::442])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44pTZC3XGzzDqHR
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Apr 2019 02:34:59 +1000 (AEST)
-Received: by mail-pl1-x644.google.com with SMTP id e92so6004155plb.6
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Apr 2019 09:34:59 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44pTZS5LHbzDqJ7
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Apr 2019 02:35:12 +1000 (AEST)
+Received: by mail-pf1-x442.google.com with SMTP id h5so7770607pfo.0
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Apr 2019 09:35:12 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
  h=from:to:cc:subject:date:message-id:in-reply-to:references
  :mime-version:content-transfer-encoding;
- bh=xbDzPgrG7sGMDqtDgEqDecIChfX7yasg95T4JIMF8ig=;
- b=ijck6Jk5jSTFu2bSdPPJqVJPs/1kM3SnO59t7pHYDikzku4nrYwI5QOuv+i7bZeD4o
- cZdrTPRAEmDk+Q7LJXtlbwSHqUhJEcTpIzf+LF2oS1Wy8urQppC8jVKLqRseAhikBvWg
- P8YQyzWrhkSBQsCQpunArWaQxYs1aXD0kalpZD8S875Eb53ISaNiK7b8hnfGSYHTaJBt
- uFLc20tsMQb4fRiT5J3ElRgI4hPXsxWR8T5cdSsqpdU6zTR2dYdjdI7SVLXrThhy57u0
- bDQASgNo4HvrS3Gs8W01u1xZy9OaTrSkuHlunsi1TGDbpg6LctOoToru/gNgkpxRp1YQ
- BkIw==
+ bh=r30BuVTEkfz816kYgjZwkEOyK5c3wp16TB066btRDaU=;
+ b=q3qV1j/r+aV2lzngOX2Tu5cQ9/ZIsC9A7p3xNC+jhnnEH/Mj24u6JAl+EdO8Sbl9YJ
+ wMVvnK70amogVERtC1t9tZlEKcJG6bAm3woNdedEFOYM22DAvgk6EROdnKlqggiGV5Vz
+ giU3TmOXzWxy7MbA1xARacqFwlyBgRxmfiO765n50KmtI4IZWk+bJ5pFplVIaPMVZd6u
+ hvPQXRbV608UQH/GisZmhJTsaD83da4fhALop3f0FUHvdL7w74ofianygsow4A4sw4bl
+ 3pS6lTT8Trv8pDu89gWn5vBzr76h0Fk+Es3Cxic7nUR1Sm3rf3J8/uXyA2S0mMLh6Zk3
+ JKcg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
  :references:mime-version:content-transfer-encoding;
- bh=xbDzPgrG7sGMDqtDgEqDecIChfX7yasg95T4JIMF8ig=;
- b=UQEKYh+dpwTCbCfQF8qMgb0xp0ZMowMxRIJxjtGiGowzZV8Q7czuOBKrfhn4q26ZG8
- enOP+Sxc+EXIs7OVyD4m+ilEDHGlIRTRDhPEnTZnNMW1ePvvxRYV6Un1LPy42oNI2PrE
- 9dL5RVWHtFmwcSEFECaUR5vsqKPctzZ8QZaDl8aAT6R9mUD4vwzQaNrc84GEOIsZWdJb
- CM/wA2WTd97ZaxyBGwFUbJw/pzPtYsCXAIKd6eIDVCHPhxWrUK5HDj1a+dC/znkMA1Yz
- xJEH9YF5s/5qIvMQaXiidOfvrDdXu8ndpM7h0ZTvWTDiGI0suBF0RLSk9Ehrl+8opPbN
- rlBg==
-X-Gm-Message-State: APjAAAVY/c8ikWwuh50mgHD6rldRkjkShtucCAtA9l0qcI2u/moWvovy
- KbPAaNWtWUGVD9uiij9SLE4=
-X-Google-Smtp-Source: APXvYqxx15uCdJw5COvBnkhivriUaaQc4+Y+k3PQcEua79hCuteAQL71tHPPK/VosXDCo8QQ2oStuw==
-X-Received: by 2002:a17:902:b10c:: with SMTP id
- q12mr27706060plr.254.1556037297364; 
- Tue, 23 Apr 2019 09:34:57 -0700 (PDT)
+ bh=r30BuVTEkfz816kYgjZwkEOyK5c3wp16TB066btRDaU=;
+ b=EFg5JEwiHyXWZhVJxzKCMtDvo9F1mD05ZBleXjH+kj73gyBPjYxyF+31Y31mZJnJCu
+ PJBTTHSqthEx1RjBNAbDqtEEYF2XBGiQ+3NxKHmVi9M3DCmjX02QApCX6pPHUd0yPFI6
+ HuIfqxnDBpFpPwx9lx69BkPattLG3nWVcpWQ/rtdATbtjPWjILmI8VzIz9hcGiNNEkX2
+ RtDH44tAHTICEdWns9mAS9ez4sRDy0bWLTdovXX/sakXtmKAkPD7E7voKh515k5PxZyG
+ LEJHGADiBZ/tN/gOsGDVj+ki2iJwKMyzKAWGTs5K2VBlD0Keh6vtCj0o9s2fs4B9Aku2
+ VduA==
+X-Gm-Message-State: APjAAAVVLHShuLzO7u7j0OBtveslI6pl1ZPLOgnsqG+gnW4Urw6lofMe
+ OLohCqvR1nvyv+R2FQo1L0iLl26x
+X-Google-Smtp-Source: APXvYqzXWw18c7FzRwMUd2bWi6/x/QaZe37quJJ155jjxO+Ur9n8EFw6Z71dleVf7w61frm/WkKtNQ==
+X-Received: by 2002:a62:1881:: with SMTP id 123mr27639024pfy.25.1556037310421; 
+ Tue, 23 Apr 2019 09:35:10 -0700 (PDT)
 Received: from localhost.localdomain ([104.238.181.70])
- by smtp.gmail.com with ESMTPSA id v1sm24364801pff.81.2019.04.23.09.34.45
+ by smtp.gmail.com with ESMTPSA id v1sm24364801pff.81.2019.04.23.09.34.57
  (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
- Tue, 23 Apr 2019 09:34:55 -0700 (PDT)
+ Tue, 23 Apr 2019 09:35:09 -0700 (PDT)
 From: Changbin Du <changbin.du@gmail.com>
 To: Jonathan Corbet <corbet@lwn.net>
-Subject: [PATCH v4 28/63] Documentation: PCI: convert pci-iov-howto.txt to reST
-Date: Wed, 24 Apr 2019 00:28:57 +0800
-Message-Id: <20190423162932.21428-29-changbin.du@gmail.com>
+Subject: [PATCH v4 29/63] Documentation: PCI: convert MSI-HOWTO.txt to reST
+Date: Wed, 24 Apr 2019 00:28:58 +0800
+Message-Id: <20190423162932.21428-30-changbin.du@gmail.com>
 X-Mailer: git-send-email 2.20.1
 In-Reply-To: <20190423162932.21428-1-changbin.du@gmail.com>
 References: <20190423162932.21428-1-changbin.du@gmail.com>
@@ -107,252 +107,270 @@ add it to Sphinx TOC tree. No essential content change.
 
 Signed-off-by: Changbin Du <changbin.du@gmail.com>
 Acked-by: Bjorn Helgaas <bhelgaas@google.com>
----
- Documentation/PCI/index.rst                   |   1 +
- .../{pci-iov-howto.txt => pci-iov-howto.rst}  | 161 ++++++++++--------
- 2 files changed, 94 insertions(+), 68 deletions(-)
- rename Documentation/PCI/{pci-iov-howto.txt => pci-iov-howto.rst} (63%)
 
-diff --git a/Documentation/PCI/index.rst b/Documentation/PCI/index.rst
-index 452723318405..e1c19962a7f8 100644
---- a/Documentation/PCI/index.rst
-+++ b/Documentation/PCI/index.rst
-@@ -10,3 +10,4 @@ Linux PCI Bus Subsystem
- 
-    pci
-    PCIEBUS-HOWTO
-+   pci-iov-howto
-diff --git a/Documentation/PCI/pci-iov-howto.txt b/Documentation/PCI/pci-iov-howto.rst
-similarity index 63%
-rename from Documentation/PCI/pci-iov-howto.txt
-rename to Documentation/PCI/pci-iov-howto.rst
-index d2a84151e99c..b9fd003206f1 100644
---- a/Documentation/PCI/pci-iov-howto.txt
-+++ b/Documentation/PCI/pci-iov-howto.rst
-@@ -1,14 +1,19 @@
--		PCI Express I/O Virtualization Howto
--		Copyright (C) 2009 Intel Corporation
--		    Yu Zhao <yu.zhao@intel.com>
+---
+v2:
+  o drop numbering.
+  o simplify author list
+---
+ .../PCI/{MSI-HOWTO.txt => MSI-HOWTO.rst}      | 83 +++++++++++--------
+ Documentation/PCI/index.rst                   |  1 +
+ 2 files changed, 50 insertions(+), 34 deletions(-)
+ rename Documentation/PCI/{MSI-HOWTO.txt => MSI-HOWTO.rst} (88%)
+
+diff --git a/Documentation/PCI/MSI-HOWTO.txt b/Documentation/PCI/MSI-HOWTO.rst
+similarity index 88%
+rename from Documentation/PCI/MSI-HOWTO.txt
+rename to Documentation/PCI/MSI-HOWTO.rst
+index 618e13d5e276..18cc3700489b 100644
+--- a/Documentation/PCI/MSI-HOWTO.txt
++++ b/Documentation/PCI/MSI-HOWTO.rst
+@@ -1,13 +1,14 @@
+-		The MSI Driver Guide HOWTO
+-	Tom L Nguyen tom.l.nguyen@intel.com
+-			10/03/2003
+-	Revised Feb 12, 2004 by Martine Silbermann
+-		email: Martine.Silbermann@hp.com
+-	Revised Jun 25, 2004 by Tom L Nguyen
+-	Revised Jul  9, 2008 by Matthew Wilcox <willy@linux.intel.com>
+-		Copyright 2003, 2008 Intel Corporation
 +.. SPDX-License-Identifier: GPL-2.0
 +.. include:: <isonum.txt>
  
--		Update: November 2012
--			-- sysfs-based SRIOV enable-/disable-ment
--		Donald Dutile <ddutile@redhat.com>
-+====================================
-+PCI Express I/O Virtualization Howto
-+====================================
- 
--1. Overview
-+:Copyright: |copy| 2009 Intel Corporation
-+:Authors: - Yu Zhao <yu.zhao@intel.com>
-+          - Donald Dutile <ddutile@redhat.com>
- 
--1.1 What is SR-IOV
-+Overview
-+========
+-1. About this guide
++==========================
++The MSI Driver Guide HOWTO
++==========================
 +
-+What is SR-IOV
-+--------------
++:Authors: Tom L Nguyen; Martine Silbermann; Matthew Wilcox
++
++About this guide
++================
  
- Single Root I/O Virtualization (SR-IOV) is a PCI Express Extended
- capability which makes one physical device appear as multiple virtual
-@@ -23,9 +28,11 @@ Memory Space, which is used to map its register set. VF device driver
- operates on the register set so it can be functional and appear as a
- real existing PCI device.
+ This guide describes the basics of Message Signaled Interrupts (MSIs),
+ the advantages of using MSI over traditional interrupt mechanisms, how
+@@ -15,7 +16,8 @@ to change your driver to use MSI or MSI-X and some basic diagnostics to
+ try if a device doesn't support MSIs.
  
--2. User Guide
-+User Guide
-+==========
  
--2.1 How can I enable SR-IOV capability
-+How can I enable SR-IOV capability
-+----------------------------------
+-2. What are MSIs?
++What are MSIs?
++==============
  
- Multiple methods are available for SR-IOV enablement.
- In the first method, the device driver (PF driver) will control the
-@@ -43,105 +50,123 @@ checks, e.g., check numvfs == 0 if enabling VFs, ensure
- numvfs <= totalvfs.
- The second method is the recommended method for new/future VF devices.
+ A Message Signaled Interrupt is a write from the device to a special
+ address which causes an interrupt to be received by the CPU.
+@@ -29,7 +31,8 @@ Devices may support both MSI and MSI-X, but only one can be enabled at
+ a time.
  
--2.2 How can I use the Virtual Functions
-+How can I use the Virtual Functions
-+-----------------------------------
  
- The VF is treated as hot-plugged PCI devices in the kernel, so they
- should be able to work in the same way as real PCI devices. The VF
- requires device driver that is same as a normal PCI device's.
+-3. Why use MSIs?
++Why use MSIs?
++=============
  
--3. Developer Guide
-+Developer Guide
+ There are three reasons why using MSIs can give an advantage over
+ traditional pin-based interrupts.
+@@ -61,14 +64,16 @@ Other possible designs include giving one interrupt to each packet queue
+ in a network card or each port in a storage controller.
+ 
+ 
+-4. How to use MSIs
++How to use MSIs
 +===============
  
--3.1 SR-IOV API
-+SR-IOV API
-+----------
+ PCI devices are initialised to use pin-based interrupts.  The device
+ driver has to set up the device to use MSI or MSI-X.  Not all machines
+ support MSIs correctly, and for those machines, the APIs described below
+ will simply fail and the device will continue to use pin-based interrupts.
  
- To enable SR-IOV capability:
--(a) For the first method, in the driver:
-+
-+(a) For the first method, in the driver::
-+
- 	int pci_enable_sriov(struct pci_dev *dev, int nr_virtfn);
--	'nr_virtfn' is number of VFs to be enabled.
--(b) For the second method, from sysfs:
-+
-+'nr_virtfn' is number of VFs to be enabled.
-+
-+(b) For the second method, from sysfs::
-+
- 	echo 'nr_virtfn' > \
-         /sys/bus/pci/devices/<DOMAIN:BUS:DEVICE.FUNCTION>/sriov_numvfs
+-4.1 Include kernel support for MSIs
++Include kernel support for MSIs
++-------------------------------
  
- To disable SR-IOV capability:
--(a) For the first method, in the driver:
-+
-+(a) For the first method, in the driver::
-+
- 	void pci_disable_sriov(struct pci_dev *dev);
--(b) For the second method, from sysfs:
-+
-+(b) For the second method, from sysfs::
-+
- 	echo  0 > \
-         /sys/bus/pci/devices/<DOMAIN:BUS:DEVICE.FUNCTION>/sriov_numvfs
+ To support MSI or MSI-X, the kernel must be built with the CONFIG_PCI_MSI
+ option enabled.  This option is only available on some architectures,
+@@ -76,14 +81,15 @@ and it may depend on some other options also being set.  For example,
+ on x86, you must also enable X86_UP_APIC or SMP in order to see the
+ CONFIG_PCI_MSI option.
  
- To enable auto probing VFs by a compatible driver on the host, run
- command below before enabling SR-IOV capabilities. This is the
- default behavior.
-+::
-+
- 	echo 1 > \
-         /sys/bus/pci/devices/<DOMAIN:BUS:DEVICE.FUNCTION>/sriov_drivers_autoprobe
+-4.2 Using MSI
++Using MSI
++---------
  
- To disable auto probing VFs by a compatible driver on the host, run
- command below before enabling SR-IOV capabilities. Updating this
- entry will not affect VFs which are already probed.
-+::
-+
- 	echo  0 > \
-         /sys/bus/pci/devices/<DOMAIN:BUS:DEVICE.FUNCTION>/sriov_drivers_autoprobe
+ Most of the hard work is done for the driver in the PCI layer.  The driver
+ simply has to request that the PCI layer set up the MSI capability for this
+ device.
  
--3.2 Usage example
-+Usage example
-+-------------
+ To automatically use MSI or MSI-X interrupt vectors, use the following
+-function:
++function::
  
- Following piece of code illustrates the usage of the SR-IOV API.
-+::
+   int pci_alloc_irq_vectors(struct pci_dev *dev, unsigned int min_vecs,
+ 		unsigned int max_vecs, unsigned int flags);
+@@ -101,12 +107,12 @@ any possible kind of interrupt.  If the PCI_IRQ_AFFINITY flag is set,
+ pci_alloc_irq_vectors() will spread the interrupts around the available CPUs.
  
--static int dev_probe(struct pci_dev *dev, const struct pci_device_id *id)
--{
--	pci_enable_sriov(dev, NR_VIRTFN);
-+	static int dev_probe(struct pci_dev *dev, const struct pci_device_id *id)
-+	{
-+		pci_enable_sriov(dev, NR_VIRTFN);
+ To get the Linux IRQ numbers passed to request_irq() and free_irq() and the
+-vectors, use the following function:
++vectors, use the following function::
  
--	...
--
--	return 0;
--}
-+		...
+   int pci_irq_vector(struct pci_dev *dev, unsigned int nr);
  
--static void dev_remove(struct pci_dev *dev)
--{
--	pci_disable_sriov(dev);
-+		return 0;
-+	}
+ Any allocated resources should be freed before removing the device using
+-the following function:
++the following function::
  
--	...
--}
-+	static void dev_remove(struct pci_dev *dev)
-+	{
-+		pci_disable_sriov(dev);
+   void pci_free_irq_vectors(struct pci_dev *dev);
  
--static int dev_suspend(struct pci_dev *dev, pm_message_t state)
--{
--	...
-+		...
-+	}
+@@ -126,7 +132,7 @@ The typical usage of MSI or MSI-X interrupts is to allocate as many vectors
+ as possible, likely up to the limit supported by the device.  If nvec is
+ larger than the number supported by the device it will automatically be
+ capped to the supported limit, so there is no need to query the number of
+-vectors supported beforehand:
++vectors supported beforehand::
  
--	return 0;
--}
-+	static int dev_suspend(struct pci_dev *dev, pm_message_t state)
-+	{
-+		...
+ 	nvec = pci_alloc_irq_vectors(pdev, 1, nvec, PCI_IRQ_ALL_TYPES)
+ 	if (nvec < 0)
+@@ -135,7 +141,7 @@ vectors supported beforehand:
+ If a driver is unable or unwilling to deal with a variable number of MSI
+ interrupts it can request a particular number of interrupts by passing that
+ number to pci_alloc_irq_vectors() function as both 'min_vecs' and
+-'max_vecs' parameters:
++'max_vecs' parameters::
  
--static int dev_resume(struct pci_dev *dev)
--{
--	...
-+		return 0;
-+	}
+ 	ret = pci_alloc_irq_vectors(pdev, nvec, nvec, PCI_IRQ_ALL_TYPES);
+ 	if (ret < 0)
+@@ -143,23 +149,24 @@ number to pci_alloc_irq_vectors() function as both 'min_vecs' and
  
--	return 0;
--}
-+	static int dev_resume(struct pci_dev *dev)
-+	{
-+		...
+ The most notorious example of the request type described above is enabling
+ the single MSI mode for a device.  It could be done by passing two 1s as
+-'min_vecs' and 'max_vecs':
++'min_vecs' and 'max_vecs'::
  
--static void dev_shutdown(struct pci_dev *dev)
--{
--	...
--}
-+		return 0;
-+	}
+ 	ret = pci_alloc_irq_vectors(pdev, 1, 1, PCI_IRQ_ALL_TYPES);
+ 	if (ret < 0)
+ 		goto out_err;
  
--static int dev_sriov_configure(struct pci_dev *dev, int numvfs)
--{
--	if (numvfs > 0) {
--		...
--		pci_enable_sriov(dev, numvfs);
-+	static void dev_shutdown(struct pci_dev *dev)
-+	{
- 		...
--		return numvfs;
- 	}
--	if (numvfs == 0) {
--		....
--		pci_disable_sriov(dev);
--		...
--		return 0;
-+
-+	static int dev_sriov_configure(struct pci_dev *dev, int numvfs)
-+	{
-+		if (numvfs > 0) {
-+			...
-+			pci_enable_sriov(dev, numvfs);
-+			...
-+			return numvfs;
-+		}
-+		if (numvfs == 0) {
-+			....
-+			pci_disable_sriov(dev);
-+			...
-+			return 0;
-+		}
- 	}
--}
--
--static struct pci_driver dev_driver = {
--	.name =		"SR-IOV Physical Function driver",
--	.id_table =	dev_id_table,
--	.probe =	dev_probe,
--	.remove =	dev_remove,
--	.suspend =	dev_suspend,
--	.resume =	dev_resume,
--	.shutdown =	dev_shutdown,
--	.sriov_configure = dev_sriov_configure,
--};
-+
-+	static struct pci_driver dev_driver = {
-+		.name =		"SR-IOV Physical Function driver",
-+		.id_table =	dev_id_table,
-+		.probe =	dev_probe,
-+		.remove =	dev_remove,
-+		.suspend =	dev_suspend,
-+		.resume =	dev_resume,
-+		.shutdown =	dev_shutdown,
-+		.sriov_configure = dev_sriov_configure,
-+	};
+ Some devices might not support using legacy line interrupts, in which case
+-the driver can specify that only MSI or MSI-X is acceptable:
++the driver can specify that only MSI or MSI-X is acceptable::
+ 
+ 	nvec = pci_alloc_irq_vectors(pdev, 1, nvec, PCI_IRQ_MSI | PCI_IRQ_MSIX);
+ 	if (nvec < 0)
+ 		goto out_err;
+ 
+-4.3 Legacy APIs
++Legacy APIs
++-----------
+ 
+ The following old APIs to enable and disable MSI or MSI-X interrupts should
+-not be used in new code:
++not be used in new code::
+ 
+   pci_enable_msi()		/* deprecated */
+   pci_disable_msi()		/* deprecated */
+@@ -174,9 +181,11 @@ number of vectors.  If you have a legitimate special use case for the count
+ of vectors we might have to revisit that decision and add a
+ pci_nr_irq_vectors() helper that handles MSI and MSI-X transparently.
+ 
+-4.4 Considerations when using MSIs
++Considerations when using MSIs
++------------------------------
+ 
+-4.4.1 Spinlocks
++Spinlocks
++~~~~~~~~~
+ 
+ Most device drivers have a per-device spinlock which is taken in the
+ interrupt handler.  With pin-based interrupts or a single MSI, it is not
+@@ -188,7 +197,8 @@ acquire the spinlock.  Such deadlocks can be avoided by using
+ spin_lock_irqsave() or spin_lock_irq() which disable local interrupts
+ and acquire the lock (see Documentation/kernel-hacking/locking.rst).
+ 
+-4.5 How to tell whether MSI/MSI-X is enabled on a device
++How to tell whether MSI/MSI-X is enabled on a device
++----------------------------------------------------
+ 
+ Using 'lspci -v' (as root) may show some devices with "MSI", "Message
+ Signalled Interrupts" or "MSI-X" capabilities.  Each of these capabilities
+@@ -196,7 +206,8 @@ has an 'Enable' flag which is followed with either "+" (enabled)
+ or "-" (disabled).
+ 
+ 
+-5. MSI quirks
++MSI quirks
++==========
+ 
+ Several PCI chipsets or devices are known not to support MSIs.
+ The PCI stack provides three ways to disable MSIs:
+@@ -205,7 +216,8 @@ The PCI stack provides three ways to disable MSIs:
+ 2. on all devices behind a specific bridge
+ 3. on a single device
+ 
+-5.1. Disabling MSIs globally
++Disabling MSIs globally
++-----------------------
+ 
+ Some host chipsets simply don't support MSIs properly.  If we're
+ lucky, the manufacturer knows this and has indicated it in the ACPI
+@@ -219,7 +231,8 @@ on the kernel command line to disable MSIs on all devices.  It would be
+ in your best interests to report the problem to linux-pci@vger.kernel.org
+ including a full 'lspci -v' so we can add the quirks to the kernel.
+ 
+-5.2. Disabling MSIs below a bridge
++Disabling MSIs below a bridge
++-----------------------------
+ 
+ Some PCI bridges are not able to route MSIs between busses properly.
+ In this case, MSIs must be disabled on all devices behind the bridge.
+@@ -230,7 +243,7 @@ as the nVidia nForce and Serverworks HT2000).  As with host chipsets,
+ Linux mostly knows about them and automatically enables MSIs if it can.
+ If you have a bridge unknown to Linux, you can enable
+ MSIs in configuration space using whatever method you know works, then
+-enable MSIs on that bridge by doing:
++enable MSIs on that bridge by doing::
+ 
+        echo 1 > /sys/bus/pci/devices/$bridge/msi_bus
+ 
+@@ -244,7 +257,8 @@ below this bridge.
+ Again, please notify linux-pci@vger.kernel.org of any bridges that need
+ special handling.
+ 
+-5.3. Disabling MSIs on a single device
++Disabling MSIs on a single device
++---------------------------------
+ 
+ Some devices are known to have faulty MSI implementations.  Usually this
+ is handled in the individual device driver, but occasionally it's necessary
+@@ -252,7 +266,8 @@ to handle this with a quirk.  Some drivers have an option to disable use
+ of MSI.  While this is a convenient workaround for the driver author,
+ it is not good practice, and should not be emulated.
+ 
+-5.4. Finding why MSIs are disabled on a device
++Finding why MSIs are disabled on a device
++-----------------------------------------
+ 
+ From the above three sections, you can see that there are many reasons
+ why MSIs may not be enabled for a given device.  Your first step should
+@@ -260,8 +275,8 @@ be to examine your dmesg carefully to determine whether MSIs are enabled
+ for your machine.  You should also check your .config to be sure you
+ have enabled CONFIG_PCI_MSI.
+ 
+-Then, 'lspci -t' gives the list of bridges above a device.  Reading
+-/sys/bus/pci/devices/*/msi_bus will tell you whether MSIs are enabled (1)
++Then, 'lspci -t' gives the list of bridges above a device. Reading
++`/sys/bus/pci/devices/*/msi_bus` will tell you whether MSIs are enabled (1)
+ or disabled (0).  If 0 is found in any of the msi_bus files belonging
+ to bridges between the PCI root and the device, MSIs are disabled.
+ 
+diff --git a/Documentation/PCI/index.rst b/Documentation/PCI/index.rst
+index e1c19962a7f8..1b25bcc1edca 100644
+--- a/Documentation/PCI/index.rst
++++ b/Documentation/PCI/index.rst
+@@ -11,3 +11,4 @@ Linux PCI Bus Subsystem
+    pci
+    PCIEBUS-HOWTO
+    pci-iov-howto
++   MSI-HOWTO
 -- 
 2.20.1
 
