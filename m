@@ -2,62 +2,87 @@ Return-Path: <SRS0=/W8y=SZ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS
+X-Spam-Status: No, score=-3.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_PASS
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 36D3CC10F14
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Apr 2019 09:15:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E98CDC10F14
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Apr 2019 09:28:32 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E00B0206A3
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Apr 2019 09:15:47 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 5FCEA20843
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Apr 2019 09:28:32 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=canb.auug.org.au header.i=@canb.auug.org.au header.b="Cpq9vQUJ"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E00B0206A3
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=canb.auug.org.au
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="fXXLYPZR"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5FCEA20843
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44pHqP4c3yzDqN1
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Apr 2019 19:15:45 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44pJ660W21zDqDq
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Apr 2019 19:28:30 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+ spf=pass (mailfrom) smtp.mailfrom=c-s.fr
+ (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=c-s.fr
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="fXXLYPZR"; 
+ dkim-atps=neutral
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44pHnG3BczzDqDq
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Apr 2019 19:13:54 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=canb.auug.org.au
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- secure) header.d=canb.auug.org.au header.i=@canb.auug.org.au
- header.b="Cpq9vQUJ"; dkim-atps=neutral
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
- SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 44pHnD6W6bz9s55;
- Tue, 23 Apr 2019 19:13:52 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=canb.auug.org.au;
- s=201702; t=1556010834;
- bh=9mktwgfUyKob7wDM6/BjkbWuw5ndBw6/47jjIsxHd/o=;
- h=Date:From:To:Cc:Subject:From;
- b=Cpq9vQUJ9Gq6QbA5UX3fL5ooPnW25uPGdTmJU4KiYXHEAy4rsAqkv0GkrFhq+jXdo
- 8SgRc2ldPR3T2k7qPeQJRpdicHSC5U2XSLFChPTNVDVvSmGmhuO3gAYYQ9a64kiegB
- gjr2N5XpHAeWKRH0ZuxDgYHwrxpUsJeGrV1jSckxgKQuASLxx9sA1/a4HAlRRye+Ky
- zhht5ClltrXoicdVWpi0YgiB1GmXpoG2C8LqQYBgwgBUCLHqizVOLW83nmix69U0kx
- aUhvUje9qn7L3DFTRM3JYUEi0/YItmSGUcxdBvNzD7N4+n/uHDHl+C+dCPNZJlRKN/
- x2gQiSE5GXJCw==
-Date: Tue, 23 Apr 2019 19:13:51 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Andrew Morton <akpm@linux-foundation.org>, Michael Ellerman
- <mpe@ellerman.id.au>, PowerPC <linuxppc-dev@lists.ozlabs.org>
-Subject: linux-next: manual merge of the akpm-current tree with the
- powerpc-fixes and powerpc trees
-Message-ID: <20190423191351.5824b525@canb.auug.org.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44pJ481l0dzDqKM
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Apr 2019 19:26:46 +1000 (AEST)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 44pJ401klQz9v0sV;
+ Tue, 23 Apr 2019 11:26:40 +0200 (CEST)
+Authentication-Results: localhost; dkim=pass
+ reason="1024-bit key; insecure key"
+ header.d=c-s.fr header.i=@c-s.fr header.b=fXXLYPZR; dkim-adsp=pass;
+ dkim-atps=neutral
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id dcXsdNJd-ocU; Tue, 23 Apr 2019 11:26:40 +0200 (CEST)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 44pJ400ZD5z9v0sN;
+ Tue, 23 Apr 2019 11:26:40 +0200 (CEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
+ t=1556011600; bh=xI7IThQ7+DmQeJrdqSOU3ghoRqGDIfHXUVxgmi7bLNs=;
+ h=Subject:To:Cc:References:From:Date:In-Reply-To:From;
+ b=fXXLYPZR3626eXWtP6vuRXKfCKY8cQAepp0mZDGbKpbm7TkkTOuwGcQMMNhceAk34
+ gOmD+KFbXvbHMDTfg/aMdBTsvnjHWeq0d4VkpgO9xtFk8a/GKcqvtNLEBQqy2qo8zV
+ BPG0f/epfRLXkUiwqnaUKAlOp35YIbBhQn47rxiM=
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 0EC158B8C7;
+ Tue, 23 Apr 2019 11:26:41 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id nl9mGBsdaIrc; Tue, 23 Apr 2019 11:26:40 +0200 (CEST)
+Received: from PO15451 (unknown [192.168.4.90])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 7573F8B8C4;
+ Tue, 23 Apr 2019 11:26:40 +0200 (CEST)
+Subject: Re: [PATCH v2 10/10] powerpc/32s: Implement Kernel Userspace Access
+ Protection
+To: Michael Ellerman <mpe@ellerman.id.au>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, ruscur@russell.cc
+References: <cover.1552292207.git.christophe.leroy@c-s.fr>
+ <a2847248a92cb1641b1740fa121c5a30593ae662.1552292207.git.christophe.leroy@c-s.fr>
+ <87ftqfu7j1.fsf@concordia.ellerman.id.au>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Message-ID: <e297ba05-e82d-d269-20d2-5bd3914b1d14@c-s.fr>
+Date: Tue, 23 Apr 2019 11:26:39 +0200
+User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:60.0) Gecko/20100101
+ Thunderbird/60.6.1
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- boundary="Sig_/R84=d46Rj=zQUc3yYyHaa/U"; protocol="application/pgp-signature"
+In-Reply-To: <87ftqfu7j1.fsf@concordia.ellerman.id.au>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: fr
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -69,84 +94,82 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Linux Next Mailing List <linux-next@vger.kernel.org>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Alexandre Ghiti <alex@ghiti.fr>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
---Sig_/R84=d46Rj=zQUc3yYyHaa/U
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
 
-Hi all,
 
-Today's linux-next merge of the akpm-current tree got a conflict in:
+Le 18/04/2019 à 08:55, Michael Ellerman a écrit :
+> Christophe Leroy <christophe.leroy@c-s.fr> writes:
+>> diff --git a/arch/powerpc/include/asm/book3s/32/kup.h b/arch/powerpc/include/asm/book3s/32/kup.h
+>> index 5f97c742ca71..b3560b2de435 100644
+>> --- a/arch/powerpc/include/asm/book3s/32/kup.h
+>> +++ b/arch/powerpc/include/asm/book3s/32/kup.h
+>> @@ -37,6 +37,113 @@
+> ...
+>> +
+>> +static inline void allow_user_access(void __user *to, const void __user *from, u32 size)
+>> +{
+>> +	u32 addr = (__force u32)to;
+>> +	u32 end = min(addr + size, TASK_SIZE);
+>> +
+>> +	if (!addr || addr >= TASK_SIZE || !size)
+>> +		return;
+>> +
+>> +	current->thread.kuap = (addr & 0xf0000000) | ((((end - 1) >> 28) + 1) & 0xf);
+>> +	kuap_update_sr(mfsrin(addr) & ~SR_KS, addr, end);	/* Clear Ks */
+>> +}
+> 
+> When rebasing on my v6 I changed the above to:
+> 
+> static inline void allow_user_access(void __user *to, const void __user *from, u32 size)
+> {
+> 	u32 addr, end;
+> 
+> 	if (__builtin_constant_p(to) && to == NULL)
+> 		return;
 
-  arch/powerpc/platforms/Kconfig.cputype
+Good point, it avoids keeping the test compiled in when the 'to' is not 
+NULL.
 
-between commit:
+> 
+> 	addr = (__force u32)to;
+> 
+> 	if (!addr || addr >= TASK_SIZE || !size)
+> 		return;
 
-  8adddf349fda ("powerpc/mm/radix: Make Radix require HUGETLB_PAGE")
+Then the !addr test isn't needed anymore I think.
 
-from the powerpc-fixes tree and commits:
+Christophe
 
-  1bb2bae2e6c7 ("powerpc/mm/radix: Use KUEP API for Radix MMU")
-  890274c2dc4c ("powerpc/64s: Implement KUAP for Radix MMU")
-
-from the powerpc tree and commits:
-
-  80d5ae3cf456 ("mm: simplify MEMORY_ISOLATION && COMPACTION || CMA into CO=
-NTIG_ALLOC")
-  3653abf7cded ("hugetlb: allow to free gigantic pages regardless of the co=
-nfiguration")
-
-from the akpm-current tree.
-
-I fixed it up (see below) and can carry the fix as necessary. This
-is now fixed as far as linux-next is concerned, but any non trivial
-conflicts should be mentioned to your upstream maintainer when your tree
-is submitted for merging.  You may also want to consider cooperating
-with the maintainer of the conflicting tree to minimise any particularly
-complex conflicts.
-
---=20
-Cheers,
-Stephen Rothwell
-
-diff --cc arch/powerpc/platforms/Kconfig.cputype
-index 00b2bb536c74,03ca91439473..000000000000
---- a/arch/powerpc/platforms/Kconfig.cputype
-+++ b/arch/powerpc/platforms/Kconfig.cputype
-@@@ -328,10 -324,8 +328,10 @@@ config ARCH_ENABLE_SPLIT_PMD_PTLOC
- =20
-  config PPC_RADIX_MMU
-  	bool "Radix MMU Support"
- -	depends on PPC_BOOK3S_64
- +	depends on PPC_BOOK3S_64 && HUGETLB_PAGE
-- 	select ARCH_HAS_GIGANTIC_PAGE if (MEMORY_ISOLATION && COMPACTION) || CMA
-+ 	select ARCH_HAS_GIGANTIC_PAGE
- +	select PPC_HAVE_KUEP
- +	select PPC_HAVE_KUAP
-  	default y
-  	help
-  	  Enable support for the Power ISA 3.0 Radix style MMU. Currently this
-
---Sig_/R84=d46Rj=zQUc3yYyHaa/U
-Content-Type: application/pgp-signature
-Content-Description: OpenPGP digital signature
-
------BEGIN PGP SIGNATURE-----
-
-iQEzBAEBCAAdFiEENIC96giZ81tWdLgKAVBC80lX0GwFAly+108ACgkQAVBC80lX
-0GywTAf/W97IPQ/tIK8fZmjGIZ/gLRhR2yCYS21XLN6mGVVZ5zCRWP9h7HzSsD0n
-jyR5gumaGvY/wx/LjlLE0r2+Z5hdgL5Z26Rh7UOd7HiejTS+E8brZajbytKuJPVV
-VD7nsgA8IEMWL3OhSHDakJS50p262vWrQiApyqMQfxe5ev6zRe6+gmwx8FB/HBhd
-LwzvBew1rIYai+jV/L/bLABs4d9J4/+oMsxnBhk7e/h+Na8jIzi0hln8JjzPvxxV
-IHbJgOmQWgQK9BQUkvwEgTYLMGmHt27xiXg+Jx3cTl7mf6p4jP/TCqWMitr0whT+
-MkgbzmSMjhh6RG1dlzXqnoetBvo6AA==
-=uWCC
------END PGP SIGNATURE-----
-
---Sig_/R84=d46Rj=zQUc3yYyHaa/U--
+> 
+> 	end = min(addr + size, TASK_SIZE);
+> 	current->thread.kuap = (addr & 0xf0000000) | ((((end - 1) >> 28) + 1) & 0xf);
+> 	kuap_update_sr(mfsrin(addr) & ~SR_KS, addr, end);	/* Clear Ks */
+> }
+> 
+> Which I think achieves the same result. It does boot :)
+> 
+>> +
+>> +static inline void prevent_user_access(void __user *to, const void __user *from, u32 size)
+>> +{
+>> +	u32 addr = (__force u32)to;
+>> +	u32 end = min(addr + size, TASK_SIZE);
+>> +
+>> +	if (!addr || addr >= TASK_SIZE || !size)
+>> +		return;
+>> +
+>> +	current->thread.kuap = 0;
+>> +	kuap_update_sr(mfsrin(addr) | SR_KS, addr, end);	/* set Ks */
+>> +}
+>> +
+>> +static inline void allow_read_from_user(const void __user *from, unsigned long size)
+>> +{
+>> +}
+> 
+> And I dropped that.
+> 
+> cheers
+> 
