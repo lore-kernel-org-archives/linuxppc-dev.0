@@ -2,56 +2,62 @@ Return-Path: <SRS0=/W8y=SZ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_MUTT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3E940C10F14
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Apr 2019 07:56:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B426DC10F14
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Apr 2019 08:59:11 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 33D0E20645
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Apr 2019 07:56:34 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id EA3D820674
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Apr 2019 08:59:10 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au header.b="ojwoD39c"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 33D0E20645
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=gibson.dropbear.id.au
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=canb.auug.org.au header.i=@canb.auug.org.au header.b="L6gdShw3"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EA3D820674
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=canb.auug.org.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44pG400l0fzDqNW
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Apr 2019 17:56:32 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44pHSD3lwkzDqQJ
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Apr 2019 18:59:08 +1000 (AEST)
 Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44pDVz18XtzDqMk
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Apr 2019 16:46:19 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44pHQP1Vr4zDq5t
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Apr 2019 18:57:33 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=gibson.dropbear.id.au
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au
- header.b="ojwoD39c"; dkim-atps=neutral
-Received: by ozlabs.org (Postfix, from userid 1007)
- id 44pDVy25CWz9sBr; Tue, 23 Apr 2019 16:46:18 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=gibson.dropbear.id.au; s=201602; t=1556001978;
- bh=w7AyAHTD5n08Qh20EwxLTm3C5JNfNlr+pwyvwtl4Yzg=;
+ header.from=canb.auug.org.au
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ secure) header.d=canb.auug.org.au header.i=@canb.auug.org.au
+ header.b="L6gdShw3"; dkim-atps=neutral
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
+ SHA256) (No client certificate requested)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 44pHQN27vwz9sNF;
+ Tue, 23 Apr 2019 18:57:32 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=canb.auug.org.au;
+ s=201702; t=1556009852;
+ bh=WToU+0B8dub+LYRfCUVi3KWI6mDmLU3QRxuAN0m9xFA=;
  h=Date:From:To:Cc:Subject:From;
- b=ojwoD39cxuDLzHYlpLMDmZVi+VDMpVARlGiVxxHH+RdXCQa2RgCae8xcdN0ZOltO4
- ANM6eTBXViBiY0WsN1qPaHlXCgn7ScZKmXu8ANHC9BCJmE/o2hzHsd3U3D1TKyjr0Z
- qmxuxXsKBVv5tildwRFpBcn8T0o1Qaj9YhbzHRQE=
-Date: Tue, 23 Apr 2019 15:41:31 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Christoph Hellwig <hch@lst.de>
-Subject: powerpc hugepage leak caused by 576ed913 "block: use bio_add_page in
- bio_iov_iter_get_pages"
-Message-ID: <20190423054131.GB31496@umbus.fritz.box>
+ b=L6gdShw3PwGEXtYUQfGNMtQWbPuM6a2n/GcECm43ZOfNEhyitqAtS4KvbceC105zV
+ yyLwDHf7YmqCKLugD69EwF5PfDeYPggUXWqAe8z6Rww1DWwiWqF4ylgIT7cO77BxRo
+ vAO91ObnRoUE/wHwOCYhLYDydETZW22XRM40BaWzIOhoCqyMwR1XWF/EOBd2YgI8CF
+ dwgZOakN7cAS+Efb6hczhbt/G5RY0Lg1GNYU85W6N1kID11rKTyRy9RGpTFdia2Hma
+ SQSkde3mi4GyFPSEsCQc7APycu37OuaOP4z+O6/AeuFVblVKL9eoPT1FwoUxbUypjT
+ YaExuiMFHHp/w==
+Date: Tue, 23 Apr 2019 18:57:30 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Andrew Morton <akpm@linux-foundation.org>, Michael Ellerman
+ <mpe@ellerman.id.au>, PowerPC <linuxppc-dev@lists.ozlabs.org>
+Subject: linux-next: manual merge of the akpm-current tree with the powerpc
+ tree
+Message-ID: <20190423185730.401f8676@canb.auug.org.au>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="XOIedfhf+7KOe/yw"
-Content-Disposition: inline
-User-Agent: Mutt/1.11.3 (2019-02-01)
+ boundary="Sig_/Nk6HokKlb1IQryWefgKDJ2M"; protocol="application/pgp-signature"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -63,91 +69,108 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Jens Axboe <axboe@kernel.dk>, linux-kernel@vger.kernel.org,
- Nick Piggin <npiggin@gmail.com>, Michael Ellerman <michael@ellerman.id.au>,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
+Cc: Laurent Vivier <lvivier@redhat.com>, Michal Hocko <mhocko@suse.com>,
+ David Hildenbrand <david@redhat.com>,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ Linux Next Mailing List <linux-next@vger.kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-
---XOIedfhf+7KOe/yw
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+--Sig_/Nk6HokKlb1IQryWefgKDJ2M
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: quoted-printable
 
-576ed913 "block: use bio_add_page in bio_iov_iter_get_pages", applied
-late in the 4.19 cycle appears to introduce a regression causing a
-huge page leak in a complicated set of circumstances I haven't fully
-identified yet.
+Hi all,
 
-On a POWER8 machine with a kernel after the commit above, when I run a
-KVM guest with RAM in hugetlbfs pages (and certain options, see below), a
-handful of the hugepages used for RAM are not released after qemu and
-the guest quit.  Usually 2 or 3 16MiB pages are leaked, though I've
-seen anything from 0-8 occasionally.
+Today's linux-next merge of the akpm-current tree got a conflict in:
 
-There are a bunch of conditions on when it occurs, only some of which
-I've pinned down:
+  arch/powerpc/mm/mem.c
 
- * It happens on a POWER8 8247-22L, but not a very similar 8247-21L,
-   and I haven't been able to work out why, yet.
+between commit:
 
- * It only happens with certain combination of qemu block and caching
-   options for the guest's root fs.  Specifically it appears to happen
-   when the file used for the guest's root disk image is opened with
-   O_DIRECT.
+  f172acbfae1a ("powerpc/mm: move warning from resize_hpt_for_hotplug()")
+  26ad26718dfa ("powerpc/mm: Fix section mismatch warning")
 
- * It depends somewhat on guest activity.
-     - It doesn't occur if the guest is only booted to firmware
-     - Booting only to initramfs without mounting the "real" root fs
-       doesn't seem to trigger the problem
-     - It appears to happen reliably with RHEL6 and RHEL7 guests, but
-       only sometimes with RHEL8 guests, again, I don't know why at
-       this stage
+from the powerpc tree and commit:
 
+  fc6a586376ab ("mm, memory_hotplug: provide a more generic restrictions fo=
+r memory hotplug")
+  e8b6bc564e97 ("mm/memory_hotplug: make __remove_pages() and arch_remove_m=
+emory() never fail")
 
-I pinned it down to this (host kernel) patch by bisection, and I've
-double checked afterwards to confirm it really is this commit, not a
-mistake during the bisection.
+from the akpm-current tree.
 
-I've tried a bunch of instrumentation, but it hasn't been very
-illuminating so far:
-
- * The leaked pages have non-zero count and are left in the
-   hugepage_activelist
-=20
- * The leaked pages *don't* appear to be blocking release of the KVM
-   VM or the qemu process owning it
-
- * The leaked pages *do* appear to be blocking release of the
-   associated address_space and (anonymous) inode, though I'm not 100%
-   certain about this.
+I fixed it up (see below) and can carry the fix as necessary. This
+is now fixed as far as linux-next is concerned, but any non trivial
+conflicts should be mentioned to your upstream maintainer when your tree
+is submitted for merging.  You may also want to consider cooperating
+with the maintainer of the conflicting tree to minimise any particularly
+complex conflicts.
 
 --=20
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+Cheers,
+Stephen Rothwell
 
---XOIedfhf+7KOe/yw
-Content-Type: application/pgp-signature; name="signature.asc"
+diff --cc arch/powerpc/mm/mem.c
+index e12bec98366f,cc9425fb9056..000000000000
+--- a/arch/powerpc/mm/mem.c
++++ b/arch/powerpc/mm/mem.c
+@@@ -109,8 -109,8 +109,8 @@@ int __weak remove_section_mapping(unsig
+  	return -ENODEV;
+  }
+ =20
+- int __ref arch_add_memory(int nid, u64 start, u64 size, struct vmem_altma=
+p *altmap,
+- 			  bool want_memblock)
+ -int __meminit arch_add_memory(int nid, u64 start, u64 size,
+ -			struct mhp_restrictions *restrictions)
+++int __ref arch_add_memory(int nid, u64 start, u64 size,
+++			  struct mhp_restrictions *restrictions)
+  {
+  	unsigned long start_pfn =3D start >> PAGE_SHIFT;
+  	unsigned long nr_pages =3D size >> PAGE_SHIFT;
+@@@ -131,8 -131,8 +131,8 @@@
+  }
+ =20
+  #ifdef CONFIG_MEMORY_HOTREMOVE
+- int __ref arch_remove_memory(int nid, u64 start, u64 size,
+- 			     struct vmem_altmap *altmap)
+ -void __meminit arch_remove_memory(int nid, u64 start, u64 size,
+ -				  struct vmem_altmap *altmap)
+++void __ref arch_remove_memory(int nid, u64 start, u64 size,
+++			      struct vmem_altmap *altmap)
+  {
+  	unsigned long start_pfn =3D start >> PAGE_SHIFT;
+  	unsigned long nr_pages =3D size >> PAGE_SHIFT;
+@@@ -161,10 -160,7 +160,8 @@@
+  	 */
+  	vm_unmap_aliases();
+ =20
+ -	resize_hpt_for_hotplug(memblock_phys_mem_size());
+ +	if (resize_hpt_for_hotplug(memblock_phys_mem_size()) =3D=3D -ENOSPC)
+ +		pr_warn("Hash collision while resizing HPT\n");
+-=20
+- 	return ret;
+  }
+  #endif
+  #endif /* CONFIG_MEMORY_HOTPLUG */
+
+--Sig_/Nk6HokKlb1IQryWefgKDJ2M
+Content-Type: application/pgp-signature
+Content-Description: OpenPGP digital signature
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAEBCAAdFiEEdfRlhq5hpmzETofcbDjKyiDZs5IFAly+pYkACgkQbDjKyiDZ
-s5LPsRAAk8A2Atuggdh5NkWqEE1kAUUgWAr3CALxHPnGD4Ny3bc//v+U1d99ZJMh
-bIz1sq5NrsqTorb0gpJ26+wW4LDlpHq0ZG7ydWnSjmZuzvYA6UB0/2Mx2DyMloEe
-x7jvbgJLN3rWVwA5JoDwoedG41kA+QR91oYy+1xcv9b0p1BBi2Ych1rqptT6HeIq
-efRZZiCvozIT+6+e7JmFQYb1YE16ysF+x0NCxeLAWOzeW/WWDJp/YYmQcuZxmlz+
-rvFmHss/1Maisi/gx8nKh0aohmvJPKr0rKXL9nvStkKn/i+4Tbcg4F8M31DKIq/F
-3/N8okF/EHovor3eFuIoB6QOq8pukSA938V2PGL1yDjLsSUrgasG8QYCQPAGeQlZ
-zjh/m/bqrzjzReQbLpo4khea+hV5vuutgpROmBej2wMXt8i4G41hHrSRgGvhnif6
-/0mFC0r0yFfqK4DxR3OZPERHeGSAb2JTH3jpdjnM0mCyIRo8JKabMnFhN8B0hnAq
-e2rafTJPieqSzau8ruIH3JSGrbg3k/9COfngUmETlxu7eOzOo2n4irnVaAoVCOTV
-v4w6tDHMC/xAAy5qIH4rZCyMjVRUsZwV+g2W1+TZ68cZAduZJu78Z12HXLGXR6G6
-8xMgPBnZih0mLt3ekD99usVFoKOSbdVYgNdsqPKMpDy/Csu7mBY=
-=+jU2
+iQEzBAEBCAAdFiEENIC96giZ81tWdLgKAVBC80lX0GwFAly+03oACgkQAVBC80lX
+0Gz8lgf/UMh08pAMMuEi1HXki2uwBPjULYkkOB7hT/sBlTNIsKj8PLg+HzB5AzS+
+3KLroeGactSUQPGdrOywqyE6E9dVlBulJwsWjLda5D1tVPmN4aDYkKG0eXaK7ATX
+sBRdb+AXlw4d4giNYySbvEkvUNNnOo/dd6jsdp/3jxuZVe/sq2U0s6Yfrh7hmUiN
++pvaEiHEVZdkOiAW7ToD1ksbB56ubAz1zy4Ii9KAkAl+p80c69C8cufbOYhFASws
+83ItvUqxFfTSIehfHasJZybU1VUzAelZ5TfU460IC2addI9Q2cAAmxGiYWy8QTS3
+roYa+gqqyGScJwQmcHLnPXzSpe8Iew==
+=r82g
 -----END PGP SIGNATURE-----
 
---XOIedfhf+7KOe/yw--
+--Sig_/Nk6HokKlb1IQryWefgKDJ2M--
