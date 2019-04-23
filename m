@@ -5,24 +5,23 @@ X-Spam-Level:
 X-Spam-Status: No, score=-8.6 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
 	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+	SPF_PASS,USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9BDF3C10F03
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Apr 2019 20:22:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 489FEC10F03
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Apr 2019 20:25:03 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 15228208E4
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Apr 2019 20:22:49 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 7BDDB208E4
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Apr 2019 20:25:02 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="iQaMBRju"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 15228208E4
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="IM3hq3uO"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7BDDB208E4
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44pZd24QKCzDqR2
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Apr 2019 06:22:46 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44pZgc3yqHzDqQK
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Apr 2019 06:25:00 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=gmail.com
  (client-ip=2607:f8b0:4864:20::543; helo=mail-pg1-x543.google.com;
@@ -30,57 +29,58 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="iQaMBRju"; 
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="IM3hq3uO"; 
  dkim-atps=neutral
 Received: from mail-pg1-x543.google.com (mail-pg1-x543.google.com
  [IPv6:2607:f8b0:4864:20::543])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44pTXs6C6xzDqHj
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Apr 2019 02:33:49 +1000 (AEST)
-Received: by mail-pg1-x543.google.com with SMTP id d31so7874758pgl.7
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Apr 2019 09:33:49 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44pTXz4lFBzDqJ2
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Apr 2019 02:33:55 +1000 (AEST)
+Received: by mail-pg1-x543.google.com with SMTP id l18so7739368pgj.6
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Apr 2019 09:33:55 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
  h=from:to:cc:subject:date:message-id:in-reply-to:references
  :mime-version:content-transfer-encoding;
- bh=0U3DN21jJSHjryo32FyL3BVOe7dtJ75E6Tjlu2mOfww=;
- b=iQaMBRjuoKwYKB7O2GsDX98OMllJ/uv/lzINdi4sfNeSK2VBMZHiOyHCoZ7dka43/T
- 6p0c0SiktgAOQ6AId8R6Moz951B66HuOUD29ySd7UTUxJvdT54QMkC3IJrX5MZjP/mSn
- bMsy3D909A2lwtdUwDub3UAjp9vroHIWEsKTt+spOnSdtPFL+I6QzGcg2lbT2uMXbwar
- xwky+jESzwTQSpVQ0acFeppNVmGelWlOa5AqcvbwELCdGVs0RjmnbhTWH6bCEBpNRCk3
- f9GV3Cm4QlnjOW0nHj+u+xfOEL8/RAmyhQG62Nan+/Ak7xyLtRmOSQfdqAi1wwB2mQm3
- 1HHg==
+ bh=4xTrnLrO59umJmSOvr4epn2M5miwC5OKlGYVuirCoC0=;
+ b=IM3hq3uOs4nXIMqaVCPkR+wmGVqnUYUAe2kfzxLiWVFI16Po9dzRGA2HEL3HTkFS0Y
+ yIRE1YfFsBZWwKLtF7pxM2H6HTLfiI0ecsylitlE0QrTK0PBvM1CSbxFDnOM+JvHatdf
+ SV28RxH4G2Z5bsYXMGcsUAbc1qqgAXv3yZdORTxV4D7NP97bqoQed6Qxa/UqCR2ZMR2z
+ 0irvdt100pc8mJM//h6u3lDSti3tCpE7DKg9Kyt6yiWkAqvOQpAVP9/ak2hcHY7RB9YV
+ MOplj8bdzATistWqkFYsXOssi0OqMMCXspkn+JIXz2agpujc4ykwxK0apEBNF4k1xB9W
+ m0zw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
  :references:mime-version:content-transfer-encoding;
- bh=0U3DN21jJSHjryo32FyL3BVOe7dtJ75E6Tjlu2mOfww=;
- b=anvIUsbQZfSbderteN2eD20WiVHKqmMN0MI6QACrATZ24oWwoBPX42W+Y9rGlg7oya
- uVVnqFrRWO2o8/DLM5AIGc7NMqcbHDx9tIcjHCLMohyAeQxJvmIlelFG4niuABo1S0oe
- ERpcjiQzIaGcpTfxss5+A3pVkW/0kx5/zW6VK3dnxyNL9uDGmqR4KwwRLJneHl4RK3Zg
- ypLqkYp+Bg3FOoX4DvnlnYZw0slJcpO6SiMaGNVOvhQ1WJQByc29O7cZfJ2X+Q5eRR5t
- /isHp/u/MtK3iS53Rr/TAoWsDP5RUPH94x0KyKbmxzce3CuIIZwykGRfYGq8CtxQkc0z
- UxFg==
-X-Gm-Message-State: APjAAAWjqjAWtz+XR4UR/oNp1aCwTUdiJNarDFraRvs/T4/iNHRYvBnT
- 74YfoBtpwzyNLSD/0J5f2dg=
-X-Google-Smtp-Source: APXvYqxCMYp3oR/dKH7Mrn8vZMzJCXFqZWJPsht2mWS9lswXXCap9aVvVsD9e9FWQej6ywWfbEMnTQ==
-X-Received: by 2002:a63:330e:: with SMTP id z14mr25388758pgz.4.1556037226258; 
- Tue, 23 Apr 2019 09:33:46 -0700 (PDT)
+ bh=4xTrnLrO59umJmSOvr4epn2M5miwC5OKlGYVuirCoC0=;
+ b=neEhh8wpJ3NmXdq8MhDBwl0pSy/DnAxsv0VxZW6wulCgLGnojDjGWvSCoEheoxpYXO
+ R8ca+g+rRFUX5MND9Aix+VeFsnUKAJZiSOviymWDlBPRwXuw6qnfdA6WQVnCwti9185h
+ H+NUVUGsxcUo/xcn6/S1ZQWxJeFztEWkvArI0tvsEIHCsZdm0ogCDR3D6fWFiiWZ+7mS
+ 7UhykWeFoYlBgb4gOAaX9S0A3rXCwl8S3ZUjVQyhJ6XCwANtquR0M2an5IyDPdGZExNL
+ WbkGIOFz3Y1GVGkLlw0rrXtcafwj4hrjHB8SR9V7uNbNb+iO7q88juNKx5LXdxE2jo6D
+ MJhw==
+X-Gm-Message-State: APjAAAWWiL0NNVmmTKm11GVpOm2q9W9FmvycgFEmCNrZ8tWEjGo1u/nN
+ GNiqoIcLaIwSFH9YNgWs03M=
+X-Google-Smtp-Source: APXvYqzCN4JlnPcIBBixsCPKXX8eA6Ikw06oVo5Ar9KruZby+Z0pOXPDt6n8BU3DR0OKk9a/I0AbTA==
+X-Received: by 2002:a65:6202:: with SMTP id d2mr25646108pgv.176.1556037233885; 
+ Tue, 23 Apr 2019 09:33:53 -0700 (PDT)
 Received: from localhost.localdomain ([104.238.181.70])
- by smtp.gmail.com with ESMTPSA id v1sm24364801pff.81.2019.04.23.09.33.34
+ by smtp.gmail.com with ESMTPSA id v1sm24364801pff.81.2019.04.23.09.33.46
  (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
- Tue, 23 Apr 2019 09:33:44 -0700 (PDT)
+ Tue, 23 Apr 2019 09:33:53 -0700 (PDT)
 From: Changbin Du <changbin.du@gmail.com>
 To: Jonathan Corbet <corbet@lwn.net>
-Subject: [PATCH v4 21/63] Documentation: ACPI: move cppc_sysfs.txt to
- admin-guide/acpi and convert to reST
-Date: Wed, 24 Apr 2019 00:28:50 +0800
-Message-Id: <20190423162932.21428-22-changbin.du@gmail.com>
+Subject: [PATCH v4 22/63] Documentation: ACPI: move lpit.txt to
+ firmware-guide/acpi and convert to reST
+Date: Wed, 24 Apr 2019 00:28:51 +0800
+Message-Id: <20190423162932.21428-23-changbin.du@gmail.com>
 X-Mailer: git-send-email 2.20.1
 In-Reply-To: <20190423162932.21428-1-changbin.du@gmail.com>
 References: <20190423162932.21428-1-changbin.du@gmail.com>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 X-Mailman-Approved-At: Wed, 24 Apr 2019 05:41:30 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -108,127 +108,58 @@ add it to Sphinx TOC tree. No essential content change.
 
 Signed-off-by: Changbin Du <changbin.du@gmail.com>
 ---
- .../acpi/cppc_sysfs.rst}                      | 71 ++++++++++---------
- Documentation/admin-guide/acpi/index.rst      |  1 +
- 2 files changed, 40 insertions(+), 32 deletions(-)
- rename Documentation/{acpi/cppc_sysfs.txt => admin-guide/acpi/cppc_sysfs.rst} (51%)
+ Documentation/firmware-guide/acpi/index.rst    |  1 +
+ .../lpit.txt => firmware-guide/acpi/lpit.rst}  | 18 +++++++++++++-----
+ 2 files changed, 14 insertions(+), 5 deletions(-)
+ rename Documentation/{acpi/lpit.txt => firmware-guide/acpi/lpit.rst} (68%)
 
-diff --git a/Documentation/acpi/cppc_sysfs.txt b/Documentation/admin-guide/acpi/cppc_sysfs.rst
-similarity index 51%
-rename from Documentation/acpi/cppc_sysfs.txt
-rename to Documentation/admin-guide/acpi/cppc_sysfs.rst
-index f20fb445135d..a4b99afbe331 100644
---- a/Documentation/acpi/cppc_sysfs.txt
-+++ b/Documentation/admin-guide/acpi/cppc_sysfs.rst
-@@ -1,5 +1,11 @@
+diff --git a/Documentation/firmware-guide/acpi/index.rst b/Documentation/firmware-guide/acpi/index.rst
+index fca854f017d8..0e60f4b7129a 100644
+--- a/Documentation/firmware-guide/acpi/index.rst
++++ b/Documentation/firmware-guide/acpi/index.rst
+@@ -22,3 +22,4 @@ ACPI Support
+    gpio-properties
+    i2c-muxes
+    acpi-lid
++   lpit
+diff --git a/Documentation/acpi/lpit.txt b/Documentation/firmware-guide/acpi/lpit.rst
+similarity index 68%
+rename from Documentation/acpi/lpit.txt
+rename to Documentation/firmware-guide/acpi/lpit.rst
+index b426398d2e97..aca928fab027 100644
+--- a/Documentation/acpi/lpit.txt
++++ b/Documentation/firmware-guide/acpi/lpit.rst
+@@ -1,3 +1,9 @@
 +.. SPDX-License-Identifier: GPL-2.0
- 
--	Collaborative Processor Performance Control (CPPC)
-+==================================================
-+Collaborative Processor Performance Control (CPPC)
-+==================================================
 +
-+CPPC
-+====
- 
- CPPC defined in the ACPI spec describes a mechanism for the OS to manage the
- performance of a logical processor on a contigious and abstract performance
-@@ -10,31 +16,28 @@ For more details on CPPC please refer to the ACPI specification at:
- 
- http://uefi.org/specifications
- 
--Some of the CPPC registers are exposed via sysfs under:
--
--/sys/devices/system/cpu/cpuX/acpi_cppc/
--
--for each cpu X
-+Some of the CPPC registers are exposed via sysfs under::
- 
----------------------------------------------------------------------------------
-+  /sys/devices/system/cpu/cpuX/acpi_cppc/
- 
--$ ls -lR  /sys/devices/system/cpu/cpu0/acpi_cppc/
--/sys/devices/system/cpu/cpu0/acpi_cppc/:
--total 0
---r--r--r-- 1 root root 65536 Mar  5 19:38 feedback_ctrs
---r--r--r-- 1 root root 65536 Mar  5 19:38 highest_perf
---r--r--r-- 1 root root 65536 Mar  5 19:38 lowest_freq
---r--r--r-- 1 root root 65536 Mar  5 19:38 lowest_nonlinear_perf
---r--r--r-- 1 root root 65536 Mar  5 19:38 lowest_perf
---r--r--r-- 1 root root 65536 Mar  5 19:38 nominal_freq
---r--r--r-- 1 root root 65536 Mar  5 19:38 nominal_perf
---r--r--r-- 1 root root 65536 Mar  5 19:38 reference_perf
---r--r--r-- 1 root root 65536 Mar  5 19:38 wraparound_time
-+for each cpu X::
- 
----------------------------------------------------------------------------------
-+  $ ls -lR  /sys/devices/system/cpu/cpu0/acpi_cppc/
-+  /sys/devices/system/cpu/cpu0/acpi_cppc/:
-+  total 0
-+  -r--r--r-- 1 root root 65536 Mar  5 19:38 feedback_ctrs
-+  -r--r--r-- 1 root root 65536 Mar  5 19:38 highest_perf
-+  -r--r--r-- 1 root root 65536 Mar  5 19:38 lowest_freq
-+  -r--r--r-- 1 root root 65536 Mar  5 19:38 lowest_nonlinear_perf
-+  -r--r--r-- 1 root root 65536 Mar  5 19:38 lowest_perf
-+  -r--r--r-- 1 root root 65536 Mar  5 19:38 nominal_freq
-+  -r--r--r-- 1 root root 65536 Mar  5 19:38 nominal_perf
-+  -r--r--r-- 1 root root 65536 Mar  5 19:38 reference_perf
-+  -r--r--r-- 1 root root 65536 Mar  5 19:38 wraparound_time
- 
- * highest_perf : Highest performance of this processor (abstract scale).
--* nominal_perf : Highest sustained performance of this processor (abstract scale).
-+* nominal_perf : Highest sustained performance of this processor
-+  (abstract scale).
- * lowest_nonlinear_perf : Lowest performance of this processor with nonlinear
-   power savings (abstract scale).
- * lowest_perf : Lowest performance of this processor (abstract scale).
-@@ -48,22 +51,26 @@ total 0
- * feedback_ctrs : Includes both Reference and delivered performance counter.
-   Reference counter ticks up proportional to processor's reference performance.
-   Delivered counter ticks up proportional to processor's delivered performance.
--* wraparound_time: Minimum time for the feedback counters to wraparound (seconds).
-+* wraparound_time: Minimum time for the feedback counters to wraparound
-+  (seconds).
- * reference_perf : Performance level at which reference performance counter
-   accumulates (abstract scale).
- 
----------------------------------------------------------------------------------
- 
--		Computing Average Delivered Performance
-+Computing Average Delivered Performance
-+=======================================
++===========================
++Low Power Idle Table (LPIT)
++===========================
 +
-+Below describes the steps to compute the average performance delivered by
-+taking two different snapshots of feedback counters at time T1 and T2.
+ To enumerate platform Low Power Idle states, Intel platforms are using
+ “Low Power Idle Table” (LPIT). More details about this table can be
+ downloaded from:
+@@ -8,13 +14,15 @@ Residencies for each low power state can be read via FFH
+ 
+ On platforms supporting S0ix sleep states, there can be two types of
+ residencies:
+-- CPU PKG C10 (Read via FFH interface)
+-- Platform Controller Hub (PCH) SLP_S0 (Read via memory mapped interface)
 +
-+  T1: Read feedback_ctrs as fbc_t1
-+      Wait or run some workload
++  - CPU PKG C10 (Read via FFH interface)
++  - Platform Controller Hub (PCH) SLP_S0 (Read via memory mapped interface)
  
--Below describes the steps to compute the average performance delivered by taking
--two different snapshots of feedback counters at time T1 and T2.
-+  T2: Read feedback_ctrs as fbc_t2
+ The following attributes are added dynamically to the cpuidle
+-sysfs attribute group:
+-	/sys/devices/system/cpu/cpuidle/low_power_idle_cpu_residency_us
+-	/sys/devices/system/cpu/cpuidle/low_power_idle_system_residency_us
++sysfs attribute group::
++
++  /sys/devices/system/cpu/cpuidle/low_power_idle_cpu_residency_us
++  /sys/devices/system/cpu/cpuidle/low_power_idle_system_residency_us
  
--T1: Read feedback_ctrs as fbc_t1
--    Wait or run some workload
--T2: Read feedback_ctrs as fbc_t2
-+::
- 
--delivered_counter_delta = fbc_t2[del] - fbc_t1[del]
--reference_counter_delta = fbc_t2[ref] - fbc_t1[ref]
-+  delivered_counter_delta = fbc_t2[del] - fbc_t1[del]
-+  reference_counter_delta = fbc_t2[ref] - fbc_t1[ref]
- 
--delivered_perf = (refernce_perf x delivered_counter_delta) / reference_counter_delta
-+  delivered_perf = (refernce_perf x delivered_counter_delta) / reference_counter_delta
-diff --git a/Documentation/admin-guide/acpi/index.rst b/Documentation/admin-guide/acpi/index.rst
-index d68e9914c5ff..9049a7b9f065 100644
---- a/Documentation/admin-guide/acpi/index.rst
-+++ b/Documentation/admin-guide/acpi/index.rst
-@@ -10,3 +10,4 @@ the Linux ACPI support.
- 
-    initrd_table_override
-    dsdt-override
-+   cppc_sysfs
+ The "low_power_idle_cpu_residency_us" attribute shows time spent
+ by the CPU package in PKG C10
 -- 
 2.20.1
 
