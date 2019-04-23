@@ -2,98 +2,82 @@ Return-Path: <SRS0=/W8y=SZ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C1109C10F03
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Apr 2019 16:08:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C9E0AC10F03
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Apr 2019 16:14:54 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 0BAFB20693
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Apr 2019 16:08:13 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 4B0062175B
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Apr 2019 16:14:54 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=linux-foundation.org header.i=@linux-foundation.org header.b="CZonqEvK"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0BAFB20693
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linux-foundation.org
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="ijGLB9Dz"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4B0062175B
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44pSzH72YqzDqRs
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Apr 2019 02:08:11 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44pT6z5CMzzDqCb
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Apr 2019 02:14:51 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=linuxfoundation.org
- (client-ip=2a00:1450:4864:20::133; helo=mail-lf1-x133.google.com;
- envelope-from=torvalds@linuxfoundation.org; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=linux-foundation.org
+ spf=pass (mailfrom) smtp.mailfrom=c-s.fr
+ (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=linux-foundation.org header.i=@linux-foundation.org
- header.b="CZonqEvK"; dkim-atps=neutral
-Received: from mail-lf1-x133.google.com (mail-lf1-x133.google.com
- [IPv6:2a00:1450:4864:20::133])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="ijGLB9Dz"; 
+ dkim-atps=neutral
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44pSxW4lKVzDq9m
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Apr 2019 02:06:37 +1000 (AEST)
-Received: by mail-lf1-x133.google.com with SMTP id o16so1395676lfl.7
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Apr 2019 09:06:37 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=linux-foundation.org; s=google;
- h=mime-version:references:in-reply-to:from:date:message-id:subject:to
- :cc; bh=FhckMePRJRIMKUNlCIkx3VHe63IXH0bZ3S6Gwqv5tdM=;
- b=CZonqEvKRryr7I9kZkzaMOwuQF50UFC0DuXrN+A5A6rDj20MPF13Loj640HKBDdB/S
- wli9FxRhQ1OX9jSEjTEapHcc+guN8oU7kWxmO0cu6zjBUv5QhZecKO1iE405PwB0TBDs
- hqJUvZk6OvySvehOwaartA/mM+abp7YvVEyVQ=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:mime-version:references:in-reply-to:from:date
- :message-id:subject:to:cc;
- bh=FhckMePRJRIMKUNlCIkx3VHe63IXH0bZ3S6Gwqv5tdM=;
- b=ujJe4gIIdY28WWxXrNGSLZh5NDEXreSp7nRwMQfLT/CSXqUrOKKj9HW2rFgqOfiwfS
- Dsw09HPUjS9leyI1kKqvSVcrGLCdrU/wrhVAn/s485XxZvthQSotag/jxiyvGL+bqlNc
- Wk2BT/dswkA0NnoHTifVu8n/kFsSA2EI+QdCotJaYKMAzQG5oJjpO42mImW7ZQ6Y6HWV
- nXiS12rOa8ZwM8PLfdlHxm35djR3m/qnNtOAIhDLm72YIz6lkryCr/mX0+t65wzWvxI7
- djuxSq4IwB7mlFexMUclhX9Bb9rrciC8WRFkbhN/vBNG0Elss+YZDQQR6tmnfZnWlskb
- vLaA==
-X-Gm-Message-State: APjAAAWjkZh8n64kGZQHIEGXBwIULZsT7z2Q32li7UznWmbWeaAxuqDs
- fYYRylyPs3KslFUm5TlT5GesLtPF5DI=
-X-Google-Smtp-Source: APXvYqzhzbFTlKsPN5KYL/Bgqt2YvyKe0QDL01DL7nQrdNuBdMZH40B8VT8H6GsJ/m7ruCkqCO2XSQ==
-X-Received: by 2002:ac2:51d9:: with SMTP id u25mr3133038lfm.91.1556035592328; 
- Tue, 23 Apr 2019 09:06:32 -0700 (PDT)
-Received: from mail-lj1-f172.google.com (mail-lj1-f172.google.com.
- [209.85.208.172])
- by smtp.gmail.com with ESMTPSA id c17sm1665914lff.84.2019.04.23.09.06.30
- for <linuxppc-dev@lists.ozlabs.org>
- (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
- Tue, 23 Apr 2019 09:06:31 -0700 (PDT)
-Received: by mail-lj1-f172.google.com with SMTP id l7so14039762ljg.6
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Apr 2019 09:06:30 -0700 (PDT)
-X-Received: by 2002:a2e:9ac8:: with SMTP id p8mr12853071ljj.79.1556035590337; 
- Tue, 23 Apr 2019 09:06:30 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44pT5J4VjYzDqCM
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Apr 2019 02:13:23 +1000 (AEST)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 44pT5C09PRz9v07k;
+ Tue, 23 Apr 2019 18:13:19 +0200 (CEST)
+Authentication-Results: localhost; dkim=pass
+ reason="1024-bit key; insecure key"
+ header.d=c-s.fr header.i=@c-s.fr header.b=ijGLB9Dz; dkim-adsp=pass;
+ dkim-atps=neutral
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id PTt_AgfKUemI; Tue, 23 Apr 2019 18:13:18 +0200 (CEST)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 44pT5B5zn7z9v07j;
+ Tue, 23 Apr 2019 18:13:18 +0200 (CEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
+ t=1556035998; bh=1AFTfzDB9IvMxny1fCOqjElP9QAgq1t7ENoaK1avYeo=;
+ h=Subject:To:References:Cc:From:Date:In-Reply-To:From;
+ b=ijGLB9DzCpnbNP6yJbut9gEIxYXWUfRrO4vdrgUGdI70HePzo9W6tj6+3Z9EjbyKR
+ hkKGVUdMhoPcjZsSshnPkJW1g3W69qLRH+zwpvVFb87aYfBggEhFrn3qmOF6y9urut
+ a5/+jlnxANDL45WLwXs3+Z3xQtAphu2BQnom/wlI=
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 7486C8B8E9;
+ Tue, 23 Apr 2019 18:13:20 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id QwhBFByJ5pvT; Tue, 23 Apr 2019 18:13:20 +0200 (CEST)
+Received: from PO15451 (unknown [192.168.4.90])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 29D408B8C4;
+ Tue, 23 Apr 2019 18:13:20 +0200 (CEST)
+Subject: Re: [PATCH][v2] powerpc/lib: remove memcpy_flushcache redundant return
+To: Li RongQing <lirongqing@baidu.com>, linuxppc-dev@lists.ozlabs.org
+References: <1555037513-22543-1-git-send-email-lirongqing@baidu.com>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Message-ID: <1fef9512-20d6-a27c-b709-5b47ed72c79e@c-s.fr>
+Date: Tue, 23 Apr 2019 18:13:18 +0200
+User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:60.0) Gecko/20100101
+ Thunderbird/60.6.1
 MIME-Version: 1.0
-References: <CAHk-=wjvcuyCQGnfOhooaL1H4H63qXO=xgo+9yncSOG=eK+kbA@mail.gmail.com>
- <20190415051919.GA31481@infradead.org>
- <CAHk-=wj7jgMOVFW0tiU-X+zhg6+Rn7mEBTej+f26rV3zXezOSA@mail.gmail.com>
- <20190416110906.6c773aff@mschwideX1> <20190416140658.2cb73a3f@mschwideX1>
- <CAHk-=wjKi5C+Onhp5Vs5BQxHbaBud9M3cTS-S6Tr9yDY4dS-Sw@mail.gmail.com>
- <CAHk-=wj2SW0Zno0Yn=S9wrsmHOKV0FiFPiPS4TM=Gn8yjfYXAg@mail.gmail.com>
- <20190417094637.51ad4c67@mschwideX1> <20190417100244.42e29736@mschwideX1>
- <CAHk-=wj5j-zMo7hVNxiw3+5L2d1WQVm3x4fbpg=OXLzDh8FhYg@mail.gmail.com>
- <20190418100218.0a4afd51@mschwideX1>
- <CAHk-=whajv8Fw2VcBqZUs0hfx1Dq4fYj3TEEx4yfR3E8+rLS1A@mail.gmail.com>
- <20190418204144.16adf2a0@mschwideX1> <20190419153307.4f2911b5@mschwideX1>
- <CAHk-=wj6yp7hkJ_wR38dhdDRkAHQaEx28v2FkVT9hDFXX_qfjA@mail.gmail.com>
- <20190423173859.42d5ba8b@mschwideX1>
-In-Reply-To: <20190423173859.42d5ba8b@mschwideX1>
-From: Linus Torvalds <torvalds@linux-foundation.org>
-Date: Tue, 23 Apr 2019 09:06:14 -0700
-X-Gmail-Original-Message-ID: <CAHk-=wiCwe7Uk0P6zJnTPqz_BvkELBbnocS-0qdWxVgq9qebjg@mail.gmail.com>
-Message-ID: <CAHk-=wiCwe7Uk0P6zJnTPqz_BvkELBbnocS-0qdWxVgq9qebjg@mail.gmail.com>
-Subject: Re: Linux 5.1-rc5
-To: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
+In-Reply-To: <1555037513-22543-1-git-send-email-lirongqing@baidu.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: fr
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -105,29 +89,65 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Christoph Hellwig <hch@infradead.org>, linuxppc-dev@lists.ozlabs.org,
- Linux List Kernel Mailing <linux-kernel@vger.kernel.org>,
- linux-s390 <linux-s390@vger.kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, Apr 23, 2019 at 8:39 AM Martin Schwidefsky
-<schwidefsky@de.ibm.com> wrote:
->
-> Ok, I added two patches for my s390/linux:features branch
->
-> Martin Schwidefsky (2):
->       s390/mm: make the pxd_offset functions more robust
->       s390/mm: convert to the generic get_user_pages_fast code
->
-> All code changes are inside arch/s390, I plan to include these patches with
-> the next merge window. That gives us a little bit of time to run our tests.
 
-Sounds good. Thanks for looking into this all.
 
-Now I slightly wonder about all the other random architectures that
-don't use the HAVE_GENERIC_GUP config option, but at least we'll have
-all of arm, powerpc, x86 and s390 using the generic code..
+Le 12/04/2019 à 04:51, Li RongQing a écrit :
+> Align it with other architectures and none of the callers has
+> been interested its return
+> 
+> Signed-off-by: Li RongQing <lirongqing@baidu.com>
+> ---
+> v1->v2: change memcpy_flushcache declaration in arch/powerpc/include/asm/string.h
+> 
+>   arch/powerpc/include/asm/string.h | 2 +-
+>   arch/powerpc/lib/pmem.c           | 4 +---
+>   2 files changed, 2 insertions(+), 4 deletions(-)
+> 
+> diff --git a/arch/powerpc/include/asm/string.h b/arch/powerpc/include/asm/string.h
+> index 1647de15a31e..15e2e16272ea 100644
+> --- a/arch/powerpc/include/asm/string.h
+> +++ b/arch/powerpc/include/asm/string.h
+> @@ -25,7 +25,7 @@ extern void * memcpy(void *,const void *,__kernel_size_t);
+>   extern void * memmove(void *,const void *,__kernel_size_t);
+>   extern int memcmp(const void *,const void *,__kernel_size_t);
+>   extern void * memchr(const void *,int,__kernel_size_t);
+> -extern void * memcpy_flushcache(void *,const void *,__kernel_size_t);
+> +extern void memcpy_flushcache(void *, const void *, __kernel_size_t);
 
-                    Linus
+As you are modifying this line, you should make it fully iaw lastest 
+rules, ie no 'extern' keyword and args should have names.
+
+I guess, just copy it from pmem.c:
+
+void memcpy_flushcache(void *dest, const void *src, size_t size);
+
+Christophe
+
+>   
+>   #ifdef CONFIG_PPC64
+>   #define __HAVE_ARCH_MEMSET32
+> diff --git a/arch/powerpc/lib/pmem.c b/arch/powerpc/lib/pmem.c
+> index 53c018762e1c..a7a1b3fc6720 100644
+> --- a/arch/powerpc/lib/pmem.c
+> +++ b/arch/powerpc/lib/pmem.c
+> @@ -48,14 +48,12 @@ long __copy_from_user_flushcache(void *dest, const void __user *src,
+>   	return copied;
+>   }
+>   
+> -void *memcpy_flushcache(void *dest, const void *src, size_t size)
+> +void memcpy_flushcache(void *dest, const void *src, size_t size)
+>   {
+>   	unsigned long start = (unsigned long) dest;
+>   
+>   	memcpy(dest, src, size);
+>   	flush_inval_dcache_range(start, start + size);
+> -
+> -	return dest;
+>   }
+>   EXPORT_SYMBOL(memcpy_flushcache);
+>   
+> 
