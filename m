@@ -4,24 +4,23 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-8.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+	SPF_PASS,USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2DFA5C10F14
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Apr 2019 03:30:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D4D94C10F14
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Apr 2019 03:31:50 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 964DA20B1F
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Apr 2019 03:30:20 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 3AD8D20B1F
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Apr 2019 03:31:50 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=nifty.com header.i=@nifty.com header.b="gV33Qf2t"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 964DA20B1F
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=nifty.com header.i=@nifty.com header.b="I0CioBDT"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3AD8D20B1F
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=socionext.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44p88p4YNCzDqNX
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Apr 2019 13:30:18 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44p8BX1cJxzDqMl
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Apr 2019 13:31:48 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=softfail (mailfrom) smtp.mailfrom=socionext.com
  (client-ip=210.131.2.76; helo=conuserg-09.nifty.com;
@@ -29,42 +28,38 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=socionext.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=nifty.com header.i=@nifty.com header.b="gV33Qf2t"; 
+ unprotected) header.d=nifty.com header.i=@nifty.com header.b="I0CioBDT"; 
  dkim-atps=neutral
 Received: from conuserg-09.nifty.com (conuserg-09.nifty.com [210.131.2.76])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44p7zt2RYczDqMT
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Apr 2019 13:22:33 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44p7zt6CQ6zDqNn
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Apr 2019 13:22:34 +1000 (AEST)
 Received: from localhost.localdomain (p14092-ipngnfx01kyoto.kyoto.ocn.ne.jp
  [153.142.97.92]) (authenticated)
- by conuserg-09.nifty.com with ESMTP id x3N3L8LF031384;
- Tue, 23 Apr 2019 12:21:13 +0900
-DKIM-Filter: OpenDKIM Filter v2.10.3 conuserg-09.nifty.com x3N3L8LF031384
+ by conuserg-09.nifty.com with ESMTP id x3N3L8LE031384;
+ Tue, 23 Apr 2019 12:21:11 +0900
+DKIM-Filter: OpenDKIM Filter v2.10.3 conuserg-09.nifty.com x3N3L8LE031384
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nifty.com;
- s=dec2015msa; t=1555989673;
- bh=ck3m1Bnhk+gBZ69Ip9jiWsEf5IWvpXJTs7wxMIQoCXU=;
+ s=dec2015msa; t=1555989672;
+ bh=WxeGjpwIMtUh4NapkUcSoliRiI5DD/Rdf3zwHkix9l0=;
  h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=gV33Qf2twLt0S6KodHjawBrkc1EsU13fh2qP1ShaK+o/SW6rZPyaYhhtUGjSAMOAL
- R6pXzzLQz8ZPC8irBjiP9xHCy62EbVDEQXUwURuCleI0FJA77siCTw7Cz4XKgG1UfL
- HVZpVKmESAPZc46mK1RRH+1phNlLhepGkqPxUGjE20kRpWeZm0GYs2r7kDaFXdO6qR
- cCIMvz79juH6wsQD+t5Jx+BzNhp4jE7MKMO0MND1/4edyYQRn+I+KQBoZTCFmf4xjF
- qjQonQHFppXfOIXGtZ0OqQBPESG1vJw9Dz8ZTGLbmLDpEupQ6kYWoETwrSNw/80XCk
- Xjd7IfyPdLgtA==
+ b=I0CioBDTkc1GHuaVSUtq8jVEnHXnq1hGY5fDTmiT2yZDSu6CTfVaaVXOU2ocZq0yd
+ yau4zui0pA9Gklyfdi8o/AJZ0Ym0WBMT+wi/ZHIchu3uqVfAfpQFmT6dC6tCX/Ecrl
+ cvxzp/A3CvHBT2XR5HyFgtORaimjq81j8GYVV04h9nnnWkEIg7LZQoh4wdOFskjT2d
+ 5eeCSxlqfwdPytf+3xnWAoqknX7CikjegNqgQuyxt3anZOWoLqsxIgU6AOl4i9IKb9
+ pVYIeb0NCpH/BeB18yE5PgIoZGN8m8fwFMGMGGUgfjYtgwRleo8ZKHDsJzkNe/clDM
+ UU4f0eSYQFKRQ==
 X-Nifty-SrcIP: [153.142.97.92]
 From: Masahiro Yamada <yamada.masahiro@socionext.com>
 To: Andrew Morton <akpm@linux-foundation.org>,
  linux-arch <linux-arch@vger.kernel.org>
-Subject: [PATCH v3 04/10] mtd: rawnand: vf610_nfc: add initializer to avoid
- -Wmaybe-uninitialized
-Date: Tue, 23 Apr 2019 12:21:00 +0900
-Message-Id: <20190423032106.11960-5-yamada.masahiro@socionext.com>
+Subject: [PATCH v3 03/10] s390/cpacf: mark scpacf_query() as __always_inline
+Date: Tue, 23 Apr 2019 12:20:59 +0900
+Message-Id: <20190423032106.11960-4-yamada.masahiro@socionext.com>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20190423032106.11960-1-yamada.masahiro@socionext.com>
 References: <20190423032106.11960-1-yamada.masahiro@socionext.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -89,21 +84,14 @@ Sender: "Linuxppc-dev"
 This prepares to move CONFIG_OPTIMIZE_INLINING from x86 to a common
 place. We need to eliminate potential issues beforehand.
 
-Kbuild test robot has never reported -Wmaybe-uninitialized warning
-for this probably because vf610_nfc_run() is inlined by the x86
-compiler's inlining heuristic.
+If it is enabled for s390, the following error is reported:
 
-If CONFIG_OPTIMIZE_INLINING is enabled for a different architecture
-and vf610_nfc_run() is not inlined, the following warning is reported:
-
-drivers/mtd/nand/raw/vf610_nfc.c: In function ‘vf610_nfc_cmd’:
-drivers/mtd/nand/raw/vf610_nfc.c:455:3: warning: ‘offset’ may be used uninitialized in this function [-Wmaybe-uninitialized]
-   vf610_nfc_rd_from_sram(instr->ctx.data.buf.in + offset,
-   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-            nfc->regs + NFC_MAIN_AREA(0) + offset,
-            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-            trfr_sz, !nfc->data_access);
-            ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+In file included from arch/s390/crypto/des_s390.c:19:
+./arch/s390/include/asm/cpacf.h: In function 'cpacf_query':
+./arch/s390/include/asm/cpacf.h:170:2: warning: asm operand 3 probably doesn't match constraints
+  asm volatile(
+  ^~~
+./arch/s390/include/asm/cpacf.h:170:2: error: impossible constraint in 'asm'
 
 Signed-off-by: Masahiro Yamada <yamada.masahiro@socionext.com>
 ---
@@ -112,22 +100,22 @@ Changes in v3: None
 Changes in v2:
   - split into a separate patch
 
- drivers/mtd/nand/raw/vf610_nfc.c | 2 +-
+ arch/s390/include/asm/cpacf.h | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/mtd/nand/raw/vf610_nfc.c b/drivers/mtd/nand/raw/vf610_nfc.c
-index a662ca1970e5..19792d725ec2 100644
---- a/drivers/mtd/nand/raw/vf610_nfc.c
-+++ b/drivers/mtd/nand/raw/vf610_nfc.c
-@@ -364,7 +364,7 @@ static int vf610_nfc_cmd(struct nand_chip *chip,
- {
- 	const struct nand_op_instr *instr;
- 	struct vf610_nfc *nfc = chip_to_nfc(chip);
--	int op_id = -1, trfr_sz = 0, offset;
-+	int op_id = -1, trfr_sz = 0, offset = 0;
- 	u32 col = 0, row = 0, cmd1 = 0, cmd2 = 0, code = 0;
- 	bool force8bit = false;
+diff --git a/arch/s390/include/asm/cpacf.h b/arch/s390/include/asm/cpacf.h
+index 3cc52e37b4b2..f316de40e51b 100644
+--- a/arch/s390/include/asm/cpacf.h
++++ b/arch/s390/include/asm/cpacf.h
+@@ -202,7 +202,7 @@ static inline int __cpacf_check_opcode(unsigned int opcode)
+ 	}
+ }
  
+-static inline int cpacf_query(unsigned int opcode, cpacf_mask_t *mask)
++static __always_inline int cpacf_query(unsigned int opcode, cpacf_mask_t *mask)
+ {
+ 	if (__cpacf_check_opcode(opcode)) {
+ 		__cpacf_query(opcode, mask);
 -- 
 2.17.1
 
