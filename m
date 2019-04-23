@@ -2,87 +2,67 @@ Return-Path: <SRS0=/W8y=SZ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_PASS
+X-Spam-Status: No, score=-2.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_MUTT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E98CDC10F14
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Apr 2019 09:28:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 28CCDC10F14
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Apr 2019 09:30:26 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 5FCEA20843
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Apr 2019 09:28:32 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 9553A20811
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Apr 2019 09:30:25 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="fXXLYPZR"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5FCEA20843
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="nj/UAzBo"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9553A20811
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44pJ660W21zDqDq
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Apr 2019 19:28:30 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44pJ8H3KHSzDqHw
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Apr 2019 19:30:23 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=c-s.fr
- (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
- envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
+ spf=none (mailfrom) smtp.mailfrom=infradead.org
+ (client-ip=2001:8b0:10b:1231::1; helo=merlin.infradead.org;
+ envelope-from=peterz@infradead.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=c-s.fr
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="fXXLYPZR"; 
- dkim-atps=neutral
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ dmarc=none (p=none dis=none) header.from=infradead.org
+Received: from merlin.infradead.org (merlin.infradead.org
+ [IPv6:2001:8b0:10b:1231::1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44pJ481l0dzDqKM
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Apr 2019 19:26:46 +1000 (AEST)
-Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 44pJ401klQz9v0sV;
- Tue, 23 Apr 2019 11:26:40 +0200 (CEST)
-Authentication-Results: localhost; dkim=pass
- reason="1024-bit key; insecure key"
- header.d=c-s.fr header.i=@c-s.fr header.b=fXXLYPZR; dkim-adsp=pass;
- dkim-atps=neutral
-X-Virus-Scanned: Debian amavisd-new at c-s.fr
-Received: from pegase1.c-s.fr ([192.168.12.234])
- by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id dcXsdNJd-ocU; Tue, 23 Apr 2019 11:26:40 +0200 (CEST)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 44pJ400ZD5z9v0sN;
- Tue, 23 Apr 2019 11:26:40 +0200 (CEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
- t=1556011600; bh=xI7IThQ7+DmQeJrdqSOU3ghoRqGDIfHXUVxgmi7bLNs=;
- h=Subject:To:Cc:References:From:Date:In-Reply-To:From;
- b=fXXLYPZR3626eXWtP6vuRXKfCKY8cQAepp0mZDGbKpbm7TkkTOuwGcQMMNhceAk34
- gOmD+KFbXvbHMDTfg/aMdBTsvnjHWeq0d4VkpgO9xtFk8a/GKcqvtNLEBQqy2qo8zV
- BPG0f/epfRLXkUiwqnaUKAlOp35YIbBhQn47rxiM=
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 0EC158B8C7;
- Tue, 23 Apr 2019 11:26:41 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id nl9mGBsdaIrc; Tue, 23 Apr 2019 11:26:40 +0200 (CEST)
-Received: from PO15451 (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 7573F8B8C4;
- Tue, 23 Apr 2019 11:26:40 +0200 (CEST)
-Subject: Re: [PATCH v2 10/10] powerpc/32s: Implement Kernel Userspace Access
- Protection
-To: Michael Ellerman <mpe@ellerman.id.au>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, ruscur@russell.cc
-References: <cover.1552292207.git.christophe.leroy@c-s.fr>
- <a2847248a92cb1641b1740fa121c5a30593ae662.1552292207.git.christophe.leroy@c-s.fr>
- <87ftqfu7j1.fsf@concordia.ellerman.id.au>
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Message-ID: <e297ba05-e82d-d269-20d2-5bd3914b1d14@c-s.fr>
-Date: Tue, 23 Apr 2019 11:26:39 +0200
-User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:60.0) Gecko/20100101
- Thunderbird/60.6.1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44pJ5W1NXBzDqN1
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Apr 2019 19:27:59 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+ d=infradead.org; s=merlin.20170209; h=In-Reply-To:Content-Type:MIME-Version:
+ References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
+ Content-Transfer-Encoding:Content-ID:Content-Description:Resent-Date:
+ Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:
+ List-Help:List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
+ bh=f/iLXaVA4u+TazdBjYinG9bUUB+MWLz5zrXVIQCfKNM=; b=nj/UAzBo31hclTqz5KOaLs3kN
+ 9+Wb0SdOYy0J9KD+QyJt7yQ9LGkIckSf3t6Viqscs1prUQ4Nt0h+LzExLOrhIw4owyz+uu7FAHuG3
+ C71Ebgg/MAqlvq9jb6UjD/kM1r8gJIbubPgfyoRFrQF2yz+qPrZJsT/XWTY7IlvtHtNy8J3fwaByD
+ EwipeXzyx6RcPe7VVCz2UCcTO/i/sdll1PXi3cBGsw3ByxE0j39YXUg26M35ZBMoWBEL2hNXhm/vB
+ E+Vg6nFM30vsFHp2cPMVfjZedrFAK5S3nGHSEHY4WDip3zj+r68oY4/UkvjhHmLcExsJDw0t9dw27
+ scs2myCjQ==;
+Received: from j217100.upc-j.chello.nl ([24.132.217.100]
+ helo=hirez.programming.kicks-ass.net)
+ by merlin.infradead.org with esmtpsa (Exim 4.90_1 #2 (Red Hat Linux))
+ id 1hIrho-0001lo-VN; Tue, 23 Apr 2019 09:27:13 +0000
+Received: by hirez.programming.kicks-ass.net (Postfix, from userid 1000)
+ id E48FE29B47DCE; Tue, 23 Apr 2019 11:27:10 +0200 (CEST)
+Date: Tue, 23 Apr 2019 11:27:10 +0200
+From: Peter Zijlstra <peterz@infradead.org>
+To: Laurent Dufour <ldufour@linux.ibm.com>
+Subject: Re: [PATCH v12 21/31] mm: Introduce find_vma_rcu()
+Message-ID: <20190423092710.GI11158@hirez.programming.kicks-ass.net>
+References: <20190416134522.17540-1-ldufour@linux.ibm.com>
+ <20190416134522.17540-22-ldufour@linux.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <87ftqfu7j1.fsf@concordia.ellerman.id.au>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: fr
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20190416134522.17540-22-ldufour@linux.ibm.com>
+User-Agent: Mutt/1.10.1 (2018-07-13)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -94,82 +74,60 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: jack@suse.cz, sergey.senozhatsky.work@gmail.com,
+ Will Deacon <will.deacon@arm.com>, mhocko@kernel.org, linux-mm@kvack.org,
+ paulus@samba.org, Punit Agrawal <punitagrawal@gmail.com>, hpa@zytor.com,
+ Michel Lespinasse <walken@google.com>,
+ Alexei Starovoitov <alexei.starovoitov@gmail.com>,
+ Andrea Arcangeli <aarcange@redhat.com>, ak@linux.intel.com,
+ Minchan Kim <minchan@kernel.org>, aneesh.kumar@linux.ibm.com, x86@kernel.org,
+ Matthew Wilcox <willy@infradead.org>,
+ Daniel Jordan <daniel.m.jordan@oracle.com>, Ingo Molnar <mingo@redhat.com>,
+ David Rientjes <rientjes@google.com>, paulmck@linux.vnet.ibm.com,
+ Haiyan Song <haiyanx.song@intel.com>, npiggin@gmail.com, sj38.park@gmail.com,
+ Jerome Glisse <jglisse@redhat.com>, dave@stgolabs.net, kemi.wang@intel.com,
+ kirill@shutemov.name, Thomas Gleixner <tglx@linutronix.de>,
+ zhong jiang <zhongjiang@huawei.com>,
+ Ganesh Mahendran <opensource.ganesh@gmail.com>,
+ Yang Shi <yang.shi@linux.alibaba.com>, Mike Rapoport <rppt@linux.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
+ vinayak menon <vinayakm.list@gmail.com>, akpm@linux-foundation.org,
+ Tim Chen <tim.c.chen@linux.intel.com>, haren@linux.vnet.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+On Tue, Apr 16, 2019 at 03:45:12PM +0200, Laurent Dufour wrote:
+> This allows to search for a VMA structure without holding the mmap_sem.
+> 
+> The search is repeated while the mm seqlock is changing and until we found
+> a valid VMA.
+> 
+> While under the RCU protection, a reference is taken on the VMA, so the
+> caller must call put_vma() once it not more need the VMA structure.
+> 
+> At the time a VMA is inserted in the MM RB tree, in vma_rb_insert(), a
+> reference is taken to the VMA by calling get_vma().
+> 
+> When removing a VMA from the MM RB tree, the VMA is not release immediately
+> but at the end of the RCU grace period through vm_rcu_put(). This ensures
+> that the VMA remains allocated until the end the RCU grace period.
+> 
+> Since the vm_file pointer, if valid, is released in put_vma(), there is no
+> guarantee that the file pointer will be valid on the returned VMA.
 
+What I'm missing here, and in the previous patch introducing the
+refcount (also see refcount_t), is _why_ we need the refcount thing at
+all.
 
-Le 18/04/2019 à 08:55, Michael Ellerman a écrit :
-> Christophe Leroy <christophe.leroy@c-s.fr> writes:
->> diff --git a/arch/powerpc/include/asm/book3s/32/kup.h b/arch/powerpc/include/asm/book3s/32/kup.h
->> index 5f97c742ca71..b3560b2de435 100644
->> --- a/arch/powerpc/include/asm/book3s/32/kup.h
->> +++ b/arch/powerpc/include/asm/book3s/32/kup.h
->> @@ -37,6 +37,113 @@
-> ...
->> +
->> +static inline void allow_user_access(void __user *to, const void __user *from, u32 size)
->> +{
->> +	u32 addr = (__force u32)to;
->> +	u32 end = min(addr + size, TASK_SIZE);
->> +
->> +	if (!addr || addr >= TASK_SIZE || !size)
->> +		return;
->> +
->> +	current->thread.kuap = (addr & 0xf0000000) | ((((end - 1) >> 28) + 1) & 0xf);
->> +	kuap_update_sr(mfsrin(addr) & ~SR_KS, addr, end);	/* Clear Ks */
->> +}
-> 
-> When rebasing on my v6 I changed the above to:
-> 
-> static inline void allow_user_access(void __user *to, const void __user *from, u32 size)
-> {
-> 	u32 addr, end;
-> 
-> 	if (__builtin_constant_p(to) && to == NULL)
-> 		return;
+My original plan was to use SRCU, which at the time was not complete
+enough so I abused/hacked preemptible RCU, but that is no longer the
+case, SRCU has all the required bits and pieces.
 
-Good point, it avoids keeping the test compiled in when the 'to' is not 
-NULL.
+Also; the initial motivation was prefaulting large VMAs and the
+contention on mmap was killing things; but similarly, the contention on
+the refcount (I did try that) killed things just the same.
 
-> 
-> 	addr = (__force u32)to;
-> 
-> 	if (!addr || addr >= TASK_SIZE || !size)
-> 		return;
-
-Then the !addr test isn't needed anymore I think.
-
-Christophe
-
-> 
-> 	end = min(addr + size, TASK_SIZE);
-> 	current->thread.kuap = (addr & 0xf0000000) | ((((end - 1) >> 28) + 1) & 0xf);
-> 	kuap_update_sr(mfsrin(addr) & ~SR_KS, addr, end);	/* Clear Ks */
-> }
-> 
-> Which I think achieves the same result. It does boot :)
-> 
->> +
->> +static inline void prevent_user_access(void __user *to, const void __user *from, u32 size)
->> +{
->> +	u32 addr = (__force u32)to;
->> +	u32 end = min(addr + size, TASK_SIZE);
->> +
->> +	if (!addr || addr >= TASK_SIZE || !size)
->> +		return;
->> +
->> +	current->thread.kuap = 0;
->> +	kuap_update_sr(mfsrin(addr) | SR_KS, addr, end);	/* set Ks */
->> +}
->> +
->> +static inline void allow_read_from_user(const void __user *from, unsigned long size)
->> +{
->> +}
-> 
-> And I dropped that.
-> 
-> cheers
-> 
+So I'm really sad to see the refcount return; and without any apparent
+justification.
