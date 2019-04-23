@@ -8,21 +8,21 @@ X-Spam-Status: No, score=-8.6 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
 	SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 46F1AC10F03
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Apr 2019 20:04:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D0D30C10F03
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Apr 2019 20:06:23 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B08D3218B0
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Apr 2019 20:04:45 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 451AD218B0
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Apr 2019 20:06:23 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="oeyeCJ2W"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B08D3218B0
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="L3xeiXnp"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 451AD218B0
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44pZDC5BcMzDqR3
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Apr 2019 06:04:43 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44pZG52V4HzDqQR
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Apr 2019 06:06:21 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=gmail.com
  (client-ip=2607:f8b0:4864:20::644; helo=mail-pl1-x644.google.com;
@@ -30,59 +30,58 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="oeyeCJ2W"; 
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="L3xeiXnp"; 
  dkim-atps=neutral
 Received: from mail-pl1-x644.google.com (mail-pl1-x644.google.com
  [IPv6:2607:f8b0:4864:20::644])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44pTWR0bgDzDqG9
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Apr 2019 02:32:34 +1000 (AEST)
-Received: by mail-pl1-x644.google.com with SMTP id ck15so7797704plb.3
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Apr 2019 09:32:34 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44pTWb5999zDqG9
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Apr 2019 02:32:43 +1000 (AEST)
+Received: by mail-pl1-x644.google.com with SMTP id e92so6001382plb.6
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Apr 2019 09:32:43 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
  h=from:to:cc:subject:date:message-id:in-reply-to:references
  :mime-version:content-transfer-encoding;
- bh=mEABvAJPuUKquiCQJQEbI9ERMbYdpL4Xy2gvmbdj4l4=;
- b=oeyeCJ2WsgE03nhOk/9sEgMBw+MMM5dqzZNVlTdRKjDIDDSfXCpu8cnVzwgZoSEEsM
- UBFq9Ug8QZBwNqZ71huTudilNRhSnnAs0/jdnoTynCoYApSqwZXgmott85RLcv3/zu/Q
- CACb0WKUhKa3gmM6BEyL+4rcO4HLTzngtZLqhEYxKciJmonuEayWOriADt0wmaA6dDjB
- OAHQcwoSnkaOEZsnMRtxO0ozUeSMfmXqEaRETr/lQ+vw4vC9bogbt3WQBY5jqDnP6wQl
- OI30M95rG6AHPwlPGl2yKJo29PLncri7j1dgbqz6xytZoStMqA8O2DWVe+yFzpxlFSaw
- vVkQ==
+ bh=+Kb3yhKuecaH+tPIFeyKoNCy2Q2HKYqzIlny4c2UXFY=;
+ b=L3xeiXnpEXxmenNLrs3YPDFeZpH9FfZiKFIk4GYjcLhr2xZro8lXD4MaVnNqw7+jN7
+ +J2IpkhfT5PSmtMDaP4aHuZcPdpjSyAcRtcPy+4/2YeedvJAajM4WtMkuU6OafogY3Sk
+ FFQwZ6w+rtnQ1lAE/l0vN8BawDclFuInn33NfUGeFTZ0hsY5fOoUJdexuV4rIahaeoje
+ 5m8SP4/I7OsWUcU2OnSwVsQgJPnuW7AF4GepHV8TUSXtavc7GS53blGwnwMpYxhHTkP2
+ 9At0PSe0cpVBGpEQto0JOcGB1xmA2xGOwJD7dr79wAjsa7agDRnkQKXq3jYEtHSRoccZ
+ yr6g==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
  :references:mime-version:content-transfer-encoding;
- bh=mEABvAJPuUKquiCQJQEbI9ERMbYdpL4Xy2gvmbdj4l4=;
- b=XrjdQcYe/CrOUjsxKflqUK0C+e7LhwMI2sJGnI3mf+gHG1n30CIO3TD4zktaB1dI9T
- 4zZ4B5LkjnOabMN0zBpF5sdmskiKeS9W1NQopwNWhjrTEtKGbbuteisJu5DMA0Wg9Kc0
- iOWV9g+czgKsDbd2oZkvbVaBtRDJ8ta9s7dtds8euBkISmYlQsn+ZEWPZms4faP2sLY+
- TMvXrYUYENaCWKUVQCOt+tKYMiIiBfG+huQMR5Eh/dUudeLuR7ENiuLXp8bX8r4NpKhy
- V/sLBed3kLoj4FH/iiKqs+ATJvDlfh0F6KcEfCaqLrBhPOG2vtORFeO/6kAigM2bJ/LE
- GDEA==
-X-Gm-Message-State: APjAAAXAQRqTv+B8zdpuSvPPIBebW4SNvUWZwJs7kB3lOyu2eJOg0IIY
- FDI1myg1U8i4UQQ+G1uW5JI=
-X-Google-Smtp-Source: APXvYqzifftwRoxPGFIrdRfAi1DPVbNnGqyi/pSYebaGrRw/87tc84tBZ4WF7JaHYuXhzDHfKfeHVg==
-X-Received: by 2002:a17:902:1105:: with SMTP id
- d5mr27497218pla.311.1556037153036; 
- Tue, 23 Apr 2019 09:32:33 -0700 (PDT)
+ bh=+Kb3yhKuecaH+tPIFeyKoNCy2Q2HKYqzIlny4c2UXFY=;
+ b=K9QzDcTPRIXqf/GEm89d1Zu9aNfSARIE3K2fzFyaD0kJ1EqqvJYlp2gYh9FcACJQqg
+ gFV00ywaieft6tAkMiv2Tf9YmFPFHokowiFpMYdgHDdK7cwqaDXpD680XH2/9j32TBtc
+ Bknw3KzRT5GjXMTonbjrEtlEZrjFEuIg6obfY1C3WJz9evSBbpPO+nK+nLCXJUWidwuX
+ AccviiXJX8sOuul93yXdxixZdw2p44nEOiDv4P/XJ03EVJcSH4cx8DT6kCCy6A14x76H
+ NxDQ+7NChPI10CtA56wvtbWf0xuTR9PcARLv8j9dQylSv6LK+6LcUxNegyqFqrTix8zr
+ a5Jg==
+X-Gm-Message-State: APjAAAXoGiXnKbZ3tio0xYSN6wwaYJe3KbEAWkEK7I9XIs5EpTTZqe7c
+ ojUsmkIF8Me9sBqyGP7gSkU=
+X-Google-Smtp-Source: APXvYqzuFBXtP4aSifoDWH3IVT1QXDqLt0k1TlsPXALgdM6up9DM5f8I9lUgUEZLrb7aoOMVFUnFqA==
+X-Received: by 2002:a17:902:e490:: with SMTP id
+ cj16mr27286585plb.156.1556037161684; 
+ Tue, 23 Apr 2019 09:32:41 -0700 (PDT)
 Received: from localhost.localdomain ([104.238.181.70])
- by smtp.gmail.com with ESMTPSA id v1sm24364801pff.81.2019.04.23.09.32.22
+ by smtp.gmail.com with ESMTPSA id v1sm24364801pff.81.2019.04.23.09.32.33
  (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
- Tue, 23 Apr 2019 09:32:32 -0700 (PDT)
+ Tue, 23 Apr 2019 09:32:41 -0700 (PDT)
 From: Changbin Du <changbin.du@gmail.com>
 To: Jonathan Corbet <corbet@lwn.net>
-Subject: [PATCH v4 14/63] Documentation: ACPI: move dsd/graph.txt to
- firmware-guide/acpi and convert to reST
-Date: Wed, 24 Apr 2019 00:28:43 +0800
-Message-Id: <20190423162932.21428-15-changbin.du@gmail.com>
+Subject: [PATCH v4 15/63] Documentation: ACPI: move
+ dsd/data-node-references.txt to firmware-guide/acpi and convert to reST
+Date: Wed, 24 Apr 2019 00:28:44 +0800
+Message-Id: <20190423162932.21428-16-changbin.du@gmail.com>
 X-Mailer: git-send-email 2.20.1
 In-Reply-To: <20190423162932.21428-1-changbin.du@gmail.com>
 References: <20190423162932.21428-1-changbin.du@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 X-Mailman-Approved-At: Wed, 24 Apr 2019 05:41:30 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -110,256 +109,78 @@ add it to Sphinx TOC tree. No essential content change.
 
 Signed-off-by: Changbin Du <changbin.du@gmail.com>
 ---
- .../acpi/dsd/graph.rst}                       | 157 +++++++++---------
- Documentation/firmware-guide/acpi/index.rst   |   1 +
- 2 files changed, 81 insertions(+), 77 deletions(-)
- rename Documentation/{acpi/dsd/graph.txt => firmware-guide/acpi/dsd/graph.rst} (56%)
+ .../acpi/dsd/data-node-references.rst}        | 28 +++++++++++--------
+ Documentation/firmware-guide/acpi/index.rst   |  1 +
+ 2 files changed, 17 insertions(+), 12 deletions(-)
+ rename Documentation/{acpi/dsd/data-node-references.txt => firmware-guide/acpi/dsd/data-node-references.rst} (79%)
 
-diff --git a/Documentation/acpi/dsd/graph.txt b/Documentation/firmware-guide/acpi/dsd/graph.rst
-similarity index 56%
-rename from Documentation/acpi/dsd/graph.txt
-rename to Documentation/firmware-guide/acpi/dsd/graph.rst
-index b9ce910781dc..e0baed35b037 100644
---- a/Documentation/acpi/dsd/graph.txt
-+++ b/Documentation/firmware-guide/acpi/dsd/graph.rst
-@@ -1,8 +1,11 @@
--Graphs
+diff --git a/Documentation/acpi/dsd/data-node-references.txt b/Documentation/firmware-guide/acpi/dsd/data-node-references.rst
+similarity index 79%
+rename from Documentation/acpi/dsd/data-node-references.txt
+rename to Documentation/firmware-guide/acpi/dsd/data-node-references.rst
+index c3871565c8cf..79c5368eaecf 100644
+--- a/Documentation/acpi/dsd/data-node-references.txt
++++ b/Documentation/firmware-guide/acpi/dsd/data-node-references.rst
+@@ -1,9 +1,12 @@
+-Copyright (C) 2018 Intel Corporation
+-Author: Sakari Ailus <sakari.ailus@linux.intel.com>
+-
 +.. SPDX-License-Identifier: GPL-2.0
++.. include:: <isonum.txt>
  
-+======
-+Graphs
-+======
- 
- _DSD
------
-+====
- 
- _DSD (Device Specific Data) [7] is a predefined ACPI device
- configuration object that can be used to convey information on
-@@ -30,7 +33,7 @@ hierarchical data extension array on each depth.
- 
- 
- Ports and endpoints
---------------------
-+===================
- 
- The port and endpoint concepts are very similar to those in Devicetree
- [3]. A port represents an interface in a device, and an endpoint
-@@ -38,9 +41,9 @@ represents a connection to that interface.
- 
- All port nodes are located under the device's "_DSD" node in the hierarchical
- data extension tree. The data extension related to each port node must begin
--with "port" and must be followed by the "@" character and the number of the port
--as its key. The target object it refers to should be called "PRTX", where "X" is
--the number of the port. An example of such a package would be:
-+with "port" and must be followed by the "@" character and the number of the
-+port as its key. The target object it refers to should be called "PRTX", where
-+"X" is the number of the port. An example of such a package would be::
- 
-     Package() { "port@4", PRT4 }
- 
-@@ -49,7 +52,7 @@ data extension key of the endpoint nodes must begin with
- "endpoint" and must be followed by the "@" character and the number of the
- endpoint. The object it refers to should be called "EPXY", where "X" is the
- number of the port and "Y" is the number of the endpoint. An example of such a
--package would be:
-+package would be::
- 
-     Package() { "endpoint@0", EP40 }
- 
-@@ -62,85 +65,85 @@ of that port shall be zero. Similarly, if a port may only have a single
- endpoint, the number of that endpoint shall be zero.
- 
- The endpoint reference uses property extension with "remote-endpoint" property
--name followed by a reference in the same package. Such references consist of the
-+name followed by a reference in the same package. Such references consist of
- the remote device reference, the first package entry of the port data extension
- reference under the device and finally the first package entry of the endpoint
--data extension reference under the port. Individual references thus appear as:
-+data extension reference under the port. Individual references thus appear as::
- 
-     Package() { device, "port@X", "endpoint@Y" }
- 
--In the above example, "X" is the number of the port and "Y" is the number of the
--endpoint.
-+In the above example, "X" is the number of the port and "Y" is the number of
-+the endpoint.
- 
- The references to endpoints must be always done both ways, to the
- remote endpoint and back from the referred remote endpoint node.
- 
--A simple example of this is show below:
-+A simple example of this is show below::
- 
-     Scope (\_SB.PCI0.I2C2)
-     {
--	Device (CAM0)
--	{
--	    Name (_DSD, Package () {
--		ToUUID("daffd814-6eba-4d8c-8a91-bc9bbf4aa301"),
--		Package () {
--		    Package () { "compatible", Package () { "nokia,smia" } },
--		},
--		ToUUID("dbb8e3e6-5886-4ba6-8795-1319f52a966b"),
--		Package () {
--		    Package () { "port@0", PRT0 },
--		}
--	    })
--	    Name (PRT0, Package() {
--		ToUUID("daffd814-6eba-4d8c-8a91-bc9bbf4aa301"),
--		Package () {
--		    Package () { "reg", 0 },
--		},
--		ToUUID("dbb8e3e6-5886-4ba6-8795-1319f52a966b"),
--		Package () {
--		    Package () { "endpoint@0", EP00 },
--		}
--	    })
--	    Name (EP00, Package() {
--		ToUUID("daffd814-6eba-4d8c-8a91-bc9bbf4aa301"),
--		Package () {
--		    Package () { "reg", 0 },
--		    Package () { "remote-endpoint", Package() { \_SB.PCI0.ISP, "port@4", "endpoint@0" } },
--		}
--	    })
--	}
-+        Device (CAM0)
-+        {
-+            Name (_DSD, Package () {
-+                ToUUID("daffd814-6eba-4d8c-8a91-bc9bbf4aa301"),
-+                Package () {
-+                    Package () { "compatible", Package () { "nokia,smia" } },
-+                },
-+                ToUUID("dbb8e3e6-5886-4ba6-8795-1319f52a966b"),
-+                Package () {
-+                    Package () { "port@0", PRT0 },
-+                }
-+            })
-+            Name (PRT0, Package() {
-+                ToUUID("daffd814-6eba-4d8c-8a91-bc9bbf4aa301"),
-+                Package () {
-+                    Package () { "reg", 0 },
-+                },
-+                ToUUID("dbb8e3e6-5886-4ba6-8795-1319f52a966b"),
-+                Package () {
-+                    Package () { "endpoint@0", EP00 },
-+                }
-+            })
-+            Name (EP00, Package() {
-+                ToUUID("daffd814-6eba-4d8c-8a91-bc9bbf4aa301"),
-+                Package () {
-+                    Package () { "reg", 0 },
-+                    Package () { "remote-endpoint", Package() { \_SB.PCI0.ISP, "port@4", "endpoint@0" } },
-+                }
-+            })
-+        }
-     }
- 
-     Scope (\_SB.PCI0)
-     {
--	Device (ISP)
--	{
--	    Name (_DSD, Package () {
--		ToUUID("dbb8e3e6-5886-4ba6-8795-1319f52a966b"),
--		Package () {
--		    Package () { "port@4", PRT4 },
--		}
--	    })
--
--	    Name (PRT4, Package() {
--		ToUUID("daffd814-6eba-4d8c-8a91-bc9bbf4aa301"),
--		Package () {
--		    Package () { "reg", 4 }, /* CSI-2 port number */
--		},
--		ToUUID("dbb8e3e6-5886-4ba6-8795-1319f52a966b"),
--		Package () {
--		    Package () { "endpoint@0", EP40 },
--		}
--	    })
--
--	    Name (EP40, Package() {
--		ToUUID("daffd814-6eba-4d8c-8a91-bc9bbf4aa301"),
--		Package () {
--		    Package () { "reg", 0 },
--		    Package () { "remote-endpoint", Package () { \_SB.PCI0.I2C2.CAM0, "port@0", "endpoint@0" } },
--		}
--	    })
--	}
-+        Device (ISP)
-+        {
-+            Name (_DSD, Package () {
-+                ToUUID("dbb8e3e6-5886-4ba6-8795-1319f52a966b"),
-+                Package () {
-+                    Package () { "port@4", PRT4 },
-+                }
-+            })
++===================================
+ Referencing hierarchical data nodes
+------------------------------------
++===================================
 +
-+            Name (PRT4, Package() {
-+                ToUUID("daffd814-6eba-4d8c-8a91-bc9bbf4aa301"),
-+                Package () {
-+                    Package () { "reg", 4 }, /* CSI-2 port number */
-+                },
-+                ToUUID("dbb8e3e6-5886-4ba6-8795-1319f52a966b"),
-+                Package () {
-+                    Package () { "endpoint@0", EP40 },
-+                }
-+            })
-+
-+            Name (EP40, Package() {
-+                ToUUID("daffd814-6eba-4d8c-8a91-bc9bbf4aa301"),
-+                Package () {
-+                    Package () { "reg", 0 },
-+                    Package () { "remote-endpoint", Package () { \_SB.PCI0.I2C2.CAM0, "port@0", "endpoint@0" } },
-+                }
-+            })
-+        }
-     }
++:Copyright: |copy| 2018 Intel Corporation
++:Author: Sakari Ailus <sakari.ailus@linux.intel.com>
  
- Here, the port 0 of the "CAM0" device is connected to the port 4 of
-@@ -148,27 +151,27 @@ the "ISP" device and vice versa.
+ ACPI in general allows referring to device objects in the tree only.
+ Hierarchical data extension nodes may not be referred to directly, hence this
+@@ -28,13 +31,14 @@ extension key.
  
+ 
+ Example
+--------
++=======
+ 
+-	In the ASL snippet below, the "reference" _DSD property [2] contains a
+-	device object reference to DEV0 and under that device object, a
+-	hierarchical data extension key "node@1" referring to the NOD1 object
+-	and lastly, a hierarchical data extension key "anothernode" referring to
+-	the ANOD object which is also the final target node of the reference.
++In the ASL snippet below, the "reference" _DSD property [2] contains a
++device object reference to DEV0 and under that device object, a
++hierarchical data extension key "node@1" referring to the NOD1 object
++and lastly, a hierarchical data extension key "anothernode" referring to
++the ANOD object which is also the final target node of the reference.
++::
+ 
+ 	Device (DEV0)
+ 	{
+@@ -75,10 +79,10 @@ Example
+ 	    })
+ 	}
+ 
+-Please also see a graph example in graph.txt .
++Please also see a graph example in :doc:`graph`.
  
  References
 -----------
 +==========
  
- [1] _DSD (Device Specific Data) Implementation Guide.
--    <URL:http://www.uefi.org/sites/default/files/resources/_DSD-implementation-guide-toplevel-1_1.htm>,
-+    http://www.uefi.org/sites/default/files/resources/_DSD-implementation-guide-toplevel-1_1.htm,
-     referenced 2016-10-03.
- 
--[2] Devicetree. <URL:http://www.devicetree.org>, referenced 2016-10-03.
-+[2] Devicetree. http://www.devicetree.org, referenced 2016-10-03.
- 
- [3] Documentation/devicetree/bindings/graph.txt
- 
- [4] Device Properties UUID For _DSD.
--    <URL:http://www.uefi.org/sites/default/files/resources/_DSD-device-properties-UUID.pdf>,
-+    http://www.uefi.org/sites/default/files/resources/_DSD-device-properties-UUID.pdf,
-     referenced 2016-10-04.
- 
- [5] Hierarchical Data Extension UUID For _DSD.
--    <URL:http://www.uefi.org/sites/default/files/resources/_DSD-hierarchical-data-extension-UUID-v1.1.pdf>,
-+    http://www.uefi.org/sites/default/files/resources/_DSD-hierarchical-data-extension-UUID-v1.1.pdf,
-     referenced 2016-10-04.
- 
- [6] Advanced Configuration and Power Interface Specification.
--    <URL:http://www.uefi.org/sites/default/files/resources/ACPI_6_1.pdf>,
-+    http://www.uefi.org/sites/default/files/resources/ACPI_6_1.pdf,
-     referenced 2016-10-04.
- 
- [7] _DSD Device Properties Usage Rules.
--    Documentation/acpi/DSD-properties-rules.txt
-+    :doc:`../DSD-properties-rules`
+ [1] Hierarchical Data Extension UUID For _DSD.
+     <URL:http://www.uefi.org/sites/default/files/resources/_DSD-hierarchical-data-extension-UUID-v1.1.pdf>,
 diff --git a/Documentation/firmware-guide/acpi/index.rst b/Documentation/firmware-guide/acpi/index.rst
-index bedcb0b242a2..f81cfbcb6878 100644
+index f81cfbcb6878..6d4e0df4f063 100644
 --- a/Documentation/firmware-guide/acpi/index.rst
 +++ b/Documentation/firmware-guide/acpi/index.rst
-@@ -8,6 +8,7 @@ ACPI Support
-    :maxdepth: 1
+@@ -9,6 +9,7 @@ ACPI Support
  
     namespace
-+   dsd/graph
+    dsd/graph
++   dsd/data-node-references
     enumeration
     osi
     method-customizing
