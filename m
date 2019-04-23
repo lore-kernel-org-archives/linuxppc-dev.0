@@ -7,76 +7,75 @@ X-Spam-Status: No, score=-8.6 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
 	SPF_PASS,USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3D7A2C10F03
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Apr 2019 21:27:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C772EC10F03
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Apr 2019 21:28:46 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 5EF9E218D3
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Apr 2019 21:27:11 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 3CA24218D3
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Apr 2019 21:28:46 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="YFVbYWgi"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5EF9E218D3
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="SkJq64AJ"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3CA24218D3
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44pc3K2qxnzDqQt
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Apr 2019 07:27:09 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44pc580h0mzDq83
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Apr 2019 07:28:44 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=2607:f8b0:4864:20::641; helo=mail-pl1-x641.google.com;
+ (client-ip=2607:f8b0:4864:20::442; helo=mail-pf1-x442.google.com;
  envelope-from=changbin.du@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="YFVbYWgi"; 
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="SkJq64AJ"; 
  dkim-atps=neutral
-Received: from mail-pl1-x641.google.com (mail-pl1-x641.google.com
- [IPv6:2607:f8b0:4864:20::641])
+Received: from mail-pf1-x442.google.com (mail-pf1-x442.google.com
+ [IPv6:2607:f8b0:4864:20::442])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44pTg13HRRzDqCW
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Apr 2019 02:39:09 +1000 (AEST)
-Received: by mail-pl1-x641.google.com with SMTP id w23so7810143ply.4
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Apr 2019 09:39:09 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44pTg55KDMzDqCW
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Apr 2019 02:39:13 +1000 (AEST)
+Received: by mail-pf1-x442.google.com with SMTP id 188so7763444pfd.8
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Apr 2019 09:39:13 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
  h=from:to:cc:subject:date:message-id:in-reply-to:references
  :mime-version:content-transfer-encoding;
- bh=lKxrWq0DPWG2/ldiM614YNjWwPB+5TI6uHMpmONkiyA=;
- b=YFVbYWginTf8h5S0SDoTIVMpULpvCv6OKgMCGQDqwtjfHm8OF/amq8OwLtdHLRayBO
- BCBf0R5V6HXNxNjhfmUM5Z8W06HJKkSxtFC9rcQDXItwQ7sd1GLz5KFJNjvtjDhcCNIH
- /RJgCoDHVfa38Ky54CEuElWSUFLSK24t+ehRe+DHGfbWNSN1iU/aWSdUg48jiuxGOvbj
- PO+h0uNSBBAa78wGa8VboKo+0yvcd/nLNWy6MN9Ac9C8Rb5MdAZOsqGBZ70yJUEdDhP/
- SXpMj7o4tL0x2dxs68n7Rjm7Q08Cs0yd7ZrASV1VvAeSQiWYwohAAtRwixx0GvD0zyRc
- HAyA==
+ bh=2yFOemuN+eolbcMH+/FkuAihsixlocXPgjBOPtuP6bo=;
+ b=SkJq64AJRj6L/JcconR1RzVxUNwJaE89UyLSCrjykYgm7VHed/1sbOtWWVRdlN8niw
+ +nS3i5yl0ZH25GUu9DKrpYujqNabEnuDfZdg8N5pxdkLXCbB3DShZBR1ytrKAiS+ppzy
+ RoPxBTK6zcETwFyC1cXvKGmL+1VsMJi3qt6ny4MWT7jWMEIGnPNhuKnCSg7b5zfbcw/1
+ SVz53xsAnmOhCU7hII/u/ATPEQ+7gKaT+0LWaDisMPg6Rl1N8fBFOIapvUfQnVL36Scw
+ b/zH3Kv1YUz/k9t35DB6/mDhqL4nfvVz8XKYIgtm2DY1ACYvbFSZ5kSZYBClu0TjzObG
+ 1YeA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
  :references:mime-version:content-transfer-encoding;
- bh=lKxrWq0DPWG2/ldiM614YNjWwPB+5TI6uHMpmONkiyA=;
- b=ChgZ7eDvw1H7cSp99jOwfDTEYX7WKy29tXMo5evjWNtoJ6XBRNAJ/xunymYY0UhpJo
- vJN8gvG7PSsPAepJHVWuj3QywUAb3FgLcuiXN87d543torus6mVgIIFcdl6ZZ3TP8/6B
- GMcP5e2EUNUrVK6ddrhY+7gfCjCuzb5rLqEfWnVGNJyZr4TvFScGrWMR5f/tEPqUNdbx
- 5zYfCrookX4HnRw03Jv4KGlGmSPdUia3lhCbgyw+0zCv0LIwsJCK3/xu5FdtkWK+tE4g
- a71orHXh6q9ARthT2fcuzD5vN+Q8e3IaH9rJAst5Ku+SQ3nYFUbDhQChzLPItLO/5kad
- RvzA==
-X-Gm-Message-State: APjAAAWwzBspc/MTTlMoNOmx/46o9eLr18xAuDzLXoYETzyFdp28kYYb
- FZW+/5Ag+ivhdG4xmGbtBOA=
-X-Google-Smtp-Source: APXvYqyyiuJdfDhtn9sySZr3o/D6USw7potnUz8aWY3bi/Zm3hnxy6EcWxCQcMDnbzEmguum4Hqo4Q==
-X-Received: by 2002:a17:902:e490:: with SMTP id
- cj16mr27318962plb.156.1556037547194; 
- Tue, 23 Apr 2019 09:39:07 -0700 (PDT)
+ bh=2yFOemuN+eolbcMH+/FkuAihsixlocXPgjBOPtuP6bo=;
+ b=R2SbG6w14sgy6+JH0lZkXwZe8Upv3Xp2hc/jBGobThBKK+cpMS/Ss2Th4z7ltgI9QP
+ cd8/rtnfnjLKcZIo6AoLy7Ok7+2izvvmFrKsXT+ESZts/HFzNZz9QUbaO3dkwpx3QpEG
+ LWYU3NScjFvxOEAPytiNSYgd+MQBGxqK/utvFAiofDpp0tvFkukIiLBoof8FNXIYVzjT
+ 6OxTvJUV0blmOaNmnPoqRgnj3QhGfeXjcXeLkL0wSH2uIyclkVsbGl+fcgutj2eBf4Ut
+ oRInRpPaIOAgD2AZaClWbY1OA0a/b5smlMjduoZ9EihQrSTxAtfsQZFL1s+IKC55p4Yl
+ SN6w==
+X-Gm-Message-State: APjAAAUSqtopn2zzs4SJZsNtdd3W5pu6c8+HFkWHjGFVNOZ9uwf59OTZ
+ U6qJdDoetZZv0I/Pc/Aez6Y=
+X-Google-Smtp-Source: APXvYqyt0eJT3NkmhT2J6r3iHijPGVxGT07haTkb6FEPB0c4A+sKOygu+96OyFnqj/Mw0nYRxCYdsw==
+X-Received: by 2002:a63:4b21:: with SMTP id y33mr26241568pga.37.1556037551867; 
+ Tue, 23 Apr 2019 09:39:11 -0700 (PDT)
 Received: from localhost.localdomain ([104.238.181.70])
- by smtp.gmail.com with ESMTPSA id v1sm24364801pff.81.2019.04.23.09.39.01
+ by smtp.gmail.com with ESMTPSA id v1sm24364801pff.81.2019.04.23.09.39.07
  (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
- Tue, 23 Apr 2019 09:39:06 -0700 (PDT)
+ Tue, 23 Apr 2019 09:39:11 -0700 (PDT)
 From: Changbin Du <changbin.du@gmail.com>
 To: Jonathan Corbet <corbet@lwn.net>
-Subject: [PATCH v4 60/63] Documentation: x86: convert x86_64/5level-paging.txt
- to reST
-Date: Wed, 24 Apr 2019 00:29:29 +0800
-Message-Id: <20190423162932.21428-61-changbin.du@gmail.com>
+Subject: [PATCH v4 61/63] Documentation: x86: convert
+ x86_64/fake-numa-for-cpusets to reST
+Date: Wed, 24 Apr 2019 00:29:30 +0800
+Message-Id: <20190423162932.21428-62-changbin.du@gmail.com>
 X-Mailer: git-send-email 2.20.1
 In-Reply-To: <20190423162932.21428-1-changbin.du@gmail.com>
 References: <20190423162932.21428-1-changbin.du@gmail.com>
@@ -108,66 +107,78 @@ add it to Sphinx TOC tree. No essential content change.
 
 Signed-off-by: Changbin Du <changbin.du@gmail.com>
 ---
- .../{5level-paging.txt => 5level-paging.rst}     | 16 +++++++++++-----
- Documentation/x86/x86_64/index.rst               |  1 +
- 2 files changed, 12 insertions(+), 5 deletions(-)
- rename Documentation/x86/x86_64/{5level-paging.txt => 5level-paging.rst} (91%)
+ ...a-for-cpusets => fake-numa-for-cpusets.rst} | 18 +++++++++++++-----
+ Documentation/x86/x86_64/index.rst             |  1 +
+ 2 files changed, 14 insertions(+), 5 deletions(-)
+ rename Documentation/x86/x86_64/{fake-numa-for-cpusets => fake-numa-for-cpusets.rst} (90%)
 
-diff --git a/Documentation/x86/x86_64/5level-paging.txt b/Documentation/x86/x86_64/5level-paging.rst
-similarity index 91%
-rename from Documentation/x86/x86_64/5level-paging.txt
-rename to Documentation/x86/x86_64/5level-paging.rst
-index 2432a5ef86d9..ab88a4514163 100644
---- a/Documentation/x86/x86_64/5level-paging.txt
-+++ b/Documentation/x86/x86_64/5level-paging.rst
-@@ -1,5 +1,11 @@
--== Overview ==
+diff --git a/Documentation/x86/x86_64/fake-numa-for-cpusets b/Documentation/x86/x86_64/fake-numa-for-cpusets.rst
+similarity index 90%
+rename from Documentation/x86/x86_64/fake-numa-for-cpusets
+rename to Documentation/x86/x86_64/fake-numa-for-cpusets.rst
+index 4b09f18831f8..3c23f45d38f6 100644
+--- a/Documentation/x86/x86_64/fake-numa-for-cpusets
++++ b/Documentation/x86/x86_64/fake-numa-for-cpusets.rst
+@@ -1,5 +1,12 @@
 +.. SPDX-License-Identifier: GPL-2.0
- 
-+==============
-+5-level paging
-+==============
 +
-+Overview
-+========
- Original x86-64 was limited by 4-level paing to 256 TiB of virtual address
- space and 64 TiB of physical address space. We are already bumping into
- this limit: some vendors offers servers with 64 TiB of memory today.
-@@ -16,16 +22,17 @@ QEMU 2.9 and later support 5-level paging.
- Virtual memory layout for 5-level paging is described in
- Documentation/x86/x86_64/mm.txt
++=====================
++Fake NUMA For CPUSets
++=====================
++
++:Author: David Rientjes <rientjes@cs.washington.edu>
++
+ Using numa=fake and CPUSets for Resource Management
+-Written by David Rientjes <rientjes@cs.washington.edu>
  
--== Enabling 5-level paging ==
+ This document describes how the numa=fake x86_64 command-line option can be used
+ in conjunction with cpusets for coarse memory management.  Using this feature,
+@@ -20,7 +27,7 @@ you become more familiar with using this combination for resource control,
+ you'll determine a better setup to minimize the number of nodes you have to deal
+ with.
  
-+Enabling 5-level paging
-+=======================
- CONFIG_X86_5LEVEL=y enables the feature.
+-A machine may be split as follows with "numa=fake=4*512," as reported by dmesg:
++A machine may be split as follows with "numa=fake=4*512," as reported by dmesg::
  
- Kernel with CONFIG_X86_5LEVEL=y still able to boot on 4-level hardware.
- In this case additional page table level -- p4d -- will be folded at
- runtime.
+ 	Faking node 0 at 0000000000000000-0000000020000000 (512MB)
+ 	Faking node 1 at 0000000020000000-0000000040000000 (512MB)
+@@ -34,7 +41,7 @@ A machine may be split as follows with "numa=fake=4*512," as reported by dmesg:
  
--== User-space and large virtual address space ==
--
-+User-space and large virtual address space
-+==========================================
- On x86, 5-level paging enables 56-bit userspace virtual address space.
- Not all user space is ready to handle wide addresses. It's known that
- at least some JIT compilers use higher bits in pointers to encode their
-@@ -58,4 +65,3 @@ One important case we need to handle here is interaction with MPX.
- MPX (without MAWA extension) cannot handle addresses above 47-bit, so we
- need to make sure that MPX cannot be enabled we already have VMA above
- the boundary and forbid creating such VMAs once MPX is enabled.
--
+ Now following the instructions for mounting the cpusets filesystem from
+ Documentation/cgroup-v1/cpusets.txt, you can assign fake nodes (i.e. contiguous memory
+-address spaces) to individual cpusets:
++address spaces) to individual cpusets::
+ 
+ 	[root@xroads /]# mkdir exampleset
+ 	[root@xroads /]# mount -t cpuset none exampleset
+@@ -47,7 +54,7 @@ Now this cpuset, 'ddset', will only allowed access to fake nodes 0 and 1 for
+ memory allocations (1G).
+ 
+ You can now assign tasks to these cpusets to limit the memory resources
+-available to them according to the fake nodes assigned as mems:
++available to them according to the fake nodes assigned as mems::
+ 
+ 	[root@xroads /exampleset/ddset]# echo $$ > tasks
+ 	[root@xroads /exampleset/ddset]# dd if=/dev/zero of=tmp bs=1024 count=1G
+@@ -56,7 +63,8 @@ available to them according to the fake nodes assigned as mems:
+ Notice the difference between the system memory usage as reported by
+ /proc/meminfo between the restricted cpuset case above and the unrestricted
+ case (i.e. running the same 'dd' command without assigning it to a fake NUMA
+-cpuset):
++cpuset)::
++
+ 				Unrestricted	Restricted
+ 	MemTotal:		3091900 kB	3091900 kB
+ 	MemFree:		  42113 kB	1513236 kB
 diff --git a/Documentation/x86/x86_64/index.rst b/Documentation/x86/x86_64/index.rst
-index 4b65d29ef459..7b8c82151358 100644
+index 7b8c82151358..e2a324cde671 100644
 --- a/Documentation/x86/x86_64/index.rst
 +++ b/Documentation/x86/x86_64/index.rst
-@@ -10,3 +10,4 @@ x86_64 Support
-    boot-options
+@@ -11,3 +11,4 @@ x86_64 Support
     uefi
     mm
-+   5level-paging
+    5level-paging
++   fake-numa-for-cpusets
 -- 
 2.20.1
 
