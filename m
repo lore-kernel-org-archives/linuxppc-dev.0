@@ -6,49 +6,47 @@ X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
 	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 02A23C10F14
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Apr 2019 14:37:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 27121C282DD
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Apr 2019 15:12:23 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 606DB21738
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Apr 2019 14:37:41 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 606DB21738
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=huawei.com
+	by mail.kernel.org (Postfix) with ESMTPS id 67CF320685
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Apr 2019 15:12:22 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 67CF320685
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=canonical.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44pQyq1RbkzDqPB
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Apr 2019 00:37:39 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44pRkr07d0zDq9B
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Apr 2019 01:12:20 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=huawei.com
- (client-ip=45.249.212.32; helo=huawei.com; envelope-from=yuehaibing@huawei.com;
- receiver=<UNKNOWN>)
+ spf=none (mailfrom) smtp.mailfrom=canonical.com
+ (client-ip=91.189.89.112; helo=youngberry.canonical.com;
+ envelope-from=colin.king@canonical.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=huawei.com
-Received: from huawei.com (szxga06-in.huawei.com [45.249.212.32])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ dmarc=fail (p=none dis=none) header.from=canonical.com
+Received: from youngberry.canonical.com (youngberry.canonical.com
+ [91.189.89.112])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44pQx52J3FzDq6J
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Apr 2019 00:36:08 +1000 (AEST)
-Received: from DGGEMS405-HUB.china.huawei.com (unknown [172.30.72.58])
- by Forcepoint Email with ESMTP id A21447A1D83A5F0DAB03;
- Tue, 23 Apr 2019 22:36:01 +0800 (CST)
-Received: from localhost (10.177.31.96) by DGGEMS405-HUB.china.huawei.com
- (10.3.19.205) with Microsoft SMTP Server id 14.3.439.0; Tue, 23 Apr 2019
- 22:35:52 +0800
-From: Yue Haibing <yuehaibing@huawei.com>
-To: <benh@kernel.crashing.org>, <paulus@samba.org>, <mpe@ellerman.id.au>,
- <mahesh@linux.vnet.ibm.com>, <npiggin@gmail.com>, <ganeshgr@linux.ibm.com>,
- <anton@samba.org>
-Subject: [PATCH] powerpc/pseries: Use correct event modifier in
- rtas_parse_epow_errlog()
-Date: Tue, 23 Apr 2019 22:35:33 +0800
-Message-ID: <20190423143533.26952-1-yuehaibing@huawei.com>
-X-Mailer: git-send-email 2.10.2.windows.1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44pRhl0PqVzDq9B
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Apr 2019 01:10:31 +1000 (AEST)
+Received: from 1.general.cking.uk.vpn ([10.172.193.212] helo=localhost)
+ by youngberry.canonical.com with esmtpsa (TLS1.0:RSA_AES_256_CBC_SHA1:32)
+ (Exim 4.76) (envelope-from <colin.king@canonical.com>)
+ id 1hIx3p-0000OD-KM; Tue, 23 Apr 2019 15:10:17 +0000
+From: Colin King <colin.king@canonical.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ "Aneesh Kumar K . V" <aneesh.kumar@linux.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH][next] powerpc/mm: fix spelling mistake "Outisde" -> "Outside"
+Date: Tue, 23 Apr 2019 16:10:17 +0100
+Message-Id: <20190423151017.14429-1-colin.king@canonical.com>
+X-Mailer: git-send-email 2.20.1
 MIME-Version: 1.0
-Content-Type: text/plain
-X-Originating-IP: [10.177.31.96]
-X-CFilter-Loop: Reflected
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -60,38 +58,103 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: YueHaibing <yuehaibing@huawei.com>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+Cc: kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: YueHaibing <yuehaibing@huawei.com>
+From: Colin Ian King <colin.king@canonical.com>
 
-rtas_parse_epow_errlog() should pass 'modifier' to
-handle_system_shutdown, because event modifier only use
-bottom 4 bits.
+There are several identical spelling mistakes in warning messages,
+fix these.
 
-Fixes: 55fc0c561742 ("powerpc/pseries: Parse and handle EPOW interrupts")
-Signed-off-by: YueHaibing <yuehaibing@huawei.com>
+Signed-off-by: Colin Ian King <colin.king@canonical.com>
 ---
- arch/powerpc/platforms/pseries/ras.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/powerpc/mm/hash_utils_64.c  | 4 ++--
+ arch/powerpc/mm/pgtable-hash64.c | 2 +-
+ arch/powerpc/mm/pgtable-radix.c  | 6 +++---
+ arch/powerpc/mm/pgtable_64.c     | 2 +-
+ 4 files changed, 7 insertions(+), 7 deletions(-)
 
-diff --git a/arch/powerpc/platforms/pseries/ras.c b/arch/powerpc/platforms/pseries/ras.c
-index c97d153..744604d 100644
---- a/arch/powerpc/platforms/pseries/ras.c
-+++ b/arch/powerpc/platforms/pseries/ras.c
-@@ -285,7 +285,7 @@ static void rtas_parse_epow_errlog(struct rtas_error_log *log)
- 		break;
+diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
+index f727197de713..6eb89643ce58 100644
+--- a/arch/powerpc/mm/hash_utils_64.c
++++ b/arch/powerpc/mm/hash_utils_64.c
+@@ -784,7 +784,7 @@ int hash__create_section_mapping(unsigned long start, unsigned long end, int nid
+ 	int rc;
  
- 	case EPOW_SYSTEM_SHUTDOWN:
--		handle_system_shutdown(epow_log->event_modifier);
-+		handle_system_shutdown(event_modifier);
- 		break;
+ 	if (end >= H_VMALLOC_START) {
+-		pr_warn("Outisde the supported range\n");
++		pr_warn("Outside the supported range\n");
+ 		return -1;
+ 	}
  
- 	case EPOW_SYSTEM_HALT:
+@@ -932,7 +932,7 @@ static void __init htab_initialize(void)
+ 		    base, size, prot);
+ 
+ 		if ((base + size) >= H_VMALLOC_START) {
+-			pr_warn("Outisde the supported range\n");
++			pr_warn("Outside the supported range\n");
+ 			continue;
+ 		}
+ 
+diff --git a/arch/powerpc/mm/pgtable-hash64.c b/arch/powerpc/mm/pgtable-hash64.c
+index d934de4e2b3a..097a3b3538b1 100644
+--- a/arch/powerpc/mm/pgtable-hash64.c
++++ b/arch/powerpc/mm/pgtable-hash64.c
+@@ -115,7 +115,7 @@ int __meminit hash__vmemmap_create_mapping(unsigned long start,
+ 	int rc;
+ 
+ 	if ((start + page_size) >= H_VMEMMAP_END) {
+-		pr_warn("Outisde the supported range\n");
++		pr_warn("Outside the supported range\n");
+ 		return -1;
+ 	}
+ 
+diff --git a/arch/powerpc/mm/pgtable-radix.c b/arch/powerpc/mm/pgtable-radix.c
+index e6d5065b0bc8..fcb0169e2d32 100644
+--- a/arch/powerpc/mm/pgtable-radix.c
++++ b/arch/powerpc/mm/pgtable-radix.c
+@@ -341,7 +341,7 @@ void __init radix_init_pgtable(void)
+ 		 */
+ 
+ 		if ((reg->base + reg->size) >= RADIX_VMALLOC_START) {
+-			pr_warn("Outisde the supported range\n");
++			pr_warn("Outside the supported range\n");
+ 			continue;
+ 		}
+ 
+@@ -902,7 +902,7 @@ static void __meminit remove_pagetable(unsigned long start, unsigned long end)
+ int __meminit radix__create_section_mapping(unsigned long start, unsigned long end, int nid)
+ {
+ 	if (end >= RADIX_VMALLOC_START) {
+-		pr_warn("Outisde the supported range\n");
++		pr_warn("Outside the supported range\n");
+ 		return -1;
+ 	}
+ 
+@@ -934,7 +934,7 @@ int __meminit radix__vmemmap_create_mapping(unsigned long start,
+ 	int ret;
+ 
+ 	if ((start + page_size) >= RADIX_VMEMMAP_END) {
+-		pr_warn("Outisde the supported range\n");
++		pr_warn("Outside the supported range\n");
+ 		return -1;
+ 	}
+ 
+diff --git a/arch/powerpc/mm/pgtable_64.c b/arch/powerpc/mm/pgtable_64.c
+index 72f58c076e26..95ad2a09501c 100644
+--- a/arch/powerpc/mm/pgtable_64.c
++++ b/arch/powerpc/mm/pgtable_64.c
+@@ -122,7 +122,7 @@ void __iomem *__ioremap_at(phys_addr_t pa, void *ea, unsigned long size, pgprot_
+ 		return NULL;
+ 
+ 	if ((ea + size) >= (void *)IOREMAP_END) {
+-		pr_warn("Outisde the supported range\n");
++		pr_warn("Outside the supported range\n");
+ 		return NULL;
+ 	}
+ 
 -- 
-2.7.0
-
+2.20.1
 
