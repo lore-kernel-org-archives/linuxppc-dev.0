@@ -2,92 +2,56 @@ Return-Path: <SRS0=/W8y=SZ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS
+X-Spam-Status: No, score=-2.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED,USER_AGENT_MUTT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 29AB4C10F03
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Apr 2019 16:49:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 30DBFC10F03
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Apr 2019 17:02:16 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6C0F5205ED
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Apr 2019 16:49:15 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6C0F5205ED
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 9430D2148D
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Apr 2019 17:02:15 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9430D2148D
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=intel.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44pTtd2CmYzDqL5
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Apr 2019 02:49:13 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44pV9d27XwzDqKj
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Apr 2019 03:02:13 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
- (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=ldufour@linux.ibm.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=intel.com
+ (client-ip=192.55.52.93; helo=mga11.intel.com;
+ envelope-from=ira.weiny@intel.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+ dmarc=pass (p=none dis=none) header.from=intel.com
+Received: from mga11.intel.com (mga11.intel.com [192.55.52.93])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44pTr54pz3zDqCW
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Apr 2019 02:47:00 +1000 (AEST)
-Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x3NGiSTC065266
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Apr 2019 12:46:58 -0400
-Received: from e06smtp02.uk.ibm.com (e06smtp02.uk.ibm.com [195.75.94.98])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2s25a23nge-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Apr 2019 12:46:58 -0400
-Received: from localhost
- by e06smtp02.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <ldufour@linux.ibm.com>;
- Tue, 23 Apr 2019 17:46:56 +0100
-Received: from b06cxnps3074.portsmouth.uk.ibm.com (9.149.109.194)
- by e06smtp02.uk.ibm.com (192.168.101.132) with IBM ESMTP SMTP Gateway:
- Authorized Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Tue, 23 Apr 2019 17:46:53 +0100
-Received: from d06av24.portsmouth.uk.ibm.com (mk.ibm.com [9.149.105.60])
- by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x3NGkqRU59899956
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Tue, 23 Apr 2019 16:46:52 GMT
-Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id AB2204203F;
- Tue, 23 Apr 2019 16:46:52 +0000 (GMT)
-Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 296C142041;
- Tue, 23 Apr 2019 16:46:52 +0000 (GMT)
-Received: from [9.145.7.116] (unknown [9.145.7.116])
- by d06av24.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Tue, 23 Apr 2019 16:46:52 +0000 (GMT)
-Subject: Re: [PATCH] powerpc/mm: Comment arch_unmap()
-From: Laurent Dufour <ldufour@linux.ibm.com>
-To: mpe@ellerman.id.au
-References: <20190423151712.79391-1-ldufour@linux.ibm.com>
-Date: Tue, 23 Apr 2019 18:46:51 +0200
-User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.14; rv:60.0)
- Gecko/20100101 Thunderbird/60.6.1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44pV7s5rnYzDqKW
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Apr 2019 03:00:34 +1000 (AEST)
+X-Amp-Result: UNKNOWN
+X-Amp-Original-Verdict: FILE UNKNOWN
+X-Amp-File-Uploaded: False
+Received: from orsmga005.jf.intel.com ([10.7.209.41])
+ by fmsmga102.fm.intel.com with ESMTP/TLS/DHE-RSA-AES256-GCM-SHA384;
+ 23 Apr 2019 10:00:31 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="5.60,386,1549958400"; d="scan'208";a="318293329"
+Received: from iweiny-desk2.sc.intel.com ([10.3.52.157])
+ by orsmga005.jf.intel.com with ESMTP; 23 Apr 2019 10:00:30 -0700
+Date: Tue, 23 Apr 2019 10:00:44 -0700
+From: Ira Weiny <ira.weiny@intel.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: Re: linux-next: manual merge of the akpm-current tree with the
+ powerpc-fixes tree
+Message-ID: <20190423170044.GA30084@iweiny-DESK2.sc.intel.com>
+References: <20190423190606.0fefb856@canb.auug.org.au>
 MIME-Version: 1.0
-In-Reply-To: <20190423151712.79391-1-ldufour@linux.ibm.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: en-US
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-x-cbid: 19042316-0008-0000-0000-000002DCEFC5
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19042316-0009-0000-0000-000022494193
-Message-Id: <5d1cf986-d51b-3c47-8f6c-ae5ba205f59b@linux.ibm.com>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2019-04-23_05:, , signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- malwarescore=0 suspectscore=1 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1810050000 definitions=main-1904230114
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20190423190606.0fefb856@canb.auug.org.au>
+User-Agent: Mutt/1.11.1 (2018-12-01)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -99,53 +63,96 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+Cc: Alexey Kardashevskiy <aik@ozlabs.ru>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ Linux Next Mailing List <linux-next@vger.kernel.org>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ PowerPC <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Le 23/04/2019 à 17:17, Laurent Dufour a écrit :
-> During a different patch review, the check in arch_munmap() was found
-> spucious due the lake of explanation.
+On Tue, Apr 23, 2019 at 07:06:06PM +1000, Stephen Rothwell wrote:
+> Hi all,
 > 
-> Adding a comment to clarify the test.
+> Today's linux-next merge of the akpm-current tree got a conflict in:
 > 
-> Suggested-by: Thomas Gleixner <tglx@linutronix.de>
-> Cc: Michael Ellerman <mpe@ellerman.id.au>
-> Signed-off-by: Laurent Dufour <ldufour@linux.ibm.com>
-> ---
->   arch/powerpc/include/asm/mmu_context.h | 11 +++++++++++
->   1 file changed, 11 insertions(+)
+>   arch/powerpc/mm/mmu_context_iommu.c
 > 
-> diff --git a/arch/powerpc/include/asm/mmu_context.h b/arch/powerpc/include/asm/mmu_context.h
-> index 6ee8195a2ffb..638f481b3c9f 100644
-> --- a/arch/powerpc/include/asm/mmu_context.h
-> +++ b/arch/powerpc/include/asm/mmu_context.h
-> @@ -240,6 +240,17 @@ static inline void arch_unmap(struct mm_struct *mm,
->   			      struct vm_area_struct *vma,
->   			      unsigned long start, unsigned long end)
->   {
-> +	/*
-> +	 * There are 2 assumptions here:
-> +	 *  1. the VDSO is one page size (guaranteed by vdso_data_store)
+> between commits:
+> 
+>   eb9d7a62c386 ("powerpc/mm_iommu: Fix potential deadlock")
+>   7a3a4d763837 ("powerpc/mm_iommu: Allow pinning large regions")
+> 
+> from the powerpc-fixes tree and commit:
+> 
+>   02f506bad7af ("mm/gup: replace get_user_pages_longterm() with FOLL_LONGTERM")
+> 
+> from the akpm-current tree.
+> 
+> I fixed it up (see below) and can carry the fix as necessary. This
 
-Indeed this is not true, only the descriptor is one page size.
-This makes that test not handling all the cases, especially if a upper 
-part of the VDSO is unmap (start > mm->context.vdso_base).
+Thanks Stephen
 
-I'll sent a new fix asap.
+Looks good for my changes.
 
-> +	 *  2. 'start' and 'end' are page aligned (guaranteed by the caller)
-> +	 * The test is wrote in a way to handle unmap operation surrounding the
-> +	 * VDSO area like:
-> +	 *            | VDSO |
-> +	 *    ^ start          ^ end
-> +	 * The test also covers the munmap() operation done to the exact VDSO's
-> +	 * boundaries.
-> +	 */
->   	if (start <= mm->context.vdso_base && mm->context.vdso_base < end)
->   		mm->context.vdso_base = 0;
->   }
+Acked-by: Ira Weiny <ira.weiny@intel.com>
+
+> is now fixed as far as linux-next is concerned, but any non trivial
+> conflicts should be mentioned to your upstream maintainer when your tree
+> is submitted for merging.  You may also want to consider cooperating
+> with the maintainer of the conflicting tree to minimise any particularly
+> complex conflicts.
 > 
+> -- 
+> Cheers,
+> Stephen Rothwell
+> 
+> diff --cc arch/powerpc/mm/mmu_context_iommu.c
+> index 8330f135294f,755fe7adc0d8..000000000000
+> --- a/arch/powerpc/mm/mmu_context_iommu.c
+> +++ b/arch/powerpc/mm/mmu_context_iommu.c
+> @@@ -135,27 -144,18 +131,28 @@@ static long mm_iommu_do_alloc(struct mm
+>   	}
+>   
+>   	down_read(&mm->mmap_sem);
+>  -	ret = get_user_pages(ua, entries, FOLL_WRITE | FOLL_LONGTERM,
+>  -			     mem->hpages, NULL);
+>  +	chunk = (1UL << (PAGE_SHIFT + MAX_ORDER - 1)) /
+>  +			sizeof(struct vm_area_struct *);
+>  +	chunk = min(chunk, entries);
+>  +	for (entry = 0; entry < entries; entry += chunk) {
+>  +		unsigned long n = min(entries - entry, chunk);
+>  +
+> - 		ret = get_user_pages_longterm(ua + (entry << PAGE_SHIFT), n,
+> - 				FOLL_WRITE, mem->hpages + entry, NULL);
+> ++		ret = get_user_pages(ua + (entry << PAGE_SHIFT), n,
+> ++				     FOLL_WRITE | FOLL_LONGTERM,
+> ++				     mem->hpages + entry, NULL);
+>  +		if (ret == n) {
+>  +			pinned += n;
+>  +			continue;
+>  +		}
+>  +		if (ret > 0)
+>  +			pinned += ret;
+>  +		break;
+>  +	}
+>   	up_read(&mm->mmap_sem);
+>  -	if (ret != entries) {
+>  -		/* free the reference taken */
+>  -		for (i = 0; i < ret; i++)
+>  -			put_page(mem->hpages[i]);
+>  -
+>  -		vfree(mem->hpas);
+>  -		kfree(mem);
+>  -		ret = -EFAULT;
+>  -		goto unlock_exit;
+>  +	if (pinned != entries) {
+>  +		if (!ret)
+>  +			ret = -EFAULT;
+>  +		goto free_exit;
+>   	}
+>   
+>   	pageshift = PAGE_SHIFT;
+
 
