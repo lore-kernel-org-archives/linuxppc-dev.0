@@ -8,74 +8,76 @@ X-Spam-Status: No, score=-8.6 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
 	SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 735FDC10F03
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Apr 2019 21:17:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CAF89C10F03
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Apr 2019 21:19:14 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id DF014218B0
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Apr 2019 21:17:35 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 32B9A218B0
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Apr 2019 21:19:14 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="P+gYd8bU"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DF014218B0
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="HC1WPwmI"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 32B9A218B0
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44pbrF6F1vzDqQn
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Apr 2019 07:17:33 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44pbt823GVzDqQh
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Apr 2019 07:19:12 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=2607:f8b0:4864:20::543; helo=mail-pg1-x543.google.com;
+ (client-ip=2607:f8b0:4864:20::643; helo=mail-pl1-x643.google.com;
  envelope-from=changbin.du@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="P+gYd8bU"; 
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="HC1WPwmI"; 
  dkim-atps=neutral
-Received: from mail-pg1-x543.google.com (mail-pg1-x543.google.com
- [IPv6:2607:f8b0:4864:20::543])
+Received: from mail-pl1-x643.google.com (mail-pl1-x643.google.com
+ [IPv6:2607:f8b0:4864:20::643])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44pTfQ3RhlzDqCW
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Apr 2019 02:38:38 +1000 (AEST)
-Received: by mail-pg1-x543.google.com with SMTP id p6so7873058pgh.9
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Apr 2019 09:38:38 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44pTfW5JqHzDq9H
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Apr 2019 02:38:43 +1000 (AEST)
+Received: by mail-pl1-x643.google.com with SMTP id ck15so7805411plb.3
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Apr 2019 09:38:43 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
  h=from:to:cc:subject:date:message-id:in-reply-to:references
  :mime-version:content-transfer-encoding;
- bh=j70G0amKcQXuPLeLIbM+m355FLoVLcQ+hAcLiiC/LxY=;
- b=P+gYd8bURGDxOzt66FfFiqD7ZCxs41XrIGFn/Pez46j/Q5lj4mwTqyMXXetbGWHP0U
- Zn1x6xz3oYIuH8U5++1TOmhyWTHjAkLlURx5CQlWPT7Zmm55kEUP8m/HLnJhWy5Di3Pa
- IWc6K6cC+x/S+5sD3pSdFydwm0XnINaaRtkpKs/Z4qlKSoW1r4TvZpV0QNsiKnUqOMAw
- juqvDMRfdTIOOvuLi3uXmUb5LiXueIy3MKKmZNbC0nFNjBYVkHR/Co79wgIFqvcewdaS
- wduNrtHoUorc9G0JgOpCy3+PmFCJknsEmcrdVzM2ivodoPo8+ESxbR+YQkp8C0tkuZjT
- RVpg==
+ bh=M9skjzp96cygvVz+1JSKV6lvwc3vgk2hHizbPglWd7s=;
+ b=HC1WPwmIlG+hlyxRIZOH4CnRvVGwgWVa8brKz231nxL34WdA7oIv1fV5i09oVTPQZf
+ HGb7skRKqQOEDwz7Nvih8QFEy8wtKy8dT/lu8CJ+eSB/mCx/vsNdhZQ2eHhSD6QHo2YG
+ TuxotwAoJX08deAs0U38LEGdW6TiWo/Jj7iSaEcRvY0nmp38CIEY4/H5B890tE45wqyF
+ HsZfKjucwW1hqfafZ6YstpPJ0y6Xkfaf/2btpDk3ncRlqLjR57n6TQR8GhbrVGm1cAKR
+ +jB4LseocMLJWC88f3+dQQ1dTw4PG93BGi+/ScqkZy+AW2l/SYsh6i6jGWQXmL68+cHS
+ nokQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
  :references:mime-version:content-transfer-encoding;
- bh=j70G0amKcQXuPLeLIbM+m355FLoVLcQ+hAcLiiC/LxY=;
- b=lpHb7r2ozoXpc5bnzGdEEUUyfUTNcr2l4zFv2/rzT0SvvJ0ffPB4niXvL9gMDOuDM0
- Qh8vIbgYm+9ib78hp95J6vIBK+zK2kZjONt3co8r/adUoH/O/LmB1HH9Sf3eKNOR+3J5
- B8hhc2Edn9sXmpSfZCwHnS3afirwMz86RVXAqezrrrq38VatIqveWA2SnZdX2Vqbbumz
- qri/nXhkhjVa5GcyllY8ULhQLTnZp/AwQ+G9muq3m05dgbZhOl7ysnLqRE3b3HzLUK+3
- mE6QbknGOxS/+HG2q9h2CtMuNBA+VFDG+ezntMepNWVXHKnOFJgjj0G9gEFS55VcxHIk
- Dgqg==
-X-Gm-Message-State: APjAAAWcPy8DTiI1OtoKU8xKmy9eggSh94to6A90O6Cid7lQWLUvxhPw
- 6NjfECAP471R5/ky2F4SCro=
-X-Google-Smtp-Source: APXvYqwTF+pJKqW6guT+W2qnSkjS5yj5xKQ51OL23k9fsqvZGy93L08hKqKjmjQws5cUu1UqjxDaHw==
-X-Received: by 2002:a63:2c06:: with SMTP id s6mr25690634pgs.245.1556037516314; 
- Tue, 23 Apr 2019 09:38:36 -0700 (PDT)
+ bh=M9skjzp96cygvVz+1JSKV6lvwc3vgk2hHizbPglWd7s=;
+ b=jt2Yd6qX5Bzi4isEC37worvD834qk0z4b3nR1/tbM16LTrsmgu0sLqnot0PvVY4hR2
+ eEuNbBI/Awz+lyvkUUuEtOE/HYX54CIC2oFDJNUPXTm0Ak1AaepTD+p3JRMzW0t2e4ad
+ MWXQTLlMJ+Blt9Ji7pMlvi/haJDR44esUzC3Gvh1/bCIuiv3yqyxoMXBGKLPIqrnsuQG
+ +jvNPkQTy8DyliAK8BOyMniOsYzweqA3DB0tkihNOcw0ghOeutj2ukDojaWImqHKrSbC
+ 6+7ZNd3cKLhrVoLHTiSBa7DzLeniP0sKhzwYDkN35VE5Iu3EtT20eFikpGXcLAa1rIR8
+ aHcA==
+X-Gm-Message-State: APjAAAX7+7dA+Ua7SIwDq4pR/jhvb3UtY37XliLBOSz7wOpLZfiN6VAg
+ vplOX1owjHAKVwOESjGoCXk=
+X-Google-Smtp-Source: APXvYqxW4QBYEj4LOBC2F/7Xh+EtfVt86Gw4890OAPE41pEAwNvEos7lM78G5yOaeekXq29BA133cQ==
+X-Received: by 2002:a17:902:6949:: with SMTP id
+ k9mr26582784plt.59.1556037521465; 
+ Tue, 23 Apr 2019 09:38:41 -0700 (PDT)
 Received: from localhost.localdomain ([104.238.181.70])
- by smtp.gmail.com with ESMTPSA id v1sm24364801pff.81.2019.04.23.09.38.31
+ by smtp.gmail.com with ESMTPSA id v1sm24364801pff.81.2019.04.23.09.38.36
  (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
- Tue, 23 Apr 2019 09:38:35 -0700 (PDT)
+ Tue, 23 Apr 2019 09:38:40 -0700 (PDT)
 From: Changbin Du <changbin.du@gmail.com>
 To: Jonathan Corbet <corbet@lwn.net>
-Subject: [PATCH v4 54/63] Documentation: x86: convert orc-unwinder.txt to reST
-Date: Wed, 24 Apr 2019 00:29:23 +0800
-Message-Id: <20190423162932.21428-55-changbin.du@gmail.com>
+Subject: [PATCH v4 55/63] Documentation: x86: convert usb-legacy-support.txt
+ to reST
+Date: Wed, 24 Apr 2019 00:29:24 +0800
+Message-Id: <20190423162932.21428-56-changbin.du@gmail.com>
 X-Mailer: git-send-email 2.20.1
 In-Reply-To: <20190423162932.21428-1-changbin.du@gmail.com>
 References: <20190423162932.21428-1-changbin.du@gmail.com>
@@ -107,122 +109,41 @@ add it to Sphinx TOC tree. No essential content change.
 
 Signed-off-by: Changbin Du <changbin.du@gmail.com>
 ---
- Documentation/x86/index.rst                   |  1 +
- .../{orc-unwinder.txt => orc-unwinder.rst}    | 27 ++++++++++---------
- 2 files changed, 16 insertions(+), 12 deletions(-)
- rename Documentation/x86/{orc-unwinder.txt => orc-unwinder.rst} (93%)
+ Documentation/x86/index.rst                               | 1 +
+ .../{usb-legacy-support.txt => usb-legacy-support.rst}    | 8 ++++++--
+ 2 files changed, 7 insertions(+), 2 deletions(-)
+ rename Documentation/x86/{usb-legacy-support.txt => usb-legacy-support.rst} (92%)
 
 diff --git a/Documentation/x86/index.rst b/Documentation/x86/index.rst
-index 4e9fa2b046df..c41c17906b6d 100644
+index c41c17906b6d..526f7a008b8e 100644
 --- a/Documentation/x86/index.rst
 +++ b/Documentation/x86/index.rst
-@@ -14,6 +14,7 @@ Linux x86 Support
-    kernel-stacks
-    entry_64
-    earlyprintk
-+   orc-unwinder
-    zero-page
-    tlb
-    mtrr
-diff --git a/Documentation/x86/orc-unwinder.txt b/Documentation/x86/orc-unwinder.rst
-similarity index 93%
-rename from Documentation/x86/orc-unwinder.txt
-rename to Documentation/x86/orc-unwinder.rst
-index cd4b29be29af..d811576c1f3e 100644
---- a/Documentation/x86/orc-unwinder.txt
-+++ b/Documentation/x86/orc-unwinder.rst
-@@ -1,8 +1,11 @@
+@@ -25,3 +25,4 @@ Linux x86 Support
+    pti
+    microcode
+    resctrl_ui
++   usb-legacy-support
+diff --git a/Documentation/x86/usb-legacy-support.txt b/Documentation/x86/usb-legacy-support.rst
+similarity index 92%
+rename from Documentation/x86/usb-legacy-support.txt
+rename to Documentation/x86/usb-legacy-support.rst
+index 1894cdfc69d9..19abead7f1a8 100644
+--- a/Documentation/x86/usb-legacy-support.txt
++++ b/Documentation/x86/usb-legacy-support.rst
+@@ -1,7 +1,11 @@
++
 +.. SPDX-License-Identifier: GPL-2.0
 +
-+============
- ORC unwinder
- ============
++==================
+ USB Legacy support
+-~~~~~~~~~~~~~~~~~~
++==================
  
- Overview
----------
-+========
- 
- The kernel CONFIG_UNWINDER_ORC option enables the ORC unwinder, which is
- similar in concept to a DWARF unwinder.  The difference is that the
-@@ -23,12 +26,12 @@ correlate instruction addresses with their stack states at run time.
+-Vojtech Pavlik <vojtech@suse.cz>, January 2004
++:Author: Vojtech Pavlik <vojtech@suse.cz>, January 2004
  
  
- ORC vs frame pointers
-----------------------
-+=====================
- 
- With frame pointers enabled, GCC adds instrumentation code to every
- function in the kernel.  The kernel's .text size increases by about
- 3.2%, resulting in a broad kernel-wide slowdown.  Measurements by Mel
--Gorman [1] have shown a slowdown of 5-10% for some workloads.
-+Gorman [1]_ have shown a slowdown of 5-10% for some workloads.
- 
- In contrast, the ORC unwinder has no effect on text size or runtime
- performance, because the debuginfo is out of band.  So if you disable
-@@ -55,7 +58,7 @@ depending on the kernel config.
- 
- 
- ORC vs DWARF
--------------
-+============
- 
- ORC debuginfo's advantage over DWARF itself is that it's much simpler.
- It gets rid of the complex DWARF CFI state machine and also gets rid of
-@@ -65,7 +68,7 @@ mission critical oops code.
- 
- The simpler debuginfo format also enables the unwinder to be much faster
- than DWARF, which is important for perf and lockdep.  In a basic
--performance test by Jiri Slaby [2], the ORC unwinder was about 20x
-+performance test by Jiri Slaby [2]_, the ORC unwinder was about 20x
- faster than an out-of-tree DWARF unwinder.  (Note: That measurement was
- taken before some performance tweaks were added, which doubled
- performance, so the speedup over DWARF may be closer to 40x.)
-@@ -85,7 +88,7 @@ still be able to control the format, e.g. no complex state machines.
- 
- 
- ORC unwind table generation
-----------------------------
-+===========================
- 
- The ORC data is generated by objtool.  With the existing compile-time
- stack metadata validation feature, objtool already follows all code
-@@ -133,7 +136,7 @@ objtool follows GCC code quite well.
- 
- 
- Unwinder implementation details
---------------------------------
-+===============================
- 
- Objtool generates the ORC data by integrating with the compile-time
- stack metadata validation feature, which is described in detail in
-@@ -154,7 +157,7 @@ subset of the table needs to be searched.
- 
- 
- Etymology
-----------
-+=========
- 
- Orcs, fearsome creatures of medieval folklore, are the Dwarves' natural
- enemies.  Similarly, the ORC unwinder was created in opposition to the
-@@ -162,7 +165,7 @@ complexity and slowness of DWARF.
- 
- "Although Orcs rarely consider multiple solutions to a problem, they do
- excel at getting things done because they are creatures of action, not
--thought." [3]  Similarly, unlike the esoteric DWARF unwinder, the
-+thought." [3]_  Similarly, unlike the esoteric DWARF unwinder, the
- veracious ORC unwinder wastes no time or siloconic effort decoding
- variable-length zero-extended unsigned-integer byte-coded
- state-machine-based debug information entries.
-@@ -174,6 +177,6 @@ brutal, unyielding efficiency.
- ORC stands for Oops Rewind Capability.
- 
- 
--[1] https://lkml.kernel.org/r/20170602104048.jkkzssljsompjdwy@suse.de
--[2] https://lkml.kernel.org/r/d2ca5435-6386-29b8-db87-7f227c2b713a@suse.cz
--[3] http://dustin.wikidot.com/half-orcs-and-orcs
-+.. [1] https://lkml.kernel.org/r/20170602104048.jkkzssljsompjdwy@suse.de
-+.. [2] https://lkml.kernel.org/r/d2ca5435-6386-29b8-db87-7f227c2b713a@suse.cz
-+.. [3] http://dustin.wikidot.com/half-orcs-and-orcs
+ Also known as "USB Keyboard" or "USB Mouse support" in the BIOS Setup is a
 -- 
 2.20.1
 
