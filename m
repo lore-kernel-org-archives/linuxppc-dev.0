@@ -6,93 +6,79 @@ X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
 	SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 406DBC10F11
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Apr 2019 07:02:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5F096C10F11
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Apr 2019 07:17:01 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B359A20878
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Apr 2019 07:02:20 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 9524120835
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Apr 2019 07:17:00 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=russell.cc header.i=@russell.cc header.b="V3ha/97I";
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b="E7KwA4yt"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B359A20878
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=russell.cc
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="M1tdwgwj"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9524120835
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44prpy5BFgzDqVD
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Apr 2019 17:02:18 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44ps7t1DRYzDqTP
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Apr 2019 17:16:58 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=russell.cc
- (client-ip=64.147.123.24; helo=wout1-smtp.messagingengine.com;
- envelope-from=ruscur@russell.cc; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=c-s.fr
+ (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=russell.cc
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=russell.cc header.i=@russell.cc header.b="V3ha/97I"; 
- dkim=pass (2048-bit key;
- unprotected) header.d=messagingengine.com header.i=@messagingengine.com
- header.b="E7KwA4yt"; dkim-atps=neutral
-Received: from wout1-smtp.messagingengine.com (wout1-smtp.messagingengine.com
- [64.147.123.24])
+ dmarc=none (p=none dis=none) header.from=c-s.fr
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="M1tdwgwj"; 
+ dkim-atps=neutral
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44prn31P26zDqBr
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Apr 2019 17:00:38 +1000 (AEST)
-Received: from compute6.internal (compute6.nyi.internal [10.202.2.46])
- by mailout.west.internal (Postfix) with ESMTP id EAB3345E;
- Wed, 24 Apr 2019 03:00:35 -0400 (EDT)
-Received: from imap21 ([10.202.2.71])
- by compute6.internal (MEProxy); Wed, 24 Apr 2019 03:00:36 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=russell.cc; h=
- mime-version:message-id:in-reply-to:references:date:from:to:cc
- :subject:content-type:content-transfer-encoding; s=fm1; bh=93IpX
- DcvugQQzamWYmE7n6PwihV80dgPedkCALr/zM8=; b=V3ha/97ICAx0ei1+LML2T
- QlJ/fYXHAr3FRPY8pCvu5y/FIsdTQMnukhyv5IsjXGWJX1YaoOLMJWw3p6mFvopt
- C04abcKrB84ViI8Q9TV98CirxUP0Epwz/urOFHy3EnRtsuaRTnchB8KMLRrkz1xr
- ZHYHwsDd9x/vAHhj/kgLgUM2glwJ04LMj4s+mgjaldUGGOEgRH/wgrK9x+6L68KL
- 9ktQ8kUqWBzoOlZI1SBmB/NAi2RHj3iyionmKlHj35PYk649toQy70mZvC7q8bF5
- KtSt2+ImjN704KCnQlArWCNvGWL9W8XoDz9uLyRxD5mSQGbIy2D4+vbnF2n9JALx
- Q==
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
- messagingengine.com; h=cc:content-transfer-encoding:content-type
- :date:from:in-reply-to:message-id:mime-version:references
- :subject:to:x-me-proxy:x-me-proxy:x-me-sender:x-me-sender
- :x-sasl-enc; s=fm2; bh=93IpXDcvugQQzamWYmE7n6PwihV80dgPedkCALr/z
- M8=; b=E7KwA4ytrbfraShrk3bcNFOVocvh/VWL/UEHQGjjUATSmKpGr7swm6A11
- 8S+HUMJWQ/4ZTHDZfbiUYCj2kruObpn9odVmSudX3qJ14ccHBohMTBnUSQoKP2pP
- zOqAMdrAze1aARQ207NdRKsWy9ICyku95lqVW1nVKYPeW2GeGvP/Tc4Xnh445UHr
- VbOZFJkQetiabWexrZItUDhD+8QX7h2RiINXu+sKNqHRi1WoZxbdO+LnOGeDEK5g
- 46QROrgyLmb0yiwPqeltt+TaT4EmeXGiNon2nCXFOZmhdhyzZiz0+ZFz1yDC92te
- HBe5lNO2lWziBxF0vHTwyzzYBKrXw==
-X-ME-Sender: <xms:kgnAXDRLJ8gNp4xEYqOhs-DW7gh-bw6uemioQuP-DBbYrMDREX7WAw>
-X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgeduuddrgeelgdduudefucetufdoteggodetrfdotf
- fvucfrrhhofhhilhgvmecuhfgrshhtofgrihhlpdfqfgfvpdfurfetoffkrfgpnffqhgen
- uceurghilhhouhhtmecufedttdenucesvcftvggtihhpihgvnhhtshculddquddttddmne
- gfrhhlucfvnfffucdludehmdenucfjughrpefofgggkfgjfhffhffvufgtgfesthhqredt
- reerjeenucfhrhhomhepfdftuhhsshgvlhhlucevuhhrrhgvhidfuceorhhushgtuhhrse
- hruhhsshgvlhhlrdgttgeqnecurfgrrhgrmhepmhgrihhlfhhrohhmpehruhhstghurhes
- rhhushhsvghllhdrtggtnecuvehluhhsthgvrhfuihiivgeptd
-X-ME-Proxy: <xmx:kgnAXNsWOPYAXcRvqs-hhg0pu0xKNEonnymgkUScnBuaKlrvzJUGbg>
- <xmx:kgnAXEbFh4y4oTv_gJNBufdTjVPNGerdz9O0BLtX6fBhfGlmjeYVfw>
- <xmx:kgnAXDEkBVm7CM06ML9ksipu13J43l4hOqj1G5R4TycoND1Wno6geQ>
- <xmx:kwnAXL7zKiAoQsT7wD3akGTCvKqTGrVFxrdoDHuFpYKlBIdO6W-wQQ>
-Received: by mailuser.nyi.internal (Postfix, from userid 501)
- id 8D44872C4D; Wed, 24 Apr 2019 03:00:34 -0400 (EDT)
-X-Mailer: MessagingEngine.com Webmail Interface
-User-Agent: Cyrus-JMAP/3.1.6-444-g755619f-fmstable-20190423v1
-Mime-Version: 1.0
-Message-Id: <e867dde6-ec13-4a3f-aa66-9819066dcb80@www.fastmail.com>
-In-Reply-To: <ab20f079-cf9f-f1c6-f3fa-54a842311fd3@c-s.fr>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44ps5Z0YgFzDqRr
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Apr 2019 17:14:55 +1000 (AEST)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 44ps5R3zSmz9v10h;
+ Wed, 24 Apr 2019 09:14:51 +0200 (CEST)
+Authentication-Results: localhost; dkim=pass
+ reason="1024-bit key; insecure key"
+ header.d=c-s.fr header.i=@c-s.fr header.b=M1tdwgwj; dkim-adsp=pass;
+ dkim-atps=neutral
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id 7bcD5UtHitT5; Wed, 24 Apr 2019 09:14:51 +0200 (CEST)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 44ps5R2mljz9v10g;
+ Wed, 24 Apr 2019 09:14:51 +0200 (CEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
+ t=1556090091; bh=4KNl/Lib2mZ6PbQYm0kmmtGURLN3TatY1c1J9aM+jtk=;
+ h=Subject:To:Cc:References:From:Date:In-Reply-To:From;
+ b=M1tdwgwjltcCijkxcCcpI4kvCVMME7uyHfVZcPmA5HCFOwvNISBpa8bRIMod9f+GL
+ 0Byzs4av2HLU6gz2EO8q9VyWj+yAQfyfCbB8ONjvbHFZXAhSeuplDxeNKV1o1DAn5Q
+ 7eLBdcerEu9I9Yd1vS0rv6IbeeAsmOZKC+S3LlLM=
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 57DC88B8ED;
+ Wed, 24 Apr 2019 09:14:52 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id hZRFJAXdMEyL; Wed, 24 Apr 2019 09:14:52 +0200 (CEST)
+Received: from PO15451 (po15451.idsi0.si.c-s.fr [172.25.231.6])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 2FEFC8B7CB;
+ Wed, 24 Apr 2019 09:14:52 +0200 (CEST)
+Subject: Re: [PATCH 2/2] powerpc/mm: Warn if W+X pages found on boot
+To: Russell Currey <ruscur@russell.cc>, linuxppc-dev@lists.ozlabs.org
 References: <20190424063958.24559-1-ruscur@russell.cc>
- <ab20f079-cf9f-f1c6-f3fa-54a842311fd3@c-s.fr>
-Date: Wed, 24 Apr 2019 03:00:33 -0400
-From: "Russell Currey" <ruscur@russell.cc>
-To: "Christophe Leroy" <christophe.leroy@c-s.fr>, linuxppc-dev@lists.ozlabs.org
-Subject: =?UTF-8?Q?Re:_[PATCH_1/2]_powerpc/mm/ptdump:_Wrap_seq=5Fprintf()_to_hand?=
- =?UTF-8?Q?le_NULL_pointers?=
-Content-Type: text/plain;charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+ <20190424063958.24559-2-ruscur@russell.cc>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Message-ID: <8e659a8f-af3f-e889-3f7a-560178c1f7b1@c-s.fr>
+Date: Wed, 24 Apr 2019 09:14:50 +0200
+User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:60.0) Gecko/20100101
+ Thunderbird/60.6.1
+MIME-Version: 1.0
+In-Reply-To: <20190424063958.24559-2-ruscur@russell.cc>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: fr
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -109,146 +95,205 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-whoops, will fix=20
 
---=20
-  Russell Currey
-  ruscur@russell.cc
 
-On Wed, Apr 24, 2019, at 4:56 PM, Christophe Leroy wrote:
->=20
->=20
-> Le 24/04/2019 =C3=A0 08:39, Russell Currey a =C3=A9crit=C2=A0:
-> > Lovingly borrowed from the arch/arm64 ptdump code.
-> >=20
-> > This doesn't seem to be an issue in practice, but is necessary for m=
-y
-> > upcoming commit.
-> >=20
-> > Converts a putc() into a puts().
-> >=20
-> > Signed-off-by: Russell Currey <ruscur@russell.cc>
-> > ---
-> >   arch/powerpc/mm/ptdump/ptdump.c | 32 ++++++++++++++++++++++-------=
----
-> >   1 file changed, 22 insertions(+), 10 deletions(-)
-> >=20
-> > diff --git a/arch/powerpc/mm/ptdump/ptdump.c b/arch/powerpc/mm/ptdum=
-p/ptdump.c
-> > index 37138428ab55..c50cb7faa334 100644
-> > --- a/arch/powerpc/mm/ptdump/ptdump.c
-> > +++ b/arch/powerpc/mm/ptdump/ptdump.c
-> > @@ -104,6 +104,18 @@ static struct addr_marker address_markers[] =3D=
- {
-> >   	{ -1,	NULL },
-> >   };
-> >  =20
-> > +#define pt_dump_seq_printf(m, fmt, args...)	\
-> > +({						\
-> > +	if (m)					\
-> > +		seq_printf(m, fmt, ##args);	\
-> > +})
-> > +
-> > +#define pt_dump_seq_puts(m, fmt)	\
-> > +({					\
-> > +	if (m)				\
-> > +		seq_printf(m, fmt);	\
->=20
-> Why not use seq_puts() here ?
->=20
-> Christophe
->=20
-> > +})
-> > +
-> >   static void dump_flag_info(struct pg_state *st, const struct flag_=
-info
-> >   		*flag, u64 pte, int num)
-> >   {
-> > @@ -121,19 +133,19 @@ static void dump_flag_info(struct pg_state *st=
-, const struct flag_info
-> >   			val =3D pte & flag->val;
-> >   			if (flag->shift)
-> >   				val =3D val >> flag->shift;
-> > -			seq_printf(st->seq, "  %s:%llx", flag->set, val);
-> > +			pt_dump_seq_printf(st->seq, "  %s:%llx", flag->set, val);
-> >   		} else {
-> >   			if ((pte & flag->mask) =3D=3D flag->val)
-> >   				s =3D flag->set;
-> >   			else
-> >   				s =3D flag->clear;
-> >   			if (s)
-> > -				seq_printf(st->seq, "  %s", s);
-> > +				pt_dump_seq_printf(st->seq, "  %s", s);
-> >   		}
-> >   		st->current_flags &=3D ~flag->mask;
-> >   	}
-> >   	if (st->current_flags !=3D 0)
-> > -		seq_printf(st->seq, "  unknown flags:%llx", st->current_flags);
-> > +		pt_dump_seq_printf(st->seq, "  unknown flags:%llx", st->current_f=
-lags);
-> >   }
-> >  =20
-> >   static void dump_addr(struct pg_state *st, unsigned long addr)
-> > @@ -148,12 +160,12 @@ static void dump_addr(struct pg_state *st, uns=
-igned long addr)
-> >   #define REG		"0x%08lx"
-> >   #endif
-> >  =20
-> > -	seq_printf(st->seq, REG "-" REG " ", st->start_address, addr - 1);=
+Le 24/04/2019 à 08:39, Russell Currey a écrit :
+> Implement code to walk all pages and warn if any are found to be both
+> writable and executable.  Depends on STRICT_KERNEL_RWX enabled, and is
+> behind the DEBUG_WX config option.
+> 
+> This only runs on boot and has no runtime performance implications.
+> 
+> Very heavily influenced (and in some cases copied verbatim) from the
+> ARM64 code written by Laura Abbott (thanks!), since our ptdump
+> infrastructure is similar.
+> 
+> Signed-off-by: Russell Currey <ruscur@russell.cc>
+> ---
+>   arch/powerpc/Kconfig.debug         | 19 +++++++++++++++
+>   arch/powerpc/include/asm/pgtable.h |  5 ++++
+>   arch/powerpc/mm/pgtable_32.c       |  5 ++++
+>   arch/powerpc/mm/pgtable_64.c       |  5 ++++
+>   arch/powerpc/mm/ptdump/ptdump.c    | 38 ++++++++++++++++++++++++++++++
+>   5 files changed, 72 insertions(+)
+> 
+> diff --git a/arch/powerpc/Kconfig.debug b/arch/powerpc/Kconfig.debug
+> index 4e00cb0a5464..a4160ff02ed4 100644
+> --- a/arch/powerpc/Kconfig.debug
+> +++ b/arch/powerpc/Kconfig.debug
+> @@ -361,6 +361,25 @@ config PPC_PTDUMP
+>   
+>   	  If you are unsure, say N.
+>   
+> +config DEBUG_WX
 
-> > +	pt_dump_seq_printf(st->seq, REG "-" REG " ", st->start_address, ad=
-dr - 1);
-> >   	if (st->start_pa =3D=3D st->last_pa && st->start_address + PAGE_S=
-IZE !=3D addr) {
-> > -		seq_printf(st->seq, "[" REG "]", st->start_pa);
-> > +		pt_dump_seq_printf(st->seq, "[" REG "]", st->start_pa);
-> >   		delta =3D PAGE_SIZE >> 10;
-> >   	} else {
-> > -		seq_printf(st->seq, " " REG " ", st->start_pa);
-> > +		pt_dump_seq_printf(st->seq, " " REG " ", st->start_pa);
-> >   		delta =3D (addr - st->start_address) >> 10;
-> >   	}
-> >   	/* Work out what appropriate unit to use */
-> > @@ -161,7 +173,7 @@ static void dump_addr(struct pg_state *st, unsig=
-ned long addr)
-> >   		delta >>=3D 10;
-> >   		unit++;
-> >   	}
-> > -	seq_printf(st->seq, "%9lu%c", delta, *unit);
-> > +	pt_dump_seq_printf(st->seq, "%9lu%c", delta, *unit);
-> >  =20
-> >   }
-> >  =20
-> > @@ -178,7 +190,7 @@ static void note_page(struct pg_state *st, unsig=
-ned long addr,
-> >   		st->start_address =3D addr;
-> >   		st->start_pa =3D pa;
-> >   		st->last_pa =3D pa;
-> > -		seq_printf(st->seq, "---[ %s ]---\n", st->marker->name);
-> > +		pt_dump_seq_printf(st->seq, "---[ %s ]---\n", st->marker->name);
-> >   	/*
-> >   	 * Dump the section of virtual memory when:
-> >   	 *   - the PTE flags from one entry to the next differs.
-> > @@ -202,7 +214,7 @@ static void note_page(struct pg_state *st, unsig=
-ned long addr,
-> >   					  st->current_flags,
-> >   					  pg_level[st->level].num);
-> >  =20
-> > -			seq_putc(st->seq, '\n');
-> > +			pt_dump_seq_puts(st->seq, "\n");
-> >   		}
-> >  =20
-> >   		/*
-> > @@ -211,7 +223,7 @@ static void note_page(struct pg_state *st, unsig=
-ned long addr,
-> >   		 */
-> >   		while (addr >=3D st->marker[1].start_address) {
-> >   			st->marker++;
-> > -			seq_printf(st->seq, "---[ %s ]---\n", st->marker->name);
-> > +			pt_dump_seq_printf(st->seq, "---[ %s ]---\n", st->marker->name);=
+I would call it PPC_DEBUG_WX to avoid confusion.
 
-> >   		}
-> >   		st->start_address =3D addr;
-> >   		st->start_pa =3D pa;
-> >=20
->
+> +	bool "Warn on W+X mappings at boot"
+> +	select PPC_PTDUMP
+> +	---help---
+> +	  Generate a warning if any W+X mappings are found at boot.
+> +
+> +	  This is useful for discovering cases where the kernel is leaving
+> +	  W+X mappings after applying NX, as such mappings are a security risk.
+> +
+> +	  Note that even if the check fails, your kernel is possibly
+> +	  still fine, as W+X mappings are not a security hole in
+> +	  themselves, what they do is that they make the exploitation
+> +	  of other unfixed kernel bugs easier.
+> +
+> +	  There is no runtime or memory usage effect of this option
+> +	  once the kernel has booted up - it's a one time check.
+> +
+> +	  If in doubt, say "Y".
+> +
+>   config PPC_FAST_ENDIAN_SWITCH
+>   	bool "Deprecated fast endian-switch syscall"
+>           depends on DEBUG_KERNEL && PPC_BOOK3S_64
+> diff --git a/arch/powerpc/include/asm/pgtable.h b/arch/powerpc/include/asm/pgtable.h
+> index 505550fb2935..be785f221e56 100644
+> --- a/arch/powerpc/include/asm/pgtable.h
+> +++ b/arch/powerpc/include/asm/pgtable.h
+> @@ -104,6 +104,11 @@ void pgtable_cache_init(void);
+>   
+>   #if defined(CONFIG_STRICT_KERNEL_RWX) || defined(CONFIG_PPC32)
+>   void mark_initmem_nx(void);
+> +
+> +#ifdef CONFIG_DEBUG_WX
+
+I don't think this #ifdef is necessary at all when there is no matching 
+#else. You could leave the declaration of the function all the time.
+
+> +extern void ptdump_check_wx(void);
+
+'extern' keyword is superflous and checkpatch --strict will likely complain.
+
+> +#endif /* CONFIG_DEBUG_WX */
+> +
+>   #else
+>   static inline void mark_initmem_nx(void) { }
+>   #endif
+> diff --git a/arch/powerpc/mm/pgtable_32.c b/arch/powerpc/mm/pgtable_32.c
+> index 6e56a6240bfa..054a6174ff7f 100644
+> --- a/arch/powerpc/mm/pgtable_32.c
+> +++ b/arch/powerpc/mm/pgtable_32.c
+> @@ -384,6 +384,11 @@ void mark_rodata_ro(void)
+>   		   PFN_DOWN((unsigned long)__start_rodata);
+>   
+>   	change_page_attr(page, numpages, PAGE_KERNEL_RO);
+> +
+> +#ifdef CONFIG_DEBUG_WX
+> +	// mark_initmem_nx() should have already run by now
+> +	ptdump_check_wx();
+
+Please avoid #ifdefs in .c files as much as possible.
+
+It would be better to define ptdump_check_wx() as static inline {} in 
+pgtable.h when CONFIG_DEBUG_WX is not selected.
+
+> +#endif
+>   }
+>   #endif
+>   
+> diff --git a/arch/powerpc/mm/pgtable_64.c b/arch/powerpc/mm/pgtable_64.c
+> index fb1375c07e8c..48036b25a958 100644
+> --- a/arch/powerpc/mm/pgtable_64.c
+> +++ b/arch/powerpc/mm/pgtable_64.c
+> @@ -328,6 +328,11 @@ void mark_rodata_ro(void)
+>   		radix__mark_rodata_ro();
+>   	else
+>   		hash__mark_rodata_ro();
+> +
+> +#ifdef CONFIG_DEBUG_WX
+> +	// mark_initmem_nx() should have already run by now
+> +	ptdump_check_wx();
+> +#endif
+
+Idem
+
+>   }
+>   
+>   void mark_initmem_nx(void)
+> diff --git a/arch/powerpc/mm/ptdump/ptdump.c b/arch/powerpc/mm/ptdump/ptdump.c
+> index c50cb7faa334..b4b09df839bb 100644
+> --- a/arch/powerpc/mm/ptdump/ptdump.c
+> +++ b/arch/powerpc/mm/ptdump/ptdump.c
+> @@ -68,6 +68,8 @@ struct pg_state {
+>   	unsigned long last_pa;
+>   	unsigned int level;
+>   	u64 current_flags;
+> +	bool check_wx;
+> +	unsigned long wx_pages;
+>   };
+>   
+>   struct addr_marker {
+> @@ -177,6 +179,19 @@ static void dump_addr(struct pg_state *st, unsigned long addr)
+>   
+>   }
+>   
+> +static void note_prot_wx(struct pg_state *st, unsigned long addr)
+> +{
+> +	if (!st->check_wx)
+> +		return;
+> +	if (!((st->current_flags & _PAGE_EXEC) && (st->current_flags & _PAGE_WRITE)))
+
+The above won't work in all cases. _PAGE_WRITE is only defined in 
+book3s64. Other arches have _PAGE_RW or _PAGE_RO.
+
+Please use the helpers defined in pgtable.h to check and not flags directly.
+
+
+> +		return;
+> +
+> +	WARN_ONCE(1, "powerpc/mm: Found insecure W+X mapping at address %p/%pS\n",
+> +		  (void *)st->start_address, (void *)st->start_address);
+> +
+> +	st->wx_pages += (addr - st->start_address) / PAGE_SIZE;
+> +}
+> +
+>   static void note_page(struct pg_state *st, unsigned long addr,
+>   	       unsigned int level, u64 val)
+>   {
+> @@ -206,6 +221,7 @@ static void note_page(struct pg_state *st, unsigned long addr,
+>   
+>   		/* Check the PTE flags */
+>   		if (st->current_flags) {
+> +			note_prot_wx(st, addr);
+>   			dump_addr(st, addr);
+>   
+>   			/* Dump all the flags */
+> @@ -378,6 +394,28 @@ static void build_pgtable_complete_mask(void)
+>   				pg_level[i].mask |= pg_level[i].flag[j].mask;
+>   }
+>   
+> +void ptdump_check_wx(void)
+> +{
+> +	struct pg_state st = {
+> +		.seq = NULL,
+> +		.marker = address_markers,
+> +		.check_wx = true,
+> +	};
+> +
+> +	if (radix_enabled())
+> +		st.start_address = PAGE_OFFSET;
+> +	else
+> +		st.start_address = KERN_VIRT_START;
+
+KERN_VIRT_START doesn't exist on PPC32.
+
+Christophe
+
+> +
+> +	walk_pagetables(&st);
+> +
+> +	if (st.wx_pages)
+> +		pr_warn("Checked W+X mappings: FAILED, %lu W+X pages found\n",
+> +			st.wx_pages);
+> +	else
+> +		pr_info("Checked W+X mappings: passed, no W+X pages found\n");
+> +}
+> +
+>   static int ptdump_init(void)
+>   {
+>   	struct dentry *debugfs_file;
+> 
