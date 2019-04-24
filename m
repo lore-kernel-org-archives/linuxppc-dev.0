@@ -2,69 +2,96 @@ Return-Path: <SRS0=+N6N=S2=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS
+X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 25AB2C282CE
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Apr 2019 15:14:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DABC5C10F11
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Apr 2019 15:16:33 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 68C3B218D3
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Apr 2019 15:14:48 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="LJr48VvT"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 68C3B218D3
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	by mail.kernel.org (Postfix) with ESMTPS id 25898218D3
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Apr 2019 15:16:33 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 25898218D3
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44q3lB1Qh7zDqS9
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Apr 2019 01:14:46 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44q3nC16V6zDqSZ
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Apr 2019 01:16:31 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=permerror (mailfrom) smtp.mailfrom=kernel.org
- (client-ip=2001:8b0:10b:1236::1; helo=casper.infradead.org;
- envelope-from=mchehab+samsung@kernel.org; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
+ (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
+ envelope-from=ldufour@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=fail (p=none dis=none) header.from=kernel.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=infradead.org header.i=@infradead.org
- header.b="LJr48VvT"; dkim-atps=neutral
-Received: from casper.infradead.org (casper.infradead.org
- [IPv6:2001:8b0:10b:1236::1])
+ dmarc=none (p=none dis=none) header.from=linux.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44q3Ll1LjlzDqQv
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Apr 2019 00:57:03 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
- d=infradead.org; s=casper.20170209; h=Content-Transfer-Encoding:Content-Type:
- MIME-Version:References:In-Reply-To:Message-ID:Subject:Cc:To:From:Date:Sender
- :Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
- Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:List-Help:
- List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
- bh=HAegWhTw52zFr6txY4cu/OvT7InTwy7rOkvAWwmB5RM=; b=LJr48VvTgnXLO74Hxq76Gu1DM6
- 7NtAg0qBrp5QUUJrZqMmWDYOxG+soFK0D7BfNgJNYJxf/ujAROBCM6PQHsftBPTG2/+jbq9N6/vul
- ItTW+k/ATPBzYZlZbOkkhsWuctjlcx9rWNhKyxHRX9Yl7IegX4Gn8IkvtGv/J8NuhF51GO78WY34b
- 1Ljr+zvvyvvbGfGKdo2Javdy7kRperh3vnK8H5NhSw/rUg87/y30fgf6UL3+CJuCCU8s7x7ry5WgL
- aiP/1zCAd1MsiH6klZUyiuLZ9vNkri5n7DCdqNFX1+8sieblpcMquosw1mlRRYcy103ibNTlHgSSt
- RL2wT0Aw==;
-Received: from 177.17.136.231.dynamic.adsl.gvt.net.br ([177.17.136.231]
- helo=coco.lan)
- by casper.infradead.org with esmtpsa (Exim 4.90_1 #2 (Red Hat Linux))
- id 1hJJKP-000176-Rq; Wed, 24 Apr 2019 14:56:54 +0000
-Date: Wed, 24 Apr 2019 11:56:47 -0300
-From: Mauro Carvalho Chehab <mchehab+samsung@kernel.org>
-To: Changbin Du <changbin.du@gmail.com>, mingo@redhat.com
-Subject: Re: [PATCH v4 24/63] Documentation: ACPI: move video_extension.txt
- to firmware-guide/acpi and convert to reST
-Message-ID: <20190424115647.092dec38@coco.lan>
-In-Reply-To: <20190423162932.21428-25-changbin.du@gmail.com>
-References: <20190423162932.21428-1-changbin.du@gmail.com>
- <20190423162932.21428-25-changbin.du@gmail.com>
-X-Mailer: Claws Mail 3.17.3 (GTK+ 2.24.32; x86_64-redhat-linux-gnu)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44q3N21TfyzDqGY
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Apr 2019 00:58:10 +1000 (AEST)
+Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
+ x3OEsTHu123349
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Apr 2019 10:58:08 -0400
+Received: from e06smtp04.uk.ibm.com (e06smtp04.uk.ibm.com [195.75.94.100])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2s2s1puy3y-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Apr 2019 10:58:07 -0400
+Received: from localhost
+ by e06smtp04.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <ldufour@linux.ibm.com>;
+ Wed, 24 Apr 2019 15:58:04 +0100
+Received: from b06cxnps3075.portsmouth.uk.ibm.com (9.149.109.195)
+ by e06smtp04.uk.ibm.com (192.168.101.134) with IBM ESMTP SMTP Gateway:
+ Authorized Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Wed, 24 Apr 2019 15:57:55 +0100
+Received: from d06av26.portsmouth.uk.ibm.com (d06av26.portsmouth.uk.ibm.com
+ [9.149.105.62])
+ by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x3OEvrA663176882
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Wed, 24 Apr 2019 14:57:53 GMT
+Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 6642AAE04D;
+ Wed, 24 Apr 2019 14:57:53 +0000 (GMT)
+Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 93EFBAE051;
+ Wed, 24 Apr 2019 14:57:50 +0000 (GMT)
+Received: from [9.145.176.48] (unknown [9.145.176.48])
+ by d06av26.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Wed, 24 Apr 2019 14:57:50 +0000 (GMT)
+Subject: Re: [PATCH v12 23/31] mm: don't do swap readahead during speculative
+ page fault
+To: Jerome Glisse <jglisse@redhat.com>
+References: <20190416134522.17540-1-ldufour@linux.ibm.com>
+ <20190416134522.17540-24-ldufour@linux.ibm.com>
+ <20190422213611.GN14666@redhat.com>
+From: Laurent Dufour <ldufour@linux.ibm.com>
+Date: Wed, 24 Apr 2019 16:57:50 +0200
+User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.14; rv:60.0)
+ Gecko/20100101 Thunderbird/60.6.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <20190422213611.GN14666@redhat.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: en-US
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+x-cbid: 19042414-0016-0000-0000-000002732720
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 19042414-0017-0000-0000-000032CF99CC
+Message-Id: <42ba3103-cbac-199f-e6f1-0fbc12aaccc8@linux.ibm.com>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
+ definitions=2019-04-24_09:, , signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1810050000 definitions=main-1904240116
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -76,204 +103,86 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: fenghua.yu@intel.com, x86@kernel.org, linux-doc@vger.kernel.org,
- linux-pci@vger.kernel.org, linux-gpio@vger.kernel.org,
- Jonathan Corbet <corbet@lwn.net>, rjw@rjwysocki.net,
- linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org,
- Bjorn Helgaas <bhelgaas@google.com>, tglx@linutronix.de,
- linuxppc-dev@lists.ozlabs.org
+Cc: jack@suse.cz, sergey.senozhatsky.work@gmail.com, peterz@infradead.org,
+ Will Deacon <will.deacon@arm.com>, mhocko@kernel.org, linux-mm@kvack.org,
+ paulus@samba.org, Punit Agrawal <punitagrawal@gmail.com>, hpa@zytor.com,
+ Michel Lespinasse <walken@google.com>,
+ Alexei Starovoitov <alexei.starovoitov@gmail.com>,
+ Andrea Arcangeli <aarcange@redhat.com>, ak@linux.intel.com,
+ Minchan Kim <minchan@kernel.org>, aneesh.kumar@linux.ibm.com, x86@kernel.org,
+ Matthew Wilcox <willy@infradead.org>,
+ Daniel Jordan <daniel.m.jordan@oracle.com>, Ingo Molnar <mingo@redhat.com>,
+ David Rientjes <rientjes@google.com>, paulmck@linux.vnet.ibm.com,
+ Haiyan Song <haiyanx.song@intel.com>, npiggin@gmail.com, sj38.park@gmail.com,
+ dave@stgolabs.net, kemi.wang@intel.com, kirill@shutemov.name,
+ Thomas Gleixner <tglx@linutronix.de>, zhong jiang <zhongjiang@huawei.com>,
+ Ganesh Mahendran <opensource.ganesh@gmail.com>,
+ Yang Shi <yang.shi@linux.alibaba.com>, Mike Rapoport <rppt@linux.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
+ Vinayak Menon <vinmenon@codeaurora.org>,
+ vinayak menon <vinayakm.list@gmail.com>, akpm@linux-foundation.org,
+ Tim Chen <tim.c.chen@linux.intel.com>, haren@linux.vnet.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Em Wed, 24 Apr 2019 00:28:53 +0800
-Changbin Du <changbin.du@gmail.com> escreveu:
-
-> This converts the plain text documentation to reStructuredText format and
-> add it to Sphinx TOC tree. No essential content change.
+Le 22/04/2019 à 23:36, Jerome Glisse a écrit :
+> On Tue, Apr 16, 2019 at 03:45:14PM +0200, Laurent Dufour wrote:
+>> Vinayak Menon faced a panic because one thread was page faulting a page in
+>> swap, while another one was mprotecting a part of the VMA leading to a VMA
+>> split.
+>> This raise a panic in swap_vma_readahead() because the VMA's boundaries
+>> were not more matching the faulting address.
+>>
+>> To avoid this, if the page is not found in the swap, the speculative page
+>> fault is aborted to retry a regular page fault.
+>>
+>> Reported-by: Vinayak Menon <vinmenon@codeaurora.org>
+>> Signed-off-by: Laurent Dufour <ldufour@linux.ibm.com>
 > 
-> Signed-off-by: Changbin Du <changbin.du@gmail.com>
-> ---
->  Documentation/firmware-guide/acpi/index.rst   |  1 +
->  .../acpi/video_extension.rst}                 | 63 ++++++++++---------
->  2 files changed, 36 insertions(+), 28 deletions(-)
->  rename Documentation/{acpi/video_extension.txt => firmware-guide/acpi/video_extension.rst} (79%)
+> Reviewed-by: Jérôme Glisse <jglisse@redhat.com>
 > 
-> diff --git a/Documentation/firmware-guide/acpi/index.rst b/Documentation/firmware-guide/acpi/index.rst
-> index 0e60f4b7129a..ae609eec4679 100644
-> --- a/Documentation/firmware-guide/acpi/index.rst
-> +++ b/Documentation/firmware-guide/acpi/index.rst
-> @@ -23,3 +23,4 @@ ACPI Support
->     i2c-muxes
->     acpi-lid
->     lpit
-> +   video_extension
-> diff --git a/Documentation/acpi/video_extension.txt b/Documentation/firmware-guide/acpi/video_extension.rst
-> similarity index 79%
-> rename from Documentation/acpi/video_extension.txt
-> rename to Documentation/firmware-guide/acpi/video_extension.rst
-> index 79bf6a4921be..06f7e3230b6e 100644
-> --- a/Documentation/acpi/video_extension.txt
-> +++ b/Documentation/firmware-guide/acpi/video_extension.rst
-> @@ -1,5 +1,8 @@
-> +.. SPDX-License-Identifier: GPL-2.0
-> +
-> +=====================
->  ACPI video extensions
-> -~~~~~~~~~~~~~~~~~~~~~
-> +=====================
->  
->  This driver implement the ACPI Extensions For Display Adapters for
->  integrated graphics devices on motherboard, as specified in ACPI 2.0
-> @@ -8,9 +11,10 @@ defining the video POST device, retrieving EDID information or to
->  setup a video output, etc.  Note that this is an ref. implementation
->  only.  It may or may not work for your integrated video device.
->  
-> -The ACPI video driver does 3 things regarding backlight control:
-> +The ACPI video driver does 3 things regarding backlight control.
->  
-> -1 Export a sysfs interface for user space to control backlight level
-> +1. Export a sysfs interface for user space to control backlight level
-> +=====================================================================
->  
->  If the ACPI table has a video device, and acpi_backlight=vendor kernel
->  command line is not present, the driver will register a backlight device
+> Note that you should also skip non swap entry in do_swap_page() when doing
+> speculative page fault at very least you need to is_device_private_entry()
+> case.
+> 
+> But this should either be part of patch 22 or another patch to fix swap
+> case.
 
-Hmm... you didn't touch on this part of the document:
+Thanks Jérôme,
 
-	And what ACPI video driver does is:
-	actual_brightness: on read, control method _BQC will be evaluated to
-	get the brightness level the firmware thinks it is at;
-	bl_power: not implemented, will set the current brightness instead;
-	brightness: on write, control method _BCM will run to set the requested
-	brightness level;
-	max_brightness: Derived from the _BCL package(see below);
-	type: firmware
+Yes I missed that, I guess the best option would be to abort on non swap 
+entry. I'll add that in the patch 22.
 
-You should touch it. My suggestion here is:
+>> ---
+>>   mm/memory.c | 11 +++++++++++
+>>   1 file changed, 11 insertions(+)
+>>
+>> diff --git a/mm/memory.c b/mm/memory.c
+>> index 6e6bf61c0e5c..1991da97e2db 100644
+>> --- a/mm/memory.c
+>> +++ b/mm/memory.c
+>> @@ -2900,6 +2900,17 @@ vm_fault_t do_swap_page(struct vm_fault *vmf)
+>>   				lru_cache_add_anon(page);
+>>   				swap_readpage(page, true);
+>>   			}
+>> +		} else if (vmf->flags & FAULT_FLAG_SPECULATIVE) {
+>> +			/*
+>> +			 * Don't try readahead during a speculative page fault
+>> +			 * as the VMA's boundaries may change in our back.
+>> +			 * If the page is not in the swap cache and synchronous
+>> +			 * read is disabled, fall back to the regular page
+>> +			 * fault mechanism.
+>> +			 */
+>> +			delayacct_clear_flag(DELAYACCT_PF_SWAPIN);
+>> +			ret = VM_FAULT_RETRY;
+>> +			goto out;
+>>   		} else {
+>>   			page = swapin_readahead(entry, GFP_HIGHUSER_MOVABLE,
+>>   						vmf);
+>> -- 
+>> 2.21.0
+>>
+> 
 
-	And what ACPI video driver does is:
-
-	actual_brightness:
-		on read, control method _BQC will be evaluated to
-		get the brightness level the firmware thinks it is at;
-	bl_power:
-		not implemented, will set the current brightness instead;
-	brightness:
-		on write, control method _BCM will run to set the requested
-		brightness level;
-	max_brightness:
-		Derived from the _BCL package(see below);
-	type:
-		firmware
-
-> @@ -32,26 +36,26 @@ type: firmware
->  
->  Note that ACPI video backlight driver will always use index for
->  brightness, actual_brightness and max_brightness. So if we have
-> -the following _BCL package:
-> +the following _BCL package::
->  
-> -Method (_BCL, 0, NotSerialized)
-> -{
-> -	Return (Package (0x0C)
-> +	Method (_BCL, 0, NotSerialized)
->  	{
-> -		0x64,
-> -		0x32,
-> -		0x0A,
-> -		0x14,
-> -		0x1E,
-> -		0x28,
-> -		0x32,
-> -		0x3C,
-> -		0x46,
-> -		0x50,
-> -		0x5A,
-> -		0x64
-> -	})
-> -}
-> +		Return (Package (0x0C)
-> +		{
-> +			0x64,
-> +			0x32,
-> +			0x0A,
-> +			0x14,
-> +			0x1E,
-> +			0x28,
-> +			0x32,
-> +			0x3C,
-> +			0x46,
-> +			0x50,
-> +			0x5A,
-> +			0x64
-> +		})
-> +	}
->  
->  The first two levels are for when laptop are on AC or on battery and are
->  not used by Linux currently. The remaining 10 levels are supported levels
-> @@ -62,13 +66,15 @@ as a "brightness level" indicator. Thus from the user space perspective
->  the range of available brightness levels is from 0 to 9 (max_brightness)
->  inclusive.
->  
-> -2 Notify user space about hotkey event
-> +2. Notify user space about hotkey event
-> +=======================================
->  
->  There are generally two cases for hotkey event reporting:
-> +
->  i) For some laptops, when user presses the hotkey, a scancode will be
->     generated and sent to user space through the input device created by
->     the keyboard driver as a key type input event, with proper remap, the
-> -   following key code will appear to user space:
-> +   following key code will appear to user space::
->  
->  	EV_KEY, KEY_BRIGHTNESSUP
->  	EV_KEY, KEY_BRIGHTNESSDOWN
-> @@ -82,7 +88,7 @@ ii) For some laptops, the press of the hotkey will not generate the
->      about the event. The event value is defined in the ACPI spec. ACPI
->      video driver will generate an key type input event according to the
->      notify value it received and send the event to user space through the
-> -    input device it created:
-> +    input device it created::
->  
->  	event		keycode
->  	0x86		KEY_BRIGHTNESSUP
-
-Perhaps making this as a table would work better:
-
-    input device it created:
-
-	=====		===================
-	event		keycode
-	=====		===================
-	0x86		KEY_BRIGHTNESSUP
-	0x87		KEY_BRIGHTNESSDOWN
-	etc.
-	=====		===================
-
-
-> @@ -94,13 +100,14 @@ so this would lead to the same effect as case i) now.
->  Once user space tool receives this event, it can modify the backlight
->  level through the sysfs interface.
->  
-> -3 Change backlight level in the kernel
-> +3. Change backlight level in the kernel
-> +=======================================
->  
->  This works for machines covered by case ii) in Section 2. Once the driver
->  received a notification, it will set the backlight level accordingly. This does
->  not affect the sending of event to user space, they are always sent to user
->  space regardless of whether or not the video module controls the backlight level
->  directly. This behaviour can be controlled through the brightness_switch_enabled
-> -module parameter as documented in admin-guide/kernel-parameters.rst. It is recommended to
-> -disable this behaviour once a GUI environment starts up and wants to have full
-> -control of the backlight level.
-> +module parameter as documented in admin-guide/kernel-parameters.rst. It is
-> +recommended to disable this behaviour once a GUI environment starts up and
-> +wants to have full control of the backlight level.
-
-
-
-Thanks,
-Mauro
