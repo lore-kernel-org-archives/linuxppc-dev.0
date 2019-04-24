@@ -2,58 +2,60 @@ Return-Path: <SRS0=+N6N=S2=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-4.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
+X-Spam-Status: No, score=-3.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_NEOMUTT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D6D2BC10F03
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Apr 2019 01:50:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2A82FC10F03
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Apr 2019 02:17:36 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 589DF21773
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Apr 2019 01:50:00 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 589DF21773
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=huawei.com
+	by mail.kernel.org (Postfix) with ESMTPS id 694F021773
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Apr 2019 02:17:35 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 694F021773
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=stgolabs.net
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44pjtZ0l9DzDqTD
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Apr 2019 11:49:58 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44pkVP0ZMGzDqVL
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Apr 2019 12:17:33 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=huawei.com
- (client-ip=45.249.212.35; helo=huawei.com; envelope-from=yuehaibing@huawei.com;
+ spf=softfail (mailfrom) smtp.mailfrom=stgolabs.net
+ (client-ip=195.135.220.15; helo=mx1.suse.de; envelope-from=dave@stgolabs.net;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=huawei.com
-Received: from huawei.com (szxga07-in.huawei.com [45.249.212.35])
+ dmarc=none (p=none dis=none) header.from=stgolabs.net
+Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44pjrw2FglzDqT5
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Apr 2019 11:48:30 +1000 (AEST)
-Received: from DGGEMS407-HUB.china.huawei.com (unknown [172.30.72.58])
- by Forcepoint Email with ESMTP id 3DC2D241662F0C6BE04A;
- Wed, 24 Apr 2019 09:48:25 +0800 (CST)
-Received: from [127.0.0.1] (10.177.31.96) by DGGEMS407-HUB.china.huawei.com
- (10.3.19.207) with Microsoft SMTP Server id 14.3.439.0; Wed, 24 Apr 2019
- 09:48:21 +0800
-Subject: Re: [PATCH] powerpc/pseries: Use correct event modifier in
- rtas_parse_epow_errlog()
-To: Russell Currey <ruscur@russell.cc>, <paulus@samba.org>,
- <mpe@ellerman.id.au>, <mahesh@linux.vnet.ibm.com>, <npiggin@gmail.com>,
- <ganeshgr@linux.ibm.com>, <anton@samba.org>
-References: <20190423143533.26952-1-yuehaibing@huawei.com>
- <1b208e33c4f51630e2a336e95f25509fe7286e34.camel@russell.cc>
-From: YueHaibing <yuehaibing@huawei.com>
-Message-ID: <9b540ba8-9711-f4a2-b4bc-d35a05fd3dda@huawei.com>
-Date: Wed, 24 Apr 2019 09:48:20 +0800
-User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:45.0) Gecko/20100101
- Thunderbird/45.2.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44pkSc6nqJzDqRr
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Apr 2019 12:15:57 +1000 (AEST)
+X-Virus-Scanned: by amavisd-new at test-mx.suse.de
+Received: from relay2.suse.de (unknown [195.135.220.254])
+ by mx1.suse.de (Postfix) with ESMTP id 9AF78AC63;
+ Wed, 24 Apr 2019 02:15:53 +0000 (UTC)
+Date: Tue, 23 Apr 2019 19:15:44 -0700
+From: Davidlohr Bueso <dave@stgolabs.net>
+To: Daniel Jordan <daniel.m.jordan@oracle.com>
+Subject: Re: [PATCH 5/6] powerpc/mmu: drop mmap_sem now that locked_vm is
+ atomic
+Message-ID: <20190424021544.ygqa4hvwbyb6nuxp@linux-r8p5>
+Mail-Followup-To: Daniel Jordan <daniel.m.jordan@oracle.com>,
+ Christophe Leroy <christophe.leroy@c-s.fr>,
+ akpm@linux-foundation.org, Alexey Kardashevskiy <aik@ozlabs.ru>,
+ linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+ Paul Mackerras <paulus@samba.org>, Christoph Lameter <cl@linux.com>,
+ linuxppc-dev@lists.ozlabs.org, jgg@mellanox.com
+References: <20190402204158.27582-1-daniel.m.jordan@oracle.com>
+ <20190402204158.27582-6-daniel.m.jordan@oracle.com>
+ <964bd5b0-f1e5-7bf0-5c58-18e75c550841@c-s.fr>
+ <20190403164002.hued52o4mga4yprw@ca-dmjordan1.us.oracle.com>
 MIME-Version: 1.0
-In-Reply-To: <1b208e33c4f51630e2a336e95f25509fe7286e34.camel@russell.cc>
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-X-Originating-IP: [10.177.31.96]
-X-CFilter-Loop: Reflected
+Content-Type: text/plain; charset=iso-8859-1; format=flowed
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+In-Reply-To: <20190403164002.hued52o4mga4yprw@ca-dmjordan1.us.oracle.com>
+User-Agent: NeoMutt/20180323
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -65,52 +67,87 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: Alexey Kardashevskiy <aik@ozlabs.ru>, linux-kernel@vger.kernel.org,
+ linux-mm@kvack.org, jgg@mellanox.com, Paul Mackerras <paulus@samba.org>,
+ akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org,
+ Christoph Lameter <cl@linux.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+On Wed, 03 Apr 2019, Daniel Jordan wrote:
 
-
-On 2019/4/24 9:29, Russell Currey wrote:
-> On Tue, 2019-04-23 at 22:35 +0800, Yue Haibing wrote:
->> From: YueHaibing <yuehaibing@huawei.com>
+>On Wed, Apr 03, 2019 at 06:58:45AM +0200, Christophe Leroy wrote:
+>> Le 02/04/2019 =E0 22:41, Daniel Jordan a =E9crit=A0:
+>> > With locked_vm now an atomic, there is no need to take mmap_sem as
+>> > writer.  Delete and refactor accordingly.
 >>
->> rtas_parse_epow_errlog() should pass 'modifier' to
->> handle_system_shutdown, because event modifier only use
->> bottom 4 bits.
+>> Could you please detail the change ?
+>
+>Ok, I'll be more specific in the next version, using some of your language=
+ in
+>fact.  :)
+>
+>> It looks like this is not the only
+>> change. I'm wondering what the consequences are.
 >>
->> Fixes: 55fc0c561742 ("powerpc/pseries: Parse and handle EPOW
->> interrupts")
->> Signed-off-by: YueHaibing <yuehaibing@huawei.com>
-> 
-> Hello,
-> 
-> This fails to compile.
-> 
-> arch/powerpc/platforms/pseries/ras.c: In function
-> 'rtas_parse_epow_errlog':
-> arch/powerpc/platforms/pseries/ras.c:288:26: error: 'event_modifier'
-> undeclared (first use in this function); did you mean 'modifier'?
->    handle_system_shutdown(event_modifier);
->                           ^~~~~~~~~~~~~~
->                           modifier
+>> Before we did:
+>> - lock
+>> - calculate future value
+>> - check the future value is acceptable
+>> - update value if future value acceptable
+>> - return error if future value non acceptable
+>> - unlock
+>>
+>> Now we do:
+>> - atomic update with future (possibly too high) value
+>> - check the new value is acceptable
+>> - atomic update back with older value if new value not acceptable and re=
+turn
+>> error
+>>
+>> So if a concurrent action wants to increase locked_vm with an acceptable
+>> step while another one has temporarily set it too high, it will now fail.
+>>
+>> I think we should keep the previous approach and do a cmpxchg after
+>> validating the new value.
 
-Yes, this should be 'modifier'
+Wouldn't the cmpxchg alternative also be exposed the locked_vm changing bet=
+ween
+validating the new value and the cmpxchg() and we'd bogusly fail even when =
+there
+is still just because the value changed (I'm assuming we don't hold any loc=
+ks,
+otherwise all this is pointless).
 
-> 
-> So yes, I assume you meant "modifier" instead of "event_modifier" as
-> mentioned in your commit message.  Did you compile this before sending?
+   current_locked =3D atomic_read(&mm->locked_vm);
+   new_locked =3D current_locked + npages;
+   if (new_locked < lock_limit)
+      if (cmpxchg(&mm->locked_vm, current_locked, new_locked) =3D=3D curren=
+t_locked)
+      	 /* ENOMEM */
 
-I am very sorry for this, this is not my compiled version,
-I forgot to check again before sending.
+>
+>That's a good idea, and especially worth doing considering that an arbitra=
+ry
+>number of threads that charge a low amount of locked_vm can fail just beca=
+use
+>one thread charges lots of it.
 
-> 
-> (found by snowpatch)
-> 
-> - Russell
-> 
-> 
-> .
-> 
+Yeah but the window for this is quite small, I doubt it would be a real iss=
+ue.
 
+What if before doing the atomic_add_return(), we first did the racy new_loc=
+ked
+check for ENOMEM, then do the speculative add and cleanup, if necessary. Th=
+is
+would further reduce the scope of the window where false ENOMEM can occur.
+
+>pinned_vm appears to be broken the same way, so I can fix it too unless so=
+meone
+>beats me to it.
+
+This should not be a surprise for the rdma folks. Cc'ing Jason nonetheless.
+
+Thanks,
+Davidlohr
