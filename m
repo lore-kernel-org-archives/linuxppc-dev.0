@@ -2,69 +2,63 @@ Return-Path: <SRS0=+N6N=S2=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_PASS,USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C147BC10F11
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Apr 2019 17:06:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CEDADC282E1
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Apr 2019 17:14:16 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3D1BD2148D
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Apr 2019 17:06:16 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 48E66206BA
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Apr 2019 17:14:16 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="MbCZxQuk"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3D1BD2148D
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="xy5aQXND"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 48E66206BA
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linuxfoundation.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44q6Cp4FCYzDqXl
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Apr 2019 03:06:14 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44q6P20XsBzDq6q
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Apr 2019 03:14:14 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=permerror (mailfrom) smtp.mailfrom=kernel.org
- (client-ip=2001:8b0:10b:1236::1; helo=casper.infradead.org;
- envelope-from=mchehab+samsung@kernel.org; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=fail (p=none dis=none) header.from=kernel.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=infradead.org header.i=@infradead.org
- header.b="MbCZxQuk"; dkim-atps=neutral
-Received: from casper.infradead.org (casper.infradead.org
- [IPv6:2001:8b0:10b:1236::1])
+ spf=pass (mailfrom) smtp.mailfrom=linuxfoundation.org
+ (client-ip=198.145.29.99; helo=mail.kernel.org;
+ envelope-from=gregkh@linuxfoundation.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=linuxfoundation.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=kernel.org header.i=@kernel.org header.b="xy5aQXND"; 
+ dkim-atps=neutral
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44q6B15fy5zDq77
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Apr 2019 03:04:41 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
- d=infradead.org; s=casper.20170209; h=Content-Transfer-Encoding:Content-Type:
- MIME-Version:References:In-Reply-To:Message-ID:Subject:Cc:To:From:Date:Sender
- :Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
- Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:List-Help:
- List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
- bh=DCGeBvTyVQ8SMBoHvyttGac1kiVwGgaKGx64/cYbuDE=; b=MbCZxQukmg5r9iu99o5wQPndZ6
- /t8x9bkkfig6RtvUHiSTrQXjWGQxIHCK5fjmKxTlkICyMHJBTQQdEsuLfEuMdByY9DfNFvP/67jd5
- M9WSRQtIoGsnfbfS1+xAq2Qbm/1VmX2ZwshDmlMjSacekQp4OTny8w8Ot37uudoSgJTmZQDiK6+LG
- RHInVFxGa1V4zDbnenAYwzEZN9dRJw++CnrIhWyoj6hkJEQRMQVqkAFtaf56LoJIQco/EXMYIa02n
- /EAKvxnnlTumATOIOAKpAVpqH02tBqdW7rYe8+226PqQwQKk5PODZiuOixFPuyay06HhBw02f7JJW
- +n5kY6FQ==;
-Received: from 177.17.136.231.dynamic.adsl.gvt.net.br ([177.17.136.231]
- helo=coco.lan)
- by casper.infradead.org with esmtpsa (Exim 4.90_1 #2 (Red Hat Linux))
- id 1hJLJu-0006Bt-Im; Wed, 24 Apr 2019 17:04:31 +0000
-Date: Wed, 24 Apr 2019 14:04:24 -0300
-From: Mauro Carvalho Chehab <mchehab+samsung@kernel.org>
-To: Changbin Du <changbin.du@gmail.com>
-Subject: Re: [PATCH v4 37/63] Documentation: add Linux x86 docs to Sphinx
- TOC tree
-Message-ID: <20190424140424.72d5ae56@coco.lan>
-In-Reply-To: <20190423162932.21428-38-changbin.du@gmail.com>
-References: <20190423162932.21428-1-changbin.du@gmail.com>
- <20190423162932.21428-38-changbin.du@gmail.com>
-X-Mailer: Claws Mail 3.17.3 (GTK+ 2.24.32; x86_64-redhat-linux-gnu)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44q6L14127zDqVf
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Apr 2019 03:11:35 +1000 (AEST)
+Received: from localhost (62-193-50-229.as16211.net [62.193.50.229])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by mail.kernel.org (Postfix) with ESMTPSA id D927621904;
+ Wed, 24 Apr 2019 17:11:32 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+ s=default; t=1556125893;
+ bh=f6nNvR/dhl28VTdhBQtdGA6nHMkHoMHIHf7qzOm2ePk=;
+ h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+ b=xy5aQXNDWaDyEwHt2a09YlF+U8kp19/iZLGkN/ohau+RylRZARKMTgkXCSZMm366T
+ 7bF04u1fqNzyzQJ9kRqqAk+ZOSUROJQ9HXNR2M4tbXDmxA4QMA0yxD0DQAJC2aznXH
+ ukfIEQNrfGPekj1/yar8lCmc5X4CJBxMH6QmSdFk=
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH 3.18 020/104] SoC: imx-sgtl5000: add missing put_device()
+Date: Wed, 24 Apr 2019 19:08:37 +0200
+Message-Id: <20190424170853.070320830@linuxfoundation.org>
+X-Mailer: git-send-email 2.21.0
+In-Reply-To: <20190424170839.996641496@linuxfoundation.org>
+References: <20190424170839.996641496@linuxfoundation.org>
+User-Agent: quilt/0.66
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -76,72 +70,71 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: fenghua.yu@intel.com, x86@kernel.org, linux-doc@vger.kernel.org,
- linux-pci@vger.kernel.org, linux-gpio@vger.kernel.org,
- Jonathan Corbet <corbet@lwn.net>, rjw@rjwysocki.net,
- linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, mingo@redhat.com,
- Bjorn Helgaas <bhelgaas@google.com>, tglx@linutronix.de,
- linuxppc-dev@lists.ozlabs.org
+Cc: Sasha Levin <sashal@kernel.org>, alsa-devel@alsa-project.org,
+ linuxppc-dev@lists.ozlabs.org, Timur Tabi <timur@kernel.org>,
+ Xiubo Li <Xiubo.Lee@gmail.com>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Sascha Hauer <s.hauer@pengutronix.de>, Takashi Iwai <tiwai@suse.com>,
+ Liam Girdwood <lgirdwood@gmail.com>, stable@vger.kernel.org,
+ Jaroslav Kysela <perex@perex.cz>, Nicolin Chen <nicoleotsuka@gmail.com>,
+ Mark Brown <broonie@kernel.org>, NXP Linux Team <linux-imx@nxp.com>,
+ Pengutronix Kernel Team <kernel@pengutronix.de>,
+ Wen Yang <yellowriver2010@hotmail.com>, Shawn Guo <shawnguo@kernel.org>,
+ Fabio Estevam <festevam@gmail.com>, linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Em Wed, 24 Apr 2019 00:29:06 +0800
-Changbin Du <changbin.du@gmail.com> escreveu:
+[ Upstream commit 8fa857da9744f513036df1c43ab57f338941ae7d ]
 
-> Add a index.rst for x86 support. More docs will be added later.
-> 
-> Signed-off-by: Changbin Du <changbin.du@gmail.com>
-> ---
->  Documentation/index.rst     | 1 +
->  Documentation/x86/index.rst | 9 +++++++++
->  2 files changed, 10 insertions(+)
->  create mode 100644 Documentation/x86/index.rst
-> 
-> diff --git a/Documentation/index.rst b/Documentation/index.rst
-> index d80138284e0f..f185c8040fa9 100644
-> --- a/Documentation/index.rst
-> +++ b/Documentation/index.rst
-> @@ -112,6 +112,7 @@ implementation.
->  .. toctree::
->     :maxdepth: 2
->  
-> +   x86/index
->     sh/index
->  
->  Filesystem Documentation
-> diff --git a/Documentation/x86/index.rst b/Documentation/x86/index.rst
-> new file mode 100644
-> index 000000000000..7612d3142b2a
-> --- /dev/null
-> +++ b/Documentation/x86/index.rst
-> @@ -0,0 +1,9 @@
-> +.. SPDX-License-Identifier: GPL-2.0
-> +
-> +=================
-> +Linux x86 Support
-> +=================
-> +
-> +.. toctree::
-> +   :maxdepth: 2
-> +   :numbered:
+The of_find_device_by_node() takes a reference to the underlying device
+structure, we should release that reference.
 
-Looks ok to me:
+Detected by coccinelle with the following warnings:
+./sound/soc/fsl/imx-sgtl5000.c:169:1-7: ERROR: missing put_device;
+call of_find_device_by_node on line 105, but without a corresponding
+object release within this function.
+./sound/soc/fsl/imx-sgtl5000.c:177:1-7: ERROR: missing put_device;
+call of_find_device_by_node on line 105, but without a corresponding
+object release within this function.
 
-Reviewed-by: Mauro Carvalho Chehab <mchehab+samsung@kernel.org>
+Signed-off-by: Wen Yang <yellowriver2010@hotmail.com>
+Cc: Timur Tabi <timur@kernel.org>
+Cc: Nicolin Chen <nicoleotsuka@gmail.com>
+Cc: Xiubo Li <Xiubo.Lee@gmail.com>
+Cc: Fabio Estevam <festevam@gmail.com>
+Cc: Liam Girdwood <lgirdwood@gmail.com>
+Cc: Mark Brown <broonie@kernel.org>
+Cc: Jaroslav Kysela <perex@perex.cz>
+Cc: Takashi Iwai <tiwai@suse.com>
+Cc: Shawn Guo <shawnguo@kernel.org>
+Cc: Sascha Hauer <s.hauer@pengutronix.de>
+Cc: Pengutronix Kernel Team <kernel@pengutronix.de>
+Cc: NXP Linux Team <linux-imx@nxp.com>
+Cc: alsa-devel@alsa-project.org
+Cc: linuxppc-dev@lists.ozlabs.org
+Cc: linux-arm-kernel@lists.infradead.org
+Cc: linux-kernel@vger.kernel.org
+Signed-off-by: Mark Brown <broonie@kernel.org>
+Signed-off-by: Sasha Levin <sashal@kernel.org>
+---
+ sound/soc/fsl/imx-sgtl5000.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-Just one reminder: after merging both this and my conversions, we may
-need to do some review at the architecture titles, in order to
-make them consistent. 
+diff --git a/sound/soc/fsl/imx-sgtl5000.c b/sound/soc/fsl/imx-sgtl5000.c
+index 1cb22dd034eb..110f3cf361af 100644
+--- a/sound/soc/fsl/imx-sgtl5000.c
++++ b/sound/soc/fsl/imx-sgtl5000.c
+@@ -115,6 +115,7 @@ static int imx_sgtl5000_probe(struct platform_device *pdev)
+ 		ret = -EPROBE_DEFER;
+ 		goto fail;
+ 	}
++	put_device(&ssi_pdev->dev);
+ 	codec_dev = of_find_i2c_device_by_node(codec_np);
+ 	if (!codec_dev) {
+ 		dev_err(&pdev->dev, "failed to find codec platform device\n");
+-- 
+2.19.1
 
-On mu conversion patches, I'm using
 
-	==================
-	$arch Architecture
-	==================
 
-Probably also not the best title. Anyway, this can easily be fixed
-with a follow up patch once we get everything merged.
-
-Thanks,
-Mauro
