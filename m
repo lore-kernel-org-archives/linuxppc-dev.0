@@ -2,83 +2,96 @@ Return-Path: <SRS0=+N6N=S2=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_PASS autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5F096C10F11
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Apr 2019 07:17:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 854FDC10F11
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Apr 2019 07:36:02 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 9524120835
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Apr 2019 07:17:00 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="M1tdwgwj"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9524120835
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
+	by mail.kernel.org (Postfix) with ESMTPS id AF5022089F
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Apr 2019 07:36:01 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org AF5022089F
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44ps7t1DRYzDqTP
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Apr 2019 17:16:58 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44psYp5NFszDqXt
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Apr 2019 17:35:58 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=c-s.fr
- (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
- envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
+ (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
+ envelope-from=ldufour@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=c-s.fr
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="M1tdwgwj"; 
- dkim-atps=neutral
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ dmarc=none (p=none dis=none) header.from=linux.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44ps5Z0YgFzDqRr
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Apr 2019 17:14:55 +1000 (AEST)
-Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 44ps5R3zSmz9v10h;
- Wed, 24 Apr 2019 09:14:51 +0200 (CEST)
-Authentication-Results: localhost; dkim=pass
- reason="1024-bit key; insecure key"
- header.d=c-s.fr header.i=@c-s.fr header.b=M1tdwgwj; dkim-adsp=pass;
- dkim-atps=neutral
-X-Virus-Scanned: Debian amavisd-new at c-s.fr
-Received: from pegase1.c-s.fr ([192.168.12.234])
- by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id 7bcD5UtHitT5; Wed, 24 Apr 2019 09:14:51 +0200 (CEST)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 44ps5R2mljz9v10g;
- Wed, 24 Apr 2019 09:14:51 +0200 (CEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
- t=1556090091; bh=4KNl/Lib2mZ6PbQYm0kmmtGURLN3TatY1c1J9aM+jtk=;
- h=Subject:To:Cc:References:From:Date:In-Reply-To:From;
- b=M1tdwgwjltcCijkxcCcpI4kvCVMME7uyHfVZcPmA5HCFOwvNISBpa8bRIMod9f+GL
- 0Byzs4av2HLU6gz2EO8q9VyWj+yAQfyfCbB8ONjvbHFZXAhSeuplDxeNKV1o1DAn5Q
- 7eLBdcerEu9I9Yd1vS0rv6IbeeAsmOZKC+S3LlLM=
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 57DC88B8ED;
- Wed, 24 Apr 2019 09:14:52 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id hZRFJAXdMEyL; Wed, 24 Apr 2019 09:14:52 +0200 (CEST)
-Received: from PO15451 (po15451.idsi0.si.c-s.fr [172.25.231.6])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 2FEFC8B7CB;
- Wed, 24 Apr 2019 09:14:52 +0200 (CEST)
-Subject: Re: [PATCH 2/2] powerpc/mm: Warn if W+X pages found on boot
-To: Russell Currey <ruscur@russell.cc>, linuxppc-dev@lists.ozlabs.org
-References: <20190424063958.24559-1-ruscur@russell.cc>
- <20190424063958.24559-2-ruscur@russell.cc>
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Message-ID: <8e659a8f-af3f-e889-3f7a-560178c1f7b1@c-s.fr>
-Date: Wed, 24 Apr 2019 09:14:50 +0200
-User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:60.0) Gecko/20100101
- Thunderbird/60.6.1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44psWd5HtQzDqSp
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Apr 2019 17:34:05 +1000 (AEST)
+Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
+ x3O7VGRM054917
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Apr 2019 03:34:02 -0400
+Received: from e06smtp04.uk.ibm.com (e06smtp04.uk.ibm.com [195.75.94.100])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2s2gpjqpn5-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Apr 2019 03:34:02 -0400
+Received: from localhost
+ by e06smtp04.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <ldufour@linux.ibm.com>;
+ Wed, 24 Apr 2019 08:33:59 +0100
+Received: from b06cxnps3074.portsmouth.uk.ibm.com (9.149.109.194)
+ by e06smtp04.uk.ibm.com (192.168.101.134) with IBM ESMTP SMTP Gateway:
+ Authorized Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Wed, 24 Apr 2019 08:33:48 +0100
+Received: from d06av23.portsmouth.uk.ibm.com (d06av23.portsmouth.uk.ibm.com
+ [9.149.105.59])
+ by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x3O7XluQ58458312
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Wed, 24 Apr 2019 07:33:47 GMT
+Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 351E1A4053;
+ Wed, 24 Apr 2019 07:33:47 +0000 (GMT)
+Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id C72CFA4059;
+ Wed, 24 Apr 2019 07:33:44 +0000 (GMT)
+Received: from [9.145.184.124] (unknown [9.145.184.124])
+ by d06av23.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Wed, 24 Apr 2019 07:33:44 +0000 (GMT)
+Subject: Re: [PATCH v12 00/31] Speculative page faults
+To: Peter Zijlstra <peterz@infradead.org>,
+ Michel Lespinasse <walken@google.com>
+References: <20190416134522.17540-1-ldufour@linux.ibm.com>
+ <CANN689F1h9XoHPzr_FQY2WfN5bb2TTd6M3HLqoJ-DQuHkNbA7g@mail.gmail.com>
+ <20190423093851.GJ11158@hirez.programming.kicks-ass.net>
+From: Laurent Dufour <ldufour@linux.ibm.com>
+Date: Wed, 24 Apr 2019 09:33:44 +0200
+User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.14; rv:60.0)
+ Gecko/20100101 Thunderbird/60.6.1
 MIME-Version: 1.0
-In-Reply-To: <20190424063958.24559-2-ruscur@russell.cc>
+In-Reply-To: <20190423093851.GJ11158@hirez.programming.kicks-ass.net>
 Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: fr
+Content-Language: en-US
 Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+x-cbid: 19042407-0016-0000-0000-00000272C3E4
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 19042407-0017-0000-0000-000032CF3377
+Message-Id: <05df6720-7130-62fe-a71f-074b6fafff3e@linux.ibm.com>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
+ definitions=2019-04-24_05:, , signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1810050000 definitions=main-1904240065
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -90,210 +103,73 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Julia.Lawall@lip6.fr, rashmica.g@gmail.com
+Cc: Jan Kara <jack@suse.cz>, sergey.senozhatsky.work@gmail.com,
+ Will Deacon <will.deacon@arm.com>, Michal Hocko <mhocko@kernel.org>,
+ linux-mm <linux-mm@kvack.org>, Paul Mackerras <paulus@samba.org>,
+ Punit Agrawal <punitagrawal@gmail.com>, "H. Peter Anvin" <hpa@zytor.com>,
+ Mike Rapoport <rppt@linux.ibm.com>,
+ Alexei Starovoitov <alexei.starovoitov@gmail.com>,
+ Andrea Arcangeli <aarcange@redhat.com>, Andi Kleen <ak@linux.intel.com>,
+ Minchan Kim <minchan@kernel.org>, aneesh.kumar@linux.ibm.com, x86@kernel.org,
+ Matthew Wilcox <willy@infradead.org>,
+ Daniel Jordan <daniel.m.jordan@oracle.com>, Ingo Molnar <mingo@redhat.com>,
+ David Rientjes <rientjes@google.com>,
+ "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+ Haiyan Song <haiyanx.song@intel.com>, Nick Piggin <npiggin@gmail.com>,
+ sj38.park@gmail.com, Jerome Glisse <jglisse@redhat.com>, dave@stgolabs.net,
+ kemi.wang@intel.com, "Kirill A. Shutemov" <kirill@shutemov.name>,
+ Thomas Gleixner <tglx@linutronix.de>, zhong jiang <zhongjiang@huawei.com>,
+ Ganesh Mahendran <opensource.ganesh@gmail.com>,
+ Yang Shi <yang.shi@linux.alibaba.com>, linuxppc-dev@lists.ozlabs.org,
+ LKML <linux-kernel@vger.kernel.org>,
+ Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
+ vinayak menon <vinayakm.list@gmail.com>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Tim Chen <tim.c.chen@linux.intel.com>, haren@linux.vnet.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-
-
-Le 24/04/2019 à 08:39, Russell Currey a écrit :
-> Implement code to walk all pages and warn if any are found to be both
-> writable and executable.  Depends on STRICT_KERNEL_RWX enabled, and is
-> behind the DEBUG_WX config option.
+Le 23/04/2019 à 11:38, Peter Zijlstra a écrit :
+> On Mon, Apr 22, 2019 at 02:29:16PM -0700, Michel Lespinasse wrote:
+>> The proposed spf mechanism only handles anon vmas. Is there a
+>> fundamental reason why it couldn't handle mapped files too ?
+>> My understanding is that the mechanism of verifying the vma after
+>> taking back the ptl at the end of the fault would work there too ?
+>> The file has to stay referenced during the fault, but holding the vma's
+>> refcount could be made to cover that ? the vm_file refcount would have
+>> to be released in __free_vma() instead of remove_vma; I'm not quite sure
+>> if that has more implications than I realize ?
 > 
-> This only runs on boot and has no runtime performance implications.
+> IIRC (and I really don't remember all that much) the trickiest bit was
+> vs unmount. Since files can stay open past the 'expected' duration,
+> umount could be delayed.
 > 
-> Very heavily influenced (and in some cases copied verbatim) from the
-> ARM64 code written by Laura Abbott (thanks!), since our ptdump
-> infrastructure is similar.
-> 
-> Signed-off-by: Russell Currey <ruscur@russell.cc>
-> ---
->   arch/powerpc/Kconfig.debug         | 19 +++++++++++++++
->   arch/powerpc/include/asm/pgtable.h |  5 ++++
->   arch/powerpc/mm/pgtable_32.c       |  5 ++++
->   arch/powerpc/mm/pgtable_64.c       |  5 ++++
->   arch/powerpc/mm/ptdump/ptdump.c    | 38 ++++++++++++++++++++++++++++++
->   5 files changed, 72 insertions(+)
-> 
-> diff --git a/arch/powerpc/Kconfig.debug b/arch/powerpc/Kconfig.debug
-> index 4e00cb0a5464..a4160ff02ed4 100644
-> --- a/arch/powerpc/Kconfig.debug
-> +++ b/arch/powerpc/Kconfig.debug
-> @@ -361,6 +361,25 @@ config PPC_PTDUMP
->   
->   	  If you are unsure, say N.
->   
-> +config DEBUG_WX
+> But yes, I think I had a version that did all that just 'fine'. Like
+> mentioned, I didn't keep the refcount because it sucked just as hard as
+> the mmap_sem contention, but the SRCU callback did the fput() just fine
+> (esp. now that we have delayed_fput).
 
-I would call it PPC_DEBUG_WX to avoid confusion.
+I had to use a refcount for the VMA because I'm using RCU in place of 
+SRCU and only protecting the RB tree using RCU.
 
-> +	bool "Warn on W+X mappings at boot"
-> +	select PPC_PTDUMP
-> +	---help---
-> +	  Generate a warning if any W+X mappings are found at boot.
-> +
-> +	  This is useful for discovering cases where the kernel is leaving
-> +	  W+X mappings after applying NX, as such mappings are a security risk.
-> +
-> +	  Note that even if the check fails, your kernel is possibly
-> +	  still fine, as W+X mappings are not a security hole in
-> +	  themselves, what they do is that they make the exploitation
-> +	  of other unfixed kernel bugs easier.
-> +
-> +	  There is no runtime or memory usage effect of this option
-> +	  once the kernel has booted up - it's a one time check.
-> +
-> +	  If in doubt, say "Y".
-> +
->   config PPC_FAST_ENDIAN_SWITCH
->   	bool "Deprecated fast endian-switch syscall"
->           depends on DEBUG_KERNEL && PPC_BOOK3S_64
-> diff --git a/arch/powerpc/include/asm/pgtable.h b/arch/powerpc/include/asm/pgtable.h
-> index 505550fb2935..be785f221e56 100644
-> --- a/arch/powerpc/include/asm/pgtable.h
-> +++ b/arch/powerpc/include/asm/pgtable.h
-> @@ -104,6 +104,11 @@ void pgtable_cache_init(void);
->   
->   #if defined(CONFIG_STRICT_KERNEL_RWX) || defined(CONFIG_PPC32)
->   void mark_initmem_nx(void);
-> +
-> +#ifdef CONFIG_DEBUG_WX
+Regarding the file pointer, I decided to release it synchronously to 
+avoid the latency of RCU during the file closing. As you mentioned this 
+could delayed the umount but not only, as Linus Torvald demonstrated by 
+the past [1]. Anyway, since the file support is not yet here there is no 
+need for that currently.
 
-I don't think this #ifdef is necessary at all when there is no matching 
-#else. You could leave the declaration of the function all the time.
+Regarding the file mapping support, the concern is to ensure that 
+vm_ops->fault() will not try to release the mmap_sem. This is true for 
+most of the file system operation using the generic one, but there is 
+currently no clever way to identify that except by checking the 
+vm_ops->fault pointer. Adding a flag to the vm_operations_struct 
+structure is another option.
 
-> +extern void ptdump_check_wx(void);
+that's doable as far as the underlying fault() function is not dealing 
+with the mmap_sem, and I made a try by the past but was thinking that 
+first the anonymous case should be accepted before moving forward this way.
 
-'extern' keyword is superflous and checkpatch --strict will likely complain.
+[1] 
+https://lore.kernel.org/linux-mm/alpine.LFD.2.00.1001041904250.3630@localhost.localdomain/
 
-> +#endif /* CONFIG_DEBUG_WX */
-> +
->   #else
->   static inline void mark_initmem_nx(void) { }
->   #endif
-> diff --git a/arch/powerpc/mm/pgtable_32.c b/arch/powerpc/mm/pgtable_32.c
-> index 6e56a6240bfa..054a6174ff7f 100644
-> --- a/arch/powerpc/mm/pgtable_32.c
-> +++ b/arch/powerpc/mm/pgtable_32.c
-> @@ -384,6 +384,11 @@ void mark_rodata_ro(void)
->   		   PFN_DOWN((unsigned long)__start_rodata);
->   
->   	change_page_attr(page, numpages, PAGE_KERNEL_RO);
-> +
-> +#ifdef CONFIG_DEBUG_WX
-> +	// mark_initmem_nx() should have already run by now
-> +	ptdump_check_wx();
-
-Please avoid #ifdefs in .c files as much as possible.
-
-It would be better to define ptdump_check_wx() as static inline {} in 
-pgtable.h when CONFIG_DEBUG_WX is not selected.
-
-> +#endif
->   }
->   #endif
->   
-> diff --git a/arch/powerpc/mm/pgtable_64.c b/arch/powerpc/mm/pgtable_64.c
-> index fb1375c07e8c..48036b25a958 100644
-> --- a/arch/powerpc/mm/pgtable_64.c
-> +++ b/arch/powerpc/mm/pgtable_64.c
-> @@ -328,6 +328,11 @@ void mark_rodata_ro(void)
->   		radix__mark_rodata_ro();
->   	else
->   		hash__mark_rodata_ro();
-> +
-> +#ifdef CONFIG_DEBUG_WX
-> +	// mark_initmem_nx() should have already run by now
-> +	ptdump_check_wx();
-> +#endif
-
-Idem
-
->   }
->   
->   void mark_initmem_nx(void)
-> diff --git a/arch/powerpc/mm/ptdump/ptdump.c b/arch/powerpc/mm/ptdump/ptdump.c
-> index c50cb7faa334..b4b09df839bb 100644
-> --- a/arch/powerpc/mm/ptdump/ptdump.c
-> +++ b/arch/powerpc/mm/ptdump/ptdump.c
-> @@ -68,6 +68,8 @@ struct pg_state {
->   	unsigned long last_pa;
->   	unsigned int level;
->   	u64 current_flags;
-> +	bool check_wx;
-> +	unsigned long wx_pages;
->   };
->   
->   struct addr_marker {
-> @@ -177,6 +179,19 @@ static void dump_addr(struct pg_state *st, unsigned long addr)
->   
->   }
->   
-> +static void note_prot_wx(struct pg_state *st, unsigned long addr)
-> +{
-> +	if (!st->check_wx)
-> +		return;
-> +	if (!((st->current_flags & _PAGE_EXEC) && (st->current_flags & _PAGE_WRITE)))
-
-The above won't work in all cases. _PAGE_WRITE is only defined in 
-book3s64. Other arches have _PAGE_RW or _PAGE_RO.
-
-Please use the helpers defined in pgtable.h to check and not flags directly.
-
-
-> +		return;
-> +
-> +	WARN_ONCE(1, "powerpc/mm: Found insecure W+X mapping at address %p/%pS\n",
-> +		  (void *)st->start_address, (void *)st->start_address);
-> +
-> +	st->wx_pages += (addr - st->start_address) / PAGE_SIZE;
-> +}
-> +
->   static void note_page(struct pg_state *st, unsigned long addr,
->   	       unsigned int level, u64 val)
->   {
-> @@ -206,6 +221,7 @@ static void note_page(struct pg_state *st, unsigned long addr,
->   
->   		/* Check the PTE flags */
->   		if (st->current_flags) {
-> +			note_prot_wx(st, addr);
->   			dump_addr(st, addr);
->   
->   			/* Dump all the flags */
-> @@ -378,6 +394,28 @@ static void build_pgtable_complete_mask(void)
->   				pg_level[i].mask |= pg_level[i].flag[j].mask;
->   }
->   
-> +void ptdump_check_wx(void)
-> +{
-> +	struct pg_state st = {
-> +		.seq = NULL,
-> +		.marker = address_markers,
-> +		.check_wx = true,
-> +	};
-> +
-> +	if (radix_enabled())
-> +		st.start_address = PAGE_OFFSET;
-> +	else
-> +		st.start_address = KERN_VIRT_START;
-
-KERN_VIRT_START doesn't exist on PPC32.
-
-Christophe
-
-> +
-> +	walk_pagetables(&st);
-> +
-> +	if (st.wx_pages)
-> +		pr_warn("Checked W+X mappings: FAILED, %lu W+X pages found\n",
-> +			st.wx_pages);
-> +	else
-> +		pr_info("Checked W+X mappings: passed, no W+X pages found\n");
-> +}
-> +
->   static int ptdump_init(void)
->   {
->   	struct dentry *debugfs_file;
-> 
