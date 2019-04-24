@@ -2,148 +2,84 @@ Return-Path: <SRS0=+N6N=S2=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AE7BDC10F11
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Apr 2019 08:53:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A480EC282CE
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Apr 2019 10:18:23 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id EAAF9218DA
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Apr 2019 08:53:39 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EAAF9218DA
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=suse.com
+	by mail.kernel.org (Postfix) with ESMTPS id 9CC6C20878
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Apr 2019 10:18:22 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="hFj68C6D"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9CC6C20878
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44pvHP3CKNzDqT3
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Apr 2019 18:53:37 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44px975sKnzDqVY
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Apr 2019 20:18:19 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=suse.com
- (client-ip=195.135.221.5; helo=smtp.nue.novell.com;
- envelope-from=mbrugger@suse.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=c-s.fr
+ (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=suse.com
-X-Greylist: delayed 1210 seconds by postgrey-1.36 at bilbo;
- Wed, 24 Apr 2019 18:52:05 AEST
-Received: from smtp.nue.novell.com (smtp.nue.novell.com [195.135.221.5])
+ dmarc=none (p=none dis=none) header.from=c-s.fr
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="hFj68C6D"; 
+ dkim-atps=neutral
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44pvFd3Dk9zDqSn
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Apr 2019 18:52:05 +1000 (AEST)
-Received: from emea4-mta.ukb.novell.com ([10.120.13.87])
- by smtp.nue.novell.com with ESMTP (TLS encrypted);
- Wed, 24 Apr 2019 10:31:49 +0200
-Received: from ziggy.stardust (nwb-a10-snat.microfocus.com [10.120.13.201])
- by emea4-mta.ukb.novell.com with ESMTP (TLS encrypted);
- Wed, 24 Apr 2019 09:31:39 +0100
-Subject: Re: [PATCHv2] kernel/crash: make parse_crashkernel()'s return value
- more indicant
-To: Pingfan Liu <kernelfans@gmail.com>, linux-kernel@vger.kernel.org
-References: <1556087581-14513-1-git-send-email-kernelfans@gmail.com>
-From: Matthias Brugger <mbrugger@suse.com>
-Openpgp: preference=signencrypt
-Autocrypt: addr=mbrugger@suse.com; prefer-encrypt=mutual; keydata=
- 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
-Message-ID: <10dc5468-6cd9-85c7-ba66-1dfa5aa922b7@suse.com>
-Date: Wed, 24 Apr 2019 10:31:37 +0200
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44px795LbmzDqBd
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Apr 2019 20:16:35 +1000 (AEST)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 44px710sMHz9v11R;
+ Wed, 24 Apr 2019 12:16:29 +0200 (CEST)
+Authentication-Results: localhost; dkim=pass
+ reason="1024-bit key; insecure key"
+ header.d=c-s.fr header.i=@c-s.fr header.b=hFj68C6D; dkim-adsp=pass;
+ dkim-atps=neutral
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id PGnOMQZM3qzZ; Wed, 24 Apr 2019 12:16:29 +0200 (CEST)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 44px706tYPz9v11Q;
+ Wed, 24 Apr 2019 12:16:28 +0200 (CEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
+ t=1556100989; bh=kQLAoCBRlDg0GilAE3TzQ5Rhf0lUcm0sWlQA3dkfBzo=;
+ h=Subject:To:Cc:References:From:Date:In-Reply-To:From;
+ b=hFj68C6DsSeST1e6tPTekMXoDRFzmzs0n4AV41FfrfM1TO124NyRtWaDIOP7DtsJg
+ P9V5oXZdrW2Gw4kAj9lQ/Wx2JEYuFFKxRoC8YGQsib0AITULiMR94ZnvRX/AB8iFmn
+ FFyTEd8J7tWPLa93OdJLsSQwUrwikkqXK9H5nmvQ=
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 2B1398B902;
+ Wed, 24 Apr 2019 12:16:30 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id G7l9pO-S-6TI; Wed, 24 Apr 2019 12:16:30 +0200 (CEST)
+Received: from PO15451 (po15451.idsi0.si.c-s.fr [172.25.231.6])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id CD1688B8FB;
+ Wed, 24 Apr 2019 12:16:29 +0200 (CEST)
+Subject: Re: [PATCH v3 3/6] powerpc/mm: Add helpers for accessing hash
+ translation related variables
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>, npiggin@gmail.com,
+ paulus@samba.org, mpe@ellerman.id.au
+References: <20190417130351.3805-1-aneesh.kumar@linux.ibm.com>
+ <20190417130351.3805-4-aneesh.kumar@linux.ibm.com>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Message-ID: <134f1c76-e105-5289-1598-531adf4913bf@c-s.fr>
+Date: Wed, 24 Apr 2019 12:16:28 +0200
+User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:60.0) Gecko/20100101
  Thunderbird/60.6.1
 MIME-Version: 1.0
-In-Reply-To: <1556087581-14513-1-git-send-email-kernelfans@gmail.com>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
+In-Reply-To: <20190417130351.3805-4-aneesh.kumar@linux.ibm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: fr
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -156,287 +92,494 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Rich Felker <dalias@libc.org>, linux-ia64@vger.kernel.org,
- Julien Thierry <julien.thierry@arm.com>, Yangtao Li <tiny.windzz@gmail.com>,
- Palmer Dabbelt <palmer@sifive.com>, Heiko Carstens <heiko.carstens@de.ibm.com>,
- Stefan Agner <stefan@agner.ch>, Paul Mackerras <paulus@samba.org>,
- "H. Peter Anvin" <hpa@zytor.com>, Catalin Marinas <catalin.marinas@arm.com>,
- Thomas Gleixner <tglx@linutronix.de>, Logan Gunthorpe <logang@deltatee.com>,
- linux-s390@vger.kernel.org, Florian Fainelli <f.fainelli@gmail.com>,
- Yoshinori Sato <ysato@users.sourceforge.jp>, linux-sh@vger.kernel.org,
- x86@kernel.org, Russell King <linux@armlinux.org.uk>,
- Ingo Molnar <mingo@redhat.com>, Hari Bathini <hbathini@linux.ibm.com>,
- James Hogan <jhogan@kernel.org>, Dave Young <dyoung@redhat.com>,
- Fenghua Yu <fenghua.yu@intel.com>, Will Deacon <will.deacon@arm.com>,
- Johannes Weiner <hannes@cmpxchg.org>, Borislav Petkov <bp@alien8.de>,
- David Hildenbrand <david@redhat.com>, linux-arm-kernel@lists.infradead.org,
- Jens Axboe <axboe@kernel.dk>, Tony Luck <tony.luck@intel.com>,
- Baoquan He <bhe@redhat.com>, Ard Biesheuvel <ard.biesheuvel@linaro.org>,
- Robin Murphy <robin.murphy@arm.com>, linux-mips@vger.kernel.org,
- Ralf Baechle <ralf@linux-mips.org>,
- Thomas Bogendoerfer <tbogendoerfer@suse.de>,
- Paul Burton <paul.burton@mips.com>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>,
- Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
- Greg Hackmann <ghackmann@android.com>
+Cc: linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
 
 
-On 24/04/2019 08:33, Pingfan Liu wrote:
-> At present, both return and crash_size should be checked to guarantee the
-> success of parse_crashkernel().
+Le 17/04/2019 à 15:03, Aneesh Kumar K.V a écrit :
+> We want to switch to allocating them runtime only when hash translation is
+> enabled. Add helpers so that both book3s and nohash can be adapted to
+> upcoming change easily.
 > 
-> Take a close look at the cases, which causes crash_size=0. Beside syntax
-> error, three cases cause parsing to get crash_size=0.
-> -1st. in parse_crashkernel_mem(), the demanded crash size is bigger than
->  system ram.
-> -2nd. in parse_crashkernel_mem(), the system ram size does not match any
->  item in the range list.
-> -3rd. "crashkernel=0MB", which is impractical.
-> 
-> All these cases can be treated as invalid argument.
-> 
-> By this way, only need a simple check on return value of
-> parse_crashkernel().
-> 
-> Signed-off-by: Pingfan Liu <kernelfans@gmail.com>
-> Cc: Russell King <linux@armlinux.org.uk>
-> Cc: Catalin Marinas <catalin.marinas@arm.com>
-> Cc: Will Deacon <will.deacon@arm.com>
-> Cc: Tony Luck <tony.luck@intel.com>
-> Cc: Fenghua Yu <fenghua.yu@intel.com>
-> Cc: Ralf Baechle <ralf@linux-mips.org>
-> Cc: Paul Burton <paul.burton@mips.com>
-> Cc: James Hogan <jhogan@kernel.org>
-> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Cc: Paul Mackerras <paulus@samba.org>
-> Cc: Michael Ellerman <mpe@ellerman.id.au>
-> Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
-> Cc: Heiko Carstens <heiko.carstens@de.ibm.com>
-> Cc: Yoshinori Sato <ysato@users.sourceforge.jp>
-> Cc: Rich Felker <dalias@libc.org>
-> Cc: Thomas Gleixner <tglx@linutronix.de>
-> Cc: Ingo Molnar <mingo@redhat.com>
-> Cc: Borislav Petkov <bp@alien8.de>
-> Cc: "H. Peter Anvin" <hpa@zytor.com>
-> Cc: Andrew Morton <akpm@linux-foundation.org>
-> Cc: Julien Thierry <julien.thierry@arm.com>
-> Cc: Palmer Dabbelt <palmer@sifive.com>
-> Cc: Ard Biesheuvel <ard.biesheuvel@linaro.org>
-> Cc: Florian Fainelli <f.fainelli@gmail.com>
-> Cc: Logan Gunthorpe <logang@deltatee.com>
-> Cc: Robin Murphy <robin.murphy@arm.com>
-> Cc: Greg Hackmann <ghackmann@android.com>
-> Cc: Stefan Agner <stefan@agner.ch>
-> Cc: Johannes Weiner <hannes@cmpxchg.org>
-> Cc: David Hildenbrand <david@redhat.com>
-> Cc: Jens Axboe <axboe@kernel.dk>
-> Cc: Thomas Bogendoerfer <tbogendoerfer@suse.de>
-> Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-> Cc: Hari Bathini <hbathini@linux.ibm.com>
-> Cc: Ananth N Mavinakayanahalli <ananth@linux.vnet.ibm.com>
-> Cc: Yangtao Li <tiny.windzz@gmail.com>
-> Cc: Dave Young <dyoung@redhat.com>
-> Cc: Baoquan He <bhe@redhat.com>
-> Cc: x86@kernel.org
-> Cc: linux-arm-kernel@lists.infradead.org
-> Cc: linux-kernel@vger.kernel.org
-> Cc: linux-ia64@vger.kernel.org
-> Cc: linux-mips@vger.kernel.org
-> Cc: linuxppc-dev@lists.ozlabs.org
-> Cc: linux-s390@vger.kernel.org
-> Cc: linux-sh@vger.kernel.org
+> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
 > ---
-> v1 -> v2: On error, return -EINVAL for all failure cases
+>   arch/powerpc/include/asm/book3s/64/mmu-hash.h |  4 +-
+>   arch/powerpc/include/asm/book3s/64/mmu.h      | 63 ++++++++++++++++++-
+>   arch/powerpc/include/asm/nohash/32/mmu-8xx.h  | 50 +++++++++++++++
+>   arch/powerpc/kernel/paca.c                    | 12 ++--
+>   arch/powerpc/mm/hash_utils_64.c               | 10 +--
+>   arch/powerpc/mm/slb.c                         |  2 +-
+>   arch/powerpc/mm/slice.c                       | 49 +++++++--------
+>   arch/powerpc/mm/subpage-prot.c                |  8 +--
+>   8 files changed, 154 insertions(+), 44 deletions(-)
 > 
->  arch/arm/kernel/setup.c             |  2 +-
->  arch/arm64/mm/init.c                |  2 +-
->  arch/ia64/kernel/setup.c            |  2 +-
->  arch/mips/kernel/setup.c            |  2 +-
->  arch/powerpc/kernel/fadump.c        |  2 +-
->  arch/powerpc/kernel/machine_kexec.c |  2 +-
->  arch/s390/kernel/setup.c            |  2 +-
->  arch/sh/kernel/machine_kexec.c      |  2 +-
->  arch/x86/kernel/setup.c             |  4 ++--
->  kernel/crash_core.c                 | 10 +++++++++-
->  10 files changed, 19 insertions(+), 11 deletions(-)
-> 
-> diff --git a/arch/arm/kernel/setup.c b/arch/arm/kernel/setup.c
-> index 5d78b6a..2feab13 100644
-> --- a/arch/arm/kernel/setup.c
-> +++ b/arch/arm/kernel/setup.c
-> @@ -997,7 +997,7 @@ static void __init reserve_crashkernel(void)
->  	total_mem = get_total_mem();
->  	ret = parse_crashkernel(boot_command_line, total_mem,
->  				&crash_size, &crash_base);
-> -	if (ret)
-> +	if (ret < 0)
->  		return;
->  
->  	if (crash_base <= 0) {
-> diff --git a/arch/arm64/mm/init.c b/arch/arm64/mm/init.c
-> index 6bc1350..240918c 100644
-> --- a/arch/arm64/mm/init.c
-> +++ b/arch/arm64/mm/init.c
-> @@ -79,7 +79,7 @@ static void __init reserve_crashkernel(void)
->  	ret = parse_crashkernel(boot_command_line, memblock_phys_mem_size(),
->  				&crash_size, &crash_base);
->  	/* no crashkernel= or invalid value specified */
-> -	if (ret || !crash_size)
-> +	if (ret < 0)
->  		return;
->  
->  	crash_size = PAGE_ALIGN(crash_size);
-> diff --git a/arch/ia64/kernel/setup.c b/arch/ia64/kernel/setup.c
-> index 583a374..3bbb58b 100644
-> --- a/arch/ia64/kernel/setup.c
-> +++ b/arch/ia64/kernel/setup.c
-> @@ -277,7 +277,7 @@ static void __init setup_crashkernel(unsigned long total, int *n)
->  
->  	ret = parse_crashkernel(boot_command_line, total,
->  			&size, &base);
-> -	if (ret == 0 && size > 0) {
-> +	if (!ret) {
->  		if (!base) {
->  			sort_regions(rsvd_region, *n);
->  			*n = merge_regions(rsvd_region, *n);
-> diff --git a/arch/mips/kernel/setup.c b/arch/mips/kernel/setup.c
-> index 8d1dc6c..168571b 100644
-> --- a/arch/mips/kernel/setup.c
-> +++ b/arch/mips/kernel/setup.c
-> @@ -715,7 +715,7 @@ static void __init mips_parse_crashkernel(void)
->  	total_mem = get_total_mem();
->  	ret = parse_crashkernel(boot_command_line, total_mem,
->  				&crash_size, &crash_base);
-> -	if (ret != 0 || crash_size <= 0)
-> +	if (ret < 0)
->  		return;
->  
->  	if (!memory_region_available(crash_base, crash_size)) {
-> diff --git a/arch/powerpc/kernel/fadump.c b/arch/powerpc/kernel/fadump.c
-> index 45a8d0b..3571504 100644
-> --- a/arch/powerpc/kernel/fadump.c
-> +++ b/arch/powerpc/kernel/fadump.c
-> @@ -376,7 +376,7 @@ static inline unsigned long fadump_calculate_reserve_size(void)
->  	 */
->  	ret = parse_crashkernel(boot_command_line, memblock_phys_mem_size(),
->  				&size, &base);
-> -	if (ret == 0 && size > 0) {
-> +	if (!ret) {
->  		unsigned long max_size;
->  
->  		if (fw_dump.reserve_bootvar)
-> diff --git a/arch/powerpc/kernel/machine_kexec.c b/arch/powerpc/kernel/machine_kexec.c
-> index 63f5a93..1697ad2 100644
-> --- a/arch/powerpc/kernel/machine_kexec.c
-> +++ b/arch/powerpc/kernel/machine_kexec.c
-> @@ -122,7 +122,7 @@ void __init reserve_crashkernel(void)
->  	/* use common parsing */
->  	ret = parse_crashkernel(boot_command_line, memblock_phys_mem_size(),
->  			&crash_size, &crash_base);
-> -	if (ret == 0 && crash_size > 0) {
-> +	if (!ret) {
->  		crashk_res.start = crash_base;
->  		crashk_res.end = crash_base + crash_size - 1;
->  	}
-> diff --git a/arch/s390/kernel/setup.c b/arch/s390/kernel/setup.c
-> index 2c642af..d4bd61b 100644
-> --- a/arch/s390/kernel/setup.c
-> +++ b/arch/s390/kernel/setup.c
-> @@ -671,7 +671,7 @@ static void __init reserve_crashkernel(void)
->  
->  	crash_base = ALIGN(crash_base, KEXEC_CRASH_MEM_ALIGN);
->  	crash_size = ALIGN(crash_size, KEXEC_CRASH_MEM_ALIGN);
-> -	if (rc || crash_size == 0)
-> +	if (rc < 0)
->  		return;
->  
->  	if (memblock.memory.regions[0].size < crash_size) {
-> diff --git a/arch/sh/kernel/machine_kexec.c b/arch/sh/kernel/machine_kexec.c
-> index 63d63a3..3c03240 100644
-> --- a/arch/sh/kernel/machine_kexec.c
-> +++ b/arch/sh/kernel/machine_kexec.c
-> @@ -157,7 +157,7 @@ void __init reserve_crashkernel(void)
->  
->  	ret = parse_crashkernel(boot_command_line, memblock_phys_mem_size(),
->  			&crash_size, &crash_base);
-> -	if (ret == 0 && crash_size > 0) {
-> +	if (!ret) {
->  		crashk_res.start = crash_base;
->  		crashk_res.end = crash_base + crash_size - 1;
->  	}
-> diff --git a/arch/x86/kernel/setup.c b/arch/x86/kernel/setup.c
-> index 3d872a5..592d5ad 100644
-> --- a/arch/x86/kernel/setup.c
-> +++ b/arch/x86/kernel/setup.c
-> @@ -526,11 +526,11 @@ static void __init reserve_crashkernel(void)
->  
->  	/* crashkernel=XM */
->  	ret = parse_crashkernel(boot_command_line, total_mem, &crash_size, &crash_base);
-> -	if (ret != 0 || crash_size <= 0) {
-> +	if (ret < 0) {
->  		/* crashkernel=X,high */
->  		ret = parse_crashkernel_high(boot_command_line, total_mem,
->  					     &crash_size, &crash_base);
-> -		if (ret != 0 || crash_size <= 0)
-> +		if (ret < 0)
->  			return;
->  		high = true;
->  	}
-> diff --git a/kernel/crash_core.c b/kernel/crash_core.c
-> index 093c9f9..83ee4a9 100644
-> --- a/kernel/crash_core.c
-> +++ b/kernel/crash_core.c
-> @@ -108,8 +108,10 @@ static int __init parse_crashkernel_mem(char *cmdline,
->  				return -EINVAL;
->  			}
->  		}
-> -	} else
-> +	} else {
->  		pr_info("crashkernel size resulted in zero bytes\n");
-> +		return -EINVAL;
-> +	}
->  
->  	return 0;
->  }
-> @@ -139,6 +141,8 @@ static int __init parse_crashkernel_simple(char *cmdline,
->  		pr_warn("crashkernel: unrecognized char: %c\n", *cur);
->  		return -EINVAL;
->  	}
-> +	if (*crash_size == 0)
-> +		return -EINVAL;
+> diff --git a/arch/powerpc/include/asm/book3s/64/mmu-hash.h b/arch/powerpc/include/asm/book3s/64/mmu-hash.h
+> index a28a28079edb..eb36fbfe4ef5 100644
+> --- a/arch/powerpc/include/asm/book3s/64/mmu-hash.h
+> +++ b/arch/powerpc/include/asm/book3s/64/mmu-hash.h
+> @@ -657,8 +657,8 @@ extern void slb_set_size(u16 size);
+>   
+>   /* 4 bits per slice and we have one slice per 1TB */
+>   #define SLICE_ARRAY_SIZE	(H_PGTABLE_RANGE >> 41)
+> -#define TASK_SLICE_ARRAY_SZ(x)	((x)->context.slb_addr_limit >> 41)
+> -
+> +#define LOW_SLICE_ARRAY_SZ	(BITS_PER_LONG / BITS_PER_BYTE)
+> +#define TASK_SLICE_ARRAY_SZ(x)	((x)->slb_addr_limit >> 41)
+>   #ifndef __ASSEMBLY__
+>   
+>   #ifdef CONFIG_PPC_SUBPAGE_PROT
+> diff --git a/arch/powerpc/include/asm/book3s/64/mmu.h b/arch/powerpc/include/asm/book3s/64/mmu.h
+> index 484a8ff9b338..28213a36fef7 100644
+> --- a/arch/powerpc/include/asm/book3s/64/mmu.h
+> +++ b/arch/powerpc/include/asm/book3s/64/mmu.h
+> @@ -124,7 +124,7 @@ typedef struct {
+>   	struct npu_context *npu_context;
+>   
+>   	 /* SLB page size encodings*/
+> -	unsigned char low_slices_psize[BITS_PER_LONG / BITS_PER_BYTE];
+> +	unsigned char low_slices_psize[LOW_SLICE_ARRAY_SZ];
+>   	unsigned char high_slices_psize[SLICE_ARRAY_SIZE];
+>   	unsigned long slb_addr_limit;
+>   # ifdef CONFIG_PPC_64K_PAGES
+> @@ -159,6 +159,67 @@ typedef struct {
+>   #endif
+>   } mm_context_t;
+>   
+> +static inline u16 mm_ctx_user_psize(mm_context_t *ctx)
+> +{
+> +	return ctx->user_psize;
+> +}
+> +
+> +static inline void mm_ctx_set_user_psize(mm_context_t *ctx, u16 user_psize)
+> +{
+> +	ctx->user_psize = user_psize;
+> +}
+> +
+> +static inline unsigned char *mm_ctx_low_slices(mm_context_t *ctx)
+> +{
+> +	return ctx->low_slices_psize;
+> +}
+> +
+> +static inline unsigned char *mm_ctx_high_slices(mm_context_t *ctx)
+> +{
+> +	return ctx->high_slices_psize;
+> +}
+> +
+> +static inline unsigned long mm_ctx_slb_addr_limit(mm_context_t *ctx)
+> +{
+> +	return ctx->slb_addr_limit;
+> +}
+> +
+> +static inline void mm_ctx_set_slb_addr_limit(mm_context_t *ctx, unsigned long limit)
+> +{
+> +	ctx->slb_addr_limit = limit;
+> +}
+> +
+> +#ifdef CONFIG_PPC_64K_PAGES
+> +static inline struct slice_mask *mm_ctx_slice_mask_64k(mm_context_t *ctx)
+> +{
+> +	return &ctx->mask_64k;
+> +}
+> +#endif
+> +
+> +static inline struct slice_mask *mm_ctx_slice_mask_4k(mm_context_t *ctx)
+> +{
+> +	return &ctx->mask_4k;
+> +}
+> +
+> +#ifdef CONFIG_HUGETLB_PAGE
+> +static inline struct slice_mask *mm_ctx_slice_mask_16m(mm_context_t *ctx)
+> +{
+> +	return &ctx->mask_16m;
+> +}
+> +
+> +static inline struct slice_mask *mm_ctx_slice_mask_16g(mm_context_t *ctx)
+> +{
+> +	return &ctx->mask_16g;
+> +}
+> +#endif
 
-This covers the case where I pass an argument like "crashkernel=0M" ?
-Can't we fix that by using kstrtoull() in memparse and check if the return value
-is < 0? In that case we could return without updating the retptr and we will be
-fine.
+I think it would be better to move slice_mask_for_size() into mmu.h 
+instead of defining those helpers.
 
->  
->  	return 0;
->  }
-> @@ -181,6 +185,8 @@ static int __init parse_crashkernel_suffix(char *cmdline,
->  		pr_warn("crashkernel: unrecognized char: %c\n", *cur);
->  		return -EINVAL;
->  	}
-> +	if (*crash_size == 0)
-> +		return -EINVAL;
+> +
+> +#ifdef CONFIG_PPC_SUBPAGE_PROT
+> +static inline struct subpage_prot_table *mm_ctx_subpage_prot(mm_context_t *ctx)
+> +{
+> +	return &ctx->spt;
+> +}
+> +#endif
+> +
+>   /*
+>    * The current system page and segment sizes
+>    */
+> diff --git a/arch/powerpc/include/asm/nohash/32/mmu-8xx.h b/arch/powerpc/include/asm/nohash/32/mmu-8xx.h
+> index 0a1a3fc54e54..0f4b0b50e5ad 100644
+> --- a/arch/powerpc/include/asm/nohash/32/mmu-8xx.h
+> +++ b/arch/powerpc/include/asm/nohash/32/mmu-8xx.h
+> @@ -167,6 +167,7 @@
+>   #ifdef CONFIG_PPC_MM_SLICES
+>   #include <asm/nohash/32/slice.h>
+>   #define SLICE_ARRAY_SIZE	(1 << (32 - SLICE_LOW_SHIFT - 1))
+> +#define LOW_SLICE_ARRAY_SZ	SLICE_ARRAY_SIZE
+>   #endif
+>   
+>   #ifndef __ASSEMBLY__
+> @@ -193,6 +194,55 @@ typedef struct {
+>   	void *pte_frag;
+>   } mm_context_t;
+>   
+> +#ifdef CONFIG_PPC_MM_SLICES
+> +static inline u16 mm_ctx_user_psize(mm_context_t *ctx)
+> +{
+> +	return ctx->user_psize;
+> +}
+> +
+> +static inline void mm_ctx_set_user_psize(mm_context_t *ctx, u16 user_psize)
+> +{
+> +	ctx->user_psize = user_psize;
+> +}
+> +
+> +static inline unsigned char *mm_ctx_low_slices(mm_context_t *ctx)
+> +{
+> +	return ctx->low_slices_psize;
+> +}
+> +
+> +static inline unsigned char *mm_ctx_high_slices(mm_context_t *ctx)
+> +{
+> +	return ctx->high_slices_psize;
+> +}
+> +
+> +static inline unsigned long mm_ctx_slb_addr_limit(mm_context_t *ctx)
+> +{
+> +	return ctx->slb_addr_limit;
+> +}
+> +
+> +static inline void mm_ctx_set_slb_addr_limit(mm_context_t *ctx, unsigned long limit)
+> +{
+> +	ctx->slb_addr_limit = limit;
+> +}
+> +
+> +static inline struct slice_mask *mm_ctx_slice_mask_base(mm_context_t *ctx)
+> +{
+> +	return &ctx->mask_base_psize;
+> +}
+> +
+> +#ifdef CONFIG_HUGETLB_PAGE
+> +static inline struct slice_mask *mm_ctx_slice_mask_512k(mm_context_t *ctx)
+> +{
+> +	return &ctx->mask_512k;
+> +}
+> +
+> +static inline struct slice_mask *mm_ctx_slice_mask_8m(mm_context_t *ctx)
+> +{
+> +	return &ctx->mask_8m;
+> +}
+> +#endif
 
-Same here.
+The 3 helpers above are never used, I think we will never need them.
 
->  
->  	return 0;
->  }
-> @@ -266,6 +272,8 @@ static int __init __parse_crashkernel(char *cmdline,
->  /*
->   * That function is the entry point for command line parsing and should be
->   * called from the arch-specific code.
-> + * On success 0. On error for either syntax error or crash_size=0, -EINVAL is
-> + * returned.
->   */
->  int __init parse_crashkernel(char *cmdline,
->  			     unsigned long long system_ram,
+What would be good is to move slice_mask_for_size() here in mmu-8xx.h
+
+I'll rebase my series on top of yours since Michael has already merged it.
+
+Christophe
+
+> +#endif /* CONFIG_PPC_MM_SLICE */
+> +
+>   #define PHYS_IMMR_BASE (mfspr(SPRN_IMMR) & 0xfff80000)
+>   #define VIRT_IMMR_BASE (__fix_to_virt(FIX_IMMR_BASE))
+>   
+> diff --git a/arch/powerpc/kernel/paca.c b/arch/powerpc/kernel/paca.c
+> index e7382abee868..9cc91d03ab62 100644
+> --- a/arch/powerpc/kernel/paca.c
+> +++ b/arch/powerpc/kernel/paca.c
+> @@ -267,12 +267,12 @@ void copy_mm_to_paca(struct mm_struct *mm)
+>   
+>   	get_paca()->mm_ctx_id = context->id;
+>   #ifdef CONFIG_PPC_MM_SLICES
+> -	VM_BUG_ON(!mm->context.slb_addr_limit);
+> -	get_paca()->mm_ctx_slb_addr_limit = mm->context.slb_addr_limit;
+> -	memcpy(&get_paca()->mm_ctx_low_slices_psize,
+> -	       &context->low_slices_psize, sizeof(context->low_slices_psize));
+> -	memcpy(&get_paca()->mm_ctx_high_slices_psize,
+> -	       &context->high_slices_psize, TASK_SLICE_ARRAY_SZ(mm));
+> +	VM_BUG_ON(!mm_ctx_slb_addr_limit(context));
+> +	get_paca()->mm_ctx_slb_addr_limit = mm_ctx_slb_addr_limit(context);
+> +	memcpy(&get_paca()->mm_ctx_low_slices_psize, mm_ctx_low_slices(context),
+> +	       LOW_SLICE_ARRAY_SZ);
+> +	memcpy(&get_paca()->mm_ctx_high_slices_psize, mm_ctx_high_slices(context),
+> +	       TASK_SLICE_ARRAY_SZ(context));
+>   #else /* CONFIG_PPC_MM_SLICES */
+>   	get_paca()->mm_ctx_user_psize = context->user_psize;
+>   	get_paca()->mm_ctx_sllp = context->sllp;
+> diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
+> index 0a4f939a8161..5a2bd132f92e 100644
+> --- a/arch/powerpc/mm/hash_utils_64.c
+> +++ b/arch/powerpc/mm/hash_utils_64.c
+> @@ -1147,7 +1147,7 @@ void demote_segment_4k(struct mm_struct *mm, unsigned long addr)
+>    */
+>   static int subpage_protection(struct mm_struct *mm, unsigned long ea)
+>   {
+> -	struct subpage_prot_table *spt = &mm->context.spt;
+> +	struct subpage_prot_table *spt = mm_ctx_subpage_prot(&mm->context);
+>   	u32 spp = 0;
+>   	u32 **sbpm, *sbpp;
+>   
+> @@ -1470,7 +1470,7 @@ static bool should_hash_preload(struct mm_struct *mm, unsigned long ea)
+>   	int psize = get_slice_psize(mm, ea);
+>   
+>   	/* We only prefault standard pages for now */
+> -	if (unlikely(psize != mm->context.user_psize))
+> +	if (unlikely(psize != mm_ctx_user_psize(&mm->context)))
+>   		return false;
+>   
+>   	/*
+> @@ -1549,7 +1549,7 @@ void hash_preload(struct mm_struct *mm, unsigned long ea,
+>   
+>   	/* Hash it in */
+>   #ifdef CONFIG_PPC_64K_PAGES
+> -	if (mm->context.user_psize == MMU_PAGE_64K)
+> +	if (mm_ctx_user_psize(&mm->context) == MMU_PAGE_64K)
+>   		rc = __hash_page_64K(ea, access, vsid, ptep, trap,
+>   				     update_flags, ssize);
+>   	else
+> @@ -1562,8 +1562,8 @@ void hash_preload(struct mm_struct *mm, unsigned long ea,
+>   	 */
+>   	if (rc == -1)
+>   		hash_failure_debug(ea, access, vsid, trap, ssize,
+> -				   mm->context.user_psize,
+> -				   mm->context.user_psize,
+> +				   mm_ctx_user_psize(&mm->context),
+> +				   mm_ctx_user_psize(&mm->context),
+>   				   pte_val(*ptep));
+>   out_exit:
+>   	local_irq_restore(flags);
+> diff --git a/arch/powerpc/mm/slb.c b/arch/powerpc/mm/slb.c
+> index 5986df48359b..78c0c0a0e355 100644
+> --- a/arch/powerpc/mm/slb.c
+> +++ b/arch/powerpc/mm/slb.c
+> @@ -739,7 +739,7 @@ static long slb_allocate_user(struct mm_struct *mm, unsigned long ea)
+>   	 * consider this as bad access if we take a SLB miss
+>   	 * on an address above addr limit.
+>   	 */
+> -	if (ea >= mm->context.slb_addr_limit)
+> +	if (ea >= mm_ctx_slb_addr_limit(&mm->context))
+>   		return -EFAULT;
+>   
+>   	context = get_user_context(&mm->context, ea);
+> diff --git a/arch/powerpc/mm/slice.c b/arch/powerpc/mm/slice.c
+> index aec91dbcdc0b..35b278082391 100644
+> --- a/arch/powerpc/mm/slice.c
+> +++ b/arch/powerpc/mm/slice.c
+> @@ -101,7 +101,7 @@ static int slice_area_is_free(struct mm_struct *mm, unsigned long addr,
+>   {
+>   	struct vm_area_struct *vma;
+>   
+> -	if ((mm->context.slb_addr_limit - len) < addr)
+> +	if ((mm_ctx_slb_addr_limit(&mm->context) - len) < addr)
+>   		return 0;
+>   	vma = find_vma(mm, addr);
+>   	return (!vma || (addr + len) <= vm_start_gap(vma));
+> @@ -155,15 +155,15 @@ static struct slice_mask *slice_mask_for_size(struct mm_struct *mm, int psize)
+>   {
+>   #ifdef CONFIG_PPC_64K_PAGES
+>   	if (psize == MMU_PAGE_64K)
+> -		return &mm->context.mask_64k;
+> +		return mm_ctx_slice_mask_64k(&mm->context);
+>   #endif
+>   	if (psize == MMU_PAGE_4K)
+> -		return &mm->context.mask_4k;
+> +		return mm_ctx_slice_mask_4k(&mm->context);
+>   #ifdef CONFIG_HUGETLB_PAGE
+>   	if (psize == MMU_PAGE_16M)
+> -		return &mm->context.mask_16m;
+> +		return mm_ctx_slice_mask_16m(&mm->context);
+>   	if (psize == MMU_PAGE_16G)
+> -		return &mm->context.mask_16g;
+> +		return mm_ctx_slice_mask_16g(&mm->context);
+>   #endif
+>   	BUG();
+>   }
+> @@ -253,7 +253,7 @@ static void slice_convert(struct mm_struct *mm,
+>   	 */
+>   	spin_lock_irqsave(&slice_convert_lock, flags);
+>   
+> -	lpsizes = mm->context.low_slices_psize;
+> +	lpsizes = mm_ctx_low_slices(&mm->context);
+>   	for (i = 0; i < SLICE_NUM_LOW; i++) {
+>   		if (!(mask->low_slices & (1u << i)))
+>   			continue;
+> @@ -272,8 +272,8 @@ static void slice_convert(struct mm_struct *mm,
+>   				(((unsigned long)psize) << (mask_index * 4));
+>   	}
+>   
+> -	hpsizes = mm->context.high_slices_psize;
+> -	for (i = 0; i < GET_HIGH_SLICE_INDEX(mm->context.slb_addr_limit); i++) {
+> +	hpsizes = mm_ctx_high_slices(&mm->context);
+> +	for (i = 0; i < GET_HIGH_SLICE_INDEX(mm_ctx_slb_addr_limit(&mm->context)); i++) {
+>   		if (!test_bit(i, mask->high_slices))
+>   			continue;
+>   
+> @@ -292,8 +292,8 @@ static void slice_convert(struct mm_struct *mm,
+>   	}
+>   
+>   	slice_dbg(" lsps=%lx, hsps=%lx\n",
+> -		  (unsigned long)mm->context.low_slices_psize,
+> -		  (unsigned long)mm->context.high_slices_psize);
+> +		  (unsigned long)mm_ctx_low_slices(&mm->context),
+> +		  (unsigned long)mm_ctx_high_slices(&mm->context));
+>   
+>   	spin_unlock_irqrestore(&slice_convert_lock, flags);
+>   
+> @@ -393,7 +393,7 @@ static unsigned long slice_find_area_topdown(struct mm_struct *mm,
+>   	 * DEFAULT_MAP_WINDOW we should apply this.
+>   	 */
+>   	if (high_limit > DEFAULT_MAP_WINDOW)
+> -		addr += mm->context.slb_addr_limit - DEFAULT_MAP_WINDOW;
+> +		addr += mm_ctx_slb_addr_limit(&mm->context) - DEFAULT_MAP_WINDOW;
+>   
+>   	while (addr > min_addr) {
+>   		info.high_limit = addr;
+> @@ -505,20 +505,20 @@ unsigned long slice_get_unmapped_area(unsigned long addr, unsigned long len,
+>   			return -ENOMEM;
+>   	}
+>   
+> -	if (high_limit > mm->context.slb_addr_limit) {
+> +	if (high_limit > mm_ctx_slb_addr_limit(&mm->context)) {
+>   		/*
+>   		 * Increasing the slb_addr_limit does not require
+>   		 * slice mask cache to be recalculated because it should
+>   		 * be already initialised beyond the old address limit.
+>   		 */
+> -		mm->context.slb_addr_limit = high_limit;
+> +		mm_ctx_set_slb_addr_limit(&mm->context, high_limit);
+>   
+>   		on_each_cpu(slice_flush_segments, mm, 1);
+>   	}
+>   
+>   	/* Sanity checks */
+>   	BUG_ON(mm->task_size == 0);
+> -	BUG_ON(mm->context.slb_addr_limit == 0);
+> +	BUG_ON(mm_ctx_slb_addr_limit(&mm->context) == 0);
+>   	VM_BUG_ON(radix_enabled());
+>   
+>   	slice_dbg("slice_get_unmapped_area(mm=%p, psize=%d...\n", mm, psize);
+> @@ -696,7 +696,7 @@ unsigned long arch_get_unmapped_area(struct file *filp,
+>   				     unsigned long flags)
+>   {
+>   	return slice_get_unmapped_area(addr, len, flags,
+> -				       current->mm->context.user_psize, 0);
+> +				       mm_ctx_user_psize(&current->mm->context), 0);
+>   }
+>   
+>   unsigned long arch_get_unmapped_area_topdown(struct file *filp,
+> @@ -706,7 +706,7 @@ unsigned long arch_get_unmapped_area_topdown(struct file *filp,
+>   					     const unsigned long flags)
+>   {
+>   	return slice_get_unmapped_area(addr0, len, flags,
+> -				       current->mm->context.user_psize, 1);
+> +				       mm_ctx_user_psize(&current->mm->context), 1);
+>   }
+>   
+>   unsigned int get_slice_psize(struct mm_struct *mm, unsigned long addr)
+> @@ -717,10 +717,10 @@ unsigned int get_slice_psize(struct mm_struct *mm, unsigned long addr)
+>   	VM_BUG_ON(radix_enabled());
+>   
+>   	if (slice_addr_is_low(addr)) {
+> -		psizes = mm->context.low_slices_psize;
+> +		psizes = mm_ctx_low_slices(&mm->context);
+>   		index = GET_LOW_SLICE_INDEX(addr);
+>   	} else {
+> -		psizes = mm->context.high_slices_psize;
+> +		psizes = mm_ctx_high_slices(&mm->context);
+>   		index = GET_HIGH_SLICE_INDEX(addr);
+>   	}
+>   	mask_index = index & 0x1;
+> @@ -742,20 +742,19 @@ void slice_init_new_context_exec(struct mm_struct *mm)
+>   	 * duplicated.
+>   	 */
+>   #ifdef CONFIG_PPC64
+> -	mm->context.slb_addr_limit = DEFAULT_MAP_WINDOW_USER64;
+> +	mm_ctx_set_slb_addr_limit(&mm->context, DEFAULT_MAP_WINDOW_USER64);
+>   #else
+>   	mm->context.slb_addr_limit = DEFAULT_MAP_WINDOW;
+>   #endif
+> -
+> -	mm->context.user_psize = psize;
+> +	mm_ctx_set_user_psize(&mm->context, psize);
+>   
+>   	/*
+>   	 * Set all slice psizes to the default.
+>   	 */
+> -	lpsizes = mm->context.low_slices_psize;
+> +	lpsizes = mm_ctx_low_slices(&mm->context);
+>   	memset(lpsizes, (psize << 4) | psize, SLICE_NUM_LOW >> 1);
+>   
+> -	hpsizes = mm->context.high_slices_psize;
+> +	hpsizes = mm_ctx_high_slices(&mm->context);
+>   	memset(hpsizes, (psize << 4) | psize, SLICE_NUM_HIGH >> 1);
+>   
+>   	/*
+> @@ -777,7 +776,7 @@ void slice_setup_new_exec(void)
+>   	if (!is_32bit_task())
+>   		return;
+>   
+> -	mm->context.slb_addr_limit = DEFAULT_MAP_WINDOW;
+> +	mm_ctx_set_slb_addr_limit(&mm->context, DEFAULT_MAP_WINDOW);
+>   }
+>   #endif
+>   
+> @@ -816,7 +815,7 @@ int slice_is_hugepage_only_range(struct mm_struct *mm, unsigned long addr,
+>   			   unsigned long len)
+>   {
+>   	const struct slice_mask *maskp;
+> -	unsigned int psize = mm->context.user_psize;
+> +	unsigned int psize = mm_ctx_user_psize(&mm->context);
+>   
+>   	VM_BUG_ON(radix_enabled());
+>   
+> diff --git a/arch/powerpc/mm/subpage-prot.c b/arch/powerpc/mm/subpage-prot.c
+> index 5e4178790dee..c72252542210 100644
+> --- a/arch/powerpc/mm/subpage-prot.c
+> +++ b/arch/powerpc/mm/subpage-prot.c
+> @@ -25,7 +25,7 @@
+>    */
+>   void subpage_prot_free(struct mm_struct *mm)
+>   {
+> -	struct subpage_prot_table *spt = &mm->context.spt;
+> +	struct subpage_prot_table *spt = mm_ctx_subpage_prot(&mm->context);
+>   	unsigned long i, j, addr;
+>   	u32 **p;
+>   
+> @@ -52,7 +52,7 @@ void subpage_prot_free(struct mm_struct *mm)
+>   
+>   void subpage_prot_init_new_context(struct mm_struct *mm)
+>   {
+> -	struct subpage_prot_table *spt = &mm->context.spt;
+> +	struct subpage_prot_table *spt = mm_ctx_subpage_prot(&mm->context);
+>   
+>   	memset(spt, 0, sizeof(*spt));
+>   }
+> @@ -93,7 +93,7 @@ static void hpte_flush_range(struct mm_struct *mm, unsigned long addr,
+>   static void subpage_prot_clear(unsigned long addr, unsigned long len)
+>   {
+>   	struct mm_struct *mm = current->mm;
+> -	struct subpage_prot_table *spt = &mm->context.spt;
+> +	struct subpage_prot_table *spt = mm_ctx_subpage_prot(&mm->context);
+>   	u32 **spm, *spp;
+>   	unsigned long i;
+>   	size_t nw;
+> @@ -189,7 +189,7 @@ SYSCALL_DEFINE3(subpage_prot, unsigned long, addr,
+>   		unsigned long, len, u32 __user *, map)
+>   {
+>   	struct mm_struct *mm = current->mm;
+> -	struct subpage_prot_table *spt = &mm->context.spt;
+> +	struct subpage_prot_table *spt = mm_ctx_subpage_prot(&mm->context);
+>   	u32 **spm, *spp;
+>   	unsigned long i;
+>   	size_t nw;
 > 
