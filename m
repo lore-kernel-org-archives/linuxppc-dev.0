@@ -6,21 +6,21 @@ X-Spam-Status: No, score=-8.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
 	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CF7E7C282CE
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Apr 2019 14:39:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A8DB5C282CE
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Apr 2019 14:44:01 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 4FC7721903
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Apr 2019 14:39:27 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id B07EB218B0
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Apr 2019 14:44:00 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="VYIBq3GU"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4FC7721903
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="mEBl8tDK"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B07EB218B0
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44q2yP1hhczDqQs
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Apr 2019 00:39:25 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44q33f1w5tzDqQC
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Apr 2019 00:43:58 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=kernel.org
  (client-ip=198.145.29.99; helo=mail.kernel.org;
@@ -28,36 +28,36 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="VYIBq3GU"; 
+ unprotected) header.d=kernel.org header.i=@kernel.org header.b="mEBl8tDK"; 
  dkim-atps=neutral
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44q2tW43qjzDqPj
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Apr 2019 00:36:03 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44q30K30qGzDq9G
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Apr 2019 00:41:05 +1000 (AEST)
 Received: from sasha-vm.mshome.net (c-73-47-72-35.hsd1.nh.comcast.net
  [73.47.72.35])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id 90AF721902;
- Wed, 24 Apr 2019 14:35:58 +0000 (UTC)
+ by mail.kernel.org (Postfix) with ESMTPSA id 5CF7121904;
+ Wed, 24 Apr 2019 14:41:00 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1556116561;
- bh=otjoxQm7BFcGcORn54cq0kegkDdiEt5ib0Jw454B8ho=;
+ s=default; t=1556116863;
+ bh=P54PgaAy6zckb/pxFSGEP87Ma5lcKrxq3aFFshAojtE=;
  h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=VYIBq3GUn86wnPp9qfAOg3aiRLKJN4jdM9YwjDqXiWS2P7lXJ1vSER58icbnJgdok
- GlQTTeYXlIWoF6TuLZ+igXuslgF8p5utwfaGS4wA/qPBmGpAVl6+U2zet/3/rr9Vd8
- 4zmga4peHSlb1FR0+86vZ2lpbVQ4oCVJTc3LI7Mo=
+ b=mEBl8tDKcmSJkrh0PTy7wR9R392zj3xkez/Bdoggss0CFzX4vVZg7dS12Tn8A53Nl
+ Ke+pAcScZvSK0NNitq0FMB/vQdtw/+LxMq+sXHUQCmse2nzv8UsFe5QlHizp+6my+s
+ /y0dpg8hZrgzs9bx1+rtJuzM7HwrCNfSe70aEUok=
 From: Sasha Levin <sashal@kernel.org>
 To: linux-kernel@vger.kernel.org,
 	stable@vger.kernel.org
-Subject: [PATCH AUTOSEL 5.0 53/66] kmemleak: powerpc: skip scanning holes in
+Subject: [PATCH AUTOSEL 4.19 44/52] kmemleak: powerpc: skip scanning holes in
  the .bss section
-Date: Wed, 24 Apr 2019 10:33:27 -0400
-Message-Id: <20190424143341.27665-53-sashal@kernel.org>
+Date: Wed, 24 Apr 2019 10:39:02 -0400
+Message-Id: <20190424143911.28890-44-sashal@kernel.org>
 X-Mailer: git-send-email 2.19.1
-In-Reply-To: <20190424143341.27665-1-sashal@kernel.org>
-References: <20190424143341.27665-1-sashal@kernel.org>
+In-Reply-To: <20190424143911.28890-1-sashal@kernel.org>
+References: <20190424143911.28890-1-sashal@kernel.org>
 MIME-Version: 1.0
 X-stable: review
 X-Patchwork-Hint: Ignore
@@ -118,7 +118,7 @@ Cc: Paolo Bonzini <pbonzini@redhat.com>
 Cc: Radim Krcmar <rkrcmar@redhat.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
-Signed-off-by: Sasha Levin (Microsoft) <sashal@kernel.org>
+Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
  arch/powerpc/kernel/kvm.c |  7 +++++++
  mm/kmemleak.c             | 16 +++++++++++-----
@@ -150,10 +150,10 @@ index 683b5b3805bd..cd381e2291df 100644
  			   &kvm_tmp[ARRAY_SIZE(kvm_tmp)], -1, NULL);
  }
 diff --git a/mm/kmemleak.c b/mm/kmemleak.c
-index 707fa5579f66..6c318f5ac234 100644
+index 17dd883198ae..5912a26e041c 100644
 --- a/mm/kmemleak.c
 +++ b/mm/kmemleak.c
-@@ -1529,11 +1529,6 @@ static void kmemleak_scan(void)
+@@ -1501,11 +1501,6 @@ static void kmemleak_scan(void)
  	}
  	rcu_read_unlock();
  
@@ -165,7 +165,7 @@ index 707fa5579f66..6c318f5ac234 100644
  #ifdef CONFIG_SMP
  	/* per-cpu sections scanning */
  	for_each_possible_cpu(i)
-@@ -2071,6 +2066,17 @@ void __init kmemleak_init(void)
+@@ -2036,6 +2031,17 @@ void __init kmemleak_init(void)
  	}
  	local_irq_restore(flags);
  
