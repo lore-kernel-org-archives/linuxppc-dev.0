@@ -2,80 +2,92 @@ Return-Path: <SRS0=+N6N=S2=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.6 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+X-Spam-Status: No, score=-8.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+	SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 46644C10F11
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Apr 2019 06:35:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E6FDAC10F11
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Apr 2019 06:42:05 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 616CC218D3
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Apr 2019 06:35:13 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 5E20A218D3
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Apr 2019 06:42:05 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Ezl0obkM"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 616CC218D3
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=russell.cc header.i=@russell.cc header.b="ltablZQM";
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b="knPBS9Z5"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5E20A218D3
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=russell.cc
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44prCg1xl4zDqTl
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Apr 2019 16:35:11 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44prMb0DMYzDqWJ
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Apr 2019 16:42:03 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=2607:f8b0:4864:20::441; helo=mail-pf1-x441.google.com;
- envelope-from=kernelfans@gmail.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=russell.cc
+ (client-ip=64.147.123.24; helo=wout1-smtp.messagingengine.com;
+ envelope-from=ruscur@russell.cc; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
+ dmarc=none (p=none dis=none) header.from=russell.cc
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="Ezl0obkM"; 
- dkim-atps=neutral
-Received: from mail-pf1-x441.google.com (mail-pf1-x441.google.com
- [IPv6:2607:f8b0:4864:20::441])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ unprotected) header.d=russell.cc header.i=@russell.cc header.b="ltablZQM"; 
+ dkim=pass (2048-bit key;
+ unprotected) header.d=messagingengine.com header.i=@messagingengine.com
+ header.b="knPBS9Z5"; dkim-atps=neutral
+Received: from wout1-smtp.messagingengine.com (wout1-smtp.messagingengine.com
+ [64.147.123.24])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44pr9n6w4YzDqNf
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Apr 2019 16:33:33 +1000 (AEST)
-Received: by mail-pf1-x441.google.com with SMTP id y13so8751152pfm.11
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Apr 2019 23:33:33 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=from:to:cc:subject:date:message-id;
- bh=rRlxu7N8hh5xmQuGaWtAPwwzwkjSE7ZjtdBUkUzkFjg=;
- b=Ezl0obkMUXLsojuUPwA01naDDy0yKrnepNBLd4lPd2ogj9s6xLk3A2TjDLuz2fenG7
- ic1ncquBHMQISfz0siFBdqAup/62d5eoVdl/a8pyn1Nnkj78+P4mjteyTe0Oy7bvYqH6
- oYBEpBiwZHmMP8q/Y0OJ0bm0LYCN7/Wz5zJwZf8X6m/na4fWB2ed/Dos/tObiXWj5Qeu
- WmrqQlNUzxaEOUpos42bqrOoLI/LeFQSUCiO80alacHQfFejy/JMechtkfzMhThVPQBj
- cNNNPLp9A8YO2srFP15cERNQmHcL6QHsgJESTIyo3er5LezRZxTzcoexgDOG+j6n8+0j
- xmPA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:from:to:cc:subject:date:message-id;
- bh=rRlxu7N8hh5xmQuGaWtAPwwzwkjSE7ZjtdBUkUzkFjg=;
- b=Ci00voAWhgTk/pYU8pU2RS/4cx+og+kB0HWfp5z5OpeIgX3T0PYfjxK5mpeUnyLgkj
- li16mm3phsAdS5gCS1QY+7eJU3OIYk8R/pd/D1ddx6zLhRs9lPufr/8T5whVqlT74efx
- 30WqqK//qRXqHTWIXtTDSAII2jE8XyW0zhZIDy8axmq3vSAQvVgs+SjGmxWGM1Hlh7pT
- QKlSSIjouIdfrqnIoF5AXWrnaK5eidMfkTos4ee8bvZbuZXafsyYodfuwneIhl97Tur1
- qJkl+stxZEKPqr+AgFWVTVyfOeOWg0+vxOuodoZ+K54HmEKH/0BEB5Q6Inygx4uU0omt
- WNAw==
-X-Gm-Message-State: APjAAAXf80IcpMBQtfMUjDgFkjVunrVOi/w+6eOLtaVXnONvLzIwDsC1
- IJw+gmmAwFoR8EubhsufvQ==
-X-Google-Smtp-Source: APXvYqzQlHbnH5HCXIk8ZMzLqSw4EkgMnJ1gk/Twyi27YfBVratB8NIesvJpC7AnOuBzfoxS8N/8Sw==
-X-Received: by 2002:a63:1702:: with SMTP id x2mr28734847pgl.448.1556087610281; 
- Tue, 23 Apr 2019 23:33:30 -0700 (PDT)
-Received: from mylaptop.nay.redhat.com ([209.132.188.80])
- by smtp.gmail.com with ESMTPSA id i15sm24448356pfr.8.2019.04.23.23.33.18
- (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
- Tue, 23 Apr 2019 23:33:29 -0700 (PDT)
-From: Pingfan Liu <kernelfans@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCHv2] kernel/crash: make parse_crashkernel()'s return value more
- indicant
-Date: Wed, 24 Apr 2019 14:33:01 +0800
-Message-Id: <1556087581-14513-1-git-send-email-kernelfans@gmail.com>
-X-Mailer: git-send-email 2.7.4
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44prKk6PdDzDqT5
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Apr 2019 16:40:26 +1000 (AEST)
+Received: from compute6.internal (compute6.nyi.internal [10.202.2.46])
+ by mailout.west.internal (Postfix) with ESMTP id 6DFB147A;
+ Wed, 24 Apr 2019 02:40:23 -0400 (EDT)
+Received: from mailfrontend2 ([10.202.2.163])
+ by compute6.internal (MEProxy); Wed, 24 Apr 2019 02:40:23 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=russell.cc; h=
+ from:to:cc:subject:date:message-id:mime-version
+ :content-transfer-encoding; s=fm1; bh=DR9pC3dPwL/mF1FX602vl7rD2o
+ fYOALoTyhygc4EkWE=; b=ltablZQM16QrLcqsHuwX8EJN9RIvoPERKCMJzrkO02
+ rl3O6lKw7VAv4cvpH7twUlL++2GpG3fo4NZRaA4tMySG5pA2dzd1VOi/cNhZvYZl
+ LLj+l/4c08XxwbAq3+w8iuNg7Ah9nzyqnphXUASDbBCjAvW+3bwckcNnFfc06Hi/
+ QRM5oYj1XklxB/ixKMy2r2LIFsuw9WQEXTrCZBQAfUgzxlWRrAei5XHqLI8nniiN
+ gxHhEmObocXs/Mmnku+SNw9fH5WvNz0XCkVufyg9TkS3og+o4dVSVjzNwTjOJg8x
+ 3Yic3d3n7SWrLYNvOUL81HCpHpWoxcM3pv649iawlwKA==
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
+ messagingengine.com; h=cc:content-transfer-encoding:date:from
+ :message-id:mime-version:subject:to:x-me-proxy:x-me-proxy
+ :x-me-sender:x-me-sender:x-sasl-enc; s=fm2; bh=DR9pC3dPwL/mF1FX6
+ 02vl7rD2ofYOALoTyhygc4EkWE=; b=knPBS9Z54+TH9NaACmI+XvH0nx2xVJ/Cx
+ fJmNyNyiDZQccUe/8VkkuybJ9QvOD9tXni50F7irACJjPA2p36qn2zVNesVVvXSH
+ xuIkf4RFiXPovT3RGC8umja3aDOO+kXvFCBJxegzLaJH22+bNDbxEdml2etMPjka
+ v3boJ5TaOgWPW5RVbQy5ggWRIguuDIHd/LKbW+mZiXcmumM+9trshOAARdXFEQlW
+ gvhfi+56I9kIuv2E6QTBMHGU/b74BIshBHch+VQpOEmEeFdP/NLMyPjdPUFjXOc4
+ JIPQ8/D4iiooPteylUM3fkMqM3sgcRRt30wYVuGnf60pBVwipAuQw==
+X-ME-Sender: <xms:1QTAXLVLuaqOOJBOaziL6CK8issNau6Ns4XpUpCI8j1y0bDUrw3Tmw>
+X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgeduuddrgeelgddutdelucetufdoteggodetrfdotf
+ fvucfrrhhofhhilhgvmecuhfgrshhtofgrihhlpdfqfgfvpdfurfetoffkrfgpnffqhgen
+ uceurghilhhouhhtmecufedttdenucgfrhhlucfvnfffucdlfedtmdenucfjughrpefhvf
+ fufffkofgggfestdekredtredttdenucfhrhhomheptfhushhsvghllhcuvehurhhrvgih
+ uceorhhushgtuhhrsehruhhsshgvlhhlrdgttgeqnecukfhppeduvddvrdelledrkedvrd
+ dutdenucfrrghrrghmpehmrghilhhfrhhomheprhhushgtuhhrsehruhhsshgvlhhlrdgt
+ tgenucevlhhushhtvghrufhiiigvpedt
+X-ME-Proxy: <xmx:1QTAXLl5Oc1X7TpbEyXPlUz7fDlsX6MFUjBRpKfD4CAAr1jd_Y0dvQ>
+ <xmx:1QTAXIDfHdtRp8mkEy3bIvvy8ozw3azzN5-o9Bo-NvUjxGA3Y1eKYw>
+ <xmx:1QTAXF5ccsnKoa09ZX-rePkEr4jGY-2KgnXutfCKgn0BXf7oZcgzOg>
+ <xmx:1wTAXKm6nHTVmjb80ZNO-YPztf20hPzCER0JdTWFwx6kobvErYREiw>
+Received: from crackle.ozlabs.ibm.com (unknown [122.99.82.10])
+ by mail.messagingengine.com (Postfix) with ESMTPA id 33B8B103D1;
+ Wed, 24 Apr 2019 02:40:18 -0400 (EDT)
+From: Russell Currey <ruscur@russell.cc>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH 1/2] powerpc/mm/ptdump: Wrap seq_printf() to handle NULL
+ pointers
+Date: Wed, 24 Apr 2019 16:39:57 +1000
+Message-Id: <20190424063958.24559-1-ruscur@russell.cc>
+X-Mailer: git-send-email 2.21.0
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -87,277 +99,122 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Rich Felker <dalias@libc.org>, linux-ia64@vger.kernel.org,
- Julien Thierry <julien.thierry@arm.com>, Yangtao Li <tiny.windzz@gmail.com>,
- Palmer Dabbelt <palmer@sifive.com>, Heiko Carstens <heiko.carstens@de.ibm.com>,
- x86@kernel.org, Pingfan Liu <kernelfans@gmail.com>, linux-mips@vger.kernel.org,
- Paul Mackerras <paulus@samba.org>, "H. Peter Anvin" <hpa@zytor.com>,
- linux-s390@vger.kernel.org, Florian Fainelli <f.fainelli@gmail.com>,
- Yoshinori Sato <ysato@users.sourceforge.jp>, linux-sh@vger.kernel.org,
- David Hildenbrand <david@redhat.com>, Russell King <linux@armlinux.org.uk>,
- Ingo Molnar <mingo@redhat.com>, linux-arm-kernel@lists.infradead.org,
- Catalin Marinas <catalin.marinas@arm.com>, James Hogan <jhogan@kernel.org>,
- Dave Young <dyoung@redhat.com>, Fenghua Yu <fenghua.yu@intel.com>,
- Will Deacon <will.deacon@arm.com>, linuxppc-dev@lists.ozlabs.org,
- Borislav Petkov <bp@alien8.de>, Stefan Agner <stefan@agner.ch>,
- Thomas Gleixner <tglx@linutronix.de>, Hari Bathini <hbathini@linux.ibm.com>,
- Jens Axboe <axboe@kernel.dk>, Tony Luck <tony.luck@intel.com>,
- Baoquan He <bhe@redhat.com>, Ard Biesheuvel <ard.biesheuvel@linaro.org>,
- Robin Murphy <robin.murphy@arm.com>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Ralf Baechle <ralf@linux-mips.org>,
- Thomas Bogendoerfer <tbogendoerfer@suse.de>,
- Paul Burton <paul.burton@mips.com>, Johannes Weiner <hannes@cmpxchg.org>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>,
- Andrew Morton <akpm@linux-foundation.org>,
- Logan Gunthorpe <logang@deltatee.com>, Greg Hackmann <ghackmann@android.com>
+Cc: Julia.Lawall@lip6.fr, rashmica.g@gmail.com,
+ Russell Currey <ruscur@russell.cc>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-At present, both return and crash_size should be checked to guarantee the
-success of parse_crashkernel().
+Lovingly borrowed from the arch/arm64 ptdump code.
 
-Take a close look at the cases, which causes crash_size=0. Beside syntax
-error, three cases cause parsing to get crash_size=0.
--1st. in parse_crashkernel_mem(), the demanded crash size is bigger than
- system ram.
--2nd. in parse_crashkernel_mem(), the system ram size does not match any
- item in the range list.
--3rd. "crashkernel=0MB", which is impractical.
+This doesn't seem to be an issue in practice, but is necessary for my
+upcoming commit.
 
-All these cases can be treated as invalid argument.
+Converts a putc() into a puts().
 
-By this way, only need a simple check on return value of
-parse_crashkernel().
-
-Signed-off-by: Pingfan Liu <kernelfans@gmail.com>
-Cc: Russell King <linux@armlinux.org.uk>
-Cc: Catalin Marinas <catalin.marinas@arm.com>
-Cc: Will Deacon <will.deacon@arm.com>
-Cc: Tony Luck <tony.luck@intel.com>
-Cc: Fenghua Yu <fenghua.yu@intel.com>
-Cc: Ralf Baechle <ralf@linux-mips.org>
-Cc: Paul Burton <paul.burton@mips.com>
-Cc: James Hogan <jhogan@kernel.org>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Cc: Heiko Carstens <heiko.carstens@de.ibm.com>
-Cc: Yoshinori Sato <ysato@users.sourceforge.jp>
-Cc: Rich Felker <dalias@libc.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Ingo Molnar <mingo@redhat.com>
-Cc: Borislav Petkov <bp@alien8.de>
-Cc: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Cc: Julien Thierry <julien.thierry@arm.com>
-Cc: Palmer Dabbelt <palmer@sifive.com>
-Cc: Ard Biesheuvel <ard.biesheuvel@linaro.org>
-Cc: Florian Fainelli <f.fainelli@gmail.com>
-Cc: Logan Gunthorpe <logang@deltatee.com>
-Cc: Robin Murphy <robin.murphy@arm.com>
-Cc: Greg Hackmann <ghackmann@android.com>
-Cc: Stefan Agner <stefan@agner.ch>
-Cc: Johannes Weiner <hannes@cmpxchg.org>
-Cc: David Hildenbrand <david@redhat.com>
-Cc: Jens Axboe <axboe@kernel.dk>
-Cc: Thomas Bogendoerfer <tbogendoerfer@suse.de>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: Hari Bathini <hbathini@linux.ibm.com>
-Cc: Ananth N Mavinakayanahalli <ananth@linux.vnet.ibm.com>
-Cc: Yangtao Li <tiny.windzz@gmail.com>
-Cc: Dave Young <dyoung@redhat.com>
-Cc: Baoquan He <bhe@redhat.com>
-Cc: x86@kernel.org
-Cc: linux-arm-kernel@lists.infradead.org
-Cc: linux-kernel@vger.kernel.org
-Cc: linux-ia64@vger.kernel.org
-Cc: linux-mips@vger.kernel.org
-Cc: linuxppc-dev@lists.ozlabs.org
-Cc: linux-s390@vger.kernel.org
-Cc: linux-sh@vger.kernel.org
+Signed-off-by: Russell Currey <ruscur@russell.cc>
 ---
-v1 -> v2: On error, return -EINVAL for all failure cases
+ arch/powerpc/mm/ptdump/ptdump.c | 32 ++++++++++++++++++++++----------
+ 1 file changed, 22 insertions(+), 10 deletions(-)
 
- arch/arm/kernel/setup.c             |  2 +-
- arch/arm64/mm/init.c                |  2 +-
- arch/ia64/kernel/setup.c            |  2 +-
- arch/mips/kernel/setup.c            |  2 +-
- arch/powerpc/kernel/fadump.c        |  2 +-
- arch/powerpc/kernel/machine_kexec.c |  2 +-
- arch/s390/kernel/setup.c            |  2 +-
- arch/sh/kernel/machine_kexec.c      |  2 +-
- arch/x86/kernel/setup.c             |  4 ++--
- kernel/crash_core.c                 | 10 +++++++++-
- 10 files changed, 19 insertions(+), 11 deletions(-)
-
-diff --git a/arch/arm/kernel/setup.c b/arch/arm/kernel/setup.c
-index 5d78b6a..2feab13 100644
---- a/arch/arm/kernel/setup.c
-+++ b/arch/arm/kernel/setup.c
-@@ -997,7 +997,7 @@ static void __init reserve_crashkernel(void)
- 	total_mem = get_total_mem();
- 	ret = parse_crashkernel(boot_command_line, total_mem,
- 				&crash_size, &crash_base);
--	if (ret)
-+	if (ret < 0)
- 		return;
+diff --git a/arch/powerpc/mm/ptdump/ptdump.c b/arch/powerpc/mm/ptdump/ptdump.c
+index 37138428ab55..c50cb7faa334 100644
+--- a/arch/powerpc/mm/ptdump/ptdump.c
++++ b/arch/powerpc/mm/ptdump/ptdump.c
+@@ -104,6 +104,18 @@ static struct addr_marker address_markers[] = {
+ 	{ -1,	NULL },
+ };
  
- 	if (crash_base <= 0) {
-diff --git a/arch/arm64/mm/init.c b/arch/arm64/mm/init.c
-index 6bc1350..240918c 100644
---- a/arch/arm64/mm/init.c
-+++ b/arch/arm64/mm/init.c
-@@ -79,7 +79,7 @@ static void __init reserve_crashkernel(void)
- 	ret = parse_crashkernel(boot_command_line, memblock_phys_mem_size(),
- 				&crash_size, &crash_base);
- 	/* no crashkernel= or invalid value specified */
--	if (ret || !crash_size)
-+	if (ret < 0)
- 		return;
- 
- 	crash_size = PAGE_ALIGN(crash_size);
-diff --git a/arch/ia64/kernel/setup.c b/arch/ia64/kernel/setup.c
-index 583a374..3bbb58b 100644
---- a/arch/ia64/kernel/setup.c
-+++ b/arch/ia64/kernel/setup.c
-@@ -277,7 +277,7 @@ static void __init setup_crashkernel(unsigned long total, int *n)
- 
- 	ret = parse_crashkernel(boot_command_line, total,
- 			&size, &base);
--	if (ret == 0 && size > 0) {
-+	if (!ret) {
- 		if (!base) {
- 			sort_regions(rsvd_region, *n);
- 			*n = merge_regions(rsvd_region, *n);
-diff --git a/arch/mips/kernel/setup.c b/arch/mips/kernel/setup.c
-index 8d1dc6c..168571b 100644
---- a/arch/mips/kernel/setup.c
-+++ b/arch/mips/kernel/setup.c
-@@ -715,7 +715,7 @@ static void __init mips_parse_crashkernel(void)
- 	total_mem = get_total_mem();
- 	ret = parse_crashkernel(boot_command_line, total_mem,
- 				&crash_size, &crash_base);
--	if (ret != 0 || crash_size <= 0)
-+	if (ret < 0)
- 		return;
- 
- 	if (!memory_region_available(crash_base, crash_size)) {
-diff --git a/arch/powerpc/kernel/fadump.c b/arch/powerpc/kernel/fadump.c
-index 45a8d0b..3571504 100644
---- a/arch/powerpc/kernel/fadump.c
-+++ b/arch/powerpc/kernel/fadump.c
-@@ -376,7 +376,7 @@ static inline unsigned long fadump_calculate_reserve_size(void)
- 	 */
- 	ret = parse_crashkernel(boot_command_line, memblock_phys_mem_size(),
- 				&size, &base);
--	if (ret == 0 && size > 0) {
-+	if (!ret) {
- 		unsigned long max_size;
- 
- 		if (fw_dump.reserve_bootvar)
-diff --git a/arch/powerpc/kernel/machine_kexec.c b/arch/powerpc/kernel/machine_kexec.c
-index 63f5a93..1697ad2 100644
---- a/arch/powerpc/kernel/machine_kexec.c
-+++ b/arch/powerpc/kernel/machine_kexec.c
-@@ -122,7 +122,7 @@ void __init reserve_crashkernel(void)
- 	/* use common parsing */
- 	ret = parse_crashkernel(boot_command_line, memblock_phys_mem_size(),
- 			&crash_size, &crash_base);
--	if (ret == 0 && crash_size > 0) {
-+	if (!ret) {
- 		crashk_res.start = crash_base;
- 		crashk_res.end = crash_base + crash_size - 1;
- 	}
-diff --git a/arch/s390/kernel/setup.c b/arch/s390/kernel/setup.c
-index 2c642af..d4bd61b 100644
---- a/arch/s390/kernel/setup.c
-+++ b/arch/s390/kernel/setup.c
-@@ -671,7 +671,7 @@ static void __init reserve_crashkernel(void)
- 
- 	crash_base = ALIGN(crash_base, KEXEC_CRASH_MEM_ALIGN);
- 	crash_size = ALIGN(crash_size, KEXEC_CRASH_MEM_ALIGN);
--	if (rc || crash_size == 0)
-+	if (rc < 0)
- 		return;
- 
- 	if (memblock.memory.regions[0].size < crash_size) {
-diff --git a/arch/sh/kernel/machine_kexec.c b/arch/sh/kernel/machine_kexec.c
-index 63d63a3..3c03240 100644
---- a/arch/sh/kernel/machine_kexec.c
-+++ b/arch/sh/kernel/machine_kexec.c
-@@ -157,7 +157,7 @@ void __init reserve_crashkernel(void)
- 
- 	ret = parse_crashkernel(boot_command_line, memblock_phys_mem_size(),
- 			&crash_size, &crash_base);
--	if (ret == 0 && crash_size > 0) {
-+	if (!ret) {
- 		crashk_res.start = crash_base;
- 		crashk_res.end = crash_base + crash_size - 1;
- 	}
-diff --git a/arch/x86/kernel/setup.c b/arch/x86/kernel/setup.c
-index 3d872a5..592d5ad 100644
---- a/arch/x86/kernel/setup.c
-+++ b/arch/x86/kernel/setup.c
-@@ -526,11 +526,11 @@ static void __init reserve_crashkernel(void)
- 
- 	/* crashkernel=XM */
- 	ret = parse_crashkernel(boot_command_line, total_mem, &crash_size, &crash_base);
--	if (ret != 0 || crash_size <= 0) {
-+	if (ret < 0) {
- 		/* crashkernel=X,high */
- 		ret = parse_crashkernel_high(boot_command_line, total_mem,
- 					     &crash_size, &crash_base);
--		if (ret != 0 || crash_size <= 0)
-+		if (ret < 0)
- 			return;
- 		high = true;
- 	}
-diff --git a/kernel/crash_core.c b/kernel/crash_core.c
-index 093c9f9..83ee4a9 100644
---- a/kernel/crash_core.c
-+++ b/kernel/crash_core.c
-@@ -108,8 +108,10 @@ static int __init parse_crashkernel_mem(char *cmdline,
- 				return -EINVAL;
- 			}
++#define pt_dump_seq_printf(m, fmt, args...)	\
++({						\
++	if (m)					\
++		seq_printf(m, fmt, ##args);	\
++})
++
++#define pt_dump_seq_puts(m, fmt)	\
++({					\
++	if (m)				\
++		seq_printf(m, fmt);	\
++})
++
+ static void dump_flag_info(struct pg_state *st, const struct flag_info
+ 		*flag, u64 pte, int num)
+ {
+@@ -121,19 +133,19 @@ static void dump_flag_info(struct pg_state *st, const struct flag_info
+ 			val = pte & flag->val;
+ 			if (flag->shift)
+ 				val = val >> flag->shift;
+-			seq_printf(st->seq, "  %s:%llx", flag->set, val);
++			pt_dump_seq_printf(st->seq, "  %s:%llx", flag->set, val);
+ 		} else {
+ 			if ((pte & flag->mask) == flag->val)
+ 				s = flag->set;
+ 			else
+ 				s = flag->clear;
+ 			if (s)
+-				seq_printf(st->seq, "  %s", s);
++				pt_dump_seq_printf(st->seq, "  %s", s);
  		}
--	} else
-+	} else {
- 		pr_info("crashkernel size resulted in zero bytes\n");
-+		return -EINVAL;
-+	}
- 
- 	return 0;
- }
-@@ -139,6 +141,8 @@ static int __init parse_crashkernel_simple(char *cmdline,
- 		pr_warn("crashkernel: unrecognized char: %c\n", *cur);
- 		return -EINVAL;
+ 		st->current_flags &= ~flag->mask;
  	}
-+	if (*crash_size == 0)
-+		return -EINVAL;
- 
- 	return 0;
+ 	if (st->current_flags != 0)
+-		seq_printf(st->seq, "  unknown flags:%llx", st->current_flags);
++		pt_dump_seq_printf(st->seq, "  unknown flags:%llx", st->current_flags);
  }
-@@ -181,6 +185,8 @@ static int __init parse_crashkernel_suffix(char *cmdline,
- 		pr_warn("crashkernel: unrecognized char: %c\n", *cur);
- 		return -EINVAL;
+ 
+ static void dump_addr(struct pg_state *st, unsigned long addr)
+@@ -148,12 +160,12 @@ static void dump_addr(struct pg_state *st, unsigned long addr)
+ #define REG		"0x%08lx"
+ #endif
+ 
+-	seq_printf(st->seq, REG "-" REG " ", st->start_address, addr - 1);
++	pt_dump_seq_printf(st->seq, REG "-" REG " ", st->start_address, addr - 1);
+ 	if (st->start_pa == st->last_pa && st->start_address + PAGE_SIZE != addr) {
+-		seq_printf(st->seq, "[" REG "]", st->start_pa);
++		pt_dump_seq_printf(st->seq, "[" REG "]", st->start_pa);
+ 		delta = PAGE_SIZE >> 10;
+ 	} else {
+-		seq_printf(st->seq, " " REG " ", st->start_pa);
++		pt_dump_seq_printf(st->seq, " " REG " ", st->start_pa);
+ 		delta = (addr - st->start_address) >> 10;
  	}
-+	if (*crash_size == 0)
-+		return -EINVAL;
+ 	/* Work out what appropriate unit to use */
+@@ -161,7 +173,7 @@ static void dump_addr(struct pg_state *st, unsigned long addr)
+ 		delta >>= 10;
+ 		unit++;
+ 	}
+-	seq_printf(st->seq, "%9lu%c", delta, *unit);
++	pt_dump_seq_printf(st->seq, "%9lu%c", delta, *unit);
  
- 	return 0;
  }
-@@ -266,6 +272,8 @@ static int __init __parse_crashkernel(char *cmdline,
- /*
-  * That function is the entry point for command line parsing and should be
-  * called from the arch-specific code.
-+ * On success 0. On error for either syntax error or crash_size=0, -EINVAL is
-+ * returned.
-  */
- int __init parse_crashkernel(char *cmdline,
- 			     unsigned long long system_ram,
+ 
+@@ -178,7 +190,7 @@ static void note_page(struct pg_state *st, unsigned long addr,
+ 		st->start_address = addr;
+ 		st->start_pa = pa;
+ 		st->last_pa = pa;
+-		seq_printf(st->seq, "---[ %s ]---\n", st->marker->name);
++		pt_dump_seq_printf(st->seq, "---[ %s ]---\n", st->marker->name);
+ 	/*
+ 	 * Dump the section of virtual memory when:
+ 	 *   - the PTE flags from one entry to the next differs.
+@@ -202,7 +214,7 @@ static void note_page(struct pg_state *st, unsigned long addr,
+ 					  st->current_flags,
+ 					  pg_level[st->level].num);
+ 
+-			seq_putc(st->seq, '\n');
++			pt_dump_seq_puts(st->seq, "\n");
+ 		}
+ 
+ 		/*
+@@ -211,7 +223,7 @@ static void note_page(struct pg_state *st, unsigned long addr,
+ 		 */
+ 		while (addr >= st->marker[1].start_address) {
+ 			st->marker++;
+-			seq_printf(st->seq, "---[ %s ]---\n", st->marker->name);
++			pt_dump_seq_printf(st->seq, "---[ %s ]---\n", st->marker->name);
+ 		}
+ 		st->start_address = addr;
+ 		st->start_pa = pa;
 -- 
-2.7.4
+2.21.0
 
