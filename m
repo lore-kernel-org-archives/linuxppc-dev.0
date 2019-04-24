@@ -2,96 +2,68 @@ Return-Path: <SRS0=+N6N=S2=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DABC5C10F11
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Apr 2019 15:16:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1A597C10F11
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Apr 2019 15:18:23 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 25898218D3
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Apr 2019 15:16:33 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 25898218D3
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 89966218FD
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Apr 2019 15:18:22 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="ifE9egBV"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 89966218FD
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44q3nC16V6zDqSZ
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Apr 2019 01:16:31 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44q3qJ4jCgzDqTb
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Apr 2019 01:18:20 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
- (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=ldufour@linux.ibm.com; receiver=<UNKNOWN>)
+ spf=permerror (mailfrom) smtp.mailfrom=kernel.org
+ (client-ip=2001:8b0:10b:1236::1; helo=casper.infradead.org;
+ envelope-from=mchehab+samsung@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+ dmarc=fail (p=none dis=none) header.from=kernel.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=infradead.org header.i=@infradead.org
+ header.b="ifE9egBV"; dkim-atps=neutral
+Received: from casper.infradead.org (casper.infradead.org
+ [IPv6:2001:8b0:10b:1236::1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44q3N21TfyzDqGY
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Apr 2019 00:58:10 +1000 (AEST)
-Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x3OEsTHu123349
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Apr 2019 10:58:08 -0400
-Received: from e06smtp04.uk.ibm.com (e06smtp04.uk.ibm.com [195.75.94.100])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2s2s1puy3y-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Apr 2019 10:58:07 -0400
-Received: from localhost
- by e06smtp04.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <ldufour@linux.ibm.com>;
- Wed, 24 Apr 2019 15:58:04 +0100
-Received: from b06cxnps3075.portsmouth.uk.ibm.com (9.149.109.195)
- by e06smtp04.uk.ibm.com (192.168.101.134) with IBM ESMTP SMTP Gateway:
- Authorized Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Wed, 24 Apr 2019 15:57:55 +0100
-Received: from d06av26.portsmouth.uk.ibm.com (d06av26.portsmouth.uk.ibm.com
- [9.149.105.62])
- by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x3OEvrA663176882
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Wed, 24 Apr 2019 14:57:53 GMT
-Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 6642AAE04D;
- Wed, 24 Apr 2019 14:57:53 +0000 (GMT)
-Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 93EFBAE051;
- Wed, 24 Apr 2019 14:57:50 +0000 (GMT)
-Received: from [9.145.176.48] (unknown [9.145.176.48])
- by d06av26.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Wed, 24 Apr 2019 14:57:50 +0000 (GMT)
-Subject: Re: [PATCH v12 23/31] mm: don't do swap readahead during speculative
- page fault
-To: Jerome Glisse <jglisse@redhat.com>
-References: <20190416134522.17540-1-ldufour@linux.ibm.com>
- <20190416134522.17540-24-ldufour@linux.ibm.com>
- <20190422213611.GN14666@redhat.com>
-From: Laurent Dufour <ldufour@linux.ibm.com>
-Date: Wed, 24 Apr 2019 16:57:50 +0200
-User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.14; rv:60.0)
- Gecko/20100101 Thunderbird/60.6.1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44q3Vn1vXfzDqSH
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Apr 2019 01:04:01 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+ d=infradead.org; s=casper.20170209; h=Content-Transfer-Encoding:Content-Type:
+ MIME-Version:References:In-Reply-To:Message-ID:Subject:Cc:To:From:Date:Sender
+ :Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
+ Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:List-Help:
+ List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
+ bh=jSu9ny5eryGAPEhyPkjGFXlRuxhppqvvRvIzVbMknhY=; b=ifE9egBVhU+e9aqmk3M8nPTP6t
+ JWiIL2BOfDdWP2w4WH/oqB9he+nfAYQqmexFE5UxTsFSSSl9effMr48OF5PAKuTdA+abOe/cujoZs
+ +2EeNAhGIz60DAvRI3fQft77KdMxpHFrK6laY8HrzNK9Re6CsPVYpsPDqhBzdEip+U+a8hzZ+Bm6r
+ eL46kfpx5rG4SmiRyUDzE6hbzI4ABjkrwU18K4lUIF1dt8EcshOD3u/aa6UB07uHI0v9B3LIxSmgD
+ U+94wyMYhJ6wP5MORtopKIAglp12BKsCUvXoB/WB8WMizPb/8SlFg/OShp2nyaQcmHgioVLBf2Hlt
+ uGll19Yg==;
+Received: from 177.17.136.231.dynamic.adsl.gvt.net.br ([177.17.136.231]
+ helo=coco.lan)
+ by casper.infradead.org with esmtpsa (Exim 4.90_1 #2 (Red Hat Linux))
+ id 1hJJR7-0001WG-8O; Wed, 24 Apr 2019 15:03:49 +0000
+Date: Wed, 24 Apr 2019 12:03:43 -0300
+From: Mauro Carvalho Chehab <mchehab+samsung@kernel.org>
+To: Changbin Du <changbin.du@gmail.com>
+Subject: Re: [PATCH v4 25/63] Documentation: add Linux PCI to Sphinx TOC tree
+Message-ID: <20190424120336.4f66cbb8@coco.lan>
+In-Reply-To: <20190423162932.21428-26-changbin.du@gmail.com>
+References: <20190423162932.21428-1-changbin.du@gmail.com>
+ <20190423162932.21428-26-changbin.du@gmail.com>
+X-Mailer: Claws Mail 3.17.3 (GTK+ 2.24.32; x86_64-redhat-linux-gnu)
 MIME-Version: 1.0
-In-Reply-To: <20190422213611.GN14666@redhat.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: en-US
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-x-cbid: 19042414-0016-0000-0000-000002732720
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19042414-0017-0000-0000-000032CF99CC
-Message-Id: <42ba3103-cbac-199f-e6f1-0fbc12aaccc8@linux.ibm.com>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2019-04-24_09:, , signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1810050000 definitions=main-1904240116
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -103,86 +75,89 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: jack@suse.cz, sergey.senozhatsky.work@gmail.com, peterz@infradead.org,
- Will Deacon <will.deacon@arm.com>, mhocko@kernel.org, linux-mm@kvack.org,
- paulus@samba.org, Punit Agrawal <punitagrawal@gmail.com>, hpa@zytor.com,
- Michel Lespinasse <walken@google.com>,
- Alexei Starovoitov <alexei.starovoitov@gmail.com>,
- Andrea Arcangeli <aarcange@redhat.com>, ak@linux.intel.com,
- Minchan Kim <minchan@kernel.org>, aneesh.kumar@linux.ibm.com, x86@kernel.org,
- Matthew Wilcox <willy@infradead.org>,
- Daniel Jordan <daniel.m.jordan@oracle.com>, Ingo Molnar <mingo@redhat.com>,
- David Rientjes <rientjes@google.com>, paulmck@linux.vnet.ibm.com,
- Haiyan Song <haiyanx.song@intel.com>, npiggin@gmail.com, sj38.park@gmail.com,
- dave@stgolabs.net, kemi.wang@intel.com, kirill@shutemov.name,
- Thomas Gleixner <tglx@linutronix.de>, zhong jiang <zhongjiang@huawei.com>,
- Ganesh Mahendran <opensource.ganesh@gmail.com>,
- Yang Shi <yang.shi@linux.alibaba.com>, Mike Rapoport <rppt@linux.ibm.com>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
- Vinayak Menon <vinmenon@codeaurora.org>,
- vinayak menon <vinayakm.list@gmail.com>, akpm@linux-foundation.org,
- Tim Chen <tim.c.chen@linux.intel.com>, haren@linux.vnet.ibm.com
+Cc: fenghua.yu@intel.com, x86@kernel.org, linux-doc@vger.kernel.org,
+ linux-pci@vger.kernel.org, linux-gpio@vger.kernel.org,
+ Jonathan Corbet <corbet@lwn.net>, rjw@rjwysocki.net,
+ linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, mingo@redhat.com,
+ Bjorn Helgaas <bhelgaas@google.com>, tglx@linutronix.de,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Le 22/04/2019 à 23:36, Jerome Glisse a écrit :
-> On Tue, Apr 16, 2019 at 03:45:14PM +0200, Laurent Dufour wrote:
->> Vinayak Menon faced a panic because one thread was page faulting a page in
->> swap, while another one was mprotecting a part of the VMA leading to a VMA
->> split.
->> This raise a panic in swap_vma_readahead() because the VMA's boundaries
->> were not more matching the faulting address.
->>
->> To avoid this, if the page is not found in the swap, the speculative page
->> fault is aborted to retry a regular page fault.
->>
->> Reported-by: Vinayak Menon <vinmenon@codeaurora.org>
->> Signed-off-by: Laurent Dufour <ldufour@linux.ibm.com>
-> 
-> Reviewed-by: Jérôme Glisse <jglisse@redhat.com>
-> 
-> Note that you should also skip non swap entry in do_swap_page() when doing
-> speculative page fault at very least you need to is_device_private_entry()
-> case.
-> 
-> But this should either be part of patch 22 or another patch to fix swap
-> case.
+Em Wed, 24 Apr 2019 00:28:54 +0800
+Changbin Du <changbin.du@gmail.com> escreveu:
 
-Thanks Jérôme,
-
-Yes I missed that, I guess the best option would be to abort on non swap 
-entry. I'll add that in the patch 22.
-
->> ---
->>   mm/memory.c | 11 +++++++++++
->>   1 file changed, 11 insertions(+)
->>
->> diff --git a/mm/memory.c b/mm/memory.c
->> index 6e6bf61c0e5c..1991da97e2db 100644
->> --- a/mm/memory.c
->> +++ b/mm/memory.c
->> @@ -2900,6 +2900,17 @@ vm_fault_t do_swap_page(struct vm_fault *vmf)
->>   				lru_cache_add_anon(page);
->>   				swap_readpage(page, true);
->>   			}
->> +		} else if (vmf->flags & FAULT_FLAG_SPECULATIVE) {
->> +			/*
->> +			 * Don't try readahead during a speculative page fault
->> +			 * as the VMA's boundaries may change in our back.
->> +			 * If the page is not in the swap cache and synchronous
->> +			 * read is disabled, fall back to the regular page
->> +			 * fault mechanism.
->> +			 */
->> +			delayacct_clear_flag(DELAYACCT_PF_SWAPIN);
->> +			ret = VM_FAULT_RETRY;
->> +			goto out;
->>   		} else {
->>   			page = swapin_readahead(entry, GFP_HIGHUSER_MOVABLE,
->>   						vmf);
->> -- 
->> 2.21.0
->>
+> Add a index.rst for PCI subsystem. More docs will be added later.
 > 
+> Signed-off-by: Changbin Du <changbin.du@gmail.com>
+> Acked-by: Bjorn Helgaas <bhelgaas@google.com>
+> ---
+>  Documentation/PCI/index.rst | 9 +++++++++
 
+On a past discussion at docs ML, we've agreed to use lowercase for new
+stuff. My suggestion here would be to use lowercase for "pci".
+
+Also, there's already a pci directory under driver-api, added on this
+commit:
+
+	commit fcc78f9c22474d60c65d522e50ea07006ec1b9fc
+	Author: Logan Gunthorpe <logang@deltatee.com>
+	Date:   Thu Oct 4 15:27:39 2018 -0600
+
+	    docs-rst: Add a new directory for PCI documentation
+
+I would just add a new section at Documentation/driver-api/pci/index.rst
+with something like:
+
+	Legacy PCI documentation
+	========================
+
+	.. note::
+
+	   The files here were written a long time ago and need some serious
+	   work. Use their contents with caution.
+
+	.. toctree::
+	    :maxdepth: 1
+
+	    <files converted from Documentation/PCI>
+
+And add those documents from Documentation/PCI into it.
+
+>  Documentation/index.rst     | 1 +
+>  2 files changed, 10 insertions(+)
+>  create mode 100644 Documentation/PCI/index.rst
+> 
+> diff --git a/Documentation/PCI/index.rst b/Documentation/PCI/index.rst
+> new file mode 100644
+> index 000000000000..c2f8728d11cf
+> --- /dev/null
+> +++ b/Documentation/PCI/index.rst
+> @@ -0,0 +1,9 @@
+> +.. SPDX-License-Identifier: GPL-2.0
+> +
+> +=======================
+> +Linux PCI Bus Subsystem
+> +=======================
+> +
+> +.. toctree::
+> +   :maxdepth: 2
+> +   :numbered:
+> diff --git a/Documentation/index.rst b/Documentation/index.rst
+> index fdfa85c56a50..d80138284e0f 100644
+> --- a/Documentation/index.rst
+> +++ b/Documentation/index.rst
+> @@ -100,6 +100,7 @@ needed).
+>     filesystems/index
+>     vm/index
+>     bpf/index
+> +   PCI/index
+>     misc-devices/index
+>  
+>  Architecture-specific documentation
+
+
+
+Thanks,
+Mauro
