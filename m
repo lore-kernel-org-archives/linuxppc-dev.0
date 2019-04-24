@@ -2,82 +2,57 @@ Return-Path: <SRS0=+N6N=S2=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_PASS
+X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_PASS
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 833B7C10F11
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Apr 2019 19:00:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5CED6C10F11
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Apr 2019 19:03:12 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id F239820835
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Apr 2019 19:00:17 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=intel-com.20150623.gappssmtp.com header.i=@intel-com.20150623.gappssmtp.com header.b="jydYgmEc"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org F239820835
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=intel.com
+	by mail.kernel.org (Postfix) with ESMTPS id DA237206BA
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Apr 2019 19:03:11 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DA237206BA
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linutronix.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44q8lM6HbwzDqT9
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Apr 2019 05:00:15 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44q8pj6VH4zDqTG
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Apr 2019 05:03:09 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=intel.com
- (client-ip=2607:f8b0:4864:20::244; helo=mail-oi1-x244.google.com;
- envelope-from=dan.j.williams@intel.com; receiver=<UNKNOWN>)
+ spf=none (mailfrom) smtp.mailfrom=linutronix.de
+ (client-ip=2a01:7a0:2:106d:700::1; helo=galois.linutronix.de;
+ envelope-from=tglx@linutronix.de; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=intel.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=intel-com.20150623.gappssmtp.com
- header.i=@intel-com.20150623.gappssmtp.com header.b="jydYgmEc"; 
- dkim-atps=neutral
-Received: from mail-oi1-x244.google.com (mail-oi1-x244.google.com
- [IPv6:2607:f8b0:4864:20::244])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ dmarc=none (p=none dis=none) header.from=linutronix.de
+Received: from Galois.linutronix.de (Galois.linutronix.de
+ [IPv6:2a01:7a0:2:106d:700::1])
+ (using TLSv1.2 with cipher DHE-RSA-AES256-SHA256 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44q7k43437zDqGJ
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Apr 2019 04:14:02 +1000 (AEST)
-Received: by mail-oi1-x244.google.com with SMTP id k6so1346453oic.4
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Apr 2019 11:14:02 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=intel-com.20150623.gappssmtp.com; s=20150623;
- h=mime-version:references:in-reply-to:from:date:message-id:subject:to
- :cc; bh=BhVsIoAU0KmMQwQooFIbVLABg6RqRAt0bXCVdPk8wQg=;
- b=jydYgmEcLg5IMUxEQPjYpc4DgbIaXE24fhOcITjx0qkXUHk//riuR0/LhemjcKcSWP
- RP4GtyjPGwp9EuPB5qNyFUVayVB4P9BiMkogYrUvmsoydY+ojeDF/VVh/Q/DKJOBflVi
- T31b0QzpIuB4I+iapiWeXld/gFrM22Nl9lTAPBwohGpDQz2Jly6tCAfI0ncKMwrK36VQ
- 9bE8rrq4w/wPkzhIaBkY3t08nM3VlvUDYfP2BcAGGPuuBLy6nGWigDas69mhU3FzJbjg
- 0KFRWfoDP7SOk6RkLZJppbZYEdvO2izZTiRoZEGJ2ADyq3lPGpHdXTbEvR74ESSr8DIX
- dBVg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:mime-version:references:in-reply-to:from:date
- :message-id:subject:to:cc;
- bh=BhVsIoAU0KmMQwQooFIbVLABg6RqRAt0bXCVdPk8wQg=;
- b=EvgRBA0cuXB7byrrz9mfU+w6VilGpsNR1beAGEvdPet2elnqnyq4nZreTMqn6FsXN8
- 92h6ERFPuS9n1Qje7Pw2+VSSsXxxIiy4osOem0aICccr/8H1LLPW7HBISWNUxrCx2fhb
- wU6soyRTuhDhHCxehnprRqy+V+QV9o3uz41egifsCbV781b25vICo+i0JIrh5mVKiS3E
- nZbTmfhmnkcHKaUGmqFUTslu5Asi8Qp9PmzFWVT/FXxJ6vroEZ4vdLXizFtx1LVs6tPS
- d6LtUwYk0gVwo+96IzlYXysB0f6BLWL9FEbQRGzO7/Uym0Ydrq1myHGH4gHPIMug+XWI
- w/Pw==
-X-Gm-Message-State: APjAAAVAcA9blAAif+qVcqbMhmdszWlKX33y5ehXaYQwYXZGei2MUkVs
- RPLggOf8oG6sNvqVfjkyDOqI35hwddKMzR3r1Tkg+Q==
-X-Google-Smtp-Source: APXvYqwN3H2piW0geeJm1fy7MdumeKyfzQXRx8tCi9JDjwMK7cOgh+Mt7+7fybL28IH9qG0F0B+c8mreTuoq/TY1uPQ=
-X-Received: by 2002:aca:de57:: with SMTP id v84mr272169oig.149.1556129638917; 
- Wed, 24 Apr 2019 11:13:58 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44q7rl2r5tzDqRM
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Apr 2019 04:19:51 +1000 (AEST)
+Received: from p5de0b374.dip0.t-ipconnect.de ([93.224.179.116] helo=nanos)
+ by Galois.linutronix.de with esmtpsa (TLS1.2:DHE_RSA_AES_256_CBC_SHA256:256)
+ (Exim 4.80) (envelope-from <tglx@linutronix.de>)
+ id 1hJMUT-0003TF-8Q; Wed, 24 Apr 2019 20:19:29 +0200
+Date: Wed, 24 Apr 2019 20:19:22 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Will Deacon <will.deacon@arm.com>
+Subject: Re: [PATCH v2 5/5] arm64/speculation: Support 'mitigations=' cmdline
+ option
+In-Reply-To: <20190424141631.GH14829@fuggles.cambridge.arm.com>
+Message-ID: <alpine.DEB.2.21.1904242019001.1762@nanos.tec.linutronix.de>
+References: <cover.1555085500.git.jpoimboe@redhat.com>
+ <24039e1370ed57e8075730c0b88c505afd9e0ab7.1555085500.git.jpoimboe@redhat.com>
+ <alpine.DEB.2.21.1904162124020.1780@nanos.tec.linutronix.de>
+ <20190424141631.GH14829@fuggles.cambridge.arm.com>
+User-Agent: Alpine 2.21 (DEB 202 2017-01-01)
 MIME-Version: 1.0
-References: <20190402115125.18803-1-aneesh.kumar@linux.ibm.com>
- <CAPcyv4hzRj5yxVJ5-7AZgzzBxEL02xf2xwhDv-U9_osWFm9kiA@mail.gmail.com>
- <20190424173833.GE19031@bombadil.infradead.org>
-In-Reply-To: <20190424173833.GE19031@bombadil.infradead.org>
-From: Dan Williams <dan.j.williams@intel.com>
-Date: Wed, 24 Apr 2019 11:13:48 -0700
-Message-ID: <CAPcyv4gLGUa69svQnwjvruALZ0ChqUJZHQJ1Mt_Cjr1Jh_6vbQ@mail.gmail.com>
-Subject: Re: [PATCH v2] mm: Fix modifying of page protection by
- insert_pfn_pmd()
-To: Matthew Wilcox <willy@infradead.org>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=US-ASCII
+X-Linutronix-Spam-Score: -1.0
+X-Linutronix-Spam-Level: -
+X-Linutronix-Spam-Status: No , -1.0 points, 5.0 required, ALL_TRUSTED=-1,
+ SHORTCIRCUIT=-0.0001
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -89,38 +64,56 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Jan Kara <jack@suse.cz>, linux-nvdimm <linux-nvdimm@lists.01.org>,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
- stable <stable@vger.kernel.org>, Linux MM <linux-mm@kvack.org>,
- Chandan Rajendra <chandan@linux.ibm.com>,
- Andrew Morton <akpm@linux-foundation.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Cc: Peter Zijlstra <peterz@infradead.org>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>, Paul Mackerras <paulus@samba.org>,
+ "H . Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@kernel.org>,
+ Andrea Arcangeli <aarcange@redhat.com>, linux-s390@vger.kernel.org,
+ x86@kernel.org, Steven Price <steven.price@arm.com>,
+ Linus Torvalds <torvalds@linux-foundation.org>,
+ Catalin Marinas <catalin.marinas@arm.com>, Waiman Long <longman@redhat.com>,
+ linux-arch@vger.kernel.org, Jon Masters <jcm@redhat.com>,
+ Jiri Kosina <jikos@kernel.org>, Borislav Petkov <bp@alien8.de>,
+ Andy Lutomirski <luto@kernel.org>, Josh Poimboeuf <jpoimboe@redhat.com>,
+ linux-arm-kernel@lists.infradead.org, Phil Auld <pauld@redhat.com>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Randy Dunlap <rdunlap@infradead.org>, linux-kernel@vger.kernel.org,
+ Tyler Hicks <tyhicks@canonical.com>,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, Apr 24, 2019 at 10:38 AM Matthew Wilcox <willy@infradead.org> wrote:
->
-> On Wed, Apr 24, 2019 at 10:13:15AM -0700, Dan Williams wrote:
-> > I think unaligned addresses have always been passed to
-> > vmf_insert_pfn_pmd(), but nothing cared until this patch. I *think*
-> > the only change needed is the following, thoughts?
-> >
-> > diff --git a/fs/dax.c b/fs/dax.c
-> > index ca0671d55aa6..82aee9a87efa 100644
-> > --- a/fs/dax.c
-> > +++ b/fs/dax.c
-> > @@ -1560,7 +1560,7 @@ static vm_fault_t dax_iomap_pmd_fault(struct
-> > vm_fault *vmf, pfn_t *pfnp,
-> >                 }
-> >
-> >                 trace_dax_pmd_insert_mapping(inode, vmf, PMD_SIZE, pfn, entry);
-> > -               result = vmf_insert_pfn_pmd(vma, vmf->address, vmf->pmd, pfn,
-> > +               result = vmf_insert_pfn_pmd(vma, pmd_addr, vmf->pmd, pfn,
-> >                                             write);
->
-> We also call vmf_insert_pfn_pmd() in dax_insert_pfn_mkwrite() -- does
-> that need to change too?
+On Wed, 24 Apr 2019, Will Deacon wrote:
 
-It wasn't clear to me that it was a problem. I think that one already
-happens to be pmd-aligned.
+> Hi Thomas,
+> 
+> On Tue, Apr 16, 2019 at 09:26:13PM +0200, Thomas Gleixner wrote:
+> > On Fri, 12 Apr 2019, Josh Poimboeuf wrote:
+> > 
+> > > Configure arm64 runtime CPU speculation bug mitigations in accordance
+> > > with the 'mitigations=' cmdline option.  This affects Meltdown, Spectre
+> > > v2, and Speculative Store Bypass.
+> > > 
+> > > The default behavior is unchanged.
+> > > 
+> > > Signed-off-by: Josh Poimboeuf <jpoimboe@redhat.com>
+> > > ---
+> > > NOTE: This is based on top of Jeremy Linton's patches:
+> > >       https://lkml.kernel.org/r/20190410231237.52506-1-jeremy.linton@arm.com
+> > 
+> > So I keep that out and we have to revisit that once the ARM64 stuff hits a
+> > tree, right? I can have a branch with just the 4 first patches applied
+> > which ARM64 folks can pull in when they apply Jeremy's patches before te
+> > merge window.
+> 
+> I'm assuming that this refers to the core/speculation branch in tip:
+> 
+> https://git.kernel.org/pub/scm/linux/kernel/git/tip/tip.git/log/?h=core/speculation
+> 
+> but please can you confirm that I'm good to pull that into arm64?
+
+Yes. It's all yours :)
+
+Thanks,
+
+	tglx
