@@ -6,52 +6,92 @@ X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 45B24C10F11
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Apr 2019 10:39:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 60996C10F11
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Apr 2019 10:41:36 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B6DAD2084F
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Apr 2019 10:39:53 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B6DAD2084F
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
+	by mail.kernel.org (Postfix) with ESMTPS id DB6572084F
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Apr 2019 10:41:35 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DB6572084F
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44pxdz2993zDqWX
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Apr 2019 20:39:51 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44pxgx6sKqzDqTR
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Apr 2019 20:41:33 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=redhat.com
- (client-ip=209.132.183.28; helo=mx1.redhat.com; envelope-from=david@redhat.com;
- receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
+ (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
+ envelope-from=ldufour@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=redhat.com
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ dmarc=none (p=none dis=none) header.from=linux.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44pxLD2byZzDqTG
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Apr 2019 20:26:12 +1000 (AEST)
-Received: from smtp.corp.redhat.com (int-mx01.intmail.prod.int.phx2.redhat.com
- [10.5.11.11])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by mx1.redhat.com (Postfix) with ESMTPS id 9334940F46;
- Wed, 24 Apr 2019 10:26:10 +0000 (UTC)
-Received: from t460s.redhat.com (ovpn-116-45.ams2.redhat.com [10.36.116.45])
- by smtp.corp.redhat.com (Postfix) with ESMTP id 79977600C4;
- Wed, 24 Apr 2019 10:26:07 +0000 (UTC)
-From: David Hildenbrand <david@redhat.com>
-To: linux-mm@kvack.org
-Subject: [PATCH v1 7/7] mm/memory_hotplug: Make
- unregister_memory_block_under_nodes() never fail
-Date: Wed, 24 Apr 2019 12:25:11 +0200
-Message-Id: <20190424102511.29318-8-david@redhat.com>
-In-Reply-To: <20190424102511.29318-1-david@redhat.com>
-References: <20190424102511.29318-1-david@redhat.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44pxW04zKczDqWG
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Apr 2019 20:33:48 +1000 (AEST)
+Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
+ x3OAXbwc122149
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Apr 2019 06:33:45 -0400
+Received: from e06smtp05.uk.ibm.com (e06smtp05.uk.ibm.com [195.75.94.101])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2s2n2nkj9m-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Apr 2019 06:33:42 -0400
+Received: from localhost
+ by e06smtp05.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <ldufour@linux.ibm.com>;
+ Wed, 24 Apr 2019 11:33:27 +0100
+Received: from b06cxnps4075.portsmouth.uk.ibm.com (9.149.109.197)
+ by e06smtp05.uk.ibm.com (192.168.101.135) with IBM ESMTP SMTP Gateway:
+ Authorized Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Wed, 24 Apr 2019 11:33:16 +0100
+Received: from d06av23.portsmouth.uk.ibm.com (d06av23.portsmouth.uk.ibm.com
+ [9.149.105.59])
+ by b06cxnps4075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x3OAXFXh57802952
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Wed, 24 Apr 2019 10:33:15 GMT
+Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id EC166A4057;
+ Wed, 24 Apr 2019 10:33:14 +0000 (GMT)
+Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 325F3A4040;
+ Wed, 24 Apr 2019 10:33:12 +0000 (GMT)
+Received: from [9.145.184.124] (unknown [9.145.184.124])
+ by d06av23.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Wed, 24 Apr 2019 10:33:12 +0000 (GMT)
+Subject: Re: [PATCH v12 18/31] mm: protect against PTE changes done by
+ dup_mmap()
+To: Jerome Glisse <jglisse@redhat.com>
+References: <20190416134522.17540-1-ldufour@linux.ibm.com>
+ <20190416134522.17540-19-ldufour@linux.ibm.com>
+ <20190422203217.GI14666@redhat.com>
+From: Laurent Dufour <ldufour@linux.ibm.com>
+Date: Wed, 24 Apr 2019 12:33:11 +0200
+User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.14; rv:60.0)
+ Gecko/20100101 Thunderbird/60.6.1
 MIME-Version: 1.0
+In-Reply-To: <20190422203217.GI14666@redhat.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: en-US
 Content-Transfer-Encoding: 8bit
-X-Scanned-By: MIMEDefang 2.79 on 10.5.11.11
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.5.16
- (mx1.redhat.com [10.5.110.30]); Wed, 24 Apr 2019 10:26:10 +0000 (UTC)
+X-TM-AS-GCONF: 00
+x-cbid: 19042410-0020-0000-0000-00000333F137
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 19042410-0021-0000-0000-0000218655DC
+Message-Id: <e61f71d0-1427-4a30-6dc3-b94a8fd609e8@linux.ibm.com>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
+ definitions=2019-04-24_07:, , signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ malwarescore=0 suspectscore=2 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1810050000 definitions=main-1904240088
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -63,119 +103,167 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-s390@vger.kernel.org, linux-ia64@vger.kernel.org,
- linux-sh@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- David Hildenbrand <david@redhat.com>, linux-kernel@vger.kernel.org,
- "David S. Miller" <davem@davemloft.net>,
- Alex Deucher <alexander.deucher@amd.com>, Mark Brown <broonie@kernel.org>,
- Jonathan Cameron <Jonathan.Cameron@huawei.com>,
- "Rafael J. Wysocki" <rafael@kernel.org>, akpm@linux-foundation.org,
- Chris Wilson <chris@chris-wilson.co.uk>, linuxppc-dev@lists.ozlabs.org,
- Dan Williams <dan.j.williams@intel.com>, Oscar Salvador <osalvador@suse.de>
+Cc: jack@suse.cz, sergey.senozhatsky.work@gmail.com, peterz@infradead.org,
+ Will Deacon <will.deacon@arm.com>, mhocko@kernel.org, linux-mm@kvack.org,
+ paulus@samba.org, Punit Agrawal <punitagrawal@gmail.com>, hpa@zytor.com,
+ Michel Lespinasse <walken@google.com>,
+ Alexei Starovoitov <alexei.starovoitov@gmail.com>,
+ Andrea Arcangeli <aarcange@redhat.com>, ak@linux.intel.com,
+ Minchan Kim <minchan@kernel.org>, aneesh.kumar@linux.ibm.com, x86@kernel.org,
+ Matthew Wilcox <willy@infradead.org>,
+ Daniel Jordan <daniel.m.jordan@oracle.com>, Ingo Molnar <mingo@redhat.com>,
+ David Rientjes <rientjes@google.com>, paulmck@linux.vnet.ibm.com,
+ Haiyan Song <haiyanx.song@intel.com>, npiggin@gmail.com, sj38.park@gmail.com,
+ dave@stgolabs.net, kemi.wang@intel.com, kirill@shutemov.name,
+ Thomas Gleixner <tglx@linutronix.de>, zhong jiang <zhongjiang@huawei.com>,
+ Ganesh Mahendran <opensource.ganesh@gmail.com>,
+ Yang Shi <yang.shi@linux.alibaba.com>, Mike Rapoport <rppt@linux.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
+ Vinayak Menon <vinmenon@codeaurora.org>,
+ vinayak menon <vinayakm.list@gmail.com>, akpm@linux-foundation.org,
+ Tim Chen <tim.c.chen@linux.intel.com>, haren@linux.vnet.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-We really don't want anything during memory hotunplug to fail.
-We always pass a valid memory block device, that check can go. Avoid
-allocating memory and eventually failing. As we are always called under
-lock, we can use a static piece of memory. This avoids having to put
-the structure onto the stack, having to guess about the stack size
-of callers.
+Le 22/04/2019 à 22:32, Jerome Glisse a écrit :
+> On Tue, Apr 16, 2019 at 03:45:09PM +0200, Laurent Dufour wrote:
+>> Vinayak Menon and Ganesh Mahendran reported that the following scenario may
+>> lead to thread being blocked due to data corruption:
+>>
+>>      CPU 1                   CPU 2                    CPU 3
+>>      Process 1,              Process 1,               Process 1,
+>>      Thread A                Thread B                 Thread C
+>>
+>>      while (1) {             while (1) {              while(1) {
+>>      pthread_mutex_lock(l)   pthread_mutex_lock(l)    fork
+>>      pthread_mutex_unlock(l) pthread_mutex_unlock(l)  }
+>>      }                       }
+>>
+>> In the details this happens because :
+>>
+>>      CPU 1                CPU 2                       CPU 3
+>>      fork()
+>>      copy_pte_range()
+>>        set PTE rdonly
+>>      got to next VMA...
+>>       .                   PTE is seen rdonly          PTE still writable
+>>       .                   thread is writing to page
+>>       .                   -> page fault
+>>       .                     copy the page             Thread writes to page
+>>       .                      .                        -> no page fault
+>>       .                     update the PTE
+>>       .                     flush TLB for that PTE
+>>     flush TLB                                        PTE are now rdonly
+> 
+> Should the fork be on CPU3 to be consistant with the top thing (just to
+> make it easier to read and go from one to the other as thread can move
+> from one CPU to another).
 
-Patch inspired by a patch from Oscar Salvador.
+Sure, this is quite confusing this way ;)
 
-In the future, there might be no need to iterate over nodes at all.
-mem->nid should tell us exactly what to remove. Memory block devices
-with mixed nodes (added during boot) should properly fenced off and never
-removed.
+>>
+>> So the write done by the CPU 3 is interfering with the page copy operation
+>> done by CPU 2, leading to the data corruption.
+>>
+>> To avoid this we mark all the VMA involved in the COW mechanism as changing
+>> by calling vm_write_begin(). This ensures that the speculative page fault
+>> handler will not try to handle a fault on these pages.
+>> The marker is set until the TLB is flushed, ensuring that all the CPUs will
+>> now see the PTE as not writable.
+>> Once the TLB is flush, the marker is removed by calling vm_write_end().
+>>
+>> The variable last is used to keep tracked of the latest VMA marked to
+>> handle the error path where part of the VMA may have been marked.
+>>
+>> Since multiple VMA from the same mm may have the sequence count increased
+>> during this process, the use of the vm_raw_write_begin/end() is required to
+>> avoid lockdep false warning messages.
+>>
+>> Reported-by: Ganesh Mahendran <opensource.ganesh@gmail.com>
+>> Reported-by: Vinayak Menon <vinmenon@codeaurora.org>
+>> Signed-off-by: Laurent Dufour <ldufour@linux.ibm.com>
+> 
+> A minor comment (see below)
+> 
+> Reviewed-by: Jérome Glisse <jglisse@redhat.com>
 
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Alex Deucher <alexander.deucher@amd.com>
-Cc: "David S. Miller" <davem@davemloft.net>
-Cc: Mark Brown <broonie@kernel.org>
-Cc: Chris Wilson <chris@chris-wilson.co.uk>
-Cc: David Hildenbrand <david@redhat.com>
-Cc: Oscar Salvador <osalvador@suse.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Cc: Jonathan Cameron <Jonathan.Cameron@huawei.com>
-Signed-off-by: David Hildenbrand <david@redhat.com>
----
- drivers/base/node.c  | 18 +++++-------------
- include/linux/node.h |  5 ++---
- 2 files changed, 7 insertions(+), 16 deletions(-)
+Thanks for the review Jérôme.
 
-diff --git a/drivers/base/node.c b/drivers/base/node.c
-index 04fdfa99b8bc..9be88fd05147 100644
---- a/drivers/base/node.c
-+++ b/drivers/base/node.c
-@@ -803,20 +803,14 @@ int register_mem_sect_under_node(struct memory_block *mem_blk, void *arg)
- 
- /*
-  * Unregister memory block device under all nodes that it spans.
-+ * Has to be called with mem_sysfs_mutex held (due to unlinked_nodes).
-  */
--int unregister_memory_block_under_nodes(struct memory_block *mem_blk)
-+void unregister_memory_block_under_nodes(struct memory_block *mem_blk)
- {
--	NODEMASK_ALLOC(nodemask_t, unlinked_nodes, GFP_KERNEL);
- 	unsigned long pfn, sect_start_pfn, sect_end_pfn;
-+	static nodemask_t unlinked_nodes;
- 
--	if (!mem_blk) {
--		NODEMASK_FREE(unlinked_nodes);
--		return -EFAULT;
--	}
--	if (!unlinked_nodes)
--		return -ENOMEM;
--	nodes_clear(*unlinked_nodes);
--
-+	nodes_clear(unlinked_nodes);
- 	sect_start_pfn = section_nr_to_pfn(mem_blk->start_section_nr);
- 	sect_end_pfn = section_nr_to_pfn(mem_blk->end_section_nr);
- 	for (pfn = sect_start_pfn; pfn <= sect_end_pfn; pfn++) {
-@@ -827,15 +821,13 @@ int unregister_memory_block_under_nodes(struct memory_block *mem_blk)
- 			continue;
- 		if (!node_online(nid))
- 			continue;
--		if (node_test_and_set(nid, *unlinked_nodes))
-+		if (node_test_and_set(nid, unlinked_nodes))
- 			continue;
- 		sysfs_remove_link(&node_devices[nid]->dev.kobj,
- 			 kobject_name(&mem_blk->dev.kobj));
- 		sysfs_remove_link(&mem_blk->dev.kobj,
- 			 kobject_name(&node_devices[nid]->dev.kobj));
- 	}
--	NODEMASK_FREE(unlinked_nodes);
--	return 0;
- }
- 
- int link_mem_sections(int nid, unsigned long start_pfn, unsigned long end_pfn)
-diff --git a/include/linux/node.h b/include/linux/node.h
-index 02a29e71b175..548c226966a2 100644
---- a/include/linux/node.h
-+++ b/include/linux/node.h
-@@ -139,7 +139,7 @@ extern int register_cpu_under_node(unsigned int cpu, unsigned int nid);
- extern int unregister_cpu_under_node(unsigned int cpu, unsigned int nid);
- extern int register_mem_sect_under_node(struct memory_block *mem_blk,
- 						void *arg);
--extern int unregister_memory_block_under_nodes(struct memory_block *mem_blk);
-+extern void unregister_memory_block_under_nodes(struct memory_block *mem_blk);
- 
- extern int register_memory_node_under_compute_node(unsigned int mem_nid,
- 						   unsigned int cpu_nid,
-@@ -175,9 +175,8 @@ static inline int register_mem_sect_under_node(struct memory_block *mem_blk,
- {
- 	return 0;
- }
--static inline int unregister_memory_block_under_nodes(struct memory_block *mem_blk)
-+static inline void unregister_memory_block_under_nodes(struct memory_block *mem_blk)
- {
--	return 0;
- }
- 
- static inline void register_hugetlbfs_with_node(node_registration_func_t reg,
--- 
-2.20.1
+>> ---
+>>   kernel/fork.c | 30 ++++++++++++++++++++++++++++--
+>>   1 file changed, 28 insertions(+), 2 deletions(-)
+>>
+>> diff --git a/kernel/fork.c b/kernel/fork.c
+>> index f8dae021c2e5..2992d2c95256 100644
+>> --- a/kernel/fork.c
+>> +++ b/kernel/fork.c
+>> @@ -462,7 +462,7 @@ EXPORT_SYMBOL(free_task);
+>>   static __latent_entropy int dup_mmap(struct mm_struct *mm,
+>>   					struct mm_struct *oldmm)
+>>   {
+>> -	struct vm_area_struct *mpnt, *tmp, *prev, **pprev;
+>> +	struct vm_area_struct *mpnt, *tmp, *prev, **pprev, *last = NULL;
+>>   	struct rb_node **rb_link, *rb_parent;
+>>   	int retval;
+>>   	unsigned long charge;
+>> @@ -581,8 +581,18 @@ static __latent_entropy int dup_mmap(struct mm_struct *mm,
+>>   		rb_parent = &tmp->vm_rb;
+>>   
+>>   		mm->map_count++;
+>> -		if (!(tmp->vm_flags & VM_WIPEONFORK))
+>> +		if (!(tmp->vm_flags & VM_WIPEONFORK)) {
+>> +			if (IS_ENABLED(CONFIG_SPECULATIVE_PAGE_FAULT)) {
+>> +				/*
+>> +				 * Mark this VMA as changing to prevent the
+>> +				 * speculative page fault hanlder to process
+>> +				 * it until the TLB are flushed below.
+>> +				 */
+>> +				last = mpnt;
+>> +				vm_raw_write_begin(mpnt);
+>> +			}
+>>   			retval = copy_page_range(mm, oldmm, mpnt);
+>> +		}
+>>   
+>>   		if (tmp->vm_ops && tmp->vm_ops->open)
+>>   			tmp->vm_ops->open(tmp);
+>> @@ -595,6 +605,22 @@ static __latent_entropy int dup_mmap(struct mm_struct *mm,
+>>   out:
+>>   	up_write(&mm->mmap_sem);
+>>   	flush_tlb_mm(oldmm);
+>> +
+>> +	if (IS_ENABLED(CONFIG_SPECULATIVE_PAGE_FAULT)) {
+> 
+> You do not need to check for CONFIG_SPECULATIVE_PAGE_FAULT as last
+> will always be NULL if it is not enabled but maybe the compiler will
+> miss the optimization opportunity if you only have the for() loop
+> below.
+
+I didn't check for the generated code, perhaps the compiler will be 
+optimize that correctly.
+This being said, I think the if block is better for the code 
+readability, highlighting that this block is only needed in the case of SPF.
+
+>> +		/*
+>> +		 * Since the TLB has been flush, we can safely unmark the
+>> +		 * copied VMAs and allows the speculative page fault handler to
+>> +		 * process them again.
+>> +		 * Walk back the VMA list from the last marked VMA.
+>> +		 */
+>> +		for (; last; last = last->vm_prev) {
+>> +			if (last->vm_flags & VM_DONTCOPY)
+>> +				continue;
+>> +			if (!(last->vm_flags & VM_WIPEONFORK))
+>> +				vm_raw_write_end(last);
+>> +		}
+>> +	}
+>> +
+>>   	up_write(&oldmm->mmap_sem);
+>>   	dup_userfaultfd_complete(&uf);
+>>   fail_uprobe_end:
+>> -- 
+>> 2.21.0
+>>
+> 
 
