@@ -3,24 +3,24 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
 X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0BE29C10F11
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Apr 2019 18:52:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 26FF0C10F11
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Apr 2019 18:55:08 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 7E8B8208E4
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Apr 2019 18:52:18 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 9B19E208E4
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Apr 2019 18:55:07 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="eHPgs9VB"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7E8B8208E4
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="HxlYlSpm"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9B19E208E4
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44q8Z80tfszDqbX
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Apr 2019 04:52:16 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44q8dP3Cn1zDqby
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Apr 2019 04:55:05 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=permerror (mailfrom) smtp.mailfrom=kernel.org
  (client-ip=2001:8b0:10b:1236::1; helo=casper.infradead.org;
@@ -29,40 +29,38 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=infradead.org header.i=@infradead.org
- header.b="eHPgs9VB"; dkim-atps=neutral
+ header.b="HxlYlSpm"; dkim-atps=neutral
 Received: from casper.infradead.org (casper.infradead.org
  [IPv6:2001:8b0:10b:1236::1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44q7WL6tyHzDqKy
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Apr 2019 04:04:46 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44q7cJ4N2gzDqDJ
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Apr 2019 04:09:04 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
  d=infradead.org; s=casper.20170209; h=Content-Transfer-Encoding:Content-Type:
  MIME-Version:References:In-Reply-To:Message-ID:Subject:Cc:To:From:Date:Sender
  :Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
  Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:List-Help:
  List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
- bh=QQxjRBbmdgAM9Bh3kBDiayTByaZ8rOIgL5n86+QEto4=; b=eHPgs9VBSJ+I8+KqGmbMTju2lr
- c0xcIJhkO2M5DD563NVO7255UOmAOc+vpo2IvNPVwyqe69ZqXkx9iioAWr9eJ4b2LMu+rhf8rYyUo
- mtQXyGjUMNv/lFhjz4jaEpC7/Tp0UkNaMIXXlAM2xteretCYdUOIlYuRI08ZjgbyPhkjYAtk47b7m
- OA0nNjLt5UlGU5fFoI53mMacP+QpIDgHjTG4uSifigHWhQfA2mF9d0P2n0WuaAsakliiGpFMUgQjo
- rvB17MoDNgV16L/zRs1kMRB1oFucBzRHljfN9aiZfld7RN8Wcr4XEM55inxhU1IiOVWlqKJ5tLTjt
- pHQcNoMQ==;
+ bh=HhQ7jYzghgIqKgaAgfN76700l4OvgCKkOAd2ol9E0lU=; b=HxlYlSpmH7r5MFlhylXWNgWOFx
+ pTx99hWG4+DIyjCa/WBRRbokCmSxtYMlWfXUuPkuUJ9gwnUINs5JGuwXSvw5I44vVxOhC3iRHXp7u
+ Z1iCmkBWtIT2gKRLi5h4nEle7u3PTMjbfGyLvqJN5qbXyxfVWEytpkuIFJTA4gifT2If8ap94O+jL
+ 79F5TWQ5txbqkjlLKe2K9XoUn65IiQM/5h3WQEwNzFR4hmDj6K8oir9+tGEJgA3gSAqzncFpvuDi4
+ vNiU5/QL+zLJCyFogbpW8Qrn+N9Y0NNTz2nVw86kV0KgVe7VdAcLqmYW3u9Hsf1lU4MsZs8zz3+r6
+ BUPvEmxQ==;
 Received: from 177.17.136.231.dynamic.adsl.gvt.net.br ([177.17.136.231]
  helo=coco.lan)
  by casper.infradead.org with esmtpsa (Exim 4.90_1 #2 (Red Hat Linux))
- id 1hJMG2-0001jj-TS; Wed, 24 Apr 2019 18:04:35 +0000
-Date: Wed, 24 Apr 2019 15:04:28 -0300
+ id 1hJMKH-0001uS-M8; Wed, 24 Apr 2019 18:08:58 +0000
+Date: Wed, 24 Apr 2019 15:08:52 -0300
 From: Mauro Carvalho Chehab <mchehab+samsung@kernel.org>
 To: Changbin Du <changbin.du@gmail.com>
-Subject: Re: [PATCH v4 21/63] Documentation: ACPI: move cppc_sysfs.txt to
- admin-guide/acpi and convert to reST
-Message-ID: <20190424150428.7eb70014@coco.lan>
-In-Reply-To: <20190424172232.qtzogm6sweaa4gva@mail.google.com>
-References: <20190423162932.21428-1-changbin.du@gmail.com>
- <20190423162932.21428-22-changbin.du@gmail.com>
- <20190424114844.5de4cfa5@coco.lan>
- <20190424172232.qtzogm6sweaa4gva@mail.google.com>
+Subject: Re: [PATCH v5 08/23] Documentation: ACPI: move
+ method-customizing.txt to firmware-guide/acpi and convert to reST
+Message-ID: <20190424150852.0e415da1@coco.lan>
+In-Reply-To: <20190424175306.25880-9-changbin.du@gmail.com>
+References: <20190424175306.25880-1-changbin.du@gmail.com>
+ <20190424175306.25880-9-changbin.du@gmail.com>
 X-Mailer: Claws Mail 3.17.3 (GTK+ 2.24.32; x86_64-redhat-linux-gnu)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -78,142 +76,221 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: fenghua.yu@intel.com, x86@kernel.org, linux-doc@vger.kernel.org,
- linux-pci@vger.kernel.org, linux-gpio@vger.kernel.org,
+Cc: fenghua.yu@intel.com, linux-doc@vger.kernel.org, linux-gpio@vger.kernel.org,
  Jonathan Corbet <corbet@lwn.net>, rjw@rjwysocki.net,
- linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, mingo@redhat.com,
- Bjorn Helgaas <bhelgaas@google.com>, tglx@linutronix.de,
- linuxppc-dev@lists.ozlabs.org
+ linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org,
+ Bjorn Helgaas <bhelgaas@google.com>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Em Thu, 25 Apr 2019 01:22:34 +0800
+Em Thu, 25 Apr 2019 01:52:51 +0800
 Changbin Du <changbin.du@gmail.com> escreveu:
 
-> On Wed, Apr 24, 2019 at 11:48:44AM -0300, Mauro Carvalho Chehab wrote:
-> > Em Wed, 24 Apr 2019 00:28:50 +0800
-> > Changbin Du <changbin.du@gmail.com> escreveu:
-> >   
-> > > This converts the plain text documentation to reStructuredText format and
-> > > add it to Sphinx TOC tree. No essential content change.
-> > > 
-> > > Signed-off-by: Changbin Du <changbin.du@gmail.com>
-> > > ---
-> > >  .../acpi/cppc_sysfs.rst}                      | 71 ++++++++++---------
-> > >  Documentation/admin-guide/acpi/index.rst      |  1 +
-> > >  2 files changed, 40 insertions(+), 32 deletions(-)
-> > >  rename Documentation/{acpi/cppc_sysfs.txt => admin-guide/acpi/cppc_sysfs.rst} (51%)
-> > > 
-> > > diff --git a/Documentation/acpi/cppc_sysfs.txt b/Documentation/admin-guide/acpi/cppc_sysfs.rst
-> > > similarity index 51%
-> > > rename from Documentation/acpi/cppc_sysfs.txt
-> > > rename to Documentation/admin-guide/acpi/cppc_sysfs.rst
-> > > index f20fb445135d..a4b99afbe331 100644
-> > > --- a/Documentation/acpi/cppc_sysfs.txt
-> > > +++ b/Documentation/admin-guide/acpi/cppc_sysfs.rst
-> > > @@ -1,5 +1,11 @@
-> > > +.. SPDX-License-Identifier: GPL-2.0
-> > >  
-> > > -	Collaborative Processor Performance Control (CPPC)
-> > > +==================================================
-> > > +Collaborative Processor Performance Control (CPPC)
-> > > +==================================================
-> > > +
-> > > +CPPC
-> > > +====
-> > >  
-> > >  CPPC defined in the ACPI spec describes a mechanism for the OS to manage the
-> > >  performance of a logical processor on a contigious and abstract performance
-> > > @@ -10,31 +16,28 @@ For more details on CPPC please refer to the ACPI specification at:
-> > >  
-> > >  http://uefi.org/specifications
-> > >  
-> > > -Some of the CPPC registers are exposed via sysfs under:
-> > > -
-> > > -/sys/devices/system/cpu/cpuX/acpi_cppc/
-> > > -  
-> > 
-> >   
-> > > -for each cpu X  
-> > 
-> > Hmm... removed by mistake?
-> >  
-> I comfirmed that no content removed.
-
-At this patch, it looks that you removed the line: "for each cpu X"
-(or am I reading it wrong?)
-
+> This converts the plain text documentation to reStructuredText format and
+> add it to Sphinx TOC tree. No essential content change.
 > 
-> > > +Some of the CPPC registers are exposed via sysfs under::
-> > >  
-> > > ---------------------------------------------------------------------------------
-> > > +  /sys/devices/system/cpu/cpuX/acpi_cppc/  
-> > 
-> > Did you parse this with Sphinx? It doesn't sound a valid ReST construction
-> > to my eyes, as:
-> > 
-> > 1) I've seen some versions of Sphinx to abort with severe errors when 
-> >    there's no blank line after the horizontal bar markup;
-> > 
-> > 2) It will very likely ignore the "::" (I didn't test it myself), as you're
-> >    not indenting the horizontal bar. End of indentation will mean the end
-> >    of an (empty) literal block.
-> > 
-> > So, I would stick with:
-> > 
-> > 
-> > 	Some of the CPPC registers are exposed via sysfs under:
-> > 
-> > 	  /sys/devices/system/cpu/cpuX/acpi_cppc/
-> > 
-> > 	---------------------------------------------------------------------------------
-> > 
-> > 	for each cpu X::
-> > 
-> > 
-> > or:
-> > 
-> > 	Some of the CPPC registers are exposed via sysfs under:
-> > 
-> > 		/sys/devices/system/cpu/cpuX/acpi_cppc/
-> > 
-> > 	for each cpu X
-> > 
-> > 	--------------------------------------------------------------------------------
-> > 
-> > 	::
-> > 
-> > (with is closer to the original author's intent)
-> > 
-> > Same applies to the other similar changes on this document.
-> >  
-> I didn't seen any warning here and the generated html is good. So I think it is
-> ok.
+> Signed-off-by: Changbin Du <changbin.du@gmail.com>
 
-Basically, what you're doing is:
+Reviewed-by: Mauro Carvalho Chehab <mchehab+samsung@kernel.org>
 
-<rst>
+> ---
+>  Documentation/acpi/method-customizing.txt     | 73 ---------------
+>  Documentation/firmware-guide/acpi/index.rst   |  3 +-
+>  .../acpi/method-customizing.rst               | 89 +++++++++++++++++++
+>  3 files changed, 91 insertions(+), 74 deletions(-)
+>  delete mode 100644 Documentation/acpi/method-customizing.txt
+>  create mode 100644 Documentation/firmware-guide/acpi/method-customizing.rst
+> 
+> diff --git a/Documentation/acpi/method-customizing.txt b/Documentation/acpi/method-customizing.txt
+> deleted file mode 100644
+> index 7235da975f23..000000000000
+> --- a/Documentation/acpi/method-customizing.txt
+> +++ /dev/null
+> @@ -1,73 +0,0 @@
+> -Linux ACPI Custom Control Method How To
+> -=======================================
+> -
+> -Written by Zhang Rui <rui.zhang@intel.com>
+> -
+> -
+> -Linux supports customizing ACPI control methods at runtime.
+> -
+> -Users can use this to
+> -1. override an existing method which may not work correctly,
+> -   or just for debugging purposes.
+> -2. insert a completely new method in order to create a missing
+> -   method such as _OFF, _ON, _STA, _INI, etc.
+> -For these cases, it is far simpler to dynamically install a single
+> -control method rather than override the entire DSDT, because kernel
+> -rebuild/reboot is not needed and test result can be got in minutes.
+> -
+> -Note: Only ACPI METHOD can be overridden, any other object types like
+> -      "Device", "OperationRegion", are not recognized. Methods
+> -      declared inside scope operators are also not supported.
+> -Note: The same ACPI control method can be overridden for many times,
+> -      and it's always the latest one that used by Linux/kernel.
+> -Note: To get the ACPI debug object output (Store (AAAA, Debug)),
+> -      please run "echo 1 > /sys/module/acpi/parameters/aml_debug_output".
+> -
+> -1. override an existing method
+> -   a) get the ACPI table via ACPI sysfs I/F. e.g. to get the DSDT,
+> -      just run "cat /sys/firmware/acpi/tables/DSDT > /tmp/dsdt.dat"
+> -   b) disassemble the table by running "iasl -d dsdt.dat".
+> -   c) rewrite the ASL code of the method and save it in a new file,
+> -   d) package the new file (psr.asl) to an ACPI table format.
+> -      Here is an example of a customized \_SB._AC._PSR method,
+> -
+> -      DefinitionBlock ("", "SSDT", 1, "", "", 0x20080715)
+> -      {
+> -	Method (\_SB_.AC._PSR, 0, NotSerialized)
+> -	{
+> -		Store ("In AC _PSR", Debug)
+> -		Return (ACON)
+> -	}
+> -      }
+> -      Note that the full pathname of the method in ACPI namespace
+> -      should be used.
+> -   e) assemble the file to generate the AML code of the method.
+> -      e.g. "iasl -vw 6084 psr.asl" (psr.aml is generated as a result)
+> -      If parameter "-vw 6084" is not supported by your iASL compiler,
+> -      please try a newer version.
+> -   f) mount debugfs by "mount -t debugfs none /sys/kernel/debug"
+> -   g) override the old method via the debugfs by running
+> -      "cat /tmp/psr.aml > /sys/kernel/debug/acpi/custom_method"
+> -
+> -2. insert a new method
+> -   This is easier than overriding an existing method.
+> -   We just need to create the ASL code of the method we want to
+> -   insert and then follow the step c) ~ g) in section 1.
+> -
+> -3. undo your changes
+> -   The "undo" operation is not supported for a new inserted method
+> -   right now, i.e. we can not remove a method currently.
+> -   For an overridden method, in order to undo your changes, please
+> -   save a copy of the method original ASL code in step c) section 1,
+> -   and redo step c) ~ g) to override the method with the original one.
+> -
+> -
+> -Note: We can use a kernel with multiple custom ACPI method running,
+> -      But each individual write to debugfs can implement a SINGLE
+> -      method override. i.e. if we want to insert/override multiple
+> -      ACPI methods, we need to redo step c) ~ g) for multiple times.
+> -
+> -Note: Be aware that root can mis-use this driver to modify arbitrary
+> -      memory and gain additional rights, if root's privileges got
+> -      restricted (for example if root is not allowed to load additional
+> -      modules after boot).
+> diff --git a/Documentation/firmware-guide/acpi/index.rst b/Documentation/firmware-guide/acpi/index.rst
+> index 61d67763851b..d1d069b26bbc 100644
+> --- a/Documentation/firmware-guide/acpi/index.rst
+> +++ b/Documentation/firmware-guide/acpi/index.rst
+> @@ -10,5 +10,6 @@ ACPI Support
+>     namespace
+>     enumeration
+>     osi
+> +   method-customizing
+>     DSD-properties-rules
+> -   gpio-properties
+> +   gpio-properties
+> \ No newline at end of file
+> diff --git a/Documentation/firmware-guide/acpi/method-customizing.rst b/Documentation/firmware-guide/acpi/method-customizing.rst
+> new file mode 100644
+> index 000000000000..de3ebcaed4cf
+> --- /dev/null
+> +++ b/Documentation/firmware-guide/acpi/method-customizing.rst
+> @@ -0,0 +1,89 @@
+> +.. SPDX-License-Identifier: GPL-2.0
+> +
+> +=======================================
+> +Linux ACPI Custom Control Method How To
+> +=======================================
+> +
+> +:Author: Zhang Rui <rui.zhang@intel.com>
+> +
+> +
+> +Linux supports customizing ACPI control methods at runtime.
+> +
+> +Users can use this to:
+> +
+> +1. override an existing method which may not work correctly,
+> +   or just for debugging purposes.
+> +2. insert a completely new method in order to create a missing
+> +   method such as _OFF, _ON, _STA, _INI, etc.
+> +
+> +For these cases, it is far simpler to dynamically install a single
+> +control method rather than override the entire DSDT, because kernel
+> +rebuild/reboot is not needed and test result can be got in minutes.
+> +
+> +.. note::
+> +
+> +  - Only ACPI METHOD can be overridden, any other object types like
+> +    "Device", "OperationRegion", are not recognized. Methods
+> +    declared inside scope operators are also not supported.
+> +
+> +  - The same ACPI control method can be overridden for many times,
+> +    and it's always the latest one that used by Linux/kernel.
+> +
+> +  - To get the ACPI debug object output (Store (AAAA, Debug)),
+> +    please run::
+> +
+> +      echo 1 > /sys/module/acpi/parameters/aml_debug_output
+> +
+> +
+> +1. override an existing method
+> +==============================
+> +a) get the ACPI table via ACPI sysfs I/F. e.g. to get the DSDT,
+> +   just run "cat /sys/firmware/acpi/tables/DSDT > /tmp/dsdt.dat"
+> +b) disassemble the table by running "iasl -d dsdt.dat".
+> +c) rewrite the ASL code of the method and save it in a new file,
+> +d) package the new file (psr.asl) to an ACPI table format.
+> +   Here is an example of a customized \_SB._AC._PSR method::
+> +
+> +      DefinitionBlock ("", "SSDT", 1, "", "", 0x20080715)
+> +      {
+> +         Method (\_SB_.AC._PSR, 0, NotSerialized)
+> +         {
+> +            Store ("In AC _PSR", Debug)
+> +            Return (ACON)
+> +         }
+> +      }
+> +
+> +   Note that the full pathname of the method in ACPI namespace
+> +   should be used.
+> +e) assemble the file to generate the AML code of the method.
+> +   e.g. "iasl -vw 6084 psr.asl" (psr.aml is generated as a result)
+> +   If parameter "-vw 6084" is not supported by your iASL compiler,
+> +   please try a newer version.
+> +f) mount debugfs by "mount -t debugfs none /sys/kernel/debug"
+> +g) override the old method via the debugfs by running
+> +   "cat /tmp/psr.aml > /sys/kernel/debug/acpi/custom_method"
+> +
+> +2. insert a new method
+> +======================
+> +This is easier than overriding an existing method.
+> +We just need to create the ASL code of the method we want to
+> +insert and then follow the step c) ~ g) in section 1.
+> +
+> +3. undo your changes
+> +====================
+> +The "undo" operation is not supported for a new inserted method
+> +right now, i.e. we can not remove a method currently.
+> +For an overridden method, in order to undo your changes, please
+> +save a copy of the method original ASL code in step c) section 1,
+> +and redo step c) ~ g) to override the method with the original one.
+> +
+> +
+> +.. note:: We can use a kernel with multiple custom ACPI method running,
+> +   But each individual write to debugfs can implement a SINGLE
+> +   method override. i.e. if we want to insert/override multiple
+> +   ACPI methods, we need to redo step c) ~ g) for multiple times.
+> +
+> +.. note:: Be aware that root can mis-use this driver to modify arbitrary
+> +   memory and gain additional rights, if root's privileges got
+> +   restricted (for example if root is not allowed to load additional
+> +   modules after boot).
 
-::
 
-foo
-   literal-block bar
-
-</rst>
-
-(where "foo" is the horizontal bar markup)
-
-I would avoid such pattern for two reasons:
-
-1) it sounds a violation of ReST syntax to format an in
-   indented paragraph some non-blank lines after a non-indented
-   line. As such, I won't doubt that different versions of Sphinx
-   would handle it differently. I'm even tempted to open a BZ
-   to Sphinx in order for them to provide a fix for that, if the
-   latest version of Sphinx accepts such crazy markup.
-
-2) It is very confusing for any human reading it.
 
 Thanks,
 Mauro
