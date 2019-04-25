@@ -2,78 +2,102 @@ Return-Path: <SRS0=v/d1=S3=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-4.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A29AEC10F11
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Apr 2019 01:20:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EF9B2C10F11
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Apr 2019 01:39:06 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id D7E37214C6
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Apr 2019 01:20:55 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D7E37214C6
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
+	by mail.kernel.org (Postfix) with ESMTPS id 3E30A214AE
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Apr 2019 01:39:06 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3E30A214AE
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44qKBY4KprzDqbf
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Apr 2019 11:20:53 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44qKbW6v5zzDqbf
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Apr 2019 11:39:03 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=redhat.com
- (client-ip=209.85.160.194; helo=mail-qt1-f194.google.com;
- envelope-from=mst@redhat.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
+ (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
+ envelope-from=aneesh.kumar@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=redhat.com
-Received: from mail-qt1-f194.google.com (mail-qt1-f194.google.com
- [209.85.160.194])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ dmarc=none (p=none dis=none) header.from=linux.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44qK8Q6qq9zDqZT
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Apr 2019 11:19:01 +1000 (AEST)
-Received: by mail-qt1-f194.google.com with SMTP id l17so3470246qtp.2
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Apr 2019 18:19:01 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:date:from:to:cc:subject:message-id:references
- :mime-version:content-disposition:in-reply-to;
- bh=gSdbl7tiCDChVFi/egk34T6hGKLdbLIMT0F6PPP6KJk=;
- b=UxwCHpF+1WQWBz/Ks9J3+cA0vmIV1bWBaNenMxXc5Yft3lSlNe2Q6BB+mVOWzt3YtS
- oES3ZBIwf6uC1hEAR02qL+8KFPywVo5+Xekk8jh2B0pgvwvLiBY69QWh6/t2f69zHdip
- fAh09qY7j57QVAm2t8cj4tIY4CB440LEv6W2PptfmxSnSHHW5t/ZXj6mYRgrjK/0rD2i
- mGN40Hq+tX/2pxklDQjoucBA6yYUeHtqzYt/lmQPSFkFmBY41/3R6qNHZo4qG7jd3nsd
- CKxgN8QiAzsXfV1rmHMn2rxylKdS3lDR/5Th1Q7KEaWOvCXTCM1keUiaq3dZYe1J5UVI
- mDHA==
-X-Gm-Message-State: APjAAAXQj/Dg6b721QbJTphn3PtHA6FhfyklXSlUZ0ctEMSjvtAQHIKW
- n38VA9AE9GaKd9v9teHZ5yd6og==
-X-Google-Smtp-Source: APXvYqxKlHSNlPqQN4XmzYneFKkJ/mvtPnQ1lM7Bwy+vkifcs/0Fs/s/gpyQh6mYewhWVUy9oqbl+w==
-X-Received: by 2002:aed:20c4:: with SMTP id 62mr26929160qtb.256.1556155138200; 
- Wed, 24 Apr 2019 18:18:58 -0700 (PDT)
-Received: from redhat.com (pool-173-76-105-71.bstnma.fios.verizon.net.
- [173.76.105.71])
- by smtp.gmail.com with ESMTPSA id e6sm9930128qtr.56.2019.04.24.18.18.55
- (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
- Wed, 24 Apr 2019 18:18:56 -0700 (PDT)
-Date: Wed, 24 Apr 2019 21:18:54 -0400
-From: "Michael S. Tsirkin" <mst@redhat.com>
-To: Thiago Jung Bauermann <bauerman@linux.ibm.com>
-Subject: Re: [RFC PATCH] virtio_ring: Use DMA API if guest memory is encrypted
-Message-ID: <20190424210813-mutt-send-email-mst@kernel.org>
-References: <20190129134750-mutt-send-email-mst@kernel.org>
- <877eefxvyb.fsf@morokweng.localdomain>
- <20190204144048-mutt-send-email-mst@kernel.org>
- <87ef71seve.fsf@morokweng.localdomain>
- <20190320171027-mutt-send-email-mst@kernel.org>
- <87tvfvbwpb.fsf@morokweng.localdomain>
- <20190323165456-mutt-send-email-mst@kernel.org>
- <87a7go71hz.fsf@morokweng.localdomain>
- <20190419190258-mutt-send-email-mst@kernel.org>
- <875zr228zf.fsf@morokweng.localdomain>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44qKYc4D8jzDqZT
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Apr 2019 11:37:23 +1000 (AEST)
+Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
+ x3P1USTB064179
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Apr 2019 21:37:21 -0400
+Received: from e17.ny.us.ibm.com (e17.ny.us.ibm.com [129.33.205.207])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2s32fb9xft-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Apr 2019 21:37:21 -0400
+Received: from localhost
+ by e17.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.ibm.com>;
+ Thu, 25 Apr 2019 02:37:19 +0100
+Received: from b01cxnp22033.gho.pok.ibm.com (9.57.198.23)
+ by e17.ny.us.ibm.com (146.89.104.204) with IBM ESMTP SMTP Gateway: Authorized
+ Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Thu, 25 Apr 2019 02:37:17 +0100
+Received: from b01ledav003.gho.pok.ibm.com (b01ledav003.gho.pok.ibm.com
+ [9.57.199.108])
+ by b01cxnp22033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x3P1bGRI20644004
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Thu, 25 Apr 2019 01:37:16 GMT
+Received: from b01ledav003.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 44D9AB2064;
+ Thu, 25 Apr 2019 01:37:16 +0000 (GMT)
+Received: from b01ledav003.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id C969DB205F;
+ Thu, 25 Apr 2019 01:37:13 +0000 (GMT)
+Received: from [9.85.69.165] (unknown [9.85.69.165])
+ by b01ledav003.gho.pok.ibm.com (Postfix) with ESMTP;
+ Thu, 25 Apr 2019 01:37:13 +0000 (GMT)
+Subject: Re: [PATCH v2] mm: Fix modifying of page protection by
+ insert_pfn_pmd()
+To: Dan Williams <dan.j.williams@intel.com>,
+ Matthew Wilcox <willy@infradead.org>
+References: <20190402115125.18803-1-aneesh.kumar@linux.ibm.com>
+ <CAPcyv4hzRj5yxVJ5-7AZgzzBxEL02xf2xwhDv-U9_osWFm9kiA@mail.gmail.com>
+ <20190424173833.GE19031@bombadil.infradead.org>
+ <CAPcyv4gLGUa69svQnwjvruALZ0ChqUJZHQJ1Mt_Cjr1Jh_6vbQ@mail.gmail.com>
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
+Date: Thu, 25 Apr 2019 07:07:12 +0530
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.6.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <875zr228zf.fsf@morokweng.localdomain>
+In-Reply-To: <CAPcyv4gLGUa69svQnwjvruALZ0ChqUJZHQJ1Mt_Cjr1Jh_6vbQ@mail.gmail.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
+X-TM-AS-GCONF: 00
+x-cbid: 19042501-0040-0000-0000-000004E5C17C
+X-IBM-SpamModules-Scores: 
+X-IBM-SpamModules-Versions: BY=3.00010990; HX=3.00000242; KW=3.00000007;
+ PH=3.00000004; SC=3.00000285; SDB=6.01193953; UDB=6.00625937; IPR=6.00974777; 
+ MB=3.00026582; MTD=3.00000008; XFM=3.00000015; UTC=2019-04-25 01:37:19
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 19042501-0041-0000-0000-000008F0D197
+Message-Id: <444ca26b-ec38-ae4b-512b-7e915c575098@linux.ibm.com>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
+ definitions=2019-04-25_01:, , signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1810050000 definitions=main-1904250008
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -85,175 +109,44 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Mike Anderson <andmike@linux.ibm.com>,
- Michael Roth <mdroth@linux.vnet.ibm.com>,
- Jean-Philippe Brucker <jean-philippe.brucker@arm.com>,
- Jason Wang <jasowang@redhat.com>, Alexey Kardashevskiy <aik@linux.ibm.com>,
- Ram Pai <linuxram@us.ibm.com>, linux-kernel@vger.kernel.org,
- virtualization@lists.linux-foundation.org, iommu@lists.linux-foundation.org,
- linuxppc-dev@lists.ozlabs.org, Christoph Hellwig <hch@lst.de>,
- David Gibson <david@gibson.dropbear.id.au>
+Cc: Jan Kara <jack@suse.cz>, linux-nvdimm <linux-nvdimm@lists.01.org>,
+ stable <stable@vger.kernel.org>, Linux MM <linux-mm@kvack.org>,
+ Chandan Rajendra <chandan@linux.ibm.com>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, Apr 24, 2019 at 10:01:56PM -0300, Thiago Jung Bauermann wrote:
+On 4/24/19 11:43 PM, Dan Williams wrote:
+> On Wed, Apr 24, 2019 at 10:38 AM Matthew Wilcox <willy@infradead.org> wrote:
+>>
+>> On Wed, Apr 24, 2019 at 10:13:15AM -0700, Dan Williams wrote:
+>>> I think unaligned addresses have always been passed to
+>>> vmf_insert_pfn_pmd(), but nothing cared until this patch. I *think*
+>>> the only change needed is the following, thoughts?
+>>>
+>>> diff --git a/fs/dax.c b/fs/dax.c
+>>> index ca0671d55aa6..82aee9a87efa 100644
+>>> --- a/fs/dax.c
+>>> +++ b/fs/dax.c
+>>> @@ -1560,7 +1560,7 @@ static vm_fault_t dax_iomap_pmd_fault(struct
+>>> vm_fault *vmf, pfn_t *pfnp,
+>>>                  }
+>>>
+>>>                  trace_dax_pmd_insert_mapping(inode, vmf, PMD_SIZE, pfn, entry);
+>>> -               result = vmf_insert_pfn_pmd(vma, vmf->address, vmf->pmd, pfn,
+>>> +               result = vmf_insert_pfn_pmd(vma, pmd_addr, vmf->pmd, pfn,
+>>>                                              write);
+>>
+>> We also call vmf_insert_pfn_pmd() in dax_insert_pfn_mkwrite() -- does
+>> that need to change too?
 > 
-> Michael S. Tsirkin <mst@redhat.com> writes:
+> It wasn't clear to me that it was a problem. I think that one already
+> happens to be pmd-aligned.
 > 
-> > On Wed, Apr 17, 2019 at 06:42:00PM -0300, Thiago Jung Bauermann wrote:
-> >>
-> >> Michael S. Tsirkin <mst@redhat.com> writes:
-> >>
-> >> > On Thu, Mar 21, 2019 at 09:05:04PM -0300, Thiago Jung Bauermann wrote:
-> >> >>
-> >> >> Michael S. Tsirkin <mst@redhat.com> writes:
-> >> >>
-> >> >> > On Wed, Mar 20, 2019 at 01:13:41PM -0300, Thiago Jung Bauermann wrote:
-> >> >> >> >From what I understand of the ACCESS_PLATFORM definition, the host will
-> >> >> >> only ever try to access memory addresses that are supplied to it by the
-> >> >> >> guest, so all of the secure guest memory that the host cares about is
-> >> >> >> accessible:
-> >> >> >>
-> >> >> >>     If this feature bit is set to 0, then the device has same access to
-> >> >> >>     memory addresses supplied to it as the driver has. In particular,
-> >> >> >>     the device will always use physical addresses matching addresses
-> >> >> >>     used by the driver (typically meaning physical addresses used by the
-> >> >> >>     CPU) and not translated further, and can access any address supplied
-> >> >> >>     to it by the driver. When clear, this overrides any
-> >> >> >>     platform-specific description of whether device access is limited or
-> >> >> >>     translated in any way, e.g. whether an IOMMU may be present.
-> >> >> >>
-> >> >> >> All of the above is true for POWER guests, whether they are secure
-> >> >> >> guests or not.
-> >> >> >>
-> >> >> >> Or are you saying that a virtio device may want to access memory
-> >> >> >> addresses that weren't supplied to it by the driver?
-> >> >> >
-> >> >> > Your logic would apply to IOMMUs as well.  For your mode, there are
-> >> >> > specific encrypted memory regions that driver has access to but device
-> >> >> > does not. that seems to violate the constraint.
-> >> >>
-> >> >> Right, if there's a pre-configured 1:1 mapping in the IOMMU such that
-> >> >> the device can ignore the IOMMU for all practical purposes I would
-> >> >> indeed say that the logic would apply to IOMMUs as well. :-)
-> >> >>
-> >> >> I guess I'm still struggling with the purpose of signalling to the
-> >> >> driver that the host may not have access to memory addresses that it
-> >> >> will never try to access.
-> >> >
-> >> > For example, one of the benefits is to signal to host that driver does
-> >> > not expect ability to access all memory. If it does, host can
-> >> > fail initialization gracefully.
-> >>
-> >> But why would the ability to access all memory be necessary or even
-> >> useful? When would the host access memory that the driver didn't tell it
-> >> to access?
-> >
-> > When I say all memory I mean even memory not allowed by the IOMMU.
-> 
-> Yes, but why? How is that memory relevant?
 
-It's relevant when driver is not trusted to only supply correct
-addresses. The feature was originally designed to support userspace
-drivers within guests.
+How about vmf_insert_pfn_pud()?
 
-> >> >> >> >> > But the name "sev_active" makes me scared because at least AMD guys who
-> >> >> >> >> > were doing the sensible thing and setting ACCESS_PLATFORM
-> >> >> >> >>
-> >> >> >> >> My understanding is, AMD guest-platform knows in advance that their
-> >> >> >> >> guest will run in secure mode and hence sets the flag at the time of VM
-> >> >> >> >> instantiation. Unfortunately we dont have that luxury on our platforms.
-> >> >> >> >
-> >> >> >> > Well you do have that luxury. It looks like that there are existing
-> >> >> >> > guests that already acknowledge ACCESS_PLATFORM and you are not happy
-> >> >> >> > with how that path is slow. So you are trying to optimize for
-> >> >> >> > them by clearing ACCESS_PLATFORM and then you have lost ability
-> >> >> >> > to invoke DMA API.
-> >> >> >> >
-> >> >> >> > For example if there was another flag just like ACCESS_PLATFORM
-> >> >> >> > just not yet used by anyone, you would be all fine using that right?
-> >> >> >>
-> >> >> >> Yes, a new flag sounds like a great idea. What about the definition
-> >> >> >> below?
-> >> >> >>
-> >> >> >> VIRTIO_F_ACCESS_PLATFORM_NO_IOMMU This feature has the same meaning as
-> >> >> >>     VIRTIO_F_ACCESS_PLATFORM both when set and when not set, with the
-> >> >> >>     exception that the IOMMU is explicitly defined to be off or bypassed
-> >> >> >>     when accessing memory addresses supplied to the device by the
-> >> >> >>     driver. This flag should be set by the guest if offered, but to
-> >> >> >>     allow for backward-compatibility device implementations allow for it
-> >> >> >>     to be left unset by the guest. It is an error to set both this flag
-> >> >> >>     and VIRTIO_F_ACCESS_PLATFORM.
-> >> >> >
-> >> >> > It looks kind of narrow but it's an option.
-> >> >>
-> >> >> Great!
-> >> >>
-> >> >> > I wonder how we'll define what's an iommu though.
-> >> >>
-> >> >> Hm, it didn't occur to me it could be an issue. I'll try.
-> >>
-> >> I rephrased it in terms of address translation. What do you think of
-> >> this version? The flag name is slightly different too:
-> >>
-> >>
-> >> VIRTIO_F_ACCESS_PLATFORM_NO_TRANSLATION This feature has the same
-> >>     meaning as VIRTIO_F_ACCESS_PLATFORM both when set and when not set,
-> >>     with the exception that address translation is guaranteed to be
-> >>     unnecessary when accessing memory addresses supplied to the device
-> >>     by the driver. Which is to say, the device will always use physical
-> >>     addresses matching addresses used by the driver (typically meaning
-> >>     physical addresses used by the CPU) and not translated further. This
-> >>     flag should be set by the guest if offered, but to allow for
-> >>     backward-compatibility device implementations allow for it to be
-> >>     left unset by the guest. It is an error to set both this flag and
-> >>     VIRTIO_F_ACCESS_PLATFORM.
-> >
-> > Thanks, I'll think about this approach. Will respond next week.
-> 
-> Thanks!
-> 
-> >> >> > Another idea is maybe something like virtio-iommu?
-> >> >>
-> >> >> You mean, have legacy guests use virtio-iommu to request an IOMMU
-> >> >> bypass? If so, it's an interesting idea for new guests but it doesn't
-> >> >> help with guests that are out today in the field, which don't have A
-> >> >> virtio-iommu driver.
-> >> >
-> >> > I presume legacy guests don't use encrypted memory so why do we
-> >> > worry about them at all?
-> >>
-> >> They don't use encrypted memory, but a host machine will run a mix of
-> >> secure and legacy guests. And since the hypervisor doesn't know whether
-> >> a guest will be secure or not at the time it is launched, legacy guests
-> >> will have to be launched with the same configuration as secure guests.
-> >
-> > OK and so I think the issue is that hosts generally fail if they set
-> > ACCESS_PLATFORM and guests do not negotiate it.
-> > So you can not just set ACCESS_PLATFORM for everyone.
-> > Is that the issue here?
-> 
-> Yes, that is one half of the issue. The other is that even if hosts
-> didn't fail, existing legacy guests wouldn't "take the initiative" of
-> not negotiating ACCESS_PLATFORM to get the improved performance. They'd
-> have to be modified to do that.
+-aneesh
 
-So there's a non-encrypted guest, hypervisor wants to set
-ACCESS_PLATFORM to allow encrypted guests but that will slow down legacy
-guests since their vIOMMU emulation is very slow.
-
-So enabling support for encryption slows down non-encrypted guests. Not
-great but not the end of the world, considering even older guests that
-don't support ACCESS_PLATFORM are completely broken and you do not seem
-to be too worried by that.
-
-For future non-encrypted guests, bypassing the emulated IOMMU for when
-that emulated IOMMU is very slow might be solvable in some other way,
-e.g. with virtio-iommu. Which reminds me, could you look at
-virtio-iommu as a solution for some of the issues?
-Review of that patchset from that POV would be appreciated.
-
-> --
-> Thiago Jung Bauermann
-> IBM Linux Technology Center
