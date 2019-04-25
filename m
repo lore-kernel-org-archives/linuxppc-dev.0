@@ -2,62 +2,71 @@ Return-Path: <SRS0=v/d1=S3=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.0 required=3.0 tests=MAILING_LIST_MULTI,SPF_PASS,
-	URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_MUTT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 76FFCC10F03
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Apr 2019 08:46:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7FE6FC10F03
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Apr 2019 12:04:18 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B7007217FA
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Apr 2019 08:46:23 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B7007217FA
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	by mail.kernel.org (Postfix) with ESMTPS id B9D0D2084B
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Apr 2019 12:04:17 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="itKCf7Um"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B9D0D2084B
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44qW4Y4SWNzDqbm
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Apr 2019 18:46:21 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44qbSv0fPKzDqZk
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Apr 2019 22:04:15 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=209.85.167.193; helo=mail-oi1-f193.google.com;
- envelope-from=rjwysocki@gmail.com; receiver=<UNKNOWN>)
+ spf=none (mailfrom) smtp.mailfrom=infradead.org
+ (client-ip=2607:7c80:54:e::133; helo=bombadil.infradead.org;
+ envelope-from=peterz@infradead.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=fail (p=none dis=none) header.from=kernel.org
-Received: from mail-oi1-f193.google.com (mail-oi1-f193.google.com
- [209.85.167.193])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ dmarc=none (p=none dis=none) header.from=infradead.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=infradead.org header.i=@infradead.org
+ header.b="itKCf7Um"; dkim-atps=neutral
+Received: from bombadil.infradead.org (bombadil.infradead.org
+ [IPv6:2607:7c80:54:e::133])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44qW2Q4zfXzDqZH
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Apr 2019 18:44:29 +1000 (AEST)
-Received: by mail-oi1-f193.google.com with SMTP id w139so16503348oie.9
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Apr 2019 01:44:29 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:mime-version:references:in-reply-to:from:date
- :message-id:subject:to:cc;
- bh=Bjt9UbhvtnUU4JF1Ugmh32U0petY5Yn4OCBHxmRAjRk=;
- b=Dwj0Hkose8YTg0cNprc9CCtYQkY8aSEL60qCEL7C4gjBe3Aw0T7ovXDll1oboi0/qq
- 4y6YwSk46vQSUfhOMEl3FVUu1U3W1OKyEPsamMvkDKm3JiotmcQEjj48DER2HqDTJRvh
- 9E9TV7w+7O+ei1ZE/+7fN3jbIEN7VE7kibW1kKuFNGz+tmb1BdWbXncnmmHybOLy9gUW
- YfYQpdcUfrMqzVVcGNCjzQ+E3q/gxTrkE49oobwNH2mSrgRVSOJMFDO+YD7NeWhPwjDk
- /LtfNji6CBcj7YtdjTkXOSO0H2DI8bImKcXDf//1AHD1VO2uvZogY8ZACcmB42Wl9nfv
- vNIQ==
-X-Gm-Message-State: APjAAAWBJmN8Xkz5TATMqBF6x/w2bNgQzDh9zX28FRxRkjPXCxPSsL5B
- WmLZkIOR718hA/Qdd1Sy3zYNtzTl9ex473lrFeA=
-X-Google-Smtp-Source: APXvYqzanEsCHYgN6ChHqJF1LmTkEoNSTo+9Gyq2P+euIofGGYu9abx/xIveUmPQLvCRXgC5r9O3U8qgxIthy2setfg=
-X-Received: by 2002:aca:f511:: with SMTP id t17mr2363558oih.115.1556181866282; 
- Thu, 25 Apr 2019 01:44:26 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44qbQr07yvzDqYK
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Apr 2019 22:02:26 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+ d=infradead.org; s=bombadil.20170209; h=In-Reply-To:Content-Type:MIME-Version
+ :References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
+ Content-Transfer-Encoding:Content-ID:Content-Description:Resent-Date:
+ Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:
+ List-Help:List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
+ bh=1qJZVo8k8mfgYlmp5TlLC0v12e3deJx7zXBcLuuf09Y=; b=itKCf7UmuYpBuLWRVW2Bbm8gh
+ Eu+0cXhmneoXZOnbipmmftF1WjzE0G/wpyQ38Uy9pfrFEaqqWy45fCY+vvi/by/YC31pQj0y/7lHp
+ ygA+X46hJbobIbWwVh6nNxJ3sxwS1L3EfifLAgx9ylVR/1bVGwEVa97r7scrmrcquEceVsbF3qbxt
+ g1mxIOpaZ362uDYeMnclHAN2Vg/uRhmD/Rh0CAwoRtrxdm4mcXrbyjD7F5e5Ud15VUxrmgYVdIcV8
+ VDjlxiZMb+502NldtQH3Jb+AQwTNz0xu+aRZIkb6vN8AiVzusMN98hHOEqkD+os7O1i0Gkd5Apo8u
+ +VshWaI7A==;
+Received: from j217100.upc-j.chello.nl ([24.132.217.100]
+ helo=hirez.programming.kicks-ass.net)
+ by bombadil.infradead.org with esmtpsa (Exim 4.90_1 #2 (Red Hat Linux))
+ id 1hJd55-00010Y-34; Thu, 25 Apr 2019 12:02:23 +0000
+Received: by hirez.programming.kicks-ass.net (Postfix, from userid 1000)
+ id 9295A29C22B16; Thu, 25 Apr 2019 14:02:21 +0200 (CEST)
+Date: Thu, 25 Apr 2019 14:02:21 +0200
+From: Peter Zijlstra <peterz@infradead.org>
+To: Nicholas Piggin <npiggin@gmail.com>
+Subject: Re: [PATCH v2 3/5] kernel/cpu: Allow non-zero CPU to be primary for
+ suspend / kexec freeze
+Message-ID: <20190425120221.GR4038@hirez.programming.kicks-ass.net>
+References: <20190411033448.20842-1-npiggin@gmail.com>
+ <20190411033448.20842-4-npiggin@gmail.com>
 MIME-Version: 1.0
-References: <20190424175306.25880-1-changbin.du@gmail.com>
-In-Reply-To: <20190424175306.25880-1-changbin.du@gmail.com>
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Date: Thu, 25 Apr 2019 10:44:14 +0200
-Message-ID: <CAJZ5v0i3iEyn1vBjPkA0X=8h_UrSeTNV_JduJq9qfYpgCOAPjQ@mail.gmail.com>
-Subject: Re: [PATCH v5 00/23] Include linux ACPI docs into Sphinx TOC tree
-To: Changbin Du <changbin.du@gmail.com>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20190411033448.20842-4-npiggin@gmail.com>
+User-Agent: Mutt/1.10.1 (2018-07-13)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -69,32 +78,31 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Fenghua Yu <fenghua.yu@intel.com>,
- Mauro Carvalho Chehab <mchehab+samsung@kernel.org>,
- "open list:DOCUMENTATION" <linux-doc@vger.kernel.org>,
- linux-gpio@vger.kernel.org, Jonathan Corbet <corbet@lwn.net>,
- "Rafael J. Wysocki" <rjw@rjwysocki.net>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
- Bjorn Helgaas <bhelgaas@google.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Cc: linux-arch@vger.kernel.org, Frederic Weisbecker <fweisbec@gmail.com>,
+ "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>,
+ linux-kernel@vger.kernel.org, Ingo Molnar <mingo@redhat.com>,
+ Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-.On Wed, Apr 24, 2019 at 7:54 PM Changbin Du <changbin.du@gmail.com> wrote:
->
-> Hi All,
-> The kernel now uses Sphinx to generate intelligent and beautiful documentation
-> from reStructuredText files. I converted all of the Linux ACPI/PCI/X86 docs to
-> reST format in this serias.
->
-> The hieararchy of ACPI docs are based on Corbet's suggestion:
-> https://lkml.org/lkml/2019/4/3/1047
-> I did some adjustment according to the content and finally they are placed as:
-> Documentation/firmware-guide/acpi/
+On Thu, Apr 11, 2019 at 01:34:46PM +1000, Nicholas Piggin wrote:
+> This patch provides an arch option, ARCH_SUSPEND_NONZERO_CPU, to
+> opt-in to allowing suspend to occur on one of the housekeeping CPUs
+> rather than hardcoded CPU0.
+> 
+> This will allow CPU0 to be a nohz_full CPU with a later change.
+> 
+> It may be possible for platforms with hardware/firmware restrictions
+> on suspend/wake effectively support this by handing off the final
+> stage to CPU0 when kernel housekeeping is no longer required. Another
+> option is to make housekeeping / nohz_full mask dynamic at runtime,
+> but the complexity could not be justified at this time.
 
-I'd like to queue up this series, but it is missing a patch to create
-Documentation/firmware-guide/acpi/index.rst.
+Should we not tie this into whatever already allows an achitecture to
+hotplug CPU-0? For instance, x86 default disallows this but has
+cpu0_hotpluggable to allow this.
 
-Care to provide one?
+Presumably POWER already allows hotplugging CPU-0 ?
+
+
