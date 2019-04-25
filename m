@@ -7,76 +7,76 @@ X-Spam-Status: No, score=-8.6 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
 	SPF_PASS,USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 41555C43219
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Apr 2019 15:59:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1B0D5C43218
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Apr 2019 16:01:53 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3595E20878
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Apr 2019 15:59:44 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 0A7FD20878
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Apr 2019 16:01:52 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="EoeLbePD"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3595E20878
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="ZXBpAtwb"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0A7FD20878
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44qhhY3qdyzDqll
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Apr 2019 01:59:41 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44qhl22JpTzDqnD
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Apr 2019 02:01:50 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=2607:f8b0:4864:20::541; helo=mail-pg1-x541.google.com;
+ (client-ip=2607:f8b0:4864:20::542; helo=mail-pg1-x542.google.com;
  envelope-from=changbin.du@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="EoeLbePD"; 
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="ZXBpAtwb"; 
  dkim-atps=neutral
-Received: from mail-pg1-x541.google.com (mail-pg1-x541.google.com
- [IPv6:2607:f8b0:4864:20::541])
+Received: from mail-pg1-x542.google.com (mail-pg1-x542.google.com
+ [IPv6:2607:f8b0:4864:20::542])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44qh5P2cj1zDqKD
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Apr 2019 01:32:41 +1000 (AEST)
-Received: by mail-pg1-x541.google.com with SMTP id l18so29880pgj.6
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Apr 2019 08:32:41 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44qh5X0FKFzDqKD
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Apr 2019 01:32:47 +1000 (AEST)
+Received: by mail-pg1-x542.google.com with SMTP id e6so35503pgc.4
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Apr 2019 08:32:47 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
  h=from:to:cc:subject:date:message-id:in-reply-to:references
  :mime-version:content-transfer-encoding;
- bh=CaQAymN7670xs/t0KNGu5btmxbdCn1nriXbjUUgfR7I=;
- b=EoeLbePDtb/Yr7j7aqcMDgSLyFG2JcA8uqLWiGExLunJmpV2qOxREsOZ9vM3/w1UnR
- Tz/RkIdPtCvhX4cQQ3yXJZbuOmolFOtacMAN6U1sbUf04z1g6irHZJbdwMLxIah1q8BG
- ldfYTY5vgQI7JD0h0J1kUo6up9aI6ktzMV+VwrdV6CnvB2Aar+SiA5++y/qKmwbW4khL
- 6G4cs0pP/UMiydahDBTusIZa/nHIBnpJ9AlhfVOAwCBPo/XYB1YsPKGeavJ5Bg5oLOzm
- kim2O3FLLNbeBqeKFhLoBfOj3CvuHIvkRiQU4ZTP3HBNEz1nLWBZKuRTcbX/ZlXzkF+V
- g2Rw==
+ bh=SyEwlX82c6Bq2y5y3PF+BOLHdI7/R7pprHZNYOVIDmE=;
+ b=ZXBpAtwbbbojc7JxUhsbCf3bMqrAJug3Vl1FxI+U8Lidue3J9RNX+CCaDfjaxmJK5M
+ Sg0WMoLR2AvBx/ZlqsNZ7DQrNTyAl+OBrBh+Vz4CtsJjdvlZi92cOBo98OXq78nzxGaw
+ tDsT0yEPyQcOP2Uy6Fy1aMGc9vuVKTbGEIa47KW18cdJ0oYAseRpMg6POweWofg3Fqtu
+ YeGPwRflm2kL4c2wIfrr9IB1/s7IK4tyUSdkK0HUV7F2nw6Uu48BdJLJfeuOTTt4cYjm
+ 36bnYMTxIrqdeVDMnR+UKzSbJNttXwoyn8PqIa/Ntv5rHTNyTzyqx1JjMxHdD8DnoICs
+ Izhw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
  :references:mime-version:content-transfer-encoding;
- bh=CaQAymN7670xs/t0KNGu5btmxbdCn1nriXbjUUgfR7I=;
- b=EgBsYA8L8gZ9oMsigeAxqhLb5PcvATnxZG9rBrkI6UnUzFU/Kv5S905dS9ZKvgGQ2r
- 3jMYL+gNLIzyn50HzwrIo91s7Bo8mxbZPiw6wYKq4lDeOvANd2SG2+CEMkJ1gvVwBOJN
- t5tcAFx5WqJftpjsXtrGscixdcGH1PYyg8zx7nNRWk7PoKCjpcjvUVPDZ7rKjklkubbr
- TcnkK5tDtpGqkGLiyDHnsB+3uEYe+3zBm/jxxUoZfdzhVjE3X4tNtkEm3DN4zrV6wYyP
- 5g6s+VzdIrhTC4LJIaJmNFKYO/pblbr7oHd1Ua0QstICbIX/M5JRUrqPOzM1ELcAYZip
- qZzg==
-X-Gm-Message-State: APjAAAV9kBDkxfQbShRSejBvianJrO0neM0uiiDhxWEPEG9wan9QuZ5I
- DyJ5qbvjheVyPUbyhM6ZE60=
-X-Google-Smtp-Source: APXvYqwu8IO/JcftwC6o2OO6yOkDsJw7boJEkhDfJjmmT1Gcs9QRkUNd/O8RephW2yg3Vg4Hv5WB6A==
-X-Received: by 2002:a65:6205:: with SMTP id d5mr2463274pgv.61.1556206358681;
- Thu, 25 Apr 2019 08:32:38 -0700 (PDT)
+ bh=SyEwlX82c6Bq2y5y3PF+BOLHdI7/R7pprHZNYOVIDmE=;
+ b=k1bnSZAsFZTgXw4nqXIVl0P7VMRV6l5TAa+wuw/+TFTe8wRAN5MKg8Q1cXDcBsjOqs
+ KGQi7gogEYQ40jIe7Uego5CO4vI6SMh2LDyERh8aPn8N79RHTeXpkxmbKTMaQYFyfdX3
+ s0fOmOItIpY35EHrEaQVtkYn5+DykuSx8i0UYhOPC23qWRrMBiB3Z51wO6WEU4RCaXkY
+ /fr7i2jTbO0wvVB2vjdDLty5J9XaCMFj74OV89P1qbmB0Y++j8gOuqtlyfhgzctwiyiE
+ fQIEfpedoyPAAD7GewPmC80xepriwF0I+ZP3jMKqq8WMMQRi0/JrPMz8XLRqkB0wiL5e
+ XU1g==
+X-Gm-Message-State: APjAAAV6/9N0IyXDivDYspUJzGM8zWLo2RPK/55MRpY1K3AOI3i6wa1i
+ itYgbEGKu4z3a/22XoENY90=
+X-Google-Smtp-Source: APXvYqzBwVFTuK1bQGBeqX5wlDE1yU17f/KuEgz4bEwbfPgIlaGhp+8dXp0z/5brq6RQhcdg5i+xpg==
+X-Received: by 2002:a63:6e09:: with SMTP id j9mr38174965pgc.416.1556206365276; 
+ Thu, 25 Apr 2019 08:32:45 -0700 (PDT)
 Received: from localhost.localdomain ([104.238.181.70])
- by smtp.gmail.com with ESMTPSA id c14sm2643363pgj.94.2019.04.25.08.32.33
+ by smtp.gmail.com with ESMTPSA id c14sm2643363pgj.94.2019.04.25.08.32.39
  (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
- Thu, 25 Apr 2019 08:32:37 -0700 (PDT)
+ Thu, 25 Apr 2019 08:32:44 -0700 (PDT)
 From: Changbin Du <changbin.du@gmail.com>
 To: rjw@rjwysocki.net,
 	Jonathan Corbet <corbet@lwn.net>
-Subject: [PATCH v6 11/24] Documentation: ACPI: move dsdt-override.txt to
- admin-guide/acpi and convert to reST
-Date: Thu, 25 Apr 2019 23:31:04 +0800
-Message-Id: <20190425153117.16057-12-changbin.du@gmail.com>
+Subject: [PATCH v6 12/24] Documentation: ACPI: move i2c-muxes.txt to
+ firmware-guide/acpi and convert to reST
+Date: Thu, 25 Apr 2019 23:31:05 +0800
+Message-Id: <20190425153117.16057-13-changbin.du@gmail.com>
 X-Mailer: git-send-email 2.20.1
 In-Reply-To: <20190425153117.16057-1-changbin.du@gmail.com>
 References: <20190425153117.16057-1-changbin.du@gmail.com>
@@ -107,41 +107,156 @@ add it to Sphinx TOC tree. No essential content change.
 Signed-off-by: Changbin Du <changbin.du@gmail.com>
 Reviewed-by: Mauro Carvalho Chehab <mchehab+samsung@kernel.org>
 ---
- .../acpi/dsdt-override.rst}                               | 8 +++++++-
- Documentation/admin-guide/acpi/index.rst                  | 1 +
- 2 files changed, 8 insertions(+), 1 deletion(-)
- rename Documentation/{acpi/dsdt-override.txt => admin-guide/acpi/dsdt-override.rst} (56%)
+ Documentation/acpi/i2c-muxes.txt              | 58 ------------------
+ .../firmware-guide/acpi/i2c-muxes.rst         | 61 +++++++++++++++++++
+ Documentation/firmware-guide/acpi/index.rst   |  3 +-
+ 3 files changed, 63 insertions(+), 59 deletions(-)
+ delete mode 100644 Documentation/acpi/i2c-muxes.txt
+ create mode 100644 Documentation/firmware-guide/acpi/i2c-muxes.rst
 
-diff --git a/Documentation/acpi/dsdt-override.txt b/Documentation/admin-guide/acpi/dsdt-override.rst
-similarity index 56%
-rename from Documentation/acpi/dsdt-override.txt
-rename to Documentation/admin-guide/acpi/dsdt-override.rst
-index 784841caa6e6..50bd7f194bf4 100644
---- a/Documentation/acpi/dsdt-override.txt
-+++ b/Documentation/admin-guide/acpi/dsdt-override.rst
-@@ -1,6 +1,12 @@
+diff --git a/Documentation/acpi/i2c-muxes.txt b/Documentation/acpi/i2c-muxes.txt
+deleted file mode 100644
+index 9fcc4f0b885e..000000000000
+--- a/Documentation/acpi/i2c-muxes.txt
++++ /dev/null
+@@ -1,58 +0,0 @@
+-ACPI I2C Muxes
+---------------
+-
+-Describing an I2C device hierarchy that includes I2C muxes requires an ACPI
+-Device () scope per mux channel.
+-
+-Consider this topology:
+-
+-+------+   +------+
+-| SMB1 |-->| MUX0 |--CH00--> i2c client A (0x50)
+-|      |   | 0x70 |--CH01--> i2c client B (0x50)
+-+------+   +------+
+-
+-which corresponds to the following ASL:
+-
+-Device (SMB1)
+-{
+-    Name (_HID, ...)
+-    Device (MUX0)
+-    {
+-        Name (_HID, ...)
+-        Name (_CRS, ResourceTemplate () {
+-            I2cSerialBus (0x70, ControllerInitiated, I2C_SPEED,
+-                          AddressingMode7Bit, "^SMB1", 0x00,
+-                          ResourceConsumer,,)
+-        }
+-
+-        Device (CH00)
+-        {
+-            Name (_ADR, 0)
+-
+-            Device (CLIA)
+-            {
+-                Name (_HID, ...)
+-                Name (_CRS, ResourceTemplate () {
+-                    I2cSerialBus (0x50, ControllerInitiated, I2C_SPEED,
+-                                  AddressingMode7Bit, "^CH00", 0x00,
+-                                  ResourceConsumer,,)
+-                }
+-            }
+-        }
+-
+-        Device (CH01)
+-        {
+-            Name (_ADR, 1)
+-
+-            Device (CLIB)
+-            {
+-                Name (_HID, ...)
+-                Name (_CRS, ResourceTemplate () {
+-                    I2cSerialBus (0x50, ControllerInitiated, I2C_SPEED,
+-                                  AddressingMode7Bit, "^CH01", 0x00,
+-                                  ResourceConsumer,,)
+-                }
+-            }
+-        }
+-    }
+-}
+diff --git a/Documentation/firmware-guide/acpi/i2c-muxes.rst b/Documentation/firmware-guide/acpi/i2c-muxes.rst
+new file mode 100644
+index 000000000000..3a8997ccd7c4
+--- /dev/null
++++ b/Documentation/firmware-guide/acpi/i2c-muxes.rst
+@@ -0,0 +1,61 @@
 +.. SPDX-License-Identifier: GPL-2.0
 +
-+===============
-+Overriding DSDT
-+===============
++==============
++ACPI I2C Muxes
++==============
 +
- Linux supports a method of overriding the BIOS DSDT:
- 
--CONFIG_ACPI_CUSTOM_DSDT builds the image into the kernel.
-+CONFIG_ACPI_CUSTOM_DSDT - builds the image into the kernel.
- 
- When to use this method is described in detail on the
- Linux/ACPI home page:
-diff --git a/Documentation/admin-guide/acpi/index.rst b/Documentation/admin-guide/acpi/index.rst
-index 09e4e81e4fb7..d68e9914c5ff 100644
---- a/Documentation/admin-guide/acpi/index.rst
-+++ b/Documentation/admin-guide/acpi/index.rst
-@@ -9,3 +9,4 @@ the Linux ACPI support.
-    :maxdepth: 1
- 
-    initrd_table_override
-+   dsdt-override
++Describing an I2C device hierarchy that includes I2C muxes requires an ACPI
++Device () scope per mux channel.
++
++Consider this topology::
++
++    +------+   +------+
++    | SMB1 |-->| MUX0 |--CH00--> i2c client A (0x50)
++    |      |   | 0x70 |--CH01--> i2c client B (0x50)
++    +------+   +------+
++
++which corresponds to the following ASL::
++
++    Device (SMB1)
++    {
++        Name (_HID, ...)
++        Device (MUX0)
++        {
++            Name (_HID, ...)
++            Name (_CRS, ResourceTemplate () {
++                I2cSerialBus (0x70, ControllerInitiated, I2C_SPEED,
++                            AddressingMode7Bit, "^SMB1", 0x00,
++                            ResourceConsumer,,)
++            }
++
++            Device (CH00)
++            {
++                Name (_ADR, 0)
++
++                Device (CLIA)
++                {
++                    Name (_HID, ...)
++                    Name (_CRS, ResourceTemplate () {
++                        I2cSerialBus (0x50, ControllerInitiated, I2C_SPEED,
++                                    AddressingMode7Bit, "^CH00", 0x00,
++                                    ResourceConsumer,,)
++                    }
++                }
++            }
++
++            Device (CH01)
++            {
++                Name (_ADR, 1)
++
++                Device (CLIB)
++                {
++                    Name (_HID, ...)
++                    Name (_CRS, ResourceTemplate () {
++                        I2cSerialBus (0x50, ControllerInitiated, I2C_SPEED,
++                                    AddressingMode7Bit, "^CH01", 0x00,
++                                    ResourceConsumer,,)
++                    }
++                }
++            }
++        }
++    }
+diff --git a/Documentation/firmware-guide/acpi/index.rst b/Documentation/firmware-guide/acpi/index.rst
+index d1d069b26bbc..1c89888f6ee8 100644
+--- a/Documentation/firmware-guide/acpi/index.rst
++++ b/Documentation/firmware-guide/acpi/index.rst
+@@ -12,4 +12,5 @@ ACPI Support
+    osi
+    method-customizing
+    DSD-properties-rules
+-   gpio-properties
+\ No newline at end of file
++   gpio-properties
++   i2c-muxes
 -- 
 2.20.1
 
