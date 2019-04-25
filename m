@@ -3,24 +3,24 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
 X-Spam-Status: No, score=-11.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_PASS,
-	URIBL_BLOCKED autolearn=ham autolearn_force=no version=3.4.0
+	INCLUDES_PATCH,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_PASS
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 28D2BC43218
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Apr 2019 19:27:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DE42AC43218
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Apr 2019 19:29:33 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id A79F920717
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Apr 2019 19:27:46 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id B12A220717
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Apr 2019 19:29:33 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=sirena.org.uk header.i=@sirena.org.uk header.b="G/AS0zIg"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A79F920717
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=sirena.org.uk header.i=@sirena.org.uk header.b="N8EotmIJ"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B12A220717
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44qnJb40gVzDqYB
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Apr 2019 05:27:43 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44qnLg3XjGzDqf2
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Apr 2019 05:29:31 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=none (mailfrom) smtp.mailfrom=sirena.org.uk
  (client-ip=2a01:7e01::f03c:91ff:fed4:a3b6; helo=heliosphere.sirena.org.uk;
@@ -29,39 +29,39 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=sirena.org.uk header.i=@sirena.org.uk
- header.b="G/AS0zIg"; dkim-atps=neutral
+ header.b="N8EotmIJ"; dkim-atps=neutral
 Received: from heliosphere.sirena.org.uk (heliosphere.sirena.org.uk
  [IPv6:2a01:7e01::f03c:91ff:fed4:a3b6])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44qnFD2p87zDqbv
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Apr 2019 05:24:46 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44qnHK700fzDqdV
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Apr 2019 05:26:37 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
  d=sirena.org.uk; s=20170815-heliosphere; h=Date:Message-Id:In-Reply-To:
  Subject:Cc:To:From:Sender:Reply-To:MIME-Version:Content-Type:
  Content-Transfer-Encoding:Content-ID:Content-Description:Resent-Date:
  Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:References:
  List-Id:List-Help:List-Unsubscribe:List-Subscribe:List-Post:List-Owner:
- List-Archive; bh=nzzIezC/WHn6VFk9//45ckJKMCwRNL/JAxMy0nfHToE=; b=G/AS0zIgJZj/
- UCFCCOcCwsoiAHvszppcVSwu/EvXqWbgmdYUl1XNjX20ithBSGM+MDOM8gl91IDzXsgQqyF9AlKWQ
- +gRU6TmlUf/sms0iSsSCW8JG2aIphxpwKUMfg/hjRyThrOXlvQ6/MwNWXeIvrOsiY4iAI1WOFe/fL
- 5wD/U=;
+ List-Archive; bh=nzzIezC/WHn6VFk9//45ckJKMCwRNL/JAxMy0nfHToE=; b=N8EotmIJhqhd
+ OcU1ohDAGykw2j4jsrMRUs8u2pDC8Dy2ILLFnHbBMifn+VXVAcP3AE+xKRncobcg5jgA19ytsT9C0
+ UsPoEBELMZ9PVu8ZFxJ5zh+0X9m+dL1UeKQ5odATG80L3m7/BdW9/TSryXmQx9cFnWDNcePEg4qUU
+ IDKp8=;
 Received: from 188.29.164.24.threembb.co.uk ([188.29.164.24]
  helo=finisterre.ee.mobilebroadband)
  by heliosphere.sirena.org.uk with esmtpsa
  (TLS1.2:ECDHE_RSA_AES_256_GCM_SHA384:256) (Exim 4.89)
  (envelope-from <broonie@sirena.org.uk>)
- id 1hJjyz-0004Yd-Hz; Thu, 25 Apr 2019 19:24:33 +0000
+ id 1hJk0u-0004d5-FE; Thu, 25 Apr 2019 19:26:32 +0000
 Received: by finisterre.ee.mobilebroadband (Postfix, from userid 1000)
- id 7BBE2441D3C; Thu, 25 Apr 2019 20:24:32 +0100 (BST)
+ id 28178441D3C; Thu, 25 Apr 2019 20:26:27 +0100 (BST)
 From: Mark Brown <broonie@kernel.org>
 To: Daniel Baluta <daniel.baluta@nxp.com>
 Subject: Applied "ASoC: fsl_sai: Update is_slave_mode with correct value" to
  the asoc tree
 In-Reply-To: <20190421193853.10188-2-daniel.baluta@nxp.com>
 X-Patchwork-Hint: ignore
-Message-Id: <20190425192432.7BBE2441D3C@finisterre.ee.mobilebroadband>
-Date: Thu, 25 Apr 2019 20:24:32 +0100 (BST)
+Message-Id: <20190425192627.28178441D3C@finisterre.ee.mobilebroadband>
+Date: Thu, 25 Apr 2019 20:26:27 +0100 (BST)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
