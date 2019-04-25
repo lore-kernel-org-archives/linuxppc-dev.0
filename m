@@ -5,83 +5,81 @@ X-Spam-Level:
 X-Spam-Status: No, score=-2.6 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
 	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_NEOMUTT autolearn=unavailable autolearn_force=no version=3.4.0
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0B406C43219
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Apr 2019 15:22:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3759DC43219
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Apr 2019 15:37:49 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id A201120675
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Apr 2019 15:22:38 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id C091F206C0
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Apr 2019 15:37:48 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="h9nSvzUU"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A201120675
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="uZ0/y/Ml"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C091F206C0
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44qgsm0dVvzDqcj
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Apr 2019 01:22:36 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44qhCF2jL9zDqXv
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Apr 2019 01:37:45 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=2607:f8b0:4864:20::641; helo=mail-pl1-x641.google.com;
+ (client-ip=2607:f8b0:4864:20::541; helo=mail-pg1-x541.google.com;
  envelope-from=changbin.du@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="h9nSvzUU"; 
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="uZ0/y/Ml"; 
  dkim-atps=neutral
-Received: from mail-pl1-x641.google.com (mail-pl1-x641.google.com
- [IPv6:2607:f8b0:4864:20::641])
+Received: from mail-pg1-x541.google.com (mail-pg1-x541.google.com
+ [IPv6:2607:f8b0:4864:20::541])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44qgqj0g5pzDqSv
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Apr 2019 01:20:48 +1000 (AEST)
-Received: by mail-pl1-x641.google.com with SMTP id z8so1590201pln.4
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Apr 2019 08:20:48 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44qh4C65hCzDqWJ
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Apr 2019 01:31:39 +1000 (AEST)
+Received: by mail-pg1-x541.google.com with SMTP id y3so12424pgk.12
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Apr 2019 08:31:39 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=date:from:to:cc:subject:message-id:references:mime-version
- :content-disposition:in-reply-to:user-agent;
- bh=yoGmyiBWeZnSsqkaBcEqMFAHcCmUDlyEJTGPecR9P2k=;
- b=h9nSvzUU1D22znVNFQ1LSGhY/0zTExAwrch/8IAqB2qOf32x85XkppW9Qkg8apnTLx
- U31SxfBskuD4jasmcIot/IIyg9VB9JzfcVi/0Ek8ofJ2n0RE/RGVrcRMdRu+1hLUMcry
- BSwLTfgRv9LZcYh2Ptpzeg5Eq7Y91dIZxyWOgWOSPs4a175JAS+jYOyYie3BZqWehcGQ
- Cjowx9sJzpwok5JaMrlbTeb0mEY34SZ4cuEC0NnSSc4naB8eFtosl07D1xt6hhH17Ls5
- jAqBNuY9EwsRHZy5pfApE03f1201K1ED/uINpnqrp0Bi4IRO+XqDAjsKqIO/4yuw7gGF
- K6XA==
+ h=from:to:cc:subject:date:message-id:mime-version
+ :content-transfer-encoding;
+ bh=38uz3qJNPvtDRMAt1xDrXWeaVF5xlbamdqed+OfZn+E=;
+ b=uZ0/y/Mls3TIS2W94diWWMLbkQi4vN3XpTJrZPsHzlrU3dQVgRAgBxiRX20Ynd2pOV
+ Kedu24tJ9bD/n4LWcVDT+4XXepndPCeosMaDvjjByhsUgBqo9fsaPLNZ7A5cJs3BdpVr
+ 6XtGsYeDGWqrVEAWO3SmSKFVLHTRDDJcBWVYKOTgmhoDB9ZuB+humMRDlaJlXP4YFX4B
+ h0bJktvWFhjU0aToCZNJRuGUB+TWBVOEI9JV5lXskoFstVym5kEeoAkjYFiFeLRVZ3Nj
+ uP1YpATEuVZaWN+EjnNQzd+de4ekJCFUkWEqbj+rqtv87aX/Q6MUwnalMElgfEgR/jf5
+ MC2Q==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
- h=x-gm-message-state:date:from:to:cc:subject:message-id:references
- :mime-version:content-disposition:in-reply-to:user-agent;
- bh=yoGmyiBWeZnSsqkaBcEqMFAHcCmUDlyEJTGPecR9P2k=;
- b=cqfHW1ZMYN9p94h3yZTtsBKY1U7Qlxuknas2IuxpIg7iywhvM7iNDam2juDxzobyuC
- CT+4gkblolHwvapCmRyHolHWpX6DsbBXvVL35w8dlnaGzYkspFWVmZcG4O1wuqRCYuI9
- kreYYZa6xvU/ZeSN2N4LaSDdYauECWnfX1cPvWjQMr2auOlsTwUNdGV2v383st88OPix
- 7I0jSMQlf7Xer+ytOXH4MV1bb5TRkGqCXzSFcvLGpNEDwA9qutD1mXoyZ57assx+9TUR
- c0aJBDEemVO9NvHpUNEh4aB0sa6tOuexgsJaoYF4T5S5boOtqPl5yAAQ2SwXrfr5OuIU
- 1itw==
-X-Gm-Message-State: APjAAAWVouKwqhDCyp6iYk4uQ2kcVrnwO+alR4axIe2ZfXCemN5DBsTX
- carCHVc1c9MCv3aIJ4JhFlQ=
-X-Google-Smtp-Source: APXvYqwiI2NpjrX77r+6N7Cj/eYgSoQZlyoYY9SaicaEwRGqAwKcL+aCStyywLLg2owA0vEn3apKfQ==
-X-Received: by 2002:a17:902:407:: with SMTP id 7mr40074978ple.62.1556205645128; 
- Thu, 25 Apr 2019 08:20:45 -0700 (PDT)
-Received: from mail.google.com ([104.238.181.70])
- by smtp.gmail.com with ESMTPSA id v15sm30955894pff.105.2019.04.25.08.20.39
- (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
- Thu, 25 Apr 2019 08:20:44 -0700 (PDT)
-Date: Thu, 25 Apr 2019 23:20:35 +0800
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+ :content-transfer-encoding;
+ bh=38uz3qJNPvtDRMAt1xDrXWeaVF5xlbamdqed+OfZn+E=;
+ b=gOJtvaXUt9AEkGjvH8Y4ZJhT9MNiSnpZRgO2oLQFk8Dm3NG466cWZ1O9UWEOFqgw/b
+ XSDzswZT++FLRYtTeIDa+Cx6ESkFxIeDooqBEG08Ci3WGgPg8XTxLdP2zb137K7CfVLt
+ 9tstd5zAEfgMmaQ2j6EI57hPXds+hYV5vyKfBih4PqQgg9ptT/jT75TCf8SBQiY8z1XV
+ 0VOjAWD/VZNEFHPiDbGiVP9ot3T3QkxX14XRFsdhT9TRT24FDTqzsGvItDBWNJInhzBe
+ yDif8jCmhLDTnQkhxOP2IRbjvn2dM2js63tdCthGEMGat00xjuSztzmI6ZjWcEQ7+WMG
+ eR1g==
+X-Gm-Message-State: APjAAAVPXn+1Kt+jLCrFYddEDKi8XIlUATnduVpHSnbA6DhZSdv7Jmy7
+ lFHtbjafkQZ5sZsy1dMUOS8=
+X-Google-Smtp-Source: APXvYqz4vstQOb+DmzkKaxVX1jZv48TV1t+eOGfn+77NOzK+ntFfMZpuZbEP4+D+DuaxqbiN8B/eiA==
+X-Received: by 2002:aa7:884b:: with SMTP id k11mr21257474pfo.49.1556206294356; 
+ Thu, 25 Apr 2019 08:31:34 -0700 (PDT)
+Received: from localhost.localdomain ([104.238.181.70])
+ by smtp.gmail.com with ESMTPSA id c14sm2643363pgj.94.2019.04.25.08.31.28
+ (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
+ Thu, 25 Apr 2019 08:31:33 -0700 (PDT)
 From: Changbin Du <changbin.du@gmail.com>
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH v5 00/23] Include linux ACPI docs into Sphinx TOC tree
-Message-ID: <20190425152034.u4q6wjhm3yfhbnzp@mail.google.com>
-References: <20190424175306.25880-1-changbin.du@gmail.com>
- <CAJZ5v0i3iEyn1vBjPkA0X=8h_UrSeTNV_JduJq9qfYpgCOAPjQ@mail.gmail.com>
+To: rjw@rjwysocki.net,
+	Jonathan Corbet <corbet@lwn.net>
+Subject: [PATCH v6 00/24] Include linux ACPI docs into Sphinx TOC tree
+Date: Thu, 25 Apr 2019 23:30:53 +0800
+Message-Id: <20190425153117.16057-1-changbin.du@gmail.com>
+X-Mailer: git-send-email 2.20.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <CAJZ5v0i3iEyn1vBjPkA0X=8h_UrSeTNV_JduJq9qfYpgCOAPjQ@mail.gmail.com>
-User-Agent: NeoMutt/20180716
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -93,39 +91,182 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Fenghua Yu <fenghua.yu@intel.com>,
- Mauro Carvalho Chehab <mchehab+samsung@kernel.org>,
- Jonathan Corbet <corbet@lwn.net>, linux-gpio@vger.kernel.org,
- "open list:DOCUMENTATION" <linux-doc@vger.kernel.org>,
- "Rafael J. Wysocki" <rjw@rjwysocki.net>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
- Bjorn Helgaas <bhelgaas@google.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Changbin Du <changbin.du@gmail.com>
+Cc: fenghua.yu@intel.com, mchehab+samsung@kernel.org, linux-doc@vger.kernel.org,
+ linux-gpio@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linux-acpi@vger.kernel.org, Bjorn Helgaas <bhelgaas@google.com>,
+ linuxppc-dev@lists.ozlabs.org, Changbin Du <changbin.du@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, Apr 25, 2019 at 10:44:14AM +0200, Rafael J. Wysocki wrote:
-> .On Wed, Apr 24, 2019 at 7:54 PM Changbin Du <changbin.du@gmail.com> wrote:
-> >
-> > Hi All,
-> > The kernel now uses Sphinx to generate intelligent and beautiful documentation
-> > from reStructuredText files. I converted all of the Linux ACPI/PCI/X86 docs to
-> > reST format in this serias.
-> >
-> > The hieararchy of ACPI docs are based on Corbet's suggestion:
-> > https://lkml.org/lkml/2019/4/3/1047
-> > I did some adjustment according to the content and finally they are placed as:
-> > Documentation/firmware-guide/acpi/
-> 
-> I'd like to queue up this series, but it is missing a patch to create
-> Documentation/firmware-guide/acpi/index.rst.
-> 
-> Care to provide one?
-oops, the first patch is missed. Let me add it next.
+Hi All,
+The kernel now uses Sphinx to generate intelligent and beautiful documentation
+from reStructuredText files. I converted all of the Linux ACPI/PCI/X86 docs to
+reST format in this serias.
+
+The hieararchy of ACPI docs are based on Corbet's suggestion:
+https://lkml.org/lkml/2019/4/3/1047
+I did some adjustment according to the content and finally they are placed as:
+Documentation/firmware-guide/acpi/
+├── acpi-lid.rst
+├── aml-debugger.rst
+├── apei
+│   ├── einj.rst
+│   └── output_format.rst
+├── debug.rst
+├── dsd
+│   ├── data-node-references.rst
+│   └── graph.rst
+├── DSD-properties-rules.rst
+├── enumeration.rst
+├── gpio-properties.rst
+├── i2c-muxes.rst
+├── lpit.rst
+├── method-customizing.rst
+├── method-tracing.rst
+├── namespace.rst
+├── osi.rst
+└── video_extension.rst
+Documentation/driver-api/acpi/
+├── linuxized-acpica.rst
+└── scan_handlers.rst
+ocumentation/admin-guide/acpi/
+├── cppc_sysfs.rst
+├── dsdt-override.rst
+├── initrd_table_override.rst
+└── ssdt-overlays.rst
+
+For you to preview, please visit below url:
+http://www.bytemem.com:8080/kernel-doc/index.html
+
+Many thanks for all the comments!
+
+v6: add a missed patch.
+v5: Fix all comments from Mauro. Thanks for your careful review!
+
+Changbin Du (24):
+  Documentation: add Linux ACPI to Sphinx TOC tree
+  Documentation: ACPI: move namespace.txt to firmware-guide/acpi and
+    convert to reST
+  Documentation: ACPI: move enumeration.txt to firmware-guide/acpi and
+    convert to reST
+  Documentation: ACPI: move osi.txt to firmware-guide/acpi and convert
+    to reST
+  Documentation: ACPI: move linuxized-acpica.txt to driver-api/acpi and
+    convert to  reST
+  Documentation: ACPI: move scan_handlers.txt to driver-api/acpi and
+    convert to reST
+  Documentation: ACPI: move DSD-properties-rules.txt to
+    firmware-guide/acpi and covert to reST
+  Documentation: ACPI: move gpio-properties.txt to firmware-guide/acpi
+    and convert to reST
+  Documentation: ACPI: move method-customizing.txt to
+    firmware-guide/acpi and convert to reST
+  Documentation: ACPI: move initrd_table_override.txt to
+    admin-guide/acpi and convert to reST
+  Documentation: ACPI: move dsdt-override.txt to admin-guide/acpi and
+    convert to reST
+  Documentation: ACPI: move i2c-muxes.txt to firmware-guide/acpi and
+    convert to reST
+  Documentation: ACPI: move acpi-lid.txt to firmware-guide/acpi and
+    convert to reST
+  Documentation: ACPI: move dsd/graph.txt to firmware-guide/acpi and
+    convert to reST
+  Documentation: ACPI: move dsd/data-node-references.txt to
+    firmware-guide/acpi and convert to reST
+  Documentation: ACPI: move debug.txt to firmware-guide/acpi and convert
+    to reST
+  Documentation: ACPI: move method-tracing.txt to firmware-guide/acpi
+    and convert to rsST
+  Documentation: ACPI: move aml-debugger.txt to firmware-guide/acpi and
+    convert to reST
+  Documentation: ACPI: move apei/output_format.txt to
+    firmware-guide/acpi and convert to reST
+  Documentation: ACPI: move apei/einj.txt to firmware-guide/acpi and
+    convert to reST
+  Documentation: ACPI: move cppc_sysfs.txt to admin-guide/acpi and
+    convert to reST
+  Documentation: ACPI: move lpit.txt to firmware-guide/acpi and convert
+    to reST
+  Documentation: ACPI: move ssdt-overlays.txt to admin-guide/acpi and
+    convert to reST
+  Documentation: ACPI: move video_extension.txt to firmware-guide/acpi
+    and convert to reST
+
+ Documentation/acpi/aml-debugger.txt           |  66 ----
+ Documentation/acpi/apei/output_format.txt     | 147 ---------
+ Documentation/acpi/i2c-muxes.txt              |  58 ----
+ Documentation/acpi/initrd_table_override.txt  | 111 -------
+ Documentation/acpi/method-customizing.txt     |  73 -----
+ Documentation/acpi/method-tracing.txt         | 192 ------------
+ Documentation/acpi/ssdt-overlays.txt          | 172 ----------
+ .../acpi/cppc_sysfs.rst}                      |  71 +++--
+ .../acpi/dsdt-override.rst}                   |   8 +-
+ Documentation/admin-guide/acpi/index.rst      |  14 +
+ .../acpi/initrd_table_override.rst            | 115 +++++++
+ .../admin-guide/acpi/ssdt-overlays.rst        | 180 +++++++++++
+ Documentation/admin-guide/index.rst           |   1 +
+ Documentation/driver-api/acpi/index.rst       |   9 +
+ .../acpi/linuxized-acpica.rst}                | 109 ++++---
+ .../acpi/scan_handlers.rst}                   |  24 +-
+ Documentation/driver-api/index.rst            |   1 +
+ .../acpi/DSD-properties-rules.rst}            |  21 +-
+ .../acpi/acpi-lid.rst}                        |  40 ++-
+ .../firmware-guide/acpi/aml-debugger.rst      |  75 +++++
+ .../acpi/apei/einj.rst}                       |  94 +++---
+ .../acpi/apei/output_format.rst               | 150 +++++++++
+ .../acpi/debug.rst}                           |  31 +-
+ .../acpi/dsd/data-node-references.rst}        |  36 ++-
+ .../acpi/dsd/graph.rst}                       | 157 +++++-----
+ .../acpi/enumeration.rst}                     | 135 ++++----
+ .../acpi/gpio-properties.rst}                 |  78 +++--
+ .../firmware-guide/acpi/i2c-muxes.rst         |  61 ++++
+ Documentation/firmware-guide/acpi/index.rst   |  26 ++
+ .../lpit.txt => firmware-guide/acpi/lpit.rst} |  18 +-
+ .../acpi/method-customizing.rst               |  89 ++++++
+ .../firmware-guide/acpi/method-tracing.rst    | 238 ++++++++++++++
+ .../acpi/namespace.rst}                       | 294 +++++++++---------
+ .../osi.txt => firmware-guide/acpi/osi.rst}   |  15 +-
+ .../acpi/video_extension.rst}                 |  85 +++--
+ Documentation/firmware-guide/index.rst        |  13 +
+ Documentation/index.rst                       |  10 +
+ MAINTAINERS                                   |   2 +-
+ 38 files changed, 1659 insertions(+), 1360 deletions(-)
+ delete mode 100644 Documentation/acpi/aml-debugger.txt
+ delete mode 100644 Documentation/acpi/apei/output_format.txt
+ delete mode 100644 Documentation/acpi/i2c-muxes.txt
+ delete mode 100644 Documentation/acpi/initrd_table_override.txt
+ delete mode 100644 Documentation/acpi/method-customizing.txt
+ delete mode 100644 Documentation/acpi/method-tracing.txt
+ delete mode 100644 Documentation/acpi/ssdt-overlays.txt
+ rename Documentation/{acpi/cppc_sysfs.txt => admin-guide/acpi/cppc_sysfs.rst} (51%)
+ rename Documentation/{acpi/dsdt-override.txt => admin-guide/acpi/dsdt-override.rst} (56%)
+ create mode 100644 Documentation/admin-guide/acpi/index.rst
+ create mode 100644 Documentation/admin-guide/acpi/initrd_table_override.rst
+ create mode 100644 Documentation/admin-guide/acpi/ssdt-overlays.rst
+ create mode 100644 Documentation/driver-api/acpi/index.rst
+ rename Documentation/{acpi/linuxized-acpica.txt => driver-api/acpi/linuxized-acpica.rst} (80%)
+ rename Documentation/{acpi/scan_handlers.txt => driver-api/acpi/scan_handlers.rst} (90%)
+ rename Documentation/{acpi/DSD-properties-rules.txt => firmware-guide/acpi/DSD-properties-rules.rst} (88%)
+ rename Documentation/{acpi/acpi-lid.txt => firmware-guide/acpi/acpi-lid.rst} (86%)
+ create mode 100644 Documentation/firmware-guide/acpi/aml-debugger.rst
+ rename Documentation/{acpi/apei/einj.txt => firmware-guide/acpi/apei/einj.rst} (67%)
+ create mode 100644 Documentation/firmware-guide/acpi/apei/output_format.rst
+ rename Documentation/{acpi/debug.txt => firmware-guide/acpi/debug.rst} (91%)
+ rename Documentation/{acpi/dsd/data-node-references.txt => firmware-guide/acpi/dsd/data-node-references.rst} (71%)
+ rename Documentation/{acpi/dsd/graph.txt => firmware-guide/acpi/dsd/graph.rst} (56%)
+ rename Documentation/{acpi/enumeration.txt => firmware-guide/acpi/enumeration.rst} (87%)
+ rename Documentation/{acpi/gpio-properties.txt => firmware-guide/acpi/gpio-properties.rst} (81%)
+ create mode 100644 Documentation/firmware-guide/acpi/i2c-muxes.rst
+ create mode 100644 Documentation/firmware-guide/acpi/index.rst
+ rename Documentation/{acpi/lpit.txt => firmware-guide/acpi/lpit.rst} (68%)
+ create mode 100644 Documentation/firmware-guide/acpi/method-customizing.rst
+ create mode 100644 Documentation/firmware-guide/acpi/method-tracing.rst
+ rename Documentation/{acpi/namespace.txt => firmware-guide/acpi/namespace.rst} (56%)
+ rename Documentation/{acpi/osi.txt => firmware-guide/acpi/osi.rst} (97%)
+ rename Documentation/{acpi/video_extension.txt => firmware-guide/acpi/video_extension.rst} (68%)
+ create mode 100644 Documentation/firmware-guide/index.rst
 
 -- 
-Cheers,
-Changbin Du
+2.20.1
+
