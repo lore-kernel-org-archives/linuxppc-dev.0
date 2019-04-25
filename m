@@ -2,102 +2,101 @@ Return-Path: <SRS0=v/d1=S3=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-4.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,UNPARSEABLE_RELAY,
+	USER_AGENT_NEOMUTT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EF9B2C10F11
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Apr 2019 01:39:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 75C14C10F11
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Apr 2019 01:48:52 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3E30A214AE
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Apr 2019 01:39:06 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3E30A214AE
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id E9053214C6
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Apr 2019 01:48:51 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=oracle.com header.i=@oracle.com header.b="A56APE8o"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E9053214C6
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=oracle.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44qKbW6v5zzDqbf
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Apr 2019 11:39:03 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44qKpn4W4PzDqX0
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Apr 2019 11:48:49 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
- (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=aneesh.kumar@linux.ibm.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=oracle.com
+ (client-ip=156.151.31.86; helo=userp2130.oracle.com;
+ envelope-from=daniel.m.jordan@oracle.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+ dmarc=pass (p=none dis=none) header.from=oracle.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=oracle.com header.i=@oracle.com header.b="A56APE8o"; 
+ dkim-atps=neutral
+Received: from userp2130.oracle.com (userp2130.oracle.com [156.151.31.86])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44qKYc4D8jzDqZT
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Apr 2019 11:37:23 +1000 (AEST)
-Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x3P1USTB064179
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Apr 2019 21:37:21 -0400
-Received: from e17.ny.us.ibm.com (e17.ny.us.ibm.com [129.33.205.207])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2s32fb9xft-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Apr 2019 21:37:21 -0400
-Received: from localhost
- by e17.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.ibm.com>;
- Thu, 25 Apr 2019 02:37:19 +0100
-Received: from b01cxnp22033.gho.pok.ibm.com (9.57.198.23)
- by e17.ny.us.ibm.com (146.89.104.204) with IBM ESMTP SMTP Gateway: Authorized
- Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Thu, 25 Apr 2019 02:37:17 +0100
-Received: from b01ledav003.gho.pok.ibm.com (b01ledav003.gho.pok.ibm.com
- [9.57.199.108])
- by b01cxnp22033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x3P1bGRI20644004
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Thu, 25 Apr 2019 01:37:16 GMT
-Received: from b01ledav003.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 44D9AB2064;
- Thu, 25 Apr 2019 01:37:16 +0000 (GMT)
-Received: from b01ledav003.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id C969DB205F;
- Thu, 25 Apr 2019 01:37:13 +0000 (GMT)
-Received: from [9.85.69.165] (unknown [9.85.69.165])
- by b01ledav003.gho.pok.ibm.com (Postfix) with ESMTP;
- Thu, 25 Apr 2019 01:37:13 +0000 (GMT)
-Subject: Re: [PATCH v2] mm: Fix modifying of page protection by
- insert_pfn_pmd()
-To: Dan Williams <dan.j.williams@intel.com>,
- Matthew Wilcox <willy@infradead.org>
-References: <20190402115125.18803-1-aneesh.kumar@linux.ibm.com>
- <CAPcyv4hzRj5yxVJ5-7AZgzzBxEL02xf2xwhDv-U9_osWFm9kiA@mail.gmail.com>
- <20190424173833.GE19031@bombadil.infradead.org>
- <CAPcyv4gLGUa69svQnwjvruALZ0ChqUJZHQJ1Mt_Cjr1Jh_6vbQ@mail.gmail.com>
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
-Date: Thu, 25 Apr 2019 07:07:12 +0530
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
- Thunderbird/60.6.1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44qKmc3FGTzDqW3
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Apr 2019 11:46:56 +1000 (AEST)
+Received: from pps.filterd (userp2130.oracle.com [127.0.0.1])
+ by userp2130.oracle.com (8.16.0.27/8.16.0.27) with SMTP id x3P1hPbe192509;
+ Thu, 25 Apr 2019 01:46:46 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com;
+ h=date : from : to : cc
+ : subject : message-id : references : mime-version : content-type :
+ in-reply-to; s=corp-2018-07-02;
+ bh=m5ftTYRrPOj/N3lOffaOsUs8i/+eGVM1j6ISGW9DwEo=;
+ b=A56APE8ofC8SCuRSVB99zB7aiTYX92gYK342Y0bfoIG+UKXrHFPXBIiu29i2XI9+nR9j
+ 9kk+YGbtjxA0rBaTcrqMygEZ1kIoRDwRw1OO/0QFM2ibOEEFIDFn05HDA6f4kW4KRQib
+ 82Kvu4qvwja6mR4cZaLnc34sPR8YLhPk8YnsmomT3nC5feMY5NtcOm3+cGRmSDus+Hq4
+ AgY/I+MzKnvZhANi530l362688ZQWSqr93r+cof3XuuLlmVjU/0Qt+AdKedmia0dCyN9
+ UVXhFNWMVFScl6GqKsiK4OgTUaFkbifggefTHZyYo4S8E33y7XyQHOIxoZde1A3NBx+6 2g== 
+Received: from userp3020.oracle.com (userp3020.oracle.com [156.151.31.79])
+ by userp2130.oracle.com with ESMTP id 2rytut5hra-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Thu, 25 Apr 2019 01:46:46 +0000
+Received: from pps.filterd (userp3020.oracle.com [127.0.0.1])
+ by userp3020.oracle.com (8.16.0.27/8.16.0.27) with SMTP id x3P1kkuG079991;
+ Thu, 25 Apr 2019 01:46:46 GMT
+Received: from userv0121.oracle.com (userv0121.oracle.com [156.151.31.72])
+ by userp3020.oracle.com with ESMTP id 2s0dwf50tu-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Thu, 25 Apr 2019 01:46:46 +0000
+Received: from abhmp0011.oracle.com (abhmp0011.oracle.com [141.146.116.17])
+ by userv0121.oracle.com (8.14.4/8.13.8) with ESMTP id x3P1kaV7005547;
+ Thu, 25 Apr 2019 01:46:36 GMT
+Received: from ca-dmjordan1.us.oracle.com (/10.211.9.48)
+ by default (Oracle Beehive Gateway v4.0)
+ with ESMTP ; Wed, 24 Apr 2019 18:46:35 -0700
+Date: Wed, 24 Apr 2019 21:47:05 -0400
+From: Daniel Jordan <daniel.m.jordan@oracle.com>
+To: Jason Gunthorpe <jgg@mellanox.com>
+Subject: Re: [PATCH 5/6] powerpc/mmu: drop mmap_sem now that locked_vm is
+ atomic
+Message-ID: <20190425014705.k5twrldr5n5a5gsz@ca-dmjordan1.us.oracle.com>
+References: <20190402204158.27582-1-daniel.m.jordan@oracle.com>
+ <20190402204158.27582-6-daniel.m.jordan@oracle.com>
+ <964bd5b0-f1e5-7bf0-5c58-18e75c550841@c-s.fr>
+ <20190403164002.hued52o4mga4yprw@ca-dmjordan1.us.oracle.com>
+ <20190424021544.ygqa4hvwbyb6nuxp@linux-r8p5>
+ <20190424111018.GA16077@mellanox.com>
 MIME-Version: 1.0
-In-Reply-To: <CAPcyv4gLGUa69svQnwjvruALZ0ChqUJZHQJ1Mt_Cjr1Jh_6vbQ@mail.gmail.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
-X-TM-AS-GCONF: 00
-x-cbid: 19042501-0040-0000-0000-000004E5C17C
-X-IBM-SpamModules-Scores: 
-X-IBM-SpamModules-Versions: BY=3.00010990; HX=3.00000242; KW=3.00000007;
- PH=3.00000004; SC=3.00000285; SDB=6.01193953; UDB=6.00625937; IPR=6.00974777; 
- MB=3.00026582; MTD=3.00000008; XFM=3.00000015; UTC=2019-04-25 01:37:19
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19042501-0041-0000-0000-000008F0D197
-Message-Id: <444ca26b-ec38-ae4b-512b-7e915c575098@linux.ibm.com>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2019-04-25_01:, , signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1810050000 definitions=main-1904250008
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20190424111018.GA16077@mellanox.com>
+User-Agent: NeoMutt/20180323-268-5a959c
+X-Proofpoint-Virus-Version: vendor=nai engine=5900 definitions=9237
+ signatures=668685
+X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 suspectscore=0
+ malwarescore=0
+ phishscore=0 bulkscore=0 spamscore=0 mlxscore=0 mlxlogscore=999
+ adultscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.0.1-1810050000 definitions=main-1904250010
+X-Proofpoint-Virus-Version: vendor=nai engine=5900 definitions=9237
+ signatures=668685
+X-Proofpoint-Spam-Details: rule=notspam policy=default score=0
+ priorityscore=1501 malwarescore=0
+ suspectscore=0 phishscore=0 bulkscore=0 spamscore=0 clxscore=1011
+ lowpriorityscore=0 mlxscore=0 impostorscore=0 mlxlogscore=999 adultscore=0
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.0.1-1810050000
+ definitions=main-1904250010
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -109,44 +108,71 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Jan Kara <jack@suse.cz>, linux-nvdimm <linux-nvdimm@lists.01.org>,
- stable <stable@vger.kernel.org>, Linux MM <linux-mm@kvack.org>,
- Chandan Rajendra <chandan@linux.ibm.com>,
- Andrew Morton <akpm@linux-foundation.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Cc: Alexey Kardashevskiy <aik@ozlabs.ru>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Daniel Jordan <daniel.m.jordan@oracle.com>,
+ "linux-mm@kvack.org" <linux-mm@kvack.org>, Paul Mackerras <paulus@samba.org>,
+ "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Christoph Lameter <cl@linux.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 4/24/19 11:43 PM, Dan Williams wrote:
-> On Wed, Apr 24, 2019 at 10:38 AM Matthew Wilcox <willy@infradead.org> wrote:
->>
->> On Wed, Apr 24, 2019 at 10:13:15AM -0700, Dan Williams wrote:
->>> I think unaligned addresses have always been passed to
->>> vmf_insert_pfn_pmd(), but nothing cared until this patch. I *think*
->>> the only change needed is the following, thoughts?
->>>
->>> diff --git a/fs/dax.c b/fs/dax.c
->>> index ca0671d55aa6..82aee9a87efa 100644
->>> --- a/fs/dax.c
->>> +++ b/fs/dax.c
->>> @@ -1560,7 +1560,7 @@ static vm_fault_t dax_iomap_pmd_fault(struct
->>> vm_fault *vmf, pfn_t *pfnp,
->>>                  }
->>>
->>>                  trace_dax_pmd_insert_mapping(inode, vmf, PMD_SIZE, pfn, entry);
->>> -               result = vmf_insert_pfn_pmd(vma, vmf->address, vmf->pmd, pfn,
->>> +               result = vmf_insert_pfn_pmd(vma, pmd_addr, vmf->pmd, pfn,
->>>                                              write);
->>
->> We also call vmf_insert_pfn_pmd() in dax_insert_pfn_mkwrite() -- does
->> that need to change too?
+On Wed, Apr 24, 2019 at 11:10:24AM +0000, Jason Gunthorpe wrote:
+> On Tue, Apr 23, 2019 at 07:15:44PM -0700, Davidlohr Bueso wrote:
+> > Wouldn't the cmpxchg alternative also be exposed the locked_vm changing between
+> > validating the new value and the cmpxchg() and we'd bogusly fail even when there
+> > is still just because the value changed (I'm assuming we don't hold any locks,
+> > otherwise all this is pointless).
+
+That's true, I hadn't considered that we could retry even when there's enough
+locked_vm.  Seems like another one is that RLIMIT_MEMLOCK could change after
+it's read.  I guess nothing's going to be perfect.  :/
+
+> Well it needs a loop..
 > 
-> It wasn't clear to me that it was a problem. I think that one already
-> happens to be pmd-aligned.
+> again:
+>    current_locked = atomic_read(&mm->locked_vm);
+>    new_locked = current_locked + npages;
+>    if (new_locked < lock_limit)
+>       if (cmpxchg(&mm->locked_vm, current_locked, new_locked) != current_locked)
+>             goto again;
 > 
+> So it won't have bogus failures as there is no unwind after
+> error. Basically this is a load locked/store conditional style of
+> locking pattern.
 
-How about vmf_insert_pfn_pud()?
+This is basically what I have so far.
 
--aneesh
+> > > That's a good idea, and especially worth doing considering that an arbitrary
+> > > number of threads that charge a low amount of locked_vm can fail just because
+> > > one thread charges lots of it.
+> > 
+> > Yeah but the window for this is quite small, I doubt it would be a real issue.
+>
+> > What if before doing the atomic_add_return(), we first did the racy new_locked
+> > check for ENOMEM, then do the speculative add and cleanup, if necessary. This
+> > would further reduce the scope of the window where false ENOMEM can occur.
 
+So the upside of this is that there's no retry loop so tasks don't spin under
+heavy contention?  Seems better to always guard against false ENOMEM, at least
+from the locked_vm side if not from the rlimit changing.
+
+> > > pinned_vm appears to be broken the same way, so I can fix it too unless someone
+> > > beats me to it.
+> > 
+> > This should not be a surprise for the rdma folks. Cc'ing Jason nonetheless.
+> 
+> I think we accepted this tiny race as a side effect of removing the
+> lock, which was very beneficial. Really the time window between the
+> atomic failing and unwind is very small, and there are enough other
+> ways a hostile user could DOS locked_vm that I don't think it really
+> matters in practice..
+> 
+> However, the cmpxchg seems better, so a helper to implement that would
+> probably be the best thing to do.
+
+I've collapsed all the locked_vm users into such a helper and am now working on
+converting the pinned_vm users to the same helper.  Taking longer than I
+thought.
