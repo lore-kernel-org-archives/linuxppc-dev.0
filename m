@@ -6,21 +6,21 @@ X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
 	SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 427CBC43218
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Apr 2019 14:55:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AEE3DC43218
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Apr 2019 14:58:20 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id F3825206BF
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Apr 2019 14:55:46 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 6FD3C2084F
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Apr 2019 14:58:20 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="MQv/Q88M"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org F3825206BF
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="U8/Hg020"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6FD3C2084F
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44qgGm4ZlZzDqHF
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Apr 2019 00:55:44 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44qgKj4yW3zDqJH
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Apr 2019 00:58:17 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=c-s.fr
  (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
@@ -28,54 +28,54 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="MQv/Q88M"; 
+ unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="U8/Hg020"; 
  dkim-atps=neutral
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44qfhh5pHzzDqZj
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44qfhj0DKQzDqZm
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Apr 2019 00:29:40 +1000 (AEST)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 44qfhb6NvGz9v191;
- Thu, 25 Apr 2019 16:29:35 +0200 (CEST)
+ by localhost (Postfix) with ESMTP id 44qfhZ5kgLz9v07L;
+ Thu, 25 Apr 2019 16:29:34 +0200 (CEST)
 Authentication-Results: localhost; dkim=pass
  reason="1024-bit key; insecure key"
- header.d=c-s.fr header.i=@c-s.fr header.b=MQv/Q88M; dkim-adsp=pass;
+ header.d=c-s.fr header.i=@c-s.fr header.b=U8/Hg020; dkim-adsp=pass;
  dkim-atps=neutral
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id 6BQ8CGsX5bka; Thu, 25 Apr 2019 16:29:35 +0200 (CEST)
+ with ESMTP id ovHELJZ2eFk3; Thu, 25 Apr 2019 16:29:34 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 44qfhb5Lvhz9v06V;
- Thu, 25 Apr 2019 16:29:35 +0200 (CEST)
+ by pegase1.c-s.fr (Postfix) with ESMTP id 44qfhZ4k9Nz9v06V;
+ Thu, 25 Apr 2019 16:29:34 +0200 (CEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
- t=1556202575; bh=9IPln7D4KRMZNphfhh9LxkOxBssa8KJfKmL3X4lBKzY=;
+ t=1556202574; bh=TwaIS2P81oPcrASBsdsj/1AWlg/8riE96JLh5A3sUas=;
  h=In-Reply-To:References:From:Subject:To:Cc:Date:From;
- b=MQv/Q88MnDgy1GevnaHD9Wgf2awATzXBfRIMB02WM+OFIbyTR0CrvkogUZuz+SQhM
- wJtVtZYzZNUkHf3rM6kqEy5pwjazDHS3rgXSALHCRJxURyzxBFmoGxeKAJdRqb+3/v
- ntAP6c0pvik/BU6R1TkkbDH0p4j378VeCCBboP0g=
+ b=U8/Hg020NC+94+eCvjW4y2f2bWclR29QvzVVZWmL1VB7vXxIInZp9JFsRBpKhp6oU
+ MtYbQs6L1dNQSjz4L76lNupPPvkUaGioufV5/BOTT4olHoe0KRgMyrSq1ItVlSFb70
+ lskvBxMb9XL05b1QAEgVOOXUz7ybMNPhcYBjQbPI=
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 4C8F78B931;
- Thu, 25 Apr 2019 16:29:37 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 33ADB8B931;
+ Thu, 25 Apr 2019 16:29:36 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id HCsUzkTsj201; Thu, 25 Apr 2019 16:29:37 +0200 (CEST)
+ with ESMTP id VPpSKOszOp44; Thu, 25 Apr 2019 16:29:36 +0200 (CEST)
 Received: from po16846vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 1216D8B923;
- Thu, 25 Apr 2019 16:29:37 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 0C4108B923;
+ Thu, 25 Apr 2019 16:29:36 +0200 (CEST)
 Received: by po16846vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id D072966276; Thu, 25 Apr 2019 14:29:36 +0000 (UTC)
-Message-Id: <c21aee3bc21b17c7a3491ef07e563ba235aeb101.1556202029.git.christophe.leroy@c-s.fr>
+ id C9F1866276; Thu, 25 Apr 2019 14:29:35 +0000 (UTC)
+Message-Id: <306daa20cb5b7c361b28831a190e45b16245779d.1556202029.git.christophe.leroy@c-s.fr>
 In-Reply-To: <cover.1556202028.git.christophe.leroy@c-s.fr>
 References: <cover.1556202028.git.christophe.leroy@c-s.fr>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v2 10/11] powerpc/mm: define subarch SLB_ADDR_LIMIT_DEFAULT
+Subject: [PATCH v2 09/11] powerpc/mm: define get_slice_psize() all the time
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, 
  aneesh.kumar@linux.ibm.com
-Date: Thu, 25 Apr 2019 14:29:36 +0000 (UTC)
+Date: Thu, 25 Apr 2019 14:29:35 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -92,89 +92,51 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This patch defines a subarch specific SLB_ADDR_LIMIT_DEFAULT
-to remove the #ifdefs around the setup of mm->context.slb_addr_limit
-
-It also generalises the use of mm_ctx_set_slb_addr_limit() helper.
+get_slice_psize() can be defined regardless of CONFIG_PPC_MM_SLICES
+to avoid ifdefs
 
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
- arch/powerpc/include/asm/book3s/64/slice.h | 2 ++
- arch/powerpc/include/asm/nohash/32/slice.h | 2 ++
- arch/powerpc/mm/hash_utils_64.c            | 2 +-
- arch/powerpc/mm/slice.c                    | 6 +-----
- arch/powerpc/mm/tlb_nohash.c               | 4 +---
- 5 files changed, 7 insertions(+), 9 deletions(-)
+ arch/powerpc/include/asm/slice.h | 5 +++++
+ arch/powerpc/mm/hugetlbpage.c    | 4 +---
+ 2 files changed, 6 insertions(+), 3 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/book3s/64/slice.h b/arch/powerpc/include/asm/book3s/64/slice.h
-index 062e11136e9c..f0d3194ba41b 100644
---- a/arch/powerpc/include/asm/book3s/64/slice.h
-+++ b/arch/powerpc/include/asm/book3s/64/slice.h
-@@ -11,4 +11,6 @@
- #define SLICE_NUM_HIGH		(H_PGTABLE_RANGE >> SLICE_HIGH_SHIFT)
- #define GET_HIGH_SLICE_INDEX(addr)	((addr) >> SLICE_HIGH_SHIFT)
+diff --git a/arch/powerpc/include/asm/slice.h b/arch/powerpc/include/asm/slice.h
+index be8af667098f..c6f466f4c241 100644
+--- a/arch/powerpc/include/asm/slice.h
++++ b/arch/powerpc/include/asm/slice.h
+@@ -36,6 +36,11 @@ void slice_setup_new_exec(void);
  
-+#define SLB_ADDR_LIMIT_DEFAULT	DEFAULT_MAP_WINDOW_USER64
-+
- #endif /* _ASM_POWERPC_BOOK3S_64_SLICE_H */
-diff --git a/arch/powerpc/include/asm/nohash/32/slice.h b/arch/powerpc/include/asm/nohash/32/slice.h
-index 777d62e40ac0..39eb0154ae2d 100644
---- a/arch/powerpc/include/asm/nohash/32/slice.h
-+++ b/arch/powerpc/include/asm/nohash/32/slice.h
-@@ -13,6 +13,8 @@
- #define SLICE_NUM_HIGH		0ul
- #define GET_HIGH_SLICE_INDEX(addr)	(addr & 0)
+ static inline void slice_init_new_context_exec(struct mm_struct *mm) {}
  
-+#define SLB_ADDR_LIMIT_DEFAULT	DEFAULT_MAP_WINDOW
++static inline unsigned int get_slice_psize(struct mm_struct *mm, unsigned long addr)
++{
++	return 0;
++}
 +
  #endif /* CONFIG_PPC_MM_SLICES */
  
- #endif /* _ASM_POWERPC_NOHASH_32_SLICE_H */
-diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
-index f727197de713..884246e3bf0b 100644
---- a/arch/powerpc/mm/hash_utils_64.c
-+++ b/arch/powerpc/mm/hash_utils_64.c
-@@ -1050,7 +1050,7 @@ void __init hash__early_init_mmu(void)
- 	htab_initialize();
+ #endif /* __ASSEMBLY__ */
+diff --git a/arch/powerpc/mm/hugetlbpage.c b/arch/powerpc/mm/hugetlbpage.c
+index 9e732bb2c84a..5f67e7a4d1cc 100644
+--- a/arch/powerpc/mm/hugetlbpage.c
++++ b/arch/powerpc/mm/hugetlbpage.c
+@@ -578,14 +578,12 @@ unsigned long hugetlb_get_unmapped_area(struct file *file, unsigned long addr,
  
- 	init_mm.context.hash_context = &init_hash_mm_context;
--	init_mm.context.hash_context->slb_addr_limit = DEFAULT_MAP_WINDOW_USER64;
-+	mm_ctx_set_slb_addr_limit(&init_mm.context, SLB_ADDR_LIMIT_DEFAULT);
+ unsigned long vma_mmu_pagesize(struct vm_area_struct *vma)
+ {
+-#ifdef CONFIG_PPC_MM_SLICES
+ 	/* With radix we don't use slice, so derive it from vma*/
+-	if (!radix_enabled()) {
++	if (IS_ENABLED(CONFIG_PPC_MM_SLICES) && !radix_enabled()) {
+ 		unsigned int psize = get_slice_psize(vma->vm_mm, vma->vm_start);
  
- 	pr_info("Initializing hash mmu with SLB\n");
- 	/* Initialize SLB management */
-diff --git a/arch/powerpc/mm/slice.c b/arch/powerpc/mm/slice.c
-index ace97d953040..97fbf7b54422 100644
---- a/arch/powerpc/mm/slice.c
-+++ b/arch/powerpc/mm/slice.c
-@@ -704,11 +704,7 @@ void slice_init_new_context_exec(struct mm_struct *mm)
- 	 * case of fork it is just inherited from the mm being
- 	 * duplicated.
- 	 */
--#ifdef CONFIG_PPC64
--	mm_ctx_set_slb_addr_limit(&mm->context, DEFAULT_MAP_WINDOW_USER64);
--#else
--	mm->context.slb_addr_limit = DEFAULT_MAP_WINDOW;
+ 		return 1UL << mmu_psize_to_shift(psize);
+ 	}
 -#endif
-+	mm_ctx_set_slb_addr_limit(&mm->context, SLB_ADDR_LIMIT_DEFAULT);
- 	mm_ctx_set_user_psize(&mm->context, psize);
- 
- 	/*
-diff --git a/arch/powerpc/mm/tlb_nohash.c b/arch/powerpc/mm/tlb_nohash.c
-index 088e0a6b5ade..ba4bff11191f 100644
---- a/arch/powerpc/mm/tlb_nohash.c
-+++ b/arch/powerpc/mm/tlb_nohash.c
-@@ -802,9 +802,7 @@ void __init early_init_mmu(void)
- #endif
- 
- #ifdef CONFIG_PPC_MM_SLICES
--#if defined(CONFIG_PPC_8xx)
--	init_mm.context.slb_addr_limit = DEFAULT_MAP_WINDOW;
--#endif
-+	mm_ctx_set_slb_addr_limit(&init_mm.context, SLB_ADDR_LIMIT_DEFAULT);
- #endif
+ 	return vma_kernel_pagesize(vma);
  }
- #endif /* CONFIG_PPC64 */
+ 
 -- 
 2.13.3
 
