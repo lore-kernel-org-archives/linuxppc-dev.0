@@ -2,79 +2,70 @@ Return-Path: <SRS0=ImKy=S4=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.6 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+X-Spam-Status: No, score=-8.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
+	SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 206CBC43219
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Apr 2019 12:13:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 05E1AC43219
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Apr 2019 12:51:58 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 966792089E
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Apr 2019 12:13:52 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 26FA1206C1
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Apr 2019 12:51:57 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="KgCU5E+m"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 966792089E
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="qVyV35Rq"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 26FA1206C1
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44rCdV5NfKzDqfc
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Apr 2019 22:13:50 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44rDTQ6YJyzDqgZ
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Apr 2019 22:51:54 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=none (mailfrom)
+ smtp.mailfrom=bombadil.srs.infradead.org (client-ip=2607:7c80:54:e::133;
+ helo=bombadil.infradead.org;
+ envelope-from=batv+69eb5840461690eae8c6+5724+infradead.org+hch@bombadil.srs.infradead.org;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=2a00:1450:4864:20::542; helo=mail-ed1-x542.google.com;
- envelope-from=daniel.baluta@gmail.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
+ dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="KgCU5E+m"; 
- dkim-atps=neutral
-Received: from mail-ed1-x542.google.com (mail-ed1-x542.google.com
- [IPv6:2a00:1450:4864:20::542])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ unprotected) header.d=infradead.org header.i=@infradead.org
+ header.b="qVyV35Rq"; dkim-atps=neutral
+Received: from bombadil.infradead.org (bombadil.infradead.org
+ [IPv6:2607:7c80:54:e::133])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44rCb62mWrzDqg1
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Apr 2019 22:11:46 +1000 (AEST)
-Received: by mail-ed1-x542.google.com with SMTP id w37so2978824edw.4
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Apr 2019 05:11:46 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=mime-version:references:in-reply-to:from:date:message-id:subject:to
- :cc; bh=Iv+Qt/L8mJZ+qcF89VURhvr8O3ic6BiHoQtS2O+mf6w=;
- b=KgCU5E+mQUaAngkEPf8GYVsgqKE13B7je9UgwHKl0P6aQOkh12SOT9rGZ4lXG/7OXp
- 8EeYa761UjVrsvbrqf4098fXcYb5CL5m3kl+IUhJTHT7NB9pbYn7nnxGeGJIOWn7AgwE
- QviFVg/QJhNo4/HEDWZBgrDpHjigmxreOePeknoFMqGRFVm9w/Xh+RDhtD/ScKPLpWZk
- 0YoXcdyapohDn57eiQvYOXRXQWlciTA2IiqEGndjEjYsKMhwaGicwUqFjRyy80bd9lVU
- T1Ls1gTw9aAsqZJThE6575U9o1snUuNn0x9zTPwI1RsAdSXczFQ7eK9Bcp4WvkpgaFx0
- WVRQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:mime-version:references:in-reply-to:from:date
- :message-id:subject:to:cc;
- bh=Iv+Qt/L8mJZ+qcF89VURhvr8O3ic6BiHoQtS2O+mf6w=;
- b=YJj7KXdjNP60sslvvf+KHWx51R+yDanom2YpcEURRLv9PPEJx+0IvHskPnkBQ+it7p
- K/02qJ/vulk2ijfzBEU5ac2VRVZaRxl7hf/EkuqBpbyCY+dIZBr2SSPCNDYLjjAygnWV
- 9+L4uz9vsasqMlWPTPamaJvcsbdJarXDxTWbuffeQyUAdBkEiaBL3Ez/g/X9TXjLrSQv
- s5IRr+8dRBrJuvTEj0h+eR0NVjjQ1+UdMF176a4OtAA7RsQFBNQ6mjo03m/Ie3uJNExG
- KmNhXjiraJDgW2pA6wpdUk2Rd3HBBdKVDrOIDFim+36ru+Is+NWNRwmrIcVab+ETIg39
- lNXw==
-X-Gm-Message-State: APjAAAVP9qTN7GbYFd5zPCr+jPr+9aEw7XUB3hqerf/yOY1zpdXY5xbS
- EKSM0rFURrTjKexWIS8caAcsDGl6NAvSpEJKBwc=
-X-Google-Smtp-Source: APXvYqwg1tBQB8xAZ3L8jvxGUswWVPmzCPfBxX5vwnT3za6d2x7T4b6Y67klyNoMzXl9S9A9zAfjFLiLY1eYF1svXSw=
-X-Received: by 2002:a50:a3c2:: with SMTP id t2mr27861786edb.46.1556280702041; 
- Fri, 26 Apr 2019 05:11:42 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44rDRB6gmPzDqgP
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Apr 2019 22:49:58 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+ d=infradead.org; s=bombadil.20170209; h=Content-Transfer-Encoding:
+ MIME-Version:References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:Sender
+ :Reply-To:Content-Type:Content-ID:Content-Description:Resent-Date:Resent-From
+ :Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:List-Help:
+ List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
+ bh=Su18TchpSoe/0NVour+JvUdeF4XIglM1Gp4Rp1+nQOc=; b=qVyV35RqHMrOL0VIl0MV8yg6eF
+ 6m62QR0pXqnMLqS3RRng7jaYESb+5VueRTHQ5uIt+xIanLEsJWJ3LUVLpnNWzrJl8OQagzarM+tMb
+ 8r1QQI52s4mqineb6/aFyIXZlJ2GzOXAVHehjaGBw9tllkthHn/DD2yn5nDN4G8KjXL9lP9zWPktk
+ T88ve/oL5YC2vkFBKdJjhpnYw1vnE7s5G84xpbiur89yUXWhXYUYBLlqwiDIiJMH5ifXA4pP5bmsq
+ xk+w/Kem68cqR37NKGE3AixOCZBdYs7wwkbUuXNoqE9ynKBaCtyRbQFVGjR8fJdyscGfeZGU76qkd
+ JpgLStHQ==;
+Received: from clnet-p19-102.ikbnet.co.at ([83.175.77.102] helo=localhost)
+ by bombadil.infradead.org with esmtpsa (Exim 4.90_1 #2 (Red Hat Linux))
+ id 1hK0IY-0007Ze-UT; Fri, 26 Apr 2019 12:49:51 +0000
+From: Christoph Hellwig <hch@lst.de>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
+Subject: [PATCH 2/3] powerpc/powernv: remove pnv_pci_{enable,disable}_tunnel
+Date: Fri, 26 Apr 2019 14:49:16 +0200
+Message-Id: <20190426124917.23789-3-hch@lst.de>
+X-Mailer: git-send-email 2.20.1
+In-Reply-To: <20190426124917.23789-1-hch@lst.de>
+References: <20190426124917.23789-1-hch@lst.de>
 MIME-Version: 1.0
-References: <20190422190213.30726-1-daniel.baluta@nxp.com>
- <20190422190213.30726-4-daniel.baluta@nxp.com>
-In-Reply-To: <20190422190213.30726-4-daniel.baluta@nxp.com>
-From: Daniel Baluta <daniel.baluta@gmail.com>
-Date: Fri, 26 Apr 2019 15:11:30 +0300
-Message-ID: <CAEnQRZCK5dPoD7TunxLsf8EXVb-99Vb0OQnaqa2rmAQu3eyWvw@mail.gmail.com>
-Subject: Re: [PATCH v3 3/3] ASoC: fsl_sai: Move clock operation to PM runtime
-To: Daniel Baluta <daniel.baluta@nxp.com>
-Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by
+ bombadil.infradead.org. See http://www.infradead.org/rpr.html
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -86,134 +77,127 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
- "timur@kernel.org" <timur@kernel.org>,
- "Xiubo.Lee@gmail.com" <Xiubo.Lee@gmail.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "S.j. Wang" <shengjiu.wang@nxp.com>, "tiwai@suse.com" <tiwai@suse.com>,
- "lgirdwood@gmail.com" <lgirdwood@gmail.com>, "perex@perex.cz" <perex@perex.cz>,
- "broonie@kernel.org" <broonie@kernel.org>, dl-linux-imx <linux-imx@nxp.com>,
- "festevam@gmail.com" <festevam@gmail.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Cc: linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi Mark,
+These have been unused ever since they've been added to the kernel.
 
-This is the only patch in the series that wasn't applied.
+Signed-off-by: Christoph Hellwig <hch@lst.de>
+---
+ arch/powerpc/include/asm/pnv-pci.h        |  2 -
+ arch/powerpc/platforms/powernv/pci-ioda.c |  4 +-
+ arch/powerpc/platforms/powernv/pci.c      | 48 -----------------------
+ arch/powerpc/platforms/powernv/pci.h      |  1 -
+ 4 files changed, 3 insertions(+), 52 deletions(-)
 
-On Mon, Apr 22, 2019 at 10:03 PM Daniel Baluta <daniel.baluta@nxp.com> wrote:
->
-> From: Shengjiu Wang <shengjiu.wang@nxp.com>
->
-> Turn off/on clocks when device enters suspend/resume. This
-> can help saving power.
->
-> As a further optimization, we turn off/on mclk only when SAI
-> is in master mode because otherwise mclk is externally provided.
->
-> Signed-off-by: Shengjiu Wang <shengjiu.wang@nxp.com>
-> Signed-off-by: Daniel Baluta <daniel.baluta@nxp.com>
-> ---
->  sound/soc/fsl/fsl_sai.c | 54 +++++++++++++++++++++++++++++++++--------
->  1 file changed, 44 insertions(+), 10 deletions(-)
->
-> diff --git a/sound/soc/fsl/fsl_sai.c b/sound/soc/fsl/fsl_sai.c
-> index 8623b7f882b9..7fd1a81ec1aa 100644
-> --- a/sound/soc/fsl/fsl_sai.c
-> +++ b/sound/soc/fsl/fsl_sai.c
-> @@ -596,15 +596,8 @@ static int fsl_sai_startup(struct snd_pcm_substream *substream,
->  {
->         struct fsl_sai *sai = snd_soc_dai_get_drvdata(cpu_dai);
->         bool tx = substream->stream == SNDRV_PCM_STREAM_PLAYBACK;
-> -       struct device *dev = &sai->pdev->dev;
->         int ret;
->
-> -       ret = clk_prepare_enable(sai->bus_clk);
-> -       if (ret) {
-> -               dev_err(dev, "failed to enable bus clock: %d\n", ret);
-> -               return ret;
-> -       }
-> -
->         regmap_update_bits(sai->regmap, FSL_SAI_xCR3(tx), FSL_SAI_CR3_TRCE,
->                            FSL_SAI_CR3_TRCE);
->
-> @@ -621,8 +614,6 @@ static void fsl_sai_shutdown(struct snd_pcm_substream *substream,
->         bool tx = substream->stream == SNDRV_PCM_STREAM_PLAYBACK;
->
->         regmap_update_bits(sai->regmap, FSL_SAI_xCR3(tx), FSL_SAI_CR3_TRCE, 0);
-> -
-> -       clk_disable_unprepare(sai->bus_clk);
->  }
->
->  static const struct snd_soc_dai_ops fsl_sai_pcm_dai_ops = {
-> @@ -932,6 +923,14 @@ static int fsl_sai_runtime_suspend(struct device *dev)
->  {
->         struct fsl_sai *sai = dev_get_drvdata(dev);
->
-> +       if (sai->mclk_streams & BIT(SNDRV_PCM_STREAM_CAPTURE))
-> +               clk_disable_unprepare(sai->mclk_clk[sai->mclk_id[0]]);
-> +
-> +       if (sai->mclk_streams & BIT(SNDRV_PCM_STREAM_PLAYBACK))
-> +               clk_disable_unprepare(sai->mclk_clk[sai->mclk_id[1]]);
-> +
-> +       clk_disable_unprepare(sai->bus_clk);
-> +
->         regcache_cache_only(sai->regmap, true);
->         regcache_mark_dirty(sai->regmap);
->
-> @@ -941,6 +940,25 @@ static int fsl_sai_runtime_suspend(struct device *dev)
->  static int fsl_sai_runtime_resume(struct device *dev)
->  {
->         struct fsl_sai *sai = dev_get_drvdata(dev);
-> +       int ret;
-> +
-> +       ret = clk_prepare_enable(sai->bus_clk);
-> +       if (ret) {
-> +               dev_err(dev, "failed to enable bus clock: %d\n", ret);
-> +               return ret;
-> +       }
-> +
-> +       if (sai->mclk_streams & BIT(SNDRV_PCM_STREAM_PLAYBACK)) {
-> +               ret = clk_prepare_enable(sai->mclk_clk[sai->mclk_id[1]]);
-> +               if (ret)
-> +                       goto disable_bus_clk;
-> +       }
-> +
-> +       if (sai->mclk_streams & BIT(SNDRV_PCM_STREAM_CAPTURE)) {
-> +               ret = clk_prepare_enable(sai->mclk_clk[sai->mclk_id[0]]);
-> +               if (ret)
-> +                       goto disable_tx_clk;
-> +       }
->
->         regcache_cache_only(sai->regmap, false);
->         regmap_write(sai->regmap, FSL_SAI_TCSR, FSL_SAI_CSR_SR);
-> @@ -948,7 +966,23 @@ static int fsl_sai_runtime_resume(struct device *dev)
->         usleep_range(1000, 2000);
->         regmap_write(sai->regmap, FSL_SAI_TCSR, 0);
->         regmap_write(sai->regmap, FSL_SAI_RCSR, 0);
-> -       return regcache_sync(sai->regmap);
-> +
-> +       ret = regcache_sync(sai->regmap);
-> +       if (ret)
-> +               goto disable_rx_clk;
-> +
-> +       return 0;
-> +
-> +disable_rx_clk:
-> +       if (sai->mclk_streams & BIT(SNDRV_PCM_STREAM_CAPTURE))
-> +               clk_disable_unprepare(sai->mclk_clk[sai->mclk_id[0]]);
-> +disable_tx_clk:
-> +       if (sai->mclk_streams & BIT(SNDRV_PCM_STREAM_PLAYBACK))
-> +               clk_disable_unprepare(sai->mclk_clk[sai->mclk_id[1]]);
-> +disable_bus_clk:
-> +       clk_disable_unprepare(sai->bus_clk);
-> +
-> +       return ret;
->  }
->  #endif /* CONFIG_PM */
->
-> --
-> 2.17.1
->
+diff --git a/arch/powerpc/include/asm/pnv-pci.h b/arch/powerpc/include/asm/pnv-pci.h
+index 9fcb0bc462c6..a8bd0aeeee03 100644
+--- a/arch/powerpc/include/asm/pnv-pci.h
++++ b/arch/powerpc/include/asm/pnv-pci.h
+@@ -27,8 +27,6 @@ extern int pnv_pci_get_power_state(uint64_t id, uint8_t *state);
+ extern int pnv_pci_set_power_state(uint64_t id, uint8_t state,
+ 				   struct opal_msg *msg);
+ 
+-extern int pnv_pci_enable_tunnel(struct pci_dev *dev, uint64_t *asnind);
+-extern int pnv_pci_disable_tunnel(struct pci_dev *dev);
+ extern int pnv_pci_set_tunnel_bar(struct pci_dev *dev, uint64_t addr,
+ 				  int enable);
+ extern int pnv_pci_get_as_notify_info(struct task_struct *task, u32 *lpid,
+diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+index 3ead4c237ed0..ed73ba8e44a6 100644
+--- a/arch/powerpc/platforms/powernv/pci-ioda.c
++++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+@@ -54,6 +54,8 @@
+ static const char * const pnv_phb_names[] = { "IODA1", "IODA2", "NPU_NVLINK",
+ 					      "NPU_OCAPI" };
+ 
++static void pnv_pci_ioda2_set_bypass(struct pnv_ioda_pe *pe, bool enable);
++
+ void pe_level_printk(const struct pnv_ioda_pe *pe, const char *level,
+ 			    const char *fmt, ...)
+ {
+@@ -2359,7 +2361,7 @@ static long pnv_pci_ioda2_set_window(struct iommu_table_group *table_group,
+ 	return 0;
+ }
+ 
+-void pnv_pci_ioda2_set_bypass(struct pnv_ioda_pe *pe, bool enable)
++static void pnv_pci_ioda2_set_bypass(struct pnv_ioda_pe *pe, bool enable)
+ {
+ 	uint16_t window_id = (pe->pe_number << 1 ) + 1;
+ 	int64_t rc;
+diff --git a/arch/powerpc/platforms/powernv/pci.c b/arch/powerpc/platforms/powernv/pci.c
+index 8d28f2932c3b..2bac62a7123d 100644
+--- a/arch/powerpc/platforms/powernv/pci.c
++++ b/arch/powerpc/platforms/powernv/pci.c
+@@ -868,54 +868,6 @@ struct device_node *pnv_pci_get_phb_node(struct pci_dev *dev)
+ }
+ EXPORT_SYMBOL(pnv_pci_get_phb_node);
+ 
+-int pnv_pci_enable_tunnel(struct pci_dev *dev, u64 *asnind)
+-{
+-	struct device_node *np;
+-	const __be32 *prop;
+-	struct pnv_ioda_pe *pe;
+-	uint16_t window_id;
+-	int rc;
+-
+-	if (!radix_enabled())
+-		return -ENXIO;
+-
+-	if (!(np = pnv_pci_get_phb_node(dev)))
+-		return -ENXIO;
+-
+-	prop = of_get_property(np, "ibm,phb-indications", NULL);
+-	of_node_put(np);
+-
+-	if (!prop || !prop[1])
+-		return -ENXIO;
+-
+-	*asnind = (u64)be32_to_cpu(prop[1]);
+-	pe = pnv_ioda_get_pe(dev);
+-	if (!pe)
+-		return -ENODEV;
+-
+-	/* Increase real window size to accept as_notify messages. */
+-	window_id = (pe->pe_number << 1 ) + 1;
+-	rc = opal_pci_map_pe_dma_window_real(pe->phb->opal_id, pe->pe_number,
+-					     window_id, pe->tce_bypass_base,
+-					     (uint64_t)1 << 48);
+-	return opal_error_code(rc);
+-}
+-EXPORT_SYMBOL_GPL(pnv_pci_enable_tunnel);
+-
+-int pnv_pci_disable_tunnel(struct pci_dev *dev)
+-{
+-	struct pnv_ioda_pe *pe;
+-
+-	pe = pnv_ioda_get_pe(dev);
+-	if (!pe)
+-		return -ENODEV;
+-
+-	/* Restore default real window size. */
+-	pnv_pci_ioda2_set_bypass(pe, true);
+-	return 0;
+-}
+-EXPORT_SYMBOL_GPL(pnv_pci_disable_tunnel);
+-
+ int pnv_pci_set_tunnel_bar(struct pci_dev *dev, u64 addr, int enable)
+ {
+ 	__be64 val;
+diff --git a/arch/powerpc/platforms/powernv/pci.h b/arch/powerpc/platforms/powernv/pci.h
+index fbec1c76d7a7..f0a6ff56e349 100644
+--- a/arch/powerpc/platforms/powernv/pci.h
++++ b/arch/powerpc/platforms/powernv/pci.h
+@@ -194,7 +194,6 @@ extern int pnv_setup_msi_irqs(struct pci_dev *pdev, int nvec, int type);
+ extern void pnv_teardown_msi_irqs(struct pci_dev *pdev);
+ extern struct pnv_ioda_pe *pnv_ioda_get_pe(struct pci_dev *dev);
+ extern void pnv_set_msi_irq_chip(struct pnv_phb *phb, unsigned int virq);
+-extern void pnv_pci_ioda2_set_bypass(struct pnv_ioda_pe *pe, bool enable);
+ extern unsigned long pnv_pci_ioda2_get_table_size(__u32 page_shift,
+ 		__u64 window_size, __u32 levels);
+ extern int pnv_eeh_post_init(void);
+-- 
+2.20.1
+
