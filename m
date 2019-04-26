@@ -2,83 +2,80 @@ Return-Path: <SRS0=ImKy=S4=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D6E57C43219
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Apr 2019 07:41:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0EBBAC43219
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Apr 2019 07:52:07 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 5AB8420684
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Apr 2019 07:41:52 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 46592206E0
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Apr 2019 07:52:06 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ozlabs-ru.20150623.gappssmtp.com header.i=@ozlabs-ru.20150623.gappssmtp.com header.b="N8UT6tPg"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5AB8420684
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ozlabs-ru.20150623.gappssmtp.com header.i=@ozlabs-ru.20150623.gappssmtp.com header.b="VvL5qNJQ"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 46592206E0
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ozlabs.ru
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44r5bf0t84zDqgp
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Apr 2019 17:41:50 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44r5qS17L7zDqh2
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Apr 2019 17:52:04 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=ozlabs.ru
- (client-ip=2607:f8b0:4864:20::644; helo=mail-pl1-x644.google.com;
+ (client-ip=2607:f8b0:4864:20::542; helo=mail-pg1-x542.google.com;
  envelope-from=aik@ozlabs.ru; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=ozlabs.ru
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=ozlabs-ru.20150623.gappssmtp.com
- header.i=@ozlabs-ru.20150623.gappssmtp.com header.b="N8UT6tPg"; 
+ header.i=@ozlabs-ru.20150623.gappssmtp.com header.b="VvL5qNJQ"; 
  dkim-atps=neutral
-Received: from mail-pl1-x644.google.com (mail-pl1-x644.google.com
- [IPv6:2607:f8b0:4864:20::644])
+Received: from mail-pg1-x542.google.com (mail-pg1-x542.google.com
+ [IPv6:2607:f8b0:4864:20::542])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44r5Y53ynjzDqfp
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Apr 2019 17:39:37 +1000 (AEST)
-Received: by mail-pl1-x644.google.com with SMTP id e92so1128512plb.6
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Apr 2019 00:39:37 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44r5ng18KDzDqfG
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Apr 2019 17:50:30 +1000 (AEST)
+Received: by mail-pg1-x542.google.com with SMTP id k19so1226440pgh.0
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Apr 2019 00:50:30 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=ozlabs-ru.20150623.gappssmtp.com; s=20150623;
  h=subject:to:cc:references:from:openpgp:autocrypt:message-id:date
  :user-agent:mime-version:in-reply-to:content-language
  :content-transfer-encoding;
- bh=qThVJPUSngx0PAnFwsQRneFtMak7atD7Xg8Qa3aP9/4=;
- b=N8UT6tPgsjCe0GJS+pVM394FR+xbLyCLBe55kTtLf+iPU+A8S6zF8zNsltMCJ1rVCO
- K3yXyCocj0bj9ZpDcBNNl/2HVBRfZUkdbLxk/FGOaRRdEHsJE1wGGL43AMj6GjsEFed1
- /Vdh2OKSV7QozboXpDOX3yCLdj0tkqMXYMmtpvuatqFKt0XjEAp03V7Bol6f6UCnbjai
- a6t0kFHenCUzuq6AeVmU/zyJNWGH2Y9LlRW0Gtiuc4fJq0x/WX6rXqF+SKL3C4J4//Bg
- 9w8CsE3nkt/UrQ4hRAXByMt2ZARass2W90CbBTF7HD8wlH3c9QChawSoCX86v1zjZLMO
- ROag==
+ bh=OD5+Ow+2b/CpbJ+7x0n3fFejvppb8II2nTGocLLC4i4=;
+ b=VvL5qNJQWGnR6wIRLQcVMQSZVWH+wExmu7UleQloEzGVyD1DnaCNMgccMWcY1kSfC8
+ OZITfiiA5U1SSUwGu9Efo1sqRRhZBdRoUCsBvb5pGwdpxSKVaorNA26gA2ZpAoY6TYEJ
+ kZYIgO5+hjciL6ItwNOa6cONAtTp/TQlwyyx5Lynoeab049Etd2EOntXwgJQV6PA5cB1
+ 3zjRDePso1bFeLZqj2OH4uratnU17Qttzy5wo1rvYYcJ6dijz2pldArnf/Sc0lFaX0QF
+ xuK53+RRk4uiPAvirHlAhkBE6TGMVmwOtysjD6xKcm0ETcQ2x00mgZA4ljbAorivKQly
+ FLAA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:subject:to:cc:references:from:openpgp:autocrypt
  :message-id:date:user-agent:mime-version:in-reply-to
  :content-language:content-transfer-encoding;
- bh=qThVJPUSngx0PAnFwsQRneFtMak7atD7Xg8Qa3aP9/4=;
- b=GbVrfhh6xQvUfjdJzdPhJ+JXmsgK0VgMWcWLbCU1WEm0pYCToOAEcpvRIP02QEIUpB
- ilUkEBGviaSDiBIWv7qiQVWXhaK91wPOA0Lz06Thb94ofILaZjze2Jg3UdMCwL+89IwA
- 2s2j17/0bht63I8WrGjS64rzrM78xiDCJYEfeWs+J+471xpkD4pme2Vgq8wqBn8RCKWA
- XNB5ViSPX/1ksIhUy31fDlFRMCwZ9JR6Y7uDMBX6k0k/8RP+30o4AvHNK7j6fVqc+RI7
- GpiXAtUeP2fx4huyyXs16a2fWpfKZGcFXic37l3AoW/qE7FGGtL2tKxCyq9rqqAqLrYe
- sXJA==
-X-Gm-Message-State: APjAAAUKx7QGk1/ifNmIr/aPlqNmYn4waagiidD38lAe9AZnA92tVzee
- +IKZ2f6jVdnDWWhmprVjVxAdow==
-X-Google-Smtp-Source: APXvYqx4as1i6tTS9oiv8/dYKNseAGw+tHYfWjf15SUB05MNJ2j7clgjM3qBsVX9npknweIolknGYQ==
-X-Received: by 2002:a17:902:b10a:: with SMTP id
- q10mr10692471plr.303.1556264374124; 
- Fri, 26 Apr 2019 00:39:34 -0700 (PDT)
+ bh=OD5+Ow+2b/CpbJ+7x0n3fFejvppb8II2nTGocLLC4i4=;
+ b=EJTYzNjapXCwbXqg7uBR0EWiqRnuZ4t4riidzD8pOkjuwt7FTay04rJv+9hg/hsGQe
+ 2N5RoOf7/rFUDHetIUbjCqog3XCxOjf95opDUvjqRXwNvCIKEw6nOylRfUrtWVKALhfw
+ ZmUvFrsgjbUawPs9QFuYLfXYiqW7krV0qymp+oUU19hJo1Bd/A4ptPtsebApaG2AtRPE
+ 39tPx/Te5yPvZR/gtfuid9Kip51SXKQ/wlWWdpXxEPhnoBfTVPo0+S92Qzd+Dt1artnl
+ +VRCr641lM1ev6pq0E6Kxo9HCBCYeUy1K/tdCiy7iVTxjyRiIQ6yShB+8f/Sy6096pAp
+ q+fw==
+X-Gm-Message-State: APjAAAUpu4c7pbMOE2uYLayA+I6ucGZ1zAWDclsHikotF3WkG1RFzWzj
+ 0P2knLofX9/6dX2n4GBJ0FLnjg==
+X-Google-Smtp-Source: APXvYqyinXOJ0odzcXw8zD8N+pjp8FMUWcSf8JRmMwggR+PPXtTHB1WSmc77Wh15RgjOm3dmPyxhFg==
+X-Received: by 2002:aa7:8252:: with SMTP id e18mr884058pfn.105.1556265027187; 
+ Fri, 26 Apr 2019 00:50:27 -0700 (PDT)
 Received: from [10.61.2.175] ([122.99.82.10])
- by smtp.gmail.com with ESMTPSA id e193sm40975036pgc.53.2019.04.26.00.39.31
+ by smtp.gmail.com with ESMTPSA id m16sm54261028pfi.29.2019.04.26.00.50.24
  (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
- Fri, 26 Apr 2019 00:39:33 -0700 (PDT)
-Subject: Re: [PATCH kernel RFC 0/2] powerpc/ioda2: An attempt to allow DMA
- masks between 32 and 59
-To: Russell Currey <ruscur@russell.cc>, linuxppc-dev@lists.ozlabs.org
-References: <20190412064408.85399-1-aik@ozlabs.ru>
- <93b691b5c538d013717f9a9326bbf77e97b58a28.camel@russell.cc>
+ Fri, 26 Apr 2019 00:50:26 -0700 (PDT)
+Subject: Re: [PATCH] vfio-pci/nvlink2: Fix potential VMA leak
+To: Greg Kurz <groug@kaod.org>, linux-kernel@vger.kernel.org
+References: <155568823785.601037.2151744205292679252.stgit@bahia.lan>
 From: Alexey Kardashevskiy <aik@ozlabs.ru>
 Openpgp: preference=signencrypt
 Autocrypt: addr=aik@ozlabs.ru; keydata=
@@ -154,12 +151,12 @@ Autocrypt: addr=aik@ozlabs.ru; keydata=
  c7E5M+/NpslPCmYnDjs5qg0/3ihh6XuOGggZQOqrYPC3PnsNs3NxirwOkVPQgO6mXxpuifvJ
  DG9EMkK8IBXnLulqVk54kf7fE0jT/d8RTtJIA92GzsgdK2rpT1MBKKVffjRFGwN7nQVOzi4T
  XrB5p+6ML7Bd84xOEGsj/vdaXmz1esuH7BOZAGEZfLRCHJ0GVCSssg==
-Message-ID: <512ef829-19ae-967b-c3d9-1722caabd846@ozlabs.ru>
-Date: Fri, 26 Apr 2019 17:39:29 +1000
+Message-ID: <d1a91bf1-d3b8-dd3b-a677-d0acc0dea277@ozlabs.ru>
+Date: Fri, 26 Apr 2019 17:50:22 +1000
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
  Thunderbird/60.6.1
 MIME-Version: 1.0
-In-Reply-To: <93b691b5c538d013717f9a9326bbf77e97b58a28.camel@russell.cc>
+In-Reply-To: <155568823785.601037.2151744205292679252.stgit@bahia.lan>
 Content-Type: text/plain; charset=utf-8
 Content-Language: en-US
 Content-Transfer-Encoding: 7bit
@@ -174,70 +171,39 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Alistair Popple <alistair@popple.id.au>,
- Oliver O'Halloran <oohall@gmail.com>,
- David Gibson <david@gibson.dropbear.id.au>
+Cc: Alex Williamson <alex.williamson@redhat.com>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
 
 
-On 23/04/2019 10:58, Russell Currey wrote:
-> On Fri, 2019-04-12 at 16:44 +1000, Alexey Kardashevskiy wrote:
->> This is an attempt to allow DMA mask 40 or similar which are not
->> large
->> enough to use either a PHB3 bypass mode or a sketchy bypass.
->>
->> This is based on sha1
->> 582549e3fbe1 Linus Torvalds Merge tag 'for-linus' of
->> git://git.kernel.org/pub/scm/linux/kernel/git/rdma/rdma 
->>
->> Please comment. Thanks.
+On 20/04/2019 01:37, Greg Kurz wrote:
+> If vfio_pci_register_dev_region() fails then we should rollback
+> previous changes, ie. unmap the ATSD registers.
 > 
-> Seems to uniformly fail on POWER8 and sometimes on P9 too.
+> Signed-off-by: Greg Kurz <groug@kaod.org>
+> ---
+>  drivers/vfio/pci/vfio_pci_nvlink2.c |    2 ++
+>  1 file changed, 2 insertions(+)
 > 
-> On P8:
+> diff --git a/drivers/vfio/pci/vfio_pci_nvlink2.c b/drivers/vfio/pci/vfio_pci_nvlink2.c
+> index 32f695ffe128..50fe3c4f7feb 100644
+> --- a/drivers/vfio/pci/vfio_pci_nvlink2.c
+> +++ b/drivers/vfio/pci/vfio_pci_nvlink2.c
+> @@ -472,6 +472,8 @@ int vfio_pci_ibm_npu2_init(struct vfio_pci_device *vdev)
+>  	return 0;
+>  
+>  free_exit:
+> +	if (data->base)
+> +		memunmap(data->base);
+>  	kfree(data);
+>  
+>  	return ret;
 > 
-> [    2.423206] Failed to allocate a TCE memory, level shift=26
-> [    2.423351] pci 0001:03     : [PE# fd] Failed to create 32-bit TCE
-> table, err -12
-> 
-> On P9:
-> 
-> [    0.303055] pci 0003:01     : [PE# 1fd] Setting up 32-bit TCE table
-> at 0..80000000
-> [    0.303119] Failed to allocate a TCE memory, level shift=30
-> [    0.303147] pci 0003:01     : [PE# 1fd] Failed to create 32-bit TCE
-> table, err -12
-> 
-> Is it selecting the wrong TCE size?
 
-Nah, it is too big level size, i.e. it is bigger than max allowed order.
+Reviewed-by: Alexey Kardashevskiy <aik@ozlabs.ru>
 
-Try:
-
-#define POWERNV_IOMMU_DEFAULT_LEVELS 3
-
-
-
->> Alexey Kardashevskiy (2):
->   powerpc/powernv/ioda: Allocate TCE table
->> levels on demand for default
->     DMA window
->   powerpc/powernv/ioda2:
->> Create bigger default window with 64k IOMMU
->     pages
-> 
->  arch/powerpc/include/asm/iommu.h              |  8 ++-
->  arch/powerpc/platforms/powernv/pci.h          |  2 +-
->  arch/powerpc/kernel/iommu.c                   | 58 +++++++++++++--
-> ----
->  arch/powerpc/platforms/powernv/pci-ioda-tce.c | 19 +++---
->  arch/powerpc/platforms/powernv/pci-ioda.c     | 14 ++++-
->  5 files changed, 66 insertions(+), 35 deletions(-)
-> 
-> 
 
 -- 
 Alexey
