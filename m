@@ -2,88 +2,94 @@ Return-Path: <SRS0=ImKy=S4=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.6 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5819CC43218
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Apr 2019 04:34:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 17EA6C43219
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Apr 2019 04:52:06 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 178AB206C1
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Apr 2019 04:34:41 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="lxxQ4rEM"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 178AB206C1
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	by mail.kernel.org (Postfix) with ESMTPS id 12AAE206BF
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Apr 2019 04:52:04 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 12AAE206BF
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44r1Rf46DDzDqgB
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Apr 2019 14:34:38 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44r1qk4qQZzDqfS
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Apr 2019 14:52:02 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=2607:f8b0:4864:20::443; helo=mail-pf1-x443.google.com;
- envelope-from=npiggin@gmail.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
+ (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
+ envelope-from=aneesh.kumar@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="lxxQ4rEM"; 
- dkim-atps=neutral
-Received: from mail-pf1-x443.google.com (mail-pf1-x443.google.com
- [IPv6:2607:f8b0:4864:20::443])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ dmarc=none (p=none dis=none) header.from=linux.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44r1Pv3Fg5zDqc8
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Apr 2019 14:33:07 +1000 (AEST)
-Received: by mail-pf1-x443.google.com with SMTP id w25so1027971pfi.9
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Apr 2019 21:33:07 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=date:from:subject:to:cc:references:in-reply-to:mime-version
- :user-agent:message-id:content-transfer-encoding;
- bh=9hkrdUZwWqTiPriAP4+hzIlVI3ze7sEIgtQrzRmmKw8=;
- b=lxxQ4rEM5pzoAujII8IvdS/DcKe58Pmct9RjpVMGLiz9xlGTxl3/ww611iMfOQQiet
- QTzTHit37Qn04vT0dya+oHuTv3LUSb3d8hmgyUI+d1mbQk/MLPyeDPCPi8npSRyVYeOu
- Xzb6UxDo9SpMWaOMUDeojvGHMSZGO8cClSzMtREdVUrle9w9nrNBiVWHUfHCfTXL7hPk
- wgKvwPgEhB0OZmlaBrKv/RT5bG9H/ghVjFwzH7smHk8VglTeW2tQKG48JzPtKZLP+dom
- VGlhkT7E3Va9CIYMi67VNjusNZDPqJPgVPPTnEJUaZ5dW7DRhvymxARRybM2Xfo3qXMg
- c4zA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:date:from:subject:to:cc:references:in-reply-to
- :mime-version:user-agent:message-id:content-transfer-encoding;
- bh=9hkrdUZwWqTiPriAP4+hzIlVI3ze7sEIgtQrzRmmKw8=;
- b=siD3OhJ12nCiBuFrFSm/tILQmx7YzzggRcLP5/aqjl5eVCuenZWOGUuX+8VRD94DBB
- gTHRkr+83a6WVRHuR47MmFZ05jlB0y6Y0UCQlFAIj2y2MOkJiXOdG2srv22zfS053JDe
- +CieweYvvG72QMoQECVlT2jfN6wKviBDg1w9tmFwIcx7diDo6JOpfyzE5qAd1q9j5y79
- +FLd1a1gsFmZVNXJyuf/0uk2lnEdMo4UGfMZRRfmUX+FS66W82EApSAf7RcbiYHfk5kH
- mMXp5AsCIQkwZSbYquWMA5m4op+voKAw2q6TB2cLZ8jWF6/wf7zXOiFDxgFdtRfhQqVI
- TbAw==
-X-Gm-Message-State: APjAAAWiW8BFSGSpFc5G+R05+6Mn3MkqcksEYlTTv+I0lna4wWVhoGVA
- WBGhSMyFpCG1fxM5yebvRds=
-X-Google-Smtp-Source: APXvYqxWJwSV34YiqjYhJ4T4cYqioPlTB9FvF3G0vXhjr4CH46GNbMVzpO9OF1VcyFxPWr5gDV0XrA==
-X-Received: by 2002:a63:1e12:: with SMTP id e18mr10712817pge.87.1556253184913; 
- Thu, 25 Apr 2019 21:33:04 -0700 (PDT)
-Received: from localhost ([203.63.161.26])
- by smtp.gmail.com with ESMTPSA id t82sm62440023pfa.153.2019.04.25.21.33.02
- (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
- Thu, 25 Apr 2019 21:33:03 -0700 (PDT)
-Date: Fri, 26 Apr 2019 14:32:56 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
-Subject: Re: [PATCH v2 3/5] kernel/cpu: Allow non-zero CPU to be primary for
- suspend / kexec freeze
-To: Peter Zijlstra <peterz@infradead.org>
-References: <20190411033448.20842-1-npiggin@gmail.com>
- <20190411033448.20842-4-npiggin@gmail.com>
- <20190425120221.GR4038@hirez.programming.kicks-ass.net>
-In-Reply-To: <20190425120221.GR4038@hirez.programming.kicks-ass.net>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44r1p42HJwzDqcq
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Apr 2019 14:50:35 +1000 (AEST)
+Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
+ x3Q4k6hk129921
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Apr 2019 00:50:32 -0400
+Received: from e06smtp02.uk.ibm.com (e06smtp02.uk.ibm.com [195.75.94.98])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2s3rjy5fja-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Apr 2019 00:50:31 -0400
+Received: from localhost
+ by e06smtp02.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.ibm.com>;
+ Fri, 26 Apr 2019 05:50:29 +0100
+Received: from b06cxnps3075.portsmouth.uk.ibm.com (9.149.109.195)
+ by e06smtp02.uk.ibm.com (192.168.101.132) with IBM ESMTP SMTP Gateway:
+ Authorized Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Fri, 26 Apr 2019 05:50:26 +0100
+Received: from d06av24.portsmouth.uk.ibm.com (mk.ibm.com [9.149.105.60])
+ by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x3Q4oP5056295446
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Fri, 26 Apr 2019 04:50:25 GMT
+Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id B747B42047;
+ Fri, 26 Apr 2019 04:50:25 +0000 (GMT)
+Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 65A6E4203F;
+ Fri, 26 Apr 2019 04:50:24 +0000 (GMT)
+Received: from skywalker.linux.ibm.com (unknown [9.193.89.254])
+ by d06av24.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Fri, 26 Apr 2019 04:50:24 +0000 (GMT)
+X-Mailer: emacs 26.1 (via feedmail 11-beta-1 I)
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
+To: Christophe Leroy <christophe.leroy@c-s.fr>, npiggin@gmail.com,
+ paulus@samba.org, mpe@ellerman.id.au
+Subject: Re: [PATCH v3 5/6] powerpc/mm: Reduce memory usage for mm_context_t
+ for radix
+In-Reply-To: <76af2dbb-96bb-d5e6-fe65-a8ca87e2e268@c-s.fr>
+References: <20190417130351.3805-1-aneesh.kumar@linux.ibm.com>
+ <20190417130351.3805-6-aneesh.kumar@linux.ibm.com>
+ <76af2dbb-96bb-d5e6-fe65-a8ca87e2e268@c-s.fr>
+Date: Fri, 26 Apr 2019 10:20:19 +0530
 MIME-Version: 1.0
-User-Agent: astroid/0.14.0 (https://github.com/astroidmail/astroid)
-Message-Id: <1556252469.19vbob4hqp.astroid@bobo.none>
 Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: quoted-printable
+X-TM-AS-GCONF: 00
+x-cbid: 19042604-0008-0000-0000-000002E049EF
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 19042604-0009-0000-0000-0000224CA5E9
+Message-Id: <87imv1bcac.fsf@linux.ibm.com>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
+ definitions=2019-04-26_03:, , signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1810050000 definitions=main-1904260034
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -95,51 +101,59 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-arch@vger.kernel.org, Frederic Weisbecker <fweisbec@gmail.com>,
- "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>,
- linux-kernel@vger.kernel.org, Ingo Molnar <mingo@redhat.com>,
- Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Peter Zijlstra's on April 25, 2019 10:02 pm:
-> On Thu, Apr 11, 2019 at 01:34:46PM +1000, Nicholas Piggin wrote:
->> This patch provides an arch option, ARCH_SUSPEND_NONZERO_CPU, to
->> opt-in to allowing suspend to occur on one of the housekeeping CPUs
->> rather than hardcoded CPU0.
+Christophe Leroy <christophe.leroy@c-s.fr> writes:
+
+> Le 17/04/2019 =C3=A0 15:03, Aneesh Kumar K.V a =C3=A9crit=C2=A0:
+>> Currently, our mm_context_t on book3s64 include all hash specific
+>> context details like slice mask and subpage protection details. We
+>> can skip allocating these with radix translation. This will help us to s=
+ave
+>> 8K per mm_context with radix translation.
 >>=20
->> This will allow CPU0 to be a nohz_full CPU with a later change.
+>> With the patch applied we have
 >>=20
->> It may be possible for platforms with hardware/firmware restrictions
->> on suspend/wake effectively support this by handing off the final
->> stage to CPU0 when kernel housekeeping is no longer required. Another
->> option is to make housekeeping / nohz_full mask dynamic at runtime,
->> but the complexity could not be justified at this time.
->=20
-> Should we not tie this into whatever already allows an achitecture to
-> hotplug CPU-0? For instance, x86 default disallows this but has
-> cpu0_hotpluggable to allow this.
-=20
-I didn't know about that option, but I see it still has the suspend
-/ hibernate restriction though, which is what this patch is breaking
-from.
+>> sizeof(mm_context_t)  =3D 136
+>> sizeof(struct hash_mm_context)  =3D 8288
+>>=20
+>> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
+>> ---
+>>   arch/powerpc/include/asm/book3s/64/mmu-hash.h | 33 ++++++++++++-
+>>   arch/powerpc/include/asm/book3s/64/mmu.h      | 49 +++++--------------
+>>   arch/powerpc/kernel/setup-common.c            |  6 +++
+>>   arch/powerpc/mm/hash_utils_64.c               |  4 +-
+>>   arch/powerpc/mm/mmu_context_book3s64.c        | 16 +++++-
+>>   5 files changed, 68 insertions(+), 40 deletions(-)
+>>=20
+>
+> [...]
+>
+>> diff --git a/arch/powerpc/kernel/setup-common.c b/arch/powerpc/kernel/se=
+tup-common.c
+>> index a07de8608484..21b1ce200b22 100644
+>> --- a/arch/powerpc/kernel/setup-common.c
+>> +++ b/arch/powerpc/kernel/setup-common.c
+>> @@ -947,6 +947,12 @@ void __init setup_arch(char **cmdline_p)
+>>   	init_mm.end_data =3D (unsigned long) _edata;
+>>   	init_mm.brk =3D klimit;
+>>=20=20=20
+>> +#ifdef CONFIG_PPC_MM_SLICES
+>> +#if defined(CONFIG_PPC_8xx)
+>> +	init_mm.context.slb_addr_limit =3D DEFAULT_MAP_WINDOW;
+>> +#endif
+>> +#endif
+>> +
+>
+> In the previous patch, you moved the above into early_init_mmu(). Why=20
+> bringing it back here ?
+>
 
-If we are to prevent suspend completely at boot time, then it's no
-problem to run cpu0 with nohz_full, but TPTB decided that's a bad
-thing.
+Rebase error. I see that you have sent a series to handle this.
 
-But I have no problem with an arch adding another boot time option
-or hook into cpu0_hotpluggable that allows you to force nohz_full.
+Thanks
+-aneesh
 
-> Presumably POWER already allows hotplugging CPU-0 ?
-
-Yeah it does. Suspend in pseries is actually really just used for
-some proprietary hypervisor partition migration scheme where you
-suspend, image gets saved, then resume it somewhere else. So that's
-easy, it's just a hypercall that appears to return exactly as it was
-called. No restriction on CPU number.
-
-Thanks,
-Nick
-=
