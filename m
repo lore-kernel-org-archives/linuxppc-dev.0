@@ -2,94 +2,79 @@ Return-Path: <SRS0=ImKy=S4=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.6 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
+	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 17EA6C43219
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Apr 2019 04:52:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5FCB8C43219
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Apr 2019 05:21:06 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 12AAE206BF
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Apr 2019 04:52:04 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 12AAE206BF
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id A018B208C3
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Apr 2019 05:21:05 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="dDGVnEVV"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A018B208C3
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44r1qk4qQZzDqfS
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Apr 2019 14:52:02 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44r2TC1P19zDqfd
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Apr 2019 15:21:03 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
- (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=aneesh.kumar@linux.ibm.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=gmail.com
+ (client-ip=2a00:1450:4864:20::542; helo=mail-ed1-x542.google.com;
+ envelope-from=daniel.baluta@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="dDGVnEVV"; 
+ dkim-atps=neutral
+Received: from mail-ed1-x542.google.com (mail-ed1-x542.google.com
+ [IPv6:2a00:1450:4864:20::542])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44r1p42HJwzDqcq
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Apr 2019 14:50:35 +1000 (AEST)
-Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x3Q4k6hk129921
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Apr 2019 00:50:32 -0400
-Received: from e06smtp02.uk.ibm.com (e06smtp02.uk.ibm.com [195.75.94.98])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2s3rjy5fja-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Apr 2019 00:50:31 -0400
-Received: from localhost
- by e06smtp02.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.ibm.com>;
- Fri, 26 Apr 2019 05:50:29 +0100
-Received: from b06cxnps3075.portsmouth.uk.ibm.com (9.149.109.195)
- by e06smtp02.uk.ibm.com (192.168.101.132) with IBM ESMTP SMTP Gateway:
- Authorized Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Fri, 26 Apr 2019 05:50:26 +0100
-Received: from d06av24.portsmouth.uk.ibm.com (mk.ibm.com [9.149.105.60])
- by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x3Q4oP5056295446
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Fri, 26 Apr 2019 04:50:25 GMT
-Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id B747B42047;
- Fri, 26 Apr 2019 04:50:25 +0000 (GMT)
-Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 65A6E4203F;
- Fri, 26 Apr 2019 04:50:24 +0000 (GMT)
-Received: from skywalker.linux.ibm.com (unknown [9.193.89.254])
- by d06av24.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Fri, 26 Apr 2019 04:50:24 +0000 (GMT)
-X-Mailer: emacs 26.1 (via feedmail 11-beta-1 I)
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
-To: Christophe Leroy <christophe.leroy@c-s.fr>, npiggin@gmail.com,
- paulus@samba.org, mpe@ellerman.id.au
-Subject: Re: [PATCH v3 5/6] powerpc/mm: Reduce memory usage for mm_context_t
- for radix
-In-Reply-To: <76af2dbb-96bb-d5e6-fe65-a8ca87e2e268@c-s.fr>
-References: <20190417130351.3805-1-aneesh.kumar@linux.ibm.com>
- <20190417130351.3805-6-aneesh.kumar@linux.ibm.com>
- <76af2dbb-96bb-d5e6-fe65-a8ca87e2e268@c-s.fr>
-Date: Fri, 26 Apr 2019 10:20:19 +0530
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44r2RP62GFzDqdd
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Apr 2019 15:19:29 +1000 (AEST)
+Received: by mail-ed1-x542.google.com with SMTP id l25so2043963eda.9
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Apr 2019 22:19:29 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+ :cc; bh=EkKGDznBbBFdZirc3jAzxYvo3XCrpzWTjeLOR2RWDaI=;
+ b=dDGVnEVV15F6OJ8thkEsN9JsCEo1VAtAMLxKxQGe5+5s6CDTooHBEE75QPq/Y/9J8Z
+ 7wUjXyWnn5i+bvagOtqwUYB3wuI7s/RjXgyF/PrOnIXFbopBGkz3ypMwtGj3gXodq77e
+ ZVkO6bOP07iU02WczIvc8Ek88kSi2nFh1hx6xtXWoO4bDZZonW5SF6Xbj4UhJFajHw0B
+ KesRMb/f8JIKoQpqMPvo7SKB3fb7TMCW4lKtkhOEshIHVChfQgwHejh+KS0G1DslF87L
+ WZQU8wkrrQByLeVJJf7lZoDH55l8ecrDlpL4GoY1hIsbevbbkURKubdDqCw0tSv+lvIK
+ 4wRA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+ :message-id:subject:to:cc;
+ bh=EkKGDznBbBFdZirc3jAzxYvo3XCrpzWTjeLOR2RWDaI=;
+ b=ZYd7BdC7HyDpN5+OVHs292H+Q9ulHKHV6NF5hNeAz5hoobtEu+t1NxW6V/2Svb1QOY
+ VyidbNpB/sjzGHmeI9rPNmrGV3w+52kxxNJO7W2EEXNsYdC6T7Wp89FAx2fusNAsfuQY
+ uHEUjzGiQcoObWHxaD4JItv2sp1et84uj2W0BkgKS/f6+O9i2JVla2Fd0bPCrDzgzX9n
+ s+zrDIpfnZOn3NzzOluU/LP83wRksrW+k3QjrSWvOzw8ZAyxAjH1mIEL/IScgGc0RV65
+ ZwWVyk9cmKb8lUNs2dA6byiAD4odKqJwBymBZiGutSpLGPp0rGnFduH8YBIFL0yPBGeQ
+ nspA==
+X-Gm-Message-State: APjAAAX5kMkntqTCKNM4OjpXyR4zi/bM+lFzyy/jo3bjs6krFSnPdsfZ
+ TX8xO9Xmkzm2mtumca5drbugY6PbDchOz73gNX0=
+X-Google-Smtp-Source: APXvYqxA5MOoF7ycT3gfeurT4M7GtKkFTTOZe8vYmvKHKfa2/cDIQLOGVZXgWfGBxaJ11AT56XVqwW3/PkaRxPYmlfs=
+X-Received: by 2002:a50:a3c2:: with SMTP id t2mr26702934edb.46.1556255965508; 
+ Thu, 25 Apr 2019 22:19:25 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
-X-TM-AS-GCONF: 00
-x-cbid: 19042604-0008-0000-0000-000002E049EF
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19042604-0009-0000-0000-0000224CA5E9
-Message-Id: <87imv1bcac.fsf@linux.ibm.com>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2019-04-26_03:, , signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1810050000 definitions=main-1904260034
+References: <1556248850-3748-1-git-send-email-nicoleotsuka@gmail.com>
+In-Reply-To: <1556248850-3748-1-git-send-email-nicoleotsuka@gmail.com>
+From: Daniel Baluta <daniel.baluta@gmail.com>
+Date: Fri, 26 Apr 2019 08:19:14 +0300
+Message-ID: <CAEnQRZCV7mnBmUFiC2pVz4ndo6a0L1eF8pAuiOO5OBTayXt=SA@mail.gmail.com>
+Subject: Re: [alsa-devel] [PATCH] ASoC: fsl_sai: Add missing return 0 in
+ remove()
+To: Nicolin Chen <nicoleotsuka@gmail.com>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -101,59 +86,54 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org
+Cc: sfr@canb.auug.org.au, Linux-ALSA <alsa-devel@alsa-project.org>,
+ Timur Tabi <timur@kernel.org>, Xiubo Li <Xiubo.Lee@gmail.com>,
+ linuxppc-dev@lists.ozlabs.org, Liam Girdwood <lgirdwood@gmail.com>,
+ Takashi Iwai <tiwai@suse.com>, Mark Brown <broonie@kernel.org>,
+ Fabio Estevam <festevam@gmail.com>, Daniel Baluta <daniel.baluta@nxp.com>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Christophe Leroy <christophe.leroy@c-s.fr> writes:
-
-> Le 17/04/2019 =C3=A0 15:03, Aneesh Kumar K.V a =C3=A9crit=C2=A0:
->> Currently, our mm_context_t on book3s64 include all hash specific
->> context details like slice mask and subpage protection details. We
->> can skip allocating these with radix translation. This will help us to s=
-ave
->> 8K per mm_context with radix translation.
->>=20
->> With the patch applied we have
->>=20
->> sizeof(mm_context_t)  =3D 136
->> sizeof(struct hash_mm_context)  =3D 8288
->>=20
->> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
->> ---
->>   arch/powerpc/include/asm/book3s/64/mmu-hash.h | 33 ++++++++++++-
->>   arch/powerpc/include/asm/book3s/64/mmu.h      | 49 +++++--------------
->>   arch/powerpc/kernel/setup-common.c            |  6 +++
->>   arch/powerpc/mm/hash_utils_64.c               |  4 +-
->>   arch/powerpc/mm/mmu_context_book3s64.c        | 16 +++++-
->>   5 files changed, 68 insertions(+), 40 deletions(-)
->>=20
+On Fri, Apr 26, 2019 at 6:22 AM Nicolin Chen <nicoleotsuka@gmail.com> wrote:
 >
-> [...]
+> Build warning being reported:
+>     sound/soc/fsl/fsl_sai.c: In function 'fsl_sai_remove':
+>     sound/soc/fsl/fsl_sai.c:921:1: warning: no return statement in
+>     function returning non-void [-Wreturn-type]
 >
->> diff --git a/arch/powerpc/kernel/setup-common.c b/arch/powerpc/kernel/se=
-tup-common.c
->> index a07de8608484..21b1ce200b22 100644
->> --- a/arch/powerpc/kernel/setup-common.c
->> +++ b/arch/powerpc/kernel/setup-common.c
->> @@ -947,6 +947,12 @@ void __init setup_arch(char **cmdline_p)
->>   	init_mm.end_data =3D (unsigned long) _edata;
->>   	init_mm.brk =3D klimit;
->>=20=20=20
->> +#ifdef CONFIG_PPC_MM_SLICES
->> +#if defined(CONFIG_PPC_8xx)
->> +	init_mm.context.slb_addr_limit =3D DEFAULT_MAP_WINDOW;
->> +#endif
->> +#endif
->> +
+> So this patch just adds a "return 0" to fix it.
 >
-> In the previous patch, you moved the above into early_init_mmu(). Why=20
-> bringing it back here ?
+> Fixes: 812ad463e089 ("ASoC: fsl_sai: Add support for runtime pm")
+> Reported-by: Stephen Rothwell <sfr@canb.auug.org.au>
+> Signed-off-by: Nicolin Chen <nicoleotsuka@gmail.com>
+
+Reviewed-by: Daniel Baluta <daniel.baluta@nxp.com>
+
+Thanks Nicolin!
+
+> ---
+>  sound/soc/fsl/fsl_sai.c | 2 ++
+>  1 file changed, 2 insertions(+)
 >
-
-Rebase error. I see that you have sent a series to handle this.
-
-Thanks
--aneesh
-
+> diff --git a/sound/soc/fsl/fsl_sai.c b/sound/soc/fsl/fsl_sai.c
+> index 26c27dc..8593269 100644
+> --- a/sound/soc/fsl/fsl_sai.c
+> +++ b/sound/soc/fsl/fsl_sai.c
+> @@ -918,6 +918,8 @@ static int fsl_sai_probe(struct platform_device *pdev)
+>  static int fsl_sai_remove(struct platform_device *pdev)
+>  {
+>         pm_runtime_disable(&pdev->dev);
+> +
+> +       return 0;
+>  }
+>
+>  static const struct of_device_id fsl_sai_ids[] = {
+> --
+> 2.7.4
+>
+> _______________________________________________
+> Alsa-devel mailing list
+> Alsa-devel@alsa-project.org
+> https://mailman.alsa-project.org/mailman/listinfo/alsa-devel
