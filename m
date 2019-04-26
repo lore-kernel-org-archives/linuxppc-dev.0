@@ -2,85 +2,95 @@ Return-Path: <SRS0=ImKy=S4=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5F8FAC43219
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Apr 2019 19:07:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8B14CC43219
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Apr 2019 19:22:01 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 1C65F2084F
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Apr 2019 19:07:55 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=rasmusvillemoes.dk header.i=@rasmusvillemoes.dk header.b="ZwDxj6NY"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1C65F2084F
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=rasmusvillemoes.dk
+	by mail.kernel.org (Postfix) with ESMTPS id A8D3A20656
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Apr 2019 19:22:00 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A8D3A20656
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44rNqF08GqzDqbm
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Apr 2019 05:07:53 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44rP7V0nGVzDqXb
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Apr 2019 05:21:58 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=rasmusvillemoes.dk
- (client-ip=2a00:1450:4864:20::543; helo=mail-ed1-x543.google.com;
- envelope-from=linux@rasmusvillemoes.dk; receiver=<UNKNOWN>)
+ spf=none (mailfrom) smtp.mailfrom=linux.vnet.ibm.com
+ (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
+ envelope-from=julietk@linux.vnet.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=rasmusvillemoes.dk
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=rasmusvillemoes.dk header.i=@rasmusvillemoes.dk
- header.b="ZwDxj6NY"; dkim-atps=neutral
-Received: from mail-ed1-x543.google.com (mail-ed1-x543.google.com
- [IPv6:2a00:1450:4864:20::543])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ header.from=linux.vnet.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44rNnL1BppzDqZQ
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 27 Apr 2019 05:06:11 +1000 (AEST)
-Received: by mail-ed1-x543.google.com with SMTP id j20so4015039edq.10
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Apr 2019 12:06:11 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=rasmusvillemoes.dk; s=google;
- h=from:to:cc:subject:date:message-id:in-reply-to:references
- :mime-version:content-transfer-encoding;
- bh=nfeGW2KMz/FXR0Ak0qG/Xrz3Om6FI+VqPqCOac6VWK0=;
- b=ZwDxj6NYYQ0lVHEiRjePF7dVhtTjLZ4WRcCUvquHehKY5j9KkDfD0a3VZwVjXiyRyV
- 2y/yxNs4ofqQH5vNKi3sZugsV46m0sQrlAAAktvDtboto/3NtDzq6Ij5ACCAgM/a7iGB
- PKBhHHtWEMlDuI6re7GK+sSxlktUbcte/LzXw=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
- :references:mime-version:content-transfer-encoding;
- bh=nfeGW2KMz/FXR0Ak0qG/Xrz3Om6FI+VqPqCOac6VWK0=;
- b=lVqIu277JaU/ZFAkKtWrSTXgss5ToHsm2D8llrM4TngloYYoC22PbjMvHLNv/O3deX
- jMEj9wC+/DKM1MdldrR1YdJmr1EqSOh0sWUun5bONSfaufW5rzRJCxI6X96oGdF9jPOa
- bGAmsK8Yo7Dv4WIoYcRmuMpMrYpLyDzXdc7f9FEdZtocEu3WeU3cmnWDk1DtCvlsDDrZ
- ZcKb2d9zkTE6SFoei5Yn9SLUZrIxkfu4VD8fJ/iVsGpTpWB7uZioTx0sQtD5E++kfC9l
- PSLUPdjQHPztlCMOlP04ywPjny6/a9O0hGk/fxq0/LbF2boCDK8z096eKPrZcXUHo3G9
- y3LQ==
-X-Gm-Message-State: APjAAAUcg35DzMFhfJ6j6RFANNsuJXoTDqqg5PsDo/rj+zHiHOwBEHuW
- cNeZr4GkP0tD8XsyzmzSMdjgzypHhFVpHIW4
-X-Google-Smtp-Source: APXvYqye2nnuhIkpxJKAk+jx5GakviX0ROdF215GjoEpPacF9cRvIq9ChoYCfJw4i0+EsI04W92Zsg==
-X-Received: by 2002:aa7:d30b:: with SMTP id p11mr15544232edq.295.1556305567686; 
- Fri, 26 Apr 2019 12:06:07 -0700 (PDT)
-Received: from prevas-ravi.prevas.se (ip-5-186-118-63.cgn.fibianet.dk.
- [5.186.118.63])
- by smtp.gmail.com with ESMTPSA id k19sm2580862ejb.43.2019.04.26.12.06.06
- (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
- Fri, 26 Apr 2019 12:06:07 -0700 (PDT)
-From: Rasmus Villemoes <linux@rasmusvillemoes.dk>
-To: linuxppc-dev@lists.ozlabs.org,
-	Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH 12/10] powerpc: unbreak DYNAMIC_DEBUG=y build with clang
-Date: Fri, 26 Apr 2019 21:06:03 +0200
-Message-Id: <20190426190603.5982-2-linux@rasmusvillemoes.dk>
-X-Mailer: git-send-email 2.20.1
-In-Reply-To: <20190426190603.5982-1-linux@rasmusvillemoes.dk>
-References: <20190426130015.GA12483@archlinux-i9>
- <20190426190603.5982-1-linux@rasmusvillemoes.dk>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44rP5c1NymzDqXC
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 27 Apr 2019 05:20:16 +1000 (AEST)
+Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
+ x3QJFtRZ136056
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Apr 2019 15:20:14 -0400
+Received: from e12.ny.us.ibm.com (e12.ny.us.ibm.com [129.33.205.202])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2s47qhs14e-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Apr 2019 15:20:13 -0400
+Received: from localhost
+ by e12.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <julietk@linux.vnet.ibm.com>;
+ Fri, 26 Apr 2019 20:20:12 +0100
+Received: from b01cxnp22034.gho.pok.ibm.com (9.57.198.24)
+ by e12.ny.us.ibm.com (146.89.104.199) with IBM ESMTP SMTP Gateway: Authorized
+ Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Fri, 26 Apr 2019 20:20:10 +0100
+Received: from b01ledav003.gho.pok.ibm.com (b01ledav003.gho.pok.ibm.com
+ [9.57.199.108])
+ by b01cxnp22034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x3QJK9SY35651622
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Fri, 26 Apr 2019 19:20:09 GMT
+Received: from b01ledav003.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id D1907B2064;
+ Fri, 26 Apr 2019 19:20:09 +0000 (GMT)
+Received: from b01ledav003.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id B58D7B2065;
+ Fri, 26 Apr 2019 19:20:09 +0000 (GMT)
+Received: from ltcalpine2-lp21.aus.stglabs.ibm.com (unknown [9.40.195.230])
+ by b01ledav003.gho.pok.ibm.com (Postfix) with ESMTP;
+ Fri, 26 Apr 2019 19:20:09 +0000 (GMT)
+Received: by ltcalpine2-lp21.aus.stglabs.ibm.com (Postfix, from userid 0)
+ id 63B4816111B; Fri, 26 Apr 2019 15:20:09 -0400 (EDT)
+Date: Fri, 26 Apr 2019 15:20:09 -0400
+From: Juliet Kim<julietk@linux.vnet.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH]powerpc/mobility: Serialize PRRN and LPM in device tree update
+User-Agent: Heirloom mailx 12.5 7/5/10
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+X-TM-AS-GCONF: 00
+x-cbid: 19042619-0060-0000-0000-0000033520ED
+X-IBM-SpamModules-Scores: 
+X-IBM-SpamModules-Versions: BY=3.00011000; HX=3.00000242; KW=3.00000007;
+ PH=3.00000004; SC=3.00000285; SDB=6.01194774; UDB=6.00626438; IPR=6.00975609; 
+ MB=3.00026612; MTD=3.00000008; XFM=3.00000015; UTC=2019-04-26 19:20:11
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 19042619-0061-0000-0000-0000491BD284
+Message-Id: <5cc359e9.h9YV36UYX//U5tLh%julietk@linux.vnet.ibm.com>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
+ definitions=2019-04-26_13:, , signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ malwarescore=0 suspectscore=1 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1011 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1810050000 definitions=main-1904260130
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -92,42 +102,83 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Arnd Bergmann <arnd@arndb.de>, Rasmus Villemoes <linux@rasmusvillemoes.dk>,
- Nick Desaulniers <ndesaulniers@google.com>, linux-kernel@vger.kernel.org,
- Jason Baron <jbaron@akamai.com>, Nathan Chancellor <natechancellor@gmail.com>
+Cc: mwb@linux.vnet.ibm.com, mmc@linux.vnet.ibm.com, nathanl@linux.vnet.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Current versions of clang does not like the %c modifier in inline
-assembly for targets other than x86, so any DYNAMIC_DEBUG=y build
-fails on ppc64. A fix is likely to land in 9.0 (see
-https://github.com/ClangBuiltLinux/linux/issues/456), but unbreak the
-build for older versions.
+Fix extending start/stop topology update scope during LPM
+Commit 65b9fdadfc4d ("powerpc/pseries/mobility: Extend start/stop
+topology update scope") made the change to the duration that 
+topology updates are suppressed during LPM to allow the complete 
+device tree update which leaves the property update notifier
+unregistered until device tree update completes. This prevents
+topology update during LPM.  
 
-Fixes: powerpc: select DYNAMIC_DEBUG_RELATIVE_POINTERS for PPC64
-Reported-by: Nathan Chancellor <natechancellor@gmail.com>
-Reported-by: Arnd Bergmann <arnd@arndb.de>
-Signed-off-by: Rasmus Villemoes <linux@rasmusvillemoes.dk>
----
-Andrew, please apply and/or fold into 10/10.
+Instead, use mutex_lock, which serializes LPM and PRRN operation 
+in pseries_devicetree_update.
 
- arch/powerpc/Kconfig | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Signed-off-by: Juliet Kim <julietk@linux.ibm.com>
 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 6821c8ae1d62..8511137ab963 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -155,7 +155,7 @@ config PPC
- 	select BUILDTIME_EXTABLE_SORT
- 	select CLONE_BACKWARDS
- 	select DCACHE_WORD_ACCESS		if PPC64 && CPU_LITTLE_ENDIAN
--	select DYNAMIC_DEBUG_RELATIVE_POINTERS	if PPC64
-+	select DYNAMIC_DEBUG_RELATIVE_POINTERS	if PPC64 && (CC_IS_GCC || CLANG_VERSION >= 90000)
- 	select DYNAMIC_FTRACE			if FUNCTION_TRACER
- 	select EDAC_ATOMIC_SCRUB
- 	select EDAC_SUPPORT
+ arch/powerpc/platforms/pseries/mobility.c | 17 +++++++++++++----
+ 1 file changed, 13 insertions(+), 4 deletions(-)
+
+diff --git a/arch/powerpc/platforms/pseries/mobility.c b/arch/powerpc/platforms/pseries/mobility.c
+index 88925f8ca8a0..3a79ded056fd 100644
+--- a/arch/powerpc/platforms/pseries/mobility.c
++++ b/arch/powerpc/platforms/pseries/mobility.c
+@@ -42,6 +42,8 @@ struct update_props_workarea {
+ #define MIGRATION_SCOPE	(1)
+ #define PRRN_SCOPE -2
+ 
++static DEFINE_MUTEX(dt_affinity_mutex);
++
+ static int mobility_rtas_call(int token, char *buf, s32 scope)
+ {
+ 	int rc;
+@@ -270,13 +272,19 @@ int pseries_devicetree_update(s32 scope)
+ 	int update_nodes_token;
+ 	int rc;
+ 
++	mutex_lock(&dt_affinity_mutex);
++
+ 	update_nodes_token = rtas_token("ibm,update-nodes");
+-	if (update_nodes_token == RTAS_UNKNOWN_SERVICE)
++	if (update_nodes_token == RTAS_UNKNOWN_SERVICE) {
++		mutex_unlock(&dt_affinity_mutex);
+ 		return -EINVAL;
++	}
+ 
+ 	rtas_buf = kzalloc(RTAS_DATA_BUF_SIZE, GFP_KERNEL);
+-	if (!rtas_buf)
++	if (!rtas_buf) {
++		mutex_unlock(&dt_affinity_mutex);
+ 		return -ENOMEM;
++	}
+ 
+ 	do {
+ 		rc = mobility_rtas_call(update_nodes_token, rtas_buf, scope);
+@@ -316,6 +324,7 @@ int pseries_devicetree_update(s32 scope)
+ 	} while (rc == 1);
+ 
+ 	kfree(rtas_buf);
++	mutex_unlock(&dt_affinity_mutex);
+ 	return rc;
+ }
+ 
+@@ -371,10 +380,10 @@ static ssize_t migration_store(struct class *class,
+ 	if (rc)
+ 		return rc;
+ 
+-	post_mobility_fixup();
+-
+ 	start_topology_update();
+ 
++	post_mobility_fixup();
++
+ 	return count;
+ }
+ 
 -- 
-2.20.1
+2.12.3
 
