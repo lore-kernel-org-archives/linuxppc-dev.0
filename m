@@ -6,21 +6,21 @@ X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
 	SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4CCA4C43218
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Apr 2019 06:20:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 894BDC43218
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Apr 2019 06:21:48 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C60B2206E0
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Apr 2019 06:20:08 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 11F68206BA
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Apr 2019 06:21:48 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="DVuXMago"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C60B2206E0
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="edYI6Zj8"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 11F68206BA
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44r3nL6Q1KzDqhS
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Apr 2019 16:20:06 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44r3qG1NntzDqcT
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Apr 2019 16:21:46 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=c-s.fr
  (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
@@ -28,55 +28,55 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="DVuXMago"; 
+ unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="edYI6Zj8"; 
  dkim-atps=neutral
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44r3Kz2fFczDqdp
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Apr 2019 15:59:51 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44r3L02g9XzDqf0
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Apr 2019 15:59:52 +1000 (AEST)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 44r3Kv2Tq7z9v1vP;
- Fri, 26 Apr 2019 07:59:47 +0200 (CEST)
+ by localhost (Postfix) with ESMTP id 44r3Kw3Tp6z9v1vQ;
+ Fri, 26 Apr 2019 07:59:48 +0200 (CEST)
 Authentication-Results: localhost; dkim=pass
  reason="1024-bit key; insecure key"
- header.d=c-s.fr header.i=@c-s.fr header.b=DVuXMago; dkim-adsp=pass;
+ header.d=c-s.fr header.i=@c-s.fr header.b=edYI6Zj8; dkim-adsp=pass;
  dkim-atps=neutral
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id 3dBihyuc_5WN; Fri, 26 Apr 2019 07:59:47 +0200 (CEST)
+ with ESMTP id aSyvv49egfCP; Fri, 26 Apr 2019 07:59:48 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 44r3Kv1TYdz9v1tj;
- Fri, 26 Apr 2019 07:59:47 +0200 (CEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
- t=1556258387; bh=4kEDLZNkBNAYCQ5OcoGO2PuBDx1/QI5nsGEmUjCJNzw=;
- h=In-Reply-To:References:From:Subject:To:Cc:Date:From;
- b=DVuXMagoAbuIWEZZwTVKXG0tADE8VQ6UXfN3DKe7buTgDOsVa/1q/pFswEdag6l50
- 8iW1iTmS5hlqHdjdbcu4CjwKQCZRKos6LJ1I6JlZ6TCI+OueKSyCmY44BmqIEqps76
- jOXZWwWupVwRDaoeMRz/j7chAgrU1fSHth4Jmeuk=
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 1962C8B807;
+ by pegase1.c-s.fr (Postfix) with ESMTP id 44r3Kw2TH3z9v1tj;
  Fri, 26 Apr 2019 07:59:48 +0200 (CEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
+ t=1556258388; bh=Wmc8C7YfAu9D4U+vu2Q+aStZ8LeGlglQqDou+EwdhfE=;
+ h=In-Reply-To:References:From:Subject:To:Cc:Date:From;
+ b=edYI6Zj8Ba2IXvCzUCwWIvGBkHV0XK5YW4u+hXnnAZRJLiStAlF/OJ1hHI5AsQoxh
+ cFarBzHmkYXBeU+8MrL6/QxTmxG0ltpiHx9KKggu305PDkRHvu/bDDR5GEngVw9qzL
+ k19Vo43/XqIvSxH8hpkeAP8ZbjxZ3Z5fdi8gUC3I=
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 3C9078B807;
+ Fri, 26 Apr 2019 07:59:49 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id AQkN-zkAJyC0; Fri, 26 Apr 2019 07:59:48 +0200 (CEST)
+ with ESMTP id xy6wdW1WVDIk; Fri, 26 Apr 2019 07:59:49 +0200 (CEST)
 Received: from po16846vm.idsi0.si.c-s.fr (po15451.idsi0.si.c-s.fr
  [172.25.231.6])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 01C618B74C;
- Fri, 26 Apr 2019 07:59:48 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 180F18B74C;
+ Fri, 26 Apr 2019 07:59:49 +0200 (CEST)
 Received: by po16846vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id D962166276; Fri, 26 Apr 2019 05:59:47 +0000 (UTC)
-Message-Id: <abacb62daee8e70f14ce3899a255f756c6b20583.1556258135.git.christophe.leroy@c-s.fr>
+ id EB45866276; Fri, 26 Apr 2019 05:59:48 +0000 (UTC)
+Message-Id: <aedb307a7c58788c831aab5ff7137011218e11fc.1556258135.git.christophe.leroy@c-s.fr>
 In-Reply-To: <cover.1556258134.git.christophe.leroy@c-s.fr>
 References: <cover.1556258134.git.christophe.leroy@c-s.fr>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v2 12/17] powerpc/mm: move hugetlb_disabled into asm/hugetlb.h
+Subject: [PATCH v2 13/17] powerpc/mm: cleanup HPAGE_SHIFT setup
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, 
  aneesh.kumar@linux.ibm.com
-Date: Fri, 26 Apr 2019 05:59:47 +0000 (UTC)
+Date: Fri, 26 Apr 2019 05:59:48 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -93,65 +93,143 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-No need to have this in asm/page.h, move it into asm/hugetlb.h
+Only book3s/64 may select default among several HPAGE_SHIFT at runtime.
+8xx always defines 512K pages as default
+FSL_BOOK3E always defines 4M pages as default
+
+This patch limits HUGETLB_PAGE_SIZE_VARIABLE to book3s/64
+moves the definitions in subarches files.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
- arch/powerpc/include/asm/hugetlb.h | 2 ++
- arch/powerpc/include/asm/page.h    | 1 -
- arch/powerpc/kernel/fadump.c       | 1 +
- arch/powerpc/mm/hash_utils_64.c    | 1 +
- 4 files changed, 4 insertions(+), 1 deletion(-)
+ arch/powerpc/Kconfig                 |  2 +-
+ arch/powerpc/include/asm/hugetlb.h   |  2 ++
+ arch/powerpc/include/asm/page.h      | 11 ++++++++---
+ arch/powerpc/mm/hugetlbpage-hash64.c | 16 ++++++++++++++++
+ arch/powerpc/mm/hugetlbpage.c        | 23 +++--------------------
+ 5 files changed, 30 insertions(+), 24 deletions(-)
 
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index 5d8e692d6470..7815eb0cc2a5 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -390,7 +390,7 @@ source "kernel/Kconfig.hz"
+ 
+ config HUGETLB_PAGE_SIZE_VARIABLE
+ 	bool
+-	depends on HUGETLB_PAGE
++	depends on HUGETLB_PAGE && PPC_BOOK3S_64
+ 	default y
+ 
+ config MATH_EMULATION
 diff --git a/arch/powerpc/include/asm/hugetlb.h b/arch/powerpc/include/asm/hugetlb.h
-index fd5c0873a57d..84598c6b0959 100644
+index 84598c6b0959..20a101046cff 100644
 --- a/arch/powerpc/include/asm/hugetlb.h
 +++ b/arch/powerpc/include/asm/hugetlb.h
-@@ -13,6 +13,8 @@
- #include <asm/nohash/32/hugetlb-8xx.h>
- #endif /* CONFIG_PPC_BOOK3S_64 */
+@@ -15,6 +15,8 @@
  
-+extern bool hugetlb_disabled;
+ extern bool hugetlb_disabled;
+ 
++void hugetlbpage_init_default(void);
 +
  void flush_dcache_icache_hugepage(struct page *page);
  
  int slice_is_hugepage_only_range(struct mm_struct *mm, unsigned long addr,
 diff --git a/arch/powerpc/include/asm/page.h b/arch/powerpc/include/asm/page.h
-index 748f5db2e2b7..6b508420d92b 100644
+index 6b508420d92b..dbc8c0679480 100644
 --- a/arch/powerpc/include/asm/page.h
 +++ b/arch/powerpc/include/asm/page.h
-@@ -29,7 +29,6 @@
+@@ -28,10 +28,15 @@
+ #define PAGE_SIZE		(ASM_CONST(1) << PAGE_SHIFT)
  
  #ifndef __ASSEMBLY__
- #ifdef CONFIG_HUGETLB_PAGE
--extern bool hugetlb_disabled;
- extern unsigned int HPAGE_SHIFT;
- #else
+-#ifdef CONFIG_HUGETLB_PAGE
+-extern unsigned int HPAGE_SHIFT;
+-#else
++#ifndef CONFIG_HUGETLB_PAGE
  #define HPAGE_SHIFT PAGE_SHIFT
-diff --git a/arch/powerpc/kernel/fadump.c b/arch/powerpc/kernel/fadump.c
-index 45a8d0be1c96..25f063f56ec5 100644
---- a/arch/powerpc/kernel/fadump.c
-+++ b/arch/powerpc/kernel/fadump.c
-@@ -36,6 +36,7 @@
- #include <linux/sysfs.h>
- #include <linux/slab.h>
- #include <linux/cma.h>
-+#include <linux/hugetlb.h>
++#elif defined(CONFIG_PPC_BOOK3S_64)
++extern unsigned int hpage_shift;
++#define HPAGE_SHIFT hpage_shift
++#elif defined(CONFIG_PPC_8xx)
++#define HPAGE_SHIFT		19	/* 512k pages */
++#elif defined(CONFIG_PPC_FSL_BOOK3E)
++#define HPAGE_SHIFT		22	/* 4M pages */
+ #endif
+ #define HPAGE_SIZE		((1UL) << HPAGE_SHIFT)
+ #define HPAGE_MASK		(~(HPAGE_SIZE - 1))
+diff --git a/arch/powerpc/mm/hugetlbpage-hash64.c b/arch/powerpc/mm/hugetlbpage-hash64.c
+index b0d9209d9a86..7a58204c3688 100644
+--- a/arch/powerpc/mm/hugetlbpage-hash64.c
++++ b/arch/powerpc/mm/hugetlbpage-hash64.c
+@@ -15,6 +15,9 @@
+ #include <asm/cacheflush.h>
+ #include <asm/machdep.h>
  
- #include <asm/debugfs.h>
- #include <asm/page.h>
-diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
-index f727197de713..db1aef2adc88 100644
---- a/arch/powerpc/mm/hash_utils_64.c
-+++ b/arch/powerpc/mm/hash_utils_64.c
-@@ -37,6 +37,7 @@
- #include <linux/context_tracking.h>
- #include <linux/libfdt.h>
- #include <linux/pkeys.h>
-+#include <linux/hugetlb.h>
++unsigned int hpage_shift;
++EXPORT_SYMBOL(hpage_shift);
++
+ extern long hpte_insert_repeating(unsigned long hash, unsigned long vpn,
+ 				  unsigned long pa, unsigned long rlags,
+ 				  unsigned long vflags, int psize, int ssize);
+@@ -145,3 +148,16 @@ void huge_ptep_modify_prot_commit(struct vm_area_struct *vma, unsigned long addr
+ 							   old_pte, pte);
+ 	set_huge_pte_at(vma->vm_mm, addr, ptep, pte);
+ }
++
++void hugetlbpage_init_default(void)
++{
++	/* Set default large page size. Currently, we pick 16M or 1M
++	 * depending on what is available
++	 */
++	if (mmu_psize_defs[MMU_PAGE_16M].shift)
++		hpage_shift = mmu_psize_defs[MMU_PAGE_16M].shift;
++	else if (mmu_psize_defs[MMU_PAGE_1M].shift)
++		hpage_shift = mmu_psize_defs[MMU_PAGE_1M].shift;
++	else if (mmu_psize_defs[MMU_PAGE_2M].shift)
++		hpage_shift = mmu_psize_defs[MMU_PAGE_2M].shift;
++}
+diff --git a/arch/powerpc/mm/hugetlbpage.c b/arch/powerpc/mm/hugetlbpage.c
+index 828860a7492e..265bd6d04233 100644
+--- a/arch/powerpc/mm/hugetlbpage.c
++++ b/arch/powerpc/mm/hugetlbpage.c
+@@ -28,9 +28,6 @@
  
- #include <asm/debugfs.h>
- #include <asm/processor.h>
+ bool hugetlb_disabled = false;
+ 
+-unsigned int HPAGE_SHIFT;
+-EXPORT_SYMBOL(HPAGE_SHIFT);
+-
+ #define hugepd_none(hpd)	(hpd_val(hpd) == 0)
+ 
+ #define PTE_T_ORDER	(__builtin_ffs(sizeof(pte_t)) - __builtin_ffs(sizeof(void *)))
+@@ -647,23 +644,9 @@ static int __init hugetlbpage_init(void)
+ #endif
+ 	}
+ 
+-#if defined(CONFIG_PPC_FSL_BOOK3E) || defined(CONFIG_PPC_8xx)
+-	/* Default hpage size = 4M on FSL_BOOK3E and 512k on 8xx */
+-	if (mmu_psize_defs[MMU_PAGE_4M].shift)
+-		HPAGE_SHIFT = mmu_psize_defs[MMU_PAGE_4M].shift;
+-	else if (mmu_psize_defs[MMU_PAGE_512K].shift)
+-		HPAGE_SHIFT = mmu_psize_defs[MMU_PAGE_512K].shift;
+-#else
+-	/* Set default large page size. Currently, we pick 16M or 1M
+-	 * depending on what is available
+-	 */
+-	if (mmu_psize_defs[MMU_PAGE_16M].shift)
+-		HPAGE_SHIFT = mmu_psize_defs[MMU_PAGE_16M].shift;
+-	else if (mmu_psize_defs[MMU_PAGE_1M].shift)
+-		HPAGE_SHIFT = mmu_psize_defs[MMU_PAGE_1M].shift;
+-	else if (mmu_psize_defs[MMU_PAGE_2M].shift)
+-		HPAGE_SHIFT = mmu_psize_defs[MMU_PAGE_2M].shift;
+-#endif
++	if (IS_ENABLED(HUGETLB_PAGE_SIZE_VARIABLE))
++		hugetlbpage_init_default();
++
+ 	return 0;
+ }
+ 
 -- 
 2.13.3
 
