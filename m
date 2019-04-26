@@ -3,22 +3,22 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
 X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 93EDFC43218
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Apr 2019 06:54:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 70C82C43218
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Apr 2019 06:55:30 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 1ABE7206DD
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Apr 2019 06:54:04 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1ABE7206DD
+	by mail.kernel.org (Postfix) with ESMTPS id EC666206DD
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Apr 2019 06:55:29 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EC666206DD
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44r4XT4NwbzDqP3
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Apr 2019 16:54:01 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44r4Z766kmzDqgp
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Apr 2019 16:55:27 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
  (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
@@ -29,59 +29,55 @@ Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44r4MF6f7yzDqcq
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Apr 2019 16:46:01 +1000 (AEST)
-Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44r4MP4YS2zDqgN
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Apr 2019 16:46:09 +1000 (AEST)
+Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x3Q6chl2096673
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Apr 2019 02:45:59 -0400
-Received: from e06smtp01.uk.ibm.com (e06smtp01.uk.ibm.com [195.75.94.97])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2s3vfjhd7d-1
+ x3Q6ch5S034709
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Apr 2019 02:46:07 -0400
+Received: from e06smtp05.uk.ibm.com (e06smtp05.uk.ibm.com [195.75.94.101])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2s3u5tvgcd-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Apr 2019 02:45:59 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Apr 2019 02:46:07 -0400
 Received: from localhost
- by e06smtp01.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp05.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.ibm.com>;
- Fri, 26 Apr 2019 07:45:57 +0100
-Received: from b06cxnps4075.portsmouth.uk.ibm.com (9.149.109.197)
- by e06smtp01.uk.ibm.com (192.168.101.131) with IBM ESMTP SMTP Gateway:
+ Fri, 26 Apr 2019 07:46:04 +0100
+Received: from b06cxnps3074.portsmouth.uk.ibm.com (9.149.109.194)
+ by e06smtp05.uk.ibm.com (192.168.101.135) with IBM ESMTP SMTP Gateway:
  Authorized Use Only! Violators will be prosecuted; 
  (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Fri, 26 Apr 2019 07:45:54 +0100
-Received: from b06wcsmtp001.portsmouth.uk.ibm.com
- (b06wcsmtp001.portsmouth.uk.ibm.com [9.149.105.160])
- by b06cxnps4075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x3Q6jrm050855956
+ Fri, 26 Apr 2019 07:46:01 +0100
+Received: from d06av21.portsmouth.uk.ibm.com (d06av21.portsmouth.uk.ibm.com
+ [9.149.105.232])
+ by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x3Q6k0RJ58982634
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Fri, 26 Apr 2019 06:45:53 GMT
-Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 5DE85A405B;
- Fri, 26 Apr 2019 06:45:53 +0000 (GMT)
-Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id C6EDBA405F;
- Fri, 26 Apr 2019 06:45:51 +0000 (GMT)
+ Fri, 26 Apr 2019 06:46:00 GMT
+Received: from d06av21.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 3AB8352057;
+ Fri, 26 Apr 2019 06:46:00 +0000 (GMT)
 Received: from skywalker.linux.ibm.com (unknown [9.193.89.254])
- by b06wcsmtp001.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Fri, 26 Apr 2019 06:45:51 +0000 (GMT)
+ by d06av21.portsmouth.uk.ibm.com (Postfix) with ESMTP id 8A47F52054;
+ Fri, 26 Apr 2019 06:45:58 +0000 (GMT)
 X-Mailer: emacs 26.1 (via feedmail 11-beta-1 Q)
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
 To: Christophe Leroy <christophe.leroy@c-s.fr>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [PATCH v2 07/11] powerpc/mm: remove a couple of #ifdef
- CONFIG_PPC_64K_PAGES in mm/slice.c
-In-Reply-To: <cf8573caf0896a7a1a7fee72280ca09f7096923b.1556202029.git.christophe.leroy@c-s.fr>
+Subject: Re: [PATCH v2 09/11] powerpc/mm: define get_slice_psize() all the time
+In-Reply-To: <306daa20cb5b7c361b28831a190e45b16245779d.1556202029.git.christophe.leroy@c-s.fr>
 References: <cover.1556202028.git.christophe.leroy@c-s.fr>
- <cf8573caf0896a7a1a7fee72280ca09f7096923b.1556202029.git.christophe.leroy@c-s.fr>
-Date: Fri, 26 Apr 2019 12:10:59 +0530
+ <306daa20cb5b7c361b28831a190e45b16245779d.1556202029.git.christophe.leroy@c-s.fr>
+Date: Fri, 26 Apr 2019 12:12:07 +0530
 MIME-Version: 1.0
 Content-Type: text/plain
 X-TM-AS-GCONF: 00
-x-cbid: 19042606-4275-0000-0000-0000032E6D18
+x-cbid: 19042606-0020-0000-0000-000003365F01
 X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19042606-4276-0000-0000-0000383DBC47
-Message-Id: <87tvel9slg.fsf@linux.ibm.com>
+x-cbparentid: 19042606-0021-0000-0000-00002188CE76
+Message-Id: <87r29p9sjk.fsf@linux.ibm.com>
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
  definitions=2019-04-26_04:, , signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
@@ -108,58 +104,54 @@ Sender: "Linuxppc-dev"
 
 Christophe Leroy <christophe.leroy@c-s.fr> writes:
 
-> This patch replaces a couple of #ifdef CONFIG_PPC_64K_PAGES
-> by IS_ENABLED(CONFIG_PPC_64K_PAGES) to improve code maintainability.
+> get_slice_psize() can be defined regardless of CONFIG_PPC_MM_SLICES
+> to avoid ifdefs
 >
 
 Reviewed-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
 
 > Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 > ---
->  arch/powerpc/mm/slice.c | 10 ++++------
->  1 file changed, 4 insertions(+), 6 deletions(-)
+>  arch/powerpc/include/asm/slice.h | 5 +++++
+>  arch/powerpc/mm/hugetlbpage.c    | 4 +---
+>  2 files changed, 6 insertions(+), 3 deletions(-)
 >
-> diff --git a/arch/powerpc/mm/slice.c b/arch/powerpc/mm/slice.c
-> index 840c4118a185..ace97d953040 100644
-> --- a/arch/powerpc/mm/slice.c
-> +++ b/arch/powerpc/mm/slice.c
-> @@ -606,14 +606,13 @@ unsigned long slice_get_unmapped_area(unsigned long addr, unsigned long len,
->  	newaddr = slice_find_area(mm, len, &potential_mask,
->  				  psize, topdown, high_limit);
+> diff --git a/arch/powerpc/include/asm/slice.h b/arch/powerpc/include/asm/slice.h
+> index be8af667098f..c6f466f4c241 100644
+> --- a/arch/powerpc/include/asm/slice.h
+> +++ b/arch/powerpc/include/asm/slice.h
+> @@ -36,6 +36,11 @@ void slice_setup_new_exec(void);
 >  
-> -#ifdef CONFIG_PPC_64K_PAGES
-> -	if (newaddr == -ENOMEM && psize == MMU_PAGE_64K) {
-> +	if (IS_ENABLED(CONFIG_PPC_64K_PAGES) && newaddr == -ENOMEM &&
-> +	    psize == MMU_PAGE_64K) {
->  		/* retry the search with 4k-page slices included */
->  		slice_or_mask(&potential_mask, &potential_mask, compat_maskp);
->  		newaddr = slice_find_area(mm, len, &potential_mask,
->  					  psize, topdown, high_limit);
->  	}
-> -#endif
+>  static inline void slice_init_new_context_exec(struct mm_struct *mm) {}
 >  
->  	if (newaddr == -ENOMEM)
->  		return -ENOMEM;
-> @@ -784,9 +783,9 @@ int slice_is_hugepage_only_range(struct mm_struct *mm, unsigned long addr,
->  	VM_BUG_ON(radix_enabled());
->  
->  	maskp = slice_mask_for_size(&mm->context, psize);
-> -#ifdef CONFIG_PPC_64K_PAGES
+> +static inline unsigned int get_slice_psize(struct mm_struct *mm, unsigned long addr)
+> +{
+> +	return 0;
+> +}
 > +
->  	/* We need to account for 4k slices too */
-> -	if (psize == MMU_PAGE_64K) {
-> +	if (IS_ENABLED(CONFIG_PPC_64K_PAGES) && psize == MMU_PAGE_64K) {
->  		const struct slice_mask *compat_maskp;
->  		struct slice_mask available;
+>  #endif /* CONFIG_PPC_MM_SLICES */
 >  
-> @@ -794,7 +793,6 @@ int slice_is_hugepage_only_range(struct mm_struct *mm, unsigned long addr,
->  		slice_or_mask(&available, maskp, compat_maskp);
->  		return !slice_check_range_fits(mm, &available, addr, len);
+>  #endif /* __ASSEMBLY__ */
+> diff --git a/arch/powerpc/mm/hugetlbpage.c b/arch/powerpc/mm/hugetlbpage.c
+> index 9e732bb2c84a..5f67e7a4d1cc 100644
+> --- a/arch/powerpc/mm/hugetlbpage.c
+> +++ b/arch/powerpc/mm/hugetlbpage.c
+> @@ -578,14 +578,12 @@ unsigned long hugetlb_get_unmapped_area(struct file *file, unsigned long addr,
+>  
+>  unsigned long vma_mmu_pagesize(struct vm_area_struct *vma)
+>  {
+> -#ifdef CONFIG_PPC_MM_SLICES
+>  	/* With radix we don't use slice, so derive it from vma*/
+> -	if (!radix_enabled()) {
+> +	if (IS_ENABLED(CONFIG_PPC_MM_SLICES) && !radix_enabled()) {
+>  		unsigned int psize = get_slice_psize(vma->vm_mm, vma->vm_start);
+>  
+>  		return 1UL << mmu_psize_to_shift(psize);
 >  	}
 > -#endif
->  
->  	return !slice_check_range_fits(mm, maskp, addr, len);
+>  	return vma_kernel_pagesize(vma);
 >  }
+>  
 > -- 
 > 2.13.3
 
