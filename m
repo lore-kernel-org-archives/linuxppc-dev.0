@@ -4,23 +4,23 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
+	SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3AFBEC43219
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Apr 2019 16:06:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E0C0DC43219
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Apr 2019 16:08:21 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id AB2FF2077B
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Apr 2019 16:06:41 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 604AD2084F
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Apr 2019 16:08:21 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="n2nTPf9J"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org AB2FF2077B
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="jw2ZCwbg"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 604AD2084F
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44rJp80TrvzDqgw
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Apr 2019 02:06:40 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44rJr30RK6zDqWc
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Apr 2019 02:08:19 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=c-s.fr
  (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
@@ -28,56 +28,56 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="n2nTPf9J"; 
+ unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="jw2ZCwbg"; 
  dkim-atps=neutral
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44rJcF1b46zDqRN
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 27 Apr 2019 01:58:03 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44rJcL58rDzDqQT
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 27 Apr 2019 01:58:10 +1000 (AEST)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 44rJc71JQQz9v0yQ;
- Fri, 26 Apr 2019 17:57:59 +0200 (CEST)
+ by localhost (Postfix) with ESMTP id 44rJcD2DHQz9v0yX;
+ Fri, 26 Apr 2019 17:58:04 +0200 (CEST)
 Authentication-Results: localhost; dkim=pass
  reason="1024-bit key; insecure key"
- header.d=c-s.fr header.i=@c-s.fr header.b=n2nTPf9J; dkim-adsp=pass;
+ header.d=c-s.fr header.i=@c-s.fr header.b=jw2ZCwbg; dkim-adsp=pass;
  dkim-atps=neutral
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id iQpzzYw55mhj; Fri, 26 Apr 2019 17:57:59 +0200 (CEST)
+ with ESMTP id 2p_ZZ2EdRKFj; Fri, 26 Apr 2019 17:58:04 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 44rJc704Gbz9v0yM;
- Fri, 26 Apr 2019 17:57:59 +0200 (CEST)
+ by pegase1.c-s.fr (Postfix) with ESMTP id 44rJcD1Byfz9v0yT;
+ Fri, 26 Apr 2019 17:58:04 +0200 (CEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
- t=1556294279; bh=NfQWkF/owQOueDmLnHDAEQVdMETk08iGdOguzYXrWyk=;
+ t=1556294284; bh=9wGxPUFuUrLRXiNNJRxZDUVdtdy1DUVt3mpRr7Vu5xk=;
  h=In-Reply-To:References:From:Subject:To:Cc:Date:From;
- b=n2nTPf9Jt9BQCIAuD3UlGAWYi6ncqTwCcLmPq90CR9OqLvkjyNW3nXSaRojWc26DV
- Z9/9Nk6GsnoB6RCj6Bq525/ggVctloIQXfWYErUjtQ7DnG3TDlmvuAZQCVVhrO+FMz
- rdW7sDhCUqCpBVIHcfLnJGnIUUPymXCy6F/5eFWY=
+ b=jw2ZCwbgl4cn6zaQxaxTkdlWZv2r0FiB9GYTNUji2cuJsfe31D8/TGuW5InFDLQHm
+ eZEZJl7P35rXjn3adGZfw5W3qSuCMYlqiQWuiEG0X8tQaYltDLdWd1/kLDJHucbezu
+ 9E1f9oGuFz+klXGtXpBOlEVKP53t7peN1k3pkBdE=
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id A19678B94A;
- Fri, 26 Apr 2019 17:58:00 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id CAF398B94A;
+ Fri, 26 Apr 2019 17:58:05 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id zluG07EiWo-O; Fri, 26 Apr 2019 17:58:00 +0200 (CEST)
+ with ESMTP id thJ1vkmgfn_F; Fri, 26 Apr 2019 17:58:05 +0200 (CEST)
 Received: from po16846vm.idsi0.si.c-s.fr (po15451.idsi0.si.c-s.fr
  [172.25.231.6])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 877158B82F;
- Fri, 26 Apr 2019 17:58:00 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id AE2C28B82F;
+ Fri, 26 Apr 2019 17:58:05 +0200 (CEST)
 Received: by po16846vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id 7B613666FE; Fri, 26 Apr 2019 15:58:00 +0000 (UTC)
-Message-Id: <d07eb9d6e6333b3e0cce68fa0e0472ce907ed610.1556293738.git.christophe.leroy@c-s.fr>
+ id 997BE666FE; Fri, 26 Apr 2019 15:58:05 +0000 (UTC)
+Message-Id: <dd467a8df4514cbedc4129f44cac67d7fecde799.1556293738.git.christophe.leroy@c-s.fr>
 In-Reply-To: <cover.1556293738.git.christophe.leroy@c-s.fr>
 References: <cover.1556293738.git.christophe.leroy@c-s.fr>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v2 02/15] powerpc/mm: define __pud_free_tlb() at all time on
- nohash/64
+Subject: [PATCH v2 07/15] powerpc/book3e: move early_alloc_pgtable() to init
+ section
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, 
  aneesh.kumar@linux.ibm.com
-Date: Fri, 26 Apr 2019 15:58:00 +0000 (UTC)
+Date: Fri, 26 Apr 2019 15:58:05 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -94,32 +94,36 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-CONFIG_PPC_64K_PAGES is not selectable on nohash/64, so get
-__pud_free_tlb() defined at all time.
+early_alloc_pgtable() is only used during init.
 
 Reviewed-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
- arch/powerpc/include/asm/nohash/64/pgalloc.h | 3 ---
- 1 file changed, 3 deletions(-)
+ arch/powerpc/mm/pgtable-book3e.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/nohash/64/pgalloc.h b/arch/powerpc/include/asm/nohash/64/pgalloc.h
-index 66d086f85bd5..ded453f9b5a8 100644
---- a/arch/powerpc/include/asm/nohash/64/pgalloc.h
-+++ b/arch/powerpc/include/asm/nohash/64/pgalloc.h
-@@ -171,12 +171,9 @@ static inline void __pte_free_tlb(struct mmu_gather *tlb, pgtable_t table,
+diff --git a/arch/powerpc/mm/pgtable-book3e.c b/arch/powerpc/mm/pgtable-book3e.c
+index 1032ef7aaf62..f6fc709697ee 100644
+--- a/arch/powerpc/mm/pgtable-book3e.c
++++ b/arch/powerpc/mm/pgtable-book3e.c
+@@ -55,7 +55,7 @@ void vmemmap_remove_mapping(unsigned long start,
+ #endif
+ #endif /* CONFIG_SPARSEMEM_VMEMMAP */
  
- #define __pmd_free_tlb(tlb, pmd, addr)		      \
- 	pgtable_free_tlb(tlb, pmd, PMD_CACHE_INDEX)
--#ifndef CONFIG_PPC_64K_PAGES
- #define __pud_free_tlb(tlb, pud, addr)		      \
- 	pgtable_free_tlb(tlb, pud, PUD_INDEX_SIZE)
+-static __ref void *early_alloc_pgtable(unsigned long size)
++static void __init *early_alloc_pgtable(unsigned long size)
+ {
+ 	void *ptr;
  
--#endif /* CONFIG_PPC_64K_PAGES */
--
- #define check_pgt_cache()	do { } while (0)
- 
- #endif /* _ASM_POWERPC_PGALLOC_64_H */
+@@ -74,7 +74,7 @@ static __ref void *early_alloc_pgtable(unsigned long size)
+  * map_kernel_page adds an entry to the ioremap page table
+  * and adds an entry to the HPT, possibly bolting it
+  */
+-int map_kernel_page(unsigned long ea, unsigned long pa, pgprot_t prot)
++int __ref map_kernel_page(unsigned long ea, unsigned long pa, pgprot_t prot)
+ {
+ 	pgd_t *pgdp;
+ 	pud_t *pudp;
 -- 
 2.13.3
 
