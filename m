@@ -2,93 +2,83 @@ Return-Path: <SRS0=ImKy=S4=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-1.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,
+	URIBL_BLOCKED autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 42CDBC43219
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Apr 2019 07:01:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5238BC43219
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Apr 2019 07:29:32 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B82BD206DD
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Apr 2019 07:01:27 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B82BD206DD
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 8BC41206E0
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Apr 2019 07:29:31 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="Sguaa3kr"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8BC41206E0
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44r4j13y2dzDqCM
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Apr 2019 17:01:25 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44r5KP0R8QzDqjy
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Apr 2019 17:29:29 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
- (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=aneesh.kumar@linux.ibm.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=c-s.fr
+ (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+ dmarc=none (p=none dis=none) header.from=c-s.fr
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="Sguaa3kr"; 
+ dkim-atps=neutral
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44r4Sw26BvzDqjM
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Apr 2019 16:50:55 +1000 (AEST)
-Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x3Q6ocsH108042
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Apr 2019 02:50:52 -0400
-Received: from e06smtp05.uk.ibm.com (e06smtp05.uk.ibm.com [195.75.94.101])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2s3u2ymtg3-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Apr 2019 02:50:52 -0400
-Received: from localhost
- by e06smtp05.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.ibm.com>;
- Fri, 26 Apr 2019 07:45:49 +0100
-Received: from b06cxnps4074.portsmouth.uk.ibm.com (9.149.109.196)
- by e06smtp05.uk.ibm.com (192.168.101.135) with IBM ESMTP SMTP Gateway:
- Authorized Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Fri, 26 Apr 2019 07:45:47 +0100
-Received: from d06av24.portsmouth.uk.ibm.com (d06av24.portsmouth.uk.ibm.com
- [9.149.105.60])
- by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x3Q6jkGG49873026
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Fri, 26 Apr 2019 06:45:46 GMT
-Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 78CFE4203F;
- Fri, 26 Apr 2019 06:45:46 +0000 (GMT)
-Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id E130642045;
- Fri, 26 Apr 2019 06:45:44 +0000 (GMT)
-Received: from skywalker.linux.ibm.com (unknown [9.193.89.254])
- by d06av24.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Fri, 26 Apr 2019 06:45:44 +0000 (GMT)
-X-Mailer: emacs 26.1 (via feedmail 11-beta-1 Q)
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
-To: Christophe Leroy <christophe.leroy@c-s.fr>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [PATCH v2 05/11] powerpc/mm: get rid of mm_ctx_slice_mask_xxx()
-In-Reply-To: <cc95821273df454eb146871bf6e5eeabef7c4ac9.1556202029.git.christophe.leroy@c-s.fr>
-References: <cover.1556202028.git.christophe.leroy@c-s.fr>
- <cc95821273df454eb146871bf6e5eeabef7c4ac9.1556202029.git.christophe.leroy@c-s.fr>
-Date: Fri, 26 Apr 2019 12:07:28 +0530
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44r5Hh2hWnzDq5t
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Apr 2019 17:27:59 +1000 (AEST)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 44r5HZ4PHyz9v1tg;
+ Fri, 26 Apr 2019 09:27:54 +0200 (CEST)
+Authentication-Results: localhost; dkim=pass
+ reason="1024-bit key; insecure key"
+ header.d=c-s.fr header.i=@c-s.fr header.b=Sguaa3kr; dkim-adsp=pass;
+ dkim-atps=neutral
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id asj_y7EPkUFf; Fri, 26 Apr 2019 09:27:54 +0200 (CEST)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 44r5HZ3Bgcz9v1tb;
+ Fri, 26 Apr 2019 09:27:54 +0200 (CEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
+ t=1556263674; bh=dbEw4emzmOoXiMom8HoU4olCvRgDJwvoSJXPGdWOd0A=;
+ h=Subject:To:Cc:References:From:Date:In-Reply-To:From;
+ b=Sguaa3kr7a0fpWyJkMeIF4P3NTvX1PHJoUtvdW/pCBRgsyjPzHLuae62Xziwehq0y
+ bm+Iw1l5MRX0Ad1HVfn0pzE4RvVYM+8CsJnrBBuge496sV5wB/69PQubqORn3cfYUL
+ C/P9n1+JJMo71qeBtKt0hfaHyy2JjJM/7Nfht3Gc=
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 7179C8B844;
+ Fri, 26 Apr 2019 09:27:55 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id a3tNQ6UVIvG5; Fri, 26 Apr 2019 09:27:55 +0200 (CEST)
+Received: from PO15451 (po15451.idsi0.si.c-s.fr [172.25.231.6])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 5A3678B82F;
+ Fri, 26 Apr 2019 09:27:55 +0200 (CEST)
+Subject: Re: BUG: crash in __tlb_remove_page_size with STRICT_KERNEL_RWX on
+ BOOK3S_32
+To: Serge Belyshev <belyshev@depni.sinp.msu.ru>
+References: <87pnp9mknl.fsf@depni.sinp.msu.ru>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Message-ID: <db886597-8867-93e6-a507-6da4963ce0bd@c-s.fr>
+Date: Fri, 26 Apr 2019 09:27:55 +0200
+User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:60.0) Gecko/20100101
+ Thunderbird/60.6.1
 MIME-Version: 1.0
-Content-Type: text/plain
-X-TM-AS-GCONF: 00
-x-cbid: 19042606-0020-0000-0000-000003365EFE
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19042606-0021-0000-0000-00002188CE73
-Message-Id: <87wojh9srb.fsf@linux.ibm.com>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2019-04-26_04:, , signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1810050000 definitions=main-1904260049
+In-Reply-To: <87pnp9mknl.fsf@depni.sinp.msu.ru>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: fr
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -100,108 +90,33 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Christophe Leroy <christophe.leroy@c-s.fr> writes:
 
-> Now that slice_mask_for_size() is in mmu.h, the mm_ctx_slice_mask_xxx()
-> are not needed anymore, so drop them. Note that the 8xx ones where
-> not used anyway.
->
 
-Reviewed-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
+Le 26/04/2019 à 06:54, Serge Belyshev a écrit :
+> Hi! Commit 63b2bc61956 aka "powerpc/mm/32s: Use BATs for STRICT_KERNEL_RWX"
+> caused my old powerbook to crash under I/O.  After "dd if=/dev/hda of=/null"
+> the crash happens in seconds.  Reverting the commit helps, as well as
+> disabling STRICT_KERNEL_RWX.  Unfortunately, I was unable to capture the oops
+> via the usb serial console, as it stuck right after the first "BUG: Unable to
+> handle kernel data access at 0xe0c29000" message. Oops screenshot:
+> http://aargh.no-ip.org/oops.jpg
+> 
 
-> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
-> ---
->  arch/powerpc/include/asm/book3s/64/mmu.h     | 32 ++++------------------------
->  arch/powerpc/include/asm/nohash/32/mmu-8xx.h | 17 ---------------
->  2 files changed, 4 insertions(+), 45 deletions(-)
->
-> diff --git a/arch/powerpc/include/asm/book3s/64/mmu.h b/arch/powerpc/include/asm/book3s/64/mmu.h
-> index ad00355f874f..e3d7f1404e20 100644
-> --- a/arch/powerpc/include/asm/book3s/64/mmu.h
-> +++ b/arch/powerpc/include/asm/book3s/64/mmu.h
-> @@ -179,45 +179,21 @@ static inline void mm_ctx_set_slb_addr_limit(mm_context_t *ctx, unsigned long li
->  	ctx->hash_context->slb_addr_limit = limit;
->  }
->  
-> -#ifdef CONFIG_PPC_64K_PAGES
-> -static inline struct slice_mask *mm_ctx_slice_mask_64k(mm_context_t *ctx)
-> -{
-> -	return &ctx->hash_context->mask_64k;
-> -}
-> -#endif
-> -
-> -static inline struct slice_mask *mm_ctx_slice_mask_4k(mm_context_t *ctx)
-> -{
-> -	return &ctx->hash_context->mask_4k;
-> -}
-> -
-> -#ifdef CONFIG_HUGETLB_PAGE
-> -static inline struct slice_mask *mm_ctx_slice_mask_16m(mm_context_t *ctx)
-> -{
-> -	return &ctx->hash_context->mask_16m;
-> -}
-> -
-> -static inline struct slice_mask *mm_ctx_slice_mask_16g(mm_context_t *ctx)
-> -{
-> -	return &ctx->hash_context->mask_16g;
-> -}
-> -#endif
-> -
->  static inline struct slice_mask *slice_mask_for_size(mm_context_t *ctx, int psize)
->  {
->  #ifdef CONFIG_PPC_64K_PAGES
->  	if (psize == MMU_PAGE_64K)
-> -		return mm_ctx_slice_mask_64k(&ctx);
-> +		return &ctx->hash_context->mask_64k;
->  #endif
->  #ifdef CONFIG_HUGETLB_PAGE
->  	if (psize == MMU_PAGE_16M)
-> -		return mm_ctx_slice_mask_16m(&ctx);
-> +		return &ctx->hash_context->mask_16m;
->  	if (psize == MMU_PAGE_16G)
-> -		return mm_ctx_slice_mask_16g(&ctx);
-> +		return &ctx->hash_context->mask_16g;
->  #endif
->  	VM_BUG_ON(psize != MMU_PAGE_4K);
->  
-> -	return mm_ctx_slice_mask_4k(&ctx);
-> +	return &ctx->hash_context->mask_4k;
->  }
->  
->  #ifdef CONFIG_PPC_SUBPAGE_PROT
-> diff --git a/arch/powerpc/include/asm/nohash/32/mmu-8xx.h b/arch/powerpc/include/asm/nohash/32/mmu-8xx.h
-> index a0f6844a1498..beded4df1f50 100644
-> --- a/arch/powerpc/include/asm/nohash/32/mmu-8xx.h
-> +++ b/arch/powerpc/include/asm/nohash/32/mmu-8xx.h
-> @@ -255,23 +255,6 @@ static inline void mm_ctx_set_slb_addr_limit(mm_context_t *ctx, unsigned long li
->  	ctx->slb_addr_limit = limit;
->  }
->  
-> -static inline struct slice_mask *mm_ctx_slice_mask_base(mm_context_t *ctx)
-> -{
-> -	return &ctx->mask_base_psize;
-> -}
-> -
-> -#ifdef CONFIG_HUGETLB_PAGE
-> -static inline struct slice_mask *mm_ctx_slice_mask_512k(mm_context_t *ctx)
-> -{
-> -	return &ctx->mask_512k;
-> -}
-> -
-> -static inline struct slice_mask *mm_ctx_slice_mask_8m(mm_context_t *ctx)
-> -{
-> -	return &ctx->mask_8m;
-> -}
-> -#endif
-> -
->  static inline struct slice_mask *slice_mask_for_size(mm_context_t *ctx, int psize)
->  {
->  #ifdef CONFIG_HUGETLB_PAGE
-> -- 
-> 2.13.3
+Hi Serge,
 
+Could you please compile your kernel with CONFIG_PPC_PTDUMP, and provide 
+the content of:
+
+/sys/kernel/debug/kernel_page_tables
+/sys/kernel/debug/powerpc/block_address_translation
+/sys/kernel/debug/powerpc/segment_registers
+
+Please also provide the begining of 'dmesg' that shows the memory layout.
+
+Thanks
+Christophe
