@@ -2,48 +2,81 @@ Return-Path: <SRS0=ImKy=S4=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B34E0C43219
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Apr 2019 14:40:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5F3B6C4321A
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Apr 2019 16:00:26 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 8F2652077B
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Apr 2019 14:40:27 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8F2652077B
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=depni.sinp.msu.ru
+	by mail.kernel.org (Postfix) with ESMTPS id D4C942077B
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Apr 2019 16:00:25 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="UgSwlMG1"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D4C942077B
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44rGtd48TszDqkJ
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Apr 2019 00:40:25 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44rJfv05JFzDqQV
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Apr 2019 02:00:23 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=depni.sinp.msu.ru
- (client-ip=213.131.7.21; helo=depni-mx.sinp.msu.ru;
- envelope-from=belyshev@depni.sinp.msu.ru; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=depni.sinp.msu.ru
-Received: from depni-mx.sinp.msu.ru (depni-mx.sinp.msu.ru [213.131.7.21])
- by lists.ozlabs.org (Postfix) with ESMTP id 44rGrz36LDzDqf4
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 27 Apr 2019 00:38:57 +1000 (AEST)
-Received: from spider (unknown [109.63.154.231])
- by depni-mx.sinp.msu.ru (Postfix) with ESMTPSA id 8D7AC1BF408;
- Fri, 26 Apr 2019 17:41:08 +0300 (MSK)
-From: Serge Belyshev <belyshev@depni.sinp.msu.ru>
-To: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: Re: BUG: crash in __tlb_remove_page_size with STRICT_KERNEL_RWX on
- BOOK3S_32
-References: <87pnp9mknl.fsf@depni.sinp.msu.ru>
- <db886597-8867-93e6-a507-6da4963ce0bd@c-s.fr>
-Date: Fri, 26 Apr 2019 17:38:50 +0300
-In-Reply-To: <db886597-8867-93e6-a507-6da4963ce0bd@c-s.fr> (Christophe Leroy's
- message of "Fri, 26 Apr 2019 09:27:55 +0200")
-Message-ID: <878svwn85h.fsf@depni.sinp.msu.ru>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/26.1 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain
+ spf=pass (mailfrom) smtp.mailfrom=c-s.fr
+ (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=c-s.fr
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="UgSwlMG1"; 
+ dkim-atps=neutral
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44rJcF1jPDzDqRq
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 27 Apr 2019 01:58:04 +1000 (AEST)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 44rJc81jgkz9v0yR;
+ Fri, 26 Apr 2019 17:58:00 +0200 (CEST)
+Authentication-Results: localhost; dkim=pass
+ reason="1024-bit key; insecure key"
+ header.d=c-s.fr header.i=@c-s.fr header.b=UgSwlMG1; dkim-adsp=pass;
+ dkim-atps=neutral
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id y2BSecOSzp5Z; Fri, 26 Apr 2019 17:58:00 +0200 (CEST)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 44rJc80g3Qz9v0yM;
+ Fri, 26 Apr 2019 17:58:00 +0200 (CEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
+ t=1556294280; bh=NzkgjIlmzqfsKNHCSyxuFQ9nYYJ76OP1jL8czDGc7rE=;
+ h=In-Reply-To:References:From:Subject:To:Cc:Date:From;
+ b=UgSwlMG19xM3PTPfEtHHdkf2njOWIFF7Xs2ed7CiuRtwrM9RHWGMma1yGqeT/Qe6z
+ PDyhEldOrlTBoCsXibdrPWh+b5hH+S7UR6RLiSa9jQZfj810SOIRj0tqRCIGVBIocE
+ eTskfnEU+MfppM7Y+8d0xEjQHrPWKjZSmkt5eDi4=
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id B47D68B94A;
+ Fri, 26 Apr 2019 17:58:01 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id DLMC3WhRyDsS; Fri, 26 Apr 2019 17:58:01 +0200 (CEST)
+Received: from po16846vm.idsi0.si.c-s.fr (po15451.idsi0.si.c-s.fr
+ [172.25.231.6])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 8F72C8B82F;
+ Fri, 26 Apr 2019 17:58:01 +0200 (CEST)
+Received: by po16846vm.idsi0.si.c-s.fr (Postfix, from userid 0)
+ id 8170A666FE; Fri, 26 Apr 2019 15:58:01 +0000 (UTC)
+Message-Id: <c440b242da6de3823c4ef51f35f38405bbd51430.1556293738.git.christophe.leroy@c-s.fr>
+In-Reply-To: <cover.1556293738.git.christophe.leroy@c-s.fr>
+References: <cover.1556293738.git.christophe.leroy@c-s.fr>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Subject: [PATCH v2 03/15] powerpc/mm: convert Book3E 64 to pte_fragment
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, 
+ aneesh.kumar@linux.ibm.com
+Date: Fri, 26 Apr 2019 15:58:01 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -55,217 +88,176 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi!
+Book3E 64 is the only subarch not using pte_fragment. In order
+to allow refactorisation, this patch converts it to pte_fragment.
 
-> Could you please compile your kernel with CONFIG_PPC_PTDUMP, and
-> provide the content of:
->
-> /sys/kernel/debug/kernel_page_tables
+Reviewed-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+---
+ arch/powerpc/include/asm/mmu_context.h       |  6 -----
+ arch/powerpc/include/asm/nohash/64/mmu.h     |  4 +++-
+ arch/powerpc/include/asm/nohash/64/pgalloc.h | 33 ++++++++++------------------
+ arch/powerpc/mm/Makefile                     |  4 ++--
+ arch/powerpc/mm/mmu_context.c                |  2 +-
+ 5 files changed, 18 insertions(+), 31 deletions(-)
 
----[ Start of kernel VM ]---
-0xe1000000-0xefffffff  0x21000000       240M        rw       present           dirty  accessed                         
----[ vmalloc() Area ]---
-0xf1000000-0xf1000fff  0x80041000         4K        rw       present  guarded  dirty  accessed                 no cache
-0xf1002000-0xf1003fff  0x80041000         8K        rw       present  guarded  dirty  accessed                 no cache
-0xf1005000-0xf1005fff  0x80060000         4K        rw       present  guarded  dirty  accessed                 no cache
-0xf1007000-0xf1007fff  0x80050000         4K        rw       present  guarded  dirty  accessed                 no cache
-0xf100a000-0xf100bfff  0xf8001000         8K        rw       present  guarded  dirty  accessed                 no cache
-0xf100d000-0xf100dfff  0x80018000         4K        rw       present  guarded  dirty  accessed                 no cache
-0xf1010000-0xf1011fff  0xa0006000         8K        rw       present  guarded  dirty  accessed                 no cache
-0xf101b000-0xf1025fff  0x3fc00000        44K        rw       present           dirty  accessed                         
-0xf1027000-0xf1027fff  0xb87ff000         4K        rw       present  guarded  dirty  accessed                 no cache
-0xf1029000-0xf1029fff  0xba7ff000         4K        rw       present  guarded  dirty  accessed                 no cache
-0xf102b000-0xf106afff  0x2f300000       256K        rw       present  guarded  dirty  accessed                 no cache
-0xf106c000-0xf106ffff  0x3fc0b000        16K        rw       present           dirty  accessed                         
-0xf1071000-0xf1071fff  0x80020000         4K        rw       present  guarded  dirty  accessed                 no cache
-0xf1074000-0xf1077fff  0xf5004000        16K        rw       present  guarded  dirty  accessed                 no cache
-0xf107a000-0xf107bfff  0x80008000         8K        rw       present  guarded  dirty  accessed                 no cache
-0xf107d000-0xf107dfff  0xf5000000         4K        rw       present  guarded  dirty  accessed                 no cache
-0xf1080000-0xf118afff  0xb8008000      1068K        rw       present  guarded  dirty  accessed                 no cache
-0xf1195000-0xf119cfff  0x2f3a0000        32K        rw       present           dirty  accessed                         
-0xf119d000-0xf119efff  0x2f3a0000         8K        rw       present           dirty  accessed                         
-0xf11a0000-0xf11a5fff  0x2f3a8000        24K        rw       present           dirty  accessed                         
-0xf11a6000-0xf11a7fff  0x2f3da000         8K        rw       present           dirty  accessed                         
-0xf11a8000-0xf11a9fff  0x2f3a8000         8K        rw       present           dirty  accessed                         
-0xf11ab000-0xf11abfff  0xa0004000         4K        rw       present  guarded  dirty  accessed                 no cache
-0xf11ad000-0xf11adfff  0xa0000000         4K        rw       present  guarded  dirty  accessed                 no cache
-0xf11af000-0xf11affff  0xa0003000         4K        rw       present  guarded  dirty  accessed                 no cache
-0xf11b1000-0xf11b1fff  0xa0002000         4K        rw       present  guarded  dirty  accessed                 no cache
-0xf11b3000-0xf11b3fff  0xa0001000         4K        rw       present  guarded  dirty  accessed                 no cache
-0xf11b5000-0xf11b5fff  0x80010000         4K        rw       present  guarded  dirty  accessed                 no cache
-0xf11b7000-0xf11b7fff  0x80008000         4K        rw       present  guarded  dirty  accessed                 no cache
-0xf11b9000-0xf11b9fff  0x80008000         4K        rw       present  guarded  dirty  accessed                 no cache
-0xf11c0000-0xf11cffff  0x88000000        64K        rw       present  guarded  dirty  accessed                 no cache
-0xf11eb000-0xf11ebfff  0x3fc16000         4K        rw       present           dirty  accessed                         
-0xf11ec000-0xf11ecfff  0x3fc15000         4K        rw       present           dirty  accessed                         
-0xf11ed000-0xf11edfff  0x3fc14000         4K        rw       present           dirty  accessed                         
-0xf1200000-0xf1259fff  0xba008000       360K        rw       present  guarded  dirty  accessed                 no cache
-0xf1280000-0xf147ffff  0xf5200000         2M        rw       present  guarded  dirty  accessed                 no cache
----[ vmalloc() End ]---
----[ Early I/O remap start ]---
-0xfde2b000-0xfde2cfff  0x80016000         8K        rw       present  guarded  dirty  accessed                 no cache
-0xfde2d000-0xfde2dfff  0x80000000         4K        rw       present  guarded  dirty  accessed                 no cache
-0xfde2e000-0xfde2efff  0xf8000000         4K        rw       present  guarded  dirty  accessed                 no cache
-0xfde2f000-0xfe62efff  0xf4000000         8M        rw       present  guarded  dirty  accessed                 no cache
-0xfe62f000-0xfe62ffff  0xf4c00000         4K        rw       present  guarded  dirty  accessed                 no cache
-0xfe630000-0xfe630fff  0xf4800000         4K        rw       present  guarded  dirty  accessed                 no cache
-0xfe631000-0xfee30fff  0xf2000000         8M        rw       present  guarded  dirty  accessed                 no cache
-0xfee31000-0xfee31fff  0xf2c00000         4K        rw       present  guarded  dirty  accessed                 no cache
-0xfee32000-0xfee32fff  0xf2800000         4K        rw       present  guarded  dirty  accessed                 no cache
-0xfee33000-0xff632fff  0xf0000000         8M        rw       present  guarded  dirty  accessed                 no cache
-0xff633000-0xff633fff  0xf0c00000         4K        rw       present  guarded  dirty  accessed                 no cache
-0xff634000-0xff634fff  0xf0800000         4K        rw       present  guarded  dirty  accessed                 no cache
-0xff635000-0xff73ffff  0xb8008000      1068K        rw       present           dirty  accessed                 no cache
-0xff740000-0xff7bffff  0x80000000       512K        rw       present  guarded  dirty  accessed                 no cache
-0xff7c0000-0xff7fffff  0xf8000000       256K        rw       present  guarded  dirty  accessed                 no cache
----[ Early I/O remap end ]---
----[ Highmem PTEs start ]---
-0xff801000-0xff801fff  0x3f804000         4K        rw       present           dirty  accessed                         
-0xff802000-0xff802fff  0x3f9c6000         4K        rw       present           dirty  accessed                         
-0xff803000-0xff803fff  0x3fa22000         4K        rw       present           dirty  accessed                         
-0xff804000-0xff804fff  0x3fa3b000         4K        rw       present           dirty  accessed                         
-0xff805000-0xff805fff  0x3fa52000         4K        rw       present           dirty  accessed                         
-0xff806000-0xff806fff  0x3fb3b000         4K        rw       present           dirty  accessed                         
-0xff807000-0xff807fff  0x3fb52000         4K        rw       present           dirty  accessed                         
-0xff808000-0xff808fff  0x3fb26000         4K        rw       present           dirty  accessed                         
-0xff809000-0xff809fff  0x3fb48000         4K        rw       present           dirty  accessed                         
-0xff80a000-0xff80afff  0x3fb79000         4K        rw       present           dirty  accessed                         
-0xff80b000-0xff80bfff  0x3f9e4000         4K        rw       present           dirty  accessed                         
-0xff80c000-0xff80cfff  0x3f574000         4K        rw       present           dirty  accessed                         
-0xff80d000-0xff80dfff  0x3f5c6000         4K        rw       present           dirty  accessed                         
-0xff80e000-0xff80efff  0x3f578000         4K        rw       present           dirty  accessed                         
-0xff80f000-0xff80ffff  0x3f60a000         4K        rw       present           dirty  accessed                         
-0xff810000-0xff810fff  0x3f791000         4K        rw       present           dirty  accessed                         
----[ Highmem PTEs end ]---
----[ Fixmap start ]---
-0xfffde000-0xfffdefff  0x3f086000         4K        rw       present           dirty  accessed                         
-0xfffdf000-0xfffdffff  0x3f08a000         4K        rw       present           dirty  accessed                         
----[ Fixmap end ]---
+diff --git a/arch/powerpc/include/asm/mmu_context.h b/arch/powerpc/include/asm/mmu_context.h
+index 6ee8195a2ffb..66a3805dc935 100644
+--- a/arch/powerpc/include/asm/mmu_context.h
++++ b/arch/powerpc/include/asm/mmu_context.h
+@@ -228,13 +228,7 @@ static inline void enter_lazy_tlb(struct mm_struct *mm,
+ #endif
+ }
+ 
+-#ifdef CONFIG_PPC_BOOK3E_64
+-static inline void arch_exit_mmap(struct mm_struct *mm)
+-{
+-}
+-#else
+ extern void arch_exit_mmap(struct mm_struct *mm);
+-#endif
+ 
+ static inline void arch_unmap(struct mm_struct *mm,
+ 			      struct vm_area_struct *vma,
+diff --git a/arch/powerpc/include/asm/nohash/64/mmu.h b/arch/powerpc/include/asm/nohash/64/mmu.h
+index 81cf30c370e5..26e05ce8f5aa 100644
+--- a/arch/powerpc/include/asm/nohash/64/mmu.h
++++ b/arch/powerpc/include/asm/nohash/64/mmu.h
+@@ -4,11 +4,13 @@
+ 
+ #define MAX_PHYSMEM_BITS        44
+ 
++#include <asm/page.h>
++
+ /* Freescale Book-E software loaded TLB or Book-3e (ISA 2.06+) MMU */
+ #include <asm/nohash/mmu-book3e.h>
+ 
+ #ifndef __ASSEMBLY__
+-typedef struct page *pgtable_t;
++typedef pte_t *pgtable_t;
+ #endif
+ 
+ #endif /* _ASM_POWERPC_NOHASH_64_MMU_H_ */
+diff --git a/arch/powerpc/include/asm/nohash/64/pgalloc.h b/arch/powerpc/include/asm/nohash/64/pgalloc.h
+index ded453f9b5a8..7fb87235f845 100644
+--- a/arch/powerpc/include/asm/nohash/64/pgalloc.h
++++ b/arch/powerpc/include/asm/nohash/64/pgalloc.h
+@@ -76,10 +76,10 @@ static inline void pmd_populate_kernel(struct mm_struct *mm, pmd_t *pmd,
+ static inline void pmd_populate(struct mm_struct *mm, pmd_t *pmd,
+ 				pgtable_t pte_page)
+ {
+-	pmd_set(pmd, (unsigned long)page_address(pte_page));
++	pmd_set(pmd, (unsigned long)pte_page);
+ }
+ 
+-#define pmd_pgtable(pmd) pmd_page(pmd)
++#define pmd_pgtable(pmd) ((pgtable_t)pmd_page_vaddr(pmd))
+ 
+ static inline pmd_t *pmd_alloc_one(struct mm_struct *mm, unsigned long addr)
+ {
+@@ -92,44 +92,35 @@ static inline void pmd_free(struct mm_struct *mm, pmd_t *pmd)
+ 	kmem_cache_free(PGT_CACHE(PMD_CACHE_INDEX), pmd);
+ }
+ 
++pte_t *pte_fragment_alloc(struct mm_struct *mm, int kernel);
+ 
+ static inline pte_t *pte_alloc_one_kernel(struct mm_struct *mm)
+ {
+-	return (pte_t *)__get_free_page(GFP_KERNEL | __GFP_ZERO);
++	return (pte_t *)pte_fragment_alloc(mm, 1);
+ }
+ 
+ static inline pgtable_t pte_alloc_one(struct mm_struct *mm)
+ {
+-	struct page *page;
+-	pte_t *pte;
+-
+-	pte = (pte_t *)__get_free_page(GFP_KERNEL | __GFP_ZERO | __GFP_ACCOUNT);
+-	if (!pte)
+-		return NULL;
+-	page = virt_to_page(pte);
+-	if (!pgtable_page_ctor(page)) {
+-		__free_page(page);
+-		return NULL;
+-	}
+-	return page;
++	return (pgtable_t)pte_fragment_alloc(mm, 0);
+ }
+ 
++void pte_frag_destroy(void *pte_frag);
++void pte_fragment_free(unsigned long *table, int kernel);
++
+ static inline void pte_free_kernel(struct mm_struct *mm, pte_t *pte)
+ {
+-	free_page((unsigned long)pte);
++	pte_fragment_free((unsigned long *)pte, 1);
+ }
+ 
+ static inline void pte_free(struct mm_struct *mm, pgtable_t ptepage)
+ {
+-	pgtable_page_dtor(ptepage);
+-	__free_page(ptepage);
++	pte_fragment_free((unsigned long *)ptepage, 0);
+ }
+ 
+ static inline void pgtable_free(void *table, int shift)
+ {
+ 	if (!shift) {
+-		pgtable_page_dtor(virt_to_page(table));
+-		free_page((unsigned long)table);
++		pte_fragment_free((unsigned long *)table, 0);
+ 	} else {
+ 		BUG_ON(shift > MAX_PGTABLE_INDEX_SIZE);
+ 		kmem_cache_free(PGT_CACHE(shift), table);
+@@ -166,7 +157,7 @@ static inline void __pte_free_tlb(struct mmu_gather *tlb, pgtable_t table,
+ 				  unsigned long address)
+ {
+ 	tlb_flush_pgtable(tlb, address);
+-	pgtable_free_tlb(tlb, page_address(table), 0);
++	pgtable_free_tlb(tlb, table, 0);
+ }
+ 
+ #define __pmd_free_tlb(tlb, pmd, addr)		      \
+diff --git a/arch/powerpc/mm/Makefile b/arch/powerpc/mm/Makefile
+index 3c1bd9fa23cd..138c772d58d1 100644
+--- a/arch/powerpc/mm/Makefile
++++ b/arch/powerpc/mm/Makefile
+@@ -9,6 +9,7 @@ CFLAGS_REMOVE_slb.o = $(CC_FLAGS_FTRACE)
+ 
+ obj-y				:= fault.o mem.o pgtable.o mmap.o \
+ 				   init_$(BITS).o pgtable_$(BITS).o \
++				   pgtable-frag.o \
+ 				   init-common.o mmu_context.o drmem.o
+ obj-$(CONFIG_PPC_MMU_NOHASH)	+= mmu_context_nohash.o tlb_nohash.o \
+ 				   tlb_nohash_low.o
+@@ -17,8 +18,7 @@ hash64-$(CONFIG_PPC_NATIVE)	:= hash_native_64.o
+ obj-$(CONFIG_PPC_BOOK3E_64)   += pgtable-book3e.o
+ obj-$(CONFIG_PPC_BOOK3S_64)	+= pgtable-hash64.o hash_utils_64.o slb.o \
+ 				   $(hash64-y) mmu_context_book3s64.o \
+-				   pgtable-book3s64.o pgtable-frag.o
+-obj-$(CONFIG_PPC32)		+= pgtable-frag.o
++				   pgtable-book3s64.o
+ obj-$(CONFIG_PPC_RADIX_MMU)	+= pgtable-radix.o tlb-radix.o
+ obj-$(CONFIG_PPC_BOOK3S_32)	+= ppc_mmu_32.o hash_low_32.o mmu_context_hash32.o
+ obj-$(CONFIG_PPC_BOOK3S)	+= tlb_hash$(BITS).o
+diff --git a/arch/powerpc/mm/mmu_context.c b/arch/powerpc/mm/mmu_context.c
+index bb52320b7369..6b049d82b98a 100644
+--- a/arch/powerpc/mm/mmu_context.c
++++ b/arch/powerpc/mm/mmu_context.c
+@@ -98,7 +98,7 @@ void switch_mm_irqs_off(struct mm_struct *prev, struct mm_struct *next,
+ 	switch_mmu_context(prev, next, tsk);
+ }
+ 
+-#ifdef CONFIG_PPC32
++#ifndef CONFIG_PPC_BOOK3S_64
+ void arch_exit_mmap(struct mm_struct *mm)
+ {
+ 	void *frag = pte_frag_get(&mm->context);
+-- 
+2.13.3
 
-
-> /sys/kernel/debug/powerpc/block_address_translation
-
----[ Instruction Block Address Translation ]---
-0: 0xc0000000-0xc07fffff 0x00000000 Kernel EXEC coherent 
-1: 0xc0800000-0xc087ffff 0x00800000 Kernel EXEC coherent 
-2:         -
-3:         -
-4:         -
-5:         -
-6:         -
-7:         -
-
----[ Data Block Address Translation ]---
-0: 0xc0000000-0xc07fffff 0x00000000 Kernel RO coherent 
-1: 0xc0800000-0xc0bfffff 0x00800000 Kernel RO coherent 
-2: 0xc0c00000-0xc13fffff 0x00c00000 Kernel RW coherent 
-3: 0xc1400000-0xc23fffff 0x01400000 Kernel RW coherent 
-4: 0xc2400000-0xc43fffff 0x02400000 Kernel RW coherent 
-5: 0xc4400000-0xc83fffff 0x04400000 Kernel RW coherent 
-6: 0xc8400000-0xd03fffff 0x08400000 Kernel RW coherent 
-7: 0xd0400000-0xe03fffff 0x10400000 Kernel RW coherent 
-
-
-> /sys/kernel/debug/powerpc/segment_registers
-
----[ User Segments ]---
-0x00000000-0x0fffffff Kern key 1 User key 1 VSID 0x07aa30
-0x10000000-0x1fffffff Kern key 1 User key 1 VSID 0x07ab41
-0x20000000-0x2fffffff Kern key 1 User key 1 VSID 0x07ac52
-0x30000000-0x3fffffff Kern key 1 User key 1 VSID 0x07ad63
-0x40000000-0x4fffffff Kern key 1 User key 1 VSID 0x07ae74
-0x50000000-0x5fffffff Kern key 1 User key 1 VSID 0x07af85
-0x60000000-0x6fffffff Kern key 1 User key 1 VSID 0x07b096
-0x70000000-0x7fffffff Kern key 1 User key 1 VSID 0x07b1a7
-0x80000000-0x8fffffff Kern key 1 User key 1 VSID 0x07b2b8
-0x90000000-0x9fffffff Kern key 1 User key 1 VSID 0x07b3c9
-0xa0000000-0xafffffff Kern key 1 User key 1 VSID 0x07b4da
-0xb0000000-0xbfffffff Kern key 1 User key 1 VSID 0x07b5eb
-
----[ Kernel Segments ]---
-0xc0000000-0xcfffffff Kern key 0 User key 1 No Exec VSID 0x000ccc
-0xd0000000-0xdfffffff Kern key 0 User key 1 No Exec VSID 0x000ddd
-0xe0000000-0xefffffff Kern key 0 User key 1 No Exec VSID 0x000eee
-0xf0000000-0xffffffff Kern key 0 User key 1 No Exec VSID 0x000fff
-
-
-> Please also provide the begining of 'dmesg' that shows the memory layout.
-
-[    0.000000] Total memory = 1024MB; using 2048kB for hash table (at (ptrval))
-[    0.000000] Linux version 5.1.0-rc6-00072-g8113a85f8720 (ssb@spider) (gcc version 9.0.1 20190409 (experimental) [trunk revision 270234] (GCC)) #1192 PREEMPT Fri Apr 26 16:45:50 MSK 2019
-[    0.000000] Found UniNorth memory controller & host bridge @ 0xf8000000 revision: 0xd2
-[    0.000000] Mapped at 0xff7c0000
-[    0.000000] Found a Intrepid mac-io controller, rev: 0, mapped at 0x(ptrval)
-[    0.000000] Processor NAP mode on idle enabled.
-[    0.000000] PowerMac motherboard: PowerBook G4 15"
-[    0.000000] Using PowerMac machine description
-[    0.000000] printk: bootconsole [udbg0] enabled
-[    0.000000] -----------------------------------------------------
-[    0.000000] Hash_size         = 0x200000
-[    0.000000] phys_mem_size     = 0x40000000
-[    0.000000] dcache_bsize      = 0x20
-[    0.000000] icache_bsize      = 0x20
-[    0.000000] cpu_features      = 0x000000002510600a
-[    0.000000]   possible        = 0x000000002f7ff14b
-[    0.000000]   always          = 0x0000000000000000
-[    0.000000] cpu_user_features = 0x9c000001 0x00000000
-[    0.000000] mmu_features      = 0x00010001
-[    0.000000] Hash              = 0x(ptrval)
-[    0.000000] Hash_mask         = 0x7fff
-[    0.000000] -----------------------------------------------------
-[    0.000000] Found UniNorth PCI host bridge at 0x00000000f0000000. Firmware bus number: 0->1
-[    0.000000] PCI host bridge /pci@f0000000  ranges:
-[    0.000000]  MEM 0x00000000f1000000..0x00000000f1ffffff -> 0x00000000f1000000 
-[    0.000000]   IO 0x00000000f0000000..0x00000000f07fffff -> 0x0000000000000000
-[    0.000000]  MEM 0x00000000b0000000..0x00000000bfffffff -> 0x00000000b0000000 
-[    0.000000] Found UniNorth PCI host bridge at 0x00000000f2000000. Firmware bus number: 0->1
-[    0.000000] PCI host bridge /pci@f2000000 (primary) ranges:
-[    0.000000]  MEM 0x00000000f3000000..0x00000000f3ffffff -> 0x00000000f3000000 
-[    0.000000]   IO 0x00000000f2000000..0x00000000f27fffff -> 0x0000000000000000
-[    0.000000]  MEM 0x0000000080000000..0x00000000afffffff -> 0x0000000080000000 
-[    0.000000] Found UniNorth PCI host bridge at 0x00000000f4000000. Firmware bus number: 0->1
-[    0.000000] PCI host bridge /pci@f4000000  ranges:
-[    0.000000]  MEM 0x00000000f5000000..0x00000000f5ffffff -> 0x00000000f5000000 
-[    0.000000]   IO 0x00000000f4000000..0x00000000f47fffff -> 0x0000000000000000
-[    0.000000] via-pmu: Server Mode is disabled
-[    0.000000] PMU driver v2 initialized for Core99, firmware: 0c
-[    0.000000] Top of RAM: 0x40000000, Total RAM: 0x40000000
-[    0.000000] Memory hole size: 0MB
-[    0.000000] Zone ranges:
-[    0.000000]   Normal   [mem 0x0000000000000000-0x000000002fffffff]
-[    0.000000]   HighMem  [mem 0x0000000030000000-0x000000003fffffff]
-[    0.000000] Movable zone start for each node
-[    0.000000] Early memory node ranges
-[    0.000000]   node   0: [mem 0x0000000000000000-0x000000003fffffff]
-[    0.000000] Initmem setup node 0 [mem 0x0000000000000000-0x000000003fffffff]
-[    0.000000] On node 0 totalpages: 262144
-[    0.000000]   Normal zone: 1536 pages used for memmap
-[    0.000000]   Normal zone: 0 pages reserved
-[    0.000000]   Normal zone: 196608 pages, LIFO batch:63
-[    0.000000]   HighMem zone: 65536 pages, LIFO batch:15
-[    0.000000] pcpu-alloc: s0 r0 d32768 u32768 alloc=1*32768
-[    0.000000] pcpu-alloc: [0] 0 
-[    0.000000] Built 1 zonelists, mobility grouping on.  Total pages: 260608
-[    0.000000] Kernel command line: root=/dev/hda3 ro console=ttyUSB0,115200 console=tty0 init=/boot/init 
-[    0.000000] Dentry cache hash table entries: 131072 (order: 7, 524288 bytes)
-[    0.000000] Inode-cache hash table entries: 65536 (order: 6, 262144 bytes)
-[    0.000000] Memory: 1023092K/1048576K available (8704K kernel code, 348K rwdata, 1344K rodata, 212K init, 1176K bss, 25484K reserved, 0K cma-reserved, 262144K highmem)
-[    0.000000] Kernel virtual memory layout:
-[    0.000000]   * 0xfffcf000..0xfffff000  : fixmap
-[    0.000000]   * 0xff800000..0xffc00000  : highmem PTEs
-[    0.000000]   * 0xfde2b000..0xff800000  : early ioremap
-[    0.000000]   * 0xf1000000..0xfde2b000  : vmalloc & ioremap
-[    0.000000] SLUB: HWalign=32, Order=0-3, MinObjects=0, CPUs=1, Nodes=1
-
-full dmesg: http://aargh.no-ip.org/dmesg.txt
-kernel config: http://aargh.no-ip.org/config.txt
-
-> Thanks
-> Christophe
-
-Thanks!
