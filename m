@@ -2,59 +2,81 @@ Return-Path: <SRS0=ImKy=S4=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SPF_PASS,USER_AGENT_MUTT autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.6 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
+	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AE5D4C43219
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Apr 2019 01:14:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8A416C43219
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Apr 2019 03:23:10 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 94FC9206C1
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Apr 2019 01:13:59 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id D380B206DD
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Apr 2019 03:23:09 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au header.b="Ia7LIXkF"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 94FC9206C1
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=gibson.dropbear.id.au
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="udHN4jJB"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D380B206DD
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44qx053YRZzDqg4
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Apr 2019 11:13:57 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+	by lists.ozlabs.org (Postfix) with ESMTP id 44qzs74GgJzDqfr
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Apr 2019 13:23:07 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+ spf=pass (mailfrom) smtp.mailfrom=gmail.com
+ (client-ip=2607:f8b0:4864:20::644; helo=mail-pl1-x644.google.com;
+ envelope-from=nicoleotsuka@gmail.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="udHN4jJB"; 
+ dkim-atps=neutral
+Received: from mail-pl1-x644.google.com (mail-pl1-x644.google.com
+ [IPv6:2607:f8b0:4864:20::644])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44qwyV3cyszDqZj
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Apr 2019 11:12:34 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=gibson.dropbear.id.au
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au
- header.b="Ia7LIXkF"; dkim-atps=neutral
-Received: by ozlabs.org (Postfix, from userid 1007)
- id 44qwyV1jlZz9s47; Fri, 26 Apr 2019 11:12:34 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=gibson.dropbear.id.au; s=201602; t=1556241154;
- bh=gc/cTdxayd/FE8y1ioTx5z9x+DBO2F8ahhTRwAc+hoY=;
- h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=Ia7LIXkFggmk7Xt5w8IhK/4t30fnD38EtcLzXOBXaenQod6yDcaRFOwtQLDCBSacO
- GcQWa56kx10krpWzblqgvc7E0PnWO1+L+YoNYR2gP/Swgji5vQeZhr52bVWl04TB0r
- cYH+RPeKItdAI0Z5GZU/liQ3LkokqIzCvHGpXZXU=
-Date: Fri, 26 Apr 2019 11:05:17 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Christoph Hellwig <hch@lst.de>
-Subject: Re: powerpc hugepage leak caused by 576ed913 "block: use
- bio_add_page in bio_iov_iter_get_pages"
-Message-ID: <20190426010517.GA7378@umbus.fritz.box>
-References: <20190423054131.GB31496@umbus.fritz.box>
- <20190425061958.GA7881@lst.de>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="45Z9DzgjV8m4Oswq"
-Content-Disposition: inline
-In-Reply-To: <20190425061958.GA7881@lst.de>
-User-Agent: Mutt/1.11.3 (2019-02-01)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44qzqY0xV6zDqdS
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Apr 2019 13:21:44 +1000 (AEST)
+Received: by mail-pl1-x644.google.com with SMTP id x15so803700pln.9
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Apr 2019 20:21:44 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=from:to:cc:subject:date:message-id;
+ bh=2J1TjtOstEzmWtLspAyMVLNIkrOKT0VPlYnQGIz+uw4=;
+ b=udHN4jJBs3pXVk16n237GoSyhZGfP8O8KDAYlJyn4iJED7j9WSbV+1zmUqg+jJlnPi
+ PRaIOEU5kug5BbH13YwAGbsS2eW5bb/UWaLkxMfFSh/PJiqL/zfzfr0gP5lHldBZM9kW
+ p0IWOJd0KbKCXZ3MZiPvhhzXuruHmlyD+Y/lRGzNHPsFYn9qCtzdsnDDpDBB7DqIPxY+
+ xWOskoDNaoJk+9eAvzZlKFT+HJzemNiwDrvnNLA3vgywC2bhI+TwS7tCSjYOQJa1iqIG
+ 13gNkOgz40bdUJwCXQ2vNR9VbrwpaQRK4ELcUgWfjqUmPuiSI4l9lVLzw6i83KmAqR3H
+ 8edQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:from:to:cc:subject:date:message-id;
+ bh=2J1TjtOstEzmWtLspAyMVLNIkrOKT0VPlYnQGIz+uw4=;
+ b=msbyChaohOGLA7mYt4vZGgIs+ut3aThwqOpJyTq308IIZ8BstY/QCeDBNMH+ZAdxQ5
+ aoIJlYOWVBPy48Jg3Dx+kj4baraIbxLtwOVR7ZKuAr/I9DtMYARB2je55DRoP6Kxjn54
+ IYFppDuSfTm6EnNKk1WtnPgiYcSTtIo+H+RyemXM0QBI8JPp61aXkjKRWyeKYCwgnNHl
+ 4IWuPFBqq0l1izYg7VabvTEdHvZU+YnhwxFHNoBnzwkkQAoivfVLvTDEJ3RHI5uAP9Pe
+ ZoNK2QSWgVDJIPPSn+P8r5jSsyzZuoBuKWClsRTEau/5WptZxHKAeWEQpy6tvdgaC38m
+ Rt2g==
+X-Gm-Message-State: APjAAAUNqxYuNU6S4acTeRjnwszDqZvNlRTebCIkrgz4unIrgmc2Oddf
+ h/1aAvtjguDndjQQWlgVJCk=
+X-Google-Smtp-Source: APXvYqzmideczOWmwDVE6IZEwTpFCEMCSkYkYC177nGVkAFFTgTtQJGsO4LuFeTWfsNBVvH589AZsg==
+X-Received: by 2002:a17:902:b605:: with SMTP id
+ b5mr5024608pls.206.1556248900457; 
+ Thu, 25 Apr 2019 20:21:40 -0700 (PDT)
+Received: from Asurada-CZ80.localdomain (c-98-248-47-108.hsd1.ca.comcast.net.
+ [98.248.47.108])
+ by smtp.gmail.com with ESMTPSA id 10sm64985956pft.100.2019.04.25.20.21.39
+ (version=TLS1_2 cipher=ECDHE-RSA-AES128-SHA bits=128/128);
+ Thu, 25 Apr 2019 20:21:39 -0700 (PDT)
+From: Nicolin Chen <nicoleotsuka@gmail.com>
+To: broonie@kernel.org
+Subject: [PATCH] ASoC: fsl_sai: Add missing return 0 in remove()
+Date: Thu, 25 Apr 2019 20:20:50 -0700
+Message-Id: <1556248850-3748-1-git-send-email-nicoleotsuka@gmail.com>
+X-Mailer: git-send-email 2.7.4
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -66,121 +88,41 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Jens Axboe <axboe@kernel.dk>, linux-kernel@vger.kernel.org,
- Nick Piggin <npiggin@gmail.com>, Michael Ellerman <michael@ellerman.id.au>,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
+Cc: daniel.baluta@nxp.com, sfr@canb.auug.org.au, alsa-devel@alsa-project.org,
+ timur@kernel.org, lgirdwood@gmail.com, linuxppc-dev@lists.ozlabs.org,
+ Xiubo.Lee@gmail.com, tiwai@suse.com, perex@perex.cz, festevam@gmail.com,
+ linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+Build warning being reported:
+    sound/soc/fsl/fsl_sai.c: In function 'fsl_sai_remove':
+    sound/soc/fsl/fsl_sai.c:921:1: warning: no return statement in
+    function returning non-void [-Wreturn-type]
 
---45Z9DzgjV8m4Oswq
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+So this patch just adds a "return 0" to fix it.
 
-On Thu, Apr 25, 2019 at 08:19:58AM +0200, Christoph Hellwig wrote:
-> Just curious:  What exact trees do you see this with?  This area
-> changed a lot with the multipage bvec support, and subsequent fixes.
+Fixes: 812ad463e089 ("ASoC: fsl_sai: Add support for runtime pm")
+Reported-by: Stephen Rothwell <sfr@canb.auug.org.au>
+Signed-off-by: Nicolin Chen <nicoleotsuka@gmail.com>
+---
+ sound/soc/fsl/fsl_sai.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
-So, I tried it with 576ed913 itself and with 576ed913^ to verify that
-it didn't happen there.  The problem also occurred with Linus' tree as
-of when I started bisecting, which appears to have been 444fe991.
-Actually, come to that, here's the whole bisect log in case it's
-helpful:
+diff --git a/sound/soc/fsl/fsl_sai.c b/sound/soc/fsl/fsl_sai.c
+index 26c27dc..8593269 100644
+--- a/sound/soc/fsl/fsl_sai.c
++++ b/sound/soc/fsl/fsl_sai.c
+@@ -918,6 +918,8 @@ static int fsl_sai_probe(struct platform_device *pdev)
+ static int fsl_sai_remove(struct platform_device *pdev)
+ {
+ 	pm_runtime_disable(&pdev->dev);
++
++	return 0;
+ }
+ 
+ static const struct of_device_id fsl_sai_ids[] = {
+-- 
+2.7.4
 
-# git bisect log
-git bisect start
-# good: [bebc6082da0a9f5d47a1ea2edc099bf671058bd4] Linux 4.14
-git bisect good bebc6082da0a9f5d47a1ea2edc099bf671058bd4
-# bad: [444fe991353987c1c9bc5ab1f903d01f1b4ad415] Merge tag 'riscv-for-linu=
-s-5.1-rc6' of git://git.kernel.org/pub/scm/linux/kernel/git/palmer/riscv-li=
-nux
-git bisect bad 444fe991353987c1c9bc5ab1f903d01f1b4ad415
-# good: [399c4129eba6145924ab90363352b7bdcd554751] Merge tag 'pxa-for-4.19-=
-dma_slave_map' of https://github.com/rjarzmik/linux
-git bisect good 399c4129eba6145924ab90363352b7bdcd554751
-# bad: [73b6f96cbc0162787bcbdac5f538167084c8d605] Merge branch 'drm-fixes-4=
-=2E20' of git://people.freedesktop.org/~agd5f/linux into drm-fixes
-git bisect bad 73b6f96cbc0162787bcbdac5f538167084c8d605
-# good: [85a585918fb4122ad26b6febaec5c3c90bf2535c] Merge tag 'loadpin-secur=
-ity-next' of https://git.kernel.org/pub/scm/linux/kernel/git/kees/linux int=
-o next-loadpin
-git bisect good 85a585918fb4122ad26b6febaec5c3c90bf2535c
-# bad: [3acbd2de6bc3af215c6ed7732dfc097d1e238503] Merge tag 'sound-4.20-rc1=
-' of git://git.kernel.org/pub/scm/linux/kernel/git/tiwai/sound
-git bisect bad 3acbd2de6bc3af215c6ed7732dfc097d1e238503
-# good: [8f18da47211554f1ef674fef627c05f23b75a8e0] Merge branch 'master' of=
- git://git.kernel.org/pub/scm/linux/kernel/git/klassert/ipsec-next
-git bisect good 8f18da47211554f1ef674fef627c05f23b75a8e0
-# bad: [0d1b82cd8ac2e8856ae9045c97782ac1c359929c] Merge branch 'ras-core-fo=
-r-linus' of git://git.kernel.org/pub/scm/linux/kernel/git/tip/tip
-git bisect bad 0d1b82cd8ac2e8856ae9045c97782ac1c359929c
-# bad: [1650ac53066577a5e83fe3e9d992c9311597ff8c] Merge tag 'mmc-v4.20' of =
-git://git.kernel.org/pub/scm/linux/kernel/git/ulfh/mmc
-git bisect bad 1650ac53066577a5e83fe3e9d992c9311597ff8c
-# bad: [6ab9e09238fdfd742fe23b81e2d385a1cab49d9b] Merge tag 'for-4.20/block=
--20181021' of git://git.kernel.dk/linux-block
-git bisect bad 6ab9e09238fdfd742fe23b81e2d385a1cab49d9b
-# good: [528985117126f11beea339cf39120ee99da04cd2] Merge tag 'arm64-upstrea=
-m' of git://git.kernel.org/pub/scm/linux/kernel/git/arm64/linux
-git bisect good 528985117126f11beea339cf39120ee99da04cd2
-# bad: [2cf99bbd106f89fc72f778e8ad9d5538f1ef939b] lightnvm: pblk: add helpe=
-rs for chunk addresses
-git bisect bad 2cf99bbd106f89fc72f778e8ad9d5538f1ef939b
-# bad: [33b14f67a4e1eabd219fd6543da8f15ed86b641c] nvme: register ns_id attr=
-ibutes as default sysfs groups
-git bisect bad 33b14f67a4e1eabd219fd6543da8f15ed86b641c
-# bad: [27ca1d4ed04ea29dc77b47190a3cc82697023e76] block: move req_gap_back_=
-merge to blk.h
-git bisect bad 27ca1d4ed04ea29dc77b47190a3cc82697023e76
-# bad: [07b05bcc3213ac9f8c28c9d835b4bf3d5798cc60] blkcg: convert blkg_looku=
-p_create to find closest blkg
-git bisect bad 07b05bcc3213ac9f8c28c9d835b4bf3d5798cc60
-# good: [cbeb869a3d1110450186b738199963c5e68c2a71] block, bfq: correctly ch=
-arge and reset entity service in all cases
-git bisect good cbeb869a3d1110450186b738199963c5e68c2a71
-# bad: [576ed9135489c723fb39b97c4e2c73428d06dd78] block: use bio_add_page i=
-n bio_iov_iter_get_pages
-git bisect bad 576ed9135489c723fb39b97c4e2c73428d06dd78
-# good: [c8765de0adfcaaf4ffb2d951e07444f00ffa9453] blok, bfq: do not plug I=
-/O if all queues are weight-raised
-git bisect good c8765de0adfcaaf4ffb2d951e07444f00ffa9453
-# first bad commit: [576ed9135489c723fb39b97c4e2c73428d06dd78] block: use b=
-io_add_page in bio_iov_iter_get_pages
-
-The problem also occurred with the RHEL8 downstream kernel tree.
-That's based on 4.18, but has 576ed913 backported.
-
-> So I'd be really curious if it can be reproduced with Jens' latest
-> block for-5.2 tree (which should be in latest linux-next).
-
-I'll see if I can try that when I next get access to the machine.
-
---=20
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
-
---45Z9DzgjV8m4Oswq
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAEBCAAdFiEEdfRlhq5hpmzETofcbDjKyiDZs5IFAlzCWU0ACgkQbDjKyiDZ
-s5LH3BAAn2hSOM3+dwLehrQVwc4k+3c4Hmw+7p5wrgOgIGkH9MDR/SUzNxOZkhM4
-hzhHZfwOQ4R+t3eJpWyW2QrY7uBrRryyYnvZPu9yigZvuj0B5cfEgbV6UiyZVIyI
-L1xdYdKkd0Yajne4mf+FfR/td1YL50A+qrh62VbQvoUVXFTFJeWCR1Klm1VGdQ2o
-RYL/89BmDzyN2YWDK2CrWTn/GKFGnBwRoUoKl0ibjHeRFaTI4S2PkqtIGJTSWHPo
-fEhWv26SrFuXceGSywEJxk/GMF+V0xFOGpMvhoIM5pC28xq5z03MEQ4CYJd8Or75
-TMaXE4ksK41U3ITTEqpoqqy4V/h4FbihtUPzM8oOj8tVJMPVGBpTI5281VMYIp7p
-POHrBnwyKDYyPVtkXRMs93s3O+CBFAWRp8Kgc+08BaZCTMtSjeSJkVxeL9nUG8xM
-6IQCe1pByeEK8HDmwdf45qgmmQYir3Ceb9toznp2mt7F5RRRSy0GVs643FQi1Ref
-crg/BkVU4rlgkbkcWdRBZRxdWbpZ90yT9pE7+5aaBs3fdL9/FfXYorokpKlI98WG
-w+ZK+Z3vqr2ncxDtOmY/hZeKj5KgeJ/SFo26PAWORbN6aiG4HziO4+fkdt521vNA
-hqua9mghyAwunKrUhkzfv/ECm9saThllOriBpBNGlvvzFK3EjNU=
-=I9iT
------END PGP SIGNATURE-----
-
---45Z9DzgjV8m4Oswq--
