@@ -6,21 +6,21 @@ X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
 	SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C0E30C43219
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Apr 2019 16:15:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 52FF8C43218
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Apr 2019 16:17:25 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 4177320B7C
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Apr 2019 16:15:53 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 7CBC02084F
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Apr 2019 16:17:24 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="Z4X1gF8t"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4177320B7C
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="D+VYBx/i"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7CBC02084F
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44rK0k4S4hzDqD7
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Apr 2019 02:15:50 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44rK2V3G5kzDq7d
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Apr 2019 02:17:22 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=c-s.fr
  (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
@@ -28,56 +28,55 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="Z4X1gF8t"; 
+ unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="D+VYBx/i"; 
  dkim-atps=neutral
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44rJcN1D73zDqQV
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 27 Apr 2019 01:58:12 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44rJcP1Sy5zDqSG
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 27 Apr 2019 01:58:13 +1000 (AEST)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 44rJcH3NLJz9v0yP;
- Fri, 26 Apr 2019 17:58:07 +0200 (CEST)
+ by localhost (Postfix) with ESMTP id 44rJcJ415sz9v0yT;
+ Fri, 26 Apr 2019 17:58:08 +0200 (CEST)
 Authentication-Results: localhost; dkim=pass
  reason="1024-bit key; insecure key"
- header.d=c-s.fr header.i=@c-s.fr header.b=Z4X1gF8t; dkim-adsp=pass;
+ header.d=c-s.fr header.i=@c-s.fr header.b=D+VYBx/i; dkim-adsp=pass;
  dkim-atps=neutral
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id nmsGD7NRdQxW; Fri, 26 Apr 2019 17:58:07 +0200 (CEST)
+ with ESMTP id zFPbq5a55teq; Fri, 26 Apr 2019 17:58:08 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 44rJcH2MSNz9v0yN;
- Fri, 26 Apr 2019 17:58:07 +0200 (CEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
- t=1556294287; bh=rPd1KhX8+UIoTL1m9RzG5ss8I9hT3dLgysZOEHzsous=;
- h=In-Reply-To:References:From:Subject:To:Cc:Date:From;
- b=Z4X1gF8trfqC8nicV60pyvKu1o5wBENwRcbM/IivXkbstuazlXuHNvVARw+hyUnj2
- FZkLPeW2+Q+Ikw+2itqFg0yroGrbIzELwl3NqLR1iAtoc8dGMTL6RgnSR2Iu3PQwFo
- EG76GMwCNLJTIEY+il58A3PugsZgIsYDnjtJ0fKo=
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id F03718B94A;
+ by pegase1.c-s.fr (Postfix) with ESMTP id 44rJcJ2nffz9v0yN;
  Fri, 26 Apr 2019 17:58:08 +0200 (CEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
+ t=1556294288; bh=gwSBkR8SNd8udGVI3QTStX+M6+oZhF2H+aToHhBfwcI=;
+ h=In-Reply-To:References:From:Subject:To:Cc:Date:From;
+ b=D+VYBx/i8J8lhJLh41BLspdDaJ+MwM4D7XDlaToE4h8pdB/oNMZ/x+Sa/iM8FwgZj
+ KamxYd2mssxObl37VKTbXbz3DB03yY0/QAV0fNdKACPFeFFS/zyuqWIOi1waudIqLU
+ 07TlUSfiu0fE6f/E6v50m62QB+l4OgnqR5jASeWE=
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 05BF58B94A;
+ Fri, 26 Apr 2019 17:58:10 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id c_cCf6c8JTbf; Fri, 26 Apr 2019 17:58:08 +0200 (CEST)
+ with ESMTP id lhVBhYkWhRyT; Fri, 26 Apr 2019 17:58:09 +0200 (CEST)
 Received: from po16846vm.idsi0.si.c-s.fr (po15451.idsi0.si.c-s.fr
  [172.25.231.6])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id CB9938B82F;
- Fri, 26 Apr 2019 17:58:08 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id D69438B82F;
+ Fri, 26 Apr 2019 17:58:09 +0200 (CEST)
 Received: by po16846vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id AEB4B666FE; Fri, 26 Apr 2019 15:58:08 +0000 (UTC)
-Message-Id: <f3b41febfb7f6ad46413013a28b89342f1b9d02a.1556293738.git.christophe.leroy@c-s.fr>
+ id B563E666FE; Fri, 26 Apr 2019 15:58:09 +0000 (UTC)
+Message-Id: <e48c9e09b90d85438f5a1da85c315f378456c5c2.1556293738.git.christophe.leroy@c-s.fr>
 In-Reply-To: <cover.1556293738.git.christophe.leroy@c-s.fr>
 References: <cover.1556293738.git.christophe.leroy@c-s.fr>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v2 10/15] powerpc/mm: refactor pte_alloc_one() and pte_free()
- families definition.
+Subject: [PATCH v2 11/15] powerpc/mm: refactor definition of pgtable_cache[]
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, 
  aneesh.kumar@linux.ibm.com
-Date: Fri, 26 Apr 2019 15:58:08 +0000 (UTC)
+Date: Fri, 26 Apr 2019 15:58:09 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -94,202 +93,202 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Functions pte_alloc_one(), pte_alloc_one_kernel(), pte_free(),
-pte_free_kernel() are identical for the four subarches.
-
-This patch moves their definition in a common place.
+pgtable_cache[] is the same for the 4 subarches, lets make it common.
 
 Reviewed-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
- arch/powerpc/include/asm/book3s/32/pgalloc.h | 25 -------------------------
+ arch/powerpc/include/asm/book3s/32/pgalloc.h | 21 ---------------------
  arch/powerpc/include/asm/book3s/64/pgalloc.h | 22 ----------------------
- arch/powerpc/include/asm/nohash/32/pgalloc.h | 25 -------------------------
- arch/powerpc/include/asm/nohash/64/pgalloc.h | 25 -------------------------
- arch/powerpc/include/asm/pgalloc.h           | 25 +++++++++++++++++++++++++
- 5 files changed, 25 insertions(+), 97 deletions(-)
+ arch/powerpc/include/asm/nohash/32/pgalloc.h | 21 ---------------------
+ arch/powerpc/include/asm/nohash/64/pgalloc.h | 22 ----------------------
+ arch/powerpc/include/asm/pgalloc.h           | 21 +++++++++++++++++++++
+ 5 files changed, 21 insertions(+), 86 deletions(-)
 
 diff --git a/arch/powerpc/include/asm/book3s/32/pgalloc.h b/arch/powerpc/include/asm/book3s/32/pgalloc.h
-index 0ed856068bb8..46422309d6e0 100644
+index 46422309d6e0..1b9b5c228230 100644
 --- a/arch/powerpc/include/asm/book3s/32/pgalloc.h
 +++ b/arch/powerpc/include/asm/book3s/32/pgalloc.h
-@@ -59,31 +59,6 @@ static inline void pmd_populate(struct mm_struct *mm, pmd_t *pmdp,
+@@ -5,26 +5,6 @@
+ #include <linux/threads.h>
+ #include <linux/slab.h>
  
- #define pmd_pgtable(pmd) ((pgtable_t)pmd_page_vaddr(pmd))
- 
--pte_t *pte_fragment_alloc(struct mm_struct *mm, int kernel);
+-/*
+- * Functions that deal with pagetables that could be at any level of
+- * the table need to be passed an "index_size" so they know how to
+- * handle allocation.  For PTE pages (which are linked to a struct
+- * page for now, and drawn from the main get_free_pages() pool), the
+- * allocation size will be (2^index_size * sizeof(pointer)) and
+- * allocations are drawn from the kmem_cache in PGT_CACHE(index_size).
+- *
+- * The maximum index size needs to be big enough to allow any
+- * pagetable sizes we need, but small enough to fit in the low bits of
+- * any page table pointer.  In other words all pagetables, even tiny
+- * ones, must be aligned to allow at least enough low 0 bits to
+- * contain this value.  This value is also used as a mask, so it must
+- * be one less than a power of two.
+- */
+-#define MAX_PGTABLE_INDEX_SIZE	0xf
 -
--static inline pte_t *pte_alloc_one_kernel(struct mm_struct *mm)
--{
--	return (pte_t *)pte_fragment_alloc(mm, 1);
--}
+-extern struct kmem_cache *pgtable_cache[];
+-#define PGT_CACHE(shift) pgtable_cache[shift]
 -
--static inline pgtable_t pte_alloc_one(struct mm_struct *mm)
--{
--	return (pgtable_t)pte_fragment_alloc(mm, 0);
--}
--
--void pte_frag_destroy(void *pte_frag);
--void pte_fragment_free(unsigned long *table, int kernel);
--
--static inline void pte_free_kernel(struct mm_struct *mm, pte_t *pte)
--{
--	pte_fragment_free((unsigned long *)pte, 1);
--}
--
--static inline void pte_free(struct mm_struct *mm, pgtable_t ptepage)
--{
--	pte_fragment_free((unsigned long *)ptepage, 0);
--}
--
- static inline void pgtable_free(void *table, unsigned index_size)
+ static inline pgd_t *pgd_alloc(struct mm_struct *mm)
  {
- 	if (!index_size) {
+ 	return kmem_cache_alloc(PGT_CACHE(PGD_INDEX_SIZE),
+@@ -69,7 +49,6 @@ static inline void pgtable_free(void *table, unsigned index_size)
+ 	}
+ }
+ 
+-#define check_pgt_cache()	do { } while (0)
+ #define get_hugepd_cache_index(x)  (x)
+ 
+ #ifdef CONFIG_SMP
 diff --git a/arch/powerpc/include/asm/book3s/64/pgalloc.h b/arch/powerpc/include/asm/book3s/64/pgalloc.h
-index 138bc2ecc0c4..cfd48d8cc055 100644
+index cfd48d8cc055..df2dce6afe14 100644
 --- a/arch/powerpc/include/asm/book3s/64/pgalloc.h
 +++ b/arch/powerpc/include/asm/book3s/64/pgalloc.h
-@@ -39,9 +39,7 @@ extern struct vmemmap_backing *vmemmap_list;
- extern struct kmem_cache *pgtable_cache[];
- #define PGT_CACHE(shift) pgtable_cache[shift]
+@@ -19,26 +19,6 @@ struct vmemmap_backing {
+ };
+ extern struct vmemmap_backing *vmemmap_list;
  
--extern pte_t *pte_fragment_alloc(struct mm_struct *, int);
+-/*
+- * Functions that deal with pagetables that could be at any level of
+- * the table need to be passed an "index_size" so they know how to
+- * handle allocation.  For PTE pages (which are linked to a struct
+- * page for now, and drawn from the main get_free_pages() pool), the
+- * allocation size will be (2^index_size * sizeof(pointer)) and
+- * allocations are drawn from the kmem_cache in PGT_CACHE(index_size).
+- *
+- * The maximum index size needs to be big enough to allow any
+- * pagetable sizes we need, but small enough to fit in the low bits of
+- * any page table pointer.  In other words all pagetables, even tiny
+- * ones, must be aligned to allow at least enough low 0 bits to
+- * contain this value.  This value is also used as a mask, so it must
+- * be one less than a power of two.
+- */
+-#define MAX_PGTABLE_INDEX_SIZE	0xf
+-
+-extern struct kmem_cache *pgtable_cache[];
+-#define PGT_CACHE(shift) pgtable_cache[shift]
+-
  extern pmd_t *pmd_fragment_alloc(struct mm_struct *, unsigned long);
--extern void pte_fragment_free(unsigned long *, int);
  extern void pmd_fragment_free(unsigned long *);
  extern void pgtable_free_tlb(struct mmu_gather *tlb, void *table, int shift);
- #ifdef CONFIG_SMP
-@@ -190,26 +188,6 @@ static inline pgtable_t pmd_pgtable(pmd_t pmd)
- 	return (pgtable_t)pmd_page_vaddr(pmd);
+@@ -199,8 +179,6 @@ static inline void __pte_free_tlb(struct mmu_gather *tlb, pgtable_t table,
+ 	pgtable_free_tlb(tlb, table, PTE_INDEX);
  }
  
--static inline pte_t *pte_alloc_one_kernel(struct mm_struct *mm)
--{
--	return (pte_t *)pte_fragment_alloc(mm, 1);
--}
+-#define check_pgt_cache()	do { } while (0)
 -
--static inline pgtable_t pte_alloc_one(struct mm_struct *mm)
--{
--	return (pgtable_t)pte_fragment_alloc(mm, 0);
--}
--
--static inline void pte_free_kernel(struct mm_struct *mm, pte_t *pte)
--{
--	pte_fragment_free((unsigned long *)pte, 1);
--}
--
--static inline void pte_free(struct mm_struct *mm, pgtable_t ptepage)
--{
--	pte_fragment_free((unsigned long *)ptepage, 0);
--}
--
- static inline void __pte_free_tlb(struct mmu_gather *tlb, pgtable_t table,
- 				  unsigned long address)
+ extern atomic_long_t direct_pages_count[MMU_PAGE_COUNT];
+ static inline void update_page_count(int psize, long count)
  {
 diff --git a/arch/powerpc/include/asm/nohash/32/pgalloc.h b/arch/powerpc/include/asm/nohash/32/pgalloc.h
-index 1d41508f0676..e96ef2fde2ca 100644
+index e96ef2fde2ca..4615801aa953 100644
 --- a/arch/powerpc/include/asm/nohash/32/pgalloc.h
 +++ b/arch/powerpc/include/asm/nohash/32/pgalloc.h
-@@ -77,31 +77,6 @@ static inline void pmd_populate(struct mm_struct *mm, pmd_t *pmdp,
- #define pmd_pgtable(pmd) ((pgtable_t)pmd_page_vaddr(pmd))
- #endif
+@@ -5,26 +5,6 @@
+ #include <linux/threads.h>
+ #include <linux/slab.h>
  
--pte_t *pte_fragment_alloc(struct mm_struct *mm, int kernel);
+-/*
+- * Functions that deal with pagetables that could be at any level of
+- * the table need to be passed an "index_size" so they know how to
+- * handle allocation.  For PTE pages (which are linked to a struct
+- * page for now, and drawn from the main get_free_pages() pool), the
+- * allocation size will be (2^index_size * sizeof(pointer)) and
+- * allocations are drawn from the kmem_cache in PGT_CACHE(index_size).
+- *
+- * The maximum index size needs to be big enough to allow any
+- * pagetable sizes we need, but small enough to fit in the low bits of
+- * any page table pointer.  In other words all pagetables, even tiny
+- * ones, must be aligned to allow at least enough low 0 bits to
+- * contain this value.  This value is also used as a mask, so it must
+- * be one less than a power of two.
+- */
+-#define MAX_PGTABLE_INDEX_SIZE	0xf
 -
--static inline pte_t *pte_alloc_one_kernel(struct mm_struct *mm)
--{
--	return (pte_t *)pte_fragment_alloc(mm, 1);
--}
+-extern struct kmem_cache *pgtable_cache[];
+-#define PGT_CACHE(shift) pgtable_cache[shift]
 -
--static inline pgtable_t pte_alloc_one(struct mm_struct *mm)
--{
--	return (pgtable_t)pte_fragment_alloc(mm, 0);
--}
--
--void pte_frag_destroy(void *pte_frag);
--void pte_fragment_free(unsigned long *table, int kernel);
--
--static inline void pte_free_kernel(struct mm_struct *mm, pte_t *pte)
--{
--	pte_fragment_free((unsigned long *)pte, 1);
--}
--
--static inline void pte_free(struct mm_struct *mm, pgtable_t ptepage)
--{
--	pte_fragment_free((unsigned long *)ptepage, 0);
--}
--
- static inline void pgtable_free(void *table, unsigned index_size)
+ static inline pgd_t *pgd_alloc(struct mm_struct *mm)
  {
- 	if (!index_size) {
-diff --git a/arch/powerpc/include/asm/nohash/64/pgalloc.h b/arch/powerpc/include/asm/nohash/64/pgalloc.h
-index 7fb87235f845..98de4f3b0306 100644
---- a/arch/powerpc/include/asm/nohash/64/pgalloc.h
-+++ b/arch/powerpc/include/asm/nohash/64/pgalloc.h
-@@ -92,31 +92,6 @@ static inline void pmd_free(struct mm_struct *mm, pmd_t *pmd)
- 	kmem_cache_free(PGT_CACHE(PMD_CACHE_INDEX), pmd);
+ 	return kmem_cache_alloc(PGT_CACHE(PGD_INDEX_SIZE),
+@@ -87,7 +67,6 @@ static inline void pgtable_free(void *table, unsigned index_size)
+ 	}
  }
  
--pte_t *pte_fragment_alloc(struct mm_struct *mm, int kernel);
+-#define check_pgt_cache()	do { } while (0)
+ #define get_hugepd_cache_index(x)	(x)
+ 
+ #ifdef CONFIG_SMP
+diff --git a/arch/powerpc/include/asm/nohash/64/pgalloc.h b/arch/powerpc/include/asm/nohash/64/pgalloc.h
+index 98de4f3b0306..ffc86d42816d 100644
+--- a/arch/powerpc/include/asm/nohash/64/pgalloc.h
++++ b/arch/powerpc/include/asm/nohash/64/pgalloc.h
+@@ -18,26 +18,6 @@ struct vmemmap_backing {
+ };
+ extern struct vmemmap_backing *vmemmap_list;
+ 
+-/*
+- * Functions that deal with pagetables that could be at any level of
+- * the table need to be passed an "index_size" so they know how to
+- * handle allocation.  For PTE pages (which are linked to a struct
+- * page for now, and drawn from the main get_free_pages() pool), the
+- * allocation size will be (2^index_size * sizeof(pointer)) and
+- * allocations are drawn from the kmem_cache in PGT_CACHE(index_size).
+- *
+- * The maximum index size needs to be big enough to allow any
+- * pagetable sizes we need, but small enough to fit in the low bits of
+- * any page table pointer.  In other words all pagetables, even tiny
+- * ones, must be aligned to allow at least enough low 0 bits to
+- * contain this value.  This value is also used as a mask, so it must
+- * be one less than a power of two.
+- */
+-#define MAX_PGTABLE_INDEX_SIZE	0xf
 -
--static inline pte_t *pte_alloc_one_kernel(struct mm_struct *mm)
--{
--	return (pte_t *)pte_fragment_alloc(mm, 1);
--}
+-extern struct kmem_cache *pgtable_cache[];
+-#define PGT_CACHE(shift) pgtable_cache[shift]
 -
--static inline pgtable_t pte_alloc_one(struct mm_struct *mm)
--{
--	return (pgtable_t)pte_fragment_alloc(mm, 0);
--}
--
--void pte_frag_destroy(void *pte_frag);
--void pte_fragment_free(unsigned long *table, int kernel);
--
--static inline void pte_free_kernel(struct mm_struct *mm, pte_t *pte)
--{
--	pte_fragment_free((unsigned long *)pte, 1);
--}
--
--static inline void pte_free(struct mm_struct *mm, pgtable_t ptepage)
--{
--	pte_fragment_free((unsigned long *)ptepage, 0);
--}
--
- static inline void pgtable_free(void *table, int shift)
+ static inline pgd_t *pgd_alloc(struct mm_struct *mm)
  {
- 	if (!shift) {
+ 	return kmem_cache_alloc(PGT_CACHE(PGD_INDEX_SIZE),
+@@ -140,6 +120,4 @@ static inline void __pte_free_tlb(struct mmu_gather *tlb, pgtable_t table,
+ #define __pud_free_tlb(tlb, pud, addr)		      \
+ 	pgtable_free_tlb(tlb, pud, PUD_INDEX_SIZE)
+ 
+-#define check_pgt_cache()	do { } while (0)
+-
+ #endif /* _ASM_POWERPC_PGALLOC_64_H */
 diff --git a/arch/powerpc/include/asm/pgalloc.h b/arch/powerpc/include/asm/pgalloc.h
-index e11f03007b57..c2c6fd438840 100644
+index c2c6fd438840..5761bee0f004 100644
 --- a/arch/powerpc/include/asm/pgalloc.h
 +++ b/arch/powerpc/include/asm/pgalloc.h
-@@ -20,6 +20,31 @@ static inline gfp_t pgtable_gfp_flags(struct mm_struct *mm, gfp_t gfp)
+@@ -45,6 +45,27 @@ static inline void pte_free(struct mm_struct *mm, pgtable_t ptepage)
+ 	pte_fragment_free((unsigned long *)ptepage, 0);
+ }
  
- #define PGALLOC_GFP (GFP_KERNEL | __GFP_ZERO)
- 
-+pte_t *pte_fragment_alloc(struct mm_struct *mm, int kernel);
++/*
++ * Functions that deal with pagetables that could be at any level of
++ * the table need to be passed an "index_size" so they know how to
++ * handle allocation.  For PTE pages, the allocation size will be
++ * (2^index_size * sizeof(pointer)) and allocations are drawn from
++ * the kmem_cache in PGT_CACHE(index_size).
++ *
++ * The maximum index size needs to be big enough to allow any
++ * pagetable sizes we need, but small enough to fit in the low bits of
++ * any page table pointer.  In other words all pagetables, even tiny
++ * ones, must be aligned to allow at least enough low 0 bits to
++ * contain this value.  This value is also used as a mask, so it must
++ * be one less than a power of two.
++ */
++#define MAX_PGTABLE_INDEX_SIZE	0xf
 +
-+static inline pte_t *pte_alloc_one_kernel(struct mm_struct *mm)
-+{
-+	return (pte_t *)pte_fragment_alloc(mm, 1);
-+}
++extern struct kmem_cache *pgtable_cache[];
++#define PGT_CACHE(shift) pgtable_cache[shift]
 +
-+static inline pgtable_t pte_alloc_one(struct mm_struct *mm)
-+{
-+	return (pgtable_t)pte_fragment_alloc(mm, 0);
-+}
-+
-+void pte_frag_destroy(void *pte_frag);
-+void pte_fragment_free(unsigned long *table, int kernel);
-+
-+static inline void pte_free_kernel(struct mm_struct *mm, pte_t *pte)
-+{
-+	pte_fragment_free((unsigned long *)pte, 1);
-+}
-+
-+static inline void pte_free(struct mm_struct *mm, pgtable_t ptepage)
-+{
-+	pte_fragment_free((unsigned long *)ptepage, 0);
-+}
++static inline void check_pgt_cache(void) { }
 +
  #ifdef CONFIG_PPC_BOOK3S
  #include <asm/book3s/pgalloc.h>
