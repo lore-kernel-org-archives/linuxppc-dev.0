@@ -6,57 +6,57 @@ X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
 	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D9FDBC43219
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Apr 2019 13:19:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 53210C43219
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Apr 2019 13:21:26 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 5D5BB208C2
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Apr 2019 13:19:26 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5D5BB208C2
+	by mail.kernel.org (Postfix) with ESMTPS id CD9F42087F
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Apr 2019 13:21:25 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CD9F42087F
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=metux.net
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44rs2h3Fv4zDqcc
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Apr 2019 23:19:24 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44rs5008MwzDq7g
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Apr 2019 23:21:24 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=none (mailfrom) smtp.mailfrom=metux.net
- (client-ip=212.227.126.187; helo=mout.kundenserver.de;
+ (client-ip=212.227.126.130; helo=mout.kundenserver.de;
  envelope-from=info@metux.net; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=metux.net
-Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.126.187])
+Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.126.130])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44rrSr6VlgzDqYV
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44rrSr69SFzDqYS
  for <linuxppc-dev@lists.ozlabs.org>; Sat, 27 Apr 2019 22:53:32 +1000 (AEST)
 Received: from orion.localdomain ([77.2.90.210]) by mrelayeu.kundenserver.de
  (mreue009 [212.227.15.167]) with ESMTPSA (Nemesis) id
- 1N49Yn-1gckUf0Xp3-0101lS; Sat, 27 Apr 2019 14:52:36 +0200
+ 1N5G1V-1gbeYR2mc1-0118EA; Sat, 27 Apr 2019 14:52:58 +0200
 From: "Enrico Weigelt, metux IT consult" <info@metux.net>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH 03/41] drivers: tty: serial: dz: fix missing parentheses
-Date: Sat, 27 Apr 2019 14:51:44 +0200
-Message-Id: <1556369542-13247-4-git-send-email-info@metux.net>
+Subject: [PATCH 29/41] drivers: tty: serial: sunzilog: cleanup logging
+Date: Sat, 27 Apr 2019 14:52:10 +0200
+Message-Id: <1556369542-13247-30-git-send-email-info@metux.net>
 X-Mailer: git-send-email 1.9.1
 In-Reply-To: <1556369542-13247-1-git-send-email-info@metux.net>
 References: <1556369542-13247-1-git-send-email-info@metux.net>
-X-Provags-ID: V03:K1:DCKi2YoTk5F832OQUdu63uCQyxtOturAok1rJyvr3Cj1aB4PytR
- 39oykOLn/6maTSaugkdLtAO+JW6mtXKXNyEKmjf/LfUX+UrtldHzEn6VJRT6Ai5Wmv6fPJu
- zDbdAsnAWjMsVY/Lfxtu7H3H0VD9b6vzG1KkGY93toXvi1amjf/kUGN1jMaJH9MM+TdtJWy
- 6Qq+l2SfPMMVa3xrX3Dhg==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:hCaJcuTMeuA=:EB4ux1IA7Tt2VnO5QHlgjW
- pkbxMpPw2nta4CmIKC1kcgXZ8R3PVqr7ziHZCtHeUGvHHk9Qk9raYRBGZaF5IqaPVm6CNMnxr
- 9vty1/D38JGFJJSTwt3NFvurWC70JuBjH/BKAB8yESh6+wLopafjQqQPN8l2KX8SGQjfwv2xO
- TyzFvmsYNx3rtFuVJ/pJ1vV56+pzzVMgAzd7E0EpyYgb7DGVVlUR2LG1dxWjJ2Hof/It2Rmfz
- p9izFHquGUwtbxHeqxGGWvM4ijYINTbcCUZVJjV5oJC9/JYWT730WUlA9JIbF2xjIF7PBRVXX
- kASrSTWn7c2M2sc3c6bB50GRDqBH6dH94gztdOwsPoZ4cj+JQkPM6uX86/TUJ8e4WJY2B5iGU
- HP7+HVB4tQVuFWqAHT2uGAz6varlOIJ5yKrTIJx6feesH62tAViO17zmGulcYNIxOP3eNPMOD
- Hmet1YF6m/ZGilYNo9SR/pjTIMz1EyH8o7eL4CQcuBZ9FwhDFRYTxTY15EVLqHyCvQkPg27Rb
- 8uO0aVYpOJ/qo2qK8zbTnZCXXNRXdpe5e3F/ivKBz+b1Oa+zghaMw2mbTc4DrgKSeZzP1LTNm
- teKvpXO2ByNWbSgSgXOBtzriQtZsC2TVemyVqTtaDrQpo+R6tvq8EoDpEQZIo8UeRCmxfnM7Q
- CuTeQ7zz0fUVVIk54pr5H16riYLFpjz7OQg7RqO6kuwjj9BxIwYM6AphowGhGxOWdsrYDcB8I
- YsZWUl7WRUQ4eG9segmrTeI0ta1XPj9nf9dvOw==
+X-Provags-ID: V03:K1:uxxvCa66CYSGi3Em4nuMPvtSzL45VE6ce5qM7EP5uZ2jwnJH/Rf
+ VzWdbFvPirBwCJNu9f+Jwyc9lVwLpUGhejFkC7ldZJdxwR7DA2BRn+Vl0BQckBceQIF7qXC
+ WyxgtztRffigF7v1SzndzvbVeMKNS2DbGfpYfH4EV+kNq293CGWXupsg6VWK6tqIR7aTFMf
+ +tRlOKQpyia0QglzkJKNA==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:y11A1qYqUqI=:8rPS9vSRvAXoCM5mb5BhuI
+ WjE5yIVWUmfvDmA/AQ4ypZ+srkteIQs198t/oJOqUwZx5Rp3SPAGlO++llU7eG0RNjUsALBZq
+ ZUvb6zw3f9sYxfEGhrGcIODhWtEO5jSQT4jIVhGurbVttXmC6195bA40SA690OEhhnFI/qCEi
+ WSwQCTE70G9mH5ZlezP2NFueEhbG7kWFhxlgd96LRp1M9Nb1RFDllOpLiSlWwuEgrwYc/txEZ
+ Jz5ZQj7Ur9cWxizBCpYX6lQ8MA/6iwg/+OwOBQFBaO9/oRTiS2RJak0h4ldhbLbwq2zihGidG
+ 1rGx2U2IrRbLZ4JMDQtJAaneQYfRx5ecqZDD3UkLCP4Ei05fNui5iI8OpZLsbkAWQMiKsryvO
+ 2kCFC0VRHePJTFZPqt9Ik9I0+gIoWPxwpdB8LfjEbEvj6k6/XPYQgonaBdL12TN97JkTvX7X2
+ zPhIz62y5IwAPzLzViaQBeYU5gJWmkOIO+mcjozxcMghEPjcS0OHpgnDA8TYNsChOcClWQN5U
+ ZTY0rQijbKo7+Fr6crZw1sEjpHfTqC53E74pOXaRvnpUsI/uBenbneEDtTlLAdpaHpm6wTBvF
+ WLYWF5qQwW7fPx/YeqvLiajUl4U2/pvABrvxsQRwW6Zi/tOfEaKerfDWvrHkfNX97OpQ9rjqO
+ aqTj8y5/k3NSG39yLJhNMUwbIOnBHg3Ua0eJn7jjxkxpYM82/aUzhOuEWTDJOxHkTsenB2gj8
+ mCkokTH7YsmuOy7tzDvemUKChz641N4UkAKV+w==
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -82,28 +82,52 @@ Sender: "Linuxppc-dev"
 
 Fix checkpatch warning:
 
-  ERROR: Macros with complex values should be enclosed in parentheses
-  #912: FILE: dz.c:912:
-  +#define SERIAL_DZ_CONSOLE	&dz_console
+    WARNING: Prefer [subsystem eg: netdev]_info([subsystem]dev, ... then dev_info(dev, ... then pr_info(...  to printk(KERN_INFO ...
+    #1238: FILE: drivers/tty/serial/sunzilog.c:1238:
+    +	printk(KERN_INFO "Console: ttyS%d (SunZilog zs%d)\n",
 
 Signed-off-by: Enrico Weigelt <info@metux.net>
 ---
- drivers/tty/serial/dz.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/tty/serial/sunzilog.c | 12 +++++-------
+ 1 file changed, 5 insertions(+), 7 deletions(-)
 
-diff --git a/drivers/tty/serial/dz.c b/drivers/tty/serial/dz.c
-index fd4f0cc..b3e9313 100644
---- a/drivers/tty/serial/dz.c
-+++ b/drivers/tty/serial/dz.c
-@@ -909,7 +909,7 @@ static int __init dz_serial_console_init(void)
+diff --git a/drivers/tty/serial/sunzilog.c b/drivers/tty/serial/sunzilog.c
+index 85edb0d..dba723c 100644
+--- a/drivers/tty/serial/sunzilog.c
++++ b/drivers/tty/serial/sunzilog.c
+@@ -1235,7 +1235,7 @@ static int __init sunzilog_console_setup(struct console *con, char *options)
+ 	if (up->port.type != PORT_SUNZILOG)
+ 		return -1;
  
- console_initcall(dz_serial_console_init);
+-	printk(KERN_INFO "Console: ttyS%d (SunZilog zs%d)\n",
++	pr_info("Console: ttyS%d (SunZilog zs%d)\n",
+ 	       (sunzilog_reg.minor - 64) + con->index, con->index);
  
--#define SERIAL_DZ_CONSOLE	&dz_console
-+#define SERIAL_DZ_CONSOLE	(&dz_console)
- #else
- #define SERIAL_DZ_CONSOLE	NULL
- #endif /* CONFIG_SERIAL_DZ_CONSOLE */
+ 	/* Get firmware console settings.  */
+@@ -1615,9 +1615,8 @@ static int __init sunzilog_init(void)
+ 		while (up) {
+ 			struct zilog_channel __iomem *channel;
+ 
+-			/* printk(KERN_INFO
+-			 *        "Enable IRQ for ZILOG Hardware %p\n",
+-			 *        up);
++			/* pr_info("Enable IRQ for ZILOG Hardware %p\n",
++			 *         up);
+ 			 */
+ 			channel          = ZILOG_CHANNEL_FROM_PORT(&up->port);
+ 			up->flags       |= SUNZILOG_FLAG_ISR_HANDLER;
+@@ -1655,9 +1654,8 @@ static void __exit sunzilog_exit(void)
+ 		while (up) {
+ 			struct zilog_channel __iomem *channel;
+ 
+-			/* printk(KERN_INFO
+-			 *        "Disable IRQ for ZILOG Hardware %p\n",
+-			 *        up);
++			/* pr_info("Disable IRQ for ZILOG Hardware %p\n",
++			 *         up);
+ 			 */
+ 			channel          = ZILOG_CHANNEL_FROM_PORT(&up->port);
+ 			up->flags       &= ~SUNZILOG_FLAG_ISR_HANDLER;
 -- 
 1.9.1
 
