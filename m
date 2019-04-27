@@ -2,26 +2,26 @@ Return-Path: <SRS0=Akx6=S5=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_MUTT autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-8.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_PASS,URIBL_BLOCKED,USER_AGENT_MUTT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4BD77C43219
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Apr 2019 14:29:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9B6C7C43219
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Apr 2019 14:30:51 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id A5FBF208CA
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Apr 2019 14:29:00 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 0CB20208CA
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Apr 2019 14:30:51 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="oaI8fF6L"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A5FBF208CA
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="VE/IsNN+"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0CB20208CA
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linuxfoundation.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44rtZy4790zDqMM
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 28 Apr 2019 00:28:58 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44rtd46PfRzDqTP
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 28 Apr 2019 00:30:48 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=linuxfoundation.org
  (client-ip=198.145.29.99; helo=mail.kernel.org;
@@ -29,38 +29,38 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=linuxfoundation.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="oaI8fF6L"; 
+ unprotected) header.d=kernel.org header.i=@kernel.org header.b="VE/IsNN+"; 
  dkim-atps=neutral
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44rsH03qqSzDqcn
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 27 Apr 2019 23:30:03 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44rsJ00LbwzDqcl
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 27 Apr 2019 23:30:55 +1000 (AEST)
 Received: from localhost (83-86-89-107.cable.dynamic.v4.ziggo.nl
  [83.86.89.107])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id 1A25D2087F;
- Sat, 27 Apr 2019 13:30:01 +0000 (UTC)
+ by mail.kernel.org (Postfix) with ESMTPSA id 6A4682087F;
+ Sat, 27 Apr 2019 13:30:52 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1556371801;
- bh=+g6CfnpPU8txgLacJbXkxyvrBdWI7sguoPHV5FU2LqI=;
+ s=default; t=1556371852;
+ bh=Lh9s0O0+A8sPU7fyQWvhROtRxYQ2VDabkJlyUvL7sek=;
  h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=oaI8fF6LWNoF2RUAMfD2xTVes2lpnrqtexXdwKOQ4J/TtOnW8+q8XvOQfRyzm91E+
- CUp5y8r6QnfzxXPow71SMWCG8DUBieutEtEuss3todm9AFQ1630ulSxDqhrkSApObS
- cGJZCqr4D9r58uGvUKd8AHfM8GHMsJU4v29U0tPI=
-Date: Sat, 27 Apr 2019 15:29:59 +0200
+ b=VE/IsNN+OoggOL0lqnbBMENjYjQMHUlg6MzRjzd1wN8UG2ch8tWXwwllPaD6PTYFn
+ mCF1UqTTSxvOfCSi55yzLfekiXXAcF44HsZlZXG4txLN8xZgDjNdx2St37NOCVhQjx
+ TD6zDEh5JrUi3h2KNNgGkeyXD0aOAtKHV/ga5/ng=
+Date: Sat, 27 Apr 2019 15:30:50 +0200
 From: Greg KH <gregkh@linuxfoundation.org>
 To: "Enrico Weigelt, metux IT consult" <info@metux.net>
-Subject: Re: [PATCH 01/41] drivers: tty: serial: dz: use dev_err() instead of
- printk()
-Message-ID: <20190427132959.GA11368@kroah.com>
+Subject: Re: [PATCH 05/41] drivers: tty: serial: dz: use pr_info() instead of
+ incomplete printk()
+Message-ID: <20190427133050.GB11368@kroah.com>
 References: <1556369542-13247-1-git-send-email-info@metux.net>
- <1556369542-13247-2-git-send-email-info@metux.net>
+ <1556369542-13247-6-git-send-email-info@metux.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1556369542-13247-2-git-send-email-info@metux.net>
+In-Reply-To: <1556369542-13247-6-git-send-email-info@metux.net>
 User-Agent: Mutt/1.11.4 (2019-03-13)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -85,16 +85,30 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Sat, Apr 27, 2019 at 02:51:42PM +0200, Enrico Weigelt, metux IT consult wrote:
-> Using dev_err() instead of printk() for more consistent output.
-> (prints device name, etc).
+On Sat, Apr 27, 2019 at 02:51:46PM +0200, Enrico Weigelt, metux IT consult wrote:
+> Fix the checkpatch warning:
+> 
+>     WARNING: printk() should include KERN_<LEVEL> facility level
+>     #934: FILE: dz.c:934:
+>     +	printk("%s%s\n", dz_name, dz_version);
 > 
 > Signed-off-by: Enrico Weigelt <info@metux.net>
+> ---
+>  drivers/tty/serial/dz.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/drivers/tty/serial/dz.c b/drivers/tty/serial/dz.c
+> index 559d076..e2670c4 100644
+> --- a/drivers/tty/serial/dz.c
+> +++ b/drivers/tty/serial/dz.c
+> @@ -931,7 +931,7 @@ static int __init dz_init(void)
+>  	if (IOASIC)
+>  		return -ENXIO;
+>  
+> -	printk("%s%s\n", dz_name, dz_version);
+> +	pr_info("%s%s\n", dz_name, dz_version);
 
-Your "From:" line does not match the signed-off-by line, so I can't take
-any of these if I wanted to :(
-
-Please fix up.
+Just drop this line, it's not needed and generally just noise.
 
 thanks,
 
