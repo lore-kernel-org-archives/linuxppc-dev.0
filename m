@@ -2,23 +2,23 @@ Return-Path: <SRS0=Akx6=S5=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5959BC43218
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Apr 2019 13:13:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2D8FAC43219
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Apr 2019 13:15:47 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id D99A2208C2
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Apr 2019 13:13:44 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D99A2208C2
+	by mail.kernel.org (Postfix) with ESMTPS id A836A208C2
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Apr 2019 13:15:46 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A836A208C2
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=metux.net
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44rrw66xxjzDqbh
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Apr 2019 23:13:42 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44rryS6BGqzDqY2
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Apr 2019 23:15:44 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=none (mailfrom) smtp.mailfrom=metux.net
  (client-ip=212.227.126.130; helo=mout.kundenserver.de;
@@ -28,36 +28,33 @@ Authentication-Results: lists.ozlabs.org;
 Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.126.130])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44rrSg3LjwzDqYn
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 27 Apr 2019 22:53:15 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44rrSj5p8dzDqHv
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 27 Apr 2019 22:53:25 +1000 (AEST)
 Received: from orion.localdomain ([77.2.90.210]) by mrelayeu.kundenserver.de
  (mreue009 [212.227.15.167]) with ESMTPSA (Nemesis) id
- 1Mzz6s-1gXTgh3Td8-00x1Ur; Sat, 27 Apr 2019 14:52:37 +0200
+ 1M2OEw-1hM22x2IWM-003z2b; Sat, 27 Apr 2019 14:52:33 +0200
 From: "Enrico Weigelt, metux IT consult" <info@metux.net>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH 05/41] drivers: tty: serial: dz: use pr_info() instead of
- incomplete printk()
-Date: Sat, 27 Apr 2019 14:51:46 +0200
-Message-Id: <1556369542-13247-6-git-send-email-info@metux.net>
+Subject: serial drivers polishing
+Date: Sat, 27 Apr 2019 14:51:41 +0200
+Message-Id: <1556369542-13247-1-git-send-email-info@metux.net>
 X-Mailer: git-send-email 1.9.1
-In-Reply-To: <1556369542-13247-1-git-send-email-info@metux.net>
-References: <1556369542-13247-1-git-send-email-info@metux.net>
-X-Provags-ID: V03:K1:0divRPlMaEn/Gqkn0bF/qffr0mtJMzUIhhcgUCpKp3L8QfEx3BT
- Sct6DXQKPsKml0HbjLEbqZ0BVdAAcNgJ6gXOI6JC8K/1+PAe8EFl5Aq1lbdbexf9MvYSvJI
- wDh21F+qIQxeFuU3Myc3hkjl/lhNuC86c6zCO8DZIQRpkFEogbQN+oxEVR+QjYaXv/F2Er3
- D3Hg7fjgdOldNL+SYlAwQ==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:+RM97HlEygc=:XCYgbldeM4fHTujSYLo9ci
- ZNeOghoSWPCt1C8c6NBMLSfGNddK58lmCDc3rlfBH3ynfXNXoutb/zjRBWM8D3BIY49a4i4UE
- w61HuHHGGrE/nW055rXaTuGx9TatMuVoyD47DJXczfb3oO2GbP0EmAQmzpC+6kDBZdseEXdDC
- Q/7Dzh91Dv5viwhjSOg8QB3blGvc6npMCA3+LRAVdg7cmGKN+31NplbmdslmfdvUCt7Zt8txu
- wu1qVJ20ms6soMtiV40LnA1aD9QGbuHc7kSx8ChK0JcxawU9TBzFvD7nHcdQCkga/Pam6wIlh
- SozaRebsNHrmz6K0Nxx5GSTQPTFKcxIbQTjsZTv+UXWB6g6MdVA8xNYDMcxFB3I9a/OOa1+q6
- SDNeRbSCUbiTqPPGCr4Wlwd5pr0t1wGkI38yOimXepPKVf4067XO8agDegepX6eMqr1dnbVEl
- 7E6hKunNpdkhyB0sNKvUPq+uvwV2l/VdX95oOhRD4521oJmMRY3DJ+fuI9JwMF0+0d43RkioS
- NAq5fkYK+cja/PvgpcgRoKs9fOqvE/DvkG7oyD8aLe7kzR0MXQDK6+nm2GtMVAfo9rLlZIslt
- eYSqlXLx6iAbP5p7IGgKyS6G3mEq0IT3MizlVzwRrPBrTI6P7aSZVck/9N5HOec9ocrRvZ2zy
- eP3CmOH7ndIUhAxgSzvJujudRMq1laldwLQ9qL1Fz34ZpgICHygnXc7BQ2s/IBPS3Nvdokjth
- xKIhRxBJYIbWNhrxBOQ1AQzGdb2SfJPFzpfkeQ==
+X-Provags-ID: V03:K1:KJDamy/sLPxVA6+e/xJ3QUvJO2vZRQRZ7H0KMjcX3Xau2yWekpn
+ NpGyWcv0BdxhaW7aX7/vr2xwwxMEX+6774NoAKSIMs3MmeEZ+xYywOxnE2TTovvdXTrh2yJ
+ RNeD0ze+njam53jHsvoBAF38TFF8FCMFOboXlpNsaf5RaLhhCCBqtkthfNYpeDWcM41q4C0
+ CVkuapPP3KK3JkmPsaT5g==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:UgSrRnCWrUY=:7fJ0rhQipVcqjbOMouuuLX
+ HpGMJ1r9jBZF63ISf/g4eJR7MR4pim7nBhig4Jl6mL9rhhjlxhwR2qh1N4i4VbbUFcAAJS4Ir
+ 3ehiLQX6cqWnF50zJ7z21t0eDxTtPggAbzQRa+2t5Cjiod8h5Wb5R4iORC6PmyUH6vKKXXUM+
+ R9rHMmPwJ7xow24gQslekOboEkjLcPhRKBzHll9gB05PrKyGQOO6IpPuj6JsGixD3/SV3rmAI
+ WRreW0Q86/xSc9xzAZ/s0Tg16UGmFtYYzADiDOPYcz3bsuoRYHOUzjkSUBY7pks4GDFdjYMMY
+ J/JvztrHNATKtF+xcSdHOfYpteSdbEr/adF2EdyGRbxXQKt/TrGXW7mmq08GeH8Pf+Ddxxi57
+ gX4f5PaLFHVVAJwJNkdrPkVeh2oB4ZHHOgB7VwynKoG66tYGIwGyrt4JIE1NQxJ6/CCNQokSN
+ tV88raPuIGD29SSpSBLoPwxN2NaH59lI0OHOA+RLEySArhq2aDwIEO1siM+Ym55O0C23LpHF/
+ hhfoTRUvhYjfKChKVcwQzaBKOc6JX3KasD/lLqJOlFd4rOiG+bk5N2aqTqu9WhMZGPdByTTNn
+ dZijwtgoeZ/ESNSagGa5Wp6TuGjsZnfKLyqzZ9EJkEAL0lFMwoIHRDBYlKB3pdj5Z6vK9cpbZ
+ wU/2h8/Ce7j4rFZJwmpQfbVxZ6ipvpbPepnAyc6fl580YIKcwbDd50N+z74IAAonMBK2/PlY6
+ SM9MoLwOFEsiV5jP9jDXm+Fk2osf8+pzyh1JcQ==
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -81,30 +78,31 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Fix the checkpatch warning:
+Hello folks,
 
-    WARNING: printk() should include KERN_<LEVEL> facility level
-    #934: FILE: dz.c:934:
-    +	printk("%s%s\n", dz_name, dz_version);
 
-Signed-off-by: Enrico Weigelt <info@metux.net>
----
- drivers/tty/serial/dz.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+here's another attempt of polishing the serial drivers:
 
-diff --git a/drivers/tty/serial/dz.c b/drivers/tty/serial/dz.c
-index 559d076..e2670c4 100644
---- a/drivers/tty/serial/dz.c
-+++ b/drivers/tty/serial/dz.c
-@@ -931,7 +931,7 @@ static int __init dz_init(void)
- 	if (IOASIC)
- 		return -ENXIO;
- 
--	printk("%s%s\n", dz_name, dz_version);
-+	pr_info("%s%s\n", dz_name, dz_version);
- 
- 	dz_init_ports();
- 
--- 
-1.9.1
+* lots of minor cleanups to make checkpatch happier
+  (eg. formatting, includes, inttypes, ...)
+
+* use appropriate logging helpers instead of printk()
+
+* consequent use of mapsize/mapbase fields:
+  the basic idea is, all drivers should fill mapbase/mapbase fields at
+  init time and later only use those fields, instead of hardcoded values
+  (later on, we can add generic helpers for the map/unmap stuff, etc)
+
+* untwisting serial8250_port_size() at all:
+  move the iomem size probing to initialization time, move out some
+  platform specific magic to corresponding platform code, etc.
+
+
+Unfortunately, I don't have the actual hardware to really test all
+the code, so please let me know if there's something broken in here.
+
+
+have fun,
+
+--mtx
 
