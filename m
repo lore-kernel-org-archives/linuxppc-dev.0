@@ -6,57 +6,57 @@ X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
 	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 61CF9C43219
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Apr 2019 13:07:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B5A16C43218
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Apr 2019 13:09:48 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id DEC4C208C2
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Apr 2019 13:07:39 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DEC4C208C2
+	by mail.kernel.org (Postfix) with ESMTPS id 3F443208C2
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Apr 2019 13:09:48 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3F443208C2
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=metux.net
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44rrn6027tzDqB9
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Apr 2019 23:07:38 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44rrqZ0wtPzDqR7
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Apr 2019 23:09:46 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=none (mailfrom) smtp.mailfrom=metux.net
- (client-ip=212.227.126.187; helo=mout.kundenserver.de;
+ (client-ip=212.227.126.130; helo=mout.kundenserver.de;
  envelope-from=info@metux.net; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=metux.net
-Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.126.187])
+Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.126.130])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44rrSf478zzDqYW
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 27 Apr 2019 22:53:22 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44rrSg3JFmzDqYk
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 27 Apr 2019 22:53:15 +1000 (AEST)
 Received: from orion.localdomain ([77.2.90.210]) by mrelayeu.kundenserver.de
  (mreue009 [212.227.15.167]) with ESMTPSA (Nemesis) id
- 1MQ5nE-1h75AP44I4-00M2Ff; Sat, 27 Apr 2019 14:52:50 +0200
+ 1M26iv-1hMqrC03Wz-002bb0; Sat, 27 Apr 2019 14:52:43 +0200
 From: "Enrico Weigelt, metux IT consult" <info@metux.net>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH 19/41] drivers: tty: serial: apbuart: fix code formatting
-Date: Sat, 27 Apr 2019 14:52:00 +0200
-Message-Id: <1556369542-13247-20-git-send-email-info@metux.net>
+Subject: [PATCH 11/41] drivers: tty: serial: sb1250-duart: fix formatting error
+Date: Sat, 27 Apr 2019 14:51:52 +0200
+Message-Id: <1556369542-13247-12-git-send-email-info@metux.net>
 X-Mailer: git-send-email 1.9.1
 In-Reply-To: <1556369542-13247-1-git-send-email-info@metux.net>
 References: <1556369542-13247-1-git-send-email-info@metux.net>
-X-Provags-ID: V03:K1:pjIAjAgne4QqCMX+FIhXRp8twk2qiMY/VorT1FzzAauzfUv0f0K
- SouwmsHqH8JyEbDuRqNFwbEIDs+EyWcnB64N7nh/mWQM9zuPT5456futLRKhnzo2DzzmTAO
- S02Mck6t77pqC6132Z833rEpWkrhCHTZd9aBV6r93jE4Lyyveee4Vx4PENyVvPDGn5fzADC
- T1cnBnEc7a4HKVi45SoRA==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:hEOSQVkrBtY=:E2i1fxkjmB++cF1pgysgSC
- 8hsAb0Aq860XW0owLqBwUm2y5DJXO+V/Is8mFh4c9ru3QfeD9ojJIKExeE/gQMx2UOQEJgGRb
- nvrMAXOkXd1qYP1gKihMwQy9DHsjWbR3wxj+hp709JVyhiYnLw9UAD3t+5PPNn6ETAr98RQP2
- gHqDm/XUrKMU6kMIkWzlIgqfxdvTEA7d7CYJRA9+zsUFW6w+/kxNsRVEd2YH5fKzEWDZTB6mG
- AA1v18dy6/1w/Ta8+c1Z5r88c2mCOFG/kzIKZoFOpF02Re1cfPJiHtMPLpESpqBGkPJuT0pan
- wj5zbHmx+ec2NOcEAFhVUHZLEz20D89Udi/Cyt1T8qV0CmOeHhNQKA82G64fYOI5+TUIzx7QC
- obIBCK9wl1bRvMCTV4E/U6sBvRSiFWt5BcFHib/PhsHSUGo1Qoyf0VIUK6oReuSkCDZLub+8G
- Ob+eIhsXiwLKrxHAPOJ3mKdJEWu46k9EuJVL6xT+/FJe8XJTXXYFVmn8//sRTXHE9xnvp8m1O
- 1hpfUx4oFrpuxlBsYSu4W9shD60EHF2Zw/7FCtDHNOWT3igcd4Kn+PwMo93U88O8Llhwj4qEi
- 0CfcgMV9NBLuRd7LB5vp6/0Y+IfZe9HXOS6bEacBXOvat8PAAolbzxQuW8puvfRpBKG0XLB8X
- ofUclwTQPMphcmiPqlFXZf2nDhQxa57xuFpm3v4alrdRoOJx+GnGdJbV+E65VwyS+7GmnAy5B
- A0stBq2sqAbOn5qtmttutC8+4NSushVi0gD3aA==
+X-Provags-ID: V03:K1:+TzVLpdAa88s4dLeOAxWyCsRhuc7KaUZKNLF0uRArPgYGfXSgiH
+ Cc2vSSp3JHtH5Dh6TLARezDiIKDVv/NGSmiD/ku3dsWnfWOrtj1Cfj89ntRTXnSvx6PBKgU
+ dt1TF7JLIo4mMJjyQ165GdSVmp05k1wOQx9x8rk+vVa9HNdzhgzqFQ2ZALqM5/sIDIRqkKv
+ zpE63Uj8QixDSf+H4FfiQ==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:7g9mhemK6rI=:1LPea258+vT4cAu97il+UN
+ TYKyF9QgPM9xIe6eeQ+jqNe+ggTMLP2Rvkb4j9U9H13Sg9CbVn9iCrF0YTfPvJy7st+0uGM2f
+ /PnRFLO51z8114t2VgJaesPsgRavI/NG+JNJ7cfluxQbMaKGaxT6e/dwtJS7cjr1YYOomqA9G
+ muP/UMza5Daoz+E60ichje3jvTqidA4lMSrQ9I6Hysh36D1wrMiCAB8NPPvc4nrvaddLXw6wB
+ HgP1Z28SnAs7F4M7EpvU2+lQ0OTn37drJgeY/1adD+7p8We3CNEdSVlX/aiCHuYBdhtA0tQwk
+ twP7c4eBkXAVXYagsNKW0MBlXlR0YW7fkDWkpusCcqgmZEquGN++8kKA5YtYIXEcg1RQIv5ze
+ 3sYNpA8wkk3GGqvshvtdRF4i/V07DDAKHjaZS4rViY5umoot7vu2gWZ7lETfiboO5z0AnKiNW
+ ArDLwY9233EwB1kTHm54Jg7uCj6lRpmvrGsTo5d38MvHFBdNvTBRnyt2zIMulQmJtFb8kkKio
+ L5hyUjTr2yPVMh8mBfg+gFuzlyXZDST0R3Rsxc16FX1n2PRzy15BgDF5VnY6vbekE+syIAUnQ
+ CpezAGe8b0r4rC4XtzPF0T9lR/Pa1UWdKJH90iIIxuaLrBDvbaT57qKKbgRo+xkQtguPp6B41
+ KnkPQ1UxL/FbNXzdFiuI/RSGrM7xIsl18lv3lduPbUzSCDcj7qPBT1cj99Wx+ndaKrPl0OaXi
+ dDx2xwj2GagsyKcjT96JpuA4aPHWH0zLebvvLA==
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -80,141 +80,32 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Fix checkpatch warnings:
+checkpatch complains:
 
-    WARNING: line over 80 characters
-    #9: FILE: drivers/tty/serial/apbuart.c:9:
-    + *  Copyright (C) 2006 Daniel Hellstrom <daniel@gaisler.com>, Aeroflex Gaisler AB
+    ERROR: space required before the open parenthesis '('
+    #659: FILE: drivers/tty/serial/sb1250-duart.c:659:
+    +	if(refcount_dec_and_test(&duart->map_guard))
 
-    WARNING: line over 80 characters
-    #11: FILE: drivers/tty/serial/apbuart.c:11:
-    + *  Copyright (C) 2009 Kristoffer Glembo <kristoffer@gaisler.com>, Aeroflex Gaisler AB
-
-    WARNING: line over 80 characters
-    #16: FILE: drivers/tty/serial/apbuart.c:16:
-    +#if defined(CONFIG_SERIAL_GRLIB_GAISLER_APBUART_CONSOLE) && defined(CONFIG_MAGIC_SYSRQ)
-
-    WARNING: labels should not be indented
-    #122: FILE: drivers/tty/serial/apbuart.c:122:
-    +	      ignore_char:
-
-    WARNING: Missing a blank line after declarations
-    #186: FILE: drivers/tty/serial/apbuart.c:186:
-    +	unsigned int status = UART_GET_STATUS(port);
-    +	return status & UART_STATUS_THE ? TIOCSER_TEMT : 0;
-
-    WARNING: Missing a blank line after declarations
-    #322: FILE: drivers/tty/serial/apbuart.c:322:
-    +	int ret = 0;
-    +	if (ser->type != PORT_UNKNOWN && ser->type != PORT_APBUART)
-
-    WARNING: Missing a blank line after declarations
-    #427: FILE: drivers/tty/serial/apbuart.c:427:
-    +	unsigned int status;
-    +	do {
-
-    WARNING: Missing a blank line after declarations
-    #463: FILE: drivers/tty/serial/apbuart.c:463:
-    +		unsigned int quot, status;
-    +		status = UART_GET_STATUS(port);
-
-    WARNING: line over 80 characters
-    #627: FILE: drivers/tty/serial/apbuart.c:627:
-    +		port->membase = ioremap(addr, sizeof(struct grlib_apbuart_regs_map));
-
-    WARNING: line over 80 characters
-    #634: FILE: drivers/tty/serial/apbuart.c:634:
-    +		port->fifosize = apbuart_scan_fifo_size((struct uart_port *) port, line);
+Just add this missing space to make checkpatch happy.
 
 Signed-off-by: Enrico Weigelt <info@metux.net>
 ---
- drivers/tty/serial/apbuart.c | 22 +++++++++++++++-------
- 1 file changed, 15 insertions(+), 7 deletions(-)
+ drivers/tty/serial/sb1250-duart.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/tty/serial/apbuart.c b/drivers/tty/serial/apbuart.c
-index 89e19b6..515a562 100644
---- a/drivers/tty/serial/apbuart.c
-+++ b/drivers/tty/serial/apbuart.c
-@@ -6,12 +6,15 @@
-  *
-  *  Copyright (C) 2000 Deep Blue Solutions Ltd.
-  *  Copyright (C) 2003 Konrad Eisele <eiselekd@web.de>
-- *  Copyright (C) 2006 Daniel Hellstrom <daniel@gaisler.com>, Aeroflex Gaisler AB
-+ *  Copyright (C) 2006 Daniel Hellstrom <daniel@gaisler.com>,
-+ *                     Aeroflex Gaisler AB
-  *  Copyright (C) 2008 Gilead Kutnick <kutnickg@zin-tech.com>
-- *  Copyright (C) 2009 Kristoffer Glembo <kristoffer@gaisler.com>, Aeroflex Gaisler AB
-+ *  Copyright (C) 2009 Kristoffer Glembo <kristoffer@gaisler.com>,
-+ *                     Aeroflex Gaisler AB
-  */
+diff --git a/drivers/tty/serial/sb1250-duart.c b/drivers/tty/serial/sb1250-duart.c
+index ec74f09..0023ed0 100644
+--- a/drivers/tty/serial/sb1250-duart.c
++++ b/drivers/tty/serial/sb1250-duart.c
+@@ -656,7 +656,7 @@ static void sbd_release_port(struct uart_port *uport)
+ 	iounmap(uport->membase);
+ 	uport->membase = NULL;
  
--#if defined(CONFIG_SERIAL_GRLIB_GAISLER_APBUART_CONSOLE) && defined(CONFIG_MAGIC_SYSRQ)
-+#if defined(CONFIG_SERIAL_GRLIB_GAISLER_APBUART_CONSOLE) \
-+	&& defined(CONFIG_MAGIC_SYSRQ)
- #define SUPPORT_SYSRQ
- #endif
- 
-@@ -116,8 +119,7 @@ static void apbuart_rx_chars(struct uart_port *port)
- 
- 		uart_insert_char(port, rsr, UART_STATUS_OE, ch, flag);
- 
--
--	      ignore_char:
-+ignore_char:
- 		status = UART_GET_STATUS(port);
- 	}
- 
-@@ -181,6 +183,7 @@ static irqreturn_t apbuart_int(int irq, void *dev_id)
- static unsigned int apbuart_tx_empty(struct uart_port *port)
- {
- 	unsigned int status = UART_GET_STATUS(port);
-+
- 	return status & UART_STATUS_THE ? TIOCSER_TEMT : 0;
+-	if(refcount_dec_and_test(&duart->map_guard))
++	if (refcount_dec_and_test(&duart->map_guard))
+ 		release_mem_region(duart->mapctrl, DUART_CHANREG_SPACING);
+ 	release_mem_region(uport->mapbase, uport->mapsize);
  }
- 
-@@ -317,6 +320,7 @@ static int apbuart_verify_port(struct uart_port *port,
- 			       struct serial_struct *ser)
- {
- 	int ret = 0;
-+
- 	if (ser->type != PORT_UNKNOWN && ser->type != PORT_APBUART)
- 		ret = -EINVAL;
- 	if (ser->irq < 0 || ser->irq >= NR_IRQS)
-@@ -422,6 +426,7 @@ static void apbuart_flush_fifo(struct uart_port *port)
- static void apbuart_console_putchar(struct uart_port *port, int ch)
- {
- 	unsigned int status;
-+
- 	do {
- 		status = UART_GET_STATUS(port);
- 	} while (!UART_TX_READY(status));
-@@ -458,6 +463,7 @@ static void apbuart_console_putchar(struct uart_port *port, int ch)
- 	if (UART_GET_CTRL(port) & (UART_CTRL_RE | UART_CTRL_TE)) {
- 
- 		unsigned int quot, status;
-+
- 		status = UART_GET_STATUS(port);
- 
- 		*parity = 'n';
-@@ -622,14 +628,16 @@ static int __init grlib_apbuart_configure(void)
- 		port = &grlib_apbuart_ports[line];
- 
- 		port->mapbase = addr;
--		port->membase = ioremap(addr, sizeof(struct grlib_apbuart_regs_map));
-+		port->membase = ioremap(addr,
-+			sizeof(struct grlib_apbuart_regs_map));
- 		port->irq = 0;
- 		port->iotype = UPIO_MEM;
- 		port->ops = &grlib_apbuart_ops;
- 		port->flags = UPF_BOOT_AUTOCONF;
- 		port->line = line;
- 		port->uartclk = *freq_hz;
--		port->fifosize = apbuart_scan_fifo_size((struct uart_port *) port, line);
-+		port->fifosize = apbuart_scan_fifo_size(
-+			(struct uart_port *) port, line);
- 		line++;
- 
- 		/* We support maximum UART_NR uarts ... */
 -- 
 1.9.1
 
