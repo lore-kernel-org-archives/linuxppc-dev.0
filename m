@@ -2,65 +2,61 @@ Return-Path: <SRS0=Akx6=S5=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	MAILING_LIST_MULTI,SPF_PASS autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B2481C43218
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Apr 2019 11:51:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A4A3CC43218
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Apr 2019 12:56:51 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id CC317208C2
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Apr 2019 11:51:32 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="2ExrCDaI"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CC317208C2
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	by mail.kernel.org (Postfix) with ESMTPS id C55022087C
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Apr 2019 12:56:50 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C55022087C
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=metux.net
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44rq5H06HjzDqcV
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Apr 2019 21:51:31 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44rrXc1VyxzDqZT
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Apr 2019 22:56:48 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=kernel.org
- (client-ip=198.145.29.99; helo=mail.kernel.org; envelope-from=jic23@kernel.org;
- receiver=<UNKNOWN>)
+ spf=none (mailfrom) smtp.mailfrom=metux.net
+ (client-ip=212.227.126.130; helo=mout.kundenserver.de;
+ envelope-from=info@metux.net; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=kernel.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="2ExrCDaI"; 
- dkim-atps=neutral
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ dmarc=none (p=none dis=none) header.from=metux.net
+Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.126.130])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44rq3M6JckzDqRF
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 27 Apr 2019 21:49:51 +1000 (AEST)
-Received: from archlinux (cpc91196-cmbg18-2-0-cust659.5-4.cable.virginm.net
- [81.96.234.148])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id 33845208C2;
- Sat, 27 Apr 2019 11:49:44 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1556365789;
- bh=micoXllDruCvx3gGFlYFaFNFGyDXOM8yAbo6P5dAYeA=;
- h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
- b=2ExrCDaIak/HJASR4XsuGCZUxmgJS5UwpMQutPER+NyybPzWgCbu0qLe3JM0MXvw1
- oxi3Lu3fHqi6q9JBVOwLjmYMmjvWk2b18k4RtrnQ0RLej+twdB4Ti+SWXkaLKv40SH
- rhgpe21hzpDVCz0661W77VP0ANZaJNy08E0aipxk=
-Date: Sat, 27 Apr 2019 12:49:36 +0100
-From: Jonathan Cameron <jic23@kernel.org>
-To: Greg KH <gregkh@linuxfoundation.org>
-Subject: Re: [PATCH v10 00/18] Introduce the Counter subsystem
-Message-ID: <20190427124937.1a9920ea@archlinux>
-In-Reply-To: <20190425193624.GA11240@kroah.com>
-References: <cover.1554184734.git.vilhelm.gray@gmail.com>
- <20190407152550.451a7f63@archlinux>
- <20190425193624.GA11240@kroah.com>
-X-Mailer: Claws Mail 3.17.3 (GTK+ 2.24.32; x86_64-pc-linux-gnu)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44rrSd4JD1zDqYP
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 27 Apr 2019 22:53:21 +1000 (AEST)
+Received: from orion.localdomain ([77.2.90.210]) by mrelayeu.kundenserver.de
+ (mreue009 [212.227.15.167]) with ESMTPSA (Nemesis) id
+ 1MdeSn-1glaAQ1CHx-00ZjUI; Sat, 27 Apr 2019 14:52:47 +0200
+From: "Enrico Weigelt, metux IT consult" <info@metux.net>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH 16/41] drivers: tty: serial: uartlite: fix overlong lines
+Date: Sat, 27 Apr 2019 14:51:57 +0200
+Message-Id: <1556369542-13247-17-git-send-email-info@metux.net>
+X-Mailer: git-send-email 1.9.1
+In-Reply-To: <1556369542-13247-1-git-send-email-info@metux.net>
+References: <1556369542-13247-1-git-send-email-info@metux.net>
+X-Provags-ID: V03:K1:Ck93dTfp9+M+xebhyVSLDIJuo4MjSGOjDhbkWBRUIflN7U9qSCe
+ pUde8jE0w5A43JR5NuYza+AsYcjHeRQdVwFH5DfzOGQOqRZzgRch+fJcKukuNGfeEOytvZR
+ 5/10Xwz0fpHNGToPKDV3mQbY+HwaGvDTud8ym7VEBca8ousV2I6zja+sNCKPIsmKUiAW4+V
+ hJqAZT0gvkBV1/kztVb2Q==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:lFLVA5ANqXA=:+nwoqH7LETA5l4ZD6Cy0by
+ 9QQxF9w7JwL9dfUQLkTSklNQAm9TDaWBKAb/AK8KrfiMTcGzLt9Ee5RiujQGuJAuFYCa25OaW
+ PsRCxkE462T85gSy8Pd/1exhcYQsoX46KyLQ4ZKSeHvVV8tbKS/OwkFfGrRHmBQ8UlBeXLZK5
+ ebF4s0a/Z8QgHeSqLp8Mld3p8Su8UoV9Y8qvT6GUpcFbwp930569alSTM8wqnyrp9aFJ3bviY
+ wC6Tzx19GZ9/leyIqE3JEmv02FWM4Ec4A6QWgiqsopsuDAzIuR2eWi4DxrYaPHzxccOjVXhW2
+ RfH12CPwxeEkAGqjze7Djw/S5IYL86ng+BscK9UV3x0uudrqH2DvL3151YkbTo13FkHwqeNnW
+ DIe1MAVVKDPOOe4QN7noYVLhRj71YKuN4gMT/LJ+u880TUoLEHCWMILbm5ZFZyvlzBG6K47hU
+ 9N57YDdSPilc+UdCPlSqXcQ4hJByXjZkI6wRREnTfmyit5sfL61G8Cy9lTvJngnoKEflZ/q/D
+ +VkFl7qZhum7WEPeks7u2yKFDTGflXCZYn2mA1tQq+cnqN0OJ85RJZpWS9w6/wqjPbVQmeHnX
+ K1uOze3TXyWYC56Tqwpenyo+uVz9fCc59R4P6VjWRvoYFvUN2alVsNGhQFk7qhdBWZ+GW9efn
+ J+EJarUbpowxoppGXDdCKd50A08hfJxVUT6cLO8NZbGm/sKEm6hc8cXIke/czqdZS6Z34iUaH
+ iiO7jtF61oWxoOCw5a6wqJbKewrFO8VHKUZg/A==
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -72,70 +68,77 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: mark.rutland@arm.com, benjamin.gaignard@st.com, linux-pwm@vger.kernel.org,
- linux-iio@vger.kernel.org, patrick.havelange@essensium.com,
- thierry.reding@gmail.com, pmeerw@pmeerw.net, linux-api@vger.kernel.org,
- lars@metafoo.de, daniel.lezcano@linaro.org,
- linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org,
- david@lechnology.com, William Breathitt Gray <vilhelm.gray@gmail.com>,
- robh+dt@kernel.org, tglx@linutronix.de, fabrice.gasnier@st.com,
- esben@haabendal.dk, shawnguo@kernel.org, linux-kernel@vger.kernel.org,
- leoyang.li@nxp.com, knaack.h@gmx.de, akpm@linux-foundation.org,
- linuxppc-dev@lists.ozlabs.org
+Cc: lorenzo.pieralisi@arm.com, linux-ia64@vger.kernel.org,
+ linux-serial@vger.kernel.org, andrew@aj.id.au, gregkh@linuxfoundation.org,
+ sudeep.holla@arm.com, liviu.dudau@arm.com, linux-mips@vger.kernel.org,
+ vz@mleia.com, linux@prisktech.co.nz, sparclinux@vger.kernel.org,
+ khilman@baylibre.com, macro@linux-mips.org, slemieux.tyco@gmail.com,
+ matthias.bgg@gmail.com, jacmet@sunsite.dk, linux-amlogic@lists.infradead.org,
+ andriy.shevchenko@linux.intel.com, linuxppc-dev@lists.ozlabs.org,
+ davem@davemloft.net
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, 25 Apr 2019 21:36:24 +0200
-Greg KH <gregkh@linuxfoundation.org> wrote:
+Fix checkpatch warnings:
 
-> On Sun, Apr 07, 2019 at 03:25:50PM +0100, Jonathan Cameron wrote:
-> > On Tue,  2 Apr 2019 15:30:35 +0900
-> > William Breathitt Gray <vilhelm.gray@gmail.com> wrote:
-> >   
-> > > Changes in v10:
-> > >   - Fix minor typographical errors in documentation
-> > >   - Merge the FlexTimer Module Quadrature decoder counter driver patches
-> > > 
-> > > This revision is functionally identical to the last; changes in this
-> > > version were made to fix minor typos in the documentation files and also
-> > > to pull in the new FTM quadrature decoder counter driver.
-> > > 
-> > > The Generic Counter API has been and is still in a feature freeze until
-> > > it is merged into the mainline. The following features will be
-> > > investigated after the merge: interrupt support for counter devices, and
-> > > a character device interface for low-latency applications.  
-> > 
-> > Hi William / al,
-> > 
-> > So the question is how to move this forwards?  I'm happy with how it turned
-> > out and the existing drivers we had in IIO are a lot cleaner under
-> > the counter subsystem (other than the backwards compatibility for those that
-> > ever existed in IIO).  For those  not following closely the situation is:  
-> 
-> I've now sucked this into my staging-testing branch and if 0-day is fine
-> with it, I'll merge it to staging-next in a day or so.  This way you can
-> build on it for any iio drivers that might be coming.
+    WARNING: line over 80 characters
+    #283: FILE: drivers/tty/serial/uartlite.c:283:
+    +	ret = request_irq(port->irq, ulite_isr, IRQF_SHARED | IRQF_TRIGGER_RISING,
 
-Great thanks. 
+    WARNING: Missing a blank line after declarations
+    #577: FILE: drivers/tty/serial/uartlite.c:577:
+    +	struct earlycon_device *device = console->data;
+    +	uart_console_write(&device->port, s, n, early_uartlite_putc);
 
-> 
-> I do have reservations about that one sysfs file that is multi-line, and
-> I think it will come to bite you in the end over time, so I reserve the
-> right to say "I told you so" when that happens...
-> 
-> But, I don't have a better answer for it now, so don't really worry
-> about it :)
-> 
-> thanks,
-> 
-> greg k-h
+    WARNING: line over 80 characters
+    #590: FILE: drivers/tty/serial/uartlite.c:590:
+    +OF_EARLYCON_DECLARE(uartlite_b, "xlnx,opb-uartlite-1.00.b", early_uartlite_setup);
 
-Looks like a few late breaking comments came in, but nothing that can't
-be fixed up before this reaches a release.
+    WARNING: line over 80 characters
+    #591: FILE: drivers/tty/serial/uartlite.c:591:
+    +OF_EARLYCON_DECLARE(uartlite_a, "xlnx,xps-uartlite-1.00.a", early_uartlite_setup);
 
-Thanks,
+Signed-off-by: Enrico Weigelt <info@metux.net>
+---
+ drivers/tty/serial/uartlite.c | 10 +++++++---
+ 1 file changed, 7 insertions(+), 3 deletions(-)
 
-Jonathan
-
+diff --git a/drivers/tty/serial/uartlite.c b/drivers/tty/serial/uartlite.c
+index 6f79353..0140cec 100644
+--- a/drivers/tty/serial/uartlite.c
++++ b/drivers/tty/serial/uartlite.c
+@@ -280,7 +280,8 @@ static int ulite_startup(struct uart_port *port)
+ 		return ret;
+ 	}
+ 
+-	ret = request_irq(port->irq, ulite_isr, IRQF_SHARED | IRQF_TRIGGER_RISING,
++	ret = request_irq(port->irq, ulite_isr,
++			  IRQF_SHARED | IRQF_TRIGGER_RISING,
+ 			  "uartlite", port);
+ 	if (ret)
+ 		return ret;
+@@ -574,6 +575,7 @@ static void early_uartlite_write(struct console *console,
+ 				 const char *s, unsigned int n)
+ {
+ 	struct earlycon_device *device = console->data;
++
+ 	uart_console_write(&device->port, s, n, early_uartlite_putc);
+ }
+ 
+@@ -587,8 +589,10 @@ static int __init early_uartlite_setup(struct earlycon_device *device,
+ 	return 0;
+ }
+ EARLYCON_DECLARE(uartlite, early_uartlite_setup);
+-OF_EARLYCON_DECLARE(uartlite_b, "xlnx,opb-uartlite-1.00.b", early_uartlite_setup);
+-OF_EARLYCON_DECLARE(uartlite_a, "xlnx,xps-uartlite-1.00.a", early_uartlite_setup);
++OF_EARLYCON_DECLARE(uartlite_b, "xlnx,opb-uartlite-1.00.b",
++		    early_uartlite_setup);
++OF_EARLYCON_DECLARE(uartlite_a, "xlnx,xps-uartlite-1.00.a",
++		    early_uartlite_setup);
+ 
+ #endif /* CONFIG_SERIAL_UARTLITE_CONSOLE */
+ 
+-- 
+1.9.1
 
