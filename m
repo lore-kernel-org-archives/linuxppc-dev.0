@@ -3,22 +3,22 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
 X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3053DC43218
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Apr 2019 13:47:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C70D4C43218
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Apr 2019 13:48:56 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id A8B41208C2
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Apr 2019 13:47:02 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A8B41208C2
+	by mail.kernel.org (Postfix) with ESMTPS id 4C3E9208C2
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Apr 2019 13:48:56 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4C3E9208C2
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=metux.net
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44rsfX5djrzDqN5
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Apr 2019 23:47:00 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44rshk4xndzDqdm
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Apr 2019 23:48:54 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=none (mailfrom) smtp.mailfrom=metux.net
  (client-ip=212.227.126.134; helo=mout.kundenserver.de;
@@ -28,35 +28,36 @@ Authentication-Results: lists.ozlabs.org;
 Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.126.134])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44rrZw0hr1zDqZT
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 27 Apr 2019 22:58:47 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44rrZw49mvzDqZB
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 27 Apr 2019 22:58:48 +1000 (AEST)
 Received: from orion.localdomain ([77.2.90.210]) by mrelayeu.kundenserver.de
  (mreue009 [212.227.15.167]) with ESMTPSA (Nemesis) id
- 1MhUDj-1gqW7b2XwJ-00efAG; Sat, 27 Apr 2019 14:52:52 +0200
+ 1MmDAW-1gu8kq1m7s-00iDvn; Sat, 27 Apr 2019 14:52:40 +0200
 From: "Enrico Weigelt, metux IT consult" <info@metux.net>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH 22/41] drivers: tty: serial: cpm_uart: fix logging calls
-Date: Sat, 27 Apr 2019 14:52:03 +0200
-Message-Id: <1556369542-13247-23-git-send-email-info@metux.net>
+Subject: [PATCH 08/41] drivers: tty: serial: sb1250-duart: fix checkpatch
+ warning on printk()
+Date: Sat, 27 Apr 2019 14:51:49 +0200
+Message-Id: <1556369542-13247-9-git-send-email-info@metux.net>
 X-Mailer: git-send-email 1.9.1
 In-Reply-To: <1556369542-13247-1-git-send-email-info@metux.net>
 References: <1556369542-13247-1-git-send-email-info@metux.net>
-X-Provags-ID: V03:K1:6aniEe4uJcRcav5vVBfcQ4eLLFWMnqJpVC4vZyHJ9k0A6q/tn4j
- b9DaJRxToUGOhrA8XctR1mPhJ0cf7Ttk2f4rAFWNa3fQjR7YkDeiN3gu2Jkvl9J2LTCqub4
- NvWiLxdxAxFk1k9fhSMKs/EVAw4rvAGYukqY9dkQaz94+MijAkIVPXhEPMgivLXBUM8RACd
- PwxeoNLw6M7rcZKmGYaIg==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:4ae+pXryDgc=:mx0SCluB4vmxIoFPECpZI0
- I+pi99k37uAp/PBAy5oVXSCaXHiGTG6dqW38LtyfujehIJipGNKdaMmdazfpDadjAEgwWsmX4
- W7Und1DBuKx/nWHjtssgjEb+TBTcTmXzLurc8piE/KzQS8bd8JlSKed3+k452MwfKq3+35IzJ
- M6TyJgB8TUW0HJIysE0RjSi4sJqSgXl8rJscZAw2l13jHSnEj3/rJwrbQJJOFC5P1075DM+wk
- WGBZT4LjsbjnB2by0QUmFtCQAl7B060lVus4iVl5bwIgmLGtAuaVBUYl/Z8M3jLhLIqC0JAC6
- +mB3/lJgI2f1Nvs33f9bS5YcQiXmmfVenjRMrNi2di59SDG0jYAXnIpXY4sJs1ZAu8YnsZRsU
- 37osy93VtkEcKNvzLFbEG++IG89LRjdH9d8NQEr/K2M2oALKpj+kvh4dg3eHLDdXQxSdkD92B
- WVwAcm5EvCrGAxmiByZuHAzWoq3sJ4ZhAPePEUfJkAnCEaDkpN0tOu1XGCbELCMhCzuMdSC7j
- 391oyi6l66AnQpVtOW/xN4q0n/U6j6889kTq7oArvf5bOqS+CGWrt4GeHYMhDjJgb67JeV1O5
- VJObZETt5SKMQvcEzRSmPjDhRxKdNgWwD7Lycw/XQtIwLzDgn7tob6yNJiWhf2OPx8oDuVFhf
- 9EKWLB531/XmZjW8vl3u+dinoMueW3XdTJHfx8LQ1QRZKyfFcd5erZRfdf67oUUhcOFqLTE5w
- UM355inC0Yw+C74Qjz0UYWJgtfMZqucLadoUmw==
+X-Provags-ID: V03:K1:9XC3q0bfB2HQ4mApDU4u33n5sD/YoC7EqQPmqP5NMOedGA7sE7R
+ zQ+4UMW4bXxRANtgf2zvHO2GKXDxkdKE28JdO/iNudeY0F3mJ+xc3fTNvs7ITqMXpD+h9nY
+ QJb/I3M0+a59qd+LyzEcKpCXtBXjQ/BRgErxc0fambEKaAP14TyYVth7y55V4vy+3k5d+oN
+ x/fGxgcPqoZSgK+QJd3pA==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:mA+DGbL3pn0=:LUwdV9FCkWYd8ew6AybJGN
+ FyaYZYw27YD3za0BlTEdQTephU9v3aoDL7yH3xhlNPmX+5CM2PApdrigTC+ri8jcVQSmJ4rIZ
+ tzjIZ7eEfYrHTPgsrBV4gEVQdGY0ZDyZx1NWo7s2aamBco75jVJh9WQ6GrN3mZ3pI4Ap1jWtK
+ 6c1sGlcYAomFgphkq8BH0qiKX1Y9a9NmvUArm8RIzX+ly9033kZwLR5tQmOvy3Quox0DSlQpA
+ pYlu8M2iFL4kLArnCS1+1A0AfKy936ST8Yu7Wu5uWaQqtVEGOQWaJ50m/nf7mVYSWDnXDyy12
+ lThD0nacpT5LNSK+F8rEaZvKfHMnNKlSc0KVB302O4ivHoBJI2eutUcuwHocV7ib9006cTrD7
+ 53H7kaHqt3lZV0LWdJkX7kc1UqBSSDkp4MPliAr50IVqjE5IlH5Z3DlTDghsTQqsCzoKrKEtH
+ syFnn+I0PpYyNheAH3S8usOqqnfRFG/Ng1njF6jkgJ4p65qhFDaftDtLo0tLwn832At0vzYkN
+ qGuVhCVMlHTVDEfvhiwUGmRHwkmm/IObaZ7FHB9BRejjgeCmzOTnWdXmkapyDTcFhKGQ/WWu/
+ 1gJKhScFqVxhyDgpd3/Q8Zx//i/vYjTYm5fUY/Vv5d6srYHH97E0UzBIsSEdLPSRaUJEDpQM3
+ Gauk38ExJHTos8640rpLdqyTiLn/gAGfs8IlXPjViSeqlfTCehT7nmldWLacXvxvPgK6JCk8o
+ QHrstXkPJ7dKqqvFajXBPfihCad38hiIfrsyWA==
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -80,76 +81,54 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Fix checkpatch warnings by using pr_err():
+checkpatch complaints:
 
-    WARNING: Prefer [subsystem eg: netdev]_err([subsystem]dev, ... then dev_err(dev, ... then pr_err(...  to printk(KERN_ERR ...
-    #109: FILE: drivers/tty/serial/cpm_uart/cpm_uart_cpm2.c:109:
-    +		printk(KERN_ERR
+    WARNING: printk() should include KERN_<LEVEL> facility level
+    #698: FILE: drivers/tty/serial/sb1250-duart.c:698:
+    +		printk(err);
 
-    WARNING: Prefer [subsystem eg: netdev]_err([subsystem]dev, ... then dev_err(dev, ... then pr_err(...  to printk(KERN_ERR ...
-    #128: FILE: drivers/tty/serial/cpm_uart/cpm_uart_cpm2.c:128:
-    +		printk(KERN_ERR
+    WARNING: printk() should include KERN_<LEVEL> facility level
+    #706: FILE: drivers/tty/serial/sb1250-duart.c:706:
+    +			printk(err);
 
-    WARNING: Prefer [subsystem eg: netdev]_err([subsystem]dev, ... then dev_err(dev, ... then pr_err(...  to printk(KERN_ERR ...
-    +           printk(KERN_ERR
-
-    WARNING: Prefer [subsystem eg: netdev]_err([subsystem]dev, ... then dev_err(dev, ... then pr_err(...  to printk(KERN_ERR ...
-    +           printk(KERN_ERR
+Even though it's a false alarm here (the string is already prefixed
+w/ KERN_ERR), it's nicer to use pr_err() here, which also makes
+checkpatch happy.
 
 Signed-off-by: Enrico Weigelt <info@metux.net>
 ---
- drivers/tty/serial/cpm_uart/cpm_uart_cpm1.c | 6 ++----
- drivers/tty/serial/cpm_uart/cpm_uart_cpm2.c | 6 ++----
- 2 files changed, 4 insertions(+), 8 deletions(-)
+ drivers/tty/serial/sb1250-duart.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/tty/serial/cpm_uart/cpm_uart_cpm1.c b/drivers/tty/serial/cpm_uart/cpm_uart_cpm1.c
-index 56fc527..aed61e9 100644
---- a/drivers/tty/serial/cpm_uart/cpm_uart_cpm1.c
-+++ b/drivers/tty/serial/cpm_uart/cpm_uart_cpm1.c
-@@ -71,8 +71,7 @@ int cpm_uart_allocbuf(struct uart_cpm_port *pinfo, unsigned int is_con)
- 	dpmemsz = sizeof(cbd_t) * (pinfo->rx_nrfifos + pinfo->tx_nrfifos);
- 	dp_offset = cpm_dpalloc(dpmemsz, 8);
- 	if (IS_ERR_VALUE(dp_offset)) {
--		printk(KERN_ERR
--		       "cpm_uart_cpm1.c: could not allocate buffer descriptors\n");
-+		pr_err("cpm_uart_cpm1.c: could not allocate buffer descriptors\n");
- 		return -ENOMEM;
+diff --git a/drivers/tty/serial/sb1250-duart.c b/drivers/tty/serial/sb1250-duart.c
+index b4342c8..227af87 100644
+--- a/drivers/tty/serial/sb1250-duart.c
++++ b/drivers/tty/serial/sb1250-duart.c
+@@ -689,13 +689,13 @@ static int sbd_map_port(struct uart_port *uport)
+ 
+ static int sbd_request_port(struct uart_port *uport)
+ {
+-	const char *err = KERN_ERR "sbd: Unable to reserve MMIO resource\n";
++	const char *err = "sbd: Unable to reserve MMIO resource\n";
+ 	struct sbd_duart *duart = to_sport(uport)->duart;
+ 	int ret = 0;
+ 
+ 	if (!request_mem_region(uport->mapbase, DUART_CHANREG_SPACING,
+ 				"sb1250-duart")) {
+-		printk(err);
++		pr_err(err);
+ 		return -EBUSY;
  	}
- 	dp_mem = cpm_dpram_addr(dp_offset);
-@@ -90,8 +89,7 @@ int cpm_uart_allocbuf(struct uart_cpm_port *pinfo, unsigned int is_con)
- 
- 	if (mem_addr == NULL) {
- 		cpm_dpfree(dp_offset);
--		printk(KERN_ERR
--		       "cpm_uart_cpm1.c: could not allocate coherent memory\n");
-+		pr_err("cpm_uart_cpm1.c: could not allocate coherent memory\n");
- 		return -ENOMEM;
+ 	refcount_inc(&duart->map_guard);
+@@ -703,7 +703,7 @@ static int sbd_request_port(struct uart_port *uport)
+ 		if (!request_mem_region(duart->mapctrl, DUART_CHANREG_SPACING,
+ 					"sb1250-duart")) {
+ 			refcount_dec(&duart->map_guard);
+-			printk(err);
++			pr_err(err);
+ 			ret = -EBUSY;
+ 		}
  	}
- 
-diff --git a/drivers/tty/serial/cpm_uart/cpm_uart_cpm2.c b/drivers/tty/serial/cpm_uart/cpm_uart_cpm2.c
-index 40cfcf4..a0fccda 100644
---- a/drivers/tty/serial/cpm_uart/cpm_uart_cpm2.c
-+++ b/drivers/tty/serial/cpm_uart/cpm_uart_cpm2.c
-@@ -106,8 +106,7 @@ int cpm_uart_allocbuf(struct uart_cpm_port *pinfo, unsigned int is_con)
- 	dpmemsz = sizeof(cbd_t) * (pinfo->rx_nrfifos + pinfo->tx_nrfifos);
- 	dp_offset = cpm_dpalloc(dpmemsz, 8);
- 	if (IS_ERR_VALUE(dp_offset)) {
--		printk(KERN_ERR
--		       "cpm_uart_cpm.c: could not allocate buffer descriptors\n");
-+		pr_err("cpm_uart_cpm.c: could not allocate buffer descriptors\n");
- 		return -ENOMEM;
- 	}
- 
-@@ -125,8 +124,7 @@ int cpm_uart_allocbuf(struct uart_cpm_port *pinfo, unsigned int is_con)
- 
- 	if (mem_addr == NULL) {
- 		cpm_dpfree(dp_offset);
--		printk(KERN_ERR
--		       "cpm_uart_cpm.c: could not allocate coherent memory\n");
-+		pr_err("cpm_uart_cpm.c: could not allocate coherent memory\n");
- 		return -ENOMEM;
- 	}
- 
 -- 
 1.9.1
 
