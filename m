@@ -6,57 +6,57 @@ X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
 	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A4A3CC43218
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Apr 2019 12:56:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 62B51C43219
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Apr 2019 12:59:13 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C55022087C
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Apr 2019 12:56:50 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C55022087C
+	by mail.kernel.org (Postfix) with ESMTPS id DBAAC208C2
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Apr 2019 12:59:12 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DBAAC208C2
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=metux.net
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44rrXc1VyxzDqZT
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Apr 2019 22:56:48 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44rrbK5bPGzDqL2
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Apr 2019 22:59:09 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=none (mailfrom) smtp.mailfrom=metux.net
- (client-ip=212.227.126.130; helo=mout.kundenserver.de;
+ (client-ip=212.227.126.187; helo=mout.kundenserver.de;
  envelope-from=info@metux.net; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=metux.net
-Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.126.130])
+Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.126.187])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44rrSd4JD1zDqYP
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44rrSf0TZQzDqHv
  for <linuxppc-dev@lists.ozlabs.org>; Sat, 27 Apr 2019 22:53:21 +1000 (AEST)
 Received: from orion.localdomain ([77.2.90.210]) by mrelayeu.kundenserver.de
  (mreue009 [212.227.15.167]) with ESMTPSA (Nemesis) id
- 1MdeSn-1glaAQ1CHx-00ZjUI; Sat, 27 Apr 2019 14:52:47 +0200
+ 1MPXpS-1h7dOA2vUw-00MaDR; Sat, 27 Apr 2019 14:52:44 +0200
 From: "Enrico Weigelt, metux IT consult" <info@metux.net>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH 16/41] drivers: tty: serial: uartlite: fix overlong lines
-Date: Sat, 27 Apr 2019 14:51:57 +0200
-Message-Id: <1556369542-13247-17-git-send-email-info@metux.net>
+Subject: [PATCH 13/41] drivers: tty: serial: uartlite: fill mapsize and use it
+Date: Sat, 27 Apr 2019 14:51:54 +0200
+Message-Id: <1556369542-13247-14-git-send-email-info@metux.net>
 X-Mailer: git-send-email 1.9.1
 In-Reply-To: <1556369542-13247-1-git-send-email-info@metux.net>
 References: <1556369542-13247-1-git-send-email-info@metux.net>
-X-Provags-ID: V03:K1:Ck93dTfp9+M+xebhyVSLDIJuo4MjSGOjDhbkWBRUIflN7U9qSCe
- pUde8jE0w5A43JR5NuYza+AsYcjHeRQdVwFH5DfzOGQOqRZzgRch+fJcKukuNGfeEOytvZR
- 5/10Xwz0fpHNGToPKDV3mQbY+HwaGvDTud8ym7VEBca8ousV2I6zja+sNCKPIsmKUiAW4+V
- hJqAZT0gvkBV1/kztVb2Q==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:lFLVA5ANqXA=:+nwoqH7LETA5l4ZD6Cy0by
- 9QQxF9w7JwL9dfUQLkTSklNQAm9TDaWBKAb/AK8KrfiMTcGzLt9Ee5RiujQGuJAuFYCa25OaW
- PsRCxkE462T85gSy8Pd/1exhcYQsoX46KyLQ4ZKSeHvVV8tbKS/OwkFfGrRHmBQ8UlBeXLZK5
- ebF4s0a/Z8QgHeSqLp8Mld3p8Su8UoV9Y8qvT6GUpcFbwp930569alSTM8wqnyrp9aFJ3bviY
- wC6Tzx19GZ9/leyIqE3JEmv02FWM4Ec4A6QWgiqsopsuDAzIuR2eWi4DxrYaPHzxccOjVXhW2
- RfH12CPwxeEkAGqjze7Djw/S5IYL86ng+BscK9UV3x0uudrqH2DvL3151YkbTo13FkHwqeNnW
- DIe1MAVVKDPOOe4QN7noYVLhRj71YKuN4gMT/LJ+u880TUoLEHCWMILbm5ZFZyvlzBG6K47hU
- 9N57YDdSPilc+UdCPlSqXcQ4hJByXjZkI6wRREnTfmyit5sfL61G8Cy9lTvJngnoKEflZ/q/D
- +VkFl7qZhum7WEPeks7u2yKFDTGflXCZYn2mA1tQq+cnqN0OJ85RJZpWS9w6/wqjPbVQmeHnX
- K1uOze3TXyWYC56Tqwpenyo+uVz9fCc59R4P6VjWRvoYFvUN2alVsNGhQFk7qhdBWZ+GW9efn
- J+EJarUbpowxoppGXDdCKd50A08hfJxVUT6cLO8NZbGm/sKEm6hc8cXIke/czqdZS6Z34iUaH
- iiO7jtF61oWxoOCw5a6wqJbKewrFO8VHKUZg/A==
+X-Provags-ID: V03:K1:HsinThJYSBbvZXPfm+0O6kKUO+qcziVpNnYsjWaEzEiMEg9DSuK
+ dNf0rb/MCsWgo6VR685d/dBzsntfhucM9zdpec9KJhVPsvgZXFU+FHm2NA8+p9uNUoUt2t/
+ 97+mu3GZ0mzF7ACNEs/tQdl8KcWi9bu5JVWLna6RzeYMAWm9wnFG9XjorOOkAQTF4hi7dJB
+ W8BggkCEpEPmgsUJa1QKA==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:M2CupHkdprI=:t4eNWY5bS1vu92cW6qDWEU
+ ADcR+6Kg7dcevcZPeO14Esbr4UB1TouOkNfW01O86yvYnijA1sc/wnjYLbAFIt0rwXMyPKNGU
+ O/PioqNftTLrLR+ttFEWixd+2dV3vE30I4Ge56dkTfvUCXNuMnkxzEAZskQfusFSpau0qMp3m
+ 4B3eZ7QEbqsajYkwU+gX1wSdVckm7ohYMvPl92gqYlvK0WbrvXhR6X59BXzlQ+TeldpXpLkpt
+ qxNlzP/6DsfSHkrfCntzbFaD4FkxHXnhDUDngfu6J8I1XCkKuDwY7JEfPQIoyLB7Ao7TKq3gj
+ WIlU9tIg7jI/cufHOP/EkSmv0xP8qavjGQazjMDDC57vd+Jovtnwcp3n24xxplR6xxuT5tAwY
+ Wp9TEeiF0rZwe1z9tF6QztbHm2UaaNo2wv6I1A+IN6pVUFBFul9CnwmxQG81GmFjrhxWSgUtJ
+ IMMdF66BcOi48fIhcMfXtDWMpWDXC+uWdiPjeWhQk1RUYc6PrVeGQOYfhDHJelX7nkF9fOJvN
+ yjiW401cuK4NbC6nHAjZULv7zT8Ckza4ID+/BlH0wUfNAkj6i28hgOSsg58c6b5fMCXjyhkJL
+ 5R5FYtY9cs3sxNW2/qp+GIWH0qY3L7sI0LyA/aC3gm70d0HNqsoPZD49KGFdJ75JCDJrwlJ+l
+ +MfViqK0FaiihFHJPKgf95dVxASBqvUqvWXYZbU0XDUpXNVGBfQQpp5jxT6/y8t/byI8M1vTQ
+ ll/ztjVh1UtTy87vhydhWCwlP4maAW5p4lwI3g==
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -80,65 +80,59 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Fix checkpatch warnings:
+Fill the struct uart_port->mapsize field and use it, insteaf of
+hardcoded values in many places. This makes the code layout a bit
+more consistent and easily allows using generic helpers for the
+io memory handling.
 
-    WARNING: line over 80 characters
-    #283: FILE: drivers/tty/serial/uartlite.c:283:
-    +	ret = request_irq(port->irq, ulite_isr, IRQF_SHARED | IRQF_TRIGGER_RISING,
-
-    WARNING: Missing a blank line after declarations
-    #577: FILE: drivers/tty/serial/uartlite.c:577:
-    +	struct earlycon_device *device = console->data;
-    +	uart_console_write(&device->port, s, n, early_uartlite_putc);
-
-    WARNING: line over 80 characters
-    #590: FILE: drivers/tty/serial/uartlite.c:590:
-    +OF_EARLYCON_DECLARE(uartlite_b, "xlnx,opb-uartlite-1.00.b", early_uartlite_setup);
-
-    WARNING: line over 80 characters
-    #591: FILE: drivers/tty/serial/uartlite.c:591:
-    +OF_EARLYCON_DECLARE(uartlite_a, "xlnx,xps-uartlite-1.00.a", early_uartlite_setup);
+Candidates for such helpers could be eg. the request+ioremap and
+iounmap+release combinations.
 
 Signed-off-by: Enrico Weigelt <info@metux.net>
 ---
- drivers/tty/serial/uartlite.c | 10 +++++++---
- 1 file changed, 7 insertions(+), 3 deletions(-)
+ drivers/tty/serial/uartlite.c | 9 +++++----
+ 1 file changed, 5 insertions(+), 4 deletions(-)
 
 diff --git a/drivers/tty/serial/uartlite.c b/drivers/tty/serial/uartlite.c
-index 6f79353..0140cec 100644
+index 44d65bd..c322ab6 100644
 --- a/drivers/tty/serial/uartlite.c
 +++ b/drivers/tty/serial/uartlite.c
-@@ -280,7 +280,8 @@ static int ulite_startup(struct uart_port *port)
- 		return ret;
+@@ -342,7 +342,7 @@ static const char *ulite_type(struct uart_port *port)
+ 
+ static void ulite_release_port(struct uart_port *port)
+ {
+-	release_mem_region(port->mapbase, ULITE_REGION);
++	release_mem_region(port->mapbase, port->mapsize);
+ 	iounmap(port->membase);
+ 	port->membase = NULL;
+ }
+@@ -356,15 +356,15 @@ static int ulite_request_port(struct uart_port *port)
+ 		"ulite console: port=%p; port->mapbase=%llx\n",
+ 		 port, (unsigned long long) port->mapbase);
+ 
+-	if (!request_mem_region(port->mapbase, ULITE_REGION, "uartlite")) {
++	if (!request_mem_region(port->mapbase, port->mapsize, "uartlite")) {
+ 		dev_err(port->dev, "Memory region busy\n");
+ 		return -EBUSY;
  	}
  
--	ret = request_irq(port->irq, ulite_isr, IRQF_SHARED | IRQF_TRIGGER_RISING,
-+	ret = request_irq(port->irq, ulite_isr,
-+			  IRQF_SHARED | IRQF_TRIGGER_RISING,
- 			  "uartlite", port);
- 	if (ret)
- 		return ret;
-@@ -574,6 +575,7 @@ static void early_uartlite_write(struct console *console,
- 				 const char *s, unsigned int n)
- {
- 	struct earlycon_device *device = console->data;
-+
- 	uart_console_write(&device->port, s, n, early_uartlite_putc);
- }
+-	port->membase = ioremap(port->mapbase, ULITE_REGION);
++	port->membase = ioremap(port->mapbase, port->mapsize);
+ 	if (!port->membase) {
+ 		dev_err(port->dev, "Unable to map registers\n");
+-		release_mem_region(port->mapbase, ULITE_REGION);
++		release_mem_region(port->mapbase, port->mapsize);
+ 		return -EBUSY;
+ 	}
  
-@@ -587,8 +589,10 @@ static int __init early_uartlite_setup(struct earlycon_device *device,
- 	return 0;
- }
- EARLYCON_DECLARE(uartlite, early_uartlite_setup);
--OF_EARLYCON_DECLARE(uartlite_b, "xlnx,opb-uartlite-1.00.b", early_uartlite_setup);
--OF_EARLYCON_DECLARE(uartlite_a, "xlnx,xps-uartlite-1.00.a", early_uartlite_setup);
-+OF_EARLYCON_DECLARE(uartlite_b, "xlnx,opb-uartlite-1.00.b",
-+		    early_uartlite_setup);
-+OF_EARLYCON_DECLARE(uartlite_a, "xlnx,xps-uartlite-1.00.a",
-+		    early_uartlite_setup);
- 
- #endif /* CONFIG_SERIAL_UARTLITE_CONSOLE */
- 
+@@ -649,6 +649,7 @@ static int ulite_assign(struct device *dev, int id, u32 base, int irq,
+ 	port->iotype = UPIO_MEM;
+ 	port->iobase = 1; /* mark port in use */
+ 	port->mapbase = base;
++	port->mapsize = ULITE_REGION;
+ 	port->membase = NULL;
+ 	port->ops = &ulite_ops;
+ 	port->irq = irq;
 -- 
 1.9.1
 
