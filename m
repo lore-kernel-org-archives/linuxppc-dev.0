@@ -3,61 +3,61 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
 X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C70D4C43218
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Apr 2019 13:48:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3E5A6C43219
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Apr 2019 13:51:02 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 4C3E9208C2
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Apr 2019 13:48:56 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4C3E9208C2
+	by mail.kernel.org (Postfix) with ESMTPS id BA01521655
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Apr 2019 13:51:01 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BA01521655
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=metux.net
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44rshk4xndzDqdm
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Apr 2019 23:48:54 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44rsl71wk7zDqDY
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Apr 2019 23:50:59 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=none (mailfrom) smtp.mailfrom=metux.net
- (client-ip=212.227.126.134; helo=mout.kundenserver.de;
+ (client-ip=212.227.126.135; helo=mout.kundenserver.de;
  envelope-from=info@metux.net; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=metux.net
-Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.126.134])
+Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.126.135])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44rrZw49mvzDqZB
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 27 Apr 2019 22:58:48 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44rrZx3x8FzDqZT
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 27 Apr 2019 22:58:49 +1000 (AEST)
 Received: from orion.localdomain ([77.2.90.210]) by mrelayeu.kundenserver.de
  (mreue009 [212.227.15.167]) with ESMTPSA (Nemesis) id
- 1MmDAW-1gu8kq1m7s-00iDvn; Sat, 27 Apr 2019 14:52:40 +0200
+ 1MBltM-1hUJWA0Zhs-00CCVD; Sat, 27 Apr 2019 14:52:42 +0200
 From: "Enrico Weigelt, metux IT consult" <info@metux.net>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH 08/41] drivers: tty: serial: sb1250-duart: fix checkpatch
- warning on printk()
-Date: Sat, 27 Apr 2019 14:51:49 +0200
-Message-Id: <1556369542-13247-9-git-send-email-info@metux.net>
+Subject: [PATCH 10/41] drivers: tty: serial: sb1250-duart: fix missing
+ parentheses
+Date: Sat, 27 Apr 2019 14:51:51 +0200
+Message-Id: <1556369542-13247-11-git-send-email-info@metux.net>
 X-Mailer: git-send-email 1.9.1
 In-Reply-To: <1556369542-13247-1-git-send-email-info@metux.net>
 References: <1556369542-13247-1-git-send-email-info@metux.net>
-X-Provags-ID: V03:K1:9XC3q0bfB2HQ4mApDU4u33n5sD/YoC7EqQPmqP5NMOedGA7sE7R
- zQ+4UMW4bXxRANtgf2zvHO2GKXDxkdKE28JdO/iNudeY0F3mJ+xc3fTNvs7ITqMXpD+h9nY
- QJb/I3M0+a59qd+LyzEcKpCXtBXjQ/BRgErxc0fambEKaAP14TyYVth7y55V4vy+3k5d+oN
- x/fGxgcPqoZSgK+QJd3pA==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:mA+DGbL3pn0=:LUwdV9FCkWYd8ew6AybJGN
- FyaYZYw27YD3za0BlTEdQTephU9v3aoDL7yH3xhlNPmX+5CM2PApdrigTC+ri8jcVQSmJ4rIZ
- tzjIZ7eEfYrHTPgsrBV4gEVQdGY0ZDyZx1NWo7s2aamBco75jVJh9WQ6GrN3mZ3pI4Ap1jWtK
- 6c1sGlcYAomFgphkq8BH0qiKX1Y9a9NmvUArm8RIzX+ly9033kZwLR5tQmOvy3Quox0DSlQpA
- pYlu8M2iFL4kLArnCS1+1A0AfKy936ST8Yu7Wu5uWaQqtVEGOQWaJ50m/nf7mVYSWDnXDyy12
- lThD0nacpT5LNSK+F8rEaZvKfHMnNKlSc0KVB302O4ivHoBJI2eutUcuwHocV7ib9006cTrD7
- 53H7kaHqt3lZV0LWdJkX7kc1UqBSSDkp4MPliAr50IVqjE5IlH5Z3DlTDghsTQqsCzoKrKEtH
- syFnn+I0PpYyNheAH3S8usOqqnfRFG/Ng1njF6jkgJ4p65qhFDaftDtLo0tLwn832At0vzYkN
- qGuVhCVMlHTVDEfvhiwUGmRHwkmm/IObaZ7FHB9BRejjgeCmzOTnWdXmkapyDTcFhKGQ/WWu/
- 1gJKhScFqVxhyDgpd3/Q8Zx//i/vYjTYm5fUY/Vv5d6srYHH97E0UzBIsSEdLPSRaUJEDpQM3
- Gauk38ExJHTos8640rpLdqyTiLn/gAGfs8IlXPjViSeqlfTCehT7nmldWLacXvxvPgK6JCk8o
- QHrstXkPJ7dKqqvFajXBPfihCad38hiIfrsyWA==
+X-Provags-ID: V03:K1:Q5d+R5/xof5LSpkM+m/1QK4rIat5cet+2kq+5TbMlzlAg7YOwcq
+ yY6SxH8FWCXU0xZpYSh06YbjnruYS3jvbIaTQGqHoabIXLaqLV16hsMLD2TgWS4RStegv55
+ BXylfzMhBa4VLDqOgexGnNJRWU6fc3oOK3V503qwx9kOQsSqkjZe8MoxRvmw7LEmLadmc7U
+ bud6UfVRg0CpivgeZa72w==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:/cEwRct3WtI=:pGRTLNVHSidz524v/P9lm6
+ IOVXBlcHq3QwTLXY7qdfbOsmO0kZzTY9DTx5ix7/A3uo3ezoqe1VWaWDGX0zoIBdIfmRtNzJO
+ Zh1jHm3voTHDSPbCEJ9dkN/gyKRpp6P/CAYGSFbq2mauBYNr7hC3ffLEs7VoWceOoxO20UucM
+ ZlttfbP0hc4PosLUj9TslTn1UddpbJasul+p3sou9zjLca1N8EK4J1CVYxEtIZsHSCfWItyV0
+ E4ExbIIi+CGKhMXlD1KmaI/9ThDx9cVPVpg64Mlib82vMeorSJzLQMU9k1wLuLTCM9/3XcbQ0
+ vE9wooAIkGsyhG2W3XGMgeAyREF6m7kg2mZvTLpurBkFfUzWqvP6fLjBdT9A0+abArSnaGyik
+ Mu1Wk2nxkTMVS4+9bncH/Mhipy6wdFhikWt6VBeKmHgTwxELRmxkNbCdcRtATXUNn+1nsypkB
+ IC19IsFBQRDTQ65ePqnaYiUaMP8lwlIWWecCfsv11xW/pVUIiWAs5UaijESBvCZZ2loF5FPrA
+ 6lM1k65xGXC8xxkPngMYK0Lt1WFbdB13eV4TUsi4uKLAQpRk4jbh8Irc6s+g4YXhR9Gh6wLnQ
+ CNhhIuRAYIAAhWio+rzWPdHjXqaI36GFxnyd7xahyOu6s9wTpJFBAYdnY6qhQtt/p1fvFo7rM
+ 6H3x1rzpKrpXcECUbMc6IzMzRXHxDBKZRbk4prLOydpao5Rq3jW8mPxBjc/yMpnA2ixoisEjU
+ zECHSQedvsLx4EoCabl7MF4qKzBZ1f9BKI5oXw==
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -81,54 +81,30 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-checkpatch complaints:
+Fix checkpatch warning:
 
-    WARNING: printk() should include KERN_<LEVEL> facility level
-    #698: FILE: drivers/tty/serial/sb1250-duart.c:698:
-    +		printk(err);
-
-    WARNING: printk() should include KERN_<LEVEL> facility level
-    #706: FILE: drivers/tty/serial/sb1250-duart.c:706:
-    +			printk(err);
-
-Even though it's a false alarm here (the string is already prefixed
-w/ KERN_ERR), it's nicer to use pr_err() here, which also makes
-checkpatch happy.
+    ERROR: Macros with complex values should be enclosed in parentheses
+    #911: FILE: drivers/tty/serial/sb1250-duart.c:911:
+    +#define SERIAL_SB1250_DUART_CONSOLE	&sbd_console
 
 Signed-off-by: Enrico Weigelt <info@metux.net>
 ---
- drivers/tty/serial/sb1250-duart.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+ drivers/tty/serial/sb1250-duart.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/drivers/tty/serial/sb1250-duart.c b/drivers/tty/serial/sb1250-duart.c
-index b4342c8..227af87 100644
+index 1184226..ec74f09 100644
 --- a/drivers/tty/serial/sb1250-duart.c
 +++ b/drivers/tty/serial/sb1250-duart.c
-@@ -689,13 +689,13 @@ static int sbd_map_port(struct uart_port *uport)
+@@ -908,7 +908,7 @@ static int __init sbd_serial_console_init(void)
  
- static int sbd_request_port(struct uart_port *uport)
- {
--	const char *err = KERN_ERR "sbd: Unable to reserve MMIO resource\n";
-+	const char *err = "sbd: Unable to reserve MMIO resource\n";
- 	struct sbd_duart *duart = to_sport(uport)->duart;
- 	int ret = 0;
+ console_initcall(sbd_serial_console_init);
  
- 	if (!request_mem_region(uport->mapbase, DUART_CHANREG_SPACING,
- 				"sb1250-duart")) {
--		printk(err);
-+		pr_err(err);
- 		return -EBUSY;
- 	}
- 	refcount_inc(&duart->map_guard);
-@@ -703,7 +703,7 @@ static int sbd_request_port(struct uart_port *uport)
- 		if (!request_mem_region(duart->mapctrl, DUART_CHANREG_SPACING,
- 					"sb1250-duart")) {
- 			refcount_dec(&duart->map_guard);
--			printk(err);
-+			pr_err(err);
- 			ret = -EBUSY;
- 		}
- 	}
+-#define SERIAL_SB1250_DUART_CONSOLE	&sbd_console
++#define SERIAL_SB1250_DUART_CONSOLE	(&sbd_console)
+ #else
+ #define SERIAL_SB1250_DUART_CONSOLE	NULL
+ #endif /* CONFIG_SERIAL_SB1250_DUART_CONSOLE */
 -- 
 1.9.1
 
