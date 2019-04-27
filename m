@@ -3,22 +3,22 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
 X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 43796C43218
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Apr 2019 13:12:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5959BC43218
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Apr 2019 13:13:45 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 64C2D208C2
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Apr 2019 13:12:06 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 64C2D208C2
+	by mail.kernel.org (Postfix) with ESMTPS id D99A2208C2
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Apr 2019 13:13:44 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D99A2208C2
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=metux.net
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44rrtD2mghzDqc8
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Apr 2019 23:12:04 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44rrw66xxjzDqbh
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Apr 2019 23:13:42 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=none (mailfrom) smtp.mailfrom=metux.net
  (client-ip=212.227.126.130; helo=mout.kundenserver.de;
@@ -28,36 +28,36 @@ Authentication-Results: lists.ozlabs.org;
 Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.126.130])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44rrSg3J6jzDqYb
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44rrSg3LjwzDqYn
  for <linuxppc-dev@lists.ozlabs.org>; Sat, 27 Apr 2019 22:53:15 +1000 (AEST)
 Received: from orion.localdomain ([77.2.90.210]) by mrelayeu.kundenserver.de
  (mreue009 [212.227.15.167]) with ESMTPSA (Nemesis) id
- 1MWRZr-1hIx843db1-00XpY8; Sat, 27 Apr 2019 14:52:44 +0200
+ 1Mzz6s-1gXTgh3Td8-00x1Ur; Sat, 27 Apr 2019 14:52:37 +0200
 From: "Enrico Weigelt, metux IT consult" <info@metux.net>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH 12/41] drivers: tty: serial: uartlite: use dev_dbg() instead
- of pr_debug()
-Date: Sat, 27 Apr 2019 14:51:53 +0200
-Message-Id: <1556369542-13247-13-git-send-email-info@metux.net>
+Subject: [PATCH 05/41] drivers: tty: serial: dz: use pr_info() instead of
+ incomplete printk()
+Date: Sat, 27 Apr 2019 14:51:46 +0200
+Message-Id: <1556369542-13247-6-git-send-email-info@metux.net>
 X-Mailer: git-send-email 1.9.1
 In-Reply-To: <1556369542-13247-1-git-send-email-info@metux.net>
 References: <1556369542-13247-1-git-send-email-info@metux.net>
-X-Provags-ID: V03:K1:iKlivJb6BzLykaezfbMDcQZdn+ix2ooVfsC6tW0pEhl98LAPDeE
- JRRVgVcfczmetBZDaIj6bTxrIsuLJZWRq491LJqAx+h9NbgwnoIDbHxcrTYcX/2PcSRokum
- actVckV0OuFGgmAK7gUuP0HXW1/BSfc94DTxmg7pJbcD5SZVKeVCxYgAJklKBryYGvN1CJo
- ibF50Jd1+Py/n87SQbwsQ==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:u5P2g8JRH2I=:qGaH8ryqR7sUqOGrLtEnq0
- 2WfUNdHCnLg10s1ecEg65pn/njtDsMqOeP8gNEpxCMTzcWsLT9VA4DU3CEBVa3HCzjiKJcfHG
- eTHURytwvHGp7s9jZVE5iai0hKZDLmT9tnCMG0O5bDybrILrbz2OaCok/sor106qS90eCocZA
- WHMkOGw0j1qJeCv0leK1Z4fuVANM96a4sKdqYlnLL2v1g0Yy7Qv2BA/TyHUBS+K7r2RGhcM93
- TQCZfinRHziPPxnqY8q6GJipcuPVsuiLqzJC0H8npIwN2FnPLLAPYV/vgXo00WkXMfxjp7mWe
- s9cDM9K+72I9v9RY2NCSZ4HlPW78uNjLRoKXH9UI6yEUBsHch/+0OxFFZTB2NnEgI5hM4CxaA
- aW2LQCsOERK9kjsOnJFUi/mvk0axc5fq8TDylOAwQOSe0Nkpla45hTAsiHS221ZrBXCbrV5zA
- vp2fnOF01p7Eyj5ee/bkdEt+KrcA0YHPLrsTPFX/ReZeKT0iqAavOA1IICkPrbO/J9OgpkqPM
- +e5kU1Y2uDllo5BJ52L6yldoO9jgsv77olPmdDGKDcAfFx4RUBuMjYer7MOaRBSCwUzPaMwsD
- tgJ7G6LdN06zK0oIyp9V0oKzUCmMe1VTLSZaAIbSfUawtMPghR9Z49rdDsyfAYZ2DohkJIPTF
- xQn1Ht0ha1HyECC5uOoj7J38mbBQIygbj3uOhqVZj78SrVH8ls26OFebX6TDxvvF5GTZrl2n3
- rnTYYYquT1fzWtIJQj/tIvkv4pDPeDZLTev6ZQ==
+X-Provags-ID: V03:K1:0divRPlMaEn/Gqkn0bF/qffr0mtJMzUIhhcgUCpKp3L8QfEx3BT
+ Sct6DXQKPsKml0HbjLEbqZ0BVdAAcNgJ6gXOI6JC8K/1+PAe8EFl5Aq1lbdbexf9MvYSvJI
+ wDh21F+qIQxeFuU3Myc3hkjl/lhNuC86c6zCO8DZIQRpkFEogbQN+oxEVR+QjYaXv/F2Er3
+ D3Hg7fjgdOldNL+SYlAwQ==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:+RM97HlEygc=:XCYgbldeM4fHTujSYLo9ci
+ ZNeOghoSWPCt1C8c6NBMLSfGNddK58lmCDc3rlfBH3ynfXNXoutb/zjRBWM8D3BIY49a4i4UE
+ w61HuHHGGrE/nW055rXaTuGx9TatMuVoyD47DJXczfb3oO2GbP0EmAQmzpC+6kDBZdseEXdDC
+ Q/7Dzh91Dv5viwhjSOg8QB3blGvc6npMCA3+LRAVdg7cmGKN+31NplbmdslmfdvUCt7Zt8txu
+ wu1qVJ20ms6soMtiV40LnA1aD9QGbuHc7kSx8ChK0JcxawU9TBzFvD7nHcdQCkga/Pam6wIlh
+ SozaRebsNHrmz6K0Nxx5GSTQPTFKcxIbQTjsZTv+UXWB6g6MdVA8xNYDMcxFB3I9a/OOa1+q6
+ SDNeRbSCUbiTqPPGCr4Wlwd5pr0t1wGkI38yOimXepPKVf4067XO8agDegepX6eMqr1dnbVEl
+ 7E6hKunNpdkhyB0sNKvUPq+uvwV2l/VdX95oOhRD4521oJmMRY3DJ+fuI9JwMF0+0d43RkioS
+ NAq5fkYK+cja/PvgpcgRoKs9fOqvE/DvkG7oyD8aLe7kzR0MXQDK6+nm2GtMVAfo9rLlZIslt
+ eYSqlXLx6iAbP5p7IGgKyS6G3mEq0IT3MizlVzwRrPBrTI6P7aSZVck/9N5HOec9ocrRvZ2zy
+ eP3CmOH7ndIUhAxgSzvJujudRMq1laldwLQ9qL1Fz34ZpgICHygnXc7BQ2s/IBPS3Nvdokjth
+ xKIhRxBJYIbWNhrxBOQ1AQzGdb2SfJPFzpfkeQ==
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -81,37 +81,29 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Using dev_dbg() instead of pr_debg() for more consistent output.
-(prints device name, etc).
+Fix the checkpatch warning:
+
+    WARNING: printk() should include KERN_<LEVEL> facility level
+    #934: FILE: dz.c:934:
+    +	printk("%s%s\n", dz_name, dz_version);
 
 Signed-off-by: Enrico Weigelt <info@metux.net>
 ---
- drivers/tty/serial/uartlite.c | 6 ++++--
- 1 file changed, 4 insertions(+), 2 deletions(-)
+ drivers/tty/serial/dz.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/tty/serial/uartlite.c b/drivers/tty/serial/uartlite.c
-index b8b912b..44d65bd 100644
---- a/drivers/tty/serial/uartlite.c
-+++ b/drivers/tty/serial/uartlite.c
-@@ -352,7 +352,8 @@ static int ulite_request_port(struct uart_port *port)
- 	struct uartlite_data *pdata = port->private_data;
- 	int ret;
+diff --git a/drivers/tty/serial/dz.c b/drivers/tty/serial/dz.c
+index 559d076..e2670c4 100644
+--- a/drivers/tty/serial/dz.c
++++ b/drivers/tty/serial/dz.c
+@@ -931,7 +931,7 @@ static int __init dz_init(void)
+ 	if (IOASIC)
+ 		return -ENXIO;
  
--	pr_debug("ulite console: port=%p; port->mapbase=%llx\n",
-+	dev_dbg(port->dev,
-+		"ulite console: port=%p; port->mapbase=%llx\n",
- 		 port, (unsigned long long) port->mapbase);
+-	printk("%s%s\n", dz_name, dz_version);
++	pr_info("%s%s\n", dz_name, dz_version);
  
- 	if (!request_mem_region(port->mapbase, ULITE_REGION, "uartlite")) {
-@@ -519,7 +520,8 @@ static int ulite_console_setup(struct console *co, char *options)
- 
- 	/* Has the device been initialized yet? */
- 	if (!port->mapbase) {
--		pr_debug("console on ttyUL%i not present\n", co->index);
-+		dev_dbg(port->dev, "console on ttyUL%i not present\n",
-+			co->index);
- 		return -ENODEV;
- 	}
+ 	dz_init_ports();
  
 -- 
 1.9.1
