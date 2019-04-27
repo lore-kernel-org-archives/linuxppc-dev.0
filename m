@@ -6,58 +6,57 @@ X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
 	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6EFC4C43218
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Apr 2019 14:16:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D5797C43219
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Apr 2019 14:18:46 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E39052087F
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Apr 2019 14:16:57 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E39052087F
+	by mail.kernel.org (Postfix) with ESMTPS id 25D862087F
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Apr 2019 14:18:46 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 25D862087F
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=metux.net
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44rtK34cWgzDqGp
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 28 Apr 2019 00:16:55 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44rtM80yQrzDqfN
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 28 Apr 2019 00:18:44 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=none (mailfrom) smtp.mailfrom=metux.net
- (client-ip=212.227.126.130; helo=mout.kundenserver.de;
+ (client-ip=212.227.126.135; helo=mout.kundenserver.de;
  envelope-from=info@metux.net; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=metux.net
-Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.126.130])
+Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.126.135])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44rrbN602fzDqZQ
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 27 Apr 2019 22:59:12 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44rrbP5DwpzDqL2
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 27 Apr 2019 22:59:13 +1000 (AEST)
 Received: from orion.localdomain ([77.2.90.210]) by mrelayeu.kundenserver.de
  (mreue009 [212.227.15.167]) with ESMTPSA (Nemesis) id
- 1M4bA6-1hJp7z0BBm-001m7B; Sat, 27 Apr 2019 14:53:09 +0200
+ 1N79q8-1ghy553AGC-017Rst; Sat, 27 Apr 2019 14:53:03 +0200
 From: "Enrico Weigelt, metux IT consult" <info@metux.net>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH 41/41] drivers: tty: serial: lpc32xx_hs: fill mapsize and use
- it
-Date: Sat, 27 Apr 2019 14:52:22 +0200
-Message-Id: <1556369542-13247-42-git-send-email-info@metux.net>
+Subject: [PATCH 35/41] drivers: tty: serial: 8250: add mapsize to platform data
+Date: Sat, 27 Apr 2019 14:52:16 +0200
+Message-Id: <1556369542-13247-36-git-send-email-info@metux.net>
 X-Mailer: git-send-email 1.9.1
 In-Reply-To: <1556369542-13247-1-git-send-email-info@metux.net>
 References: <1556369542-13247-1-git-send-email-info@metux.net>
-X-Provags-ID: V03:K1:NfvV5UR6Ok9kQv6ROMSW720NbVRt8zJA2j6SiVCta9zO0Jw5F68
- oDYmpeAiqIZsk1sS86lqn4+pdFZWevIEnEZ69zvk7cMJbxGvaG9S0AMXx6E3vAMZVzd7pPE
- dnjPcyK+WGDDc90Ms7ezLEUDc+ruGvc0EkFIZ+8daJJAv3bsvnnSUMXjXwFBnPEgLp6qoWu
- RKq97jOfEVGzQSAvfA3Lw==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:o0QwINSBCvI=:5NwwQl1Esd8QIcblEooFY8
- Wij0Blkkux3UaAKJGKSU7YRC2R/jgAt2BXt6ThqrZ+n9BW81xL1tkiHaY1L+G+NJdOP5kCfvb
- IEvhWTyHlfvSzifLjcE8u6ZIx4gQUqz5p21jIODouYUuJrOZANuiWfsDOYdeAHFkS9Hm6GEB3
- V29ZGJs8hAL9WOfO0rq7M+5dVuYDtzQHJsUWY7sUmrPOV9UYwtkzssIWY8dTZ47KlIghDkuOQ
- Jaq5NlFi7oJE7GO+3ky1ra/yMW0jNYG8XlDGkyp5hZT+29QQftgBHwPeiHsgr8eYYyKn9CUQ/
- EURBexcU4XMM6c6xyqhlhIB/4UTob3psDcR8azBtMbc8CQDYzoTcmr30WEPS52gjjiwu49Dog
- 6+lYOhU0jAWfE9lLzrHpEDwHyyN8R0cbOB9iQ+Io3XHv8A9uT88rXhySDd3QrxyWl/A9pOht2
- vtM1Av0FTLQHWv0y5uWiMyUmicPKb47gIRemAA/Vs8vw3IPKQRUk78ZlBxm4f/j/ofFd2cOVi
- gCccn/Wxze8mP+G5e/EYNr469DGCTNau9a5adTze8eBcF13hOo6siMkcIcf2Y40FXToBd5s0s
- Ud8zUJZwkWhEGMUKn+6a6PUyVEbHA9EuFQsSnD+aOYctuTsIRkDmosMnRfYoSSGm1Xj7gbxYd
- xiKcMy8Fjzd8cryiboYVSUn1kiV+QJIjwLEL7u0SsnmBt1Nl3eM0/0HPWaZzTW2lQl/Zuovvn
- 9KBQvtzuAb44Iwd1p7dTE3ibpht0hS8/dIsxZg==
+X-Provags-ID: V03:K1:JcK0nmXUqvVZov6FpygbFCYx2SBIMbt8YBo1Pyu7lLXpjQoFRY+
+ pUU91A2VFsC0opVj58fPkR0Q6FJXQi2dkc/wvSXJs1UuyFbz9fA4rXDWaSqNdJmI+Ni3NVN
+ GCHT5mxv7iA219z7s0oyXnMLdcGAYrX/sQa9g9+0osWcxqkU8TBbfxVPdIH8z0lkkec4VUA
+ Jy3EMpSULncwPlRSUSCNg==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:YDpImvGn3R8=:tgBoeB5JmWkHrPT4D/H2bm
+ ke4Q5ukVTCE5Dh1f6v4e0aRP4j6Ev4/57TeKYe9VpFxmrapQ0dWX4RVryt7CL8BOZdUERiFnT
+ EfqZCmSPOCkvF7DI1UBcwBtOFo78mnudVVbujkzyeK0kOOnXUUYFU3jin5uwHinOiaT+VSgox
+ 37Xs5VIaI7hWvLoRn6xwFIu3+DZASQ/0yf03sw06aQcaoyRvKDnnkyGeqEsXuEMN8tilEQVNG
+ 64P6JtvqI6//joeXrhz9ayj9md5nP2NrHFqch/S1t9x7llzxVDVYnDh5oboQ9HyyOT9bnpDPV
+ 6K8iQfqBzHG6sKpzPPCo/A7aTNYz3v8hGoBhF9h89K10hft/ZHR+72X8UsL87DgUAlb/We368
+ wmcqZP8eZHKQaQjOeZ07ozi/9PICbl0AeSPZ663XRzHSalGy+nWlZ14JzV3w0fl2YcTO8RtUx
+ nZQoC5amxNmn7kpUWk6pZeQnIkQ8XhXq3iQEosa9nBMR57L7WhggiAurttYpP18NHXYEp78o5
+ yltBNHch9g6KpNyD3Y8e4Nj7ZJPE8gWqZGDQ+erCKIVdWJXL7f7ehe6i2CLEKnJkX5scK9Zv/
+ IQa+Nv1uvo+8/7Z9HtdYj1ysjkj3PKQGfoGBiP99Z/Jinw7/2+ZP8bCMwG1qVHh17FlE+g0Nv
+ mBoHGzoU9yDNdWh/BVlWpFBAjYMpDyHRSgtix/xw7G/hLbyX424T9N+wZTUK9Yx40NcA6YnAg
+ jvq2X4S3DIGaoGdyuuFkJzMkjl+JxdsplJBPpg==
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -81,59 +80,52 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Fill the struct uart_port->mapsize field and use it, insteaf of
-hardcoded values in many places. This makes the code layout a bit
-more consistent and easily allows using generic helpers for the
-io memory handling.
+Adding a mapsize field for the 8250 port platform data struct,
+so we can now set the resource size (eg. *1) and don't need
+funny runtime detections like serial8250_port_size() anymore.
 
-Candidates for such helpers could be eg. the request+ioremap and
-iounmap+release combinations.
+For now, serial8250_port_size() is called everytime we need
+the io resource size. That function checks which chip we
+actually have and returns the appropriate size. This approach
+is a bit clumpsy and not entirely easy to understand, and
+it's a violation of layers :p
+
+Obviously, that information cannot change after the driver init,
+so we can safely do that probing once on driver init and just
+use the stored value later.
+
+*1) arch/mips/alchemy/common/platform.c
 
 Signed-off-by: Enrico Weigelt <info@metux.net>
 ---
- drivers/tty/serial/lpc32xx_hs.c | 12 ++++++++----
- 1 file changed, 8 insertions(+), 4 deletions(-)
+ drivers/tty/serial/8250/8250_core.c | 1 +
+ include/linux/serial_8250.h         | 1 +
+ 2 files changed, 2 insertions(+)
 
-diff --git a/drivers/tty/serial/lpc32xx_hs.c b/drivers/tty/serial/lpc32xx_hs.c
-index f4e27d0..d1f09aa 100644
---- a/drivers/tty/serial/lpc32xx_hs.c
-+++ b/drivers/tty/serial/lpc32xx_hs.c
-@@ -579,7 +579,7 @@ static void serial_lpc32xx_release_port(struct uart_port *port)
- 			port->membase = NULL;
- 		}
- 
--		release_mem_region(port->mapbase, SZ_4K);
-+		release_mem_region(port->mapbase, port->mapsize);
- 	}
- }
- 
-@@ -590,12 +590,15 @@ static int serial_lpc32xx_request_port(struct uart_port *port)
- 	if ((port->iotype == UPIO_MEM32) && (port->mapbase)) {
- 		ret = 0;
- 
--		if (!request_mem_region(port->mapbase, SZ_4K, MODNAME))
-+		if (!request_mem_region(port->mapbase,
-+					port->mapsize, MODNAME))
- 			ret = -EBUSY;
- 		else if (port->flags & UPF_IOREMAP) {
--			port->membase = ioremap(port->mapbase, SZ_4K);
-+			port->membase = ioremap(port->mapbase,
-+						port->mapsize);
- 			if (!port->membase) {
--				release_mem_region(port->mapbase, SZ_4K);
-+				release_mem_region(port->mapbase,
-+						   port->mapsize);
- 				ret = -ENOMEM;
- 			}
- 		}
-@@ -684,6 +687,7 @@ static int serial_hs_lpc32xx_probe(struct platform_device *pdev)
- 		return -ENXIO;
- 	}
- 	p->port.mapbase = res->start;
-+	p->port.mapsize = SZ_4K;
- 	p->port.membase = NULL;
- 
- 	ret = platform_get_irq(pdev, 0);
+diff --git a/drivers/tty/serial/8250/8250_core.c b/drivers/tty/serial/8250/8250_core.c
+index e441221..71a398b 100644
+--- a/drivers/tty/serial/8250/8250_core.c
++++ b/drivers/tty/serial/8250/8250_core.c
+@@ -814,6 +814,7 @@ static int serial8250_probe(struct platform_device *dev)
+ 		uart.port.iotype	= p->iotype;
+ 		uart.port.flags		= p->flags;
+ 		uart.port.mapbase	= p->mapbase;
++		uart.port.mapsize	= p->mapsize;
+ 		uart.port.hub6		= p->hub6;
+ 		uart.port.private_data	= p->private_data;
+ 		uart.port.type		= p->type;
+diff --git a/include/linux/serial_8250.h b/include/linux/serial_8250.h
+index 5a655ba..8b8183a 100644
+--- a/include/linux/serial_8250.h
++++ b/include/linux/serial_8250.h
+@@ -22,6 +22,7 @@ struct plat_serial8250_port {
+ 	unsigned long	iobase;		/* io base address */
+ 	void __iomem	*membase;	/* ioremap cookie or NULL */
+ 	resource_size_t	mapbase;	/* resource base */
++	resource_size_t	mapsize;	/* resource size */
+ 	unsigned int	irq;		/* interrupt number */
+ 	unsigned long	irqflags;	/* request_irq flags */
+ 	unsigned int	uartclk;	/* UART clock rate */
 -- 
 1.9.1
 
