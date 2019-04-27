@@ -6,57 +6,58 @@ X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
 	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 450F2C43218
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Apr 2019 13:56:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7294CC43218
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Apr 2019 13:59:18 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id BA2022087F
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Apr 2019 13:56:58 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BA2022087F
+	by mail.kernel.org (Postfix) with ESMTPS id DF59D2087F
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Apr 2019 13:59:17 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DF59D2087F
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=metux.net
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44rst03bB8zDqdm
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Apr 2019 23:56:56 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44rswg0ysXzDqDC
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Apr 2019 23:59:15 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=none (mailfrom) smtp.mailfrom=metux.net
- (client-ip=212.227.126.187; helo=mout.kundenserver.de;
+ (client-ip=212.227.126.130; helo=mout.kundenserver.de;
  envelope-from=info@metux.net; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=metux.net
-Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.126.187])
+Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.126.130])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44rrZy5wqCzDqZQ
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44rrZz248HzDqLJ
  for <linuxppc-dev@lists.ozlabs.org>; Sat, 27 Apr 2019 22:58:50 +1000 (AEST)
 Received: from orion.localdomain ([77.2.90.210]) by mrelayeu.kundenserver.de
  (mreue009 [212.227.15.167]) with ESMTPSA (Nemesis) id
- 1MRCFw-1h5zEz3V3s-00N8iN; Sat, 27 Apr 2019 14:52:57 +0200
+ 1MNss4-1h9I592Io4-00OFB5; Sat, 27 Apr 2019 14:52:39 +0200
 From: "Enrico Weigelt, metux IT consult" <info@metux.net>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH 28/41] drivers: tty: serial: sunzilog: fix includes
-Date: Sat, 27 Apr 2019 14:52:09 +0200
-Message-Id: <1556369542-13247-29-git-send-email-info@metux.net>
+Subject: [PATCH 07/41] drivers: tty: serial: sb1250-duart: include
+ <linux/io.h> instead of <asm/io.h>
+Date: Sat, 27 Apr 2019 14:51:48 +0200
+Message-Id: <1556369542-13247-8-git-send-email-info@metux.net>
 X-Mailer: git-send-email 1.9.1
 In-Reply-To: <1556369542-13247-1-git-send-email-info@metux.net>
 References: <1556369542-13247-1-git-send-email-info@metux.net>
-X-Provags-ID: V03:K1:Vc4oNRhzaq0GImBAR5CgiZ+whb77bqy0PxtEF5afHcYFvx1oVZb
- siNewF36P93CZkzncVMQnr4mlIS/A8kCZTaukIk2D/GuBtTc3OHRLhlyKjwaq32J2XmrRlB
- f2vNOVy/3BrWxRfFIWguM5CtYi1a+WcUK3nW67RriXOHA4rE+69skktXGN0uJRmUq+H07n0
- K1/tFtsXXjzqS2NXo4RKA==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:G0FFOz0EZw8=:++ICmXO2GpSRcz5hEx2aD1
- 6E5IZz1xZtFc7Bo28D7Xa3YToLuKovidLGz1GvSDCBlRbtmk8MK9qrVEI2YEjK+HM3U3bywBn
- LRybOfgF+YyOp6mswgWhe5WdwQoR0c9nyr36aCKrwuWTPgmBSw98+8ywzd68Xs+Las1Mlx1f9
- dUm270h0Wg1e/wLzu9nUDWuw48qqgJ168lyoA5imIC9NaqH86TAH8rz3GeIeBPtMtQEzE6DIt
- I8ThOIAmO1UUcZ3PqHcpVYcw05Fbdoohq9QKNnWtyeMyNbaCN8mTaFdi1l6g1BBgIYg+X2Jrj
- DVHENskQwNZ1s51Nlu/0wkdKIxageCgYWL+LkXzWjossPOzmG+0ZeFUlCJGkkulQjGYFHNVu7
- K6f8K554rlG4uVrfNHmY7xsE8QIvjxC16WXp4+S2EfS0w+hxxPxLEpHgbIL/pLZ7PV8x8vFik
- BI1fGxW5LJWb+GfNLHwaHssIgGGtCmqDJXguu9xOtkNMizGemLWhYdEh17ZtADTRoT2d1xNuU
- +ShLqyULGCOEb0LAcoc5JbANgDjXSC8N9pBrdxpaFInjJF8mEYP50Fhw0cZnWigtHw1jmD2mo
- zgTJySrDGamBlm3MDPgw9bAWhSSnPFIZbd48ITRqfUKllwyuO2zJ3MUH4JZBmhkxbVQ50udtP
- LGI5ngTEsXOlW9iXua+0UlGmcT52hvjDTTZ8Ypc+Z+XZnydbY+MrEg0oHi/h0MzubG7u4bcTn
- 2HxNiSx73lWVfMdqk86PstJKN9CQsrISP70IiA==
+X-Provags-ID: V03:K1:rdRXb5foI78ZUKXg0PVAe5Z5nzYlAxuzsWdK2nGI/ZCG+/6jRlM
+ hI3kp/kBUUgLKHfqLAS7fc8k7GQ2ADy4ZKXhqdqZiryVc7Z/Z2r9L5PNnJpvCGJ5Wm3QKlp
+ qfPO4bQ3xuErAjl1GwNDMV08O2NC44IuFF/UesW2Ttt/YM+Ee5ZbuxprWyPUKJV4WjcRcmA
+ KbeNYOb/RogJgZxW+H2Qg==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:jvvsYo9LuQY=:0CBFF1B+GF8XcuC/OEGe+u
+ lE4du1nr2BxJUF3un6Key4aTFwXC9M1MP7vy6bRFShSWpMf0LqNeZ0PIMA0Boouqvq/LrWtch
+ Bk8WIgPTVxONhX5cGTvv16KtAPX0N4Fc9XShLvZ3WIf85Pb8B1cmctvJO+91Vowqbv+OcZI7t
+ u+klW1Y8h/XcHrCaCI9URzloY+8Skh09MjkRvd8JImBxErSZR4TrV4lBw/vZvh3JRZ3nDa87F
+ 2Ofw4ntjWDHq9/4ydwL8/MS8Ra0tJ7FucapkGNCI03gw6bHg/Zq4CUz1NxvvtMpgxBnM44EhT
+ 2A3Z5OphsucVUhbQFEvQY9hXMAtMHGW4rZOtjflDCKjXwJn18oRU+SQ/6LI35sYnI0g+RNJXj
+ tcWYqG4u9L0O8K8B4QVhUS7hRnlp2mbXd445I0YV8wXTD24XSK5SWOLFwReIA2lMQsJebO8bf
+ kOYGnaMypkS+rVMNELRAxXUQTHj6gaeBgDMuxEmFbm0dchrEnZ00FbAiLxbs/e9Y/E/n9X0Eq
+ o+xS5zS5vti1O/IP6Ues2fjQ1nTyVd/xw4wMImB6WzxwnZmNp0YWHbZLvjJL63nIoXq9Qz+BJ
+ x7N9TE7pgE2XwhIytU04iiIwK8ScI8APYxb0YztNJoFdEZciwryk1L+87RQy/1IYdGGBwWFcL
+ QUDI0D0Z4viNgV6YKzf3QKqTOX97ZXwOA6V8297sBPuZdKsbJllrR12CsQvQnG8kj12Fs0lKS
+ H6/3+9ybOTfmXynKHeq0NbNED/Mh0mZepeJ+kw==
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -83,28 +84,27 @@ Sender: "Linuxppc-dev"
 Fix checkpatch warning:
 
     WARNING: Use #include <linux/io.h> instead of <asm/io.h>
-    #38: FILE: drivers/tty/serial/sunzilog.c:38:
+    #41: FILE: drivers/tty/serial/sb1250-duart.c:41:
     +#include <asm/io.h>
 
 Signed-off-by: Enrico Weigelt <info@metux.net>
 ---
- drivers/tty/serial/sunzilog.c | 2 +-
+ drivers/tty/serial/sb1250-duart.c | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/tty/serial/sunzilog.c b/drivers/tty/serial/sunzilog.c
-index 17b0520..85edb0d 100644
---- a/drivers/tty/serial/sunzilog.c
-+++ b/drivers/tty/serial/sunzilog.c
-@@ -34,8 +34,8 @@
- #endif
- #include <linux/init.h>
- #include <linux/of_device.h>
-+#include <linux/io.h>
+diff --git a/drivers/tty/serial/sb1250-duart.c b/drivers/tty/serial/sb1250-duart.c
+index 655961c..b4342c8 100644
+--- a/drivers/tty/serial/sb1250-duart.c
++++ b/drivers/tty/serial/sb1250-duart.c
+@@ -38,7 +38,7 @@
+ #include <linux/types.h>
  
+ #include <linux/refcount.h>
 -#include <asm/io.h>
- #include <asm/irq.h>
- #include <asm/prom.h>
- #include <asm/setup.h>
++#include <linux/io.h>
+ #include <asm/war.h>
+ 
+ #include <asm/sibyte/sb1250.h>
 -- 
 1.9.1
 
