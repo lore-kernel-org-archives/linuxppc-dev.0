@@ -1,97 +1,90 @@
 Return-Path: <SRS0=Akx6=S5=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-X-Spam-Level: 
-X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Level: *
+X-Spam-Status: No, score=1.8 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
+	DKIM_INVALID,DKIM_SIGNED,FSL_HELO_FAKE,HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_MUTT autolearn=no autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id F1314C43219
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Apr 2019 05:13:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E1097C43219
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Apr 2019 06:02:12 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 76B87208C2
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Apr 2019 05:13:16 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 76B87208C2
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 24260208C2
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Apr 2019 06:02:12 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=google.com header.i=@google.com header.b="sQgZM+n9"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 24260208C2
+Authentication-Results: mail.kernel.org; dmarc=fail (p=reject dis=none) header.from=google.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44rfFk54YMzDqT4
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Apr 2019 15:13:14 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44rgL94LlKzDqXC
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Apr 2019 16:02:09 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
- (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=julietk@linux.ibm.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=google.com
+ (client-ip=2607:f8b0:4864:20::442; helo=mail-pf1-x442.google.com;
+ envelope-from=walken@google.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ dmarc=pass (p=reject dis=none) header.from=google.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=google.com header.i=@google.com header.b="sQgZM+n9"; 
+ dkim-atps=neutral
+Received: from mail-pf1-x442.google.com (mail-pf1-x442.google.com
+ [IPv6:2607:f8b0:4864:20::442])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44rP516H0RzDqXC
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 27 Apr 2019 05:19:49 +1000 (AEST)
-Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x3QJFVMY130627
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Apr 2019 15:19:45 -0400
-Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2s45588bj9-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Apr 2019 15:19:45 -0400
-Received: from localhost
- by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <julietk@linux.ibm.com>;
- Fri, 26 Apr 2019 20:19:44 +0100
-Received: from b03cxnp08028.gho.boulder.ibm.com (9.17.130.20)
- by e34.co.us.ibm.com (192.168.1.134) with IBM ESMTP SMTP Gateway: Authorized
- Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Fri, 26 Apr 2019 20:19:42 +0100
-Received: from b03ledav003.gho.boulder.ibm.com
- (b03ledav003.gho.boulder.ibm.com [9.17.130.234])
- by b03cxnp08028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x3QJJfk38913254
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Fri, 26 Apr 2019 19:19:41 GMT
-Received: from b03ledav003.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id DA7956A05A;
- Fri, 26 Apr 2019 19:19:40 +0000 (GMT)
-Received: from b03ledav003.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id C26256A057;
- Fri, 26 Apr 2019 19:19:40 +0000 (GMT)
-Received: from ltcalpine2-lp21.aus.stglabs.ibm.com (unknown [9.40.195.230])
- by b03ledav003.gho.boulder.ibm.com (Postfix) with ESMTP;
- Fri, 26 Apr 2019 19:19:40 +0000 (GMT)
-Received: by ltcalpine2-lp21.aus.stglabs.ibm.com (Postfix, from userid 0)
- id D2C8A16111B; Fri, 26 Apr 2019 15:19:39 -0400 (EDT)
-Date: Fri, 26 Apr 2019 15:19:39 -0400
-From: Juliet Kim<julietk@linux.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH]powerpc/mobility: Serialize PRRN and LPM in device tree update
-User-Agent: Heirloom mailx 12.5 7/5/10
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44rgJ431nDzDqV8
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 27 Apr 2019 16:00:18 +1000 (AEST)
+Received: by mail-pf1-x442.google.com with SMTP id 10so2723743pfo.5
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Apr 2019 23:00:18 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=20161025;
+ h=date:from:to:cc:subject:message-id:references:mime-version
+ :content-disposition:content-transfer-encoding:in-reply-to
+ :user-agent; bh=9mSKg2SIvsOs/xLgAIl2pXj2eMJ9JaMiTd4MI5nAg04=;
+ b=sQgZM+n9Be/cWtzN8fNus9HazrNXXo2P9TnRXJ3OGXR/7LV1xuaW4rJA/roFhqf0TY
+ mQCS64dg1TtuGiotH0xCet3pe1hS8IOvRcqAhBIgfyzwhLE/9ZwL2Gwe40/zd/NnkU+7
+ VrpMs8JFZ+ZUVmL6NL9u579BqupyJRMM5thKTY4byen+ygGpp6uuta11/qVxM0mde7gT
+ NUJBfmXhweZUqn604h85jwvMEvFMmU1yG1Zy3ng8ZZlB4JTgg7O9/oy6VPt9CsqUZm4n
+ K+HJubSlTziMfSj9ObPIOHOr59uF1HZw9VN8rdH7MqooI+xJn3y98FDtNsW803OpqSrv
+ MhuA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+ :mime-version:content-disposition:content-transfer-encoding
+ :in-reply-to:user-agent;
+ bh=9mSKg2SIvsOs/xLgAIl2pXj2eMJ9JaMiTd4MI5nAg04=;
+ b=Nv0J/VkzCUNRlzxOZtou+GbkR7OJcrcPCkFBW0zIyGce4O/eunNLPknAaGN11Gr6TT
+ 2rLxj9AuZ/kPk2j9j0Dg4DUqc0uwN8sQXohW9Je37s+ayYKlS+oZdDGcr6lxKoybDONJ
+ HTetTbM3YmSC+c57JWZ4RWJL457aCJu1uqhfuAw/31MQMW51xoRsxsBHp6+G5mF43Pkk
+ 95XSFh7hN0ipfqTTbwB7GX5fOVYCT4SgzavBjEgvTw95RvBDiIFddeHJkD6MT4UBNptE
+ iJjtX9aTxQroo4Ayo6Ds3LypwkhIWJ+/9k923kw02myfdbdIR+hf+8tgwI4wGdhpeQEW
+ cveA==
+X-Gm-Message-State: APjAAAUK3ScNFreLrMYx1cglpxsPPYxo+zRWKYSyDoMx+tDksASLmpDO
+ upaSZVAeIu7f5kvp9fi2oG8VJw==
+X-Google-Smtp-Source: APXvYqxBrLQLYOhjC06ttH0oS4iTEZciWxGcpCjxLxO6REBckClVky6ibhEZSIdbT3pUDWmo5ZD8Gw==
+X-Received: by 2002:a65:408b:: with SMTP id t11mr8911128pgp.372.1556344814717; 
+ Fri, 26 Apr 2019 23:00:14 -0700 (PDT)
+Received: from google.com ([2620:15c:2cd:202:668d:6035:b425:3a3a])
+ by smtp.gmail.com with ESMTPSA id u62sm44711410pfa.124.2019.04.26.23.00.12
+ (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
+ Fri, 26 Apr 2019 23:00:13 -0700 (PDT)
+Date: Fri, 26 Apr 2019 23:00:10 -0700
+From: Michel Lespinasse <walken@google.com>
+To: Laurent Dufour <ldufour@linux.ibm.com>
+Subject: Re: [PATCH v12 00/31] Speculative page faults
+Message-ID: <20190427060010.GB174296@google.com>
+References: <20190416134522.17540-1-ldufour@linux.ibm.com>
+ <CANN689F1h9XoHPzr_FQY2WfN5bb2TTd6M3HLqoJ-DQuHkNbA7g@mail.gmail.com>
+ <aadc7b03-9121-6800-341b-6f2849088a09@linux.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-X-TM-AS-GCONF: 00
-x-cbid: 19042619-0016-0000-0000-000009A77640
-X-IBM-SpamModules-Scores: 
-X-IBM-SpamModules-Versions: BY=3.00011000; HX=3.00000242; KW=3.00000007;
- PH=3.00000004; SC=3.00000285; SDB=6.01194774; UDB=6.00626437; IPR=6.00975609; 
- MB=3.00026612; MTD=3.00000008; XFM=3.00000015; UTC=2019-04-26 19:19:43
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19042619-0017-0000-0000-000042F8A2C1
-Message-Id: <5cc359cb.vtkUQVWEs1xLqLLf%julietk@linux.ibm.com>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2019-04-26_13:, , signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- malwarescore=0 suspectscore=1 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1810050000 definitions=main-1904260130
-X-Mailman-Approved-At: Sat, 27 Apr 2019 15:04:36 +1000
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <aadc7b03-9121-6800-341b-6f2849088a09@linux.ibm.com>
+User-Agent: Mutt/1.10.1 (2018-07-13)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -103,83 +96,77 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: nathanl@linux.ibm.com, mmc@linux.ibm.com, mwb@linux.ibm.com
+Cc: Jan Kara <jack@suse.cz>, sergey.senozhatsky.work@gmail.com,
+ Peter Zijlstra <peterz@infradead.org>, Will Deacon <will.deacon@arm.com>,
+ Michal Hocko <mhocko@kernel.org>, linux-mm <linux-mm@kvack.org>,
+ Paul Mackerras <paulus@samba.org>, Punit Agrawal <punitagrawal@gmail.com>,
+ "H. Peter Anvin" <hpa@zytor.com>, Mike Rapoport <rppt@linux.ibm.com>,
+ Alexei Starovoitov <alexei.starovoitov@gmail.com>,
+ Andrea Arcangeli <aarcange@redhat.com>, Andi Kleen <ak@linux.intel.com>,
+ Minchan Kim <minchan@kernel.org>, aneesh.kumar@linux.ibm.com, x86@kernel.org,
+ Matthew Wilcox <willy@infradead.org>,
+ Daniel Jordan <daniel.m.jordan@oracle.com>, Ingo Molnar <mingo@redhat.com>,
+ David Rientjes <rientjes@google.com>,
+ "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+ Haiyan Song <haiyanx.song@intel.com>, Nick Piggin <npiggin@gmail.com>,
+ sj38.park@gmail.com, Jerome Glisse <jglisse@redhat.com>, dave@stgolabs.net,
+ kemi.wang@intel.com, "Kirill A. Shutemov" <kirill@shutemov.name>,
+ Thomas Gleixner <tglx@linutronix.de>, zhong jiang <zhongjiang@huawei.com>,
+ Ganesh Mahendran <opensource.ganesh@gmail.com>,
+ Yang Shi <yang.shi@linux.alibaba.com>, linuxppc-dev@lists.ozlabs.org,
+ LKML <linux-kernel@vger.kernel.org>,
+ Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
+ vinayak menon <vinayakm.list@gmail.com>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Tim Chen <tim.c.chen@linux.intel.com>, haren@linux.vnet.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Fix extending start/stop topology update scope during LPM
-Commit 65b9fdadfc4d ("powerpc/pseries/mobility: Extend start/stop
-topology update scope") made the change to the duration that 
-topology updates are suppressed during LPM to allow the complete 
-device tree update which leaves the property update notifier
-unregistered until device tree update completes. This prevents
-topology update during LPM.  
+On Wed, Apr 24, 2019 at 08:01:20PM +0200, Laurent Dufour wrote:
+> Le 22/04/2019 à 23:29, Michel Lespinasse a écrit :
+> > Hi Laurent,
+> > 
+> > Thanks a lot for copying me on this patchset. It took me a few days to
+> > go through it - I had not been following the previous iterations of
+> > this series so I had to catch up. I will be sending comments for
+> > individual commits, but before tat I would like to discuss the series
+> > as a whole.
+> 
+> Hi Michel,
+> 
+> Thanks for reviewing this series.
+> 
+> > I think these changes are a big step in the right direction. My main
+> > reservation about them is that they are additive - adding some complexity
+> > for speculative page faults - and I wonder if it'd be possible, over the
+> > long term, to replace the existing complexity we have in mmap_sem retry
+> > mechanisms instead of adding to it. This is not something that should
+> > block your progress, but I think it would be good, as we introduce spf,
+> > to evaluate whether we could eventually get all the way to removing the
+> > mmap_sem retry mechanism, or if we will actually have to keep both.
+> 
+> Until we get rid of the mmap_sem which seems to be a very long story, I
+> can't see how we could get rid of the retry mechanism.
 
-Instead, use mutex_lock, which serializes LPM and PRRN operation 
-in pseries_devicetree_update.
+Short answer: I'd like spf to be extended to handle file vmas,
+populating page tables, and the vm_normal_page thing, so that we
+wouldn't have to fall back to the path that grabs (and possibly
+has to drop) the read side mmap_sem.
 
-Signed-off-by: Juliet Kim <julietk@linux.ibm.com>
+Even doing the above, there are still cases spf can't solve - for
+example, gup, or the occasional spf abort, or even the case of a large
+mmap/munmap delaying a smaller one. I think replacing mmap_sem with a
+reader/writer interval lock would be a very nice generic solution to
+this problem, allowing false conflicts to proceed in parallel, while
+synchronizing true conflicts which is exactly what we want. But I
+don't think such a lock can be implemented efficiently enough to be
+put on the page fault fast-path, so I think spf could be the solution
+there - it would allow us to skip taking that interval lock on most
+page faults. The other places where we use mmap_sem are not as critical
+for performance (they normally operate on a larger region at a time)
+so I think we could afford the interval lock in those places.
 
- arch/powerpc/platforms/pseries/mobility.c | 17 +++++++++++++----
- 1 file changed, 13 insertions(+), 4 deletions(-)
-
-diff --git a/arch/powerpc/platforms/pseries/mobility.c b/arch/powerpc/platforms/pseries/mobility.c
-index 88925f8ca8a0..3a79ded056fd 100644
---- a/arch/powerpc/platforms/pseries/mobility.c
-+++ b/arch/powerpc/platforms/pseries/mobility.c
-@@ -42,6 +42,8 @@ struct update_props_workarea {
- #define MIGRATION_SCOPE	(1)
- #define PRRN_SCOPE -2
- 
-+static DEFINE_MUTEX(dt_affinity_mutex);
-+
- static int mobility_rtas_call(int token, char *buf, s32 scope)
- {
- 	int rc;
-@@ -270,13 +272,19 @@ int pseries_devicetree_update(s32 scope)
- 	int update_nodes_token;
- 	int rc;
- 
-+	mutex_lock(&dt_affinity_mutex);
-+
- 	update_nodes_token = rtas_token("ibm,update-nodes");
--	if (update_nodes_token == RTAS_UNKNOWN_SERVICE)
-+	if (update_nodes_token == RTAS_UNKNOWN_SERVICE) {
-+		mutex_unlock(&dt_affinity_mutex);
- 		return -EINVAL;
-+	}
- 
- 	rtas_buf = kzalloc(RTAS_DATA_BUF_SIZE, GFP_KERNEL);
--	if (!rtas_buf)
-+	if (!rtas_buf) {
-+		mutex_unlock(&dt_affinity_mutex);
- 		return -ENOMEM;
-+	}
- 
- 	do {
- 		rc = mobility_rtas_call(update_nodes_token, rtas_buf, scope);
-@@ -316,6 +324,7 @@ int pseries_devicetree_update(s32 scope)
- 	} while (rc == 1);
- 
- 	kfree(rtas_buf);
-+	mutex_unlock(&dt_affinity_mutex);
- 	return rc;
- }
- 
-@@ -371,10 +380,10 @@ static ssize_t migration_store(struct class *class,
- 	if (rc)
- 		return rc;
- 
--	post_mobility_fixup();
--
- 	start_topology_update();
- 
-+	post_mobility_fixup();
-+
- 	return count;
- }
- 
 -- 
-2.12.3
-
+Michel "Walken" Lespinasse
+A program is never fully debugged until the last user dies.
