@@ -3,22 +3,22 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
 X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0C1DFC43219
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Apr 2019 14:08:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3AA60C43219
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Apr 2019 14:10:50 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 79B412064A
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Apr 2019 14:08:45 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 79B412064A
+	by mail.kernel.org (Postfix) with ESMTPS id AF1AA2064A
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Apr 2019 14:10:49 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org AF1AA2064A
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=metux.net
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44rt7b3cMCzDqCG
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 28 Apr 2019 00:08:43 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44rt9z5w4CzDqG6
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 28 Apr 2019 00:10:47 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=none (mailfrom) smtp.mailfrom=metux.net
  (client-ip=212.227.126.134; helo=mout.kundenserver.de;
@@ -28,36 +28,36 @@ Authentication-Results: lists.ozlabs.org;
 Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.126.134])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44rrb817JpzDqZ3
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 27 Apr 2019 22:58:59 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44rrbK0TtwzDqLX
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 27 Apr 2019 22:59:08 +1000 (AEST)
 Received: from orion.localdomain ([77.2.90.210]) by mrelayeu.kundenserver.de
  (mreue009 [212.227.15.167]) with ESMTPSA (Nemesis) id
- 1MVNF1-1hBGYO2EDP-00SLNE; Sat, 27 Apr 2019 14:52:59 +0200
+ 1M2wCi-1hLTog0PAy-003R4p; Sat, 27 Apr 2019 14:53:02 +0200
 From: "Enrico Weigelt, metux IT consult" <info@metux.net>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH 30/41] drivers: tty: serial: ioc4_serial: use dev_warn()
- instead of printk()
-Date: Sat, 27 Apr 2019 14:52:11 +0200
-Message-Id: <1556369542-13247-31-git-send-email-info@metux.net>
+Subject: [PATCH 33/41] drivers: tty: serial: zs: use dev_err() instead of
+ printk()
+Date: Sat, 27 Apr 2019 14:52:14 +0200
+Message-Id: <1556369542-13247-34-git-send-email-info@metux.net>
 X-Mailer: git-send-email 1.9.1
 In-Reply-To: <1556369542-13247-1-git-send-email-info@metux.net>
 References: <1556369542-13247-1-git-send-email-info@metux.net>
-X-Provags-ID: V03:K1:feZjQEPGewpWSo2bykBkAQkXP9Lb/ZtVsJ70Hc9aX4own7v09FA
- e65s7fBpQb+RWeo/XsvBCLQDRKkUOdSWYbg6QCmXdWbNheYrxgq5Ys1L3nrokeJAVzT8JZ+
- 6QZ7hrXczsjiQ2m1ogHA/r87Uy8zuLwqRpXTsIxH63Kg2ZR+GURXbvN2XWzuqCWUQaBZhlg
- o8S6PJbm8wTsqW6D1wobQ==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:nHmHVGZ+sFw=:XEUcLjplSSh4cLN3S86osQ
- RRbCB7db/0vzL9crkypDqE14Bon4jX8tkQp+cV84NUEPnutsi1rZQXkR4sVogL2UAX1EfdiiB
- ZWKYz5bKoCvZlKSiftMKZUka/T9wvECXHUhnEKxzzueMi2of8Uxue3lfBBkJH9b8PZkdj/aBu
- hAVrybHlnoB+Hts3s4Qq9Yy5z2frg+23hoDafdGDKzIJ0fvLfEsLMDIFMxm7LE/J9SKGTgIa7
- tZ58qm9OQ3Txpe70s8HAz/xkXSK4+XoXJQBqu7ZrQNx/jcX2JYhMfAepdO1NCxTYgqslwtvn+
- kxGGMTf6L2XUp+N+gXomgjjRSJMgH3W3gTzsgBNFIef44wNrxXIRqWnS0dqhzwnML+I21nJgT
- JsP72f0z1irz3kvXLjiL0k7sMDTuisgI6xTr5ERBxmcxPaoFNhcsOAkmaQTVpLiNF0fEV5/dL
- WK4RMr7D9o56XTKE0EQzBnfQDa7Zfr8vDHqPF4Vu3WxThIrFjgXz8Zsg61lyIUN4ZZjDrsICU
- PDnYPVUjW2oyN/4KWwTygxJqxEDU5ZojGlkJKNHwGdRLqoDvsOo0Hjgegt6+vxBdV7hn9HGQb
- Ugkk9R/zIcgd5+5y91jWlvjIUgrdf9fTgbe4Kfzgh4wQDYu3gYVeEwWAgn8sWpj2uVSa2HNmz
- hlBwqixysxqraJN0XG+N+twjuf4CX7sV3lyqftOAlfA0RV0fskMINh/77gW9ct+dzrZzjQeA2
- si+Yy2zUBy990FyaAGOADvUOkyowhyO4YvHeJQ==
+X-Provags-ID: V03:K1:QF40RLIzjg39yF+kkJLwWE6eyJO2lDQl6Yzy88yH5771K+U+/wt
+ 1Wjl3D+kIur6TBPIOh4jOyMYXzSox/0XX1Hcf4zFuPQmKc9TKSN1fBoJRYlf+0M/kOR3PC/
+ l9Y251gM1AKpBxtXImahYkduMkU7yDZeVYsF1N1b7uZfo2UV2TlEEwBb0bCY34hAZbZneXk
+ NbA8aA4/MktrW0coiKTyQ==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:PUEIAZHq084=:kxQMrXXEM11XkaImEQol+w
+ YRDcBRFVIfJV/kZpoTtR3bHPPNubpwQ7L9FlRGCd1xACbBhX2X9/DK4LUw8062FZnQswsMCpZ
+ aAxvH2fDWo0piTBjlBhh5WKxTMf/2NdY0bGl8KvANiJmVr8N3btRCf4twxtWgoaM2yQlvx9Dh
+ XX1W2DVx7AW/84N/b1/Qp40K+Uov6Mtc+JCnVHuehXjvoeVbL94pxRcRVNaHLnmJoN67b8R9T
+ Z2DQh6rRomE0Xn0QWOVfzQeux5PT7vOu7PNyRhmElwC7KOOfG9OZ4RlBtgu8MyY1+px0473p8
+ 7BoepyA+XJmpF6bm7lpsbwAkIyB01RMOyARkYp0B7XYHb8m5MNrOdJFPQQdpVAYUpjMVwAeOA
+ 3AnSE3gnazF3GghmURzxARDymYGOK2OG92ix0oQ/Mn9CAFRiTdP5vLKjuU5zx/53PAMbktFVQ
+ Ofi9MttGWE1lXfXQ2Js+qs2VnA80M6YnjSefpWu4gLeQ9hrverj6UipU00xRtpJcND/HLgwB8
+ 86FKuRfg6ZIdG8hkJ36pYeLp+cA+qeNsaNvhZ/vxTHE8HxNB12/lqkIyDz9/C4OsNRYgcSvhz
+ rhY4Axk21INx26qURBJm+xTpHFrpsEDdYuBLmR7fqp/mCOMItkRRJoWGX9rxsu/FP3r8E5gBH
+ +GjN8e2uue3oQZyfU+v0B9LgPNRv5q5NX7cxHgX9eBzVe7u0l+I+giY5mmQxqMTLmDhHME0V6
+ xOUf5VJvIC5tXkV9iOU1J3YxRZ2V8igq50uU7A==
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -81,27 +81,45 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Using dev_warn() instead of printk() for more consistent output.
+Using dev_err() instead of printk() for more consistent output.
 (prints device name, etc).
 
 Signed-off-by: Enrico Weigelt <info@metux.net>
 ---
- drivers/tty/serial/ioc4_serial.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/tty/serial/zs.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/tty/serial/ioc4_serial.c b/drivers/tty/serial/ioc4_serial.c
-index db5b979..21c1b8f 100644
---- a/drivers/tty/serial/ioc4_serial.c
-+++ b/drivers/tty/serial/ioc4_serial.c
-@@ -2752,7 +2752,7 @@ static int ioc4_serial_remove_one(struct ioc4_driver_data *idd)
- 		the_port->dev = &pdev->dev;
- 		spin_lock_init(&the_port->lock);
- 		if (uart_add_one_port(u_driver, the_port) < 0) {
--			printk(KERN_WARNING
-+			dev_warn(&pdev->dev,
- 		           "%s: unable to add port %d bus %d\n",
- 			       __func__, the_port->line, pdev->bus->number);
- 		} else {
+diff --git a/drivers/tty/serial/zs.c b/drivers/tty/serial/zs.c
+index b03d3e4..adbfe79 100644
+--- a/drivers/tty/serial/zs.c
++++ b/drivers/tty/serial/zs.c
+@@ -767,7 +767,7 @@ static int zs_startup(struct uart_port *uport)
+ 				  IRQF_SHARED, "scc", scc);
+ 		if (ret) {
+ 			atomic_add(-1, &scc->irq_guard);
+-			printk(KERN_ERR "zs: can't get irq %d\n",
++			dev_err(uport->dev, "zs: can't get irq %d\n",
+ 			       zport->port.irq);
+ 			return ret;
+ 		}
+@@ -995,7 +995,7 @@ static int zs_map_port(struct uart_port *uport)
+ 		uport->membase = ioremap_nocache(uport->mapbase,
+ 						 ZS_CHAN_IO_SIZE);
+ 	if (!uport->membase) {
+-		printk(KERN_ERR "zs: Cannot map MMIO\n");
++		dev_err(port->dev, "zs: Cannot map MMIO\n");
+ 		return -ENOMEM;
+ 	}
+ 	return 0;
+@@ -1006,7 +1006,7 @@ static int zs_request_port(struct uart_port *uport)
+ 	int ret;
+ 
+ 	if (!request_mem_region(uport->mapbase, ZS_CHAN_IO_SIZE, "scc")) {
+-		printk(KERN_ERR "zs: Unable to reserve MMIO resource\n");
++		dev_err(uport->dev, "zs: Unable to reserve MMIO resource\n");
+ 		return -EBUSY;
+ 	}
+ 	ret = zs_map_port(uport);
 -- 
 1.9.1
 
