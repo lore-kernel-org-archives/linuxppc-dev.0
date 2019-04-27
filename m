@@ -3,60 +3,62 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
 X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EE451C43218
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Apr 2019 13:39:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D90ABC43219
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Apr 2019 13:41:42 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 768012087C
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Apr 2019 13:39:35 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 768012087C
+	by mail.kernel.org (Postfix) with ESMTPS id 5257D2087C
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Apr 2019 13:41:42 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5257D2087C
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=metux.net
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44rsTx3NvSzDqDQ
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Apr 2019 23:39:33 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44rsXN51J4zDqDQ
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Apr 2019 23:41:40 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=none (mailfrom) smtp.mailfrom=metux.net
- (client-ip=212.227.126.130; helo=mout.kundenserver.de;
+ (client-ip=212.227.126.133; helo=mout.kundenserver.de;
  envelope-from=info@metux.net; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=metux.net
-Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.126.130])
+X-Greylist: delayed 327 seconds by postgrey-1.36 at bilbo;
+ Sat, 27 Apr 2019 22:58:44 AEST
+Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.126.133])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44rrZq49VHzDqb5
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 27 Apr 2019 22:58:42 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44rrZr10n6zDqZ3
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 27 Apr 2019 22:58:43 +1000 (AEST)
 Received: from orion.localdomain ([77.2.90.210]) by mrelayeu.kundenserver.de
  (mreue009 [212.227.15.167]) with ESMTPSA (Nemesis) id
- 1Mspy4-1gVqbT38iO-00tCHb; Sat, 27 Apr 2019 14:52:51 +0200
+ 1Mdvyo-1gklM610Mw-00b6vt; Sat, 27 Apr 2019 14:52:48 +0200
 From: "Enrico Weigelt, metux IT consult" <info@metux.net>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH 21/41] drivers: tty: serial: cpm_uart: fix includes
-Date: Sat, 27 Apr 2019 14:52:02 +0200
-Message-Id: <1556369542-13247-22-git-send-email-info@metux.net>
+Subject: [PATCH 17/41] drivers: tty: serial: apbuart: fix logging calls
+Date: Sat, 27 Apr 2019 14:51:58 +0200
+Message-Id: <1556369542-13247-18-git-send-email-info@metux.net>
 X-Mailer: git-send-email 1.9.1
 In-Reply-To: <1556369542-13247-1-git-send-email-info@metux.net>
 References: <1556369542-13247-1-git-send-email-info@metux.net>
-X-Provags-ID: V03:K1:xQq23jU9i9rUL2fNQuvkwl6eGPDVSQvpkDbQ/zveful4zboC1HW
- oNd3D0zOYk84zfCJ0Xuzpmh6YQ79oPwoYvw/oeAO14yaLEcslLKcMENViWN+rlXtE9vM1qv
- 1jCwWuLOXgdLjw4fxAGT3BB8TcpKk2wNp9jWPWPgaYVVv0WEj/TEQ/U7sklnKXLuZSVuAgG
- ee5Mn3D1VCygJnSepJUyg==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:G6YjMjuCEzU=:vTbjOK57YMxDpyHJDCsvgf
- g5oSd2GABlrVrg6R3Y2bibtDmrWjuJETHno5Baj4LpBZm6EeK2HYZ1OFvfKTLXiZu+lwgaBdl
- Qac2M4i+nAw5rOrAw2ow775Sclco5rlIvEYaZn9n+JvQdxwhsEMG47EoWyn/ndEiv0D382c1j
- VcxXa0YV2wDanrP23G5UgPydtCBUW3WmBO1JtKXAW7IKnMCVM/8CBvGdxWWlp6xSIZNcnqX50
- +6UMTFNjs6rWE7tAgAHhSt53/vMlfs2segTSR4Ej9genNrs5l5pn68GqZYLFmx/SIha3LVMad
- oeE867ky2ohaZuVLoEeZmShtJ+6kHaB3EJrNUBmO6mfcv6BOFAGaJTrkij+dzySWyEKMrs7/k
- c/ieUXGQb3gWaXyFRkFpeOxRwEYUaB8XGQmecH9NKRVV10m4DvNGPz9Y64pQuKNUiPuYPMRLh
- sRo9hufn0Wdv5bLRF2gxpF7M9j68eBxmtgmobENUwLNFjLCrQhnIxTnO75TVL4S+LzKM+9uNj
- R0lxv0wx2tlf0WYPAwgVEhDMDSZPu62EVjTqJqocmGaCmVfBVbHxH7GUqGTPb5wtk/fsOeMKk
- 23J9Zg4qsvkXBMG6i9rDbRv4frJBGt0AfD8OmXdpSmZhpXV7CUFtmWllY5odxIkOhZ9mqOHuI
- HAoX2YlQaOPn+CGIvsgNdrpDxk+3hYt45FHWcJ6fe6fs6nHQSm/mcfSwhd68KN3jKp1Zt81C9
- tPbxzWFyE1TQmFbx1N4B8YhOIYg9ssLx1tizDw==
+X-Provags-ID: V03:K1:74q7QZbgRgRsAUkPp9HoIcby/AiA8t4Mu2TUa7cvirQmdem+3Am
+ 8EQGnLshuK8zT/JT/rXJ1jMsYvUFcIBhmVWtNocXE1OdQlrcN6zxnc0lOKUkbKlCtWRyBOs
+ SfDclKxIBbTDIEFobqRgxh4RYW3wCVdlAW+GkkAV2vRB5P9CXtzp+iTfXlW2e2cAPKtq+p3
+ x9rgoBVikwGuHrHXLrrgQ==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:uTiVp3Nczjw=:q1a1X6kKvjHfrhz1Px6grs
+ y2cRAewloYSEeFwYySk0YrARqZHX8MO30d9uC8GmJDALaFdmlLqkw6kOPMdQTidaZ+DNwmHiq
+ IazDQmrIO+v2lu9uFF5C0afTbj84APORT9xRNgIWfXuuU0izLJ0obJJd3I5TkdS12GTnhp5Ur
+ EE2/Mtlbvto3kPE/WZRQACH3YRpUTmpIL/m0dGYHDy42saGN55NYEpdl1wSGpZcYpuwmJZo6d
+ ehxYz13zJwKYfPNldFiO+CYbV+sbHa6kCHXFhkEiWRptPYEbmD5P0x1Aq4Ha0Dk6HsKrt4ZR3
+ Ns67DYiDJQgMCkxJGuYCAUiutr2+7H4M4i6KzrI16WJ1ODcV/8T3OH6dIkiTc+OmGF6R5w338
+ F5P3xx5qLXFl6rWARSAVFmouGusjIYCcINRYs+e6P0qtKQ4aqb+cGKSWGER3i6x0IoE6AiTc8
+ 0poScbN8XXBERjWafnDHE10SqEx2FZofVt8PhamE53PiboRklIOMXYlD1+Rs0AOP6q7nRseuQ
+ +/Nt+QisBh0sliQtTfB7A7jox+V25n2QxajLYhvIDYiNuY3hKf50/+Fi5ln9Mwaol0bk/vsac
+ fsnub6AMLtxhLdg4C1NOVyDgTrBvipolZ0UgY/g7u3MCpHa80W979KbaW8kD372HVeDuSyw1p
+ CwKLh/xNKZvJyQhvmhqwnLi2HW2iH28NNNg4fT7Ze0ksGeM+xperH9HQBJn8xvHtN24TAjDx+
+ VsRqVz8nC+PwpHOUYuTXVSAeJQWb3ep7HlkJvQ==
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -80,55 +82,71 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Fixing checkpatch warning:
+Fix checkpatch warnings:
 
-    WARNING: Use #include <linux/io.h> instead of <asm/io.h>
-    #25: FILE: drivers/tty/serial/cpm_uart/cpm_uart_cpm2.c:25:
-    +#include <asm/io.h>
+    WARNING: Prefer using '"%s...", __func__' to using 'apbuart_console_setup', this function's name, in a string
+    #491: FILE: drivers/tty/serial/apbuart.c:491:
+    +	pr_debug("apbuart_console_setup co=%p, co->index=%i, options=%s\n",
 
-    WARNING: Use #include <linux/io.h> instead of <asm/io.h>
-    +#include <asm/io.h>
+    WARNING: Prefer [subsystem eg: netdev]_info([subsystem]dev, ... then dev_info(dev, ... then pr_info(...  to printk(KERN_INFO ...
+    #661: FILE: drivers/tty/serial/apbuart.c:661:
+    +	printk(KERN_INFO "Serial: GRLIB APBUART driver\n");
 
-    WARNING: Use #include <linux/delay.h> instead of <asm/delay.h>
-    +#include <asm/delay.h>
+    WARNING: Prefer [subsystem eg: netdev]_err([subsystem]dev, ... then dev_err(dev, ... then pr_err(...  to printk(KERN_ERR ...
+    #666: FILE: drivers/tty/serial/apbuart.c:666:
+    +		printk(KERN_ERR "%s: uart_register_driver failed (%i)\n",
+
+    WARNING: Prefer [subsystem eg: netdev]_err([subsystem]dev, ... then dev_err(dev, ... then pr_err(...  to printk(KERN_ERR ...
+    #673: FILE: drivers/tty/serial/apbuart.c:673:
+    +		printk(KERN_ERR
 
 Signed-off-by: Enrico Weigelt <info@metux.net>
 ---
- drivers/tty/serial/cpm_uart/cpm_uart_core.c | 4 ++--
- drivers/tty/serial/cpm_uart/cpm_uart_cpm2.c | 2 +-
- 2 files changed, 3 insertions(+), 3 deletions(-)
+ drivers/tty/serial/apbuart.c | 15 +++++++--------
+ 1 file changed, 7 insertions(+), 8 deletions(-)
 
-diff --git a/drivers/tty/serial/cpm_uart/cpm_uart_core.c b/drivers/tty/serial/cpm_uart/cpm_uart_core.c
-index 374b8bb..c831d31 100644
---- a/drivers/tty/serial/cpm_uart/cpm_uart_core.c
-+++ b/drivers/tty/serial/cpm_uart/cpm_uart_core.c
-@@ -33,10 +33,10 @@
- #include <linux/gpio.h>
- #include <linux/of_gpio.h>
- #include <linux/clk.h>
-+#include <linux/io.h>
-+#include <linux/delay.h>
+diff --git a/drivers/tty/serial/apbuart.c b/drivers/tty/serial/apbuart.c
+index 60cd133..d2b86f7 100644
+--- a/drivers/tty/serial/apbuart.c
++++ b/drivers/tty/serial/apbuart.c
+@@ -482,8 +482,8 @@ static int __init apbuart_console_setup(struct console *co, char *options)
+ 	int parity = 'n';
+ 	int flow = 'n';
  
--#include <asm/io.h>
- #include <asm/irq.h>
--#include <asm/delay.h>
- #include <asm/fs_pd.h>
- #include <asm/udbg.h>
+-	pr_debug("apbuart_console_setup co=%p, co->index=%i, options=%s\n",
+-		 co, co->index, options);
++	pr_debug("%s() co=%p, co->index=%i, options=%s\n",
++		 __func__, co, co->index, options);
  
-diff --git a/drivers/tty/serial/cpm_uart/cpm_uart_cpm2.c b/drivers/tty/serial/cpm_uart/cpm_uart_cpm2.c
-index ef1ae08..40cfcf4 100644
---- a/drivers/tty/serial/cpm_uart/cpm_uart_cpm2.c
-+++ b/drivers/tty/serial/cpm_uart/cpm_uart_cpm2.c
-@@ -21,8 +21,8 @@
- #include <linux/device.h>
- #include <linux/memblock.h>
- #include <linux/dma-mapping.h>
-+#include <linux/io.h>
+ 	/*
+ 	 * Check whether an invalid uart number has been specified, and
+@@ -650,21 +650,20 @@ static int __init grlib_apbuart_init(void)
+ 	if (ret)
+ 		return ret;
  
--#include <asm/io.h>
- #include <asm/irq.h>
- #include <asm/fs_pd.h>
- #include <asm/prom.h>
+-	printk(KERN_INFO "Serial: GRLIB APBUART driver\n");
++	pr_info("Serial: GRLIB APBUART driver\n");
+ 
+ 	ret = uart_register_driver(&grlib_apbuart_driver);
+ 
+ 	if (ret) {
+-		printk(KERN_ERR "%s: uart_register_driver failed (%i)\n",
+-		       __FILE__, ret);
++		pr_err("%s: uart_register_driver failed (%i)\n",
++		       __func__, ret);
+ 		return ret;
+ 	}
+ 
+ 	ret = platform_driver_register(&grlib_apbuart_of_driver);
+ 	if (ret) {
+-		printk(KERN_ERR
+-		       "%s: platform_driver_register failed (%i)\n",
+-		       __FILE__, ret);
++		pr_err("%s: platform_driver_register failed (%i)\n",
++		       __func__, ret);
+ 		uart_unregister_driver(&grlib_apbuart_driver);
+ 		return ret;
+ 	}
 -- 
 1.9.1
 
