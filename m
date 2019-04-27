@@ -6,58 +6,58 @@ X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
 	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 69D38C43218
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Apr 2019 14:07:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0C1DFC43219
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Apr 2019 14:08:46 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id DF17F208C2
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Apr 2019 14:06:59 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DF17F208C2
+	by mail.kernel.org (Postfix) with ESMTPS id 79B412064A
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Apr 2019 14:08:45 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 79B412064A
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=metux.net
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44rt5Z0KLQzDqf6
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 28 Apr 2019 00:06:58 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44rt7b3cMCzDqCG
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 28 Apr 2019 00:08:43 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=none (mailfrom) smtp.mailfrom=metux.net
- (client-ip=212.227.126.133; helo=mout.kundenserver.de;
+ (client-ip=212.227.126.134; helo=mout.kundenserver.de;
  envelope-from=info@metux.net; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=metux.net
-Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.126.133])
+Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.126.134])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44rrb26R0gzDqZp
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 27 Apr 2019 22:58:54 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44rrb817JpzDqZ3
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 27 Apr 2019 22:58:59 +1000 (AEST)
 Received: from orion.localdomain ([77.2.90.210]) by mrelayeu.kundenserver.de
  (mreue009 [212.227.15.167]) with ESMTPSA (Nemesis) id
- 1MQ5nE-1h759i2pEm-00M2Ff; Sat, 27 Apr 2019 14:52:38 +0200
+ 1MVNF1-1hBGYO2EDP-00SLNE; Sat, 27 Apr 2019 14:52:59 +0200
 From: "Enrico Weigelt, metux IT consult" <info@metux.net>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH 06/41] drivers: tty: serial: sb1250-duart: use dev_err()
+Subject: [PATCH 30/41] drivers: tty: serial: ioc4_serial: use dev_warn()
  instead of printk()
-Date: Sat, 27 Apr 2019 14:51:47 +0200
-Message-Id: <1556369542-13247-7-git-send-email-info@metux.net>
+Date: Sat, 27 Apr 2019 14:52:11 +0200
+Message-Id: <1556369542-13247-31-git-send-email-info@metux.net>
 X-Mailer: git-send-email 1.9.1
 In-Reply-To: <1556369542-13247-1-git-send-email-info@metux.net>
 References: <1556369542-13247-1-git-send-email-info@metux.net>
-X-Provags-ID: V03:K1:virapGaLe72N04lun9WdAKkbszb/ggQMqOiOUSHBcLWgpMmeSap
- mBYtyGLtkO8bfsb4eQ43Ka/Pvv/b4cCI/WGEqijtDJEFEcNTc93ifR7R/FI82p+Et0Hzuoy
- 6Mqe+toYlTBM2KOFgvujwEBfyVHzntqNkA4zWfZ1M4ILi8IQFR+Hd6QOrw7CXV2bkioPk2/
- 824zpPHm55RHdm67u7Kxw==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:SXNQXQp8sh0=:R+aDQv3lvekLyrADiGHuEK
- CtjfTAKoGHRmAjJ6Xb8dN2lYsNh+W28aEMdgh54xOhuTgRpDw4N5AydwVa1GkJGE/tBGvdfAD
- LGbG75FmSB3lV4Wn/TKhId58KXrWjy4NasiTvMWwcEQCMJzYAkG/jiv4voibWWMGGn5SGimjx
- Ri5mwvqYchoCMBxp5G8fq8TAC3jOucf6Mss2WGvap1Dy1W51Z7vBnDhn+i5v7TDsglctmWzan
- Ke8R49dCVVJFUaYWtPYEn/kT9DlGBvcvv6NSuH1LmfFzwVSaM7Oc++m734vQgRN+BQmrZrEai
- niQ5mxsmA06CCqcVnq1OGyvvC+jd8DI6V5EHytHjcZdD5BWacXE3X1Ph37DGnF5QaAElvcJNx
- JHZmdDuln4PJd69ya3LTzIHfVGfys5Hu+kB1hnqYHdNmnKP7BueWXVbU/UC9QKwlYqeU6G66o
- ru2DwKVH9t45x6cXhEa7yA2jvN3ouOU76Sz+H5Cp+nlDq1Ybci8/nhjNiwfo4jawKsg+zj3Iw
- RbGPd4x2mRMaP3PWyH5HvBuQSzrNsyMmhQ8SHnxzTbWwqf9KPTumzBJ0iHnYYxttOp5cJTjdg
- 6mSjPGkYGuHLjRrkoaTi1lfmVInfsYZ4Lr37aECl4PjQqWv+wlisIiGO0YN6Vjqb/PWhlVKsX
- 0xddrJBapb3NNXPajntYjHK3wk4Ry+UwAxRBGz7v3H7C4gehhm/qGZtQVkt5NAFC55ZbINGVA
- O/1LHfyS5WzFTyyM6LXbhxXCsAQY2rESpK26aQ==
+X-Provags-ID: V03:K1:feZjQEPGewpWSo2bykBkAQkXP9Lb/ZtVsJ70Hc9aX4own7v09FA
+ e65s7fBpQb+RWeo/XsvBCLQDRKkUOdSWYbg6QCmXdWbNheYrxgq5Ys1L3nrokeJAVzT8JZ+
+ 6QZ7hrXczsjiQ2m1ogHA/r87Uy8zuLwqRpXTsIxH63Kg2ZR+GURXbvN2XWzuqCWUQaBZhlg
+ o8S6PJbm8wTsqW6D1wobQ==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:nHmHVGZ+sFw=:XEUcLjplSSh4cLN3S86osQ
+ RRbCB7db/0vzL9crkypDqE14Bon4jX8tkQp+cV84NUEPnutsi1rZQXkR4sVogL2UAX1EfdiiB
+ ZWKYz5bKoCvZlKSiftMKZUka/T9wvECXHUhnEKxzzueMi2of8Uxue3lfBBkJH9b8PZkdj/aBu
+ hAVrybHlnoB+Hts3s4Qq9Yy5z2frg+23hoDafdGDKzIJ0fvLfEsLMDIFMxm7LE/J9SKGTgIa7
+ tZ58qm9OQ3Txpe70s8HAz/xkXSK4+XoXJQBqu7ZrQNx/jcX2JYhMfAepdO1NCxTYgqslwtvn+
+ kxGGMTf6L2XUp+N+gXomgjjRSJMgH3W3gTzsgBNFIef44wNrxXIRqWnS0dqhzwnML+I21nJgT
+ JsP72f0z1irz3kvXLjiL0k7sMDTuisgI6xTr5ERBxmcxPaoFNhcsOAkmaQTVpLiNF0fEV5/dL
+ WK4RMr7D9o56XTKE0EQzBnfQDa7Zfr8vDHqPF4Vu3WxThIrFjgXz8Zsg61lyIUN4ZZjDrsICU
+ PDnYPVUjW2oyN/4KWwTygxJqxEDU5ZojGlkJKNHwGdRLqoDvsOo0Hjgegt6+vxBdV7hn9HGQb
+ Ugkk9R/zIcgd5+5y91jWlvjIUgrdf9fTgbe4Kfzgh4wQDYu3gYVeEwWAgn8sWpj2uVSa2HNmz
+ hlBwqixysxqraJN0XG+N+twjuf4CX7sV3lyqftOAlfA0RV0fskMINh/77gW9ct+dzrZzjQeA2
+ si+Yy2zUBy990FyaAGOADvUOkyowhyO4YvHeJQ==
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -81,44 +81,27 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Using dev_err() instead of printk() for more consistent output.
+Using dev_warn() instead of printk() for more consistent output.
 (prints device name, etc).
 
 Signed-off-by: Enrico Weigelt <info@metux.net>
 ---
- drivers/tty/serial/sb1250-duart.c | 5 ++---
- 1 file changed, 2 insertions(+), 3 deletions(-)
+ drivers/tty/serial/ioc4_serial.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/tty/serial/sb1250-duart.c b/drivers/tty/serial/sb1250-duart.c
-index 329aced..655961c 100644
---- a/drivers/tty/serial/sb1250-duart.c
-+++ b/drivers/tty/serial/sb1250-duart.c
-@@ -663,7 +663,6 @@ static void sbd_release_port(struct uart_port *uport)
- 
- static int sbd_map_port(struct uart_port *uport)
- {
--	const char *err = KERN_ERR "sbd: Cannot map MMIO\n";
- 	struct sbd_port *sport = to_sport(uport);
- 	struct sbd_duart *duart = sport->duart;
- 
-@@ -671,7 +670,7 @@ static int sbd_map_port(struct uart_port *uport)
- 		uport->membase = ioremap_nocache(uport->mapbase,
- 						 DUART_CHANREG_SPACING);
- 	if (!uport->membase) {
--		printk(err);
-+		dev_err(uport->dev, "Cannot map MMIO (base)\n");
- 		return -ENOMEM;
- 	}
- 
-@@ -679,7 +678,7 @@ static int sbd_map_port(struct uart_port *uport)
- 		sport->memctrl = ioremap_nocache(duart->mapctrl,
- 						 DUART_CHANREG_SPACING);
- 	if (!sport->memctrl) {
--		printk(err);
-+		dev_err(uport->dev, "Cannot map MMIO (ctrl)\n");
- 		iounmap(uport->membase);
- 		uport->membase = NULL;
- 		return -ENOMEM;
+diff --git a/drivers/tty/serial/ioc4_serial.c b/drivers/tty/serial/ioc4_serial.c
+index db5b979..21c1b8f 100644
+--- a/drivers/tty/serial/ioc4_serial.c
++++ b/drivers/tty/serial/ioc4_serial.c
+@@ -2752,7 +2752,7 @@ static int ioc4_serial_remove_one(struct ioc4_driver_data *idd)
+ 		the_port->dev = &pdev->dev;
+ 		spin_lock_init(&the_port->lock);
+ 		if (uart_add_one_port(u_driver, the_port) < 0) {
+-			printk(KERN_WARNING
++			dev_warn(&pdev->dev,
+ 		           "%s: unable to add port %d bus %d\n",
+ 			       __func__, the_port->line, pdev->bus->number);
+ 		} else {
 -- 
 1.9.1
 
