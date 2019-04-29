@@ -2,50 +2,53 @@ Return-Path: <SRS0=4hcN=S7=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-2.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_MUTT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 80168C43219
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Apr 2019 11:58:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3BF3BC43219
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Apr 2019 12:00:04 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 1AF682053B
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Apr 2019 11:58:39 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1AF682053B
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+	by mail.kernel.org (Postfix) with ESMTPS id DF2312053B
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Apr 2019 12:00:03 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DF2312053B
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kernel.crashing.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44t38Y0njtzDqRS
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Apr 2019 21:58:37 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44t36Z6XR9zDqQ1
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Apr 2019 21:56:54 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44t3BB0kkWzDqTF
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Apr 2019 22:00:02 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=permerror (mailfrom)
+ smtp.mailfrom=kernel.crashing.org (client-ip=63.228.1.57;
+ helo=gate.crashing.org; envelope-from=segher@kernel.crashing.org;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=ellerman.id.au
-Received: by ozlabs.org (Postfix)
- id 44t36Z58Vqz9sCJ; Mon, 29 Apr 2019 21:56:54 +1000 (AEST)
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
- SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 44t36Z4BWlz9s6w;
- Mon, 29 Apr 2019 21:56:54 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Greg KH <gregkh@linuxfoundation.org>
-Subject: Re: [PATCH stable v4.4 00/52] powerpc spectre backports for 4.4
-In-Reply-To: <20190429070357.GA3167@kroah.com>
-References: <20190421142037.21881-1-mpe@ellerman.id.au>
- <20190421163421.GA8449@kroah.com> <87o94qac1z.fsf@concordia.ellerman.id.au>
- <87a7g99viy.fsf@concordia.ellerman.id.au> <20190429070357.GA3167@kroah.com>
-Date: Mon, 29 Apr 2019 21:56:36 +1000
-Message-ID: <877ebd9g97.fsf@concordia.ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain
+ header.from=kernel.crashing.org
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44t36z6dfzzDqQT
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Apr 2019 21:57:15 +1000 (AEST)
+Received: from gate.crashing.org (localhost.localdomain [127.0.0.1])
+ by gate.crashing.org (8.14.1/8.14.1) with ESMTP id x3TBv70h019030;
+ Mon, 29 Apr 2019 06:57:07 -0500
+Received: (from segher@localhost)
+ by gate.crashing.org (8.14.1/8.14.1/Submit) id x3TBv6Gw019029;
+ Mon, 29 Apr 2019 06:57:06 -0500
+X-Authentication-Warning: gate.crashing.org: segher set sender to
+ segher@kernel.crashing.org using -f
+Date: Mon, 29 Apr 2019 06:57:06 -0500
+From: Segher Boessenkool <segher@kernel.crashing.org>
+To: Christoph Hellwig <hch@lst.de>
+Subject: Re: [PATCH] powerpc: remove the __kernel_io_end export
+Message-ID: <20190429115706.GO8599@gate.crashing.org>
+References: <20190429115241.12621-1-hch@lst.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20190429115241.12621-1-hch@lst.de>
+User-Agent: Mutt/1.4.2.3i
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -57,36 +60,22 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: npiggin@gmail.com, diana.craciun@nxp.com, linuxppc-dev@ozlabs.org,
- stable@vger.kernel.org, msuchanek@suse.de
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ aneesh.kumar@linux.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Greg KH <gregkh@linuxfoundation.org> writes:
-> On Mon, Apr 29, 2019 at 04:26:45PM +1000, Michael Ellerman wrote:
->> Michael Ellerman <mpe@ellerman.id.au> writes:
->> > Greg KH <gregkh@linuxfoundation.org> writes:
->> >> On Mon, Apr 22, 2019 at 12:19:45AM +1000, Michael Ellerman wrote:
->> >>> -----BEGIN PGP SIGNED MESSAGE-----
->> >>> Hash: SHA1
->> >>> 
->> >>> Hi Greg/Sasha,
->> >>> 
->> >>> Please queue up these powerpc patches for 4.4 if you have no objections.
->> >>
->> >> why?  Do you, or someone else, really care about spectre issues in 4.4?
->> >> Who is using ppc for 4.4 becides a specific enterprise distro (and they
->> >> don't seem to be pulling in my stable updates anyway...)?
->> >
->> > Someone asked for it, but TBH I can't remember who it was. I can chase
->> > it up if you like.
->> 
->> Yeah it was a request from one of the distros. They plan to take it once
->> it lands in 4.4 stable.
->
-> Ok, thanks for confirming, I'll work on this this afternoon.
+On Mon, Apr 29, 2019 at 06:52:41AM -0500, Christoph Hellwig wrote:
+> This export was added in this merge window, but without any actual
+> user, or justification for a modular user.
 
-Thanks. If there's any problems let us know.
+Hi Christoph,
 
-cheers
+> -unsigned long __kernel_io_end;
+>  EXPORT_SYMBOL(__kernel_io_end);
+
+Does that work?  Don't you need to remove that second line, as well?
+
+
+Segher
