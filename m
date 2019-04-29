@@ -6,37 +6,37 @@ X-Spam-Status: No, score=-3.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS
 	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1E5BBC43219
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Apr 2019 10:31:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2A82BC43219
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Apr 2019 10:32:32 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 8DC602087B
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Apr 2019 10:31:15 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 625762087B
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Apr 2019 10:32:31 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="JsXUvJIE"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8DC602087B
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="ybJ8xgYU"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 625762087B
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linuxfoundation.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44t1Cj2TbTzDqLN
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Apr 2019 20:31:13 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+	by lists.ozlabs.org (Postfix) with ESMTP id 44t1F933X5zDqV7
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Apr 2019 20:32:29 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44t0MF5s3mzDqQ8
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Apr 2019 19:52:41 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44t0MJ6xcqzDqPl
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Apr 2019 19:52:44 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=linuxfoundation.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="JsXUvJIE"; 
+ unprotected) header.d=kernel.org header.i=@kernel.org header.b="ybJ8xgYU"; 
  dkim-atps=neutral
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 44t0MF4f42z8tDC
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Apr 2019 19:52:41 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 44t0MJ4qHvz8vt7
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Apr 2019 19:52:44 +1000 (AEST)
 Received: by ozlabs.org (Postfix)
- id 44t0MF3pTNz9sML; Mon, 29 Apr 2019 19:52:41 +1000 (AEST)
+ id 44t0MJ4GRYz9sML; Mon, 29 Apr 2019 19:52:44 +1000 (AEST)
 Authentication-Results: ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=linuxfoundation.org
  (client-ip=198.145.29.99; helo=mail.kernel.org;
@@ -44,35 +44,35 @@ Authentication-Results: ozlabs.org;
 Authentication-Results: ozlabs.org; dmarc=none (p=none dis=none)
  header.from=linuxfoundation.org
 Authentication-Results: ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="JsXUvJIE"; 
+ unprotected) header.d=kernel.org header.i=@kernel.org header.b="ybJ8xgYU"; 
  dkim-atps=neutral
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 44t0MD60xZz9s70
- for <linuxppc-dev@ozlabs.org>; Mon, 29 Apr 2019 19:52:40 +1000 (AEST)
+ by ozlabs.org (Postfix) with ESMTPS id 44t0MJ0Mvpz9sCJ
+ for <linuxppc-dev@ozlabs.org>; Mon, 29 Apr 2019 19:52:44 +1000 (AEST)
 Received: from localhost (83-86-89-107.cable.dynamic.v4.ziggo.nl
  [83.86.89.107])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id D71D0205ED;
- Mon, 29 Apr 2019 09:52:38 +0000 (UTC)
+ by mail.kernel.org (Postfix) with ESMTPSA id 77D20205F4;
+ Mon, 29 Apr 2019 09:52:41 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1556531559;
- bh=VH8EnipIgXJSWGpWBCpxUMjA9AOnoSlBpScZOHnM7Eg=;
+ s=default; t=1556531562;
+ bh=boNw6wa+CcOsXKGFr9ET+tCCXvYD9ZVlHKFB2rMDZyE=;
  h=Subject:To:Cc:From:Date:In-Reply-To:From;
- b=JsXUvJIEnw6rZ8VyCgRzaf6wFZeXa1dCpAqfFiMm8nCAq9d6y9E5ETISdVVFa4Qtj
- Pq7EHrIUC8ddDJLVC7XAq+m7gV2TRWcb6qNCy8IuVasJb4No7El17eCTXy2zsPCTKo
- ++RQkz+axPtM2OEZLZW64FEFA/TEPG67ke2hcFh4=
-Subject: Patch "powerpc: Avoid code patching freed init sections" has been
+ b=ybJ8xgYU6SjQOMOpT/3uIc2SKo/i26MZKzf0RP9pw9bvoQdoKH6NX3hV3+WVqNA/T
+ qm2GSg2tmK3/PSdo1YQSIP7EIIiWH3MjxHHcKyUwaVdHnpMk8E4DbZDbFpSr/d2+Rx
+ GI4HWcjyI/GF3NmrwTvreYjlVeCagGRjnTnJLNn4=
+Subject: Patch "powerpc/fsl: Fix the flush of branch predictor." has been
  added to the 4.4-stable tree
-To: christophe.leroy@c-s.fr, diana.craciun@nxp.com, gregkh@linuxfoundation.org,
- linuxppc-dev@ozlabs.org, mikey@neuling.org, mpe@ellerman.id.au,
+To: christophe.leroy@c-s.fr, diana.craciun@nxp.com, dja@axtens.net,
+ gregkh@linuxfoundation.org, linuxppc-dev@ozlabs.org, mpe@ellerman.id.au,
  msuchanek@suse.de, npiggin@gmail.com
 From: <gregkh@linuxfoundation.org>
-Date: Mon, 29 Apr 2019 11:51:25 +0200
-In-Reply-To: <20190421142037.21881-45-mpe@ellerman.id.au>
-Message-ID: <1556531485193218@kroah.com>
+Date: Mon, 29 Apr 2019 11:51:26 +0200
+In-Reply-To: <20190421142037.21881-53-mpe@ellerman.id.au>
+Message-ID: <155653148617886@kroah.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ANSI_X3.4-1968
 Content-Transfer-Encoding: 8bit
@@ -97,13 +97,13 @@ Sender: "Linuxppc-dev"
 
 This is a note to let you know that I've just added the patch titled
 
-    powerpc: Avoid code patching freed init sections
+    powerpc/fsl: Fix the flush of branch predictor.
 
 to the 4.4-stable tree which can be found at:
     http://www.kernel.org/git/?p=linux/kernel/git/stable/stable-queue.git;a=summary
 
 The filename of the patch is:
-     powerpc-avoid-code-patching-freed-init-sections.patch
+     powerpc-fsl-fix-the-flush-of-branch-predictor.patch
 and it can be found in the queue-4.4 subdirectory.
 
 If you, or anyone else, feels it should not be added to the stable tree,
@@ -112,104 +112,48 @@ please let <stable@vger.kernel.org> know about it.
 
 From foo@baz Mon 29 Apr 2019 11:38:37 AM CEST
 From: Michael Ellerman <mpe@ellerman.id.au>
-Date: Mon, 22 Apr 2019 00:20:29 +1000
-Subject: powerpc: Avoid code patching freed init sections
+Date: Mon, 22 Apr 2019 00:20:37 +1000
+Subject: powerpc/fsl: Fix the flush of branch predictor.
 To: stable@vger.kernel.org, gregkh@linuxfoundation.org
 Cc: linuxppc-dev@ozlabs.org, diana.craciun@nxp.com, msuchanek@suse.de, npiggin@gmail.com, christophe.leroy@c-s.fr
-Message-ID: <20190421142037.21881-45-mpe@ellerman.id.au>
+Message-ID: <20190421142037.21881-53-mpe@ellerman.id.au>
 
-From: Michael Neuling <mikey@neuling.org>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
 
-commit 51c3c62b58b357e8d35e4cc32f7b4ec907426fe3 upstream.
+commit 27da80719ef132cf8c80eb406d5aeb37dddf78cc upstream.
 
-This stops us from doing code patching in init sections after they've
-been freed.
+The commit identified below adds MC_BTB_FLUSH macro only when
+CONFIG_PPC_FSL_BOOK3E is defined. This results in the following error
+on some configs (seen several times with kisskb randconfig_defconfig)
 
-In this chain:
-  kvm_guest_init() ->
-    kvm_use_magic_page() ->
-      fault_in_pages_readable() ->
-	 __get_user() ->
-	   __get_user_nocheck() ->
-	     barrier_nospec();
+arch/powerpc/kernel/exceptions-64e.S:576: Error: Unrecognized opcode: `mc_btb_flush'
+make[3]: *** [scripts/Makefile.build:367: arch/powerpc/kernel/exceptions-64e.o] Error 1
+make[2]: *** [scripts/Makefile.build:492: arch/powerpc/kernel] Error 2
+make[1]: *** [Makefile:1043: arch/powerpc] Error 2
+make: *** [Makefile:152: sub-make] Error 2
 
-We have a code patching location at barrier_nospec() and
-kvm_guest_init() is an init function. This whole chain gets inlined,
-so when we free the init section (hence kvm_guest_init()), this code
-goes away and hence should no longer be patched.
+This patch adds a blank definition of MC_BTB_FLUSH for other cases.
 
-We seen this as userspace memory corruption when using a memory
-checker while doing partition migration testing on powervm (this
-starts the code patching post migration via
-/sys/kernel/mobility/migration). In theory, it could also happen when
-using /sys/kernel/debug/powerpc/barrier_nospec.
-
-Signed-off-by: Michael Neuling <mikey@neuling.org>
-Reviewed-by: Nicholas Piggin <npiggin@gmail.com>
-Reviewed-by: Christophe Leroy <christophe.leroy@c-s.fr>
+Fixes: 10c5e83afd4a ("powerpc/fsl: Flush the branch predictor at each kernel entry (64bit)")
+Cc: Diana Craciun <diana.craciun@nxp.com>
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+Reviewed-by: Daniel Axtens <dja@axtens.net>
+Reviewed-by: Diana Craciun <diana.craciun@nxp.com>
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 ---
- arch/powerpc/include/asm/setup.h |    1 +
- arch/powerpc/lib/code-patching.c |   13 +++++++++++++
- arch/powerpc/mm/mem.c            |    2 ++
- 3 files changed, 16 insertions(+)
+ arch/powerpc/kernel/exceptions-64e.S |    1 +
+ 1 file changed, 1 insertion(+)
 
---- a/arch/powerpc/include/asm/setup.h
-+++ b/arch/powerpc/include/asm/setup.h
-@@ -8,6 +8,7 @@ extern void ppc_printk_progress(char *s,
- 
- extern unsigned int rtas_data;
- extern unsigned long long memory_limit;
-+extern bool init_mem_is_free;
- extern unsigned long klimit;
- extern void *zalloc_maybe_bootmem(size_t size, gfp_t mask);
- 
---- a/arch/powerpc/lib/code-patching.c
-+++ b/arch/powerpc/lib/code-patching.c
-@@ -14,12 +14,25 @@
- #include <asm/page.h>
- #include <asm/code-patching.h>
- #include <asm/uaccess.h>
-+#include <asm/setup.h>
-+#include <asm/sections.h>
- 
- 
-+static inline bool is_init(unsigned int *addr)
-+{
-+	return addr >= (unsigned int *)__init_begin && addr < (unsigned int *)__init_end;
-+}
-+
- int patch_instruction(unsigned int *addr, unsigned int instr)
- {
- 	int err;
- 
-+	/* Make sure we aren't patching a freed init section */
-+	if (init_mem_is_free && is_init(addr)) {
-+		pr_debug("Skipping init section patching addr: 0x%px\n", addr);
-+		return 0;
-+	}
-+
- 	__put_user_size(instr, addr, 4, err);
- 	if (err)
- 		return err;
---- a/arch/powerpc/mm/mem.c
-+++ b/arch/powerpc/mm/mem.c
-@@ -62,6 +62,7 @@
+--- a/arch/powerpc/kernel/exceptions-64e.S
++++ b/arch/powerpc/kernel/exceptions-64e.S
+@@ -348,6 +348,7 @@ ret_from_mc_except:
+ #define GEN_BTB_FLUSH
+ #define CRIT_BTB_FLUSH
+ #define DBG_BTB_FLUSH
++#define MC_BTB_FLUSH
+ #define GDBELL_BTB_FLUSH
  #endif
- 
- unsigned long long memory_limit;
-+bool init_mem_is_free;
- 
- #ifdef CONFIG_HIGHMEM
- pte_t *kmap_pte;
-@@ -381,6 +382,7 @@ void __init mem_init(void)
- void free_initmem(void)
- {
- 	ppc_md.progress = ppc_printk_progress;
-+	init_mem_is_free = true;
- 	free_initmem_default(POISON_FREE_INITMEM);
- }
  
 
 
