@@ -2,63 +2,71 @@ Return-Path: <SRS0=4hcN=S7=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.0 required=3.0 tests=MAILING_LIST_MULTI,SPF_PASS
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-4.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EE0F9C43219
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Apr 2019 07:19:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 92B67C43219
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Apr 2019 07:25:30 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 4AF9620673
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Apr 2019 07:19:05 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4AF9620673
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	by mail.kernel.org (Postfix) with ESMTPS id 0623A205ED
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Apr 2019 07:25:29 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0623A205ED
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=metux.net
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44swxz1NGgzDqCl
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Apr 2019 17:19:03 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44sx5M5Z5tzDqQD
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Apr 2019 17:25:27 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=209.85.167.196; helo=mail-oi1-f196.google.com;
- envelope-from=rjwysocki@gmail.com; receiver=<UNKNOWN>)
+ spf=none (mailfrom) smtp.mailfrom=metux.net
+ (client-ip=212.227.17.10; helo=mout.kundenserver.de;
+ envelope-from=lkml@metux.net; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=fail (p=none dis=none) header.from=kernel.org
-Received: from mail-oi1-f196.google.com (mail-oi1-f196.google.com
- [209.85.167.196])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ dmarc=none (p=none dis=none) header.from=metux.net
+Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.17.10])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44swwV4x6fzDqBZ
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Apr 2019 17:17:44 +1000 (AEST)
-Received: by mail-oi1-f196.google.com with SMTP id n187so7495677oih.6
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Apr 2019 00:17:44 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:mime-version:references:in-reply-to:from:date
- :message-id:subject:to:cc:content-transfer-encoding;
- bh=U0ILNQQnANwDaULFq9BnSLE4JegKbYYRqIG6pRQ8vEk=;
- b=cSgu98tHj1fnaN3VrXul56eLAc35mxPtU7UjsMlJ+8MO3+kO2IKpCyzMta9gh5oJNh
- LzZV/sL0Omq4h6xws5GaWb0VyUpTmsM4HvH1B5QhsQg/fCNMjAJ4dslgQ5Cgp3M4tNFq
- cRbSPYRxb6CAEmGQ2/aNvfAEzmcq/iL2z6vWQK55feJATK/9eeg00+cQWNPI+NbrDANp
- DJM5UIvslIfef03QuVxfk0Gvjlw8WOoY/v8L9tYM9vihU2r+ZiNpeDQwm5u61ib3C5sa
- A3uFUP/kx3sjOyDoxFF5lqTr0pOn7XWt1IC1tXeHi6XtqzaezH3v2xscuxA8XBs93fXX
- SMng==
-X-Gm-Message-State: APjAAAWBvyHHI8ExjblOe5BxM66/TQ16F1Yp4IyH279V8ttIri7bDsIt
- HNJAaFoi86w5U/EYKK0OLtWo6cCaFgJcLMucIWA=
-X-Google-Smtp-Source: APXvYqwr1JzPOuSpeIEP+9sUUFOH+slhC9WrQ3DVJQkPqRABjuPtCwtvgu2tX7fhE9UKdsflW3QhNDNgQMdTGy0lX/Q=
-X-Received: by 2002:aca:4a8a:: with SMTP id x132mr7422695oia.68.1556522262049; 
- Mon, 29 Apr 2019 00:17:42 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44sx3r3YRyzDqKN
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Apr 2019 17:24:07 +1000 (AEST)
+Received: from [192.168.1.110] ([77.9.18.117]) by mrelayeu.kundenserver.de
+ (mreue106 [212.227.15.183]) with ESMTPSA (Nemesis) id
+ 1N7AAk-1giQjU0jDY-017SZ2; Mon, 29 Apr 2019 09:23:28 +0200
+Subject: Re: [PATCH 01/41] drivers: tty: serial: dz: use dev_err() instead of
+ printk()
+To: Greg KH <gregkh@linuxfoundation.org>,
+ "Enrico Weigelt, metux IT consult" <info@metux.net>
+References: <1556369542-13247-1-git-send-email-info@metux.net>
+ <1556369542-13247-2-git-send-email-info@metux.net>
+ <20190427133117.GC11368@kroah.com>
+From: "Enrico Weigelt, metux IT consult" <lkml@metux.net>
+Organization: metux IT consult
+Message-ID: <721dc048-8b5f-e7f5-2dab-f0f328435e0c@metux.net>
+Date: Mon, 29 Apr 2019 09:23:21 +0200
+User-Agent: Mozilla/5.0 (X11; Linux i686 on x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.2.1
 MIME-Version: 1.0
-References: <5fdabbb9-0a62-4802-f1ca-f83584f935fa@molgen.mpg.de>
-In-Reply-To: <5fdabbb9-0a62-4802-f1ca-f83584f935fa@molgen.mpg.de>
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Date: Mon, 29 Apr 2019 09:17:26 +0200
-Message-ID: <CAJZ5v0gobp60Pn5cdh0CohGAXSBs-EvntNqKc_dj_UTnOiogkQ@mail.gmail.com>
-Subject: Re: Why is suspend with s2idle available on POWER8 systems?
-To: Paul Menzel <pmenzel@molgen.mpg.de>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+In-Reply-To: <20190427133117.GC11368@kroah.com>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
+X-Provags-ID: V03:K1:2yBsSwNlRemILw3qvHg+EUmYturt1pLcLjGTAKgJyue8kvRS4SA
+ Ycg5vG+6X+ZgHuQ3PHVzy/Dv44Zuxjh37IHDyzF2jEvtvZGNvYkKtrnXVZYGUnPdIu0W46i
+ 2IMqhI87Gg+pJeqQ6/ht5bwJVFkYWHqCEPoyT4ASEIm1+8v8y21GaFqc39ZCbGTdMT51cQj
+ 0S+tKBdUy1LLCwqz09Z5Q==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:hvct3rbX28g=:TmP05eZMgYa4HiZY4PnD/X
+ 6m3IhBL+nEVPGdArSYiuiX7eZZXEk5U/K4fdA/5I69ZzNB+lgpMzTJARgTptylrCcsF+ec56R
+ EcFsOKNj9r4+Pijm0w6PIOOCQR9sDUMsKWVVev1N7blGt5gqfEfHG3QYEEANluS9l3kZ85qbk
+ LdiiJxi6KrmHyMeNDiFyYrsu6r5+ZF6VhCjr35ptTbfRr0e5WdHohtBwPezdwun0dBypwZywX
+ L5iAIZgzdTo2KZXu+RTM7QCX25OsuIZNUK0fBx7MuFFqj8vtok69bXzmZ8j7mixBq7tx5Wrn6
+ i/cdujidsg4MAPszgSCu03/hJyb8p1ELPZ5aG5Cw03pNubg+wvW0vv70xGJY2ux2SC5jfv/TZ
+ 0kjKPYeKxFMu/0DII+t2N4c4ZCQJKTkCH/2d297RXIqJfaPcp0I+1ngc88j46FPAj7Y/CXSna
+ oWFRjB2Mk47zKZTsVGCP+SZCjO+ppRHXdfWvy2WO2L47GwCItPGmDKR1G9/dkNJT/v4lSeMO9
+ 8RlnxdMzk4uTIE1tZ0xj9SJNh31sjQNICyC1uJ5Jnx2LeKdeZw8Ultodwh9RHuzYigZGtEqtq
+ +w5cJnlLXt6zOcX65xf+ZznoLz9/DKEE+bN1MafnjmBF5nahezF1Q9YFoj0JclEWAYzhUDE9C
+ F62YYxCgxwvt3b48D5G4DMkXK5gD+OnF6o1vZQ8+QwLzMY/Vt77ayebi1+6HkKqsi3zgXZHmD
+ 8+778zAcA9tvPs8yE7LGV7ixGCrb8ircrZMSmUQV9blo0HEhiHR6q028GOw=
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -70,78 +78,37 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Linux PM <linux-pm@vger.kernel.org>,
- "Rafael J. Wysocki" <rjw@rjwysocki.net>, LKML <linux-kernel@vger.kernel.org>,
- Paul Mackerras <paulus@samba.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Cc: linux-ia64@vger.kernel.org, lorenzo.pieralisi@arm.com,
+ linux-mips@vger.kernel.org, linux-serial@vger.kernel.org, andrew@aj.id.au,
+ khilman@baylibre.com, sudeep.holla@arm.com, liviu.dudau@arm.com,
+ linux-kernel@vger.kernel.org, vz@mleia.com, linux@prisktech.co.nz,
+ sparclinux@vger.kernel.org, macro@linux-mips.org, slemieux.tyco@gmail.com,
+ matthias.bgg@gmail.com, jacmet@sunsite.dk, linux-amlogic@lists.infradead.org,
+ andriy.shevchenko@linux.intel.com, linuxppc-dev@lists.ozlabs.org,
+ davem@davemloft.net
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Sat, Apr 27, 2019 at 12:54 PM Paul Menzel <pmenzel@molgen.mpg.de> wrote:
->
-> Dear Linux folks,
->
->
-> Updating an IBM S822LC from Ubuntu 18.10 to 19.04 some user space stuff
-> seems to have changed, so that going into sleep/suspend is enabled.
->
-> That raises two questions.
->
-> 1.  Is suspend actually supported on a POWER8 processor?
+On 27.04.19 15:31, Greg KH wrote:
+> On Sat, Apr 27, 2019 at 02:51:42PM +0200, Enrico Weigelt, metux IT consult wrote:
+>> Using dev_err() instead of printk() for more consistent output.
+>> (prints device name, etc).
+>>
+>> Signed-off-by: Enrico Weigelt <info@metux.net>
+>> ---
+>>  drivers/tty/serial/dz.c | 8 ++++----
+> 
+> Do you have this hardware to test any of these changes with?
 
-Suspend-to-idle is a special variant of system suspend that does not
-depend on any special platform support.  It works by suspending
-devices and letting all of the CPUs in the system go idle (hence the
-name).
+Unfortunately not :(
 
-Also see https://www.kernel.org/doc/html/latest/admin-guide/pm/sleep-states=
-.html#suspend-to-idle
+Do you happen to know anybody who has ?
 
->
-> > Apr 27 10:18:13 power NetworkManager[7534]: <info>  [1556353093.7224] m=
-anager: sleep: sleep requested (sleeping: no  e
-> > Apr 27 10:18:13 power systemd[1]: Reached target Sleep.
-> > Apr 27 10:18:13 power systemd[1]: Starting Suspend...
-> > Apr 27 10:18:13 power systemd-sleep[82190]: Suspending system...
-> > Apr 27 10:18:13 power kernel: PM: suspend entry (s2idle)
-> > -- Reboot --
->
-> > $ uname -m
-> > ppc64le
-> > $ more /proc/version
-> > Linux version 5.1.0-rc6+ (joey@power) (gcc version 8.3.0 (Ubuntu 8.3.0-=
-6ubuntu1)) #1 SMP Sat Apr 27 10:01:48 CEST 2019
-> > $ more /sys/power/mem_sleep
-> > [s2idle]
-> > $ more /sys/power/state
-> > freeze mem
-> > $ grep _SUSPEND /boot/config-5.0.0-14-generic # also enabled in Ubuntu=
-=E2=80=99s configuration
-> > CONFIG_ARCH_SUSPEND_POSSIBLE=3Dy
-> > CONFIG_SUSPEND=3Dy
-> > CONFIG_SUSPEND_FREEZER=3Dy
-> > # CONFIG_SUSPEND_SKIP_SYNC is not set
-> > # CONFIG_PM_TEST_SUSPEND is not set
->
-> Should the Kconfig symbol `SUSPEND` be selectable? If yes, should their
-> be some detection during runtime?
->
-> 2.  If it is supported, what are the ways to getting it to resume? What
-> would the IPMI command be?
+--mtx
 
-That would depend on the distribution.
 
-Generally, you need to set up at least one device to generate wakeup interr=
-upts.
-
-The interface to do that are the /sys/devices/.../power/wakeup files,
-but that has to cause enble_irq_wake() to be called for the given IRQ,
-so some support in the underlying drivers need to be present for it to
-work.
-
-USB devices generally work as wakeup sources if the controllers reside
-on a PCI bus, for example.
-
-Thanks,
-Rafael
+-- 
+Enrico Weigelt, metux IT consult
+Free software and Linux embedded engineering
+info@metux.net -- +49-151-27565287
