@@ -2,65 +2,79 @@ Return-Path: <SRS0=4hcN=S7=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.0 required=3.0 tests=MAILING_LIST_MULTI,SPF_PASS
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_MUTT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4305EC43219
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Apr 2019 09:11:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3B112C43219
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Apr 2019 09:45:16 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C12F321670
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Apr 2019 09:11:42 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C12F321670
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	by mail.kernel.org (Postfix) with ESMTPS id 5D8CD206BF
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Apr 2019 09:45:15 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="ahGBurIg"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5D8CD206BF
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linuxfoundation.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44szRx05nRzDqMB
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Apr 2019 19:11:41 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=209.85.210.47; helo=mail-ot1-f47.google.com;
- envelope-from=rjwysocki@gmail.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=fail (p=none dis=none) header.from=kernel.org
-Received: from mail-ot1-f47.google.com (mail-ot1-f47.google.com
- [209.85.210.47])
+	by lists.ozlabs.org (Postfix) with ESMTP id 44t0Bd1W8FzDqNW
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Apr 2019 19:45:13 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44szNf6B0QzDqPG
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Apr 2019 19:08:50 +1000 (AEST)
-Received: by mail-ot1-f47.google.com with SMTP id b18so1664362otq.3
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Apr 2019 02:08:50 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:mime-version:references:in-reply-to:from:date
- :message-id:subject:to:cc:content-transfer-encoding;
- bh=2VWJO2MGiduBgVwh+y0rSMdiohlU2hlJmSsmX8IMxNI=;
- b=M++RhD0uq23pzaFCVgcGqv8ccid/Nx3rEt75y1R2kdcpeZAFyAzdU5vP27ud+6ReMe
- 9WVVO7SepZgXwmRrmjddv9B420tLAxFBdirYeMZpcRQs0iP/lNPklViU41skegrudA3Q
- SSbqXYXChW+EmRPJYFUL61co74vaDH0+q+TBg/QppcTxkridmA4KqNejfk86tRHBFlGl
- vWyrdVEKfWJnei7eHPSjzVnv7P4nyaeYlbLlJtV7N8sIan2jd7KDzzUlP5WJ9jwrQZy6
- +1ros1bWr/5fQNjHpV++ayUqXwyRoKth48M6/He/T3YMm1tUJmJK3Mebnc1iwftgnwVu
- /nwg==
-X-Gm-Message-State: APjAAAVvhz/YWYTDMGqwYeVdp/VD8o5yCwIohb0Cyl3NcRymIbf7ntTS
- ZvnOJkzOdN6iJhvFWXC1pLE2qpSxH9iq8lTDxJQ=
-X-Google-Smtp-Source: APXvYqxhvgorRjOjGR5KwL0tVgrlRLyMivMC1DNNtT60AWmSWUv/MAR76xN6ZmJSFy/scEaQioWysRLnEkElcaBCY80=
-X-Received: by 2002:a9d:6e17:: with SMTP id e23mr7531429otr.65.1556528928156; 
- Mon, 29 Apr 2019 02:08:48 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44t08n5kGszDqNC
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Apr 2019 19:43:37 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=linuxfoundation.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=kernel.org header.i=@kernel.org header.b="ahGBurIg"; 
+ dkim-atps=neutral
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 44t08n31yQz8t9Z
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Apr 2019 19:43:37 +1000 (AEST)
+Received: by ozlabs.org (Postfix)
+ id 44t08n2p2zz9sCJ; Mon, 29 Apr 2019 19:43:37 +1000 (AEST)
+Authentication-Results: ozlabs.org;
+ spf=pass (mailfrom) smtp.mailfrom=linuxfoundation.org
+ (client-ip=198.145.29.99; helo=mail.kernel.org;
+ envelope-from=gregkh@linuxfoundation.org; receiver=<UNKNOWN>)
+Authentication-Results: ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=linuxfoundation.org
+Authentication-Results: ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=kernel.org header.i=@kernel.org header.b="ahGBurIg"; 
+ dkim-atps=neutral
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 44t08n0hLfz9s70
+ for <linuxppc-dev@ozlabs.org>; Mon, 29 Apr 2019 19:43:35 +1000 (AEST)
+Received: from localhost (83-86-89-107.cable.dynamic.v4.ziggo.nl
+ [83.86.89.107])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by mail.kernel.org (Postfix) with ESMTPSA id 45E4A2075E;
+ Mon, 29 Apr 2019 09:43:32 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+ s=default; t=1556531012;
+ bh=aSHmGzzq/V1JxyY2tqNTpgwP94DZg2qxTfI03dMWZtY=;
+ h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+ b=ahGBurIgPWOS3WsQsutYLZ5WEdIWgNAgGce5qJR6KDIJp5dSb24myXD0gOAdJWQIG
+ +BWmrv9xwZQd/j4Tm5eXFQAVnyq/0T9I16m+hpniR1B6mYQCqDSehqAHTlVCM9Ms3a
+ eHQIf9wAQkc8/+em7W3Qy27EqfYPJ2Ne+rQA8YnY=
+Date: Mon, 29 Apr 2019 11:43:30 +0200
+From: Greg KH <gregkh@linuxfoundation.org>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: [PATCH stable v4.4 00/52] powerpc spectre backports for 4.4
+Message-ID: <20190429094330.GA30526@kroah.com>
+References: <20190421142037.21881-1-mpe@ellerman.id.au>
 MIME-Version: 1.0
-References: <5fdabbb9-0a62-4802-f1ca-f83584f935fa@molgen.mpg.de>
- <CAJZ5v0gobp60Pn5cdh0CohGAXSBs-EvntNqKc_dj_UTnOiogkQ@mail.gmail.com>
- <c4c2f89f-9af7-01de-9144-9f11a8dafd58@molgen.mpg.de>
-In-Reply-To: <c4c2f89f-9af7-01de-9144-9f11a8dafd58@molgen.mpg.de>
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Date: Mon, 29 Apr 2019 11:08:37 +0200
-Message-ID: <CAJZ5v0jhrtaRmb9_n_=hpqZU0iFvEsV8FKoZ1v7QANXq-dWVFQ@mail.gmail.com>
-Subject: Re: Why is suspend with s2idle available on POWER8 systems?
-To: Paul Menzel <pmenzel@molgen.mpg.de>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20190421142037.21881-1-mpe@ellerman.id.au>
+User-Agent: Mutt/1.11.4 (2019-03-13)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -72,122 +86,20 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>,
- Linux PM <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>,
- LKML <linux-kernel@vger.kernel.org>, Paul Mackerras <paulus@samba.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Cc: npiggin@gmail.com, diana.craciun@nxp.com, linuxppc-dev@ozlabs.org,
+ stable@vger.kernel.org, msuchanek@suse.de
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, Apr 29, 2019 at 10:50 AM Paul Menzel <pmenzel@molgen.mpg.de> wrote:
->
-> Dear Rafael,
->
->
-> On 04/29/2019 09:17 AM, Rafael J. Wysocki wrote:
-> > On Sat, Apr 27, 2019 at 12:54 PM Paul Menzel <pmenzel@molgen.mpg.de> wr=
-ote:
->
-> >> Updating an IBM S822LC from Ubuntu 18.10 to 19.04 some user space stuf=
-f
-> >> seems to have changed, so that going into sleep/suspend is enabled.
-> >>
-> >> That raises two questions.
-> >>
-> >> 1.  Is suspend actually supported on a POWER8 processor?
-> >
-> > Suspend-to-idle is a special variant of system suspend that does not
-> > depend on any special platform support.  It works by suspending
-> > devices and letting all of the CPUs in the system go idle (hence the
-> > name).
-> >
-> > Also see https://www.kernel.org/doc/html/latest/admin-guide/pm/sleep-st=
-ates.html#suspend-to-idle
->
-> Thanks. I guess I mixed it up with the new S0ix-states [1].
+On Mon, Apr 22, 2019 at 12:19:45AM +1000, Michael Ellerman wrote:
+> -----BEGIN PGP SIGNED MESSAGE-----
+> Hash: SHA1
+> 
+> Hi Greg/Sasha,
+> 
+> Please queue up these powerpc patches for 4.4 if you have no objections.
 
-Those can be entered via suspend-to-idle, if supported and actually
-reachable on a given platform, but suspend-to-idle is more general
-than that.
+All now queued up, thanks.
 
-> >>> Apr 27 10:18:13 power NetworkManager[7534]: <info>  [1556353093.7224]=
- manager: sleep: sleep requested (sleeping: no  e
-> >>> Apr 27 10:18:13 power systemd[1]: Reached target Sleep.
-> >>> Apr 27 10:18:13 power systemd[1]: Starting Suspend...
-> >>> Apr 27 10:18:13 power systemd-sleep[82190]: Suspending system...
-> >>> Apr 27 10:18:13 power kernel: PM: suspend entry (s2idle)
-> >>> -- Reboot --
-> >>
-> >>> $ uname -m
-> >>> ppc64le
-> >>> $ more /proc/version
-> >>> Linux version 5.1.0-rc6+ (joey@power) (gcc version 8.3.0 (Ubuntu 8.3.=
-0-6ubuntu1)) #1 SMP Sat Apr 27 10:01:48 CEST 2019
-> >>> $ more /sys/power/mem_sleep
-> >>> [s2idle]
-> >>> $ more /sys/power/state
-> >>> freeze mem
-> >>> $ grep _SUSPEND /boot/config-5.0.0-14-generic # also enabled in Ubunt=
-u=E2=80=99s configuration
-> >>> CONFIG_ARCH_SUSPEND_POSSIBLE=3Dy
-> >>> CONFIG_SUSPEND=3Dy
-> >>> CONFIG_SUSPEND_FREEZER=3Dy
-> >>> # CONFIG_SUSPEND_SKIP_SYNC is not set
-> >>> # CONFIG_PM_TEST_SUSPEND is not set
-> >>
-> >> Should the Kconfig symbol `SUSPEND` be selectable? If yes, should thei=
-r
-> >> be some detection during runtime?
-> >>
-> >> 2.  If it is supported, what are the ways to getting it to resume? Wha=
-t
-> >> would the IPMI command be?
-> >
-> > That would depend on the distribution.
-> >
-> > Generally, you need to set up at least one device to generate wakeup
-> > interrupts.
-> >
-> > The interface to do that are the /sys/devices/.../power/wakeup files,
-> > but that has to cause enble_irq_wake() to be called for the given IRQ,
-> > so some support in the underlying drivers need to be present for it to
-> > work.
-> >
-> > USB devices generally work as wakeup sources if the controllers reside
-> > on a PCI bus, for example.
->
-> ```
-> $ find /sys/devices/ -name wakeup | xargs grep enabled
-> /sys/devices/pci0021:00/0021:00:00.0/0021:01:00.0/0021:02:09.0/0021:0d:00=
-.0/usb1/1-3/1-3.4/power/wakeup:enabled
-> /sys/devices/pci0021:00/0021:00:00.0/0021:01:00.0/0021:02:09.0/0021:0d:00=
-.0/power/wakeup:enabled
-> $ lsusb -t
-> /:  Bus 02.Port 1: Dev 1, Class=3Droot_hub, Driver=3Dxhci_hcd/4p, 5000M
-> /:  Bus 01.Port 1: Dev 1, Class=3Droot_hub, Driver=3Dxhci_hcd/4p, 480M
->     |__ Port 3: Dev 2, If 0, Class=3DHub, Driver=3Dhub/5p, 480M
->         |__ Port 1: Dev 3, If 0, Class=3DMass Storage, Driver=3Dusb-stora=
-ge, 480M
->         |__ Port 2: Dev 4, If 0, Class=3DMass Storage, Driver=3Dusb-stora=
-ge, 480M
->         |__ Port 3: Dev 5, If 0, Class=3DMass Storage, Driver=3Dusb-stora=
-ge, 480M
->         |__ Port 4: Dev 6, If 0, Class=3DHuman Interface Device, Driver=
-=3Dusbhid, 1.5M
->         |__ Port 4: Dev 6, If 1, Class=3DHuman Interface Device, Driver=
-=3Dusbhid, 1.5M
-> $ lsusb
-> Bus 002 Device 001: ID 1d6b:0003 Linux Foundation 3.0 root hub
-> Bus 001 Device 006: ID 046b:ff10 American Megatrends, Inc. Virtual Keyboa=
-rd and Mouse
-> Bus 001 Device 005: ID 046b:ff31 American Megatrends, Inc.
-> Bus 001 Device 004: ID 046b:ff40 American Megatrends, Inc.
-> Bus 001 Device 003: ID 046b:ff20 American Megatrends, Inc.
-> Bus 001 Device 002: ID 046b:ff01 American Megatrends, Inc.
-> Bus 001 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub
-> ```
-
-I'm not really sure what you wanted to say here, but it looks like
-system wakeup is not enabled for device 6 on bus 1 which is probably
-what you want.
+greg k-h
