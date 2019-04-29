@@ -6,37 +6,37 @@ X-Spam-Status: No, score=-3.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS
 	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2F993C43219
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Apr 2019 10:59:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2C840C43219
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Apr 2019 11:00:36 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id A592320673
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Apr 2019 10:59:17 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 8C92D20673
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Apr 2019 11:00:35 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="nol1j063"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A592320673
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="07VDsl4N"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8C92D20673
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linuxfoundation.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44t1r3392YzDqQl
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Apr 2019 20:59:15 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+	by lists.ozlabs.org (Postfix) with ESMTP id 44t1sY5KNwzDqSs
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Apr 2019 21:00:33 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44t0ND2PS3zDq6N
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Apr 2019 19:53:32 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44t0NF3lbCzDqPk
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Apr 2019 19:53:33 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=linuxfoundation.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="nol1j063"; 
+ unprotected) header.d=kernel.org header.i=@kernel.org header.b="07VDsl4N"; 
  dkim-atps=neutral
 Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 44t0NC64pPz8tDC
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Apr 2019 19:53:31 +1000 (AEST)
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 44t0NF1K4Jz8tDC
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Apr 2019 19:53:33 +1000 (AEST)
 Received: by ozlabs.org (Postfix)
- id 44t0NC231Fz9sMM; Mon, 29 Apr 2019 19:53:31 +1000 (AEST)
+ id 44t0NF02Lfz9s70; Mon, 29 Apr 2019 19:53:33 +1000 (AEST)
 Authentication-Results: ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=linuxfoundation.org
  (client-ip=198.145.29.99; helo=mail.kernel.org;
@@ -44,35 +44,35 @@ Authentication-Results: ozlabs.org;
 Authentication-Results: ozlabs.org; dmarc=none (p=none dis=none)
  header.from=linuxfoundation.org
 Authentication-Results: ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="nol1j063"; 
+ unprotected) header.d=kernel.org header.i=@kernel.org header.b="07VDsl4N"; 
  dkim-atps=neutral
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 44t0NB3n3Gz9sCJ
- for <linuxppc-dev@ozlabs.org>; Mon, 29 Apr 2019 19:53:30 +1000 (AEST)
+ by ozlabs.org (Postfix) with ESMTPS id 44t0ND3fdWz9sCJ
+ for <linuxppc-dev@ozlabs.org>; Mon, 29 Apr 2019 19:53:32 +1000 (AEST)
 Received: from localhost (83-86-89-107.cable.dynamic.v4.ziggo.nl
  [83.86.89.107])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id E364620449;
- Mon, 29 Apr 2019 09:53:27 +0000 (UTC)
+ by mail.kernel.org (Postfix) with ESMTPSA id 754D5206BF;
+ Mon, 29 Apr 2019 09:53:30 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1556531608;
- bh=/NDqxH2KbE8J+PCpGx2EDyO6eGWgB86Aye7ps+gPCmw=;
+ s=default; t=1556531610;
+ bh=pKmw2lHQ1UPhbktOb7wO1b4NVseOwH/92dMUxch8cQg=;
  h=Subject:To:Cc:From:Date:In-Reply-To:From;
- b=nol1j0635CAaZXbKOpO4m0FDhlDkwtbW5IkR7E7v/2wZWlm2DvAmXmemtLUUqxTjH
- 7/I8cD2ZhfRRe5WswM0eveLpVeeF7tv5iMJ5NgpZ3UUhcubaCEQ6qDo6mZLlT0eFTB
- A+9exGGVS5LTTtBPGv5k7XpcBiux59YRkBgKVRr0=
-Subject: Patch "powerpc/rfi-flush: Always enable fallback flush on pseries"
- has been added to the 4.4-stable tree
+ b=07VDsl4Nfmp1xHaluPNUZ/yjKcO/AbGe4USjq1uVbPydtSWiirCjluZPMSeTnIT7U
+ zgyJcURPsFhvp27vfQEuLIIkYLwJVufLaqMqXC/7k8dOT2l1kHKjLdKYCL3mJndbP+
+ Q6BlbGmq7AkwQxMFBhHTWQQnRG6dkB3+cPFotu3E=
+Subject: Patch "powerpc/rfi-flush: Move the logic to avoid a redo into the
+ debugfs code" has been added to the 4.4-stable tree
 To: christophe.leroy@c-s.fr, diana.craciun@nxp.com, gregkh@linuxfoundation.org,
  linuxppc-dev@ozlabs.org, mauricfo@linux.vnet.ibm.com, mpe@ellerman.id.au,
  msuchanek@suse.de, npiggin@gmail.com
 From: <gregkh@linuxfoundation.org>
-Date: Mon, 29 Apr 2019 11:51:30 +0200
-In-Reply-To: <20190421142037.21881-8-mpe@ellerman.id.au>
-Message-ID: <1556531490189152@kroah.com>
+Date: Mon, 29 Apr 2019 11:51:31 +0200
+In-Reply-To: <20190421142037.21881-6-mpe@ellerman.id.au>
+Message-ID: <1556531491186207@kroah.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ANSI_X3.4-1968
 Content-Transfer-Encoding: 8bit
@@ -97,13 +97,13 @@ Sender: "Linuxppc-dev"
 
 This is a note to let you know that I've just added the patch titled
 
-    powerpc/rfi-flush: Always enable fallback flush on pseries
+    powerpc/rfi-flush: Move the logic to avoid a redo into the debugfs code
 
 to the 4.4-stable tree which can be found at:
     http://www.kernel.org/git/?p=linux/kernel/git/stable/stable-queue.git;a=summary
 
 The filename of the patch is:
-     powerpc-rfi-flush-always-enable-fallback-flush-on-pseries.patch
+     powerpc-rfi-flush-move-the-logic-to-avoid-a-redo-into-the-debugfs-code.patch
 and it can be found in the queue-4.4 subdirectory.
 
 If you, or anyone else, feels it should not be added to the stable tree,
@@ -112,58 +112,66 @@ please let <stable@vger.kernel.org> know about it.
 
 From foo@baz Mon 29 Apr 2019 11:38:37 AM CEST
 From: Michael Ellerman <mpe@ellerman.id.au>
-Date: Mon, 22 Apr 2019 00:19:52 +1000
-Subject: powerpc/rfi-flush: Always enable fallback flush on pseries
+Date: Mon, 22 Apr 2019 00:19:50 +1000
+Subject: powerpc/rfi-flush: Move the logic to avoid a redo into the debugfs code
 To: stable@vger.kernel.org, gregkh@linuxfoundation.org
 Cc: linuxppc-dev@ozlabs.org, diana.craciun@nxp.com, msuchanek@suse.de, npiggin@gmail.com, christophe.leroy@c-s.fr
-Message-ID: <20190421142037.21881-8-mpe@ellerman.id.au>
+Message-ID: <20190421142037.21881-6-mpe@ellerman.id.au>
 
 From: Michael Ellerman <mpe@ellerman.id.au>
 
-commit 84749a58b6e382f109abf1e734bc4dd43c2c25bb upstream.
+commit 1e2a9fc7496955faacbbed49461d611b704a7505 upstream.
 
-This ensures the fallback flush area is always allocated on pseries,
-so in case a LPAR is migrated from a patched to an unpatched system,
-it is possible to enable the fallback flush in the target system.
+rfi_flush_enable() includes a check to see if we're already
+enabled (or disabled), and in that case does nothing.
+
+But that means calling setup_rfi_flush() a 2nd time doesn't actually
+work, which is a bit confusing.
+
+Move that check into the debugfs code, where it really belongs.
 
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 Signed-off-by: Mauricio Faria de Oliveira <mauricfo@linux.vnet.ibm.com>
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 ---
- arch/powerpc/platforms/pseries/setup.c |   10 +---------
- 1 file changed, 1 insertion(+), 9 deletions(-)
+ arch/powerpc/kernel/setup_64.c |   13 ++++++++-----
+ 1 file changed, 8 insertions(+), 5 deletions(-)
 
---- a/arch/powerpc/platforms/pseries/setup.c
-+++ b/arch/powerpc/platforms/pseries/setup.c
-@@ -508,26 +508,18 @@ static void pseries_setup_rfi_flush(void
+--- a/arch/powerpc/kernel/setup_64.c
++++ b/arch/powerpc/kernel/setup_64.c
+@@ -873,9 +873,6 @@ static void do_nothing(void *unused)
  
- 	/* Enable by default */
- 	enable = true;
-+	types = L1D_FLUSH_FALLBACK;
- 
- 	rc = plpar_get_cpu_characteristics(&result);
- 	if (rc == H_SUCCESS) {
--		types = L1D_FLUSH_NONE;
+ void rfi_flush_enable(bool enable)
+ {
+-	if (rfi_flush == enable)
+-		return;
 -
- 		if (result.character & H_CPU_CHAR_L1D_FLUSH_TRIG2)
- 			types |= L1D_FLUSH_MTTRIG;
- 		if (result.character & H_CPU_CHAR_L1D_FLUSH_ORI30)
- 			types |= L1D_FLUSH_ORI;
+ 	if (enable) {
+ 		do_rfi_flush_fixups(enabled_flush_types);
+ 		on_each_cpu(do_nothing, NULL, 1);
+@@ -929,13 +926,19 @@ void __init setup_rfi_flush(enum l1d_flu
+ #ifdef CONFIG_DEBUG_FS
+ static int rfi_flush_set(void *data, u64 val)
+ {
++	bool enable;
++
+ 	if (val == 1)
+-		rfi_flush_enable(true);
++		enable = true;
+ 	else if (val == 0)
+-		rfi_flush_enable(false);
++		enable = false;
+ 	else
+ 		return -EINVAL;
  
--		/* Use fallback if nothing set in hcall */
--		if (types == L1D_FLUSH_NONE)
--			types = L1D_FLUSH_FALLBACK;
--
- 		if ((!(result.behaviour & H_CPU_BEHAV_L1D_FLUSH_PR)) ||
- 		    (!(result.behaviour & H_CPU_BEHAV_FAVOUR_SECURITY)))
- 			enable = false;
--	} else {
--		/* Default to fallback if case hcall is not available */
--		types = L1D_FLUSH_FALLBACK;
- 	}
++	/* Only do anything if we're changing state */
++	if (enable != rfi_flush)
++		rfi_flush_enable(enable);
++
+ 	return 0;
+ }
  
- 	setup_rfi_flush(types, enable);
 
 
 Patches currently in stable-queue which might be from mpe@ellerman.id.au are
