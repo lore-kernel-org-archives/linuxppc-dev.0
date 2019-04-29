@@ -6,37 +6,37 @@ X-Spam-Status: No, score=-3.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS
 	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B42D5C43219
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Apr 2019 10:08:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6D49BC43219
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Apr 2019 10:10:08 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 2B94D2084B
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Apr 2019 10:08:27 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id E0FC02084B
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Apr 2019 10:10:07 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="tpMZo00j"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2B94D2084B
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="grRULmeS"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E0FC02084B
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linuxfoundation.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44t0jP1Lf4zDqLB
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Apr 2019 20:08:25 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+	by lists.ozlabs.org (Postfix) with ESMTP id 44t0lK0lkwzDqLC
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Apr 2019 20:10:05 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44t0LS66MYzDqPG
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Apr 2019 19:52:00 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44t0LV5N0ZzDqP9
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Apr 2019 19:52:02 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=linuxfoundation.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="tpMZo00j"; 
+ unprotected) header.d=kernel.org header.i=@kernel.org header.b="grRULmeS"; 
  dkim-atps=neutral
 Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 44t0LS41fdz8tDC
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Apr 2019 19:52:00 +1000 (AEST)
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 44t0LV4cZcz8tDC
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Apr 2019 19:52:02 +1000 (AEST)
 Received: by ozlabs.org (Postfix)
- id 44t0LS33lLz9sCJ; Mon, 29 Apr 2019 19:52:00 +1000 (AEST)
+ id 44t0LV3qWtz9sCJ; Mon, 29 Apr 2019 19:52:02 +1000 (AEST)
 Authentication-Results: ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=linuxfoundation.org
  (client-ip=198.145.29.99; helo=mail.kernel.org;
@@ -44,35 +44,35 @@ Authentication-Results: ozlabs.org;
 Authentication-Results: ozlabs.org; dmarc=none (p=none dis=none)
  header.from=linuxfoundation.org
 Authentication-Results: ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="tpMZo00j"; 
+ unprotected) header.d=kernel.org header.i=@kernel.org header.b="grRULmeS"; 
  dkim-atps=neutral
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 44t0LR20ZXz9s70
- for <linuxppc-dev@ozlabs.org>; Mon, 29 Apr 2019 19:51:59 +1000 (AEST)
+ by ozlabs.org (Postfix) with ESMTPS id 44t0LT75Dlz9s70
+ for <linuxppc-dev@ozlabs.org>; Mon, 29 Apr 2019 19:52:01 +1000 (AEST)
 Received: from localhost (83-86-89-107.cable.dynamic.v4.ziggo.nl
  [83.86.89.107])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id 403A12075E;
- Mon, 29 Apr 2019 09:51:57 +0000 (UTC)
+ by mail.kernel.org (Postfix) with ESMTPSA id E88A7206BF;
+ Mon, 29 Apr 2019 09:51:59 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1556531517;
- bh=fHGgDnY7NYBBzmC9xy4NIgEtGXMZOOe4TuzPxS+MMvc=;
+ s=default; t=1556531520;
+ bh=QN4RwSuwuA/DUerAoF6QUrawj78doX0pM9zobRDUTaU=;
  h=Subject:To:Cc:From:Date:In-Reply-To:From;
- b=tpMZo00jfbhpavJ6OVnoDDzEi3dhaFk/iGClJWxbSNQHCh0XwY4ULup8q0b49EG4j
- UFsiGp2sxNDaNy/KJEXapRX+9x4w8tRNXx0KXDorPpeZu/gyjC5+FwIkGHdNj45YLb
- 3mfyVh1YUI8hHTtmIljN633vVc6mTkRALaoNN78c=
-Subject: Patch "powerpc/64s: Enable barrier_nospec based on firmware settings"
- has been added to the 4.4-stable tree
+ b=grRULmeS2Kujq/sJtE9++T50mkM96Tt9Btr9b3iQj7KBz7wNlflW2V5cIC1VA+IkZ
+ +xYY5IcgmyLhie2frlOwuXzg0CWO7A4EQ6Ze56AgHPcyXwSECYOtsGucuO2oMLmdQ5
+ CkeEyEfjPsFslDKFkLm4CuYZPuw/FbDcRSMuYANE=
+Subject: Patch "powerpc/64: Make stf barrier PPC_BOOK3S_64 specific." has been
+ added to the 4.4-stable tree
 To: christophe.leroy@c-s.fr, diana.craciun@nxp.com, gregkh@linuxfoundation.org,
  linuxppc-dev@ozlabs.org, mpe@ellerman.id.au, msuchanek@suse.de,
  npiggin@gmail.com
 From: <gregkh@linuxfoundation.org>
 Date: Mon, 29 Apr 2019 11:51:22 +0200
-In-Reply-To: <20190421142037.21881-29-mpe@ellerman.id.au>
-Message-ID: <155653148212385@kroah.com>
+In-Reply-To: <20190421142037.21881-35-mpe@ellerman.id.au>
+Message-ID: <155653148224211@kroah.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ANSI_X3.4-1968
 Content-Transfer-Encoding: 8bit
@@ -97,13 +97,13 @@ Sender: "Linuxppc-dev"
 
 This is a note to let you know that I've just added the patch titled
 
-    powerpc/64s: Enable barrier_nospec based on firmware settings
+    powerpc/64: Make stf barrier PPC_BOOK3S_64 specific.
 
 to the 4.4-stable tree which can be found at:
     http://www.kernel.org/git/?p=linux/kernel/git/stable/stable-queue.git;a=summary
 
 The filename of the patch is:
-     powerpc-64s-enable-barrier_nospec-based-on-firmware-settings.patch
+     powerpc-64-make-stf-barrier-ppc_book3s_64-specific.patch
 and it can be found in the queue-4.4 subdirectory.
 
 If you, or anyone else, feels it should not be added to the stable tree,
@@ -112,129 +112,41 @@ please let <stable@vger.kernel.org> know about it.
 
 From foo@baz Mon 29 Apr 2019 11:38:37 AM CEST
 From: Michael Ellerman <mpe@ellerman.id.au>
-Date: Mon, 22 Apr 2019 00:20:13 +1000
-Subject: powerpc/64s: Enable barrier_nospec based on firmware settings
+Date: Mon, 22 Apr 2019 00:20:19 +1000
+Subject: powerpc/64: Make stf barrier PPC_BOOK3S_64 specific.
 To: stable@vger.kernel.org, gregkh@linuxfoundation.org
 Cc: linuxppc-dev@ozlabs.org, diana.craciun@nxp.com, msuchanek@suse.de, npiggin@gmail.com, christophe.leroy@c-s.fr
-Message-ID: <20190421142037.21881-29-mpe@ellerman.id.au>
+Message-ID: <20190421142037.21881-35-mpe@ellerman.id.au>
 
-From: Michal Suchanek <msuchanek@suse.de>
+From: Diana Craciun <diana.craciun@nxp.com>
 
-commit cb3d6759a93c6d0aea1c10deb6d00e111c29c19c upstream.
+commit 6453b532f2c8856a80381e6b9a1f5ea2f12294df upstream.
 
-Check what firmware told us and enable/disable the barrier_nospec as
-appropriate.
+NXP Book3E platforms are not vulnerable to speculative store
+bypass, so make the mitigations PPC_BOOK3S_64 specific.
 
-We err on the side of enabling the barrier, as it's no-op on older
-systems, see the comment for more detail.
-
+Signed-off-by: Diana Craciun <diana.craciun@nxp.com>
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 ---
- arch/powerpc/include/asm/setup.h       |    1 
- arch/powerpc/kernel/security.c         |   59 +++++++++++++++++++++++++++++++++
- arch/powerpc/platforms/powernv/setup.c |    1 
- arch/powerpc/platforms/pseries/setup.c |    1 
- 4 files changed, 62 insertions(+)
+ arch/powerpc/kernel/security.c |    2 ++
+ 1 file changed, 2 insertions(+)
 
---- a/arch/powerpc/include/asm/setup.h
-+++ b/arch/powerpc/include/asm/setup.h
-@@ -38,6 +38,7 @@ enum l1d_flush_type {
- 
- void setup_rfi_flush(enum l1d_flush_type, bool enable);
- void do_rfi_flush_fixups(enum l1d_flush_type types);
-+void setup_barrier_nospec(void);
- void do_barrier_nospec_fixups(bool enable);
- extern bool barrier_nospec_enabled;
- 
 --- a/arch/powerpc/kernel/security.c
 +++ b/arch/powerpc/kernel/security.c
-@@ -24,6 +24,65 @@ static void enable_barrier_nospec(bool e
- 	do_barrier_nospec_fixups(enable);
+@@ -177,6 +177,7 @@ ssize_t cpu_show_spectre_v2(struct devic
+ 	return s.len;
  }
  
-+void setup_barrier_nospec(void)
-+{
-+	bool enable;
-+
-+	/*
-+	 * It would make sense to check SEC_FTR_SPEC_BAR_ORI31 below as well.
-+	 * But there's a good reason not to. The two flags we check below are
-+	 * both are enabled by default in the kernel, so if the hcall is not
-+	 * functional they will be enabled.
-+	 * On a system where the host firmware has been updated (so the ori
-+	 * functions as a barrier), but on which the hypervisor (KVM/Qemu) has
-+	 * not been updated, we would like to enable the barrier. Dropping the
-+	 * check for SEC_FTR_SPEC_BAR_ORI31 achieves that. The only downside is
-+	 * we potentially enable the barrier on systems where the host firmware
-+	 * is not updated, but that's harmless as it's a no-op.
-+	 */
-+	enable = security_ftr_enabled(SEC_FTR_FAVOUR_SECURITY) &&
-+		 security_ftr_enabled(SEC_FTR_BNDS_CHK_SPEC_BAR);
-+
-+	enable_barrier_nospec(enable);
-+}
-+
-+#ifdef CONFIG_DEBUG_FS
-+static int barrier_nospec_set(void *data, u64 val)
-+{
-+	switch (val) {
-+	case 0:
-+	case 1:
-+		break;
-+	default:
-+		return -EINVAL;
-+	}
-+
-+	if (!!val == !!barrier_nospec_enabled)
-+		return 0;
-+
-+	enable_barrier_nospec(!!val);
-+
-+	return 0;
-+}
-+
-+static int barrier_nospec_get(void *data, u64 *val)
-+{
-+	*val = barrier_nospec_enabled ? 1 : 0;
-+	return 0;
-+}
-+
-+DEFINE_SIMPLE_ATTRIBUTE(fops_barrier_nospec,
-+			barrier_nospec_get, barrier_nospec_set, "%llu\n");
-+
-+static __init int barrier_nospec_debugfs_init(void)
-+{
-+	debugfs_create_file("barrier_nospec", 0600, powerpc_debugfs_root, NULL,
-+			    &fops_barrier_nospec);
-+	return 0;
-+}
-+device_initcall(barrier_nospec_debugfs_init);
-+#endif /* CONFIG_DEBUG_FS */
-+
- ssize_t cpu_show_meltdown(struct device *dev, struct device_attribute *attr, char *buf)
- {
- 	bool thread_priv;
---- a/arch/powerpc/platforms/powernv/setup.c
-+++ b/arch/powerpc/platforms/powernv/setup.c
-@@ -123,6 +123,7 @@ static void pnv_setup_rfi_flush(void)
- 		  security_ftr_enabled(SEC_FTR_L1D_FLUSH_HV));
- 
- 	setup_rfi_flush(type, enable);
-+	setup_barrier_nospec();
++#ifdef CONFIG_PPC_BOOK3S_64
+ /*
+  * Store-forwarding barrier support.
+  */
+@@ -322,3 +323,4 @@ static __init int stf_barrier_debugfs_in
  }
- 
- static void __init pnv_setup_arch(void)
---- a/arch/powerpc/platforms/pseries/setup.c
-+++ b/arch/powerpc/platforms/pseries/setup.c
-@@ -574,6 +574,7 @@ void pseries_setup_rfi_flush(void)
- 		 security_ftr_enabled(SEC_FTR_L1D_FLUSH_PR);
- 
- 	setup_rfi_flush(types, enable);
-+	setup_barrier_nospec();
- }
- 
- static void __init pSeries_setup_arch(void)
+ device_initcall(stf_barrier_debugfs_init);
+ #endif /* CONFIG_DEBUG_FS */
++#endif /* CONFIG_PPC_BOOK3S_64 */
 
 
 Patches currently in stable-queue which might be from mpe@ellerman.id.au are
