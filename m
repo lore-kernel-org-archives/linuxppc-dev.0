@@ -2,84 +2,67 @@ Return-Path: <SRS0=4hcN=S7=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C67B1C43219
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Apr 2019 16:04:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6E42FC43219
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Apr 2019 16:05:43 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 42BA52064A
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Apr 2019 16:04:11 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="TCJfhTf+"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 42BA52064A
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
+	by mail.kernel.org (Postfix) with ESMTPS id EDC9E2087B
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Apr 2019 16:05:42 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EDC9E2087B
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nxp.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44t8bs3D0wzDqHF
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Apr 2019 02:04:09 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44t8dd02B3zDqGX
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Apr 2019 02:05:41 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44t8Tz1vY7zDqQy
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Apr 2019 01:59:03 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=c-s.fr
- (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
- envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=c-s.fr
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="TCJfhTf+"; 
- dkim-atps=neutral
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ dmarc=fail (p=none dis=none) header.from=nxp.com
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 44t8Tz1G1Bz8tRR
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Apr 2019 01:59:03 +1000 (AEST)
+Received: by ozlabs.org (Postfix)
+ id 44t8Tz0lScz9sNN; Tue, 30 Apr 2019 01:59:03 +1000 (AEST)
+Authentication-Results: ozlabs.org; spf=pass (mailfrom) smtp.mailfrom=nxp.com
+ (client-ip=92.121.34.13; helo=inva020.nxp.com;
+ envelope-from=diana.craciun@nxp.com; receiver=<UNKNOWN>)
+Authentication-Results: ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=nxp.com
+Received: from inva020.nxp.com (inva020.nxp.com [92.121.34.13])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44t8Qr1KpBzDqRR
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Apr 2019 01:56:20 +1000 (AEST)
-Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 44t8Qg1H7zz9vD3T;
- Mon, 29 Apr 2019 17:56:11 +0200 (CEST)
-Authentication-Results: localhost; dkim=pass
- reason="1024-bit key; insecure key"
- header.d=c-s.fr header.i=@c-s.fr header.b=TCJfhTf+; dkim-adsp=pass;
- dkim-atps=neutral
-X-Virus-Scanned: Debian amavisd-new at c-s.fr
-Received: from pegase1.c-s.fr ([192.168.12.234])
- by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id e4zvibUn7XuO; Mon, 29 Apr 2019 17:56:11 +0200 (CEST)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 44t8Qg01MLz9vD3G;
- Mon, 29 Apr 2019 17:56:11 +0200 (CEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
- t=1556553371; bh=MAsrBDvhnJttPasnsN8gBilzLEIc1tXHx2VDi8YmxeA=;
- h=Subject:To:Cc:References:From:Date:In-Reply-To:From;
- b=TCJfhTf+GtIv6E3INZukOMu5Yh2lbbCEwQPfE+Jza9vNBWj1fGcVlvS9y5bh8WQEf
- A7u5vGY3+mSGrzSQnBl5pVv9YKko+vqC2/RZ1Df503Iz9uiAHImnTg5AE5lZEFW3ho
- 5D0sxY1tKt7QvFSa0C7DrgwII8Apaq2alR/vHwLs=
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 325D98B8B4;
- Mon, 29 Apr 2019 17:56:16 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id lnR_i6xj-pyv; Mon, 29 Apr 2019 17:56:16 +0200 (CEST)
-Received: from PO15451 (po15451.idsi0.si.c-s.fr [172.25.231.6])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id D48808B8B3;
- Mon, 29 Apr 2019 17:56:15 +0200 (CEST)
-Subject: Re: [PATCH 23/41] drivers: tty: serial: cpm_uart: fix styling issues
-To: "Enrico Weigelt, metux IT consult" <info@metux.net>,
- linux-kernel@vger.kernel.org
-References: <1556369542-13247-1-git-send-email-info@metux.net>
- <1556369542-13247-24-git-send-email-info@metux.net>
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Message-ID: <df50792f-88bc-379a-d9e1-4f2dc1f4965a@c-s.fr>
-Date: Mon, 29 Apr 2019 17:56:15 +0200
-User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:60.0) Gecko/20100101
- Thunderbird/60.6.1
-MIME-Version: 1.0
-In-Reply-To: <1556369542-13247-24-git-send-email-info@metux.net>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: fr
-Content-Transfer-Encoding: 8bit
+ by ozlabs.org (Postfix) with ESMTPS id 44t8Ty4hVXz9s70
+ for <linuxppc-dev@ozlabs.org>; Tue, 30 Apr 2019 01:59:02 +1000 (AEST)
+Received: from inva020.nxp.com (localhost [127.0.0.1])
+ by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id 0CFB31A0186;
+ Mon, 29 Apr 2019 17:49:38 +0200 (CEST)
+Received: from inva024.eu-rdc02.nxp.com (inva024.eu-rdc02.nxp.com
+ [134.27.226.22])
+ by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id 015881A017C;
+ Mon, 29 Apr 2019 17:49:38 +0200 (CEST)
+Received: from fsr-ub1664-009.ea.freescale.net
+ (fsr-ub1664-009.ea.freescale.net [10.171.71.77])
+ by inva024.eu-rdc02.nxp.com (Postfix) with ESMTP id AB90B205EE;
+ Mon, 29 Apr 2019 17:49:37 +0200 (CEST)
+From: Diana Craciun <diana.craciun@nxp.com>
+To: stable@vger.kernel.org,
+	gregkh@linuxfoundation.org
+Subject: [PATCH stable v4.4 8/8] Documentation: Add nospectre_v1 parameter
+Date: Mon, 29 Apr 2019 18:49:08 +0300
+Message-Id: <1556552948-24957-9-git-send-email-diana.craciun@nxp.com>
+X-Mailer: git-send-email 2.7.4
+In-Reply-To: <1556552948-24957-1-git-send-email-diana.craciun@nxp.com>
+References: <1556552948-24957-1-git-send-email-diana.craciun@nxp.com>
+X-Virus-Scanned: ClamAV using ClamSMTP
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -91,93 +74,34 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: lorenzo.pieralisi@arm.com, linux-ia64@vger.kernel.org, macro@linux-mips.org,
- andrew@aj.id.au, gregkh@linuxfoundation.org, slemieux.tyco@gmail.com,
- liviu.dudau@arm.com, linux-mips@vger.kernel.org, vz@mleia.com,
- linux@prisktech.co.nz, matthias.bgg@gmail.com, khilman@baylibre.com,
- linux-serial@vger.kernel.org, sudeep.holla@arm.com, sparclinux@vger.kernel.org,
- jacmet@sunsite.dk, linux-amlogic@lists.infradead.org,
- andriy.shevchenko@linux.intel.com, linuxppc-dev@lists.ozlabs.org,
- davem@davemloft.net
+Cc: Diana Craciun <diana.craciun@nxp.com>, linuxppc-dev@ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+Currently only supported on powerpc.
 
+Signed-off-by: Diana Craciun <diana.craciun@nxp.com>
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+---
+ Documentation/kernel-parameters.txt | 4 ++++
+ 1 file changed, 4 insertions(+)
 
-Le 27/04/2019 à 14:52, Enrico Weigelt, metux IT consult a écrit :
-> Fix checkpatch errors:
+diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
+index f0bdf78420a0..3ff87d5d6fea 100644
+--- a/Documentation/kernel-parameters.txt
++++ b/Documentation/kernel-parameters.txt
+@@ -2449,6 +2449,10 @@ bytes respectively. Such letter suffixes can also be entirely omitted.
+ 			legacy floating-point registers on task switch.
+ 
+ 	nohugeiomap	[KNL,x86] Disable kernel huge I/O mappings.
++	
++	nospectre_v1	[PPC] Disable mitigations for Spectre Variant 1 (bounds
++			check bypass). With this option data leaks are possible
++			in the system.
+ 
+ 	nospectre_v2	[X86,PPC_FSL_BOOK3E] Disable all mitigations for the Spectre variant 2
+ 			(indirect branch prediction) vulnerability. System may
+-- 
+2.17.1
 
-What the main purpose of this change ?
-
-If we apply this, any fix to stable will be a nightmare to backport. Is 
-it really worth it ?
-
-Anyway, a couple of comments in the patch below
-
-[...]
-
-> 
-> 
-> Signed-off-by: Enrico Weigelt <info@metux.net>
-> ---
->   drivers/tty/serial/cpm_uart/cpm_uart.h      | 10 +--
->   drivers/tty/serial/cpm_uart/cpm_uart_core.c | 95 ++++++++++++++++-------------
->   drivers/tty/serial/cpm_uart/cpm_uart_cpm1.h |  4 +-
->   drivers/tty/serial/cpm_uart/cpm_uart_cpm2.c |  6 +-
->   4 files changed, 64 insertions(+), 51 deletions(-)
-
-[...]
-
-> 
-> @@ -1048,9 +1058,10 @@ static void cpm_uart_early_write(struct uart_cpm_port *pinfo,
->   static int poll_wait_key(char *obuf, struct uart_cpm_port *pinfo)
->   {
->   	u_char		c, *cp;
-> -	volatile cbd_t	*bdp;
->   	int		i;
->   
-> +	volatile cbd_t	*bdp;
-> +
-
-This was likely a false positive from checkpatch. The formatting was 
-good, and now it is wrong as it adds an unnecessary blank line.
-
->   	/* Get the address of the host memory buffer.
->   	 */
->   	bdp = pinfo->rx_cur;
-
-[...]
-
-> diff --git a/drivers/tty/serial/cpm_uart/cpm_uart_cpm2.c b/drivers/tty/serial/cpm_uart/cpm_uart_cpm2.c
-> index a0fccda..154ac19 100644
-> --- a/drivers/tty/serial/cpm_uart/cpm_uart_cpm2.c
-> +++ b/drivers/tty/serial/cpm_uart/cpm_uart_cpm2.c
-> @@ -117,8 +117,7 @@ int cpm_uart_allocbuf(struct uart_cpm_port *pinfo, unsigned int is_con)
->   	if (is_con) {
->   		mem_addr = kzalloc(memsz, GFP_NOWAIT);
->   		dma_addr = virt_to_bus(mem_addr);
-> -	}
-> -	else
-> +	} else
->   		mem_addr = dma_alloc_coherent(pinfo->port.dev, memsz, &dma_addr,
->   					      GFP_KERNEL);
-
-Checkpatch should have told you that in case first leg has braces, 
-second leg must have braces too even if it's a single line.
-
-Christophe
-
-
->   
-> @@ -148,7 +147,8 @@ void cpm_uart_freebuf(struct uart_cpm_port *pinfo)
->   	dma_free_coherent(pinfo->port.dev, L1_CACHE_ALIGN(pinfo->rx_nrfifos *
->   							  pinfo->rx_fifosize) +
->   			  L1_CACHE_ALIGN(pinfo->tx_nrfifos *
-> -					 pinfo->tx_fifosize), (void __force *)pinfo->mem_addr,
-> +					 pinfo->tx_fifosize),
-> +			  (void __force *)pinfo->mem_addr,
->   			  pinfo->dma_addr);
->   
->   	cpm_dpfree(pinfo->dp_addr);
-> 
