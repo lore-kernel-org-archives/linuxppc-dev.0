@@ -2,25 +2,25 @@ Return-Path: <SRS0=4hcN=S7=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D5092C43219
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Apr 2019 08:13:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 58764C43219
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Apr 2019 08:14:48 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 0ED2E206BF
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Apr 2019 08:13:30 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id C88FC206BF
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Apr 2019 08:14:47 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=haabendal.dk header.i=@haabendal.dk header.b="CP2vSNy7"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0ED2E206BF
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=haabendal.dk header.i=@haabendal.dk header.b="J72ulJHK"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C88FC206BF
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=haabendal.dk
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44sy8n0cW2zDqQj
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Apr 2019 18:13:29 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44syBG1vp9zDqNJ
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Apr 2019 18:14:46 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=none (mailfrom) smtp.mailfrom=haabendal.dk
  (client-ip=46.30.210.182; helo=mailrelay1-1.pub.mailoutpod1-cph3.one.com;
@@ -28,39 +28,38 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=haabendal.dk
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=haabendal.dk header.i=@haabendal.dk header.b="CP2vSNy7";
+ unprotected) header.d=haabendal.dk header.i=@haabendal.dk header.b="J72ulJHK";
  dkim-atps=neutral
-X-Greylist: delayed 330 seconds by postgrey-1.36 at bilbo;
- Mon, 29 Apr 2019 17:04:27 AEST
 Received: from mailrelay1-1.pub.mailoutpod1-cph3.one.com
  (mailrelay1-1.pub.mailoutpod1-cph3.one.com [46.30.210.182])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44swd70LhwzDqNC
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Apr 2019 17:04:23 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44swj109SczDq5k
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Apr 2019 17:07:48 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=haabendal.dk; s=20140924;
  h=content-type:mime-version:message-id:in-reply-to:date:references:subject:cc:
- to:from:from; bh=2zPNY/cLW+90UYWtDhMxkbIjGVuo2/qwkZPK5J1aSCw=;
- b=CP2vSNy756Mu3PtV+/tCzfX6N6bBGGfZKwlgWUT2H2cArhP/z70fnh24zaD9CdWJ/CVftTTS4gt2y
- lzy6ywMHBUcRWoNQim3ZF/6tQSSjIgSDKBsymx0AH22Qz5W85tgTTNBnRrDn0B9XKmkxbmpYhfGqah
- 6+ZKk6oxQnrQyZZY=
-X-HalOne-Cookie: 03bc1ce83dc9ecce239c19145261b37861aa8c6c
-X-HalOne-ID: dcee62ed-6a4c-11e9-b614-d0431ea8a283
+ to:from:from; bh=Rf8sJx3ur2QK6RYa5XV2vgfxSi64pRoBLm32TUjXvQ4=;
+ b=J72ulJHKQ5eRR7B3qrSTNdLv9fhmdBLHYdplxN71Kgqcrdgo5MySuk4ZXn9V8yxr3eOg/6LQPGt9z
+ tne8BVs+PM5pe6qif7+qjVZFmLlWRRmRD5cd/6UVv5y2i2zaREWePHqki8KPN48Pg0BL/QXjGGbA2X
+ p2Q/6XzJRGrQkj7U=
+X-HalOne-Cookie: c9f683bd629857cf1aa4cd2256f9c542bd663e00
+X-HalOne-ID: 58b9dc8e-6a4d-11e9-b614-d0431ea8a283
 Received: from localhost (unknown [193.163.1.7])
  by mailrelay1.pub.mailoutpod1-cph3.one.com (Halon) with ESMTPSA
- id dcee62ed-6a4c-11e9-b614-d0431ea8a283;
- Mon, 29 Apr 2019 07:03:16 +0000 (UTC)
+ id 58b9dc8e-6a4d-11e9-b614-d0431ea8a283;
+ Mon, 29 Apr 2019 07:06:44 +0000 (UTC)
 From: Esben Haabendal <esben@haabendal.dk>
 To: "Enrico Weigelt\, metux IT consult" <info@metux.net>
-Subject: Re: [PATCH 40/41] drivers: tty: serial: helper for setting mmio range
+Subject: Re: [PATCH 35/41] drivers: tty: serial: 8250: add mapsize to platform
+ data
 References: <1556369542-13247-1-git-send-email-info@metux.net>
- <1556369542-13247-41-git-send-email-info@metux.net>
-Date: Mon, 29 Apr 2019 09:03:16 +0200
-In-Reply-To: <1556369542-13247-41-git-send-email-info@metux.net> (Enrico
- Weigelt's message of "Sat, 27 Apr 2019 14:52:21 +0200")
-Message-ID: <87ef5lz423.fsf@haabendal.dk>
+ <1556369542-13247-36-git-send-email-info@metux.net>
+Date: Mon, 29 Apr 2019 09:06:44 +0200
+In-Reply-To: <1556369542-13247-36-git-send-email-info@metux.net> (Enrico
+ Weigelt's message of "Sat, 27 Apr 2019 14:52:16 +0200")
+Message-ID: <87wojdxpbv.fsf@haabendal.dk>
 User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/26.2 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain
@@ -90,22 +89,53 @@ Sender: "Linuxppc-dev"
 
 "Enrico Weigelt, metux IT consult" <info@metux.net> writes:
 
-> Introduce a little helpers for settings the mmio range from an
-> struct resource or start/len parameters with less code.
-> (also setting iotype to UPIO_MEM)
+> Adding a mapsize field for the 8250 port platform data struct,
+> so we can now set the resource size (eg. *1) and don't need
+> funny runtime detections like serial8250_port_size() anymore.
 >
-> Also converting drivers to use these new helpers as well as
-> fetching mapsize field instead of using hardcoded values.
-> (the runtime overhead of that should be negligible)
+> For now, serial8250_port_size() is called everytime we need
+> the io resource size. That function checks which chip we
+> actually have and returns the appropriate size. This approach
+> is a bit clumpsy and not entirely easy to understand, and
+> it's a violation of layers :p
 >
-> The idea is moving to a consistent scheme, so later common
-> calls like request+ioremap combination can be done by generic
-> helpers.
+> Obviously, that information cannot change after the driver init,
+> so we can safely do that probing once on driver init and just
+> use the stored value later.
+>
+> *1) arch/mips/alchemy/common/platform.c
+>
+> Signed-off-by: Enrico Weigelt <info@metux.net>
+> ---
+>  drivers/tty/serial/8250/8250_core.c | 1 +
+>  include/linux/serial_8250.h         | 1 +
+>  2 files changed, 2 insertions(+)
+>
+> diff --git a/drivers/tty/serial/8250/8250_core.c b/drivers/tty/serial/8250/8250_core.c
+> index e441221..71a398b 100644
+> --- a/drivers/tty/serial/8250/8250_core.c
+> +++ b/drivers/tty/serial/8250/8250_core.c
+> @@ -814,6 +814,7 @@ static int serial8250_probe(struct platform_device *dev)
+>  		uart.port.iotype	= p->iotype;
+>  		uart.port.flags		= p->flags;
+>  		uart.port.mapbase	= p->mapbase;
+> +		uart.port.mapsize	= p->mapsize;
+>  		uart.port.hub6		= p->hub6;
+>  		uart.port.private_data	= p->private_data;
+>  		uart.port.type		= p->type;
+> diff --git a/include/linux/serial_8250.h b/include/linux/serial_8250.h
+> index 5a655ba..8b8183a 100644
+> --- a/include/linux/serial_8250.h
+> +++ b/include/linux/serial_8250.h
+> @@ -22,6 +22,7 @@ struct plat_serial8250_port {
+>  	unsigned long	iobase;		/* io base address */
+>  	void __iomem	*membase;	/* ioremap cookie or NULL */
+>  	resource_size_t	mapbase;	/* resource base */
+> +	resource_size_t	mapsize;	/* resource size */
+>  	unsigned int	irq;		/* interrupt number */
+>  	unsigned long	irqflags;	/* request_irq flags */
+>  	unsigned int	uartclk;	/* UART clock rate */
 
-Why not simply replace iobase, mapbase and mapsize with a struct
-resource value instead?
-
-Incidentally, that would allow to specify a memory resource with a
-parent memory resource :)
+Or replace iobase, mapbase and mapsize with a struct resource value?
 
 /Esben
