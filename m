@@ -6,37 +6,37 @@ X-Spam-Status: No, score=-3.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS
 	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 09E59C43219
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Apr 2019 10:52:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DC26DC43219
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Apr 2019 10:53:53 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 7EC3020673
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Apr 2019 10:52:24 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 56C2E20673
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Apr 2019 10:53:53 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="WdEqVyhl"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7EC3020673
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="ok/0Sv6U"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 56C2E20673
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linuxfoundation.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44t1h674qtzDqSr
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Apr 2019 20:52:22 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+	by lists.ozlabs.org (Postfix) with ESMTP id 44t1jq41CGzDqVK
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Apr 2019 20:53:51 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44t0My0TSgzDqQ1
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Apr 2019 19:53:18 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44t0N23Wq0zDqJg
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Apr 2019 19:53:22 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=linuxfoundation.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="WdEqVyhl"; 
+ unprotected) header.d=kernel.org header.i=@kernel.org header.b="ok/0Sv6U"; 
  dkim-atps=neutral
 Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 44t0Mx6YWwz8tDC
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Apr 2019 19:53:17 +1000 (AEST)
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 44t0N20ZS5z8tDC
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Apr 2019 19:53:22 +1000 (AEST)
 Received: by ozlabs.org (Postfix)
- id 44t0Mx5vTzz9sCJ; Mon, 29 Apr 2019 19:53:17 +1000 (AEST)
+ id 44t0N15xHFz9sCJ; Mon, 29 Apr 2019 19:53:21 +1000 (AEST)
 Authentication-Results: ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=linuxfoundation.org
  (client-ip=198.145.29.99; helo=mail.kernel.org;
@@ -44,35 +44,35 @@ Authentication-Results: ozlabs.org;
 Authentication-Results: ozlabs.org; dmarc=none (p=none dis=none)
  header.from=linuxfoundation.org
 Authentication-Results: ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="WdEqVyhl"; 
+ unprotected) header.d=kernel.org header.i=@kernel.org header.b="ok/0Sv6U"; 
  dkim-atps=neutral
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 44t0Mx16tBz9s70
- for <linuxppc-dev@ozlabs.org>; Mon, 29 Apr 2019 19:53:17 +1000 (AEST)
+ by ozlabs.org (Postfix) with ESMTPS id 44t0Mz5VhRz9s70
+ for <linuxppc-dev@ozlabs.org>; Mon, 29 Apr 2019 19:53:19 +1000 (AEST)
 Received: from localhost (83-86-89-107.cable.dynamic.v4.ziggo.nl
  [83.86.89.107])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id 2F87A206BF;
- Mon, 29 Apr 2019 09:53:15 +0000 (UTC)
+ by mail.kernel.org (Postfix) with ESMTPSA id C159120449;
+ Mon, 29 Apr 2019 09:53:17 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1556531595;
- bh=aRgh64GW2w1UVgZOiZFmAA8SkdACvSo/6Xi++cdnK4o=;
+ s=default; t=1556531598;
+ bh=M+3uB4cLv1XIDhsxT0fwdMWZgOMy2+sgJyJ8ir+BcI4=;
  h=Subject:To:Cc:From:Date:In-Reply-To:From;
- b=WdEqVyhljXJtUw1ZKV2F8sua85FawyBWvyK+N9VrEE/GG0Gh7LYE4Szu5u+R2C/C5
- c9KtPcysVyX6f/CePAcaRR7czx43ycdXFy9PQSsViT0/lB2hTC1M6vLQRucE2Yny1n
- qaDBTQqHaVTEpRYGkhegFtzU3dUlewg2pBpT1wew=
-Subject: Patch "powerpc/pseries: Add new H_GET_CPU_CHARACTERISTICS flags" has
- been added to the 4.4-stable tree
+ b=ok/0Sv6U0z/8j+nYFoLZPfcNRfc6x6OiJEYwzcdU4/etZ9lnWjrvVNhfpBvVbw2XP
+ 69llIfLa4bbMmDl276a4GAyDwrCJT/RsZYcyoa5/ZXDZ4RnqR0yEGrFmK8zVVQm/tV
+ 0bUgUgb0+deW4KTTdGahrilUsfr1Q04i+urD4EAs=
+Subject: Patch "powerpc/pseries: Use the security flags in
+ pseries_setup_rfi_flush()" has been added to the 4.4-stable tree
 To: christophe.leroy@c-s.fr, diana.craciun@nxp.com, gregkh@linuxfoundation.org,
  linuxppc-dev@ozlabs.org, mpe@ellerman.id.au, msuchanek@suse.de,
  npiggin@gmail.com
 From: <gregkh@linuxfoundation.org>
-Date: Mon, 29 Apr 2019 11:51:28 +0200
-In-Reply-To: <20190421142037.21881-10-mpe@ellerman.id.au>
-Message-ID: <15565314885987@kroah.com>
+Date: Mon, 29 Apr 2019 11:51:29 +0200
+In-Reply-To: <20190421142037.21881-18-mpe@ellerman.id.au>
+Message-ID: <155653148924354@kroah.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ANSI_X3.4-1968
 Content-Transfer-Encoding: 8bit
@@ -97,13 +97,13 @@ Sender: "Linuxppc-dev"
 
 This is a note to let you know that I've just added the patch titled
 
-    powerpc/pseries: Add new H_GET_CPU_CHARACTERISTICS flags
+    powerpc/pseries: Use the security flags in pseries_setup_rfi_flush()
 
 to the 4.4-stable tree which can be found at:
     http://www.kernel.org/git/?p=linux/kernel/git/stable/stable-queue.git;a=summary
 
 The filename of the patch is:
-     powerpc-pseries-add-new-h_get_cpu_characteristics-flags.patch
+     powerpc-pseries-use-the-security-flags-in-pseries_setup_rfi_flush.patch
 and it can be found in the queue-4.4 subdirectory.
 
 If you, or anyone else, feels it should not be added to the stable tree,
@@ -112,37 +112,71 @@ please let <stable@vger.kernel.org> know about it.
 
 From foo@baz Mon 29 Apr 2019 11:38:37 AM CEST
 From: Michael Ellerman <mpe@ellerman.id.au>
-Date: Mon, 22 Apr 2019 00:19:54 +1000
-Subject: powerpc/pseries: Add new H_GET_CPU_CHARACTERISTICS flags
+Date: Mon, 22 Apr 2019 00:20:02 +1000
+Subject: powerpc/pseries: Use the security flags in pseries_setup_rfi_flush()
 To: stable@vger.kernel.org, gregkh@linuxfoundation.org
 Cc: linuxppc-dev@ozlabs.org, diana.craciun@nxp.com, msuchanek@suse.de, npiggin@gmail.com, christophe.leroy@c-s.fr
-Message-ID: <20190421142037.21881-10-mpe@ellerman.id.au>
+Message-ID: <20190421142037.21881-18-mpe@ellerman.id.au>
 
 From: Michael Ellerman <mpe@ellerman.id.au>
 
-commit c4bc36628d7f8b664657d8bd6ad1c44c177880b7 upstream.
+commit 2e4a16161fcd324b1f9bf6cb6856529f7eaf0689 upstream.
 
-Add some additional values which have been defined for the
-H_GET_CPU_CHARACTERISTICS hypercall.
+Now that we have the security flags we can simplify the code in
+pseries_setup_rfi_flush() because the security flags have pessimistic
+defaults.
 
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 ---
- arch/powerpc/include/asm/hvcall.h |    3 +++
- 1 file changed, 3 insertions(+)
+ arch/powerpc/platforms/pseries/setup.c |   27 ++++++++++++---------------
+ 1 file changed, 12 insertions(+), 15 deletions(-)
 
---- a/arch/powerpc/include/asm/hvcall.h
-+++ b/arch/powerpc/include/asm/hvcall.h
-@@ -292,6 +292,9 @@
- #define H_CPU_CHAR_L1D_FLUSH_ORI30	(1ull << 61) // IBM bit 2
- #define H_CPU_CHAR_L1D_FLUSH_TRIG2	(1ull << 60) // IBM bit 3
- #define H_CPU_CHAR_L1D_THREAD_PRIV	(1ull << 59) // IBM bit 4
-+#define H_CPU_CHAR_BRANCH_HINTS_HONORED	(1ull << 58) // IBM bit 5
-+#define H_CPU_CHAR_THREAD_RECONFIG_CTRL	(1ull << 57) // IBM bit 6
-+#define H_CPU_CHAR_COUNT_CACHE_DISABLED	(1ull << 56) // IBM bit 7
+--- a/arch/powerpc/platforms/pseries/setup.c
++++ b/arch/powerpc/platforms/pseries/setup.c
+@@ -541,30 +541,27 @@ void pseries_setup_rfi_flush(void)
+ 	bool enable;
+ 	long rc;
  
- #define H_CPU_BEHAV_FAVOUR_SECURITY	(1ull << 63) // IBM bit 0
- #define H_CPU_BEHAV_L1D_FLUSH_PR	(1ull << 62) // IBM bit 1
+-	/* Enable by default */
+-	enable = true;
+-	types = L1D_FLUSH_FALLBACK;
+-
+ 	rc = plpar_get_cpu_characteristics(&result);
+-	if (rc == H_SUCCESS) {
++	if (rc == H_SUCCESS)
+ 		init_cpu_char_feature_flags(&result);
+ 
+-		if (result.character & H_CPU_CHAR_L1D_FLUSH_TRIG2)
+-			types |= L1D_FLUSH_MTTRIG;
+-		if (result.character & H_CPU_CHAR_L1D_FLUSH_ORI30)
+-			types |= L1D_FLUSH_ORI;
+-
+-		if ((!(result.behaviour & H_CPU_BEHAV_L1D_FLUSH_PR)) ||
+-		    (!(result.behaviour & H_CPU_BEHAV_FAVOUR_SECURITY)))
+-			enable = false;
+-	}
+-
+ 	/*
+ 	 * We're the guest so this doesn't apply to us, clear it to simplify
+ 	 * handling of it elsewhere.
+ 	 */
+ 	security_ftr_clear(SEC_FTR_L1D_FLUSH_HV);
+ 
++	types = L1D_FLUSH_FALLBACK;
++
++	if (security_ftr_enabled(SEC_FTR_L1D_FLUSH_TRIG2))
++		types |= L1D_FLUSH_MTTRIG;
++
++	if (security_ftr_enabled(SEC_FTR_L1D_FLUSH_ORI30))
++		types |= L1D_FLUSH_ORI;
++
++	enable = security_ftr_enabled(SEC_FTR_FAVOUR_SECURITY) && \
++		 security_ftr_enabled(SEC_FTR_L1D_FLUSH_PR);
++
+ 	setup_rfi_flush(types, enable);
+ }
+ 
 
 
 Patches currently in stable-queue which might be from mpe@ellerman.id.au are
