@@ -2,60 +2,67 @@ Return-Path: <SRS0=4hcN=S7=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.3 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLACK
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_PASS,USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0A624C43219
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Apr 2019 11:16:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 63EB4C43219
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Apr 2019 11:54:53 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 840862087B
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Apr 2019 11:16:15 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 840862087B
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
+	by mail.kernel.org (Postfix) with ESMTPS id 988B22087B
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Apr 2019 11:54:52 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="k6XXwcfv"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 988B22087B
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44t2Cd4d0RzDqL0
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Apr 2019 21:16:13 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44t3491Ts9zDqSn
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Apr 2019 21:54:49 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=none (mailfrom)
+ smtp.mailfrom=bombadil.srs.infradead.org (client-ip=2607:7c80:54:e::133;
+ helo=bombadil.infradead.org;
+ envelope-from=batv+3f5cf76c63215fb3955b+5727+infradead.org+hch@bombadil.srs.infradead.org;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=kaod.org
- (client-ip=178.33.111.220; helo=1.mo179.mail-out.ovh.net;
- envelope-from=groug@kaod.org; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=kaod.org
-X-Greylist: delayed 1200 seconds by postgrey-1.36 at bilbo;
- Mon, 29 Apr 2019 21:12:36 AEST
-Received: from 1.mo179.mail-out.ovh.net (1.mo179.mail-out.ovh.net
- [178.33.111.220])
+ dmarc=none (p=none dis=none) header.from=lst.de
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=infradead.org header.i=@infradead.org
+ header.b="k6XXwcfv"; dkim-atps=neutral
+Received: from bombadil.infradead.org (bombadil.infradead.org
+ [IPv6:2607:7c80:54:e::133])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44t27S5dYdzDqJP
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Apr 2019 21:12:34 +1000 (AEST)
-Received: from player158.ha.ovh.net (unknown [10.108.57.50])
- by mo179.mail-out.ovh.net (Postfix) with ESMTP id 25AC0127301
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Apr 2019 12:37:09 +0200 (CEST)
-Received: from kaod.org (lns-bzn-46-82-253-208-248.adsl.proxad.net
- [82.253.208.248]) (Authenticated sender: groug@kaod.org)
- by player158.ha.ovh.net (Postfix) with ESMTPSA id C9E2051F45C6;
- Mon, 29 Apr 2019 10:37:01 +0000 (UTC)
-Date: Mon, 29 Apr 2019 12:36:59 +0200
-From: Greg Kurz <groug@kaod.org>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>
-Subject: Re: [PATCH] powerpc/powernv/npu: Fix reference leak
-Message-ID: <20190429123659.00c0622b@bahia.lan>
-In-Reply-To: <962c1d9e-719c-cb82-cabc-1cf619e1510b@ozlabs.ru>
-References: <155568805354.600470.13376593185688810607.stgit@bahia.lan>
- <962c1d9e-719c-cb82-cabc-1cf619e1510b@ozlabs.ru>
-X-Mailer: Claws Mail 3.16.0 (GTK+ 2.24.32; x86_64-redhat-linux-gnu)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44t32S53JYzDqPm
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Apr 2019 21:53:20 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+ d=infradead.org; s=bombadil.20170209; h=Content-Transfer-Encoding:
+ MIME-Version:Message-Id:Date:Subject:Cc:To:From:Sender:Reply-To:Content-Type:
+ Content-ID:Content-Description:Resent-Date:Resent-From:Resent-Sender:
+ Resent-To:Resent-Cc:Resent-Message-ID:In-Reply-To:References:List-Id:
+ List-Help:List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
+ bh=IENXPLnoXusqcRveMX69IYLx+6Bv7CG1f5ec/sjff1M=; b=k6XXwcfvJKs14QwpAHSnhoBW1
+ aGO/aRuD5TOGfyMDr8h4Gz3KEDQSvMqK5Ou5K7tbhNbbm3Fu8Gw8ReZKCvFO+T5GkW6pxcc8Xsvzq
+ oJDgGrUwFKgqhnnvQnYtZ6XYZWqLPriWNF2duXpV9kKGaTMIBgL4DGcT4g7ubCt3/36Mu9ARTJD3u
+ 5TVaTYYoY2PYA/6sOnpqcX0hrs9x4dfGDO+HjAy96Qh24Oz5EDZ5P8F+qKoQtRM9TFqPzkhAMmA3Y
+ YVbE90qYMrBuE+IZGRIuO2J0scJaDnpWY7e52ma0NV7iSUpghZp906mXESIg118fB+0t6CMv4hwY4
+ pgnNHxB2g==;
+Received: from 65-114-90-19.dia.static.qwest.net ([65.114.90.19]
+ helo=localhost)
+ by bombadil.infradead.org with esmtpsa (Exim 4.90_1 #2 (Red Hat Linux))
+ id 1hL4qS-0008Fg-NM; Mon, 29 Apr 2019 11:53:16 +0000
+From: Christoph Hellwig <hch@lst.de>
+To: mpe@ellerman.id.au
+Subject: [PATCH] powerpc: remove the __kernel_io_end export
+Date: Mon, 29 Apr 2019 06:52:41 -0500
+Message-Id: <20190429115241.12621-1-hch@lst.de>
+X-Mailer: git-send-email 2.20.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Ovh-Tracer-Id: 15264106512109181429
-X-VR-SPAMSTATE: OK
-X-VR-SPAMSCORE: -100
-X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgeduuddriedvgdefudcutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfqggfjpdevjffgvefmvefgnecuuegrihhlohhuthemucehtddtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmd
+Content-Transfer-Encoding: 8bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by
+ bombadil.infradead.org. See http://www.infradead.org/rpr.html
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -67,127 +74,33 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- stable@vger.kernel.org, Alistair Popple <alistair@popple.id.au>
+Cc: aneesh.kumar@linux.ibm.com, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, 29 Apr 2019 16:01:29 +1000
-Alexey Kardashevskiy <aik@ozlabs.ru> wrote:
+This export was added in this merge window, but without any actual
+user, or justification for a modular user.
 
-> On 20/04/2019 01:34, Greg Kurz wrote:
-> > Since 902bdc57451c, get_pci_dev() calls pci_get_domain_bus_and_slot(). This
-> > has the effect of incrementing the reference count of the PCI device, as
-> > explained in drivers/pci/search.c:
-> > 
-> >  * Given a PCI domain, bus, and slot/function number, the desired PCI
-> >  * device is located in the list of PCI devices. If the device is
-> >  * found, its reference count is increased and this function returns a
-> >  * pointer to its data structure.  The caller must decrement the
-> >  * reference count by calling pci_dev_put().  If no device is found,
-> >  * %NULL is returned.
-> > 
-> > Nothing was done to call pci_dev_put() and the reference count of GPU and
-> > NPU PCI devices rockets up.
-> > 
-> > A natural way to fix this would be to teach the callers about the change,
-> > so that they call pci_dev_put() when done with the pointer. This turns
-> > out to be quite intrusive, as it affects many paths in npu-dma.c,
-> > pci-ioda.c and vfio_pci_nvlink2.c.  
-> 
-> 
-> afaict this referencing is only done to protect the current traverser
-> and what you've done is actually a natural way (and the generic
-> pci_get_dev_by_id() does exactly the same), although this looks a bit weird.
-> 
+Fixes: a35a3c6f6065 ("powerpc/mm/hash64: Add a variable to track the end of IO mapping")
+Signed-off-by: Christoph Hellwig <hch@lst.de>
+---
+ arch/powerpc/mm/pgtable_64.c | 1 -
+ 1 file changed, 1 deletion(-)
 
-Not exactly the same: pci_get_dev_by_id() always increment the refcount
-of the returned PCI device. The refcount is only decremented when this
-device is passed to pci_get_dev_by_id() to continue searching.
-
-That means that the users of the PCI device pointer returned by
-pci_get_dev_by_id() or its exported variants pci_get_subsys(),
-pci_get_device() and pci_get_class() do handle the refcount. They
-all pass the pointer to pci_dev_put() or continue the search,
-which calls pci_dev_put() internally.
-
-Direct and indirect callers of get_pci_dev() don't care for the
-refcount at all unless I'm missing something.
-
-> 
-> > Also, the issue appeared in 4.16 and
-> > some affected code got moved around since then: it would be problematic
-> > to backport the fix to stable releases.
-> > 
-> > All that code never cared for reference counting anyway. Call pci_dev_put()
-> > from get_pci_dev() to revert to the previous behavior.  
-> >> Fixes: 902bdc57451c ("powerpc/powernv/idoa: Remove unnecessary pcidev  
-> from pci_dn")
-> > Cc: stable@vger.kernel.org # v4.16
-> > Signed-off-by: Greg Kurz <groug@kaod.org>
-> > ---
-> >  arch/powerpc/platforms/powernv/npu-dma.c |   15 ++++++++++++++-
-> >  1 file changed, 14 insertions(+), 1 deletion(-)
-> > 
-> > diff --git a/arch/powerpc/platforms/powernv/npu-dma.c b/arch/powerpc/platforms/powernv/npu-dma.c
-> > index e713ade30087..d8f3647e8fb2 100644
-> > --- a/arch/powerpc/platforms/powernv/npu-dma.c
-> > +++ b/arch/powerpc/platforms/powernv/npu-dma.c
-> > @@ -31,9 +31,22 @@ static DEFINE_SPINLOCK(npu_context_lock);
-> >  static struct pci_dev *get_pci_dev(struct device_node *dn)
-> >  {
-> >  	struct pci_dn *pdn = PCI_DN(dn);
-> > +	struct pci_dev *pdev;
-> >  
-> > -	return pci_get_domain_bus_and_slot(pci_domain_nr(pdn->phb->bus),
-> > +	pdev = pci_get_domain_bus_and_slot(pci_domain_nr(pdn->phb->bus),
-> >  					   pdn->busno, pdn->devfn);
-> > +
-> > +	/*
-> > +	 * pci_get_domain_bus_and_slot() increased the reference count of
-> > +	 * the PCI device, but callers don't need that actually as the PE
-> > +	 * already holds a reference to the device.  
-> 
-> Imho this would be just enough.
-> 
-> Anyway,
-> 
-> Reviewed-by: Alexey Kardashevskiy <aik@ozlabs.ru>
-> 
-
-Thanks !
-
-I now realize that I forgot to add the --cc option for stable on my stgit
-command line :-\.
-
-Cc'ing now.
-
-> 
-> How did you find it? :)
-> 
-
-While reading code to find some inspiration for OpenCAPI passthrough. :)
-
-I saw the following in vfio_pci_ibm_npu2_init():
-
-	if (!pnv_pci_get_gpu_dev(vdev->pdev))
-		return -ENODEV;
-
-and simply followed the function calls.
-
-> 
-> > Since callers aren't
-> > +	 * aware of the reference count change, call pci_dev_put() now to
-> > +	 * avoid leaks.
-> > +	 */
-> > +	if (pdev)
-> > +		pci_dev_put(pdev);
-> > +
-> > +	return pdev;
-> >  }
-> >  
-> >  /* Given a NPU device get the associated PCI device. */
-> >   
-> 
+diff --git a/arch/powerpc/mm/pgtable_64.c b/arch/powerpc/mm/pgtable_64.c
+index 72f58c076e26..1fddc81cc682 100644
+--- a/arch/powerpc/mm/pgtable_64.c
++++ b/arch/powerpc/mm/pgtable_64.c
+@@ -96,7 +96,6 @@ unsigned long __vmalloc_end;
+ EXPORT_SYMBOL(__vmalloc_end);
+ unsigned long __kernel_io_start;
+ EXPORT_SYMBOL(__kernel_io_start);
+-unsigned long __kernel_io_end;
+ EXPORT_SYMBOL(__kernel_io_end);
+ struct page *vmemmap;
+ EXPORT_SYMBOL(vmemmap);
+-- 
+2.20.1
 
