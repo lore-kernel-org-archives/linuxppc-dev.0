@@ -6,37 +6,37 @@ X-Spam-Status: No, score=-3.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS
 	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 484A3C43219
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Apr 2019 11:04:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B9FBCC43219
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Apr 2019 11:06:30 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id BB60C20673
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Apr 2019 11:04:53 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 3730E20673
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Apr 2019 11:06:30 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="ij9WBXrQ"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BB60C20673
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="iv5kdZgg"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3730E20673
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linuxfoundation.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44t1yW6NDzzDqNV
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Apr 2019 21:04:51 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44t20N3xdYzDqJS
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Apr 2019 21:06:28 +1000 (AEST)
 Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44t0NP3MlTzDqK6
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Apr 2019 19:53:41 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44t0NR5p53zDqQ1
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Apr 2019 19:53:43 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=linuxfoundation.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="ij9WBXrQ"; 
+ unprotected) header.d=kernel.org header.i=@kernel.org header.b="iv5kdZgg"; 
  dkim-atps=neutral
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 44t0NP09Qsz8vt7
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Apr 2019 19:53:41 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 44t0NR3nNRz8tDC
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Apr 2019 19:53:43 +1000 (AEST)
 Received: by ozlabs.org (Postfix)
- id 44t0NN6YK4z9sCJ; Mon, 29 Apr 2019 19:53:40 +1000 (AEST)
+ id 44t0NR2xjsz9sCJ; Mon, 29 Apr 2019 19:53:43 +1000 (AEST)
 Authentication-Results: ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=linuxfoundation.org
  (client-ip=198.145.29.99; helo=mail.kernel.org;
@@ -44,35 +44,35 @@ Authentication-Results: ozlabs.org;
 Authentication-Results: ozlabs.org; dmarc=none (p=none dis=none)
  header.from=linuxfoundation.org
 Authentication-Results: ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="ij9WBXrQ"; 
+ unprotected) header.d=kernel.org header.i=@kernel.org header.b="iv5kdZgg"; 
  dkim-atps=neutral
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 44t0NN1tVZz9s3Z
- for <linuxppc-dev@ozlabs.org>; Mon, 29 Apr 2019 19:53:40 +1000 (AEST)
+ by ozlabs.org (Postfix) with ESMTPS id 44t0NQ5pNJz9s3Z
+ for <linuxppc-dev@ozlabs.org>; Mon, 29 Apr 2019 19:53:42 +1000 (AEST)
 Received: from localhost (83-86-89-107.cable.dynamic.v4.ziggo.nl
  [83.86.89.107])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id 47FDF20449;
- Mon, 29 Apr 2019 09:53:38 +0000 (UTC)
+ by mail.kernel.org (Postfix) with ESMTPSA id D10C0206BF;
+ Mon, 29 Apr 2019 09:53:40 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1556531618;
- bh=Djmev4UYkO7r1r9g5D1kqb61sb0I3R1KMmVu5hEaGIg=;
+ s=default; t=1556531621;
+ bh=73GLQoYG1zleMWQE8VKVsXVwwbewd1GD8lDiRZFWaLY=;
  h=Subject:To:Cc:From:Date:In-Reply-To:From;
- b=ij9WBXrQjmPOQtcJt6z7VpVYwZb4sYkcO55Nqa35nPOqn7Eo8ULkYmizBMysHtENE
- 4kA869t36iNG/wKe2iKSY72ui0D3EKjeS7IXMougnsc1IqPenuZ3LesbRDoHeS76mH
- jKwTM3QXjl8EN+mcjdOKdTN+2ciyZQpG30Axcw4s=
-Subject: Patch "powerpc/xmon: Add RFI flush related fields to paca dump" has
- been added to the 4.4-stable tree
+ b=iv5kdZggXRKzQs382KZpiYTD1dFKFRe1wJ1b+w1SV3uca75rgFiR3wYaPmj5n7SNw
+ yyKZFwU8VNdTwdCsKlT+1pyzNdbZI8BgdVIR2UyP7V26Q0yFx8w6dyDwuLfZKgCJVV
+ ZxJJs4filAp0sueZGOUzO9fmG74n8/HSJWnMhhBA=
+Subject: Patch "powerpc64s: Show ori31 availability in spectre_v1 sysfs file
+ not v2" has been added to the 4.4-stable tree
 To: christophe.leroy@c-s.fr, diana.craciun@nxp.com, gregkh@linuxfoundation.org,
  linuxppc-dev@ozlabs.org, mpe@ellerman.id.au, msuchanek@suse.de,
  npiggin@gmail.com
 From: <gregkh@linuxfoundation.org>
 Date: Mon, 29 Apr 2019 11:51:32 +0200
-In-Reply-To: <20190421142037.21881-2-mpe@ellerman.id.au>
-Message-ID: <155653149215233@kroah.com>
+In-Reply-To: <20190421142037.21881-33-mpe@ellerman.id.au>
+Message-ID: <1556531492184206@kroah.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ANSI_X3.4-1968
 Content-Transfer-Encoding: 8bit
@@ -97,13 +97,13 @@ Sender: "Linuxppc-dev"
 
 This is a note to let you know that I've just added the patch titled
 
-    powerpc/xmon: Add RFI flush related fields to paca dump
+    powerpc64s: Show ori31 availability in spectre_v1 sysfs file not v2
 
 to the 4.4-stable tree which can be found at:
     http://www.kernel.org/git/?p=linux/kernel/git/stable/stable-queue.git;a=summary
 
 The filename of the patch is:
-     powerpc-xmon-add-rfi-flush-related-fields-to-paca-dump.patch
+     powerpc64s-show-ori31-availability-in-spectre_v1-sysfs-file-not-v2.patch
 and it can be found in the queue-4.4 subdirectory.
 
 If you, or anyone else, feels it should not be added to the stable tree,
@@ -112,35 +112,101 @@ please let <stable@vger.kernel.org> know about it.
 
 From foo@baz Mon 29 Apr 2019 11:38:37 AM CEST
 From: Michael Ellerman <mpe@ellerman.id.au>
-Date: Mon, 22 Apr 2019 00:19:46 +1000
-Subject: powerpc/xmon: Add RFI flush related fields to paca dump
+Date: Mon, 22 Apr 2019 00:20:17 +1000
+Subject: powerpc64s: Show ori31 availability in spectre_v1 sysfs file not v2
 To: stable@vger.kernel.org, gregkh@linuxfoundation.org
 Cc: linuxppc-dev@ozlabs.org, diana.craciun@nxp.com, msuchanek@suse.de, npiggin@gmail.com, christophe.leroy@c-s.fr
-Message-ID: <20190421142037.21881-2-mpe@ellerman.id.au>
+Message-ID: <20190421142037.21881-33-mpe@ellerman.id.au>
 
 From: Michael Ellerman <mpe@ellerman.id.au>
 
-commit 274920a3ecd5f43af0cc380bc0a9ee73a52b9f8a upstream.
+commit 6d44acae1937b81cf8115ada8958e04f601f3f2e upstream.
 
+When I added the spectre_v2 information in sysfs, I included the
+availability of the ori31 speculation barrier.
+
+Although the ori31 barrier can be used to mitigate v2, it's primarily
+intended as a spectre v1 mitigation. Spectre v2 is mitigated by
+hardware changes.
+
+So rework the sysfs files to show the ori31 information in the
+spectre_v1 file, rather than v2.
+
+Currently we display eg:
+
+  $ grep . spectre_v*
+  spectre_v1:Mitigation: __user pointer sanitization
+  spectre_v2:Mitigation: Indirect branch cache disabled, ori31 speculation barrier enabled
+
+After:
+
+  $ grep . spectre_v*
+  spectre_v1:Mitigation: __user pointer sanitization, ori31 speculation barrier enabled
+  spectre_v2:Mitigation: Indirect branch cache disabled
+
+Fixes: d6fbe1c55c55 ("powerpc/64s: Wire up cpu_show_spectre_v2()")
+Cc: stable@vger.kernel.org # v4.17+
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 ---
- arch/powerpc/xmon/xmon.c |    4 ++++
- 1 file changed, 4 insertions(+)
+ arch/powerpc/kernel/security.c |   27 +++++++++++++++++----------
+ 1 file changed, 17 insertions(+), 10 deletions(-)
 
---- a/arch/powerpc/xmon/xmon.c
-+++ b/arch/powerpc/xmon/xmon.c
-@@ -2144,6 +2144,10 @@ static void dump_one_paca(int cpu)
- 	DUMP(p, slb_cache_ptr, "x");
- 	for (i = 0; i < SLB_CACHE_ENTRIES; i++)
- 		printf(" slb_cache[%d]:        = 0x%016lx\n", i, p->slb_cache[i]);
+--- a/arch/powerpc/kernel/security.c
++++ b/arch/powerpc/kernel/security.c
+@@ -118,25 +118,35 @@ ssize_t cpu_show_meltdown(struct device
+ 
+ ssize_t cpu_show_spectre_v1(struct device *dev, struct device_attribute *attr, char *buf)
+ {
+-	if (!security_ftr_enabled(SEC_FTR_BNDS_CHK_SPEC_BAR))
+-		return sprintf(buf, "Not affected\n");
++	struct seq_buf s;
 +
-+	DUMP(p, rfi_flush_fallback_area, "px");
-+	DUMP(p, l1d_flush_congruence, "llx");
-+	DUMP(p, l1d_flush_sets, "llx");
- #endif
- 	DUMP(p, dscr_default, "llx");
- #ifdef CONFIG_PPC_BOOK3E
++	seq_buf_init(&s, buf, PAGE_SIZE - 1);
++
++	if (security_ftr_enabled(SEC_FTR_BNDS_CHK_SPEC_BAR)) {
++		if (barrier_nospec_enabled)
++			seq_buf_printf(&s, "Mitigation: __user pointer sanitization");
++		else
++			seq_buf_printf(&s, "Vulnerable");
+ 
+-	if (barrier_nospec_enabled)
+-		return sprintf(buf, "Mitigation: __user pointer sanitization\n");
++		if (security_ftr_enabled(SEC_FTR_SPEC_BAR_ORI31))
++			seq_buf_printf(&s, ", ori31 speculation barrier enabled");
+ 
+-	return sprintf(buf, "Vulnerable\n");
++		seq_buf_printf(&s, "\n");
++	} else
++		seq_buf_printf(&s, "Not affected\n");
++
++	return s.len;
+ }
+ 
+ ssize_t cpu_show_spectre_v2(struct device *dev, struct device_attribute *attr, char *buf)
+ {
+-	bool bcs, ccd, ori;
+ 	struct seq_buf s;
++	bool bcs, ccd;
+ 
+ 	seq_buf_init(&s, buf, PAGE_SIZE - 1);
+ 
+ 	bcs = security_ftr_enabled(SEC_FTR_BCCTRL_SERIALISED);
+ 	ccd = security_ftr_enabled(SEC_FTR_COUNT_CACHE_DISABLED);
+-	ori = security_ftr_enabled(SEC_FTR_SPEC_BAR_ORI31);
+ 
+ 	if (bcs || ccd) {
+ 		seq_buf_printf(&s, "Mitigation: ");
+@@ -152,9 +162,6 @@ ssize_t cpu_show_spectre_v2(struct devic
+ 	} else
+ 		seq_buf_printf(&s, "Vulnerable");
+ 
+-	if (ori)
+-		seq_buf_printf(&s, ", ori31 speculation barrier enabled");
+-
+ 	seq_buf_printf(&s, "\n");
+ 
+ 	return s.len;
 
 
 Patches currently in stable-queue which might be from mpe@ellerman.id.au are
