@@ -6,37 +6,37 @@ X-Spam-Status: No, score=-3.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS
 	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B8151C43219
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Apr 2019 10:49:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6E871C004C9
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Apr 2019 10:51:05 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 327FB20675
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Apr 2019 10:49:34 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 9723A20675
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Apr 2019 10:51:04 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="ktUaww1f"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 327FB20675
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="j33W6qxK"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9723A20675
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linuxfoundation.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44t1cr1d4DzDqV4
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Apr 2019 20:49:32 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+	by lists.ozlabs.org (Postfix) with ESMTP id 44t1fZ4f4vzDqTl
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Apr 2019 20:51:02 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44t0Mr4tnwzDqG0
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Apr 2019 19:53:12 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44t0Mw0z8BzDqPk
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Apr 2019 19:53:16 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=linuxfoundation.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="ktUaww1f"; 
+ unprotected) header.d=kernel.org header.i=@kernel.org header.b="j33W6qxK"; 
  dkim-atps=neutral
 Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 44t0Mr3nWJz8tDC
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Apr 2019 19:53:12 +1000 (AEST)
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 44t0Mv6M6lz8tDC
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Apr 2019 19:53:15 +1000 (AEST)
 Received: by ozlabs.org (Postfix)
- id 44t0Mr3JjXz9sCJ; Mon, 29 Apr 2019 19:53:12 +1000 (AEST)
+ id 44t0Mv5Nr2z9sML; Mon, 29 Apr 2019 19:53:15 +1000 (AEST)
 Authentication-Results: ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=linuxfoundation.org
  (client-ip=198.145.29.99; helo=mail.kernel.org;
@@ -44,35 +44,35 @@ Authentication-Results: ozlabs.org;
 Authentication-Results: ozlabs.org; dmarc=none (p=none dis=none)
  header.from=linuxfoundation.org
 Authentication-Results: ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="ktUaww1f"; 
+ unprotected) header.d=kernel.org header.i=@kernel.org header.b="j33W6qxK"; 
  dkim-atps=neutral
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 44t0Mq69Z6z9s3Z
- for <linuxppc-dev@ozlabs.org>; Mon, 29 Apr 2019 19:53:11 +1000 (AEST)
+ by ozlabs.org (Postfix) with ESMTPS id 44t0Mv0rMcz9s70
+ for <linuxppc-dev@ozlabs.org>; Mon, 29 Apr 2019 19:53:15 +1000 (AEST)
 Received: from localhost (83-86-89-107.cable.dynamic.v4.ziggo.nl
  [83.86.89.107])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id DE45E206BF;
- Mon, 29 Apr 2019 09:53:09 +0000 (UTC)
+ by mail.kernel.org (Postfix) with ESMTPSA id 8A35820449;
+ Mon, 29 Apr 2019 09:53:12 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1556531590;
- bh=fPatcaCer/NJfK7rf73cBW5ausiJb5QZPYLmxSjCqvs=;
+ s=default; t=1556531593;
+ bh=EhD4hZrhE+NtZNPD6wGeOCaNU7jgV1aX9ikXIYnRpco=;
  h=Subject:To:Cc:From:Date:In-Reply-To:From;
- b=ktUaww1fk0mW/pzZaGbGYwaEbT2YTMpWRDN/7JWNDfTo+KJTmlmH5+tJxD4d5k2pf
- REYmpGpD1Z2LDBaZzZkRGT4nMc0InAZxgluNj/Wts94nhcE/MTTIZGqfqVG2GYpEFF
- gmTjLGEkbCYtQy+B/at5NdZ8QJapKuklvovwHb5c=
-Subject: Patch "powerpc/pseries: Restore default security feature flags on
- setup" has been added to the 4.4-stable tree
+ b=j33W6qxK5aeY3ezy6bOvfqVBB+39qQ9SomRS3REpB7iNma66LXBHclldS5FSt6LMR
+ BOXfaX9zOiq86YfobS066UzvoGXIkWyXYR9jud2UEnp73lY+YNGRLx9wLXu4SzUc5I
+ VDIURybjbvetvBce+PkQX/wTwqnO2vojr5xw/Ets=
+Subject: Patch "powerpc/pseries: Set or clear security feature flags" has been
+ added to the 4.4-stable tree
 To: christophe.leroy@c-s.fr, diana.craciun@nxp.com, gregkh@linuxfoundation.org,
- linuxppc-dev@ozlabs.org, mauricfo@linux.vnet.ibm.com, mpe@ellerman.id.au,
- msuchanek@suse.de, npiggin@gmail.com
+ linuxppc-dev@ozlabs.org, mpe@ellerman.id.au, msuchanek@suse.de,
+ npiggin@gmail.com
 From: <gregkh@linuxfoundation.org>
 Date: Mon, 29 Apr 2019 11:51:28 +0200
-In-Reply-To: <20190421142037.21881-23-mpe@ellerman.id.au>
-Message-ID: <155653148822467@kroah.com>
+In-Reply-To: <20190421142037.21881-13-mpe@ellerman.id.au>
+Message-ID: <155653148825420@kroah.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ANSI_X3.4-1968
 Content-Transfer-Encoding: 8bit
@@ -97,13 +97,13 @@ Sender: "Linuxppc-dev"
 
 This is a note to let you know that I've just added the patch titled
 
-    powerpc/pseries: Restore default security feature flags on setup
+    powerpc/pseries: Set or clear security feature flags
 
 to the 4.4-stable tree which can be found at:
     http://www.kernel.org/git/?p=linux/kernel/git/stable/stable-queue.git;a=summary
 
 The filename of the patch is:
-     powerpc-pseries-restore-default-security-feature-flags-on-setup.patch
+     powerpc-pseries-set-or-clear-security-feature-flags.patch
 and it can be found in the queue-4.4 subdirectory.
 
 If you, or anyone else, feels it should not be added to the stable tree,
@@ -112,65 +112,98 @@ please let <stable@vger.kernel.org> know about it.
 
 From foo@baz Mon 29 Apr 2019 11:38:37 AM CEST
 From: Michael Ellerman <mpe@ellerman.id.au>
-Date: Mon, 22 Apr 2019 00:20:07 +1000
-Subject: powerpc/pseries: Restore default security feature flags on setup
+Date: Mon, 22 Apr 2019 00:19:57 +1000
+Subject: powerpc/pseries: Set or clear security feature flags
 To: stable@vger.kernel.org, gregkh@linuxfoundation.org
 Cc: linuxppc-dev@ozlabs.org, diana.craciun@nxp.com, msuchanek@suse.de, npiggin@gmail.com, christophe.leroy@c-s.fr
-Message-ID: <20190421142037.21881-23-mpe@ellerman.id.au>
+Message-ID: <20190421142037.21881-13-mpe@ellerman.id.au>
 
-From: Mauricio Faria de Oliveira <mauricfo@linux.vnet.ibm.com>
+From: Michael Ellerman <mpe@ellerman.id.au>
 
-commit 6232774f1599028a15418179d17f7df47ede770a upstream.
+commit f636c14790ead6cc22cf62279b1f8d7e11a67116 upstream.
 
-After migration the security feature flags might have changed (e.g.,
-destination system with unpatched firmware), but some flags are not
-set/clear again in init_cpu_char_feature_flags() because it assumes
-the security flags to be the defaults.
+Now that we have feature flags for security related things, set or
+clear them based on what we receive from the hypercall.
 
-Additionally, if the H_GET_CPU_CHARACTERISTICS hypercall fails then
-init_cpu_char_feature_flags() does not run again, which potentially
-might leave the system in an insecure or sub-optimal configuration.
-
-So, just restore the security feature flags to the defaults assumed
-by init_cpu_char_feature_flags() so it can set/clear them correctly,
-and to ensure safe settings are in place in case the hypercall fail.
-
-Fixes: f636c14790ea ("powerpc/pseries: Set or clear security feature flags")
-Depends-on: 19887d6a28e2 ("powerpc: Move default security feature flags")
-Signed-off-by: Mauricio Faria de Oliveira <mauricfo@linux.vnet.ibm.com>
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 ---
- arch/powerpc/platforms/pseries/setup.c |   11 +++++++++++
- 1 file changed, 11 insertions(+)
+ arch/powerpc/platforms/pseries/setup.c |   43 +++++++++++++++++++++++++++++++++
+ 1 file changed, 43 insertions(+)
 
 --- a/arch/powerpc/platforms/pseries/setup.c
 +++ b/arch/powerpc/platforms/pseries/setup.c
-@@ -502,6 +502,10 @@ static void __init find_and_init_phbs(vo
+@@ -67,6 +67,7 @@
+ #include <asm/eeh.h>
+ #include <asm/reg.h>
+ #include <asm/plpar_wrappers.h>
++#include <asm/security_features.h>
  
- static void init_cpu_char_feature_flags(struct h_cpu_char_result *result)
- {
-+	/*
-+	 * The features below are disabled by default, so we instead look to see
-+	 * if firmware has *enabled* them, and set them if so.
-+	 */
- 	if (result->character & H_CPU_CHAR_SPEC_BAR_ORI31)
- 		security_ftr_set(SEC_FTR_SPEC_BAR_ORI31);
+ #include "pseries.h"
  
-@@ -541,6 +545,13 @@ void pseries_setup_rfi_flush(void)
- 	bool enable;
- 	long rc;
+@@ -499,6 +500,40 @@ static void __init find_and_init_phbs(vo
+ 	of_pci_check_probe_only();
+ }
  
-+	/*
-+	 * Set features to the defaults assumed by init_cpu_char_feature_flags()
-+	 * so it can set/clear again any features that might have changed after
-+	 * migration, and in case the hypercall fails and it is not even called.
-+	 */
-+	powerpc_security_features = SEC_FTR_DEFAULT;
++static void init_cpu_char_feature_flags(struct h_cpu_char_result *result)
++{
++	if (result->character & H_CPU_CHAR_SPEC_BAR_ORI31)
++		security_ftr_set(SEC_FTR_SPEC_BAR_ORI31);
 +
++	if (result->character & H_CPU_CHAR_BCCTRL_SERIALISED)
++		security_ftr_set(SEC_FTR_BCCTRL_SERIALISED);
++
++	if (result->character & H_CPU_CHAR_L1D_FLUSH_ORI30)
++		security_ftr_set(SEC_FTR_L1D_FLUSH_ORI30);
++
++	if (result->character & H_CPU_CHAR_L1D_FLUSH_TRIG2)
++		security_ftr_set(SEC_FTR_L1D_FLUSH_TRIG2);
++
++	if (result->character & H_CPU_CHAR_L1D_THREAD_PRIV)
++		security_ftr_set(SEC_FTR_L1D_THREAD_PRIV);
++
++	if (result->character & H_CPU_CHAR_COUNT_CACHE_DISABLED)
++		security_ftr_set(SEC_FTR_COUNT_CACHE_DISABLED);
++
++	/*
++	 * The features below are enabled by default, so we instead look to see
++	 * if firmware has *disabled* them, and clear them if so.
++	 */
++	if (!(result->character & H_CPU_BEHAV_FAVOUR_SECURITY))
++		security_ftr_clear(SEC_FTR_FAVOUR_SECURITY);
++
++	if (!(result->character & H_CPU_BEHAV_L1D_FLUSH_PR))
++		security_ftr_clear(SEC_FTR_L1D_FLUSH_PR);
++
++	if (!(result->character & H_CPU_BEHAV_BNDS_CHK_SPEC_BAR))
++		security_ftr_clear(SEC_FTR_BNDS_CHK_SPEC_BAR);
++}
++
+ void pseries_setup_rfi_flush(void)
+ {
+ 	struct h_cpu_char_result result;
+@@ -512,6 +547,8 @@ void pseries_setup_rfi_flush(void)
+ 
  	rc = plpar_get_cpu_characteristics(&result);
- 	if (rc == H_SUCCESS)
- 		init_cpu_char_feature_flags(&result);
+ 	if (rc == H_SUCCESS) {
++		init_cpu_char_feature_flags(&result);
++
+ 		if (result.character & H_CPU_CHAR_L1D_FLUSH_TRIG2)
+ 			types |= L1D_FLUSH_MTTRIG;
+ 		if (result.character & H_CPU_CHAR_L1D_FLUSH_ORI30)
+@@ -522,6 +559,12 @@ void pseries_setup_rfi_flush(void)
+ 			enable = false;
+ 	}
+ 
++	/*
++	 * We're the guest so this doesn't apply to us, clear it to simplify
++	 * handling of it elsewhere.
++	 */
++	security_ftr_clear(SEC_FTR_L1D_FLUSH_HV);
++
+ 	setup_rfi_flush(types, enable);
+ }
+ 
 
 
 Patches currently in stable-queue which might be from mpe@ellerman.id.au are
