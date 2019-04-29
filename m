@@ -2,73 +2,82 @@ Return-Path: <SRS0=4hcN=S7=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-2.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_MUTT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 54246C43219
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Apr 2019 07:05:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B799EC43219
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Apr 2019 07:06:47 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B85D52053B
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Apr 2019 07:05:25 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B85D52053B
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=metux.net
+	by mail.kernel.org (Postfix) with ESMTPS id 332F42053B
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Apr 2019 07:06:47 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="g2SwCdon"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 332F42053B
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linuxfoundation.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44swfC26RvzDqMq
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Apr 2019 17:05:23 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=metux.net
- (client-ip=212.227.17.10; helo=mout.kundenserver.de;
- envelope-from=lkml@metux.net; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=metux.net
-X-Greylist: delayed 501 seconds by postgrey-1.36 at bilbo;
- Mon, 29 Apr 2019 17:03:44 AEST
-Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.17.10])
+	by lists.ozlabs.org (Postfix) with ESMTP id 44swgn2CsBzDqPv
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Apr 2019 17:06:45 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44swcg11kSzDqNC
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Apr 2019 17:04:03 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=linuxfoundation.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=kernel.org header.i=@kernel.org header.b="g2SwCdon"; 
+ dkim-atps=neutral
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 44swcf5VwZz8t9Z
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Apr 2019 17:04:02 +1000 (AEST)
+Received: by ozlabs.org (Postfix)
+ id 44swcf59kNz9sCJ; Mon, 29 Apr 2019 17:04:02 +1000 (AEST)
+Authentication-Results: ozlabs.org;
+ spf=pass (mailfrom) smtp.mailfrom=linuxfoundation.org
+ (client-ip=198.145.29.99; helo=mail.kernel.org;
+ envelope-from=gregkh@linuxfoundation.org; receiver=<UNKNOWN>)
+Authentication-Results: ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=linuxfoundation.org
+Authentication-Results: ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=kernel.org header.i=@kernel.org header.b="g2SwCdon"; 
+ dkim-atps=neutral
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44swcJ4652zDqLV
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Apr 2019 17:03:42 +1000 (AEST)
-Received: from [192.168.1.110] ([77.9.18.117]) by mrelayeu.kundenserver.de
- (mreue106 [212.227.15.183]) with ESMTPSA (Nemesis) id
- 1Mcp3E-1gl7730n7C-00ZzhK; Mon, 29 Apr 2019 08:48:59 +0200
-Subject: Re: [PATCH 37/41] drivers: tty: serial: 8250: simplify io resource
- size computation
-To: Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
- "Enrico Weigelt, metux IT consult" <info@metux.net>
-References: <1556369542-13247-1-git-send-email-info@metux.net>
- <1556369542-13247-38-git-send-email-info@metux.net>
- <20190428152103.GP9224@smile.fi.intel.com>
-From: "Enrico Weigelt, metux IT consult" <lkml@metux.net>
-Organization: metux IT consult
-Message-ID: <431b36fe-3071-fcfd-b04e-b4b293e79a80@metux.net>
-Date: Mon, 29 Apr 2019 08:48:53 +0200
-User-Agent: Mozilla/5.0 (X11; Linux i686 on x86_64; rv:60.0) Gecko/20100101
- Thunderbird/60.2.1
+ by ozlabs.org (Postfix) with ESMTPS id 44swcf2y21z9s6w
+ for <linuxppc-dev@ozlabs.org>; Mon, 29 Apr 2019 17:04:02 +1000 (AEST)
+Received: from localhost (83-86-89-107.cable.dynamic.v4.ziggo.nl
+ [83.86.89.107])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by mail.kernel.org (Postfix) with ESMTPSA id 6CB9E2053B;
+ Mon, 29 Apr 2019 07:03:59 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+ s=default; t=1556521439;
+ bh=qrDMuZuX1wxLmzGaTUP/jakCb0ach5fUyGbQ7MM+gc4=;
+ h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+ b=g2SwCdonv4sBwoaRV9G5h5/VYEIdu1JH66qG29TL/dVWpc5On8fkEVWhVMDI8n9AJ
+ u2rgivwzLW4an0/yc+6apvluiyNAzZ6zisXjLY+2FoloS7rvm39zSwZB1diBIqYDYM
+ 9xcUQ+oOKKTWjLTFRxyg4+bBbEaqXRmUyU2C4n1s=
+Date: Mon, 29 Apr 2019 09:03:57 +0200
+From: Greg KH <gregkh@linuxfoundation.org>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: [PATCH stable v4.4 00/52] powerpc spectre backports for 4.4
+Message-ID: <20190429070357.GA3167@kroah.com>
+References: <20190421142037.21881-1-mpe@ellerman.id.au>
+ <20190421163421.GA8449@kroah.com>
+ <87o94qac1z.fsf@concordia.ellerman.id.au>
+ <87a7g99viy.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-In-Reply-To: <20190428152103.GP9224@smile.fi.intel.com>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
-X-Provags-ID: V03:K1:M88UFXLBX4VkHOON6uaOcOnE636KnuLI4S/ApACS+qnAPKvNe1+
- 9MFUOX3DMU30BBIWozSwvAEA9pGnmBl6OGeXBQ8Y1viVSeN44w0UCqfu9VYX20rWKj/nkKL
- vlvP3uU93E8RgsPKi9ujRFjje3G/Y2BUL7L9RvbqLvk4fuIny6ic9WkRhGLxllJ4DYLhyIb
- wH0HgSJz+Bi+9teW53wMg==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:u9OLiV2NxMI=:BNT2iVnuJdRqsN8euG+dfk
- HBjZpowQEKc8i9YEaAcQxfX0Xrnk35mBLrlhMjbBvcWIf5WZw/7Pm+mXx+V1dFKcQsS+Lu50V
- 5bDOcGuFUoK/sUzxnglVGAxNs8eJ9kxrro3+a2JKPL8uc9FJYCUawT3mO+0S0UaJf2AYyGPlX
- /RZ/z54sfajEJVzLQIKL43DrXu63xpZI+71dbpqhzetYGBUoiS0lgc+R55/XoJEx0NuZwa1qb
- gyqEc67qLVR7c64zv+cEsyKzpK7p5kQ1ef+Mi2gQjZKfW3G5SRhKrag1npvi8UefJEXx2WAIe
- OPIdSh1mcaBpIWu3d7+EEIk+IIAtYF6XQ6BkXLNNKTpxQDF33pLqxZ9iendOoYitbc6AwiJUN
- wiy5MO11Nitm2hnsUfqRspcZsQCCt4JIwiUbPExEPdzVVcMo48uFkoDgrr7GDDyoX8pyckM28
- MkK0Bi+1nixNSUu+W8rKndzjg67EbLF4o3lnvwH6ty50zq5zWOmNr5vOZjszTiRS13/Edp6bN
- UDTPm2zo80Pc/XYqImCZbth4Cq4qEAv9pGzOSzSmD7J04gFZibzRJ24o31rEosJzCh9i5R+tH
- 80VfeRzGC9goSjNumViDsrjloRJmT2RznsEv2u2OF12R/CIy3vu9c6QNKE5aV2WtZ+vDejhvy
- WHPE3F3UBa0p8I2ypg5w6TxYt4pzpsPC/oQwFQATvFes43QSiGFhNZUNDYgz5zpUabRAvZXAD
- zPTghUltcJp2z28xG/BdfqeOQEK9ZaEQwmQFp7zVxyLyemxTX4aSeEkhqfM=
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <87a7g99viy.fsf@concordia.ellerman.id.au>
+User-Agent: Mutt/1.11.4 (2019-03-13)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -80,34 +89,33 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: lorenzo.pieralisi@arm.com, linux-ia64@vger.kernel.org,
- linux-serial@vger.kernel.org, andrew@aj.id.au, gregkh@linuxfoundation.org,
- sudeep.holla@arm.com, liviu.dudau@arm.com, linux-kernel@vger.kernel.org,
- vz@mleia.com, linux@prisktech.co.nz, sparclinux@vger.kernel.org,
- khilman@baylibre.com, macro@linux-mips.org, slemieux.tyco@gmail.com,
- matthias.bgg@gmail.com, jacmet@sunsite.dk, linux-amlogic@lists.infradead.org,
- linux-mips@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, davem@davemloft.net
+Cc: npiggin@gmail.com, diana.craciun@nxp.com, linuxppc-dev@ozlabs.org,
+ stable@vger.kernel.org, msuchanek@suse.de
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 28.04.19 17:21, Andy Shevchenko wrote:
-
+On Mon, Apr 29, 2019 at 04:26:45PM +1000, Michael Ellerman wrote:
+> Michael Ellerman <mpe@ellerman.id.au> writes:
+> > Greg KH <gregkh@linuxfoundation.org> writes:
+> >> On Mon, Apr 22, 2019 at 12:19:45AM +1000, Michael Ellerman wrote:
+> >>> -----BEGIN PGP SIGNED MESSAGE-----
+> >>> Hash: SHA1
+> >>> 
+> >>> Hi Greg/Sasha,
+> >>> 
+> >>> Please queue up these powerpc patches for 4.4 if you have no objections.
+> >>
+> >> why?  Do you, or someone else, really care about spectre issues in 4.4?
+> >> Who is using ppc for 4.4 becides a specific enterprise distro (and they
+> >> don't seem to be pulling in my stable updates anyway...)?
+> >
+> > Someone asked for it, but TBH I can't remember who it was. I can chase
+> > it up if you like.
 > 
->> +#define SERIAL_RT2880_IOSIZE	0x100
-> 
-> And why this is in the header file and not in corresponding C one?
+> Yeah it was a request from one of the distros. They plan to take it once
+> it lands in 4.4 stable.
 
-hmm, no particular reason, maybe just an old habit to put definitions
-into .h files ;-)
+Ok, thanks for confirming, I'll work on this this afternoon.
 
-I can move it to 8250_of.c if you like me to.
-
-
-
---mtx
-
--- 
-Enrico Weigelt, metux IT consult
-Free software and Linux embedded engineering
-info@metux.net -- +49-151-27565287
+greg k-h
