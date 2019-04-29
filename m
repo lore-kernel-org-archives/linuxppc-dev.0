@@ -2,72 +2,82 @@ Return-Path: <SRS0=4hcN=S7=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-3.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 706D8C43219
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Apr 2019 09:46:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 49ACBC43219
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Apr 2019 09:53:59 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E92DC206BF
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Apr 2019 09:46:55 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E92DC206BF
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=metux.net
+	by mail.kernel.org (Postfix) with ESMTPS id BC2C221473
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Apr 2019 09:53:58 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="V75jkGwO"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BC2C221473
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linuxfoundation.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44t0DY6lTLzDqNS
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Apr 2019 19:46:53 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=metux.net
- (client-ip=217.72.192.75; helo=mout.kundenserver.de;
- envelope-from=lkml@metux.net; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=metux.net
-X-Greylist: delayed 10459 seconds by postgrey-1.36 at bilbo;
- Mon, 29 Apr 2019 19:44:02 AEST
-Received: from mout.kundenserver.de (mout.kundenserver.de [217.72.192.75])
+	by lists.ozlabs.org (Postfix) with ESMTP id 44t0Nh5KwyzDqG0
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Apr 2019 19:53:56 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44t0L02MNkzDqP6
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Apr 2019 19:51:36 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=linuxfoundation.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=kernel.org header.i=@kernel.org header.b="V75jkGwO"; 
+ dkim-atps=neutral
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 44t0L01fWvz8vt7
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Apr 2019 19:51:36 +1000 (AEST)
+Received: by ozlabs.org (Postfix)
+ id 44t0L01Sdjz9sN6; Mon, 29 Apr 2019 19:51:36 +1000 (AEST)
+Authentication-Results: ozlabs.org;
+ spf=pass (mailfrom) smtp.mailfrom=linuxfoundation.org
+ (client-ip=198.145.29.99; helo=mail.kernel.org;
+ envelope-from=gregkh@linuxfoundation.org; receiver=<UNKNOWN>)
+Authentication-Results: ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=linuxfoundation.org
+Authentication-Results: ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=kernel.org header.i=@kernel.org header.b="V75jkGwO"; 
+ dkim-atps=neutral
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44t09G4JB8zDqNT
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Apr 2019 19:44:01 +1000 (AEST)
-Received: from [192.168.1.110] ([77.9.18.117]) by mrelayeu.kundenserver.de
- (mreue108 [212.227.15.183]) with ESMTPSA (Nemesis) id
- 1N2m3G-1gdyq42eM8-0133kZ; Mon, 29 Apr 2019 11:43:20 +0200
-Subject: Re: [PATCH 40/41] drivers: tty: serial: helper for setting mmio range
-To: Esben Haabendal <esben@haabendal.dk>,
- "Enrico Weigelt, metux IT consult" <info@metux.net>
-References: <1556369542-13247-1-git-send-email-info@metux.net>
- <1556369542-13247-41-git-send-email-info@metux.net>
- <87ef5lz423.fsf@haabendal.dk>
-From: "Enrico Weigelt, metux IT consult" <lkml@metux.net>
-Organization: metux IT consult
-Message-ID: <d0b966eb-46b7-d145-92ed-3c62c495f41b@metux.net>
-Date: Mon, 29 Apr 2019 11:43:13 +0200
-User-Agent: Mozilla/5.0 (X11; Linux i686 on x86_64; rv:60.0) Gecko/20100101
- Thunderbird/60.2.1
+ by ozlabs.org (Postfix) with ESMTPS id 44t0Kz4wyNz9sML
+ for <linuxppc-dev@ozlabs.org>; Mon, 29 Apr 2019 19:51:33 +1000 (AEST)
+Received: from localhost (83-86-89-107.cable.dynamic.v4.ziggo.nl
+ [83.86.89.107])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by mail.kernel.org (Postfix) with ESMTPSA id 13C62206BF;
+ Mon, 29 Apr 2019 09:51:30 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+ s=default; t=1556531491;
+ bh=ChtvQVZW8wxqWBid/0AtelwMimHn5MrGilSMh8p2GmM=;
+ h=Subject:To:Cc:From:Date:In-Reply-To:From;
+ b=V75jkGwOwV2vSzf10vzBsddJwWn+gsSDW0eL3Zkrur+y+wbEGySR0B8IfNlrxoalH
+ Uq5VP9qZuchzE3yzvkM2o7xurwld4SdFI1IyzzheM6PymB6m9pjM9H93Ik57Usa75H
+ 3u1Oc1IGOqabNWv1oFtL/v3na5xL8i1Fc6iCEIz8=
+Subject: Patch "powerpc/64: Add CONFIG_PPC_BARRIER_NOSPEC" has been added to
+ the 4.4-stable tree
+To: christophe.leroy@c-s.fr, diana.craciun@nxp.com, gregkh@linuxfoundation.org,
+ linuxppc-dev@ozlabs.org, mpe@ellerman.id.au, msuchanek@suse.de,
+ npiggin@gmail.com
+From: <gregkh@linuxfoundation.org>
+Date: Mon, 29 Apr 2019 11:51:21 +0200
+In-Reply-To: <20190421142037.21881-36-mpe@ellerman.id.au>
+Message-ID: <15565314814191@kroah.com>
 MIME-Version: 1.0
-In-Reply-To: <87ef5lz423.fsf@haabendal.dk>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
-X-Provags-ID: V03:K1:68dkhGSAKsaCjO526gNf2WSoTW6jL84pVEW36g5e32fJf4hZfEa
- B5yR5eOo/trCHlzEMiqf88gr4lugIpFcu4i7DTW0T8FoWZiDwOwvxkhUV//Oq9txPyP1qxO
- p0s8teHbOF2xnbWjYTCy/e6+F0vybuPcYhQPvcgRagIqrGRZ5ZI4QdP/10WEUP7zI9Ka+YU
- NVd7BerOC+zYOaIOiK9cQ==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:NvmcDnTkNeI=:ba8d+q8YRab3rFKFqBt24t
- Zg9Zpq/zp8ESR/s4VsMdM2nnOKEofNFRgQuqib0Eoa+F6Di5aptfGcy2fbPQ8PlEnZZ9eFk2I
- W8lkLs1brmFQ4pMtwo1NaxLwJO+yyvyfB7yhUe3mP3ipOkVy3TvxwOqCpUxbn7cvLhhjdXYOV
- RACHse6YI1rEPLKisTi4jbY/Z2xia1z7JZNNtXMm7NyYuxlDHoAmeM51Uq1Sm9jqHrh3VjIFE
- zH5gWFbcmJhRKcS506T4D0qDLdiTRWb5HWe08PMYOLEyCWt6KkONz7ZlQEuLletC4+ebSyFne
- +YblDaPDYWW6s7TMZS94IzEKoglkP06ZU7juKMArxn0JPRB97yN78PMrSGLDm4zCHngdgwukX
- 8QhoUFb/g5oGgRP7xEm3XeyGV0XvRu9ft3THf7jFb/oF+7zCYEmaFMR7HLRHU94BxlelmoOUT
- hf0mEVyRlee3ckCEnDTzSPPktrpdeTwqaoCQIhlRInQVIwdhHJ8XZKfDN1mzvZ2IlFCWEBcMH
- +/+AxD4dkbOiJWktWAReEU2MAQiJAuIPnt8UjKkg2V6v0lHpO3+n8CFCI9Jvijm6LfpHzTHUN
- Z7KbPljaibH9464lnBZleel3EqRWzc88wYjkyJ4C3GZdlzFeP8imAVrJmxNQRR3yOT8ND3ssO
- MC6KOR0+WrmqVYkvJIvXzV6xd3FMar2vZbSJ2ckBe+smk2GbBP44mQDVVrZ5aKzyo4QDZBzHk
- BkVF8qEdunqnt+mSaL40iQ9yOh8uAqzpNBWyyGax+adypiNnzhrhF9jigoE=
+Content-Type: text/plain; charset=ANSI_X3.4-1968
+Content-Transfer-Encoding: 8bit
+X-stable: commit
+X-Patchwork-Hint: ignore 
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -79,44 +89,242 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-ia64@vger.kernel.org, lorenzo.pieralisi@arm.com,
- linux-mips@vger.kernel.org, linux-serial@vger.kernel.org, andrew@aj.id.au,
- gregkh@linuxfoundation.org, sudeep.holla@arm.com, liviu.dudau@arm.com,
- linux-kernel@vger.kernel.org, vz@mleia.com, linux@prisktech.co.nz,
- sparclinux@vger.kernel.org, khilman@baylibre.com, macro@linux-mips.org,
- slemieux.tyco@gmail.com, matthias.bgg@gmail.com, jacmet@sunsite.dk,
- linux-amlogic@lists.infradead.org, andriy.shevchenko@linux.intel.com,
- linuxppc-dev@lists.ozlabs.org, davem@davemloft.net
+Cc: stable-commits@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 29.04.19 09:03, Esben Haabendal wrote:
 
-> Why not simply replace iobase, mapbase and mapsize with a struct
-> resource value instead?
+This is a note to let you know that I've just added the patch titled
 
-That was actually my original goal, when I started this. But the
-situation is a bit more tricky. Many drivers (especially the old ones)
-initialize these fields in different ways. And there're many places
-accessing these fields.
+    powerpc/64: Add CONFIG_PPC_BARRIER_NOSPEC
 
-Drivers for old devices should be handled w/ great care. I don't have
-access to all that hardware, so I can't test it. Therefore, I'm trying
-to move in small steps. One step ahead another.
+to the 4.4-stable tree which can be found at:
+    http://www.kernel.org/git/?p=linux/kernel/git/stable/stable-queue.git;a=summary
 
-One of my next steps would be factoring out more common operations
-(eg. mapping, etc) into helpers, up to a point, where someday no driver
-is accessing these fields directly anymore.
+The filename of the patch is:
+     powerpc-64-add-config_ppc_barrier_nospec.patch
+and it can be found in the queue-4.4 subdirectory.
 
-Then we could easily move everything into struct resource. On that
-road, we'd also need to find a way for handling the specialities of
-the various UPIO_* modes via struct resource.
+If you, or anyone else, feels it should not be added to the stable tree,
+please let <stable@vger.kernel.org> know about it.
 
 
---mtx
+From foo@baz Mon 29 Apr 2019 11:38:37 AM CEST
+From: Michael Ellerman <mpe@ellerman.id.au>
+Date: Mon, 22 Apr 2019 00:20:20 +1000
+Subject: powerpc/64: Add CONFIG_PPC_BARRIER_NOSPEC
+To: stable@vger.kernel.org, gregkh@linuxfoundation.org
+Cc: linuxppc-dev@ozlabs.org, diana.craciun@nxp.com, msuchanek@suse.de, npiggin@gmail.com, christophe.leroy@c-s.fr
+Message-ID: <20190421142037.21881-36-mpe@ellerman.id.au>
 
--- 
-Enrico Weigelt, metux IT consult
-Free software and Linux embedded engineering
-info@metux.net -- +49-151-27565287
+From: Michael Ellerman <mpe@ellerman.id.au>
+
+commit 179ab1cbf883575c3a585bcfc0f2160f1d22a149 upstream.
+
+Add a config symbol to encode which platforms support the
+barrier_nospec speculation barrier. Currently this is just Book3S 64
+but we will add Book3E in a future patch.
+
+Signed-off-by: Diana Craciun <diana.craciun@nxp.com>
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+---
+ arch/powerpc/Kconfig               |    7 ++++++-
+ arch/powerpc/include/asm/barrier.h |    6 +++---
+ arch/powerpc/include/asm/setup.h   |    2 +-
+ arch/powerpc/kernel/Makefile       |    3 ++-
+ arch/powerpc/kernel/module.c       |    4 +++-
+ arch/powerpc/kernel/vmlinux.lds.S  |    4 +++-
+ arch/powerpc/lib/feature-fixups.c  |    6 ++++--
+ 7 files changed, 22 insertions(+), 10 deletions(-)
+
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -136,7 +136,7 @@ config PPC
+ 	select GENERIC_SMP_IDLE_THREAD
+ 	select GENERIC_CMOS_UPDATE
+ 	select GENERIC_TIME_VSYSCALL_OLD
+-	select GENERIC_CPU_VULNERABILITIES	if PPC_BOOK3S_64
++	select GENERIC_CPU_VULNERABILITIES	if PPC_BARRIER_NOSPEC
+ 	select GENERIC_CLOCKEVENTS
+ 	select GENERIC_CLOCKEVENTS_BROADCAST if SMP
+ 	select ARCH_HAS_TICK_BROADCAST if GENERIC_CLOCKEVENTS_BROADCAST
+@@ -162,6 +162,11 @@ config PPC
+ 	select ARCH_HAS_DMA_SET_COHERENT_MASK
+ 	select HAVE_ARCH_SECCOMP_FILTER
+ 
++config PPC_BARRIER_NOSPEC
++    bool
++    default y
++    depends on PPC_BOOK3S_64
++
+ config GENERIC_CSUM
+ 	def_bool CPU_LITTLE_ENDIAN
+ 
+--- a/arch/powerpc/include/asm/barrier.h
++++ b/arch/powerpc/include/asm/barrier.h
+@@ -92,7 +92,7 @@ do {									\
+ #define smp_mb__after_atomic()      smp_mb()
+ #define smp_mb__before_spinlock()   smp_mb()
+ 
+-#ifdef CONFIG_PPC_BOOK3S_64
++#ifdef CONFIG_PPC_BARRIER_NOSPEC
+ /*
+  * Prevent execution of subsequent instructions until preceding branches have
+  * been fully resolved and are no longer executing speculatively.
+@@ -102,9 +102,9 @@ do {									\
+ // This also acts as a compiler barrier due to the memory clobber.
+ #define barrier_nospec() asm (stringify_in_c(barrier_nospec_asm) ::: "memory")
+ 
+-#else /* !CONFIG_PPC_BOOK3S_64 */
++#else /* !CONFIG_PPC_BARRIER_NOSPEC */
+ #define barrier_nospec_asm
+ #define barrier_nospec()
+-#endif
++#endif /* CONFIG_PPC_BARRIER_NOSPEC */
+ 
+ #endif /* _ASM_POWERPC_BARRIER_H */
+--- a/arch/powerpc/include/asm/setup.h
++++ b/arch/powerpc/include/asm/setup.h
+@@ -42,7 +42,7 @@ void setup_barrier_nospec(void);
+ void do_barrier_nospec_fixups(bool enable);
+ extern bool barrier_nospec_enabled;
+ 
+-#ifdef CONFIG_PPC_BOOK3S_64
++#ifdef CONFIG_PPC_BARRIER_NOSPEC
+ void do_barrier_nospec_fixups_range(bool enable, void *start, void *end);
+ #else
+ static inline void do_barrier_nospec_fixups_range(bool enable, void *start, void *end) { };
+--- a/arch/powerpc/kernel/Makefile
++++ b/arch/powerpc/kernel/Makefile
+@@ -40,10 +40,11 @@ obj-$(CONFIG_PPC64)		+= setup_64.o sys_p
+ obj-$(CONFIG_VDSO32)		+= vdso32/
+ obj-$(CONFIG_HAVE_HW_BREAKPOINT)	+= hw_breakpoint.o
+ obj-$(CONFIG_PPC_BOOK3S_64)	+= cpu_setup_ppc970.o cpu_setup_pa6t.o
+-obj-$(CONFIG_PPC_BOOK3S_64)	+= cpu_setup_power.o security.o
++obj-$(CONFIG_PPC_BOOK3S_64)	+= cpu_setup_power.o
+ obj-$(CONFIG_PPC_BOOK3S_64)	+= mce.o mce_power.o
+ obj64-$(CONFIG_RELOCATABLE)	+= reloc_64.o
+ obj-$(CONFIG_PPC_BOOK3E_64)	+= exceptions-64e.o idle_book3e.o
++obj-$(CONFIG_PPC_BARRIER_NOSPEC) += security.o
+ obj-$(CONFIG_PPC64)		+= vdso64/
+ obj-$(CONFIG_ALTIVEC)		+= vecemu.o
+ obj-$(CONFIG_PPC_970_NAP)	+= idle_power4.o
+--- a/arch/powerpc/kernel/module.c
++++ b/arch/powerpc/kernel/module.c
+@@ -67,13 +67,15 @@ int module_finalize(const Elf_Ehdr *hdr,
+ 		do_feature_fixups(powerpc_firmware_features,
+ 				  (void *)sect->sh_addr,
+ 				  (void *)sect->sh_addr + sect->sh_size);
++#endif /* CONFIG_PPC64 */
+ 
++#ifdef CONFIG_PPC_BARRIER_NOSPEC
+ 	sect = find_section(hdr, sechdrs, "__spec_barrier_fixup");
+ 	if (sect != NULL)
+ 		do_barrier_nospec_fixups_range(barrier_nospec_enabled,
+ 				  (void *)sect->sh_addr,
+ 				  (void *)sect->sh_addr + sect->sh_size);
+-#endif
++#endif /* CONFIG_PPC_BARRIER_NOSPEC */
+ 
+ 	sect = find_section(hdr, sechdrs, "__lwsync_fixup");
+ 	if (sect != NULL)
+--- a/arch/powerpc/kernel/vmlinux.lds.S
++++ b/arch/powerpc/kernel/vmlinux.lds.S
+@@ -93,14 +93,16 @@ SECTIONS
+ 		*(__rfi_flush_fixup)
+ 		__stop___rfi_flush_fixup = .;
+ 	}
++#endif /* CONFIG_PPC64 */
+ 
++#ifdef CONFIG_PPC_BARRIER_NOSPEC
+ 	. = ALIGN(8);
+ 	__spec_barrier_fixup : AT(ADDR(__spec_barrier_fixup) - LOAD_OFFSET) {
+ 		__start___barrier_nospec_fixup = .;
+ 		*(__barrier_nospec_fixup)
+ 		__stop___barrier_nospec_fixup = .;
+ 	}
+-#endif
++#endif /* CONFIG_PPC_BARRIER_NOSPEC */
+ 
+ 	EXCEPTION_TABLE(0)
+ 
+--- a/arch/powerpc/lib/feature-fixups.c
++++ b/arch/powerpc/lib/feature-fixups.c
+@@ -301,6 +301,9 @@ void do_barrier_nospec_fixups_range(bool
+ 	printk(KERN_DEBUG "barrier-nospec: patched %d locations\n", i);
+ }
+ 
++#endif /* CONFIG_PPC_BOOK3S_64 */
++
++#ifdef CONFIG_PPC_BARRIER_NOSPEC
+ void do_barrier_nospec_fixups(bool enable)
+ {
+ 	void *start, *end;
+@@ -310,8 +313,7 @@ void do_barrier_nospec_fixups(bool enabl
+ 
+ 	do_barrier_nospec_fixups_range(enable, start, end);
+ }
+-
+-#endif /* CONFIG_PPC_BOOK3S_64 */
++#endif /* CONFIG_PPC_BARRIER_NOSPEC */
+ 
+ void do_lwsync_fixups(unsigned long value, void *fixup_start, void *fixup_end)
+ {
+
+
+Patches currently in stable-queue which might be from mpe@ellerman.id.au are
+
+queue-4.4/powerpc-64s-add-support-for-a-store-forwarding-barrier-at-kernel-entry-exit.patch
+queue-4.4/powerpc-64-make-stf-barrier-ppc_book3s_64-specific.patch
+queue-4.4/powerpc-pseries-set-or-clear-security-feature-flags.patch
+queue-4.4/powerpc-fsl-fix-spectre_v2-mitigations-reporting.patch
+queue-4.4/powerpc-64s-patch-barrier_nospec-in-modules.patch
+queue-4.4/powerpc-pseries-support-firmware-disable-of-rfi-flush.patch
+queue-4.4/powerpc-rfi-flush-call-setup_rfi_flush-after-lpm-migration.patch
+queue-4.4/powerpc-pseries-query-hypervisor-for-count-cache-flush-settings.patch
+queue-4.4/powerpc-powernv-set-or-clear-security-feature-flags.patch
+queue-4.4/powerpc-64s-add-support-for-software-count-cache-flush.patch
+queue-4.4/powerpc64s-show-ori31-availability-in-spectre_v1-sysfs-file-not-v2.patch
+queue-4.4/powerpc-fsl-flush-the-branch-predictor-at-each-kernel-entry-64bit.patch
+queue-4.4/powerpc-fsl-update-spectre-v2-reporting.patch
+queue-4.4/powerpc-64s-wire-up-cpu_show_spectre_v2.patch
+queue-4.4/powerpc-64-make-meltdown-reporting-book3s-64-specific.patch
+queue-4.4/powerpc-rfi-flush-make-it-possible-to-call-setup_rfi_flush-again.patch
+queue-4.4/powerpc-64s-add-support-for-ori-barrier_nospec-patching.patch
+queue-4.4/powerpc-use-barrier_nospec-in-copy_from_user.patch
+queue-4.4/powerpc-64s-fix-section-mismatch-warnings-from-setup_rfi_flush.patch
+queue-4.4/powerpc-avoid-code-patching-freed-init-sections.patch
+queue-4.4/powerpc-fsl-add-macro-to-flush-the-branch-predictor.patch
+queue-4.4/powerpc-xmon-add-rfi-flush-related-fields-to-paca-dump.patch
+queue-4.4/powerpc-fsl-add-barrier_nospec-implementation-for-nxp-powerpc-book3e.patch
+queue-4.4/powerpc-security-fix-spectre_v2-reporting.patch
+queue-4.4/powerpc-add-security-feature-flags-for-spectre-meltdown.patch
+queue-4.4/powerpc-powernv-use-the-security-flags-in-pnv_setup_rfi_flush.patch
+queue-4.4/powerpc-64-disable-the-speculation-barrier-from-the-command-line.patch
+queue-4.4/powerpc-fsl-fix-the-flush-of-branch-predictor.patch
+queue-4.4/powerpc-pseries-use-the-security-flags-in-pseries_setup_rfi_flush.patch
+queue-4.4/powerpc-64-add-config_ppc_barrier_nospec.patch
+queue-4.4/powerpc-64s-move-cpu_show_meltdown.patch
+queue-4.4/powerpc-64-use-barrier_nospec-in-syscall-entry.patch
+queue-4.4/powerpc-fsl-add-nospectre_v2-command-line-argument.patch
+queue-4.4/powerpc-64s-add-new-security-feature-flags-for-count-cache-flush.patch
+queue-4.4/powerpc-fsl-add-infrastructure-to-fixup-branch-predictor-flush.patch
+queue-4.4/powerpc-rfi-flush-differentiate-enabled-and-patched-flush-types.patch
+queue-4.4/powerpc-64s-enhance-the-information-in-cpu_show_spectre_v1.patch
+queue-4.4/powerpc-64-call-setup_barrier_nospec-from-setup_arch.patch
+queue-4.4/powerpc-rfi-flush-always-enable-fallback-flush-on-pseries.patch
+queue-4.4/powerpc-64s-improve-rfi-l1-d-cache-flush-fallback.patch
+queue-4.4/powerpc-asm-add-a-patch_site-macro-helpers-for-patching-instructions.patch
+queue-4.4/powerpc-pseries-add-new-h_get_cpu_characteristics-flags.patch
+queue-4.4/powerpc-64s-enable-barrier_nospec-based-on-firmware-settings.patch
+queue-4.4/powerpc-powernv-support-firmware-disable-of-rfi-flush.patch
+queue-4.4/powerpc-rfi-flush-move-the-logic-to-avoid-a-redo-into-the-debugfs-code.patch
+queue-4.4/powerpc-powernv-query-firmware-for-count-cache-flush-settings.patch
+queue-4.4/powerpc-64s-wire-up-cpu_show_spectre_v1.patch
+queue-4.4/powerpc-64s-add-barrier_nospec.patch
+queue-4.4/powerpc-64s-enhance-the-information-in-cpu_show_meltdown.patch
+queue-4.4/powerpc-move-default-security-feature-flags.patch
+queue-4.4/powerpc-pseries-fix-clearing-of-security-feature-flags.patch
+queue-4.4/powerpc-pseries-restore-default-security-feature-flags-on-setup.patch
