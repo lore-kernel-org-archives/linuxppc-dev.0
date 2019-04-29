@@ -2,70 +2,79 @@ Return-Path: <SRS0=4hcN=S7=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C9BA9C43219
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Apr 2019 11:10:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CA7E6C43219
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Apr 2019 11:11:48 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 4A2802087B
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Apr 2019 11:10:15 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4A2802087B
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=metux.net
+	by mail.kernel.org (Postfix) with ESMTPS id 4721F2087B
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Apr 2019 11:11:48 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="jIEsWsNr"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4721F2087B
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44t24j117xzDqMp
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Apr 2019 21:10:13 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44t26T67YWzDqF0
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Apr 2019 21:11:45 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=metux.net
- (client-ip=217.72.192.74; helo=mout.kundenserver.de;
- envelope-from=lkml@metux.net; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=c-s.fr
+ (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=metux.net
-Received: from mout.kundenserver.de (mout.kundenserver.de [217.72.192.74])
+ dmarc=none (p=none dis=none) header.from=c-s.fr
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="jIEsWsNr"; 
+ dkim-atps=neutral
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44t0q30wbvzDqG0
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Apr 2019 20:13:17 +1000 (AEST)
-Received: from [192.168.1.110] ([77.9.18.117]) by mrelayeu.kundenserver.de
- (mreue109 [212.227.15.183]) with ESMTPSA (Nemesis) id
- 1Mn2eH-1gtAeU2env-00k71v; Mon, 29 Apr 2019 12:12:41 +0200
-Subject: Re: [PATCH 40/41] drivers: tty: serial: helper for setting mmio range
-To: Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
- "Enrico Weigelt, metux IT consult" <info@metux.net>
-References: <1556369542-13247-1-git-send-email-info@metux.net>
- <1556369542-13247-41-git-send-email-info@metux.net>
- <20190428153905.GR9224@smile.fi.intel.com>
-From: "Enrico Weigelt, metux IT consult" <lkml@metux.net>
-Organization: metux IT consult
-Message-ID: <c75f4ca9-367c-25d5-2597-75f2dccf6e1c@metux.net>
-Date: Mon, 29 Apr 2019 12:12:35 +0200
-User-Agent: Mozilla/5.0 (X11; Linux i686 on x86_64; rv:60.0) Gecko/20100101
- Thunderbird/60.2.1
-MIME-Version: 1.0
-In-Reply-To: <20190428153905.GR9224@smile.fi.intel.com>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
-X-Provags-ID: V03:K1:5FkmJafy5b5rMQmFz5MFYjwZmJr3yDLuFQxt3St57wxX5e7mxBe
- D8gfJTEZt0nLiRI3QkVGXsb9wFfsMmR3uoGvaxXgyLlbyWLfln2s3zeyyG6o65B1y5WhMcw
- +UezzJKbteNZnyt/6ruUBSu+3RNIYCG4i6IsdWYkD19xg7ktkmAgoTChutrNqAWKbIy18AH
- 9oGUMGzHGkqb2alaK+C2g==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:7tP6LgaKJ7I=:f1If2vaJgwBnL/GMoXSVIX
- MPluTwHXqchm7WJg0qmVVZG7JtWCbTp0wuD3Y5kmBa5wFnvp1/XLA14GcDxgC6ecixJrilyO1
- ajh0Xr0Xqi41cOjfAGDjmbED/G6IxY+lBKINgsciqrC4fkrb8/EKY2LBqfF38e5uUwB0JyD/o
- PPHDPuYNCAvxwe2px9yLabR7lCcaI3j8oSMZT8aIgRvOq4yuEud+V3yfnbUjDAhy7AAZXSTNz
- PFxpQK8JC/VjmUfuyj02oJOCfW1OccsGB45/LwL304A8lPd/BtjqwFq1UH05e45x/ZNj0wMRi
- QIyUo6L0cymajBznFNs8i7smcqapNbCttDsScmvqLDhF8QMo0DAndENY4ny04KI/pftgsLSEO
- bgvp+wj5zHD6ObQm/cJ7RNYrPHZ7NK4dTBk83YaL83sqNIN5sUTYVMRTDljX3GSQr7kBSy9pJ
- WL56aZQL6H4rNLgRgew/lYTQ4W7//8UIpidCWD7ofRaC7VrGWNwpTs8l2ebScq8Wsl6QLCaO2
- O0pZ9fPElJ+wdwey6GXGouyoHxdMFxL3u9IYSgRxWq9+3w52h1wHrCmAC/taWiTDBc2semljj
- OwQJV9hG90HAtzDQe8o0df0wESJjF1ztyJVNgHjVWhSmNiZ9TSEND/7hZM/Lt4ScGqIzcMSjv
- 2Og6Lk8EzYxVNyzrHKir1tCMBx1j/0QbRyNnxNQo07uH1cbysow9CPLPJ3dAYImDxDcAUjMRB
- 5Lc3dsS4j36EMoHTPVR+6f104n+ntvt5nPCp5xG5dNp8mXtAHkchqYFy+IU=
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44t1Tv21pwzDqjX
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Apr 2019 20:43:29 +1000 (AEST)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 44t1Tj49xNz9v0KF;
+ Mon, 29 Apr 2019 12:43:21 +0200 (CEST)
+Authentication-Results: localhost; dkim=pass
+ reason="1024-bit key; insecure key"
+ header.d=c-s.fr header.i=@c-s.fr header.b=jIEsWsNr; dkim-adsp=pass;
+ dkim-atps=neutral
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id h6P2FVo-9-Er; Mon, 29 Apr 2019 12:43:21 +0200 (CEST)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 44t1Tj31N8z9v0KD;
+ Mon, 29 Apr 2019 12:43:21 +0200 (CEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
+ t=1556534601; bh=LdoI2qT2aaRj/eKoZVF9HzfAiu1O/6qZbR/YCdBfHpw=;
+ h=From:Subject:To:Cc:Date:From;
+ b=jIEsWsNrnFHt8xpb23J3uqys7xSTOshMZ5puFweZYkxfqU03ZR3cMcXicleTjn07s
+ jRYeKbA0uCKYoSkgxQqyX678USkfDryn6T/JxhkGMj8oioaaAkc4F8BgvLCwqhx3fT
+ YByhpH00SdJHOf9wEnjWMlr1KxNd9JbZin2yTbiA=
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 37DBF8B8AE;
+ Mon, 29 Apr 2019 12:43:26 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id mGYo9Qa2Q9VL; Mon, 29 Apr 2019 12:43:26 +0200 (CEST)
+Received: from po16846vm.idsi0.si.c-s.fr (po15451.idsi0.si.c-s.fr
+ [172.25.231.6])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 1424C8B7FB;
+ Mon, 29 Apr 2019 12:43:26 +0200 (CEST)
+Received: by po16846vm.idsi0.si.c-s.fr (Postfix, from userid 0)
+ id 0767466702; Mon, 29 Apr 2019 10:43:26 +0000 (UTC)
+Message-Id: <23167861f6095456b4ba3b52c55a514201ca738f.1556534520.git.christophe.leroy@c-s.fr>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Subject: [PATCH 1/3] powerpc: Move PPC_HA() PPC_HI() and PPC_LO() to
+ ppc-opcode.h
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
+Date: Mon, 29 Apr 2019 10:43:26 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -77,143 +86,56 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: lorenzo.pieralisi@arm.com, linux-ia64@vger.kernel.org,
- linux-serial@vger.kernel.org, andrew@aj.id.au, gregkh@linuxfoundation.org,
- sudeep.holla@arm.com, liviu.dudau@arm.com, linux-kernel@vger.kernel.org,
- vz@mleia.com, linux@prisktech.co.nz, sparclinux@vger.kernel.org,
- khilman@baylibre.com, macro@linux-mips.org, slemieux.tyco@gmail.com,
- matthias.bgg@gmail.com, jacmet@sunsite.dk, linux-amlogic@lists.infradead.org,
- linux-mips@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, davem@davemloft.net
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 28.04.19 17:39, Andy Shevchenko wrote:
+PPC_HA() PPC_HI() and PPC_LO() macros are nice macros. Move them
+from module64.c to ppc-opcode.h in order to use them in other places.
 
-Hi,
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+---
+ arch/powerpc/include/asm/ppc-opcode.h | 7 +++++++
+ arch/powerpc/kernel/module_64.c       | 7 -------
+ 2 files changed, 7 insertions(+), 7 deletions(-)
 
-seems I've forgot to add "RFC:" in the subject - I'm not entirely happy
-w/ that patch myself, just want to hear your oppinions.
-
->> -	port->port.iotype = UPIO_MEM;>> -	port->port.mapbase = pci_resource_start(pcidev, bar) + offset;>> +
-uart_memres_set_start_len(&port->port,>> +				
-pci_resource_start(pcidev, bar) + offset,>> +				
-pci_resource_len(pcidev, bar));>> +> > I don't see how it's better.>
-Moreover, the size argument seems wrong here.
-hmm, I'm actually not sure yet, what the correct size really would be,
-where the value actually comes from. Just assumed that it would be the
-whole area that the BAR tells. But now I recognized that I'd need to
-substract 'offset' here.
-
-Rethinking it further, we'd probably could deduce the UPIO_* from the
-struct resource, too.
-
->> +		uart_memres_set_start_len(>> +			&port,>> +			FRODO_BASE + FRODO_APCI_OFFSET(1), 0);> > Please,
-avoid such splitting, first parameter is quite fit above line.
-
-Ok. My intention was having both parameters starting at the same line,
-but then the second line would get too long again. > ...and here, and
-maybe in other places you split the assignments to the members> in two
-part. Better to call your function before or after these blocks of>
-assignments.
-the reason what I've just replaced the exactly the assignments, trying
-not to touch too much ;-)
-I'll have a closer look on what can be moved w/o side effects.
-
->> -			uport->mapsize	= ZS_CHAN_IO_SIZE;
->> -			uport->mapbase	= dec_kn_slot_base +
->> -					  zs_parms.scc[chip] +
->> -					  (side ^ ZS_CHAN_B) * ZS_CHAN_IO_SIZE;
->> +
->> +			uart_memres_set_start_len(dec_kn_slot_base +
->> +						    zs_parms.scc[chip] +
->> +						    (side ^ ZS_CHAN_B) *
->> +							ZS_CHAN_IO_SIZE,
->> +						  ZS_CHAN_IO_SIZE);
-> 
-> This looks hard to read. Think of temporary variables and better formatting
-> style.
-
-Ok.
-
-> 
->>  /*
->> + * set physical io range from struct resource
->> + * if resource is NULL, clear the fields
->> + * also set the iotype to UPIO_MEM
-> 
-> Something wrong with punctuation and style. Please, use proper casing and
-> sentences split.
-
-Ok. fixed it.
-
-
->> +static inline void uart_memres_set_res(struct uart_port *port,
-> 
-> Perhaps better name can be found.
-> Especially taking into account that it handles IO / MMIO here.
-
-hmm, lacking creativity here ;-)
-any suggestions ?
-
-> 
->> +				       struct resource *res)
->> +{
->> +	if (!res) {
-> 
-> It should return an error in such case.
-
-It's not an error, but desired behaviour: NULL resource
-clears the value.
-
->> +		port->mapsize = 0;
->> +		port->mapbase = 0;
->> +		port->iobase = 0;
->> +		return;
->> +	}
->> +
->> +	if (resource_type(res) == IORESOURCE_IO) {
->> +		port->iotype = UPIO_PORT;
->> +		port->iobase = resource->start;
->> +		return;
->> +	}
->> +
->> +	uart->mapbase = res->start;
->> +	uart->mapsize = resource_size(res);
-> 
->> +	uart->iotype  = UPIO_MEM;
-> 
-> Only one type? Why type is even set here?
-
-It's the default case. The special cases (eg. UPIO_MEM32) need to be
-set explicitly, after that call.
-
-Not really nice, but haven't found a better solution yet. I don't like
-the idea of passing an UPIO_* parameter to the function, most callers
-should not care, if they don't really need to.
-
-
->> + */
-> 
->> +static inline void uart_memres_set_start_len(struct uart_driver *uart,
->> +					     resource_size_t start,
->> +					     resource_size_t len)
-> 
-> The comment doesn't tell why this is needed when we have one for struct
-> resource.
-
-Renamed it to uart_memres_set_mmio_range().
-
-This helper is meant for drivers that don't work w/ struct resource,
-or explicitly set their own len.
-
-
-
-Thanks for your review.
-
---mtx
-
+diff --git a/arch/powerpc/include/asm/ppc-opcode.h b/arch/powerpc/include/asm/ppc-opcode.h
+index 23f7ed796f38..c5ff44400d4d 100644
+--- a/arch/powerpc/include/asm/ppc-opcode.h
++++ b/arch/powerpc/include/asm/ppc-opcode.h
+@@ -412,6 +412,13 @@
+ #define __PPC_SPR(r)	((((r) & 0x1f) << 16) | ((((r) >> 5) & 0x1f) << 11))
+ #define __PPC_RC21	(0x1 << 10)
+ 
++/* Both low and high 16 bits are added as SIGNED additions, so if low
++   16 bits has high bit set, high 16 bits must be adjusted.  These
++   macros do that (stolen from binutils). */
++#define PPC_LO(v) ((v) & 0xffff)
++#define PPC_HI(v) (((v) >> 16) & 0xffff)
++#define PPC_HA(v) PPC_HI ((v) + 0x8000)
++
+ /*
+  * Only use the larx hint bit on 64bit CPUs. e500v1/v2 based CPUs will treat a
+  * larx with EH set as an illegal instruction.
+diff --git a/arch/powerpc/kernel/module_64.c b/arch/powerpc/kernel/module_64.c
+index 8661eea78503..c2e1b06253b8 100644
+--- a/arch/powerpc/kernel/module_64.c
++++ b/arch/powerpc/kernel/module_64.c
+@@ -400,13 +400,6 @@ static inline unsigned long my_r2(const Elf64_Shdr *sechdrs, struct module *me)
+ 	return (sechdrs[me->arch.toc_section].sh_addr & ~0xfful) + 0x8000;
+ }
+ 
+-/* Both low and high 16 bits are added as SIGNED additions, so if low
+-   16 bits has high bit set, high 16 bits must be adjusted.  These
+-   macros do that (stolen from binutils). */
+-#define PPC_LO(v) ((v) & 0xffff)
+-#define PPC_HI(v) (((v) >> 16) & 0xffff)
+-#define PPC_HA(v) PPC_HI ((v) + 0x8000)
+-
+ /* Patch stub to reference function and correct r2 value. */
+ static inline int create_stub(const Elf64_Shdr *sechdrs,
+ 			      struct ppc64_stub_entry *entry,
 -- 
-Enrico Weigelt, metux IT consult
-Free software and Linux embedded engineering
-info@metux.net -- +49-151-27565287
+2.13.3
+
