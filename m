@@ -6,37 +6,37 @@ X-Spam-Status: No, score=-3.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS
 	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 10014C43219
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Apr 2019 09:59:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7C646C43219
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Apr 2019 10:00:55 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 7F6B320449
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Apr 2019 09:59:33 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id B381220449
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Apr 2019 10:00:54 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="toiXLNMY"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7F6B320449
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="Km2hjgQB"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B381220449
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linuxfoundation.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44t0W74DVtzDqS7
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Apr 2019 19:59:31 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+	by lists.ozlabs.org (Postfix) with ESMTP id 44t0Xh5D0xzDqT3
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Apr 2019 20:00:52 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44t0LB0cvTzDqQ3
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Apr 2019 19:51:46 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44t0LD6PcfzDqPQ
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Apr 2019 19:51:48 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=linuxfoundation.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="toiXLNMY"; 
+ unprotected) header.d=kernel.org header.i=@kernel.org header.b="Km2hjgQB"; 
  dkim-atps=neutral
 Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 44t0L82sLGz8tDC
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Apr 2019 19:51:44 +1000 (AEST)
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 44t0LC5dQLz8tDC
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Apr 2019 19:51:47 +1000 (AEST)
 Received: by ozlabs.org (Postfix)
- id 44t0L814DQz9sCJ; Mon, 29 Apr 2019 19:51:44 +1000 (AEST)
+ id 44t0LC1JxKz9sCJ; Mon, 29 Apr 2019 19:51:47 +1000 (AEST)
 Authentication-Results: ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=linuxfoundation.org
  (client-ip=198.145.29.99; helo=mail.kernel.org;
@@ -44,35 +44,35 @@ Authentication-Results: ozlabs.org;
 Authentication-Results: ozlabs.org; dmarc=none (p=none dis=none)
  header.from=linuxfoundation.org
 Authentication-Results: ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="toiXLNMY"; 
+ unprotected) header.d=kernel.org header.i=@kernel.org header.b="Km2hjgQB"; 
  dkim-atps=neutral
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 44t0L71wdYz9s3Z
- for <linuxppc-dev@ozlabs.org>; Mon, 29 Apr 2019 19:51:43 +1000 (AEST)
+ by ozlabs.org (Postfix) with ESMTPS id 44t0LB0HDMz9s70
+ for <linuxppc-dev@ozlabs.org>; Mon, 29 Apr 2019 19:51:46 +1000 (AEST)
 Received: from localhost (83-86-89-107.cable.dynamic.v4.ziggo.nl
  [83.86.89.107])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id 710B62087B;
- Mon, 29 Apr 2019 09:51:41 +0000 (UTC)
+ by mail.kernel.org (Postfix) with ESMTPSA id F3B87206BF;
+ Mon, 29 Apr 2019 09:51:43 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1556531501;
- bh=Z2C2E7d9q6JRTmoOqilhXA9iH1g/i7ZFGqS+/04VXic=;
+ s=default; t=1556531504;
+ bh=VywHXVcLi7KYfnf6YgDeNIzmSBiEg0rhw7JffpBvz6s=;
  h=Subject:To:Cc:From:Date:In-Reply-To:From;
- b=toiXLNMYFOFNQ/Ggu215SZ1c54gYE50IoKqmil3YyZSXEZ7ZA/aJhiExA5aWBJcni
- NRKyj2+BA/oSDd4vUyYl0uSviD5iWFYxzO6UJNyDV1D+oxc2508NHJnhlgRa00uDvE
- kFy+LGZwUZzBMz/fVVJXu395+/4btXTM7HJLY8xs=
-Subject: Patch "powerpc/64: Use barrier_nospec in syscall entry" has been
- added to the 4.4-stable tree
+ b=Km2hjgQBUSM9HLutwLFay8af9nUqZypsyZjJLVEOQO9idDpGCZzMNzg5BtvAVYFdK
+ BSM7nKTA/ezccj0XcEZ/in+7YJvCigB0U4NpbLx3xFtn/fKQXmBD1lYs5oIPuri35p
+ vSFkk6+BWkFoqMtRD4JkKT7/1Q+v/bt6zR5oyXDM=
+Subject: Patch "powerpc/64s: Add barrier_nospec" has been added to the
+ 4.4-stable tree
 To: christophe.leroy@c-s.fr, diana.craciun@nxp.com, gregkh@linuxfoundation.org,
  linuxppc-dev@ozlabs.org, mpe@ellerman.id.au, msuchanek@suse.de,
  npiggin@gmail.com
 From: <gregkh@linuxfoundation.org>
 Date: Mon, 29 Apr 2019 11:51:22 +0200
-In-Reply-To: <20190421142037.21881-30-mpe@ellerman.id.au>
-Message-ID: <15565314821342@kroah.com>
+In-Reply-To: <20190421142037.21881-26-mpe@ellerman.id.au>
+Message-ID: <1556531482115158@kroah.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ANSI_X3.4-1968
 Content-Transfer-Encoding: 8bit
@@ -97,13 +97,13 @@ Sender: "Linuxppc-dev"
 
 This is a note to let you know that I've just added the patch titled
 
-    powerpc/64: Use barrier_nospec in syscall entry
+    powerpc/64s: Add barrier_nospec
 
 to the 4.4-stable tree which can be found at:
     http://www.kernel.org/git/?p=linux/kernel/git/stable/stable-queue.git;a=summary
 
 The filename of the patch is:
-     powerpc-64-use-barrier_nospec-in-syscall-entry.patch
+     powerpc-64s-add-barrier_nospec.patch
 and it can be found in the queue-4.4 subdirectory.
 
 If you, or anyone else, feels it should not be added to the stable tree,
@@ -112,54 +112,57 @@ please let <stable@vger.kernel.org> know about it.
 
 From foo@baz Mon 29 Apr 2019 11:38:37 AM CEST
 From: Michael Ellerman <mpe@ellerman.id.au>
-Date: Mon, 22 Apr 2019 00:20:14 +1000
-Subject: powerpc/64: Use barrier_nospec in syscall entry
+Date: Mon, 22 Apr 2019 00:20:10 +1000
+Subject: powerpc/64s: Add barrier_nospec
 To: stable@vger.kernel.org, gregkh@linuxfoundation.org
 Cc: linuxppc-dev@ozlabs.org, diana.craciun@nxp.com, msuchanek@suse.de, npiggin@gmail.com, christophe.leroy@c-s.fr
-Message-ID: <20190421142037.21881-30-mpe@ellerman.id.au>
+Message-ID: <20190421142037.21881-26-mpe@ellerman.id.au>
 
-From: Michael Ellerman <mpe@ellerman.id.au>
+From: Michal Suchanek <msuchanek@suse.de>
 
-commit 51973a815c6b46d7b23b68d6af371ad1c9d503ca upstream.
+commit a6b3964ad71a61bb7c61d80a60bea7d42187b2eb upstream.
 
-Our syscall entry is done in assembly so patch in an explicit
-barrier_nospec.
+A no-op form of ori (or immediate of 0 into r31 and the result stored
+in r31) has been re-tasked as a speculation barrier. The instruction
+only acts as a barrier on newer machines with appropriate firmware
+support. On older CPUs it remains a harmless no-op.
 
-Based on a patch by Michal Suchanek.
+Implement barrier_nospec using this instruction.
+
+mpe: The semantics of the instruction are believed to be that it
+prevents execution of subsequent instructions until preceding branches
+have been fully resolved and are no longer executing speculatively.
+There is no further documentation available at this time.
 
 Signed-off-by: Michal Suchanek <msuchanek@suse.de>
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 ---
- arch/powerpc/kernel/entry_64.S |   10 ++++++++++
- 1 file changed, 10 insertions(+)
+ arch/powerpc/include/asm/barrier.h |   15 +++++++++++++++
+ 1 file changed, 15 insertions(+)
 
---- a/arch/powerpc/kernel/entry_64.S
-+++ b/arch/powerpc/kernel/entry_64.S
-@@ -36,6 +36,7 @@
- #include <asm/hw_irq.h>
- #include <asm/context_tracking.h>
- #include <asm/tm.h>
-+#include <asm/barrier.h>
- #ifdef CONFIG_PPC_BOOK3S
- #include <asm/exception-64s.h>
- #else
-@@ -177,6 +178,15 @@ system_call:			/* label this so stack tr
- 	clrldi	r8,r8,32
- 15:
- 	slwi	r0,r0,4
+--- a/arch/powerpc/include/asm/barrier.h
++++ b/arch/powerpc/include/asm/barrier.h
+@@ -92,4 +92,19 @@ do {									\
+ #define smp_mb__after_atomic()      smp_mb()
+ #define smp_mb__before_spinlock()   smp_mb()
+ 
++#ifdef CONFIG_PPC_BOOK3S_64
++/*
++ * Prevent execution of subsequent instructions until preceding branches have
++ * been fully resolved and are no longer executing speculatively.
++ */
++#define barrier_nospec_asm ori 31,31,0
 +
-+	barrier_nospec_asm
-+	/*
-+	 * Prevent the load of the handler below (based on the user-passed
-+	 * system call number) being speculatively executed until the test
-+	 * against NR_syscalls and branch to .Lsyscall_enosys above has
-+	 * committed.
-+	 */
++// This also acts as a compiler barrier due to the memory clobber.
++#define barrier_nospec() asm (stringify_in_c(barrier_nospec_asm) ::: "memory")
 +
- 	ldx	r12,r11,r0	/* Fetch system call handler [ptr] */
- 	mtctr   r12
- 	bctrl			/* Call handler */
++#else /* !CONFIG_PPC_BOOK3S_64 */
++#define barrier_nospec_asm
++#define barrier_nospec()
++#endif
++
+ #endif /* _ASM_POWERPC_BARRIER_H */
 
 
 Patches currently in stable-queue which might be from mpe@ellerman.id.au are
