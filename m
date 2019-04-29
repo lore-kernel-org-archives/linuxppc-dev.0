@@ -6,37 +6,37 @@ X-Spam-Status: No, score=-3.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS
 	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1C86FC43219
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Apr 2019 10:55:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 45F1EC43219
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Apr 2019 10:56:46 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 8DC3F20673
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Apr 2019 10:55:06 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id BB7F620673
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Apr 2019 10:56:45 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="0fXUN2NR"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8DC3F20673
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="SgPW0jud"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BB7F620673
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linuxfoundation.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44t1lD4js6zDqW0
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Apr 2019 20:55:04 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44t1n770rJzDqJ1
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Apr 2019 20:56:43 +1000 (AEST)
 Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44t0N36SBnzDqPW
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Apr 2019 19:53:23 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44t0N60RFpzDq6N
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Apr 2019 19:53:26 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=linuxfoundation.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="0fXUN2NR"; 
+ unprotected) header.d=kernel.org header.i=@kernel.org header.b="SgPW0jud"; 
  dkim-atps=neutral
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 44t0N34Vz8z8tDC
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Apr 2019 19:53:23 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 44t0N55hTFz8tDC
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Apr 2019 19:53:25 +1000 (AEST)
 Received: by ozlabs.org (Postfix)
- id 44t0N33tDmz9sCJ; Mon, 29 Apr 2019 19:53:23 +1000 (AEST)
+ id 44t0N52rxcz9sCJ; Mon, 29 Apr 2019 19:53:25 +1000 (AEST)
 Authentication-Results: ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=linuxfoundation.org
  (client-ip=198.145.29.99; helo=mail.kernel.org;
@@ -44,35 +44,35 @@ Authentication-Results: ozlabs.org;
 Authentication-Results: ozlabs.org; dmarc=none (p=none dis=none)
  header.from=linuxfoundation.org
 Authentication-Results: ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="0fXUN2NR"; 
+ unprotected) header.d=kernel.org header.i=@kernel.org header.b="SgPW0jud"; 
  dkim-atps=neutral
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 44t0N26sGLz9s3Z
- for <linuxppc-dev@ozlabs.org>; Mon, 29 Apr 2019 19:53:22 +1000 (AEST)
+ by ozlabs.org (Postfix) with ESMTPS id 44t0N45Dxmz9s70
+ for <linuxppc-dev@ozlabs.org>; Mon, 29 Apr 2019 19:53:24 +1000 (AEST)
 Received: from localhost (83-86-89-107.cable.dynamic.v4.ziggo.nl
  [83.86.89.107])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id 5883B206BF;
- Mon, 29 Apr 2019 09:53:20 +0000 (UTC)
+ by mail.kernel.org (Postfix) with ESMTPSA id E0B1320449;
+ Mon, 29 Apr 2019 09:53:22 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1556531600;
- bh=yFTXVBYC4XqFv+4JgHQrzyBj212EhzimNkyQTELEnrY=;
+ s=default; t=1556531603;
+ bh=P2gJ8fBi8o8s4ojMk93OCwcqSGmdZuUDrMknLPBsQsc=;
  h=Subject:To:Cc:From:Date:In-Reply-To:From;
- b=0fXUN2NRqiqGsUhRNmRk39+j8nGY1UpqdQKv2F/q7DEaDFmttX8zNWbkbeHUlvcUc
- CHBQGKJgirpelgm5BBBQitS/bpaKzQlgs+Lr6lFiz5VIz9sX4OAF4dEtJzb8U94FwR
- XKzIPnDBSoNPGhpM9v9xxsgTfV/t6LZo833gS6HU=
-Subject: Patch "powerpc/pseries: Support firmware disable of RFI flush" has
- been added to the 4.4-stable tree
+ b=SgPW0judq6zycZ1xaCdBwJjvrwnQgDRDwQKwvU5K9KzvTE+yDzVCpFdmP18VOCqgw
+ 8/ritnqPQGgeWSXKXhfqE/90Ez+iXv9ai+UksO11lk7RaXyGomMTc2KzX+z7G2dZ7T
+ xQHMV2xOAACWil5An1EEfpwXVWqOJKy9OOusRj00=
+Subject: Patch "powerpc/rfi-flush: Call setup_rfi_flush() after LPM migration"
+ has been added to the 4.4-stable tree
 To: christophe.leroy@c-s.fr, diana.craciun@nxp.com, gregkh@linuxfoundation.org,
- linuxppc-dev@ozlabs.org, mpe@ellerman.id.au, msuchanek@suse.de,
- npiggin@gmail.com
+ linuxppc-dev@ozlabs.org, mauricfo@linux.vnet.ibm.com, mpe@ellerman.id.au,
+ msuchanek@suse.de, npiggin@gmail.com
 From: <gregkh@linuxfoundation.org>
-Date: Mon, 29 Apr 2019 11:51:29 +0200
-In-Reply-To: <20190421142037.21881-4-mpe@ellerman.id.au>
-Message-ID: <155653148911550@kroah.com>
+Date: Mon, 29 Apr 2019 11:51:30 +0200
+In-Reply-To: <20190421142037.21881-11-mpe@ellerman.id.au>
+Message-ID: <155653149018184@kroah.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ANSI_X3.4-1968
 Content-Transfer-Encoding: 8bit
@@ -97,13 +97,13 @@ Sender: "Linuxppc-dev"
 
 This is a note to let you know that I've just added the patch titled
 
-    powerpc/pseries: Support firmware disable of RFI flush
+    powerpc/rfi-flush: Call setup_rfi_flush() after LPM migration
 
 to the 4.4-stable tree which can be found at:
     http://www.kernel.org/git/?p=linux/kernel/git/stable/stable-queue.git;a=summary
 
 The filename of the patch is:
-     powerpc-pseries-support-firmware-disable-of-rfi-flush.patch
+     powerpc-rfi-flush-call-setup_rfi_flush-after-lpm-migration.patch
 and it can be found in the queue-4.4 subdirectory.
 
 If you, or anyone else, feels it should not be added to the stable tree,
@@ -112,38 +112,61 @@ please let <stable@vger.kernel.org> know about it.
 
 From foo@baz Mon 29 Apr 2019 11:38:37 AM CEST
 From: Michael Ellerman <mpe@ellerman.id.au>
-Date: Mon, 22 Apr 2019 00:19:48 +1000
-Subject: powerpc/pseries: Support firmware disable of RFI flush
+Date: Mon, 22 Apr 2019 00:19:55 +1000
+Subject: powerpc/rfi-flush: Call setup_rfi_flush() after LPM migration
 To: stable@vger.kernel.org, gregkh@linuxfoundation.org
 Cc: linuxppc-dev@ozlabs.org, diana.craciun@nxp.com, msuchanek@suse.de, npiggin@gmail.com, christophe.leroy@c-s.fr
-Message-ID: <20190421142037.21881-4-mpe@ellerman.id.au>
+Message-ID: <20190421142037.21881-11-mpe@ellerman.id.au>
 
 From: Michael Ellerman <mpe@ellerman.id.au>
 
-commit 582605a429e20ae68fd0b041b2e840af296edd08 upstream.
+commit 921bc6cf807ceb2ab8005319cf39f33494d6b100 upstream.
 
-Some versions of firmware will have a setting that can be configured
-to disable the RFI flush, add support for it.
+We might have migrated to a machine that uses a different flush type,
+or doesn't need flushing at all.
 
-Fixes: 8989d56878a7 ("powerpc/pseries: Query hypervisor for RFI flush settings")
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+Signed-off-by: Mauricio Faria de Oliveira <mauricfo@linux.vnet.ibm.com>
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 ---
- arch/powerpc/platforms/pseries/setup.c |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ arch/powerpc/platforms/pseries/mobility.c |    3 +++
+ arch/powerpc/platforms/pseries/pseries.h  |    2 ++
+ arch/powerpc/platforms/pseries/setup.c    |    2 +-
+ 3 files changed, 6 insertions(+), 1 deletion(-)
 
+--- a/arch/powerpc/platforms/pseries/mobility.c
++++ b/arch/powerpc/platforms/pseries/mobility.c
+@@ -314,6 +314,9 @@ void post_mobility_fixup(void)
+ 		printk(KERN_ERR "Post-mobility device tree update "
+ 			"failed: %d\n", rc);
+ 
++	/* Possibly switch to a new RFI flush type */
++	pseries_setup_rfi_flush();
++
+ 	return;
+ }
+ 
+--- a/arch/powerpc/platforms/pseries/pseries.h
++++ b/arch/powerpc/platforms/pseries/pseries.h
+@@ -81,4 +81,6 @@ extern struct pci_controller_ops pseries
+ 
+ unsigned long pseries_memory_block_size(void);
+ 
++void pseries_setup_rfi_flush(void);
++
+ #endif /* _PSERIES_PSERIES_H */
 --- a/arch/powerpc/platforms/pseries/setup.c
 +++ b/arch/powerpc/platforms/pseries/setup.c
-@@ -522,7 +522,8 @@ static void pseries_setup_rfi_flush(void
- 		if (types == L1D_FLUSH_NONE)
- 			types = L1D_FLUSH_FALLBACK;
+@@ -499,7 +499,7 @@ static void __init find_and_init_phbs(vo
+ 	of_pci_check_probe_only();
+ }
  
--		if (!(result.behaviour & H_CPU_BEHAV_L1D_FLUSH_PR))
-+		if ((!(result.behaviour & H_CPU_BEHAV_L1D_FLUSH_PR)) ||
-+		    (!(result.behaviour & H_CPU_BEHAV_FAVOUR_SECURITY)))
- 			enable = false;
- 	} else {
- 		/* Default to fallback if case hcall is not available */
+-static void pseries_setup_rfi_flush(void)
++void pseries_setup_rfi_flush(void)
+ {
+ 	struct h_cpu_char_result result;
+ 	enum l1d_flush_type types;
 
 
 Patches currently in stable-queue which might be from mpe@ellerman.id.au are
