@@ -2,41 +2,41 @@ Return-Path: <SRS0=xPOF=TA=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_MUTT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,
+	URIBL_BLOCKED autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3561EC43219
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Apr 2019 10:41:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9AB9BC43219
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Apr 2019 10:43:39 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id A30EA2075E
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Apr 2019 10:41:55 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 125EA20675
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Apr 2019 10:43:38 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="2niCqAHd"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A30EA2075E
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="AUyI9p4e"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 125EA20675
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linuxfoundation.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44tdPY4rylzDqH5
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Apr 2019 20:41:53 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44tdRW5rcgzDqS4
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Apr 2019 20:43:35 +1000 (AEST)
 Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44tdKy2S9CzDqLL
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Apr 2019 20:38:46 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44tdN4725XzDqDb
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Apr 2019 20:40:36 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=linuxfoundation.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="2niCqAHd"; 
+ unprotected) header.d=kernel.org header.i=@kernel.org header.b="AUyI9p4e"; 
  dkim-atps=neutral
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 44tdKy02Vbz8tXV
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Apr 2019 20:38:46 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 44tdN45PcFz8xWF
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Apr 2019 20:40:36 +1000 (AEST)
 Received: by ozlabs.org (Postfix)
- id 44tdKx5dh1z9sCJ; Tue, 30 Apr 2019 20:38:45 +1000 (AEST)
+ id 44tdN31QJgz9sCJ; Tue, 30 Apr 2019 20:40:35 +1000 (AEST)
 Authentication-Results: ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=linuxfoundation.org
  (client-ip=198.145.29.99; helo=mail.kernel.org;
@@ -44,38 +44,39 @@ Authentication-Results: ozlabs.org;
 Authentication-Results: ozlabs.org; dmarc=none (p=none dis=none)
  header.from=linuxfoundation.org
 Authentication-Results: ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="2niCqAHd"; 
+ unprotected) header.d=kernel.org header.i=@kernel.org header.b="AUyI9p4e"; 
  dkim-atps=neutral
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 44tdKx2491z9sCF
- for <linuxppc-dev@ozlabs.org>; Tue, 30 Apr 2019 20:38:45 +1000 (AEST)
+ by ozlabs.org (Postfix) with ESMTPS id 44tdN23mB3z9sBr
+ for <linuxppc-dev@ozlabs.org>; Tue, 30 Apr 2019 20:40:34 +1000 (AEST)
 Received: from localhost (83-86-89-107.cable.dynamic.v4.ziggo.nl
  [83.86.89.107])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id 9EC8B2075E;
- Tue, 30 Apr 2019 10:38:42 +0000 (UTC)
+ by mail.kernel.org (Postfix) with ESMTPSA id 65EEE2075E;
+ Tue, 30 Apr 2019 10:40:31 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1556620723;
- bh=6Ib7R+4+pUuUf64xAfk/WLCRX2nHXBsYiE2bzPNh5qE=;
- h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=2niCqAHdSmnHMPzJrguyjpBwn81KPQ2rwlrjiKDmrlQlxV3vygz7JAoc9pbSMy+D4
- of7NyH00qTNkzEpBfB8JbJRAAceKuURRfByU0Sws0inDYMhgP8lgxKZfpEhHbalck6
- 71Eetdx5yy55lBtvRtKDJd9p5Nt6t5rI/96SOiSo=
-Date: Tue, 30 Apr 2019 12:38:40 +0200
-From: Greg KH <gregkh@linuxfoundation.org>
-To: Diana Craciun <diana.craciun@nxp.com>
-Subject: Re: [PATCH stable v4.4 8/8] Documentation: Add nospectre_v1 parameter
-Message-ID: <20190430103840.GB10539@kroah.com>
-References: <1556552948-24957-1-git-send-email-diana.craciun@nxp.com>
- <1556552948-24957-9-git-send-email-diana.craciun@nxp.com>
+ s=default; t=1556620831;
+ bh=6OGh/D6+lmZrMFWqbUfRXThWoAmAWAVCODIvzqUIiX8=;
+ h=Subject:To:Cc:From:Date:In-Reply-To:From;
+ b=AUyI9p4e3/ntiatOEeYFxrOLKTflFECZqj+8EUVgSD8l2dr9a+YdlIWSkC9RfL2Zt
+ YP5NqXWE1F8TPL5f7zO3bwodvd+8o/asIbZ6NBcXl6SUANuHA8exafk28lO48jn0pr
+ iTAmJZ2zMRvkS+PrdBIrrUffsl/8dz7ho6ckOgyc=
+Subject: Patch "powerpc/fsl: Emulate SPRN_BUCSR register" has been added to
+ the 4.4-stable tree
+To: diana.craciun@nxp.com, gregkh@linuxfoundation.org, linuxppc-dev@ozlabs.org,
+ mpe@ellerman.id.au
+From: <gregkh@linuxfoundation.org>
+Date: Tue, 30 Apr 2019 12:40:29 +0200
+In-Reply-To: <1556552948-24957-4-git-send-email-diana.craciun@nxp.com>
+Message-ID: <155662082920054@kroah.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1556552948-24957-9-git-send-email-diana.craciun@nxp.com>
-User-Agent: Mutt/1.11.4 (2019-03-13)
+Content-Type: text/plain; charset=ANSI_X3.4-1968
+Content-Transfer-Encoding: 8bit
+X-stable: commit
+X-Patchwork-Hint: ignore 
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -87,16 +88,128 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@ozlabs.org, stable@vger.kernel.org
+Cc: stable-commits@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, Apr 29, 2019 at 06:49:08PM +0300, Diana Craciun wrote:
-> Currently only supported on powerpc.
 
-No upstream git commit id for this one?
+This is a note to let you know that I've just added the patch titled
 
-thanks,
+    powerpc/fsl: Emulate SPRN_BUCSR register
 
-greg k-h
+to the 4.4-stable tree which can be found at:
+    http://www.kernel.org/git/?p=linux/kernel/git/stable/stable-queue.git;a=summary
+
+The filename of the patch is:
+     powerpc-fsl-emulate-sprn_bucsr-register.patch
+and it can be found in the queue-4.4 subdirectory.
+
+If you, or anyone else, feels it should not be added to the stable tree,
+please let <stable@vger.kernel.org> know about it.
+
+
+From foo@baz Tue 30 Apr 2019 12:38:50 PM CEST
+From: Diana Craciun <diana.craciun@nxp.com>
+Date: Mon, 29 Apr 2019 18:49:03 +0300
+Subject: powerpc/fsl: Emulate SPRN_BUCSR register
+To: stable@vger.kernel.org, gregkh@linuxfoundation.org
+Cc: linuxppc-dev@ozlabs.org, mpe@ellerman.id.au, Diana Craciun <diana.craciun@nxp.com>
+Message-ID: <1556552948-24957-4-git-send-email-diana.craciun@nxp.com>
+
+From: Diana Craciun <diana.craciun@nxp.com>
+
+commit 98518c4d8728656db349f875fcbbc7c126d4c973 upstream.
+
+In order to flush the branch predictor the guest kernel performs
+writes to the BUCSR register which is hypervisor privilleged. However,
+the branch predictor is flushed at each KVM entry, so the branch
+predictor has been already flushed, so just return as soon as possible
+to guest.
+
+Signed-off-by: Diana Craciun <diana.craciun@nxp.com>
+[mpe: Tweak comment formatting]
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+---
+ arch/powerpc/kvm/e500_emulate.c |    7 +++++++
+ 1 file changed, 7 insertions(+)
+
+--- a/arch/powerpc/kvm/e500_emulate.c
++++ b/arch/powerpc/kvm/e500_emulate.c
+@@ -277,6 +277,13 @@ int kvmppc_core_emulate_mtspr_e500(struc
+ 		vcpu->arch.pwrmgtcr0 = spr_val;
+ 		break;
+ 
++	case SPRN_BUCSR:
++		/*
++		 * If we are here, it means that we have already flushed the
++		 * branch predictor, so just return to guest.
++		 */
++		break;
++
+ 	/* extra exceptions */
+ #ifdef CONFIG_SPE_POSSIBLE
+ 	case SPRN_IVOR32:
+
+
+Patches currently in stable-queue which might be from diana.craciun@nxp.com are
+
+queue-4.4/powerpc-64s-add-support-for-a-store-forwarding-barrier-at-kernel-entry-exit.patch
+queue-4.4/powerpc-fsl-emulate-sprn_bucsr-register.patch
+queue-4.4/powerpc-64-make-stf-barrier-ppc_book3s_64-specific.patch
+queue-4.4/powerpc-pseries-set-or-clear-security-feature-flags.patch
+queue-4.4/powerpc-fsl-fix-spectre_v2-mitigations-reporting.patch
+queue-4.4/powerpc-64s-patch-barrier_nospec-in-modules.patch
+queue-4.4/powerpc-pseries-support-firmware-disable-of-rfi-flush.patch
+queue-4.4/powerpc-rfi-flush-call-setup_rfi_flush-after-lpm-migration.patch
+queue-4.4/powerpc-pseries-query-hypervisor-for-count-cache-flush-settings.patch
+queue-4.4/powerpc-powernv-set-or-clear-security-feature-flags.patch
+queue-4.4/powerpc-64s-add-support-for-software-count-cache-flush.patch
+queue-4.4/powerpc64s-show-ori31-availability-in-spectre_v1-sysfs-file-not-v2.patch
+queue-4.4/powerpc-fsl-flush-the-branch-predictor-at-each-kernel-entry-64bit.patch
+queue-4.4/powerpc-fsl-update-spectre-v2-reporting.patch
+queue-4.4/powerpc-64s-wire-up-cpu_show_spectre_v2.patch
+queue-4.4/powerpc-64-make-meltdown-reporting-book3s-64-specific.patch
+queue-4.4/powerpc-rfi-flush-make-it-possible-to-call-setup_rfi_flush-again.patch
+queue-4.4/powerpc-64s-add-support-for-ori-barrier_nospec-patching.patch
+queue-4.4/powerpc-use-barrier_nospec-in-copy_from_user.patch
+queue-4.4/powerpc-64s-fix-section-mismatch-warnings-from-setup_rfi_flush.patch
+queue-4.4/powerpc-fsl-sanitize-the-syscall-table-for-nxp-powerpc-32-bit-platforms.patch
+queue-4.4/powerpc-avoid-code-patching-freed-init-sections.patch
+queue-4.4/powerpc-fsl-add-macro-to-flush-the-branch-predictor.patch
+queue-4.4/powerpc-xmon-add-rfi-flush-related-fields-to-paca-dump.patch
+queue-4.4/powerpc-fsl-add-barrier_nospec-implementation-for-nxp-powerpc-book3e.patch
+queue-4.4/powerpc-security-fix-spectre_v2-reporting.patch
+queue-4.4/powerpc-add-security-feature-flags-for-spectre-meltdown.patch
+queue-4.4/powerpc-powernv-use-the-security-flags-in-pnv_setup_rfi_flush.patch
+queue-4.4/powerpc-64-disable-the-speculation-barrier-from-the-command-line.patch
+queue-4.4/powerpc-fsl-fix-the-flush-of-branch-predictor.patch
+queue-4.4/powerpc-pseries-use-the-security-flags-in-pseries_setup_rfi_flush.patch
+queue-4.4/powerpc-64-add-config_ppc_barrier_nospec.patch
+queue-4.4/powerpc-64s-move-cpu_show_meltdown.patch
+queue-4.4/powerpc-fsl-enable-runtime-patching-if-nospectre_v2-boot-arg-is-used.patch
+queue-4.4/powerpc-64-use-barrier_nospec-in-syscall-entry.patch
+queue-4.4/powerpc-fsl-fixed-warning-orphan-section-__btb_flush_fixup.patch
+queue-4.4/powerpc-fsl-add-nospectre_v2-command-line-argument.patch
+queue-4.4/powerpc-64s-add-new-security-feature-flags-for-count-cache-flush.patch
+queue-4.4/powerpc-fsl-add-infrastructure-to-fixup-branch-predictor-flush.patch
+queue-4.4/powerpc-rfi-flush-differentiate-enabled-and-patched-flush-types.patch
+queue-4.4/powerpc-64s-enhance-the-information-in-cpu_show_spectre_v1.patch
+queue-4.4/powerpc-64-call-setup_barrier_nospec-from-setup_arch.patch
+queue-4.4/powerpc-rfi-flush-always-enable-fallback-flush-on-pseries.patch
+queue-4.4/powerpc-64s-improve-rfi-l1-d-cache-flush-fallback.patch
+queue-4.4/powerpc-asm-add-a-patch_site-macro-helpers-for-patching-instructions.patch
+queue-4.4/powerpc-pseries-add-new-h_get_cpu_characteristics-flags.patch
+queue-4.4/powerpc-fsl-flush-the-branch-predictor-at-each-kernel-entry-32-bit.patch
+queue-4.4/powerpc-64s-enable-barrier_nospec-based-on-firmware-settings.patch
+queue-4.4/powerpc-powernv-support-firmware-disable-of-rfi-flush.patch
+queue-4.4/powerpc-rfi-flush-move-the-logic-to-avoid-a-redo-into-the-debugfs-code.patch
+queue-4.4/powerpc-fsl-flush-branch-predictor-when-entering-kvm.patch
+queue-4.4/powerpc-powernv-query-firmware-for-count-cache-flush-settings.patch
+queue-4.4/powerpc-64s-wire-up-cpu_show_spectre_v1.patch
+queue-4.4/powerpc-64s-add-barrier_nospec.patch
+queue-4.4/powerpc-64s-enhance-the-information-in-cpu_show_meltdown.patch
+queue-4.4/powerpc-move-default-security-feature-flags.patch
+queue-4.4/powerpc-pseries-fix-clearing-of-security-feature-flags.patch
+queue-4.4/powerpc-pseries-restore-default-security-feature-flags-on-setup.patch
