@@ -2,87 +2,63 @@ Return-Path: <SRS0=xPOF=TA=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.6 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_PASS,URIBL_BLOCKED autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 46321C43219
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Apr 2019 02:48:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 99DA1C43219
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Apr 2019 03:01:29 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 7C8472147A
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Apr 2019 02:48:40 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="kpvZIF17"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7C8472147A
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	by mail.kernel.org (Postfix) with ESMTPS id 22A5A20673
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Apr 2019 03:01:29 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 22A5A20673
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=windriver.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44tQvT6RFmzDqRy
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Apr 2019 12:48:37 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44tRBG70hczDqSW
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Apr 2019 13:01:26 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=2607:f8b0:4864:20::643; helo=mail-pl1-x643.google.com;
- envelope-from=npiggin@gmail.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=windriver.com
+ (client-ip=147.11.146.13; helo=mail1.windriver.com;
+ envelope-from=pablo.rodriguez-quesada@windriver.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="kpvZIF17"; 
- dkim-atps=neutral
-Received: from mail-pl1-x643.google.com (mail-pl1-x643.google.com
- [IPv6:2607:f8b0:4864:20::643])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ dmarc=none (p=none dis=none) header.from=windriver.com
+X-Greylist: delayed 7829 seconds by postgrey-1.36 at bilbo;
+ Tue, 30 Apr 2019 13:00:05 AEST
+Received: from mail1.windriver.com (mail1.windriver.com [147.11.146.13])
+ (using TLSv1.1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44tQsR4rV7zDqN9
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Apr 2019 12:46:51 +1000 (AEST)
-Received: by mail-pl1-x643.google.com with SMTP id l2so3253551plt.11
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Apr 2019 19:46:51 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=date:from:subject:to:cc:references:in-reply-to:mime-version
- :user-agent:message-id:content-transfer-encoding;
- bh=ZpJQsgca0/LVXSQJRGMNekhujVFwpXEhIaVfT5sfHAQ=;
- b=kpvZIF17L9G03YJq6KG5vubutPEqXMbRlH2u3ftH+O+AKf2OGcWUdaTlOlazuQl36C
- T3YXt2hVzvcuh99ojGDB+1JXLF5u3RMsWoFk8UK3vWKWLRxhP85QZ7kQvaxE4q94m60X
- 44wOHbQ63X6mjvJxlsky7M9GOFR4Tig1feUjYeiVoPj9F7gOx8xSGLksb14lXxnn7HsF
- qk6HxsKulWIihT8kN9ZUDmrDJRGFsrutS08zYZkGoTRuNDGSvzb1jhQCsuLv21wgUENE
- i1LLb6rNnKp3tPGoQ9XSv5thHAWIJe290G7aDuUqHbmu7BQTTrkG0YQwSxZlYAZ22wXj
- JksQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:date:from:subject:to:cc:references:in-reply-to
- :mime-version:user-agent:message-id:content-transfer-encoding;
- bh=ZpJQsgca0/LVXSQJRGMNekhujVFwpXEhIaVfT5sfHAQ=;
- b=X8i5GzCnWRt3rKnY6YNwCXPyM2oAs52MGvnENUEtiW+iV0U137Vq94Ir6V3b6pU9GZ
- TQtMRb4cu9oy8Aw0aaUSBPdBILD5K3g08L/tL1xdJeAwRiT06q4VYu2KeicBrNFYZLR9
- BSTgrw9BYa82ToBaZSBa8C4+qk/ax7Xco+aP1cITZLIj7lTbmi38TIzbh7z9jRWaQ/dB
- V4lfWIrcwaISQydD4GhHDfIcbsZuwEb54VZL7wDCuC+FbFi7ZpFLKl11s4l009j0RyhC
- W+dFOfgqY2t7uEFWJstC9O6ycRsVcUvwGqKtcXIuVhjDOtKxVS9cGJkNyKHHMx0RJUdp
- 7EJw==
-X-Gm-Message-State: APjAAAWQu813buqUiwpoR2z9VwLezGK6CEtHg3+DOZ5V1ghcM76UXDWb
- 4AJGJaozLyw33dA8yCcw2xY=
-X-Google-Smtp-Source: APXvYqxJ3bN9p+xxhe52PIxCipNM8t93ISXM/JyGKmdLl5vcETLdScqbbeuA8ScDP+AwIhXCzD2n9w==
-X-Received: by 2002:a17:902:8c85:: with SMTP id
- t5mr7315616plo.23.1556592408950; 
- Mon, 29 Apr 2019 19:46:48 -0700 (PDT)
-Received: from localhost (60-240-193-213.tpgi.com.au. [60.240.193.213])
- by smtp.gmail.com with ESMTPSA id 17sm66294013pfw.65.2019.04.29.19.46.46
- (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
- Mon, 29 Apr 2019 19:46:46 -0700 (PDT)
-Date: Tue, 30 Apr 2019 12:46:40 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
-Subject: Re: [PATCH v2 0/5] Allow CPU0 to be nohz full
-To: Peter Zijlstra <peterz@infradead.org>
-References: <20190411033448.20842-1-npiggin@gmail.com>
- <20190425120427.GS4038@hirez.programming.kicks-ass.net>
-In-Reply-To: <20190425120427.GS4038@hirez.programming.kicks-ass.net>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44tR8j6mHZzDqLR
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Apr 2019 13:00:03 +1000 (AEST)
+Received: from ALA-HCB.corp.ad.wrs.com ([147.11.189.41])
+ by mail1.windriver.com (8.15.2/8.15.1) with ESMTPS id x3U0nRL5015621
+ (version=TLSv1 cipher=AES128-SHA bits=128 verify=FAIL);
+ Mon, 29 Apr 2019 17:49:27 -0700 (PDT)
+Received: from ALA-MBD.corp.ad.wrs.com ([169.254.3.163]) by
+ ALA-HCB.corp.ad.wrs.com ([147.11.189.41]) with mapi id 14.03.0439.000; Mon,
+ 29 Apr 2019 17:49:15 -0700
+From: "Rodriguez Quesada, Pablo" <Pablo.Rodriguez-Quesada@windriver.com>
+To: Christophe Leroy <christophe.leroy@c-s.fr>
+Subject: RE: Machine Check Exceptions
+Thread-Topic: Machine Check Exceptions
+Thread-Index: AdT61Io1ul16C2EtScWIxTsT0pjndwAis6KAAAauFKAAxLJIgAAYKEIA
+Date: Tue, 30 Apr 2019 00:49:15 +0000
+Message-ID: <0CDD4071D6ACF54ABB9CF1A6D90375A809BA18D7@ALA-MBD.corp.ad.wrs.com>
+References: <0CDD4071D6ACF54ABB9CF1A6D90375A809B91A41@ALA-MBD.corp.ad.wrs.com>
+ <64209dd1-7cce-4061-1139-15e7ef394e66@c-s.fr>
+ <0CDD4071D6ACF54ABB9CF1A6D90375A809B91C51@ALA-MBD.corp.ad.wrs.com>
+ <49f28ecd-b2c2-aa9f-8183-f6c945824292@c-s.fr>
+In-Reply-To: <49f28ecd-b2c2-aa9f-8183-f6c945824292@c-s.fr>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+x-originating-ip: [147.11.119.144]
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 MIME-Version: 1.0
-User-Agent: astroid/0.14.0 (https://github.com/astroidmail/astroid)
-Message-Id: <1556592099.38esq4uhhz.astroid@bobo.none>
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -94,39 +70,58 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-arch@vger.kernel.org, Frederic Weisbecker <fweisbec@gmail.com>,
- "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>,
- linux-kernel@vger.kernel.org, Ingo Molnar <mingo@redhat.com>,
- Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@lists.ozlabs.org
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Peter Zijlstra's on April 25, 2019 10:04 pm:
-> On Thu, Apr 11, 2019 at 01:34:43PM +1000, Nicholas Piggin wrote:
->> Since last time, I added a compile time option to opt-out of this
->> if the platform does not support suspend on non-zero, and tried to
->> improve legibility of changelogs and explain the justification
->> better.
->>=20
->> I have been testing this on powerpc/pseries and it seems to work
->> fine (the firmware call to suspend can be called on any CPU and
->> resumes where it left off), but not included here because the
->> code has some bitrot unrelated to this series which I hacked to
->> fix. I will discuss it and either send an acked patch to go with
->> this series if it is small, or fix it in powerpc tree.
->>=20
->=20
-> Rafael, Frederic, any comments?
->=20
-
-Sorry to ping again, I guess people are probably busy after vacation.
-Any chance we could get this in next merge window? Peter are you okay
-with the config option as it is, then we can look at adapting it to
-what x86 needs as a follow up (e.g., allow nohz CPU0 for
-cpu0_hotpluggable case)?
-
-Thanks,
-Nick
-
-=
+SGkgQ2hyaXN0b3BoZSwNCg0KSSB3aWxsIHRyeSB3aXRoIHRoZSBOTUkgYXBwcm9hY2guIEp1c3Qg
+b25lIHF1ZXN0aW9uOiANCg0KPlRoZSBkcml2ZXIgSSB3cm90ZSB0aGF0IHlvdSBhcmUgcmVmZXJy
+aW5nIHRvIGlzIHRvIGhhbmRsZSB0aGUgd2F0Y2hkb2cgaW4gZTMwMCBwb3dlcnBjIGNvcmUuIFRo
+aXMgaXMgYmVjYXVzZSB0aGUgZTMwMCBnZXJlcmF0ZXMgYSBtYWNoaW5lIGNoZWNrIG9uIGV4cGly
+eSA+d2hlbiB0aGUgd2F0Y2hkb2cgaXMgY29uZmlndXJlZCBpbiBOTUkgbW9kZS4NCg0KQnkgTk1J
+IG1vZGUgZG8geW91IG1lYW4gZW5hYmxpbmcgdGhlIENPTkZJR19IQVZFX05NSV9XQVRDSERPRyBz
+eW1ib2wgb24gdGhlIC5jb25maWc/DQoNCg0KVGhhbmsgeW91LA0KUGFibG8NCg0KLS0tLS1Pcmln
+aW5hbCBNZXNzYWdlLS0tLS0NCkZyb206IENocmlzdG9waGUgTGVyb3kgPGNocmlzdG9waGUubGVy
+b3lAYy1zLmZyPiANClNlbnQ6IE1vbmRheSwgQXByaWwgMjksIDIwMTkgMTI6MTAgQU0NClRvOiBS
+b2RyaWd1ZXogUXVlc2FkYSwgUGFibG8gPFBhYmxvLlJvZHJpZ3Vlei1RdWVzYWRhQHdpbmRyaXZl
+ci5jb20+DQpDYzogbGludXhwcGMtZGV2QGxpc3RzLm96bGFicy5vcmcNClN1YmplY3Q6IFJlOiBN
+YWNoaW5lIENoZWNrIEV4Y2VwdGlvbnMNCg0KSGkgUGFibG8sDQoNCkkga25vdyBub3RoaW5nIGFi
+b3V0IG1jZS1pbmplY3QuDQoNClRoZSBkcml2ZXIgSSB3cm90ZSB0aGF0IHlvdSBhcmUgcmVmZXJy
+aW5nIHRvIGlzIHRvIGhhbmRsZSB0aGUgd2F0Y2hkb2cgaW4gZTMwMCBwb3dlcnBjIGNvcmUuIFRo
+aXMgaXMgYmVjYXVzZSB0aGUgZTMwMCBnZXJlcmF0ZXMgYSBtYWNoaW5lIGNoZWNrIG9uIGV4cGly
+eSB3aGVuIHRoZSB3YXRjaGRvZyBpcyBjb25maWd1cmVkIGluIE5NSSBtb2RlLg0KDQpUaGVyZWZv
+cmUsIHRyaWdnZXJpbmcgdGhlIG1hY2hpbmUgY2hlY2sgaXMgcmF0aGVyIGVhc3kgaW4gdGhhdCBj
+YXNlLCBJIGp1c3QgaGF2ZSB0byBzdG9wIHJlZnJlc2hpbmcgdGhlIHdhdGNoZG9nLg0KDQpDaHJp
+c3RvcGhlDQoNCkxlIDI1LzA0LzIwMTkgw6AgMTc6MzUsIFJvZHJpZ3VleiBRdWVzYWRhLCBQYWJs
+byBhIMOpY3JpdMKgOg0KPiBIaSBDaHJpc3RvcGhlciwNCj4gDQo+IEkgYW0gdHJ5aW5nIHRvIGNy
+ZWF0ZSBhIGN1c3RvbSBoYW5kbGVyIGZvciBNQ0UsIGJ1dCBJIGRvbid0IGhhdmUgYSB3YXkgDQo+
+IHRvIHRyaWdnZXIgaXQgKE9yIGRvbid0IGtub3cgaG93KQ0KPiANCj4gVGhlcmVmb3JlIEkgbG9v
+a2VkIGF0IHRoZSBtY2UtaW5qZWN0IHRvb2woKiopIGFuZCBjb21waWxlIGl0IGZvciBQUEMgYnV0
+IHRoZSBwYXRoICIvc3lzL2RldmljZXMvc3lzdGVtL21hY2hpbmUgY2hlY2svbWFjaGluZWNoZWNr
+MCIgZG9lc24ndCBleGlzdCB1bmxpa2UgSW50ZWwgYXJjaGl0ZWN0dXJlIGFuZCB0aGUgYXBwIGZh
+aWxzLiBJIHdhbnQgdG8gZml4IGl0Lg0KPiANCj4gTXkgcXVlc3Rpb24gaXM6IERvIHlvdSBrbm93
+IGlmIHRoZXJlIGlzIGEgd2F5IHRvIGluamVjdCBhbiBNQ0Ugb24gUG93ZXJQQz8gT3IgY2FuIHlv
+dSBndWlkZSBtZSBvbiBob3cgdG8gc3RhcnQgbXkgcmVzZWFyY2ggYWJvdXQgaXQuIEkgZmluZCBp
+dCB2ZXJ5IGRpZmZpY3VsdCB0byBzZWFyY2ggZm9yIFBQQyBkb2N1bWVudGF0aW9uLiBUaGF0IGlz
+IHdoeSBJIGFtIHdyaXRpbmcgdG8geW91LCB0byBnZXQgYW55IHRpcHMgZm9yIGRldmVsb3Bpbmcg
+YSBtY2UtaW5qZWN0IGZvciBQUEMuIEFuZCBvZiBjb3Vyc2UsIEkgd291bGQgYmUgbW9yZSB0aGFu
+IGdsYWQgdG8gY29udHJpYnV0ZSB0byB0aGUgT3BlblNvdXJjZSBjb21tdW5pdHkuDQo+IA0KPiBB
+bHNvLCBob3cgZGlkIHlvdSB0ZXN0IHlvdXIgaGFuZGxlcj8gRG8geW91IGhhdmUgYW4gZWFzeSBt
+ZWNoYW5pc20gdG8gdHJpZ2dlciB0aGUgZXhjZXB0aW9ucz8NCj4gDQo+IFRoYW5rIHlvdSwNCj4g
+UGFibG8NCj4gDQo+ICgqKikgaHR0cHM6Ly9naXRodWIuY29tL2FuZGlrbGVlbi9tY2UtaW5qZWN0
+Lw0KPiANCj4gDQo+IA0KPiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBDaHJp
+c3RvcGhlIExlcm95IDxjaHJpc3RvcGhlLmxlcm95QGMtcy5mcj4NCj4gU2VudDogV2VkbmVzZGF5
+LCBBcHJpbCAyNCwgMjAxOSAxMTowNyBQTQ0KPiBUbzogUm9kcmlndWV6IFF1ZXNhZGEsIFBhYmxv
+IDxQYWJsby5Sb2RyaWd1ZXotUXVlc2FkYUB3aW5kcml2ZXIuY29tPg0KPiBTdWJqZWN0OiBSZTog
+TWFjaGluZSBDaGVjayBFeGNlcHRpb25zDQo+IA0KPiBIaSBQYWJsbywNCj4gDQo+IE5vIHByb2Js
+ZW0NCj4gDQo+IENocmlzdG9waGUNCj4gDQo+IA0KPiBMZSAyNC8wNC8yMDE5IMOgIDIxOjMzLCBS
+b2RyaWd1ZXogUXVlc2FkYSwgUGFibG8gYSDDqWNyaXTCoDoNCj4+IEhpIENyaXN0b3BoZXIsDQo+
+Pg0KPj4gSG9wZSB5b3UgYXJlIGRvaW5nIGdvb2QhDQo+Pg0KPj4gSSBhbSBsZWFybmluZyBhYm91
+dCBNYWNoaW5lIENoZWNrIEV4Y2VwdGlvbnMgb24gUFBDLCBhbmQgSSBmb3VuZCB0aGlzIA0KPj4g
+Y29tbWl0IG9mIHlvdXJzOg0KPj4NCj4+IGh0dHBzOi8vZ2l0aHViLmNvbS90b3J2YWxkcy9saW51
+eC9jb21taXQvMGRlYWUzOWNlYzZkYWIzYTY2Nzk0ZjNlOWU4Mw0KPj4gYw0KPj4gYTRkYzMwMDgw
+ZjENCj4+DQo+PiBXb3VsZCB5b3UgbWluZCBpZiBJIGFzayB5b3UgYSBjb3VwbGUgb2YgcXVlc3Rp
+b25zPw0KPj4NCj4+IFRoYW5rIHlvdSwNCj4+DQo+PiBXUiBsb2dvIHNpZ25pdHVyZSA8aHR0cDov
+L3d3dy53aW5kcml2ZXIuY29tLz4NCj4+DQo+PiAJDQo+Pg0KPj4gKlBhYmxvIFJvZHJpZ3Vleios
+IEludGVybiwgV2luZCBSaXZlciBDb3N0YSBSaWNhDQo+Pg0K
