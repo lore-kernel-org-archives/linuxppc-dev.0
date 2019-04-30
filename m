@@ -2,82 +2,61 @@ Return-Path: <SRS0=xPOF=TA=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_PASS,URIBL_BLOCKED,USER_AGENT_MUTT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_MUTT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 93345C43219
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Apr 2019 13:29:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3141EC43219
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Apr 2019 14:15:04 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C905B20644
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Apr 2019 13:29:24 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="00XvEI9H"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C905B20644
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linuxfoundation.org
+	by mail.kernel.org (Postfix) with ESMTPS id 4414A20652
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Apr 2019 14:15:03 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4414A20652
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.intel.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44tj6p5Qf8zDqHn
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Apr 2019 23:29:22 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44tj2L1Bv4zDq9Z
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Apr 2019 23:25:30 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44tk7R6sgbzDqSV
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 May 2019 00:14:59 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+ spf=none (mailfrom) smtp.mailfrom=linux.intel.com
+ (client-ip=134.134.136.20; helo=mga02.intel.com;
+ envelope-from=andriy.shevchenko@linux.intel.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=linuxfoundation.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="00XvEI9H"; 
- dkim-atps=neutral
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 44tj2K5cgjz8xXr
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Apr 2019 23:25:29 +1000 (AEST)
-Received: by ozlabs.org (Postfix)
- id 44tj2K3rBcz9sCF; Tue, 30 Apr 2019 23:25:29 +1000 (AEST)
-Authentication-Results: ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=linuxfoundation.org
- (client-ip=198.145.29.99; helo=mail.kernel.org;
- envelope-from=gregkh@linuxfoundation.org; receiver=<UNKNOWN>)
-Authentication-Results: ozlabs.org; dmarc=none (p=none dis=none)
- header.from=linuxfoundation.org
-Authentication-Results: ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="00XvEI9H"; 
- dkim-atps=neutral
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ header.from=linux.intel.com
+Received: from mga02.intel.com (mga02.intel.com [134.134.136.20])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 44tj2J0r7Cz9sBr
- for <linuxppc-dev@ozlabs.org>; Tue, 30 Apr 2019 23:25:28 +1000 (AEST)
-Received: from localhost (83-86-89-107.cable.dynamic.v4.ziggo.nl
- [83.86.89.107])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id 6086921707;
- Tue, 30 Apr 2019 13:25:25 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1556630725;
- bh=HVMmC5sVHgkcsl22a0sJavWbalQlXmGpxIF+hfE4eLk=;
- h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=00XvEI9HOx/1hfpaSHD4CY9l1ivd757ZHhFjqGDEKFUM/9IScpI49ZHrpJxSXSPXP
- XVnyDMUcmcaEPrRNZQ/t2zxHla2//rB1fv/y2JpB5sa+WvWw5XVPO6njS39kRE64sd
- GDp/3ykYDA7SS70O0huqpMYZ9bMExir6lnbjYtCU=
-Date: Tue, 30 Apr 2019 15:25:23 +0200
-From: Greg KH <gregkh@linuxfoundation.org>
-To: Diana Craciun <diana.craciun@nxp.com>
-Subject: Re: [PATCH v2 stable v4.4 2/2] Documentation: Add nospectre_v1
- parameter
-Message-ID: <20190430132523.GB5327@kroah.com>
-References: <1556628147-15687-1-git-send-email-diana.craciun@nxp.com>
- <1556628147-15687-2-git-send-email-diana.craciun@nxp.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44tk2V0pWgzDqRD
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 May 2019 00:10:40 +1000 (AEST)
+X-Amp-Result: UNSCANNABLE
+X-Amp-File-Uploaded: False
+Received: from fmsmga006.fm.intel.com ([10.253.24.20])
+ by orsmga101.jf.intel.com with ESMTP/TLS/DHE-RSA-AES256-GCM-SHA384;
+ 30 Apr 2019 07:10:36 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="5.60,414,1549958400"; d="scan'208";a="342158227"
+Received: from smile.fi.intel.com (HELO smile) ([10.237.72.86])
+ by fmsmga006.fm.intel.com with ESMTP; 30 Apr 2019 07:10:31 -0700
+Received: from andy by smile with local (Exim 4.92)
+ (envelope-from <andriy.shevchenko@linux.intel.com>)
+ id 1hLTSn-0006VO-Gw; Tue, 30 Apr 2019 17:10:29 +0300
+Date: Tue, 30 Apr 2019 17:10:29 +0300
+From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+To: Christophe Leroy <christophe.leroy@c-s.fr>
+Subject: Re: [PATCH 22/41] drivers: tty: serial: cpm_uart: fix logging calls
+Message-ID: <20190430141029.GK9224@smile.fi.intel.com>
+References: <1556369542-13247-1-git-send-email-info@metux.net>
+ <1556369542-13247-23-git-send-email-info@metux.net>
+ <a00ba23b-e73e-c964-a6d0-347cb605b8c8@c-s.fr>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <1556628147-15687-2-git-send-email-diana.craciun@nxp.com>
-User-Agent: Mutt/1.11.4 (2019-03-13)
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <a00ba23b-e73e-c964-a6d0-347cb605b8c8@c-s.fr>
+Organization: Intel Finland Oy - BIC 0357606-4 - Westendinkatu 7, 02160 Espoo
+User-Agent: Mutt/1.10.1 (2018-07-13)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -89,44 +68,50 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@ozlabs.org, stable@vger.kernel.org
+Cc: lorenzo.pieralisi@arm.com, linux-ia64@vger.kernel.org, macro@linux-mips.org,
+ linuxppc-dev@lists.ozlabs.org, andrew@aj.id.au, gregkh@linuxfoundation.org,
+ slemieux.tyco@gmail.com, liviu.dudau@arm.com, linux-kernel@vger.kernel.org,
+ linux-mips@vger.kernel.org, linux@prisktech.co.nz, matthias.bgg@gmail.com,
+ khilman@baylibre.com, linux-serial@vger.kernel.org, sudeep.holla@arm.com,
+ sparclinux@vger.kernel.org, jacmet@sunsite.dk,
+ linux-amlogic@lists.infradead.org, vz@mleia.com, "Enrico Weigelt,
+ metux IT consult" <info@metux.net>, davem@davemloft.net
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, Apr 30, 2019 at 03:42:27PM +0300, Diana Craciun wrote:
-> commit 26cb1f36c43ee6e89d2a9f48a5a7500d5248f836 upstream.
+On Mon, Apr 29, 2019 at 05:59:04PM +0200, Christophe Leroy wrote:
+> Le 27/04/2019 à 14:52, Enrico Weigelt, metux IT consult a écrit :
+> > Fix checkpatch warnings by using pr_err():
+> > 
+> >      WARNING: Prefer [subsystem eg: netdev]_err([subsystem]dev, ... then dev_err(dev, ... then pr_err(...  to printk(KERN_ERR ...
+> >      #109: FILE: drivers/tty/serial/cpm_uart/cpm_uart_cpm2.c:109:
+> >      +		printk(KERN_ERR
+> > 
+> >      WARNING: Prefer [subsystem eg: netdev]_err([subsystem]dev, ... then dev_err(dev, ... then pr_err(...  to printk(KERN_ERR ...
+> >      #128: FILE: drivers/tty/serial/cpm_uart/cpm_uart_cpm2.c:128:
+> >      +		printk(KERN_ERR
+> > 
+> >      WARNING: Prefer [subsystem eg: netdev]_err([subsystem]dev, ... then dev_err(dev, ... then pr_err(...  to printk(KERN_ERR ...
+> >      +           printk(KERN_ERR
+> > 
+> >      WARNING: Prefer [subsystem eg: netdev]_err([subsystem]dev, ... then dev_err(dev, ... then pr_err(...  to printk(KERN_ERR ...
+> >      +           printk(KERN_ERR
+> > 
+> > Signed-off-by: Enrico Weigelt <info@metux.net>
 > 
-> Currently only supported on powerpc.
+> Reviewed-by: Christophe Leroy <christophe.leroy@c-s.fr>
 > 
-> Signed-off-by: Diana Craciun <diana.craciun@nxp.com>
-> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
-> ---
->  Documentation/kernel-parameters.txt | 4 ++++
->  1 file changed, 4 insertions(+)
+> But is that really worth doing those changes ?
 > 
-> diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
-> index f0bdf78420a0..3ff87d5d6fea 100644
-> --- a/Documentation/kernel-parameters.txt
-> +++ b/Documentation/kernel-parameters.txt
-> @@ -2449,6 +2449,10 @@ bytes respectively. Such letter suffixes can also be entirely omitted.
->  			legacy floating-point registers on task switch.
->  
->  	nohugeiomap	[KNL,x86] Disable kernel huge I/O mappings.
-> +	
-> +	nospectre_v1	[PPC] Disable mitigations for Spectre Variant 1 (bounds
-> +			check bypass). With this option data leaks are possible
-> +			in the system.
->  
->  	nospectre_v2	[X86,PPC_FSL_BOOK3E] Disable all mitigations for the Spectre variant 2
->  			(indirect branch prediction) vulnerability. System may
-> -- 
-> 2.17.1
->
+> If we want to do something useful, wouldn't it make more sense to introduce
+> the use of dev_err() in order to identify the faulting device in the message
+> ?
 
-Both of these patches needed to be added to a bunch of the stable trees,
-so I've now done that.
++1 for switching to dev_*().
 
-thanks,
+-- 
+With Best Regards,
+Andy Shevchenko
 
-greg k-h
+
