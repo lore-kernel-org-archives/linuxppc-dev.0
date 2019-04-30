@@ -4,40 +4,40 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-8.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_PASS,USER_AGENT_MUTT autolearn=unavailable autolearn_force=no
-	version=3.4.0
+	SPF_PASS,URIBL_BLOCKED,USER_AGENT_MUTT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CCAA7C43219
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Apr 2019 13:26:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 93345C43219
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Apr 2019 13:29:25 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 4D26521707
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Apr 2019 13:26:30 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id C905B20644
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Apr 2019 13:29:24 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="GvD0xlHf"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4D26521707
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="00XvEI9H"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C905B20644
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linuxfoundation.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44tj3R46MszDq9l
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Apr 2019 23:26:27 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44tj6p5Qf8zDqHn
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Apr 2019 23:29:22 +1000 (AEST)
 Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44tj0Y4KZQzDq62
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Apr 2019 23:23:57 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44tj2L1Bv4zDq9Z
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Apr 2019 23:25:30 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=linuxfoundation.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="GvD0xlHf"; 
+ unprotected) header.d=kernel.org header.i=@kernel.org header.b="00XvEI9H"; 
  dkim-atps=neutral
 Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 44tj0Y335Dz8tCq
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Apr 2019 23:23:57 +1000 (AEST)
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 44tj2K5cgjz8xXr
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Apr 2019 23:25:29 +1000 (AEST)
 Received: by ozlabs.org (Postfix)
- id 44tj0Y2P1Yz9sBr; Tue, 30 Apr 2019 23:23:57 +1000 (AEST)
+ id 44tj2K3rBcz9sCF; Tue, 30 Apr 2019 23:25:29 +1000 (AEST)
 Authentication-Results: ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=linuxfoundation.org
  (client-ip=198.145.29.99; helo=mail.kernel.org;
@@ -45,32 +45,32 @@ Authentication-Results: ozlabs.org;
 Authentication-Results: ozlabs.org; dmarc=none (p=none dis=none)
  header.from=linuxfoundation.org
 Authentication-Results: ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="GvD0xlHf"; 
+ unprotected) header.d=kernel.org header.i=@kernel.org header.b="00XvEI9H"; 
  dkim-atps=neutral
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 44tj0X5tJ0z9sB8
- for <linuxppc-dev@ozlabs.org>; Tue, 30 Apr 2019 23:23:56 +1000 (AEST)
+ by ozlabs.org (Postfix) with ESMTPS id 44tj2J0r7Cz9sBr
+ for <linuxppc-dev@ozlabs.org>; Tue, 30 Apr 2019 23:25:28 +1000 (AEST)
 Received: from localhost (83-86-89-107.cable.dynamic.v4.ziggo.nl
  [83.86.89.107])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id CB2B82075E;
- Tue, 30 Apr 2019 13:23:53 +0000 (UTC)
+ by mail.kernel.org (Postfix) with ESMTPSA id 6086921707;
+ Tue, 30 Apr 2019 13:25:25 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1556630634;
- bh=FX21K3x2eSTyPIYWY0QOv+WYz0qilVJ+BIvLkM+EmQ0=;
+ s=default; t=1556630725;
+ bh=HVMmC5sVHgkcsl22a0sJavWbalQlXmGpxIF+hfE4eLk=;
  h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=GvD0xlHfZRVr6nFo7UE4aA8wDccgdkeRLC1tuVrB/I2RK73LORqUskopsimBTOzO3
- tT7P3vQnpdLOpHHAjM6wFNMkMcCz78e25Hjd0FcoERQ/erq4kp8Zxb1nnV4HJuRn+v
- C/EWw2JztFfd1+PbWabxPZbUXaydYpAVWYLK1bKQ=
-Date: Tue, 30 Apr 2019 15:23:52 +0200
+ b=00XvEI9HOx/1hfpaSHD4CY9l1ivd757ZHhFjqGDEKFUM/9IScpI49ZHrpJxSXSPXP
+ XVnyDMUcmcaEPrRNZQ/t2zxHla2//rB1fv/y2JpB5sa+WvWw5XVPO6njS39kRE64sd
+ GDp/3ykYDA7SS70O0huqpMYZ9bMExir6lnbjYtCU=
+Date: Tue, 30 Apr 2019 15:25:23 +0200
 From: Greg KH <gregkh@linuxfoundation.org>
 To: Diana Craciun <diana.craciun@nxp.com>
 Subject: Re: [PATCH v2 stable v4.4 2/2] Documentation: Add nospectre_v1
  parameter
-Message-ID: <20190430132352.GA5327@kroah.com>
+Message-ID: <20190430132523.GB5327@kroah.com>
 References: <1556628147-15687-1-git-send-email-diana.craciun@nxp.com>
  <1556628147-15687-2-git-send-email-diana.craciun@nxp.com>
 MIME-Version: 1.0
@@ -114,9 +114,19 @@ On Tue, Apr 30, 2019 at 03:42:27PM +0300, Diana Craciun wrote:
 >  
 >  	nohugeiomap	[KNL,x86] Disable kernel huge I/O mappings.
 > +	
+> +	nospectre_v1	[PPC] Disable mitigations for Spectre Variant 1 (bounds
+> +			check bypass). With this option data leaks are possible
+> +			in the system.
+>  
+>  	nospectre_v2	[X86,PPC_FSL_BOOK3E] Disable all mitigations for the Spectre variant 2
+>  			(indirect branch prediction) vulnerability. System may
+> -- 
+> 2.17.1
+>
 
-Trailing whitespace :(
+Both of these patches needed to be added to a bunch of the stable trees,
+so I've now done that.
 
-Fix up your editor to flag this as RED or something.  I'll go fix it
-up...
+thanks,
 
+greg k-h
