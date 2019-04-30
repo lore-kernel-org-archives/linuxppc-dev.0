@@ -4,61 +4,57 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-5.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,
-	USER_AGENT_MUTT autolearn=unavailable autolearn_force=no version=3.4.0
+	URIBL_BLOCKED,USER_AGENT_MUTT autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 40C36C43219
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Apr 2019 08:43:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0CD4CC04AA6
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Apr 2019 10:13:35 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 725422080C
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Apr 2019 08:43:55 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 7751F21734
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Apr 2019 10:13:34 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="dEg27DCS"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 725422080C
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linuxfoundation.org
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ozlabs.org header.i=@ozlabs.org header.b="YADHNTpg"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7751F21734
+Authentication-Results: mail.kernel.org; dmarc=pass (p=none dis=none) header.from=ozlabs.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44tZnN6TrMzDqSG
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Apr 2019 18:43:52 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44tcmr0F0dzDqRg
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Apr 2019 20:13:32 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44tcky1NfTzDqQX
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Apr 2019 20:11:54 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=linuxfoundation.org
- (client-ip=198.145.29.99; helo=mail.kernel.org;
- envelope-from=gregkh@linuxfoundation.org; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=linuxfoundation.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="dEg27DCS"; 
+ dmarc=pass (p=none dis=none) header.from=ozlabs.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ secure) header.d=ozlabs.org header.i=@ozlabs.org header.b="YADHNTpg"; 
  dkim-atps=neutral
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44tZlY2gsWzDqQV
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Apr 2019 18:42:15 +1000 (AEST)
-Received: from localhost (83-86-89-107.cable.dynamic.v4.ziggo.nl
- [83.86.89.107])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id 36AE12080C;
- Tue, 30 Apr 2019 08:42:12 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1556613732;
- bh=hEJeedReyrvMTpELjkKW1DKI7hOCgymeSH+xAu+sczM=;
+Received: by ozlabs.org (Postfix, from userid 1003)
+ id 44tckx63cWz9sBr; Tue, 30 Apr 2019 20:11:53 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ozlabs.org; s=201707;
+ t=1556619113; bh=/3cVNERTeFNHsUu9N/NoL+9iM4miE3OQ/3mWOShCetQ=;
  h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=dEg27DCShWwjcKfJpSN7jb8hw9W+I6X7E2sxVT9Fj4EuClzFAADCY696yzjHssROH
- W/LnxaInMXg7CCA0UWJMYF1LKPkU087xraspvXQRxJVPYA9N5OdPaZ7W/OsV4BBFW/
- R2FFmGMugS74G/TSkL1aMwotBDq30UBehjlQcb9s=
-Date: Tue, 30 Apr 2019 10:42:10 +0200
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-To: "Tobin C. Harding" <tobin@kernel.org>
-Subject: Re: [PATCH] powerpc: Fix kobject memleak
-Message-ID: <20190430084210.GA11737@kroah.com>
-References: <20190430010923.17092-1-tobin@kernel.org>
+ b=YADHNTpgxSe0EKuGzE4A8KBo387NkTzsK47lXBVfvDMfrxrylvn1IrLnm+Ic3Hsht
+ 66jPJh0khrpXf8dcgZDLjItpY1WuMYUr3eJBZLlf0JZeaRqJTffklbU4yccaqyLoFY
+ WXlPUtcNffp2rnPfd0VSRjzpyocOj3HxoOCsAHwIc3woDjwTdq25lco5x/s+nCZIHa
+ gDkxC0BKknl85ITtZs3JL6Nch17VFz/OwqW9rHhK2RqKMO5FpesErdsk1AVyrfwq37
+ XUOSCSm0N59pkDi2jjKXhKLR9nqHKglGp95cnJH3kTIwA26uZwNlsquKmg77jnsxRE
+ tJQKc4QtRhscg==
+Date: Tue, 30 Apr 2019 20:03:23 +1000
+From: Paul Mackerras <paulus@ozlabs.org>
+To: Palmer Dabbelt <palmer@sifive.com>
+Subject: Re: [PATCH] KVM: PPC: Book3S HV: smb->smp comment fixup
+Message-ID: <20190430100323.GF32205@blackberry>
+References: <20190425195339.12609-1-palmer@sifive.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20190430010923.17092-1-tobin@kernel.org>
-User-Agent: Mutt/1.11.4 (2019-03-13)
+In-Reply-To: <20190425195339.12609-1-palmer@sifive.com>
+User-Agent: Mutt/1.5.24 (2015-08-30)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -70,19 +66,18 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ kvm-ppc@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, Apr 30, 2019 at 11:09:23AM +1000, Tobin C. Harding wrote:
-> Currently error return from kobject_init_and_add() is not followed by a
-> call to kobject_put().  This means there is a memory leak.
+On Thu, Apr 25, 2019 at 12:53:39PM -0700, Palmer Dabbelt wrote:
+> I made the same typo when trying to grep for uses of smp_wmb and figured
+> I might as well fix it.
 > 
-> Add call to kobject_put() in error path of kobject_init_and_add().
-> 
-> Signed-off-by: Tobin C. Harding <tobin@kernel.org>
+> Signed-off-by: Palmer Dabbelt <palmer@sifive.com>
 
-Reviewed-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Thanks, patch applied to my kvm-ppc-next tree.
 
+Paul.
