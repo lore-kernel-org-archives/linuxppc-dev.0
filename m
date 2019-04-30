@@ -4,23 +4,23 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
+	SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 956D0C43219
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Apr 2019 12:58:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C803EC43219
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Apr 2019 12:59:45 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C348A21670
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Apr 2019 12:58:07 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 4202721670
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Apr 2019 12:59:45 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="U74z0Sgn"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C348A21670
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="QjHo7GC0"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4202721670
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44thQj684VzDqMN
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Apr 2019 22:58:05 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44thSb2m9qzDqVF
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Apr 2019 22:59:43 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=c-s.fr
  (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
@@ -28,55 +28,54 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="U74z0Sgn"; 
+ unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="QjHo7GC0"; 
  dkim-atps=neutral
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44th0k2LVmzDqNV
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44th0k5w0rzDqNQ
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Apr 2019 22:39:02 +1000 (AEST)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 44th0d5n8nz9vD33;
- Tue, 30 Apr 2019 14:38:57 +0200 (CEST)
+ by localhost (Postfix) with ESMTP id 44th0Z3krWz9vD38;
+ Tue, 30 Apr 2019 14:38:54 +0200 (CEST)
 Authentication-Results: localhost; dkim=pass
  reason="1024-bit key; insecure key"
- header.d=c-s.fr header.i=@c-s.fr header.b=U74z0Sgn; dkim-adsp=pass;
+ header.d=c-s.fr header.i=@c-s.fr header.b=QjHo7GC0; dkim-adsp=pass;
  dkim-atps=neutral
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id nlpAqwvcJFv9; Tue, 30 Apr 2019 14:38:57 +0200 (CEST)
+ with ESMTP id 8R6cxy9lUxcR; Tue, 30 Apr 2019 14:38:54 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 44th0d4Z4Bz9vD30;
- Tue, 30 Apr 2019 14:38:57 +0200 (CEST)
+ by pegase1.c-s.fr (Postfix) with ESMTP id 44th0Z2jSnz9vD30;
+ Tue, 30 Apr 2019 14:38:54 +0200 (CEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
- t=1556627937; bh=wz4z49vveZWek/d8S0CKVkTsdO2dnxqY9DcbscNvV9w=;
+ t=1556627934; bh=XvXA4BMh4E6TIZg6dxaZb2e6bZuem4Kr4mb92NmoWwk=;
  h=In-Reply-To:References:From:Subject:To:Cc:Date:From;
- b=U74z0Sgnii6BHskqW3HdjUDm7wVXKS3lJwsnf5lQ9QRfB8AkfPqkyBrHg9+1EnDEj
- 761LkboR8HSZMY2VL9bBgGGxGJtm6ukhvoIO5bJqXH0CLFV7Iqz3NUPO2hme/KAQdk
- 9FJuQ0f0nkHiO2q2HlfywJf++mywtlj88oas0Ut8=
+ b=QjHo7GC09riyX1k3X58u6arozIlXejsrrIiXDw+eC1rkjrrjtvytadbAr9IAmKGkl
+ jvv6GEaO7kFFX2Si8VkNkNNMxuNb/7kcY5AUmMipPyqZ6UOqkYMpDKxIPmJDoPcQue
+ 42MEDUkd6qv0Mv7QjZpAYthFoVhZXVmyc6BzT5OA=
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id F01CA8B8E1;
- Tue, 30 Apr 2019 14:38:58 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id BAF068B8DF;
+ Tue, 30 Apr 2019 14:38:55 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id wo1i9I3DWNeZ; Tue, 30 Apr 2019 14:38:58 +0200 (CEST)
+ with ESMTP id 68_IWAWmCRjB; Tue, 30 Apr 2019 14:38:55 +0200 (CEST)
 Received: from po16846vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 96B2E8B8E0;
- Tue, 30 Apr 2019 14:38:58 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 7D7138B8C2;
+ Tue, 30 Apr 2019 14:38:55 +0200 (CEST)
 Received: by po16846vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id 68591666F8; Tue, 30 Apr 2019 12:38:58 +0000 (UTC)
-Message-Id: <7113d40938c410b55a3d6645d9a07da425c7d42a.1556627571.git.christophe.leroy@c-s.fr>
+ id 50DC6666F8; Tue, 30 Apr 2019 12:38:55 +0000 (UTC)
+Message-Id: <7a379bb42fc4433878d4451b05a5581985ed3afc.1556627571.git.christophe.leroy@c-s.fr>
 In-Reply-To: <cover.1556627571.git.christophe.leroy@c-s.fr>
 References: <cover.1556627571.git.christophe.leroy@c-s.fr>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v3 09/16] powerpc/32: enter syscall with MSR_EE inconditionaly
- set
+Subject: [PATCH v3 06/16] powerpc/40x: Split and rename NORMAL_EXCEPTION_PROLOG
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
  Nicholas Piggin <npiggin@gmail.com>
-Date: Tue, 30 Apr 2019 12:38:58 +0000 (UTC)
+Date: Tue, 30 Apr 2019 12:38:55 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -93,120 +92,118 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-syscalls are expected to be entered with MSR_EE set. Lets
-make it inconditional by forcing MSR_EE on syscalls.
-
-This patch adds EXC_XFER_SYS for that.
-
-Suggested-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-[splited out from benh RFC patch]
+This patch splits NORMAL_EXCEPTION_PROLOG in the same way as in
+head_8xx.S and head_32.S and renames it EXCEPTION_PROLOG() as well
+to match head_32.h
 
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
- arch/powerpc/kernel/head_32.S        | 2 +-
- arch/powerpc/kernel/head_32.h        | 4 ++++
- arch/powerpc/kernel/head_40x.S       | 2 +-
- arch/powerpc/kernel/head_44x.S       | 2 +-
- arch/powerpc/kernel/head_8xx.S       | 2 +-
- arch/powerpc/kernel/head_booke.h     | 4 ++++
- arch/powerpc/kernel/head_fsl_booke.S | 2 +-
- 7 files changed, 13 insertions(+), 5 deletions(-)
+ arch/powerpc/kernel/head_40x.S | 26 ++++++++++++++++----------
+ 1 file changed, 16 insertions(+), 10 deletions(-)
 
-diff --git a/arch/powerpc/kernel/head_32.S b/arch/powerpc/kernel/head_32.S
-index fbc655aa0acf..6aa8addce296 100644
---- a/arch/powerpc/kernel/head_32.S
-+++ b/arch/powerpc/kernel/head_32.S
-@@ -371,7 +371,7 @@ END_FTR_SECTION_IFSET(CPU_FTR_FPU_UNAVAILABLE)
- 	DO_KVM  0xc00
- SystemCall:
- 	EXCEPTION_PROLOG
--	EXC_XFER_EE_LITE(0xc00, DoSyscall)
-+	EXC_XFER_SYS(0xc00, DoSyscall)
- 
- /* Single step - not used on 601 */
- 	EXCEPTION(0xd00, SingleStep, single_step_exception, EXC_XFER_STD)
-diff --git a/arch/powerpc/kernel/head_32.h b/arch/powerpc/kernel/head_32.h
-index aa0131bb09b5..7221418a883f 100644
---- a/arch/powerpc/kernel/head_32.h
-+++ b/arch/powerpc/kernel/head_32.h
-@@ -123,6 +123,10 @@
- 	EXC_XFER_TEMPLATE(hdlr, n+1, MSR_KERNEL, NOCOPY, transfer_to_handler, \
- 			  ret_from_except)
- 
-+#define EXC_XFER_SYS(n, hdlr)		\
-+	EXC_XFER_TEMPLATE(hdlr, n+1, MSR_KERNEL | MSR_EE, NOCOPY, transfer_to_handler, \
-+			  ret_from_except)
-+
- #define EXC_XFER_EE(n, hdlr)		\
- 	EXC_XFER_TEMPLATE(hdlr, n, MSR_KERNEL, COPY_EE, transfer_to_handler_full, \
- 			  ret_from_except_full)
 diff --git a/arch/powerpc/kernel/head_40x.S b/arch/powerpc/kernel/head_40x.S
-index cce9bd33a176..1a80a3e45e44 100644
+index cb95a5c17cea..1547750567b6 100644
 --- a/arch/powerpc/kernel/head_40x.S
 +++ b/arch/powerpc/kernel/head_40x.S
-@@ -350,7 +350,7 @@ _ENTRY(saved_ksp_limit)
+@@ -103,10 +103,14 @@ _ENTRY(saved_ksp_limit)
+  * turned off (i.e. using physical addresses). We assume SPRG_THREAD has
+  * the physical address of the current task thread_struct.
+  */
+-#define NORMAL_EXCEPTION_PROLOG						     \
++#define EXCEPTION_PROLOG						     \
+ 	mtspr	SPRN_SPRG_SCRATCH0,r10;	/* save two registers to work with */\
+ 	mtspr	SPRN_SPRG_SCRATCH1,r11;					     \
+ 	mfcr	r10;			/* save CR in r10 for now	   */\
++	EXCEPTION_PROLOG_1;						     \
++	EXCEPTION_PROLOG_2
++
++#define EXCEPTION_PROLOG_1						     \
+ 	mfspr	r11,SPRN_SRR1;		/* check whether user or kernel    */\
+ 	andi.	r11,r11,MSR_PR;						     \
+ 	tophys(r11,r1);							     \
+@@ -115,7 +119,9 @@ _ENTRY(saved_ksp_limit)
+ 	lwz	r11,TASK_STACK-THREAD(r11); /* this thread's kernel stack */\
+ 	addi	r11,r11,THREAD_SIZE;					     \
+ 	tophys(r11,r11);						     \
+-1:	subi	r11,r11,INT_FRAME_SIZE;	/* Allocate an exception frame     */\
++1:	subi	r11,r11,INT_FRAME_SIZE	/* Allocate an exception frame     */
++
++#define EXCEPTION_PROLOG_2						     \
+ 	stw	r10,_CCR(r11);          /* save various registers	   */\
+ 	stw	r12,GPR12(r11);						     \
+ 	stw	r9,GPR9(r11);						     \
+@@ -205,7 +211,7 @@ label:
+ 
+ #define EXCEPTION(n, label, hdlr, xfer)				\
+ 	START_EXCEPTION(n, label);				\
+-	NORMAL_EXCEPTION_PROLOG;				\
++	EXCEPTION_PROLOG;				\
+ 	addi	r3,r1,STACK_FRAME_OVERHEAD;			\
+ 	xfer(n, hdlr)
+ 
+@@ -396,7 +402,7 @@ label:
+  * This is caused by a fetch from non-execute or guarded pages.
+  */
+ 	START_EXCEPTION(0x0400, InstructionAccess)
+-	NORMAL_EXCEPTION_PROLOG
++	EXCEPTION_PROLOG
+ 	mr	r4,r12			/* Pass SRR0 as arg2 */
+ 	li	r5,0			/* Pass zero as arg3 */
+ 	EXC_XFER_LITE(0x400, handle_page_fault)
+@@ -406,7 +412,7 @@ label:
+ 
+ /* 0x0600 - Alignment Exception */
+ 	START_EXCEPTION(0x0600, Alignment)
+-	NORMAL_EXCEPTION_PROLOG
++	EXCEPTION_PROLOG
+ 	mfspr	r4,SPRN_DEAR		/* Grab the DEAR and save it */
+ 	stw	r4,_DEAR(r11)
+ 	addi	r3,r1,STACK_FRAME_OVERHEAD
+@@ -414,7 +420,7 @@ label:
+ 
+ /* 0x0700 - Program Exception */
+ 	START_EXCEPTION(0x0700, ProgramCheck)
+-	NORMAL_EXCEPTION_PROLOG
++	EXCEPTION_PROLOG
+ 	mfspr	r4,SPRN_ESR		/* Grab the ESR and save it */
+ 	stw	r4,_ESR(r11)
+ 	addi	r3,r1,STACK_FRAME_OVERHEAD
+@@ -427,7 +433,7 @@ label:
+ 
  /* 0x0C00 - System Call Exception */
  	START_EXCEPTION(0x0C00,	SystemCall)
- 	EXCEPTION_PROLOG
--	EXC_XFER_EE_LITE(0xc00, DoSyscall)
-+	EXC_XFER_SYS(0xc00, DoSyscall)
+-	NORMAL_EXCEPTION_PROLOG
++	EXCEPTION_PROLOG
+ 	EXC_XFER_EE_LITE(0xc00, DoSyscall)
  
  	EXCEPTION(0x0D00, Trap_0D, unknown_exception, EXC_XFER_EE)
- 	EXCEPTION(0x0E00, Trap_0E, unknown_exception, EXC_XFER_EE)
-diff --git a/arch/powerpc/kernel/head_44x.S b/arch/powerpc/kernel/head_44x.S
-index 37117ab11584..9cc01948651f 100644
---- a/arch/powerpc/kernel/head_44x.S
-+++ b/arch/powerpc/kernel/head_44x.S
-@@ -283,7 +283,7 @@ interrupt_base:
- 	/* System Call Interrupt */
- 	START_EXCEPTION(SystemCall)
- 	NORMAL_EXCEPTION_PROLOG(BOOKE_INTERRUPT_SYSCALL)
--	EXC_XFER_EE_LITE(0x0c00, DoSyscall)
-+	EXC_XFER_SYS(0x0c00, DoSyscall)
+@@ -733,7 +739,7 @@ label:
  
- 	/* Auxiliary Processor Unavailable Interrupt */
- 	EXCEPTION(0x2020, BOOKE_INTERRUPT_AP_UNAVAIL, \
-diff --git a/arch/powerpc/kernel/head_8xx.S b/arch/powerpc/kernel/head_8xx.S
-index 7b76ad1b9620..19ad6484f198 100644
---- a/arch/powerpc/kernel/head_8xx.S
-+++ b/arch/powerpc/kernel/head_8xx.S
-@@ -186,7 +186,7 @@ Alignment:
- 	. = 0xc00
- SystemCall:
- 	EXCEPTION_PROLOG
--	EXC_XFER_EE_LITE(0xc00, DoSyscall)
-+	EXC_XFER_SYS(0xc00, DoSyscall)
+ 	/* Programmable Interval Timer (PIT) Exception. (from 0x1000) */
+ Decrementer:
+-	NORMAL_EXCEPTION_PROLOG
++	EXCEPTION_PROLOG
+ 	lis	r0,TSR_PIS@h
+ 	mtspr	SPRN_TSR,r0		/* Clear the PIT exception */
+ 	addi	r3,r1,STACK_FRAME_OVERHEAD
+@@ -741,7 +747,7 @@ Decrementer:
  
- /* Single step - not used on 601 */
- 	EXCEPTION(0xd00, SingleStep, single_step_exception, EXC_XFER_STD)
-diff --git a/arch/powerpc/kernel/head_booke.h b/arch/powerpc/kernel/head_booke.h
-index 1b22a8dea399..612f54ba1125 100644
---- a/arch/powerpc/kernel/head_booke.h
-+++ b/arch/powerpc/kernel/head_booke.h
-@@ -251,6 +251,10 @@ END_BTB_FLUSH_SECTION
- 	EXC_XFER_TEMPLATE(hdlr, n+1, MSR_KERNEL, NOCOPY, transfer_to_handler, \
- 			  ret_from_except)
+ 	/* Fixed Interval Timer (FIT) Exception. (from 0x1010) */
+ FITException:
+-	NORMAL_EXCEPTION_PROLOG
++	EXCEPTION_PROLOG
+ 	addi	r3,r1,STACK_FRAME_OVERHEAD;
+ 	EXC_XFER_EE(0x1010, unknown_exception)
  
-+#define EXC_XFER_SYS(n, hdlr)						\
-+	EXC_XFER_TEMPLATE(hdlr, n+1, MSR_KERNEL | MSR_EE, NOCOPY, transfer_to_handler, \
-+			  ret_from_except)
-+
- #define EXC_XFER_EE(n, hdlr)		\
- 	EXC_XFER_TEMPLATE(hdlr, n, MSR_KERNEL, COPY_EE, transfer_to_handler_full, \
- 			  ret_from_except_full)
-diff --git a/arch/powerpc/kernel/head_fsl_booke.S b/arch/powerpc/kernel/head_fsl_booke.S
-index 32332e24e421..e77a2ed94642 100644
---- a/arch/powerpc/kernel/head_fsl_booke.S
-+++ b/arch/powerpc/kernel/head_fsl_booke.S
-@@ -411,7 +411,7 @@ interrupt_base:
- 	/* System Call Interrupt */
- 	START_EXCEPTION(SystemCall)
- 	NORMAL_EXCEPTION_PROLOG(SYSCALL)
--	EXC_XFER_EE_LITE(0x0c00, DoSyscall)
-+	EXC_XFER_SYS(0x0c00, DoSyscall)
- 
- 	/* Auxiliary Processor Unavailable Interrupt */
- 	EXCEPTION(0x2900, AP_UNAVAIL, AuxillaryProcessorUnavailable, \
+@@ -759,7 +765,7 @@ WDTException:
+  * if they can't resolve the lightweight TLB fault.
+  */
+ DataAccess:
+-	NORMAL_EXCEPTION_PROLOG
++	EXCEPTION_PROLOG
+ 	mfspr	r5,SPRN_ESR		/* Grab the ESR, save it, pass arg3 */
+ 	stw	r5,_ESR(r11)
+ 	mfspr	r4,SPRN_DEAR		/* Grab the DEAR, save it, pass arg2 */
 -- 
 2.13.3
 
