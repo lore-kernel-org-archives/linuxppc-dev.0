@@ -2,50 +2,45 @@ Return-Path: <SRS0=hyM8=TB=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS,UNPARSEABLE_RELAY autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-4.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_PASS,UNPARSEABLE_RELAY
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 74949C43219
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 May 2019 02:27:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 98B7BC43219
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 May 2019 02:31:03 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id D09612087B
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 May 2019 02:27:19 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D09612087B
+	by mail.kernel.org (Postfix) with ESMTPS id 1BF022087B
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 May 2019 02:31:03 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1BF022087B
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linux-mips.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44v2NP1Zc8zDqSW
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 May 2019 12:27:17 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44v2Sh6VSvzDqSf
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 May 2019 12:31:00 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=none (mailfrom) smtp.mailfrom=linux-mips.org
  (client-ip=148.251.95.138; helo=cvs.linux-mips.org;
  envelope-from=macro@linux-mips.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=linux-mips.org
-X-Greylist: delayed 305 seconds by postgrey-1.36 at bilbo;
- Wed, 01 May 2019 12:25:51 AEST
 Received: from cvs.linux-mips.org (eddie.linux-mips.org [148.251.95.138])
- by lists.ozlabs.org (Postfix) with ESMTP id 44v2Ll0FvnzDqSC
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 May 2019 12:25:50 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTP id 44v2R81fgyzDqSL
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 May 2019 12:29:39 +1000 (AEST)
 Received: (from localhost user: 'macro', uid#1010) by eddie.linux-mips.org
- with ESMTP id S23990394AbfEACUhiM2bj (ORCPT
+ with ESMTP id S23990394AbfEAC3gOuPKs (ORCPT
  <rfc822;linuxppc-dev@lists.ozlabs.org>);
- Wed, 1 May 2019 04:20:37 +0200
-Date: Wed, 1 May 2019 03:20:37 +0100 (BST)
+ Wed, 1 May 2019 04:29:36 +0200
+Date: Wed, 1 May 2019 03:29:36 +0100 (BST)
 From: "Maciej W. Rozycki" <macro@linux-mips.org>
-To: Greg KH <gregkh@linuxfoundation.org>
-Subject: Re: [PATCH 01/41] drivers: tty: serial: dz: use dev_err() instead
- of printk()
-In-Reply-To: <20190429131224.GA27385@kroah.com>
-Message-ID: <alpine.LFD.2.21.1905010255070.30973@eddie.linux-mips.org>
+To: "Enrico Weigelt, metux IT consult" <info@metux.net>
+Subject: Re: [PATCH 06/41] drivers: tty: serial: sb1250-duart: use dev_err()
+ instead of printk()
+In-Reply-To: <1556369542-13247-7-git-send-email-info@metux.net>
+Message-ID: <alpine.LFD.2.21.1905010257020.30973@eddie.linux-mips.org>
 References: <1556369542-13247-1-git-send-email-info@metux.net>
- <1556369542-13247-2-git-send-email-info@metux.net>
- <20190427133117.GC11368@kroah.com>
- <bae3f23b-8823-f089-c40e-024ba225555f@metux.net>
- <20190429131224.GA27385@kroah.com>
+ <1556369542-13247-7-git-send-email-info@metux.net>
 User-Agent: Alpine 2.21 (LFD 202 2017-01-01)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -61,37 +56,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 Cc: linux-ia64@vger.kernel.org, lorenzo.pieralisi@arm.com,
- linux-mips@vger.kernel.org, sparclinux@vger.kernel.org, andrew@aj.id.au,
- khilman@baylibre.com, sudeep.holla@arm.com, liviu.dudau@arm.com,
- linux-kernel@vger.kernel.org, vz@mleia.com, linux@prisktech.co.nz,
- linuxppc-dev@lists.ozlabs.org, "Enrico Weigelt,
- metux IT consult" <lkml@metux.net>, linux-serial@vger.kernel.org,
- slemieux.tyco@gmail.com, matthias.bgg@gmail.com, jacmet@sunsite.dk,
- linux-amlogic@lists.infradead.org, andriy.shevchenko@linux.intel.com,
- "Enrico Weigelt, metux IT consult" <info@metux.net>,
+ linux-mips@vger.kernel.org, andrew@aj.id.au,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>, sudeep.holla@arm.com,
+ liviu.dudau@arm.com, linux-kernel@vger.kernel.org, vz@mleia.com,
+ linux@prisktech.co.nz, sparclinux@vger.kernel.org, khilman@baylibre.com,
+ linux-serial@vger.kernel.org, slemieux.tyco@gmail.com, matthias.bgg@gmail.com,
+ jacmet@sunsite.dk, linux-amlogic@lists.infradead.org,
+ andriy.shevchenko@linux.intel.com, linuxppc-dev@lists.ozlabs.org,
  "David S. Miller" <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, 29 Apr 2019, Greg KH wrote:
+On Sat, 27 Apr 2019, Enrico Weigelt, metux IT consult wrote:
 
-> > >>  drivers/tty/serial/dz.c | 8 ++++----
-> > > 
-> > > Do you have this hardware to test any of these changes with?
-> > 
-> > Unfortunately not :(
-> 
-> Then I can take the "basic" types of patches for the driver (like this
-> one), but not any others, sorry.
+> diff --git a/drivers/tty/serial/sb1250-duart.c b/drivers/tty/serial/sb1250-duart.c
+> index 329aced..655961c 100644
+> --- a/drivers/tty/serial/sb1250-duart.c
+> +++ b/drivers/tty/serial/sb1250-duart.c
+> @@ -663,7 +663,6 @@ static void sbd_release_port(struct uart_port *uport)
+>  
+>  static int sbd_map_port(struct uart_port *uport)
+>  {
+> -	const char *err = KERN_ERR "sbd: Cannot map MMIO\n";
+>  	struct sbd_port *sport = to_sport(uport);
+>  	struct sbd_duart *duart = sport->duart;
+>  
+> @@ -671,7 +670,7 @@ static int sbd_map_port(struct uart_port *uport)
+>  		uport->membase = ioremap_nocache(uport->mapbase,
+>  						 DUART_CHANREG_SPACING);
+>  	if (!uport->membase) {
+> -		printk(err);
+> +		dev_err(uport->dev, "Cannot map MMIO (base)\n");
+>  		return -ENOMEM;
+>  	}
+>  
+> @@ -679,7 +678,7 @@ static int sbd_map_port(struct uart_port *uport)
+>  		sport->memctrl = ioremap_nocache(duart->mapctrl,
+>  						 DUART_CHANREG_SPACING);
+>  	if (!sport->memctrl) {
+> -		printk(err);
+> +		dev_err(uport->dev, "Cannot map MMIO (ctrl)\n");
+>  		iounmap(uport->membase);
+>  		uport->membase = NULL;
+>  		return -ENOMEM;
 
- I can verify changes to dz.c, sb1250-duart.c and zs.c with real hardware, 
-but regrettably not right away: the hardware is in a remote location and 
-while I have it wired for remote operation unfortunately its connectivity 
-has been cut off by an unfriendly ISP.
-
- I'm not sure if all the changes make sense though: if there is a compiler 
-warning or a usability issue, then a patch is surely welcome, otherwise: 
-"If it ain't broke, don't fix it".
+ Hmm, what's the point to have separate messages, which consume extra 
+memory, for a hardly if at all possible error condition?
 
   Maciej
