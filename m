@@ -2,48 +2,53 @@ Return-Path: <SRS0=hyM8=TB=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-4.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_PASS,UNPARSEABLE_RELAY autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D3A36C43219
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 May 2019 01:46:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 74949C43219
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 May 2019 02:27:20 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 439BA2087B
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 May 2019 01:46:14 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 439BA2087B
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+	by mail.kernel.org (Postfix) with ESMTPS id D09612087B
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 May 2019 02:27:19 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D09612087B
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linux-mips.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44v1Sz69ZhzDqW3
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 May 2019 11:46:11 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44v1RZ1C5MzDqJR
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 May 2019 11:44:58 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44v2NP1Zc8zDqSW
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 May 2019 12:27:17 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+ spf=none (mailfrom) smtp.mailfrom=linux-mips.org
+ (client-ip=148.251.95.138; helo=cvs.linux-mips.org;
+ envelope-from=macro@linux-mips.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=ellerman.id.au
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
- SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 44v1RX6sx8z9s7T;
- Wed,  1 May 2019 11:44:56 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>, npiggin@gmail.com,
- paulus@samba.org
-Subject: Re: [PATCH] powerpc/mm/radix: Fix kernel crash when running subpage
- protect test
-In-Reply-To: <20190430075907.7701-1-aneesh.kumar@linux.ibm.com>
-References: <20190430075907.7701-1-aneesh.kumar@linux.ibm.com>
-Date: Wed, 01 May 2019 11:44:56 +1000
-Message-ID: <875zqvaqxz.fsf@concordia.ellerman.id.au>
+ header.from=linux-mips.org
+X-Greylist: delayed 305 seconds by postgrey-1.36 at bilbo;
+ Wed, 01 May 2019 12:25:51 AEST
+Received: from cvs.linux-mips.org (eddie.linux-mips.org [148.251.95.138])
+ by lists.ozlabs.org (Postfix) with ESMTP id 44v2Ll0FvnzDqSC
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 May 2019 12:25:50 +1000 (AEST)
+Received: (from localhost user: 'macro', uid#1010) by eddie.linux-mips.org
+ with ESMTP id S23990394AbfEACUhiM2bj (ORCPT
+ <rfc822;linuxppc-dev@lists.ozlabs.org>);
+ Wed, 1 May 2019 04:20:37 +0200
+Date: Wed, 1 May 2019 03:20:37 +0100 (BST)
+From: "Maciej W. Rozycki" <macro@linux-mips.org>
+To: Greg KH <gregkh@linuxfoundation.org>
+Subject: Re: [PATCH 01/41] drivers: tty: serial: dz: use dev_err() instead
+ of printk()
+In-Reply-To: <20190429131224.GA27385@kroah.com>
+Message-ID: <alpine.LFD.2.21.1905010255070.30973@eddie.linux-mips.org>
+References: <1556369542-13247-1-git-send-email-info@metux.net>
+ <1556369542-13247-2-git-send-email-info@metux.net>
+ <20190427133117.GC11368@kroah.com>
+ <bae3f23b-8823-f089-c40e-024ba225555f@metux.net>
+ <20190429131224.GA27385@kroah.com>
+User-Agent: Alpine 2.21 (LFD 202 2017-01-01)
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=US-ASCII
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -55,42 +60,38 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Sachin Sant <sachinp@linux.vnet.ibm.com>,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Cc: linux-ia64@vger.kernel.org, lorenzo.pieralisi@arm.com,
+ linux-mips@vger.kernel.org, sparclinux@vger.kernel.org, andrew@aj.id.au,
+ khilman@baylibre.com, sudeep.holla@arm.com, liviu.dudau@arm.com,
+ linux-kernel@vger.kernel.org, vz@mleia.com, linux@prisktech.co.nz,
+ linuxppc-dev@lists.ozlabs.org, "Enrico Weigelt,
+ metux IT consult" <lkml@metux.net>, linux-serial@vger.kernel.org,
+ slemieux.tyco@gmail.com, matthias.bgg@gmail.com, jacmet@sunsite.dk,
+ linux-amlogic@lists.infradead.org, andriy.shevchenko@linux.intel.com,
+ "Enrico Weigelt, metux IT consult" <info@metux.net>,
+ "David S. Miller" <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-"Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com> writes:
+On Mon, 29 Apr 2019, Greg KH wrote:
 
-> This patch fixes the below crash by making sure we touch the subpage protection
-> related structures only if we know they are allocated on the platform. With
-> radix translation we don't allocate hash context at all and trying to access
-> subpage_prot_table results in
->
->  Faulting instruction address: 0xc00000000008bdb4
->  Oops: Kernel access of bad area, sig: 11 [#1]
->  LE PAGE_SIZE=64K MMU=Radix MMU=Hash SMP NR_CPUS=2048 NUMA PowerNV
->  ....
->  NIP [c00000000008bdb4] sys_subpage_prot+0x74/0x590
->  LR [c00000000000b688] system_call+0x5c/0x70
->  Call Trace:
->  [c00020002c6b7d30] [c00020002c6b7d90] 0xc00020002c6b7d90 (unreliable)
->  [c00020002c6b7e20] [c00000000000b688] system_call+0x5c/0x70
->  Instruction dump:
->  fb61ffd8 fb81ffe0 fba1ffe8 fbc1fff0 fbe1fff8 f821ff11 e92d1178 f9210068
->  39200000 e92d0968 ebe90630 e93f03e8 <eb891038> 60000000 3860fffe e9410068
->
-> We also move the subpage_prot_table with mmp_sem held to avoid racec
-> between two parallel subpage_prot syscall.
->
-> Reported-by: Sachin Sant <sachinp@linux.vnet.ibm.com>
-> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
+> > >>  drivers/tty/serial/dz.c | 8 ++++----
+> > > 
+> > > Do you have this hardware to test any of these changes with?
+> > 
+> > Unfortunately not :(
+> 
+> Then I can take the "basic" types of patches for the driver (like this
+> one), but not any others, sorry.
 
-Presumably it was:
+ I can verify changes to dz.c, sb1250-duart.c and zs.c with real hardware, 
+but regrettably not right away: the hardware is in a remote location and 
+while I have it wired for remote operation unfortunately its connectivity 
+has been cut off by an unfriendly ISP.
 
-701101865f5d ("powerpc/mm: Reduce memory usage for mm_context_t for radix")
+ I'm not sure if all the changes make sense though: if there is a compiler 
+warning or a usability issue, then a patch is surely welcome, otherwise: 
+"If it ain't broke, don't fix it".
 
-That caused the breakage?
-
-cheers
+  Maciej
