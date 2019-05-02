@@ -2,48 +2,79 @@ Return-Path: <SRS0=aDnU=TC=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-4.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_PASS autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2BE88C43219
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 May 2019 16:04:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 153DCC43219
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 May 2019 16:29:10 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6C16E20651
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 May 2019 16:04:49 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6C16E20651
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+	by mail.kernel.org (Postfix) with ESMTPS id 3011820645
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 May 2019 16:29:08 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="UNio1EoX"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3011820645
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44w0TC1txDzDqYj
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 May 2019 02:04:47 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44w11G4xyTzDqHv
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 May 2019 02:29:06 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+ spf=pass (mailfrom) smtp.mailfrom=c-s.fr
+ (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=c-s.fr
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="UNio1EoX"; 
+ dkim-atps=neutral
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44vzkZ6Q6wzDqN2
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 May 2019 01:31:18 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=ellerman.id.au
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
- SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 44vzkR0Xvsz9sPk;
- Fri,  3 May 2019 01:31:11 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Mike Rapoport <rppt@linux.ibm.com>,
- Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] memblock: make keeping memblock memory opt-in rather than
- opt-out
-In-Reply-To: <1556102150-32517-1-git-send-email-rppt@linux.ibm.com>
-References: <1556102150-32517-1-git-send-email-rppt@linux.ibm.com>
-Date: Fri, 03 May 2019 01:31:10 +1000
-Message-ID: <87h8acyitd.fsf@concordia.ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44w0zY0Dl3zDq96
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 May 2019 02:27:35 +1000 (AEST)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 44w0zR01Ptz9tycn;
+ Thu,  2 May 2019 18:27:31 +0200 (CEST)
+Authentication-Results: localhost; dkim=pass
+ reason="1024-bit key; insecure key"
+ header.d=c-s.fr header.i=@c-s.fr header.b=UNio1EoX; dkim-adsp=pass;
+ dkim-atps=neutral
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id pz2HD9vn8F2E; Thu,  2 May 2019 18:27:30 +0200 (CEST)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 44w0zQ4pdVz9tyck;
+ Thu,  2 May 2019 18:27:30 +0200 (CEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
+ t=1556814450; bh=WYN0o2e28rw4KS1Iqn2OUuOv3s2mGJlGe3yXVUGCAYs=;
+ h=In-Reply-To:References:From:Subject:To:Cc:Date:From;
+ b=UNio1EoXzFxZZvYUAwASfmM863neBDqPX5DnKe8QNTlsJmM1GkOoCoxvYL+AmqsqA
+ l72Sha1+Mgy72Br5yul/o+0V1GSdRMTgi7E5VbTwCY9UoB+WWpr8G7nLle2EPGJA24
+ HQ6oce/7tNDobzgrPc9KyoWcaKFQISP7EV08hilk=
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 56D1D8B8FE;
+ Thu,  2 May 2019 18:27:32 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id cRhWZjiNrc6s; Thu,  2 May 2019 18:27:32 +0200 (CEST)
+Received: from po16846vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 1BC1B8B899;
+ Thu,  2 May 2019 18:27:32 +0200 (CEST)
+Received: by po16846vm.idsi0.si.c-s.fr (Postfix, from userid 0)
+ id E46FA672AF; Thu,  2 May 2019 16:27:31 +0000 (UTC)
+Message-Id: <238e7fa33c16b5d1ad946cde5c063890eaed860a.1556814003.git.christophe.leroy@c-s.fr>
+In-Reply-To: <298f344bdb21ab566271f5d18c6782ed20f072b7.1556814003.git.christophe.leroy@c-s.fr>
+References: <298f344bdb21ab566271f5d18c6782ed20f072b7.1556814003.git.christophe.leroy@c-s.fr>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Subject: [PATCH v2 3/3] powerpc/module64: Use symbolic instructions names.
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
+Date: Thu,  2 May 2019 16:27:31 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -55,39 +86,113 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Rich Felker <dalias@libc.org>, linux-ia64@vger.kernel.org,
- linux-sh@vger.kernel.org, Heiko Carstens <heiko.carstens@de.ibm.com>,
- linux-mips@vger.kernel.org, linux-mm@kvack.org,
- Paul Mackerras <paulus@samba.org>, "H. Peter Anvin" <hpa@zytor.com>,
- linux-s390@vger.kernel.org, Yoshinori Sato <ysato@users.sourceforge.jp>,
- linux-hexagon@vger.kernel.org, x86@kernel.org,
- Russell King <linux@armlinux.org.uk>, Mike Rapoport <rppt@linux.ibm.com>,
- Ingo Molnar <mingo@redhat.com>, Geert Uytterhoeven <geert@linux-m68k.org>,
- Catalin Marinas <catalin.marinas@arm.com>, James Hogan <jhogan@kernel.org>,
- Fenghua Yu <fenghua.yu@intel.com>, Will Deacon <will.deacon@arm.com>,
- linux-m68k@lists.linux-m68k.org, Borislav Petkov <bp@alien8.de>,
- nios2-dev@lists.rocketboards.org, Thomas Gleixner <tglx@linutronix.de>,
- linux-arm-kernel@lists.infradead.org, Tony Luck <tony.luck@intel.com>,
- kexec@lists.infradead.org, linux-kernel@vger.kernel.org,
- Ralf Baechle <ralf@linux-mips.org>, Richard Kuo <rkuo@codeaurora.org>,
- Paul Burton <paul.burton@mips.com>, Eric Biederman <ebiederm@xmission.com>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>, Ley Foon Tan <lftan@altera.com>,
- linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Mike Rapoport <rppt@linux.ibm.com> writes:
-> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-> index 2d0be82..39877b9 100644
-> --- a/arch/powerpc/Kconfig
-> +++ b/arch/powerpc/Kconfig
-> @@ -143,6 +143,7 @@ config PPC
->  	select ARCH_HAS_UBSAN_SANITIZE_ALL
->  	select ARCH_HAS_ZONE_DEVICE		if PPC_BOOK3S_64
->  	select ARCH_HAVE_NMI_SAFE_CMPXCHG
-> +	select ARCH_KEEP_MEMBLOCK
+To increase readability/maintainability, replace hard coded
+instructions values by symbolic names.
 
-Acked-by: Michael Ellerman <mpe@ellerman.id.au> (powerpc)
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+---
+v2: rearranged comments ; fixed warning by adding () in an 'if' around X | Y
 
-cheers
+ arch/powerpc/kernel/module_64.c | 53 +++++++++++++++++++++++++++--------------
+ 1 file changed, 35 insertions(+), 18 deletions(-)
+
+diff --git a/arch/powerpc/kernel/module_64.c b/arch/powerpc/kernel/module_64.c
+index c2e1b06253b8..516c590c7a1f 100644
+--- a/arch/powerpc/kernel/module_64.c
++++ b/arch/powerpc/kernel/module_64.c
+@@ -133,20 +133,27 @@ struct ppc64_stub_entry
+  * the stub, but it's significantly shorter to put these values at the
+  * end of the stub code, and patch the stub address (32-bits relative
+  * to the TOC ptr, r2) into the stub.
++ *
++ * addis   r11,r2, <high>
++ * addi    r11,r11, <low>
++ * std     r2,R2_STACK_OFFSET(r1)
++ * ld      r12,32(r11)
++ * ld      r2,40(r11)
++ * mtctr   r12
++ * bctr
+  */
+-
+ static u32 ppc64_stub_insns[] = {
+-	0x3d620000,			/* addis   r11,r2, <high> */
+-	0x396b0000,			/* addi    r11,r11, <low> */
++	PPC_INST_ADDIS | __PPC_RT(R11) | __PPC_RA(R2),
++	PPC_INST_ADDI | __PPC_RT(R11) | __PPC_RA(R11),
+ 	/* Save current r2 value in magic place on the stack. */
+-	0xf8410000|R2_STACK_OFFSET,	/* std     r2,R2_STACK_OFFSET(r1) */
+-	0xe98b0020,			/* ld      r12,32(r11) */
++	PPC_INST_STD | __PPC_RS(R2) | __PPC_RA(R1) | R2_STACK_OFFSET,
++	PPC_INST_LD | __PPC_RT(R12) | __PPC_RA(R11) | 32,
+ #ifdef PPC64_ELF_ABI_v1
+ 	/* Set up new r2 from function descriptor */
+-	0xe84b0028,			/* ld      r2,40(r11) */
++	PPC_INST_LD | __PPC_RT(R2) | __PPC_RA(R11) | 40,
+ #endif
+-	0x7d8903a6,			/* mtctr   r12 */
+-	0x4e800420			/* bctr */
++	PPC_INST_MTCTR | __PPC_RS(R12),
++	PPC_INST_BCTR,
+ };
+ 
+ #ifdef CONFIG_DYNAMIC_FTRACE
+@@ -704,18 +711,21 @@ int apply_relocate_add(Elf64_Shdr *sechdrs,
+ 		         *	ld r2, ...(r12)
+ 			 *	add r2, r2, r12
+ 			 */
+-			if ((((uint32_t *)location)[0] & ~0xfffc)
+-			    != 0xe84c0000)
++			if ((((uint32_t *)location)[0] & ~0xfffc) !=
++			    PPC_INST_LD | __PPC_RT(R2) | __PPC_RA(R12))
+ 				break;
+-			if (((uint32_t *)location)[1] != 0x7c426214)
++			if (((uint32_t *)location)[1] !=
++			    PPC_INST_ADD | __PPC_RT(R2) | __PPC_RA(R2) | __PPC_RB(R12))
+ 				break;
+ 			/*
+ 			 * If found, replace it with:
+ 			 *	addis r2, r12, (.TOC.-func)@ha
+ 			 *	addi r2, r12, (.TOC.-func)@l
+ 			 */
+-			((uint32_t *)location)[0] = 0x3c4c0000 + PPC_HA(value);
+-			((uint32_t *)location)[1] = 0x38420000 + PPC_LO(value);
++			((uint32_t *)location)[0] = PPC_INST_ADDIS | __PPC_RT(R2) |
++						    __PPC_RA(R12) | PPC_HA(value);
++			((uint32_t *)location)[1] = PPC_INST_ADDI | __PPC_RT(R2) |
++						    __PPC_RA(R12) | PPC_LO(value);
+ 			break;
+ 
+ 		case R_PPC64_REL16_HA:
+@@ -769,12 +779,19 @@ static unsigned long create_ftrace_stub(const Elf64_Shdr *sechdrs,
+ {
+ 	struct ppc64_stub_entry *entry;
+ 	unsigned int i, num_stubs;
++	/*
++	 * ld      r12,PACATOC(r13)
++	 * addis   r12,r12,<high>
++	 * addi    r12,r12,<low>
++	 * mtctr   r12
++	 * bctr
++	 */
+ 	static u32 stub_insns[] = {
+-		0xe98d0000 | PACATOC, 	/* ld      r12,PACATOC(r13)	*/
+-		0x3d8c0000,		/* addis   r12,r12,<high>	*/
+-		0x398c0000, 		/* addi    r12,r12,<low>	*/
+-		0x7d8903a6, 		/* mtctr   r12			*/
+-		0x4e800420, 		/* bctr				*/
++		PPC_INST_LD | __PPC_RT(R12) | __PPC_RA(R13) | PACATOC,
++		PPC_INST_ADDIS | __PPC_RT(R12) | __PPC_RA(R12),
++		PPC_INST_ADDI | __PPC_RT(R12) | __PPC_RA(R12),
++		PPC_INST_MTCTR | __PPC_RS(R12),
++		PPC_INST_BCTR,
+ 	};
+ 	long reladdr;
+ 
+-- 
+2.13.3
+
