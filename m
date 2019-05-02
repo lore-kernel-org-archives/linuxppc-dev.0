@@ -6,21 +6,21 @@ X-Spam-Status: No, score=-11.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_PASS
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3B2FDC43219
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 May 2019 02:23:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1D58BC43219
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 May 2019 02:24:41 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id A7CA82085A
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 May 2019 02:23:29 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 8C5662085A
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 May 2019 02:24:40 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=sirena.org.uk header.i=@sirena.org.uk header.b="c8EcTqPh"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A7CA82085A
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=sirena.org.uk header.i=@sirena.org.uk header.b="uNqKX7SD"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8C5662085A
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44vfFV6TyjzDqXZ
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 May 2019 12:23:26 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44vfGt4mbvzDqZb
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 May 2019 12:24:38 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=none (mailfrom) smtp.mailfrom=sirena.org.uk
  (client-ip=2a01:7e01::f03c:91ff:fed4:a3b6; helo=heliosphere.sirena.org.uk;
@@ -29,12 +29,12 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=sirena.org.uk header.i=@sirena.org.uk
- header.b="c8EcTqPh"; dkim-atps=neutral
+ header.b="uNqKX7SD"; dkim-atps=neutral
 Received: from heliosphere.sirena.org.uk (heliosphere.sirena.org.uk
  [IPv6:2a01:7e01::f03c:91ff:fed4:a3b6])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44vf841JgvzDqQC
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44vf8471q0zDqRM
  for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 May 2019 12:18:44 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
  d=sirena.org.uk; s=20170815-heliosphere; h=Date:Message-Id:In-Reply-To:
@@ -42,25 +42,24 @@ DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
  Content-Transfer-Encoding:Content-ID:Content-Description:Resent-Date:
  Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:References:
  List-Id:List-Help:List-Unsubscribe:List-Subscribe:List-Post:List-Owner:
- List-Archive; bh=gUX7cgUSecfjVH1YPs8zG06dexR+UJShlkpV9/2EzyE=; b=c8EcTqPhucPW
- y8sW8JkO1Nt+N+n8ulkl7Nx2swEWdqNZ26DL/bvv5PQz7bH3SypyKoACZkQVzo+Ag0ZDh911ZTqI/
- ly9+HXsAy1TjPC59revy/JKGOWj0xhauDWhuKPW7Fbh0xiIf9rIw0mUAP2a9ujBXXk5BUH/W9ovVL
- pbkQc=;
+ List-Archive; bh=vr2VIXn3Zn8E9lStqhtVN3FmIgvkBlu7YokpK9YQ9y0=; b=uNqKX7SDj5yL
+ D43C2f1vMCFiH3NZTL00y+o4cNYiscmYhPVccI/tPTB1vRBsxFoWlayQ/KEoABKBHAhKlkniYjN39
+ 6+c3b5DqT52irUctnw5gqLTQowFIlMDnfV/gXoHbRu0RaalMm6IWSj6dBETbnKJ4TCg02V/j/kArg
+ Sn9mo=;
 Received: from [211.55.52.15] (helo=finisterre.ee.mobilebroadband)
  by heliosphere.sirena.org.uk with esmtpsa
  (TLS1.2:ECDHE_RSA_AES_256_GCM_SHA384:256) (Exim 4.89)
  (envelope-from <broonie@sirena.org.uk>)
- id 1hM1Ix-0005sN-At; Thu, 02 May 2019 02:18:35 +0000
+ id 1hM1Iv-0005sC-5U; Thu, 02 May 2019 02:18:33 +0000
 Received: by finisterre.ee.mobilebroadband (Postfix, from userid 1000)
- id 499DE441D3C; Thu,  2 May 2019 03:18:32 +0100 (BST)
+ id 3FCBC441D3D; Thu,  2 May 2019 03:18:30 +0100 (BST)
 From: Mark Brown <broonie@kernel.org>
 To: Andra Danciu <andradanciu1997@gmail.com>
-Subject: Applied "ASoC: mpc5200_psc_i2s: Fix invalid license ID" to the asoc
- tree
-In-Reply-To: <20190414191450.18377-3-andradanciu1997@gmail.com>
+Subject: Applied "ASoC: mpc5200_dma: Fix invalid license ID" to the asoc tree
+In-Reply-To: <20190414191450.18377-2-andradanciu1997@gmail.com>
 X-Patchwork-Hint: ignore
-Message-Id: <20190502021832.499DE441D3C@finisterre.ee.mobilebroadband>
-Date: Thu,  2 May 2019 03:18:32 +0100 (BST)
+Message-Id: <20190502021830.3FCBC441D3D@finisterre.ee.mobilebroadband>
+Date: Thu,  2 May 2019 03:18:30 +0100 (BST)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -85,7 +84,7 @@ Sender: "Linuxppc-dev"
 
 The patch
 
-   ASoC: mpc5200_psc_i2s: Fix invalid license ID
+   ASoC: mpc5200_dma: Fix invalid license ID
 
 has been applied to the asoc tree at
 
@@ -110,33 +109,33 @@ to this mail.
 Thanks,
 Mark
 
-From 680ae69d52279474ecb204f0f7bae1f4d9361cbd Mon Sep 17 00:00:00 2001
+From ac097cac496f69e97083c6b128c5a209a85c6fcb Mon Sep 17 00:00:00 2001
 From: Andra Danciu <andradanciu1997@gmail.com>
-Date: Sun, 14 Apr 2019 22:14:50 +0300
-Subject: [PATCH] ASoC: mpc5200_psc_i2s: Fix invalid license ID
+Date: Sun, 14 Apr 2019 22:14:49 +0300
+Subject: [PATCH] ASoC: mpc5200_dma: Fix invalid license ID
 
 As the file had no other license notice/reference, it falls under the
 project license and therefore the proper SPDX id is: GPL-2.0-only
 
 Cc: Daniel Baluta <daniel.baluta@nxp.com>
-Fixes: 864a8472c4412 ("ASoC: mpc5200_psc_i2s: Switch to SPDX identifier")
+Fixes: 1edfc2485d8dc ("ASoC: mpc5200_dma: Switch to SPDX identifier")
 Reported-by: Thomas Gleixner <tglx@linutronix.de>
 Signed-off-by: Andra Danciu <andradanciu1997@gmail.com>
 Signed-off-by: Mark Brown <broonie@kernel.org>
 ---
- sound/soc/fsl/mpc5200_psc_i2s.c | 2 +-
+ sound/soc/fsl/mpc5200_dma.c | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/sound/soc/fsl/mpc5200_psc_i2s.c b/sound/soc/fsl/mpc5200_psc_i2s.c
-index 6de97461ba25..9bc01f374b39 100644
---- a/sound/soc/fsl/mpc5200_psc_i2s.c
-+++ b/sound/soc/fsl/mpc5200_psc_i2s.c
+diff --git a/sound/soc/fsl/mpc5200_dma.c b/sound/soc/fsl/mpc5200_dma.c
+index 4396442c2fdd..ccf9301889fe 100644
+--- a/sound/soc/fsl/mpc5200_dma.c
++++ b/sound/soc/fsl/mpc5200_dma.c
 @@ -1,4 +1,4 @@
 -// SPDX-License-Identifier: GPL
 +// SPDX-License-Identifier: GPL-2.0-only
  //
- // Freescale MPC5200 PSC in I2S mode
- // ALSA SoC Digital Audio Interface (DAI) driver
+ // Freescale MPC5200 PSC DMA
+ // ALSA SoC Platform driver
 -- 
 2.20.1
 
