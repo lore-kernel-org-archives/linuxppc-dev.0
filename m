@@ -2,50 +2,87 @@ Return-Path: <SRS0=aDnU=TC=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-4.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,
+	URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D506CC43219
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 May 2019 11:39:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4601DC43219
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 May 2019 11:44:27 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 599822081C
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 May 2019 11:39:56 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 599822081C
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+	by mail.kernel.org (Postfix) with ESMTPS id B97D12081C
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 May 2019 11:44:26 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="EXLy1HDZ"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B97D12081C
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44vtbZ16ZbzDqSv
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 May 2019 21:39:54 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44vthm3Jn9zDqT1
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 May 2019 21:44:24 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+ spf=pass (mailfrom) smtp.mailfrom=c-s.fr
+ (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=c-s.fr
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="EXLy1HDZ"; 
+ dkim-atps=neutral
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44vtZ42QGPzDqLS
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 May 2019 21:38:36 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=ellerman.id.au
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
- SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 44vtZ350X5z9s9T;
- Thu,  2 May 2019 21:38:35 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Christophe Leroy <christophe.leroy@c-s.fr>,
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44vtgG53jDzDqLg
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 May 2019 21:43:05 +1000 (AEST)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 44vtg83SdBzB09ZH;
+ Thu,  2 May 2019 13:43:00 +0200 (CEST)
+Authentication-Results: localhost; dkim=pass
+ reason="1024-bit key; insecure key"
+ header.d=c-s.fr header.i=@c-s.fr header.b=EXLy1HDZ; dkim-adsp=pass;
+ dkim-atps=neutral
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id KxwpglQ6XV5S; Thu,  2 May 2019 13:43:00 +0200 (CEST)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 44vtg82KKYzB09ZF;
+ Thu,  2 May 2019 13:43:00 +0200 (CEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
+ t=1556797380; bh=cMkTXTCMVvl2JDSWZdRJlzPRMgw1uvnG3jkjZKVvvsk=;
+ h=Subject:To:Cc:References:From:Date:In-Reply-To:From;
+ b=EXLy1HDZv52mN/1dlOI3ETPX2N0L3qyIz1HsaOh/OyZ9yN0bXdxRFyNe84tECqkd+
+ sd/uksma7l8uPfYyZkNThvD/GsjFZI3suXI2876n57CgQ39O7jlfvQzCErWRKc3ga/
+ LPuKAgdU93mOX+1JFnoJjjxOVCX8/FPFZqpp0BFM=
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 9F5A18B8F7;
+ Thu,  2 May 2019 13:43:01 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id Hd4E6wWeUzz0; Thu,  2 May 2019 13:43:01 +0200 (CEST)
+Received: from PO15451 (unknown [192.168.4.90])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 49A5B8B899;
+ Thu,  2 May 2019 13:43:01 +0200 (CEST)
+Subject: Re: [PATCH v1 3/4] powerpc/mm: Move book3s32 specifics in
+ subdirectory mm/book3s64
+To: Michael Ellerman <mpe@ellerman.id.au>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH v1 4/4] powerpc/mm: Move nohash specifics in subdirectory
- mm/nohash
-In-Reply-To: <a87606761d285e4f3dee5c2de1e6691f04e429b6.1553853405.git.christophe.leroy@c-s.fr>
 References: <cover.1553853405.git.christophe.leroy@c-s.fr>
- <a87606761d285e4f3dee5c2de1e6691f04e429b6.1553853405.git.christophe.leroy@c-s.fr>
-Date: Thu, 02 May 2019 21:38:35 +1000
-Message-ID: <87r29hxf0k.fsf@concordia.ellerman.id.au>
+ <12c1ba4fc9e2e55ca44c5c57225669b296d48c74.1553853405.git.christophe.leroy@c-s.fr>
+ <87tvedxfa6.fsf@concordia.ellerman.id.au>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Message-ID: <9577f0d2-2447-5407-0b69-339a89cf40e1@c-s.fr>
+Date: Thu, 2 May 2019 13:43:00 +0200
+User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:60.0) Gecko/20100101
+ Thunderbird/60.6.1
 MIME-Version: 1.0
-Content-Type: text/plain
+In-Reply-To: <87tvedxfa6.fsf@concordia.ellerman.id.au>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: fr
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -62,49 +99,41 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Christophe Leroy <christophe.leroy@c-s.fr> writes:
 
-> Many files in arch/powerpc/mm are only for nohash. This patch
-> creates a subdirectory for them.
->
-> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
-> ---
->  arch/powerpc/mm/Makefile                          | 17 +----------------
->  arch/powerpc/mm/{ => nohash}/40x_mmu.c            |  0
->  arch/powerpc/mm/{ => nohash}/44x_mmu.c            |  0
->  arch/powerpc/mm/{ => nohash}/8xx_mmu.c            |  0
->  arch/powerpc/mm/nohash/Makefile                   | 21 +++++++++++++++++++++
->  arch/powerpc/mm/{ => nohash}/fsl_booke_mmu.c      |  0
->  arch/powerpc/mm/{ => nohash}/hugetlbpage-book3e.c |  0
->  arch/powerpc/mm/{ => nohash}/mmu_context_nohash.c |  0
->  arch/powerpc/mm/{ => nohash}/pgtable-book3e.c     |  0
->  arch/powerpc/mm/{ => nohash}/tlb_low_64e.S        |  0
->  arch/powerpc/mm/{ => nohash}/tlb_nohash.c         |  0
->  arch/powerpc/mm/{ => nohash}/tlb_nohash_low.S     |  0
->  12 files changed, 22 insertions(+), 16 deletions(-)
->  rename arch/powerpc/mm/{ => nohash}/40x_mmu.c (100%)
->  rename arch/powerpc/mm/{ => nohash}/44x_mmu.c (100%)
->  rename arch/powerpc/mm/{ => nohash}/8xx_mmu.c (100%)
->  create mode 100644 arch/powerpc/mm/nohash/Makefile
->  rename arch/powerpc/mm/{ => nohash}/fsl_booke_mmu.c (100%)
->  rename arch/powerpc/mm/{ => nohash}/hugetlbpage-book3e.c (100%)
->  rename arch/powerpc/mm/{ => nohash}/mmu_context_nohash.c (100%)
->  rename arch/powerpc/mm/{ => nohash}/pgtable-book3e.c (100%)
->  rename arch/powerpc/mm/{ => nohash}/tlb_low_64e.S (100%)
->  rename arch/powerpc/mm/{ => nohash}/tlb_nohash.c (100%)
->  rename arch/powerpc/mm/{ => nohash}/tlb_nohash_low.S (100%)
 
-I went with:
+Le 02/05/2019 à 13:32, Michael Ellerman a écrit :
+> Christophe Leroy <christophe.leroy@c-s.fr> writes:
+> 
+>> Several files in arch/powerpc/mm are only for book3S32. This patch
+>> creates a subdirectory for them.
+>>
+>> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+>> ---
+>>   arch/powerpc/mm/Makefile                            | 3 +--
+>>   arch/powerpc/mm/book3s32/Makefile                   | 6 ++++++
+>>   arch/powerpc/mm/{ => book3s32}/hash_low_32.S        | 0
+>>   arch/powerpc/mm/{ => book3s32}/mmu_context_hash32.c | 0
+>>   arch/powerpc/mm/{ => book3s32}/ppc_mmu_32.c         | 0
+>>   arch/powerpc/mm/{ => book3s32}/tlb_hash32.c         | 0
+>>   6 files changed, 7 insertions(+), 2 deletions(-)
+>>   create mode 100644 arch/powerpc/mm/book3s32/Makefile
+>>   rename arch/powerpc/mm/{ => book3s32}/hash_low_32.S (100%)
+>>   rename arch/powerpc/mm/{ => book3s32}/mmu_context_hash32.c (100%)
+>>   rename arch/powerpc/mm/{ => book3s32}/ppc_mmu_32.c (100%)
+>>   rename arch/powerpc/mm/{ => book3s32}/tlb_hash32.c (100%)
+> 
+> I shortened them to:
+> 
+>    arch/powerpc/mm/{hash_low_32.S => book3s32/hash_low.S}
+>    arch/powerpc/mm/{ppc_mmu_32.c => book3s32/mmu.c}
 
-  arch/powerpc/mm/{40x_mmu.c => nohash/40x.c}
-  arch/powerpc/mm/{44x_mmu.c => nohash/44x.c}
-  arch/powerpc/mm/{8xx_mmu.c => nohash/8xx.c}
-  arch/powerpc/mm/{hugetlbpage-book3e.c => nohash/book3e_hugetlbpage.c}
-  arch/powerpc/mm/{pgtable-book3e.c => nohash/book3e_pgtable.c}
-  arch/powerpc/mm/{fsl_booke_mmu.c => nohash/fsl_booke.c}
-  arch/powerpc/mm/{mmu_context_nohash.c => nohash/mmu_context.c}
-  arch/powerpc/mm/{tlb_nohash.c => nohash/tlb.c}
-  arch/powerpc/mm/{tlb_nohash_low.S => nohash/tlb_low.S}
-  arch/powerpc/mm/{ => nohash}/tlb_low_64e.S
+To be consistent with what you did in nohash/ dir, shouldn't we rename 
+the above 'ppc.c' or 'ppc_32.c' instead of 'mmu.c' ?
 
-cheers
+Christophe
+
+>    arch/powerpc/mm/{mmu_context_hash32.c => book3s32/mmu_context.c}
+>    arch/powerpc/mm/{tlb_hash32.c => book3s32/tlb.c}
+> 
+> cheers
+> 
