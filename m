@@ -2,50 +2,59 @@ Return-Path: <SRS0=aDnU=TC=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,USER_AGENT_MUTT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_MUTT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C2A0AC43219
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 May 2019 13:59:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E2FB8C43219
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 May 2019 14:06:35 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id CFD80206DF
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 May 2019 13:59:16 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CFD80206DF
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 60E10208C4
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 May 2019 14:06:35 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 60E10208C4
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44vxhL0LKDzDqD4
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 May 2019 23:59:14 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44vxrn1tMzzDqHx
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 May 2019 00:06:33 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=arm.com
- (client-ip=217.140.101.70; helo=foss.arm.com;
- envelope-from=catalin.marinas@arm.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=redhat.com
+ (client-ip=209.132.183.28; helo=mx1.redhat.com; envelope-from=oleg@redhat.com;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=arm.com
-Received: from foss.arm.com (foss.arm.com [217.140.101.70])
- by lists.ozlabs.org (Postfix) with ESMTP id 44vxb30qjKzDqDD
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 May 2019 23:54:37 +1000 (AEST)
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.72.51.249])
- by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 38742374;
- Thu,  2 May 2019 06:54:35 -0700 (PDT)
-Received: from arrakis.emea.arm.com (arrakis.cambridge.arm.com [10.1.196.78])
- by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id
- 58D213F908; Thu,  2 May 2019 06:54:33 -0700 (PDT)
-Date: Thu, 2 May 2019 14:54:30 +0100
-From: Catalin Marinas <catalin.marinas@arm.com>
+ dmarc=pass (p=none dis=none) header.from=redhat.com
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44vxl84j5BzDqD4
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 May 2019 00:01:40 +1000 (AEST)
+Received: from smtp.corp.redhat.com (int-mx06.intmail.prod.int.phx2.redhat.com
+ [10.5.11.16])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by mx1.redhat.com (Postfix) with ESMTPS id CC2A9307EA9F;
+ Thu,  2 May 2019 14:01:28 +0000 (UTC)
+Received: from dhcp-27-174.brq.redhat.com (unknown [10.43.17.159])
+ by smtp.corp.redhat.com (Postfix) with SMTP id DE7E57D3E6;
+ Thu,  2 May 2019 14:01:24 +0000 (UTC)
+Received: by dhcp-27-174.brq.redhat.com (nbSMTP-1.00) for uid 1000
+ oleg@redhat.com; Thu,  2 May 2019 16:01:27 +0200 (CEST)
+Date: Thu, 2 May 2019 16:01:22 +0200
+From: Oleg Nesterov <oleg@redhat.com>
 To: Christoph Hellwig <hch@lst.de>
-Subject: Re: [PATCH 1/5] arm64: don't use asm-generic/ptrace.h
-Message-ID: <20190502135430.GB25142@arrakis.emea.arm.com>
+Subject: Re: remove asm-generic/ptrace.h
+Message-ID: <20190502140122.GC7323@redhat.com>
 References: <20190501173943.5688-1-hch@lst.de>
- <20190501173943.5688-2-hch@lst.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20190501173943.5688-2-hch@lst.de>
-User-Agent: Mutt/1.10.1 (2018-07-13)
+In-Reply-To: <20190501173943.5688-1-hch@lst.de>
+User-Agent: Mutt/1.5.24 (2015-08-30)
+X-Scanned-By: MIMEDefang 2.79 on 10.5.11.16
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.5.16
+ (mx1.redhat.com [10.5.110.44]); Thu, 02 May 2019 14:01:34 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -58,19 +67,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 Cc: linux-arch@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>,
- linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org, x86@kernel.org,
- linux-mips@vger.kernel.org, Oleg Nesterov <oleg@redhat.com>,
- linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
+ linux-sh@vger.kernel.org, x86@kernel.org, linux-mips@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, May 01, 2019 at 01:39:39PM -0400, Christoph Hellwig wrote:
-> Doing the indirection through macros for the regs accessors just
-> makes them harder to read, so implement the helpers directly.
-> 
-> Note that only the helpers actually used are implemented now.
-> 
-> Signed-off-by: Christoph Hellwig <hch@lst.de>
+On 05/01, Christoph Hellwig wrote:
+>
+> Hi all,
+>
+> asm-generic/ptrace.h is a little weird in that it doesn't actually
+> implement any functionality, but it provided multiple layers of macros
+> that just implement trivial inline functions.  We implement those
+> directly in the few architectures and be off with a much simpler
+> design.
 
-Acked-by: Catalin Marinas <catalin.marinas@arm.com>
+Oh, thanks, I was always confused by these macros ;)
+
+Oleg.
+
