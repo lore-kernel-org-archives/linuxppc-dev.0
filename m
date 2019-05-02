@@ -2,100 +2,82 @@ Return-Path: <SRS0=aDnU=TC=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.7 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
+	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E5AE2C43219
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 May 2019 05:52:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 915F2C43219
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 May 2019 06:24:00 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 230352081C
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 May 2019 05:52:49 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id C8BCC20873
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 May 2019 06:23:59 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=russell.cc header.i=@russell.cc header.b="NSlRPYIQ";
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b="XTknv/fy"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 230352081C
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=russell.cc
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="OUxx+AAH"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C8BCC20873
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44vkv32zJmzDqNX
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 May 2019 15:52:47 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44vlb12mjLzDqVQ
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 May 2019 16:23:57 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=russell.cc
- (client-ip=64.147.123.21; helo=wout5-smtp.messagingengine.com;
- envelope-from=ruscur@russell.cc; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=gmail.com
+ (client-ip=2607:f8b0:4864:20::141; helo=mail-it1-x141.google.com;
+ envelope-from=kernelfans@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=russell.cc
+ dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=russell.cc header.i=@russell.cc header.b="NSlRPYIQ"; 
- dkim=pass (2048-bit key;
- unprotected) header.d=messagingengine.com header.i=@messagingengine.com
- header.b="XTknv/fy"; dkim-atps=neutral
-Received: from wout5-smtp.messagingengine.com (wout5-smtp.messagingengine.com
- [64.147.123.21])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="OUxx+AAH"; 
+ dkim-atps=neutral
+Received: from mail-it1-x141.google.com (mail-it1-x141.google.com
+ [IPv6:2607:f8b0:4864:20::141])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44vksS4v2WzDqNt
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 May 2019 15:51:23 +1000 (AEST)
-Received: from compute6.internal (compute6.nyi.internal [10.202.2.46])
- by mailout.west.internal (Postfix) with ESMTP id B71BC665;
- Thu,  2 May 2019 01:51:21 -0400 (EDT)
-Received: from mailfrontend1 ([10.202.2.162])
- by compute6.internal (MEProxy); Thu, 02 May 2019 01:51:22 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=russell.cc; h=
- message-id:subject:from:to:cc:date:in-reply-to:references
- :content-type:mime-version:content-transfer-encoding; s=fm1; bh=
- z3feKxzzz6GlsK4M3kbZV3st+zoBxa0Qgkb2ifjb1q0=; b=NSlRPYIQaF1OraSR
- xcacuU09eS01nt4VLBKmY4fDGFqxEyfWy0WTw5pcfQ15xfiMTCqNszOzlb2sw4mE
- x3gW7siJFzlEBG0HSXwYGB2m5oO4HIMWGd/Sa2yqlkzz3+hEYO7ik7JN6kae/H7k
- 7jbU9RI1j2c5ZP9+rFcXN2b0HDm3Nu1m+S23WcHFUY0hflxq28ia8qg3ouwiWGig
- DiyQr1qStyrCYhmlQWtjQj1v08WWVGFVMnJ+QCdvmod3W8d6X1PVMA4nkOsj5TXf
- D+InKhPMSGJ7WjLQ6TdWrBZrMTmEHj4Xa7tqeXWp9wGvXHT4ULqe7qLdRZXt7CbK
- GNa0Rg==
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
- messagingengine.com; h=cc:content-transfer-encoding:content-type
- :date:from:in-reply-to:message-id:mime-version:references
- :subject:to:x-me-proxy:x-me-proxy:x-me-sender:x-me-sender
- :x-sasl-enc; s=fm2; bh=z3feKxzzz6GlsK4M3kbZV3st+zoBxa0Qgkb2ifjb1
- q0=; b=XTknv/fy84XvsvbwGTCleNXYwRgF7XX8xVxCm1SrGz7nMwdVnwJGgMySD
- GsVl75RHHAnyQkdHp1bMIsmJk6WDBHDZLRbjF7ZD6Gt3qq0xxc7WG/f57Y8e5/DK
- RyFW1GByar7A6KZtEJX1LCxUBdbJikUQAR8ZCBBwVCCD4z5hLaL5PVrRSyi6w1ma
- amWt2fu8zvJbI1vbY5ZZPjjHD3dxDJUdeq/QdaCXNFUdCPuRRl53168hnUWLOA6U
- XBG+Hlu4xte3bC15uNK1qq0T9LNPsL7rkUsJTZCxDOnMVEnLSnir7WdrM12ZJ3cU
- CGO/C7WeIUOJKblGIGRKUrSys6w/w==
-X-ME-Sender: <xms:WIXKXLUqgcsSyvO__HmzAIVKlCgzf7Fh9A3Wx0Xmi30BmlUvKlfexw>
-X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgeduuddrieekgdeludcutefuodetggdotefrodftvf
- curfhrohhfihhlvgemucfhrghsthforghilhdpqfgfvfdpuffrtefokffrpgfnqfghnecu
- uegrihhlohhuthemuceftddtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenfg
- hrlhcuvffnffculdeftddmnecujfgurhepkffuhffvffgjfhgtfggggfesthejredttder
- jeenucfhrhhomheptfhushhsvghllhcuvehurhhrvgihuceorhhushgtuhhrsehruhhssh
- gvlhhlrdgttgeqnecukfhppeduvddvrdelledrkedvrddutdenucfrrghrrghmpehmrghi
- lhhfrhhomheprhhushgtuhhrsehruhhsshgvlhhlrdgttgenucevlhhushhtvghrufhiii
- gvpedt
-X-ME-Proxy: <xmx:WIXKXKUd_Ym7OZMyxtq6_EQCIKqxjiR5Gwk9AiEuYnTX1eNKW8baYg>
- <xmx:WIXKXJK9N8Zu7IgFwKEaqZBKrbL3s251cIZfeOBGcciJGnuFap6Bdg>
- <xmx:WIXKXCC4wl_EwqwYNfP6fJOPBwBvkMMbJQTIBdZFQvznW5DmUz32jQ>
- <xmx:WYXKXJz-RdvpWAv_N5beimdUx01IqkgTYYOrtgS7TsBIS9-b3mXJuw>
-Received: from crackle.ozlabs.ibm.com (unknown [122.99.82.10])
- by mail.messagingengine.com (Postfix) with ESMTPA id 608DAE448F;
- Thu,  2 May 2019 01:51:18 -0400 (EDT)
-Message-ID: <6f3c93698669da36cb6bb354394a1f63c93a58cc.camel@russell.cc>
-Subject: Re: [PATCH 2/2] powerpc/mm: Warn if W+X pages found on boot
-From: Russell Currey <ruscur@russell.cc>
-To: Christophe Leroy <christophe.leroy@c-s.fr>, linuxppc-dev@lists.ozlabs.org
-Date: Thu, 02 May 2019 15:51:15 +1000
-In-Reply-To: <673532fb-cd09-748f-e936-14c0cab854b1@c-s.fr>
-References: <20190424063958.24559-1-ruscur@russell.cc>
- <20190424063958.24559-2-ruscur@russell.cc>
- <8e659a8f-af3f-e889-3f7a-560178c1f7b1@c-s.fr>
- <ca5e1db5fca5c12ca69d7810d575a437ae39ec87.camel@russell.cc>
- <673532fb-cd09-748f-e936-14c0cab854b1@c-s.fr>
-Content-Type: text/plain; charset="UTF-8"
-User-Agent: Evolution 3.32.1 
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44vlYB0PR9zDqLV
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 May 2019 16:22:21 +1000 (AEST)
+Received: by mail-it1-x141.google.com with SMTP id q19so1447535itk.3
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 01 May 2019 23:22:21 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+ :cc; bh=k56mmNJm2c37muwGSNyw5prel5SUd23hcD0vEkYllYY=;
+ b=OUxx+AAHpV80+7jWx8f1+E7itJj9D1rgHeIv5/3VMm7TKAnaU1bHWCA0kR/Uu4B/N0
+ YiDM2kOhNwjBsVDh7yPbvcSscs4wrg/XbXz1H/w3lDdnJU4TQ9QwedxsTFe/Bbjt18D3
+ JRn/qzW0ooD8Rl7s9nAI0qgl8XU1Fhb9EsRc0VNWcSWwmT5yQ/Ep3gbO5ZmDWB/2TOjs
+ 56aGZ16FpdQ10TxCUNbdRMfiLjvkeIGo1brUr0GBhS/X+j6ZJRXFbl8XXTiVI/tpSorx
+ HgJ21xXoiQgpOYV/KzFy4OYZm4ZtO8AhUMxPfwPWagYl7mDnLgavitYf7mYuADYjNy/N
+ 5KRA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+ :message-id:subject:to:cc;
+ bh=k56mmNJm2c37muwGSNyw5prel5SUd23hcD0vEkYllYY=;
+ b=jTCnwodCu9o8Y44kYY2SRHQeb7F5Fdc9QzPHNTBNBhwVwodTZuNplhLyqX8TCsDFcp
+ uVlwybWGtYAB/aLDQ5/xRv8kvdjJ41TZaDr3+2VuOr50MDdFOtAamX/KSMeaVfLu6ITm
+ IYuJQtEzjo+WLCDJ0yec5OmZXHr7k0gm3EtArho5uLK3IMQF23tH0/6EmOE5lo6dfOGR
+ rmuHYEiaT81MvKbLu4Aio47fCyVCg/cqcQK+uxBYZeDNrGERtgNJV4kCX+zYvkhaY5Fu
+ U4NTp89zID4Cd9YU+1XXMNMe9/q8uDr4q47JI1X8wkqNRX7N0Hceg4r2lRpp+ak+YfPo
+ WL2A==
+X-Gm-Message-State: APjAAAV8b6kyZm/Ya2H1O+SYO+tfRjHmGnMt1fkFjn1fUpC6YMJybhG+
+ MzoGFiXF/zmXu3YbqQxJ7BmPRIB6CglJH9P4KQ==
+X-Google-Smtp-Source: APXvYqx2USGvNZCoaLJnd+1UamBCWbf1OMfqf8foQXGwbUGpu68tSJhvorSVm2AnXEjYEs1kPbB4DdJnuY+hXU3VFhQ=
+X-Received: by 2002:a05:660c:38e:: with SMTP id
+ x14mr1138760itj.146.1556778137619; 
+ Wed, 01 May 2019 23:22:17 -0700 (PDT)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
+References: <1556087581-14513-1-git-send-email-kernelfans@gmail.com>
+ <10dc5468-6cd9-85c7-ba66-1dfa5aa922b7@suse.com>
+ <CAFgQCTstd667wP6g+maxYekz4u3iBR2R=FHUiS1V=XxTs6MKUw@mail.gmail.com>
+In-Reply-To: <CAFgQCTstd667wP6g+maxYekz4u3iBR2R=FHUiS1V=XxTs6MKUw@mail.gmail.com>
+From: Pingfan Liu <kernelfans@gmail.com>
+Date: Thu, 2 May 2019 14:22:06 +0800
+Message-ID: <CAFgQCTtQm7SuBRfXik6B065Aa+uQ=Mx6i+Y1q+NJU1GEiUgH4g@mail.gmail.com>
+Subject: Re: [PATCHv2] kernel/crash: make parse_crashkernel()'s return value
+ more indicant
+To: Matthias Brugger <mbrugger@suse.com>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -107,34 +89,67 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Julia.Lawall@lip6.fr, rashmica.g@gmail.com
+Cc: Rich Felker <dalias@libc.org>, linux-ia64@vger.kernel.org,
+ Julien Thierry <julien.thierry@arm.com>, Yangtao Li <tiny.windzz@gmail.com>,
+ Palmer Dabbelt <palmer@sifive.com>, Heiko Carstens <heiko.carstens@de.ibm.com>,
+ Stefan Agner <stefan@agner.ch>, linux-mips@vger.kernel.org,
+ Paul Mackerras <paulus@samba.org>, "H. Peter Anvin" <hpa@zytor.com>,
+ Thomas Gleixner <tglx@linutronix.de>, Logan Gunthorpe <logang@deltatee.com>,
+ linux-s390@vger.kernel.org, Florian Fainelli <f.fainelli@gmail.com>,
+ Yoshinori Sato <ysato@users.sourceforge.jp>, linux-sh@vger.kernel.org,
+ x86@kernel.org, Russell King <linux@armlinux.org.uk>,
+ Ingo Molnar <mingo@redhat.com>, Hari Bathini <hbathini@linux.ibm.com>,
+ Catalin Marinas <catalin.marinas@arm.com>, James Hogan <jhogan@kernel.org>,
+ Dave Young <dyoung@redhat.com>, Fenghua Yu <fenghua.yu@intel.com>,
+ Will Deacon <will.deacon@arm.com>, Johannes Weiner <hannes@cmpxchg.org>,
+ Borislav Petkov <bp@alien8.de>, David Hildenbrand <david@redhat.com>,
+ linux-arm-kernel@lists.infradead.org, Jens Axboe <axboe@kernel.dk>,
+ Tony Luck <tony.luck@intel.com>, Baoquan He <bhe@redhat.com>,
+ Ard Biesheuvel <ard.biesheuvel@linaro.org>,
+ Robin Murphy <robin.murphy@arm.com>, LKML <linux-kernel@vger.kernel.org>,
+ Ralf Baechle <ralf@linux-mips.org>,
+ Thomas Bogendoerfer <tbogendoerfer@suse.de>,
+ Paul Burton <paul.burton@mips.com>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>,
+ Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
+ Greg Hackmann <ghackmann@android.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-> > > > +	if (radix_enabled())
-> > > > +		st.start_address = PAGE_OFFSET;
-> > > > +	else
-> > > +		st.start_address = KERN_VIRT_START;
-> > > 
-> > > KERN_VIRT_START doesn't exist on PPC32.
-> > > 
-> > > Christophe
-> > > 
-> > Thanks a lot for the review!  Applied all your suggestions.  What
-> > should I use on PPC32 instead?
-> 
-> Indeed it looks like KERN_VIRT_START is defined as 0 for PPC32 at
-> the 
-> top of ptdump.c, which look strange to me.
-> 
-> I guess PAGE_OFFSET should be the good value for KERN_VIRT_START on
-> PPC32.
-> 
-> Christophe
+On Thu, Apr 25, 2019 at 4:20 PM Pingfan Liu <kernelfans@gmail.com> wrote:
+>
+> On Wed, Apr 24, 2019 at 4:31 PM Matthias Brugger <mbrugger@suse.com> wrote:
+> >
+> >
+> [...]
+> > > @@ -139,6 +141,8 @@ static int __init parse_crashkernel_simple(char *cmdline,
+> > >               pr_warn("crashkernel: unrecognized char: %c\n", *cur);
+> > >               return -EINVAL;
+> > >       }
+> > > +     if (*crash_size == 0)
+> > > +             return -EINVAL;
+> >
+> > This covers the case where I pass an argument like "crashkernel=0M" ?
+> > Can't we fix that by using kstrtoull() in memparse and check if the return value
+> > is < 0? In that case we could return without updating the retptr and we will be
+> > fine.
+After a series of work, I suddenly realized that it can not be done
+like this way. "0M" causes kstrtoull() to return -EINVAL, but this is
+caused by "M", not "0". If passing "0" to kstrtoull(), it will return
+0 on success.
 
-git blame says you put it there :) I'll set it to PAGE_OFFSET instead
-of zero.  Cheers
+> >
+> It seems that kstrtoull() treats 0M as invalid parameter, while
+> simple_strtoull() does not.
+>
+My careless going through the code. And I tested with a valid value
+"256M" using kstrtoull(), it also returned -EINVAL.
 
-- Russell
+So I think there is no way to distinguish 0 from a positive value
+inside this basic math function.
+Do I miss anything?
 
+Thanks and regards,
+Pingfan
