@@ -2,87 +2,91 @@ Return-Path: <SRS0=aDnU=TC=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,
-	URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B5508C43219
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 May 2019 07:16:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 97140C43219
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 May 2019 07:23:21 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 2E1992085A
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 May 2019 07:16:40 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="rEHNJlQJ"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2E1992085A
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
+	by mail.kernel.org (Postfix) with ESMTPS id 0A6B92081C
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 May 2019 07:23:20 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0A6B92081C
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44vmlp0NKzzDqTV
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 May 2019 17:16:38 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44vmvV4yw9zDqX6
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 May 2019 17:23:18 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=c-s.fr
- (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
- envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
+ (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
+ envelope-from=ajd@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=c-s.fr
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="rEHNJlQJ"; 
- dkim-atps=neutral
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ dmarc=none (p=none dis=none) header.from=linux.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44vmkF129tzDq5W
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 May 2019 17:15:16 +1000 (AEST)
-Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 44vmk73BzLz9v05Y;
- Thu,  2 May 2019 09:15:11 +0200 (CEST)
-Authentication-Results: localhost; dkim=pass
- reason="1024-bit key; insecure key"
- header.d=c-s.fr header.i=@c-s.fr header.b=rEHNJlQJ; dkim-adsp=pass;
- dkim-atps=neutral
-X-Virus-Scanned: Debian amavisd-new at c-s.fr
-Received: from pegase1.c-s.fr ([192.168.12.234])
- by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id TpNxnI6ZUBCj; Thu,  2 May 2019 09:15:11 +0200 (CEST)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 44vmk7298cz9v05W;
- Thu,  2 May 2019 09:15:11 +0200 (CEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
- t=1556781311; bh=iVXsSTH0lWTeNrTGnZuWHGTn/IUlAmjSq/GG8IGe/k8=;
- h=Subject:To:Cc:References:From:Date:In-Reply-To:From;
- b=rEHNJlQJLgyz3el1t5mt6kuHmKaCiL4acEa59WfA+KAOI5dYLu45M3p1CGuWA/WYL
- TVSkOntHyh1uSSt79aFkqM/JN19f+/ZETREARyzIsC9fmZ+neXavstcaZF2vDxjW7f
- AczpdarKEYo01SrVfFQx19275Ca6wB8JegEsRzXg=
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 3EBD78B87F;
- Thu,  2 May 2019 09:15:12 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id cgB-cgIwqxf4; Thu,  2 May 2019 09:15:12 +0200 (CEST)
-Received: from PO15451 (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id A72218B74C;
- Thu,  2 May 2019 09:15:11 +0200 (CEST)
-Subject: Re: [PATCH v1 2/4] powerpc/mm: Move book3s64 specifics in
- subdirectory mm/book3s64
-To: Michael Ellerman <mpe@ellerman.id.au>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>
-References: <cover.1553853405.git.christophe.leroy@c-s.fr>
- <c4afde657ef9e4ad0266ae62e9907313c41c4a16.1553853405.git.christophe.leroy@c-s.fr>
- <87sgtx5o0j.fsf@concordia.ellerman.id.au>
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Message-ID: <7dbe8476-bfa3-29ac-5155-a67823d39ef4@c-s.fr>
-Date: Thu, 2 May 2019 09:15:11 +0200
-User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:60.0) Gecko/20100101
- Thunderbird/60.6.1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44vl4Z6VNWzDqNX
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 May 2019 16:00:59 +1000 (AEST)
+Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
+ x425v6Cr041160
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 2 May 2019 02:00:56 -0400
+Received: from e06smtp03.uk.ibm.com (e06smtp03.uk.ibm.com [195.75.94.99])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2s7msu25cq-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 02 May 2019 02:00:55 -0400
+Received: from localhost
+ by e06smtp03.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <ajd@linux.ibm.com>;
+ Thu, 2 May 2019 07:00:53 +0100
+Received: from b06cxnps4076.portsmouth.uk.ibm.com (9.149.109.198)
+ by e06smtp03.uk.ibm.com (192.168.101.133) with IBM ESMTP SMTP Gateway:
+ Authorized Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Thu, 2 May 2019 07:00:52 +0100
+Received: from d06av21.portsmouth.uk.ibm.com (d06av21.portsmouth.uk.ibm.com
+ [9.149.105.232])
+ by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x4260prd36962452
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 2 May 2019 06:00:51 GMT
+Received: from d06av21.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 8883652067
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 May 2019 06:00:50 +0000 (GMT)
+Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
+ by d06av21.portsmouth.uk.ibm.com (Postfix) with ESMTP id 3902152050
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 May 2019 06:00:50 +0000 (GMT)
+Received: from intelligence.ozlabs.ibm.com (haven.au.ibm.com [9.192.254.114])
+ (using TLSv1.2 with cipher DHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.au.ibm.com (Postfix) with ESMTPSA id B1436A034A;
+ Thu,  2 May 2019 16:00:48 +1000 (AEST)
+From: Andrew Donnellan <ajd@linux.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] MAINTAINERS: Update cxl/ocxl email address
+Date: Thu,  2 May 2019 16:00:41 +1000
+X-Mailer: git-send-email 2.20.1
 MIME-Version: 1.0
-In-Reply-To: <87sgtx5o0j.fsf@concordia.ellerman.id.au>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: fr
 Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+x-cbid: 19050206-0012-0000-0000-000003176D3F
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 19050206-0013-0000-0000-0000214FDB05
+Message-Id: <20190502060041.794-1-ajd@linux.ibm.com>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
+ definitions=2019-05-02_03:, , signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ malwarescore=0 suspectscore=1 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1011 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=496 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1810050000 definitions=main-1905020047
+X-Mailman-Approved-At: Thu, 02 May 2019 17:22:01 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -94,89 +98,40 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: fbarrat@linux.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+Use my @linux.ibm.com email to avoid a layer of redirection.
 
+Signed-off-by: Andrew Donnellan <ajd@linux.ibm.com>
+---
+ MAINTAINERS | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-Le 02/05/2019 à 09:11, Michael Ellerman a écrit :
-> Christophe Leroy <christophe.leroy@c-s.fr> writes:
-> 
->> Many files in arch/powerpc/mm are only for book3S64. This patch
->> creates a subdirectory for them.
->>
->> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
->> ---
->>   arch/powerpc/mm/Makefile                           | 25 +++----------------
->>   arch/powerpc/mm/book3s64/Makefile                  | 28 ++++++++++++++++++++++
->>   arch/powerpc/mm/{ => book3s64}/hash64_4k.c         |  0
->>   arch/powerpc/mm/{ => book3s64}/hash64_64k.c        |  0
->>   arch/powerpc/mm/{ => book3s64}/hash_native_64.c    |  0
->>   arch/powerpc/mm/{ => book3s64}/hash_utils_64.c     |  0
->>   arch/powerpc/mm/{ => book3s64}/hugepage-hash64.c   |  0
->>   .../powerpc/mm/{ => book3s64}/hugetlbpage-hash64.c |  0
->>   arch/powerpc/mm/{ => book3s64}/hugetlbpage-radix.c |  0
->>   .../mm/{ => book3s64}/mmu_context_book3s64.c       |  0
->>   arch/powerpc/mm/{ => book3s64}/mmu_context_iommu.c |  0
->>   arch/powerpc/mm/{ => book3s64}/pgtable-book3s64.c  |  0
->>   arch/powerpc/mm/{ => book3s64}/pgtable-hash64.c    |  0
->>   arch/powerpc/mm/{ => book3s64}/pgtable-radix.c     |  0
->>   arch/powerpc/mm/{ => book3s64}/pkeys.c             |  0
->>   arch/powerpc/mm/{ => book3s64}/slb.c               |  0
->>   arch/powerpc/mm/{ => book3s64}/subpage-prot.c      |  0
->>   arch/powerpc/mm/{ => book3s64}/tlb-radix.c         |  0
->>   arch/powerpc/mm/{ => book3s64}/tlb_hash64.c        |  0
->>   arch/powerpc/mm/{ => book3s64}/vphn.c              |  0
->>   arch/powerpc/mm/{ => book3s64}/vphn.h              |  0
->>   arch/powerpc/mm/numa.c                             |  2 +-
->>   22 files changed, 32 insertions(+), 23 deletions(-)
->>   create mode 100644 arch/powerpc/mm/book3s64/Makefile
->>   rename arch/powerpc/mm/{ => book3s64}/hash64_4k.c (100%)
->>   rename arch/powerpc/mm/{ => book3s64}/hash64_64k.c (100%)
->>   rename arch/powerpc/mm/{ => book3s64}/hash_native_64.c (100%)
->>   rename arch/powerpc/mm/{ => book3s64}/hash_utils_64.c (100%)
->>   rename arch/powerpc/mm/{ => book3s64}/hugepage-hash64.c (100%)
->>   rename arch/powerpc/mm/{ => book3s64}/hugetlbpage-hash64.c (100%)
->>   rename arch/powerpc/mm/{ => book3s64}/hugetlbpage-radix.c (100%)
->>   rename arch/powerpc/mm/{ => book3s64}/mmu_context_book3s64.c (100%)
->>   rename arch/powerpc/mm/{ => book3s64}/mmu_context_iommu.c (100%)
->>   rename arch/powerpc/mm/{ => book3s64}/pgtable-book3s64.c (100%)
->>   rename arch/powerpc/mm/{ => book3s64}/pgtable-hash64.c (100%)
->>   rename arch/powerpc/mm/{ => book3s64}/pgtable-radix.c (100%)
->>   rename arch/powerpc/mm/{ => book3s64}/pkeys.c (100%)
->>   rename arch/powerpc/mm/{ => book3s64}/slb.c (100%)
->>   rename arch/powerpc/mm/{ => book3s64}/subpage-prot.c (100%)
->>   rename arch/powerpc/mm/{ => book3s64}/tlb-radix.c (100%)
->>   rename arch/powerpc/mm/{ => book3s64}/tlb_hash64.c (100%)
-> 
-> Do you mind if I take this but rework the destination names in the process?
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 5c38f21aee78..386e2336fe7e 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -4293,7 +4293,7 @@ F:	drivers/net/ethernet/chelsio/cxgb4vf/
+ 
+ CXL (IBM Coherent Accelerator Processor Interface CAPI) DRIVER
+ M:	Frederic Barrat <fbarrat@linux.ibm.com>
+-M:	Andrew Donnellan <andrew.donnellan@au1.ibm.com>
++M:	Andrew Donnellan <ajd@linux.ibm.com>
+ L:	linuxppc-dev@lists.ozlabs.org
+ S:	Supported
+ F:	arch/powerpc/platforms/powernv/pci-cxl.c
+@@ -11173,7 +11173,7 @@ F:	tools/objtool/
+ 
+ OCXL (Open Coherent Accelerator Processor Interface OpenCAPI) DRIVER
+ M:	Frederic Barrat <fbarrat@linux.ibm.com>
+-M:	Andrew Donnellan <andrew.donnellan@au1.ibm.com>
++M:	Andrew Donnellan <ajd@linux.ibm.com>
+ L:	linuxppc-dev@lists.ozlabs.org
+ S:	Supported
+ F:	arch/powerpc/platforms/powernv/ocxl.c
+-- 
+2.20.1
 
-I don't mind, I think it's a good idea.
-
-> 
-> I don't like having eg. book3s64/pgtable-book3s64.c
-> 
-> And some of the other names could use a bit of cleanup too.
-> 
-> What about:
-> 
->   arch/powerpc/mm/{hash64_4k.c => book3s64/hash_4k.c}
->   arch/powerpc/mm/{hash64_64k.c => book3s64/hash_64k.c}
->   arch/powerpc/mm/{hugepage-hash64.c => book3s64/hash_hugepage.c}
->   arch/powerpc/mm/{hugetlbpage-hash64.c => book3s64/hash_hugetlbpage.c}
->   arch/powerpc/mm/{hash_native_64.c => book3s64/hash_native.c}
->   arch/powerpc/mm/{pgtable-hash64.c => book3s64/hash_pgtable.c}
->   arch/powerpc/mm/{tlb_hash64.c => book3s64/hash_tlb.c}
->   arch/powerpc/mm/{hash_utils_64.c => book3s64/hash_utils.c}
->   arch/powerpc/mm/{mmu_context_iommu.c => book3s64/iommu_api.c}
->   arch/powerpc/mm/{mmu_context_book3s64.c => book3s64/mmu_context.c}
->   arch/powerpc/mm/{pgtable-book3s64.c => book3s64/pgtable.c}
->   arch/powerpc/mm/{hugetlbpage-radix.c => book3s64/radix_hugetlbpage.c}
->   arch/powerpc/mm/{pgtable-radix.c => book3s64/radix_pgtable.c}
->   arch/powerpc/mm/{tlb-radix.c => book3s64/radix_tlb.c}
-
-Looks good
-
-Christophe
