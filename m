@@ -2,23 +2,23 @@ Return-Path: <SRS0=aDnU=TC=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 61AD9C43219
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 May 2019 15:32:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id F421EC04AAA
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 May 2019 15:35:28 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 960A52081C
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 May 2019 15:32:48 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 960A52081C
+	by mail.kernel.org (Postfix) with ESMTPS id 7FB8720675
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 May 2019 15:35:28 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7FB8720675
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44vzmD5Y8dzDqLT
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 May 2019 01:32:44 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44vzqL38NczDqLt
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 May 2019 01:35:26 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
  (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
@@ -29,60 +29,59 @@ Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44vzh13yqmzDqLw
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 May 2019 01:29:05 +1000 (AEST)
-Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44vzhK3KJdzDqMC
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 May 2019 01:29:21 +1000 (AEST)
+Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
  by mx0b-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x42FS83i127775
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 2 May 2019 11:29:01 -0400
-Received: from e06smtp02.uk.ibm.com (e06smtp02.uk.ibm.com [195.75.94.98])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2s82sxsbpj-1
+ x42FS4Bd121088
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 2 May 2019 11:29:18 -0400
+Received: from e06smtp07.uk.ibm.com (e06smtp07.uk.ibm.com [195.75.94.103])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2s824xbbs1-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 02 May 2019 11:29:00 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 02 May 2019 11:29:18 -0400
 Received: from localhost
- by e06smtp02.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp07.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <rppt@linux.ibm.com>;
- Thu, 2 May 2019 16:28:58 +0100
-Received: from b06cxnps4076.portsmouth.uk.ibm.com (9.149.109.198)
- by e06smtp02.uk.ibm.com (192.168.101.132) with IBM ESMTP SMTP Gateway:
+ Thu, 2 May 2019 16:29:16 +0100
+Received: from b06cxnps3074.portsmouth.uk.ibm.com (9.149.109.194)
+ by e06smtp07.uk.ibm.com (192.168.101.137) with IBM ESMTP SMTP Gateway:
  Authorized Use Only! Violators will be prosecuted; 
  (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Thu, 2 May 2019 16:28:50 +0100
-Received: from d06av23.portsmouth.uk.ibm.com (d06av23.portsmouth.uk.ibm.com
- [9.149.105.59])
- by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x42FSnXd45023486
+ Thu, 2 May 2019 16:29:07 +0100
+Received: from d06av21.portsmouth.uk.ibm.com (d06av21.portsmouth.uk.ibm.com
+ [9.149.105.232])
+ by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x42FT6o918022466
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Thu, 2 May 2019 15:28:49 GMT
-Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 830D5A4051;
- Thu,  2 May 2019 15:28:49 +0000 (GMT)
-Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 12855A404D;
- Thu,  2 May 2019 15:28:45 +0000 (GMT)
+ Thu, 2 May 2019 15:29:06 GMT
+Received: from d06av21.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 5E5285204E;
+ Thu,  2 May 2019 15:29:06 +0000 (GMT)
 Received: from rapoport-lnx (unknown [9.148.205.209])
- by d06av23.portsmouth.uk.ibm.com (Postfix) with ESMTPS;
- Thu,  2 May 2019 15:28:44 +0000 (GMT)
+ by d06av21.portsmouth.uk.ibm.com (Postfix) with ESMTPS id C6A1352054;
+ Thu,  2 May 2019 15:29:01 +0000 (GMT)
 Received: by rapoport-lnx (sSMTP sendmail emulation);
- Thu, 02 May 2019 18:28:43 +0300
+ Thu, 02 May 2019 18:29:00 +0300
 From: Mike Rapoport <rppt@linux.ibm.com>
 To: Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH 00/15] introduce generic pte_{alloc,free}_one[_kernel]
-Date: Thu,  2 May 2019 18:28:27 +0300
+Subject: [PATCH 03/15] arm: switch to generic version of pte allocation
+Date: Thu,  2 May 2019 18:28:30 +0300
 X-Mailer: git-send-email 2.7.4
+In-Reply-To: <1556810922-20248-1-git-send-email-rppt@linux.ibm.com>
+References: <1556810922-20248-1-git-send-email-rppt@linux.ibm.com>
 X-TM-AS-GCONF: 00
-x-cbid: 19050215-0008-0000-0000-000002E29914
+x-cbid: 19050215-0028-0000-0000-000003699E1F
 X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19050215-0009-0000-0000-0000224F082B
-Message-Id: <1556810922-20248-1-git-send-email-rppt@linux.ibm.com>
+x-cbparentid: 19050215-0029-0000-0000-000024290A09
+Message-Id: <1556810922-20248-4-git-send-email-rppt@linux.ibm.com>
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
  definitions=2019-05-02_08:, , signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=1
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
  priorityscore=1501
- malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=1
- clxscore=1015 lowpriorityscore=0 mlxscore=1 impostorscore=0
- mlxlogscore=211 adultscore=0 classifier=spam adjust=0 reason=mlx
+ malwarescore=0 suspectscore=2 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=934 adultscore=0 classifier=spam adjust=0 reason=mlx
  scancount=1 engine=8.0.1-1810050000 definitions=main-1905020103
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -115,83 +114,121 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi,
+Replace __get_free_page() and alloc_pages() calls with the generic
+__pte_alloc_one_kernel() and __pte_alloc_one().
 
-I've tried to trim down the recipients list, but it's still quite long, so
-sorry for the spam.
+There is no functional change for the kernel PTE allocation.
 
-Many architectures have similar, if not identical implementation of
-pte_alloc_one_kernel(), pte_alloc_one(), pte_free_kernel() and pte_free().
+The difference for the user PTEs, is that the clear_pte_table() is now
+called after pgtable_page_ctor() and the addition of __GFP_ACCOUNT to the
+GFP flags.
 
-A while ago Anshuman suggested to introduce a common definition of
-GFP_PGTABLE and during the discussion it was suggested to rather
-consolidate the allocators.
+The conversion to the generic version of pte_free_kernel() removes the NULL
+check for pte.
 
-These patches introduce generic version of PTE allocation and free and
-enable their use on several architectures.
+The pte_free() version on arm is identical to the generic one and can be
+simply dropped.
 
-The conversion introduces some changes for some of the architectures.
-Here's the executive summary and the details are described at each patch.
+Signed-off-by: Mike Rapoport <rppt@linux.ibm.com>
+---
+ arch/arm/include/asm/pgalloc.h | 41 +++++++++++++----------------------------
+ arch/arm/mm/mmu.c              |  2 +-
+ 2 files changed, 14 insertions(+), 29 deletions(-)
 
-* Most architectures do not set __GFP_ACCOUNT for the user page tables.
-Switch to the generic functions is "spreading that goodness to all other
-architectures"
-* arm, arm64 and unicore32 used to check if the pte is not NULL before
-freeing its memory in pte_free_kernel(). It's dropped during the
-conversion as it seems superfluous.
-* x86 used to BUG_ON() is pte was not page aligned duirng
-pte_free_kernel(), the generic version simply frees the memory without any
-checks.
-
-This set only performs the straightforward conversion, the architectures
-with different logic in pte_alloc_one() and pte_alloc_one_kernel() are not
-touched, as well as architectures that have custom page table allocators.
-
-[1] https://lore.kernel.org/lkml/1547619692-7946-1-git-send-email-anshuman.khandual@arm.com
-
- asm-generic, x86: introduce generic pte_{alloc,free}_one[_kernel]
-
-Mike Rapoport (15):
-  asm-generic, x86: introduce generic pte_{alloc,free}_one[_kernel]
-  alpha: switch to generic version of pte allocation
-  arm: switch to generic version of pte allocation
-  arm64: switch to generic version of pte allocation
-  csky: switch to generic version of pte allocation
-  hexagon: switch to generic version of pte allocation
-  m68k: sun3: switch to generic version of pte allocation
-  mips: switch to generic version of pte allocation
-  nds32: switch to generic version of pte allocation
-  nios2: switch to generic version of pte allocation
-  parisc: switch to generic version of pte allocation
-  powerpc/nohash/64: switch to generic version of pte allocation
-  riscv: switch to generic version of pte allocation
-  um: switch to generic version of pte allocation
-  unicore32: switch to generic version of pte allocation
-
- arch/alpha/include/asm/pgalloc.h             |  40 +---------
- arch/arm/include/asm/pgalloc.h               |  41 ++++------
- arch/arm/mm/mmu.c                            |   2 +-
- arch/arm64/include/asm/pgalloc.h             |  43 +----------
- arch/arm64/mm/mmu.c                          |   2 +-
- arch/arm64/mm/pgd.c                          |   4 +-
- arch/csky/include/asm/pgalloc.h              |  30 +-------
- arch/hexagon/include/asm/pgalloc.h           |  34 +--------
- arch/m68k/include/asm/sun3_pgalloc.h         |  41 +---------
- arch/mips/include/asm/pgalloc.h              |  33 +--------
- arch/nds32/include/asm/pgalloc.h             |  31 +-------
- arch/nios2/include/asm/pgalloc.h             |  37 +--------
- arch/parisc/include/asm/pgalloc.h            |  33 +--------
- arch/powerpc/include/asm/nohash/64/pgalloc.h |  35 +--------
- arch/riscv/include/asm/pgalloc.h             |  29 +-------
- arch/um/include/asm/pgalloc.h                |  16 +---
- arch/um/kernel/mem.c                         |  22 ------
- arch/unicore32/include/asm/pgalloc.h         |  36 ++-------
- arch/x86/include/asm/pgalloc.h               |  19 +----
- arch/x86/mm/pgtable.c                        |  33 +++------
- include/asm-generic/pgalloc.h                | 107 ++++++++++++++++++++++++++-
- virt/kvm/arm/mmu.c                           |   2 +-
- 22 files changed, 171 insertions(+), 499 deletions(-)
-
+diff --git a/arch/arm/include/asm/pgalloc.h b/arch/arm/include/asm/pgalloc.h
+index 17ab72f..13c5a9d 100644
+--- a/arch/arm/include/asm/pgalloc.h
++++ b/arch/arm/include/asm/pgalloc.h
+@@ -57,8 +57,6 @@ static inline void pud_populate(struct mm_struct *mm, pud_t *pud, pmd_t *pmd)
+ extern pgd_t *pgd_alloc(struct mm_struct *mm);
+ extern void pgd_free(struct mm_struct *mm, pgd_t *pgd);
+ 
+-#define PGALLOC_GFP	(GFP_KERNEL | __GFP_ZERO)
+-
+ static inline void clean_pte_table(pte_t *pte)
+ {
+ 	clean_dcache_area(pte + PTE_HWTABLE_PTRS, PTE_HWTABLE_SIZE);
+@@ -80,54 +78,41 @@ static inline void clean_pte_table(pte_t *pte)
+  *  |  h/w pt 1  |
+  *  +------------+
+  */
++
++#define __HAVE_ARCH_PTE_ALLOC_ONE_KERNEL
++#define __HAVE_ARCH_PTE_ALLOC_ONE
++#include <asm-generic/pgalloc.h>
++
+ static inline pte_t *
+ pte_alloc_one_kernel(struct mm_struct *mm)
+ {
+-	pte_t *pte;
++	pte_t *pte = __pte_alloc_one_kernel(mm);
+ 
+-	pte = (pte_t *)__get_free_page(PGALLOC_GFP);
+ 	if (pte)
+ 		clean_pte_table(pte);
+ 
+ 	return pte;
+ }
+ 
++#ifdef CONFIG_HIGHPTE
++#define PGTABLE_HIGHMEM __GFP_HIGHMEM
++#else
++#define PGTABLE_HIGHMEM 0
++#endif
++
+ static inline pgtable_t
+ pte_alloc_one(struct mm_struct *mm)
+ {
+ 	struct page *pte;
+ 
+-#ifdef CONFIG_HIGHPTE
+-	pte = alloc_pages(PGALLOC_GFP | __GFP_HIGHMEM, 0);
+-#else
+-	pte = alloc_pages(PGALLOC_GFP, 0);
+-#endif
++	pte = __pte_alloc_one(mm, GFP_PGTABLE_USER | PGTABLE_HIGHMEM);
+ 	if (!pte)
+ 		return NULL;
+ 	if (!PageHighMem(pte))
+ 		clean_pte_table(page_address(pte));
+-	if (!pgtable_page_ctor(pte)) {
+-		__free_page(pte);
+-		return NULL;
+-	}
+ 	return pte;
+ }
+ 
+-/*
+- * Free one PTE table.
+- */
+-static inline void pte_free_kernel(struct mm_struct *mm, pte_t *pte)
+-{
+-	if (pte)
+-		free_page((unsigned long)pte);
+-}
+-
+-static inline void pte_free(struct mm_struct *mm, pgtable_t pte)
+-{
+-	pgtable_page_dtor(pte);
+-	__free_page(pte);
+-}
+-
+ static inline void __pmd_populate(pmd_t *pmdp, phys_addr_t pte,
+ 				  pmdval_t prot)
+ {
+diff --git a/arch/arm/mm/mmu.c b/arch/arm/mm/mmu.c
+index f3ce341..e8e0382 100644
+--- a/arch/arm/mm/mmu.c
++++ b/arch/arm/mm/mmu.c
+@@ -732,7 +732,7 @@ static void __init *early_alloc(unsigned long sz)
+ 
+ static void *__init late_alloc(unsigned long sz)
+ {
+-	void *ptr = (void *)__get_free_pages(PGALLOC_GFP, get_order(sz));
++	void *ptr = (void *)__get_free_pages(GFP_PGTABLE_KERNEL, get_order(sz));
+ 
+ 	if (!ptr || !pgtable_page_ctor(virt_to_page(ptr)))
+ 		BUG();
 -- 
 2.7.4
 
