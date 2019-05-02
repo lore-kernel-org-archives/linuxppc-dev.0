@@ -2,43 +2,67 @@ Return-Path: <SRS0=aDnU=TC=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_MUTT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B7AEAC04AA9
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 May 2019 14:24:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 73170C43219
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 May 2019 14:33:18 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 0C3FA20652
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 May 2019 14:24:43 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0C3FA20652
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+	by mail.kernel.org (Postfix) with ESMTPS id E2EB8205F4
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 May 2019 14:33:17 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="lb0LwYB5"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E2EB8205F4
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linuxfoundation.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44vyFj2wQKzDqF0
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 May 2019 00:24:41 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44vy805YvSzDqMK
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 May 2019 00:19:44 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44vyRb3PmWzDqGx
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 May 2019 00:33:15 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+ spf=pass (mailfrom) smtp.mailfrom=linuxfoundation.org
+ (client-ip=198.145.29.99; helo=mail.kernel.org;
+ envelope-from=gregkh@linuxfoundation.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=ellerman.id.au
-Received: by ozlabs.org (Postfix)
- id 44vy804Y00z9s3l; Fri,  3 May 2019 00:19:44 +1000 (AEST)
-Received: by ozlabs.org (Postfix, from userid 1034)
- id 44vy803DdJz9sBr; Fri,  3 May 2019 00:19:44 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: linux-edac@vger.kernel.org
-Subject: [PATCH] EDAC, mpc85xx: Prevent building as a module
-Date: Fri,  3 May 2019 00:19:41 +1000
-Message-Id: <20190502141941.12927-1-mpe@ellerman.id.au>
-X-Mailer: git-send-email 2.20.1
+ header.from=linuxfoundation.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=kernel.org header.i=@kernel.org header.b="lb0LwYB5"; 
+ dkim-atps=neutral
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44vyPH2YyhzDqFM
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 May 2019 00:31:15 +1000 (AEST)
+Received: from localhost (83-86-89-107.cable.dynamic.v4.ziggo.nl
+ [83.86.89.107])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by mail.kernel.org (Postfix) with ESMTPSA id 7F5D5205F4;
+ Thu,  2 May 2019 14:31:12 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+ s=default; t=1556807473;
+ bh=y5jVx1Vr45IYZXdnuMmQlJ963MVRseLeFnp2Z3e8K7Y=;
+ h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+ b=lb0LwYB5aV/+RONxcgf7wOlwTkwen8aazd2+1ujBiUjq1kHVOrZVjlgzIY95xfCAQ
+ L1Qi3hK6a1MiB3I8n4Elvi0Zo0fDGNJDrx87crP2tmf+vo48Y+4ksgNAnqS4dXXHaz
+ S6FIRV+ta5qdUjX6SF0HeJYSrOdOdpp5QWoO5PSc=
+Date: Thu, 2 May 2019 16:31:10 +0200
+From: Greg KH <gregkh@linuxfoundation.org>
+To: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Subject: Re: Linux 5.1-rc5
+Message-ID: <20190502143110.GC17577@kroah.com>
+References: <CAHk-=wjvcuyCQGnfOhooaL1H4H63qXO=xgo+9yncSOG=eK+kbA@mail.gmail.com>
+ <20190415051919.GA31481@infradead.org>
+ <CAHk-=wj7jgMOVFW0tiU-X+zhg6+Rn7mEBTej+f26rV3zXezOSA@mail.gmail.com>
+ <20190502122128.GA2670@kroah.com>
+ <20190502161758.26972bb2@mschwideX1>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20190502161758.26972bb2@mschwideX1>
+User-Agent: Mutt/1.11.4 (2019-03-13)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -50,42 +74,64 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: morbidrsa@gmail.com, linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
- james.morse@arm.com, bp@alien8.de, mchehab@kernel.org
+Cc: linux-s390 <linux-s390@vger.kernel.org>,
+ Linux List Kernel Mailing <linux-kernel@vger.kernel.org>,
+ Christoph Hellwig <hch@infradead.org>,
+ Linus Torvalds <torvalds@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The mpc85xx EDAC code can be configured as a module but then fails to
-build because it uses two unexported symbols:
+On Thu, May 02, 2019 at 04:17:58PM +0200, Martin Schwidefsky wrote:
+> On Thu, 2 May 2019 14:21:28 +0200
+> Greg KH <gregkh@linuxfoundation.org> wrote:
+> 
+> > On Mon, Apr 15, 2019 at 09:17:10AM -0700, Linus Torvalds wrote:
+> > > On Sun, Apr 14, 2019 at 10:19 PM Christoph Hellwig <hch@infradead.org> wrote:  
+> > > >
+> > > > Can we please have the page refcount overflow fixes out on the list
+> > > > for review, even if it is after the fact?  
+> > > 
+> > > They were actually on a list for review long before the fact, but it
+> > > was the security mailing list. The issue actually got discussed back
+> > > in January along with early versions of the patches, but then we
+> > > dropped the ball because it just wasn't on anybody's radar and it got
+> > > resurrected late March. Willy wrote a rather bigger patch-series, and
+> > > review of that is what then resulted in those commits. So they may
+> > > look recent, but that's just because the original patches got
+> > > seriously edited down and rewritten.
+> > > 
+> > > That said, powerpc and s390 should at least look at maybe adding a
+> > > check for the page ref in their gup paths too. Powerpc has the special
+> > > gup_hugepte() case, and s390 has its own version of gup entirely. I
+> > > was actually hoping the s390 guys would look at using the generic gup
+> > > code.
+> > > 
+> > > I ruthlessly also entirely ignored MIPS, SH and sparc, since they seem
+> > > largely irrelevant, partly since even theoretically this whole issue
+> > > needs a _lot_ of memory.
+> > > 
+> > > Michael, Martin, see commit 6b3a70773630 ("Merge branch 'page-refs'
+> > > (page ref overflow)"). You may or may not really care.  
+> > 
+> > I've now queued these patches up for the next round of stable releases,
+> > as some people seem to care about these.
+> > 
+> > I didn't see any follow-on patches for s390 or ppc64 hit the tree for
+> > these changes, am I just missing them and should also queue up a few
+> > more to handle this issue on those platforms?
+> 
+> I fixed that with a different approach. The following two patches are
+> queued for the next merge window:
+> 
+> d1874a0c2805 "s390/mm: make the pxd_offset functions more robust"
+> 1a42010cdc26 "s390/mm: convert to the generic get_user_pages_fast code"
+> 
+> With these two s390 now uses the generic gup code in mm/gup.c
 
-  ERROR: ".pci_find_hose_for_OF_device" [drivers/edac/mpc85xx_edac_mod.ko] undefined!
-  ERROR: ".early_find_capability" [drivers/edac/mpc85xx_edac_mod.ko] undefined!
+Nice!  Do you want me to queue those up for the stable backports once
+they hit a public -rc release?
 
-We don't want to export those symbols just for this driver, so make
-the driver only configurable as a built-in.
+thanks,
 
-This seems to have been broken since at least commit c92132f59806
-("edac/85xx: Add PCIe error interrupt edac support") (Nov 2013).
-
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
----
- drivers/edac/Kconfig | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/drivers/edac/Kconfig b/drivers/edac/Kconfig
-index 47eb4d13ed5f..6317519f9d88 100644
---- a/drivers/edac/Kconfig
-+++ b/drivers/edac/Kconfig
-@@ -263,7 +263,7 @@ config EDAC_PND2
- 	  micro-server but may appear on others in the future.
- 
- config EDAC_MPC85XX
--	tristate "Freescale MPC83xx / MPC85xx"
-+	bool "Freescale MPC83xx / MPC85xx"
- 	depends on FSL_SOC
- 	help
- 	  Support for error detection and correction on the Freescale
--- 
-2.20.1
-
+greg k-h
