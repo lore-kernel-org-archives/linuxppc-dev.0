@@ -3,41 +3,40 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
 X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
-	autolearn=ham autolearn_force=no version=3.4.0
+	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_PASS autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DA60FC43219
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 May 2019 07:22:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 90D81C43219
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 May 2019 07:23:39 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 9126E20645
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 May 2019 07:22:22 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9126E20645
+	by mail.kernel.org (Postfix) with ESMTPS id 47E472075C
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 May 2019 07:23:39 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 47E472075C
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44wNqw3pzQzDqcV
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 May 2019 17:22:20 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44wNsP0YC9zDqbg
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 May 2019 17:23:37 +1000 (AEST)
 Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44wNKK1YfZzDqSJ
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44wNKK49VFzDqV3
  for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 May 2019 16:59:17 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 44wNKG2Hncz9sP9; Fri,  3 May 2019 16:59:14 +1000 (AEST)
+ id 44wNKH0Dw8z9s9y; Fri,  3 May 2019 16:59:14 +1000 (AEST)
 X-powerpc-patch-notification: thanks
-X-powerpc-patch-commit: 29b861ea7742e571c1940366944eabc24d612e98
+X-powerpc-patch-commit: 659a6e38db0b422c63fd68ca7e78a8daadca061e
 X-Patchwork-Hint: ignore
-In-Reply-To: <20190401061156.31366-1-joel@jms.id.au>
-To: Joel Stanley <joel@jms.id.au>, Michael Neuling <mikey@neuling.org>,
- linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <1554099639-11442-1-git-send-email-maddy@linux.vnet.ibm.com>
+To: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Subject: Re: [PATCH] Documentation: powerpc: Expand the DAWR acronym
-Message-Id: <44wNKG2Hncz9sP9@ozlabs.org>
+Subject: Re: [PATCH] powerpc/perf: Remove PM_BR_CMPL_ALT from power9 event list
+Message-Id: <44wNKH0Dw8z9s9y@ozlabs.org>
 Date: Fri,  3 May 2019 16:59:14 +1000 (AEST)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -50,19 +49,20 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-doc@vger.kernel.org
+Cc: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, 2019-04-01 at 06:11:56 UTC, Joel Stanley wrote:
-> Those not of us not drowning in POWER might not know what this means.
+On Mon, 2019-04-01 at 06:20:39 UTC, Madhavan Srinivasan wrote:
+> PM_BR_CMPL_ALT event is not supported and remove from the power9 event list
 > 
-> Signed-off-by: Joel Stanley <joel@jms.id.au>
-> Acked-by: Michael Neuling <mikey@neuling.org>
+> Fixes: 24bedcb7c811 ('powerpc/perf: Fix branch event code for power9')
+> Signed-off-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
 
 Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/29b861ea7742e571c1940366944eabc2
+https://git.kernel.org/powerpc/c/659a6e38db0b422c63fd68ca7e78a8da
 
 cheers
