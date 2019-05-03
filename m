@@ -6,38 +6,38 @@ X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_PASS autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D8D0AC43219
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 May 2019 07:29:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 89BD5C43219
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 May 2019 07:30:49 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 8BA8620B7C
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 May 2019 07:29:29 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8BA8620B7C
+	by mail.kernel.org (Postfix) with ESMTPS id 3EFA220B7C
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 May 2019 07:30:49 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3EFA220B7C
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44wP074VVCzDqVq
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 May 2019 17:29:27 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44wP1f5tLFzDqDM
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 May 2019 17:30:46 +1000 (AEST)
 Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44wNKM6RTbzDqTJ
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44wNKM6RNszDqSJ
  for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 May 2019 16:59:19 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 44wNKM3RTJz9s9y; Fri,  3 May 2019 16:59:19 +1000 (AEST)
+ id 44wNKK1Yp3z9sPG; Fri,  3 May 2019 16:59:16 +1000 (AEST)
 X-powerpc-patch-notification: thanks
-X-powerpc-patch-commit: 7ae3f6e130e8dc6188b59e3b4ebc2f16e9c8d053
+X-powerpc-patch-commit: e1619e89c96c596d72e66f15a0794f5001c8576e
 X-Patchwork-Hint: ignore
-In-Reply-To: <20190409044005.26446-1-npiggin@gmail.com>
-To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <20190403004926.6702-1-joel@jms.id.au>
+To: Joel Stanley <joel@jms.id.au>, linuxppc-dev@lists.ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Subject: Re: [PATCH v2] powerpc/watchdog: Use hrtimers for per-CPU heartbeat
-Message-Id: <44wNKM3RTJz9s9y@ozlabs.org>
-Date: Fri,  3 May 2019 16:59:19 +1000 (AEST)
+Subject: Re: [PATCH] powerpc: config: skiroot: Add (back) MLX5 ethernet support
+Message-Id: <44wNKK1Yp3z9sPG@ozlabs.org>
+Date: Fri,  3 May 2019 16:59:16 +1000 (AEST)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -49,33 +49,23 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "Gautham R . Shenoy" <ego@linux.vnet.ibm.com>,
- Ravikumar Bangoria <ravi.bangoria@in.ibm.com>,
- Nicholas Piggin <npiggin@gmail.com>
+Cc: Carol L Soto <clsoto@us.ibm.com>, Stewart Smith <stewart@linux.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, 2019-04-09 at 04:40:05 UTC, Nicholas Piggin wrote:
-> Using a jiffies timer creates a dependency on the tick_do_timer_cpu
-> incrementing jiffies. If that CPU has locked up and jiffies is not
-> incrementing, the watchdog heartbeat timer for all CPUs stops and
-> creates false positives and confusing warnings on local CPUs, and
-> also causes the SMP detector to stop, so the root cause is never
-> detected.
+On Wed, 2019-04-03 at 00:49:26 UTC, Joel Stanley wrote:
+> It turns out that some defconfig changes and kernel config option
+> changes meant we accidentally dropped Ethernet support for Mellanox CLX5
+> cards.
 > 
-> Fix this by using hrtimer based timers for the watchdog heartbeat,
-> like the generic kernel hardlockup detector.
-> 
-> Cc: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
-> Reported-by: Ravikumar Bangoria <ravi.bangoria@in.ibm.com>
-> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
-> Tested-by: Ravi Bangoria <ravi.bangoria@linux.ibm.com>
-> Reported-by: Ravi Bangoria <ravi.bangoria@linux.ibm.com>
-> Reviewed-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
+> Reported-by: Carol L Soto <clsoto@us.ibm.com>
+> Suggested-by: Carol L Soto <clsoto@us.ibm.com>
+> Signed-off-by: Stewart Smith <stewart@linux.ibm.com>
+> Signed-off-by: Joel Stanley <joel@jms.id.au>
 
 Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/7ae3f6e130e8dc6188b59e3b4ebc2f16
+https://git.kernel.org/powerpc/c/e1619e89c96c596d72e66f15a0794f50
 
 cheers
