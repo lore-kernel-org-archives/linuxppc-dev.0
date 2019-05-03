@@ -6,39 +6,41 @@ X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id ADA38C43219
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 May 2019 07:40:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B971FC43219
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 May 2019 07:42:12 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6691F205F4
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 May 2019 07:40:57 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6691F205F4
+	by mail.kernel.org (Postfix) with ESMTPS id 6F650205F4
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 May 2019 07:42:12 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6F650205F4
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44wPFM62LwzDqYp
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 May 2019 17:40:55 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+	by lists.ozlabs.org (Postfix) with ESMTP id 44wPGp4Wr7zDqNV
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 May 2019 17:42:10 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44wNKR24VPzDqSJ
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44wNKR6S6yzDqQB
  for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 May 2019 16:59:23 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 44wNKR0HMbz9sPG; Fri,  3 May 2019 16:59:22 +1000 (AEST)
+ id 44wNKR4m2Pz9sNC; Fri,  3 May 2019 16:59:23 +1000 (AEST)
 X-powerpc-patch-notification: thanks
-X-powerpc-patch-commit: 33dda8c32714c1a8f318450af4d1f9f123e2ed24
+X-powerpc-patch-commit: 5ba666d56c4ff9b011c1b029dcc689cff8b176fb
 X-Patchwork-Hint: ignore
-In-Reply-To: <20190423211116.261111-1-ndesaulniers@google.com>
-To: Nick Desaulniers <ndesaulniers@google.com>, benh@kernel.crashing.org,
- paulus@samba.org
+In-Reply-To: <3814377306ac3acdd404e2f23ff05dcf7e6bee26.1556202029.git.christophe.leroy@c-s.fr>
+To: Christophe Leroy <christophe.leroy@c-s.fr>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, aneesh.kumar@linux.ibm.com
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Subject: Re: [PATCH] powerpc: vdso: drop unnecessary cc-ldoption
-Message-Id: <44wNKR0HMbz9sPG@ozlabs.org>
-Date: Fri,  3 May 2019 16:59:22 +1000 (AEST)
+Subject: Re: [PATCH v2 01/11] powerpc/mm: fix erroneous duplicate
+ slb_addr_limit init
+Message-Id: <44wNKR4m2Pz9sNC@ozlabs.org>
+Date: Fri,  3 May 2019 16:59:23 +1000 (AEST)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -50,30 +52,26 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: clang-built-linux@googlegroups.com,
- Nick Desaulniers <ndesaulniers@google.com>, linux-kernel@vger.kernel.org,
- Nicholas Piggin <npiggin@gmail.com>,
- Masahiro Yamada <yamada.masahiro@socionext.com>,
- Andrew Donnellan <andrew.donnellan@au1.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- Dmitry Vyukov <dvyukov@google.com>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, 2019-04-23 at 21:11:14 UTC, Nick Desaulniers wrote:
-> Towards the goal of removing cc-ldoption, it seems that --hash-style=
-> was added to binutils 2.17.50.0.2 in 2006. The minimal required version
-> of binutils for the kernel according to
-> Documentation/process/changes.rst is 2.20.
+On Thu, 2019-04-25 at 14:29:27 UTC, Christophe Leroy wrote:
+> Commit 67fda38f0d68 ("powerpc/mm: Move slb_addr_linit to
+> early_init_mmu") moved slb_addr_limit init out of setup_arch().
 > 
-> Link: https://gcc.gnu.org/ml/gcc/2007-01/msg01141.html
-> Cc: clang-built-linux@googlegroups.com
-> Suggested-by: Masahiro Yamada <yamada.masahiro@socionext.com>
-> Signed-off-by: Nick Desaulniers <ndesaulniers@google.com>
-> Reviewed-by: Nicholas Piggin <npiggin@gmail.com>
+> Commit 701101865f5d ("powerpc/mm: Reduce memory usage for mm_context_t
+> for radix") brought it back into setup_arch() by error.
+> 
+> This patch reverts that erroneous regress.
+> 
+> Fixes: 701101865f5d ("powerpc/mm: Reduce memory usage for mm_context_t for radix")
+> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+> Reviewed-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
 
-Applied to powerpc next, thanks.
+Patches 1-10 applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/33dda8c32714c1a8f318450af4d1f9f1
+https://git.kernel.org/powerpc/c/5ba666d56c4ff9b011c1b029dcc689cf
 
 cheers
