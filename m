@@ -6,21 +6,21 @@ X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
 	SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 16CC9C43219
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 May 2019 06:43:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0BB04C43219
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 May 2019 06:44:40 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 8E4152075E
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 May 2019 06:43:18 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 7F3DF2075E
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 May 2019 06:44:39 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="QYIb4xuk"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8E4152075E
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="HsHHODId"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7F3DF2075E
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44wMyr0zk5zDqSR
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 May 2019 16:43:16 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44wN0Q0BfyzDqVn
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 May 2019 16:44:38 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=c-s.fr
  (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
@@ -28,54 +28,53 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="QYIb4xuk"; 
+ unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="HsHHODId"; 
  dkim-atps=neutral
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44wMvV1XpWzDqKD
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44wMvV2KGVzDqMt
  for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 May 2019 16:40:21 +1000 (AEST)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 44wMvP2gb7z9tyt1;
- Fri,  3 May 2019 08:40:17 +0200 (CEST)
+ by localhost (Postfix) with ESMTP id 44wMvM2rLhz9tysy;
+ Fri,  3 May 2019 08:40:15 +0200 (CEST)
 Authentication-Results: localhost; dkim=pass
  reason="1024-bit key; insecure key"
- header.d=c-s.fr header.i=@c-s.fr header.b=QYIb4xuk; dkim-adsp=pass;
+ header.d=c-s.fr header.i=@c-s.fr header.b=HsHHODId; dkim-adsp=pass;
  dkim-atps=neutral
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id kDtKsYuNxSjv; Fri,  3 May 2019 08:40:17 +0200 (CEST)
+ with ESMTP id vvdtxIvNJmBc; Fri,  3 May 2019 08:40:15 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 44wMvP1TTkz9tysx;
- Fri,  3 May 2019 08:40:17 +0200 (CEST)
+ by pegase1.c-s.fr (Postfix) with ESMTP id 44wMvM1ZWRz9tysx;
+ Fri,  3 May 2019 08:40:15 +0200 (CEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
- t=1556865617; bh=zJpKbWhCowhTRHfZ53KmsRJ1mIVebZ+JchC1KFAjbKo=;
- h=In-Reply-To:References:From:Subject:To:Cc:Date:From;
- b=QYIb4xukOtwgDVLs+pJZPTGbpVBeVlabgsshGCExJ05l3rCUJQAAdKDyTiwI800K9
- 4t4Ir0LGSIe9PyJlxTAlo1N3gL/9UbFUlIRAY78PmbyumTS5YzhJg9pkADSCuFkOuG
- FiPKc2bhdxPJgNsujo92s2hlRkj+WmSFALMgeAsk=
+ t=1556865615; bh=uLPrtweH4CCx8fAiUqOJnXMsdeqqXnJrBQBoFT6pz/c=;
+ h=From:Subject:To:Cc:Date:From;
+ b=HsHHODIde2UNb6QWfzPoakHMyO5mairHY3NTtUxLxjCTUJuvamLEODPs1/FqptsJN
+ zgyosbTChOU2cBSt1EbXvoVPBhQoZ2cX6Dxcv9JMlutXFLSBLdRpQjJLm/0sO6gBhB
+ RBRIyBziQEjCc/4S6eWEeMj+PvIv9qN5VvT7xXik=
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 1E22C8B7F9;
- Fri,  3 May 2019 08:40:18 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 1DBA08B7F9;
+ Fri,  3 May 2019 08:40:16 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id daFoRVdbv_D7; Fri,  3 May 2019 08:40:18 +0200 (CEST)
+ with ESMTP id mTT2tk3plnvV; Fri,  3 May 2019 08:40:16 +0200 (CEST)
 Received: from po16846vm.idsi0.si.c-s.fr (po15451.idsi0.si.c-s.fr
  [172.25.231.6])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id EFBF78B75A;
- Fri,  3 May 2019 08:40:17 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id E6AEA8B75A;
+ Fri,  3 May 2019 08:40:15 +0200 (CEST)
 Received: by po16846vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id E78DB66204; Fri,  3 May 2019 06:40:17 +0000 (UTC)
-Message-Id: <6fb61d1c9104b0324d4a9c445f431c0928c7ea25.1556865423.git.christophe.leroy@c-s.fr>
-In-Reply-To: <298f344bdb21ab566271f5d18c6782ed20f072b7.1556865423.git.christophe.leroy@c-s.fr>
-References: <298f344bdb21ab566271f5d18c6782ed20f072b7.1556865423.git.christophe.leroy@c-s.fr>
+ id DC92E66204; Fri,  3 May 2019 06:40:15 +0000 (UTC)
+Message-Id: <298f344bdb21ab566271f5d18c6782ed20f072b7.1556865423.git.christophe.leroy@c-s.fr>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v3 3/3] powerpc/module64: Use symbolic instructions names.
+Subject: [PATCH v3 1/3] powerpc: Move PPC_HA() PPC_HI() and PPC_LO() to
+ ppc-opcode.h
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Date: Fri,  3 May 2019 06:40:17 +0000 (UTC)
+Date: Fri,  3 May 2019 06:40:15 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -92,109 +91,54 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-To increase readability/maintainability, replace hard coded
-instructions values by symbolic names.
+PPC_HA() PPC_HI() and PPC_LO() macros are nice macros. Move them
+from module64.c to ppc-opcode.h in order to use them in other places.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
-v3: fixed warning by adding () in an 'if' around X | Y (unlike said in v2 history, this change was forgotten in v2)
-v2: rearranged comments
+v3: no change
+v2: no change
 
- arch/powerpc/kernel/module_64.c | 53 +++++++++++++++++++++++++++--------------
- 1 file changed, 35 insertions(+), 18 deletions(-)
+ arch/powerpc/include/asm/ppc-opcode.h | 7 +++++++
+ arch/powerpc/kernel/module_64.c       | 7 -------
+ 2 files changed, 7 insertions(+), 7 deletions(-)
 
+diff --git a/arch/powerpc/include/asm/ppc-opcode.h b/arch/powerpc/include/asm/ppc-opcode.h
+index 23f7ed796f38..c5ff44400d4d 100644
+--- a/arch/powerpc/include/asm/ppc-opcode.h
++++ b/arch/powerpc/include/asm/ppc-opcode.h
+@@ -412,6 +412,13 @@
+ #define __PPC_SPR(r)	((((r) & 0x1f) << 16) | ((((r) >> 5) & 0x1f) << 11))
+ #define __PPC_RC21	(0x1 << 10)
+ 
++/* Both low and high 16 bits are added as SIGNED additions, so if low
++   16 bits has high bit set, high 16 bits must be adjusted.  These
++   macros do that (stolen from binutils). */
++#define PPC_LO(v) ((v) & 0xffff)
++#define PPC_HI(v) (((v) >> 16) & 0xffff)
++#define PPC_HA(v) PPC_HI ((v) + 0x8000)
++
+ /*
+  * Only use the larx hint bit on 64bit CPUs. e500v1/v2 based CPUs will treat a
+  * larx with EH set as an illegal instruction.
 diff --git a/arch/powerpc/kernel/module_64.c b/arch/powerpc/kernel/module_64.c
-index c2e1b06253b8..b33a5d5e2d35 100644
+index 8661eea78503..c2e1b06253b8 100644
 --- a/arch/powerpc/kernel/module_64.c
 +++ b/arch/powerpc/kernel/module_64.c
-@@ -133,20 +133,27 @@ struct ppc64_stub_entry
-  * the stub, but it's significantly shorter to put these values at the
-  * end of the stub code, and patch the stub address (32-bits relative
-  * to the TOC ptr, r2) into the stub.
-+ *
-+ * addis   r11,r2, <high>
-+ * addi    r11,r11, <low>
-+ * std     r2,R2_STACK_OFFSET(r1)
-+ * ld      r12,32(r11)
-+ * ld      r2,40(r11)
-+ * mtctr   r12
-+ * bctr
-  */
+@@ -400,13 +400,6 @@ static inline unsigned long my_r2(const Elf64_Shdr *sechdrs, struct module *me)
+ 	return (sechdrs[me->arch.toc_section].sh_addr & ~0xfful) + 0x8000;
+ }
+ 
+-/* Both low and high 16 bits are added as SIGNED additions, so if low
+-   16 bits has high bit set, high 16 bits must be adjusted.  These
+-   macros do that (stolen from binutils). */
+-#define PPC_LO(v) ((v) & 0xffff)
+-#define PPC_HI(v) (((v) >> 16) & 0xffff)
+-#define PPC_HA(v) PPC_HI ((v) + 0x8000)
 -
- static u32 ppc64_stub_insns[] = {
--	0x3d620000,			/* addis   r11,r2, <high> */
--	0x396b0000,			/* addi    r11,r11, <low> */
-+	PPC_INST_ADDIS | __PPC_RT(R11) | __PPC_RA(R2),
-+	PPC_INST_ADDI | __PPC_RT(R11) | __PPC_RA(R11),
- 	/* Save current r2 value in magic place on the stack. */
--	0xf8410000|R2_STACK_OFFSET,	/* std     r2,R2_STACK_OFFSET(r1) */
--	0xe98b0020,			/* ld      r12,32(r11) */
-+	PPC_INST_STD | __PPC_RS(R2) | __PPC_RA(R1) | R2_STACK_OFFSET,
-+	PPC_INST_LD | __PPC_RT(R12) | __PPC_RA(R11) | 32,
- #ifdef PPC64_ELF_ABI_v1
- 	/* Set up new r2 from function descriptor */
--	0xe84b0028,			/* ld      r2,40(r11) */
-+	PPC_INST_LD | __PPC_RT(R2) | __PPC_RA(R11) | 40,
- #endif
--	0x7d8903a6,			/* mtctr   r12 */
--	0x4e800420			/* bctr */
-+	PPC_INST_MTCTR | __PPC_RS(R12),
-+	PPC_INST_BCTR,
- };
- 
- #ifdef CONFIG_DYNAMIC_FTRACE
-@@ -704,18 +711,21 @@ int apply_relocate_add(Elf64_Shdr *sechdrs,
- 		         *	ld r2, ...(r12)
- 			 *	add r2, r2, r12
- 			 */
--			if ((((uint32_t *)location)[0] & ~0xfffc)
--			    != 0xe84c0000)
-+			if ((((uint32_t *)location)[0] & ~0xfffc) !=
-+			    (PPC_INST_LD | __PPC_RT(R2) | __PPC_RA(R12)))
- 				break;
--			if (((uint32_t *)location)[1] != 0x7c426214)
-+			if (((uint32_t *)location)[1] !=
-+			    (PPC_INST_ADD | __PPC_RT(R2) | __PPC_RA(R2) | __PPC_RB(R12)))
- 				break;
- 			/*
- 			 * If found, replace it with:
- 			 *	addis r2, r12, (.TOC.-func)@ha
- 			 *	addi r2, r12, (.TOC.-func)@l
- 			 */
--			((uint32_t *)location)[0] = 0x3c4c0000 + PPC_HA(value);
--			((uint32_t *)location)[1] = 0x38420000 + PPC_LO(value);
-+			((uint32_t *)location)[0] = PPC_INST_ADDIS | __PPC_RT(R2) |
-+						    __PPC_RA(R12) | PPC_HA(value);
-+			((uint32_t *)location)[1] = PPC_INST_ADDI | __PPC_RT(R2) |
-+						    __PPC_RA(R12) | PPC_LO(value);
- 			break;
- 
- 		case R_PPC64_REL16_HA:
-@@ -769,12 +779,19 @@ static unsigned long create_ftrace_stub(const Elf64_Shdr *sechdrs,
- {
- 	struct ppc64_stub_entry *entry;
- 	unsigned int i, num_stubs;
-+	/*
-+	 * ld      r12,PACATOC(r13)
-+	 * addis   r12,r12,<high>
-+	 * addi    r12,r12,<low>
-+	 * mtctr   r12
-+	 * bctr
-+	 */
- 	static u32 stub_insns[] = {
--		0xe98d0000 | PACATOC, 	/* ld      r12,PACATOC(r13)	*/
--		0x3d8c0000,		/* addis   r12,r12,<high>	*/
--		0x398c0000, 		/* addi    r12,r12,<low>	*/
--		0x7d8903a6, 		/* mtctr   r12			*/
--		0x4e800420, 		/* bctr				*/
-+		PPC_INST_LD | __PPC_RT(R12) | __PPC_RA(R13) | PACATOC,
-+		PPC_INST_ADDIS | __PPC_RT(R12) | __PPC_RA(R12),
-+		PPC_INST_ADDI | __PPC_RT(R12) | __PPC_RA(R12),
-+		PPC_INST_MTCTR | __PPC_RS(R12),
-+		PPC_INST_BCTR,
- 	};
- 	long reladdr;
- 
+ /* Patch stub to reference function and correct r2 value. */
+ static inline int create_stub(const Elf64_Shdr *sechdrs,
+ 			      struct ppc64_stub_entry *entry,
 -- 
 2.13.3
 
