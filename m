@@ -2,94 +2,64 @@ Return-Path: <SRS0=37tr=TD=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_PASS,UNPARSEABLE_RELAY,USER_AGENT_MUTT autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-4.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 12E71C43219
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 May 2019 13:19:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 31444C43219
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 May 2019 13:33:40 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 486A72070B
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 May 2019 13:19:13 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=oracle.com header.i=@oracle.com header.b="MkgAYKJi"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 486A72070B
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=oracle.com
+	by mail.kernel.org (Postfix) with ESMTPS id D25FF2075E
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 May 2019 13:33:39 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D25FF2075E
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arndb.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44wXlg0cx2zDqlX
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 May 2019 23:19:11 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44wY4K0xkWzDqlg
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 May 2019 23:33:37 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=oracle.com
- (client-ip=141.146.126.79; helo=aserp2130.oracle.com;
- envelope-from=dan.carpenter@oracle.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=gmail.com
+ (client-ip=209.85.160.194; helo=mail-qt1-f194.google.com;
+ envelope-from=arndbergmann@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=oracle.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=oracle.com header.i=@oracle.com header.b="MkgAYKJi"; 
- dkim-atps=neutral
-Received: from aserp2130.oracle.com (aserp2130.oracle.com [141.146.126.79])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ dmarc=none (p=none dis=none) header.from=arndb.de
+Received: from mail-qt1-f194.google.com (mail-qt1-f194.google.com
+ [209.85.160.194])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44wXh6111pzDqjV
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 May 2019 23:16:05 +1000 (AEST)
-Received: from pps.filterd (aserp2130.oracle.com [127.0.0.1])
- by aserp2130.oracle.com (8.16.0.27/8.16.0.27) with SMTP id x43DE9Z8139285;
- Fri, 3 May 2019 13:16:02 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com;
- h=date : from : to : cc
- : subject : message-id : mime-version : content-type; s=corp-2018-07-02;
- bh=LKoaRH4hte2H2gUAeE/hBpDseBARYBBMupgVpZ6MJsg=;
- b=MkgAYKJii7S3MkefBB4xrK2gBNOYc2R8NlKIkGKDg0i1qDnor9mBZ/NFRYV0F/S6wWbE
- pwsBeHSIVV5FsRC4R3Mchrix2xfqRu2ejBDsZkhZm3or1XLbSpmoTQZP+86DUcFHvOq6
- yUYGJResPYpZ23kSIKLJA9yvcF7q8xXT/U7wBgBeQ+WhuR1kj10UGoEvJIsrzeCYTvjh
- TAdkroV/qGIalovgXNLOkIKPBBZx2AkCZVDeKe9GnUjapZbSX54KbzQoUiKdkwj9sONO
- DtEm0e0irdQ11NpDQAipfua8Y48BjLVWeRdtgqkNzqR+yof7dmEKdi4fyToluYLdYmMY Zg== 
-Received: from aserp3030.oracle.com (aserp3030.oracle.com [141.146.126.71])
- by aserp2130.oracle.com with ESMTP id 2s6xhypn1p-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Fri, 03 May 2019 13:16:02 +0000
-Received: from pps.filterd (aserp3030.oracle.com [127.0.0.1])
- by aserp3030.oracle.com (8.16.0.27/8.16.0.27) with SMTP id x43DEvYZ173502;
- Fri, 3 May 2019 13:16:01 GMT
-Received: from userv0121.oracle.com (userv0121.oracle.com [156.151.31.72])
- by aserp3030.oracle.com with ESMTP id 2s7rtc9efj-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Fri, 03 May 2019 13:16:01 +0000
-Received: from abhmp0019.oracle.com (abhmp0019.oracle.com [141.146.116.25])
- by userv0121.oracle.com (8.14.4/8.13.8) with ESMTP id x43DFx3b006657;
- Fri, 3 May 2019 13:16:00 GMT
-Received: from mwanda (/196.104.111.181)
- by default (Oracle Beehive Gateway v4.0)
- with ESMTP ; Fri, 03 May 2019 06:15:59 -0700
-Date: Fri, 3 May 2019 16:15:51 +0300
-From: Dan Carpenter <dan.carpenter@oracle.com>
-To: Qiang Zhao <qiang.zhao@nxp.com>, Grant Likely <grant.likely@secretlab.ca>
-Subject: [PATCH] soc: fsl: qe: gpio: Fix an error code in qe_pin_request()
-Message-ID: <20190503131551.GB1236@mwanda>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44wXzm03mCzDqhn
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 May 2019 23:29:39 +1000 (AEST)
+Received: by mail-qt1-f194.google.com with SMTP id c13so6621515qtn.8
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 03 May 2019 06:29:39 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+ :message-id:subject:to:cc;
+ bh=Fk5GUwth5BvvK8Eer/x9OS3rdg8YnckRm3ge9ViV+sM=;
+ b=HficPYt7p+oErZH9DbVYaGxzAdc2XhMZne8c+PBEJOPRuILneY3sB1wcHwmm7+2kQU
+ r7pRjd/g8pv09ALDQz+nGz+lqc4aSvXgRkR2x39wQaXYpvZsl50HLDHNRhPRXjM8hV4f
+ Bdr4KO7t8jLrS9oqx0+bE1i92XulSrt5Iz87oJS07I+jLt8pWA1cSwSgEx4Toe/AHXtl
+ mzqI10w8qyyZtyQlqnW7jyTQcesc3SWeJXLQfVW1RL2DPuptIoul2ieUu6roq6MOk9vm
+ HyrNKAAdZE8M1Tz8sRtgKyIfHtGuct5yPme1I5n0soaPxkptEnQR12qTyv4dT08z3Lp9
+ +5ZA==
+X-Gm-Message-State: APjAAAXap7Fu6XH/SC22icJkfZ5NzCnnTPwvCPKL1rT7JZUc9D8mllqL
+ Tjz6D999HihUK60xwSgUtwdomdMZwvHgJhc0MOU=
+X-Google-Smtp-Source: APXvYqw8ksabgFtpp8q3N/HfcPgRVYjc/VIhVGxEo5Nm6nyf24/EmnBpzo4QPweVmQKnq4DCKvnFaYM9qsG1Qqd+NVU=
+X-Received: by 2002:a0c:89c8:: with SMTP id 8mr8014801qvs.149.1556890176895;
+ Fri, 03 May 2019 06:29:36 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-X-Mailer: git-send-email haha only kidding
-User-Agent: Mutt/1.10.1 (2018-07-13)
-X-Proofpoint-Virus-Version: vendor=nai engine=5900 definitions=9245
- signatures=668685
-X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 suspectscore=0
- malwarescore=0
- phishscore=0 bulkscore=0 spamscore=0 mlxscore=0 mlxlogscore=999
- adultscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.0.1-1810050000 definitions=main-1905030083
-X-Proofpoint-Virus-Version: vendor=nai engine=5900 definitions=9245
- signatures=668685
-X-Proofpoint-Spam-Details: rule=notspam policy=default score=0
- priorityscore=1501 malwarescore=0
- suspectscore=0 phishscore=0 bulkscore=0 spamscore=0 clxscore=1011
- lowpriorityscore=0 mlxscore=0 impostorscore=0 mlxlogscore=999 adultscore=0
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.0.1-1810050000
- definitions=main-1905030083
+References: <20190501173943.5688-1-hch@lst.de>
+ <20190501173943.5688-6-hch@lst.de>
+In-Reply-To: <20190501173943.5688-6-hch@lst.de>
+From: Arnd Bergmann <arnd@arndb.de>
+Date: Fri, 3 May 2019 09:29:20 -0400
+Message-ID: <CAK8P3a2-bFU=2Pmva9qj06JQ44MAW_D-Jaf_0fSExYm1yM8dtQ@mail.gmail.com>
+Subject: Re: [PATCH 5/5] asm-generic: remove ptrace.h
+To: Christoph Hellwig <hch@lst.de>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -101,38 +71,20 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: kernel-janitors@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- Li Yang <leoyang.li@nxp.com>
+Cc: linux-arch <linux-arch@vger.kernel.org>,
+ Linux-sh list <linux-sh@vger.kernel.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ the arch/x86 maintainers <x86@kernel.org>, Oleg Nesterov <oleg@redhat.com>,
+ linux-mips@vger.kernel.org, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Linux ARM <linux-arm-kernel@lists.infradead.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-There was a missing error code in this path.  It meant that we returned
-ERR_PTR(0) which is NULL and would result in a NULL dereference in the
-caller.
+On Wed, May 1, 2019 at 1:40 PM Christoph Hellwig <hch@lst.de> wrote:
+>
+> No one is using this helper anymore.
+>
+> Signed-off-by: Christoph Hellwig <hch@lst.de>
 
-Fixes: 1a2d397a6eb5 ("gpio/powerpc: Eliminate duplication of of_get_named_gpio_flags()")
-Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
----
- drivers/soc/fsl/qe/gpio.c | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
-
-diff --git a/drivers/soc/fsl/qe/gpio.c b/drivers/soc/fsl/qe/gpio.c
-index 819bed0f5667..51b3a47b5a55 100644
---- a/drivers/soc/fsl/qe/gpio.c
-+++ b/drivers/soc/fsl/qe/gpio.c
-@@ -179,8 +179,10 @@ struct qe_pin *qe_pin_request(struct device_node *np, int index)
- 	if (err < 0)
- 		goto err0;
- 	gc = gpio_to_chip(err);
--	if (WARN_ON(!gc))
-+	if (WARN_ON(!gc)) {
-+		err = -ENODEV;
- 		goto err0;
-+	}
- 
- 	if (!of_device_is_compatible(gc->of_node, "fsl,mpc8323-qe-pario-bank")) {
- 		pr_debug("%s: tried to get a non-qe pin\n", __func__);
--- 
-2.18.0
-
+Acked-by: Arnd Bergmann <arnd@arndb.de>
