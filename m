@@ -2,71 +2,80 @@ Return-Path: <SRS0=37tr=TD=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_MUTT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C1E13C04AAA
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 May 2019 06:19:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0CA25C43219
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 May 2019 06:41:49 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 4630E2133F
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 May 2019 06:19:08 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 46DDB2075E
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 May 2019 06:41:48 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=sirena.org.uk header.i=@sirena.org.uk header.b="jkvoYfxS"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4630E2133F
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="pmW8T7OK"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 46DDB2075E
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44wMQx2wcgzDqC0
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 May 2019 16:19:05 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44wMx56sRmzDqWy
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 May 2019 16:41:45 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=sirena.org.uk
- (client-ip=2a01:7e01::f03c:91ff:fed4:a3b6; helo=heliosphere.sirena.org.uk;
- envelope-from=broonie@sirena.org.uk; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=c-s.fr
+ (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=fail (p=none dis=none) header.from=kernel.org
+ dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=sirena.org.uk header.i=@sirena.org.uk
- header.b="jkvoYfxS"; dkim-atps=neutral
-Received: from heliosphere.sirena.org.uk (heliosphere.sirena.org.uk
- [IPv6:2a01:7e01::f03c:91ff:fed4:a3b6])
+ unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="pmW8T7OK"; 
+ dkim-atps=neutral
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44wMPL407jzDq7F
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 May 2019 16:17:40 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
- d=sirena.org.uk; s=20170815-heliosphere; h=In-Reply-To:Content-Type:
- MIME-Version:References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
- Content-Transfer-Encoding:Content-ID:Content-Description:Resent-Date:
- Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:
- List-Help:List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
- bh=5vEsn3t0K5FrUDpqgBN9YEaqzn044x2H/vNzN5bOsSA=; b=jkvoYfxSRYUtsrQF/SohdXboz
- LNRNw18UJAMAdf4Pi8lnV9aYdCMRMVl4UClh3xD0l34qM8EdZin1Nu1FUc7jV66JOaTebvLSZtlfk
- HQvhnVfItGdyPFE6uwngD70qLFVvtaXDQ+kXCqCrIGGpdhfCBNVZM7fZ4qvxcQtRxcO1I=;
-Received: from [42.29.24.106] (helo=finisterre.ee.mobilebroadband)
- by heliosphere.sirena.org.uk with esmtpsa
- (TLS1.2:ECDHE_RSA_AES_256_GCM_SHA384:256) (Exim 4.89)
- (envelope-from <broonie@sirena.org.uk>)
- id 1hMRVi-0000TX-AZ; Fri, 03 May 2019 06:17:30 +0000
-Received: by finisterre.ee.mobilebroadband (Postfix, from userid 1000)
- id D198A441D3C; Fri,  3 May 2019 07:17:25 +0100 (BST)
-Date: Fri, 3 May 2019 15:17:25 +0900
-From: Mark Brown <broonie@kernel.org>
-To: "S.j. Wang" <shengjiu.wang@nxp.com>
-Subject: Re: [PATCH V6 1/3] ASoC: fsl_asrc: Fix the issue about unsupported
- rate
-Message-ID: <20190503061725.GA5107@sirena.org.uk>
-References: <cover.1555908545.git.shengjiu.wang@nxp.com>
- <2cea4cb992a445863e88fa7865f55a02a83e031e.1555908545.git.shengjiu.wang@nxp.com>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
- protocol="application/pgp-signature"; boundary="k+w/mQv8wyuph6w0"
-Content-Disposition: inline
-In-Reply-To: <2cea4cb992a445863e88fa7865f55a02a83e031e.1555908545.git.shengjiu.wang@nxp.com>
-X-Cookie: All true wisdom is found on T-shirts.
-User-Agent: Mutt/1.10.1 (2018-07-13)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44wMvV1XfjzDqJl
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 May 2019 16:40:21 +1000 (AEST)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 44wMvN2QSJz9tyt0;
+ Fri,  3 May 2019 08:40:16 +0200 (CEST)
+Authentication-Results: localhost; dkim=pass
+ reason="1024-bit key; insecure key"
+ header.d=c-s.fr header.i=@c-s.fr header.b=pmW8T7OK; dkim-adsp=pass;
+ dkim-atps=neutral
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id wCtPh53GZE7D; Fri,  3 May 2019 08:40:16 +0200 (CEST)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 44wMvN1Csdz9tysx;
+ Fri,  3 May 2019 08:40:16 +0200 (CEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
+ t=1556865616; bh=ErZY6f2nbUnrR9LqRl87fClAqCNURuX08D5DzZWi5Nw=;
+ h=In-Reply-To:References:From:Subject:To:Cc:Date:From;
+ b=pmW8T7OKkjWoSTTSmyNynz8pHy31B7/9nU6N548EhvrtsorMvoRyK5zllKzi8oolU
+ UrXBX4LRvEJg45MhFRBV8L6yTuk84OywZDMh1U9s4fXOMc+i+HccHunTjIPoOXomlv
+ WX/lkuSYwGdp5VrlhWEGNGiWrp3UjZAyv6ixDa9E=
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 13B078B7F9;
+ Fri,  3 May 2019 08:40:17 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id RkhyRCXMLTaB; Fri,  3 May 2019 08:40:17 +0200 (CEST)
+Received: from po16846vm.idsi0.si.c-s.fr (po15451.idsi0.si.c-s.fr
+ [172.25.231.6])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id EAD288B75A;
+ Fri,  3 May 2019 08:40:16 +0200 (CEST)
+Received: by po16846vm.idsi0.si.c-s.fr (Postfix, from userid 0)
+ id E3BA566204; Fri,  3 May 2019 06:40:16 +0000 (UTC)
+Message-Id: <b4c832e13b2e14c8f140644b9d0eadac1928675f.1556865423.git.christophe.leroy@c-s.fr>
+In-Reply-To: <298f344bdb21ab566271f5d18c6782ed20f072b7.1556865423.git.christophe.leroy@c-s.fr>
+References: <298f344bdb21ab566271f5d18c6782ed20f072b7.1556865423.git.christophe.leroy@c-s.fr>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Subject: [PATCH v3 2/3] powerpc/module32: Use symbolic instructions names.
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
+Date: Fri,  3 May 2019 06:40:16 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -78,55 +87,64 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
- "timur@kernel.org" <timur@kernel.org>,
- "Xiubo.Lee@gmail.com" <Xiubo.Lee@gmail.com>,
- "festevam@gmail.com" <festevam@gmail.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "nicoleotsuka@gmail.com" <nicoleotsuka@gmail.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+To increase readability/maintainability, replace hard coded
+instructions values by symbolic names.
 
---k+w/mQv8wyuph6w0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+---
+v3: no change
+v2: Remove the ENTRY_JMP0 and ENTRY_JMP1 macros ; left real instructions as a comment.
 
-On Mon, Apr 22, 2019 at 04:52:02AM +0000, S.j. Wang wrote:
-> When the output sample rate is [8kHz, 30kHz], the limitation
-> of the supported ratio range is [1/24, 8]. In the driver
-> we use (8kHz, 30kHz) instead of [8kHz, 30kHz].
-> So this patch is to fix this issue and the potential rounding
-> issue with divider.
->=20
-None of this series applies either, with similar error messages:
+ arch/powerpc/kernel/module_32.c | 24 ++++++++++++++++--------
+ 1 file changed, 16 insertions(+), 8 deletions(-)
 
-Applying: ASoC: fsl_asrc: Fix the issue about unsupported rate
-Using index info to reconstruct a base tree...
-error: patch failed: sound/soc/fsl/fsl_asrc.c:282
-error: sound/soc/fsl/fsl_asrc.c: patch does not apply
-error: Did you hand edit your patch?
-It does not apply to blobs recorded in its index.
+diff --git a/arch/powerpc/kernel/module_32.c b/arch/powerpc/kernel/module_32.c
+index 88d83771f462..9cf201111d6c 100644
+--- a/arch/powerpc/kernel/module_32.c
++++ b/arch/powerpc/kernel/module_32.c
+@@ -172,10 +172,12 @@ int module_frob_arch_sections(Elf32_Ehdr *hdr,
+ 
+ static inline int entry_matches(struct ppc_plt_entry *entry, Elf32_Addr val)
+ {
+-	if (entry->jump[0] == 0x3d800000 + ((val + 0x8000) >> 16)
+-	    && entry->jump[1] == 0x398c0000 + (val & 0xffff))
+-		return 1;
+-	return 0;
++	if (entry->jump[0] != (PPC_INST_ADDIS | __PPC_RT(R12) | PPC_HA(val)))
++		return 0;
++	if (entry->jump[1] != (PPC_INST_ADDI | __PPC_RT(R12) | __PPC_RA(R12) |
++			       PPC_LO(val)))
++		return 0;
++	return 1;
+ }
+ 
+ /* Set up a trampoline in the PLT to bounce us to the distant function */
+@@ -200,10 +202,16 @@ static uint32_t do_plt_call(void *location,
+ 		entry++;
+ 	}
+ 
+-	entry->jump[0] = 0x3d800000+((val+0x8000)>>16); /* lis r12,sym@ha */
+-	entry->jump[1] = 0x398c0000 + (val&0xffff);     /* addi r12,r12,sym@l*/
+-	entry->jump[2] = 0x7d8903a6;                    /* mtctr r12 */
+-	entry->jump[3] = 0x4e800420;			/* bctr */
++	/*
++	 * lis r12, sym@ha
++	 * addi r12, r12, sym@l
++	 * mtctr r12
++	 * bctr
++	 */
++	entry->jump[0] = PPC_INST_ADDIS | __PPC_RT(R12) | PPC_HA(val);
++	entry->jump[1] = PPC_INST_ADDI | __PPC_RT(R12) | __PPC_RA(R12) | PPC_LO(val);
++	entry->jump[2] = PPC_INST_MTCTR | __PPC_RS(R12);
++	entry->jump[3] = PPC_INST_BCTR;
+ 
+ 	pr_debug("Initialized plt for 0x%x at %p\n", val, entry);
+ 	return (uint32_t)entry;
+-- 
+2.13.3
 
-(I get the same error message for your PM patch when applying without
-using patchwork as my main workflow does.)
-
---k+w/mQv8wyuph6w0
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQEzBAABCgAdFiEEreZoqmdXGLWf4p/qJNaLcl1Uh9AFAlzL3PUACgkQJNaLcl1U
-h9AuFwf9GU1mu4UAbguaCvzQD7KN7UOFPnMm2fjMErvpmxgq/cV7aFQEJv6Kc9Z6
-A2/l/TYJ+iNoJ01SPYwRKqw63mJmthjOsikQzaH3VISq6kF09ENT35Z4U1r8zOkb
-6IbPno6mpS6rBk0ckEJ7TLf4dl9zDh4djeaGWVK8MFX+D2eW86vfn0qNSWVCO55O
-p46Qvf2iwJJyc9HVx1AR8hJFAtadOWlmfPYUbUJ0DIJpAzT1aCFtoIGqj2Ef40hl
-YMo9B11fGc9xoae/INeoJIAOInjLKeS/Pm0n4N5FJpPeke/b13n0bDJ7EuHOy+td
-YCXUiBuuUhxXCy372VZHevRq1JK7hw==
-=B7sO
------END PGP SIGNATURE-----
-
---k+w/mQv8wyuph6w0--
