@@ -4,40 +4,41 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
-	autolearn=ham autolearn_force=no version=3.4.0
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C17A0C43219
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 May 2019 06:51:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9E1C6C43219
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 May 2019 06:52:45 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 79C4A2075E
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 May 2019 06:51:31 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 79C4A2075E
+	by mail.kernel.org (Postfix) with ESMTPS id 547F8205C9
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 May 2019 06:52:45 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 547F8205C9
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44wN8K14VpzDqV6
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 May 2019 16:51:29 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44wN9l3Q70zDqXR
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 May 2019 16:52:43 +1000 (AEST)
 Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44wN6g18JCzDqP1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44wN6g2BMpzDqPC
  for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 May 2019 16:50:03 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 44wN6f6dqYz9sB8; Fri,  3 May 2019 16:50:02 +1000 (AEST)
+ id 44wN6g1QrVz9sBb; Fri,  3 May 2019 16:50:03 +1000 (AEST)
 X-powerpc-patch-notification: thanks
-X-powerpc-patch-commit: c1fe190c06723322f2dfac31d3b982c581e434ef
+X-powerpc-patch-commit: 88ec6b93c8e7d6d4ffaf6ad6395ceb3bf552de15
 X-Patchwork-Hint: ignore
-In-Reply-To: <20190401060312.22670-1-mikey@neuling.org>
-To: Michael Neuling <mikey@neuling.org>
+In-Reply-To: <20190410170448.3923-2-clg@kaod.org>
+To: =?utf-8?q?C=C3=A9dric_Le_Goater?= <clg@kaod.org>, kvm-ppc@vger.kernel.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Subject: Re: [PATCH v2] powerpc: Add force enable of DAWR on P9 option
-Message-Id: <44wN6f6dqYz9sB8@ozlabs.org>
-Date: Fri,  3 May 2019 16:50:02 +1000 (AEST)
+Subject: Re: [PATCH v5 01/16] powerpc/xive: add OPAL extensions for the XIVE
+ native exploitation support
+Message-Id: <44wN6g1QrVz9sBb@ozlabs.org>
+Date: Fri,  3 May 2019 16:50:03 +1000 (AEST)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -49,49 +50,23 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: mikey@neuling.org, linuxppc-dev@lists.ozlabs.org,
- Cameron Kaiser <spectre@floodgap.com>
+Cc: linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>,
+ =?utf-8?b?Q8Op?= =?utf-8?q?dric_Le_Goater?= <clg@kaod.org>,
+ kvm@vger.kernel.org, David Gibson <david@gibson.dropbear.id.au>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, 2019-04-01 at 06:03:12 UTC, Michael Neuling wrote:
-> This adds a flag so that the DAWR can be enabled on P9 via:
->   echo Y > /sys/kernel/debug/powerpc/dawr_enable_dangerous
+On Wed, 2019-04-10 at 17:04:33 UTC, =?utf-8?q?C=C3=A9dric_Le_Goater?= wrote:
+> The support for XIVE native exploitation mode in Linux/KVM needs a
+> couple more OPAL calls to get and set the state of the XIVE internal
+> structures being used by a sPAPR guest.
 > 
-> The DAWR was previously force disabled on POWER9 in:
->   9654153158 powerpc: Disable DAWR in the base POWER9 CPU features
-> Also see Documentation/powerpc/DAWR-POWER9.txt
-> 
-> This is a dangerous setting, USE AT YOUR OWN RISK.
-> 
-> Some users may not care about a bad user crashing their box
-> (ie. single user/desktop systems) and really want the DAWR.  This
-> allows them to force enable DAWR.
-> 
-> This flag can also be used to disable DAWR access. Once this is
-> cleared, all DAWR access should be cleared immediately and your
-> machine once again safe from crashing.
-> 
-> Userspace may get confused by toggling this. If DAWR is force
-> enabled/disabled between getting the number of breakpoints (via
-> PTRACE_GETHWDBGINFO) and setting the breakpoint, userspace will get an
-> inconsistent view of what's available. Similarly for guests.
-> 
-> For the DAWR to be enabled in a KVM guest, the DAWR needs to be force
-> enabled in the host AND the guest. For this reason, this won't work on
-> POWERVM as it doesn't allow the HCALL to work. Writes of 'Y' to the
-> dawr_enable_dangerous file will fail if the hypervisor doesn't support
-> writing the DAWR.
-> 
-> To double check the DAWR is working, run this kernel selftest:
->   tools/testing/selftests/powerpc/ptrace/ptrace-hwbreak.c
-> Any errors/failures/skips mean something is wrong.
-> 
-> Signed-off-by: Michael Neuling <mikey@neuling.org>
+> Signed-off-by: Céddric Le Goater <clg@kaod.org>
+> Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
 
 Applied to powerpc topic/ppc-kvm, thanks.
 
-https://git.kernel.org/powerpc/c/c1fe190c06723322f2dfac31d3b982c5
+https://git.kernel.org/powerpc/c/88ec6b93c8e7d6d4ffaf6ad6395ceb3b
 
 cheers
