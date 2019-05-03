@@ -2,98 +2,71 @@ Return-Path: <SRS0=37tr=TD=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_PASS,USER_AGENT_MUTT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BEA38C43219
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 May 2019 00:56:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E5FC8C43219
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 May 2019 04:29:29 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3338A2070B
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 May 2019 00:56:48 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id EA5CC2075C
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 May 2019 04:29:28 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=russell.cc header.i=@russell.cc header.b="mcqoaD00";
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b="4JAy1yuV"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3338A2070B
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=russell.cc
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=sirena.org.uk header.i=@sirena.org.uk header.b="kSYuTYG+"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EA5CC2075C
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44wDH21M0gzDqWh
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 May 2019 10:56:46 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44wK0Q32L7zDqSJ
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 May 2019 14:29:26 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=russell.cc
- (client-ip=64.147.123.25; helo=wout2-smtp.messagingengine.com;
- envelope-from=ruscur@russell.cc; receiver=<UNKNOWN>)
+ spf=none (mailfrom) smtp.mailfrom=sirena.org.uk
+ (client-ip=2a01:7e01::f03c:91ff:fed4:a3b6; helo=heliosphere.sirena.org.uk;
+ envelope-from=broonie@sirena.org.uk; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=russell.cc
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=russell.cc header.i=@russell.cc header.b="mcqoaD00"; 
- dkim=pass (2048-bit key;
- unprotected) header.d=messagingengine.com header.i=@messagingengine.com
- header.b="4JAy1yuV"; dkim-atps=neutral
-Received: from wout2-smtp.messagingengine.com (wout2-smtp.messagingengine.com
- [64.147.123.25])
+ dmarc=fail (p=none dis=none) header.from=kernel.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=sirena.org.uk header.i=@sirena.org.uk
+ header.b="kSYuTYG+"; dkim-atps=neutral
+Received: from heliosphere.sirena.org.uk (heliosphere.sirena.org.uk
+ [IPv6:2a01:7e01::f03c:91ff:fed4:a3b6])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44wDFR1q1FzDqLB
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 May 2019 10:55:23 +1000 (AEST)
-Received: from compute6.internal (compute6.nyi.internal [10.202.2.46])
- by mailout.west.internal (Postfix) with ESMTP id A151F5A7;
- Thu,  2 May 2019 20:55:20 -0400 (EDT)
-Received: from mailfrontend2 ([10.202.2.163])
- by compute6.internal (MEProxy); Thu, 02 May 2019 20:55:20 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=russell.cc; h=
- message-id:subject:from:to:cc:date:in-reply-to:references
- :content-type:mime-version:content-transfer-encoding; s=fm1; bh=
- UEIQv5LWUL+GdzdBZmIUWxKe8JPzQq56Ac0tlzTHnmo=; b=mcqoaD00l8Bq5jg9
- c8/pGIJXC4LbJgoP/uNi9ugl5TmECbHjDCoQrrtOWOaPAzrPjVM0h3Gp4l0FWVaZ
- noTOpwY21mXM+SgIsPY4jRDAzFAFI9I9LjvkA7JuWI252QfPhznb7mfI2A7T58kB
- mTnejxJDVv3DMbL6/vvUm6Eab1lDACqzukXwXfCBXWzbbysrUMEphSEZOUlAAmzq
- E/KEx+syH+lB6x9a3Ivo5eYSKI4K2vatwIWK2C6lYcG+kszHs5Bewbq5uGK8ab8i
- 2AigP6tzBBo8gfk1bvF7Lh/FqF/EU4ESvXU1xrlSRF5ijhZKyBCg+RCnaJoJpW+K
- 2kHxZw==
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
- messagingengine.com; h=cc:content-transfer-encoding:content-type
- :date:from:in-reply-to:message-id:mime-version:references
- :subject:to:x-me-proxy:x-me-proxy:x-me-sender:x-me-sender
- :x-sasl-enc; s=fm2; bh=UEIQv5LWUL+GdzdBZmIUWxKe8JPzQq56Ac0tlzTHn
- mo=; b=4JAy1yuV7+ziviIt7hM1Zsc+bpr5Nei9inJKjIPAWz9/eZNDKiT1o60P1
- GXCPAnI8P2mufJRGwsnu+LDrTYTFZPcWQvFtQxup7jaPAGxerPCTTPe7nJFM/QSb
- zLae9PVfMjk8UXt7t3z3gk512zBCjt+OIGlnkZvlHf5HTtijjeVVADx7ppIE9mGW
- CQiNwNOpurVQkV40Jf4eSVjGFMpUFBWuBQNffMsZgsS7HcwFGYpXKDborIS8dVpI
- s40M16mzoHf5SBGpY9s8Qd26qFSEaupctHEGcT4z+uc+D7bb5GjRu0v31j66MKl9
- f/4DGanTWzV2r9ZAi/njooGGZO0+A==
-X-ME-Sender: <xms:d5HLXGm9iAzGeXRxMNExnBvs2PKhlhmMHj4A3aZ-4fjvt2aV0ARW5g>
-X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgeduuddrjedtgdegtdcutefuodetggdotefrodftvf
- curfhrohhfihhlvgemucfhrghsthforghilhdpqfgfvfdpuffrtefokffrpgfnqfghnecu
- uegrihhlohhuthemuceftddtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenfg
- hrlhcuvffnffculdeftddmnecujfgurhepkffuhffvffgjfhgtfggggfesthejredttder
- jeenucfhrhhomheptfhushhsvghllhcuvehurhhrvgihuceorhhushgtuhhrsehruhhssh
- gvlhhlrdgttgeqnecukfhppeduvddvrdelledrkedvrddutdenucfrrghrrghmpehmrghi
- lhhfrhhomheprhhushgtuhhrsehruhhsshgvlhhlrdgttgenucevlhhushhtvghrufhiii
- gvpedt
-X-ME-Proxy: <xmx:d5HLXGFWla6Ck7CM6dNhiRN5KA8i_gbiBFieqprXwTadhwNVVk6XKA>
- <xmx:d5HLXCdQB8joxLe7s_dRc56UUNItvVKBNqlgcBcxso_EAo4oApuIXg>
- <xmx:d5HLXPhu7ceq9cA8XFnL59NzzXzTx61ZfBqnPlXu0ycTC4ReL8ed0Q>
- <xmx:eJHLXOcGzl1E_8KMFp0iAjDGc75Z_X7XkKgczjYitB5A-TbogUw43w>
-Received: from crackle.ozlabs.ibm.com (unknown [122.99.82.10])
- by mail.messagingengine.com (Postfix) with ESMTPA id 75146103D4;
- Thu,  2 May 2019 20:55:17 -0400 (EDT)
-Message-ID: <5074405df506970edc7c3fe7604bc60f345163eb.camel@russell.cc>
-Subject: Re: [PATCH v2 2/2] powerpc/mm: Warn if W+X pages found on boot
-From: Russell Currey <ruscur@russell.cc>
-To: Joel Stanley <joel@jms.id.au>
-Date: Fri, 03 May 2019 10:55:13 +1000
-In-Reply-To: <CACPK8XeGD85Yt1bZvuDo4LnYwn0xg15eDJoOep1JC3bg0s0uXA@mail.gmail.com>
-References: <20190502073947.6481-1-ruscur@russell.cc>
- <20190502073947.6481-2-ruscur@russell.cc>
- <CACPK8XeGD85Yt1bZvuDo4LnYwn0xg15eDJoOep1JC3bg0s0uXA@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-User-Agent: Evolution 3.32.1 
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44wJym4QM4zDqCM
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 May 2019 14:27:58 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+ d=sirena.org.uk; s=20170815-heliosphere; h=In-Reply-To:Content-Type:
+ MIME-Version:References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
+ Content-Transfer-Encoding:Content-ID:Content-Description:Resent-Date:
+ Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:
+ List-Help:List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
+ bh=hirmFxMWxTe8SvSlfv6UKmH6ZLra2U80Aw6D8pbteKA=; b=kSYuTYG+34olIoQ8l3LjWqqda
+ lIOJLqMIwpq9+7seT5ZdLRiKdRc390u5YcQ8Fwsam3XEW9MjXMB8STya8NdLgoXH3phgTaihHhUCF
+ TeSrl2rB5jaPvdVgZhB++HmmmC9EkXwOlNiOCjXTpb79MogT+it7fnJc6/pslmHpxEQGM=;
+Received: from [42.29.24.106] (helo=finisterre.ee.mobilebroadband)
+ by heliosphere.sirena.org.uk with esmtpsa
+ (TLS1.2:ECDHE_RSA_AES_256_GCM_SHA384:256) (Exim 4.89)
+ (envelope-from <broonie@sirena.org.uk>)
+ id 1hMPnU-0000Lu-Kk; Fri, 03 May 2019 04:27:45 +0000
+Received: by finisterre.ee.mobilebroadband (Postfix, from userid 1000)
+ id 9D2FF441D3C; Fri,  3 May 2019 05:27:31 +0100 (BST)
+Date: Fri, 3 May 2019 13:27:31 +0900
+From: Mark Brown <broonie@kernel.org>
+To: "S.j. Wang" <shengjiu.wang@nxp.com>
+Subject: Re: [EXT] Re: [PATCH V4] ASoC: fsl_esai: Add pm runtime function
+Message-ID: <20190503042731.GX14916@sirena.org.uk>
+References: <c4cf809a66b8c98de11e43f7e9fa2823cf3c5ba6.1556417687.git.shengjiu.wang@nxp.com>
+ <20190502023945.GA19532@sirena.org.uk>
+ <VE1PR04MB6479F3EED50613DF8F041713E3340@VE1PR04MB6479.eurprd04.prod.outlook.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; micalg=pgp-sha512;
+ protocol="application/pgp-signature"; boundary="7fXEoLLey27Fs/d6"
+Content-Disposition: inline
+In-Reply-To: <VE1PR04MB6479F3EED50613DF8F041713E3340@VE1PR04MB6479.eurprd04.prod.outlook.com>
+X-Cookie: -- I have seen the FUN --
+User-Agent: Mutt/1.10.1 (2018-07-13)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -105,61 +78,57 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Julia Lawall <Julia.Lawall@lip6.fr>, Rashmica Gupta <rashmica.g@gmail.com>,
- linuxppc-dev@lists.ozlabs.org
+Cc: "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
+ "timur@kernel.org" <timur@kernel.org>,
+ "Xiubo.Lee@gmail.com" <Xiubo.Lee@gmail.com>,
+ "festevam@gmail.com" <festevam@gmail.com>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "nicoleotsuka@gmail.com" <nicoleotsuka@gmail.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, 2019-05-03 at 00:37 +0000, Joel Stanley wrote:
-> On Thu, 2 May 2019 at 07:42, Russell Currey <ruscur@russell.cc>
-> wrote:
-> > Implement code to walk all pages and warn if any are found to be
-> > both
-> > writable and executable.  Depends on STRICT_KERNEL_RWX enabled, and
-> > is
-> > behind the DEBUG_WX config option.
-> > 
-> > This only runs on boot and has no runtime performance implications.
-> > 
-> > Very heavily influenced (and in some cases copied verbatim) from
-> > the
-> > ARM64 code written by Laura Abbott (thanks!), since our ptdump
-> > infrastructure is similar.
-> > 
-> > Signed-off-by: Russell Currey <ruscur@russell.cc>
-> > ---
-> > v2: A myriad of fixes and cleanups thanks to Christophe Leroy
-> > 
-> >  arch/powerpc/Kconfig.debug         | 19 ++++++++++++++
-> >  arch/powerpc/include/asm/pgtable.h |  6 +++++
-> >  arch/powerpc/mm/pgtable_32.c       |  3 +++
-> >  arch/powerpc/mm/pgtable_64.c       |  3 +++
-> >  arch/powerpc/mm/ptdump/ptdump.c    | 41
-> > +++++++++++++++++++++++++++++-
-> >  5 files changed, 71 insertions(+), 1 deletion(-)
-> > 
-> > diff --git a/arch/powerpc/Kconfig.debug
-> > b/arch/powerpc/Kconfig.debug
-> > index 4e00cb0a5464..9e8bcddd8b8f 100644
-> > --- a/arch/powerpc/Kconfig.debug
-> > +++ b/arch/powerpc/Kconfig.debug
-> > @@ -361,6 +361,25 @@ config PPC_PTDUMP
-> > 
-> >           If you are unsure, say N.
-> > 
-> > +config PPC_DEBUG_WX
-> 
-> The other architectures call this DEBUG_WX, in case you wanted to
-> name
-> it the same.
 
-I did originally, I changed it since we have PPC_PTDUMP but I don't
-really care either way.  mpe can change it if he wants
+--7fXEoLLey27Fs/d6
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> 
-> > +       bool "Warn on W+X mappings at boot"
-> > +       select PPC_PTDUMP
-> > +       help
-> > +         Generate a warning if any W+X mappings are found at boot.
+On Thu, May 02, 2019 at 09:13:58AM +0000, S.j. Wang wrote:
 
+> I am checking, but I don't know why this patch failed in your side. I=20
+> Tried to apply this patch on for-5.1, for 5.2,  for-linus  and for-next, =
+all are
+> Successful.  The git is git://git.kernel.org/pub/scm/linux/kernel/git/bro=
+onie/sound.git.
+
+> I can't reproduce your problem. Is there any my operation wrong?
+
+The error message I got was:
+
+Applying: ASoC: fsl_esai: Add pm runtime function
+error: patch failed: sound/soc/fsl/fsl_esai.c:9
+error: sound/soc/fsl/fsl_esai.c: patch does not apply
+Patch failed at 0001 ASoC: fsl_esai: Add pm runtime function
+
+which is the header addition.  I can't spot any obvious issues visually
+looking at the patch, only thing I can think is some kind of whitespace
+damage somewhere.
+
+--7fXEoLLey27Fs/d6
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQEzBAABCgAdFiEEreZoqmdXGLWf4p/qJNaLcl1Uh9AFAlzLwzAACgkQJNaLcl1U
+h9AAiQf9HER7t18a/h1Xns+qrJ2Gt/oRnh2FQEPHz/ajt0N1I2kyvwnDMxXjU34Q
+FKJHEqKuZ0uke450rOvpVifBPhnbxhdkqVCKjT4sW0fyznHNxy9PQ0/3L25J0v1J
+pPEBlTC98wytk8rkdrJqwY3gBV6lzaO/2s+dntb+7w9jqadwDz/QvpGBY3rFGCtd
+D2vBoMjd3MhCZRZv2VuVfPuV/xtmdS+/wwhiE9Wo8Q8+55wfgN+7mNaYAkyofhUS
+3l0RLeg4aXFJvltKO0oHlToG+emSt5i06hp0QQfTFuUKYe/d9xVKb7z8Icas0mMf
+LhcnV09lhAjvRs4boOmGzenukdsmxw==
+=jyVv
+-----END PGP SIGNATURE-----
+
+--7fXEoLLey27Fs/d6--
