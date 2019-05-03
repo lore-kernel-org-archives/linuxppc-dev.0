@@ -3,44 +3,43 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
 X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_PASS
+	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7C005C43219
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 May 2019 07:24:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 49990C43219
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 May 2019 07:26:30 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 335962075C
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 May 2019 07:24:52 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 335962075C
+	by mail.kernel.org (Postfix) with ESMTPS id 053C0208C3
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 May 2019 07:26:30 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 053C0208C3
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44wNtp4jn3zDqdr
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 May 2019 17:24:50 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44wNwg4lDJzDqYP
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 May 2019 17:26:27 +1000 (AEST)
 Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44wNKK1Yk0zDqQ0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44wNKK4DXqzDqV6
  for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 May 2019 16:59:17 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 44wNKF2n5tz9sBr; Fri,  3 May 2019 16:59:12 +1000 (AEST)
+ id 44wNKJ1fXYz9sPJ; Fri,  3 May 2019 16:59:15 +1000 (AEST)
 X-powerpc-patch-notification: thanks
-X-powerpc-patch-commit: 9d9f2cccde952126185e3336af0d4dc62eb254ad
+X-powerpc-patch-commit: d7fbe2a0439ce6f20917a65990a78c9e747aad34
 X-Patchwork-Hint: ignore
-In-Reply-To: <1c8eb7526ed327c3317053d57ac34e8c652b5449.1553853405.git.christophe.leroy@c-s.fr>
+In-Reply-To: <5ad9ed13155f55e1715274561354aa7ab57973fc.1554195798.git.christophe.leroy@c-s.fr>
 To: Christophe Leroy <christophe.leroy@c-s.fr>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>
+ Paul Mackerras <paulus@samba.org>, danielwa@cisco.com
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Subject: Re: [PATCH v1 1/4] powerpc/mm: change #include "mmu_decl.h" to
- <mm/mmu_decl.h>
-Message-Id: <44wNKF2n5tz9sBr@ozlabs.org>
-Date: Fri,  3 May 2019 16:59:13 +1000 (AEST)
+Subject: Re: [PATCH 4/9] powerpc/prom_init: get rid of PROM_SCRATCH_SIZE
+Message-Id: <44wNKJ1fXYz9sPJ@ozlabs.org>
+Date: Fri,  3 May 2019 16:59:15 +1000 (AEST)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -52,19 +51,19 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: linux-arch@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, 2019-03-29 at 09:59:59 UTC, Christophe Leroy wrote:
-> This patch make inclusion of mmu_decl.h independant of the location
-> of the file including it.
+On Tue, 2019-04-02 at 09:08:38 UTC, Christophe Leroy wrote:
+> PROM_SCRATCH_SIZE is same as sizeof(prom_scratch)
 > 
 > Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 
-Series applied to powerpc next, thanks.
+Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/9d9f2cccde952126185e3336af0d4dc6
+https://git.kernel.org/powerpc/c/d7fbe2a0439ce6f20917a65990a78c9e
 
 cheers
