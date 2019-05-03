@@ -3,42 +3,46 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
 X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
+	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_PASS
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7707CC43219
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 May 2019 07:44:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5DCA4C04AAA
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 May 2019 07:45:48 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 313E8205F4
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 May 2019 07:44:33 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 313E8205F4
+	by mail.kernel.org (Postfix) with ESMTPS id 0ED902087F
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 May 2019 07:45:47 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0ED902087F
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44wPKW2PY8zDqZQ
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 May 2019 17:44:31 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44wPLy1CJqzDqdf
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 May 2019 17:45:46 +1000 (AEST)
 Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44wNKS5G13zDqPb
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 May 2019 16:59:24 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44wNKT21KBzDqQh
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 May 2019 16:59:25 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 44wNKS2Df9z9sPR; Fri,  3 May 2019 16:59:24 +1000 (AEST)
+ id 44wNKS6JSsz9sPW; Fri,  3 May 2019 16:59:24 +1000 (AEST)
 X-powerpc-patch-notification: thanks
-X-powerpc-patch-commit: 447def3b06adab60b999417b316bd2352d7e643e
+X-powerpc-patch-commit: d69ca6bab39e84a84781535b977c7e62c8f84d37
 X-Patchwork-Hint: ignore
-In-Reply-To: <e727e0a19c059566903745ee71a7bc5c46458dcb.1556293738.git.christophe.leroy@c-s.fr>
+In-Reply-To: <08b3159b2094581c71e002dec1865e99e08e2320.1556295459.git.christophe.leroy@c-s.fr>
 To: Christophe Leroy <christophe.leroy@c-s.fr>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, aneesh.kumar@linux.ibm.com
+ Paul Mackerras <paulus@samba.org>, Nicholas Piggin <npiggin@gmail.com>,
+ Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>,
+ Andrey Ryabinin <aryabinin@virtuozzo.com>,
+ Alexander Potapenko <glider@google.com>, Dmitry Vyukov <dvyukov@google.com>,
+ Daniel Axtens <dja@axtens.net>
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Subject: Re: [PATCH v2 01/15] powerpc/mm: drop __bad_pte()
-Message-Id: <44wNKS2Df9z9sPR@ozlabs.org>
+Subject: Re: [PATCH v11 01/13] powerpc/32: Move early_init() in a separate file
+Message-Id: <44wNKS6JSsz9sPW@ozlabs.org>
 Date: Fri,  3 May 2019 16:59:24 +1000 (AEST)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -51,20 +55,20 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, kasan-dev@googlegroups.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, 2019-04-26 at 15:57:59 UTC, Christophe Leroy wrote:
-> This has never been called (since Kernel has been in git at least),
-> drop it.
+On Fri, 2019-04-26 at 16:23:25 UTC, Christophe Leroy wrote:
+> In preparation of KASAN, move early_init() into a separate
+> file in order to allow deactivation of KASAN for that function.
 > 
-> Reviewed-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
 > Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 
 Series applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/447def3b06adab60b999417b316bd235
+https://git.kernel.org/powerpc/c/d69ca6bab39e84a84781535b977c7e62
 
 cheers
