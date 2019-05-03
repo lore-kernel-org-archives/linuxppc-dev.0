@@ -2,93 +2,59 @@ Return-Path: <SRS0=37tr=TD=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_PASS,UNPARSEABLE_RELAY,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 238DDC43219
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 May 2019 20:21:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CC9E2C04AAA
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 May 2019 22:31:13 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 483AB2075E
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 May 2019 20:21:29 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=oracle.com header.i=@oracle.com header.b="TnscqanT"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 483AB2075E
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=oracle.com
+	by mail.kernel.org (Postfix) with ESMTPS id 426A7206C1
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 May 2019 22:31:12 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 426A7206C1
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=cambridgegreys.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44wk6t5zFVzDqcL
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  4 May 2019 06:21:26 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44wn0Z0ZvJzDqZb
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  4 May 2019 08:31:10 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=oracle.com
- (client-ip=156.151.31.85; helo=userp2120.oracle.com;
- envelope-from=daniel.m.jordan@oracle.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=oracle.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=oracle.com header.i=@oracle.com header.b="TnscqanT"; 
- dkim-atps=neutral
-Received: from userp2120.oracle.com (userp2120.oracle.com [156.151.31.85])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44wk5F2TxszDqY7
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  4 May 2019 06:20:01 +1000 (AEST)
-Received: from pps.filterd (userp2120.oracle.com [127.0.0.1])
- by userp2120.oracle.com (8.16.0.27/8.16.0.27) with SMTP id x43KEIGQ123066;
- Fri, 3 May 2019 20:19:37 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com;
- h=mime-version :
- message-id : date : from : to : cc : subject : content-type :
- content-transfer-encoding; s=corp-2018-07-02;
- bh=NBf0VXWy2aRMKYEnL9KebROCy7Bu40HpC3c3T+lz8wo=;
- b=TnscqanTJfLG+rMhABQlj2zRbqxybUldb0Mxlr2pbtzuwJ96o0DA3Tdex6Ch/agNjwtw
- gKIGlcjA2wjYJy95+6yi89Rb24w9W7Sjn86CtZb0MN5t/jNAYxT7VoozlkJjMdZfS3w/
- 1aCt+4qYy8MHSTNFczeYdSipaDE8ue9FQjo2OIVTS9VJFWG/eR7gnrCwQYkvnNZ/Pxdz
- wgYmCOfIENhELvg824YMA9cEXc2uLYLGvD2aYy2DDh80Rc0zuus5JzH48ZI4EYxwwrT6
- VoigNdQcpkqwpDhVZI8tWQFRGNo6bu0wMLXKAPZtn5yc68m/gauGzGCgzZ8w/8PIISFd nw== 
-Received: from aserp3030.oracle.com (aserp3030.oracle.com [141.146.126.71])
- by userp2120.oracle.com with ESMTP id 2s6xj01131-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Fri, 03 May 2019 20:19:37 +0000
-Received: from pps.filterd (aserp3030.oracle.com [127.0.0.1])
- by aserp3030.oracle.com (8.16.0.27/8.16.0.27) with SMTP id x43KGq3h044042;
- Fri, 3 May 2019 20:17:36 GMT
-Received: from aserv0122.oracle.com (aserv0122.oracle.com [141.146.126.236])
- by aserp3030.oracle.com with ESMTP id 2s7rtcfwg1-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Fri, 03 May 2019 20:17:36 +0000
-Received: from abhmp0017.oracle.com (abhmp0017.oracle.com [141.146.116.23])
- by aserv0122.oracle.com (8.14.4/8.14.4) with ESMTP id x43KHNuF021889;
- Fri, 3 May 2019 20:17:24 GMT
-Received: from localhost.localdomain (/73.60.114.248) by default (Oracle
- Beehive Gateway v4.0) with ESMTP ; Fri, 03 May 2019 13:16:52 -0700
+ spf=none (mailfrom) smtp.mailfrom=cambridgegreys.com
+ (client-ip=5.153.251.140; helo=www.kot-begemot.co.uk;
+ envelope-from=anton.ivanov@cambridgegreys.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=cambridgegreys.com
+Received: from www.kot-begemot.co.uk (ivanoab6.miniserver.com [5.153.251.140])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
+ bits)) (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44whLZ1p9szDqVc
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  4 May 2019 05:01:23 +1000 (AEST)
+Received: from [192.168.17.6] (helo=jain.kot-begemot.co.uk)
+ by www.kot-begemot.co.uk with esmtps (TLS1.2:ECDHE_RSA_AES_256_GCM_SHA384:256)
+ (Exim 4.89) (envelope-from <anton.ivanov@cambridgegreys.com>)
+ id 1hMYFM-00074d-Bk; Fri, 03 May 2019 13:29:04 +0000
+Received: from jain.kot-begemot.co.uk ([192.168.3.3])
+ by jain.kot-begemot.co.uk with esmtp (Exim 4.89)
+ (envelope-from <anton.ivanov@cambridgegreys.com>)
+ id 1hMYFF-0001a5-CV; Fri, 03 May 2019 14:29:03 +0100
+Subject: Re: [PATCH 14/15] um: switch to generic version of pte allocation
+To: Mike Rapoport <rppt@linux.ibm.com>,
+ Andrew Morton <akpm@linux-foundation.org>
+References: <1556810922-20248-1-git-send-email-rppt@linux.ibm.com>
+ <1556810922-20248-15-git-send-email-rppt@linux.ibm.com>
+From: Anton Ivanov <anton.ivanov@cambridgegreys.com>
+Message-ID: <3fddc076-1843-ee84-febb-44c8d317489f@cambridgegreys.com>
+Date: Fri, 3 May 2019 14:28:56 +0100
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.6.1
 MIME-Version: 1.0
-Message-ID: <20190503201629.20512-1-daniel.m.jordan@oracle.com>
-Date: Fri, 3 May 2019 13:16:30 -0700 (PDT)
-From: Daniel Jordan <daniel.m.jordan@oracle.com>
-To: akpm@linux-foundation.org
-Subject: [PATCH] mm: add account_locked_vm utility function
-X-Mailer: git-send-email 2.21.0
-Content-Type: text/plain; charset=ascii
-Content-Transfer-Encoding: 8bit
-X-Proofpoint-Virus-Version: vendor=nai engine=5900 definitions=9245
- signatures=668685
-X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 suspectscore=8
- malwarescore=0
- phishscore=0 bulkscore=0 spamscore=0 mlxscore=0 mlxlogscore=999
- adultscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.0.1-1810050000 definitions=main-1905030132
-X-Proofpoint-Virus-Version: vendor=nai engine=5900 definitions=9245
- signatures=668685
-X-Proofpoint-Spam-Details: rule=notspam policy=default score=0
- priorityscore=1501 malwarescore=0
- suspectscore=8 phishscore=0 bulkscore=0 spamscore=0 clxscore=1015
- lowpriorityscore=0 mlxscore=0 impostorscore=0 mlxlogscore=999 adultscore=0
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.0.1-1810050000
- definitions=main-1905030133
+In-Reply-To: <1556810922-20248-15-git-send-email-rppt@linux.ibm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
+X-Clacks-Overhead: GNU Terry Pratchett
+X-Mailman-Approved-At: Sat, 04 May 2019 08:29:08 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -100,578 +66,118 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Mark Rutland <mark.rutland@arm.com>, Davidlohr Bueso <dave@stgolabs.net>,
- kvm@vger.kernel.org, Alan Tull <atull@kernel.org>,
- Alexey Kardashevskiy <aik@ozlabs.ru>, linux-fpga@vger.kernel.org,
- linux-kernel@vger.kernel.org, kvm-ppc@vger.kernel.org,
- Daniel Jordan <daniel.m.jordan@oracle.com>, linux-mm@kvack.org,
- Alex Williamson <alex.williamson@redhat.com>,
- Jason Gunthorpe <jgg@mellanox.com>, Moritz Fischer <mdf@kernel.org>,
- Steve Sistare <steven.sistare@oracle.com>, Christoph Lameter <cl@linux.com>,
- linuxppc-dev@lists.ozlabs.org, Wu Hao <hao.wu@intel.com>
+Cc: Michal Hocko <mhocko@suse.com>, Catalin Marinas <catalin.marinas@arm.com>,
+ Palmer Dabbelt <palmer@sifive.com>, linux-kernel@vger.kernel.org,
+ Guo Ren <guoren@kernel.org>, linux-hexagon@vger.kernel.org,
+ linux-riscv@lists.infradead.org, linux-arch@vger.kernel.org,
+ Richard Weinberger <richard@nod.at>, Helge Deller <deller@gmx.de>,
+ x86@kernel.org, Russell King <linux@armlinux.org.uk>,
+ Matthew Wilcox <willy@infradead.org>,
+ Geert Uytterhoeven <geert@linux-m68k.org>, Matt Turner <mattst88@gmail.com>,
+ Sam Creasey <sammy@sammy.net>, Arnd Bergmann <arnd@arndb.de>,
+ linux-alpha@vger.kernel.org, linux-um@lists.infradead.org,
+ linux-m68k@lists.linux-m68k.org, Greentime Hu <green.hu@gmail.com>,
+ Ley Foon Tan <lftan@altera.com>, Guan Xuetao <gxt@pku.edu.cn>,
+ linux-arm-kernel@lists.infradead.org, linux-parisc@vger.kernel.org,
+ linux-mips@vger.kernel.org, Richard Kuo <rkuo@codeaurora.org>,
+ Paul Burton <paul.burton@mips.com>, nios2-dev@lists.rocketboards.org,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-locked_vm accounting is done roughly the same way in five places, so
-unify them in a helper.  Standardize the debug prints, which vary
-slightly.  Error codes stay the same, so user-visible behavior does too.
 
-Signed-off-by: Daniel Jordan <daniel.m.jordan@oracle.com>
-Cc: Alan Tull <atull@kernel.org>
-Cc: Alexey Kardashevskiy <aik@ozlabs.ru>
-Cc: Alex Williamson <alex.williamson@redhat.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Christoph Lameter <cl@linux.com>
-Cc: Christophe Leroy <christophe.leroy@c-s.fr>
-Cc: Davidlohr Bueso <dave@stgolabs.net>
-Cc: Jason Gunthorpe <jgg@mellanox.com>
-Cc: Mark Rutland <mark.rutland@arm.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Moritz Fischer <mdf@kernel.org>
-Cc: Paul Mackerras <paulus@ozlabs.org>
-Cc: Steve Sistare <steven.sistare@oracle.com>
-Cc: Wu Hao <hao.wu@intel.com>
-Cc: linux-mm@kvack.org
-Cc: kvm@vger.kernel.org
-Cc: kvm-ppc@vger.kernel.org
-Cc: linuxppc-dev@lists.ozlabs.org
-Cc: linux-fpga@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
----
 
-Based on v5.1-rc7.  Tested with the vfio type1 driver.  Any feedback
-welcome.
+On 02/05/2019 16:28, Mike Rapoport wrote:
+> um allocates PTE pages with __get_free_page() and uses
+> GFP_KERNEL | __GFP_ZERO for the allocations.
+> 
+> Switch it to the generic version that does exactly the same thing for the
+> kernel page tables and adds __GFP_ACCOUNT for the user PTEs.
+> 
+> The pte_free() and pte_free_kernel() versions are identical to the generic
+> ones and can be simply dropped.
+> 
+> Signed-off-by: Mike Rapoport <rppt@linux.ibm.com>
+> ---
+>   arch/um/include/asm/pgalloc.h | 16 ++--------------
+>   arch/um/kernel/mem.c          | 22 ----------------------
+>   2 files changed, 2 insertions(+), 36 deletions(-)
+> 
+> diff --git a/arch/um/include/asm/pgalloc.h b/arch/um/include/asm/pgalloc.h
+> index 99eb568..d7b282e 100644
+> --- a/arch/um/include/asm/pgalloc.h
+> +++ b/arch/um/include/asm/pgalloc.h
+> @@ -10,6 +10,8 @@
+>   
+>   #include <linux/mm.h>
+>   
+> +#include <asm-generic/pgalloc.h>	/* for pte_{alloc,free}_one */
+> +
+>   #define pmd_populate_kernel(mm, pmd, pte) \
+>   	set_pmd(pmd, __pmd(_PAGE_TABLE + (unsigned long) __pa(pte)))
+>   
+> @@ -25,20 +27,6 @@
+>   extern pgd_t *pgd_alloc(struct mm_struct *);
+>   extern void pgd_free(struct mm_struct *mm, pgd_t *pgd);
+>   
+> -extern pte_t *pte_alloc_one_kernel(struct mm_struct *);
+> -extern pgtable_t pte_alloc_one(struct mm_struct *);
+> -
+> -static inline void pte_free_kernel(struct mm_struct *mm, pte_t *pte)
+> -{
+> -	free_page((unsigned long) pte);
+> -}
+> -
+> -static inline void pte_free(struct mm_struct *mm, pgtable_t pte)
+> -{
+> -	pgtable_page_dtor(pte);
+> -	__free_page(pte);
+> -}
+> -
+>   #define __pte_free_tlb(tlb,pte, address)		\
+>   do {							\
+>   	pgtable_page_dtor(pte);				\
+> diff --git a/arch/um/kernel/mem.c b/arch/um/kernel/mem.c
+> index 99aa11b..2280374 100644
+> --- a/arch/um/kernel/mem.c
+> +++ b/arch/um/kernel/mem.c
+> @@ -215,28 +215,6 @@ void pgd_free(struct mm_struct *mm, pgd_t *pgd)
+>   	free_page((unsigned long) pgd);
+>   }
+>   
+> -pte_t *pte_alloc_one_kernel(struct mm_struct *mm)
+> -{
+> -	pte_t *pte;
+> -
+> -	pte = (pte_t *)__get_free_page(GFP_KERNEL|__GFP_ZERO);
+> -	return pte;
+> -}
+> -
+> -pgtable_t pte_alloc_one(struct mm_struct *mm)
+> -{
+> -	struct page *pte;
+> -
+> -	pte = alloc_page(GFP_KERNEL|__GFP_ZERO);
+> -	if (!pte)
+> -		return NULL;
+> -	if (!pgtable_page_ctor(pte)) {
+> -		__free_page(pte);
+> -		return NULL;
+> -	}
+> -	return pte;
+> -}
+> -
+>   #ifdef CONFIG_3_LEVEL_PGTABLES
+>   pmd_t *pmd_alloc_one(struct mm_struct *mm, unsigned long address)
+>   {
+> 
 
-Andrew, this one patch replaces these six from [1]:
 
-    mm-change-locked_vms-type-from-unsigned-long-to-atomic64_t.patch
-    vfio-type1-drop-mmap_sem-now-that-locked_vm-is-atomic.patch
-    vfio-spapr_tce-drop-mmap_sem-now-that-locked_vm-is-atomic.patch
-    fpga-dlf-afu-drop-mmap_sem-now-that-locked_vm-is-atomic.patch
-    kvm-book3s-drop-mmap_sem-now-that-locked_vm-is-atomic.patch
-    powerpc-mmu-drop-mmap_sem-now-that-locked_vm-is-atomic.patch
+Reviewed-by: Anton Ivanov <anton.ivanov@cambridgegreys.com>
+Acked-by: Anton Ivanov <anton.ivanov@cambridgegreys.com>
 
-That series converts locked_vm to an atomic, but on closer inspection causes at
-least one accounting race in mremap, and fixing it just for this type
-conversion came with too much ugly in the core mm to justify, especially when
-the right long-term fix is making these drivers use pinned_vm instead.
-
-Christophe's suggestion of cmpxchg[2] does prevent the races he
-mentioned for pinned_vm, but others would still remain.  In perf_mmap
-and the hfi1 driver, pinned_vm is checked against the rlimit racily and
-then later increased when the pinned_vm originally read may have gone
-stale.  Any fixes for that, that I could think of, seem about as good as
-what's there now, so I left it.  I have a patch that uses cmpxchg with
-pinned_vm if others feel strongly that the aforementioned races should
-be fixed.
-
-Daniel
-
-[1] https://lore.kernel.org/linux-mm/20190402204158.27582-1-daniel.m.jordan@oracle.com/
-[2] https://lore.kernel.org/linux-mm/964bd5b0-f1e5-7bf0-5c58-18e75c550841@c-s.fr/
-
- arch/powerpc/kvm/book3s_64_vio.c    | 44 +++---------------------
- arch/powerpc/mm/mmu_context_iommu.c | 41 +++-------------------
- drivers/fpga/dfl-afu-dma-region.c   | 53 +++--------------------------
- drivers/vfio/vfio_iommu_spapr_tce.c | 52 +++++-----------------------
- drivers/vfio/vfio_iommu_type1.c     | 23 ++++---------
- include/linux/mm.h                  | 19 +++++++++++
- mm/util.c                           | 48 ++++++++++++++++++++++++++
- 7 files changed, 94 insertions(+), 186 deletions(-)
-
-diff --git a/arch/powerpc/kvm/book3s_64_vio.c b/arch/powerpc/kvm/book3s_64_vio.c
-index f02b04973710..f7d37fa6003a 100644
---- a/arch/powerpc/kvm/book3s_64_vio.c
-+++ b/arch/powerpc/kvm/book3s_64_vio.c
-@@ -30,6 +30,7 @@
- #include <linux/anon_inodes.h>
- #include <linux/iommu.h>
- #include <linux/file.h>
-+#include <linux/mm.h>
- 
- #include <asm/kvm_ppc.h>
- #include <asm/kvm_book3s.h>
-@@ -56,43 +57,6 @@ static unsigned long kvmppc_stt_pages(unsigned long tce_pages)
- 	return tce_pages + ALIGN(stt_bytes, PAGE_SIZE) / PAGE_SIZE;
- }
- 
--static long kvmppc_account_memlimit(unsigned long stt_pages, bool inc)
--{
--	long ret = 0;
--
--	if (!current || !current->mm)
--		return ret; /* process exited */
--
--	down_write(&current->mm->mmap_sem);
--
--	if (inc) {
--		unsigned long locked, lock_limit;
--
--		locked = current->mm->locked_vm + stt_pages;
--		lock_limit = rlimit(RLIMIT_MEMLOCK) >> PAGE_SHIFT;
--		if (locked > lock_limit && !capable(CAP_IPC_LOCK))
--			ret = -ENOMEM;
--		else
--			current->mm->locked_vm += stt_pages;
--	} else {
--		if (WARN_ON_ONCE(stt_pages > current->mm->locked_vm))
--			stt_pages = current->mm->locked_vm;
--
--		current->mm->locked_vm -= stt_pages;
--	}
--
--	pr_debug("[%d] RLIMIT_MEMLOCK KVM %c%ld %ld/%ld%s\n", current->pid,
--			inc ? '+' : '-',
--			stt_pages << PAGE_SHIFT,
--			current->mm->locked_vm << PAGE_SHIFT,
--			rlimit(RLIMIT_MEMLOCK),
--			ret ? " - exceeded" : "");
--
--	up_write(&current->mm->mmap_sem);
--
--	return ret;
--}
--
- static void kvm_spapr_tce_iommu_table_free(struct rcu_head *head)
- {
- 	struct kvmppc_spapr_tce_iommu_table *stit = container_of(head,
-@@ -277,7 +241,7 @@ static int kvm_spapr_tce_release(struct inode *inode, struct file *filp)
- 
- 	kvm_put_kvm(stt->kvm);
- 
--	kvmppc_account_memlimit(
-+	account_locked_vm(current->mm,
- 		kvmppc_stt_pages(kvmppc_tce_pages(stt->size)), false);
- 	call_rcu(&stt->rcu, release_spapr_tce_table);
- 
-@@ -303,7 +267,7 @@ long kvm_vm_ioctl_create_spapr_tce(struct kvm *kvm,
- 		return -EINVAL;
- 
- 	npages = kvmppc_tce_pages(size);
--	ret = kvmppc_account_memlimit(kvmppc_stt_pages(npages), true);
-+	ret = account_locked_vm(current->mm, kvmppc_stt_pages(npages), true);
- 	if (ret)
- 		return ret;
- 
-@@ -359,7 +323,7 @@ long kvm_vm_ioctl_create_spapr_tce(struct kvm *kvm,
- 
- 	kfree(stt);
-  fail_acct:
--	kvmppc_account_memlimit(kvmppc_stt_pages(npages), false);
-+	account_locked_vm(current->mm, kvmppc_stt_pages(npages), false);
- 	return ret;
- }
- 
-diff --git a/arch/powerpc/mm/mmu_context_iommu.c b/arch/powerpc/mm/mmu_context_iommu.c
-index 8330f135294f..9e7001a70570 100644
---- a/arch/powerpc/mm/mmu_context_iommu.c
-+++ b/arch/powerpc/mm/mmu_context_iommu.c
-@@ -19,6 +19,7 @@
- #include <linux/hugetlb.h>
- #include <linux/swap.h>
- #include <linux/sizes.h>
-+#include <linux/mm.h>
- #include <asm/mmu_context.h>
- #include <asm/pte-walk.h>
- #include <linux/mm_inline.h>
-@@ -51,40 +52,6 @@ struct mm_iommu_table_group_mem_t {
- 	u64 dev_hpa;		/* Device memory base address */
- };
- 
--static long mm_iommu_adjust_locked_vm(struct mm_struct *mm,
--		unsigned long npages, bool incr)
--{
--	long ret = 0, locked, lock_limit;
--
--	if (!npages)
--		return 0;
--
--	down_write(&mm->mmap_sem);
--
--	if (incr) {
--		locked = mm->locked_vm + npages;
--		lock_limit = rlimit(RLIMIT_MEMLOCK) >> PAGE_SHIFT;
--		if (locked > lock_limit && !capable(CAP_IPC_LOCK))
--			ret = -ENOMEM;
--		else
--			mm->locked_vm += npages;
--	} else {
--		if (WARN_ON_ONCE(npages > mm->locked_vm))
--			npages = mm->locked_vm;
--		mm->locked_vm -= npages;
--	}
--
--	pr_debug("[%d] RLIMIT_MEMLOCK HASH64 %c%ld %ld/%ld\n",
--			current ? current->pid : 0,
--			incr ? '+' : '-',
--			npages << PAGE_SHIFT,
--			mm->locked_vm << PAGE_SHIFT,
--			rlimit(RLIMIT_MEMLOCK));
--	up_write(&mm->mmap_sem);
--
--	return ret;
--}
--
- bool mm_iommu_preregistered(struct mm_struct *mm)
- {
- 	return !list_empty(&mm->context.iommu_group_mem_list);
-@@ -101,7 +68,7 @@ static long mm_iommu_do_alloc(struct mm_struct *mm, unsigned long ua,
- 	unsigned long entry, chunk;
- 
- 	if (dev_hpa == MM_IOMMU_TABLE_INVALID_HPA) {
--		ret = mm_iommu_adjust_locked_vm(mm, entries, true);
-+		ret = account_locked_vm(mm, entries, true);
- 		if (ret)
- 			return ret;
- 
-@@ -215,7 +182,7 @@ static long mm_iommu_do_alloc(struct mm_struct *mm, unsigned long ua,
- 	kfree(mem);
- 
- unlock_exit:
--	mm_iommu_adjust_locked_vm(mm, locked_entries, false);
-+	account_locked_vm(mm, locked_entries, false);
- 
- 	return ret;
- }
-@@ -315,7 +282,7 @@ long mm_iommu_put(struct mm_struct *mm, struct mm_iommu_table_group_mem_t *mem)
- unlock_exit:
- 	mutex_unlock(&mem_list_mutex);
- 
--	mm_iommu_adjust_locked_vm(mm, unlock_entries, false);
-+	account_locked_vm(mm, unlock_entries, false);
- 
- 	return ret;
- }
-diff --git a/drivers/fpga/dfl-afu-dma-region.c b/drivers/fpga/dfl-afu-dma-region.c
-index e18a786fc943..059438e17193 100644
---- a/drivers/fpga/dfl-afu-dma-region.c
-+++ b/drivers/fpga/dfl-afu-dma-region.c
-@@ -12,6 +12,7 @@
- #include <linux/dma-mapping.h>
- #include <linux/sched/signal.h>
- #include <linux/uaccess.h>
-+#include <linux/mm.h>
- 
- #include "dfl-afu.h"
- 
-@@ -31,52 +32,6 @@ void afu_dma_region_init(struct dfl_feature_platform_data *pdata)
- 	afu->dma_regions = RB_ROOT;
- }
- 
--/**
-- * afu_dma_adjust_locked_vm - adjust locked memory
-- * @dev: port device
-- * @npages: number of pages
-- * @incr: increase or decrease locked memory
-- *
-- * Increase or decrease the locked memory size with npages input.
-- *
-- * Return 0 on success.
-- * Return -ENOMEM if locked memory size is over the limit and no CAP_IPC_LOCK.
-- */
--static int afu_dma_adjust_locked_vm(struct device *dev, long npages, bool incr)
--{
--	unsigned long locked, lock_limit;
--	int ret = 0;
--
--	/* the task is exiting. */
--	if (!current->mm)
--		return 0;
--
--	down_write(&current->mm->mmap_sem);
--
--	if (incr) {
--		locked = current->mm->locked_vm + npages;
--		lock_limit = rlimit(RLIMIT_MEMLOCK) >> PAGE_SHIFT;
--
--		if (locked > lock_limit && !capable(CAP_IPC_LOCK))
--			ret = -ENOMEM;
--		else
--			current->mm->locked_vm += npages;
--	} else {
--		if (WARN_ON_ONCE(npages > current->mm->locked_vm))
--			npages = current->mm->locked_vm;
--		current->mm->locked_vm -= npages;
--	}
--
--	dev_dbg(dev, "[%d] RLIMIT_MEMLOCK %c%ld %ld/%ld%s\n", current->pid,
--		incr ? '+' : '-', npages << PAGE_SHIFT,
--		current->mm->locked_vm << PAGE_SHIFT, rlimit(RLIMIT_MEMLOCK),
--		ret ? "- exceeded" : "");
--
--	up_write(&current->mm->mmap_sem);
--
--	return ret;
--}
--
- /**
-  * afu_dma_pin_pages - pin pages of given dma memory region
-  * @pdata: feature device platform data
-@@ -92,7 +47,7 @@ static int afu_dma_pin_pages(struct dfl_feature_platform_data *pdata,
- 	struct device *dev = &pdata->dev->dev;
- 	int ret, pinned;
- 
--	ret = afu_dma_adjust_locked_vm(dev, npages, true);
-+	ret = account_locked_vm(current->mm, npages, true);
- 	if (ret)
- 		return ret;
- 
-@@ -121,7 +76,7 @@ static int afu_dma_pin_pages(struct dfl_feature_platform_data *pdata,
- free_pages:
- 	kfree(region->pages);
- unlock_vm:
--	afu_dma_adjust_locked_vm(dev, npages, false);
-+	account_locked_vm(current->mm, npages, false);
- 	return ret;
- }
- 
-@@ -141,7 +96,7 @@ static void afu_dma_unpin_pages(struct dfl_feature_platform_data *pdata,
- 
- 	put_all_pages(region->pages, npages);
- 	kfree(region->pages);
--	afu_dma_adjust_locked_vm(dev, npages, false);
-+	account_locked_vm(current->mm, npages, false);
- 
- 	dev_dbg(dev, "%ld pages unpinned\n", npages);
- }
-diff --git a/drivers/vfio/vfio_iommu_spapr_tce.c b/drivers/vfio/vfio_iommu_spapr_tce.c
-index 6b64e45a5269..d39a1b830d82 100644
---- a/drivers/vfio/vfio_iommu_spapr_tce.c
-+++ b/drivers/vfio/vfio_iommu_spapr_tce.c
-@@ -22,6 +22,7 @@
- #include <linux/vmalloc.h>
- #include <linux/sched/mm.h>
- #include <linux/sched/signal.h>
-+#include <linux/mm.h>
- 
- #include <asm/iommu.h>
- #include <asm/tce.h>
-@@ -34,49 +35,13 @@
- static void tce_iommu_detach_group(void *iommu_data,
- 		struct iommu_group *iommu_group);
- 
--static long try_increment_locked_vm(struct mm_struct *mm, long npages)
-+static int tce_account_locked_vm(struct mm_struct *mm, unsigned long npages,
-+				 bool inc)
- {
--	long ret = 0, locked, lock_limit;
--
- 	if (WARN_ON_ONCE(!mm))
- 		return -EPERM;
- 
--	if (!npages)
--		return 0;
--
--	down_write(&mm->mmap_sem);
--	locked = mm->locked_vm + npages;
--	lock_limit = rlimit(RLIMIT_MEMLOCK) >> PAGE_SHIFT;
--	if (locked > lock_limit && !capable(CAP_IPC_LOCK))
--		ret = -ENOMEM;
--	else
--		mm->locked_vm += npages;
--
--	pr_debug("[%d] RLIMIT_MEMLOCK +%ld %ld/%ld%s\n", current->pid,
--			npages << PAGE_SHIFT,
--			mm->locked_vm << PAGE_SHIFT,
--			rlimit(RLIMIT_MEMLOCK),
--			ret ? " - exceeded" : "");
--
--	up_write(&mm->mmap_sem);
--
--	return ret;
--}
--
--static void decrement_locked_vm(struct mm_struct *mm, long npages)
--{
--	if (!mm || !npages)
--		return;
--
--	down_write(&mm->mmap_sem);
--	if (WARN_ON_ONCE(npages > mm->locked_vm))
--		npages = mm->locked_vm;
--	mm->locked_vm -= npages;
--	pr_debug("[%d] RLIMIT_MEMLOCK -%ld %ld/%ld\n", current->pid,
--			npages << PAGE_SHIFT,
--			mm->locked_vm << PAGE_SHIFT,
--			rlimit(RLIMIT_MEMLOCK));
--	up_write(&mm->mmap_sem);
-+	return account_locked_vm(mm, npages, inc);
- }
- 
- /*
-@@ -336,7 +301,7 @@ static int tce_iommu_enable(struct tce_container *container)
- 		return ret;
- 
- 	locked = table_group->tce32_size >> PAGE_SHIFT;
--	ret = try_increment_locked_vm(container->mm, locked);
-+	ret = tce_account_locked_vm(container->mm, locked, true);
- 	if (ret)
- 		return ret;
- 
-@@ -355,7 +320,7 @@ static void tce_iommu_disable(struct tce_container *container)
- 	container->enabled = false;
- 
- 	BUG_ON(!container->mm);
--	decrement_locked_vm(container->mm, container->locked_pages);
-+	tce_account_locked_vm(container->mm, container->locked_pages, false);
- }
- 
- static void *tce_iommu_open(unsigned long arg)
-@@ -658,7 +623,8 @@ static long tce_iommu_create_table(struct tce_container *container,
- 	if (!table_size)
- 		return -EINVAL;
- 
--	ret = try_increment_locked_vm(container->mm, table_size >> PAGE_SHIFT);
-+	ret = tce_account_locked_vm(container->mm, table_size >> PAGE_SHIFT,
-+				    true);
- 	if (ret)
- 		return ret;
- 
-@@ -677,7 +643,7 @@ static void tce_iommu_free_table(struct tce_container *container,
- 	unsigned long pages = tbl->it_allocated_size >> PAGE_SHIFT;
- 
- 	iommu_tce_table_put(tbl);
--	decrement_locked_vm(container->mm, pages);
-+	tce_account_locked_vm(container->mm, pages, false);
- }
- 
- static long tce_iommu_create_window(struct tce_container *container,
-diff --git a/drivers/vfio/vfio_iommu_type1.c b/drivers/vfio/vfio_iommu_type1.c
-index d0f731c9920a..15ac76171ccd 100644
---- a/drivers/vfio/vfio_iommu_type1.c
-+++ b/drivers/vfio/vfio_iommu_type1.c
-@@ -273,25 +273,14 @@ static int vfio_lock_acct(struct vfio_dma *dma, long npage, bool async)
- 		return -ESRCH; /* process exited */
- 
- 	ret = down_write_killable(&mm->mmap_sem);
--	if (!ret) {
--		if (npage > 0) {
--			if (!dma->lock_cap) {
--				unsigned long limit;
--
--				limit = task_rlimit(dma->task,
--						RLIMIT_MEMLOCK) >> PAGE_SHIFT;
--
--				if (mm->locked_vm + npage > limit)
--					ret = -ENOMEM;
--			}
--		}
-+	if (ret)
-+		goto out;
- 
--		if (!ret)
--			mm->locked_vm += npage;
--
--		up_write(&mm->mmap_sem);
--	}
-+	ret = __account_locked_vm(mm, abs(npage), npage > 0, dma->task,
-+				  dma->lock_cap);
-+	up_write(&mm->mmap_sem);
- 
-+out:
- 	if (async)
- 		mmput(mm);
- 
-diff --git a/include/linux/mm.h b/include/linux/mm.h
-index 6b10c21630f5..7134e55ca23f 100644
---- a/include/linux/mm.h
-+++ b/include/linux/mm.h
-@@ -1521,6 +1521,25 @@ static inline long get_user_pages_longterm(unsigned long start,
- int get_user_pages_fast(unsigned long start, int nr_pages, int write,
- 			struct page **pages);
- 
-+int __account_locked_vm(struct mm_struct *mm, unsigned long pages, bool inc,
-+			struct task_struct *task, bool bypass_rlim);
-+
-+static inline int account_locked_vm(struct mm_struct *mm, unsigned long pages,
-+				    bool inc)
-+{
-+	int ret;
-+
-+	if (pages == 0 || !mm)
-+		return 0;
-+
-+	down_write(&mm->mmap_sem);
-+	ret = __account_locked_vm(mm, pages, inc, current,
-+				  capable(CAP_IPC_LOCK));
-+	up_write(&mm->mmap_sem);
-+
-+	return ret;
-+}
-+
- /* Container for pinned pfns / pages */
- struct frame_vector {
- 	unsigned int nr_allocated;	/* Number of frames we have space for */
-diff --git a/mm/util.c b/mm/util.c
-index 43a2984bccaa..552302665bc2 100644
---- a/mm/util.c
-+++ b/mm/util.c
-@@ -6,6 +6,7 @@
- #include <linux/err.h>
- #include <linux/sched.h>
- #include <linux/sched/mm.h>
-+#include <linux/sched/signal.h>
- #include <linux/sched/task_stack.h>
- #include <linux/security.h>
- #include <linux/swap.h>
-@@ -346,6 +347,53 @@ int __weak get_user_pages_fast(unsigned long start,
- }
- EXPORT_SYMBOL_GPL(get_user_pages_fast);
- 
-+/**
-+ * __account_locked_vm - account locked pages to an mm's locked_vm
-+ * @mm:          mm to account against, may be NULL
-+ * @pages:       number of pages to account
-+ * @inc:         %true if @pages should be considered positive, %false if not
-+ * @task:        task used to check RLIMIT_MEMLOCK
-+ * @bypass_rlim: %true if checking RLIMIT_MEMLOCK should be skipped
-+ *
-+ * Assumes @task and @mm are valid (i.e. at least one reference on each), and
-+ * that mmap_sem is held as writer.
-+ *
-+ * Return:
-+ * * 0       on success
-+ * * 0       if @mm is NULL (can happen for example if the task is exiting)
-+ * * -ENOMEM if RLIMIT_MEMLOCK would be exceeded.
-+ */
-+int __account_locked_vm(struct mm_struct *mm, unsigned long pages, bool inc,
-+			struct task_struct *task, bool bypass_rlim)
-+{
-+	unsigned long locked_vm, limit;
-+	int ret = 0;
-+
-+	locked_vm = mm->locked_vm;
-+	if (inc) {
-+		if (!bypass_rlim) {
-+			limit = task_rlimit(task, RLIMIT_MEMLOCK) >> PAGE_SHIFT;
-+			if (locked_vm + pages > limit) {
-+				ret = -ENOMEM;
-+				goto out;
-+			}
-+		}
-+		mm->locked_vm = locked_vm + pages;
-+	} else {
-+		WARN_ON_ONCE(pages > locked_vm);
-+		mm->locked_vm = locked_vm - pages;
-+	}
-+
-+out:
-+	pr_debug("%s: [%d] %c%lu %lu/%lu%s\n", __func__, task->pid,
-+		 (inc) ? '+' : '-', pages << PAGE_SHIFT,
-+		 locked_vm << PAGE_SHIFT, task_rlimit(task, RLIMIT_MEMLOCK),
-+		 ret ? " - exceeded" : "");
-+
-+	return ret;
-+}
-+EXPORT_SYMBOL_GPL(__account_locked_vm);
-+
- unsigned long vm_mmap_pgoff(struct file *file, unsigned long addr,
- 	unsigned long len, unsigned long prot,
- 	unsigned long flag, unsigned long pgoff)
-
-base-commit: 37624b58542fb9f2d9a70e6ea006ef8a5f66c30b
 -- 
-2.21.0
-
+Anton R. Ivanov
+Cambridgegreys Limited. Registered in England. Company Number 10273661
+https://www.cambridgegreys.com/
