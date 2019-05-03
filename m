@@ -3,41 +3,41 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
 X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
-	autolearn=ham autolearn_force=no version=3.4.0
+	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_PASS autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D5268C43219
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 May 2019 07:27:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D8D0AC43219
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 May 2019 07:29:29 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 874AC20B7C
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 May 2019 07:27:51 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 874AC20B7C
+	by mail.kernel.org (Postfix) with ESMTPS id 8BA8620B7C
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 May 2019 07:29:29 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8BA8620B7C
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44wNyF3zjZzDqdb
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 May 2019 17:27:49 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44wP074VVCzDqVq
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 May 2019 17:29:27 +1000 (AEST)
 Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44wNKM6RMmzDqS6
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44wNKM6RTbzDqTJ
  for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 May 2019 16:59:19 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 44wNKK6RMWz9sPM; Fri,  3 May 2019 16:59:17 +1000 (AEST)
+ id 44wNKM3RTJz9s9y; Fri,  3 May 2019 16:59:19 +1000 (AEST)
 X-powerpc-patch-notification: thanks
-X-powerpc-patch-commit: 708597daf23486ea6f889ca29cc88389ca9a409a
+X-powerpc-patch-commit: 7ae3f6e130e8dc6188b59e3b4ebc2f16e9c8d053
 X-Patchwork-Hint: ignore
-In-Reply-To: <1554378890-31851-1-git-send-email-maddy@linux.vnet.ibm.com>
-To: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+In-Reply-To: <20190409044005.26446-1-npiggin@gmail.com>
+To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Subject: Re: [PATCH v2 1/2] powerpc/perf: init pmu from core-book3s
-Message-Id: <44wNKK6RMWz9sPM@ozlabs.org>
-Date: Fri,  3 May 2019 16:59:17 +1000 (AEST)
+Subject: Re: [PATCH v2] powerpc/watchdog: Use hrtimers for per-CPU heartbeat
+Message-Id: <44wNKM3RTJz9s9y@ozlabs.org>
+Date: Fri,  3 May 2019 16:59:19 +1000 (AEST)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -49,23 +49,33 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org
+Cc: "Gautham R . Shenoy" <ego@linux.vnet.ibm.com>,
+ Ravikumar Bangoria <ravi.bangoria@in.ibm.com>,
+ Nicholas Piggin <npiggin@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, 2019-04-04 at 11:54:49 UTC, Madhavan Srinivasan wrote:
-> Currenty pmu driver file for each ppc64 generation processor
-> has a __init call in itself. Refactor the code by moving the
-> __init call to core-books.c. This also clean's up compat mode
-> pmu driver registration.
+On Tue, 2019-04-09 at 04:40:05 UTC, Nicholas Piggin wrote:
+> Using a jiffies timer creates a dependency on the tick_do_timer_cpu
+> incrementing jiffies. If that CPU has locked up and jiffies is not
+> incrementing, the watchdog heartbeat timer for all CPUs stops and
+> creates false positives and confusing warnings on local CPUs, and
+> also causes the SMP detector to stop, so the root cause is never
+> detected.
 > 
-> Suggested-by: Michael Ellerman <mpe@ellerman.id.au>
-> Signed-off-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+> Fix this by using hrtimer based timers for the watchdog heartbeat,
+> like the generic kernel hardlockup detector.
+> 
+> Cc: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
+> Reported-by: Ravikumar Bangoria <ravi.bangoria@in.ibm.com>
+> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+> Tested-by: Ravi Bangoria <ravi.bangoria@linux.ibm.com>
+> Reported-by: Ravi Bangoria <ravi.bangoria@linux.ibm.com>
+> Reviewed-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
 
 Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/708597daf23486ea6f889ca29cc88389
+https://git.kernel.org/powerpc/c/7ae3f6e130e8dc6188b59e3b4ebc2f16
 
 cheers
