@@ -6,40 +6,40 @@ X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E2A60C43219
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 May 2019 07:19:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 078B5C43219
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 May 2019 07:21:02 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 9849F2075C
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 May 2019 07:19:28 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9849F2075C
+	by mail.kernel.org (Postfix) with ESMTPS id AD46B2075C
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 May 2019 07:21:01 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org AD46B2075C
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44wNmZ4C33zDqXt
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 May 2019 17:19:26 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+	by lists.ozlabs.org (Postfix) with ESMTP id 44wNpM2XHszDqdm
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 May 2019 17:20:59 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44wNKD6ftxzDqR1
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 May 2019 16:59:12 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44wNKK1YlKzDqTJ
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 May 2019 16:59:17 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 44wNKD4ZS9z9sBb; Fri,  3 May 2019 16:59:12 +1000 (AEST)
+ id 44wNKF4yxqz9sB8; Fri,  3 May 2019 16:59:13 +1000 (AEST)
 X-powerpc-patch-notification: thanks
-X-powerpc-patch-commit: 71faf8145cdc20f22aa398eb7b206b33826cf2bd
+X-powerpc-patch-commit: 32eeb5614d3bf166e84fe69bb5f3a51a48cac7a1
 X-Patchwork-Hint: ignore
-In-Reply-To: <a048e3619ef2c378d075f46119ff5b7091320ecc.1553779159.git.christophe.leroy@c-s.fr>
-To: Christophe Leroy <christophe.leroy@c-s.fr>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>
+In-Reply-To: <20190329154456.27152-1-yuehaibing@huawei.com>
+To: Yue Haibing <yuehaibing@huawei.com>, <fbarrat@linux.ibm.com>,
+ <andrew.donnellan@au1.ibm.com>, <arnd@arndb.de>, <gregkh@linuxfoundation.org>
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Subject: Re: [PATCH] powerpc/nohash64: clean pgtable.h
-Message-Id: <44wNKD4ZS9z9sBb@ozlabs.org>
-Date: Fri,  3 May 2019 16:59:12 +1000 (AEST)
+Subject: Re: [PATCH -next] ocxl: remove set but not used variables 'tid' and
+ 'lpid'
+Message-Id: <44wNKF4yxqz9sB8@ozlabs.org>
+Date: Fri,  3 May 2019 16:59:13 +1000 (AEST)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -51,20 +51,30 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org, YueHaibing <yuehaibing@huawei.com>,
+ linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, 2019-03-28 at 13:19:47 UTC, Christophe Leroy wrote:
-> TRANSPARENT_HUGEPAGE is only supported by book3s
+On Fri, 2019-03-29 at 15:44:56 UTC, Yue Haibing wrote:
+> From: YueHaibing <yuehaibing@huawei.com>
 > 
-> VMEMMAP_REGION_ID is never used
+> Fixes gcc '-Wunused-but-set-variable' warning:
 > 
-> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+> drivers/misc/ocxl/link.c: In function 'xsl_fault_handler':
+> drivers/misc/ocxl/link.c:187:17: warning: variable 'tid' set but not used [-Wunused-but-set-variable]
+> drivers/misc/ocxl/link.c:187:6: warning: variable 'lpid' set but not used [-Wunused-but-set-variable]
+> 
+> They are never used and can be removed.
+> 
+> Signed-off-by: YueHaibing <yuehaibing@huawei.com>
+> Reviewed-by: Mukesh Ojha <mojha@codeaurora.org>
+> Acked-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+> Acked-by: Frederic Barrat <fbarrat@linux.ibm.com>
 
 Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/71faf8145cdc20f22aa398eb7b206b33
+https://git.kernel.org/powerpc/c/32eeb5614d3bf166e84fe69bb5f3a51a
 
 cheers
