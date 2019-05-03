@@ -2,53 +2,94 @@ Return-Path: <SRS0=37tr=TD=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_PASS,UNPARSEABLE_RELAY,USER_AGENT_MUTT autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A931CC43219
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 May 2019 13:05:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 12E71C43219
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 May 2019 13:19:14 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 624EF2081C
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 May 2019 13:05:42 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 624EF2081C
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nxp.com
+	by mail.kernel.org (Postfix) with ESMTPS id 486A72070B
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 May 2019 13:19:13 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=oracle.com header.i=@oracle.com header.b="MkgAYKJi"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 486A72070B
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=oracle.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44wXS4269HzDqkJ
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 May 2019 23:05:40 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44wXlg0cx2zDqlX
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 May 2019 23:19:11 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=nxp.com
- (client-ip=92.121.34.13; helo=inva020.nxp.com;
- envelope-from=laurentiu.tudor@nxp.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=oracle.com
+ (client-ip=141.146.126.79; helo=aserp2130.oracle.com;
+ envelope-from=dan.carpenter@oracle.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=nxp.com
-Received: from inva020.nxp.com (inva020.nxp.com [92.121.34.13])
+ dmarc=pass (p=none dis=none) header.from=oracle.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=oracle.com header.i=@oracle.com header.b="MkgAYKJi"; 
+ dkim-atps=neutral
+Received: from aserp2130.oracle.com (aserp2130.oracle.com [141.146.126.79])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44wXPP3LZ9zDqjW
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 May 2019 23:03:19 +1000 (AEST)
-Received: from inva020.nxp.com (localhost [127.0.0.1])
- by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id F24EA1A00C7;
- Fri,  3 May 2019 15:03:13 +0200 (CEST)
-Received: from inva024.eu-rdc02.nxp.com (inva024.eu-rdc02.nxp.com
- [134.27.226.22])
- by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id E565C1A0029;
- Fri,  3 May 2019 15:03:13 +0200 (CEST)
-Received: from fsr-ub1864-101.ea.freescale.net
- (fsr-ub1864-101.ea.freescale.net [10.171.82.13])
- by inva024.eu-rdc02.nxp.com (Postfix) with ESMTP id 5949A205F4;
- Fri,  3 May 2019 15:03:13 +0200 (CEST)
-From: laurentiu.tudor@nxp.com
-To: netdev@vger.kernel.org, madalin.bucur@nxp.com, camelia.groza@nxp.com,
- leoyang.li@nxp.com
-Subject: [PATCH v3] dpaa_eth: fix SG frame cleanup
-Date: Fri,  3 May 2019 16:03:11 +0300
-Message-Id: <20190503130311.9914-1-laurentiu.tudor@nxp.com>
-X-Mailer: git-send-email 2.17.1
-X-Virus-Scanned: ClamAV using ClamSMTP
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44wXh6111pzDqjV
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 May 2019 23:16:05 +1000 (AEST)
+Received: from pps.filterd (aserp2130.oracle.com [127.0.0.1])
+ by aserp2130.oracle.com (8.16.0.27/8.16.0.27) with SMTP id x43DE9Z8139285;
+ Fri, 3 May 2019 13:16:02 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com;
+ h=date : from : to : cc
+ : subject : message-id : mime-version : content-type; s=corp-2018-07-02;
+ bh=LKoaRH4hte2H2gUAeE/hBpDseBARYBBMupgVpZ6MJsg=;
+ b=MkgAYKJii7S3MkefBB4xrK2gBNOYc2R8NlKIkGKDg0i1qDnor9mBZ/NFRYV0F/S6wWbE
+ pwsBeHSIVV5FsRC4R3Mchrix2xfqRu2ejBDsZkhZm3or1XLbSpmoTQZP+86DUcFHvOq6
+ yUYGJResPYpZ23kSIKLJA9yvcF7q8xXT/U7wBgBeQ+WhuR1kj10UGoEvJIsrzeCYTvjh
+ TAdkroV/qGIalovgXNLOkIKPBBZx2AkCZVDeKe9GnUjapZbSX54KbzQoUiKdkwj9sONO
+ DtEm0e0irdQ11NpDQAipfua8Y48BjLVWeRdtgqkNzqR+yof7dmEKdi4fyToluYLdYmMY Zg== 
+Received: from aserp3030.oracle.com (aserp3030.oracle.com [141.146.126.71])
+ by aserp2130.oracle.com with ESMTP id 2s6xhypn1p-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Fri, 03 May 2019 13:16:02 +0000
+Received: from pps.filterd (aserp3030.oracle.com [127.0.0.1])
+ by aserp3030.oracle.com (8.16.0.27/8.16.0.27) with SMTP id x43DEvYZ173502;
+ Fri, 3 May 2019 13:16:01 GMT
+Received: from userv0121.oracle.com (userv0121.oracle.com [156.151.31.72])
+ by aserp3030.oracle.com with ESMTP id 2s7rtc9efj-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Fri, 03 May 2019 13:16:01 +0000
+Received: from abhmp0019.oracle.com (abhmp0019.oracle.com [141.146.116.25])
+ by userv0121.oracle.com (8.14.4/8.13.8) with ESMTP id x43DFx3b006657;
+ Fri, 3 May 2019 13:16:00 GMT
+Received: from mwanda (/196.104.111.181)
+ by default (Oracle Beehive Gateway v4.0)
+ with ESMTP ; Fri, 03 May 2019 06:15:59 -0700
+Date: Fri, 3 May 2019 16:15:51 +0300
+From: Dan Carpenter <dan.carpenter@oracle.com>
+To: Qiang Zhao <qiang.zhao@nxp.com>, Grant Likely <grant.likely@secretlab.ca>
+Subject: [PATCH] soc: fsl: qe: gpio: Fix an error code in qe_pin_request()
+Message-ID: <20190503131551.GB1236@mwanda>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+X-Mailer: git-send-email haha only kidding
+User-Agent: Mutt/1.10.1 (2018-07-13)
+X-Proofpoint-Virus-Version: vendor=nai engine=5900 definitions=9245
+ signatures=668685
+X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 suspectscore=0
+ malwarescore=0
+ phishscore=0 bulkscore=0 spamscore=0 mlxscore=0 mlxlogscore=999
+ adultscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.0.1-1810050000 definitions=main-1905030083
+X-Proofpoint-Virus-Version: vendor=nai engine=5900 definitions=9245
+ signatures=668685
+X-Proofpoint-Spam-Details: rule=notspam policy=default score=0
+ priorityscore=1501 malwarescore=0
+ suspectscore=0 phishscore=0 bulkscore=0 spamscore=0 clxscore=1011
+ lowpriorityscore=0 mlxscore=0 impostorscore=0 mlxlogscore=999 adultscore=0
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.0.1-1810050000
+ definitions=main-1905030083
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -60,44 +101,38 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-kernel@vger.kernel.org, stable@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, davem@davemloft.net,
- linux-arm-kernel@lists.infradead.org,
- Laurentiu Tudor <laurentiu.tudor@nxp.com>
+Cc: kernel-janitors@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ Li Yang <leoyang.li@nxp.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Laurentiu Tudor <laurentiu.tudor@nxp.com>
+There was a missing error code in this path.  It meant that we returned
+ERR_PTR(0) which is NULL and would result in a NULL dereference in the
+caller.
 
-Fix issue with the entry indexing in the sg frame cleanup code being
-off-by-1. This problem showed up when doing some basic iperf tests and
-manifested in traffic coming to a halt.
-
-Signed-off-by: Laurentiu Tudor <laurentiu.tudor@nxp.com>
-Acked-by: Madalin Bucur <madalin.bucur@nxp.com>
-Cc: <stable@vger.kernel.org>
+Fixes: 1a2d397a6eb5 ("gpio/powerpc: Eliminate duplication of of_get_named_gpio_flags()")
+Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
 ---
-v3:
- - added cc:stable tag (Joakim)
- - pulled from the original patch series and send individually
+ drivers/soc/fsl/qe/gpio.c | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
- drivers/net/ethernet/freescale/dpaa/dpaa_eth.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/drivers/net/ethernet/freescale/dpaa/dpaa_eth.c b/drivers/net/ethernet/freescale/dpaa/dpaa_eth.c
-index daede7272768..40420edc9ce6 100644
---- a/drivers/net/ethernet/freescale/dpaa/dpaa_eth.c
-+++ b/drivers/net/ethernet/freescale/dpaa/dpaa_eth.c
-@@ -1663,7 +1663,7 @@ static struct sk_buff *dpaa_cleanup_tx_fd(const struct dpaa_priv *priv,
- 				 qm_sg_entry_get_len(&sgt[0]), dma_dir);
+diff --git a/drivers/soc/fsl/qe/gpio.c b/drivers/soc/fsl/qe/gpio.c
+index 819bed0f5667..51b3a47b5a55 100644
+--- a/drivers/soc/fsl/qe/gpio.c
++++ b/drivers/soc/fsl/qe/gpio.c
+@@ -179,8 +179,10 @@ struct qe_pin *qe_pin_request(struct device_node *np, int index)
+ 	if (err < 0)
+ 		goto err0;
+ 	gc = gpio_to_chip(err);
+-	if (WARN_ON(!gc))
++	if (WARN_ON(!gc)) {
++		err = -ENODEV;
+ 		goto err0;
++	}
  
- 		/* remaining pages were mapped with skb_frag_dma_map() */
--		for (i = 1; i < nr_frags; i++) {
-+		for (i = 1; i <= nr_frags; i++) {
- 			WARN_ON(qm_sg_entry_is_ext(&sgt[i]));
- 
- 			dma_unmap_page(dev, qm_sg_addr(&sgt[i]),
+ 	if (!of_device_is_compatible(gc->of_node, "fsl,mpc8323-qe-pario-bank")) {
+ 		pr_debug("%s: tried to get a non-qe pin\n", __func__);
 -- 
-2.17.1
+2.18.0
 
