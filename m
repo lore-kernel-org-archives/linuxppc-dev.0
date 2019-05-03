@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT
 	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 77B73C43219
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 May 2019 00:52:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EF8F8C43219
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 May 2019 00:53:43 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id BD7932070B
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 May 2019 00:52:26 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BD7932070B
+	by mail.kernel.org (Postfix) with ESMTPS id 758492070B
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 May 2019 00:53:43 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 758492070B
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44wDB04n2VzDqVc
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 May 2019 10:52:24 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44wDCT3tz2zDqNK
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 May 2019 10:53:41 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
  (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
@@ -29,56 +29,47 @@ Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44wD8X5DfSzDqLB
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44wD8X62dmzDqLC
  for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 May 2019 10:51:07 +1000 (AEST)
-Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x430lk5P084630
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 2 May 2019 20:51:05 -0400
-Received: from e16.ny.us.ibm.com (e16.ny.us.ibm.com [129.33.205.206])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2s88gr51bj-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 02 May 2019 20:51:05 -0400
-Received: from localhost
- by e16.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <tyreld@linux.ibm.com>;
- Fri, 3 May 2019 01:51:03 +0100
-Received: from b01cxnp22035.gho.pok.ibm.com (9.57.198.25)
- by e16.ny.us.ibm.com (146.89.104.203) with IBM ESMTP SMTP Gateway: Authorized
- Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Fri, 3 May 2019 01:51:02 +0100
+ x430lcZi135743; Thu, 2 May 2019 20:51:04 -0400
+Received: from ppma01dal.us.ibm.com (83.d6.3fa9.ip4.static.sl-reverse.com
+ [169.63.214.131])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2s8aj2hj8s-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Thu, 02 May 2019 20:51:04 -0400
+Received: from pps.filterd (ppma01dal.us.ibm.com [127.0.0.1])
+ by ppma01dal.us.ibm.com (8.16.0.27/8.16.0.27) with SMTP id x42IsHxw013591;
+ Thu, 2 May 2019 18:55:02 GMT
+Received: from b01cxnp22036.gho.pok.ibm.com (b01cxnp22036.gho.pok.ibm.com
+ [9.57.198.26]) by ppma01dal.us.ibm.com with ESMTP id 2s4eq3wvr4-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Thu, 02 May 2019 18:55:01 +0000
 Received: from b01ledav001.gho.pok.ibm.com (b01ledav001.gho.pok.ibm.com
  [9.57.199.106])
- by b01cxnp22035.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x430p1V536962446
+ by b01cxnp22036.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x430p2kF24183006
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Fri, 3 May 2019 00:51:01 GMT
+ Fri, 3 May 2019 00:51:02 GMT
 Received: from b01ledav001.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 1880428058;
+ by IMSVA (Postfix) with ESMTP id 7071628058;
+ Fri,  3 May 2019 00:51:02 +0000 (GMT)
+Received: from b01ledav001.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id DDA6D2805A;
  Fri,  3 May 2019 00:51:01 +0000 (GMT)
-Received: from b01ledav001.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 84BBA28059;
- Fri,  3 May 2019 00:51:00 +0000 (GMT)
 Received: from ltcalpine2-lp11.aus.stglabs.ibm.com (unknown [9.40.195.194])
  by b01ledav001.gho.pok.ibm.com (Postfix) with ESMTP;
- Fri,  3 May 2019 00:51:00 +0000 (GMT)
+ Fri,  3 May 2019 00:51:01 +0000 (GMT)
 From: Tyrel Datwyler <tyreld@linux.ibm.com>
 To: james.bottomley@hansenpartnership.com
-Subject: [PATCH v2 1/3] ibmvscsi: Wire up host_reset() in the drivers
- scsi_host_template
-Date: Thu,  2 May 2019 19:50:56 -0500
+Subject: [PATCH v2 3/3] ibmvscsi: fix tripping of blk_mq_run_hw_queue WARN_ON
+Date: Thu,  2 May 2019 19:50:58 -0500
+Message-Id: <20190503005058.8768-3-tyreld@linux.ibm.com>
 X-Mailer: git-send-email 2.18.1
+In-Reply-To: <20190503005058.8768-1-tyreld@linux.ibm.com>
+References: <20190503005058.8768-1-tyreld@linux.ibm.com>
 X-TM-AS-GCONF: 00
-x-cbid: 19050300-0072-0000-0000-0000042457A1
-X-IBM-SpamModules-Scores: 
-X-IBM-SpamModules-Versions: BY=3.00011038; HX=3.00000242; KW=3.00000007;
- PH=3.00000004; SC=3.00000285; SDB=6.01197740; UDB=6.00628232; IPR=6.00978597; 
- MB=3.00026706; MTD=3.00000008; XFM=3.00000015; UTC=2019-05-03 00:51:03
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19050300-0073-0000-0000-00004C0DCD88
-Message-Id: <20190503005058.8768-1-tyreld@linux.ibm.com>
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
  definitions=2019-05-02_13:, , signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
@@ -107,50 +98,91 @@ Sender: "Linuxppc-dev"
 
 From: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
 
-Wire up the host_reset function in our driver_template to allow a user
-requested adpater reset via the host_reset sysfs attribute.
+After a successful SRP login response we call scsi_unblock_requests() to
+kick any pending IO's. The callback to process this SRP response happens in
+a tasklet and therefore is in softirq context. The result of such is
+that when blk-mq is enabled it is no longer safe to call
+scsi_unblock_requests() from this context. The result of duing so
+triggers the following WARN_ON splat in dmesg after a host reset or CRQ
+reenablement.
 
-Example:
+WARNING: CPU: 0 PID: 0 at block/blk-mq.c:1375 __blk_mq_run_hw_queue+0x120/0x180
+Modules linked in:
+CPU: 0 PID: 0 Comm: swapper/0 Not tainted 5.0.0-rc8 #4
+NIP [c0000000009771e0] __blk_mq_run_hw_queue+0x120/0x180
+LR [c000000000977484] __blk_mq_delay_run_hw_queue+0x244/0x250
+Call Trace:
 
-echo "adapter" > /sys/class/scsi_host/host0/host_reset
+__blk_mq_delay_run_hw_queue+0x244/0x250
+blk_mq_run_hw_queue+0x8c/0x1c0
+blk_mq_run_hw_queues+0x60/0x90
+scsi_run_queue+0x1e4/0x3b0
+scsi_run_host_queues+0x48/0x80
+login_rsp+0xb0/0x100
+ibmvscsi_handle_crq+0x30c/0x3e0
+ibmvscsi_task+0x54/0xe0
+tasklet_action_common.isra.3+0xc4/0x1a0
+__do_softirq+0x174/0x3f4
+irq_exit+0xf0/0x120
+__do_irq+0xb0/0x210
+call_do_irq+0x14/0x24
+do_IRQ+0x9c/0x130
+hardware_interrupt_common+0x14c/0x150
+
+This patch fixes the issue by introducing a new host action for
+unblocking the scsi requests in our seperate work thread.
 
 Signed-off-by: Tyrel Datwyler <tyreld@linux.ibm.com>
 ---
 Changes in v2:
-	removed interrupt disabe/enable around reset
+	no change
 
- drivers/scsi/ibmvscsi/ibmvscsi.c | 11 +++++++++++
- 1 file changed, 11 insertions(+)
+ drivers/scsi/ibmvscsi/ibmvscsi.c | 5 ++++-
+ drivers/scsi/ibmvscsi/ibmvscsi.h | 1 +
+ 2 files changed, 5 insertions(+), 1 deletion(-)
 
 diff --git a/drivers/scsi/ibmvscsi/ibmvscsi.c b/drivers/scsi/ibmvscsi/ibmvscsi.c
-index 8cec5230fe31..65fc8ca962c5 100644
+index 8df82c58e7b9..727c31dc11a0 100644
 --- a/drivers/scsi/ibmvscsi/ibmvscsi.c
 +++ b/drivers/scsi/ibmvscsi/ibmvscsi.c
-@@ -2050,6 +2050,16 @@ static struct device_attribute ibmvscsi_host_config = {
- 	.show = show_host_config,
+@@ -1179,7 +1179,8 @@ static void login_rsp(struct srp_event_struct *evt_struct)
+ 		   be32_to_cpu(evt_struct->xfer_iu->srp.login_rsp.req_lim_delta));
+ 
+ 	/* If we had any pending I/Os, kick them */
+-	scsi_unblock_requests(hostdata->host);
++	hostdata->action = IBMVSCSI_HOST_ACTION_UNBLOCK;
++	wake_up(&hostdata->work_wait_q);
+ }
+ 
+ /**
+@@ -2123,6 +2124,7 @@ static void ibmvscsi_do_work(struct ibmvscsi_host_data *hostdata)
+ 	spin_lock_irqsave(hostdata->host->host_lock, flags);
+ 	switch (hostdata->action) {
+ 	case IBMVSCSI_HOST_ACTION_NONE:
++	case IBMVSCSI_HOST_ACTION_UNBLOCK:
+ 		break;
+ 	case IBMVSCSI_HOST_ACTION_RESET:
+ 		spin_unlock_irqrestore(hostdata->host->host_lock, flags);
+@@ -2164,6 +2166,7 @@ static int __ibmvscsi_work_to_do(struct ibmvscsi_host_data *hostdata)
+ 		return 0;
+ 	case IBMVSCSI_HOST_ACTION_RESET:
+ 	case IBMVSCSI_HOST_ACTION_REENABLE:
++	case IBMVSCSI_HOST_ACTION_UNBLOCK:
+ 	default:
+ 		break;
+ 	}
+diff --git a/drivers/scsi/ibmvscsi/ibmvscsi.h b/drivers/scsi/ibmvscsi/ibmvscsi.h
+index 04bcbc832dc9..d9bf502334ba 100644
+--- a/drivers/scsi/ibmvscsi/ibmvscsi.h
++++ b/drivers/scsi/ibmvscsi/ibmvscsi.h
+@@ -92,6 +92,7 @@ enum ibmvscsi_host_action {
+ 	IBMVSCSI_HOST_ACTION_NONE = 0,
+ 	IBMVSCSI_HOST_ACTION_RESET,
+ 	IBMVSCSI_HOST_ACTION_REENABLE,
++	IBMVSCSI_HOST_ACTION_UNBLOCK,
  };
  
-+static int ibmvscsi_host_reset(struct Scsi_Host *shost, int reset_type)
-+{
-+	struct ibmvscsi_host_data *hostdata = shost_priv(shost);
-+
-+	dev_info(hostdata->dev, "Initiating adapter reset!\n");
-+	ibmvscsi_reset_host(hostdata);
-+
-+	return 0;
-+}
-+
- static struct device_attribute *ibmvscsi_attrs[] = {
- 	&ibmvscsi_host_vhost_loc,
- 	&ibmvscsi_host_vhost_name,
-@@ -2076,6 +2086,7 @@ static struct scsi_host_template driver_template = {
- 	.eh_host_reset_handler = ibmvscsi_eh_host_reset_handler,
- 	.slave_configure = ibmvscsi_slave_configure,
- 	.change_queue_depth = ibmvscsi_change_queue_depth,
-+	.host_reset = ibmvscsi_host_reset,
- 	.cmd_per_lun = IBMVSCSI_CMDS_PER_LUN_DEFAULT,
- 	.can_queue = IBMVSCSI_MAX_REQUESTS_DEFAULT,
- 	.this_id = -1,
+ /* all driver data associated with a host adapter */
 -- 
 2.18.1
 
