@@ -3,42 +3,41 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
 X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
-	autolearn=ham autolearn_force=no version=3.4.0
+	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_PASS
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D4C81C43219
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 May 2019 08:01:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 904F6C43219
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 May 2019 08:03:19 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 8B56B20675
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 May 2019 08:01:48 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8B56B20675
+	by mail.kernel.org (Postfix) with ESMTPS id 45C7720675
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 May 2019 08:03:19 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 45C7720675
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44wPjQ4wCszDqyG
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 May 2019 18:01:46 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+	by lists.ozlabs.org (Postfix) with ESMTP id 44wPl93CKKzDqnl
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 May 2019 18:03:17 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44wNKf32PVzDqR1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44wNKf75WgzDqQ0
  for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 May 2019 16:59:34 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 44wNKf0JJFz9sD4; Fri,  3 May 2019 16:59:33 +1000 (AEST)
+ id 44wNKf4xjRz9sBr; Fri,  3 May 2019 16:59:34 +1000 (AEST)
 X-powerpc-patch-notification: thanks
-X-powerpc-patch-commit: 5b2a15296210d3b70e06d0f09a8e701ff74ccbe8
+X-powerpc-patch-commit: 5d085ec04a000fefb5182d3b03ee46ca96d8389b
 X-Patchwork-Hint: ignore
-In-Reply-To: <20181004062337.14252-1-anton@ozlabs.org>
-To: Anton Blanchard <anton@ozlabs.org>, benh@kernel.crashing.org,
- paulus@samba.org, npiggin@gmail.com, ruscur@russell.cc
+In-Reply-To: <1540905715-4266-1-git-send-email-tsu.yubo@gmail.com>
+To: Bo YU <tsu.yubo@gmail.com>, benh@kernel.crashing.org, paulus@samba.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Subject: Re: [PATCH] powerpc: Add doorbell tracepoints
-Message-Id: <44wNKf0JJFz9sD4@ozlabs.org>
-Date: Fri,  3 May 2019 16:59:33 +1000 (AEST)
+Subject: Re: [PATCH] arch: fix without checked-return value with lseek
+Message-Id: <44wNKf4xjRz9sBr@ozlabs.org>
+Date: Fri,  3 May 2019 16:59:34 +1000 (AEST)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -50,19 +49,21 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org
+Cc: Bo YU <tsu.yubo@gmail.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, 2018-10-04 at 06:23:37 UTC, Anton Blanchard wrote:
-> When analysing sources of OS jitter, I noticed that doorbells cannot be
-> traced.
+On Tue, 2018-10-30 at 13:21:55 UTC, Bo YU wrote:
+> lseek should have returned value but we miss it maybe.
+> This is detected by Coverity scan:
+> CID: 1440481
 > 
-> Signed-off-by: Anton Blanchard <anton@ozlabs.org>
+> Signed-off-by: Bo YU <tsu.yubo@gmail.com>
 
 Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/5b2a15296210d3b70e06d0f09a8e701f
+https://git.kernel.org/powerpc/c/5d085ec04a000fefb5182d3b03ee46ca
 
 cheers
