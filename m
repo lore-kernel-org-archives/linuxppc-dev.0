@@ -2,93 +2,98 @@ Return-Path: <SRS0=37tr=TD=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DA372C43219
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 May 2019 00:54:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BEA38C43219
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 May 2019 00:56:48 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 63AC92070B
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 May 2019 00:54:59 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 63AC92070B
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 3338A2070B
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 May 2019 00:56:48 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=russell.cc header.i=@russell.cc header.b="mcqoaD00";
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b="4JAy1yuV"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3338A2070B
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=russell.cc
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44wDDx1dHZzDqYJ
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 May 2019 10:54:57 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44wDH21M0gzDqWh
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 May 2019 10:56:46 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
- (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=tyreld@linux.ibm.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=russell.cc
+ (client-ip=64.147.123.25; helo=wout2-smtp.messagingengine.com;
+ envelope-from=ruscur@russell.cc; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+ dmarc=none (p=none dis=none) header.from=russell.cc
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=russell.cc header.i=@russell.cc header.b="mcqoaD00"; 
+ dkim=pass (2048-bit key;
+ unprotected) header.d=messagingengine.com header.i=@messagingengine.com
+ header.b="4JAy1yuV"; dkim-atps=neutral
+Received: from wout2-smtp.messagingengine.com (wout2-smtp.messagingengine.com
+ [64.147.123.25])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44wD8Y6HzbzDqLB
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 May 2019 10:51:09 +1000 (AEST)
-Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x430maLD112382
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 2 May 2019 20:51:08 -0400
-Received: from e16.ny.us.ibm.com (e16.ny.us.ibm.com [129.33.205.206])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2s88sumjyt-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 02 May 2019 20:51:07 -0400
-Received: from localhost
- by e16.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <tyreld@linux.ibm.com>;
- Fri, 3 May 2019 01:51:06 +0100
-Received: from b01cxnp22035.gho.pok.ibm.com (9.57.198.25)
- by e16.ny.us.ibm.com (146.89.104.203) with IBM ESMTP SMTP Gateway: Authorized
- Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Fri, 3 May 2019 01:51:02 +0100
-Received: from b01ledav001.gho.pok.ibm.com (b01ledav001.gho.pok.ibm.com
- [9.57.199.106])
- by b01cxnp22035.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x430p1da18808844
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Fri, 3 May 2019 00:51:01 GMT
-Received: from b01ledav001.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id BF4F72805C;
- Fri,  3 May 2019 00:51:01 +0000 (GMT)
-Received: from b01ledav001.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 3749F2805A;
- Fri,  3 May 2019 00:51:01 +0000 (GMT)
-Received: from ltcalpine2-lp11.aus.stglabs.ibm.com (unknown [9.40.195.194])
- by b01ledav001.gho.pok.ibm.com (Postfix) with ESMTP;
- Fri,  3 May 2019 00:51:01 +0000 (GMT)
-From: Tyrel Datwyler <tyreld@linux.ibm.com>
-To: james.bottomley@hansenpartnership.com
-Subject: [PATCH v2 2/3] ibmvscsi: redo driver work thread to use enum action
- states
-Date: Thu,  2 May 2019 19:50:57 -0500
-X-Mailer: git-send-email 2.18.1
-In-Reply-To: <20190503005058.8768-1-tyreld@linux.ibm.com>
-References: <20190503005058.8768-1-tyreld@linux.ibm.com>
-X-TM-AS-GCONF: 00
-x-cbid: 19050300-0072-0000-0000-0000042457A2
-X-IBM-SpamModules-Scores: 
-X-IBM-SpamModules-Versions: BY=3.00011038; HX=3.00000242; KW=3.00000007;
- PH=3.00000004; SC=3.00000285; SDB=6.01197740; UDB=6.00628232; IPR=6.00978597; 
- MB=3.00026706; MTD=3.00000008; XFM=3.00000015; UTC=2019-05-03 00:51:04
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19050300-0073-0000-0000-00004C0DCD8B
-Message-Id: <20190503005058.8768-2-tyreld@linux.ibm.com>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2019-05-02_13:, , signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- malwarescore=0 suspectscore=1 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=934 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1810050000 definitions=main-1905030003
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44wDFR1q1FzDqLB
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 May 2019 10:55:23 +1000 (AEST)
+Received: from compute6.internal (compute6.nyi.internal [10.202.2.46])
+ by mailout.west.internal (Postfix) with ESMTP id A151F5A7;
+ Thu,  2 May 2019 20:55:20 -0400 (EDT)
+Received: from mailfrontend2 ([10.202.2.163])
+ by compute6.internal (MEProxy); Thu, 02 May 2019 20:55:20 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=russell.cc; h=
+ message-id:subject:from:to:cc:date:in-reply-to:references
+ :content-type:mime-version:content-transfer-encoding; s=fm1; bh=
+ UEIQv5LWUL+GdzdBZmIUWxKe8JPzQq56Ac0tlzTHnmo=; b=mcqoaD00l8Bq5jg9
+ c8/pGIJXC4LbJgoP/uNi9ugl5TmECbHjDCoQrrtOWOaPAzrPjVM0h3Gp4l0FWVaZ
+ noTOpwY21mXM+SgIsPY4jRDAzFAFI9I9LjvkA7JuWI252QfPhznb7mfI2A7T58kB
+ mTnejxJDVv3DMbL6/vvUm6Eab1lDACqzukXwXfCBXWzbbysrUMEphSEZOUlAAmzq
+ E/KEx+syH+lB6x9a3Ivo5eYSKI4K2vatwIWK2C6lYcG+kszHs5Bewbq5uGK8ab8i
+ 2AigP6tzBBo8gfk1bvF7Lh/FqF/EU4ESvXU1xrlSRF5ijhZKyBCg+RCnaJoJpW+K
+ 2kHxZw==
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
+ messagingengine.com; h=cc:content-transfer-encoding:content-type
+ :date:from:in-reply-to:message-id:mime-version:references
+ :subject:to:x-me-proxy:x-me-proxy:x-me-sender:x-me-sender
+ :x-sasl-enc; s=fm2; bh=UEIQv5LWUL+GdzdBZmIUWxKe8JPzQq56Ac0tlzTHn
+ mo=; b=4JAy1yuV7+ziviIt7hM1Zsc+bpr5Nei9inJKjIPAWz9/eZNDKiT1o60P1
+ GXCPAnI8P2mufJRGwsnu+LDrTYTFZPcWQvFtQxup7jaPAGxerPCTTPe7nJFM/QSb
+ zLae9PVfMjk8UXt7t3z3gk512zBCjt+OIGlnkZvlHf5HTtijjeVVADx7ppIE9mGW
+ CQiNwNOpurVQkV40Jf4eSVjGFMpUFBWuBQNffMsZgsS7HcwFGYpXKDborIS8dVpI
+ s40M16mzoHf5SBGpY9s8Qd26qFSEaupctHEGcT4z+uc+D7bb5GjRu0v31j66MKl9
+ f/4DGanTWzV2r9ZAi/njooGGZO0+A==
+X-ME-Sender: <xms:d5HLXGm9iAzGeXRxMNExnBvs2PKhlhmMHj4A3aZ-4fjvt2aV0ARW5g>
+X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgeduuddrjedtgdegtdcutefuodetggdotefrodftvf
+ curfhrohhfihhlvgemucfhrghsthforghilhdpqfgfvfdpuffrtefokffrpgfnqfghnecu
+ uegrihhlohhuthemuceftddtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenfg
+ hrlhcuvffnffculdeftddmnecujfgurhepkffuhffvffgjfhgtfggggfesthejredttder
+ jeenucfhrhhomheptfhushhsvghllhcuvehurhhrvgihuceorhhushgtuhhrsehruhhssh
+ gvlhhlrdgttgeqnecukfhppeduvddvrdelledrkedvrddutdenucfrrghrrghmpehmrghi
+ lhhfrhhomheprhhushgtuhhrsehruhhsshgvlhhlrdgttgenucevlhhushhtvghrufhiii
+ gvpedt
+X-ME-Proxy: <xmx:d5HLXGFWla6Ck7CM6dNhiRN5KA8i_gbiBFieqprXwTadhwNVVk6XKA>
+ <xmx:d5HLXCdQB8joxLe7s_dRc56UUNItvVKBNqlgcBcxso_EAo4oApuIXg>
+ <xmx:d5HLXPhu7ceq9cA8XFnL59NzzXzTx61ZfBqnPlXu0ycTC4ReL8ed0Q>
+ <xmx:eJHLXOcGzl1E_8KMFp0iAjDGc75Z_X7XkKgczjYitB5A-TbogUw43w>
+Received: from crackle.ozlabs.ibm.com (unknown [122.99.82.10])
+ by mail.messagingengine.com (Postfix) with ESMTPA id 75146103D4;
+ Thu,  2 May 2019 20:55:17 -0400 (EDT)
+Message-ID: <5074405df506970edc7c3fe7604bc60f345163eb.camel@russell.cc>
+Subject: Re: [PATCH v2 2/2] powerpc/mm: Warn if W+X pages found on boot
+From: Russell Currey <ruscur@russell.cc>
+To: Joel Stanley <joel@jms.id.au>
+Date: Fri, 03 May 2019 10:55:13 +1000
+In-Reply-To: <CACPK8XeGD85Yt1bZvuDo4LnYwn0xg15eDJoOep1JC3bg0s0uXA@mail.gmail.com>
+References: <20190502073947.6481-1-ruscur@russell.cc>
+ <20190502073947.6481-2-ruscur@russell.cc>
+ <CACPK8XeGD85Yt1bZvuDo4LnYwn0xg15eDJoOep1JC3bg0s0uXA@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+User-Agent: Evolution 3.32.1 
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -100,166 +105,61 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Tyrel Datwyler <tyreld@linux.ibm.com>, martin.petersen@oracle.com,
- linux-scsi@vger.kernel.org, Tyrel Datwyler <tyreld@linux.vnet.ibm.com>,
- brking@linux.ibm.com, linuxppc-dev@lists.ozlabs.org
+Cc: Julia Lawall <Julia.Lawall@lip6.fr>, Rashmica Gupta <rashmica.g@gmail.com>,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
+On Fri, 2019-05-03 at 00:37 +0000, Joel Stanley wrote:
+> On Thu, 2 May 2019 at 07:42, Russell Currey <ruscur@russell.cc>
+> wrote:
+> > Implement code to walk all pages and warn if any are found to be
+> > both
+> > writable and executable.  Depends on STRICT_KERNEL_RWX enabled, and
+> > is
+> > behind the DEBUG_WX config option.
+> > 
+> > This only runs on boot and has no runtime performance implications.
+> > 
+> > Very heavily influenced (and in some cases copied verbatim) from
+> > the
+> > ARM64 code written by Laura Abbott (thanks!), since our ptdump
+> > infrastructure is similar.
+> > 
+> > Signed-off-by: Russell Currey <ruscur@russell.cc>
+> > ---
+> > v2: A myriad of fixes and cleanups thanks to Christophe Leroy
+> > 
+> >  arch/powerpc/Kconfig.debug         | 19 ++++++++++++++
+> >  arch/powerpc/include/asm/pgtable.h |  6 +++++
+> >  arch/powerpc/mm/pgtable_32.c       |  3 +++
+> >  arch/powerpc/mm/pgtable_64.c       |  3 +++
+> >  arch/powerpc/mm/ptdump/ptdump.c    | 41
+> > +++++++++++++++++++++++++++++-
+> >  5 files changed, 71 insertions(+), 1 deletion(-)
+> > 
+> > diff --git a/arch/powerpc/Kconfig.debug
+> > b/arch/powerpc/Kconfig.debug
+> > index 4e00cb0a5464..9e8bcddd8b8f 100644
+> > --- a/arch/powerpc/Kconfig.debug
+> > +++ b/arch/powerpc/Kconfig.debug
+> > @@ -361,6 +361,25 @@ config PPC_PTDUMP
+> > 
+> >           If you are unsure, say N.
+> > 
+> > +config PPC_DEBUG_WX
+> 
+> The other architectures call this DEBUG_WX, in case you wanted to
+> name
+> it the same.
 
-The current implemenation relies on two flags in the drivers private host
-structure to signal the need for a host reset or to reenable the CRQ after a
-LPAR migration. This patch does away with those flags and introduces a single
-action flag and defined enums for the supported kthread work actions. Lastly,
-the if/else logic is replaced with a switch statement.
+I did originally, I changed it since we have PPC_PTDUMP but I don't
+really care either way.  mpe can change it if he wants
 
-Signed-off-by: Tyrel Datwyler <tyreld@linux.ibm.com>
----
-Changes in v2:
-	release/grab host_lock around reset/reenable calls
-
- drivers/scsi/ibmvscsi/ibmvscsi.c | 61 ++++++++++++++++++++++----------
- drivers/scsi/ibmvscsi/ibmvscsi.h |  9 +++--
- 2 files changed, 49 insertions(+), 21 deletions(-)
-
-diff --git a/drivers/scsi/ibmvscsi/ibmvscsi.c b/drivers/scsi/ibmvscsi/ibmvscsi.c
-index 65fc8ca962c5..8df82c58e7b9 100644
---- a/drivers/scsi/ibmvscsi/ibmvscsi.c
-+++ b/drivers/scsi/ibmvscsi/ibmvscsi.c
-@@ -828,7 +828,7 @@ static void ibmvscsi_reset_host(struct ibmvscsi_host_data *hostdata)
- 	atomic_set(&hostdata->request_limit, 0);
- 
- 	purge_requests(hostdata, DID_ERROR);
--	hostdata->reset_crq = 1;
-+	hostdata->action = IBMVSCSI_HOST_ACTION_RESET;
- 	wake_up(&hostdata->work_wait_q);
- }
- 
-@@ -1797,7 +1797,7 @@ static void ibmvscsi_handle_crq(struct viosrp_crq *crq,
- 			/* We need to re-setup the interpartition connection */
- 			dev_info(hostdata->dev, "Re-enabling adapter!\n");
- 			hostdata->client_migrated = 1;
--			hostdata->reenable_crq = 1;
-+			hostdata->action = IBMVSCSI_HOST_ACTION_REENABLE;
- 			purge_requests(hostdata, DID_REQUEUE);
- 			wake_up(&hostdata->work_wait_q);
- 		} else {
-@@ -2116,48 +2116,71 @@ static unsigned long ibmvscsi_get_desired_dma(struct vio_dev *vdev)
- 
- static void ibmvscsi_do_work(struct ibmvscsi_host_data *hostdata)
- {
-+	unsigned long flags;
- 	int rc;
- 	char *action = "reset";
- 
--	if (hostdata->reset_crq) {
--		smp_rmb();
--		hostdata->reset_crq = 0;
--
-+	spin_lock_irqsave(hostdata->host->host_lock, flags);
-+	switch (hostdata->action) {
-+	case IBMVSCSI_HOST_ACTION_NONE:
-+		break;
-+	case IBMVSCSI_HOST_ACTION_RESET:
-+		spin_unlock_irqrestore(hostdata->host->host_lock, flags);
- 		rc = ibmvscsi_reset_crq_queue(&hostdata->queue, hostdata);
-+		spin_lock_irqsave(hostdata->host->host_lock, flags);
- 		if (!rc)
- 			rc = ibmvscsi_send_crq(hostdata, 0xC001000000000000LL, 0);
- 		vio_enable_interrupts(to_vio_dev(hostdata->dev));
--	} else if (hostdata->reenable_crq) {
--		smp_rmb();
-+		break;
-+	case IBMVSCSI_HOST_ACTION_REENABLE:
- 		action = "enable";
-+		spin_unlock_irqrestore(hostdata->host->host_lock, flags);
- 		rc = ibmvscsi_reenable_crq_queue(&hostdata->queue, hostdata);
--		hostdata->reenable_crq = 0;
-+		spin_lock_irqsave(hostdata->host->host_lock, flags);
- 		if (!rc)
- 			rc = ibmvscsi_send_crq(hostdata, 0xC001000000000000LL, 0);
--	} else
--		return;
-+		break;
-+	default:
-+		break;
-+	}
-+
-+	hostdata->action = IBMVSCSI_HOST_ACTION_NONE;
- 
- 	if (rc) {
- 		atomic_set(&hostdata->request_limit, -1);
- 		dev_err(hostdata->dev, "error after %s\n", action);
- 	}
-+	spin_unlock_irqrestore(hostdata->host->host_lock, flags);
- 
- 	scsi_unblock_requests(hostdata->host);
- }
- 
--static int ibmvscsi_work_to_do(struct ibmvscsi_host_data *hostdata)
-+static int __ibmvscsi_work_to_do(struct ibmvscsi_host_data *hostdata)
- {
- 	if (kthread_should_stop())
- 		return 1;
--	else if (hostdata->reset_crq) {
--		smp_rmb();
--		return 1;
--	} else if (hostdata->reenable_crq) {
--		smp_rmb();
--		return 1;
-+	switch (hostdata->action) {
-+	case IBMVSCSI_HOST_ACTION_NONE:
-+		return 0;
-+	case IBMVSCSI_HOST_ACTION_RESET:
-+	case IBMVSCSI_HOST_ACTION_REENABLE:
-+	default:
-+		break;
- 	}
- 
--	return 0;
-+	return 1;
-+}
-+
-+static int ibmvscsi_work_to_do(struct ibmvscsi_host_data *hostdata)
-+{
-+	unsigned long flags;
-+	int rc;
-+
-+	spin_lock_irqsave(hostdata->host->host_lock, flags);
-+	rc = __ibmvscsi_work_to_do(hostdata);
-+	spin_unlock_irqrestore(hostdata->host->host_lock, flags);
-+
-+	return rc;
- }
- 
- static int ibmvscsi_work(void *data)
-diff --git a/drivers/scsi/ibmvscsi/ibmvscsi.h b/drivers/scsi/ibmvscsi/ibmvscsi.h
-index 3a7875575616..04bcbc832dc9 100644
---- a/drivers/scsi/ibmvscsi/ibmvscsi.h
-+++ b/drivers/scsi/ibmvscsi/ibmvscsi.h
-@@ -88,13 +88,18 @@ struct event_pool {
- 	dma_addr_t iu_token;
- };
- 
-+enum ibmvscsi_host_action {
-+	IBMVSCSI_HOST_ACTION_NONE = 0,
-+	IBMVSCSI_HOST_ACTION_RESET,
-+	IBMVSCSI_HOST_ACTION_REENABLE,
-+};
-+
- /* all driver data associated with a host adapter */
- struct ibmvscsi_host_data {
- 	struct list_head host_list;
- 	atomic_t request_limit;
- 	int client_migrated;
--	int reset_crq;
--	int reenable_crq;
-+	enum ibmvscsi_host_action action;
- 	struct device *dev;
- 	struct event_pool pool;
- 	struct crq_queue queue;
--- 
-2.18.1
+> 
+> > +       bool "Warn on W+X mappings at boot"
+> > +       select PPC_PTDUMP
+> > +       help
+> > +         Generate a warning if any W+X mappings are found at boot.
 
