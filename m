@@ -2,56 +2,56 @@ Return-Path: <SRS0=37tr=TD=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-7.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_MUTT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id F07B5C43219
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 May 2019 12:49:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2CA52C43219
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 May 2019 13:03:01 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 7E8302075E
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 May 2019 12:49:47 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7E8302075E
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lwn.net
+	by mail.kernel.org (Postfix) with ESMTPS id 63CD22087F
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 May 2019 13:03:00 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 63CD22087F
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44wX5j2HGtzDqlR
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 May 2019 22:49:45 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44wXNy0s83zDqjY
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 May 2019 23:02:58 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=lwn.net
- (client-ip=45.79.88.28; helo=ms.lwn.net; envelope-from=corbet@lwn.net;
- receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=arm.com
+ (client-ip=217.140.101.70; helo=foss.arm.com;
+ envelope-from=will.deacon@arm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=lwn.net
-Received: from ms.lwn.net (ms.lwn.net [45.79.88.28])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44wX336LWmzDqgL
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 May 2019 22:47:27 +1000 (AEST)
-Received: from localhost.localdomain (localhost [127.0.0.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by ms.lwn.net (Postfix) with ESMTPSA id 4EA677DE;
- Fri,  3 May 2019 12:47:22 +0000 (UTC)
-Date: Fri, 3 May 2019 06:47:19 -0600
-From: Jonathan Corbet <corbet@lwn.net>
-To: Will Deacon <will.deacon@arm.com>
+ dmarc=none (p=none dis=none) header.from=arm.com
+Received: from foss.arm.com (foss.arm.com [217.140.101.70])
+ by lists.ozlabs.org (Postfix) with ESMTP id 44wXLF4hqrzDqjV
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 May 2019 23:00:35 +1000 (AEST)
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.72.51.249])
+ by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 9E1FE374;
+ Fri,  3 May 2019 06:00:34 -0700 (PDT)
+Received: from fuggles.cambridge.arm.com (usa-sjc-imap-foss1.foss.arm.com
+ [10.72.51.249])
+ by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id B62A23F220;
+ Fri,  3 May 2019 06:00:29 -0700 (PDT)
+Date: Fri, 3 May 2019 14:00:27 +0100
+From: Will Deacon <will.deacon@arm.com>
+To: Jonathan Corbet <corbet@lwn.net>
 Subject: Re: [PATCH] Documentation: Add ARM64 to kernel-parameters.rst
-Message-ID: <20190503064719.45d79af9@lwn.net>
-In-Reply-To: <20190503123940.GC32046@fuggles.cambridge.arm.com>
+Message-ID: <20190503130027.GD32046@fuggles.cambridge.arm.com>
 References: <cover.1555085500.git.jpoimboe@redhat.com>
  <24039e1370ed57e8075730c0b88c505afd9e0ab7.1555085500.git.jpoimboe@redhat.com>
  <25174c3c-0e39-0562-7d02-bb7d51cd2b43@infradead.org>
  <20190413035621.tohihjksatqushwf@treble>
  <20190503063756.09c74f6e@lwn.net>
  <20190503123940.GC32046@fuggles.cambridge.arm.com>
-Organization: LWN.net
-X-Mailer: Claws Mail 3.17.3 (GTK+ 2.24.32; x86_64-redhat-linux-gnu)
+ <20190503064719.45d79af9@lwn.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20190503064719.45d79af9@lwn.net>
+User-Agent: Mutt/1.11.1+86 (6f28e57d73f2) ()
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -83,17 +83,20 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, 3 May 2019 13:39:40 +0100
-Will Deacon <will.deacon@arm.com> wrote:
-
-> > It looks like nobody has picked this up...so I've applied it.  
+On Fri, May 03, 2019 at 06:47:19AM -0600, Jonathan Corbet wrote:
+> On Fri, 3 May 2019 13:39:40 +0100
+> Will Deacon <will.deacon@arm.com> wrote:
 > 
-> It's queued and tagged in the arm64 tree, which should also be in next!
+> > > It looks like nobody has picked this up...so I've applied it.  
+> > 
+> > It's queued and tagged in the arm64 tree, which should also be in next!
+> 
+> Just looked again, I still don't see it there.  Josh's mitigations= change
+> is there, but not this one.  In any case, I've unapplied it, so it's all
+> yours.
 
-Just looked again, I still don't see it there.  Josh's mitigations= change
-is there, but not this one.  In any case, I've unapplied it, so it's all
-yours.
+Weird... I see it in -next as 4ad499c94264:
 
-Thanks,
+https://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git/commit/?id=4ad499c94264a2ee05aacc518b9bde658318e510
 
-jon
+Will
