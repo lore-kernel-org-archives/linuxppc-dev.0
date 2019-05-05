@@ -2,56 +2,69 @@ Return-Path: <SRS0=6+SE=TF=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-4.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-1.0 required=3.0 tests=MAILING_LIST_MULTI,SPF_PASS
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8D991C004C9
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  5 May 2019 17:35:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 165E8C004C9
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  5 May 2019 19:17:18 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 47AB220675
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  5 May 2019 17:35:13 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 47AB220675
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=davemloft.net
+	by mail.kernel.org (Postfix) with ESMTPS id 6FCA6206DF
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  5 May 2019 19:17:17 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6FCA6206DF
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=bugzilla.kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44xtL744BpzDqJm
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 May 2019 03:35:11 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44xwbv2pDjzDqLZ
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 May 2019 05:17:15 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=davemloft.net
- (client-ip=2620:137:e000::1:9; helo=shards.monkeyblade.net;
- envelope-from=davem@davemloft.net; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=davemloft.net
-Received: from shards.monkeyblade.net (shards.monkeyblade.net
- [IPv6:2620:137:e000::1:9])
+ spf=pass (mailfrom) smtp.mailfrom=bugzilla.kernel.org
+ (client-ip=198.145.29.98; helo=mail.wl.linuxfoundation.org;
+ envelope-from=bugzilla-daemon@bugzilla.kernel.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=bugzilla.kernel.org
+Received: from mail.wl.linuxfoundation.org (mail.wl.linuxfoundation.org
+ [198.145.29.98])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44xtJm6c7bzDq7h
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 May 2019 03:33:59 +1000 (AEST)
-Received: from localhost (unknown [IPv6:2601:601:9f80:35cd::3d8])
- (using TLSv1 with cipher AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- (Authenticated sender: davem-davemloft)
- by shards.monkeyblade.net (Postfix) with ESMTPSA id 58E2014DA6480;
- Sun,  5 May 2019 10:33:53 -0700 (PDT)
-Date: Sun, 05 May 2019 10:33:52 -0700 (PDT)
-Message-Id: <20190505.103352.552893412554706513.davem@davemloft.net>
-To: christophe.leroy@c-s.fr
-Subject: Re: [PATCH] net: ucc_geth - fix Oops when changing number of
- buffers in the ring
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <ba66f38ff44b95e82925fd0500eb32fe03895496.1556889892.git.christophe.leroy@c-s.fr>
-References: <ba66f38ff44b95e82925fd0500eb32fe03895496.1556889892.git.christophe.leroy@c-s.fr>
-X-Mailer: Mew version 6.8 on Emacs 26.1
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender succeeded SMTP AUTH, not delayed by milter-greylist-4.5.12
- (shards.monkeyblade.net [149.20.54.216]);
- Sun, 05 May 2019 10:33:53 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44xwZP4xylzDqJB
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 May 2019 05:15:57 +1000 (AEST)
+Received: from mail.wl.linuxfoundation.org (localhost [127.0.0.1])
+ by mail.wl.linuxfoundation.org (Postfix) with ESMTP id 5FE262864E
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  5 May 2019 19:15:54 +0000 (UTC)
+Received: by mail.wl.linuxfoundation.org (Postfix, from userid 486)
+ id 5455828653; Sun,  5 May 2019 19:15:54 +0000 (UTC)
+From: bugzilla-daemon@bugzilla.kernel.org
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [Bug 203515] [crypto] alg: skcipher: p8_aes_ctr encryption test
+ failed (wrong result) on test vector 3, cfg="uneven misaligned splits, may
+ sleep"
+Date: Sun, 05 May 2019 19:15:53 +0000
+X-Bugzilla-Reason: None
+X-Bugzilla-Type: changed
+X-Bugzilla-Watch-Reason: AssignedTo platform_ppc-64@kernel-bugs.osdl.org
+X-Bugzilla-Product: Platform Specific/Hardware
+X-Bugzilla-Component: PPC-64
+X-Bugzilla-Version: 2.5
+X-Bugzilla-Keywords: 
+X-Bugzilla-Severity: normal
+X-Bugzilla-Who: erhard_f@mailbox.org
+X-Bugzilla-Status: NEW
+X-Bugzilla-Resolution: 
+X-Bugzilla-Priority: P1
+X-Bugzilla-Assigned-To: platform_ppc-64@kernel-bugs.osdl.org
+X-Bugzilla-Flags: 
+X-Bugzilla-Changed-Fields: cf_kernel_version
+Message-ID: <bug-203515-206035-92qOTVIfdX@https.bugzilla.kernel.org/>
+In-Reply-To: <bug-203515-206035@https.bugzilla.kernel.org/>
+References: <bug-203515-206035@https.bugzilla.kernel.org/>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+X-Bugzilla-URL: https://bugzilla.kernel.org/
+Auto-Submitted: auto-generated
+MIME-Version: 1.0
+X-Virus-Scanned: ClamAV using ClamSMTP
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -63,25 +76,21 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, leoyang.li@nxp.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Date: Fri,  3 May 2019 13:33:23 +0000 (UTC)
+https://bugzilla.kernel.org/show_bug.cgi?id=3D203515
 
-> When changing the number of buffers in the RX ring while the interface
-> is running, the following Oops is encountered due to the new number
-> of buffers being taken into account immediately while their allocation
-> is done when opening the device only.
- ...
-> This patch forbids the modification of the number of buffers in the
-> ring while the interface is running.
-> 
-> Fixes: ac421852b3a0 ("ucc_geth: add ethtool support")
-> Cc: stable@vger.kernel.org
-> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+Erhard F. (erhard_f@mailbox.org) changed:
 
-Applied and queued up for -stable.
+           What    |Removed                     |Added
+----------------------------------------------------------------------------
+     Kernel Version|5.1.0-rc7                   |5.1.0-rc1
+
+--- Comment #2 from Erhard F. (erhard_f@mailbox.org) ---
+Did some testing, -rc1 is already is affected.
+
+--=20
+You are receiving this mail because:
+You are watching the assignee of the bug.=
