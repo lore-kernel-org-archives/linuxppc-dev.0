@@ -2,22 +2,22 @@ Return-Path: <SRS0=6+SE=TF=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.0 required=3.0 tests=MAILING_LIST_MULTI,SPF_PASS,
-	URIBL_BLOCKED autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-1.0 required=3.0 tests=MAILING_LIST_MULTI,SPF_PASS
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6AC57C04AAB
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  5 May 2019 00:56:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 50735C04AAA
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  5 May 2019 00:58:10 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id A51682063F
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  5 May 2019 00:56:52 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A51682063F
+	by mail.kernel.org (Postfix) with ESMTPS id 070D72063F
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  5 May 2019 00:58:09 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 070D72063F
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=bugzilla.kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44xSBB3BkMzDqMB
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  5 May 2019 10:56:50 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44xSCh1dmTzDqMm
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  5 May 2019 10:58:08 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=bugzilla.kernel.org
  (client-ip=198.145.29.98; helo=mail.wl.linuxfoundation.org;
@@ -28,21 +28,21 @@ Received: from mail.wl.linuxfoundation.org (mail.wl.linuxfoundation.org
  [198.145.29.98])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44xR3F0s2TzDqLZ
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  5 May 2019 10:05:44 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44xR444SgGzDqLZ
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  5 May 2019 10:06:28 +1000 (AEST)
 Received: from mail.wl.linuxfoundation.org (localhost [127.0.0.1])
- by mail.wl.linuxfoundation.org (Postfix) with ESMTP id 524EB287EA
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  5 May 2019 00:05:41 +0000 (UTC)
+ by mail.wl.linuxfoundation.org (Postfix) with ESMTP id 9218228821
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  5 May 2019 00:06:26 +0000 (UTC)
 Received: by mail.wl.linuxfoundation.org (Postfix, from userid 486)
- id 4657A2882A; Sun,  5 May 2019 00:05:41 +0000 (UTC)
+ id 83326287EA; Sun,  5 May 2019 00:06:26 +0000 (UTC)
 From: bugzilla-daemon@bugzilla.kernel.org
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [Bug 203515] New: [crypto] alg: skcipher: p8_aes_ctr encryption test
- failed (wrong result) on test vector 3, cfg="uneven misaligned splits,
- may sleep"
-Date: Sun, 05 May 2019 00:05:40 +0000
+Subject: [Bug 203515] [crypto] alg: skcipher: p8_aes_ctr encryption test
+ failed (wrong result) on test vector 3, cfg="uneven misaligned splits, may
+ sleep"
+Date: Sun, 05 May 2019 00:06:26 +0000
 X-Bugzilla-Reason: None
-X-Bugzilla-Type: new
+X-Bugzilla-Type: changed
 X-Bugzilla-Watch-Reason: AssignedTo platform_ppc-64@kernel-bugs.osdl.org
 X-Bugzilla-Product: Platform Specific/Hardware
 X-Bugzilla-Component: PPC-64
@@ -55,10 +55,10 @@ X-Bugzilla-Resolution:
 X-Bugzilla-Priority: P1
 X-Bugzilla-Assigned-To: platform_ppc-64@kernel-bugs.osdl.org
 X-Bugzilla-Flags: 
-X-Bugzilla-Changed-Fields: bug_id short_desc product version
- cf_kernel_version rep_platform op_sys cf_tree bug_status bug_severity
- priority component assigned_to reporter cf_regression attachments.created
-Message-ID: <bug-203515-206035@https.bugzilla.kernel.org/>
+X-Bugzilla-Changed-Fields: attachments.created
+Message-ID: <bug-203515-206035-WU6QY15zzK@https.bugzilla.kernel.org/>
+In-Reply-To: <bug-203515-206035@https.bugzilla.kernel.org/>
+References: <bug-203515-206035@https.bugzilla.kernel.org/>
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 X-Bugzilla-URL: https://bugzilla.kernel.org/
@@ -83,44 +83,10 @@ Sender: "Linuxppc-dev"
 
 https://bugzilla.kernel.org/show_bug.cgi?id=3D203515
 
-            Bug ID: 203515
-           Summary: [crypto] alg: skcipher: p8_aes_ctr encryption test
-                    failed (wrong result) on test vector 3, cfg=3D"uneven
-                    misaligned splits, may sleep"
-           Product: Platform Specific/Hardware
-           Version: 2.5
-    Kernel Version: 5.1.0-rc7
-          Hardware: All
-                OS: Linux
-              Tree: Mainline
-            Status: NEW
-          Severity: normal
-          Priority: P1
-         Component: PPC-64
-          Assignee: platform_ppc-64@kernel-bugs.osdl.org
-          Reporter: erhard_f@mailbox.org
-        Regression: Yes
-
-Created attachment 282609
-  --> https://bugzilla.kernel.org/attachment.cgi?id=3D282609&action=3Dedit
-dmesg (5.1.0-rc7, Talos II)
-
-Seems like some POWER8/9 specific encrytion test fails in 5.1.0-rc7. This d=
-id
-not happen in 5.0.x and before.
-
-[...]
-[    5.246612] crypto_register_alg 'cbc(aes)' =3D 0
-[    5.254268] alg: skcipher: p8_aes_ctr encryption test failed (wrong resu=
-lt)
-on test vector 3, cfg=3D"uneven misaligned splits, may sleep"
-[    5.255266] xhci_hcd 0003:01:00.0: xHCI Host Controller
-[    5.255346] xhci_hcd 0003:01:00.0: new USB bus registered, assigned bus
-number 1
-[    5.255522] xhci_hcd 0003:01:00.0: hcc params 0x0270f06d hci version 0x96
-quirks 0x0000000004000000
-[    5.256008] crypto_register_alg 'ctr(aes)' =3D 0
-[...]
+--- Comment #1 from Erhard F. (erhard_f@mailbox.org) ---
+Created attachment 282611
+  --> https://bugzilla.kernel.org/attachment.cgi?id=3D282611&action=3Dedit
+kernel .config (5.1.0-rc7, Talos II)
 
 --=20
 You are receiving this mail because:
