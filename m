@@ -2,87 +2,70 @@ Return-Path: <SRS0=pfuI=TG=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.7 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS
+X-Spam-Status: No, score=-1.2 required=3.0 tests=DATE_IN_PAST_03_06,
+	DKIM_INVALID,DKIM_SIGNED,MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_MUTT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5D4DFC04AAC
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 May 2019 07:36:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2A579C04AAD
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 May 2019 07:39:27 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 9DC8C2082F
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 May 2019 07:36:30 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id A2A70206A3
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 May 2019 07:39:26 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=rasmusvillemoes.dk header.i=@rasmusvillemoes.dk header.b="HfCKA2Gc"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9DC8C2082F
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=rasmusvillemoes.dk
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=sirena.org.uk header.i=@sirena.org.uk header.b="NjHcG+e5"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A2A70206A3
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44yF0q6PT7zDqKD
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 May 2019 17:36:27 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44yF4D63XrzDqL9
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 May 2019 17:39:24 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=rasmusvillemoes.dk
- (client-ip=2a00:1450:4864:20::243; helo=mail-lj1-x243.google.com;
- envelope-from=linux@rasmusvillemoes.dk; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=rasmusvillemoes.dk
+ spf=none (mailfrom) smtp.mailfrom=sirena.org.uk
+ (client-ip=2a01:7e01::f03c:91ff:fed4:a3b6; helo=heliosphere.sirena.org.uk;
+ envelope-from=broonie@sirena.org.uk; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=rasmusvillemoes.dk header.i=@rasmusvillemoes.dk
- header.b="HfCKA2Gc"; dkim-atps=neutral
-Received: from mail-lj1-x243.google.com (mail-lj1-x243.google.com
- [IPv6:2a00:1450:4864:20::243])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ unprotected) header.d=sirena.org.uk header.i=@sirena.org.uk
+ header.b="NjHcG+e5"; dkim-atps=neutral
+Received: from heliosphere.sirena.org.uk (heliosphere.sirena.org.uk
+ [IPv6:2a01:7e01::f03c:91ff:fed4:a3b6])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44yDzB518RzDqJ1
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 May 2019 17:35:01 +1000 (AEST)
-Received: by mail-lj1-x243.google.com with SMTP id 132so2439653ljj.4
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 06 May 2019 00:35:01 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=rasmusvillemoes.dk; s=google;
- h=subject:to:cc:references:from:message-id:date:user-agent
- :mime-version:in-reply-to:content-language:content-transfer-encoding;
- bh=ok4FiX0qqzxFXNlfPJQBxeAS7MtYAthIHs0pXM/1gsw=;
- b=HfCKA2GcWuIWfyCu6q7Vb4VuU5C85rltY95cYwAzVOuNpcOxt9Vpj8t6IWJzXJpM16
- uc9PlW5f9Go3h/CJ9UsWwq1rdbfbTV7+cveeHt9cUsGuK9G3I7pEgW3Zv9bOFVDQOZbH
- MpdHFdCp7U0R6aqGNC2FBUx6AIBp++6riZnVE=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:subject:to:cc:references:from:message-id:date
- :user-agent:mime-version:in-reply-to:content-language
- :content-transfer-encoding;
- bh=ok4FiX0qqzxFXNlfPJQBxeAS7MtYAthIHs0pXM/1gsw=;
- b=WQeVjG2KQCSlpvP6So+MlDibBvFmaKGOf00vQgIG7nGIvZf7CAZim+Y5g6zHdaPLww
- 5nPr7Pn3NoT31RZgV5DulSXIXmwz+OtJw4COFrYzkPXUd85mCsmEPFEaP0J/PA9yXQ8B
- t8ghr+pYNi8Hb0qKm50TUUo8iXuyHT1DaCVgsfjjPPsvayt89c8MWVExzZNb2IObq7Px
- 9B1czrSCSPx2Xy8S0b4y5MUwA7C1K3n9JbrJayF9uXIk4n1fspLFIkDR4sSQ90wKLBx5
- SOXVGMEgKelPm+BAbV08sSerE1bMUZynDrVs6FxdqSVeiZty5k/VT5n8GpRf/ad6MVDK
- uiRA==
-X-Gm-Message-State: APjAAAWn4L1S819E73pnsUN6w4x6jIhXz+aA69CtIGDsrBI7hEyNKXSk
- pmOJlHL6lAvzSQmsyBNMezsfzg==
-X-Google-Smtp-Source: APXvYqyIXcDanMudqDV0cbvEgmg2JswEqVaUi3W8CZa23fGsbc0VYTSqSxQKNyi+uTC2tZHBHGapWQ==
-X-Received: by 2002:a2e:9f07:: with SMTP id u7mr3713010ljk.115.1557128097278; 
- Mon, 06 May 2019 00:34:57 -0700 (PDT)
-Received: from [172.16.11.26] ([81.216.59.226])
- by smtp.gmail.com with ESMTPSA id y25sm2083764ljh.31.2019.05.06.00.34.55
- (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
- Mon, 06 May 2019 00:34:56 -0700 (PDT)
-Subject: Re: [PATCH 00/10] implement DYNAMIC_DEBUG_RELATIVE_POINTERS
-To: Ingo Molnar <mingo@kernel.org>
-References: <20190409212517.7321-1-linux@rasmusvillemoes.dk>
- <1afb0702-3cc5-ba4f-2bdd-604d9da2b846@rasmusvillemoes.dk>
- <20190506070544.GA66463@gmail.com>
-From: Rasmus Villemoes <linux@rasmusvillemoes.dk>
-Message-ID: <25dfde77-fdad-0b99-75ec-4ba480058970@rasmusvillemoes.dk>
-Date: Mon, 6 May 2019 09:34:55 +0200
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
- Thunderbird/60.6.1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44yF2M0NKVzDqBc
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 May 2019 17:37:46 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+ d=sirena.org.uk; s=20170815-heliosphere; h=In-Reply-To:Content-Type:
+ MIME-Version:References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
+ Content-Transfer-Encoding:Content-ID:Content-Description:Resent-Date:
+ Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:
+ List-Help:List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
+ bh=tzpXHk7pggK3a6IReCA75UnDglv4kzjtwAX41NwuIs4=; b=NjHcG+e5mciylrLgGpMM5XvoQ
+ xOog8IPCBf1UzwcpqaA6fQTHSG8iv9C6CvC2qOUWzWc1Idw1jS0qia5310WtllkAjfaM+7p5dv1QQ
+ FniGskOBWOn5W4M7Dick338AZbeW9tlV5ueQYGHR76aN7OvKeA+i2lFdJW9zctVOk0mJ4=;
+Received: from kd111239184067.au-net.ne.jp ([111.239.184.67]
+ helo=finisterre.ee.mobilebroadband)
+ by heliosphere.sirena.org.uk with esmtpsa
+ (TLS1.2:ECDHE_RSA_AES_256_GCM_SHA384:256) (Exim 4.89)
+ (envelope-from <broonie@sirena.org.uk>)
+ id 1hNYBt-0000s1-90; Mon, 06 May 2019 07:37:37 +0000
+Received: by finisterre.ee.mobilebroadband (Postfix, from userid 1000)
+ id 7342C441D41; Mon,  6 May 2019 04:53:45 +0100 (BST)
+Date: Mon, 6 May 2019 12:53:45 +0900
+From: Mark Brown <broonie@kernel.org>
+To: "S.j. Wang" <shengjiu.wang@nxp.com>
+Subject: Re: [PATCH V4] ASoC: fsl_esai: Add pm runtime function
+Message-ID: <20190506035345.GJ14916@sirena.org.uk>
+References: <VE1PR04MB64794DF2979F3AD350A9EB3DE3370@VE1PR04MB6479.eurprd04.prod.outlook.com>
 MIME-Version: 1.0
-In-Reply-To: <20190506070544.GA66463@gmail.com>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; micalg=pgp-sha512;
+ protocol="application/pgp-signature"; boundary="7e8BFhNxqpjiNKz7"
+Content-Disposition: inline
+In-Reply-To: <VE1PR04MB64794DF2979F3AD350A9EB3DE3370@VE1PR04MB6479.eurprd04.prod.outlook.com>
+X-Cookie: -- I have seen the FUN --
+User-Agent: Mutt/1.10.1 (2018-07-13)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -94,47 +77,50 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Nick Desaulniers <ndesaulniers@google.com>, Arnd Bergmann <arnd@arndb.de>,
- x86@kernel.org, Will Deacon <will.deacon@arm.com>,
- linux-kernel@vger.kernel.org, Linus Torvalds <torvalds@linux-foundation.org>,
- Jason Baron <jbaron@akamai.com>, Ingo Molnar <mingo@redhat.com>,
- Andy Lutomirski <luto@kernel.org>, Andrew Morton <akpm@linux-foundation.org>,
- linuxppc-dev@lists.ozlabs.org, Nathan Chancellor <natechancellor@gmail.com>,
- linux-arm-kernel@lists.infradead.org
+Cc: "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
+ "timur@kernel.org" <timur@kernel.org>,
+ "Xiubo.Lee@gmail.com" <Xiubo.Lee@gmail.com>,
+ "festevam@gmail.com" <festevam@gmail.com>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Nicolin Chen <nicoleotsuka@gmail.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 06/05/2019 09.05, Ingo Molnar wrote:
-> 
-> 
-> It's sad to see such nice data footprint savings go the way of the dodo 
-> just because GCC 4.8 is buggy.
-> 
-> The current compatibility cut-off is GCC 4.6:
-> 
->   GNU C                  4.6              gcc --version
-> 
-> Do we know where the GCC bug was fixed, was it in GCC 4.9?
 
-Not sure. The report was from a build on CentOS with gcc 4.8.5, so I
-tried installing the gcc-4.8 package on my Ubuntu machine and could
-reproduce. Then I tried installed gcc-4.9, and after disabling
-CONFIG_RETPOLINE (both CentOS and Ubuntu carry backported retpoline
-support in their 4.8, but apparently not 4.9), I could see that the
-problem was gone. But whether it's gone because it no longer elides an
-asm volatile() on a code path it otherwise emits code for, or because it
-simply doesn't emit the unused static inline() at all I don't know.
+--7e8BFhNxqpjiNKz7
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-I thought 0day also tested a range of supported compiler versions, so I
-was rather surprised at getting this report at all. But I suppose the
-arch/config matrix is already pretty huge. Anyway, the bug certainly
-doesn't exist in any of the gcc versions 0day does test.
+On Sun, May 05, 2019 at 03:28:59AM +0000, S.j. Wang wrote:
 
-I _am_ bending the C rules a bit with the "extern some_var; asm
-volatile(".section some_section\nsome_var: blabla");". I should probably
-ask on the gcc list whether this way of defining a local symbol in
-inline assembly and referring to it from C is supposed to work, or it
-just happens to work by chance.
+> We find that maybe it is caused by the Transfer-Encoding format.
+> We sent the patch by the  --transfer-encoding=8bit, but in the receiver side
+> it shows:
+]
+> Content-Type: text/plain; charset="utf-8"
+> Content-Transfer-Encoding: base64
 
-Rasmus
+> It may be caused by our company's mail server. We are checking...
+
+Ah, that looks likely...  not sure I have any great suggestions for how
+to resolve it but at least it looks like progress on figuring out the
+cause, I haven't been able to see anything wrong locally.
+
+--7e8BFhNxqpjiNKz7
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQEzBAABCgAdFiEEreZoqmdXGLWf4p/qJNaLcl1Uh9AFAlzPr8gACgkQJNaLcl1U
+h9DVeQf7ByKyqDU+F0dmHJsGDAll4nFkuDLq9wax+i1rjUCghvBhzq+0tNPf51Dk
+oJT0+OmCtKJcYIu4Z7OsLBDr75SiQE83YxdWnaAGik49IJUA7ggTXCtXfpLcs2Vy
+VtPc2H969t2crPjYI3AkUIJzYHB2GCwgsWvKmDeWS0c6Sb55eN5DptFsS6UuPcrI
+CCOhBJvO9P85bBNjkMRAla+SM6GV77Uq5DC4iV7ert68gwp8pRVdMY1sNTx9J7BZ
+soqk2U9xLPJtJUeZs89WKZy8mCW1BtFuvQAvt1W/mNJmkWWedc4FkAQgHV3b/pIn
+z4slaJ2AqBkaAIC0hq6wGq8dKSVecQ==
+=/QHA
+-----END PGP SIGNATURE-----
+
+--7e8BFhNxqpjiNKz7--
