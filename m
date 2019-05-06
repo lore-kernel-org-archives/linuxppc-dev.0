@@ -6,84 +6,85 @@ X-Spam-Status: No, score=-8.9 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT
 	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 832D9C04AAA
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 May 2019 09:51:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8E072C04AAA
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 May 2019 09:52:26 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 1160620830
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 May 2019 09:51:01 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1160620830
+	by mail.kernel.org (Postfix) with ESMTPS id 19EB7205C9
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 May 2019 09:52:26 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 19EB7205C9
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44yJ030xFmzDqRY
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 May 2019 19:50:59 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44yJ1g5Wh2zDqBd
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 May 2019 19:52:23 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=none (mailfrom) smtp.mailfrom=linux.vnet.ibm.com
- (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
+ (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
  envelope-from=naveen.n.rao@linux.vnet.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=linux.vnet.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44yHrZ07fVzDqK5
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 May 2019 19:44:29 +1000 (AEST)
-Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x469hFDX014713
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 6 May 2019 05:44:27 -0400
-Received: from e06smtp02.uk.ibm.com (e06smtp02.uk.ibm.com [195.75.94.98])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2sajd18ehy-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44yHrd53bJzDqJX
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 May 2019 19:44:33 +1000 (AEST)
+Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
+ x469hvD9056040
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 6 May 2019 05:44:30 -0400
+Received: from e06smtp03.uk.ibm.com (e06smtp03.uk.ibm.com [195.75.94.99])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2saggdw0p6-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 06 May 2019 05:44:27 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 06 May 2019 05:44:30 -0400
 Received: from localhost
- by e06smtp02.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp03.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
- Mon, 6 May 2019 10:44:25 +0100
-Received: from b06cxnps4074.portsmouth.uk.ibm.com (9.149.109.196)
- by e06smtp02.uk.ibm.com (192.168.101.132) with IBM ESMTP SMTP Gateway:
+ Mon, 6 May 2019 10:44:28 +0100
+Received: from b06cxnps3075.portsmouth.uk.ibm.com (9.149.109.195)
+ by e06smtp03.uk.ibm.com (192.168.101.133) with IBM ESMTP SMTP Gateway:
  Authorized Use Only! Violators will be prosecuted; 
  (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Mon, 6 May 2019 10:44:23 +0100
+ Mon, 6 May 2019 10:44:27 +0100
 Received: from d06av24.portsmouth.uk.ibm.com (mk.ibm.com [9.149.105.60])
- by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x469iLRp43188442
+ by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x469iPKC59572436
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Mon, 6 May 2019 09:44:21 GMT
+ Mon, 6 May 2019 09:44:25 GMT
 Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 62DAD42041;
- Mon,  6 May 2019 09:44:21 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 60DD14204C;
+ Mon,  6 May 2019 09:44:25 +0000 (GMT)
 Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 919734204C;
- Mon,  6 May 2019 09:44:18 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 042A742041;
+ Mon,  6 May 2019 09:44:22 +0000 (GMT)
 Received: from naverao1-tp.in.ibm.com (unknown [9.199.155.34])
  by d06av24.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Mon,  6 May 2019 09:44:18 +0000 (GMT)
+ Mon,  6 May 2019 09:44:21 +0000 (GMT)
 From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
 To: Michael Ellerman <mpe@ellerman.id.au>,
  Nathan Lynch <nathanl@linux.ibm.com>, Mingming Cao <mingming.cao@ibm.com>,
  "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
-Subject: [RFC PATCH 4/6] powerpc/pseries: Generalize hcall_vphn()
-Date: Mon,  6 May 2019 15:13:47 +0530
+Subject: [RFC PATCH 5/6] powerpc/pseries: Introduce helpers to gatekeep DTLB
+ usage
+Date: Mon,  6 May 2019 15:13:48 +0530
 X-Mailer: git-send-email 2.21.0
 In-Reply-To: <cover.1557134488.git.naveen.n.rao@linux.vnet.ibm.com>
 References: <cover.1557134488.git.naveen.n.rao@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-x-cbid: 19050609-0008-0000-0000-000002E3BE6B
+x-cbid: 19050609-0012-0000-0000-00000318C175
 X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19050609-0009-0000-0000-0000225035D6
-Message-Id: <4d28c93861ebb1f36d25d68ca4fd34a9fdff6029.1557134488.git.naveen.n.rao@linux.vnet.ibm.com>
+x-cbparentid: 19050609-0013-0000-0000-0000215139BB
+Message-Id: <cdfe83f641894b1789c5899528e8f03893a0671c.1557134488.git.naveen.n.rao@linux.vnet.ibm.com>
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
  definitions=2019-05-06_06:, , signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
  priorityscore=1501
- malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
+ malwarescore=0 suspectscore=2 phishscore=0 bulkscore=0 spamscore=0
  clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
  mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
  scancount=1 engine=8.0.1-1810050000 definitions=main-1905060085
@@ -103,87 +104,122 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-H_HOME_NODE_ASSOCIATIVITY hcall can take two different flags and return
-different associativity information in each case. Generalize the
-existing hcall_vphn() function to take flags as an argument and to
-return the result. Update the only existing user to pass the proper
-arguments.
+Since we would be introducing a new user of the DTL buffer in a
+subsequent patch, add helpers to gatekeep use of the DTL buffer. The
+current usage of the DTL buffer from debugfs is at a per-cpu level
+(corresponding to the cpu debugfs file that is opened). Subsequently, we
+will have users enabling/accessing DTLB for all online cpus. These
+helpers allow any number of per-cpu users, or a single global user
+exclusively.
 
 Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
 ---
- arch/powerpc/mm/book3s64/vphn.h |  8 ++++++++
- arch/powerpc/mm/numa.c          | 27 +++++++++++++--------------
- 2 files changed, 21 insertions(+), 14 deletions(-)
+ arch/powerpc/include/asm/plpar_wrappers.h |  2 ++
+ arch/powerpc/platforms/pseries/dtl.c      | 10 ++++++-
+ arch/powerpc/platforms/pseries/lpar.c     | 36 +++++++++++++++++++++++
+ 3 files changed, 47 insertions(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/mm/book3s64/vphn.h b/arch/powerpc/mm/book3s64/vphn.h
-index f0b93c2dd578..f7ff1e0c3801 100644
---- a/arch/powerpc/mm/book3s64/vphn.h
-+++ b/arch/powerpc/mm/book3s64/vphn.h
-@@ -11,6 +11,14 @@
-  */
- #define VPHN_ASSOC_BUFSIZE (VPHN_REGISTER_COUNT*sizeof(u64)/sizeof(u16) + 1)
+diff --git a/arch/powerpc/include/asm/plpar_wrappers.h b/arch/powerpc/include/asm/plpar_wrappers.h
+index d08feb1bc2bd..ab7dd454b6eb 100644
+--- a/arch/powerpc/include/asm/plpar_wrappers.h
++++ b/arch/powerpc/include/asm/plpar_wrappers.h
+@@ -88,6 +88,8 @@ static inline long register_dtl(unsigned long cpu, unsigned long vpa)
+ 	return vpa_call(H_VPA_REG_DTL, cpu, vpa);
+ }
  
-+/*
-+ * The H_HOME_NODE_ASSOCIATIVITY hcall takes two values for flags:
-+ * 1 for retrieving associativity information for a guest cpu
-+ * 2 for retrieving associativity information for a host/hypervisor cpu
-+ */
-+#define VPHN_FLAG_VCPU	1
-+#define VPHN_FLAG_PCPU	2
++extern bool register_dtl_buffer_access(bool global);
++extern void unregister_dtl_buffer_access(bool global);
+ extern void register_dtl_buffer(int cpu);
+ extern void alloc_dtl_buffers(void);
+ extern void vpa_init(int cpu);
+diff --git a/arch/powerpc/platforms/pseries/dtl.c b/arch/powerpc/platforms/pseries/dtl.c
+index fb05804adb2f..dd28296c9903 100644
+--- a/arch/powerpc/platforms/pseries/dtl.c
++++ b/arch/powerpc/platforms/pseries/dtl.c
+@@ -193,11 +193,15 @@ static int dtl_enable(struct dtl *dtl)
+ 	if (dtl->buf)
+ 		return -EBUSY;
+ 
++	if (register_dtl_buffer_access(false))
++		return -EBUSY;
 +
- extern int vphn_unpack_associativity(const long *packed, __be32 *unpacked);
+ 	n_entries = dtl_buf_entries;
+ 	buf = kmem_cache_alloc_node(dtl_cache, GFP_KERNEL, cpu_to_node(dtl->cpu));
+ 	if (!buf) {
+ 		printk(KERN_WARNING "%s: buffer alloc failed for cpu %d\n",
+ 				__func__, dtl->cpu);
++		unregister_dtl_buffer_access(false);
+ 		return -ENOMEM;
+ 	}
  
- #endif
-diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
-index 57e64273cb33..57f006b6214b 100644
---- a/arch/powerpc/mm/numa.c
-+++ b/arch/powerpc/mm/numa.c
-@@ -1087,6 +1087,17 @@ static void reset_topology_timer(void);
- static int topology_timer_secs = 1;
- static int topology_inited;
+@@ -214,8 +218,11 @@ static int dtl_enable(struct dtl *dtl)
+ 	}
+ 	spin_unlock(&dtl->lock);
  
-+static long hcall_vphn(unsigned long cpu, u64 flags, __be32 *associativity)
+-	if (rc)
++	if (rc) {
++		unregister_dtl_buffer_access(false);
+ 		kmem_cache_free(dtl_cache, buf);
++	}
++
+ 	return rc;
+ }
+ 
+@@ -227,6 +234,7 @@ static void dtl_disable(struct dtl *dtl)
+ 	dtl->buf = NULL;
+ 	dtl->buf_entries = 0;
+ 	spin_unlock(&dtl->lock);
++	unregister_dtl_buffer_access(false);
+ }
+ 
+ /* file interface */
+diff --git a/arch/powerpc/platforms/pseries/lpar.c b/arch/powerpc/platforms/pseries/lpar.c
+index 3375ca8cefb5..6af5a2a11deb 100644
+--- a/arch/powerpc/platforms/pseries/lpar.c
++++ b/arch/powerpc/platforms/pseries/lpar.c
+@@ -65,6 +65,42 @@ EXPORT_SYMBOL(plpar_hcall);
+ EXPORT_SYMBOL(plpar_hcall9);
+ EXPORT_SYMBOL(plpar_hcall_norets);
+ 
++static DEFINE_SPINLOCK(dtl_buffer_refctr_lock);
++static unsigned int dtl_buffer_global_refctr, dtl_buffer_percpu_refctr;
++
++bool register_dtl_buffer_access(bool global)
 +{
-+	long rc;
-+	long retbuf[PLPAR_HCALL9_BUFSIZE] = {0};
++	int rc = 0;
 +
-+	rc = plpar_hcall9(H_HOME_NODE_ASSOCIATIVITY, retbuf, flags, cpu);
-+	vphn_unpack_associativity(retbuf, associativity);
++	spin_lock(&dtl_buffer_refctr_lock);
++
++	if ((global && (dtl_buffer_global_refctr || dtl_buffer_percpu_refctr))
++			|| (!global && dtl_buffer_global_refctr)) {
++		rc = -1;
++	} else {
++		if (global)
++			dtl_buffer_global_refctr++;
++		else
++			dtl_buffer_percpu_refctr++;
++	}
++
++	spin_unlock(&dtl_buffer_refctr_lock);
 +
 +	return rc;
 +}
 +
- /*
-  * Change polling interval for associativity changes.
-  */
-@@ -1165,25 +1176,13 @@ static int update_cpu_associativity_changes_mask(void)
-  * Retrieve the new associativity information for a virtual processor's
-  * home node.
-  */
--static long hcall_vphn(unsigned long cpu, __be32 *associativity)
--{
--	long rc;
--	long retbuf[PLPAR_HCALL9_BUFSIZE] = {0};
--	u64 flags = 1;
--	int hwcpu = get_hard_smp_processor_id(cpu);
--
--	rc = plpar_hcall9(H_HOME_NODE_ASSOCIATIVITY, retbuf, flags, hwcpu);
--	vphn_unpack_associativity(retbuf, associativity);
--
--	return rc;
--}
--
- static long vphn_get_associativity(unsigned long cpu,
- 					__be32 *associativity)
++void unregister_dtl_buffer_access(bool global)
++{
++	spin_lock(&dtl_buffer_refctr_lock);
++
++	if (global)
++		dtl_buffer_global_refctr--;
++	else
++		dtl_buffer_percpu_refctr--;
++
++	spin_unlock(&dtl_buffer_refctr_lock);
++}
++
+ void alloc_dtl_buffers(void)
  {
- 	long rc;
- 
--	rc = hcall_vphn(cpu, associativity);
-+	rc = hcall_vphn(get_hard_smp_processor_id(cpu),
-+				VPHN_FLAG_VCPU, associativity);
- 
- 	switch (rc) {
- 	case H_FUNCTION:
+ 	int cpu;
 -- 
 2.21.0
 
