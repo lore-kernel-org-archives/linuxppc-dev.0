@@ -2,79 +2,92 @@ Return-Path: <SRS0=pfuI=TG=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.5 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED
+X-Spam-Status: No, score=-8.9 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT
 	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 49003C04AAA
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 May 2019 09:13:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BDC44C04AAA
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 May 2019 09:45:43 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id BD8F62082F
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 May 2019 09:13:32 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="YiczZxhl"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BD8F62082F
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	by mail.kernel.org (Postfix) with ESMTPS id 071DE20830
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 May 2019 09:45:42 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 071DE20830
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44yH8p4PRCzDqC0
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 May 2019 19:13:30 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44yHsw54FvzDqLK
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 May 2019 19:45:40 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=2607:f8b0:4864:20::641; helo=mail-pl1-x641.google.com;
- envelope-from=andy.shevchenko@gmail.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="YiczZxhl"; 
- dkim-atps=neutral
-Received: from mail-pl1-x641.google.com (mail-pl1-x641.google.com
- [IPv6:2607:f8b0:4864:20::641])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ spf=none (mailfrom) smtp.mailfrom=linux.vnet.ibm.com
+ (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
+ envelope-from=naveen.n.rao@linux.vnet.ibm.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=linux.vnet.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44yH7F4Yl4zDqHV
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 May 2019 19:12:09 +1000 (AEST)
-Received: by mail-pl1-x641.google.com with SMTP id w24so6065664plp.2
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 06 May 2019 02:12:09 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=mime-version:references:in-reply-to:from:date:message-id:subject:to
- :cc; bh=2zkFvMfXSuPxA7TswP4qZ+QIZKRpTzLAUwlBxIZ9PzU=;
- b=YiczZxhl+N5iLdzUGTmZ+vv61ahbfT5sYkO+ZKl1O183V89+BhJz/LVCYZW69Rs96I
- B9L09hT9RKBTMzQPy68tiva/wZUTF1HeqiQA0wgIQKQi9hc9wauqzRc3OKkCm1b+45xD
- /TIxR7gFTxFuR4TGryfYzNp53n1d0MoSOlSKqUI1PygQXIr4DIq/BsZfwXixIBOH9ZxQ
- yFa4fMS2Zky76vcoykF14xxJXsTp6HA89kojG6J76npL+WXgKQ2KtB8ZUuikGBrAHTkD
- gd51bYyzDfYbsyUC+pmkXYFFrzi2nJRQ6fAyiK8dpDyV02X1sRuhxEHafOiBQ4LbnHZJ
- uFzw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:mime-version:references:in-reply-to:from:date
- :message-id:subject:to:cc;
- bh=2zkFvMfXSuPxA7TswP4qZ+QIZKRpTzLAUwlBxIZ9PzU=;
- b=rtmoXDOCN1iWxHXCW99JXPu9fKTBoZaOWTW8aPQd0kCi5A6VUfoUnm6W7eTxX0/0bh
- ner2lykQCXKPKkQxbF/v2DrHicIzHa6NNoheX4uJBvn2KQKTKN/3FRCRXxqzqbH/QYZ3
- NCKtAC0BQhbNt4URBxSToVsl94lrqhJDU5bwMrom+eMFplZjvCbmgs+5vj5a0K9QlsrT
- lAxJk8dZKmoQ6OXovIV8muU7xvDrctvMD0Is4TvDuY9+GjUmdq7XtaIqEd6vz4bWz8Jx
- KBwPF7sf5PvDii7niqv/0VVKHdHIPMVaD82iTo9KxU+vW1WN1Dr3CvrA7qUex2fTe2PV
- giYA==
-X-Gm-Message-State: APjAAAWwV4nocE+FKbRCFvIabyw8ov3KQ86XGeR0aiFjmODyfHA7wpue
- MGasQ+HLiW0OkkJQOFymtLUheEuK3Int60N0UmQ=
-X-Google-Smtp-Source: APXvYqzcd/LiJVbbE8cCf+fOVIBhczP6XN4ND6V/1pkV1QnBDFee3E6dAicqEB0BMR5uY867+F0seVXH98gF0RaaX4M=
-X-Received: by 2002:a17:902:8349:: with SMTP id
- z9mr30421370pln.144.1557133433288; 
- Mon, 06 May 2019 02:03:53 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44yHrK6vzjzDqHj
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 May 2019 19:44:17 +1000 (AEST)
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
+ x469hMmB107080
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 6 May 2019 05:44:15 -0400
+Received: from e06smtp02.uk.ibm.com (e06smtp02.uk.ibm.com [195.75.94.98])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2saggen0kb-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 06 May 2019 05:44:15 -0400
+Received: from localhost
+ by e06smtp02.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
+ Mon, 6 May 2019 10:44:13 +0100
+Received: from b06cxnps3075.portsmouth.uk.ibm.com (9.149.109.195)
+ by e06smtp02.uk.ibm.com (192.168.101.132) with IBM ESMTP SMTP Gateway:
+ Authorized Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Mon, 6 May 2019 10:44:11 +0100
+Received: from d06av24.portsmouth.uk.ibm.com (mk.ibm.com [9.149.105.60])
+ by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x469iAug25690232
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Mon, 6 May 2019 09:44:10 GMT
+Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 0C3794203F;
+ Mon,  6 May 2019 09:44:10 +0000 (GMT)
+Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id DA9174204F;
+ Mon,  6 May 2019 09:44:07 +0000 (GMT)
+Received: from naverao1-tp.in.ibm.com (unknown [9.199.155.34])
+ by d06av24.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Mon,  6 May 2019 09:44:07 +0000 (GMT)
+From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
+To: Michael Ellerman <mpe@ellerman.id.au>,
+ Nathan Lynch <nathanl@linux.ibm.com>, Mingming Cao <mingming.cao@ibm.com>,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
+Subject: [RFC PATCH 1/6] powerpc/pseries: Use macros for referring to the DTL
+ enable mask
+Date: Mon,  6 May 2019 15:13:44 +0530
+X-Mailer: git-send-email 2.21.0
+In-Reply-To: <cover.1557134488.git.naveen.n.rao@linux.vnet.ibm.com>
+References: <cover.1557134488.git.naveen.n.rao@linux.vnet.ibm.com>
 MIME-Version: 1.0
-References: <20190416202013.4034148-1-arnd@arndb.de>
-In-Reply-To: <20190416202013.4034148-1-arnd@arndb.de>
-From: Andy Shevchenko <andy.shevchenko@gmail.com>
-Date: Mon, 6 May 2019 12:03:42 +0300
-Message-ID: <CAHp75Vc2-zzRYk0vpdPQm5duZwW+v=svEndTPV4Sr59QrGcMHg@mail.gmail.com>
-Subject: Re: [PATCH v3 00/26] compat_ioctl: cleanups
-To: Arnd Bergmann <arnd@arndb.de>
-Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+x-cbid: 19050609-0008-0000-0000-000002E3BE68
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 19050609-0009-0000-0000-0000225035D3
+Message-Id: <a9f01b9cf7d7637bb3a971d1152284f2d8b5dbd2.1557134488.git.naveen.n.rao@linux.vnet.ibm.com>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
+ definitions=2019-05-06_06:, , signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=792 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1810050000 definitions=main-1905060085
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -86,65 +99,89 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Linux NVMe Mailinglist <linux-nvme@lists.infradead.org>,
- linux-iio <linux-iio@vger.kernel.org>, linux-remoteproc@vger.kernel.org,
- linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
- Platform Driver <platform-driver-x86@vger.kernel.org>,
- linux-ide@vger.kernel.org,
- "open list:MEMORY TECHNOLOGY..." <linux-mtd@lists.infradead.org>,
- sparclinux@vger.kernel.org, linux1394-devel@lists.sourceforge.net,
- devel@driverdev.osuosl.org, linux-s390@vger.kernel.org,
- linux-scsi <linux-scsi@vger.kernel.org>, linux-bluetooth@vger.kernel.org,
- y2038@lists.linaro.org, qat-linux@intel.com, amd-gfx@lists.freedesktop.org,
- linux-input <linux-input@vger.kernel.org>,
- Marcel Holtmann <marcel@holtmann.org>,
- Linux Media Mailing List <linux-media@vger.kernel.org>,
- "open list:REAL TIME CLOCK \(RTC\) SUBSYSTEM" <linux-rtc@vger.kernel.org>,
- ALSA Development Mailing List <alsa-devel@alsa-project.org>,
- "James E.J. Bottomley" <jejb@linux.ibm.com>,
- Alexander Viro <viro@zeniv.linux.org.uk>, ceph-devel@vger.kernel.org,
- linux-arm Mailing List <linux-arm-kernel@lists.infradead.org>,
- Karsten Keil <isdn@linux-pingi.de>,
- "Martin K. Petersen" <martin.petersen@oracle.com>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- USB <linux-usb@vger.kernel.org>,
- "open list:TI WILINK WIRELES..." <linux-wireless@vger.kernel.org>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- "open list:HFI1 DRIVER" <linux-rdma@vger.kernel.org>,
- linux-crypto <linux-crypto@vger.kernel.org>, netdev <netdev@vger.kernel.org>,
- Linux FS Devel <linux-fsdevel@vger.kernel.org>,
- linux-integrity <linux-integrity@vger.kernel.org>,
- "open list:LINUX FOR POWERPC PA SEMI PWRFICIENT"
- <linuxppc-dev@lists.ozlabs.org>, "David S. Miller" <davem@davemloft.net>,
- linux-btrfs@vger.kernel.org, linux-ppp@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, Apr 16, 2019 at 11:23 PM Arnd Bergmann <arnd@arndb.de> wrote:
->
-> Hi Al,
->
-> It took me way longer than I had hoped to revisit this series, see
-> https://lore.kernel.org/lkml/20180912150142.157913-1-arnd@arndb.de/
-> for the previously posted version.
->
-> I've come to the point where all conversion handlers and most
-> COMPATIBLE_IOCTL() entries are gone from this file, but for
-> now, this series only has the parts that have either been reviewed
-> previously, or that are simple enough to include.
->
-> The main missing piece is the SG_IO/SG_GET_REQUEST_TABLE conversion.
-> I'll post the patches I made for that later, as they need more
-> testing and review from the scsi maintainers.
->
-> I hope you can still take these for the coming merge window, unless
-> new problems come up.
+Introduce macros to encode the DTL enable mask fields and use those
+instead of hardcoding numbers.
 
->  drivers/platform/x86/wmi.c                  |   2 +-
+Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
+---
+ arch/powerpc/include/asm/lppaca.h      | 11 +++++++++++
+ arch/powerpc/platforms/pseries/dtl.c   |  8 +-------
+ arch/powerpc/platforms/pseries/lpar.c  |  2 +-
+ arch/powerpc/platforms/pseries/setup.c |  2 +-
+ 4 files changed, 14 insertions(+), 9 deletions(-)
 
-Acked-by: Andy Shevchenko <andy.shevchenko@gmail.com>
-
+diff --git a/arch/powerpc/include/asm/lppaca.h b/arch/powerpc/include/asm/lppaca.h
+index 7c23ce8a5a4c..2c7e31187726 100644
+--- a/arch/powerpc/include/asm/lppaca.h
++++ b/arch/powerpc/include/asm/lppaca.h
+@@ -154,6 +154,17 @@ struct dtl_entry {
+ #define DISPATCH_LOG_BYTES	4096	/* bytes per cpu */
+ #define N_DISPATCH_LOG		(DISPATCH_LOG_BYTES / sizeof(struct dtl_entry))
+ 
++/*
++ * Dispatch trace log event enable mask:
++ *   0x1: voluntary virtual processor waits
++ *   0x2: time-slice preempts
++ *   0x4: virtual partition memory page faults
++ */
++#define DTL_LOG_CEDE		0x1
++#define DTL_LOG_PREEMPT		0x2
++#define DTL_LOG_FAULT		0x4
++#define DTL_LOG_ALL		(DTL_LOG_CEDE | DTL_LOG_PREEMPT | DTL_LOG_FAULT)
++
+ extern struct kmem_cache *dtl_cache;
+ 
+ /*
+diff --git a/arch/powerpc/platforms/pseries/dtl.c b/arch/powerpc/platforms/pseries/dtl.c
+index ef6595153642..051ea2de1e1a 100644
+--- a/arch/powerpc/platforms/pseries/dtl.c
++++ b/arch/powerpc/platforms/pseries/dtl.c
+@@ -40,13 +40,7 @@ struct dtl {
+ };
+ static DEFINE_PER_CPU(struct dtl, cpu_dtl);
+ 
+-/*
+- * Dispatch trace log event mask:
+- * 0x7: 0x1: voluntary virtual processor waits
+- *      0x2: time-slice preempts
+- *      0x4: virtual partition memory page faults
+- */
+-static u8 dtl_event_mask = 0x7;
++static u8 dtl_event_mask = DTL_LOG_ALL;
+ 
+ 
+ /*
+diff --git a/arch/powerpc/platforms/pseries/lpar.c b/arch/powerpc/platforms/pseries/lpar.c
+index 1034ef1fe2b4..23f2ac6793b7 100644
+--- a/arch/powerpc/platforms/pseries/lpar.c
++++ b/arch/powerpc/platforms/pseries/lpar.c
+@@ -126,7 +126,7 @@ void vpa_init(int cpu)
+ 			pr_err("WARNING: DTL registration of cpu %d (hw %d) "
+ 			       "failed with %ld\n", smp_processor_id(),
+ 			       hwcpu, ret);
+-		lppaca_of(cpu).dtl_enable_mask = 2;
++		lppaca_of(cpu).dtl_enable_mask = DTL_LOG_PREEMPT;
+ 	}
+ }
+ 
+diff --git a/arch/powerpc/platforms/pseries/setup.c b/arch/powerpc/platforms/pseries/setup.c
+index e4f0dfd4ae33..fabaefff8399 100644
+--- a/arch/powerpc/platforms/pseries/setup.c
++++ b/arch/powerpc/platforms/pseries/setup.c
+@@ -316,7 +316,7 @@ static int alloc_dispatch_logs(void)
+ 		pr_err("WARNING: DTL registration of cpu %d (hw %d) failed "
+ 		       "with %d\n", smp_processor_id(),
+ 		       hard_smp_processor_id(), ret);
+-	get_paca()->lppaca_ptr->dtl_enable_mask = 2;
++	get_paca()->lppaca_ptr->dtl_enable_mask = DTL_LOG_PREEMPT;
+ 
+ 	return 0;
+ }
 -- 
-With Best Regards,
-Andy Shevchenko
+2.21.0
+
