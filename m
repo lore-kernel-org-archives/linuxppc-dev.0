@@ -2,96 +2,95 @@ Return-Path: <SRS0=Sivu=TH=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.7 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,UNPARSEABLE_RELAY,
-	USER_AGENT_NEOMUTT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.9 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 778B4C04A6B
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 May 2019 03:12:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 84625C004C9
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 May 2019 04:31:46 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id EAA25206BF
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 May 2019 03:12:10 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=oracle.com header.i=@oracle.com header.b="qPZyJEvF"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EAA25206BF
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=oracle.com
+	by mail.kernel.org (Postfix) with ESMTPS id B10B020825
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 May 2019 04:31:45 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B10B020825
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44yl5N4N1LzDqNj
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 May 2019 13:12:08 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44ymsC3ZWtzDqMl
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 May 2019 14:31:43 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=oracle.com
- (client-ip=156.151.31.85; helo=userp2120.oracle.com;
- envelope-from=daniel.m.jordan@oracle.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
+ (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
+ envelope-from=sbobroff@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=oracle.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=oracle.com header.i=@oracle.com header.b="qPZyJEvF"; 
- dkim-atps=neutral
-Received: from userp2120.oracle.com (userp2120.oracle.com [156.151.31.85])
+ dmarc=none (p=none dis=none) header.from=linux.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44yl3l5pbDzDqJW
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 May 2019 13:10:43 +1000 (AEST)
-Received: from pps.filterd (userp2120.oracle.com [127.0.0.1])
- by userp2120.oracle.com (8.16.0.27/8.16.0.27) with SMTP id x4738uBG073685;
- Tue, 7 May 2019 03:10:22 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com;
- h=date : from : to : cc
- : subject : message-id : references : mime-version : content-type :
- in-reply-to; s=corp-2018-07-02;
- bh=Sa+cOJtJx0K5ZUTspQzVWRaHsaM72rSdt2S6cah8KqE=;
- b=qPZyJEvFwNkpPyu498f2W9cJG3cwo3YzJHpJuUkM4qNXyo0XdOQ9+2nBbN/aGX6t9k1U
- wHeLMsyAc1cE1N+uTUZnW/Iyw54XcN6jiBEm0jAv/cQLsff/0gr7PXOraCv+40U7PJWD
- R/9Fkc7FCq8Z9qdqoT6DH83+M46p62s329nBRNiN69nX2PhdQ2dCEdLOHXuJEXE0hF3p
- GLmiF0TCkWeY+nB04qmMqqK6u9J8x9umk/1yUcK+AKwwac5NjQpKLneDVrp7r8yIEyQW
- 1GH7C9dCib2+z68OBCyWe+2gDeM+qGNzSX60HntCF330GSmcl5vC0+RL01+Q5LaL4Rk4 Og== 
-Received: from userp3020.oracle.com (userp3020.oracle.com [156.151.31.79])
- by userp2120.oracle.com with ESMTP id 2s94b0j77m-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Tue, 07 May 2019 03:10:22 +0000
-Received: from pps.filterd (userp3020.oracle.com [127.0.0.1])
- by userp3020.oracle.com (8.16.0.27/8.16.0.27) with SMTP id x473A5lN185360;
- Tue, 7 May 2019 03:10:22 GMT
-Received: from userv0122.oracle.com (userv0122.oracle.com [156.151.31.75])
- by userp3020.oracle.com with ESMTP id 2s94af7xxr-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Tue, 07 May 2019 03:10:22 +0000
-Received: from abhmp0017.oracle.com (abhmp0017.oracle.com [141.146.116.23])
- by userv0122.oracle.com (8.14.4/8.14.4) with ESMTP id x473A6JU021461;
- Tue, 7 May 2019 03:10:07 GMT
-Received: from ca-dmjordan1.us.oracle.com (/10.211.9.48)
- by default (Oracle Beehive Gateway v4.0)
- with ESMTP ; Mon, 06 May 2019 20:10:06 -0700
-Date: Mon, 6 May 2019 23:09:57 -0400
-From: Daniel Jordan <daniel.m.jordan@oracle.com>
-To: Jason Gunthorpe <jgg@mellanox.com>
-Subject: Re: [PATCH] mm: add account_locked_vm utility function
-Message-ID: <20190507030957.3qp7yflco6ckcj5q@ca-dmjordan1.us.oracle.com>
-References: <20190503201629.20512-1-daniel.m.jordan@oracle.com>
- <20190503232818.GA5182@mellanox.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44ymqY4Bn1zDqK5
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 May 2019 14:30:16 +1000 (AEST)
+Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
+ x474MGhR039010
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 7 May 2019 00:30:13 -0400
+Received: from e06smtp04.uk.ibm.com (e06smtp04.uk.ibm.com [195.75.94.100])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2saypgxmsu-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 07 May 2019 00:30:13 -0400
+Received: from localhost
+ by e06smtp04.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <sbobroff@linux.ibm.com>;
+ Tue, 7 May 2019 05:30:11 +0100
+Received: from b06cxnps3074.portsmouth.uk.ibm.com (9.149.109.194)
+ by e06smtp04.uk.ibm.com (192.168.101.134) with IBM ESMTP SMTP Gateway:
+ Authorized Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Tue, 7 May 2019 05:30:09 +0100
+Received: from d06av25.portsmouth.uk.ibm.com (d06av25.portsmouth.uk.ibm.com
+ [9.149.105.61])
+ by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x474U8oa52691168
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Tue, 7 May 2019 04:30:08 GMT
+Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 72D7711C054;
+ Tue,  7 May 2019 04:30:08 +0000 (GMT)
+Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 2CDED11C064;
+ Tue,  7 May 2019 04:30:08 +0000 (GMT)
+Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
+ by d06av25.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Tue,  7 May 2019 04:30:08 +0000 (GMT)
+Received: from tungsten.ozlabs.ibm.com (haven.au.ibm.com [9.192.254.114])
+ (using TLSv1.2 with cipher DHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.au.ibm.com (Postfix) with ESMTPSA id B8A7AA023A;
+ Tue,  7 May 2019 14:30:06 +1000 (AEST)
+From: Sam Bobroff <sbobroff@linux.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH v2 1/6] powerpc/64: Adjust order in pcibios_init()
+Date: Tue,  7 May 2019 14:30:01 +1000
+X-Mailer: git-send-email 2.19.0.2.gcad72f5712
+In-Reply-To: <cover.1557203383.git.sbobroff@linux.ibm.com>
+References: <cover.1557203383.git.sbobroff@linux.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20190503232818.GA5182@mellanox.com>
-User-Agent: NeoMutt/20180323-268-5a959c
-X-Proofpoint-Virus-Version: vendor=nai engine=5900 definitions=9249
- signatures=668686
-X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 suspectscore=0
- malwarescore=0
- phishscore=0 bulkscore=0 spamscore=0 mlxscore=0 mlxlogscore=999
- adultscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.0.1-1810050000 definitions=main-1905070018
-X-Proofpoint-Virus-Version: vendor=nai engine=5900 definitions=9249
- signatures=668686
-X-Proofpoint-Spam-Details: rule=notspam policy=default score=0
- priorityscore=1501 malwarescore=0
- suspectscore=0 phishscore=0 bulkscore=0 spamscore=0 clxscore=1011
- lowpriorityscore=0 mlxscore=0 impostorscore=0 mlxlogscore=999 adultscore=0
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.0.1-1810050000
- definitions=main-1905070018
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+x-cbid: 19050704-0016-0000-0000-000002790935
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 19050704-0017-0000-0000-000032D5B098
+Message-Id: <e95e2d3412aeb4225ec7f59bce24cf1d1c25e8dc.1557203383.git.sbobroff@linux.ibm.com>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
+ definitions=2019-05-07_02:, , signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ malwarescore=0 suspectscore=29 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1810050000 definitions=main-1905070028
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -103,47 +102,92 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Mark Rutland <mark.rutland@arm.com>, Davidlohr Bueso <dave@stgolabs.net>,
- "kvm@vger.kernel.org" <kvm@vger.kernel.org>, Alan Tull <atull@kernel.org>,
- Alexey Kardashevskiy <aik@ozlabs.ru>,
- "linux-fpga@vger.kernel.org" <linux-fpga@vger.kernel.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "kvm-ppc@vger.kernel.org" <kvm-ppc@vger.kernel.org>,
- Daniel Jordan <daniel.m.jordan@oracle.com>,
- "linux-mm@kvack.org" <linux-mm@kvack.org>,
- Alex Williamson <alex.williamson@redhat.com>, Moritz Fischer <mdf@kernel.org>,
- Steve Sistare <steven.sistare@oracle.com>,
- "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Christoph Lameter <cl@linux.com>, Wu Hao <hao.wu@intel.com>
+Cc: aik@ozlabs.ru, oohall@gmail.com, tyreld@linux.vnet.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, May 03, 2019 at 11:28:22PM +0000, Jason Gunthorpe wrote:
-> On Fri, May 03, 2019 at 01:16:30PM -0700, Daniel Jordan wrote:
-> > Andrew, this one patch replaces these six from [1]:
-> > 
-> >     mm-change-locked_vms-type-from-unsigned-long-to-atomic64_t.patch
-> >     vfio-type1-drop-mmap_sem-now-that-locked_vm-is-atomic.patch
-> >     vfio-spapr_tce-drop-mmap_sem-now-that-locked_vm-is-atomic.patch
-> >     fpga-dlf-afu-drop-mmap_sem-now-that-locked_vm-is-atomic.patch
-> >     kvm-book3s-drop-mmap_sem-now-that-locked_vm-is-atomic.patch
-> >     powerpc-mmu-drop-mmap_sem-now-that-locked_vm-is-atomic.patch
-> > 
-> > That series converts locked_vm to an atomic, but on closer inspection causes at
-> > least one accounting race in mremap, and fixing it just for this type
-> > conversion came with too much ugly in the core mm to justify, especially when
-> > the right long-term fix is making these drivers use pinned_vm instead.
-> 
-> Did we ever decide what to do here? Should all these drivers be
-> switched to pinned_vm anyhow?
+The pcibios_init() function for 64 bit PowerPC currently calls
+pci_bus_add_devices() before pcibios_resource_survey(), which seems
+incorrect because it adds devices and attempts to bind their drivers
+before allocating their resources (although no problems seem to be
+apparent).
 
-Well, there were the concerns about switching in [1].  Alex, is there an
-example of an application or library that would break or be exploitable?  If
-there were particular worries (qemu for vfio type1, for example), perhaps some
-coordinated changes across the kernel and userspace would be possible,
-especially given the amount of effort it's likely going to take to get the
-locked_vm/pinned_vm accounting sorted out.
+So move the call to pci_bus_add_devices() to after
+pcibios_resource_survey(), while extracting call to the
+pcibios_fixup() hook so that it remains in the same location.
 
-[1] https://lore.kernel.org/linux-mm/20190213130330.76ef1987@w520.home/
+This will also allow the ppc_md.pcibios_bus_add_device() hooks to
+perform actions that depend on PCI resources, both during rescanning
+(where this is already the case) and at boot time, to support future
+work.
+
+Signed-off-by: Sam Bobroff <sbobroff@linux.ibm.com>
+Reviewed-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+---
+ arch/powerpc/kernel/pci-common.c |  4 ----
+ arch/powerpc/kernel/pci_32.c     |  4 ++++
+ arch/powerpc/kernel/pci_64.c     | 12 +++++++++---
+ 3 files changed, 13 insertions(+), 7 deletions(-)
+
+diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-common.c
+index ff4b7539cbdf..3146eb73e3b3 100644
+--- a/arch/powerpc/kernel/pci-common.c
++++ b/arch/powerpc/kernel/pci-common.c
+@@ -1383,10 +1383,6 @@ void __init pcibios_resource_survey(void)
+ 		pr_debug("PCI: Assigning unassigned resources...\n");
+ 		pci_assign_unassigned_resources();
+ 	}
+-
+-	/* Call machine dependent fixup */
+-	if (ppc_md.pcibios_fixup)
+-		ppc_md.pcibios_fixup();
+ }
+ 
+ /* This is used by the PCI hotplug driver to allocate resource
+diff --git a/arch/powerpc/kernel/pci_32.c b/arch/powerpc/kernel/pci_32.c
+index 0417fda13636..7078122e9cea 100644
+--- a/arch/powerpc/kernel/pci_32.c
++++ b/arch/powerpc/kernel/pci_32.c
+@@ -262,6 +262,10 @@ static int __init pcibios_init(void)
+ 	/* Call common code to handle resource allocation */
+ 	pcibios_resource_survey();
+ 
++	/* Call machine dependent fixup */
++	if (ppc_md.pcibios_fixup)
++		ppc_md.pcibios_fixup();
++
+ 	/* Call machine dependent post-init code */
+ 	if (ppc_md.pcibios_after_init)
+ 		ppc_md.pcibios_after_init();
+diff --git a/arch/powerpc/kernel/pci_64.c b/arch/powerpc/kernel/pci_64.c
+index 9d8c10d55407..6f16f30031d7 100644
+--- a/arch/powerpc/kernel/pci_64.c
++++ b/arch/powerpc/kernel/pci_64.c
+@@ -58,14 +58,20 @@ static int __init pcibios_init(void)
+ 	pci_add_flags(PCI_ENABLE_PROC_DOMAINS | PCI_COMPAT_DOMAIN_0);
+ 
+ 	/* Scan all of the recorded PCI controllers.  */
+-	list_for_each_entry_safe(hose, tmp, &hose_list, list_node) {
++	list_for_each_entry_safe(hose, tmp, &hose_list, list_node)
+ 		pcibios_scan_phb(hose);
+-		pci_bus_add_devices(hose->bus);
+-	}
+ 
+ 	/* Call common code to handle resource allocation */
+ 	pcibios_resource_survey();
+ 
++	/* Add devices. */
++	list_for_each_entry_safe(hose, tmp, &hose_list, list_node)
++		pci_bus_add_devices(hose->bus);
++
++	/* Call machine dependent fixup */
++	if (ppc_md.pcibios_fixup)
++		ppc_md.pcibios_fixup();
++
+ 	printk(KERN_DEBUG "PCI: Probing PCI hardware done\n");
+ 
+ 	return 0;
+-- 
+2.19.0.2.gcad72f5712
+
