@@ -6,21 +6,21 @@ X-Spam-Status: No, score=-11.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_PASS,
 	URIBL_BLOCKED autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E3740C04A6B
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 May 2019 02:30:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B8B9BC04A6B
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 May 2019 02:32:06 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 1A37E206BF
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 May 2019 02:30:44 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 38ABA206BF
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 May 2019 02:32:06 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=sirena.org.uk header.i=@sirena.org.uk header.b="DjY3qcA5"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1A37E206BF
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=sirena.org.uk header.i=@sirena.org.uk header.b="n0SFRfDF"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 38ABA206BF
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44yk9Y5B1MzDqLv
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 May 2019 12:30:41 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44ykC80YRszDqNn
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 May 2019 12:32:04 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=none (mailfrom) smtp.mailfrom=sirena.org.uk
  (client-ip=2a01:7e01::f03c:91ff:fed4:a3b6; helo=heliosphere.sirena.org.uk;
@@ -29,38 +29,38 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=sirena.org.uk header.i=@sirena.org.uk
- header.b="DjY3qcA5"; dkim-atps=neutral
+ header.b="n0SFRfDF"; dkim-atps=neutral
 Received: from heliosphere.sirena.org.uk (heliosphere.sirena.org.uk
  [IPv6:2a01:7e01::f03c:91ff:fed4:a3b6])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44yk7w5H5WzDqK5
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 May 2019 12:29:15 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44yk9c2p0xzDqNF
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 May 2019 12:30:44 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
  d=sirena.org.uk; s=20170815-heliosphere; h=Date:Message-Id:In-Reply-To:
  Subject:Cc:To:From:Sender:Reply-To:MIME-Version:Content-Type:
  Content-Transfer-Encoding:Content-ID:Content-Description:Resent-Date:
  Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:References:
  List-Id:List-Help:List-Unsubscribe:List-Subscribe:List-Post:List-Owner:
- List-Archive; bh=aSPRS/UQTQIlG/Fpji6u6bjSVgCp4Melu+2tov3g5R4=; b=DjY3qcA5pL1T
- mdfHfSDzwvw3BrCANnUOvAs6VsvCK/pP3j6IHqgqKB0C/7yDb2O5wD9srqBNXfJZp9rSDQBjAMLQM
- HRXF7W0D/7KIq4CCCI87rLtxy/uW2pRJ9XjE8tunuBmYX4Lj3U69V7ENW4fXZ8wd9WMm8JZad2IRE
- ttC3c=;
+ List-Archive; bh=aSPRS/UQTQIlG/Fpji6u6bjSVgCp4Melu+2tov3g5R4=; b=n0SFRfDFK1Of
+ rgY61rDkvIWmIM8aA9E9eE7sO4Ruh2YWA9xrrgw9Ry4r+8S3P2tgo6N7WISJoOWj2UOoCXTeKF9pI
+ 40V6JiVixRC6iAbH64NX26Sa2vaddbleCMZSSaj1nbRAOgbYu261IgUDO34aiWXHTqopfG/8N/TEA
+ 7heH0=;
 Received: from kd111239185057.au-net.ne.jp ([111.239.185.57]
  helo=finisterre.sirena.org.uk)
  by heliosphere.sirena.org.uk with esmtpsa
  (TLS1.2:ECDHE_RSA_AES_256_GCM_SHA384:256) (Exim 4.89)
  (envelope-from <broonie@sirena.org.uk>)
- id 1hNpqp-0003RP-LM; Tue, 07 May 2019 02:29:04 +0000
+ id 1hNpsN-0003Sv-2h; Tue, 07 May 2019 02:30:39 +0000
 Received: by finisterre.ee.mobilebroadband (Postfix, from userid 1000)
- id 9513A440035; Tue,  7 May 2019 03:28:53 +0100 (BST)
+ id 26DF4440035; Tue,  7 May 2019 03:30:33 +0100 (BST)
 From: Mark Brown <broonie@kernel.org>
 To: S.j. Wang <shengjiu.wang@nxp.com>
 Subject: Applied "ASoC: fsl_esai: Add pm runtime function" to the asoc tree
 In-Reply-To: <20190503194944.30167-1-nicoleotsuka@gmail.com>
 X-Patchwork-Hint: ignore
-Message-Id: <20190507022853.9513A440035@finisterre.sirena.org.uk>
-Date: Tue,  7 May 2019 03:28:53 +0100 (BST)
+Message-Id: <20190507023033.26DF4440035@finisterre.sirena.org.uk>
+Date: Tue,  7 May 2019 03:30:33 +0100 (BST)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
