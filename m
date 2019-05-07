@@ -2,68 +2,86 @@ Return-Path: <SRS0=Sivu=TH=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.0 required=3.0 tests=MAILING_LIST_MULTI,SPF_PASS,
-	URIBL_BLOCKED autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.5 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
+	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_NEOMUTT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 283A9C004C9
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 May 2019 13:41:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3728DC004C9
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 May 2019 13:52:50 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id CF969206A3
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 May 2019 13:41:10 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CF969206A3
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=bugzilla.kernel.org
+	by mail.kernel.org (Postfix) with ESMTPS id 58511205C9
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 May 2019 13:52:49 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="oMQjJcPi"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 58511205C9
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44z1385GgMzDqGp
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 May 2019 23:41:08 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44z1JZ5S1ZzDqJT
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 May 2019 23:52:46 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=bugzilla.kernel.org
- (client-ip=198.145.29.98; helo=mail.wl.linuxfoundation.org;
- envelope-from=bugzilla-daemon@bugzilla.kernel.org; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=bugzilla.kernel.org
-Received: from mail.wl.linuxfoundation.org (mail.wl.linuxfoundation.org
- [198.145.29.98])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ spf=pass (mailfrom) smtp.mailfrom=gmail.com
+ (client-ip=2607:f8b0:4864:20::444; helo=mail-pf1-x444.google.com;
+ envelope-from=richardcochran@gmail.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="oMQjJcPi"; 
+ dkim-atps=neutral
+Received: from mail-pf1-x444.google.com (mail-pf1-x444.google.com
+ [IPv6:2607:f8b0:4864:20::444])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44z1082FVBzDqDM
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 May 2019 23:38:31 +1000 (AEST)
-Received: from mail.wl.linuxfoundation.org (localhost [127.0.0.1])
- by mail.wl.linuxfoundation.org (Postfix) with ESMTP id 334F6288C6
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 May 2019 13:38:30 +0000 (UTC)
-Received: by mail.wl.linuxfoundation.org (Postfix, from userid 486)
- id 27C10288EE; Tue,  7 May 2019 13:38:30 +0000 (UTC)
-From: bugzilla-daemon@bugzilla.kernel.org
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [Bug 203517] WARNING: inconsistent lock state. inconsistent
- {SOFTIRQ-ON-W} -> {IN-SOFTIRQ-W} usage.
-Date: Tue, 07 May 2019 13:38:28 +0000
-X-Bugzilla-Reason: None
-X-Bugzilla-Type: changed
-X-Bugzilla-Watch-Reason: AssignedTo platform_ppc-64@kernel-bugs.osdl.org
-X-Bugzilla-Product: File System
-X-Bugzilla-Component: btrfs
-X-Bugzilla-Version: 2.5
-X-Bugzilla-Keywords: 
-X-Bugzilla-Severity: normal
-X-Bugzilla-Who: erhard_f@mailbox.org
-X-Bugzilla-Status: NEW
-X-Bugzilla-Resolution: 
-X-Bugzilla-Priority: P1
-X-Bugzilla-Assigned-To: platform_ppc-64@kernel-bugs.osdl.org
-X-Bugzilla-Flags: 
-X-Bugzilla-Changed-Fields: 
-Message-ID: <bug-203517-206035-KFIWguaOhU@https.bugzilla.kernel.org/>
-In-Reply-To: <bug-203517-206035@https.bugzilla.kernel.org/>
-References: <bug-203517-206035@https.bugzilla.kernel.org/>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-X-Bugzilla-URL: https://bugzilla.kernel.org/
-Auto-Submitted: auto-generated
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44z1FS2H2GzDqHH
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 May 2019 23:50:01 +1000 (AEST)
+Received: by mail-pf1-x444.google.com with SMTP id 13so8394694pfw.9
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 07 May 2019 06:50:00 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=date:from:to:cc:subject:message-id:references:mime-version
+ :content-disposition:in-reply-to:user-agent;
+ bh=S8BQEP1OV6vKoSe5VDyJlLX4UR1XhupCQW202rhq/sQ=;
+ b=oMQjJcPiNX92IlwTDMAW4qr/DdkOFqHLv0mxlbPfOeLaWsnqFZadYEibjkDIgY2NoM
+ /65COGgPxkzIo+amIzo6LPYgGDGhJxntl4IHC1R/RwjQFVpiP4UXGWuwbHOfyZ8euQcE
+ ir9EJkZF9XcN0WR7nfl/JhEl0+MZHZx/FFJIdaszpfSQ9rsW7hA8LTHBLq1t+IWpekyS
+ iyEd6m3PD3RorhuG5Xmkci0vdJw7KlYnHW5KDkeG+yBLz7q4YH3GU/dqJHBkQriNNSBe
+ xEnRNdM5sxiM7Y2G+ogZwJCOOm3oWbLZc2p+U6WW1oVu9v/vdRNQ/7P9oOscBiCmAEP7
+ h3lw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+ :mime-version:content-disposition:in-reply-to:user-agent;
+ bh=S8BQEP1OV6vKoSe5VDyJlLX4UR1XhupCQW202rhq/sQ=;
+ b=F36aJ+8MZwdQkIuscKEMxed80o9Ye9MXPLvTTSYSRX/ewXG8jwUnxG4vej6GXE2AiF
+ peJpgjmsDEuGSa6bMojHisGtwSSieyW1FqUqNFrWx3NmesIDUCZmyDnZCYbUl/ioeo6c
+ 8F2ZPyAb1g5+CX/7wHKFdGMGZKk53dhCkQz3yt1vGuwnFNzQFVbp3O9W5EwOicyL9uAa
+ I80uDowJq45J3Ce2ihOiJXv2UV/WYcc+Wvtc2VyM6Z6jpzAffGN7fhDOlk0U4TmUH7hD
+ NX43iJH7GCP8UIDn34lYBWKL8qKbehaQdTxmypN9Vq32KbDRVk9j9XsSK1SNIMpffkUW
+ 8lqA==
+X-Gm-Message-State: APjAAAWtPLLe3B4nX+Ex8Fk6CtgH40SXTkDH2vyKeSMnlcvTgRAqqzO2
+ +8+lxAn5NEKb1qNWKUM0D0s=
+X-Google-Smtp-Source: APXvYqwNMrdvjlCOgIU9TBbSh3DwQp1FscE2sA0W7mHk+F+dufo6InfjIlXwfy6OIa5H5Al1dkWeIA==
+X-Received: by 2002:aa7:98c6:: with SMTP id e6mr2436297pfm.191.1557236995744; 
+ Tue, 07 May 2019 06:49:55 -0700 (PDT)
+Received: from localhost (c-73-222-71-142.hsd1.ca.comcast.net. [73.222.71.142])
+ by smtp.gmail.com with ESMTPSA id v6sm8275551pgk.77.2019.05.07.06.49.54
+ (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
+ Tue, 07 May 2019 06:49:54 -0700 (PDT)
+Date: Tue, 7 May 2019 06:49:52 -0700
+From: Richard Cochran <richardcochran@gmail.com>
+To: Po Liu <po.liu@nxp.com>
+Subject: Re: [PATCH v1] timer:clock:ptp: add support the dynamic posix clock
+ alarm set for ptp
+Message-ID: <20190507134952.uqqxmhinv75actbh@localhost>
+References: <1557032106-28041-1-git-send-email-Po.Liu@nxp.com>
 MIME-Version: 1.0
-X-Virus-Scanned: ClamAV using ClamSMTP
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1557032106-28041-1-git-send-email-Po.Liu@nxp.com>
+User-Agent: NeoMutt/20170113 (1.7.2)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -75,20 +93,56 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: Roy Zang <roy.zang@nxp.com>,
+ "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Leo Li <leoyang.li@nxp.com>, Claudiu Manoil <claudiu.manoil@nxp.com>,
+ Mingkai Hu <mingkai.hu@nxp.com>, "Y.b. Lu" <yangbo.lu@nxp.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "davem@davemloft.net" <davem@davemloft.net>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
+ "deepa.kernel@gmail.com" <deepa.kernel@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-https://bugzilla.kernel.org/show_bug.cgi?id=3D203517
+On Sun, May 05, 2019 at 05:02:05AM +0000, Po Liu wrote:
+> Current kernel code do not support the dynamic posix clock alarm set.
+> This code would support it by the posix timer structure.
+> 
+> 319  const struct k_clock clock_posix_dynamic = {
+> 
+> 320         .clock_getres   = pc_clock_getres,
+> 321         .clock_set      = pc_clock_settime,
+> 322         .clock_get      = pc_clock_gettime,
+> 323         .clock_adj      = pc_clock_adjtime,
+> 324 +       .timer_create   = pc_timer_create,
+> 325 +       .timer_del      = pc_timer_delete,
+> 326 +       .timer_set      = pc_timer_set,
+> 327 +       .timer_arm      = pc_timer_arm,
+> }
+> 
 
---- Comment #5 from Erhard F. (erhard_f@mailbox.org) ---
-Some more info about the system:
-Talos II running Gentoo Linux ppc64, Big Endian.
-btrfs root filesystem (zstd compressed, standard compression level).
-swap: /sbin/zram-init -d0 -s32 -azstd -Lzram_swap 4096
-build partition: /sbin/zram-init -d1 -s32 -alzo -text2 -orelatime -m1777
--Lvar_tmp_dir 34816 /var/tmp
+Sorry, NAK, since we decided some time ago not to support timer_*
+operations on dynamic clocks.  You get much better application level
+timer performance by synchronizing CLOCK_REALTIME to your PHC and
+using clock_nanosleep() with CLOCK_REALTIME or CLOCK_MONOTONIC.
 
---=20
-You are receiving this mail because:
-You are watching the assignee of the bug.=
+> This won't change the user space system call code. Normally the user
+> space set alarm by timer_create() and timer_settime(). Reference code
+> are tools/testing/selftests/ptp/testptp.c.
+
+That program still has misleading examples.  Sorry about that.  I'll
+submit a patch to remove them.
+
+> +static int pc_timer_create(struct k_itimer *new_timer)
+> +{
+> +	return 0;
+> +}
+> +
+
+This of course would never work.  Consider what happens when two or
+more timers are created and armed.
+
+Thanks,
+Richard
