@@ -2,79 +2,78 @@ Return-Path: <SRS0=Sivu=TH=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.7 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.7 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D2376C004C9
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 May 2019 20:43:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C3475C004C9
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 May 2019 20:47:38 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 5492420449
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 May 2019 20:43:24 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 4230620449
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 May 2019 20:47:38 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=intel-com.20150623.gappssmtp.com header.i=@intel-com.20150623.gappssmtp.com header.b="n2cLf9Qv"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5492420449
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=intel-com.20150623.gappssmtp.com header.i=@intel-com.20150623.gappssmtp.com header.b="rqW6lucK"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4230620449
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=intel.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44zBQL2148zDqLD
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 May 2019 06:43:22 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44zBWD0VKNzDqPF
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 May 2019 06:47:36 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=intel.com
- (client-ip=2607:f8b0:4864:20::341; helo=mail-ot1-x341.google.com;
+ (client-ip=2607:f8b0:4864:20::343; helo=mail-ot1-x343.google.com;
  envelope-from=dan.j.williams@intel.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=intel.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=intel-com.20150623.gappssmtp.com
- header.i=@intel-com.20150623.gappssmtp.com header.b="n2cLf9Qv"; 
+ header.i=@intel-com.20150623.gappssmtp.com header.b="rqW6lucK"; 
  dkim-atps=neutral
-Received: from mail-ot1-x341.google.com (mail-ot1-x341.google.com
- [IPv6:2607:f8b0:4864:20::341])
+Received: from mail-ot1-x343.google.com (mail-ot1-x343.google.com
+ [IPv6:2607:f8b0:4864:20::343])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44zBKG1cfKzDqJX
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 May 2019 06:38:57 +1000 (AEST)
-Received: by mail-ot1-x341.google.com with SMTP id g8so16269187otl.8
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 07 May 2019 13:38:57 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44zBTq3xPyzDq8M
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 May 2019 06:46:22 +1000 (AEST)
+Received: by mail-ot1-x343.google.com with SMTP id o39so16289801ota.6
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 07 May 2019 13:46:22 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=intel-com.20150623.gappssmtp.com; s=20150623;
  h=mime-version:references:in-reply-to:from:date:message-id:subject:to
- :cc; bh=6pfRHejW3cZFOE77y3IUUX4go4AGbYiRoY6juBt94WE=;
- b=n2cLf9QvpatFw6Fx6Im50C3lqxaAWG43jr2hC2ev1xZpfJ6J8FUzxhXEUavTl94SZm
- SVHlKHKIcM/ZhfovCw4MijKPgzW/E+HLz4qZ175x7tfNV+dQC05A0tETwYssL7clan9W
- UsEpcZNB+TJeQSbZEqorEcfiOUdbu+Sy8m9YAZ3S+el0grhl2bD78JddE66O4Q+1avuY
- KR225hZ12kjGn4PRHpeZLqKoFnuS+tJCq4z76VyCpIv4O/vr+Au5mfwKYyPGTxiEapDr
- R3GKFkX289EisuP8nBoU3VOoPxvd3l0FVJ+ulJz6IltOlc4nobKQXXstnEsx5ZFdmsTb
- rEdA==
+ :cc; bh=Fw0JPQ4oQ07pMZfSEOmqFo0Ax/JNe6lqDNiuIeW+cfk=;
+ b=rqW6lucK5GLSkk6D3VC83NNNr3p5l4cDVk4n80Uvm322BBV2qCuKSPr4z+P2ezcoyK
+ z+YMgkO0V+5hEmcMr0MwF6O3QHG8xWVY2eTA1Py3k6awm18aqMlPP98eZujqBEdbRRXN
+ aS93k1uMcPJFXIHF98HnDfB8WCQgSAWAn+PzoKcCdVTC+uJmNJ+7TTcrUEmBZNFgGikS
+ JoN377FDE4nzpHgH/fCwVvnpugUJXF2ApAVZaCrgrLXf7ZjFcE/OLNwmWNUpvbW/wIQU
+ Uwg4mKk8U4/mWeh5D1XY1VYZpFjHtv4IPmwLoWQVjBRPrwTp5axa3EA9O5FG/AT874cG
+ VNvQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:mime-version:references:in-reply-to:from:date
  :message-id:subject:to:cc;
- bh=6pfRHejW3cZFOE77y3IUUX4go4AGbYiRoY6juBt94WE=;
- b=Ww1wPcRPRRjK7AGcYiraZR1mqStevw/xWHLY1HXP1I4bWsQoXEg3uflNKaVLGWjVY5
- bNt51HcJC2ysAkP6HwtYyk7z+qXTbeWfmH97lJnxBsGNVf0km/d0dco1UhklVBjx3vnh
- fTm6p87t9ZjG5nPUmSh2k6o26cIzMYrX0c3bUJatTJxdZohY0m15AOGckGJqRBDOSlis
- VcahI6QcMI3Ddy4QzBSVpW6ysFr7aqwbgfAueMpfZMPbxNKZ0GRdrJJdkPor39MWfWGi
- /Go+Ual+VZIPAdGwvTRJH8PWzvLxBZUvumuU+T0KhDqcOBIPUHpDheRUYloLrBlqKcav
- 9cpA==
-X-Gm-Message-State: APjAAAWQXqYf3S/DhoIynlKNf/zdLaPH+1mY9i2Tu9MlpUfQZJwvLjyk
- PfTQ/t6BlMV8khVKVdkW4LHo7wOjbVgfCVljY6/JtQ==
-X-Google-Smtp-Source: APXvYqyoyS46mGkeS8xfe2+s5llXVwHTTrq4TjXi1ZN6I2Su0aHjvxJMNj2Psjrwn9yCamOWlD6+DD7mFrLZ6kZfD1Q=
-X-Received: by 2002:a9d:5cc1:: with SMTP id r1mr21322434oti.229.1557261534468; 
- Tue, 07 May 2019 13:38:54 -0700 (PDT)
+ bh=Fw0JPQ4oQ07pMZfSEOmqFo0Ax/JNe6lqDNiuIeW+cfk=;
+ b=ltgfflJaoFbezRLOZ4t1d743D3ifgL3klkhmvvAn7qUcq9AoTVzhSQMz4/0sZ4Zfvz
+ AmnDVoyrNeAAUudRTslI4bmn5LzfVZLFLrY1c/fG8Mnix4Gxwt+8A7VMU7NIXRqbuWYW
+ 3IPe9kiVYTHvNSeOHHfI1YPWUT6wfhk6ePbfApVdr3tqHo3dhnOaoL9+7vB4pHGUgFR9
+ QPkcm3Af9I4QV4X6Tw96xNYmHw0+EU3q2COpLvI1iJZ0LKJnhIZMJCcEDPw8/8n81WrI
+ YHGKU562Vbca+yr0muBl7cmNZbN0Odzzu7ddRrW7i5pwF9ktGblDmuWcpH9hmTmvcrhu
+ Pe8A==
+X-Gm-Message-State: APjAAAXHEcqn7YUxTitsCRJ7RXXeBptLX4AzyLa7U5j4VOxa6a0nfWin
+ yY7bncRYGjR/8R9dLMDbXYkyj+u1qzpuuUkMaMFD7A==
+X-Google-Smtp-Source: APXvYqwkL7vHIYJxD+HfiXZUkr4PGh3XR7bd+koUKuRLubXL7y6kGEyKk74Z2RGz0ad/moc44qYziRyn+VmkpRZHHO8=
+X-Received: by 2002:a9d:6f19:: with SMTP id n25mr2402081otq.367.1557261979262; 
+ Tue, 07 May 2019 13:46:19 -0700 (PDT)
 MIME-Version: 1.0
 References: <20190507183804.5512-1-david@redhat.com>
- <20190507183804.5512-2-david@redhat.com>
-In-Reply-To: <20190507183804.5512-2-david@redhat.com>
+ <20190507183804.5512-3-david@redhat.com>
+In-Reply-To: <20190507183804.5512-3-david@redhat.com>
 From: Dan Williams <dan.j.williams@intel.com>
-Date: Tue, 7 May 2019 13:38:43 -0700
-Message-ID: <CAPcyv4jCtOYLCtAhRPhGrHZKyvHZmE8i1aGsRRBWk+G0v4EGAg@mail.gmail.com>
-Subject: Re: [PATCH v2 1/8] mm/memory_hotplug: Simplify and fix
- check_hotplug_memory_range()
+Date: Tue, 7 May 2019 13:46:08 -0700
+Message-ID: <CAPcyv4gtAMn2mDz0s1GRTJ52MeTK3jJYLQne6MiEx_ipPFUsmA@mail.gmail.com>
+Subject: Re: [PATCH v2 2/8] s390x/mm: Implement arch_remove_memory()
 To: David Hildenbrand <david@redhat.com>
 Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -88,34 +87,69 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-s390 <linux-s390@vger.kernel.org>, Michal Hocko <mhocko@suse.com>,
- linux-ia64@vger.kernel.org, Pavel Tatashin <pasha.tatashin@soleen.com>,
- Linux-sh <linux-sh@vger.kernel.org>, Mathieu Malaterre <malat@debian.org>,
+Cc: Oscar Salvador <osalvador@suse.com>,
+ linux-s390 <linux-s390@vger.kernel.org>, Michal Hocko <mhocko@suse.com>,
+ linux-ia64@vger.kernel.org, Vasily Gorbik <gor@linux.ibm.com>,
+ Linux-sh <linux-sh@vger.kernel.org>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>,
  Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Wei Yang <richard.weiyang@gmail.com>, Linux MM <linux-mm@kvack.org>,
- Qian Cai <cai@lca.pw>, Arun KS <arunks@codeaurora.org>,
+ Linux MM <linux-mm@kvack.org>, Mike Rapoport <rppt@linux.vnet.ibm.com>,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>,
  Andrew Morton <akpm@linux-foundation.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Oscar Salvador <osalvador@suse.de>
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
 On Tue, May 7, 2019 at 11:38 AM David Hildenbrand <david@redhat.com> wrote:
 >
-> By converting start and size to page granularity, we actually ignore
-> unaligned parts within a page instead of properly bailing out with an
-> error.
+> Will come in handy when wanting to handle errors after
+> arch_add_memory().
 >
+> Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
+> Cc: Heiko Carstens <heiko.carstens@de.ibm.com>
 > Cc: Andrew Morton <akpm@linux-foundation.org>
-> Cc: Oscar Salvador <osalvador@suse.de>
 > Cc: Michal Hocko <mhocko@suse.com>
+> Cc: Mike Rapoport <rppt@linux.vnet.ibm.com>
 > Cc: David Hildenbrand <david@redhat.com>
-> Cc: Pavel Tatashin <pasha.tatashin@soleen.com>
-> Cc: Qian Cai <cai@lca.pw>
-> Cc: Wei Yang <richard.weiyang@gmail.com>
-> Cc: Arun KS <arunks@codeaurora.org>
-> Cc: Mathieu Malaterre <malat@debian.org>
+> Cc: Vasily Gorbik <gor@linux.ibm.com>
+> Cc: Oscar Salvador <osalvador@suse.com>
 > Signed-off-by: David Hildenbrand <david@redhat.com>
+> ---
+>  arch/s390/mm/init.c | 13 +++++++------
+>  1 file changed, 7 insertions(+), 6 deletions(-)
+>
+> diff --git a/arch/s390/mm/init.c b/arch/s390/mm/init.c
+> index 31b1071315d7..1e0cbae69f12 100644
+> --- a/arch/s390/mm/init.c
+> +++ b/arch/s390/mm/init.c
+> @@ -237,12 +237,13 @@ int arch_add_memory(int nid, u64 start, u64 size,
+>  void arch_remove_memory(int nid, u64 start, u64 size,
+>                         struct vmem_altmap *altmap)
+>  {
+> -       /*
+> -        * There is no hardware or firmware interface which could trigger a
+> -        * hot memory remove on s390. So there is nothing that needs to be
+> -        * implemented.
+> -        */
+> -       BUG();
+> +       unsigned long start_pfn = start >> PAGE_SHIFT;
+> +       unsigned long nr_pages = size >> PAGE_SHIFT;
+> +       struct zone *zone;
+> +
+> +       zone = page_zone(pfn_to_page(start_pfn));
 
-Reviewed-by: Dan Williams <dan.j.williams@intel.com>
+Does s390 actually support passing in an altmap? If 'yes', I think it
+also needs the vmem_altmap_offset() fixup like x86-64:
+
+        /* With altmap the first mapped page is offset from @start */
+        if (altmap)
+                page += vmem_altmap_offset(altmap);
+
+...but I suspect it does not support altmap since
+arch/s390/mm/vmem.c::vmemmap_populate() does not arrange for 'struct
+page' capacity to be allocated out of an altmap defined page pool.
+
+I think it would be enough to disallow any arch_add_memory() on s390
+where @altmap is non-NULL. At least until s390 gains ZONE_DEVICE
+support and can enable the pmem use case.
