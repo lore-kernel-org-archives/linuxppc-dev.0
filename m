@@ -2,23 +2,23 @@ Return-Path: <SRS0=Sivu=TH=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.9 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_PASS autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.9 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 23A32C004C9
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 May 2019 18:41:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8DFD0C004C9
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 May 2019 18:43:15 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id A83EC20675
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 May 2019 18:41:55 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A83EC20675
+	by mail.kernel.org (Postfix) with ESMTPS id 1F20E20675
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 May 2019 18:43:15 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1F20E20675
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44z7k924yRzDqN1
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 May 2019 04:41:53 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44z7lj0z7PzDqNp
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 May 2019 04:43:13 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=redhat.com
  (client-ip=209.132.183.28; helo=mx1.redhat.com; envelope-from=david@redhat.com;
@@ -28,28 +28,29 @@ Authentication-Results: lists.ozlabs.org;
 Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44z7fB1pDBzDq9C
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 May 2019 04:38:24 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44z7fG2tnWzDq5b
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 May 2019 04:38:30 +1000 (AEST)
 Received: from smtp.corp.redhat.com (int-mx08.intmail.prod.int.phx2.redhat.com
  [10.5.11.23])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by mx1.redhat.com (Postfix) with ESMTPS id 074D0308FBA0;
- Tue,  7 May 2019 18:38:20 +0000 (UTC)
+ by mx1.redhat.com (Postfix) with ESMTPS id ABD9B308FEE2;
+ Tue,  7 May 2019 18:38:28 +0000 (UTC)
 Received: from t460s.redhat.com (ovpn-116-95.ams2.redhat.com [10.36.116.95])
- by smtp.corp.redhat.com (Postfix) with ESMTP id CC0CA3DA5;
- Tue,  7 May 2019 18:38:05 +0000 (UTC)
+ by smtp.corp.redhat.com (Postfix) with ESMTP id B1B871EF;
+ Tue,  7 May 2019 18:38:23 +0000 (UTC)
 From: David Hildenbrand <david@redhat.com>
 To: linux-mm@kvack.org
-Subject: [PATCH v2 0/8] mm/memory_hotplug: Factor out memory block device
- handling
-Date: Tue,  7 May 2019 20:37:56 +0200
-Message-Id: <20190507183804.5512-1-david@redhat.com>
+Subject: [PATCH v2 2/8] s390x/mm: Implement arch_remove_memory()
+Date: Tue,  7 May 2019 20:37:58 +0200
+Message-Id: <20190507183804.5512-3-david@redhat.com>
+In-Reply-To: <20190507183804.5512-1-david@redhat.com>
+References: <20190507183804.5512-1-david@redhat.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-Scanned-By: MIMEDefang 2.84 on 10.5.11.23
 X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.5.16
- (mx1.redhat.com [10.5.110.43]); Tue, 07 May 2019 18:38:21 +0000 (UTC)
+ (mx1.redhat.com [10.5.110.49]); Tue, 07 May 2019 18:38:28 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -61,106 +62,58 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Oscar Salvador <osalvador@suse.com>, Michal Hocko <mhocko@suse.com>,
- linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org,
- Peter Zijlstra <peterz@infradead.org>,
- Dave Hansen <dave.hansen@linux.intel.com>,
- Heiko Carstens <heiko.carstens@de.ibm.com>,
- Chris Wilson <chris@chris-wilson.co.uk>,
- Masahiro Yamada <yamada.masahiro@socionext.com>,
- Pavel Tatashin <pavel.tatashin@microsoft.com>, Rich Felker <dalias@libc.org>,
- Arun KS <arunks@codeaurora.org>, "H. Peter Anvin" <hpa@zytor.com>,
- Ingo Molnar <mingo@kernel.org>, "Rafael J. Wysocki" <rafael@kernel.org>,
- Qian Cai <cai@lca.pw>, linux-s390@vger.kernel.org, Baoquan He <bhe@redhat.com>,
- Logan Gunthorpe <logang@deltatee.com>, David Hildenbrand <david@redhat.com>,
- Mike Rapoport <rppt@linux.ibm.com>, Ingo Molnar <mingo@redhat.com>,
- Fenghua Yu <fenghua.yu@intel.com>, Pavel Tatashin <pasha.tatashin@soleen.com>,
- Vasily Gorbik <gor@linux.ibm.com>, Rob Herring <robh@kernel.org>,
- "mike.travis@hpe.com" <mike.travis@hpe.com>,
- Nicholas Piggin <npiggin@gmail.com>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>, Mark Brown <broonie@kernel.org>,
- Borislav Petkov <bp@alien8.de>, Andy Lutomirski <luto@kernel.org>,
- Jonathan Cameron <Jonathan.Cameron@huawei.com>,
- Dan Williams <dan.j.williams@intel.com>, Wei Yang <richard.weiyang@gmail.com>,
- Joonsoo Kim <iamjoonsoo.kim@lge.com>, Oscar Salvador <osalvador@suse.de>,
- Tony Luck <tony.luck@intel.com>, Yoshinori Sato <ysato@users.sourceforge.jp>,
- Andrew Banman <andrew.banman@hpe.com>, Mathieu Malaterre <malat@debian.org>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org,
- Mike Rapoport <rppt@linux.vnet.ibm.com>, Thomas Gleixner <tglx@linutronix.de>,
- Wei Yang <richardw.yang@linux.intel.com>,
- Alex Deucher <alexander.deucher@amd.com>, Paul Mackerras <paulus@samba.org>,
- akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org,
- "David S. Miller" <davem@davemloft.net>,
- "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>
+Cc: Oscar Salvador <osalvador@suse.com>, linux-s390@vger.kernel.org,
+ Michal Hocko <mhocko@suse.com>, linux-ia64@vger.kernel.org,
+ Vasily Gorbik <gor@linux.ibm.com>, linux-sh@vger.kernel.org,
+ David Hildenbrand <david@redhat.com>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>, linux-kernel@vger.kernel.org,
+ Mike Rapoport <rppt@linux.vnet.ibm.com>,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>, akpm@linux-foundation.org,
+ linuxppc-dev@lists.ozlabs.org, Dan Williams <dan.j.williams@intel.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-We only want memory block devices for memory to be onlined/offlined
-(add/remove from the buddy). This is required so user space can
-online/offline memory and kdump gets notified about newly onlined memory.
+Will come in handy when wanting to handle errors after
+arch_add_memory().
 
-Only such memory has the requirement of having to span whole memory blocks.
-Let's factor out creation/removal of memory block devices. This helps
-to further cleanup arch_add_memory/arch_remove_memory() and to make
-implementation of new features easier. E.g. supplying a driver for
-memory block devices becomes way easier (so user space is able to
-distinguish different types of added memory to properly online it).
+Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Cc: Heiko Carstens <heiko.carstens@de.ibm.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: Michal Hocko <mhocko@suse.com>
+Cc: Mike Rapoport <rppt@linux.vnet.ibm.com>
+Cc: David Hildenbrand <david@redhat.com>
+Cc: Vasily Gorbik <gor@linux.ibm.com>
+Cc: Oscar Salvador <osalvador@suse.com>
+Signed-off-by: David Hildenbrand <david@redhat.com>
+---
+ arch/s390/mm/init.c | 13 +++++++------
+ 1 file changed, 7 insertions(+), 6 deletions(-)
 
-Patch 1 makes sure the memory block size granularity is always respected.
-Patch 2 implements arch_remove_memory() on s390x. Patch 3 prepares
-arch_remove_memory() to be also called without CONFIG_MEMORY_HOTREMOVE.
-Patch 4,5 and 6 factor out creation/removal of memory block devices.
-Patch 7 gets rid of some unlikely errors that could have happened, not
-removing links between memory block devices and nodes, previously brought
-up by Oscar.
-
-Did a quick sanity test with DIMM plug/unplug, making sure all devices
-and sysfs links properly get added/removed. Compile tested on s390x and
-x86-64.
-
-Based on git://git.cmpxchg.org/linux-mmots.git
-
-Next refactoring on my list will be making sure that remove_memory()
-will never deal with zones / access "struct pages". Any kind of zone
-handling will have to be done when offlining system memory / before
-removing device memory. I am thinking about remove_pfn_range_from_zone()",
-du undo everything "move_pfn_range_to_zone()" did.
-
-v1 -> v2:
-- s390x/mm: Implement arch_remove_memory()
--- remove mapping after "__remove_pages"
-
-
-David Hildenbrand (8):
-  mm/memory_hotplug: Simplify and fix check_hotplug_memory_range()
-  s390x/mm: Implement arch_remove_memory()
-  mm/memory_hotplug: arch_remove_memory() and __remove_pages() with
-    CONFIG_MEMORY_HOTPLUG
-  mm/memory_hotplug: Create memory block devices after arch_add_memory()
-  mm/memory_hotplug: Drop MHP_MEMBLOCK_API
-  mm/memory_hotplug: Remove memory block devices before
-    arch_remove_memory()
-  mm/memory_hotplug: Make unregister_memory_block_under_nodes() never
-    fail
-  mm/memory_hotplug: Remove "zone" parameter from
-    sparse_remove_one_section
-
- arch/ia64/mm/init.c            |   2 -
- arch/powerpc/mm/mem.c          |   2 -
- arch/s390/mm/init.c            |  15 +++--
- arch/sh/mm/init.c              |   2 -
- arch/x86/mm/init_32.c          |   2 -
- arch/x86/mm/init_64.c          |   2 -
- drivers/base/memory.c          | 109 +++++++++++++++++++--------------
- drivers/base/node.c            |  27 +++-----
- include/linux/memory.h         |   6 +-
- include/linux/memory_hotplug.h |  12 +---
- include/linux/node.h           |   7 +--
- mm/memory_hotplug.c            |  44 ++++++-------
- mm/sparse.c                    |  10 +--
- 13 files changed, 104 insertions(+), 136 deletions(-)
-
+diff --git a/arch/s390/mm/init.c b/arch/s390/mm/init.c
+index 31b1071315d7..1e0cbae69f12 100644
+--- a/arch/s390/mm/init.c
++++ b/arch/s390/mm/init.c
+@@ -237,12 +237,13 @@ int arch_add_memory(int nid, u64 start, u64 size,
+ void arch_remove_memory(int nid, u64 start, u64 size,
+ 			struct vmem_altmap *altmap)
+ {
+-	/*
+-	 * There is no hardware or firmware interface which could trigger a
+-	 * hot memory remove on s390. So there is nothing that needs to be
+-	 * implemented.
+-	 */
+-	BUG();
++	unsigned long start_pfn = start >> PAGE_SHIFT;
++	unsigned long nr_pages = size >> PAGE_SHIFT;
++	struct zone *zone;
++
++	zone = page_zone(pfn_to_page(start_pfn));
++	__remove_pages(zone, start_pfn, nr_pages, altmap);
++	vmem_remove_mapping(start, size);
+ }
+ #endif
+ #endif /* CONFIG_MEMORY_HOTPLUG */
 -- 
 2.20.1
 
