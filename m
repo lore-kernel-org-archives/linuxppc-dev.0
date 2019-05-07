@@ -2,78 +2,68 @@ Return-Path: <SRS0=Sivu=TH=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.7 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-1.0 required=3.0 tests=MAILING_LIST_MULTI,SPF_PASS,
+	URIBL_BLOCKED autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0918FC004C9
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 May 2019 13:38:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 283A9C004C9
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 May 2019 13:41:11 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 724A720578
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 May 2019 13:38:07 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="NZhAPArn"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 724A720578
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
+	by mail.kernel.org (Postfix) with ESMTPS id CF969206A3
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 May 2019 13:41:10 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CF969206A3
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=bugzilla.kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44z0zd3yg7zDqDM
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 May 2019 23:38:05 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44z1385GgMzDqGp
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 May 2019 23:41:08 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=c-s.fr
- (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
- envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=c-s.fr
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="NZhAPArn"; 
- dkim-atps=neutral
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ spf=pass (mailfrom) smtp.mailfrom=bugzilla.kernel.org
+ (client-ip=198.145.29.98; helo=mail.wl.linuxfoundation.org;
+ envelope-from=bugzilla-daemon@bugzilla.kernel.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=bugzilla.kernel.org
+Received: from mail.wl.linuxfoundation.org (mail.wl.linuxfoundation.org
+ [198.145.29.98])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44z0rJ3jcSzDqHP
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 May 2019 23:31:43 +1000 (AEST)
-Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 44z0rB3ns1z9v1qL;
- Tue,  7 May 2019 15:31:38 +0200 (CEST)
-Authentication-Results: localhost; dkim=pass
- reason="1024-bit key; insecure key"
- header.d=c-s.fr header.i=@c-s.fr header.b=NZhAPArn; dkim-adsp=pass;
- dkim-atps=neutral
-X-Virus-Scanned: Debian amavisd-new at c-s.fr
-Received: from pegase1.c-s.fr ([192.168.12.234])
- by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id k7qaG0dZ0J0U; Tue,  7 May 2019 15:31:38 +0200 (CEST)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 44z0rB2ffmz9v1qJ;
- Tue,  7 May 2019 15:31:38 +0200 (CEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
- t=1557235898; bh=uxZQpxauEnM4aYWFAk/wkXMZ76Y3WDlotHwL8DND8kc=;
- h=From:Subject:To:Cc:Date:From;
- b=NZhAPArnVW1kBB8dsyWinS5PUZzBJVcD3YA4vGclaFu9u1jfLwdNMZQNg6RDhsQ7l
- EpyUprEBYrZ/E4Yn4bWaDKPv+9YHgqwma6cytQt72yx4iQoI+3epnbRzRqH9X1ook6
- 7UGh4qvKt2PbRh2wArECo5C3iKSNybqQOqVz7LcE=
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id C53DD8B8FF;
- Tue,  7 May 2019 15:31:39 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id OW1MUf1y11wT; Tue,  7 May 2019 15:31:39 +0200 (CEST)
-Received: from po16846vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 94E208B8F8;
- Tue,  7 May 2019 15:31:39 +0200 (CEST)
-Received: by po16846vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id 78EAC66242; Tue,  7 May 2019 13:31:39 +0000 (UTC)
-Message-Id: <0b460a85319fb89dab2c5d1200ac69a3e1b7c1ef.1557235807.git.christophe.leroy@c-s.fr>
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH] powerpc: slightly improve cache helpers
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Segher Boessenkool <segher@kernel.crashing.org>
-Date: Tue,  7 May 2019 13:31:39 +0000 (UTC)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44z1082FVBzDqDM
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 May 2019 23:38:31 +1000 (AEST)
+Received: from mail.wl.linuxfoundation.org (localhost [127.0.0.1])
+ by mail.wl.linuxfoundation.org (Postfix) with ESMTP id 334F6288C6
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 May 2019 13:38:30 +0000 (UTC)
+Received: by mail.wl.linuxfoundation.org (Postfix, from userid 486)
+ id 27C10288EE; Tue,  7 May 2019 13:38:30 +0000 (UTC)
+From: bugzilla-daemon@bugzilla.kernel.org
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [Bug 203517] WARNING: inconsistent lock state. inconsistent
+ {SOFTIRQ-ON-W} -> {IN-SOFTIRQ-W} usage.
+Date: Tue, 07 May 2019 13:38:28 +0000
+X-Bugzilla-Reason: None
+X-Bugzilla-Type: changed
+X-Bugzilla-Watch-Reason: AssignedTo platform_ppc-64@kernel-bugs.osdl.org
+X-Bugzilla-Product: File System
+X-Bugzilla-Component: btrfs
+X-Bugzilla-Version: 2.5
+X-Bugzilla-Keywords: 
+X-Bugzilla-Severity: normal
+X-Bugzilla-Who: erhard_f@mailbox.org
+X-Bugzilla-Status: NEW
+X-Bugzilla-Resolution: 
+X-Bugzilla-Priority: P1
+X-Bugzilla-Assigned-To: platform_ppc-64@kernel-bugs.osdl.org
+X-Bugzilla-Flags: 
+X-Bugzilla-Changed-Fields: 
+Message-ID: <bug-203517-206035-KFIWguaOhU@https.bugzilla.kernel.org/>
+In-Reply-To: <bug-203517-206035@https.bugzilla.kernel.org/>
+References: <bug-203517-206035@https.bugzilla.kernel.org/>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+X-Bugzilla-URL: https://bugzilla.kernel.org/
+Auto-Submitted: auto-generated
+MIME-Version: 1.0
+X-Virus-Scanned: ClamAV using ClamSMTP
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -85,53 +75,20 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Cache instructions (dcbz, dcbi, dcbf and dcbst) take two registers
-that are summed to obtain the target address. Using '%y0' argument
-gives GCC the opportunity to use both registers instead of only one
-with the second being forced to 0.
+https://bugzilla.kernel.org/show_bug.cgi?id=3D203517
 
-Suggested-by: Segher Boessenkool <segher@kernel.crashing.org>
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
----
- arch/powerpc/include/asm/cache.h | 8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+--- Comment #5 from Erhard F. (erhard_f@mailbox.org) ---
+Some more info about the system:
+Talos II running Gentoo Linux ppc64, Big Endian.
+btrfs root filesystem (zstd compressed, standard compression level).
+swap: /sbin/zram-init -d0 -s32 -azstd -Lzram_swap 4096
+build partition: /sbin/zram-init -d1 -s32 -alzo -text2 -orelatime -m1777
+-Lvar_tmp_dir 34816 /var/tmp
 
-diff --git a/arch/powerpc/include/asm/cache.h b/arch/powerpc/include/asm/cache.h
-index 40ea5b3781c6..5a22a869a20b 100644
---- a/arch/powerpc/include/asm/cache.h
-+++ b/arch/powerpc/include/asm/cache.h
-@@ -85,22 +85,22 @@ extern void _set_L3CR(unsigned long);
- 
- static inline void dcbz(void *addr)
- {
--	__asm__ __volatile__ ("dcbz 0, %0" : : "r"(addr) : "memory");
-+	__asm__ __volatile__ ("dcbz %y0" : : "m"(*(u8 *)addr) : "memory");
- }
- 
- static inline void dcbi(void *addr)
- {
--	__asm__ __volatile__ ("dcbi 0, %0" : : "r"(addr) : "memory");
-+	__asm__ __volatile__ ("dcbi %y0" : : "m"(*(u8 *)addr) : "memory");
- }
- 
- static inline void dcbf(void *addr)
- {
--	__asm__ __volatile__ ("dcbf 0, %0" : : "r"(addr) : "memory");
-+	__asm__ __volatile__ ("dcbf %y0" : : "m"(*(u8 *)addr) : "memory");
- }
- 
- static inline void dcbst(void *addr)
- {
--	__asm__ __volatile__ ("dcbst 0, %0" : : "r"(addr) : "memory");
-+	__asm__ __volatile__ ("dcbst %y0" : : "m"(*(u8 *)addr) : "memory");
- }
- #endif /* !__ASSEMBLY__ */
- #endif /* __KERNEL__ */
--- 
-2.13.3
-
+--=20
+You are receiving this mail because:
+You are watching the assignee of the bug.=
