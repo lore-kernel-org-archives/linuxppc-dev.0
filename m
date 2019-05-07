@@ -2,86 +2,58 @@ Return-Path: <SRS0=Sivu=TH=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.0 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_MUTT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.9 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	HTML_MESSAGE,MAILING_LIST_MULTI,SPF_PASS,T_KAM_HTML_FONT_INVALID,
+	URIBL_BLOCKED autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 18FFAC004C9
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 May 2019 23:09:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4723DC004C9
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 May 2019 23:24:32 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 4B33020989
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 May 2019 23:09:11 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="AGx8NaFc"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4B33020989
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	by mail.kernel.org (Postfix) with ESMTPS id 7871020825
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 May 2019 23:24:31 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7871020825
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=windriver.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44zFfY202LzDqQ1
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 May 2019 09:09:09 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44zG0F1JCGzDqHb
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 May 2019 09:24:29 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=2607:f8b0:4864:20::442; helo=mail-pf1-x442.google.com;
- envelope-from=yury.norov@gmail.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=windriver.com
+ (client-ip=147.11.146.13; helo=mail1.windriver.com;
+ envelope-from=pablo.rodriguez-quesada@windriver.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="AGx8NaFc"; 
- dkim-atps=neutral
-Received: from mail-pf1-x442.google.com (mail-pf1-x442.google.com
- [IPv6:2607:f8b0:4864:20::442])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ dmarc=none (p=none dis=none) header.from=windriver.com
+Received: from mail1.windriver.com (mail1.windriver.com [147.11.146.13])
+ (using TLSv1.1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44zFd32PtHzDqFY
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 May 2019 09:07:51 +1000 (AEST)
-Received: by mail-pf1-x442.google.com with SMTP id j11so9399332pff.13
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 07 May 2019 16:07:51 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=date:from:to:cc:subject:message-id:references:mime-version
- :content-disposition:in-reply-to:user-agent;
- bh=ksCK6MwbJy5hkcrjGKRfLybVWED7pfrtN2x342eMfl8=;
- b=AGx8NaFcW0nNXm6FRSDK6XWn3BprVlDb7i1+/3oeRJ/rTpK2ryo/87zzPV5opLP7xf
- 39wPiWYVVrh822ck/V2weclYk6f7buLBNfCsV7AaAs/jVezQ9fX6c5+Ib/Cs+xAWW9yu
- OwaApcdTNA+9aDNHpR+2WuMuAs0x4ZCBsFrnyKuD98zkTsrYOhwzMAfhS7onbHITyBti
- EP2BdBCb2EFWw3NHM3JT4nY0Lew6PhPWbwiXnW49AkZmhZApjQVIyVeE5frTrY2Kgxj1
- 37Z3lmZG0Xjhzz/PtQ7BjhTj8SXaXK8I6AUi5D9lSE7zPFhoYSel/z4ojks6JAIv5F8n
- fyag==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:date:from:to:cc:subject:message-id:references
- :mime-version:content-disposition:in-reply-to:user-agent;
- bh=ksCK6MwbJy5hkcrjGKRfLybVWED7pfrtN2x342eMfl8=;
- b=Dip0luh7SwzJJygl3f7c/bpeN0dcy/0hnRkmQXBTJ831OcWsidaWGnmEjCeNIh3uA+
- KyQTyLJ38ecXs+INm3EcK3Gx9bNQExZ2oDQjNqdm7WEXPF0w0N88jkR68gwZwtswA4da
- Q1LP+lpQwr1I/A675zu/m0PykEJ19Ie2e8pgPLTTKUexvzMLGDuNI9YXqa8XJ7uhs425
- JlN067DGqhBSJ2ZDE93W1U9kDCzDFUXySAAFhaEoMwRcdqZ/cc4vnhgkeDs9y6g0GUoM
- FJckZWpsNz8uHZvQ9Amdn4AGvWe13hDK2MbcoJ813gNziKXSqIpn/cLoryjyBpfvoRqS
- DrLw==
-X-Gm-Message-State: APjAAAXkfq+IGonydovUmbrO2a0tjBlV1cGKlrTGKf7SqI+rpKVsFBt0
- FhQoRjh7XN/VIGn3KOCMt2U=
-X-Google-Smtp-Source: APXvYqwl7+tg2Ewiz/jP4v1lUDMe2zgpvST8mIlQ/beigoour/174+exi07SmbvBzd/rqbmEpqcJJg==
-X-Received: by 2002:a63:ed16:: with SMTP id d22mr9290179pgi.35.1557270468115; 
- Tue, 07 May 2019 16:07:48 -0700 (PDT)
-Received: from localhost ([2601:640:2:82fb:19d3:11c4:475e:3daa])
- by smtp.gmail.com with ESMTPSA id l68sm19547511pfb.20.2019.05.07.16.07.47
- (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
- Tue, 07 May 2019 16:07:47 -0700 (PDT)
-Date: Tue, 7 May 2019 16:07:46 -0700
-From: Yury Norov <yury.norov@gmail.com>
-To: Al Viro <viro@zeniv.linux.org.uk>
-Subject: Re: [PATCH] powerpc: restore current_thread_info()
-Message-ID: <20190507230746.GA19259@yury-thinkpad>
-References: <20190507225121.18676-1-ynorov@marvell.com>
- <20190507225856.GP23075@ZenIV.linux.org.uk>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44zCvn48VQzDqGT
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 May 2019 07:50:27 +1000 (AEST)
+Received: from ALA-HCB.corp.ad.wrs.com ([147.11.189.41])
+ by mail1.windriver.com (8.15.2/8.15.1) with ESMTPS id x47LoJ6R011253
+ (version=TLSv1 cipher=AES128-SHA bits=128 verify=FAIL);
+ Tue, 7 May 2019 14:50:20 -0700 (PDT)
+Received: from ALA-MBD.corp.ad.wrs.com ([169.254.3.163]) by
+ ALA-HCB.corp.ad.wrs.com ([147.11.189.41]) with mapi id 14.03.0439.000; Tue, 7
+ May 2019 14:50:19 -0700
+From: "Rodriguez Quesada, Pablo" <Pablo.Rodriguez-Quesada@windriver.com>
+To: Christophe Leroy <christophe.leroy@c-s.fr>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Subject: IPIC_SERMR vs IPIC_SERMR
+Thread-Topic: IPIC_SERMR vs IPIC_SERMR
+Thread-Index: AdUFGKVoyl91wemYQnSiBoky/o4FAA==
+Date: Tue, 7 May 2019 21:50:19 +0000
+Message-ID: <0CDD4071D6ACF54ABB9CF1A6D90375A809BAF4E4@ALA-MBD.corp.ad.wrs.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+x-originating-ip: [147.11.119.215]
+Content-Type: multipart/alternative;
+ boundary="_000_0CDD4071D6ACF54ABB9CF1A6D90375A809BAF4E4ALAMBDcorpadwrs_"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20190507225856.GP23075@ZenIV.linux.org.uk>
-User-Agent: Mutt/1.9.4 (2018-02-28)
+X-Mailman-Approved-At: Wed, 08 May 2019 09:23:20 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -93,31 +65,405 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Yury Norov <ynorov@marvell.com>, linux-kernel@vger.kernel.org,
- Nicholas Piggin <npiggin@gmail.com>, Paul Mackerras <paulus@samba.org>,
- Breno Leitao <leitao@debian.org>, linuxppc-dev@lists.ozlabs.org
+Cc: "Ramirez Rojas, Luis Daniel \(Daniel\)" <Daniel.RamirezRojas@windriver.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, May 07, 2019 at 11:58:56PM +0100, Al Viro wrote:
-> On Tue, May 07, 2019 at 03:51:21PM -0700, Yury Norov wrote:
-> > Commit ed1cd6deb013 ("powerpc: Activate CONFIG_THREAD_INFO_IN_TASK")
-> > removes the function current_thread_info(). It's wrong because the
-> > function is used in non-arch code and is part of API.
-> 
-> In include/linux/thread_info.h:
-> 
-> #ifdef CONFIG_THREAD_INFO_IN_TASK
-> /*
->  * For CONFIG_THREAD_INFO_IN_TASK kernels we need <asm/current.h> for the
->  * definition of current, but for !CONFIG_THREAD_INFO_IN_TASK kernels,
->  * including <asm/current.h> can cause a circular dependency on some platforms.
->  */
-> #include <asm/current.h>
-> #define current_thread_info() ((struct thread_info *)current)
-> #endif
+--_000_0CDD4071D6ACF54ABB9CF1A6D90375A809BAF4E4ALAMBDcorpadwrs_
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
-Ah, sorry. Then it might be my rebase issue. I was confused because Christophe
-didn't remove the comment to current_thread_info(), so I decided he
-removed it erroneously.
+Hi, Christophe and everyone from the LinuxPPC community,
+
+Hope you are doing well!
+I was working with Daniel, and we were reviewing the ipic source code and c=
+ame to these questions:
+
+
+1.       The first one came up while reviewing the document "Understanding =
+IPIC" from NXP (*). The document states that:
+
+System Error Status Register (SERSR) - 0x40: Each bit in the SERSR register=
+ corresponds to a non-maskable error source that generates a machine check =
+exception (MCP). These bits are cleared by writing the bit location with a =
+logic 1.
+
+The interrupting source must be cleared before clearing the interrupts erro=
+r status bit.
+
+System Error Mask Register (SERMR) - 0x44 When a machine check exception is=
+ signaled from one of the peripheral modules, its corresponding flag bit in=
+ this register is set. Any of the interrupting sources can be individually =
+masked.
+
+We noticed that you changed the ipic_clear_mcp_status  function by swapping=
+ SERMR to SERSR, but we don't fully understand why. Could you please elabor=
+ate on why this change is made? This because we had a code that was working=
+ before the patch and we would fully understand why it stopped working. Fro=
+m our perspective, both SERSR and SERMR are related to MCEs and honestly do=
+n't know what's the difference at the hardware level, and the role of every=
+ register on the machine check flow. It is also weird for us that before yo=
+ur patch the register SERSR wasn't used in any part of the Linux kernel.
+
+
+2.       In commit 8acb88682cc00a41a677c2455a7c992d you removed ipic_set_hi=
+ghest_priority(), ipic_enable_mcp() and ipic_disable_mcp()because it wasn't=
+ used but here we are confused because ipic_clear_mcp_status() sets all bit=
+s with the mask and in the old disable function the bits from the mask are =
+cleared with a bitwise AND,changing the other bits from the SERMR register =
+but the mcp_irq.
+
+ipic_clear:
+ipic_write<https://elixir.bootlin.com/linux/v4.1.13/ident/ipic_write>(prima=
+ry_ipic<https://elixir.bootlin.com/linux/v4.1.13/ident/primary_ipic>->regs,=
+ IPIC_SERMR<https://elixir.bootlin.com/linux/v4.1.13/ident/IPIC_SERMR>, mas=
+k);
+ipic_disable:
+                                temp<https://elixir.bootlin.com/linux/v4.1.=
+13/ident/temp> =3D ipic_read<https://elixir.bootlin.com/linux/v4.1.13/ident=
+/ipic_read>(ipic<https://elixir.bootlin.com/linux/v4.1.13/ident/ipic>->regs=
+, IPIC_SERMR<https://elixir.bootlin.com/linux/v4.1.13/ident/IPIC_SERMR>);
+                                temp<https://elixir.bootlin.com/linux/v4.1.=
+13/ident/temp> &=3D (1 << (31 - mcp_irq));
+                                ipic_write<https://elixir.bootlin.com/linux=
+/v4.1.13/ident/ipic_write>(ipic<https://elixir.bootlin.com/linux/v4.1.13/id=
+ent/ipic>->regs, IPIC_SERMR<https://elixir.bootlin.com/linux/v4.1.13/ident/=
+IPIC_SERMR>, temp<https://elixir.bootlin.com/linux/v4.1.13/ident/temp>);
+
+                Isn't ipic_clear a set function instead of a clear function=
+? This bring us confusion
+Another question is why these functions were created in the first place?
+
+
+3.       In the NXP document it states that: These bits are cleared by writ=
+ing the bit location with a logic 1. The interrupting source must be cleare=
+d before clearing the interrupts error status bit.
+Does this mean that these registers work with negative logic? How is this m=
+anaged in the kernel?
+The interrupting source is the SERMR register, the SERSR or any other?
+
+
+4.       What is the real difference between MCP and MCE? What are their us=
+es?
+
+
+I know it is a lot of information but we are very confused about the use of=
+ these registers and we noticed that you are very involved on the PPC devel=
+opment. So we would like to hear from an expert.
+
+Thank you very much for your time,
+Pablo
+
+
+
+
+
+
+(*) https://www.nxp.com/docs/en/application-note/AN3797.pdf
+
+--_000_0CDD4071D6ACF54ABB9CF1A6D90375A809BAF4E4ALAMBDcorpadwrs_
+Content-Type: text/html; charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
+
+<html xmlns:v=3D"urn:schemas-microsoft-com:vml" xmlns:o=3D"urn:schemas-micr=
+osoft-com:office:office" xmlns:w=3D"urn:schemas-microsoft-com:office:word" =
+xmlns:m=3D"http://schemas.microsoft.com/office/2004/12/omml" xmlns=3D"http:=
+//www.w3.org/TR/REC-html40">
+<head>
+<meta http-equiv=3D"Content-Type" content=3D"text/html; charset=3Dus-ascii"=
+>
+<meta name=3D"Generator" content=3D"Microsoft Word 15 (filtered medium)">
+<style><!--
+/* Font Definitions */
+@font-face
+	{font-family:"Cambria Math";
+	panose-1:2 4 5 3 5 4 6 3 2 4;}
+@font-face
+	{font-family:Calibri;
+	panose-1:2 15 5 2 2 2 4 3 2 4;}
+/* Style Definitions */
+p.MsoNormal, li.MsoNormal, div.MsoNormal
+	{margin:0in;
+	margin-bottom:.0001pt;
+	font-size:11.0pt;
+	font-family:"Calibri",sans-serif;}
+a:link, span.MsoHyperlink
+	{mso-style-priority:99;
+	color:#0563C1;
+	text-decoration:underline;}
+a:visited, span.MsoHyperlinkFollowed
+	{mso-style-priority:99;
+	color:#954F72;
+	text-decoration:underline;}
+pre
+	{mso-style-priority:99;
+	mso-style-link:"HTML Preformatted Char";
+	margin:0in;
+	margin-bottom:.0001pt;
+	font-size:10.0pt;
+	font-family:"Courier New";}
+p.MsoListParagraph, li.MsoListParagraph, div.MsoListParagraph
+	{mso-style-priority:34;
+	margin-top:0in;
+	margin-right:0in;
+	margin-bottom:0in;
+	margin-left:.5in;
+	margin-bottom:.0001pt;
+	font-size:11.0pt;
+	font-family:"Calibri",sans-serif;}
+span.EmailStyle17
+	{mso-style-type:personal-compose;
+	font-family:"Calibri",sans-serif;
+	color:windowtext;}
+span.HTMLPreformattedChar
+	{mso-style-name:"HTML Preformatted Char";
+	mso-style-priority:99;
+	mso-style-link:"HTML Preformatted";
+	font-family:"Courier New";}
+span.n
+	{mso-style-name:n;}
+span.p
+	{mso-style-name:p;}
+span.o
+	{mso-style-name:o;}
+span.mi
+	{mso-style-name:mi;}
+.MsoChpDefault
+	{mso-style-type:export-only;}
+@page WordSection1
+	{size:8.5in 11.0in;
+	margin:1.0in 1.0in 1.0in 1.0in;}
+div.WordSection1
+	{page:WordSection1;}
+/* List Definitions */
+@list l0
+	{mso-list-id:638807685;
+	mso-list-type:hybrid;
+	mso-list-template-ids:756864570 67698703 67698713 67698715 67698703 676987=
+13 67698715 67698703 67698713 67698715;}
+@list l0:level1
+	{mso-level-tab-stop:none;
+	mso-level-number-position:left;
+	text-indent:-.25in;}
+@list l0:level2
+	{mso-level-number-format:alpha-lower;
+	mso-level-tab-stop:none;
+	mso-level-number-position:left;
+	text-indent:-.25in;}
+@list l0:level3
+	{mso-level-number-format:roman-lower;
+	mso-level-tab-stop:none;
+	mso-level-number-position:right;
+	text-indent:-9.0pt;}
+@list l0:level4
+	{mso-level-tab-stop:none;
+	mso-level-number-position:left;
+	text-indent:-.25in;}
+@list l0:level5
+	{mso-level-number-format:alpha-lower;
+	mso-level-tab-stop:none;
+	mso-level-number-position:left;
+	text-indent:-.25in;}
+@list l0:level6
+	{mso-level-number-format:roman-lower;
+	mso-level-tab-stop:none;
+	mso-level-number-position:right;
+	text-indent:-9.0pt;}
+@list l0:level7
+	{mso-level-tab-stop:none;
+	mso-level-number-position:left;
+	text-indent:-.25in;}
+@list l0:level8
+	{mso-level-number-format:alpha-lower;
+	mso-level-tab-stop:none;
+	mso-level-number-position:left;
+	text-indent:-.25in;}
+@list l0:level9
+	{mso-level-number-format:roman-lower;
+	mso-level-tab-stop:none;
+	mso-level-number-position:right;
+	text-indent:-9.0pt;}
+ol
+	{margin-bottom:0in;}
+ul
+	{margin-bottom:0in;}
+--></style><!--[if gte mso 9]><xml>
+<o:shapedefaults v:ext=3D"edit" spidmax=3D"1026" />
+</xml><![endif]--><!--[if gte mso 9]><xml>
+<o:shapelayout v:ext=3D"edit">
+<o:idmap v:ext=3D"edit" data=3D"1" />
+</o:shapelayout></xml><![endif]-->
+</head>
+<body lang=3D"EN-US" link=3D"#0563C1" vlink=3D"#954F72">
+<div class=3D"WordSection1">
+<p class=3D"MsoNormal">Hi, Christophe and everyone from the LinuxPPC commun=
+ity,<o:p></o:p></p>
+<p class=3D"MsoNormal"><o:p>&nbsp;</o:p></p>
+<p class=3D"MsoNormal">Hope you are doing well!<o:p></o:p></p>
+<p class=3D"MsoNormal">I was working with Daniel, and we were reviewing the=
+ ipic source code and came to these questions:<o:p></o:p></p>
+<p class=3D"MsoNormal"><o:p>&nbsp;</o:p></p>
+<p class=3D"MsoListParagraph" style=3D"text-indent:-.25in;mso-list:l0 level=
+1 lfo1"><![if !supportLists]><span style=3D"mso-list:Ignore">1.<span style=
+=3D"font:7.0pt &quot;Times New Roman&quot;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&=
+nbsp;
+</span></span><![endif]>The first one came up while reviewing the document =
+&#8220;Understanding IPIC&#8221; from NXP (*). The document states that:<o:=
+p></o:p></p>
+<p class=3D"MsoListParagraph" style=3D"text-autospace:none"><i><span style=
+=3D"font-size:10.0pt;font-family:&quot;Times New Roman&quot;,serif">System =
+Error Status Register (SERSR) &#8211; 0x40: Each bit in the SERSR register =
+corresponds to a non-maskable error source that generates
+ a machine check exception (MCP). These bits are cleared by writing the bit=
+ location with a logic 1.<o:p></o:p></span></i></p>
+<p class=3D"MsoListParagraph" style=3D"text-autospace:none"><i><span style=
+=3D"font-size:10.0pt;font-family:&quot;Times New Roman&quot;,serif">The int=
+errupting source must be cleared before clearing the interrupts error statu=
+s bit.<o:p></o:p></span></i></p>
+<p class=3D"MsoListParagraph" style=3D"text-autospace:none"><i><span style=
+=3D"font-size:10.0pt;font-family:&quot;Times New Roman&quot;,serif">System =
+Error Mask Register (SERMR) &#8211; 0x44 When a machine check exception is =
+signaled from one of the peripheral modules, its corresponding
+ flag bit in this register is set. Any of the interrupting sources can be i=
+ndividually masked.<o:p></o:p></span></i></p>
+<p class=3D"MsoNormal" style=3D"text-autospace:none"><i><span style=3D"font=
+-size:10.0pt;font-family:&quot;Times New Roman&quot;,serif"><o:p>&nbsp;</o:=
+p></span></i></p>
+<p class=3D"MsoNormal" style=3D"margin-left:.25in;text-indent:.25in;text-au=
+tospace:none">
+We noticed that you changed the ipic_clear_mcp_status &nbsp;function by swa=
+pping SERMR to SERSR, but we don&#8217;t fully understand why. Could you pl=
+ease elaborate on why this change is made? This because we had a code that =
+was working before the patch and we would fully
+ understand why it stopped working. From our perspective, both SERSR and SE=
+RMR are related to MCEs and honestly don&#8217;t know what&#8217;s the diff=
+erence at the hardware level, and the role of every register on the machine=
+ check flow. It is also weird for us that before
+ your patch the register SERSR wasn&#8217;t used in any part of the Linux k=
+ernel.<o:p></o:p></p>
+<p class=3D"MsoNormal" style=3D"text-autospace:none"><o:p>&nbsp;</o:p></p>
+<p class=3D"MsoListParagraph" style=3D"text-indent:-.25in;mso-list:l0 level=
+1 lfo1;text-autospace:none">
+<![if !supportLists]><span style=3D"mso-list:Ignore">2.<span style=3D"font:=
+7.0pt &quot;Times New Roman&quot;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span><![endif]>In commit 8acb88682cc00a41a677c2455a7c992d you remo=
+ved ipic_set_highest_priority(), ipic_enable_mcp() and ipic_disable_mcp()be=
+cause it wasn&#8217;t used but here we are confused because ipic_clear_mcp_=
+status() sets all bits with the mask and
+ in the old disable function the bits from the mask are cleared with a bitw=
+ise AND,changing the other bits from the SERMR register but the mcp_irq.<o:=
+p></o:p></p>
+<p class=3D"MsoNormal" style=3D"margin-left:.25in;text-autospace:none"><o:p=
+>&nbsp;</o:p></p>
+<p class=3D"MsoNormal" style=3D"text-indent:.5in;text-autospace:none">ipic_=
+clear: <o:p>
+</o:p></p>
+<p class=3D"MsoNormal" style=3D"margin-left:.5in;text-indent:.5in;text-auto=
+space:none">
+<a href=3D"https://elixir.bootlin.com/linux/v4.1.13/ident/ipic_write"><span=
+ style=3D"color:windowtext;text-decoration:none">ipic_write</span></a>(<a h=
+ref=3D"https://elixir.bootlin.com/linux/v4.1.13/ident/primary_ipic"><span s=
+tyle=3D"color:windowtext;text-decoration:none">primary_ipic</span></a>-&gt;=
+regs,
+<a href=3D"https://elixir.bootlin.com/linux/v4.1.13/ident/IPIC_SERMR"><span=
+ style=3D"color:windowtext;text-decoration:none">IPIC_SERMR</span></a>, mas=
+k);<o:p></o:p></p>
+<p class=3D"MsoNormal" style=3D"text-indent:.5in;text-autospace:none">ipic_=
+disable:<o:p></o:p></p>
+<p class=3D"MsoNormal" style=3D"text-autospace:none">&nbsp;&nbsp;&nbsp;&nbs=
+p;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;=
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
+sp;&nbsp; <a href=3D"https://elixir.bootlin.com/linux/v4.1.13/ident/temp">
+<span style=3D"color:windowtext;text-decoration:none">temp</span></a> =3D <=
+a href=3D"https://elixir.bootlin.com/linux/v4.1.13/ident/ipic_read">
+<span style=3D"color:windowtext;text-decoration:none">ipic_read</span></a>(=
+<a href=3D"https://elixir.bootlin.com/linux/v4.1.13/ident/ipic"><span style=
+=3D"color:windowtext;text-decoration:none">ipic</span></a>-&gt;regs,
+<a href=3D"https://elixir.bootlin.com/linux/v4.1.13/ident/IPIC_SERMR"><span=
+ style=3D"color:windowtext;text-decoration:none">IPIC_SERMR</span></a>);<o:=
+p></o:p></p>
+<p class=3D"MsoNormal" style=3D"text-autospace:none">&nbsp;&nbsp;&nbsp;&nbs=
+p;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;=
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
+sp;&nbsp; <a href=3D"https://elixir.bootlin.com/linux/v4.1.13/ident/temp">
+<span style=3D"color:windowtext;text-decoration:none">temp</span></a> &amp;=
+=3D (1 &lt;&lt; (31 - mcp_irq));<o:p></o:p></p>
+<p class=3D"MsoNormal" style=3D"text-autospace:none">&nbsp;&nbsp;&nbsp;&nbs=
+p;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;=
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
+sp;&nbsp; <a href=3D"https://elixir.bootlin.com/linux/v4.1.13/ident/ipic_wr=
+ite">
+<span style=3D"color:windowtext;text-decoration:none">ipic_write</span></a>=
+(<a href=3D"https://elixir.bootlin.com/linux/v4.1.13/ident/ipic"><span styl=
+e=3D"color:windowtext;text-decoration:none">ipic</span></a>-&gt;regs,
+<a href=3D"https://elixir.bootlin.com/linux/v4.1.13/ident/IPIC_SERMR"><span=
+ style=3D"color:windowtext;text-decoration:none">IPIC_SERMR</span></a>,
+<a href=3D"https://elixir.bootlin.com/linux/v4.1.13/ident/temp"><span style=
+=3D"color:windowtext;text-decoration:none">temp</span></a>);<o:p></o:p></p>
+<p class=3D"MsoNormal" style=3D"text-autospace:none"><o:p>&nbsp;</o:p></p>
+<p class=3D"MsoNormal" style=3D"text-autospace:none">&nbsp;&nbsp;&nbsp;&nbs=
+p;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Isn&#8=
+217;t ipic_clear a set function instead of a clear function? This bring us =
+confusion
+<o:p></o:p></p>
+<p class=3D"MsoNormal" style=3D"text-indent:.5in;text-autospace:none">Anoth=
+er question is why these functions were created in the first place?<o:p></o=
+:p></p>
+<p class=3D"MsoNormal" style=3D"text-autospace:none"><o:p>&nbsp;</o:p></p>
+<p class=3D"MsoListParagraph" style=3D"text-indent:-.25in;mso-list:l0 level=
+1 lfo1;text-autospace:none">
+<![if !supportLists]><span style=3D"mso-list:Ignore">3.<span style=3D"font:=
+7.0pt &quot;Times New Roman&quot;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span><![endif]>In the NXP document it states that: <i><span style=
+=3D"font-size:9.0pt">These bits are cleared by writing the bit location wit=
+h a logic 1. The interrupting source must be cleared before clearing the in=
+terrupts error status bit.</span></i><o:p></o:p></p>
+<p class=3D"MsoNormal" style=3D"margin-left:.25in;text-indent:.25in;text-au=
+tospace:none">
+Does this mean that these registers work with negative logic? How is this m=
+anaged in the kernel?
+<o:p></o:p></p>
+<p class=3D"MsoNormal" style=3D"margin-left:.25in;text-indent:.25in;text-au=
+tospace:none">
+The interrupting source is the SERMR register, the SERSR or any other?<o:p>=
+</o:p></p>
+<p class=3D"MsoNormal" style=3D"text-indent:.5in;text-autospace:none"><o:p>=
+&nbsp;</o:p></p>
+<p class=3D"MsoListParagraph" style=3D"text-indent:-.25in;mso-list:l0 level=
+1 lfo1;text-autospace:none">
+<![if !supportLists]><span style=3D"mso-list:Ignore">4.<span style=3D"font:=
+7.0pt &quot;Times New Roman&quot;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span><![endif]>What is the real difference between MCP and MCE? Wh=
+at are their uses?<o:p></o:p></p>
+<p class=3D"MsoNormal" style=3D"text-autospace:none">&nbsp;&nbsp;&nbsp;&nbs=
+p;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <o:p><=
+/o:p></p>
+<p class=3D"MsoNormal" style=3D"text-autospace:none"><o:p>&nbsp;</o:p></p>
+<p class=3D"MsoNormal" style=3D"margin-left:.5in;text-autospace:none">I kno=
+w it is a lot of information but we are very confused about the use of thes=
+e registers and we noticed that you are very involved on the PPC developmen=
+t. So we would like to hear from an
+ expert.<o:p></o:p></p>
+<p class=3D"MsoNormal" style=3D"text-indent:.5in;text-autospace:none"><o:p>=
+&nbsp;</o:p></p>
+<p class=3D"MsoNormal" style=3D"text-indent:.5in;text-autospace:none">Thank=
+ you very much for your time,<o:p></o:p></p>
+<p class=3D"MsoNormal" style=3D"text-indent:.5in;text-autospace:none">Pablo=
+<o:p></o:p></p>
+<p class=3D"MsoNormal" style=3D"text-autospace:none"><o:p>&nbsp;</o:p></p>
+<pre><span style=3D"font-size:11.0pt;color:black"><o:p>&nbsp;</o:p></span><=
+/pre>
+<p class=3D"MsoNormal" style=3D"margin-left:.5in;text-autospace:none"><o:p>=
+&nbsp;</o:p></p>
+<p class=3D"MsoNormal"><o:p>&nbsp;</o:p></p>
+<p class=3D"MsoNormal"><o:p>&nbsp;</o:p></p>
+<p class=3D"MsoNormal"><o:p></o:p></p>
+<p class=3D"MsoNormal">(*) <a href=3D"https://www.nxp.com/docs/en/applicati=
+on-note/AN3797.pdf">
+https://www.nxp.com/docs/en/application-note/AN3797.pdf</a><o:p></o:p></p>
+</div>
+</body>
+</html>
+
+--_000_0CDD4071D6ACF54ABB9CF1A6D90375A809BAF4E4ALAMBDcorpadwrs_--
