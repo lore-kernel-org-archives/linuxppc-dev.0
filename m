@@ -2,81 +2,48 @@ Return-Path: <SRS0=iUs8=TI=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.7 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.9 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_PASS autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1DA11C004C9
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 May 2019 00:31:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9867CC004C9
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 May 2019 00:44:00 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 5746A205ED
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 May 2019 00:31:56 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=intel-com.20150623.gappssmtp.com header.i=@intel-com.20150623.gappssmtp.com header.b="gRIeqvWj"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5746A205ED
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=intel.com
+	by mail.kernel.org (Postfix) with ESMTPS id 4D5B720C01
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 May 2019 00:44:00 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4D5B720C01
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44zHV22mwrzDqNS
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 May 2019 10:31:54 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=intel.com
- (client-ip=2607:f8b0:4864:20::343; helo=mail-ot1-x343.google.com;
- envelope-from=dan.j.williams@intel.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=intel.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=intel-com.20150623.gappssmtp.com
- header.i=@intel-com.20150623.gappssmtp.com header.b="gRIeqvWj"; 
- dkim-atps=neutral
-Received: from mail-ot1-x343.google.com (mail-ot1-x343.google.com
- [IPv6:2607:f8b0:4864:20::343])
+	by lists.ozlabs.org (Postfix) with ESMTP id 44zHly20G9zDqP1
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 May 2019 10:43:58 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44zHSR5RkWzDqFm
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 May 2019 10:30:31 +1000 (AEST)
-Received: by mail-ot1-x343.google.com with SMTP id i8so7043057oth.10
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 07 May 2019 17:30:31 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=intel-com.20150623.gappssmtp.com; s=20150623;
- h=mime-version:references:in-reply-to:from:date:message-id:subject:to
- :cc; bh=aNugRNfI1NASCVQQotBkfUx3cjwsiA1TzUpe8ibe7ac=;
- b=gRIeqvWjXvHVuVEemJNJK8AS0nBpMXjQNbmZV9qOtFksOrHCfrqeuX/vrn0nS6wwxy
- kLfpormJ8YBe4ZEF9hNxd/IFXkViwzDXyjJ7SWlHab5fqkWfEG9z/QESkM0GYa14N37c
- lpNEiivZk/k4qPe6YXKCt/Usic/XxFC7BwQxcRPqPZt9yKca0JFbo8LULWWrbneDHmq+
- K8a2yddzszAkKsKQ3kY36HSo7YkWplePB3l48/W53IN9tPwuJM2Yv7wbC95njLsaoego
- 6jh4lLkkJ43Um5WDoj3cd+7cCVtFpC4h2yUMlngnDEfXLG3iM/uPEArsgoY53kR9Wc3H
- DUgQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:mime-version:references:in-reply-to:from:date
- :message-id:subject:to:cc;
- bh=aNugRNfI1NASCVQQotBkfUx3cjwsiA1TzUpe8ibe7ac=;
- b=RudkWIKvQsF99/gHwCsybdGeHof9pFDMolrvCGT6rMVySAhCJqDKVu/OtGtIjdtwpX
- f18zzWFpguOlSQyro/MZDwYm9buitjqvb4WE0Bvjsm75Z2kzgiSKSMXem7WNLTYLtTOF
- AkQ9i3JQAh32yXV4goAhq+3Op8lb3C4vHc6RWuR/B62Qxlaj2pAmU0Y1OaatSlK355zN
- S2Va+TBmn+nIRAo6TPIeKckDAPP3+rkAqNetwsbUrgAl2u9a+GKZCzhSy6HVxgzQOQux
- cDf1PU48v0ey2VuRmIDwBkpG/5Zxho/gJIvCM5W8zx/w2l0oSDFW2hEmmk6g+rqBy7Fx
- au9g==
-X-Gm-Message-State: APjAAAXJJLWJ2bpdg+mIwzQk/usJ7jNjRcFBsAYGl7sqVbZJ8qV9zkxZ
- EeVu3n3e2ePSd8KBNd6G8vsJDQjm+mDyQ3+YpEeSig==
-X-Google-Smtp-Source: APXvYqwnFUcfnqP6BFgjGKomJPr5yaMMCBD85pEk3++fjkl68hk/raq4PqQ7V3ysBstXCoK7LDo9wO4kaWYzTHhnX6M=
-X-Received: by 2002:a9d:5cc1:: with SMTP id r1mr22059155oti.229.1557275426847; 
- Tue, 07 May 2019 17:30:26 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44zHkS600kzDqLr
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 May 2019 10:42:40 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=ellerman.id.au
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
+ SHA256) (No client certificate requested)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 44zHkQ6mGQz9s00;
+ Wed,  8 May 2019 10:42:38 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Yury Norov <yury.norov@gmail.com>, Al Viro <viro@zeniv.linux.org.uk>
+Subject: Re: [PATCH] powerpc: restore current_thread_info()
+In-Reply-To: <20190507230746.GA19259@yury-thinkpad>
+References: <20190507225121.18676-1-ynorov@marvell.com>
+ <20190507225856.GP23075@ZenIV.linux.org.uk>
+ <20190507230746.GA19259@yury-thinkpad>
+Date: Wed, 08 May 2019 10:42:37 +1000
+Message-ID: <87h8a5wzcy.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-References: <20190507183804.5512-1-david@redhat.com>
- <20190507183804.5512-9-david@redhat.com>
-In-Reply-To: <20190507183804.5512-9-david@redhat.com>
-From: Dan Williams <dan.j.williams@intel.com>
-Date: Tue, 7 May 2019 17:30:15 -0700
-Message-ID: <CAPcyv4hzpuApmKHhC6mHnE-RmiZ8Aspiv5wfd+Fs4QmaDsCJVw@mail.gmail.com>
-Subject: Re: [PATCH v2 8/8] mm/memory_hotplug: Remove "zone" parameter from
- sparse_remove_one_section
-To: David Hildenbrand <david@redhat.com>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -88,26 +55,36 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-s390 <linux-s390@vger.kernel.org>, linux-ia64@vger.kernel.org,
- Linux-sh <linux-sh@vger.kernel.org>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Linux MM <linux-mm@kvack.org>, Andrew Morton <akpm@linux-foundation.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Cc: Yury Norov <ynorov@marvell.com>, linux-kernel@vger.kernel.org,
+ Nicholas Piggin <npiggin@gmail.com>, Paul Mackerras <paulus@samba.org>,
+ Breno Leitao <leitao@debian.org>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, May 7, 2019 at 11:39 AM David Hildenbrand <david@redhat.com> wrote:
+Yury Norov <yury.norov@gmail.com> writes:
+> On Tue, May 07, 2019 at 11:58:56PM +0100, Al Viro wrote:
+>> On Tue, May 07, 2019 at 03:51:21PM -0700, Yury Norov wrote:
+>> > Commit ed1cd6deb013 ("powerpc: Activate CONFIG_THREAD_INFO_IN_TASK")
+>> > removes the function current_thread_info(). It's wrong because the
+>> > function is used in non-arch code and is part of API.
+>> 
+>> In include/linux/thread_info.h:
+>> 
+>> #ifdef CONFIG_THREAD_INFO_IN_TASK
+>> /*
+>>  * For CONFIG_THREAD_INFO_IN_TASK kernels we need <asm/current.h> for the
+>>  * definition of current, but for !CONFIG_THREAD_INFO_IN_TASK kernels,
+>>  * including <asm/current.h> can cause a circular dependency on some platforms.
+>>  */
+>> #include <asm/current.h>
+>> #define current_thread_info() ((struct thread_info *)current)
+>> #endif
 >
-> Unused, and memory unplug path should never care about zones. This is
-> the job of memory offlining. ZONE_DEVICE might require special care -
-> the caller of arch_remove_memory() should handle this.
+> Ah, sorry. Then it might be my rebase issue. I was confused because Christophe
+> didn't remove the comment to current_thread_info(), so I decided he
+> removed it erroneously.
 
-The ZONE_DEVICE usage does not require special care so you can drop
-that comment. The only place it's used in the subsection patches is to
-lookup the node-id, but it turns out that the resulting node-id is
-then never used.
+Yeah you're right, that comment should have been removed too.
 
-With the ZONE_DEVICE mention dropped out of changelog you can add:
-
-Reviewed-by: Dan Williams <dan.j.williams@intel.com>
+cheers
