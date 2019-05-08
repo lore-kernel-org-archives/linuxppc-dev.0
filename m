@@ -2,63 +2,88 @@ Return-Path: <SRS0=iUs8=TI=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.7 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.9 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 59E71C04A6B
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 May 2019 05:49:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 692DDC04A6B
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 May 2019 06:20:37 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id CD4ED20644
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 May 2019 05:49:04 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=anastas.io header.i=@anastas.io header.b="fpJCAPjE"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CD4ED20644
-Authentication-Results: mail.kernel.org; dmarc=fail (p=quarantine dis=none) header.from=anastas.io
+	by mail.kernel.org (Postfix) with ESMTPS id B313B214AF
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 May 2019 06:20:36 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B313B214AF
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44zQWy60mvzDqMK
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 May 2019 15:49:02 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44zRDK4xXgzDqM4
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 May 2019 16:20:33 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=anastas.io
- (client-ip=104.248.188.109; helo=alpha.anastas.io;
- envelope-from=shawn@anastas.io; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none)
- header.from=anastas.io
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=anastas.io header.i=@anastas.io header.b="fpJCAPjE"; 
- dkim-atps=neutral
-Received: from alpha.anastas.io (alpha.anastas.io [104.248.188.109])
+ spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
+ (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
+ envelope-from=rppt@linux.ibm.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=linux.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44zQT55sjrzDqLD
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 May 2019 15:46:33 +1000 (AEST)
-Received: from authenticated-user (alpha.anastas.io [104.248.188.109])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by alpha.anastas.io (Postfix) with ESMTPSA id C3C847F8E9;
- Tue,  7 May 2019 21:41:57 -0500 (CDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=anastas.io; s=mail;
- t=1557283318; bh=NkudzRVjZwK8lfclmmYkCIVdF6pby8ZJf/uHpomfJrM=;
- h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=fpJCAPjErySQROJkqZpixSeWqaUVJJzawqjQyqdW7t39zeEH9PmmI9DB7EO13UtOq
- RpvXSPxHjEJeEsH9agvTKzb3vu+FfzKagl3JIES2Rx8u1gbWs7/AJVJUZ6G/QP4erB
- xJQzpp98YWWDkhSIK4jmBTeslTgrpnoAckWamK/wCE26uNAVuU8IKTpcWG+rKDL/Ae
- GKemB1UcGQNg16WVprwBOypaaEtBPHf4W6M4HzTiAggjAffYTMb4bvP57GPVWRg4hL
- D7vc4WwWMoKzIPJuoSFoLPkXBotjjy27GDfW2Jf5RYi/+YdZrg8+S1n19Nat3pvvLj
- ClEDTEjvulaaA==
-From: Shawn Anastasio <shawn@anastas.io>
-To: bhelgaas@google.com
-Subject: [PATCH 3/3] powerpc/pseries: Allow user-specified PCI resource
- alignment after init
-Date: Tue,  7 May 2019 21:41:51 -0500
-Message-Id: <20190508024151.5690-4-shawn@anastas.io>
-In-Reply-To: <20190508024151.5690-1-shawn@anastas.io>
-References: <20190508024151.5690-1-shawn@anastas.io>
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44zR8v0TXSzDqK9
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 May 2019 16:17:33 +1000 (AEST)
+Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
+ x486GcS6072893
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 8 May 2019 02:17:29 -0400
+Received: from e06smtp02.uk.ibm.com (e06smtp02.uk.ibm.com [195.75.94.98])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2sbp870cxn-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 08 May 2019 02:17:29 -0400
+Received: from localhost
+ by e06smtp02.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <rppt@linux.ibm.com>;
+ Wed, 8 May 2019 07:17:27 +0100
+Received: from b06cxnps3075.portsmouth.uk.ibm.com (9.149.109.195)
+ by e06smtp02.uk.ibm.com (192.168.101.132) with IBM ESMTP SMTP Gateway:
+ Authorized Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Wed, 8 May 2019 07:17:17 +0100
+Received: from b06wcsmtp001.portsmouth.uk.ibm.com
+ (b06wcsmtp001.portsmouth.uk.ibm.com [9.149.105.160])
+ by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x486HGdZ56426730
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Wed, 8 May 2019 06:17:16 GMT
+Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id C1500A405F;
+ Wed,  8 May 2019 06:17:16 +0000 (GMT)
+Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 7C43EA406B;
+ Wed,  8 May 2019 06:17:13 +0000 (GMT)
+Received: from rapoport-lnx (unknown [9.148.8.112])
+ by b06wcsmtp001.portsmouth.uk.ibm.com (Postfix) with ESMTPS;
+ Wed,  8 May 2019 06:17:13 +0000 (GMT)
+Received: by rapoport-lnx (sSMTP sendmail emulation);
+ Wed, 08 May 2019 09:17:12 +0300
+From: Mike Rapoport <rppt@linux.ibm.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH v2 00/14] introduce generic pte_{alloc,free}_one[_kernel]
+Date: Wed,  8 May 2019 09:16:57 +0300
+X-Mailer: git-send-email 2.7.4
+X-TM-AS-GCONF: 00
+x-cbid: 19050806-0008-0000-0000-000002E466E7
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 19050806-0009-0000-0000-00002250E6BE
+Message-Id: <1557296232-15361-1-git-send-email-rppt@linux.ibm.com>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
+ definitions=2019-05-08_05:, , signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=412 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1810050000 definitions=main-1905080040
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -70,120 +95,103 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: sbobroff@linux.ibm.com, linux-pci@vger.kernel.org,
- linux-kernel@vger.kernel.org, rppt@linux.ibm.com, xyjxie@linux.vnet.ibm.com,
- paulus@samba.org, linuxppc-dev@lists.ozlabs.org
+Cc: Michal Hocko <mhocko@suse.com>, Catalin Marinas <catalin.marinas@arm.com>,
+ Palmer Dabbelt <palmer@sifive.com>, linux-mips@vger.kernel.org,
+ linux-mm@kvack.org, Guo Ren <guoren@kernel.org>, linux-hexagon@vger.kernel.org,
+ linux-riscv@lists.infradead.org, linux-arch@vger.kernel.org,
+ Helge Deller <deller@gmx.de>, x86@kernel.org,
+ Russell King <linux@armlinux.org.uk>, Matthew Wilcox <willy@infradead.org>,
+ Mike Rapoport <rppt@linux.ibm.com>, Geert Uytterhoeven <geert@linux-m68k.org>,
+ Matt Turner <mattst88@gmail.com>, Sam Creasey <sammy@sammy.net>,
+ Arnd Bergmann <arnd@arndb.de>, Anshuman Khandual <anshuman.khandual@arm.com>,
+ linux-um@lists.infradead.org, Richard Weinberger <richard@nod.at>,
+ linux-m68k@lists.linux-m68k.org, Greentime Hu <green.hu@gmail.com>,
+ nios2-dev@lists.rocketboards.org, Guan Xuetao <gxt@pku.edu.cn>,
+ linux-arm-kernel@lists.infradead.org, linux-parisc@vger.kernel.org,
+ linux-kernel@vger.kernel.org, Richard Kuo <rkuo@codeaurora.org>,
+ Paul Burton <paul.burton@mips.com>, linux-alpha@vger.kernel.org,
+ Ley Foon Tan <lftan@altera.com>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On pseries, custom PCI resource alignment specified with the commandline
-argument pci=resource_alignment is disabled due to PCI resources being
-managed by the firmware. However, in the case of PCI hotplug the
-resources are managed by the kernel, so custom alignments should be
-honored in these cases. This is done by only honoring custom
-alignments after initial PCI initialization is done, to ensure that
-all devices managed by the firmware are excluded.
+Hi,
 
-Without this ability, sub-page BARs sometimes get mapped in between
-page boundaries for hotplugged devices and are therefore unusable
-with the VFIO framework. This change allows users to request
-page alignment for devices they wish to access via VFIO using
-the pci=resource_alignment commandline argument.
+Many architectures have similar, if not identical implementation of
+pte_alloc_one_kernel(), pte_alloc_one(), pte_free_kernel() and pte_free().
 
-In the future, this could be extended to provide page-aligned
-resources by default for hotplugged devices, similar to what is
-done on powernv by commit 382746376993 ("powerpc/powernv: Override
-pcibios_default_alignment() to force PCI devices to be page aligned")
+A while ago Anshuman suggested to introduce a common definition of
+GFP_PGTABLE and during the discussion it was suggested to rather
+consolidate the allocators.
 
-Signed-off-by: Shawn Anastasio <shawn@anastas.io>
----
- arch/powerpc/include/asm/machdep.h     |  3 +++
- arch/powerpc/kernel/pci-common.c       |  9 +++++++++
- arch/powerpc/platforms/pseries/setup.c | 22 ++++++++++++++++++++++
- 3 files changed, 34 insertions(+)
+These patches introduce generic version of PTE allocation and free and
+enable their use on several architectures.
 
-diff --git a/arch/powerpc/include/asm/machdep.h b/arch/powerpc/include/asm/machdep.h
-index 2fbfaa9176ed..46eb62c0954e 100644
---- a/arch/powerpc/include/asm/machdep.h
-+++ b/arch/powerpc/include/asm/machdep.h
-@@ -179,6 +179,9 @@ struct machdep_calls {
- 
- 	resource_size_t (*pcibios_default_alignment)(void);
- 
-+	/* Called when determining PCI resource alignment */
-+	int (*pcibios_ignore_alignment_request)(void);
-+
- #ifdef CONFIG_PCI_IOV
- 	void (*pcibios_fixup_sriov)(struct pci_dev *pdev);
- 	resource_size_t (*pcibios_iov_resource_alignment)(struct pci_dev *, int resno);
-diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-common.c
-index ff4b7539cbdf..1a6ded45a701 100644
---- a/arch/powerpc/kernel/pci-common.c
-+++ b/arch/powerpc/kernel/pci-common.c
-@@ -238,6 +238,15 @@ resource_size_t pcibios_default_alignment(void)
- 	return 0;
- }
- 
-+resource_size_t pcibios_ignore_alignment_request(void)
-+{
-+	if (ppc_md.pcibios_ignore_alignment_request)
-+		return ppc_md.pcibios_ignore_alignment_request();
-+
-+	/* Fall back to default method of checking PCI_PROBE_ONLY */
-+	return pci_has_flag(PCI_PROBE_ONLY);
-+}
-+
- #ifdef CONFIG_PCI_IOV
- resource_size_t pcibios_iov_resource_alignment(struct pci_dev *pdev, int resno)
- {
-diff --git a/arch/powerpc/platforms/pseries/setup.c b/arch/powerpc/platforms/pseries/setup.c
-index e4f0dfd4ae33..c6af2ed8ee0f 100644
---- a/arch/powerpc/platforms/pseries/setup.c
-+++ b/arch/powerpc/platforms/pseries/setup.c
-@@ -82,6 +82,8 @@ EXPORT_SYMBOL(CMO_PageSize);
- 
- int fwnmi_active;  /* TRUE if an FWNMI handler is present */
- 
-+int initial_pci_init_done; /* TRUE if initial pcibios init has completed */
-+
- static void pSeries_show_cpuinfo(struct seq_file *m)
- {
- 	struct device_node *root;
-@@ -749,6 +751,23 @@ static resource_size_t pseries_pci_iov_resource_alignment(struct pci_dev *pdev,
- }
- #endif
- 
-+static void pseries_after_init(void)
-+{
-+	initial_pci_init_done = 1;
-+}
-+
-+static int pseries_ignore_alignment_request(void)
-+{
-+	if (initial_pci_init_done)
-+		/*
-+		 * Allow custom alignments after init for things
-+		 * like PCI hotplugging.
-+		 */
-+		return 0;
-+
-+	return pci_has_flag(PCI_PROBE_ONLY);
-+}
-+
- static void __init pSeries_setup_arch(void)
- {
- 	set_arch_panic_timeout(10, ARCH_PANIC_TIMEOUT);
-@@ -797,6 +816,9 @@ static void __init pSeries_setup_arch(void)
- 	}
- 
- 	ppc_md.pcibios_root_bridge_prepare = pseries_root_bridge_prepare;
-+	ppc_md.pcibios_after_init = pseries_after_init;
-+	ppc_md.pcibios_ignore_alignment_request =
-+		pseries_ignore_alignment_request;
- }
- 
- static void pseries_panic(char *str)
+The conversion introduces some changes for some of the architectures.
+Here's the executive summary and the details are described at each patch.
+
+* Most architectures do not set __GFP_ACCOUNT for the user page tables.
+Switch to the generic functions is "spreading that goodness to all other
+architectures"
+* arm, arm64 and unicore32 used to check if the pte is not NULL before
+freeing its memory in pte_free_kernel(). It's dropped during the
+conversion as it seems superfluous.
+* x86 used to BUG_ON() is pte was not page aligned duirng
+pte_free_kernel(), the generic version simply frees the memory without any
+checks.
+
+This set only performs the straightforward conversion, the architectures
+with different logic in pte_alloc_one() and pte_alloc_one_kernel() are not
+touched, as well as architectures that have custom page table allocators.
+
+v2 changes:
+* rebase on the current upstream
+* fix copy-paste error in the description of pte_free()
+* fix changelog for MIPS to match actual changes
+* drop powerpc changes
+* add Acked/Reviewed tags
+
+[1] https://lore.kernel.org/lkml/1547619692-7946-1-git-send-email-anshuman.khandual@arm.com
+
+Mike Rapoport (14):
+  asm-generic, x86: introduce generic pte_{alloc,free}_one[_kernel]
+  alpha: switch to generic version of pte allocation
+  arm: switch to generic version of pte allocation
+  arm64: switch to generic version of pte allocation
+  csky: switch to generic version of pte allocation
+  hexagon: switch to generic version of pte allocation
+  m68k: sun3: switch to generic version of pte allocation
+  mips: switch to generic version of pte allocation
+  nds32: switch to generic version of pte allocation
+  nios2: switch to generic version of pte allocation
+  parisc: switch to generic version of pte allocation
+  riscv: switch to generic version of pte allocation
+  um: switch to generic version of pte allocation
+  unicore32: switch to generic version of pte allocation
+
+ arch/alpha/include/asm/pgalloc.h     |  40 +------------
+ arch/arm/include/asm/pgalloc.h       |  41 +++++---------
+ arch/arm/mm/mmu.c                    |   2 +-
+ arch/arm64/include/asm/pgalloc.h     |  47 +++------------
+ arch/arm64/mm/mmu.c                  |   2 +-
+ arch/arm64/mm/pgd.c                  |   9 ++-
+ arch/csky/include/asm/pgalloc.h      |  30 +---------
+ arch/hexagon/include/asm/pgalloc.h   |  34 +----------
+ arch/m68k/include/asm/sun3_pgalloc.h |  41 +-------------
+ arch/mips/include/asm/pgalloc.h      |  33 +----------
+ arch/nds32/include/asm/pgalloc.h     |  31 ++--------
+ arch/nios2/include/asm/pgalloc.h     |  37 +-----------
+ arch/parisc/include/asm/pgalloc.h    |  33 +----------
+ arch/riscv/include/asm/pgalloc.h     |  29 +---------
+ arch/um/include/asm/pgalloc.h        |  16 +-----
+ arch/um/kernel/mem.c                 |  22 -------
+ arch/unicore32/include/asm/pgalloc.h |  36 +++---------
+ arch/x86/include/asm/pgalloc.h       |  19 +------
+ arch/x86/mm/pgtable.c                |  33 +++--------
+ include/asm-generic/pgalloc.h        | 107 +++++++++++++++++++++++++++++++++--
+ virt/kvm/arm/mmu.c                   |   2 +-
+ 21 files changed, 178 insertions(+), 466 deletions(-)
+
 -- 
-2.20.1
+2.7.4
 
