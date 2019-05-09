@@ -2,22 +2,22 @@ Return-Path: <SRS0=tA1z=TJ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.0 required=3.0 tests=MAILING_LIST_MULTI,SPF_PASS
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-1.0 required=3.0 tests=MAILING_LIST_MULTI,SPF_PASS,
+	URIBL_BLOCKED autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1E525C04AB1
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 May 2019 11:37:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4F1BCC04AB1
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 May 2019 11:43:39 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 9D0D6216C4
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 May 2019 11:37:56 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9D0D6216C4
+	by mail.kernel.org (Postfix) with ESMTPS id 03A34216C4
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 May 2019 11:43:38 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 03A34216C4
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=bugzilla.kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 450BD23MHzzDqSs
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 May 2019 21:37:54 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 450BLc6M4dzDqLt
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 May 2019 21:43:36 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=bugzilla.kernel.org
  (client-ip=198.145.29.98; helo=mail.wl.linuxfoundation.org;
@@ -28,18 +28,18 @@ Received: from mail.wl.linuxfoundation.org (mail.wl.linuxfoundation.org
  [198.145.29.98])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 450BBb1xMkzDqDd
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 May 2019 21:36:38 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 450BKD6JG9zDqDd
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 May 2019 21:42:24 +1000 (AEST)
 Received: from mail.wl.linuxfoundation.org (localhost [127.0.0.1])
- by mail.wl.linuxfoundation.org (Postfix) with ESMTP id DC9CA287E0
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 May 2019 11:36:36 +0000 (UTC)
+ by mail.wl.linuxfoundation.org (Postfix) with ESMTP id 37B08251F4
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 May 2019 11:42:23 +0000 (UTC)
 Received: by mail.wl.linuxfoundation.org (Postfix, from userid 486)
- id D0E8628825; Thu,  9 May 2019 11:36:36 +0000 (UTC)
+ id 2BDCE287C0; Thu,  9 May 2019 11:42:23 +0000 (UTC)
 From: bugzilla-daemon@bugzilla.kernel.org
 To: linuxppc-dev@lists.ozlabs.org
 Subject: [Bug 203125] Kernel 5.1-rc1 fails to boot on a PowerMac G4 3,6:
  Caused by (from SRR1=141020): Transfer error ack signal
-Date: Thu, 09 May 2019 11:36:35 +0000
+Date: Thu, 09 May 2019 11:42:21 +0000
 X-Bugzilla-Reason: None
 X-Bugzilla-Type: changed
 X-Bugzilla-Watch-Reason: AssignedTo platform_ppc-32@kernel-bugs.osdl.org
@@ -55,7 +55,7 @@ X-Bugzilla-Priority: P1
 X-Bugzilla-Assigned-To: platform_ppc-32@kernel-bugs.osdl.org
 X-Bugzilla-Flags: 
 X-Bugzilla-Changed-Fields: 
-Message-ID: <bug-203125-206035-2kSQsaUbab@https.bugzilla.kernel.org/>
+Message-ID: <bug-203125-206035-jgqR85VfRC@https.bugzilla.kernel.org/>
 In-Reply-To: <bug-203125-206035@https.bugzilla.kernel.org/>
 References: <bug-203125-206035@https.bugzilla.kernel.org/>
 Content-Type: text/plain; charset="UTF-8"
@@ -81,21 +81,13 @@ Sender: "Linuxppc-dev"
 
 https://bugzilla.kernel.org/show_bug.cgi?id=3D203125
 
---- Comment #8 from Erhard F. (erhard_f@mailbox.org) ---
-I tried to apply the patch on top of 5.1.0 but it did not work out 'cause t=
-here
-is no arch/powerpc/mm/book3s32/hash_low.S. The correct file on my system se=
-emed
-arch/powerpc/mm/hash_low_32.S, but changing the path in the patch did not w=
-ork
-either.
+--- Comment #9 from Erhard F. (erhard_f@mailbox.org) ---
+@Christophe: Oops, accidentally I trashed your last comment. Sorry! This pa=
+tch
+didn't apply either. There is no book3s32 directory in my linux-stable tree,
+the hash_*.S files are directly in mm/
 
-What actually did work was manually applying your proposed change in
-arch/powerpc/mm/book3s32/hash_low.S! Now the G4 boots up fine with 5.1.0 as=
- it
-did with 5.0.x.
-
-Many thanks for the fix!
+But does not matter, your code change works!
 
 --=20
 You are receiving this mail because:
