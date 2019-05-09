@@ -2,65 +2,83 @@ Return-Path: <SRS0=tA1z=TJ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.9 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.2 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_MUTT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 47B43C04AB1
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 May 2019 17:51:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3F8F4C04AB1
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 May 2019 18:04:03 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 93BB22089E
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 May 2019 17:51:08 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 93BB22089E
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ACULAB.COM
+	by mail.kernel.org (Postfix) with ESMTPS id BB6312177B
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 May 2019 18:04:02 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=alien8.de header.i=@alien8.de header.b="a8RjWUcV"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BB6312177B
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=alien8.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 450LVd67KqzDqS3
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 May 2019 03:51:05 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 450LnX6fqFzDqSq
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 May 2019 04:04:00 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 450Lm04mGjzDqRX
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 May 2019 04:02:40 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=aculab.com
- (client-ip=207.82.80.151; helo=eu-smtp-delivery-151.mimecast.com;
- envelope-from=david.laight@aculab.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=ACULAB.COM
-Received: from eu-smtp-delivery-151.mimecast.com
- (eu-smtp-delivery-151.mimecast.com [207.82.80.151])
+ dmarc=pass (p=none dis=none) header.from=alien8.de
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=alien8.de header.i=@alien8.de header.b="a8RjWUcV"; 
+ dkim-atps=neutral
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 450Lm01qS6z8wN4
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 May 2019 04:02:40 +1000 (AEST)
+Received: by ozlabs.org (Postfix)
+ id 450Lm014Q5z9sBr; Fri, 10 May 2019 04:02:40 +1000 (AEST)
+Authentication-Results: ozlabs.org; spf=pass (mailfrom) smtp.mailfrom=alien8.de
+ (client-ip=2a01:4f8:190:11c2::b:1457; helo=mail.skyhub.de;
+ envelope-from=bp@alien8.de; receiver=<UNKNOWN>)
+Authentication-Results: ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=alien8.de
+Authentication-Results: ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=alien8.de header.i=@alien8.de header.b="a8RjWUcV"; 
+ dkim-atps=neutral
+Received: from mail.skyhub.de (mail.skyhub.de [IPv6:2a01:4f8:190:11c2::b:1457])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 450LSt2YClzDqRW
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 May 2019 03:49:31 +1000 (AEST)
-Received: from AcuMS.aculab.com (156.67.243.126 [156.67.243.126]) (Using
- TLS) by relay.mimecast.com with ESMTP id uk-mta-2-cILVDsqaNZKuy6_7SA1Hbw-1;
- Thu, 09 May 2019 14:47:00 +0100
-Received: from AcuMS.Aculab.com (fd9f:af1c:a25b::d117) by AcuMS.aculab.com
- (fd9f:af1c:a25b::d117) with Microsoft SMTP Server (TLS) id 15.0.1347.2; Thu,
- 9 May 2019 14:46:59 +0100
-Received: from AcuMS.Aculab.com ([fe80::43c:695e:880f:8750]) by
- AcuMS.aculab.com ([fe80::43c:695e:880f:8750%12]) with mapi id 15.00.1347.000; 
- Thu, 9 May 2019 14:46:59 +0100
-From: David Laight <David.Laight@ACULAB.COM>
-To: =?iso-8859-1?Q?=27Michal_Such=E1nek=27?= <msuchanek@suse.de>, Petr Mladek
- <pmladek@suse.com>
-Subject: RE: [PATCH] vsprintf: Do not break early boot with probing addresses
-Thread-Topic: [PATCH] vsprintf: Do not break early boot with probing addresses
-Thread-Index: AQHVBmyk/iTC8Q7sI0elwkZY5/gFJaZizfQA
-Date: Thu, 9 May 2019 13:46:59 +0000
-Message-ID: <8ad8bb83b7034f7e92df12040fb8c2c2@AcuMS.aculab.com>
-References: <20190509121923.8339-1-pmladek@suse.com>
- <20190509153829.06319d0c@kitsune.suse.cz>
-In-Reply-To: <20190509153829.06319d0c@kitsune.suse.cz>
-Accept-Language: en-GB, en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-x-ms-exchange-transport-fromentityheader: Hosted
-x-originating-ip: [10.202.205.107]
+ by ozlabs.org (Postfix) with ESMTPS id 450Llz4T78z9sBp
+ for <linuxppc-dev@ozlabs.org>; Fri, 10 May 2019 04:02:38 +1000 (AEST)
+Received: from zn.tnic (p200300EC2F0F5F0071783F241746291C.dip0.t-ipconnect.de
+ [IPv6:2003:ec:2f0f:5f00:7178:3f24:1746:291c])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by mail.skyhub.de (SuperMail on ZX Spectrum 128k) with ESMTPSA id 008451EC0AD6;
+ Thu,  9 May 2019 20:02:27 +0200 (CEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=alien8.de; s=dkim;
+ t=1557424948;
+ h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+ to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+ content-transfer-encoding:in-reply-to:in-reply-to:  references:references;
+ bh=LE6rba9B9rU5DbzSHGx/pRi6Lf56AIjnr35aFsMIzx0=;
+ b=a8RjWUcVSKawUH6Wjde6La9FXxCtzDNi3YnI+OMK2XcixlBnhA6XEtKqKRhEM0al/llKME
+ bU1tU9ahok52xcoqbLYM5JT5mMOMtQEGXfj8qxXlWRAQHBd+V4bCdzy6S6SHtnJ7Y3YFC3
+ CGtCAvs1EMUnHirHSl1tVM9zkj/XSgY=
+Date: Thu, 9 May 2019 20:02:20 +0200
+From: Borislav Petkov <bp@alien8.de>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: [PATCH] EDAC, mpc85xx: Prevent building as a module
+Message-ID: <20190509180220.GH17053@zn.tnic>
+References: <20190502141941.12927-1-mpe@ellerman.id.au>
+ <20190506065045.GA3901@x250> <20190508101238.GB19015@zn.tnic>
+ <87o94bvfxm.fsf@concordia.ellerman.id.au>
+ <20190509145534.GD17053@zn.tnic>
 MIME-Version: 1.0
-X-MC-Unique: cILVDsqaNZKuy6_7SA1Hbw-1
-X-Mimecast-Spam-Score: 0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20190509145534.GD17053@zn.tnic>
+User-Agent: Mutt/1.10.1 (2018-07-13)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -72,45 +90,46 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "linux-arch@vger.kernel.org" <linux-arch@vger.kernel.org>,
- "linux-s390@vger.kernel.org" <linux-s390@vger.kernel.org>,
- Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>,
- Rasmus Villemoes <linux@rasmusvillemoes.dk>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Heiko Carstens <heiko.carstens@de.ibm.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Steven Rostedt <rostedt@goodmis.org>, Michal Hocko <mhocko@suse.cz>,
- Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
- Stephen Rothwell <sfr@ozlabs.org>, Andy
- Shevchenko <andriy.shevchenko@linux.intel.com>,
- Linus Torvalds <torvalds@linux-foundation.org>, Martin
- Schwidefsky <schwidefsky@de.ibm.com>, "Tobin C . Harding" <me@tobin.cc>
+Cc: Johannes Thumshirn <morbidrsa@gmail.com>, linux-kernel@vger.kernel.org,
+ linuxppc-dev@ozlabs.org, james.morse@arm.com, mchehab@kernel.org,
+ linux-edac@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Michal Such=C3=A1nek
-> Sent: 09 May 2019 14:38
-...
-> > The problem is the combination of some new code called via printk(),
-> > check_pointer() which calls probe_kernel_read(). That then calls
-> > allow_user_access() (PPC_KUAP) and that uses mmu_has_feature() too earl=
-y
-> > (before we've patched features).
->=20
-> There is early_mmu_has_feature for this case. mmu_has_feature does not
-> work before patching so parts of kernel that can run before patching
-> must use the early_ variant which actually runs code reading the
-> feature bitmap to determine the answer.
+On Thu, May 09, 2019 at 04:55:34PM +0200, Borislav Petkov wrote:
+> On Fri, May 10, 2019 at 12:52:05AM +1000, Michael Ellerman wrote:
+> > Thanks. It would be nice if you could send it as a fix for 5.2, it's the
+> > last thing blocking one of my allmodconfig builds. But if you don't
+> > think it qualifies as a fix that's fine too, it can wait.
+> 
+> Sure, no problem. Will do a pull request later.
 
-Does the early_ variant get patched so the it is reasonably
-efficient after the 'patching' is done?
-Or should there be a third version which gets patched across?
+Hmm, so looking at this more, I was able to produce this config with my
+ancient cross-compiler:
 
-=09David
+CONFIG_EDAC_SUPPORT=y
+CONFIG_EDAC=m
+CONFIG_EDAC_LEGACY_SYSFS=y
+CONFIG_EDAC_MPC85XX=y
 
--
-Registered Address Lakeside, Bramley Road, Mount Farm, Milton Keynes, MK1 1=
-PT, UK
-Registration No: 1397386 (Wales)
+Now, mpc85xx_edac is built-in and edac_core.ko is a module
+(CONFIG_EDAC=m) and that should not work - i.e., builtin code calling
+module functions. But my cross-compiler is happily building this without
+complaint. Or maybe I'm missing something.
 
+In any case, I *think* the proper fix should be to do:
+
+config EDAC_MPC85XX
+        bool "Freescale MPC83xx / MPC85xx"
+        depends on FSL_SOC && EDAC=y
+
+so that you can't even produce the above invalid .config snippet.
+
+Hmmm?
+
+-- 
+Regards/Gruss,
+    Boris.
+
+Good mailing practices for 400: avoid top-posting and trim the reply.
