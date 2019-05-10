@@ -2,63 +2,50 @@ Return-Path: <SRS0=Jq0w=TK=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.4 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_MUTT autolearn=unavailable
+X-Spam-Status: No, score=-2.9 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_NEOMUTT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DE8CBC04AB2
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 May 2019 14:36:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 367F0C04A6B
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 May 2019 14:50:53 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6B43D216C4
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 May 2019 14:36:51 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6B43D216C4
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.intel.com
+	by mail.kernel.org (Postfix) with ESMTPS id 981AC21479
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 May 2019 14:50:52 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 981AC21479
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=suse.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 450t811rMgzDqSk
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 11 May 2019 00:36:49 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 450tSB1PkFzDqVN
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 11 May 2019 00:50:50 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=linux.intel.com
- (client-ip=192.55.52.93; helo=mga11.intel.com;
- envelope-from=andriy.shevchenko@linux.intel.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=linux.intel.com
-Received: from mga11.intel.com (mga11.intel.com [192.55.52.93])
+ spf=pass (mailfrom) smtp.mailfrom=suse.com
+ (client-ip=195.135.220.15; helo=mx1.suse.de; envelope-from=pmladek@suse.com;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=suse.com
+Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 450t585js0zDqTW
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 11 May 2019 00:34:19 +1000 (AEST)
-X-Amp-Result: UNKNOWN
-X-Amp-Original-Verdict: FILE UNKNOWN
-X-Amp-File-Uploaded: False
-Received: from orsmga002.jf.intel.com ([10.7.209.21])
- by fmsmga102.fm.intel.com with ESMTP/TLS/DHE-RSA-AES256-GCM-SHA384;
- 10 May 2019 07:34:16 -0700
-X-ExtLoop1: 1
-Received: from smile.fi.intel.com (HELO smile) ([10.237.72.86])
- by orsmga002.jf.intel.com with ESMTP; 10 May 2019 07:34:08 -0700
-Received: from andy by smile with local (Exim 4.92)
- (envelope-from <andriy.shevchenko@linux.intel.com>)
- id 1hP6b9-0004Sg-Pc; Fri, 10 May 2019 17:34:07 +0300
-Date: Fri, 10 May 2019 17:34:07 +0300
-From: "andriy.shevchenko@linux.intel.com" <andriy.shevchenko@linux.intel.com>
-To: "Ardelean, Alexandru" <alexandru.Ardelean@analog.com>
-Subject: Re: [PATCH 03/16] lib,treewide: add new match_string() helper/macro
-Message-ID: <20190510143407.GA9224@smile.fi.intel.com>
-References: <20190508112842.11654-1-alexandru.ardelean@analog.com>
- <20190508112842.11654-5-alexandru.ardelean@analog.com>
- <20190508131128.GL9224@smile.fi.intel.com>
- <20190508131856.GB10138@kroah.com>
- <b2440bc9485456a7a90a488c528997587b22088b.camel@analog.com>
- <4df165bc4247e60aa4952fd55cb0c77e60712767.camel@analog.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 450tQY4KLXzDqNK
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 11 May 2019 00:49:23 +1000 (AEST)
+X-Virus-Scanned: by amavisd-new at test-mx.suse.de
+Received: from relay2.suse.de (unknown [195.135.220.254])
+ by mx1.suse.de (Postfix) with ESMTP id 85445AFD2;
+ Fri, 10 May 2019 14:49:18 +0000 (UTC)
+Date: Fri, 10 May 2019 16:49:17 +0200
+From: Petr Mladek <pmladek@suse.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [PATCH] vsprintf: Do not break early boot with probing addresses
+Message-ID: <20190510144917.lrgftg4wjfcyxoku@pathway.suse.cz>
+References: <20190510081635.GA4533@jagdpanzerIV>
+ <20190510084213.22149-1-pmladek@suse.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4df165bc4247e60aa4952fd55cb0c77e60712767.camel@analog.com>
-Organization: Intel Finland Oy - BIC 0357606-4 - Westendinkatu 7, 02160 Espoo
-User-Agent: Mutt/1.10.1 (2018-07-13)
+In-Reply-To: <20190510084213.22149-1-pmladek@suse.com>
+User-Agent: NeoMutt/20170912 (1.9.0)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -70,71 +57,35 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>,
- "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>,
- "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
- "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
- "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
- "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>,
- "linux-mm@kvack.org" <linux-mm@kvack.org>,
- "linux-mtd@lists.infradead.org" <linux-mtd@lists.infradead.org>,
- "linux-clk@vger.kernel.org" <linux-clk@vger.kernel.org>,
- "devel@driverdev.osuosl.org" <devel@driverdev.osuosl.org>,
- "linux-rockchip@lists.infradead.org" <linux-rockchip@lists.infradead.org>,
- "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
- "intel-gfx@lists.freedesktop.org" <intel-gfx@lists.freedesktop.org>,
- "linux-gpio@vger.kernel.org" <linux-gpio@vger.kernel.org>,
- "linux-rpi-kernel@lists.infradead.org" <linux-rpi-kernel@lists.infradead.org>,
- "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>,
- "cgroups@vger.kernel.org" <cgroups@vger.kernel.org>,
- "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
- "linux-ide@vger.kernel.org" <linux-ide@vger.kernel.org>,
- "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>,
- "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>,
- "linux-mmc@vger.kernel.org" <linux-mmc@vger.kernel.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "linux-security-module@vger.kernel.org"
- <linux-security-module@vger.kernel.org>,
- "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
- "linux-integrity@vger.kernel.org" <linux-integrity@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Cc: linux-arch@vger.kernel.org,
+ Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>, linux-s390@vger.kernel.org,
+ Rasmus Villemoes <linux@rasmusvillemoes.dk>, linux-kernel@vger.kernel.org,
+ Steven Rostedt <rostedt@goodmis.org>, Michal Hocko <mhocko@suse.cz>,
+ Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
+ Stephen Rothwell <sfr@ozlabs.org>,
+ Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+ linuxppc-dev@lists.ozlabs.org, Martin Schwidefsky <schwidefsky@de.ibm.com>,
+ "Tobin C . Harding" <me@tobin.cc>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, May 10, 2019 at 09:15:27AM +0000, Ardelean, Alexandru wrote:
-> On Wed, 2019-05-08 at 16:22 +0300, Alexandru Ardelean wrote:
-> > On Wed, 2019-05-08 at 15:18 +0200, Greg KH wrote:
-> > > On Wed, May 08, 2019 at 04:11:28PM +0300, Andy Shevchenko wrote:
-> > > > On Wed, May 08, 2019 at 02:28:29PM +0300, Alexandru Ardelean wrote:
-
-> > > > Can you split include/linux/ change from the rest?
-> > > 
-> > > That would break the build, why do you want it split out?  This makes
-> > > sense all as a single patch to me.
-> > > 
-> > 
-> > Not really.
-> > It would be just be the new match_string() helper/macro in a new commit.
-> > And the conversions of the simple users of match_string() (the ones using
-> > ARRAY_SIZE()) in another commit.
-> > 
+On Fri 2019-05-10 10:42:13, Petr Mladek wrote:
+> The commit 3e5903eb9cff70730 ("vsprintf: Prevent crash when dereferencing
+> invalid pointers") broke boot on several architectures. The common
+> pattern is that probe_kernel_read() is not working during early
+> boot because userspace access framework is not ready.
 > 
-> I should have asked in my previous reply.
-> Leave this as-is or re-formulate in 2 patches ?
+> It is a generic problem. We have to avoid any complex external
+> functions in vsprintf() code, especially in the common path.
+> They might break printk() easily and are hard to debug.
+> 
+> Replace probe_kernel_read() with some simple checks for obvious
+> problems.
 
-Depends on on what you would like to spend your time: collecting Acks for all
-pieces in treewide patch or send new API first followed up by per driver /
-module update in next cycle.
+JFYI, I have sent a pull request with this patch, see
+https://lkml.kernel.org/r/20190510144718.riyy72g4cy5nkggx@pathway.suse.cz
 
-I also have no strong preference.
-And I think it's good to add Heikki Krogerus to Cc list for both patch series,
-since he is the author of sysfs variant and may have something to comment on
-the rest.
-
--- 
-With Best Regards,
-Andy Shevchenko
-
-
+Best Regards,
+Petr
