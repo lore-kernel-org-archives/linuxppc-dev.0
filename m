@@ -2,88 +2,88 @@ Return-Path: <SRS0=Jq0w=TK=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.0 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_MUTT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.7 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,HTML_MESSAGE,MAILING_LIST_MULTI,SPF_PASS
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0E47EC04A6B
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 May 2019 05:08:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 24FD9C04A6B
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 May 2019 05:24:12 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 4C9D82177B
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 May 2019 05:08:39 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 637E02175B
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 May 2019 05:24:11 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="c0UMDkfB"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4C9D82177B
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=linux-foundation.org header.i=@linux-foundation.org header.b="fohbzQBc"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 637E02175B
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linux-foundation.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 450dXN5xPXzDqTP
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 May 2019 15:08:36 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 450dtK30dpzDqV8
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 May 2019 15:24:09 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=2607:f8b0:4864:20::641; helo=mail-pl1-x641.google.com;
- envelope-from=sergey.senozhatsky.work@gmail.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="c0UMDkfB"; 
- dkim-atps=neutral
-Received: from mail-pl1-x641.google.com (mail-pl1-x641.google.com
- [IPv6:2607:f8b0:4864:20::641])
+ spf=pass (mailfrom) smtp.mailfrom=linuxfoundation.org
+ (client-ip=2a00:1450:4864:20::243; helo=mail-lj1-x243.google.com;
+ envelope-from=torvalds@linuxfoundation.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=linux-foundation.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=linux-foundation.org header.i=@linux-foundation.org
+ header.b="fohbzQBc"; dkim-atps=neutral
+Received: from mail-lj1-x243.google.com (mail-lj1-x243.google.com
+ [IPv6:2a00:1450:4864:20::243])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 450dVr73ZyzDqRW
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 May 2019 15:07:15 +1000 (AEST)
-Received: by mail-pl1-x641.google.com with SMTP id f12so219100plt.8
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 09 May 2019 22:07:15 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=date:from:to:cc:subject:message-id:references:mime-version
- :content-disposition:in-reply-to:user-agent;
- bh=FjMDX6OXptCPbOEPZorERjXrFHT+sQLeZXg4fcoOVO4=;
- b=c0UMDkfB6tTjOuuL7w77f9bWKLRAazsReBhnmqpNGDM0k59e6X/kl3C4Pe6J9eHUen
- VFAkbAqGjUIJBx7hvW7Fh6dqtrYSHH9XX2PvuEVj32Jy9VNtfv95QPZNAgVJgPRL3BKO
- OyB6K6sIcnJOt80RK+9Kgdu4JyMQCO4sdI1JvFP7WzWDVWm7oHYsqPIL5NCA8RM1tJ12
- ggKw4hwLADwL4j8sXY2gT6/wneNWSju7qCVIsYvNXQPH+QrW25KdR1AYG7U4Rz8in6rI
- qNWUTknwUpjjpgfRE8r4QpfQla/BLjPtT0IOYTbpCwB99LwTtNvLRfDE7OPzwXu3cz1B
- Lx1w==
+ by lists.ozlabs.org (Postfix) with ESMTPS id 450d4M57q0zDqS1
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 May 2019 14:47:47 +1000 (AEST)
+Received: by mail-lj1-x243.google.com with SMTP id w1so1351805ljw.0
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 09 May 2019 21:47:46 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=linux-foundation.org; s=google;
+ h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+ :cc; bh=ImcrHBqFFEqsmpAMxzWPbx7VppKY86XVes/D/i1UVb4=;
+ b=fohbzQBcRJy6wMgJSp6gpKGQZeDeRjcUTot7TfXWT2k/dGlAbqjtZpoVJQXdUZuhkf
+ rTL7MWW7QI2QCVJgzMq8Wr9Jelc98wWm6uqyLy7Jp1xS9qqShXO83rXs8FRZACpgk2XU
+ gfgRxfTzqX7YGmmXht0ejVHBroIkQsCZs0X9Q=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
- h=x-gm-message-state:date:from:to:cc:subject:message-id:references
- :mime-version:content-disposition:in-reply-to:user-agent;
- bh=FjMDX6OXptCPbOEPZorERjXrFHT+sQLeZXg4fcoOVO4=;
- b=D+U43g7tqVtJHZwpNMQLE18v2TPqTAglTd+LcinfnBvs1bH4CKBo9s3V1hp8zilYv0
- F6hOFKVDfTW8J+kWgyhXRPxrzRU2E2woSqEvQfAFEg5tuTCDEkE1afj+LRwAuDNX89W6
- sEB/AHDVmefQUhrPYQ8JPQDq04K/GtAXJHUj5A5hV2+IU07eoRk2D20fBGnQ6XnORO6K
- rAIte7ACBXWOGWo56FoWTrAtIGrUaaN1uchj/tE4c11YwSC/Xd8Q2F0xCCvkDXf77+Al
- j9PYoAiT3LqOk4/FKiDsOr4CFC+T3G7tzyjc/6qqWs7O7OjOSIB/ywabPIAanWb5ag4s
- jWow==
-X-Gm-Message-State: APjAAAWWB5jn5bloIGUz9TdTIOgJCgiWQ4ZG1UNwzbDE4ZLKJFRDwj/i
- AogfSNTM+WKj3yW8IPHuUIM=
-X-Google-Smtp-Source: APXvYqzNL5x5L+kA/IjbOlsUuaCt+dnLaiieinMh/bSrZ4GSD+ciNLFNHlYGUDHIszX5LplSP6e0cA==
-X-Received: by 2002:a17:902:8c85:: with SMTP id
- t5mr10664151plo.23.1557464834204; 
- Thu, 09 May 2019 22:07:14 -0700 (PDT)
-Received: from localhost ([39.7.15.25])
- by smtp.gmail.com with ESMTPSA id d67sm5741186pfa.35.2019.05.09.22.07.12
- (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
- Thu, 09 May 2019 22:07:13 -0700 (PDT)
-Date: Fri, 10 May 2019 14:07:09 +0900
-From: Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH] vsprintf: Do not break early boot with probing addresses
-Message-ID: <20190510050709.GA1831@jagdpanzerIV>
+ h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+ :message-id:subject:to:cc;
+ bh=ImcrHBqFFEqsmpAMxzWPbx7VppKY86XVes/D/i1UVb4=;
+ b=UKUHI3g0aQlCEgWU18TMIzX2lQTwhIbEMOcW+36JxpzDs7NozAvrT1yjCB7lvs62tn
+ lg2mlU+Mlzw/7GuoclSXPQGpOF0D3obPuB0PBip54MwU3z3xokK2IGbTdJJil6QgM/KI
+ K0H/P4nCkqBB5E933l8IF49okpSM2m2qryc6QGbo4KyQVJITkubH2U3gGO3tTaFp4kW9
+ grgPhKS73X+aE3gmRBm8oRdyRoDNoz6ToabsM9auNm6Iy6ZkZ9b60KGCUTRrC+6FmGUh
+ aAb8YwHUsAtvONYJGuzFhHBUQfC86vtqqq694eZER+MI9VFyD9MRia1Bw7Acbdc7hfWj
+ rowA==
+X-Gm-Message-State: APjAAAVVCrkKTLJj799hvj0PDLyT4BDL8tT6Osb7LJwmlbBmge38iDZS
+ VEjFpetay8txpBTGzipKlsx2c82iacI=
+X-Google-Smtp-Source: APXvYqyYM5EAlc09emJOKkkWgKqfi72EYtLwwGoR0//2piLz6SjBPvHdxbZlMlvPcS9ByLzl6OjdPA==
+X-Received: by 2002:a2e:9ada:: with SMTP id p26mr4374912ljj.167.1557463661616; 
+ Thu, 09 May 2019 21:47:41 -0700 (PDT)
+Received: from mail-lf1-f49.google.com (mail-lf1-f49.google.com.
+ [209.85.167.49])
+ by smtp.gmail.com with ESMTPSA id n8sm997123lfe.15.2019.05.09.21.47.39
+ for <linuxppc-dev@lists.ozlabs.org>
+ (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
+ Thu, 09 May 2019 21:47:40 -0700 (PDT)
+Received: by mail-lf1-f49.google.com with SMTP id y10so3164979lfl.3
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 09 May 2019 21:47:39 -0700 (PDT)
+X-Received: by 2002:ac2:43cf:: with SMTP id u15mr4557604lfl.67.1557463658025; 
+ Thu, 09 May 2019 21:47:38 -0700 (PDT)
+MIME-Version: 1.0
 References: <20190509121923.8339-1-pmladek@suse.com>
  <20190510043200.GC15652@jagdpanzerIV>
- <CAHk-=wiP+hwSqEW0dM6AYNWUR7jXDkeueq69et6ahfUgV7hC3w@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <CAHk-=wiP+hwSqEW0dM6AYNWUR7jXDkeueq69et6ahfUgV7hC3w@mail.gmail.com>
-User-Agent: Mutt/1.11.4 (2019-03-13)
+In-Reply-To: <20190510043200.GC15652@jagdpanzerIV>
+From: Linus Torvalds <torvalds@linux-foundation.org>
+Date: Thu, 9 May 2019 21:47:27 -0700
+X-Gmail-Original-Message-ID: <CAHk-=wiP+hwSqEW0dM6AYNWUR7jXDkeueq69et6ahfUgV7hC3w@mail.gmail.com>
+Message-ID: <CAHk-=wiP+hwSqEW0dM6AYNWUR7jXDkeueq69et6ahfUgV7hC3w@mail.gmail.com>
+Subject: Re: [PATCH] vsprintf: Do not break early boot with probing addresses
+To: Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>
+Content-Type: multipart/alternative; boundary="000000000000166f8f05888144be"
+X-Mailman-Approved-At: Fri, 10 May 2019 15:23:00 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -96,7 +96,6 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 Cc: Petr Mladek <pmladek@suse.com>, linux-arch@vger.kernel.org,
- Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>,
  Heiko Carstens <heiko.carstens@de.ibm.com>, linux-s390@vger.kernel.org,
  Rasmus Villemoes <linux@rasmusvillemoes.dk>, linux-kernel@vger.kernel.org,
  Steven Rostedt <rostedt@goodmis.org>, Michal Hocko <mhocko@suse.cz>,
@@ -109,13 +108,134 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On (05/09/19 21:47), Linus Torvalds wrote:
->    [ Sorry about html and mobile crud, I'm not at the computer right now ]
->    How about we just undo the whole misguided probe_kernel_address() thing?
+--000000000000166f8f05888144be
+Content-Type: text/plain; charset="UTF-8"
 
-But the problem will remain - %pS/%pF on PPC (and some other arch-s)
-do dereference_function_descriptor(), which calls probe_kernel_address().
-So if probe_kernel_address() starts to dump_stack(), then we are heading
-towards stack overflow. Unless I'm totally missing something.
+[ Sorry about html and mobile crud, I'm not at the computer right now ]
 
-	-ss
+How about we just undo the whole misguided probe_kernel_address() thing?
+
+The excuse for is was that it would avoid crashes.
+
+It turns out that was wrong, and that it just made things much worse.
+Honestly, we haven't really had the crashes that the logic was supposed to
+protect against in the first place, so by now it's clear that the whole
+thing was a stupid and horrible mistake in the first place.
+
+So let's admit that and just go back to the old sane model.
+
+Seriously, we've never needed that odd probing. It causes issues. It's
+wrong and pointless.
+
+       Linus
+
+On Thu, May 9, 2019, 21:32 Sergey Senozhatsky <
+sergey.senozhatsky.work@gmail.com> wrote:
+
+> On (05/09/19 14:19), Petr Mladek wrote:
+> > 1. Report on Power:
+> >
+> > Kernel crashes very early during boot with with CONFIG_PPC_KUAP and
+> > CONFIG_JUMP_LABEL_FEATURE_CHECK_DEBUG
+> >
+> > The problem is the combination of some new code called via printk(),
+> > check_pointer() which calls probe_kernel_read(). That then calls
+> > allow_user_access() (PPC_KUAP) and that uses mmu_has_feature() too early
+> > (before we've patched features). With the JUMP_LABEL debug enabled that
+> > causes us to call printk() & dump_stack() and we end up recursing and
+> > overflowing the stack.
+>
+> Hmm... hmm... PPC does an .opd-based symbol dereference, which
+> eventually probe_kernel_read()-s. So early printk(%pS) will do
+>
+>         printk(%pS)
+>          dereference_function_descriptor()
+>           probe_kernel_address()
+>            dump_stack()
+>             printk(%pS)
+>              dereference_function_descriptor()
+>               probe_kernel_address()
+>                dump_stack()
+>                 printk(%pS)
+>                  ...
+>
+> I'd say... that it's not vsprintf that we want to fix, it's
+> the idea that probe_kernel_address() can dump_stack() on any
+> platform. On some archs probe_kernel_address()->dump_stack()
+> is going nowhere:
+>  dump_stack() does probe_kernel_address(), which calls dump_stack(),
+>  which calls printk(%pS)->probe_kernel_address() again and again,
+>  and again.
+>
+>         -ss
+>
+
+--000000000000166f8f05888144be
+Content-Type: text/html; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+
+<div dir=3D"auto"><div dir=3D"auto">[ Sorry about html and mobile crud, I&#=
+39;m not at the computer right now ]</div><div dir=3D"auto"><br></div>How a=
+bout we just undo the whole misguided probe_kernel_address() thing?<div dir=
+=3D"auto"><br></div><div dir=3D"auto">The excuse for is was that it would a=
+void crashes.</div><div dir=3D"auto"><br></div><div dir=3D"auto">It turns o=
+ut that was wrong, and that it just made things much worse. Honestly, we ha=
+ven&#39;t really had the crashes that the logic was supposed to protect aga=
+inst in the first place, so by now it&#39;s clear that the whole thing was =
+a stupid and horrible mistake in the first place.</div><div dir=3D"auto"><b=
+r></div><div dir=3D"auto">So let&#39;s admit that and just go back to the o=
+ld sane model.</div><div dir=3D"auto"><br></div><div dir=3D"auto">Seriously=
+, we&#39;ve never needed that odd probing. It causes issues. It&#39;s wrong=
+ and pointless.</div><div dir=3D"auto"><br></div><div dir=3D"auto">=C2=A0 =
+=C2=A0 =C2=A0 =C2=A0Linus</div></div><br><div class=3D"gmail_quote"><div di=
+r=3D"ltr" class=3D"gmail_attr">On Thu, May 9, 2019, 21:32 Sergey Senozhatsk=
+y &lt;<a href=3D"mailto:sergey.senozhatsky.work@gmail.com">sergey.senozhats=
+ky.work@gmail.com</a>&gt; wrote:<br></div><blockquote class=3D"gmail_quote"=
+ style=3D"margin:0 0 0 .8ex;border-left:1px #ccc solid;padding-left:1ex">On=
+ (05/09/19 14:19), Petr Mladek wrote:<br>
+&gt; 1. Report on Power:<br>
+&gt; <br>
+&gt; Kernel crashes very early during boot with with CONFIG_PPC_KUAP and<br=
+>
+&gt; CONFIG_JUMP_LABEL_FEATURE_CHECK_DEBUG<br>
+&gt; <br>
+&gt; The problem is the combination of some new code called via printk(),<b=
+r>
+&gt; check_pointer() which calls probe_kernel_read(). That then calls<br>
+&gt; allow_user_access() (PPC_KUAP) and that uses mmu_has_feature() too ear=
+ly<br>
+&gt; (before we&#39;ve patched features). With the JUMP_LABEL debug enabled=
+ that<br>
+&gt; causes us to call printk() &amp; dump_stack() and we end up recursing =
+and<br>
+&gt; overflowing the stack.<br>
+<br>
+Hmm... hmm... PPC does an .opd-based symbol dereference, which<br>
+eventually probe_kernel_read()-s. So early printk(%pS) will do<br>
+<br>
+=C2=A0 =C2=A0 =C2=A0 =C2=A0 printk(%pS)<br>
+=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0dereference_function_descriptor()<br>
+=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 probe_kernel_address()<br>
+=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0dump_stack()<br>
+=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 printk(%pS)<br>
+=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0dereference_function_descri=
+ptor()<br>
+=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 probe_kernel_address()<br>
+=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0dump_stack()<br>
+=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 printk(%pS)<br>
+=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0...<br>
+<br>
+I&#39;d say... that it&#39;s not vsprintf that we want to fix, it&#39;s<br>
+the idea that probe_kernel_address() can dump_stack() on any<br>
+platform. On some archs probe_kernel_address()-&gt;dump_stack()<br>
+is going nowhere:<br>
+=C2=A0dump_stack() does probe_kernel_address(), which calls dump_stack(),<b=
+r>
+=C2=A0which calls printk(%pS)-&gt;probe_kernel_address() again and again,<b=
+r>
+=C2=A0and again.<br>
+<br>
+=C2=A0 =C2=A0 =C2=A0 =C2=A0 -ss<br>
+</blockquote></div>
+
+--000000000000166f8f05888144be--
