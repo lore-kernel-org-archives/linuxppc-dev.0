@@ -2,79 +2,95 @@ Return-Path: <SRS0=Jq0w=TK=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.7 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.9 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 41D20C04A6B
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 May 2019 09:26:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 632FCC04AB3
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 May 2019 09:27:36 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6C4F42175B
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 May 2019 09:26:24 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="taWSJ99P"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6C4F42175B
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
+	by mail.kernel.org (Postfix) with ESMTPS id D7A45217D6
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 May 2019 09:27:35 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D7A45217D6
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 450lFp2skQzDqTv
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 May 2019 19:26:22 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 450lHB0PZbzDqSy
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 May 2019 19:27:34 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=c-s.fr
- (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
- envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=c-s.fr
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="taWSJ99P"; 
- dkim-atps=neutral
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ spf=none (mailfrom) smtp.mailfrom=linux.vnet.ibm.com
+ (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
+ envelope-from=ego@linux.vnet.ibm.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=linux.vnet.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 450lD6179RzDqS4
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 May 2019 19:24:53 +1000 (AEST)
-Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 450lD01KCKz9v1Mt;
- Fri, 10 May 2019 11:24:48 +0200 (CEST)
-Authentication-Results: localhost; dkim=pass
- reason="1024-bit key; insecure key"
- header.d=c-s.fr header.i=@c-s.fr header.b=taWSJ99P; dkim-adsp=pass;
- dkim-atps=neutral
-X-Virus-Scanned: Debian amavisd-new at c-s.fr
-Received: from pegase1.c-s.fr ([192.168.12.234])
- by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id KJXQjKtTJ41s; Fri, 10 May 2019 11:24:48 +0200 (CEST)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 450lD00HK7z9v1MX;
- Fri, 10 May 2019 11:24:48 +0200 (CEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
- t=1557480288; bh=7+rPkb2mMCN5fVEdeNW5Bv+959x/xuLC/xkQspJWIF4=;
- h=From:Subject:To:Cc:Date:From;
- b=taWSJ99PKG67Av4raH7KIE+Cms6j4wKbf27OdG2itiwITW2soKJWE2LGl/28cLXXI
- +U9DlPPhQ7uHNnTjc3v8CfSWhU7C4wW1W5gzC6RdgDS/zUWx0AKQuWgBtOW1VGp7b5
- JbHEWmola2E6NrjmVNMdZ+MR5+b67mB2A+KLvZ1E=
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 30AB88B940;
- Fri, 10 May 2019 11:24:49 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id 6vEArAskASY9; Fri, 10 May 2019 11:24:49 +0200 (CEST)
-Received: from po16846vm.idsi0.si.c-s.fr (po15451.idsi0.si.c-s.fr
- [172.25.231.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 15F368B7E6;
- Fri, 10 May 2019 11:24:49 +0200 (CEST)
-Received: by po16846vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id DAAD2673B2; Fri, 10 May 2019 09:24:48 +0000 (UTC)
-Message-Id: <c6ff2faba7fbb56a7f5b5f08cd3453f89fc0aaf4.1557480165.git.christophe.leroy@c-s.fr>
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v2] powerpc: slightly improve cache helpers
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Segher Boessenkool <segher@kernel.crashing.org>
-Date: Fri, 10 May 2019 09:24:48 +0000 (UTC)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 450lDd6jNBzDqT5
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 May 2019 19:25:21 +1000 (AEST)
+Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
+ x4A9MjuE183035
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 May 2019 05:25:18 -0400
+Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2sd4ykcu3f-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 May 2019 05:25:18 -0400
+Received: from localhost
+ by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <ego@linux.vnet.ibm.com>;
+ Fri, 10 May 2019 10:25:17 +0100
+Received: from b03cxnp08025.gho.boulder.ibm.com (9.17.130.17)
+ by e35.co.us.ibm.com (192.168.1.135) with IBM ESMTP SMTP Gateway: Authorized
+ Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Fri, 10 May 2019 10:25:15 +0100
+Received: from b03ledav002.gho.boulder.ibm.com
+ (b03ledav002.gho.boulder.ibm.com [9.17.130.233])
+ by b03cxnp08025.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x4A9PEct52953342
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Fri, 10 May 2019 09:25:14 GMT
+Received: from b03ledav002.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 9062913605E;
+ Fri, 10 May 2019 09:25:14 +0000 (GMT)
+Received: from b03ledav002.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 4ADA513604F;
+ Fri, 10 May 2019 09:25:14 +0000 (GMT)
+Received: from sofia.ibm.com (unknown [9.124.35.248])
+ by b03ledav002.gho.boulder.ibm.com (Postfix) with ESMTP;
+ Fri, 10 May 2019 09:25:14 +0000 (GMT)
+Received: by sofia.ibm.com (Postfix, from userid 1000)
+ id 1BA412E2D08; Fri, 10 May 2019 14:55:13 +0530 (IST)
+From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+To: Paul Mackerras <paulus@samba.org>, Nicholas Piggin <npiggin@gmail.com>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
+Subject: [RESEND PATCH] powerpc/pseries: Fix cpu_hotplug_lock acquisition in
+ resize_hpt
+Date: Fri, 10 May 2019 14:54:54 +0530
+X-Mailer: git-send-email 1.8.3.1
+X-TM-AS-GCONF: 00
+x-cbid: 19051009-0012-0000-0000-000017349B09
+X-IBM-SpamModules-Scores: 
+X-IBM-SpamModules-Versions: BY=3.00011081; HX=3.00000242; KW=3.00000007;
+ PH=3.00000004; SC=3.00000285; SDB=6.01201230; UDB=6.00630345; IPR=6.00982126; 
+ MB=3.00026827; MTD=3.00000008; XFM=3.00000015; UTC=2019-05-10 09:25:17
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 19051009-0013-0000-0000-000057358B3A
+Message-Id: <1557480294-808-1-git-send-email-ego@linux.vnet.ibm.com>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
+ definitions=2019-05-09_02:, , signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1810050000 definitions=main-1905100067
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -86,53 +102,113 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Cache instructions (dcbz, dcbi, dcbf and dcbst) take two registers
-that are summed to obtain the target address. Using 'Z' constraint
-and '%y0' argument gives GCC the opportunity to use both registers
-instead of only one with the second being forced to 0.
+From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
 
-Suggested-by: Segher Boessenkool <segher@kernel.crashing.org>
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+During a memory hotplug operations involving resizing of the HPT, we
+invoke a stop_machine() to perform the resizing. In this code path, we
+end up recursively taking the cpu_hotplug_lock, first in
+memory_hotplug_begin() and then subsequently in stop_machine(). This
+causes the system to hang. With lockdep enabled we get the following
+error message before the hang.
+
+  swapper/0/1 is trying to acquire lock:
+  (____ptrval____) (cpu_hotplug_lock.rw_sem){++++}, at: stop_machine+0x2c/0x60
+
+  but task is already holding lock:
+  (____ptrval____) (cpu_hotplug_lock.rw_sem){++++}, at: mem_hotplug_begin+0x20/0x50
+
+  other info that might help us debug this:
+   Possible unsafe locking scenario:
+
+         CPU0
+         ----
+    lock(cpu_hotplug_lock.rw_sem);
+    lock(cpu_hotplug_lock.rw_sem);
+
+   *** DEADLOCK ***
+
+Fix this issue by
+  1) Requiring all the calls to pseries_lpar_resize_hpt() be made
+     with cpu_hotplug_lock held.
+
+  2) In pseries_lpar_resize_hpt() invoke stop_machine_cpuslocked()
+     as a consequence of 1)
+
+  3) To satisfy 1), in hpt_order_set(), call mmu_hash_ops.resize_hpt()
+     with cpu_hotplug_lock held.
+
+Reported-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
+Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/cache.h | 8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/cache.h b/arch/powerpc/include/asm/cache.h
-index 40ea5b3781c6..df8e4c407366 100644
---- a/arch/powerpc/include/asm/cache.h
-+++ b/arch/powerpc/include/asm/cache.h
-@@ -85,22 +85,22 @@ extern void _set_L3CR(unsigned long);
+Rebased this one against powerpc/next instead of linux/master.
+
+ arch/powerpc/mm/book3s64/hash_utils.c | 9 ++++++++-
+ arch/powerpc/platforms/pseries/lpar.c | 8 ++++++--
+ 2 files changed, 14 insertions(+), 3 deletions(-)
+
+diff --git a/arch/powerpc/mm/book3s64/hash_utils.c b/arch/powerpc/mm/book3s64/hash_utils.c
+index 919a861..d07fcafd 100644
+--- a/arch/powerpc/mm/book3s64/hash_utils.c
++++ b/arch/powerpc/mm/book3s64/hash_utils.c
+@@ -38,6 +38,7 @@
+ #include <linux/libfdt.h>
+ #include <linux/pkeys.h>
+ #include <linux/hugetlb.h>
++#include <linux/cpu.h>
  
- static inline void dcbz(void *addr)
+ #include <asm/debugfs.h>
+ #include <asm/processor.h>
+@@ -1928,10 +1929,16 @@ static int hpt_order_get(void *data, u64 *val)
+ 
+ static int hpt_order_set(void *data, u64 val)
  {
--	__asm__ __volatile__ ("dcbz 0, %0" : : "r"(addr) : "memory");
-+	__asm__ __volatile__ ("dcbz %y0" : : "Z"(*(u8 *)addr) : "memory");
++	int ret;
++
+ 	if (!mmu_hash_ops.resize_hpt)
+ 		return -ENODEV;
+ 
+-	return mmu_hash_ops.resize_hpt(val);
++	cpus_read_lock();
++	ret = mmu_hash_ops.resize_hpt(val);
++	cpus_read_unlock();
++
++	return ret;
  }
  
- static inline void dcbi(void *addr)
- {
--	__asm__ __volatile__ ("dcbi 0, %0" : : "r"(addr) : "memory");
-+	__asm__ __volatile__ ("dcbi %y0" : : "Z"(*(u8 *)addr) : "memory");
+ DEFINE_DEBUGFS_ATTRIBUTE(fops_hpt_order, hpt_order_get, hpt_order_set, "%llu\n");
+diff --git a/arch/powerpc/platforms/pseries/lpar.c b/arch/powerpc/platforms/pseries/lpar.c
+index 1034ef1..2fc9756 100644
+--- a/arch/powerpc/platforms/pseries/lpar.c
++++ b/arch/powerpc/platforms/pseries/lpar.c
+@@ -859,7 +859,10 @@ static int pseries_lpar_resize_hpt_commit(void *data)
+ 	return 0;
  }
  
- static inline void dcbf(void *addr)
+-/* Must be called in user context */
++/*
++ * Must be called in user context. The caller should hold the
++ * cpus_lock.
++ */
+ static int pseries_lpar_resize_hpt(unsigned long shift)
  {
--	__asm__ __volatile__ ("dcbf 0, %0" : : "r"(addr) : "memory");
-+	__asm__ __volatile__ ("dcbf %y0" : : "Z"(*(u8 *)addr) : "memory");
- }
+ 	struct hpt_resize_state state = {
+@@ -913,7 +916,8 @@ static int pseries_lpar_resize_hpt(unsigned long shift)
  
- static inline void dcbst(void *addr)
- {
--	__asm__ __volatile__ ("dcbst 0, %0" : : "r"(addr) : "memory");
-+	__asm__ __volatile__ ("dcbst %y0" : : "Z"(*(u8 *)addr) : "memory");
- }
- #endif /* !__ASSEMBLY__ */
- #endif /* __KERNEL__ */
+ 	t1 = ktime_get();
+ 
+-	rc = stop_machine(pseries_lpar_resize_hpt_commit, &state, NULL);
++	rc = stop_machine_cpuslocked(pseries_lpar_resize_hpt_commit,
++				     &state, NULL);
+ 
+ 	t2 = ktime_get();
+ 
 -- 
-2.13.3
+1.9.4
 
