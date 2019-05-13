@@ -2,60 +2,89 @@ Return-Path: <SRS0=ygHD=TN=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_PASS,
-	USER_AGENT_MUTT autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9A3C7C04AB1
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 May 2019 06:43:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id F3067C04AB1
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 May 2019 06:48:50 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E8C2B20879
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 May 2019 06:43:37 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ozlabs.org header.i=@ozlabs.org header.b="WL8j2isZ"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E8C2B20879
-Authentication-Results: mail.kernel.org; dmarc=pass (p=none dis=none) header.from=ozlabs.org
+	by mail.kernel.org (Postfix) with ESMTPS id 1434720879
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 May 2019 06:48:49 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1434720879
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 452WVb3SdczDqKr
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 May 2019 16:43:35 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 452WSy6RY1zDqBL
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 May 2019 16:42:10 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 452Wcc0SnvzDqKl
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 May 2019 16:48:48 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=ozlabs.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- secure) header.d=ozlabs.org header.i=@ozlabs.org header.b="WL8j2isZ"; 
- dkim-atps=neutral
-Received: by ozlabs.org (Postfix, from userid 1003)
- id 452WSy2tP5z9s4Y; Mon, 13 May 2019 16:42:10 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ozlabs.org; s=201707;
- t=1557729730; bh=bfjxecMrdmX4OfnJ3FpAf871ZQ2GIHJ1hAkeFqBk1YI=;
- h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=WL8j2isZzN21WNnf6psha+YqfAlDb9btXeL3ZX/QhF50KzvyC84Y5xGTE4GlMumC/
- bVyZRfSqyYfncHBMRU15MxWuzdG3ku92gGIIXFEyMLmWeR37u8Icq/000C3E3FI3DN
- n4hNuZcbr0lC74gdqqFfON+N5H/YgkeD1VYkPYjgxXspNYtVBXvLmEiqgAnLf3XiFd
- oBC5R5m5PpM5+WcjT0F/SgTkJ50TvtvaA+EsHPZaqtg6pYL/FaB2AxO1TSBXbsTQUn
- UfJjVKHPcwfpRHnkvACt1zx3bWeuu1NEuyveUaeubY9qvLmedTGBhRnhe0KewLKN1m
- FelH6kV6zkr8Q==
-Date: Mon, 13 May 2019 16:42:07 +1000
-From: Paul Mackerras <paulus@ozlabs.org>
-To: Nicholas Piggin <npiggin@gmail.com>
-Subject: Re: [PATCH v10 2/2] powerpc/64s: KVM update for reimplement book3s
- idle code in C
-Message-ID: <20190513064207.GA11679@blackberry>
-References: <20190428114515.32683-1-npiggin@gmail.com>
- <20190428114515.32683-3-npiggin@gmail.com>
+ spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
+ (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
+ envelope-from=naveen.n.rao@linux.ibm.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=linux.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 452Wb91LpPzDq9R
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 May 2019 16:47:31 +1000 (AEST)
+Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
+ x4D6lSFm087522
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 May 2019 02:47:28 -0400
+Received: from e06smtp04.uk.ibm.com (e06smtp04.uk.ibm.com [195.75.94.100])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2sf2cmjrqb-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 May 2019 02:47:26 -0400
+Received: from localhost
+ by e06smtp04.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.ibm.com>;
+ Mon, 13 May 2019 07:47:19 +0100
+Received: from b06cxnps3075.portsmouth.uk.ibm.com (9.149.109.195)
+ by e06smtp04.uk.ibm.com (192.168.101.134) with IBM ESMTP SMTP Gateway:
+ Authorized Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Mon, 13 May 2019 07:47:17 +0100
+Received: from d06av21.portsmouth.uk.ibm.com (d06av21.portsmouth.uk.ibm.com
+ [9.149.105.232])
+ by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x4D6lGNe61866230
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Mon, 13 May 2019 06:47:16 GMT
+Received: from d06av21.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 2767F52052;
+ Mon, 13 May 2019 06:47:16 +0000 (GMT)
+Received: from localhost (unknown [9.124.35.138])
+ by d06av21.portsmouth.uk.ibm.com (Postfix) with ESMTP id CD4385204E;
+ Mon, 13 May 2019 06:47:15 +0000 (GMT)
+Date: Mon, 13 May 2019 12:17:12 +0530
+From: "Naveen N. Rao" <naveen.n.rao@linux.ibm.com>
+Subject: Re: [RFC PATCH] powerpc/64/ftrace: mprofile-kernel patch out mflr
+To: linuxppc-dev@lists.ozlabs.org, Michael Ellerman <mpe@ellerman.id.au>,
+ Nicholas Piggin <npiggin@gmail.com>
+References: <20190413015940.31170-1-npiggin@gmail.com>
+ <871s13ujcf.fsf@concordia.ellerman.id.au>
+In-Reply-To: <871s13ujcf.fsf@concordia.ellerman.id.au>
+User-Agent: astroid/0.14.0 (https://github.com/astroidmail/astroid)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20190428114515.32683-3-npiggin@gmail.com>
-User-Agent: Mutt/1.5.24 (2015-08-30)
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: quoted-printable
+X-TM-AS-GCONF: 00
+x-cbid: 19051306-0016-0000-0000-0000027B02A9
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 19051306-0017-0000-0000-000032D7C4C6
+Message-Id: <1557729790.fw18xf9mdt.naveen@linux.ibm.com>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
+ definitions=2019-05-13_05:, , signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=491 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1810050000 definitions=main-1905130050
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -67,46 +96,48 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "Gautham R . Shenoy" <ego@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org, kvm-ppc@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Sun, Apr 28, 2019 at 09:45:15PM +1000, Nicholas Piggin wrote:
-> This is the KVM update to the new idle code. A few improvements:
-> 
-> - Idle sleepers now always return to caller rather than branch out
->   to KVM first.
-> - This allows optimisations like very fast return to caller when no
->   state has been lost.
-> - KVM no longer requires nap_state_lost because it controls NVGPR
->   save/restore itself on the way in and out.
-> - The heavy idle wakeup KVM request check can be moved out of the
->   normal host idle code and into the not-performance-critical offline
->   code.
-> - KVM nap code now returns from where it is called, which makes the
->   flow a bit easier to follow.
+Michael Ellerman wrote:
+> Nicholas Piggin <npiggin@gmail.com> writes:
+>> The new mprofile-kernel mcount sequence is
+>>
+>>   mflr	r0
+>>   bl	_mcount
+>>
+>> Dynamic ftrace patches the branch instruction with a noop, but leaves
+>> the mflr. mflr is executed by the branch unit that can only execute one
+>> per cycle on POWER9 and shared with branches, so it would be nice to
+>> avoid it where possible.
+>>
+>> This patch is a hacky proof of concept to nop out the mflr. Can we do
+>> this or are there races or other issues with it?
+>=20
+> There's a race, isn't there?
+>=20
+> We have a function foo which currently has tracing disabled, so the mflr
+> and bl are nop'ed out.
+>=20
+>   CPU 0			CPU 1
+>   =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+>   bl foo
+>   nop (ie. not mflr)
+>   -> interrupt
+>   something else	enable tracing for foo
+>   ...			patch mflr and branch
+>   <- rfi
+>   bl _mcount
+>=20
+> So we end up in _mcount() but with r0 not populated.
 
-One question below...
+Good catch! Looks like we need to patch the mflr with a "b +8" similar=20
+to what we do in __ftrace_make_nop().
 
-> diff --git a/arch/powerpc/kvm/book3s_hv_rmhandlers.S b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-> index 58d0f1ba845d..f66191d8f841 100644
-> --- a/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-> +++ b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-...
-> @@ -2656,6 +2662,9 @@ END_FTR_SECTION_IFSET(CPU_FTR_ARCH_300)
->  
->  	lis	r3, LPCR_PECEDP@h	/* Do wake on privileged doorbell */
->  
-> +	/* Go back to host stack */
-> +	ld	r1, HSTATE_HOST_R1(r13)
 
-At this point we are in kvmppc_h_cede, which we branched to from
-hcall_try_real_mode, which came from the guest exit path, where we
-have already loaded r1 from HSTATE_HOST_R1(r13).  So if there is a
-path to get here with r1 not already set to HSTATE_HOST_R1(r13), then
-I missed it - please point it out to me.  Otherwise this statement
-seems superfluous.
+- Naveen
 
-Paul.
+=
+
