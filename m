@@ -2,73 +2,61 @@ Return-Path: <SRS0=ygHD=TN=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.5 required=3.0 tests=MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,USER_AGENT_MUTT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A40DCC04AA7
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 May 2019 17:52:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8957DC04AA7
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 May 2019 17:57:30 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 02BA120873
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 May 2019 17:52:44 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 02BA120873
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	by mail.kernel.org (Postfix) with ESMTPS id EED05208CA
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 May 2019 17:57:29 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EED05208CA
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 452pLg0bBJzDqH2
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 May 2019 03:52:43 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 452pS76lcfzDqGh
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 May 2019 03:57:27 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=209.85.210.68; helo=mail-ot1-f68.google.com;
- envelope-from=robherring2@gmail.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=kaod.org
+ (client-ip=178.33.104.224; helo=16.mo1.mail-out.ovh.net;
+ envelope-from=groug@kaod.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=fail (p=none dis=none) header.from=kernel.org
-Received: from mail-ot1-f68.google.com (mail-ot1-f68.google.com
- [209.85.210.68])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ dmarc=none (p=none dis=none) header.from=kaod.org
+X-Greylist: delayed 21576 seconds by postgrey-1.36 at bilbo;
+ Tue, 14 May 2019 03:55:59 AEST
+Received: from 16.mo1.mail-out.ovh.net (16.mo1.mail-out.ovh.net
+ [178.33.104.224])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 452pK63GBGzDqGh
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 May 2019 03:51:21 +1000 (AEST)
-Received: by mail-ot1-f68.google.com with SMTP id j49so4947093otc.13
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 May 2019 10:51:21 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:date:from:to:cc:subject:message-id:references
- :mime-version:content-disposition:in-reply-to:user-agent;
- bh=m4N4IZgDvzO5+VbOkAL+/qLpzVDWLu+YalUcmqAEWjc=;
- b=twEsscWNgLNCdDHqNP/Nr2GWvSIWpUhopw6AUBw5lqTiljW5VMk3wMsXgOKuoVvkgi
- Be1UCAvd8t8pleBjSTExEDJEpGZxek7eQ4/+gBuW1nvHhZEqI/sXJyhtfW89hBcbI69C
- z453moZ+fGIIsc2cR9PXO9/6Z2GX8i+Sckc3ytjrWZnFIhVnmWTmYHU8VgVh1S0yelJ8
- T/vOjiqS6ezOh/l97HCFqxQwd3bVzazcLLMpCTFDUIr2yWmkxAC4AzVR+rCh/Nvazo2i
- FMt5VChjTTOEH8+9IN1TuQnD8xlFWUu52VUb9iLPIiWdqiTiF1KmTBUDAQ03hVlof40k
- oNTw==
-X-Gm-Message-State: APjAAAVWjRx4BtTt4q43/7Lojxx3iGbGBDEXTy4ClH6rkzwbgd1l+MWz
- XQ9MTSmxPDH/8R0AaS/uPg==
-X-Google-Smtp-Source: APXvYqyi6vDqkZOF8NsHPlQ7yDvigtmGZCYFZkAc4wdlsemMKX21ODIa4vUe8/dokESav8OUMfKvnw==
-X-Received: by 2002:a9d:6d8c:: with SMTP id x12mr11381060otp.34.1557769878486; 
- Mon, 13 May 2019 10:51:18 -0700 (PDT)
-Received: from localhost (24-155-109-49.dyn.grandenetworks.net.
- [24.155.109.49])
- by smtp.gmail.com with ESMTPSA id x21sm576703otk.4.2019.05.13.10.51.17
- (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
- Mon, 13 May 2019 10:51:17 -0700 (PDT)
-Date: Mon, 13 May 2019 12:51:17 -0500
-From: Rob Herring <robh@kernel.org>
-To: Rasmus Villemoes <rasmus.villemoes@prevas.dk>
-Subject: Re: [PATCH v3 4/6] dt-bindings: soc/fsl: qe: document new
- fsl,qe-snums  binding
-Message-ID: <20190513175117.GA22288@bogus>
-References: <20190501092841.9026-1-rasmus.villemoes@prevas.dk>
- <20190513111442.25724-1-rasmus.villemoes@prevas.dk>
- <20190513111442.25724-5-rasmus.villemoes@prevas.dk>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 452pQR1WBFzDqGh
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 May 2019 03:55:53 +1000 (AEST)
+Received: from player729.ha.ovh.net (unknown [10.109.160.5])
+ by mo1.mail-out.ovh.net (Postfix) with ESMTP id 211F216C6B1
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 May 2019 13:56:15 +0200 (CEST)
+Received: from kaod.org (lns-bzn-46-82-253-208-248.adsl.proxad.net
+ [82.253.208.248]) (Authenticated sender: groug@kaod.org)
+ by player729.ha.ovh.net (Postfix) with ESMTPSA id 1EAF25D72366;
+ Mon, 13 May 2019 11:56:07 +0000 (UTC)
+Date: Mon, 13 May 2019 13:56:06 +0200
+From: Greg Kurz <groug@kaod.org>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: [PATCH] powerpc/powernv/npu: Fix reference leak
+Message-ID: <20190513135606.7d9a0902@bahia.lan>
+In-Reply-To: <20190429123659.00c0622b@bahia.lan>
+References: <155568805354.600470.13376593185688810607.stgit@bahia.lan>
+ <962c1d9e-719c-cb82-cabc-1cf619e1510b@ozlabs.ru>
+ <20190429123659.00c0622b@bahia.lan>
+X-Mailer: Claws Mail 3.16.0 (GTK+ 2.24.32; x86_64-redhat-linux-gnu)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20190513111442.25724-5-rasmus.villemoes@prevas.dk>
-User-Agent: Mutt/1.10.1 (2018-07-13)
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Ovh-Tracer-Id: 6583981181895154097
+X-VR-SPAMSTATE: OK
+X-VR-SPAMSCORE: -100
+X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgeduuddrleeggdegiecutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfqggfjpdevjffgvefmvefgnecuuegrihhlohhuthemucehtddtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmd
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -80,37 +68,142 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Li Yang <leoyang.li@nxp.com>, Scott Wood <oss@buserror.net>,
- Rasmus Villemoes <Rasmus.Villemoes@prevas.se>,
- Mark Rutland <mark.rutland@arm.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
- Qiang Zhao <qiang.zhao@nxp.com>
+Cc: Alexey Kardashevskiy <aik@ozlabs.ru>,
+ Alistair Popple <alistair@popple.id.au>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, stable@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, 13 May 2019 11:14:58 +0000, Rasmus Villemoes wrote:
-> Reading table 4-30, and its footnotes, of the QUICC Engine Block
-> Reference Manual shows that the set of snum _values_ is not
-> necessarily just a function of the _number_ of snums, as given in the
-> fsl,qe-num-snums property.
+Michael,
+
+Any comments on this patch ? Should I repost with a shorter comment
+as suggested by Alexey ?
+
+Cheers,
+
+--
+Greg
+
+On Mon, 29 Apr 2019 12:36:59 +0200
+Greg Kurz <groug@kaod.org> wrote:
+
+> On Mon, 29 Apr 2019 16:01:29 +1000
+> Alexey Kardashevskiy <aik@ozlabs.ru> wrote:
 > 
-> As an alternative, to make it easier to add support for other variants
-> of the QUICC engine IP, this introduces a new binding fsl,qe-snums,
-> which automatically encodes both the number of snums and the actual
-> values to use.
+> > On 20/04/2019 01:34, Greg Kurz wrote:  
+> > > Since 902bdc57451c, get_pci_dev() calls pci_get_domain_bus_and_slot(). This
+> > > has the effect of incrementing the reference count of the PCI device, as
+> > > explained in drivers/pci/search.c:
+> > > 
+> > >  * Given a PCI domain, bus, and slot/function number, the desired PCI
+> > >  * device is located in the list of PCI devices. If the device is
+> > >  * found, its reference count is increased and this function returns a
+> > >  * pointer to its data structure.  The caller must decrement the
+> > >  * reference count by calling pci_dev_put().  If no device is found,
+> > >  * %NULL is returned.
+> > > 
+> > > Nothing was done to call pci_dev_put() and the reference count of GPU and
+> > > NPU PCI devices rockets up.
+> > > 
+> > > A natural way to fix this would be to teach the callers about the change,
+> > > so that they call pci_dev_put() when done with the pointer. This turns
+> > > out to be quite intrusive, as it affects many paths in npu-dma.c,
+> > > pci-ioda.c and vfio_pci_nvlink2.c.    
+> > 
+> > 
+> > afaict this referencing is only done to protect the current traverser
+> > and what you've done is actually a natural way (and the generic
+> > pci_get_dev_by_id() does exactly the same), although this looks a bit weird.
+> >   
 > 
-> Signed-off-by: Rasmus Villemoes <rasmus.villemoes@prevas.dk>
-> ---
-> Rob, thanks for the review of v2. However, since I moved the example
-> from the commit log to the binding (per Joakim's request), I didn't
-> add a Reviewed-by tag for this revision.
+> Not exactly the same: pci_get_dev_by_id() always increment the refcount
+> of the returned PCI device. The refcount is only decremented when this
+> device is passed to pci_get_dev_by_id() to continue searching.
 > 
->  .../devicetree/bindings/soc/fsl/cpm_qe/qe.txt       | 13 ++++++++++++-
->  1 file changed, 12 insertions(+), 1 deletion(-)
+> That means that the users of the PCI device pointer returned by
+> pci_get_dev_by_id() or its exported variants pci_get_subsys(),
+> pci_get_device() and pci_get_class() do handle the refcount. They
+> all pass the pointer to pci_dev_put() or continue the search,
+> which calls pci_dev_put() internally.
+> 
+> Direct and indirect callers of get_pci_dev() don't care for the
+> refcount at all unless I'm missing something.
+> 
+> >   
+> > > Also, the issue appeared in 4.16 and
+> > > some affected code got moved around since then: it would be problematic
+> > > to backport the fix to stable releases.
+> > > 
+> > > All that code never cared for reference counting anyway. Call pci_dev_put()
+> > > from get_pci_dev() to revert to the previous behavior.    
+> > >> Fixes: 902bdc57451c ("powerpc/powernv/idoa: Remove unnecessary pcidev    
+> > from pci_dn")  
+> > > Cc: stable@vger.kernel.org # v4.16
+> > > Signed-off-by: Greg Kurz <groug@kaod.org>
+> > > ---
+> > >  arch/powerpc/platforms/powernv/npu-dma.c |   15 ++++++++++++++-
+> > >  1 file changed, 14 insertions(+), 1 deletion(-)
+> > > 
+> > > diff --git a/arch/powerpc/platforms/powernv/npu-dma.c b/arch/powerpc/platforms/powernv/npu-dma.c
+> > > index e713ade30087..d8f3647e8fb2 100644
+> > > --- a/arch/powerpc/platforms/powernv/npu-dma.c
+> > > +++ b/arch/powerpc/platforms/powernv/npu-dma.c
+> > > @@ -31,9 +31,22 @@ static DEFINE_SPINLOCK(npu_context_lock);
+> > >  static struct pci_dev *get_pci_dev(struct device_node *dn)
+> > >  {
+> > >  	struct pci_dn *pdn = PCI_DN(dn);
+> > > +	struct pci_dev *pdev;
+> > >  
+> > > -	return pci_get_domain_bus_and_slot(pci_domain_nr(pdn->phb->bus),
+> > > +	pdev = pci_get_domain_bus_and_slot(pci_domain_nr(pdn->phb->bus),
+> > >  					   pdn->busno, pdn->devfn);
+> > > +
+> > > +	/*
+> > > +	 * pci_get_domain_bus_and_slot() increased the reference count of
+> > > +	 * the PCI device, but callers don't need that actually as the PE
+> > > +	 * already holds a reference to the device.    
+> > 
+> > Imho this would be just enough.
+> > 
+> > Anyway,
+> > 
+> > Reviewed-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+> >   
+> 
+> Thanks !
+> 
+> I now realize that I forgot to add the --cc option for stable on my stgit
+> command line :-\.
+> 
+> Cc'ing now.
+> 
+> > 
+> > How did you find it? :)
+> >   
+> 
+> While reading code to find some inspiration for OpenCAPI passthrough. :)
+> 
+> I saw the following in vfio_pci_ibm_npu2_init():
+> 
+> 	if (!pnv_pci_get_gpu_dev(vdev->pdev))
+> 		return -ENODEV;
+> 
+> and simply followed the function calls.
+> 
+> >   
+> > > Since callers aren't
+> > > +	 * aware of the reference count change, call pci_dev_put() now to
+> > > +	 * avoid leaks.
+> > > +	 */
+> > > +	if (pdev)
+> > > +		pci_dev_put(pdev);
+> > > +
+> > > +	return pdev;
+> > >  }
+> > >  
+> > >  /* Given a NPU device get the associated PCI device. */
+> > >     
+> >   
 > 
 
-Reviewed-by: Rob Herring <robh@kernel.org>
