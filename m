@@ -2,61 +2,69 @@ Return-Path: <SRS0=ygHD=TN=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-4.0 required=3.0 tests=MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8957DC04AA7
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 May 2019 17:57:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id F3D25C04AA7
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 May 2019 20:19:29 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id EED05208CA
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 May 2019 17:57:29 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EED05208CA
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
+	by mail.kernel.org (Postfix) with ESMTPS id 43A7D2085A
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 May 2019 20:19:28 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 43A7D2085A
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=bugzilla.kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 452pS76lcfzDqGh
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 May 2019 03:57:27 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 452sbx6M8BzDqKh
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 May 2019 06:19:25 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=kaod.org
- (client-ip=178.33.104.224; helo=16.mo1.mail-out.ovh.net;
- envelope-from=groug@kaod.org; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=kaod.org
-X-Greylist: delayed 21576 seconds by postgrey-1.36 at bilbo;
- Tue, 14 May 2019 03:55:59 AEST
-Received: from 16.mo1.mail-out.ovh.net (16.mo1.mail-out.ovh.net
- [178.33.104.224])
+ spf=pass (mailfrom) smtp.mailfrom=bugzilla.kernel.org
+ (client-ip=198.145.29.98; helo=mail.wl.linuxfoundation.org;
+ envelope-from=bugzilla-daemon@bugzilla.kernel.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=bugzilla.kernel.org
+Received: from mail.wl.linuxfoundation.org (mail.wl.linuxfoundation.org
+ [198.145.29.98])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 452pQR1WBFzDqGh
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 May 2019 03:55:53 +1000 (AEST)
-Received: from player729.ha.ovh.net (unknown [10.109.160.5])
- by mo1.mail-out.ovh.net (Postfix) with ESMTP id 211F216C6B1
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 May 2019 13:56:15 +0200 (CEST)
-Received: from kaod.org (lns-bzn-46-82-253-208-248.adsl.proxad.net
- [82.253.208.248]) (Authenticated sender: groug@kaod.org)
- by player729.ha.ovh.net (Postfix) with ESMTPSA id 1EAF25D72366;
- Mon, 13 May 2019 11:56:07 +0000 (UTC)
-Date: Mon, 13 May 2019 13:56:06 +0200
-From: Greg Kurz <groug@kaod.org>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [PATCH] powerpc/powernv/npu: Fix reference leak
-Message-ID: <20190513135606.7d9a0902@bahia.lan>
-In-Reply-To: <20190429123659.00c0622b@bahia.lan>
-References: <155568805354.600470.13376593185688810607.stgit@bahia.lan>
- <962c1d9e-719c-cb82-cabc-1cf619e1510b@ozlabs.ru>
- <20190429123659.00c0622b@bahia.lan>
-X-Mailer: Claws Mail 3.16.0 (GTK+ 2.24.32; x86_64-redhat-linux-gnu)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 452sZR5HQWzDqBX
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 May 2019 06:18:07 +1000 (AEST)
+Received: from mail.wl.linuxfoundation.org (localhost [127.0.0.1])
+ by mail.wl.linuxfoundation.org (Postfix) with ESMTP id 764662845C
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 May 2019 20:18:04 +0000 (UTC)
+Received: by mail.wl.linuxfoundation.org (Postfix, from userid 486)
+ id 6B0B02843C; Mon, 13 May 2019 20:18:04 +0000 (UTC)
+From: bugzilla-daemon@bugzilla.kernel.org
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [Bug 203597] New: kernel 4.9.175 fails to boot on a PowerMac G4 3,6
+ at early stage
+Date: Mon, 13 May 2019 20:18:03 +0000
+X-Bugzilla-Reason: None
+X-Bugzilla-Type: new
+X-Bugzilla-Watch-Reason: AssignedTo platform_ppc-32@kernel-bugs.osdl.org
+X-Bugzilla-Product: Platform Specific/Hardware
+X-Bugzilla-Component: PPC-32
+X-Bugzilla-Version: 2.5
+X-Bugzilla-Keywords: 
+X-Bugzilla-Severity: normal
+X-Bugzilla-Who: erhard_f@mailbox.org
+X-Bugzilla-Status: NEW
+X-Bugzilla-Resolution: 
+X-Bugzilla-Priority: P1
+X-Bugzilla-Assigned-To: platform_ppc-32@kernel-bugs.osdl.org
+X-Bugzilla-Flags: 
+X-Bugzilla-Changed-Fields: bug_id short_desc product version
+ cf_kernel_version rep_platform op_sys cf_tree bug_status bug_severity
+ priority component assigned_to reporter cf_regression attachments.created
+Message-ID: <bug-203597-206035@https.bugzilla.kernel.org/>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+X-Bugzilla-URL: https://bugzilla.kernel.org/
+Auto-Submitted: auto-generated
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Ovh-Tracer-Id: 6583981181895154097
-X-VR-SPAMSTATE: OK
-X-VR-SPAMSCORE: -100
-X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgeduuddrleeggdegiecutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfqggfjpdevjffgvefmvefgnecuuegrihhlohhuthemucehtddtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmd
+X-Virus-Scanned: ClamAV using ClamSMTP
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -68,142 +76,91 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Alexey Kardashevskiy <aik@ozlabs.ru>,
- Alistair Popple <alistair@popple.id.au>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, stable@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Michael,
+https://bugzilla.kernel.org/show_bug.cgi?id=3D203597
 
-Any comments on this patch ? Should I repost with a shorter comment
-as suggested by Alexey ?
+            Bug ID: 203597
+           Summary: kernel 4.9.175 fails to boot on a PowerMac G4 3,6 at
+                    early stage
+           Product: Platform Specific/Hardware
+           Version: 2.5
+    Kernel Version: 4.9.175
+          Hardware: PPC-32
+                OS: Linux
+              Tree: Mainline
+            Status: NEW
+          Severity: normal
+          Priority: P1
+         Component: PPC-32
+          Assignee: platform_ppc-32@kernel-bugs.osdl.org
+          Reporter: erhard_f@mailbox.org
+        Regression: No
 
-Cheers,
+Created attachment 282743
+  --> https://bugzilla.kernel.org/attachment.cgi?id=3D282743&action=3Dedit
+kernel .config (PowerMac G4 MDD)
 
---
-Greg
+Trying out older kernels on the G4 MDD I noticed recent 4.9.x freeze the
+machine. Only message displayed in black letters on a white screen:
 
-On Mon, 29 Apr 2019 12:36:59 +0200
-Greg Kurz <groug@kaod.org> wrote:
+done
+found display   : /pco@f0000000/ATY,AlteracParent@10/ATY,Alterac_B@1,
+opening...
 
-> On Mon, 29 Apr 2019 16:01:29 +1000
-> Alexey Kardashevskiy <aik@ozlabs.ru> wrote:
-> 
-> > On 20/04/2019 01:34, Greg Kurz wrote:  
-> > > Since 902bdc57451c, get_pci_dev() calls pci_get_domain_bus_and_slot(). This
-> > > has the effect of incrementing the reference count of the PCI device, as
-> > > explained in drivers/pci/search.c:
-> > > 
-> > >  * Given a PCI domain, bus, and slot/function number, the desired PCI
-> > >  * device is located in the list of PCI devices. If the device is
-> > >  * found, its reference count is increased and this function returns a
-> > >  * pointer to its data structure.  The caller must decrement the
-> > >  * reference count by calling pci_dev_put().  If no device is found,
-> > >  * %NULL is returned.
-> > > 
-> > > Nothing was done to call pci_dev_put() and the reference count of GPU and
-> > > NPU PCI devices rockets up.
-> > > 
-> > > A natural way to fix this would be to teach the callers about the change,
-> > > so that they call pci_dev_put() when done with the pointer. This turns
-> > > out to be quite intrusive, as it affects many paths in npu-dma.c,
-> > > pci-ioda.c and vfio_pci_nvlink2.c.    
-> > 
-> > 
-> > afaict this referencing is only done to protect the current traverser
-> > and what you've done is actually a natural way (and the generic
-> > pci_get_dev_by_id() does exactly the same), although this looks a bit weird.
-> >   
-> 
-> Not exactly the same: pci_get_dev_by_id() always increment the refcount
-> of the returned PCI device. The refcount is only decremented when this
-> device is passed to pci_get_dev_by_id() to continue searching.
-> 
-> That means that the users of the PCI device pointer returned by
-> pci_get_dev_by_id() or its exported variants pci_get_subsys(),
-> pci_get_device() and pci_get_class() do handle the refcount. They
-> all pass the pointer to pci_dev_put() or continue the search,
-> which calls pci_dev_put() internally.
-> 
-> Direct and indirect callers of get_pci_dev() don't care for the
-> refcount at all unless I'm missing something.
-> 
-> >   
-> > > Also, the issue appeared in 4.16 and
-> > > some affected code got moved around since then: it would be problematic
-> > > to backport the fix to stable releases.
-> > > 
-> > > All that code never cared for reference counting anyway. Call pci_dev_put()
-> > > from get_pci_dev() to revert to the previous behavior.    
-> > >> Fixes: 902bdc57451c ("powerpc/powernv/idoa: Remove unnecessary pcidev    
-> > from pci_dn")  
-> > > Cc: stable@vger.kernel.org # v4.16
-> > > Signed-off-by: Greg Kurz <groug@kaod.org>
-> > > ---
-> > >  arch/powerpc/platforms/powernv/npu-dma.c |   15 ++++++++++++++-
-> > >  1 file changed, 14 insertions(+), 1 deletion(-)
-> > > 
-> > > diff --git a/arch/powerpc/platforms/powernv/npu-dma.c b/arch/powerpc/platforms/powernv/npu-dma.c
-> > > index e713ade30087..d8f3647e8fb2 100644
-> > > --- a/arch/powerpc/platforms/powernv/npu-dma.c
-> > > +++ b/arch/powerpc/platforms/powernv/npu-dma.c
-> > > @@ -31,9 +31,22 @@ static DEFINE_SPINLOCK(npu_context_lock);
-> > >  static struct pci_dev *get_pci_dev(struct device_node *dn)
-> > >  {
-> > >  	struct pci_dn *pdn = PCI_DN(dn);
-> > > +	struct pci_dev *pdev;
-> > >  
-> > > -	return pci_get_domain_bus_and_slot(pci_domain_nr(pdn->phb->bus),
-> > > +	pdev = pci_get_domain_bus_and_slot(pci_domain_nr(pdn->phb->bus),
-> > >  					   pdn->busno, pdn->devfn);
-> > > +
-> > > +	/*
-> > > +	 * pci_get_domain_bus_and_slot() increased the reference count of
-> > > +	 * the PCI device, but callers don't need that actually as the PE
-> > > +	 * already holds a reference to the device.    
-> > 
-> > Imho this would be just enough.
-> > 
-> > Anyway,
-> > 
-> > Reviewed-by: Alexey Kardashevskiy <aik@ozlabs.ru>
-> >   
-> 
-> Thanks !
-> 
-> I now realize that I forgot to add the --cc option for stable on my stgit
-> command line :-\.
-> 
-> Cc'ing now.
-> 
-> > 
-> > How did you find it? :)
-> >   
-> 
-> While reading code to find some inspiration for OpenCAPI passthrough. :)
-> 
-> I saw the following in vfio_pci_ibm_npu2_init():
-> 
-> 	if (!pnv_pci_get_gpu_dev(vdev->pdev))
-> 		return -ENODEV;
-> 
-> and simply followed the function calls.
-> 
-> >   
-> > > Since callers aren't
-> > > +	 * aware of the reference count change, call pci_dev_put() now to
-> > > +	 * avoid leaks.
-> > > +	 */
-> > > +	if (pdev)
-> > > +		pci_dev_put(pdev);
-> > > +
-> > > +	return pdev;
-> > >  }
-> > >  
-> > >  /* Given a NPU device get the associated PCI device. */
-> > >     
-> >   
-> 
 
+It's a hard freeze, RCU_CPU_STALL_TIMEOUT does not kick in.
+
+Tried other stable kernels, which all worked:
+4.19.37
+4.14.114=20
+4.4.179
+
+So I suppose it's only a 4.9.x issue. Last working 4.9.x kernel I had in
+service was 4.9.161. First one I spotted freezing was 4.9.171. A bisect gav=
+e me
+the following commit:
+
+1c38a84d45862be06ac418618981631eddbda741 is the first bad commit
+commit 1c38a84d45862be06ac418618981631eddbda741
+Author: Michael Neuling <mikey@neuling.org>
+Date:   Thu Apr 11 21:45:59 2019 +1000
+
+    powerpc: Avoid code patching freed init sections
+
+    commit 51c3c62b58b357e8d35e4cc32f7b4ec907426fe3 upstream.
+
+    This stops us from doing code patching in init sections after they've
+    been freed.
+
+    In this chain:
+      kvm_guest_init() ->
+        kvm_use_magic_page() ->
+          fault_in_pages_readable() ->
+             __get_user() ->
+               __get_user_nocheck() ->
+                 barrier_nospec();
+
+    We have a code patching location at barrier_nospec() and
+    kvm_guest_init() is an init function. This whole chain gets inlined,
+    so when we free the init section (hence kvm_guest_init()), this code
+    goes away and hence should no longer be patched.
+
+    We seen this as userspace memory corruption when using a memory
+    checker while doing partition migration testing on powervm (this
+    starts the code patching post migration via
+    /sys/kernel/mobility/migration). In theory, it could also happen when
+    using /sys/kernel/debug/powerpc/barrier_nospec.
+
+    Cc: stable@vger.kernel.org # 4.13+
+    Signed-off-by: Michael Neuling <mikey@neuling.org>
+    Reviewed-by: Nicholas Piggin <npiggin@gmail.com>
+    Reviewed-by: Christophe Leroy <christophe.leroy@c-s.fr>
+    Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+    Signed-off-by: Sasha Levin <sashal@kernel.org>
+
+--=20
+You are receiving this mail because:
+You are watching the assignee of the bug.=
