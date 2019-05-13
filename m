@@ -2,165 +2,60 @@ Return-Path: <SRS0=ygHD=TN=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_PASS,
+	USER_AGENT_MUTT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BEF13C04AB1
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 May 2019 06:34:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9A3C7C04AB1
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 May 2019 06:43:38 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3BE3F20989
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 May 2019 06:34:19 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id E8C2B20879
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 May 2019 06:43:37 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ozlabs-ru.20150623.gappssmtp.com header.i=@ozlabs-ru.20150623.gappssmtp.com header.b="G3n0BpR1"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3BE3F20989
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ozlabs.ru
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ozlabs.org header.i=@ozlabs.org header.b="WL8j2isZ"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E8C2B20879
+Authentication-Results: mail.kernel.org; dmarc=pass (p=none dis=none) header.from=ozlabs.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 452WHs0rgJzDqJf
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 May 2019 16:34:17 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=ozlabs.ru
- (client-ip=2607:f8b0:4864:20::441; helo=mail-pf1-x441.google.com;
- envelope-from=aik@ozlabs.ru; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=ozlabs.ru
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ozlabs-ru.20150623.gappssmtp.com
- header.i=@ozlabs-ru.20150623.gappssmtp.com header.b="G3n0BpR1"; 
- dkim-atps=neutral
-Received: from mail-pf1-x441.google.com (mail-pf1-x441.google.com
- [IPv6:2607:f8b0:4864:20::441])
+	by lists.ozlabs.org (Postfix) with ESMTP id 452WVb3SdczDqKr
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 May 2019 16:43:35 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 452WGT3RVBzDqCk
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 May 2019 16:33:05 +1000 (AEST)
-Received: by mail-pf1-x441.google.com with SMTP id l132so6622107pfc.8
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 12 May 2019 23:33:05 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=ozlabs-ru.20150623.gappssmtp.com; s=20150623;
- h=subject:to:cc:references:from:openpgp:autocrypt:message-id:date
- :user-agent:mime-version:in-reply-to:content-language
- :content-transfer-encoding;
- bh=Y5tTbtz1ki1Pa5i++2QevC/qpjuZZalm0EawxEtoeKU=;
- b=G3n0BpR1j3f7I1n7ypMEVjAxP8+3E+ttCci6i4WX1I7MgrinkbhDOBstrdURPDNTPo
- VDURST1jMDFh8QSICQm+jDnaao761qvnenH6dWiCht3Hx3KIM6h62amzuCKNIpGHOHKf
- AHIuJfQlfrTGA0fvv1EPHRFmBoxzD7I5ZxDwfGtDdR5FlemX4iNlJ4L3ZTN5BgcXlyUm
- URzNodydmKjD9gvbgFcaialJxRZXveWjkiceIaRPMraX8hEvXYyySwg1ou37XAOd298x
- /fzrmCsNMKSPzVlIl4SIe3Itraq4x5WUx2wjWxtzKmXtcnAP+zOuCGkI4Egl408TrJYv
- grAQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:subject:to:cc:references:from:openpgp:autocrypt
- :message-id:date:user-agent:mime-version:in-reply-to
- :content-language:content-transfer-encoding;
- bh=Y5tTbtz1ki1Pa5i++2QevC/qpjuZZalm0EawxEtoeKU=;
- b=h/ptVwrCRu/scp4zcNVWAzl/hk+FLr9594yrP/JD878Xb3K4dJ/YjMO2wSDevuKb+i
- KJyv4klTO8c4nbEQSB9fZsnno3EE9Pp0pb6RN5tV+nmIdMn5lC1+OrBXa98t0MpVAfCT
- j030ksFDY46rgslnQMSDtjSGmi4Vq6jshOymTh+COUH/tsBidfQ2+00oMScyHE7Kuix9
- ie2EMHI5D3rvMoInBPh83sat7ywhhbE72unM0dNiO+sC4lzSYPQwwaLHsZXEDsOd6gnz
- /rqnh+VIbOrfHLKxXjHTKwziOaxyX8kow3hDSdrwBSKEg0wT+SpFshGM+4X3l0OyxWJ4
- bTlQ==
-X-Gm-Message-State: APjAAAUlFTKkhxHpgrlXDsgFqf8iwCpKdX01U4RElWPnaitlGXyFym5V
- XJJ4WcC770UVxw3ZwvzdVP4mnw==
-X-Google-Smtp-Source: APXvYqwhOODZhwZke6lZg2ttCJjs4shzMIjpgq3WbXGGCkVTsFSh7oXtCDOCCu4dYkRHJEfXZCfKFg==
-X-Received: by 2002:a63:d408:: with SMTP id a8mr28758211pgh.184.1557729182628; 
- Sun, 12 May 2019 23:33:02 -0700 (PDT)
-Received: from [10.61.2.175] ([122.99.82.10])
- by smtp.gmail.com with ESMTPSA id s9sm10632057pfa.31.2019.05.12.23.33.00
- (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
- Sun, 12 May 2019 23:33:02 -0700 (PDT)
-Subject: Re: [PATCH kernel 2/2] powerpc/pseries/dma: Enable swiotlb
-To: Thiago Jung Bauermann <bauerman@linux.ibm.com>
-References: <20190507062559.20295-1-aik@ozlabs.ru>
- <20190507062559.20295-3-aik@ozlabs.ru> <87zhnu0w5t.fsf@morokweng.localdomain>
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
-Openpgp: preference=signencrypt
-Autocrypt: addr=aik@ozlabs.ru; keydata=
- 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
-Message-ID: <d0b86fb6-ba73-9be0-a5e5-a02f42c8e148@ozlabs.ru>
-Date: Mon, 13 May 2019 16:32:58 +1000
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
- Thunderbird/60.6.1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 452WSy6RY1zDqBL
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 May 2019 16:42:10 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=ozlabs.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ secure) header.d=ozlabs.org header.i=@ozlabs.org header.b="WL8j2isZ"; 
+ dkim-atps=neutral
+Received: by ozlabs.org (Postfix, from userid 1003)
+ id 452WSy2tP5z9s4Y; Mon, 13 May 2019 16:42:10 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ozlabs.org; s=201707;
+ t=1557729730; bh=bfjxecMrdmX4OfnJ3FpAf871ZQ2GIHJ1hAkeFqBk1YI=;
+ h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+ b=WL8j2isZzN21WNnf6psha+YqfAlDb9btXeL3ZX/QhF50KzvyC84Y5xGTE4GlMumC/
+ bVyZRfSqyYfncHBMRU15MxWuzdG3ku92gGIIXFEyMLmWeR37u8Icq/000C3E3FI3DN
+ n4hNuZcbr0lC74gdqqFfON+N5H/YgkeD1VYkPYjgxXspNYtVBXvLmEiqgAnLf3XiFd
+ oBC5R5m5PpM5+WcjT0F/SgTkJ50TvtvaA+EsHPZaqtg6pYL/FaB2AxO1TSBXbsTQUn
+ UfJjVKHPcwfpRHnkvACt1zx3bWeuu1NEuyveUaeubY9qvLmedTGBhRnhe0KewLKN1m
+ FelH6kV6zkr8Q==
+Date: Mon, 13 May 2019 16:42:07 +1000
+From: Paul Mackerras <paulus@ozlabs.org>
+To: Nicholas Piggin <npiggin@gmail.com>
+Subject: Re: [PATCH v10 2/2] powerpc/64s: KVM update for reimplement book3s
+ idle code in C
+Message-ID: <20190513064207.GA11679@blackberry>
+References: <20190428114515.32683-1-npiggin@gmail.com>
+ <20190428114515.32683-3-npiggin@gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <87zhnu0w5t.fsf@morokweng.localdomain>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20190428114515.32683-3-npiggin@gmail.com>
+User-Agent: Mutt/1.5.24 (2015-08-30)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -172,109 +67,46 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Alistair Popple <alistair@popple.id.au>, linuxppc-dev@lists.ozlabs.org,
- David Gibson <david@gibson.dropbear.id.au>
+Cc: "Gautham R . Shenoy" <ego@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org, kvm-ppc@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+On Sun, Apr 28, 2019 at 09:45:15PM +1000, Nicholas Piggin wrote:
+> This is the KVM update to the new idle code. A few improvements:
+> 
+> - Idle sleepers now always return to caller rather than branch out
+>   to KVM first.
+> - This allows optimisations like very fast return to caller when no
+>   state has been lost.
+> - KVM no longer requires nap_state_lost because it controls NVGPR
+>   save/restore itself on the way in and out.
+> - The heavy idle wakeup KVM request check can be moved out of the
+>   normal host idle code and into the not-performance-critical offline
+>   code.
+> - KVM nap code now returns from where it is called, which makes the
+>   flow a bit easier to follow.
 
+One question below...
 
-On 11/05/2019 08:41, Thiago Jung Bauermann wrote:
-> 
-> Hello Alexey,
-> 
-> Thanks!
-> 
-> I have similar changes in my "Secure Virtual Machine Enablement"
-> patches, which I am currently preparing for posting again real soon now.
-> 
-> This is the last version:
-> 
-> https://lore.kernel.org/linuxppc-dev/20180824162535.22798-1-bauerman@linux.ibm.com/
-> 
-> Alexey Kardashevskiy <aik@ozlabs.ru> writes:
-> 
->> So far the pseries platforms has always been using IOMMU making SWIOTLB
->> unnecessary. Now we want secure guests which means devices can only
->> access certain areas of guest physical memory; we are going to use
->> SWIOTLB for this purpose.
->>
->> This allows SWIOTLB for pseries. By default there is no change in behavior.
->>
->> This enables SWIOTLB when the "swiotlb" kernel parameter is set to "force".
->>
->> With the SWIOTLB enabled, the kernel creates a directly mapped DMA window
->> (using the usual DDW mechanism) and implements SWIOTLB on top of that.
->>
->> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
->> ---
->>  arch/powerpc/platforms/pseries/setup.c | 5 +++++
->>  arch/powerpc/platforms/pseries/Kconfig | 1 +
->>  2 files changed, 6 insertions(+)
->>
->> diff --git a/arch/powerpc/platforms/pseries/setup.c b/arch/powerpc/platforms/pseries/setup.c
->> index e4f0dfd4ae33..30d72b587ac5 100644
->> --- a/arch/powerpc/platforms/pseries/setup.c
->> +++ b/arch/powerpc/platforms/pseries/setup.c
->> @@ -42,6 +42,7 @@
->>  #include <linux/of.h>
->>  #include <linux/of_pci.h>
->>  #include <linux/memblock.h>
->> +#include <linux/swiotlb.h>
->>
->>  #include <asm/mmu.h>
->>  #include <asm/processor.h>
->> @@ -71,6 +72,7 @@
->>  #include <asm/isa-bridge.h>
->>  #include <asm/security_features.h>
->>  #include <asm/asm-const.h>
->> +#include <asm/swiotlb.h>
->>
->>  #include "pseries.h"
->>  #include "../../../../drivers/pci/pci.h"
->> @@ -797,6 +799,9 @@ static void __init pSeries_setup_arch(void)
->>  	}
->>
->>  	ppc_md.pcibios_root_bridge_prepare = pseries_root_bridge_prepare;
->> +
->> +	if (swiotlb_force == SWIOTLB_FORCE)
->> +		ppc_swiotlb_enable = 1;
->>  }
-> 
-> Yep! I have this here, enabled when booting as a secure guest:
-> 
-> https://lore.kernel.org/linuxppc-dev/20180824162535.22798-6-bauerman@linux.ibm.com/
-> 
-> And also another patch which makes it so that if booting as a secure
-> guest it acts as if the swiotlb kernel parameter was set to force:
-> 
-> https://lore.kernel.org/linuxppc-dev/20180824162535.22798-11-bauerman@linux.ibm.com/
-> 
->>  static void pseries_panic(char *str)
->> diff --git a/arch/powerpc/platforms/pseries/Kconfig b/arch/powerpc/platforms/pseries/Kconfig
->> index 9c6b3d860518..b9e8b608de01 100644
->> --- a/arch/powerpc/platforms/pseries/Kconfig
->> +++ b/arch/powerpc/platforms/pseries/Kconfig
->> @@ -23,6 +23,7 @@ config PPC_PSERIES
->>  	select ARCH_RANDOM
->>  	select PPC_DOORBELL
->>  	select FORCE_SMP
->> +	select SWIOTLB
->>  	default y
->>
->>  config PPC_SPLPAR
-> 
-> I put this in a PPC_SVM config option:
-> 
-> https://lore.kernel.org/linuxppc-dev/20180824162535.22798-3-bauerman@linux.ibm.com/
+> diff --git a/arch/powerpc/kvm/book3s_hv_rmhandlers.S b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+> index 58d0f1ba845d..f66191d8f841 100644
+> --- a/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+> +++ b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+...
+> @@ -2656,6 +2662,9 @@ END_FTR_SECTION_IFSET(CPU_FTR_ARCH_300)
+>  
+>  	lis	r3, LPCR_PECEDP@h	/* Do wake on privileged doorbell */
+>  
+> +	/* Go back to host stack */
+> +	ld	r1, HSTATE_HOST_R1(r13)
 
+At this point we are in kvmppc_h_cede, which we branched to from
+hcall_try_real_mode, which came from the guest exit path, where we
+have already loaded r1 from HSTATE_HOST_R1(r13).  So if there is a
+path to get here with r1 not already set to HSTATE_HOST_R1(r13), then
+I missed it - please point it out to me.  Otherwise this statement
+seems superfluous.
 
-Well, my intention is to make it work regardless SVM, just to see if it
-works and where the problems are if it does not (right now the NVIDIA
-driver does not like SWIOTLB, debugging).
-
-
-
--- 
-Alexey
+Paul.
