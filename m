@@ -2,71 +2,83 @@ Return-Path: <SRS0=tOPa=TO=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS autolearn=unavailable autolearn_force=no
+X-Spam-Status: No, score=-6.0 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_PASS,UPPERCASE_50_75 autolearn=unavailable autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8481AC04AB4
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 May 2019 09:04:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9004DC04AB4
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 May 2019 09:06:55 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 0E44E20862
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 May 2019 09:04:05 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0E44E20862
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
+	by mail.kernel.org (Postfix) with ESMTPS id 1251020862
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 May 2019 09:06:54 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="mdOi1sJi"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1251020862
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 453BZC5LrwzDqLT
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 May 2019 19:04:03 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 453BdT0x93zDqKh
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 May 2019 19:06:53 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=209.85.217.66; helo=mail-vs1-f66.google.com;
- envelope-from=geert.uytterhoeven@gmail.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=linux-m68k.org
-Received: from mail-vs1-f66.google.com (mail-vs1-f66.google.com
- [209.85.217.66])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ spf=pass (mailfrom) smtp.mailfrom=c-s.fr
+ (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=c-s.fr
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="mdOi1sJi"; 
+ dkim-atps=neutral
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 453BXV1ltjzDqC9
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 May 2019 19:02:33 +1000 (AEST)
-Received: by mail-vs1-f66.google.com with SMTP id y6so9842773vsb.0
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 May 2019 02:02:33 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:mime-version:references:in-reply-to:from:date
- :message-id:subject:to:cc;
- bh=2QqOosWQeAwRJoNs9Z6x1enYh3cBYDajQeKrzZRmqkc=;
- b=Q/pbXaFkEUQrs/d8tOUDgZBC/hG3KPVYjhXLcO261vC+B1cbu0n4WGyWv504vvDMRk
- hQCy5ZrRsZBGcvjE6BCbTNswEZyCP+9XsA+vBnk0xoPp/F+QFUmjJht088RtXFJjJEJB
- qtotrUh1g17c2o969m5tAWLF1bgtL+2TssD6zpIbp4PvPUcbOERsfWGz2vD7cAQrm3gi
- INhVCEZ8O0/OtkQ/x2PU9J4zlOk953uCyytmu9Ju4W946s9uue3PTmZV0Ie4wb4eorvt
- mzRf6RTYIP7aWwArmaYXcf08+lQVihrCdJxFbTq3lbQP2+ho0CnHEyc3ouGVRNeXtcx6
- 6gLA==
-X-Gm-Message-State: APjAAAWiJsH4MUHbe/h5IrOXGUz6nA3PoxqxYOWERodo0ZLXvucidCKn
- 0mhzglkoN8HbDYtgN2C4i7t9QeHgCfo6f84hUac=
-X-Google-Smtp-Source: APXvYqwi3qbyq7zdQc/EvX2OvsAWMtr+MgLv2h/XMFQWPJGUCYbXVG6LRayJYD+Q+PmXioY96F5KIcICjqmtTGPRtEc=
-X-Received: by 2002:a67:7c93:: with SMTP id x141mr8531743vsc.96.1557824550758; 
- Tue, 14 May 2019 02:02:30 -0700 (PDT)
-MIME-Version: 1.0
-References: <20190510081635.GA4533@jagdpanzerIV>
- <20190510084213.22149-1-pmladek@suse.com>
- <20190510122401.21a598f6@gandalf.local.home>
- <daf4dfd1-7f4f-8b92-6866-437c3a2be28b@c-s.fr>
- <096d6c9c17b3484484d9d9d3f3aa3a7c@AcuMS.aculab.com>
- <20190513091320.GK9224@smile.fi.intel.com>
- <20190513124220.wty2qbnz4wo52h3x@pathway.suse.cz>
- <20190514020730.GA651@jagdpanzerIV>
- <45348cf615fe40d383c1a25688d4a88f@AcuMS.aculab.com>
-In-Reply-To: <45348cf615fe40d383c1a25688d4a88f@AcuMS.aculab.com>
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Tue, 14 May 2019 11:02:17 +0200
-Message-ID: <CAMuHMdXaMObq9h2Sb49PW1-HUysPeaWXB7wJmKFz=xLmSoUDZg@mail.gmail.com>
-Subject: Re: [PATCH] vsprintf: Do not break early boot with probing addresses
-To: David Laight <David.Laight@aculab.com>
-Content-Type: text/plain; charset="UTF-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 453Bbf5wPpzDqBt
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 May 2019 19:05:18 +1000 (AEST)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 453BbZ2zKtz9v0Yc;
+ Tue, 14 May 2019 11:05:14 +0200 (CEST)
+Authentication-Results: localhost; dkim=pass
+ reason="1024-bit key; insecure key"
+ header.d=c-s.fr header.i=@c-s.fr header.b=mdOi1sJi; dkim-adsp=pass;
+ dkim-atps=neutral
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id z1ItiGX7jjRG; Tue, 14 May 2019 11:05:14 +0200 (CEST)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 453BbZ1p8Cz9v0YY;
+ Tue, 14 May 2019 11:05:14 +0200 (CEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
+ t=1557824714; bh=gnFTCMPfHpZ6URgcdmLkrXdWzWsJFnvLthyYOc0ikJo=;
+ h=In-Reply-To:References:From:Subject:To:Cc:Date:From;
+ b=mdOi1sJimj2hgwSH13FcvRt7WCSMroOKp4HOv7u4YhmRGlgTCQY81XoEl2/e/iaI3
+ oiBBDJC8OUakIO8v5X4pwBT8SdEjmjMX/BhfFhmx7/K9P1+I0iaSaGyp1z66TAZ5VI
+ ldNABvyC076uIY6FigfdjvEoaOSU2yt5nbhfiuQ4=
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 57A8E8B8BE;
+ Tue, 14 May 2019 11:05:15 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id diQDik9w2xOK; Tue, 14 May 2019 11:05:15 +0200 (CEST)
+Received: from po16846vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 0AF4F8B8BD;
+ Tue, 14 May 2019 11:05:15 +0200 (CEST)
+Received: by po16846vm.idsi0.si.c-s.fr (Postfix, from userid 0)
+ id CC7656742D; Tue, 14 May 2019 09:05:14 +0000 (UTC)
+Message-Id: <0e779b35cf66fd4aa5ec0ec09fb7820f6c518cb3.1557824379.git.christophe.leroy@c-s.fr>
+In-Reply-To: <239d1c8f15b8bedc161a234f9f1a22a07160dbdf.1557824379.git.christophe.leroy@c-s.fr>
+References: <239d1c8f15b8bedc161a234f9f1a22a07160dbdf.1557824379.git.christophe.leroy@c-s.fr>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Subject: [PATCH 2/4] powerpc/32: activate ARCH_HAS_PMEM_API and
+ ARCH_HAS_UACCESS_FLUSHCACHE
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Oliver O'Halloran <oohall@gmail.com>,
+ Segher Boessenkool <segher@kernel.crashing.org>
+Date: Tue, 14 May 2019 09:05:14 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -78,48 +90,39 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Petr Mladek <pmladek@suse.com>,
- "linux-arch@vger.kernel.org" <linux-arch@vger.kernel.org>,
- Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>,
- Heiko Carstens <heiko.carstens@de.ibm.com>,
- "linux-s390@vger.kernel.org" <linux-s390@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Rasmus Villemoes <linux@rasmusvillemoes.dk>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Steven Rostedt <rostedt@goodmis.org>, Michal Hocko <mhocko@suse.cz>,
- Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
- Stephen Rothwell <sfr@ozlabs.org>,
- Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
- Linus Torvalds <torvalds@linux-foundation.org>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>, "Tobin C . Harding" <me@tobin.cc>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, May 14, 2019 at 10:29 AM David Laight <David.Laight@aculab.com> wrote:
-> > And I like Steven's "(fault)" idea.
-> > How about this:
-> >
-> >       if ptr < PAGE_SIZE              -> "(null)"
-> >       if IS_ERR_VALUE(ptr)            -> "(fault)"
-> >
-> >       -ss
->
-> Or:
->         if (ptr < PAGE_SIZE)
->                 return ptr ? "(null+)" : "(null)";
->         if IS_ERR_VALUE(ptr)
->                 return "(errno)"
+PPC32 also have flush_dcache_range() so it can also support
+ARCH_HAS_PMEM_API and ARCH_HAS_UACCESS_FLUSHCACHE without changes.
 
-Do we care about the value? "(-E%u)"?
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+---
+ arch/powerpc/Kconfig | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-Gr{oetje,eeting}s,
-
-                        Geert
-
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index d7996cfaceca..cf6e30f637be 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -127,13 +127,13 @@ config PPC
+ 	select ARCH_HAS_KCOV
+ 	select ARCH_HAS_MMIOWB			if PPC64
+ 	select ARCH_HAS_PHYS_TO_DMA
+-	select ARCH_HAS_PMEM_API                if PPC64
++	select ARCH_HAS_PMEM_API
+ 	select ARCH_HAS_PTE_SPECIAL
+ 	select ARCH_HAS_MEMBARRIER_CALLBACKS
+ 	select ARCH_HAS_SCALED_CPUTIME		if VIRT_CPU_ACCOUNTING_NATIVE && PPC64
+ 	select ARCH_HAS_STRICT_KERNEL_RWX	if ((PPC_BOOK3S_64 || PPC32) && !RELOCATABLE && !HIBERNATION)
+ 	select ARCH_HAS_TICK_BROADCAST		if GENERIC_CLOCKEVENTS_BROADCAST
+-	select ARCH_HAS_UACCESS_FLUSHCACHE	if PPC64
++	select ARCH_HAS_UACCESS_FLUSHCACHE
+ 	select ARCH_HAS_UBSAN_SANITIZE_ALL
+ 	select ARCH_HAS_ZONE_DEVICE		if PPC_BOOK3S_64
+ 	select ARCH_HAVE_NMI_SAFE_CMPXCHG
 -- 
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+2.13.3
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
