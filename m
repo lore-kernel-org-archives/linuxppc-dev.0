@@ -4,23 +4,23 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
+	SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 84583C04AB4
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 May 2019 17:27:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E2BD6C04AB4
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 May 2019 17:28:54 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 07AE720850
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 May 2019 17:27:43 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 63E8320850
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 May 2019 17:28:54 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="SbRziWRh"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 07AE720850
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="CG13edOo"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 63E8320850
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linuxfoundation.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 453PlL1Xd1zDqNS
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 May 2019 03:27:42 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 453Pmh2lcTzDqFL
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 May 2019 03:28:52 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=linuxfoundation.org
  (client-ip=198.145.29.99; helo=mail.kernel.org;
@@ -28,28 +28,28 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=linuxfoundation.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="SbRziWRh"; 
+ unprotected) header.d=kernel.org header.i=@kernel.org header.b="CG13edOo"; 
  dkim-atps=neutral
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 453PQj5BBhzDqLP
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 May 2019 03:13:17 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 453PRG0PVgzDqMx
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 May 2019 03:13:45 +1000 (AEST)
 Received: from localhost (83-86-89-107.cable.dynamic.v4.ziggo.nl
  [83.86.89.107])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id 5F702216F4;
- Tue, 14 May 2019 17:13:14 +0000 (UTC)
+ by mail.kernel.org (Postfix) with ESMTPSA id E128C20881;
+ Tue, 14 May 2019 17:13:42 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1557853995;
- bh=Gnri2Wr1YCPQky459e4EFM8B8Q4B3DajxWgQ/ZkaxFA=;
+ s=default; t=1557854023;
+ bh=uXfn21iV82fnPU2p/vgmcsuadKa7tBJq79AgwWyF9Pc=;
  h=Subject:To:Cc:From:Date:From;
- b=SbRziWRhV2K5dVHdAzJZGXyboqyMs47Bt64IJUpgPQ4DQK/wog64x0sNzYpQhf8U4
- xVxAHE1Uzf2GVz8BWcZrrE+N8/ISbtpsedp88NFyVVPamqpgjhJHNuGaWv30lEhtsr
- arCeZNmXaQhkwSrRJHqCjJ4MiMj/Pmoofp7ikn0g=
+ b=CG13edOoEK+md2OSus8UhV7tvDK13q64x03LDfuWcvSClLAg5B3si3b7mnOCkskO3
+ zm3rrcK3sFgms9QEu+cifODmRiIpLccZgV4HH2Xj8+dct1Am0s0sW19YSOD7H4zIGl
+ YKdI4WmGGTJE0sQ7g/yNWYOm+wL8EKQJJD7qGSIo=
 Subject: Patch "[PATCH 20/27] cpu/speculation: Add 'mitigations=' cmdline
- option" has been added to the 5.0-stable tree
+ option" has been added to the 5.1-stable tree
 To: aarcange@redhat.com,
  b07a8ef9b7c5055c3a4637c87d07c296d5016fe0.1555085500.git.jpoimboe@redhat.com,
  benh@kernel.crashing.org, bp@alien8.de, catalin.marinas@arm.com,
@@ -61,8 +61,8 @@ To: aarcange@redhat.com,
  schwidefsky@de.ibm.com, steven.price@arm.com, tglx@linutronix.de,
  torvalds@linux-foundation.org, tyhicks@canonical.com, will.deacon@arm.com
 From: <gregkh@linuxfoundation.org>
-Date: Tue, 14 May 2019 19:06:17 +0200
-Message-ID: <1557853577107123@kroah.com>
+Date: Tue, 14 May 2019 19:06:19 +0200
+Message-ID: <15578535796283@kroah.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ANSI_X3.4-1968
 Content-Transfer-Encoding: 8bit
@@ -89,18 +89,18 @@ This is a note to let you know that I've just added the patch titled
 
     [PATCH 20/27] cpu/speculation: Add 'mitigations=' cmdline option
 
-to the 5.0-stable tree which can be found at:
+to the 5.1-stable tree which can be found at:
     http://www.kernel.org/git/?p=linux/kernel/git/stable/stable-queue.git;a=summary
 
 The filename of the patch is:
      0020-cpu-speculation-Add-mitigations-cmdline-option.patch
-and it can be found in the queue-5.0 subdirectory.
+and it can be found in the queue-5.1 subdirectory.
 
 If you, or anyone else, feels it should not be added to the stable tree,
 please let <stable@vger.kernel.org> know about it.
 
 
-From 8d7c1c38b02551bd808007884bc37f501076b8c8 Mon Sep 17 00:00:00 2001
+From 5ef5d563d124711c025378fee5aed0d69311fb59 Mon Sep 17 00:00:00 2001
 From: Josh Poimboeuf <jpoimboe@redhat.com>
 Date: Fri, 12 Apr 2019 15:39:28 -0500
 Subject: [PATCH 20/27] cpu/speculation: Add 'mitigations=' cmdline option
@@ -175,10 +175,10 @@ Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
  3 files changed, 63 insertions(+)
 
 diff --git a/Documentation/admin-guide/kernel-parameters.txt b/Documentation/admin-guide/kernel-parameters.txt
-index 8f04985d3122..df6d9a7c1724 100644
+index c079f001663b..fcc4d1bc4526 100644
 --- a/Documentation/admin-guide/kernel-parameters.txt
 +++ b/Documentation/admin-guide/kernel-parameters.txt
-@@ -2539,6 +2539,30 @@
+@@ -2570,6 +2570,30 @@
  			in the "bleeding edge" mini2440 support kernel at
  			http://repo.or.cz/w/linux-2.6/mini2440.git
  
@@ -272,14 +272,14 @@ index 6754f3ecfd94..43e741e88691 100644
 
 Patches currently in stable-queue which might be from jpoimboe@redhat.com are
 
-queue-5.0/0019-x86-speculation-mds-Print-SMT-vulnerable-on-MSBDS-wi.patch
-queue-5.0/0016-x86-speculation-Move-arch_smt_update-call-to-after-m.patch
-queue-5.0/0024-x86-speculation-mds-Add-mitigations-support-for-MDS.patch
-queue-5.0/0021-x86-speculation-Support-mitigations-cmdline-option.patch
-queue-5.0/0022-powerpc-speculation-Support-mitigations-cmdline-opti.patch
-queue-5.0/0020-cpu-speculation-Add-mitigations-cmdline-option.patch
-queue-5.0/0023-s390-speculation-Support-mitigations-cmdline-option.patch
-queue-5.0/0015-x86-speculation-mds-Add-mds-full-nosmt-cmdline-optio.patch
-queue-5.0/0027-x86-speculation-mds-Fix-documentation-typo.patch
-queue-5.0/0017-x86-speculation-mds-Add-SMT-warning-message.patch
-queue-5.0/0018-x86-speculation-mds-Fix-comment.patch
+queue-5.1/0019-x86-speculation-mds-Print-SMT-vulnerable-on-MSBDS-wi.patch
+queue-5.1/0016-x86-speculation-Move-arch_smt_update-call-to-after-m.patch
+queue-5.1/0024-x86-speculation-mds-Add-mitigations-support-for-MDS.patch
+queue-5.1/0021-x86-speculation-Support-mitigations-cmdline-option.patch
+queue-5.1/0022-powerpc-speculation-Support-mitigations-cmdline-opti.patch
+queue-5.1/0020-cpu-speculation-Add-mitigations-cmdline-option.patch
+queue-5.1/0023-s390-speculation-Support-mitigations-cmdline-option.patch
+queue-5.1/0015-x86-speculation-mds-Add-mds-full-nosmt-cmdline-optio.patch
+queue-5.1/0027-x86-speculation-mds-Fix-documentation-typo.patch
+queue-5.1/0017-x86-speculation-mds-Add-SMT-warning-message.patch
+queue-5.1/0018-x86-speculation-mds-Fix-comment.patch
