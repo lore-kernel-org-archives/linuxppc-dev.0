@@ -6,21 +6,21 @@ X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
 	SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B8A97C04AB4
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 May 2019 17:16:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DE5A2C04AB4
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 May 2019 17:17:58 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 046A220578
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 May 2019 17:16:43 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 5BDE220578
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 May 2019 17:17:58 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="OkVsBYjg"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 046A220578
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="QVIEYBNA"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5BDE220578
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linuxfoundation.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 453PVd1VN8zDqKh
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 May 2019 03:16:41 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 453PX44zfYzDqPT
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 May 2019 03:17:56 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=linuxfoundation.org
  (client-ip=198.145.29.99; helo=mail.kernel.org;
@@ -28,31 +28,31 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=linuxfoundation.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="OkVsBYjg"; 
+ unprotected) header.d=kernel.org header.i=@kernel.org header.b="QVIEYBNA"; 
  dkim-atps=neutral
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 453PML42NTzDqLf
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 May 2019 03:10:22 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 453PNy1fD1zDqNX
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 May 2019 03:11:46 +1000 (AEST)
 Received: from localhost (83-86-89-107.cable.dynamic.v4.ziggo.nl
  [83.86.89.107])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id C59AF2084A;
- Tue, 14 May 2019 17:10:19 +0000 (UTC)
+ by mail.kernel.org (Postfix) with ESMTPSA id 55ECA20881;
+ Tue, 14 May 2019 17:11:43 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1557853820;
- bh=Ht/GR8HB1FUSUzS8AN032OUyYJxPZRJheUXYadqgqq0=;
+ s=default; t=1557853904;
+ bh=PVnGfL6QDSZx8JScdNpMsfMMiCiWaf8VLC8mSIGq9vU=;
  h=Subject:To:Cc:From:Date:From;
- b=OkVsBYjgE/lEMyZox6TLpalUu/fjN8L6oraou4BhOx/s31+cb26DCXlYYs4KsOZxE
- G3F0etSLME92TAjYZCxIR9pfUGwALWqPnToA8VcgpbHyF9vP8AXLllEOdVyTueiDeL
- Gz8ljAUYxeldj69itWgq/HgMghX58w1dyokxY6XM=
-Subject: Patch "[PATCH 28/32] s390/speculation: Support 'mitigations=' cmdline
- option" has been added to the 4.14-stable tree
-To: aarcange@redhat.com, benh@kernel.crashing.org, bp@alien8.de,
- catalin.marinas@arm.com,
- e4a161805458a5ec88812aac0307ae3908a030fc.1555085500.git.jpoimboe@redhat.com,
+ b=QVIEYBNAlLGYUcaLjp1ZiOFfcEtRhrfh/o497GoG5rgrZrgtsPAL+rlMj95MXN12a
+ sBuZPg3wHvVjhiIwyTeqauwDypEboMcdk/uf8fgO6af29Jl8XCuU4B0hUUGRow+vB3
+ ld8quK3D0wUDLSZhqbMr8oGs5q8nCKUsoR3wH+1c=
+Subject: Patch "[PATCH 23/30] cpu/speculation: Add 'mitigations=' cmdline
+ option" has been added to the 4.19-stable tree
+To: aarcange@redhat.com,
+ b07a8ef9b7c5055c3a4637c87d07c296d5016fe0.1555085500.git.jpoimboe@redhat.com,
+ benh@kernel.crashing.org, bp@alien8.de, catalin.marinas@arm.com,
  gregkh@linuxfoundation.org, heiko.carstens@de.ibm.com, hpa@zytor.com,
  jcm@redhat.com, jikos@kernel.org, jkosina@suse.cz, jpoimboe@redhat.com,
  linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
@@ -61,8 +61,8 @@ To: aarcange@redhat.com, benh@kernel.crashing.org, bp@alien8.de,
  schwidefsky@de.ibm.com, steven.price@arm.com, tglx@linutronix.de,
  torvalds@linux-foundation.org, tyhicks@canonical.com, will.deacon@arm.com
 From: <gregkh@linuxfoundation.org>
-Date: Tue, 14 May 2019 19:06:11 +0200
-Message-ID: <15578535713886@kroah.com>
+Date: Tue, 14 May 2019 19:06:14 +0200
+Message-ID: <155785357422160@kroah.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ANSI_X3.4-1968
 Content-Transfer-Encoding: 8bit
@@ -87,31 +87,55 @@ Sender: "Linuxppc-dev"
 
 This is a note to let you know that I've just added the patch titled
 
-    [PATCH 28/32] s390/speculation: Support 'mitigations=' cmdline option
+    [PATCH 23/30] cpu/speculation: Add 'mitigations=' cmdline option
 
-to the 4.14-stable tree which can be found at:
+to the 4.19-stable tree which can be found at:
     http://www.kernel.org/git/?p=linux/kernel/git/stable/stable-queue.git;a=summary
 
 The filename of the patch is:
-     0028-s390-speculation-Support-mitigations-cmdline-option.patch
-and it can be found in the queue-4.14 subdirectory.
+     0023-cpu-speculation-Add-mitigations-cmdline-option.patch
+and it can be found in the queue-4.19 subdirectory.
 
 If you, or anyone else, feels it should not be added to the stable tree,
 please let <stable@vger.kernel.org> know about it.
 
 
-From fd823d678f3cdc35d423a25e6ce9a7c0d2e55e1b Mon Sep 17 00:00:00 2001
+From 1a85023111931463125a6da902675facd3e00c21 Mon Sep 17 00:00:00 2001
 From: Josh Poimboeuf <jpoimboe@redhat.com>
-Date: Fri, 12 Apr 2019 15:39:31 -0500
-Subject: [PATCH 28/32] s390/speculation: Support 'mitigations=' cmdline option
+Date: Fri, 12 Apr 2019 15:39:28 -0500
+Subject: [PATCH 23/30] cpu/speculation: Add 'mitigations=' cmdline option
 
-commit 0336e04a6520bdaefdb0769d2a70084fa52e81ed upstream
+commit 98af8452945c55652de68536afdde3b520fec429 upstream
 
-Configure s390 runtime CPU speculation bug mitigations in accordance
-with the 'mitigations=' cmdline option.  This affects Spectre v1 and
-Spectre v2.
+Keeping track of the number of mitigations for all the CPU speculation
+bugs has become overwhelming for many users.  It's getting more and more
+complicated to decide which mitigations are needed for a given
+architecture.  Complicating matters is the fact that each arch tends to
+have its own custom way to mitigate the same vulnerability.
 
-The default behavior is unchanged.
+Most users fall into a few basic categories:
+
+a) they want all mitigations off;
+
+b) they want all reasonable mitigations on, with SMT enabled even if
+   it's vulnerable; or
+
+c) they want all reasonable mitigations on, with SMT disabled if
+   vulnerable.
+
+Define a set of curated, arch-independent options, each of which is an
+aggregation of existing options:
+
+- mitigations=off: Disable all mitigations.
+
+- mitigations=auto: [default] Enable all the default mitigations, but
+  leave SMT enabled, even if it's vulnerable.
+
+- mitigations=auto,nosmt: Enable all the default mitigations, disabling
+  SMT if needed by a mitigation.
+
+Currently, these options are placeholders which don't actually do
+anything.  They will be fleshed out in upcoming patches.
 
 Signed-off-by: Josh Poimboeuf <jpoimboe@redhat.com>
 Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
@@ -142,65 +166,105 @@ Cc: Linus Torvalds <torvalds@linux-foundation.org>
 Cc: Randy Dunlap <rdunlap@infradead.org>
 Cc: Steven Price <steven.price@arm.com>
 Cc: Phil Auld <pauld@redhat.com>
-Link: https://lkml.kernel.org/r/e4a161805458a5ec88812aac0307ae3908a030fc.1555085500.git.jpoimboe@redhat.com
+Link: https://lkml.kernel.org/r/b07a8ef9b7c5055c3a4637c87d07c296d5016fe0.1555085500.git.jpoimboe@redhat.com
 Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 ---
- Documentation/admin-guide/kernel-parameters.txt | 5 +++--
- arch/s390/kernel/nospec-branch.c                | 9 +++++++++
- 2 files changed, 12 insertions(+), 2 deletions(-)
+ .../admin-guide/kernel-parameters.txt         | 24 +++++++++++++++++++
+ include/linux/cpu.h                           | 24 +++++++++++++++++++
+ kernel/cpu.c                                  | 15 ++++++++++++
+ 3 files changed, 63 insertions(+)
 
 diff --git a/Documentation/admin-guide/kernel-parameters.txt b/Documentation/admin-guide/kernel-parameters.txt
-index 204161cee674..6fa7895885c9 100644
+index df8d10668b11..6a1b94afb005 100644
 --- a/Documentation/admin-guide/kernel-parameters.txt
 +++ b/Documentation/admin-guide/kernel-parameters.txt
-@@ -2389,7 +2389,7 @@
+@@ -2502,6 +2502,30 @@
+ 			in the "bleeding edge" mini2440 support kernel at
  			http://repo.or.cz/w/linux-2.6/mini2440.git
  
- 	mitigations=
--			[X86,PPC] Control optional mitigations for CPU
-+			[X86,PPC,S390] Control optional mitigations for CPU
- 			vulnerabilities.  This is a set of curated,
- 			arch-independent options, each of which is an
- 			aggregation of existing arch-specific options.
-@@ -2400,7 +2400,8 @@
- 				expose users to several CPU vulnerabilities.
- 				Equivalent to: nopti [X86,PPC]
- 					       nospectre_v1 [PPC]
--					       nospectre_v2 [X86,PPC]
-+					       nobp=0 [S390]
-+					       nospectre_v2 [X86,PPC,S390]
- 					       spectre_v2_user=off [X86]
- 					       spec_store_bypass_disable=off [X86,PPC]
- 					       l1tf=off [X86]
-diff --git a/arch/s390/kernel/nospec-branch.c b/arch/s390/kernel/nospec-branch.c
-index d5eed651b5ab..83e597688562 100644
---- a/arch/s390/kernel/nospec-branch.c
-+++ b/arch/s390/kernel/nospec-branch.c
-@@ -1,6 +1,7 @@
- // SPDX-License-Identifier: GPL-2.0
- #include <linux/module.h>
- #include <linux/device.h>
-+#include <linux/cpu.h>
- #include <asm/facility.h>
- #include <asm/nospec-branch.h>
- 
-@@ -55,8 +56,16 @@ static int __init nospectre_v2_setup_early(char *str)
- }
- early_param("nospectre_v2", nospectre_v2_setup_early);
- 
++	mitigations=
++			Control optional mitigations for CPU vulnerabilities.
++			This is a set of curated, arch-independent options, each
++			of which is an aggregation of existing arch-specific
++			options.
 +
- void __init nospec_auto_detect(void)
- {
-+	if (cpu_mitigations_off()) {
-+		/*
-+		 * Disable expolines and disable nobp.
-+		 */
-+		if (IS_ENABLED(CC_USING_EXPOLINE))
-+			nospec_disable = 1;
-+		__clear_facility(82, S390_lowcore.alt_stfle_fac_list);
- 	if (IS_ENABLED(CC_USING_EXPOLINE)) {
- 		/*
- 		 * The kernel has been compiled with expolines.
++			off
++				Disable all optional CPU mitigations.  This
++				improves system performance, but it may also
++				expose users to several CPU vulnerabilities.
++
++			auto (default)
++				Mitigate all CPU vulnerabilities, but leave SMT
++				enabled, even if it's vulnerable.  This is for
++				users who don't want to be surprised by SMT
++				getting disabled across kernel upgrades, or who
++				have other ways of avoiding SMT-based attacks.
++				This is the default behavior.
++
++			auto,nosmt
++				Mitigate all CPU vulnerabilities, disabling SMT
++				if needed.  This is for users who always want to
++				be fully mitigated, even if it means losing SMT.
++
+ 	mminit_loglevel=
+ 			[KNL] When CONFIG_DEBUG_MEMORY_INIT is set, this
+ 			parameter allows control of the logging verbosity for
+diff --git a/include/linux/cpu.h b/include/linux/cpu.h
+index 3c87ad888ed3..57ae83c4d5f4 100644
+--- a/include/linux/cpu.h
++++ b/include/linux/cpu.h
+@@ -189,4 +189,28 @@ static inline void cpu_smt_disable(bool force) { }
+ static inline void cpu_smt_check_topology(void) { }
+ #endif
+ 
++/*
++ * These are used for a global "mitigations=" cmdline option for toggling
++ * optional CPU mitigations.
++ */
++enum cpu_mitigations {
++	CPU_MITIGATIONS_OFF,
++	CPU_MITIGATIONS_AUTO,
++	CPU_MITIGATIONS_AUTO_NOSMT,
++};
++
++extern enum cpu_mitigations cpu_mitigations;
++
++/* mitigations=off */
++static inline bool cpu_mitigations_off(void)
++{
++	return cpu_mitigations == CPU_MITIGATIONS_OFF;
++}
++
++/* mitigations=auto,nosmt */
++static inline bool cpu_mitigations_auto_nosmt(void)
++{
++	return cpu_mitigations == CPU_MITIGATIONS_AUTO_NOSMT;
++}
++
+ #endif /* _LINUX_CPU_H_ */
+diff --git a/kernel/cpu.c b/kernel/cpu.c
+index dc250ec2c096..bc6c880a093f 100644
+--- a/kernel/cpu.c
++++ b/kernel/cpu.c
+@@ -2278,3 +2278,18 @@ void __init boot_cpu_hotplug_init(void)
+ #endif
+ 	this_cpu_write(cpuhp_state.state, CPUHP_ONLINE);
+ }
++
++enum cpu_mitigations cpu_mitigations __ro_after_init = CPU_MITIGATIONS_AUTO;
++
++static int __init mitigations_parse_cmdline(char *arg)
++{
++	if (!strcmp(arg, "off"))
++		cpu_mitigations = CPU_MITIGATIONS_OFF;
++	else if (!strcmp(arg, "auto"))
++		cpu_mitigations = CPU_MITIGATIONS_AUTO;
++	else if (!strcmp(arg, "auto,nosmt"))
++		cpu_mitigations = CPU_MITIGATIONS_AUTO_NOSMT;
++
++	return 0;
++}
++early_param("mitigations", mitigations_parse_cmdline);
 -- 
 2.21.0
 
@@ -208,15 +272,15 @@ index d5eed651b5ab..83e597688562 100644
 
 Patches currently in stable-queue which might be from jpoimboe@redhat.com are
 
-queue-4.14/0022-x86-speculation-mds-Add-SMT-warning-message.patch
-queue-4.14/0027-powerpc-speculation-Support-mitigations-cmdline-opti.patch
-queue-4.14/0025-cpu-speculation-Add-mitigations-cmdline-option.patch
-queue-4.14/0029-x86-speculation-mds-Add-mitigations-support-for-MDS.patch
-queue-4.14/0028-s390-speculation-Support-mitigations-cmdline-option.patch
-queue-4.14/0032-x86-speculation-mds-Fix-documentation-typo.patch
-queue-4.14/0023-x86-speculation-mds-Fix-comment.patch
-queue-4.14/0002-Documentation-l1tf-Fix-small-spelling-typo.patch
-queue-4.14/0024-x86-speculation-mds-Print-SMT-vulnerable-on-MSBDS-wi.patch
-queue-4.14/0026-x86-speculation-Support-mitigations-cmdline-option.patch
-queue-4.14/0021-x86-speculation-Move-arch_smt_update-call-to-after-m.patch
-queue-4.14/0020-x86-speculation-mds-Add-mds-full-nosmt-cmdline-optio.patch
+queue-4.19/0025-powerpc-speculation-Support-mitigations-cmdline-opti.patch
+queue-4.19/0022-x86-speculation-mds-Print-SMT-vulnerable-on-MSBDS-wi.patch
+queue-4.19/0024-x86-speculation-Support-mitigations-cmdline-option.patch
+queue-4.19/0023-cpu-speculation-Add-mitigations-cmdline-option.patch
+queue-4.19/0018-x86-speculation-mds-Add-mds-full-nosmt-cmdline-optio.patch
+queue-4.19/0030-x86-speculation-mds-Fix-documentation-typo.patch
+queue-4.19/0027-x86-speculation-mds-Add-mitigations-support-for-MDS.patch
+queue-4.19/0020-x86-speculation-mds-Add-SMT-warning-message.patch
+queue-4.19/0001-Documentation-l1tf-Fix-small-spelling-typo.patch
+queue-4.19/0019-x86-speculation-Move-arch_smt_update-call-to-after-m.patch
+queue-4.19/0026-s390-speculation-Support-mitigations-cmdline-option.patch
+queue-4.19/0021-x86-speculation-mds-Fix-comment.patch
