@@ -2,98 +2,84 @@ Return-Path: <SRS0=tOPa=TO=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.8 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
+	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,
+	URIBL_BLOCKED autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7E275C04AB4
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 May 2019 22:37:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 13C05C04AB4
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 May 2019 22:40:08 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 92D4620879
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 May 2019 22:37:04 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 92D4620879
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 7C08620873
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 May 2019 22:40:07 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="dEl4sU5q"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7C08620873
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 453XcG3ZtPzDqQD
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 May 2019 08:37:02 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 453Xgn21k0zDqNK
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 May 2019 08:40:05 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=linux.vnet.ibm.com
- (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=tyreld@linux.vnet.ibm.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=linux.vnet.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ spf=pass (mailfrom) smtp.mailfrom=gmail.com
+ (client-ip=2607:f8b0:4864:20::e43; helo=mail-vs1-xe43.google.com;
+ envelope-from=slandden@gmail.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="dEl4sU5q"; 
+ dkim-atps=neutral
+Received: from mail-vs1-xe43.google.com (mail-vs1-xe43.google.com
+ [IPv6:2607:f8b0:4864:20::e43])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 453XZs6qdnzDqLt
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 May 2019 08:35:49 +1000 (AEST)
-Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x4EMQuuH076938
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 May 2019 18:35:45 -0400
-Received: from e17.ny.us.ibm.com (e17.ny.us.ibm.com [129.33.205.207])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2sg31106h1-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 May 2019 18:35:45 -0400
-Received: from localhost
- by e17.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <tyreld@linux.vnet.ibm.com>;
- Tue, 14 May 2019 23:35:44 +0100
-Received: from b01cxnp22036.gho.pok.ibm.com (9.57.198.26)
- by e17.ny.us.ibm.com (146.89.104.204) with IBM ESMTP SMTP Gateway: Authorized
- Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Tue, 14 May 2019 23:35:42 +0100
-Received: from b01ledav006.gho.pok.ibm.com (b01ledav006.gho.pok.ibm.com
- [9.57.199.111])
- by b01cxnp22036.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x4EMZfJ617367254
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Tue, 14 May 2019 22:35:41 GMT
-Received: from b01ledav006.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 56E7CAC066;
- Tue, 14 May 2019 22:35:41 +0000 (GMT)
-Received: from b01ledav006.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 82C97AC06C;
- Tue, 14 May 2019 22:35:40 +0000 (GMT)
-Received: from oc6857751186.ibm.com (unknown [9.80.212.150])
- by b01ledav006.gho.pok.ibm.com (Postfix) with ESMTP;
- Tue, 14 May 2019 22:35:40 +0000 (GMT)
-Subject: Re: [RFC PATCH 1/3] powerpc/mm: Handle page table allocation failures
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>, npiggin@gmail.com,
- paulus@samba.org, mpe@ellerman.id.au
-References: <20190514145041.7836-1-aneesh.kumar@linux.ibm.com>
-From: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
-Date: Tue, 14 May 2019 15:35:39 -0700
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:52.0) Gecko/20100101
- Thunderbird/52.9.1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 453MG15mXYzDqHn
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 May 2019 01:35:34 +1000 (AEST)
+Received: by mail-vs1-xe43.google.com with SMTP id j184so1051686vsd.11
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 May 2019 08:35:34 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+ :cc; bh=980y18YdjmALl59G6hcP6zEimSkBXdkpnfC5LT9sZPA=;
+ b=dEl4sU5qCzg39opWx9sKU946SAsOAgMnj986H5geqhuO5V5aOb14kg8ib3YOfp+xp0
+ oCLeBgPlt1A6ExI43I+0UI8Rw4XzWRzfw4HbeuUOpBTW1Gl+J9ykR3AhCrGbFIqDOXqD
+ MansgszdcVbH5jBSN+Tminsuduc949LyAim6qqLQxo7OkNuCWi+ir+PEeqAduOCz0Pnd
+ IvWiw/3tOSFnIGwKCGg7m5G/KJ6f4Wj0JcL5aIztSzHfAccblQEdORm7MfujPTYM9Ref
+ Xu1b2iPuVe+4ij3QVNPJ7GhkP0HQ0NPPYYObP8KQe4yDlfYOdVEK3YOoz0vjfUBsGyJG
+ jvDA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+ :message-id:subject:to:cc;
+ bh=980y18YdjmALl59G6hcP6zEimSkBXdkpnfC5LT9sZPA=;
+ b=AMrk61HjC+WCZhskRMaqR93S1v6AUTgtBmPg58cPaPvgEKggIrTAOm+BqRIy1wAlxu
+ sxfVuheeSn14IBDa8B7QJrsNRCzPFgq23PbRT5FezWp+sfGKYyiLqq/cOxf3pd0nuAeM
+ bPNbKF8IPryYyShHRDUH/M28qaDBBJSCSnVDErKznQke92VyIYQovIz2XJn5DDAcJJYr
+ Og7uB3rxBCWlEPUJndZn9Q7/OycrHtBHEbDPb03mrpzv3VAoSXDTk4s7auttvDKThh8K
+ GzLsilvl/ETEejaHupQZjqO4MliLhxdGEf3jUxS6rqZ0/xAIsU8F/VB57DbkkCQQjI//
+ SIrw==
+X-Gm-Message-State: APjAAAX9RnLnoZ3kfCNo+vey9lBmQ1P/ZCDAaHb3K4CmrLF9J2wOhQkZ
+ 000XE6lAfgfxXM+PmeJ7rAziywN5O3ZQL2jeEl0=
+X-Google-Smtp-Source: APXvYqwnvzd+/XMd6bd8zJb3YomBXzkYFkFjrmaLwoHy194H1LYhEzN4vDQ889gGZQZ3AbymJEk1SJG7USPvsrENYNU=
+X-Received: by 2002:a05:6102:c7:: with SMTP id
+ u7mr4187174vsp.226.1557848130976; 
+ Tue, 14 May 2019 08:35:30 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <20190514145041.7836-1-aneesh.kumar@linux.ibm.com>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
-X-TM-AS-GCONF: 00
-x-cbid: 19051422-0040-0000-0000-000004EFA535
-X-IBM-SpamModules-Scores: 
-X-IBM-SpamModules-Versions: BY=3.00011099; HX=3.00000242; KW=3.00000007;
- PH=3.00000004; SC=3.00000285; SDB=6.01203386; UDB=6.00631654; IPR=6.00984309; 
- MB=3.00026893; MTD=3.00000008; XFM=3.00000015; UTC=2019-05-14 22:35:43
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19051422-0041-0000-0000-000008FBB38F
-Message-Id: <b633907a-453f-a96f-b23d-4981e936e885@linux.vnet.ibm.com>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2019-05-14_13:, , signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=998 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1810050000 definitions=main-1905140147
+References: <20190513005104.20140-1-shawn@git.icu>
+ <20190514022308.32363-1-shawn@git.icu>
+ <20190514022308.32363-2-shawn@git.icu>
+ <5f31b4964d64aea3fc31165b9cbd0b9d16fd2aa0.camel@russell.cc>
+In-Reply-To: <5f31b4964d64aea3fc31165b9cbd0b9d16fd2aa0.camel@russell.cc>
+From: Shawn Landden <slandden@gmail.com>
+Date: Tue, 14 May 2019 10:35:19 -0500
+Message-ID: <CA+49okqe0CLOm7VXPiYp-33DjwkQ5TQXLUNrhuHiUQVBxaT2ng@mail.gmail.com>
+Subject: Re: [v2 2/2] [PowerPC] Allow use of SIMD in interrupts from kernel
+ code
+To: Russell Currey <ruscur@russell.cc>
+Content-Type: text/plain; charset="UTF-8"
+X-Mailman-Approved-At: Wed, 15 May 2019 08:38:49 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -105,64 +91,43 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 05/14/2019 07:50 AM, Aneesh Kumar K.V wrote:
-> This fixes the below crash that arises due to not handling page table allocation
-> failures while allocating hugetlb page table.
+On Tue, May 14, 2019 at 2:22 AM Russell Currey <ruscur@russell.cc> wrote:
+>
+> On Mon, 2019-05-13 at 23:23 -0300, Shawn Landden wrote:
+> > This second patch is separate because it could be wrong,
+> > like I am not sure about how kernel thread migration works,
+> > and it is even allowing simd in preemptible kernel code.
+> >
+> > Signed-off-by: Shawn Landden <shawn@git.icu>
+> > ---
+>
+> Hi Shawn,
+>
+> This patch doesn't build on 64-bit embedded (ppc64e_defconfig):
+>
+> arch/powerpc/kernel/process.c:194:13: error: 'interrupted_kernel_fpu_idle' defined but not used [-Werror=unused-function]
+>  static bool interrupted_kernel_fpu_idle(void)
+>              ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+Thanks for noticing this. I knew what I needed to do, and this was
+just sloppiness on my end.
+>
+> and otherwise adds two sparse warnings:
+>
+> +arch/powerpc/kernel/process.c:356:13: warning: function 'disable_kernel_altivec' with external linkage has definition
+> +arch/powerpc/kernel/process.c:416:6: warning: symbol 'may_use_simd' was not declared. Should it be static?
+This is the same problem as above.
+>
+> There's also some style issues (spaces instead of tabs).
+Yes, I have to be careful using nano on a VPS.
 
-Was there supposed to be a oops stack trace attached here in the commit log?
-
--Tyrel
-
-> 
-> Fixes: e2b3d202d1db ("powerpc: Switch 16GB and 16MB explicit hugepages to a different page table format")
-> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
-> ---
->  arch/powerpc/mm/hugetlbpage.c | 8 ++++++++
->  1 file changed, 8 insertions(+)
-> 
-> diff --git a/arch/powerpc/mm/hugetlbpage.c b/arch/powerpc/mm/hugetlbpage.c
-> index c5c9ff2d7afc..ae9d71da5219 100644
-> --- a/arch/powerpc/mm/hugetlbpage.c
-> +++ b/arch/powerpc/mm/hugetlbpage.c
-> @@ -130,6 +130,8 @@ pte_t *huge_pte_alloc(struct mm_struct *mm, unsigned long addr, unsigned long sz
->  	} else {
->  		pdshift = PUD_SHIFT;
->  		pu = pud_alloc(mm, pg, addr);
-> +		if (!pu)
-> +			return NULL;
->  		if (pshift == PUD_SHIFT)
->  			return (pte_t *)pu;
->  		else if (pshift > PMD_SHIFT) {
-> @@ -138,6 +140,8 @@ pte_t *huge_pte_alloc(struct mm_struct *mm, unsigned long addr, unsigned long sz
->  		} else {
->  			pdshift = PMD_SHIFT;
->  			pm = pmd_alloc(mm, pu, addr);
-> +			if (!pm)
-> +				return NULL;
->  			if (pshift == PMD_SHIFT)
->  				/* 16MB hugepage */
->  				return (pte_t *)pm;
-> @@ -154,12 +158,16 @@ pte_t *huge_pte_alloc(struct mm_struct *mm, unsigned long addr, unsigned long sz
->  	} else {
->  		pdshift = PUD_SHIFT;
->  		pu = pud_alloc(mm, pg, addr);
-> +		if (!pu)
-> +			return NULL;
->  		if (pshift >= PUD_SHIFT) {
->  			ptl = pud_lockptr(mm, pu);
->  			hpdp = (hugepd_t *)pu;
->  		} else {
->  			pdshift = PMD_SHIFT;
->  			pm = pmd_alloc(mm, pu, addr);
-> +			if (!pm)
-> +				return NULL;
->  			ptl = pmd_lockptr(mm, pm);
->  			hpdp = (hugepd_t *)pm;
->  		}
-> 
-
+New patch coming in 1 sec.
+>
+> Reported by snowpatch (see https://patchwork.ozlabs.org/patch/1099181/)
+>
+> - Russell
+>
