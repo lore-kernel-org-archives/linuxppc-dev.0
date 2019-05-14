@@ -2,72 +2,73 @@ Return-Path: <SRS0=tOPa=TO=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,
-	URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_PASS autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A80AAC04AB4
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 May 2019 18:53:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5FA7CC04AB4
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 May 2019 19:15:24 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 22B3320818
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 May 2019 18:53:03 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="DjoDOKY5"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 22B3320818
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linuxfoundation.org
+	by mail.kernel.org (Postfix) with ESMTPS id AB8572086A
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 May 2019 19:15:23 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org AB8572086A
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 453Rdn143hzDqLj
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 May 2019 04:53:01 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 453S7Y220hzDqQ9
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 May 2019 05:15:21 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=linuxfoundation.org
- (client-ip=198.145.29.99; helo=mail.kernel.org;
- envelope-from=gregkh@linuxfoundation.org; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=gmail.com
+ (client-ip=209.85.222.68; helo=mail-ua1-f68.google.com;
+ envelope-from=geert.uytterhoeven@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=linuxfoundation.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="DjoDOKY5"; 
- dkim-atps=neutral
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ header.from=linux-m68k.org
+Received: from mail-ua1-f68.google.com (mail-ua1-f68.google.com
+ [209.85.222.68])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 453RcM0MYFzDqKD
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 May 2019 04:51:46 +1000 (AEST)
-Received: from localhost (83-86-89-107.cable.dynamic.v4.ziggo.nl
- [83.86.89.107])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id 2A33420881;
- Tue, 14 May 2019 18:51:44 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1557859904;
- bh=VGp6G7WBo75TIjlb/MR2z2MnnjmhZTgWCXdktMbfxXI=;
- h=Subject:To:Cc:From:Date:From;
- b=DjoDOKY5DVPW7HD0SKMXn7l29ElKvqsr0yntPGOQPFV1FZBNU6k6LJaTbL1+FL8qU
- mEZhbFftMZklsXnTpFipgiKnbXTdxDL077C9B2XCa9oIrkKreZMEtWG8epIrPHA22b
- Dbr1uzvb+vChEGUNduTtsq8mMpcY0YeNgQD0IpsU=
-Subject: Patch "x86/speculation: Support 'mitigations=' cmdline option" has
- been added to the 4.4-stable tree
-To: 6616d0ae169308516cfdf5216bedd169f8a8291b.1555085500.git.jpoimboe@redhat.com,
- aarcange@redhat.com, ben@decadent.org.uk, benh@kernel.crashing.org,
- bp@alien8.de, catalin.marinas@arm.com, gregkh@linuxfoundation.org,
- heiko.carstens@de.ibm.com, hpa@zytor.com, jcm@redhat.com, jikos@kernel.org,
- jkosina@suse.cz, jpoimboe@redhat.com, linux-arm-kernel@lists.infradead.org,
- linuxppc-dev@lists.ozlabs.org, longman@redhat.com, luto@kernel.org,
- mpe@ellerman.id.au, pauld@redhat.com, paulus@samba.org, peterz@infradead.org,
- rdunlap@infradead.org, schwidefsky@de.ibm.com, steven.price@arm.com,
- tglx@linutronix.de, torvalds@linux-foundation.org, tyhicks@canonical.com,
- will.deacon@arm.com
-From: <gregkh@linuxfoundation.org>
-Date: Tue, 14 May 2019 20:30:41 +0200
-Message-ID: <1557858641110224@kroah.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 453S5G3ZsqzDqLq
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 May 2019 05:13:22 +1000 (AEST)
+Received: by mail-ua1-f68.google.com with SMTP id e9so55425uar.9
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 May 2019 12:13:21 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+ :message-id:subject:to:cc;
+ bh=ey484zS6VT0M2Pei8ezvWLc9zrbpgGtkTWzKMtIHIxc=;
+ b=ZJJbzfOAjyMAZobxvhYnxzUoFEeIGhYQY0vCJZcl4pjpYjaBrJ9XyCsIItHhXDEmZy
+ 5EyFnDLdStqSQORkL5RXXmYGF+kgzXGVCUihG+OyfnB7SkKkCbCAWxnfxRSw4l5TwSMJ
+ pmFlP2vLVZW94mUgtoVNm0UN7qe+TxknlVdZhoMUnFx6ZqRKw4QSaycB+cSixhhFjRBj
+ s/TcOcxg7Bey3HM8daJD3Psda1V/MYu7w2BTWC9rOgr5O1X3SiPaHpY33LljPtk3wD/I
+ pzx1k1e1VQxxQE+q0/vUk4PLRva2y/G7uKMAjZBmXlomRqc/CojZp6AmDrd+TMnw/M2N
+ 8ssA==
+X-Gm-Message-State: APjAAAWh+/+KrrLyjqO6CYWr6wWEQ3CIkEloxiU/m+jWaHrHm4VeZxV2
+ tVyqubvOte977B8dQilRnXcUKVxEZM3j7ZwszUw=
+X-Google-Smtp-Source: APXvYqwpNaVM9wRlHtOulRVzPKuMGHFU99WPEXTmHwABAVMr5sC13R5BhmyWg1OsGphA/1Wa/vebr7FJneAt0jS5OTs=
+X-Received: by 2002:ab0:d89:: with SMTP id i9mr17498845uak.96.1557861198950;
+ Tue, 14 May 2019 12:13:18 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ANSI_X3.4-1968
-Content-Transfer-Encoding: 8bit
-X-stable: commit
-X-Patchwork-Hint: ignore 
+References: <20190510081635.GA4533@jagdpanzerIV>
+ <20190510084213.22149-1-pmladek@suse.com>
+ <20190510122401.21a598f6@gandalf.local.home>
+ <daf4dfd1-7f4f-8b92-6866-437c3a2be28b@c-s.fr>
+ <096d6c9c17b3484484d9d9d3f3aa3a7c@AcuMS.aculab.com>
+ <20190513091320.GK9224@smile.fi.intel.com>
+ <20190513124220.wty2qbnz4wo52h3x@pathway.suse.cz>
+ <20190514020730.GA651@jagdpanzerIV>
+ <45348cf615fe40d383c1a25688d4a88f@AcuMS.aculab.com>
+ <CAMuHMdXaMObq9h2Sb49PW1-HUysPeaWXB7wJmKFz=xLmSoUDZg@mail.gmail.com>
+ <20190514143751.48e81e05@oasis.local.home>
+In-Reply-To: <20190514143751.48e81e05@oasis.local.home>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Tue, 14 May 2019 21:13:06 +0200
+Message-ID: <CAMuHMdUhy3uB+G23uXh__F2Y_Jsam5uS1Q5jJC95kWAOEM8WRA@mail.gmail.com>
+Subject: Re: [PATCH] vsprintf: Do not break early boot with probing addresses
+To: Steven Rostedt <rostedt@goodmis.org>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -79,199 +80,73 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: stable-commits@vger.kernel.org
+Cc: Petr Mladek <pmladek@suse.com>,
+ "linux-arch@vger.kernel.org" <linux-arch@vger.kernel.org>,
+ Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>,
+ "linux-s390@vger.kernel.org" <linux-s390@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Rasmus Villemoes <linux@rasmusvillemoes.dk>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Michal Hocko <mhocko@suse.cz>,
+ Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
+ David Laight <David.Laight@aculab.com>, Stephen Rothwell <sfr@ozlabs.org>,
+ Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+ Linus Torvalds <torvalds@linux-foundation.org>,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>, "Tobin C . Harding" <me@tobin.cc>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+Hi Steve,
 
-This is a note to let you know that I've just added the patch titled
+On Tue, May 14, 2019 at 8:37 PM Steven Rostedt <rostedt@goodmis.org> wrote:
+> On Tue, 14 May 2019 11:02:17 +0200
+> Geert Uytterhoeven <geert@linux-m68k.org> wrote:
+> > On Tue, May 14, 2019 at 10:29 AM David Laight <David.Laight@aculab.com> wrote:
+> > > > And I like Steven's "(fault)" idea.
+> > > > How about this:
+> > > >
+> > > >       if ptr < PAGE_SIZE              -> "(null)"
+> > > >       if IS_ERR_VALUE(ptr)            -> "(fault)"
+> > > >
+> > > >       -ss
+> > >
+> > > Or:
+> > >         if (ptr < PAGE_SIZE)
+> > >                 return ptr ? "(null+)" : "(null)";
+>
+> Hmm, that is useful.
+>
+> > >         if IS_ERR_VALUE(ptr)
+> > >                 return "(errno)"
+>
+> I still prefer "(fault)" as is pretty much all I would expect from a
+> pointer dereference, even if it is just bad parsing of, say, a parsing
+> an MAC address. "fault" is generic enough. "errno" will be confusing,
+> because that's normally a variable not a output.
+>
+> >
+> > Do we care about the value? "(-E%u)"?
+>
+> That too could be confusing. What would (-E22) be considered by a user
+> doing an sprintf() on some string. I know that would confuse me, or I
+> would think that it was what the %pX displayed, and wonder why it
+> displayed it that way. Whereas "(fault)" is quite obvious for any %p
+> use case.
 
-    x86/speculation: Support 'mitigations=' cmdline option
+I would immediately understand there's a missing IS_ERR() check in a
+function that can return  -EINVAL, without having to add a new printk()
+to find out what kind of bogus value has been received, and without
+having to reboot, and trying to reproduce...
 
-to the 4.4-stable tree which can be found at:
-    http://www.kernel.org/git/?p=linux/kernel/git/stable/stable-queue.git;a=summary
+Gr{oetje,eeting}s,
 
-The filename of the patch is:
-     x86-speculation-support-mitigations-cmdline-option.patch
-and it can be found in the queue-4.4 subdirectory.
+                        Geert
 
-If you, or anyone else, feels it should not be added to the stable tree,
-please let <stable@vger.kernel.org> know about it.
+-- 
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-
-From foo@baz Tue 14 May 2019 08:29:35 PM CEST
-From: Josh Poimboeuf <jpoimboe@redhat.com>
-Date: Fri, 12 Apr 2019 15:39:29 -0500
-Subject: x86/speculation: Support 'mitigations=' cmdline option
-
-From: Josh Poimboeuf <jpoimboe@redhat.com>
-
-commit d68be4c4d31295ff6ae34a8ddfaa4c1a8ff42812 upstream.
-
-Configure x86 runtime CPU speculation bug mitigations in accordance with
-the 'mitigations=' cmdline option.  This affects Meltdown, Spectre v2,
-Speculative Store Bypass, and L1TF.
-
-The default behavior is unchanged.
-
-Signed-off-by: Josh Poimboeuf <jpoimboe@redhat.com>
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-Tested-by: Jiri Kosina <jkosina@suse.cz> (on x86)
-Reviewed-by: Jiri Kosina <jkosina@suse.cz>
-Cc: Borislav Petkov <bp@alien8.de>
-Cc: "H . Peter Anvin" <hpa@zytor.com>
-Cc: Andy Lutomirski <luto@kernel.org>
-Cc: Peter Zijlstra <peterz@infradead.org>
-Cc: Jiri Kosina <jikos@kernel.org>
-Cc: Waiman Long <longman@redhat.com>
-Cc: Andrea Arcangeli <aarcange@redhat.com>
-Cc: Jon Masters <jcm@redhat.com>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org
-Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Cc: Heiko Carstens <heiko.carstens@de.ibm.com>
-Cc: linux-s390@vger.kernel.org
-Cc: Catalin Marinas <catalin.marinas@arm.com>
-Cc: Will Deacon <will.deacon@arm.com>
-Cc: linux-arm-kernel@lists.infradead.org
-Cc: linux-arch@vger.kernel.org
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: Tyler Hicks <tyhicks@canonical.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Randy Dunlap <rdunlap@infradead.org>
-Cc: Steven Price <steven.price@arm.com>
-Cc: Phil Auld <pauld@redhat.com>
-Link: https://lkml.kernel.org/r/6616d0ae169308516cfdf5216bedd169f8a8291b.1555085500.git.jpoimboe@redhat.com
-[bwh: Backported to 4.4:
- - Drop the auto,nosmt option and the l1tf mitigation selection, which we can't
-   support
- - Adjust filenames, context]
-Signed-off-by: Ben Hutchings <ben@decadent.org.uk>
-Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
----
- Documentation/kernel-parameters.txt |   14 +++++++++-----
- arch/x86/kernel/cpu/bugs.c          |    6 ++++--
- arch/x86/mm/kaiser.c                |    4 +++-
- 3 files changed, 16 insertions(+), 8 deletions(-)
-
---- a/Documentation/kernel-parameters.txt
-+++ b/Documentation/kernel-parameters.txt
-@@ -2174,15 +2174,19 @@ bytes respectively. Such letter suffixes
- 			http://repo.or.cz/w/linux-2.6/mini2440.git
- 
- 	mitigations=
--			Control optional mitigations for CPU vulnerabilities.
--			This is a set of curated, arch-independent options, each
--			of which is an aggregation of existing arch-specific
--			options.
-+			[X86] Control optional mitigations for CPU
-+			vulnerabilities.  This is a set of curated,
-+			arch-independent options, each of which is an
-+			aggregation of existing arch-specific options.
- 
- 			off
- 				Disable all optional CPU mitigations.  This
- 				improves system performance, but it may also
- 				expose users to several CPU vulnerabilities.
-+				Equivalent to: nopti [X86]
-+					       nospectre_v2 [X86]
-+					       spectre_v2_user=off [X86]
-+					       spec_store_bypass_disable=off [X86]
- 
- 			auto (default)
- 				Mitigate all CPU vulnerabilities, but leave SMT
-@@ -2190,7 +2194,7 @@ bytes respectively. Such letter suffixes
- 				users who don't want to be surprised by SMT
- 				getting disabled across kernel upgrades, or who
- 				have other ways of avoiding SMT-based attacks.
--				This is the default behavior.
-+				Equivalent to: (default behavior)
- 
- 	mminit_loglevel=
- 			[KNL] When CONFIG_DEBUG_MEMORY_INIT is set, this
---- a/arch/x86/kernel/cpu/bugs.c
-+++ b/arch/x86/kernel/cpu/bugs.c
-@@ -479,7 +479,8 @@ static enum spectre_v2_mitigation_cmd __
- 	char arg[20];
- 	int ret, i;
- 
--	if (cmdline_find_option_bool(boot_command_line, "nospectre_v2"))
-+	if (cmdline_find_option_bool(boot_command_line, "nospectre_v2") ||
-+	    cpu_mitigations_off())
- 		return SPECTRE_V2_CMD_NONE;
- 
- 	ret = cmdline_find_option(boot_command_line, "spectre_v2", arg, sizeof(arg));
-@@ -743,7 +744,8 @@ static enum ssb_mitigation_cmd __init ss
- 	char arg[20];
- 	int ret, i;
- 
--	if (cmdline_find_option_bool(boot_command_line, "nospec_store_bypass_disable")) {
-+	if (cmdline_find_option_bool(boot_command_line, "nospec_store_bypass_disable") ||
-+	    cpu_mitigations_off()) {
- 		return SPEC_STORE_BYPASS_CMD_NONE;
- 	} else {
- 		ret = cmdline_find_option(boot_command_line, "spec_store_bypass_disable",
---- a/arch/x86/mm/kaiser.c
-+++ b/arch/x86/mm/kaiser.c
-@@ -10,6 +10,7 @@
- #include <linux/mm.h>
- #include <linux/uaccess.h>
- #include <linux/ftrace.h>
-+#include <linux/cpu.h>
- 
- #undef pr_fmt
- #define pr_fmt(fmt)     "Kernel/User page tables isolation: " fmt
-@@ -297,7 +298,8 @@ void __init kaiser_check_boottime_disabl
- 			goto skip;
- 	}
- 
--	if (cmdline_find_option_bool(boot_command_line, "nopti"))
-+	if (cmdline_find_option_bool(boot_command_line, "nopti") ||
-+	    cpu_mitigations_off())
- 		goto disable;
- 
- skip:
-
-
-Patches currently in stable-queue which might be from jpoimboe@redhat.com are
-
-queue-4.4/x86-speculation-mds-fix-documentation-typo.patch
-queue-4.4/x86-speculation-mds-add-mitigations-support-for-mds.patch
-queue-4.4/x86-speculation-rework-smt-state-change.patch
-queue-4.4/cpu-speculation-add-mitigations-cmdline-option.patch
-queue-4.4/x86-speculation-mds-fix-comment.patch
-queue-4.4/x86-speculation-reorder-the-spec_v2-code.patch
-queue-4.4/x86-speculation-add-prctl-control-for-indirect-branch-speculation.patch
-queue-4.4/x86-speculation-provide-ibpb-always-command-line-options.patch
-queue-4.4/x86-kconfig-select-sched_smt-if-smp-enabled.patch
-queue-4.4/x86-speculation-mds-add-smt-warning-message.patch
-queue-4.4/x86-process-consolidate-and-simplify-switch_to_xtra-code.patch
-queue-4.4/x86-speculation-reorganize-speculation-control-msrs-update.patch
-queue-4.4/x86-speculation-update-the-tif_ssbd-comment.patch
-queue-4.4/x86-speculation-propagate-information-about-rsb-filling-mitigation-to-sysfs.patch
-queue-4.4/x86-speculation-unify-conditional-spectre-v2-print-functions.patch
-queue-4.4/x86-speculation-disable-stibp-when-enhanced-ibrs-is-in-use.patch
-queue-4.4/x86-speculation-rename-ssbd-update-functions.patch
-queue-4.4/x86-speculation-enable-prctl-mode-for-spectre_v2_user.patch
-queue-4.4/x86-speculation-mark-string-arrays-const-correctly.patch
-queue-4.4/x86-speculation-move-arch_smt_update-call-to-after-mitigation-decisions.patch
-queue-4.4/x86-speculation-add-seccomp-spectre-v2-user-space-protection-mode.patch
-queue-4.4/x86-speculation-clean-up-spectre_v2_parse_cmdline.patch
-queue-4.4/x86-mm-use-write_once-when-setting-ptes.patch
-queue-4.4/x86-speculation-apply-ibpb-more-strictly-to-avoid-cross-process-data-leak.patch
-queue-4.4/x86-speculation-add-command-line-control-for-indirect-branch-speculation.patch
-queue-4.4/x86-speculation-move-stipb-ibpb-string-conditionals-out-of-cpu_show_common.patch
-queue-4.4/x86-speculation-support-mitigations-cmdline-option.patch
-queue-4.4/x86-speculation-remove-unnecessary-ret-variable-in-cpu_show_common.patch
-queue-4.4/x86-speculation-prepare-for-per-task-indirect-branch-speculation-control.patch
-queue-4.4/x86-speculation-avoid-__switch_to_xtra-calls.patch
-queue-4.4/x86-speculation-mds-print-smt-vulnerable-on-msbds-with-mitigations-off.patch
-queue-4.4/x86-speculation-split-out-tif-update.patch
-queue-4.4/x86-speculation-prepare-for-conditional-ibpb-in-switch_mm.patch
-queue-4.4/x86-speculation-prepare-arch_smt_update-for-prctl-mode.patch
-queue-4.4/x86-speculation-enable-cross-hyperthread-spectre-v2-stibp-mitigation.patch
-queue-4.4/x86-speculataion-mark-command-line-parser-data-__initdata.patch
-queue-4.4/x86-speculation-prevent-stale-spec_ctrl-msr-content.patch
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
