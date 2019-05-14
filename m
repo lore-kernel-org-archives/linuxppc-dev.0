@@ -2,93 +2,47 @@ Return-Path: <SRS0=tOPa=TO=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-4.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B2CBBC04AB4
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 May 2019 06:08:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C9D41C04AB4
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 May 2019 06:41:58 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 394A72086A
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 May 2019 06:08:55 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 394A72086A
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 19463206A3
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 May 2019 06:41:57 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 19463206A3
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4536h51wkDzDqQ8
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 May 2019 16:08:53 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
- (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=aneesh.kumar@linux.ibm.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 4537QC3kGJzDqMk
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 May 2019 16:41:55 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4536ZS63CXzDqHv
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 May 2019 16:04:00 +1000 (AEST)
-Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x4E63oen033885
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 May 2019 02:03:57 -0400
-Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2sfqjdh19x-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 May 2019 02:03:47 -0400
-Received: from localhost
- by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.ibm.com>;
- Tue, 14 May 2019 07:02:16 +0100
-Received: from b03cxnp08025.gho.boulder.ibm.com (9.17.130.17)
- by e34.co.us.ibm.com (192.168.1.134) with IBM ESMTP SMTP Gateway: Authorized
- Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Tue, 14 May 2019 07:02:13 +0100
-Received: from b03ledav005.gho.boulder.ibm.com
- (b03ledav005.gho.boulder.ibm.com [9.17.130.236])
- by b03cxnp08025.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x4E62Bre9699618
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Tue, 14 May 2019 06:02:12 GMT
-Received: from b03ledav005.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id C74C9BE051;
- Tue, 14 May 2019 06:02:11 +0000 (GMT)
-Received: from b03ledav005.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id D4133BE04F;
- Tue, 14 May 2019 06:02:09 +0000 (GMT)
-Received: from skywalker.ibmuc.com (unknown [9.80.230.27])
- by b03ledav005.gho.boulder.ibm.com (Postfix) with ESMTP;
- Tue, 14 May 2019 06:02:09 +0000 (GMT)
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
-To: npiggin@gmail.com, paulus@samba.org, mpe@ellerman.id.au
-Subject: [PATCH] powerpc/book3s/mm: Clear MMU_FTR_HPTE_TABLE when radix is
- enabled.
-Date: Tue, 14 May 2019 11:32:05 +0530
-X-Mailer: git-send-email 2.21.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4537Ns0RGNzDqGC
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 May 2019 16:40:45 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=ellerman.id.au
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
+ SHA256) (No client certificate requested)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 4537Nq5FQYz9sBV;
+ Tue, 14 May 2019 16:40:43 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>, npiggin@gmail.com,
+ paulus@samba.org
+Subject: Re: [PATCH] powerpc/mm: Handle page table allocation failures
+In-Reply-To: <20190514010543.29896-1-aneesh.kumar@linux.ibm.com>
+References: <20190514010543.29896-1-aneesh.kumar@linux.ibm.com>
+Date: Tue, 14 May 2019 16:40:43 +1000
+Message-ID: <87ftphtu6s.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-x-cbid: 19051406-0016-0000-0000-000009B210CF
-X-IBM-SpamModules-Scores: 
-X-IBM-SpamModules-Versions: BY=3.00011095; HX=3.00000242; KW=3.00000007;
- PH=3.00000004; SC=3.00000285; SDB=6.01203055; UDB=6.00631455; IPR=6.00983977; 
- MB=3.00026878; MTD=3.00000008; XFM=3.00000015; UTC=2019-05-14 06:02:14
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19051406-0017-0000-0000-00004335DEC0
-Message-Id: <20190514060205.20887-1-aneesh.kumar@linux.ibm.com>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2019-05-14_03:, , signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1810050000 definitions=main-1905140043
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -100,110 +54,55 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
- linuxppc-dev@lists.ozlabs.org
+Cc: Sachin Sant <sachinp@linux.vnet.ibm.com>,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Avoids confusion when printing Oops message like below
+"Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com> writes:
+> This fix the below crash that arise due to not handling page table allocation
+> failures while allocating hugetlb page table.
+>
+>  BUG: Kernel NULL pointer dereference at 0x0000001c
+>  Faulting instruction address: 0xc000000001d1e58c
+>  Oops: Kernel access of bad area, sig: 11 [#1]
+>  LE PAGE_SIZE=4K MMU=Hash SMP NR_CPUS=2048 NUMA pSeries
+>
+>  CPU: 3 PID: 4635 Comm: futex_wake04 Tainted: G        W  O      5.1.0-next-20190507-autotest #1
+>  NIP:  c000000001d1e58c LR: c000000001d1e54c CTR: 0000000000000000
+>  REGS: c000000004937890 TRAP: 0300   Tainted: G        W  O       (5.1.0-next-20190507-autotest)
+>  MSR:  8000000000009033 <SF,EE,ME,IR,DR,RI,LE>  CR: 22424822  XER: 00000000
+>  CFAR: c00000000183e9e0 DAR: 000000000000001c DSISR: 40000000 IRQMASK: 0
+>  GPR00: c000000001901a80 c000000004937b20 c000000003938700 0000000000000000
+>  GPR04: 0000000000400cc0 000000000003efff 000000027966e000 c000000003ba8700
+>  GPR08: c000000003ba8700 000000000d601125 c000000003ba8700 0000000080000000
+>  GPR12: 0000000022424822 c00000001ecae280 0000000000000000 0000000000000000
+>  GPR16: 0000000000000000 0000000000000000 0000000000000000 0000000000000000
+>  GPR20: 0000000000000018 c0000000039e2d30 c0000000039e2d28 c0000002762da460
+>  GPR24: 000000000000001c 0000000000000000 0000000000000001 c000000001901a80
+>  GPR28: 0000000000400cc0 0000000000000000 0000000000000000 0000000000400cc0
+>  NIP [c000000001d1e58c] kmem_cache_alloc+0xbc/0x5a0
+>  LR [c000000001d1e54c] kmem_cache_alloc+0x7c/0x5a0
+>  Call Trace:
+>   [c000000001c91150] __pud_alloc+0x160/0x200 (unreliable)
+>   [c000000001901a80] huge_pte_alloc+0x580/0x950
+>   [c000000001cf7910] hugetlb_fault+0x9a0/0x1250
+>   [c000000001c94a80] handle_mm_fault+0x490/0x4a0
+>   [c0000000018d529c] __do_page_fault+0x77c/0x1f00
+>   [c0000000018d6a48] do_page_fault+0x28/0x50
+>   [c00000000183b0d4] handle_page_fault+0x18/0x38
+>
+> Fixes: e2b3d202d1db ("powerpc: Switch 16GB and 16MB explicit hugepages to a different page table format")
+> Reported-by: Sachin Sant <sachinp@linux.vnet.ibm.com>
+> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
+> ---
+>
+> Note: I did add a recent commit for the Fixes tag. But in reality we never checked for page table
+> allocation failure there. If we want to go to that old commit, then we may need.
 
- Faulting instruction address: 0xc00000000008bdb4
- Oops: Kernel access of bad area, sig: 11 [#1]
- LE PAGE_SIZE=64K MMU=Radix MMU=Hash SMP NR_CPUS=2048 NUMA PowerNV
+If we never checked for failure in that path, is there some reason we've
+only just noticed the crashes? Are we just testing under memory pressure
+more effectively than we used to?
 
-Either ibm,pa-features or ibm,powerpc-cpu-features can be used to enable the
-MMU features. We don't clear related MMU feature bits there. We use the kernel
-commandline to determine what translation mode we want to use and clear the
-HPTE or radix bit accordingly. On LPAR we do have to renable HASH bit if the
-hypervisor can't do radix.
-
-Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
----
- arch/powerpc/mm/init_64.c | 11 ++++++++++-
- arch/powerpc/mm/pgtable.c |  7 +++----
- 2 files changed, 13 insertions(+), 5 deletions(-)
-
-diff --git a/arch/powerpc/mm/init_64.c b/arch/powerpc/mm/init_64.c
-index 45b02fa11cd8..652d954444ba 100644
---- a/arch/powerpc/mm/init_64.c
-+++ b/arch/powerpc/mm/init_64.c
-@@ -355,15 +355,18 @@ static void __init early_check_vec5(void)
- 	chosen = of_get_flat_dt_subnode_by_name(root, "chosen");
- 	if (chosen == -FDT_ERR_NOTFOUND) {
- 		cur_cpu_spec->mmu_features &= ~MMU_FTR_TYPE_RADIX;
-+		cur_cpu_spec->mmu_features |= MMU_FTR_HPTE_TABLE;
- 		return;
- 	}
- 	vec5 = of_get_flat_dt_prop(chosen, "ibm,architecture-vec-5", &size);
- 	if (!vec5) {
- 		cur_cpu_spec->mmu_features &= ~MMU_FTR_TYPE_RADIX;
-+		cur_cpu_spec->mmu_features |= MMU_FTR_HPTE_TABLE;
- 		return;
- 	}
- 	if (size <= OV5_INDX(OV5_MMU_SUPPORT)) {
- 		cur_cpu_spec->mmu_features &= ~MMU_FTR_TYPE_RADIX;
-+		cur_cpu_spec->mmu_features |= MMU_FTR_HPTE_TABLE;
- 		return;
- 	}
- 
-@@ -381,17 +384,23 @@ static void __init early_check_vec5(void)
- 		}
- 		/* Do radix anyway - the hypervisor said we had to */
- 		cur_cpu_spec->mmu_features |= MMU_FTR_TYPE_RADIX;
-+		cur_cpu_spec->mmu_features &= ~MMU_FTR_HPTE_TABLE;
- 	} else if (mmu_supported == OV5_FEAT(OV5_MMU_HASH)) {
- 		/* Hypervisor only supports hash - disable radix */
- 		cur_cpu_spec->mmu_features &= ~MMU_FTR_TYPE_RADIX;
-+		cur_cpu_spec->mmu_features |= MMU_FTR_HPTE_TABLE;
- 	}
- }
- 
- void __init mmu_early_init_devtree(void)
- {
- 	/* Disable radix mode based on kernel command line. */
--	if (disable_radix)
-+	if (disable_radix) {
- 		cur_cpu_spec->mmu_features &= ~MMU_FTR_TYPE_RADIX;
-+	} else {
-+		if (early_radix_enabled())
-+			cur_cpu_spec->mmu_features &= ~MMU_FTR_HPTE_TABLE;
-+	}
- 
- 	/*
- 	 * Check /chosen/ibm,architecture-vec-5 if running as a guest.
-diff --git a/arch/powerpc/mm/pgtable.c b/arch/powerpc/mm/pgtable.c
-index b97aee03924f..0fa6cac3fe82 100644
---- a/arch/powerpc/mm/pgtable.c
-+++ b/arch/powerpc/mm/pgtable.c
-@@ -77,9 +77,6 @@ static struct page *maybe_pte_to_page(pte_t pte)
- 
- static pte_t set_pte_filter_hash(pte_t pte)
- {
--	if (radix_enabled())
--		return pte;
--
- 	pte = __pte(pte_val(pte) & ~_PAGE_HPTEFLAGS);
- 	if (pte_looks_normal(pte) && !(cpu_has_feature(CPU_FTR_COHERENT_ICACHE) ||
- 				       cpu_has_feature(CPU_FTR_NOEXECUTE))) {
-@@ -110,6 +107,8 @@ static pte_t set_pte_filter(pte_t pte)
- 
- 	if (mmu_has_feature(MMU_FTR_HPTE_TABLE))
- 		return set_pte_filter_hash(pte);
-+	else if (radix_enabled())
-+		return pte;
- 
- 	/* No exec permission in the first place, move on */
- 	if (!pte_exec(pte) || !pte_looks_normal(pte))
-@@ -140,7 +139,7 @@ static pte_t set_access_flags_filter(pte_t pte, struct vm_area_struct *vma,
- {
- 	struct page *pg;
- 
--	if (mmu_has_feature(MMU_FTR_HPTE_TABLE))
-+	if (mmu_has_feature(MMU_FTR_HPTE_TABLE) || radix_enabled())
- 		return pte;
- 
- 	/* So here, we only care about exec faults, as we use them
--- 
-2.21.0
-
+cheers
