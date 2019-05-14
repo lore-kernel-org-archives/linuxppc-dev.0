@@ -4,23 +4,23 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
+	SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CF872C04AB4
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 May 2019 09:08:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BE908C04AB4
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 May 2019 09:09:15 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 4D11320675
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 May 2019 09:08:02 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 3FC0B20675
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 May 2019 09:09:15 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="QEXAUooo"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4D11320675
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="KgNoGhS5"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3FC0B20675
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 453Bfm3BDBzDqNB
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 May 2019 19:08:00 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 453Bh91SYgzDqCT
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 May 2019 19:09:13 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=c-s.fr
  (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
@@ -28,54 +28,55 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="QEXAUooo"; 
+ unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="KgNoGhS5"; 
  dkim-atps=neutral
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 453Bbf30PxzDqBd
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 May 2019 19:05:18 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 453Bbh6LgqzDqBd
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 May 2019 19:05:20 +1000 (AEST)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 453BbY47qqz9v0YZ;
- Tue, 14 May 2019 11:05:13 +0200 (CEST)
+ by localhost (Postfix) with ESMTP id 453Bbc3fJZz9v0Yf;
+ Tue, 14 May 2019 11:05:16 +0200 (CEST)
 Authentication-Results: localhost; dkim=pass
  reason="1024-bit key; insecure key"
- header.d=c-s.fr header.i=@c-s.fr header.b=QEXAUooo; dkim-adsp=pass;
+ header.d=c-s.fr header.i=@c-s.fr header.b=KgNoGhS5; dkim-adsp=pass;
  dkim-atps=neutral
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id b0W5i0t6Q68R; Tue, 14 May 2019 11:05:13 +0200 (CEST)
+ with ESMTP id Ql2CZfdz1N6K; Tue, 14 May 2019 11:05:16 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 453BbY301Rz9v0YY;
- Tue, 14 May 2019 11:05:13 +0200 (CEST)
+ by pegase1.c-s.fr (Postfix) with ESMTP id 453Bbc2crbz9v0Yb;
+ Tue, 14 May 2019 11:05:16 +0200 (CEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
- t=1557824713; bh=v4bNhQOc7ZvxUNO59OYToxqsttx0pncVXMsK3CmHAi4=;
- h=From:Subject:To:Cc:Date:From;
- b=QEXAUoooJ0KRP4YbPD13py3w4zLXPhVu4CkmcJFYQi5j7hsZ0t4HmObK8oCaHfsda
- Rem60QOLsHg4ZpIuHXgUBxZAdBp5vl8zlNx0GZNilvjDfKxERLPKt8ZHwxVuNACHA3
- Ekz9EZFNrLrSZAuM0phNLlNx3MXmLmJdEZD1GaEI=
+ t=1557824716; bh=6rd5Gd+7Ji3pxkGeUUt0ZGqg9Wz3VtWy++0D79Z+AWI=;
+ h=In-Reply-To:References:From:Subject:To:Cc:Date:From;
+ b=KgNoGhS5hawXMa/kL7fPnh82oQsJm2Cyq3NBuWJYV3VyWCTextzhEG1O6kow/bTDd
+ 3iKFgzP866mIxjxgoZvXfY5c30VxhNRuopqjfsiJlbtd6tJ/1lTr34UTyHV5fb4OjN
+ GaBKIjrkftae7CFXnFvJGomNpifLap5hLKUdw1Xo=
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 776788B8BE;
- Tue, 14 May 2019 11:05:14 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 701B98B8BF;
+ Tue, 14 May 2019 11:05:17 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id IJPs24qvg3OW; Tue, 14 May 2019 11:05:14 +0200 (CEST)
+ with ESMTP id NtDUpuKhwm6N; Tue, 14 May 2019 11:05:17 +0200 (CEST)
 Received: from po16846vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 23C578B8BD;
- Tue, 14 May 2019 11:05:14 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 209D18B7C1;
+ Tue, 14 May 2019 11:05:17 +0200 (CEST)
 Received: by po16846vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id B72316742D; Tue, 14 May 2019 09:05:13 +0000 (UTC)
-Message-Id: <239d1c8f15b8bedc161a234f9f1a22a07160dbdf.1557824379.git.christophe.leroy@c-s.fr>
+ id DA77F6742D; Tue, 14 May 2019 09:05:16 +0000 (UTC)
+Message-Id: <d6f628ffdeb9c7863da722a8f6ef2949e57bb360.1557824379.git.christophe.leroy@c-s.fr>
+In-Reply-To: <239d1c8f15b8bedc161a234f9f1a22a07160dbdf.1557824379.git.christophe.leroy@c-s.fr>
+References: <239d1c8f15b8bedc161a234f9f1a22a07160dbdf.1557824379.git.christophe.leroy@c-s.fr>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH 1/4] powerpc/64: flush_inval_dcache_range() becomes
- flush_dcache_range()
+Subject: [PATCH 4/4] powerpc/64: reuse PPC32 static inline flush_dcache_range()
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
  Oliver O'Halloran <oohall@gmail.com>,
  Segher Boessenkool <segher@kernel.crashing.org>
-Date: Tue, 14 May 2019 09:05:13 +0000 (UTC)
+Date: Tue, 14 May 2019 09:05:16 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -92,182 +93,156 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On most arches having function flush_dcache_range(), including PPC32,
-this function does a writeback and invalidation of the cache bloc.
+This patch drops the assembly PPC64 version of flush_dcache_range()
+and re-uses the PPC32 static inline version.
 
-On PPC64, flush_dcache_range() only does a writeback while
-flush_inval_dcache_range() does the invalidation in addition.
+With GCC 8.1, the following code is generated:
 
-In addition it looks like within arch/powerpc/, there are no PPC64
-platforms using flush_dcache_range()
+void flush_test(unsigned long start, unsigned long stop)
+{
+	flush_dcache_range(start, stop);
+}
 
-This patch drops the existing 64 bits version of flush_dcache_range()
-and renames flush_inval_dcache_range() into flush_dcache_range().
+0000000000000130 <.flush_test>:
+ 130:	3d 22 00 00 	addis   r9,r2,0
+			132: R_PPC64_TOC16_HA	.data+0x8
+ 134:	81 09 00 00 	lwz     r8,0(r9)
+			136: R_PPC64_TOC16_LO	.data+0x8
+ 138:	3d 22 00 00 	addis   r9,r2,0
+			13a: R_PPC64_TOC16_HA	.data+0xc
+ 13c:	80 e9 00 00 	lwz     r7,0(r9)
+			13e: R_PPC64_TOC16_LO	.data+0xc
+ 140:	7d 48 00 d0 	neg     r10,r8
+ 144:	7d 43 18 38 	and     r3,r10,r3
+ 148:	7c 00 04 ac 	hwsync
+ 14c:	4c 00 01 2c 	isync
+ 150:	39 28 ff ff 	addi    r9,r8,-1
+ 154:	7c 89 22 14 	add     r4,r9,r4
+ 158:	7c 83 20 50 	subf    r4,r3,r4
+ 15c:	7c 89 3c 37 	srd.    r9,r4,r7
+ 160:	41 82 00 1c 	beq     17c <.flush_test+0x4c>
+ 164:	7d 29 03 a6 	mtctr   r9
+ 168:	60 00 00 00 	nop
+ 16c:	60 00 00 00 	nop
+ 170:	7c 00 18 ac 	dcbf    0,r3
+ 174:	7c 63 42 14 	add     r3,r3,r8
+ 178:	42 00 ff f8 	bdnz    170 <.flush_test+0x40>
+ 17c:	7c 00 04 ac 	hwsync
+ 180:	4c 00 01 2c 	isync
+ 184:	4e 80 00 20 	blr
+ 188:	60 00 00 00 	nop
+ 18c:	60 00 00 00 	nop
 
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
- arch/powerpc/include/asm/cacheflush.h |  1 -
- arch/powerpc/kernel/misc_64.S         | 27 ++-------------------------
- arch/powerpc/lib/pmem.c               |  8 ++++----
- arch/powerpc/mm/mem.c                 |  4 ++--
- arch/powerpc/sysdev/dart_iommu.c      |  2 +-
- drivers/macintosh/smu.c               |  4 ++--
- 6 files changed, 11 insertions(+), 35 deletions(-)
+ arch/powerpc/include/asm/cache.h      | 10 ++++++++++
+ arch/powerpc/include/asm/cacheflush.h | 14 ++++++++------
+ arch/powerpc/kernel/misc_64.S         | 29 -----------------------------
+ 3 files changed, 18 insertions(+), 35 deletions(-)
 
+diff --git a/arch/powerpc/include/asm/cache.h b/arch/powerpc/include/asm/cache.h
+index 0009a0a82e86..45e3137ccd71 100644
+--- a/arch/powerpc/include/asm/cache.h
++++ b/arch/powerpc/include/asm/cache.h
+@@ -54,6 +54,16 @@ struct ppc64_caches {
+ };
+ 
+ extern struct ppc64_caches ppc64_caches;
++
++static inline u32 l1_cache_shift(void)
++{
++	return ppc64_caches.l1d.log_block_size;
++}
++
++static inline u32 l1_cache_bytes(void)
++{
++	return ppc64_caches.l1d.block_size;
++}
+ #else
+ static inline u32 l1_cache_shift(void)
+ {
 diff --git a/arch/powerpc/include/asm/cacheflush.h b/arch/powerpc/include/asm/cacheflush.h
-index d5a8d7bf0759..e9a40b110f1d 100644
+index d405f18441cd..3cd7ce3dec8b 100644
 --- a/arch/powerpc/include/asm/cacheflush.h
 +++ b/arch/powerpc/include/asm/cacheflush.h
-@@ -109,7 +109,6 @@ static inline void invalidate_dcache_range(unsigned long start,
- #endif /* CONFIG_PPC32 */
- #ifdef CONFIG_PPC64
- extern void flush_dcache_range(unsigned long start, unsigned long stop);
--extern void flush_inval_dcache_range(unsigned long start, unsigned long stop);
+@@ -57,7 +57,6 @@ static inline void __flush_dcache_icache_phys(unsigned long physaddr)
+ }
  #endif
  
+-#ifdef CONFIG_PPC32
+ /*
+  * Write any modified data cache blocks out to memory and invalidate them.
+  * Does not invalidate the corresponding instruction cache blocks.
+@@ -70,9 +69,17 @@ static inline void flush_dcache_range(unsigned long start, unsigned long stop)
+ 	unsigned long size = stop - (unsigned long)addr + (bytes - 1);
+ 	unsigned long i;
+ 
++	if (IS_ENABLED(CONFIG_PPC64)) {
++		mb();	/* sync */
++		isync();
++	}
++
+ 	for (i = 0; i < size >> shift; i++, addr += bytes)
+ 		dcbf(addr);
+ 	mb();	/* sync */
++
++	if (IS_ENABLED(CONFIG_PPC64))
++		isync();
+ }
+ 
+ /*
+@@ -112,11 +119,6 @@ static inline void invalidate_dcache_range(unsigned long start,
+ 	mb();	/* sync */
+ }
+ 
+-#endif /* CONFIG_PPC32 */
+-#ifdef CONFIG_PPC64
+-extern void flush_dcache_range(unsigned long start, unsigned long stop);
+-#endif
+-
  #define copy_to_user_page(vma, page, vaddr, dst, src, len) \
+ 	do { \
+ 		memcpy(dst, src, len); \
 diff --git a/arch/powerpc/kernel/misc_64.S b/arch/powerpc/kernel/misc_64.S
-index 262ba9481781..a4fd536efb44 100644
+index a4fd536efb44..1b0a42c50ef1 100644
 --- a/arch/powerpc/kernel/misc_64.S
 +++ b/arch/powerpc/kernel/misc_64.S
-@@ -121,31 +121,8 @@ EXPORT_SYMBOL(flush_icache_range)
-  *
-  *    flush all bytes from start to stop-1 inclusive
-  */
--_GLOBAL_TOC(flush_dcache_range)
+@@ -115,35 +115,6 @@ _ASM_NOKPROBE_SYMBOL(flush_icache_range)
+ EXPORT_SYMBOL(flush_icache_range)
  
--/*
-- * Flush the data cache to memory 
-- * 
-- * Different systems have different cache line sizes
+ /*
+- * Like above, but only do the D-cache.
+- *
+- * flush_dcache_range(unsigned long start, unsigned long stop)
+- *
+- *    flush all bytes from start to stop-1 inclusive
 - */
+-
+-_GLOBAL_TOC(flush_dcache_range)
 - 	ld	r10,PPC64_CACHES@toc(r2)
 -	lwz	r7,DCACHEL1BLOCKSIZE(r10)	/* Get dcache block size */
 -	addi	r5,r7,-1
 -	andc	r6,r3,r5		/* round low to line bdy */
 -	subf	r8,r6,r4		/* compute length */
 -	add	r8,r8,r5		/* ensure we get enough */
--	lwz	r9,DCACHEL1LOGBLOCKSIZE(r10)	/* Get log-2 of dcache block size */
+-	lwz	r9,DCACHEL1LOGBLOCKSIZE(r10)/* Get log-2 of dcache block size */
 -	srw.	r8,r8,r9		/* compute line count */
 -	beqlr				/* nothing to do? */
+-	sync
+-	isync
 -	mtctr	r8
--0:	dcbst	0,r6
+-0:	dcbf	0,r6
 -	add	r6,r6,r7
 -	bdnz	0b
 -	sync
+-	isync
 -	blr
 -EXPORT_SYMBOL(flush_dcache_range)
 -
--_GLOBAL(flush_inval_dcache_range)
-+_GLOBAL_TOC(flush_dcache_range)
-  	ld	r10,PPC64_CACHES@toc(r2)
- 	lwz	r7,DCACHEL1BLOCKSIZE(r10)	/* Get dcache block size */
- 	addi	r5,r7,-1
-@@ -164,7 +141,7 @@ _GLOBAL(flush_inval_dcache_range)
- 	sync
- 	isync
- 	blr
--
-+EXPORT_SYMBOL(flush_dcache_range)
- 
- /*
+-/*
   * Flush a particular page from the data cache to RAM.
-diff --git a/arch/powerpc/lib/pmem.c b/arch/powerpc/lib/pmem.c
-index 53c018762e1c..36e08bf850e0 100644
---- a/arch/powerpc/lib/pmem.c
-+++ b/arch/powerpc/lib/pmem.c
-@@ -23,14 +23,14 @@
- void arch_wb_cache_pmem(void *addr, size_t size)
- {
- 	unsigned long start = (unsigned long) addr;
--	flush_inval_dcache_range(start, start + size);
-+	flush_dcache_range(start, start + size);
- }
- EXPORT_SYMBOL(arch_wb_cache_pmem);
- 
- void arch_invalidate_pmem(void *addr, size_t size)
- {
- 	unsigned long start = (unsigned long) addr;
--	flush_inval_dcache_range(start, start + size);
-+	flush_dcache_range(start, start + size);
- }
- EXPORT_SYMBOL(arch_invalidate_pmem);
- 
-@@ -43,7 +43,7 @@ long __copy_from_user_flushcache(void *dest, const void __user *src,
- 	unsigned long copied, start = (unsigned long) dest;
- 
- 	copied = __copy_from_user(dest, src, size);
--	flush_inval_dcache_range(start, start + size);
-+	flush_dcache_range(start, start + size);
- 
- 	return copied;
- }
-@@ -53,7 +53,7 @@ void *memcpy_flushcache(void *dest, const void *src, size_t size)
- 	unsigned long start = (unsigned long) dest;
- 
- 	memcpy(dest, src, size);
--	flush_inval_dcache_range(start, start + size);
-+	flush_dcache_range(start, start + size);
- 
- 	return dest;
- }
-diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
-index cd525d709072..39e66f033995 100644
---- a/arch/powerpc/mm/mem.c
-+++ b/arch/powerpc/mm/mem.c
-@@ -125,7 +125,7 @@ int __ref arch_add_memory(int nid, u64 start, u64 size, struct vmem_altmap *altm
- 			start, start + size, rc);
- 		return -EFAULT;
- 	}
--	flush_inval_dcache_range(start, start + size);
-+	flush_dcache_range(start, start + size);
- 
- 	return __add_pages(nid, start_pfn, nr_pages, altmap, want_memblock);
- }
-@@ -153,7 +153,7 @@ int __ref arch_remove_memory(int nid, u64 start, u64 size,
- 
- 	/* Remove htab bolted mappings for this section of memory */
- 	start = (unsigned long)__va(start);
--	flush_inval_dcache_range(start, start + size);
-+	flush_dcache_range(start, start + size);
- 	ret = remove_section_mapping(start, start + size);
- 
- 	/* Ensure all vmalloc mappings are flushed in case they also
-diff --git a/arch/powerpc/sysdev/dart_iommu.c b/arch/powerpc/sysdev/dart_iommu.c
-index 2a751795ec1e..bc259a8d3f2d 100644
---- a/arch/powerpc/sysdev/dart_iommu.c
-+++ b/arch/powerpc/sysdev/dart_iommu.c
-@@ -158,7 +158,7 @@ static void dart_cache_sync(unsigned int *base, unsigned int count)
- 	unsigned int tmp;
- 
- 	/* Perform a standard cache flush */
--	flush_inval_dcache_range(start, end);
-+	flush_dcache_range(start, end);
- 
- 	/*
- 	 * Perform the sequence described in the CPC925 manual to
-diff --git a/drivers/macintosh/smu.c b/drivers/macintosh/smu.c
-index 6a844125cf2d..97758eed03f2 100644
---- a/drivers/macintosh/smu.c
-+++ b/drivers/macintosh/smu.c
-@@ -133,7 +133,7 @@ static void smu_start_cmd(void)
- 	/* Flush command and data to RAM */
- 	faddr = (unsigned long)smu->cmd_buf;
- 	fend = faddr + smu->cmd_buf->length + 2;
--	flush_inval_dcache_range(faddr, fend);
-+	flush_dcache_range(faddr, fend);
- 
- 
- 	/* We also disable NAP mode for the duration of the command
-@@ -195,7 +195,7 @@ static irqreturn_t smu_db_intr(int irq, void *arg)
- 		 * reply length (it's only 2 cache lines anyway)
- 		 */
- 		faddr = (unsigned long)smu->cmd_buf;
--		flush_inval_dcache_range(faddr, faddr + 256);
-+		flush_dcache_range(faddr, faddr + 256);
- 
- 		/* Now check ack */
- 		ack = (~cmd->cmd) & 0xff;
+  * Note: this is necessary because the instruction cache does *not*
+  * snoop from the data cache.
 -- 
 2.13.3
 
