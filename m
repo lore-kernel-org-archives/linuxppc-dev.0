@@ -2,88 +2,99 @@ Return-Path: <SRS0=9qWD=TP=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-4.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A31A4C04E87
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 May 2019 13:54:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0AD64C04E53
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 May 2019 14:08:54 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 2654820873
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 May 2019 13:54:03 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 4A7482084E
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 May 2019 14:08:53 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="C9Zc5r+f"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2654820873
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=debian.org
+	dkim=pass (1024-bit key) header.d=nxp.com header.i=@nxp.com header.b="rYNRVOFX"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4A7482084E
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nxp.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 453wyJ5Rr7zDqSM
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 May 2019 23:54:00 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 453xHQ65nwzDqW4
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 May 2019 00:08:50 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=2a00:1450:4864:20::442; helo=mail-wr1-x442.google.com;
- envelope-from=mathieu.malaterre@gmail.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=nxp.com
+ (client-ip=40.107.2.41; helo=eur02-ve1-obe.outbound.protection.outlook.com;
+ envelope-from=horia.geanta@nxp.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=debian.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="C9Zc5r+f"; 
+ dmarc=pass (p=none dis=none) header.from=nxp.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=nxp.com header.i=@nxp.com header.b="rYNRVOFX"; 
  dkim-atps=neutral
-Received: from mail-wr1-x442.google.com (mail-wr1-x442.google.com
- [IPv6:2a00:1450:4864:20::442])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Received: from EUR02-VE1-obe.outbound.protection.outlook.com
+ (mail-eopbgr20041.outbound.protection.outlook.com [40.107.2.41])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 453ww65Zs9zDqSH
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 May 2019 23:52:06 +1000 (AEST)
-Received: by mail-wr1-x442.google.com with SMTP id s17so2794765wru.3
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 May 2019 06:52:06 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=sender:from:to:cc:subject:date:message-id:in-reply-to:references
- :mime-version:content-transfer-encoding;
- bh=nytq/On43q8XPsmcb/kSTUQUu6ygGympqGdBDgeJzfY=;
- b=C9Zc5r+fI+/FO7h8AYtoREtVY8FaEZvGe/awFqM/h2Sjhl2yPheAI5gJllXqLo/9g8
- EYfqpBRqmVDz62X80O9XaD8idB4VEQAx4zIxi5CbJUJguCTDzSvAUYq+ESEsH0nOerRZ
- U0mcrPGx7YzHOQIXjyMWkPXtuTZe125hPDKlCLP7vR03oXTXpQl1K8ApJ+vIY2YSnluA
- njBDBytCi+CK1XjhQX0db0niLdYzN4A7f6gmN5h44c5LuMzbr+UOS8fHbNxW8+EbESEP
- B9DiP5TNWjH+vWzLQyGUopvXFZ11R94g09DYr6gkU3KEMiHMdhlHgXKOhop3LVLnXHNT
- KmlA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:sender:from:to:cc:subject:date:message-id
- :in-reply-to:references:mime-version:content-transfer-encoding;
- bh=nytq/On43q8XPsmcb/kSTUQUu6ygGympqGdBDgeJzfY=;
- b=lf706SFQ+kW05c7KbBdZYwNi/LGtsIJoFUhahVogkenfljJmR3/8NpDqWSJYuV/0LW
- rEiLhlFp/jEArRn8VhdjVAZhJVqwQ8l/7Ji781mlH3UFbsMBKLm3LH0o/n/kxGOcCFSs
- E+oA+B8qbWwcfttxiMOp52IkduDKstyQC5Vruj/YvM0lLkPWlMxFx1zxBcJzJeX/dKQf
- 30ZLuxM12EW0F7L6CzkNMFGrUy/ubSadxPWklF1z9ns2dl/C179EIAtis5/M9wIEhrJP
- mGbb32X5tfrc60nAPz+RD34WynmmYHSrO3kTZRZXH7b4YqiID4QnASjPFxvQnljIzyc9
- ADFg==
-X-Gm-Message-State: APjAAAXNhCVNQ9TjwBlMG8AWexvRaGQpYBQHM2Gj6o9yFIKeLpDZQE94
- a8iX6ENu9edgVoxFRtPzlpY=
-X-Google-Smtp-Source: APXvYqxn8yBAWfFqMrTjax6PBoUXe7fjtfc1XiH6muJ6fS3SzOZiH/DzI+lzz7JVSfykkQBkJ5jBHA==
-X-Received: by 2002:adf:e850:: with SMTP id d16mr10513190wrn.269.1557928321334; 
- Wed, 15 May 2019 06:52:01 -0700 (PDT)
-Received: from macbookpro.malat.net ([2a01:e34:ee1e:860:6f23:82e6:aa2d:bbd1])
- by smtp.gmail.com with ESMTPSA id
- x187sm2256456wmb.33.2019.05.15.06.51.59
- (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
- Wed, 15 May 2019 06:52:00 -0700 (PDT)
-Received: by macbookpro.malat.net (Postfix, from userid 1000)
- id 1FBCB1146D7B; Wed, 15 May 2019 15:51:49 +0200 (CEST)
-From: Mathieu Malaterre <malat@debian.org>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: [PATCH v2] powerpc: silence a -Wcast-function-type warning in
- dawr_write_file_bool
-Date: Wed, 15 May 2019 15:51:46 +0200
-Message-Id: <20190515135146.5866-1-malat@debian.org>
-X-Mailer: git-send-email 2.20.1
-In-Reply-To: <20190515120942.3812-1-malat@debian.org>
-References: <20190515120942.3812-1-malat@debian.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 453xCP52HdzDqVH
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 May 2019 00:05:17 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nxp.com; s=selector2; 
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=ZuWhjNo0yAfWVBkZhdwfp7qUe2X1r9MNjzX2ykJy+2M=;
+ b=rYNRVOFXJ0KMJqnGQb3lXawAj2BfeP352mGNyuZ2C5tK+X12b+4a9dYrqhnoquaezy8ptsYYqJfM9MFdlR7KjGsCVWCPI45UYjTj9h9+Qrqs+al4woqKFwqe0n10/48Bsu0IWlRHd386h0stkqQugv0lzjP2ZtC582Z1+jeOrvc=
+Received: from VI1PR0402MB3485.eurprd04.prod.outlook.com (52.134.3.153) by
+ VI1PR0402MB3533.eurprd04.prod.outlook.com (52.134.4.26) with Microsoft SMTP
+ Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.20.1900.16; Wed, 15 May 2019 14:05:11 +0000
+Received: from VI1PR0402MB3485.eurprd04.prod.outlook.com
+ ([fe80::dd3c:969d:89b9:f422]) by VI1PR0402MB3485.eurprd04.prod.outlook.com
+ ([fe80::dd3c:969d:89b9:f422%4]) with mapi id 15.20.1878.024; Wed, 15 May 2019
+ 14:05:11 +0000
+From: Horia Geanta <horia.geanta@nxp.com>
+To: Christophe Leroy <christophe.leroy@c-s.fr>, Herbert Xu
+ <herbert@gondor.apana.org.au>, "David S. Miller" <davem@davemloft.net>
+Subject: Re: [PATCH] crypto: talitos - fix skcipher failure due to wrong
+ output IV
+Thread-Topic: [PATCH] crypto: talitos - fix skcipher failure due to wrong
+ output IV
+Thread-Index: AQHVCxnMCzIthJlccEajEJwlNrxcew==
+Date: Wed, 15 May 2019 14:05:11 +0000
+Message-ID: <VI1PR0402MB34858D80A15D4B55F64570E398090@VI1PR0402MB3485.eurprd04.prod.outlook.com>
+References: <a5b0d31d8fc9fc9bc2b69baa5330466090825a39.1557923113.git.christophe.leroy@c-s.fr>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+authentication-results: spf=none (sender IP is )
+ smtp.mailfrom=horia.geanta@nxp.com; 
+x-originating-ip: [212.146.100.6]
+x-ms-publictraffictype: Email
+x-ms-office365-filtering-correlation-id: f7fdb8af-9fd2-46b4-c1e6-08d6d93e5888
+x-ms-office365-filtering-ht: Tenant
+x-microsoft-antispam: BCL:0; PCL:0;
+ RULEID:(2390118)(7020095)(4652040)(8989299)(4534185)(4627221)(201703031133081)(201702281549075)(8990200)(5600141)(711020)(4605104)(4618075)(2017052603328)(7193020);
+ SRVR:VI1PR0402MB3533; 
+x-ms-traffictypediagnostic: VI1PR0402MB3533:
+x-microsoft-antispam-prvs: <VI1PR0402MB353302E4E36E8C6ADAF3DDE698090@VI1PR0402MB3533.eurprd04.prod.outlook.com>
+x-ms-oob-tlc-oobclassifiers: OLM:8882;
+x-forefront-prvs: 0038DE95A2
+x-forefront-antispam-report: SFV:NSPM;
+ SFS:(10009020)(346002)(366004)(136003)(376002)(396003)(39860400002)(199004)(189003)(53546011)(81156014)(81166006)(8936002)(6506007)(8676002)(76176011)(74316002)(54906003)(316002)(7696005)(305945005)(7736002)(33656002)(3846002)(102836004)(2906002)(99286004)(229853002)(110136005)(256004)(14444005)(6116002)(6436002)(55016002)(9686003)(66476007)(52536014)(5660300002)(44832011)(71190400001)(66066001)(68736007)(26005)(71200400001)(66446008)(66556008)(64756008)(186003)(4326008)(53936002)(86362001)(476003)(6246003)(478600001)(14454004)(25786009)(486006)(66946007)(446003)(76116006)(73956011);
+ DIR:OUT; SFP:1101; SCL:1; SRVR:VI1PR0402MB3533;
+ H:VI1PR0402MB3485.eurprd04.prod.outlook.com; FPR:; SPF:None; LANG:en;
+ PTR:InfoNoRecords; A:1; MX:1; 
+received-spf: None (protection.outlook.com: nxp.com does not designate
+ permitted sender hosts)
+x-ms-exchange-senderadcheck: 1
+x-microsoft-antispam-message-info: tqRKJ8tn+veTogvMVEoaMg8qQ++6AsiP2XHRa2EwSnXCvbywl8PLczPTwZFA8hrZ3VeWGGxLBVGWhfP89SHEfOQ6NoQjU1Njse/DfmVq3LHNMxRZL7R54W+9xJ54rjUQ2faCGwJRIM6XR1+eyMieuvpOe74TlcpKIrAhkIFnekkIfPhrDFwOy4BKDyraR1AXrWz+UjucDSV6sAC4eM559kHOQe7/kyTClYDKwRGJ9dHb9+E/pi+GekeTIu+O15ORskuf7biBhXLhEzyEY6YYV8CC8C8EtQ+4XnuZlbsTm1TlAmbK+nfzMN9icSX3RV48nwGEHKjkWwcOrzGZuYNbUr9lJP/OkQNtIrhQVikWtnRLiNKdKS4DJYrzI0hA+SxRD/5V5QYZuc3hjz7foG8ReuPKSlv1KgrE4j+n9hkpDK0=
+Content-Type: text/plain; charset="iso-8859-2"
+Content-Transfer-Encoding: quoted-printable
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+X-OriginatorOrg: nxp.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: f7fdb8af-9fd2-46b4-c1e6-08d6d93e5888
+X-MS-Exchange-CrossTenant-originalarrivaltime: 15 May 2019 14:05:11.4920 (UTC)
+X-MS-Exchange-CrossTenant-fromentityheader: Hosted
+X-MS-Exchange-CrossTenant-id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
+X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: VI1PR0402MB3533
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -95,61 +106,41 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Michael Neuling <mikey@neuling.org>, Mathieu Malaterre <malat@debian.org>,
- linux-kernel@vger.kernel.org, Christoph Hellwig <hch@infradead.org>,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-crypto@vger.kernel.org" <linux-crypto@vger.kernel.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-In commit c1fe190c0672 ("powerpc: Add force enable of DAWR on P9
-option") the following piece of code was added:
-
-   smp_call_function((smp_call_func_t)set_dawr, &null_brk, 0);
-
-Since GCC 8 this triggers the following warning about incompatible
-function types:
-
-  arch/powerpc/kernel/hw_breakpoint.c:408:21: error: cast between incompatible function types from 'int (*)(struct arch_hw_breakpoint *)' to 'void (*)(void *)' [-Werror=cast-function-type]
-
-Since the warning is there for a reason, and should not be hidden behind
-a cast, provide an intermediate callback function to avoid the warning.
-
-Fixes: c1fe190c0672 ("powerpc: Add force enable of DAWR on P9 option")
-Suggested-by: Christoph Hellwig <hch@infradead.org>
-Cc: Michael Neuling <mikey@neuling.org>
-Signed-off-by: Mathieu Malaterre <malat@debian.org>
----
-v2: do not hide warning using a hack
-
- arch/powerpc/kernel/hw_breakpoint.c | 7 ++++++-
- 1 file changed, 6 insertions(+), 1 deletion(-)
-
-diff --git a/arch/powerpc/kernel/hw_breakpoint.c b/arch/powerpc/kernel/hw_breakpoint.c
-index f70fb89dbf60..969092d84a2f 100644
---- a/arch/powerpc/kernel/hw_breakpoint.c
-+++ b/arch/powerpc/kernel/hw_breakpoint.c
-@@ -386,6 +386,11 @@ void hw_breakpoint_pmu_read(struct perf_event *bp)
- bool dawr_force_enable;
- EXPORT_SYMBOL_GPL(dawr_force_enable);
- 
-+static void set_dawr_cb(void *info)
-+{
-+	set_dawr(info);
-+}
-+
- static ssize_t dawr_write_file_bool(struct file *file,
- 				    const char __user *user_buf,
- 				    size_t count, loff_t *ppos)
-@@ -405,7 +410,7 @@ static ssize_t dawr_write_file_bool(struct file *file,
- 
- 	/* If we are clearing, make sure all CPUs have the DAWR cleared */
- 	if (!dawr_force_enable)
--		smp_call_function((smp_call_func_t)set_dawr, &null_brk, 0);
-+		smp_call_function(set_dawr_cb, &null_brk, 0);
- 
- 	return rc;
- }
--- 
-2.20.1
-
+On 5/15/2019 3:29 PM, Christophe Leroy wrote:=0A=
+> Selftests report the following:=0A=
+> =0A=
+> [    2.984845] alg: skcipher: cbc-aes-talitos encryption test failed (wro=
+ng output IV) on test vector 0, cfg=3D"in-place"=0A=
+> [    2.995377] 00000000: 3d af ba 42 9d 9e b4 30 b4 22 da 80 2c 9f ac 41=
+=0A=
+> [    3.032673] alg: skcipher: cbc-des-talitos encryption test failed (wro=
+ng output IV) on test vector 0, cfg=3D"in-place"=0A=
+> [    3.043185] 00000000: fe dc ba 98 76 54 32 10=0A=
+> [    3.063238] alg: skcipher: cbc-3des-talitos encryption test failed (wr=
+ong output IV) on test vector 0, cfg=3D"in-place"=0A=
+> [    3.073818] 00000000: 7d 33 88 93 0f 93 b2 42=0A=
+> =0A=
+> This above dumps show that the actual output IV is indeed the input IV.=
+=0A=
+> This is due to the IV not being copied back into the request.=0A=
+> =0A=
+> This patch fixes that.=0A=
+> =0A=
+> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>=0A=
+Reviewed-by: Horia Geant=E3 <horia.geanta@nxp.com>=0A=
+=0A=
+While here, could you please check ecb mode (which by definition does not h=
+ave=0A=
+an IV) is behaving correctly?=0A=
+Looking in driver_algs[] list of crypto algorithms supported by talitos,=0A=
+ecb(aes,des,3des) are declared with ivsize !=3D 0.=0A=
+=0A=
+Thanks,=0A=
+Horia=0A=
