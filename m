@@ -2,61 +2,82 @@ Return-Path: <SRS0=9qWD=TP=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C0E8EC04E53
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 May 2019 10:22:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B05B2C04E53
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 May 2019 10:26:20 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 1505C20815
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 May 2019 10:22:37 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1505C20815
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
+	by mail.kernel.org (Postfix) with ESMTPS id 317862084F
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 May 2019 10:26:20 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=axtens.net header.i=@axtens.net header.b="LNFk3SYq"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 317862084F
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=axtens.net
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 453rGL46cRzDqTG
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 May 2019 20:22:34 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 453rLf0d94zDqSt
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 May 2019 20:26:18 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=kaod.org
- (client-ip=188.165.48.29; helo=11.mo1.mail-out.ovh.net;
- envelope-from=clg@kaod.org; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=axtens.net
+ (client-ip=2607:f8b0:4864:20::644; helo=mail-pl1-x644.google.com;
+ envelope-from=dja@axtens.net; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=kaod.org
-Received: from 11.mo1.mail-out.ovh.net (11.mo1.mail-out.ovh.net
- [188.165.48.29])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ dmarc=none (p=none dis=none) header.from=axtens.net
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=axtens.net header.i=@axtens.net header.b="LNFk3SYq"; 
+ dkim-atps=neutral
+Received: from mail-pl1-x644.google.com (mail-pl1-x644.google.com
+ [IPv6:2607:f8b0:4864:20::644])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 453rDs4cFnzDqRK
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 May 2019 20:21:14 +1000 (AEST)
-Received: from player761.ha.ovh.net (unknown [10.109.143.249])
- by mo1.mail-out.ovh.net (Postfix) with ESMTP id DCBFD1780BF
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 May 2019 12:13:35 +0200 (CEST)
-Received: from kaod.org (lfbn-1-10649-41.w90-89.abo.wanadoo.fr [90.89.235.41])
- (Authenticated sender: clg@kaod.org)
- by player761.ha.ovh.net (Postfix) with ESMTPSA id 2F9C65CA0640;
- Wed, 15 May 2019 10:13:26 +0000 (UTC)
-Subject: Re: [PATCH] powerpc/pseries: Fix xive=off command line
-To: Greg Kurz <groug@kaod.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Paul Mackerras <paulus@ozlabs.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>
-References: <155791470178.432724.8008395673479905061.stgit@bahia.lan>
-From: =?UTF-8?Q?C=c3=a9dric_Le_Goater?= <clg@kaod.org>
-Message-ID: <f627ac6d-1237-a980-b6a3-13f571d6d9c3@kaod.org>
-Date: Wed, 15 May 2019 12:13:25 +0200
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
- Thunderbird/60.6.1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 453rK84bddzDqSB
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 May 2019 20:25:00 +1000 (AEST)
+Received: by mail-pl1-x644.google.com with SMTP id c5so1116888pll.11
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 May 2019 03:25:00 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=axtens.net; s=google;
+ h=from:to:cc:subject:date:message-id:mime-version
+ :content-transfer-encoding;
+ bh=Sb4pV1d5lxWRP204NVfZBomUvfE6MxP49E2mX7dS5Bc=;
+ b=LNFk3SYqazir1mtooOos9X27csivCVSHkilxBtbcBBTJ57MuXcN0CJAkFjXJKhnyzh
+ 0+HbVTAkpr6A5iI97f9dQH1bAk6JEdmmVWs6tLeIhjuNw7t0FG1iR8HKNUTvK89fS+wr
+ 18lIAFxVcfHTtTnfVth8z84az/irEcPIUU+zI=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+ :content-transfer-encoding;
+ bh=Sb4pV1d5lxWRP204NVfZBomUvfE6MxP49E2mX7dS5Bc=;
+ b=fJpBZMkPnVqsW9bwPBLvzuNKPhfbl74IjKGEMAmVHG0hdR9MukagE+7wcjsSU8lYiL
+ fB4MLpqqU4pJ3cytaq+q3Ej6Kx8TbconSWgWSYarp8uY0CzhQzUPDlQjjDpqcoC43Zv9
+ T/oCblK3nKOu4h+moF1UMRmh+cKg23g8pG87XSEBNymVqe2i/5NOLWA/LQcsLsX3vHgl
+ V4hJyMA+v/Ki9JdZvZS+ih6u+6nZKgvfetUggKKC27pb4CMR2UTvCZy6xzVkOkk34Sbo
+ CQnJKiuHjGrxq2xROOZqBiJW6lBTcQTZLqkY13l6xuk+fmX/kEd71E19hLeKWiqntlKL
+ CK1g==
+X-Gm-Message-State: APjAAAXkBkbENhClZu0fJ6GqQlAzpibzo61t0E/lFnsqOT55WGhO8rAe
+ vdo2D+tQPIBwgQQQBZJLFYs28A==
+X-Google-Smtp-Source: APXvYqyjLExp8dImFftLMhrdYyBWBoJDEuAc+MBp5wYkorCb8rPwgnHl5nUDBpqX3DRe2bDSKOSMwQ==
+X-Received: by 2002:a17:902:868c:: with SMTP id
+ g12mr25668785plo.323.1557915897147; 
+ Wed, 15 May 2019 03:24:57 -0700 (PDT)
+Received: from localhost (dip-220-235-49-186.wa.westnet.com.au.
+ [220.235.49.186])
+ by smtp.gmail.com with ESMTPSA id 194sm4367930pfb.125.2019.05.15.03.24.55
+ (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
+ Wed, 15 May 2019 03:24:56 -0700 (PDT)
+From: Daniel Axtens <dja@axtens.net>
+To: mpe@ellerman.id.au, ebiggers@kernel.org, linux-crypto@vger.kernel.org,
+ Herbert Xu <herbert@gondor.apana.org.au>
+Subject: [PATCH] crypto: vmx - CTR: always increment IV as quadword
+Date: Wed, 15 May 2019 20:24:50 +1000
+Message-Id: <20190515102450.30557-1-dja@axtens.net>
+X-Mailer: git-send-email 2.19.1
 MIME-Version: 1.0
-In-Reply-To: <155791470178.432724.8008395673479905061.stgit@bahia.lan>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
 Content-Transfer-Encoding: 8bit
-X-Ovh-Tracer-Id: 16595201680402844598
-X-VR-SPAMSTATE: OK
-X-VR-SPAMSCORE: -100
-X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgeduuddrleekgddvjecutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfqggfjpdevjffgvefmvefgnecuuegrihhlohhuthemucehtddtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmd
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -68,201 +89,63 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: pavrampu@in.ibm.com, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, stable@vger.kernel.org
+Cc: leo.barbosa@canonical.com, Stephan Mueller <smueller@chronox.de>,
+ nayna@linux.ibm.com, omosnacek@gmail.com, leitao@debian.org,
+ pfsmorigo@gmail.com, marcelo.cerri@canonical.com, gcwilson@linux.ibm.com,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 5/15/19 12:05 PM, Greg Kurz wrote:
-> On POWER9, if the hypervisor supports XIVE exploitation mode, the guest OS
-> will unconditionally requests for the XIVE interrupt mode even if XIVE was
-> deactivated with the kernel command line xive=off. Later on, when the spapr
-> XIVE init code handles xive=off, it disables XIVE and tries to fall back on
-> the legacy mode XICS.
-> 
-> This discrepency causes a kernel panic because the hypervisor is configured
-> to provide the XIVE interrupt mode to the guest :
-> 
-> [    0.008837] kernel BUG at arch/powerpc/sysdev/xics/xics-common.c:135!
-> [    0.008877] Oops: Exception in kernel mode, sig: 5 [#1]
-> [    0.008908] LE SMP NR_CPUS=1024 NUMA pSeries
-> [    0.008939] Modules linked in:
-> [    0.008964] CPU: 0 PID: 1 Comm: swapper/0 Tainted: G        W         5.0.13-200.fc29.ppc64le #1
-> [    0.009018] NIP:  c000000001029ab8 LR: c000000001029aac CTR: c0000000018e0000
-> [    0.009065] REGS: c0000007f96d7900 TRAP: 0700   Tainted: G        W          (5.0.13-200.fc29.ppc64le)
-> [    0.009119] MSR:  8000000002029033 <SF,VEC,EE,ME,IR,DR,RI,LE>  CR: 28000222  XER: 20040000
-> [    0.009168] CFAR: c0000000001b1e28 IRQMASK: 0
-> [    0.009168] GPR00: c000000001029aac c0000007f96d7b90 c0000000015e8600 0000000000000000
-> [    0.009168] GPR04: 0000000000000001 0000000000000000 0000000000000061 646f6d61696e0d0a
-> [    0.009168] GPR08: 00000007fd8f0000 0000000000000001 c0000000014c44c0 c0000007f96d76cf
-> [    0.009168] GPR12: 0000000000000000 c0000000018e0000 0000000000000001 0000000000000000
-> [    0.009168] GPR16: 0000000000000000 0000000000000001 c0000007f96d7c08 c0000000016903d0
-> [    0.009168] GPR20: c0000007fffe04e8 ffffffffffffffea c000000001620164 c00000000161fe58
-> [    0.009168] GPR24: c000000000ea6c88 c0000000011151a8 00000000006000c0 c0000007f96d7c34
-> [    0.009168] GPR28: 0000000000000000 c0000000014b286c c000000001115180 c00000000161dc70
-> [    0.009558] NIP [c000000001029ab8] xics_smp_probe+0x38/0x98
-> [    0.009590] LR [c000000001029aac] xics_smp_probe+0x2c/0x98
-> [    0.009622] Call Trace:
-> [    0.009639] [c0000007f96d7b90] [c000000001029aac] xics_smp_probe+0x2c/0x98 (unreliable)
-> [    0.009687] [c0000007f96d7bb0] [c000000001033404] pSeries_smp_probe+0x40/0xa0
-> [    0.009734] [c0000007f96d7bd0] [c0000000010212a4] smp_prepare_cpus+0x62c/0x6ec
-> [    0.009782] [c0000007f96d7cf0] [c0000000010141b8] kernel_init_freeable+0x148/0x448
-> [    0.009829] [c0000007f96d7db0] [c000000000010ba4] kernel_init+0x2c/0x148
-> [    0.009870] [c0000007f96d7e20] [c00000000000bdd4] ret_from_kernel_thread+0x5c/0x68
-> [    0.009916] Instruction dump:
-> [    0.009940] 7c0802a6 60000000 7c0802a6 38800002 f8010010 f821ffe1 3c62001c e863b9a0
-> [    0.009988] 4b1882d1 60000000 7c690034 5529d97e <0b090000> 3d22001c e929b998 3ce2ff8f
-> 
-> Look for xive=off during prom_init and don't ask for XIVE in this case. One
-> exception though: if the host only supports XIVE, we still want to boot so
-> we ignore xive=off.
-> 
-> Similarly, have the spapr XIVE init code to looking at the interrupt mode
-> negociated during CAS, and ignore xive=off if the hypervisor only supports
-> XIVE.
-> 
-> Fixes: eac1e731b59e ("powerpc/xive: guest exploitation of the XIVE interrupt controller")
-> Cc: stable@vger.kernel.org # v4.20
-> Reported-by: Pavithra R. Prakash <pavrampu@in.ibm.com>
-> Signed-off-by: Greg Kurz <groug@kaod.org>
+The kernel self-tests picked up an issue with CTR mode:
+alg: skcipher: p8_aes_ctr encryption test failed (wrong result) on test vector 3, cfg="uneven misaligned splits, may sleep"
 
+Test vector 3 has an IV of FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFD, so
+after 3 increments it should wrap around to 0.
 
-Reviewed-by: Cédric Le Goater <clg@kaod.org>
+In the aesp8-ppc code from OpenSSL, there are two paths that
+increment IVs: the bulk (8 at a time) path, and the individual
+path which is used when there are fewer than 8 AES blocks to
+process.
 
-Thanks,
+In the bulk path, the IV is incremented with vadduqm: "Vector
+Add Unsigned Quadword Modulo", which does 128-bit addition.
 
-C.
+In the individual path, however, the IV is incremented with
+vadduwm: "Vector Add Unsigned Word Modulo", which instead
+does 4 32-bit additions. Thus the IV would instead become
+FFFFFFFFFFFFFFFFFFFFFFFF00000000, throwing off the result.
 
-> ---
-> eac1e731b59e is a v4.16 commit actually but this patch only applies
-> cleanly to v4.20 and newer. If needed I can send a backport for
-> older versions.
-> ---
->  arch/powerpc/kernel/prom_init.c  |   16 +++++++++++-
->  arch/powerpc/sysdev/xive/spapr.c |   52 +++++++++++++++++++++++++++++++++++++-
->  2 files changed, 66 insertions(+), 2 deletions(-)
-> 
-> diff --git a/arch/powerpc/kernel/prom_init.c b/arch/powerpc/kernel/prom_init.c
-> index 523bb99d7676..c8f7eb845927 100644
-> --- a/arch/powerpc/kernel/prom_init.c
-> +++ b/arch/powerpc/kernel/prom_init.c
-> @@ -172,6 +172,7 @@ static unsigned long __prombss prom_tce_alloc_end;
->  
->  #ifdef CONFIG_PPC_PSERIES
->  static bool __prombss prom_radix_disable;
-> +static bool __prombss prom_xive_disable;
->  #endif
->  
->  struct platform_support {
-> @@ -808,6 +809,12 @@ static void __init early_cmdline_parse(void)
->  	}
->  	if (prom_radix_disable)
->  		prom_debug("Radix disabled from cmdline\n");
-> +
-> +	opt = prom_strstr(prom_cmd_line, "xive=off");
-> +	if (opt) {
-> +		prom_xive_disable = true;
-> +		prom_debug("XIVE disabled from cmdline\n");
-> +	}
->  #endif /* CONFIG_PPC_PSERIES */
->  }
->  
-> @@ -1216,10 +1223,17 @@ static void __init prom_parse_xive_model(u8 val,
->  	switch (val) {
->  	case OV5_FEAT(OV5_XIVE_EITHER): /* Either Available */
->  		prom_debug("XIVE - either mode supported\n");
-> -		support->xive = true;
-> +		support->xive = !prom_xive_disable;
->  		break;
->  	case OV5_FEAT(OV5_XIVE_EXPLOIT): /* Only Exploitation mode */
->  		prom_debug("XIVE - exploitation mode supported\n");
-> +		if (prom_xive_disable) {
-> +			/*
-> +			 * If we __have__ to do XIVE, we're better off ignoring
-> +			 * the command line rather than not booting.
-> +			 */
-> +			prom_printf("WARNING: Ignoring cmdline option xive=off\n");
-> +		}
->  		support->xive = true;
->  		break;
->  	case OV5_FEAT(OV5_XIVE_LEGACY): /* Only Legacy mode */
-> diff --git a/arch/powerpc/sysdev/xive/spapr.c b/arch/powerpc/sysdev/xive/spapr.c
-> index 575db3b06a6b..2e2d1b8f810f 100644
-> --- a/arch/powerpc/sysdev/xive/spapr.c
-> +++ b/arch/powerpc/sysdev/xive/spapr.c
-> @@ -20,6 +20,7 @@
->  #include <linux/cpumask.h>
->  #include <linux/mm.h>
->  #include <linux/delay.h>
-> +#include <linux/libfdt.h>
->  
->  #include <asm/prom.h>
->  #include <asm/io.h>
-> @@ -663,6 +664,55 @@ static bool xive_get_max_prio(u8 *max_prio)
->  	return true;
->  }
->  
-> +static const u8 *get_vec5_feature(unsigned int index)
-> +{
-> +	unsigned long root, chosen;
-> +	int size;
-> +	const u8 *vec5;
-> +
-> +	root = of_get_flat_dt_root();
-> +	chosen = of_get_flat_dt_subnode_by_name(root, "chosen");
-> +	if (chosen == -FDT_ERR_NOTFOUND)
-> +		return NULL;
-> +
-> +	vec5 = of_get_flat_dt_prop(chosen, "ibm,architecture-vec-5", &size);
-> +	if (!vec5)
-> +		return NULL;
-> +
-> +	if (size <= index)
-> +		return NULL;
-> +
-> +	return vec5 + index;
-> +}
-> +
-> +static bool xive_spapr_disabled(void)
-> +{
-> +	const u8 *vec5_xive;
-> +
-> +	vec5_xive = get_vec5_feature(OV5_INDX(OV5_XIVE_SUPPORT));
-> +	if (vec5_xive) {
-> +		u8 val;
-> +
-> +		val = *vec5_xive & OV5_FEAT(OV5_XIVE_SUPPORT);
-> +		switch (val) {
-> +		case OV5_FEAT(OV5_XIVE_EITHER):
-> +		case OV5_FEAT(OV5_XIVE_LEGACY):
-> +			break;
-> +		case OV5_FEAT(OV5_XIVE_EXPLOIT):
-> +			/* Hypervisor only supports XIVE */
-> +			if (xive_cmdline_disabled)
-> +				pr_warn("WARNING: Ignoring cmdline option xive=off\n");
-> +			return false;
-> +		default:
-> +			pr_warn("%s: Unknown xive support option: 0x%x\n",
-> +				__func__, val);
-> +			break;
-> +		}
-> +	}
-> +
-> +	return xive_cmdline_disabled;
-> +}
-> +
->  bool __init xive_spapr_init(void)
->  {
->  	struct device_node *np;
-> @@ -675,7 +725,7 @@ bool __init xive_spapr_init(void)
->  	const __be32 *reg;
->  	int i;
->  
-> -	if (xive_cmdline_disabled)
-> +	if (xive_spapr_disabled())
->  		return false;
->  
->  	pr_devel("%s()\n", __func__);
-> 
+Use vadduqm.
+
+This was probably a typo originally, what with q and w being
+adjacent. It is a pretty narrow edge case: I am really
+impressed by the quality of the kernel self-tests!
+
+Fixes: 5c380d623ed3 ("crypto: vmx - Add support for VMS instructions by ASM")
+Cc: stable@vger.kernel.org
+Signed-off-by: Daniel Axtens <dja@axtens.net>
+
+---
+
+I'll pass this along internally to get it into OpenSSL as well.
+---
+ drivers/crypto/vmx/aesp8-ppc.pl | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/crypto/vmx/aesp8-ppc.pl b/drivers/crypto/vmx/aesp8-ppc.pl
+index de78282b8f44..9c6b5c1d6a1a 100644
+--- a/drivers/crypto/vmx/aesp8-ppc.pl
++++ b/drivers/crypto/vmx/aesp8-ppc.pl
+@@ -1357,7 +1357,7 @@ Loop_ctr32_enc:
+ 	addi		$idx,$idx,16
+ 	bdnz		Loop_ctr32_enc
+ 
+-	vadduwm		$ivec,$ivec,$one
++	vadduqm		$ivec,$ivec,$one
+ 	 vmr		$dat,$inptail
+ 	 lvx		$inptail,0,$inp
+ 	 addi		$inp,$inp,16
+-- 
+2.19.1
 
