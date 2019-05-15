@@ -2,57 +2,44 @@ Return-Path: <SRS0=9qWD=TP=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-3.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED,USER_AGENT_NEOMUTT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DCA27C04E53
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 May 2019 07:24:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2A6D8C04E53
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 May 2019 07:37:43 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 30DE120862
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 May 2019 07:24:41 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 30DE120862
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
+	by mail.kernel.org (Postfix) with ESMTPS id ABA0A20881
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 May 2019 07:37:42 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org ABA0A20881
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=suse.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 453mK26vQjzDqSc
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 May 2019 17:24:38 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 453mc23F6PzDqQc
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 May 2019 17:37:38 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=209.85.222.68; helo=mail-ua1-f68.google.com;
- envelope-from=geert.uytterhoeven@gmail.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=linux-m68k.org
-Received: from mail-ua1-f68.google.com (mail-ua1-f68.google.com
- [209.85.222.68])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ spf=pass (mailfrom) smtp.mailfrom=suse.com
+ (client-ip=195.135.220.15; helo=mx1.suse.de; envelope-from=pmladek@suse.com;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=suse.com
+Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 453mHX46lpzDqP9
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 May 2019 17:23:20 +1000 (AEST)
-Received: by mail-ua1-f68.google.com with SMTP id 79so339989uav.6
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 May 2019 00:23:20 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:mime-version:references:in-reply-to:from:date
- :message-id:subject:to:cc;
- bh=D6y3Txro2Y80xJMXPF/WXXyGFbfglpcuRYylKAaykOs=;
- b=nkLANUWE4Kdbrgc6T0t3YR8u+jIbze0XAhDlBboO14adEp0HtEsZ+aujakhnqfKbkG
- /gX63u+m965rhHW2WI0XmoarCbm+wLxI8W6RvP8zwlchdC10BV9iwVsCp43SKWbhpuB3
- 6YwnZsvPLsX0rJ0PynJS/cB8v0lAgVQT3hvyy7KtP8Ef726wRMB5ik3Kqto1291+/oI7
- ZehOgZzB033jzNxJOBwG0H0GBr9rU119B8B9u0MHMP3z2PhlcJBKoKJ630cEP8LQApxI
- OsMOOQo5lWoSpQFgSD00k3f5Hwd0D1PtNcx6MU/4WzAMZ94CLTEPO6cCjkOwITaSBpCZ
- Njaw==
-X-Gm-Message-State: APjAAAXeDUcJD8ZIJly7R9Zrj64CaJbBqlJ2x42vmDdY8yR9hRbz+pRU
- URCFdX59yEerRBRM6KlqfmPNrLHLpnXJ4QDN1sY=
-X-Google-Smtp-Source: APXvYqwXjd7ZJQ8Ru9EPguJi1io4zPagRBwnSJVZX+f303p0r2QyE6ajAOtJrnYR8sRf8L5ySdKBcnfwbQtAINpBUKc=
-X-Received: by 2002:ab0:6419:: with SMTP id x25mr19591138uao.86.1557904997683; 
- Wed, 15 May 2019 00:23:17 -0700 (PDT)
-MIME-Version: 1.0
-References: <20190510081635.GA4533@jagdpanzerIV>
- <20190510084213.22149-1-pmladek@suse.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 453mYz12YVzDqQ5
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 May 2019 17:35:48 +1000 (AEST)
+X-Virus-Scanned: by amavisd-new at test-mx.suse.de
+Received: from relay2.suse.de (unknown [195.135.220.254])
+ by mx1.suse.de (Postfix) with ESMTP id 8E79AABE9;
+ Wed, 15 May 2019 07:35:44 +0000 (UTC)
+Date: Wed, 15 May 2019 09:35:42 +0200
+From: Petr Mladek <pmladek@suse.com>
+To: Steven Rostedt <rostedt@goodmis.org>
+Subject: Re: [PATCH] vsprintf: Do not break early boot with probing addresses
+Message-ID: <20190515073542.y6ru2nfagtcrpdl7@pathway.suse.cz>
+References: <20190510084213.22149-1-pmladek@suse.com>
  <20190510122401.21a598f6@gandalf.local.home>
  <daf4dfd1-7f4f-8b92-6866-437c3a2be28b@c-s.fr>
  <096d6c9c17b3484484d9d9d3f3aa3a7c@AcuMS.aculab.com>
@@ -62,15 +49,11 @@ References: <20190510081635.GA4533@jagdpanzerIV>
  <45348cf615fe40d383c1a25688d4a88f@AcuMS.aculab.com>
  <CAMuHMdXaMObq9h2Sb49PW1-HUysPeaWXB7wJmKFz=xLmSoUDZg@mail.gmail.com>
  <20190514143751.48e81e05@oasis.local.home>
- <CAMuHMdUhy3uB+G23uXh__F2Y_Jsam5uS1Q5jJC95kWAOEM8WRA@mail.gmail.com>
- <20190514153503.6b7faaa7@oasis.local.home>
-In-Reply-To: <20190514153503.6b7faaa7@oasis.local.home>
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Wed, 15 May 2019 09:23:05 +0200
-Message-ID: <CAMuHMdUFEwxwQUWg0HNUiz75hP6S7TVGSx7fWXnsQ_3qsVfotQ@mail.gmail.com>
-Subject: Re: [PATCH] vsprintf: Do not break early boot with probing addresses
-To: Steven Rostedt <rostedt@goodmis.org>
-Content-Type: text/plain; charset="UTF-8"
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20190514143751.48e81e05@oasis.local.home>
+User-Agent: NeoMutt/20170912 (1.9.0)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -82,8 +65,7 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Petr Mladek <pmladek@suse.com>,
- "linux-arch@vger.kernel.org" <linux-arch@vger.kernel.org>,
+Cc: "linux-arch@vger.kernel.org" <linux-arch@vger.kernel.org>,
  Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>,
  Heiko Carstens <heiko.carstens@de.ibm.com>,
  "linux-s390@vger.kernel.org" <linux-s390@vger.kernel.org>,
@@ -92,7 +74,8 @@ Cc: Petr Mladek <pmladek@suse.com>,
  "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
  Michal Hocko <mhocko@suse.cz>,
  Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
- David Laight <David.Laight@aculab.com>, Stephen Rothwell <sfr@ozlabs.org>,
+ David Laight <David.Laight@aculab.com>,
+ Geert Uytterhoeven <geert@linux-m68k.org>, Stephen Rothwell <sfr@ozlabs.org>,
  Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
  Linus Torvalds <torvalds@linux-foundation.org>,
  Martin Schwidefsky <schwidefsky@de.ibm.com>, "Tobin C . Harding" <me@tobin.cc>
@@ -100,43 +83,60 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi Steve,
-
-On Tue, May 14, 2019 at 9:35 PM Steven Rostedt <rostedt@goodmis.org> wrote:
-> On Tue, 14 May 2019 21:13:06 +0200
+On Tue 2019-05-14 14:37:51, Steven Rostedt wrote:
+> 
+> [ Purple is a nice shade on the bike shed. ;-) ]
+> 
+> On Tue, 14 May 2019 11:02:17 +0200
 > Geert Uytterhoeven <geert@linux-m68k.org> wrote:
-> > > > Do we care about the value? "(-E%u)"?
+> 
+> > On Tue, May 14, 2019 at 10:29 AM David Laight <David.Laight@aculab.com> wrote:
+> > > > And I like Steven's "(fault)" idea.
+> > > > How about this:
+> > > >
+> > > >       if ptr < PAGE_SIZE              -> "(null)"
+> > > >       if IS_ERR_VALUE(ptr)            -> "(fault)"
+> > > >
+> > > >       -ss  
 > > >
-> > > That too could be confusing. What would (-E22) be considered by a user
-> > > doing an sprintf() on some string. I know that would confuse me, or I
-> > > would think that it was what the %pX displayed, and wonder why it
-> > > displayed it that way. Whereas "(fault)" is quite obvious for any %p
-> > > use case.
-> >
-> > I would immediately understand there's a missing IS_ERR() check in a
-> > function that can return  -EINVAL, without having to add a new printk()
-> > to find out what kind of bogus value has been received, and without
-> > having to reboot, and trying to reproduce...
->
-> I have to ask. Has there actually been a case that you used a %pX and
-> it faulted, and you had to go back to find what the value of the
-> failure was?
+> > > Or:
+> > >         if (ptr < PAGE_SIZE)
+> > >                 return ptr ? "(null+)" : "(null)";
+> 
+> Hmm, that is useful.
+> 
+> > >         if IS_ERR_VALUE(ptr)
+> > >                 return "(errno)"  
+> 
+> I still prefer "(fault)" as is pretty much all I would expect from a
+> pointer dereference, even if it is just bad parsing of, say, a parsing
+> an MAC address. "fault" is generic enough. "errno" will be confusing,
+> because that's normally a variable not a output.
+> 
+> > 
+> > Do we care about the value? "(-E%u)"?
+> 
+> That too could be confusing. What would (-E22) be considered by a user
+> doing an sprintf() on some string. I know that would confuse me, or I
+> would think that it was what the %pX displayed, and wonder why it
+> displayed it that way. Whereas "(fault)" is quite obvious for any %p
+> use case.
 
-If it faulted, the bad pointer value is obvious from the backtrace.
-If the code avoids the fault by verifying the pointer and returning
-"(efault)" instead, the bad pointer value is lost.
+This discussion clearly shows that it is hard to make anyone happy.
 
-Or am I missing something?
+I considered switching to "(fault)" because there seems to be more
+people in favor of this.
 
-Thanks!
+But there is used also "(einval)" when an unsupported pointer
+modifier is passed. The idea is to show error codes that people
+are familiar with.
 
-Gr{oetje,eeting}s,
+It might have been better to use the uppercase "(EFAULT)" and
+"(EINVAL)" to make it more obvious. But I wanted to follow
+the existing style with the lowercase "(null)".
 
-                        Geert
+As of now, I think that we should keep it as is unless there is
+some wider agreement on a change.
 
--- 
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+Best Regards,
+Petr
