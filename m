@@ -2,64 +2,64 @@ Return-Path: <SRS0=9qWD=TP=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,
+	USER_AGENT_MUTT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A63B2C04E53
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 May 2019 08:07:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D7FD1C04E53
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 May 2019 08:31:03 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id F123420675
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 May 2019 08:07:00 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org F123420675
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arndb.de
+	by mail.kernel.org (Postfix) with ESMTPS id 9B3AA20843
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 May 2019 08:31:01 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="SdigXGYp"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9B3AA20843
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linuxfoundation.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 453nFv0JbPzDqVK
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 May 2019 18:06:59 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 453nnb21twzDqVf
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 May 2019 18:30:59 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=209.85.222.193; helo=mail-qk1-f193.google.com;
- envelope-from=arndbergmann@gmail.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=arndb.de
-Received: from mail-qk1-f193.google.com (mail-qk1-f193.google.com
- [209.85.222.193])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ spf=pass (mailfrom) smtp.mailfrom=linuxfoundation.org
+ (client-ip=198.145.29.99; helo=mail.kernel.org;
+ envelope-from=gregkh@linuxfoundation.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=linuxfoundation.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=kernel.org header.i=@kernel.org header.b="SdigXGYp"; 
+ dkim-atps=neutral
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 453nDM3HvBzDqQm
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 May 2019 18:05:38 +1000 (AEST)
-Received: by mail-qk1-f193.google.com with SMTP id q197so130288qke.7
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 May 2019 01:05:38 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:mime-version:references:in-reply-to:from:date
- :message-id:subject:to:cc;
- bh=Q+ccq2l1YBXRacKh6NL0gv9RFQ3XL6hLCYeRFYOlzPA=;
- b=gkfTbJ9n9Updr5oRPlRgJFLp4DvmcWBGUy32IJ8C+fjjZmFEI/VzpLSc629F1UmrMw
- 8ud6fIdx2ZGNAUJxNfc8p8XZ6xHIqBIjSDJf+h4C2dzHQwt9QDAOJ00q7YGctc0T8yT9
- W8Uxc+sy2S5Y8dMnpGieLItL+3HL4T8XVC5FKZEa/KGbJiUsr6lhlUBYyNTTdBKUQUkh
- Du1GZ4dAVqcp+QDnmdNcEAYw4/hYIlJ67XKWIJdqEoN6PSPu//cg5k8FFWZlnh3XBIiS
- VQ0CxpzelKRryHjaC0MQvpGlTt3BH+dEC7HfDaVTdfmRp84zlSNo/0fD9UZzCvP7P6Uu
- d75w==
-X-Gm-Message-State: APjAAAWWhYY2CBLpdlQ51x5YfGW0XOGQHlUMy0y5iL+Qu52DUf2u7Y0V
- SImjbIitHzZEsyFKR4ASX3A2KaX6cYto76O4F7A=
-X-Google-Smtp-Source: APXvYqyIH5XViMS1a+4nEhLjKpZlbMQT/F6wM51bbNHL491ybxO9CDxjXoTFt4avIv9Jz3PVxDBDwzIn6dZ25APRqtI=
-X-Received: by 2002:a37:c441:: with SMTP id h1mr5276612qkm.291.1557907536423; 
- Wed, 15 May 2019 01:05:36 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 453nm06nn5zDq9R
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 May 2019 18:29:36 +1000 (AEST)
+Received: from localhost (83-86-89-107.cable.dynamic.v4.ziggo.nl
+ [83.86.89.107])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by mail.kernel.org (Postfix) with ESMTPSA id 43E7720843;
+ Wed, 15 May 2019 08:29:33 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+ s=default; t=1557908973;
+ bh=cb6Z72ERql0xdgtLEheM3Mr6tP+8TTkYRDEjF92YdbM=;
+ h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+ b=SdigXGYpCHahSil4CZYyy/NiXojNHYkhugo43zeFTqjlrDGXb1oFyhTfCwi/uoHhq
+ 1O+0Z8NwBTRc07OTs3Ya+ehdtc6bQJiPl6GgiBEbpVUYO61xxkovBN++Wra2EE8d3A
+ N6fYSRwKLhMwU1A0EEfRgvm2nD05P96Ok4Xgcpfk=
+Date: Wed, 15 May 2019 10:29:31 +0200
+From: Greg KH <gregkh@linuxfoundation.org>
+To: Christophe Leroy <christophe.leroy@c-s.fr>
+Subject: Re: [PATCH stable 4.9] powerpc/lib: fix book3s/32 boot failure due
+ to code patching
+Message-ID: <20190515082931.GA28349@kroah.com>
+References: <629c2acb1fcd09c2d2e3352370c3d9853372cf39.1557902321.git.christophe.leroy@c-s.fr>
 MIME-Version: 1.0
-References: <20190515072747.39941-1-xiaowei.bao@nxp.com>
- <20190515072747.39941-2-xiaowei.bao@nxp.com>
-In-Reply-To: <20190515072747.39941-2-xiaowei.bao@nxp.com>
-From: Arnd Bergmann <arnd@arndb.de>
-Date: Wed, 15 May 2019 10:05:19 +0200
-Message-ID: <CAK8P3a3AXRp_v_7hkoJA28tUCiSh1eYzbk4Q4h29OqL6y-KL8A@mail.gmail.com>
-Subject: Re: [PATCH 2/3] arm64: dts: ls1028a: Add PCIe controller DT nodes
-To: Xiaowei Bao <xiaowei.bao@nxp.com>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <629c2acb1fcd09c2d2e3352370c3d9853372cf39.1557902321.git.christophe.leroy@c-s.fr>
+User-Agent: Mutt/1.11.4 (2019-03-13)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -71,57 +71,36 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Mark Rutland <mark.rutland@arm.com>, Roy Zang <roy.zang@nxp.com>,
- Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>,
- DTML <devicetree@vger.kernel.org>, gregkh <gregkh@linuxfoundation.org>,
- Kate Stewart <kstewart@linuxfoundation.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- linux-pci <linux-pci@vger.kernel.org>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Kishon <kishon@ti.com>, "M.h. Lian" <minghuan.Lian@nxp.com>,
- Rob Herring <robh+dt@kernel.org>,
- Linux ARM <linux-arm-kernel@lists.infradead.org>,
- Philippe Ombredanne <pombredanne@nexb.com>,
- Bjorn Helgaas <bhelgaas@google.com>, Leo Li <leoyang.li@nxp.com>,
- Shawn Guo <shawnguo@kernel.org>, Shawn Lin <shawn.lin@rock-chips.com>,
- Mingkai Hu <mingkai.hu@nxp.com>
+Cc: erhard_f@mailbox.org, Michael Neuling <mikey@neuling.org>,
+ linux-kernel@vger.kernel.org,
+ "stable@vger.kernel.org" <stable@vger.kernel.org>,
+ Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, May 15, 2019 at 9:36 AM Xiaowei Bao <xiaowei.bao@nxp.com> wrote:
-> Signed-off-by: Xiaowei Bao <xiaowei.bao@nxp.com>
+On Wed, May 15, 2019 at 06:40:47AM +0000, Christophe Leroy wrote:
+> [Backport of upstream commit b45ba4a51cde29b2939365ef0c07ad34c8321789]
+> 
+> On powerpc32, patch_instruction() is called by apply_feature_fixups()
+> which is called from early_init()
+> 
+> There is the following note in front of early_init():
+>  * Note that the kernel may be running at an address which is different
+>  * from the address that it was linked at, so we must use RELOC/PTRRELOC
+>  * to access static data (including strings).  -- paulus
+> 
+> Therefore init_mem_is_free must be accessed with PTRRELOC()
+> 
+> Fixes: 1c38a84d4586 ("powerpc: Avoid code patching freed init sections")
+> Link: https://bugzilla.kernel.org/show_bug.cgi?id=203597
+> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+> 
 > ---
->  arch/arm64/boot/dts/freescale/fsl-ls1028a.dtsi |   52 ++++++++++++++++++++++++
->  1 files changed, 52 insertions(+), 0 deletions(-)
->
-> diff --git a/arch/arm64/boot/dts/freescale/fsl-ls1028a.dtsi b/arch/arm64/boot/dts/freescale/fsl-ls1028a.dtsi
-> index b045812..50b579b 100644
-> --- a/arch/arm64/boot/dts/freescale/fsl-ls1028a.dtsi
-> +++ b/arch/arm64/boot/dts/freescale/fsl-ls1028a.dtsi
-> @@ -398,6 +398,58 @@
->                         status = "disabled";
->                 };
->
-> +               pcie@3400000 {
-> +                       compatible = "fsl,ls1028a-pcie";
-> +                       reg = <0x00 0x03400000 0x0 0x00100000   /* controller registers */
-> +                              0x80 0x00000000 0x0 0x00002000>; /* configuration space */
-> +                       reg-names = "regs", "config";
-> +                       interrupts = <GIC_SPI 108 IRQ_TYPE_LEVEL_HIGH>, /* PME interrupt */
-> +                                    <GIC_SPI 109 IRQ_TYPE_LEVEL_HIGH>; /* aer interrupt */
-> +                       interrupt-names = "pme", "aer";
-> +                       #address-cells = <3>;
-> +                       #size-cells = <2>;
-> +                       device_type = "pci";
-> +                       dma-coherent;
-> +                       num-lanes = <4>;
-> +                       bus-range = <0x0 0xff>;
-> +                       ranges = <0x81000000 0x0 0x00000000 0x80 0x00010000 0x0 0x00010000   /* downstream I/O */
-> +                                 0x82000000 0x0 0x40000000 0x80 0x40000000 0x0 0x40000000>; /* non-prefetchable memory */
+> Can't apply the upstream commit as such due to several other unrelated stuff
+> like for instance STRICT_KERNEL_RWX which are missing.
+> So instead, using same approach as for commit 252eb55816a6f69ef9464cad303cdb3326cdc61d
 
-Are you sure there is no support for 64-bit BARs or prefetchable memory?
+Now queued up, thanks.
 
-Is this a hardware bug, or something that can be fixed in firmware?
-
-       Arnd
+greg k-h
