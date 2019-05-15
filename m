@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
 	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3443AC04AB4
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 May 2019 01:38:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8EBC7C04AB4
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 May 2019 01:39:24 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id A9A4D2084F
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 May 2019 01:38:10 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A9A4D2084F
+	by mail.kernel.org (Postfix) with ESMTPS id 0F09E2084F
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 May 2019 01:39:24 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0F09E2084F
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=git.icu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 453cdD2Jz5zDqPw
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 May 2019 11:38:08 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 453cff41M0zDqN3
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 May 2019 11:39:22 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=git.icu
  (client-ip=163.172.180.134; helo=git.icu; envelope-from=shawn@git.icu;
@@ -27,18 +27,18 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=git.icu
 Received: from git.icu (git.icu [163.172.180.134])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 453cbp3ZNmzDqNJ
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 May 2019 11:36:53 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 453ccc060LzDqNd
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 May 2019 11:37:36 +1000 (AEST)
 Received: from localhost.localdomain (minicloud.parqtec.unicamp.br
- [143.106.167.126]) by git.icu (Postfix) with ESMTPSA id BA1892206D1;
- Wed, 15 May 2019 01:36:45 +0000 (UTC)
+ [143.106.167.126]) by git.icu (Postfix) with ESMTPSA id 993B82206D1;
+ Wed, 15 May 2019 01:37:31 +0000 (UTC)
 From: Shawn Landden <shawn@git.icu>
 To: 
-Subject: [PATCH 1/2] [PowerPC] Add simd.h implementation
-Date: Tue, 14 May 2019 22:36:30 -0300
-Message-Id: <20190515013631.2099-1-shawn@git.icu>
+Subject: [v4 PATCH 1/2] [PowerPC] Add simd.h implementation
+Date: Tue, 14 May 2019 22:37:24 -0300
+Message-Id: <20190515013725.2198-1-shawn@git.icu>
 X-Mailer: git-send-email 2.21.0.1020.gf2820cf01a
 In-Reply-To: <20190513005104.20140-1-shawn@git.icu>
 References: <20190513005104.20140-1-shawn@git.icu>
