@@ -2,66 +2,92 @@ Return-Path: <SRS0=kVu9=TQ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
 	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 883EDC04E84
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 May 2019 11:44:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 64E7AC04AAF
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 May 2019 11:52:51 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 053F92089E
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 May 2019 11:44:08 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="fyEYQTsM"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 053F92089E
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	by mail.kernel.org (Postfix) with ESMTPS id E41C42082E
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 May 2019 11:52:50 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E41C42082E
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 454V1y5tTzzDqcW
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 May 2019 21:44:06 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 454VD04Q7LzDqHY
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 May 2019 21:52:48 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=kernel.org
- (client-ip=198.145.29.99; helo=mail.kernel.org;
- envelope-from=sashal@kernel.org; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
+ (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
+ envelope-from=aneesh.kumar@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=kernel.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="fyEYQTsM"; 
- dkim-atps=neutral
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ dmarc=none (p=none dis=none) header.from=linux.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 454Tx24XRYzDq9L
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 May 2019 21:39:50 +1000 (AEST)
-Received: from sasha-vm.mshome.net (c-73-47-72-35.hsd1.nh.comcast.net
- [73.47.72.35])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id 115322089E;
- Thu, 16 May 2019 11:39:46 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1558006787;
- bh=+ZPCNg3ruihxdWeoGY0MhxzDP6Lb0DhGX7m8k9gKt40=;
- h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=fyEYQTsMdX4VCkIj6Q6rPCr8xxaRu9yhF3dDZWjp4/7slOTZ5a2Ru1R3kApho6A26
- WVKySUqpIRFSgPDu/ZdagV/a4CD7fFzonteBDYHuzka3DKDY1IuqOJDhYfNVQE3YIB
- o4CB4xj/N/Ui6CtpNzf0JnNqbuchP+gmKf8ZwsQE=
-From: Sasha Levin <sashal@kernel.org>
-To: linux-kernel@vger.kernel.org,
-	stable@vger.kernel.org
-Subject: [PATCH AUTOSEL 5.0 11/34] KVM: PPC: Book3S HV: Perserve PSSCR
- FAKE_SUSPEND bit on guest exit
-Date: Thu, 16 May 2019 07:39:08 -0400
-Message-Id: <20190516113932.8348-11-sashal@kernel.org>
-X-Mailer: git-send-email 2.20.1
-In-Reply-To: <20190516113932.8348-1-sashal@kernel.org>
-References: <20190516113932.8348-1-sashal@kernel.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 454VB25JqBzDqSw
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 May 2019 21:51:05 +1000 (AEST)
+Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
+ x4GBjWH4154689
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 May 2019 07:51:02 -0400
+Received: from e14.ny.us.ibm.com (e14.ny.us.ibm.com [129.33.205.204])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2sh4vrxbrn-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 May 2019 07:51:02 -0400
+Received: from localhost
+ by e14.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.ibm.com>;
+ Thu, 16 May 2019 12:51:02 +0100
+Received: from b01cxnp22035.gho.pok.ibm.com (9.57.198.25)
+ by e14.ny.us.ibm.com (146.89.104.201) with IBM ESMTP SMTP Gateway: Authorized
+ Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Thu, 16 May 2019 12:51:00 +0100
+Received: from b01ledav001.gho.pok.ibm.com (b01ledav001.gho.pok.ibm.com
+ [9.57.199.106])
+ by b01cxnp22035.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x4GBoxjn25559190
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Thu, 16 May 2019 11:50:59 GMT
+Received: from b01ledav001.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 3BCF52805A;
+ Thu, 16 May 2019 11:50:59 +0000 (GMT)
+Received: from b01ledav001.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 9009B28060;
+ Thu, 16 May 2019 11:50:57 +0000 (GMT)
+Received: from skywalker.ibmuc.com (unknown [9.85.74.53])
+ by b01ledav001.gho.pok.ibm.com (Postfix) with ESMTP;
+ Thu, 16 May 2019 11:50:57 +0000 (GMT)
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
+To: npiggin@gmail.com, paulus@samba.org, mpe@ellerman.id.au
+Subject: [PATCH] powerpc/mm/hash: Improve address limit checks
+Date: Thu, 16 May 2019 17:20:54 +0530
+X-Mailer: git-send-email 2.21.0
 MIME-Version: 1.0
-X-stable: review
-X-Patchwork-Hint: Ignore
 Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+x-cbid: 19051611-0052-0000-0000-000003C02434
+X-IBM-SpamModules-Scores: 
+X-IBM-SpamModules-Versions: BY=3.00011105; HX=3.00000242; KW=3.00000007;
+ PH=3.00000004; SC=3.00000285; SDB=6.01204120; UDB=6.00632097; IPR=6.00985051; 
+ MB=3.00026917; MTD=3.00000008; XFM=3.00000015; UTC=2019-05-16 11:51:01
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 19051611-0053-0000-0000-000060EAE2FF
+Message-Id: <20190516115054.15220-1-aneesh.kumar@linux.ibm.com>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
+ definitions=2019-05-16_10:, , signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=954 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1810050000 definitions=main-1905160079
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -73,99 +99,68 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Sasha Levin <sashal@kernel.org>, linuxppc-dev@lists.ozlabs.org,
- kvm-ppc@vger.kernel.org, Suraj Jitindar Singh <sjitindarsingh@gmail.com>
+Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Suraj Jitindar Singh <sjitindarsingh@gmail.com>
+Different parts of the code do the limit check by ignoring the top nibble
+of EA. ie. we do checks like
 
-[ Upstream commit 7cb9eb106d7a4efab6bcf30ec9503f1d703c77f5 ]
+	if ((ea & EA_MASK)  >= H_PGTABLE_RANGE)
+	   	error
 
-There is a hardware bug in some POWER9 processors where a treclaim in
-fake suspend mode can cause an inconsistency in the XER[SO] bit across
-the threads of a core, the workaround being to force the core into SMT4
-when doing the treclaim.
+This patch makes sure we don't insert SLB entries for addresses whose top nibble
+doesn't match the ignored bits.
 
-The FAKE_SUSPEND bit (bit 10) in the PSSCR is used to control whether a
-thread is in fake suspend or real suspend. The important difference here
-being that thread reconfiguration is blocked in real suspend but not
-fake suspend mode.
+With an address like 0x4000000008000000, we can result in wrong slb entries like
 
-When we exit a guest which was in fake suspend mode, we force the core
-into SMT4 while we do the treclaim in kvmppc_save_tm_hv().
-However on the new exit path introduced with the function
-kvmhv_run_single_vcpu() we restore the host PSSCR before calling
-kvmppc_save_tm_hv() which means that if we were in fake suspend mode we
-put the thread into real suspend mode when we clear the
-PSSCR[FAKE_SUSPEND] bit. This means that we block thread reconfiguration
-and the thread which is trying to get the core into SMT4 before it can
-do the treclaim spins forever since it itself is blocking thread
-reconfiguration. The result is that that core is essentially lost.
+13 4000000008000000 400ea1b217000510   1T ESID=   400000 VSID=   ea1b217000 LLP:110
 
-This results in a trace such as:
-[   93.512904] CPU: 7 PID: 13352 Comm: qemu-system-ppc Not tainted 5.0.0 #4
-[   93.512905] NIP:  c000000000098a04 LR: c0000000000cc59c CTR: 0000000000000000
-[   93.512908] REGS: c000003fffd2bd70 TRAP: 0100   Not tainted  (5.0.0)
-[   93.512908] MSR:  9000000302883033 <SF,HV,VEC,VSX,FP,ME,IR,DR,RI,LE,TM[SE]>  CR: 22222444  XER: 00000000
-[   93.512914] CFAR: c000000000098a5c IRQMASK: 3
-[   93.512915] PACATMSCRATCH: 0000000000000001
-[   93.512916] GPR00: 0000000000000001 c000003f6cc1b830 c000000001033100 0000000000000004
-[   93.512928] GPR04: 0000000000000004 0000000000000002 0000000000000004 0000000000000007
-[   93.512930] GPR08: 0000000000000000 0000000000000004 0000000000000000 0000000000000004
-[   93.512932] GPR12: c000203fff7fc000 c000003fffff9500 0000000000000000 0000000000000000
-[   93.512935] GPR16: 2000000000300375 000000000000059f 0000000000000000 0000000000000000
-[   93.512951] GPR20: 0000000000000000 0000000000080053 004000000256f41f c000003f6aa88ef0
-[   93.512953] GPR24: c000003f6aa89100 0000000000000010 0000000000000000 0000000000000000
-[   93.512956] GPR28: c000003f9e9a0800 0000000000000000 0000000000000001 c000203fff7fc000
-[   93.512959] NIP [c000000000098a04] pnv_power9_force_smt4_catch+0x1b4/0x2c0
-[   93.512960] LR [c0000000000cc59c] kvmppc_save_tm_hv+0x40/0x88
-[   93.512960] Call Trace:
-[   93.512961] [c000003f6cc1b830] [0000000000080053] 0x80053 (unreliable)
-[   93.512965] [c000003f6cc1b8a0] [c00800001e9cb030] kvmhv_p9_guest_entry+0x508/0x6b0 [kvm_hv]
-[   93.512967] [c000003f6cc1b940] [c00800001e9cba44] kvmhv_run_single_vcpu+0x2dc/0xb90 [kvm_hv]
-[   93.512968] [c000003f6cc1ba10] [c00800001e9cc948] kvmppc_vcpu_run_hv+0x650/0xb90 [kvm_hv]
-[   93.512969] [c000003f6cc1bae0] [c00800001e8f620c] kvmppc_vcpu_run+0x34/0x48 [kvm]
-[   93.512971] [c000003f6cc1bb00] [c00800001e8f2d4c] kvm_arch_vcpu_ioctl_run+0x2f4/0x400 [kvm]
-[   93.512972] [c000003f6cc1bb90] [c00800001e8e3918] kvm_vcpu_ioctl+0x460/0x7d0 [kvm]
-[   93.512974] [c000003f6cc1bd00] [c0000000003ae2c0] do_vfs_ioctl+0xe0/0x8e0
-[   93.512975] [c000003f6cc1bdb0] [c0000000003aeb24] ksys_ioctl+0x64/0xe0
-[   93.512978] [c000003f6cc1be00] [c0000000003aebc8] sys_ioctl+0x28/0x80
-[   93.512981] [c000003f6cc1be20] [c00000000000b3a4] system_call+0x5c/0x70
-[   93.512983] Instruction dump:
-[   93.512986] 419dffbc e98c0000 2e8b0000 38000001 60000000 60000000 60000000 40950068
-[   93.512993] 392bffff 39400000 79290020 39290001 <7d2903a6> 60000000 60000000 7d235214
+without this patch we will map that EA with LINEAR_MAP_REGION_ID and further
+those addr limit check will return false.
 
-To fix this we preserve the PSSCR[FAKE_SUSPEND] bit until we call
-kvmppc_save_tm_hv() which will mean the core can get into SMT4 and
-perform the treclaim. Note kvmppc_save_tm_hv() clears the
-PSSCR[FAKE_SUSPEND] bit again so there is no need to explicitly do that.
-
-Fixes: 95a6432ce9038 ("KVM: PPC: Book3S HV: Streamlined guest entry/exit path on P9 for radix guests")
-
-Signed-off-by: Suraj Jitindar Singh <sjitindarsingh@gmail.com>
-Signed-off-by: Paul Mackerras <paulus@ozlabs.org>
-Signed-off-by: Sasha Levin <sashal@kernel.org>
+Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
 ---
- arch/powerpc/kvm/book3s_hv.c | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+ arch/powerpc/include/asm/book3s/64/hash.h | 10 ++++++----
+ 1 file changed, 6 insertions(+), 4 deletions(-)
 
-diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
-index 5a066fc299e17..f17065f2c962f 100644
---- a/arch/powerpc/kvm/book3s_hv.c
-+++ b/arch/powerpc/kvm/book3s_hv.c
-@@ -3407,7 +3407,9 @@ static int kvmhv_load_hv_regs_and_go(struct kvm_vcpu *vcpu, u64 time_limit,
- 	vcpu->arch.shregs.sprg2 = mfspr(SPRN_SPRG2);
- 	vcpu->arch.shregs.sprg3 = mfspr(SPRN_SPRG3);
+diff --git a/arch/powerpc/include/asm/book3s/64/hash.h b/arch/powerpc/include/asm/book3s/64/hash.h
+index 5486087e64ea..1060fadb4a56 100644
+--- a/arch/powerpc/include/asm/book3s/64/hash.h
++++ b/arch/powerpc/include/asm/book3s/64/hash.h
+@@ -29,10 +29,8 @@
+ #define H_PGTABLE_EADDR_SIZE	(H_PTE_INDEX_SIZE + H_PMD_INDEX_SIZE + \
+ 				 H_PUD_INDEX_SIZE + H_PGD_INDEX_SIZE + PAGE_SHIFT)
+ #define H_PGTABLE_RANGE		(ASM_CONST(1) << H_PGTABLE_EADDR_SIZE)
+-/*
+- * Top 2 bits are ignored in page table walk.
+- */
+-#define EA_MASK			(~(0xcUL << 60))
++
++#define EA_MASK			(~PAGE_OFFSET)
  
--	mtspr(SPRN_PSSCR, host_psscr);
-+	/* Preserve PSSCR[FAKE_SUSPEND] until we've called kvmppc_save_tm_hv */
-+	mtspr(SPRN_PSSCR, host_psscr |
-+	      (local_paca->kvm_hstate.fake_suspend << PSSCR_FAKE_SUSPEND_LG));
- 	mtspr(SPRN_HFSCR, host_hfscr);
- 	mtspr(SPRN_CIABR, host_ciabr);
- 	mtspr(SPRN_DAWR, host_dawr);
+ /*
+  * We store the slot details in the second half of page table.
+@@ -93,6 +91,7 @@
+ #define VMALLOC_REGION_ID	NON_LINEAR_REGION_ID(H_VMALLOC_START)
+ #define IO_REGION_ID		NON_LINEAR_REGION_ID(H_KERN_IO_START)
+ #define VMEMMAP_REGION_ID	NON_LINEAR_REGION_ID(H_VMEMMAP_START)
++#define INVALID_REGION_ID	(VMEMMAP_REGION_ID + 1)
+ 
+ /*
+  * Defines the address of the vmemap area, in its own region on
+@@ -119,6 +118,9 @@ static inline int get_region_id(unsigned long ea)
+ 	if (id == 0)
+ 		return USER_REGION_ID;
+ 
++	if (id != (PAGE_OFFSET >> 60))
++		return INVALID_REGION_ID;
++
+ 	if (ea < H_KERN_VIRT_START)
+ 		return LINEAR_MAP_REGION_ID;
+ 
 -- 
-2.20.1
+2.21.0
 
