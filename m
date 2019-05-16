@@ -7,21 +7,21 @@ X-Spam-Status: No, score=-11.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EB9C1C04AAF
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 May 2019 18:04:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D38B6C04AAF
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 May 2019 18:05:58 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3AD4620657
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 May 2019 18:04:40 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 5E55620657
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 May 2019 18:05:58 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=sirena.org.uk header.i=@sirena.org.uk header.b="NxNYO5a+"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3AD4620657
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=sirena.org.uk header.i=@sirena.org.uk header.b="QvubYhE2"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5E55620657
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 454fT15PlFzDqSG
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 May 2019 04:04:37 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 454fVX3q03zDqWK
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 May 2019 04:05:56 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=none (mailfrom) smtp.mailfrom=sirena.org.uk
  (client-ip=2a01:7e01::f03c:91ff:fed4:a3b6; helo=heliosphere.sirena.org.uk;
@@ -30,37 +30,37 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=sirena.org.uk header.i=@sirena.org.uk
- header.b="NxNYO5a+"; dkim-atps=neutral
+ header.b="QvubYhE2"; dkim-atps=neutral
 Received: from heliosphere.sirena.org.uk (heliosphere.sirena.org.uk
  [IPv6:2a01:7e01::f03c:91ff:fed4:a3b6])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 454fRJ6HxKzDq8X
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 May 2019 04:03:08 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 454fRM5DZQzDq8X
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 May 2019 04:03:11 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
  d=sirena.org.uk; s=20170815-heliosphere; h=Date:Message-Id:In-Reply-To:
  Subject:Cc:To:From:Sender:Reply-To:MIME-Version:Content-Type:
  Content-Transfer-Encoding:Content-ID:Content-Description:Resent-Date:
  Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:References:
  List-Id:List-Help:List-Unsubscribe:List-Subscribe:List-Post:List-Owner:
- List-Archive; bh=ekT/k7vlXSvj5k6HNpwx2lIkAO/l/9VkzZ2ftxsAgRE=; b=NxNYO5a+pBoX
- jgx89xKhk2hDxxmNv78NyjHKie8RM3Eo0AbOgh1W7B/wjzHZesg+HTUKIVJ1uBN26tcSzZKB7iX+Y
- uGYq3GjhmAllMPSyLwG9fbGRqpsRzN+Qnw1gxIQraQXvHgTKgCGqDZNyCLCIbckbF/VzT0tSshT7t
- YoQ4w=;
+ List-Archive; bh=8bZja2xkVqlKe9Ee36ywIzxXtmLn67PxOoUS8NcSf8U=; b=QvubYhE2Lk8n
+ SagD9Sc5z3FsyW4VJjfM5XnXOGeOgDXnpgHFGTsX/dSvZ6/nzECisUCScJ/bH5xY4cW3SVlWZSQMl
+ BfHSND6EUoWYSC6KDeXTSUHhyRyb3ZEJO8n/2ICrP/Vk7Li+bu+XrELoSSdIXDqYsDBwEMkpVq9g2
+ F6qLg=;
 Received: from cpc102320-sgyl38-2-0-cust46.18-2.cable.virginm.net
  ([82.37.168.47] helo=debutante.sirena.org.uk)
  by heliosphere.sirena.org.uk with esmtpa (Exim 4.89)
  (envelope-from <broonie@sirena.org.uk>)
- id 1hRKia-00085R-6y; Thu, 16 May 2019 18:03:00 +0000
+ id 1hRKiZ-00085Q-U6; Thu, 16 May 2019 18:02:59 +0000
 Received: by debutante.sirena.org.uk (Postfix, from userid 1000)
- id AA4AD112929F; Thu, 16 May 2019 19:02:59 +0100 (BST)
+ id 768C1112929E; Thu, 16 May 2019 19:02:59 +0100 (BST)
 From: Mark Brown <broonie@kernel.org>
 To: S.j. Wang <shengjiu.wang@nxp.com>
-Subject: Applied "ASoC: fsl_asrc: Fix the issue about unsupported rate" to the
- asoc tree
-In-Reply-To: <e0c519d616b48a1481c9f239646517b453e7ce50.1557901312.git.shengjiu.wang@nxp.com>
+Subject: Applied "ASoC: fsl_asrc: replace the process_option table with
+ function" to the asoc tree
+In-Reply-To: <7d683186c3de9314e361fd4ead42f9691968e65c.1557901312.git.shengjiu.wang@nxp.com>
 X-Patchwork-Hint: ignore
-Message-Id: <20190516180259.AA4AD112929F@debutante.sirena.org.uk>
+Message-Id: <20190516180259.768C1112929E@debutante.sirena.org.uk>
 Date: Thu, 16 May 2019 19:02:59 +0100 (BST)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -75,20 +75,19 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 Cc: alsa-devel@alsa-project.org, timur@kernel.org, Xiubo.Lee@gmail.com,
  festevam@gmail.com, Shengjiu Wang <shengjiu.wang@nxp.com>,
- linux-kernel@vger.kernel.org, stable@vger.kernel.org,
- Nicolin Chen <nicoleotsuka@gmail.com>, Mark Brown <broonie@kernel.org>,
- linuxppc-dev@lists.ozlabs.org
+ linux-kernel@vger.kernel.org, Nicolin Chen <nicoleotsuka@gmail.com>,
+ Mark Brown <broonie@kernel.org>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
 The patch
 
-   ASoC: fsl_asrc: Fix the issue about unsupported rate
+   ASoC: fsl_asrc: replace the process_option table with function
 
 has been applied to the asoc tree at
 
-   https://git.kernel.org/pub/scm/linux/kernel/git/broonie/sound.git for-5.2
+   https://git.kernel.org/pub/scm/linux/kernel/git/broonie/sound.git for-5.3
 
 All being well this means that it will be integrated into the linux-next
 tree (usually sometime in the next 24 hours) and sent to Linus during
@@ -109,42 +108,134 @@ to this mail.
 Thanks,
 Mark
 
-From b06c58c2a1eed571ea2a6640fdb85b7b00196b1e Mon Sep 17 00:00:00 2001
+From 4aecaa0a82b3142fb2f2862b3f25ecc96dc06d8c Mon Sep 17 00:00:00 2001
 From: "S.j. Wang" <shengjiu.wang@nxp.com>
-Date: Wed, 15 May 2019 06:42:18 +0000
-Subject: [PATCH] ASoC: fsl_asrc: Fix the issue about unsupported rate
+Date: Wed, 15 May 2019 06:42:22 +0000
+Subject: [PATCH] ASoC: fsl_asrc: replace the process_option table with
+ function
 
-When the output sample rate is [8kHz, 30kHz], the limitation
-of the supported ratio range is [1/24, 8]. In the driver
-we use (8kHz, 30kHz) instead of [8kHz, 30kHz].
-So this patch is to fix this issue and the potential rounding
-issue with divider.
+When we want to support more sample rate, for example 12kHz/24kHz
+we need update the process_option table, if we want to support more
+sample rate next time, the table need to be updated again. which
+is not flexible.
 
-Fixes: fff6e03c7b65 ("ASoC: fsl_asrc: add support for 8-30kHz
-output sample rate")
-Cc: <stable@vger.kernel.org>
+We got a function fsl_asrc_sel_proc to replace the table, which can
+give the pre-processing and post-processing options according to
+the sample rate.
+
 Signed-off-by: Shengjiu Wang <shengjiu.wang@nxp.com>
 Acked-by: Nicolin Chen <nicoleotsuka@gmail.com>
 Signed-off-by: Mark Brown <broonie@kernel.org>
 ---
- sound/soc/fsl/fsl_asrc.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ sound/soc/fsl/fsl_asrc.c | 71 +++++++++++++++++++++++++++++-----------
+ 1 file changed, 51 insertions(+), 20 deletions(-)
 
 diff --git a/sound/soc/fsl/fsl_asrc.c b/sound/soc/fsl/fsl_asrc.c
-index 0b937924d2e4..ea035c12a325 100644
+index 0b937924d2e4..71793d3dc75c 100644
 --- a/sound/soc/fsl/fsl_asrc.c
 +++ b/sound/soc/fsl/fsl_asrc.c
-@@ -282,8 +282,8 @@ static int fsl_asrc_config_pair(struct fsl_asrc_pair *pair)
- 		return -EINVAL;
- 	}
+@@ -26,24 +26,6 @@
+ #define pair_dbg(fmt, ...) \
+ 	dev_dbg(&asrc_priv->pdev->dev, "Pair %c: " fmt, 'A' + index, ##__VA_ARGS__)
  
--	if ((outrate > 8000 && outrate < 30000) &&
--	    (outrate/inrate > 24 || inrate/outrate > 8)) {
-+	if ((outrate >= 8000 && outrate <= 30000) &&
-+	    (outrate > 24 * inrate || inrate > 8 * outrate)) {
- 		pair_err("exceed supported ratio range [1/24, 8] for \
- 				inrate/outrate: %d/%d\n", inrate, outrate);
- 		return -EINVAL;
+-/* Sample rates are aligned with that defined in pcm.h file */
+-static const u8 process_option[][12][2] = {
+-	/* 8kHz 11.025kHz 16kHz 22.05kHz 32kHz 44.1kHz 48kHz   64kHz   88.2kHz 96kHz   176kHz  192kHz */
+-	{{0, 1}, {0, 1}, {0, 1}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0},},	/* 5512Hz */
+-	{{0, 1}, {0, 1}, {0, 1}, {0, 1}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0},},	/* 8kHz */
+-	{{0, 2}, {0, 1}, {0, 1}, {0, 1}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0},},	/* 11025Hz */
+-	{{1, 2}, {0, 2}, {0, 1}, {0, 1}, {0, 1}, {0, 1}, {0, 1}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0},},	/* 16kHz */
+-	{{1, 2}, {1, 2}, {0, 2}, {0, 1}, {0, 1}, {0, 1}, {0, 1}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0},},	/* 22050Hz */
+-	{{1, 2}, {2, 1}, {2, 1}, {0, 2}, {0, 1}, {0, 1}, {0, 1}, {0, 1}, {0, 1}, {0, 0}, {0, 0}, {0, 0},},	/* 32kHz */
+-	{{2, 2}, {2, 2}, {2, 1}, {2, 1}, {0, 2}, {0, 1}, {0, 1}, {0, 1}, {0, 1}, {0, 1}, {0, 0}, {0, 0},},	/* 44.1kHz */
+-	{{2, 2}, {2, 2}, {2, 1}, {2, 1}, {0, 2}, {0, 2}, {0, 1}, {0, 1}, {0, 1}, {0, 1}, {0, 0}, {0, 0},},	/* 48kHz */
+-	{{2, 2}, {2, 2}, {2, 2}, {2, 1}, {1, 2}, {0, 2}, {0, 2}, {0, 1}, {0, 1}, {0, 1}, {0, 1}, {0, 0},},	/* 64kHz */
+-	{{2, 2}, {2, 2}, {2, 2}, {2, 2}, {1, 2}, {1, 2}, {1, 2}, {1, 1}, {1, 1}, {1, 1}, {1, 1}, {1, 1},},	/* 88.2kHz */
+-	{{2, 2}, {2, 2}, {2, 2}, {2, 2}, {1, 2}, {1, 2}, {1, 2}, {1, 1}, {1, 1}, {1, 1}, {1, 1}, {1, 1},},	/* 96kHz */
+-	{{2, 2}, {2, 2}, {2, 2}, {2, 2}, {2, 2}, {2, 2}, {2, 2}, {2, 1}, {2, 1}, {2, 1}, {2, 1}, {2, 1},},	/* 176kHz */
+-	{{2, 2}, {2, 2}, {2, 2}, {2, 2}, {2, 2}, {2, 2}, {2, 2}, {2, 1}, {2, 1}, {2, 1}, {2, 1}, {2, 1},},	/* 192kHz */
+-};
+-
+ /* Corresponding to process_option */
+ static int supported_input_rate[] = {
+ 	5512, 8000, 11025, 16000, 22050, 32000, 44100, 48000, 64000, 88200,
+@@ -79,6 +61,52 @@ static unsigned char output_clk_map_imx53[] = {
+ 
+ static unsigned char *clk_map[2];
+ 
++/**
++ * Select the pre-processing and post-processing options
++ * Make sure to exclude following unsupported cases before
++ * calling this function:
++ * 1) inrate > 8.125 * outrate
++ * 2) inrate > 16.125 * outrate
++ *
++ * inrate: input sample rate
++ * outrate: output sample rate
++ * pre_proc: return value for pre-processing option
++ * post_proc: return value for post-processing option
++ */
++static void fsl_asrc_sel_proc(int inrate, int outrate,
++			     int *pre_proc, int *post_proc)
++{
++	bool post_proc_cond2;
++	bool post_proc_cond0;
++
++	/* select pre_proc between [0, 2] */
++	if (inrate * 8 > 33 * outrate)
++		*pre_proc = 2;
++	else if (inrate * 8 > 15 * outrate) {
++		if (inrate > 152000)
++			*pre_proc = 2;
++		else
++			*pre_proc = 1;
++	} else if (inrate < 76000)
++		*pre_proc = 0;
++	else if (inrate > 152000)
++		*pre_proc = 2;
++	else
++		*pre_proc = 1;
++
++	/* Condition for selection of post-processing */
++	post_proc_cond2 = (inrate * 15 > outrate * 16 && outrate < 56000) ||
++			  (inrate > 56000 && outrate < 56000);
++	post_proc_cond0 = inrate * 23 < outrate * 8;
++
++	if (post_proc_cond2)
++		*post_proc = 2;
++	else if (post_proc_cond0)
++		*post_proc = 0;
++	else
++		*post_proc = 1;
++}
++
+ /**
+  * Request ASRC pair
+  *
+@@ -239,6 +267,7 @@ static int fsl_asrc_config_pair(struct fsl_asrc_pair *pair)
+ 	u32 inrate, outrate, indiv, outdiv;
+ 	u32 clk_index[2], div[2];
+ 	int in, out, channels;
++	int pre_proc, post_proc;
+ 	struct clk *clk;
+ 	bool ideal;
+ 
+@@ -377,11 +406,13 @@ static int fsl_asrc_config_pair(struct fsl_asrc_pair *pair)
+ 			   ASRCTR_IDRi_MASK(index) | ASRCTR_USRi_MASK(index),
+ 			   ASRCTR_IDR(index) | ASRCTR_USR(index));
+ 
++	fsl_asrc_sel_proc(inrate, outrate, &pre_proc, &post_proc);
++
+ 	/* Apply configurations for pre- and post-processing */
+ 	regmap_update_bits(asrc_priv->regmap, REG_ASRCFG,
+ 			   ASRCFG_PREMODi_MASK(index) |	ASRCFG_POSTMODi_MASK(index),
+-			   ASRCFG_PREMOD(index, process_option[in][out][0]) |
+-			   ASRCFG_POSTMOD(index, process_option[in][out][1]));
++			   ASRCFG_PREMOD(index, pre_proc) |
++			   ASRCFG_POSTMOD(index, post_proc));
+ 
+ 	return fsl_asrc_set_ideal_ratio(pair, inrate, outrate);
+ }
 -- 
 2.20.1
 
