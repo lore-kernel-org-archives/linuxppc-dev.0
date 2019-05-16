@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-4.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 000E7C04AAF
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 May 2019 16:29:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 65441C04AAF
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 May 2019 16:30:21 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 7C5272082E
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 May 2019 16:29:01 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7C5272082E
+	by mail.kernel.org (Postfix) with ESMTPS id E5DB82082E
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 May 2019 16:30:20 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E5DB82082E
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=decadent.org.uk
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 454cLg52w4zDqfX
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 May 2019 02:28:59 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 454cNB4sN7zDqkk
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 May 2019 02:30:18 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=decadent.org.uk
  (client-ip=88.96.1.126; helo=shadbolt.e.decadent.org.uk;
@@ -29,27 +29,28 @@ Received: from shadbolt.e.decadent.org.uk (shadbolt.e.decadent.org.uk
  [88.96.1.126])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 454cGB3wSTzDqfF
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 May 2019 02:25:06 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 454cGF5RgjzDqfG
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 May 2019 02:25:09 +1000 (AEST)
 Received: from [167.98.27.226] (helo=deadeye)
  by shadbolt.decadent.org.uk with esmtps
  (TLS1.2:ECDHE_RSA_AES_256_GCM_SHA384:256) (Exim 4.89)
  (envelope-from <ben@decadent.org.uk>)
- id 1hRImJ-0006zW-P7; Thu, 16 May 2019 16:58:43 +0100
+ id 1hRImD-0006yp-5s; Thu, 16 May 2019 16:58:37 +0100
 Received: from ben by deadeye with local (Exim 4.92)
  (envelope-from <ben@decadent.org.uk>)
- id 1hRImF-0001Sj-2I; Thu, 16 May 2019 16:58:39 +0100
+ id 1hRImC-0001N3-J7; Thu, 16 May 2019 16:58:36 +0100
 Content-Type: text/plain; charset="UTF-8"
 Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
 MIME-Version: 1.0
 From: Ben Hutchings <ben@decadent.org.uk>
 To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Date: Thu, 16 May 2019 16:55:33 +0100
-Message-ID: <lsq.1558022133.486480847@decadent.org.uk>
+Date: Thu, 16 May 2019 16:55:32 +0100
+Message-ID: <lsq.1558022132.38146636@decadent.org.uk>
 X-Mailer: LinuxStableQueue (scripts by bwh)
 X-Patchwork-Hint: ignore
-Subject: [PATCH 3.16 79/86] cpu/speculation: Add 'mitigations=' cmdline option
+Subject: [PATCH 3.16 09/86] jump_label: Allow jump labels to be used in
+ assembly
 In-Reply-To: <lsq.1558022132.52852998@decadent.org.uk>
 X-SA-Exim-Connect-IP: 167.98.27.226
 X-SA-Exim-Mail-From: ben@decadent.org.uk
@@ -66,22 +67,16 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Peter Zijlstra <peterz@infradead.org>,
- Catalin Marinas <catalin.marinas@arm.com>,
- Denis Kirjanov <kda@linux-powerpc.org>,
- Heiko Carstens <heiko.carstens@de.ibm.com>, Paul Mackerras <paulus@samba.org>,
- "H . Peter Anvin" <hpa@zytor.com>, linux-arch@vger.kernel.org,
- linux-s390@vger.kernel.org, Steven Price <steven.price@arm.com>,
- Linus Torvalds <torvalds@linux-foundation.org>,
- Waiman Long <longman@redhat.com>, Andrea Arcangeli <aarcange@redhat.com>,
- Jon Masters <jcm@redhat.com>, Will Deacon <will.deacon@arm.com>,
- Jiri Kosina <jikos@kernel.org>, Borislav Petkov <bp@alien8.de>,
- Andy Lutomirski <luto@kernel.org>, Josh Poimboeuf <jpoimboe@redhat.com>,
- Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org,
- Phil Auld <pauld@redhat.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Randy Dunlap <rdunlap@infradead.org>, Tyler Hicks <tyhicks@canonical.com>,
- Jiri Kosina <jkosina@suse.cz>, Martin Schwidefsky <schwidefsky@de.ibm.com>,
- akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org
+Cc: "Peter Zijlstra \(Intel\)" <peterz@infradead.org>,
+ Denis Kirjanov <kda@linux-powerpc.org>, heiko.carstens@de.ibm.com,
+ paulus@samba.org, Ingo Molnar <mingo@kernel.org>, linux@arm.linux.org.uk,
+ mgorman@suse.de, catalin.marinas@arm.com,
+ "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, liuj97@gmail.com,
+ will.deacon@arm.com, rostedt@goodmis.org, jbaron@akamai.com,
+ Anton Blanchard <anton@samba.org>, Thomas Gleixner <tglx@linutronix.de>,
+ mmarek@suse.cz, Linus Torvalds <torvalds@linux-foundation.org>,
+ ralf@linux-mips.org, schwidefsky@de.ibm.com, akpm@linux-foundation.org,
+ linuxppc-dev@lists.ozlabs.org, davem@davemloft.net
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
@@ -90,144 +85,108 @@ Sender: "Linuxppc-dev"
 
 ------------------
 
-From: Josh Poimboeuf <jpoimboe@redhat.com>
+From: Anton Blanchard <anton@samba.org>
 
-commit 98af8452945c55652de68536afdde3b520fec429 upstream.
+commit c0ccf6f99e3a43b87980c9df7da48427885206d0 upstream.
 
-Keeping track of the number of mitigations for all the CPU speculation
-bugs has become overwhelming for many users.  It's getting more and more
-complicated to decide which mitigations are needed for a given
-architecture.  Complicating matters is the fact that each arch tends to
-have its own custom way to mitigate the same vulnerability.
+To use jump labels in assembly we need the HAVE_JUMP_LABEL
+define, so we select a fallback version if the toolchain does
+not support them.
 
-Most users fall into a few basic categories:
+Modify linux/jump_label.h so it can be included by assembly
+files. We also need to add -DCC_HAVE_ASM_GOTO to KBUILD_AFLAGS.
 
-a) they want all mitigations off;
-
-b) they want all reasonable mitigations on, with SMT enabled even if
-   it's vulnerable; or
-
-c) they want all reasonable mitigations on, with SMT disabled if
-   vulnerable.
-
-Define a set of curated, arch-independent options, each of which is an
-aggregation of existing options:
-
-- mitigations=off: Disable all mitigations.
-
-- mitigations=auto: [default] Enable all the default mitigations, but
-  leave SMT enabled, even if it's vulnerable.
-
-- mitigations=auto,nosmt: Enable all the default mitigations, disabling
-  SMT if needed by a mitigation.
-
-Currently, these options are placeholders which don't actually do
-anything.  They will be fleshed out in upcoming patches.
-
-Signed-off-by: Josh Poimboeuf <jpoimboe@redhat.com>
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-Tested-by: Jiri Kosina <jkosina@suse.cz> (on x86)
-Reviewed-by: Jiri Kosina <jkosina@suse.cz>
-Cc: Borislav Petkov <bp@alien8.de>
-Cc: "H . Peter Anvin" <hpa@zytor.com>
-Cc: Andy Lutomirski <luto@kernel.org>
-Cc: Peter Zijlstra <peterz@infradead.org>
-Cc: Jiri Kosina <jikos@kernel.org>
-Cc: Waiman Long <longman@redhat.com>
-Cc: Andrea Arcangeli <aarcange@redhat.com>
-Cc: Jon Masters <jcm@redhat.com>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org
-Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Cc: Heiko Carstens <heiko.carstens@de.ibm.com>
-Cc: linux-s390@vger.kernel.org
-Cc: Catalin Marinas <catalin.marinas@arm.com>
-Cc: Will Deacon <will.deacon@arm.com>
-Cc: linux-arm-kernel@lists.infradead.org
-Cc: linux-arch@vger.kernel.org
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: Tyler Hicks <tyhicks@canonical.com>
+Signed-off-by: Anton Blanchard <anton@samba.org>
+Acked-by: Peter Zijlstra (Intel) <peterz@infradead.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>
 Cc: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Randy Dunlap <rdunlap@infradead.org>
-Cc: Steven Price <steven.price@arm.com>
-Cc: Phil Auld <pauld@redhat.com>
-Link: https://lkml.kernel.org/r/b07a8ef9b7c5055c3a4637c87d07c296d5016fe0.1555085500.git.jpoimboe@redhat.com
-[bwh: Backported to 3.16:
- - Drop the auto,nosmt option which we can't support
- - Adjust filename]
+Cc: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+Cc: Peter Zijlstra <peterz@infradead.org>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: benh@kernel.crashing.org
+Cc: catalin.marinas@arm.com
+Cc: davem@davemloft.net
+Cc: heiko.carstens@de.ibm.com
+Cc: jbaron@akamai.com
+Cc: linux@arm.linux.org.uk
+Cc: linuxppc-dev@lists.ozlabs.org
+Cc: liuj97@gmail.com
+Cc: mgorman@suse.de
+Cc: mmarek@suse.cz
+Cc: mpe@ellerman.id.au
+Cc: paulus@samba.org
+Cc: ralf@linux-mips.org
+Cc: rostedt@goodmis.org
+Cc: schwidefsky@de.ibm.com
+Cc: will.deacon@arm.com
+Link: http://lkml.kernel.org/r/1428551492-21977-2-git-send-email-anton@samba.org
+Signed-off-by: Ingo Molnar <mingo@kernel.org>
 Signed-off-by: Ben Hutchings <ben@decadent.org.uk>
 ---
---- a/Documentation/kernel-parameters.txt
-+++ b/Documentation/kernel-parameters.txt
-@@ -1906,6 +1906,25 @@ bytes respectively. Such letter suffixes
- 			in the "bleeding edge" mini2440 support kernel at
- 			http://repo.or.cz/w/linux-2.6/mini2440.git
+ Makefile                   |  1 +
+ include/linux/jump_label.h | 21 +++++++++++++++++----
+ 2 files changed, 18 insertions(+), 4 deletions(-)
+
+--- a/Makefile
++++ b/Makefile
+@@ -761,6 +761,7 @@ KBUILD_ARFLAGS := $(call ar-option,D)
+ # check for 'asm goto'
+ ifeq ($(shell $(CONFIG_SHELL) $(srctree)/scripts/gcc-goto.sh $(CC)), y)
+ 	KBUILD_CFLAGS += -DCC_HAVE_ASM_GOTO
++	KBUILD_AFLAGS += -DCC_HAVE_ASM_GOTO
+ endif
  
-+	mitigations=
-+			Control optional mitigations for CPU vulnerabilities.
-+			This is a set of curated, arch-independent options, each
-+			of which is an aggregation of existing arch-specific
-+			options.
-+
-+			off
-+				Disable all optional CPU mitigations.  This
-+				improves system performance, but it may also
-+				expose users to several CPU vulnerabilities.
-+
-+			auto (default)
-+				Mitigate all CPU vulnerabilities, but leave SMT
-+				enabled, even if it's vulnerable.  This is for
-+				users who don't want to be surprised by SMT
-+				getting disabled across kernel upgrades, or who
-+				have other ways of avoiding SMT-based attacks.
-+				This is the default behavior.
-+
- 	mminit_loglevel=
- 			[KNL] When CONFIG_DEBUG_MEMORY_INIT is set, this
- 			parameter allows control of the logging verbosity for
---- a/include/linux/cpu.h
-+++ b/include/linux/cpu.h
-@@ -277,4 +277,21 @@ void arch_cpu_idle_enter(void);
- void arch_cpu_idle_exit(void);
- void arch_cpu_idle_dead(void);
+ include $(srctree)/scripts/Makefile.extrawarn
+--- a/include/linux/jump_label.h
++++ b/include/linux/jump_label.h
+@@ -45,6 +45,12 @@
+  * same as using STATIC_KEY_INIT_FALSE.
+  */
  
-+/*
-+ * These are used for a global "mitigations=" cmdline option for toggling
-+ * optional CPU mitigations.
-+ */
-+enum cpu_mitigations {
-+	CPU_MITIGATIONS_OFF,
-+	CPU_MITIGATIONS_AUTO,
-+};
++#if defined(CC_HAVE_ASM_GOTO) && defined(CONFIG_JUMP_LABEL)
++# define HAVE_JUMP_LABEL
++#endif
 +
-+extern enum cpu_mitigations cpu_mitigations;
++#ifndef __ASSEMBLY__
 +
-+/* mitigations=off */
-+static inline bool cpu_mitigations_off(void)
-+{
-+	return cpu_mitigations == CPU_MITIGATIONS_OFF;
-+}
+ #include <linux/types.h>
+ #include <linux/compiler.h>
+ #include <linux/bug.h>
+@@ -55,7 +61,7 @@ extern bool static_key_initialized;
+ 				    "%s used before call to jump_label_init", \
+ 				    __func__)
+ 
+-#if defined(CC_HAVE_ASM_GOTO) && defined(CONFIG_JUMP_LABEL)
++#ifdef HAVE_JUMP_LABEL
+ 
+ struct static_key {
+ 	atomic_t enabled;
+@@ -66,13 +72,18 @@ struct static_key {
+ #endif
+ };
+ 
+-# include <asm/jump_label.h>
+-# define HAVE_JUMP_LABEL
+ #else
+ struct static_key {
+ 	atomic_t enabled;
+ };
+-#endif	/* CC_HAVE_ASM_GOTO && CONFIG_JUMP_LABEL */
++#endif	/* HAVE_JUMP_LABEL */
++#endif /* __ASSEMBLY__ */
 +
- #endif /* _LINUX_CPU_H_ */
---- a/kernel/cpu.c
-+++ b/kernel/cpu.c
-@@ -795,3 +795,16 @@ void init_cpu_online(const struct cpumas
- {
- 	cpumask_copy(to_cpumask(cpu_online_bits), src);
++#ifdef HAVE_JUMP_LABEL
++#include <asm/jump_label.h>
++#endif
++
++#ifndef __ASSEMBLY__
+ 
+ enum jump_label_type {
+ 	JUMP_LABEL_DISABLE = 0,
+@@ -223,3 +234,5 @@ static inline void static_key_disable(st
  }
+ 
+ #endif	/* _LINUX_JUMP_LABEL_H */
 +
-+enum cpu_mitigations cpu_mitigations = CPU_MITIGATIONS_AUTO;
-+
-+static int __init mitigations_parse_cmdline(char *arg)
-+{
-+	if (!strcmp(arg, "off"))
-+		cpu_mitigations = CPU_MITIGATIONS_OFF;
-+	else if (!strcmp(arg, "auto"))
-+		cpu_mitigations = CPU_MITIGATIONS_AUTO;
-+
-+	return 0;
-+}
-+early_param("mitigations", mitigations_parse_cmdline);
++#endif /* __ASSEMBLY__ */
 
