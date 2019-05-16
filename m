@@ -2,60 +2,66 @@ Return-Path: <SRS0=kVu9=TQ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-4.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-11.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 65441C04AAF
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 May 2019 16:30:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EB9C1C04AAF
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 May 2019 18:04:40 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E5DB82082E
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 May 2019 16:30:20 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E5DB82082E
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=decadent.org.uk
+	by mail.kernel.org (Postfix) with ESMTPS id 3AD4620657
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 May 2019 18:04:40 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=sirena.org.uk header.i=@sirena.org.uk header.b="NxNYO5a+"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3AD4620657
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 454cNB4sN7zDqkk
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 May 2019 02:30:18 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 454fT15PlFzDqSG
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 May 2019 04:04:37 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=decadent.org.uk
- (client-ip=88.96.1.126; helo=shadbolt.e.decadent.org.uk;
- envelope-from=ben@decadent.org.uk; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=decadent.org.uk
-Received: from shadbolt.e.decadent.org.uk (shadbolt.e.decadent.org.uk
- [88.96.1.126])
+ spf=none (mailfrom) smtp.mailfrom=sirena.org.uk
+ (client-ip=2a01:7e01::f03c:91ff:fed4:a3b6; helo=heliosphere.sirena.org.uk;
+ envelope-from=broonie@sirena.org.uk; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=fail (p=none dis=none) header.from=kernel.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=sirena.org.uk header.i=@sirena.org.uk
+ header.b="NxNYO5a+"; dkim-atps=neutral
+Received: from heliosphere.sirena.org.uk (heliosphere.sirena.org.uk
+ [IPv6:2a01:7e01::f03c:91ff:fed4:a3b6])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 454cGF5RgjzDqfG
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 May 2019 02:25:09 +1000 (AEST)
-Received: from [167.98.27.226] (helo=deadeye)
- by shadbolt.decadent.org.uk with esmtps
- (TLS1.2:ECDHE_RSA_AES_256_GCM_SHA384:256) (Exim 4.89)
- (envelope-from <ben@decadent.org.uk>)
- id 1hRImD-0006yp-5s; Thu, 16 May 2019 16:58:37 +0100
-Received: from ben by deadeye with local (Exim 4.92)
- (envelope-from <ben@decadent.org.uk>)
- id 1hRImC-0001N3-J7; Thu, 16 May 2019 16:58:36 +0100
-Content-Type: text/plain; charset="UTF-8"
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-MIME-Version: 1.0
-From: Ben Hutchings <ben@decadent.org.uk>
-To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Date: Thu, 16 May 2019 16:55:32 +0100
-Message-ID: <lsq.1558022132.38146636@decadent.org.uk>
-X-Mailer: LinuxStableQueue (scripts by bwh)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 454fRJ6HxKzDq8X
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 May 2019 04:03:08 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+ d=sirena.org.uk; s=20170815-heliosphere; h=Date:Message-Id:In-Reply-To:
+ Subject:Cc:To:From:Sender:Reply-To:MIME-Version:Content-Type:
+ Content-Transfer-Encoding:Content-ID:Content-Description:Resent-Date:
+ Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:References:
+ List-Id:List-Help:List-Unsubscribe:List-Subscribe:List-Post:List-Owner:
+ List-Archive; bh=ekT/k7vlXSvj5k6HNpwx2lIkAO/l/9VkzZ2ftxsAgRE=; b=NxNYO5a+pBoX
+ jgx89xKhk2hDxxmNv78NyjHKie8RM3Eo0AbOgh1W7B/wjzHZesg+HTUKIVJ1uBN26tcSzZKB7iX+Y
+ uGYq3GjhmAllMPSyLwG9fbGRqpsRzN+Qnw1gxIQraQXvHgTKgCGqDZNyCLCIbckbF/VzT0tSshT7t
+ YoQ4w=;
+Received: from cpc102320-sgyl38-2-0-cust46.18-2.cable.virginm.net
+ ([82.37.168.47] helo=debutante.sirena.org.uk)
+ by heliosphere.sirena.org.uk with esmtpa (Exim 4.89)
+ (envelope-from <broonie@sirena.org.uk>)
+ id 1hRKia-00085R-6y; Thu, 16 May 2019 18:03:00 +0000
+Received: by debutante.sirena.org.uk (Postfix, from userid 1000)
+ id AA4AD112929F; Thu, 16 May 2019 19:02:59 +0100 (BST)
+From: Mark Brown <broonie@kernel.org>
+To: S.j. Wang <shengjiu.wang@nxp.com>
+Subject: Applied "ASoC: fsl_asrc: Fix the issue about unsupported rate" to the
+ asoc tree
+In-Reply-To: <e0c519d616b48a1481c9f239646517b453e7ce50.1557901312.git.shengjiu.wang@nxp.com>
 X-Patchwork-Hint: ignore
-Subject: [PATCH 3.16 09/86] jump_label: Allow jump labels to be used in
- assembly
-In-Reply-To: <lsq.1558022132.52852998@decadent.org.uk>
-X-SA-Exim-Connect-IP: 167.98.27.226
-X-SA-Exim-Mail-From: ben@decadent.org.uk
-X-SA-Exim-Scanned: No (on shadbolt.decadent.org.uk);
- SAEximRunCond expanded to false
+Message-Id: <20190516180259.AA4AD112929F@debutante.sirena.org.uk>
+Date: Thu, 16 May 2019 19:02:59 +0100 (BST)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -67,126 +73,78 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "Peter Zijlstra \(Intel\)" <peterz@infradead.org>,
- Denis Kirjanov <kda@linux-powerpc.org>, heiko.carstens@de.ibm.com,
- paulus@samba.org, Ingo Molnar <mingo@kernel.org>, linux@arm.linux.org.uk,
- mgorman@suse.de, catalin.marinas@arm.com,
- "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, liuj97@gmail.com,
- will.deacon@arm.com, rostedt@goodmis.org, jbaron@akamai.com,
- Anton Blanchard <anton@samba.org>, Thomas Gleixner <tglx@linutronix.de>,
- mmarek@suse.cz, Linus Torvalds <torvalds@linux-foundation.org>,
- ralf@linux-mips.org, schwidefsky@de.ibm.com, akpm@linux-foundation.org,
- linuxppc-dev@lists.ozlabs.org, davem@davemloft.net
+Cc: alsa-devel@alsa-project.org, timur@kernel.org, Xiubo.Lee@gmail.com,
+ festevam@gmail.com, Shengjiu Wang <shengjiu.wang@nxp.com>,
+ linux-kernel@vger.kernel.org, stable@vger.kernel.org,
+ Nicolin Chen <nicoleotsuka@gmail.com>, Mark Brown <broonie@kernel.org>,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-3.16.68-rc1 review patch.  If anyone has any objections, please let me know.
+The patch
 
-------------------
+   ASoC: fsl_asrc: Fix the issue about unsupported rate
 
-From: Anton Blanchard <anton@samba.org>
+has been applied to the asoc tree at
 
-commit c0ccf6f99e3a43b87980c9df7da48427885206d0 upstream.
+   https://git.kernel.org/pub/scm/linux/kernel/git/broonie/sound.git for-5.2
 
-To use jump labels in assembly we need the HAVE_JUMP_LABEL
-define, so we select a fallback version if the toolchain does
-not support them.
+All being well this means that it will be integrated into the linux-next
+tree (usually sometime in the next 24 hours) and sent to Linus during
+the next merge window (or sooner if it is a bug fix), however if
+problems are discovered then the patch may be dropped or reverted.  
 
-Modify linux/jump_label.h so it can be included by assembly
-files. We also need to add -DCC_HAVE_ASM_GOTO to KBUILD_AFLAGS.
+You may get further e-mails resulting from automated or manual testing
+and review of the tree, please engage with people reporting problems and
+send followup patches addressing any issues that are reported if needed.
 
-Signed-off-by: Anton Blanchard <anton@samba.org>
-Acked-by: Peter Zijlstra (Intel) <peterz@infradead.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-Cc: Peter Zijlstra <peterz@infradead.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: benh@kernel.crashing.org
-Cc: catalin.marinas@arm.com
-Cc: davem@davemloft.net
-Cc: heiko.carstens@de.ibm.com
-Cc: jbaron@akamai.com
-Cc: linux@arm.linux.org.uk
-Cc: linuxppc-dev@lists.ozlabs.org
-Cc: liuj97@gmail.com
-Cc: mgorman@suse.de
-Cc: mmarek@suse.cz
-Cc: mpe@ellerman.id.au
-Cc: paulus@samba.org
-Cc: ralf@linux-mips.org
-Cc: rostedt@goodmis.org
-Cc: schwidefsky@de.ibm.com
-Cc: will.deacon@arm.com
-Link: http://lkml.kernel.org/r/1428551492-21977-2-git-send-email-anton@samba.org
-Signed-off-by: Ingo Molnar <mingo@kernel.org>
-Signed-off-by: Ben Hutchings <ben@decadent.org.uk>
+If any updates are required or you are submitting further changes they
+should be sent as incremental updates against current git, existing
+patches will not be replaced.
+
+Please add any relevant lists and maintainers to the CCs when replying
+to this mail.
+
+Thanks,
+Mark
+
+From b06c58c2a1eed571ea2a6640fdb85b7b00196b1e Mon Sep 17 00:00:00 2001
+From: "S.j. Wang" <shengjiu.wang@nxp.com>
+Date: Wed, 15 May 2019 06:42:18 +0000
+Subject: [PATCH] ASoC: fsl_asrc: Fix the issue about unsupported rate
+
+When the output sample rate is [8kHz, 30kHz], the limitation
+of the supported ratio range is [1/24, 8]. In the driver
+we use (8kHz, 30kHz) instead of [8kHz, 30kHz].
+So this patch is to fix this issue and the potential rounding
+issue with divider.
+
+Fixes: fff6e03c7b65 ("ASoC: fsl_asrc: add support for 8-30kHz
+output sample rate")
+Cc: <stable@vger.kernel.org>
+Signed-off-by: Shengjiu Wang <shengjiu.wang@nxp.com>
+Acked-by: Nicolin Chen <nicoleotsuka@gmail.com>
+Signed-off-by: Mark Brown <broonie@kernel.org>
 ---
- Makefile                   |  1 +
- include/linux/jump_label.h | 21 +++++++++++++++++----
- 2 files changed, 18 insertions(+), 4 deletions(-)
+ sound/soc/fsl/fsl_asrc.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
---- a/Makefile
-+++ b/Makefile
-@@ -761,6 +761,7 @@ KBUILD_ARFLAGS := $(call ar-option,D)
- # check for 'asm goto'
- ifeq ($(shell $(CONFIG_SHELL) $(srctree)/scripts/gcc-goto.sh $(CC)), y)
- 	KBUILD_CFLAGS += -DCC_HAVE_ASM_GOTO
-+	KBUILD_AFLAGS += -DCC_HAVE_ASM_GOTO
- endif
+diff --git a/sound/soc/fsl/fsl_asrc.c b/sound/soc/fsl/fsl_asrc.c
+index 0b937924d2e4..ea035c12a325 100644
+--- a/sound/soc/fsl/fsl_asrc.c
++++ b/sound/soc/fsl/fsl_asrc.c
+@@ -282,8 +282,8 @@ static int fsl_asrc_config_pair(struct fsl_asrc_pair *pair)
+ 		return -EINVAL;
+ 	}
  
- include $(srctree)/scripts/Makefile.extrawarn
---- a/include/linux/jump_label.h
-+++ b/include/linux/jump_label.h
-@@ -45,6 +45,12 @@
-  * same as using STATIC_KEY_INIT_FALSE.
-  */
- 
-+#if defined(CC_HAVE_ASM_GOTO) && defined(CONFIG_JUMP_LABEL)
-+# define HAVE_JUMP_LABEL
-+#endif
-+
-+#ifndef __ASSEMBLY__
-+
- #include <linux/types.h>
- #include <linux/compiler.h>
- #include <linux/bug.h>
-@@ -55,7 +61,7 @@ extern bool static_key_initialized;
- 				    "%s used before call to jump_label_init", \
- 				    __func__)
- 
--#if defined(CC_HAVE_ASM_GOTO) && defined(CONFIG_JUMP_LABEL)
-+#ifdef HAVE_JUMP_LABEL
- 
- struct static_key {
- 	atomic_t enabled;
-@@ -66,13 +72,18 @@ struct static_key {
- #endif
- };
- 
--# include <asm/jump_label.h>
--# define HAVE_JUMP_LABEL
- #else
- struct static_key {
- 	atomic_t enabled;
- };
--#endif	/* CC_HAVE_ASM_GOTO && CONFIG_JUMP_LABEL */
-+#endif	/* HAVE_JUMP_LABEL */
-+#endif /* __ASSEMBLY__ */
-+
-+#ifdef HAVE_JUMP_LABEL
-+#include <asm/jump_label.h>
-+#endif
-+
-+#ifndef __ASSEMBLY__
- 
- enum jump_label_type {
- 	JUMP_LABEL_DISABLE = 0,
-@@ -223,3 +234,5 @@ static inline void static_key_disable(st
- }
- 
- #endif	/* _LINUX_JUMP_LABEL_H */
-+
-+#endif /* __ASSEMBLY__ */
+-	if ((outrate > 8000 && outrate < 30000) &&
+-	    (outrate/inrate > 24 || inrate/outrate > 8)) {
++	if ((outrate >= 8000 && outrate <= 30000) &&
++	    (outrate > 24 * inrate || inrate > 8 * outrate)) {
+ 		pair_err("exceed supported ratio range [1/24, 8] for \
+ 				inrate/outrate: %d/%d\n", inrate, outrate);
+ 		return -EINVAL;
+-- 
+2.20.1
 
