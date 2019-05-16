@@ -2,102 +2,66 @@ Return-Path: <SRS0=kVu9=TQ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_MUTT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 17C2AC04AB4
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 May 2019 08:24:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 67F84C04E84
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 May 2019 11:42:09 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6067A2082E
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 May 2019 08:24:43 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6067A2082E
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id AB1F52166E
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 May 2019 11:42:08 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="zySpQXc7"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org AB1F52166E
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 454Pbs020KzDqcX
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 May 2019 18:24:41 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 454Tzf4GBRzDq9L
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 May 2019 21:42:06 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=linux.vnet.ibm.com
- (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=ego@linux.vnet.ibm.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=linux.vnet.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+ spf=pass (mailfrom) smtp.mailfrom=kernel.org
+ (client-ip=198.145.29.99; helo=mail.kernel.org;
+ envelope-from=sashal@kernel.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=kernel.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=kernel.org header.i=@kernel.org header.b="zySpQXc7"; 
+ dkim-atps=neutral
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 454PZM4kvXzDqZP
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 May 2019 18:23:22 +1000 (AEST)
-Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x4G8NDN6036445
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 May 2019 04:23:18 -0400
-Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2sh3egjaae-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 May 2019 04:23:13 -0400
-Received: from localhost
- by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <ego@linux.vnet.ibm.com>;
- Thu, 16 May 2019 09:22:45 +0100
-Received: from b03cxnp08025.gho.boulder.ibm.com (9.17.130.17)
- by e33.co.us.ibm.com (192.168.1.133) with IBM ESMTP SMTP Gateway: Authorized
- Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Thu, 16 May 2019 09:22:42 +0100
-Received: from b03ledav005.gho.boulder.ibm.com
- (b03ledav005.gho.boulder.ibm.com [9.17.130.236])
- by b03cxnp08025.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x4G8MffA15860102
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Thu, 16 May 2019 08:22:41 GMT
-Received: from b03ledav005.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 7016FBE053;
- Thu, 16 May 2019 08:22:41 +0000 (GMT)
-Received: from b03ledav005.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 2731EBE054;
- Thu, 16 May 2019 08:22:41 +0000 (GMT)
-Received: from sofia.ibm.com (unknown [9.124.35.248])
- by b03ledav005.gho.boulder.ibm.com (Postfix) with ESMTP;
- Thu, 16 May 2019 08:22:41 +0000 (GMT)
-Received: by sofia.ibm.com (Postfix, from userid 1000)
- id 2046C2E3894; Thu, 16 May 2019 13:52:38 +0530 (IST)
-Date: Thu, 16 May 2019 13:52:38 +0530
-From: Gautham R Shenoy <ego@linux.vnet.ibm.com>
-To: Nicholas Piggin <npiggin@gmail.com>
-Subject: Re: [PATCH 0/1] Forced-wakeup for stop lite states on Powernv
-References: <20190422063231.51043-1-huntbag@linux.vnet.ibm.com>
- <1557291178.ow4spjzq5t.astroid@bobo.none>
- <b2fcf69a-aecd-ea81-b497-737642354736@linux.vnet.ibm.com>
- <1557981860.eltms77ctp.astroid@bobo.none>
- <20190516053659.GA20396@in.ibm.com>
- <1557986956.6pmjz10b9z.astroid@bobo.none>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 454Tx251P5zDqZS
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 May 2019 21:39:50 +1000 (AEST)
+Received: from sasha-vm.mshome.net (c-73-47-72-35.hsd1.nh.comcast.net
+ [73.47.72.35])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by mail.kernel.org (Postfix) with ESMTPSA id 3FC192168B;
+ Thu, 16 May 2019 11:39:48 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+ s=default; t=1558006789;
+ bh=usTzdBEGevdojQvxpyvI9EUSyB4z1uIxU5u4YtGaaLU=;
+ h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+ b=zySpQXc7WAMPyrjfDF/Zysa8iTPrpp7+iNjRvdq2PLrVwpueOKrbEmoc8TL3zINqI
+ w4Nh6EAtD4gkLiDLKHlHTGK20NWr+fY/tbo/yU6Hr/D2Lr5HESzwmhsKFvr6tW8sz/
+ hz/sDX88NMPNi1dkX4ah3UNVJv8Uitr1ZckMNDIw=
+From: Sasha Levin <sashal@kernel.org>
+To: linux-kernel@vger.kernel.org,
+	stable@vger.kernel.org
+Subject: [PATCH AUTOSEL 5.0 12/34] KVM: PPC: Book3S: Protect memslots while
+ validating user address
+Date: Thu, 16 May 2019 07:39:09 -0400
+Message-Id: <20190516113932.8348-12-sashal@kernel.org>
+X-Mailer: git-send-email 2.20.1
+In-Reply-To: <20190516113932.8348-1-sashal@kernel.org>
+References: <20190516113932.8348-1-sashal@kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1557986956.6pmjz10b9z.astroid@bobo.none>
-User-Agent: Mutt/1.5.23 (2014-03-12)
-X-TM-AS-GCONF: 00
-x-cbid: 19051608-0036-0000-0000-00000ABC3AF4
-X-IBM-SpamModules-Scores: 
-X-IBM-SpamModules-Versions: BY=3.00011104; HX=3.00000242; KW=3.00000007;
- PH=3.00000004; SC=3.00000285; SDB=6.01204051; UDB=6.00632055; IPR=6.00984981; 
- MB=3.00026913; MTD=3.00000008; XFM=3.00000015; UTC=2019-05-16 08:22:45
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19051608-0037-0000-0000-00004BD0A5B6
-Message-Id: <20190516082238.GB20396@in.ibm.com>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2019-05-16_07:, , signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- malwarescore=0 suspectscore=2 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1810050000 definitions=main-1905160057
+X-stable: review
+X-Patchwork-Hint: Ignore
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -109,107 +73,83 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Reply-To: ego@linux.vnet.ibm.com
-Cc: ego@linux.vnet.ibm.com, linux-pm@vger.kernel.org, daniel.lezcano@linaro.org,
- rjw@rjwysocki.net, linux-kernel@vger.kernel.org,
- Abhishek <huntbag@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- dja@axtens.net
+Cc: Alexey Kardashevskiy <aik@ozlabs.ru>, linuxppc-dev@lists.ozlabs.org,
+ kvm-ppc@vger.kernel.org, Sasha Levin <sashal@kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi Nicholas,
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
 
-On Thu, May 16, 2019 at 04:13:17PM +1000, Nicholas Piggin wrote:
+[ Upstream commit 345077c8e172c255ea0707214303ccd099e5656b ]
 
-> 
-> > The motivation behind this patch was a HPC customer issue where they
-> > were observing some CPUs in the core getting stuck at stop0_lite
-> > state, thereby lowering the performance on the other CPUs of the core
-> > which were running the application.
-> > 
-> > Disabling stop0_lite via sysfs didn't help since we would fallback to
-> > snooze and it would make matters worse.
-> 
-> snooze has the timeout though, so it should kick into stop0 properly
-> (and if it doesn't that's another issue that should be fixed in this
-> series).
->
-> I'm not questioning the patch for stop0_lite, to be clear. I think
-> the logic is sound. I just raise one urelated issue that happens to
-> be for stop0_lite as well (should we even enable it on P9?), and one
-> peripheral issue (should we make a similar fix for deeper stop states?)
->
+Guest physical to user address translation uses KVM memslots and reading
+these requires holding the kvm->srcu lock. However recently introduced
+kvmppc_tce_validate() broke the rule (see the lockdep warning below).
 
-I think it makes sense to generalize this from the point of view of
-CPUs remaining in shallower idle states for long durations on tickless
-kernels.
+This moves srcu_read_lock(&vcpu->kvm->srcu) earlier to protect
+kvmppc_tce_validate() as well.
 
-> > 
-> >> 
-> >> We should always have fewer states unless proven otherwise.
-> > 
-> > I agree.
-> > 
-> >> 
-> >> That said, we enable it today so I don't want to argue this point
-> >> here, because it is a different issue from your patch.
-> >> 
-> >> > When it is in stop0 or deeper, 
-> >> > it free up both
-> >> > space and time slice of core.
-> >> > In stop0_lite, cpu doesn't free up the core resources and thus inhibits 
-> >> > thread
-> >> > folding. When a cpu goes to stop0, it will free up the core resources 
-> >> > thus increasing
-> >> > the single thread performance of other sibling thread.
-> >> > Hence, we do not want to get stuck in stop0_lite for long duration, and 
-> >> > want to quickly
-> >> > move onto the next state.
-> >> > If we get stuck in any other state we would possibly be losing on to 
-> >> > power saving,
-> >> > but will still be able to gain the performance benefits for other 
-> >> > sibling threads.
-> >> 
-> >> That's true, but stop0 -> deeper stop is also a benefit (for
-> >> performance if we have some power/thermal constraints, and/or for power
-> >> usage).
-> >> 
-> >> Sure it may not be so noticable as the SMT switch, but I just wonder
-> >> if the infrastructure should be there for the same reason.
-> >> 
-> >> I was testing interrupt frequency on some tickless workloads configs,
-> >> and without too much trouble you can get CPUs to sleep with no
-> >> interrupts for many minutes. Hours even. We wouldn't want the CPU to
-> >> stay in stop0 for that long.
-> > 
-> > If it stays in stop0 or even stop2 for that long, we would want to
-> > "promote" it to a deeper state, such as say STOP5 which allows the
-> > other cores to run at higher frequencies.
-> 
-> So we would want this same logic for all but the deepest runtime
-> stop state?
+=============================
+WARNING: suspicious RCU usage
+5.1.0-rc2-le_nv2_aikATfstn1-p1 #380 Not tainted
+-----------------------------
+include/linux/kvm_host.h:605 suspicious rcu_dereference_check() usage!
 
-Yes. We can, in steps, promote individual threads of the core to
-eventually request a deeper state such as stop4/5. On a completely
-idle tickless system, eventually we should see the core go to the
-deeper idle state.
+other info that might help us debug this:
 
-> 
-> >> Just thinking about the patch itself, I wonder do you need a full
-> >> kernel timer, or could we just set the decrementer? Is there much 
-> >> performance cost here?
-> >>
-> > 
-> > Good point. A decrementer would do actually.
-> 
-> That would be good if it does, might save a few cycles.
-> 
-> Thanks,
-> Nick
->
+rcu_scheduler_active = 2, debug_locks = 1
+1 lock held by qemu-system-ppc/8020:
+ #0: 0000000094972fe9 (&vcpu->mutex){+.+.}, at: kvm_vcpu_ioctl+0xdc/0x850 [kvm]
 
---
-Thanks and Regards
-gautham.
+stack backtrace:
+CPU: 44 PID: 8020 Comm: qemu-system-ppc Not tainted 5.1.0-rc2-le_nv2_aikATfstn1-p1 #380
+Call Trace:
+[c000003fece8f740] [c000000000bcc134] dump_stack+0xe8/0x164 (unreliable)
+[c000003fece8f790] [c000000000181be0] lockdep_rcu_suspicious+0x130/0x170
+[c000003fece8f810] [c0000000000d5f50] kvmppc_tce_to_ua+0x280/0x290
+[c000003fece8f870] [c00800001a7e2c78] kvmppc_tce_validate+0x80/0x1b0 [kvm]
+[c000003fece8f8e0] [c00800001a7e3fac] kvmppc_h_put_tce+0x94/0x3e4 [kvm]
+[c000003fece8f9a0] [c00800001a8baac4] kvmppc_pseries_do_hcall+0x30c/0xce0 [kvm_hv]
+[c000003fece8fa10] [c00800001a8bd89c] kvmppc_vcpu_run_hv+0x694/0xec0 [kvm_hv]
+[c000003fece8fae0] [c00800001a7d95dc] kvmppc_vcpu_run+0x34/0x48 [kvm]
+[c000003fece8fb00] [c00800001a7d56bc] kvm_arch_vcpu_ioctl_run+0x2f4/0x400 [kvm]
+[c000003fece8fb90] [c00800001a7c3618] kvm_vcpu_ioctl+0x460/0x850 [kvm]
+[c000003fece8fd00] [c00000000041c4f4] do_vfs_ioctl+0xe4/0x930
+[c000003fece8fdb0] [c00000000041ce04] ksys_ioctl+0xc4/0x110
+[c000003fece8fe00] [c00000000041ce78] sys_ioctl+0x28/0x80
+[c000003fece8fe20] [c00000000000b5a4] system_call+0x5c/0x70
+
+Fixes: 42de7b9e2167 ("KVM: PPC: Validate TCEs against preregistered memory page sizes", 2018-09-10)
+Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+Signed-off-by: Paul Mackerras <paulus@ozlabs.org>
+Signed-off-by: Sasha Levin <sashal@kernel.org>
+---
+ arch/powerpc/kvm/book3s_64_vio.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/arch/powerpc/kvm/book3s_64_vio.c b/arch/powerpc/kvm/book3s_64_vio.c
+index 532ab79734c7a..d43e8fe6d4241 100644
+--- a/arch/powerpc/kvm/book3s_64_vio.c
++++ b/arch/powerpc/kvm/book3s_64_vio.c
+@@ -543,14 +543,14 @@ long kvmppc_h_put_tce(struct kvm_vcpu *vcpu, unsigned long liobn,
+ 	if (ret != H_SUCCESS)
+ 		return ret;
+ 
++	idx = srcu_read_lock(&vcpu->kvm->srcu);
++
+ 	ret = kvmppc_tce_validate(stt, tce);
+ 	if (ret != H_SUCCESS)
+-		return ret;
++		goto unlock_exit;
+ 
+ 	dir = iommu_tce_direction(tce);
+ 
+-	idx = srcu_read_lock(&vcpu->kvm->srcu);
+-
+ 	if ((dir != DMA_NONE) && kvmppc_tce_to_ua(vcpu->kvm, tce, &ua, NULL)) {
+ 		ret = H_PARAMETER;
+ 		goto unlock_exit;
+-- 
+2.20.1
 
