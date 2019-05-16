@@ -2,86 +2,81 @@ Return-Path: <SRS0=kVu9=TQ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS,URIBL_BLOCKED,USER_AGENT_NEOMUTT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.8 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
+	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,HTML_MESSAGE,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 65457C04AAF
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 May 2019 13:11:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 78B88C04AAF
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 May 2019 13:14:44 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id D376A20818
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 May 2019 13:11:21 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id EDF3A20818
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 May 2019 13:14:43 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=brauner.io header.i=@brauner.io header.b="GRxeUQMC"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D376A20818
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=brauner.io
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="e8VWDUkI"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EDF3A20818
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 454Wyb0DdYzDqdW
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 May 2019 23:11:19 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 454X2T3TdxzDqdD
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 May 2019 23:14:41 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=brauner.io
- (client-ip=2a00:1450:4864:20::543; helo=mail-ed1-x543.google.com;
- envelope-from=christian@brauner.io; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=gmail.com
+ (client-ip=2607:f8b0:4864:20::a44; helo=mail-vk1-xa44.google.com;
+ envelope-from=slandden@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=brauner.io
+ dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- secure) header.d=brauner.io header.i=@brauner.io header.b="GRxeUQMC"; 
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="e8VWDUkI"; 
  dkim-atps=neutral
-Received: from mail-ed1-x543.google.com (mail-ed1-x543.google.com
- [IPv6:2a00:1450:4864:20::543])
+Received: from mail-vk1-xa44.google.com (mail-vk1-xa44.google.com
+ [IPv6:2607:f8b0:4864:20::a44])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 454WvK62ZFzDqS3
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 May 2019 23:08:28 +1000 (AEST)
-Received: by mail-ed1-x543.google.com with SMTP id w33so5161822edb.10
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 May 2019 06:08:28 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=brauner.io; s=google;
- h=date:from:to:cc:subject:message-id:references:mime-version
- :content-disposition:in-reply-to:user-agent;
- bh=jBAUBEgS9CTwipSrc6xzDmW1RVItxpv28CPVuXdSXxE=;
- b=GRxeUQMCXOVh37t5Sw740ly8qtZPRUCCCuv9QrOvbPCErQEesLGEm7EKrXAe0Q9KJ8
- Z2g505Ms1qmYsjpb12060y9byTSC8XMgPPOX3qoYUm7Wuo3GhPqSLBaepdYgRwIARNNw
- f1qSmJlbONGpkHQJTh3piORC/JZieb0S9j9mqhLIuQMSaQYY9Fp7KshgDzX51htGan8m
- Sxk2kN6la3ME1D8bVbdzuQqjT/ou0n6uk27GXJB7sFHnw9j78I+U5Nev2p4rx/U1wEC7
- 4Ntaz4NKM/S52nOQZW29Gzd4zoFa1reEayvlgt/ir0RYr/yiXPYA0rELPDQMlq2mdu1F
- tVNw==
+ by lists.ozlabs.org (Postfix) with ESMTPS id 454TBy1bm1zDqZG
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 May 2019 21:06:50 +1000 (AEST)
+Received: by mail-vk1-xa44.google.com with SMTP id u131so897809vke.9
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 May 2019 04:06:49 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+ :cc; bh=wxUIMIPXF7//ia3ngSwnb56b2D+TWwTqhbugwySOISc=;
+ b=e8VWDUkIzlERuOe1qLIZyvVHXCa1nTabnsbZXjuO/LgqU5WVW70+N6zoNX7kGFLUgB
+ wfKTZ0xRft1/3pxfIecYvQLj0+0vMXQj5LzhIInymXoVKu1Xu3b4Y8yxO04y1vSs7HUa
+ 23NiTneWHnX9XfdrQegnEuDoQIWzwgzW+xmqOgkBn27Mvrst9zoCqA6rBslFM+ciphR3
+ VAJqhC9oUAoeHikeHqvez+i7o2pND6aIGRElyPSOcvABTl+mbX1Jg+LlffihK0PWDbUG
+ yyVoKOyw3uRoqUn06y0VwK1AkMiJ6zRRB+W2HS9x3l6rXlBvxJuP3RhmJefHpltV3Kt5
+ dETQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
- h=x-gm-message-state:date:from:to:cc:subject:message-id:references
- :mime-version:content-disposition:in-reply-to:user-agent;
- bh=jBAUBEgS9CTwipSrc6xzDmW1RVItxpv28CPVuXdSXxE=;
- b=illQ52MRQ1m0KY9DLVTQO88q1TbwzxArVVwB67U1249fsO+LMOjtL9sLVPKGeswm5m
- leXJUV8EC2KXIiWcHdaTuHPZIUCD6ukGp/fEKr9y8SWMWp649FE+1SIQLkxBxGhuLeVv
- VnFQ0SeuZIl0Cm2ivQZ8uRbLzG4sfxO+Nn1pKuQO0ORh8KU7k2RKfTkBmLzS/SomREPy
- YpN8KM7Qd1rZiiVoNYTA4GgOHi+n5Q2GiKyHXCsWDML+LlUdfjvQuYbTFslXGlj0w0k8
- xECNWK8GcVhxHvK+RoapFieWiFoFKilCoZYOXFZWUWV0VnIEYN7btvejGwGY2uFGrG/4
- DY7g==
-X-Gm-Message-State: APjAAAUz4w9UnUox+kcX1+qJVISCY36QLY/768HnL2326edpJnysFWDW
- v8WnpHVCsZoeJXPsGUbE3T+rnA==
-X-Google-Smtp-Source: APXvYqw6MgzOGs4eZ9bDhdi4eCkaorExR9i5a/NKq40xlcfMO66JmZJGeYkhHm/1LjUeLbq94zzeIA==
-X-Received: by 2002:a50:89bb:: with SMTP id g56mr49862849edg.124.1558012098308; 
- Thu, 16 May 2019 06:08:18 -0700 (PDT)
-Received: from brauner.io ([193.96.224.243])
- by smtp.gmail.com with ESMTPSA id p17sm1815197edr.94.2019.05.16.06.08.15
- (version=TLS1_3 cipher=AEAD-AES256-GCM-SHA384 bits=256/256);
- Thu, 16 May 2019 06:08:17 -0700 (PDT)
-Date: Thu, 16 May 2019 15:08:15 +0200
-From: Christian Brauner <christian@brauner.io>
-To: Daniel Colascione <dancol@google.com>
-Subject: Re: [PATCH 1/2] pid: add pidfd_open()
-Message-ID: <20190516130813.i66ujfzftbgpqhnh@brauner.io>
-References: <20190515100400.3450-1-christian@brauner.io>
- <CAKOZuesPF+ftwqsNDMBy1LpwJgWTNuQm9-E=C90sSTBYEEsDww@mail.gmail.com>
+ h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+ :message-id:subject:to:cc;
+ bh=wxUIMIPXF7//ia3ngSwnb56b2D+TWwTqhbugwySOISc=;
+ b=sFABO8WJpGDFFMitHX0wr4VIdIqP51SH3PvB6zDFk3hzIw+VLFjZh03icxlrwog6dW
+ lr70h4lPOV4F9F3zaRHwQYRmh9DDksn2tiSrLJ8k/wtdYEMO6Pxwf31y4hvaZ0w+skdR
+ 8AMZWWsMKgiNKoCXze0FcKFoPfK974P7HBd0TAYYv7L4iaF3S+/cZmjz4HZzYJBIrS6r
+ axxSdN3PHqDxM8DWTWrNrZbmLsCeLpjzY7G30YyJWzEx69yDvhYGnEJvLzww2+rUPIjn
+ zYhBHW1T/6+zBlBoERFN4myveGWVQetVOqWBZpdBdWFd9hmbSC48flWlLDAHqlDF3/oH
+ RL/A==
+X-Gm-Message-State: APjAAAWfYRUf+JW6tQyKC7U9hviKxmGOSvPV4V/vm0XhR2i6l/6eMI2S
+ yryB2LU5jy3L9rBrW2GLCfM1jjMsz2vUapy0A+Q=
+X-Google-Smtp-Source: APXvYqww04mm39VSuOOg+y5lrt6tFqNKj1EzdXcpDVS5elPBBi2kwgNENTKOSbQFrZAUTD6euQXwqfjnW8/xXjx09dc=
+X-Received: by 2002:a1f:62c7:: with SMTP id w190mr21786531vkb.72.1558004806462; 
+ Thu, 16 May 2019 04:06:46 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <CAKOZuesPF+ftwqsNDMBy1LpwJgWTNuQm9-E=C90sSTBYEEsDww@mail.gmail.com>
-User-Agent: NeoMutt/20180716
+References: <d8d0bf05-2c22-0ade-6361-4841e521597c@xenosoft.de>
+ <dbfbd2e0-eca8-8ecc-793b-a6f1471ce2ee@c-s.fr>
+In-Reply-To: <dbfbd2e0-eca8-8ecc-793b-a6f1471ce2ee@c-s.fr>
+From: Shawn Landden <slandden@gmail.com>
+Date: Thu, 16 May 2019 06:06:34 -0500
+Message-ID: <CA+49okoBAVxNDfL46fXQJ8GOTq7O3kLkru9jdbScEJr4+mbkrQ@mail.gmail.com>
+Subject: Re: Latest Git kernel: Section mismatch in reference from the
+ variable start_here_multiplatform to the function .init.text:.early_setup()
+To: Christophe Leroy <christophe.leroy@c-s.fr>
+Content-Type: multipart/alternative; boundary="0000000000000c33270588ff430b"
+X-Mailman-Approved-At: Thu, 16 May 2019 23:11:42 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -93,212 +88,125 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org,
- linux-kernel <linux-kernel@vger.kernel.org>,
- David Howells <dhowells@redhat.com>,
- "open list:KERNEL SELFTEST FRAMEWORK" <linux-kselftest@vger.kernel.org>,
- sparclinux@vger.kernel.org, Linux API <linux-api@vger.kernel.org>,
- elena.reshetova@intel.com, linux-arch@vger.kernel.org,
- linux-s390@vger.kernel.org, linux-xtensa@linux-xtensa.org,
- Kees Cook <keescook@chromium.org>, Arnd Bergmann <arnd@arndb.de>,
- Jann Horn <jannh@google.com>, linux-m68k@lists.linux-m68k.org,
- Al Viro <viro@zeniv.linux.org.uk>, Andy Lutomirski <luto@kernel.org>,
- Oleg Nesterov <oleg@redhat.com>, Thomas Gleixner <tglx@linutronix.de>,
- linux-arm-kernel@lists.infradead.org, linux-parisc@vger.kernel.org,
- Aleksa Sarai <cyphar@cyphar.com>,
- Linus Torvalds <torvalds@linux-foundation.org>, linux-mips@vger.kernel.org,
- Andy Lutomirski <luto@amacapital.net>,
- "Eric W. Biederman" <ebiederm@xmission.com>, linux-alpha@vger.kernel.org,
- Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org
+Cc: Christian Zigotzky <info@xenosoft.de>, linuxppc-dev@lists.ozlabs.org,
+ Christian Zigotzky <chzigotzky@xenosoft.de>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, May 15, 2019 at 10:45:06AM -0700, Daniel Colascione wrote:
-> On Wed, May 15, 2019 at 3:04 AM Christian Brauner <christian@brauner.io> wrote:
-> >
-> > This adds the pidfd_open() syscall. It allows a caller to retrieve pollable
-> > pidfds for a process which did not get created via CLONE_PIDFD, i.e. for a
-> > process that is created via traditional fork()/clone() calls that is only
-> > referenced by a PID:
-> 
-> Thanks for doing this work. I'm really looking forward to this new
-> approach to process management.
+--0000000000000c33270588ff430b
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-Thanks! Glad to hear!
+Hi
 
-> 
-> > int pidfd = pidfd_open(1234, 0);
-> > ret = pidfd_send_signal(pidfd, SIGSTOP, NULL, 0);
-> >
-> > With the introduction of pidfds through CLONE_PIDFD it is possible to
-> > created pidfds at process creation time.
-> > However, a lot of processes get created with traditional PID-based calls
-> > such as fork() or clone() (without CLONE_PIDFD). For these processes a
-> > caller can currently not create a pollable pidfd. This is a huge problem
-> > for Android's low memory killer (LMK) and service managers such as systemd.
-> > Both are examples of tools that want to make use of pidfds to get reliable
-> > notification of process exit for non-parents (pidfd polling) and race-free
-> > signal sending (pidfd_send_signal()). They intend to switch to this API for
-> > process supervision/management as soon as possible. Having no way to get
-> > pollable pidfds from PID-only processes is one of the biggest blockers for
-> > them in adopting this api. With pidfd_open() making it possible to retrieve
-> > pidfd for PID-based processes we enable them to adopt this api.
-> >
-> > In line with Arnd's recent changes to consolidate syscall numbers across
-> > architectures, I have added the pidfd_open() syscall to all architectures
-> > at the same time.
-> 
-> I'm glad it's easier now.
-> 
-> >  arch/alpha/kernel/syscalls/syscall.tbl      |  1 +
-> >  arch/arm64/include/asm/unistd32.h           |  2 +
-> >  arch/ia64/kernel/syscalls/syscall.tbl       |  1 +
-> >  arch/m68k/kernel/syscalls/syscall.tbl       |  1 +
-> >  arch/microblaze/kernel/syscalls/syscall.tbl |  1 +
-> >  arch/mips/kernel/syscalls/syscall_n32.tbl   |  1 +
-> >  arch/parisc/kernel/syscalls/syscall.tbl     |  1 +
-> >  arch/powerpc/kernel/syscalls/syscall.tbl    |  1 +
-> >  arch/s390/kernel/syscalls/syscall.tbl       |  1 +
-> >  arch/sh/kernel/syscalls/syscall.tbl         |  1 +
-> >  arch/sparc/kernel/syscalls/syscall.tbl      |  1 +
-> >  arch/x86/entry/syscalls/syscall_32.tbl      |  1 +
-> >  arch/x86/entry/syscalls/syscall_64.tbl      |  1 +
-> >  arch/xtensa/kernel/syscalls/syscall.tbl     |  1 +
-> 
-> It'd be nice to arrange the system call tables so that we need to
-> change only one file when adding a new system call.
-> 
-> [Snip system call wiring]
-> 
-> > --- a/include/linux/pid.h
-> > +++ b/include/linux/pid.h
-> > @@ -67,6 +67,7 @@ struct pid
-> >  extern struct pid init_struct_pid;
-> >
-> >  extern const struct file_operations pidfd_fops;
-> > +extern int pidfd_create(struct pid *pid);
-> >
-> >  static inline struct pid *get_pid(struct pid *pid)
-> >  {
-> > diff --git a/include/linux/syscalls.h b/include/linux/syscalls.h
-> > index e2870fe1be5b..989055e0b501 100644
-> > --- a/include/linux/syscalls.h
-> > +++ b/include/linux/syscalls.h
-> > @@ -929,6 +929,7 @@ asmlinkage long sys_clock_adjtime32(clockid_t which_clock,
-> >                                 struct old_timex32 __user *tx);
-> >  asmlinkage long sys_syncfs(int fd);
-> >  asmlinkage long sys_setns(int fd, int nstype);
-> > +asmlinkage long sys_pidfd_open(pid_t pid, unsigned int flags);
-> >  asmlinkage long sys_sendmmsg(int fd, struct mmsghdr __user *msg,
-> >                              unsigned int vlen, unsigned flags);
-> >  asmlinkage long sys_process_vm_readv(pid_t pid,
-> > diff --git a/include/uapi/asm-generic/unistd.h b/include/uapi/asm-generic/unistd.h
-> > index dee7292e1df6..94a257a93d20 100644
-> > --- a/include/uapi/asm-generic/unistd.h
-> > +++ b/include/uapi/asm-generic/unistd.h
-> > @@ -832,9 +832,11 @@ __SYSCALL(__NR_io_uring_setup, sys_io_uring_setup)
-> >  __SYSCALL(__NR_io_uring_enter, sys_io_uring_enter)
-> >  #define __NR_io_uring_register 427
-> >  __SYSCALL(__NR_io_uring_register, sys_io_uring_register)
-> > +#define __NR_pidfd_open 428
-> > +__SYSCALL(__NR_pidfd_open, sys_pidfd_open)
-> >
-> >  #undef __NR_syscalls
-> > -#define __NR_syscalls 428
-> > +#define __NR_syscalls 429
-> >
-> >  /*
-> >   * 32 bit systems traditionally used different
-> > diff --git a/kernel/fork.c b/kernel/fork.c
-> > index 737db1828437..980cc1d2b8d4 100644
-> > --- a/kernel/fork.c
-> > +++ b/kernel/fork.c
-> > @@ -1714,7 +1714,7 @@ const struct file_operations pidfd_fops = {
-> >   * Return: On success, a cloexec pidfd is returned.
-> >   *         On error, a negative errno number will be returned.
-> >   */
-> > -static int pidfd_create(struct pid *pid)
-> > +int pidfd_create(struct pid *pid)
-> >  {
-> >         int fd;
-> >
-> > diff --git a/kernel/pid.c b/kernel/pid.c
-> > index 20881598bdfa..237d18d6ecb8 100644
-> > --- a/kernel/pid.c
-> > +++ b/kernel/pid.c
-> > @@ -38,6 +38,7 @@
-> >  #include <linux/syscalls.h>
-> >  #include <linux/proc_ns.h>
-> >  #include <linux/proc_fs.h>
-> > +#include <linux/sched/signal.h>
-> >  #include <linux/sched/task.h>
-> >  #include <linux/idr.h>
-> >
-> > @@ -451,6 +452,53 @@ struct pid *find_ge_pid(int nr, struct pid_namespace *ns)
-> >         return idr_get_next(&ns->idr, &nr);
-> >  }
-> >
-> > +/**
-> > + * pidfd_open() - Open new pid file descriptor.
-> > + *
-> > + * @pid:   pid for which to retrieve a pidfd
-> > + * @flags: flags to pass
-> > + *
-> > + * This creates a new pid file descriptor with the O_CLOEXEC flag set for
-> > + * the process identified by @pid. Currently, the process identified by
-> > + * @pid must be a thread-group leader. This restriction currently exists
-> > + * for all aspects of pidfds including pidfd creation (CLONE_PIDFD cannot
-> > + * be used with CLONE_THREAD) and pidfd polling (only supports thread group
-> > + * leaders).
-> > + *
-> > + * Return: On success, a cloexec pidfd is returned.
-> > + *         On error, a negative errno number will be returned.
-> > + */
-> > +SYSCALL_DEFINE2(pidfd_open, pid_t, pid, unsigned int, flags)
-> > +{
-> > +       int fd, ret;
-> > +       struct pid *p;
-> > +       struct task_struct *tsk;
-> > +
-> > +       if (flags)
-> > +               return -EINVAL;
-> 
-> If we support blocking operations on pidfds, we'll want to be able to
-> put them in non-blocking mode. Does it make sense to accept and ignore
-> O_NONBLOCK here now?
+El mi=C3=A9., 15 may. 2019 5:17, Christophe Leroy <christophe.leroy@c-s.fr>
+escribi=C3=B3:
 
-Hm, is there a race condition you see that would prevent you from using
-fcntl()? If you're ok with using fcntl() I would argue we should hold on
-tight to every bit we have for flags.
+> Hi,
+>
+> Le 15/05/2019 =C3=A0 12:09, Christian Zigotzky a =C3=A9crit :
+> > Hi All,
+> >
+> > I got the following error messages with the latest Git kernel today:
+> >
+> > GEN     .version
+> >    CHK     include/generated/compile.h
+> >    LD      vmlinux.o
+> >    MODPOST vmlinux.o
+> > WARNING: vmlinux.o(.text+0x302a): Section mismatch in reference from th=
+e
+> > variable start_here_multiplatform to the function
+> .init.text:.early_setup()
+> > The function start_here_multiplatform() references
+> > the function __init .early_setup().
+> > This is often because start_here_multiplatform lacks a __init
+> > annotation or the annotation of .early_setup is wrong.
+> >
+> >    MODINFO modules.builtin.modinfo
+> >    KSYM    .tmp_kallsyms1.o
+> >    KSYM    .tmp_kallsyms2.o
+> >    LD      vmlinux
+> >    SORTEX  vmlinux
+> >    SYSMAP  System.map
+> >    CHKHEAD vmlinux
+> >
+> > What does it mean?
+>
+The best first thing to do with these type of errors is to Google them. If
+you see there are patches just assume somebody else is working on it. That
+saves everybody time, because these things tend to get duplicate reports.
 
-> 
-> > +       if (pid <= 0)
-> > +               return -EINVAL;
-> 
-> WDYT of defining pid == 0 to mean "open myself"?
+>
+> I proposed a patch for it at https://patchwork.ozlabs.org/patch/1097845/
+>
+> Christophe
+>
+> >
+> > Please find attached the kernel config.
+> >
+> > Thanks,
+> > Christian
+> >
+>
 
-I'm torn. It be a nice shortcut of course but pid being 0 is usually an
-indicator for child processes. So unless the getpid() before
-pidfd_open() is an issue I'd say let's leave it as is. If you really
-want the shortcut might -1 be better?
+--0000000000000c33270588ff430b
+Content-Type: text/html; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-> 
-> > +       p = find_get_pid(pid);
-> > +       if (!p)
-> > +               return -ESRCH;
-> > +
-> > +       rcu_read_lock();
-> > +       tsk = pid_task(p, PIDTYPE_PID);
-> > +       if (!tsk)
-> > +               ret = -ESRCH;
-> > +       else if (unlikely(!thread_group_leader(tsk)))
-> > +               ret = -EINVAL;
-> > +       else
-> > +               ret = 0;
-> > +       rcu_read_unlock();
-> > +
-> > +       fd = ret ?: pidfd_create(p);
-> > +       put_pid(p);
-> > +       return fd;
-> > +}
+<div dir=3D"auto"><div>Hi<br><br><div class=3D"gmail_quote"><div dir=3D"ltr=
+" class=3D"gmail_attr">El mi=C3=A9., 15 may. 2019 5:17, Christophe Leroy &l=
+t;<a href=3D"mailto:christophe.leroy@c-s.fr">christophe.leroy@c-s.fr</a>&gt=
+; escribi=C3=B3:<br></div><blockquote class=3D"gmail_quote" style=3D"margin=
+:0 0 0 .8ex;border-left:1px #ccc solid;padding-left:1ex">Hi,<br>
+<br>
+Le 15/05/2019 =C3=A0 12:09, Christian Zigotzky a =C3=A9crit=C2=A0:<br>
+&gt; Hi All,<br>
+&gt; <br>
+&gt; I got the following error messages with the latest Git kernel today:<b=
+r>
+&gt; <br>
+&gt; GEN=C2=A0=C2=A0=C2=A0=C2=A0 .version<br>
+&gt;=C2=A0 =C2=A0 CHK=C2=A0=C2=A0=C2=A0=C2=A0 include/generated/compile.h<b=
+r>
+&gt;=C2=A0 =C2=A0 LD=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 vmlinux.o<br>
+&gt;=C2=A0 =C2=A0 MODPOST vmlinux.o<br>
+&gt; WARNING: vmlinux.o(.text+0x302a): Section mismatch in reference from t=
+he <br>
+&gt; variable start_here_multiplatform to the function .init.text:.early_se=
+tup()<br>
+&gt; The function start_here_multiplatform() references<br>
+&gt; the function __init .early_setup().<br>
+&gt; This is often because start_here_multiplatform lacks a __init<br>
+&gt; annotation or the annotation of .early_setup is wrong.<br>
+&gt; <br>
+&gt;=C2=A0 =C2=A0 MODINFO modules.builtin.modinfo<br>
+&gt;=C2=A0 =C2=A0 KSYM=C2=A0=C2=A0=C2=A0 .tmp_kallsyms1.o<br>
+&gt;=C2=A0 =C2=A0 KSYM=C2=A0=C2=A0=C2=A0 .tmp_kallsyms2.o<br>
+&gt;=C2=A0 =C2=A0 LD=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 vmlinux<br>
+&gt;=C2=A0 =C2=A0 SORTEX=C2=A0 vmlinux<br>
+&gt;=C2=A0 =C2=A0 SYSMAP=C2=A0 System.map<br>
+&gt;=C2=A0 =C2=A0 CHKHEAD vmlinux<br>
+&gt; <br>
+&gt; What does it mean?<br></blockquote></div></div><div dir=3D"auto">The b=
+est first thing to do with these type of errors is to Google them. If you s=
+ee there are patches just assume somebody else is working on it. That saves=
+ everybody time, because these things tend to get duplicate reports.</div><=
+div dir=3D"auto"><div class=3D"gmail_quote"><blockquote class=3D"gmail_quot=
+e" style=3D"margin:0 0 0 .8ex;border-left:1px #ccc solid;padding-left:1ex">
+<br>
+I proposed a patch for it at <a href=3D"https://patchwork.ozlabs.org/patch/=
+1097845/" rel=3D"noreferrer noreferrer" target=3D"_blank">https://patchwork=
+.ozlabs.org/patch/1097845/</a><br>
+<br>
+Christophe<br>
+<br>
+&gt; <br>
+&gt; Please find attached the kernel config.<br>
+&gt; <br>
+&gt; Thanks,<br>
+&gt; Christian<br>
+&gt; <br>
+</blockquote></div></div></div>
+
+--0000000000000c33270588ff430b--
