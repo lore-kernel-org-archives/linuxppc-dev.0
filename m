@@ -2,81 +2,86 @@ Return-Path: <SRS0=kVu9=TQ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.8 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,HTML_MESSAGE,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
+	SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 78B88C04AAF
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 May 2019 13:14:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3D7F4C04AAF
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 May 2019 13:35:23 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id EDF3A20818
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 May 2019 13:14:43 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 7ED322082E
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 May 2019 13:35:22 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="e8VWDUkI"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EDF3A20818
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="NYTHLKBb"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7ED322082E
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 454X2T3TdxzDqdD
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 May 2019 23:14:41 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 454XVJ1KBJzDqdf
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 May 2019 23:35:20 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=2607:f8b0:4864:20::a44; helo=mail-vk1-xa44.google.com;
- envelope-from=slandden@gmail.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=c-s.fr
+ (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="e8VWDUkI"; 
+ dmarc=none (p=none dis=none) header.from=c-s.fr
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="NYTHLKBb"; 
  dkim-atps=neutral
-Received: from mail-vk1-xa44.google.com (mail-vk1-xa44.google.com
- [IPv6:2607:f8b0:4864:20::a44])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 454TBy1bm1zDqZG
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 May 2019 21:06:50 +1000 (AEST)
-Received: by mail-vk1-xa44.google.com with SMTP id u131so897809vke.9
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 May 2019 04:06:49 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=mime-version:references:in-reply-to:from:date:message-id:subject:to
- :cc; bh=wxUIMIPXF7//ia3ngSwnb56b2D+TWwTqhbugwySOISc=;
- b=e8VWDUkIzlERuOe1qLIZyvVHXCa1nTabnsbZXjuO/LgqU5WVW70+N6zoNX7kGFLUgB
- wfKTZ0xRft1/3pxfIecYvQLj0+0vMXQj5LzhIInymXoVKu1Xu3b4Y8yxO04y1vSs7HUa
- 23NiTneWHnX9XfdrQegnEuDoQIWzwgzW+xmqOgkBn27Mvrst9zoCqA6rBslFM+ciphR3
- VAJqhC9oUAoeHikeHqvez+i7o2pND6aIGRElyPSOcvABTl+mbX1Jg+LlffihK0PWDbUG
- yyVoKOyw3uRoqUn06y0VwK1AkMiJ6zRRB+W2HS9x3l6rXlBvxJuP3RhmJefHpltV3Kt5
- dETQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:mime-version:references:in-reply-to:from:date
- :message-id:subject:to:cc;
- bh=wxUIMIPXF7//ia3ngSwnb56b2D+TWwTqhbugwySOISc=;
- b=sFABO8WJpGDFFMitHX0wr4VIdIqP51SH3PvB6zDFk3hzIw+VLFjZh03icxlrwog6dW
- lr70h4lPOV4F9F3zaRHwQYRmh9DDksn2tiSrLJ8k/wtdYEMO6Pxwf31y4hvaZ0w+skdR
- 8AMZWWsMKgiNKoCXze0FcKFoPfK974P7HBd0TAYYv7L4iaF3S+/cZmjz4HZzYJBIrS6r
- axxSdN3PHqDxM8DWTWrNrZbmLsCeLpjzY7G30YyJWzEx69yDvhYGnEJvLzww2+rUPIjn
- zYhBHW1T/6+zBlBoERFN4myveGWVQetVOqWBZpdBdWFd9hmbSC48flWlLDAHqlDF3/oH
- RL/A==
-X-Gm-Message-State: APjAAAWfYRUf+JW6tQyKC7U9hviKxmGOSvPV4V/vm0XhR2i6l/6eMI2S
- yryB2LU5jy3L9rBrW2GLCfM1jjMsz2vUapy0A+Q=
-X-Google-Smtp-Source: APXvYqww04mm39VSuOOg+y5lrt6tFqNKj1EzdXcpDVS5elPBBi2kwgNENTKOSbQFrZAUTD6euQXwqfjnW8/xXjx09dc=
-X-Received: by 2002:a1f:62c7:: with SMTP id w190mr21786531vkb.72.1558004806462; 
- Thu, 16 May 2019 04:06:46 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 454XRK6YvyzDq8M
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 May 2019 23:32:44 +1000 (AEST)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 454XRB1clVz9v6X8;
+ Thu, 16 May 2019 15:32:38 +0200 (CEST)
+Authentication-Results: localhost; dkim=pass
+ reason="1024-bit key; insecure key"
+ header.d=c-s.fr header.i=@c-s.fr header.b=NYTHLKBb; dkim-adsp=pass;
+ dkim-atps=neutral
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id YJ2fH7KAqsev; Thu, 16 May 2019 15:32:38 +0200 (CEST)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 454XRB0P2lz9v6Ws;
+ Thu, 16 May 2019 15:32:38 +0200 (CEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
+ t=1558013558; bh=nnbDu0Oncip1B1EfAee0nXXH/Y+D1kJM8P3yAxFONt8=;
+ h=Subject:To:Cc:References:From:Date:In-Reply-To:From;
+ b=NYTHLKBbYT+1AyjfBvVrBs+aVvT0yZrGdfDLlEw5m4ZSeWGjsy+j5C8Rusba+uXOC
+ 09reBIj2aW5astgucBs6dszCpYVWDkiKv45TJDO8zpM3srgNKS6m2t+8G0AO9TDr7d
+ IHd0d8/WPeVC1xcTGhPFZEP3SMAbOwY5Zqi5GKIY=
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 743F98B831;
+ Thu, 16 May 2019 15:32:39 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id MI1hq9bTdmn3; Thu, 16 May 2019 15:32:39 +0200 (CEST)
+Received: from PO15451 (unknown [192.168.4.90])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id D33418B82A;
+ Thu, 16 May 2019 15:32:38 +0200 (CEST)
+Subject: Re: [PATCH] crypto: talitos - fix skcipher failure due to wrong
+ output IV
+To: Eric Biggers <ebiggers@kernel.org>
+References: <a5b0d31d8fc9fc9bc2b69baa5330466090825a39.1557923113.git.christophe.leroy@c-s.fr>
+ <VI1PR0402MB34858D80A15D4B55F64570E398090@VI1PR0402MB3485.eurprd04.prod.outlook.com>
+ <29db3f20-f931-efc6-02a8-fe160ab8b484@c-s.fr>
+ <20190516023050.GA23200@sol.localdomain>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Message-ID: <593f51b1-8c51-1994-623d-f5a591891d8a@c-s.fr>
+Date: Thu, 16 May 2019 15:32:38 +0200
+User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:60.0) Gecko/20100101
+ Thunderbird/60.6.1
 MIME-Version: 1.0
-References: <d8d0bf05-2c22-0ade-6361-4841e521597c@xenosoft.de>
- <dbfbd2e0-eca8-8ecc-793b-a6f1471ce2ee@c-s.fr>
-In-Reply-To: <dbfbd2e0-eca8-8ecc-793b-a6f1471ce2ee@c-s.fr>
-From: Shawn Landden <slandden@gmail.com>
-Date: Thu, 16 May 2019 06:06:34 -0500
-Message-ID: <CA+49okoBAVxNDfL46fXQJ8GOTq7O3kLkru9jdbScEJr4+mbkrQ@mail.gmail.com>
-Subject: Re: Latest Git kernel: Section mismatch in reference from the
- variable start_here_multiplatform to the function .init.text:.early_setup()
-To: Christophe Leroy <christophe.leroy@c-s.fr>
-Content-Type: multipart/alternative; boundary="0000000000000c33270588ff430b"
-X-Mailman-Approved-At: Thu, 16 May 2019 23:11:42 +1000
+In-Reply-To: <20190516023050.GA23200@sol.localdomain>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: fr
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -88,125 +93,88 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Christian Zigotzky <info@xenosoft.de>, linuxppc-dev@lists.ozlabs.org,
- Christian Zigotzky <chzigotzky@xenosoft.de>
+Cc: Herbert Xu <herbert@gondor.apana.org.au>,
+ Horia Geanta <horia.geanta@nxp.com>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "linux-crypto@vger.kernel.org" <linux-crypto@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "David S. Miller" <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
---0000000000000c33270588ff430b
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
 
-Hi
 
-El mi=C3=A9., 15 may. 2019 5:17, Christophe Leroy <christophe.leroy@c-s.fr>
-escribi=C3=B3:
+Le 16/05/2019 à 04:30, Eric Biggers a écrit :
+> On Wed, May 15, 2019 at 08:49:48PM +0200, Christophe Leroy wrote:
+>>
+>>
+>> Le 15/05/2019 à 16:05, Horia Geanta a écrit :
+>>> On 5/15/2019 3:29 PM, Christophe Leroy wrote:
+>>>> Selftests report the following:
+>>>>
+>>>> [    2.984845] alg: skcipher: cbc-aes-talitos encryption test failed (wrong output IV) on test vector 0, cfg="in-place"
+>>>> [    2.995377] 00000000: 3d af ba 42 9d 9e b4 30 b4 22 da 80 2c 9f ac 41
+>>>> [    3.032673] alg: skcipher: cbc-des-talitos encryption test failed (wrong output IV) on test vector 0, cfg="in-place"
+>>>> [    3.043185] 00000000: fe dc ba 98 76 54 32 10
+>>>> [    3.063238] alg: skcipher: cbc-3des-talitos encryption test failed (wrong output IV) on test vector 0, cfg="in-place"
+>>>> [    3.073818] 00000000: 7d 33 88 93 0f 93 b2 42
+>>>>
+>>>> This above dumps show that the actual output IV is indeed the input IV.
+>>>> This is due to the IV not being copied back into the request.
+>>>>
+>>>> This patch fixes that.
+>>>>
+>>>> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+>>> Reviewed-by: Horia Geantă <horia.geanta@nxp.com>
+>>
+>> It's missing a Fixes: tag and a Cc: to stable.
+>>
+>> I'll resend tomorrow.
+>>
+>>>
+>>> While here, could you please check ecb mode (which by definition does not have
+>>> an IV) is behaving correctly?
+>>> Looking in driver_algs[] list of crypto algorithms supported by talitos,
+>>> ecb(aes,des,3des) are declared with ivsize != 0.
+>>
+>> According to /proc/crypto, test are passed for ecb.
+>>
+> 
+> Did you try enabling CONFIG_CRYPTO_MANAGER_EXTRA_TESTS?  There is now a check
+> that the driver's ivsize matches the generic implementation's:
+> 
+>          if (ivsize != crypto_skcipher_ivsize(generic_tfm)) {
+>                  pr_err("alg: skcipher: ivsize for %s (%u) doesn't match generic impl (%u)\n",
+>                         driver, ivsize, crypto_skcipher_ivsize(generic_tfm));
+>                  err = -EINVAL;
+>                  goto out;
+>          }
+> 
+> For ECB that means the ivsize must be 0.
+> 
+> AFAICS the talitos driver even accesses the IV for ECB, which is wrong; and the
+> only reason this isn't crashing the self-tests already is that they are confused
+> by the declared ivsize being nonzero so they don't pass NULL as they should.
+> 
 
-> Hi,
->
-> Le 15/05/2019 =C3=A0 12:09, Christian Zigotzky a =C3=A9crit :
-> > Hi All,
-> >
-> > I got the following error messages with the latest Git kernel today:
-> >
-> > GEN     .version
-> >    CHK     include/generated/compile.h
-> >    LD      vmlinux.o
-> >    MODPOST vmlinux.o
-> > WARNING: vmlinux.o(.text+0x302a): Section mismatch in reference from th=
-e
-> > variable start_here_multiplatform to the function
-> .init.text:.early_setup()
-> > The function start_here_multiplatform() references
-> > the function __init .early_setup().
-> > This is often because start_here_multiplatform lacks a __init
-> > annotation or the annotation of .early_setup is wrong.
-> >
-> >    MODINFO modules.builtin.modinfo
-> >    KSYM    .tmp_kallsyms1.o
-> >    KSYM    .tmp_kallsyms2.o
-> >    LD      vmlinux
-> >    SORTEX  vmlinux
-> >    SYSMAP  System.map
-> >    CHKHEAD vmlinux
-> >
-> > What does it mean?
->
-The best first thing to do with these type of errors is to Google them. If
-you see there are patches just assume somebody else is working on it. That
-saves everybody time, because these things tend to get duplicate reports.
+Ok, thanks. I'll try and run EXTRA TESTS as soon as I get the current 
+test all fixed.
 
->
-> I proposed a patch for it at https://patchwork.ozlabs.org/patch/1097845/
->
-> Christophe
->
-> >
-> > Please find attached the kernel config.
-> >
-> > Thanks,
-> > Christian
-> >
->
+For the time being, I'm having a problem that I'm a bit lost with:
 
---0000000000000c33270588ff430b
-Content-Type: text/html; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+AEAD decryption fails at the moment for out-of-line tests, and the 
+reason is that the ICV (used to do the SW compare with the expected one) 
+is generated after the decrypted data.
+It works perfectly when src == dst, because the src has space for it, 
+but when the dst is different, the dst length is smaller so the ICV is 
+generated outside the sg list, and the comparison fails because the 
+comparison is done with the last bytes of the last segment of dst sg 
+list (which corresponds to the end of decrypted data in that case).
 
-<div dir=3D"auto"><div>Hi<br><br><div class=3D"gmail_quote"><div dir=3D"ltr=
-" class=3D"gmail_attr">El mi=C3=A9., 15 may. 2019 5:17, Christophe Leroy &l=
-t;<a href=3D"mailto:christophe.leroy@c-s.fr">christophe.leroy@c-s.fr</a>&gt=
-; escribi=C3=B3:<br></div><blockquote class=3D"gmail_quote" style=3D"margin=
-:0 0 0 .8ex;border-left:1px #ccc solid;padding-left:1ex">Hi,<br>
-<br>
-Le 15/05/2019 =C3=A0 12:09, Christian Zigotzky a =C3=A9crit=C2=A0:<br>
-&gt; Hi All,<br>
-&gt; <br>
-&gt; I got the following error messages with the latest Git kernel today:<b=
-r>
-&gt; <br>
-&gt; GEN=C2=A0=C2=A0=C2=A0=C2=A0 .version<br>
-&gt;=C2=A0 =C2=A0 CHK=C2=A0=C2=A0=C2=A0=C2=A0 include/generated/compile.h<b=
-r>
-&gt;=C2=A0 =C2=A0 LD=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 vmlinux.o<br>
-&gt;=C2=A0 =C2=A0 MODPOST vmlinux.o<br>
-&gt; WARNING: vmlinux.o(.text+0x302a): Section mismatch in reference from t=
-he <br>
-&gt; variable start_here_multiplatform to the function .init.text:.early_se=
-tup()<br>
-&gt; The function start_here_multiplatform() references<br>
-&gt; the function __init .early_setup().<br>
-&gt; This is often because start_here_multiplatform lacks a __init<br>
-&gt; annotation or the annotation of .early_setup is wrong.<br>
-&gt; <br>
-&gt;=C2=A0 =C2=A0 MODINFO modules.builtin.modinfo<br>
-&gt;=C2=A0 =C2=A0 KSYM=C2=A0=C2=A0=C2=A0 .tmp_kallsyms1.o<br>
-&gt;=C2=A0 =C2=A0 KSYM=C2=A0=C2=A0=C2=A0 .tmp_kallsyms2.o<br>
-&gt;=C2=A0 =C2=A0 LD=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 vmlinux<br>
-&gt;=C2=A0 =C2=A0 SORTEX=C2=A0 vmlinux<br>
-&gt;=C2=A0 =C2=A0 SYSMAP=C2=A0 System.map<br>
-&gt;=C2=A0 =C2=A0 CHKHEAD vmlinux<br>
-&gt; <br>
-&gt; What does it mean?<br></blockquote></div></div><div dir=3D"auto">The b=
-est first thing to do with these type of errors is to Google them. If you s=
-ee there are patches just assume somebody else is working on it. That saves=
- everybody time, because these things tend to get duplicate reports.</div><=
-div dir=3D"auto"><div class=3D"gmail_quote"><blockquote class=3D"gmail_quot=
-e" style=3D"margin:0 0 0 .8ex;border-left:1px #ccc solid;padding-left:1ex">
-<br>
-I proposed a patch for it at <a href=3D"https://patchwork.ozlabs.org/patch/=
-1097845/" rel=3D"noreferrer noreferrer" target=3D"_blank">https://patchwork=
-.ozlabs.org/patch/1097845/</a><br>
-<br>
-Christophe<br>
-<br>
-&gt; <br>
-&gt; Please find attached the kernel config.<br>
-&gt; <br>
-&gt; Thanks,<br>
-&gt; Christian<br>
-&gt; <br>
-</blockquote></div></div></div>
+What I'm having hard time with it that it seems that when the sg list 
+has several elements, it uses an out of line area for generating the ICV 
+but not when the sg list has only one element. I'm really wondering why.
 
---0000000000000c33270588ff430b--
+Thanks
+Christophe
