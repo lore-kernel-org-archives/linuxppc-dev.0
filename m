@@ -2,60 +2,68 @@ Return-Path: <SRS0=79up=TR=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E5DCFC04AB4
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 May 2019 11:24:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8AC66C04AB4
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 May 2019 13:15:14 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 71F562087B
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 May 2019 11:24:21 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 71F562087B
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
+	by mail.kernel.org (Postfix) with ESMTPS id C93A82168B
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 May 2019 13:15:13 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C93A82168B
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=informatik.wtf
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4555Xg2cbKzDqFv
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 May 2019 21:24:19 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=kaod.org
- (client-ip=46.105.74.148; helo=10.mo173.mail-out.ovh.net;
- envelope-from=groug@kaod.org; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=kaod.org
-X-Greylist: delayed 899 seconds by postgrey-1.36 at bilbo;
- Fri, 17 May 2019 21:23:03 AEST
-Received: from 10.mo173.mail-out.ovh.net (10.mo173.mail-out.ovh.net
- [46.105.74.148])
+	by lists.ozlabs.org (Postfix) with ESMTP id 45580Z5pSyzDqSM
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 May 2019 23:15:10 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4557wr2bY4zDqRs
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 May 2019 23:11:56 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=informatik.wtf
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 4557wr1HD4z8tPq
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 May 2019 23:11:56 +1000 (AEST)
+Received: by ozlabs.org (Postfix)
+ id 4557wr0sqfz9s9y; Fri, 17 May 2019 23:11:56 +1000 (AEST)
+Authentication-Results: ozlabs.org;
+ spf=pass (mailfrom) smtp.mailfrom=informatik.wtf
+ (client-ip=198.54.122.46; helo=new-02-2.privateemail.com;
+ envelope-from=cmr@informatik.wtf; receiver=<UNKNOWN>)
+Authentication-Results: ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=informatik.wtf
+Received: from NEW-02-2.privateemail.com (new-02-2.privateemail.com
+ [198.54.122.46])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4555WC4Z2ZzDq5b
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 May 2019 21:22:59 +1000 (AEST)
-Received: from player763.ha.ovh.net (unknown [10.109.159.157])
- by mo173.mail-out.ovh.net (Postfix) with ESMTP id 11FC0FE3C2
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 May 2019 12:58:00 +0200 (CEST)
-Received: from kaod.org (lns-bzn-46-82-253-208-248.adsl.proxad.net
- [82.253.208.248]) (Authenticated sender: groug@kaod.org)
- by player763.ha.ovh.net (Postfix) with ESMTPSA id 00FA25E06E1D;
- Fri, 17 May 2019 10:57:54 +0000 (UTC)
-Date: Fri, 17 May 2019 12:57:54 +0200
-From: Greg Kurz <groug@kaod.org>
-To: Sasha Levin <sashal@kernel.org>
-Subject: Re: [PATCH] powerpc/pseries: Fix xive=off command line
-Message-ID: <20190517125754.2f0a572e@bahia.lan>
-In-Reply-To: <20190515105443.835E72084E@mail.kernel.org>
-References: <155791470178.432724.8008395673479905061.stgit@bahia.lan>
- <20190515105443.835E72084E@mail.kernel.org>
-X-Mailer: Claws Mail 3.16.0 (GTK+ 2.24.32; x86_64-redhat-linux-gnu)
+ by ozlabs.org (Postfix) with ESMTPS id 4557wq2yG1z9s9N
+ for <linuxppc-dev@ozlabs.org>; Fri, 17 May 2019 23:11:53 +1000 (AEST)
+Received: from MTA-09.privateemail.com (unknown [10.20.147.19])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by NEW-02.privateemail.com (Postfix) with ESMTPS id A1B0F6008E;
+ Fri, 17 May 2019 13:11:50 +0000 (UTC)
+Received: from MTA-09.privateemail.com (localhost [127.0.0.1])
+ by MTA-09.privateemail.com (Postfix) with ESMTP id 8CF2060041;
+ Fri, 17 May 2019 09:11:50 -0400 (EDT)
+Received: from wrwlf0000.attlocal.net (unknown [10.20.151.203])
+ by MTA-09.privateemail.com (Postfix) with ESMTPA id 096BC60043;
+ Fri, 17 May 2019 13:11:49 +0000 (UTC)
+From: "Christopher M. Riedl" <cmr@informatik.wtf>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH v4] powerpc/64s: support nospectre_v2 cmdline option
+Date: Fri, 17 May 2019 08:14:01 -0500
+Message-Id: <20190517131400.20503-1-cmr@informatik.wtf>
+X-Mailer: git-send-email 2.21.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Ovh-Tracer-Id: 10644257719299512787
-X-VR-SPAMSTATE: OK
-X-VR-SPAMSCORE: -100
-X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgeduuddruddtvddgfeehucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecuqfggjfdpvefjgfevmfevgfenuceurghilhhouhhtmecuhedttdenucesvcftvggtihhpihgvnhhtshculddquddttddm
+Content-Transfer-Encoding: 8bit
+X-Virus-Scanned: ClamAV using ClamSMTP
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -67,89 +75,77 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- stable@vger.kernel.org,
- =?UTF-8?B?Q8OpZHJp?= =?UTF-8?B?Yw==?= Le Goater <clg@kaod.org>
+Cc: "Christopher M. Riedl" <cmr@informatik.wtf>,
+ Andrew Donnellan <ajd@linux.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, 15 May 2019 10:54:42 +0000
-Sasha Levin <sashal@kernel.org> wrote:
+Add support for disabling the kernel implemented spectre v2 mitigation
+(count cache flush on context switch) via the nospectre_v2 and
+mitigations=off cmdline options.
 
-> Hi,
-> 
+Suggested-by: Michael Ellerman <mpe@ellerman.id.au>
+Signed-off-by: Christopher M. Riedl <cmr@informatik.wtf>
+Reviewed-by: Andrew Donnellan <ajd@linux.ibm.com>
+---
+v3->v4:
+	add support for new mitigations=off cmdline option
 
-Hi,
+ arch/powerpc/kernel/security.c | 19 ++++++++++++++++---
+ 1 file changed, 16 insertions(+), 3 deletions(-)
 
-> [This is an automated email]
-> 
-> This commit has been processed because it contains a "Fixes:" tag,
-> fixing commit: eac1e731b59e powerpc/xive: guest exploitation of the XIVE interrupt controller.
-> 
-> The bot has tested the following trees: v5.1.1, v5.0.15, v4.19.42, v4.14.118.
-> 
-> v5.1.1: Build OK!
-> v5.0.15: Build OK!
-> v4.19.42: Failed to apply! Possible dependencies:
->     8ca2d5151e7f ("powerpc/prom_init: Move a few remaining statics to appropriate sections")
->     c886087caee7 ("powerpc/prom_init: Move prom_radix_disable to __prombss")
-> 
-
-Dependencies are:
-
-3bad719b4954 ("powerpc/prom_init: Make of_workarounds static")
-e63334e556d9 ("powerpc/prom_init: Replace __initdata with __prombss when applicable")
-11fdb309341c ("powerpc/prom_init: Remove support for OPAL v2")
-c886087caee7 ("powerpc/prom_init: Move prom_radix_disable to __prombss")
-8ca2d5151e7f ("powerpc/prom_init: Move a few remaining statics to appropriate sections")
-f1f208e54d08 ("powerpc/prom_init: Generate "phandle" instead of "linux, phandle"")
-cbe46bd4f510 ("powerpc: remove CONFIG_CMDLINE #ifdef mess")
-450e7dd4001f ("powerpc/prom_init: don't use string functions from lib/")
-
-The patches apply flawlessly and allow the build to succeed.
-
-> v4.14.118: Failed to apply! Possible dependencies:
->     028555a590d6 ("powerpc/xive: fix hcall H_INT_RESET to support long busy delays")
->     7a22d6321c3d ("powerpc/mm/radix: Update command line parsing for disable_radix")
->     8ca2d5151e7f ("powerpc/prom_init: Move a few remaining statics to appropriate sections")
->     c886087caee7 ("powerpc/prom_init: Move prom_radix_disable to __prombss")
-> 
-
-Dependencies are:
-
-7a22d6321c3d ("powerpc/mm/radix: Update command line parsing for disable_radix")
-028555a590d6 ("powerpc/xive: fix hcall H_INT_RESET to support long busy delays")
-3bad719b4954 ("powerpc/prom_init: Make of_workarounds static")
-e63334e556d9 ("powerpc/prom_init: Replace __initdata with __prombss when applicable")
-11fdb309341c ("powerpc/prom_init: Remove support for OPAL v2")
-c886087caee7 ("powerpc/prom_init: Move prom_radix_disable to __prombss")
-8ca2d5151e7f ("powerpc/prom_init: Move a few remaining statics to appropriate sections")
-f1f208e54d08 ("powerpc/prom_init: Generate "phandle" instead of "linux, phandle"")
-cbe46bd4f510 ("powerpc: remove CONFIG_CMDLINE #ifdef mess")
-450e7dd4001f ("powerpc/prom_init: don't use string functions from lib/")
-
-The patches apply flawlessly and allow the build to succeed.
-
-> 
-> How should we proceed with this patch?
-> 
-
-xive=off allows the kernel to use the legacy XICS interrupt controller
-interface on POWER9, definitely not a recommended setting. A typical
-usage for this would be to workaround some issue that would only pop
-up when using XIVE. Note also that this only affects the pseries platform,
-ie. running under an hypervisor (KVM or pHyp).
-
-I cannot state right now whether it is worth the pain to cherry-pick all
-the dependencies to fix this or not in older kernels...
-
-Cheers,
-
---
-Greg
-
-> --
-> Thanks,
-> Sasha
+diff --git a/arch/powerpc/kernel/security.c b/arch/powerpc/kernel/security.c
+index e1c9cf079503..88ae6a9bdf74 100644
+--- a/arch/powerpc/kernel/security.c
++++ b/arch/powerpc/kernel/security.c
+@@ -28,7 +28,7 @@ static enum count_cache_flush_type count_cache_flush_type = COUNT_CACHE_FLUSH_NO
+ bool barrier_nospec_enabled;
+ static bool no_nospec;
+ static bool btb_flush_enabled;
+-#ifdef CONFIG_PPC_FSL_BOOK3E
++#if defined(CONFIG_PPC_FSL_BOOK3E) || defined(CONFIG_PPC_BOOK3S_64)
+ static bool no_spectrev2;
+ #endif
+ 
+@@ -114,7 +114,7 @@ static __init int security_feature_debugfs_init(void)
+ device_initcall(security_feature_debugfs_init);
+ #endif /* CONFIG_DEBUG_FS */
+ 
+-#ifdef CONFIG_PPC_FSL_BOOK3E
++#if defined(CONFIG_PPC_FSL_BOOK3E) || defined(CONFIG_PPC_BOOK3S_64)
+ static int __init handle_nospectre_v2(char *p)
+ {
+ 	no_spectrev2 = true;
+@@ -122,6 +122,9 @@ static int __init handle_nospectre_v2(char *p)
+ 	return 0;
+ }
+ early_param("nospectre_v2", handle_nospectre_v2);
++#endif /* CONFIG_PPC_FSL_BOOK3E || CONFIG_PPC_BOOK3S_64 */
++
++#ifdef CONFIG_PPC_FSL_BOOK3E
+ void setup_spectre_v2(void)
+ {
+ 	if (no_spectrev2 || cpu_mitigations_off())
+@@ -399,7 +402,17 @@ static void toggle_count_cache_flush(bool enable)
+ 
+ void setup_count_cache_flush(void)
+ {
+-	toggle_count_cache_flush(true);
++	bool enable = true;
++
++	if (no_spectrev2 || cpu_mitigations_off()) {
++		if (security_ftr_enabled(SEC_FTR_BCCTRL_SERIALISED)
++		    || security_ftr_enabled(SEC_FTR_COUNT_CACHE_DISABLED))
++			pr_warn("Spectre v2 mitigations not under software control, can't disable\n");
++
++		enable = false;
++	}
++
++	toggle_count_cache_flush(enable);
+ }
+ 
+ #ifdef CONFIG_DEBUG_FS
+-- 
+2.21.0
 
