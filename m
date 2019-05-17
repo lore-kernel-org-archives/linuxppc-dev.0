@@ -4,51 +4,54 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
-	version=3.4.0
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 07258C04AAF
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 May 2019 02:49:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C6E3BC04E84
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 May 2019 02:55:34 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 8738720815
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 May 2019 02:49:42 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8738720815
+	by mail.kernel.org (Postfix) with ESMTPS id 20F2020848
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 May 2019 02:55:33 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 20F2020848
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nxp.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 454t6r4dwgzDqS3
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 May 2019 12:49:40 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 454tFb5qTWzDqQc
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 May 2019 12:55:31 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=nxp.com
- (client-ip=92.121.34.21; helo=inva021.nxp.com;
+ (client-ip=92.121.34.13; helo=inva020.nxp.com;
  envelope-from=ran.wang_1@nxp.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=nxp.com
-Received: from inva021.nxp.com (inva021.nxp.com [92.121.34.21])
+X-Greylist: delayed 450 seconds by postgrey-1.36 at bilbo;
+ Fri, 17 May 2019 12:54:05 AEST
+Received: from inva020.nxp.com (inva020.nxp.com [92.121.34.13])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 454t3L1ShLzDqP2
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 May 2019 12:46:33 +1000 (AEST)
-Received: from inva021.nxp.com (localhost [127.0.0.1])
- by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id EBB69200065;
- Fri, 17 May 2019 04:46:28 +0200 (CEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 454tCx6hrFzDqQM
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 May 2019 12:54:04 +1000 (AEST)
+Received: from inva020.nxp.com (localhost [127.0.0.1])
+ by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id CF84D1A010B;
+ Fri, 17 May 2019 04:46:29 +0200 (CEST)
 Received: from invc005.ap-rdc01.nxp.com (invc005.ap-rdc01.nxp.com
  [165.114.16.14])
- by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id 4585720025F;
- Fri, 17 May 2019 04:46:23 +0200 (CEST)
+ by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id 29CAE1A000F;
+ Fri, 17 May 2019 04:46:24 +0200 (CEST)
 Received: from localhost.localdomain (mega.ap.freescale.net [10.192.208.232])
- by invc005.ap-rdc01.nxp.com (Postfix) with ESMTP id 0A047402AE;
- Fri, 17 May 2019 10:46:15 +0800 (SGT)
+ by invc005.ap-rdc01.nxp.com (Postfix) with ESMTP id 4ED96402BF;
+ Fri, 17 May 2019 10:46:17 +0800 (SGT)
 From: Ran Wang <ran.wang_1@nxp.com>
 To: Li Yang <leoyang.li@nxp.com>, Rob Herring <robh+dt@kernel.org>,
  Mark Rutland <mark.rutland@arm.com>
-Subject: [PATCH 1/3] PM: wakeup: Add routine to help fetch wakeup source
- object.
-Date: Fri, 17 May 2019 10:47:46 +0800
-Message-Id: <20190517024748.15534-1-ran.wang_1@nxp.com>
+Subject: [PATCH 2/3] Documentation: dt: binding: fsl: Add 'little-endian' and
+ update Chassis define
+Date: Fri, 17 May 2019 10:47:47 +0800
+Message-Id: <20190517024748.15534-2-ran.wang_1@nxp.com>
 X-Mailer: git-send-email 2.17.1
+In-Reply-To: <20190517024748.15534-1-ran.wang_1@nxp.com>
+References: <20190517024748.15534-1-ran.wang_1@nxp.com>
 X-Virus-Scanned: ClamAV using ClamSMTP
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -70,89 +73,44 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Some user might want to go through all registered wakeup sources
-and doing things accordingly. For example, SoC PM driver might need to
-do HW programming to prevent powering down specific IP which wakeup
-source depending on. And is user's responsibility to identify if this
-wakeup source he is interested in.
+By default, QorIQ SoC's RCPM register block is Big Endian. But
+there are some exceptions, such as LS1088A and LS2088A, are Little
+Endian. So add this optional property to help identify them.
+
+Actually LS2021A and other Layerscapes won't totally follow Chassis
+2.1, so separate them from powerpc SoC.
 
 Signed-off-by: Ran Wang <ran.wang_1@nxp.com>
 ---
- drivers/base/power/wakeup.c |   18 ++++++++++++++++++
- include/linux/pm_wakeup.h   |    3 +++
- 2 files changed, 21 insertions(+), 0 deletions(-)
+ Documentation/devicetree/bindings/soc/fsl/rcpm.txt |    8 +++++++-
+ 1 files changed, 7 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/base/power/wakeup.c b/drivers/base/power/wakeup.c
-index 5fa1898..8d75795 100644
---- a/drivers/base/power/wakeup.c
-+++ b/drivers/base/power/wakeup.c
-@@ -14,6 +14,7 @@
- #include <linux/suspend.h>
- #include <linux/seq_file.h>
- #include <linux/debugfs.h>
-+#include <linux/of_device.h>
- #include <linux/pm_wakeirq.h>
- #include <trace/events/power.h>
+diff --git a/Documentation/devicetree/bindings/soc/fsl/rcpm.txt b/Documentation/devicetree/bindings/soc/fsl/rcpm.txt
+index e284e4e..058154c 100644
+--- a/Documentation/devicetree/bindings/soc/fsl/rcpm.txt
++++ b/Documentation/devicetree/bindings/soc/fsl/rcpm.txt
+@@ -20,6 +20,7 @@ Required properites:
+ 	* "fsl,qoriq-rcpm-1.0": for chassis 1.0 rcpm
+ 	* "fsl,qoriq-rcpm-2.0": for chassis 2.0 rcpm
+ 	* "fsl,qoriq-rcpm-2.1": for chassis 2.1 rcpm
++	* "fsl,qoriq-rcpm-2.1+": for chassis 2.1+ rcpm
  
-@@ -236,6 +237,22 @@ void wakeup_source_unregister(struct wakeup_source *ws)
- 	}
- }
- EXPORT_SYMBOL_GPL(wakeup_source_unregister);
-+/**
-+ * wakeup_source_get_next - Get next wakeup source from the list
-+ * @ws: Previous wakeup source object, null means caller want first one.
-+ */
-+struct wakeup_source *wakeup_source_get_next(struct wakeup_source *ws)
-+{
-+	struct list_head *ws_head = &wakeup_sources;
+ All references to "1.0" and "2.0" refer to the QorIQ chassis version to
+ which the chip complies.
+@@ -27,7 +28,12 @@ Chassis Version		Example Chips
+ ---------------		-------------------------------
+ 1.0				p4080, p5020, p5040, p2041, p3041
+ 2.0				t4240, b4860, b4420
+-2.1				t1040, ls1021
++2.1				t1040,
++2.1+			ls1021a, ls1012a, ls1043a, ls1046a
 +
-+	if (ws)
-+		return list_next_or_null_rcu(ws_head, &ws->entry,
-+				struct wakeup_source, entry);
-+	else
-+		return list_entry_rcu(ws_head->next,
-+				struct wakeup_source, entry);
-+}
-+EXPORT_SYMBOL_GPL(wakeup_source_get_next);
++Optional properties:
++ - little-endian : RCPM register block is Little Endian. Without it RCPM
++   will be Big Endian (default case).
  
- /**
-  * device_wakeup_attach - Attach a wakeup source object to a device object.
-@@ -252,6 +269,7 @@ static int device_wakeup_attach(struct device *dev, struct wakeup_source *ws)
- 		return -EEXIST;
- 	}
- 	dev->power.wakeup = ws;
-+	ws->attached_dev = dev;
- 	if (dev->power.wakeirq)
- 		device_wakeup_attach_irq(dev, dev->power.wakeirq);
- 	spin_unlock_irq(&dev->power.lock);
-diff --git a/include/linux/pm_wakeup.h b/include/linux/pm_wakeup.h
-index 4238dde..1335487 100644
---- a/include/linux/pm_wakeup.h
-+++ b/include/linux/pm_wakeup.h
-@@ -50,6 +50,7 @@
-  * @wakeup_count: Number of times the wakeup source might abort suspend.
-  * @active: Status of the wakeup source.
-  * @has_timeout: The wakeup source has been activated with a timeout.
-+ * @attached_dev: The device it attached to
-  */
- struct wakeup_source {
- 	const char 		*name;
-@@ -70,6 +71,7 @@ struct wakeup_source {
- 	unsigned long		wakeup_count;
- 	bool			active:1;
- 	bool			autosleep_enabled:1;
-+	struct device	*attached_dev;
- };
- 
- #ifdef CONFIG_PM_SLEEP
-@@ -102,6 +104,7 @@ static inline void device_set_wakeup_path(struct device *dev)
- extern void wakeup_source_remove(struct wakeup_source *ws);
- extern struct wakeup_source *wakeup_source_register(const char *name);
- extern void wakeup_source_unregister(struct wakeup_source *ws);
-+extern struct wakeup_source *wakeup_source_get_next(struct wakeup_source *ws);
- extern int device_wakeup_enable(struct device *dev);
- extern int device_wakeup_disable(struct device *dev);
- extern void device_set_wakeup_capable(struct device *dev, bool capable);
+ Example:
+ The RCPM node for T4240:
 -- 
 1.7.1
 
