@@ -6,39 +6,39 @@ X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS
 	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 628C1C04AAF
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 18 May 2019 11:19:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 90AC4C04AAF
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 18 May 2019 11:21:00 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id D569F2087E
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 18 May 2019 11:19:47 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D569F2087E
+	by mail.kernel.org (Postfix) with ESMTPS id 4547A2087E
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 18 May 2019 11:21:00 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4547A2087E
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 455jNx593vzDqY4
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 18 May 2019 21:19:45 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+	by lists.ozlabs.org (Postfix) with ESMTP id 455jQL5ZRMzDqbt
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 18 May 2019 21:20:58 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 455jHX5mKszDq7j
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 May 2019 21:15:04 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 455jHZ15GmzDqKt
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 May 2019 21:15:06 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 455jHX4s5tz9sB8; Sat, 18 May 2019 21:15:04 +1000 (AEST)
+ id 455jHY5Y1zz9sBp; Sat, 18 May 2019 21:15:05 +1000 (AEST)
 X-powerpc-patch-notification: thanks
-X-powerpc-patch-commit: 6457f42eb3f6e9552366631bd5aeb096ae5f599a
+X-powerpc-patch-commit: c179976cf4cbd2e65f29741d5bc07ccf8747a532
 X-Patchwork-Hint: ignore
-In-Reply-To: <20190515094523.8095-1-aneesh.kumar@linux.ibm.com>
+In-Reply-To: <20190516115054.15220-1-aneesh.kumar@linux.ibm.com>
 To: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>, npiggin@gmail.com,
  paulus@samba.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Subject: Re: [PATCH] powerpc/mm: Drop VM_BUG_ON in get_region_id
-Message-Id: <455jHX4s5tz9sB8@ozlabs.org>
-Date: Sat, 18 May 2019 21:15:04 +1000 (AEST)
+Subject: Re: [PATCH] powerpc/mm/hash: Improve address limit checks
+Message-Id: <455jHY5Y1zz9sBp@ozlabs.org>
+Date: Sat, 18 May 2019 21:15:05 +1000 (AEST)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -56,26 +56,27 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, 2019-05-15 at 09:45:23 UTC, "Aneesh Kumar K.V" wrote:
-> We can call get_region_id without validating the ea value. That means
-> with a wrong ea value we hit the BUG as below.
+On Thu, 2019-05-16 at 11:50:54 UTC, "Aneesh Kumar K.V" wrote:
+> Different parts of the code do the limit check by ignoring the top nibble
+> of EA. ie. we do checks like
 > 
->  kernel BUG at arch/powerpc/include/asm/book3s/64/hash.h:129!
->  Oops: Exception in kernel mode, sig: 5 [#1]
->  LE PAGE_SIZE=64K MMU=Hash SMP NR_CPUS=2048 NUMA pSeries
->  CPU: 0 PID: 3937 Comm: access_tests Not tainted 5.1.0
->  ....
->  NIP [c00000000007ba20] do_slb_fault+0x70/0x320
->  LR [c00000000000896c] data_access_slb_common+0x15c/0x1a0
+> 	if ((ea & EA_MASK)  >= H_PGTABLE_RANGE)
+> 	   	error
 > 
-> Fix this by removing the VM_BUG_ON. All callers make sure the returned region id
-> is valid and error out otherwise.
+> This patch makes sure we don't insert SLB entries for addresses whose top nibble
+> doesn't match the ignored bits.
 > 
-> Fixes: 0034d395f89d ("powerpc/mm/hash64: Map all the kernel regions in the same 0xc range")
+> With an address like 0x4000000008000000, we can result in wrong slb entries like
+> 
+> 13 4000000008000000 400ea1b217000510   1T ESID=   400000 VSID=   ea1b217000 LLP:110
+> 
+> without this patch we will map that EA with LINEAR_MAP_REGION_ID and further
+> those addr limit check will return false.
+> 
 > Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
 
 Applied to powerpc fixes, thanks.
 
-https://git.kernel.org/powerpc/c/6457f42eb3f6e9552366631bd5aeb096
+https://git.kernel.org/powerpc/c/c179976cf4cbd2e65f29741d5bc07ccf
 
 cheers
