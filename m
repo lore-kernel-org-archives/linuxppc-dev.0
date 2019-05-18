@@ -4,34 +4,34 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 68DE0C04AAF
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 18 May 2019 14:45:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6194DC04AAF
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 18 May 2019 14:46:27 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E8BF920833
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 18 May 2019 14:45:05 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E8BF920833
+	by mail.kernel.org (Postfix) with ESMTPS id E0FDB20833
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 18 May 2019 14:46:26 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E0FDB20833
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 455nxq6Cf9zDqJk
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 19 May 2019 00:45:03 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+	by lists.ozlabs.org (Postfix) with ESMTP id 455nzP1DFNzDqQM
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 19 May 2019 00:46:25 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 455nWy00NJzDqPR
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 19 May 2019 00:26:06 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 455nX0688wzDqPj
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 19 May 2019 00:26:08 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 455nWx4J90z8tTb
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 19 May 2019 00:26:05 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 455nX01CHzz8vNR
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 19 May 2019 00:26:08 +1000 (AEST)
 Received: by ozlabs.org (Postfix)
- id 455nWx1wStz9sB8; Sun, 19 May 2019 00:26:05 +1000 (AEST)
+ id 455nWz5q0dz9sCJ; Sun, 19 May 2019 00:26:07 +1000 (AEST)
 Authentication-Results: ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
  (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
@@ -42,61 +42,61 @@ Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 455nWw4zlCz9sPS
- for <linuxppc-dev@ozlabs.org>; Sun, 19 May 2019 00:26:04 +1000 (AEST)
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x4IEHg9D102677
- for <linuxppc-dev@ozlabs.org>; Sat, 18 May 2019 10:26:02 -0400
-Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2sjdxggxwe-1
+ by ozlabs.org (Postfix) with ESMTPS id 455nWz1d6pz9sNT
+ for <linuxppc-dev@ozlabs.org>; Sun, 19 May 2019 00:26:06 +1000 (AEST)
+Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
+ x4IEGYT4146266
+ for <linuxppc-dev@ozlabs.org>; Sat, 18 May 2019 10:26:05 -0400
+Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2sje84ru1n-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@ozlabs.org>; Sat, 18 May 2019 10:26:02 -0400
+ for <linuxppc-dev@ozlabs.org>; Sat, 18 May 2019 10:26:04 -0400
 Received: from localhost
- by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <cclaudio@linux.ibm.com>;
- Sat, 18 May 2019 15:26:01 +0100
-Received: from b03cxnp07029.gho.boulder.ibm.com (9.17.130.16)
- by e31.co.us.ibm.com (192.168.1.131) with IBM ESMTP SMTP Gateway: Authorized
+ Sat, 18 May 2019 15:26:04 +0100
+Received: from b03cxnp08027.gho.boulder.ibm.com (9.17.130.19)
+ by e35.co.us.ibm.com (192.168.1.135) with IBM ESMTP SMTP Gateway: Authorized
  Use Only! Violators will be prosecuted; 
  (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Sat, 18 May 2019 15:25:59 +0100
+ Sat, 18 May 2019 15:26:02 +0100
 Received: from b03ledav004.gho.boulder.ibm.com
  (b03ledav004.gho.boulder.ibm.com [9.17.130.235])
- by b03cxnp07029.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x4IEPw4d64684096
+ by b03cxnp08027.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x4IEQ15025100576
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Sat, 18 May 2019 14:25:58 GMT
+ Sat, 18 May 2019 14:26:01 GMT
 Received: from b03ledav004.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 17ECF7805E;
+ by IMSVA (Postfix) with ESMTP id 49A6F7805E;
+ Sat, 18 May 2019 14:26:01 +0000 (GMT)
+Received: from b03ledav004.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 812177805C;
  Sat, 18 May 2019 14:25:58 +0000 (GMT)
-Received: from b03ledav004.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 4E42C7805C;
- Sat, 18 May 2019 14:25:55 +0000 (GMT)
 Received: from rino.ibm.com (unknown [9.85.168.40])
  by b03ledav004.gho.boulder.ibm.com (Postfix) with ESMTP;
- Sat, 18 May 2019 14:25:55 +0000 (GMT)
+ Sat, 18 May 2019 14:25:58 +0000 (GMT)
 From: Claudio Carvalho <cclaudio@linux.ibm.com>
 To: Paul Mackerras <paulus@ozlabs.org>, Michael Ellerman <mpe@ellerman.id.au>, 
  kvm-ppc@vger.kernel.org, linuxppc-dev@ozlabs.org
-Subject: [RFC PATCH v2 09/10] KVM: PPC: Book3S HV: Fixed for running secure
- guests
-Date: Sat, 18 May 2019 11:25:23 -0300
+Subject: [RFC PATCH v2 10/10] KVM: PPC: Ultravisor: Check for MSR_S during
+ hv_reset_msr
+Date: Sat, 18 May 2019 11:25:24 -0300
 X-Mailer: git-send-email 2.20.1
 In-Reply-To: <20190518142524.28528-1-cclaudio@linux.ibm.com>
 References: <20190518142524.28528-1-cclaudio@linux.ibm.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-x-cbid: 19051814-8235-0000-0000-00000E9900B1
+x-cbid: 19051814-0012-0000-0000-000017388FD6
 X-IBM-SpamModules-Scores: 
 X-IBM-SpamModules-Versions: BY=3.00011118; HX=3.00000242; KW=3.00000007;
  PH=3.00000004; SC=3.00000286; SDB=6.01205121; UDB=6.00632701; IPR=6.00986061; 
- MB=3.00026948; MTD=3.00000008; XFM=3.00000015; UTC=2019-05-18 14:26:01
+ MB=3.00026949; MTD=3.00000008; XFM=3.00000015; UTC=2019-05-18 14:26:03
 X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19051814-8236-0000-0000-0000459E050A
-Message-Id: <20190518142524.28528-10-cclaudio@linux.ibm.com>
+x-cbparentid: 19051814-0013-0000-0000-00005750D6BD
+Message-Id: <20190518142524.28528-11-cclaudio@linux.ibm.com>
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
  definitions=2019-05-18_11:, , signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
@@ -126,51 +126,31 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Paul Mackerras <paulus@ozlabs.org>
+From: Michael Anderson <andmike@linux.ibm.com>
 
-- Pass SRR1 in r11 for UV_RETURN because SRR0 and SRR1 get set by
-  the sc 2 instruction. (Note r3 - r10 potentially have hcall return
-  values in them.)
+ - Check for MSR_S so that kvmppc_set_msr will include. Prior to this
+   change return to guest would not have the S bit set.
 
-- Fix kvmppc_msr_interrupt to preserve the MSR_S bit.
+ - Patch based on comment from Paul Mackerras <pmac@au1.ibm.com>
 
-Signed-off-by: Paul Mackerras <paulus@ozlabs.org>
+Signed-off-by: Michael Anderson <andmike@linux.ibm.com>
 Signed-off-by: Claudio Carvalho <cclaudio@linux.ibm.com>
 ---
- arch/powerpc/kvm/book3s_hv_rmhandlers.S | 8 ++++++--
- 1 file changed, 6 insertions(+), 2 deletions(-)
+ arch/powerpc/kvm/book3s_64_mmu_hv.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/arch/powerpc/kvm/book3s_hv_rmhandlers.S b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-index d89efa0783a2..1b44c85956b9 100644
---- a/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-+++ b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-@@ -1160,6 +1160,7 @@ END_FTR_SECTION_IFSET(CPU_FTR_ARCH_300)
- ret_to_ultra:
- 	lwz	r6, VCPU_CR(r4)
- 	mtcr	r6
-+	mfspr	r11, SPRN_SRR1
- 	LOAD_REG_IMMEDIATE(r0, UV_RETURN)
- 	ld	r7, VCPU_GPR(R7)(r4)
- 	ld	r6, VCPU_GPR(R6)(r4)
-@@ -3360,13 +3361,16 @@ END_MMU_FTR_SECTION_IFSET(MMU_FTR_TYPE_RADIX)
-  *   r0 is used as a scratch register
-  */
- kvmppc_msr_interrupt:
-+	andis.	r0, r11, MSR_S@h
- 	rldicl	r0, r11, 64 - MSR_TS_S_LG, 62
--	cmpwi	r0, 2 /* Check if we are in transactional state..  */
-+	cmpwi	cr1, r0, 2 /* Check if we are in transactional state..  */
- 	ld	r11, VCPU_INTR_MSR(r9)
--	bne	1f
-+	bne	cr1, 1f
- 	/* ... if transactional, change to suspended */
- 	li	r0, 1
- 1:	rldimi	r11, r0, MSR_TS_S_LG, 63 - MSR_TS_T_LG
-+	beqlr
-+	oris	r11, r11, MSR_S@h		/* preserve MSR_S bit setting */
- 	blr
+diff --git a/arch/powerpc/kvm/book3s_64_mmu_hv.c b/arch/powerpc/kvm/book3s_64_mmu_hv.c
+index be7bc070eae5..dcc1c1fb5f9c 100644
+--- a/arch/powerpc/kvm/book3s_64_mmu_hv.c
++++ b/arch/powerpc/kvm/book3s_64_mmu_hv.c
+@@ -295,6 +295,7 @@ static void kvmppc_mmu_book3s_64_hv_reset_msr(struct kvm_vcpu *vcpu)
+ 		msr |= MSR_TS_S;
+ 	else
+ 		msr |= vcpu->arch.shregs.msr & MSR_TS_MASK;
++	msr |= vcpu->arch.shregs.msr & MSR_S;
+ 	kvmppc_set_msr(vcpu, msr);
+ }
  
- /*
 -- 
 2.20.1
 
