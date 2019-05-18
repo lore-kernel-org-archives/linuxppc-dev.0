@@ -2,86 +2,50 @@ Return-Path: <SRS0=Iee9=TS=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,USER_AGENT_NEOMUTT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-4.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2B96FC04AAF
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 18 May 2019 10:06:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7EFC7C04AAF
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 18 May 2019 10:29:33 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6BFB92087B
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 18 May 2019 10:06:32 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=brauner.io header.i=@brauner.io header.b="MzXf8JwF"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6BFB92087B
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=brauner.io
+	by mail.kernel.org (Postfix) with ESMTPS id BB07D2087E
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 18 May 2019 10:29:32 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BB07D2087E
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 455gmQ1cnbzDqS0
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 18 May 2019 20:06:30 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=brauner.io
- (client-ip=2a00:1450:4864:20::541; helo=mail-ed1-x541.google.com;
- envelope-from=christian@brauner.io; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=brauner.io
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- secure) header.d=brauner.io header.i=@brauner.io header.b="MzXf8JwF"; 
- dkim-atps=neutral
-Received: from mail-ed1-x541.google.com (mail-ed1-x541.google.com
- [IPv6:2a00:1450:4864:20::541])
+	by lists.ozlabs.org (Postfix) with ESMTP id 455hGy4w4vzDqSZ
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 18 May 2019 20:29:30 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 455gkz0QjgzDqQN
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 May 2019 20:05:13 +1000 (AEST)
-Received: by mail-ed1-x541.google.com with SMTP id n17so14783173edb.0
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 May 2019 03:05:13 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=brauner.io; s=google;
- h=date:from:to:cc:subject:message-id:references:mime-version
- :content-disposition:in-reply-to:user-agent;
- bh=kuxvODYNXQX1UADGYTekrXKJHl9GqTdixhHyMJoLFkg=;
- b=MzXf8JwF72gJj2Pq8n12P+UywZxc2BVXTvpiVUKrEniJVb1LIFP3IbcOliQYISdvq7
- CigvtYVzwi+8s8BzhGA7JzeYEAEgELRKSJUGXkBeKo3jIoY+k+AIz1NIGNQ3IbqWFvd/
- pZcoiBfjP1G87UNeXXgpYPrDlzF+SvvAxTS1B9J01RvJsEbVREubCnWtrpwlE+W8uhC8
- abJb2p1WNSljrqCFAQH7at9A4yXrlhg+5ZrhECybT+pFDJTv4XLPhvmKoEIQriQEdsEE
- 2qeWRYeIhjWVjN8Omnws0ZotrB2BKKuxhO4+QGekj7Ec6VajrUKLl5oRB10tcR/KFGxb
- SomA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:date:from:to:cc:subject:message-id:references
- :mime-version:content-disposition:in-reply-to:user-agent;
- bh=kuxvODYNXQX1UADGYTekrXKJHl9GqTdixhHyMJoLFkg=;
- b=NO4JMj1UiS+V6L4FhrRx5hsaDyh0Inhp1tOicX89SSbdFGrpVaH1JSRv7rDyx7IuVa
- PoVCnjtsLbFwV6eIQJaO33xgbxBDZGlzlvgp6xm0I1k3DOcvsVZo4N9qoauewEDhMSnA
- /wVbYzpEBb6vvAjRY//osSxPl/MecGp4ViMTDYYEfAZByOiOHJyQjgSgsKCT7vnHS2U/
- pMT6mfmxzVJ8HKQZ/Wf99ljTGV8dIrCb993VP97PzDFB18TrF9wPRVDCS7VkeoH7tiOI
- 7RbQp5m/3/kbbpzUG53c9ufyMYw3H5Q4WsrcG8gDiHR+kTGigvcOAP6u4rsz49fQNqCd
- v2Uw==
-X-Gm-Message-State: APjAAAV7gCpBSNfbfAw7dj+CEA5OEdFwd/NlA1Mq7lyXcQr8z9OHdT4n
- C0Ni0155LsukuvyYLmr2BJJYfw==
-X-Google-Smtp-Source: APXvYqyJ8cSwup5T+wLOXgE4G1RIJN3Q14FiCUfotn6HCvE35vO+QFm+mQrHo4U4TisKcq8ZEYMBDQ==
-X-Received: by 2002:a50:b82d:: with SMTP id j42mr63022736ede.186.1558173905455; 
- Sat, 18 May 2019 03:05:05 -0700 (PDT)
-Received: from brauner.io ([46.183.103.8])
- by smtp.gmail.com with ESMTPSA id y30sm3741910edc.83.2019.05.18.03.04.59
- (version=TLS1_3 cipher=AEAD-AES256-GCM-SHA384 bits=256/256);
- Sat, 18 May 2019 03:05:04 -0700 (PDT)
-Date: Sat, 18 May 2019 12:04:46 +0200
-From: Christian Brauner <christian@brauner.io>
-To: Joel Fernandes <joel@joelfernandes.org>
-Subject: Re: [PATCH v1 1/2] pid: add pidfd_open()
-Message-ID: <20190518100435.c5bqpcnra53dsr6p@brauner.io>
-References: <20190516135944.7205-1-christian@brauner.io>
- <20190516224949.GA15401@localhost>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 455hFf4J4SzDqNK
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 May 2019 20:28:22 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=ellerman.id.au
+Received: by ozlabs.org (Postfix)
+ id 455hFf2c8Jz9s9y; Sat, 18 May 2019 20:28:22 +1000 (AEST)
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
+ SHA256) (No client certificate requested)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 455hFf0P43z9s9T;
+ Sat, 18 May 2019 20:28:22 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH v2] powerpc/mm/hash: Fix get_region_id() for invalid
+ addresses
+In-Reply-To: <1558144540.o3oxh2ygpu.astroid@bobo.none>
+References: <20190517132958.22299-1-mpe@ellerman.id.au>
+ <1558144540.o3oxh2ygpu.astroid@bobo.none>
+Date: Sat, 18 May 2019 20:28:22 +1000
+Message-ID: <87ef4w83ax.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20190516224949.GA15401@localhost>
-User-Agent: NeoMutt/20180716
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -93,117 +57,68 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org, oleg@redhat.com,
- dhowells@redhat.com, linux-kselftest@vger.kernel.org,
- sparclinux@vger.kernel.org, linux-api@vger.kernel.org,
- elena.reshetova@intel.com, linux-arch@vger.kernel.org,
- linux-s390@vger.kernel.org, dancol@google.com,
- Geert Uytterhoeven <geert@linux-m68k.org>, kernel-team@android.com,
- serge@hallyn.com, linux-xtensa@linux-xtensa.org, keescook@chromium.org,
- arnd@arndb.de, jannh@google.com, linux-m68k@lists.linux-m68k.org,
- viro@zeniv.linux.org.uk, luto@kernel.org, linux-mips@vger.kernel.orgg,
- tglx@linutronix.de, surenb@google.com, linux-arm-kernel@lists.infradead.org,
- linux-parisc@vger.kernel.org, cyphar@cyphar.com, torvalds@linux-foundation.org,
- linux-kernel@vger.kernel.org, luto@amacapital.net, ebiederm@xmission.com,
- linux-alpha@vger.kernel.org, akpm@linux-foundation.org,
- linuxppc-dev@lists.ozlabs.org
+Cc: aneesh.kumar@linux.vnet.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Sat, May 18, 2019 at 05:48:03AM -0400, Joel Fernandes wrote:
-> Hi Christian,
-> 
-> For next revision, could you also CC surenb@google.com as well? He is also
-> working on the low memory killer. And also suggest CC to
-> kernel-team@android.com. And mentioned some comments below, thanks.
+Nicholas Piggin <npiggin@gmail.com> writes:
+> Michael Ellerman's on May 17, 2019 11:29 pm:
+>> From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
+>> 
+>> Accesses by userspace to random addresses outside the user or kernel
+>> address range will generate an SLB fault. When we handle that fault we
+>> classify the effective address into several classes, eg. user, kernel
+>> linear, kernel virtual etc.
+>> 
+>> For addresses that are completely outside of any valid range, we
+>> should not insert an SLB entry at all, and instead immediately an
+>> exception.
+>> 
+>> In the past this was handled in two ways. Firstly we would check the
+>> top nibble of the address (using REGION_ID(ea)) and that would tell us
+>> if the address was user (0), kernel linear (c), kernel virtual (d), or
+>> vmemmap (f). If the address didn't match any of these it was invalid.
+>> 
+>> Then for each type of address we would do a secondary check. For the
+>> user region we check against H_PGTABLE_RANGE, for kernel linear we
+>> would mask the top nibble of the address and then check the address
+>> against MAX_PHYSMEM_BITS.
+>> 
+>> As part of commit 0034d395f89d ("powerpc/mm/hash64: Map all the kernel
+>> regions in the same 0xc range") we replaced REGION_ID() with
+>> get_region_id() and changed the masking of the top nibble to only mask
+>> the top two bits, which introduced a bug.
+>> 
+>> Addresses less than (4 << 60) are still handled correctly, they are
+>> either less than (1 << 60) in which case they are subject to the
+>> H_PGTABLE_RANGE check, or they are correctly checked against
+>> MAX_PHYSMEM_BITS.
+>> 
+>> However addresses from (4 << 60) to ((0xc << 60) - 1), are incorrectly
+>> treated as kernel linear addresses in get_region_id(). Then the top
+>> two bits are cleared by EA_MASK in slb_allocate_kernel() and the
+>> address is checked against MAX_PHYSMEM_BITS, which it passes due to
+>> the masking. The end result is we incorrectly insert SLB entries for
+>> those addresses.
+>> 
+>> That is not actually catastrophic, having inserted the SLB entry we
+>> will then go on to take a page fault for the address and at that point
+>> we detect the problem and report it as a bad fault.
+>> 
+>> Still we should not be inserting those entries, or treating them as
+>> kernel linear addresses in the first place. So fix get_region_id() to
+>> detect addresses in that range and return an invalid region id, which
+>> we cause use to not insert an SLB entry and directly report an
+>> exception.
+>> 
+>> Fixes: 0034d395f89d ("powerpc/mm/hash64: Map all the kernel regions in the same 0xc range")
+>> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
+>> [mpe: Drop change to EA_MASK for now, rewrite change log]
+>> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+>
+> Looks good to me.
 
-Yip, totally. Just added them both to my Cc list. :)
-(I saw you added Suren manually. I added the Android kernel team now too.)
+Thanks for reviewing.
 
-> 
-> On Thu, May 16, 2019 at 03:59:42PM +0200, Christian Brauner wrote:
-> [snip]  
-> > diff --git a/kernel/pid.c b/kernel/pid.c
-> > index 20881598bdfa..4afca3d6dcb8 100644
-> > --- a/kernel/pid.c
-> > +++ b/kernel/pid.c
-> > @@ -38,6 +38,7 @@
-> >  #include <linux/syscalls.h>
-> >  #include <linux/proc_ns.h>
-> >  #include <linux/proc_fs.h>
-> > +#include <linux/sched/signal.h>
-> >  #include <linux/sched/task.h>
-> >  #include <linux/idr.h>
-> >  
-> > @@ -451,6 +452,55 @@ struct pid *find_ge_pid(int nr, struct pid_namespace *ns)
-> >  	return idr_get_next(&ns->idr, &nr);
-> >  }
-> >  
-> > +/**
-> > + * pidfd_open() - Open new pid file descriptor.
-> > + *
-> > + * @pid:   pid for which to retrieve a pidfd
-> > + * @flags: flags to pass
-> > + *
-> > + * This creates a new pid file descriptor with the O_CLOEXEC flag set for
-> > + * the process identified by @pid. Currently, the process identified by
-> > + * @pid must be a thread-group leader. This restriction currently exists
-> > + * for all aspects of pidfds including pidfd creation (CLONE_PIDFD cannot
-> > + * be used with CLONE_THREAD) and pidfd polling (only supports thread group
-> > + * leaders).
-> > + *
-> > + * Return: On success, a cloexec pidfd is returned.
-> > + *         On error, a negative errno number will be returned.
-> > + */
-> > +SYSCALL_DEFINE2(pidfd_open, pid_t, pid, unsigned int, flags)
-> > +{
-> > +	int fd, ret;
-> > +	struct pid *p;
-> > +	struct task_struct *tsk;
-> > +
-> > +	if (flags)
-> > +		return -EINVAL;
-> > +
-> > +	if (pid <= 0)
-> > +		return -EINVAL;
-> > +
-> > +	p = find_get_pid(pid);
-> > +	if (!p)
-> > +		return -ESRCH;
-> > +
-> > +	ret = 0;
-> > +	rcu_read_lock();
-> > +	/*
-> > +	 * If this returns non-NULL the pid was used as a thread-group
-> > +	 * leader. Note, we race with exec here: If it changes the
-> > +	 * thread-group leader we might return the old leader.
-> > +	 */
-> > +	tsk = pid_task(p, PIDTYPE_TGID);
-> 
-> Just trying to understand the comment here. The issue is that we might either
-> return the new leader, or the old leader depending on the overlap with
-> concurrent de_thread right? In either case, we don't care though.
-> 
-> I suggest to remove the "Note..." part of the comment since it doesn't seem the
-> race is relevant here unless we are doing something else with tsk in the
-> function, but if you want to keep it that's also fine. Comment text should
-> probably should be 'return the new leader' though.
-
-Nah, I actually removed the comment already independently (cf. see [1]).
-
-[1]: https://git.kernel.org/pub/scm/linux/kernel/git/brauner/linux.git/commit/?h=pidfd_open&id=dcfc98c2d957bf3ac14b06414cb2cf4c673fc297
-> 
-> > +	if (!tsk)
-> > +		ret = -ESRCH;
-> 
-> Perhaps -EINVAL?  AFAICS, this can only happen if a CLONE_THREAD pid was
-> passed as argument to pidfd_open which is invalid. But let me know what you
-> had in mind..
-
-Hm, from the kernel's perspective ESRCH is correct but I guess EINVAL is
-nicer for userspace. So I don't have objections to using EINVAL. My
-first version did too I think.
-
-Thanks!
-Christian
+cheers
