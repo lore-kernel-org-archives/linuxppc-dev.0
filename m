@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-1.0 required=3.0 tests=MAILING_LIST_MULTI,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 59ACBC04AB4
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 19 May 2019 19:37:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D3854C04AB4
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 19 May 2019 19:38:53 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 17D3820578
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 19 May 2019 19:37:00 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 17D3820578
+	by mail.kernel.org (Postfix) with ESMTPS id 818D920645
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 19 May 2019 19:38:53 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 818D920645
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=bugzilla.kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 456XNB2Gm4zDqH5
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 May 2019 05:36:58 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 456XQM4L11zDqHY
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 May 2019 05:38:51 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=bugzilla.kernel.org
  (client-ip=198.145.29.98; helo=mail.wl.linuxfoundation.org;
@@ -29,20 +29,20 @@ Received: from mail.wl.linuxfoundation.org (mail.wl.linuxfoundation.org
  [198.145.29.98])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 456XKl1y6wzDqFh
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 May 2019 05:34:50 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 456XLS3JlJzDqHL
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 May 2019 05:35:28 +1000 (AEST)
 Received: from mail.wl.linuxfoundation.org (localhost [127.0.0.1])
- by mail.wl.linuxfoundation.org (Postfix) with ESMTP id 63514285AF
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 19 May 2019 19:34:48 +0000 (UTC)
+ by mail.wl.linuxfoundation.org (Postfix) with ESMTP id 2179926B39
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 19 May 2019 19:35:26 +0000 (UTC)
 Received: by mail.wl.linuxfoundation.org (Postfix, from userid 486)
- id 56D3B285C6; Sun, 19 May 2019 19:34:48 +0000 (UTC)
+ id 0FA74285BE; Sun, 19 May 2019 19:35:26 +0000 (UTC)
 From: bugzilla-daemon@bugzilla.kernel.org
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [Bug 203647] New: Locking API testsuite fails "mixed
- read-lock/lock-write ABBA" rlock on kernels >=4.14.x
-Date: Sun, 19 May 2019 19:34:47 +0000
+Subject: [Bug 203647] Locking API testsuite fails "mixed read-lock/lock-write
+ ABBA" rlock on kernels >=4.14.x
+Date: Sun, 19 May 2019 19:35:25 +0000
 X-Bugzilla-Reason: None
-X-Bugzilla-Type: new
+X-Bugzilla-Type: changed
 X-Bugzilla-Watch-Reason: AssignedTo platform_ppc-64@kernel-bugs.osdl.org
 X-Bugzilla-Product: Platform Specific/Hardware
 X-Bugzilla-Component: PPC-64
@@ -55,10 +55,10 @@ X-Bugzilla-Resolution:
 X-Bugzilla-Priority: P1
 X-Bugzilla-Assigned-To: platform_ppc-64@kernel-bugs.osdl.org
 X-Bugzilla-Flags: 
-X-Bugzilla-Changed-Fields: bug_id short_desc product version
- cf_kernel_version rep_platform op_sys cf_tree bug_status bug_severity
- priority component assigned_to reporter cf_regression attachments.created
-Message-ID: <bug-203647-206035@https.bugzilla.kernel.org/>
+X-Bugzilla-Changed-Fields: attachments.created
+Message-ID: <bug-203647-206035-HsK6LUW9y8@https.bugzilla.kernel.org/>
+In-Reply-To: <bug-203647-206035@https.bugzilla.kernel.org/>
+References: <bug-203647-206035@https.bugzilla.kernel.org/>
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 X-Bugzilla-URL: https://bugzilla.kernel.org/
@@ -82,95 +82,10 @@ Sender: "Linuxppc-dev"
 
 https://bugzilla.kernel.org/show_bug.cgi?id=3D203647
 
-            Bug ID: 203647
-           Summary: Locking API testsuite fails "mixed
-                    read-lock/lock-write ABBA" rlock on kernels >=3D4.14.x
-           Product: Platform Specific/Hardware
-           Version: 2.5
-    Kernel Version: 5.1.3
-          Hardware: All
-                OS: Linux
-              Tree: Mainline
-            Status: NEW
-          Severity: normal
-          Priority: P1
-         Component: PPC-64
-          Assignee: platform_ppc-64@kernel-bugs.osdl.org
-          Reporter: erhard_f@mailbox.org
-        Regression: No
-
-Created attachment 282831
-  --> https://bugzilla.kernel.org/attachment.cgi?id=3D282831&action=3Dedit
-dmesg (5.1.3, G5 11,2)
-
-Probably this test fails on ppc64 since it is around. Kernel 4.9.x passes a=
-ll
-tests, since it does not seem to contain "mixed read-lock/lock-write ABBA".
-
-Machine is a PowerMac G5 11,2 running Gentoo Linux ppc64, Big Endian, 4 KiB
-pagesize.
-
-[    0.002051] ------------------------
-[    0.002065] | Locking API testsuite:
-[    0.002079]
-----------------------------------------------------------------------------
-[    0.002111]                                  | spin |wlock |rlock |mutex=
- |
-wsem | rsem |
-[    0.002142]=20=20
---------------------------------------------------------------------------
-[    0.002179]                      A-A deadlock:  ok  |  ok  |  ok  |  ok =
- |=20
-ok  |  ok  |  ok  |
-[    0.007366]                  A-B-B-A deadlock:  ok  |  ok  |  ok  |  ok =
- |=20
-ok  |  ok  |  ok  |
-[    0.012471]              A-B-B-C-C-A deadlock:  ok  |  ok  |  ok  |  ok =
- |=20
-ok  |  ok  |  ok  |
-[    0.017598]              A-B-C-A-B-C deadlock:  ok  |  ok  |  ok  |  ok =
- |=20
-ok  |  ok  |  ok  |
-[    0.022740]          A-B-B-C-C-D-D-A deadlock:  ok  |  ok  |  ok  |  ok =
- |=20
-ok  |  ok  |  ok  |
-[    0.027912]          A-B-C-D-B-D-D-A deadlock:  ok  |  ok  |  ok  |  ok =
- |=20
-ok  |  ok  |  ok  |
-[    0.033083]          A-B-C-D-B-C-D-A deadlock:  ok  |  ok  |  ok  |  ok =
- |=20
-ok  |  ok  |  ok  |
-[    0.038269]                     double unlock:  ok  |  ok  |  ok  |  ok =
- |=20
-ok  |  ok  |  ok  |
-[    0.043319]                   initialize held:  ok  |  ok  |  ok  |  ok =
- |=20
-ok  |  ok  |  ok  |
-[    0.048379]=20=20
---------------------------------------------------------------------------
-[    0.048411]               recursive read-lock:             |  ok  |=20=
-=20=20=20=20=20=20=20=20
-   |  ok  |
-[    0.049894]            recursive read-lock #2:             |  ok  |=20=
-=20=20=20=20=20=20=20=20
-   |  ok  |
-[    0.051375]             mixed read-write-lock:             |  ok  |=20=
-=20=20=20=20=20=20=20=20
-   |  ok  |
-[    0.052859]             mixed write-read-lock:             |  ok  |=20=
-=20=20=20=20=20=20=20=20
-   |  ok  |
-[    0.054333]   mixed read-lock/lock-write ABBA:             |FAILED|=20=
-=20=20=20=20=20=20=20=20
-   |  ok  |
-[    0.055802]    mixed read-lock/lock-read ABBA:             |  ok  |=20=
-=20=20=20=20=20=20=20=20
-   |  ok  |
-[    0.057290]  mixed write-lock/lock-write ABBA:             |  ok  |=20=
-=20=20=20=20=20=20=20=20
-   |  ok  |
-[    0.058771]=20=20
---------------------------------------------------------------------------
+--- Comment #1 from Erhard F. (erhard_f@mailbox.org) ---
+Created attachment 282833
+  --> https://bugzilla.kernel.org/attachment.cgi?id=3D282833&action=3Dedit
+dmesg (5.0.17, G5 11,2)
 
 --=20
 You are receiving this mail because:
