@@ -2,61 +2,69 @@ Return-Path: <SRS0=38T3=TT=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-1.0 required=3.0 tests=MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 99D73C04AB4
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 19 May 2019 17:46:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 59ACBC04AB4
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 19 May 2019 19:37:02 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 17E4320657
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 19 May 2019 17:46:55 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="yWWmZXmt"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 17E4320657
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	by mail.kernel.org (Postfix) with ESMTPS id 17D3820578
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 19 May 2019 19:37:00 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 17D3820578
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=bugzilla.kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 456TxB0bsHzDqKP
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 May 2019 03:46:54 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 456XNB2Gm4zDqH5
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 May 2019 05:36:58 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=kernel.org
- (client-ip=198.145.29.99; helo=mail.kernel.org;
- envelope-from=pr-tracker-bot@kernel.org; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=kernel.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="yWWmZXmt"; 
- dkim-atps=neutral
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ spf=pass (mailfrom) smtp.mailfrom=bugzilla.kernel.org
+ (client-ip=198.145.29.98; helo=mail.wl.linuxfoundation.org;
+ envelope-from=bugzilla-daemon@bugzilla.kernel.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=bugzilla.kernel.org
+Received: from mail.wl.linuxfoundation.org (mail.wl.linuxfoundation.org
+ [198.145.29.98])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 456TvW1xVzzDqCV
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 May 2019 03:45:26 +1000 (AEST)
-Subject: Re: [GIT PULL] Please pull powerpc/linux.git powerpc-5.2-2 tag
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1558287923;
- bh=7xvkMEJP6TZQGs90N8lPVLkD94TPzvSWtlkz2Ao0GNE=;
- h=From:In-Reply-To:References:Date:To:Cc:From;
- b=yWWmZXmtb4ZtqELg4M4sfd6YFmIgm51hnEMo5d/X7AAW9mari9tpU5emPes7eCFI0
- 1aPxG/kVIJzdwMQ7xkRwYIg9GriS+46ZB9t5LGc1YbCaaOY1V0MBVAiDxsUFcqOjR1
- tjb8nIgdH8IZkuFlhYgifQgC5ydCx4zAgnUcYRR4=
-From: pr-tracker-bot@kernel.org
-In-Reply-To: <87bm00818p.fsf@concordia.ellerman.id.au>
-References: <87bm00818p.fsf@concordia.ellerman.id.au>
-X-PR-Tracked-List-Id: <linux-kernel.vger.kernel.org>
-X-PR-Tracked-Message-Id: <87bm00818p.fsf@concordia.ellerman.id.au>
-X-PR-Tracked-Remote: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git
- tags/powerpc-5.2-2
-X-PR-Tracked-Commit-Id: 672eaf37db9f99fd794eed2c68a8b3b05d484081
-X-PR-Merge-Tree: torvalds/linux.git
-X-PR-Merge-Refname: refs/heads/master
-X-PR-Merge-Commit-Id: 86a78a8b8d0414455c2174852968ce54205add82
-Message-Id: <155828792351.9186.916934956975502044.pr-tracker-bot@kernel.org>
-Date: Sun, 19 May 2019 17:45:23 +0000
-To: Michael Ellerman <mpe@ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 456XKl1y6wzDqFh
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 May 2019 05:34:50 +1000 (AEST)
+Received: from mail.wl.linuxfoundation.org (localhost [127.0.0.1])
+ by mail.wl.linuxfoundation.org (Postfix) with ESMTP id 63514285AF
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 19 May 2019 19:34:48 +0000 (UTC)
+Received: by mail.wl.linuxfoundation.org (Postfix, from userid 486)
+ id 56D3B285C6; Sun, 19 May 2019 19:34:48 +0000 (UTC)
+From: bugzilla-daemon@bugzilla.kernel.org
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [Bug 203647] New: Locking API testsuite fails "mixed
+ read-lock/lock-write ABBA" rlock on kernels >=4.14.x
+Date: Sun, 19 May 2019 19:34:47 +0000
+X-Bugzilla-Reason: None
+X-Bugzilla-Type: new
+X-Bugzilla-Watch-Reason: AssignedTo platform_ppc-64@kernel-bugs.osdl.org
+X-Bugzilla-Product: Platform Specific/Hardware
+X-Bugzilla-Component: PPC-64
+X-Bugzilla-Version: 2.5
+X-Bugzilla-Keywords: 
+X-Bugzilla-Severity: normal
+X-Bugzilla-Who: erhard_f@mailbox.org
+X-Bugzilla-Status: NEW
+X-Bugzilla-Resolution: 
+X-Bugzilla-Priority: P1
+X-Bugzilla-Assigned-To: platform_ppc-64@kernel-bugs.osdl.org
+X-Bugzilla-Flags: 
+X-Bugzilla-Changed-Fields: bug_id short_desc product version
+ cf_kernel_version rep_platform op_sys cf_tree bug_status bug_severity
+ priority component assigned_to reporter cf_regression attachments.created
+Message-ID: <bug-203647-206035@https.bugzilla.kernel.org/>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+X-Bugzilla-URL: https://bugzilla.kernel.org/
+Auto-Submitted: auto-generated
+MIME-Version: 1.0
+X-Virus-Scanned: ClamAV using ClamSMTP
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -68,22 +76,102 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: aneesh.kumar@linux.ibm.com, linux-kernel@vger.kernel.org,
- Linus Torvalds <torvalds@linux-foundation.org>, tobin@kernel.org,
- linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The pull request you sent on Sat, 18 May 2019 21:12:54 +1000:
+https://bugzilla.kernel.org/show_bug.cgi?id=3D203647
 
-> https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git tags/powerpc-5.2-2
+            Bug ID: 203647
+           Summary: Locking API testsuite fails "mixed
+                    read-lock/lock-write ABBA" rlock on kernels >=3D4.14.x
+           Product: Platform Specific/Hardware
+           Version: 2.5
+    Kernel Version: 5.1.3
+          Hardware: All
+                OS: Linux
+              Tree: Mainline
+            Status: NEW
+          Severity: normal
+          Priority: P1
+         Component: PPC-64
+          Assignee: platform_ppc-64@kernel-bugs.osdl.org
+          Reporter: erhard_f@mailbox.org
+        Regression: No
 
-has been merged into torvalds/linux.git:
-https://git.kernel.org/torvalds/c/86a78a8b8d0414455c2174852968ce54205add82
+Created attachment 282831
+  --> https://bugzilla.kernel.org/attachment.cgi?id=3D282831&action=3Dedit
+dmesg (5.1.3, G5 11,2)
 
-Thank you!
+Probably this test fails on ppc64 since it is around. Kernel 4.9.x passes a=
+ll
+tests, since it does not seem to contain "mixed read-lock/lock-write ABBA".
 
--- 
-Deet-doot-dot, I am a bot.
-https://korg.wiki.kernel.org/userdoc/prtracker
+Machine is a PowerMac G5 11,2 running Gentoo Linux ppc64, Big Endian, 4 KiB
+pagesize.
+
+[    0.002051] ------------------------
+[    0.002065] | Locking API testsuite:
+[    0.002079]
+----------------------------------------------------------------------------
+[    0.002111]                                  | spin |wlock |rlock |mutex=
+ |
+wsem | rsem |
+[    0.002142]=20=20
+--------------------------------------------------------------------------
+[    0.002179]                      A-A deadlock:  ok  |  ok  |  ok  |  ok =
+ |=20
+ok  |  ok  |  ok  |
+[    0.007366]                  A-B-B-A deadlock:  ok  |  ok  |  ok  |  ok =
+ |=20
+ok  |  ok  |  ok  |
+[    0.012471]              A-B-B-C-C-A deadlock:  ok  |  ok  |  ok  |  ok =
+ |=20
+ok  |  ok  |  ok  |
+[    0.017598]              A-B-C-A-B-C deadlock:  ok  |  ok  |  ok  |  ok =
+ |=20
+ok  |  ok  |  ok  |
+[    0.022740]          A-B-B-C-C-D-D-A deadlock:  ok  |  ok  |  ok  |  ok =
+ |=20
+ok  |  ok  |  ok  |
+[    0.027912]          A-B-C-D-B-D-D-A deadlock:  ok  |  ok  |  ok  |  ok =
+ |=20
+ok  |  ok  |  ok  |
+[    0.033083]          A-B-C-D-B-C-D-A deadlock:  ok  |  ok  |  ok  |  ok =
+ |=20
+ok  |  ok  |  ok  |
+[    0.038269]                     double unlock:  ok  |  ok  |  ok  |  ok =
+ |=20
+ok  |  ok  |  ok  |
+[    0.043319]                   initialize held:  ok  |  ok  |  ok  |  ok =
+ |=20
+ok  |  ok  |  ok  |
+[    0.048379]=20=20
+--------------------------------------------------------------------------
+[    0.048411]               recursive read-lock:             |  ok  |=20=
+=20=20=20=20=20=20=20=20
+   |  ok  |
+[    0.049894]            recursive read-lock #2:             |  ok  |=20=
+=20=20=20=20=20=20=20=20
+   |  ok  |
+[    0.051375]             mixed read-write-lock:             |  ok  |=20=
+=20=20=20=20=20=20=20=20
+   |  ok  |
+[    0.052859]             mixed write-read-lock:             |  ok  |=20=
+=20=20=20=20=20=20=20=20
+   |  ok  |
+[    0.054333]   mixed read-lock/lock-write ABBA:             |FAILED|=20=
+=20=20=20=20=20=20=20=20
+   |  ok  |
+[    0.055802]    mixed read-lock/lock-read ABBA:             |  ok  |=20=
+=20=20=20=20=20=20=20=20
+   |  ok  |
+[    0.057290]  mixed write-lock/lock-write ABBA:             |  ok  |=20=
+=20=20=20=20=20=20=20=20
+   |  ok  |
+[    0.058771]=20=20
+--------------------------------------------------------------------------
+
+--=20
+You are receiving this mail because:
+You are watching the assignee of the bug.=
