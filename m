@@ -2,83 +2,62 @@ Return-Path: <SRS0=EeCa=TU=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.3 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,UNWANTED_LANGUAGE_BODY,URIBL_BLOCKED,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_MUTT autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E1422C04E87
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 May 2019 06:35:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7730BC04AAF
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 May 2019 06:39:02 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6483D20851
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 May 2019 06:35:28 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id A939820815
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 May 2019 06:39:01 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=axtens.net header.i=@axtens.net header.b="W4oNWM/A"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6483D20851
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=axtens.net
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ozlabs.org header.i=@ozlabs.org header.b="Tuc+fMdf"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A939820815
+Authentication-Results: mail.kernel.org; dmarc=pass (p=none dis=none) header.from=ozlabs.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 456pzy4bqQzDqMd
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 May 2019 16:35:26 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=axtens.net
- (client-ip=2607:f8b0:4864:20::442; helo=mail-pf1-x442.google.com;
- envelope-from=dja@axtens.net; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=axtens.net
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=axtens.net header.i=@axtens.net header.b="W4oNWM/A"; 
- dkim-atps=neutral
-Received: from mail-pf1-x442.google.com (mail-pf1-x442.google.com
- [IPv6:2607:f8b0:4864:20::442])
+	by lists.ozlabs.org (Postfix) with ESMTP id 456q434HtyzDqL8
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 May 2019 16:38:59 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 456pnf1c73zDqHK
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 May 2019 16:26:30 +1000 (AEST)
-Received: by mail-pf1-x442.google.com with SMTP id u17so6689559pfn.7
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 19 May 2019 23:26:30 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=axtens.net; s=google;
- h=from:to:cc:subject:date:message-id:in-reply-to:references
- :mime-version:content-transfer-encoding;
- bh=M29QHGrl4WPf2MIcsZiIfsIvaHh84YE3PGOJpCodWoU=;
- b=W4oNWM/AcltXE6V0EDbkptkvtjL2Bs9aRzGiSArPeiN5NMu3Mq/NXj0WqOgZl9PRPn
- Hm7/LBsWzOl5zEpxXiObhkDQ4xXQwT9MDLY9y+DQBp5K1eEyuulzWINrgMeeVfbwD29r
- KqRBUh7JTj9mKNRKD7yPsY6htG9Z6UAeKz7R0=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
- :references:mime-version:content-transfer-encoding;
- bh=M29QHGrl4WPf2MIcsZiIfsIvaHh84YE3PGOJpCodWoU=;
- b=ADrhMIO+aAfnzFyzqQEe/IyFR9/fN8NuaeaqtvxpJ/XPHLbgTpAYqnu5iQZQ7KJbup
- kewMxXtDZy5DReO7nck48+sybgkhmbQLv1peh3fG8TmJ5hP2izK/lZa4D3kNxEAHznpo
- ds+hgpjyJJRgEZ8hAEPWbzxJyxq0/yuEJ8Vou2UUZJEOgC3a8OTq8LPe5llDghoNIE9G
- qNrA5xdvK1dMFowhiPNSDyZhtqlLJHB2m2M5q8gwv0QVnmVzFwl00eE33qKGpd98ILvu
- z+x/CpFFFaZ6Z2hTLcUvspGlgJQnDwGjWF9FIhzf65p7GkGCbewnyc7NV13Wf49rRF8H
- Y9jQ==
-X-Gm-Message-State: APjAAAVlGEYk2ns+k5adw5goIC0S+/9s8leg29n07OJkd2edo5bleYZR
- Wu+Tbj9FVTgAW+OXPNjE0Gl/Lg==
-X-Google-Smtp-Source: APXvYqzIvYEk54q9lJ3XWEqVU7YLZdcBPRc0n1wJz8ytxvXIyB0sAGTzp5WRBiAnTGHk7i7ZeI2k7A==
-X-Received: by 2002:a65:48ca:: with SMTP id o10mr73791991pgs.136.1558333588492; 
- Sun, 19 May 2019 23:26:28 -0700 (PDT)
-Received: from localhost (ppp167-251-205.static.internode.on.net.
- [59.167.251.205])
- by smtp.gmail.com with ESMTPSA id 79sm29290526pfz.144.2019.05.19.23.26.26
- (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
- Sun, 19 May 2019 23:26:27 -0700 (PDT)
-From: Daniel Axtens <dja@axtens.net>
-To: nayna@linux.ibm.com, cclaudio@linux.ibm.com, linux-fsdevel@vger.kernel.org,
- greg@kroah.com, linuxppc-dev@lists.ozlabs.org
-Subject: [WIP RFC PATCH 6/6] fwvarfs: Add opal_secvar backend
-Date: Mon, 20 May 2019 16:25:53 +1000
-Message-Id: <20190520062553.14947-7-dja@axtens.net>
-X-Mailer: git-send-email 2.19.1
-In-Reply-To: <20190520062553.14947-1-dja@axtens.net>
-References: <20190520062553.14947-1-dja@axtens.net>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 456q2g4x7MzDqBd
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 May 2019 16:37:47 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=ozlabs.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ secure) header.d=ozlabs.org header.i=@ozlabs.org header.b="Tuc+fMdf"; 
+ dkim-atps=neutral
+Received: by ozlabs.org (Postfix)
+ id 456q2g3FqHz9sBb; Mon, 20 May 2019 16:37:47 +1000 (AEST)
+Received: by ozlabs.org (Postfix, from userid 1003)
+ id 456q2g20V9z9s9y; Mon, 20 May 2019 16:37:47 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ozlabs.org; s=201707;
+ t=1558334267; bh=KMvPkfmRTz792i4T4gnia0zZY7D8IlGpYuJ3hjuUXsQ=;
+ h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+ b=Tuc+fMdfRe9ei0Q/0+/guTHfXvOu47MbPR5V6VnMHzKXhjHRjx9sUvJbABvl4C2q+
+ jhA3znoOvbi6FV3JlF0YE6zpJrPI86KgQeqNxwFLUNocqtt8t5S6k5pGosoEfdENDF
+ OvMkF8SKE5MMjjfGFMTvaYSJBin67U52tFJcsb8wIduDc4apI2wfAfMbn59uOdFdzd
+ SPjVDYUYH5t/80+IMZ6D6N3SAxnoU0ZY0Ob3e0CYdrKSX86sTGInjf4n0TYAiDjTdc
+ E5K5ptQW+1yXN18aJBQ/D4pPtlN/b8Ow89LDbQEL7NQF7wyN/c/HZiBg5JUo7+5018
+ hfpAjGIWIuaow==
+Date: Mon, 20 May 2019 15:43:57 +1000
+From: Paul Mackerras <paulus@ozlabs.org>
+To: Claudio Carvalho <cclaudio@linux.ibm.com>
+Subject: Re: [RFC PATCH v2 07/10] KVM: PPC: Ultravisor: Restrict LDBAR access
+Message-ID: <20190520054357.GB21382@blackberry>
+References: <20190518142524.28528-1-cclaudio@linux.ibm.com>
+ <20190518142524.28528-8-cclaudio@linux.ibm.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20190518142524.28528-8-cclaudio@linux.ibm.com>
+User-Agent: Mutt/1.5.24 (2015-08-30)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -90,319 +69,85 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Daniel Axtens <dja@axtens.net>
+Cc: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>,
+ Michael Anderson <andmike@linux.ibm.com>, Ram Pai <linuxram@us.ibm.com>,
+ kvm-ppc@vger.kernel.org, Bharata B Rao <bharata@linux.ibm.com>,
+ linuxppc-dev@ozlabs.org, Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
+ Thiago Jung Bauermann <bauerman@linux.ibm.com>,
+ Anshuman Khandual <khandual@linux.vnet.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-COMPILE TESTED ONLY.
+On Sat, May 18, 2019 at 11:25:21AM -0300, Claudio Carvalho wrote:
+> From: Ram Pai <linuxram@us.ibm.com>
+> 
+> When the ultravisor firmware is available, it takes control over the
+> LDBAR register. In this case, thread-imc updates and save/restore
+> operations on the LDBAR register are handled by ultravisor.
+> 
+> Signed-off-by: Ram Pai <linuxram@us.ibm.com>
+> [Restrict LDBAR access in assembly code and some in C, update the commit
+>  message]
+> Signed-off-by: Claudio Carvalho <cclaudio@linux.ibm.com>
 
-mount -t fwvarfs opal_secvar /fw
+Some of the places that you are patching below are explicitly only
+executed on POWER8, which can't have an ultravisor, and therefore
+the change isn't needed:
 
-Signed-off-by: Daniel Axtens <dja@axtens.net>
----
- Documentation/filesystems/fwvarfs.txt |   3 +
- fs/fwvarfs/Kconfig                    |  11 ++
- fs/fwvarfs/Makefile                   |   1 +
- fs/fwvarfs/fwvarfs.c                  |   3 +
- fs/fwvarfs/fwvarfs.h                  |   4 +
- fs/fwvarfs/opal_secvar.c              | 218 ++++++++++++++++++++++++++
- 6 files changed, 240 insertions(+)
- create mode 100644 fs/fwvarfs/opal_secvar.c
+> ---
+>  arch/powerpc/kvm/book3s_hv.c                 |  4 +-
+>  arch/powerpc/kvm/book3s_hv_rmhandlers.S      |  2 +
+>  arch/powerpc/perf/imc-pmu.c                  | 64 ++++++++++++--------
+>  arch/powerpc/platforms/powernv/idle.c        |  6 +-
+>  arch/powerpc/platforms/powernv/subcore-asm.S |  4 ++
+>  5 files changed, 52 insertions(+), 28 deletions(-)
+> 
+> diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
+> index 0fab0a201027..81f35f955d16 100644
+> --- a/arch/powerpc/kvm/book3s_hv.c
+> +++ b/arch/powerpc/kvm/book3s_hv.c
+> @@ -75,6 +75,7 @@
+>  #include <asm/xics.h>
+>  #include <asm/xive.h>
+>  #include <asm/hw_breakpoint.h>
+> +#include <asm/firmware.h>
+>  
+>  #include "book3s.h"
+>  
+> @@ -3117,7 +3118,8 @@ static noinline void kvmppc_run_core(struct kvmppc_vcore *vc)
+>  			subcore_size = MAX_SMT_THREADS / split;
+>  			split_info.rpr = mfspr(SPRN_RPR);
+>  			split_info.pmmar = mfspr(SPRN_PMMAR);
+> -			split_info.ldbar = mfspr(SPRN_LDBAR);
+> +			if (!firmware_has_feature(FW_FEATURE_ULTRAVISOR))
+> +				split_info.ldbar = mfspr(SPRN_LDBAR);
 
-diff --git a/Documentation/filesystems/fwvarfs.txt b/Documentation/filesystems/fwvarfs.txt
-index 7c1e921e5c50..3ecc4b4428a5 100644
---- a/Documentation/filesystems/fwvarfs.txt
-+++ b/Documentation/filesystems/fwvarfs.txt
-@@ -36,6 +36,9 @@ Supported backends
-    backend. Read-only with no creation or deletion, but sufficient that
-    efivar --print --name <whatever> works the same as efivarfs.
- 
-+ * opal_secvar - COMPILE-TESTED ONLY implementation against PowerNV
-+   OPAL Secure Variable storage.
-+
- Usage
- -----
- 
-diff --git a/fs/fwvarfs/Kconfig b/fs/fwvarfs/Kconfig
-index e4474da11dbc..cb9cbc6f8fb3 100644
---- a/fs/fwvarfs/Kconfig
-+++ b/fs/fwvarfs/Kconfig
-@@ -34,3 +34,14 @@ config FWVAR_FS_EFI_BACKEND
- 	  in the same way the do with efivarfs.
- 
- 	  Say N here unless you're exploring fwvarfs.
-+
-+config FWVAR_FS_OPAL_SECVAR_BACKEND
-+	bool "OPAL Secure Variable backend"
-+	depends on FWVAR_FS
-+	depends on OPAL_SECVAR
-+	help
-+	  Include a read-only, compile-tested-only, not up-to-date
-+	  backend for OPAL Secure Variables. This is really just
-+	  designed to show how the code would work, and you should
-+	  only select Y here if you are developing OPAL secure
-+	  variables.
-diff --git a/fs/fwvarfs/Makefile b/fs/fwvarfs/Makefile
-index 2ab9dfd650ca..8d258acdfef7 100644
---- a/fs/fwvarfs/Makefile
-+++ b/fs/fwvarfs/Makefile
-@@ -7,3 +7,4 @@ obj-$(CONFIG_FWVAR_FS)		+= fwvarfs.o
- 
- obj-$(CONFIG_FWVAR_FS_MEM_BACKEND)		+= mem.o
- obj-$(CONFIG_FWVAR_FS_EFI_BACKEND)		+= efi.o
-+obj-$(CONFIG_FWVAR_FS_OPAL_SECVAR_BACKEND)	+= opal_secvar.o
-diff --git a/fs/fwvarfs/fwvarfs.c b/fs/fwvarfs/fwvarfs.c
-index 643ec6585b4d..3c93b6442e95 100644
---- a/fs/fwvarfs/fwvarfs.c
-+++ b/fs/fwvarfs/fwvarfs.c
-@@ -24,6 +24,9 @@ static struct fwvarfs_backend *fwvarfs_backends[] = {
- #endif
- #ifdef CONFIG_FWVAR_FS_EFI_BACKEND
- 	&fwvarfs_efi_backend,
-+#endif
-+#ifdef CONFIG_FWVAR_FS_OPAL_SECVAR_BACKEND
-+	&fwvarfs_opal_secvar_backend,
- #endif
- 	NULL,
- };
-diff --git a/fs/fwvarfs/fwvarfs.h b/fs/fwvarfs/fwvarfs.h
-index 49bde268401f..5780046dafae 100644
---- a/fs/fwvarfs/fwvarfs.h
-+++ b/fs/fwvarfs/fwvarfs.h
-@@ -117,4 +117,8 @@ extern struct fwvarfs_backend fwvarfs_mem_backend;
- extern struct fwvarfs_backend fwvarfs_efi_backend;
- #endif
- 
-+#if defined(CONFIG_FWVAR_FS_OPAL_SECVAR_BACKEND)
-+extern struct fwvarfs_backend fwvarfs_opal_secvar_backend;
-+#endif
-+
- #endif /* FWVARFS_H */
-diff --git a/fs/fwvarfs/opal_secvar.c b/fs/fwvarfs/opal_secvar.c
-new file mode 100644
-index 000000000000..4a1749317ed9
---- /dev/null
-+++ b/fs/fwvarfs/opal_secvar.c
-@@ -0,0 +1,218 @@
-+// SPDX-License-Identifier: GPL-2.0
-+/*
-+ * Copyright (C) 2019 IBM Corporation
-+ * Author: Daniel Axtens
-+ *
-+ * Loosely based on efivarfs:
-+ * Copyright (C) 2012 Red Hat, Inc.
-+ * Copyright (C) 2012 Jeremy Kerr <jeremy.kerr@canonical.com>
-+ * and drivers/firmware/efi/vars.c:
-+ * Copyright (C) 2001,2003,2004 Dell <Matt_Domsch@dell.com>
-+ * Copyright (C) 2004 Intel Corporation <matthew.e.tolentino@intel.com>
-+ *
-+ * We cheat by not allowing for case-insensitivity.
-+ */
-+
-+#include <linux/fs.h>
-+#include <linux/list.h>
-+#include <linux/slab.h>
-+#include "fwvarfs.h"
-+
-+#include <linux/uuid.h>
-+#include <linux/ucs2_string.h>
-+#include <asm/opal-api.h>
-+#include <asm/opal-secvar.h>
-+
-+#define pr_fmt(fmt)	"fwvarfs: opal_secvar: " fmt
-+
-+static LIST_HEAD(opal_secvar_file_list);
-+
-+struct fwvarfs_opal_secvar_file {
-+	struct list_head list;
-+	u16 *name;
-+	guid_t vendor;
-+};
-+
-+// stolen from efi.h
-+static inline char *
-+guid_to_str(guid_t *guid, char *out)
-+{
-+	sprintf(out, "%pUl", guid->b);
-+	return out;
-+}
-+
-+// need a forward decl to pass down to register
-+struct fwvarfs_backend fwvarfs_opal_secvar_backend;
-+
-+
-+static ssize_t fwvarfs_opal_secvar_read(void *variable, char *buf,
-+		size_t count, loff_t off)
-+{
-+	struct fwvarfs_opal_secvar_file *file_data = variable;
-+	unsigned long datasize = 0;
-+	u32 attributes;
-+	void *data;
-+	ssize_t size = 0;
-+	loff_t ppos = off;
-+	int rc;
-+
-+	// get size
-+	rc = opal_get_secure_variable(file_data->name, &file_data->vendor,
-+				      NULL, &datasize, NULL);
-+	if (rc != OPAL_SUCCESS && rc != OPAL_PARTIAL)
-+		return -EIO;
-+
-+	data = kmalloc(datasize + sizeof(attributes), GFP_KERNEL);
-+
-+	if (!data)
-+		return -ENOMEM;
-+
-+	rc = opal_get_secure_variable(file_data->name, &file_data->vendor,
-+		&attributes, &datasize, data + sizeof(attributes));
-+	if (rc != OPAL_SUCCESS) {
-+		size = -EIO;
-+		goto out_free;
-+	}
-+
-+	memcpy(data, &attributes, sizeof(attributes));
-+	size = memory_read_from_buffer(buf, count, &ppos, data,
-+				       datasize + sizeof(attributes));
-+out_free:
-+	kfree(data);
-+
-+	return size;
-+}
-+
-+static int fwvarfs_opal_secvar_callback(u16 *name16, guid_t vendor,
-+				unsigned long name_size)
-+{
-+	struct fwvarfs_opal_secvar_file *file_data;
-+	char *name;
-+	int len;
-+	int err = -ENOMEM;
-+
-+	file_data = kzalloc(sizeof(*file_data), GFP_KERNEL);
-+	if (!file_data)
-+		return err;
-+
-+	file_data->name = kmemdup(name16, name_size, GFP_KERNEL);
-+	if (!file_data->name)
-+		goto fail;
-+
-+	file_data->vendor = vendor;
-+
-+	len = ucs2_utf8size(name16);
-+
-+	/* name, plus '-', plus GUID, plus NUL */
-+	name = kmalloc(len + 1 + UUID_STRING_LEN + 1, GFP_KERNEL);
-+	if (!name)
-+		goto fail_embedded_name;
-+
-+	ucs2_as_utf8(name, name16, len);
-+
-+	name[len] = '-';
-+
-+	guid_to_str(&vendor, name + len + 1);
-+
-+	name[len + UUID_STRING_LEN + 1] = '\0';
-+
-+	// no convenient way to get size without reading the whole thing,
-+	// present size as 0 for now.
-+
-+	err = fwvarfs_register_var(&fwvarfs_opal_secvar_backend, name,
-+				   file_data, 0);
-+	if (err)
-+		goto fail_name;
-+
-+	INIT_LIST_HEAD(&file_data->list);
-+	list_add(&opal_secvar_file_list, &file_data->list);
-+
-+	/* copied by the above, I think */
-+	kfree(name);
-+
-+	return 0;
-+fail_name:
-+	kfree(name);
-+fail_embedded_name:
-+	kfree(file_data->name);
-+fail:
-+	kfree(file_data);
-+	return err;
-+}
-+
-+
-+static void fwvarfs_opal_secvar_destroy(void *var)
-+{
-+	struct fwvarfs_opal_secvar_file *file_data = var;
-+
-+	kfree(file_data->name);
-+	list_del(&file_data->list);
-+	kfree(file_data);
-+}
-+
-+
-+static int fwvarfs_opal_secvar_enumerate(void)
-+{
-+	int err;
-+	struct fwvarfs_opal_secvar_file *pos, *tmp;
-+	unsigned long variable_name_size = 1024;
-+	u16 *variable_name;
-+	unsigned long status;
-+	guid_t vendor_guid;
-+
-+	variable_name = kzalloc(variable_name_size, GFP_KERNEL);
-+	if (!variable_name)
-+		return -ENOMEM;
-+
-+	/*
-+	 * Assume that as per EFI spec, the maximum storage allocated for both
-+	 * the variable name and variable data is 1024 bytes.
-+	 */
-+
-+	do {
-+		variable_name_size = 1024;
-+
-+		status = opal_get_next_secure_variable(&variable_name_size,
-+						variable_name,
-+						&vendor_guid);
-+		switch (status) {
-+		case OPAL_SUCCESS:
-+			err = fwvarfs_opal_secvar_callback(variable_name,
-+					vendor_guid, variable_name_size);
-+			if (err)
-+				status = OPAL_EMPTY;
-+
-+			break;
-+		case OPAL_EMPTY:
-+			break;
-+		case OPAL_UNSUPPORTED:
-+			status = OPAL_EMPTY;
-+			err = -ENODEV;
-+		default:
-+			pr_warn("opal_get_next_secure_variable: status=%lx\n",
-+				status);
-+			status = OPAL_EMPTY;
-+			err = -EIO;
-+			break;
-+		}
-+
-+	} while (status != OPAL_EMPTY);
-+
-+	kfree(variable_name);
-+
-+	if (err) {
-+		list_for_each_entry_safe(pos, tmp, &opal_secvar_file_list,
-+					 list) {
-+			fwvarfs_opal_secvar_destroy(pos);
-+		}
-+	}
-+
-+	return err;
-+}
-+
-+struct fwvarfs_backend fwvarfs_opal_secvar_backend = {
-+	.name = "opal_secvar",
-+	.destroy = fwvarfs_opal_secvar_destroy,
-+	.enumerate = fwvarfs_opal_secvar_enumerate,
-+	.read = fwvarfs_opal_secvar_read,
-+};
--- 
-2.19.1
+This is inside an if (is_power8) statement.
 
+> diff --git a/arch/powerpc/platforms/powernv/subcore-asm.S b/arch/powerpc/platforms/powernv/subcore-asm.S
+> index 39bb24aa8f34..e4383fa5e150 100644
+> --- a/arch/powerpc/platforms/powernv/subcore-asm.S
+> +++ b/arch/powerpc/platforms/powernv/subcore-asm.S
+> @@ -44,7 +44,9 @@ _GLOBAL(split_core_secondary_loop)
+>  
+>  real_mode:
+>  	/* Grab values from unsplit SPRs */
+> +BEGIN_FW_FTR_SECTION
+>  	mfspr	r6,  SPRN_LDBAR
+> +END_FW_FTR_SECTION_IFCLR(FW_FEATURE_ULTRAVISOR)
+>  	mfspr	r7,  SPRN_PMMAR
+>  	mfspr	r8,  SPRN_PMCR
+>  	mfspr	r9,  SPRN_RPR
+> @@ -77,7 +79,9 @@ real_mode:
+>  	mtspr	SPRN_HDEC, r4
+>  
+>  	/* Restore SPR values now we are split */
+> +BEGIN_FW_FTR_SECTION
+>  	mtspr	SPRN_LDBAR, r6
+> +END_FW_FTR_SECTION_IFCLR(FW_FEATURE_ULTRAVISOR)
+
+Only POWER8 supports split-core mode, so we can only get here on
+POWER8.
+
+Paul.
