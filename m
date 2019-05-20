@@ -6,37 +6,37 @@ X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
 	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0E79CC04AAC
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 May 2019 10:21:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 71719C04AAC
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 May 2019 10:22:56 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 58ECA206B6
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 May 2019 10:21:28 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 58ECA206B6
+	by mail.kernel.org (Postfix) with ESMTPS id F376620675
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 May 2019 10:22:55 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org F376620675
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 456w0k0Px0zDqLr
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 May 2019 20:21:26 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+	by lists.ozlabs.org (Postfix) with ESMTP id 456w2P5TrfzDqMW
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 May 2019 20:22:53 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 456vzF1Q0jzDqHR
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 May 2019 20:20:09 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 456w063f7SzDqLD
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 May 2019 20:20:54 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: by ozlabs.org (Postfix)
- id 456vzF0KK5z9s3l; Mon, 20 May 2019 20:20:09 +1000 (AEST)
+ id 456w060jGdz9s55; Mon, 20 May 2019 20:20:54 +1000 (AEST)
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 456vzD6FsYz9sBb; Mon, 20 May 2019 20:20:08 +1000 (AEST)
+ id 456w0601snz9s9N; Mon, 20 May 2019 20:20:53 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: linuxppc-dev@ozlabs.org
 Subject: [PATCH v2] selftests/powerpc: Add a test of bad (out-of-range)
  accesses
-Date: Mon, 20 May 2019 20:20:05 +1000
-Message-Id: <20190520102005.11611-1-mpe@ellerman.id.au>
+Date: Mon, 20 May 2019 20:20:51 +1000
+Message-Id: <20190520102051.12103-1-mpe@ellerman.id.au>
 X-Mailer: git-send-email 2.20.1
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
@@ -51,7 +51,7 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: npigging@ozlabs.org
+Cc: npiggin@gmail.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
