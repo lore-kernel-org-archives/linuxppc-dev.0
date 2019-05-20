@@ -2,54 +2,59 @@ Return-Path: <SRS0=EeCa=TU=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_MUTT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A8C28C04AAF
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 May 2019 09:09:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id F35E3C04AAF
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 May 2019 09:12:50 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 38FFB20656
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 May 2019 09:09:35 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 38FFB20656
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=denx.de
+	by mail.kernel.org (Postfix) with ESMTPS id 8101120675
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 May 2019 09:12:50 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8101120675
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 456tPn1wdRzDqLF
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 May 2019 19:09:33 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 456tTX1Qk4zDqDP
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 May 2019 19:12:48 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=ucw.cz
- (client-ip=195.113.26.193; helo=atrey.karlin.mff.cuni.cz;
- envelope-from=pavel@ucw.cz; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=kaod.org
+ (client-ip=46.105.79.203; helo=10.mo68.mail-out.ovh.net;
+ envelope-from=groug@kaod.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=denx.de
-Received: from atrey.karlin.mff.cuni.cz (atrey.karlin.mff.cuni.cz
- [195.113.26.193])
+ dmarc=none (p=none dis=none) header.from=kaod.org
+X-Greylist: delayed 3577 seconds by postgrey-1.36 at bilbo;
+ Mon, 20 May 2019 19:11:23 AEST
+Received: from 10.mo68.mail-out.ovh.net (10.mo68.mail-out.ovh.net
+ [46.105.79.203])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 456tMr4b92zDq62
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 May 2019 19:07:52 +1000 (AEST)
-Received: by atrey.karlin.mff.cuni.cz (Postfix, from userid 512)
- id 8BC7080450; Mon, 20 May 2019 11:07:39 +0200 (CEST)
-Date: Mon, 20 May 2019 11:07:49 +0200
-From: Pavel Machek <pavel@denx.de>
-To: Ran Wang <ran.wang_1@nxp.com>
-Subject: Re: [PATCH V2 3/3] soc: fsl: add RCPM driver
-Message-ID: <20190520090748.GB9748@amd>
-References: <20190517033946.30763-1-ran.wang_1@nxp.com>
- <20190517033946.30763-3-ran.wang_1@nxp.com>
- <20190519213844.GH31403@amd>
- <AM5PR0402MB2865EC5E1EF12C6C1D3C5566F1060@AM5PR0402MB2865.eurprd04.prod.outlook.com>
- <20190520085647.GA9748@amd>
- <AM5PR0402MB2865F4574B19761848B001F9F1060@AM5PR0402MB2865.eurprd04.prod.outlook.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 456tRv5PPCzDqBc
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 May 2019 19:11:19 +1000 (AEST)
+Received: from player799.ha.ovh.net (unknown [10.108.54.217])
+ by mo68.mail-out.ovh.net (Postfix) with ESMTP id F058712E541
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 May 2019 09:55:26 +0200 (CEST)
+Received: from kaod.org (lns-bzn-46-82-253-208-248.adsl.proxad.net
+ [82.253.208.248]) (Authenticated sender: groug@kaod.org)
+ by player799.ha.ovh.net (Postfix) with ESMTPSA id C7FF45E9AA3C;
+ Mon, 20 May 2019 07:55:21 +0000 (UTC)
+Date: Mon, 20 May 2019 09:55:20 +0200
+From: Greg Kurz <groug@kaod.org>
+To: Frederic Barrat <fbarrat@linux.ibm.com>
+Subject: Re: [PATCH v2] ocxl: Fix potential memory leak on context creation
+Message-ID: <20190520095520.097b7f04@bahia.lan>
+In-Reply-To: <20190520071618.1722-1-fbarrat@linux.ibm.com>
+References: <20190520071618.1722-1-fbarrat@linux.ibm.com>
+X-Mailer: Claws Mail 3.16.0 (GTK+ 2.24.32; x86_64-redhat-linux-gnu)
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="8GpibOaaTibBMecb"
-Content-Disposition: inline
-In-Reply-To: <AM5PR0402MB2865F4574B19761848B001F9F1060@AM5PR0402MB2865.eurprd04.prod.outlook.com>
-User-Agent: Mutt/1.5.23 (2014-03-12)
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Ovh-Tracer-Id: 6732318493272152421
+X-VR-SPAMSTATE: OK
+X-VR-SPAMSCORE: -100
+X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgeduuddruddtjedguddvlecutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfqggfjpdevjffgvefmvefgnecuuegrihhlohhuthemucehtddtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmd
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -61,90 +66,69 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Mark Rutland <mark.rutland@arm.com>, Len Brown <len.brown@intel.com>,
- "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- Pavel Machek <pavel@denx.de>,
- "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
- "Rafael J . Wysocki" <rjw@rjwysocki.net>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Leo Li <leoyang.li@nxp.com>, Rob Herring <robh+dt@kernel.org>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Cc: clombard@linux.ibm.com, linuxppc-dev@lists.ozlabs.org, alastair@au1.ibm.com,
+ andrew.donnellan@au1.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+On Mon, 20 May 2019 09:16:18 +0200
+Frederic Barrat <fbarrat@linux.ibm.com> wrote:
 
---8GpibOaaTibBMecb
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+> If we couldn't fully init a context, we were leaking memory.
+> 
+> Fixes: b9721d275cc2 ("ocxl: Allow external drivers to use OpenCAPI contexts")
 
-On Mon 2019-05-20 09:03:50, Ran Wang wrote:
-> Hi Pavel,
->=20
-> On Monday, May 20, 2019 16:57, Pavel Machek wrote:
-> >=20
-> > Hi!
-> >=20
-> > > > > +static int rcpm_pm_prepare(struct device *dev) {
-> > > > > +	struct device_node *np =3D dev->of_node;
-> > > > > +	struct wakeup_source *ws;
-> > > > > +	struct rcpm *rcpm;
-> > > > > +	u32 value[RCPM_WAKEUP_CELL_MAX_SIZE + 1], tmp;
-> > > > > +	int i, ret;
-> > > > > +
-> > > > > +	rcpm =3D dev_get_drvdata(dev);
-> > > > > +	if (!rcpm)
-> > > > > +		return -EINVAL;
-> > > > > +
-> > > > > +	/* Begin with first registered wakeup source */
-> > > > > +	ws =3D wakeup_source_get_next(NULL);
-> > > > > +	while (ws) {
-> > > >
-> > > > while (ws =3D wakeup_source_get_next(NULL)) ?
-> > >
-> > > Actually, we only pass NULL to wakeup_source_get_next() at very first
-> > > call to get 1st wakeup source. Then in the while loop, we will fetch
-> > > next source but not 1st, that's different. I am afraid your suggestion
-> > > is not quite correct.
-> >=20
-> > Sorry, I seen your next version before seeing this explanation.
-> >=20
-> > You are right, but the current code is "interesting". What about
-> >=20
-> >     ws =3D NULL;
-> >     while (ws =3D wakeup_source_get_next(NULL)) ...
-> >=20
-> > then?
->=20
-> Did you mean:
->      ws =3D NULL;
->      while (ws =3D wakeup_source_get_next(ws)) ...
->=20
->    Yes, that will be the same to my original logic, do you recommend to c=
-hange
-> to this? :)
+Oops... missed that during review :-\
 
-Yes please. It will be less confusing to the reader.
+> Signed-off-by: Frederic Barrat <fbarrat@linux.ibm.com>
+> ---
+> 
+> Changelog:
+> v2: reset context pointer in case of allocation failure (Andrew)
+> 
 
-Thanks (and sorry for cross-talk),
-								Pavel
---=20
-DENX Software Engineering GmbH,      Managing Director: Wolfgang Denk
-HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
+Alternatively you could change the code to do:
 
---8GpibOaaTibBMecb
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
+	ctx = kzalloc(sizeof(struct ocxl_context), GFP_KERNEL);
+	if (!ctx)
+		return -ENOMEM;
+	.
+	.
+	.
+	if (pasid < 0) {
+		mutex_unlock(&afu->contexts_lock);
+		kfree(ctx);
+		return pasid;
+	}
+	.
+	.
+	.
+	*context = ctx;
+	return 0;
+}
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
+This has the advantage of clearing any risk of side-effect with
+*context forever, which is a safer practice IMHO.
 
-iEYEARECAAYFAlzibmQACgkQMOfwapXb+vJOsgCgqGW6NAUYHlbtL2j5RhCyhuS2
-zxMAn1WDZj1TbQDXI+hk99qNzljFSRtI
-=XWgf
------END PGP SIGNATURE-----
+Patch is correct anyway, so:
 
---8GpibOaaTibBMecb--
+Reviewed-by: Greg Kurz <groug@kaod.org>
+
+>  drivers/misc/ocxl/context.c | 2 ++
+>  1 file changed, 2 insertions(+)
+> 
+> diff --git a/drivers/misc/ocxl/context.c b/drivers/misc/ocxl/context.c
+> index bab9c9364184..24e4fb010275 100644
+> --- a/drivers/misc/ocxl/context.c
+> +++ b/drivers/misc/ocxl/context.c
+> @@ -22,6 +22,8 @@ int ocxl_context_alloc(struct ocxl_context **context, struct ocxl_afu *afu,
+>  			afu->pasid_base + afu->pasid_max, GFP_KERNEL);
+>  	if (pasid < 0) {
+>  		mutex_unlock(&afu->contexts_lock);
+> +		kfree(*context);
+> +		*context = NULL;
+>  		return pasid;
+>  	}
+>  	afu->pasid_count++;
+
