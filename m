@@ -2,95 +2,101 @@ Return-Path: <SRS0=EeCa=TU=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-2.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_MUTT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 41C71C04AAC
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 May 2019 15:03:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E6EE8C04AAC
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 May 2019 15:14:03 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C3FD120863
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 May 2019 15:03:41 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C3FD120863
+	by mail.kernel.org (Postfix) with ESMTPS id 3E7AC20863
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 May 2019 15:14:03 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3E7AC20863
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4572GM4vvvzDqLL
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 May 2019 01:03:39 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4572VJ6V3bzDqHS
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 May 2019 01:14:00 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
- (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=nathanl@linux.ibm.com; receiver=<UNKNOWN>)
+ (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
+ envelope-from=bharata@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4572DZ06PVzDqF6
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 May 2019 01:02:05 +1000 (AEST)
-Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x4KF0Y7h008041
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 May 2019 11:02:02 -0400
-Received: from e16.ny.us.ibm.com (e16.ny.us.ibm.com [129.33.205.206])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2skvtp53yt-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4572SK1HZxzDqCW
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 May 2019 01:12:16 +1000 (AEST)
+Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
+ x4KF3e5A118426
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 May 2019 11:12:11 -0400
+Received: from e06smtp07.uk.ibm.com (e06smtp07.uk.ibm.com [195.75.94.103])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2skwduv6ur-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 May 2019 11:02:02 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 May 2019 11:12:11 -0400
 Received: from localhost
- by e16.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp07.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <nathanl@linux.ibm.com>;
- Mon, 20 May 2019 16:02:01 +0100
-Received: from b01cxnp23033.gho.pok.ibm.com (9.57.198.28)
- by e16.ny.us.ibm.com (146.89.104.203) with IBM ESMTP SMTP Gateway: Authorized
- Use Only! Violators will be prosecuted; 
+ for <linuxppc-dev@lists.ozlabs.org> from <bharata@linux.ibm.com>;
+ Mon, 20 May 2019 16:12:09 +0100
+Received: from b06cxnps3075.portsmouth.uk.ibm.com (9.149.109.195)
+ by e06smtp07.uk.ibm.com (192.168.101.137) with IBM ESMTP SMTP Gateway:
+ Authorized Use Only! Violators will be prosecuted; 
  (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Mon, 20 May 2019 16:01:59 +0100
-Received: from b01ledav006.gho.pok.ibm.com (b01ledav006.gho.pok.ibm.com
- [9.57.199.111])
- by b01cxnp23033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x4KF1wQi39387394
+ Mon, 20 May 2019 16:12:07 +0100
+Received: from d06av23.portsmouth.uk.ibm.com (d06av23.portsmouth.uk.ibm.com
+ [9.149.105.59])
+ by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x4KFC63D61014040
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Mon, 20 May 2019 15:01:58 GMT
-Received: from b01ledav006.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id E5947AC05F;
- Mon, 20 May 2019 15:01:57 +0000 (GMT)
-Received: from b01ledav006.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id C91D2AC059;
- Mon, 20 May 2019 15:01:57 +0000 (GMT)
-Received: from localhost (unknown [9.41.179.184])
- by b01ledav006.gho.pok.ibm.com (Postfix) with ESMTP;
- Mon, 20 May 2019 15:01:57 +0000 (GMT)
-From: Nathan Lynch <nathanl@linux.ibm.com>
-To: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
-Subject: Re: [PATCH 1/3] powerpc/pseries: Simplify cpu readd to use drc_index
-In-Reply-To: <05a4295b-dea5-bea2-5fd3-c8fbee7bac48@linux.vnet.ibm.com>
-References: <20190516023706.50118-1-tyreld@linux.ibm.com>
- <8736leky3x.fsf@linux.ibm.com>
- <05a4295b-dea5-bea2-5fd3-c8fbee7bac48@linux.vnet.ibm.com>
-Date: Mon, 20 May 2019 10:01:57 -0500
+ Mon, 20 May 2019 15:12:06 GMT
+Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 5801BA4055;
+ Mon, 20 May 2019 15:12:06 +0000 (GMT)
+Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id D2684A404D;
+ Mon, 20 May 2019 15:12:04 +0000 (GMT)
+Received: from in.ibm.com (unknown [9.199.42.100])
+ by d06av23.portsmouth.uk.ibm.com (Postfix) with ESMTPS;
+ Mon, 20 May 2019 15:12:04 +0000 (GMT)
+Date: Mon, 20 May 2019 20:42:02 +0530
+From: Bharata B Rao <bharata@linux.ibm.com>
+To: Nicholas Piggin <npiggin@gmail.com>
+Subject: Re: PROBLEM: Power9: kernel oops on memory hotunplug from ppc64le
+ guest
+References: <16a7a635-c592-27e2-75b4-d02071833278@linux.vnet.ibm.com>
+ <20190518141434.GA22939@in.ibm.com>
+ <878sv1993k.fsf@concordia.ellerman.id.au>
+ <20190520042533.GB22939@in.ibm.com>
+ <1558327521.633yjtl8ki.astroid@bobo.none>
+ <20190520055622.GC22939@in.ibm.com>
+ <1558335484.9inx69a7ea.astroid@bobo.none>
+ <20190520082035.GD22939@in.ibm.com>
+ <20190520142922.GE22939@in.ibm.com>
+ <1558363500.jsgl4a2lfa.astroid@bobo.none>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1558363500.jsgl4a2lfa.astroid@bobo.none>
+User-Agent: Mutt/1.10.1 (2018-07-13)
 X-TM-AS-GCONF: 00
-x-cbid: 19052015-0072-0000-0000-000004307096
-X-IBM-SpamModules-Scores: 
-X-IBM-SpamModules-Versions: BY=3.00011131; HX=3.00000242; KW=3.00000007;
- PH=3.00000004; SC=3.00000286; SDB=6.01206074; UDB=6.00633284; IPR=6.00987033; 
- MB=3.00026971; MTD=3.00000008; XFM=3.00000015; UTC=2019-05-20 15:02:00
+x-cbid: 19052015-0028-0000-0000-0000036FA4D5
 X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19052015-0073-0000-0000-00004C4B0D6B
-Message-Id: <87tvdpjhju.fsf@linux.ibm.com>
+x-cbparentid: 19052015-0029-0000-0000-0000242F4AE2
+Message-Id: <20190520151202.GF22939@in.ibm.com>
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
  definitions=2019-05-20_07:, , signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
  priorityscore=1501
- malwarescore=0 suspectscore=1 phishscore=0 bulkscore=0 spamscore=0
+ malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
  clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
  mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1810050000 definitions=main-1905200098
+ scancount=1 engine=8.0.1-1810050000 definitions=main-1905200099
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -102,32 +108,93 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: mingming.cao@ibm.com, linuxppc-dev@lists.ozlabs.org
+Reply-To: bharata@linux.ibm.com
+Cc: bharata@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
+ linux-next@vger.kernel.org, aneesh.kumar@linux.ibm.com,
+ srikanth <sraithal@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Tyrel Datwyler <tyreld@linux.vnet.ibm.com> writes:
+On Tue, May 21, 2019 at 12:55:49AM +1000, Nicholas Piggin wrote:
+> Bharata B Rao's on May 21, 2019 12:29 am:
+> > On Mon, May 20, 2019 at 01:50:35PM +0530, Bharata B Rao wrote:
+> >> On Mon, May 20, 2019 at 05:00:21PM +1000, Nicholas Piggin wrote:
+> >> > Bharata B Rao's on May 20, 2019 3:56 pm:
+> >> > > On Mon, May 20, 2019 at 02:48:35PM +1000, Nicholas Piggin wrote:
+> >> > >> >> > git bisect points to
+> >> > >> >> >
+> >> > >> >> > commit 4231aba000f5a4583dd9f67057aadb68c3eca99d
+> >> > >> >> > Author: Nicholas Piggin <npiggin@gmail.com>
+> >> > >> >> > Date:   Fri Jul 27 21:48:17 2018 +1000
+> >> > >> >> >
+> >> > >> >> >     powerpc/64s: Fix page table fragment refcount race vs speculative references
+> >> > >> >> >
+> >> > >> >> >     The page table fragment allocator uses the main page refcount racily
+> >> > >> >> >     with respect to speculative references. A customer observed a BUG due
+> >> > >> >> >     to page table page refcount underflow in the fragment allocator. This
+> >> > >> >> >     can be caused by the fragment allocator set_page_count stomping on a
+> >> > >> >> >     speculative reference, and then the speculative failure handler
+> >> > >> >> >     decrements the new reference, and the underflow eventually pops when
+> >> > >> >> >     the page tables are freed.
+> >> > >> >> >
+> >> > >> >> >     Fix this by using a dedicated field in the struct page for the page
+> >> > >> >> >     table fragment allocator.
+> >> > >> >> >
+> >> > >> >> >     Fixes: 5c1f6ee9a31c ("powerpc: Reduce PTE table memory wastage")
+> >> > >> >> >     Cc: stable@vger.kernel.org # v3.10+
+> >> > >> >> 
+> >> > >> >> That's the commit that added the BUG_ON(), so prior to that you won't
+> >> > >> >> see the crash.
+> >> > >> > 
+> >> > >> > Right, but the commit says it fixes page table page refcount underflow by
+> >> > >> > introducing a new field &page->pt_frag_refcount. Now we are hitting the underflow
+> >> > >> > for this pt_frag_refcount.
+> >> > >> 
+> >> > >> The fixed underflow is caused by a bug (race on page count) that got 
+> >> > >> fixed by that patch. You are hitting a different underflow here. It's
+> >> > >> not certain my patch caused it, I'm just trying to reproduce now.
+> >> > > 
+> >> > > Ok.
+> >> > 
+> >> > Can't reproduce I'm afraid, tried adding and removing 8GB memory from a
+> >> > 4GB guest (via host adding / removing memory device), and it just works.
+> >> 
+> >> Boot, add 8G, reboot, remove 8G is the sequence to reproduce.
+> >> 
+> >> > 
+> >> > It's likely to be an edge case like an off by one or rounding error
+> >> > that just happens to trigger in your config. Might be easiest if you
+> >> > could test with a debug patch.
+> >> 
+> >> Sure, I will continue debugging.
+> > 
+> > When the guest is rebooted after hotplug, the entire memory (which includes
+> > the hotplugged memory) gets remapped again freshly. However at this time
+> > since no slab is available yet, pt_frag_refcount never gets initialized as we
+> > never do pte_fragment_alloc() for these mappings. So we right away hit the
+> > underflow during the first unplug itself, it looks like.
+> 
+> Nice catch, good debugging work.
 
-> On 05/16/2019 12:17 PM, Nathan Lynch wrote:
->> Tyrel Datwyler <tyreld@linux.ibm.com> writes:
->>> The current dlpar_cpu_readd() takes in a cpu_id and uses that to look up
->>> the cpus device_node so that we can get at the ibm,my-drc-index
->>> property. The only user of cpu readd is an OF notifier call back. This
->>> call back already has a reference to the device_node and therefore can
->>> retrieve the drc_index from the device_node.
->> 
->> dlpar_cpu_readd is a hack to try to change the CPU-node relationship at
->> runtime without destabilizing the system. It doesn't accomplish that and
->> it should just be removed (and I'm working on that).
->> 
->
-> I will politely disagree. We've done exactly this from userspace for
-> years. My experience still suggests that memory affinity is the
-> problem area, and that the work to push this all into the kernel
-> originally was poorly tested.
+Thanks, with help from Aneesh.
 
-Kernel implementation details aside, how do you change the cpu-node
-relationship at runtime without breaking NUMA-aware applications? Is
-this not a fundamental issue to address before adding code like this?
+> 
+> > I will check how this can be fixed.
+> 
+> Tricky problem. What do you think? You might be able to make the early 
+> page table allocations in the same pattern as the frag allocations, and 
+> then fill in the struct page metadata when you have those.
+
+Will explore.
+
+> 
+> Other option may be create a new set of page tables after mm comes up
+> to replace the early page tables with. That's a bigger hammer though.
+
+Will also check if similar scenario exists on x86 and if so, how and when
+pte frag data is fixed there.
+
+Regards,
+Bharata.
 
