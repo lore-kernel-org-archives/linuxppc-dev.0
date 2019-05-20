@@ -2,78 +2,53 @@ Return-Path: <SRS0=EeCa=TU=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A7C69C04AAF
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 May 2019 13:13:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B5406C04AAC
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 May 2019 13:15:30 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 380F8213F2
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 May 2019 13:13:00 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 380F8213F2
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
+	by mail.kernel.org (Postfix) with ESMTPS id 3905920815
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 May 2019 13:15:30 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3905920815
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=goodmis.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 456zpf26cTzDqGt
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 May 2019 23:12:58 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 456zsX27S8zDqL8
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 May 2019 23:15:28 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=redhat.com
- (client-ip=209.85.160.193; helo=mail-qt1-f193.google.com;
- envelope-from=mst@redhat.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=kernel.org
+ (client-ip=198.145.29.99; helo=mail.kernel.org;
+ envelope-from=srs0=cz5i=tu=goodmis.org=rostedt@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=redhat.com
-Received: from mail-qt1-f193.google.com (mail-qt1-f193.google.com
- [209.85.160.193])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ dmarc=none (p=none dis=none) header.from=goodmis.org
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 456zk94J58zDqGg
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 May 2019 23:09:04 +1000 (AEST)
-Received: by mail-qt1-f193.google.com with SMTP id o7so16186732qtp.4
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 May 2019 06:09:04 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:date:from:to:cc:subject:message-id:references
- :mime-version:content-disposition:in-reply-to;
- bh=dFuLtne3guYuFwbHKpK48q543MOC/my0Y0MNbyUjuPE=;
- b=ucO2wEqj5IRUA0Ejx8smfU69zYbK589sevtANHX6YuCupXUJsSvV+A6UIo50EwVIMR
- KObAtXJqGlFwa9ji/AxCXGah3I6kYK37+OcJT8o1Z+GU6uPnzviXEqG4RllbNvz8i69r
- uM3OIWmWfwgDfFtLxGzO0Gc/0BLZ0GrjaQFjl09fgW9uXfWR9Wba76iQtvTB7yQSWWK8
- d79a+dl1mD5Hx2CvIRqqCgVUNQhVdFiwTfKUNZHyzkQS1OdmmqsnLgrNAPvz5rNWgLPe
- +S+XDnzWQExveKUL7X4Xb+p+VN7aB76B3jy0FwDDGfu3M+dgTBhckSycfAAsUP0/c/RM
- HDMg==
-X-Gm-Message-State: APjAAAU7qOvtLUxItukMuiRSHA0GjW7zLym7wqMkRUggYlJbwrsKuHVi
- lJ6vzsIgITuHUfPwKCNd3lIbFQ==
-X-Google-Smtp-Source: APXvYqxFmd0nNrX047VR0mRGjhNHl6yQJCi/WzEdlp1N5DlMzFNrD0wqdFlb4sI+QUnVeRVV7+bGMQ==
-X-Received: by 2002:a0c:af51:: with SMTP id j17mr38357606qvc.34.1558357741216; 
- Mon, 20 May 2019 06:09:01 -0700 (PDT)
-Received: from redhat.com (pool-173-76-105-71.bstnma.fios.verizon.net.
- [173.76.105.71])
- by smtp.gmail.com with ESMTPSA id n190sm7929770qkb.83.2019.05.20.06.08.58
- (version=TLS1_3 cipher=AEAD-AES256-GCM-SHA384 bits=256/256);
- Mon, 20 May 2019 06:08:59 -0700 (PDT)
-Date: Mon, 20 May 2019 09:08:52 -0400
-From: "Michael S. Tsirkin" <mst@redhat.com>
-To: Thiago Jung Bauermann <bauerman@linux.ibm.com>
-Subject: Re: [RFC PATCH] virtio_ring: Use DMA API if guest memory is encrypted
-Message-ID: <20190520090602-mutt-send-email-mst@kernel.org>
-References: <20190204144048-mutt-send-email-mst@kernel.org>
- <87ef71seve.fsf@morokweng.localdomain>
- <20190320171027-mutt-send-email-mst@kernel.org>
- <87tvfvbwpb.fsf@morokweng.localdomain>
- <20190323165456-mutt-send-email-mst@kernel.org>
- <87a7go71hz.fsf@morokweng.localdomain>
- <20190419190258-mutt-send-email-mst@kernel.org>
- <875zr228zf.fsf@morokweng.localdomain>
- <20190424210813-mutt-send-email-mst@kernel.org>
- <871s1o1ft0.fsf@morokweng.localdomain>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 456zq84zLjzDqBN
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 May 2019 23:13:24 +1000 (AEST)
+Received: from gandalf.local.home (cpe-66-24-58-225.stny.res.rr.com
+ [66.24.58.225])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by mail.kernel.org (Postfix) with ESMTPSA id F1E9020815;
+ Mon, 20 May 2019 13:13:21 +0000 (UTC)
+Date: Mon, 20 May 2019 09:13:20 -0400
+From: Steven Rostedt <rostedt@goodmis.org>
+To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
+Subject: Re: [RFC PATCH 2/4] x86/ftrace: Fix use of flags in
+ ftrace_replace_code()
+Message-ID: <20190520091320.01cdcfb7@gandalf.local.home>
+In-Reply-To: <e1429923d9eda92a3cf5ee9e33c7eacce539781d.1558115654.git.naveen.n.rao@linux.vnet.ibm.com>
+References: <cover.1558115654.git.naveen.n.rao@linux.vnet.ibm.com>
+ <e1429923d9eda92a3cf5ee9e33c7eacce539781d.1558115654.git.naveen.n.rao@linux.vnet.ibm.com>
+X-Mailer: Claws Mail 3.17.3 (GTK+ 2.24.32; x86_64-pc-linux-gnu)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <871s1o1ft0.fsf@morokweng.localdomain>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -85,150 +60,55 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Mike Anderson <andmike@linux.ibm.com>,
- Michael Roth <mdroth@linux.vnet.ibm.com>,
- Jean-Philippe Brucker <jean-philippe.brucker@arm.com>,
- Jason Wang <jasowang@redhat.com>, Alexey Kardashevskiy <aik@linux.ibm.com>,
- Ram Pai <linuxram@us.ibm.com>, linux-kernel@vger.kernel.org,
- virtualization@lists.linux-foundation.org, iommu@lists.linux-foundation.org,
- linuxppc-dev@lists.ozlabs.org, Christoph Hellwig <hch@lst.de>,
- David Gibson <david@gibson.dropbear.id.au>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ Nicholas Piggin <npiggin@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, Apr 26, 2019 at 08:56:43PM -0300, Thiago Jung Bauermann wrote:
-> 
-> Michael S. Tsirkin <mst@redhat.com> writes:
-> 
-> > On Wed, Apr 24, 2019 at 10:01:56PM -0300, Thiago Jung Bauermann wrote:
-> >>
-> >> Michael S. Tsirkin <mst@redhat.com> writes:
-> >>
-> >> > On Wed, Apr 17, 2019 at 06:42:00PM -0300, Thiago Jung Bauermann wrote:
-> >> >>
-> >> >> Michael S. Tsirkin <mst@redhat.com> writes:
-> >> >>
-> >> >> > On Thu, Mar 21, 2019 at 09:05:04PM -0300, Thiago Jung Bauermann wrote:
-> >> >> >>
-> >> >> >> Michael S. Tsirkin <mst@redhat.com> writes:
-> >> >> >>
-> >> >> >> > On Wed, Mar 20, 2019 at 01:13:41PM -0300, Thiago Jung Bauermann wrote:
-> >> >> >> >> >From what I understand of the ACCESS_PLATFORM definition, the host will
-> >> >> >> >> only ever try to access memory addresses that are supplied to it by the
-> >> >> >> >> guest, so all of the secure guest memory that the host cares about is
-> >> >> >> >> accessible:
-> >> >> >> >>
-> >> >> >> >>     If this feature bit is set to 0, then the device has same access to
-> >> >> >> >>     memory addresses supplied to it as the driver has. In particular,
-> >> >> >> >>     the device will always use physical addresses matching addresses
-> >> >> >> >>     used by the driver (typically meaning physical addresses used by the
-> >> >> >> >>     CPU) and not translated further, and can access any address supplied
-> >> >> >> >>     to it by the driver. When clear, this overrides any
-> >> >> >> >>     platform-specific description of whether device access is limited or
-> >> >> >> >>     translated in any way, e.g. whether an IOMMU may be present.
-> >> >> >> >>
-> >> >> >> >> All of the above is true for POWER guests, whether they are secure
-> >> >> >> >> guests or not.
-> >> >> >> >>
-> >> >> >> >> Or are you saying that a virtio device may want to access memory
-> >> >> >> >> addresses that weren't supplied to it by the driver?
-> >> >> >> >
-> >> >> >> > Your logic would apply to IOMMUs as well.  For your mode, there are
-> >> >> >> > specific encrypted memory regions that driver has access to but device
-> >> >> >> > does not. that seems to violate the constraint.
-> >> >> >>
-> >> >> >> Right, if there's a pre-configured 1:1 mapping in the IOMMU such that
-> >> >> >> the device can ignore the IOMMU for all practical purposes I would
-> >> >> >> indeed say that the logic would apply to IOMMUs as well. :-)
-> >> >> >>
-> >> >> >> I guess I'm still struggling with the purpose of signalling to the
-> >> >> >> driver that the host may not have access to memory addresses that it
-> >> >> >> will never try to access.
-> >> >> >
-> >> >> > For example, one of the benefits is to signal to host that driver does
-> >> >> > not expect ability to access all memory. If it does, host can
-> >> >> > fail initialization gracefully.
-> >> >>
-> >> >> But why would the ability to access all memory be necessary or even
-> >> >> useful? When would the host access memory that the driver didn't tell it
-> >> >> to access?
-> >> >
-> >> > When I say all memory I mean even memory not allowed by the IOMMU.
-> >>
-> >> Yes, but why? How is that memory relevant?
-> >
-> > It's relevant when driver is not trusted to only supply correct
-> > addresses. The feature was originally designed to support userspace
-> > drivers within guests.
-> 
-> Ah, thanks for clarifying. I don't think that's a problem in our case.
-> If the guest provides an incorrect address, the hardware simply won't
-> allow the host to access it.
-> 
-> >> >> >> > Another idea is maybe something like virtio-iommu?
-> >> >> >>
-> >> >> >> You mean, have legacy guests use virtio-iommu to request an IOMMU
-> >> >> >> bypass? If so, it's an interesting idea for new guests but it doesn't
-> >> >> >> help with guests that are out today in the field, which don't have A
-> >> >> >> virtio-iommu driver.
-> >> >> >
-> >> >> > I presume legacy guests don't use encrypted memory so why do we
-> >> >> > worry about them at all?
-> >> >>
-> >> >> They don't use encrypted memory, but a host machine will run a mix of
-> >> >> secure and legacy guests. And since the hypervisor doesn't know whether
-> >> >> a guest will be secure or not at the time it is launched, legacy guests
-> >> >> will have to be launched with the same configuration as secure guests.
-> >> >
-> >> > OK and so I think the issue is that hosts generally fail if they set
-> >> > ACCESS_PLATFORM and guests do not negotiate it.
-> >> > So you can not just set ACCESS_PLATFORM for everyone.
-> >> > Is that the issue here?
-> >>
-> >> Yes, that is one half of the issue. The other is that even if hosts
-> >> didn't fail, existing legacy guests wouldn't "take the initiative" of
-> >> not negotiating ACCESS_PLATFORM to get the improved performance. They'd
-> >> have to be modified to do that.
-> >
-> > So there's a non-encrypted guest, hypervisor wants to set
-> > ACCESS_PLATFORM to allow encrypted guests but that will slow down legacy
-> > guests since their vIOMMU emulation is very slow.
-> 
-> Yes.
-> 
-> > So enabling support for encryption slows down non-encrypted guests. Not
-> > great but not the end of the world, considering even older guests that
-> > don't support ACCESS_PLATFORM are completely broken and you do not seem
-> > to be too worried by that.
-> 
-> Well, I guess that would be the third half of the issue. :-)
-> 
-> > For future non-encrypted guests, bypassing the emulated IOMMU for when
-> > that emulated IOMMU is very slow might be solvable in some other way,
-> > e.g. with virtio-iommu. Which reminds me, could you look at
-> > virtio-iommu as a solution for some of the issues?
-> > Review of that patchset from that POV would be appreciated.
-> 
-> Yes, I will have a look. As you mentioned already, virtio-iommu doesn't
-> define a way to request iommu bypass for a device so that would have to
-> be added.
+On Sat, 18 May 2019 00:32:46 +0530
+"Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> wrote:
 
-I think it does have a way for guest to request bypass:
-there's a feature bit which - if set - specifies that a device
-that is in no domain bypasses the iommu.
+> In commit a0572f687fb3c ("ftrace: Allow ftrace_replace_code() to be
+> schedulable), the generic ftrace_replace_code() function was modified to
+> accept a flags argument in place of a single 'enable' flag. However, the
+> x86 version of this function was not updated. Fix the same.
+> 
+> Fixes: a0572f687fb3c ("ftrace: Allow ftrace_replace_code() to be schedulable")
+> Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
+> ---
+> I haven't yet tested this patch on x86, but this looked wrong so sending 
+> this as a RFC.
 
-> Though to be honest in practice I don't think such a feature in
-> virtio-iommu would make things easier for us, at least in the short
-> term. It would take the same effort to define a powerpc-specific
-> hypercall to accomplish the same thing (easier, in fact since we
-> wouldn't have to implement the rest of virtio-iommu). In fact, there
-> already is such hypercall, but it is only defined for VIO devices
-> (RTAS_IBM_SET_TCE_BYPASS in QEMU). We would have to make it work on
-> virtio devices as well.
+This code has been through a bit of updates, and I need to go through
+and clean it up. I'll have to take a look and convert "int" to "bool"
+so that "enable" is not confusing.
 
-Now I'm a bit lost. Could you pls describe quickly what does it do?
+Thanks, I think I'll try to do a clean up first, and then this patch
+shouldn't "look wrong" after that.
 
-> --
-> Thiago Jung Bauermann
-> IBM Linux Technology Center
+-- Steve
+
+> 
+> - Naveen
+> 
+> 
+>  arch/x86/kernel/ftrace.c | 3 ++-
+>  1 file changed, 2 insertions(+), 1 deletion(-)
+> 
+> diff --git a/arch/x86/kernel/ftrace.c b/arch/x86/kernel/ftrace.c
+> index 0caf8122d680..0c01b344ba16 100644
+> --- a/arch/x86/kernel/ftrace.c
+> +++ b/arch/x86/kernel/ftrace.c
+> @@ -554,8 +554,9 @@ static void run_sync(void)
+>  		local_irq_disable();
+>  }
+>  
+> -void ftrace_replace_code(int enable)
+> +void ftrace_replace_code(int mod_flags)
+>  {
+> +	int enable = mod_flags & FTRACE_MODIFY_ENABLE_FL;
+>  	struct ftrace_rec_iter *iter;
+>  	struct dyn_ftrace *rec;
+>  	const char *report = "adding breakpoints";
+
