@@ -2,64 +2,56 @@ Return-Path: <SRS0=EeCa=TU=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
-	SPF_PASS,URIBL_BLOCKED,USER_AGENT_MUTT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 59860C04AAF
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 May 2019 09:42:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9FA9CC04AAF
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 May 2019 09:52:33 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 9C61420675
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 May 2019 09:42:03 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="kRUu+TQs"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9C61420675
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linuxfoundation.org
+	by mail.kernel.org (Postfix) with ESMTPS id 2D26E20815
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 May 2019 09:52:33 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2D26E20815
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nxp.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 456v7F40QWzDqJB
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 May 2019 19:42:01 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 456vMM0z2nzDqK6
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 May 2019 19:52:31 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=linuxfoundation.org
- (client-ip=198.145.29.99; helo=mail.kernel.org;
- envelope-from=gregkh@linuxfoundation.org; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=linuxfoundation.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="kRUu+TQs"; 
- dkim-atps=neutral
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ spf=pass (mailfrom) smtp.mailfrom=nxp.com
+ (client-ip=92.121.34.21; helo=inva021.nxp.com;
+ envelope-from=ran.wang_1@nxp.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=nxp.com
+Received: from inva021.nxp.com (inva021.nxp.com [92.121.34.21])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 456v5Q5Nd0zDqHb
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 May 2019 19:40:25 +1000 (AEST)
-Received: from localhost (83-86-89-107.cable.dynamic.v4.ziggo.nl
- [83.86.89.107])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id 5FA3920675;
- Mon, 20 May 2019 09:40:22 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1558345222;
- bh=KlsviQfKrQui86twPZxBf/IfvPh7qAn/XGim2VH7goY=;
- h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=kRUu+TQsj8X8DYHPnUWAnW9UfPuTekrHZCS+FwPGmiXfiNR6UEgfjm6nJ7tM1/Wte
- ogYjtWT1+MLAYyC4w6gZW+gKMVQinsQhzVwvbjg3FdQlFNxTPFaEMZW+UQHc6bAPCH
- qM6nm1h++frHWcQYWEFSQPe7HpSMxEwAYA+wLzmo=
-Date: Mon, 20 May 2019 11:40:20 +0200
-From: Greg KH <gregkh@linuxfoundation.org>
-To: Masahiro Yamada <yamada.masahiro@socionext.com>
-Subject: Re: [PATCH] kbuild: do not check name uniqueness of builtin modules
-Message-ID: <20190520094020.GC15326@kroah.com>
-References: <20190520025437.13825-1-yamada.masahiro@socionext.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20190520025437.13825-1-yamada.masahiro@socionext.com>
-User-Agent: Mutt/1.11.4 (2019-03-13)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 456vKl3tRbzDqHb
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 May 2019 19:51:05 +1000 (AEST)
+Received: from inva021.nxp.com (localhost [127.0.0.1])
+ by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id 5B08F20017C;
+ Mon, 20 May 2019 11:51:02 +0200 (CEST)
+Received: from invc005.ap-rdc01.nxp.com (invc005.ap-rdc01.nxp.com
+ [165.114.16.14])
+ by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id 8BD2D20016E;
+ Mon, 20 May 2019 11:50:56 +0200 (CEST)
+Received: from localhost.localdomain (mega.ap.freescale.net [10.192.208.232])
+ by invc005.ap-rdc01.nxp.com (Postfix) with ESMTP id 35546402DF;
+ Mon, 20 May 2019 17:50:49 +0800 (SGT)
+From: Ran Wang <ran.wang_1@nxp.com>
+To: Li Yang <leoyang.li@nxp.com>, Rob Herring <robh+dt@kernel.org>,
+ Mark Rutland <mark.rutland@arm.com>, Pavel Machek <pavel@ucw.cz>
+Subject: [PATCH v4 2/3] Documentation: dt: binding: fsl: Add 'little-endian'
+ and update Chassis define
+Date: Mon, 20 May 2019 17:52:37 +0800
+Message-Id: <20190520095238.29210-2-ran.wang_1@nxp.com>
+X-Mailer: git-send-email 2.17.1
+In-Reply-To: <20190520095238.29210-1-ran.wang_1@nxp.com>
+References: <20190520095238.29210-1-ran.wang_1@nxp.com>
+X-Virus-Scanned: ClamAV using ClamSMTP
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -71,53 +63,62 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Michael Schmitz <schmitzmic@gmail.com>,
- Stephen Rothwell <sfr@canb.auug.org.au>, linuxppc-dev@lists.ozlabs.org,
- Kees Cook <keescook@chromium.org>, Arnd Bergmann <arnd@arndb.de>,
- linux-kbuild@vger.kernel.org, Linus Torvalds <torvalds@linux-foundation.org>,
- Rusty Russell <rusty@rustcorp.com.au>,
- Lucas De Marchi <lucas.demarchi@intel.com>, linux-kernel@vger.kernel.org,
- Lucas De Marchi <lucas.de.marchi@gmail.com>, Jessica Yu <jeyu@kernel.org>,
- Sam Ravnborg <sam@ravnborg.org>
+Cc: Len Brown <len.brown@intel.com>, devicetree@vger.kernel.org,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org,
+ "Rafael J . Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org,
+ Ran Wang <ran.wang_1@nxp.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, May 20, 2019 at 11:54:37AM +0900, Masahiro Yamada wrote:
-> I just thought it was a good idea to scan builtin.modules in the name
-> uniqueness checking, but Stephen reported a false positive.
-> 
-> ppc64_defconfig produces:
-> 
->   warning: same basename if the following are built as modules:
->     arch/powerpc/platforms/powermac/nvram.ko
->     drivers/char/nvram.ko
-> 
-> ..., which is a false positive because the former is never built as
-> a module as you see in arch/powerpc/platforms/powermac/Makefile:
-> 
->   # CONFIG_NVRAM is an arch. independent tristate symbol, for pmac32 we really
->   # need this to be a bool.  Cheat here and pretend CONFIG_NVRAM=m is really
->   # CONFIG_NVRAM=y
->   obj-$(CONFIG_NVRAM:m=y)         += nvram.o
-> 
-> Since we cannot predict how tricky Makefiles are written in wild,
-> builtin.modules may potentially contain false positives. I do not
-> think it is a big deal as far as kmod is concerned, but false positive
-> warnings in the kernel build makes people upset. It is better to not
-> do it.
-> 
-> Even without checking builtin.modules, we have enough (and more solid)
-> test coverage with allmodconfig.
-> 
-> While I touched this part, I replaced the sed code with neater one
-> provided by Stephen.
-> 
-> Link: https://lkml.org/lkml/2019/5/19/120
-> Link: https://lkml.org/lkml/2019/5/19/123
-> Fixes: 3a48a91901c5 ("kbuild: check uniqueness of module names")
-> Reported-by: Stephen Rothwell <sfr@canb.auug.org.au>
-> Signed-off-by: Masahiro Yamada <yamada.masahiro@socionext.com>
-> ---
+By default, QorIQ SoC's RCPM register block is Big Endian. But
+there are some exceptions, such as LS1088A and LS2088A, are Little
+Endian. So add this optional property to help identify them.
 
-Reviewed-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Actually LS2021A and other Layerscapes won't totally follow Chassis
+2.1, so separate them from powerpc SoC.
+
+Signed-off-by: Ran Wang <ran.wang_1@nxp.com>
+---
+Change in v4:
+	- Adjust indectation of 'ls1021a, ls1012a, ls1043a, ls1046a'.
+
+Change in v3:
+	- None.
+
+Change in v2:
+	- None.
+
+ Documentation/devicetree/bindings/soc/fsl/rcpm.txt |    8 +++++++-
+ 1 files changed, 7 insertions(+), 1 deletions(-)
+
+diff --git a/Documentation/devicetree/bindings/soc/fsl/rcpm.txt b/Documentation/devicetree/bindings/soc/fsl/rcpm.txt
+index e284e4e..058154c 100644
+--- a/Documentation/devicetree/bindings/soc/fsl/rcpm.txt
++++ b/Documentation/devicetree/bindings/soc/fsl/rcpm.txt
+@@ -20,6 +20,7 @@ Required properites:
+ 	* "fsl,qoriq-rcpm-1.0": for chassis 1.0 rcpm
+ 	* "fsl,qoriq-rcpm-2.0": for chassis 2.0 rcpm
+ 	* "fsl,qoriq-rcpm-2.1": for chassis 2.1 rcpm
++	* "fsl,qoriq-rcpm-2.1+": for chassis 2.1+ rcpm
+ 
+ All references to "1.0" and "2.0" refer to the QorIQ chassis version to
+ which the chip complies.
+@@ -27,7 +28,12 @@ Chassis Version		Example Chips
+ ---------------		-------------------------------
+ 1.0				p4080, p5020, p5040, p2041, p3041
+ 2.0				t4240, b4860, b4420
+-2.1				t1040, ls1021
++2.1				t1040,
++2.1+				ls1021a, ls1012a, ls1043a, ls1046a
++
++Optional properties:
++ - little-endian : RCPM register block is Little Endian. Without it RCPM
++   will be Big Endian (default case).
+ 
+ Example:
+ The RCPM node for T4240:
+-- 
+1.7.1
+
