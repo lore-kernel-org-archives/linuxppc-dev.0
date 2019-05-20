@@ -4,52 +4,42 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
-	version=3.4.0
+	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CB977C04AAF
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 May 2019 09:54:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0E79CC04AAC
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 May 2019 10:21:29 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 56735206B6
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 May 2019 09:54:49 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 56735206B6
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nxp.com
+	by mail.kernel.org (Postfix) with ESMTPS id 58ECA206B6
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 May 2019 10:21:28 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 58ECA206B6
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 456vPz3r2BzDqHk
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 May 2019 19:54:47 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=nxp.com
- (client-ip=92.121.34.21; helo=inva021.nxp.com;
- envelope-from=ran.wang_1@nxp.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=nxp.com
-Received: from inva021.nxp.com (inva021.nxp.com [92.121.34.21])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 456w0k0Px0zDqLr
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 May 2019 20:21:26 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 456vKl3r6SzDqF0
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 May 2019 19:51:04 +1000 (AEST)
-Received: from inva021.nxp.com (localhost [127.0.0.1])
- by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id 483F120028A;
- Mon, 20 May 2019 11:51:01 +0200 (CEST)
-Received: from invc005.ap-rdc01.nxp.com (invc005.ap-rdc01.nxp.com
- [165.114.16.14])
- by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id 4968320018B;
- Mon, 20 May 2019 11:50:55 +0200 (CEST)
-Received: from localhost.localdomain (mega.ap.freescale.net [10.192.208.232])
- by invc005.ap-rdc01.nxp.com (Postfix) with ESMTP id E68B6402A2;
- Mon, 20 May 2019 17:50:47 +0800 (SGT)
-From: Ran Wang <ran.wang_1@nxp.com>
-To: Li Yang <leoyang.li@nxp.com>, Rob Herring <robh+dt@kernel.org>,
- Mark Rutland <mark.rutland@arm.com>, Pavel Machek <pavel@ucw.cz>
-Subject: [PATCH v4 1/3] PM: wakeup: Add routine to help fetch wakeup source
- object.
-Date: Mon, 20 May 2019 17:52:36 +0800
-Message-Id: <20190520095238.29210-1-ran.wang_1@nxp.com>
-X-Mailer: git-send-email 2.17.1
-X-Virus-Scanned: ClamAV using ClamSMTP
+ by lists.ozlabs.org (Postfix) with ESMTPS id 456vzF1Q0jzDqHR
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 May 2019 20:20:09 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=ellerman.id.au
+Received: by ozlabs.org (Postfix)
+ id 456vzF0KK5z9s3l; Mon, 20 May 2019 20:20:09 +1000 (AEST)
+Received: by ozlabs.org (Postfix, from userid 1034)
+ id 456vzD6FsYz9sBb; Mon, 20 May 2019 20:20:08 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH v2] selftests/powerpc: Add a test of bad (out-of-range)
+ accesses
+Date: Mon, 20 May 2019 20:20:05 +1000
+Message-Id: <20190520102005.11611-1-mpe@ellerman.id.au>
+X-Mailer: git-send-email 2.20.1
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -61,107 +51,240 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Len Brown <len.brown@intel.com>, devicetree@vger.kernel.org,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org,
- "Rafael J . Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org,
- Ran Wang <ran.wang_1@nxp.com>, linuxppc-dev@lists.ozlabs.org,
- linux-arm-kernel@lists.infradead.org
+Cc: npigging@ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Some user might want to go through all registered wakeup sources
-and doing things accordingly. For example, SoC PM driver might need to
-do HW programming to prevent powering down specific IP which wakeup
-source depending on. And is user's responsibility to identify if this
-wakeup source he is interested in.
+Userspace isn't allowed to access certain address ranges, make sure we
+actually test that to at least some degree.
 
-Signed-off-by: Ran Wang <ran.wang_1@nxp.com>
+This would have caught the recent bug where the SLB fault handler was
+incorrectly called on an out-of-range access when using the Radix MMU.
+It also would have caught the bug we had in get_region_id() where we
+were inserting SLB entries for bad addresses.
+
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 ---
-Change in v4:
-	- None.
+v2: Incorporate changes from Nick's version. Check the faulted address,
+    and make sure we get BNDERR for things that are completely out of
+    bounds.
 
-Change in v3:
-	- Adjust indentation of *attached_dev;.
+ tools/testing/selftests/powerpc/mm/.gitignore |   3 +-
+ tools/testing/selftests/powerpc/mm/Makefile   |   4 +-
+ .../selftests/powerpc/mm/bad_accesses.c       | 167 ++++++++++++++++++
+ 3 files changed, 172 insertions(+), 2 deletions(-)
+ create mode 100644 tools/testing/selftests/powerpc/mm/bad_accesses.c
 
-Change in v2:
-	- None.
-
- drivers/base/power/wakeup.c |   18 ++++++++++++++++++
- include/linux/pm_wakeup.h   |    3 +++
- 2 files changed, 21 insertions(+), 0 deletions(-)
-
-diff --git a/drivers/base/power/wakeup.c b/drivers/base/power/wakeup.c
-index 5b2b6a0..6904485 100644
---- a/drivers/base/power/wakeup.c
-+++ b/drivers/base/power/wakeup.c
-@@ -14,6 +14,7 @@
- #include <linux/suspend.h>
- #include <linux/seq_file.h>
- #include <linux/debugfs.h>
-+#include <linux/of_device.h>
- #include <linux/pm_wakeirq.h>
- #include <trace/events/power.h>
+diff --git a/tools/testing/selftests/powerpc/mm/.gitignore b/tools/testing/selftests/powerpc/mm/.gitignore
+index ba919308fe30..c189170ba041 100644
+--- a/tools/testing/selftests/powerpc/mm/.gitignore
++++ b/tools/testing/selftests/powerpc/mm/.gitignore
+@@ -3,4 +3,5 @@ subpage_prot
+ tempfile
+ prot_sao
+ segv_errors
+-wild_bctr
+\ No newline at end of file
++wild_bctr
++bad_accesses
+\ No newline at end of file
+diff --git a/tools/testing/selftests/powerpc/mm/Makefile b/tools/testing/selftests/powerpc/mm/Makefile
+index 43d68420e363..f9667f980241 100644
+--- a/tools/testing/selftests/powerpc/mm/Makefile
++++ b/tools/testing/selftests/powerpc/mm/Makefile
+@@ -2,7 +2,8 @@
+ noarg:
+ 	$(MAKE) -C ../
  
-@@ -226,6 +227,22 @@ void wakeup_source_unregister(struct wakeup_source *ws)
- 	}
- }
- EXPORT_SYMBOL_GPL(wakeup_source_unregister);
-+/**
-+ * wakeup_source_get_next - Get next wakeup source from the list
-+ * @ws: Previous wakeup source object, null means caller want first one.
-+ */
-+struct wakeup_source *wakeup_source_get_next(struct wakeup_source *ws)
-+{
-+	struct list_head *ws_head = &wakeup_sources;
+-TEST_GEN_PROGS := hugetlb_vs_thp_test subpage_prot prot_sao segv_errors wild_bctr
++TEST_GEN_PROGS := hugetlb_vs_thp_test subpage_prot prot_sao segv_errors \
++		  wild_bctr bad_accesses
+ TEST_GEN_FILES := tempfile
+ 
+ top_srcdir = ../../../../..
+@@ -13,6 +14,7 @@ $(TEST_GEN_PROGS): ../harness.c
+ $(OUTPUT)/prot_sao: ../utils.c
+ 
+ $(OUTPUT)/wild_bctr: CFLAGS += -m64
++$(OUTPUT)/bad_accesses: CFLAGS += -m64
+ 
+ $(OUTPUT)/tempfile:
+ 	dd if=/dev/zero of=$@ bs=64k count=1
+diff --git a/tools/testing/selftests/powerpc/mm/bad_accesses.c b/tools/testing/selftests/powerpc/mm/bad_accesses.c
+new file mode 100644
+index 000000000000..f18b2b91b263
+--- /dev/null
++++ b/tools/testing/selftests/powerpc/mm/bad_accesses.c
+@@ -0,0 +1,167 @@
++// SPDX-License-Identifier: GPL-2.0+
++//
++// Copyright 2019, Michael Ellerman, IBM Corp.
++//
++// Test that out-of-bounds reads/writes behave as expected.
 +
-+	if (ws)
-+		return list_next_or_null_rcu(ws_head, &ws->entry,
-+				struct wakeup_source, entry);
-+	else
-+		return list_entry_rcu(ws_head->next,
-+				struct wakeup_source, entry);
++#include <setjmp.h>
++#include <stdbool.h>
++#include <stdio.h>
++#include <stdlib.h>
++#include <string.h>
++#include <sys/types.h>
++#include <sys/wait.h>
++#include <unistd.h>
++
++#include "utils.h"
++
++
++// 64-bit kernel is always here
++#define PAGE_OFFSET	(0xcul << 60)
++
++static unsigned long kernel_virt_end;
++
++static volatile int fault_code;
++static volatile unsigned long fault_addr;
++static jmp_buf setjmp_env;
++
++static void segv_handler(int n, siginfo_t *info, void *ctxt_v)
++{
++	fault_code = info->si_code;
++	fault_addr = (unsigned long)info->si_addr;
++	siglongjmp(setjmp_env, 1);
 +}
-+EXPORT_SYMBOL_GPL(wakeup_source_get_next);
- 
- /**
-  * device_wakeup_attach - Attach a wakeup source object to a device object.
-@@ -242,6 +259,7 @@ static int device_wakeup_attach(struct device *dev, struct wakeup_source *ws)
- 		return -EEXIST;
- 	}
- 	dev->power.wakeup = ws;
-+	ws->attached_dev = dev;
- 	if (dev->power.wakeirq)
- 		device_wakeup_attach_irq(dev, dev->power.wakeirq);
- 	spin_unlock_irq(&dev->power.lock);
-diff --git a/include/linux/pm_wakeup.h b/include/linux/pm_wakeup.h
-index 0ff134d..913b2fb 100644
---- a/include/linux/pm_wakeup.h
-+++ b/include/linux/pm_wakeup.h
-@@ -50,6 +50,7 @@
-  * @wakeup_count: Number of times the wakeup source might abort suspend.
-  * @active: Status of the wakeup source.
-  * @has_timeout: The wakeup source has been activated with a timeout.
-+ * @attached_dev: The device it attached to
-  */
- struct wakeup_source {
- 	const char 		*name;
-@@ -70,6 +71,7 @@ struct wakeup_source {
- 	unsigned long		wakeup_count;
- 	bool			active:1;
- 	bool			autosleep_enabled:1;
-+	struct device		*attached_dev;
- };
- 
- #ifdef CONFIG_PM_SLEEP
-@@ -101,6 +103,7 @@ static inline void device_set_wakeup_path(struct device *dev)
- extern void wakeup_source_remove(struct wakeup_source *ws);
- extern struct wakeup_source *wakeup_source_register(const char *name);
- extern void wakeup_source_unregister(struct wakeup_source *ws);
-+extern struct wakeup_source *wakeup_source_get_next(struct wakeup_source *ws);
- extern int device_wakeup_enable(struct device *dev);
- extern int device_wakeup_disable(struct device *dev);
- extern void device_set_wakeup_capable(struct device *dev, bool capable);
++
++int bad_access(char *p, bool write)
++{
++	char x;
++
++	fault_code = 0;
++	fault_addr = 0;
++
++	if (sigsetjmp(setjmp_env, 1) == 0) {
++		if (write)
++			*p = 1;
++		else
++			x = *p;
++
++		printf("Bad - no SEGV! (%c)\n", x);
++		return 1;
++	}
++
++	// If we see MAPERR that means we took a page fault rather than an SLB
++	// miss. We only expect to take page faults for addresses within the
++	// valid kernel range.
++	FAIL_IF(fault_code == SEGV_MAPERR && \
++		(fault_addr < PAGE_OFFSET || fault_addr >= kernel_virt_end));
++
++	FAIL_IF(fault_code != SEGV_MAPERR && fault_code != SEGV_BNDERR);
++
++	return 0;
++}
++
++static int using_hash_mmu(bool *using_hash)
++{
++	char line[128];
++	FILE *f;
++	int rc;
++
++	f = fopen("/proc/cpuinfo", "r");
++	FAIL_IF(!f);
++
++	rc = 0;
++	while (fgets(line, sizeof(line), f) != NULL) {
++		if (strcmp(line, "MMU		: Hash\n") == 0) {
++			*using_hash = true;
++			goto out;
++		}
++
++		if (strcmp(line, "MMU		: Radix\n") == 0) {
++			*using_hash = false;
++			goto out;
++		}
++	}
++
++	rc = -1;
++out:
++	fclose(f);
++	return rc;
++}
++
++static int test(void)
++{
++	unsigned long i, j, addr, region_shift, page_shift, page_size;
++	struct sigaction sig;
++	bool hash_mmu;
++
++	sig = (struct sigaction) {
++		.sa_sigaction = segv_handler,
++		.sa_flags = SA_SIGINFO,
++	};
++
++	FAIL_IF(sigaction(SIGSEGV, &sig, NULL) != 0);
++
++	FAIL_IF(using_hash_mmu(&hash_mmu));
++
++	page_size = sysconf(_SC_PAGESIZE);
++	if (page_size == (64 * 1024))
++		page_shift = 16;
++	else
++		page_shift = 12;
++
++	if (page_size == (64 * 1024) || !hash_mmu) {
++		region_shift = 52;
++
++		// We have 7 512T regions (4 kernel linear, vmalloc, io, vmemmap)
++		kernel_virt_end = PAGE_OFFSET + (7 * (512ul << 40));
++	} else if (page_size == (4 * 1024) && hash_mmu) {
++		region_shift = 46;
++
++		// We have 7 64T regions (4 kernel linear, vmalloc, io, vmemmap)
++		kernel_virt_end = PAGE_OFFSET + (7 * (64ul << 40));
++	} else
++		FAIL_IF(true);
++
++	printf("Using %s MMU, PAGE_SIZE = %dKB start address 0x%016lx\n",
++	       hash_mmu ? "hash" : "radix",
++	       (1 << page_shift) >> 10,
++	       1ul << region_shift);
++
++	// This generates access patterns like:
++	//   0x0010000000000000
++	//   0x0010000000010000
++	//   0x0010000000020000
++	//   ...
++	//   0x0014000000000000
++	//   0x0018000000000000
++	//   0x0020000000000000
++	//   0x0020000000010000
++	//   0x0020000000020000
++	//   ...
++	//   0xf400000000000000
++	//   0xf800000000000000
++
++	for (i = 1; i <= ((0xful << 60) >> region_shift); i++) {
++		for (j = page_shift - 1; j < 60; j++) {
++			unsigned long base, delta;
++
++			base  = i << region_shift;
++			delta = 1ul << j;
++
++			if (delta >= base)
++				break;
++
++			addr = (base | delta) & ~((1 << page_shift) - 1);
++
++			FAIL_IF(bad_access((char *)addr, false));
++			FAIL_IF(bad_access((char *)addr, true));
++		}
++	}
++
++	return 0;
++}
++
++int main(void)
++{
++	return test_harness(test, "bad_accesses");
++}
 -- 
-1.7.1
+2.20.1
 
