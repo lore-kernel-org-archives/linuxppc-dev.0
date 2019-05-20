@@ -2,68 +2,47 @@ Return-Path: <SRS0=EeCa=TU=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-4.2 required=3.0 tests=DKIM_ADSP_ALL,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_MUTT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_MUTT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 64696C04AAC
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 May 2019 18:07:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EECA9C04AAC
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 May 2019 19:53:33 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id AF3FC214DA
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 May 2019 18:07:44 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=rere.qmqm.pl header.i=@rere.qmqm.pl header.b="ZDYqeYDG"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org AF3FC214DA
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=rere.qmqm.pl
+	by mail.kernel.org (Postfix) with ESMTPS id 35C6E20863
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 May 2019 19:53:33 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 35C6E20863
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=the-dreams.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4576Lk19VszDqKj
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 May 2019 04:07:42 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4578hp53TqzDqNF
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 May 2019 05:53:30 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=rere.qmqm.pl
- (client-ip=91.227.64.183; helo=rere.qmqm.pl;
- envelope-from=mirq-linux@rere.qmqm.pl; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=the-dreams.de
+ (client-ip=88.99.104.3; helo=pokefinder.org; envelope-from=wsa@the-dreams.de;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=rere.qmqm.pl
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=rere.qmqm.pl header.i=@rere.qmqm.pl header.b="ZDYqeYDG";
- dkim-atps=neutral
-X-Greylist: delayed 596 seconds by postgrey-1.36 at bilbo;
- Tue, 21 May 2019 04:06:17 AEST
-Received: from rere.qmqm.pl (rere.qmqm.pl [91.227.64.183])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4576K55gwBzDqCs
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 May 2019 04:06:17 +1000 (AEST)
-Received: from remote.user (localhost [127.0.0.1])
- by rere.qmqm.pl (Postfix) with ESMTPSA id 45763m0MdZz9t;
- Mon, 20 May 2019 19:54:43 +0200 (CEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=rere.qmqm.pl; s=1;
- t=1558374886; bh=hXE7AHhk3hVcTSSePlYKB9Bnza+wPxYvgvUVa4FLAsI=;
- h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=ZDYqeYDGoE2mL3x/+uC0/QalyZqGXXaVmCUQpPqRVyY4+7M0TsipHp97zwKXyKVIy
- GbYocBIkcKAONIMVifes8muu0oUVHPBtqkfkhX2a6oQ+DzJ+mN7UgB8hLy0Kdq5zKp
- MRJwLUWypLRdkoa61oo2R0OB9FI4eoR42+MLq5KOOAhj3bHYYBxJSWALmKUUqLAKqb
- jvdTEp1YKmsGAaw2IbVWqtQvUCTUO5qMndwhtXTVeHRnaz5tRIXIGufEBAXC17fZIF
- YKdv3eoHpCgLsvYhzvEbUFoO8tE2KTbKffBb+hTWdrOdIQVVjcOqjCKEpcfcskAERk
- 5COH+wX22iT7g==
-X-Virus-Status: Clean
-X-Virus-Scanned: clamav-milter 0.100.3 at mail
-Date: Mon, 20 May 2019 19:55:55 +0200
-From: =?iso-8859-2?Q?Micha=B3_Miros=B3aw?= <mirq-linux@rere.qmqm.pl>
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Subject: Re: [PATCH] misc: remove redundant 'default n' from Kconfig-s
-Message-ID: <20190520175555.GA5429@qmqm.qmqm.pl>
-References: <CGME20190520141047eucas1p2c6006d1ecfc3eb287b6b33d131f66180@eucas1p2.samsung.com>
- <1ab818ae-4d9f-d17a-f11f-7caaa5bf98bc@samsung.com>
+ dmarc=none (p=none dis=none) header.from=the-dreams.de
+Received: from pokefinder.org (sauhun.de [88.99.104.3])
+ by lists.ozlabs.org (Postfix) with ESMTP id 4578gT0fx6zDqBX
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 May 2019 05:52:20 +1000 (AEST)
+Received: from localhost (p54B333DA.dip0.t-ipconnect.de [84.179.51.218])
+ by pokefinder.org (Postfix) with ESMTPSA id 3853E2C2761;
+ Mon, 20 May 2019 17:05:11 +0200 (CEST)
+Date: Mon, 20 May 2019 17:05:10 +0200
+From: Wolfram Sang <wsa@the-dreams.de>
+To: Mauro Carvalho Chehab <mchehab+samsung@kernel.org>
+Subject: Re: [PATCH 10/10] docs: fix broken documentation links
+Message-ID: <20190520150510.GA2606@kunai>
+References: <cover.1558362030.git.mchehab+samsung@kernel.org>
+ <4fd1182b4a41feb2447c7ccde4d7f0a6b3c92686.1558362030.git.mchehab+samsung@kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-2
+Content-Type: multipart/signed; micalg=pgp-sha512;
+ protocol="application/pgp-signature"; boundary="6c2NcOVqGQ03X4Wi"
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <1ab818ae-4d9f-d17a-f11f-7caaa5bf98bc@samsung.com>
+In-Reply-To: <4fd1182b4a41feb2447c7ccde4d7f0a6b3c92686.1558362030.git.mchehab+samsung@kernel.org>
 User-Agent: Mutt/1.10.1 (2018-07-13)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -76,42 +55,80 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Eric Piel <eric.piel@tremplin-utc.net>,
- Andrew Donnellan <ajd@linux.ibm.com>, Arnd Bergmann <arnd@arndb.de>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Frank Haverkamp <haver@linux.ibm.com>, linux-kernel@vger.kernel.org,
- Frederic Barrat <fbarrat@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Cc: kvm@vger.kernel.org, Linux Doc Mailing List <linux-doc@vger.kernel.org>,
+ linux-pci@vger.kernel.org, platform-driver-x86@vger.kernel.org,
+ linux-mm@kvack.org, linux-i2c@vger.kernel.org, linux-kselftest@vger.kernel.org,
+ devel@driverdev.osuosl.org, Jonathan Corbet <corbet@lwn.net>, x86@kernel.org,
+ linux-acpi@vger.kernel.org, xen-devel@lists.xenproject.org,
+ linux-edac@vger.kernel.org, devicetree@vger.kernel.org,
+ linux-arm-msm@vger.kernel.org, Mauro Carvalho Chehab <mchehab@infradead.org>,
+ linux-gpio@vger.kernel.org, linux-amlogic@lists.infradead.org,
+ virtualization@lists.linux-foundation.org,
+ linux-arm-kernel@lists.infradead.org, devel@acpica.org, netdev@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, May 20, 2019 at 04:10:46PM +0200, Bartlomiej Zolnierkiewicz wrote:
-> 'default n' is the default value for any bool or tristate Kconfig
-> setting so there is no need to write it explicitly.
-> 
-> Also since commit f467c5640c29 ("kconfig: only write '# CONFIG_FOO
-> is not set' for visible symbols") the Kconfig behavior is the same
-> regardless of 'default n' being present or not:
-> 
->     ...
->     One side effect of (and the main motivation for) this change is making
->     the following two definitions behave exactly the same:
->     
->         config FOO
->                 bool
->     
->         config FOO
->                 bool
->                 default n
->     
->     With this change, neither of these will generate a
->     '# CONFIG_FOO is not set' line (assuming FOO isn't selected/implied).
->     That might make it clearer to people that a bare 'default n' is
->     redundant.
->     ...
-> 
-> Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-[...]
->  drivers/misc/cb710/Kconfig        |    1 -
 
-Acked-by: Micha³ Miros³aw <mirq-linux@rere.qmqm.pl>
+--6c2NcOVqGQ03X4Wi
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+On Mon, May 20, 2019 at 11:47:39AM -0300, Mauro Carvalho Chehab wrote:
+> Mostly due to x86 and acpi conversion, several documentation
+> links are still pointing to the old file. Fix them.
+>=20
+> Signed-off-by: Mauro Carvalho Chehab <mchehab+samsung@kernel.org>
+
+Thanks, didn't notice that.
+
+>  Documentation/i2c/instantiating-devices          |  2 +-
+
+=2E..
+
+> diff --git a/Documentation/i2c/instantiating-devices b/Documentation/i2c/=
+instantiating-devices
+> index 0d85ac1935b7..5a3e2f331e8c 100644
+> --- a/Documentation/i2c/instantiating-devices
+> +++ b/Documentation/i2c/instantiating-devices
+> @@ -85,7 +85,7 @@ Method 1c: Declare the I2C devices via ACPI
+>  -------------------------------------------
+> =20
+>  ACPI can also describe I2C devices. There is special documentation for t=
+his
+> -which is currently located at Documentation/acpi/enumeration.txt.
+> +which is currently located at Documentation/firmware-guide/acpi/enumerat=
+ion.rst.
+> =20
+> =20
+>  Method 2: Instantiate the devices explicitly
+
+For this I2C part:
+
+Reviewed-by: Wolfram Sang <wsa@the-dreams.de>
+
+
+--6c2NcOVqGQ03X4Wi
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCgAdFiEEOZGx6rniZ1Gk92RdFA3kzBSgKbYFAlziwiIACgkQFA3kzBSg
+Kbb/+hAArOEJ2RcuEqvOP7Ge80J7VxtEVTCR0sWRFg/7cpRGLnwf1qLSAUlfAJYj
+fUhZ9ANfeB4Y4ZltOPwJ34KNtZy/kYzYyoy/WgiNfJUrf+s7auOF+dMXRvBe8VyX
+v/pHpAMzTf8rtNkaESOahPExL1lgrI2dShZa3Mxofm2eb3Kam0OJRr6Cvj7mA/Rq
+PHq1QUlG+Y3hZdvAHjQ6GN6wr+pNnhqeSSAd3BZg5MZQpPRiaK+C4tPkqOD/TNwX
+9+iPJTMPhWsdei4UO1POHGCOclFatxkPOQm9JjsTD1h1lEJK7Afs1cTCd0crwpzW
+nQuj+MSjKTqcOwQ4hF1x6PwlbJm4Hq/+r6b50UsnQYai6pt7Khp9OISmYTxPQhgI
+8aXZbjsMB3k9ebYulULGdF0f3p/IPoqneTUf3yi5OxNbhJ8eyNcQ4l35MP9hEyYb
+H/9a/G4GXP7CLyCtKd53OtNeE1tTF4zGKIhe7v9OInHolA3gLx1R1rxiBeQB+XyA
+NO/4FdEIZ1QWAyl7m1aWBtYpar2uvFyEhZWG3sVhZYsA9dQNBfgzFSu60wus7hy4
+D9FxYijaEnHZvPivrTwfcp8ittAvsIrM3xANcOhWXEU6eC6w0KX15QiiyPQUbssL
+H3fPVUBxQlwicyY98Dvh7eJmnD1WEsMcDmDI5RqrAxhdD/bxbN0=
+=b4+p
+-----END PGP SIGNATURE-----
+
+--6c2NcOVqGQ03X4Wi--
