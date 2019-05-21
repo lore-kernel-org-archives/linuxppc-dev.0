@@ -2,25 +2,26 @@ Return-Path: <SRS0=oIc7=TV=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E4CE2C04AAF
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 May 2019 13:37:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1D54DC04AAF
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 May 2019 13:41:35 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 30FD2208C3
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 May 2019 13:37:58 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 988B7208C3
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 May 2019 13:41:34 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="v5L0ne9l"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 30FD2208C3
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="OE9LtBbv"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 988B7208C3
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 457cJz3RfqzDqJM
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 May 2019 23:37:55 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 457cP82mtnzDqLf
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 May 2019 23:41:32 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=c-s.fr
  (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
@@ -28,51 +29,53 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="v5L0ne9l"; 
+ unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="OE9LtBbv"; 
  dkim-atps=neutral
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 457cDj5jvqzDqFH
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 May 2019 23:34:12 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 457cDj5xCVzDqJM
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 May 2019 23:34:13 +1000 (AEST)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 457cDY6p7wz9v1nn;
- Tue, 21 May 2019 15:34:05 +0200 (CEST)
+ by localhost (Postfix) with ESMTP id 457cDc5tfsz9v2XZ;
+ Tue, 21 May 2019 15:34:08 +0200 (CEST)
 Authentication-Results: localhost; dkim=pass
  reason="1024-bit key; insecure key"
- header.d=c-s.fr header.i=@c-s.fr header.b=v5L0ne9l; dkim-adsp=pass;
+ header.d=c-s.fr header.i=@c-s.fr header.b=OE9LtBbv; dkim-adsp=pass;
  dkim-atps=neutral
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id n2tkmpse9POB; Tue, 21 May 2019 15:34:05 +0200 (CEST)
+ with ESMTP id llxTgzOPOP6u; Tue, 21 May 2019 15:34:08 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 457cDY5mh8z9v1nh;
- Tue, 21 May 2019 15:34:05 +0200 (CEST)
+ by pegase1.c-s.fr (Postfix) with ESMTP id 457cDc4s3pz9v2XY;
+ Tue, 21 May 2019 15:34:08 +0200 (CEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
- t=1558445645; bh=4k6PLmXdY0SvqmTbZLBIzVnywVWKh7ktdtBKLg7zhR0=;
- h=From:Subject:To:Cc:Date:From;
- b=v5L0ne9l7IeJ6j1RlEtDlB3tznGmL91nYxqqzqAQ9628UCkLw7a61V7lU7BlOMeaI
- b0O1Pfn3sC/WTzObfEfPlukMzbiQDm5GZ/6SBtxI8+0WZYgmM+uRDgWxmfFVG8vyhS
- VJTPMoNWaUD4+epVtwrFHblur8GZGQQvo7qCoHJ0=
+ t=1558445648; bh=pa7vl8a//DSmJcXNbFqorY8WvZK4+qW8qWntTf4Yza4=;
+ h=In-Reply-To:References:From:Subject:To:Cc:Date:From;
+ b=OE9LtBbvaUzvcxrv7hQbRZaoo/POV51uzrKh1cxT9rza+02xMSPe/PrjvDkXVaDvm
+ VXwcgfHuF2Njjjowfws5ROeg03A6V7qAhU9g4xGZO57pQsHQUz/0k/cqE0ccJ/LFEk
+ 35GdTzT2edQtJkWkVBLozUpeiVJnw826zT6Mq+p0=
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 455248B80D;
- Tue, 21 May 2019 15:34:07 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 252AE8B80C;
+ Tue, 21 May 2019 15:34:10 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id 45QZsARu0znr; Tue, 21 May 2019 15:34:07 +0200 (CEST)
+ with ESMTP id 9yYx09vm-5o2; Tue, 21 May 2019 15:34:10 +0200 (CEST)
 Received: from po16846vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 0F4598B803;
- Tue, 21 May 2019 15:34:07 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 031EE8B803;
+ Tue, 21 May 2019 15:34:10 +0200 (CEST)
 Received: by po16846vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id A260268458; Tue, 21 May 2019 13:34:06 +0000 (UTC)
-Message-Id: <cover.1558445259.git.christophe.leroy@c-s.fr>
+ id CD25468458; Tue, 21 May 2019 13:34:09 +0000 (UTC)
+Message-Id: <310b67004e02da826322e7cc96b85f46c9ef35b2.1558445259.git.christophe.leroy@c-s.fr>
+In-Reply-To: <cover.1558445259.git.christophe.leroy@c-s.fr>
+References: <cover.1558445259.git.christophe.leroy@c-s.fr>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v1 00/15] Fixing selftests failure on Talitos driver
+Subject: [PATCH v1 03/15] crypto: talitos - reduce max key size for SEC1
 To: Herbert Xu <herbert@gondor.apana.org.au>,
  "David S. Miller" <davem@davemloft.net>, horia.geanta@nxp.com
-Date: Tue, 21 May 2019 13:34:06 +0000 (UTC)
+Date: Tue, 21 May 2019 13:34:09 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -90,34 +93,34 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Several test failures have popped up following recent changes to crypto
-selftests.
+SEC1 doesn't support SHA384/512, so it doesn't require
+longer keys.
 
-This series fixes (most of) them.
+This patch reduces the max key size when the driver
+is built for SEC1 only.
 
-The last three patches are trivial cleanups.
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+Fixes: 03d2c5114c95 ("crypto: talitos - Extend max key length for SHA384/512-HMAC and AEAD")
+---
+ drivers/crypto/talitos.c | 4 ++++
+ 1 file changed, 4 insertions(+)
 
-Christophe Leroy (15):
-  crypto: talitos - fix skcipher failure due to wrong output IV
-  crypto: talitos - rename alternative AEAD algos.
-  crypto: talitos - reduce max key size for SEC1
-  crypto: talitos - check AES key size
-  crypto: talitos - fix CTR alg blocksize
-  crypto: talitos - check data blocksize in ablkcipher.
-  crypto: talitos - fix ECB algs ivsize
-  crypto: talitos - Do not modify req->cryptlen on decryption.
-  crypto: talitos - HMAC SNOOP NO AFEU mode requires SW icv checking.
-  crypto: talitos - properly handle split ICV.
-  crypto: talitos - Align SEC1 accesses to 32 bits boundaries.
-  crypto: talitos - fix AEAD processing.
-  Revert "crypto: talitos - export the talitos_submit function"
-  crypto: talitos - use IS_ENABLED() in has_ftr_sec1()
-  crypto: talitos - use SPDX-License-Identifier
-
- drivers/crypto/talitos.c | 281 ++++++++++++++++++++++-------------------------
- drivers/crypto/talitos.h |  45 ++------
- 2 files changed, 139 insertions(+), 187 deletions(-)
-
+diff --git a/drivers/crypto/talitos.c b/drivers/crypto/talitos.c
+index 6f8bc6467706..6312f8d501b1 100644
+--- a/drivers/crypto/talitos.c
++++ b/drivers/crypto/talitos.c
+@@ -837,7 +837,11 @@ static void talitos_unregister_rng(struct device *dev)
+  * HMAC_SNOOP_NO_AFEA (HSNA) instead of type IPSEC_ESP
+  */
+ #define TALITOS_CRA_PRIORITY_AEAD_HSNA	(TALITOS_CRA_PRIORITY - 1)
++#ifdef CONFIG_CRYPTO_DEV_TALITOS_SEC2
+ #define TALITOS_MAX_KEY_SIZE		(AES_MAX_KEY_SIZE + SHA512_BLOCK_SIZE)
++#else
++#define TALITOS_MAX_KEY_SIZE		(AES_MAX_KEY_SIZE + SHA256_BLOCK_SIZE)
++#endif
+ #define TALITOS_MAX_IV_LENGTH		16 /* max of AES_BLOCK_SIZE, DES3_EDE_BLOCK_SIZE */
+ 
+ struct talitos_ctx {
 -- 
 2.13.3
 
