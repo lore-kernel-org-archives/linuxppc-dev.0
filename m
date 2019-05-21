@@ -2,45 +2,84 @@ Return-Path: <SRS0=oIc7=TV=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-13.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CB1E3C04AAF
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 May 2019 11:41:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 16002C04AAF
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 May 2019 11:42:55 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 58E2721773
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 May 2019 11:41:38 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 58E2721773
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+	by mail.kernel.org (Postfix) with ESMTPS id 8D34F20862
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 May 2019 11:42:54 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=brauner.io header.i=@brauner.io header.b="IGl4P8AF"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8D34F20862
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=brauner.io
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 457Ykm3XZ2zDqLW
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 May 2019 21:41:36 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+	by lists.ozlabs.org (Postfix) with ESMTP id 457YmC6d6fzDqP7
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 May 2019 21:42:51 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+ spf=pass (mailfrom) smtp.mailfrom=brauner.io
+ (client-ip=2607:f8b0:4864:20::541; helo=mail-pg1-x541.google.com;
+ envelope-from=christian@brauner.io; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=brauner.io
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ secure) header.d=brauner.io header.i=@brauner.io header.b="IGl4P8AF"; 
+ dkim-atps=neutral
+Received: from mail-pg1-x541.google.com (mail-pg1-x541.google.com
+ [IPv6:2607:f8b0:4864:20::541])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 457YhZ3901zDqMt
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 May 2019 21:39:42 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=ellerman.id.au
-Received: by ozlabs.org (Postfix)
- id 457YhZ0t26z9s9T; Tue, 21 May 2019 21:39:42 +1000 (AEST)
-Received: by ozlabs.org (Postfix, from userid 1034)
- id 457YhY6vFMz9sB8; Tue, 21 May 2019 21:39:41 +1000 (AEST)
-X-powerpc-patch-notification: thanks
-X-powerpc-patch-commit: c179976cf4cbd2e65f29741d5bc07ccf8747a532
-X-Patchwork-Hint: ignore
-In-Reply-To: <20190517132958.22299-1-mpe@ellerman.id.au>
-To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
-From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Subject: Re: [PATCH v2] powerpc/mm/hash: Fix get_region_id() for invalid
- addresses
-Message-Id: <457YhY6vFMz9sB8@ozlabs.org>
-Date: Tue, 21 May 2019 21:39:41 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 457Yjj6hkyzDqLV
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 May 2019 21:40:40 +1000 (AEST)
+Received: by mail-pg1-x541.google.com with SMTP id t187so8446130pgb.13
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 May 2019 04:40:40 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=brauner.io; s=google;
+ h=from:to:cc:subject:date:message-id:mime-version
+ :content-transfer-encoding;
+ bh=HzBatA9wkX3zSlVcsT5aC4xwVAsySLfbtfS6XlJ7bvU=;
+ b=IGl4P8AFdDKLGxdwZcWhkMUv/MDgWEt3Jkl1myBZsZDrfYVRWSjTplBqpo4/41wnSg
+ 5jozrHQIQx7VBGZDtnoGADmOyumpPSO4nu8Tc5+rXRG8znYoawNFYDcV96icK/HF0d39
+ sGk64iOeVHjh7ybT0qA8/4PPNePmtYSBOxerVIhAqQbK11MtzTzK4UG0rlUKn06iYGaC
+ rLp9+tzE+aMD83MmGcxpiP+xr50r2Qadv+uzWx1vOcrnT+NeL5HrfaoohFkR/er3YXge
+ 3DCy58j1GsDR4Hwx145UN7/myNqsI8ezICY5FX39AkTZFSD5JXG38HhoR7SSZjsOH6y6
+ tmtQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+ :content-transfer-encoding;
+ bh=HzBatA9wkX3zSlVcsT5aC4xwVAsySLfbtfS6XlJ7bvU=;
+ b=DCHG+CBabNl2Uc3xklVsuPkpz4rUmuYF44Mn7LqdLW59rLadyl68+Q+JfJ1FHmob5G
+ HFVIOQbUvQ2B4D4+VOm2fWeeMpeYL3wOn7sXeFl4ntTdCcJD5GZDGg2783nZGMhQEJqZ
+ 464QRxvx0aMXbJ9qU6Vs3n/KKvYR1pz13gjOCwZgdo4074mhiahRi1DHFDaMFgzx0JiU
+ KJlj7TAWK7KDH/j3q6SoVECG8AaHd4nAUvAYFDvnHSy9EX2URpapaAHCk+EvdiOgvXEm
+ 2egmPF3GJ0W6qVCDcqHkbwnA7S4yU01PYHb8urxaDSGfWhin/3igJQpgGmEk11Sm4EJ4
+ dm8A==
+X-Gm-Message-State: APjAAAWdEi1EnoA+S/J89o/wXmxwBkz6th+qkkz9j+ZlLDK1+CwxAyPe
+ k8ZCK+q5uHAd3RBVUyvQ8DwThQ==
+X-Google-Smtp-Source: APXvYqws7fDy6UQYk7Zwqk+EJfPX4HBdClvo7+M9ZavkIl+3mCJEebNi8WNBVaQUEA13k6kYeYsKjw==
+X-Received: by 2002:a63:9d83:: with SMTP id
+ i125mr75660063pgd.229.1558438837129; 
+ Tue, 21 May 2019 04:40:37 -0700 (PDT)
+Received: from localhost.localdomain ([208.54.39.182])
+ by smtp.gmail.com with ESMTPSA id s9sm34103515pfa.31.2019.05.21.04.40.24
+ (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
+ Tue, 21 May 2019 04:40:36 -0700 (PDT)
+From: Christian Brauner <christian@brauner.io>
+To: viro@zeniv.linux.org.uk, linux-kernel@vger.kernel.org,
+ linux-fsdevel@vger.kernel.org, linux-api@vger.kernel.org
+Subject: [PATCH 1/2] open: add close_range()
+Date: Tue, 21 May 2019 13:34:47 +0200
+Message-Id: <20190521113448.20654-1-christian@brauner.io>
+X-Mailer: git-send-email 2.21.0
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -52,67 +91,467 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: aneesh.kumar@linux.vnet.ibm.com, npiggin@gmail.com
+Cc: linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org, ldv@altlinux.org,
+ dhowells@redhat.com, linux-kselftest@vger.kernel.org,
+ sparclinux@vger.kernel.org, shuah@kernel.org, linux-arch@vger.kernel.org,
+ linux-s390@vger.kernel.org, miklos@szeredi.hu, x86@kernel.org,
+ Christian Brauner <christian@brauner.io>, linux-mips@vger.kernel.org,
+ linux-xtensa@linux-xtensa.org, tkjos@android.com, arnd@arndb.de,
+ jannh@google.com, linux-m68k@lists.linux-m68k.org, tglx@linutronix.de,
+ linux-arm-kernel@lists.infradead.org, fweimer@redhat.com,
+ linux-parisc@vger.kernel.org, torvalds@linux-foundation.org, oleg@redhat.com,
+ linux-alpha@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, 2019-05-17 at 13:29:58 UTC, Michael Ellerman wrote:
-> From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
-> 
-> Accesses by userspace to random addresses outside the user or kernel
-> address range will generate an SLB fault. When we handle that fault we
-> classify the effective address into several classes, eg. user, kernel
-> linear, kernel virtual etc.
-> 
-> For addresses that are completely outside of any valid range, we
-> should not insert an SLB entry at all, and instead immediately an
-> exception.
-> 
-> In the past this was handled in two ways. Firstly we would check the
-> top nibble of the address (using REGION_ID(ea)) and that would tell us
-> if the address was user (0), kernel linear (c), kernel virtual (d), or
-> vmemmap (f). If the address didn't match any of these it was invalid.
-> 
-> Then for each type of address we would do a secondary check. For the
-> user region we check against H_PGTABLE_RANGE, for kernel linear we
-> would mask the top nibble of the address and then check the address
-> against MAX_PHYSMEM_BITS.
-> 
-> As part of commit 0034d395f89d ("powerpc/mm/hash64: Map all the kernel
-> regions in the same 0xc range") we replaced REGION_ID() with
-> get_region_id() and changed the masking of the top nibble to only mask
-> the top two bits, which introduced a bug.
-> 
-> Addresses less than (4 << 60) are still handled correctly, they are
-> either less than (1 << 60) in which case they are subject to the
-> H_PGTABLE_RANGE check, or they are correctly checked against
-> MAX_PHYSMEM_BITS.
-> 
-> However addresses from (4 << 60) to ((0xc << 60) - 1), are incorrectly
-> treated as kernel linear addresses in get_region_id(). Then the top
-> two bits are cleared by EA_MASK in slb_allocate_kernel() and the
-> address is checked against MAX_PHYSMEM_BITS, which it passes due to
-> the masking. The end result is we incorrectly insert SLB entries for
-> those addresses.
-> 
-> That is not actually catastrophic, having inserted the SLB entry we
-> will then go on to take a page fault for the address and at that point
-> we detect the problem and report it as a bad fault.
-> 
-> Still we should not be inserting those entries, or treating them as
-> kernel linear addresses in the first place. So fix get_region_id() to
-> detect addresses in that range and return an invalid region id, which
-> we cause use to not insert an SLB entry and directly report an
-> exception.
-> 
-> Fixes: 0034d395f89d ("powerpc/mm/hash64: Map all the kernel regions in the same 0xc range")
-> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
-> [mpe: Drop change to EA_MASK for now, rewrite change log]
-> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+This adds the close_range() syscall. It allows to efficiently close a range
+of file descriptors up to all file descriptors of a calling task.
 
-Applied to powerpc fixes.
+The syscall came up in a recent discussion around the new mount API and
+making new file descriptor types cloexec by default. During this
+discussion, Al suggested the close_range() syscall (cf. [1]). Note, a
+syscall in this manner has been requested by various people over time.
 
-https://git.kernel.org/powerpc/c/c179976cf4cbd2e65f29741d5bc07ccf
+First, it helps to close all file descriptors of an exec()ing task. This
+can be done safely via (quoting Al's example from [1] verbatim):
 
-cheers
+        /* that exec is sensitive */
+        unshare(CLONE_FILES);
+        /* we don't want anything past stderr here */
+        close_range(3, ~0U);
+        execve(....);
+
+The code snippet above is one way of working around the problem that file
+descriptors are not cloexec by default. This is aggravated by the fact that
+we can't just switch them over without massively regressing userspace. For
+a whole class of programs having an in-kernel method of closing all file
+descriptors is very helpful (e.g. demons, service managers, programming
+language standard libraries, container managers etc.).
+(Please note, unshare(CLONE_FILES) should only be needed if the calling
+ task is multi-threaded and shares the file descriptor table with another
+ thread in which case two threads could race with one thread allocating
+ file descriptors and the other one closing them via close_range(). For the
+ general case close_range() before the execve() is sufficient.)
+
+Second, it allows userspace to avoid implementing closing all file
+descriptors by parsing through /proc/<pid>/fd/* and calling close() on each
+file descriptor. From looking at various large(ish) userspace code bases
+this or similar patterns are very common in:
+- service managers (cf. [4])
+- libcs (cf. [6])
+- container runtimes (cf. [5])
+- programming language runtimes/standard libraries
+  - Python (cf. [2])
+  - Rust (cf. [7], [8])
+As Dmitry pointed out there's even a long-standing glibc bug about missing
+kernel support for this task (cf. [3]).
+In addition, the syscall will also work for tasks that do not have procfs
+mounted and on kernels that do not have procfs support compiled in. In such
+situations the only way to make sure that all file descriptors are closed
+is to call close() on each file descriptor up to UINT_MAX or RLIMIT_NOFILE,
+OPEN_MAX trickery (cf. comment [8] on Rust).
+
+The performance is striking. For good measure, comparing the following
+simple close_all_fds() userspace implementation that is essentially just
+glibc's version in [6]:
+
+static int close_all_fds(void)
+{
+        DIR *dir;
+        struct dirent *direntp;
+
+        dir = opendir("/proc/self/fd");
+        if (!dir)
+                return -1;
+
+        while ((direntp = readdir(dir))) {
+                int fd;
+                if (strcmp(direntp->d_name, ".") == 0)
+                        continue;
+                if (strcmp(direntp->d_name, "..") == 0)
+                        continue;
+                fd = atoi(direntp->d_name);
+                if (fd == 0 || fd == 1 || fd == 2)
+                        continue;
+                close(fd);
+        }
+
+        closedir(dir); /* cannot fail */
+        return 0;
+}
+
+to close_range() yields:
+1. closing 4 open files:
+   - close_all_fds(): ~280 us
+   - close_range():    ~24 us
+
+2. closing 1000 open files:
+   - close_all_fds(): ~5000 us
+   - close_range():   ~800 us
+
+close_range() is designed to allow for some flexibility. Specifically, it
+does not simply always close all open file descriptors of a task. Instead,
+callers can specify an upper bound.
+This is e.g. useful for scenarios where specific file descriptors are
+created with well-known numbers that are supposed to be excluded from
+getting closed.
+For extra paranoia close_range() comes with a flags argument. This can e.g.
+be used to implement extension. Once can imagine userspace wanting to stop
+at the first error instead of ignoring errors under certain circumstances.
+There might be other valid ideas in the future. In any case, a flag
+argument doesn't hurt and keeps us on the safe side.
+
+From an implementation side this is kept rather dumb. It saw some input
+from David and Jann but all nonsense is obviously my own!
+- Errors to close file descriptors are currently ignored. (Could be changed
+  by setting a flag in the future if needed.)
+- __close_range() is a rather simplistic wrapper around __close_fd().
+  My reasoning behind this is based on the nature of how __close_fd() needs
+  to release an fd. But maybe I misunderstood specifics:
+  We take the files_lock and rcu-dereference the fdtable of the calling
+  task, we find the entry in the fdtable, get the file and need to release
+  files_lock before calling filp_close().
+  In the meantime the fdtable might have been altered so we can't just
+  retake the spinlock and keep the old rcu-reference of the fdtable
+  around. Instead we need to grab a fresh reference to the fdtable.
+  If my reasoning is correct then there's really no point in fancyfying
+  __close_range(): We just need to rcu-dereference the fdtable of the
+  calling task once to cap the max_fd value correctly and then go on
+  calling __close_fd() in a loop.
+
+/* References */
+[1]: https://lore.kernel.org/lkml/20190516165021.GD17978@ZenIV.linux.org.uk/
+[2]: https://github.com/python/cpython/blob/9e4f2f3a6b8ee995c365e86d976937c141d867f8/Modules/_posixsubprocess.c#L220
+[3]: https://sourceware.org/bugzilla/show_bug.cgi?id=10353#c7
+[4]: https://github.com/systemd/systemd/blob/5238e9575906297608ff802a27e2ff9effa3b338/src/basic/fd-util.c#L217
+[5]: https://github.com/lxc/lxc/blob/ddf4b77e11a4d08f09b7b9cd13e593f8c047edc5/src/lxc/start.c#L236
+[6]: https://sourceware.org/git/?p=glibc.git;a=blob;f=sysdeps/unix/sysv/linux/grantpt.c;h=2030e07fa6e652aac32c775b8c6e005844c3c4eb;hb=HEAD#l17
+     Note that this is an internal implementation that is not exported.
+     Currently, libc seems to not provide an exported version of this
+     because of missing kernel support to do this.
+[7]: https://github.com/rust-lang/rust/issues/12148
+[8]: https://github.com/rust-lang/rust/blob/5f47c0613ed4eb46fca3633c1297364c09e5e451/src/libstd/sys/unix/process2.rs#L303-L308
+     Rust's solution is slightly different but is equally unperformant.
+     Rust calls getdtablesize() which is a glibc library function that
+     simply returns the current RLIMIT_NOFILE or OPEN_MAX values. Rust then
+     goes on to call close() on each fd. That's obviously overkill for most
+     tasks. Rarely, tasks - especially non-demons - hit RLIMIT_NOFILE or
+     OPEN_MAX.
+     Let's be nice and assume an unprivileged user with RLIMIT_NOFILE set
+     to 1024. Even in this case, there's a very high chance that in the
+     common case Rust is calling the close() syscall 1021 times pointlessly
+     if the task just has 0, 1, and 2 open.
+
+Suggested-by: Al Viro <viro@zeniv.linux.org.uk>
+Signed-off-by: Christian Brauner <christian@brauner.io>
+Cc: Arnd Bergmann <arnd@arndb.de>
+Cc: Jann Horn <jannh@google.com>
+Cc: David Howells <dhowells@redhat.com>
+Cc: Dmitry V. Levin <ldv@altlinux.org>
+Cc: Oleg Nesterov <oleg@redhat.com>
+Cc: Florian Weimer <fweimer@redhat.com>
+Cc: linux-api@vger.kernel.org
+---
+ arch/alpha/kernel/syscalls/syscall.tbl      |  1 +
+ arch/arm/tools/syscall.tbl                  |  1 +
+ arch/arm64/include/asm/unistd32.h           |  2 ++
+ arch/ia64/kernel/syscalls/syscall.tbl       |  1 +
+ arch/m68k/kernel/syscalls/syscall.tbl       |  1 +
+ arch/microblaze/kernel/syscalls/syscall.tbl |  1 +
+ arch/mips/kernel/syscalls/syscall_n32.tbl   |  1 +
+ arch/mips/kernel/syscalls/syscall_n64.tbl   |  1 +
+ arch/mips/kernel/syscalls/syscall_o32.tbl   |  1 +
+ arch/parisc/kernel/syscalls/syscall.tbl     |  1 +
+ arch/powerpc/kernel/syscalls/syscall.tbl    |  1 +
+ arch/s390/kernel/syscalls/syscall.tbl       |  1 +
+ arch/sh/kernel/syscalls/syscall.tbl         |  1 +
+ arch/sparc/kernel/syscalls/syscall.tbl      |  1 +
+ arch/x86/entry/syscalls/syscall_32.tbl      |  1 +
+ arch/x86/entry/syscalls/syscall_64.tbl      |  1 +
+ arch/xtensa/kernel/syscalls/syscall.tbl     |  1 +
+ fs/file.c                                   | 30 +++++++++++++++++++++
+ fs/open.c                                   | 20 ++++++++++++++
+ include/linux/fdtable.h                     |  2 ++
+ include/linux/syscalls.h                    |  2 ++
+ include/uapi/asm-generic/unistd.h           |  4 ++-
+ 22 files changed, 75 insertions(+), 1 deletion(-)
+
+diff --git a/arch/alpha/kernel/syscalls/syscall.tbl b/arch/alpha/kernel/syscalls/syscall.tbl
+index 9e7704e44f6d..b55d93af8096 100644
+--- a/arch/alpha/kernel/syscalls/syscall.tbl
++++ b/arch/alpha/kernel/syscalls/syscall.tbl
+@@ -473,3 +473,4 @@
+ 541	common	fsconfig			sys_fsconfig
+ 542	common	fsmount				sys_fsmount
+ 543	common	fspick				sys_fspick
++545	common	close_range			sys_close_range
+diff --git a/arch/arm/tools/syscall.tbl b/arch/arm/tools/syscall.tbl
+index aaf479a9e92d..0125c97c75dd 100644
+--- a/arch/arm/tools/syscall.tbl
++++ b/arch/arm/tools/syscall.tbl
+@@ -447,3 +447,4 @@
+ 431	common	fsconfig			sys_fsconfig
+ 432	common	fsmount				sys_fsmount
+ 433	common	fspick				sys_fspick
++435	common	close_range			sys_close_range
+diff --git a/arch/arm64/include/asm/unistd32.h b/arch/arm64/include/asm/unistd32.h
+index c39e90600bb3..9a3270d29b42 100644
+--- a/arch/arm64/include/asm/unistd32.h
++++ b/arch/arm64/include/asm/unistd32.h
+@@ -886,6 +886,8 @@ __SYSCALL(__NR_fsconfig, sys_fsconfig)
+ __SYSCALL(__NR_fsmount, sys_fsmount)
+ #define __NR_fspick 433
+ __SYSCALL(__NR_fspick, sys_fspick)
++#define __NR_close_range 435
++__SYSCALL(__NR_close_range, sys_close_range)
+ 
+ /*
+  * Please add new compat syscalls above this comment and update
+diff --git a/arch/ia64/kernel/syscalls/syscall.tbl b/arch/ia64/kernel/syscalls/syscall.tbl
+index e01df3f2f80d..1a90b464e96f 100644
+--- a/arch/ia64/kernel/syscalls/syscall.tbl
++++ b/arch/ia64/kernel/syscalls/syscall.tbl
+@@ -354,3 +354,4 @@
+ 431	common	fsconfig			sys_fsconfig
+ 432	common	fsmount				sys_fsmount
+ 433	common	fspick				sys_fspick
++435	common	close_range			sys_close_range
+diff --git a/arch/m68k/kernel/syscalls/syscall.tbl b/arch/m68k/kernel/syscalls/syscall.tbl
+index 7e3d0734b2f3..2dee2050f9ef 100644
+--- a/arch/m68k/kernel/syscalls/syscall.tbl
++++ b/arch/m68k/kernel/syscalls/syscall.tbl
+@@ -433,3 +433,4 @@
+ 431	common	fsconfig			sys_fsconfig
+ 432	common	fsmount				sys_fsmount
+ 433	common	fspick				sys_fspick
++435	common	close_range			sys_close_range
+diff --git a/arch/microblaze/kernel/syscalls/syscall.tbl b/arch/microblaze/kernel/syscalls/syscall.tbl
+index 26339e417695..923ef69e5a76 100644
+--- a/arch/microblaze/kernel/syscalls/syscall.tbl
++++ b/arch/microblaze/kernel/syscalls/syscall.tbl
+@@ -439,3 +439,4 @@
+ 431	common	fsconfig			sys_fsconfig
+ 432	common	fsmount				sys_fsmount
+ 433	common	fspick				sys_fspick
++435	common	close_range			sys_close_range
+diff --git a/arch/mips/kernel/syscalls/syscall_n32.tbl b/arch/mips/kernel/syscalls/syscall_n32.tbl
+index 0e2dd68ade57..967ed9de51cd 100644
+--- a/arch/mips/kernel/syscalls/syscall_n32.tbl
++++ b/arch/mips/kernel/syscalls/syscall_n32.tbl
+@@ -372,3 +372,4 @@
+ 431	n32	fsconfig			sys_fsconfig
+ 432	n32	fsmount				sys_fsmount
+ 433	n32	fspick				sys_fspick
++435	n32	close_range			sys_close_range
+diff --git a/arch/mips/kernel/syscalls/syscall_n64.tbl b/arch/mips/kernel/syscalls/syscall_n64.tbl
+index 5eebfa0d155c..71de731102b1 100644
+--- a/arch/mips/kernel/syscalls/syscall_n64.tbl
++++ b/arch/mips/kernel/syscalls/syscall_n64.tbl
+@@ -348,3 +348,4 @@
+ 431	n64	fsconfig			sys_fsconfig
+ 432	n64	fsmount				sys_fsmount
+ 433	n64	fspick				sys_fspick
++435	n64	close_range			sys_close_range
+diff --git a/arch/mips/kernel/syscalls/syscall_o32.tbl b/arch/mips/kernel/syscalls/syscall_o32.tbl
+index 3cc1374e02d0..5a325ab29f88 100644
+--- a/arch/mips/kernel/syscalls/syscall_o32.tbl
++++ b/arch/mips/kernel/syscalls/syscall_o32.tbl
+@@ -421,3 +421,4 @@
+ 431	o32	fsconfig			sys_fsconfig
+ 432	o32	fsmount				sys_fsmount
+ 433	o32	fspick				sys_fspick
++435	o32	close_range			sys_close_range
+diff --git a/arch/parisc/kernel/syscalls/syscall.tbl b/arch/parisc/kernel/syscalls/syscall.tbl
+index c9e377d59232..dcc0a0879139 100644
+--- a/arch/parisc/kernel/syscalls/syscall.tbl
++++ b/arch/parisc/kernel/syscalls/syscall.tbl
+@@ -430,3 +430,4 @@
+ 431	common	fsconfig			sys_fsconfig
+ 432	common	fsmount				sys_fsmount
+ 433	common	fspick				sys_fspick
++435	common	close_range			sys_close_range
+diff --git a/arch/powerpc/kernel/syscalls/syscall.tbl b/arch/powerpc/kernel/syscalls/syscall.tbl
+index 103655d84b4b..ba2c1f078cbd 100644
+--- a/arch/powerpc/kernel/syscalls/syscall.tbl
++++ b/arch/powerpc/kernel/syscalls/syscall.tbl
+@@ -515,3 +515,4 @@
+ 431	common	fsconfig			sys_fsconfig
+ 432	common	fsmount				sys_fsmount
+ 433	common	fspick				sys_fspick
++435	common	close_range			sys_close_range
+diff --git a/arch/s390/kernel/syscalls/syscall.tbl b/arch/s390/kernel/syscalls/syscall.tbl
+index e822b2964a83..d7c9043d2902 100644
+--- a/arch/s390/kernel/syscalls/syscall.tbl
++++ b/arch/s390/kernel/syscalls/syscall.tbl
+@@ -436,3 +436,4 @@
+ 431  common	fsconfig		sys_fsconfig			sys_fsconfig
+ 432  common	fsmount			sys_fsmount			sys_fsmount
+ 433  common	fspick			sys_fspick			sys_fspick
++435  common	close_range		sys_close_range			sys_close_range
+diff --git a/arch/sh/kernel/syscalls/syscall.tbl b/arch/sh/kernel/syscalls/syscall.tbl
+index 016a727d4357..9b5e6bf0ce32 100644
+--- a/arch/sh/kernel/syscalls/syscall.tbl
++++ b/arch/sh/kernel/syscalls/syscall.tbl
+@@ -436,3 +436,4 @@
+ 431	common	fsconfig			sys_fsconfig
+ 432	common	fsmount				sys_fsmount
+ 433	common	fspick				sys_fspick
++435	common	close_range			sys_close_range
+diff --git a/arch/sparc/kernel/syscalls/syscall.tbl b/arch/sparc/kernel/syscalls/syscall.tbl
+index e047480b1605..8c674a1e0072 100644
+--- a/arch/sparc/kernel/syscalls/syscall.tbl
++++ b/arch/sparc/kernel/syscalls/syscall.tbl
+@@ -479,3 +479,4 @@
+ 431	common	fsconfig			sys_fsconfig
+ 432	common	fsmount				sys_fsmount
+ 433	common	fspick				sys_fspick
++435	common	close_range			sys_close_range
+diff --git a/arch/x86/entry/syscalls/syscall_32.tbl b/arch/x86/entry/syscalls/syscall_32.tbl
+index ad968b7bac72..7f7a89a96707 100644
+--- a/arch/x86/entry/syscalls/syscall_32.tbl
++++ b/arch/x86/entry/syscalls/syscall_32.tbl
+@@ -438,3 +438,4 @@
+ 431	i386	fsconfig		sys_fsconfig			__ia32_sys_fsconfig
+ 432	i386	fsmount			sys_fsmount			__ia32_sys_fsmount
+ 433	i386	fspick			sys_fspick			__ia32_sys_fspick
++435	i386	close_range		sys_close_range			__ia32_sys_close_range
+diff --git a/arch/x86/entry/syscalls/syscall_64.tbl b/arch/x86/entry/syscalls/syscall_64.tbl
+index b4e6f9e6204a..0f7d47ae921c 100644
+--- a/arch/x86/entry/syscalls/syscall_64.tbl
++++ b/arch/x86/entry/syscalls/syscall_64.tbl
+@@ -355,6 +355,7 @@
+ 431	common	fsconfig		__x64_sys_fsconfig
+ 432	common	fsmount			__x64_sys_fsmount
+ 433	common	fspick			__x64_sys_fspick
++435	common	close_range		__x64_sys_close_range
+ 
+ #
+ # x32-specific system call numbers start at 512 to avoid cache impact
+diff --git a/arch/xtensa/kernel/syscalls/syscall.tbl b/arch/xtensa/kernel/syscalls/syscall.tbl
+index 5fa0ee1c8e00..b489532265d0 100644
+--- a/arch/xtensa/kernel/syscalls/syscall.tbl
++++ b/arch/xtensa/kernel/syscalls/syscall.tbl
+@@ -404,3 +404,4 @@
+ 431	common	fsconfig			sys_fsconfig
+ 432	common	fsmount				sys_fsmount
+ 433	common	fspick				sys_fspick
++435	common	close_range			sys_close_range
+diff --git a/fs/file.c b/fs/file.c
+index 3da91a112bab..3680977a685a 100644
+--- a/fs/file.c
++++ b/fs/file.c
+@@ -641,6 +641,36 @@ int __close_fd(struct files_struct *files, unsigned fd)
+ }
+ EXPORT_SYMBOL(__close_fd); /* for ksys_close() */
+ 
++/**
++ * __close_range() - Close all file descriptors in a given range.
++ *
++ * @fd:     starting file descriptor to close
++ * @max_fd: last file descriptor to close
++ *
++ * This closes a range of file descriptors. All file descriptors
++ * from @fd up to and including @max_fd are closed.
++ */
++int __close_range(struct files_struct *files, unsigned fd, unsigned max_fd)
++{
++	unsigned int cur_max;
++
++	if (fd > max_fd)
++		return -EINVAL;
++
++	rcu_read_lock();
++	cur_max = files_fdtable(files)->max_fds;
++	rcu_read_unlock();
++
++	/* cap to last valid index into fdtable */
++	if (max_fd >= cur_max)
++		max_fd = cur_max - 1;
++
++	while (fd <= max_fd)
++		__close_fd(files, fd++);
++
++	return 0;
++}
++
+ /*
+  * variant of __close_fd that gets a ref on the file for later fput
+  */
+diff --git a/fs/open.c b/fs/open.c
+index 9c7d724a6f67..c7baaee7aa47 100644
+--- a/fs/open.c
++++ b/fs/open.c
+@@ -1174,6 +1174,26 @@ SYSCALL_DEFINE1(close, unsigned int, fd)
+ 	return retval;
+ }
+ 
++/**
++ * close_range() - Close all file descriptors in a given range.
++ *
++ * @fd:     starting file descriptor to close
++ * @max_fd: last file descriptor to close
++ * @flags:  reserved for future extensions
++ *
++ * This closes a range of file descriptors. All file descriptors
++ * from @fd up to and including @max_fd are closed.
++ * Currently, errors to close a given file descriptor are ignored.
++ */
++SYSCALL_DEFINE3(close_range, unsigned int, fd, unsigned int, max_fd,
++		unsigned int, flags)
++{
++	if (flags)
++		return -EINVAL;
++
++	return __close_range(current->files, fd, max_fd);
++}
++
+ /*
+  * This routine simulates a hangup on the tty, to arrange that users
+  * are given clean terminals at login time.
+diff --git a/include/linux/fdtable.h b/include/linux/fdtable.h
+index f07c55ea0c22..fcd07181a365 100644
+--- a/include/linux/fdtable.h
++++ b/include/linux/fdtable.h
+@@ -121,6 +121,8 @@ extern void __fd_install(struct files_struct *files,
+ 		      unsigned int fd, struct file *file);
+ extern int __close_fd(struct files_struct *files,
+ 		      unsigned int fd);
++extern int __close_range(struct files_struct *files, unsigned int fd,
++			 unsigned int max_fd);
+ extern int __close_fd_get_file(unsigned int fd, struct file **res);
+ 
+ extern struct kmem_cache *files_cachep;
+diff --git a/include/linux/syscalls.h b/include/linux/syscalls.h
+index e2870fe1be5b..c0189e223255 100644
+--- a/include/linux/syscalls.h
++++ b/include/linux/syscalls.h
+@@ -441,6 +441,8 @@ asmlinkage long sys_fchown(unsigned int fd, uid_t user, gid_t group);
+ asmlinkage long sys_openat(int dfd, const char __user *filename, int flags,
+ 			   umode_t mode);
+ asmlinkage long sys_close(unsigned int fd);
++asmlinkage long sys_close_range(unsigned int fd, unsigned int max_fd,
++				unsigned int flags);
+ asmlinkage long sys_vhangup(void);
+ 
+ /* fs/pipe.c */
+diff --git a/include/uapi/asm-generic/unistd.h b/include/uapi/asm-generic/unistd.h
+index a87904daf103..3f36c8745d24 100644
+--- a/include/uapi/asm-generic/unistd.h
++++ b/include/uapi/asm-generic/unistd.h
+@@ -844,9 +844,11 @@ __SYSCALL(__NR_fsconfig, sys_fsconfig)
+ __SYSCALL(__NR_fsmount, sys_fsmount)
+ #define __NR_fspick 433
+ __SYSCALL(__NR_fspick, sys_fspick)
++#define __NR_close_range 435
++__SYSCALL(__NR_close_range, sys_close_range)
+ 
+ #undef __NR_syscalls
+-#define __NR_syscalls 434
++#define __NR_syscalls 436
+ 
+ /*
+  * 32 bit systems traditionally used different
+-- 
+2.21.0
+
