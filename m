@@ -2,69 +2,62 @@ Return-Path: <SRS0=oIc7=TV=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.0 required=3.0 tests=MAILING_LIST_MULTI,
-	MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-8.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 041EBC04AAF
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 May 2019 05:36:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 61CEFC04AAF
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 May 2019 06:19:02 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 7EFEC21743
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 May 2019 05:36:42 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7EFEC21743
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=bugzilla.kernel.org
+	by mail.kernel.org (Postfix) with ESMTPS id A511C20863
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 May 2019 06:19:01 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=nifty.com header.i=@nifty.com header.b="qRhjmuYx"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A511C20863
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=socionext.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 457Pdh05HzzDqMv
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 May 2019 15:36:40 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 457QZW1sT2zDqLZ
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 May 2019 16:18:59 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=bugzilla.kernel.org
- (client-ip=198.145.29.98; helo=mail.wl.linuxfoundation.org;
- envelope-from=bugzilla-daemon@bugzilla.kernel.org; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=bugzilla.kernel.org
-Received: from mail.wl.linuxfoundation.org (mail.wl.linuxfoundation.org
- [198.145.29.98])
+ spf=softfail (mailfrom) smtp.mailfrom=socionext.com
+ (client-ip=210.131.2.77; helo=conuserg-10.nifty.com;
+ envelope-from=yamada.masahiro@socionext.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=socionext.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=nifty.com header.i=@nifty.com header.b="qRhjmuYx"; 
+ dkim-atps=neutral
+Received: from conuserg-10.nifty.com (conuserg-10.nifty.com [210.131.2.77])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 457PcG1TGBzDqGm
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 May 2019 15:35:25 +1000 (AEST)
-Received: from mail.wl.linuxfoundation.org (localhost [127.0.0.1])
- by mail.wl.linuxfoundation.org (Postfix) with ESMTP id E468028849
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 May 2019 05:35:22 +0000 (UTC)
-Received: by mail.wl.linuxfoundation.org (Postfix, from userid 486)
- id D8D1428972; Tue, 21 May 2019 05:35:22 +0000 (UTC)
-From: bugzilla-daemon@bugzilla.kernel.org
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [Bug 203647] Locking API testsuite fails "mixed read-lock/lock-write
- ABBA" rlock on kernels >=4.14.x
-Date: Tue, 21 May 2019 05:35:22 +0000
-X-Bugzilla-Reason: None
-X-Bugzilla-Type: changed
-X-Bugzilla-Watch-Reason: AssignedTo platform_ppc-64@kernel-bugs.osdl.org
-X-Bugzilla-Product: Platform Specific/Hardware
-X-Bugzilla-Component: PPC-64
-X-Bugzilla-Version: 2.5
-X-Bugzilla-Keywords: 
-X-Bugzilla-Severity: normal
-X-Bugzilla-Who: michael@ellerman.id.au
-X-Bugzilla-Status: RESOLVED
-X-Bugzilla-Resolution: DOCUMENTED
-X-Bugzilla-Priority: P1
-X-Bugzilla-Assigned-To: platform_ppc-64@kernel-bugs.osdl.org
-X-Bugzilla-Flags: 
-X-Bugzilla-Changed-Fields: bug_status cc resolution
-Message-ID: <bug-203647-206035-g2k23p9l6I@https.bugzilla.kernel.org/>
-In-Reply-To: <bug-203647-206035@https.bugzilla.kernel.org/>
-References: <bug-203647-206035@https.bugzilla.kernel.org/>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-X-Bugzilla-URL: https://bugzilla.kernel.org/
-Auto-Submitted: auto-generated
-MIME-Version: 1.0
-X-Virus-Scanned: ClamAV using ClamSMTP
+ by lists.ozlabs.org (Postfix) with ESMTPS id 457QY037JMzDqKs
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 May 2019 16:17:40 +1000 (AEST)
+Received: from localhost.localdomain (p14092-ipngnfx01kyoto.kyoto.ocn.ne.jp
+ [153.142.97.92]) (authenticated)
+ by conuserg-10.nifty.com with ESMTP id x4L6H3Aj032461;
+ Tue, 21 May 2019 15:17:03 +0900
+DKIM-Filter: OpenDKIM Filter v2.10.3 conuserg-10.nifty.com x4L6H3Aj032461
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nifty.com;
+ s=dec2015msa; t=1558419423;
+ bh=XrIYM7aPLD1wF9IwpTW/Z8OCfZUnOmtJFdrupyPx8Jg=;
+ h=From:To:Cc:Subject:Date:From;
+ b=qRhjmuYxD1rELM9hqEW562/6ESLP8dewpyu3CRkbpHWF/HyEsjx4CGe5Z9rn8qLQ+
+ gboSm5Et1KAj3cRJMaRBFPSH4UA7AkbxWqvj495Ob5JkS8H/a9sJA494+KEZvTfxoh
+ 3INjo03cOlwI6gYC0amArPqePIVHH8CDPPZEYRd8Gt/aS+niGNLLi2HBOly8hnGu9L
+ XquUKHIO435JOzS08erKhaVC/V3+jc5FuO/Tf6AB8rEd15ACMZuObKOyldeDbk4Fas
+ TyuVWDZrd55cnf86Y+vvNrnQ7cM0OsEo9jy9RD4igjtuKvrN/FgYG+TOTMjMz50Hdz
+ /zHMLg0X9EnQA==
+X-Nifty-SrcIP: [153.142.97.92]
+From: Masahiro Yamada <yamada.masahiro@socionext.com>
+To: linuxppc-dev@lists.ozlabs.org, Michael Ellerman <mpe@ellerman.id.au>
+Subject: [PATCH] powerpc/mm: mark more tlb functions as __always_inline
+Date: Tue, 21 May 2019 15:16:59 +0900
+Message-Id: <20190521061659.6073-1-yamada.masahiro@socionext.com>
+X-Mailer: git-send-email 2.17.1
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -76,51 +69,173 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: Masahiro Yamada <yamada.masahiro@socionext.com>,
+ Paul Mackerras <paulus@samba.org>, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-https://bugzilla.kernel.org/show_bug.cgi?id=3D203647
+With CONFIG_OPTIMIZE_INLINING enabled, Laura Abbott reported error
+with gcc 9.1.1:
 
-Michael Ellerman (michael@ellerman.id.au) changed:
+  arch/powerpc/mm/book3s64/radix_tlb.c: In function '_tlbiel_pid':
+  arch/powerpc/mm/book3s64/radix_tlb.c:104:2: warning: asm operand 3 probably doesn't match constraints
+    104 |  asm volatile(PPC_TLBIEL(%0, %4, %3, %2, %1)
+        |  ^~~
+  arch/powerpc/mm/book3s64/radix_tlb.c:104:2: error: impossible constraint in 'asm'
 
-           What    |Removed                     |Added
-----------------------------------------------------------------------------
-             Status|NEW                         |RESOLVED
-                 CC|                            |michael@ellerman.id.au
-         Resolution|---                         |DOCUMENTED
+Fixing _tlbiel_pid() is enough to address the warning above, but I
+inlined more functions to fix all potential issues.
 
---- Comment #6 from Michael Ellerman (michael@ellerman.id.au) ---
-This appears to be working as expected, which I admit is a little confusing.
+To meet the 'i' (immediate) constraint for the asm operands, functions
+propagating propagated 'ric' must be always inlined.
 
-The key thing is that at the end you see, eg:
+Fixes: 9012d011660e ("compiler: allow all arches to enable CONFIG_OPTIMIZE_INLINING")
+Reported-by: Laura Abbott <labbott@redhat.com>
+Signed-off-by: Masahiro Yamada <yamada.masahiro@socionext.com>
+---
 
-  [    0.179788] Good, all 261 testcases passed! |
+ arch/powerpc/mm/book3s64/hash_native.c |  8 +++--
+ arch/powerpc/mm/book3s64/radix_tlb.c   | 44 +++++++++++++++-----------
+ 2 files changed, 30 insertions(+), 22 deletions(-)
 
-See the commit that added the test:
+diff --git a/arch/powerpc/mm/book3s64/hash_native.c b/arch/powerpc/mm/book3s64/hash_native.c
+index aaa28fd918fe..bc2c35c0d2b1 100644
+--- a/arch/powerpc/mm/book3s64/hash_native.c
++++ b/arch/powerpc/mm/book3s64/hash_native.c
+@@ -60,9 +60,11 @@ static inline void tlbiel_hash_set_isa206(unsigned int set, unsigned int is)
+  * tlbiel instruction for hash, set invalidation
+  * i.e., r=1 and is=01 or is=10 or is=11
+  */
+-static inline void tlbiel_hash_set_isa300(unsigned int set, unsigned int is,
+-					unsigned int pid,
+-					unsigned int ric, unsigned int prs)
++static __always_inline void tlbiel_hash_set_isa300(unsigned int set,
++						   unsigned int is,
++						   unsigned int pid,
++						   unsigned int ric,
++						   unsigned int prs)
+ {
+ 	unsigned long rb;
+ 	unsigned long rs;
+diff --git a/arch/powerpc/mm/book3s64/radix_tlb.c b/arch/powerpc/mm/book3s64/radix_tlb.c
+index 4d841369399f..91c4242c1be3 100644
+--- a/arch/powerpc/mm/book3s64/radix_tlb.c
++++ b/arch/powerpc/mm/book3s64/radix_tlb.c
+@@ -29,9 +29,11 @@
+  * tlbiel instruction for radix, set invalidation
+  * i.e., r=1 and is=01 or is=10 or is=11
+  */
+-static inline void tlbiel_radix_set_isa300(unsigned int set, unsigned int is,
+-					unsigned int pid,
+-					unsigned int ric, unsigned int prs)
++static __always_inline void tlbiel_radix_set_isa300(unsigned int set,
++						    unsigned int is,
++						    unsigned int pid,
++						    unsigned int ric,
++						    unsigned int prs)
+ {
+ 	unsigned long rb;
+ 	unsigned long rs;
+@@ -150,8 +152,8 @@ static __always_inline void __tlbie_lpid(unsigned long lpid, unsigned long ric)
+ 	trace_tlbie(lpid, 0, rb, rs, ric, prs, r);
+ }
+ 
+-static inline void __tlbiel_lpid_guest(unsigned long lpid, int set,
+-				unsigned long ric)
++static __always_inline void __tlbiel_lpid_guest(unsigned long lpid, int set,
++						unsigned long ric)
+ {
+ 	unsigned long rb,rs,prs,r;
+ 
+@@ -167,8 +169,8 @@ static inline void __tlbiel_lpid_guest(unsigned long lpid, int set,
+ }
+ 
+ 
+-static inline void __tlbiel_va(unsigned long va, unsigned long pid,
+-			       unsigned long ap, unsigned long ric)
++static __always_inline void __tlbiel_va(unsigned long va, unsigned long pid,
++					unsigned long ap, unsigned long ric)
+ {
+ 	unsigned long rb,rs,prs,r;
+ 
+@@ -183,8 +185,8 @@ static inline void __tlbiel_va(unsigned long va, unsigned long pid,
+ 	trace_tlbie(0, 1, rb, rs, ric, prs, r);
+ }
+ 
+-static inline void __tlbie_va(unsigned long va, unsigned long pid,
+-			      unsigned long ap, unsigned long ric)
++static __always_inline void __tlbie_va(unsigned long va, unsigned long pid,
++				       unsigned long ap, unsigned long ric)
+ {
+ 	unsigned long rb,rs,prs,r;
+ 
+@@ -199,8 +201,10 @@ static inline void __tlbie_va(unsigned long va, unsigned long pid,
+ 	trace_tlbie(0, 0, rb, rs, ric, prs, r);
+ }
+ 
+-static inline void __tlbie_lpid_va(unsigned long va, unsigned long lpid,
+-			      unsigned long ap, unsigned long ric)
++static __always_inline void __tlbie_lpid_va(unsigned long va,
++					    unsigned long lpid,
++					    unsigned long ap,
++					    unsigned long ric)
+ {
+ 	unsigned long rb,rs,prs,r;
+ 
+@@ -239,7 +243,7 @@ static inline void fixup_tlbie_lpid(unsigned long lpid)
+ /*
+  * We use 128 set in radix mode and 256 set in hpt mode.
+  */
+-static inline void _tlbiel_pid(unsigned long pid, unsigned long ric)
++static __always_inline void _tlbiel_pid(unsigned long pid, unsigned long ric)
+ {
+ 	int set;
+ 
+@@ -341,7 +345,8 @@ static inline void _tlbie_lpid(unsigned long lpid, unsigned long ric)
+ 	asm volatile("eieio; tlbsync; ptesync": : :"memory");
+ }
+ 
+-static inline void _tlbiel_lpid_guest(unsigned long lpid, unsigned long ric)
++static __always_inline void _tlbiel_lpid_guest(unsigned long lpid,
++					       unsigned long ric)
+ {
+ 	int set;
+ 
+@@ -381,8 +386,8 @@ static inline void __tlbiel_va_range(unsigned long start, unsigned long end,
+ 		__tlbiel_va(addr, pid, ap, RIC_FLUSH_TLB);
+ }
+ 
+-static inline void _tlbiel_va(unsigned long va, unsigned long pid,
+-			      unsigned long psize, unsigned long ric)
++static __always_inline void _tlbiel_va(unsigned long va, unsigned long pid,
++				       unsigned long psize, unsigned long ric)
+ {
+ 	unsigned long ap = mmu_get_ap(psize);
+ 
+@@ -413,8 +418,8 @@ static inline void __tlbie_va_range(unsigned long start, unsigned long end,
+ 		__tlbie_va(addr, pid, ap, RIC_FLUSH_TLB);
+ }
+ 
+-static inline void _tlbie_va(unsigned long va, unsigned long pid,
+-			      unsigned long psize, unsigned long ric)
++static __always_inline void _tlbie_va(unsigned long va, unsigned long pid,
++				      unsigned long psize, unsigned long ric)
+ {
+ 	unsigned long ap = mmu_get_ap(psize);
+ 
+@@ -424,8 +429,9 @@ static inline void _tlbie_va(unsigned long va, unsigned long pid,
+ 	asm volatile("eieio; tlbsync; ptesync": : :"memory");
+ }
+ 
+-static inline void _tlbie_lpid_va(unsigned long va, unsigned long lpid,
+-			      unsigned long psize, unsigned long ric)
++static __always_inline void _tlbie_lpid_va(unsigned long va, unsigned long lpid,
++					   unsigned long psize,
++					   unsigned long ric)
+ {
+ 	unsigned long ap = mmu_get_ap(psize);
+ 
+-- 
+2.17.1
 
-https://git.kernel.org/torvalds/c/e91498589746
-
-  locking/lockdep/selftests: Add mixed read-write ABBA tests
-
-  Currently lockdep has limited support for recursive readers, add a few
-  mixed read-write ABBA selftests to show the extend of these
-  limitations.
-
-And in the code:
-
-        print_testname("mixed read-lock/lock-write ABBA");
-        pr_cont("             |");
-        dotest(rlock_ABBA1, FAILURE, LOCKTYPE_RWLOCK);
-#ifdef CONFIG_PROVE_LOCKING
-        /*
-         * Lockdep does indeed fail here, but there's nothing we can do abo=
-ut
-         * that now.  Don't kill lockdep for it.
-         */
-        unexpected_testcase_failures--;
-#endif
-
---=20
-You are receiving this mail because:
-You are watching the assignee of the bug.=
