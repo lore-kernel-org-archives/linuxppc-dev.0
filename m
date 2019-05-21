@@ -2,60 +2,50 @@ Return-Path: <SRS0=oIc7=TV=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0AE80C04AAF
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 May 2019 07:58:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 31445C04AAF
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 May 2019 08:57:55 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 459C02173C
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 May 2019 07:58:56 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 459C02173C
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=perches.com
+	by mail.kernel.org (Postfix) with ESMTPS id E0709217D4
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 May 2019 08:57:54 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E0709217D4
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=canonical.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 457Snn6sNtzDqN1
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 May 2019 17:58:53 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 457V5r5wMjzDq7n
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 May 2019 18:57:52 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=perches.com
- (client-ip=216.40.44.82; helo=smtprelay.hostedemail.com;
- envelope-from=joe@perches.com; receiver=<UNKNOWN>)
+ spf=none (mailfrom) smtp.mailfrom=canonical.com
+ (client-ip=91.189.89.112; helo=youngberry.canonical.com;
+ envelope-from=colin.king@canonical.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=perches.com
-Received: from smtprelay.hostedemail.com (smtprelay0082.hostedemail.com
- [216.40.44.82])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ dmarc=fail (p=none dis=none) header.from=canonical.com
+Received: from youngberry.canonical.com (youngberry.canonical.com
+ [91.189.89.112])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 457SmV6ncfzDqKy
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 May 2019 17:57:46 +1000 (AEST)
-Received: from filter.hostedemail.com (clb03-v110.bra.tucows.net
- [216.40.38.60])
- by smtprelay05.hostedemail.com (Postfix) with ESMTP id EA649180178A1;
- Tue, 21 May 2019 07:57:41 +0000 (UTC)
-X-Session-Marker: 6A6F6540706572636865732E636F6D
-X-HE-Tag: sort67_430d7b49e2635
-X-Filterd-Recvd-Size: 1832
-Received: from XPS-9350.home (cpe-23-242-196-136.socal.res.rr.com
- [23.242.196.136]) (Authenticated sender: joe@perches.com)
- by omf08.hostedemail.com (Postfix) with ESMTPA;
- Tue, 21 May 2019 07:57:40 +0000 (UTC)
-Message-ID: <38aa2fcceaf7c2c7c6cd7c3abe2999fe7ef98a44.camel@perches.com>
-Subject: Re: [PATCH] powerpc/mm: mark more tlb functions as __always_inline
-From: Joe Perches <joe@perches.com>
-To: Masahiro Yamada <yamada.masahiro@socionext.com>, Christophe Leroy
- <christophe.leroy@c-s.fr>
-Date: Tue, 21 May 2019 00:57:39 -0700
-In-Reply-To: <CAK7LNAQNp+wsvNK84oYcGwR24=Kf=_N8WJdyZ2aUL9T3qDsVsA@mail.gmail.com>
-References: <20190521061659.6073-1-yamada.masahiro@socionext.com>
- <16d967dd-9f8f-4e9e-97fd-3f9761e5d97c@c-s.fr>
- <CAK7LNAQNp+wsvNK84oYcGwR24=Kf=_N8WJdyZ2aUL9T3qDsVsA@mail.gmail.com>
-Content-Type: text/plain; charset="ISO-8859-1"
-User-Agent: Evolution 3.30.1-1build1 
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+ by lists.ozlabs.org (Postfix) with ESMTPS id 457V4H5D9FzDqL7
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 May 2019 18:56:29 +1000 (AEST)
+Received: from 1.general.cking.uk.vpn ([10.172.193.212] helo=localhost)
+ by youngberry.canonical.com with esmtpsa (TLS1.0:RSA_AES_256_CBC_SHA1:32)
+ (Exim 4.76) (envelope-from <colin.king@canonical.com>)
+ id 1hT0ZM-0000vb-P9; Tue, 21 May 2019 08:56:24 +0000
+From: Colin King <colin.king@canonical.com>
+To: Li Yang <leoyang.li@nxp.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-arm-kernel@lists.infradead.org
+Subject: [PATCH][next] soc: fsl: fix spelling mistake "Firmaware" -> "Firmware"
+Date: Tue, 21 May 2019 09:56:24 +0100
+Message-Id: <20190521085624.13665-1-colin.king@canonical.com>
+X-Mailer: git-send-email 2.20.1
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -67,30 +57,33 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Paul Mackerras <paulus@samba.org>
+Cc: kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, 2019-05-21 at 16:27 +0900, Masahiro Yamada wrote:
-> On Tue, May 21, 2019 at 3:54 PM Christophe Leroy
-> > powerpc accepts lines up to 90 chars, see arch/powerpc/tools/checkpatch.pl
-> 
-> Ugh, I did not know this. Horrible.
-> 
-> The Linux coding style should be global in the kernel tree.
-> No subsystem should adopts its own coding style.
+From: Colin Ian King <colin.king@canonical.com>
 
-I don't see a problem using 90 column lines by arch/<foo>
+There is a spelling mistake in a pr_err message. Fix it.
 
-There are other subsystem specific variations like the net/
+Signed-off-by: Colin Ian King <colin.king@canonical.com>
+---
+ drivers/soc/fsl/dpaa2-console.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-	/* multiline comments without initial blank comment lines
-	 * look like this...
-	 */
-
-If there were arch specific drivers with style variations
-in say drivers/net, then that might be more of an issue.
+diff --git a/drivers/soc/fsl/dpaa2-console.c b/drivers/soc/fsl/dpaa2-console.c
+index 9168d8ddc932..27243f706f37 100644
+--- a/drivers/soc/fsl/dpaa2-console.c
++++ b/drivers/soc/fsl/dpaa2-console.c
+@@ -73,7 +73,7 @@ static u64 get_mc_fw_base_address(void)
+ 
+ 	mcfbaregs = ioremap(mc_base_addr.start, resource_size(&mc_base_addr));
+ 	if (!mcfbaregs) {
+-		pr_err("could not map MC Firmaware Base registers\n");
++		pr_err("could not map MC Firmware Base registers\n");
+ 		return 0;
+ 	}
+ 
+-- 
+2.20.1
 
