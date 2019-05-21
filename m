@@ -2,44 +2,46 @@ Return-Path: <SRS0=oIc7=TV=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-4.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 488DEC04AAF
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 May 2019 11:50:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 41FD2C04E87
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 May 2019 11:51:49 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C8A242173C
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 May 2019 11:50:18 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C8A242173C
+	by mail.kernel.org (Postfix) with ESMTPS id C29112173C
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 May 2019 11:51:48 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C29112173C
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 457Ywm4wJ1zDqN3
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 May 2019 21:50:16 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 457YyV710QzDqM2
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 May 2019 21:51:46 +1000 (AEST)
 Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 457Yv41lHPzDq99
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 May 2019 21:48:48 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 457Yw65dybzDqLy
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 May 2019 21:49:42 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
  SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 457Yv36XJHz9s7h;
- Tue, 21 May 2019 21:48:47 +1000 (AEST)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 457Yw527Kzz9s7h;
+ Tue, 21 May 2019 21:49:40 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Anju T Sudhakar <anju@linux.vnet.ibm.com>
-Subject: Re: [PATCH] powerpc/powernv: Return for invalid IMC domain
-In-Reply-To: <20190520085753.19670-1-anju@linux.vnet.ibm.com>
-References: <20190520085753.19670-1-anju@linux.vnet.ibm.com>
-Date: Tue, 21 May 2019 21:48:46 +1000
-Message-ID: <87sgt86na9.fsf@concordia.ellerman.id.au>
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
+ Arnd Bergmann <arnd@arndb.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Subject: Re: [PATCH] misc: remove redundant 'default n' from Kconfig-s
+In-Reply-To: <1ab818ae-4d9f-d17a-f11f-7caaa5bf98bc@samsung.com>
+References: <CGME20190520141047eucas1p2c6006d1ecfc3eb287b6b33d131f66180@eucas1p2.samsung.com>
+ <1ab818ae-4d9f-d17a-f11f-7caaa5bf98bc@samsung.com>
+Date: Tue, 21 May 2019 21:49:38 +1000
+Message-ID: <87pnoc6n8t.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -53,66 +55,55 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: pavsubra@in.ibm.com, maddy@linux.vnet.ibm.com,
- linuxppc-dev@lists.ozlabs.org, anju@linux.vnet.ibm.com
+Cc: Eric Piel <eric.piel@tremplin-utc.net>,
+ Andrew Donnellan <ajd@linux.ibm.com>, Frank Haverkamp <haver@linux.ibm.com>,
+ linux-kernel@vger.kernel.org,
+ =?utf-8?Q?Micha=C5=82_Miros?= =?utf-8?Q?=C5=82aw?= <mirq-linux@rere.qmqm.pl>,
+ Frederic Barrat <fbarrat@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Anju T Sudhakar <anju@linux.vnet.ibm.com> writes:
-> Currently init_imc_pmu() can be failed either because
-> an IMC unit with invalid domain(i.e an IMC node not
-> supported by the kernel) is attempted a pmu-registration
-> or something went wrong while registering a valid IMC unit.
-> In both the cases kernel provides a 'Registration failed'
-> error message.
+Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com> writes:
+> 'default n' is the default value for any bool or tristate Kconfig
+> setting so there is no need to write it explicitly.
 >
-> Example:
-> Log message, when trace-imc node is not supported by the kernel, and the
-> skiboot supports trace-imc node.
+> Also since commit f467c5640c29 ("kconfig: only write '# CONFIG_FOO
+> is not set' for visible symbols") the Kconfig behavior is the same
+> regardless of 'default n' being present or not:
 >
-> So for kernel, trace-imc node is now an unknown domain.
+>     ...
+>     One side effect of (and the main motivation for) this change is making
+>     the following two definitions behave exactly the same:
+>     
+>         config FOO
+>                 bool
+>     
+>         config FOO
+>                 bool
+>                 default n
+>     
+>     With this change, neither of these will generate a
+>     '# CONFIG_FOO is not set' line (assuming FOO isn't selected/implied).
+>     That might make it clearer to people that a bare 'default n' is
+>     redundant.
+>     ...
 >
-> [    1.731870] nest_phb5_imc performance monitor hardware support registered
-> [    1.731944] nest_powerbus0_imc performance monitor hardware support registered
-> [    1.734458] thread_imc performance monitor hardware support registered
-> [    1.734460] IMC Unknown Device type
-> [    1.734462] IMC PMU (null) Register failed
-> [    1.734558] nest_xlink0_imc performance monitor hardware support registered
-> [    1.734614] nest_xlink1_imc performance monitor hardware support registered
-> [    1.734670] nest_xlink2_imc performance monitor hardware support registered
-> [    1.747043] Initialise system trusted keyrings
-> [    1.747054] Key type blacklist registered
->
->
-> To avoid ambiguity on the error message, return for invalid domain
-> before attempting a pmu registration. 
+> Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+...
+> Index: b/drivers/misc/ocxl/Kconfig
+> ===================================================================
+> --- a/drivers/misc/ocxl/Kconfig
+> +++ b/drivers/misc/ocxl/Kconfig
+> @@ -4,7 +4,6 @@
+>  
+>  config OCXL_BASE
+>  	bool
+> -	default n
+>  	select PPC_COPRO_BASE
+>  
+>  config OCXL
 
-What do we print once the patch is applied?
+Acked-by: Michael Ellerman <mpe@ellerman.id.au> (ocxl)
 
 cheers
-
-> Fixes: 8f95faaac56c1 (`powerpc/powernv: Detect and create IMC device`)
-> Reported-by: Pavaman Subramaniyam <pavsubra@in.ibm.com>
-> Signed-off-by: Anju T Sudhakar <anju@linux.vnet.ibm.com>
-> ---
->  arch/powerpc/platforms/powernv/opal-imc.c | 4 ++++
->  1 file changed, 4 insertions(+)
->
-> diff --git a/arch/powerpc/platforms/powernv/opal-imc.c b/arch/powerpc/platforms/powernv/opal-imc.c
-> index 58a0794..4e8b0e1 100644
-> --- a/arch/powerpc/platforms/powernv/opal-imc.c
-> +++ b/arch/powerpc/platforms/powernv/opal-imc.c
-> @@ -161,6 +161,10 @@ static int imc_pmu_create(struct device_node *parent, int pmu_index, int domain)
->  	struct imc_pmu *pmu_ptr;
->  	u32 offset;
->  
-> +	/* Return for unknown domain */
-> +	if (domain < 0)
-> +		return -EINVAL;
-> +
->  	/* memory for pmu */
->  	pmu_ptr = kzalloc(sizeof(*pmu_ptr), GFP_KERNEL);
->  	if (!pmu_ptr)
-> -- 
-> 1.8.3.1
