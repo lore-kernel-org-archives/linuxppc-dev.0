@@ -6,21 +6,21 @@ X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
 	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7100DC04E87
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 May 2019 14:00:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1AE1BC04AAF
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 May 2019 14:05:46 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id EBBCF21773
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 May 2019 14:00:51 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 92D9B21479
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 May 2019 14:05:45 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="wDmkV30Z"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EBBCF21773
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="o/gnp2xg"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 92D9B21479
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 457cqP2csQzDqK6
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 May 2019 00:00:49 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 457cx33Dm6zDq6J
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 May 2019 00:05:43 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=c-s.fr
  (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
@@ -28,53 +28,54 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="wDmkV30Z"; 
+ unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="o/gnp2xg"; 
  dkim-atps=neutral
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 457cDr5b2SzDqJk
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 May 2019 23:34:20 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 457cDs4JXJzDqK1
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 May 2019 23:34:21 +1000 (AEST)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 457cDm01ylz9v2Xb;
- Tue, 21 May 2019 15:34:16 +0200 (CEST)
+ by localhost (Postfix) with ESMTP id 457cDn1G9tz9v2Xg;
+ Tue, 21 May 2019 15:34:17 +0200 (CEST)
 Authentication-Results: localhost; dkim=pass
  reason="1024-bit key; insecure key"
- header.d=c-s.fr header.i=@c-s.fr header.b=wDmkV30Z; dkim-adsp=pass;
+ header.d=c-s.fr header.i=@c-s.fr header.b=o/gnp2xg; dkim-adsp=pass;
  dkim-atps=neutral
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id K3dGGqH2eHck; Tue, 21 May 2019 15:34:15 +0200 (CEST)
+ with ESMTP id wKa2lSF93ERs; Tue, 21 May 2019 15:34:17 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 457cDl65YDz9v2XY;
- Tue, 21 May 2019 15:34:15 +0200 (CEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
- t=1558445655; bh=zYNSnTdBI2zlv+nNU1YJCYKZt0d8+sVXOHJ4QyhBzhk=;
- h=In-Reply-To:References:From:Subject:To:Cc:Date:From;
- b=wDmkV30Z25a7KCNIbqmuyroCCzdpnZqFNkvTW/i3AeXvb+NsDzUq8rXvfPNtj9jzE
- 6Rk9nqBL9MU2u3aKtT6fTX2ydZApXMH5EjAh5DWifgCnqnGnUHFuI/Eos07/ktc1ct
- noZH3G9x2fjWRzJjbM2ddga97ma8EuYAxSmtrtGs=
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 47A368B80E;
+ by pegase1.c-s.fr (Postfix) with ESMTP id 457cDn0F2Jz9v2Xf;
  Tue, 21 May 2019 15:34:17 +0200 (CEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
+ t=1558445657; bh=dIcYGD04oevPJ+O9RX9tz1rHLgXACfTYanLnbPvtcUs=;
+ h=In-Reply-To:References:From:Subject:To:Cc:Date:From;
+ b=o/gnp2xgdxEIkS+KF0gdhKmotoVhGMCqmxJFaEr23rgTSu4pSQXsA41yyOvybE4eT
+ N+imzO9FeVrOFo7cAJZFhJ+d1dNmxm/NPd9YH92l5f7xxcytPzbaIQMaOdPa4Oh15i
+ s/AHHgoh5yn0nuJWlgaR+jtYiQIZCl5UK90QOyFo=
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 726468B80C;
+ Tue, 21 May 2019 15:34:18 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id X8v_1FalQceD; Tue, 21 May 2019 15:34:17 +0200 (CEST)
+ with ESMTP id Sym30Y13iXDc; Tue, 21 May 2019 15:34:18 +0200 (CEST)
 Received: from po16846vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 210998B803;
- Tue, 21 May 2019 15:34:17 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 4542F8B803;
+ Tue, 21 May 2019 15:34:18 +0200 (CEST)
 Received: by po16846vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id DF3A868458; Tue, 21 May 2019 13:34:12 +0000 (UTC)
-Message-Id: <a276c80d100ab95f14878c052d93a232a527b86d.1558445259.git.christophe.leroy@c-s.fr>
+ id 0C5F568458; Tue, 21 May 2019 13:34:18 +0000 (UTC)
+Message-Id: <e3da0b360bcb45dd697fd40da54ca752b8de19a5.1558445259.git.christophe.leroy@c-s.fr>
 In-Reply-To: <cover.1558445259.git.christophe.leroy@c-s.fr>
 References: <cover.1558445259.git.christophe.leroy@c-s.fr>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v1 06/15] crypto: talitos - check data blocksize in ablkcipher.
+Subject: [PATCH v1 11/15] crypto: talitos - Align SEC1 accesses to 32 bits
+ boundaries.
 To: Herbert Xu <herbert@gondor.apana.org.au>,
  "David S. Miller" <davem@davemloft.net>, horia.geanta@nxp.com
-Date: Tue, 21 May 2019 13:34:12 +0000 (UTC)
+Date: Tue, 21 May 2019 13:34:18 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -92,54 +93,36 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-When data size is not a multiple of the alg's block size,
-the SEC generates an error interrupt and dumps the registers.
-And for NULL size, the SEC does just nothing and the interrupt
-is awaited forever.
+The MPC885 reference manual states:
 
-This patch ensures the data size is correct before submitting
-the request to the SEC engine.
+SEC Lite-initiated 8xx writes can occur only on 32-bit-word boundaries, but
+reads can occur on any byte boundary. Writing back a header read from a
+non-32-bit-word boundary will yield unpredictable results.
+
+In order to ensure that, cra_alignmask is set to 3 for SEC1.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
-Fixes: 4de9d0b547b9 ("crypto: talitos - Add ablkcipher algorithms")
+Fixes: 9c4a79653b35 ("crypto: talitos - Freescale integrated security engine (SEC) driver")
 ---
- drivers/crypto/talitos.c | 16 ++++++++++++++++
- 1 file changed, 16 insertions(+)
+ drivers/crypto/talitos.c | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
 
 diff --git a/drivers/crypto/talitos.c b/drivers/crypto/talitos.c
-index 8b9a529f1b66..1e5410f92166 100644
+index 7c8a3a717b91..750b0159e654 100644
 --- a/drivers/crypto/talitos.c
 +++ b/drivers/crypto/talitos.c
-@@ -1756,6 +1756,14 @@ static int ablkcipher_encrypt(struct ablkcipher_request *areq)
- 	struct crypto_ablkcipher *cipher = crypto_ablkcipher_reqtfm(areq);
- 	struct talitos_ctx *ctx = crypto_ablkcipher_ctx(cipher);
- 	struct talitos_edesc *edesc;
-+	unsigned int blocksize =
-+			crypto_tfm_alg_blocksize(crypto_ablkcipher_tfm(cipher));
-+
-+	if (!areq->nbytes)
-+		return 0;
-+
-+	if (areq->nbytes % blocksize)
-+		return -EINVAL;
+@@ -3327,7 +3327,10 @@ static struct talitos_crypto_alg *talitos_alg_alloc(struct device *dev,
+ 		alg->cra_priority = t_alg->algt.priority;
+ 	else
+ 		alg->cra_priority = TALITOS_CRA_PRIORITY;
+-	alg->cra_alignmask = 0;
++	if (has_ftr_sec1(priv))
++		alg->cra_alignmask = 3;
++	else
++		alg->cra_alignmask = 0;
+ 	alg->cra_ctxsize = sizeof(struct talitos_ctx);
+ 	alg->cra_flags |= CRYPTO_ALG_KERN_DRIVER_ONLY;
  
- 	/* allocate extended descriptor */
- 	edesc = ablkcipher_edesc_alloc(areq, true);
-@@ -1773,6 +1781,14 @@ static int ablkcipher_decrypt(struct ablkcipher_request *areq)
- 	struct crypto_ablkcipher *cipher = crypto_ablkcipher_reqtfm(areq);
- 	struct talitos_ctx *ctx = crypto_ablkcipher_ctx(cipher);
- 	struct talitos_edesc *edesc;
-+	unsigned int blocksize =
-+			crypto_tfm_alg_blocksize(crypto_ablkcipher_tfm(cipher));
-+
-+	if (!areq->nbytes)
-+		return 0;
-+
-+	if (areq->nbytes % blocksize)
-+		return -EINVAL;
- 
- 	/* allocate extended descriptor */
- 	edesc = ablkcipher_edesc_alloc(areq, false);
 -- 
 2.13.3
 
