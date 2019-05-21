@@ -2,63 +2,87 @@ Return-Path: <SRS0=oIc7=TV=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no
+X-Spam-Status: No, score=-2.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED,USER_AGENT_NEOMUTT autolearn=unavailable autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 41F5CC04AAF
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 May 2019 16:39:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B3434C04AAF
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 May 2019 16:43:19 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C5AED2173E
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 May 2019 16:39:05 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C5AED2173E
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
+	by mail.kernel.org (Postfix) with ESMTPS id 338662173E
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 May 2019 16:43:19 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=brauner.io header.i=@brauner.io header.b="DrUfMEDj"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 338662173E
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=brauner.io
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 457hL000s8zDqSw
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 May 2019 02:39:04 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 457hQs1ttrzDqNT
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 May 2019 02:43:17 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=redhat.com
- (client-ip=209.132.183.28; helo=mx1.redhat.com;
- envelope-from=dhowells@redhat.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=brauner.io
+ (client-ip=2a00:1450:4864:20::344; helo=mail-wm1-x344.google.com;
+ envelope-from=christian@brauner.io; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=redhat.com
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ dmarc=none (p=none dis=none) header.from=brauner.io
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ secure) header.d=brauner.io header.i=@brauner.io header.b="DrUfMEDj"; 
+ dkim-atps=neutral
+Received: from mail-wm1-x344.google.com (mail-wm1-x344.google.com
+ [IPv6:2a00:1450:4864:20::344])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 457hJL4Lm3zDqP5
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 May 2019 02:37:38 +1000 (AEST)
-Received: from smtp.corp.redhat.com (int-mx04.intmail.prod.int.phx2.redhat.com
- [10.5.11.14])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by mx1.redhat.com (Postfix) with ESMTPS id 36C037FDEE;
- Tue, 21 May 2019 16:30:39 +0000 (UTC)
-Received: from warthog.procyon.org.uk (ovpn-120-170.rdu2.redhat.com
- [10.10.120.170])
- by smtp.corp.redhat.com (Postfix) with ESMTP id 7B1B95E7AF;
- Tue, 21 May 2019 16:30:28 +0000 (UTC)
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
- Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
- Kingdom.
- Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <20190521150006.GJ17978@ZenIV.linux.org.uk>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 457hP91rRszDqDY
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 May 2019 02:41:48 +1000 (AEST)
+Received: by mail-wm1-x344.google.com with SMTP id n25so1746483wmk.4
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 May 2019 09:41:48 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=brauner.io; s=google;
+ h=date:from:to:cc:subject:message-id:references:mime-version
+ :content-disposition:in-reply-to:user-agent;
+ bh=QRw4dWFrlFKNeC2Hv6jFCNR7pmJ9ZVloUzzaJsWHe3k=;
+ b=DrUfMEDjMCX/F/kpAns9Xje6tAglSh3UhG5Ut0HpXQH/i/WF067F5FUZoHtyFcz92J
+ B9zO7Q3xmWBLCoBBlKTKoCtUiQsaTMx3Npeppmj4pHHAb15DBLIi9tECGzeTa0qz68HY
+ 5SJCekbjPP909njq82OecOWv07W5VLYr5VkHE6sbSe+2o5Mw73nXEvvOijdE8vUJH9BM
+ uSenbJ2wN1Uv1xiE6qAy9CpI8LAAlCfwF/dLDfgYTm5Xge0CjqlWt1lxcYk7Ou9/XL7L
+ lIMEXS/i0lcGD5hbzAqtPxjiA1/NY2p62maSbnW0JtvlH3GgYQ9nmlSCeM60N0klvzp1
+ geRQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+ :mime-version:content-disposition:in-reply-to:user-agent;
+ bh=QRw4dWFrlFKNeC2Hv6jFCNR7pmJ9ZVloUzzaJsWHe3k=;
+ b=ulMavORsOZPRjYxv3QrhncfqUfkNoyDIc9Ve2o7PGIbg30SZ3V2HInV2psjM7vVSHH
+ SQI9SzciWK14V0rudWPs3PV8j/KnbyzualQ1JbO1CZipI5zKjEP98717ldorCp/bl3TI
+ OSMMCzYKguJY8KE1RrTsDKvPZr7GTN5dlzYamZFLrFv0Nff+Pdoc+Xymz/gpQS6Hf6o8
+ oCzdf4XmW/p5w6fWwiiMWpThvUMtZwO8XvrfC1wTGUO8NCCh44ngDo+3fzVawXAr53KP
+ SHgNv3646OHm3l+dfdpQqn4AO5uzTjca5H0z/ZUr4s2Pvv4Lnv9Mq9hEIsppuCRA5CE9
+ YBRw==
+X-Gm-Message-State: APjAAAUABPG0Uu6OSifeC+ggJjsES4i1025lKsSSg6gjcWegnIzZhusZ
+ Od2KTWkfEQnc0N44/KduJHJOPw==
+X-Google-Smtp-Source: APXvYqy9lGE6AuIM688BrnvZ7pn7z99PmptY1DxlEejau1I+HdIPSmSJeaZzuDaCQae7Ot/VplE6/A==
+X-Received: by 2002:a7b:c40e:: with SMTP id k14mr3957899wmi.114.1558456904711; 
+ Tue, 21 May 2019 09:41:44 -0700 (PDT)
+Received: from brauner.io ([212.91.227.56])
+ by smtp.gmail.com with ESMTPSA id q14sm7089531wrx.86.2019.05.21.09.41.43
+ (version=TLS1_3 cipher=AEAD-AES256-GCM-SHA384 bits=256/256);
+ Tue, 21 May 2019 09:41:44 -0700 (PDT)
+Date: Tue, 21 May 2019 18:41:42 +0200
+From: Christian Brauner <christian@brauner.io>
+To: David Howells <dhowells@redhat.com>
+Subject: Re: [PATCH 1/2] open: add close_range()
+Message-ID: <20190521164141.rbehqnghiej3gfua@brauner.io>
 References: <20190521150006.GJ17978@ZenIV.linux.org.uk>
  <20190521113448.20654-1-christian@brauner.io>
-To: Al Viro <viro@zeniv.linux.org.uk>
-Subject: Re: [PATCH 1/2] open: add close_range()
+ <28114.1558456227@warthog.procyon.org.uk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-ID: <28113.1558456227.1@warthog.procyon.org.uk>
-Content-Transfer-Encoding: quoted-printable
-Date: Tue, 21 May 2019 17:30:27 +0100
-Message-ID: <28114.1558456227@warthog.procyon.org.uk>
-X-Scanned-By: MIMEDefang 2.79 on 10.5.11.14
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.5.16
- (mx1.redhat.com [10.5.110.27]); Tue, 21 May 2019 16:30:57 +0000 (UTC)
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <28114.1558456227@warthog.procyon.org.uk>
+User-Agent: NeoMutt/20180716
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -71,70 +95,63 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 Cc: linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org, oleg@redhat.com,
- dhowells@redhat.com, linux-kselftest@vger.kernel.org,
- sparclinux@vger.kernel.org, shuah@kernel.org, linux-arch@vger.kernel.org,
- linux-s390@vger.kernel.org, miklos@szeredi.hu, x86@kernel.org,
- torvalds@linux-foundation.org, Christian Brauner <christian@brauner.io>,
- linux-mips@vger.kernel.org, linux-xtensa@linux-xtensa.org, tkjos@android.com,
- arnd@arndb.de, jannh@google.com, linux-m68k@lists.linux-m68k.org,
- tglx@linutronix.de, ldv@altlinux.org, linux-arm-kernel@lists.infradead.org,
- fweimer@redhat.com, linux-parisc@vger.kernel.org, linux-api@vger.kernel.org,
+ linux-kselftest@vger.kernel.org, sparclinux@vger.kernel.org, shuah@kernel.org,
+ linux-arch@vger.kernel.org, linux-s390@vger.kernel.org, miklos@szeredi.hu,
+ x86@kernel.org, torvalds@linux-foundation.org, linux-mips@vger.kernel.org,
+ linux-xtensa@linux-xtensa.org, tkjos@android.com, arnd@arndb.de,
+ jannh@google.com, linux-m68k@lists.linux-m68k.org,
+ Al Viro <viro@zeniv.linux.org.uk>, tglx@linutronix.de, ldv@altlinux.org,
+ linux-arm-kernel@lists.infradead.org, fweimer@redhat.com,
+ linux-parisc@vger.kernel.org, linux-api@vger.kernel.org,
  linux-kernel@vger.kernel.org, linux-alpha@vger.kernel.org,
  linux-fsdevel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Al Viro <viro@zeniv.linux.org.uk> wrote:
+On Tue, May 21, 2019 at 05:30:27PM +0100, David Howells wrote:
+> Al Viro <viro@zeniv.linux.org.uk> wrote:
+> 
+> > Umm...  That's going to be very painful if you dup2() something to MAX_INT and
+> > then run that; roughly 2G iterations of bouncing ->file_lock up and down,
+> > without anything that would yield CPU in process.
+> > 
+> > If anything, I would suggest something like
+> > 
+> > 	fd = *start_fd;
+> > 	grab the lock
+> >         fdt = files_fdtable(files);
+> > more:
+> > 	look for the next eviction candidate in ->open_fds, starting at fd
+> > 	if there's none up to max_fd
+> > 		drop the lock
+> > 		return NULL
+> > 	*start_fd = fd + 1;
+> > 	if the fscker is really opened and not just reserved
+> > 		rcu_assign_pointer(fdt->fd[fd], NULL);
+> > 		__put_unused_fd(files, fd);
+> > 		drop the lock
+> > 		return the file we'd got
+> > 	if (unlikely(need_resched()))
+> > 		drop lock
+> > 		cond_resched();
+> > 		grab lock
+> > 		fdt = files_fdtable(files);
+> > 	goto more;
+> > 
+> > with the main loop being basically
+> > 	while ((file = pick_next(files, &start_fd, max_fd)) != NULL)
+> > 		filp_close(file, files);
+> 
+> If we can live with close_from(int first) rather than close_range(), then this
+> can perhaps be done a lot more efficiently by:
 
-> Umm...  That's going to be very painful if you dup2() something to MAX_I=
-NT and
-> then run that; roughly 2G iterations of bouncing ->file_lock up and down=
-,
-> without anything that would yield CPU in process.
-> =
+Yeah, you mentioned this before. I do like being able to specify an
+upper bound to have the ability to place fds strategically after said
+upper bound.
+I have used this quite a few times where I know that given task may have
+inherited up to m fds and I want to inherit a specific pipe who's fd I
+know. Then I'd dup2(pipe_fd, <upper_bound + 1>) and then close all
+other fds. Is that too much of a corner case?
 
-> If anything, I would suggest something like
-> =
-
-> 	fd =3D *start_fd;
-> 	grab the lock
->         fdt =3D files_fdtable(files);
-> more:
-> 	look for the next eviction candidate in ->open_fds, starting at fd
-> 	if there's none up to max_fd
-> 		drop the lock
-> 		return NULL
-> 	*start_fd =3D fd + 1;
-> 	if the fscker is really opened and not just reserved
-> 		rcu_assign_pointer(fdt->fd[fd], NULL);
-> 		__put_unused_fd(files, fd);
-> 		drop the lock
-> 		return the file we'd got
-> 	if (unlikely(need_resched()))
-> 		drop lock
-> 		cond_resched();
-> 		grab lock
-> 		fdt =3D files_fdtable(files);
-> 	goto more;
-> =
-
-> with the main loop being basically
-> 	while ((file =3D pick_next(files, &start_fd, max_fd)) !=3D NULL)
-> 		filp_close(file, files);
-
-If we can live with close_from(int first) rather than close_range(), then =
-this
-can perhaps be done a lot more efficiently by:
-
-	new =3D alloc_fdtable(first);
-	spin_lock(&files->file_lock);
-	old =3D files_fdtable(files);
-	copy_fds(new, old, 0, first - 1);
-	rcu_assign_pointer(files->fdt, new);
-	spin_unlock(&files->file_lock);
-	clear_fds(old, 0, first - 1);
-	close_fdt_from(old, first);
-	kfree_rcu(old);
-
-David
+Christian
