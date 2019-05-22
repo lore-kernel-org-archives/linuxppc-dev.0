@@ -2,97 +2,95 @@ Return-Path: <SRS0=UVon=TW=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	HTML_MESSAGE,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9753EC072A4
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 May 2019 06:37:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9133DC072A4
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 May 2019 07:46:09 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E132020863
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 May 2019 06:37:10 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E132020863
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id DF9FF217D7
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 May 2019 07:46:08 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DF9FF217D7
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4582x06rbvzDqQx
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 May 2019 16:37:08 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4584SZ0wvWzDqPK
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 May 2019 17:46:06 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
- (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=aneesh.kumar@linux.ibm.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+ spf=none (mailfrom) smtp.mailfrom=linux.vnet.ibm.com
+ (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
+ envelope-from=anju@linux.vnet.ibm.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=linux.vnet.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4582vc07KxzDqHP
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 May 2019 16:35:55 +1000 (AEST)
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x4M6XYBC001150
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 May 2019 02:35:52 -0400
-Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2sn039tpk7-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4581gY2frfzDqK1
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 May 2019 15:40:25 +1000 (AEST)
+Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
+ x4M5b5gp126915
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 May 2019 01:40:23 -0400
+Received: from e06smtp03.uk.ibm.com (e06smtp03.uk.ibm.com [195.75.94.99])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2smury8r0m-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 May 2019 02:35:52 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 May 2019 01:40:22 -0400
 Received: from localhost
- by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp03.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.ibm.com>;
- Wed, 22 May 2019 07:35:51 +0100
-Received: from b03cxnp08025.gho.boulder.ibm.com (9.17.130.17)
- by e36.co.us.ibm.com (192.168.1.136) with IBM ESMTP SMTP Gateway: Authorized
- Use Only! Violators will be prosecuted; 
+ for <linuxppc-dev@lists.ozlabs.org> from <anju@linux.vnet.ibm.com>;
+ Wed, 22 May 2019 06:40:20 +0100
+Received: from b06cxnps3074.portsmouth.uk.ibm.com (9.149.109.194)
+ by e06smtp03.uk.ibm.com (192.168.101.133) with IBM ESMTP SMTP Gateway:
+ Authorized Use Only! Violators will be prosecuted; 
  (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Wed, 22 May 2019 07:35:48 +0100
-Received: from b03ledav004.gho.boulder.ibm.com
- (b03ledav004.gho.boulder.ibm.com [9.17.130.235])
- by b03cxnp08025.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x4M6ZlS124510908
+ Wed, 22 May 2019 06:40:18 +0100
+Received: from d06av26.portsmouth.uk.ibm.com (d06av26.portsmouth.uk.ibm.com
+ [9.149.105.62])
+ by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x4M5eHuf36503658
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Wed, 22 May 2019 06:35:48 GMT
-Received: from b03ledav004.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id CC79778066;
- Wed, 22 May 2019 06:35:47 +0000 (GMT)
-Received: from b03ledav004.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 92C897805C;
- Wed, 22 May 2019 06:35:46 +0000 (GMT)
-Received: from [9.124.31.87] (unknown [9.124.31.87])
- by b03ledav004.gho.boulder.ibm.com (Postfix) with ESMTP;
- Wed, 22 May 2019 06:35:46 +0000 (GMT)
-Subject: Re: [RFC PATCH 1/3] mm/nvdimm: Add PFN_MIN_VERSION support
-To: dan.j.williams@intel.com
-References: <20190522062057.26581-1-aneesh.kumar@linux.ibm.com>
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
-Date: Wed, 22 May 2019 12:05:45 +0530
+ Wed, 22 May 2019 05:40:17 GMT
+Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 48BA5AE057;
+ Wed, 22 May 2019 05:40:17 +0000 (GMT)
+Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 89488AE055;
+ Wed, 22 May 2019 05:40:16 +0000 (GMT)
+Received: from localhost.localdomain (unknown [9.124.35.72])
+ by d06av26.portsmouth.uk.ibm.com (Postfix) with ESMTPS;
+ Wed, 22 May 2019 05:40:16 +0000 (GMT)
+Subject: Re: [PATCH] powerpc/powernv: Return for invalid IMC domain
+To: Michael Ellerman <mpe@ellerman.id.au>
+References: <20190520085753.19670-1-anju@linux.vnet.ibm.com>
+ <87sgt86na9.fsf@concordia.ellerman.id.au>
+From: Anju T Sudhakar <anju@linux.vnet.ibm.com>
+Date: Wed, 22 May 2019 11:10:15 +0530
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
  Thunderbird/60.6.1
 MIME-Version: 1.0
-In-Reply-To: <20190522062057.26581-1-aneesh.kumar@linux.ibm.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
+In-Reply-To: <87sgt86na9.fsf@concordia.ellerman.id.au>
+Content-Type: multipart/alternative;
+ boundary="------------423130FBCB40CAF30FC4B33D"
 Content-Language: en-US
-Content-Transfer-Encoding: 7bit
 X-TM-AS-GCONF: 00
-x-cbid: 19052206-0020-0000-0000-00000EEE87E9
-X-IBM-SpamModules-Scores: 
-X-IBM-SpamModules-Versions: BY=3.00011141; HX=3.00000242; KW=3.00000007;
- PH=3.00000004; SC=3.00000286; SDB=6.01206848; UDB=6.00633758; IPR=6.00987824; 
- MB=3.00026997; MTD=3.00000008; XFM=3.00000015; UTC=2019-05-22 06:35:50
+x-cbid: 19052205-0012-0000-0000-0000031E2BC6
 X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19052206-0021-0000-0000-000065EBBC02
-Message-Id: <27bcf0e4-ba1d-2a7e-c181-ff60a9413bce@linux.ibm.com>
+x-cbparentid: 19052205-0013-0000-0000-00002156DF1D
+Message-Id: <7855537e-d021-fc4a-9791-419acda1616d@linux.vnet.ibm.com>
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2019-05-22_03:, , signatures=0
+ definitions=2019-05-22_02:, , signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
  priorityscore=1501
- malwarescore=0 suspectscore=1 phishscore=0 bulkscore=0 spamscore=0
+ malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
  clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
  mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1810050000 definitions=main-1905220048
+ scancount=1 engine=8.0.1-1810050000 definitions=main-1905220040
+X-Mailman-Approved-At: Wed, 22 May 2019 17:44:50 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -104,67 +102,141 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
- linux-nvdimm@lists.01.org
+Cc: pavsubra@in.ibm.com, maddy@linux.vnet.ibm.com,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 5/22/19 11:50 AM, Aneesh Kumar K.V wrote:
-> This allows us to make changes in a backward incompatible way. I have
-> kept the PFN_MIN_VERSION in this patch '0' because we are not introducing
-> any incompatible changes in this patch. We also may want to backport this
-> to older kernels.
-> 
-> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
-> ---
->   drivers/nvdimm/pfn.h      |  9 ++++++++-
->   drivers/nvdimm/pfn_devs.c |  4 ++++
->   drivers/nvdimm/pmem.c     | 26 ++++++++++++++++++++++----
->   3 files changed, 34 insertions(+), 5 deletions(-)
-> 
-> diff --git a/drivers/nvdimm/pfn.h b/drivers/nvdimm/pfn.h
-> index dde9853453d3..1b10ae5773b6 100644
-> --- a/drivers/nvdimm/pfn.h
-> +++ b/drivers/nvdimm/pfn.h
-> @@ -20,6 +20,12 @@
->   #define PFN_SIG_LEN 16
->   #define PFN_SIG "NVDIMM_PFN_INFO\0"
->   #define DAX_SIG "NVDIMM_DAX_INFO\0"
-> +/*
-> + * increment this when we are making changes such that older
-> + * kernel should fail to initialize that namespace.
-> + */
-> +
-> +#define PFN_MIN_VERSION 0
->   
->   struct nd_pfn_sb {
->   	u8 signature[PFN_SIG_LEN];
-> @@ -36,7 +42,8 @@ struct nd_pfn_sb {
->   	__le32 end_trunc;
->   	/* minor-version-2 record the base alignment of the mapping */
->   	__le32 align;
-> -	u8 padding[4000];
-> +	__le16 min_verison;
-> +	u8 padding[3998];
->   	__le64 checksum;
->   };
->   
-> diff --git a/drivers/nvdimm/pfn_devs.c b/drivers/nvdimm/pfn_devs.c
-> index 01f40672507f..3250de70a7b3 100644
-> --- a/drivers/nvdimm/pfn_devs.c
-> +++ b/drivers/nvdimm/pfn_devs.c
-> @@ -439,6 +439,9 @@ int nd_pfn_validate(struct nd_pfn *nd_pfn, const char *sig)
->   	if (nvdimm_read_bytes(ndns, SZ_4K, pfn_sb, sizeof(*pfn_sb), 0))
->   		return -ENXIO;
->   
-> +	if (le16_to_cpu(pfn_sb->min_version > PFN_MIN_VERSION))
-> +		return -EOPNOTSUPP;
+This is a multi-part message in MIME format.
+--------------423130FBCB40CAF30FC4B33D
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
 
-+	if (le16_to_cpu(pfn_sb->min_version) > PFN_MIN_VERSION)
-+		return -EOPNOTSUPP;
+Hi,
+
+On 5/21/19 5:18 PM, Michael Ellerman wrote:
+> Anju T Sudhakar <anju@linux.vnet.ibm.com> writes:
+>> Currently init_imc_pmu() can be failed either because
+>> an IMC unit with invalid domain(i.e an IMC node not
+>> supported by the kernel) is attempted a pmu-registration
+>> or something went wrong while registering a valid IMC unit.
+>> In both the cases kernel provides a 'Registration failed'
+>> error message.
+>>
+>> Example:
+>> Log message, when trace-imc node is not supported by the kernel, and the
+>> skiboot supports trace-imc node.
+>>
+>> So for kernel, trace-imc node is now an unknown domain.
+>>
+>> [    1.731870] nest_phb5_imc performance monitor hardware support registered
+>> [    1.731944] nest_powerbus0_imc performance monitor hardware support registered
+>> [    1.734458] thread_imc performance monitor hardware support registered
+>> [    1.734460] IMC Unknown Device type
+>> [    1.734462] IMC PMU (null) Register failed
+>> [    1.734558] nest_xlink0_imc performance monitor hardware support registered
+>> [    1.734614] nest_xlink1_imc performance monitor hardware support registered
+>> [    1.734670] nest_xlink2_imc performance monitor hardware support registered
+>> [    1.747043] Initialise system trusted keyrings
+>> [    1.747054] Key type blacklist registered
+>>
+>>
+>> To avoid ambiguity on the error message, return for invalid domain
+>> before attempting a pmu registration.
+> What do we print once the patch is applied?
+
+
+Once the patch is applied, we return for invalid domains. so we will 
+only have
+
+`/IMC Unknown Device type/` message printed for *unknown domains*.
+
+And `/IMC PMU (null) Register failed/` message will appear only if the
+
+registration fails for a *known domain*.
 
 
 
--aneesh
+Thanks,
+
+Anju
+
+
+
+--------------423130FBCB40CAF30FC4B33D
+Content-Type: text/html; charset=utf-8
+Content-Transfer-Encoding: 7bit
+
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  </head>
+  <body text="#000000" bgcolor="#FFFFFF">
+    <p>Hi,<br>
+    </p>
+    <div class="moz-cite-prefix">On 5/21/19 5:18 PM, Michael Ellerman
+      wrote:<br>
+    </div>
+    <blockquote type="cite"
+      cite="mid:87sgt86na9.fsf@concordia.ellerman.id.au">
+      <pre class="moz-quote-pre" wrap="">Anju T Sudhakar <a class="moz-txt-link-rfc2396E" href="mailto:anju@linux.vnet.ibm.com">&lt;anju@linux.vnet.ibm.com&gt;</a> writes:
+</pre>
+      <blockquote type="cite">
+        <pre class="moz-quote-pre" wrap="">Currently init_imc_pmu() can be failed either because
+an IMC unit with invalid domain(i.e an IMC node not
+supported by the kernel) is attempted a pmu-registration
+or something went wrong while registering a valid IMC unit.
+In both the cases kernel provides a 'Registration failed'
+error message.
+
+Example:
+Log message, when trace-imc node is not supported by the kernel, and the
+skiboot supports trace-imc node.
+
+So for kernel, trace-imc node is now an unknown domain.
+
+[    1.731870] nest_phb5_imc performance monitor hardware support registered
+[    1.731944] nest_powerbus0_imc performance monitor hardware support registered
+[    1.734458] thread_imc performance monitor hardware support registered
+[    1.734460] IMC Unknown Device type
+[    1.734462] IMC PMU (null) Register failed
+[    1.734558] nest_xlink0_imc performance monitor hardware support registered
+[    1.734614] nest_xlink1_imc performance monitor hardware support registered
+[    1.734670] nest_xlink2_imc performance monitor hardware support registered
+[    1.747043] Initialise system trusted keyrings
+[    1.747054] Key type blacklist registered
+
+
+To avoid ambiguity on the error message, return for invalid domain
+before attempting a pmu registration. 
+</pre>
+      </blockquote>
+      <pre class="moz-quote-pre" wrap="">
+What do we print once the patch is applied?
+</pre>
+    </blockquote>
+    <p><br>
+    </p>
+    <p>Once the patch is applied, we return for invalid domains. so we
+      will only have <br>
+    </p>
+    <p>`<i>IMC Unknown Device type</i>` message printed for <b>unknown
+        domains</b>.</p>
+    <p>And `<i>IMC PMU (null) Register failed</i>` message will appear
+      only if the <br>
+    </p>
+    <p>registration fails for a <b>known domain</b>.</p>
+    <p><br>
+    </p>
+    <p><br>
+    </p>
+    <p>Thanks,</p>
+    <p>Anju<br>
+    </p>
+    <br>
+  </body>
+</html>
+
+--------------423130FBCB40CAF30FC4B33D--
 
