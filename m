@@ -2,95 +2,85 @@ Return-Path: <SRS0=UVon=TW=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	HTML_MESSAGE,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-4.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9133DC072A4
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 May 2019 07:46:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 146FBC072A4
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 May 2019 07:47:31 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id DF9FF217D7
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 May 2019 07:46:08 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DF9FF217D7
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 8C7CE217D9
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 May 2019 07:47:30 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="G1xQ7NGH"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8C7CE217D9
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4584SZ0wvWzDqPK
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 May 2019 17:46:06 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4584V860kjzDqLT
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 May 2019 17:47:28 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=linux.vnet.ibm.com
- (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=anju@linux.vnet.ibm.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=linux.vnet.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+ spf=pass (mailfrom) smtp.mailfrom=c-s.fr
+ (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=c-s.fr
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="G1xQ7NGH"; 
+ dkim-atps=neutral
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4581gY2frfzDqK1
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 May 2019 15:40:25 +1000 (AEST)
-Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x4M5b5gp126915
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 May 2019 01:40:23 -0400
-Received: from e06smtp03.uk.ibm.com (e06smtp03.uk.ibm.com [195.75.94.99])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2smury8r0m-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 May 2019 01:40:22 -0400
-Received: from localhost
- by e06smtp03.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <anju@linux.vnet.ibm.com>;
- Wed, 22 May 2019 06:40:20 +0100
-Received: from b06cxnps3074.portsmouth.uk.ibm.com (9.149.109.194)
- by e06smtp03.uk.ibm.com (192.168.101.133) with IBM ESMTP SMTP Gateway:
- Authorized Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Wed, 22 May 2019 06:40:18 +0100
-Received: from d06av26.portsmouth.uk.ibm.com (d06av26.portsmouth.uk.ibm.com
- [9.149.105.62])
- by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x4M5eHuf36503658
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Wed, 22 May 2019 05:40:17 GMT
-Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 48BA5AE057;
- Wed, 22 May 2019 05:40:17 +0000 (GMT)
-Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 89488AE055;
- Wed, 22 May 2019 05:40:16 +0000 (GMT)
-Received: from localhost.localdomain (unknown [9.124.35.72])
- by d06av26.portsmouth.uk.ibm.com (Postfix) with ESMTPS;
- Wed, 22 May 2019 05:40:16 +0000 (GMT)
-Subject: Re: [PATCH] powerpc/powernv: Return for invalid IMC domain
-To: Michael Ellerman <mpe@ellerman.id.au>
-References: <20190520085753.19670-1-anju@linux.vnet.ibm.com>
- <87sgt86na9.fsf@concordia.ellerman.id.au>
-From: Anju T Sudhakar <anju@linux.vnet.ibm.com>
-Date: Wed, 22 May 2019 11:10:15 +0530
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
- Thunderbird/60.6.1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4584Sc06q3zDqQG
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 May 2019 17:46:06 +1000 (AEST)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 4584ST00W2z9v1VX;
+ Wed, 22 May 2019 09:46:01 +0200 (CEST)
+Authentication-Results: localhost; dkim=pass
+ reason="1024-bit key; insecure key"
+ header.d=c-s.fr header.i=@c-s.fr header.b=G1xQ7NGH; dkim-adsp=pass;
+ dkim-atps=neutral
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id 8i9G6yAW0AVu; Wed, 22 May 2019 09:46:00 +0200 (CEST)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 4584SS5yT6z9v1VW;
+ Wed, 22 May 2019 09:46:00 +0200 (CEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
+ t=1558511160; bh=Q7p8tnanbyhfXSwbbdwXPGkJ/UivUbr2zRRYxsQb98o=;
+ h=Subject:From:To:Cc:References:Date:In-Reply-To:From;
+ b=G1xQ7NGHjbn4bC9w6HQLH0qWrK0+kYcgd87FZhFZepZzAbMvL6mi19XTJ9oFlUY0B
+ MsGcL8QH8mYfbv3yBgwuEerG0misANGDeKjUaEAUh5cXl3V5Z1tG7khb4gNJ6OCMpp
+ jomE28BUf3igRfadq5PpIIfTv4IgsK/YQeCKS7hE=
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id D74C48B81B;
+ Wed, 22 May 2019 09:46:01 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id hfWoYvLqeC5p; Wed, 22 May 2019 09:46:01 +0200 (CEST)
+Received: from po16846vm.idsi0.si.c-s.fr (po15451.idsi0.si.c-s.fr
+ [172.25.231.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id A805D8B75B;
+ Wed, 22 May 2019 09:46:01 +0200 (CEST)
+Subject: Re: [BISECTED] kexec regression on PowerBook G4
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+To: Aaro Koskinen <aaro.koskinen@iki.fi>, Michael Ellerman <mpe@ellerman.id.au>
+References: <20190521221859.GC3621@darkstar.musicnaut.iki.fi>
+ <90f3557b-400b-60b5-9ff8-d5605adeee79@c-s.fr>
+Message-ID: <a8f8a0d7-1737-4c83-4587-8d4dc87c3ecb@c-s.fr>
+Date: Wed, 22 May 2019 07:44:56 +0000
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:52.0) Gecko/20100101
+ Thunderbird/52.7.0
 MIME-Version: 1.0
-In-Reply-To: <87sgt86na9.fsf@concordia.ellerman.id.au>
-Content-Type: multipart/alternative;
- boundary="------------423130FBCB40CAF30FC4B33D"
+In-Reply-To: <90f3557b-400b-60b5-9ff8-d5605adeee79@c-s.fr>
+Content-Type: text/plain; charset=utf-8; format=flowed
 Content-Language: en-US
-X-TM-AS-GCONF: 00
-x-cbid: 19052205-0012-0000-0000-0000031E2BC6
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19052205-0013-0000-0000-00002156DF1D
-Message-Id: <7855537e-d021-fc4a-9791-419acda1616d@linux.vnet.ibm.com>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2019-05-22_02:, , signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1810050000 definitions=main-1905220040
-X-Mailman-Approved-At: Wed, 22 May 2019 17:44:50 +1000
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -102,141 +92,113 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: pavsubra@in.ibm.com, maddy@linux.vnet.ibm.com,
- linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This is a multi-part message in MIME format.
---------------423130FBCB40CAF30FC4B33D
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Hi Again,
 
-Hi,
-
-On 5/21/19 5:18 PM, Michael Ellerman wrote:
-> Anju T Sudhakar <anju@linux.vnet.ibm.com> writes:
->> Currently init_imc_pmu() can be failed either because
->> an IMC unit with invalid domain(i.e an IMC node not
->> supported by the kernel) is attempted a pmu-registration
->> or something went wrong while registering a valid IMC unit.
->> In both the cases kernel provides a 'Registration failed'
->> error message.
+On 05/22/2019 06:14 AM, Christophe Leroy wrote:
+> Hi Aero,
+> 
+> Le 22/05/2019 à 00:18, Aaro Koskinen a écrit :
+>> Hi,
 >>
->> Example:
->> Log message, when trace-imc node is not supported by the kernel, and the
->> skiboot supports trace-imc node.
+>> I was trying to upgrade from v5.0 -> v5.1 on PowerBook G4, but when 
+>> trying
+>> to kexec a kernel the system gets stuck (no errors seen on the console).
+> 
+> Do you mean you are trying to kexec a v5.1 kernel from a v5.0 kernel, or 
+> do you have a working v5.1 kernel, but kexec doesn't work with it ?
+> 
 >>
->> So for kernel, trace-imc node is now an unknown domain.
+>> Bisected to: 93c4a162b014 ("powerpc/6xx: Store PGDIR physical address
+>> in a SPRG"). This commit doesn't revert cleanly anymore but I tested
+>> that the one before works OK.
+> 
+> Not sure that's the problem. There was a problem with that commit, but 
+> it was fixed by 4622a2d43101 ("powerpc/6xx: fix setup and use of 
+> SPRN_SPRG_PGDIR for hash32").
+> You probably hit some commit between those two during bisect, that's 
+> likely the reason why you ended here.
+> 
+> Can you restart your bisect from 4622a2d43101 ?
+> 
+> If you have CONFIG_SMP, maybe you should also consider taking 
+> 397d2300b08c ("powerpc/32s: fix flush_hash_pages() on SMP"). Stable 
+> 5.1.4 includes it.
+> 
 >>
->> [    1.731870] nest_phb5_imc performance monitor hardware support registered
->> [    1.731944] nest_powerbus0_imc performance monitor hardware support registered
->> [    1.734458] thread_imc performance monitor hardware support registered
->> [    1.734460] IMC Unknown Device type
->> [    1.734462] IMC PMU (null) Register failed
->> [    1.734558] nest_xlink0_imc performance monitor hardware support registered
->> [    1.734614] nest_xlink1_imc performance monitor hardware support registered
->> [    1.734670] nest_xlink2_imc performance monitor hardware support registered
->> [    1.747043] Initialise system trusted keyrings
->> [    1.747054] Key type blacklist registered
+>> With current Linus HEAD (9c7db5004280), it gets a bit further but still
+>> doesn't work: now I get an error on the console after kexec "Starting
+>> new kernel! ... Bye!":
 >>
->>
->> To avoid ambiguity on the error message, return for invalid domain
->> before attempting a pmu registration.
-> What do we print once the patch is applied?
+>>     kernel tried to execute exec-protected page (...) - exploit attempt?
+> 
+> Interesting.
+> 
+> Do you have CONFIG_STRICT_KERNEL_RWX=y in your .config ? If so, can you 
+> retry without it ?
 
+After looking at the code, I don't thing CONFIG_STRICT_KERNEL_RWX will 
+make any difference. Can you try the patch below ?
 
-Once the patch is applied, we return for invalid domains. so we will 
-only have
+ From 8c1039da0d0f26cdf995156a905fc97fe7bda36c Mon Sep 17 00:00:00 2001
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Date: Wed, 22 May 2019 07:28:42 +0000
+Subject: [PATCH] Fix Kexec
 
-`/IMC Unknown Device type/` message printed for *unknown domains*.
+---
+  arch/powerpc/include/asm/pgtable.h     | 2 ++
+  arch/powerpc/kernel/machine_kexec_32.c | 4 ++++
+  arch/powerpc/mm/pgtable_32.c           | 2 +-
+  3 files changed, 7 insertions(+), 1 deletion(-)
 
-And `/IMC PMU (null) Register failed/` message will appear only if the
+diff --git a/arch/powerpc/include/asm/pgtable.h 
+b/arch/powerpc/include/asm/pgtable.h
+index 3f53be60fb01..642eea937229 100644
+--- a/arch/powerpc/include/asm/pgtable.h
++++ b/arch/powerpc/include/asm/pgtable.h
+@@ -140,6 +140,8 @@ static inline void pte_frag_set(mm_context_t *ctx, 
+void *p)
+  }
+  #endif
 
-registration fails for a *known domain*.
++int change_page_attr(struct page *page, int numpages, pgprot_t prot);
++
+  #endif /* __ASSEMBLY__ */
 
+  #endif /* _ASM_POWERPC_PGTABLE_H */
+diff --git a/arch/powerpc/kernel/machine_kexec_32.c 
+b/arch/powerpc/kernel/machine_kexec_32.c
+index affe5dcce7f4..4f719501e6ae 100644
+--- a/arch/powerpc/kernel/machine_kexec_32.c
++++ b/arch/powerpc/kernel/machine_kexec_32.c
+@@ -54,6 +54,10 @@ void default_machine_kexec(struct kimage *image)
+  	memcpy((void *)reboot_code_buffer, relocate_new_kernel,
+  						relocate_new_kernel_size);
 
-
-Thanks,
-
-Anju
-
-
-
---------------423130FBCB40CAF30FC4B33D
-Content-Type: text/html; charset=utf-8
-Content-Transfer-Encoding: 7bit
-
-<html>
-  <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-  </head>
-  <body text="#000000" bgcolor="#FFFFFF">
-    <p>Hi,<br>
-    </p>
-    <div class="moz-cite-prefix">On 5/21/19 5:18 PM, Michael Ellerman
-      wrote:<br>
-    </div>
-    <blockquote type="cite"
-      cite="mid:87sgt86na9.fsf@concordia.ellerman.id.au">
-      <pre class="moz-quote-pre" wrap="">Anju T Sudhakar <a class="moz-txt-link-rfc2396E" href="mailto:anju@linux.vnet.ibm.com">&lt;anju@linux.vnet.ibm.com&gt;</a> writes:
-</pre>
-      <blockquote type="cite">
-        <pre class="moz-quote-pre" wrap="">Currently init_imc_pmu() can be failed either because
-an IMC unit with invalid domain(i.e an IMC node not
-supported by the kernel) is attempted a pmu-registration
-or something went wrong while registering a valid IMC unit.
-In both the cases kernel provides a 'Registration failed'
-error message.
-
-Example:
-Log message, when trace-imc node is not supported by the kernel, and the
-skiboot supports trace-imc node.
-
-So for kernel, trace-imc node is now an unknown domain.
-
-[    1.731870] nest_phb5_imc performance monitor hardware support registered
-[    1.731944] nest_powerbus0_imc performance monitor hardware support registered
-[    1.734458] thread_imc performance monitor hardware support registered
-[    1.734460] IMC Unknown Device type
-[    1.734462] IMC PMU (null) Register failed
-[    1.734558] nest_xlink0_imc performance monitor hardware support registered
-[    1.734614] nest_xlink1_imc performance monitor hardware support registered
-[    1.734670] nest_xlink2_imc performance monitor hardware support registered
-[    1.747043] Initialise system trusted keyrings
-[    1.747054] Key type blacklist registered
-
-
-To avoid ambiguity on the error message, return for invalid domain
-before attempting a pmu registration. 
-</pre>
-      </blockquote>
-      <pre class="moz-quote-pre" wrap="">
-What do we print once the patch is applied?
-</pre>
-    </blockquote>
-    <p><br>
-    </p>
-    <p>Once the patch is applied, we return for invalid domains. so we
-      will only have <br>
-    </p>
-    <p>`<i>IMC Unknown Device type</i>` message printed for <b>unknown
-        domains</b>.</p>
-    <p>And `<i>IMC PMU (null) Register failed</i>` message will appear
-      only if the <br>
-    </p>
-    <p>registration fails for a <b>known domain</b>.</p>
-    <p><br>
-    </p>
-    <p><br>
-    </p>
-    <p>Thanks,</p>
-    <p>Anju<br>
-    </p>
-    <br>
-  </body>
-</html>
-
---------------423130FBCB40CAF30FC4B33D--
-
++	change_page_attr(image->control_code_page,
++			 ALIGN(KEXEC_CONTROL_PAGE_SIZE, PAGE_SIZE) >> PAGE_SHIFT,
++			 PAGE_KERNEL_TEXT);
++
+  	flush_icache_range(reboot_code_buffer,
+  				reboot_code_buffer + KEXEC_CONTROL_PAGE_SIZE);
+  	printk(KERN_INFO "Bye!\n");
+diff --git a/arch/powerpc/mm/pgtable_32.c b/arch/powerpc/mm/pgtable_32.c
+index 16ada373b32b..0e4651d803fc 100644
+--- a/arch/powerpc/mm/pgtable_32.c
++++ b/arch/powerpc/mm/pgtable_32.c
+@@ -340,7 +340,7 @@ static int __change_page_attr_noflush(struct page 
+*page, pgprot_t prot)
+   *
+   * THIS DOES NOTHING WITH BAT MAPPINGS, DEBUG USE ONLY
+   */
+-static int change_page_attr(struct page *page, int numpages, pgprot_t prot)
++int change_page_attr(struct page *page, int numpages, pgprot_t prot)
+  {
+  	int i, err = 0;
+  	unsigned long flags;
+-- 
+2.13.3
