@@ -2,49 +2,84 @@ Return-Path: <SRS0=UVon=TW=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8F288C282CE
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 May 2019 11:12:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0300CC282CE
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 May 2019 11:51:45 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 1D38920644
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 May 2019 11:12:43 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1D38920644
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 4768E2173C
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 May 2019 11:51:44 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="POXkwPJv"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4768E2173C
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45892y1jqszDqVT
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 May 2019 21:12:42 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4589vx4yjszDqQP
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 May 2019 21:51:41 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=arm.com
- (client-ip=217.140.101.70; helo=foss.arm.com;
- envelope-from=vincenzo.frascino@arm.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=c-s.fr
+ (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=arm.com
-Received: from foss.arm.com (foss.arm.com [217.140.101.70])
- by lists.ozlabs.org (Postfix) with ESMTP id 4588xL2nBLzDqFB
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 May 2019 21:07:46 +1000 (AEST)
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.72.51.249])
- by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id D472715BF;
- Wed, 22 May 2019 04:07:45 -0700 (PDT)
-Received: from e119884-lin.cambridge.arm.com (e119884-lin.cambridge.arm.com
- [10.1.196.72])
- by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 9AC9C3F575;
- Wed, 22 May 2019 04:07:43 -0700 (PDT)
-From: Vincenzo Frascino <vincenzo.frascino@arm.com>
-To: linux-arch@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ dmarc=none (p=none dis=none) header.from=c-s.fr
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="POXkwPJv"; 
+ dkim-atps=neutral
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4589tQ1FzHzDqGX
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 May 2019 21:50:22 +1000 (AEST)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 4589tJ4yVNz9v0fR;
+ Wed, 22 May 2019 13:50:16 +0200 (CEST)
+Authentication-Results: localhost; dkim=pass
+ reason="1024-bit key; insecure key"
+ header.d=c-s.fr header.i=@c-s.fr header.b=POXkwPJv; dkim-adsp=pass;
+ dkim-atps=neutral
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id V94w9JZLf8FZ; Wed, 22 May 2019 13:50:16 +0200 (CEST)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 4589tJ3hd9z9v0fQ;
+ Wed, 22 May 2019 13:50:16 +0200 (CEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
+ t=1558525816; bh=v7mSv9ZultjO77hfD5xE57INGaAyhzhE/RNKEdmCEnY=;
+ h=Subject:To:Cc:References:From:Date:In-Reply-To:From;
+ b=POXkwPJvrZMMAl4KHfYk+/3xhHCe5cXX/yQJse+zdWqbVwvnT9lGVShGA9wBEFrld
+ p6fRLRYjvdqiGUaNPRLXGMBTlEnwL3XGZgrPpMHY8i8AOVS/Ww6MNQwDwx7PqetY7/
+ ExcgF1De4OuUfZau36hSm3PnzJ+NrXIfm3w+bP90=
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id D25B38B83C;
+ Wed, 22 May 2019 13:50:17 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id ozEKrGxkZ0tD; Wed, 22 May 2019 13:50:17 +0200 (CEST)
+Received: from PO15451 (po15451.idsi0.si.c-s.fr [172.25.231.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 884888B83A;
+ Wed, 22 May 2019 13:50:17 +0200 (CEST)
+Subject: Re: [PATCH v3 3/3] kselftest: Extend vDSO selftest to clock_getres
+To: Vincenzo Frascino <vincenzo.frascino@arm.com>,
+ linux-arch@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
  linux-s390@vger.kernel.org, linux-kselftest@vger.kernel.org
-Subject: [PATCH v3 2/3] s390: Fix vDSO clock_getres()
-Date: Wed, 22 May 2019 12:07:21 +0100
-Message-Id: <20190522110722.28094-3-vincenzo.frascino@arm.com>
-X-Mailer: git-send-email 2.21.0
-In-Reply-To: <20190522110722.28094-1-vincenzo.frascino@arm.com>
 References: <20190522110722.28094-1-vincenzo.frascino@arm.com>
+ <20190522110722.28094-4-vincenzo.frascino@arm.com>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Message-ID: <3a6d9b99-0026-6743-9e73-4880f3cd6b1c@c-s.fr>
+Date: Wed, 22 May 2019 13:50:17 +0200
+User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:60.0) Gecko/20100101
+ Thunderbird/60.6.1
 MIME-Version: 1.0
+In-Reply-To: <20190522110722.28094-4-vincenzo.frascino@arm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: fr
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -64,154 +99,205 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-clock_getres in the vDSO library has to preserve the same behaviour
-of posix_get_hrtimer_res().
 
-In particular, posix_get_hrtimer_res() does:
-    sec = 0;
-    ns = hrtimer_resolution;
-and hrtimer_resolution depends on the enablement of the high
-resolution timers that can happen either at compile or at run time.
 
-Fix the s390 vdso implementation of clock_getres keeping a copy of
-hrtimer_resolution in vdso data and using that directly.
+Le 22/05/2019 à 13:07, Vincenzo Frascino a écrit :
+> The current version of the multiarch vDSO selftest verifies only
+> gettimeofday.
+> 
+> Extend the vDSO selftest to clock_getres, to verify that the
+> syscall and the vDSO library function return the same information.
+> 
+> The extension has been used to verify the hrtimer_resoltion fix.
+> 
+> Cc: Shuah Khan <shuah@kernel.org>
+> Signed-off-by: Vincenzo Frascino <vincenzo.frascino@arm.com>
+> ---
+> 
+> Note: This patch is independent from the others in this series, hence it
+> can be merged singularly by the kselftest maintainers.
+> 
+>   tools/testing/selftests/vDSO/Makefile         |   2 +
+>   .../selftests/vDSO/vdso_clock_getres.c        | 137 ++++++++++++++++++
+>   2 files changed, 139 insertions(+)
+>   create mode 100644 tools/testing/selftests/vDSO/vdso_clock_getres.c
+> 
+> diff --git a/tools/testing/selftests/vDSO/Makefile b/tools/testing/selftests/vDSO/Makefile
+> index 9e03d61f52fd..d5c5bfdf1ac1 100644
+> --- a/tools/testing/selftests/vDSO/Makefile
+> +++ b/tools/testing/selftests/vDSO/Makefile
+> @@ -5,6 +5,7 @@ uname_M := $(shell uname -m 2>/dev/null || echo not)
+>   ARCH ?= $(shell echo $(uname_M) | sed -e s/i.86/x86/ -e s/x86_64/x86/)
+>   
+>   TEST_GEN_PROGS := $(OUTPUT)/vdso_test
+> +TEST_GEN_PROGS += $(OUTPUT)/vdso_clock_getres
+>   ifeq ($(ARCH),x86)
+>   TEST_GEN_PROGS += $(OUTPUT)/vdso_standalone_test_x86
+>   endif
+> @@ -18,6 +19,7 @@ endif
+>   
+>   all: $(TEST_GEN_PROGS)
+>   $(OUTPUT)/vdso_test: parse_vdso.c vdso_test.c
+> +$(OUTPUT)/vdso_clock_getres: vdso_clock_getres.c
+>   $(OUTPUT)/vdso_standalone_test_x86: vdso_standalone_test_x86.c parse_vdso.c
+>   	$(CC) $(CFLAGS) $(CFLAGS_vdso_standalone_test_x86) \
+>   		vdso_standalone_test_x86.c parse_vdso.c \
+> diff --git a/tools/testing/selftests/vDSO/vdso_clock_getres.c b/tools/testing/selftests/vDSO/vdso_clock_getres.c
+> new file mode 100644
+> index 000000000000..341a9bc34ffc
+> --- /dev/null
+> +++ b/tools/testing/selftests/vDSO/vdso_clock_getres.c
+> @@ -0,0 +1,137 @@
+> +// SPDX-License-Identifier: GPL-2.0 WITH Linux-syscall-note
+> +/*
+> + * vdso_clock_getres.c: Sample code to test clock_getres.
+> + * Copyright (c) 2019 Arm Ltd.
+> + *
+> + * Compile with:
+> + * gcc -std=gnu99 vdso_clock_getres.c
+> + *
+> + * Tested on ARM, ARM64, MIPS32, x86 (32-bit and 64-bit),
+> + * Power (32-bit and 64-bit), S390x (32-bit and 64-bit).
+> + * Might work on other architectures.
+> + */
+> +
+> +#define _GNU_SOURCE
+> +#include <elf.h>
+> +#include <err.h>
+> +#include <fcntl.h>
+> +#include <stdint.h>
+> +#include <stdio.h>
+> +#include <stdlib.h>
+> +#include <time.h>
+> +#include <sys/auxv.h>
+> +#include <sys/mman.h>
+> +#include <sys/time.h>
+> +#include <unistd.h>
+> +#include <sys/syscall.h>
+> +
+> +#include "../kselftest.h"
+> +
+> +static long syscall_clock_getres(clockid_t _clkid, struct timespec *_ts)
+> +{
+> +	long ret;
+> +
+> +	ret = syscall(SYS_clock_getres, _clkid, _ts);
+> +
+> +	return ret;
+> +}
+> +
+> +const char *vdso_clock_name[12] = {
+> +	"CLOCK_REALTIME",
+> +	"CLOCK_MONOTONIC",
+> +	"CLOCK_PROCESS_CPUTIME_ID",
+> +	"CLOCK_THREAD_CPUTIME_ID",
+> +	"CLOCK_MONOTONIC_RAW",
+> +	"CLOCK_REALTIME_COARSE",
+> +	"CLOCK_MONOTONIC_COARSE",
+> +	"CLOCK_BOOTTIME",
+> +	"CLOCK_REALTIME_ALARM",
+> +	"CLOCK_BOOTTIME_ALARM",
+> +	"CLOCK_SGI_CYCLE",
+> +	"CLOCK_TAI",
+> +};
+> +
+> +/*
+> + * This function calls clock_getres in vdso and by system call
+> + * with different values for clock_id.
+> + *
+> + * Example of output:
+> + *
+> + * clock_id: CLOCK_REALTIME [PASS]
+> + * clock_id: CLOCK_BOOTTIME [PASS]
+> + * clock_id: CLOCK_TAI [PASS]
+> + * clock_id: CLOCK_REALTIME_COARSE [PASS]
+> + * clock_id: CLOCK_MONOTONIC [PASS]
+> + * clock_id: CLOCK_MONOTONIC_RAW [PASS]
+> + * clock_id: CLOCK_MONOTONIC_COARSE [PASS]
+> + */
+> +static inline int vdso_test_clock(unsigned int clock_id)
+> +{
+> +	struct timespec x, y;
+> +
+> +	printf("clock_id: %s", vdso_clock_name[clock_id]);
+> +	clock_getres(clock_id, &x);
+> +	syscall_clock_getres(clock_id, &y);
+> +
+> +	if ((x.tv_sec != y.tv_sec) || (x.tv_sec != y.tv_sec)) {
+> +		printf(" [FAIL]\n");
+> +		return KSFT_FAIL;
+> +	}
+> +
+> +	printf(" [PASS]\n");
+> +	return 0;
+> +}
+> +
+> +int main(int argc, char **argv)
+> +{
+> +	int ret;
+> +
+> +#if _POSIX_TIMERS > 0
+> +
+> +#ifdef CLOCK_REALTIME
 
-Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Cc: Heiko Carstens <heiko.carstens@de.ibm.com>
-Signed-off-by: Vincenzo Frascino <vincenzo.frascino@arm.com>
-Acked-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
----
+Why do you need that #ifdef and all the ones below ?
 
-Note: This patch is independent from the others in this series, hence it
-can be merged singularly by the s390 maintainers.
+CLOCK_REALTIME (and others) is defined in include/uapi/linux/time.h, so 
+it should be there when you build the test, shouldn't it ?
 
- arch/s390/include/asm/vdso.h           |  1 +
- arch/s390/kernel/asm-offsets.c         |  2 +-
- arch/s390/kernel/time.c                |  1 +
- arch/s390/kernel/vdso32/clock_getres.S | 12 +++++++-----
- arch/s390/kernel/vdso64/clock_getres.S | 10 +++++-----
- 5 files changed, 15 insertions(+), 11 deletions(-)
+> +	ret = vdso_test_clock(CLOCK_REALTIME);
+> +	if (ret)
+> +		goto out;
 
-diff --git a/arch/s390/include/asm/vdso.h b/arch/s390/include/asm/vdso.h
-index 169d7604eb80..f3ba84fa9bd1 100644
---- a/arch/s390/include/asm/vdso.h
-+++ b/arch/s390/include/asm/vdso.h
-@@ -36,6 +36,7 @@ struct vdso_data {
- 	__u32 tk_shift;			/* Shift used for xtime_nsec	0x60 */
- 	__u32 ts_dir;			/* TOD steering direction	0x64 */
- 	__u64 ts_end;			/* TOD steering end		0x68 */
-+	__u32 hrtimer_res;		/* hrtimer resolution		0x70 */
- };
- 
- struct vdso_per_cpu_data {
-diff --git a/arch/s390/kernel/asm-offsets.c b/arch/s390/kernel/asm-offsets.c
-index 41ac4ad21311..4a229a60b24a 100644
---- a/arch/s390/kernel/asm-offsets.c
-+++ b/arch/s390/kernel/asm-offsets.c
-@@ -76,6 +76,7 @@ int main(void)
- 	OFFSET(__VDSO_TK_SHIFT, vdso_data, tk_shift);
- 	OFFSET(__VDSO_TS_DIR, vdso_data, ts_dir);
- 	OFFSET(__VDSO_TS_END, vdso_data, ts_end);
-+	OFFSET(__VDSO_CLOCK_REALTIME_RES, vdso_data, hrtimer_res);
- 	OFFSET(__VDSO_ECTG_BASE, vdso_per_cpu_data, ectg_timer_base);
- 	OFFSET(__VDSO_ECTG_USER, vdso_per_cpu_data, ectg_user_time);
- 	OFFSET(__VDSO_CPU_NR, vdso_per_cpu_data, cpu_nr);
-@@ -87,7 +88,6 @@ int main(void)
- 	DEFINE(__CLOCK_REALTIME_COARSE, CLOCK_REALTIME_COARSE);
- 	DEFINE(__CLOCK_MONOTONIC_COARSE, CLOCK_MONOTONIC_COARSE);
- 	DEFINE(__CLOCK_THREAD_CPUTIME_ID, CLOCK_THREAD_CPUTIME_ID);
--	DEFINE(__CLOCK_REALTIME_RES, MONOTONIC_RES_NSEC);
- 	DEFINE(__CLOCK_COARSE_RES, LOW_RES_NSEC);
- 	BLANK();
- 	/* idle data offsets */
-diff --git a/arch/s390/kernel/time.c b/arch/s390/kernel/time.c
-index e8766beee5ad..8ea9db599d38 100644
---- a/arch/s390/kernel/time.c
-+++ b/arch/s390/kernel/time.c
-@@ -310,6 +310,7 @@ void update_vsyscall(struct timekeeper *tk)
- 
- 	vdso_data->tk_mult = tk->tkr_mono.mult;
- 	vdso_data->tk_shift = tk->tkr_mono.shift;
-+	vdso_data->hrtimer_res = hrtimer_resolution;
- 	smp_wmb();
- 	++vdso_data->tb_update_count;
- }
-diff --git a/arch/s390/kernel/vdso32/clock_getres.S b/arch/s390/kernel/vdso32/clock_getres.S
-index eaf9cf1417f6..fecd7684c645 100644
---- a/arch/s390/kernel/vdso32/clock_getres.S
-+++ b/arch/s390/kernel/vdso32/clock_getres.S
-@@ -18,20 +18,22 @@
- __kernel_clock_getres:
- 	CFI_STARTPROC
- 	basr	%r1,0
--	la	%r1,4f-.(%r1)
-+10:	al	%r1,4f-10b(%r1)
-+	l	%r0,__VDSO_CLOCK_REALTIME_RES(%r1)
- 	chi	%r2,__CLOCK_REALTIME
- 	je	0f
- 	chi	%r2,__CLOCK_MONOTONIC
- 	je	0f
--	la	%r1,5f-4f(%r1)
-+	basr	%r1,0
-+	la	%r1,5f-.(%r1)
-+	l	%r0,0(%r1)
- 	chi	%r2,__CLOCK_REALTIME_COARSE
- 	je	0f
- 	chi	%r2,__CLOCK_MONOTONIC_COARSE
- 	jne	3f
- 0:	ltr	%r3,%r3
- 	jz	2f				/* res == NULL */
--1:	l	%r0,0(%r1)
--	xc	0(4,%r3),0(%r3)			/* set tp->tv_sec to zero */
-+1:	xc	0(4,%r3),0(%r3)			/* set tp->tv_sec to zero */
- 	st	%r0,4(%r3)			/* store tp->tv_usec */
- 2:	lhi	%r2,0
- 	br	%r14
-@@ -39,6 +41,6 @@ __kernel_clock_getres:
- 	svc	0
- 	br	%r14
- 	CFI_ENDPROC
--4:	.long	__CLOCK_REALTIME_RES
-+4:	.long	_vdso_data - 10b
- 5:	.long	__CLOCK_COARSE_RES
- 	.size	__kernel_clock_getres,.-__kernel_clock_getres
-diff --git a/arch/s390/kernel/vdso64/clock_getres.S b/arch/s390/kernel/vdso64/clock_getres.S
-index 081435398e0a..022b58c980db 100644
---- a/arch/s390/kernel/vdso64/clock_getres.S
-+++ b/arch/s390/kernel/vdso64/clock_getres.S
-@@ -17,12 +17,14 @@
- 	.type  __kernel_clock_getres,@function
- __kernel_clock_getres:
- 	CFI_STARTPROC
--	larl	%r1,4f
-+	larl	%r1,3f
-+	lg	%r0,0(%r1)
- 	cghi	%r2,__CLOCK_REALTIME_COARSE
- 	je	0f
- 	cghi	%r2,__CLOCK_MONOTONIC_COARSE
- 	je	0f
--	larl	%r1,3f
-+	larl	%r1,_vdso_data
-+	l	%r0,__VDSO_CLOCK_REALTIME_RES(%r1)
- 	cghi	%r2,__CLOCK_REALTIME
- 	je	0f
- 	cghi	%r2,__CLOCK_MONOTONIC
-@@ -36,7 +38,6 @@ __kernel_clock_getres:
- 	jz	2f
- 0:	ltgr	%r3,%r3
- 	jz	1f				/* res == NULL */
--	lg	%r0,0(%r1)
- 	xc	0(8,%r3),0(%r3)			/* set tp->tv_sec to zero */
- 	stg	%r0,8(%r3)			/* store tp->tv_usec */
- 1:	lghi	%r2,0
-@@ -45,6 +46,5 @@ __kernel_clock_getres:
- 	svc	0
- 	br	%r14
- 	CFI_ENDPROC
--3:	.quad	__CLOCK_REALTIME_RES
--4:	.quad	__CLOCK_COARSE_RES
-+3:	.quad	__CLOCK_COARSE_RES
- 	.size	__kernel_clock_getres,.-__kernel_clock_getres
--- 
-2.21.0
+Why that goto ? Nothing is done at out, so a 'return ret' would be 
+better I think.
 
+And do we really want to stop at first failure ? Wouldn't it be better 
+to run all the tests regardless ?
+
+Christophe
+
+> +#endif
+> +
+> +#ifdef CLOCK_BOOTTIME
+> +	ret = vdso_test_clock(CLOCK_BOOTTIME);
+> +	if (ret)
+> +		goto out;
+> +#endif
+> +
+> +#ifdef CLOCK_TAI
+> +	ret = vdso_test_clock(CLOCK_TAI);
+> +	if (ret)
+> +		goto out;
+> +#endif
+> +
+> +#ifdef CLOCK_REALTIME_COARSE
+> +	ret = vdso_test_clock(CLOCK_REALTIME_COARSE);
+> +	if (ret)
+> +		goto out;
+> +#endif
+> +
+> +#ifdef CLOCK_MONOTONIC
+> +	ret = vdso_test_clock(CLOCK_MONOTONIC);
+> +	if (ret)
+> +		goto out;
+> +#endif
+> +
+> +#ifdef CLOCK_MONOTONIC_RAW
+> +	ret = vdso_test_clock(CLOCK_MONOTONIC_RAW);
+> +	if (ret)
+> +		goto out;
+> +#endif
+> +
+> +#ifdef CLOCK_MONOTONIC_COARSE
+> +	ret = vdso_test_clock(CLOCK_MONOTONIC_COARSE);
+> +	if (ret)
+> +		goto out;
+> +#endif
+> +
+> +#endif
+> +
+> +out:
+> +	return ret;
+> +}
+> 
