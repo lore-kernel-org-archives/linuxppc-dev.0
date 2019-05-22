@@ -4,24 +4,23 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-8.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
-	version=3.4.0
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 32EBCC282DD
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 May 2019 19:57:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 44ABBC282CE
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 May 2019 19:59:12 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6149120856
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 May 2019 19:56:59 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id E639420862
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 May 2019 19:59:11 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="lFfuDgi3"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6149120856
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="sEWIpSrg"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E639420862
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 458Ngs0qx0zDqBH
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 May 2019 05:56:57 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 458NkQ29P7zDqPP
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 May 2019 05:59:10 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=kernel.org
  (client-ip=198.145.29.99; helo=mail.kernel.org;
@@ -29,33 +28,33 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="lFfuDgi3"; 
+ unprotected) header.d=kernel.org header.i=@kernel.org header.b="sEWIpSrg"; 
  dkim-atps=neutral
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 458N3l2861zDqDt
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 May 2019 05:29:05 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 458N3l4rNLzDqL0
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 May 2019 05:29:07 +1000 (AEST)
 Received: from sasha-vm.mshome.net (c-73-47-72-35.hsd1.nh.comcast.net
  [73.47.72.35])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id C2ED720675;
- Wed, 22 May 2019 19:29:02 +0000 (UTC)
+ by mail.kernel.org (Postfix) with ESMTPSA id 0D532217F9;
+ Wed, 22 May 2019 19:29:04 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1558553343;
- bh=gv+FR0rS2TJQ3fIyX/u06tYIbVz2HjKxwq4USBy5tlw=;
+ s=default; t=1558553345;
+ bh=NiqXvwojC1D7C1RXV3saA1gnnXcxvKec8v+zqiUIXuc=;
  h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=lFfuDgi3si7YfYsImlzdZOKcr3H2kQ05m1/enwjhyDWU0DSPlmef/PzdLtZOSJ63+
- CBoIZGcYBb+MKftQAQsfnKbBXolp0qKjsCt6E0E3Pe+iQC8iXfuxa7rQYcHKAmZjJG
- a9OtBvZRuEzHGveDeW7ESgnWO+8CP9/vyZfy7Svc=
+ b=sEWIpSrgpF08xeYZYoDuOYPCXDNaeJhl7BKQMEowdUUjxP1XgmCnwYV2z3N7a9oe1
+ i6zx/tYpcQEx6hEhkRzvLgB7KAeCkiXl2GUtWqZQtg0vbUDwkDkuGos4yuta4/KhzT
+ wRc+kSa3mTwx1M1DlL709Ch18+RtAtJEi6QsWQ4g=
 From: Sasha Levin <sashal@kernel.org>
 To: linux-kernel@vger.kernel.org,
 	stable@vger.kernel.org
-Subject: [PATCH AUTOSEL 4.14 014/167] powerpc/perf: Return accordingly on
- invalid chip-id in
-Date: Wed, 22 May 2019 15:26:09 -0400
-Message-Id: <20190522192842.25858-14-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 4.14 015/167] powerpc/boot: Fix missing check of
+ lseek() return value
+Date: Wed, 22 May 2019 15:26:10 -0400
+Message-Id: <20190522192842.25858-15-sashal@kernel.org>
 X-Mailer: git-send-email 2.20.1
 In-Reply-To: <20190522192842.25858-1-sashal@kernel.org>
 References: <20190522192842.25858-1-sashal@kernel.org>
@@ -74,49 +73,42 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Sasha Levin <sashal@kernel.org>,
- Madhavan Srinivasan <maddy@linux.vnet.ibm.com>,
- Anju T Sudhakar <anju@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- Dan Carpenter <dan.carpenter@oracle.com>
+Cc: Sasha Levin <sashal@kernel.org>, Bo YU <tsu.yubo@gmail.com>,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Anju T Sudhakar <anju@linux.vnet.ibm.com>
+From: Bo YU <tsu.yubo@gmail.com>
 
-[ Upstream commit a913e5e8b43be1d3897a141ce61c1ec071cad89c ]
+[ Upstream commit 5d085ec04a000fefb5182d3b03ee46ca96d8389b ]
 
-Nest hardware counter memory resides in a per-chip reserve-memory.
-During nest_imc_event_init(), chip-id of the event-cpu is considered to
-calculate the base memory addresss for that cpu. Return, proper error
-condition if the chip_id calculated is invalid.
+This is detected by Coverity scan: CID: 1440481
 
-Reported-by: Dan Carpenter <dan.carpenter@oracle.com>
-Fixes: 885dcd709ba91 ("powerpc/perf: Add nest IMC PMU support")
-Reviewed-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-Signed-off-by: Anju T Sudhakar <anju@linux.vnet.ibm.com>
+Signed-off-by: Bo YU <tsu.yubo@gmail.com>
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- arch/powerpc/perf/imc-pmu.c | 5 +++++
- 1 file changed, 5 insertions(+)
+ arch/powerpc/boot/addnote.c | 6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/perf/imc-pmu.c b/arch/powerpc/perf/imc-pmu.c
-index b73961b95c345..994e4392cac5c 100644
---- a/arch/powerpc/perf/imc-pmu.c
-+++ b/arch/powerpc/perf/imc-pmu.c
-@@ -481,6 +481,11 @@ static int nest_imc_event_init(struct perf_event *event)
- 	 * Get the base memory addresss for this cpu.
- 	 */
- 	chip_id = cpu_to_chip_id(event->cpu);
-+
-+	/* Return, if chip_id is not valid */
-+	if (chip_id < 0)
-+		return -ENODEV;
-+
- 	pcni = pmu->mem_info;
- 	do {
- 		if (pcni->id == chip_id) {
+diff --git a/arch/powerpc/boot/addnote.c b/arch/powerpc/boot/addnote.c
+index 9d9f6f334d3cc..3da3e2b1b51bc 100644
+--- a/arch/powerpc/boot/addnote.c
++++ b/arch/powerpc/boot/addnote.c
+@@ -223,7 +223,11 @@ main(int ac, char **av)
+ 	PUT_16(E_PHNUM, np + 2);
+ 
+ 	/* write back */
+-	lseek(fd, (long) 0, SEEK_SET);
++	i = lseek(fd, (long) 0, SEEK_SET);
++	if (i < 0) {
++		perror("lseek");
++		exit(1);
++	}
+ 	i = write(fd, buf, n);
+ 	if (i < 0) {
+ 		perror("write");
 -- 
 2.20.1
 
