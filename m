@@ -3,22 +3,22 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
 X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS
-	autolearn=ham autolearn_force=no version=3.4.0
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 59DD3C282CE
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 May 2019 14:56:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8B1CCC282CE
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 May 2019 15:04:53 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 958D520879
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 May 2019 14:56:52 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 958D520879
+	by mail.kernel.org (Postfix) with ESMTPS id 1846220879
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 May 2019 15:04:53 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1846220879
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 458G1Z1KH4zDqQk
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 May 2019 00:56:50 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 458GBq1V1VzDqP5
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 May 2019 01:04:51 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=arm.com
  (client-ip=217.140.101.70; helo=foss.arm.com;
@@ -26,14 +26,14 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=arm.com
 Received: from foss.arm.com (usa-sjc-mx-foss1.foss.arm.com [217.140.101.70])
- by lists.ozlabs.org (Postfix) with ESMTP id 458Fzw08ZyzDqMN
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 May 2019 00:55:22 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTP id 458G9N3JPTzDqHL
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 May 2019 01:03:35 +1000 (AEST)
 Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.72.51.249])
- by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 5A86980D;
- Wed, 22 May 2019 07:55:20 -0700 (PDT)
+ by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 576EF80D;
+ Wed, 22 May 2019 08:03:34 -0700 (PDT)
 Received: from [10.1.196.72] (e119884-lin.cambridge.arm.com [10.1.196.72])
- by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 0E7403F718;
- Wed, 22 May 2019 07:55:17 -0700 (PDT)
+ by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 3B8143F718;
+ Wed, 22 May 2019 08:03:32 -0700 (PDT)
 Subject: Re: [PATCH v3 3/3] kselftest: Extend vDSO selftest to clock_getres
 To: Christophe Leroy <christophe.leroy@c-s.fr>, linux-arch@vger.kernel.org,
  linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
@@ -42,8 +42,8 @@ References: <20190522110722.28094-1-vincenzo.frascino@arm.com>
  <20190522110722.28094-4-vincenzo.frascino@arm.com>
  <3a6d9b99-0026-6743-9e73-4880f3cd6b1c@c-s.fr>
 From: Vincenzo Frascino <vincenzo.frascino@arm.com>
-Message-ID: <84a39582-7acb-fa00-682f-dc126fdfa266@arm.com>
-Date: Wed, 22 May 2019 15:55:16 +0100
+Message-ID: <c0b5b233-9b06-1627-6b72-773ac4b5d69e@arm.com>
+Date: Wed, 22 May 2019 16:03:30 +0100
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
  Thunderbird/60.6.1
 MIME-Version: 1.0
@@ -221,10 +221,10 @@ On 22/05/2019 12:50, Christophe Leroy wrote:
 > it should be there when you build the test, shouldn't it ?
 > 
 
-In implementing this test I followed what the man page for clock_gettime(2)
-defines in terms of availability of the timers. Since I do not know how old are
-the userspace headers, I think it is a good idea checking that the clocks are
-defined before trying to use them.
+In implementing this test I tried to follow what the man page for
+clock_gettime(2) defines in terms of availability of the timers. Since I do not
+know how old are the userspace headers, I think it is a good idea checking that
+the clocks are defined before trying to use them.
 
 >> +	ret = vdso_test_clock(CLOCK_REALTIME);
 >> +	if (ret)
@@ -232,17 +232,16 @@ defined before trying to use them.
 > 
 > Why that goto ? Nothing is done at out, so a 'return ret' would be 
 > better I think.
->
+> 
 
 Agree, thanks for pointing this out. Will fix in v4.
-
 
 > And do we really want to stop at first failure ? Wouldn't it be better 
 > to run all the tests regardless ?
 > 
 
 The test is supposed to fail if one of the sub-tests fails, hence once the first
-fails doesn't seem convenient running the others, because we already know the
+fails doesn't seem convenient to run the others, because we already know the
 result.
 
 > Christophe
