@@ -2,82 +2,95 @@ Return-Path: <SRS0=UVon=TW=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D9D8CC072A4
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 May 2019 08:13:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 12B9FC072A4
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 May 2019 08:29:37 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 26F6A20815
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 May 2019 08:13:50 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=brauner.io header.i=@brauner.io header.b="FQpPrYca"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 26F6A20815
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=brauner.io
+	by mail.kernel.org (Postfix) with ESMTPS id 62817217F9
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 May 2019 08:29:36 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 62817217F9
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45854X1hX5zDqNj
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 May 2019 18:13:48 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4585Qg61BVzDqPw
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 May 2019 18:29:31 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=brauner.io
- (client-ip=2a00:1450:4864:20::142; helo=mail-lf1-x142.google.com;
- envelope-from=christian@brauner.io; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
+ (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
+ envelope-from=aneesh.kumar@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=brauner.io
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- secure) header.d=brauner.io header.i=@brauner.io header.b="FQpPrYca"; 
- dkim-atps=neutral
-Received: from mail-lf1-x142.google.com (mail-lf1-x142.google.com
- [IPv6:2a00:1450:4864:20::142])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ dmarc=none (p=none dis=none) header.from=linux.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4585306Dp2zDqLP
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 May 2019 18:12:26 +1000 (AEST)
-Received: by mail-lf1-x142.google.com with SMTP id y10so979233lfl.3
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 May 2019 01:12:26 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=brauner.io; s=google;
- h=mime-version:references:in-reply-to:from:date:message-id:subject:to
- :cc; bh=NinRxNHyDYbCj8IbjH00ChDPuWJUmzxEB5UBBCZfvuk=;
- b=FQpPrYcaQxCAFGTYiUsPu0qLO+TyOcW7gshxdKkzEdBEoeF7zfGLnQVrcgcr4gKCeX
- LJ4YXrL36Z8UOIkkUcBOLv8jo3+1wy2Zrr1Gv+mEl7u90rBwnDVcVlXzHgwabis+F7I/
- dlJlteIhWCGDFh11b+aiyTTGML6DsZQmYr7FjOpjo+237NiSY/93FSEYu5SmcuC+kMHi
- w+QbDlfq/QnsLdgPfA6Jf+xdMdism6B4eELfwRuNPZvO4gmtKOqxk/k31Xt7g6ek0i6A
- 6O4E/le0sudnktBxl+9AFEIeQt8N5n9ZAVs90K2h9eXQLV3Rz/8qfSLtahw9cvbBcJ3h
- 1JTg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:mime-version:references:in-reply-to:from:date
- :message-id:subject:to:cc;
- bh=NinRxNHyDYbCj8IbjH00ChDPuWJUmzxEB5UBBCZfvuk=;
- b=PDDLtm4FMtzy3IpykMG2uM+R7mOVAyYPkIbsQu6KIKUC5v1/BHEcVJPOkbFkebZA7p
- KI24EuNk6FhCPwVwr5yLykGPtt2RD8gNhImobjyViUAc9S1eRxY8tzMBeT7+b+wNKo0+
- pNDhDIJWtSn2qWzV34l1BWQpSUNr1KCf+n+fX0r/0HcOBLP/r2pG1hVoq1SfK4glDQKE
- YVsIp8KEQEnJR4jdhlxlGdEtRCT49WnxHzlz9B0On48T4+lpRbwNXxgHSCN3EExV93il
- jeoF20t4ujAWgHlYAchvUM8zh9QDhDXzj34YN3ZBkrtVMVRswtNVOC0k9NrraGdB0Ga3
- 2xrw==
-X-Gm-Message-State: APjAAAUSXz+4qrChY+H6hiRQjBYPBClQCTU9i1jJxZo+VbLDoSL7krpR
- m9Pkkye/7rcVTcXBFqnxsEpFdr5b4MD0um08t999yA==
-X-Google-Smtp-Source: APXvYqx7pLLI28SrC6KCXMaRxdNQfwff8OtpKLPW6FHDJY0UodmrushWU4y7kAd+10dOgbbxHnK3LHfXY1UCm8GAhHE=
-X-Received: by 2002:a05:6512:1c1:: with SMTP id
- f1mr4469627lfp.125.1558512742198; 
- Wed, 22 May 2019 01:12:22 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4585PJ3h3QzDqM7
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 May 2019 18:28:19 +1000 (AEST)
+Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
+ x4M8SFti035448
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 May 2019 04:28:17 -0400
+Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2sn2n5rn2b-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 May 2019 04:28:16 -0400
+Received: from localhost
+ by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.ibm.com>;
+ Wed, 22 May 2019 09:27:13 +0100
+Received: from b03cxnp08026.gho.boulder.ibm.com (9.17.130.18)
+ by e35.co.us.ibm.com (192.168.1.135) with IBM ESMTP SMTP Gateway: Authorized
+ Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Wed, 22 May 2019 09:27:10 +0100
+Received: from b03ledav006.gho.boulder.ibm.com
+ (b03ledav006.gho.boulder.ibm.com [9.17.130.237])
+ by b03cxnp08026.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x4M8R9H212583204
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Wed, 22 May 2019 08:27:09 GMT
+Received: from b03ledav006.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 6C6DAC6057;
+ Wed, 22 May 2019 08:27:09 +0000 (GMT)
+Received: from b03ledav006.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id C00EAC605B;
+ Wed, 22 May 2019 08:27:07 +0000 (GMT)
+Received: from skywalker.in.ibm.com (unknown [9.124.31.87])
+ by b03ledav006.gho.boulder.ibm.com (Postfix) with ESMTP;
+ Wed, 22 May 2019 08:27:07 +0000 (GMT)
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
+To: dan.j.williams@intel.com
+Subject: [RFC PATCH V2 2/3] mm/nvdimm: Add page size and struct page size to
+ pfn superblock
+Date: Wed, 22 May 2019 13:57:00 +0530
+X-Mailer: git-send-email 2.21.0
+In-Reply-To: <20190522082701.6817-1-aneesh.kumar@linux.ibm.com>
+References: <20190522082701.6817-1-aneesh.kumar@linux.ibm.com>
 MIME-Version: 1.0
-References: <20190521150006.GJ17978@ZenIV.linux.org.uk>
- <20190521113448.20654-1-christian@brauner.io>
- <28114.1558456227@warthog.procyon.org.uk>
- <20190521164141.rbehqnghiej3gfua@brauner.io>
- <CAHk-=wgtHm4t71oKbykE=awiVv2H2wCy8yH0L_FsyhHQ5OSO+Q@mail.gmail.com>
-In-Reply-To: <CAHk-=wgtHm4t71oKbykE=awiVv2H2wCy8yH0L_FsyhHQ5OSO+Q@mail.gmail.com>
-From: Christian Brauner <christian@brauner.io>
-Date: Wed, 22 May 2019 10:12:11 +0200
-Message-ID: <CAHrFyr4NV_5Z7TRSXTaurd4KCTLiHqKb47dN=bdY46HiL9ZY3Q@mail.gmail.com>
-Subject: Re: [PATCH 1/2] open: add close_range()
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+x-cbid: 19052208-0012-0000-0000-00001739F84E
+X-IBM-SpamModules-Scores: 
+X-IBM-SpamModules-Versions: BY=3.00011141; HX=3.00000242; KW=3.00000007;
+ PH=3.00000004; SC=3.00000286; SDB=6.01206885; UDB=6.00633780; IPR=6.00987860; 
+ MB=3.00026999; MTD=3.00000008; XFM=3.00000015; UTC=2019-05-22 08:27:12
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 19052208-0013-0000-0000-0000575C5264
+Message-Id: <20190522082701.6817-2-aneesh.kumar@linux.ibm.com>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
+ definitions=2019-05-22_03:, , signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ malwarescore=0 suspectscore=1 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1810050000 definitions=main-1905220062
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -89,58 +102,98 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-ia64@vger.kernel.org, Linux-sh list <linux-sh@vger.kernel.org>,
- Oleg Nesterov <oleg@redhat.com>, David Howells <dhowells@redhat.com>,
- "open list:KERNEL SELFTEST FRAMEWORK" <linux-kselftest@vger.kernel.org>,
- sparclinux <sparclinux@vger.kernel.org>, Shuah Khan <shuah@kernel.org>,
- linux-arch <linux-arch@vger.kernel.org>,
- linux-s390 <linux-s390@vger.kernel.org>, Miklos Szeredi <miklos@szeredi.hu>,
- the arch/x86 maintainers <x86@kernel.org>, linux-mips@vger.kernel.org,
- linux-xtensa@linux-xtensa.org, Todd Kjos <tkjos@android.com>,
- Arnd Bergmann <arnd@arndb.de>, Jann Horn <jannh@google.com>,
- linux-m68k <linux-m68k@lists.linux-m68k.org>,
- Al Viro <viro@zeniv.linux.org.uk>, Thomas Gleixner <tglx@linutronix.de>,
- "Dmitry V. Levin" <ldv@altlinux.org>,
- Linux ARM <linux-arm-kernel@lists.infradead.org>,
- Florian Weimer <fweimer@redhat.com>,
- Parisc List <linux-parisc@vger.kernel.org>,
- Linux API <linux-api@vger.kernel.org>,
- Linux List Kernel Mailing <linux-kernel@vger.kernel.org>,
- alpha <linux-alpha@vger.kernel.org>,
- linux-fsdevel <linux-fsdevel@vger.kernel.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Cc: linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>, linux-nvdimm@lists.01.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, May 21, 2019 at 10:23 PM Linus Torvalds
-<torvalds@linux-foundation.org> wrote:
->
-> On Tue, May 21, 2019 at 9:41 AM Christian Brauner <christian@brauner.io> wrote:
-> >
-> > Yeah, you mentioned this before. I do like being able to specify an
-> > upper bound to have the ability to place fds strategically after said
-> > upper bound.
->
-> I suspect that's the case.
->
-> And if somebody really wants to just close everything and uses a large
-> upper bound, we can - if we really want to - just compare the upper
-> bound to the file table size, and do an optimized case for that. We do
-> that upper bound comparison anyway to limit the size of the walk, so
-> *if* it's a big deal, that case could then do the whole "shrink
-> fdtable" case too.
+This is needed so that we don't wrongly initialize a namespace
+which doesn't have enough space reserved for holding struct pages
+with the current kernel.
 
-Makes sense.
+We also increment PFN_MIN_VERSION to make sure that older kernel
+won't initialize namespace created with newer kernel.
 
->
-> But I don't believe it's worth optimizing for unless somebody really
-> has a load where that is shown to be a big deal.   Just do the silly
-> and simple loop, and add a cond_resched() in the loop, like
-> close_files() does for the "we have a _lot_ of files open" case.
+Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
+---
+ drivers/nvdimm/pfn.h      |  7 +++++--
+ drivers/nvdimm/pfn_devs.c | 19 ++++++++++++++++++-
+ 2 files changed, 23 insertions(+), 3 deletions(-)
 
-Ok. I will resend a v1 later with the cond_resched() logic you and Al
-suggested added.
+diff --git a/drivers/nvdimm/pfn.h b/drivers/nvdimm/pfn.h
+index 5fd29242745a..ba11738ca8a2 100644
+--- a/drivers/nvdimm/pfn.h
++++ b/drivers/nvdimm/pfn.h
+@@ -25,7 +25,7 @@
+  * kernel should fail to initialize that namespace.
+  */
+ 
+-#define PFN_MIN_VERSION 0
++#define PFN_MIN_VERSION 1
+ 
+ struct nd_pfn_sb {
+ 	u8 signature[PFN_SIG_LEN];
+@@ -43,7 +43,10 @@ struct nd_pfn_sb {
+ 	/* minor-version-2 record the base alignment of the mapping */
+ 	__le32 align;
+ 	__le16 min_version;
+-	u8 padding[3998];
++	/* minor-version-3 record the page size and struct page size */
++	__le16 page_struct_size;
++	__le32 page_size;
++	u8 padding[3992];
+ 	__le64 checksum;
+ };
+ 
+diff --git a/drivers/nvdimm/pfn_devs.c b/drivers/nvdimm/pfn_devs.c
+index a2268cf262f5..39fa8cf8ef58 100644
+--- a/drivers/nvdimm/pfn_devs.c
++++ b/drivers/nvdimm/pfn_devs.c
+@@ -466,6 +466,15 @@ int nd_pfn_validate(struct nd_pfn *nd_pfn, const char *sig)
+ 	if (__le16_to_cpu(pfn_sb->version_minor) < 2)
+ 		pfn_sb->align = 0;
+ 
++	if (__le16_to_cpu(pfn_sb->version_minor) < 3) {
++		/*
++		 * For a large part we use PAGE_SIZE. But we
++		 * do have some accounting code using SZ_4K.
++		 */
++		pfn_sb->page_struct_size = cpu_to_le16(64);
++		pfn_sb->page_size = cpu_to_le32(SZ_4K);
++	}
++
+ 	switch (le32_to_cpu(pfn_sb->mode)) {
+ 	case PFN_MODE_RAM:
+ 	case PFN_MODE_PMEM:
+@@ -481,6 +490,12 @@ int nd_pfn_validate(struct nd_pfn *nd_pfn, const char *sig)
+ 		align = 1UL << ilog2(offset);
+ 	mode = le32_to_cpu(pfn_sb->mode);
+ 
++	if (le32_to_cpu(pfn_sb->page_size) != PAGE_SIZE)
++		return -EOPNOTSUPP;
++
++	if (le16_to_cpu(pfn_sb->page_struct_size) != sizeof(struct page))
++		return -EOPNOTSUPP;
++
+ 	if (!nd_pfn->uuid) {
+ 		/*
+ 		 * When probing a namepace via nd_pfn_probe() the uuid
+@@ -775,11 +790,13 @@ static int nd_pfn_init(struct nd_pfn *nd_pfn)
+ 	memcpy(pfn_sb->uuid, nd_pfn->uuid, 16);
+ 	memcpy(pfn_sb->parent_uuid, nd_dev_to_uuid(&ndns->dev), 16);
+ 	pfn_sb->version_major = cpu_to_le16(1);
+-	pfn_sb->version_minor = cpu_to_le16(2);
++	pfn_sb->version_minor = cpu_to_le16(3);
+ 	pfn_sb->min_version = cpu_to_le16(PFN_MIN_VERSION);
+ 	pfn_sb->start_pad = cpu_to_le32(start_pad);
+ 	pfn_sb->end_trunc = cpu_to_le32(end_trunc);
+ 	pfn_sb->align = cpu_to_le32(nd_pfn->align);
++	pfn_sb->page_struct_size = cpu_to_le16(sizeof(struct page));
++	pfn_sb->page_size = cpu_to_le32(PAGE_SIZE);
+ 	checksum = nd_sb_checksum((struct nd_gen_sb *) pfn_sb);
+ 	pfn_sb->checksum = cpu_to_le64(checksum);
+ 
+-- 
+2.21.0
 
-Thanks!
-Christian
