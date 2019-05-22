@@ -3,62 +3,63 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
 X-Spam-Status: No, score=-4.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
-	autolearn=ham autolearn_force=no version=3.4.0
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 478FFC282CE
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 May 2019 20:35:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3460AC282CE
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 May 2019 21:21:39 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 73C9221473
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 May 2019 20:35:24 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 73C9221473
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
+	by mail.kernel.org (Postfix) with ESMTPS id 504B221773
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 May 2019 21:21:38 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 504B221773
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arndb.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 458PX95MJ1zDqR2
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 May 2019 06:35:21 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 458QYX026dzDqS2
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 May 2019 07:21:36 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=c-s.fr
- (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
- envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=gmail.com
+ (client-ip=209.85.160.196; helo=mail-qt1-f196.google.com;
+ envelope-from=arndbergmann@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=c-s.fr
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ dmarc=none (p=none dis=none) header.from=arndb.de
+Received: from mail-qt1-f196.google.com (mail-qt1-f196.google.com
+ [209.85.160.196])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 458PVJ1kYPzDqQt
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 May 2019 06:33:41 +1000 (AEST)
-Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 458PV85w7lz9v0V8;
- Wed, 22 May 2019 22:33:36 +0200 (CEST)
-X-Virus-Scanned: Debian amavisd-new at c-s.fr
-Received: from pegase1.c-s.fr ([192.168.12.234])
- by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id yFA-MrauNdsJ; Wed, 22 May 2019 22:33:36 +0200 (CEST)
-Received: from vm-hermes.si.c-s.fr (vm-hermes.si.c-s.fr [192.168.25.253])
- by pegase1.c-s.fr (Postfix) with ESMTP id 458PV83fMkz9v0V7;
- Wed, 22 May 2019 22:33:36 +0200 (CEST)
-Received: by vm-hermes.si.c-s.fr (Postfix, from userid 33)
- id 1E457709; Wed, 22 May 2019 22:33:35 +0200 (CEST)
-Received: from 37.173.159.113 ([37.173.159.113]) by messagerie.si.c-s.fr
- (Horde Framework) with HTTP; Wed, 22 May 2019 22:33:35 +0200
-Date: Wed, 22 May 2019 22:33:35 +0200
-Message-ID: <20190522223335.Horde.JIF8kbX8AwL8wErArEvEcg1@messagerie.si.c-s.fr>
-From: LEROY Christophe <christophe.leroy@c-s.fr>
-To: Aaro Koskinen <aaro.koskinen@iki.fi>
-Subject: Re: [BISECTED] kexec regression on PowerBook G4
-References: <20190521221859.GC3621@darkstar.musicnaut.iki.fi>
- <90f3557b-400b-60b5-9ff8-d5605adeee79@c-s.fr>
- <a8f8a0d7-1737-4c83-4587-8d4dc87c3ecb@c-s.fr>
- <20190522201310.GB456@darkstar.musicnaut.iki.fi>
-In-Reply-To: <20190522201310.GB456@darkstar.musicnaut.iki.fi>
-User-Agent: Internet Messaging Program (IMP) H5 (6.2.3)
-Content-Type: text/plain; charset=UTF-8; format=flowed; DelSp=Yes
+ by lists.ozlabs.org (Postfix) with ESMTPS id 458QX5554mzDqQl
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 May 2019 07:20:19 +1000 (AEST)
+Received: by mail-qt1-f196.google.com with SMTP id y22so4235345qtn.8
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 May 2019 14:20:19 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+ :message-id:subject:to:cc;
+ bh=PLY+CCzT6G7iJEFJBPIdwtB7E513yqHwhuA32U3ib3M=;
+ b=hdTaoM7nDbtiEnJ0E1dZmPm8pcq731sy5bEoBfMlZH7oMTYt0t6ryxPS9Fiyz9mflP
+ boJGf81dVj1IxB5XtWD0h2g+ZiHj1cs50T6tUIc09RilxcblTHcXcSwdYwZtTwJgjva/
+ 1OxAg2GFb3jki/VfjKqv1hkte2e36DYNQWR0plnTwxxLs7j1UJOOQai1lhj5x1kpX6qP
+ WdJeV1P/sGT6D77BQj2hPgz048j9eS2CgaZX44XxaOZefbj/kjq9PQkVxM+HzSs1uhtj
+ k3fXe13C4rKye2WBxIpHN9qZ+yKWFXf2o0MY+YPHnWwaKixiaPuJ2KnIUpNYRBiAYs02
+ kc/Q==
+X-Gm-Message-State: APjAAAVddUo4VJflxjaiT+U+Mjc7oYQUEsXyOgJmVSQhQ3u8/q/9wYPu
+ 1lF4aSqJTlNoWlFW4EPr4MDrofOAZWlnNDRMbY4=
+X-Google-Smtp-Source: APXvYqwXie6/tZhn3C4BpBgyl8D93Wtqfnb2Q1JvEErclhEBWpspsuISvDK5zx3thIBKKQda8003GrBIAoQ7tjRZi2o=
+X-Received: by 2002:ac8:2a05:: with SMTP id k5mr59259074qtk.304.1558560017048; 
+ Wed, 22 May 2019 14:20:17 -0700 (PDT)
 MIME-Version: 1.0
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+References: <CGME20190520141047eucas1p2c6006d1ecfc3eb287b6b33d131f66180@eucas1p2.samsung.com>
+ <1ab818ae-4d9f-d17a-f11f-7caaa5bf98bc@samsung.com>
+In-Reply-To: <1ab818ae-4d9f-d17a-f11f-7caaa5bf98bc@samsung.com>
+From: Arnd Bergmann <arnd@arndb.de>
+Date: Wed, 22 May 2019 23:20:00 +0200
+Message-ID: <CAK8P3a0wky-Km=PQO9=jN2kC0Zyy75LfD-1Kn5YHiEEV8ymZHQ@mail.gmail.com>
+Subject: Re: [PATCH] misc: remove redundant 'default n' from Kconfig-s
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -70,146 +71,45 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org
+Cc: Eric Piel <eric.piel@tremplin-utc.net>,
+ Andrew Donnellan <ajd@linux.ibm.com>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Frank Haverkamp <haver@linux.ibm.com>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ =?UTF-8?B?TWljaGHFgiBNaXJvc8WCYXc=?= <mirq-linux@rere.qmqm.pl>,
+ Frederic Barrat <fbarrat@linux.ibm.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Aaro Koskinen <aaro.koskinen@iki.fi> a =C3=A9crit=C2=A0:
-
-> Hi,
+On Mon, May 20, 2019 at 4:10 PM Bartlomiej Zolnierkiewicz
+<b.zolnierkie@samsung.com> wrote:
 >
-> On Wed, May 22, 2019 at 07:44:56AM +0000, Christophe Leroy wrote:
->> On 05/22/2019 06:14 AM, Christophe Leroy wrote:
->> >Le 22/05/2019 =C3=A0 00:18, Aaro Koskinen a =C3=A9crit=C2=A0:
->> >>I was trying to upgrade from v5.0 -> v5.1 on PowerBook G4, but when
->> >>trying
->> >>to kexec a kernel the system gets stuck (no errors seen on the console=
-).
->> >
->> >Do you mean you are trying to kexec a v5.1 kernel from a v5.0 kernel, o=
-r
->> >do you have a working v5.1 kernel, but kexec doesn't work with it ?
->> >
->> >>
->> >>Bisected to: 93c4a162b014 ("powerpc/6xx: Store PGDIR physical address
->> >>in a SPRG"). This commit doesn't revert cleanly anymore but I tested
->> >>that the one before works OK.
->> >
->> >Not sure that's the problem. There was a problem with that commit, but =
-it
->> >was fixed by 4622a2d43101 ("powerpc/6xx: fix setup and use of
->> >SPRN_SPRG_PGDIR for hash32").
->> >You probably hit some commit between those two during bisect, that's
->> >likely the reason why you ended here.
->> >
->> >Can you restart your bisect from 4622a2d43101 ?
->> >
->> >If you have CONFIG_SMP, maybe you should also consider taking 397d2300b=
-08c
->> >("powerpc/32s: fix flush_hash_pages() on SMP"). Stable 5.1.4 includes i=
-t.
->> >
->> >>
->> >>With current Linus HEAD (9c7db5004280), it gets a bit further but stil=
-l
->> >>doesn't work: now I get an error on the console after kexec "Starting
->> >>new kernel! ... Bye!":
->> >>
->> >>=C2=A0=C2=A0=C2=A0=C2=A0kernel tried to execute exec-protected page (.=
-..) - exploit attempt?
->> >
->> >Interesting.
->> >
->> >Do you have CONFIG_STRICT_KERNEL_RWX=3Dy in your .config ? If so, can y=
-ou
->> >retry without it ?
->>
->> After looking at the code, I don't thing CONFIG_STRICT_KERNEL_RWX will m=
-ake
->> any difference. Can you try the patch below ?
+> 'default n' is the default value for any bool or tristate Kconfig
+> setting so there is no need to write it explicitly.
 >
-> Doesn't help (git refuses the patch as corrupted, so I had to do those
-> changes manually, but I'm pretty sure I got it right).
+> Also since commit f467c5640c29 ("kconfig: only write '# CONFIG_FOO
+> is not set' for visible symbols") the Kconfig behavior is the same
+> regardless of 'default n' being present or not:
 >
-> I still get the "kernel tried to execute exec-protected page...". What
-> should I try next?
-
-Can you provide full details of the Oops you get ? And also your System.map=
- ?
-K
-Also build with CONFIG_PPC_PTDUMP and mount /sys/kernel/debug and give=20=
-=20
-content=20of /sys/kernel/debug/powerpc/block_address_translation and=20=20
-.../segment_registers=20before the failing kexec, and also=20=20
-/sys/kernel/debug/kernel_page_tables
-
-Thx
-Christophe
-
+>     ...
+>     One side effect of (and the main motivation for) this change is making
+>     the following two definitions behave exactly the same:
 >
->=20A.
+>         config FOO
+>                 bool
 >
->> From 8c1039da0d0f26cdf995156a905fc97fe7bda36c Mon Sep 17 00:00:00 2001
->> From: Christophe Leroy <christophe.leroy@c-s.fr>
->> Date: Wed, 22 May 2019 07:28:42 +0000
->> Subject: [PATCH] Fix Kexec
->>
->> ---
->>  arch/powerpc/include/asm/pgtable.h     | 2 ++
->>  arch/powerpc/kernel/machine_kexec_32.c | 4 ++++
->>  arch/powerpc/mm/pgtable_32.c           | 2 +-
->>  3 files changed, 7 insertions(+), 1 deletion(-)
->>
->> diff --git a/arch/powerpc/include/asm/pgtable.h
->> b/arch/powerpc/include/asm/pgtable.h
->> index 3f53be60fb01..642eea937229 100644
->> --- a/arch/powerpc/include/asm/pgtable.h
->> +++ b/arch/powerpc/include/asm/pgtable.h
->> @@ -140,6 +140,8 @@ static inline void pte_frag_set(mm_context_t *ctx, v=
-oid
->> *p)
->>  }
->>  #endif
->>
->> +int change_page_attr(struct page *page, int numpages, pgprot_t prot);
->> +
->>  #endif /* __ASSEMBLY__ */
->>
->>  #endif /* _ASM_POWERPC_PGTABLE_H */
->> diff --git a/arch/powerpc/kernel/machine_kexec_32.c
->> b/arch/powerpc/kernel/machine_kexec_32.c
->> index affe5dcce7f4..4f719501e6ae 100644
->> --- a/arch/powerpc/kernel/machine_kexec_32.c
->> +++ b/arch/powerpc/kernel/machine_kexec_32.c
->> @@ -54,6 +54,10 @@ void default_machine_kexec(struct kimage *image)
->>  	memcpy((void *)reboot_code_buffer, relocate_new_kernel,
->>  						relocate_new_kernel_size);
->>
->> +	change_page_attr(image->control_code_page,
->> +			 ALIGN(KEXEC_CONTROL_PAGE_SIZE, PAGE_SIZE) >> PAGE_SHIFT,
->> +			 PAGE_KERNEL_TEXT);
->> +
->>  	flush_icache_range(reboot_code_buffer,
->>  				reboot_code_buffer + KEXEC_CONTROL_PAGE_SIZE);
->>  	printk(KERN_INFO "Bye!\n");
->> diff --git a/arch/powerpc/mm/pgtable_32.c b/arch/powerpc/mm/pgtable_32.c
->> index 16ada373b32b..0e4651d803fc 100644
->> --- a/arch/powerpc/mm/pgtable_32.c
->> +++ b/arch/powerpc/mm/pgtable_32.c
->> @@ -340,7 +340,7 @@ static int __change_page_attr_noflush(struct page *p=
-age,
->> pgprot_t prot)
->>   *
->>   * THIS DOES NOTHING WITH BAT MAPPINGS, DEBUG USE ONLY
->>   */
->> -static int change_page_attr(struct page *page, int numpages, pgprot_t p=
-rot)
->> +int change_page_attr(struct page *page, int numpages, pgprot_t prot)
->>  {
->>  	int i, err =3D 0;
->>  	unsigned long flags;
->> --
->> 2.13.3
+>         config FOO
+>                 bool
+>                 default n
+>
+>     With this change, neither of these will generate a
+>     '# CONFIG_FOO is not set' line (assuming FOO isn't selected/implied).
+>     That might make it clearer to people that a bare 'default n' is
+>     redundant.
+>     ...
+>
+> Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 
-
+Acked-by: Arnd Bergmann <arnd@arndb.de>
