@@ -2,66 +2,52 @@ Return-Path: <SRS0=UVon=TW=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_MUTT autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 67E68C282CE
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 May 2019 20:09:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5D50BC282CE
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 May 2019 20:10:41 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id D9EA121473
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 May 2019 20:09:26 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="etVrJ4o9"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D9EA121473
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	by mail.kernel.org (Postfix) with ESMTPS id D80D321019
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 May 2019 20:10:40 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D80D321019
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=iki.fi
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 458NyD6h86zDqSp
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 May 2019 06:09:24 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 458Nzf6S8jzDqSl
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 May 2019 06:10:38 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=kernel.org
- (client-ip=198.145.29.99; helo=mail.kernel.org;
- envelope-from=sashal@kernel.org; receiver=<UNKNOWN>)
+ spf=neutral (mailfrom) smtp.mailfrom=iki.fi
+ (client-ip=62.142.5.107; helo=emh01.mail.saunalahti.fi;
+ envelope-from=aaro.koskinen@iki.fi; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=kernel.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="etVrJ4o9"; 
- dkim-atps=neutral
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ dmarc=fail (p=none dis=none) header.from=iki.fi
+Received: from emh01.mail.saunalahti.fi (emh01.mail.saunalahti.fi
+ [62.142.5.107])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 458N6r2Rc4zDqP2
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 May 2019 05:31:48 +1000 (AEST)
-Received: from sasha-vm.mshome.net (c-73-47-72-35.hsd1.nh.comcast.net
- [73.47.72.35])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id 62835217D7;
- Wed, 22 May 2019 19:31:45 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1558553506;
- bh=V6VAb/5YM6f2CZC9OozkhSdrFt6Chgf47ZaYM3V8uN4=;
- h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=etVrJ4o9IJHTEHXFeBCrrBn6CglzgfmiQTYTuG08QUzNjvVqsR7VI2v7sIQfCH2hx
- 2BGOkbzSIRp3yIe6fB5gh37GQjcCoTMYg6byrgLZQBsViRs5yhpOIiSdMIyq6OX1I2
- 3y4IQqu9IIsoy3kQJCwT60jiJc37qp3jSGO2rBfU=
-From: Sasha Levin <sashal@kernel.org>
-To: linux-kernel@vger.kernel.org,
-	stable@vger.kernel.org
-Subject: [PATCH AUTOSEL 4.4 13/92] ASoC: fsl_sai: Update is_slave_mode with
- correct value
-Date: Wed, 22 May 2019 15:30:08 -0400
-Message-Id: <20190522193127.27079-13-sashal@kernel.org>
-X-Mailer: git-send-email 2.20.1
-In-Reply-To: <20190522193127.27079-1-sashal@kernel.org>
-References: <20190522193127.27079-1-sashal@kernel.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 458Nvr5SPczDqRp
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 May 2019 06:07:17 +1000 (AEST)
+Received: from darkstar.musicnaut.iki.fi (85-76-4-80-nat.elisa-mobile.fi
+ [85.76.4.80])
+ by emh01.mail.saunalahti.fi (Postfix) with ESMTP id 8EC1020030;
+ Wed, 22 May 2019 23:07:11 +0300 (EEST)
+Date: Wed, 22 May 2019 23:07:11 +0300
+From: Aaro Koskinen <aaro.koskinen@iki.fi>
+To: Christophe Leroy <christophe.leroy@c-s.fr>
+Subject: Re: [BISECTED] kexec regression on PowerBook G4
+Message-ID: <20190522200711.GA456@darkstar.musicnaut.iki.fi>
+References: <20190521221859.GC3621@darkstar.musicnaut.iki.fi>
+ <90f3557b-400b-60b5-9ff8-d5605adeee79@c-s.fr>
 MIME-Version: 1.0
-X-stable: review
-X-Patchwork-Hint: Ignore
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
+In-Reply-To: <90f3557b-400b-60b5-9ff8-d5605adeee79@c-s.fr>
+User-Agent: Mutt/1.5.24 (2015-08-30)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -73,54 +59,65 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Nicolin Chen <nicoleotsuka@gmail.com>, Sasha Levin <sashal@kernel.org>,
- Mark Brown <broonie@kernel.org>, Daniel Baluta <daniel.baluta@nxp.com>,
- linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Daniel Baluta <daniel.baluta@nxp.com>
+Hi,
 
-[ Upstream commit ddb351145a967ee791a0fb0156852ec2fcb746ba ]
+On Wed, May 22, 2019 at 08:14:23AM +0200, Christophe Leroy wrote:
+> Le 22/05/2019 à 00:18, Aaro Koskinen a écrit :
+> >I was trying to upgrade from v5.0 -> v5.1 on PowerBook G4, but when trying
+> >to kexec a kernel the system gets stuck (no errors seen on the console).
+> 
+> Do you mean you are trying to kexec a v5.1 kernel from a v5.0 kernel, or do
+> you have a working v5.1 kernel, but kexec doesn't work with it ?
 
-is_slave_mode defaults to false because sai structure
-that contains it is kzalloc'ed.
+To summarize, my system's boot goes like this:
 
-Anyhow, if we decide to set the following configuration
-SAI slave -> SAI master, is_slave_mode will remain set on true
-although SAI being master it should be set to false.
+Open Firmware -> kernel A (small due to OF limit) -> (kexec) -> kernel B (big)
 
-Fix this by updating is_slave_mode for each call of
-fsl_sai_set_dai_fmt.
+First both A & B were at v5.0 ==> boot works.
+Then I upgraded B to v5.1 ==> boot works.
+Then I upgraded A to v5.1 ==> boot fails.
 
-Signed-off-by: Daniel Baluta <daniel.baluta@nxp.com>
-Acked-by: Nicolin Chen <nicoleotsuka@gmail.com>
-Signed-off-by: Mark Brown <broonie@kernel.org>
-Signed-off-by: Sasha Levin <sashal@kernel.org>
----
- sound/soc/fsl/fsl_sai.c | 2 ++
- 1 file changed, 2 insertions(+)
+So the issue must be in A. So after bisecting I got the following result:
 
-diff --git a/sound/soc/fsl/fsl_sai.c b/sound/soc/fsl/fsl_sai.c
-index 08b460ba06efc..61d2d955f26a6 100644
---- a/sound/soc/fsl/fsl_sai.c
-+++ b/sound/soc/fsl/fsl_sai.c
-@@ -260,12 +260,14 @@ static int fsl_sai_set_dai_fmt_tr(struct snd_soc_dai *cpu_dai,
- 	case SND_SOC_DAIFMT_CBS_CFS:
- 		val_cr2 |= FSL_SAI_CR2_BCD_MSTR;
- 		val_cr4 |= FSL_SAI_CR4_FSD_MSTR;
-+		sai->is_slave_mode = false;
- 		break;
- 	case SND_SOC_DAIFMT_CBM_CFM:
- 		sai->is_slave_mode = true;
- 		break;
- 	case SND_SOC_DAIFMT_CBS_CFM:
- 		val_cr2 |= FSL_SAI_CR2_BCD_MSTR;
-+		sai->is_slave_mode = false;
- 		break;
- 	case SND_SOC_DAIFMT_CBM_CFS:
- 		val_cr4 |= FSL_SAI_CR4_FSD_MSTR;
--- 
-2.20.1
+	Kernel A with commit 93c4a162b014 ==> fails
+	Kernel A with commit 93c4a162b014^1 ==> works
 
+n >Bisected to: 93c4a162b014 ("powerpc/6xx: Store PGDIR physical address
+> >in a SPRG"). This commit doesn't revert cleanly anymore but I tested
+> >that the one before works OK.
+> 
+> Not sure that's the problem. There was a problem with that commit, but it
+> was fixed by 4622a2d43101 ("powerpc/6xx: fix setup and use of
+> SPRN_SPRG_PGDIR for hash32").
+> You probably hit some commit between those two during bisect, that's likely
+> the reason why you ended here.
+> 
+> Can you restart your bisect from 4622a2d43101 ?
+
+This is not a good commit to start with, as it already gives "kernel
+tried to execute exec protected page..." after the "Bye!" message.
+
+> If you have CONFIG_SMP, maybe you should also consider taking 397d2300b08c
+> ("powerpc/32s: fix flush_hash_pages() on SMP"). Stable 5.1.4 includes it.
+
+This is UP computer and CONFIG_SMP is not set.
+
+> >With current Linus HEAD (9c7db5004280), it gets a bit further but still
+> >doesn't work: now I get an error on the console after kexec "Starting
+> >new kernel! ... Bye!":
+> >
+> >	kernel tried to execute exec-protected page (...) - exploit attempt?
+> 
+> Interesting.
+> 
+> Do you have CONFIG_STRICT_KERNEL_RWX=y in your .config ? If so, can you
+> retry without it ?
+
+I don't set that option.
+
+A.
