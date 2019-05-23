@@ -2,54 +2,54 @@ Return-Path: <SRS0=w0cb=TX=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS
+X-Spam-Status: No, score=-4.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
 	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6F013C04AAC
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 May 2019 08:47:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CFF01C04AAC
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 May 2019 08:55:15 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B90242175B
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 May 2019 08:47:44 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B90242175B
+	by mail.kernel.org (Postfix) with ESMTPS id 577532075E
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 May 2019 08:55:15 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 577532075E
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=debian.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 458jnB3d4pzDqFB
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 May 2019 18:47:42 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 458jxr5P4KzDqcS
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 May 2019 18:55:12 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=209.85.210.67; helo=mail-ot1-f67.google.com;
+ (client-ip=209.85.210.65; helo=mail-ot1-f65.google.com;
  envelope-from=mathieu.malaterre@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=debian.org
-Received: from mail-ot1-f67.google.com (mail-ot1-f67.google.com
- [209.85.210.67])
+Received: from mail-ot1-f65.google.com (mail-ot1-f65.google.com
+ [209.85.210.65])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 458jlk6WXNzDq62
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 May 2019 18:46:26 +1000 (AEST)
-Received: by mail-ot1-f67.google.com with SMTP id g18so4664973otj.11
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 May 2019 01:46:26 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 458jw71TQPzDq6l
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 May 2019 18:53:42 +1000 (AEST)
+Received: by mail-ot1-f65.google.com with SMTP id u11so4708120otq.7
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 May 2019 01:53:42 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:mime-version:references:in-reply-to:from:date
  :message-id:subject:to:cc:content-transfer-encoding;
- bh=8QKOuZsXCKoGRlpO5lyxyoXP3MPWfoKuTRCqNZgNN14=;
- b=dMssHPc0Ij4uWetf6IMklJk88fD4M9112PepGCrfLeR7WMMUkJxJqpt9XmuPx2W0BD
- UuntER5ZLh+fStaZcIn4HnNLpAbPu9mpIjbssrlOI4w3XGWINkk5JXoZS83UDcUBo8J6
- D93PXChP3EuRBOMnZ+vWVSZ250KNGiR9bBhtXalXINfuIxkZKQdjfrmkNsJ8deOAQ2SW
- eL+4XjOwWYNluKu5ah7P89PTlIOUUOiN2hKSnJGP/RVOr1lhr5Munyu42Tzalj0Oaqpd
- vEbqOqqEnr/sYzCtOb0Xdxa5bp93wqs8O2anXYjSZMHnpwPn0U9pxwugyM7UiYp2MJS5
- k5cg==
-X-Gm-Message-State: APjAAAUP4hDm0e/7eCo7tJ3YSTbA0ln2hOs9HCWJCXUxFn4fFD7Kvfq2
- XELKKHaoXWwiaAedgxVrnCny5zCfqz7pAgZ3RBY=
-X-Google-Smtp-Source: APXvYqyfpnWGmk78Wp+Tex6dY2geI0TRhZzhpXj/jaLgRpO1+WSqUb0sPhy4CanjkjlByE4ZI5fx6wnq5raiDJ8RkO4=
-X-Received: by 2002:a9d:1a5:: with SMTP id e34mr29923888ote.59.1558601184167; 
- Thu, 23 May 2019 01:46:24 -0700 (PDT)
+ bh=IgQ/bRtEOqDdDekv2xHrHuQNQBwEC6RN7d0nBiETbME=;
+ b=XGkp+CFv8PWig12sQ7P8DDQcKyCHANUrhWwK4pdNs7IvNXfyxkeoRTIlduPvY5Aucg
+ ovw18riGSK87UZB+kKUfMTfNkpqkmaC46DckLZYaKJB2PPdxtTx9pD+c9DaNZIIXwuZ+
+ eIOK8i/s/t0t8Hil8HbjZhL3E7cJ7fWkP1QuwkyHMWOPh6rnbNUoiK1U7Fkf/4ckvJe/
+ m2uMZjsn7Z15d5ejy/wkAw0mRUA6/OBAMuNnyumM/mzwJmjUnq+KnxPJFp21X194+H1e
+ wdAMObWMgQItVlnMk4tPwOQgeAkcjSsjpfAKbTXIeqXBbBK5C9zC51ko3RCK3W65W5om
+ 4RZg==
+X-Gm-Message-State: APjAAAUi+8vFV9Z0vFqv97+NQSE8SV3RRLbp+zDG+XeJxgh1WsNWwX0M
+ /NQ6ZPBzDTNALL0Q0IolNAQu1r2aF5QMUicR1A8=
+X-Google-Smtp-Source: APXvYqwDvxZRzlIRx6czcwd724jbKzMIgCfgL9eERTxnzDDveGA1jt21mugeKRVliN9mfMCvm8am9lTxcieIqd2Sgb0=
+X-Received: by 2002:a9d:27c7:: with SMTP id c65mr56481138otb.335.1558601620848; 
+ Thu, 23 May 2019 01:53:40 -0700 (PDT)
 MIME-Version: 1.0
 References: <CA+7wUszwugJeS_x_ExaHPUb8p23D7Zo2f2qqXfLQwr8EiLsk2g@mail.gmail.com>
  <33ab57c7-294a-6ae4-d678-1490ce5b97f1@c-s.fr>
@@ -58,8 +58,8 @@ References: <CA+7wUszwugJeS_x_ExaHPUb8p23D7Zo2f2qqXfLQwr8EiLsk2g@mail.gmail.com>
  <CA+7wUsxOxvtsp511c63HK-=Wm22qyEtDcg=p4rfRD+n55UQmiQ@mail.gmail.com>
 In-Reply-To: <CA+7wUsxOxvtsp511c63HK-=Wm22qyEtDcg=p4rfRD+n55UQmiQ@mail.gmail.com>
 From: Mathieu Malaterre <malat@debian.org>
-Date: Thu, 23 May 2019 10:46:13 +0200
-Message-ID: <CA+7wUsy+tY1Ny2dOr4Y9ZDxVn1UUgu3a3vJUQou0nx2ss4dYRw@mail.gmail.com>
+Date: Thu, 23 May 2019 10:53:29 +0200
+Message-ID: <CA+7wUszcau+OBj+ZTr007_vuTJsOmT0izZ64_W98x1=MPLU6aA@mail.gmail.com>
 Subject: Re: Failure to boot G4: dt_headr_start=0x01501000
 To: Christophe Leroy <christophe.leroy@c-s.fr>
 Content-Type: text/plain; charset="UTF-8"
@@ -156,13 +156,6 @@ On Thu, May 23, 2019 at 10:29 AM Mathieu Malaterre <malat@debian.org> wrote=
 > > When you say you are using 'master', what do you mean ? Can you give th=
 e
 > > commit Id ?
-
-Sorry about that. The problematic commit for me is:
-
-54dee406374c Merge tag 'arm64-fixes' of
-git://git.kernel.org/pub/scm/linux/kernel/git/arm64/linux
-
-
 > >
 > > Does it boots with Kernel 5.1.4 ?
 >
@@ -182,7 +175,13 @@ trval))
 > > Did you try latest powerpc/merge branch ?
 >
 > Will try that next.
->
+
+I confirm powerpc/merge does not boot for me (same config). Commit id:
+
+a27eaa62326d (powerpc/merge) Automatic merge of branches 'master',
+'next' and 'fixes' into merge
+
+
 > > Can you send your full .config ?
 >
 > Config is attached.
