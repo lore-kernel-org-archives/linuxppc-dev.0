@@ -1,84 +1,44 @@
-Return-Path: <SRS0=LfN0=TY=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
+Return-Path: <SRS0=7t1b=TZ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 790D8C282E1
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 24 May 2019 23:57:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CD016C282E1
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 25 May 2019 00:56:27 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E9F5120674
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 24 May 2019 23:57:34 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=joelfernandes.org header.i=@joelfernandes.org header.b="ExaDqp0k"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E9F5120674
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=joelfernandes.org
+	by mail.kernel.org (Postfix) with ESMTPS id 2EEA220863
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 25 May 2019 00:56:26 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2EEA220863
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 459jwY2674zDqnn
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 25 May 2019 09:57:33 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=joelfernandes.org
- (client-ip=2607:f8b0:4864:20::444; helo=mail-pf1-x444.google.com;
- envelope-from=joel@joelfernandes.org; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=joelfernandes.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=joelfernandes.org header.i=@joelfernandes.org
- header.b="ExaDqp0k"; dkim-atps=neutral
-Received: from mail-pf1-x444.google.com (mail-pf1-x444.google.com
- [IPv6:2607:f8b0:4864:20::444])
+	by lists.ozlabs.org (Postfix) with ESMTP id 459lDS17GYzDqWh
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 25 May 2019 10:56:24 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 459jlz162TzDqTy
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 25 May 2019 09:50:07 +1000 (AEST)
-Received: by mail-pf1-x444.google.com with SMTP id d126so4001893pfd.2
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 May 2019 16:50:07 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=joelfernandes.org; s=google;
- h=from:to:cc:subject:date:message-id:in-reply-to:references
- :mime-version:content-transfer-encoding;
- bh=4IUQP+uKyCN66rRAguQBd+uSI/nPEDtpoZNPuNABz7k=;
- b=ExaDqp0kDit6EEuSOcT+FAdLJsr3wasxUTshDnisEPTxiqbsM/iwHBlK5jmEac4uTx
- 1WrmYkFMfBW8Hthn8w/kr+CT1si+DUZOuwzHNsk8UBPZv3PhzihaZaVz4saSEqQb9A8/
- P62/INsuK+8WFv0NR63C1VMqjfsXLMIYivmZQ=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
- :references:mime-version:content-transfer-encoding;
- bh=4IUQP+uKyCN66rRAguQBd+uSI/nPEDtpoZNPuNABz7k=;
- b=dTv2O6BvnMD2kBme3L1L3HahFMowqNnaHXgRkJni9vpk8Cjml+LlcZVFEPDBhTHotG
- V2JU019CED/oCLLLlg3Ai84xj7xL9GLySvV0ogz8BWzHgmADOq9VEeDFwNlewkqtuXdn
- vGD1W7S+UskZ2VbHps4TFO30W9O0tYAPYukm9Pn1FsBg/rLiLenj/QygiQGP4Mx6cFKY
- 1KfK+LGvz9p/k1e9CczNxwj8nc/xUBTakNB7QW35Nv2B9hw/hJEXGNxd+zhs0bqbOb8j
- 3SEHdAIM6qRFRlHpap97hOjzKfTAaxRMrzFWQktVSzt5kxwvnegaJpd6cJYRICVS9N0W
- mHQA==
-X-Gm-Message-State: APjAAAW8VkBnJ+frEoOHynQNYbqQ2YPaKK6zaWTDnb+ToJ7ZIagk5euu
- u3tyWC0gfGNxUyAhJFbJFiS8Sew9Rw3Jwg==
-X-Google-Smtp-Source: APXvYqxNGBpXom3Ado94lkiXFHwXNMChLcccb7ZkYxRn6dsfk/n65WIEwwfbkGKCqFKqFYilSX8ODw==
-X-Received: by 2002:a17:90a:372a:: with SMTP id
- u39mr12987526pjb.19.1558741804955; 
- Fri, 24 May 2019 16:50:04 -0700 (PDT)
-Received: from joelaf.cam.corp.google.com ([2620:15c:6:12:9c46:e0da:efbf:69cc])
- by smtp.gmail.com with ESMTPSA id q4sm3297595pgb.39.2019.05.24.16.50.02
- (version=TLS1_3 cipher=AEAD-AES256-GCM-SHA384 bits=256/256);
- Fri, 24 May 2019 16:50:04 -0700 (PDT)
-From: "Joel Fernandes (Google)" <joel@joelfernandes.org>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH RFC 5/5] rcu: Remove rcu_dereference_raw_notrace since no users
-Date: Fri, 24 May 2019 19:49:33 -0400
-Message-Id: <20190524234933.5133-6-joel@joelfernandes.org>
-X-Mailer: git-send-email 2.22.0.rc1.257.g3120a18244-goog
-In-Reply-To: <20190524234933.5133-1-joel@joelfernandes.org>
-References: <20190524234933.5133-1-joel@joelfernandes.org>
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+ by lists.ozlabs.org (Postfix) with ESMTPS id 459lBb6zpQzDqTW
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 25 May 2019 10:54:47 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=ellerman.id.au
+Received: by ozlabs.org (Postfix, from userid 1034)
+ id 459lBb45HVz9sB8; Sat, 25 May 2019 10:54:47 +1000 (AEST)
+X-powerpc-patch-notification: thanks
+X-powerpc-patch-commit: 3202e35ec1c8fc19cea24253ff83edf702a60a02
+X-Patchwork-Hint: ignore
+In-Reply-To: <20190511024217.4013-2-ravi.bangoria@linux.ibm.com>
+To: Ravi Bangoria <ravi.bangoria@linux.ibm.com>, peterz@infradead.org,
+ jolsa@redhat.com, maddy@linux.vnet.ibm.com
+From: Michael Ellerman <patch-notifications@ellerman.id.au>
+Subject: Re: [PATCH 2/2] powerpc/perf: Fix mmcra corruption by bhrb_filter
+Message-Id: <459lBb45HVz9sB8@ozlabs.org>
+Date: Sat, 25 May 2019 10:54:47 +1000 (AEST)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -90,64 +50,37 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: rcu@vger.kernel.org, Jonathan Corbet <corbet@lwn.net>,
- linux-doc@vger.kernel.org, Lai Jiangshan <jiangshanlai@gmail.com>,
- Josh Triplett <josh@joshtriplett.org>, kvm-ppc@vger.kernel.org,
- Miguel Ojeda <miguel.ojeda.sandonis@gmail.com>, Ingo Molnar <mingo@redhat.com>,
- Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
- Steven Rostedt <rostedt@goodmis.org>,
- "Joel Fernandes \(Google\)" <joel@joelfernandes.org>,
- "Paul E. McKenney" <paulmck@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Cc: Ravi Bangoria <ravi.bangoria@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, acme@kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The series removes all users of the API and with this patch, the API
-itself. Also fix documentation.
+On Sat, 2019-05-11 at 02:42:17 UTC, Ravi Bangoria wrote:
+> Consider a scenario where user creates two events:
+> 
+>   1st event:
+>     attr.sample_type |= PERF_SAMPLE_BRANCH_STACK;
+>     attr.branch_sample_type = PERF_SAMPLE_BRANCH_ANY;
+>     fd = perf_event_open(attr, 0, 1, -1, 0);
+> 
+>   This sets cpuhw->bhrb_filter to 0 and returns valid fd.
+> 
+>   2nd event:
+>     attr.sample_type |= PERF_SAMPLE_BRANCH_STACK;
+>     attr.branch_sample_type = PERF_SAMPLE_BRANCH_CALL;
+>     fd = perf_event_open(attr, 0, 1, -1, 0);
+> 
+>   It overrides cpuhw->bhrb_filter to -1 and returns with error.
+> 
+> Now if power_pmu_enable() gets called by any path other than
+> power_pmu_add(), ppmu->config_bhrb(-1) will set mmcra to -1.
+> 
+> Signed-off-by: Ravi Bangoria <ravi.bangoria@linux.ibm.com>
+> Reviewed-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
 
-Signed-off-by: Joel Fernandes (Google) <joel@joelfernandes.org>
----
- Documentation/RCU/Design/Requirements/Requirements.html | 6 +++---
- include/linux/rcupdate.h                                | 9 ---------
- 2 files changed, 3 insertions(+), 12 deletions(-)
+Applied to powerpc fixes, thanks.
 
-diff --git a/Documentation/RCU/Design/Requirements/Requirements.html b/Documentation/RCU/Design/Requirements/Requirements.html
-index 5a9238a2883c..9727278893e6 100644
---- a/Documentation/RCU/Design/Requirements/Requirements.html
-+++ b/Documentation/RCU/Design/Requirements/Requirements.html
-@@ -2512,9 +2512,9 @@ disabled across the entire RCU read-side critical section.
- <p>
- It is possible to use tracing on RCU code, but tracing itself
- uses RCU.
--For this reason, <tt>rcu_dereference_raw_notrace()</tt>
--is provided for use by tracing, which avoids the destructive
--recursion that could otherwise ensue.
-+This is the other reason for using, <tt>rcu_dereference_raw()</tt>,
-+for use by tracing, which avoids the destructive recursion that could
-+otherwise ensue.
- This API is also used by virtualization in some architectures,
- where RCU readers execute in environments in which tracing
- cannot be used.
-diff --git a/include/linux/rcupdate.h b/include/linux/rcupdate.h
-index 922bb6848813..f917a27fc115 100644
---- a/include/linux/rcupdate.h
-+++ b/include/linux/rcupdate.h
-@@ -472,15 +472,6 @@ static inline void rcu_preempt_sleep_check(void) { }
- 	__rcu_dereference_check((p), (c) || rcu_read_lock_sched_held(), \
- 				__rcu)
- 
--/*
-- * The tracing infrastructure traces RCU (we want that), but unfortunately
-- * some of the RCU checks causes tracing to lock up the system.
-- *
-- * The no-tracing version of rcu_dereference_raw() must not call
-- * rcu_read_lock_held().
-- */
--#define rcu_dereference_raw_notrace(p) __rcu_dereference_check((p), 1, __rcu)
--
- /**
-  * rcu_dereference_protected() - fetch RCU pointer when updates prevented
-  * @p: The pointer to read, prior to dereferencing
--- 
-2.22.0.rc1.257.g3120a18244-goog
+https://git.kernel.org/powerpc/c/3202e35ec1c8fc19cea24253ff83edf7
 
+cheers
