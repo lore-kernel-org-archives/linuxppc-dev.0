@@ -2,51 +2,85 @@ Return-Path: <SRS0=7t1b=TZ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED,USER_AGENT_MUTT autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BFA8BC282E1
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 25 May 2019 03:26:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id F2669C04AB0
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 25 May 2019 08:16:20 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 2B5232075C
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 25 May 2019 03:26:25 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2B5232075C
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=goodmis.org
+	by mail.kernel.org (Postfix) with ESMTPS id 29FEC2168B
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 25 May 2019 08:16:19 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=joelfernandes.org header.i=@joelfernandes.org header.b="tVo3uBLc"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 29FEC2168B
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=joelfernandes.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 459pYW1LjczDqXP
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 25 May 2019 13:26:23 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 459x015QhzzDqVs
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 25 May 2019 18:16:17 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=kernel.org
- (client-ip=198.145.29.99; helo=mail.kernel.org;
- envelope-from=srs0=xwpv=tz=goodmis.org=rostedt@kernel.org; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=goodmis.org
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ spf=pass (mailfrom) smtp.mailfrom=joelfernandes.org
+ (client-ip=2607:f8b0:4864:20::642; helo=mail-pl1-x642.google.com;
+ envelope-from=joel@joelfernandes.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=joelfernandes.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=joelfernandes.org header.i=@joelfernandes.org
+ header.b="tVo3uBLc"; dkim-atps=neutral
+Received: from mail-pl1-x642.google.com (mail-pl1-x642.google.com
+ [IPv6:2607:f8b0:4864:20::642])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 459pX14YwjzDqTy
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 25 May 2019 13:25:05 +1000 (AEST)
-Received: from gandalf.local.home (cpe-66-24-58-225.stny.res.rr.com
- [66.24.58.225])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id 84AF82075C;
- Sat, 25 May 2019 03:25:01 +0000 (UTC)
-Date: Fri, 24 May 2019 23:24:58 -0400
-From: Steven Rostedt <rostedt@goodmis.org>
-To: "Joel Fernandes (Google)" <joel@joelfernandes.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 459wyN5KNjzDqS0
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 25 May 2019 18:14:50 +1000 (AEST)
+Received: by mail-pl1-x642.google.com with SMTP id p1so5097463plo.2
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 25 May 2019 01:14:50 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=joelfernandes.org; s=google;
+ h=date:from:to:cc:subject:message-id:references:mime-version
+ :content-disposition:in-reply-to:user-agent;
+ bh=1c/wOZB7UIcO4fhNsFW8JEtKnsulp1uLNI0yUTmwDCo=;
+ b=tVo3uBLcpEIXXZnhVPqSswFuc4q2UlbviAt3R2V2Thcy9J19G8Vh9t8IKakn6eWu7P
+ LF+dLcUy8MISmgvZ0VGCcUrlJOi0R9kMHNLpfYwqA4+5Un+SNXosWy9sZwuR5XURngkR
+ S1XgD6r2KG9fhVaAYKrKbQt6RqcK7l5hP89YQ=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+ :mime-version:content-disposition:in-reply-to:user-agent;
+ bh=1c/wOZB7UIcO4fhNsFW8JEtKnsulp1uLNI0yUTmwDCo=;
+ b=MOc7eGD3LsFjMcCVZcUPrTDJBHddD/KsXtbVxfsrJ+hw2vQxRd+WQPqr9Cssiu3Uzz
+ o6CCOU1PXe9ZQGemoVRfvUfuYpqX2XA6IUrSoX8yHrrYQ9zZR87m+NlW4xfLOcHbPMhS
+ SMpyI8IuBAbHR7ZSmKG/sfiAiTitDU4uoCrw4Eo9BpjjeObG4hUPTTy4WJTjuipbTMdr
+ /jRCIw45jnqWYU34nyYmln6qurHXRYQGN6GDUly51QseJW24+pR0P1C2d92m+4BGAHA/
+ cP8/mEXj6RurOPWt63gOsYemc1l/Dqbdt1OMOVPHzj/pUMSCC850Ps+yeinnWwakf6a2
+ /ynQ==
+X-Gm-Message-State: APjAAAW+3hrPqJ7DUdM792z/NvDw9Qhk2OF0zHvLOQftAWI0lEbqAjft
+ PdW9MHgnBu1nZd+662J/UhD7GQ==
+X-Google-Smtp-Source: APXvYqy398cjiqw83nLMzWHb1uka5NbJ8a1bov+JXtig8R0soLxRu+ibdZSFPg0qivDKo96oArfXwQ==
+X-Received: by 2002:a17:902:10c:: with SMTP id
+ 12mr111734693plb.61.1558772087333; 
+ Sat, 25 May 2019 01:14:47 -0700 (PDT)
+Received: from localhost ([2620:15c:6:12:9c46:e0da:efbf:69cc])
+ by smtp.gmail.com with ESMTPSA id 25sm4607225pfp.76.2019.05.25.01.14.45
+ (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
+ Sat, 25 May 2019 01:14:46 -0700 (PDT)
+Date: Sat, 25 May 2019 04:14:44 -0400
+From: Joel Fernandes <joel@joelfernandes.org>
+To: Steven Rostedt <rostedt@goodmis.org>
 Subject: Re: [PATCH RFC 0/5] Remove some notrace RCU APIs
-Message-ID: <20190524232458.4bcf4eb4@gandalf.local.home>
-In-Reply-To: <20190524234933.5133-1-joel@joelfernandes.org>
+Message-ID: <20190525081444.GC197789@google.com>
 References: <20190524234933.5133-1-joel@joelfernandes.org>
-X-Mailer: Claws Mail 3.17.3 (GTK+ 2.24.32; x86_64-pc-linux-gnu)
+ <20190524232458.4bcf4eb4@gandalf.local.home>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20190524232458.4bcf4eb4@gandalf.local.home>
+User-Agent: Mutt/1.10.1 (2018-07-13)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -69,17 +103,33 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, 24 May 2019 19:49:28 -0400
-"Joel Fernandes (Google)" <joel@joelfernandes.org> wrote:
-
-> The series removes users of the following APIs, and the APIs themselves, since
-> the regular non - _notrace variants don't do any tracing anyway.
->  * hlist_for_each_entry_rcu_notrace
->  * rcu_dereference_raw_notrace
+On Fri, May 24, 2019 at 11:24:58PM -0400, Steven Rostedt wrote:
+> On Fri, 24 May 2019 19:49:28 -0400
+> "Joel Fernandes (Google)" <joel@joelfernandes.org> wrote:
 > 
+> > The series removes users of the following APIs, and the APIs themselves, since
+> > the regular non - _notrace variants don't do any tracing anyway.
+> >  * hlist_for_each_entry_rcu_notrace
+> >  * rcu_dereference_raw_notrace
+> > 
+> 
+> I guess the difference between the _raw_notrace and just _raw variants
+> is that _notrace ones do a rcu_check_sparse(). Don't we want to keep
+> that check?
 
-I guess the difference between the _raw_notrace and just _raw variants
-is that _notrace ones do a rcu_check_sparse(). Don't we want to keep
-that check?
+This is true.
 
--- Steve
+Since the users of _raw_notrace are very few, is it worth keeping this API
+just for sparse checking? The API naming is also confusing. I was expecting
+_raw_notrace to do fewer checks than _raw, instead of more. Honestly, I just
+want to nuke _raw_notrace as done in this series and later we can introduce a
+sparse checking version of _raw if need-be. The other option could be to
+always do sparse checking for _raw however that used to be the case and got
+changed in http://lists.infradead.org/pipermail/linux-afs/2016-July/001016.html
+
+thanks a lot,
+
+ - Joel
+
+> 
+> -- Steve
