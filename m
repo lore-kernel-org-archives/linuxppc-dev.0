@@ -6,46 +6,52 @@ X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
 	URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1B94FC04AB3
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 May 2019 10:55:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id ADB02C04AB3
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 May 2019 11:14:03 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 65AF920859
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 May 2019 10:55:08 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 65AF920859
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net
+	by mail.kernel.org (Postfix) with ESMTPS id E0B412146F
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 May 2019 11:14:02 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E0B412146F
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45CDQK3n7fzDqJS
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 May 2019 20:55:05 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45CDr86flBzDqLb
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 May 2019 21:14:00 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=rjwysocki.net
- (client-ip=79.96.170.134; helo=cloudserver094114.home.pl;
- envelope-from=rjw@rjwysocki.net; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=redhat.com
+ (client-ip=209.132.183.28; helo=mx1.redhat.com; envelope-from=david@redhat.com;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=rjwysocki.net
-Received: from cloudserver094114.home.pl (cloudserver094114.home.pl
- [79.96.170.134])
+ dmarc=pass (p=none dis=none) header.from=redhat.com
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45CDNr4d0yzDqDJ
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 May 2019 20:53:47 +1000 (AEST)
-Received: from 79.184.255.36.ipv4.supernova.orange.pl (79.184.255.36) (HELO
- kreacher.localnet)
- by serwer1319399.home.pl (79.96.170.134) with SMTP (IdeaSmtpServer 0.83.213)
- id 3e9dcd1393346651; Mon, 27 May 2019 12:53:42 +0200
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-To: Mathieu Malaterre <malat@debian.org>
-Subject: Re: [PATCH v2] powerpc/power: Expose pfn_is_nosave prototype
-Date: Mon, 27 May 2019 12:53:41 +0200
-Message-ID: <1929721.iDiXxTFbjN@kreacher>
-In-Reply-To: <20190524104418.17194-1-malat@debian.org>
-References: <20190523114736.30268-1-malat@debian.org>
- <20190524104418.17194-1-malat@debian.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45CDp81W1SzDq9G
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 May 2019 21:12:15 +1000 (AEST)
+Received: from smtp.corp.redhat.com (int-mx08.intmail.prod.int.phx2.redhat.com
+ [10.5.11.23])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by mx1.redhat.com (Postfix) with ESMTPS id CD8CF330259;
+ Mon, 27 May 2019 11:12:13 +0000 (UTC)
+Received: from t460s.redhat.com (ovpn-117-89.ams2.redhat.com [10.36.117.89])
+ by smtp.corp.redhat.com (Postfix) with ESMTP id 54D6E19C7F;
+ Mon, 27 May 2019 11:12:10 +0000 (UTC)
+From: David Hildenbrand <david@redhat.com>
+To: linux-mm@kvack.org
+Subject: [PATCH v3 01/11] mm/memory_hotplug: Simplify and fix
+ check_hotplug_memory_range()
+Date: Mon, 27 May 2019 13:11:42 +0200
+Message-Id: <20190527111152.16324-2-david@redhat.com>
+In-Reply-To: <20190527111152.16324-1-david@redhat.com>
+References: <20190527111152.16324-1-david@redhat.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8bit
+X-Scanned-By: MIMEDefang 2.84 on 10.5.11.23
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.5.16
+ (mx1.redhat.com [10.5.110.29]); Mon, 27 May 2019 11:12:14 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -57,91 +63,63 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Len Brown <len.brown@intel.com>, linux-s390@vger.kernel.org,
- linux-pm@vger.kernel.org, Heiko Carstens <heiko.carstens@de.ibm.com>,
- linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
- Pavel Machek <pavel@ucw.cz>, Martin Schwidefsky <schwidefsky@de.ibm.com>,
- linuxppc-dev@lists.ozlabs.org
+Cc: linux-s390@vger.kernel.org, Michal Hocko <mhocko@suse.com>,
+ linux-ia64@vger.kernel.org, Pavel Tatashin <pasha.tatashin@soleen.com>,
+ linux-sh@vger.kernel.org, Mathieu Malaterre <malat@debian.org>,
+ David Hildenbrand <david@redhat.com>, linux-kernel@vger.kernel.org,
+ Wei Yang <richard.weiyang@gmail.com>, Arun KS <arunks@codeaurora.org>,
+ Qian Cai <cai@lca.pw>, Wei Yang <richardw.yang@linux.intel.com>,
+ Igor Mammedov <imammedo@redhat.com>, akpm@linux-foundation.org,
+ linuxppc-dev@lists.ozlabs.org, Dan Williams <dan.j.williams@intel.com>,
+ linux-arm-kernel@lists.infradead.org, Oscar Salvador <osalvador@suse.de>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Friday, May 24, 2019 12:44:18 PM CEST Mathieu Malaterre wrote:
-> The declaration for pfn_is_nosave is only available in
-> kernel/power/power.h. Since this function can be override in arch,
-> expose it globally. Having a prototype will make sure to avoid warning
-> (sometime treated as error with W=1) such as:
-> 
->   arch/powerpc/kernel/suspend.c:18:5: error: no previous prototype for 'pfn_is_nosave' [-Werror=missing-prototypes]
-> 
-> This moves the declaration into a globally visible header file and add
-> missing include to avoid a warning on powerpc. Also remove the
-> duplicated prototypes since not required anymore.
-> 
-> Cc: Christophe Leroy <christophe.leroy@c-s.fr>
-> Signed-off-by: Mathieu Malaterre <malat@debian.org>
-> ---
-> v2: As suggestion by christophe remove duplicates prototypes
-> 
->  arch/powerpc/kernel/suspend.c | 1 +
->  arch/s390/kernel/entry.h      | 1 -
->  include/linux/suspend.h       | 1 +
->  kernel/power/power.h          | 2 --
->  4 files changed, 2 insertions(+), 3 deletions(-)
-> 
-> diff --git a/arch/powerpc/kernel/suspend.c b/arch/powerpc/kernel/suspend.c
-> index a531154cc0f3..9e1b6b894245 100644
-> --- a/arch/powerpc/kernel/suspend.c
-> +++ b/arch/powerpc/kernel/suspend.c
-> @@ -8,6 +8,7 @@
->   */
->  
->  #include <linux/mm.h>
-> +#include <linux/suspend.h>
->  #include <asm/page.h>
->  #include <asm/sections.h>
->  
-> diff --git a/arch/s390/kernel/entry.h b/arch/s390/kernel/entry.h
-> index 20420c2b8a14..b2956d49b6ad 100644
-> --- a/arch/s390/kernel/entry.h
-> +++ b/arch/s390/kernel/entry.h
-> @@ -63,7 +63,6 @@ void __init startup_init(void);
->  void die(struct pt_regs *regs, const char *str);
->  int setup_profiling_timer(unsigned int multiplier);
->  void __init time_init(void);
-> -int pfn_is_nosave(unsigned long);
->  void s390_early_resume(void);
->  unsigned long prepare_ftrace_return(unsigned long parent, unsigned long sp, unsigned long ip);
->  
-> diff --git a/include/linux/suspend.h b/include/linux/suspend.h
-> index 6b3ea9ea6a9e..e8b8a7bede90 100644
-> --- a/include/linux/suspend.h
-> +++ b/include/linux/suspend.h
-> @@ -395,6 +395,7 @@ extern bool system_entering_hibernation(void);
->  extern bool hibernation_available(void);
->  asmlinkage int swsusp_save(void);
->  extern struct pbe *restore_pblist;
-> +int pfn_is_nosave(unsigned long pfn);
->  #else /* CONFIG_HIBERNATION */
->  static inline void register_nosave_region(unsigned long b, unsigned long e) {}
->  static inline void register_nosave_region_late(unsigned long b, unsigned long e) {}
-> diff --git a/kernel/power/power.h b/kernel/power/power.h
-> index 9e58bdc8a562..44bee462ff57 100644
-> --- a/kernel/power/power.h
-> +++ b/kernel/power/power.h
-> @@ -75,8 +75,6 @@ static inline void hibernate_reserved_size_init(void) {}
->  static inline void hibernate_image_size_init(void) {}
->  #endif /* !CONFIG_HIBERNATION */
->  
-> -extern int pfn_is_nosave(unsigned long);
-> -
->  #define power_attr(_name) \
->  static struct kobj_attribute _name##_attr = {	\
->  	.attr	= {				\
-> 
+By converting start and size to page granularity, we actually ignore
+unaligned parts within a page instead of properly bailing out with an
+error.
 
-With an ACK from the powerpc maintainers, I could apply this one.
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: Oscar Salvador <osalvador@suse.de>
+Cc: Michal Hocko <mhocko@suse.com>
+Cc: David Hildenbrand <david@redhat.com>
+Cc: Pavel Tatashin <pasha.tatashin@soleen.com>
+Cc: Qian Cai <cai@lca.pw>
+Cc: Wei Yang <richard.weiyang@gmail.com>
+Cc: Arun KS <arunks@codeaurora.org>
+Cc: Mathieu Malaterre <malat@debian.org>
+Reviewed-by: Dan Williams <dan.j.williams@intel.com>
+Reviewed-by: Wei Yang <richardw.yang@linux.intel.com>
+Signed-off-by: David Hildenbrand <david@redhat.com>
+---
+ mm/memory_hotplug.c | 11 +++--------
+ 1 file changed, 3 insertions(+), 8 deletions(-)
 
-
-
+diff --git a/mm/memory_hotplug.c b/mm/memory_hotplug.c
+index e096c987d261..762887b2358b 100644
+--- a/mm/memory_hotplug.c
++++ b/mm/memory_hotplug.c
+@@ -1051,16 +1051,11 @@ int try_online_node(int nid)
+ 
+ static int check_hotplug_memory_range(u64 start, u64 size)
+ {
+-	unsigned long block_sz = memory_block_size_bytes();
+-	u64 block_nr_pages = block_sz >> PAGE_SHIFT;
+-	u64 nr_pages = size >> PAGE_SHIFT;
+-	u64 start_pfn = PFN_DOWN(start);
+-
+ 	/* memory range must be block size aligned */
+-	if (!nr_pages || !IS_ALIGNED(start_pfn, block_nr_pages) ||
+-	    !IS_ALIGNED(nr_pages, block_nr_pages)) {
++	if (!size || !IS_ALIGNED(start, memory_block_size_bytes()) ||
++	    !IS_ALIGNED(size, memory_block_size_bytes())) {
+ 		pr_err("Block size [%#lx] unaligned hotplug range: start %#llx, size %#llx",
+-		       block_sz, start, size);
++		       memory_block_size_bytes(), start, size);
+ 		return -EINVAL;
+ 	}
+ 
+-- 
+2.20.1
 
