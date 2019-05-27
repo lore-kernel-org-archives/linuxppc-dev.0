@@ -2,48 +2,55 @@ Return-Path: <SRS0=jaSx=T4=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B70E2C04AB3
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 May 2019 01:18:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7FED9C04AB3
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 May 2019 01:49:00 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 437AD2075E
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 May 2019 01:18:54 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 437AD2075E
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+	by mail.kernel.org (Postfix) with ESMTPS id B90C920823
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 May 2019 01:48:59 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B90C920823
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45CbZz67vgzDqKw
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 May 2019 11:18:51 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45CcFj46ZVzDqNS
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 May 2019 11:48:57 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+ spf=pass (mailfrom) smtp.mailfrom=redhat.com
+ (client-ip=209.132.183.28; helo=mx1.redhat.com; envelope-from=david@redhat.com;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=redhat.com
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45CbXG2y7VzDqKS
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 May 2019 11:16:30 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=ellerman.id.au
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
- SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 45CbXG1YsPz9s3Z;
- Tue, 28 May 2019 11:16:30 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>,
- Mathieu Malaterre <malat@debian.org>
-Subject: Re: [PATCH v2] powerpc/power: Expose pfn_is_nosave prototype
-In-Reply-To: <1929721.iDiXxTFbjN@kreacher>
-References: <20190523114736.30268-1-malat@debian.org>
- <20190524104418.17194-1-malat@debian.org> <1929721.iDiXxTFbjN@kreacher>
-Date: Tue, 28 May 2019 11:16:30 +1000
-Message-ID: <875zpvqsy9.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45CDp8034CzDq6l
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 May 2019 21:12:14 +1000 (AEST)
+Received: from smtp.corp.redhat.com (int-mx08.intmail.prod.int.phx2.redhat.com
+ [10.5.11.23])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by mx1.redhat.com (Postfix) with ESMTPS id F158C88317;
+ Mon, 27 May 2019 11:12:09 +0000 (UTC)
+Received: from t460s.redhat.com (ovpn-117-89.ams2.redhat.com [10.36.117.89])
+ by smtp.corp.redhat.com (Postfix) with ESMTP id 9B2952AA81;
+ Mon, 27 May 2019 11:11:53 +0000 (UTC)
+From: David Hildenbrand <david@redhat.com>
+To: linux-mm@kvack.org
+Subject: [PATCH v3 00/11] mm/memory_hotplug: Factor out memory block
+ devicehandling
+Date: Mon, 27 May 2019 13:11:41 +0200
+Message-Id: <20190527111152.16324-1-david@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Transfer-Encoding: 8bit
+X-Scanned-By: MIMEDefang 2.84 on 10.5.11.23
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.5.16
+ (mx1.redhat.com [10.5.110.28]); Mon, 27 May 2019 11:12:11 +0000 (UTC)
+X-Mailman-Approved-At: Tue, 28 May 2019 11:47:52 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -55,56 +62,122 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Len Brown <len.brown@intel.com>, linux-s390@vger.kernel.org,
- linux-pm@vger.kernel.org, Heiko Carstens <heiko.carstens@de.ibm.com>,
- linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
- Pavel Machek <pavel@ucw.cz>, Martin Schwidefsky <schwidefsky@de.ibm.com>,
- linuxppc-dev@lists.ozlabs.org
+Cc: Mark Rutland <mark.rutland@arm.com>, Oscar Salvador <osalvador@suse.com>,
+ "Rafael J. Wysocki" <rafael@kernel.org>, Michal Hocko <mhocko@suse.com>,
+ linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org,
+ Peter Zijlstra <peterz@infradead.org>,
+ Dave Hansen <dave.hansen@linux.intel.com>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>,
+ Wei Yang <richard.weiyang@gmail.com>,
+ Masahiro Yamada <yamada.masahiro@socionext.com>,
+ Pavel Tatashin <pavel.tatashin@microsoft.com>, Rich Felker <dalias@libc.org>,
+ Arun KS <arunks@codeaurora.org>, Chintan Pandya <cpandya@codeaurora.org>,
+ Ingo Molnar <mingo@kernel.org>, Paul Mackerras <paulus@samba.org>,
+ Qian Cai <cai@lca.pw>, linux-s390@vger.kernel.org,
+ "H. Peter Anvin" <hpa@zytor.com>, Yu Zhao <yuzhao@google.com>,
+ Baoquan He <bhe@redhat.com>, Logan Gunthorpe <logang@deltatee.com>,
+ David Hildenbrand <david@redhat.com>, Mike Rapoport <rppt@linux.ibm.com>,
+ Jun Yao <yaojun8558363@gmail.com>, Ingo Molnar <mingo@redhat.com>,
+ Catalin Marinas <catalin.marinas@arm.com>, Rob Herring <robh@kernel.org>,
+ Fenghua Yu <fenghua.yu@intel.com>, Pavel Tatashin <pasha.tatashin@soleen.com>,
+ Vasily Gorbik <gor@linux.ibm.com>,
+ Anshuman Khandual <anshuman.khandual@arm.com>,
+ "mike.travis@hpe.com" <mike.travis@hpe.com>, Will Deacon <will.deacon@arm.com>,
+ Robin Murphy <robin.murphy@arm.com>, Nicholas Piggin <npiggin@gmail.com>,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>, Mark Brown <broonie@kernel.org>,
+ Borislav Petkov <bp@alien8.de>, Andy Lutomirski <luto@kernel.org>,
+ Jonathan Cameron <Jonathan.Cameron@huawei.com>,
+ Dan Williams <dan.j.williams@intel.com>,
+ Chris Wilson <chris@chris-wilson.co.uk>, Joonsoo Kim <iamjoonsoo.kim@lge.com>,
+ linux-arm-kernel@lists.infradead.org, Oscar Salvador <osalvador@suse.de>,
+ Tony Luck <tony.luck@intel.com>, Yoshinori Sato <ysato@users.sourceforge.jp>,
+ Ard Biesheuvel <ard.biesheuvel@linaro.org>,
+ Mathieu Malaterre <malat@debian.org>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Andrew Banman <andrew.banman@hpe.com>, linux-kernel@vger.kernel.org,
+ Mike Rapoport <rppt@linux.vnet.ibm.com>, Thomas Gleixner <tglx@linutronix.de>,
+ Wei Yang <richardw.yang@linux.intel.com>,
+ Alex Deucher <alexander.deucher@amd.com>, Igor Mammedov <imammedo@redhat.com>,
+ akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org,
+ "David S. Miller" <davem@davemloft.net>,
+ "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-"Rafael J. Wysocki" <rjw@rjwysocki.net> writes:
-> On Friday, May 24, 2019 12:44:18 PM CEST Mathieu Malaterre wrote:
->> The declaration for pfn_is_nosave is only available in
->> kernel/power/power.h. Since this function can be override in arch,
->> expose it globally. Having a prototype will make sure to avoid warning
->> (sometime treated as error with W=1) such as:
->> 
->>   arch/powerpc/kernel/suspend.c:18:5: error: no previous prototype for 'pfn_is_nosave' [-Werror=missing-prototypes]
->> 
->> This moves the declaration into a globally visible header file and add
->> missing include to avoid a warning on powerpc. Also remove the
->> duplicated prototypes since not required anymore.
->> 
->> Cc: Christophe Leroy <christophe.leroy@c-s.fr>
->> Signed-off-by: Mathieu Malaterre <malat@debian.org>
->> ---
->> v2: As suggestion by christophe remove duplicates prototypes
->> 
->>  arch/powerpc/kernel/suspend.c | 1 +
->>  arch/s390/kernel/entry.h      | 1 -
->>  include/linux/suspend.h       | 1 +
->>  kernel/power/power.h          | 2 --
->>  4 files changed, 2 insertions(+), 3 deletions(-)
->> 
->> diff --git a/kernel/power/power.h b/kernel/power/power.h
->> index 9e58bdc8a562..44bee462ff57 100644
->> --- a/kernel/power/power.h
->> +++ b/kernel/power/power.h
->> @@ -75,8 +75,6 @@ static inline void hibernate_reserved_size_init(void) {}
->>  static inline void hibernate_image_size_init(void) {}
->>  #endif /* !CONFIG_HIBERNATION */
->>  
->> -extern int pfn_is_nosave(unsigned long);
->> -
->>  #define power_attr(_name) \
->>  static struct kobj_attribute _name##_attr = {	\
->>  	.attr	= {				\
->> 
->
-> With an ACK from the powerpc maintainers, I could apply this one.
+We only want memory block devices for memory to be onlined/offlined
+(add/remove from the buddy). This is required so user space can
+online/offline memory and kdump gets notified about newly onlined memory.
 
-Sent.
+Let's factor out creation/removal of memory block devices. This helps
+to further cleanup arch_add_memory/arch_remove_memory() and to make
+implementation of new features easier - especially sub-section
+memory hot add from Dan.
 
-cheers
+Anshuman Khandual is currently working on arch_remove_memory(). I added
+a temporary solution via "arm64/mm: Add temporary arch_remove_memory()
+implementation", that is sufficient as a firsts tep in the context of
+this series. (we don't cleanup page tables in case anything goes
+wrong already)
+
+Did a quick sanity test with DIMM plug/unplug, making sure all devices
+and sysfs links properly get added/removed. Compile tested on s390x and
+x86-64.
+
+Based on next/master.
+
+Next refactoring on my list will be making sure that remove_memory()
+will never deal with zones / access "struct pages". Any kind of zone
+handling will have to be done when offlining system memory / before
+removing device memory. I am thinking about remove_pfn_range_from_zone()",
+du undo everything "move_pfn_range_to_zone()" did.
+
+v2 -> v3:
+- Add "s390x/mm: Fail when an altmap is used for arch_add_memory()"
+- Add "arm64/mm: Add temporary arch_remove_memory() implementation"
+- Add "drivers/base/memory: Pass a block_id to init_memory_block()"
+- Various changes to "mm/memory_hotplug: Create memory block devices
+  after arch_add_memory()" and "mm/memory_hotplug: Create memory block
+  devices after arch_add_memory()" due to switching from sections to
+  block_id's.
+
+v1 -> v2:
+- s390x/mm: Implement arch_remove_memory()
+-- remove mapping after "__remove_pages"
+
+David Hildenbrand (11):
+  mm/memory_hotplug: Simplify and fix check_hotplug_memory_range()
+  s390x/mm: Fail when an altmap is used for arch_add_memory()
+  s390x/mm: Implement arch_remove_memory()
+  arm64/mm: Add temporary arch_remove_memory() implementation
+  drivers/base/memory: Pass a block_id to init_memory_block()
+  mm/memory_hotplug: Allow arch_remove_pages() without
+    CONFIG_MEMORY_HOTREMOVE
+  mm/memory_hotplug: Create memory block devices after arch_add_memory()
+  mm/memory_hotplug: Drop MHP_MEMBLOCK_API
+  mm/memory_hotplug: Remove memory block devices before
+    arch_remove_memory()
+  mm/memory_hotplug: Make unregister_memory_block_under_nodes() never
+    fail
+  mm/memory_hotplug: Remove "zone" parameter from
+    sparse_remove_one_section
+
+ arch/arm64/mm/mmu.c            |  17 +++++
+ arch/ia64/mm/init.c            |   2 -
+ arch/powerpc/mm/mem.c          |   2 -
+ arch/s390/mm/init.c            |  18 +++--
+ arch/sh/mm/init.c              |   2 -
+ arch/x86/mm/init_32.c          |   2 -
+ arch/x86/mm/init_64.c          |   2 -
+ drivers/base/memory.c          | 134 +++++++++++++++++++--------------
+ drivers/base/node.c            |  27 +++----
+ include/linux/memory.h         |   6 +-
+ include/linux/memory_hotplug.h |  12 +--
+ include/linux/node.h           |   7 +-
+ mm/memory_hotplug.c            |  44 +++++------
+ mm/sparse.c                    |  10 +--
+ 14 files changed, 140 insertions(+), 145 deletions(-)
+
+-- 
+2.20.1
+
