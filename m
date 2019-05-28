@@ -2,23 +2,23 @@ Return-Path: <SRS0=jaSx=T4=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-4.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7E04AC04AB6
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 May 2019 11:59:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5B641C04AB6
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 May 2019 12:06:59 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C9D722075B
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 May 2019 11:58:59 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C9D722075B
+	by mail.kernel.org (Postfix) with ESMTPS id DE8F520883
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 May 2019 12:06:58 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DE8F520883
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45CsnY3BB8zDqQZ
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 May 2019 21:58:57 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45Csym4fgLzDqNb
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 May 2019 22:06:56 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=arm.com
  (client-ip=217.140.101.70; helo=foss.arm.com;
@@ -26,30 +26,23 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=arm.com
 Received: from foss.arm.com (foss.arm.com [217.140.101.70])
- by lists.ozlabs.org (Postfix) with ESMTP id 45Cslw1rZ0zDqJg
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 May 2019 21:57:30 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTP id 45CswZ2wZWzDqGJ
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 May 2019 22:05:00 +1000 (AEST)
 Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.72.51.249])
- by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id C7D02341;
- Tue, 28 May 2019 04:57:27 -0700 (PDT)
-Received: from [10.1.196.72] (e119884-lin.cambridge.arm.com [10.1.196.72])
- by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id B38783F59C;
- Tue, 28 May 2019 04:57:25 -0700 (PDT)
-Subject: Re: [PATCH v4 3/3] kselftest: Extend vDSO selftest to clock_getres
-To: Michael Ellerman <mpe@ellerman.id.au>, linux-arch@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
- linux-kselftest@vger.kernel.org
-References: <20190523112116.19233-1-vincenzo.frascino@arm.com>
- <20190523112116.19233-4-vincenzo.frascino@arm.com>
- <87lfyrp0d2.fsf@concordia.ellerman.id.au>
+ by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 1A1F6341;
+ Tue, 28 May 2019 05:04:59 -0700 (PDT)
+Received: from e119884-lin.cambridge.arm.com (e119884-lin.cambridge.arm.com
+ [10.1.196.72])
+ by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id AFFA83F59C;
+ Tue, 28 May 2019 05:04:56 -0700 (PDT)
 From: Vincenzo Frascino <vincenzo.frascino@arm.com>
-Message-ID: <afb7395f-43e9-c304-2db2-349e6727b687@arm.com>
-Date: Tue, 28 May 2019 12:57:24 +0100
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
- Thunderbird/60.6.1
+To: linux-arch@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-s390@vger.kernel.org, linux-kselftest@vger.kernel.org
+Subject: [PATCH v5 0/3] Fix vDSO clock_getres()
+Date: Tue, 28 May 2019 13:04:43 +0100
+Message-Id: <20190528120446.48911-1-vincenzo.frascino@arm.com>
+X-Mailer: git-send-email 2.21.0
 MIME-Version: 1.0
-In-Reply-To: <87lfyrp0d2.fsf@concordia.ellerman.id.au>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -64,87 +57,83 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 Cc: Arnd Bergmann <arnd@arndb.de>, Heiko Carstens <heiko.carstens@de.ibm.com>,
  Paul Mackerras <paulus@samba.org>, Martin Schwidefsky <schwidefsky@de.ibm.com>,
- Thomas Gleixner <tglx@linutronix.de>, Shuah Khan <shuah@kernel.org>
+ Thomas Gleixner <tglx@linutronix.de>, vincenzo.frascino@arm.com,
+ Shuah Khan <shuah@kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi Michael,
+clock_getres in the vDSO library has to preserve the same behaviour
+of posix_get_hrtimer_res().
 
-thank you for your reply.
+In particular, posix_get_hrtimer_res() does:
+    sec = 0;
+    ns = hrtimer_resolution;
+and hrtimer_resolution depends on the enablement of the high
+resolution timers that can happen either at compile or at run time.
 
-On 28/05/2019 07:19, Michael Ellerman wrote:
-> Vincenzo Frascino <vincenzo.frascino@arm.com> writes:
-> 
->> The current version of the multiarch vDSO selftest verifies only
->> gettimeofday.
->>
->> Extend the vDSO selftest to clock_getres, to verify that the
->> syscall and the vDSO library function return the same information.
->>
->> The extension has been used to verify the hrtimer_resoltion fix.
-> 
-> This is passing for me even without patch 1 applied, shouldn't it fail
-> without the fix? What am I missing?
-> 
+A possible fix is to change the vdso implementation of clock_getres,
+keeping a copy of hrtimer_resolution in vdso data and using that
+directly [1].
 
-This is correct, because during the refactoring process I missed an "n" :)
+This patchset implements the proposed fix for arm64, powerpc, s390,
+nds32 and adds a test to verify that the syscall and the vdso library
+implementation of clock_getres return the same values.
 
-if·((x.tv_sec·!=·y.tv_sec)·||·(x.tv_sec·!=·y.tv_sec))
+Even if these patches are unified by the same topic, there is no
+dependency between them, hence they can be merged singularly by each
+arch maintainer.
 
-Should be:
+Note: arm64 and nds32 respective fixes have been merged in 5.2-rc1,
+hence they have been removed from this series.
 
-if·((x.tv_sec·!=·y.tv_sec)·||·(x.tv_nsec·!=·y.tv_nsec))
+[1] https://marc.info/?l=linux-arm-kernel&m=155110381930196&w=2
 
-My mistake, I am going to fix the test and re-post v5 of this set.
+Changes:
+--------
+v5:
+  - Rebased on 5.2-rc2
+  - Fixed a bug in kselftest.
+v4:
+  - Address review comments.
+v3:
+  - Rebased on 5.2-rc1.
+  - Address review comments.
+v2:
+  - Rebased on 5.1-rc5.
+  - Addressed review comments.
 
-Without my patch if you pass "highres=off" to the kernel (as a command line
-parameter) it leads to a broken implementation of clock_getres since the value
-of CLOCK_REALTIME_RES does not change at runtime.
+Cc: Christophe Leroy <christophe.leroy@c-s.fr>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Cc: Heiko Carstens <heiko.carstens@de.ibm.com>
+Cc: Shuah Khan <shuah@kernel.org>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Arnd Bergmann <arnd@arndb.de>
+Signed-off-by: Vincenzo Frascino <vincenzo.frascino@arm.com>
 
-Expected result (with highres=off):
+Vincenzo Frascino (3):
+  powerpc: Fix vDSO clock_getres()
+  s390: Fix vDSO clock_getres()
+  kselftest: Extend vDSO selftest to clock_getres
 
-# uname -r
-5.2.0-rc2
-# ./vdso_clock_getres
-clock_id: CLOCK_REALTIME [FAIL]
-clock_id: CLOCK_BOOTTIME [PASS]
-clock_id: CLOCK_TAI [PASS]
-clock_id: CLOCK_REALTIME_COARSE [PASS]
-clock_id: CLOCK_MONOTONIC [FAIL]
-clock_id: CLOCK_MONOTONIC_RAW [PASS]
-clock_id: CLOCK_MONOTONIC_COARSE [PASS]
-
-The reason of this behavior is that the only clocks supported by getres on
-powerpc are CLOCK_REALTIME and CLOCK_MONOTONIC, the rest on the clocks use
-always syscalls.
-
-> # uname -r
-> 5.2.0-rc2-gcc-8.2.0
-> 
-> # ./vdso_clock_getres
-> clock_id: CLOCK_REALTIME [PASS]
-> clock_id: CLOCK_BOOTTIME [PASS]
-> clock_id: CLOCK_TAI [PASS]
-> clock_id: CLOCK_REALTIME_COARSE [PASS]
-> clock_id: CLOCK_MONOTONIC [PASS]
-> clock_id: CLOCK_MONOTONIC_RAW [PASS]
-> clock_id: CLOCK_MONOTONIC_COARSE [PASS]
-> 
-> cheers
-> 
->> Cc: Shuah Khan <shuah@kernel.org>
->> Signed-off-by: Vincenzo Frascino <vincenzo.frascino@arm.com>
->> ---
->>
->> Note: This patch is independent from the others in this series, hence it
->> can be merged singularly by the kselftest maintainers.
->>
->>  tools/testing/selftests/vDSO/Makefile         |   2 +
->>  .../selftests/vDSO/vdso_clock_getres.c        | 124 ++++++++++++++++++
->>  2 files changed, 126 insertions(+)
->>  create mode 100644 tools/testing/selftests/vDSO/vdso_clock_getres.c
+ arch/powerpc/include/asm/vdso_datapage.h      |   2 +
+ arch/powerpc/kernel/asm-offsets.c             |   2 +-
+ arch/powerpc/kernel/time.c                    |   1 +
+ arch/powerpc/kernel/vdso32/gettimeofday.S     |   7 +-
+ arch/powerpc/kernel/vdso64/gettimeofday.S     |   7 +-
+ arch/s390/include/asm/vdso.h                  |   1 +
+ arch/s390/kernel/asm-offsets.c                |   2 +-
+ arch/s390/kernel/time.c                       |   1 +
+ arch/s390/kernel/vdso32/clock_getres.S        |  12 +-
+ arch/s390/kernel/vdso64/clock_getres.S        |  10 +-
+ tools/testing/selftests/vDSO/Makefile         |   2 +
+ .../selftests/vDSO/vdso_clock_getres.c        | 124 ++++++++++++++++++
+ 12 files changed, 155 insertions(+), 16 deletions(-)
+ create mode 100644 tools/testing/selftests/vDSO/vdso_clock_getres.c
 
 -- 
-Regards,
-Vincenzo
+2.21.0
+
