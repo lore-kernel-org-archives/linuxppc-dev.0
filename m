@@ -2,64 +2,49 @@ Return-Path: <SRS0=jaSx=T4=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 94EE8C04AB3
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 May 2019 01:59:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A1892C04AB3
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 May 2019 02:35:23 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 0CA882075E
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 May 2019 01:59:06 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=anastas.io header.i=@anastas.io header.b="Z6HTxRma"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0CA882075E
-Authentication-Results: mail.kernel.org; dmarc=fail (p=quarantine dis=none) header.from=anastas.io
+	by mail.kernel.org (Postfix) with ESMTPS id ED2BB20823
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 May 2019 02:35:22 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org ED2BB20823
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45CcTN403LzDqQr
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 May 2019 11:59:04 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=anastas.io
- (client-ip=104.248.188.109; helo=alpha.anastas.io;
- envelope-from=shawn@anastas.io; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none)
- header.from=anastas.io
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=anastas.io header.i=@anastas.io header.b="Z6HTxRma"; 
- dkim-atps=neutral
-Received: from alpha.anastas.io (alpha.anastas.io [104.248.188.109])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 45CdHD5ZPHzDqL5
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 May 2019 12:35:20 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45CcNV6qcxzDqKS
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 May 2019 11:54:50 +1000 (AEST)
-Received: from authenticated-user (alpha.anastas.io [104.248.188.109])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by alpha.anastas.io (Postfix) with ESMTPSA id 3DD407F8F8;
- Mon, 27 May 2019 20:54:18 -0500 (CDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=anastas.io; s=mail;
- t=1559008459; bh=EGTrKlRnXu1zsiLLv/Fv7FG8sil5S0AhH+klcU6GwLU=;
- h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=Z6HTxRma9ugS+kSTEteLkii8KAfQxaSkokf6vGN9VTX0TdJQuIq9VmVCC6fOt9Epx
- ix+mt1WTiYhgE5dY7HDD5WJht8hnOdwmsOZ0ig2EXt7P/5XrVfqmc+l7d6opoUlpR/
- vZqZQB++8IUtoaIgyIn/GlFbzuaw1IFYl8rTMdAbecQjW8Ila8tLy0tiQKaiz0lTy9
- aBnQjc9ccXekz6uqoHigBzgc3U1DsHa07ku8mSUtpsbESfxgKwfDvScxE17P4zrO7c
- UAag/X4BIOsm1m+Bixc2360zMzWEsBK5DTOS86uGD1LXG7N1ctA9axFj+sSnUO0ffI
- RZ0J49C6M5oUw==
-From: Shawn Anastasio <shawn@anastas.io>
-To: linux-pci@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v2 2/3] powerpc/64: Enable pcibios_after_init hook on ppc64
-Date: Mon, 27 May 2019 20:54:11 -0500
-Message-Id: <20190528015412.30521-3-shawn@anastas.io>
-In-Reply-To: <20190528015412.30521-1-shawn@anastas.io>
-References: <20190528015412.30521-1-shawn@anastas.io>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45CdFT0hhszDqHL
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 May 2019 12:33:49 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=ellerman.id.au
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
+ SHA256) (No client certificate requested)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 45CdFL2nBkz9s3l;
+ Tue, 28 May 2019 12:33:41 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Christian Brauner <christian@brauner.io>, viro@zeniv.linux.org.uk,
+ linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+ linux-api@vger.kernel.org, torvalds@linux-foundation.org, fweimer@redhat.com
+Subject: Re: [PATCH v2 2/2] tests: add close_range() tests
+In-Reply-To: <20190523154747.15162-3-christian@brauner.io>
+References: <20190523154747.15162-1-christian@brauner.io>
+ <20190523154747.15162-3-christian@brauner.io>
+Date: Tue, 28 May 2019 12:33:41 +1000
+Message-ID: <8736kzqpdm.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -71,61 +56,102 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: sbobroff@linux.ibm.com, linux-kernel@vger.kernel.org, rppt@linux.ibm.com,
- xyjxie@linux.vnet.ibm.com, bhelgaas@google.com, paulus@samba.org
+Cc: linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org, ldv@altlinux.org,
+ dhowells@redhat.com, linux-kselftest@vger.kernel.org,
+ sparclinux@vger.kernel.org, shuah@kernel.org, linux-arch@vger.kernel.org,
+ linux-s390@vger.kernel.org, miklos@szeredi.hu, x86@kernel.org,
+ Christian Brauner <christian@brauner.io>, linux-mips@vger.kernel.org,
+ linux-xtensa@linux-xtensa.org, tkjos@android.com, arnd@arndb.de,
+ jannh@google.com, linux-m68k@lists.linux-m68k.org, tglx@linutronix.de,
+ linux-arm-kernel@lists.infradead.org, linux-parisc@vger.kernel.org,
+ oleg@redhat.com, linux-alpha@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Enable the pcibios_after_init hook on all powerpc platforms.
-This hook is executed at the end of pcibios_init and was previously
-only available on CONFIG_PPC32.
+Christian Brauner <christian@brauner.io> writes:
+> This adds basic tests for the new close_range() syscall.
+> - test that no invalid flags can be passed
+> - test that a range of file descriptors is correctly closed
+> - test that a range of file descriptors is correctly closed if there there
+>   are already closed file descriptors in the range
+> - test that max_fd is correctly capped to the current fdtable maximum
+>
+> Signed-off-by: Christian Brauner <christian@brauner.io>
+> Cc: Arnd Bergmann <arnd@arndb.de>
+> Cc: Jann Horn <jannh@google.com>
+> Cc: David Howells <dhowells@redhat.com>
+> Cc: Dmitry V. Levin <ldv@altlinux.org>
+> Cc: Oleg Nesterov <oleg@redhat.com>
+> Cc: Linus Torvalds <torvalds@linux-foundation.org>
+> Cc: Florian Weimer <fweimer@redhat.com>
+> Cc: linux-api@vger.kernel.org
+> ---
+> v1: unchanged
+> v2:
+> - Christian Brauner <christian@brauner.io>:
+>   - verify that close_range() correctly closes a single file descriptor
+> ---
+>  tools/testing/selftests/Makefile              |   1 +
+>  tools/testing/selftests/core/.gitignore       |   1 +
+>  tools/testing/selftests/core/Makefile         |   6 +
+>  .../testing/selftests/core/close_range_test.c | 142 ++++++++++++++++++
+>  4 files changed, 150 insertions(+)
+>  create mode 100644 tools/testing/selftests/core/.gitignore
+>  create mode 100644 tools/testing/selftests/core/Makefile
+>  create mode 100644 tools/testing/selftests/core/close_range_test.c
+>
+> diff --git a/tools/testing/selftests/core/.gitignore b/tools/testing/selftests/core/.gitignore
+> new file mode 100644
+> index 000000000000..6e6712ce5817
+> --- /dev/null
+> +++ b/tools/testing/selftests/core/.gitignore
+> @@ -0,0 +1 @@
+> +close_range_test
+> diff --git a/tools/testing/selftests/core/Makefile b/tools/testing/selftests/core/Makefile
+> new file mode 100644
+> index 000000000000..de3ae68aa345
+> --- /dev/null
+> +++ b/tools/testing/selftests/core/Makefile
+> @@ -0,0 +1,6 @@
+> +CFLAGS += -g -I../../../../usr/include/ -I../../../../include
 
-Since it is useful and not inherently limited to 32-bit mode,
-remove the limitation and allow it on all powerpc platforms.
+Your second -I pulls the unexported kernel headers in, userspace
+programs shouldn't include unexported kernel headers.
 
-Signed-off-by: Shawn Anastasio <shawn@anastas.io>
----
- arch/powerpc/include/asm/machdep.h | 3 +--
- arch/powerpc/kernel/pci_64.c       | 4 ++++
- 2 files changed, 5 insertions(+), 2 deletions(-)
+It breaks the build on powerpc with eg:
 
-diff --git a/arch/powerpc/include/asm/machdep.h b/arch/powerpc/include/asm/machdep.h
-index 2f0ca6560e47..2fbfaa9176ed 100644
---- a/arch/powerpc/include/asm/machdep.h
-+++ b/arch/powerpc/include/asm/machdep.h
-@@ -150,6 +150,7 @@ struct machdep_calls {
- 	void		(*init)(void);
- 
- 	void		(*kgdb_map_scc)(void);
-+#endif /* CONFIG_PPC32 */
- 
- 	/*
- 	 * optional PCI "hooks"
-@@ -157,8 +158,6 @@ struct machdep_calls {
- 	/* Called at then very end of pcibios_init() */
- 	void (*pcibios_after_init)(void);
- 
--#endif /* CONFIG_PPC32 */
--
- 	/* Called in indirect_* to avoid touching devices */
- 	int (*pci_exclude_device)(struct pci_controller *, unsigned char, unsigned char);
- 
-diff --git a/arch/powerpc/kernel/pci_64.c b/arch/powerpc/kernel/pci_64.c
-index 9d8c10d55407..fba7fe6e4a50 100644
---- a/arch/powerpc/kernel/pci_64.c
-+++ b/arch/powerpc/kernel/pci_64.c
-@@ -68,6 +68,10 @@ static int __init pcibios_init(void)
- 
- 	printk(KERN_DEBUG "PCI: Probing PCI hardware done\n");
- 
-+	/* Call machine dependent post-init code */
-+	if (ppc_md.pcibios_after_init)
-+		ppc_md.pcibios_after_init();
+  powerpc64le-linux-gnu-gcc -g -I../../../../usr/include/ -I../../../../include    close_range_test.c  -o /output/kselftest/core/close_range_test
+  In file included from /usr/powerpc64le-linux-gnu/include/bits/fcntl-linux.h:346,
+                   from /usr/powerpc64le-linux-gnu/include/bits/fcntl.h:62,
+                   from /usr/powerpc64le-linux-gnu/include/fcntl.h:35,
+                   from close_range_test.c:5:
+  ../../../../include/linux/falloc.h:13:2: error: unknown type name '__s16'
+    __s16  l_type;
+    ^~~~~
+
+
+Did you do that on purpose or just copy it from one of the other
+Makefiles? :)
+
+If you're just wanting to get the syscall number when the headers
+haven't been exported, I think the best solution is to do eg:
+
+diff --git a/tools/testing/selftests/core/close_range_test.c b/tools/testing/selftests/core/close_range_test.c
+index d6e6079d3d53..34c6f02f25de 100644
+--- a/tools/testing/selftests/core/close_range_test.c
++++ b/tools/testing/selftests/core/close_range_test.c
+@@ -14,6 +14,10 @@
+
+ #include "../kselftest.h"
+
++#ifndef __NR_close_range
++#define __NR_close_range       435
++#endif
 +
- 	return 0;
- }
- 
--- 
-2.20.1
+ static inline int sys_close_range(unsigned int fd, unsigned int max_fd,
+                                  unsigned int flags)
+ {
 
+
+cheers
