@@ -2,23 +2,23 @@ Return-Path: <SRS0=jaSx=T4=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-4.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9AAF4C04AB6
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 May 2019 19:27:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A46CAC04AB6
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 May 2019 19:28:49 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 295EA20717
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 May 2019 19:27:01 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 295EA20717
+	by mail.kernel.org (Postfix) with ESMTPS id 355D7208C3
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 May 2019 19:28:49 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 355D7208C3
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45D3kW0ChmzDqR1
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 May 2019 05:26:59 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45D3mb4v2MzDqQb
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 May 2019 05:28:47 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
  (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
@@ -29,62 +29,62 @@ Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45D3hz3P0szDqJL
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 May 2019 05:25:39 +1000 (AEST)
-Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45D3lD5S2XzDq5t
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 May 2019 05:27:36 +1000 (AEST)
+Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x4SJPLvF133229
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 May 2019 15:25:36 -0400
-Received: from e12.ny.us.ibm.com (e12.ny.us.ibm.com [129.33.205.202])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2ss9cdmh6u-1
+ x4SJOJbo015031
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 May 2019 15:27:34 -0400
+Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2ss8u1p64a-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 May 2019 15:25:28 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 May 2019 15:27:34 -0400
 Received: from localhost
- by e12.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <bauerman@linux.ibm.com>;
- Tue, 28 May 2019 20:23:30 +0100
-Received: from b01cxnp22036.gho.pok.ibm.com (9.57.198.26)
- by e12.ny.us.ibm.com (146.89.104.199) with IBM ESMTP SMTP Gateway: Authorized
+ Tue, 28 May 2019 20:27:33 +0100
+Received: from b03cxnp08025.gho.boulder.ibm.com (9.17.130.17)
+ by e32.co.us.ibm.com (192.168.1.132) with IBM ESMTP SMTP Gateway: Authorized
  Use Only! Violators will be prosecuted; 
  (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Tue, 28 May 2019 20:23:25 +0100
-Received: from b01ledav005.gho.pok.ibm.com (b01ledav005.gho.pok.ibm.com
- [9.57.199.110])
- by b01cxnp22036.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x4SJNOSg34275810
+ Tue, 28 May 2019 20:27:28 +0100
+Received: from b03ledav005.gho.boulder.ibm.com
+ (b03ledav005.gho.boulder.ibm.com [9.17.130.236])
+ by b03cxnp08025.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x4SJRRNP22282730
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Tue, 28 May 2019 19:23:24 GMT
-Received: from b01ledav005.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 59697AE05C;
- Tue, 28 May 2019 19:23:24 +0000 (GMT)
-Received: from b01ledav005.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 8BF17AE060;
- Tue, 28 May 2019 19:23:20 +0000 (GMT)
+ Tue, 28 May 2019 19:27:27 GMT
+Received: from b03ledav005.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 0C0A6BE053;
+ Tue, 28 May 2019 19:27:27 +0000 (GMT)
+Received: from b03ledav005.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id D76FDBE058;
+ Tue, 28 May 2019 19:27:22 +0000 (GMT)
 Received: from morokweng.localdomain (unknown [9.85.218.160])
- by b01ledav005.gho.pok.ibm.com (Postfix) with ESMTPS;
- Tue, 28 May 2019 19:23:20 +0000 (GMT)
+ by b03ledav005.gho.boulder.ibm.com (Postfix) with ESMTPS;
+ Tue, 28 May 2019 19:27:22 +0000 (GMT)
 References: <20190418035120.2354-1-bauerman@linux.ibm.com>
  <20190418035120.2354-10-bauerman@linux.ibm.com>
- <1557442868.10635.87.camel@linux.ibm.com>
+ <1557835765.4139.9.camel@linux.ibm.com>
 User-agent: mu4e 1.0; emacs 26.2
 From: Thiago Jung Bauermann <bauerman@linux.ibm.com>
 To: Mimi Zohar <zohar@linux.ibm.com>
 Subject: Re: [PATCH v10 09/12] ima: Implement support for module-style
  appended signatures
-In-reply-to: <1557442868.10635.87.camel@linux.ibm.com>
-Date: Tue, 28 May 2019 16:23:16 -0300
+In-reply-to: <1557835765.4139.9.camel@linux.ibm.com>
+Date: Tue, 28 May 2019 16:27:17 -0300
 MIME-Version: 1.0
 Content-Type: text/plain
 X-TM-AS-GCONF: 00
-x-cbid: 19052819-0060-0000-0000-00000348F66C
+x-cbid: 19052819-0004-0000-0000-000015154B13
 X-IBM-SpamModules-Scores: 
 X-IBM-SpamModules-Versions: BY=3.00011176; HX=3.00000242; KW=3.00000007;
- PH=3.00000004; SC=3.00000286; SDB=6.01209920; UDB=6.00635634; IPR=6.00990949; 
- MB=3.00027089; MTD=3.00000008; XFM=3.00000015; UTC=2019-05-28 19:23:29
+ PH=3.00000004; SC=3.00000286; SDB=6.01209921; UDB=6.00635635; IPR=6.00990951; 
+ MB=3.00027089; MTD=3.00000008; XFM=3.00000015; UTC=2019-05-28 19:27:32
 X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19052819-0061-0000-0000-000049888DD2
-Message-Id: <87zhn65qor.fsf@morokweng.localdomain>
+x-cbparentid: 19052819-0005-0000-0000-00008BD76A03
+Message-Id: <87y32q5qi2.fsf@morokweng.localdomain>
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
  definitions=2019-05-28_09:, , signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
@@ -123,62 +123,49 @@ Mimi Zohar <zohar@linux.ibm.com> writes:
 
 > Hi Thiago,
 >
->> diff --git a/security/integrity/ima/ima_policy.c b/security/integrity/ima/ima_policy.c
->> index fca7a3f23321..a7a20a8c15c1 100644
->> --- a/security/integrity/ima/ima_policy.c
->> +++ b/security/integrity/ima/ima_policy.c
->> @@ -1144,6 +1144,12 @@ void ima_delete_rules(void)
->>  	}
->>  }
->>
->> +#define __ima_hook_stringify(str)	(#str),
->> +
->> +const char *const func_tokens[] = {
->> +	__ima_hooks(__ima_hook_stringify)
->> +};
->> +
->>  #ifdef	CONFIG_IMA_READ_POLICY
->>  enum {
->>  	mask_exec = 0, mask_write, mask_read, mask_append
->> @@ -1156,12 +1162,6 @@ static const char *const mask_tokens[] = {
->>  	"MAY_APPEND"
->>  };
->>
->> -#define __ima_hook_stringify(str)	(#str),
->> -
->> -static const char *const func_tokens[] = {
->> -	__ima_hooks(__ima_hook_stringify)
->> -};
->> -
->>  void *ima_policy_start(struct seq_file *m, loff_t *pos)
->>  {
->>  	loff_t l = *pos;
+> On Thu, 2019-04-18 at 00:51 -0300, Thiago Jung Bauermann wrote:
+>> 
+>> @@ -326,6 +356,10 @@ int ima_appraise_measurement(enum ima_hooks func,
+>> case INTEGRITY_UNKNOWN:
+>> break;
+>> case INTEGRITY_NOXATTRS:/* No EVM protected xattrs. */
+>> +/* It's fine not to have xattrs when using a modsig. */
+>> +if (try_modsig)
+>> +break;
+>> +/* fall through */
+>> case INTEGRITY_NOLABEL:/* No security.evm xattr. */
+>> cause = "missing-HMAC";
+>> goto out;
+>> @@ -340,6 +374,14 @@ int ima_appraise_measurement(enum ima_hooks func,
+>> rc = xattr_verify(func, iint, xattr_value, xattr_len, &status,
+>>  &cause);
+>> 
+>> +/*
+>> + * If we have a modsig and either no imasig or the imasig's key isn't
+>> + * known, then try verifying the modsig.
+>> + */
+>> +if (status != INTEGRITY_PASS && try_modsig &&
+>> + (!xattr_value || rc == -ENOKEY))
+>> +rc = modsig_verify(func, modsig, &status, &cause);
 >
-> Is moving this something left over from previous versions or there is
-> a need for this change?
+> EVM protects other security xattrs, not just security.ima, if they
+> exist. As a result, evm_verifyxattr() could pass based on the other
+> security xattrs.
 
-Well, it's not a strong need, but it's still relevant in the current
-version. I use func_tokens in ima_read_modsig() in order to be able to
-mention the hook name in mod_check_sig()'s error message:
+Indeed! It doesn't make sense to test for status != INTEGRITY_PASS here.
+Not sure what I was thinking. Thanks for spotting it. With your other
+comments about this if clause, this code now reads:
 
-In ima_read_modsig():
+	/*
+	 * If we have a modsig and either no imasig or the imasig's key isn't
+	 * known, then try verifying the modsig.
+	 */
+	if (try_modsig &&
+	    (!xattr_value || xattr_value->type == IMA_XATTR_DIGEST_NG ||
+	     rc == -ENOKEY))
+		rc = modsig_verify(func, modsig, &status, &cause);
 
-	rc = mod_check_sig(sig, buf_len, func_tokens[func]);
-
-And in mod_check_sig():
-
-		pr_err("%s: Module is not signed with expected PKCS#7 message\n",
-		       name);
-
-If you think it's not worth it to expose func_tokens, I can make
-ima_read_modsig() pass a more generic const string such as "IMA modsig"
-for example.
-
-> Other than this, the patch looks good.
-
-Nice!
-
---
+-- 
 Thiago Jung Bauermann
 IBM Linux Technology Center
 
