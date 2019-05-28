@@ -2,49 +2,79 @@ Return-Path: <SRS0=jaSx=T4=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-4.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.6 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
+	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BE7BFC072B1
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 May 2019 03:45:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 71DC0C072B1
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 May 2019 04:03:09 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 49E8F20883
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 May 2019 03:45:08 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 49E8F20883
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+	by mail.kernel.org (Postfix) with ESMTPS id B10632075C
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 May 2019 04:03:08 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="dYxqyHL+"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B10632075C
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45Cfqk3xjDzDqK3
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 May 2019 13:45:06 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+	by lists.ozlabs.org (Postfix) with ESMTP id 45CgDV4St1zDqLg
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 May 2019 14:03:06 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+ spf=pass (mailfrom) smtp.mailfrom=gmail.com
+ (client-ip=2607:f8b0:4864:20::143; helo=mail-it1-x143.google.com;
+ envelope-from=oohall@gmail.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="dYxqyHL+"; 
+ dkim-atps=neutral
+Received: from mail-it1-x143.google.com (mail-it1-x143.google.com
+ [IPv6:2607:f8b0:4864:20::143])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45CfpD0yHxzDqHF
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 May 2019 13:43:48 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=ellerman.id.au
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
- SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 45Cfp83y01z9s9N;
- Tue, 28 May 2019 13:43:43 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Christian Brauner <christian@brauner.io>, viro@zeniv.linux.org.uk,
- linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
- torvalds@linux-foundation.org, fweimer@redhat.com
-Subject: Re: [PATCH v3 2/3] arch: wire-up close_range()
-In-Reply-To: <20190524111047.6892-3-christian@brauner.io>
-References: <20190524111047.6892-1-christian@brauner.io>
- <20190524111047.6892-3-christian@brauner.io>
-Date: Tue, 28 May 2019 13:43:43 +1000
-Message-ID: <87woibp7kg.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45CgBr0ZmqzDqJm
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 May 2019 14:01:39 +1000 (AEST)
+Received: by mail-it1-x143.google.com with SMTP id h20so2047173itk.4
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 May 2019 21:01:39 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+ :cc; bh=zjUv3nPJ7HnSKnPAy37kFrlpSs1ndqPhpkQ4GDIU1O0=;
+ b=dYxqyHL+477TUHLXPK+2QfGw9r+JCnOqa53WiAbkxKKaEMeuwCy/UPmSB6nmb1Yj0u
+ KYlMf472gcxrD/BVM+E2Fw1j8twcWAr6KH847JOZEM7CdQjxVZqk+UwHwcydvYTQihHw
+ 1eVUzMCebp70Z3chp9dNlI37XG0C+K6IbUIlCjUErvNo30/rcTpaPWU2X/hepgupxX9v
+ eg0qbdtPpVcsCP0ubWSPUBAR9tvlRdwNEOj571H0dbSa9GGc8KLVlmOjHMACTls76zB2
+ M/vkSGTkAXLQRonpLVck6/RXxbouWdn+7Hq+OiYEo5bSBMlgnTHA8YBIL2QwuOFKzivq
+ aOCQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+ :message-id:subject:to:cc;
+ bh=zjUv3nPJ7HnSKnPAy37kFrlpSs1ndqPhpkQ4GDIU1O0=;
+ b=WJYr3qglLurmm8YYyAqojYm7lhG1MQvH8Pc9n3xUgezsH3Tq3GXvftw5CQiMlDgFYw
+ ABX16ADKQ6RHD7J+cSp5PeF4lYjdXC4Ed1rMADttTqntWOKaAEywug1gfTeUEYZLV3PI
+ RFf6OKHyUElXkBkPfhcRrRMkinGk1LK5HrflwQxoMffxTfUj54WwY5XdJ+3/isOfBYXw
+ c97O2maYTwQ4FpqsFUqOaMSR9MbS8Adp2eEmW4zGPREp3gvoiltLw59pEWjLGj788/MC
+ 0VD8QikWvxwMRYbmVqnxqNsLBbV03VVswW2WMf1XRCsYLiA4B7Obot2ui1gb8pT+h1YW
+ hKNw==
+X-Gm-Message-State: APjAAAVNWTDsJzidrIfxI/SPKsHC/UP769/cA2qFo4NdTmfQvSu6tG3/
+ W9IUvpRIJuDGI3D6VPGTinWt3v5B8eEkkny5gZo=
+X-Google-Smtp-Source: APXvYqy1mxn99so8vKfCz+Sf4gW32dGBxlzGt3ZTO7PZqd3wa9GEtU6jcUUCHFFmtBRz/O38JAC4wzmV/MuC9K94Zcw=
+X-Received: by 2002:a24:190e:: with SMTP id b14mr1588278itb.15.1559016096130; 
+ Mon, 27 May 2019 21:01:36 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain
+References: <20190527225521.5884-1-shawn@anastas.io>
+In-Reply-To: <20190527225521.5884-1-shawn@anastas.io>
+From: Oliver <oohall@gmail.com>
+Date: Tue, 28 May 2019 14:01:24 +1000
+Message-ID: <CAOSf1CFFyz0YNqdpd5r44MaBV449yoK3WOMBZ1mpgZ=judNfDQ@mail.gmail.com>
+Subject: Re: [RESEND PATCH 0/3] Allow custom PCI resource alignment on pseries
+To: Shawn Anastasio <shawn@anastas.io>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -56,46 +86,68 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org, ldv@altlinux.org,
- dhowells@redhat.com, sparclinux@vger.kernel.org, shuah@kernel.org,
- linux-arch@vger.kernel.org, linux-s390@vger.kernel.org, miklos@szeredi.hu,
- x86@kernel.org, Christian Brauner <christian@brauner.io>,
- linux-mips@vger.kernel.org, linux-xtensa@linux-xtensa.org, tkjos@android.com,
- arnd@arndb.de, jannh@google.com, linux-m68k@lists.linux-m68k.org,
- tglx@linutronix.de, linux-arm-kernel@lists.infradead.org,
- linux-parisc@vger.kernel.org, linux-api@vger.kernel.org, oleg@redhat.com,
- linux-alpha@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Cc: Sam Bobroff <sbobroff@linux.ibm.com>, linux-pci@vger.kernel.org,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, rppt@linux.ibm.com,
+ Alexey Kardashevskiy <aik@ozlabs.ru>, Paul Mackerras <paulus@samba.org>,
+ Bjorn Helgaas <bhelgaas@google.com>, xyjxie@linux.vnet.ibm.com,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Christian Brauner <christian@brauner.io> writes:
-> diff --git a/arch/powerpc/kernel/syscalls/syscall.tbl b/arch/powerpc/kernel/syscalls/syscall.tbl
-> index 103655d84b4b..ba2c1f078cbd 100644
-> --- a/arch/powerpc/kernel/syscalls/syscall.tbl
-> +++ b/arch/powerpc/kernel/syscalls/syscall.tbl
-> @@ -515,3 +515,4 @@
->  431	common	fsconfig			sys_fsconfig
->  432	common	fsmount				sys_fsmount
->  433	common	fspick				sys_fspick
-> +435	common	close_range			sys_close_range
+On Tue, May 28, 2019 at 8:56 AM Shawn Anastasio <shawn@anastas.io> wrote:
+>
+> Hello all,
+>
+> This patch set implements support for user-specified PCI resource
+> alignment on the pseries platform for hotplugged PCI devices.
+> Currently on pseries, PCI resource alignments specified with the
+> pci=resource_alignment commandline argument are ignored, since
+> the firmware is in charge of managing the PCI resources. In the
+> case of hotplugged devices, though, the kernel is in charge of
+> configuring the resources and should obey alignment requirements.
 
-With a minor build fix the selftest passes for me on ppc64le:
+Are you using hotplug to work around SLOF (the OF we use under qemu)
+not aligning BARs to 64K? It looks like there is a commit in SLOF to
+fix that (https://git.qemu.org/?p=SLOF.git;a=commit;f=board-qemu/slof/pci-phb.fs;h=1903174472f8800caf50c959b304501b4c01153c).
 
-  # ./close_range_test 
-  1..9
-  ok 1 do not allow invalid flag values for close_range()
-  ok 2 close_range() from 3 to 53
-  ok 3 fcntl() verify closed range from 3 to 53
-  ok 4 close_range() from 54 to 95
-  ok 5 fcntl() verify closed range from 54 to 95
-  ok 6 close_range() from 96 to 102
-  ok 7 fcntl() verify closed range from 96 to 102
-  ok 8 close_range() closed single file descriptor
-  ok 9 fcntl() verify closed single file descriptor
-  # Pass 9 Fail 0 Xfail 0 Xpass 0 Skip 0 Error 0
+> The current behavior of ignoring the alignment for hotplugged devices
+> results in sub-page BARs landing between page boundaries and
+> becoming un-mappable from userspace via the VFIO framework.
+> This issue was observed on a pseries KVM guest with hotplugged
+> ivshmem devices.
 
+> With these changes, users can specify an appropriate
+> pci=resource_alignment argument on boot for devices they wish to use
+> with VFIO.
+>
+> In the future, this could be extended to provide page-aligned
+> resources by default for hotplugged devices, similar to what is done
+> on powernv by commit 382746376993 ("powerpc/powernv: Override
+> pcibios_default_alignment() to force PCI devices to be page aligned").
 
-Acked-by: Michael Ellerman <mpe@ellerman.id.au> (powerpc)
+Can we make aligning the BARs to PAGE_SIZE the default behaviour? The
+BAR assignment process is complex enough as-is so I'd rather we didn't
+add another platform hack into the mix.
 
-cheers
+> Feedback is appreciated.
+>
+> Thanks,
+> Shawn
+>
+> Shawn Anastasio (3):
+>   PCI: Introduce pcibios_ignore_alignment_request
+>   powerpc/64: Enable pcibios_after_init hook on ppc64
+>   powerpc/pseries: Allow user-specified PCI resource alignment after
+>     init
+>
+>  arch/powerpc/include/asm/machdep.h     |  6 ++++--
+>  arch/powerpc/kernel/pci-common.c       |  9 +++++++++
+>  arch/powerpc/kernel/pci_64.c           |  4 ++++
+>  arch/powerpc/platforms/pseries/setup.c | 22 ++++++++++++++++++++++
+>  drivers/pci/pci.c                      |  9 +++++++--
+>  5 files changed, 46 insertions(+), 4 deletions(-)
+>
+> --
+> 2.20.1
+>
