@@ -2,93 +2,80 @@ Return-Path: <SRS0=jaSx=T4=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.6 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
+	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 67638C04AB6
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 May 2019 05:40:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4FD36C04AB6
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 May 2019 05:42:03 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E732520883
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 May 2019 05:40:43 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E732520883
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id C56FD20883
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 May 2019 05:42:02 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="VGP8dMK+"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C56FD20883
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45CjP56rLgzDqJN
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 May 2019 15:40:41 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45CjQd0fYMzDqP0
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 May 2019 15:42:01 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
- (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=aneesh.kumar@linux.ibm.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=gmail.com
+ (client-ip=2607:f8b0:4864:20::d42; helo=mail-io1-xd42.google.com;
+ envelope-from=oohall@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="VGP8dMK+"; 
+ dkim-atps=neutral
+Received: from mail-io1-xd42.google.com (mail-io1-xd42.google.com
+ [IPv6:2607:f8b0:4864:20::d42])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45CjJX62MqzDqNC
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 May 2019 15:36:44 +1000 (AEST)
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x4S5RdYu017205; Tue, 28 May 2019 01:36:38 -0400
-Received: from pps.reinject (localhost [127.0.0.1])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2srxuy0egh-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Tue, 28 May 2019 01:36:38 -0400
-Received: from m0098417.ppops.net (m0098417.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.27/8.16.0.27) with SMTP id x4S5Rm1C017708;
- Tue, 28 May 2019 01:36:38 -0400
-Received: from ppma01dal.us.ibm.com (83.d6.3fa9.ip4.static.sl-reverse.com
- [169.63.214.131])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2srxuy0eg5-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Tue, 28 May 2019 01:36:38 -0400
-Received: from pps.filterd (ppma01dal.us.ibm.com [127.0.0.1])
- by ppma01dal.us.ibm.com (8.16.0.27/8.16.0.27) with SMTP id x4RNXLUE009953;
- Mon, 27 May 2019 23:41:26 GMT
-Received: from b03cxnp08025.gho.boulder.ibm.com
- (b03cxnp08025.gho.boulder.ibm.com [9.17.130.17])
- by ppma01dal.us.ibm.com with ESMTP id 2spwb8p2d7-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 27 May 2019 23:41:26 +0000
-Received: from b03ledav004.gho.boulder.ibm.com
- (b03ledav004.gho.boulder.ibm.com [9.17.130.235])
- by b03cxnp08025.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x4S5aZqe22675736
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Tue, 28 May 2019 05:36:35 GMT
-Received: from b03ledav004.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 63CDD78063;
- Tue, 28 May 2019 05:36:35 +0000 (GMT)
-Received: from b03ledav004.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 9351B7805C;
- Tue, 28 May 2019 05:36:33 +0000 (GMT)
-Received: from skywalker.in.ibm.com (unknown [9.124.31.115])
- by b03ledav004.gho.boulder.ibm.com (Postfix) with ESMTP;
- Tue, 28 May 2019 05:36:33 +0000 (GMT)
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
-To: npiggin@gmail.com, paulus@samba.org, mpe@ellerman.id.au
-Subject: [PATCH v2 2/3] powerpc/mm/hugetlb: Fix kernel crash if we fail to
- allocate page table caches
-Date: Tue, 28 May 2019 11:06:25 +0530
-Message-Id: <20190528053626.2756-2-aneesh.kumar@linux.ibm.com>
-X-Mailer: git-send-email 2.21.0
-In-Reply-To: <20190528053626.2756-1-aneesh.kumar@linux.ibm.com>
-References: <20190528053626.2756-1-aneesh.kumar@linux.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45CjJb6Q8wzDqJg
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 May 2019 15:36:47 +1000 (AEST)
+Received: by mail-io1-xd42.google.com with SMTP id n5so8575364ioc.7
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 May 2019 22:36:47 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+ :cc; bh=uOPv1qTEBbFYjQNPzSNmFNcH/nt/LDTtFw6ta2rIGHU=;
+ b=VGP8dMK+aCp5KkT/EOWIZEoyi3SA+Jsz+tKSTdgYoFe0SJfO4sC9foGEr3wdQPpTLL
+ HH3AfYgsgTNmt5iv9eQdfjbRlcTydjdt3PBg0YKp8fu7PDBjKD9rAaJNWDf1nGmiBC+a
+ qjUQXVWoj8AGsx8t6/A6Ib17QYc01FBDEhYySq7w9uHaH2Lx78sExNDSBQ4CEeVqn6tB
+ 0MA7ENJ95MVHo6RKAbUCifU96QXrAHg+ZZ1n2Y6HMFEtx1YyP61SSdDaJ0MA6SEbZx/0
+ 3Gdq0ksWRgQIHl7UI+0w1InHjjfDeNR43Ozzpg/5DhJWkvDpYQvBHZwXCIdda77qFhmO
+ jeUw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+ :message-id:subject:to:cc;
+ bh=uOPv1qTEBbFYjQNPzSNmFNcH/nt/LDTtFw6ta2rIGHU=;
+ b=qY6MxlGR15oSdmKprMhv/8nxHWT9bWb/26KfvkG4gdUc12SnMNXslqOMm/HS8ORp1f
+ Slj9Z/e8ZgJYQv0doPPEQBxyEFmtz9Xv1L4CttWK0/yiMfFCFdta48Y9gMVOg59MHGT+
+ ZPlw8obrPFvD8o9inFzhE2F0CD56xv9sxk0n+5CZEL39NOs5yyXcf0FUNyFOdhpW4G+R
+ WcdEMZRHJC+FI46NHaZpJe5lNV7GUL7N2YCrfdTgGSVIbE4RZQAjLdtrOpdPfhJEKqAr
+ WaPow+M0lQUdvyRlW160LCl3sMN5obUNqZke2tFq2aNBmJVysWj9MxqTuzR4RukIuFRZ
+ PFGg==
+X-Gm-Message-State: APjAAAWezsijDppEc3LCPD+F9A2ujgjUnu7+Yy/uSHYWBylRLEeOlyhj
+ 98BFOk8mJxOYSenJ1AeeaoXCrD7OaOarSg21gd8=
+X-Google-Smtp-Source: APXvYqyz8usNLv2CoGQTSe4nisOC+2Z6g2EAsInvH/MLl7QMebVv5X/qtF6kReCo+Llk3AM1TIYUPBqdv2ajpBFJtEE=
+X-Received: by 2002:a5e:c70c:: with SMTP id f12mr7539299iop.293.1559021805684; 
+ Mon, 27 May 2019 22:36:45 -0700 (PDT)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2019-05-28_02:, , signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1810050000 definitions=main-1905280038
+References: <20190528040313.35582-1-shawn@anastas.io>
+ <20190528040313.35582-2-shawn@anastas.io>
+In-Reply-To: <20190528040313.35582-2-shawn@anastas.io>
+From: Oliver <oohall@gmail.com>
+Date: Tue, 28 May 2019 15:36:34 +1000
+Message-ID: <CAOSf1CEFfbmwfvmdqT1xdt8SFb=tYdYXLfXeyZ8=iRnhg4a3Pg@mail.gmail.com>
+Subject: Re: [PATCH v3 1/3] PCI: Introduce pcibios_ignore_alignment_request
+To: Shawn Anastasio <shawn@anastas.io>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -100,44 +87,90 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
- linuxppc-dev@lists.ozlabs.org
+Cc: Sam Bobroff <sbobroff@linux.ibm.com>, linux-pci@vger.kernel.org,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, rppt@linux.ibm.com,
+ Paul Mackerras <paulus@samba.org>, Bjorn Helgaas <bhelgaas@google.com>,
+ xyjxie@linux.vnet.ibm.com, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-We only check for hugetlb allocations, because with hugetlb we do conditional
-registration. For PGD/PUD/PMD levels we register them always in
-pgtable_cache_init.
+On Tue, May 28, 2019 at 2:03 PM Shawn Anastasio <shawn@anastas.io> wrote:
+>
+> Introduce a new pcibios function pcibios_ignore_alignment_request
+> which allows the PCI core to defer to platform-specific code to
+> determine whether or not to ignore alignment requests for PCI resources.
+>
+> The existing behavior is to simply ignore alignment requests when
+> PCI_PROBE_ONLY is set. This is behavior is maintained by the
+> default implementation of pcibios_ignore_alignment_request.
+>
+> Signed-off-by: Shawn Anastasio <shawn@anastas.io>
+> ---
+>  drivers/pci/pci.c   | 9 +++++++--
+>  include/linux/pci.h | 1 +
+>  2 files changed, 8 insertions(+), 2 deletions(-)
+>
+> diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
+> index 8abc843b1615..8207a09085d1 100644
+> --- a/drivers/pci/pci.c
+> +++ b/drivers/pci/pci.c
+> @@ -5882,6 +5882,11 @@ resource_size_t __weak pcibios_default_alignment(void)
+>         return 0;
+>  }
+>
+> +int __weak pcibios_ignore_alignment_request(void)
+> +{
+> +       return pci_has_flag(PCI_PROBE_ONLY);
+> +}
+> +
+>  #define RESOURCE_ALIGNMENT_PARAM_SIZE COMMAND_LINE_SIZE
+>  static char resource_alignment_param[RESOURCE_ALIGNMENT_PARAM_SIZE] = {0};
+>  static DEFINE_SPINLOCK(resource_alignment_lock);
+> @@ -5906,9 +5911,9 @@ static resource_size_t pci_specified_resource_alignment(struct pci_dev *dev,
+>         p = resource_alignment_param;
+>         if (!*p && !align)
+>                 goto out;
+> -       if (pci_has_flag(PCI_PROBE_ONLY)) {
+> +       if (pcibios_ignore_alignment_request()) {
+>                 align = 0;
+> -               pr_info_once("PCI: Ignoring requested alignments (PCI_PROBE_ONLY)\n");
+> +               pr_info_once("PCI: Ignoring requested alignments\n");
+>                 goto out;
+>         }
 
-Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
----
- arch/powerpc/mm/hugetlbpage.c | 7 ++++++-
- 1 file changed, 6 insertions(+), 1 deletion(-)
+I think the logic here is questionable to begin with. If the user has
+explicitly requested re-aligning a resource via the command line then
+we should probably do it even if PCI_PROBE_ONLY is set. When it breaks
+they get to keep the pieces.
 
-diff --git a/arch/powerpc/mm/hugetlbpage.c b/arch/powerpc/mm/hugetlbpage.c
-index 1de0f43a68e5..f55dc110f2ad 100644
---- a/arch/powerpc/mm/hugetlbpage.c
-+++ b/arch/powerpc/mm/hugetlbpage.c
-@@ -61,12 +61,17 @@ static int __hugepte_alloc(struct mm_struct *mm, hugepd_t *hpdp,
- 		num_hugepd = 1;
- 	}
- 
-+	if (!cachep) {
-+		WARN_ONCE(1, "No page table cache created for hugetlb tables");
-+		return -ENOMEM;
-+	}
-+
- 	new = kmem_cache_alloc(cachep, pgtable_gfp_flags(mm, GFP_KERNEL));
- 
- 	BUG_ON(pshift > HUGEPD_SHIFT_MASK);
- 	BUG_ON((unsigned long)new & HUGEPD_SHIFT_MASK);
- 
--	if (! new)
-+	if (!new)
- 		return -ENOMEM;
- 
- 	/*
--- 
-2.21.0
+That said, the real issue here is that PCI_PROBE_ONLY probably
+shouldn't be set under qemu/kvm. Under the other hypervisor (PowerVM)
+hotplugged devices are configured by firmware before it's passed to
+the guest and we need to keep the FW assignments otherwise things
+break. QEMU however doesn't do any BAR assignments and relies on that
+being handled by the guest. At boot time this is done by SLOF, but
+Linux only keeps SLOF around until it's extracted the device-tree.
+Once that's done SLOF gets blown away and the kernel needs to do it's
+own BAR assignments. I'm guessing there's a hack in there to make it
+work today, but it's a little surprising that it works at all...
 
+IIRC Sam Bobroff was looking at hotplug under pseries recently so he
+might have something to add. He's sick at the moment, but I'll ask him
+to take a look at this once he's back among the living
+
+> diff --git a/include/linux/pci.h b/include/linux/pci.h
+> index 4a5a84d7bdd4..47471dcdbaf9 100644
+> --- a/include/linux/pci.h
+> +++ b/include/linux/pci.h
+> @@ -1990,6 +1990,7 @@ static inline void pcibios_penalize_isa_irq(int irq, int active) {}
+>  int pcibios_alloc_irq(struct pci_dev *dev);
+>  void pcibios_free_irq(struct pci_dev *dev);
+>  resource_size_t pcibios_default_alignment(void);
+> +int pcibios_ignore_alignment_request(void);
+>
+>  #ifdef CONFIG_HIBERNATE_CALLBACKS
+>  extern struct dev_pm_ops pcibios_pm_ops;
+> --
+> 2.20.1
+>
