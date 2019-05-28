@@ -2,95 +2,49 @@ Return-Path: <SRS0=jaSx=T4=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-4.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id F3ADAC072B1
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 May 2019 03:30:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BE7BFC072B1
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 May 2019 03:45:08 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6B01D20675
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 May 2019 03:30:49 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6B01D20675
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 49E8F20883
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 May 2019 03:45:08 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 49E8F20883
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45CfWC50GKzDqMk
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 May 2019 13:30:47 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
- (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=stewart@linux.ibm.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 45Cfqk3xjDzDqK3
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 May 2019 13:45:06 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45CfTs2x1RzDqJQ
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 May 2019 13:29:36 +1000 (AEST)
-Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x4S3S4We148928
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 May 2019 23:29:34 -0400
-Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2srr4n0mue-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 May 2019 23:29:33 -0400
-Received: from localhost
- by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <stewart@linux.ibm.com>;
- Tue, 28 May 2019 04:29:33 +0100
-Received: from b03cxnp08025.gho.boulder.ibm.com (9.17.130.17)
- by e31.co.us.ibm.com (192.168.1.131) with IBM ESMTP SMTP Gateway: Authorized
- Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Tue, 28 May 2019 04:29:30 +0100
-Received: from b03ledav004.gho.boulder.ibm.com
- (b03ledav004.gho.boulder.ibm.com [9.17.130.235])
- by b03cxnp08025.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x4S3TTkT24641896
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Tue, 28 May 2019 03:29:30 GMT
-Received: from b03ledav004.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id D83A27805E;
- Tue, 28 May 2019 03:29:29 +0000 (GMT)
-Received: from b03ledav004.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id A081A7805C;
- Tue, 28 May 2019 03:29:29 +0000 (GMT)
-Received: from birb.localdomain (unknown [9.185.142.109])
- by b03ledav004.gho.boulder.ibm.com (Postfix) with ESMTP;
- Tue, 28 May 2019 03:29:29 +0000 (GMT)
-Received: by birb.localdomain (Postfix, from userid 1000)
- id 470AF4EC63D; Tue, 28 May 2019 13:29:26 +1000 (AEST)
-From: Stewart Smith <stewart@linux.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [TRIVIAL] [PATCH] powerpc/powernv-eeh: Consisely desribe what this
- file does
-Date: Tue, 28 May 2019 13:29:25 +1000
-X-Mailer: git-send-email 2.21.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45CfpD0yHxzDqHF
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 May 2019 13:43:48 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=ellerman.id.au
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
+ SHA256) (No client certificate requested)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 45Cfp83y01z9s9N;
+ Tue, 28 May 2019 13:43:43 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Christian Brauner <christian@brauner.io>, viro@zeniv.linux.org.uk,
+ linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+ torvalds@linux-foundation.org, fweimer@redhat.com
+Subject: Re: [PATCH v3 2/3] arch: wire-up close_range()
+In-Reply-To: <20190524111047.6892-3-christian@brauner.io>
+References: <20190524111047.6892-1-christian@brauner.io>
+ <20190524111047.6892-3-christian@brauner.io>
+Date: Tue, 28 May 2019 13:43:43 +1000
+Message-ID: <87woibp7kg.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-x-cbid: 19052803-8235-0000-0000-00000E9F39DD
-X-IBM-SpamModules-Scores: 
-X-IBM-SpamModules-Versions: BY=3.00011174; HX=3.00000242; KW=3.00000007;
- PH=3.00000004; SC=3.00000286; SDB=6.01209603; UDB=6.00635444; IPR=6.00990631; 
- MB=3.00027079; MTD=3.00000008; XFM=3.00000015; UTC=2019-05-28 03:29:32
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19052803-8236-0000-0000-000045BFF87B
-Message-Id: <20190528032925.8836-1-stewart@linux.ibm.com>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2019-05-27_12:, , signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- malwarescore=0 suspectscore=1 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=667 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1810050000 definitions=main-1905280023
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -102,33 +56,46 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: sbobroff@linux.ibm.com, oohall@gmail.com,
- Stewart Smith <stewart@linux.ibm.com>, paulus@samba.org
+Cc: linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org, ldv@altlinux.org,
+ dhowells@redhat.com, sparclinux@vger.kernel.org, shuah@kernel.org,
+ linux-arch@vger.kernel.org, linux-s390@vger.kernel.org, miklos@szeredi.hu,
+ x86@kernel.org, Christian Brauner <christian@brauner.io>,
+ linux-mips@vger.kernel.org, linux-xtensa@linux-xtensa.org, tkjos@android.com,
+ arnd@arndb.de, jannh@google.com, linux-m68k@lists.linux-m68k.org,
+ tglx@linutronix.de, linux-arm-kernel@lists.infradead.org,
+ linux-parisc@vger.kernel.org, linux-api@vger.kernel.org, oleg@redhat.com,
+ linux-alpha@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-If the previous comment made sense, continue debugging or call your
-doctor immediately.
+Christian Brauner <christian@brauner.io> writes:
+> diff --git a/arch/powerpc/kernel/syscalls/syscall.tbl b/arch/powerpc/kernel/syscalls/syscall.tbl
+> index 103655d84b4b..ba2c1f078cbd 100644
+> --- a/arch/powerpc/kernel/syscalls/syscall.tbl
+> +++ b/arch/powerpc/kernel/syscalls/syscall.tbl
+> @@ -515,3 +515,4 @@
+>  431	common	fsconfig			sys_fsconfig
+>  432	common	fsmount				sys_fsmount
+>  433	common	fspick				sys_fspick
+> +435	common	close_range			sys_close_range
 
-Signed-off-by: Stewart Smith <stewart@linux.ibm.com>
----
- arch/powerpc/platforms/powernv/eeh-powernv.c | 4 +---
- 1 file changed, 1 insertion(+), 3 deletions(-)
+With a minor build fix the selftest passes for me on ppc64le:
 
-diff --git a/arch/powerpc/platforms/powernv/eeh-powernv.c b/arch/powerpc/platforms/powernv/eeh-powernv.c
-index f38078976c5d..bea6708be065 100644
---- a/arch/powerpc/platforms/powernv/eeh-powernv.c
-+++ b/arch/powerpc/platforms/powernv/eeh-powernv.c
-@@ -1,7 +1,5 @@
- /*
-- * The file intends to implement the platform dependent EEH operations on
-- * powernv platform. Actually, the powernv was created in order to fully
-- * hypervisor support.
-+ * PowerNV Platform dependent EEH operations
-  *
-  * Copyright Benjamin Herrenschmidt & Gavin Shan, IBM Corporation 2013.
-  *
--- 
-2.21.0
+  # ./close_range_test 
+  1..9
+  ok 1 do not allow invalid flag values for close_range()
+  ok 2 close_range() from 3 to 53
+  ok 3 fcntl() verify closed range from 3 to 53
+  ok 4 close_range() from 54 to 95
+  ok 5 fcntl() verify closed range from 54 to 95
+  ok 6 close_range() from 96 to 102
+  ok 7 fcntl() verify closed range from 96 to 102
+  ok 8 close_range() closed single file descriptor
+  ok 9 fcntl() verify closed single file descriptor
+  # Pass 9 Fail 0 Xfail 0 Xpass 0 Skip 0 Error 0
 
+
+Acked-by: Michael Ellerman <mpe@ellerman.id.au> (powerpc)
+
+cheers
