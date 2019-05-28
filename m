@@ -2,55 +2,64 @@ Return-Path: <SRS0=jaSx=T4=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7FED9C04AB3
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 May 2019 01:49:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 76E84C04AB3
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 May 2019 01:55:42 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B90C920823
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 May 2019 01:48:59 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B90C920823
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
+	by mail.kernel.org (Postfix) with ESMTPS id EC8352075E
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 May 2019 01:55:41 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=anastas.io header.i=@anastas.io header.b="jkoPdaXY"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EC8352075E
+Authentication-Results: mail.kernel.org; dmarc=fail (p=quarantine dis=none) header.from=anastas.io
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45CcFj46ZVzDqNS
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 May 2019 11:48:57 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45CcPR1Ps6zDqMC
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 May 2019 11:55:38 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=redhat.com
- (client-ip=209.132.183.28; helo=mx1.redhat.com; envelope-from=david@redhat.com;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=redhat.com
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ spf=pass (mailfrom) smtp.mailfrom=anastas.io
+ (client-ip=104.248.188.109; helo=alpha.anastas.io;
+ envelope-from=shawn@anastas.io; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none)
+ header.from=anastas.io
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=anastas.io header.i=@anastas.io header.b="jkoPdaXY"; 
+ dkim-atps=neutral
+Received: from alpha.anastas.io (alpha.anastas.io [104.248.188.109])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45CDp8034CzDq6l
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 May 2019 21:12:14 +1000 (AEST)
-Received: from smtp.corp.redhat.com (int-mx08.intmail.prod.int.phx2.redhat.com
- [10.5.11.23])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45CcMv6pMyzDqJM
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 May 2019 11:54:19 +1000 (AEST)
+Received: from authenticated-user (alpha.anastas.io [104.248.188.109])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by mx1.redhat.com (Postfix) with ESMTPS id F158C88317;
- Mon, 27 May 2019 11:12:09 +0000 (UTC)
-Received: from t460s.redhat.com (ovpn-117-89.ams2.redhat.com [10.36.117.89])
- by smtp.corp.redhat.com (Postfix) with ESMTP id 9B2952AA81;
- Mon, 27 May 2019 11:11:53 +0000 (UTC)
-From: David Hildenbrand <david@redhat.com>
-To: linux-mm@kvack.org
-Subject: [PATCH v3 00/11] mm/memory_hotplug: Factor out memory block
- devicehandling
-Date: Mon, 27 May 2019 13:11:41 +0200
-Message-Id: <20190527111152.16324-1-david@redhat.com>
+ by alpha.anastas.io (Postfix) with ESMTPSA id 3C4F37F8F7;
+ Mon, 27 May 2019 20:54:17 -0500 (CDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=anastas.io; s=mail;
+ t=1559008458; bh=JsmM3TF8YlXJ0OlLlUbqQr2/zPIZK0XaaIlAJ070/mg=;
+ h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+ b=jkoPdaXY5XwAO1T08QAOaqZ+F7d675TuKefYlSJiiKLq3kM55/+JyWA3ttzz9xsHW
+ B4LlRttoyQRIcAgVxPI0IA5CLNmx+Yq0TcVnHfsCsndI20JVU3AZRUzwAAHg+gLS9W
+ 4XLxD+Rpxe7jULMpbjHauAua9nH8IT6h4NM3uTqPcgRzgXO4Op5nB9TZa9Jm1s+GTt
+ gONJysKq9xK9/1iMvCFK4pmLMjEZ89Z40glW/lafdgUOiALZKtEnsDj0eHvPK/NQXA
+ CqOzh76yqt94nnDLlUkKvrIoYeVSOt+DPrlpScWEwy61RAWG/j3cw6PJ20uVlHv/H2
+ ZddttAT2tpcsA==
+From: Shawn Anastasio <shawn@anastas.io>
+To: linux-pci@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH v2 1/3] PCI: Introduce pcibios_ignore_alignment_request
+Date: Mon, 27 May 2019 20:54:10 -0500
+Message-Id: <20190528015412.30521-2-shawn@anastas.io>
+In-Reply-To: <20190528015412.30521-1-shawn@anastas.io>
+References: <20190528015412.30521-1-shawn@anastas.io>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-Scanned-By: MIMEDefang 2.84 on 10.5.11.23
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.5.16
- (mx1.redhat.com [10.5.110.28]); Mon, 27 May 2019 11:12:11 +0000 (UTC)
-X-Mailman-Approved-At: Tue, 28 May 2019 11:47:52 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -62,122 +71,66 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Mark Rutland <mark.rutland@arm.com>, Oscar Salvador <osalvador@suse.com>,
- "Rafael J. Wysocki" <rafael@kernel.org>, Michal Hocko <mhocko@suse.com>,
- linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org,
- Peter Zijlstra <peterz@infradead.org>,
- Dave Hansen <dave.hansen@linux.intel.com>,
- Heiko Carstens <heiko.carstens@de.ibm.com>,
- Wei Yang <richard.weiyang@gmail.com>,
- Masahiro Yamada <yamada.masahiro@socionext.com>,
- Pavel Tatashin <pavel.tatashin@microsoft.com>, Rich Felker <dalias@libc.org>,
- Arun KS <arunks@codeaurora.org>, Chintan Pandya <cpandya@codeaurora.org>,
- Ingo Molnar <mingo@kernel.org>, Paul Mackerras <paulus@samba.org>,
- Qian Cai <cai@lca.pw>, linux-s390@vger.kernel.org,
- "H. Peter Anvin" <hpa@zytor.com>, Yu Zhao <yuzhao@google.com>,
- Baoquan He <bhe@redhat.com>, Logan Gunthorpe <logang@deltatee.com>,
- David Hildenbrand <david@redhat.com>, Mike Rapoport <rppt@linux.ibm.com>,
- Jun Yao <yaojun8558363@gmail.com>, Ingo Molnar <mingo@redhat.com>,
- Catalin Marinas <catalin.marinas@arm.com>, Rob Herring <robh@kernel.org>,
- Fenghua Yu <fenghua.yu@intel.com>, Pavel Tatashin <pasha.tatashin@soleen.com>,
- Vasily Gorbik <gor@linux.ibm.com>,
- Anshuman Khandual <anshuman.khandual@arm.com>,
- "mike.travis@hpe.com" <mike.travis@hpe.com>, Will Deacon <will.deacon@arm.com>,
- Robin Murphy <robin.murphy@arm.com>, Nicholas Piggin <npiggin@gmail.com>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>, Mark Brown <broonie@kernel.org>,
- Borislav Petkov <bp@alien8.de>, Andy Lutomirski <luto@kernel.org>,
- Jonathan Cameron <Jonathan.Cameron@huawei.com>,
- Dan Williams <dan.j.williams@intel.com>,
- Chris Wilson <chris@chris-wilson.co.uk>, Joonsoo Kim <iamjoonsoo.kim@lge.com>,
- linux-arm-kernel@lists.infradead.org, Oscar Salvador <osalvador@suse.de>,
- Tony Luck <tony.luck@intel.com>, Yoshinori Sato <ysato@users.sourceforge.jp>,
- Ard Biesheuvel <ard.biesheuvel@linaro.org>,
- Mathieu Malaterre <malat@debian.org>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Andrew Banman <andrew.banman@hpe.com>, linux-kernel@vger.kernel.org,
- Mike Rapoport <rppt@linux.vnet.ibm.com>, Thomas Gleixner <tglx@linutronix.de>,
- Wei Yang <richardw.yang@linux.intel.com>,
- Alex Deucher <alexander.deucher@amd.com>, Igor Mammedov <imammedo@redhat.com>,
- akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org,
- "David S. Miller" <davem@davemloft.net>,
- "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>
+Cc: sbobroff@linux.ibm.com, linux-kernel@vger.kernel.org, rppt@linux.ibm.com,
+ xyjxie@linux.vnet.ibm.com, bhelgaas@google.com, paulus@samba.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-We only want memory block devices for memory to be onlined/offlined
-(add/remove from the buddy). This is required so user space can
-online/offline memory and kdump gets notified about newly onlined memory.
+Introduce a new pcibios function pcibios_ignore_alignment_request
+which allows the PCI core to defer to platform-specific code to
+determine whether or not to ignore alignment requests for PCI resources.
 
-Let's factor out creation/removal of memory block devices. This helps
-to further cleanup arch_add_memory/arch_remove_memory() and to make
-implementation of new features easier - especially sub-section
-memory hot add from Dan.
+The existing behavior is to simply ignore alignment requests when
+PCI_PROBE_ONLY is set. This is behavior is maintained by the
+default implementation of pcibios_ignore_alignment_request.
 
-Anshuman Khandual is currently working on arch_remove_memory(). I added
-a temporary solution via "arm64/mm: Add temporary arch_remove_memory()
-implementation", that is sufficient as a firsts tep in the context of
-this series. (we don't cleanup page tables in case anything goes
-wrong already)
+Signed-off-by: Shawn Anastasio <shawn@anastas.io>
+---
+ drivers/pci/pci.c   | 9 +++++++--
+ include/linux/pci.h | 1 +
+ 2 files changed, 8 insertions(+), 2 deletions(-)
 
-Did a quick sanity test with DIMM plug/unplug, making sure all devices
-and sysfs links properly get added/removed. Compile tested on s390x and
-x86-64.
-
-Based on next/master.
-
-Next refactoring on my list will be making sure that remove_memory()
-will never deal with zones / access "struct pages". Any kind of zone
-handling will have to be done when offlining system memory / before
-removing device memory. I am thinking about remove_pfn_range_from_zone()",
-du undo everything "move_pfn_range_to_zone()" did.
-
-v2 -> v3:
-- Add "s390x/mm: Fail when an altmap is used for arch_add_memory()"
-- Add "arm64/mm: Add temporary arch_remove_memory() implementation"
-- Add "drivers/base/memory: Pass a block_id to init_memory_block()"
-- Various changes to "mm/memory_hotplug: Create memory block devices
-  after arch_add_memory()" and "mm/memory_hotplug: Create memory block
-  devices after arch_add_memory()" due to switching from sections to
-  block_id's.
-
-v1 -> v2:
-- s390x/mm: Implement arch_remove_memory()
--- remove mapping after "__remove_pages"
-
-David Hildenbrand (11):
-  mm/memory_hotplug: Simplify and fix check_hotplug_memory_range()
-  s390x/mm: Fail when an altmap is used for arch_add_memory()
-  s390x/mm: Implement arch_remove_memory()
-  arm64/mm: Add temporary arch_remove_memory() implementation
-  drivers/base/memory: Pass a block_id to init_memory_block()
-  mm/memory_hotplug: Allow arch_remove_pages() without
-    CONFIG_MEMORY_HOTREMOVE
-  mm/memory_hotplug: Create memory block devices after arch_add_memory()
-  mm/memory_hotplug: Drop MHP_MEMBLOCK_API
-  mm/memory_hotplug: Remove memory block devices before
-    arch_remove_memory()
-  mm/memory_hotplug: Make unregister_memory_block_under_nodes() never
-    fail
-  mm/memory_hotplug: Remove "zone" parameter from
-    sparse_remove_one_section
-
- arch/arm64/mm/mmu.c            |  17 +++++
- arch/ia64/mm/init.c            |   2 -
- arch/powerpc/mm/mem.c          |   2 -
- arch/s390/mm/init.c            |  18 +++--
- arch/sh/mm/init.c              |   2 -
- arch/x86/mm/init_32.c          |   2 -
- arch/x86/mm/init_64.c          |   2 -
- drivers/base/memory.c          | 134 +++++++++++++++++++--------------
- drivers/base/node.c            |  27 +++----
- include/linux/memory.h         |   6 +-
- include/linux/memory_hotplug.h |  12 +--
- include/linux/node.h           |   7 +-
- mm/memory_hotplug.c            |  44 +++++------
- mm/sparse.c                    |  10 +--
- 14 files changed, 140 insertions(+), 145 deletions(-)
-
+diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
+index 8abc843b1615..8207a09085d1 100644
+--- a/drivers/pci/pci.c
++++ b/drivers/pci/pci.c
+@@ -5882,6 +5882,11 @@ resource_size_t __weak pcibios_default_alignment(void)
+ 	return 0;
+ }
+ 
++int __weak pcibios_ignore_alignment_request(void)
++{
++	return pci_has_flag(PCI_PROBE_ONLY);
++}
++
+ #define RESOURCE_ALIGNMENT_PARAM_SIZE COMMAND_LINE_SIZE
+ static char resource_alignment_param[RESOURCE_ALIGNMENT_PARAM_SIZE] = {0};
+ static DEFINE_SPINLOCK(resource_alignment_lock);
+@@ -5906,9 +5911,9 @@ static resource_size_t pci_specified_resource_alignment(struct pci_dev *dev,
+ 	p = resource_alignment_param;
+ 	if (!*p && !align)
+ 		goto out;
+-	if (pci_has_flag(PCI_PROBE_ONLY)) {
++	if (pcibios_ignore_alignment_request()) {
+ 		align = 0;
+-		pr_info_once("PCI: Ignoring requested alignments (PCI_PROBE_ONLY)\n");
++		pr_info_once("PCI: Ignoring requested alignments\n");
+ 		goto out;
+ 	}
+ 
+diff --git a/include/linux/pci.h b/include/linux/pci.h
+index 4a5a84d7bdd4..47471dcdbaf9 100644
+--- a/include/linux/pci.h
++++ b/include/linux/pci.h
+@@ -1990,6 +1990,7 @@ static inline void pcibios_penalize_isa_irq(int irq, int active) {}
+ int pcibios_alloc_irq(struct pci_dev *dev);
+ void pcibios_free_irq(struct pci_dev *dev);
+ resource_size_t pcibios_default_alignment(void);
++int pcibios_ignore_alignment_request(void);
+ 
+ #ifdef CONFIG_HIBERNATE_CALLBACKS
+ extern struct dev_pm_ops pcibios_pm_ops;
 -- 
 2.20.1
 
