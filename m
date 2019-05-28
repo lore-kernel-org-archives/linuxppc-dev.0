@@ -2,26 +2,26 @@ Return-Path: <SRS0=jaSx=T4=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+X-Spam-Status: No, score=-5.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id F25FFC072B1
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 May 2019 04:09:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7D6EAC072B1
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 May 2019 04:11:33 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 64DB22075B
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 May 2019 04:09:58 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id CF8A02075B
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 May 2019 04:11:32 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=anastas.io header.i=@anastas.io header.b="dYKBGgsq"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 64DB22075B
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=anastas.io header.i=@anastas.io header.b="UzyA0d+b"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CF8A02075B
 Authentication-Results: mail.kernel.org; dmarc=fail (p=quarantine dis=none) header.from=anastas.io
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45CgNN6YHgzDqTv
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 May 2019 14:09:56 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45CgQC02bgzDqQb
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 May 2019 14:11:31 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=anastas.io
  (client-ip=104.248.188.109; helo=alpha.anastas.io;
@@ -29,37 +29,39 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none)
  header.from=anastas.io
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=anastas.io header.i=@anastas.io header.b="dYKBGgsq"; 
+ unprotected) header.d=anastas.io header.i=@anastas.io header.b="UzyA0d+b"; 
  dkim-atps=neutral
 Received: from alpha.anastas.io (alpha.anastas.io [104.248.188.109])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45CgFP5MpQzDqL4
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 May 2019 14:03:53 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45CgNn1XygzDqBL
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 May 2019 14:10:17 +1000 (AEST)
 Received: from authenticated-user (alpha.anastas.io [104.248.188.109])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by alpha.anastas.io (Postfix) with ESMTPSA id 440827F8F8;
- Mon, 27 May 2019 23:03:21 -0500 (CDT)
+ by alpha.anastas.io (Postfix) with ESMTPSA id 4968E7F8EF;
+ Mon, 27 May 2019 23:09:44 -0500 (CDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=anastas.io; s=mail;
- t=1559016202; bh=EGTrKlRnXu1zsiLLv/Fv7FG8sil5S0AhH+klcU6GwLU=;
- h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=dYKBGgsqdfiMi1eoJOtniAmEda6YnvbaZ/xR0B+e1QfXDskdOBl9uKEbG/HJ5rd02
- Eojzh34WnSaWRbdicp15KcL1bEIzo2zeHzY2QAej2d8C2Mc7BcC5yDwbh4xpT9Dr+j
- TLQj7Jv1GMFXtuSdQGtOaGcUYRgEdmaLsYzND1BxwXSNfBUOanTOguLFLwF6Ic58MT
- DLivhV6IUEvLEK+d7DA5CDOlgePmaYfTVNi0KAGktNmY7/OyhnFZJr0jOBacDWeXY1
- /ljrUZOTUTpgPpU7VhV/Xk24WcDJpR/w9P7nM5wqJVnEWcNssHybcvOZjd2ldctfts
- gQdSuZNgFSGOw==
+ t=1559016585; bh=IPciv5XW8PSn65YQOGUAMeOHM6XRioM8jODTE/cBdU8=;
+ h=Subject:To:Cc:References:From:Date:In-Reply-To:From;
+ b=UzyA0d+bwaxA63Oe76TnTbWrmuixk00++UDHHULAMRtlXL1tQyOPcqCkkRUPZZ1PQ
+ HpsgooHm8WqhhWC7QfzC2iKIdrSZXOpYo5WgjNFU4KyoGhekqEEGZYlhElpqndDNe3
+ 04+RgWq9HzWarLrw4syf5siY4sNAIEbuczdXwtk4r+Q3YNCcCv2jK5aiXwsYeFCaxO
+ ToCYkhXQUdicOb7lEHI7bomtsh5Wd2RPYrKS+K2gVjZDGuOIkO8PqpeEbeGMNq98N4
+ ETOxHIsX6WV8D6BZVIIWDFo0J36/cd/kMY37Rtg0OMcSa0MI48d38ZLftW/Jhbz2BI
+ xJaryvJOfr/aw==
+Subject: Re: [RESEND PATCH 0/3] Allow custom PCI resource alignment on pseries
+To: Oliver <oohall@gmail.com>
+References: <20190527225521.5884-1-shawn@anastas.io>
+ <CAOSf1CFFyz0YNqdpd5r44MaBV449yoK3WOMBZ1mpgZ=judNfDQ@mail.gmail.com>
 From: Shawn Anastasio <shawn@anastas.io>
-To: linux-pci@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v3 2/3] powerpc/64: Enable pcibios_after_init hook on ppc64
-Date: Mon, 27 May 2019 23:03:12 -0500
-Message-Id: <20190528040313.35582-3-shawn@anastas.io>
-In-Reply-To: <20190528040313.35582-1-shawn@anastas.io>
-References: <20190528040313.35582-1-shawn@anastas.io>
+Message-ID: <476555b7-b462-d844-57ea-7ca1c6113d9b@anastas.io>
+Date: Mon, 27 May 2019 23:09:43 -0500
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+In-Reply-To: <CAOSf1CFFyz0YNqdpd5r44MaBV449yoK3WOMBZ1mpgZ=judNfDQ@mail.gmail.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -71,61 +73,80 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: sbobroff@linux.ibm.com, linux-kernel@vger.kernel.org, rppt@linux.ibm.com,
- xyjxie@linux.vnet.ibm.com, bhelgaas@google.com, paulus@samba.org
+Cc: Sam Bobroff <sbobroff@linux.ibm.com>, linux-pci@vger.kernel.org,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, rppt@linux.ibm.com,
+ Alexey Kardashevskiy <aik@ozlabs.ru>, Paul Mackerras <paulus@samba.org>,
+ Bjorn Helgaas <bhelgaas@google.com>, xyjxie@linux.vnet.ibm.com,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Enable the pcibios_after_init hook on all powerpc platforms.
-This hook is executed at the end of pcibios_init and was previously
-only available on CONFIG_PPC32.
 
-Since it is useful and not inherently limited to 32-bit mode,
-remove the limitation and allow it on all powerpc platforms.
 
-Signed-off-by: Shawn Anastasio <shawn@anastas.io>
----
- arch/powerpc/include/asm/machdep.h | 3 +--
- arch/powerpc/kernel/pci_64.c       | 4 ++++
- 2 files changed, 5 insertions(+), 2 deletions(-)
+On 5/27/19 11:01 PM, Oliver wrote:
+> On Tue, May 28, 2019 at 8:56 AM Shawn Anastasio <shawn@anastas.io> wrote:
+>>
+>> Hello all,
+>>
+>> This patch set implements support for user-specified PCI resource
+>> alignment on the pseries platform for hotplugged PCI devices.
+>> Currently on pseries, PCI resource alignments specified with the
+>> pci=resource_alignment commandline argument are ignored, since
+>> the firmware is in charge of managing the PCI resources. In the
+>> case of hotplugged devices, though, the kernel is in charge of
+>> configuring the resources and should obey alignment requirements.
+> 
+> Are you using hotplug to work around SLOF (the OF we use under qemu)
+> not aligning BARs to 64K? It looks like there is a commit in SLOF to
+> fix that (https://git.qemu.org/?p=SLOF.git;a=commit;f=board-qemu/slof/pci-phb.fs;h=1903174472f8800caf50c959b304501b4c01153c).
+> 
 
-diff --git a/arch/powerpc/include/asm/machdep.h b/arch/powerpc/include/asm/machdep.h
-index 2f0ca6560e47..2fbfaa9176ed 100644
---- a/arch/powerpc/include/asm/machdep.h
-+++ b/arch/powerpc/include/asm/machdep.h
-@@ -150,6 +150,7 @@ struct machdep_calls {
- 	void		(*init)(void);
- 
- 	void		(*kgdb_map_scc)(void);
-+#endif /* CONFIG_PPC32 */
- 
- 	/*
- 	 * optional PCI "hooks"
-@@ -157,8 +158,6 @@ struct machdep_calls {
- 	/* Called at then very end of pcibios_init() */
- 	void (*pcibios_after_init)(void);
- 
--#endif /* CONFIG_PPC32 */
--
- 	/* Called in indirect_* to avoid touching devices */
- 	int (*pci_exclude_device)(struct pci_controller *, unsigned char, unsigned char);
- 
-diff --git a/arch/powerpc/kernel/pci_64.c b/arch/powerpc/kernel/pci_64.c
-index 9d8c10d55407..fba7fe6e4a50 100644
---- a/arch/powerpc/kernel/pci_64.c
-+++ b/arch/powerpc/kernel/pci_64.c
-@@ -68,6 +68,10 @@ static int __init pcibios_init(void)
- 
- 	printk(KERN_DEBUG "PCI: Probing PCI hardware done\n");
- 
-+	/* Call machine dependent post-init code */
-+	if (ppc_md.pcibios_after_init)
-+		ppc_md.pcibios_after_init();
-+
- 	return 0;
- }
- 
--- 
-2.20.1
+No, my application actually requires PCI hotplug at run-time.
 
+>> The current behavior of ignoring the alignment for hotplugged devices
+>> results in sub-page BARs landing between page boundaries and
+>> becoming un-mappable from userspace via the VFIO framework.
+>> This issue was observed on a pseries KVM guest with hotplugged
+>> ivshmem devices.
+> 
+>> With these changes, users can specify an appropriate
+>> pci=resource_alignment argument on boot for devices they wish to use
+>> with VFIO.
+>>
+>> In the future, this could be extended to provide page-aligned
+>> resources by default for hotplugged devices, similar to what is done
+>> on powernv by commit 382746376993 ("powerpc/powernv: Override
+>> pcibios_default_alignment() to force PCI devices to be page aligned").
+> 
+> Can we make aligning the BARs to PAGE_SIZE the default behaviour? The
+> BAR assignment process is complex enough as-is so I'd rather we didn't
+> add another platform hack into the mix.
+
+Absolutely. This will still require the existing changes so that the 
+custom alignment isn't flat-out ignored on pseries, but I can set
+it to default to PAGE_SIZE as well, similar to how it's done on PowerNV.
+I've just pushed a v3 to fix a typo and I'll incorporate this change
+in v4.
+
+>> Feedback is appreciated.
+>>
+>> Thanks,
+>> Shawn
+>>
+>> Shawn Anastasio (3):
+>>    PCI: Introduce pcibios_ignore_alignment_request
+>>    powerpc/64: Enable pcibios_after_init hook on ppc64
+>>    powerpc/pseries: Allow user-specified PCI resource alignment after
+>>      init
+>>
+>>   arch/powerpc/include/asm/machdep.h     |  6 ++++--
+>>   arch/powerpc/kernel/pci-common.c       |  9 +++++++++
+>>   arch/powerpc/kernel/pci_64.c           |  4 ++++
+>>   arch/powerpc/platforms/pseries/setup.c | 22 ++++++++++++++++++++++
+>>   drivers/pci/pci.c                      |  9 +++++++--
+>>   5 files changed, 46 insertions(+), 4 deletions(-)
+>>
+>> --
+>> 2.20.1
+>>
