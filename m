@@ -2,53 +2,52 @@ Return-Path: <SRS0=Oz1q=T5=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 46F21C28CC0
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 May 2019 13:33:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 68C75C28CC0
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 May 2019 13:57:20 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 7E0CE21882
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 May 2019 13:33:45 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7E0CE21882
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=hisilicon.com
+	by mail.kernel.org (Postfix) with ESMTPS id B600922CF8
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 May 2019 13:57:19 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B600922CF8
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45DWrQ5SwNzDqBV
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 May 2019 23:33:42 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=hisilicon.com
- (client-ip=45.249.212.32; helo=huawei.com;
- envelope-from=zhangshaokun@hisilicon.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=hisilicon.com
-X-Greylist: delayed 927 seconds by postgrey-1.36 at bilbo;
- Wed, 29 May 2019 19:39:02 AEST
-Received: from huawei.com (szxga06-in.huawei.com [45.249.212.32])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 45DXMd1k70zDqFh
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 May 2019 23:57:17 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45DQdf0V1CzDqFK
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 May 2019 19:39:00 +1000 (AEST)
-Received: from DGGEMS403-HUB.china.huawei.com (unknown [172.30.72.59])
- by Forcepoint Email with ESMTP id 65645ED0CC80F5AD7B17
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 May 2019 17:23:27 +0800 (CST)
-Received: from localhost.localdomain (10.67.212.132) by
- DGGEMS403-HUB.china.huawei.com (10.3.19.203) with Microsoft SMTP Server id
- 14.3.439.0; Wed, 29 May 2019 17:23:19 +0800
-From: Shaokun Zhang <zhangshaokun@hisilicon.com>
-To: <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH] powerpc/64s: Fix misleading SPR and timebase information
-Date: Wed, 29 May 2019 17:21:51 +0800
-Message-ID: <1559121711-24114-1-git-send-email-zhangshaokun@hisilicon.com>
-X-Mailer: git-send-email 2.7.4
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45DXKM2GvKzDqFv
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 May 2019 23:55:19 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=ellerman.id.au
+Received: by ozlabs.org (Postfix)
+ id 45DXKL4YXPz9s3l; Wed, 29 May 2019 23:55:18 +1000 (AEST)
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
+ SHA256) (No client certificate requested)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 45DXKL1HWpz9s3Z;
+ Wed, 29 May 2019 23:55:17 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Masahiro Yamada <yamada.masahiro@socionext.com>,
+ Christoph Hellwig <hch@infradead.org>
+Subject: Re: [PATCH] powerpc/configs: Rename foo_basic_defconfig to
+ foo_base.config
+In-Reply-To: <CAK7LNAS3iTOeX5b2F7E9PeWqma1_hx7Tbrt2V=3fvrqhSk5Zug@mail.gmail.com>
+References: <20190528081614.26096-1-mpe@ellerman.id.au>
+ <20190528121009.GA11901@infradead.org>
+ <CAK7LNAS3iTOeX5b2F7E9PeWqma1_hx7Tbrt2V=3fvrqhSk5Zug@mail.gmail.com>
+Date: Wed, 29 May 2019 23:55:16 +1000
+Message-ID: <87zhn5nz5n.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
-X-Originating-IP: [10.67.212.132]
-X-CFilter-Loop: Reflected
-X-Mailman-Approved-At: Wed, 29 May 2019 23:30:12 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -60,42 +59,93 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Shaokun Zhang <zhangshaokun@hisilicon.com>,
- Nicholas Piggin <npiggin@gmail.com>
+Cc: linuxppc-dev@ozlabs.org,
+ Linux Kbuild mailing list <linux-kbuild@vger.kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-pr_info shows SPR and timebase as a decimal value with a '0x'
-prefix, which is somewhat misleading.
+Masahiro Yamada <yamada.masahiro@socionext.com> writes:
+> On Tue, May 28, 2019 at 9:10 PM Christoph Hellwig <hch@infradead.org> wrote:
+>>
+>> On Tue, May 28, 2019 at 06:16:14PM +1000, Michael Ellerman wrote:
+>> > We have several "defconfigs" that are not actually full defconfigs
+>> > they are just a base set of options which are then merged with other
+>> > fragments to produce a working defconfig.
+>
+> The default values from Kconfig files are used
+> where CONFIG options are not specified by the defconfig.
+>
+> So, I think corenet_basic_defconfig is a full defconfig
+> even if it contains a single CONFIG option.
 
-Fix it to print hexadecimal, as was intended.
+That's technically true, but it's not a full defconfig in the sense that
+it doesn't define a meaningful set of options for building for a
+specific machine. In fact if you build it you get a .config that doesn't
+include the one option it defines, CONFIG_CORENET_GENERIC=y.
 
-Fixes: 10d91611f426 ("powerpc/64s: Reimplement book3s idle code in C")
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Nicholas Piggin <npiggin@gmail.com>
-Signed-off-by: Shaokun Zhang <zhangshaokun@hisilicon.com>
----
- arch/powerpc/platforms/powernv/idle.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+> Since the difference between "*_defconfig" and "*.config"
+> is ambiguous in some cases, it depends on the intended usage.
 
-diff --git a/arch/powerpc/platforms/powernv/idle.c b/arch/powerpc/platforms/powernv/idle.c
-index c9133f7908ca..77f2e0a4ee37 100644
---- a/arch/powerpc/platforms/powernv/idle.c
-+++ b/arch/powerpc/platforms/powernv/idle.c
-@@ -1159,10 +1159,10 @@ static void __init pnv_power9_idle_init(void)
- 			pnv_deepest_stop_psscr_mask);
- 	}
- 
--	pr_info("cpuidle-powernv: First stop level that may lose SPRs = 0x%lld\n",
-+	pr_info("cpuidle-powernv: First stop level that may lose SPRs = 0x%llx\n",
- 		pnv_first_spr_loss_level);
- 
--	pr_info("cpuidle-powernv: First stop level that may lose timebase = 0x%lld\n",
-+	pr_info("cpuidle-powernv: First stop level that may lose timebase = 0x%llx\n",
- 		pnv_first_tb_loss_level);
- }
- 
--- 
-2.7.4
+I'm pretty sure all the existing foo.config files are fragments that are
+intended to be merged with an existing .config or other fragments.
 
+ie:
+
+These are fragments:
+  arch/arm/configs/dram_0x00000000.config
+  arch/arm/configs/dram_0xc0000000.config
+  arch/arm/configs/dram_0xd0000000.config
+
+These are all fragments:
+  arch/powerpc/configs/be.config
+  arch/powerpc/configs/book3s_32.config
+  arch/powerpc/configs/altivec.config
+  arch/powerpc/configs/85xx-hw.config
+  arch/powerpc/configs/guest.config
+  arch/powerpc/configs/85xx-smp.config
+  arch/powerpc/configs/85xx-64bit.config
+  arch/powerpc/configs/dpaa.config
+  arch/powerpc/configs/85xx-32bit.config
+  arch/powerpc/configs/fsl-emb-nonhw.config
+  arch/powerpc/configs/86xx-smp.config
+  arch/powerpc/configs/le.config
+  arch/powerpc/configs/86xx-hw.config
+
+Pretty sure these all are, they're used in gen_generic_defconfigs in arch/mips/Makefile:
+  arch/mips/configs/generic/board-xilfpga.config
+  arch/mips/configs/generic/board-ocelot.config
+  arch/mips/configs/generic/board-ni169445.config
+  arch/mips/configs/generic/32r6.config
+  arch/mips/configs/generic/64r1.config
+  arch/mips/configs/generic/32r1.config
+  arch/mips/configs/generic/64r6.config
+  arch/mips/configs/generic/eb.config
+  arch/mips/configs/generic/micro32r2.config
+  arch/mips/configs/generic/32r2.config
+  arch/mips/configs/generic/board-boston.config
+  arch/mips/configs/generic/el.config
+  arch/mips/configs/generic/board-ranchu.config
+  arch/mips/configs/generic/64r2.config
+  arch/mips/configs/generic/board-sead-3.config
+
+These are also both fragments:
+  arch/x86/configs/tiny.config
+  arch/x86/configs/xen.config
+
+
+>> > The most obvious example is corenet_basic_defconfig which only
+>> > contains one symbol CONFIG_CORENET_GENERIC=y. But there is also
+>> > mpc85xx_base_defconfig which doesn't actually enable CONFIG_PPC_85xx.
+>> >
+>> > To avoid confusion, rename these config fragments to "foo_base.config"
+>> > to make it clearer that they are not full defconfigs.
+>>
+>> Adding linux-kbuild, maybe we can make the handling of these fragments
+>> generic and actually document it..
+>
+> I do not know how it should be documented.
+
+Me either.
+
+cheers
