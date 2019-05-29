@@ -2,94 +2,62 @@ Return-Path: <SRS0=Oz1q=T5=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+X-Spam-Status: No, score=-8.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no
-	version=3.4.0
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3379EC04AB6
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 May 2019 01:27:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id F089DC04AB6
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 May 2019 02:02:47 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 87F9F2070D
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 May 2019 01:27:37 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 027FC20B1F
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 May 2019 02:02:46 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=nifty.com header.i=@nifty.com header.b="Gmf80RTw"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 87F9F2070D
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=socionext.com
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=neuling.org header.i=@neuling.org header.b="KskuY1i1"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 027FC20B1F
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=neuling.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45DCkb2bR9zDqR1
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 May 2019 11:27:35 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45DDW85B4zzDqR6
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 May 2019 12:02:44 +1000 (AEST)
 Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45DCj13gP3zDqMT
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 May 2019 11:26:13 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45DDTS2JWpzDqDD
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 May 2019 12:01:16 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=socionext.com
+ dmarc=none (p=none dis=none) header.from=neuling.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=nifty.com header.i=@nifty.com header.b="Gmf80RTw"; 
+ unprotected) header.d=neuling.org header.i=@neuling.org header.b="KskuY1i1"; 
  dkim-atps=neutral
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 45DCj11pmBz8t60
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 May 2019 11:26:13 +1000 (AEST)
-Received: by ozlabs.org (Postfix)
- id 45DCj10kBgz9sB8; Wed, 29 May 2019 11:26:13 +1000 (AEST)
-Authentication-Results: ozlabs.org;
- spf=softfail (mailfrom) smtp.mailfrom=socionext.com
- (client-ip=202.248.20.70; helo=condef-05.nifty.com;
- envelope-from=yamada.masahiro@socionext.com; receiver=<UNKNOWN>)
-Authentication-Results: ozlabs.org;
- dmarc=none (p=none dis=none) header.from=socionext.com
-Authentication-Results: ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=nifty.com header.i=@nifty.com header.b="Gmf80RTw"; 
- dkim-atps=neutral
-X-Greylist: delayed 721 seconds by postgrey-1.36 at bilbo;
- Wed, 29 May 2019 11:26:12 AEST
-Received: from condef-05.nifty.com (condef-05.nifty.com [202.248.20.70])
- by ozlabs.org (Postfix) with ESMTP id 45DCj02J8Vz9s4V
- for <linuxppc-dev@ozlabs.org>; Wed, 29 May 2019 11:26:11 +1000 (AEST)
-Received: from conssluserg-01.nifty.com ([10.126.8.80])by condef-05.nifty.com
- with ESMTP id x4T13fVh006676
- for <linuxppc-dev@ozlabs.org>; Wed, 29 May 2019 10:03:41 +0900
-Received: from mail-vs1-f53.google.com (mail-vs1-f53.google.com
- [209.85.217.53]) (authenticated)
- by conssluserg-01.nifty.com with ESMTP id x4T13FMd015648
- for <linuxppc-dev@ozlabs.org>; Wed, 29 May 2019 10:03:16 +0900
-DKIM-Filter: OpenDKIM Filter v2.10.3 conssluserg-01.nifty.com x4T13FMd015648
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nifty.com;
- s=dec2015msa; t=1559091796;
- bh=jCFvB+YrbV9fJHJdugjROEKPLOpLpTgL08/q9nI4KGc=;
- h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
- b=Gmf80RTwYa2qi09vsE5IVUP87MPwHvnCogJbT2CwHXFGTwzMr4gE99YVDAp+UoKY3
- wy3IWgeceGQKc2Wk3D75nIW54n59a1Ay1IGDDJea7YBbYxq3lW8EoBw9qpgHHvwUkT
- 7ceVcSJJyAKYmtWgANPz11LRfRTMuLEq9YkShajbQuYn6xqwTVFYaBS9VNCXO2SJYj
- G8uRF1MVcqEjEk5uuBQSut6mDxCO/ocg/66wN8cnvOPccLtGBLef8E5imnS4aPrtED
- OmQy2XWT4BNpBoAizqNph/HxbgCHrQTzqqowqpoj5BRQlJnL8OMEwGrpOaT8+sxciE
- +jISQWBJhcl9w==
-X-Nifty-SrcIP: [209.85.217.53]
-Received: by mail-vs1-f53.google.com with SMTP id l20so608357vsp.3
- for <linuxppc-dev@ozlabs.org>; Tue, 28 May 2019 18:03:16 -0700 (PDT)
-X-Gm-Message-State: APjAAAXHrD/N86Qjg14gqA+au/7fSq5f9VuDlgprTRNHoCJyef49nJg3
- MawfC3r0j/b3jHSi/pwqNYb/39a4gbiOb6AlEA4=
-X-Google-Smtp-Source: APXvYqxplV/jP2LrS5T89OsCaERGxlf1sVP8AefRu/blvrYdWLLb/iDr3Nm2u2xxA3ooBfhoclfxaf7LFeEhiZunFdA=
-X-Received: by 2002:a67:de99:: with SMTP id r25mr44708672vsk.215.1559091795309; 
- Tue, 28 May 2019 18:03:15 -0700 (PDT)
+Received: from neuling.org (localhost [127.0.0.1])
+ by ozlabs.org (Postfix) with ESMTP id 45DDTS0GD0z9sB8;
+ Wed, 29 May 2019 12:01:16 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=neuling.org;
+ s=201811; t=1559095276;
+ bh=lrZ/2Ea04UVOHmw7HiCUbqsY9vi+kOq1PIvO/IA52t8=;
+ h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+ b=KskuY1i1vLzBbcAc/T08SlLMNm/DR6Q3nBDMzmv/Hufo93J3bwrotWqkO7VGLCcex
+ yFqpTAs5mje1SndtItaxCehfIQTkJZZnlWoioG0mEIAvS/6f5Ssz40Qs8ffa4myzJB
+ Oo22SMYfqHt9d4yACNBlBrBHiucw0ol4F1QzaSKeIWYKN7Xrh314xjFvdNwgIOPYKV
+ tHmVqI+oNel+654dRVIib0g/3NAmz2REC3KcjmyQm2xsK09cYyJUFJTvvzPQlESMki
+ FPuGcUJl+e0berRk9ZTCU3te45oak3capewrqjIpo+uINvno7Tb6IEz8Ys5kX7dc8n
+ 8DR0JHJ3+souQ==
+Received: by neuling.org (Postfix, from userid 1000)
+ id DFEFB2A569A; Wed, 29 May 2019 12:01:15 +1000 (AEST)
+From: Michael Neuling <mikey@neuling.org>
+To: mpe@ellerman.id.au
+Subject: [PATCH v4 2/2] powerpc: Fix compile issue with force DAWR
+Date: Wed, 29 May 2019 12:01:15 +1000
+Message-Id: <20190529020115.14201-2-mikey@neuling.org>
+X-Mailer: git-send-email 2.21.0
+In-Reply-To: <20190529020115.14201-1-mikey@neuling.org>
+References: <20190529020115.14201-1-mikey@neuling.org>
 MIME-Version: 1.0
-References: <20190528081614.26096-1-mpe@ellerman.id.au>
- <20190528121009.GA11901@infradead.org>
-In-Reply-To: <20190528121009.GA11901@infradead.org>
-From: Masahiro Yamada <yamada.masahiro@socionext.com>
-Date: Wed, 29 May 2019 10:02:39 +0900
-X-Gmail-Original-Message-ID: <CAK7LNAS3iTOeX5b2F7E9PeWqma1_hx7Tbrt2V=3fvrqhSk5Zug@mail.gmail.com>
-Message-ID: <CAK7LNAS3iTOeX5b2F7E9PeWqma1_hx7Tbrt2V=3fvrqhSk5Zug@mail.gmail.com>
-Subject: Re: [PATCH] powerpc/configs: Rename foo_basic_defconfig to
- foo_base.config
-To: Christoph Hellwig <hch@infradead.org>
-Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -101,118 +69,351 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Linux Kbuild mailing list <linux-kbuild@vger.kernel.org>,
- linuxppc-dev@ozlabs.org
+Cc: Mathieu Malaterre <malat@debian.org>, mikey@neuling.org,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, May 28, 2019 at 9:10 PM Christoph Hellwig <hch@infradead.org> wrote:
->
-> On Tue, May 28, 2019 at 06:16:14PM +1000, Michael Ellerman wrote:
-> > We have several "defconfigs" that are not actually full defconfigs
-> > they are just a base set of options which are then merged with other
-> > fragments to produce a working defconfig.
+If you compile with KVM but without CONFIG_HAVE_HW_BREAKPOINT you fail
+at linking with:
+  arch/powerpc/kvm/book3s_hv_rmhandlers.o:(.text+0x708): undefined reference to `dawr_force_enable'
 
-The default values from Kconfig files are used
-where CONFIG options are not specified by the defconfig.
+This was caused by commit c1fe190c0672 ("powerpc: Add force enable of
+DAWR on P9 option").
 
-So, I think corenet_basic_defconfig is a full defconfig
-even if it contains a single CONFIG option.
+This moves a bunch of code around to fix this. It moves a lot of the
+DAWR code in a new file and creates a new CONFIG_PPC_DAWR to enable
+compiling it.
 
-Since the difference between "*_defconfig" and "*.config"
-is ambiguous in some cases, it depends on the intended usage.
-
-
-> > The most obvious example is corenet_basic_defconfig which only
-> > contains one symbol CONFIG_CORENET_GENERIC=y. But there is also
-> > mpc85xx_base_defconfig which doesn't actually enable CONFIG_PPC_85xx.
-> >
-> > To avoid confusion, rename these config fragments to "foo_base.config"
-> > to make it clearer that they are not full defconfigs.
->
-> Adding linux-kbuild, maybe we can make the handling of these fragments
-> generic and actually document it..
-
-I do not know how it should be documented.
-
-
-
-> >
-> > Reported-by: Christophe Leroy <christophe.leroy@c-s.fr>
-> > Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
-> > ---
-> >  arch/powerpc/Makefile                                | 12 ++++++------
-> >  .../{corenet_basic_defconfig => corenet_base.config} |  0
-> >  .../{mpc85xx_basic_defconfig => mpc85xx_base.config} |  0
-> >  .../{mpc86xx_basic_defconfig => mpc86xx_base.config} |  0
-> >  4 files changed, 6 insertions(+), 6 deletions(-)
-> >  rename arch/powerpc/configs/{corenet_basic_defconfig => corenet_base.config} (100%)
-> >  rename arch/powerpc/configs/{mpc85xx_basic_defconfig => mpc85xx_base.config} (100%)
-> >  rename arch/powerpc/configs/{mpc86xx_basic_defconfig => mpc86xx_base.config} (100%)
-> >
-> > diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
-> > index c345b79414a9..94f735db2229 100644
-> > --- a/arch/powerpc/Makefile
-> > +++ b/arch/powerpc/Makefile
-> > @@ -333,32 +333,32 @@ PHONY += powernv_be_defconfig
-> >
-> >  PHONY += mpc85xx_defconfig
-> >  mpc85xx_defconfig:
-> > -     $(call merge_into_defconfig,mpc85xx_basic_defconfig,\
-> > +     $(call merge_into_defconfig,mpc85xx_base.config,\
-> >               85xx-32bit 85xx-hw fsl-emb-nonhw)
-> >
-> >  PHONY += mpc85xx_smp_defconfig
-> >  mpc85xx_smp_defconfig:
-> > -     $(call merge_into_defconfig,mpc85xx_basic_defconfig,\
-> > +     $(call merge_into_defconfig,mpc85xx_base.config,\
-> >               85xx-32bit 85xx-smp 85xx-hw fsl-emb-nonhw)
-> >
-> >  PHONY += corenet32_smp_defconfig
-> >  corenet32_smp_defconfig:
-> > -     $(call merge_into_defconfig,corenet_basic_defconfig,\
-> > +     $(call merge_into_defconfig,corenet_base.config,\
-> >               85xx-32bit 85xx-smp 85xx-hw fsl-emb-nonhw dpaa)
-> >
-> >  PHONY += corenet64_smp_defconfig
-> >  corenet64_smp_defconfig:
-> > -     $(call merge_into_defconfig,corenet_basic_defconfig,\
-> > +     $(call merge_into_defconfig,corenet_base.config,\
-> >               85xx-64bit 85xx-smp altivec 85xx-hw fsl-emb-nonhw dpaa)
-> >
-> >  PHONY += mpc86xx_defconfig
-> >  mpc86xx_defconfig:
-> > -     $(call merge_into_defconfig,mpc86xx_basic_defconfig,\
-> > +     $(call merge_into_defconfig,mpc86xx_base.config,\
-> >               86xx-hw fsl-emb-nonhw)
-> >
-> >  PHONY += mpc86xx_smp_defconfig
-> >  mpc86xx_smp_defconfig:
-> > -     $(call merge_into_defconfig,mpc86xx_basic_defconfig,\
-> > +     $(call merge_into_defconfig,mpc86xx_base.config,\
-> >               86xx-smp 86xx-hw fsl-emb-nonhw)
-> >
-> >  PHONY += ppc32_allmodconfig
-> > diff --git a/arch/powerpc/configs/corenet_basic_defconfig b/arch/powerpc/configs/corenet_base.config
-> > similarity index 100%
-> > rename from arch/powerpc/configs/corenet_basic_defconfig
-> > rename to arch/powerpc/configs/corenet_base.config
-> > diff --git a/arch/powerpc/configs/mpc85xx_basic_defconfig b/arch/powerpc/configs/mpc85xx_base.config
-> > similarity index 100%
-> > rename from arch/powerpc/configs/mpc85xx_basic_defconfig
-> > rename to arch/powerpc/configs/mpc85xx_base.config
-> > diff --git a/arch/powerpc/configs/mpc86xx_basic_defconfig b/arch/powerpc/configs/mpc86xx_base.config
-> > similarity index 100%
-> > rename from arch/powerpc/configs/mpc86xx_basic_defconfig
-> > rename to arch/powerpc/configs/mpc86xx_base.config
-> > --
-> > 2.20.1
-> >
-> ---end quoted text---
-
-
-
+Fixes: c1fe190c0672 ("powerpc: Add force enable of DAWR on P9 option")
+Signed-off-by: Michael Neuling <mikey@neuling.org>
 --
-Best Regards
-Masahiro Yamada
+v4:
+  - Fix merge conflict with patch from Mathieu Malaterre:
+     powerpc: silence a -Wcast-function-type warning in dawr_write_file_bool
+  - Fixed checkpatch issues noticed by Christophe Leroy.
+
+v3:
+  Fixes based on Christophe Leroy's comments:
+  - Fix Kconfig options to better reflect reality
+  - Reorder alphabetically
+  - Inline vs #define
+  - Fixed default return for dawr_enabled() when CONFIG_PPC_DAWR=N
+
+V2:
+  Fixes based on Christophe Leroy's comments:
+  - Fix commit message formatting
+  - Move more DAWR code into dawr.c
+---
+ arch/powerpc/Kconfig                     |   5 ++
+ arch/powerpc/include/asm/hw_breakpoint.h |  21 +++--
+ arch/powerpc/kernel/Makefile             |   1 +
+ arch/powerpc/kernel/dawr.c               | 100 +++++++++++++++++++++++
+ arch/powerpc/kernel/hw_breakpoint.c      |  61 --------------
+ arch/powerpc/kernel/process.c            |  28 -------
+ arch/powerpc/kvm/Kconfig                 |   1 +
+ 7 files changed, 121 insertions(+), 96 deletions(-)
+ create mode 100644 arch/powerpc/kernel/dawr.c
+
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index 8c1c636308..87a3ce4e92 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -234,6 +234,7 @@ config PPC
+ 	select OLD_SIGSUSPEND
+ 	select PCI_DOMAINS			if PCI
+ 	select PCI_SYSCALL			if PCI
++	select PPC_DAWR				if PPC64
+ 	select RTC_LIB
+ 	select SPARSE_IRQ
+ 	select SYSCTL_EXCEPTION_TRACE
+@@ -370,6 +371,10 @@ config PPC_ADV_DEBUG_DAC_RANGE
+ 	depends on PPC_ADV_DEBUG_REGS && 44x
+ 	default y
+ 
++config PPC_DAWR
++	bool
++	default n
++
+ config ZONE_DMA
+ 	bool
+ 	default y if PPC_BOOK3E_64
+diff --git a/arch/powerpc/include/asm/hw_breakpoint.h b/arch/powerpc/include/asm/hw_breakpoint.h
+index 0fe8c1e46b..41abdae6d0 100644
+--- a/arch/powerpc/include/asm/hw_breakpoint.h
++++ b/arch/powerpc/include/asm/hw_breakpoint.h
+@@ -90,18 +90,25 @@ static inline void hw_breakpoint_disable(void)
+ extern void thread_change_pc(struct task_struct *tsk, struct pt_regs *regs);
+ int hw_breakpoint_handler(struct die_args *args);
+ 
+-extern int set_dawr(struct arch_hw_breakpoint *brk);
++#else	/* CONFIG_HAVE_HW_BREAKPOINT */
++static inline void hw_breakpoint_disable(void) { }
++static inline void thread_change_pc(struct task_struct *tsk,
++					struct pt_regs *regs) { }
++
++#endif	/* CONFIG_HAVE_HW_BREAKPOINT */
++
++
++#ifdef CONFIG_PPC_DAWR
+ extern bool dawr_force_enable;
+ static inline bool dawr_enabled(void)
+ {
+ 	return dawr_force_enable;
+ }
+-
+-#else	/* CONFIG_HAVE_HW_BREAKPOINT */
+-static inline void hw_breakpoint_disable(void) { }
+-static inline void thread_change_pc(struct task_struct *tsk,
+-					struct pt_regs *regs) { }
++int set_dawr(struct arch_hw_breakpoint *brk);
++#else
+ static inline bool dawr_enabled(void) { return false; }
+-#endif	/* CONFIG_HAVE_HW_BREAKPOINT */
++static inline int set_dawr(struct arch_hw_breakpoint *brk) { return -1; }
++#endif
++
+ #endif	/* __KERNEL__ */
+ #endif	/* _PPC_BOOK3S_64_HW_BREAKPOINT_H */
+diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
+index 0ea6c4aa3a..56dfa7a2a6 100644
+--- a/arch/powerpc/kernel/Makefile
++++ b/arch/powerpc/kernel/Makefile
+@@ -56,6 +56,7 @@ obj-$(CONFIG_PPC64)		+= setup_64.o sys_ppc32.o \
+ obj-$(CONFIG_VDSO32)		+= vdso32/
+ obj-$(CONFIG_PPC_WATCHDOG)	+= watchdog.o
+ obj-$(CONFIG_HAVE_HW_BREAKPOINT)	+= hw_breakpoint.o
++obj-$(CONFIG_PPC_DAWR)		+= dawr.o
+ obj-$(CONFIG_PPC_BOOK3S_64)	+= cpu_setup_ppc970.o cpu_setup_pa6t.o
+ obj-$(CONFIG_PPC_BOOK3S_64)	+= cpu_setup_power.o
+ obj-$(CONFIG_PPC_BOOK3S_64)	+= mce.o mce_power.o
+diff --git a/arch/powerpc/kernel/dawr.c b/arch/powerpc/kernel/dawr.c
+new file mode 100644
+index 0000000000..c8b3fb610c
+--- /dev/null
++++ b/arch/powerpc/kernel/dawr.c
+@@ -0,0 +1,100 @@
++// SPDX-License-Identifier: GPL-2.0+
++//
++// DAWR infrastructure
++//
++// Copyright 2019, Michael Neuling, IBM Corporation.
++
++#include <linux/types.h>
++#include <linux/export.h>
++#include <linux/fs.h>
++#include <linux/debugfs.h>
++#include <asm/debugfs.h>
++#include <asm/machdep.h>
++#include <asm/hvcall.h>
++
++bool dawr_force_enable;
++EXPORT_SYMBOL_GPL(dawr_force_enable);
++
++int set_dawr(struct arch_hw_breakpoint *brk)
++{
++	unsigned long dawr, dawrx, mrd;
++
++	dawr = brk->address;
++
++	dawrx  = (brk->type & (HW_BRK_TYPE_READ | HW_BRK_TYPE_WRITE))
++		<< (63 - 58);
++	dawrx |= ((brk->type & (HW_BRK_TYPE_TRANSLATE)) >> 2) << (63 - 59);
++	dawrx |= (brk->type & (HW_BRK_TYPE_PRIV_ALL)) >> 3;
++	/* dawr length is stored in field MDR bits 48:53.  Matches range in
++	 * doublewords (64 bits) baised by -1 eg. 0b000000=1DW and
++	 * 0b111111=64DW.
++	 * brk->len is in bytes.
++	 * This aligns up to double word size, shifts and does the bias.
++	 */
++	mrd = ((brk->len + 7) >> 3) - 1;
++	dawrx |= (mrd & 0x3f) << (63 - 53);
++
++	if (ppc_md.set_dawr)
++		return ppc_md.set_dawr(dawr, dawrx);
++	mtspr(SPRN_DAWR, dawr);
++	mtspr(SPRN_DAWRX, dawrx);
++	return 0;
++}
++
++static void set_dawr_cb(void *info)
++{
++	set_dawr(info);
++}
++
++static ssize_t dawr_write_file_bool(struct file *file,
++				    const char __user *user_buf,
++				    size_t count, loff_t *ppos)
++{
++	struct arch_hw_breakpoint null_brk = {0, 0, 0};
++	size_t rc;
++
++	/* Send error to user if they hypervisor won't allow us to write DAWR */
++	if ((!dawr_force_enable) &&
++	    (firmware_has_feature(FW_FEATURE_LPAR)) &&
++	    (set_dawr(&null_brk) != H_SUCCESS))
++		return -1;
++
++	rc = debugfs_write_file_bool(file, user_buf, count, ppos);
++	if (rc)
++		return rc;
++
++	/* If we are clearing, make sure all CPUs have the DAWR cleared */
++	if (!dawr_force_enable)
++		smp_call_function(set_dawr_cb, &null_brk, 0);
++
++	return rc;
++}
++
++static const struct file_operations dawr_enable_fops = {
++	.read =		debugfs_read_file_bool,
++	.write =	dawr_write_file_bool,
++	.open =		simple_open,
++	.llseek =	default_llseek,
++};
++
++static int __init dawr_force_setup(void)
++{
++	dawr_force_enable = false;
++
++	if (cpu_has_feature(CPU_FTR_DAWR)) {
++		/* Don't setup sysfs file for user control on P8 */
++		dawr_force_enable = true;
++		return 0;
++	}
++
++	if (PVR_VER(mfspr(SPRN_PVR)) == PVR_POWER9) {
++		/* Turn DAWR off by default, but allow admin to turn it on */
++		dawr_force_enable = false;
++		debugfs_create_file_unsafe("dawr_enable_dangerous", 0600,
++					   powerpc_debugfs_root,
++					   &dawr_force_enable,
++					   &dawr_enable_fops);
++	}
++	return 0;
++}
++arch_initcall(dawr_force_setup);
+diff --git a/arch/powerpc/kernel/hw_breakpoint.c b/arch/powerpc/kernel/hw_breakpoint.c
+index ca3a2358b7..95605a9c9a 100644
+--- a/arch/powerpc/kernel/hw_breakpoint.c
++++ b/arch/powerpc/kernel/hw_breakpoint.c
+@@ -380,64 +380,3 @@ void hw_breakpoint_pmu_read(struct perf_event *bp)
+ {
+ 	/* TODO */
+ }
+-
+-bool dawr_force_enable;
+-EXPORT_SYMBOL_GPL(dawr_force_enable);
+-
+-static void set_dawr_cb(void *info)
+-{
+-	set_dawr(info);
+-}
+-
+-static ssize_t dawr_write_file_bool(struct file *file,
+-				    const char __user *user_buf,
+-				    size_t count, loff_t *ppos)
+-{
+-	struct arch_hw_breakpoint null_brk = {0, 0, 0};
+-	size_t rc;
+-
+-	/* Send error to user if they hypervisor won't allow us to write DAWR */
+-	if ((!dawr_force_enable) &&
+-	    (firmware_has_feature(FW_FEATURE_LPAR)) &&
+-	    (set_dawr(&null_brk) != H_SUCCESS))
+-		return -1;
+-
+-	rc = debugfs_write_file_bool(file, user_buf, count, ppos);
+-	if (rc)
+-		return rc;
+-
+-	/* If we are clearing, make sure all CPUs have the DAWR cleared */
+-	if (!dawr_force_enable)
+-		smp_call_function(set_dawr_cb, &null_brk, 0);
+-
+-	return rc;
+-}
+-
+-static const struct file_operations dawr_enable_fops = {
+-	.read =		debugfs_read_file_bool,
+-	.write =	dawr_write_file_bool,
+-	.open =		simple_open,
+-	.llseek =	default_llseek,
+-};
+-
+-static int __init dawr_force_setup(void)
+-{
+-	dawr_force_enable = false;
+-
+-	if (cpu_has_feature(CPU_FTR_DAWR)) {
+-		/* Don't setup sysfs file for user control on P8 */
+-		dawr_force_enable = true;
+-		return 0;
+-	}
+-
+-	if (PVR_VER(mfspr(SPRN_PVR)) == PVR_POWER9) {
+-		/* Turn DAWR off by default, but allow admin to turn it on */
+-		dawr_force_enable = false;
+-		debugfs_create_file_unsafe("dawr_enable_dangerous", 0600,
+-					   powerpc_debugfs_root,
+-					   &dawr_force_enable,
+-					   &dawr_enable_fops);
+-	}
+-	return 0;
+-}
+-arch_initcall(dawr_force_setup);
+diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
+index 87da401299..03a2da35ce 100644
+--- a/arch/powerpc/kernel/process.c
++++ b/arch/powerpc/kernel/process.c
+@@ -797,34 +797,6 @@ static inline int set_dabr(struct arch_hw_breakpoint *brk)
+ 	return __set_dabr(dabr, dabrx);
+ }
+ 
+-int set_dawr(struct arch_hw_breakpoint *brk)
+-{
+-	unsigned long dawr, dawrx, mrd;
+-
+-	dawr = brk->address;
+-
+-	dawrx  = (brk->type & (HW_BRK_TYPE_READ | HW_BRK_TYPE_WRITE)) \
+-		                   << (63 - 58); //* read/write bits */
+-	dawrx |= ((brk->type & (HW_BRK_TYPE_TRANSLATE)) >> 2) \
+-		                   << (63 - 59); //* translate */
+-	dawrx |= (brk->type & (HW_BRK_TYPE_PRIV_ALL)) \
+-		                   >> 3; //* PRIM bits */
+-	/* dawr length is stored in field MDR bits 48:53.  Matches range in
+-	   doublewords (64 bits) baised by -1 eg. 0b000000=1DW and
+-	   0b111111=64DW.
+-	   brk->len is in bytes.
+-	   This aligns up to double word size, shifts and does the bias.
+-	*/
+-	mrd = ((brk->len + 7) >> 3) - 1;
+-	dawrx |= (mrd & 0x3f) << (63 - 53);
+-
+-	if (ppc_md.set_dawr)
+-		return ppc_md.set_dawr(dawr, dawrx);
+-	mtspr(SPRN_DAWR, dawr);
+-	mtspr(SPRN_DAWRX, dawrx);
+-	return 0;
+-}
+-
+ void __set_breakpoint(struct arch_hw_breakpoint *brk)
+ {
+ 	memcpy(this_cpu_ptr(&current_brk), brk, sizeof(*brk));
+diff --git a/arch/powerpc/kvm/Kconfig b/arch/powerpc/kvm/Kconfig
+index f53997a8ca..b8e13d5a4a 100644
+--- a/arch/powerpc/kvm/Kconfig
++++ b/arch/powerpc/kvm/Kconfig
+@@ -38,6 +38,7 @@ config KVM_BOOK3S_32_HANDLER
+ config KVM_BOOK3S_64_HANDLER
+ 	bool
+ 	select KVM_BOOK3S_HANDLER
++	select PPC_DAWR_FORCE_ENABLE
+ 
+ config KVM_BOOK3S_PR_POSSIBLE
+ 	bool
+-- 
+2.21.0
+
