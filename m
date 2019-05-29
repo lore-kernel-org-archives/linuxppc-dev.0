@@ -2,69 +2,61 @@ Return-Path: <SRS0=Oz1q=T5=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_MUTT autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CB7DCC04AB3
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 May 2019 06:30:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B278CC28CC0
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 May 2019 13:18:07 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 1BA0421019
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 May 2019 06:30:02 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 011A2208CB
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 May 2019 13:18:06 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="quZbL2cv"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1BA0421019
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="PvWN50R5"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 011A2208CB
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45DLRX5phhzDqQl
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 May 2019 16:30:00 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=none (mailfrom)
- smtp.mailfrom=bombadil.srs.infradead.org (client-ip=2607:7c80:54:e::133;
- helo=bombadil.infradead.org;
- envelope-from=batv+6b2e7d6ba9248c696ca2+5757+infradead.org+hch@bombadil.srs.infradead.org;
- receiver=<UNKNOWN>)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45DWVN1sdwzDqKw
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 May 2019 23:18:04 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=infradead.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=infradead.org header.i=@infradead.org
- header.b="quZbL2cv"; dkim-atps=neutral
-Received: from bombadil.infradead.org (bombadil.infradead.org
- [IPv6:2607:7c80:54:e::133])
+ spf=pass (mailfrom) smtp.mailfrom=kernel.org
+ (client-ip=198.145.29.99; helo=mail.kernel.org;
+ envelope-from=sashal@kernel.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=kernel.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=kernel.org header.i=@kernel.org header.b="PvWN50R5"; 
+ dkim-atps=neutral
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45DLQ80W2wzDq5W
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 May 2019 16:28:48 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
- d=infradead.org; s=bombadil.20170209; h=In-Reply-To:Content-Type:MIME-Version
- :References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
- Content-Transfer-Encoding:Content-ID:Content-Description:Resent-Date:
- Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:
- List-Help:List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
- bh=13JV4V4SogibwHhPoYROLAGqH0iKpEvSIoc3Rnqr3kg=; b=quZbL2cvfTRj4ptBkClYlllAT
- EWqbPDFMD4beEL0HvoLGUz+Dzfpdlhgp1iQ4/FtdGEMPElJ1t6Xnep/T3AToV8sFd5GRzVhP+meY/
- 8f84J6gZVzqpehfMaWNKee2Oocx8qGj+QNrJE0UNWEXlWZndXLITO+tQ9Hn/nfaYVrdfWiY42Rcu0
- fmobdIEWzwiYN9J8CuWOJgbBSCNdMJbKrY9TbIwj+qFromwHAUTysi04EMQSbfgHBRATXYCi3wMs3
- ZsHMXCDQmReXmsfFKNRUAMV4eZ00qE1+2Axn0H54Fc1tHlpysPBBYf+xqd6Glp5v47C7EKsPFn54k
- ETad8jvgw==;
-Received: from hch by bombadil.infradead.org with local (Exim 4.90_1 #2 (Red
- Hat Linux)) id 1hVs4o-0002j7-BQ; Wed, 29 May 2019 06:28:42 +0000
-Date: Tue, 28 May 2019 23:28:42 -0700
-From: Christoph Hellwig <hch@infradead.org>
-To: Michael Neuling <mikey@neuling.org>
-Subject: Re: [PATCH v4 2/2] powerpc: Fix compile issue with force DAWR
-Message-ID: <20190529062842.GA4787@infradead.org>
-References: <20190529020115.14201-1-mikey@neuling.org>
- <20190529020115.14201-2-mikey@neuling.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20190529020115.14201-2-mikey@neuling.org>
-User-Agent: Mutt/1.9.2 (2017-12-15)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by
- bombadil.infradead.org. See http://www.infradead.org/rpr.html
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45DWQr0WQHzDqHl
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 May 2019 23:14:59 +1000 (AEST)
+Received: from localhost (unknown [23.100.24.84])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by mail.kernel.org (Postfix) with ESMTPSA id F00B7217F9;
+ Wed, 29 May 2019 13:14:56 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+ s=default; t=1559135697;
+ bh=O/8evzPRCciUudwmym3BED9Gn/r0gJgN81NDZ5pjxHA=;
+ h=Date:From:To:To:To:Cc:Cc:Cc:Cc:Cc:Cc:Subject:In-Reply-To:
+ References:From;
+ b=PvWN50R54qN6h0HT8BZkg4LyNglEOy8RcidoA9vFqlFYPC0t/Ccl2QhX54p49Avpm
+ dZF0l9DiAAjoYlTQJDDlWumEXxqkYW4mMDcES9EABlSrscsOffpS61QTAmAsQxKEyc
+ Cj4itwf5BpcSeCRg3BPAZ0FGoHcop6RhZ9qvUzC8=
+Date: Wed, 29 May 2019 13:14:56 +0000
+From: Sasha Levin <sashal@kernel.org>
+To: Sasha Levin <sashal@kernel.org>
+To: Vincenzo Frascino <vincenzo.frascino@arm.com>
+To: linux-arch@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+Subject: Re: [PATCH v4 1/3] powerpc: Fix vDSO clock_getres()
+In-Reply-To: <20190523112116.19233-2-vincenzo.frascino@arm.com>
+References: <20190523112116.19233-2-vincenzo.frascino@arm.com>
+Message-Id: <20190529131456.F00B7217F9@mail.kernel.org>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -76,49 +68,78 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Mathieu Malaterre <malat@debian.org>, linuxppc-dev@lists.ozlabs.org
+Cc: , stable@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+ vincenzo.frascino@arm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-> +config PPC_DAWR
-> +	bool
-> +	default n
+Hi,
 
-"default n" is the default default.  No need to write this line.
+[This is an automated email]
 
-> +++ b/arch/powerpc/kernel/dawr.c
-> @@ -0,0 +1,100 @@
-> +// SPDX-License-Identifier: GPL-2.0+
-> +//
-> +// DAWR infrastructure
-> +//
-> +// Copyright 2019, Michael Neuling, IBM Corporation.
+This commit has been processed because it contains a "Fixes:" tag,
+fixing commit: a7f290dad32ee [PATCH] powerpc: Merge vdso's and add vdso support to 32 bits kernel.
 
-Normal top of file header should be /* */, //-style comments are only
-for the actual SPDX heder line.
+The bot has tested the following trees: v5.1.4, v5.0.18, v4.19.45, v4.14.121, v4.9.178, v4.4.180, v3.18.140.
 
-> +	/* Send error to user if they hypervisor won't allow us to write DAWR */
-> +	if ((!dawr_force_enable) &&
-> +	    (firmware_has_feature(FW_FEATURE_LPAR)) &&
-> +	    (set_dawr(&null_brk) != H_SUCCESS))
+v5.1.4: Build OK!
+v5.0.18: Build OK!
+v4.19.45: Build OK!
+v4.14.121: Failed to apply! Possible dependencies:
+    5c929885f1bb4 ("powerpc/vdso64: Add support for CLOCK_{REALTIME/MONOTONIC}_COARSE")
+    b5b4453e7912f ("powerpc/vdso64: Fix CLOCK_MONOTONIC inconsistencies across Y2038")
 
-None of the three inner brace sets here are required, and the code
-becomes much easier to read without them.
+v4.9.178: Failed to apply! Possible dependencies:
+    4546561551106 ("powerpc/asm: Use OFFSET macro in asm-offsets.c")
+    5c929885f1bb4 ("powerpc/vdso64: Add support for CLOCK_{REALTIME/MONOTONIC}_COARSE")
+    5d451a87e5ebb ("powerpc/64: Retrieve number of L1 cache sets from device-tree")
+    7c5b06cadf274 ("KVM: PPC: Book3S HV: Adapt TLB invalidations to work on POWER9")
+    83677f551e0a6 ("KVM: PPC: Book3S HV: Adjust host/guest context switch for POWER9")
+    902e06eb86cd6 ("powerpc/32: Change the stack protector canary value per task")
+    b5b4453e7912f ("powerpc/vdso64: Fix CLOCK_MONOTONIC inconsistencies across Y2038")
+    bd067f83b0840 ("powerpc/64: Fix naming of cache block vs. cache line")
+    e2827fe5c1566 ("powerpc/64: Clean up ppc64_caches using a struct per cache")
+    e9cf1e085647b ("KVM: PPC: Book3S HV: Add new POWER9 guest-accessible SPRs")
+    f4c51f841d2ac ("KVM: PPC: Book3S HV: Modify guest entry/exit paths to handle radix guests")
 
-> +		return -1;
+v4.4.180: Failed to apply! Possible dependencies:
+    153086644fd1f ("powerpc/ftrace: Add support for -mprofile-kernel ftrace ABI")
+    3eb5d5888dc68 ("powerpc: Add ppc_strict_facility_enable boot option")
+    4546561551106 ("powerpc/asm: Use OFFSET macro in asm-offsets.c")
+    579e633e764e6 ("powerpc: create flush_all_to_thread()")
+    5c929885f1bb4 ("powerpc/vdso64: Add support for CLOCK_{REALTIME/MONOTONIC}_COARSE")
+    70fe3d980f5f1 ("powerpc: Restore FPU/VEC/VSX if previously used")
+    85baa095497f3 ("powerpc/livepatch: Add live patching support on ppc64le")
+    902e06eb86cd6 ("powerpc/32: Change the stack protector canary value per task")
+    b5b4453e7912f ("powerpc/vdso64: Fix CLOCK_MONOTONIC inconsistencies across Y2038")
+    bf76f73c5f655 ("powerpc: enable UBSAN support")
+    c208505900b23 ("powerpc: create giveup_all()")
+    d1e1cf2e38def ("powerpc: clean up asm/switch_to.h")
+    dc4fbba11e466 ("powerpc: Create disable_kernel_{fp,altivec,vsx,spe}()")
+    f17c4e01e906c ("powerpc/module: Mark module stubs with a magic value")
 
-What about returning a proper error code?
+v3.18.140: Failed to apply! Possible dependencies:
+    10239733ee861 ("powerpc: Remove bootmem allocator")
+    2449acc5348b9 ("powerpc/kernel: Enable seccomp filter")
+    4546561551106 ("powerpc/asm: Use OFFSET macro in asm-offsets.c")
+    49e4e15619cd7 ("tile: support CONTEXT_TRACKING and thus NOHZ_FULL")
+    5c929885f1bb4 ("powerpc/vdso64: Add support for CLOCK_{REALTIME/MONOTONIC}_COARSE")
+    73569d87e2cc5 ("MIPS: OCTEON: Enable little endian kernel.")
+    817820b0226a1 ("powerpc/iommu: Support "hybrid" iommu/direct DMA ops for coherent_mask < dma_mask")
+    83fe27ea53116 ("rcu: Make SRCU optional by using CONFIG_SRCU")
+    85baa095497f3 ("powerpc/livepatch: Add live patching support on ppc64le")
+    b01aec9b2c7d3 ("EDAC: Cleanup atomic_scrub mess")
+    b30e759072c18 ("powerpc/mm: Switch to generic RCU get_user_pages_fast")
+    b5b4453e7912f ("powerpc/vdso64: Fix CLOCK_MONOTONIC inconsistencies across Y2038")
+    bf76f73c5f655 ("powerpc: enable UBSAN support")
+    c54b2bf1b5e99 ("powerpc: Add ppc64 hard lockup detector support")
+    f30c59e921f12 ("mm: Update generic gup implementation to handle hugepage directory")
+    f47436734dc89 ("tile: Use the more common pr_warn instead of pr_warning")
 
-> +static int __init dawr_force_setup(void)
-> +{
-> +	dawr_force_enable = false;
 
-This variable already is initialized to alse by default, so this line
-is not required.
+How should we proceed with this patch?
 
-> +	if (PVR_VER(mfspr(SPRN_PVR)) == PVR_POWER9) {
-> +		/* Turn DAWR off by default, but allow admin to turn it on */
-> +		dawr_force_enable = false;
-
-.. and neither is this one.
+--
+Thanks,
+Sasha
