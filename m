@@ -2,67 +2,51 @@ Return-Path: <SRS0=Y6lA=T6=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_MUTT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_NEOMUTT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4507BC28CC0
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 May 2019 13:45:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 45E4EC28CC0
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 May 2019 13:50:26 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 8E6B8259D7
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 May 2019 13:45:50 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="cO8H1JSN"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8E6B8259D7
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
+	by mail.kernel.org (Postfix) with ESMTPS id A36DF24D63
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 May 2019 13:50:25 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A36DF24D63
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=gondor.apana.org.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45F83v2H85zDqSQ
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 May 2019 23:45:47 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45F89C4P3ZzDqKP
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 May 2019 23:50:23 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=infradead.org
- (client-ip=2607:7c80:54:e::133; helo=bombadil.infradead.org;
- envelope-from=willy@infradead.org; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=infradead.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=infradead.org header.i=@infradead.org
- header.b="cO8H1JSN"; dkim-atps=neutral
-Received: from bombadil.infradead.org (bombadil.infradead.org
- [IPv6:2607:7c80:54:e::133])
+ spf=pass (mailfrom) smtp.mailfrom=gondor.apana.org.au
+ (client-ip=216.24.177.18; helo=deadmen.hmeau.com;
+ envelope-from=herbert@gondor.apana.org.au; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=gondor.apana.org.au
+Received: from deadmen.hmeau.com (helcar.hmeau.com [216.24.177.18])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45F7xH3rhnzDqQL
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 May 2019 23:40:02 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
- d=infradead.org; s=bombadil.20170209; h=In-Reply-To:Content-Type:MIME-Version
- :References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
- Content-Transfer-Encoding:Content-ID:Content-Description:Resent-Date:
- Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:
- List-Help:List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
- bh=1z2R00tGmVK2jShz09WQ0aSl4fghOklhUmq3MkzmZGo=; b=cO8H1JSNfCwyIOlnTHicp8Zhy
- tdZp1B1hNurTw3WgAzPBczTGKcSpIkF2nUeFXWFXbacSglBjt8yYhoxBpvJQd2bkSo8SPeHDMVlbk
- AmGm77WpHy+tChpRqlM72RL0yDXaK+gT4W1Kljnz/VQ/KVDugsJZ0Tc/HFFB2pHCUi7WQ8dCXvAcZ
- squPNwIZONWngjyh6R0Q/O1CiEId8WQLaglsMjfxroLiY82v0UZBHk7vWS3/3ejIRWejmUyHZlDM1
- gPiCoTWkidUnsD2jvuDxMSsXlKB3TaOPHa9W0ihPAK8uyAmomCO3ELcq+JfaA9MCjatOQ5PlCd63o
- jpySg/rQw==;
-Received: from willy by bombadil.infradead.org with local (Exim 4.90_1 #2 (Red
- Hat Linux)) id 1hWLHe-0001vX-Pd; Thu, 30 May 2019 13:39:54 +0000
-Date: Thu, 30 May 2019 06:39:54 -0700
-From: Matthew Wilcox <willy@infradead.org>
-To: Anshuman Khandual <anshuman.khandual@arm.com>
-Subject: Re: [RFC] mm: Generalize notify_page_fault()
-Message-ID: <20190530133954.GA2024@bombadil.infradead.org>
-References: <1559195713-6956-1-git-send-email-anshuman.khandual@arm.com>
- <20190530110639.GC23461@bombadil.infradead.org>
- <4f9a610d-e856-60f6-4467-09e9c3836771@arm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45F7yN0MNtzDqVD
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 May 2019 23:40:57 +1000 (AEST)
+Received: from gondobar.mordor.me.apana.org.au ([192.168.128.4] helo=gondobar)
+ by deadmen.hmeau.com with esmtps (Exim 4.89 #2 (Debian))
+ id 1hWLIZ-0005V5-Tu; Thu, 30 May 2019 21:40:52 +0800
+Received: from herbert by gondobar with local (Exim 4.89)
+ (envelope-from <herbert@gondor.apana.org.au>)
+ id 1hWLIW-0003ca-FG; Thu, 30 May 2019 21:40:48 +0800
+Date: Thu, 30 May 2019 21:40:48 +0800
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Eric Biggers <ebiggers@kernel.org>
+Subject: Re: [PATCH] crypto: vmx - convert to SPDX license identifiers
+Message-ID: <20190530134048.xg3jdm53mydtxcd4@gondor.apana.org.au>
+References: <20190520164232.159053-1-ebiggers@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4f9a610d-e856-60f6-4467-09e9c3836771@arm.com>
-User-Agent: Mutt/1.9.2 (2017-12-15)
+In-Reply-To: <20190520164232.159053-1-ebiggers@kernel.org>
+User-Agent: NeoMutt/20170113 (1.7.2)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -74,35 +58,31 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Mark Rutland <mark.rutland@arm.com>, Michal Hocko <mhocko@suse.com>,
- linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org,
- Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>,
- linux-mm@kvack.org, Paul Mackerras <paulus@samba.org>,
- sparclinux@vger.kernel.org, linux-s390@vger.kernel.org,
- Yoshinori Sato <ysato@users.sourceforge.jp>,
- Russell King <linux@armlinux.org.uk>, Fenghua Yu <fenghua.yu@intel.com>,
- Stephen Rothwell <sfr@canb.auug.org.au>,
- Andrey Konovalov <andreyknvl@google.com>, linux-arm-kernel@lists.infradead.org,
- Tony Luck <tony.luck@intel.com>, Heiko Carstens <heiko.carstens@de.ibm.com>,
- linux-kernel@vger.kernel.org, Martin Schwidefsky <schwidefsky@de.ibm.com>,
- Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
- "David S. Miller" <davem@davemloft.net>
+Cc: Nayna Jain <nayna@linux.ibm.com>,
+ Paulo Flabiano Smorigo <pfsmorigo@gmail.com>, linux-crypto@vger.kernel.org,
+ Breno =?iso-8859-1?Q?Leit=E3o?= <leitao@debian.org>,
+ linuxppc-dev@lists.ozlabs.org, Daniel Axtens <dja@axtens.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, May 30, 2019 at 05:31:15PM +0530, Anshuman Khandual wrote:
-> On 05/30/2019 04:36 PM, Matthew Wilcox wrote:
-> > The two handle preemption differently.  Why is x86 wrong and this one
-> > correct?
+On Mon, May 20, 2019 at 09:42:32AM -0700, Eric Biggers wrote:
+> From: Eric Biggers <ebiggers@google.com>
 > 
-> Here it expects context to be already non-preemptible where as the proposed
-> generic function makes it non-preemptible with a preempt_[disable|enable]()
-> pair for the required code section, irrespective of it's present state. Is
-> not this better ?
+> Remove the boilerplate license text and replace it with the equivalent
+> SPDX license identifier.
+> 
+> Signed-off-by: Eric Biggers <ebiggers@google.com>
+> ---
+>  drivers/crypto/vmx/aes.c     | 14 +-------------
+>  drivers/crypto/vmx/aes_cbc.c | 14 +-------------
+>  drivers/crypto/vmx/aes_ctr.c | 14 +-------------
+>  drivers/crypto/vmx/aes_xts.c | 14 +-------------
+>  drivers/crypto/vmx/vmx.c     | 14 +-------------
+>  5 files changed, 5 insertions(+), 65 deletions(-)
 
-git log -p arch/x86/mm/fault.c
-
-search for 'kprobes'.
-
-tell me what you think.
+Patch applied.  Thanks.
+-- 
+Email: Herbert Xu <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
