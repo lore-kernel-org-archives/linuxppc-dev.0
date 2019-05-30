@@ -6,36 +6,36 @@ X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
 	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 507CDC28CC2
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 May 2019 04:12:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AFDE1C072B1
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 May 2019 04:15:24 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id BAC63251BD
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 May 2019 04:12:51 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BAC63251BD
+	by mail.kernel.org (Postfix) with ESMTPS id 4018B2522D
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 May 2019 04:15:24 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4018B2522D
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=huawei.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45DvLm5p8ZzDqFv
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 May 2019 14:12:48 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45DvPj20ZhzDq9L
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 May 2019 14:15:21 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=huawei.com
- (client-ip=45.249.212.190; helo=huawei.com;
+ (client-ip=45.249.212.35; helo=huawei.com;
  envelope-from=thunder.leizhen@huawei.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=huawei.com
-Received: from huawei.com (szxga04-in.huawei.com [45.249.212.190])
+Received: from huawei.com (szxga07-in.huawei.com [45.249.212.35])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45Dtqr1gFczDq8M
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 May 2019 13:49:28 +1000 (AEST)
-Received: from DGGEMS403-HUB.china.huawei.com (unknown [172.30.72.60])
- by Forcepoint Email with ESMTP id B27A09DAB0CAA2FD2FCF;
- Thu, 30 May 2019 11:49:22 +0800 (CST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45Dtqv4xlzzDqNL
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 May 2019 13:49:31 +1000 (AEST)
+Received: from DGGEMS403-HUB.china.huawei.com (unknown [172.30.72.59])
+ by Forcepoint Email with ESMTP id D27FD9252FECB80D3628;
+ Thu, 30 May 2019 11:49:27 +0800 (CST)
 Received: from HGHY4L002753561.china.huawei.com (10.133.215.186) by
  DGGEMS403-HUB.china.huawei.com (10.3.19.203) with Microsoft SMTP Server id
- 14.3.439.0; Thu, 30 May 2019 11:49:16 +0800
+ 14.3.439.0; Thu, 30 May 2019 11:49:17 +0800
 From: Zhen Lei <thunder.leizhen@huawei.com>
 To: Jean-Philippe Brucker <jean-philippe.brucker@arm.com>, John Garry
  <john.garry@huawei.com>, Robin Murphy <robin.murphy@arm.com>, Will Deacon
@@ -53,10 +53,10 @@ To: Jean-Philippe Brucker <jean-philippe.brucker@arm.com>, John Garry
  <linux-kernel@vger.kernel.org>, linux-s390 <linux-s390@vger.kernel.org>,
  linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, x86 <x86@kernel.org>,
  linux-ia64 <linux-ia64@vger.kernel.org>
-Subject: [PATCH v8 4/7] powernv/iommu: add support for IOMMU default DMA mode
+Subject: [PATCH v8 5/7] iommu/vt-d: add support for IOMMU default DMA mode
  build options
-Date: Thu, 30 May 2019 11:48:28 +0800
-Message-ID: <20190530034831.4184-5-thunder.leizhen@huawei.com>
+Date: Thu, 30 May 2019 11:48:29 +0800
+Message-ID: <20190530034831.4184-6-thunder.leizhen@huawei.com>
 X-Mailer: git-send-email 2.21.0.windows.1
 In-Reply-To: <20190530034831.4184-1-thunder.leizhen@huawei.com>
 References: <20190530034831.4184-1-thunder.leizhen@huawei.com>
@@ -81,51 +81,43 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The default DMA mode is PASSTHROUGH on powernv, this patch make it can be
+The default DMA mode of INTEL IOMMU is LAZY, this patch make it can be
 set to STRICT at build time. It can be overridden by boot option.
 
 There is no functional change.
 
 Signed-off-by: Zhen Lei <thunder.leizhen@huawei.com>
 ---
- arch/powerpc/platforms/powernv/pci-ioda.c | 3 ++-
- drivers/iommu/Kconfig                     | 2 ++
- 2 files changed, 4 insertions(+), 1 deletion(-)
+ drivers/iommu/Kconfig       | 2 +-
+ drivers/iommu/intel-iommu.c | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-index 126602b4e39972d..40208b9019be890 100644
---- a/arch/powerpc/platforms/powernv/pci-ioda.c
-+++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-@@ -85,7 +85,8 @@ void pe_level_printk(const struct pnv_ioda_pe *pe, const char *level,
- 	va_end(args);
- }
- 
--static bool pnv_iommu_bypass_disabled __read_mostly;
-+static bool pnv_iommu_bypass_disabled __read_mostly =
-+			!IS_ENABLED(CONFIG_IOMMU_DEFAULT_PASSTHROUGH);
- static bool pci_reset_phbs __read_mostly;
- 
- static int __init iommu_setup(char *str)
 diff --git a/drivers/iommu/Kconfig b/drivers/iommu/Kconfig
-index 9b48c2fc20e14d3..b5af859956c4fda 100644
+index b5af859956c4fda..af580274b7c5270 100644
 --- a/drivers/iommu/Kconfig
 +++ b/drivers/iommu/Kconfig
-@@ -78,6 +78,7 @@ config IOMMU_DEBUGFS
- choice
+@@ -79,7 +79,7 @@ choice
  	prompt "IOMMU default DMA mode"
  	depends on IOMMU_API
-+	default IOMMU_DEFAULT_PASSTHROUGH if (PPC_POWERNV && PCI)
- 	default IOMMU_DEFAULT_LAZY if S390_IOMMU
+ 	default IOMMU_DEFAULT_PASSTHROUGH if (PPC_POWERNV && PCI)
+-	default IOMMU_DEFAULT_LAZY if S390_IOMMU
++	default IOMMU_DEFAULT_LAZY if (INTEL_IOMMU || S390_IOMMU)
  	default IOMMU_DEFAULT_STRICT
  	help
-@@ -98,6 +99,7 @@ config IOMMU_DEFAULT_PASSTHROUGH
+ 	  This option allows IOMMU DMA mode to be chose at build time, to
+diff --git a/drivers/iommu/intel-iommu.c b/drivers/iommu/intel-iommu.c
+index a209199f3af6460..50d74ea0acdbdca 100644
+--- a/drivers/iommu/intel-iommu.c
++++ b/drivers/iommu/intel-iommu.c
+@@ -362,7 +362,7 @@ static int domain_detach_iommu(struct dmar_domain *domain,
  
- config IOMMU_DEFAULT_LAZY
- 	bool "lazy"
-+	depends on !PPC_POWERNV
- 	help
- 	  Support lazy mode, where for every IOMMU DMA unmap operation, the
- 	  flush operation of IOTLB and the free operation of IOVA are deferred.
+ static int dmar_map_gfx = 1;
+ static int dmar_forcedac;
+-static int intel_iommu_strict;
++static int intel_iommu_strict = IS_ENABLED(CONFIG_IOMMU_DEFAULT_STRICT);
+ static int intel_iommu_superpage = 1;
+ static int intel_iommu_sm;
+ static int iommu_identity_mapping;
 -- 
 1.8.3
 
