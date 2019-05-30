@@ -7,21 +7,21 @@ X-Spam-Status: No, score=-8.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 920E8C072B1
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 May 2019 03:44:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3CC4BC28CC2
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 May 2019 03:48:16 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 1BDA424C8F
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 May 2019 03:44:30 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 6F072248FA
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 May 2019 03:48:15 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="Oxxtk6B1"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1BDA424C8F
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="ZjI7dSDT"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6F072248FA
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linuxfoundation.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45Dtk401ffzDqDf
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 May 2019 13:44:28 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45DtpN5rgZzDqNw
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 May 2019 13:48:12 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=linuxfoundation.org
  (client-ip=198.145.29.99; helo=mail.kernel.org;
@@ -29,35 +29,35 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=linuxfoundation.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="Oxxtk6B1"; 
+ unprotected) header.d=kernel.org header.i=@kernel.org header.b="ZjI7dSDT"; 
  dkim-atps=neutral
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45Dt9j1CYgzDqNt
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 May 2019 13:19:51 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45DtCK277tzDqPw
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 May 2019 13:21:17 +1000 (AEST)
 Received: from localhost (ip67-88-213-2.z213-88-67.customer.algx.net
  [67.88.213.2])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id 797322486B;
- Thu, 30 May 2019 03:19:49 +0000 (UTC)
+ by mail.kernel.org (Postfix) with ESMTPSA id F2C492495E;
+ Thu, 30 May 2019 03:21:14 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1559186389;
+ s=default; t=1559186475;
  bh=7HI6N91vbKXJrX1wN4OS7tsYTq/hOQxF0ZkTbp8oJ14=;
  h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=Oxxtk6B1szocWsO+llYI+z7GZLsG0ddIgHMCoskURcKthUuDARFF7Eq0vbfXGLGwp
- LIOUe8NS0iwbwjPjICJD8NfWp/c91FZlLI2JQrEaZLEnficQRpHtI03wgTgCme/g7H
- qeaMvSjYqhJWyZozT4oVVJQCjfpBpGVpStP+EPLE=
+ b=ZjI7dSDTxBJdqIp6W3j9DYyRoinKtMlQ7CDBYUTo3zMEmsvsL14LIutYCaLW3YN+q
+ lWZi6yRh++dGqGCts1XDhF0bU9ZYoawhw3v5xvJ5j+Nusmn0yjxXufp4Z8IhnJt9Bf
+ CyyypOlSgTbkH7uh/4Rvsn8qUARB6jx/q8uJV6SI=
 From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH 4.14 159/193] ASoC: fsl_utils: fix a leaked reference by
- adding missing of_node_put
-Date: Wed, 29 May 2019 20:06:53 -0700
-Message-Id: <20190530030510.270374548@linuxfoundation.org>
+Subject: [PATCH 4.9 107/128] ASoC: fsl_utils: fix a leaked reference by adding
+ missing of_node_put
+Date: Wed, 29 May 2019 20:07:19 -0700
+Message-Id: <20190530030453.891084085@linuxfoundation.org>
 X-Mailer: git-send-email 2.21.0
-In-Reply-To: <20190530030446.953835040@linuxfoundation.org>
-References: <20190530030446.953835040@linuxfoundation.org>
+In-Reply-To: <20190530030432.977908967@linuxfoundation.org>
+References: <20190530030432.977908967@linuxfoundation.org>
 User-Agent: quilt/0.66
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
