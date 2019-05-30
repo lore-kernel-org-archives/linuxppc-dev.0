@@ -2,23 +2,24 @@ Return-Path: <SRS0=Y6lA=T6=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C9B22C072B1
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 May 2019 04:00:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0668AC072B1
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 May 2019 04:03:27 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 58DC724F57
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 May 2019 04:00:20 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 58DC724F57
+	by mail.kernel.org (Postfix) with ESMTPS id 399D324FF1
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 May 2019 04:03:26 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 399D324FF1
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=huawei.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45Dv4K5rh6zDqCp
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 May 2019 14:00:17 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45Dv7v5myMzDqSn
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 May 2019 14:03:23 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=huawei.com
  (client-ip=45.249.212.190; helo=huawei.com;
@@ -28,14 +29,14 @@ Authentication-Results: lists.ozlabs.org;
 Received: from huawei.com (szxga04-in.huawei.com [45.249.212.190])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45Dtqm3tNrzDqRb
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 May 2019 13:49:23 +1000 (AEST)
-Received: from DGGEMS403-HUB.china.huawei.com (unknown [172.30.72.58])
- by Forcepoint Email with ESMTP id A41468F06A13BCCAA76D;
- Thu, 30 May 2019 11:49:17 +0800 (CST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45Dtqn4wPSzDqSZ
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 May 2019 13:49:25 +1000 (AEST)
+Received: from DGGEMS403-HUB.china.huawei.com (unknown [172.30.72.60])
+ by Forcepoint Email with ESMTP id BDE66C3CFC5D45E96D5B;
+ Thu, 30 May 2019 11:49:22 +0800 (CST)
 Received: from HGHY4L002753561.china.huawei.com (10.133.215.186) by
  DGGEMS403-HUB.china.huawei.com (10.3.19.203) with Microsoft SMTP Server id
- 14.3.439.0; Thu, 30 May 2019 11:49:10 +0800
+ 14.3.439.0; Thu, 30 May 2019 11:49:15 +0800
 From: Zhen Lei <thunder.leizhen@huawei.com>
 To: Jean-Philippe Brucker <jean-philippe.brucker@arm.com>, John Garry
  <john.garry@huawei.com>, Robin Murphy <robin.murphy@arm.com>, Will Deacon
@@ -53,10 +54,13 @@ To: Jean-Philippe Brucker <jean-philippe.brucker@arm.com>, John Garry
  <linux-kernel@vger.kernel.org>, linux-s390 <linux-s390@vger.kernel.org>,
  linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, x86 <x86@kernel.org>,
  linux-ia64 <linux-ia64@vger.kernel.org>
-Subject: [PATCH v8 0/7] iommu: enhance IOMMU default DMA mode build options
-Date: Thu, 30 May 2019 11:48:24 +0800
-Message-ID: <20190530034831.4184-1-thunder.leizhen@huawei.com>
+Subject: [PATCH v8 3/7] s390/pci: add support for IOMMU default DMA mode build
+ options
+Date: Thu, 30 May 2019 11:48:27 +0800
+Message-ID: <20190530034831.4184-4-thunder.leizhen@huawei.com>
 X-Mailer: git-send-email 2.21.0.windows.1
+In-Reply-To: <20190530034831.4184-1-thunder.leizhen@huawei.com>
+References: <20190530034831.4184-1-thunder.leizhen@huawei.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Content-Type: text/plain
@@ -78,53 +82,50 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-v7--> v8
-1. Split into multiple small patches base on ARCHs or IOMMU drivers.
-2. Hide the unsupported build options on the related ARCH or IOMMU.
+The default DMA mode is LAZY on s390, this patch make it can be set to
+STRICT at build time. It can be overridden by boot option.
 
-v6 --> v7:
-1. Fix some text editing errors
+There is no functional change.
 
-v5 --> v6:
-1. give up adding boot option iommu.dma_mode
+Signed-off-by: Zhen Lei <thunder.leizhen@huawei.com>
+---
+ arch/s390/pci/pci_dma.c | 2 +-
+ drivers/iommu/Kconfig   | 2 ++
+ 2 files changed, 3 insertions(+), 1 deletion(-)
 
-v4 --> v5:
-As Hanjun and Thomas Gleixner's suggestion:
-1. Keep the old ARCH specific boot options no change.
-2. Keep build option CONFIG_IOMMU_DEFAULT_PASSTHROUGH no change.
-
-v4:
-As Robin Murphy's suggestion:
-"It's also not necessarily obvious to the user how this interacts with
-IOMMU_DEFAULT_PASSTHROUGH, so if we really do go down this route, maybe it
-would be better to refactor the whole lot into a single selection of something
-like IOMMU_DEFAULT_MODE anyway."
-
-In this version, I tried to normalize the IOMMU dma mode boot options for all
-ARCHs. When IOMMU is enabled, there are 3 dma modes: paasthrough(bypass),
-lazy(mapping but defer the IOTLB invalidation), strict. But currently each
-ARCHs defined their private boot options, different with each other. For
-example, to enable/disable "passthrough", ARM64 use iommu.passthrough=1/0,
-X86 use iommu=pt/nopt, PPC/POWERNV use iommu=nobypass.
-
-Zhen Lei (7):
-  iommu: enhance IOMMU default DMA mode build options
-  x86/dma: use IS_ENABLED() to simplify the code
-  s390/pci: add support for IOMMU default DMA mode build options
-  powernv/iommu: add support for IOMMU default DMA mode build options
-  iommu/vt-d: add support for IOMMU default DMA mode build options
-  iommu/amd: add support for IOMMU default DMA mode build options
-  ia64: hide build option IOMMU_DEFAULT_PASSTHROUGH
-
- arch/powerpc/platforms/powernv/pci-ioda.c |  3 +-
- arch/s390/pci/pci_dma.c                   |  2 +-
- arch/x86/kernel/pci-dma.c                 |  7 ++---
- drivers/iommu/Kconfig                     | 46 ++++++++++++++++++++++++++-----
- drivers/iommu/amd_iommu_init.c            |  3 +-
- drivers/iommu/intel-iommu.c               |  2 +-
- drivers/iommu/iommu.c                     |  3 +-
- 7 files changed, 49 insertions(+), 17 deletions(-)
-
+diff --git a/arch/s390/pci/pci_dma.c b/arch/s390/pci/pci_dma.c
+index 9e52d1527f71495..784ad1e0acecfb1 100644
+--- a/arch/s390/pci/pci_dma.c
++++ b/arch/s390/pci/pci_dma.c
+@@ -17,7 +17,7 @@
+ 
+ static struct kmem_cache *dma_region_table_cache;
+ static struct kmem_cache *dma_page_table_cache;
+-static int s390_iommu_strict;
++static int s390_iommu_strict = IS_ENABLED(CONFIG_IOMMU_DEFAULT_STRICT);
+ 
+ static int zpci_refresh_global(struct zpci_dev *zdev)
+ {
+diff --git a/drivers/iommu/Kconfig b/drivers/iommu/Kconfig
+index d6a1a45f80ffbf5..9b48c2fc20e14d3 100644
+--- a/drivers/iommu/Kconfig
++++ b/drivers/iommu/Kconfig
+@@ -78,6 +78,7 @@ config IOMMU_DEBUGFS
+ choice
+ 	prompt "IOMMU default DMA mode"
+ 	depends on IOMMU_API
++	default IOMMU_DEFAULT_LAZY if S390_IOMMU
+ 	default IOMMU_DEFAULT_STRICT
+ 	help
+ 	  This option allows IOMMU DMA mode to be chose at build time, to
+@@ -87,6 +88,7 @@ choice
+ 
+ config IOMMU_DEFAULT_PASSTHROUGH
+ 	bool "passthrough"
++	depends on !S390_IOMMU
+ 	help
+ 	  In this mode, the DMA access through IOMMU without any addresses
+ 	  translation. That means, the wrong or illegal DMA access can not
 -- 
 1.8.3
 
