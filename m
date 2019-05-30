@@ -7,19 +7,19 @@ X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1A1A9C28CC0
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 May 2019 14:23:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 76D38C28CC0
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 May 2019 14:26:06 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 942C525AD7
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 May 2019 14:23:53 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 942C525AD7
+	by mail.kernel.org (Postfix) with ESMTPS id 0226725ADB
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 May 2019 14:26:05 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0226725ADB
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nxp.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45F8vq2vrpzDqWg
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 31 May 2019 00:23:51 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45F8yM2QS7zDqWG
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 31 May 2019 00:26:03 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=nxp.com
  (client-ip=92.121.34.21; helo=inva021.nxp.com;
@@ -29,25 +29,25 @@ Authentication-Results: lists.ozlabs.org;
 Received: from inva021.nxp.com (inva021.nxp.com [92.121.34.21])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45F8qR1fHpzDqVQ
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 May 2019 00:20:00 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45F8qQ5WX1zDqT8
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 May 2019 00:19:59 +1000 (AEST)
 Received: from inva021.nxp.com (localhost [127.0.0.1])
- by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id 45B6F2005FF;
- Thu, 30 May 2019 16:19:57 +0200 (CEST)
+ by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id 978E22005F6;
+ Thu, 30 May 2019 16:19:56 +0200 (CEST)
 Received: from inva024.eu-rdc02.nxp.com (inva024.eu-rdc02.nxp.com
  [134.27.226.22])
- by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id 380D12002A0;
- Thu, 30 May 2019 16:19:57 +0200 (CEST)
+ by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id 944CB200280;
+ Thu, 30 May 2019 16:19:56 +0200 (CEST)
 Received: from fsr-ub1864-101.ea.freescale.net
  (fsr-ub1864-101.ea.freescale.net [10.171.82.13])
- by inva024.eu-rdc02.nxp.com (Postfix) with ESMTP id A3E7F2062D;
+ by inva024.eu-rdc02.nxp.com (Postfix) with ESMTP id 0BA872026B;
  Thu, 30 May 2019 16:19:56 +0200 (CEST)
 From: laurentiu.tudor@nxp.com
 To: netdev@vger.kernel.org, madalin.bucur@nxp.com, roy.pledge@nxp.com,
  camelia.groza@nxp.com, leoyang.li@nxp.com
-Subject: [PATCH v3 6/6] dpaa_eth: fix iova handling for sg frames
-Date: Thu, 30 May 2019 17:19:51 +0300
-Message-Id: <20190530141951.6704-7-laurentiu.tudor@nxp.com>
+Subject: [PATCH v3 5/6] dpaa_eth: fix iova handling for contiguous frames
+Date: Thu, 30 May 2019 17:19:50 +0300
+Message-Id: <20190530141951.6704-6-laurentiu.tudor@nxp.com>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20190530141951.6704-1-laurentiu.tudor@nxp.com>
 References: <20190530141951.6704-1-laurentiu.tudor@nxp.com>
@@ -75,124 +75,149 @@ From: Laurentiu Tudor <laurentiu.tudor@nxp.com>
 
 The driver relies on the no longer valid assumption that dma addresses
 (iovas) are identical to physical addressees and uses phys_to_virt() to
-make iova -> vaddr conversions. Fix this also for scatter-gather frames
-using the iova -> phys conversion function added in the previous patch.
+make iova -> vaddr conversions. Fix this by adding a function that does
+proper iova -> phys conversions using the iommu api and update the code
+to use it.
+Also, a dma_unmap_single() call had to be moved further down the code
+because iova -> vaddr conversions were required before the unmap.
+For now only the contiguous frame case is handled and the SG case is
+split in a following patch.
 While at it, clean-up a redundant dpaa_bpid2pool() and pass the bp
 as parameter.
 
 Signed-off-by: Laurentiu Tudor <laurentiu.tudor@nxp.com>
 Acked-by: Madalin Bucur <madalin.bucur@nxp.com>
 ---
- .../net/ethernet/freescale/dpaa/dpaa_eth.c    | 40 +++++++++++--------
- 1 file changed, 23 insertions(+), 17 deletions(-)
+ .../net/ethernet/freescale/dpaa/dpaa_eth.c    | 42 ++++++++++---------
+ .../net/ethernet/freescale/dpaa/dpaa_eth.h    |  2 +
+ 2 files changed, 24 insertions(+), 20 deletions(-)
 
 diff --git a/drivers/net/ethernet/freescale/dpaa/dpaa_eth.c b/drivers/net/ethernet/freescale/dpaa/dpaa_eth.c
-index 46194a04617a..7d978a93dffd 100644
+index f54b0cd0d175..46194a04617a 100644
 --- a/drivers/net/ethernet/freescale/dpaa/dpaa_eth.c
 +++ b/drivers/net/ethernet/freescale/dpaa/dpaa_eth.c
-@@ -1641,14 +1641,17 @@ static struct sk_buff *dpaa_cleanup_tx_fd(const struct dpaa_priv *priv,
+@@ -50,6 +50,7 @@
+ #include <linux/highmem.h>
+ #include <linux/percpu.h>
+ #include <linux/dma-mapping.h>
++#include <linux/iommu.h>
+ #include <linux/sort.h>
+ #include <linux/phy_fixed.h>
+ #include <soc/fsl/bman.h>
+@@ -1595,6 +1596,12 @@ static int dpaa_eth_refill_bpools(struct dpaa_priv *priv)
+ 	return 0;
+ }
  
- 	if (unlikely(qm_fd_get_format(fd) == qm_fd_sg)) {
- 		nr_frags = skb_shinfo(skb)->nr_frags;
--		dma_unmap_single(dev, addr,
--				 qm_fd_get_offset(fd) + DPAA_SGT_SIZE,
--				 dma_dir);
- 
- 		/* The sgt buffer has been allocated with netdev_alloc_frag(),
- 		 * it's from lowmem.
- 		 */
--		sgt = phys_to_virt(addr + qm_fd_get_offset(fd));
-+		sgt = phys_to_virt(dpaa_iova_to_phys(priv,
-+						     addr +
-+						     qm_fd_get_offset(fd)));
++static phys_addr_t dpaa_iova_to_phys(const struct dpaa_priv *priv,
++				     dma_addr_t addr)
++{
++	return priv->domain ? iommu_iova_to_phys(priv->domain, addr) : addr;
++}
 +
-+		dma_unmap_single(dev, addr,
-+				 qm_fd_get_offset(fd) + DPAA_SGT_SIZE,
-+				 dma_dir);
+ /* Cleanup function for outgoing frame descriptors that were built on Tx path,
+  * either contiguous frames or scatter/gather ones.
+  * Skb freeing is not handled here.
+@@ -1617,7 +1624,7 @@ static struct sk_buff *dpaa_cleanup_tx_fd(const struct dpaa_priv *priv,
+ 	int nr_frags, i;
+ 	u64 ns;
  
- 		/* sgt[0] is from lowmem, was dma_map_single()-ed */
- 		dma_unmap_single(dev, qm_sg_addr(&sgt[0]),
-@@ -1663,7 +1666,7 @@ static struct sk_buff *dpaa_cleanup_tx_fd(const struct dpaa_priv *priv,
- 		}
+-	skbh = (struct sk_buff **)phys_to_virt(addr);
++	skbh = (struct sk_buff **)phys_to_virt(dpaa_iova_to_phys(priv, addr));
+ 	skb = *skbh;
  
- 		/* Free the page frag that we allocated on Tx */
--		skb_free_frag(phys_to_virt(addr));
-+		skb_free_frag(skbh);
- 	} else {
- 		dma_unmap_single(dev, addr,
- 				 skb_tail_pointer(skb) - (u8 *)skbh, dma_dir);
-@@ -1724,14 +1727,14 @@ static struct sk_buff *contig_fd_to_skb(const struct dpaa_priv *priv,
-  * The page fragment holding the S/G Table is recycled here.
+ 	if (priv->tx_tstamp && skb_shinfo(skb)->tx_flags & SKBTX_HW_TSTAMP) {
+@@ -1687,25 +1694,21 @@ static u8 rx_csum_offload(const struct dpaa_priv *priv, const struct qm_fd *fd)
+  * accommodate the shared info area of the skb.
   */
- static struct sk_buff *sg_fd_to_skb(const struct dpaa_priv *priv,
--				    const struct qm_fd *fd)
-+				    const struct qm_fd *fd,
-+				    struct dpaa_bp *dpaa_bp,
-+				    void *vaddr)
+ static struct sk_buff *contig_fd_to_skb(const struct dpaa_priv *priv,
+-					const struct qm_fd *fd)
++					const struct qm_fd *fd,
++					struct dpaa_bp *dpaa_bp,
++					void *vaddr)
  {
  	ssize_t fd_off = qm_fd_get_offset(fd);
 -	dma_addr_t addr = qm_fd_addr(fd);
- 	const struct qm_sg_entry *sgt;
- 	struct page *page, *head_page;
 -	struct dpaa_bp *dpaa_bp;
--	void *vaddr, *sg_vaddr;
-+	void *sg_vaddr;
- 	int frag_off, frag_len;
  	struct sk_buff *skb;
- 	dma_addr_t sg_addr;
-@@ -1740,7 +1743,6 @@ static struct sk_buff *sg_fd_to_skb(const struct dpaa_priv *priv,
- 	int *count_ptr;
- 	int i;
+-	void *vaddr;
  
 -	vaddr = phys_to_virt(addr);
  	WARN_ON(!IS_ALIGNED((unsigned long)vaddr, SMP_CACHE_BYTES));
  
- 	/* Iterate through the SGT entries and add data buffers to the skb */
-@@ -1751,14 +1753,17 @@ static struct sk_buff *sg_fd_to_skb(const struct dpaa_priv *priv,
- 		WARN_ON(qm_sg_entry_is_ext(&sgt[i]));
+-	dpaa_bp = dpaa_bpid2pool(fd->bpid);
+-	if (!dpaa_bp)
+-		goto free_buffer;
+-
+ 	skb = build_skb(vaddr, dpaa_bp->size +
+ 			SKB_DATA_ALIGN(sizeof(struct skb_shared_info)));
+-	if (WARN_ONCE(!skb, "Build skb failure on Rx\n"))
+-		goto free_buffer;
++	if (WARN_ONCE(!skb, "Build skb failure on Rx\n")) {
++		skb_free_frag(vaddr);
++		return NULL;
++	}
+ 	WARN_ON(fd_off != priv->rx_headroom);
+ 	skb_reserve(skb, fd_off);
+ 	skb_put(skb, qm_fd_get_length(fd));
+@@ -1713,10 +1716,6 @@ static struct sk_buff *contig_fd_to_skb(const struct dpaa_priv *priv,
+ 	skb->ip_summed = rx_csum_offload(priv, fd);
  
- 		sg_addr = qm_sg_addr(&sgt[i]);
--		sg_vaddr = phys_to_virt(sg_addr);
--		WARN_ON(!IS_ALIGNED((unsigned long)sg_vaddr,
--				    SMP_CACHE_BYTES));
+ 	return skb;
+-
+-free_buffer:
+-	skb_free_frag(vaddr);
+-	return NULL;
+ }
  
- 		/* We may use multiple Rx pools */
- 		dpaa_bp = dpaa_bpid2pool(sgt[i].bpid);
--		if (!dpaa_bp)
-+		if (!dpaa_bp) {
-+			pr_info("%s: fail to get dpaa_bp for sg bpid %d\n",
-+				__func__, sgt[i].bpid);
- 			goto free_buffers;
-+		}
-+		sg_vaddr = phys_to_virt(dpaa_iova_to_phys(priv, sg_addr));
-+		WARN_ON(!IS_ALIGNED((unsigned long)sg_vaddr,
-+				    SMP_CACHE_BYTES));
- 
- 		count_ptr = this_cpu_ptr(dpaa_bp->percpu_count);
- 		dma_unmap_single(dpaa_bp->dev, sg_addr, dpaa_bp->size,
-@@ -1830,10 +1835,11 @@ static struct sk_buff *sg_fd_to_skb(const struct dpaa_priv *priv,
- 	/* free all the SG entries */
- 	for (i = 0; i < DPAA_SGT_MAX_ENTRIES ; i++) {
- 		sg_addr = qm_sg_addr(&sgt[i]);
--		sg_vaddr = phys_to_virt(sg_addr);
--		skb_free_frag(sg_vaddr);
- 		dpaa_bp = dpaa_bpid2pool(sgt[i].bpid);
- 		if (dpaa_bp) {
-+			sg_addr = dpaa_iova_to_phys(priv, sg_addr);
-+			sg_vaddr = phys_to_virt(sg_addr);
-+			skb_free_frag(sg_vaddr);
- 			count_ptr = this_cpu_ptr(dpaa_bp->percpu_count);
- 			(*count_ptr)--;
- 		}
-@@ -2326,7 +2332,7 @@ static enum qman_cb_dqrr_result rx_default_dqrr(struct qman_portal *portal,
- 	if (likely(fd_format == qm_fd_contig))
- 		skb = contig_fd_to_skb(priv, fd, dpaa_bp, vaddr);
- 	else
--		skb = sg_fd_to_skb(priv, fd);
-+		skb = sg_fd_to_skb(priv, fd, dpaa_bp, vaddr);
- 	if (!skb)
+ /* Build an skb with the data of the first S/G entry in the linear portion and
+@@ -2309,12 +2308,12 @@ static enum qman_cb_dqrr_result rx_default_dqrr(struct qman_portal *portal,
+ 	if (!dpaa_bp)
  		return qman_cb_dqrr_consume;
  
+-	dma_unmap_single(dpaa_bp->dev, addr, dpaa_bp->size, DMA_FROM_DEVICE);
+-
+ 	/* prefetch the first 64 bytes of the frame or the SGT start */
+-	vaddr = phys_to_virt(addr);
++	vaddr = phys_to_virt(dpaa_iova_to_phys(priv, addr));
+ 	prefetch(vaddr + qm_fd_get_offset(fd));
+ 
++	dma_unmap_single(dpaa_bp->dev, addr, dpaa_bp->size, DMA_FROM_DEVICE);
++
+ 	/* The only FD types that we may receive are contig and S/G */
+ 	WARN_ON((fd_format != qm_fd_contig) && (fd_format != qm_fd_sg));
+ 
+@@ -2325,7 +2324,7 @@ static enum qman_cb_dqrr_result rx_default_dqrr(struct qman_portal *portal,
+ 	(*count_ptr)--;
+ 
+ 	if (likely(fd_format == qm_fd_contig))
+-		skb = contig_fd_to_skb(priv, fd);
++		skb = contig_fd_to_skb(priv, fd, dpaa_bp, vaddr);
+ 	else
+ 		skb = sg_fd_to_skb(priv, fd);
+ 	if (!skb)
+@@ -2836,6 +2835,9 @@ static int dpaa_eth_probe(struct platform_device *pdev)
+ 	priv = netdev_priv(net_dev);
+ 	priv->net_dev = net_dev;
+ 
++	/* cache iommu domain */
++	priv->domain = iommu_get_domain_for_dev(dev);
++
+ 	priv->msg_enable = netif_msg_init(debug, DPAA_MSG_DEFAULT);
+ 
+ 	/* If fsl_fm_max_frm is set to a higher value than the all-common 1500,
+diff --git a/drivers/net/ethernet/freescale/dpaa/dpaa_eth.h b/drivers/net/ethernet/freescale/dpaa/dpaa_eth.h
+index af320f83c742..1548cb67b448 100644
+--- a/drivers/net/ethernet/freescale/dpaa/dpaa_eth.h
++++ b/drivers/net/ethernet/freescale/dpaa/dpaa_eth.h
+@@ -185,6 +185,8 @@ struct dpaa_priv {
+ 
+ 	bool tx_tstamp; /* Tx timestamping enabled */
+ 	bool rx_tstamp; /* Rx timestamping enabled */
++
++	struct iommu_domain *domain;
+ };
+ 
+ /* from dpaa_ethtool.c */
 -- 
 2.17.1
 
