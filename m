@@ -7,21 +7,21 @@ X-Spam-Status: No, score=-8.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 82A35C28CC0
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 May 2019 03:31:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 69341C28CC2
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 May 2019 03:33:43 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C6ACC24AEF
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 May 2019 03:31:08 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id E34D324B53
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 May 2019 03:33:42 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="UL0u7tSU"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C6ACC24AEF
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="ZptM3BmI"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E34D324B53
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linuxfoundation.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45DtQf3v44zDqHd
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 May 2019 13:31:06 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45DtTc425XzDqQw
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 May 2019 13:33:40 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=linuxfoundation.org
  (client-ip=198.145.29.99; helo=mail.kernel.org;
@@ -29,32 +29,32 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=linuxfoundation.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="UL0u7tSU"; 
+ unprotected) header.d=kernel.org header.i=@kernel.org header.b="ZptM3BmI"; 
  dkim-atps=neutral
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45Dt7S2CcCzDqMX
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 May 2019 13:17:56 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45Dt7X0tJpzDqLr
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 May 2019 13:17:59 +1000 (AEST)
 Received: from localhost (ip67-88-213-2.z213-88-67.customer.algx.net
  [67.88.213.2])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id EDE3924479;
- Thu, 30 May 2019 03:17:53 +0000 (UTC)
+ by mail.kernel.org (Postfix) with ESMTPSA id 3E5CE2474A;
+ Thu, 30 May 2019 03:17:58 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1559186274;
- bh=MUReWeJro4bxc7yBDsWgZz5yQ6ksbBFwyAHIyxQ+gJ8=;
+ s=default; t=1559186278;
+ bh=vbT6JzcrqgZfDANvgbazIhs61L2kvqOjhh2SjOsVIHQ=;
  h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=UL0u7tSUhErc5Y8FNYg/h6FnYl5PI4WurIq+ocV5iLEqHXZcj/TBWu0I/k1InHgaE
- vbPFxXmeFlspGEQ5+Dk/8hOMhCMA6l6G7H9uyrFJj9MOGWDul5vlCOQRexpsW0Wa67
- o86gQIs5hgRqspbI3CvgkjHrJZKVPSWb7kbfhhHs=
+ b=ZptM3BmIOa14p0Sw2s4wSg//GgD+JTx6wuXZovAGfeG+xaqOYAUzhdO1/OiNm8wWD
+ 4cdrVfTxkxwTCqO9VKs75xJVuCRGqzPHuoZ1Qpt6lU71A9v175TLOwECVFlpLK/UGZ
+ v3ULKb/pDanB9+nLwbBI3kYrTf9OFv2yQEitqOYY=
 From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH 4.19 215/276] ASoC: fsl_utils: fix a leaked reference by
- adding missing of_node_put
-Date: Wed, 29 May 2019 20:06:13 -0700
-Message-Id: <20190530030538.571433062@linuxfoundation.org>
+Subject: [PATCH 4.19 180/276] cpufreq/pasemi: fix possible object reference
+ leak
+Date: Wed, 29 May 2019 20:05:38 -0700
+Message-Id: <20190530030536.547237935@linuxfoundation.org>
 X-Mailer: git-send-email 2.21.0
 In-Reply-To: <20190530030523.133519668@linuxfoundation.org>
 References: <20190530030523.133519668@linuxfoundation.org>
@@ -73,57 +73,49 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Sasha Levin <sashal@kernel.org>, alsa-devel@alsa-project.org,
- linuxppc-dev@lists.ozlabs.org, Timur Tabi <timur@kernel.org>,
- Xiubo Li <Xiubo.Lee@gmail.com>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Takashi Iwai <tiwai@suse.com>,
- Liam Girdwood <lgirdwood@gmail.com>, stable@vger.kernel.org,
- Jaroslav Kysela <perex@perex.cz>, Nicolin Chen <nicoleotsuka@gmail.com>,
- Mark Brown <broonie@kernel.org>, Fabio Estevam <festevam@gmail.com>,
+Cc: Sasha Levin <sashal@kernel.org>, linux-pm@vger.kernel.org,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ "Rafael J. Wysocki" <rjw@rjwysocki.net>, stable@vger.kernel.org,
+ Viresh Kumar <viresh.kumar@linaro.org>, linuxppc-dev@lists.ozlabs.org,
  Wen Yang <wen.yang99@zte.com.cn>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-[ Upstream commit c705247136a523488eac806bd357c3e5d79a7acd ]
+[ Upstream commit a9acc26b75f652f697e02a9febe2ab0da648a571 ]
 
-The call to of_parse_phandle returns a node pointer with refcount
+The call to of_get_cpu_node returns a node pointer with refcount
 incremented thus it must be explicitly decremented after the last
 usage.
 
 Detected by coccinelle with the following warnings:
-./sound/soc/fsl/fsl_utils.c:74:2-8: ERROR: missing of_node_put; acquired a node pointer with refcount incremented on line 38, but without a corresponding     object release within this function.
+./drivers/cpufreq/pasemi-cpufreq.c:212:1-7: ERROR: missing of_node_put; acquired a node pointer with refcount incremented on line 147, but without a corresponding object release within this function.
+./drivers/cpufreq/pasemi-cpufreq.c:220:1-7: ERROR: missing of_node_put; acquired a node pointer with refcount incremented on line 147, but without a corresponding object release within this function.
 
 Signed-off-by: Wen Yang <wen.yang99@zte.com.cn>
-Cc: Timur Tabi <timur@kernel.org>
-Cc: Nicolin Chen <nicoleotsuka@gmail.com>
-Cc: Xiubo Li <Xiubo.Lee@gmail.com>
-Cc: Fabio Estevam <festevam@gmail.com>
-Cc: Liam Girdwood <lgirdwood@gmail.com>
-Cc: Mark Brown <broonie@kernel.org>
-Cc: Jaroslav Kysela <perex@perex.cz>
-Cc: Takashi Iwai <tiwai@suse.com>
-Cc: alsa-devel@alsa-project.org
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>
 Cc: linuxppc-dev@lists.ozlabs.org
+Cc: linux-pm@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org
-Signed-off-by: Mark Brown <broonie@kernel.org>
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- sound/soc/fsl/fsl_utils.c | 1 +
+ drivers/cpufreq/pasemi-cpufreq.c | 1 +
  1 file changed, 1 insertion(+)
 
-diff --git a/sound/soc/fsl/fsl_utils.c b/sound/soc/fsl/fsl_utils.c
-index 7f0fa4b522231..cca33ab7020a4 100644
---- a/sound/soc/fsl/fsl_utils.c
-+++ b/sound/soc/fsl/fsl_utils.c
-@@ -71,6 +71,7 @@ int fsl_asoc_get_dma_channel(struct device_node *ssi_np,
- 	iprop = of_get_property(dma_np, "cell-index", NULL);
- 	if (!iprop) {
- 		of_node_put(dma_np);
-+		of_node_put(dma_channel_np);
- 		return -EINVAL;
- 	}
- 	*dma_id = be32_to_cpup(iprop);
+diff --git a/drivers/cpufreq/pasemi-cpufreq.c b/drivers/cpufreq/pasemi-cpufreq.c
+index 75dfbd2a58ea6..c7710c149de85 100644
+--- a/drivers/cpufreq/pasemi-cpufreq.c
++++ b/drivers/cpufreq/pasemi-cpufreq.c
+@@ -146,6 +146,7 @@ static int pas_cpufreq_cpu_init(struct cpufreq_policy *policy)
+ 
+ 	cpu = of_get_cpu_node(policy->cpu, NULL);
+ 
++	of_node_put(cpu);
+ 	if (!cpu)
+ 		goto out;
+ 
 -- 
 2.20.1
 
