@@ -2,69 +2,87 @@ Return-Path: <SRS0=knV+=T7=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_MUTT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-13.6 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
+	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 34EEFC28CC2
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 31 May 2019 17:50:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 084DCC04AB6
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 31 May 2019 18:54:42 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B06B926D65
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 31 May 2019 17:50:16 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 4B11D26E14
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 31 May 2019 18:54:41 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="EAUDatB5"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B06B926D65
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="pGTETKfe"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4B11D26E14
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45FsRV3bZ8zDqdV
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  1 Jun 2019 03:50:14 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45Ftsp45Y0zDqcV
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  1 Jun 2019 04:54:38 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=infradead.org
- (client-ip=2607:7c80:54:e::133; helo=bombadil.infradead.org;
- envelope-from=willy@infradead.org; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=gmail.com
+ (client-ip=2a00:1450:4864:20::544; helo=mail-ed1-x544.google.com;
+ envelope-from=natechancellor@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=infradead.org
+ dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=infradead.org header.i=@infradead.org
- header.b="EAUDatB5"; dkim-atps=neutral
-Received: from bombadil.infradead.org (bombadil.infradead.org
- [IPv6:2607:7c80:54:e::133])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="pGTETKfe"; 
+ dkim-atps=neutral
+Received: from mail-ed1-x544.google.com (mail-ed1-x544.google.com
+ [IPv6:2a00:1450:4864:20::544])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45FsQ43RHtzDqXt
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  1 Jun 2019 03:49:00 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
- d=infradead.org; s=bombadil.20170209; h=In-Reply-To:Content-Type:MIME-Version
- :References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
- Content-Transfer-Encoding:Content-ID:Content-Description:Resent-Date:
- Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:
- List-Help:List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
- bh=ox5SYttOkOuRXfS7cs3JsHQ+R0GLTw4N6BHjQRoaW9E=; b=EAUDatB5hW46G9M1Ux5rKjKdO
- 2gatVjjYZRPlz/Y8yieBJl+NTOqpgatgBKBU0KD4TsTPRHuOAOdASb97lecou22eiM2OapeLCzPgp
- B0i0qPk66SspAy6OJFa1NIO4ol3ItewiiFaxYuuw7LLCg6ihQcITsomL18HAh28KsH655hSpvEaXK
- xELWZ9GoG8dKe0FlwT+BYKfNw7vVZDolyKXu+JXuRall/zajJ1hcm3jvaxeoZ0nnxHMg7OjxSwtOg
- 5Emd9DEvLQB4DtO5nEcmw84mXxgWLl2OJrNXW+ggkep9wq+uTLg1JfxZNt1MTnoW7sdnu4+jS5Uxt
- sHxXOWYlg==;
-Received: from willy by bombadil.infradead.org with local (Exim 4.90_1 #2 (Red
- Hat Linux)) id 1hWleA-0002Ni-V0; Fri, 31 May 2019 17:48:54 +0000
-Date: Fri, 31 May 2019 10:48:54 -0700
-From: Matthew Wilcox <willy@infradead.org>
-To: Anshuman Khandual <anshuman.khandual@arm.com>
-Subject: Re: [RFC] mm: Generalize notify_page_fault()
-Message-ID: <20190531174854.GA31852@bombadil.infradead.org>
-References: <1559195713-6956-1-git-send-email-anshuman.khandual@arm.com>
- <20190530110639.GC23461@bombadil.infradead.org>
- <4f9a610d-e856-60f6-4467-09e9c3836771@arm.com>
- <20190530133954.GA2024@bombadil.infradead.org>
- <f1995445-d5ab-f292-d26c-809581002184@arm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45FtrR41jszDqZN
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  1 Jun 2019 04:53:24 +1000 (AEST)
+Received: by mail-ed1-x544.google.com with SMTP id w33so15935904edb.10
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 May 2019 11:53:24 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=from:to:cc:subject:date:message-id:mime-version
+ :content-transfer-encoding;
+ bh=piCJ6jEF6MBc4EJPMFsudzP7NRZDnr1GSlVWfPmBoUQ=;
+ b=pGTETKfe1tTLLxY/NozLw5pRvA556SpSsWvFQ/zFFBI68rKKDwsQl2SCdYv+30I17T
+ 4d1GZKf5SUaDUAi+D48E3fBGZjv5XACgWmfCtfq3iZF50PJoGmkaxwxqy6YTeOy4wmLw
+ roa21TEQ12TNacClYrWZtAS+15Qi5OYX+pPK8yMm6XDZCo68CfbQCrs49GVjQ8O9ufdX
+ EPFJbArhE81aIUqwAuj0ZyOBWgO3ClwISo7P77bGK3R+blXcZuxdIWp//mPioP7SQ8rP
+ 0qKOpTzJnIQZPrtZOyW9haCplftEH1/a7vRbz9Lmad3fOP8PFP4zBgF19XpG8tVxF3IH
+ kzAQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+ :content-transfer-encoding;
+ bh=piCJ6jEF6MBc4EJPMFsudzP7NRZDnr1GSlVWfPmBoUQ=;
+ b=IwjTPnI8YGCjvN0ZYT0VGvd+dO65lXV7N30Frx6ngBIFfgNnXmBNYghLi30XKG+TLk
+ 29q7bFr5fyAmeqaFwZdkmNSysyHAQwnPuERk28Oqg0LATtZIIQ8ZXdYErrmIYLbSVL+r
+ vk9b8YitUxlDhoYBLFMzHqmJ0Som4ATXm6DgXzfZWPArGfsMC0mxqO6VFktJfS3h6XDB
+ VSj3Yahq91//62bEqb8ysJSIhdqaMTUXmuxV+utuYmpt/8wmo2/jSvNIC66cWrL4/uOy
+ CXgsNgfRIvu5jHF9zoLIoOVhKJo0USFP97FLN/y2FhHHya5nfuHRyuJqxquZ57eLXoXY
+ 9oVg==
+X-Gm-Message-State: APjAAAU2YBWTdKSf4jm38CNfftSLPXb/aHIix4HIpIG3DPHMlpI8qyss
+ jH1o6pf+EoT79rQc6/ZhZkA=
+X-Google-Smtp-Source: APXvYqx535alRqStLg3CPU1+Fg/qXZIQbrvAUQDh4QWyvu8dpjY3mMQzRz94s9OTk3JQBudJj9leNQ==
+X-Received: by 2002:a05:6402:1819:: with SMTP id
+ g25mr3576488edy.56.1559328799792; 
+ Fri, 31 May 2019 11:53:19 -0700 (PDT)
+Received: from localhost.localdomain ([2a01:4f9:2b:2b15::2])
+ by smtp.gmail.com with ESMTPSA id j3sm1789080edh.82.2019.05.31.11.53.18
+ (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
+ Fri, 31 May 2019 11:53:19 -0700 (PDT)
+From: Nathan Chancellor <natechancellor@gmail.com>
+To: Tyrel Datwyler <tyreld@linux.ibm.com>,
+ "James E.J. Bottomley" <jejb@linux.ibm.com>,
+ "Martin K. Petersen" <martin.petersen@oracle.com>
+Subject: [PATCH] scsi: ibmvscsi: Don't use rc uninitialized in ibmvscsi_do_work
+Date: Fri, 31 May 2019 11:53:06 -0700
+Message-Id: <20190531185306.41290-1-natechancellor@gmail.com>
+X-Mailer: git-send-email 2.22.0.rc2
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <f1995445-d5ab-f292-d26c-809581002184@arm.com>
-User-Agent: Mutt/1.9.2 (2017-12-15)
+X-Patchwork-Bot: notify
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -76,56 +94,47 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Mark Rutland <mark.rutland@arm.com>, Michal Hocko <mhocko@suse.com>,
- linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org,
- Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>,
- linux-mm@kvack.org, Paul Mackerras <paulus@samba.org>,
- sparclinux@vger.kernel.org, linux-s390@vger.kernel.org,
- Yoshinori Sato <ysato@users.sourceforge.jp>,
- Russell King <linux@armlinux.org.uk>, Fenghua Yu <fenghua.yu@intel.com>,
- Stephen Rothwell <sfr@canb.auug.org.au>,
- Andrey Konovalov <andreyknvl@google.com>, linux-arm-kernel@lists.infradead.org,
- Tony Luck <tony.luck@intel.com>, Heiko Carstens <heiko.carstens@de.ibm.com>,
- linux-kernel@vger.kernel.org, Martin Schwidefsky <schwidefsky@de.ibm.com>,
- Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
- "David S. Miller" <davem@davemloft.net>
+Cc: clang-built-linux@googlegroups.com,
+ Nathan Chancellor <natechancellor@gmail.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, May 31, 2019 at 02:17:43PM +0530, Anshuman Khandual wrote:
-> On 05/30/2019 07:09 PM, Matthew Wilcox wrote:
-> > On Thu, May 30, 2019 at 05:31:15PM +0530, Anshuman Khandual wrote:
-> >> On 05/30/2019 04:36 PM, Matthew Wilcox wrote:
-> >>> The two handle preemption differently.  Why is x86 wrong and this one
-> >>> correct?
-> >>
-> >> Here it expects context to be already non-preemptible where as the proposed
-> >> generic function makes it non-preemptible with a preempt_[disable|enable]()
-> >> pair for the required code section, irrespective of it's present state. Is
-> >> not this better ?
-> > 
-> > git log -p arch/x86/mm/fault.c
-> > 
-> > search for 'kprobes'.
-> > 
-> > tell me what you think.
-> 
-> Are you referring to these following commits
-> 
-> a980c0ef9f6d ("x86/kprobes: Refactor kprobes_fault() like kprobe_exceptions_notify()")
-> b506a9d08bae ("x86: code clarification patch to Kprobes arch code")
-> 
-> In particular the later one (b506a9d08bae). It explains how the invoking context
-> in itself should be non-preemptible for the kprobes processing context irrespective
-> of whether kprobe_running() or perhaps smp_processor_id() is safe or not. Hence it
-> does not make much sense to continue when original invoking context is preemptible.
-> Instead just bail out earlier. This seems to be making more sense than preempt
-> disable-enable pair. If there are no concerns about this change from other platforms,
-> I will change the preemption behavior in proposed generic function next time around.
+clang warns:
 
-Exactly.
+drivers/scsi/ibmvscsi/ibmvscsi.c:2126:7: warning: variable 'rc' is used
+uninitialized whenever switch case is taken [-Wsometimes-uninitialized]
+        case IBMVSCSI_HOST_ACTION_NONE:
+             ^~~~~~~~~~~~~~~~~~~~~~~~~
+drivers/scsi/ibmvscsi/ibmvscsi.c:2151:6: note: uninitialized use occurs
+here
+        if (rc) {
+            ^~
 
-So, any of the arch maintainers know of a reason they behave differently
-from x86 in this regard?  Or can Anshuman use the x86 implementation
-for all the architectures supporting kprobes?
+Initialize rc to zero so that the atomic_set and dev_err statement don't
+trigger for the cases that just break.
+
+Fixes: 035a3c4046b5 ("scsi: ibmvscsi: redo driver work thread to use enum action states")
+Link: https://github.com/ClangBuiltLinux/linux/issues/502
+Signed-off-by: Nathan Chancellor <natechancellor@gmail.com>
+---
+ drivers/scsi/ibmvscsi/ibmvscsi.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/scsi/ibmvscsi/ibmvscsi.c b/drivers/scsi/ibmvscsi/ibmvscsi.c
+index 727c31dc11a0..6714d8043e62 100644
+--- a/drivers/scsi/ibmvscsi/ibmvscsi.c
++++ b/drivers/scsi/ibmvscsi/ibmvscsi.c
+@@ -2118,7 +2118,7 @@ static unsigned long ibmvscsi_get_desired_dma(struct vio_dev *vdev)
+ static void ibmvscsi_do_work(struct ibmvscsi_host_data *hostdata)
+ {
+ 	unsigned long flags;
+-	int rc;
++	int rc = 0;
+ 	char *action = "reset";
+ 
+ 	spin_lock_irqsave(hostdata->host->host_lock, flags);
+-- 
+2.22.0.rc2
+
