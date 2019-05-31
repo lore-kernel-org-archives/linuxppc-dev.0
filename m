@@ -2,87 +2,68 @@ Return-Path: <SRS0=knV+=T7=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.6 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-1.0 required=3.0 tests=MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 084DCC04AB6
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 31 May 2019 18:54:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4D36AC04AB6
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 31 May 2019 21:28:45 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 4B11D26E14
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 31 May 2019 18:54:41 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="pGTETKfe"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4B11D26E14
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	by mail.kernel.org (Postfix) with ESMTPS id C692D23A58
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 31 May 2019 21:28:44 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C692D23A58
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=bugzilla.kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45Ftsp45Y0zDqcV
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  1 Jun 2019 04:54:38 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45FyHZ1vfnzDqdD
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  1 Jun 2019 07:28:42 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=2a00:1450:4864:20::544; helo=mail-ed1-x544.google.com;
- envelope-from=natechancellor@gmail.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="pGTETKfe"; 
- dkim-atps=neutral
-Received: from mail-ed1-x544.google.com (mail-ed1-x544.google.com
- [IPv6:2a00:1450:4864:20::544])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ spf=pass (mailfrom) smtp.mailfrom=bugzilla.kernel.org
+ (client-ip=198.145.29.98; helo=mail.wl.linuxfoundation.org;
+ envelope-from=bugzilla-daemon@bugzilla.kernel.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=bugzilla.kernel.org
+Received: from mail.wl.linuxfoundation.org (mail.wl.linuxfoundation.org
+ [198.145.29.98])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45FtrR41jszDqZN
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  1 Jun 2019 04:53:24 +1000 (AEST)
-Received: by mail-ed1-x544.google.com with SMTP id w33so15935904edb.10
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 May 2019 11:53:24 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=from:to:cc:subject:date:message-id:mime-version
- :content-transfer-encoding;
- bh=piCJ6jEF6MBc4EJPMFsudzP7NRZDnr1GSlVWfPmBoUQ=;
- b=pGTETKfe1tTLLxY/NozLw5pRvA556SpSsWvFQ/zFFBI68rKKDwsQl2SCdYv+30I17T
- 4d1GZKf5SUaDUAi+D48E3fBGZjv5XACgWmfCtfq3iZF50PJoGmkaxwxqy6YTeOy4wmLw
- roa21TEQ12TNacClYrWZtAS+15Qi5OYX+pPK8yMm6XDZCo68CfbQCrs49GVjQ8O9ufdX
- EPFJbArhE81aIUqwAuj0ZyOBWgO3ClwISo7P77bGK3R+blXcZuxdIWp//mPioP7SQ8rP
- 0qKOpTzJnIQZPrtZOyW9haCplftEH1/a7vRbz9Lmad3fOP8PFP4zBgF19XpG8tVxF3IH
- kzAQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
- :content-transfer-encoding;
- bh=piCJ6jEF6MBc4EJPMFsudzP7NRZDnr1GSlVWfPmBoUQ=;
- b=IwjTPnI8YGCjvN0ZYT0VGvd+dO65lXV7N30Frx6ngBIFfgNnXmBNYghLi30XKG+TLk
- 29q7bFr5fyAmeqaFwZdkmNSysyHAQwnPuERk28Oqg0LATtZIIQ8ZXdYErrmIYLbSVL+r
- vk9b8YitUxlDhoYBLFMzHqmJ0Som4ATXm6DgXzfZWPArGfsMC0mxqO6VFktJfS3h6XDB
- VSj3Yahq91//62bEqb8ysJSIhdqaMTUXmuxV+utuYmpt/8wmo2/jSvNIC66cWrL4/uOy
- CXgsNgfRIvu5jHF9zoLIoOVhKJo0USFP97FLN/y2FhHHya5nfuHRyuJqxquZ57eLXoXY
- 9oVg==
-X-Gm-Message-State: APjAAAU2YBWTdKSf4jm38CNfftSLPXb/aHIix4HIpIG3DPHMlpI8qyss
- jH1o6pf+EoT79rQc6/ZhZkA=
-X-Google-Smtp-Source: APXvYqx535alRqStLg3CPU1+Fg/qXZIQbrvAUQDh4QWyvu8dpjY3mMQzRz94s9OTk3JQBudJj9leNQ==
-X-Received: by 2002:a05:6402:1819:: with SMTP id
- g25mr3576488edy.56.1559328799792; 
- Fri, 31 May 2019 11:53:19 -0700 (PDT)
-Received: from localhost.localdomain ([2a01:4f9:2b:2b15::2])
- by smtp.gmail.com with ESMTPSA id j3sm1789080edh.82.2019.05.31.11.53.18
- (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
- Fri, 31 May 2019 11:53:19 -0700 (PDT)
-From: Nathan Chancellor <natechancellor@gmail.com>
-To: Tyrel Datwyler <tyreld@linux.ibm.com>,
- "James E.J. Bottomley" <jejb@linux.ibm.com>,
- "Martin K. Petersen" <martin.petersen@oracle.com>
-Subject: [PATCH] scsi: ibmvscsi: Don't use rc uninitialized in ibmvscsi_do_work
-Date: Fri, 31 May 2019 11:53:06 -0700
-Message-Id: <20190531185306.41290-1-natechancellor@gmail.com>
-X-Mailer: git-send-email 2.22.0.rc2
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45FyG32j9pzDqSM
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  1 Jun 2019 07:27:22 +1000 (AEST)
+Received: from mail.wl.linuxfoundation.org (localhost [127.0.0.1])
+ by mail.wl.linuxfoundation.org (Postfix) with ESMTP id 60CC528D58
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 May 2019 21:27:19 +0000 (UTC)
+Received: by mail.wl.linuxfoundation.org (Postfix, from userid 486)
+ id 553E528D5A; Fri, 31 May 2019 21:27:19 +0000 (UTC)
+From: bugzilla-daemon@bugzilla.kernel.org
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [Bug 203517] WARNING: inconsistent lock state. inconsistent
+ {SOFTIRQ-ON-W} -> {IN-SOFTIRQ-W} usage.
+Date: Fri, 31 May 2019 21:27:18 +0000
+X-Bugzilla-Reason: None
+X-Bugzilla-Type: changed
+X-Bugzilla-Watch-Reason: AssignedTo platform_ppc-64@kernel-bugs.osdl.org
+X-Bugzilla-Product: File System
+X-Bugzilla-Component: btrfs
+X-Bugzilla-Version: 2.5
+X-Bugzilla-Keywords: 
+X-Bugzilla-Severity: normal
+X-Bugzilla-Who: erhard_f@mailbox.org
+X-Bugzilla-Status: RESOLVED
+X-Bugzilla-Resolution: CODE_FIX
+X-Bugzilla-Priority: P1
+X-Bugzilla-Assigned-To: platform_ppc-64@kernel-bugs.osdl.org
+X-Bugzilla-Flags: 
+X-Bugzilla-Changed-Fields: 
+Message-ID: <bug-203517-206035-Ni1mlruxoq@https.bugzilla.kernel.org/>
+In-Reply-To: <bug-203517-206035@https.bugzilla.kernel.org/>
+References: <bug-203517-206035@https.bugzilla.kernel.org/>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+X-Bugzilla-URL: https://bugzilla.kernel.org/
+Auto-Submitted: auto-generated
 MIME-Version: 1.0
-X-Patchwork-Bot: notify
-Content-Transfer-Encoding: 8bit
+X-Virus-Scanned: ClamAV using ClamSMTP
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -94,47 +75,15 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: clang-built-linux@googlegroups.com,
- Nathan Chancellor <natechancellor@gmail.com>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-clang warns:
+https://bugzilla.kernel.org/show_bug.cgi?id=3D203517
 
-drivers/scsi/ibmvscsi/ibmvscsi.c:2126:7: warning: variable 'rc' is used
-uninitialized whenever switch case is taken [-Wsometimes-uninitialized]
-        case IBMVSCSI_HOST_ACTION_NONE:
-             ^~~~~~~~~~~~~~~~~~~~~~~~~
-drivers/scsi/ibmvscsi/ibmvscsi.c:2151:6: note: uninitialized use occurs
-here
-        if (rc) {
-            ^~
+--- Comment #9 from Erhard F. (erhard_f@mailbox.org) ---
+Has it already landed in 5.1 stable? Have not seen it yet.
 
-Initialize rc to zero so that the atomic_set and dev_err statement don't
-trigger for the cases that just break.
-
-Fixes: 035a3c4046b5 ("scsi: ibmvscsi: redo driver work thread to use enum action states")
-Link: https://github.com/ClangBuiltLinux/linux/issues/502
-Signed-off-by: Nathan Chancellor <natechancellor@gmail.com>
----
- drivers/scsi/ibmvscsi/ibmvscsi.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/drivers/scsi/ibmvscsi/ibmvscsi.c b/drivers/scsi/ibmvscsi/ibmvscsi.c
-index 727c31dc11a0..6714d8043e62 100644
---- a/drivers/scsi/ibmvscsi/ibmvscsi.c
-+++ b/drivers/scsi/ibmvscsi/ibmvscsi.c
-@@ -2118,7 +2118,7 @@ static unsigned long ibmvscsi_get_desired_dma(struct vio_dev *vdev)
- static void ibmvscsi_do_work(struct ibmvscsi_host_data *hostdata)
- {
- 	unsigned long flags;
--	int rc;
-+	int rc = 0;
- 	char *action = "reset";
- 
- 	spin_lock_irqsave(hostdata->host->host_lock, flags);
--- 
-2.22.0.rc2
-
+--=20
+You are receiving this mail because:
+You are watching the assignee of the bug.=
