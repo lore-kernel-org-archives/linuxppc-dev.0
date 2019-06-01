@@ -4,39 +4,40 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-8.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E243BC28CC1
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  1 Jun 2019 13:22:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 09952C28CC1
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  1 Jun 2019 13:27:56 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 377FB27331
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  1 Jun 2019 13:22:56 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 86DC425DA0
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  1 Jun 2019 13:27:55 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="VJqS7q3m"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 377FB27331
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="RpAPS/CL"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 86DC425DA0
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45GMSY39qgzDqSv
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  1 Jun 2019 23:22:53 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+	by lists.ozlabs.org (Postfix) with ESMTP id 45GMZK3sRczDqK9
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  1 Jun 2019 23:27:53 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45GMMg1nf5zDqSP
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  1 Jun 2019 23:18:39 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45GMQf2FMZzDqcW
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  1 Jun 2019 23:21:14 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="VJqS7q3m"; 
+ unprotected) header.d=kernel.org header.i=@kernel.org header.b="RpAPS/CL"; 
  dkim-atps=neutral
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 45GMMc5Vjmz8sjs
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  1 Jun 2019 23:18:36 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 45GMQf06N6z8tQv
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  1 Jun 2019 23:21:14 +1000 (AEST)
 Received: by ozlabs.org (Postfix)
- id 45GMMc3vnYz9sPh; Sat,  1 Jun 2019 23:18:36 +1000 (AEST)
+ id 45GMQd6Knhz9sR4; Sat,  1 Jun 2019 23:21:13 +1000 (AEST)
 Authentication-Results: ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=kernel.org
  (client-ip=198.145.29.99; helo=mail.kernel.org;
@@ -44,35 +45,35 @@ Authentication-Results: ozlabs.org;
 Authentication-Results: ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=kernel.org
 Authentication-Results: ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="VJqS7q3m"; 
+ unprotected) header.d=kernel.org header.i=@kernel.org header.b="RpAPS/CL"; 
  dkim-atps=neutral
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 45GMMc0Gjqz9sPg
- for <linuxppc-dev@ozlabs.org>; Sat,  1 Jun 2019 23:18:36 +1000 (AEST)
+ by ozlabs.org (Postfix) with ESMTPS id 45GMQd3S1hz9sQx
+ for <linuxppc-dev@ozlabs.org>; Sat,  1 Jun 2019 23:21:13 +1000 (AEST)
 Received: from sasha-vm.mshome.net (c-73-47-72-35.hsd1.nh.comcast.net
  [73.47.72.35])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id C026E272AA;
- Sat,  1 Jun 2019 13:18:32 +0000 (UTC)
+ by mail.kernel.org (Postfix) with ESMTPSA id C312C272FE;
+ Sat,  1 Jun 2019 13:21:09 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1559395113;
- bh=cj/IQ77HXq6PLhUf2CGtPUKkuQrgVntohc1tmQxxOjs=;
+ s=default; t=1559395270;
+ bh=fKpwX+0ndO0fyq/4snZ5Zvj1X2AzAdtPXs3or6au32k=;
  h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=VJqS7q3mj+MAm0nfGhNrKyewbwxESjIs1ikN+G008LpxUy/pS6GO5OoNCJKrzMWcY
- BsvM1xxTTZ2K45fHGw5b/7sWhJRTvce2Wh+XOr8h678Lvt61xuPMR4XzKDtpsUDtJd
- buQ6XW0lgAguR+lJVbNhmtajR+iifjzlxR8e4sw8=
+ b=RpAPS/CLmpa08wJUHjnUOW/LeFroKCYRZul5V88hTn6Qgj0ml/6ZMSkjncM+cPKRe
+ cTOZBCaf2izHsv+fqZBEAGc4visUnAZoxnCHZx9sy+o6jW3aeskH09xYPfwLES9IeY
+ j22f7ikQhrGw8qTYdI3YrCxBLe0zuNczOhwXTn/Q=
 From: Sasha Levin <sashal@kernel.org>
 To: linux-kernel@vger.kernel.org,
 	stable@vger.kernel.org
-Subject: [PATCH AUTOSEL 5.1 038/186] EDAC/mpc85xx: Prevent building as a module
-Date: Sat,  1 Jun 2019 09:14:14 -0400
-Message-Id: <20190601131653.24205-38-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 5.0 035/173] EDAC/mpc85xx: Prevent building as a module
+Date: Sat,  1 Jun 2019 09:17:07 -0400
+Message-Id: <20190601131934.25053-35-sashal@kernel.org>
 X-Mailer: git-send-email 2.20.1
-In-Reply-To: <20190601131653.24205-1-sashal@kernel.org>
-References: <20190601131653.24205-1-sashal@kernel.org>
+In-Reply-To: <20190601131934.25053-1-sashal@kernel.org>
+References: <20190601131934.25053-1-sashal@kernel.org>
 MIME-Version: 1.0
 X-stable: review
 X-Patchwork-Hint: Ignore
@@ -134,10 +135,10 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  1 file changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/drivers/edac/Kconfig b/drivers/edac/Kconfig
-index 47eb4d13ed5f8..5e2e0348d460f 100644
+index e286b5b990035..a3e6750393380 100644
 --- a/drivers/edac/Kconfig
 +++ b/drivers/edac/Kconfig
-@@ -263,8 +263,8 @@ config EDAC_PND2
+@@ -251,8 +251,8 @@ config EDAC_PND2
  	  micro-server but may appear on others in the future.
  
  config EDAC_MPC85XX
