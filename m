@@ -7,21 +7,21 @@ X-Spam-Status: No, score=-8.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A6E0AC28CC1
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  1 Jun 2019 07:53:03 +0000 (UTC)
-Received: from lists.ozlabs.org (unknown [203.11.71.2])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D34F8C28CC1
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  1 Jun 2019 07:54:07 +0000 (UTC)
+Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id D24CF270F3
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  1 Jun 2019 07:53:02 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 54381270F3
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  1 Jun 2019 07:54:07 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="rcHoPkNB"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D24CF270F3
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="hyjPcmLt"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 54381270F3
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45GD7w31xKzDqf8
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  1 Jun 2019 17:53:00 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45GD993ZT1zDqnK
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  1 Jun 2019 17:54:05 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=none (mailfrom)
  smtp.mailfrom=bombadil.srs.infradead.org (client-ip=2607:7c80:54:e::133;
  helo=bombadil.infradead.org;
@@ -31,12 +31,12 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=infradead.org header.i=@infradead.org
- header.b="rcHoPkNB"; dkim-atps=neutral
+ header.b="hyjPcmLt"; dkim-atps=neutral
 Received: from bombadil.infradead.org (bombadil.infradead.org
  [IPv6:2607:7c80:54:e::133])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45GD5M58D9zDqcD
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45GD5M38PrzDqbv
  for <linuxppc-dev@lists.ozlabs.org>; Sat,  1 Jun 2019 17:50:47 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
  d=infradead.org; s=bombadil.20170209; h=Content-Transfer-Encoding:
@@ -44,25 +44,24 @@ DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
  :Reply-To:Content-Type:Content-ID:Content-Description:Resent-Date:Resent-From
  :Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:List-Help:
  List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
- bh=yY/ra2PGFgbg7XqU3FF0wFq0V6rCLZSmY3LqWPMhNa4=; b=rcHoPkNBcn5I35lT0nSXPSoUmK
- 4vxZRGXHEDwfmRiduNeBcHUEvPxoD8OJrN0S5PQmE3re/arNQar+m7iSLIMTsowGpB4Ex04zPb/gN
- 29PPacLkhP5k/ojj3/Pa75U++zPDy3dYVb7BB3Paj88dFUs47D6xLlvkBHuqM7Il063uPmOqZZNcF
- wD8Tfl4VS9E3grfV6nmX4Tt/FE4OvZDbbNPrwWgUWcHBoL/a9qclxKhIIBdy59SE5ZBiYm89iK4RM
- INzpbbwRa9Sf7Gyw3QMcVnAV2C3wd8IfP0CShLYG4iQifTBRdaFTvSUlYc0QaQRmDfkZUOHZgrJuX
- 0fxi4omg==;
+ bh=PtF6JlZd/BfV9Typ91IQ/A0fJXKPUUPSZdBpZtuTT7o=; b=hyjPcmLtpzsxZZqlvh75qKW2VE
+ RoZyn2HMekrjZEzE40C041i52hpzuDfJwM9cPRPWwQv94nzemt2EtQDVo8FnM2sTEjfWULCnI4RpF
+ 2erohWRZG7mJT0wIIuj+5YXhdN5c+UEHTV8RpEaE5ee+1/XHYJQkGPkDx5itNmZ8DNZ/IX0VCNnrG
+ f6yXEMbuiDDcfLxwKhbCjeKq2CErUUmhFfeNIhe+YM71UCFFu7fh88Ofk8jVC9pra9GPmUb6HnPDY
+ DL8V2wZ7t0fs4R8RcM+V7Fp1M0082VCLwHugE0FJCxBWvZ1WH4OKbhzAp8L5/ZAIw4saZVbzvvJv+
+ ti/0ydPg==;
 Received: from 217-76-161-89.static.highway.a1.net ([217.76.161.89]
  helo=localhost)
  by bombadil.infradead.org with esmtpsa (Exim 4.90_1 #2 (Red Hat Linux))
- id 1hWymI-0007kx-5x; Sat, 01 Jun 2019 07:50:11 +0000
+ id 1hWymE-00077u-Jv; Sat, 01 Jun 2019 07:50:07 +0000
 From: Christoph Hellwig <hch@lst.de>
 To: Linus Torvalds <torvalds@linux-foundation.org>,
  Paul Burton <paul.burton@mips.com>, James Hogan <jhogan@kernel.org>,
  Yoshinori Sato <ysato@users.sourceforge.jp>, Rich Felker <dalias@libc.org>,
  "David S. Miller" <davem@davemloft.net>
-Subject: [PATCH 02/16] mm: use untagged_addr() for get_user_pages_fast
- addresses
-Date: Sat,  1 Jun 2019 09:49:45 +0200
-Message-Id: <20190601074959.14036-3-hch@lst.de>
+Subject: [PATCH 01/16] uaccess: add untagged_addr definition for other arches
+Date: Sat,  1 Jun 2019 09:49:44 +0200
+Message-Id: <20190601074959.14036-2-hch@lst.de>
 X-Mailer: git-send-email 2.20.1
 In-Reply-To: <20190601074959.14036-1-hch@lst.de>
 References: <20190601074959.14036-1-hch@lst.de>
@@ -85,42 +84,43 @@ Cc: linux-sh@vger.kernel.org, Andrey Konovalov <andreyknvl@google.com>,
  x86@kernel.org, linux-mips@vger.kernel.org,
  Nicholas Piggin <npiggin@gmail.com>, linux-kernel@vger.kernel.org,
  linux-mm@kvack.org, Khalid Aziz <khalid.aziz@oracle.com>,
- Paul Mackerras <paulus@samba.org>, sparclinux@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org
+ Paul Mackerras <paulus@samba.org>, Catalin Marinas <catalin.marinas@arm.com>,
+ sparclinux@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This will allow sparc64 to override its ADI tags for
-get_user_pages and get_user_pages_fast.
+From: Andrey Konovalov <andreyknvl@google.com>
 
+To allow arm64 syscalls to accept tagged pointers from userspace, we must
+untag them when they are passed to the kernel. Since untagging is done in
+generic parts of the kernel, the untagged_addr macro needs to be defined
+for all architectures.
+
+Define it as a noop for architectures other than arm64.
+
+Acked-by: Catalin Marinas <catalin.marinas@arm.com>
+Signed-off-by: Andrey Konovalov <andreyknvl@google.com>
 Signed-off-by: Christoph Hellwig <hch@lst.de>
 ---
- mm/gup.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ include/linux/mm.h | 4 ++++
+ 1 file changed, 4 insertions(+)
 
-diff --git a/mm/gup.c b/mm/gup.c
-index f173fcbaf1b2..9775f7675653 100644
---- a/mm/gup.c
-+++ b/mm/gup.c
-@@ -2145,7 +2145,7 @@ int __get_user_pages_fast(unsigned long start, int nr_pages, int write,
- 	unsigned long flags;
- 	int nr = 0;
+diff --git a/include/linux/mm.h b/include/linux/mm.h
+index 0e8834ac32b7..949d43e9c0b6 100644
+--- a/include/linux/mm.h
++++ b/include/linux/mm.h
+@@ -99,6 +99,10 @@ extern int mmap_rnd_compat_bits __read_mostly;
+ #include <asm/pgtable.h>
+ #include <asm/processor.h>
  
--	start &= PAGE_MASK;
-+	start = untagged_addr(start) & PAGE_MASK;
- 	len = (unsigned long) nr_pages << PAGE_SHIFT;
- 	end = start + len;
- 
-@@ -2218,7 +2218,7 @@ int get_user_pages_fast(unsigned long start, int nr_pages,
- 	unsigned long addr, len, end;
- 	int nr = 0, ret = 0;
- 
--	start &= PAGE_MASK;
-+	start = untagged_addr(start) & PAGE_MASK;
- 	addr = start;
- 	len = (unsigned long) nr_pages << PAGE_SHIFT;
- 	end = start + len;
++#ifndef untagged_addr
++#define untagged_addr(addr) (addr)
++#endif
++
+ #ifndef __pa_symbol
+ #define __pa_symbol(x)  __pa(RELOC_HIDE((unsigned long)(x), 0))
+ #endif
 -- 
 2.20.1
 
