@@ -2,60 +2,72 @@ Return-Path: <SRS0=Rp/q=UB=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.8 required=3.0 tests=FREEMAIL_FORGED_FROMDOMAIN,
-	FREEMAIL_FROM,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
+X-Spam-Status: No, score=-6.0 required=3.0 tests=MAILING_LIST_MULTI,
+	MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DE588C282DC
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  2 Jun 2019 07:45:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AA9C7C282DC
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  2 Jun 2019 10:01:19 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 30F5B27849
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  2 Jun 2019 07:45:28 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 30F5B27849
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=sina.com
+	by mail.kernel.org (Postfix) with ESMTPS id D008C278B6
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  2 Jun 2019 10:01:18 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D008C278B6
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=bugzilla.kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45Gqwj4WhnzDqY1
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  2 Jun 2019 17:45:25 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45GtxS3hrzzDqS5
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  2 Jun 2019 20:01:16 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=sina.com
- (client-ip=202.108.3.162; helo=mail3-162.sinamail.sina.com.cn;
- envelope-from=hdanton@sina.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=sina.com
-X-Greylist: delayed 135 seconds by postgrey-1.36 at bilbo;
- Sun, 02 Jun 2019 17:42:26 AEST
-Received: from mail3-162.sinamail.sina.com.cn (mail3-162.sinamail.sina.com.cn
- [202.108.3.162])
- by lists.ozlabs.org (Postfix) with SMTP id 45GqsG4tLmzDqR7
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  2 Jun 2019 17:42:24 +1000 (AEST)
-Received: from unknown (HELO localhost.localdomain)([123.112.52.63])
- by sina.com with ESMTP
- id 5CF37D4B00006234; Sun, 2 Jun 2019 15:39:58 +0800 (CST)
-X-Sender: hdanton@sina.com
-X-Auth-ID: hdanton@sina.com
-X-SMAIL-MID: 820312401022
-From: Hillf Danton <hdanton@sina.com>
-To: Christoph Hellwig <hch@lst.de>
-Subject: Re: [PATCH 10/16] sparc64: use the generic get_user_pages_fast code
-Date: Sun,  2 Jun 2019 15:39:48 +0800
-Message-Id: <20190601074959.14036-11-hch@lst.de>
-In-Reply-To: <20190601074959.14036-1-hch@lst.de>
-References: <20190601074959.14036-1-hch@lst.de>
-X-Mailer: git-send-email 2.20.1
+ spf=pass (mailfrom) smtp.mailfrom=bugzilla.kernel.org
+ (client-ip=198.145.29.98; helo=mail.wl.linuxfoundation.org;
+ envelope-from=bugzilla-daemon@bugzilla.kernel.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=bugzilla.kernel.org
+Received: from mail.wl.linuxfoundation.org (mail.wl.linuxfoundation.org
+ [198.145.29.98])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45Gtw71Y7nzDqKt
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  2 Jun 2019 20:00:06 +1000 (AEST)
+Received: from mail.wl.linuxfoundation.org (localhost [127.0.0.1])
+ by mail.wl.linuxfoundation.org (Postfix) with ESMTP id 024E628C09
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  2 Jun 2019 10:00:04 +0000 (UTC)
+Received: by mail.wl.linuxfoundation.org (Postfix, from userid 486)
+ id EAFC128C15; Sun,  2 Jun 2019 10:00:03 +0000 (UTC)
+From: bugzilla-daemon@bugzilla.kernel.org
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [Bug 203517] WARNING: inconsistent lock state. inconsistent
+ {SOFTIRQ-ON-W} -> {IN-SOFTIRQ-W} usage.
+Date: Sun, 02 Jun 2019 10:00:02 +0000
+X-Bugzilla-Reason: None
+X-Bugzilla-Type: changed
+X-Bugzilla-Watch-Reason: AssignedTo platform_ppc-64@kernel-bugs.osdl.org
+X-Bugzilla-Product: File System
+X-Bugzilla-Component: btrfs
+X-Bugzilla-Version: 2.5
+X-Bugzilla-Keywords: 
+X-Bugzilla-Severity: normal
+X-Bugzilla-Who: michael@ellerman.id.au
+X-Bugzilla-Status: RESOLVED
+X-Bugzilla-Resolution: CODE_FIX
+X-Bugzilla-Priority: P1
+X-Bugzilla-Assigned-To: platform_ppc-64@kernel-bugs.osdl.org
+X-Bugzilla-Flags: 
+X-Bugzilla-Changed-Fields: cc
+Message-ID: <bug-203517-206035-b1kneqW9ad@https.bugzilla.kernel.org/>
+In-Reply-To: <bug-203517-206035@https.bugzilla.kernel.org/>
+References: <bug-203517-206035@https.bugzilla.kernel.org/>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+X-Bugzilla-URL: https://bugzilla.kernel.org/
+Auto-Submitted: auto-generated
 MIME-Version: 1.0
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by
- bombadil.infradead.org. See http://www.infradead.org/rpr.html
-Precedence: bulk
-X-Mailing-List: linux-kernel@vger.kernel.org
-Archived-At: <https://lore.kernel.org/lkml/20190601074959.14036-11-hch@lst.de/>
-Content-Transfer-Encoding: 8bit
-X-Mailman-Approved-At: Sun, 02 Jun 2019 17:44:24 +1000
+X-Virus-Scanned: ClamAV using ClamSMTP
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
+Precedence: list
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -64,60 +76,25 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: x86@kernel.org, Rich Felker <dalias@libc.org>,
- Yoshinori Sato <ysato@users.sourceforge.jp>, linux-sh@vger.kernel.org,
- James Hogan <jhogan@kernel.org>, linuxppc-dev@lists.ozlabs.org,
- Khalid Aziz <khalid.aziz@oracle.com>, Nicholas Piggin <npiggin@gmail.com>,
- linux-mips@vger.kernel.org, linux-mm@kvack.org,
- Paul Burton <paul.burton@mips.com>, Paul Mackerras <paulus@samba.org>,
- Andrey Konovalov <andreyknvl@google.com>, sparclinux@vger.kernel.org,
- Linus Torvalds <torvalds@linux-foundation.org>,
- "David S. Miller" <davem@davemloft.net>, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
-Content-Type: text/plain; charset="UTF-8"
-Message-ID: <20190602073948.2kuFtdc0b_v-5gIWDV0bJYfn8VqgRRBUEKe2NuYTUi8@z>
 
+https://bugzilla.kernel.org/show_bug.cgi?id=3D203517
 
-Hi Christoph 
+Michael Ellerman (michael@ellerman.id.au) changed:
 
-On Sat,  1 Jun 2019 09:49:53 +0200 Christoph Hellwig wrote:
-> 
-> diff --git a/arch/sparc/include/asm/pgtable_64.h b/arch/sparc/include/asm/pgtable_64.h
-> index a93eca29e85a..2301ab5250e4 100644
-> --- a/arch/sparc/include/asm/pgtable_64.h
-> +++ b/arch/sparc/include/asm/pgtable_64.h
-> @@ -1098,6 +1098,24 @@ static inline unsigned long untagged_addr(unsigned long start)
->  }
->  #define untagged_addr untagged_addr
->  
-> +static inline bool pte_access_permitted(pte_t pte, bool write)
-> +{
-> +	u64 prot;
-> +
-> +	if (tlb_type == hypervisor) {
-> +		prot = _PAGE_PRESENT_4V | _PAGE_P_4V;
-> +		if (prot)
+           What    |Removed                     |Added
+----------------------------------------------------------------------------
+                 CC|                            |michael@ellerman.id.au
 
-Feel free to correct me if I misread or miss anything.
-It looks like a typo: s/prot/write/, as checking _PAGE_PRESENT_4V and
-_PAGE_P_4V makes prot always have _PAGE_WRITE_4V set, regardless of write.
+--- Comment #10 from Michael Ellerman (michael@ellerman.id.au) ---
+No, it's in mainline since Friday so it will get picked up for stable in the
+next week or so:
 
-> +			prot |= _PAGE_WRITE_4V;
-> +	} else {
-> +		prot = _PAGE_PRESENT_4U | _PAGE_P_4U;
-> +		if (write)
-> +			prot |= _PAGE_WRITE_4U;
-> +	}
-> +
-> +	return (pte_val(pte) & (prot | _PAGE_SPECIAL)) == prot;
-> +}
-> +#define pte_access_permitted pte_access_permitted
-> +
->  #include <asm/tlbflush.h>
->  #include <asm-generic/pgtable.h>
+https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?=
+id=3Dfee13fe96529523a709d1fff487f14a5e0d56d34
 
-BR
-Hillf
-
+--=20
+You are receiving this mail because:
+You are watching the assignee of the bug.=
