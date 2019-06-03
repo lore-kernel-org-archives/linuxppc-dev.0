@@ -2,104 +2,87 @@ Return-Path: <SRS0=u7tn=UC=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.6 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
+	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_NEOMUTT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B1E22C04AB5
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Jun 2019 21:49:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 91C84C04AB5
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Jun 2019 21:51:03 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 28BAB24315
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Jun 2019 21:49:39 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 15E4626CF5
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Jun 2019 21:51:03 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=prevas.se header.i=@prevas.se header.b="j0XbqT8Z"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 28BAB24315
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=prevas.se
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="XQ/b11C8"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 15E4626CF5
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45HpcK1tQlzDqZX
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Jun 2019 07:49:37 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (helo)
- smtp.helo=eur04-he1-obe.outbound.protection.outlook.com
- (client-ip=40.107.7.114; helo=eur04-he1-obe.outbound.protection.outlook.com;
- envelope-from=rasmus.villemoes@prevas.se; receiver=<UNKNOWN>)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45Hpdx1fqczDqYt
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Jun 2019 07:51:01 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=prevas.se
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=prevas.se header.i=@prevas.se header.b="j0XbqT8Z"; 
+ spf=pass (mailfrom) smtp.mailfrom=gmail.com
+ (client-ip=2a00:1450:4864:20::542; helo=mail-ed1-x542.google.com;
+ envelope-from=richard.weiyang@gmail.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="XQ/b11C8"; 
  dkim-atps=neutral
-Received: from EUR04-HE1-obe.outbound.protection.outlook.com
- (mail-eopbgr70114.outbound.protection.outlook.com [40.107.7.114])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-ed1-x542.google.com (mail-ed1-x542.google.com
+ [IPv6:2a00:1450:4864:20::542])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45Hm2d6GVrzDqNs
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Jun 2019 05:53:44 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=prevas.se; s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=6BNzFMUgJjai20ENr4cV9FqDq6vBCbEYUtdITG1exhM=;
- b=j0XbqT8ZhLjOvPACzwlztp6EtSqgzozQH6OxOrHwp8V4G/TPiKTFFySs0nyf2Otd6ryfVpiwfmcZ5EoFzspS6MEj/vi1M17cu1ubNYky3vj6lhtEGfs5y3Ug91yFXY2qblgDNkf1ILL02dRsmaSpmgbTkNYqvTuIdEKmxemyNEo=
-Received: from VI1PR10MB2639.EURPRD10.PROD.OUTLOOK.COM (20.178.126.80) by
- VI1PR10MB2510.EURPRD10.PROD.OUTLOOK.COM (20.177.59.83) with Microsoft SMTP
- Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.20.1943.22; Mon, 3 Jun 2019 19:53:36 +0000
-Received: from VI1PR10MB2639.EURPRD10.PROD.OUTLOOK.COM
- ([fe80::8844:426d:816b:f5d5]) by VI1PR10MB2639.EURPRD10.PROD.OUTLOOK.COM
- ([fe80::8844:426d:816b:f5d5%6]) with mapi id 15.20.1943.018; Mon, 3 Jun 2019
- 19:53:36 +0000
-From: Rasmus Villemoes <Rasmus.Villemoes@prevas.se>
-To: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Qiang Zhao
- <qiang.zhao@nxp.com>, Li Yang <leoyang.li@nxp.com>
-Subject: Re: [PATCH v3 0/6] soc/fsl/qe: cleanups and new DT binding
-Thread-Topic: [PATCH v3 0/6] soc/fsl/qe: cleanups and new DT binding
-Thread-Index: AQHVCX0WBepWBUryR0K8DhsVu6ZcHqaKeRAA
-Date: Mon, 3 Jun 2019 19:53:36 +0000
-Message-ID: <e11c1e55-1e11-7ce3-3c0f-0b723ab260aa@prevas.se>
-References: <20190501092841.9026-1-rasmus.villemoes@prevas.dk>
- <20190513111442.25724-1-rasmus.villemoes@prevas.dk>
-In-Reply-To: <20190513111442.25724-1-rasmus.villemoes@prevas.dk>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-x-clientproxiedby: HE1PR05CA0309.eurprd05.prod.outlook.com
- (2603:10a6:7:93::40) To VI1PR10MB2639.EURPRD10.PROD.OUTLOOK.COM
- (2603:10a6:803:e1::16)
-authentication-results: spf=none (sender IP is )
- smtp.mailfrom=Rasmus.Villemoes@prevas.se; 
-x-ms-exchange-messagesentrepresentingtype: 1
-x-originating-ip: [5.186.118.63]
-x-ms-publictraffictype: Email
-x-ms-office365-filtering-correlation-id: f27868fe-709b-411f-9666-08d6e85d2a68
-x-microsoft-antispam: BCL:0; PCL:0;
- RULEID:(2390118)(7020095)(4652040)(8989299)(4534185)(4627221)(201703031133081)(201702281549075)(8990200)(5600148)(711020)(4605104)(1401327)(2017052603328)(7193020);
- SRVR:VI1PR10MB2510; 
-x-ms-traffictypediagnostic: VI1PR10MB2510:
-x-microsoft-antispam-prvs: <VI1PR10MB25108FE6C241FFDDF7475C668A140@VI1PR10MB2510.EURPRD10.PROD.OUTLOOK.COM>
-x-ms-oob-tlc-oobclassifiers: OLM:8273;
-x-forefront-prvs: 0057EE387C
-x-forefront-antispam-report: SFV:NSPM;
- SFS:(10019020)(366004)(396003)(346002)(376002)(136003)(39850400004)(199004)(189003)(44832011)(71446004)(53936002)(66066001)(25786009)(316002)(6246003)(14454004)(5660300002)(52116002)(486006)(4744005)(7416002)(110136005)(2616005)(446003)(6512007)(4326008)(2906002)(476003)(3846002)(6486002)(11346002)(54906003)(229853002)(6116002)(6436002)(73956011)(64756008)(8676002)(66476007)(102836004)(256004)(81166006)(305945005)(7736002)(76176011)(81156014)(86362001)(66556008)(31686004)(2501003)(72206003)(26005)(99286004)(71200400001)(8936002)(66446008)(478600001)(74482002)(71190400001)(31696002)(68736007)(186003)(386003)(6506007)(36756003)(66946007);
- DIR:OUT; SFP:1102; SCL:1; SRVR:VI1PR10MB2510;
- H:VI1PR10MB2639.EURPRD10.PROD.OUTLOOK.COM; FPR:; SPF:None; LANG:en;
- PTR:InfoNoRecords; A:1; MX:1; 
-received-spf: None (protection.outlook.com: prevas.se does not designate
- permitted sender hosts)
-x-ms-exchange-senderadcheck: 1
-x-microsoft-antispam-message-info: bHHqEOSKRRdFRJUk0NLOMa/EJxHT58PIMySffURmEJMakwrQPeGBgTuYHJSMFP73/2xz4zMYbQg0ji4nU5ab8Wk/Ry6F+Mxo8jhHscg4xsYrVzwB+O9VYwRcL3SC+jhi6cQ4S9fVRx0IddBgJmmOeUVtfO/HfPYvdcTwPHGqQzLT66wzCZxQBfiqUiD6/p9i9MVYLV5uoM0NG73Efiyoq0ZOHorQ707etMWcBrPe9T7nTVstNfLlT89023M4Djg/ElNEp9BPVra5uS0O8wGlKTlq9QSBEP0TFs8p0fpss5afR7rmY1jf/b3t6wcq1kA063ziCv2l/pjB4lsYgw19UJb+0DXE8kB/enr9YVoRnJl7BnCpz+rkI5500ClTk0DNBzyCxbFjfb64PsRsiaYydQwCTx4hP1JlJ0hfUm1Bee0=
-Content-Type: text/plain; charset="utf-8"
-Content-ID: <623556BC6EE58D43987924910752EF6D@EURPRD10.PROD.OUTLOOK.COM>
-Content-Transfer-Encoding: base64
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45Hp0J1ZHQzDqK6
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Jun 2019 07:21:51 +1000 (AEST)
+Received: by mail-ed1-x542.google.com with SMTP id x25so16629772eds.8
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 03 Jun 2019 14:21:51 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=date:from:to:cc:subject:message-id:reply-to:references:mime-version
+ :content-disposition:in-reply-to:user-agent;
+ bh=mDmSeoJUhGrEtos9TXtgY/7zbEqsIvl9K5n7SoOuM0Q=;
+ b=XQ/b11C8narXjTlhkZ1MB7tWYfM3tn0gmctbAqj3Rg65oTPOPd5SHeIFfV4+pTgR06
+ H2yUQs+GBXTI5/pQ11GhtJSYOg13gCScGhp5Uw4kkyuuOGYt2F8pO4q/wP7TqotREBPc
+ 91e2hzzlvI3jTc6Z7b/WV/1ytW/7sSbPDcIpe9KhAfWyMGiA57S7aTr5cRiMnKok7aog
+ vWuu1tjLrXDviSm0kHoQBVanBMljxHAaqcY7ozxKezrnJVSUuVb4Q6bWbsKWwYjxxekA
+ 3shYVDSVWHN9XLsu1dh1Z3t+e/B6spVRthobIhqAdP0+bOyU/uJFUcEFcRXticxtZ4Ct
+ /ELA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:date:from:to:cc:subject:message-id:reply-to
+ :references:mime-version:content-disposition:in-reply-to:user-agent;
+ bh=mDmSeoJUhGrEtos9TXtgY/7zbEqsIvl9K5n7SoOuM0Q=;
+ b=uT/1a0uqz+Y2ACzui9BQy3guLw5Erpk26hZ0ZKjmPpQr+Wk3gp8XUB338hWuTff+dB
+ 69fNfOazWo9QOFVRpgvUZTWfn5nKginuF0aj618XQCHKyt48aGVROSRksdhZBZHP3LYH
+ S5k/v+7NHFeSwyfpsnVnct6yY+F3VHqYP571qNsexPmQrQKf9cCYmbkJZpTfaj+khQQ7
+ t98nkBmG1Ns+j2qurEdp0+s31mUbp2kmx8t1qnff8bKPGE5D0niIi1lo+O9mWThR8frn
+ AxAKHl9tS6vmmygIUi5J7JycyI/ulvj7r8gJSaKNqLkmxo9Pg6ImL1AUEMDqQxqMoVmM
+ DuUQ==
+X-Gm-Message-State: APjAAAWo41kvAv2Got0TzKTA2tjTTLyBjUxbj/50kXbzsGQ/sajTmk/5
+ +M2ft7t9UA8eRQfXp2btAow=
+X-Google-Smtp-Source: APXvYqyaKi12rIWxwu+9xuJ+SjF9E6cYt6eiwEWk3oV6ngFX6Zl36r7DH7SlPfRLKG6EtJguaiB+Vw==
+X-Received: by 2002:a17:906:fcda:: with SMTP id
+ qx26mr24558965ejb.92.1559596907853; 
+ Mon, 03 Jun 2019 14:21:47 -0700 (PDT)
+Received: from localhost ([185.92.221.13])
+ by smtp.gmail.com with ESMTPSA id s57sm4311051edd.54.2019.06.03.14.21.46
+ (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
+ Mon, 03 Jun 2019 14:21:46 -0700 (PDT)
+Date: Mon, 3 Jun 2019 21:21:46 +0000
+From: Wei Yang <richard.weiyang@gmail.com>
+To: David Hildenbrand <david@redhat.com>
+Subject: Re: [PATCH v3 00/11] mm/memory_hotplug: Factor out memory block
+ devicehandling
+Message-ID: <20190603212146.7hdha6wrlxtkxxxr@master>
+References: <20190527111152.16324-1-david@redhat.com>
 MIME-Version: 1.0
-X-OriginatorOrg: prevas.se
-X-MS-Exchange-CrossTenant-Network-Message-Id: f27868fe-709b-411f-9666-08d6e85d2a68
-X-MS-Exchange-CrossTenant-originalarrivaltime: 03 Jun 2019 19:53:36.3462 (UTC)
-X-MS-Exchange-CrossTenant-fromentityheader: Hosted
-X-MS-Exchange-CrossTenant-id: d350cf71-778d-4780-88f5-071a4cb1ed61
-X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
-X-MS-Exchange-CrossTenant-userprincipalname: Rasmus.Villemoes@prevas.dk
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: VI1PR10MB2510
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20190527111152.16324-1-david@redhat.com>
+User-Agent: NeoMutt/20170113 (1.7.2)
 X-Mailman-Approved-At: Tue, 04 Jun 2019 07:45:39 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -112,25 +95,136 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Mark Rutland <mark.rutland@arm.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Scott Wood <oss@buserror.net>, Rob Herring <robh+dt@kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Reply-To: Wei Yang <richard.weiyang@gmail.com>
+Cc: Mark Rutland <mark.rutland@arm.com>, Oscar Salvador <osalvador@suse.com>,
+ Michal Hocko <mhocko@suse.com>, linux-ia64@vger.kernel.org,
+ linux-sh@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>,
+ Dave Hansen <dave.hansen@linux.intel.com>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>,
+ Wei Yang <richard.weiyang@gmail.com>, linux-mm@kvack.org,
+ Pavel Tatashin <pavel.tatashin@microsoft.com>, Rich Felker <dalias@libc.org>,
+ Arun KS <arunks@codeaurora.org>, Chintan Pandya <cpandya@codeaurora.org>,
+ Ingo Molnar <mingo@kernel.org>, Paul Mackerras <paulus@samba.org>,
+ Qian Cai <cai@lca.pw>, linux-s390@vger.kernel.org,
+ "H. Peter Anvin" <hpa@zytor.com>, Yu Zhao <yuzhao@google.com>,
+ Baoquan He <bhe@redhat.com>, Logan Gunthorpe <logang@deltatee.com>,
+ "Rafael J. Wysocki" <rafael@kernel.org>, Mike Rapoport <rppt@linux.ibm.com>,
+ Jun Yao <yaojun8558363@gmail.com>, "mike.travis@hpe.com" <mike.travis@hpe.com>,
+ Ingo Molnar <mingo@redhat.com>, Catalin Marinas <catalin.marinas@arm.com>,
+ Rob Herring <robh@kernel.org>, Fenghua Yu <fenghua.yu@intel.com>,
+ Pavel Tatashin <pasha.tatashin@soleen.com>, Vasily Gorbik <gor@linux.ibm.com>,
+ Anshuman Khandual <anshuman.khandual@arm.com>,
+ Masahiro Yamada <yamada.masahiro@socionext.com>,
+ Will Deacon <will.deacon@arm.com>, Robin Murphy <robin.murphy@arm.com>,
+ Nicholas Piggin <npiggin@gmail.com>,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>, Mark Brown <broonie@kernel.org>,
+ Borislav Petkov <bp@alien8.de>, Andy Lutomirski <luto@kernel.org>,
+ Jonathan Cameron <Jonathan.Cameron@huawei.com>,
+ Dan Williams <dan.j.williams@intel.com>,
+ Chris Wilson <chris@chris-wilson.co.uk>, Joonsoo Kim <iamjoonsoo.kim@lge.com>,
+ linux-arm-kernel@lists.infradead.org, Oscar Salvador <osalvador@suse.de>,
+ Tony Luck <tony.luck@intel.com>, Yoshinori Sato <ysato@users.sourceforge.jp>,
+ Ard Biesheuvel <ard.biesheuvel@linaro.org>,
+ Mathieu Malaterre <malat@debian.org>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Andrew Banman <andrew.banman@hpe.com>, linux-kernel@vger.kernel.org,
+ Mike Rapoport <rppt@linux.vnet.ibm.com>, Thomas Gleixner <tglx@linutronix.de>,
+ Wei Yang <richardw.yang@linux.intel.com>,
+ Alex Deucher <alexander.deucher@amd.com>, Igor Mammedov <imammedo@redhat.com>,
+ akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org,
+ "David S. Miller" <davem@davemloft.net>,
+ "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-T24gMTMvMDUvMjAxOSAxMy4xNCwgUmFzbXVzIFZpbGxlbW9lcyB3cm90ZToNCj4gVGhpcyBzbWFs
-bCBzZXJpZXMgY29uc2lzdHMgb2Ygc29tZSBzbWFsbCBjbGVhbnVwcyBhbmQgc2ltcGxpZmljYXRp
-b25zDQo+IG9mIHRoZSBRVUlDQyBlbmdpbmUgZHJpdmVyLCBhbmQgaW50cm9kdWNlcyBhIG5ldyBE
-VCBiaW5kaW5nIHRoYXQgbWFrZXMNCj4gaXQgbXVjaCBlYXNpZXIgdG8gc3VwcG9ydCBvdGhlciB2
-YXJpYW50cyBvZiB0aGUgUVVJQ0MgZW5naW5lIElQIGJsb2NrDQo+IHRoYXQgYXBwZWFycyBpbiB0
-aGUgd2lsZDogVGhlcmUncyBubyByZWFzb24gdG8gZXhwZWN0IGluIGdlbmVyYWwgdGhhdA0KPiB0
-aGUgbnVtYmVyIG9mIHZhbGlkIFNOVU1zIHVuaXF1ZWx5IGRldGVybWluZXMgdGhlIHNldCBvZiBz
-dWNoLCBzbyBpdCdzDQo+IGJldHRlciB0byBzaW1wbHkgbGV0IHRoZSBkZXZpY2UgdHJlZSBzcGVj
-aWZ5IHRoZSB2YWx1ZXMgKGFuZCwNCj4gaW1wbGljaXRseSB2aWEgdGhlIGFycmF5IGxlbmd0aCwg
-YWxzbyB0aGUgY291bnQpLg0KPiANCj4gV2hpY2ggdHJlZSBzaG91bGQgdGhpcyBnbyB0aHJvdWdo
-Pw0KDQpQaW5nPyBUaGVzZSBwYXRjaGVzIHNob3VsZCBiZSByZWFkeSB0byBnbyBpbiwgYnV0IEkg
-ZG9uJ3Qga25vdyB3aG8gaXMNCnN1cHBvc2VkIHRvIHBpY2sgdGhlbSB1cC4NCg0KVGhhbmtzLA0K
-UmFzbXVzDQo=
+IMHO, there is some typo.
+
+s/devicehandling/device handling/
+
+On Mon, May 27, 2019 at 01:11:41PM +0200, David Hildenbrand wrote:
+>We only want memory block devices for memory to be onlined/offlined
+>(add/remove from the buddy). This is required so user space can
+>online/offline memory and kdump gets notified about newly onlined memory.
+>
+>Let's factor out creation/removal of memory block devices. This helps
+>to further cleanup arch_add_memory/arch_remove_memory() and to make
+>implementation of new features easier - especially sub-section
+>memory hot add from Dan.
+>
+>Anshuman Khandual is currently working on arch_remove_memory(). I added
+>a temporary solution via "arm64/mm: Add temporary arch_remove_memory()
+>implementation", that is sufficient as a firsts tep in the context of
+
+s/firsts tep/first step/
+
+>this series. (we don't cleanup page tables in case anything goes
+>wrong already)
+>
+>Did a quick sanity test with DIMM plug/unplug, making sure all devices
+>and sysfs links properly get added/removed. Compile tested on s390x and
+>x86-64.
+>
+>Based on next/master.
+>
+>Next refactoring on my list will be making sure that remove_memory()
+>will never deal with zones / access "struct pages". Any kind of zone
+>handling will have to be done when offlining system memory / before
+>removing device memory. I am thinking about remove_pfn_range_from_zone()",
+>du undo everything "move_pfn_range_to_zone()" did.
+
+what is "du undo"? I may not get it.
+
+>
+>v2 -> v3:
+>- Add "s390x/mm: Fail when an altmap is used for arch_add_memory()"
+>- Add "arm64/mm: Add temporary arch_remove_memory() implementation"
+>- Add "drivers/base/memory: Pass a block_id to init_memory_block()"
+>- Various changes to "mm/memory_hotplug: Create memory block devices
+>  after arch_add_memory()" and "mm/memory_hotplug: Create memory block
+>  devices after arch_add_memory()" due to switching from sections to
+>  block_id's.
+>
+>v1 -> v2:
+>- s390x/mm: Implement arch_remove_memory()
+>-- remove mapping after "__remove_pages"
+>
+>David Hildenbrand (11):
+>  mm/memory_hotplug: Simplify and fix check_hotplug_memory_range()
+>  s390x/mm: Fail when an altmap is used for arch_add_memory()
+>  s390x/mm: Implement arch_remove_memory()
+>  arm64/mm: Add temporary arch_remove_memory() implementation
+>  drivers/base/memory: Pass a block_id to init_memory_block()
+>  mm/memory_hotplug: Allow arch_remove_pages() without
+>    CONFIG_MEMORY_HOTREMOVE
+>  mm/memory_hotplug: Create memory block devices after arch_add_memory()
+>  mm/memory_hotplug: Drop MHP_MEMBLOCK_API
+>  mm/memory_hotplug: Remove memory block devices before
+>    arch_remove_memory()
+>  mm/memory_hotplug: Make unregister_memory_block_under_nodes() never
+>    fail
+>  mm/memory_hotplug: Remove "zone" parameter from
+>    sparse_remove_one_section
+>
+> arch/arm64/mm/mmu.c            |  17 +++++
+> arch/ia64/mm/init.c            |   2 -
+> arch/powerpc/mm/mem.c          |   2 -
+> arch/s390/mm/init.c            |  18 +++--
+> arch/sh/mm/init.c              |   2 -
+> arch/x86/mm/init_32.c          |   2 -
+> arch/x86/mm/init_64.c          |   2 -
+> drivers/base/memory.c          | 134 +++++++++++++++++++--------------
+> drivers/base/node.c            |  27 +++----
+> include/linux/memory.h         |   6 +-
+> include/linux/memory_hotplug.h |  12 +--
+> include/linux/node.h           |   7 +-
+> mm/memory_hotplug.c            |  44 +++++------
+> mm/sparse.c                    |  10 +--
+> 14 files changed, 140 insertions(+), 145 deletions(-)
+>
+>-- 
+>2.20.1
+
+-- 
+Wei Yang
+Help you, Help me
