@@ -6,39 +6,41 @@ X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
 	URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 33803C04AB5
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Jun 2019 12:34:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C9DA8C04AB5
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Jun 2019 12:36:28 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E43AA24203
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Jun 2019 12:34:58 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E43AA24203
+	by mail.kernel.org (Postfix) with ESMTPS id 7F317280AB
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Jun 2019 12:36:28 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7F317280AB
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45HZJJ2bS7zDqTw
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Jun 2019 22:34:56 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+	by lists.ozlabs.org (Postfix) with ESMTP id 45HZL23wXpzDqV2
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Jun 2019 22:36:26 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45HZFq4p7TzDqKT
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  3 Jun 2019 22:32:47 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45HZFr2gDWzDqKb
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  3 Jun 2019 22:32:48 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 45HZFp6yhxz9s7h; Mon,  3 Jun 2019 22:32:46 +1000 (AEST)
+ id 45HZFq6dddz9sN6; Mon,  3 Jun 2019 22:32:47 +1000 (AEST)
 X-powerpc-patch-notification: thanks
-X-powerpc-patch-commit: 02c5f5394918b9b47ff4357b1b18335768cd867d
+X-powerpc-patch-commit: d667edc01bedcd23988ef69f851e7cc26cc3c67f
 X-Patchwork-Hint: ignore
 Content-Type: text/plain; charset="utf-8";
-In-Reply-To: <155568805354.600470.13376593185688810607.stgit@bahia.lan>
-To: Greg Kurz <groug@kaod.org>, linux-kernel@vger.kernel.org
+In-Reply-To: <20190504102427.12332-1-yuehaibing@huawei.com>
+To: YueHaibing <yuehaibing@huawei.com>, <benh@kernel.crashing.org>,
+ <paulus@samba.org>, <christophe.leroy@c-s.fr>,
+ <aneesh.kumar@linux.vnet.ibm.com>
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Subject: Re: [PATCH] powerpc/powernv/npu: Fix reference leak
-Message-Id: <45HZFp6yhxz9s7h@ozlabs.org>
-Date: Mon,  3 Jun 2019 22:32:46 +1000 (AEST)
+Subject: Re: [PATCH -next] powerpc/book3s64: Make some symbols static
+Message-Id: <45HZFq6dddz9sN6@ozlabs.org>
+Date: Mon,  3 Jun 2019 22:32:47 +1000 (AEST)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -50,44 +52,23 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Alexey Kardashevskiy <aik@ozlabs.ru>,
- Alistair Popple <alistair@popple.id.au>, linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev@lists.ozlabs.org, YueHaibing <yuehaibing@huawei.com>,
+ linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, 2019-04-19 at 15:34:13 UTC, Greg Kurz wrote:
-> Since 902bdc57451c, get_pci_dev() calls pci_get_domain_bus_and_slot(). This
-> has the effect of incrementing the reference count of the PCI device, as
-> explained in drivers/pci/search.c:
+On Sat, 2019-05-04 at 10:24:27 UTC, YueHaibing wrote:
+> Fix sparse warnings:
 > 
->  * Given a PCI domain, bus, and slot/function number, the desired PCI
->  * device is located in the list of PCI devices. If the device is
->  * found, its reference count is increased and this function returns a
->  * pointer to its data structure.  The caller must decrement the
->  * reference count by calling pci_dev_put().  If no device is found,
->  * %NULL is returned.
+> arch/powerpc/mm/book3s64/radix_pgtable.c:326:13: warning: symbol 'radix_init_pgtable' was not declared. Should it be static?
+> arch/powerpc/mm/book3s64/hash_native.c:48:1: warning: symbol 'native_tlbie_lock' was not declared. Should it be static?
+> arch/powerpc/mm/book3s64/hash_utils.c:988:24: warning: symbol 'init_hash_mm_context' was not declared. Should it be static?
 > 
-> Nothing was done to call pci_dev_put() and the reference count of GPU and
-> NPU PCI devices rockets up.
-> 
-> A natural way to fix this would be to teach the callers about the change,
-> so that they call pci_dev_put() when done with the pointer. This turns
-> out to be quite intrusive, as it affects many paths in npu-dma.c,
-> pci-ioda.c and vfio_pci_nvlink2.c. Also, the issue appeared in 4.16 and
-> some affected code got moved around since then: it would be problematic
-> to backport the fix to stable releases.
-> 
-> All that code never cared for reference counting anyway. Call pci_dev_put()
-> from get_pci_dev() to revert to the previous behavior.
-> 
-> Fixes: 902bdc57451c ("powerpc/powernv/idoa: Remove unnecessary pcidev from pci_dn")
-> Cc: stable@vger.kernel.org # v4.16
-> Signed-off-by: Greg Kurz <groug@kaod.org>
-> Reviewed-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+> Signed-off-by: YueHaibing <yuehaibing@huawei.com>
 
 Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/02c5f5394918b9b47ff4357b1b183357
+https://git.kernel.org/powerpc/c/d667edc01bedcd23988ef69f851e7cc2
 
 cheers
