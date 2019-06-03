@@ -2,71 +2,83 @@ Return-Path: <SRS0=u7tn=UC=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_MUTT autolearn=ham
+X-Spam-Status: No, score=-8.6 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
+	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 06661C282CE
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Jun 2019 21:47:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CE11AC04AB5
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Jun 2019 21:48:26 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 7E8DE25ED6
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Jun 2019 21:47:07 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 503B523A48
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Jun 2019 21:48:26 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=sirena.org.uk header.i=@sirena.org.uk header.b="Rfq++3K2"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7E8DE25ED6
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="N7C/10lL"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 503B523A48
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45HpYP2dVlzDqQd
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Jun 2019 07:47:05 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45HpZw4JnFzDqQx
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Jun 2019 07:48:24 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=sirena.org.uk
- (client-ip=2a01:7e01::f03c:91ff:fed4:a3b6; helo=heliosphere.sirena.org.uk;
- envelope-from=broonie@sirena.org.uk; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=gmail.com
+ (client-ip=2a00:1450:4864:20::243; helo=mail-lj1-x243.google.com;
+ envelope-from=paweldembicki@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=fail (p=none dis=none) header.from=kernel.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=sirena.org.uk header.i=@sirena.org.uk
- header.b="Rfq++3K2"; dkim-atps=neutral
-Received: from heliosphere.sirena.org.uk (heliosphere.sirena.org.uk
- [IPv6:2a01:7e01::f03c:91ff:fed4:a3b6])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="N7C/10lL"; 
+ dkim-atps=neutral
+Received: from mail-lj1-x243.google.com (mail-lj1-x243.google.com
+ [IPv6:2a00:1450:4864:20::243])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45HfS80XNYzDqRL
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Jun 2019 01:41:59 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
- d=sirena.org.uk; s=20170815-heliosphere; h=In-Reply-To:Content-Type:
- MIME-Version:References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
- Content-Transfer-Encoding:Content-ID:Content-Description:Resent-Date:
- Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:
- List-Help:List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
- bh=1nerRAALIr+GbFV8r1sFGZ42UhtZBI7DJIk+wBaRWY4=; b=Rfq++3K2CPz/V+xtU6FTwnmqV
- IrZkS8JUafj4B/5u2jbV1gF5lzZyd9isVPq0hf5673+l2SKd1sxHzHMYLDaBSNAPoLzxFQZz0hlU0
- VtxIW60leJ7SHhCzEfDkc4gMVE5CU1hjWUpdByTfPbLiJqn67GDK4S9nwoWk8/8XdK3gg=;
-Received: from cpc102320-sgyl38-2-0-cust46.18-2.cable.virginm.net
- ([82.37.168.47] helo=finisterre.sirena.org.uk)
- by heliosphere.sirena.org.uk with esmtpsa
- (TLS1.2:ECDHE_RSA_AES_256_GCM_SHA384:256) (Exim 4.89)
- (envelope-from <broonie@sirena.org.uk>)
- id 1hXp5K-0002FH-HL; Mon, 03 Jun 2019 15:41:18 +0000
-Received: by finisterre.sirena.org.uk (Postfix, from userid 1000)
- id B00B8440046; Mon,  3 Jun 2019 16:41:17 +0100 (BST)
-Date: Mon, 3 Jun 2019 16:41:17 +0100
-From: Mark Brown <broonie@kernel.org>
-To: Mauro Carvalho Chehab <mchehab+samsung@kernel.org>
-Subject: Re: [PATCH 22/22] docs: fix broken documentation links
-Message-ID: <20190603154117.GW2456@sirena.org.uk>
-References: <cover.1559171394.git.mchehab+samsung@kernel.org>
- <f9fecacbe4ce0b2b3aed38d71ae3753f2daf3ce3.1559171394.git.mchehab+samsung@kernel.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45Hgnq4B1KzDqBv
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Jun 2019 02:42:19 +1000 (AEST)
+Received: by mail-lj1-x243.google.com with SMTP id h11so16909635ljb.2
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 03 Jun 2019 09:42:19 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=from:to:cc:subject:date:message-id:mime-version
+ :content-transfer-encoding;
+ bh=ZxdsJUzrzirDV9SoFUmfun9q9AXOSWclIRGIX2baL2Y=;
+ b=N7C/10lLvMRhc2gCSkGs8QaF+cwD/Qcw7BW0cuFy6wQsDwPxn8AmDJJUuIvTaSjEXg
+ SuzZSrENjfTHUoDrJ6gD+eOIU3cpI6oqUldqD9gs2uNz8p7DQdwOTjAg+JMH/x601m7H
+ Esxj/dVD0a+fnLHEKWjDWxB9FvUVdOvgv8KqwpaScBTvTAbmRS3azMY3CwiT4OWn4i6Y
+ dWBL2iKbD9fISePhoUn07PDTAFHu94rMZVQ+81cO+p8GrIJhU6lTdQO7ywMxlzLHz6vS
+ cuTS+gGOJOMt2YW8aJavsWZNikY7/5MZY90WYuuJip/QPnSi9RebnPJjk6zKZH75y4Fb
+ 3Oaw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+ :content-transfer-encoding;
+ bh=ZxdsJUzrzirDV9SoFUmfun9q9AXOSWclIRGIX2baL2Y=;
+ b=NFdSSf2EYaQimrAfyZeweiu5rbzUCv5BwujmJbQFIbpaB9HKBsh9yab9eDD8p3c+tY
+ ZMUVXXQVbbmO2B7hCFOkIIbMfwnLCcG/Mv0OHP0JgOa0xYFkIBwtvmta/cLKUHTB/r2y
+ LxlxwiRsDl4d5ODB9KZshfAMXtgFl70956B03ekbJdJAPU9xIBc4L7ADsGb9G1ycCGrx
+ OCe0hpWW5Uyh4cxAZ5ntk5kdaCRB0Lv2zIhRircSTMtOZR2tHYB+ncjDmwPCYXOGRK7u
+ 4isWbBwj9r2B9kZErDJcXGtmUhHme78vRg+CwmRJFCjb/cC1DCXIQVSwumCs5fAPWzwX
+ yqTg==
+X-Gm-Message-State: APjAAAXYBNzNQW+8//M+UiIB8MlXbnYkTgeu104eA28OCKBB7ZERDtgZ
+ q/pEN2RShYEPUID5EVeaa5Q=
+X-Google-Smtp-Source: APXvYqxXFTRtKG8W/wE7vPy3gcwzNZsFCLLCuA9ttno3xoT+sqGIVtk64GC8X0e7QSJHyfZsXHThsg==
+X-Received: by 2002:a2e:4256:: with SMTP id p83mr14154095lja.201.1559580135602; 
+ Mon, 03 Jun 2019 09:42:15 -0700 (PDT)
+Received: from krolik-desktop.lan ([91.238.216.6])
+ by smtp.gmail.com with ESMTPSA id d5sm3251109lji.85.2019.06.03.09.42.14
+ (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
+ Mon, 03 Jun 2019 09:42:15 -0700 (PDT)
+From: Pawel Dembicki <paweldembicki@gmail.com>
+To: 
+Subject: [PATCH] powerpc: Enable kernel XZ compression option on PPC_85xx
+Date: Mon,  3 Jun 2019 18:41:14 +0200
+Message-Id: <20190603164115.27471-1-paweldembicki@gmail.com>
+X-Mailer: git-send-email 2.20.1
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
- protocol="application/pgp-signature"; boundary="ULJ2Z7kCM1hyNsWd"
-Content-Disposition: inline
-In-Reply-To: <f9fecacbe4ce0b2b3aed38d71ae3753f2daf3ce3.1559171394.git.mchehab+samsung@kernel.org>
-X-Cookie: The other line moves faster.
-User-Agent: Mutt/1.10.1 (2018-07-13)
+Content-Transfer-Encoding: 8bit
 X-Mailman-Approved-At: Tue, 04 Jun 2019 07:45:39 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -79,112 +91,35 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Andrew Lunn <andrew@lunn.ch>, Andy Lutomirski <luto@kernel.org>,
- Wolfram Sang <wsa@the-dreams.de>, Catalin Marinas <catalin.marinas@arm.com>,
- Linus Walleij <linus.walleij@linaro.org>, Will Deacon <will.deacon@arm.com>,
- Pavel Tatashin <pasha.tatashin@oracle.com>, Paul Mackerras <paulus@samba.org>,
- Alessia Mantegazza <amantegazza@vaga.pv.it>, Jakub Wilk <jwilk@jwilk.net>,
- Bartosz Golaszewski <bgolaszewski@baylibre.com>,
- "Paul E. McKenney" <paulmck@linux.ibm.com>,
- Kevin Hilman <khilman@baylibre.com>, James Morris <jmorris@namei.org>,
- linux-acpi@vger.kernel.org, Ingo Molnar <mingo@redhat.com>,
- xen-devel@lists.xenproject.org, Jason Wang <jasowang@redhat.com>,
- Alexander Popov <alex.popov@linux.com>, Qian Cai <cai@lca.pw>,
- Al Viro <viro@zeniv.linux.org.uk>,
- Thomas Preston <thomas.preston@codethink.co.uk>,
- Thomas Gleixner <tglx@linutronix.de>, Kairui Song <kasong@redhat.com>,
- Ding Xiang <dingxiang@cmss.chinamobile.com>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org,
- Paul Burton <paul.burton@mips.com>, Jiri Kosina <jkosina@suse.cz>,
- Casey Schaufler <casey@schaufler-ca.com>,
- Andrew Morton <akpm@linux-foundation.org>, Lu Baolu <baolu.lu@linux.intel.com>,
- Mark Rutland <mark.rutland@arm.com>, Feng Tang <feng.tang@intel.com>,
- Linux Doc Mailing List <linux-doc@vger.kernel.org>,
- Dave Hansen <dave.hansen@linux.intel.com>, Mimi Zohar <zohar@linux.ibm.com>,
- Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>, linux-mm@kvack.org,
- Masahiro Yamada <yamada.masahiro@socionext.com>,
- Yannik Sembritzki <yannik@sembritzki.me>, Harry Wei <harryxiyou@gmail.com>,
- linux-i2c@vger.kernel.org, Shuah Khan <shuah@kernel.org>,
- Stephen Rothwell <sfr@canb.auug.org.au>,
- Stefano Stabellini <sstabellini@kernel.org>, Alexandre Ghiti <alex@ghiti.fr>,
- YueHaibing <yuehaibing@huawei.com>, Robert Moore <robert.moore@intel.com>,
- AKASHI Takahiro <takahiro.akashi@linaro.org>, Len Brown <lenb@kernel.org>,
- Joerg Roedel <jroedel@suse.de>, linux-arm-msm@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, Mauro Carvalho Chehab <mchehab@infradead.org>,
- linux-gpio@vger.kernel.org, Claudiu Manoil <claudiu.manoil@nxp.com>,
- Florian Fainelli <f.fainelli@gmail.com>,
- Jacek Anaszewski <jacek.anaszewski@gmail.com>,
- Bjorn Helgaas <bhelgaas@google.com>, linux-amlogic@lists.infradead.org,
- Boris Ostrovsky <boris.ostrovsky@oracle.com>,
- Mika Westerberg <mika.westerberg@linux.intel.com>,
- linux-arm-kernel@lists.infradead.org, Tony Luck <tony.luck@intel.com>,
- Sean Christopherson <sean.j.christopherson@intel.com>,
- James Morse <james.morse@arm.com>, Samuel Mendoza-Jonas <sam@mendozajonas.com>,
- linux-pci@vger.kernel.org, Bhupesh Sharma <bhsharma@redhat.com>,
- Jonathan Cameron <Jonathan.Cameron@huawei.com>,
- platform-driver-x86@vger.kernel.org, Quentin Perret <quentin.perret@arm.com>,
- linux-kselftest@vger.kernel.org, Alex Shi <alex.shi@linux.alibaba.com>,
- Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Baoquan He <bhe@redhat.com>,
- Jonathan Corbet <corbet@lwn.net>, Raphael Gault <raphael.gault@arm.com>,
- Joel Stanley <joel@jms.id.au>, Federico Vaga <federico.vaga@vaga.pv.it>,
- Darren Hart <dvhart@infradead.org>, linux-edac@vger.kernel.org,
- Erik Schmauss <erik.schmauss@intel.com>, "Serge E. Hallyn" <serge@hallyn.com>,
- Palmer Dabbelt <palmer@sifive.com>, Kees Cook <keescook@chromium.org>,
- Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
- Jonathan =?iso-8859-1?Q?Neusch=E4fer?= <j.neuschaefer@gmx.net>,
- SeongJae Park <sj38.park@gmail.com>, Borislav Petkov <bp@alien8.de>,
- Sunil Muthuswamy <sunilmut@microsoft.com>,
- virtualization@lists.linux-foundation.org, devel@acpica.org,
- Ard Biesheuvel <ard.biesheuvel@linaro.org>,
- Liam Girdwood <lgirdwood@gmail.com>,
- Sakari Ailus <sakari.ailus@linux.intel.com>, Olof Johansson <olof@lixom.net>,
- Logan Gunthorpe <logang@deltatee.com>, "David S. Miller" <davem@davemloft.net>,
- "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>,
- Sven Van Asbroeck <thesven73@gmail.com>, Michal Hocko <mhocko@suse.com>,
- kvm@vger.kernel.org, "Michael S. Tsirkin" <mst@redhat.com>,
- Peter Zijlstra <peterz@infradead.org>, Thorsten Leemhuis <linux@leemhuis.info>,
- David Howells <dhowells@redhat.com>, David Brown <david.brown@linaro.org>,
- "H. Peter Anvin" <hpa@zytor.com>, devel@driverdev.osuosl.org,
- Manfred Spraul <manfred@colorfullife.com>, x86@kernel.org,
- Russell King <linux@armlinux.org.uk>, Mike Rapoport <rppt@linux.ibm.com>,
- Andy Gross <agross@kernel.org>, Dave Young <dyoung@redhat.com>,
- devicetree@vger.kernel.org, Arnaldo Carvalho de Melo <acme@redhat.com>,
- Jerome Glisse <jglisse@redhat.com>, Rob Herring <robh+dt@kernel.org>,
- Josh Poimboeuf <jpoimboe@redhat.com>, Dmitry Vyukov <dvyukov@google.com>,
- Luis Chamberlain <mcgrof@kernel.org>, Juergen Gross <jgross@suse.com>,
- Denis Efremov <efremov@ispras.ru>, netdev@vger.kernel.org,
- Nicolas Ferre <nicolas.ferre@microchip.com>,
- Changbin Du <changbin.du@intel.com>, linux-security-module@vger.kernel.org,
- Robin Murphy <robin.murphy@arm.com>, Andy Shevchenko <andy@infradead.org>
+Cc: Christian Lamparter <chunkeey@gmail.com>, linux-kernel@vger.kernel.org,
+ Pawel Dembicki <paweldembicki@gmail.com>, Paul Mackerras <paulus@samba.org>,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+Enable kernel XZ compression option on PPC_85xx. Tested with
+simpleImage on TP-Link TL-WDR4900 (Freescale P1014 processor).
 
---ULJ2Z7kCM1hyNsWd
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Suggested-by: Christian Lamparter <chunkeey@gmail.com>
+Signed-off-by: Pawel Dembicki <paweldembicki@gmail.com>
+---
+ arch/powerpc/Kconfig | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-On Wed, May 29, 2019 at 08:23:53PM -0300, Mauro Carvalho Chehab wrote:
-> Mostly due to x86 and acpi conversion, several documentation
-> links are still pointing to the old file. Fix them.
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index 8c1c636308c8..daf4cb968922 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -196,7 +196,7 @@ config PPC
+ 	select HAVE_IOREMAP_PROT
+ 	select HAVE_IRQ_EXIT_ON_IRQ_STACK
+ 	select HAVE_KERNEL_GZIP
+-	select HAVE_KERNEL_XZ			if PPC_BOOK3S || 44x
++	select HAVE_KERNEL_XZ			if PPC_BOOK3S || 44x || PPC_85xx
+ 	select HAVE_KPROBES
+ 	select HAVE_KPROBES_ON_FTRACE
+ 	select HAVE_KRETPROBES
+-- 
+2.20.1
 
-Acked-by: Mark Brown <broonie@kernel.org>
-
---ULJ2Z7kCM1hyNsWd
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQEzBAABCgAdFiEEreZoqmdXGLWf4p/qJNaLcl1Uh9AFAlz1P5wACgkQJNaLcl1U
-h9CgCQf+J9k75rt3mgSxGm21PStcBWah+jHorcSB3vAFo/VgwBXCI7/qQymUKkNd
-rUN0absPBGdyjsU+iDp0RrGijvdavWuigfic8bEJ/z2tbzj1I3+XRrah0tiPgdrF
-6/uFF/xfdYflsvBqmmu+/uXwwvzWtE/DITZ/m7fXcUjk8uahw4sWCAiyoPAqgUCL
-otIcJ8/L/0bQ2oiDiLTBqWp/NcOepodvjV5BcRyh49dwR0RDdBVxfdjyVboI9WQN
-YK9ZiCa/QaQRl0S5ce7bPH/c4U+mujmla7rE8icfqRDhtsMuXa+JvQMCPEIfnzxe
-kGqmVHCLVcqZZ5sJZOMLQSVlIsbckw==
-=aP8U
------END PGP SIGNATURE-----
-
---ULJ2Z7kCM1hyNsWd--
