@@ -2,106 +2,90 @@ Return-Path: <SRS0=u7tn=UC=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-0.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 443B5C04AB5
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Jun 2019 15:18:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 82DA6C04AB5
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Jun 2019 16:10:39 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6F96C23B6F
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Jun 2019 15:18:21 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id C85342772F
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Jun 2019 16:10:38 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=oracle.com header.i=@oracle.com header.b="YXOLt6gq"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6F96C23B6F
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=oracle.com
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=linux-foundation.org header.i=@linux-foundation.org header.b="WCXqjpyK"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C85342772F
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linux-foundation.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45Hdwp5mmBzDqW0
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Jun 2019 01:18:18 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45Hg585SX4zDqS0
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Jun 2019 02:10:36 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=oracle.com
- (client-ip=156.151.31.85; helo=userp2120.oracle.com;
- envelope-from=khalid.aziz@oracle.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=oracle.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=oracle.com header.i=@oracle.com header.b="YXOLt6gq"; 
- dkim-atps=neutral
-Received: from userp2120.oracle.com (userp2120.oracle.com [156.151.31.85])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ spf=pass (mailfrom) smtp.mailfrom=linuxfoundation.org
+ (client-ip=2a00:1450:4864:20::142; helo=mail-lf1-x142.google.com;
+ envelope-from=torvalds@linuxfoundation.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=linux-foundation.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=linux-foundation.org header.i=@linux-foundation.org
+ header.b="WCXqjpyK"; dkim-atps=neutral
+Received: from mail-lf1-x142.google.com (mail-lf1-x142.google.com
+ [IPv6:2a00:1450:4864:20::142])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45HdvG0FV9zDqPm
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Jun 2019 01:16:51 +1000 (AEST)
-Received: from pps.filterd (userp2120.oracle.com [127.0.0.1])
- by userp2120.oracle.com (8.16.0.27/8.16.0.27) with SMTP id x53F8i5n001438;
- Mon, 3 Jun 2019 15:16:22 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com;
- h=subject : to : cc :
- references : from : message-id : date : mime-version : in-reply-to :
- content-type : content-transfer-encoding; s=corp-2018-07-02;
- bh=Ki7uylAda9xiN8zeds9nD/lyhAxSHsFTY/OHo5Iyx7w=;
- b=YXOLt6gqicqliY0an8pQp23MWi+nuI/j4RGb+V08q3E7RR9WpVudFd5tNi4UxJ8lT0V9
- QD15UU8Ceho68KaL4kpbutE9o6Kpgs0IjTtiqjniDbCB+F9K1WpyqpIpqioC2rJaCtMh
- llks/iMsYyRfOQC4WnOnnxFDi27Jd2asmRi4WyP9/xsG/884I4UjKrjzqsyKfYJgHoYn
- UYnK6X7LqXJB+20nQKMluHBKTPmzH6k6zJiVxpivgk7t5UOwmzcdlX+dY8SEKUyL4P2U
- GaduDIDe9lruho7fEctWyrciD+R46VlcI1f8BJut/7IKfhaBV8i8kjHt6SyaoLqopGkK oA== 
-Received: from aserp3020.oracle.com (aserp3020.oracle.com [141.146.126.70])
- by userp2120.oracle.com with ESMTP id 2suj0q7mkh-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Mon, 03 Jun 2019 15:16:22 +0000
-Received: from pps.filterd (aserp3020.oracle.com [127.0.0.1])
- by aserp3020.oracle.com (8.16.0.27/8.16.0.27) with SMTP id x53FEZCm155123;
- Mon, 3 Jun 2019 15:16:21 GMT
-Received: from aserv0121.oracle.com (aserv0121.oracle.com [141.146.126.235])
- by aserp3020.oracle.com with ESMTP id 2sv36s9bcr-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Mon, 03 Jun 2019 15:16:21 +0000
-Received: from abhmp0016.oracle.com (abhmp0016.oracle.com [141.146.116.22])
- by aserv0121.oracle.com (8.14.4/8.13.8) with ESMTP id x53FGA4B012052;
- Mon, 3 Jun 2019 15:16:10 GMT
-Received: from [192.168.1.16] (/24.9.64.241)
- by default (Oracle Beehive Gateway v4.0)
- with ESMTP ; Mon, 03 Jun 2019 08:16:10 -0700
-Subject: Re: [PATCH 01/16] uaccess: add untagged_addr definition for other
- arches
-To: Christoph Hellwig <hch@lst.de>,
- Linus Torvalds <torvalds@linux-foundation.org>,
- Paul Burton <paul.burton@mips.com>, James Hogan <jhogan@kernel.org>,
- Yoshinori Sato <ysato@users.sourceforge.jp>,
- Rich Felker <dalias@libc.org>, "David S. Miller" <davem@davemloft.net>,
- Andrey Konovalov <andreyknvl@google.com>
-References: <20190601074959.14036-1-hch@lst.de>
- <20190601074959.14036-2-hch@lst.de>
-From: Khalid Aziz <khalid.aziz@oracle.com>
-Organization: Oracle Corp
-Message-ID: <431c7395-2327-2f7c-cc8f-b01412b74e10@oracle.com>
-Date: Mon, 3 Jun 2019 09:16:08 -0600
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
- Thunderbird/60.7.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45Hg3S0ByLzDqLn
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Jun 2019 02:09:07 +1000 (AEST)
+Received: by mail-lf1-x142.google.com with SMTP id y198so3564214lfa.1
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 03 Jun 2019 09:09:07 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=linux-foundation.org; s=google;
+ h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+ :cc; bh=lgsfrWNkeAwXitTJcoIdmm+S5jV0yGJC2wH7GAyc/RM=;
+ b=WCXqjpyK9CxskKR1Rsa2JsUVjNbLjTBCO3DKbpdiCOAgDG3/x4OwA5zT3oR9AF+TAb
+ KoxRzjysV3/yPddUMg57RzzWz8pj3wl00UXp/zI8qmqY5Pxb0GSO0BkOluklf9MnQYLn
+ o8mf30F5cjoqsx0tY+OcCybKIrmRF+OMKq7aY=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+ :message-id:subject:to:cc;
+ bh=lgsfrWNkeAwXitTJcoIdmm+S5jV0yGJC2wH7GAyc/RM=;
+ b=eOGOg8x5nmyV2iEnd7qATb9HPFckbkzjTxQT6HuM+toTIcbzfszJOV/kF+oIHj7LY5
+ gq5VX0793S3sP787CandBBtwl9mt1VgLYuhGhyLdZNJAhhSQOV7jYCSjgezo1L0s03om
+ +qbHqnKjWHus7VH2Aq0tQiHuwx9zF++wvXUQuv7LbGAPhFFeI2vOxDIJIrMa5PC85DXX
+ PVr3Wm2zmIeiPkLUWbGjVHDmSCcAzsOuSqLKq4uI4zGi2E43M1W9ha00Hqj4mZEbyCW6
+ uYENYv47k+7Hsjwf8wXhiHxt/Ly4IU0LXdysMhgoUOb+rJgg26pqAjENinl2jeBbXpg9
+ Wrjw==
+X-Gm-Message-State: APjAAAVMwoC7IC4HhOho7evPe4JlFve8UNSjDI/1LGaus1AiNbJbn39e
+ SKfXamWOj45JxUFUquwEdDwTn5Mcgg4=
+X-Google-Smtp-Source: APXvYqwpyyDK7pfS+eAfvu487rQVdeFSqYkM3tJQdExfrhcZy+JNeE1dUjPgfuueLr6Fzy73d5/H9g==
+X-Received: by 2002:a05:6512:144:: with SMTP id
+ m4mr14352674lfo.114.1559578141119; 
+ Mon, 03 Jun 2019 09:09:01 -0700 (PDT)
+Received: from mail-lj1-f174.google.com (mail-lj1-f174.google.com.
+ [209.85.208.174])
+ by smtp.gmail.com with ESMTPSA id f10sm3250523ljk.95.2019.06.03.09.08.59
+ for <linuxppc-dev@lists.ozlabs.org>
+ (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
+ Mon, 03 Jun 2019 09:08:59 -0700 (PDT)
+Received: by mail-lj1-f174.google.com with SMTP id a10so13524880ljf.6
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 03 Jun 2019 09:08:59 -0700 (PDT)
+X-Received: by 2002:a2e:4246:: with SMTP id p67mr14377820lja.44.1559578139147; 
+ Mon, 03 Jun 2019 09:08:59 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <20190601074959.14036-2-hch@lst.de>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: quoted-printable
-X-Proofpoint-Virus-Version: vendor=nai engine=6000 definitions=9276
- signatures=668687
-X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 suspectscore=0
- malwarescore=0
- phishscore=0 bulkscore=0 spamscore=0 mlxscore=0 mlxlogscore=874
- adultscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.0.1-1810050000 definitions=main-1906030106
-X-Proofpoint-Virus-Version: vendor=nai engine=6000 definitions=9276
- signatures=668687
-X-Proofpoint-Spam-Details: rule=notspam policy=default score=0
- priorityscore=1501 malwarescore=0
- suspectscore=0 phishscore=0 bulkscore=0 spamscore=0 clxscore=1011
- lowpriorityscore=0 mlxscore=0 impostorscore=0 mlxlogscore=887 adultscore=0
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.0.1-1810050000
- definitions=main-1906030106
+References: <20190601074959.14036-1-hch@lst.de>
+ <20190601074959.14036-4-hch@lst.de>
+ <CAHk-=whusWKhS=SYoC9f9HjVmPvR5uP51Mq=ZCtktqTBT2qiBw@mail.gmail.com>
+ <20190603074121.GA22920@lst.de>
+In-Reply-To: <20190603074121.GA22920@lst.de>
+From: Linus Torvalds <torvalds@linux-foundation.org>
+Date: Mon, 3 Jun 2019 09:08:43 -0700
+X-Gmail-Original-Message-ID: <CAHk-=wg5mww3StP8HqPN4d5eij3KmEayM743v-nDKAMgRe2J6g@mail.gmail.com>
+Message-ID: <CAHk-=wg5mww3StP8HqPN4d5eij3KmEayM743v-nDKAMgRe2J6g@mail.gmail.com>
+Subject: Re: [PATCH 03/16] mm: simplify gup_fast_permitted
+To: Christoph Hellwig <hch@lst.de>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -113,59 +97,37 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Catalin Marinas <catalin.marinas@arm.com>, linux-sh@vger.kernel.org,
- x86@kernel.org, linux-mips@vger.kernel.org,
- Nicholas Piggin <npiggin@gmail.com>, linux-kernel@vger.kernel.org,
- linux-mm@kvack.org, Paul Mackerras <paulus@samba.org>,
- sparclinux@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Cc: Rich Felker <dalias@libc.org>, Yoshinori Sato <ysato@users.sourceforge.jp>,
+ Linux-sh list <linux-sh@vger.kernel.org>, James Hogan <jhogan@kernel.org>,
+ the arch/x86 maintainers <x86@kernel.org>,
+ Khalid Aziz <khalid.aziz@oracle.com>, Nicholas Piggin <npiggin@gmail.com>,
+ linux-mips@vger.kernel.org, Linux-MM <linux-mm@kvack.org>,
+ Paul Burton <paul.burton@mips.com>, Paul Mackerras <paulus@samba.org>,
+ Andrey Konovalov <andreyknvl@google.com>, sparclinux@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>,
+ Linux List Kernel Mailing <linux-kernel@vger.kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 6/1/19 1:49 AM, Christoph Hellwig wrote:
-> From: Andrey Konovalov <andreyknvl@google.com>
->=20
-> To allow arm64 syscalls to accept tagged pointers from userspace, we mu=
-st
-> untag them when they are passed to the kernel. Since untagging is done =
-in
-> generic parts of the kernel, the untagged_addr macro needs to be define=
-d
-> for all architectures.
->=20
-> Define it as a noop for architectures other than arm64.
+On Mon, Jun 3, 2019 at 12:41 AM Christoph Hellwig <hch@lst.de> wrote:
+>
+> I only removed a duplicate of it.
 
-Could you reword above sentence? We are already starting off with
-untagged_addr() not being no-op for arm64 and sparc64. It will expand
-further potentially. So something more along the lines of "Define it as
-noop for architectures that do not support memory tagging". The first
-paragraph in the log can also be rewritten to be not specific to arm64.
+I don't see any remaining cases.
 
---
-Khalid
+> The full (old) code in get_user_pages_fast() looks like this:
+>
+>         if (nr_pages <= 0)
+>                 return 0;
+>
+>         if (unlikely(!access_ok((void __user *)start, len)))
+>                 return -EFAULT;
+>
+>         if (gup_fast_permitted(start, nr_pages)) {
 
->=20
-> Acked-by: Catalin Marinas <catalin.marinas@arm.com>
-> Signed-off-by: Andrey Konovalov <andreyknvl@google.com>
-> Signed-off-by: Christoph Hellwig <hch@lst.de>
-> ---
->  include/linux/mm.h | 4 ++++
->  1 file changed, 4 insertions(+)
->=20
-> diff --git a/include/linux/mm.h b/include/linux/mm.h
-> index 0e8834ac32b7..949d43e9c0b6 100644
-> --- a/include/linux/mm.h
-> +++ b/include/linux/mm.h
-> @@ -99,6 +99,10 @@ extern int mmap_rnd_compat_bits __read_mostly;
->  #include <asm/pgtable.h>
->  #include <asm/processor.h>
-> =20
-> +#ifndef untagged_addr
-> +#define untagged_addr(addr) (addr)
-> +#endif
-> +
->  #ifndef __pa_symbol
->  #define __pa_symbol(x)  __pa(RELOC_HIDE((unsigned long)(x), 0))
->  #endif
->=20
+Yes, and that code was correct.
 
+The new code has no test at all for "nr_pages == 0", afaik.
+
+                 Linus
