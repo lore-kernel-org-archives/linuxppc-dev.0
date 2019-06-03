@@ -2,114 +2,56 @@ Return-Path: <SRS0=u7tn=UC=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5E1ABC28CC5
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Jun 2019 03:39:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 20A25C04AB6
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Jun 2019 04:54:36 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 9AA4D27B16
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Jun 2019 03:39:43 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=microsoft.com header.i=@microsoft.com header.b="XHM7kckK"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9AA4D27B16
-Authentication-Results: mail.kernel.org; dmarc=fail (p=reject dis=none) header.from=microsoft.com
+	by mail.kernel.org (Postfix) with ESMTPS id 6CD4E27B84
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Jun 2019 04:54:35 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6CD4E27B84
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45HLQj39rNzDqN3
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Jun 2019 13:39:41 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45HN545GLqzDqRh
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Jun 2019 14:54:32 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=microsoft.com
- (client-ip=40.107.131.94; helo=apc01-sg2-obe.outbound.protection.outlook.com;
- envelope-from=v-lide@microsoft.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none)
- header.from=microsoft.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=microsoft.com header.i=@microsoft.com
- header.b="XHM7kckK"; dkim-atps=neutral
-Received: from APC01-SG2-obe.outbound.protection.outlook.com
- (mail-eopbgr1310094.outbound.protection.outlook.com [40.107.131.94])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45HL4C56t0zDqMn
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  3 Jun 2019 13:23:39 +1000 (AEST)
-ARC-Seal: i=1; a=rsa-sha256; s=testarcselector01; d=microsoft.com; cv=none;
- b=cYNvTIjQ9OFaHJTUQeYcVS4IdxL06IOrc674xKJWLTn8TpVuREJW/zqJtt0cIZ5lny3ROaSfFRc+Q56HUli3MkA2BE0qOTva0ds1DMysnan9/yukon5GjpfISvx7gDpCYmBiBDlP8KGKTFas805RtSY3uKlU2xq7voZsplTpS/c=
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com; 
- s=testarcselector01;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=X3E7S7hN4t7FSvflUrqz7lJlAww7wYqdnk5HSp4V848=;
- b=fkICxAt/uJlWap2z6VA/sYgpX49U0EqCSmxQ+HkaiZp2SEvQk+522QhA+pz89WbIGrz9/jbU0a366u7hg/qK5mjNaSRTcZsFOmBtk8UIpJN9Lqp21xGMzQLrDChwUG8bhKyYzjPoxR8uAlSIsobOxKEzhtpTbztKQpba9w7i3aA=
-ARC-Authentication-Results: i=1; test.office365.com
- 1;spf=none;dmarc=none;dkim=none;arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=X3E7S7hN4t7FSvflUrqz7lJlAww7wYqdnk5HSp4V848=;
- b=XHM7kckK+Br+/yAYJf+jlcW5SBXuvDKeS8PuVzxVIfvLNPeHy3Bwagtaeqt5KIm16VsaDodNXrfLI8xXWE30WoMziyUVlqlPLJNCX13eP5kaepKj1LRXSSJNd/uVI7zhv8F8DBynhlWW9Iw42rxFf++6gUcRXpbRt45NxZ2VUn8=
-Received: from KL1P15301MB0294.APCP153.PROD.OUTLOOK.COM (52.132.240.147) by
- KL1P15301MB0326.APCP153.PROD.OUTLOOK.COM (52.132.241.74) with Microsoft SMTP
- Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.20.1987.3; Mon, 3 Jun 2019 03:23:34 +0000
-Received: from KL1P15301MB0294.APCP153.PROD.OUTLOOK.COM
- ([fe80::94b3:929c:cb30:a005]) by KL1P15301MB0294.APCP153.PROD.OUTLOOK.COM
- ([fe80::94b3:929c:cb30:a005%9]) with mapi id 15.20.1987.003; Mon, 3 Jun 2019
- 03:23:34 +0000
-From: "Lili Deng (Wicresoft North America Ltd)" <v-lide@microsoft.com>
-To: Sachin Sant <sachinp@linux.vnet.ibm.com>, Dexuan-Linux Cui
- <dexuan.linux@gmail.com>
-Subject: RE: [next-20190530] Boot failure on PowerPC
-Thread-Topic: [next-20190530] Boot failure on PowerPC
-Thread-Index: AQHVF9yX3BwniFeSJ0iqHPvcE2BsqqaJRHIAgAAC7PA=
-Date: Mon, 3 Jun 2019 03:23:34 +0000
-Message-ID: <KL1P15301MB02948DA3C780A2DC4A145E0F9E140@KL1P15301MB0294.APCP153.PROD.OUTLOOK.COM>
-References: <79EEB945-661A-41AD-8B26-2FD3B3F84697@linux.vnet.ibm.com>
- <87h89aohnu.fsf@concordia.ellerman.id.au>
- <CAA42JLYcPi4ypvX=Ma8yWzUCF=B=FkDrzLex=bJiLyryuWTE2g@mail.gmail.com>
- <D8C9598F-4A51-4402-9344-894EC6B6CE47@linux.vnet.ibm.com>
-In-Reply-To: <D8C9598F-4A51-4402-9344-894EC6B6CE47@linux.vnet.ibm.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-authentication-results: spf=none (sender IP is )
- smtp.mailfrom=v-lide@microsoft.com; 
-x-originating-ip: [2404:f801:8050:3:c0::35f8]
-x-ms-publictraffictype: Email
-x-ms-office365-filtering-correlation-id: e5479348-b296-43b5-eceb-08d6e7d2dc84
-x-ms-office365-filtering-ht: Tenant
-x-microsoft-antispam: BCL:0; PCL:0;
- RULEID:(2390118)(7020095)(4652040)(8989299)(4534185)(4627221)(201703031133081)(201702281549075)(8990200)(5600148)(711020)(4605104)(1401327)(4618075)(2017052603328)(7193020);
- SRVR:KL1P15301MB0326; 
-x-ms-traffictypediagnostic: KL1P15301MB0326:
-x-ms-exchange-purlcount: 1
-x-microsoft-antispam-prvs: <KL1P15301MB032601C3E08B63DC5AB737449E140@KL1P15301MB0326.APCP153.PROD.OUTLOOK.COM>
-x-ms-oob-tlc-oobclassifiers: OLM:8273;
-x-forefront-prvs: 0057EE387C
-x-forefront-antispam-report: SFV:NSPM;
- SFS:(10019020)(39860400002)(396003)(346002)(366004)(136003)(376002)(189003)(199004)(13464003)(53936002)(476003)(66446008)(76116006)(186003)(52536014)(64756008)(8990500004)(99286004)(14444005)(256004)(9686003)(66476007)(73956011)(10090500001)(66556008)(66946007)(14454004)(71200400001)(74316002)(6246003)(5660300002)(305945005)(7736002)(6306002)(446003)(55016002)(6436002)(107886003)(11346002)(33656002)(71190400001)(966005)(229853002)(6116002)(4326008)(46003)(68736007)(10290500003)(86362001)(54906003)(110136005)(8676002)(81166006)(2906002)(6506007)(53546011)(81156014)(316002)(486006)(22452003)(76176011)(478600001)(102836004)(7696005)(25786009)(8936002);
- DIR:OUT; SFP:1102; SCL:1; SRVR:KL1P15301MB0326;
- H:KL1P15301MB0294.APCP153.PROD.OUTLOOK.COM; FPR:; SPF:None; LANG:en;
- PTR:InfoNoRecords; MX:1; A:1; 
-received-spf: None (protection.outlook.com: microsoft.com does not designate
- permitted sender hosts)
-x-ms-exchange-senderadcheck: 1
-x-microsoft-antispam-message-info: m5QmYYzmhvcm2j1PUIDXdNL0jYLRNAafIvlskADKEq4fQviUC8YXC9ni47+5iqBvv4bpyiEjRvcnI8/7wamC4Yc7kkpYHt4oXpojYWElQNuNxuNr64NjskiOZtINH/qNJPFq7wOg7wlwXmPtcApR88DVh53YZoowMUnm546K5G9nswY07q48awDAFa5mqXZ4Xh/l82oesC34ACNWLAbe6z31Rh+9qp27VdtaxwbRvWrfjgJaI8BD/HYwhKrY/lGd/0W3gT7to4/MfVmbmIa+l3Sh8Svf2RDXJ1+gpuN6hrDsvMbhhkZ6de/eN5Qz2+Ia6vZY0gBv9KFwnsNrVNp+htRG4LnINDfOVOTfRMb8niW1lkFMJEEViogyWU229LvfcCTj9kZ87XSGDtkgBrikQ7BkaFl3zFz15BuluQqiYLw=
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+ spf=pass (mailfrom) smtp.mailfrom=arm.com
+ (client-ip=217.140.101.70; helo=foss.arm.com;
+ envelope-from=anshuman.khandual@arm.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=arm.com
+Received: from foss.arm.com (usa-sjc-mx-foss1.foss.arm.com [217.140.101.70])
+ by lists.ozlabs.org (Postfix) with ESMTP id 45HN3k5gtfzDqNF
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  3 Jun 2019 14:53:21 +1000 (AEST)
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.72.51.249])
+ by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id A87D1341;
+ Sun,  2 Jun 2019 21:53:18 -0700 (PDT)
+Received: from [10.162.40.144] (p8cg001049571a15.blr.arm.com [10.162.40.144])
+ by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id
+ CC0BB3F5AF; Sun,  2 Jun 2019 21:53:11 -0700 (PDT)
+Subject: Re: [RFC] mm: Generalize notify_page_fault()
+To: Matthew Wilcox <willy@infradead.org>
+References: <1559195713-6956-1-git-send-email-anshuman.khandual@arm.com>
+ <20190530110639.GC23461@bombadil.infradead.org>
+ <4f9a610d-e856-60f6-4467-09e9c3836771@arm.com>
+ <20190530133954.GA2024@bombadil.infradead.org>
+ <f1995445-d5ab-f292-d26c-809581002184@arm.com>
+ <20190531174854.GA31852@bombadil.infradead.org>
+From: Anshuman Khandual <anshuman.khandual@arm.com>
+Message-ID: <6338fef8-e097-a76e-5c07-455d0d9b6e24@arm.com>
+Date: Mon, 3 Jun 2019 10:23:26 +0530
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:52.0) Gecko/20100101
+ Thunderbird/52.9.1
 MIME-Version: 1.0
-X-OriginatorOrg: microsoft.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: e5479348-b296-43b5-eceb-08d6e7d2dc84
-X-MS-Exchange-CrossTenant-originalarrivaltime: 03 Jun 2019 03:23:34.3773 (UTC)
-X-MS-Exchange-CrossTenant-fromentityheader: Hosted
-X-MS-Exchange-CrossTenant-id: 72f988bf-86f1-41af-91ab-2d7cd011db47
-X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
-X-MS-Exchange-CrossTenant-userprincipalname: v-lide@microsoft.com
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: KL1P15301MB0326
-X-Mailman-Approved-At: Mon, 03 Jun 2019 13:38:36 +1000
+In-Reply-To: <20190531174854.GA31852@bombadil.infradead.org>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -121,57 +63,76 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "linux-next@vger.kernel.org" <linux-next@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Dexuan Cui <decui@microsoft.com>
+Cc: Mark Rutland <mark.rutland@arm.com>, Michal Hocko <mhocko@suse.com>,
+ linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org,
+ Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>,
+ linux-mm@kvack.org, Paul Mackerras <paulus@samba.org>,
+ sparclinux@vger.kernel.org, linux-s390@vger.kernel.org,
+ Yoshinori Sato <ysato@users.sourceforge.jp>,
+ Russell King <linux@armlinux.org.uk>, Fenghua Yu <fenghua.yu@intel.com>,
+ Stephen Rothwell <sfr@canb.auug.org.au>,
+ Andrey Konovalov <andreyknvl@google.com>, linux-arm-kernel@lists.infradead.org,
+ Tony Luck <tony.luck@intel.com>, Heiko Carstens <heiko.carstens@de.ibm.com>,
+ linux-kernel@vger.kernel.org, Martin Schwidefsky <schwidefsky@de.ibm.com>,
+ Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
+ "David S. Miller" <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi Sachin,
-
-I verified below patch against Ubuntu 18.04, didn't hit the kernel panic an=
-y more, could you please let know how did you verify?
-
-Thanks,
-Lili
------Original Message-----
-From: Sachin Sant <sachinp@linux.vnet.ibm.com>=20
-Sent: Monday, June 3, 2019 11:12 AM
-To: Dexuan-Linux Cui <dexuan.linux@gmail.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>; linuxppc-dev@lists.ozlabs.org; l=
-inux-next@vger.kernel.org; Dexuan Cui <decui@microsoft.com>; Lili Deng (Wic=
-resoft North America Ltd) <v-lide@microsoft.com>
-Subject: Re: [next-20190530] Boot failure on PowerPC
 
 
+On 05/31/2019 11:18 PM, Matthew Wilcox wrote:
+> On Fri, May 31, 2019 at 02:17:43PM +0530, Anshuman Khandual wrote:
+>> On 05/30/2019 07:09 PM, Matthew Wilcox wrote:
+>>> On Thu, May 30, 2019 at 05:31:15PM +0530, Anshuman Khandual wrote:
+>>>> On 05/30/2019 04:36 PM, Matthew Wilcox wrote:
+>>>>> The two handle preemption differently.  Why is x86 wrong and this one
+>>>>> correct?
+>>>>
+>>>> Here it expects context to be already non-preemptible where as the proposed
+>>>> generic function makes it non-preemptible with a preempt_[disable|enable]()
+>>>> pair for the required code section, irrespective of it's present state. Is
+>>>> not this better ?
+>>>
+>>> git log -p arch/x86/mm/fault.c
+>>>
+>>> search for 'kprobes'.
+>>>
+>>> tell me what you think.
+>>
+>> Are you referring to these following commits
+>>
+>> a980c0ef9f6d ("x86/kprobes: Refactor kprobes_fault() like kprobe_exceptions_notify()")
+>> b506a9d08bae ("x86: code clarification patch to Kprobes arch code")
+>>
+>> In particular the later one (b506a9d08bae). It explains how the invoking context
+>> in itself should be non-preemptible for the kprobes processing context irrespective
+>> of whether kprobe_running() or perhaps smp_processor_id() is safe or not. Hence it
+>> does not make much sense to continue when original invoking context is preemptible.
+>> Instead just bail out earlier. This seems to be making more sense than preempt
+>> disable-enable pair. If there are no concerns about this change from other platforms,
+>> I will change the preemption behavior in proposed generic function next time around.
+> 
+> Exactly.
+> 
+> So, any of the arch maintainers know of a reason they behave differently
+> from x86 in this regard?  Or can Anshuman use the x86 implementation
+> for all the architectures supporting kprobes?
 
-> On 31-May-2019, at 11:43 PM, Dexuan-Linux Cui <dexuan.linux@gmail.com> wr=
-ote:
->=20
-> On Fri, May 31, 2019 at 6:52 AM Michael Ellerman <mpe@ellerman.id.au> wro=
-te:
->>>=20
->>> Machine boots till login prompt and then panics few seconds later.
->>>=20
->>> Last known next build was May 24th. Will attempt few builds till May=20
->>> 30 to narrow down this problem.
->>=20
->> My CI was fine with next-20190529 (9a15d2e3fd03e3).
->>=20
->> cheers
->=20
-> Hi Sachin,
-> It looks this patch may fix the issue:
-> https://nam06.safelinks.protection.outlook.com/?url=3Dhttps%3A%2F%2Flkml.=
-org%2Flkml%2F2019%2F5%2F30%2F1630&amp;data=3D02%7C01%7Cv-lide%40microsoft.c=
-om%7C66e1ef6017aa461703f808d6e7d148cd%7C72f988bf86f141af91ab2d7cd011db47%7C=
-1%7C1%7C636951283393233385&amp;sdata=3DIJFhtvL2Bd87HCoMZ7oWL%2Bar6NY%2FfPbm=
-dCZMT%2BJz5t4%3D&amp;reserved=3D0 , but I'm not sure.
+So the generic notify_page_fault() will be like this.
 
-It does not help fix the kernel panic issue, but it fixes the get_swap_devi=
-ce warning messages during the boot.
+int __kprobes notify_page_fault(struct pt_regs *regs, unsigned int trap)
+{
+        int ret = 0;
 
-Thanks
--Sachin
-
+        /*
+         * To be potentially processing a kprobe fault and to be allowed
+         * to call kprobe_running(), we have to be non-preemptible.
+         */
+        if (kprobes_built_in() && !preemptible() && !user_mode(regs)) {
+                if (kprobe_running() && kprobe_fault_handler(regs, trap))
+                        ret = 1;
+        }
+        return ret;
+}
