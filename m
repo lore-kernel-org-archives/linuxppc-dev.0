@@ -2,90 +2,57 @@ Return-Path: <SRS0=u7tn=UC=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 82DA6C04AB5
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Jun 2019 16:10:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 16CA3C04AB5
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Jun 2019 16:43:47 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C85342772F
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Jun 2019 16:10:38 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=linux-foundation.org header.i=@linux-foundation.org header.b="WCXqjpyK"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C85342772F
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linux-foundation.org
+	by mail.kernel.org (Postfix) with ESMTPS id 63C2D23D65
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Jun 2019 16:43:46 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 63C2D23D65
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=suse.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45Hg585SX4zDqS0
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Jun 2019 02:10:36 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45HgqN10F2zDqWj
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Jun 2019 02:43:44 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=linuxfoundation.org
- (client-ip=2a00:1450:4864:20::142; helo=mail-lf1-x142.google.com;
- envelope-from=torvalds@linuxfoundation.org; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=linux-foundation.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=linux-foundation.org header.i=@linux-foundation.org
- header.b="WCXqjpyK"; dkim-atps=neutral
-Received: from mail-lf1-x142.google.com (mail-lf1-x142.google.com
- [IPv6:2a00:1450:4864:20::142])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ spf=pass (mailfrom) smtp.mailfrom=suse.de
+ (client-ip=195.135.220.15; helo=mx1.suse.de; envelope-from=afaerber@suse.de;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=suse.de
+Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45Hg3S0ByLzDqLn
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Jun 2019 02:09:07 +1000 (AEST)
-Received: by mail-lf1-x142.google.com with SMTP id y198so3564214lfa.1
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 03 Jun 2019 09:09:07 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=linux-foundation.org; s=google;
- h=mime-version:references:in-reply-to:from:date:message-id:subject:to
- :cc; bh=lgsfrWNkeAwXitTJcoIdmm+S5jV0yGJC2wH7GAyc/RM=;
- b=WCXqjpyK9CxskKR1Rsa2JsUVjNbLjTBCO3DKbpdiCOAgDG3/x4OwA5zT3oR9AF+TAb
- KoxRzjysV3/yPddUMg57RzzWz8pj3wl00UXp/zI8qmqY5Pxb0GSO0BkOluklf9MnQYLn
- o8mf30F5cjoqsx0tY+OcCybKIrmRF+OMKq7aY=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:mime-version:references:in-reply-to:from:date
- :message-id:subject:to:cc;
- bh=lgsfrWNkeAwXitTJcoIdmm+S5jV0yGJC2wH7GAyc/RM=;
- b=eOGOg8x5nmyV2iEnd7qATb9HPFckbkzjTxQT6HuM+toTIcbzfszJOV/kF+oIHj7LY5
- gq5VX0793S3sP787CandBBtwl9mt1VgLYuhGhyLdZNJAhhSQOV7jYCSjgezo1L0s03om
- +qbHqnKjWHus7VH2Aq0tQiHuwx9zF++wvXUQuv7LbGAPhFFeI2vOxDIJIrMa5PC85DXX
- PVr3Wm2zmIeiPkLUWbGjVHDmSCcAzsOuSqLKq4uI4zGi2E43M1W9ha00Hqj4mZEbyCW6
- uYENYv47k+7Hsjwf8wXhiHxt/Ly4IU0LXdysMhgoUOb+rJgg26pqAjENinl2jeBbXpg9
- Wrjw==
-X-Gm-Message-State: APjAAAVMwoC7IC4HhOho7evPe4JlFve8UNSjDI/1LGaus1AiNbJbn39e
- SKfXamWOj45JxUFUquwEdDwTn5Mcgg4=
-X-Google-Smtp-Source: APXvYqwpyyDK7pfS+eAfvu487rQVdeFSqYkM3tJQdExfrhcZy+JNeE1dUjPgfuueLr6Fzy73d5/H9g==
-X-Received: by 2002:a05:6512:144:: with SMTP id
- m4mr14352674lfo.114.1559578141119; 
- Mon, 03 Jun 2019 09:09:01 -0700 (PDT)
-Received: from mail-lj1-f174.google.com (mail-lj1-f174.google.com.
- [209.85.208.174])
- by smtp.gmail.com with ESMTPSA id f10sm3250523ljk.95.2019.06.03.09.08.59
- for <linuxppc-dev@lists.ozlabs.org>
- (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
- Mon, 03 Jun 2019 09:08:59 -0700 (PDT)
-Received: by mail-lj1-f174.google.com with SMTP id a10so13524880ljf.6
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 03 Jun 2019 09:08:59 -0700 (PDT)
-X-Received: by 2002:a2e:4246:: with SMTP id p67mr14377820lja.44.1559578139147; 
- Mon, 03 Jun 2019 09:08:59 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45Hgnl3VcXzDqR3
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Jun 2019 02:42:17 +1000 (AEST)
+X-Virus-Scanned: by amavisd-new at test-mx.suse.de
+Received: from relay2.suse.de (unknown [195.135.220.254])
+ by mx1.suse.de (Postfix) with ESMTP id B3319AE79;
+ Mon,  3 Jun 2019 16:42:13 +0000 (UTC)
+Subject: Re: [PATCH v3 0/6] Prerequisites for NXP LS104xA SMMU enablement
+To: Laurentiu Tudor <laurentiu.tudor@nxp.com>
+References: <20190530141951.6704-1-laurentiu.tudor@nxp.com>
+ <d086216f-f3fc-c88a-3891-81e84e8bdb01@suse.de>
+ <VI1PR04MB5134BFA391D8FF013762882FEC190@VI1PR04MB5134.eurprd04.prod.outlook.com>
+ <19cc3230-33b0-e465-6317-590780b33efa@suse.de>
+ <VI1PR04MB5134E4DA6EA052BEBB3C26EFEC190@VI1PR04MB5134.eurprd04.prod.outlook.com>
+From: =?UTF-8?Q?Andreas_F=c3=a4rber?= <afaerber@suse.de>
+Openpgp: preference=signencrypt
+Organization: SUSE Linux GmbH
+Message-ID: <c237dd17-ed43-d2d0-c76c-0c1dbf859690@suse.de>
+Date: Mon, 3 Jun 2019 18:42:12 +0200
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.6.1
 MIME-Version: 1.0
-References: <20190601074959.14036-1-hch@lst.de>
- <20190601074959.14036-4-hch@lst.de>
- <CAHk-=whusWKhS=SYoC9f9HjVmPvR5uP51Mq=ZCtktqTBT2qiBw@mail.gmail.com>
- <20190603074121.GA22920@lst.de>
-In-Reply-To: <20190603074121.GA22920@lst.de>
-From: Linus Torvalds <torvalds@linux-foundation.org>
-Date: Mon, 3 Jun 2019 09:08:43 -0700
-X-Gmail-Original-Message-ID: <CAHk-=wg5mww3StP8HqPN4d5eij3KmEayM743v-nDKAMgRe2J6g@mail.gmail.com>
-Message-ID: <CAHk-=wg5mww3StP8HqPN4d5eij3KmEayM743v-nDKAMgRe2J6g@mail.gmail.com>
-Subject: Re: [PATCH 03/16] mm: simplify gup_fast_permitted
-To: Christoph Hellwig <hch@lst.de>
-Content-Type: text/plain; charset="UTF-8"
+In-Reply-To: <VI1PR04MB5134E4DA6EA052BEBB3C26EFEC190@VI1PR04MB5134.eurprd04.prod.outlook.com>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -97,37 +64,79 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Rich Felker <dalias@libc.org>, Yoshinori Sato <ysato@users.sourceforge.jp>,
- Linux-sh list <linux-sh@vger.kernel.org>, James Hogan <jhogan@kernel.org>,
- the arch/x86 maintainers <x86@kernel.org>,
- Khalid Aziz <khalid.aziz@oracle.com>, Nicholas Piggin <npiggin@gmail.com>,
- linux-mips@vger.kernel.org, Linux-MM <linux-mm@kvack.org>,
- Paul Burton <paul.burton@mips.com>, Paul Mackerras <paulus@samba.org>,
- Andrey Konovalov <andreyknvl@google.com>, sparclinux@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>,
- Linux List Kernel Mailing <linux-kernel@vger.kernel.org>
+Cc: Madalin-cristian Bucur <madalin.bucur@nxp.com>,
+ "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+ Roy Pledge <roy.pledge@nxp.com>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Leo Li <leoyang.li@nxp.com>,
+ "iommu@lists.linux-foundation.org" <iommu@lists.linux-foundation.org>,
+ Camelia Alexandra Groza <camelia.groza@nxp.com>,
+ Mian Yousaf Kaukab <yousaf.kaukab@suse.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "davem@davemloft.net" <davem@davemloft.net>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, Jun 3, 2019 at 12:41 AM Christoph Hellwig <hch@lst.de> wrote:
->
-> I only removed a duplicate of it.
+Am 31.05.19 um 19:32 schrieb Laurentiu Tudor:
+>> -----Original Message-----
+>> From: Andreas Färber <afaerber@suse.de>
+>> Sent: Friday, May 31, 2019 8:04 PM
+>>
+>> Hello Laurentiu,
+>>
+>> Am 31.05.19 um 18:46 schrieb Laurentiu Tudor:
+>>>> -----Original Message-----
+>>>> From: Andreas Färber <afaerber@suse.de>
+>>>> Sent: Friday, May 31, 2019 7:15 PM
+>>>>
+>>>> Hi Laurentiu,
+>>>>
+>>>> Am 30.05.19 um 16:19 schrieb laurentiu.tudor@nxp.com:
+>>>>> This patch series contains several fixes in preparation for SMMU
+>>>>> support on NXP LS1043A and LS1046A chips. Once these get picked up,
+>>>>> I'll submit the actual SMMU enablement patches consisting in the
+>>>>> required device tree changes.
+>>>>
+>>>> Have you thought through what will happen if this patch ordering is not
+>>>> preserved? In particular, a user installing a future U-Boot update with
+>>>> the DTB bits but booting a stable kernel without this patch series -
+>>>> wouldn't that regress dpaa then for our customers?
+>>>>
+>>>
+>>> These are fixes for issues that popped out after enabling SMMU.
+>>> I do not expect them to break anything.
+>>
+>> That was not my question! You're missing my point: All your patches are
+>> lacking a Fixes header in their commit message, for backporting them, to
+>> avoid _your DT patches_ breaking the driver on stable branches!
+> 
+> It does appear that I'm missing your point. For sure, the DT updates solely will
+> break the kernel without these fixes but I'm not sure I understand how this
+> could happen.
 
-I don't see any remaining cases.
+In short, customers rarely run master branch. Kindly have your
+colleagues explain stable branches to you in details.
 
-> The full (old) code in get_user_pages_fast() looks like this:
->
->         if (nr_pages <= 0)
->                 return 0;
->
->         if (unlikely(!access_ok((void __user *)start, len)))
->                 return -EFAULT;
->
->         if (gup_fast_permitted(start, nr_pages)) {
+With Fixes header I was referring to the syntax explained here:
+https://www.kernel.org/doc/html/latest/process/submitting-patches.html#describe-your-changes
+https://www.kernel.org/doc/html/latest/process/submitting-patches.html#using-reported-by-tested-by-reviewed-by-suggested-by-and-fixes
 
-Yes, and that code was correct.
+> My plan was to share the kernel dts patches sometime after this series
+> makes it through.
 
-The new code has no test at all for "nr_pages == 0", afaik.
+That's fine. What I'm warning you is that seemingly your DT patches,
+once in one of your LSDK U-Boot releases, will cause a regression for
+distros like our SLES 15 SP1 unless these prereq kernel patches get
+applied on the respective stable branches. Which will not happen
+automatically unless you as patch author take the appropriate action
+before they get merged.
 
-                 Linus
+Thanks,
+Andreas
+
+-- 
+SUSE Linux GmbH, Maxfeldstr. 5, 90409 Nürnberg, Germany
+GF: Felix Imendörffer, Mary Higgins, Sri Rasiah
+HRB 21284 (AG Nürnberg)
