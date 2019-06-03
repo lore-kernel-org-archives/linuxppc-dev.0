@@ -4,22 +4,22 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-12.0 required=3.0
 	tests=HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS
+	MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 48DFBC04AB5
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Jun 2019 23:33:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 527F7C04AB5
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Jun 2019 23:35:40 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 9E7C82431A
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Jun 2019 23:33:10 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9E7C82431A
+	by mail.kernel.org (Postfix) with ESMTPS id D0DF1265AE
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Jun 2019 23:35:39 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D0DF1265AE
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45Hrvm4trkzDqVH
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Jun 2019 09:33:08 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45Hryd6n4PzDqVD
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Jun 2019 09:35:37 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=none (mailfrom) smtp.mailfrom=linux.vnet.ibm.com
  (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
@@ -30,73 +30,76 @@ Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45HrtG4JtyzDqNT
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Jun 2019 09:31:50 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45HrxD3zKvzDq75
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Jun 2019 09:34:24 +1000 (AEST)
 Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x53NM6vv089988; Mon, 3 Jun 2019 19:31:45 -0400
-Received: from pps.reinject (localhost [127.0.0.1])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2swcx4gp2v-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 03 Jun 2019 19:31:44 -0400
-Received: from m0098410.ppops.net (m0098410.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.27/8.16.0.27) with SMTP id x53NMfpX090962;
- Mon, 3 Jun 2019 19:31:44 -0400
-Received: from ppma01dal.us.ibm.com (83.d6.3fa9.ip4.static.sl-reverse.com
- [169.63.214.131])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2swcx4gp2f-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 03 Jun 2019 19:31:44 -0400
-Received: from pps.filterd (ppma01dal.us.ibm.com [127.0.0.1])
- by ppma01dal.us.ibm.com (8.16.0.27/8.16.0.27) with SMTP id x53HYdGb030561;
- Mon, 3 Jun 2019 17:36:45 GMT
-Received: from b01cxnp22034.gho.pok.ibm.com (b01cxnp22034.gho.pok.ibm.com
- [9.57.198.24]) by ppma01dal.us.ibm.com with ESMTP id 2suh093trb-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 03 Jun 2019 17:36:45 +0000
+ x53NWl0r111800
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 3 Jun 2019 19:34:22 -0400
+Received: from e13.ny.us.ibm.com (e13.ny.us.ibm.com [129.33.205.203])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2swcx4grpv-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 03 Jun 2019 19:34:22 -0400
+Received: from localhost
+ by e13.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <tyreld@linux.vnet.ibm.com>;
+ Tue, 4 Jun 2019 00:34:21 +0100
+Received: from b01cxnp22033.gho.pok.ibm.com (9.57.198.23)
+ by e13.ny.us.ibm.com (146.89.104.200) with IBM ESMTP SMTP Gateway: Authorized
+ Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Tue, 4 Jun 2019 00:34:18 +0100
 Received: from b01ledav006.gho.pok.ibm.com (b01ledav006.gho.pok.ibm.com
  [9.57.199.111])
- by b01cxnp22034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x53NUR7H36110428
+ by b01cxnp22033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x53NYHtf18546912
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Mon, 3 Jun 2019 23:30:27 GMT
+ Mon, 3 Jun 2019 23:34:17 GMT
 Received: from b01ledav006.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 6EF4DAC060;
- Mon,  3 Jun 2019 23:30:27 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 7DFEAAC05B;
+ Mon,  3 Jun 2019 23:34:17 +0000 (GMT)
 Received: from b01ledav006.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 1C153AC05F;
- Mon,  3 Jun 2019 23:30:26 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 57642AC059;
+ Mon,  3 Jun 2019 23:34:16 +0000 (GMT)
 Received: from oc6857751186.ibm.com (unknown [9.85.191.102])
  by b01ledav006.gho.pok.ibm.com (Postfix) with ESMTP;
- Mon,  3 Jun 2019 23:30:25 +0000 (GMT)
-Subject: Re: [PATCH] scsi: ibmvscsi: Don't use rc uninitialized in
+ Mon,  3 Jun 2019 23:34:16 +0000 (GMT)
+Subject: Re: [PATCH v2] scsi: ibmvscsi: Don't use rc uninitialized in
  ibmvscsi_do_work
-To: Michael Ellerman <mpe@ellerman.id.au>,
- Nathan Chancellor <natechancellor@gmail.com>,
+From: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
+To: Nathan Chancellor <natechancellor@gmail.com>,
  Tyrel Datwyler <tyreld@linux.ibm.com>,
  "James E.J. Bottomley" <jejb@linux.ibm.com>,
  "Martin K. Petersen" <martin.petersen@oracle.com>
 References: <20190531185306.41290-1-natechancellor@gmail.com>
- <87blzgnvhx.fsf@concordia.ellerman.id.au>
-From: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
-Message-ID: <031eaca1-bb6d-a14f-bb66-a520219549e4@linux.vnet.ibm.com>
-Date: Mon, 3 Jun 2019 16:30:25 -0700
+ <20190603221941.65432-1-natechancellor@gmail.com>
+ <6fa1dd2e-676f-b12a-5bb6-e86f5c5628fa@linux.vnet.ibm.com>
+Date: Mon, 3 Jun 2019 16:34:15 -0700
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:52.0) Gecko/20100101
  Thunderbird/52.9.1
 MIME-Version: 1.0
-In-Reply-To: <87blzgnvhx.fsf@concordia.ellerman.id.au>
+In-Reply-To: <6fa1dd2e-676f-b12a-5bb6-e86f5c5628fa@linux.vnet.ibm.com>
 Content-Type: text/plain; charset=utf-8
 Content-Language: en-US
 Content-Transfer-Encoding: 7bit
 X-TM-AS-GCONF: 00
+x-cbid: 19060323-0064-0000-0000-000003E93CB8
+X-IBM-SpamModules-Scores: 
+X-IBM-SpamModules-Versions: BY=3.00011210; HX=3.00000242; KW=3.00000007;
+ PH=3.00000004; SC=3.00000286; SDB=6.01212850; UDB=6.00637411; IPR=6.00993910; 
+ MB=3.00027171; MTD=3.00000008; XFM=3.00000015; UTC=2019-06-03 23:34:20
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 19060323-0065-0000-0000-00003DBA2142
+Message-Id: <8598d642-82e3-daad-a487-693208e13c90@linux.vnet.ibm.com>
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2019-06-03_18:, , signatures=0
+ definitions=2019-06-03_19:, , signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
  priorityscore=1501
  malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
  clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
  mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1810050000 definitions=main-1906030157
+ scancount=1 engine=8.0.1-1810050000 definitions=main-1906030158
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -114,10 +117,8 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 06/02/2019 03:15 AM, Michael Ellerman wrote:
-> Hi Nathan,
-> 
-> Nathan Chancellor <natechancellor@gmail.com> writes:
+On 06/03/2019 04:25 PM, Tyrel Datwyler wrote:
+> On 06/03/2019 03:19 PM, Nathan Chancellor wrote:
 >> clang warns:
 >>
 >> drivers/scsi/ibmvscsi/ibmvscsi.c:2126:7: warning: variable 'rc' is used
@@ -129,76 +130,46 @@ On 06/02/2019 03:15 AM, Michael Ellerman wrote:
 >>         if (rc) {
 >>             ^~
 >>
->> Initialize rc to zero so that the atomic_set and dev_err statement don't
->> trigger for the cases that just break.
+>> Initialize rc to zero in the case statements that clang mentions so that
+>> the atomic_set and dev_err statement don't trigger for them.
 >>
 >> Fixes: 035a3c4046b5 ("scsi: ibmvscsi: redo driver work thread to use enum action states")
 >> Link: https://github.com/ClangBuiltLinux/linux/issues/502
+>> Suggested-by: Michael Ellerman <mpe@ellerman.id.au>
 >> Signed-off-by: Nathan Chancellor <natechancellor@gmail.com>
->> ---
->>  drivers/scsi/ibmvscsi/ibmvscsi.c | 2 +-
->>  1 file changed, 1 insertion(+), 1 deletion(-)
->>
->> diff --git a/drivers/scsi/ibmvscsi/ibmvscsi.c b/drivers/scsi/ibmvscsi/ibmvscsi.c
->> index 727c31dc11a0..6714d8043e62 100644
->> --- a/drivers/scsi/ibmvscsi/ibmvscsi.c
->> +++ b/drivers/scsi/ibmvscsi/ibmvscsi.c
->> @@ -2118,7 +2118,7 @@ static unsigned long ibmvscsi_get_desired_dma(struct vio_dev *vdev)
->>  static void ibmvscsi_do_work(struct ibmvscsi_host_data *hostdata)
->>  {
->>  	unsigned long flags;
->> -	int rc;
->> +	int rc = 0;
->>  	char *action = "reset";
->>  
->>  	spin_lock_irqsave(hostdata->host->host_lock, flags);
 > 
-> It's always preferable IMHO to keep any initialisation as localised as
-> possible, so that the compiler can continue to warn about uninitialised
-> usages elsewhere. In this case that would mean doing the rc = 0 in the
-> switch, something like:
+> Acked-by: Tyrel Datwyler <tyreld@linux.ibm.com>
 > 
-> diff --git a/drivers/scsi/ibmvscsi/ibmvscsi.c b/drivers/scsi/ibmvscsi/ibmvscsi.c
-> index 727c31dc11a0..7ee5755cf636 100644
-> --- a/drivers/scsi/ibmvscsi/ibmvscsi.c
-> +++ b/drivers/scsi/ibmvscsi/ibmvscsi.c
-> @@ -2123,9 +2123,6 @@ static void ibmvscsi_do_work(struct ibmvscsi_host_data *hostdata)
->  
->         spin_lock_irqsave(hostdata->host->host_lock, flags);
->         switch (hostdata->action) {
-> -       case IBMVSCSI_HOST_ACTION_NONE:
-> -       case IBMVSCSI_HOST_ACTION_UNBLOCK:
-> -               break;
->         case IBMVSCSI_HOST_ACTION_RESET:
->                 spin_unlock_irqrestore(hostdata->host->host_lock, flags);
->                 rc = ibmvscsi_reset_crq_queue(&hostdata->queue, hostdata);
-> @@ -2142,7 +2139,10 @@ static void ibmvscsi_do_work(struct ibmvscsi_host_data *hostdata)
->                 if (!rc)
->                         rc = ibmvscsi_send_crq(hostdata, 0xC001000000000000LL, 0);
->                 break;
-> +       case IBMVSCSI_HOST_ACTION_NONE:
-> +       case IBMVSCSI_HOST_ACTION_UNBLOCK:
->         default:
-> +               rc = 0;
->                 break;
->         }
-> 
-> 
-> But then that makes me wonder if that's actually correct?
-> 
-> If we get an action that we don't recognise should we just throw it away
-> like that? (by doing hostdata->action = IBMVSCSI_HOST_ACTION_NONE). Tyrel?
 
-On initial pass I was ok with this, but after thinking on it I think it is more
-subtle.
+On second thought NACK. See my response to Michael earlier in the thread.
 
-The right approach is to set rc = 0 for HOST_ACTION_UNBLOCK as we want to fall
-through. For HOST_ACTION_NONE and default we need to return directly from the
-function.
+I think this is the better solution:
 
--Tyrel
+diff --git a/drivers/scsi/ibmvscsi/ibmvscsi.c b/drivers/scsi/ibmvscsi/ibmvscsi.c
+index 727c31dc11a0..c3cf05dd8733 100644
+--- a/drivers/scsi/ibmvscsi/ibmvscsi.c
++++ b/drivers/scsi/ibmvscsi/ibmvscsi.c
+@@ -2123,8 +2123,8 @@ static void ibmvscsi_do_work(struct ibmvscsi_host_data
+*hostdata)
 
-> 
-> cheers
-> 
+        spin_lock_irqsave(hostdata->host->host_lock, flags);
+        switch (hostdata->action) {
+-       case IBMVSCSI_HOST_ACTION_NONE:
+        case IBMVSCSI_HOST_ACTION_UNBLOCK:
++               rc = 0;
+                break;
+        case IBMVSCSI_HOST_ACTION_RESET:
+                spin_unlock_irqrestore(hostdata->host->host_lock, flags);
+@@ -2142,8 +2142,9 @@ static void ibmvscsi_do_work(struct ibmvscsi_host_data
+*hostdata)
+                if (!rc)
+                        rc = ibmvscsi_send_crq(hostdata, 0xC001000000000000LL, 0);
+                break;
++       case IBMVSCSI_HOST_ACTION_NONE:
+        default:
+-               break;
++               return;
+        }
+
+        hostdata->action = IBMVSCSI_HOST_ACTION_NONE;
 
