@@ -2,81 +2,59 @@ Return-Path: <SRS0=u7tn=UC=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+X-Spam-Status: No, score=-8.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_MUTT autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BCEC2C28CC5
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Jun 2019 02:14:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 15C34C28CC5
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Jun 2019 02:16:32 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3F9E627AC3
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Jun 2019 02:14:11 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id D88A027AC3
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Jun 2019 02:16:30 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=axtens.net header.i=@axtens.net header.b="OWV+H2uk"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3F9E627AC3
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=axtens.net
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au header.b="NKiwhnD/"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D88A027AC3
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=gibson.dropbear.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45HJX11tGMzDqQ8
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Jun 2019 12:14:09 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=axtens.net
- (client-ip=2607:f8b0:4864:20::442; helo=mail-pf1-x442.google.com;
- envelope-from=dja@axtens.net; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=axtens.net
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=axtens.net header.i=@axtens.net header.b="OWV+H2uk"; 
- dkim-atps=neutral
-Received: from mail-pf1-x442.google.com (mail-pf1-x442.google.com
- [IPv6:2607:f8b0:4864:20::442])
+	by lists.ozlabs.org (Postfix) with ESMTP id 45HJZh6y2jzDqQY
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Jun 2019 12:16:28 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45HJQf2ZBPzDqMv
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  3 Jun 2019 12:09:30 +1000 (AEST)
-Received: by mail-pf1-x442.google.com with SMTP id r22so9643472pfh.9
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 02 Jun 2019 19:09:30 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=axtens.net; s=google;
- h=from:to:cc:subject:date:message-id:mime-version
- :content-transfer-encoding;
- bh=stz73iUf9C6RHHj3xWZfepbbnMyNao045W9wPexeqOg=;
- b=OWV+H2ukCkdcMzBttQVcGVVY/ANUL2/4r1X7AY/OpH5D16JJup0DYJtgmo+zicX5Jv
- 0VMGP2aS03USXjvIUoknRaRoJsfKg0lVy+h4tBa8JlZBX9OH281VnGv44MIdQWUjfW4F
- b0/BuVLfgjxapSRnGjmkHbdb9LLD60Yrxrdts=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
- :content-transfer-encoding;
- bh=stz73iUf9C6RHHj3xWZfepbbnMyNao045W9wPexeqOg=;
- b=S7yHg9d4RO869Lc1jdIE+O+kqITtVWiw96mElZCLz4Pv7i3LH2VWjV7U27cdPYJCsM
- FVoJ9PmjInDU0L/cQrH+lygzswNVjT1Z9kOX7NPiiQs88u5xVF9EPp+kZUVRNrBDM8vK
- 4DTknBa9s8CEYGja3fCryslWXh0zMmbuMhYaqoEUbLV4DT5l9uX8ooRtNZaX6hwbnuw0
- 1hrqn9g/0dwN8G8ql0qytadvWpnxVXu45pnlV6cT3IuqC5M1RHLFzUbwGveW8Rm9pYj5
- odpEv3qqppGjqZDzmSdu5d/v/1UDxeb0xbTfAudlwoDx28qk6h9Iq4/ce7mol6pRANDz
- 0nLg==
-X-Gm-Message-State: APjAAAWijgEiEQk4oJ0K3skw1cg0K5RSYcqcz0mB/NCXe4cZJn3Bqhrs
- eV68XliuW4iTMB4k8FjgP9spli5XLUo=
-X-Google-Smtp-Source: APXvYqyLSdTdqYJobr3J//O8hGFEnS+QMTUvdKcaopilRPTmvD/1cRXiCDjhda0nHzlYUKVlrEIJaQ==
-X-Received: by 2002:a65:6495:: with SMTP id e21mr25177639pgv.383.1559527767587; 
- Sun, 02 Jun 2019 19:09:27 -0700 (PDT)
-Received: from localhost (ppp167-251-205.static.internode.on.net.
- [59.167.251.205])
- by smtp.gmail.com with ESMTPSA id p18sm723916pff.93.2019.06.02.19.09.25
- (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
- Sun, 02 Jun 2019 19:09:26 -0700 (PDT)
-From: Daniel Axtens <dja@axtens.net>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH BACKPORTv2 4.4] crypto: vmx - ghash: do nosimd fallback
- manually
-Date: Mon,  3 Jun 2019 12:09:20 +1000
-Message-Id: <20190603020920.9798-1-dja@axtens.net>
-X-Mailer: git-send-email 2.19.1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45HJXK4nkPzDqQ8
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  3 Jun 2019 12:14:25 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=gibson.dropbear.id.au
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au
+ header.b="NKiwhnD/"; dkim-atps=neutral
+Received: by ozlabs.org (Postfix, from userid 1007)
+ id 45HJXK2xG1z9s4V; Mon,  3 Jun 2019 12:14:25 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+ d=gibson.dropbear.id.au; s=201602; t=1559528065;
+ bh=xCgkrpwLbkg9tDhWKofkOH6HMboontiaU70JSXUUlJw=;
+ h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+ b=NKiwhnD/+UJCJPOjt899/ThfTkjOS9RBFoujk36Q8RLAtoES107vOpxCBzeCOKkoi
+ 0P7tAWJGjxs38jA5QY2PYLVxXpytwF2tNB7kGAjjEQmN9aRWQkwx+Lyy5qD90A/h0v
+ fRtk0TNa8QOVdwEXlCvOfpBs8y5qe7Arl/2Ylc08=
+Date: Mon, 3 Jun 2019 12:03:49 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Alexey Kardashevskiy <aik@ozlabs.ru>
+Subject: Re: [PATCH kernel v3 1/3] powerpc/iommu: Allow bypass-only for DMA
+Message-ID: <20190603020349.GB3411@umbus.fritz.box>
+References: <20190530070355.121802-1-aik@ozlabs.ru>
+ <20190530070355.121802-2-aik@ozlabs.ru>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature"; boundary="1UWUbFP1cBYEclgG"
+Content-Disposition: inline
+In-Reply-To: <20190530070355.121802-2-aik@ozlabs.ru>
+User-Agent: Mutt/1.11.4 (2019-03-13)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -88,332 +66,94 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Herbert Xu <herbert@gondor.apana.org.au>, stable@vger.kernel.org,
- Daniel Axtens <dja@axtens.net>
+Cc: Sam Bobroff <sbobroff@linux.ibm.com>,
+ Alistair Popple <alistair@popple.id.au>, Oliver O'Halloran <oohall@gmail.com>,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-commit 357d065a44cdd77ed5ff35155a989f2a763e96ef upstream.
-[backported: the VMX driver did not use crypto_simd_usable() until
- after 5.1, CRYPTO_ALG_TYPE_SHASH was still specified in .options
- until after 4.14, and the sequence for preparing the kernel to use
- vmx changed after 4.4.]
 
-VMX ghash was using a fallback that did not support interleaving simd
-and nosimd operations, leading to failures in the extended test suite.
+--1UWUbFP1cBYEclgG
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-If I understood correctly, Eric's suggestion was to use the same
-data format that the generic code uses, allowing us to call into it
-with the same contexts. I wasn't able to get that to work - I think
-there's a very different key structure and data layout being used.
+On Thu, May 30, 2019 at 05:03:53PM +1000, Alexey Kardashevskiy wrote:
+> POWER8 and newer support a bypass mode which maps all host memory to
+> PCI buses so an IOMMU table is not always required. However if we fail to
+> create such a table, the DMA setup fails and the kernel does not boot.
+>=20
+> This skips the 32bit DMA setup check if the bypass is can be selected.
+>=20
+> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
 
-So instead steal the arm64 approach and perform the fallback
-operations directly if required.
+Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
 
-Fixes: cc333cd68dfa ("crypto: vmx - Adding GHASH routines for VMX module")
-Cc: stable@vger.kernel.org # v4.1+
-Reported-by: Eric Biggers <ebiggers@google.com>
-Signed-off-by: Daniel Axtens <dja@axtens.net>
-Acked-by: Ard Biesheuvel <ard.biesheuvel@linaro.org>
-Tested-by: Michael Ellerman <mpe@ellerman.id.au>
-Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
-Signed-off-by: Daniel Axtens <dja@axtens.net>
----
+> ---
+>=20
+> This minor thing helped me debugging next 2 patches so it can help
+> somebody else too.
+> ---
+>  arch/powerpc/kernel/dma-iommu.c | 11 +++++------
+>  1 file changed, 5 insertions(+), 6 deletions(-)
+>=20
+> diff --git a/arch/powerpc/kernel/dma-iommu.c b/arch/powerpc/kernel/dma-io=
+mmu.c
+> index 09231ef06d01..809c1dc01edf 100644
+> --- a/arch/powerpc/kernel/dma-iommu.c
+> +++ b/arch/powerpc/kernel/dma-iommu.c
+> @@ -118,18 +118,17 @@ int dma_iommu_dma_supported(struct device *dev, u64=
+ mask)
+>  {
+>  	struct iommu_table *tbl =3D get_iommu_table_base(dev);
+> =20
+> -	if (!tbl) {
+> -		dev_info(dev, "Warning: IOMMU dma not supported: mask 0x%08llx"
+> -			", table unavailable\n", mask);
+> -		return 0;
+> -	}
+> -
+>  	if (dev_is_pci(dev) && dma_iommu_bypass_supported(dev, mask)) {
+>  		dev->archdata.iommu_bypass =3D true;
+>  		dev_dbg(dev, "iommu: 64-bit OK, using fixed ops\n");
+>  		return 1;
+>  	}
+> =20
+> +	if (!tbl) {
+> +		dev_err(dev, "Warning: IOMMU dma not supported: mask 0x%08llx, table u=
+navailable\n", mask);
+> +		return 0;
+> +	}
+> +
+>  	if (tbl->it_offset > (mask >> tbl->it_page_shift)) {
+>  		dev_info(dev, "Warning: IOMMU offset too big for device mask\n");
+>  		dev_info(dev, "mask: 0x%08llx, table offset: 0x%08lx\n",
 
-v2: do stable backport form correctly.
+--=20
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
 
----
- drivers/crypto/vmx/ghash.c | 218 +++++++++++++++----------------------
- 1 file changed, 89 insertions(+), 129 deletions(-)
+--1UWUbFP1cBYEclgG
+Content-Type: application/pgp-signature; name="signature.asc"
 
-diff --git a/drivers/crypto/vmx/ghash.c b/drivers/crypto/vmx/ghash.c
-index 84b9389bf1ed..d6b68cf7bba7 100644
---- a/drivers/crypto/vmx/ghash.c
-+++ b/drivers/crypto/vmx/ghash.c
-@@ -1,22 +1,14 @@
-+// SPDX-License-Identifier: GPL-2.0
- /**
-  * GHASH routines supporting VMX instructions on the Power 8
-  *
-- * Copyright (C) 2015 International Business Machines Inc.
-- *
-- * This program is free software; you can redistribute it and/or modify
-- * it under the terms of the GNU General Public License as published by
-- * the Free Software Foundation; version 2 only.
-- *
-- * This program is distributed in the hope that it will be useful,
-- * but WITHOUT ANY WARRANTY; without even the implied warranty of
-- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-- * GNU General Public License for more details.
-- *
-- * You should have received a copy of the GNU General Public License
-- * along with this program; if not, write to the Free Software
-- * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-+ * Copyright (C) 2015, 2019 International Business Machines Inc.
-  *
-  * Author: Marcelo Henrique Cerri <mhcerri@br.ibm.com>
-+ *
-+ * Extended by Daniel Axtens <dja@axtens.net> to replace the fallback
-+ * mechanism. The new approach is based on arm64 code, which is:
-+ *   Copyright (C) 2014 - 2018 Linaro Ltd. <ard.biesheuvel@linaro.org>
-  */
- 
- #include <linux/types.h>
-@@ -39,71 +31,25 @@ void gcm_ghash_p8(u64 Xi[2], const u128 htable[16],
- 		  const u8 *in, size_t len);
- 
- struct p8_ghash_ctx {
-+	/* key used by vector asm */
- 	u128 htable[16];
--	struct crypto_shash *fallback;
-+	/* key used by software fallback */
-+	be128 key;
- };
- 
- struct p8_ghash_desc_ctx {
- 	u64 shash[2];
- 	u8 buffer[GHASH_DIGEST_SIZE];
- 	int bytes;
--	struct shash_desc fallback_desc;
- };
- 
--static int p8_ghash_init_tfm(struct crypto_tfm *tfm)
--{
--	const char *alg = "ghash-generic";
--	struct crypto_shash *fallback;
--	struct crypto_shash *shash_tfm = __crypto_shash_cast(tfm);
--	struct p8_ghash_ctx *ctx = crypto_tfm_ctx(tfm);
--
--	fallback = crypto_alloc_shash(alg, 0, CRYPTO_ALG_NEED_FALLBACK);
--	if (IS_ERR(fallback)) {
--		printk(KERN_ERR
--		       "Failed to allocate transformation for '%s': %ld\n",
--		       alg, PTR_ERR(fallback));
--		return PTR_ERR(fallback);
--	}
--
--	crypto_shash_set_flags(fallback,
--			       crypto_shash_get_flags((struct crypto_shash
--						       *) tfm));
--
--	/* Check if the descsize defined in the algorithm is still enough. */
--	if (shash_tfm->descsize < sizeof(struct p8_ghash_desc_ctx)
--	    + crypto_shash_descsize(fallback)) {
--		printk(KERN_ERR
--		       "Desc size of the fallback implementation (%s) does not match the expected value: %lu vs %u\n",
--		       alg,
--		       shash_tfm->descsize - sizeof(struct p8_ghash_desc_ctx),
--		       crypto_shash_descsize(fallback));
--		return -EINVAL;
--	}
--	ctx->fallback = fallback;
--
--	return 0;
--}
--
--static void p8_ghash_exit_tfm(struct crypto_tfm *tfm)
--{
--	struct p8_ghash_ctx *ctx = crypto_tfm_ctx(tfm);
--
--	if (ctx->fallback) {
--		crypto_free_shash(ctx->fallback);
--		ctx->fallback = NULL;
--	}
--}
--
- static int p8_ghash_init(struct shash_desc *desc)
- {
--	struct p8_ghash_ctx *ctx = crypto_tfm_ctx(crypto_shash_tfm(desc->tfm));
- 	struct p8_ghash_desc_ctx *dctx = shash_desc_ctx(desc);
- 
- 	dctx->bytes = 0;
- 	memset(dctx->shash, 0, GHASH_DIGEST_SIZE);
--	dctx->fallback_desc.tfm = ctx->fallback;
--	dctx->fallback_desc.flags = desc->flags;
--	return crypto_shash_init(&dctx->fallback_desc);
-+	return 0;
- }
- 
- static int p8_ghash_setkey(struct crypto_shash *tfm, const u8 *key,
-@@ -122,7 +68,53 @@ static int p8_ghash_setkey(struct crypto_shash *tfm, const u8 *key,
- 	gcm_init_p8(ctx->htable, (const u64 *) key);
- 	pagefault_enable();
- 	preempt_enable();
--	return crypto_shash_setkey(ctx->fallback, key, keylen);
-+
-+	memcpy(&ctx->key, key, GHASH_BLOCK_SIZE);
-+
-+	return 0;
-+}
-+
-+static inline void __ghash_block(struct p8_ghash_ctx *ctx,
-+				 struct p8_ghash_desc_ctx *dctx)
-+{
-+	if (!IN_INTERRUPT) {
-+		preempt_disable();
-+		pagefault_disable();
-+		enable_kernel_altivec();
-+		enable_kernel_vsx();
-+		enable_kernel_fp();
-+		gcm_ghash_p8(dctx->shash, ctx->htable,
-+				dctx->buffer, GHASH_DIGEST_SIZE);
-+		pagefault_enable();
-+		preempt_enable();
-+	} else {
-+		crypto_xor((u8 *)dctx->shash, dctx->buffer, GHASH_BLOCK_SIZE);
-+		gf128mul_lle((be128 *)dctx->shash, &ctx->key);
-+	}
-+}
-+
-+static inline void __ghash_blocks(struct p8_ghash_ctx *ctx,
-+				  struct p8_ghash_desc_ctx *dctx,
-+				  const u8 *src, unsigned int srclen)
-+{
-+	if (!IN_INTERRUPT) {
-+		preempt_disable();
-+		pagefault_disable();
-+		enable_kernel_altivec();
-+		enable_kernel_vsx();
-+		enable_kernel_fp();
-+		gcm_ghash_p8(dctx->shash, ctx->htable,
-+				src, srclen);
-+		pagefault_enable();
-+		preempt_enable();
-+	} else {
-+		while (srclen >= GHASH_BLOCK_SIZE) {
-+			crypto_xor((u8 *)dctx->shash, src, GHASH_BLOCK_SIZE);
-+			gf128mul_lle((be128 *)dctx->shash, &ctx->key);
-+			srclen -= GHASH_BLOCK_SIZE;
-+			src += GHASH_BLOCK_SIZE;
-+		}
-+	}
- }
- 
- static int p8_ghash_update(struct shash_desc *desc,
-@@ -132,51 +124,33 @@ static int p8_ghash_update(struct shash_desc *desc,
- 	struct p8_ghash_ctx *ctx = crypto_tfm_ctx(crypto_shash_tfm(desc->tfm));
- 	struct p8_ghash_desc_ctx *dctx = shash_desc_ctx(desc);
- 
--	if (IN_INTERRUPT) {
--		return crypto_shash_update(&dctx->fallback_desc, src,
--					   srclen);
--	} else {
--		if (dctx->bytes) {
--			if (dctx->bytes + srclen < GHASH_DIGEST_SIZE) {
--				memcpy(dctx->buffer + dctx->bytes, src,
--				       srclen);
--				dctx->bytes += srclen;
--				return 0;
--			}
-+	if (dctx->bytes) {
-+		if (dctx->bytes + srclen < GHASH_DIGEST_SIZE) {
- 			memcpy(dctx->buffer + dctx->bytes, src,
--			       GHASH_DIGEST_SIZE - dctx->bytes);
--			preempt_disable();
--			pagefault_disable();
--			enable_kernel_altivec();
--			enable_kernel_vsx();
--			enable_kernel_fp();
--			gcm_ghash_p8(dctx->shash, ctx->htable,
--				     dctx->buffer, GHASH_DIGEST_SIZE);
--			pagefault_enable();
--			preempt_enable();
--			src += GHASH_DIGEST_SIZE - dctx->bytes;
--			srclen -= GHASH_DIGEST_SIZE - dctx->bytes;
--			dctx->bytes = 0;
--		}
--		len = srclen & ~(GHASH_DIGEST_SIZE - 1);
--		if (len) {
--			preempt_disable();
--			pagefault_disable();
--			enable_kernel_altivec();
--			enable_kernel_vsx();
--			enable_kernel_fp();
--			gcm_ghash_p8(dctx->shash, ctx->htable, src, len);
--			pagefault_enable();
--			preempt_enable();
--			src += len;
--			srclen -= len;
--		}
--		if (srclen) {
--			memcpy(dctx->buffer, src, srclen);
--			dctx->bytes = srclen;
-+				srclen);
-+			dctx->bytes += srclen;
-+			return 0;
- 		}
--		return 0;
-+		memcpy(dctx->buffer + dctx->bytes, src,
-+			GHASH_DIGEST_SIZE - dctx->bytes);
-+
-+		__ghash_block(ctx, dctx);
-+
-+		src += GHASH_DIGEST_SIZE - dctx->bytes;
-+		srclen -= GHASH_DIGEST_SIZE - dctx->bytes;
-+		dctx->bytes = 0;
-+	}
-+	len = srclen & ~(GHASH_DIGEST_SIZE - 1);
-+	if (len) {
-+		__ghash_blocks(ctx, dctx, src, len);
-+		src += len;
-+		srclen -= len;
- 	}
-+	if (srclen) {
-+		memcpy(dctx->buffer, src, srclen);
-+		dctx->bytes = srclen;
-+	}
-+	return 0;
- }
- 
- static int p8_ghash_final(struct shash_desc *desc, u8 *out)
-@@ -185,26 +159,14 @@ static int p8_ghash_final(struct shash_desc *desc, u8 *out)
- 	struct p8_ghash_ctx *ctx = crypto_tfm_ctx(crypto_shash_tfm(desc->tfm));
- 	struct p8_ghash_desc_ctx *dctx = shash_desc_ctx(desc);
- 
--	if (IN_INTERRUPT) {
--		return crypto_shash_final(&dctx->fallback_desc, out);
--	} else {
--		if (dctx->bytes) {
--			for (i = dctx->bytes; i < GHASH_DIGEST_SIZE; i++)
--				dctx->buffer[i] = 0;
--			preempt_disable();
--			pagefault_disable();
--			enable_kernel_altivec();
--			enable_kernel_vsx();
--			enable_kernel_fp();
--			gcm_ghash_p8(dctx->shash, ctx->htable,
--				     dctx->buffer, GHASH_DIGEST_SIZE);
--			pagefault_enable();
--			preempt_enable();
--			dctx->bytes = 0;
--		}
--		memcpy(out, dctx->shash, GHASH_DIGEST_SIZE);
--		return 0;
-+	if (dctx->bytes) {
-+		for (i = dctx->bytes; i < GHASH_DIGEST_SIZE; i++)
-+			dctx->buffer[i] = 0;
-+		__ghash_block(ctx, dctx);
-+		dctx->bytes = 0;
- 	}
-+	memcpy(out, dctx->shash, GHASH_DIGEST_SIZE);
-+	return 0;
- }
- 
- struct shash_alg p8_ghash_alg = {
-@@ -219,11 +181,9 @@ struct shash_alg p8_ghash_alg = {
- 		 .cra_name = "ghash",
- 		 .cra_driver_name = "p8_ghash",
- 		 .cra_priority = 1000,
--		 .cra_flags = CRYPTO_ALG_TYPE_SHASH | CRYPTO_ALG_NEED_FALLBACK,
-+		 .cra_flags = CRYPTO_ALG_TYPE_SHASH,
- 		 .cra_blocksize = GHASH_BLOCK_SIZE,
- 		 .cra_ctxsize = sizeof(struct p8_ghash_ctx),
- 		 .cra_module = THIS_MODULE,
--		 .cra_init = p8_ghash_init_tfm,
--		 .cra_exit = p8_ghash_exit_tfm,
- 	},
- };
--- 
-2.19.1
+-----BEGIN PGP SIGNATURE-----
 
+iQIzBAEBCAAdFiEEdfRlhq5hpmzETofcbDjKyiDZs5IFAlz0gAIACgkQbDjKyiDZ
+s5JYyxAAniTJ9FJnUPGWo2wWvCB2es38BHCX3vTWyh7hODggkByaCsvx2loscfMs
+YxrHsgxZQXebrUFaAhnKfwsoJXlVpTxsBNpbMu5C15eGxy/2wADwys8DCq5BsG5B
+8uTkhX3bLevaE85xP/cs1kZQO9ZOsgULJ0dknxlDHDROhWKRMJUFv/hPfioX7l/7
+601ngW/bAxKTqH/riS7PDd4sra/AoPBBa2LqO8iZzQCKWmXVWn8o0BJ6x9+5psnJ
+Ve2bsV32AA2M0MiDj/WPRQXqA9GRAMZITcgZea6yFXa5gUlAGxdd5BXynJHal3Hm
+nusPKq5WbGBmSg9tj3Rf5QliGl/GWRoPxt54qlYjLJvWkzL4ObUYUrX9YodUcBKQ
+sBMQYGfJLaxSSzumuTUCuSAoc5uzNUF9i9AIbF3/w1SXOtG7hLnKs4rq76GBEt5b
+TVr1t+vmmC3t+7TqX0UL2mLazudMMOQy9hVHExvlWMGaTvWz9ErODdtZf2XWtmQH
+0M9EetXpXEPRr9OcFxvjPiASPJe4ZPbuyqShslcAq+Wuv9CkpbhW2fveb71NPv1l
+tA80HUDPL9uObDkeWiIwH9lPwqQ6kb+i6JIqQjMwt3IvZQWFu6yC5LB6OB05Ru4T
+rKn1UUMIyAtCBaQ3yV4e2xBxAKJ055DaUBXOCObNqbV7nv1pA58=
+=mRGo
+-----END PGP SIGNATURE-----
+
+--1UWUbFP1cBYEclgG--
