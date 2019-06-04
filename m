@@ -2,59 +2,92 @@ Return-Path: <SRS0=V6lO=UD=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_MUTT autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id ADE23C282CE
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Jun 2019 09:11:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 32A3AC282CE
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Jun 2019 09:12:58 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3CD6224CB3
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Jun 2019 09:11:17 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3CD6224CB3
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.intel.com
+	by mail.kernel.org (Postfix) with ESMTPS id B675C22CBD
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Jun 2019 09:12:57 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B675C22CBD
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45J5kq0DMdzDqJH
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Jun 2019 19:11:15 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45J5ml0s5yzDqDM
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Jun 2019 19:12:55 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=linux.intel.com
- (client-ip=192.55.52.43; helo=mga05.intel.com;
- envelope-from=richardw.yang@linux.intel.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=linux.intel.com
-Received: from mga05.intel.com (mga05.intel.com [192.55.52.43])
+ spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
+ (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
+ envelope-from=aneesh.kumar@linux.ibm.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=linux.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45J4vR4N8hzDqK9
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Jun 2019 18:33:39 +1000 (AEST)
-X-Amp-Result: UNKNOWN
-X-Amp-Original-Verdict: FILE UNKNOWN
-X-Amp-File-Uploaded: False
-Received: from orsmga006.jf.intel.com ([10.7.209.51])
- by fmsmga105.fm.intel.com with ESMTP/TLS/DHE-RSA-AES256-GCM-SHA384;
- 04 Jun 2019 01:32:26 -0700
-X-ExtLoop1: 1
-Received: from richard.sh.intel.com (HELO localhost) ([10.239.159.54])
- by orsmga006.jf.intel.com with ESMTP; 04 Jun 2019 01:32:17 -0700
-Date: Tue, 4 Jun 2019 16:31:48 +0800
-From: Wei Yang <richardw.yang@linux.intel.com>
-To: David Hildenbrand <david@redhat.com>
-Subject: Re: [PATCH v3 06/11] mm/memory_hotplug: Allow arch_remove_pages()
- without CONFIG_MEMORY_HOTREMOVE
-Message-ID: <20190604083148.GA28403@richard>
-References: <20190527111152.16324-1-david@redhat.com>
- <20190527111152.16324-7-david@redhat.com>
- <20190603221540.bvhuvltlwuirm5sl@master>
- <2ba74d1d-643e-7e22-acff-2b04c579b4f8@redhat.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45J5jV3bM5zDqPc
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Jun 2019 19:10:06 +1000 (AEST)
+Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
+ x5499wtr120271
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 4 Jun 2019 05:10:02 -0400
+Received: from e13.ny.us.ibm.com (e13.ny.us.ibm.com [129.33.205.203])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2swns7r06r-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 04 Jun 2019 05:10:02 -0400
+Received: from localhost
+ by e13.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.ibm.com>;
+ Tue, 4 Jun 2019 10:10:02 +0100
+Received: from b01cxnp22033.gho.pok.ibm.com (9.57.198.23)
+ by e13.ny.us.ibm.com (146.89.104.200) with IBM ESMTP SMTP Gateway: Authorized
+ Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Tue, 4 Jun 2019 10:09:58 +0100
+Received: from b01ledav005.gho.pok.ibm.com (b01ledav005.gho.pok.ibm.com
+ [9.57.199.110])
+ by b01cxnp22033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x5499vQ015728696
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Tue, 4 Jun 2019 09:09:57 GMT
+Received: from b01ledav005.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 65482AE06D;
+ Tue,  4 Jun 2019 09:09:56 +0000 (GMT)
+Received: from b01ledav005.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id BC025AE063;
+ Tue,  4 Jun 2019 09:09:54 +0000 (GMT)
+Received: from skywalker.in.ibm.com (unknown [9.124.35.234])
+ by b01ledav005.gho.pok.ibm.com (Postfix) with ESMTP;
+ Tue,  4 Jun 2019 09:09:54 +0000 (GMT)
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
+To: akpm@linux-foundation.org
+Subject: [PATCH] mm/mmap: Move common defines to mman-common.h
+Date: Tue,  4 Jun 2019 14:39:50 +0530
+X-Mailer: git-send-email 2.21.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <2ba74d1d-643e-7e22-acff-2b04c579b4f8@redhat.com>
-User-Agent: Mutt/1.10.1 (2018-07-13)
-X-Mailman-Approved-At: Tue, 04 Jun 2019 19:07:14 +1000
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+x-cbid: 19060409-0064-0000-0000-000003E974B8
+X-IBM-SpamModules-Scores: 
+X-IBM-SpamModules-Versions: BY=3.00011212; HX=3.00000242; KW=3.00000007;
+ PH=3.00000004; SC=3.00000286; SDB=6.01213036; UDB=6.00637527; IPR=6.00994103; 
+ MB=3.00027178; MTD=3.00000008; XFM=3.00000015; UTC=2019-06-04 09:10:00
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 19060409-0065-0000-0000-00003DBBE0F9
+Message-Id: <20190604090950.31417-1-aneesh.kumar@linux.ibm.com>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
+ definitions=2019-06-04_07:, , signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ malwarescore=0 suspectscore=1 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=400 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1810050000 definitions=main-1906040061
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -66,73 +99,102 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Reply-To: Wei Yang <richardw.yang@linux.intel.com>
-Cc: Oscar Salvador <osalvador@suse.com>, Rich Felker <dalias@libc.org>,
- linux-ia64@vger.kernel.org, Anshuman Khandual <anshuman.khandual@arm.com>,
- linux-sh@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>,
- Dave Hansen <dave.hansen@linux.intel.com>,
- Heiko Carstens <heiko.carstens@de.ibm.com>, Arun KS <arunks@codeaurora.org>,
- Wei Yang <richard.weiyang@gmail.com>, linux-mm@kvack.org,
- Michal Hocko <mhocko@suse.com>, Paul Mackerras <paulus@samba.org>,
- "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
- Qian Cai <cai@lca.pw>, linux-s390@vger.kernel.org,
- Yoshinori Sato <ysato@users.sourceforge.jp>,
- "Rafael J. Wysocki" <rafael@kernel.org>, Mike Rapoport <rppt@linux.ibm.com>,
- Ingo Molnar <mingo@redhat.com>, Fenghua Yu <fenghua.yu@intel.com>,
- Pavel Tatashin <pasha.tatashin@soleen.com>, Vasily Gorbik <gor@linux.ibm.com>,
- Rob Herring <robh@kernel.org>, "mike.travis@hpe.com" <mike.travis@hpe.com>,
- Nicholas Piggin <npiggin@gmail.com>, Alex Deucher <alexander.deucher@amd.com>,
- Mark Brown <broonie@kernel.org>, Borislav Petkov <bp@alien8.de>,
- Andy Lutomirski <luto@kernel.org>, Dan Williams <dan.j.williams@intel.com>,
- Chris Wilson <chris@chris-wilson.co.uk>, linux-arm-kernel@lists.infradead.org,
- Tony Luck <tony.luck@intel.com>, Baoquan He <bhe@redhat.com>,
- Masahiro Yamada <yamada.masahiro@socionext.com>,
- Mathieu Malaterre <malat@debian.org>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Andrew Banman <andrew.banman@hpe.com>, linux-kernel@vger.kernel.org,
- Logan Gunthorpe <logang@deltatee.com>,
- Wei Yang <richardw.yang@linux.intel.com>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>,
- Igor Mammedov <imammedo@redhat.com>, akpm@linux-foundation.org,
- linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>,
- "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>
+Cc: sparclinux@vger.kernel.org, linux-mm@kvack.org,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, Jun 04, 2019 at 08:59:43AM +0200, David Hildenbrand wrote:
->On 04.06.19 00:15, Wei Yang wrote:
->> Allow arch_remove_pages() or arch_remove_memory()?
->
->Looks like I merged __remove_pages() and arch_remove_memory().
->
->@Andrew, can you fix this up to
->
->"mm/memory_hotplug: Allow arch_remove_memory() without
->CONFIG_MEMORY_HOTREMOVE"
->
->? Thanks!
->
+Two architecture that use arch specific MMAP flags are powerpc and sparc.
+We still have few flag values common across them and other architectures.
+Consolidate this in mman-common.h.
 
-Already merged?
+Also update the comment to indicate where to find HugeTLB specific reserved
+values
 
->> 
->> And want to confirm the kernel build on affected arch succeed?
->
->I compile-tested on s390x and x86. As the patches are in linux-next for
->some time, I think the other builds are also fine.
->
+Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
+---
+ arch/powerpc/include/uapi/asm/mman.h   | 6 +-----
+ arch/sparc/include/uapi/asm/mman.h     | 6 ------
+ include/uapi/asm-generic/mman-common.h | 6 +++++-
+ include/uapi/asm-generic/mman.h        | 9 ++++-----
+ 4 files changed, 10 insertions(+), 17 deletions(-)
 
-Yep, sounds good~
-
->Thanks!
->
->-- 
->
->Thanks,
->
->David / dhildenb
-
+diff --git a/arch/powerpc/include/uapi/asm/mman.h b/arch/powerpc/include/uapi/asm/mman.h
+index 65065ce32814..c0c737215b00 100644
+--- a/arch/powerpc/include/uapi/asm/mman.h
++++ b/arch/powerpc/include/uapi/asm/mman.h
+@@ -21,15 +21,11 @@
+ #define MAP_DENYWRITE	0x0800		/* ETXTBSY */
+ #define MAP_EXECUTABLE	0x1000		/* mark it as an executable */
+ 
++
+ #define MCL_CURRENT     0x2000          /* lock all currently mapped pages */
+ #define MCL_FUTURE      0x4000          /* lock all additions to address space */
+ #define MCL_ONFAULT	0x8000		/* lock all pages that are faulted in */
+ 
+-#define MAP_POPULATE	0x8000		/* populate (prefault) pagetables */
+-#define MAP_NONBLOCK	0x10000		/* do not block on IO */
+-#define MAP_STACK	0x20000		/* give out an address that is best suited for process/thread stacks */
+-#define MAP_HUGETLB	0x40000		/* create a huge page mapping */
+-
+ /* Override any generic PKEY permission defines */
+ #define PKEY_DISABLE_EXECUTE   0x4
+ #undef PKEY_ACCESS_MASK
+diff --git a/arch/sparc/include/uapi/asm/mman.h b/arch/sparc/include/uapi/asm/mman.h
+index f6f99ec65bb3..cec9f4109687 100644
+--- a/arch/sparc/include/uapi/asm/mman.h
++++ b/arch/sparc/include/uapi/asm/mman.h
+@@ -22,10 +22,4 @@
+ #define MCL_FUTURE      0x4000          /* lock all additions to address space */
+ #define MCL_ONFAULT	0x8000		/* lock all pages that are faulted in */
+ 
+-#define MAP_POPULATE	0x8000		/* populate (prefault) pagetables */
+-#define MAP_NONBLOCK	0x10000		/* do not block on IO */
+-#define MAP_STACK	0x20000		/* give out an address that is best suited for process/thread stacks */
+-#define MAP_HUGETLB	0x40000		/* create a huge page mapping */
+-
+-
+ #endif /* _UAPI__SPARC_MMAN_H__ */
+diff --git a/include/uapi/asm-generic/mman-common.h b/include/uapi/asm-generic/mman-common.h
+index bea0278f65ab..ef4623f03156 100644
+--- a/include/uapi/asm-generic/mman-common.h
++++ b/include/uapi/asm-generic/mman-common.h
+@@ -25,7 +25,11 @@
+ # define MAP_UNINITIALIZED 0x0		/* Don't support this flag */
+ #endif
+ 
+-/* 0x0100 - 0x40000 flags are defined in asm-generic/mman.h */
++/* 0x0100 - 0x4000 flags are defined in asm-generic/mman.h */
++#define MAP_POPULATE		0x008000	/* populate (prefault) pagetables */
++#define MAP_NONBLOCK		0x010000	/* do not block on IO */
++#define MAP_STACK		0x020000	/* give out an address that is best suited for process/thread stacks */
++#define MAP_HUGETLB		0x040000	/* create a huge page mapping */
+ #define MAP_SYNC		0x080000 /* perform synchronous page faults for the mapping */
+ #define MAP_FIXED_NOREPLACE	0x100000	/* MAP_FIXED which doesn't unmap underlying mapping */
+ 
+diff --git a/include/uapi/asm-generic/mman.h b/include/uapi/asm-generic/mman.h
+index 2dffcbf705b3..57e8195d0b53 100644
+--- a/include/uapi/asm-generic/mman.h
++++ b/include/uapi/asm-generic/mman.h
+@@ -9,12 +9,11 @@
+ #define MAP_EXECUTABLE	0x1000		/* mark it as an executable */
+ #define MAP_LOCKED	0x2000		/* pages are locked */
+ #define MAP_NORESERVE	0x4000		/* don't check for reservations */
+-#define MAP_POPULATE	0x8000		/* populate (prefault) pagetables */
+-#define MAP_NONBLOCK	0x10000		/* do not block on IO */
+-#define MAP_STACK	0x20000		/* give out an address that is best suited for process/thread stacks */
+-#define MAP_HUGETLB	0x40000		/* create a huge page mapping */
+ 
+-/* Bits [26:31] are reserved, see mman-common.h for MAP_HUGETLB usage */
++/*
++ * Bits [26:31] are reserved, see asm-generic/hugetlb_encode.h
++ * for MAP_HUGETLB usage
++ */
+ 
+ #define MCL_CURRENT	1		/* lock all current mappings */
+ #define MCL_FUTURE	2		/* lock all future mappings */
 -- 
-Wei Yang
-Help you, Help me
+2.21.0
+
