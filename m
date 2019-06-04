@@ -3,62 +3,51 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
 X-Spam-Status: No, score=-4.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 822B9C282CE
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Jun 2019 08:04:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 200EFC282CE
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Jun 2019 08:13:34 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 11FEC2403C
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Jun 2019 08:04:20 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 11FEC2403C
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
+	by mail.kernel.org (Postfix) with ESMTPS id 578412461E
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Jun 2019 08:13:33 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 578412461E
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45J4Fb0xYRzDqPB
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Jun 2019 18:04:19 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45J4SC0gdLzDqXT
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Jun 2019 18:13:31 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=209.85.208.193; helo=mail-lj1-f193.google.com;
- envelope-from=geert.uytterhoeven@gmail.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=linux-m68k.org
-Received: from mail-lj1-f193.google.com (mail-lj1-f193.google.com
- [209.85.208.193])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45J4CT6FTszDqV6
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Jun 2019 18:02:29 +1000 (AEST)
-Received: by mail-lj1-f193.google.com with SMTP id t28so7625073lje.9
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 04 Jun 2019 01:02:29 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:mime-version:references:in-reply-to:from:date
- :message-id:subject:to:cc;
- bh=YKrWcEE+1+xOTvbjgAfsUzEO5QbPrU8ilMZ5XA3rETw=;
- b=idC8QPRUjSC1khBWok1p8Hz4hB/FhT3dGtRo7lfVJ96xmKnCn2f/W6mRcMg4ZNB7Ja
- nCvpW7bh3fY2o6oItRNNeuDyzYBYcdttdfgG3neebkWsZZZPNhb6512DSPCMewZx40zW
- ldCwYx034VW4SMnlNDeW5cOk0BeyEWAXZTjFifSdMMXKJ+4MEMyC1XfwzO9UQ3GK2mRo
- NY08tOjfFFgxk+c61yuhct05LpC1tkS5BLtDCrbmTX0wNB3kp/ncZxoA8MzTedakgrdz
- zqiJEqoEZI7D6afjsFmtUWrzALMbziOZI2NGbxBt3Fxxgg6nVzylTXn6/8ORutcOTioY
- s22w==
-X-Gm-Message-State: APjAAAViXjDko1NC+YU6VtWegUQtsDDVUsf2OUDO/Dhqvd6GdyLOUXce
- Ti17AVh83EHRy8DcSxGqoR/ohrWcaXN3f5MjusM=
-X-Google-Smtp-Source: APXvYqzzf13C6wiQMMFGa7+YGno05GQRLA5lbCkTvOdIMMODSSpqRw2+8UyeCEu5iNIWNk+qucMElr3uAFn6IYCf3GU=
-X-Received: by 2002:a2e:91c5:: with SMTP id u5mr4699545ljg.65.1559635345302;
- Tue, 04 Jun 2019 01:02:25 -0700 (PDT)
+ spf=pass (mailfrom) smtp.mailfrom=arm.com
+ (client-ip=217.140.101.70; helo=foss.arm.com;
+ envelope-from=anshuman.khandual@arm.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=arm.com
+Received: from foss.arm.com (foss.arm.com [217.140.101.70])
+ by lists.ozlabs.org (Postfix) with ESMTP id 45J4Qg37rHzDqKw
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Jun 2019 18:12:09 +1000 (AEST)
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.72.51.249])
+ by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 22F87A78;
+ Tue,  4 Jun 2019 01:12:06 -0700 (PDT)
+Received: from [10.162.40.144] (p8cg001049571a15.blr.arm.com [10.162.40.144])
+ by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id
+ 82BA43F246; Tue,  4 Jun 2019 01:11:55 -0700 (PDT)
+Subject: Re: [RFC V2] mm: Generalize notify_page_fault()
+To: Peter Zijlstra <peterz@infradead.org>
+References: <1559630046-12940-1-git-send-email-anshuman.khandual@arm.com>
+ <20190604065401.GE3402@hirez.programming.kicks-ass.net>
+From: Anshuman Khandual <anshuman.khandual@arm.com>
+Message-ID: <afe886e5-8420-0c33-ed2f-159cd3d55882@arm.com>
+Date: Tue, 4 Jun 2019 13:42:10 +0530
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:52.0) Gecko/20100101
+ Thunderbird/52.9.1
 MIME-Version: 1.0
-References: <1559635233-21385-1-git-send-email-krzk@kernel.org>
-In-Reply-To: <1559635233-21385-1-git-send-email-krzk@kernel.org>
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Tue, 4 Jun 2019 10:02:13 +0200
-Message-ID: <CAMuHMdVn5PtJEHApLQ8-C02Hr+ghhKQb2EAP=Kgr9oQwR6psTg@mail.gmail.com>
-Subject: Re: [PATCH] powerpc/configs: Remove useless UEVENT_HELPER_PATH
-To: Krzysztof Kozlowski <krzk@kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+In-Reply-To: <20190604065401.GE3402@hirez.programming.kicks-ass.net>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -70,36 +59,62 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Geert Uytterhoeven <geert+renesas@glider.be>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Paul Mackerras <paulus@samba.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Cc: Mark Rutland <mark.rutland@arm.com>, Michal Hocko <mhocko@suse.com>,
+ linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org,
+ Catalin Marinas <catalin.marinas@arm.com>,
+ Dave Hansen <dave.hansen@linux.intel.com>, Will Deacon <will.deacon@arm.com>,
+ linux-mm@kvack.org, Paul Mackerras <paulus@samba.org>,
+ sparclinux@vger.kernel.org, linux-s390@vger.kernel.org,
+ Yoshinori Sato <ysato@users.sourceforge.jp>, x86@kernel.org,
+ Russell King <linux@armlinux.org.uk>, Matthew Wilcox <willy@infradead.org>,
+ Ingo Molnar <mingo@redhat.com>, Fenghua Yu <fenghua.yu@intel.com>,
+ Stephen Rothwell <sfr@canb.auug.org.au>,
+ Andrey Konovalov <andreyknvl@google.com>, Andy Lutomirski <luto@kernel.org>,
+ Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org,
+ Tony Luck <tony.luck@intel.com>, Heiko Carstens <heiko.carstens@de.ibm.com>,
+ linux-kernel@vger.kernel.org, Martin Schwidefsky <schwidefsky@de.ibm.com>,
+ Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
+ "David S. Miller" <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, Jun 4, 2019 at 10:01 AM Krzysztof Kozlowski <krzk@kernel.org> wrote:
-> Remove the CONFIG_UEVENT_HELPER_PATH because:
-> 1. It is disabled since commit 1be01d4a5714 ("driver: base: Disable
->    CONFIG_UEVENT_HELPER by default") as its dependency (UEVENT_HELPER) was
->    made default to 'n',
-> 2. It is not recommended (help message: "This should not be used today
->    [...] creates a high system load") and was kept only for ancient
->    userland,
-> 3. Certain userland specifically requests it to be disabled (systemd
->    README: "Legacy hotplug slows down the system and confuses udev").
->
-> Signed-off-by: Krzysztof Kozlowski <krzk@kernel.org>
 
-Acked-by: Geert Uytterhoeven <geert+renesas@glider.be>
 
-Gr{oetje,eeting}s,
+On 06/04/2019 12:24 PM, Peter Zijlstra wrote:
+> On Tue, Jun 04, 2019 at 12:04:06PM +0530, Anshuman Khandual wrote:
+>> diff --git a/mm/memory.c b/mm/memory.c
+>> index ddf20bd..b6bae8f 100644
+>> --- a/mm/memory.c
+>> +++ b/mm/memory.c
+>> @@ -52,6 +52,7 @@
+>>  #include <linux/pagemap.h>
+>>  #include <linux/memremap.h>
+>>  #include <linux/ksm.h>
+>> +#include <linux/kprobes.h>
+>>  #include <linux/rmap.h>
+>>  #include <linux/export.h>
+>>  #include <linux/delayacct.h>
+>> @@ -141,6 +142,21 @@ static int __init init_zero_pfn(void)
+>>  core_initcall(init_zero_pfn);
+>>  
+>>  
+>> +int __kprobes notify_page_fault(struct pt_regs *regs, unsigned int trap)
+>> +{
+>> +	int ret = 0;
+>> +
+>> +	/*
+>> +	 * To be potentially processing a kprobe fault and to be allowed
+>> +	 * to call kprobe_running(), we have to be non-preemptible.
+>> +	 */
+>> +	if (kprobes_built_in() && !preemptible() && !user_mode(regs)) {
+>> +		if (kprobe_running() && kprobe_fault_handler(regs, trap))
+>> +			ret = 1;
+>> +	}
+>> +	return ret;
+>> +}
+> 
+> That thing should be called kprobe_page_fault() or something,
+> notify_page_fault() is a horribly crap name for this function.
 
-                        Geert
-
--- 
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+Agreed. kprobe_page_fault() sounds good.
