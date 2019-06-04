@@ -2,90 +2,68 @@ Return-Path: <SRS0=V6lO=UD=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 90A0AC282CE
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Jun 2019 09:26:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D64FBC282CE
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Jun 2019 10:13:24 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 1D07324619
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Jun 2019 09:26:27 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1D07324619
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 24AF22084A
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Jun 2019 10:13:23 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="d9cIWZCZ"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 24AF22084A
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45J64K0h1hzDqHH
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Jun 2019 19:26:25 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45J76T1R7MzDqNB
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Jun 2019 20:13:21 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=linux.vnet.ibm.com
- (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=sachinp@linux.vnet.ibm.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=linux.vnet.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+ spf=permerror (mailfrom) smtp.mailfrom=kernel.org
+ (client-ip=2001:8b0:10b:1236::1; helo=casper.infradead.org;
+ envelope-from=mchehab+samsung@kernel.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=fail (p=none dis=none) header.from=kernel.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=infradead.org header.i=@infradead.org
+ header.b="d9cIWZCZ"; dkim-atps=neutral
+Received: from casper.infradead.org (casper.infradead.org
+ [IPv6:2001:8b0:10b:1236::1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45J62j38hpzDq9n
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Jun 2019 19:25:00 +1000 (AEST)
-Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x549Hacp144233
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 4 Jun 2019 05:24:58 -0400
-Received: from e06smtp03.uk.ibm.com (e06smtp03.uk.ibm.com [195.75.94.99])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2swns7rmnm-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 04 Jun 2019 05:24:58 -0400
-Received: from localhost
- by e06smtp03.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <sachinp@linux.vnet.ibm.com>;
- Tue, 4 Jun 2019 10:24:56 +0100
-Received: from b06cxnps3075.portsmouth.uk.ibm.com (9.149.109.195)
- by e06smtp03.uk.ibm.com (192.168.101.133) with IBM ESMTP SMTP Gateway:
- Authorized Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Tue, 4 Jun 2019 10:24:54 +0100
-Received: from b06wcsmtp001.portsmouth.uk.ibm.com
- (b06wcsmtp001.portsmouth.uk.ibm.com [9.149.105.160])
- by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x549OrfL62914798
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Tue, 4 Jun 2019 09:24:53 GMT
-Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 5A1B2A4065;
- Tue,  4 Jun 2019 09:24:53 +0000 (GMT)
-Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id B6F7FA4054;
- Tue,  4 Jun 2019 09:24:52 +0000 (GMT)
-Received: from [9.109.244.70] (unknown [9.109.244.70])
- by b06wcsmtp001.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Tue,  4 Jun 2019 09:24:52 +0000 (GMT)
-From: Sachin Sant <sachinp@linux.vnet.ibm.com>
-Content-Type: text/plain;
-	charset=utf-8
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45J74G6RsdzDqN2
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Jun 2019 20:11:26 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+ d=infradead.org; s=casper.20170209; h=Content-Transfer-Encoding:Content-Type:
+ MIME-Version:References:In-Reply-To:Message-ID:Subject:Cc:To:From:Date:Sender
+ :Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
+ Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:List-Help:
+ List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
+ bh=RqlFiW8mqvn7VXsVgTdqn3QWI09o+fvsDMKwHHMYzmM=; b=d9cIWZCZ55BJMQwQks2BNYpnDx
+ FqYMGyyRB1/+xnBZRQfrn9L/vQOb3XFT6N2WpEBsZAYZoZbB/q7ZATyrLrNVWfSWI25HFL3inBEUU
+ vUdxdMhnNSspqMB6VC5iO2IIejt7RRQ3/VUlXkNtF+IYokbxbNlXoEDmre6nm5C0Aej2yZ/tky0mB
+ tEH7cJigZ0HyD2xXpUJZ1kcoRPkbjssCBOIh75l3gt6dOnBtH1yDtowQkM7ht2irwKoblXvOsRAQX
+ qyMsNFrrpG+tlA7Ihz3bC6PHmi8cqIpfcR2sloY0tI/zNa9b7flEVlJIBlvKL5taPWiCjXJ2TFzd4
+ KCADzMrQ==;
+Received: from [187.113.6.249] (helo=coco.lan)
+ by casper.infradead.org with esmtpsa (Exim 4.90_1 #2 (Red Hat Linux))
+ id 1hY6PB-0005Su-8Q; Tue, 04 Jun 2019 10:10:57 +0000
+Date: Tue, 4 Jun 2019 07:10:48 -0300
+From: Mauro Carvalho Chehab <mchehab+samsung@kernel.org>
+To: Christophe Leroy <christophe.leroy@c-s.fr>
+Subject: Re: [PATCH 09/22] docs: mark orphan documents as such
+Message-ID: <20190604071048.4f226fff@coco.lan>
+In-Reply-To: <2891a08c-50b1-db33-0e96-740d45c5235f@c-s.fr>
+References: <cover.1559171394.git.mchehab+samsung@kernel.org>
+ <e0bf4e767dd5de9189e5993fbec2f4b1bafd2064.1559171394.git.mchehab+samsung@kernel.org>
+ <2891a08c-50b1-db33-0e96-740d45c5235f@c-s.fr>
+X-Mailer: Claws Mail 3.17.3 (GTK+ 2.24.32; x86_64-redhat-linux-gnu)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: quoted-printable
-Mime-Version: 1.0 (Mac OS X Mail 12.4 \(3445.104.11\))
-Subject: [PowerPC][next-20190603] WARNING: at kernel/fork.c:721
-Date: Tue, 4 Jun 2019 14:54:51 +0530
-To: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-X-Mailer: Apple Mail (2.3445.104.11)
-X-TM-AS-GCONF: 00
-x-cbid: 19060409-0012-0000-0000-00000322F38A
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19060409-0013-0000-0000-0000215BD195
-Message-Id: <ED78D3E2-CDCB-494F-9918-2C086F9BC158@linux.vnet.ibm.com>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2019-06-04_07:, , signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=607 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1810050000 definitions=main-1906040062
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -97,86 +75,273 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-next@vger.kernel.org
+Cc: kvm@vger.kernel.org, Radim =?UTF-8?B?S3LEjW3DocWZ?= <rkrcmar@redhat.com>,
+ Maxime Ripard <maxime.ripard@bootlin.com>, dri-devel@lists.freedesktop.org,
+ platform-driver-x86@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+ linux-stm32@st-md-mailman.stormreply.com, Andrew Donnellan <ajd@linux.ibm.com>,
+ Jonathan Corbet <corbet@lwn.net>,
+ Linux Doc Mailing List <linux-doc@vger.kernel.org>,
+ David Airlie <airlied@linux.ie>, Alexandre Torgue <alexandre.torgue@st.com>,
+ linux-pm@vger.kernel.org,
+ Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+ Matan Ziv-Av <matan@svgalib.org>,
+ Mauro Carvalho Chehab <mchehab@infradead.org>, Daniel Vetter <daniel@ffwll.ch>,
+ Sean Paul <sean@poorly.run>, linux-arm-kernel@lists.infradead.org,
+ linux-kernel@vger.kernel.org, Maxime Coquelin <mcoquelin.stm32@gmail.com>,
+ Frederic Barrat <fbarrat@linux.ibm.com>, Paolo Bonzini <pbonzini@redhat.com>,
+ linuxppc-dev@lists.ozlabs.org, Georgi Djakov <georgi.djakov@linaro.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-While booting linux-next [20190603] on a POWER9 LPAR ran into
-following warning
+Em Mon, 3 Jun 2019 09:32:54 +0200
+Christophe Leroy <christophe.leroy@c-s.fr> escreveu:
 
-[    9.002935] WARNING: CPU: 0 PID: 1 at kernel/fork.c:721 =
-__put_task_struct+0x34/0x170
-[    9.002947] Modules linked in: dm_mirror dm_region_hash dm_log dm_mod
-[    9.002960] CPU: 0 PID: 1 Comm: systemd Not tainted =
-5.2.0-rc3-next-20190603-autotest #1
-[    9.002971] NIP:  c0000000001191e4 LR: c00000000020c53c CTR: =
-0000000000000000
-[    9.002980] REGS: c0000008b2783810 TRAP: 0700   Not tainted  =
-(5.2.0-rc3-next-20190603-autotest)
-[    9.002990] MSR:  8000000000029033 <SF,EE,ME,IR,DR,RI,LE>  CR: =
-24222842  XER: 20040000
-[    9.003004] CFAR: c00000000020c538 IRQMASK: 0=20
-[    9.003004] GPR00: c00000000020c53c c0000008b2783aa0 c00000000138ca00 =
-c0000008b92e19f8=20
-[    9.003004] GPR04: c0000008b2783b98 c0000008b2783b98 c0000008b92e24b0 =
-0000000000000000=20
-[    9.003004] GPR08: 0000000000000000 0000000000000001 0000000000000000 =
-c000000000a81060=20
-[    9.003004] GPR12: 0000000024224842 c0000000017c0000 0000000000000000 =
-0000000000000000=20
-[    9.003004] GPR16: 0000000000000000 0000000000000000 0000000000000000 =
-0000000000000001=20
-[    9.003004] GPR20: 0000000000000000 00007fff95f90000 c0000008b2756dc0 =
-c0000008b2783df0=20
-[    9.003004] GPR24: 0000000000002000 c0000008ad74d200 c0000008b926a218 =
-0000000000000000=20
-[    9.003004] GPR28: c0000008b92e1400 0000000000000000 0000000000000000 =
-c0000008b92e19f8=20
-[    9.003083] NIP [c0000000001191e4] __put_task_struct+0x34/0x170
-[    9.003094] LR [c00000000020c53c] css_task_iter_end+0x11c/0x1b0
-[    9.003101] Call Trace:
-[    9.003108] [c0000008b2783aa0] [c0000008b92e1400] 0xc0000008b92e1400 =
-(unreliable)
-[    9.003119] [c0000008b2783ad0] [c00000000020c53c] =
-css_task_iter_end+0x11c/0x1b0
-[    9.003129] [c0000008b2783b10] [c00000000020f60c] =
-pidlist_array_load+0x12c/0x390
-[    9.003140] [c0000008b2783bf0] [c00000000020fa20] =
-cgroup_pidlist_start+0x1b0/0x1e0
-[    9.003151] [c0000008b2783c40] [c0000000001ffd98] =
-cgroup_seqfile_start+0x38/0x50
-[    9.003163] [c0000008b2783c60] [c00000000049c270] =
-kernfs_seq_start+0x80/0x120
-[    9.003175] [c0000008b2783ca0] [c0000000003fea08] =
-seq_read+0x208/0x540
-[    9.003184] [c0000008b2783d20] [c00000000049cdd4] =
-kernfs_fop_read+0x1a4/0x260
-[    9.003196] [c0000008b2783d70] [c0000000003c3cec] =
-__vfs_read+0x3c/0x70
-[    9.003205] [c0000008b2783d90] [c0000000003c3dd4] vfs_read+0xb4/0x1b0
-[    9.003214] [c0000008b2783dd0] [c0000000003c42bc] =
-ksys_read+0x7c/0x130
-[    9.003224] [c0000008b2783e20] [c00000000000b688] =
-system_call+0x5c/0x70
-[    9.003232] Instruction dump:
-[    9.003237] 38423850 7c0802a6 60000000 7c0802a6 fbc1fff0 fbe1fff8 =
-f8010010 f821ffd1=20
-[    9.003251] 7c7f1b78 8123067c 7d290034 5529d97e <0b090000> 81230110 =
-7d290034 5529d97e=20
-[    9.003264] ---[ end trace 2194bb4cf2567482 ]=E2=80=94
+> Le 30/05/2019 =C3=A0 01:23, Mauro Carvalho Chehab a =C3=A9crit=C2=A0:
+> > Sphinx doesn't like orphan documents:
+> >=20
+> >      Documentation/accelerators/ocxl.rst: WARNING: document isn't inclu=
+ded in any toctree
+> >      Documentation/arm/stm32/overview.rst: WARNING: document isn't incl=
+uded in any toctree
+> >      Documentation/arm/stm32/stm32f429-overview.rst: WARNING: document =
+isn't included in any toctree
+> >      Documentation/arm/stm32/stm32f746-overview.rst: WARNING: document =
+isn't included in any toctree
+> >      Documentation/arm/stm32/stm32f769-overview.rst: WARNING: document =
+isn't included in any toctree
+> >      Documentation/arm/stm32/stm32h743-overview.rst: WARNING: document =
+isn't included in any toctree
+> >      Documentation/arm/stm32/stm32mp157-overview.rst: WARNING: document=
+ isn't included in any toctree
+> >      Documentation/gpu/msm-crash-dump.rst: WARNING: document isn't incl=
+uded in any toctree
+> >      Documentation/interconnect/interconnect.rst: WARNING: document isn=
+'t included in any toctree
+> >      Documentation/laptops/lg-laptop.rst: WARNING: document isn't inclu=
+ded in any toctree
+> >      Documentation/powerpc/isa-versions.rst: WARNING: document isn't in=
+cluded in any toctree
+> >      Documentation/virtual/kvm/amd-memory-encryption.rst: WARNING: docu=
+ment isn't included in any toctree
+> >      Documentation/virtual/kvm/vcpu-requests.rst: WARNING: document isn=
+'t included in any toctree
+> >=20
+> > So, while they aren't on any toctree, add :orphan: to them, in order
+> > to silent this warning. =20
+>=20
+> Are those files really not meant to be included in a toctree ?
+>=20
+> Shouldn't we include them in the relevant toctree instead of just=20
+> shutting up Sphinx warnings ?
 
-Have not seen this warning previously and is new with this next build.
+This is a good point. My understanding is that those orphaned docs
+are there for two reasons:
 
-void __put_task_struct(struct task_struct *tsk)
-{
-        WARN_ON(!tsk->exit_state);     <<=3D=3D=20
-        WARN_ON(refcount_read(&tsk->usage));
+1) someone created a new document as .rst but there's no index.rst file yet,
+as there are lots of other documents already there not converted. That's
+the case, for example, of the ones under Documentation/arm;
 
-Since I am running into various boot failures with next tree for last =
-week or so
-am not able to bisect.
+2) They're part of an undergoing effort of converting stuff to ReST.
+One opted to keep it orphaned temporarily in order to avoid merge
+conflicts.
 
-Thanks
--Sachin=
+That's said, I have myself a big (/86 patches and growing) series
+with do a huge step on txt->rst conversion (it covers a significant
+amount of documentation). On this series, I'm removing the orphaned
+tags for several files (including, for example, those at Documentation/arm).
 
+Yet, it is a lot easier to see if such series is not introducing
+warnings regressions if we first address those.
+
+It should be notice that discovering the orphaned files should be as
+simple as:
+
+	git grep -l ":orphan:" Documentation
+
+>=20
+> Christophe
+>=20
+> >=20
+> > Signed-off-by: Mauro Carvalho Chehab <mchehab+samsung@kernel.org>
+> > ---
+> >   Documentation/accelerators/ocxl.rst                 | 2 ++
+> >   Documentation/arm/stm32/overview.rst                | 2 ++
+> >   Documentation/arm/stm32/stm32f429-overview.rst      | 2 ++
+> >   Documentation/arm/stm32/stm32f746-overview.rst      | 2 ++
+> >   Documentation/arm/stm32/stm32f769-overview.rst      | 2 ++
+> >   Documentation/arm/stm32/stm32h743-overview.rst      | 2 ++
+> >   Documentation/arm/stm32/stm32mp157-overview.rst     | 2 ++
+> >   Documentation/gpu/msm-crash-dump.rst                | 2 ++
+> >   Documentation/interconnect/interconnect.rst         | 2 ++
+> >   Documentation/laptops/lg-laptop.rst                 | 2 ++
+> >   Documentation/powerpc/isa-versions.rst              | 2 ++
+> >   Documentation/virtual/kvm/amd-memory-encryption.rst | 2 ++
+> >   Documentation/virtual/kvm/vcpu-requests.rst         | 2 ++
+> >   13 files changed, 26 insertions(+)
+> >=20
+> > diff --git a/Documentation/accelerators/ocxl.rst b/Documentation/accele=
+rators/ocxl.rst
+> > index 14cefc020e2d..b1cea19a90f5 100644
+> > --- a/Documentation/accelerators/ocxl.rst
+> > +++ b/Documentation/accelerators/ocxl.rst
+> > @@ -1,3 +1,5 @@
+> > +:orphan:
+> > +
+> >   =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D
+> >   OpenCAPI (Open Coherent Accelerator Processor Interface)
+> >   =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D
+> > diff --git a/Documentation/arm/stm32/overview.rst b/Documentation/arm/s=
+tm32/overview.rst
+> > index 85cfc8410798..f7e734153860 100644
+> > --- a/Documentation/arm/stm32/overview.rst
+> > +++ b/Documentation/arm/stm32/overview.rst
+> > @@ -1,3 +1,5 @@
+> > +:orphan:
+> > +
+> >   =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D
+> >   STM32 ARM Linux Overview
+> >   =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D
+> > diff --git a/Documentation/arm/stm32/stm32f429-overview.rst b/Documenta=
+tion/arm/stm32/stm32f429-overview.rst
+> > index 18feda97f483..65bbb1c3b423 100644
+> > --- a/Documentation/arm/stm32/stm32f429-overview.rst
+> > +++ b/Documentation/arm/stm32/stm32f429-overview.rst
+> > @@ -1,3 +1,5 @@
+> > +:orphan:
+> > +
+> >   STM32F429 Overview
+> >   =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> >  =20
+> > diff --git a/Documentation/arm/stm32/stm32f746-overview.rst b/Documenta=
+tion/arm/stm32/stm32f746-overview.rst
+> > index b5f4b6ce7656..42d593085015 100644
+> > --- a/Documentation/arm/stm32/stm32f746-overview.rst
+> > +++ b/Documentation/arm/stm32/stm32f746-overview.rst
+> > @@ -1,3 +1,5 @@
+> > +:orphan:
+> > +
+> >   STM32F746 Overview
+> >   =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> >  =20
+> > diff --git a/Documentation/arm/stm32/stm32f769-overview.rst b/Documenta=
+tion/arm/stm32/stm32f769-overview.rst
+> > index 228656ced2fe..f6adac862b17 100644
+> > --- a/Documentation/arm/stm32/stm32f769-overview.rst
+> > +++ b/Documentation/arm/stm32/stm32f769-overview.rst
+> > @@ -1,3 +1,5 @@
+> > +:orphan:
+> > +
+> >   STM32F769 Overview
+> >   =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> >  =20
+> > diff --git a/Documentation/arm/stm32/stm32h743-overview.rst b/Documenta=
+tion/arm/stm32/stm32h743-overview.rst
+> > index 3458dc00095d..c525835e7473 100644
+> > --- a/Documentation/arm/stm32/stm32h743-overview.rst
+> > +++ b/Documentation/arm/stm32/stm32h743-overview.rst
+> > @@ -1,3 +1,5 @@
+> > +:orphan:
+> > +
+> >   STM32H743 Overview
+> >   =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> >  =20
+> > diff --git a/Documentation/arm/stm32/stm32mp157-overview.rst b/Document=
+ation/arm/stm32/stm32mp157-overview.rst
+> > index 62e176d47ca7..2c52cd020601 100644
+> > --- a/Documentation/arm/stm32/stm32mp157-overview.rst
+> > +++ b/Documentation/arm/stm32/stm32mp157-overview.rst
+> > @@ -1,3 +1,5 @@
+> > +:orphan:
+> > +
+> >   STM32MP157 Overview
+> >   =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> >  =20
+> > diff --git a/Documentation/gpu/msm-crash-dump.rst b/Documentation/gpu/m=
+sm-crash-dump.rst
+> > index 757cd257e0d8..240ef200f76c 100644
+> > --- a/Documentation/gpu/msm-crash-dump.rst
+> > +++ b/Documentation/gpu/msm-crash-dump.rst
+> > @@ -1,3 +1,5 @@
+> > +:orphan:
+> > +
+> >   =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> >   MSM Crash Dump Format
+> >   =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> > diff --git a/Documentation/interconnect/interconnect.rst b/Documentatio=
+n/interconnect/interconnect.rst
+> > index c3e004893796..56e331dab70e 100644
+> > --- a/Documentation/interconnect/interconnect.rst
+> > +++ b/Documentation/interconnect/interconnect.rst
+> > @@ -1,5 +1,7 @@
+> >   .. SPDX-License-Identifier: GPL-2.0
+> >  =20
+> > +:orphan:
+> > +
+> >   =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> >   GENERIC SYSTEM INTERCONNECT SUBSYSTEM
+> >   =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> > diff --git a/Documentation/laptops/lg-laptop.rst b/Documentation/laptop=
+s/lg-laptop.rst
+> > index aa503ee9b3bc..f2c2ffe31101 100644
+> > --- a/Documentation/laptops/lg-laptop.rst
+> > +++ b/Documentation/laptops/lg-laptop.rst
+> > @@ -1,5 +1,7 @@
+> >   .. SPDX-License-Identifier: GPL-2.0+
+> >  =20
+> > +:orphan:
+> > +
+> >   LG Gram laptop extra features
+> >   =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D
+> >  =20
+> > diff --git a/Documentation/powerpc/isa-versions.rst b/Documentation/pow=
+erpc/isa-versions.rst
+> > index 812e20cc898c..66c24140ebf1 100644
+> > --- a/Documentation/powerpc/isa-versions.rst
+> > +++ b/Documentation/powerpc/isa-versions.rst
+> > @@ -1,3 +1,5 @@
+> > +:orphan:
+> > +
+> >   CPU to ISA Version Mapping
+> >   =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D
+> >  =20
+> > diff --git a/Documentation/virtual/kvm/amd-memory-encryption.rst b/Docu=
+mentation/virtual/kvm/amd-memory-encryption.rst
+> > index 659bbc093b52..33d697ab8a58 100644
+> > --- a/Documentation/virtual/kvm/amd-memory-encryption.rst
+> > +++ b/Documentation/virtual/kvm/amd-memory-encryption.rst
+> > @@ -1,3 +1,5 @@
+> > +:orphan:
+> > +
+> >   =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> >   Secure Encrypted Virtualization (SEV)
+> >   =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> > diff --git a/Documentation/virtual/kvm/vcpu-requests.rst b/Documentatio=
+n/virtual/kvm/vcpu-requests.rst
+> > index 5feb3706a7ae..c1807a1b92e6 100644
+> > --- a/Documentation/virtual/kvm/vcpu-requests.rst
+> > +++ b/Documentation/virtual/kvm/vcpu-requests.rst
+> > @@ -1,3 +1,5 @@
+> > +:orphan:
+> > +
+> >   =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> >   KVM VCPU Requests
+> >   =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> >  =20
+
+
+
+Thanks,
+Mauro
