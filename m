@@ -2,76 +2,62 @@ Return-Path: <SRS0=V6lO=UD=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 72266C04AB5
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Jun 2019 03:07:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2EB24C04AB5
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Jun 2019 03:08:18 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id F3C9426155
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Jun 2019 03:07:00 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org F3C9426155
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=informatik.wtf
+	by mail.kernel.org (Postfix) with ESMTPS id 94B722608F
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Jun 2019 03:08:17 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=neuling.org header.i=@neuling.org header.b="HpNZb6RY"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 94B722608F
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=neuling.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45HxfV01C8zDqZL
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Jun 2019 13:06:58 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+	by lists.ozlabs.org (Postfix) with ESMTP id 45Hxgz4ltMzDqdj
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Jun 2019 13:08:15 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45Hxcq39BhzDqMy
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Jun 2019 13:05:31 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=informatik.wtf
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 45Hxcq2P4fz8vsm
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Jun 2019 13:05:31 +1000 (AEST)
-Received: by ozlabs.org (Postfix)
- id 45Hxcq25Q1z9s3l; Tue,  4 Jun 2019 13:05:31 +1000 (AEST)
-Authentication-Results: ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=informatik.wtf
- (client-ip=198.54.127.52; helo=new-02-3.privateemail.com;
- envelope-from=cmr@informatik.wtf; receiver=<UNKNOWN>)
-Authentication-Results: ozlabs.org; dmarc=none (p=none dis=none)
- header.from=informatik.wtf
-Received: from NEW-02-3.privateemail.com (new-02-3.privateemail.com
- [198.54.127.52])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 45Hxcp2MCDz9s3Z
- for <linuxppc-dev@ozlabs.org>; Tue,  4 Jun 2019 13:05:29 +1000 (AEST)
-Received: from MTA-06-1.privateemail.com (unknown [10.20.147.16])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by NEW-02.privateemail.com (Postfix) with ESMTPS id 38F3260277;
- Tue,  4 Jun 2019 03:05:25 +0000 (UTC)
-Received: from MTA-06.privateemail.com (localhost [127.0.0.1])
- by MTA-06.privateemail.com (Postfix) with ESMTP id 22A236003D;
- Mon,  3 Jun 2019 23:05:25 -0400 (EDT)
-Received: from APP-01 (unknown [10.20.147.151])
- by MTA-06.privateemail.com (Postfix) with ESMTPA id E75D560039;
- Tue,  4 Jun 2019 03:05:24 +0000 (UTC)
-Date: Mon, 3 Jun 2019 23:05:24 -0400 (EDT)
-From: Christopher M Riedl <cmr@informatik.wtf>
-To: Andrew Donnellan <ajd@linux.ibm.com>, linuxppc-dev@ozlabs.org,
- kernel-hardening@lists.openwall.com
-Message-ID: <1146575236.484635.1559617524880@privateemail.com>
-In-Reply-To: <81549d40-e477-6552-9a12-7200933279af@linux.ibm.com>
-References: <20190524123816.1773-1-cmr@informatik.wtf>
- <81549d40-e477-6552-9a12-7200933279af@linux.ibm.com>
-Subject: Re: [RFC PATCH v2] powerpc/xmon: restrict when kernel is locked down
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45Hxdr0mgqzDqNr
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Jun 2019 13:06:24 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=neuling.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=neuling.org header.i=@neuling.org header.b="HpNZb6RY"; 
+ dkim-atps=neutral
+Received: from neuling.org (localhost [127.0.0.1])
+ by ozlabs.org (Postfix) with ESMTP id 45Hxdm5hKNz9s4Y;
+ Tue,  4 Jun 2019 13:06:20 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=neuling.org;
+ s=201811; t=1559617580;
+ bh=De/OGgu5qv2ybOP5Xy1CmLXYhr5tDwOMnXtB/W9tVUo=;
+ h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+ b=HpNZb6RYRhUjtI9jHA89eq81WDfz10uVEk3WP/mGHwQquxSFn60q1S5MreNO5IpNa
+ y0Xikh30574YQwpgrQCViuIW4+plXrb+5JQOe/HQmoNY9uh9ZUdyqQHkTVUJmu3PpM
+ 6d7ZSVhp9GNscP3uYOzfDqxJbXR49rycJwde7qIaWZzfCrrDjb8pzDHV8t4sZstpFR
+ T0hzFG/d0AMxmshLbtNkBl5Ra0lSoAAp0xToaDLxT6saGjvoctWTQPNlA+PudawzUR
+ 1i4A38ySNk/wKMYZ3l3jtp+8ZRKwDcx22+ZnpI+RjzMfw7LQcwv7YFGUCPuWpxjY27
+ mLxYJFqILHuyw==
+Received: by neuling.org (Postfix, from userid 1000)
+ id E95142A56C5; Tue,  4 Jun 2019 13:00:38 +1000 (AEST)
+From: Michael Neuling <mikey@neuling.org>
+To: mpe@ellerman.id.au
+Subject: [PATCH v5 2/2] powerpc: Fix compile issue with force DAWR
+Date: Tue,  4 Jun 2019 13:00:37 +1000
+Message-Id: <20190604030037.9424-2-mikey@neuling.org>
+X-Mailer: git-send-email 2.21.0
+In-Reply-To: <20190604030037.9424-1-mikey@neuling.org>
+References: <20190604030037.9424-1-mikey@neuling.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-Priority: 3
-Importance: Medium
-X-Mailer: Open-Xchange Mailer v7.8.4-Rev57
-X-Originating-Client: open-xchange-appsuite
-X-Virus-Scanned: ClamAV using ClamSMTP
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -83,203 +69,356 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: mjg59@google.com, dja@axtens.net
+Cc: Mathieu Malaterre <malat@debian.org>, mikey@neuling.org,
+ linuxppc-dev@lists.ozlabs.org, hch@infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+If you compile with KVM but without CONFIG_HAVE_HW_BREAKPOINT you fail
+at linking with:
+  arch/powerpc/kvm/book3s_hv_rmhandlers.o:(.text+0x708): undefined reference to `dawr_force_enable'
 
-> On June 3, 2019 at 1:36 AM Andrew Donnellan <ajd@linux.ibm.com> wrote:
-> 
-> 
-> On 24/5/19 10:38 pm, Christopher M. Riedl wrote:
-> > Xmon should be either fully or partially disabled depending on the
-> > kernel lockdown state.
-> > 
-> > Put xmon into read-only mode for lockdown=integrity and completely
-> > disable xmon when lockdown=confidentiality. Xmon checks the lockdown
-> > state and takes appropriate action:
-> > 
-> >   (1) during xmon_setup to prevent early xmon'ing
-> > 
-> >   (2) when triggered via sysrq
-> > 
-> >   (3) when toggled via debugfs
-> > 
-> >   (4) when triggered via a previously enabled breakpoint
-> > 
-> > The following lockdown state transitions are handled:
-> > 
-> >   (1) lockdown=none -> lockdown=integrity
-> >       clear all breakpoints, set xmon read-only mode
-> > 
-> >   (2) lockdown=none -> lockdown=confidentiality
-> >       clear all breakpoints, prevent re-entry into xmon
-> > 
-> >   (3) lockdown=integrity -> lockdown=confidentiality
-> >       prevent re-entry into xmon
-> > 
-> > Suggested-by: Andrew Donnellan <ajd@linux.ibm.com>
-> > Signed-off-by: Christopher M. Riedl <cmr@informatik.wtf>
-> > ---
-> > 
-> > Applies on top of this series:
-> > 	https://patchwork.kernel.org/cover/10884631/
-> > 
-> > I've done some limited testing of the scenarios mentioned in the commit
-> > message on a single CPU QEMU config.
-> > 
-> > v1->v2:
-> > 	Fix subject line
-> > 	Submit to linuxppc-dev and kernel-hardening
-> > 
-> >   arch/powerpc/xmon/xmon.c | 56 +++++++++++++++++++++++++++++++++++++++-
-> >   1 file changed, 55 insertions(+), 1 deletion(-)
-> > 
-> > diff --git a/arch/powerpc/xmon/xmon.c b/arch/powerpc/xmon/xmon.c
-> > index 3e7be19aa208..8c4a5a0c28f0 100644
-> > --- a/arch/powerpc/xmon/xmon.c
-> > +++ b/arch/powerpc/xmon/xmon.c
-> > @@ -191,6 +191,9 @@ static void dump_tlb_44x(void);
-> >   static void dump_tlb_book3e(void);
-> >   #endif
-> >   
-> > +static void clear_all_bpt(void);
-> > +static void xmon_init(int);
-> > +
-> >   #ifdef CONFIG_PPC64
-> >   #define REG		"%.16lx"
-> >   #else
-> > @@ -291,6 +294,39 @@ Commands:\n\
-> >     zh	halt\n"
-> >   ;
-> >   
-> > +#ifdef CONFIG_LOCK_DOWN_KERNEL
-> > +static bool xmon_check_lockdown(void)
-> > +{
-> > +	static bool lockdown = false;
-> > +
-> > +	if (!lockdown) {
-> > +		lockdown = kernel_is_locked_down("Using xmon",
-> > +						 LOCKDOWN_CONFIDENTIALITY);
-> > +		if (lockdown) {
-> > +			printf("xmon: Disabled by strict kernel lockdown\n");
-> > +			xmon_on = 0;
-> > +			xmon_init(0);
-> > +		}
-> > +	}
-> > +
-> > +	if (!xmon_is_ro) {
-> > +		xmon_is_ro = kernel_is_locked_down("Using xmon write-access",
-> > +						   LOCKDOWN_INTEGRITY);
-> > +		if (xmon_is_ro) {
-> > +			printf("xmon: Read-only due to kernel lockdown\n");
-> > +			clear_all_bpt();
-> 
-> Remind me again why we need to clear breakpoints in integrity mode?
-> 
-> 
-> Andrew
-> 
+This was caused by commit c1fe190c0672 ("powerpc: Add force enable of
+DAWR on P9 option").
 
-I interpreted "integrity" mode as meaning that any changes made by xmon should
-be reversed. This also covers the case when a user creates some breakpoint(s)
-in xmon, exits xmon, and then elevates the lockdown state. Upon hitting the
-first breakpoint and (re-)entering xmon, xmon will clear all breakpoints.
+This moves a bunch of code around to fix this. It moves a lot of the
+DAWR code in a new file and creates a new CONFIG_PPC_DAWR to enable
+compiling it.
 
-Xmon can only take action in response to dynamic lockdown level changes when
-xmon is invoked in some manner - if there is a better way I am all ears :)
+Fixes: c1fe190c0672 ("powerpc: Add force enable of DAWR on P9 option")
+Signed-off-by: Michael Neuling <mikey@neuling.org>
+--
+v5:
+  - Changes based on comments by hch
+    - Change // to /* comments
+    - Change return code from -1 to -ENODEV
+    - Remove unneeded default n in new Kconfig option
+    - Remove setting to default value
+    - Remove unnecessary braces
 
-> 
-> > +		}
-> > +	}
-> > +
-> > +	return lockdown;
-> > +}
-> > +#else
-> > +inline static bool xmon_check_lockdown(void)
-> > +{
-> > +	return false;
-> > +}
-> > +#endif /* CONFIG_LOCK_DOWN_KERNEL */
-> > +
-> >   static struct pt_regs *xmon_regs;
-> >   
-> >   static inline void sync(void)
-> > @@ -708,6 +744,9 @@ static int xmon_bpt(struct pt_regs *regs)
-> >   	struct bpt *bp;
-> >   	unsigned long offset;
-> >   
-> > +	if (xmon_check_lockdown())
-> > +		return 0;
-> > +
-> >   	if ((regs->msr & (MSR_IR|MSR_PR|MSR_64BIT)) != (MSR_IR|MSR_64BIT))
-> >   		return 0;
-> >   
-> > @@ -739,6 +778,9 @@ static int xmon_sstep(struct pt_regs *regs)
-> >   
-> >   static int xmon_break_match(struct pt_regs *regs)
-> >   {
-> > +	if (xmon_check_lockdown())
-> > +		return 0;
-> > +
-> >   	if ((regs->msr & (MSR_IR|MSR_PR|MSR_64BIT)) != (MSR_IR|MSR_64BIT))
-> >   		return 0;
-> >   	if (dabr.enabled == 0)
-> > @@ -749,6 +791,9 @@ static int xmon_break_match(struct pt_regs *regs)
-> >   
-> >   static int xmon_iabr_match(struct pt_regs *regs)
-> >   {
-> > +	if (xmon_check_lockdown())
-> > +		return 0;
-> > +
-> >   	if ((regs->msr & (MSR_IR|MSR_PR|MSR_64BIT)) != (MSR_IR|MSR_64BIT))
-> >   		return 0;
-> >   	if (iabr == NULL)
-> > @@ -3742,6 +3787,9 @@ static void xmon_init(int enable)
-> >   #ifdef CONFIG_MAGIC_SYSRQ
-> >   static void sysrq_handle_xmon(int key)
-> >   {
-> > +	if (xmon_check_lockdown())
-> > +		return;
-> > +
-> >   	/* ensure xmon is enabled */
-> >   	xmon_init(1);
-> >   	debugger(get_irq_regs());
-> > @@ -3763,7 +3811,6 @@ static int __init setup_xmon_sysrq(void)
-> >   device_initcall(setup_xmon_sysrq);
-> >   #endif /* CONFIG_MAGIC_SYSRQ */
-> >   
-> > -#ifdef CONFIG_DEBUG_FS
-> >   static void clear_all_bpt(void)
-> >   {
-> >   	int i;
-> > @@ -3785,8 +3832,12 @@ static void clear_all_bpt(void)
-> >   	printf("xmon: All breakpoints cleared\n");
-> >   }
-> >   
-> > +#ifdef CONFIG_DEBUG_FS
-> >   static int xmon_dbgfs_set(void *data, u64 val)
-> >   {
-> > +	if (xmon_check_lockdown())
-> > +		return 0;
-> > +
-> >   	xmon_on = !!val;
-> >   	xmon_init(xmon_on);
-> >   
-> > @@ -3845,6 +3896,9 @@ early_param("xmon", early_parse_xmon);
-> >   
-> >   void __init xmon_setup(void)
-> >   {
-> > +	if (xmon_check_lockdown())
-> > +		return;
-> > +
-> >   	if (xmon_on)
-> >   		xmon_init(1);
-> >   	if (xmon_early)
-> > 
-> 
-> -- 
-> Andrew Donnellan              OzLabs, ADL Canberra
-> ajd@linux.ibm.com             IBM Australia Limited
->
+v4:
+  - Fix merge conflict with patch from Mathieu Malaterre:
+     powerpc: silence a -Wcast-function-type warning in dawr_write_file_bool
+  - Fixed checkpatch issues noticed by Christophe Leroy.
+
+v3:
+  Fixes based on Christophe Leroy's comments:
+  - Fix Kconfig options to better reflect reality
+  - Reorder alphabetically
+  - Inline vs #define
+  - Fixed default return for dawr_enabled() when CONFIG_PPC_DAWR=N
+
+V2:
+  Fixes based on Christophe Leroy's comments:
+  - Fix commit message formatting
+  - Move more DAWR code into dawr.c
+---
+ arch/powerpc/Kconfig                     |  4 +
+ arch/powerpc/include/asm/hw_breakpoint.h | 21 +++--
+ arch/powerpc/kernel/Makefile             |  1 +
+ arch/powerpc/kernel/dawr.c               | 98 ++++++++++++++++++++++++
+ arch/powerpc/kernel/hw_breakpoint.c      | 61 ---------------
+ arch/powerpc/kernel/process.c            | 28 -------
+ arch/powerpc/kvm/Kconfig                 |  1 +
+ 7 files changed, 118 insertions(+), 96 deletions(-)
+ create mode 100644 arch/powerpc/kernel/dawr.c
+
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index 8c1c636308..9d61b36df4 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -234,6 +234,7 @@ config PPC
+ 	select OLD_SIGSUSPEND
+ 	select PCI_DOMAINS			if PCI
+ 	select PCI_SYSCALL			if PCI
++	select PPC_DAWR				if PPC64
+ 	select RTC_LIB
+ 	select SPARSE_IRQ
+ 	select SYSCTL_EXCEPTION_TRACE
+@@ -370,6 +371,9 @@ config PPC_ADV_DEBUG_DAC_RANGE
+ 	depends on PPC_ADV_DEBUG_REGS && 44x
+ 	default y
+ 
++config PPC_DAWR
++	bool
++
+ config ZONE_DMA
+ 	bool
+ 	default y if PPC_BOOK3E_64
+diff --git a/arch/powerpc/include/asm/hw_breakpoint.h b/arch/powerpc/include/asm/hw_breakpoint.h
+index 0fe8c1e46b..41abdae6d0 100644
+--- a/arch/powerpc/include/asm/hw_breakpoint.h
++++ b/arch/powerpc/include/asm/hw_breakpoint.h
+@@ -90,18 +90,25 @@ static inline void hw_breakpoint_disable(void)
+ extern void thread_change_pc(struct task_struct *tsk, struct pt_regs *regs);
+ int hw_breakpoint_handler(struct die_args *args);
+ 
+-extern int set_dawr(struct arch_hw_breakpoint *brk);
++#else	/* CONFIG_HAVE_HW_BREAKPOINT */
++static inline void hw_breakpoint_disable(void) { }
++static inline void thread_change_pc(struct task_struct *tsk,
++					struct pt_regs *regs) { }
++
++#endif	/* CONFIG_HAVE_HW_BREAKPOINT */
++
++
++#ifdef CONFIG_PPC_DAWR
+ extern bool dawr_force_enable;
+ static inline bool dawr_enabled(void)
+ {
+ 	return dawr_force_enable;
+ }
+-
+-#else	/* CONFIG_HAVE_HW_BREAKPOINT */
+-static inline void hw_breakpoint_disable(void) { }
+-static inline void thread_change_pc(struct task_struct *tsk,
+-					struct pt_regs *regs) { }
++int set_dawr(struct arch_hw_breakpoint *brk);
++#else
+ static inline bool dawr_enabled(void) { return false; }
+-#endif	/* CONFIG_HAVE_HW_BREAKPOINT */
++static inline int set_dawr(struct arch_hw_breakpoint *brk) { return -1; }
++#endif
++
+ #endif	/* __KERNEL__ */
+ #endif	/* _PPC_BOOK3S_64_HW_BREAKPOINT_H */
+diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
+index 0ea6c4aa3a..56dfa7a2a6 100644
+--- a/arch/powerpc/kernel/Makefile
++++ b/arch/powerpc/kernel/Makefile
+@@ -56,6 +56,7 @@ obj-$(CONFIG_PPC64)		+= setup_64.o sys_ppc32.o \
+ obj-$(CONFIG_VDSO32)		+= vdso32/
+ obj-$(CONFIG_PPC_WATCHDOG)	+= watchdog.o
+ obj-$(CONFIG_HAVE_HW_BREAKPOINT)	+= hw_breakpoint.o
++obj-$(CONFIG_PPC_DAWR)		+= dawr.o
+ obj-$(CONFIG_PPC_BOOK3S_64)	+= cpu_setup_ppc970.o cpu_setup_pa6t.o
+ obj-$(CONFIG_PPC_BOOK3S_64)	+= cpu_setup_power.o
+ obj-$(CONFIG_PPC_BOOK3S_64)	+= mce.o mce_power.o
+diff --git a/arch/powerpc/kernel/dawr.c b/arch/powerpc/kernel/dawr.c
+new file mode 100644
+index 0000000000..ae3bd6abac
+--- /dev/null
++++ b/arch/powerpc/kernel/dawr.c
+@@ -0,0 +1,98 @@
++// SPDX-License-Identifier: GPL-2.0+
++/*
++ * DAWR infrastructure
++ *
++ * Copyright 2019, Michael Neuling, IBM Corporation.
++ */
++
++#include <linux/types.h>
++#include <linux/export.h>
++#include <linux/fs.h>
++#include <linux/debugfs.h>
++#include <asm/debugfs.h>
++#include <asm/machdep.h>
++#include <asm/hvcall.h>
++
++bool dawr_force_enable;
++EXPORT_SYMBOL_GPL(dawr_force_enable);
++
++int set_dawr(struct arch_hw_breakpoint *brk)
++{
++	unsigned long dawr, dawrx, mrd;
++
++	dawr = brk->address;
++
++	dawrx  = (brk->type & (HW_BRK_TYPE_READ | HW_BRK_TYPE_WRITE))
++		<< (63 - 58);
++	dawrx |= ((brk->type & (HW_BRK_TYPE_TRANSLATE)) >> 2) << (63 - 59);
++	dawrx |= (brk->type & (HW_BRK_TYPE_PRIV_ALL)) >> 3;
++	/* dawr length is stored in field MDR bits 48:53.  Matches range in
++	 * doublewords (64 bits) baised by -1 eg. 0b000000=1DW and
++	 * 0b111111=64DW.
++	 * brk->len is in bytes.
++	 * This aligns up to double word size, shifts and does the bias.
++	 */
++	mrd = ((brk->len + 7) >> 3) - 1;
++	dawrx |= (mrd & 0x3f) << (63 - 53);
++
++	if (ppc_md.set_dawr)
++		return ppc_md.set_dawr(dawr, dawrx);
++	mtspr(SPRN_DAWR, dawr);
++	mtspr(SPRN_DAWRX, dawrx);
++	return 0;
++}
++
++static void set_dawr_cb(void *info)
++{
++	set_dawr(info);
++}
++
++static ssize_t dawr_write_file_bool(struct file *file,
++				    const char __user *user_buf,
++				    size_t count, loff_t *ppos)
++{
++	struct arch_hw_breakpoint null_brk = {0, 0, 0};
++	size_t rc;
++
++	/* Send error to user if they hypervisor won't allow us to write DAWR */
++	if (!dawr_force_enable &&
++	    firmware_has_feature(FW_FEATURE_LPAR) &&
++	    set_dawr(&null_brk) != H_SUCCESS)
++		return -ENODEV;
++
++	rc = debugfs_write_file_bool(file, user_buf, count, ppos);
++	if (rc)
++		return rc;
++
++	/* If we are clearing, make sure all CPUs have the DAWR cleared */
++	if (!dawr_force_enable)
++		smp_call_function(set_dawr_cb, &null_brk, 0);
++
++	return rc;
++}
++
++static const struct file_operations dawr_enable_fops = {
++	.read =		debugfs_read_file_bool,
++	.write =	dawr_write_file_bool,
++	.open =		simple_open,
++	.llseek =	default_llseek,
++};
++
++static int __init dawr_force_setup(void)
++{
++	if (cpu_has_feature(CPU_FTR_DAWR)) {
++		/* Don't setup sysfs file for user control on P8 */
++		dawr_force_enable = true;
++		return 0;
++	}
++
++	if (PVR_VER(mfspr(SPRN_PVR)) == PVR_POWER9) {
++		/* Turn DAWR off by default, but allow admin to turn it on */
++		debugfs_create_file_unsafe("dawr_enable_dangerous", 0600,
++					   powerpc_debugfs_root,
++					   &dawr_force_enable,
++					   &dawr_enable_fops);
++	}
++	return 0;
++}
++arch_initcall(dawr_force_setup);
+diff --git a/arch/powerpc/kernel/hw_breakpoint.c b/arch/powerpc/kernel/hw_breakpoint.c
+index ca3a2358b7..95605a9c9a 100644
+--- a/arch/powerpc/kernel/hw_breakpoint.c
++++ b/arch/powerpc/kernel/hw_breakpoint.c
+@@ -380,64 +380,3 @@ void hw_breakpoint_pmu_read(struct perf_event *bp)
+ {
+ 	/* TODO */
+ }
+-
+-bool dawr_force_enable;
+-EXPORT_SYMBOL_GPL(dawr_force_enable);
+-
+-static void set_dawr_cb(void *info)
+-{
+-	set_dawr(info);
+-}
+-
+-static ssize_t dawr_write_file_bool(struct file *file,
+-				    const char __user *user_buf,
+-				    size_t count, loff_t *ppos)
+-{
+-	struct arch_hw_breakpoint null_brk = {0, 0, 0};
+-	size_t rc;
+-
+-	/* Send error to user if they hypervisor won't allow us to write DAWR */
+-	if ((!dawr_force_enable) &&
+-	    (firmware_has_feature(FW_FEATURE_LPAR)) &&
+-	    (set_dawr(&null_brk) != H_SUCCESS))
+-		return -1;
+-
+-	rc = debugfs_write_file_bool(file, user_buf, count, ppos);
+-	if (rc)
+-		return rc;
+-
+-	/* If we are clearing, make sure all CPUs have the DAWR cleared */
+-	if (!dawr_force_enable)
+-		smp_call_function(set_dawr_cb, &null_brk, 0);
+-
+-	return rc;
+-}
+-
+-static const struct file_operations dawr_enable_fops = {
+-	.read =		debugfs_read_file_bool,
+-	.write =	dawr_write_file_bool,
+-	.open =		simple_open,
+-	.llseek =	default_llseek,
+-};
+-
+-static int __init dawr_force_setup(void)
+-{
+-	dawr_force_enable = false;
+-
+-	if (cpu_has_feature(CPU_FTR_DAWR)) {
+-		/* Don't setup sysfs file for user control on P8 */
+-		dawr_force_enable = true;
+-		return 0;
+-	}
+-
+-	if (PVR_VER(mfspr(SPRN_PVR)) == PVR_POWER9) {
+-		/* Turn DAWR off by default, but allow admin to turn it on */
+-		dawr_force_enable = false;
+-		debugfs_create_file_unsafe("dawr_enable_dangerous", 0600,
+-					   powerpc_debugfs_root,
+-					   &dawr_force_enable,
+-					   &dawr_enable_fops);
+-	}
+-	return 0;
+-}
+-arch_initcall(dawr_force_setup);
+diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
+index 87da401299..03a2da35ce 100644
+--- a/arch/powerpc/kernel/process.c
++++ b/arch/powerpc/kernel/process.c
+@@ -797,34 +797,6 @@ static inline int set_dabr(struct arch_hw_breakpoint *brk)
+ 	return __set_dabr(dabr, dabrx);
+ }
+ 
+-int set_dawr(struct arch_hw_breakpoint *brk)
+-{
+-	unsigned long dawr, dawrx, mrd;
+-
+-	dawr = brk->address;
+-
+-	dawrx  = (brk->type & (HW_BRK_TYPE_READ | HW_BRK_TYPE_WRITE)) \
+-		                   << (63 - 58); //* read/write bits */
+-	dawrx |= ((brk->type & (HW_BRK_TYPE_TRANSLATE)) >> 2) \
+-		                   << (63 - 59); //* translate */
+-	dawrx |= (brk->type & (HW_BRK_TYPE_PRIV_ALL)) \
+-		                   >> 3; //* PRIM bits */
+-	/* dawr length is stored in field MDR bits 48:53.  Matches range in
+-	   doublewords (64 bits) baised by -1 eg. 0b000000=1DW and
+-	   0b111111=64DW.
+-	   brk->len is in bytes.
+-	   This aligns up to double word size, shifts and does the bias.
+-	*/
+-	mrd = ((brk->len + 7) >> 3) - 1;
+-	dawrx |= (mrd & 0x3f) << (63 - 53);
+-
+-	if (ppc_md.set_dawr)
+-		return ppc_md.set_dawr(dawr, dawrx);
+-	mtspr(SPRN_DAWR, dawr);
+-	mtspr(SPRN_DAWRX, dawrx);
+-	return 0;
+-}
+-
+ void __set_breakpoint(struct arch_hw_breakpoint *brk)
+ {
+ 	memcpy(this_cpu_ptr(&current_brk), brk, sizeof(*brk));
+diff --git a/arch/powerpc/kvm/Kconfig b/arch/powerpc/kvm/Kconfig
+index f53997a8ca..b8e13d5a4a 100644
+--- a/arch/powerpc/kvm/Kconfig
++++ b/arch/powerpc/kvm/Kconfig
+@@ -38,6 +38,7 @@ config KVM_BOOK3S_32_HANDLER
+ config KVM_BOOK3S_64_HANDLER
+ 	bool
+ 	select KVM_BOOK3S_HANDLER
++	select PPC_DAWR_FORCE_ENABLE
+ 
+ config KVM_BOOK3S_PR_POSSIBLE
+ 	bool
+-- 
+2.21.0
+
