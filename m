@@ -2,57 +2,60 @@ Return-Path: <SRS0=V6lO=UD=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-12.0 required=3.0
+	tests=HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 196B4C28CC6
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Jun 2019 05:44:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id F1FE5C282CE
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Jun 2019 06:26:09 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 863DB2342A
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Jun 2019 05:44:12 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=ozlabs.org header.i=@ozlabs.org header.b="f+fvjgSq"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 863DB2342A
-Authentication-Results: mail.kernel.org; dmarc=pass (p=none dis=none) header.from=ozlabs.org
+	by mail.kernel.org (Postfix) with ESMTPS id 7E46624C1B
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Jun 2019 06:26:09 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7E46624C1B
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45J17t2LRYzDqYB
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Jun 2019 15:44:10 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45J16Z0p9KzDqCh
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Jun 2019 15:43:02 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45J24H22MSzDqS1
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Jun 2019 16:26:07 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=ozlabs.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- secure) header.d=ozlabs.org header.i=@ozlabs.org header.b="f+fvjgSq"; 
- dkim-atps=neutral
-Received: by ozlabs.org (Postfix, from userid 1010)
- id 45J16Y6NL9z9s4Y; Tue,  4 Jun 2019 15:43:01 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ozlabs.org; s=201707;
- t=1559626981; bh=/6VuDf/uFaaPBvkmkQuaukwQQEW2dE0J5zdz5UnXxGE=;
- h=From:To:Cc:Subject:Date:From;
- b=f+fvjgSqKc4IMQbCjY2IIR4A16zsyFbyI23JguUjBPSCZ0ujRDGhUDMV5fXiX9VuJ
- G+n6bP7iIHauKva8I+N+bHcgNsAcD4XDoayOQ5V3YRJOWDqKqyrq+mHVS/JWTwgM5X
- un7ndyCFxhNRYA+Zhr+zyXAmB6yLISlr4WMF3NhSAROBDIhHbsQWMXOcuzh9dxbqC9
- BGYqhvYPTgLN1QpJcBvjMEAJGq0px71XaEnozp9FJIbTeT9YBlf6FKlJGTxWBdaXYL
- +dCIJh8Cf0uBlKKm+kSq0WLeEg+4F78kOyF8K3TKbkTHE+FjpKZijb9LnztZipHzvn
- 1LcHjfdA5q6yQ==
-From: Anton Blanchard <anton@ozlabs.org>
-To: paulus@samba.org, mpe@ellerman.id.au, npiggin@gmail.com,
- aneesh.kumar@linux.vnet.ibm.com
-Subject: [PATCH] powerpc/configs: Disable latencytop
-Date: Tue,  4 Jun 2019 15:42:57 +1000
-Message-Id: <20190604054257.30703-1-anton@ozlabs.org>
-X-Mailer: git-send-email 2.21.0
+ spf=pass (mailfrom) smtp.mailfrom=c-s.fr
+ (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=c-s.fr
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45J22l2PHvzDqLX
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Jun 2019 16:24:46 +1000 (AEST)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 45J22c6Rwqz9vDbl;
+ Tue,  4 Jun 2019 08:24:40 +0200 (CEST)
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id bLXlcgVXjjBG; Tue,  4 Jun 2019 08:24:40 +0200 (CEST)
+Received: from vm-hermes.si.c-s.fr (vm-hermes.si.c-s.fr [192.168.25.253])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 45J22c5XHVz9vDbk;
+ Tue,  4 Jun 2019 08:24:40 +0200 (CEST)
+Received: by vm-hermes.si.c-s.fr (Postfix, from userid 33)
+ id B90D1843; Tue,  4 Jun 2019 08:24:39 +0200 (CEST)
+Received: from 37-165-91-81.coucou-networks.fr
+ (37-165-91-81.coucou-networks.fr [37.165.91.81]) by messagerie.c-s.fr (Horde
+ Framework) with HTTP; Tue, 04 Jun 2019 08:24:39 +0200
+Date: Tue, 04 Jun 2019 08:24:39 +0200
+Message-ID: <20190604082439.Horde.tWsSNlWiTjwbZIMIFhnFcQ5@messagerie.c-s.fr>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+To: Nathan Chancellor <natechancellor@gmail.com>
+Subject: Re: [PATCH] PCI: rpaphp: Avoid a sometimes-uninitialized warning
+In-Reply-To: <20190603174323.48251-1-natechancellor@gmail.com>
+User-Agent: Internet Messaging Program (IMP) H5 (6.2.3)
+Content-Type: text/plain; charset=UTF-8; format=flowed; DelSp=Yes
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Disposition: inline
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -64,148 +67,113 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org
+Cc: Tyrel Datwyler <tyreld@linux.ibm.com>, linux-pci@vger.kernel.org,
+ linux-kernel@vger.kernel.org, clang-built-linux@googlegroups.com,
+ Paul Mackerras <paulus@samba.org>, Bjorn Helgaas <bhelgaas@google.com>,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-latencytop adds almost 4kB to each and every task struct and as such
-it doesn't deserve to be in our defconfigs.
 
-Signed-off-by: Anton Blanchard <anton@ozlabs.org>
----
- arch/powerpc/configs/g5_defconfig       | 1 -
- arch/powerpc/configs/gamecube_defconfig | 1 -
- arch/powerpc/configs/maple_defconfig    | 1 -
- arch/powerpc/configs/pmac32_defconfig   | 1 -
- arch/powerpc/configs/powernv_defconfig  | 1 -
- arch/powerpc/configs/ppc64_defconfig    | 1 -
- arch/powerpc/configs/ppc64e_defconfig   | 1 -
- arch/powerpc/configs/ppc6xx_defconfig   | 1 -
- arch/powerpc/configs/pseries_defconfig  | 1 -
- arch/powerpc/configs/wii_defconfig      | 1 -
- 10 files changed, 10 deletions(-)
+Quoting Nathan Chancellor <natechancellor@gmail.com>:
 
-diff --git a/arch/powerpc/configs/g5_defconfig b/arch/powerpc/configs/g5_defconfig
-index ceb3c770786f..8e9389d6c8ef 100644
---- a/arch/powerpc/configs/g5_defconfig
-+++ b/arch/powerpc/configs/g5_defconfig
-@@ -244,7 +244,6 @@ CONFIG_CRC_T10DIF=y
- CONFIG_MAGIC_SYSRQ=y
- CONFIG_DEBUG_KERNEL=y
- CONFIG_DEBUG_MUTEXES=y
--CONFIG_LATENCYTOP=y
- CONFIG_BOOTX_TEXT=y
- CONFIG_CRYPTO_TEST=m
- CONFIG_CRYPTO_PCBC=m
-diff --git a/arch/powerpc/configs/gamecube_defconfig b/arch/powerpc/configs/gamecube_defconfig
-index 805b0f87653c..bfffdc4f1b73 100644
---- a/arch/powerpc/configs/gamecube_defconfig
-+++ b/arch/powerpc/configs/gamecube_defconfig
-@@ -91,7 +91,6 @@ CONFIG_CRC_CCITT=y
- CONFIG_PRINTK_TIME=y
- CONFIG_DEBUG_SPINLOCK=y
- CONFIG_DEBUG_MUTEXES=y
--CONFIG_LATENCYTOP=y
- CONFIG_SCHED_TRACER=y
- CONFIG_DMA_API_DEBUG=y
- CONFIG_PPC_EARLY_DEBUG=y
-diff --git a/arch/powerpc/configs/maple_defconfig b/arch/powerpc/configs/maple_defconfig
-index c5f2005005d3..1c436fafb397 100644
---- a/arch/powerpc/configs/maple_defconfig
-+++ b/arch/powerpc/configs/maple_defconfig
-@@ -104,7 +104,6 @@ CONFIG_MAGIC_SYSRQ=y
- CONFIG_DEBUG_KERNEL=y
- CONFIG_DEBUG_STACK_USAGE=y
- CONFIG_DEBUG_STACKOVERFLOW=y
--CONFIG_LATENCYTOP=y
- CONFIG_XMON=y
- CONFIG_XMON_DEFAULT=y
- CONFIG_BOOTX_TEXT=y
-diff --git a/arch/powerpc/configs/pmac32_defconfig b/arch/powerpc/configs/pmac32_defconfig
-index 50b610b48914..8d632ceaea48 100644
---- a/arch/powerpc/configs/pmac32_defconfig
-+++ b/arch/powerpc/configs/pmac32_defconfig
-@@ -293,7 +293,6 @@ CONFIG_CRC_T10DIF=y
- CONFIG_MAGIC_SYSRQ=y
- CONFIG_DEBUG_KERNEL=y
- CONFIG_DETECT_HUNG_TASK=y
--CONFIG_LATENCYTOP=y
- CONFIG_XMON=y
- CONFIG_XMON_DEFAULT=y
- CONFIG_BOOTX_TEXT=y
-diff --git a/arch/powerpc/configs/powernv_defconfig b/arch/powerpc/configs/powernv_defconfig
-index ef2ef98d3f28..1cf8ce18b4ca 100644
---- a/arch/powerpc/configs/powernv_defconfig
-+++ b/arch/powerpc/configs/powernv_defconfig
-@@ -317,7 +317,6 @@ CONFIG_DEBUG_STACK_USAGE=y
- CONFIG_DEBUG_STACKOVERFLOW=y
- CONFIG_SOFTLOCKUP_DETECTOR=y
- CONFIG_HARDLOCKUP_DETECTOR=y
--CONFIG_LATENCYTOP=y
- CONFIG_FUNCTION_TRACER=y
- CONFIG_SCHED_TRACER=y
- CONFIG_FTRACE_SYSCALLS=y
-diff --git a/arch/powerpc/configs/ppc64_defconfig b/arch/powerpc/configs/ppc64_defconfig
-index 91fdb619b484..96d695ffe074 100644
---- a/arch/powerpc/configs/ppc64_defconfig
-+++ b/arch/powerpc/configs/ppc64_defconfig
-@@ -367,7 +367,6 @@ CONFIG_DEBUG_STACKOVERFLOW=y
- CONFIG_SOFTLOCKUP_DETECTOR=y
- CONFIG_HARDLOCKUP_DETECTOR=y
- CONFIG_DEBUG_MUTEXES=y
--CONFIG_LATENCYTOP=y
- CONFIG_FUNCTION_TRACER=y
- CONFIG_SCHED_TRACER=y
- CONFIG_BLK_DEV_IO_TRACE=y
-diff --git a/arch/powerpc/configs/ppc64e_defconfig b/arch/powerpc/configs/ppc64e_defconfig
-index 41d85cb3c9a2..7e52d4658867 100644
---- a/arch/powerpc/configs/ppc64e_defconfig
-+++ b/arch/powerpc/configs/ppc64e_defconfig
-@@ -223,7 +223,6 @@ CONFIG_DEBUG_STACK_USAGE=y
- CONFIG_DEBUG_STACKOVERFLOW=y
- CONFIG_DETECT_HUNG_TASK=y
- CONFIG_DEBUG_MUTEXES=y
--CONFIG_LATENCYTOP=y
- CONFIG_IRQSOFF_TRACER=y
- CONFIG_SCHED_TRACER=y
- CONFIG_BLK_DEV_IO_TRACE=y
-diff --git a/arch/powerpc/configs/ppc6xx_defconfig b/arch/powerpc/configs/ppc6xx_defconfig
-index 7c6baf6df139..7bcdb4d1411c 100644
---- a/arch/powerpc/configs/ppc6xx_defconfig
-+++ b/arch/powerpc/configs/ppc6xx_defconfig
-@@ -1148,7 +1148,6 @@ CONFIG_FAIL_MAKE_REQUEST=y
- CONFIG_FAIL_IO_TIMEOUT=y
- CONFIG_FAULT_INJECTION_DEBUG_FS=y
- CONFIG_FAULT_INJECTION_STACKTRACE_FILTER=y
--CONFIG_LATENCYTOP=y
- CONFIG_SCHED_TRACER=y
- CONFIG_STACK_TRACER=y
- CONFIG_BLK_DEV_IO_TRACE=y
-diff --git a/arch/powerpc/configs/pseries_defconfig b/arch/powerpc/configs/pseries_defconfig
-index 62e12f61a3b2..c8f5f281e367 100644
---- a/arch/powerpc/configs/pseries_defconfig
-+++ b/arch/powerpc/configs/pseries_defconfig
-@@ -290,7 +290,6 @@ CONFIG_DEBUG_STACK_USAGE=y
- CONFIG_DEBUG_STACKOVERFLOW=y
- CONFIG_SOFTLOCKUP_DETECTOR=y
- CONFIG_HARDLOCKUP_DETECTOR=y
--CONFIG_LATENCYTOP=y
- CONFIG_FUNCTION_TRACER=y
- CONFIG_SCHED_TRACER=y
- CONFIG_BLK_DEV_IO_TRACE=y
-diff --git a/arch/powerpc/configs/wii_defconfig b/arch/powerpc/configs/wii_defconfig
-index f5c366b02828..d60c04a4708a 100644
---- a/arch/powerpc/configs/wii_defconfig
-+++ b/arch/powerpc/configs/wii_defconfig
-@@ -123,7 +123,6 @@ CONFIG_PRINTK_TIME=y
- CONFIG_MAGIC_SYSRQ=y
- CONFIG_DEBUG_SPINLOCK=y
- CONFIG_DEBUG_MUTEXES=y
--CONFIG_LATENCYTOP=y
- CONFIG_SCHED_TRACER=y
- CONFIG_BLK_DEV_IO_TRACE=y
- CONFIG_DMA_API_DEBUG=y
--- 
-2.21.0
+> When building with -Wsometimes-uninitialized, clang warns:
+>
+> drivers/pci/hotplug/rpaphp_core.c:243:14: warning: variable 'fndit' is
+> used uninitialized whenever 'for' loop exits because its condition is
+> false [-Wsometimes-uninitialized]
+>         for (j = 0; j < entries; j++) {
+>                     ^~~~~~~~~~~
+> drivers/pci/hotplug/rpaphp_core.c:256:6: note: uninitialized use occurs
+> here
+>         if (fndit)
+>             ^~~~~
+> drivers/pci/hotplug/rpaphp_core.c:243:14: note: remove the condition if
+> it is always true
+>         for (j = 0; j < entries; j++) {
+>                     ^~~~~~~~~~~
+> drivers/pci/hotplug/rpaphp_core.c:233:14: note: initialize the variable
+> 'fndit' to silence this warning
+>         int j, fndit;
+>                     ^
+>                      = 0
+>
+> Looking at the loop in a vacuum as clang would, fndit could be
+> uninitialized if entries was ever zero or the if statement was
+> always true within the loop. Regardless of whether or not this
+> warning is a problem in practice, "found" variables should always
+> be initialized to false so that there is no possibility of
+> undefined behavior.
+>
+> Link: https://github.com/ClangBuiltLinux/linux/issues/504
+> Fixes: 2fcf3ae508c2 ("hotplug/drc-info: Add code to search  
+> ibm,drc-info property")
+> Signed-off-by: Nathan Chancellor <natechancellor@gmail.com>
+> ---
+>  drivers/pci/hotplug/rpaphp_core.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+>
+> diff --git a/drivers/pci/hotplug/rpaphp_core.c  
+> b/drivers/pci/hotplug/rpaphp_core.c
+> index bcd5d357ca23..07b56bf2886f 100644
+> --- a/drivers/pci/hotplug/rpaphp_core.c
+> +++ b/drivers/pci/hotplug/rpaphp_core.c
+> @@ -230,7 +230,7 @@ static int rpaphp_check_drc_props_v2(struct  
+> device_node *dn, char *drc_name,
+>  	struct of_drc_info drc;
+>  	const __be32 *value;
+>  	char cell_drc_name[MAX_DRC_NAME_LEN];
+> -	int j, fndit;
+> +	int j, fndit = 0;
 
+Not sure fndit is needed at all. Looking into the full function code,  
+fndit only serves as doing a single action. That action could be done  
+in the loop directly, see below
+
+And while you are at it, I guess you should also handle the  
+initialisation of cell_drc_name.
+In the current code, it looks like content of cell_drc_name is  
+undefined when doing the strcmp when fndit is not 1.
+
+>
+>  	info = of_find_property(dn->parent, "ibm,drc-info", NULL);
+>  	if (info == NULL)
+> --
+> 2.22.0.rc2
+
+diff --git a/drivers/pci/hotplug/rpaphp_core.c  
+b/drivers/pci/hotplug/rpaphp_core.c
+index bcd5d357ca23..87113419a44f 100644
+--- a/drivers/pci/hotplug/rpaphp_core.c
++++ b/drivers/pci/hotplug/rpaphp_core.c
+@@ -230,7 +230,7 @@ static int rpaphp_check_drc_props_v2(struct  
+device_node *dn, char *drc_name,
+  	struct of_drc_info drc;
+  	const __be32 *value;
+  	char cell_drc_name[MAX_DRC_NAME_LEN];
+-	int j, fndit;
++	int j;
+
+  	info = of_find_property(dn->parent, "ibm,drc-info", NULL);
+  	if (info == NULL)
+@@ -248,14 +248,10 @@ static int rpaphp_check_drc_props_v2(struct  
+device_node *dn, char *drc_name,
+  		if (my_index > drc.last_drc_index)
+  			continue;
+
+-		fndit = 1;
++		/* Found it */
++		sprintf(cell_drc_name, "%s%d", drc.drc_name_prefix, my_index);
+  		break;
+  	}
+-	/* Found it */
+-
+-	if (fndit)
+-		sprintf(cell_drc_name, "%s%d", drc.drc_name_prefix,
+-			my_index);
+
+  	if (((drc_name == NULL) ||
+  	     (drc_name && !strcmp(drc_name, cell_drc_name))) &&
+
+Christophe
