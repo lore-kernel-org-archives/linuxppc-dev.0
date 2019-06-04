@@ -2,98 +2,56 @@ Return-Path: <SRS0=V6lO=UD=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A8761C04AB5
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Jun 2019 00:04:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 39259C04AB5
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Jun 2019 00:19:38 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3383725B85
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Jun 2019 00:04:44 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3383725B85
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id AC6DD26077
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Jun 2019 00:19:37 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org AC6DD26077
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kernel.crashing.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45HscB6vnKzDqVq
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Jun 2019 10:04:42 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=linux.vnet.ibm.com
- (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=tyreld@linux.vnet.ibm.com; receiver=<UNKNOWN>)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45HsxM4FfXzDqbs
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Jun 2019 10:19:35 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=permerror (mailfrom)
+ smtp.mailfrom=kernel.crashing.org (client-ip=63.228.1.57;
+ helo=gate.crashing.org; envelope-from=benh@kernel.crashing.org;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=linux.vnet.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ header.from=kernel.crashing.org
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45HsZj2RSFzDqR1
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Jun 2019 10:03:25 +1000 (AEST)
-Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x54024MF027585; Mon, 3 Jun 2019 20:03:15 -0400
-Received: from pps.reinject (localhost [127.0.0.1])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2swaajyhuk-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 03 Jun 2019 20:03:15 -0400
-Received: from m0098419.ppops.net (m0098419.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.27/8.16.0.27) with SMTP id x5403Dm1031622;
- Mon, 3 Jun 2019 20:03:14 -0400
-Received: from ppma01dal.us.ibm.com (83.d6.3fa9.ip4.static.sl-reverse.com
- [169.63.214.131])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2swaajyhsk-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 03 Jun 2019 20:03:14 -0400
-Received: from pps.filterd (ppma01dal.us.ibm.com [127.0.0.1])
- by ppma01dal.us.ibm.com (8.16.0.27/8.16.0.27) with SMTP id x53HmTGf010647;
- Mon, 3 Jun 2019 18:08:14 GMT
-Received: from b01cxnp23033.gho.pok.ibm.com (b01cxnp23033.gho.pok.ibm.com
- [9.57.198.28]) by ppma01dal.us.ibm.com with ESMTP id 2suh09413g-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 03 Jun 2019 18:08:14 +0000
-Received: from b01ledav006.gho.pok.ibm.com (b01ledav006.gho.pok.ibm.com
- [9.57.199.111])
- by b01cxnp23033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x5403BbY18022734
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Tue, 4 Jun 2019 00:03:11 GMT
-Received: from b01ledav006.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 471C2AC05F;
- Tue,  4 Jun 2019 00:03:11 +0000 (GMT)
-Received: from b01ledav006.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id C4EACAC065;
- Tue,  4 Jun 2019 00:03:09 +0000 (GMT)
-Received: from oc6857751186.ibm.com (unknown [9.85.191.102])
- by b01ledav006.gho.pok.ibm.com (Postfix) with ESMTP;
- Tue,  4 Jun 2019 00:03:09 +0000 (GMT)
-Subject: Re: [PATCH v2] PCI: rpaphp: Avoid a sometimes-uninitialized warning
-To: Nathan Chancellor <natechancellor@gmail.com>,
- Tyrel Datwyler <tyreld@linux.ibm.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-References: <20190603174323.48251-1-natechancellor@gmail.com>
- <20190603221157.58502-1-natechancellor@gmail.com>
-From: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
-Message-ID: <78f5a331-6158-0ef5-0476-b976c8e71a68@linux.vnet.ibm.com>
-Date: Mon, 3 Jun 2019 17:03:09 -0700
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:52.0) Gecko/20100101
- Thunderbird/52.9.1
-MIME-Version: 1.0
-In-Reply-To: <20190603221157.58502-1-natechancellor@gmail.com>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45Hsw00lnzzDqDN
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Jun 2019 10:18:23 +1000 (AEST)
+Received: from localhost (localhost.localdomain [127.0.0.1])
+ by gate.crashing.org (8.14.1/8.14.1) with ESMTP id x540ICHI017518;
+ Mon, 3 Jun 2019 19:18:13 -0500
+Message-ID: <73f8650b2bcb861d79cad675d6c8e1b92f4d4d11.camel@kernel.crashing.org>
+Subject: Re: [PATCH kernel] prom_init: Fetch flatten device tree from the
+ system firmware
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Segher Boessenkool <segher@kernel.crashing.org>, Alexey Kardashevskiy
+ <aik@ozlabs.ru>
+Date: Tue, 04 Jun 2019 10:18:12 +1000
+In-Reply-To: <20190603234247.GQ31586@gate.crashing.org>
+References: <20190501034221.18437-1-aik@ozlabs.ru>
+ <a62a8612-77f5-5c6b-a6a2-15f006051d5e@ozlabs.ru>
+ <20190530193736.GC31586@gate.crashing.org>
+ <43f037c57eed8ad2175470c940917dced947bb70.camel@kernel.crashing.org>
+ <20190602232330.GN31586@gate.crashing.org>
+ <7fc6cd5e-ddd6-4028-b4ef-7bdcd6db69d0@ozlabs.ru>
+ <20190603234247.GQ31586@gate.crashing.org>
+Content-Type: text/plain; charset="UTF-8"
+X-Mailer: Evolution 3.28.5-0ubuntu0.18.04.1 
+Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2019-06-03_19:, , signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1011 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1810050000 definitions=main-1906030160
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -105,42 +63,40 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-pci@vger.kernel.org, Nick Desaulniers <ndesaulniers@google.com>,
- linux-kernel@vger.kernel.org, clang-built-linux@googlegroups.com,
- Bjorn Helgaas <bhelgaas@google.com>, linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev@lists.ozlabs.org,
+ Suraj Jitindar Singh <sjitindarsingh@gmail.com>,
+ David Gibson <david@gibson.dropbear.id.au>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 06/03/2019 03:11 PM, Nathan Chancellor wrote:
-> When building with -Wsometimes-uninitialized, clang warns:
+On Mon, 2019-06-03 at 18:42 -0500, Segher Boessenkool wrote:
+> Hi!
 > 
-> drivers/pci/hotplug/rpaphp_core.c:243:14: warning: variable 'fndit' is
-> used uninitialized whenever 'for' loop exits because its condition is
-> false [-Wsometimes-uninitialized]
->         for (j = 0; j < entries; j++) {
->                     ^~~~~~~~~~~
-> drivers/pci/hotplug/rpaphp_core.c:256:6: note: uninitialized use occurs
-> here
->         if (fndit)
->             ^~~~~
-> drivers/pci/hotplug/rpaphp_core.c:243:14: note: remove the condition if
-> it is always true
->         for (j = 0; j < entries; j++) {
->                     ^~~~~~~~~~~
-> drivers/pci/hotplug/rpaphp_core.c:233:14: note: initialize the variable
-> 'fndit' to silence this warning
->         int j, fndit;
->                     ^
->                      = 0
+> On Mon, Jun 03, 2019 at 12:56:26PM +1000, Alexey Kardashevskiy wrote:
+> > On 03/06/2019 09:23, Segher Boessenkool wrote:
+> > > > So I go for the simple one and agree with Alexey's idea.
+> > > 
+> > > When dealing with a whole device tree you have to know about the
+> > > various
+> > > dynamically generated nodes and props, and handle each
+> > > appropriately.
+> > 
+> > The code I am changing fetches the device tree and build an fdt.
+> > What is
+> > that special knowledge in this context you are talking about?
 > 
-> fndit is only used to gate a sprintf call, which can be moved into the
-> loop to simplify the code and eliminate the local variable, which will
-> fix this warning.
-> 
-> Link: https://github.com/ClangBuiltLinux/linux/issues/504
-> Fixes: 2fcf3ae508c2 ("hotplug/drc-info: Add code to search ibm,drc-info property")
-> Suggested-by: Nick Desaulniers <ndesaulniers@google.com>
-> Signed-off-by: Nathan Chancellor <natechancellor@gmail.com>
+> Things like /options are dynamically generated.
 
-Acked-by: Tyrel Datwyler <tyreld@linux.ibm.com>
+They are generated before we do the call to extract the fdt, what's the
+problem there ?
+
+> I thought you would just be able to reuse some FDT parsing code to
+> implement my suggested new interface.  Maybe that was too optimistic.
+
+No, the idea is to have SLOF re-flatten it's live tree and hand us a
+blob. At least that's my understanding.
+
+Ben.
+
+
