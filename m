@@ -6,82 +6,82 @@ X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
 	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D8DD3C282CE
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Jun 2019 09:17:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3FCD7C282CE
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Jun 2019 09:18:27 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 66F1522CF8
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Jun 2019 09:17:15 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 66F1522CF8
+	by mail.kernel.org (Postfix) with ESMTPS id 862CF24B80
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Jun 2019 09:18:26 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 862CF24B80
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45J5sj6N6rzDq6k
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Jun 2019 19:17:13 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45J5v40mtPzDqcx
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Jun 2019 19:18:24 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
- (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
+ (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
  envelope-from=aneesh.kumar@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45J5pR01pjzDq6k
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Jun 2019 19:14:22 +1000 (AEST)
-Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x5497kog086150
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 4 Jun 2019 05:14:20 -0400
-Received: from e14.ny.us.ibm.com (e14.ny.us.ibm.com [129.33.205.204])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2swmh0uwqr-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45J5pR74rzzDqGm
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Jun 2019 19:14:23 +1000 (AEST)
+Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
+ x5499w7U120224
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 4 Jun 2019 05:14:21 -0400
+Received: from e17.ny.us.ibm.com (e17.ny.us.ibm.com [129.33.205.207])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2swns7r67j-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 04 Jun 2019 05:14:20 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 04 Jun 2019 05:14:21 -0400
 Received: from localhost
- by e14.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e17.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.ibm.com>;
- Tue, 4 Jun 2019 10:14:19 +0100
-Received: from b01cxnp22033.gho.pok.ibm.com (9.57.198.23)
- by e14.ny.us.ibm.com (146.89.104.201) with IBM ESMTP SMTP Gateway: Authorized
+ Tue, 4 Jun 2019 10:14:20 +0100
+Received: from b01cxnp23032.gho.pok.ibm.com (9.57.198.27)
+ by e17.ny.us.ibm.com (146.89.104.204) with IBM ESMTP SMTP Gateway: Authorized
  Use Only! Violators will be prosecuted; 
  (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Tue, 4 Jun 2019 10:14:15 +0100
+ Tue, 4 Jun 2019 10:14:19 +0100
 Received: from b01ledav006.gho.pok.ibm.com (b01ledav006.gho.pok.ibm.com
  [9.57.199.111])
- by b01cxnp22033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x549EEnU15007958
+ by b01cxnp23032.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x549EIIh37487078
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Tue, 4 Jun 2019 09:14:14 GMT
+ Tue, 4 Jun 2019 09:14:18 GMT
 Received: from b01ledav006.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 528DCAC05F;
- Tue,  4 Jun 2019 09:14:14 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 102A4AC05B;
+ Tue,  4 Jun 2019 09:14:18 +0000 (GMT)
 Received: from b01ledav006.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id D6809AC060;
- Tue,  4 Jun 2019 09:14:12 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 944AFAC05F;
+ Tue,  4 Jun 2019 09:14:16 +0000 (GMT)
 Received: from skywalker.in.ibm.com (unknown [9.124.35.234])
  by b01ledav006.gho.pok.ibm.com (Postfix) with ESMTP;
- Tue,  4 Jun 2019 09:14:12 +0000 (GMT)
+ Tue,  4 Jun 2019 09:14:16 +0000 (GMT)
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
 To: dan.j.williams@intel.com
-Subject: [PATCH v3 2/6] mm/nvdimm: Add PFN_MIN_VERSION support
-Date: Tue,  4 Jun 2019 14:43:53 +0530
+Subject: [PATCH v3 4/6] mm/nvdimm: Use correct #defines instead of opencoding
+Date: Tue,  4 Jun 2019 14:43:55 +0530
 X-Mailer: git-send-email 2.21.0
 In-Reply-To: <20190604091357.32213-1-aneesh.kumar@linux.ibm.com>
 References: <20190604091357.32213-1-aneesh.kumar@linux.ibm.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-x-cbid: 19060409-0052-0000-0000-000003CB0714
+x-cbid: 19060409-0040-0000-0000-000004F8624C
 X-IBM-SpamModules-Scores: 
 X-IBM-SpamModules-Versions: BY=3.00011212; HX=3.00000242; KW=3.00000007;
- PH=3.00000004; SC=3.00000286; SDB=6.01213037; UDB=6.00637527; IPR=6.00994104; 
- MB=3.00027178; MTD=3.00000008; XFM=3.00000015; UTC=2019-06-04 09:14:17
+ PH=3.00000004; SC=3.00000286; SDB=6.01213037; UDB=6.00637528; IPR=6.00994104; 
+ MB=3.00027178; MTD=3.00000008; XFM=3.00000015; UTC=2019-06-04 09:14:20
 X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19060409-0053-0000-0000-0000612A42D4
-Message-Id: <20190604091357.32213-2-aneesh.kumar@linux.ibm.com>
+x-cbparentid: 19060409-0041-0000-0000-000009048050
+Message-Id: <20190604091357.32213-4-aneesh.kumar@linux.ibm.com>
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
  definitions=2019-06-04_07:, , signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
@@ -107,135 +107,93 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This allows us to make changes in a backward incompatible way. I have
-kept the PFN_MIN_VERSION in this patch '0' because we are not introducing
-any incompatible changes in this patch. We also may want to backport this
-to older kernels.
+The nfpn related change is needed to fix the kernel message
 
-The error looks like
+"number of pfns truncated from 2617344 to 163584"
 
-  dax0.1: init failed, superblock min version 1, kernel support version 0
-
-and the namespace is marked disabled
-
-$ndctl list -Ni
-[
-  {
-    "dev":"namespace0.0",
-    "mode":"fsdax",
-    "map":"mem",
-    "size":10737418240,
-    "uuid":"9605de6d-cefa-4a87-99cd-dec28b02cffe",
-    "state":"disabled"
-  }
-]
+The change makes sure the nfpns stored in the superblock is right value.
 
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
 ---
- drivers/nvdimm/pfn.h      |  9 ++++++++-
- drivers/nvdimm/pfn_devs.c |  9 +++++++++
- drivers/nvdimm/pmem.c     | 26 ++++++++++++++++++++++----
- 3 files changed, 39 insertions(+), 5 deletions(-)
+ drivers/nvdimm/label.c          | 2 +-
+ drivers/nvdimm/namespace_devs.c | 6 +++---
+ drivers/nvdimm/pfn_devs.c       | 6 +++---
+ drivers/nvdimm/region_devs.c    | 8 ++++----
+ 4 files changed, 11 insertions(+), 11 deletions(-)
 
-diff --git a/drivers/nvdimm/pfn.h b/drivers/nvdimm/pfn.h
-index dde9853453d3..5fd29242745a 100644
---- a/drivers/nvdimm/pfn.h
-+++ b/drivers/nvdimm/pfn.h
-@@ -20,6 +20,12 @@
- #define PFN_SIG_LEN 16
- #define PFN_SIG "NVDIMM_PFN_INFO\0"
- #define DAX_SIG "NVDIMM_DAX_INFO\0"
-+/*
-+ * increment this when we are making changes such that older
-+ * kernel should fail to initialize that namespace.
-+ */
-+
-+#define PFN_MIN_VERSION 0
+diff --git a/drivers/nvdimm/label.c b/drivers/nvdimm/label.c
+index edf278067e72..c5f28c48bde4 100644
+--- a/drivers/nvdimm/label.c
++++ b/drivers/nvdimm/label.c
+@@ -363,7 +363,7 @@ static bool slot_valid(struct nvdimm_drvdata *ndd,
  
- struct nd_pfn_sb {
- 	u8 signature[PFN_SIG_LEN];
-@@ -36,7 +42,8 @@ struct nd_pfn_sb {
- 	__le32 end_trunc;
- 	/* minor-version-2 record the base alignment of the mapping */
- 	__le32 align;
--	u8 padding[4000];
-+	__le16 min_version;
-+	u8 padding[3998];
- 	__le64 checksum;
- };
+ 	/* check that DPA allocations are page aligned */
+ 	if ((__le64_to_cpu(nd_label->dpa)
+-				| __le64_to_cpu(nd_label->rawsize)) % SZ_4K)
++				| __le64_to_cpu(nd_label->rawsize)) % PAGE_SIZE)
+ 		return false;
+ 
+ 	/* check checksum */
+diff --git a/drivers/nvdimm/namespace_devs.c b/drivers/nvdimm/namespace_devs.c
+index d0214644e334..c4c5a191b1d6 100644
+--- a/drivers/nvdimm/namespace_devs.c
++++ b/drivers/nvdimm/namespace_devs.c
+@@ -1014,10 +1014,10 @@ static ssize_t __size_store(struct device *dev, unsigned long long val)
+ 		return -ENXIO;
+ 	}
+ 
+-	div_u64_rem(val, SZ_4K * nd_region->ndr_mappings, &remainder);
++	div_u64_rem(val, PAGE_SIZE * nd_region->ndr_mappings, &remainder);
+ 	if (remainder) {
+-		dev_dbg(dev, "%llu is not %dK aligned\n", val,
+-				(SZ_4K * nd_region->ndr_mappings) / SZ_1K);
++		dev_dbg(dev, "%llu is not %ldK aligned\n", val,
++				(PAGE_SIZE * nd_region->ndr_mappings) / SZ_1K);
+ 		return -EINVAL;
+ 	}
  
 diff --git a/drivers/nvdimm/pfn_devs.c b/drivers/nvdimm/pfn_devs.c
-index 01f40672507f..00c57805cad3 100644
+index e01eee9efafe..d137f52f46ee 100644
 --- a/drivers/nvdimm/pfn_devs.c
 +++ b/drivers/nvdimm/pfn_devs.c
-@@ -439,6 +439,14 @@ int nd_pfn_validate(struct nd_pfn *nd_pfn, const char *sig)
- 	if (nvdimm_read_bytes(ndns, SZ_4K, pfn_sb, sizeof(*pfn_sb), 0))
+@@ -778,8 +778,8 @@ static int nd_pfn_init(struct nd_pfn *nd_pfn)
+ 		 * when populating the vmemmap. This *should* be equal to
+ 		 * PMD_SIZE for most architectures.
+ 		 */
+-		offset = ALIGN(start + reserve + 64 * npfns,
+-				max(nd_pfn->align, PMD_SIZE)) - start;
++		offset = ALIGN(start + reserve + sizeof(struct page) * npfns,
++			       max(nd_pfn->align, PMD_SIZE)) - start;
+ 	} else if (nd_pfn->mode == PFN_MODE_RAM)
+ 		offset = ALIGN(start + reserve, nd_pfn->align) - start;
+ 	else
+@@ -791,7 +791,7 @@ static int nd_pfn_init(struct nd_pfn *nd_pfn)
  		return -ENXIO;
+ 	}
  
-+	if (le16_to_cpu(pfn_sb->min_version) > PFN_MIN_VERSION) {
-+		dev_err(&nd_pfn->dev,
-+			"init failed, superblock min version %d kernel"
-+			" support version %d\n",
-+			le16_to_cpu(pfn_sb->min_version), PFN_MIN_VERSION);
-+		return -EOPNOTSUPP;
-+	}
-+
- 	if (memcmp(pfn_sb->signature, sig, PFN_SIG_LEN) != 0)
- 		return -ENODEV;
+-	npfns = (size - offset - start_pad - end_trunc) / SZ_4K;
++	npfns = (size - offset - start_pad - end_trunc) / PAGE_SIZE;
+ 	pfn_sb->mode = cpu_to_le32(nd_pfn->mode);
+ 	pfn_sb->dataoff = cpu_to_le64(offset);
+ 	pfn_sb->npfns = cpu_to_le64(npfns);
+diff --git a/drivers/nvdimm/region_devs.c b/drivers/nvdimm/region_devs.c
+index fcf3d8828540..139d7b45b337 100644
+--- a/drivers/nvdimm/region_devs.c
++++ b/drivers/nvdimm/region_devs.c
+@@ -1005,10 +1005,10 @@ static struct nd_region *nd_region_create(struct nvdimm_bus *nvdimm_bus,
+ 		struct nd_mapping_desc *mapping = &ndr_desc->mapping[i];
+ 		struct nvdimm *nvdimm = mapping->nvdimm;
  
-@@ -769,6 +777,7 @@ static int nd_pfn_init(struct nd_pfn *nd_pfn)
- 	memcpy(pfn_sb->parent_uuid, nd_dev_to_uuid(&ndns->dev), 16);
- 	pfn_sb->version_major = cpu_to_le16(1);
- 	pfn_sb->version_minor = cpu_to_le16(2);
-+	pfn_sb->min_version = cpu_to_le16(PFN_MIN_VERSION);
- 	pfn_sb->start_pad = cpu_to_le32(start_pad);
- 	pfn_sb->end_trunc = cpu_to_le32(end_trunc);
- 	pfn_sb->align = cpu_to_le32(nd_pfn->align);
-diff --git a/drivers/nvdimm/pmem.c b/drivers/nvdimm/pmem.c
-index d9d845077b8b..eddc28e8c357 100644
---- a/drivers/nvdimm/pmem.c
-+++ b/drivers/nvdimm/pmem.c
-@@ -496,6 +496,7 @@ static int pmem_attach_disk(struct device *dev,
- 
- static int nd_pmem_probe(struct device *dev)
- {
-+	int ret;
- 	struct nd_namespace_common *ndns;
- 
- 	ndns = nvdimm_namespace_common_probe(dev);
-@@ -511,12 +512,29 @@ static int nd_pmem_probe(struct device *dev)
- 	if (is_nd_pfn(dev))
- 		return pmem_attach_disk(dev, ndns);
- 
--	/* if we find a valid info-block we'll come back as that personality */
--	if (nd_btt_probe(dev, ndns) == 0 || nd_pfn_probe(dev, ndns) == 0
--			|| nd_dax_probe(dev, ndns) == 0)
-+	ret = nd_btt_probe(dev, ndns);
-+	if (ret == 0)
- 		return -ENXIO;
-+	else if (ret == -EOPNOTSUPP)
-+		return ret;
- 
--	/* ...otherwise we're just a raw pmem device */
-+	ret = nd_pfn_probe(dev, ndns);
-+	if (ret == 0)
-+		return -ENXIO;
-+	else if (ret == -EOPNOTSUPP)
-+		return ret;
-+
-+	ret = nd_dax_probe(dev, ndns);
-+	if (ret == 0)
-+		return -ENXIO;
-+	else if (ret == -EOPNOTSUPP)
-+		return ret;
-+	/*
-+	 * We have two failure conditions here, there is no
-+	 * info reserver block or we found a valid info reserve block
-+	 * but failed to initialize the pfn superblock.
-+	 * Don't create a raw pmem disk for the second case.
-+	 */
- 	return pmem_attach_disk(dev, ndns);
- }
+-		if ((mapping->start | mapping->size) % SZ_4K) {
+-			dev_err(&nvdimm_bus->dev, "%s: %s mapping%d is not 4K aligned\n",
+-					caller, dev_name(&nvdimm->dev), i);
+-
++		if ((mapping->start | mapping->size) % PAGE_SIZE) {
++			dev_err(&nvdimm_bus->dev,
++				"%s: %s mapping%d is not %ld aligned\n",
++				caller, dev_name(&nvdimm->dev), i, PAGE_SIZE);
+ 			return NULL;
+ 		}
  
 -- 
 2.21.0
