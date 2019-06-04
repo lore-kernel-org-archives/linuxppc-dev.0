@@ -2,23 +2,23 @@ Return-Path: <SRS0=V6lO=UD=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1C118C282CE
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Jun 2019 06:59:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0CD44C282CE
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Jun 2019 07:01:39 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 9FCB124DB4
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Jun 2019 06:59:13 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9FCB124DB4
+	by mail.kernel.org (Postfix) with ESMTPS id 8D3B024DB4
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Jun 2019 07:01:38 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8D3B024DB4
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45J2pR4nJMzDqQM
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Jun 2019 16:59:11 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45J2sD1BprzDqSs
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Jun 2019 17:01:36 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=redhat.com
  (client-ip=209.132.183.28; helo=mx1.redhat.com; envelope-from=david@redhat.com;
@@ -28,23 +28,23 @@ Authentication-Results: lists.ozlabs.org;
 Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45J2lf4sxmzDqR3
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Jun 2019 16:56:46 +1000 (AEST)
-Received: from smtp.corp.redhat.com (int-mx02.intmail.prod.int.phx2.redhat.com
- [10.5.11.12])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45J2qS3zHXzDqLf
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Jun 2019 17:00:04 +1000 (AEST)
+Received: from smtp.corp.redhat.com (int-mx06.intmail.prod.int.phx2.redhat.com
+ [10.5.11.16])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by mx1.redhat.com (Postfix) with ESMTPS id EF1C2368E3;
- Tue,  4 Jun 2019 06:56:44 +0000 (UTC)
+ by mx1.redhat.com (Postfix) with ESMTPS id 7E4D518DF7C;
+ Tue,  4 Jun 2019 07:00:00 +0000 (UTC)
 Received: from [10.36.117.37] (ovpn-117-37.ams2.redhat.com [10.36.117.37])
- by smtp.corp.redhat.com (Postfix) with ESMTP id 61C2B60FD5;
- Tue,  4 Jun 2019 06:56:41 +0000 (UTC)
-Subject: Re: [PATCH v3 05/11] drivers/base/memory: Pass a block_id to
- init_memory_block()
+ by smtp.corp.redhat.com (Postfix) with ESMTP id 107EB5C89D;
+ Tue,  4 Jun 2019 06:59:49 +0000 (UTC)
+Subject: Re: [PATCH v3 06/11] mm/memory_hotplug: Allow arch_remove_pages()
+ without CONFIG_MEMORY_HOTREMOVE
 To: Wei Yang <richard.weiyang@gmail.com>
 References: <20190527111152.16324-1-david@redhat.com>
- <20190527111152.16324-6-david@redhat.com>
- <20190603214932.3xsvxwiiutcve4tz@master>
+ <20190527111152.16324-7-david@redhat.com>
+ <20190603221540.bvhuvltlwuirm5sl@master>
 From: David Hildenbrand <david@redhat.com>
 Openpgp: preference=signencrypt
 Autocrypt: addr=david@redhat.com; prefer-encrypt=mutual; keydata=
@@ -91,18 +91,18 @@ Autocrypt: addr=david@redhat.com; prefer-encrypt=mutual; keydata=
  +8Umfre0Xt4713VxMygW0PnQt5aSQdMD58jHFxTk092mU+yIHj5LeYgvwSgZN4airXk5yRXl
  SE+xAvmumFBY
 Organization: Red Hat GmbH
-Message-ID: <cd708cec-f369-4176-16c9-93a3c8ab6947@redhat.com>
-Date: Tue, 4 Jun 2019 08:56:40 +0200
+Message-ID: <2ba74d1d-643e-7e22-acff-2b04c579b4f8@redhat.com>
+Date: Tue, 4 Jun 2019 08:59:43 +0200
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
  Thunderbird/60.7.0
 MIME-Version: 1.0
-In-Reply-To: <20190603214932.3xsvxwiiutcve4tz@master>
+In-Reply-To: <20190603221540.bvhuvltlwuirm5sl@master>
 Content-Type: text/plain; charset=utf-8
 Content-Language: en-US
 Content-Transfer-Encoding: 7bit
-X-Scanned-By: MIMEDefang 2.79 on 10.5.11.12
+X-Scanned-By: MIMEDefang 2.79 on 10.5.11.16
 X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.5.16
- (mx1.redhat.com [10.5.110.30]); Tue, 04 Jun 2019 06:56:45 +0000 (UTC)
+ (mx1.redhat.com [10.5.110.29]); Tue, 04 Jun 2019 07:00:02 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -114,69 +114,57 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-s390@vger.kernel.org, linux-ia64@vger.kernel.org,
- linux-sh@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- "Rafael J. Wysocki" <rafael@kernel.org>, linux-kernel@vger.kernel.org,
- linux-mm@kvack.org, Igor Mammedov <imammedo@redhat.com>,
- akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org,
- Dan Williams <dan.j.williams@intel.com>, linux-arm-kernel@lists.infradead.org
+Cc: Oscar Salvador <osalvador@suse.com>, Rich Felker <dalias@libc.org>,
+ linux-ia64@vger.kernel.org, Anshuman Khandual <anshuman.khandual@arm.com>,
+ linux-sh@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>,
+ Dave Hansen <dave.hansen@linux.intel.com>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>, Arun KS <arunks@codeaurora.org>,
+ Chris Wilson <chris@chris-wilson.co.uk>, linux-mm@kvack.org,
+ Michal Hocko <mhocko@suse.com>, Paul Mackerras <paulus@samba.org>,
+ "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+ Qian Cai <cai@lca.pw>, linux-s390@vger.kernel.org,
+ Yoshinori Sato <ysato@users.sourceforge.jp>,
+ "Rafael J. Wysocki" <rafael@kernel.org>, Mike Rapoport <rppt@linux.ibm.com>,
+ Ingo Molnar <mingo@redhat.com>, Fenghua Yu <fenghua.yu@intel.com>,
+ Pavel Tatashin <pasha.tatashin@soleen.com>, Vasily Gorbik <gor@linux.ibm.com>,
+ Rob Herring <robh@kernel.org>, "mike.travis@hpe.com" <mike.travis@hpe.com>,
+ Nicholas Piggin <npiggin@gmail.com>, Alex Deucher <alexander.deucher@amd.com>,
+ Mark Brown <broonie@kernel.org>, Borislav Petkov <bp@alien8.de>,
+ Andy Lutomirski <luto@kernel.org>, Dan Williams <dan.j.williams@intel.com>,
+ linux-arm-kernel@lists.infradead.org, Tony Luck <tony.luck@intel.com>,
+ Baoquan He <bhe@redhat.com>, Masahiro Yamada <yamada.masahiro@socionext.com>,
+ Mathieu Malaterre <malat@debian.org>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Andrew Banman <andrew.banman@hpe.com>, linux-kernel@vger.kernel.org,
+ Logan Gunthorpe <logang@deltatee.com>,
+ Wei Yang <richardw.yang@linux.intel.com>,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>,
+ Igor Mammedov <imammedo@redhat.com>, akpm@linux-foundation.org,
+ linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>,
+ "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 03.06.19 23:49, Wei Yang wrote:
-> On Mon, May 27, 2019 at 01:11:46PM +0200, David Hildenbrand wrote:
->> We'll rework hotplug_memory_register() shortly, so it no longer consumes
->> pass a section.
->>
->> Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
->> Cc: "Rafael J. Wysocki" <rafael@kernel.org>
->> Signed-off-by: David Hildenbrand <david@redhat.com>
->> ---
->> drivers/base/memory.c | 15 +++++++--------
->> 1 file changed, 7 insertions(+), 8 deletions(-)
->>
->> diff --git a/drivers/base/memory.c b/drivers/base/memory.c
->> index f180427e48f4..f914fa6fe350 100644
->> --- a/drivers/base/memory.c
->> +++ b/drivers/base/memory.c
->> @@ -651,21 +651,18 @@ int register_memory(struct memory_block *memory)
->> 	return ret;
->> }
->>
->> -static int init_memory_block(struct memory_block **memory,
->> -			     struct mem_section *section, unsigned long state)
->> +static int init_memory_block(struct memory_block **memory, int block_id,
->> +			     unsigned long state)
->> {
->> 	struct memory_block *mem;
->> 	unsigned long start_pfn;
->> -	int scn_nr;
->> 	int ret = 0;
->>
->> 	mem = kzalloc(sizeof(*mem), GFP_KERNEL);
->> 	if (!mem)
->> 		return -ENOMEM;
->>
->> -	scn_nr = __section_nr(section);
->> -	mem->start_section_nr =
->> -			base_memory_block_id(scn_nr) * sections_per_block;
->> +	mem->start_section_nr = block_id * sections_per_block;
->> 	mem->end_section_nr = mem->start_section_nr + sections_per_block - 1;
->> 	mem->state = state;
->> 	start_pfn = section_nr_to_pfn(mem->start_section_nr);
->> @@ -694,7 +691,8 @@ static int add_memory_block(int base_section_nr)
->>
->> 	if (section_count == 0)
->> 		return 0;
->> -	ret = init_memory_block(&mem, __nr_to_section(section_nr), MEM_ONLINE);
->> +	ret = init_memory_block(&mem, base_memory_block_id(base_section_nr),
->> +				MEM_ONLINE);
+On 04.06.19 00:15, Wei Yang wrote:
+> Allow arch_remove_pages() or arch_remove_memory()?
+
+Looks like I merged __remove_pages() and arch_remove_memory().
+
+@Andrew, can you fix this up to
+
+"mm/memory_hotplug: Allow arch_remove_memory() without
+CONFIG_MEMORY_HOTREMOVE"
+
+? Thanks!
+
 > 
-> If my understanding is correct, section_nr could be removed too.
+> And want to confirm the kernel build on affected arch succeed?
 
-Yes you are, this has already been addressed in linux-next.
+I compile-tested on s390x and x86. As the patches are in linux-next for
+some time, I think the other builds are also fine.
 
+Thanks!
 
 -- 
 
