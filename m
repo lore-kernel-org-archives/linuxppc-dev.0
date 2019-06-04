@@ -2,65 +2,64 @@ Return-Path: <SRS0=V6lO=UD=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_MUTT autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 638E5C04AB5
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Jun 2019 02:16:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8EDEFC04AB5
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Jun 2019 03:02:01 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id DDFCB250FB
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Jun 2019 02:16:57 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id EF0A0261E1
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Jun 2019 03:02:00 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au header.b="JEBKlTZo"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DDFCB250FB
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=gibson.dropbear.id.au
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=neuling.org header.i=@neuling.org header.b="CvqDMeQ8"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EF0A0261E1
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=neuling.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45HwXm08syzDqWG
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Jun 2019 12:16:56 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+	by lists.ozlabs.org (Postfix) with ESMTP id 45HxXk3mwSzDqMy
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Jun 2019 13:01:58 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45HwWD4wFmzDqPB
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Jun 2019 12:15:36 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=gibson.dropbear.id.au
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au
- header.b="JEBKlTZo"; dkim-atps=neutral
-Received: by ozlabs.org (Postfix, from userid 1007)
- id 45HwWD2tmNz9s9y; Tue,  4 Jun 2019 12:15:36 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=gibson.dropbear.id.au; s=201602; t=1559614536;
- bh=z09flnAUfm9RhIXEmOxG01cmWOy778r4YU6BkCM/Qvo=;
- h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=JEBKlTZodXcJ9Di1OQg0ZI7jgZKNyBqd5zK6kaVMBzirScj+k3u5qgH0mNBuHJJrW
- yf1fycjJa02UUyzjq7KUtNthvwjD1DplYcaGcPoLM0oazQ2KhQSkawZT3jj2/Gx+y6
- gSPnx1CgphWyhSiyvTq1wfGkmDLmY3daqqDB/iUk=
-Date: Tue, 4 Jun 2019 10:32:56 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH kernel] prom_init: Fetch flatten device tree from the
- system firmware
-Message-ID: <20190604003255.GA9045@umbus.fritz.box>
-References: <20190501034221.18437-1-aik@ozlabs.ru>
- <a62a8612-77f5-5c6b-a6a2-15f006051d5e@ozlabs.ru>
- <20190530193736.GC31586@gate.crashing.org>
- <43f037c57eed8ad2175470c940917dced947bb70.camel@kernel.crashing.org>
- <20190602232330.GN31586@gate.crashing.org>
- <7fc6cd5e-ddd6-4028-b4ef-7bdcd6db69d0@ozlabs.ru>
- <32063141651fd502c8ce94be19cb5c5330ce39bd.camel@kernel.crashing.org>
- <20190603234932.GR31586@gate.crashing.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45HxWM4SRCzDqDX
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Jun 2019 13:00:47 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=neuling.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=neuling.org header.i=@neuling.org header.b="CvqDMeQ8"; 
+ dkim-atps=neutral
+Received: from neuling.org (localhost [127.0.0.1])
+ by ozlabs.org (Postfix) with ESMTP id 45HxWM2Gb4z9s3Z;
+ Tue,  4 Jun 2019 13:00:47 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=neuling.org;
+ s=201811; t=1559617247;
+ bh=VUd9GWQtgbkgeyYLimUbt7j45REwwm+8dxNtJyVqgXY=;
+ h=Subject:From:To:Cc:Date:In-Reply-To:References:From;
+ b=CvqDMeQ8WkPPfnPpux0tIsEjkVV6wnsDzvKOW8dBg9ZAO4T7+/30AIpxUkGr3xgTF
+ 11AYzBEIbI19P1Ya/5A0Yoy8V1xs+106iRjZfGugawF/JYr4gSh5E0+s464cpaCPEk
+ d/HJhe7SuENcanWd/6G71VVXHnAQl8PZOYO+pdI7RIAWmeYlliRDyKnjIxo85ieYfN
+ XNvSBc0zxxRQko2NPpVpIINKcrhSO7Cv1ZUaooCr+UW/85ZFl/jkABx+0ugq+lW2tL
+ GDtWiRQH60LKO/Z136utEkBVjDzbMox7/brBKSTyCHvaxnetfctVvOy6u6VlSJvBQ2
+ pFJs8onZOXz+A==
+Received: by neuling.org (Postfix, from userid 1000)
+ id 4A3F12A56C6; Tue,  4 Jun 2019 13:00:47 +1000 (AEST)
+Message-ID: <9bd5f8b9795417d40332320dec2c256ef342c026.camel@neuling.org>
+Subject: Re: [PATCH v4 2/2] powerpc: Fix compile issue with force DAWR
+From: Michael Neuling <mikey@neuling.org>
+To: Christoph Hellwig <hch@infradead.org>
+Date: Tue, 04 Jun 2019 13:00:47 +1000
+In-Reply-To: <20190529062842.GA4787@infradead.org>
+References: <20190529020115.14201-1-mikey@neuling.org>
+ <20190529020115.14201-2-mikey@neuling.org>
+ <20190529062842.GA4787@infradead.org>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+User-Agent: Evolution 3.32.2 (3.32.2-1.fc30) 
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="pWyiEgJYm5f9v55/"
-Content-Disposition: inline
-In-Reply-To: <20190603234932.GR31586@gate.crashing.org>
-User-Agent: Mutt/1.11.4 (2019-03-13)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -72,63 +71,57 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Alexey Kardashevskiy <aik@ozlabs.ru>, linuxppc-dev@lists.ozlabs.org,
- Suraj Jitindar Singh <sjitindarsingh@gmail.com>
+Cc: Mathieu Malaterre <malat@debian.org>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+I agree with all the below and will address in v5.
 
---pWyiEgJYm5f9v55/
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Mikey
 
-On Mon, Jun 03, 2019 at 06:49:32PM -0500, Segher Boessenkool wrote:
-> On Tue, Jun 04, 2019 at 07:18:42AM +1000, Benjamin Herrenschmidt wrote:
-> > Yes we could make property fetching faster but mostly by creating a new
-> > bulk interface which is quite a bit of work, a new API, and will in
-> > practice not be used for anything other than creating the FDT. In that
-> > case, nothing will beat in performance having OF create the FDT itself
-> > based on its current tree.
+On Tue, 2019-05-28 at 23:28 -0700, Christoph Hellwig wrote:
+> > +config PPC_DAWR
+> > +	bool
+> > +	default n
 >=20
-> And that will change the whole boot protocol, the interaction between OF
-> and its client, which is a much bigger change, not conceptually trivial
-> at all.  Copying all properties at once is, which is why I suggested it.
+> "default n" is the default default.  No need to write this line.
+>=20
+> > +++ b/arch/powerpc/kernel/dawr.c
+> > @@ -0,0 +1,100 @@
+> > +// SPDX-License-Identifier: GPL-2.0+
+> > +//
+> > +// DAWR infrastructure
+> > +//
+> > +// Copyright 2019, Michael Neuling, IBM Corporation.
+>=20
+> Normal top of file header should be /* */, //-style comments are only
+> for the actual SPDX heder line.
+>=20
+> > +	/* Send error to user if they hypervisor won't allow us to write DAWR=
+ */
+> > +	if ((!dawr_force_enable) &&
+> > +	    (firmware_has_feature(FW_FEATURE_LPAR)) &&
+> > +	    (set_dawr(&null_brk) !=3D H_SUCCESS))
+>=20
+> None of the three inner brace sets here are required, and the code
+> becomes much easier to read without them.
+>=20
+> > +		return -1;
+>=20
+> What about returning a proper error code?
+>=20
+> > +static int __init dawr_force_setup(void)
+> > +{
+> > +	dawr_force_enable =3D false;
+>=20
+> This variable already is initialized to alse by default, so this line
+> is not required.
+>=20
+> > +	if (PVR_VER(mfspr(SPRN_PVR)) =3D=3D PVR_POWER9) {
+> > +		/* Turn DAWR off by default, but allow admin to turn it on */
+> > +		dawr_force_enable =3D false;
+>=20
+> .. and neither is this one.
+>=20
 
-Much as I wasn't terribly convinced by the original idea, I agree with
-Ben and Alexey here.  Your approach has slightly more complexity for
-slightly less benefit.  If it's worth doing yours it's better to do
-theirs.
-
-> It would take away the opposition to your patch.
-
-Only from you, AFAICT...
-
---=20
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
-
---pWyiEgJYm5f9v55/
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAEBCAAdFiEEdfRlhq5hpmzETofcbDjKyiDZs5IFAlz1vDUACgkQbDjKyiDZ
-s5L/rBAA5iDgysEvs13JBaX9C9BwA1X0tM/3uwsKh6pVfnyRG32ZFYsl61TEgIJB
-00P+ewsT01qXaZn+VZZztk76U2l6RY6HMmEU46NHcK7KFgsH85ibUMX+VTeMYh3J
-dNuKoI0AZ+cRlZNimomnyH/90WuptpwR6w/Cl9CCK2NzgtZ+EEwenhus7Y0TTLdo
-oP2e6DLYO+eGrZEOyK5/OhOTqEqaUffmVLq9Yu3Odor1j+xc0pIl/mGf0D8hfJyG
-RTBA9nrISln4wCG4LFxQXs94vI2/At1D6uKOQEcAHIcyFuuANX+FOXf3+94fsZ94
-O4qhzQZ5lsHg+1JKNBUF5j+2QidZnmOK7XNtdbeaIYpXP3941MK79sQ8e8gIVZZY
-XuhZ+gpA/+eJhhdpwbOyPFnJeG5AcvmY+6qdyrNARDmT4NSzUn+GckcRkvjJLK5v
-IXqGCC0g48LZlIfzh97l9Ff1KQbWa87OIbhcn6nF32Q22A9O7Z6Ble9JszZ1Bnj6
-IyIfR82hVx1uKHQBBRAxDHUdFE62CMNmtMrekBq7v3c/twx/ogtI8ZsDlQIyuJBu
-c+X+kXO0bInf7sqhJGtFy/daNiJ7OJT6D22PbzR9Y3bQs6Jh7c0RTK4Y/PHf0mAV
-685IdGdmw9AdU0JX6G+p5yIzM1ljS97hX8nAZlvegImQnqikC7g=
-=hy3s
------END PGP SIGNATURE-----
-
---pWyiEgJYm5f9v55/--
