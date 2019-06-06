@@ -2,90 +2,86 @@ Return-Path: <SRS0=nl2z=UF=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-4.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
+X-Spam-Status: No, score=-1.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
 	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3F26CC04AB5
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Jun 2019 12:54:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A2E8CC04AB5
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Jun 2019 13:48:33 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 4C42A2070B
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Jun 2019 12:54:58 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4C42A2070B
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id ED0D42070B
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Jun 2019 13:48:32 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="mRWpWXNn"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org ED0D42070B
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45KQc028qGzDqlJ
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Jun 2019 22:54:56 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45KRnn73LpzDqL4
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Jun 2019 23:48:29 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
- (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=aneesh.kumar@linux.ibm.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=gmail.com
+ (client-ip=2607:f8b0:4864:20::844; helo=mail-qt1-x844.google.com;
+ envelope-from=radu.rendec@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="mRWpWXNn"; 
+ dkim-atps=neutral
+Received: from mail-qt1-x844.google.com (mail-qt1-x844.google.com
+ [IPv6:2607:f8b0:4864:20::844])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45KQW73n2pzDqjT
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Jun 2019 22:50:43 +1000 (AEST)
-Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x56ChGp7027664
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 6 Jun 2019 08:50:40 -0400
-Received: from e06smtp02.uk.ibm.com (e06smtp02.uk.ibm.com [195.75.94.98])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2sy2sp9c37-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 06 Jun 2019 08:50:40 -0400
-Received: from localhost
- by e06smtp02.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.ibm.com>;
- Thu, 6 Jun 2019 13:50:38 +0100
-Received: from b06cxnps4076.portsmouth.uk.ibm.com (9.149.109.198)
- by e06smtp02.uk.ibm.com (192.168.101.132) with IBM ESMTP SMTP Gateway:
- Authorized Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Thu, 6 Jun 2019 13:50:34 +0100
-Received: from d06av21.portsmouth.uk.ibm.com (d06av21.portsmouth.uk.ibm.com
- [9.149.105.232])
- by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x56CoXro44630238
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Thu, 6 Jun 2019 12:50:34 GMT
-Received: from d06av21.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id CFDCA52052;
- Thu,  6 Jun 2019 12:50:33 +0000 (GMT)
-Received: from skywalker.linux.ibm.com (unknown [9.85.84.230])
- by d06av21.portsmouth.uk.ibm.com (Postfix) with ESMTP id 8731952051;
- Thu,  6 Jun 2019 12:50:32 +0000 (GMT)
-X-Mailer: emacs 26.2 (via feedmail 11-beta-1 I)
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
-To: Michael Ellerman <mpe@ellerman.id.au>, Oliver <oohall@gmail.com>
-Subject: Re: [PATCH] powerpc/nvdimm: Add support for multibyte read/write for
- metadata
-In-Reply-To: <8736konw3i.fsf@concordia.ellerman.id.au>
-References: <20190602044350.31660-1-aneesh.kumar@linux.ibm.com>
- <CAOSf1CEsWiDyc3rAzNoPwBUUhs4deXt_1MJpuKUV_CP-LJhjhw@mail.gmail.com>
- <87ef49hg85.fsf@linux.ibm.com> <8736konw3i.fsf@concordia.ellerman.id.au>
-Date: Thu, 06 Jun 2019 18:20:31 +0530
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45KRkC6KcGzDqNS
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Jun 2019 23:45:23 +1000 (AEST)
+Received: by mail-qt1-x844.google.com with SMTP id 14so2712094qtf.0
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 06 Jun 2019 06:45:23 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=message-id:subject:from:to:cc:date:in-reply-to:references
+ :user-agent:mime-version:content-transfer-encoding;
+ bh=cbWHU2TAAmriqlsqy0lbK2IJbHWP0xfk7NysNgwfeo8=;
+ b=mRWpWXNnd6IloiFR3j9MKpFCeFiw5eb1UTxh/Yna9fXaG+lS69+4dSNYnb+ZLnYefm
+ gPr+q3EmChGjEwQ/QsjmeL2PWVMa1vGeEanLMVasS083LSUVwNI0sEYqaKlXqRp42dK5
+ E1c15vyvwU3PfVG2Np1fEQASww6/BPoacCL97GaatofPLmvt5qQ0SfcveAKYTEczXzzU
+ YKaYRIulLlJEhR+l7TkrEg978aCeHaJ0BRmtqynJOtn+d4OhMdh0t59zOE1o6PzHnwGZ
+ EjO9rlJDr6i8cX+MpDS1Y0QrZZQZY8AP3uJEuehjwFA3w8ajfBrystuCnH803KySqAsP
+ /Qvw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:message-id:subject:from:to:cc:date:in-reply-to
+ :references:user-agent:mime-version:content-transfer-encoding;
+ bh=cbWHU2TAAmriqlsqy0lbK2IJbHWP0xfk7NysNgwfeo8=;
+ b=nLsLKHCH2pt5miYGnWm+XbGSHnnbYYx0sHCW1RbHljtcZYqKW7BxDJMzBwWyS6jzW6
+ 1dlf/jlwxLUyil2hlDr8+GHdpwNXASX41DgK5s6TqBTWzLgA/wzjdN+V1hYfoYCuI9u6
+ B5iPKeHr5G+NO5A6E2ID1/lMrHccRuDLcEVRXlnefDj0m2LVFkSwYFnyI1AawzfYoJJV
+ QCqDpfCBD+fnlHZbbab1F4U+WSbB/jx5iaP4DwWY8Ct3zbqnzBxOtuE2qnUaDjm/IKqJ
+ 67A6PL4Yvr5uvNSJMUQiKpxgZ7IePb82JMAAt4DodjZ+1EP9NT/Bud3iBYOKc0Njs6GM
+ qDiQ==
+X-Gm-Message-State: APjAAAUtWPyl1dtw565DPkFgShIFDup1D5TlF3CQfYvrPY8b8i4iAKkB
+ dz285ONNyre4CNQunvH+sQo=
+X-Google-Smtp-Source: APXvYqyIQracPlFANu0gkJzTq/eda8YSkMBqTyT1yJOPRhYGrfUBvdRsWrfXGwUXRdGyeSrl0Qmi7w==
+X-Received: by 2002:ac8:1a39:: with SMTP id v54mr41116077qtj.21.1559828718157; 
+ Thu, 06 Jun 2019 06:45:18 -0700 (PDT)
+Received: from bat.mindbit.ro (ftp.optelian.com. [216.13.53.98])
+ by smtp.gmail.com with ESMTPSA id u8sm871366qkk.7.2019.06.06.06.45.17
+ (version=TLS1_3 cipher=AEAD-AES256-GCM-SHA384 bits=256/256);
+ Thu, 06 Jun 2019 06:45:17 -0700 (PDT)
+Message-ID: <62eaddb44743811a8b2cf4da5aa85f5b61662539.camel@gmail.com>
+Subject: Re: PowerPC arch_ptrace() writes beyond thread_struct/task_struct
+From: Radu Rendec <radu.rendec@gmail.com>
+To: Christophe Leroy <christophe.leroy@c-s.fr>, linuxppc-dev@lists.ozlabs.org
+Date: Thu, 06 Jun 2019 09:45:16 -0400
+In-Reply-To: <84012c6a-befa-5091-ee13-4da5d5eb7d75@c-s.fr>
+References: <CAD5jUk-meCjEoqJqwriEZxfXQqWvObZUPq0MP=pSQmAbAbXMkw@mail.gmail.com>
+ <84012c6a-befa-5091-ee13-4da5d5eb7d75@c-s.fr>
+Content-Type: text/plain; charset="UTF-8"
+User-Agent: Evolution 3.30.5 (3.30.5-1.fc29) 
 MIME-Version: 1.0
-Content-Type: text/plain
-X-TM-AS-GCONF: 00
-x-cbid: 19060612-0008-0000-0000-000002F089B7
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19060612-0009-0000-0000-0000225D75D3
-Message-Id: <878sueho88.fsf@linux.ibm.com>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2019-06-06_10:, , signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1810050000 definitions=main-1906060091
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -97,90 +93,93 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Paul Mackerras <paulus@samba.org>, Nicholas Piggin <npiggin@gmail.com>
+Cc: Oleg Nesterov <oleg@redhat.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Michael Ellerman <mpe@ellerman.id.au> writes:
+On Thu, 2019-06-06 at 07:15 +0200, Christophe Leroy wrote:
+> 
+> Le 05/06/2019 à 23:45, Radu Rendec a écrit :
+> > Hi Everyone,
+> > 
+> > I'm seeing some weird memory corruption that I have been able to isolate
+> > to arch_ptrace() [arch/powerpc/kernel/ptrace.c] and PTRACE_POKEUSR. I am
+> > on PowerPC 32 (MPC8378), kernel 4.9.179.
+> > 
+> > It's not very easy for me to test on the latest kernel, but I guess
+> > little has changed since 4.9 in either the architecture specific ptrace
+> > code or PowerPC register data structures.
+> > 
+> > What happens is that gdb calls ptrace(PTRACE_POKEUSER) with addr=0x158.
+> > This goes down to arch_ptrace() [arch/powerpc/kernel/ptrace.c], inside
+> > `case PTRACE_POKEUSR`, on the branch that does this:
+> > 
+> >      memcpy(&child->thread.TS_FPR(fpidx), &data,
+> >              sizeof(long));
+> > 
+> > where:
+> >      index = addr >> 2 = 0x56 = 86
+> >      fpidx = index - PT_FPR0 = 86 - 48 = 38
+> 
+> In struct thread_fp_state, fpr field is u64, so I guess we should have 
+> the following on PPC32:
+> 
+> fpidx = (index - PT_FPR0) >> 1;
 
-> "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com> writes:
->> Oliver <oohall@gmail.com> writes:
->>> On Sun, Jun 2, 2019 at 2:44 PM Aneesh Kumar K.V
->>> <aneesh.kumar@linux.ibm.com> wrote:
-> ...
->>>> diff --git a/arch/powerpc/platforms/pseries/papr_scm.c b/arch/powerpc/platforms/pseries/papr_scm.c
->>>> index 0176ce66673f..e33cebb8ee6c 100644
->>>> --- a/arch/powerpc/platforms/pseries/papr_scm.c
->>>> +++ b/arch/powerpc/platforms/pseries/papr_scm.c
->>>> @@ -97,42 +97,102 @@ static int drc_pmem_unbind(struct papr_scm_priv *p)
->>>>  }
->>>>
->>>>  static int papr_scm_meta_get(struct papr_scm_priv *p,
->>>> -                       struct nd_cmd_get_config_data_hdr *hdr)
->>>> +                            struct nd_cmd_get_config_data_hdr *hdr)
->>>>  {
->>>>         unsigned long data[PLPAR_HCALL_BUFSIZE];
->>>> +       unsigned long offset, data_offset;
->>>> +       int len, read;
->>>>         int64_t ret;
->>>>
->>>> -       if (hdr->in_offset >= p->metadata_size || hdr->in_length != 1)
->>>> +       if ((hdr->in_offset + hdr->in_length) >= p->metadata_size)
->>>>                 return -EINVAL;
->>>>
->>>> -       ret = plpar_hcall(H_SCM_READ_METADATA, data, p->drc_index,
->>>> -                       hdr->in_offset, 1);
->>>> -
->>>> -       if (ret == H_PARAMETER) /* bad DRC index */
->>>> -               return -ENODEV;
->>>> -       if (ret)
->>>> -               return -EINVAL; /* other invalid parameter */
->>>> -
->>>> -       hdr->out_buf[0] = data[0] & 0xff;
->>>> -
->>>> +       for (len = hdr->in_length; len; len -= read) {
->>>> +
->>>> +               data_offset = hdr->in_length - len;
->>>> +               offset = hdr->in_offset + data_offset;
->>>> +
->>>> +               if (len >= 8)
->>>> +                       read = 8;
->>>> +               else if (len >= 4)
->>>> +                       read = 4;
->>>> +               else if ( len >= 2)
->>>> +                       read = 2;
->>>> +               else
->>>> +                       read = 1;
->>>> +
->>>> +               ret = plpar_hcall(H_SCM_READ_METADATA, data, p->drc_index,
->>>> +                                 offset, read);
->>>> +
->>>> +               if (ret == H_PARAMETER) /* bad DRC index */
->>>> +                       return -ENODEV;
->>>> +               if (ret)
->>>> +                       return -EINVAL; /* other invalid parameter */
->>>> +
->>>> +               switch (read) {
->>>> +               case 8:
->>>> +                       *(uint64_t *)(hdr->out_buf + data_offset) = be64_to_cpu(data[0]);
->>>> +                       break;
->>>> +               case 4:
->>>> +                       *(uint32_t *)(hdr->out_buf + data_offset) = be32_to_cpu(data[0] & 0xffffffff);
->>>> +                       break;
-> ...
->>>
->>> I assume you got the qemu bits sorted out with Shiva? Looks good otherwise.
->>
->> That is correct. I also tested with different xfer values (1, 2, 4, 8)
->> on both Qemu and PowerVM.
->
-> With a big endian kernel?
+I guess this would only apply to PPC32, since everything up to fpidx is
+calculated in units of sizeof(long) - which is 4 on PPC32 and 8 on
+PPC64. But fpr[0:31] is always u64.
 
-I completed this testing and found new bugs in other parts of the code.
+It also looks odd that only sizeof(long) bytes are ever copied for any
+given fpr[fpidx], which means one half of the u64 is never accessible on
+PPC32.
 
-Thanks for the sugestion.
+Ont other thing I don't get is the "+1" in the definition of PT_FPSCR
+for PPC32:
 
--aneesh
+    #define PT_FPSCR (PT_FPR0 + 2*32 + 1)
+
+Looking at struct thread_fp_state, fpscr follows immediately after
+fpr[31]. Is the FPSCR register only 32-bit on PPC32? Is it stored in the
+2nd half of (struct thread_fp_state).fpscr? This line:
+
+    child->thread.fp_state.fpscr = data;
+
+suggests so. And in that case, the "+1" in PT_FPSCR makes sense, but
+only for big endian: assigning `data` (which is "long", 32-bit) to the
+`fpscr` field (which is "u64") would go to the higher address, which is
+indeed "+1" in units of 32-bit words.
+
+Then there is also a problem is the condition that determines whether
+memcpy() is used to access one of the fpr[0:31] or fpscr is assigned
+directly:
+
+    if (fpidx < (PT_FPSCR - PT_FPR0))
+
+The case when the supplied addr points to the lower half of fpscr (which
+is unused on PPC32?) erroneously indexes into fpr[0:31].
+
+Is there any documentation of what "addr" is supposed to mean?
+
+
+> >      &child->thread.TS_FPR(fpidx) = (void *)child + 1296
+> > 
+> >      offsetof(struct task_struct, thread) = 960
+> >      sizeof(struct thread_struct) = 336
+> >      sizeof(struct task_struct) = 1296
+> > 
+> > In other words, the memcpy() call writes just beyond thread_struct
+> > (which is also beyond task_struct, for that matter).
+> > 
+> > This should never get past the bounds checks for `index`, so perhaps
+> > there is a mismatch between ptrace macros and the actual register data
+> > structures layout.
+> > 
+> > I will continue to investigate, but I'm not familiar with the PowerPC
+> > registers so it will take a while before I make sense of all the data
+> > structures and macros. Hopefully this rings a bell to someone who is
+> > already familiar with those and could figure out quickly what the
+> > problem is.
+
 
