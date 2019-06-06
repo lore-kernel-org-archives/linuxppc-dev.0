@@ -7,48 +7,50 @@ X-Spam-Status: No, score=-1.0 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CCC9DC04AB5
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Jun 2019 13:57:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 02801C04AB5
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Jun 2019 14:00:26 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 87B3720652
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Jun 2019 13:57:17 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 87B3720652
+	by mail.kernel.org (Postfix) with ESMTPS id B76AE20652
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Jun 2019 14:00:25 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B76AE20652
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45KRzv0JyszDqhK
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Jun 2019 23:57:15 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+	by lists.ozlabs.org (Postfix) with ESMTP id 45KS3W3CBJzDqGC
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Jun 2019 00:00:23 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45KRDP5YMJzDqhD
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45KRDP6qX6zDqjJ
  for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Jun 2019 23:23:01 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  dmarc=fail (p=none dis=none) header.from=gmail.com
 Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 45KRDP3D6Wz8tSD
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 45KRDP3LpZz8wJV
  for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Jun 2019 23:23:01 +1000 (AEST)
 Received: by ozlabs.org (Postfix)
- id 45KRDP2DMfz9sNT; Thu,  6 Jun 2019 23:23:01 +1000 (AEST)
+ id 45KRDP2D8Sz9sND; Thu,  6 Jun 2019 23:23:01 +1000 (AEST)
 Authentication-Results: ozlabs.org;
  spf=softfail (mailfrom) smtp.mailfrom=gmail.com
  (client-ip=162.253.133.57; helo=n7.nabble.com;
  envelope-from=girramsivakrishna@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: ozlabs.org;
  dmarc=fail (p=none dis=none) header.from=gmail.com
+X-Greylist: delayed 487 seconds by postgrey-1.36 at bilbo;
+ Thu, 06 Jun 2019 23:23:00 AEST
 Received: from n7.nabble.com (n7.nabble.com [162.253.133.57])
- by ozlabs.org (Postfix) with ESMTP id 45KRDN4Bh3z9sDX
+ by ozlabs.org (Postfix) with ESMTP id 45KRDN4BJXz9s4V
  for <linuxppc-dev@ozlabs.org>; Thu,  6 Jun 2019 23:23:00 +1000 (AEST)
 Received: from n7.nabble.com (localhost [127.0.0.1])
- by n7.nabble.com (Postfix) with ESMTP id A31E8CA5BBDC
- for <linuxppc-dev@ozlabs.org>; Thu,  6 Jun 2019 06:14:50 -0700 (MST)
-Date: Thu, 6 Jun 2019 06:14:50 -0700 (MST)
+ by n7.nabble.com (Postfix) with ESMTP id 0E369CA5BCB5
+ for <linuxppc-dev@ozlabs.org>; Thu,  6 Jun 2019 06:15:28 -0700 (MST)
+Date: Thu, 6 Jun 2019 06:15:28 -0700 (MST)
 From: siva krishna <girramsivakrishna@gmail.com>
 To: linuxppc-dev@ozlabs.org
-Message-ID: <1559826890592-0.post@n7.nabble.com>
+Message-ID: <1559826928056-0.post@n7.nabble.com>
 In-Reply-To: <547eba1b0903232205uc3b6a78y6db7e7ce161bd39@mail.gmail.com>
 References: <547eba1b0903180036m46f6ffc0g521a5081924a2613@mail.gmail.com>
  <4206182445660643B9AEB8D4E55BBD0A02B9DDEEB3@HERMES2>
@@ -76,9 +78,7 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi ,
-
-can you elobarate this ,meaning which file need to be modified etc .
+can yo explain little more on this 
 
 
 
