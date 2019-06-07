@@ -3,22 +3,21 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
 X-Spam-Status: No, score=-1.0 required=3.0 tests=MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no
-	version=3.4.0
+	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 43092C04AB5
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Jun 2019 00:03:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A61E2C04AB5
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Jun 2019 00:05:17 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id EC7E920840
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Jun 2019 00:03:48 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EC7E920840
+	by mail.kernel.org (Postfix) with ESMTPS id 5814020840
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Jun 2019 00:05:17 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5814020840
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=bugzilla.kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45KjRl0DyhzDqMG
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Jun 2019 10:03:47 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45KjTR4DpXzDqX3
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Jun 2019 10:05:15 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=bugzilla.kernel.org
  (client-ip=198.145.29.98; helo=mail.wl.linuxfoundation.org;
@@ -29,18 +28,18 @@ Received: from mail.wl.linuxfoundation.org (mail.wl.linuxfoundation.org
  [198.145.29.98])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45KjP05lVKzDqJV
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Jun 2019 10:01:24 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45KjS23s9HzDqBv
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Jun 2019 10:04:02 +1000 (AEST)
 Received: from mail.wl.linuxfoundation.org (localhost [127.0.0.1])
- by mail.wl.linuxfoundation.org (Postfix) with ESMTP id 67D0328AC1
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Jun 2019 00:01:22 +0000 (UTC)
+ by mail.wl.linuxfoundation.org (Postfix) with ESMTP id 4693520502
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Jun 2019 00:04:00 +0000 (UTC)
 Received: by mail.wl.linuxfoundation.org (Postfix, from userid 486)
- id 5AD2227CF3; Fri,  7 Jun 2019 00:01:22 +0000 (UTC)
+ id 3A7A528AF6; Fri,  7 Jun 2019 00:04:00 +0000 (UTC)
 From: bugzilla-daemon@bugzilla.kernel.org
 To: linuxppc-dev@lists.ozlabs.org
 Subject: [Bug 203839] Kernel 5.2-rc3 fails to boot on a PowerMac G4 3,6:
  systemd[1]: Failed to bump fs.file-max, ignoring: invalid argument
-Date: Fri, 07 Jun 2019 00:01:21 +0000
+Date: Fri, 07 Jun 2019 00:03:59 +0000
 X-Bugzilla-Reason: None
 X-Bugzilla-Type: changed
 X-Bugzilla-Watch-Reason: AssignedTo platform_ppc-32@kernel-bugs.osdl.org
@@ -56,7 +55,7 @@ X-Bugzilla-Priority: P1
 X-Bugzilla-Assigned-To: platform_ppc-32@kernel-bugs.osdl.org
 X-Bugzilla-Flags: 
 X-Bugzilla-Changed-Fields: attachments.created
-Message-ID: <bug-203839-206035-pPxDgkNI9z@https.bugzilla.kernel.org/>
+Message-ID: <bug-203839-206035-rblwljoM5C@https.bugzilla.kernel.org/>
 In-Reply-To: <bug-203839-206035@https.bugzilla.kernel.org/>
 References: <bug-203839-206035@https.bugzilla.kernel.org/>
 Content-Type: text/plain; charset="UTF-8"
@@ -82,10 +81,10 @@ Sender: "Linuxppc-dev"
 
 https://bugzilla.kernel.org/show_bug.cgi?id=3D203839
 
---- Comment #1 from Erhard F. (erhard_f@mailbox.org) ---
-Created attachment 283137
-  --> https://bugzilla.kernel.org/attachment.cgi?id=3D283137&action=3Dedit
-failed boot, screenshot 5.2-rc1
+--- Comment #2 from Erhard F. (erhard_f@mailbox.org) ---
+Created attachment 283139
+  --> https://bugzilla.kernel.org/attachment.cgi?id=3D283139&action=3Dedit
+kernel .config (5.2-rc3, G4 MDD)
 
 --=20
 You are receiving this mail because:
