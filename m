@@ -5,23 +5,24 @@ X-Spam-Level:
 X-Spam-Status: No, score=-7.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8F6E6C28CC3
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Jun 2019 06:36:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5B128C28CC3
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Jun 2019 06:43:40 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id CEBE7208C0
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Jun 2019 06:36:09 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id CCB9F2089E
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Jun 2019 06:43:39 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="gvG7A/8R"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CEBE7208C0
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="MnT9AIXy"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CCB9F2089E
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45Kt8R47YkzDqw9
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Jun 2019 16:36:07 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45KtK54ZH2zDqws
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Jun 2019 16:43:37 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=gmail.com
  (client-ip=2607:f8b0:4864:20::644; helo=mail-pl1-x644.google.com;
@@ -29,60 +30,58 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="gvG7A/8R"; 
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="MnT9AIXy"; 
  dkim-atps=neutral
 Received: from mail-pl1-x644.google.com (mail-pl1-x644.google.com
  [IPv6:2607:f8b0:4864:20::644])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45Kt5F5lQBzDqDN
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Jun 2019 16:33:21 +1000 (AEST)
-Received: by mail-pl1-x644.google.com with SMTP id g9so426861plm.6
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 06 Jun 2019 23:33:21 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45KtH72lGBzDqhk
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Jun 2019 16:41:54 +1000 (AEST)
+Received: by mail-pl1-x644.google.com with SMTP id c5so427256pll.11
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 06 Jun 2019 23:41:54 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
  h=date:from:subject:to:cc:references:in-reply-to:mime-version
  :user-agent:message-id:content-transfer-encoding;
- bh=FMq1+yhjaa4/6JYRj7g9m3mzV5lNsGwmEBtT8uI58tI=;
- b=gvG7A/8RseiB3lbU57nEd4ug7kBcV7GGqvz/oV155Z6bmsLUyvViGSousf2P7TCtFF
- cDGEACAEe+nf7WsQC7vLDn9THKH1RjlD4NpnX9B9r1h1QpYuRfHTlWHDTE4H8N0K4jxB
- 2apjaa5FImCGk9NdLLEYv/RZMmXMAgCL7jnYAgPzDG3+H+ABVVYdOh03AOpxLQu+zCo2
- e/HF1GZAAW6zonmdADfkjMPPyGX85ti8Y2SvdmL2p76gtBNgrFxPW7IlkGqhQCgrS2Kw
- 6xbHyGjnOMTYk6pB+G66JltJmQWVtC9MEDbUFReYO5g2mBf8r+/IzUboM/thXbaAitug
- 7jsw==
+ bh=3BLP3ekijkK+wrh0qdt9QXc+1tLAjWaM6aBRWK37yrs=;
+ b=MnT9AIXyaw9X1gvjLukGW4GHb9WlEmhIVdIl4b7fXwHLQyyr4ROHH7SPo8bzGuNdOb
+ SLN5y3szvqcuQK36TJGrcS2ojiL75xqv+QuSqVaMbxqnpD66loMmWVZaaupOTfmCP5Pv
+ vrr3AEUG/DEzBSM2lrgitgu0aWQ/HiRy3KCmLSfIk7wRozHwd31ad3SggN7Q/Jnm8xru
+ RbDHn2qfQ+cks4n56g4pkf8Kpq9LWw7AT6GJCeRxhVegqFYTmwRSdprDvpzBKZF8LgZr
+ Z/0G25OGkhI7mjZLN7Ky+ujIzlsNzP1GX90/zJlVMliyOM3a7lMposHMU5d9eigGDTYY
+ +g/Q==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:date:from:subject:to:cc:references:in-reply-to
  :mime-version:user-agent:message-id:content-transfer-encoding;
- bh=FMq1+yhjaa4/6JYRj7g9m3mzV5lNsGwmEBtT8uI58tI=;
- b=QrxZXtbRHnKs2iUeSQ4r4OrkWnxbUMe3Xdzzr4XOT02ypjt9d1+q47YIgJatGgYMSp
- XRQ6kcwVzxnbJgEpL+ZI8GbVQ8Ck1FVkz4y1CxHgsVtBHV5vj4ht2M+tivNR8LU7zu63
- 73bDkiYpk09EEGMYifJq9cWDKyXUA0r5fNU/BRQrIIvxtR+XJaST6a0BxjudgYN4ktoC
- g+PW5ofad4J3sgvdtKiifpCRZnZMcfZbosvvTo/YlC9SKK+yHF6PosTypvI54Hntud2C
- 0gaTcxT36aSaboFo1bC6K3PBSfI1hOmMkZUxul2npqxFTi089TRJfXnbJkq4+Tilqwsk
- bI5g==
-X-Gm-Message-State: APjAAAVZnq13GjUcExC/hnKS8RUFy1A1xluPn5Sk696xUfQ4HttIhcqB
- qXAvVr2tW/VlpcElYhke2OM=
-X-Google-Smtp-Source: APXvYqxibB5VeXMQ4uKwvZ62GDzXmqUcFvMCDp/sFAnv/wvUMxTJU3tA8rSwcfuxgx/qlhFak7YQAQ==
-X-Received: by 2002:a17:902:aa88:: with SMTP id
- d8mr46668889plr.73.1559889197930; 
- Thu, 06 Jun 2019 23:33:17 -0700 (PDT)
+ bh=3BLP3ekijkK+wrh0qdt9QXc+1tLAjWaM6aBRWK37yrs=;
+ b=YRoYmIPjNA7NnKgPrkPAisGbGcO5Xfam2HrlqPVMVqzXUPlFQ7Snohc0XnmDa1kBvE
+ G0aAJmCiZWjJH5eNI5pXP1GnBzuukJy6fRzvCQ3BBZjky1LvayQ0SdTSkXObdMNavqkS
+ nRAasvYKPvDCUCW5p/R9cA0yTxFd3lnuYnb6eMtfkXMSgoAIwcA4vUfn8z34MW+vKg82
+ wf/doXcUffSK4l7YGX7BP+/xpz9Z/0Rx0CFyqw9yY4Gmmy0wtF1QNqGehF9gfNgMMCeT
+ rM1NsWtjDs5YTJ/Zqry3l3AfoL2IQn3/LaYdhxpTG68X19B8BBtbECqMh4nVJgNaH1zU
+ Yx+g==
+X-Gm-Message-State: APjAAAX05+xTxVstAZzjcdYcp1/1ACRRJgWVLhsF/k10UTtEULlSdDcy
+ T8JLtT26AOtlNhh0dIraLvQUed/rE5k=
+X-Google-Smtp-Source: APXvYqzCP5KMMW6rOei+NKFsRi+/+3IRXXwvLE0VLnLnoIKhViju5oLu+0BIHUDYnr1+aLKznfuBaA==
+X-Received: by 2002:a17:902:e2:: with SMTP id
+ a89mr54611497pla.210.1559889712489; 
+ Thu, 06 Jun 2019 23:41:52 -0700 (PDT)
 Received: from localhost ([202.125.30.143])
- by smtp.gmail.com with ESMTPSA id g8sm1072895pgd.29.2019.06.06.23.33.16
+ by smtp.gmail.com with ESMTPSA id j2sm1978021pfb.157.2019.06.06.23.41.50
  (version=TLS1_3 cipher=AEAD-AES256-GCM-SHA384 bits=256/256);
- Thu, 06 Jun 2019 23:33:17 -0700 (PDT)
-Date: Fri, 07 Jun 2019 16:31:46 +1000
+ Thu, 06 Jun 2019 23:41:51 -0700 (PDT)
+Date: Fri, 07 Jun 2019 16:40:19 +1000
 From: Nicholas Piggin <npiggin@gmail.com>
-Subject: Re: [PATCH 2/2] powerpc/64s: __find_linux_pte synchronization vs
- pmdp_invalidate
+Subject: Re: [PATCH 1/2] powerpc/64s: Fix THP PMD collapse serialisation
 To: Christophe Leroy <christophe.leroy@c-s.fr>, linuxppc-dev@lists.ozlabs.org
 References: <20190607035636.5446-1-npiggin@gmail.com>
- <20190607035636.5446-2-npiggin@gmail.com>
- <46295970-4740-5648-efb4-513ab6a5c1c0@c-s.fr>
-In-Reply-To: <46295970-4740-5648-efb4-513ab6a5c1c0@c-s.fr>
+ <696d26a4-90e2-cb16-975f-d00cf6a01b67@c-s.fr>
+In-Reply-To: <696d26a4-90e2-cb16-975f-d00cf6a01b67@c-s.fr>
 MIME-Version: 1.0
 User-Agent: astroid/0.14.0 (https://github.com/astroidmail/astroid)
-Message-Id: <1559889014.vrn7eh65ke.astroid@bobo.none>
+Message-Id: <1559889211.i6ap0cklqg.astroid@bobo.none>
 Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -101,67 +100,81 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Christophe Leroy's on June 7, 2019 3:35 pm:
+Christophe Leroy's on June 7, 2019 3:34 pm:
 >=20
 >=20
 > Le 07/06/2019 =C3=A0 05:56, Nicholas Piggin a =C3=A9crit=C2=A0:
->> The change to pmdp_invalidate to mark the pmd with _PAGE_INVALID broke
->> the synchronisation against lock free lookups, __find_linux_pte's
->> pmd_none check no longer returns true for such cases.
+>> Commit 1b2443a547f9 ("powerpc/book3s64: Avoid multiple endian conversion
+>> in pte helpers") changed the actual bitwise tests in pte_access_permitte=
+d
+>> by using pte_write() and pte_present() helpers rather than raw bitwise
+>> testing _PAGE_WRITE and _PAGE_PRESENT bits.
 >>=20
->> Fix this by adding a check for this condition as well.
+>> The pte_present change now returns true for ptes which are !_PAGE_PRESEN=
+T
+>> and _PAGE_INVALID, which is the combination used by pmdp_invalidate to
+>> synchronize access from lock-free lookups. pte_access_permitted is used =
+by
+>> pmd_access_permitted, so allowing GUP lock free access to proceed with
+>> such PTEs breaks this synchronisation.
 >>=20
->> Fixes: da7ad366b497 ("powerpc/mm/book3s: Update pmd_present to look at _=
-PAGE_PRESENT bit")
+>> This bug has been observed on HPT host, with random crashes and corrupti=
+on
+>> in guests, usually together with bad PMD messages in the host.
+>>=20
+>> Fix this by adding an explicit check in pmd_access_permitted, and
+>> documenting the condition explicitly.
+>>=20
+>> The pte_write() change should be okay, and would prevent GUP from fallin=
+g
+>> back to the slow path when encountering savedwrite ptes, which matches
+>> what x86 (that does not implement savedwrite) does.
+>>=20
+>> Fixes: 1b2443a547f9 ("powerpc/book3s64: Avoid multiple endian conversion=
+ in pte helpers")
+>> Cc: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
 >> Cc: Christophe Leroy <christophe.leroy@c-s.fr>
->> Suggested-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
 >> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 >> ---
->>   arch/powerpc/mm/pgtable.c | 16 ++++++++++++++--
->>   1 file changed, 14 insertions(+), 2 deletions(-)
 >>=20
->> diff --git a/arch/powerpc/mm/pgtable.c b/arch/powerpc/mm/pgtable.c
->> index db4a6253df92..533fc6fa6726 100644
->> --- a/arch/powerpc/mm/pgtable.c
->> +++ b/arch/powerpc/mm/pgtable.c
->> @@ -372,13 +372,25 @@ pte_t *__find_linux_pte(pgd_t *pgdir, unsigned lon=
-g ea,
->>   	pdshift =3D PMD_SHIFT;
->>   	pmdp =3D pmd_offset(&pud, ea);
->>   	pmd  =3D READ_ONCE(*pmdp);
->> +
->>   	/*
->> -	 * A hugepage collapse is captured by pmd_none, because
->> -	 * it mark the pmd none and do a hpte invalidate.
->> +	 * A hugepage collapse is captured by this condition, see
->> +	 * pmdp_collapse_flush.
->>   	 */
->>   	if (pmd_none(pmd))
->>   		return NULL;
+>> I accounted for Aneesh's and Christophe's feedback, except I couldn't
+>> find a good way to replace the ifdef with IS_ENABLED because of
+>> _PAGE_INVALID etc., but at least cleaned that up a bit nicer.
+>=20
+> I guess the standard way is to add a pmd_is_serializing() which return=20
+> always false in book3s/32/pgtable.h and in nohash/pgtable.h
+
+
+>=20
+>>=20
+>> Patch 1 solves a problem I can hit quite reliably running HPT/HPT KVM.
+>> Patch 2 was noticed by Aneesh when inspecting code for similar bugs.
+>> They should probably both be merged in stable kernels after upstream.
+>>=20
+>>   arch/powerpc/include/asm/book3s/64/pgtable.h | 30 ++++++++++++++++++++
+>>   arch/powerpc/mm/book3s64/pgtable.c           |  3 ++
+>>   2 files changed, 33 insertions(+)
+>>=20
+>> diff --git a/arch/powerpc/include/asm/book3s/64/pgtable.h b/arch/powerpc=
+/include/asm/book3s/64/pgtable.h
+>> index 7dede2e34b70..ccf00a8b98c6 100644
+>> --- a/arch/powerpc/include/asm/book3s/64/pgtable.h
+>> +++ b/arch/powerpc/include/asm/book3s/64/pgtable.h
+>> @@ -876,6 +876,23 @@ static inline int pmd_present(pmd_t pmd)
+>>   	return false;
+>>   }
 >>  =20
->> +#ifdef CONFIG_PPC_BOOK3S_64
->> +	/*
->> +	 * A hugepage split is captured by this condition, see
->> +	 * pmdp_invalidate.
->> +	 *
->> +	 * Huge page modification can be caught here too.
->> +	 */
->> +	if (pmd_is_serializing(pmd))
->> +		return NULL;
->> +#endif
->> +
+>> +static inline int pmd_is_serializing(pmd_t pmd)
 >=20
-> Could get rid of that #ifdef by adding the following in book3s32 and=20
-> nohash pgtable.h:
->=20
-> static inline bool pmd_is_serializing()  { return false; }
+> should be static inline bool instead of int ?
 
-I don't mind either way. If it's an isolated case like this, sometimes=20
-I'm against polluting the sub arch code with it.
+I think just about all the p?d_blah boolean functions in the tree are
+int at the moment, so I followed that pattern.
 
-It's up to you I can change that if you prefer.
+May be a good tree wide change to make at some point.
 
 Thanks,
 Nick
+
 
 =
