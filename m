@@ -2,22 +2,23 @@ Return-Path: <SRS0=aGTZ=UI=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.0 required=3.0 tests=MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.0 required=3.0 tests=MAILING_LIST_MULTI,
+	MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 03CB5C28EBD
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  9 Jun 2019 07:23:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A98CCC28EBD
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  9 Jun 2019 07:43:35 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 46F592089E
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  9 Jun 2019 07:23:26 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 46F592089E
+	by mail.kernel.org (Postfix) with ESMTPS id 2F1E92070B
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  9 Jun 2019 07:43:35 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2F1E92070B
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=bugzilla.kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45M7633dxKzDqT5
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  9 Jun 2019 17:23:23 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45M7YK0nl4zDqTg
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  9 Jun 2019 17:43:33 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=bugzilla.kernel.org
  (client-ip=198.145.29.98; helo=mail.wl.linuxfoundation.org;
@@ -28,18 +29,18 @@ Received: from mail.wl.linuxfoundation.org (mail.wl.linuxfoundation.org
  [198.145.29.98])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45M7331SvnzDqD9
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  9 Jun 2019 17:20:46 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45M7WR6h2SzDqQb
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  9 Jun 2019 17:41:55 +1000 (AEST)
 Received: from mail.wl.linuxfoundation.org (localhost [127.0.0.1])
- by mail.wl.linuxfoundation.org (Postfix) with ESMTP id CA37326224
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  9 Jun 2019 07:20:44 +0000 (UTC)
+ by mail.wl.linuxfoundation.org (Postfix) with ESMTP id 5A29328924
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  9 Jun 2019 07:41:53 +0000 (UTC)
 Received: by mail.wl.linuxfoundation.org (Postfix, from userid 486)
- id BBC152899F; Sun,  9 Jun 2019 07:20:44 +0000 (UTC)
+ id 384ED28B0D; Sun,  9 Jun 2019 07:41:53 +0000 (UTC)
 From: bugzilla-daemon@bugzilla.kernel.org
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [Bug 203839] Kernel 5.2-rc3 fails to boot on a PowerMac G4 3,6:
- systemd[1]: Failed to bump fs.file-max, ignoring: invalid argument
-Date: Sun, 09 Jun 2019 07:20:43 +0000
+Subject: [Bug 155231] powerpc : native aslr vdso randomization is not working
+ in powerpc platform
+Date: Sun, 09 Jun 2019 07:41:52 +0000
 X-Bugzilla-Reason: None
 X-Bugzilla-Type: changed
 X-Bugzilla-Watch-Reason: AssignedTo platform_ppc-32@kernel-bugs.osdl.org
@@ -49,15 +50,15 @@ X-Bugzilla-Version: 2.5
 X-Bugzilla-Keywords: 
 X-Bugzilla-Severity: normal
 X-Bugzilla-Who: christophe.leroy@c-s.fr
-X-Bugzilla-Status: NEW
+X-Bugzilla-Status: NEEDINFO
 X-Bugzilla-Resolution: 
 X-Bugzilla-Priority: P1
 X-Bugzilla-Assigned-To: platform_ppc-32@kernel-bugs.osdl.org
 X-Bugzilla-Flags: 
 X-Bugzilla-Changed-Fields: cc
-Message-ID: <bug-203839-206035-iMCiCud95b@https.bugzilla.kernel.org/>
-In-Reply-To: <bug-203839-206035@https.bugzilla.kernel.org/>
-References: <bug-203839-206035@https.bugzilla.kernel.org/>
+Message-ID: <bug-155231-206035-Pywee23yGs@https.bugzilla.kernel.org/>
+In-Reply-To: <bug-155231-206035@https.bugzilla.kernel.org/>
+References: <bug-155231-206035@https.bugzilla.kernel.org/>
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 X-Bugzilla-URL: https://bugzilla.kernel.org/
@@ -79,7 +80,7 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-https://bugzilla.kernel.org/show_bug.cgi?id=3D203839
+https://bugzilla.kernel.org/show_bug.cgi?id=3D155231
 
 Christophe Leroy (christophe.leroy@c-s.fr) changed:
 
@@ -87,10 +88,8 @@ Christophe Leroy (christophe.leroy@c-s.fr) changed:
 ----------------------------------------------------------------------------
                  CC|                            |christophe.leroy@c-s.fr
 
---- Comment #5 from Christophe Leroy (christophe.leroy@c-s.fr) ---
-Then the problem is not due to the rework of syscalls.
-
-Are you able to bisect ?
+--- Comment #2 from Christophe Leroy (christophe.leroy@c-s.fr) ---
+See related ppc issue https://github.com/linuxppc/issues/issues/59
 
 --=20
 You are receiving this mail because:
