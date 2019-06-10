@@ -2,68 +2,88 @@ Return-Path: <SRS0=ea3T=UJ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.0 required=3.0 tests=MAILING_LIST_MULTI,
-	MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-8.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9D283C468C1
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Jun 2019 06:33:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B4547C468BC
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Jun 2019 06:35:19 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 27EC120833
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Jun 2019 06:33:40 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 27EC120833
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=bugzilla.kernel.org
+	by mail.kernel.org (Postfix) with ESMTPS id 1C5E720833
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Jun 2019 06:35:19 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1C5E720833
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45Mjy96zgLzDqQZ
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Jun 2019 16:33:37 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45Mk045yGVzDqQr
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Jun 2019 16:35:16 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=bugzilla.kernel.org
- (client-ip=198.145.29.98; helo=mail.wl.linuxfoundation.org;
- envelope-from=bugzilla-daemon@bugzilla.kernel.org; receiver=<UNKNOWN>)
+ spf=none (mailfrom) smtp.mailfrom=linux.vnet.ibm.com
+ (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
+ envelope-from=anju@linux.vnet.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=bugzilla.kernel.org
-Received: from mail.wl.linuxfoundation.org (mail.wl.linuxfoundation.org
- [198.145.29.98])
+ header.from=linux.vnet.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45MjtP3VtGzDqHk
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Jun 2019 16:30:20 +1000 (AEST)
-Received: from mail.wl.linuxfoundation.org (localhost [127.0.0.1])
- by mail.wl.linuxfoundation.org (Postfix) with ESMTP id BC09027DA4
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Jun 2019 06:30:17 +0000 (UTC)
-Received: by mail.wl.linuxfoundation.org (Postfix, from userid 486)
- id AF52D284C8; Mon, 10 Jun 2019 06:30:17 +0000 (UTC)
-From: bugzilla-daemon@bugzilla.kernel.org
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [Bug 203837] Booting kernel under KVM immediately freezes host
-Date: Mon, 10 Jun 2019 06:30:17 +0000
-X-Bugzilla-Reason: None
-X-Bugzilla-Type: changed
-X-Bugzilla-Watch-Reason: AssignedTo platform_ppc-64@kernel-bugs.osdl.org
-X-Bugzilla-Product: Platform Specific/Hardware
-X-Bugzilla-Component: PPC-64
-X-Bugzilla-Version: 2.5
-X-Bugzilla-Keywords: 
-X-Bugzilla-Severity: blocking
-X-Bugzilla-Who: npiggin@gmail.com
-X-Bugzilla-Status: NEW
-X-Bugzilla-Resolution: 
-X-Bugzilla-Priority: P1
-X-Bugzilla-Assigned-To: platform_ppc-64@kernel-bugs.osdl.org
-X-Bugzilla-Flags: 
-X-Bugzilla-Changed-Fields: 
-Message-ID: <bug-203837-206035-3nTG9hYR3r@https.bugzilla.kernel.org/>
-In-Reply-To: <bug-203837-206035@https.bugzilla.kernel.org/>
-References: <bug-203837-206035@https.bugzilla.kernel.org/>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-X-Bugzilla-URL: https://bugzilla.kernel.org/
-Auto-Submitted: auto-generated
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45Mjx516FhzDqR0
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Jun 2019 16:32:40 +1000 (AEST)
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
+ x5A6VlOa100810
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Jun 2019 02:32:36 -0400
+Received: from e06smtp02.uk.ibm.com (e06smtp02.uk.ibm.com [195.75.94.98])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2t1e27fxqg-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Jun 2019 02:32:36 -0400
+Received: from localhost
+ by e06smtp02.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <anju@linux.vnet.ibm.com>;
+ Mon, 10 Jun 2019 07:32:34 +0100
+Received: from b06cxnps4075.portsmouth.uk.ibm.com (9.149.109.197)
+ by e06smtp02.uk.ibm.com (192.168.101.132) with IBM ESMTP SMTP Gateway:
+ Authorized Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Mon, 10 Jun 2019 07:32:32 +0100
+Received: from d06av24.portsmouth.uk.ibm.com (mk.ibm.com [9.149.105.60])
+ by b06cxnps4075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x5A6WVj160555446
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Mon, 10 Jun 2019 06:32:31 GMT
+Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 43A864203F;
+ Mon, 10 Jun 2019 06:32:31 +0000 (GMT)
+Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 3F87C42045;
+ Mon, 10 Jun 2019 06:32:30 +0000 (GMT)
+Received: from localhost.in.ibm.com (unknown [9.124.35.72])
+ by d06av24.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Mon, 10 Jun 2019 06:32:30 +0000 (GMT)
+From: Anju T Sudhakar <anju@linux.vnet.ibm.com>
+To: mpe@ellerman.id.au
+Subject: [PATCH v2] powerpc/perf: Use cpumask_last() to determine the
+ designated cpu for nest/core units.
+Date: Mon, 10 Jun 2019 12:02:29 +0530
+X-Mailer: git-send-email 2.20.1
 MIME-Version: 1.0
-X-Virus-Scanned: ClamAV using ClamSMTP
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+x-cbid: 19061006-0008-0000-0000-000002F1D49A
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 19061006-0009-0000-0000-0000225ECA41
+Message-Id: <20190610063229.32560-1-anju@linux.vnet.ibm.com>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
+ definitions=2019-06-10_03:, , signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ malwarescore=0 suspectscore=1 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1810050000 definitions=main-1906100045
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -75,37 +95,110 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: ego@linux.vnet.ibm.com, anju@linux.vnet.ibm.com,
+ linuxppc-dev@lists.ozlabs.org, maddy@linux.vnet.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-https://bugzilla.kernel.org/show_bug.cgi?id=3D203837
+Nest and core imc(In-memory Collection counters) assigns a particular
+cpu as the designated target for counter data collection.
+During system boot, the first online cpu in a chip gets assigned as
+the designated cpu for that chip(for nest-imc) and the first online cpu
+in a core gets assigned as the designated cpu for that core(for core-imc).
 
---- Comment #3 from npiggin@gmail.com ---
-bugzilla-daemon@bugzilla.kernel.org's on June 7, 2019 4:29 pm:
-> https://bugzilla.kernel.org/show_bug.cgi?id=3D203837
->=20
-> --- Comment #2 from Paul Mackerras (paulus@ozlabs.org) ---
-> Just tried 5.1.7 in the host and got the guest locking up during boot. In
-> xmon
-> I see one cpu in pmdp_invalidate and another in handle_mm_fault. It seems
-> very
-> possible this is the bug that Nick Piggin's recent patch series fixes
-> ("powerpc/64s: Fix THP PMD collapse serialisation"):
->=20
-> http://patchwork.ozlabs.org/project/linuxppc-dev/list/?series=3D112348
+If the designated cpu goes offline, the next online cpu from the same
+chip(for nest-imc)/core(for core-imc) is assigned as the next target,
+and the event context is migrated to the target cpu.
+Currently, cpumask_any_but() function is used to find the target cpu.
+Though this function is expected to return a `random` cpu, this always
+returns the next online cpu.
 
-It's worth a try, although the bug was introduced around 4.20 and
-I wasn't able to trigger it on radix, but other timing changes
-could cause it to trigger I suppose.
+If all cpus in a chip/core is offlined in a sequential manner, starting
+from the first cpu, the event migration has to happen for all the cpus
+which goes offline. Since the migration process involves a grace period,
+the total time taken to offline all the cpus will be significantly high.
 
-pdbg (https://github.com/open-power/pdbg) is a useful tool for your
-BMC that can often get the CPU registers out even for bad crashes,
-this might help to narrow down the problem without bisecting.
+Example:
+In a system which has 2 sockets, with
+NUMA node0 CPU(s):     0-87
+NUMA node8 CPU(s):     88-175
 
-Thanks,
-Nick
+Time taken to offline cpu 88-175:
+real    2m56.099s
+user    0m0.191s
+sys     0m0.000s
 
---=20
-You are receiving this mail because:
-You are watching the assignee of the bug.=
+Use cpumask_last() to choose the target cpu, when the designated cpu
+goes online, so the migration will happen only when the last_cpu in the
+mask goes offline. This way the time taken to offline all cpus in a
+chip/core can be reduced.
+
+With the patch, 
+
+Time taken  to offline cpu 88-175:
+real    0m12.207s
+user    0m0.171s
+sys     0m0.000s
+
+
+Offlining all cpus in reverse order is also taken care because,
+cpumask_any_but() is used to find the designated cpu if the last cpu in
+the mask goes offline. Since cpumask_any_but() always return the first
+cpu in the mask, that becomes the designated cpu and migration will happen
+only when the first_cpu in the mask goes offline.
+
+Example:
+With the patch,
+
+Time taken to offline cpu from 175-88:
+real    0m9.330s
+user    0m0.110s
+sys     0m0.000s
+
+Signed-off-by: Anju T Sudhakar <anju@linux.vnet.ibm.com>
+Reviewed-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+---
+
+Changes from v1:
+	Modified the commit log with more info.
+---
+
+ arch/powerpc/perf/imc-pmu.c | 14 ++++++++++++--
+ 1 file changed, 12 insertions(+), 2 deletions(-)
+
+diff --git a/arch/powerpc/perf/imc-pmu.c b/arch/powerpc/perf/imc-pmu.c
+index 31fa753..fbfd6e7 100644
+--- a/arch/powerpc/perf/imc-pmu.c
++++ b/arch/powerpc/perf/imc-pmu.c
+@@ -366,7 +366,14 @@ static int ppc_nest_imc_cpu_offline(unsigned int cpu)
+ 	 */
+ 	nid = cpu_to_node(cpu);
+ 	l_cpumask = cpumask_of_node(nid);
+-	target = cpumask_any_but(l_cpumask, cpu);
++	target = cpumask_last(l_cpumask);
++
++	/*
++	 * If this(target) is the last cpu in the cpumask for this chip,
++	 * check for any possible online cpu in the chip.
++	 */
++	if (unlikely(target == cpu))
++		target = cpumask_any_but(l_cpumask, cpu);
+ 
+ 	/*
+ 	 * Update the cpumask with the target cpu and
+@@ -671,7 +678,10 @@ static int ppc_core_imc_cpu_offline(unsigned int cpu)
+ 		return 0;
+ 
+ 	/* Find any online cpu in that core except the current "cpu" */
+-	ncpu = cpumask_any_but(cpu_sibling_mask(cpu), cpu);
++	ncpu = cpumask_last(cpu_sibling_mask(cpu));
++
++	if (unlikely(ncpu == cpu))
++		ncpu = cpumask_any_but(cpu_sibling_mask(cpu), cpu);
+ 
+ 	if (ncpu >= 0 && ncpu < nr_cpu_ids) {
+ 		cpumask_set_cpu(ncpu, &core_imc_cpumask);
+-- 
+1.8.3.1
+
