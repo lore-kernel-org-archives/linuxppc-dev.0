@@ -2,103 +2,81 @@ Return-Path: <SRS0=ea3T=UJ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
+	SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8D524C43218
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Jun 2019 20:52:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8708FC4321A
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Jun 2019 21:55:58 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 1D73020820
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Jun 2019 20:52:27 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1D73020820
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id C953720820
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Jun 2019 21:55:57 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (4096-bit key) header.d=kolabnow.com header.i=@kolabnow.com header.b="EapXvUIM"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C953720820
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=vaga.pv.it
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45N51502sJzDqRd
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Jun 2019 06:52:25 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45N4cG6JWgzDqM7
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Jun 2019 06:34:22 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45N6QL6Yq6zDqHk
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Jun 2019 07:55:54 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 45N4cF0gmmz8w3g
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Jun 2019 06:34:21 +1000 (AEST)
-Received: by ozlabs.org (Postfix)
- id 45N4cC4Q7Nz9s6w; Tue, 11 Jun 2019 06:34:19 +1000 (AEST)
-Authentication-Results: ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
- (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=nayna@linux.ibm.com; receiver=<UNKNOWN>)
-Authentication-Results: ozlabs.org;
- dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+ spf=pass (mailfrom) smtp.mailfrom=vaga.pv.it
+ (client-ip=95.128.36.40; helo=mx.kolabnow.com;
+ envelope-from=federico.vaga@vaga.pv.it; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=vaga.pv.it
+Authentication-Results: lists.ozlabs.org; dkim=pass (4096-bit key;
+ secure) header.d=kolabnow.com header.i=@kolabnow.com header.b="EapXvUIM"; 
+ dkim-atps=neutral
+Received: from mx.kolabnow.com (mx.kolabnow.com [95.128.36.40])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 45N4cB15j0z9sP8
- for <linuxppc-dev@ozlabs.org>; Tue, 11 Jun 2019 06:34:17 +1000 (AEST)
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x5AKWLcv120185
- for <linuxppc-dev@ozlabs.org>; Mon, 10 Jun 2019 16:34:15 -0400
-Received: from e06smtp02.uk.ibm.com (e06smtp02.uk.ibm.com [195.75.94.98])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2t1x4tgfn2-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@ozlabs.org>; Mon, 10 Jun 2019 16:34:15 -0400
-Received: from localhost
- by e06smtp02.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <nayna@linux.ibm.com>;
- Mon, 10 Jun 2019 21:34:13 +0100
-Received: from b06cxnps3075.portsmouth.uk.ibm.com (9.149.109.195)
- by e06smtp02.uk.ibm.com (192.168.101.132) with IBM ESMTP SMTP Gateway:
- Authorized Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Mon, 10 Jun 2019 21:34:09 +0100
-Received: from d06av25.portsmouth.uk.ibm.com (d06av25.portsmouth.uk.ibm.com
- [9.149.105.61])
- by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x5AKY7VI63045816
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Mon, 10 Jun 2019 20:34:07 GMT
-Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 9BDCA11C04A;
- Mon, 10 Jun 2019 20:34:07 +0000 (GMT)
-Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id AD84A11C04C;
- Mon, 10 Jun 2019 20:34:05 +0000 (GMT)
-Received: from swastik.ibm.com (unknown [9.85.139.99])
- by d06av25.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Mon, 10 Jun 2019 20:34:05 +0000 (GMT)
-From: Nayna Jain <nayna@linux.ibm.com>
-To: linuxppc-dev@ozlabs.org, linux-efi@vger.kernel.org,
- linux-integrity@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH v3 2/3] powerpc/powernv: detect the secure boot mode of the
- system
-Date: Mon, 10 Jun 2019 16:33:56 -0400
-X-Mailer: git-send-email 1.8.3.1
-In-Reply-To: <1560198837-18857-1-git-send-email-nayna@linux.ibm.com>
-References: <1560198837-18857-1-git-send-email-nayna@linux.ibm.com>
-X-TM-AS-GCONF: 00
-x-cbid: 19061020-0008-0000-0000-000002F20A3C
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19061020-0009-0000-0000-0000225F0217
-Message-Id: <1560198837-18857-3-git-send-email-nayna@linux.ibm.com>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2019-06-10_09:, , signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1810050000 definitions=main-1906100139
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45N4TF1jPtzDqPy
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Jun 2019 06:28:15 +1000 (AEST)
+Received: from localhost (unknown [127.0.0.1])
+ by ext-mx-out001.mykolab.com (Postfix) with ESMTP id 6F0AF471;
+ Mon, 10 Jun 2019 22:28:11 +0200 (CEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kolabnow.com; h=
+ content-type:content-type:content-transfer-encoding:mime-version
+ :references:in-reply-to:message-id:date:date:subject:subject
+ :from:from:received:received:received; s=dkim20160331; t=
+ 1560198490; x=1562012891; bh=ySLNIX1jiCqldrmER8p/c1YOLUiUU7vfIBo
+ k3u7v1yA=; b=EapXvUIMVFf6+o/ABs27wxwmgtHDsszrg9EFsnc24dvgL7QF2qq
+ TaG4xjoviEw/OnDIhauiiHZdzx1W+LfScdG2OGC1E+j5/+veHcxBj/MTdpjq1+Lu
+ KAMsQ9Z1c+65LrZDSBOU4PAT0+Os8ZZiwgE99D5H7FOfhLhQqsAfr6Is99Hc8o4s
+ vSnZWPYPwqTsX8XALZYd5hLbqAlHBuT1Ti4ucBeIButpQ38ylbUChwbPre8s9TmY
+ KrluQr7SGOWuWZBAmlnDiXPuDHeDKbRy6hJol5nqh3w1trxYcii4RjN49A9I+z+e
+ zlKNVjS8XXYGzUUF9NrXxy8KM/85ZXFax7cDlKsiTrwtl1ANz0PD4e0H8et5hrzY
+ vnbDN77J59GZjgx0ZNyYjSz207JTssMEdP2o5tsmYeVoogZCiT0cXpttrokaHKYm
+ u8fxntxISlah+bMsG6PLTfeiKuzKCdDDI8U6a75onv+Ne32mGEGrERibJgnoxIi/
+ 9ule/llnhkd5nm60D87JBEdaCXyCIQArCFqerbkNcGJFx1VGXP22KkvoJp0ZFaVt
+ SyA3AzIxLUW8iUcscrnAZa17tF3CzDYnEUG33/1NghStEyjkZ1QqtZynATBoeaYL
+ /8xfOuy9TMGb4RoYPT+vcPL3j2M7mY6BXbD45qGOZ16ecLRGOpuBf+1A=
+X-Virus-Scanned: amavisd-new at mykolab.com
+Received: from mx.kolabnow.com ([127.0.0.1])
+ by localhost (ext-mx-out001.mykolab.com [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id ob2j4vb4okHw; Mon, 10 Jun 2019 22:28:10 +0200 (CEST)
+Received: from int-mx002.mykolab.com (unknown [10.9.13.2])
+ by ext-mx-out001.mykolab.com (Postfix) with ESMTPS id A7DC0206;
+ Mon, 10 Jun 2019 22:28:10 +0200 (CEST)
+Received: from ext-subm001.mykolab.com (unknown [10.9.6.1])
+ by int-mx002.mykolab.com (Postfix) with ESMTPS id B08DA38E4;
+ Mon, 10 Jun 2019 18:48:28 +0200 (CEST)
+From: Federico Vaga <federico.vaga@vaga.pv.it>
+To: Mauro Carvalho Chehab <mchehab+samsung@kernel.org>
+Subject: Re: [PATCH v3 14/33] docs: kbuild: convert docs to ReST and rename to
+ *.rst
+Date: Mon, 10 Jun 2019 18:48:26 +0200
+Message-ID: <15154261.vasc4R9psd@harkonnen>
+In-Reply-To: <3d40d111d0512d785b6a67573772f532f88d2359.1560045490.git.mchehab+samsung@kernel.org>
+References: <cover.1560045490.git.mchehab+samsung@kernel.org>
+ <3d40d111d0512d785b6a67573772f532f88d2359.1560045490.git.mchehab+samsung@kernel.org>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
+X-Mailman-Approved-At: Tue, 11 Jun 2019 07:54:13 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -110,141 +88,151 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Ard Biesheuvel <ard.biesheuvel@linaro.org>,
- Nayna Jain <nayna@linux.ibm.com>, Claudio Carvalho <cclaudio@linux.ibm.com>,
- Mimi Zohar <zohar@linux.ibm.com>, Matthew Garret <matthew.garret@nebula.com>,
- Paul Mackerras <paulus@samba.org>, Jeremy Kerr <jk@ozlabs.org>
+Cc: , linux-wireless@vger.kernel.org, linux-fbdev@vger.kernel.org,
+	Emmanuel Grumbach <emmanuel.grumbach@intel.com>,
+	Stanislaw Gruszka <sgruszka@redhat.com>,
+	Vignesh Raghavendra <vigneshr@ti.com>,
+	Linux Doc Mailing List <linux-doc@vger.kernel.org>,
+	bridge@lists.linux-foundation.org,
+	Palmer Dabbelt <palmer@sifive.com>, alsa-devel@alsa-project.org,
+	dri-devel@lists.freedesktop.org, Ofer Levi <oferle@mellanox.com>,
+	Masahiro Yamada <yamada.masahiro@socionext.com>,
+	Harry Wei <harryxiyou@gmail.com>, Paul Mackerras <paulus@samba.org>,
+	Miquel Raynal <miquel.raynal@bootlin.com>,
+	linux-kbuild@vger.kernel.org, linux-riscv@lists.infradead.org,
+	Vincent Chen <deanbo422@gmail.com>,
+	Aurelien Jacquiot <jacquiot.aurelien@gmail.com>,
+	Jonas Bonn <jonas@southpole.se>,
+	Alex Shi <alex.shi@linux.alibaba.com>, linux-c6x-dev@linux-c6x.org,
+	linux-scsi@vger.kernel.org, Jonathan Corbet <corbet@lwn.net>,
+	Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
+	netdev@vger.kernel.org, Marek Vasut <marek.vasut@gmail.com>,
+	coreteam@netfilter.org, Mark Salter <msalter@redhat.com>,
+	Al exey Kuznetsov <kuznet@ms2.inr.ac.ru>,
+	linux-snps-arc@lists.infradead.org,
+	"James E.J. Bottomley" <jejb@linux.ibm.com>,
+	Pablo Neira Ayuso <pablo@netfilter.org>, devel@driverdev.osuosl.org,
+	Albert Ou <aou@eecs.berkeley.edu>,
+	Johannes Berg <johannes.berg@intel.com>,
+	Intel Linux Wireless <linuxwifi@intel.com>,
+	Nikolay Aleksandrov <nikolay@cumulusnetworks.com>,
+	David Woodhouse <dwmw2@infradead.or>,
+	Jozsef Kadlecsik <kadlec@blackhole.kfki.hu>,
+	Mauro Carvalho Chehab <mchehab@infradead.org>,
+	openrisc@lists.librecores.org,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	Greentime Hu <green.hu@gmail.com>, linux-mtd@lists.infradead.org,
+	Takashi Iwai <tiwai@suse.com>, Jaroslav Kysela <perex@perex.cz>,
+	Stafford Horne <shorne@gmail.com>,
+	Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>,
+	Kalle Valo <kvalo@codeaurora.org>,
+	Teddy Wang <teddy.wang@siliconmotion.com>,
+	Jon Maloy <jon.maloy@ericsson.com>, Michal Simek <monstr@monstr.eu>,
+	Michal Marek <michal.lkml@markovi.net>,
+	netfilter-devel@vger.kernel.org,
+	"Martin K. Petersen" <martin.petersen@oracle.com>,
+	g@lists.ozlabs.org, Hideaki YOSHIFUJI <yoshfuji@linux-ipv6.org>,
+	Vineet Gupta <vgupta@synopsys.com>, linux-usb@vger.kernel.org,
+	Florian Westphal <fw@strlen.de>, linux-kernel@vger.kernel.org,
+	tipc-discussion@lists.sourceforge.net,
+	Sudip Mukherjee <sudipm.mukherjee@gmail.com>,
+	Miguel Ojeda Sandonis <miguel.ojeda.sandonis@gmail.com>,
+	Roopa Prabhu <roopa@cumulusnetworks.com>,
+	Richard Weinberger <richard@nod.at>,
+	Ying Xue <ying.xue@windriver.com>,
+	Luca Coelho <luciano.coelho@intel.com>,
+	Brian Norris <computersforpeace@gmail.com>,
+	linuxppc-dev@lists.ozlabs.org,
+	"David S. Miller" <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-PowerNV secure boot defines different IMA policies based on the secure
-boot state of the system.
+In data Sunday, June 9, 2019 4:27:04 AM CEST, Mauro Carvalho Chehab ha 
+scritto:
+> The kbuild documentation clearly shows that the documents
+> there are written at different times: some use markdown,
+> some use their own peculiar logic to split sections.
+> 
+> Convert everything to ReST without affecting too much
+> the author's style and avoiding adding uneeded markups.
+> 
+> The conversion is actually:
+>   - add blank lines and identation in order to identify paragraphs;
+>   - fix tables markups;
+>   - add some lists markups;
+>   - mark literal blocks;
+>   - adjust title markups.
+> 
+> At its new index.rst, let's add a :orphan: while this is not linked to
+> the main index.rst file, in order to avoid build warnings.
+> 
+> Signed-off-by: Mauro Carvalho Chehab <mchehab+samsung@kernel.org>
+> ---
+>  Documentation/admin-guide/README.rst          |   2 +-
+>  ...eaders_install.txt => headers_install.rst} |   5 +-
+>  Documentation/kbuild/index.rst                |  27 +
+>  Documentation/kbuild/issues.rst               |  11 +
+>  .../kbuild/{kbuild.txt => kbuild.rst}         | 119 ++--
+>  ...nfig-language.txt => kconfig-language.rst} | 232 ++++----
+>  ...anguage.txt => kconfig-macro-language.rst} |  37 +-
+>  .../kbuild/{kconfig.txt => kconfig.rst}       | 136 +++--
+>  .../kbuild/{makefiles.txt => makefiles.rst}   | 530 +++++++++++-------
+>  .../kbuild/{modules.txt => modules.rst}       | 168 +++---
+>  Documentation/kernel-hacking/hacking.rst      |   4 +-
+>  Documentation/process/coding-style.rst        |   2 +-
+>  Documentation/process/submit-checklist.rst    |   2 +-
+>  .../it_IT/kernel-hacking/hacking.rst          |   4 +-
+>  .../it_IT/process/coding-style.rst            |   2 +-
+>  .../it_IT/process/submit-checklist.rst        |   2 +-
 
-This patch defines a function to detect the secure boot state of the
-system.
+Limited to translations/it_IT
 
-Signed-off-by: Nayna Jain <nayna@linux.ibm.com>
----
- arch/powerpc/include/asm/secboot.h       | 21 ++++++++
- arch/powerpc/platforms/powernv/Makefile  |  3 +-
- arch/powerpc/platforms/powernv/secboot.c | 61 ++++++++++++++++++++++++
- 3 files changed, 84 insertions(+), 1 deletion(-)
- create mode 100644 arch/powerpc/include/asm/secboot.h
- create mode 100644 arch/powerpc/platforms/powernv/secboot.c
+Acked-by: Federico Vaga <federico.vaga@vaga.pv.it>
 
-diff --git a/arch/powerpc/include/asm/secboot.h b/arch/powerpc/include/asm/secboot.h
-new file mode 100644
-index 000000000000..1904fb4a3352
---- /dev/null
-+++ b/arch/powerpc/include/asm/secboot.h
-@@ -0,0 +1,21 @@
-+/* SPDX-License-Identifier: GPL-2.0 */
-+/*
-+ * PowerPC secure boot definitions
-+ *
-+ * Copyright (C) 2019 IBM Corporation
-+ * Author: Nayna Jain <nayna@linux.ibm.com>
-+ *
-+ */
-+#ifndef POWERPC_SECBOOT_H
-+#define POWERPC_SECBOOT_H
-+
-+#if defined(CONFIG_OPAL_SECVAR)
-+extern bool get_powerpc_sb_mode(void);
-+#else
-+static inline bool get_powerpc_sb_mode(void)
-+{
-+	return false;
-+}
-+#endif
-+
-+#endif
-diff --git a/arch/powerpc/platforms/powernv/Makefile b/arch/powerpc/platforms/powernv/Makefile
-index 6651c742e530..74705a3fc474 100644
---- a/arch/powerpc/platforms/powernv/Makefile
-+++ b/arch/powerpc/platforms/powernv/Makefile
-@@ -4,6 +4,7 @@ obj-y			+= idle.o opal-rtc.o opal-nvram.o opal-lpc.o opal-flash.o
- obj-y			+= rng.o opal-elog.o opal-dump.o opal-sysparam.o opal-sensor.o
- obj-y			+= opal-msglog.o opal-hmi.o opal-power.o opal-irqchip.o
- obj-y			+= opal-kmsg.o opal-powercap.o opal-psr.o opal-sensor-groups.o
-+obj-y			+= secboot.o
- 
- obj-$(CONFIG_SMP)	+= smp.o subcore.o subcore-asm.o
- obj-$(CONFIG_PCI)	+= pci.o pci-ioda.o npu-dma.o pci-ioda-tce.o
-@@ -16,4 +17,4 @@ obj-$(CONFIG_PERF_EVENTS) += opal-imc.o
- obj-$(CONFIG_PPC_MEMTRACE)	+= memtrace.o
- obj-$(CONFIG_PPC_VAS)	+= vas.o vas-window.o vas-debug.o
- obj-$(CONFIG_OCXL_BASE)	+= ocxl.o
--obj-$(CONFIG_OPAL_SECVAR) += opal-secvar.o
-+obj-$(CONFIG_OPAL_SECVAR) += opal-secvar.o secboot.o
-diff --git a/arch/powerpc/platforms/powernv/secboot.c b/arch/powerpc/platforms/powernv/secboot.c
-new file mode 100644
-index 000000000000..9199e520ebed
---- /dev/null
-+++ b/arch/powerpc/platforms/powernv/secboot.c
-@@ -0,0 +1,61 @@
-+// SPDX-License-Identifier: GPL-2.0
-+/*
-+ * Copyright (C) 2019 IBM Corporation
-+ * Author: Nayna Jain <nayna@linux.ibm.com>
-+ *
-+ * secboot.c
-+ *      - util function to get powerpc secboot state
-+ */
-+#include <linux/uuid.h>
-+#include <asm/opal.h>
-+#include <asm/secboot.h>
-+#include <asm/opal-secvar.h>
-+
-+bool get_powerpc_sb_mode(void)
-+{
-+	u8 secure_boot_name[] = "SecureBoot";
-+	u8 setup_mode_name[] = "SetupMode";
-+	u8 secboot, setupmode;
-+	unsigned long size = sizeof(secboot);
-+	int status;
-+	unsigned long version;
-+
-+	status = opal_variable_version(&version);
-+	if ((status != OPAL_SUCCESS) || (version != BACKEND_TC_COMPAT_V1)) {
-+		pr_info("secboot: error retrieving compatible backend\n");
-+		return false;
-+	}
-+
-+	status = opal_get_variable(secure_boot_name, sizeof(secure_boot_name),
-+				   NULL, NULL, &secboot, &size);
-+
-+	/*
-+	 * For now assume all failures reading the SecureBoot variable implies
-+	 * secure boot is not enabled. Later differentiate failure types.
-+	 */
-+	if (status != OPAL_SUCCESS) {
-+		secboot = 0;
-+		setupmode = 0;
-+		goto out;
-+	}
-+
-+	size = sizeof(setupmode);
-+	status = opal_get_variable(setup_mode_name, sizeof(setup_mode_name),
-+				   NULL, NULL,  &setupmode, &size);
-+
-+	/*
-+	 * Failure to read the SetupMode variable does not prevent
-+	 * secure boot mode
-+	 */
-+	if (status != OPAL_SUCCESS)
-+		setupmode = 0;
-+
-+out:
-+	if ((secboot == 0) || (setupmode == 1)) {
-+		pr_info("secboot: secureboot mode disabled\n");
-+		return false;
-+	}
-+
-+	pr_info("secboot: secureboot mode enabled\n");
-+	return true;
-+}
--- 
-2.20.1
+>  .../zh_CN/process/coding-style.rst            |   2 +-
+>  .../zh_CN/process/submit-checklist.rst        |   2 +-
+>  Kconfig                                       |   2 +-
+>  arch/arc/plat-eznps/Kconfig                   |   2 +-
+>  arch/c6x/Kconfig                              |   2 +-
+>  arch/microblaze/Kconfig.debug                 |   2 +-
+>  arch/microblaze/Kconfig.platform              |   2 +-
+>  arch/nds32/Kconfig                            |   2 +-
+>  arch/openrisc/Kconfig                         |   2 +-
+>  arch/powerpc/sysdev/Kconfig                   |   2 +-
+>  arch/riscv/Kconfig                            |   2 +-
+>  drivers/auxdisplay/Kconfig                    |   2 +-
+>  drivers/firmware/Kconfig                      |   2 +-
+>  drivers/mtd/devices/Kconfig                   |   2 +-
+>  drivers/net/ethernet/smsc/Kconfig             |   6 +-
+>  drivers/net/wireless/intel/iwlegacy/Kconfig   |   4 +-
+>  drivers/net/wireless/intel/iwlwifi/Kconfig    |   2 +-
+>  drivers/parport/Kconfig                       |   2 +-
+>  drivers/scsi/Kconfig                          |   4 +-
+>  drivers/staging/sm750fb/Kconfig               |   2 +-
+>  drivers/usb/misc/Kconfig                      |   4 +-
+>  drivers/video/fbdev/Kconfig                   |  14 +-
+>  net/bridge/netfilter/Kconfig                  |   2 +-
+>  net/ipv4/netfilter/Kconfig                    |   2 +-
+>  net/ipv6/netfilter/Kconfig                    |   2 +-
+>  net/netfilter/Kconfig                         |  16 +-
+>  net/tipc/Kconfig                              |   2 +-
+>  scripts/Kbuild.include                        |   4 +-
+>  scripts/Makefile.host                         |   2 +-
+>  scripts/kconfig/symbol.c                      |   2 +-
+>  .../tests/err_recursive_dep/expected_stderr   |  14 +-
+>  sound/oss/dmasound/Kconfig                    |   6 +-
+>  48 files changed, 840 insertions(+), 561 deletions(-)
+>  rename Documentation/kbuild/{headers_install.txt => headers_install.rst}
+> (96%) create mode 100644 Documentation/kbuild/index.rst
+>  create mode 100644 Documentation/kbuild/issues.rst
+>  rename Documentation/kbuild/{kbuild.txt => kbuild.rst} (72%)
+>  rename Documentation/kbuild/{kconfig-language.txt => kconfig-language.rst}
+> (85%) rename Documentation/kbuild/{kconfig-macro-language.txt =>
+> kconfig-macro-language.rst} (94%) rename Documentation/kbuild/{kconfig.txt
+> => kconfig.rst} (80%)
+>  rename Documentation/kbuild/{makefiles.txt => makefiles.rst} (83%)
+>  rename Documentation/kbuild/{modules.txt => modules.rst} (84%)
+
+
 
