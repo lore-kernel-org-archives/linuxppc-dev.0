@@ -2,81 +2,84 @@ Return-Path: <SRS0=ea3T=UJ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
-	SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.3 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
+	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8708FC4321A
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Jun 2019 21:55:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9B1A1C4321A
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Jun 2019 23:31:07 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C953720820
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Jun 2019 21:55:57 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id B4F9020820
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Jun 2019 23:31:06 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (4096-bit key) header.d=kolabnow.com header.i=@kolabnow.com header.b="EapXvUIM"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C953720820
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=vaga.pv.it
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="h556Ql2t"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B4F9020820
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45N6QL6Yq6zDqHk
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Jun 2019 07:55:54 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45N8X80hbzzDqRP
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Jun 2019 09:31:04 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=vaga.pv.it
- (client-ip=95.128.36.40; helo=mx.kolabnow.com;
- envelope-from=federico.vaga@vaga.pv.it; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=gmail.com
+ (client-ip=2607:f8b0:4864:20::143; helo=mail-it1-x143.google.com;
+ envelope-from=radu.rendec@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=vaga.pv.it
-Authentication-Results: lists.ozlabs.org; dkim=pass (4096-bit key;
- secure) header.d=kolabnow.com header.i=@kolabnow.com header.b="EapXvUIM"; 
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="h556Ql2t"; 
  dkim-atps=neutral
-Received: from mx.kolabnow.com (mx.kolabnow.com [95.128.36.40])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-it1-x143.google.com (mail-it1-x143.google.com
+ [IPv6:2607:f8b0:4864:20::143])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45N4TF1jPtzDqPy
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Jun 2019 06:28:15 +1000 (AEST)
-Received: from localhost (unknown [127.0.0.1])
- by ext-mx-out001.mykolab.com (Postfix) with ESMTP id 6F0AF471;
- Mon, 10 Jun 2019 22:28:11 +0200 (CEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kolabnow.com; h=
- content-type:content-type:content-transfer-encoding:mime-version
- :references:in-reply-to:message-id:date:date:subject:subject
- :from:from:received:received:received; s=dkim20160331; t=
- 1560198490; x=1562012891; bh=ySLNIX1jiCqldrmER8p/c1YOLUiUU7vfIBo
- k3u7v1yA=; b=EapXvUIMVFf6+o/ABs27wxwmgtHDsszrg9EFsnc24dvgL7QF2qq
- TaG4xjoviEw/OnDIhauiiHZdzx1W+LfScdG2OGC1E+j5/+veHcxBj/MTdpjq1+Lu
- KAMsQ9Z1c+65LrZDSBOU4PAT0+Os8ZZiwgE99D5H7FOfhLhQqsAfr6Is99Hc8o4s
- vSnZWPYPwqTsX8XALZYd5hLbqAlHBuT1Ti4ucBeIButpQ38ylbUChwbPre8s9TmY
- KrluQr7SGOWuWZBAmlnDiXPuDHeDKbRy6hJol5nqh3w1trxYcii4RjN49A9I+z+e
- zlKNVjS8XXYGzUUF9NrXxy8KM/85ZXFax7cDlKsiTrwtl1ANz0PD4e0H8et5hrzY
- vnbDN77J59GZjgx0ZNyYjSz207JTssMEdP2o5tsmYeVoogZCiT0cXpttrokaHKYm
- u8fxntxISlah+bMsG6PLTfeiKuzKCdDDI8U6a75onv+Ne32mGEGrERibJgnoxIi/
- 9ule/llnhkd5nm60D87JBEdaCXyCIQArCFqerbkNcGJFx1VGXP22KkvoJp0ZFaVt
- SyA3AzIxLUW8iUcscrnAZa17tF3CzDYnEUG33/1NghStEyjkZ1QqtZynATBoeaYL
- /8xfOuy9TMGb4RoYPT+vcPL3j2M7mY6BXbD45qGOZ16ecLRGOpuBf+1A=
-X-Virus-Scanned: amavisd-new at mykolab.com
-Received: from mx.kolabnow.com ([127.0.0.1])
- by localhost (ext-mx-out001.mykolab.com [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id ob2j4vb4okHw; Mon, 10 Jun 2019 22:28:10 +0200 (CEST)
-Received: from int-mx002.mykolab.com (unknown [10.9.13.2])
- by ext-mx-out001.mykolab.com (Postfix) with ESMTPS id A7DC0206;
- Mon, 10 Jun 2019 22:28:10 +0200 (CEST)
-Received: from ext-subm001.mykolab.com (unknown [10.9.6.1])
- by int-mx002.mykolab.com (Postfix) with ESMTPS id B08DA38E4;
- Mon, 10 Jun 2019 18:48:28 +0200 (CEST)
-From: Federico Vaga <federico.vaga@vaga.pv.it>
-To: Mauro Carvalho Chehab <mchehab+samsung@kernel.org>
-Subject: Re: [PATCH v3 14/33] docs: kbuild: convert docs to ReST and rename to
- *.rst
-Date: Mon, 10 Jun 2019 18:48:26 +0200
-Message-ID: <15154261.vasc4R9psd@harkonnen>
-In-Reply-To: <3d40d111d0512d785b6a67573772f532f88d2359.1560045490.git.mchehab+samsung@kernel.org>
-References: <cover.1560045490.git.mchehab+samsung@kernel.org>
- <3d40d111d0512d785b6a67573772f532f88d2359.1560045490.git.mchehab+samsung@kernel.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45N8V70hvczDqGc
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Jun 2019 09:29:18 +1000 (AEST)
+Received: by mail-it1-x143.google.com with SMTP id l21so1888991ita.2
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Jun 2019 16:29:18 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=from:to:cc:subject:date:message-id:mime-version
+ :content-transfer-encoding;
+ bh=J9HPrN2ssIKly8QosgZJTvVKX7D+6ItL0Y1EM/MaSs4=;
+ b=h556Ql2t33AHH/c9wvAMH6UaHR1pLK9XmQHUml6v+PHVg6mNr8lwZinqfXMlofNJHg
+ l54P2/C9CDNcmVqBx5UVElDg/BX/hJGlcqWn1sh4J9a/JBQ4ZplN+ld882VIOnC1+Bvh
+ IWnejCgqFApgQoASWSy/7OQMRZ9QZ/oGcTvL5Po5sSTA9Z/zF8LugjgtxkppNNIUDoqM
+ Zc8c244j0Y3sXePojM+G1v2Ae8mZ8/pmWjqhIkbwfel5oRuitvxK6ZtEzt9mJTt2v5vW
+ oFMItSZ2pWsVQWmp1Pa9qd0G8A0oYPibJedNXUMh8dD7nlwfTj2Zi+KgCC+Gxg8LMJLD
+ ZCVA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+ :content-transfer-encoding;
+ bh=J9HPrN2ssIKly8QosgZJTvVKX7D+6ItL0Y1EM/MaSs4=;
+ b=LOKG81x826Y7YMS5TgHst6G8quZOigtWUA0pdi7wxccbrJlDGfU72qq8M0zXiKjf/o
+ Ucjgw8rIsrI3ddi3Eb/2OTCv79TjqSMLoBcZ4CR8gS05C/ciSogJrCq+QDiygWjKM9t2
+ FOklTNb4xAbZTZ4ewX8fjrNlp78YjfHLXs8riJtd8oqAuTrzmY4TIJ6jF5k9TBbc3aIY
+ /UDdFperMs+S/QKwSgLCpfkhLlX0W9Ffxuyu7s2kmblTREf5HSAIPHBhppKACEwe/xrw
+ 56YndklxES+b1ot8EDNkJuHbtWeAB/yIiB35gKFLtU3GWTGbw9o46T9sq4rEYwYQM1ye
+ Uprg==
+X-Gm-Message-State: APjAAAU2oCspqjF+cuZq/qaJSQG7gP58ZoD5qJv7UP++bGD1BxMnoXX4
+ bLaZjkXZ+D5ReMO1Bui7A/tmQZph
+X-Google-Smtp-Source: APXvYqzeB5YKRHak/Jh5rNv57dsgpfrVp8yafb74PZxOFf47a0dnv/GprC5y6iM1w9r6TVoSNqcsAw==
+X-Received: by 2002:a05:660c:20a:: with SMTP id
+ y10mr15540230itj.148.1560209355821; 
+ Mon, 10 Jun 2019 16:29:15 -0700 (PDT)
+Received: from bat.kanata.rendec.net
+ (CPE00fc8d79db03-CM00fc8d79db00.cpe.net.fido.ca. [72.140.67.131])
+ by smtp.gmail.com with ESMTPSA id z138sm488770itc.36.2019.06.10.16.29.14
+ (version=TLS1_3 cipher=AEAD-AES256-GCM-SHA384 bits=256/256);
+ Mon, 10 Jun 2019 16:29:15 -0700 (PDT)
+From: Radu Rendec <radu.rendec@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH 0/1] PPC32: fix ptrace() access to FPU registers
+Date: Mon, 10 Jun 2019 19:27:57 -0400
+Message-Id: <20190610232758.19010-1-radu.rendec@gmail.com>
+X-Mailer: git-send-email 2.20.1
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
-X-Mailman-Approved-At: Tue, 11 Jun 2019 07:54:13 +1000
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -88,151 +91,148 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: , linux-wireless@vger.kernel.org, linux-fbdev@vger.kernel.org,
-	Emmanuel Grumbach <emmanuel.grumbach@intel.com>,
-	Stanislaw Gruszka <sgruszka@redhat.com>,
-	Vignesh Raghavendra <vigneshr@ti.com>,
-	Linux Doc Mailing List <linux-doc@vger.kernel.org>,
-	bridge@lists.linux-foundation.org,
-	Palmer Dabbelt <palmer@sifive.com>, alsa-devel@alsa-project.org,
-	dri-devel@lists.freedesktop.org, Ofer Levi <oferle@mellanox.com>,
-	Masahiro Yamada <yamada.masahiro@socionext.com>,
-	Harry Wei <harryxiyou@gmail.com>, Paul Mackerras <paulus@samba.org>,
-	Miquel Raynal <miquel.raynal@bootlin.com>,
-	linux-kbuild@vger.kernel.org, linux-riscv@lists.infradead.org,
-	Vincent Chen <deanbo422@gmail.com>,
-	Aurelien Jacquiot <jacquiot.aurelien@gmail.com>,
-	Jonas Bonn <jonas@southpole.se>,
-	Alex Shi <alex.shi@linux.alibaba.com>, linux-c6x-dev@linux-c6x.org,
-	linux-scsi@vger.kernel.org, Jonathan Corbet <corbet@lwn.net>,
-	Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
-	netdev@vger.kernel.org, Marek Vasut <marek.vasut@gmail.com>,
-	coreteam@netfilter.org, Mark Salter <msalter@redhat.com>,
-	Al exey Kuznetsov <kuznet@ms2.inr.ac.ru>,
-	linux-snps-arc@lists.infradead.org,
-	"James E.J. Bottomley" <jejb@linux.ibm.com>,
-	Pablo Neira Ayuso <pablo@netfilter.org>, devel@driverdev.osuosl.org,
-	Albert Ou <aou@eecs.berkeley.edu>,
-	Johannes Berg <johannes.berg@intel.com>,
-	Intel Linux Wireless <linuxwifi@intel.com>,
-	Nikolay Aleksandrov <nikolay@cumulusnetworks.com>,
-	David Woodhouse <dwmw2@infradead.or>,
-	Jozsef Kadlecsik <kadlec@blackhole.kfki.hu>,
-	Mauro Carvalho Chehab <mchehab@infradead.org>,
-	openrisc@lists.librecores.org,
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-	Greentime Hu <green.hu@gmail.com>, linux-mtd@lists.infradead.org,
-	Takashi Iwai <tiwai@suse.com>, Jaroslav Kysela <perex@perex.cz>,
-	Stafford Horne <shorne@gmail.com>,
-	Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>,
-	Kalle Valo <kvalo@codeaurora.org>,
-	Teddy Wang <teddy.wang@siliconmotion.com>,
-	Jon Maloy <jon.maloy@ericsson.com>, Michal Simek <monstr@monstr.eu>,
-	Michal Marek <michal.lkml@markovi.net>,
-	netfilter-devel@vger.kernel.org,
-	"Martin K. Petersen" <martin.petersen@oracle.com>,
-	g@lists.ozlabs.org, Hideaki YOSHIFUJI <yoshfuji@linux-ipv6.org>,
-	Vineet Gupta <vgupta@synopsys.com>, linux-usb@vger.kernel.org,
-	Florian Westphal <fw@strlen.de>, linux-kernel@vger.kernel.org,
-	tipc-discussion@lists.sourceforge.net,
-	Sudip Mukherjee <sudipm.mukherjee@gmail.com>,
-	Miguel Ojeda Sandonis <miguel.ojeda.sandonis@gmail.com>,
-	Roopa Prabhu <roopa@cumulusnetworks.com>,
-	Richard Weinberger <richard@nod.at>,
-	Ying Xue <ying.xue@windriver.com>,
-	Luca Coelho <luciano.coelho@intel.com>,
-	Brian Norris <computersforpeace@gmail.com>,
-	linuxppc-dev@lists.ozlabs.org,
-	"David S. Miller" <davem@davemloft.net>
+Cc: Oleg Nesterov <oleg@redhat.com>, Radu Rendec <radu.rendec@gmail.com>,
+ Paul Mackerras <paulus@samba.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-In data Sunday, June 9, 2019 4:27:04 AM CEST, Mauro Carvalho Chehab ha 
-scritto:
-> The kbuild documentation clearly shows that the documents
-> there are written at different times: some use markdown,
-> some use their own peculiar logic to split sections.
-> 
-> Convert everything to ReST without affecting too much
-> the author's style and avoiding adding uneeded markups.
-> 
-> The conversion is actually:
->   - add blank lines and identation in order to identify paragraphs;
->   - fix tables markups;
->   - add some lists markups;
->   - mark literal blocks;
->   - adjust title markups.
-> 
-> At its new index.rst, let's add a :orphan: while this is not linked to
-> the main index.rst file, in order to avoid build warnings.
-> 
-> Signed-off-by: Mauro Carvalho Chehab <mchehab+samsung@kernel.org>
-> ---
->  Documentation/admin-guide/README.rst          |   2 +-
->  ...eaders_install.txt => headers_install.rst} |   5 +-
->  Documentation/kbuild/index.rst                |  27 +
->  Documentation/kbuild/issues.rst               |  11 +
->  .../kbuild/{kbuild.txt => kbuild.rst}         | 119 ++--
->  ...nfig-language.txt => kconfig-language.rst} | 232 ++++----
->  ...anguage.txt => kconfig-macro-language.rst} |  37 +-
->  .../kbuild/{kconfig.txt => kconfig.rst}       | 136 +++--
->  .../kbuild/{makefiles.txt => makefiles.rst}   | 530 +++++++++++-------
->  .../kbuild/{modules.txt => modules.rst}       | 168 +++---
->  Documentation/kernel-hacking/hacking.rst      |   4 +-
->  Documentation/process/coding-style.rst        |   2 +-
->  Documentation/process/submit-checklist.rst    |   2 +-
->  .../it_IT/kernel-hacking/hacking.rst          |   4 +-
->  .../it_IT/process/coding-style.rst            |   2 +-
->  .../it_IT/process/submit-checklist.rst        |   2 +-
+Hi Everyone,
 
-Limited to translations/it_IT
+I'm following up on the ptrace() problem that I reported a few days ago.
+I believe my version of the code handles all cases correctly. While the
+problem essentially boils down to dividing the fpidx by 2 on PPC32, it
+becomes tricky when the same code must work correctly on both PPC32 and
+PPC64.
 
-Acked-by: Federico Vaga <federico.vaga@vaga.pv.it>
+One other thing that I believe was handled incorrectly in the previous
+version is the unused half of fpscr on PPC32. Note that while PT_FPSCR
+is defined as (PT_FPR0 + 2*32 + 1), making only the upper half visible,
+PT_FPR0 + 2*32 still corresponds to a possible address that userspace
+can pass. In that case, comparing fpidx to (PT_FPSCR - PT_FPR0) would
+cause an invalid access to the FPU registers array.
 
->  .../zh_CN/process/coding-style.rst            |   2 +-
->  .../zh_CN/process/submit-checklist.rst        |   2 +-
->  Kconfig                                       |   2 +-
->  arch/arc/plat-eznps/Kconfig                   |   2 +-
->  arch/c6x/Kconfig                              |   2 +-
->  arch/microblaze/Kconfig.debug                 |   2 +-
->  arch/microblaze/Kconfig.platform              |   2 +-
->  arch/nds32/Kconfig                            |   2 +-
->  arch/openrisc/Kconfig                         |   2 +-
->  arch/powerpc/sysdev/Kconfig                   |   2 +-
->  arch/riscv/Kconfig                            |   2 +-
->  drivers/auxdisplay/Kconfig                    |   2 +-
->  drivers/firmware/Kconfig                      |   2 +-
->  drivers/mtd/devices/Kconfig                   |   2 +-
->  drivers/net/ethernet/smsc/Kconfig             |   6 +-
->  drivers/net/wireless/intel/iwlegacy/Kconfig   |   4 +-
->  drivers/net/wireless/intel/iwlwifi/Kconfig    |   2 +-
->  drivers/parport/Kconfig                       |   2 +-
->  drivers/scsi/Kconfig                          |   4 +-
->  drivers/staging/sm750fb/Kconfig               |   2 +-
->  drivers/usb/misc/Kconfig                      |   4 +-
->  drivers/video/fbdev/Kconfig                   |  14 +-
->  net/bridge/netfilter/Kconfig                  |   2 +-
->  net/ipv4/netfilter/Kconfig                    |   2 +-
->  net/ipv6/netfilter/Kconfig                    |   2 +-
->  net/netfilter/Kconfig                         |  16 +-
->  net/tipc/Kconfig                              |   2 +-
->  scripts/Kbuild.include                        |   4 +-
->  scripts/Makefile.host                         |   2 +-
->  scripts/kconfig/symbol.c                      |   2 +-
->  .../tests/err_recursive_dep/expected_stderr   |  14 +-
->  sound/oss/dmasound/Kconfig                    |   6 +-
->  48 files changed, 840 insertions(+), 561 deletions(-)
->  rename Documentation/kbuild/{headers_install.txt => headers_install.rst}
-> (96%) create mode 100644 Documentation/kbuild/index.rst
->  create mode 100644 Documentation/kbuild/issues.rst
->  rename Documentation/kbuild/{kbuild.txt => kbuild.rst} (72%)
->  rename Documentation/kbuild/{kconfig-language.txt => kconfig-language.rst}
-> (85%) rename Documentation/kbuild/{kconfig-macro-language.txt =>
-> kconfig-macro-language.rst} (94%) rename Documentation/kbuild/{kconfig.txt
-> => kconfig.rst} (80%)
->  rename Documentation/kbuild/{makefiles.txt => makefiles.rst} (83%)
->  rename Documentation/kbuild/{modules.txt => modules.rst} (84%)
+I tested the patch on 4.9.179, but that part of the code is identical in
+recent kernels so it should work just the same.
 
+I wrote a simple test program than can be used to quickly test (on an
+x86_64 host) that all cases are handled correctly for both PPC32/PPC64.
+The code is included below.
 
+I also tested with gdbserver (test patch included below) and verified
+that it generates two ptrace() calls for each FPU register, with
+addresses between 0xc0 and 0x1bc.
+
+8<--------------- Makefile ---------------------------------------------
+.PHONY: all clean
+
+all: ptrace-fpregs-32 ptrace-fpregs-64
+
+ptrace-fpregs-32: ptrace-fpregs.c
+	$(CC) -o ptrace-fpregs-32 -Wall -O2 -m32 ptrace-fpregs.c
+
+ptrace-fpregs-64: ptrace-fpregs.c
+	$(CC) -o ptrace-fpregs-64 -Wall -O2 ptrace-fpregs.c
+
+clean:
+	rm -f ptrace-fpregs-32 ptrace-fpregs-64
+8<--------------- ptrace-fpregs.c --------------------------------------
+#include <stdio.h>
+#include <errno.h>
+
+#define PT_FPR0	48
+
+#ifndef __x86_64
+
+#define PT_FPR31 (PT_FPR0 + 2*31)
+#define PT_FPSCR (PT_FPR0 + 2*32 + 1)
+
+#else
+
+#define PT_FPSCR (PT_FPR0 + 32)
+
+#endif
+
+int test_access(unsigned long addr)
+{
+	int ret;
+
+	do {
+		unsigned long index, fpidx;
+
+		ret = -EIO;
+
+		/* convert to index and check */
+		index = addr / sizeof(long);
+		if ((addr & (sizeof(long) - 1)) || (index > PT_FPSCR))
+			break;
+
+		if (index < PT_FPR0) {
+			ret = printf("ptrace_put_reg(%lu)", index);
+			break;
+		}
+
+		ret = 0;
+#ifndef __x86_64
+		if (index == PT_FPSCR - 1) {
+			/* corner case for PPC32; do nothing */
+			printf("corner_case");
+			break;
+		}
+#endif
+		if (index == PT_FPSCR) {
+			printf("fpscr");
+			break;
+		}
+
+		/*
+		 * FPR is always 64-bit; on PPC32, userspace does two 32-bit
+		 * accesses. Add bit2 to allow accessing the upper half on
+		 * 32-bit; on 64-bit, bit2 is always 0 (we validate it above).
+		 */
+		fpidx = (addr - PT_FPR0 * sizeof(long)) / 8;
+		printf("TS_FPR[%lu] + %lu", fpidx, addr & 4);
+		break;
+	} while (0);
+
+	return ret;
+}
+
+int main(void)
+{
+	unsigned long addr;
+	int rc;
+
+	for (addr = 0; addr < PT_FPSCR * sizeof(long) + 16; addr++) {
+		printf("0x%04lx: ", addr);
+		rc = test_access(addr);
+		if (rc < 0)
+			printf("!err!");
+		printf("\t<%d>\n", rc);
+	}
+
+	return 0;
+}
+8<--------------- gdb.patch --------------------------------------------
+--- gdb/gdbserver/linux-low.c.orig	2019-06-10 11:45:53.810882669 -0400
++++ gdb/gdbserver/linux-low.c	2019-06-10 11:49:32.272929766 -0400
+@@ -4262,6 +4262,8 @@ store_register (struct regcache *regcach
+   pid = lwpid_of (get_thread_lwp (current_inferior));
+   for (i = 0; i < size; i += sizeof (PTRACE_XFER_TYPE))
+     {
++      printf("writing register #%d offset %d at address %#x\n",
++             regno, i, (unsigned int)regaddr);
+       errno = 0;
+       ptrace (PTRACE_POKEUSER, pid,
+ 	    /* Coerce to a uintptr_t first to avoid potential gcc warning
+8<----------------------------------------------------------------------
+
+Radu Rendec (1):
+  PPC32: fix ptrace() access to FPU registers
+
+ arch/powerpc/kernel/ptrace.c | 85 ++++++++++++++++++++++--------------
+ 1 file changed, 52 insertions(+), 33 deletions(-)
+
+-- 
+2.20.1
 
