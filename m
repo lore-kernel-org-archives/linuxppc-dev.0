@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-5.3 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_MUTT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EE252C4321A
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Jun 2019 19:11:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 47113C43218
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Jun 2019 19:12:52 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id A7F1420652
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Jun 2019 19:11:16 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A7F1420652
+	by mail.kernel.org (Postfix) with ESMTPS id 08450206E0
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Jun 2019 19:12:51 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 08450206E0
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=suse.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45N2mL5R8SzDqFS
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Jun 2019 05:11:14 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45N2p841ZjzDqSR
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Jun 2019 05:12:48 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=suse.de
  (client-ip=195.135.220.15; helo=mx1.suse.de; envelope-from=osalvador@suse.de;
@@ -28,24 +28,24 @@ Authentication-Results: lists.ozlabs.org;
 Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45MzqN3JgczDqP4
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Jun 2019 02:58:40 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45N01F3dz0zDqNk
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Jun 2019 03:07:12 +1000 (AEST)
 X-Virus-Scanned: by amavisd-new at test-mx.suse.de
 Received: from relay2.suse.de (unknown [195.135.220.254])
- by mx1.suse.de (Postfix) with ESMTP id 7B3A4AC3A;
- Mon, 10 Jun 2019 16:58:37 +0000 (UTC)
-Date: Mon, 10 Jun 2019 18:58:35 +0200
+ by mx1.suse.de (Postfix) with ESMTP id 159A4AD1E;
+ Mon, 10 Jun 2019 17:07:09 +0000 (UTC)
+Date: Mon, 10 Jun 2019 19:07:06 +0200
 From: Oscar Salvador <osalvador@suse.de>
 To: David Hildenbrand <david@redhat.com>
-Subject: Re: [PATCH v3 11/11] mm/memory_hotplug: Remove "zone" parameter from
- sparse_remove_one_section
-Message-ID: <20190610165834.GC5643@linux>
+Subject: Re: [PATCH v3 02/11] s390x/mm: Fail when an altmap is used for
+ arch_add_memory()
+Message-ID: <20190610170705.GD5643@linux>
 References: <20190527111152.16324-1-david@redhat.com>
- <20190527111152.16324-12-david@redhat.com>
+ <20190527111152.16324-3-david@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20190527111152.16324-12-david@redhat.com>
+In-Reply-To: <20190527111152.16324-3-david@redhat.com>
 User-Agent: Mutt/1.10.1 (2018-07-13)
 X-Mailman-Approved-At: Tue, 11 Jun 2019 05:02:30 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -59,9 +59,13 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-s390@vger.kernel.org, linux-ia64@vger.kernel.org,
- linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org,
+Cc: Oscar Salvador <osalvador@suse.com>, linux-s390@vger.kernel.org,
+ Michal Hocko <mhocko@suse.com>, linux-ia64@vger.kernel.org,
+ Vasily Gorbik <gor@linux.ibm.com>, linux-sh@vger.kernel.org,
+ Heiko Carstens <heiko.carstens@de.ibm.com>, linux-kernel@vger.kernel.org,
  Wei Yang <richard.weiyang@gmail.com>, linux-mm@kvack.org,
+ Mike Rapoport <rppt@linux.vnet.ibm.com>,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>,
  Igor Mammedov <imammedo@redhat.com>, akpm@linux-foundation.org,
  linuxppc-dev@lists.ozlabs.org, Dan Williams <dan.j.williams@intel.com>,
  linux-arm-kernel@lists.infradead.org
@@ -69,12 +73,20 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, May 27, 2019 at 01:11:52PM +0200, David Hildenbrand wrote:
-> The parameter is unused, so let's drop it. Memory removal paths should
-> never care about zones. This is the job of memory offlining and will
-> require more refactorings.
+On Mon, May 27, 2019 at 01:11:43PM +0200, David Hildenbrand wrote:
+> ZONE_DEVICE is not yet supported, fail if an altmap is passed, so we
+> don't forget arch_add_memory()/arch_remove_memory() when unlocking
+> support.
 > 
-> Reviewed-by: Dan Williams <dan.j.williams@intel.com>
+> Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
+> Cc: Heiko Carstens <heiko.carstens@de.ibm.com>
+> Cc: Andrew Morton <akpm@linux-foundation.org>
+> Cc: Michal Hocko <mhocko@suse.com>
+> Cc: Mike Rapoport <rppt@linux.vnet.ibm.com>
+> Cc: David Hildenbrand <david@redhat.com>
+> Cc: Vasily Gorbik <gor@linux.ibm.com>
+> Cc: Oscar Salvador <osalvador@suse.com>
+> Suggested-by: Dan Williams <dan.j.williams@intel.com>
 > Signed-off-by: David Hildenbrand <david@redhat.com>
 
 Reviewed-by: Oscar Salvador <osalvador@suse.de>
