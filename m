@@ -2,73 +2,112 @@ Return-Path: <SRS0=ea3T=UJ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
+X-Spam-Status: No, score=-6.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS
 	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B9121C282DD
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Jun 2019 10:41:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 051B6C282DD
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Jun 2019 12:22:24 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 403CD206BB
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Jun 2019 10:41:58 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=xenosoft.de header.i=@xenosoft.de header.b="JbObCS4w"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 403CD206BB
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=xenosoft.de
+	by mail.kernel.org (Postfix) with ESMTPS id 372922053B
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Jun 2019 12:22:22 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 372922053B
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45MqSg4CTzzDqML
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Jun 2019 20:41:55 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45MshW2NgHzDqQ6
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Jun 2019 22:22:19 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45Mscd0Z4vzDqMp
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Jun 2019 22:18:57 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (helo) smtp.helo=mo6-p00-ob.smtp.rzone.de
- (client-ip=2a01:238:20a:202:5300::3; helo=mo6-p00-ob.smtp.rzone.de;
- envelope-from=chzigotzky@xenosoft.de; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=xenosoft.de
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=xenosoft.de header.i=@xenosoft.de header.b="JbObCS4w"; 
- dkim-atps=neutral
-Received: from mo6-p00-ob.smtp.rzone.de (mo6-p00-ob.smtp.rzone.de
- [IPv6:2a01:238:20a:202:5300::3])
+ dmarc=none (p=none dis=none) header.from=linux.ibm.com
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 45Mscb4qgxz8tR6
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Jun 2019 22:18:55 +1000 (AEST)
+Received: by ozlabs.org (Postfix)
+ id 45Mscb3cY8z9sN4; Mon, 10 Jun 2019 22:18:55 +1000 (AEST)
+Authentication-Results: ozlabs.org;
+ spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
+ (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
+ envelope-from=cclaudio@linux.ibm.com; receiver=<UNKNOWN>)
+Authentication-Results: ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=linux.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45MqQc14MfzDqLJ
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Jun 2019 20:40:04 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; t=1560163193;
- s=strato-dkim-0002; d=xenosoft.de;
- h=To:References:Message-Id:Cc:Date:In-Reply-To:From:Subject:
- X-RZG-CLASS-ID:X-RZG-AUTH:From:Subject:Sender;
- bh=fXoqWcsE3DP1yX2H+FF/T6fIPtAjMq1TSAPSSeXlVMI=;
- b=JbObCS4wqwnG5dF7Gv6apJtB9wIWmxZlUGr8ZICrLhWmqUaNlfOFi3rpmKpvZZ+He0
- IudgR5/05hBQAMpJWpHLtaXhoeAlK4H931W31VamLdJaqhxWoyOWm/UmLdI8la4+Dc8w
- 8Y4H4tP2B5MrVSYaxX8WKGnFBs54oWPdmfRMvWy7G++JCN6OmdIl3jPsG9GU4R2duIyU
- LXuc/vpF9KcBolo0a8bFn4NR5ET+2XtxsVC3zZqy8mkkuYQpBQZvNzfxg9L9mFU6rQb/
- MvoRqwWKKM2nRIBn5/W7GrB8a6NZhziHafg6tCwK7w2bDJ5SQfHRx/ZjohiT+YwLDIpu
- 7Q7Q==
-X-RZG-AUTH: ":L2QefEenb+UdBJSdRCXu93KJ1bmSGnhMdmOod1DhGN0rBVhd9dFr4tFIFSaQ9BUYVIIL1Is3"
-X-RZG-CLASS-ID: mo00
-Received: from [10.120.27.175] by smtp.strato.de (RZmta 44.18 DYNA|AUTH)
- with ESMTPSA id v09a9cv5AAdnunX
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (curve secp521r1 with
- 521 ECDH bits, eq. 15360 bits RSA))
- (Client did not present a certificate);
- Mon, 10 Jun 2019 12:39:49 +0200 (CEST)
-Content-Type: text/plain;
-	charset=utf-8
-Mime-Version: 1.0 (1.0)
-Subject: Re: Latest Git kernel: Section mismatch in reference from the
- variable start_here_multiplatform to the function .init.text:.early_setup()
-From: Christian Zigotzky <chzigotzky@xenosoft.de>
-X-Mailer: iPhone Mail (16E227)
-In-Reply-To: <dbfbd2e0-eca8-8ecc-793b-a6f1471ce2ee@c-s.fr>
-Date: Mon, 10 Jun 2019 11:39:59 +0200
-Content-Transfer-Encoding: quoted-printable
-Message-Id: <461FD07C-F683-4CDB-9894-5A3E8D2E0411@xenosoft.de>
-References: <d8d0bf05-2c22-0ade-6361-4841e521597c@xenosoft.de>
- <dbfbd2e0-eca8-8ecc-793b-a6f1471ce2ee@c-s.fr>
-To: Christophe Leroy <christophe.leroy@c-s.fr>
+ by ozlabs.org (Postfix) with ESMTPS id 45MscX1byrz9sNt
+ for <linuxppc-dev@ozlabs.org>; Mon, 10 Jun 2019 22:18:51 +1000 (AEST)
+Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
+ x5ACCS6A046200
+ for <linuxppc-dev@ozlabs.org>; Mon, 10 Jun 2019 08:18:47 -0400
+Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2t1n4sd8bc-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@ozlabs.org>; Mon, 10 Jun 2019 08:18:47 -0400
+Received: from localhost
+ by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <cclaudio@linux.ibm.com>;
+ Mon, 10 Jun 2019 13:18:46 +0100
+Received: from b03cxnp07028.gho.boulder.ibm.com (9.17.130.15)
+ by e31.co.us.ibm.com (192.168.1.131) with IBM ESMTP SMTP Gateway: Authorized
+ Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Mon, 10 Jun 2019 13:18:44 +0100
+Received: from b03ledav004.gho.boulder.ibm.com
+ (b03ledav004.gho.boulder.ibm.com [9.17.130.235])
+ by b03cxnp07028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x5ACIg6223331120
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Mon, 10 Jun 2019 12:18:42 GMT
+Received: from b03ledav004.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id A94CB7805C;
+ Mon, 10 Jun 2019 12:18:42 +0000 (GMT)
+Received: from b03ledav004.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 6F9D47805E;
+ Mon, 10 Jun 2019 12:18:40 +0000 (GMT)
+Received: from [9.18.235.79] (unknown [9.18.235.79])
+ by b03ledav004.gho.boulder.ibm.com (Postfix) with ESMTP;
+ Mon, 10 Jun 2019 12:18:40 +0000 (GMT)
+Subject: Re: [PATCH v3 1/9] KVM: PPC: Ultravisor: Add PPC_UV config option
+To: Leonardo Bras <leonardo@linux.ibm.com>, linuxppc-dev@ozlabs.org
+References: <20190606173614.32090-1-cclaudio@linux.ibm.com>
+ <20190606173614.32090-2-cclaudio@linux.ibm.com>
+ <0f6d278e78b2784a77ce2cd07a84377da6f5262e.camel@linux.ibm.com>
+From: Claudio Carvalho <cclaudio@linux.ibm.com>
+Date: Mon, 10 Jun 2019 09:18:39 -0300
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.6.0
+MIME-Version: 1.0
+In-Reply-To: <0f6d278e78b2784a77ce2cd07a84377da6f5262e.camel@linux.ibm.com>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
+Content-Language: en-US
+X-TM-AS-GCONF: 00
+x-cbid: 19061012-8235-0000-0000-00000EA5F1A6
+X-IBM-SpamModules-Scores: 
+X-IBM-SpamModules-Versions: BY=3.00011242; HX=3.00000242; KW=3.00000007;
+ PH=3.00000004; SC=3.00000286; SDB=6.01215941; UDB=6.00639292; IPR=6.00997040; 
+ MB=3.00027252; MTD=3.00000008; XFM=3.00000015; UTC=2019-06-10 12:18:45
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 19061012-8236-0000-0000-000045F57D3F
+Message-Id: <156cd4df-7616-1f34-afd6-7298ebdc8dc0@linux.ibm.com>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
+ definitions=2019-06-10_06:, , signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1810050000 definitions=main-1906100086
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -80,49 +119,69 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Christian Zigotzky <info@xenosoft.de>
+Cc: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>,
+ Michael Anderson <andmike@linux.ibm.com>, Ram Pai <linuxram@us.ibm.com>,
+ kvm-ppc@vger.kernel.org, Bharata B Rao <bharata@linux.ibm.com>,
+ Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
+ Anshuman Khandual <khandual@linux.vnet.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hello Christophe,
 
-Could you please add this patch to the GIT kernel because the issue still ex=
-ists.
+On 6/7/19 5:11 PM, Leonardo Bras wrote:
+>
+> On Thu, 2019-06-06 at 14:36 -0300, Claudio Carvalho wrote:
+>> From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+>>
+>> CONFIG_PPC_UV adds support for ultravisor.
+>>
+>> Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+>> Signed-off-by: Bharata B Rao <bharata@linux.ibm.com>
+>> Signed-off-by: Ram Pai <linuxram@us.ibm.com>
+>> [Update config help and commit message]
+>> Signed-off-by: Claudio Carvalho <cclaudio@linux.ibm.com>
+>> ---
+>>  arch/powerpc/Kconfig | 20 ++++++++++++++++++++
+>>  1 file changed, 20 insertions(+)
+>>
+>> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+>> index 8c1c636308c8..276c1857c335 100644
+>> --- a/arch/powerpc/Kconfig
+>> +++ b/arch/powerpc/Kconfig
+>> @@ -439,6 +439,26 @@ config PPC_TRANSACTIONAL_MEM
+>>         ---help---
+>>           Support user-mode Transactional Memory on POWERPC.
+>>
+>> +config PPC_UV
+>> +	bool "Ultravisor support"
+>> +	depends on KVM_BOOK3S_HV_POSSIBLE
+>> +	select HMM_MIRROR
+>> +	select HMM
+>> +	select ZONE_DEVICE
+>> +	select MIGRATE_VMA_HELPER
+>> +	select DEV_PAGEMAP_OPS
+>> +	select DEVICE_PRIVATE
+>> +	select MEMORY_HOTPLUG
+>> +	select MEMORY_HOTREMOVE
+>> +	default n
+>> +	help
+>> +	  This option paravirtualizes the kernel to run in POWER platforms that
+>> +	  supports the Protected Execution Facility (PEF). In such platforms,
+>> +	  the ultravisor firmware runs at a privilege level above the
+>> +	  hypervisor.
+>> +
+>> +	  If unsure, say "N".
+>> +
+>>  config LD_HEAD_STUB_CATCH
+>>  	bool "Reserve 256 bytes to cope with linker stubs in HEAD text" if EXPERT
+>>  	depends on PPC64
+> Maybe this patch should be the last of the series, as it may cause some
+> bisect trouble to have this option enabled while missing some of the
+> patches.
 
-Thanks,
-Christian
+Thanks Leonardo. I changed that for the next version.
 
-On 15. May 2019, at 12:15, Christophe Leroy <christophe.leroy@c-s.fr> wrote:=
+Claudio
 
 
-Hi,
-
-Le 15/05/2019 =C3=A0 12:09, Christian Zigotzky a =C3=A9crit :
-Hi All,
-I got the following error messages with the latest Git kernel today:
-GEN     .version
-  CHK     include/generated/compile.h
-  LD      vmlinux.o
-  MODPOST vmlinux.o
-WARNING: vmlinux.o(.text+0x302a): Section mismatch in reference from the var=
-iable start_here_multiplatform to the function .init.text:.early_setup()
-The function start_here_multiplatform() references
-the function __init .early_setup().
-This is often because start_here_multiplatform lacks a __init
-annotation or the annotation of .early_setup is wrong.
-  MODINFO modules.builtin.modinfo
-  KSYM    .tmp_kallsyms1.o
-  KSYM    .tmp_kallsyms2.o
-  LD      vmlinux
-  SORTEX  vmlinux
-  SYSMAP  System.map
-  CHKHEAD vmlinux
-What does it mean?
-
-=E2=80=94=E2=80=94=E2=80=94=E2=80=94=E2=80=94=E2=80=94=E2=80=94=E2=80=94-
-
-I proposed a patch for it at https://patchwork.ozlabs.org/patch/1097845/
-
-Christophe=
