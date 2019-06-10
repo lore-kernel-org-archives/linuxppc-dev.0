@@ -2,52 +2,87 @@ Return-Path: <SRS0=ea3T=UJ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.3 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
+	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 12DAFC468BC
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Jun 2019 05:48:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8634DC468C1
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Jun 2019 05:53:58 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C20DF20820
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Jun 2019 05:48:55 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C20DF20820
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 0BE11207E0
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Jun 2019 05:53:57 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="ap3P9Rv1"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0BE11207E0
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45MhyY2RfxzDqRn
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Jun 2019 15:48:53 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45Mj4N153tzDqS0
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Jun 2019 15:53:56 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=arm.com
- (client-ip=217.140.110.172; helo=foss.arm.com;
- envelope-from=anshuman.khandual@arm.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=gmail.com
+ (client-ip=2607:f8b0:4864:20::642; helo=mail-pl1-x642.google.com;
+ envelope-from=npiggin@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=arm.com
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
- by lists.ozlabs.org (Postfix) with ESMTP id 45Mhwh48phzDqGv
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Jun 2019 15:47:14 +1000 (AEST)
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
- by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id EABA0344;
- Sun,  9 Jun 2019 22:47:12 -0700 (PDT)
-Received: from [10.162.42.131] (p8cg001049571a15.blr.arm.com [10.162.42.131])
- by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id
- 7B91E3F557; Sun,  9 Jun 2019 22:47:11 -0700 (PDT)
-Subject: Re: [PATCH 2/4] arm64: support huge vmap vmalloc
-To: Nicholas Piggin <npiggin@gmail.com>, linux-mm@kvack.org
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="ap3P9Rv1"; 
+ dkim-atps=neutral
+Received: from mail-pl1-x642.google.com (mail-pl1-x642.google.com
+ [IPv6:2607:f8b0:4864:20::642])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45Mj2Q2NVqzDqP0
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Jun 2019 15:52:13 +1000 (AEST)
+Received: by mail-pl1-x642.google.com with SMTP id f97so3185229plb.5
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 09 Jun 2019 22:52:13 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=date:from:subject:to:cc:references:in-reply-to:mime-version
+ :user-agent:message-id:content-transfer-encoding;
+ bh=yYBt1hcQRQ0spSrpHXNNQXBu1ZghSIdq4bfDYf+JhQs=;
+ b=ap3P9Rv1D8aQHfClkdMrAIz0lJEB90foHbKNELFbvjYgglPGaYhZZDEGactmqxDbB3
+ i+m5J8ngAGhJZb11iW+5E/vyO7uT254K24ZGbAxYTF7kz8oo6GsGkNjAKS++f130U4UR
+ UUbpTGlCkup21/YPprv1FmY2NFCj/Zkl1wv0sV69bIiM8DgpcagIQO+vQGgQO8/2r7AN
+ ZcZYFC0bQfmpDEP9Hc9VA/8BQKHEy9UviztpTRgHAfrNzLiuj0WS59rfT1892jQBYNk6
+ /Xn43QCihdD3QMiH3u0Xv0VsizSFc1kAVU0z5uCFs1IvO2bJKtZnzNfvUepQZoQDkA0i
+ Xa+Q==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:date:from:subject:to:cc:references:in-reply-to
+ :mime-version:user-agent:message-id:content-transfer-encoding;
+ bh=yYBt1hcQRQ0spSrpHXNNQXBu1ZghSIdq4bfDYf+JhQs=;
+ b=BCsCZQuyO3UEpA9lt89cVFOoyci47/v0/vJUMEe4bvfXHJ5PdHF47PGE1yhn+nOtrb
+ z8z8mBVw0tlkeCrdfD1o9RhBNYMmDO74iCyMsbqY/Wbl874X8PcqDzQ/wLCGtUrHSkC+
+ djGO+pg7qvQTbsXs4xr5D5cB3jLEtsVemESN0h0rbOhHWRm/IMul1m+vuKIX9MOHQnXg
+ yakOu738uy1870FezHh2XGeKM8hVdZBksVSaz5PZwsfaGQLJSmi00ZgAxJVt3qd2u804
+ Ic20nZ1CN/gENAHkpbOozY76aTpy/sZckemQ4W+H/KJgPC5KFhmdV3wM8dUeivlcPovv
+ JfMA==
+X-Gm-Message-State: APjAAAUDfsHIIwFfhgrDxfzHC8WBmW90RsOPK5Qy/2iCij8BPqnhBE/X
+ EehddXgLzTo/PCyVfzqER60=
+X-Google-Smtp-Source: APXvYqwEoxXM5FQzuBBvwT6FbXqtViBTtkOAbbFjME16dv8NldZlQjn3iDQ3dOMqqHq0nrc6FYbq4Q==
+X-Received: by 2002:a17:902:2983:: with SMTP id
+ h3mr24952866plb.45.1560145930521; 
+ Sun, 09 Jun 2019 22:52:10 -0700 (PDT)
+Received: from localhost (60-241-56-246.tpgi.com.au. [60.241.56.246])
+ by smtp.gmail.com with ESMTPSA id k1sm8446233pjp.2.2019.06.09.22.52.08
+ (version=TLS1_3 cipher=AEAD-AES256-GCM-SHA384 bits=256/256);
+ Sun, 09 Jun 2019 22:52:09 -0700 (PDT)
+Date: Mon, 10 Jun 2019 15:49:48 +1000
+From: Nicholas Piggin <npiggin@gmail.com>
+Subject: Re: [PATCH 4/4] mm/vmalloc: Hugepage vmalloc mappings
+To: linux-mm@kvack.org
 References: <20190610043838.27916-1-npiggin@gmail.com>
- <20190610043838.27916-2-npiggin@gmail.com>
-From: Anshuman Khandual <anshuman.khandual@arm.com>
-Message-ID: <c49a8fa7-c700-b45b-31b8-1d49afc42136@arm.com>
-Date: Mon, 10 Jun 2019 11:17:29 +0530
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:52.0) Gecko/20100101
- Thunderbird/52.9.1
+ <20190610043838.27916-4-npiggin@gmail.com>
+In-Reply-To: <20190610043838.27916-4-npiggin@gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <20190610043838.27916-2-npiggin@gmail.com>
+User-Agent: astroid/0.14.0 (https://github.com/astroidmail/astroid)
+Message-Id: <1560145722.obq2bpepl8.astroid@bobo.none>
 Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -64,37 +99,19 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+Nicholas Piggin's on June 10, 2019 2:38 pm:
+> +static int vmap_hpages_range(unsigned long start, unsigned long end,
+> +			   pgprot_t prot, struct page **pages,
+> +			   unsigned int page_shift)
+> +{
+> +	BUG_ON(page_shift !=3D PAGE_SIZE);
+> +	return vmap_pages_range(start, end, prot, pages);
+> +}
 
+That's a false positive BUG_ON for !HUGE_VMAP configs. I'll fix that
+and repost after a round of feedback.
 
-On 06/10/2019 10:08 AM, Nicholas Piggin wrote:
-> Applying huge vmap to vmalloc requires vmalloc_to_page to walk huge
-> pages. Define pud_large and pmd_large to support this.
-> 
-> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
-> ---
->  arch/arm64/include/asm/pgtable.h | 2 ++
->  1 file changed, 2 insertions(+)
-> 
-> diff --git a/arch/arm64/include/asm/pgtable.h b/arch/arm64/include/asm/pgtable.h
-> index 2c41b04708fe..30fe7b344bf7 100644
-> --- a/arch/arm64/include/asm/pgtable.h
-> +++ b/arch/arm64/include/asm/pgtable.h
-> @@ -428,6 +428,7 @@ extern pgprot_t phys_mem_access_prot(struct file *file, unsigned long pfn,
->  				 PMD_TYPE_TABLE)
->  #define pmd_sect(pmd)		((pmd_val(pmd) & PMD_TYPE_MASK) == \
->  				 PMD_TYPE_SECT)
-> +#define pmd_large(pmd)		pmd_sect(pmd)
->  
->  #if defined(CONFIG_ARM64_64K_PAGES) || CONFIG_PGTABLE_LEVELS < 3
->  #define pud_sect(pud)		(0)
-> @@ -438,6 +439,7 @@ extern pgprot_t phys_mem_access_prot(struct file *file, unsigned long pfn,
->  #define pud_table(pud)		((pud_val(pud) & PUD_TYPE_MASK) == \
->  				 PUD_TYPE_TABLE)
->  #endif
-> +#define pud_large(pud)		pud_sect(pud)
->  
->  extern pgd_t init_pg_dir[PTRS_PER_PGD];
->  extern pgd_t init_pg_end[];
+Thanks,
+Nick
 
-Another series (I guess not merged yet) is trying to add these wrappers
-on arm64 (https://patchwork.kernel.org/patch/10883887/).
+=
