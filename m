@@ -2,92 +2,80 @@ Return-Path: <SRS0=ea3T=UJ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.8 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_MUTT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
+	SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id ABC5AC4321A
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Jun 2019 19:04:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B23C8C4321A
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Jun 2019 19:06:05 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id F1045207E0
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Jun 2019 19:04:14 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 375E4207E0
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Jun 2019 19:06:05 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="iwNBtvBQ"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org F1045207E0
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	dkim=pass (4096-bit key) header.d=kolabnow.com header.i=@kolabnow.com header.b="Qbjr2lAF"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 375E4207E0
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=vaga.pv.it
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45N2cD07FszDqFJ
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Jun 2019 05:04:12 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45N2fM0ghvzDqQq
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Jun 2019 05:06:03 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=2607:f8b0:4864:20::844; helo=mail-qt1-x844.google.com;
- envelope-from=arnaldo.melo@gmail.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=vaga.pv.it
+ (client-ip=95.128.36.40; helo=mx.kolabnow.com;
+ envelope-from=federico.vaga@vaga.pv.it; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="iwNBtvBQ"; 
+ dmarc=none (p=none dis=none) header.from=vaga.pv.it
+Authentication-Results: lists.ozlabs.org; dkim=pass (4096-bit key;
+ secure) header.d=kolabnow.com header.i=@kolabnow.com header.b="Qbjr2lAF"; 
  dkim-atps=neutral
-Received: from mail-qt1-x844.google.com (mail-qt1-x844.google.com
- [IPv6:2607:f8b0:4864:20::844])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Received: from mx.kolabnow.com (mx.kolabnow.com [95.128.36.40])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45MxYy1s02zDqMX
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Jun 2019 01:16:50 +1000 (AEST)
-Received: by mail-qt1-x844.google.com with SMTP id m29so10993315qtu.1
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Jun 2019 08:16:50 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=from:date:to:cc:subject:message-id:references:mime-version
- :content-disposition:in-reply-to:user-agent;
- bh=A58gSkvzAqlytIO6jApUdBIFoWfe/E0ueVnquFhH+y4=;
- b=iwNBtvBQLT1v7fZZu6X114jxEpsi9K0wPJlIKIgBxsjuqVAZvJ8lZYmM2LmF1wPwYo
- LDrm0Nyr7wtsnLEJOmfUEYoXCqTG1PP7H4Qsv63S3yVB046B/nVZbGDcF6C/rMj1Whdp
- JaGWK3dxh2DldR83Cdz4vWFM8pHGrkcPhMeHXuTkffSzDFPrpDoFC2/Nm6/yeakAvCCr
- DlvRo0dhBZNOFDkJjuqk6nKT7522Y5fKaqN+TC59oME0y2SdLtMQyqWARfwvS6gRnkK/
- ed7FF646pHlo8ojJ46V6Pc8oFN21PQHYcsTm1sIqmXaCxc1pwSeIKfgsi7DXh0ygkpY9
- 1YkQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:from:date:to:cc:subject:message-id:references
- :mime-version:content-disposition:in-reply-to:user-agent;
- bh=A58gSkvzAqlytIO6jApUdBIFoWfe/E0ueVnquFhH+y4=;
- b=l1k2Elyvd2e9fXiZYfRQBlLqb++ZF4vEcfsUp5qK7Ewb6SM9v3YRc6tXOm/G1N9ijz
- o9EMU9blYWik7H8k1dYzXgLLxA/10VkC576PC39CQdhDxqlSz4XXkW8hjm1vcrsi/Y+2
- BUWfr3NDjYrMjllre/o1DEJ6S5BWmXmQy0Woi2Yl8S+Kfj1yCAVcYdDw0unNCoL6WXvE
- kC7Ygysx7bVzWTvh1RP1I016es+b9zcfkvUI4uGxwM/gBBRVbMZHxtnj8S51t8bvnKkq
- 4QwYGffRCoMoUryAiIdE4FsVa3NIA8lxhsDVwpJ+z+F9QJcndvFCzaLOZs6IHCesBsv2
- ZT5Q==
-X-Gm-Message-State: APjAAAXPEXZkODYpC+yCN8OPifE27RQM8YgZG8NH9zCytfY/a3Crp6eu
- bJKfs9VS0RnzCbOeFsK7kUk=
-X-Google-Smtp-Source: APXvYqy070yA+0OSHU30l7xZRSxuWQmt12wbM65RPs74Gvqhp5/KjUrkROv81xNFYhhKTUVG40Z8RQ==
-X-Received: by 2002:a0c:981b:: with SMTP id c27mr57804221qvd.48.1560179807224; 
- Mon, 10 Jun 2019 08:16:47 -0700 (PDT)
-Received: from quaco.ghostprotocols.net (179-240-164-83.3g.claro.net.br.
- [179.240.164.83])
- by smtp.gmail.com with ESMTPSA id u7sm2748039qta.82.2019.06.10.08.16.45
- (version=TLS1_3 cipher=AEAD-AES256-GCM-SHA384 bits=256/256);
- Mon, 10 Jun 2019 08:16:46 -0700 (PDT)
-From: Arnaldo Carvalho de Melo <arnaldo.melo@gmail.com>
-X-Google-Original-From: Arnaldo Carvalho de Melo <acme@kernel.org>
-Received: by quaco.ghostprotocols.net (Postfix, from userid 1000)
- id BD0C141149; Mon, 10 Jun 2019 12:16:42 -0300 (-03)
-Date: Mon, 10 Jun 2019 12:16:42 -0300
-To: Anju T Sudhakar <anju@linux.vnet.ibm.com>
-Subject: Re: [PATCH RESEND 1/2] tools/perf: Add arch neutral function to
- choose event for perf kvm record
-Message-ID: <20190610151642.GT21245@kernel.org>
-References: <20190610064518.949-1-anju@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45Mz5P75h1zDqLx
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Jun 2019 02:25:45 +1000 (AEST)
+Received: from localhost (unknown [127.0.0.1])
+ by ext-mx-out003.mykolab.com (Postfix) with ESMTP id 1FF58403E2;
+ Mon, 10 Jun 2019 18:25:41 +0200 (CEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kolabnow.com; h=
+ content-type:content-type:content-transfer-encoding:mime-version
+ :references:in-reply-to:message-id:date:date:subject:subject
+ :from:from:received:received:received; s=dkim20160331; t=
+ 1560183940; x=1561998341; bh=ySLNIX1jiCqldrmER8p/c1YOLUiUU7vfIBo
+ k3u7v1yA=; b=Qbjr2lAFN/nwTVFb3YkUWU/8tkK2xRuhjZsLMgdCND9R34aGoNh
+ L2rcHMjFoWIBOEyBgi+MymRMgil8vhsvUkvUoupC7SoATMEh/iy6YPVpjA+5H4ji
+ Sq9azbND3/SSpkJHQo81xewDfs7u1H8fnDh9kVM4AjM48YEfBXsuVqT4rapzKmul
+ 1Ei88sIKitJClBwofZmi6InRA8gbKUKcVg7DR+C8Og1oKRbf3v3PTi2BIL/5Ow+m
+ fE5WCn3ir1WHhOXjbX9mYQIY6ionQ0oEGjmBF7gnqu8ILBGEfAUdczCqRfLLNKCu
+ Mgna0odiTpKA/ttrTXGmAUMaLJYKwuOFR2wMFJm6jNdjUVsq50EPgBNt5hojESRK
+ ARVzFlktwS9I7Dg3zxTTNCvNs1SDiPwRgnX2zRa6o2Hrxw0ZA9SD5NGvxwjwYkXn
+ RcfHGYEqdsFjfhrPUKzbyHovzfhc/DvM6es5MEDChVM6hbtU3ebGQuYz5ZzCLoU5
+ Tf5CE5ptqRaJnjqoewc+2I8Ou8dWd2AozVQYRI4NAjcWVDkkpXeNqNKSa8KUmZ9G
+ AbcsC0D7p3FXd28Z6d8F8A8HeKobEE1AM4rGfzQsMzvMT1TA0Dv5erAQVa/NLGEs
+ kZJ5ZtcjwU/5TJ6pEvxuxKdns93Yhvd/oWDj/yITosqRFhYy+AwM5lfQ=
+X-Virus-Scanned: amavisd-new at mykolab.com
+Received: from mx.kolabnow.com ([127.0.0.1])
+ by localhost (ext-mx-out003.mykolab.com [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id n9ph0Cuw_TXP; Mon, 10 Jun 2019 18:25:40 +0200 (CEST)
+Received: from int-mx002.mykolab.com (unknown [10.9.13.2])
+ by ext-mx-out003.mykolab.com (Postfix) with ESMTPS id 3D67D403AA;
+ Mon, 10 Jun 2019 18:25:39 +0200 (CEST)
+Received: from ext-subm003.mykolab.com (unknown [10.9.6.3])
+ by int-mx002.mykolab.com (Postfix) with ESMTPS id 6CFED3431;
+ Mon, 10 Jun 2019 18:25:38 +0200 (CEST)
+From: Federico Vaga <federico.vaga@vaga.pv.it>
+To: Mauro Carvalho Chehab <mchehab+samsung@kernel.org>
+Subject: Re: [PATCH v3 14/33] docs: kbuild: convert docs to ReST and rename to
+ *.rst
+Date: Mon, 10 Jun 2019 18:25:36 +0200
+Message-ID: <6349042.qd6NX4z2Zd@harkonnen>
+In-Reply-To: <3d40d111d0512d785b6a67573772f532f88d2359.1560045490.git.mchehab+samsung@kernel.org>
+References: <cover.1560045490.git.mchehab+samsung@kernel.org>
+ <3d40d111d0512d785b6a67573772f532f88d2359.1560045490.git.mchehab+samsung@kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20190610064518.949-1-anju@linux.vnet.ibm.com>
-X-Url: http://acmel.wordpress.com
-User-Agent: Mutt/1.11.3 (2019-02-01)
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 X-Mailman-Approved-At: Tue, 11 Jun 2019 05:02:30 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -100,131 +88,153 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: ravi.bangoria@linux.ibm.com, maddy@linux.vnet.ibm.com, peterz@infradead.org,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- alexander.shishkin@linux.intel.com, namhyung@kernel.org, jolsa@redhat.com
+Cc: , linux-wireless@vger.kernel.org, linux-fbdev@vger.kernel.org,
+	Emmanuel Grumbach <emmanuel.grumbach@intel.com>,
+	Stanislaw Gruszka <sgruszka@redhat.com>,
+	Vignesh Raghavendra <vigneshr@ti.com>,
+	Linux Doc Mailing List <linux-doc@vger.kernel.org>,
+	bridge@lists.linux-foundation.org,
+	Palmer Dabbelt <palmer@sifive.com>, alsa-devel@alsa-project.org,
+	dri-devel@lists.freedesktop.org, Ofer Levi <oferle@mellanox.com>,
+	Masahiro Yamada <yamada.masahiro@socionext.com>,
+	Harry Wei <harryxiyou@gmail.com>, Paul Mackerras <paulus@samba.org>,
+	Miquel Raynal <miquel.raynal@bootlin.com>,
+	linux-kbuild@vger.kernel.org, linux-riscv@lists.infradead.org,
+	Vincent Chen <deanbo422@gmail.com>,
+	Aurelien Jacquiot <jacquiot.aurelien@gmail.com>,
+	Jonas Bonn <jonas@southpole.se>,
+	Alex Shi <alex.shi@linux.alibaba.com>, linux-c6x-dev@linux-c6x.org,
+	linux-scsi@vger.kernel.org, Jonathan Corbet <corbet@lwn.net>,
+	Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
+	netdev@vger.kernel.org, Marek Vasut <marek.vasut@gmail.com>,
+	coreteam@netfilter.org, Mark Salter <msalter@redhat.com>,
+	Al exey Kuznetsov <kuznet@ms2.inr.ac.ru>,
+	linux-snps-arc@lists.infradead.org,
+	"James E.J. Bottomley" <jejb@linux.ibm.com>,
+	Pablo Neira Ayuso <pablo@netfilter.org>, devel@driverdev.osuosl.org,
+	Albert Ou <aou@eecs.berkeley.edu>,
+	Johannes Berg <johannes.berg@intel.com>,
+	Intel Linux Wireless <linuxwifi@intel.com>,
+	Nikolay Aleksandrov <nikolay@cumulusnetworks.com>,
+	David Woodhouse <dwmw2@infradead.or>,
+	Jozsef Kadlecsik <kadlec@blackhole.kfki.hu>,
+	Mauro Carvalho Chehab <mchehab@infradead.org>,
+	openrisc@lists.librecores.org,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	Greentime Hu <green.hu@gmail.com>, linux-mtd@lists.infradead.org,
+	Takashi Iwai <tiwai@suse.com>, Jaroslav Kysela <perex@perex.cz>,
+	Stafford Horne <shorne@gmail.com>,
+	Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>,
+	Kalle Valo <kvalo@codeaurora.org>,
+	Teddy Wang <teddy.wang@siliconmotion.com>,
+	Jon Maloy <jon.maloy@ericsson.com>, Michal Simek <monstr@monstr.eu>,
+	Michal Marek <michal.lkml@markovi.net>,
+	netfilter-devel@vger.kernel.org,
+	"Martin K. Petersen" <martin.petersen@oracle.com>,
+	g@lists.ozlabs.org, Hideaki YOSHIFUJI <yoshfuji@linux-ipv6.org>,
+	Vineet Gupta <vgupta@synopsys.com>, linux-usb@vger.kernel.org,
+	Florian Westphal <fw@strlen.de>, linux-kernel@vger.kernel.org,
+	tipc-discussion@lists.sourceforge.net,
+	Sudip Mukherjee <sudipm.mukherjee@gmail.com>,
+	Miguel Ojeda Sandonis <miguel.ojeda.sandonis@gmail.com>,
+	Roopa Prabhu <roopa@cumulusnetworks.com>,
+	Richard Weinberger <richard@nod.at>,
+	Ying Xue <ying.xue@windriver.com>,
+	Luca Coelho <luciano.coelho@intel.com>,
+	Brian Norris <computersforpeace@gmail.com>,
+	linuxppc-dev@lists.ozlabs.org,
+	"David S. Miller" <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Em Mon, Jun 10, 2019 at 12:15:17PM +0530, Anju T Sudhakar escreveu:
-> 'perf kvm record' uses 'cycles'(if the user did not specify any event) as
-> the default event to profile the guest.
-> This will not provide any proper samples from the guest incase of
-> powerpc architecture, since in powerpc the PMUs are controlled by
-> the guest rather than the host.
+In data Sunday, June 9, 2019 4:27:04 AM CEST, Mauro Carvalho Chehab ha 
+scritto:
+> The kbuild documentation clearly shows that the documents
+> there are written at different times: some use markdown,
+> some use their own peculiar logic to split sections.
 > 
-> Patch adds a function to pick an arch specific event for 'perf kvm record',
-> instead of selecting 'cycles' as a default event for all architectures.
+> Convert everything to ReST without affecting too much
+> the author's style and avoiding adding uneeded markups.
 > 
-> For powerpc this function checks for any user specified event, and if there
-> isn't any it returns invalid instead of proceeding with 'cycles' event.
-
-Michael, Ravi, Maddy, could you please provide an Acked-by, Reviewed-by
-or Tested-by?
-
-- Arnaldo
- 
-> Signed-off-by: Anju T Sudhakar <anju@linux.vnet.ibm.com>
+> The conversion is actually:
+>   - add blank lines and identation in order to identify paragraphs;
+>   - fix tables markups;
+>   - add some lists markups;
+>   - mark literal blocks;
+>   - adjust title markups.
+> 
+> At its new index.rst, let's add a :orphan: while this is not linked to
+> the main index.rst file, in order to avoid build warnings.
+> 
+> Signed-off-by: Mauro Carvalho Chehab <mchehab+samsung@kernel.org>
 > ---
->  tools/perf/arch/powerpc/util/kvm-stat.c | 37 +++++++++++++++++++++++++
->  tools/perf/builtin-kvm.c                | 12 +++++++-
->  tools/perf/util/kvm-stat.h              |  2 +-
->  3 files changed, 49 insertions(+), 2 deletions(-)
-> 
-> diff --git a/tools/perf/arch/powerpc/util/kvm-stat.c b/tools/perf/arch/powerpc/util/kvm-stat.c
-> index f9db341c47b6..66f8fe500945 100644
-> --- a/tools/perf/arch/powerpc/util/kvm-stat.c
-> +++ b/tools/perf/arch/powerpc/util/kvm-stat.c
-> @@ -8,6 +8,7 @@
->  
->  #include "book3s_hv_exits.h"
->  #include "book3s_hcalls.h"
-> +#include <subcmd/parse-options.h>
->  
->  #define NR_TPS 4
->  
-> @@ -172,3 +173,39 @@ int cpu_isa_init(struct perf_kvm_stat *kvm, const char *cpuid __maybe_unused)
->  
->  	return ret;
->  }
-> +
-> +/*
-> + * Incase of powerpc architecture, pmu registers are programmable
-> + * by guest kernel. So monitoring guest via host may not provide
-> + * valid samples. It is better to fail the "perf kvm record"
-> + * with default "cycles" event to monitor guest in powerpc.
-> + *
-> + * Function to parse the arguments and return appropriate values.
-> + */
-> +int kvm_add_default_arch_event(int *argc, const char **argv)
-> +{
-> +	const char **tmp;
-> +	bool event = false;
-> +	int i, j = *argc;
-> +
-> +	const struct option event_options[] = {
-> +		OPT_BOOLEAN('e', "event", &event, NULL),
-> +		OPT_END()
-> +	};
-> +
-> +	tmp = calloc(j + 1, sizeof(char *));
-> +	if (!tmp)
-> +		return -EINVAL;
-> +
-> +	for (i = 0; i < j; i++)
-> +		tmp[i] = argv[i];
-> +
-> +	parse_options(j, tmp, event_options, NULL, 0);
-> +	if (!event) {
-> +		free(tmp);
-> +		return -EINVAL;
-> +	}
-> +
-> +	free(tmp);
-> +	return 0;
-> +}
-> diff --git a/tools/perf/builtin-kvm.c b/tools/perf/builtin-kvm.c
-> index dbb6f737a3e2..fe33b3ec55c9 100644
-> --- a/tools/perf/builtin-kvm.c
-> +++ b/tools/perf/builtin-kvm.c
-> @@ -1510,11 +1510,21 @@ static int kvm_cmd_stat(const char *file_name, int argc, const char **argv)
->  }
->  #endif /* HAVE_KVM_STAT_SUPPORT */
->  
-> +int __weak kvm_add_default_arch_event(int *argc __maybe_unused,
-> +					const char **argv __maybe_unused)
-> +{
-> +	return 0;
-> +}
-> +
->  static int __cmd_record(const char *file_name, int argc, const char **argv)
->  {
-> -	int rec_argc, i = 0, j;
-> +	int rec_argc, i = 0, j, ret;
->  	const char **rec_argv;
->  
-> +	ret = kvm_add_default_arch_event(&argc, argv);
-> +	if (ret)
-> +		return -EINVAL;
-> +
->  	rec_argc = argc + 2;
->  	rec_argv = calloc(rec_argc + 1, sizeof(char *));
->  	rec_argv[i++] = strdup("record");
-> diff --git a/tools/perf/util/kvm-stat.h b/tools/perf/util/kvm-stat.h
-> index 1403dec189b4..da38b56c46cb 100644
-> --- a/tools/perf/util/kvm-stat.h
-> +++ b/tools/perf/util/kvm-stat.h
-> @@ -144,5 +144,5 @@ extern const int decode_str_len;
->  extern const char *kvm_exit_reason;
->  extern const char *kvm_entry_trace;
->  extern const char *kvm_exit_trace;
-> -
-> +extern int kvm_add_default_arch_event(int *argc, const char **argv);
->  #endif /* __PERF_KVM_STAT_H */
-> -- 
-> 2.17.2
+>  Documentation/admin-guide/README.rst          |   2 +-
+>  ...eaders_install.txt => headers_install.rst} |   5 +-
+>  Documentation/kbuild/index.rst                |  27 +
+>  Documentation/kbuild/issues.rst               |  11 +
+>  .../kbuild/{kbuild.txt => kbuild.rst}         | 119 ++--
+>  ...nfig-language.txt => kconfig-language.rst} | 232 ++++----
+>  ...anguage.txt => kconfig-macro-language.rst} |  37 +-
+>  .../kbuild/{kconfig.txt => kconfig.rst}       | 136 +++--
+>  .../kbuild/{makefiles.txt => makefiles.rst}   | 530 +++++++++++-------
+>  .../kbuild/{modules.txt => modules.rst}       | 168 +++---
+>  Documentation/kernel-hacking/hacking.rst      |   4 +-
+>  Documentation/process/coding-style.rst        |   2 +-
+>  Documentation/process/submit-checklist.rst    |   2 +-
+>  .../it_IT/kernel-hacking/hacking.rst          |   4 +-
+>  .../it_IT/process/coding-style.rst            |   2 +-
+>  .../it_IT/process/submit-checklist.rst        |   2 +-
 
--- 
+Limited to translations/it_IT
 
-- Arnaldo
+Acked-by: Federico Vaga <federico.vaga@vaga.pv.it>
+
+>  .../zh_CN/process/coding-style.rst            |   2 +-
+>  .../zh_CN/process/submit-checklist.rst        |   2 +-
+>  Kconfig                                       |   2 +-
+>  arch/arc/plat-eznps/Kconfig                   |   2 +-
+>  arch/c6x/Kconfig                              |   2 +-
+>  arch/microblaze/Kconfig.debug                 |   2 +-
+>  arch/microblaze/Kconfig.platform              |   2 +-
+>  arch/nds32/Kconfig                            |   2 +-
+>  arch/openrisc/Kconfig                         |   2 +-
+>  arch/powerpc/sysdev/Kconfig                   |   2 +-
+>  arch/riscv/Kconfig                            |   2 +-
+>  drivers/auxdisplay/Kconfig                    |   2 +-
+>  drivers/firmware/Kconfig                      |   2 +-
+>  drivers/mtd/devices/Kconfig                   |   2 +-
+>  drivers/net/ethernet/smsc/Kconfig             |   6 +-
+>  drivers/net/wireless/intel/iwlegacy/Kconfig   |   4 +-
+>  drivers/net/wireless/intel/iwlwifi/Kconfig    |   2 +-
+>  drivers/parport/Kconfig                       |   2 +-
+>  drivers/scsi/Kconfig                          |   4 +-
+>  drivers/staging/sm750fb/Kconfig               |   2 +-
+>  drivers/usb/misc/Kconfig                      |   4 +-
+>  drivers/video/fbdev/Kconfig                   |  14 +-
+>  net/bridge/netfilter/Kconfig                  |   2 +-
+>  net/ipv4/netfilter/Kconfig                    |   2 +-
+>  net/ipv6/netfilter/Kconfig                    |   2 +-
+>  net/netfilter/Kconfig                         |  16 +-
+>  net/tipc/Kconfig                              |   2 +-
+>  scripts/Kbuild.include                        |   4 +-
+>  scripts/Makefile.host                         |   2 +-
+>  scripts/kconfig/symbol.c                      |   2 +-
+>  .../tests/err_recursive_dep/expected_stderr   |  14 +-
+>  sound/oss/dmasound/Kconfig                    |   6 +-
+>  48 files changed, 840 insertions(+), 561 deletions(-)
+>  rename Documentation/kbuild/{headers_install.txt => headers_install.rst}
+> (96%) create mode 100644 Documentation/kbuild/index.rst
+>  create mode 100644 Documentation/kbuild/issues.rst
+>  rename Documentation/kbuild/{kbuild.txt => kbuild.rst} (72%)
+>  rename Documentation/kbuild/{kconfig-language.txt => kconfig-language.rst}
+> (85%) rename Documentation/kbuild/{kconfig-macro-language.txt =>
+> kconfig-macro-language.rst} (94%) rename Documentation/kbuild/{kconfig.txt
+> => kconfig.rst} (80%)
+>  rename Documentation/kbuild/{makefiles.txt => makefiles.rst} (83%)
+>  rename Documentation/kbuild/{modules.txt => modules.rst} (84%)
+
+
+
+
+
