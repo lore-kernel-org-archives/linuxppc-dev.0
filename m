@@ -2,83 +2,92 @@ Return-Path: <SRS0=3S3E=UK=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.9 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-2.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 28D62C4321A
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Jun 2019 06:30:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9B30FC43218
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Jun 2019 06:33:05 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 97DDE212F5
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Jun 2019 06:30:23 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="OdWbQDWO"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 97DDE212F5
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
+	by mail.kernel.org (Postfix) with ESMTPS id 2A2182086D
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Jun 2019 06:33:05 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2A2182086D
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45NKqv16J1zDqVm
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Jun 2019 16:30:19 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45NKv30gNVzDqXL
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Jun 2019 16:33:03 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=c-s.fr
- (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
- envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
+ (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
+ envelope-from=bauerman@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=c-s.fr
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="OdWbQDWO"; 
- dkim-atps=neutral
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ dmarc=none (p=none dis=none) header.from=linux.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45NKnS1TX1zDqTR
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Jun 2019 16:28:10 +1000 (AEST)
-Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 45NKnL21w3z9v01D;
- Tue, 11 Jun 2019 08:28:06 +0200 (CEST)
-Authentication-Results: localhost; dkim=pass
- reason="1024-bit key; insecure key"
- header.d=c-s.fr header.i=@c-s.fr header.b=OdWbQDWO; dkim-adsp=pass;
- dkim-atps=neutral
-X-Virus-Scanned: Debian amavisd-new at c-s.fr
-Received: from pegase1.c-s.fr ([192.168.12.234])
- by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id I0XfYMZYnj09; Tue, 11 Jun 2019 08:28:06 +0200 (CEST)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 45NKnL0yfcz9v00y;
- Tue, 11 Jun 2019 08:28:06 +0200 (CEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
- t=1560234486; bh=NP+Agrn1OAyI0Ns0U/ifZeNqzBdhV2IDaWscEoINg6I=;
- h=Subject:To:References:From:Date:In-Reply-To:From;
- b=OdWbQDWOniZvyJna1wUdRp8nPOzhcHZNpF5VmUAxGV2HxAnBytiXMbH0UGjDnQjMS
- 0paMQgP8aXigPCYP9rL5Tl2F+86Jl7YFDx0HhY2kO6z7eXegE5ZB+khIV7O/hrpv4x
- 60p0Sr7u3acsdGaLJsNCLOUk9Aysy8BxjF890wqc=
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 0AC708B7D4;
- Tue, 11 Jun 2019 08:28:07 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id u9l5BfALZqwZ; Tue, 11 Jun 2019 08:28:06 +0200 (CEST)
-Received: from PO15451 (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 778EE8B75B;
- Tue, 11 Jun 2019 08:28:06 +0200 (CEST)
-Subject: Re: [PATCH 1/3] powerpc/64: __ioremap_at clean up in the error case
-To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
-References: <20190610030818.17965-1-npiggin@gmail.com>
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Message-ID: <5d358284-c31c-5e01-240a-54b3491a8915@c-s.fr>
-Date: Tue, 11 Jun 2019 08:28:06 +0200
-User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:60.0) Gecko/20100101
- Thunderbird/60.7.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45NKpc4W8XzDqVB
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Jun 2019 16:29:12 +1000 (AEST)
+Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
+ x5B6RQJo104297
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Jun 2019 02:29:09 -0400
+Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2t25efbgcx-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Jun 2019 02:29:09 -0400
+Received: from localhost
+ by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <bauerman@linux.ibm.com>;
+ Tue, 11 Jun 2019 07:29:08 +0100
+Received: from b03cxnp08026.gho.boulder.ibm.com (9.17.130.18)
+ by e33.co.us.ibm.com (192.168.1.133) with IBM ESMTP SMTP Gateway: Authorized
+ Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Tue, 11 Jun 2019 07:29:02 +0100
+Received: from b03ledav006.gho.boulder.ibm.com
+ (b03ledav006.gho.boulder.ibm.com [9.17.130.237])
+ by b03cxnp08026.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x5B6T0l922610362
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Tue, 11 Jun 2019 06:29:00 GMT
+Received: from b03ledav006.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id ABEE6C605D;
+ Tue, 11 Jun 2019 06:29:00 +0000 (GMT)
+Received: from b03ledav006.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id B1485C6055;
+ Tue, 11 Jun 2019 06:28:51 +0000 (GMT)
+Received: from morokweng.localdomain.com (unknown [9.85.227.34])
+ by b03ledav006.gho.boulder.ibm.com (Postfix) with ESMTP;
+ Tue, 11 Jun 2019 06:28:51 +0000 (GMT)
+From: Thiago Jung Bauermann <bauerman@linux.ibm.com>
+To: linux-integrity@vger.kernel.org
+Subject: [PATCH v11 00/13] Appended signatures support for IMA appraisal
+Date: Tue, 11 Jun 2019 03:28:04 -0300
+X-Mailer: git-send-email 2.21.0
 MIME-Version: 1.0
-In-Reply-To: <20190610030818.17965-1-npiggin@gmail.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: fr
 Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+x-cbid: 19061106-0036-0000-0000-00000AC971EA
+X-IBM-SpamModules-Scores: 
+X-IBM-SpamModules-Versions: BY=3.00011245; HX=3.00000242; KW=3.00000007;
+ PH=3.00000004; SC=3.00000286; SDB=6.01216304; UDB=6.00639510; IPR=6.00997403; 
+ MB=3.00027259; MTD=3.00000008; XFM=3.00000015; UTC=2019-06-11 06:29:06
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 19061106-0037-0000-0000-00004C2DD766
+Message-Id: <20190611062817.18412-1-bauerman@linux.ibm.com>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
+ definitions=2019-06-11_03:, , signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ malwarescore=0 suspectscore=3 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1810050000 definitions=main-1906110044
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -90,98 +99,230 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: Herbert Xu <herbert@gondor.apana.org.au>, linux-doc@vger.kernel.org,
+ Dmitry Kasatkin <dmitry.kasatkin@gmail.com>,
+ "David S. Miller" <davem@davemloft.net>, Jonathan Corbet <corbet@lwn.net>,
+ linux-kernel@vger.kernel.org, Mimi Zohar <zohar@linux.ibm.com>,
+ James Morris <jmorris@namei.org>, David Howells <dhowells@redhat.com>, "AKASHI,
+ Takahiro" <takahiro.akashi@linaro.org>, linux-security-module@vger.kernel.org,
+ keyrings@vger.kernel.org, linux-crypto@vger.kernel.org,
+ Jessica Yu <jeyu@kernel.org>, linuxppc-dev@lists.ozlabs.org,
+ David Woodhouse <dwmw2@infradead.org>,
+ Thiago Jung Bauermann <bauerman@linux.ibm.com>,
+ "Serge E. Hallyn" <serge@hallyn.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+Hello,
+
+Nothing big in this version. Noteworthy changes are:
+
+1. Fixes for two bugs in ima_appraise_measurements() which were spotted and
+resolved by Mimi Zohar. The changelog points them out.
+
+2. One bugfix in process_measurement() which would cause all files
+appraised with modsig to be measured as well, even if the policy didn't
+request it.
+
+3. Adapted to work with per policy rule template formats.
+
+Plus small cosmetic changes in some places. The changelog has the details.
+
+This has been tested with signed modules and with signed kernels loaded via
+kexec_file_load().
+
+Many thanks to Mimi Zohar for her help with the development of this patch
+series.
+
+The patches apply on today's linux-integrity/next-queued-testing.
+
+Original cover letter:
+
+On the OpenPOWER platform, secure boot and trusted boot are being
+implemented using IMA for taking measurements and verifying signatures.
+Since the kernel image on Power servers is an ELF binary, kernels are
+signed using the scripts/sign-file tool and thus use the same signature
+format as signed kernel modules.
+
+This patch series adds support in IMA for verifying those signatures.
+It adds flexibility to OpenPOWER secure boot, because it allows it to boot
+kernels with the signature appended to them as well as kernels where the
+signature is stored in the IMA extended attribute.
+
+Changes since v10:
+
+- Patch "MODSIGN: Export module signature definitions"
+  - Moved config MODULE_SIG_FORMAT definition before its use. Suggested by
+    Mimi Zohar.
+  - Added missing kerneldoc for @name parameter. Suggested by Mimi Zohar.
+
+- Patch "ima: Implement support for module-style appended signatures"
+  - Bugfix: don't check status variable when deciding whether to verify
+    modsig in ima_appraise_measurement(). Suggested by Mimi Zohar.
+  - Bugfix: verify the modsig in ima_appraise_measurement() if the xattr
+    contains a digest. Suggested by Mimi Zohar.
+
+- Patch "ima: Define ima-modsig template"
+  - Renamed ima_modsig_serialize() to ima_get_raw_modsig().
+  - Renamed check_current_template_modsig() to check_template_modsig().
+  - Fixed outdated comment in ima_eventmodsig_init(). Suggested by Mimi
+    Zohar.
+  - Check either the global or the per-rule template when an appraisal rule
+    allows modsig. Suggested by Mimi Zohar.
+
+- Patch "ima: Store the measurement again when appraising a modsig"
+  - Bugfix: Only re-measure file containing modsig if it was measured
+    before.
+  - Check for modsig-related fields in the template_desc obtained in
+    process_measurement() which can be a per-rule template. Suggested by Mimi
+    Zohar.
+
+- Patch "ima: Allow template= option for appraise rules as well"
+  - New patch. Suggested by Mimi Zohar.
+
+Changes since v9:
+
+- Patch "MODSIGN: Export module signature definitions"
+  - Moved mod_check_sig() to a new file so that CONFIG_IMA_APPRAISE_MODSIG
+    doesn't have to depend on CONFIG_MODULES.
+  - Changed scripts/Makefile to build sign-file if CONFIG_MODULE_SIG_FORMAT
+    is set.
+  - Removed Mimi's Reviewed-by because of the changes in this version.
+
+- Patch "PKCS#7: Refactor verify_pkcs7_signature()"
+  - Don't add function pkcs7_get_message_sig() anymore, since it's not
+    needed in the current version.
+
+- Patch "PKCS#7: Introduce pkcs7_get_digest()"
+  - Changed 'len' argument from 'u8 *' to 'u32 *'.
+  - Added 'hash_algo' argument to obtain the algo used for the digest.
+  - Don't check whether 'buf', 'len' and 'hash_algo' output arguments are NULL,
+    since the function's only caller always sets them.
+  - Removed Mimi's Reviewed-by because of the changes in this version.
+
+- Patch "integrity: Introduce asymmetric_sig_has_known_key()"
+  - Dropped.
+
+- Patch "integrity: Introduce integrity_keyring_from_id"
+  - Squashed into "ima: Implement support for module-style appended signatures"
+  - Changed integrity_keyring_from_id() to a static function (suggested by Mimi
+    Zohar).
+
+- Patch "ima: Introduce is_signed()"
+  - Dropped.
+
+- Patch "ima: Export func_tokens"
+  - Squashed into "ima: Implement support for module-style appended signatures"
+
+- Patch "ima: Use designated initializers for struct ima_event_data"
+  - New patch.
+
+- Patch "ima: Factor xattr_verify() out of ima_appraise_measurement()"
+  - New patch.
+
+- Patch "ima: Implement support for module-style appended signatures"
+  - Renamed 'struct modsig_hdr' to 'struct modsig'.
+  - Added integrity_modsig_verify() to integrity/digsig.c so that it's not
+    necessary to export integrity_keyring_from_id() (Suggested by Mimi Zohar).
+  - Don't add functions ima_xattr_sig_known_key() and
+    modsig_has_known_key() since they're not necessary anymore.
+  - Added modsig argument to ima_appraise_measurement().
+  - Verify modsig in a separate function called by ima_appraise_measurement().
+  - Renamed ima_read_collect_modsig() to ima_read_modsig(), with a separate
+    collect function added in patch "ima: Collect modsig" (suggested by Mimi
+    Zohar).
+  - In ima_read_modsig(), moved code saving of raw PKCS7 data to 'struct
+    modsig' to patch "ima: Collect modsig".
+  - In ima_read_modsig(), moved all parts related to the modsig hash to
+    patch "ima: Collect modsig".
+  - In ima_read_modsig(), don't check if the buf pointer is NULL since it's
+    never supposed to happen.
+  - Renamed ima_free_xattr_data() to ima_free_modsig().
+  - No need to check for modsig in ima_read_xattr() and
+    ima_inode_set_xattr() anymore.
+  - In ima_modsig_verify(), don't check if the modsig pointer is NULL since
+    it's not supposed to happen.
+  - Don't define IMA_MODSIG element in enum evm_ima_xattr_type.
+
+- Patch "ima: Collect modsig"
+  - New patch.
+
+- Patch "ima: Define ima-modsig template"
+  - Patch renamed from "ima: Add new "d-sig" template field"
+  - Renamed 'd-sig' template field to 'd-modsig'.
+  - Added 'modsig' template field.
+  - Added 'ima-modsig' defined template descriptor.
+  - Renamed ima_modsig_serialize_data() to ima_modsig_serialize().
+  - Renamed ima_get_modsig_hash() to ima_get_modsig_digest(). Also the
+    function is a lot simpler now since what it used to do is now done in
+    ima_collect_modsig() and pkcs7_get_digest().
+  - Added check for failed modsig collection in ima_eventdigest_modsig_init().
+  - Added modsig argument to ima_store_measurement().
+  - Added 'modsig' field to struct ima_event_data.
+  - Removed check for modsig == NULL in ima_get_modsig_digest() and in
+    ima_modsig_serialize_data() since their callers already performs that
+    check.
+  - Moved check_current_template_modsig() to this patch, previously was in
+    "ima: Store the measurement again when appraising a modsig".
+
+- Patch "ima: Store the measurement again when appraising a modsig"
+  - Renamed ima_template_has_sig() to ima_template_has_modsig().
+  - Added a change to ima_collect_measurement(), making it to call
+    ima_collect_modsig() even if IMA_COLLECT is set in iint->flags.
+  - Removed IMA_READ_MEASURE flag.
+  - Renamed template_has_sig global variable to template_has_modsig.
+  - Renamed find_sig_in_template() to find_modsig_in_template().
 
 
-Le 10/06/2019 à 05:08, Nicholas Piggin a écrit :
-> __ioremap_at error handling is wonky, it requires caller to clean up
-> after it. Implement a helper that does the map and error cleanup and
-> remove the requirement from the caller.
-> 
-> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
-> ---
-> 
-> This series is a different approach to the problem, using the generic
-> ioremap_page_range directly which reduces added code, and moves
-> the radix specific code into radix files. Thanks to Christophe for
-> pointing out various problems with the previous patch.
-> 
->   arch/powerpc/mm/pgtable_64.c | 27 ++++++++++++++++++++-------
->   1 file changed, 20 insertions(+), 7 deletions(-)
-> 
-> diff --git a/arch/powerpc/mm/pgtable_64.c b/arch/powerpc/mm/pgtable_64.c
-> index d2d976ff8a0e..6bd3660388aa 100644
-> --- a/arch/powerpc/mm/pgtable_64.c
-> +++ b/arch/powerpc/mm/pgtable_64.c
-> @@ -108,14 +108,30 @@ unsigned long ioremap_bot;
->   unsigned long ioremap_bot = IOREMAP_BASE;
->   #endif
->   
-> +static int ioremap_range(unsigned long ea, phys_addr_t pa, unsigned long size, pgprot_t prot, int nid)
-> +{
-> +	unsigned long i;
-> +
-> +	for (i = 0; i < size; i += PAGE_SIZE) {
-> +		int err = map_kernel_page(ea + i, pa + i, prot);
+Thiago Jung Bauermann (13):
+  MODSIGN: Export module signature definitions
+  PKCS#7: Refactor verify_pkcs7_signature()
+  PKCS#7: Introduce pkcs7_get_digest()
+  integrity: Introduce struct evm_xattr
+  integrity: Select CONFIG_KEYS instead of depending on it
+  ima: Use designated initializers for struct ima_event_data
+  ima: Add modsig appraise_type option for module-style appended
+    signatures
+  ima: Factor xattr_verify() out of ima_appraise_measurement()
+  ima: Implement support for module-style appended signatures
+  ima: Collect modsig
+  ima: Define ima-modsig template
+  ima: Store the measurement again when appraising a modsig
+  ima: Allow template= option for appraise rules as well
 
-Missing a blank line
+ Documentation/ABI/testing/ima_policy      |   6 +-
+ Documentation/security/IMA-templates.rst  |   7 +-
+ certs/system_keyring.c                    |  61 +++++--
+ crypto/asymmetric_keys/pkcs7_verify.c     |  33 ++++
+ include/crypto/pkcs7.h                    |   4 +
+ include/linux/module.h                    |   3 -
+ include/linux/module_signature.h          |  44 +++++
+ include/linux/verification.h              |  10 ++
+ init/Kconfig                              |   6 +-
+ kernel/Makefile                           |   1 +
+ kernel/module.c                           |   1 +
+ kernel/module_signature.c                 |  46 +++++
+ kernel/module_signing.c                   |  56 +-----
+ scripts/Makefile                          |   2 +-
+ security/integrity/Kconfig                |   2 +-
+ security/integrity/digsig.c               |  43 ++++-
+ security/integrity/evm/evm_main.c         |   8 +-
+ security/integrity/ima/Kconfig            |  13 ++
+ security/integrity/ima/Makefile           |   1 +
+ security/integrity/ima/ima.h              |  60 ++++++-
+ security/integrity/ima/ima_api.c          |  34 +++-
+ security/integrity/ima/ima_appraise.c     | 199 ++++++++++++++--------
+ security/integrity/ima/ima_init.c         |   4 +-
+ security/integrity/ima/ima_main.c         |  24 ++-
+ security/integrity/ima/ima_modsig.c       | 169 ++++++++++++++++++
+ security/integrity/ima/ima_policy.c       |  68 +++++++-
+ security/integrity/ima/ima_template.c     |  26 ++-
+ security/integrity/ima/ima_template_lib.c |  60 ++++++-
+ security/integrity/ima/ima_template_lib.h |   4 +
+ security/integrity/integrity.h            |  26 +++
+ 30 files changed, 840 insertions(+), 181 deletions(-)
+ create mode 100644 include/linux/module_signature.h
+ create mode 100644 kernel/module_signature.c
+ create mode 100644 security/integrity/ima/ima_modsig.c
 
-> +		if (err) {
-
-I'd have done the following to reduce indentation depth
-
-		if (!err)
-			continue
-
-> +			if (slab_is_available())
-> +				unmap_kernel_range(ea, size);
-
-Shouldn't it be unmap_kernel_range(ea, i) ?
-
-Christophe
-
-> +			else
-> +				WARN_ON_ONCE(1); /* Should clean up */
-> +			return err;
-> +		}
-> +	}
-> +
-> +	return 0;
-> +}
-> +
->   /**
->    * __ioremap_at - Low level function to establish the page tables
->    *                for an IO mapping
->    */
->   void __iomem *__ioremap_at(phys_addr_t pa, void *ea, unsigned long size, pgprot_t prot)
->   {
-> -	unsigned long i;
-> -
->   	/* We don't support the 4K PFN hack with ioremap */
->   	if (pgprot_val(prot) & H_PAGE_4K_PFN)
->   		return NULL;
-> @@ -129,9 +145,8 @@ void __iomem *__ioremap_at(phys_addr_t pa, void *ea, unsigned long size, pgprot_
->   	WARN_ON(((unsigned long)ea) & ~PAGE_MASK);
->   	WARN_ON(size & ~PAGE_MASK);
->   
-> -	for (i = 0; i < size; i += PAGE_SIZE)
-> -		if (map_kernel_page((unsigned long)ea + i, pa + i, prot))
-> -			return NULL;
-> +	if (ioremap_range((unsigned long)ea, pa, size, prot, NUMA_NO_NODE))
-> +		return NULL;
->   
->   	return (void __iomem *)ea;
->   }
-> @@ -182,8 +197,6 @@ void __iomem * __ioremap_caller(phys_addr_t addr, unsigned long size,
->   
->   		area->phys_addr = paligned;
->   		ret = __ioremap_at(paligned, area->addr, size, prot);
-> -		if (!ret)
-> -			vunmap(area->addr);
->   	} else {
->   		ret = __ioremap_at(paligned, (void *)ioremap_bot, size, prot);
->   		if (ret)
-> 
