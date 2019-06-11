@@ -2,61 +2,81 @@ Return-Path: <SRS0=3S3E=UK=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-13.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CD1F0C4321A
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Jun 2019 01:51:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9F85AC4321B
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Jun 2019 01:56:38 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 177ED20652
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Jun 2019 01:51:17 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 177ED20652
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
+	by mail.kernel.org (Postfix) with ESMTPS id DB9342086D
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Jun 2019 01:56:37 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=axtens.net header.i=@axtens.net header.b="dQpPZ6wo"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DB9342086D
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=axtens.net
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45NCdv4pxPzDqS2
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Jun 2019 11:51:15 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45NCm32PgczDqS2
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Jun 2019 11:56:35 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=kaod.org
- (client-ip=46.105.36.150; helo=17.mo6.mail-out.ovh.net;
- envelope-from=clg@kaod.org; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=axtens.net
+ (client-ip=2607:f8b0:4864:20::441; helo=mail-pf1-x441.google.com;
+ envelope-from=dja@axtens.net; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=kaod.org
-X-Greylist: delayed 28802 seconds by postgrey-1.36 at bilbo;
- Tue, 11 Jun 2019 11:49:09 AEST
-Received: from 17.mo6.mail-out.ovh.net (17.mo6.mail-out.ovh.net
- [46.105.36.150])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ dmarc=none (p=none dis=none) header.from=axtens.net
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=axtens.net header.i=@axtens.net header.b="dQpPZ6wo"; 
+ dkim-atps=neutral
+Received: from mail-pf1-x441.google.com (mail-pf1-x441.google.com
+ [IPv6:2607:f8b0:4864:20::441])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45NCbT20TSzDqR1
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Jun 2019 11:49:04 +1000 (AEST)
-Received: from player687.ha.ovh.net (unknown [10.108.57.139])
- by mo6.mail-out.ovh.net (Postfix) with ESMTP id 1DCEF1CF451
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Jun 2019 19:31:33 +0200 (CEST)
-Received: from kaod.org (lfbn-1-10649-41.w90-89.abo.wanadoo.fr [90.89.235.41])
- (Authenticated sender: clg@kaod.org)
- by player687.ha.ovh.net (Postfix) with ESMTPSA id 789E26A33C0D;
- Mon, 10 Jun 2019 17:31:30 +0000 (UTC)
-Subject: Re: [PATCH v2] powerpc: Add force enable of DAWR on P9 option
-To: Michael Neuling <mikey@neuling.org>, mpe@ellerman.id.au
-References: <20190401060312.22670-1-mikey@neuling.org>
-From: =?UTF-8?Q?C=c3=a9dric_Le_Goater?= <clg@kaod.org>
-Message-ID: <68f4f99d-4bb7-7d25-1e68-96c65dfbfbe9@kaod.org>
-Date: Mon, 10 Jun 2019 19:31:28 +0200
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
- Thunderbird/60.7.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45NCjp6rYfzDqJC
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Jun 2019 11:54:37 +1000 (AEST)
+Received: by mail-pf1-x441.google.com with SMTP id 19so5515435pfa.4
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Jun 2019 18:54:37 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=axtens.net; s=google;
+ h=from:to:cc:subject:date:message-id:mime-version
+ :content-transfer-encoding;
+ bh=d8vqyEfyEGXEarVNNYpCOFtLHlqzQ7o7fyj/liwhzuE=;
+ b=dQpPZ6woCtcySsrf4Ul24GN4v7BttX0OsyBXheASptYvWUSyDbA8NWCGKPrtzLqrrv
+ l7K8qC2z/2pi73CIZUzt9wGWtnEYd8AlZiYKTJWC787q4ePdDEMTa8c4vEX7IO97tRxm
+ +3EMgB0ZMLZh1elTgLedz+xdXlx53qs8ajD7M=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+ :content-transfer-encoding;
+ bh=d8vqyEfyEGXEarVNNYpCOFtLHlqzQ7o7fyj/liwhzuE=;
+ b=qnU2ex6Y9pEyPKBGHSQPZe/xrogVHQgtgN6daszjjpTvAP/UnZnzd12wEMkFwSwrm8
+ iwsIWRrd7M47WGXQ6ghtDyLKe0+KA9n6GcPGGYajC/X2QnU6cd9XMOMqRjhrxL7cQMqF
+ kRqOt8eMPp6V+W8iH1eAWzSI2lgYg0olzYo4WCwfPOIFamVPH/+gYPlSjtYH2bkoy4n7
+ U6qqkeVGB8/RbN4VLKtpNzGaB96pnXkaPNDwxncvQlOUTIoVnJuZR8pNv2XR9iA7igKB
+ vn3A7jSRygIq21GKISA4Ji/QkwR0bCoLQfEPJqtIkeIv5yq2epSObvxfN5JrtS55p5A9
+ ev5Q==
+X-Gm-Message-State: APjAAAW/LaW0CZt4wUDSNCzZ0fswalnuLznS3RA4VqHyjZ9lBnHioIef
+ TIr4T/QDZTJ1HdOdF+H1f6m/Jg==
+X-Google-Smtp-Source: APXvYqw3WSeugZDuLtsfP733puLMUeQvH9dbPzsXTHy2ldDDcutOiW/unPP4BCv/v+BIqhRKFY58ig==
+X-Received: by 2002:a65:6284:: with SMTP id f4mr18441480pgv.14.1560218076066; 
+ Mon, 10 Jun 2019 18:54:36 -0700 (PDT)
+Received: from localhost (ppp167-251-205.static.internode.on.net.
+ [59.167.251.205])
+ by smtp.gmail.com with ESMTPSA id b26sm7741233pfo.129.2019.06.10.18.54.34
+ (version=TLS1_3 cipher=AEAD-AES256-GCM-SHA384 bits=256/256);
+ Mon, 10 Jun 2019 18:54:35 -0700 (PDT)
+From: Daniel Axtens <dja@axtens.net>
+To: mpe@ellerman.id.au, ebiggers@kernel.org, linux-crypto@vger.kernel.org,
+ Herbert Xu <herbert@gondor.apana.org.au>
+Subject: [PATCH] crypto: vmx - Document CTR mode counter width quirks
+Date: Tue, 11 Jun 2019 11:54:31 +1000
+Message-Id: <20190611015431.26772-1-dja@axtens.net>
+X-Mailer: git-send-email 2.20.1
 MIME-Version: 1.0
-In-Reply-To: <20190401060312.22670-1-mikey@neuling.org>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
-X-Ovh-Tracer-Id: 10661427696369044271
-X-VR-SPAMSTATE: OK
-X-VR-SPAMSCORE: 0
-X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgeduuddrudehvddgudduhecutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfqggfjpdevjffgvefmvefgnecuuegrihhlohhuthemucehtddtnecu
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -68,64 +88,72 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, Cameron Kaiser <spectre@floodgap.com>
+Cc: leo.barbosa@canonical.com, Stephan Mueller <smueller@chronox.de>,
+ nayna@linux.ibm.com, omosnacek@gmail.com, leitao@debian.org,
+ pfsmorigo@gmail.com, marcelo.cerri@canonical.com, gcwilson@linux.ibm.com,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hello Michael,
+The CTR code comes from OpenSSL, where it does a 32-bit counter.
+The kernel has a 128-bit counter. This difference has lead to
+issues.
 
+Document it.
 
-> --- a/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-> +++ b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-> @@ -822,18 +822,21 @@ END_FTR_SECTION_IFCLR(CPU_FTR_ARCH_207S)
->  	mtspr	SPRN_IAMR, r5
->  	mtspr	SPRN_PSPB, r6
->  	mtspr	SPRN_FSCR, r7
-> -	ld	r5, VCPU_DAWR(r4)
-> -	ld	r6, VCPU_DAWRX(r4)
-> -	ld	r7, VCPU_CIABR(r4)
-> -	ld	r8, VCPU_TAR(r4)
->  	/*
->  	 * Handle broken DAWR case by not writing it. This means we
->  	 * can still store the DAWR register for migration.
->  	 */
-> -BEGIN_FTR_SECTION
-> +	LOAD_REG_ADDR(r5, dawr_force_enable)
-> +	lbz	r5, 0(r5)
-> +	cmpdi	r5, 0
-> +	beq	1f
-> +	ld	r5, VCPU_DAWR(r4)
-> +	ld	r6, VCPU_DAWRX(r4)
->  	mtspr	SPRN_DAWR, r5
->  	mtspr	SPRN_DAWRX, r6
-> -END_FTR_SECTION_IFSET(CPU_FTR_DAWR)
-> +1:
-> +	ld	r7, VCPU_CIABR(r4)
-> +	ld	r8, VCPU_TAR(r4)
->  	mtspr	SPRN_CIABR, r7
->  	mtspr	SPRN_TAR, r8
->  	ld	r5, VCPU_IC(r4)
-> @@ -2513,11 +2516,11 @@ END_FTR_SECTION_IFSET(CPU_FTR_ARCH_207S)
->  	blr
->  
->  2:
-> -BEGIN_FTR_SECTION
-> -	/* POWER9 with disabled DAWR */
-> +	LOAD_REG_ADDR(r11, dawr_force_enable)
-> +	lbz	r11, 0(r11)
-> +	cmpdi	r11, 0
->  	li	r3, H_HARDWARE
-> -	blr
-> -END_FTR_SECTION_IFCLR(CPU_FTR_DAWR)
-> +	beqlr
+Signed-off-by: Daniel Axtens <dja@axtens.net>
+---
+ drivers/crypto/vmx/aesp8-ppc.pl | 22 ++++++++++++++++++++--
+ 1 file changed, 20 insertions(+), 2 deletions(-)
 
-Why is this a 'beqlr' ? Shouldn't it be a blr ? 
-
-C.
-
->  	/* Emulate H_SET_DABR/X on P8 for the sake of compat mode guests */
->  	rlwimi	r5, r4, 5, DAWRX_DR | DAWRX_DW
->  	rlwimi	r5, r4, 2, DAWRX_WT
-> 
+diff --git a/drivers/crypto/vmx/aesp8-ppc.pl b/drivers/crypto/vmx/aesp8-ppc.pl
+index 9c6b5c1d6a1a..db874367b602 100644
+--- a/drivers/crypto/vmx/aesp8-ppc.pl
++++ b/drivers/crypto/vmx/aesp8-ppc.pl
+@@ -1286,6 +1286,24 @@ ___
+ 
+ #########################################################################
+ {{{	# CTR procedure[s]						#
++
++####################### WARNING: Here be dragons! #######################
++#
++# This code is written as 'ctr32', based on a 32-bit counter used
++# upstream. The kernel does *not* use a 32-bit counter. The kernel uses
++# a 128-bit counter.
++#
++# This leads to subtle changes from the upstream code: the counter
++# is incremented with vaddu_q_m rather than vaddu_w_m. This occurs in
++# both the bulk (8 blocks at a time) path, and in the individual block
++# path. Be aware of this when doing updates.
++#
++# See:
++# 1d4aa0b4c181 ("crypto: vmx - Fixing AES-CTR counter bug")
++# 009b30ac7444 ("crypto: vmx - CTR: always increment IV as quadword")
++# https://github.com/openssl/openssl/pull/8942
++#
++#########################################################################
+ my ($inp,$out,$len,$key,$ivp,$x10,$rounds,$idx)=map("r$_",(3..10));
+ my ($rndkey0,$rndkey1,$inout,$tmp)=		map("v$_",(0..3));
+ my ($ivec,$inptail,$inpperm,$outhead,$outperm,$outmask,$keyperm,$one)=
+@@ -1357,7 +1375,7 @@ Loop_ctr32_enc:
+ 	addi		$idx,$idx,16
+ 	bdnz		Loop_ctr32_enc
+ 
+-	vadduqm		$ivec,$ivec,$one
++	vadduqm		$ivec,$ivec,$one	# Kernel change for 128-bit
+ 	 vmr		$dat,$inptail
+ 	 lvx		$inptail,0,$inp
+ 	 addi		$inp,$inp,16
+@@ -1501,7 +1519,7 @@ Load_ctr32_enc_key:
+ 	$SHL		$len,$len,4
+ 
+ 	vadduqm		$out1,$ivec,$one	# counter values ...
+-	vadduqm		$out2,$ivec,$two
++	vadduqm		$out2,$ivec,$two	# (do all ctr adds as 128-bit)
+ 	vxor		$out0,$ivec,$rndkey0	# ... xored with rndkey[0]
+ 	 le?li		$idx,8
+ 	vadduqm		$out3,$out1,$two
+-- 
+2.20.1
 
