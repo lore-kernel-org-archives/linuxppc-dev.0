@@ -6,91 +6,90 @@ X-Spam-Status: No, score=-8.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
 	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C6A6EC4321A
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Jun 2019 17:12:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7C692C4321A
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Jun 2019 17:14:16 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 560762086D
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Jun 2019 17:12:00 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 560762086D
+	by mail.kernel.org (Postfix) with ESMTPS id 092FA2086D
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Jun 2019 17:14:15 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 092FA2086D
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45Nc4G1gxszDqvh
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Jun 2019 03:11:58 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+	by lists.ozlabs.org (Postfix) with ESMTP id 45Nc6r0HdSzDqgG
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Jun 2019 03:14:12 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45Nbxv4xYdzDqrM
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Jun 2019 03:06:27 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45Nby25PRczDqsd
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Jun 2019 03:06:34 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=linux.ibm.com
 Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 45Nbxv1Jx0z8t60
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Jun 2019 03:06:27 +1000 (AEST)
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 45Nby21hS9z8vHY
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Jun 2019 03:06:34 +1000 (AEST)
 Received: by ozlabs.org (Postfix)
- id 45Nbxv0Phnz9sNf; Wed, 12 Jun 2019 03:06:27 +1000 (AEST)
+ id 45Nby16pn0z9sNf; Wed, 12 Jun 2019 03:06:33 +1000 (AEST)
 Authentication-Results: ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
- (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
+ (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
  envelope-from=nayna@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: ozlabs.org;
  dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 45Nbxt2T1Hz9sDB
- for <linuxppc-dev@ozlabs.org>; Wed, 12 Jun 2019 03:06:26 +1000 (AEST)
-Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x5BH2ifS104795
- for <linuxppc-dev@ozlabs.org>; Tue, 11 Jun 2019 13:06:24 -0400
-Received: from e06smtp04.uk.ibm.com (e06smtp04.uk.ibm.com [195.75.94.100])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2t2eqg51tt-1
+ by ozlabs.org (Postfix) with ESMTPS id 45Nby112Rfz9s1c
+ for <linuxppc-dev@ozlabs.org>; Wed, 12 Jun 2019 03:06:32 +1000 (AEST)
+Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
+ x5BH2jJW106290
+ for <linuxppc-dev@ozlabs.org>; Tue, 11 Jun 2019 13:06:31 -0400
+Received: from e06smtp07.uk.ibm.com (e06smtp07.uk.ibm.com [195.75.94.103])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2t2eug4wuv-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@ozlabs.org>; Tue, 11 Jun 2019 13:06:23 -0400
+ for <linuxppc-dev@ozlabs.org>; Tue, 11 Jun 2019 13:06:30 -0400
 Received: from localhost
- by e06smtp04.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp07.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <nayna@linux.ibm.com>;
- Tue, 11 Jun 2019 18:06:21 +0100
+ Tue, 11 Jun 2019 18:06:28 +0100
 Received: from b06avi18626390.portsmouth.uk.ibm.com (9.149.26.192)
- by e06smtp04.uk.ibm.com (192.168.101.134) with IBM ESMTP SMTP Gateway:
+ by e06smtp07.uk.ibm.com (192.168.101.137) with IBM ESMTP SMTP Gateway:
  Authorized Use Only! Violators will be prosecuted; 
  (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Tue, 11 Jun 2019 18:06:17 +0100
+ Tue, 11 Jun 2019 18:06:24 +0100
 Received: from d06av25.portsmouth.uk.ibm.com (d06av25.portsmouth.uk.ibm.com
  [9.149.105.61])
  by b06avi18626390.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP
- id x5BH68RR33292564
+ id x5BH6FWg26214754
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Tue, 11 Jun 2019 17:06:08 GMT
+ Tue, 11 Jun 2019 17:06:16 GMT
 Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id A088911C04A;
- Tue, 11 Jun 2019 17:06:15 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id AD24D11C05E;
+ Tue, 11 Jun 2019 17:06:22 +0000 (GMT)
 Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 2DC5D11C058;
- Tue, 11 Jun 2019 17:06:13 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 23A1011C04C;
+ Tue, 11 Jun 2019 17:06:20 +0000 (GMT)
 Received: from swastik.ibm.com (unknown [9.80.199.191])
  by d06av25.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Tue, 11 Jun 2019 17:06:12 +0000 (GMT)
+ Tue, 11 Jun 2019 17:06:19 +0000 (GMT)
 From: Nayna Jain <nayna@linux.ibm.com>
 To: linuxppc-dev@ozlabs.org, linux-efi@vger.kernel.org,
  linux-integrity@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH v4 1/3] powerpc/powernv: Add OPAL API interface to get
- secureboot state
-Date: Tue, 11 Jun 2019 13:06:03 -0400
+Subject: [PATCH v4 3/3] powerpc: Add support to initialize ima policy rules
+Date: Tue, 11 Jun 2019 13:06:05 -0400
 X-Mailer: git-send-email 1.8.3.1
 In-Reply-To: <1560272765-5768-1-git-send-email-nayna@linux.ibm.com>
 References: <1560272765-5768-1-git-send-email-nayna@linux.ibm.com>
 X-TM-AS-GCONF: 00
-x-cbid: 19061117-0016-0000-0000-000002883096
+x-cbid: 19061117-0028-0000-0000-0000037967E0
 X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19061117-0017-0000-0000-000032E5608B
-Message-Id: <1560272765-5768-2-git-send-email-nayna@linux.ibm.com>
+x-cbparentid: 19061117-0029-0000-0000-0000243957E4
+Message-Id: <1560272765-5768-4-git-send-email-nayna@linux.ibm.com>
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
  definitions=2019-06-11_08:, , signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
@@ -119,226 +118,141 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Claudio Carvalho <cclaudio@linux.ibm.com>
+PowerNV secure boot relies on the kernel IMA security subsystem to
+perform the OS kernel image signature verification. Since each secure
+boot mode has different IMA policy requirements, dynamic definition of
+the policy rules based on the runtime secure boot mode of the system is
+required. On systems that support secure boot, but have it disabled,
+only measurement policy rules of the kernel image and modules are
+defined.
 
-The X.509 certificates trusted by the platform and other information
-required to secure boot the OS kernel are wrapped in secure variables,
-which are controlled by OPAL.
+This patch defines the arch-specific implementation to retrieve the
+secure boot mode of the system and accordingly configures the IMA policy
+rules.
 
-This patch adds support to read OPAL secure variables through
-OPAL_SECVAR_GET call. It returns the metadata and data for a given secure
-variable based on the unique key.
+This patch provides arch-specific IMA policies if PPC_SECURE_BOOT
+config is enabled.
 
-Since OPAL can support different types of backend which can vary in the
-variable interpretation, a new OPAL API call named OPAL_SECVAR_BACKEND, is
-added to retrieve the supported backend version. This helps the consumer
-to know how to interpret the variable.
-
-This support can be enabled using CONFIG_OPAL_SECVAR
-
-Signed-off-by: Claudio Carvalho <cclaudio@linux.ibm.com>
 Signed-off-by: Nayna Jain <nayna@linux.ibm.com>
 ---
-This patch depends on a new OPAL call that is being added to skiboot.
-The patch set that implements the new call has been posted to
-https://patchwork.ozlabs.org/project/skiboot/list/?series=112868
+ arch/powerpc/Kconfig           | 14 +++++++++
+ arch/powerpc/kernel/Makefile   |  1 +
+ arch/powerpc/kernel/ima_arch.c | 54 ++++++++++++++++++++++++++++++++++
+ include/linux/ima.h            |  3 +-
+ 4 files changed, 71 insertions(+), 1 deletion(-)
+ create mode 100644 arch/powerpc/kernel/ima_arch.c
 
- arch/powerpc/include/asm/opal-api.h          |  4 +-
- arch/powerpc/include/asm/opal-secvar.h       | 23 ++++++
- arch/powerpc/include/asm/opal.h              |  6 ++
- arch/powerpc/platforms/powernv/Kconfig       |  6 ++
- arch/powerpc/platforms/powernv/Makefile      |  1 +
- arch/powerpc/platforms/powernv/opal-call.c   |  2 +
- arch/powerpc/platforms/powernv/opal-secvar.c | 85 ++++++++++++++++++++
- 7 files changed, 126 insertions(+), 1 deletion(-)
- create mode 100644 arch/powerpc/include/asm/opal-secvar.h
- create mode 100644 arch/powerpc/platforms/powernv/opal-secvar.c
-
-diff --git a/arch/powerpc/include/asm/opal-api.h b/arch/powerpc/include/asm/opal-api.h
-index e1577cfa7186..a505e669b4b6 100644
---- a/arch/powerpc/include/asm/opal-api.h
-+++ b/arch/powerpc/include/asm/opal-api.h
-@@ -212,7 +212,9 @@
- #define OPAL_HANDLE_HMI2			166
- #define	OPAL_NX_COPROC_INIT			167
- #define OPAL_XIVE_GET_VP_STATE			170
--#define OPAL_LAST				170
-+#define OPAL_SECVAR_GET                         173
-+#define OPAL_SECVAR_BACKEND                     177
-+#define OPAL_LAST				177
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index 8c1c636308c8..9de77bb14f54 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -902,6 +902,20 @@ config PPC_MEM_KEYS
  
- #define QUIESCE_HOLD			1 /* Spin all calls at entry */
- #define QUIESCE_REJECT			2 /* Fail all calls with OPAL_BUSY */
-diff --git a/arch/powerpc/include/asm/opal-secvar.h b/arch/powerpc/include/asm/opal-secvar.h
-new file mode 100644
-index 000000000000..b677171a0368
---- /dev/null
-+++ b/arch/powerpc/include/asm/opal-secvar.h
-@@ -0,0 +1,23 @@
-+/* SPDX-License-Identifier: GPL-2.0 */
-+/*
-+ * PowerNV definitions for secure variables OPAL API.
-+ *
-+ * Copyright (C) 2019 IBM Corporation
-+ * Author: Claudio Carvalho <cclaudio@linux.ibm.com>
-+ *
-+ */
-+#ifndef OPAL_SECVAR_H
-+#define OPAL_SECVAR_H
-+
-+enum {
-+	BACKEND_NONE = 0,
-+	BACKEND_TC_COMPAT_V1,
-+};
-+
-+extern int opal_get_variable(u8 *key, unsigned long ksize,
-+			     u8 *metadata, unsigned long *mdsize,
-+			     u8 *data, unsigned long *dsize);
-+
-+extern int opal_variable_version(unsigned long *backend);
-+
-+#endif
-diff --git a/arch/powerpc/include/asm/opal.h b/arch/powerpc/include/asm/opal.h
-index 4cc37e708bc7..57d2c2356eda 100644
---- a/arch/powerpc/include/asm/opal.h
-+++ b/arch/powerpc/include/asm/opal.h
-@@ -394,6 +394,12 @@ void opal_powercap_init(void);
- void opal_psr_init(void);
- void opal_sensor_groups_init(void);
+ 	  If unsure, say y.
  
-+extern int opal_secvar_get(uint64_t k_key, uint64_t k_key_len,
-+			   uint64_t k_metadata, uint64_t k_metadata_size,
-+			   uint64_t k_data, uint64_t k_data_size);
-+
-+extern int opal_secvar_backend(uint64_t k_backend);
-+
- #endif /* __ASSEMBLY__ */
- 
- #endif /* _ASM_POWERPC_OPAL_H */
-diff --git a/arch/powerpc/platforms/powernv/Kconfig b/arch/powerpc/platforms/powernv/Kconfig
-index 850eee860cf2..65b060539b5c 100644
---- a/arch/powerpc/platforms/powernv/Kconfig
-+++ b/arch/powerpc/platforms/powernv/Kconfig
-@@ -47,3 +47,9 @@ config PPC_VAS
- 	  VAS adapters are found in POWER9 based systems.
- 
- 	  If unsure, say N.
-+
-+config OPAL_SECVAR
-+	bool "OPAL Secure Variables"
-+	depends on PPC_POWERNV
++config PPC_SECURE_BOOT
++	prompt "Enable PowerPC Secure Boot"
++	bool
++	default n
++	depends on PPC64
++	depends on OPAL_SECVAR
++	depends on IMA
++	depends on IMA_ARCH_POLICY
 +	help
-+	  This enables the kernel to access OPAL secure variables.
-diff --git a/arch/powerpc/platforms/powernv/Makefile b/arch/powerpc/platforms/powernv/Makefile
-index da2e99efbd04..6651c742e530 100644
---- a/arch/powerpc/platforms/powernv/Makefile
-+++ b/arch/powerpc/platforms/powernv/Makefile
-@@ -16,3 +16,4 @@ obj-$(CONFIG_PERF_EVENTS) += opal-imc.o
- obj-$(CONFIG_PPC_MEMTRACE)	+= memtrace.o
- obj-$(CONFIG_PPC_VAS)	+= vas.o vas-window.o vas-debug.o
- obj-$(CONFIG_OCXL_BASE)	+= ocxl.o
-+obj-$(CONFIG_OPAL_SECVAR) += opal-secvar.o
-diff --git a/arch/powerpc/platforms/powernv/opal-call.c b/arch/powerpc/platforms/powernv/opal-call.c
-index 36c8fa3647a2..0445980f294f 100644
---- a/arch/powerpc/platforms/powernv/opal-call.c
-+++ b/arch/powerpc/platforms/powernv/opal-call.c
-@@ -288,3 +288,5 @@ OPAL_CALL(opal_pci_set_pbcq_tunnel_bar,		OPAL_PCI_SET_PBCQ_TUNNEL_BAR);
- OPAL_CALL(opal_sensor_read_u64,			OPAL_SENSOR_READ_U64);
- OPAL_CALL(opal_sensor_group_enable,		OPAL_SENSOR_GROUP_ENABLE);
- OPAL_CALL(opal_nx_coproc_init,			OPAL_NX_COPROC_INIT);
-+OPAL_CALL(opal_secvar_get,                      OPAL_SECVAR_GET);
-+OPAL_CALL(opal_secvar_backend,                  OPAL_SECVAR_BACKEND);
-diff --git a/arch/powerpc/platforms/powernv/opal-secvar.c b/arch/powerpc/platforms/powernv/opal-secvar.c
++	  Linux on POWER with firmware secure boot enabled needs to define
++	  security policies to extend secure boot to the OS.This config
++	  allows user to enable OS Secure Boot on PowerPC systems that
++	  have firmware secure boot support.
++
+ endmenu
+ 
+ config ISA_DMA_API
+diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
+index 0ea6c4aa3a20..75c929b41341 100644
+--- a/arch/powerpc/kernel/Makefile
++++ b/arch/powerpc/kernel/Makefile
+@@ -131,6 +131,7 @@ ifdef CONFIG_IMA
+ obj-y				+= ima_kexec.o
+ endif
+ endif
++obj-$(CONFIG_PPC_SECURE_BOOT)	+= ima_arch.o
+ 
+ obj-$(CONFIG_AUDIT)		+= audit.o
+ obj64-$(CONFIG_AUDIT)		+= compat_audit.o
+diff --git a/arch/powerpc/kernel/ima_arch.c b/arch/powerpc/kernel/ima_arch.c
 new file mode 100644
-index 000000000000..dba441dd5af1
+index 000000000000..1767bf6e6550
 --- /dev/null
-+++ b/arch/powerpc/platforms/powernv/opal-secvar.c
-@@ -0,0 +1,85 @@
++++ b/arch/powerpc/kernel/ima_arch.c
+@@ -0,0 +1,54 @@
 +// SPDX-License-Identifier: GPL-2.0
 +/*
-+ * PowerNV code for secure variables
-+ *
 + * Copyright (C) 2019 IBM Corporation
-+ * Author: Claudio Carvalho <cclaudio@linux.ibm.com>
++ * Author: Nayna Jain <nayna@linux.ibm.com>
 + *
++ * ima_arch.c
++ *      - initialize ima policies for PowerPC Secure Boot
 + */
++
++#include <linux/ima.h>
++#include <asm/secboot.h>
++
++bool arch_ima_get_secureboot(void)
++{
++	bool sb_mode;
++
++	sb_mode = get_powerpc_sb_mode();
++	if (sb_mode)
++		return true;
++	else
++		return false;
++}
 +
 +/*
-+ * The opal wrappers in this file treat the @name, @vendor, and @data
-+ * parameters as little endian blobs.
-+ * @name is a ucs2 string
-+ * @vendor is the vendor GUID. It is converted to LE in the kernel
-+ * @data variable data, which layout may be different for each variable
++ * File signature verification is not needed, include only measurements
 + */
++static const char *const default_arch_rules[] = {
++	"measure func=KEXEC_KERNEL_CHECK template=ima-modsig",
++	"measure func=MODULE_CHECK template=ima-modsig",
++	NULL
++};
 +
-+#define pr_fmt(fmt) "secvar: "fmt
++/* Both file signature verification and measurements are needed */
++static const char *const sb_arch_rules[] = {
++	"measure func=KEXEC_KERNEL_CHECK template=ima-modsig",
++	"measure func=MODULE_CHECK template=ima-modsig",
++	"appraise func=KEXEC_KERNEL_CHECK appraise_type=imasig|modsig template=ima-modsig",
++#if !IS_ENABLED(CONFIG_MODULE_SIG)
++	"appraise func=MODULE_CHECK appraise_type=imasig|modsig template=ima-modsig",
++#endif
++	NULL
++};
 +
-+#include <linux/types.h>
-+#include <asm/opal.h>
-+#include <asm/opal-secvar.h>
-+
-+static bool is_opal_secvar_supported(void)
++/*
++ * On PowerPC, file measurements are to be added to the IMA measurement list
++ * irrespective of the secure boot state of the system. Signature verification
++ * is conditionally enabled based on the secure boot state.
++ */
++const char *const *arch_get_ima_policy(void)
 +{
-+	static bool opal_secvar_supported;
-+	static bool initialized;
-+
-+	if (initialized)
-+		return opal_secvar_supported;
-+
-+	if (!opal_check_token(OPAL_SECVAR_GET)
-+	    || !opal_check_token(OPAL_SECVAR_BACKEND)) {
-+		pr_err("OPAL doesn't support secure variables\n");
-+		opal_secvar_supported = false;
-+	} else {
-+		opal_secvar_supported = true;
-+	}
-+
-+	initialized = true;
-+
-+	return opal_secvar_supported;
++	if (IS_ENABLED(CONFIG_IMA_ARCH_POLICY) && arch_ima_get_secureboot())
++		return sb_arch_rules;
++	return default_arch_rules;
 +}
-+
-+int opal_get_variable(u8 *key, unsigned long ksize, u8 *metadata,
-+		      unsigned long *mdsize, u8 *data, unsigned long *dsize)
-+{
-+	int rc;
-+
-+	if (!is_opal_secvar_supported())
-+		return OPAL_UNSUPPORTED;
-+
-+	if (mdsize)
-+		*mdsize = cpu_to_be64(*mdsize);
-+	if (dsize)
-+		*dsize = cpu_to_be64(*dsize);
-+
-+	rc = opal_secvar_get(__pa(key), ksize, __pa(metadata), __pa(mdsize),
-+			     __pa(data), __pa(dsize));
-+
-+	if (mdsize)
-+		*mdsize = be64_to_cpu(*mdsize);
-+	if (dsize)
-+		*dsize = be64_to_cpu(*dsize);
-+
-+	return rc;
-+}
-+
-+int opal_variable_version(unsigned long *backend)
-+{
-+	int rc;
-+
-+	if (!is_opal_secvar_supported())
-+		return OPAL_UNSUPPORTED;
-+
-+	if (backend)
-+		*backend = cpu_to_be64(*backend);
-+
-+	rc = opal_secvar_backend(__pa(backend));
-+
-+	if (backend)
-+		*backend = be64_to_cpu(*backend);
-+
-+	return rc;
-+}
+diff --git a/include/linux/ima.h b/include/linux/ima.h
+index fd9f7cf4cdf5..a01df076ecae 100644
+--- a/include/linux/ima.h
++++ b/include/linux/ima.h
+@@ -31,7 +31,8 @@ extern void ima_post_path_mknod(struct dentry *dentry);
+ extern void ima_add_kexec_buffer(struct kimage *image);
+ #endif
+ 
+-#if (defined(CONFIG_X86) && defined(CONFIG_EFI)) || defined(CONFIG_S390)
++#if (defined(CONFIG_X86) && defined(CONFIG_EFI)) || defined(CONFIG_S390) \
++	|| defined(CONFIG_PPC_SECURE_BOOT)
+ extern bool arch_ima_get_secureboot(void);
+ extern const char * const *arch_get_ima_policy(void);
+ #else
 -- 
 2.20.1
 
