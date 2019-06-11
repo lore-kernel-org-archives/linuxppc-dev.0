@@ -2,25 +2,26 @@ Return-Path: <SRS0=3S3E=UK=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B1571C4321A
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Jun 2019 16:07:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AEF72C4321A
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Jun 2019 16:09:49 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 35425212F5
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Jun 2019 16:07:49 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 324A72145D
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Jun 2019 16:09:49 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="NooVa7od"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 35425212F5
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="Qsrqx7Gj"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 324A72145D
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45NZfB3PRszDqdW
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Jun 2019 02:07:46 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45NZhW2wtzzDqdp
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Jun 2019 02:09:47 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=none (mailfrom)
  smtp.mailfrom=bombadil.srs.infradead.org (client-ip=2607:7c80:54:e::133;
  helo=bombadil.infradead.org;
@@ -30,38 +31,40 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=infradead.org header.i=@infradead.org
- header.b="NooVa7od"; dkim-atps=neutral
+ header.b="Qsrqx7Gj"; dkim-atps=neutral
 Received: from bombadil.infradead.org (bombadil.infradead.org
  [IPv6:2607:7c80:54:e::133])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45NXkr4TtqzDqcW
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45NXkt1LDkzDqVL
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Jun 2019 00:41:40 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
  d=infradead.org; s=bombadil.20170209; h=Content-Transfer-Encoding:
- MIME-Version:Message-Id:Date:Subject:Cc:To:From:Sender:Reply-To:Content-Type:
- Content-ID:Content-Description:Resent-Date:Resent-From:Resent-Sender:
- Resent-To:Resent-Cc:Resent-Message-ID:In-Reply-To:References:List-Id:
- List-Help:List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
- bh=o2J4Gd6aGMYycQc2Cgd8ykATa6/NVo6qP3SsoSO5AUQ=; b=NooVa7odzLv7IOhiLuJXRzdAT
- 9847NXr6KbmlQQbCdm/roXtU733/1c0TujxJALV/CRskCxkSZJxIjTuvYje4Hu2HIx2/18lsT2IkT
- V4S9ZLfKxOjzNiNdjE9YSFiOAuEFWncLCMqFlld9C8E0tZO1blw/UZUNEDSAKtGyMp1ujFWNiFfe7
- bemGU+fEPeBzJVI3EYWYyNcNlr9PPjI0kHfUCTEX9tUwAnnuaSJSqAOCWqlHSD1idi9GIdvUa4nKM
- oFIEUMzaP5Hxm/4DCKB8Fju5R0z5GUcY9hrj8tNMF/3Z6P45ZzjIK8YKFH6ozHQKYWGLVdntjkdeO
- jfIDBIm1w==;
+ MIME-Version:References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:Sender
+ :Reply-To:Content-Type:Content-ID:Content-Description:Resent-Date:Resent-From
+ :Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:List-Help:
+ List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
+ bh=gzNr8cC+RcaEr7a/7B73Y02JTGGTEGr38/f2ngv8wBc=; b=Qsrqx7Gjl2GC8vf87J1kV0OBS9
+ Tt5zTsC9u5FMT4aBrJhjCtE6a9K5hEj6huEHcTGHIZTp0lPnrD3O3q6Taf6l5zAkrj04NvtpjMFZz
+ QSbVSiRFTFj1K1DWEpoIo8npKLbZp/icZRb4FmghwPVhUl2hQQ3GZ8V/iVwFa0djVedxsNvetvYQ/
+ U8rrAK2RSgtkuzMw1qKgToiMIX3BNteGcXa0JARj45dk/04PT26mlULgR6rFGQSTQUrd9alXQpxPZ
+ v2Ok1HiUy9mTgFSunZi7dGsxAIdFawyIN5trdPG1sAjbfv2nBSw2rK5taBkGiygEsnDU61sdcdRaz
+ phR5Tu6w==;
 Received: from mpp-cp1-natpool-1-037.ethz.ch ([82.130.71.37] helo=localhost)
  by bombadil.infradead.org with esmtpsa (Exim 4.92 #3 (Red Hat Linux))
- id 1hahxS-0005NR-8l; Tue, 11 Jun 2019 14:41:06 +0000
+ id 1hahxZ-0005O7-RH; Tue, 11 Jun 2019 14:41:14 +0000
 From: Christoph Hellwig <hch@lst.de>
 To: Linus Torvalds <torvalds@linux-foundation.org>,
  Paul Burton <paul.burton@mips.com>, James Hogan <jhogan@kernel.org>,
  Yoshinori Sato <ysato@users.sourceforge.jp>, Rich Felker <dalias@libc.org>,
  "David S. Miller" <davem@davemloft.net>
-Subject: switch the remaining architectures to use generic GUP v3
-Date: Tue, 11 Jun 2019 16:40:46 +0200
-Message-Id: <20190611144102.8848-1-hch@lst.de>
+Subject: [PATCH 02/16] mm: simplify gup_fast_permitted
+Date: Tue, 11 Jun 2019 16:40:48 +0200
+Message-Id: <20190611144102.8848-3-hch@lst.de>
 X-Mailer: git-send-email 2.20.1
+In-Reply-To: <20190611144102.8848-1-hch@lst.de>
+References: <20190611144102.8848-1-hch@lst.de>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by
@@ -87,23 +90,111 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi Linus and maintainers,
+Pass in the already calculated end value instead of recomputing it, and
+leave the end > start check in the callers instead of duplicating them
+in the arch code.
 
-below is a series to switch mips, sh and sparc64 to use the generic
-GUP code so that we only have one codebase to touch for further
-improvements to this code.  I don't have hardware for any of these
-architectures, and generally no clue about their page table
-management, so handle with care.
+Signed-off-by: Christoph Hellwig <hch@lst.de>
+---
+ arch/s390/include/asm/pgtable.h   |  8 +-------
+ arch/x86/include/asm/pgtable_64.h |  8 +-------
+ mm/gup.c                          | 17 +++++++----------
+ 3 files changed, 9 insertions(+), 24 deletions(-)
 
-Changes since v2:
- - rebase to mainline to pick up the untagged_addr definition
- - fix the gup range check to be start <= end to catch the 0 length case
- - use pfn based version for the missing pud_page/pgd_page definitions
- - fix a wrong check in the sparc64 version of pte_access_permitted
+diff --git a/arch/s390/include/asm/pgtable.h b/arch/s390/include/asm/pgtable.h
+index 9f0195d5fa16..9b274fcaacb6 100644
+--- a/arch/s390/include/asm/pgtable.h
++++ b/arch/s390/include/asm/pgtable.h
+@@ -1270,14 +1270,8 @@ static inline pte_t *pte_offset(pmd_t *pmd, unsigned long address)
+ #define pte_offset_map(pmd, address) pte_offset_kernel(pmd, address)
+ #define pte_unmap(pte) do { } while (0)
+ 
+-static inline bool gup_fast_permitted(unsigned long start, int nr_pages)
++static inline bool gup_fast_permitted(unsigned long start, unsigned long end)
+ {
+-	unsigned long len, end;
+-
+-	len = (unsigned long) nr_pages << PAGE_SHIFT;
+-	end = start + len;
+-	if (end < start)
+-		return false;
+ 	return end <= current->mm->context.asce_limit;
+ }
+ #define gup_fast_permitted gup_fast_permitted
+diff --git a/arch/x86/include/asm/pgtable_64.h b/arch/x86/include/asm/pgtable_64.h
+index 0bb566315621..4990d26dfc73 100644
+--- a/arch/x86/include/asm/pgtable_64.h
++++ b/arch/x86/include/asm/pgtable_64.h
+@@ -259,14 +259,8 @@ extern void init_extra_mapping_uc(unsigned long phys, unsigned long size);
+ extern void init_extra_mapping_wb(unsigned long phys, unsigned long size);
+ 
+ #define gup_fast_permitted gup_fast_permitted
+-static inline bool gup_fast_permitted(unsigned long start, int nr_pages)
++static inline bool gup_fast_permitted(unsigned long start, unsigned long end)
+ {
+-	unsigned long len, end;
+-
+-	len = (unsigned long)nr_pages << PAGE_SHIFT;
+-	end = start + len;
+-	if (end < start)
+-		return false;
+ 	if (end >> __VIRTUAL_MASK_SHIFT)
+ 		return false;
+ 	return true;
+diff --git a/mm/gup.c b/mm/gup.c
+index 6bb521db67ec..3237f33792e6 100644
+--- a/mm/gup.c
++++ b/mm/gup.c
+@@ -2123,13 +2123,9 @@ static void gup_pgd_range(unsigned long addr, unsigned long end,
+  * Check if it's allowed to use __get_user_pages_fast() for the range, or
+  * we need to fall back to the slow version:
+  */
+-bool gup_fast_permitted(unsigned long start, int nr_pages)
++static bool gup_fast_permitted(unsigned long start, unsigned long end)
+ {
+-	unsigned long len, end;
+-
+-	len = (unsigned long) nr_pages << PAGE_SHIFT;
+-	end = start + len;
+-	return end >= start;
++	return true;
+ }
+ #endif
+ 
+@@ -2150,6 +2146,8 @@ int __get_user_pages_fast(unsigned long start, int nr_pages, int write,
+ 	len = (unsigned long) nr_pages << PAGE_SHIFT;
+ 	end = start + len;
+ 
++	if (end <= start)
++		return 0;
+ 	if (unlikely(!access_ok((void __user *)start, len)))
+ 		return 0;
+ 
+@@ -2165,7 +2163,7 @@ int __get_user_pages_fast(unsigned long start, int nr_pages, int write,
+ 	 * block IPIs that come from THPs splitting.
+ 	 */
+ 
+-	if (gup_fast_permitted(start, nr_pages)) {
++	if (gup_fast_permitted(start, end)) {
+ 		local_irq_save(flags);
+ 		gup_pgd_range(start, end, write ? FOLL_WRITE : 0, pages, &nr);
+ 		local_irq_restore(flags);
+@@ -2224,13 +2222,12 @@ int get_user_pages_fast(unsigned long start, int nr_pages,
+ 	len = (unsigned long) nr_pages << PAGE_SHIFT;
+ 	end = start + len;
+ 
+-	if (nr_pages <= 0)
++	if (end <= start)
+ 		return 0;
+-
+ 	if (unlikely(!access_ok((void __user *)start, len)))
+ 		return -EFAULT;
+ 
+-	if (gup_fast_permitted(start, nr_pages)) {
++	if (gup_fast_permitted(start, end)) {
+ 		local_irq_disable();
+ 		gup_pgd_range(addr, end, gup_flags, pages, &nr);
+ 		local_irq_enable();
+-- 
+2.20.1
 
-Changes since v1:
- - fix various issues found by the build bot
- - cherry pick and use the untagged_addr helper form Andrey
- - add various refactoring patches to share more code over architectures
- - move the powerpc hugepd code to mm/gup.c and sync it with the generic
-   hup semantics
