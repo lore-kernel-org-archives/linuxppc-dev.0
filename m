@@ -7,21 +7,21 @@ X-Spam-Status: No, score=-8.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DDFF2C4321A
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Jun 2019 16:33:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5E847C4321A
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Jun 2019 16:35:13 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 44B212086D
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Jun 2019 16:33:14 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 9E62A2086D
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Jun 2019 16:35:12 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="G8LOT4PF"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 44B212086D
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="NOYU9DLY"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9E62A2086D
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45NbCX5mX5zDqsj
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Jun 2019 02:33:12 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45NbFp28qvzDqpr
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Jun 2019 02:35:10 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=none (mailfrom)
  smtp.mailfrom=bombadil.srs.infradead.org (client-ip=2607:7c80:54:e::133;
  helo=bombadil.infradead.org;
@@ -31,37 +31,37 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=infradead.org header.i=@infradead.org
- header.b="G8LOT4PF"; dkim-atps=neutral
+ header.b="NOYU9DLY"; dkim-atps=neutral
 Received: from bombadil.infradead.org (bombadil.infradead.org
  [IPv6:2607:7c80:54:e::133])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45NXlG37TwzDqVL
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Jun 2019 00:42:02 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45NXlK3h54zDqTK
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Jun 2019 00:42:05 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
  d=infradead.org; s=bombadil.20170209; h=Content-Transfer-Encoding:
  MIME-Version:References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:Sender
  :Reply-To:Content-Type:Content-ID:Content-Description:Resent-Date:Resent-From
  :Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:List-Help:
  List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
- bh=BBXXT9xa9mrRhIGkEBsSxPqH41gwjewyswp0iGthWuw=; b=G8LOT4PF2yvCs1mHkYytZqaKeQ
- xEujP5jOt56yiaI+d8fgDk4Xmq480Lul6ae1hHIRTkyZ4l7d6Fsri/dNIUK9LffjZeavJwiShIBZe
- Q44n5eKUC+iTdz7NZezLbHWpMZoll7MPwJGN4b+uFUK/T3Wp6fklHarEf9lPLlQsbnIV2Ppjy6PC2
- aEKuoSGKW0MabJ7AF8PN1lRrSYS8/EUd9PN10WcpUVfYQl5IsiolX/4XUXYwV+6XNGn1jowk49CzR
- O7mStspTewveegDCsMZIAXSzkHajsbpdPgODgDrKkW1Ef97kDEoc2nmsBeNk3X+3EarOGJxgFUb9c
- vjWvJ/5A==;
+ bh=A1i8h65qriplI15qgyPKPV5aWfBos+CWcUOK7xSAxuY=; b=NOYU9DLYhjro838aLFWjvDoMbZ
+ UkqZ8t//il4sKiPD2MvuzAucG5i7l8pWQ6VZyXnM1lDiBoQSz1ebEgO0BoHCTP8qbcTO53B6Bxri5
+ 4hFy8f18Wb9wpm7g7LLyMcw6j6ZRXpvaD3DUeonwZKNckLX8QbqQvsZlKL5eHMh/7DG7/kuoYQcX/
+ YW+S9XokqeT/7Vw2z5+vqNVRt8eGRYlmsFbAa22ATQgqR5aJPASr2OARLcEF1Ta3Mn/k33RIaEXrm
+ z6rmE/LSYeU+Btb4GR8sulOJQPhFjwpE69UYW3PVZcX30EaXUIHK9X6wejIo8dhub+RTZQTowcoNm
+ oUmZ6b2A==;
 Received: from mpp-cp1-natpool-1-037.ethz.ch ([82.130.71.37] helo=localhost)
  by bombadil.infradead.org with esmtpsa (Exim 4.92 #3 (Red Hat Linux))
- id 1hahy5-0005dm-5p; Tue, 11 Jun 2019 14:41:45 +0000
+ id 1hahyB-0005u1-RB; Tue, 11 Jun 2019 14:41:52 +0000
 From: Christoph Hellwig <hch@lst.de>
 To: Linus Torvalds <torvalds@linux-foundation.org>,
  Paul Burton <paul.burton@mips.com>, James Hogan <jhogan@kernel.org>,
  Yoshinori Sato <ysato@users.sourceforge.jp>, Rich Felker <dalias@libc.org>,
  "David S. Miller" <davem@davemloft.net>
-Subject: [PATCH 13/16] mm: move the powerpc hugepd code to mm/gup.c
-Date: Tue, 11 Jun 2019 16:40:59 +0200
-Message-Id: <20190611144102.8848-14-hch@lst.de>
+Subject: [PATCH 15/16] mm: mark the page referenced in gup_hugepte
+Date: Tue, 11 Jun 2019 16:41:01 +0200
+Message-Id: <20190611144102.8848-16-hch@lst.de>
 X-Mailer: git-send-email 2.20.1
 In-Reply-To: <20190611144102.8848-1-hch@lst.de>
 References: <20190611144102.8848-1-hch@lst.de>
@@ -90,263 +90,26 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-While only powerpc supports the hugepd case, the code is pretty
-generic and I'd like to keep all GUP internals in one place.
+All other get_user_page_fast cases mark the page referenced, so do
+this here as well.
 
 Signed-off-by: Christoph Hellwig <hch@lst.de>
 ---
- arch/powerpc/Kconfig          |  1 +
- arch/powerpc/mm/hugetlbpage.c | 72 ------------------------------
- include/linux/hugetlb.h       | 18 --------
- mm/Kconfig                    | 10 +++++
- mm/gup.c                      | 82 +++++++++++++++++++++++++++++++++++
- 5 files changed, 93 insertions(+), 90 deletions(-)
+ mm/gup.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 992a04796e56..4f1b00979cde 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -125,6 +125,7 @@ config PPC
- 	select ARCH_HAS_FORTIFY_SOURCE
- 	select ARCH_HAS_GCOV_PROFILE_ALL
- 	select ARCH_HAS_KCOV
-+	select ARCH_HAS_HUGEPD			if HUGETLB_PAGE
- 	select ARCH_HAS_MMIOWB			if PPC64
- 	select ARCH_HAS_PHYS_TO_DMA
- 	select ARCH_HAS_PMEM_API                if PPC64
-diff --git a/arch/powerpc/mm/hugetlbpage.c b/arch/powerpc/mm/hugetlbpage.c
-index b5d92dc32844..51716c11d0fb 100644
---- a/arch/powerpc/mm/hugetlbpage.c
-+++ b/arch/powerpc/mm/hugetlbpage.c
-@@ -511,13 +511,6 @@ struct page *follow_huge_pd(struct vm_area_struct *vma,
- 	return page;
- }
- 
--static unsigned long hugepte_addr_end(unsigned long addr, unsigned long end,
--				      unsigned long sz)
--{
--	unsigned long __boundary = (addr + sz) & ~(sz-1);
--	return (__boundary - 1 < end - 1) ? __boundary : end;
--}
--
- #ifdef CONFIG_PPC_MM_SLICES
- unsigned long hugetlb_get_unmapped_area(struct file *file, unsigned long addr,
- 					unsigned long len, unsigned long pgoff,
-@@ -665,68 +658,3 @@ void flush_dcache_icache_hugepage(struct page *page)
- 		}
- 	}
- }
--
--static int gup_hugepte(pte_t *ptep, unsigned long sz, unsigned long addr,
--		       unsigned long end, int write, struct page **pages, int *nr)
--{
--	unsigned long pte_end;
--	struct page *head, *page;
--	pte_t pte;
--	int refs;
--
--	pte_end = (addr + sz) & ~(sz-1);
--	if (pte_end < end)
--		end = pte_end;
--
--	pte = READ_ONCE(*ptep);
--
--	if (!pte_access_permitted(pte, write))
--		return 0;
--
--	/* hugepages are never "special" */
--	VM_BUG_ON(!pfn_valid(pte_pfn(pte)));
--
--	refs = 0;
--	head = pte_page(pte);
--
--	page = head + ((addr & (sz-1)) >> PAGE_SHIFT);
--	do {
--		VM_BUG_ON(compound_head(page) != head);
--		pages[*nr] = page;
--		(*nr)++;
--		page++;
--		refs++;
--	} while (addr += PAGE_SIZE, addr != end);
--
--	if (!page_cache_add_speculative(head, refs)) {
--		*nr -= refs;
--		return 0;
--	}
--
--	if (unlikely(pte_val(pte) != pte_val(*ptep))) {
--		/* Could be optimized better */
--		*nr -= refs;
--		while (refs--)
--			put_page(head);
--		return 0;
--	}
--
--	return 1;
--}
--
--int gup_huge_pd(hugepd_t hugepd, unsigned long addr, unsigned int pdshift,
--		unsigned long end, int write, struct page **pages, int *nr)
--{
--	pte_t *ptep;
--	unsigned long sz = 1UL << hugepd_shift(hugepd);
--	unsigned long next;
--
--	ptep = hugepte_offset(hugepd, addr, pdshift);
--	do {
--		next = hugepte_addr_end(addr, end, sz);
--		if (!gup_hugepte(ptep, sz, addr, end, write, pages, nr))
--			return 0;
--	} while (ptep++, addr = next, addr != end);
--
--	return 1;
--}
-diff --git a/include/linux/hugetlb.h b/include/linux/hugetlb.h
-index edf476c8cfb9..0f91761e2c53 100644
---- a/include/linux/hugetlb.h
-+++ b/include/linux/hugetlb.h
-@@ -16,29 +16,11 @@ struct user_struct;
- struct mmu_gather;
- 
- #ifndef is_hugepd
--/*
-- * Some architectures requires a hugepage directory format that is
-- * required to support multiple hugepage sizes. For example
-- * a4fe3ce76 "powerpc/mm: Allow more flexible layouts for hugepage pagetables"
-- * introduced the same on powerpc. This allows for a more flexible hugepage
-- * pagetable layout.
-- */
- typedef struct { unsigned long pd; } hugepd_t;
- #define is_hugepd(hugepd) (0)
- #define __hugepd(x) ((hugepd_t) { (x) })
--static inline int gup_huge_pd(hugepd_t hugepd, unsigned long addr,
--			      unsigned pdshift, unsigned long end,
--			      int write, struct page **pages, int *nr)
--{
--	return 0;
--}
--#else
--extern int gup_huge_pd(hugepd_t hugepd, unsigned long addr,
--		       unsigned pdshift, unsigned long end,
--		       int write, struct page **pages, int *nr);
- #endif
- 
--
- #ifdef CONFIG_HUGETLB_PAGE
- 
- #include <linux/mempolicy.h>
-diff --git a/mm/Kconfig b/mm/Kconfig
-index 5c41409557da..44be3f01a2b2 100644
---- a/mm/Kconfig
-+++ b/mm/Kconfig
-@@ -769,4 +769,14 @@ config GUP_GET_PTE_LOW_HIGH
- config ARCH_HAS_PTE_SPECIAL
- 	bool
- 
-+#
-+# Some architectures require a special hugepage directory format that is
-+# required to support multiple hugepage sizes. For example a4fe3ce76
-+# "powerpc/mm: Allow more flexible layouts for hugepage pagetables"
-+# introduced it on powerpc.  This allows for a more flexible hugepage
-+# pagetable layouts.
-+#
-+config ARCH_HAS_HUGEPD
-+	bool
-+
- endmenu
 diff --git a/mm/gup.c b/mm/gup.c
-index 78dc1871b3d4..494aa4c3a55e 100644
+index 0733674b539d..8bcc042f933a 100644
 --- a/mm/gup.c
 +++ b/mm/gup.c
-@@ -1967,6 +1967,88 @@ static int __gup_device_huge_pud(pud_t pud, pud_t *pudp, unsigned long addr,
- }
- #endif
+@@ -2021,6 +2021,7 @@ static int gup_hugepte(pte_t *ptep, unsigned long sz, unsigned long addr,
+ 		return 0;
+ 	}
  
-+#ifdef CONFIG_ARCH_HAS_HUGEPD
-+static unsigned long hugepte_addr_end(unsigned long addr, unsigned long end,
-+				      unsigned long sz)
-+{
-+	unsigned long __boundary = (addr + sz) & ~(sz-1);
-+	return (__boundary - 1 < end - 1) ? __boundary : end;
-+}
-+
-+static int gup_hugepte(pte_t *ptep, unsigned long sz, unsigned long addr,
-+		       unsigned long end, int write, struct page **pages, int *nr)
-+{
-+	unsigned long pte_end;
-+	struct page *head, *page;
-+	pte_t pte;
-+	int refs;
-+
-+	pte_end = (addr + sz) & ~(sz-1);
-+	if (pte_end < end)
-+		end = pte_end;
-+
-+	pte = READ_ONCE(*ptep);
-+
-+	if (!pte_access_permitted(pte, write))
-+		return 0;
-+
-+	/* hugepages are never "special" */
-+	VM_BUG_ON(!pfn_valid(pte_pfn(pte)));
-+
-+	refs = 0;
-+	head = pte_page(pte);
-+
-+	page = head + ((addr & (sz-1)) >> PAGE_SHIFT);
-+	do {
-+		VM_BUG_ON(compound_head(page) != head);
-+		pages[*nr] = page;
-+		(*nr)++;
-+		page++;
-+		refs++;
-+	} while (addr += PAGE_SIZE, addr != end);
-+
-+	if (!page_cache_add_speculative(head, refs)) {
-+		*nr -= refs;
-+		return 0;
-+	}
-+
-+	if (unlikely(pte_val(pte) != pte_val(*ptep))) {
-+		/* Could be optimized better */
-+		*nr -= refs;
-+		while (refs--)
-+			put_page(head);
-+		return 0;
-+	}
-+
-+	return 1;
-+}
-+
-+static int gup_huge_pd(hugepd_t hugepd, unsigned long addr,
-+		unsigned int pdshift, unsigned long end, int write,
-+		struct page **pages, int *nr)
-+{
-+	pte_t *ptep;
-+	unsigned long sz = 1UL << hugepd_shift(hugepd);
-+	unsigned long next;
-+
-+	ptep = hugepte_offset(hugepd, addr, pdshift);
-+	do {
-+		next = hugepte_addr_end(addr, end, sz);
-+		if (!gup_hugepte(ptep, sz, addr, end, write, pages, nr))
-+			return 0;
-+	} while (ptep++, addr = next, addr != end);
-+
-+	return 1;
-+}
-+#else
-+static inline int gup_huge_pd(hugepd_t hugepd, unsigned long addr,
-+		unsigned pdshift, unsigned long end, int write,
-+		struct page **pages, int *nr)
-+{
-+	return 0;
-+}
-+#endif /* CONFIG_ARCH_HAS_HUGEPD */
-+
- static int gup_huge_pmd(pmd_t orig, pmd_t *pmdp, unsigned long addr,
- 		unsigned long end, unsigned int flags, struct page **pages, int *nr)
- {
++	SetPageReferenced(head);
+ 	return 1;
+ }
+ 
 -- 
 2.20.1
 
