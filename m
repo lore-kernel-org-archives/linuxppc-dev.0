@@ -2,80 +2,74 @@ Return-Path: <SRS0=3S3E=UK=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+X-Spam-Status: No, score=-8.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id F1630C4321A
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Jun 2019 16:03:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 19729C4321A
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Jun 2019 16:05:45 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 4224F212F5
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Jun 2019 16:03:46 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 6ADE82080A
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Jun 2019 16:05:44 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="l5yBuROh"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4224F212F5
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="hksldD9H"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6ADE82080A
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45NZYW4g2szDqc8
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Jun 2019 02:03:43 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45NZbp5MpkzDqdD
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Jun 2019 02:05:42 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=none (mailfrom)
+ smtp.mailfrom=bombadil.srs.infradead.org (client-ip=2607:7c80:54:e::133;
+ helo=bombadil.infradead.org;
+ envelope-from=batv+98d4ae9035936dc2f97b+5770+infradead.org+hch@bombadil.srs.infradead.org;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=c-s.fr
- (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
- envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=c-s.fr
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="l5yBuROh"; 
- dkim-atps=neutral
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ dmarc=none (p=none dis=none) header.from=lst.de
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=infradead.org header.i=@infradead.org
+ header.b="hksldD9H"; dkim-atps=neutral
+Received: from bombadil.infradead.org (bombadil.infradead.org
+ [IPv6:2607:7c80:54:e::133])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45NXhr4ggjzDqWl
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Jun 2019 00:39:56 +1000 (AEST)
-Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 45NXhj4z9Nz9v1Dx;
- Tue, 11 Jun 2019 16:39:49 +0200 (CEST)
-Authentication-Results: localhost; dkim=pass
- reason="1024-bit key; insecure key"
- header.d=c-s.fr header.i=@c-s.fr header.b=l5yBuROh; dkim-adsp=pass;
- dkim-atps=neutral
-X-Virus-Scanned: Debian amavisd-new at c-s.fr
-Received: from pegase1.c-s.fr ([192.168.12.234])
- by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id iJtW222AN5GI; Tue, 11 Jun 2019 16:39:49 +0200 (CEST)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 45NXhj3y9vz9v1Dw;
- Tue, 11 Jun 2019 16:39:49 +0200 (CEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
- t=1560263989; bh=z1F6PHZmuc1YG8A1ts1rr1gl6K/z7hQn1Ct+jqvfadg=;
- h=In-Reply-To:References:From:Subject:To:Cc:Date:From;
- b=l5yBuROhKgFK0yWBMbsyNNUcipq7fjQ2bCY8ALD3M92C2jhpnhLcKZGdAlrTNvP1Q
- dyI8cEaUupNQMMfYK6aE0iz6sKIl8oVOOcyn/DwBRsa6leH5E6wVvCsxul8VYYZ+DO
- /Iso3V1SFUvgNLfjdUQan1od0ZDv/KrkrlFqlvA0=
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 0F2338B75B;
- Tue, 11 Jun 2019 16:39:51 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id 6tBflYT_5b88; Tue, 11 Jun 2019 16:39:51 +0200 (CEST)
-Received: from po16838vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id C88738B7F6;
- Tue, 11 Jun 2019 16:39:50 +0200 (CEST)
-Received: by po16838vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id 9C1D968CE5; Tue, 11 Jun 2019 14:39:50 +0000 (UTC)
-Message-Id: <09bbce930ef6bf209c5bb5241fccc6b4dc583ba5.1560263641.git.christophe.leroy@c-s.fr>
-In-Reply-To: <cover.1560263641.git.christophe.leroy@c-s.fr>
-References: <cover.1560263641.git.christophe.leroy@c-s.fr>
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v2 3/4] crypto: talitos - eliminate unneeded 'done' functions
- at build time
-To: Herbert Xu <herbert@gondor.apana.org.au>,
- "David S. Miller" <davem@davemloft.net>, horia.geanta@nxp.com
-Date: Tue, 11 Jun 2019 14:39:50 +0000 (UTC)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45NXkr3FLfzDqVF
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Jun 2019 00:41:40 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+ d=infradead.org; s=bombadil.20170209; h=Content-Transfer-Encoding:
+ MIME-Version:References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:Sender
+ :Reply-To:Content-Type:Content-ID:Content-Description:Resent-Date:Resent-From
+ :Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:List-Help:
+ List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
+ bh=pU76vjF549TgrGMDxTP+px3yFTf1TEh0R8Swc6QhucM=; b=hksldD9HOj5evI3EEsvNNZserQ
+ 9QfL5wF9gT7egY+bR9UULwLlKaDcw+8UV7m2/8Nx0LXz3UkxV9NozCDfZ44qqcS/1MjRrVmQH691W
+ F+pa5IeoK2lMHw7zdweUhqWjsXhgXBNiVCgccTrkGw+N4DTtTTb6rdNpAcyxs2QNryR0hJKmc2s/b
+ YhzCLeQqFaGRjbitn3ZJ5vYl9VFojSvxwCaSFpt+Sy1VKPlpBJYsDKNs5rLGgMg2fBrAGZ19Pbgp0
+ SeqyCW789tSA3PxnOlwKgzjeyFyE2oxk6A62waWOoKoHh27uuHpxZYxoZuPf046XmMbKVyOakaQh1
+ ZCwcvfmw==;
+Received: from mpp-cp1-natpool-1-037.ethz.ch ([82.130.71.37] helo=localhost)
+ by bombadil.infradead.org with esmtpsa (Exim 4.92 #3 (Red Hat Linux))
+ id 1hahxV-0005Nh-VL; Tue, 11 Jun 2019 14:41:10 +0000
+From: Christoph Hellwig <hch@lst.de>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+ Paul Burton <paul.burton@mips.com>, James Hogan <jhogan@kernel.org>,
+ Yoshinori Sato <ysato@users.sourceforge.jp>, Rich Felker <dalias@libc.org>,
+ "David S. Miller" <davem@davemloft.net>
+Subject: [PATCH 01/16] mm: use untagged_addr() for get_user_pages_fast
+ addresses
+Date: Tue, 11 Jun 2019 16:40:47 +0200
+Message-Id: <20190611144102.8848-2-hch@lst.de>
+X-Mailer: git-send-email 2.20.1
+In-Reply-To: <20190611144102.8848-1-hch@lst.de>
+References: <20190611144102.8848-1-hch@lst.de>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by
+ bombadil.infradead.org. See http://www.infradead.org/rpr.html
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -87,36 +81,46 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-crypto@vger.kernel.org,
- linux-kernel@vger.kernel.org
+Cc: linux-sh@vger.kernel.org, Andrey Konovalov <andreyknvl@google.com>,
+ x86@kernel.org, linux-mips@vger.kernel.org,
+ Nicholas Piggin <npiggin@gmail.com>, linux-kernel@vger.kernel.org,
+ linux-mm@kvack.org, Khalid Aziz <khalid.aziz@oracle.com>,
+ Paul Mackerras <paulus@samba.org>, sparclinux@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-When building for SEC1 only, talitos2_done functions are unneeded
-and should go away.
+This will allow sparc64 to override its ADI tags for
+get_user_pages and get_user_pages_fast.
 
-For this, use has_ftr_sec1() which will always return true when only
-SEC1 support is being built, allowing GCC to drop TALITOS2 functions.
-
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+Signed-off-by: Christoph Hellwig <hch@lst.de>
 ---
- drivers/crypto/talitos.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ mm/gup.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/crypto/talitos.c b/drivers/crypto/talitos.c
-index 4f03baef952b..b2de931de623 100644
---- a/drivers/crypto/talitos.c
-+++ b/drivers/crypto/talitos.c
-@@ -3401,7 +3401,7 @@ static int talitos_probe(struct platform_device *ofdev)
- 	if (err)
- 		goto err_out;
+diff --git a/mm/gup.c b/mm/gup.c
+index ddde097cf9e4..6bb521db67ec 100644
+--- a/mm/gup.c
++++ b/mm/gup.c
+@@ -2146,7 +2146,7 @@ int __get_user_pages_fast(unsigned long start, int nr_pages, int write,
+ 	unsigned long flags;
+ 	int nr = 0;
  
--	if (of_device_is_compatible(np, "fsl,sec1.0")) {
-+	if (has_ftr_sec1(priv)) {
- 		if (priv->num_channels == 1)
- 			tasklet_init(&priv->done_task[0], talitos1_done_ch0,
- 				     (unsigned long)dev);
+-	start &= PAGE_MASK;
++	start = untagged_addr(start) & PAGE_MASK;
+ 	len = (unsigned long) nr_pages << PAGE_SHIFT;
+ 	end = start + len;
+ 
+@@ -2219,7 +2219,7 @@ int get_user_pages_fast(unsigned long start, int nr_pages,
+ 	unsigned long addr, len, end;
+ 	int nr = 0, ret = 0;
+ 
+-	start &= PAGE_MASK;
++	start = untagged_addr(start) & PAGE_MASK;
+ 	addr = start;
+ 	len = (unsigned long) nr_pages << PAGE_SHIFT;
+ 	end = start + len;
 -- 
-2.13.3
+2.20.1
 
