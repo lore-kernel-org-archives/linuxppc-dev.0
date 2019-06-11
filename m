@@ -1,88 +1,89 @@
-Return-Path: <SRS0=ea3T=UJ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
+Return-Path: <SRS0=3S3E=UK=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.3 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
+X-Spam-Status: No, score=-6.3 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
 	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
-	version=3.4.0
+	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0B0C4C43218
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Jun 2019 23:32:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2EFF5C4321A
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Jun 2019 00:20:58 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 7720F20820
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Jun 2019 23:32:52 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 6E28F20820
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Jun 2019 00:20:57 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="EidV6xiU"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7720F20820
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="TBlGmlc2"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6E28F20820
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45N8ZB40KFzDqRd
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Jun 2019 09:32:50 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45N9dg2MVdzDqHv
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Jun 2019 10:20:55 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=2607:f8b0:4864:20::142; helo=mail-it1-x142.google.com;
- envelope-from=radu.rendec@gmail.com; receiver=<UNKNOWN>)
+ (client-ip=2607:f8b0:4864:20::441; helo=mail-pf1-x441.google.com;
+ envelope-from=npiggin@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="EidV6xiU"; 
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="TBlGmlc2"; 
  dkim-atps=neutral
-Received: from mail-it1-x142.google.com (mail-it1-x142.google.com
- [IPv6:2607:f8b0:4864:20::142])
+Received: from mail-pf1-x441.google.com (mail-pf1-x441.google.com
+ [IPv6:2607:f8b0:4864:20::441])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45N8VJ2KFBzDqLx
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Jun 2019 09:29:27 +1000 (AEST)
-Received: by mail-it1-x142.google.com with SMTP id m187so1880404ite.3
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Jun 2019 16:29:27 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45N9br3hxFzDqHv
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Jun 2019 10:19:18 +1000 (AEST)
+Received: by mail-pf1-x441.google.com with SMTP id d126so6242429pfd.2
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Jun 2019 17:19:18 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=from:to:cc:subject:date:message-id:in-reply-to:references
- :mime-version:content-transfer-encoding;
- bh=76DfEPMtFWQ2hvV2rRpLziepRkoXuAh8kDJ8OjCUQ6U=;
- b=EidV6xiUkzkpqHEErKOPuraSgkGy1mh54jKCxRQFG7J9EQaYjlsmHVgNr5WNsKmtZ4
- ncCshTeMCJsyQeW4ywWQUrjSSFS7UYPKSXqKhlXAlSoiyneahhPRtusGDwRHyGyWUop4
- /v3yNZz5kubSZ60t+hzRZre+wjCYrc7r8xVbUvjqwx3qlzCdToy1iuBCW2kyNDIwjv93
- s/d6ETqkDm2029hz0+WTOTNNqk7Ad3GlqHgYYulmVtGX8OKnCDM0izg94Ad4tq45QWgV
- SDumwLPzjR++XHo266jR21A/prjPg8ga37aJcRQ39rNcGjJjhBRKnRASJhURPrmhJwCV
- ldxA==
+ h=date:from:subject:to:cc:references:in-reply-to:mime-version
+ :user-agent:message-id:content-transfer-encoding;
+ bh=kf1YyuZJhLbGytx9oEnxtDtE8fc9RKGSzHH7TIul9Sc=;
+ b=TBlGmlc2oLGUtlyY46DOUgonwGAEtYMUYdhm0cllicVyUI/BPgtgaOmnAjGaaYVHzN
+ A0fjwALwgLUqGviO7+StCoG6dyy0wYnm7XmChvKgXgwT8Qjjns2QmYK+mW/FoML5bG+A
+ jI7xyqR0jHWWYVOYiZ3sfsdno+Jo5DA0eutICcA+OwAf67XO70Y0G1KMUivaBlvI6Zm+
+ CcNuKo09YMTLWA3A2/BkVQQ4J+GLspGgjZ15hGainVhKSWVO6jsyRTKcillUNWrUzeU1
+ FUZnJYaP4sXXynKeHQ2XsEKgLlkAnWTdksA+RORUON2cc0iaaywOWy3W2KaeST5PzSl/
+ PHyg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
- h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
- :references:mime-version:content-transfer-encoding;
- bh=76DfEPMtFWQ2hvV2rRpLziepRkoXuAh8kDJ8OjCUQ6U=;
- b=tC0iSH17TdYUUv2Gt3xtjM2QaRY4nf5OvNb9UQu1GAJuV20T+igkinHFNfzYF/+hr0
- WOngEJ+9w3vaJP9LsMhCYttHnxGqTQWDhnDcZ3L3I9QgZt9dB5fxzeZ0rILCzGQ+BncK
- Q97RpjtchaEZqjav2jwP2Xg66CX0+55oNgtYaTwwWBIg0qIhOFLUtLKjzSWQKr3yfIW0
- 6nUz+1GJf1n5on/GlNbKNQiLrITFxfUNP+C6LW/As3OwHCzZXrKJ5jF8l6EJEA9q2Mtk
- Ra6kQT1dfkV70tuaQzIghiho+a05yKpFRUjY1nM/um5iZa8c0wF2fO9c3xu/QxInllb6
- +X8w==
-X-Gm-Message-State: APjAAAVA23Tdw7VYbstPx+fDahw6VSy03CzDVvJOxeY+PfLtKAGEO/7s
- RrZsXDbcU/JtaLD4H/AzbKrkOx/B6lI=
-X-Google-Smtp-Source: APXvYqxI3qpHgdTDXRTiw3KoA/G5mT7Pn1RMb8Zr/g1lBOk9ZrvEQd+B2Zo62e140i06B+20Lg+AEw==
-X-Received: by 2002:a05:660c:14b:: with SMTP id
- r11mr16058372itk.44.1560209365707; 
- Mon, 10 Jun 2019 16:29:25 -0700 (PDT)
-Received: from bat.kanata.rendec.net
- (CPE00fc8d79db03-CM00fc8d79db00.cpe.net.fido.ca. [72.140.67.131])
- by smtp.gmail.com with ESMTPSA id z138sm488770itc.36.2019.06.10.16.29.24
+ h=x-gm-message-state:date:from:subject:to:cc:references:in-reply-to
+ :mime-version:user-agent:message-id:content-transfer-encoding;
+ bh=kf1YyuZJhLbGytx9oEnxtDtE8fc9RKGSzHH7TIul9Sc=;
+ b=OiIgdFoOJPBmP8593qup9IuwjkJEuDqoRj4XF9J2BCDKV4YdQTt5SB+3KDDmt1cBBg
+ DYdKRLO+su2XfNzSJOrxjA9Vb8OowSommpacuAJSGI64jBPQfY3INhK0KOnk+W4PChUA
+ 2LUgX9lzsaSqBwxe9/mWmVwSEXE7tjCFVPzlGK2G/Cr8kaPwowAz8+3tvmzaBRHrkjmF
+ 5Rt1PqXAOnQOnxaUig8opNZj/ME1co6mVWzFrAKrosiYqy0211Gg8f/EdNBBM4A8AxyU
+ /pS6OPDoF3OSVDOLRFm5rBVL+DSw3xHdRji+JqUNcI9x6otTRFsyLSfFjLT2QoPkRsF2
+ tedA==
+X-Gm-Message-State: APjAAAVgQW35DOdrNW3G1xSkjQicAizy3TmowZ0jBTtX6PPRbO5HhUwJ
+ T5cq099qz4+rd0rSJsYqq6A=
+X-Google-Smtp-Source: APXvYqxgMYWWPx1ZQFXfw2cg/UbyzAwuDoyfR2sYAnz5rU+dlw9qzLHOiKLcKWY6Wi9DH2lgoB0iGA==
+X-Received: by 2002:a17:90a:778b:: with SMTP id
+ v11mr24564239pjk.132.1560212354810; 
+ Mon, 10 Jun 2019 17:19:14 -0700 (PDT)
+Received: from localhost (60-241-56-246.tpgi.com.au. [60.241.56.246])
+ by smtp.gmail.com with ESMTPSA id p65sm9713021pfp.58.2019.06.10.17.19.13
  (version=TLS1_3 cipher=AEAD-AES256-GCM-SHA384 bits=256/256);
- Mon, 10 Jun 2019 16:29:25 -0700 (PDT)
-From: Radu Rendec <radu.rendec@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 1/1] PPC32: fix ptrace() access to FPU registers
-Date: Mon, 10 Jun 2019 19:27:58 -0400
-Message-Id: <20190610232758.19010-2-radu.rendec@gmail.com>
-X-Mailer: git-send-email 2.20.1
-In-Reply-To: <20190610232758.19010-1-radu.rendec@gmail.com>
-References: <20190610232758.19010-1-radu.rendec@gmail.com>
+ Mon, 10 Jun 2019 17:19:14 -0700 (PDT)
+Date: Tue, 11 Jun 2019 10:16:43 +1000
+From: Nicholas Piggin <npiggin@gmail.com>
+Subject: Re: [PATCH 4/4] mm/vmalloc: Hugepage vmalloc mappings
+To: Anshuman Khandual <anshuman.khandual@arm.com>, linux-mm@kvack.org
+References: <20190610043838.27916-1-npiggin@gmail.com>
+ <20190610043838.27916-4-npiggin@gmail.com>
+ <a3b2dcb1-148e-b2f1-e181-92c16d868bc9@arm.com>
+In-Reply-To: <a3b2dcb1-148e-b2f1-e181-92c16d868bc9@arm.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+User-Agent: astroid/0.14.0 (https://github.com/astroidmail/astroid)
+Message-Id: <1560210095.fpemv3ultp.astroid@bobo.none>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -94,168 +95,492 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Oleg Nesterov <oleg@redhat.com>, Radu Rendec <radu.rendec@gmail.com>,
- Paul Mackerras <paulus@samba.org>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This patch addresses several issues with ptrace() access to FPU
-registers through PTRACE_PEEKUSR/PTRACE_POKEUSR.
+Anshuman Khandual's on June 10, 2019 6:53 pm:
+> On 06/10/2019 10:08 AM, Nicholas Piggin wrote:
+>> For platforms that define HAVE_ARCH_HUGE_VMAP, have vmap allow vmalloc t=
+o
+>> allocate huge pages and map them.
+>=20
+> IIUC that extends HAVE_ARCH_HUGE_VMAP from iormap to vmalloc.=20
+>=20
+>>=20
+>> This brings dTLB misses for linux kernel tree `git diff` from 45,000 to
+>> 8,000 on a Kaby Lake KVM guest with 8MB dentry hash and mitigations=3Dof=
+f
+>> (performance is in the noise, under 1% difference, page tables are likel=
+y
+>> to be well cached for this workload). Similar numbers are seen on POWER9=
+.
+>=20
+> Sure will try this on arm64.
+>=20
+>>=20
+>> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+>> ---
+>>  include/asm-generic/4level-fixup.h |   1 +
+>>  include/asm-generic/5level-fixup.h |   1 +
+>>  include/linux/vmalloc.h            |   1 +
+>>  mm/vmalloc.c                       | 132 +++++++++++++++++++++++------
+>>  4 files changed, 107 insertions(+), 28 deletions(-)
+>>=20
+>> diff --git a/include/asm-generic/4level-fixup.h b/include/asm-generic/4l=
+evel-fixup.h
+>> index e3667c9a33a5..3cc65a4dd093 100644
+>> --- a/include/asm-generic/4level-fixup.h
+>> +++ b/include/asm-generic/4level-fixup.h
+>> @@ -20,6 +20,7 @@
+>>  #define pud_none(pud)			0
+>>  #define pud_bad(pud)			0
+>>  #define pud_present(pud)		1
+>> +#define pud_large(pud)			0
+>>  #define pud_ERROR(pud)			do { } while (0)
+>>  #define pud_clear(pud)			pgd_clear(pud)
+>>  #define pud_val(pud)			pgd_val(pud)
+>> diff --git a/include/asm-generic/5level-fixup.h b/include/asm-generic/5l=
+evel-fixup.h
+>> index bb6cb347018c..c4377db09a4f 100644
+>> --- a/include/asm-generic/5level-fixup.h
+>> +++ b/include/asm-generic/5level-fixup.h
+>> @@ -22,6 +22,7 @@
+>>  #define p4d_none(p4d)			0
+>>  #define p4d_bad(p4d)			0
+>>  #define p4d_present(p4d)		1
+>> +#define p4d_large(p4d)			0
+>>  #define p4d_ERROR(p4d)			do { } while (0)
+>>  #define p4d_clear(p4d)			pgd_clear(p4d)
+>>  #define p4d_val(p4d)			pgd_val(p4d)
+>=20
+> Both of these are required from vmalloc_to_page() which as per a later co=
+mment
+> should be part of a prerequisite patch before this series.
 
-Standard CPU registers are of course the size of the machine word on
-both PPC32/PPC64, but FPU registers are always 64-bit. Because the
-ptrace() can only transfer one `long` at a time with PTRACE_PEEKUSR and
-PTRACE_POKEUSR, on PPC32 userspace must do two separate ptrace() calls
-to access a whole FPU register.
+I'm not sure what you mean. This patch is where they get used.
 
-This patch fixes the code that translates between ptrace() addresses and
-indexes into (struct thread_fp_state).fpr, taking into account all cases
-for both PPC32/PPC64. In the previous version, on PPC32, the index was
-double the correct value, allowing memory to be accessed beyond the
-register array. This had the following side effects:
-* Access to all FPU registers (except for FPR0) was broken.
-* PTRACE_POKEUSR could corrupt memory following the FPU register array.
-  That means the remainder of thread_struct, which is by design the last
-  field of task_struct. For large enough ptrace() addresses, memory
-  access could go even outside task_struct, corrupting the adjacent
-  task_struct.
+Possibly I could split this and the vmalloc_to_page change out. I'll
+consider it.
 
-Note that gdb (which is probably the most frequent user of ptrace() with
-PTRACE_PEEKUSR/PTRACE_POKEUSR) seems to always read/write all FPU
-registers whenever a traced task stops.
+>> diff --git a/include/linux/vmalloc.h b/include/linux/vmalloc.h
+>> index 812bea5866d6..4c92dc608928 100644
+>> --- a/include/linux/vmalloc.h
+>> +++ b/include/linux/vmalloc.h
+>> @@ -42,6 +42,7 @@ struct vm_struct {
+>>  	unsigned long		size;
+>>  	unsigned long		flags;
+>>  	struct page		**pages;
+>> +	unsigned int		page_shift;
+>=20
+> So the entire vm_struct will be mapped with a single page_shift. It canno=
+t have
+> mix and match mappings with PAGE_SIZE, PMD_SIZE, PUD_SIZE etc in case the
+> allocation fails for larger ones, falling back etc what over other reason=
+s.
 
-Signed-off-by: Radu Rendec <radu.rendec@gmail.com>
----
- arch/powerpc/kernel/ptrace.c | 85 ++++++++++++++++++++++--------------
- 1 file changed, 52 insertions(+), 33 deletions(-)
+For now, yes. I have a bit of follow up work to improve that and make
+it able to fall back, but it's a bit more churn and not a significant
+benefit just yet because there are not a lot of very large vmallocs
+(except the early hashes which can be satisfied with large allocs).
 
-diff --git a/arch/powerpc/kernel/ptrace.c b/arch/powerpc/kernel/ptrace.c
-index 684b0b315c32..060e5ed0fad9 100644
---- a/arch/powerpc/kernel/ptrace.c
-+++ b/arch/powerpc/kernel/ptrace.c
-@@ -2991,69 +2991,88 @@ long arch_ptrace(struct task_struct *child, long request,
- 	switch (request) {
- 	/* read the word at location addr in the USER area. */
- 	case PTRACE_PEEKUSR: {
--		unsigned long index, tmp;
-+		unsigned long index, fpidx, tmp = 0;
- 
- 		ret = -EIO;
- 		/* convert to index and check */
-+		index = addr / sizeof(long);
-+		if ((addr & (sizeof(long) - 1)) || (index > PT_FPSCR))
-+			break;
- #ifdef CONFIG_PPC32
--		index = addr >> 2;
--		if ((addr & 3) || (index > PT_FPSCR)
--		    || (child->thread.regs == NULL))
--#else
--		index = addr >> 3;
--		if ((addr & 7) || (index > PT_FPSCR))
--#endif
-+		if (child->thread.regs == NULL)
- 			break;
-+#endif
- 
- 		CHECK_FULL_REGS(child->thread.regs);
- 		if (index < PT_FPR0) {
- 			ret = ptrace_get_reg(child, (int) index, &tmp);
- 			if (ret)
- 				break;
--		} else {
--			unsigned int fpidx = index - PT_FPR0;
-+			goto out_peekusr;
-+		}
- 
--			flush_fp_to_thread(child);
--			if (fpidx < (PT_FPSCR - PT_FPR0))
--				memcpy(&tmp, &child->thread.TS_FPR(fpidx),
--				       sizeof(long));
--			else
--				tmp = child->thread.fp_state.fpscr;
-+		flush_fp_to_thread(child);
-+#ifdef CONFIG_PPC32
-+		if (index == PT_FPSCR - 1)
-+			/* corner case for PPC32; do nothing */
-+			goto out_peekusr;
-+#endif
-+		if (index == PT_FPSCR) {
-+			tmp = child->thread.fp_state.fpscr;
-+			goto out_peekusr;
- 		}
-+		/*
-+		 * FPR is always 64-bit; on PPC32, userspace does two 32-bit
-+		 * accesses. Add bit2 to allow accessing the upper half on
-+		 * 32-bit; on 64-bit, bit2 is always 0 (we validate it above).
-+		 */
-+		fpidx = (addr - PT_FPR0 * sizeof(long)) / 8;
-+		memcpy(&tmp, (void *)&child->thread.TS_FPR(fpidx) + (addr & 4),
-+			sizeof(long));
-+out_peekusr:
- 		ret = put_user(tmp, datalp);
- 		break;
- 	}
- 
- 	/* write the word at location addr in the USER area */
- 	case PTRACE_POKEUSR: {
--		unsigned long index;
-+		unsigned long index, fpidx;
- 
- 		ret = -EIO;
- 		/* convert to index and check */
-+		index = addr / sizeof(long);
-+		if ((addr & (sizeof(long) - 1)) || (index > PT_FPSCR))
-+			break;
- #ifdef CONFIG_PPC32
--		index = addr >> 2;
--		if ((addr & 3) || (index > PT_FPSCR)
--		    || (child->thread.regs == NULL))
--#else
--		index = addr >> 3;
--		if ((addr & 7) || (index > PT_FPSCR))
--#endif
-+		if (child->thread.regs == NULL)
- 			break;
-+#endif
- 
- 		CHECK_FULL_REGS(child->thread.regs);
- 		if (index < PT_FPR0) {
- 			ret = ptrace_put_reg(child, index, data);
--		} else {
--			unsigned int fpidx = index - PT_FPR0;
-+			break;
-+		}
- 
--			flush_fp_to_thread(child);
--			if (fpidx < (PT_FPSCR - PT_FPR0))
--				memcpy(&child->thread.TS_FPR(fpidx), &data,
--				       sizeof(long));
--			else
--				child->thread.fp_state.fpscr = data;
--			ret = 0;
-+		ret = 0;
-+		flush_fp_to_thread(child);
-+#ifdef CONFIG_PPC32
-+		if (index == PT_FPSCR - 1)
-+			/* corner case for PPC32; do nothing */
-+			break;
-+#endif
-+		if (index == PT_FPSCR) {
-+			child->thread.fp_state.fpscr = data;
-+			break;
- 		}
-+		/*
-+		 * FPR is always 64-bit; on PPC32, userspace does two 32-bit
-+		 * accesses. Add bit2 to allow accessing the upper half on
-+		 * 32-bit; on 64-bit, bit2 is always 0 (we validate it above).
-+		 */
-+		fpidx = (addr - PT_FPR0 * sizeof(long)) / 8;
-+		memcpy((void *)&child->thread.TS_FPR(fpidx) + (addr & 4),
-+			&data, sizeof(long));
- 		break;
- 	}
- 
--- 
-2.20.1
+>=20
+>>  	unsigned int		nr_pages;
+>>  	phys_addr_t		phys_addr;
+>>  	const void		*caller;
+>> diff --git a/mm/vmalloc.c b/mm/vmalloc.c
+>> index dd27cfb29b10..0cf8e861caeb 100644
+>> --- a/mm/vmalloc.c
+>> +++ b/mm/vmalloc.c
+>> @@ -36,6 +36,7 @@
+>>  #include <linux/rbtree_augmented.h>
+>> =20
+>>  #include <linux/uaccess.h>
+>> +#include <asm/pgtable.h>
+>>  #include <asm/tlbflush.h>
+>>  #include <asm/shmparam.h>
+>> =20
+>> @@ -440,6 +441,41 @@ static int vmap_pages_range(unsigned long start, un=
+signed long end,
+>>  	return ret;
+>>  }
+>> =20
+>> +#ifdef CONFIG_HAVE_ARCH_HUGE_VMAP
+>> +static int vmap_hpages_range(unsigned long start, unsigned long end,
+>=20
+> A small nit (if you agree) s/hpages/huge_pages/
 
+Hmm. It's not actually a good function name because it can do small
+pages as well. vmap_pages_size_range or something may be better.
+
+>=20
+>> +				   pgprot_t prot, struct page **pages,
+>=20
+> Re-order (prot <---> pages) just to follow the standard like before.
+
+Will do.
+
+>> +				   unsigned int page_shift)
+>> +{
+>> +	unsigned long addr =3D start;
+>> +	unsigned int i, nr =3D (end - start) >> (PAGE_SHIFT + page_shift);
+>=20
+> s/nr/nr_huge_pages ?
+
+Sure.
+
+> Also should not we check for the alignment of the range [start...end] wit=
+h
+> respect to (1UL << [PAGE_SHIFT + page_shift]).
+
+The caller should if it specifies large page. Could check and -EINVAL
+for incorrect alignment.
+
+>> +
+>> +	for (i =3D 0; i < nr; i++) {
+>> +		int err;
+>> +
+>> +		err =3D vmap_range_noflush(addr,
+>> +					addr + (PAGE_SIZE << page_shift),
+>> +					__pa(page_address(pages[i])), prot,
+>> +					PAGE_SHIFT + page_shift);
+>> +		if (err)
+>> +			return err;
+>> +
+>> +		addr +=3D PAGE_SIZE << page_shift;
+>> +	}
+>> +	flush_cache_vmap(start, end);
+>> +
+>> +	return nr;
+>> +}
+>> +#else
+>> +static int vmap_hpages_range(unsigned long start, unsigned long end,
+>> +			   pgprot_t prot, struct page **pages,
+>> +			   unsigned int page_shift)
+>> +{
+>> +	BUG_ON(page_shift !=3D PAGE_SIZE);
+>> +	return vmap_pages_range(start, end, prot, pages);
+>> +}
+>> +#endif
+>> +
+>> +
+>>  int is_vmalloc_or_module_addr(const void *x)
+>>  {
+>>  	/*
+>> @@ -462,7 +498,7 @@ struct page *vmalloc_to_page(const void *vmalloc_add=
+r)
+>>  {
+>>  	unsigned long addr =3D (unsigned long) vmalloc_addr;
+>>  	struct page *page =3D NULL;
+>> -	pgd_t *pgd =3D pgd_offset_k(addr);
+>> +	pgd_t *pgd;
+>>  	p4d_t *p4d;
+>>  	pud_t *pud;
+>>  	pmd_t *pmd;
+>> @@ -474,27 +510,38 @@ struct page *vmalloc_to_page(const void *vmalloc_a=
+ddr)
+>>  	 */
+>>  	VIRTUAL_BUG_ON(!is_vmalloc_or_module_addr(vmalloc_addr));
+>> =20
+>> +	pgd =3D pgd_offset_k(addr);
+>>  	if (pgd_none(*pgd))
+>>  		return NULL;
+>> +
+>=20
+> Small nit. Stray line here.
+>=20
+> 'pgd' related changes here seem to be just cleanups and should not part o=
+f this patch.
+
+Yeah I figure it doesn't matter to make small changes close by, but
+maybe that's more frowned upon now for git blame?
+
+>>  	p4d =3D p4d_offset(pgd, addr);
+>>  	if (p4d_none(*p4d))
+>>  		return NULL;
+>> -	pud =3D pud_offset(p4d, addr);
+>> +#ifdef CONFIG_HAVE_ARCH_HUGE_VMAP
+>> +	if (p4d_large(*p4d))
+>> +		return p4d_page(*p4d) + ((addr & ~P4D_MASK) >> PAGE_SHIFT);
+>> +#endif
+>> +	if (WARN_ON_ONCE(p4d_bad(*p4d)))
+>> +		return NULL;
+>> =20
+>> -	/*
+>> -	 * Don't dereference bad PUD or PMD (below) entries. This will also
+>> -	 * identify huge mappings, which we may encounter on architectures
+>> -	 * that define CONFIG_HAVE_ARCH_HUGE_VMAP=3Dy. Such regions will be
+>> -	 * identified as vmalloc addresses by is_vmalloc_addr(), but are
+>> -	 * not [unambiguously] associated with a struct page, so there is
+>> -	 * no correct value to return for them.
+>> -	 */
+>=20
+> What changed the situation so that we could return struct page for a huge
+> mapping now ?
+
+For the PUD case? Nothing changed, per se, we I just calculate the
+correct struct page now, so I may return it.
+
+> AFAICT even after this patch, PUD/P4D level huge pages can only
+> be created with ioremap_page_range() not with vmalloc() which creates PMD
+> sized mappings only. Hence if it's okay to dereference struct page of a h=
+uge
+> mapping (not withstanding the comment here) it should be part of an earli=
+er
+> patch fixing it first for existing ioremap_page_range() huge mappings.
+
+Possibly yes, we can consider 029c54b095995 to be a band-aid for huge
+vmaps which is fixed properly by this change, in which case it could
+make sense to break this into its own patch.
+
+>=20
+>> -	WARN_ON_ONCE(pud_bad(*pud));
+>> -	if (pud_none(*pud) || pud_bad(*pud))
+>> +	pud =3D pud_offset(p4d, addr);
+>> +	if (pud_none(*pud))
+>> +		return NULL;
+>> +#ifdef CONFIG_HAVE_ARCH_HUGE_VMAP
+>> +	if (pud_large(*pud))
+>> +		return pud_page(*pud) + ((addr & ~PUD_MASK) >> PAGE_SHIFT);
+>> +#endif
+>> +	if (WARN_ON_ONCE(pud_bad(*pud)))
+>>  		return NULL;
+>> +
+>>  	pmd =3D pmd_offset(pud, addr);
+>> -	WARN_ON_ONCE(pmd_bad(*pmd));
+>> -	if (pmd_none(*pmd) || pmd_bad(*pmd))
+>> +	if (pmd_none(*pmd))
+>> +		return NULL;
+>> +#ifdef CONFIG_HAVE_ARCH_HUGE_VMAP
+>> +	if (pmd_large(*pmd))
+>> +		return pmd_page(*pmd) + ((addr & ~PMD_MASK) >> PAGE_SHIFT);
+>> +#endif
+>> +	if (WARN_ON_ONCE(pmd_bad(*pmd)))
+>>  		return NULL;
+>=20
+> At each page table level, we are checking in this order
+>=20
+> pXX_none() --> pXX_large() --> pXX_bad()
+>=20
+> Are not these alternative orders bit better
+>=20
+> pXX_bad() --> pXX_none() --> pXX_large()
+>=20
+> Or
+>=20
+> pXX_none() --> pXX_bad() --> pXX_large()
+>=20
+> Checking for pXX_bad() at the end does not make much sense.
+
+Yeah the order tends to go none->bad. It's not 100% clear we can
+test bad before none (at least it goes against convention). But good
+point should be changed to your last sequence I think.
+
+>=20
+>> =20
+>>  	ptep =3D pte_offset_map(pmd, addr);
+>> @@ -502,6 +549,7 @@ struct page *vmalloc_to_page(const void *vmalloc_add=
+r)
+>>  	if (pte_present(pte))
+>>  		page =3D pte_page(pte);
+>>  	pte_unmap(ptep);
+>> +
+>=20
+> Small nit. Stray line here.
+
+I don't mind adding some lines here and there, like here. It is an
+unrelated (alleged-)cleanup though.
+
+>=20
+>>  	return page;
+>>  }
+>>  EXPORT_SYMBOL(vmalloc_to_page);
+>> @@ -2185,8 +2233,9 @@ static struct vm_struct *__get_vm_area_node(unsign=
+ed long size,
+>>  		return NULL;
+>> =20
+>>  	if (flags & VM_IOREMAP)
+>> -		align =3D 1ul << clamp_t(int, get_count_order_long(size),
+>> -				       PAGE_SHIFT, IOREMAP_MAX_ORDER);
+>> +		align =3D max(align,
+>> +				1ul << clamp_t(int, get_count_order_long(size),
+>> +				       PAGE_SHIFT, IOREMAP_MAX_ORDER));
+>> =20
+>>  	area =3D kzalloc_node(sizeof(*area), gfp_mask & GFP_RECLAIM_MASK, node=
+);
+>>  	if (unlikely(!area))
+>> @@ -2398,7 +2447,7 @@ static void __vunmap(const void *addr, int dealloc=
+ate_pages)
+>>  			struct page *page =3D area->pages[i];
+>> =20
+>>  			BUG_ON(!page);
+>> -			__free_pages(page, 0);
+>> +			__free_pages(page, area->page_shift);
+>=20
+> area->page_shift' turns out to be effective page order. I think the name =
+here is bit
+> misleading. s/page_shift/page_order or nr_pages should be better IMHO. pa=
+ge_shift is
+> not actual shift (1UL << area->shift to get size) nor does it sound like =
+page 'order'.
+
+Yeah good point.
+
+>>  		}
+>> =20
+>>  		kvfree(area->pages);
+>> @@ -2541,14 +2590,17 @@ static void *__vmalloc_area_node(struct vm_struc=
+t *area, gfp_t gfp_mask,
+>>  				 pgprot_t prot, int node)
+>>  {
+>>  	struct page **pages;
+>> +	unsigned long addr =3D (unsigned long)area->addr;
+>> +	unsigned long size =3D get_vm_area_size(area);
+>> +	unsigned int page_shift =3D area->page_shift;
+>> +	unsigned int shift =3D page_shift + PAGE_SHIFT;
+>>  	unsigned int nr_pages, array_size, i;
+>>  	const gfp_t nested_gfp =3D (gfp_mask & GFP_RECLAIM_MASK) | __GFP_ZERO;
+>>  	const gfp_t alloc_mask =3D gfp_mask | __GFP_NOWARN;
+>>  	const gfp_t highmem_mask =3D (gfp_mask & (GFP_DMA | GFP_DMA32)) ?
+>> -					0 :
+>> -					__GFP_HIGHMEM;
+>> +					0 : __GFP_HIGHMEM;
+>> =20
+>> -	nr_pages =3D get_vm_area_size(area) >> PAGE_SHIFT;
+>> +	nr_pages =3D size >> shift;
+>>  	array_size =3D (nr_pages * sizeof(struct page *));
+>> =20
+>>  	area->nr_pages =3D nr_pages;
+>> @@ -2569,10 +2621,8 @@ static void *__vmalloc_area_node(struct vm_struct=
+ *area, gfp_t gfp_mask,
+>>  	for (i =3D 0; i < area->nr_pages; i++) {
+>>  		struct page *page;
+>> =20
+>> -		if (node =3D=3D NUMA_NO_NODE)
+>> -			page =3D alloc_page(alloc_mask|highmem_mask);
+>> -		else
+>> -			page =3D alloc_pages_node(node, alloc_mask|highmem_mask, 0);
+>> +		page =3D alloc_pages_node(node,
+>> +				alloc_mask|highmem_mask, page_shift);
+>=20
+> alloc_mask remains the exact same like before even for these high order p=
+ages.
+
+Is there a problem there? I don't see.
+
+>> =20
+>>  		if (unlikely(!page)) {
+>>  			/* Successfully allocated i pages, free them in __vunmap() */
+>> @@ -2584,8 +2634,9 @@ static void *__vmalloc_area_node(struct vm_struct =
+*area, gfp_t gfp_mask,
+>>  			cond_resched();
+>>  	}
+>> =20
+>> -	if (map_vm_area(area, prot, pages))
+>> +	if (vmap_hpages_range(addr, addr + size, prot, pages, page_shift) < 0)
+>>  		goto fail;
+>> +
+>>  	return area->addr;
+>> =20
+>>  fail:
+>> @@ -2619,22 +2670,39 @@ void *__vmalloc_node_range(unsigned long size, u=
+nsigned long align,
+>>  			pgprot_t prot, unsigned long vm_flags, int node,
+>>  			const void *caller)
+>>  {
+>> -	struct vm_struct *area;
+>> +	struct vm_struct *area =3D NULL;
+>>  	void *addr;
+>>  	unsigned long real_size =3D size;
+>> +	unsigned long real_align =3D align;
+>> +	unsigned int shift =3D PAGE_SHIFT;
+>> =20
+>>  	size =3D PAGE_ALIGN(size);
+>>  	if (!size || (size >> PAGE_SHIFT) > totalram_pages())
+>>  		goto fail;
+>> =20
+>> +	if (IS_ENABLED(CONFIG_HAVE_ARCH_HUGE_VMAP)) {
+>> +		unsigned long size_per_node;
+>> +
+>> +		size_per_node =3D size;
+>> +		if (node =3D=3D NUMA_NO_NODE)
+>> +			size_per_node /=3D num_online_nodes();
+>> +		if (size_per_node >=3D PMD_SIZE)
+>> +			shift =3D PMD_SHIFT;
+>=20
+> There are two problems here.
+>=20
+> 1. Should not size_per_node be aligned with PMD_SIZE to avoid wasting mem=
+ory later
+>    because of alignment upwards (making it worse for NUMA_NO_NODE)
+
+I'm not sure what you mean, it's just a heuristic to check for node
+interleaving, and use small pages if large can not interleave well.
+
+> 2. What about PUD_SIZE which is not considered here at all
+
+Yeah, not doing PUD pages at all. It would be pretty trivial to add=20
+after PMD is working, but would it actually get used anywhere?
+
+> 3. We should have similar knobs like ioremap controlling different size h=
+uge mappings
+>=20
+> static int __read_mostly ioremap_p4d_capable;
+> static int __read_mostly ioremap_pud_capable;
+> static int __read_mostly ioremap_pmd_capable;
+> static int __read_mostly ioremap_huge_disabled;
+>=20
+> while also giving arch a chance to weigh in through similar overrides lik=
+e these.
+>=20
+> arch_ioremap_[pud|pmd]_supported() ---> probably unifying it for vmalloc(=
+)=20
+
+I'm not sure if that makes sense. IO mappings I could see maybe having
+some quirks or bugs or support issues. Cacheable mappings should be the
+"base" for supporting larger pages, if the platform has trouble with
+those then it should just avoid the feature I think.
+
+Or is there a good reason to add the option? I don't mind, I just want
+to avoid proliferation.
+
+>> +	}
+>> +again:
+>> +	align =3D max(real_align, 1UL << shift);
+>> +	size =3D ALIGN(real_size, align);
+>> +
+>>  	area =3D __get_vm_area_node(size, align, VM_ALLOC | VM_UNINITIALIZED |
+>>  				vm_flags, start, end, node, gfp_mask, caller);
+>>  	if (!area)
+>>  		goto fail;
+>> =20
+>> +	area->page_shift =3D shift - PAGE_SHIFT;
+>> +
+>>  	addr =3D __vmalloc_area_node(area, gfp_mask, prot, node);
+>>  	if (!addr)
+>> -		return NULL;
+>> +		goto fail;
+>> =20
+>>  	/*
+>>  	 * In this function, newly allocated vm_struct has VM_UNINITIALIZED
+>> @@ -2648,8 +2716,16 @@ void *__vmalloc_node_range(unsigned long size, un=
+signed long align,
+>>  	return addr;
+>> =20
+>>  fail:
+>> -	warn_alloc(gfp_mask, NULL,
+>> +	if (shift =3D=3D PMD_SHIFT) {
+>> +		shift =3D PAGE_SHIFT;
+>> +		goto again;
+>> +	}
+>=20
+> PUD_SHIFT should be accommodated here as well while falling back to lower
+> mapping sizes in case previous allocation attempt fails.
+>=20
+
+This also would be part of PUD support.
+
+Thanks,
+Nick
+=
