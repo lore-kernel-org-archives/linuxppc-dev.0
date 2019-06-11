@@ -2,65 +2,69 @@ Return-Path: <SRS0=3S3E=UK=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.9 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.0 required=3.0 tests=INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2CEF4C4321A
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Jun 2019 07:26:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D32CDC4321A
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Jun 2019 07:28:29 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 4C38E2086D
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Jun 2019 07:26:45 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=neuling.org header.i=@neuling.org header.b="GwrXFAyI"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4C38E2086D
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=neuling.org
+	by mail.kernel.org (Postfix) with ESMTPS id 5A6472086D
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Jun 2019 07:28:29 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5A6472086D
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=bugzilla.kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45NM4y5SgWzDqZw
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Jun 2019 17:26:42 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45NM2f2nRXzDqMg
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Jun 2019 17:24:42 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45NM6z2c5vzDqZS
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Jun 2019 17:28:27 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=neuling.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=neuling.org header.i=@neuling.org header.b="GwrXFAyI"; 
- dkim-atps=neutral
-Received: from neuling.org (localhost [127.0.0.1])
- by ozlabs.org (Postfix) with ESMTP id 45NM2c6XVmz9s4Y;
- Tue, 11 Jun 2019 17:24:40 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=neuling.org;
- s=201811; t=1560237880;
- bh=m3LDjm4NiOZ5VYUqoFur2ahPV8ez+tRbiPtVObgfueU=;
- h=Subject:From:To:Cc:Date:In-Reply-To:References:From;
- b=GwrXFAyIyXZn6zlLmaHgtZgOEjGquS7pAIX4ZfRHBE/7Mum7/MqE4K5mjjm2Q4dk2
- jlG8zr1hRYMbF9OgkNc3WJd/Dk+Bnzt6y+nNjljcYwG1h5yIC/mR8gFdZwIpaztByW
- FNeYQnEuwVXi4qDZcU2wGMT66CRS/7aIOzFiMfnT64TawWEmbWtyGZCiVMOiNTojgB
- pKuGXtrH07ZCb8bfhTPvxdv5Kt4qfDTub0Kg7iwAZ2UhrwUa5MZDSicfoznMxpT3Ge
- KFz86151pwc2hhr3z4s/Nr6WekX1v3UXRWcMBqwKBGRt/PGCSLVrYwcVlsKq43hSgz
- Eay/10zb3x6og==
-Received: by neuling.org (Postfix, from userid 1000)
- id D23B12A0E2F; Tue, 11 Jun 2019 17:24:40 +1000 (AEST)
-Message-ID: <5d4cdec0f11e1d47b196b068fcd9fdb107f147b0.camel@neuling.org>
-Subject: Re: [PATCH v2] powerpc: Add force enable of DAWR on P9 option
-From: Michael Neuling <mikey@neuling.org>
-To: =?ISO-8859-1?Q?C=E9dric?= Le Goater <clg@kaod.org>, mpe@ellerman.id.au
-Date: Tue, 11 Jun 2019 17:24:40 +1000
-In-Reply-To: <dc9106e8-422f-5582-e463-def38902f03a@kaod.org>
-References: <20190401060312.22670-1-mikey@neuling.org>
- <68f4f99d-4bb7-7d25-1e68-96c65dfbfbe9@kaod.org>
- <287ab7092cc6128e1c0d25f6245eb5f1706c6cb0.camel@neuling.org>
- <dc9106e8-422f-5582-e463-def38902f03a@kaod.org>
+ spf=pass (mailfrom) smtp.mailfrom=bugzilla.kernel.org
+ (client-ip=198.145.29.98; helo=mail.wl.linuxfoundation.org;
+ envelope-from=bugzilla-daemon@bugzilla.kernel.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=bugzilla.kernel.org
+Received: from mail.wl.linuxfoundation.org (mail.wl.linuxfoundation.org
+ [198.145.29.98])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45NM461K5hzDqZS
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Jun 2019 17:25:57 +1000 (AEST)
+Received: from mail.wl.linuxfoundation.org (localhost [127.0.0.1])
+ by mail.wl.linuxfoundation.org (Postfix) with ESMTP id 829C62857B
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Jun 2019 07:25:54 +0000 (UTC)
+Received: by mail.wl.linuxfoundation.org (Postfix, from userid 486)
+ id 767992873F; Tue, 11 Jun 2019 07:25:54 +0000 (UTC)
+From: bugzilla-daemon@bugzilla.kernel.org
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [Bug 203839] Kernel 5.2-rc3 fails to boot on a PowerMac G4 3,6:
+ systemd[1]: Failed to bump fs.file-max, ignoring: invalid argument
+Date: Tue, 11 Jun 2019 07:25:53 +0000
+X-Bugzilla-Reason: None
+X-Bugzilla-Type: changed
+X-Bugzilla-Watch-Reason: AssignedTo platform_ppc-32@kernel-bugs.osdl.org
+X-Bugzilla-Product: Platform Specific/Hardware
+X-Bugzilla-Component: PPC-32
+X-Bugzilla-Version: 2.5
+X-Bugzilla-Keywords: 
+X-Bugzilla-Severity: normal
+X-Bugzilla-Who: christophe.leroy@c-s.fr
+X-Bugzilla-Status: NEW
+X-Bugzilla-Resolution: 
+X-Bugzilla-Priority: P1
+X-Bugzilla-Assigned-To: platform_ppc-32@kernel-bugs.osdl.org
+X-Bugzilla-Flags: 
+X-Bugzilla-Changed-Fields: 
+Message-ID: <bug-203839-206035-Acd6qHYi4L@https.bugzilla.kernel.org/>
+In-Reply-To: <bug-203839-206035@https.bugzilla.kernel.org/>
+References: <bug-203839-206035@https.bugzilla.kernel.org/>
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
-User-Agent: Evolution 3.32.2 (3.32.2-1.fc30) 
+X-Bugzilla-URL: https://bugzilla.kernel.org/
+Auto-Submitted: auto-generated
 MIME-Version: 1.0
+X-Virus-Scanned: ClamAV using ClamSMTP
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -72,124 +76,77 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, Cameron Kaiser <spectre@floodgap.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, 2019-06-11 at 08:48 +0200, C=C3=A9dric Le Goater wrote:
-> On 11/06/2019 08:44, Michael Neuling wrote:
-> > > >  2:
-> > > > -BEGIN_FTR_SECTION
-> > > > -	/* POWER9 with disabled DAWR */
-> > > > +	LOAD_REG_ADDR(r11, dawr_force_enable)
-> > > > +	lbz	r11, 0(r11)
-> > > > +	cmpdi	r11, 0
-> > > >  	li	r3, H_HARDWARE
-> > > > -	blr
-> > > > -END_FTR_SECTION_IFCLR(CPU_FTR_DAWR)
-> > > > +	beqlr
-> > >=20
-> > > Why is this a 'beqlr' ? Shouldn't it be a blr ?=20
-> >=20
-> > I believe it's right and should be a beqlr.  It's to replace the FTR se=
-ction to
-> > make it dynamic based on the dawr_force_enable bit.
+https://bugzilla.kernel.org/show_bug.cgi?id=3D203839
+
+--- Comment #8 from Christophe Leroy (christophe.leroy@c-s.fr) ---
+Argh !
+
+CONFIG_SMP must (again) be the reason we missed it.
+
+Can you please try the change below ?
+
+diff --git a/arch/powerpc/kernel/head_32.S b/arch/powerpc/kernel/head_32.S
+index 1d5f1bd0dacd..f255e22184b4 100644
+--- a/arch/powerpc/kernel/head_32.S
++++ b/arch/powerpc/kernel/head_32.S
+@@ -752,6 +752,7 @@ __secondary_start:
+        stw     r0,0(r3)
+
+        /* load up the MMU */
++       bl      load_segment_registers
+        bl      load_up_mmu
+
+        /* ptr to phys current thread */
+
+Thanks
+Christophe
+
+On 06/11/2019 12:32 AM, bugzilla-daemon@bugzilla.kernel.org wrote:
+> https://bugzilla.kernel.org/show_bug.cgi?id=3D203839
 >=20
-> hmm, see the crash below on a L1 running a nested guest. r3 is set
-> to -1 (H_HARDWARE) but a vpcu pointer was expected. How can we fix
-> this ?=20
+> --- Comment #6 from Erhard F. (erhard_f@mailbox.org) ---
+> Created attachment 283183
+>    --> https://bugzilla.kernel.org/attachment.cgi?id=3D283183&action=3Ded=
+it
+> bisect.log
 >=20
-> C.
+> bisect took me a while due to quite some skips. Cherry-picking
+> 397d2300b08cdee052053e362018cdb6dd65eea2 and
+> 305d60012304684bd59ea1f67703e51662e4906a helped me complete it.
 >=20
+> # git bisect good | tee -a /root/bisect02.log
+> 215b823707ce4e8e52b106915f70357fa474c669 is the first bad commit
+> commit 215b823707ce4e8e52b106915f70357fa474c669
+> Author: Christophe Leroy <christophe.leroy@c-s.fr>
+> Date:   Fri Apr 26 16:23:36 2019 +0000
 >=20
-> [   44.374746] BUG: Kernel NULL pointer dereference at 0x000013bf
-> [   44.374848] Faulting instruction address: 0xc00000000010b044
-> [   44.374906] Oops: Kernel access of bad area, sig: 11 [#1]
-> [   44.374951] LE PAGE_SIZE=3D64K MMU=3DRadix MMU=3DHash SMP NR_CPUS=3D20=
-48 NUMA pSeries
-> [   44.375018] Modules linked in: vhost_net vhost tap xt_CHECKSUM iptable=
-_mangle xt_MASQUERADE iptable_nat nf_nat xt_conntrack nf_conntrack nf_defra=
-g_ipv6 libcrc32c nf_defrag_ipv4 ipt_REJECT nf_reject_ipv4 xt_tcpudp bridge =
-stp llc ebtable_filter ebtables ip6table_filter ip6_tables iptable_filter b=
-pfilter vmx_crypto crct10dif_vpmsum crc32c_vpmsum kvm_hv kvm sch_fq_codel i=
-p_tables x_tables autofs4 virtio_net net_failover virtio_scsi failover
-> [   44.375401] CPU: 8 PID: 1771 Comm: qemu-system-ppc Kdump: loaded Not t=
-ainted 5.2.0-rc4+ #3
-> [   44.375500] NIP:  c00000000010b044 LR: c0080000089dacf4 CTR: c00000000=
-010aff4
-> [   44.375604] REGS: c00000179b397710 TRAP: 0300   Not tainted  (5.2.0-rc=
-4+)
-> [   44.375691] MSR:  800000000280b033 <SF,VEC,VSX,EE,FP,ME,IR,DR,RI,LE>  =
-CR: 42244842  XER: 00000000
-> [   44.375815] CFAR: c00000000010aff8 DAR: 00000000000013bf DSISR: 420000=
-00 IRQMASK: 0=20
-> [   44.375815] GPR00: c0080000089dd6bc c00000179b3979a0 c008000008a04300 =
-ffffffffffffffff=20
-> [   44.375815] GPR04: 0000000000000000 0000000000000003 000000002444b05d =
-c0000017f11c45d0=20
-> [   44.375815] GPR08: 078000003e018dfe 0000000000000028 0000000000000001 =
-0000000000000075=20
-> [   44.375815] GPR12: c00000000010aff4 c000000007ff6300 0000000000000000 =
-0000000000000000=20
-> [   44.375815] GPR16: 0000000000000000 c0000017f11d0000 00000000ffffffff =
-c0000017f11ca7a8=20
-> [   44.375815] GPR20: c0000017f11c42ec ffffffffffffffff 0000000000000000 =
-000000000000000a=20
-> [   44.375815] GPR24: fffffffffffffffc 0000000000000000 c0000017f11c0000 =
-c000000001a77ed8=20
-> [   44.375815] GPR28: c00000179af70000 fffffffffffffffc c0080000089ff170 =
-c00000179ae88540=20
-> [   44.376673] NIP [c00000000010b044] kvmppc_h_set_dabr+0x50/0x68
-> [   44.376754] LR [c0080000089dacf4] kvmppc_pseries_do_hcall+0xa3c/0xeb0 =
-[kvm_hv]
-> [   44.376849] Call Trace:
-> [   44.376886] [c00000179b3979a0] [c0000017f11c0000] 0xc0000017f11c0000 (=
-unreliable)
-> [   44.376982] [c00000179b397a10] [c0080000089dd6bc] kvmppc_vcpu_run_hv+0=
-x694/0xec0 [kvm_hv]
-> [   44.377084] [c00000179b397ae0] [c0080000093f8bcc] kvmppc_vcpu_run+0x34=
-/0x48 [kvm]
-> [   44.377185] [c00000179b397b00] [c0080000093f522c] kvm_arch_vcpu_ioctl_=
-run+0x2f4/0x400 [kvm]
-> [   44.377286] [c00000179b397b90] [c0080000093e3618] kvm_vcpu_ioctl+0x460=
-/0x850 [kvm]
-> [   44.377384] [c00000179b397d00] [c0000000004ba6c4] do_vfs_ioctl+0xe4/0x=
-b40
-> [   44.377464] [c00000179b397db0] [c0000000004bb1e4] ksys_ioctl+0xc4/0x11=
-0
-> [   44.377547] [c00000179b397e00] [c0000000004bb258] sys_ioctl+0x28/0x80
-> [   44.377628] [c00000179b397e20] [c00000000000b888] system_call+0x5c/0x7=
-0
-> [   44.377712] Instruction dump:
-> [   44.377765] 4082fff4 4c00012c 38600000 4e800020 e96280c0 896b0000 2c2b=
-0000 3860ffff=20
-> [   44.377862] 4d820020 50852e74 508516f6 78840724 <f88313c0> f8a313c8 7c=
-942ba6 7cbc2ba6=20
+>      powerpc/32s: set up an early static hash table for KASAN.
+>=20
+>      KASAN requires early activation of hash table, before memblock()
+>      functions are available.
+>=20
+>      This patch implements an early hash_table statically defined in
+>      __initdata.
+>=20
+>      During early boot, a single page table is used.
+>=20
+>      For hash32, when doing the final init, one page table is allocated
+>      for each PGD entry because of the _PAGE_HASHPTE flag which can't be
+>      common to several virt pages. This is done after memblock get
+>      available but before switching to the final hash table, otherwise
+>      there are issues with TLB flushing due to the shared entries.
+>=20
+>      Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+>      Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+>=20
+> :040000 040000 abc24eb3c4ad3e4f2b1eb7b52c295c8b95d79a78
+> c3b6114c26eb8e181abb3f1abc9b6ecc12292f4d M      arch
+>
 
-
-Opps, it's because I corrupted r3 :-(
-
-Does this fix it?
-
-
-diff --git a/arch/powerpc/kvm/book3s_hv_rmhandlers.S b/arch/powerpc/kvm/boo=
-k3s_hv_rmhandlers.S
-index 139027c62d..f781ee1458 100644
---- a/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-+++ b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-@@ -2519,8 +2519,10 @@ END_FTR_SECTION_IFSET(CPU_FTR_ARCH_207S)
- 	LOAD_REG_ADDR(r11, dawr_force_enable)
- 	lbz	r11, 0(r11)
- 	cmpdi	r11, 0
-+	bne	3f
- 	li	r3, H_HARDWARE
--	beqlr
-+	blr
-+3:
- 	/* Emulate H_SET_DABR/X on P8 for the sake of compat mode guests */
- 	rlwimi	r5, r4, 5, DAWRX_DR | DAWRX_DW
- 	rlwimi	r5, r4, 2, DAWRX_WT
-
-
-
+--=20
+You are receiving this mail because:
+You are watching the assignee of the bug.=
