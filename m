@@ -2,106 +2,101 @@ Return-Path: <SRS0=IyNZ=UL=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	HTML_MESSAGE,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 95DDBC31E46
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Jun 2019 22:42:49 +0000 (UTC)
-Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 31DA8C31E46
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Jun 2019 23:06:33 +0000 (UTC)
+Received: from lists.ozlabs.org (unknown [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 0F83420684
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Jun 2019 22:42:48 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0F83420684
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id A60AE20896
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Jun 2019 23:06:32 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=axtens.net header.i=@axtens.net header.b="kMu+BVJa"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A60AE20896
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=axtens.net
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45PMMV66ZbzDr7n
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Jun 2019 08:42:46 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45PMtt1rl3zDr7Z
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Jun 2019 09:06:30 +1000 (AEST)
 Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45PKGh46XVzDqsb
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Jun 2019 07:08:28 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=linux.vnet.ibm.com
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 45PKGh0XyVz8t3y
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Jun 2019 07:08:28 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45PMrk04xBzDqwM
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Jun 2019 09:04:37 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=axtens.net
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=axtens.net header.i=@axtens.net header.b="kMu+BVJa"; 
+ dkim-atps=neutral
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 45PMrj6Fc6z8t23
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Jun 2019 09:04:37 +1000 (AEST)
 Received: by ozlabs.org (Postfix)
- id 45PKGh094Dz9sBb; Thu, 13 Jun 2019 07:08:28 +1000 (AEST)
+ id 45PMrj5tvpz9sCJ; Thu, 13 Jun 2019 09:04:37 +1000 (AEST)
 Authentication-Results: ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=linux.vnet.ibm.com
- (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=nayna@linux.vnet.ibm.com; receiver=<UNKNOWN>)
-Authentication-Results: ozlabs.org; dmarc=none (p=none dis=none)
- header.from=linux.vnet.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ spf=pass (mailfrom) smtp.mailfrom=axtens.net
+ (client-ip=2607:f8b0:4864:20::544; helo=mail-pg1-x544.google.com;
+ envelope-from=dja@axtens.net; receiver=<UNKNOWN>)
+Authentication-Results: ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=axtens.net
+Authentication-Results: ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=axtens.net header.i=@axtens.net header.b="kMu+BVJa"; 
+ dkim-atps=neutral
+Received: from mail-pg1-x544.google.com (mail-pg1-x544.google.com
+ [IPv6:2607:f8b0:4864:20::544])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 45PKGg3v0Bz9s4Y;
- Thu, 13 Jun 2019 07:08:27 +1000 (AEST)
-Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x5CL5AA6053524; Wed, 12 Jun 2019 17:08:16 -0400
-Received: from ppma01dal.us.ibm.com (83.d6.3fa9.ip4.static.sl-reverse.com
- [169.63.214.131])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2t373gma3u-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 12 Jun 2019 17:08:16 -0400
-Received: from pps.filterd (ppma01dal.us.ibm.com [127.0.0.1])
- by ppma01dal.us.ibm.com (8.16.0.27/8.16.0.27) with SMTP id x5CGQpCv025957;
- Wed, 12 Jun 2019 16:30:02 GMT
-Received: from b01cxnp23032.gho.pok.ibm.com (b01cxnp23032.gho.pok.ibm.com
- [9.57.198.27]) by ppma01dal.us.ibm.com with ESMTP id 2t1x6ssrcr-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 12 Jun 2019 16:30:02 +0000
-Received: from b01ledav003.gho.pok.ibm.com (b01ledav003.gho.pok.ibm.com
- [9.57.199.108])
- by b01cxnp23032.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x5CL8D5911731236
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Wed, 12 Jun 2019 21:08:13 GMT
-Received: from b01ledav003.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 8CA4EB2067;
- Wed, 12 Jun 2019 21:08:13 +0000 (GMT)
-Received: from b01ledav003.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 8A879B2079;
- Wed, 12 Jun 2019 21:08:12 +0000 (GMT)
-Received: from swastik.ibm.com (unknown [9.85.138.41])
- by b01ledav003.gho.pok.ibm.com (Postfix) with ESMTP;
- Wed, 12 Jun 2019 21:08:12 +0000 (GMT)
-Subject: Re: [PATCH v3 1/3] powerpc/powernv: Add OPAL API interface to get
- secureboot state
-To: Daniel Axtens <dja@axtens.net>, Nayna Jain <nayna@linux.ibm.com>,
+ by ozlabs.org (Postfix) with ESMTPS id 45PMrh213jz9sBb
+ for <linuxppc-dev@ozlabs.org>; Thu, 13 Jun 2019 09:04:35 +1000 (AEST)
+Received: by mail-pg1-x544.google.com with SMTP id k187so9236899pga.0
+ for <linuxppc-dev@ozlabs.org>; Wed, 12 Jun 2019 16:04:35 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=axtens.net; s=google;
+ h=from:to:cc:subject:in-reply-to:references:date:message-id
+ :mime-version; bh=0sXEuoXXfB+58oAqB27nyxVJnIR0qxmqN3amvLO4MUI=;
+ b=kMu+BVJa981hAatIgUu4yrYi7Q8PVRZO3FdVXL/KM/vtg9zSDoY6QaoYVsgwARCtsB
+ 8wMNnJZZEbmSLCmDQCZCYinzc3oFyRXDR4yjqyajTfxcaq5mYNvy6US7H9FOyI1ujcE6
+ mkifXT6gFQ7lLMNCAiWTrrsyS6n/+tpWDLK+4=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:from:to:cc:subject:in-reply-to:references:date
+ :message-id:mime-version;
+ bh=0sXEuoXXfB+58oAqB27nyxVJnIR0qxmqN3amvLO4MUI=;
+ b=t583ys49P9KRD//Bwsl9kbA/FM7TVZhv/7h3yvRJT5TV/JJXwGFippLKmA8g69z0JR
+ jOjFCuRZrB4gk7UikbIbpxyE1iZT/TNsXM938ZVsmjx7JSRScbE01OOr5exozSJChlDP
+ mPqFl/9fyK+VJ0Q2nonsPC6Ul/JB3YRDA2Fa3dc3/Vepx6E418xTtR95G1++q4RpFs33
+ aOwiTX9fUUqpdC7va9KD02g5TIM/EZNjEy8vKHS+J1eaQYZvsGy5W/QQ5zZVnT17Uam2
+ MQfwMpd1vKgPjeiPvipcV43B68umlwRqgnpaSrzA6n26EIF1PytKkcbLY1ZVzEkjMoXF
+ 6ppQ==
+X-Gm-Message-State: APjAAAWD+nSgxQmkw+DhK7StkyxkPV+3O6ysTlG+sjX5ZXUdF8wi09eG
+ GgODfmPVTFfDvcKaSVZUFtj8RQ==
+X-Google-Smtp-Source: APXvYqx+XWoFTjG9dZbuolj86wqQOT4Iqef0H+9nNIH/wMPWesoTcaGtVUCDotl0QJH7LYE+KensLw==
+X-Received: by 2002:a63:ee0a:: with SMTP id e10mr26896771pgi.28.1560380672280; 
+ Wed, 12 Jun 2019 16:04:32 -0700 (PDT)
+Received: from localhost (ppp167-251-205.static.internode.on.net.
+ [59.167.251.205])
+ by smtp.gmail.com with ESMTPSA id g9sm463989pgs.78.2019.06.12.16.04.29
+ (version=TLS1_3 cipher=AEAD-AES256-GCM-SHA384 bits=256/256);
+ Wed, 12 Jun 2019 16:04:31 -0700 (PDT)
+From: Daniel Axtens <dja@axtens.net>
+To: Nayna <nayna@linux.vnet.ibm.com>, Nayna Jain <nayna@linux.ibm.com>,
  linuxppc-dev@ozlabs.org, linux-efi@vger.kernel.org,
  linux-integrity@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v3 1/3] powerpc/powernv: Add OPAL API interface to get
+ secureboot state
+In-Reply-To: <eaa37bd0-a77d-d70a-feb5-c0e73ce231bf@linux.vnet.ibm.com>
 References: <1560198837-18857-1-git-send-email-nayna@linux.ibm.com>
  <1560198837-18857-2-git-send-email-nayna@linux.ibm.com>
  <87ftofpbth.fsf@dja-thinkpad.axtens.net>
-From: Nayna <nayna@linux.vnet.ibm.com>
-Message-ID: <eaa37bd0-a77d-d70a-feb5-c0e73ce231bf@linux.vnet.ibm.com>
-Date: Wed, 12 Jun 2019 17:08:12 -0400
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:52.0) Gecko/20100101
- Thunderbird/52.9.1
+ <eaa37bd0-a77d-d70a-feb5-c0e73ce231bf@linux.vnet.ibm.com>
+Date: Thu, 13 Jun 2019 09:04:26 +1000
+Message-ID: <87d0jipfr9.fsf@dja-thinkpad.axtens.net>
 MIME-Version: 1.0
-In-Reply-To: <87ftofpbth.fsf@dja-thinkpad.axtens.net>
-Content-Type: multipart/alternative;
- boundary="------------94B64B1CEF39324F1BD5A777"
-Content-Language: en-US
-X-TM-AS-GCONF: 00
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2019-06-12_13:, , signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1011 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1810050000 definitions=main-1906120145
-X-Mailman-Approved-At: Thu, 13 Jun 2019 08:39:12 +1000
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -122,309 +117,117 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This is a multi-part message in MIME format.
---------------94B64B1CEF39324F1BD5A777
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 8bit
+Hi Nayna,
 
-
-
-On 06/12/2019 02:17 AM, Daniel Axtens wrote:
-> Nayna Jain <nayna@linux.ibm.com> writes:
->
->> From: Claudio Carvalho <cclaudio@linux.ibm.com>
+>>> Since OPAL can support different types of backend which can vary in the
+>>> variable interpretation, a new OPAL API call named OPAL_SECVAR_BACKEND, is
+>>> added to retrieve the supported backend version. This helps the consumer
+>>> to know how to interpret the variable.
+>>>
+>> (Firstly, apologies that I haven't got around to asking about this yet!)
 >>
->> The X.509 certificates trusted by the platform and other information
->> required to secure boot the OS kernel are wrapped in secure variables,
->> which are controlled by OPAL.
+>> Are pluggable/versioned backend a good idea?
 >>
->> This patch adds support to read OPAL secure variables through
->> OPAL_SECVAR_GET call. It returns the metadata and data for a given secure
->> variable based on the unique key.
+>> There are a few things that worry me about the idea:
 >>
->> Since OPAL can support different types of backend which can vary in the
->> variable interpretation, a new OPAL API call named OPAL_SECVAR_BACKEND, is
->> added to retrieve the supported backend version. This helps the consumer
->> to know how to interpret the variable.
->>
-> (Firstly, apologies that I haven't got around to asking about this yet!)
+>>   - It adds complexity in crypto (or crypto-adjacent) code, and that
+>>     increases the likelihood that we'll accidentally add a bug with bad
+>>     consequences.
 >
-> Are pluggable/versioned backend a good idea?
+> Sorry, I think I am not clear on what exactly you mean here.Can you 
+> please elaborate or give specifics ?
+
+Cryptosystems with greater flexibility can have new kinds of
+vulnerabilities arise from the greater complexity. The first sort of
+thing that comes to mind is a downgrade attack like from TLS. I think
+you're protected from this because the mode cannot be negotiatied at run
+time, but in general it's security sensitive code so I'd like it to be
+as simple as possible.
+
+>>   - If we are worried about a long-term-future change to how secure-boot
+>>     works, would it be better to just add more get/set calls to opal at
+>>     the point at which we actually implement the new system?
 >
-> There are a few things that worry me about the idea:
+> The intention is to avoid to re-implement the key/value interface for 
+> each scheme. Do you mean to deprecate the old APIs and add new APIs with 
+> every scheme ?
+
+Yes, because I expect the scheme would change very, very rarely.
+
+>>   - Under what circumstances would would we change the kernel-visible
+>>     behaviour of skiboot? Are we expecting to change the behaviour,
+>>     content or names of the variables in future? Otherwise the only
+>>     relevant change I can think of is a change to hardware platforms, and
+>>     I'm not sure how a change in hardware would lead to change in
+>>     behaviour in the kernel. Wouldn't Skiboot hide h/w differences?
 >
->   - It adds complexity in crypto (or crypto-adjacent) code, and that
->     increases the likelihood that we'll accidentally add a bug with bad
->     consequences.
+> Backends are intended to be an agreement for firmware, kernel and 
+> userspace on what the format of variables are, what variables should be 
+> expected, how they should be signed, etc. Though we don't expect it to 
+> happen very often, we want to anticipate possible changes in the 
+> firmware which may affect the kernel such as new features, support of 
+> new authentication mechanisms, addition of new variables. Corresponding 
+> skiboot patches are on - 
+> https://lists.ozlabs.org/pipermail/skiboot/2019-June/014641.html
 
-Sorry, I think I am not clear on what exactly you mean here.Can you 
-please elaborate or give specifics ?
+I still feel like this is holding onto ongoing complexity for very
+little gain, but perhaps this is because I can't picture a specific
+change that would actually require a wholesale change to the scheme.
 
+You mention new features, support for new authentication mechanisms, and
+addition of new variables.
 
+ - New features is a bit too generic to answer specifically. In general
+   I accept that there exists some new feature that would be
+   sufficiently backwards-incompatible as to require a new version. I
+   just can't think of one off the top of my head and so I'm not
+   convinced it's worth the complexity. Did you have something in mind?
+
+ - By support for new authentication mechanisms, I assume you mean new
+   mechanisms for authenticating variable updates? This is communicated
+   in edk2 via the attributes field. Looking at patch 5 from the skiboot
+   series:
+
++ * When the attribute EFI_VARIABLE_TIME_BASED_AUTHENTICATED_WRITE_ACCESS is set,
++ * then the Data buffer shall begin with an instance of a complete (and
++ * serialized) EFI_VARIABLE_AUTHENTICATION_2 descriptor.
+
+   Could a new authentication scheme be communicated by setting a
+   different attribute value? Or are we not carrying attributes in the
+   metadata blob?
+
+ - For addition of new variables, I'm confused as to why this would
+   require a new API - wouldn't it just be exposed in the normal way via
+   opal_secvar_get(_next)?
+
+I guess I also somewhat object to calling it a 'backend' if we're using
+it as a version scheme. I think the skiboot storage backends are true
+backends - they provide different implementations of the same
+functionality with the same API, but this seems like you're using it to
+indicate different functionality. It seems like we're using it as if it
+were called OPAL_SECVAR_VERSION.
+
+>>   - What is the correct fallback behaviour if a kernel receives a result
+>>     that it does not expect? If a kernel expecting BackendV1 is instead
+>>     informed that it is running on BackendV2, then the cannot access the
+>>     secure variable at all, so it cannot load keys that are potentially
+>>     required to successfully boot (e.g. to validate the module for
+>>     network card or graphics!)
 >
->   - Under what circumstances would would we change the kernel-visible
->     behaviour of skiboot? Are we expecting to change the behaviour,
->     content or names of the variables in future? Otherwise the only
->     relevant change I can think of is a change to hardware platforms, and
->     I'm not sure how a change in hardware would lead to change in
->     behaviour in the kernel. Wouldn't Skiboot hide h/w differences?
+> The backend is declaredby the firmware, and is set at compile-time. The 
+> kernel queriesfirmware on whichbackend is in use, and the backend will 
+> not change at runtime.If the backend in use by the firmware is not 
+> supported by the kernel (e.g. kernel is too old), the kernel does not 
+> attempt to read any secure variables, as it won't understand what the 
+> format is. This is a secure boot failure condition, as we cannot verify 
+> the next kernel. With addition of new backends in the skiboot, the 
+> support will be added to the kernel. Note: skiboot and skiroot should 
+> always be in sync with backend support.
 
-Backends are intended to be an agreement for firmware, kernel and 
-userspace on what the format of variables are, what variables should be 
-expected, how they should be signed, etc. Though we don't expect it to 
-happen very often, we want to anticipate possible changes in the 
-firmware which may affect the kernel such as new features, support of 
-new authentication mechanisms, addition of new variables. Corresponding 
-skiboot patches are on - 
-https://lists.ozlabs.org/pipermail/skiboot/2019-June/014641.html
+Seems reasonable. I'm thinking specifically about the kernel loaded
+after skiroot; and yes, on reflection just failing to boot is the only
+sensible thing you can do.
 
-
->
->   - If we are worried about a long-term-future change to how secure-boot
->     works, would it be better to just add more get/set calls to opal at
->     the point at which we actually implement the new system?
-
-The intention is to avoid to re-implement the key/value interface for 
-each scheme. Do you mean to deprecate the old APIs and add new APIs with 
-every scheme ?
-
-
->     
->   - UEFI added EFI_VARIABLE_AUTHENTICATION_3 in a way that - as far
->     as I know - didn't break backwards compatibility. Is there a reason
->     we cannot add features that way instead? (It also dropped v1 of the
->     authentication header.)
->     
->   - What is the correct fallback behaviour if a kernel receives a result
->     that it does not expect? If a kernel expecting BackendV1 is instead
->     informed that it is running on BackendV2, then the cannot access the
->     secure variable at all, so it cannot load keys that are potentially
->     required to successfully boot (e.g. to validate the module for
->     network card or graphics!)
-
-The backend is declaredby the firmware, and is set at compile-time. The 
-kernel queriesfirmware on whichbackend is in use, and the backend will 
-not change at runtime.If the backend in use by the firmware is not 
-supported by the kernel (e.g. kernel is too old), the kernel does not 
-attempt to read any secure variables, as it won't understand what the 
-format is. This is a secure boot failure condition, as we cannot verify 
-the next kernel. With addition of new backends in the skiboot, the 
-support will be added to the kernel. Note: skiboot and skiroot should 
-always be in sync with backend support.
-
-
-Thanks & Regards,
-     - Nayna
-
-
---------------94B64B1CEF39324F1BD5A777
-Content-Type: text/html; charset=utf-8
-Content-Transfer-Encoding: 8bit
-
-<html>
-  <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-  </head>
-  <body text="#000000" bgcolor="#FFFFFF">
-    <p><br>
-    </p>
-    <br>
-    <div class="moz-cite-prefix">On 06/12/2019 02:17 AM, Daniel Axtens
-      wrote:<br>
-    </div>
-    <blockquote type="cite"
-      cite="mid:87ftofpbth.fsf@dja-thinkpad.axtens.net">
-      <pre wrap="">Nayna Jain <a class="moz-txt-link-rfc2396E" href="mailto:nayna@linux.ibm.com">&lt;nayna@linux.ibm.com&gt;</a> writes:
-
-</pre>
-      <blockquote type="cite">
-        <pre wrap="">From: Claudio Carvalho <a class="moz-txt-link-rfc2396E" href="mailto:cclaudio@linux.ibm.com">&lt;cclaudio@linux.ibm.com&gt;</a>
-
-The X.509 certificates trusted by the platform and other information
-required to secure boot the OS kernel are wrapped in secure variables,
-which are controlled by OPAL.
-
-This patch adds support to read OPAL secure variables through
-OPAL_SECVAR_GET call. It returns the metadata and data for a given secure
-variable based on the unique key.
-
-Since OPAL can support different types of backend which can vary in the
-variable interpretation, a new OPAL API call named OPAL_SECVAR_BACKEND, is
-added to retrieve the supported backend version. This helps the consumer
-to know how to interpret the variable.
-
-</pre>
-      </blockquote>
-      <pre wrap="">
-(Firstly, apologies that I haven't got around to asking about this yet!)
-
-Are pluggable/versioned backend a good idea?
-
-There are a few things that worry me about the idea:
-
- - It adds complexity in crypto (or crypto-adjacent) code, and that
-   increases the likelihood that we'll accidentally add a bug with bad
-   consequences.</pre>
-    </blockquote>
-    <br>
-    <span class="author-6932218873" style="font-family: Lato,
-      &quot;Helvetica Neue&quot;, Helvetica, Arial, sans-serif;
-      font-size: 14px; color: rgb(34, 34, 34);">Sorry, I think I am not
-      clear on what exactly you mean here.</span><span
-      class="author-6932218873 font-color-000000 font-size-medium"
-      style="color: rgb(34, 34, 34); font-family: Lato, &quot;Helvetica
-      Neue&quot;, Helvetica, Arial, sans-serif; font-size: 14px;"> </span><span
-      class="author-6932218873" style="font-family: Lato,
-      &quot;Helvetica Neue&quot;, Helvetica, Arial, sans-serif;
-      font-size: 14px; color: rgb(34, 34, 34);">Can you please elaborate
-      or give specifics ?</span><br>
-    <br>
-    <br>
-    <blockquote type="cite"
-      cite="mid:87ftofpbth.fsf@dja-thinkpad.axtens.net">
-      <pre wrap="">
-
- - Under what circumstances would would we change the kernel-visible
-   behaviour of skiboot? Are we expecting to change the behaviour,
-   content or names of the variables in future? Otherwise the only
-   relevant change I can think of is a change to hardware platforms, and
-   I'm not sure how a change in hardware would lead to change in
-   behaviour in the kernel. Wouldn't Skiboot hide h/w differences?</pre>
-    </blockquote>
-    <br>
-    <span class="author-6932218873" style="font-family: Lato,
-      &quot;Helvetica Neue&quot;, Helvetica, Arial, sans-serif;
-      font-size: 14px; color: rgb(34, 34, 34);">Backends are intended to
-      be an agreement for firmware, kernel and userspace on what the
-      format of variables are, what variables should be expected, how
-      they should be signed, etc. Though we don't expect it to happen
-      very often, we want to anticipate possible changes in the firmware
-      which may affect the kernel such as new features, support of new
-      authentication mechanisms, addition of new variables.
-      Corresponding skiboot patches are on - </span><span
-      class="author-6932218873
-link-MTU2MDM3MzE4NDE1My1odHRwczovL2xpc3RzLm96bGFicy5vcmcvcGlwZXJtYWlsL3NraWJvb3QvMjAxOS1KdW5lLzAxNDY0MS5odG1s"
-      style="font-family: Lato, &quot;Helvetica Neue&quot;, Helvetica,
-      Arial, sans-serif; font-size: 14px; color: rgb(34, 34, 34);"><a
-        href="https://lists.ozlabs.org/pipermail/skiboot/2019-June/014641.html"
-        target="_blank" rel="noreferrer nofollow" class="link"
-data-attrib-id="MTU2MDM3MzE4NDE1My1odHRwczovL2xpc3RzLm96bGFicy5vcmcvcGlwZXJtYWlsL3NraWJvb3QvMjAxOS1KdW5lLzAxNDY0MS5odG1s">https://lists.ozlabs.org/pipermail/skiboot/2019-June/014641.html</a></span><br>
-    <br>
-    <br>
-    <blockquote type="cite"
-      cite="mid:87ftofpbth.fsf@dja-thinkpad.axtens.net">
-      <pre wrap="">
-
- - If we are worried about a long-term-future change to how secure-boot
-   works, would it be better to just add more get/set calls to opal at
-   the point at which we actually implement the new system?</pre>
-    </blockquote>
-    <br>
-    <span class="author-6932218873 font-color-000000 font-size-medium"
-      style="color: rgb(34, 34, 34); font-family: Lato, &quot;Helvetica
-      Neue&quot;, Helvetica, Arial, sans-serif; font-size: 14px;">The
-      intention is to avoid to re-implement the key/value interface for
-      each scheme. Do yo</span><span class="author-6932218873"
-      style="font-family: Lato, &quot;Helvetica Neue&quot;, Helvetica,
-      Arial, sans-serif; font-size: 14px; color: rgb(34, 34, 34);">u
-      mean to deprecate the old APIs and add new APIs with every scheme
-      ?</span><br>
-    <br>
-    <br>
-    <blockquote type="cite"
-      cite="mid:87ftofpbth.fsf@dja-thinkpad.axtens.net">
-      <pre wrap="">
-   
- - UEFI added EFI_VARIABLE_AUTHENTICATION_3 in a way that - as far
-   as I know - didn't break backwards compatibility. Is there a reason
-   we cannot add features that way instead? (It also dropped v1 of the
-   authentication header.)
-   
- - What is the correct fallback behaviour if a kernel receives a result
-   that it does not expect? If a kernel expecting BackendV1 is instead
-   informed that it is running on BackendV2, then the cannot access the
-   secure variable at all, so it cannot load keys that are potentially
-   required to successfully boot (e.g. to validate the module for
-   network card or graphics!)</pre>
-    </blockquote>
-    <br>
-    <div data-node-type="line" id="magicdomid1119" class="ace-line"><span
-        class="author-6932218873 font-color-000000 font-size-medium"
-        style="color: rgb(34, 34, 34); font-family: Lato,
-        &quot;Helvetica Neue&quot;, Helvetica, Arial, sans-serif;
-        font-size: 14px;">The backend is </span><span
-        class="author-270238033 font-color-000000 font-size-medium"
-        style="color: rgb(34, 34, 34); font-family: Lato,
-        &quot;Helvetica Neue&quot;, Helvetica, Arial, sans-serif;
-        font-size: 14px;">declared</span><span class="author-6932218873
-        font-color-000000 font-size-medium" style="color: rgb(34, 34,
-        34); font-family: Lato, &quot;Helvetica Neue&quot;, Helvetica,
-        Arial, sans-serif; font-size: 14px;"> by the firmware, </span><span
-        class="author-270238033 font-color-000000 font-size-medium"
-        style="color: rgb(34, 34, 34); font-family: Lato,
-        &quot;Helvetica Neue&quot;, Helvetica, Arial, sans-serif;
-        font-size: 14px;">and is set at compile-time. T</span><span
-        class="author-6932218873 font-color-000000 font-size-medium"
-        style="color: rgb(34, 34, 34); font-family: Lato,
-        &quot;Helvetica Neue&quot;, Helvetica, Arial, sans-serif;
-        font-size: 14px;">he kernel </span><span
-        class="author-270238033 font-color-000000 font-size-medium"
-        style="color: rgb(34, 34, 34); font-family: Lato,
-        &quot;Helvetica Neue&quot;, Helvetica, Arial, sans-serif;
-        font-size: 14px;">queries</span><span class="author-6932218873
-        font-color-000000 font-size-medium" style="color: rgb(34, 34,
-        34); font-family: Lato, &quot;Helvetica Neue&quot;, Helvetica,
-        Arial, sans-serif; font-size: 14px;"> firmware </span><span
-        class="author-270238033 font-color-000000 font-size-medium"
-        style="color: rgb(34, 34, 34); font-family: Lato,
-        &quot;Helvetica Neue&quot;, Helvetica, Arial, sans-serif;
-        font-size: 14px;">on which</span><span class="author-6932218873
-        font-color-000000 font-size-medium" style="color: rgb(34, 34,
-        34); font-family: Lato, &quot;Helvetica Neue&quot;, Helvetica,
-        Arial, sans-serif; font-size: 14px;"> backend </span><span
-        class="author-270238033 font-color-000000 font-size-medium"
-        style="color: rgb(34, 34, 34); font-family: Lato,
-        &quot;Helvetica Neue&quot;, Helvetica, Arial, sans-serif;
-        font-size: 14px;">is in use, and the backend will not change at
-        runtime.</span><span class="author-6932218873 font-color-000000
-        font-size-medium" style="color: rgb(34, 34, 34); font-family:
-        Lato, &quot;Helvetica Neue&quot;, Helvetica, Arial, sans-serif;
-        font-size: 14px;"> </span><span class="author-270238033
-        font-color-000000 font-size-medium" style="color: rgb(34, 34,
-        34); font-family: Lato, &quot;Helvetica Neue&quot;, Helvetica,
-        Arial, sans-serif; font-size: 14px;">If the backend in use by
-        the firmware is not supported by the kernel (e.g. kernel is too
-        old), the kernel does not attempt to read any secure variables,
-        as it won't understand what the format is. This is a secure boot
-        failure condition, as we cannot verify the next kernel. </span><span
-        class="author-270238033 font-color-000000 font-size-medium"
-        style="color: rgb(34, 34, 34); font-family: Lato,
-        &quot;Helvetica Neue&quot;, Helvetica, Arial, sans-serif;
-        font-size: 14px;"><span class="author-6932218873
-          font-color-000000 font-size-medium" style="color: rgb(34, 34,
-          34); font-family: Lato, &quot;Helvetica Neue&quot;, Helvetica,
-          Arial, sans-serif; font-size: 14px;">With addition of new
-          backends in the skiboot, the support will be added to the
-          kernel.</span> Note: skiboot and skiroot should always be in
-        sync with backend support.</span><span class="author-6932218873
-        font-color-000000 font-size-medium" style="color: rgb(34, 34,
-        34); font-family: Lato, &quot;Helvetica Neue&quot;, Helvetica,
-        Arial, sans-serif; font-size: 14px;"> </span></div>
-    <div data-node-type="line" id="magicdomid1320" class="ace-line"><span
-        class="author-6932218873 font-color-000000 font-size-medium"
-        style="color: rgb(34, 34, 34); font-family: Lato,
-        &quot;Helvetica Neue&quot;, Helvetica, Arial, sans-serif;
-        font-size: 14px;"></span><br>
-      <span class="author-6932218873 font-color-000000 font-size-medium"
-        style="color: rgb(34, 34, 34); font-family: Lato,
-        &quot;Helvetica Neue&quot;, Helvetica, Arial, sans-serif;
-        font-size: 14px;"></span></div>
-    <br>
-    Thanks &amp; Regards,<br>
-        - Nayna<br>
-    <br>
-  </body>
-</html>
-
---------------94B64B1CEF39324F1BD5A777--
+Regards,
+Daniel
 
