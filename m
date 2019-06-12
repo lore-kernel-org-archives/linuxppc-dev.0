@@ -2,57 +2,87 @@ Return-Path: <SRS0=IyNZ=UL=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1F07FC31E46
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Jun 2019 03:34:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EF2FEC31E46
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Jun 2019 04:47:29 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 71E7B20866
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Jun 2019 03:34:55 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 71E7B20866
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kernel.crashing.org
+	by mail.kernel.org (Postfix) with ESMTPS id 4C671206E0
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Jun 2019 04:47:28 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4C671206E0
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45Nstz51TbzDqyh
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Jun 2019 13:34:51 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=permerror (mailfrom)
- smtp.mailfrom=kernel.crashing.org (client-ip=63.228.1.57;
- helo=gate.crashing.org; envelope-from=benh@kernel.crashing.org;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=kernel.crashing.org
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 45NvVk1CGGzDqyf
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Jun 2019 14:47:26 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+ spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
+ (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
+ envelope-from=nathanl@linux.ibm.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=linux.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45Nsrw63ZLzDqb5
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Jun 2019 13:33:03 +1000 (AEST)
-Received: from localhost (localhost.localdomain [127.0.0.1])
- by gate.crashing.org (8.14.1/8.14.1) with ESMTP id x5C3WnMD029931;
- Tue, 11 Jun 2019 22:32:50 -0500
-Message-ID: <9fc8153bf08d1a5fd166d0cb38585094bffa060b.camel@kernel.crashing.org>
-Subject: Re: [BISECTED REGRESSION] b43legacy broken on G4 PowerBook
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Larry Finger <Larry.Finger@lwfinger.net>, Christoph Hellwig <hch@lst.de>
-Date: Wed, 12 Jun 2019 13:32:49 +1000
-In-Reply-To: <7dcf54a9-a7aa-3a4c-8e2d-556be633d6e0@lwfinger.net>
-References: <20190605225059.GA9953@darkstar.musicnaut.iki.fi>
- <73da300c-871c-77ac-8a3a-deac226743ef@lwfinger.net>
- <20190607172902.GA8183@lst.de>
- <30000803-3772-3edf-f4a9-55122d504f3f@lwfinger.net>
- <20190610081825.GA16534@lst.de>
- <153c13f5-a829-1eab-a3c5-fecfb84127ff@lwfinger.net>
- <20190611060521.GA19512@lst.de>
- <5aaa600b-5b59-1f68-454f-20403c318f1a@lwfinger.net>
- <0b257651bb7ac4a6f0a8dce5470120b7701720b9.camel@kernel.crashing.org>
- <7dcf54a9-a7aa-3a4c-8e2d-556be633d6e0@lwfinger.net>
-Content-Type: text/plain; charset="UTF-8"
-X-Mailer: Evolution 3.28.5-0ubuntu0.18.04.1 
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45NvSC424gzDqvp
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Jun 2019 14:45:14 +1000 (AEST)
+Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
+ x5C4fsK2004328
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Jun 2019 00:45:10 -0400
+Received: from ppma01wdc.us.ibm.com (fd.55.37a9.ip4.static.sl-reverse.com
+ [169.55.85.253])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2t2rbhvtqy-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Jun 2019 00:45:09 -0400
+Received: from pps.filterd (ppma01wdc.us.ibm.com [127.0.0.1])
+ by ppma01wdc.us.ibm.com (8.16.0.27/8.16.0.27) with SMTP id x5C4efDj022152
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Jun 2019 04:45:10 GMT
+Received: from b03cxnp07029.gho.boulder.ibm.com
+ (b03cxnp07029.gho.boulder.ibm.com [9.17.130.16])
+ by ppma01wdc.us.ibm.com with ESMTP id 2t1qctrqc0-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Jun 2019 04:45:10 +0000
+Received: from b03ledav003.gho.boulder.ibm.com
+ (b03ledav003.gho.boulder.ibm.com [9.17.130.234])
+ by b03cxnp07029.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x5C4j7hs22151572
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Jun 2019 04:45:08 GMT
+Received: from b03ledav003.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id BFFF76A04F
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Jun 2019 04:45:07 +0000 (GMT)
+Received: from b03ledav003.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 8DDB46A04D
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Jun 2019 04:45:07 +0000 (GMT)
+Received: from localhost (unknown [9.85.194.175])
+ by b03ledav003.gho.boulder.ibm.com (Postfix) with ESMTP
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Jun 2019 04:45:07 +0000 (GMT)
+From: Nathan Lynch <nathanl@linux.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH 1/3] powerpc/cacheinfo: add cacheinfo_teardown,
+ cacheinfo_rebuild
+Date: Tue, 11 Jun 2019 23:45:04 -0500
+Message-Id: <20190612044506.16392-2-nathanl@linux.ibm.com>
+X-Mailer: git-send-email 2.20.1
+In-Reply-To: <20190612044506.16392-1-nathanl@linux.ibm.com>
+References: <20190612044506.16392-1-nathanl@linux.ibm.com>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
+ definitions=2019-06-12_02:, , signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ malwarescore=0 suspectscore=1 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=994 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1810050000 definitions=main-1906120031
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -64,56 +94,66 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, Christian Zigotzky <chzigotzky@xenosoft.de>,
- linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org,
- Aaro Koskinen <aaro.koskinen@iki.fi>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, 2019-06-11 at 20:52 -0500, Larry Finger wrote:
-> On 6/11/19 5:46 PM, Benjamin Herrenschmidt wrote:
-> > On Tue, 2019-06-11 at 17:20 -0500, Larry Finger wrote:
-> > > b43-pci-bridge 0001:11:00.0: dma_direct_supported: failed (mask =
-> > > 0x3fffffff,
-> > > min_mask = 0x5ffff000/0x5ffff000, dma bits = 0x1f
-> > 
-> > Ugh ? A mask with holes in it ? That's very wrong... That min_mask is
-> > bogus.
-> 
-> I agree, but that is not likely serious as most systems will have enough memory 
-> that the max_pfn term will be much larger than the initial min_mask, and 
-> min_mask will be unchanged by the min function. 
+Allow external callers to force the cacheinfo code to release all its
+references to cache nodes, e.g. before processing device tree updates
+post-migration, and to rebuild the hierarchy afterward.
 
-Well no... it's too much memory that is the problem. If min_mask is
-bogus though it will cause problem later too, so one should look into
-it.
+CPU online/offline must be blocked by callers; enforce this.
 
-> In addition, min_mask is not 
-> used beyond this routine, and then only to decide if direct dma is supported. 
-> The following patch generates masks with no holes, but I cannot see that it is 
-> needed.
+Fixes: 410bccf97881 ("powerpc/pseries: Partition migration in the kernel")
+Signed-off-by: Nathan Lynch <nathanl@linux.ibm.com>
+---
+ arch/powerpc/kernel/cacheinfo.c | 21 +++++++++++++++++++++
+ arch/powerpc/kernel/cacheinfo.h |  4 ++++
+ 2 files changed, 25 insertions(+)
 
-The right fix is to round up max_pfn to a power of 2, something like
-
-min_mask = min_t(u64, min_mask, (roundup_pow_of_two(max_pfn - 1)) <<
-		PAGE_SHIFT) 
-
-> diff --git a/kernel/dma/direct.c b/kernel/dma/direct.c
-> index 2c2772e9702a..e3edd4f29e80 100644
-> --- a/kernel/dma/direct.c
-> +++ b/kernel/dma/direct.c
-> @@ -384,7 +384,8 @@ int dma_direct_supported(struct device *dev, u64 mask)
->          else
->                  min_mask = DMA_BIT_MASK(32);
-> 
-> -       min_mask = min_t(u64, min_mask, (max_pfn - 1) << PAGE_SHIFT);
-> +       min_mask = min_t(u64, min_mask, ((max_pfn - 1) << PAGE_SHIFT) |
-> +                                        DMA_BIT_MASK(PAGE_SHIFT));
-> 
->          /*
->           * This check needs to be against the actual bit mask value, so
-> 
-> 
-> Larry
+diff --git a/arch/powerpc/kernel/cacheinfo.c b/arch/powerpc/kernel/cacheinfo.c
+index 862e2890bd3d..42c559efe060 100644
+--- a/arch/powerpc/kernel/cacheinfo.c
++++ b/arch/powerpc/kernel/cacheinfo.c
+@@ -896,4 +896,25 @@ void cacheinfo_cpu_offline(unsigned int cpu_id)
+ 	if (cache)
+ 		cache_cpu_clear(cache, cpu_id);
+ }
++
++void cacheinfo_teardown(void)
++{
++	unsigned int cpu;
++
++	lockdep_assert_cpus_held();
++
++	for_each_online_cpu(cpu)
++		cacheinfo_cpu_offline(cpu);
++}
++
++void cacheinfo_rebuild(void)
++{
++	unsigned int cpu;
++
++	lockdep_assert_cpus_held();
++
++	for_each_online_cpu(cpu)
++		cacheinfo_cpu_online(cpu);
++}
++
+ #endif /* (CONFIG_PPC_PSERIES && CONFIG_SUSPEND) || CONFIG_HOTPLUG_CPU */
+diff --git a/arch/powerpc/kernel/cacheinfo.h b/arch/powerpc/kernel/cacheinfo.h
+index 955f5e999f1b..52bd3fc6642d 100644
+--- a/arch/powerpc/kernel/cacheinfo.h
++++ b/arch/powerpc/kernel/cacheinfo.h
+@@ -6,4 +6,8 @@
+ extern void cacheinfo_cpu_online(unsigned int cpu_id);
+ extern void cacheinfo_cpu_offline(unsigned int cpu_id);
+ 
++/* Allow migration/suspend to tear down and rebuild the hierarchy. */
++extern void cacheinfo_teardown(void);
++extern void cacheinfo_rebuild(void);
++
+ #endif /* _PPC_CACHEINFO_H */
+-- 
+2.20.1
 
