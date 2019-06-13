@@ -2,81 +2,69 @@ Return-Path: <SRS0=gIJz=UM=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 03603C31E45
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Jun 2019 08:41:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A2024C31E45
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Jun 2019 08:45:07 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 7BB5821473
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Jun 2019 08:41:24 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="lkutTp2U"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7BB5821473
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linuxfoundation.org
+	by mail.kernel.org (Postfix) with ESMTPS id EFF672173C
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Jun 2019 08:45:06 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EFF672173C
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=huawei.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45PcfB25dlzDrB9
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Jun 2019 18:41:22 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45Pcc91XmjzDr9N
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Jun 2019 18:39:37 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=linuxfoundation.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="lkutTp2U"; 
- dkim-atps=neutral
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 45Pcc90q7Cz8t3y
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Jun 2019 18:39:37 +1000 (AEST)
-Received: by ozlabs.org (Postfix)
- id 45Pcc90RCcz9sDX; Thu, 13 Jun 2019 18:39:37 +1000 (AEST)
-Authentication-Results: ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=linuxfoundation.org
- (client-ip=198.145.29.99; helo=mail.kernel.org;
- envelope-from=gregkh@linuxfoundation.org; receiver=<UNKNOWN>)
-Authentication-Results: ozlabs.org; dmarc=none (p=none dis=none)
- header.from=linuxfoundation.org
-Authentication-Results: ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="lkutTp2U"; 
- dkim-atps=neutral
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+	by lists.ozlabs.org (Postfix) with ESMTP id 45PckS39cSzDrFY
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Jun 2019 18:45:04 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+ spf=pass (mailfrom) smtp.mailfrom=huawei.com
+ (client-ip=45.249.212.190; helo=huawei.com;
+ envelope-from=thunder.leizhen@huawei.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=huawei.com
+Received: from huawei.com (szxga04-in.huawei.com [45.249.212.190])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 45Pcc85F7sz9s9y
- for <linuxppc-dev@ozlabs.org>; Thu, 13 Jun 2019 18:39:36 +1000 (AEST)
-Received: from localhost (83-86-89-107.cable.dynamic.v4.ziggo.nl
- [83.86.89.107])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id 94BF321479;
- Thu, 13 Jun 2019 08:39:33 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1560415174;
- bh=xHK2yznNvP7abV7OQvqrwN/hV3EsN1/XtGCm2HbYo8c=;
- h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=lkutTp2URsBZM1H1R1YxN7hr6dCGBQucHjHK1gt68BaY+M1PzI1kcuBpVn5OnRnsg
- nRg590R7zeoeCdzy/Czc0+HniYXH1wwHzosuGH2Jm9xS0qgVuWoCj4Mzq3mBsh0ctL
- fMD1EZX55ciriPehBfqyjuBLDMqxC12AqeIpkXSE=
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH 4.19 029/118] EDAC/mpc85xx: Prevent building as a module
-Date: Thu, 13 Jun 2019 10:32:47 +0200
-Message-Id: <20190613075645.207725772@linuxfoundation.org>
-X-Mailer: git-send-email 2.22.0
-In-Reply-To: <20190613075643.642092651@linuxfoundation.org>
-References: <20190613075643.642092651@linuxfoundation.org>
-User-Agent: quilt/0.66
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45PchK3H5JzDr9N
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Jun 2019 18:43:13 +1000 (AEST)
+Received: from DGGEMS403-HUB.china.huawei.com (unknown [172.30.72.59])
+ by Forcepoint Email with ESMTP id 7C2EF437288702CB4296;
+ Thu, 13 Jun 2019 16:43:10 +0800 (CST)
+Received: from HGHY4L002753561.china.huawei.com (10.133.215.186) by
+ DGGEMS403-HUB.china.huawei.com (10.3.19.203) with Microsoft SMTP Server id
+ 14.3.439.0; Thu, 13 Jun 2019 16:42:59 +0800
+From: Zhen Lei <thunder.leizhen@huawei.com>
+To: Jean-Philippe Brucker <jean-philippe.brucker@arm.com>, John Garry
+ <john.garry@huawei.com>, Robin Murphy <robin.murphy@arm.com>, Will Deacon
+ <will.deacon@arm.com>, Joerg Roedel <joro@8bytes.org>, Jonathan Corbet
+ <corbet@lwn.net>, linux-doc <linux-doc@vger.kernel.org>, Sebastian Ott
+ <sebott@linux.ibm.com>, Gerald Schaefer <gerald.schaefer@de.ibm.com>,
+ "Martin Schwidefsky" <schwidefsky@de.ibm.com>, Heiko Carstens
+ <heiko.carstens@de.ibm.com>, Benjamin Herrenschmidt
+ <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, "Michael
+ Ellerman" <mpe@ellerman.id.au>, Tony Luck <tony.luck@intel.com>, Fenghua Yu
+ <fenghua.yu@intel.com>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar
+ <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, "H . Peter Anvin"
+ <hpa@zytor.com>, David Woodhouse <dwmw2@infradead.org>, iommu
+ <iommu@lists.linux-foundation.org>, linux-kernel
+ <linux-kernel@vger.kernel.org>, linux-s390 <linux-s390@vger.kernel.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, x86 <x86@kernel.org>,
+ linux-ia64 <linux-ia64@vger.kernel.org>
+Subject: [PATCH v9 1/7] iommu: enhance IOMMU default DMA mode build options
+Date: Thu, 13 Jun 2019 16:42:34 +0800
+Message-ID: <20190613084240.16768-2-thunder.leizhen@huawei.com>
+X-Mailer: git-send-email 2.21.0.windows.1
+In-Reply-To: <20190613084240.16768-1-thunder.leizhen@huawei.com>
+References: <20190613084240.16768-1-thunder.leizhen@huawei.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-Originating-IP: [10.133.215.186]
+X-CFilter-Loop: Reflected
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -88,67 +76,94 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Sasha Levin <sashal@kernel.org>, Borislav Petkov <bp@suse.de>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Mauro Carvalho Chehab <mchehab@kernel.org>, stable@vger.kernel.org,
- linuxppc-dev@ozlabs.org, morbidrsa@gmail.com,
- James Morse <james.morse@arm.com>, Johannes Thumshirn <jth@kernel.org>,
- linux-edac <linux-edac@vger.kernel.org>
+Cc: Zhen Lei <thunder.leizhen@huawei.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-[ Upstream commit 2b8358a951b1e2a534a54924cd8245e58a1c5fb8 ]
+First, add build option IOMMU_DEFAULT_{LAZY|STRICT}, so that we have the
+opportunity to set {lazy|strict} mode as default at build time. Then put
+the three config options in an choice, make people can only choose one of
+the three at a time.
 
-The mpc85xx EDAC driver can be configured as a module but then fails to
-build because it uses two unexported symbols:
-
-  ERROR: ".pci_find_hose_for_OF_device" [drivers/edac/mpc85xx_edac_mod.ko] undefined!
-  ERROR: ".early_find_capability" [drivers/edac/mpc85xx_edac_mod.ko] undefined!
-
-We don't want to export those symbols just for this driver, so make the
-driver only configurable as a built-in.
-
-This seems to have been broken since at least
-
-  c92132f59806 ("edac/85xx: Add PCIe error interrupt edac support")
-
-(Nov 2013).
-
- [ bp: make it depend on EDAC=y so that the EDAC core doesn't get built
-   as a module. ]
-
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
-Signed-off-by: Borislav Petkov <bp@suse.de>
-Acked-by: Johannes Thumshirn <jth@kernel.org>
-Cc: James Morse <james.morse@arm.com>
-Cc: Mauro Carvalho Chehab <mchehab@kernel.org>
-Cc: linux-edac <linux-edac@vger.kernel.org>
-Cc: linuxppc-dev@ozlabs.org
-Cc: morbidrsa@gmail.com
-Link: https://lkml.kernel.org/r/20190502141941.12927-1-mpe@ellerman.id.au
-Signed-off-by: Sasha Levin <sashal@kernel.org>
+Signed-off-by: Zhen Lei <thunder.leizhen@huawei.com>
 ---
- drivers/edac/Kconfig | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/iommu/Kconfig | 44 ++++++++++++++++++++++++++++++++++++--------
+ drivers/iommu/iommu.c |  3 ++-
+ 2 files changed, 38 insertions(+), 9 deletions(-)
 
-diff --git a/drivers/edac/Kconfig b/drivers/edac/Kconfig
-index 57304b2e989f..b00cc03ad6b6 100644
---- a/drivers/edac/Kconfig
-+++ b/drivers/edac/Kconfig
-@@ -250,8 +250,8 @@ config EDAC_PND2
- 	  micro-server but may appear on others in the future.
+diff --git a/drivers/iommu/Kconfig b/drivers/iommu/Kconfig
+index 83664db5221df02..fe715fb295c6ed2 100644
+--- a/drivers/iommu/Kconfig
++++ b/drivers/iommu/Kconfig
+@@ -75,16 +75,44 @@ config IOMMU_DEBUGFS
+ 	  debug/iommu directory, and then populate a subdirectory with
+ 	  entries as required.
  
- config EDAC_MPC85XX
--	tristate "Freescale MPC83xx / MPC85xx"
--	depends on FSL_SOC
-+	bool "Freescale MPC83xx / MPC85xx"
-+	depends on FSL_SOC && EDAC=y
- 	help
- 	  Support for error detection and correction on the Freescale
- 	  MPC8349, MPC8560, MPC8540, MPC8548, T4240
+-config IOMMU_DEFAULT_PASSTHROUGH
+-	bool "IOMMU passthrough by default"
++choice
++	prompt "IOMMU default DMA mode"
+ 	depends on IOMMU_API
+-        help
+-	  Enable passthrough by default, removing the need to pass in
+-	  iommu.passthrough=on or iommu=pt through command line. If this
+-	  is enabled, you can still disable with iommu.passthrough=off
+-	  or iommu=nopt depending on the architecture.
++	default IOMMU_DEFAULT_STRICT
++	help
++	  This option allows an IOMMU DMA mode to be chosen at build time, to
++	  override the default DMA mode of each ARCH, removing the need to
++	  pass in kernel parameters through command line. You can still use
++	  ARCH specific boot options to override this option again.
+ 
+-	  If unsure, say N here.
++	  If unsure, keep the default.
++
++config IOMMU_DEFAULT_PASSTHROUGH
++	bool "passthrough"
++	help
++	  In this mode, the DMA access through IOMMU without any addresses
++	  translation. That means, the wrong or illegal DMA access can not
++	  be caught, no error information will be reported.
++
++config IOMMU_DEFAULT_LAZY
++	bool "lazy"
++	help
++	  Support lazy mode, where for every IOMMU DMA unmap operation, the
++	  flush operation of IOTLB and the free operation of IOVA are deferred.
++	  They are only guaranteed to be done before the related IOVA will be
++	  reused.
++
++config IOMMU_DEFAULT_STRICT
++	bool "strict"
++	help
++	  For every IOMMU DMA unmap operation, the flush operation of IOTLB and
++	  the free operation of IOVA are guaranteed to be done in the unmap
++	  function.
++
++	  This mode is safer than the two above, but it maybe slower in some
++	  high performace scenarios.
++
++endchoice
+ 
+ config OF_IOMMU
+        def_bool y
+diff --git a/drivers/iommu/iommu.c b/drivers/iommu/iommu.c
+index f9cacce909d3ae9..05171dd0bd03aee 100644
+--- a/drivers/iommu/iommu.c
++++ b/drivers/iommu/iommu.c
+@@ -31,7 +31,8 @@
+ #else
+ static unsigned int iommu_def_domain_type = IOMMU_DOMAIN_DMA;
+ #endif
+-static bool iommu_dma_strict __read_mostly = true;
++static bool iommu_dma_strict __read_mostly =
++			IS_ENABLED(CONFIG_IOMMU_DEFAULT_STRICT);
+ 
+ struct iommu_group {
+ 	struct kobject kobj;
 -- 
-2.20.1
-
+1.8.3
 
 
