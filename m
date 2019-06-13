@@ -2,59 +2,79 @@ Return-Path: <SRS0=gIJz=UM=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1913BC31E45
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Jun 2019 09:09:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EAF8BC31E45
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Jun 2019 09:14:17 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 633FF2133D
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Jun 2019 09:09:26 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 633FF2133D
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=glider.be
+	by mail.kernel.org (Postfix) with ESMTPS id 2C7712133D
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Jun 2019 09:14:17 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="IUKGD7qi"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2C7712133D
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45PdGW5xyQzDrFm
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Jun 2019 19:09:23 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45PdN668HXzDr3t
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Jun 2019 19:14:14 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=linux-m68k.org
- (client-ip=195.130.132.45; helo=newton.telenet-ops.be;
- envelope-from=geert@linux-m68k.org; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=c-s.fr
+ (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=glider.be
-X-Greylist: delayed 450 seconds by postgrey-1.36 at bilbo;
- Thu, 13 Jun 2019 19:07:41 AEST
-Received: from newton.telenet-ops.be (newton.telenet-ops.be [195.130.132.45])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
- bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45PdDY4dwNzDrFS
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Jun 2019 19:07:40 +1000 (AEST)
-Received: from baptiste.telenet-ops.be (baptiste.telenet-ops.be
- [IPv6:2a02:1800:120:4::f00:13])
- by newton.telenet-ops.be (Postfix) with ESMTPS id 45Pd3j69cczMrsly
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Jun 2019 11:00:01 +0200 (CEST)
-Received: from ramsan ([84.194.111.163])
- by baptiste.telenet-ops.be with bizsmtp
- id Q8zU2000G3XaVaC018zV7m; Thu, 13 Jun 2019 10:59:55 +0200
-Received: from rox.of.borg ([192.168.97.57]) by ramsan with esmtp (Exim 4.90_1)
- (envelope-from <geert@linux-m68k.org>)
- id 1hbLZw-0000Wz-Fs; Thu, 13 Jun 2019 10:59:28 +0200
-Received: from geert by rox.of.borg with local (Exim 4.90_1)
- (envelope-from <geert@linux-m68k.org>)
- id 1hbKBT-0003Vp-Fd; Thu, 13 Jun 2019 09:30:07 +0200
-From: Geert Uytterhoeven <geert+renesas@glider.be>
-To: Jim Paris <jim@jtan.com>, Geoff Levand <geoff@infradead.org>,
- Jens Axboe <axboe@kernel.dk>, Christoph Hellwig <hch@lst.de>
-Subject: [PATCH] block/ps3vram: Use %llu to format sector_t after LBDAF removal
-Date: Thu, 13 Jun 2019 09:30:06 +0200
-Message-Id: <20190613073006.13459-1-geert+renesas@glider.be>
-X-Mailer: git-send-email 2.17.1
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+ dmarc=none (p=none dis=none) header.from=c-s.fr
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="IUKGD7qi"; 
+ dkim-atps=neutral
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45PdKV3QnHzDrGn
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Jun 2019 19:11:56 +1000 (AEST)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 45PdKN4JJzzB09Zf;
+ Thu, 13 Jun 2019 11:11:52 +0200 (CEST)
+Authentication-Results: localhost; dkim=pass
+ reason="1024-bit key; insecure key"
+ header.d=c-s.fr header.i=@c-s.fr header.b=IUKGD7qi; dkim-adsp=pass;
+ dkim-atps=neutral
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id 3RUzFGec82Hn; Thu, 13 Jun 2019 11:11:52 +0200 (CEST)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 45PdKN327kzB09ZZ;
+ Thu, 13 Jun 2019 11:11:52 +0200 (CEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
+ t=1560417112; bh=cUi98ap1JHPgzHUcPuQ+SGqO7xRW7HHyt2QyM8V7Ab8=;
+ h=From:Subject:To:Cc:Date:From;
+ b=IUKGD7qiW0+tIV5Tl076uAfx5o59J4G32wQJhvMkR10S8zPGKOqG62aI8WeWyN44b
+ wFyj2WCxfdcednX0RRFE4XXa2bO+7ev5Hv0qaH9v8Ve+6tQs5OKxAiIkFsp1VNWWZp
+ mFjyK+/qKYIHd1BQlzlVSECePreCN6PkmjRk3dhY=
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 75C1E8B8C0;
+ Thu, 13 Jun 2019 11:11:53 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id AJ27zzXuDbW2; Thu, 13 Jun 2019 11:11:53 +0200 (CEST)
+Received: from po16838vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 3C0898B8B9;
+ Thu, 13 Jun 2019 11:11:53 +0200 (CEST)
+Received: by po16838vm.idsi0.si.c-s.fr (Postfix, from userid 0)
+ id 06C4568B1D; Thu, 13 Jun 2019 09:11:53 +0000 (UTC)
+Message-Id: <1930b7e67ab361e68f356e7fdeba403e32ce3ad0.1560416986.git.christophe.leroy@c-s.fr>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Subject: [PATCH v2 01/10] powerpc/8xx: move CPM1 related files from sysdev/ to
+ platforms/8xx
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, 
+ oss@buserror.net
+Date: Thu, 13 Jun 2019 09:11:53 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -66,40 +86,71 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Geert Uytterhoeven <geert+renesas@glider.be>, linux-block@vger.kernel.org,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The removal of CONFIG_LBDAF changed the type of sector_t from "unsigned
-long" to "u64" aka "unsigned long long" on 64-bit platforms, leading to
-a compiler warning regression:
+Only 8xx selects CPM1 and related CONFIG options are already
+in platforms/8xx/Kconfig
 
-    drivers/block/ps3vram.c: In function ‘ps3vram_probe’:
-    drivers/block/ps3vram.c:770:23: warning: format ‘%lu’ expects argument of type ‘long unsigned int’, but argument 4 has type ‘sector_t {aka long long unsigned int}’ [-Wformat=]
+Move the related C files to platforms/8xx/.
 
-Fix this by using "%llu" instead.
-
-Fixes: 72deb455b5ec619f ("block: remove CONFIG_LBDAF")
-Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
- drivers/block/ps3vram.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/powerpc/platforms/8xx/Makefile                 | 3 +++
+ arch/powerpc/{sysdev => platforms/8xx}/cpm1.c       | 0
+ arch/powerpc/{sysdev => platforms/8xx}/cpm_gpio.c   | 0
+ arch/powerpc/{sysdev => platforms/8xx}/micropatch.c | 0
+ arch/powerpc/sysdev/Makefile                        | 3 ---
+ 5 files changed, 3 insertions(+), 3 deletions(-)
+ rename arch/powerpc/{sysdev => platforms/8xx}/cpm1.c (100%)
+ rename arch/powerpc/{sysdev => platforms/8xx}/cpm_gpio.c (100%)
+ rename arch/powerpc/{sysdev => platforms/8xx}/micropatch.c (100%)
 
-diff --git a/drivers/block/ps3vram.c b/drivers/block/ps3vram.c
-index 4c7f51b1eda94727..4628e1a27a2b7133 100644
---- a/drivers/block/ps3vram.c
-+++ b/drivers/block/ps3vram.c
-@@ -767,7 +767,7 @@ static int ps3vram_probe(struct ps3_system_bus_device *dev)
- 	strlcpy(gendisk->disk_name, DEVICE_NAME, sizeof(gendisk->disk_name));
- 	set_capacity(gendisk, priv->size >> 9);
+diff --git a/arch/powerpc/platforms/8xx/Makefile b/arch/powerpc/platforms/8xx/Makefile
+index 708ab099e886..10b338436655 100644
+--- a/arch/powerpc/platforms/8xx/Makefile
++++ b/arch/powerpc/platforms/8xx/Makefile
+@@ -3,6 +3,9 @@
+ # Makefile for the PowerPC 8xx linux kernel.
+ #
+ obj-y			+= m8xx_setup.o machine_check.o pic.o
++obj-$(CONFIG_CPM1)		+= cpm1.o
++obj-$(CONFIG_UCODE_PATCH)	+= micropatch.o
++obj-$(CONFIG_8xx_GPIO)		+= cpm_gpio.o
+ obj-$(CONFIG_MPC885ADS)   += mpc885ads_setup.o
+ obj-$(CONFIG_MPC86XADS)   += mpc86xads_setup.o
+ obj-$(CONFIG_PPC_EP88XC)  += ep88xc.o
+diff --git a/arch/powerpc/sysdev/cpm1.c b/arch/powerpc/platforms/8xx/cpm1.c
+similarity index 100%
+rename from arch/powerpc/sysdev/cpm1.c
+rename to arch/powerpc/platforms/8xx/cpm1.c
+diff --git a/arch/powerpc/sysdev/cpm_gpio.c b/arch/powerpc/platforms/8xx/cpm_gpio.c
+similarity index 100%
+rename from arch/powerpc/sysdev/cpm_gpio.c
+rename to arch/powerpc/platforms/8xx/cpm_gpio.c
+diff --git a/arch/powerpc/sysdev/micropatch.c b/arch/powerpc/platforms/8xx/micropatch.c
+similarity index 100%
+rename from arch/powerpc/sysdev/micropatch.c
+rename to arch/powerpc/platforms/8xx/micropatch.c
+diff --git a/arch/powerpc/sysdev/Makefile b/arch/powerpc/sysdev/Makefile
+index aaf23283ba0c..cfcade8270a9 100644
+--- a/arch/powerpc/sysdev/Makefile
++++ b/arch/powerpc/sysdev/Makefile
+@@ -37,12 +37,9 @@ obj-$(CONFIG_XILINX_PCI)	+= xilinx_pci.o
+ obj-$(CONFIG_OF_RTC)		+= of_rtc.o
  
--	dev_info(&dev->core, "%s: Using %lu MiB of GPU memory\n",
-+	dev_info(&dev->core, "%s: Using %llu MiB of GPU memory\n",
- 		 gendisk->disk_name, get_capacity(gendisk) >> 11);
+ obj-$(CONFIG_CPM)		+= cpm_common.o
+-obj-$(CONFIG_CPM1)		+= cpm1.o
+ obj-$(CONFIG_CPM2)		+= cpm2.o cpm2_pic.o cpm_gpio.o
+-obj-$(CONFIG_8xx_GPIO)		+= cpm_gpio.o
+ obj-$(CONFIG_QUICC_ENGINE)	+= cpm_common.o
+ obj-$(CONFIG_PPC_DCR)		+= dcr.o
+-obj-$(CONFIG_UCODE_PATCH)	+= micropatch.o
  
- 	device_add_disk(&dev->core, gendisk, NULL);
+ obj-$(CONFIG_PPC_MPC512x)	+= mpc5xxx_clocks.o
+ obj-$(CONFIG_PPC_MPC52xx)	+= mpc5xxx_clocks.o
 -- 
-2.17.1
+2.13.3
 
