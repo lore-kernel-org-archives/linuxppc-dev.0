@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-8.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
 	URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C78C5C31E45
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Jun 2019 08:56:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B7AFBC31E45
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Jun 2019 08:58:10 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 01E0820851
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Jun 2019 08:56:20 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 01E0820851
+	by mail.kernel.org (Postfix) with ESMTPS id 3E1F221473
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Jun 2019 08:58:10 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3E1F221473
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=huawei.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45PczQ1bttzDrGn
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Jun 2019 18:56:18 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45Pd1W4C3szDr1X
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Jun 2019 18:58:07 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=huawei.com
  (client-ip=45.249.212.191; helo=huawei.com;
@@ -28,14 +28,14 @@ Authentication-Results: lists.ozlabs.org;
 Received: from huawei.com (szxga05-in.huawei.com [45.249.212.191])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45Pchx3QRvzDr9N
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45Pchx5JHXzDrC0
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Jun 2019 18:43:45 +1000 (AEST)
 Received: from DGGEMS403-HUB.china.huawei.com (unknown [172.30.72.58])
- by Forcepoint Email with ESMTP id 018BD55A1FCA4A250BE7;
- Thu, 13 Jun 2019 16:43:41 +0800 (CST)
+ by Forcepoint Email with ESMTP id E9BFCB3E969C7057F6F3;
+ Thu, 13 Jun 2019 16:43:40 +0800 (CST)
 Received: from HGHY4L002753561.china.huawei.com (10.133.215.186) by
  DGGEMS403-HUB.china.huawei.com (10.3.19.203) with Microsoft SMTP Server id
- 14.3.439.0; Thu, 13 Jun 2019 16:43:33 +0800
+ 14.3.439.0; Thu, 13 Jun 2019 16:43:32 +0800
 From: Zhen Lei <thunder.leizhen@huawei.com>
 To: Jean-Philippe Brucker <jean-philippe.brucker@arm.com>, John Garry
  <john.garry@huawei.com>, Robin Murphy <robin.murphy@arm.com>, Will Deacon
@@ -53,9 +53,10 @@ To: Jean-Philippe Brucker <jean-philippe.brucker@arm.com>, John Garry
  <linux-kernel@vger.kernel.org>, linux-s390 <linux-s390@vger.kernel.org>,
  linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, x86 <x86@kernel.org>,
  linux-ia64 <linux-ia64@vger.kernel.org>
-Subject: [PATCH v9 7/7] ia64: hide build option IOMMU_DEFAULT_PASSTHROUGH
-Date: Thu, 13 Jun 2019 16:42:40 +0800
-Message-ID: <20190613084240.16768-8-thunder.leizhen@huawei.com>
+Subject: [PATCH v9 6/7] iommu/amd: add support for IOMMU default DMA mode
+ build options
+Date: Thu, 13 Jun 2019 16:42:39 +0800
+Message-ID: <20190613084240.16768-7-thunder.leizhen@huawei.com>
 X-Mailer: git-send-email 2.21.0.windows.1
 In-Reply-To: <20190613084240.16768-1-thunder.leizhen@huawei.com>
 References: <20190613084240.16768-1-thunder.leizhen@huawei.com>
@@ -80,26 +81,43 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The DMA mode PASSTHROUGH is not used on ia64.
+The default DMA mode of AMD IOMMU is LAZY, this patch make it can be set
+to STRICT at build time. It can be overridden by boot option.
+
+There is no functional change.
 
 Signed-off-by: Zhen Lei <thunder.leizhen@huawei.com>
 ---
- drivers/iommu/Kconfig | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/iommu/Kconfig          | 2 +-
+ drivers/iommu/amd_iommu_init.c | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/drivers/iommu/Kconfig b/drivers/iommu/Kconfig
-index 70741fd73b07785..63506f1cad3d149 100644
+index fd297b0e0330d27..70741fd73b07785 100644
 --- a/drivers/iommu/Kconfig
 +++ b/drivers/iommu/Kconfig
-@@ -91,7 +91,7 @@ choice
- 
- config IOMMU_DEFAULT_PASSTHROUGH
- 	bool "passthrough"
--	depends on !S390_IOMMU
-+	depends on (!S390_IOMMU && !IA64)
+@@ -79,7 +79,7 @@ choice
+ 	prompt "IOMMU default DMA mode"
+ 	depends on IOMMU_API
+ 	default IOMMU_DEFAULT_PASSTHROUGH if (PPC_POWERNV && PCI)
+-	default IOMMU_DEFAULT_LAZY if (INTEL_IOMMU || S390_IOMMU)
++	default IOMMU_DEFAULT_LAZY if (AMD_IOMMU || INTEL_IOMMU || S390_IOMMU)
+ 	default IOMMU_DEFAULT_STRICT
  	help
- 	  In this mode, the DMA access through IOMMU without any addresses
- 	  translation. That means, the wrong or illegal DMA access can not
+ 	  This option allows an IOMMU DMA mode to be chosen at build time, to
+diff --git a/drivers/iommu/amd_iommu_init.c b/drivers/iommu/amd_iommu_init.c
+index 07d84dbab564e4d..b7d5c1757425946 100644
+--- a/drivers/iommu/amd_iommu_init.c
++++ b/drivers/iommu/amd_iommu_init.c
+@@ -154,7 +154,7 @@ struct ivmd_header {
+ 					   to handle */
+ LIST_HEAD(amd_iommu_unity_map);		/* a list of required unity mappings
+ 					   we find in ACPI */
+-bool amd_iommu_unmap_flush;		/* if true, flush on every unmap */
++bool amd_iommu_unmap_flush = IS_ENABLED(CONFIG_IOMMU_DEFAULT_STRICT);	/* if true, flush on every unmap */
+ 
+ LIST_HEAD(amd_iommu_list);		/* list of all AMD IOMMUs in the
+ 					   system */
 -- 
 1.8.3
 
