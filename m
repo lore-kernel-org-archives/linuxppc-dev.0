@@ -2,56 +2,79 @@ Return-Path: <SRS0=gIJz=UM=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_MUTT autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 311D8C31E45
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Jun 2019 07:32:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AA642C31E45
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Jun 2019 08:01:00 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id AB12420866
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Jun 2019 07:32:07 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org AB12420866
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
+	by mail.kernel.org (Postfix) with ESMTPS id D3D1C20896
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Jun 2019 08:00:59 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=axtens.net header.i=@axtens.net header.b="b8Xguc9H"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D3D1C20896
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=axtens.net
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45Pb6F3xckzDr7x
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Jun 2019 17:32:05 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45PblY16pFzDrB9
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Jun 2019 18:00:57 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=lst.de
- (client-ip=213.95.11.211; helo=newverein.lst.de; envelope-from=hch@lst.de;
- receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=axtens.net
+ (client-ip=2607:f8b0:4864:20::442; helo=mail-pf1-x442.google.com;
+ envelope-from=dja@axtens.net; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=lst.de
-Received: from newverein.lst.de (verein.lst.de [213.95.11.211])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ dmarc=none (p=none dis=none) header.from=axtens.net
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=axtens.net header.i=@axtens.net header.b="b8Xguc9H"; 
+ dkim-atps=neutral
+Received: from mail-pf1-x442.google.com (mail-pf1-x442.google.com
+ [IPv6:2607:f8b0:4864:20::442])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45Pb4469mKzDqpM
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Jun 2019 17:30:10 +1000 (AEST)
-Received: by newverein.lst.de (Postfix, from userid 2407)
- id 504D068B02; Thu, 13 Jun 2019 09:29:37 +0200 (CEST)
-Date: Thu, 13 Jun 2019 09:29:37 +0200
-From: Christoph Hellwig <hch@lst.de>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [BISECTED REGRESSION] b43legacy broken on G4 PowerBook
-Message-ID: <20190613072937.GA12093@lst.de>
-References: <73da300c-871c-77ac-8a3a-deac226743ef@lwfinger.net>
- <20190607172902.GA8183@lst.de>
- <30000803-3772-3edf-f4a9-55122d504f3f@lwfinger.net>
- <20190610081825.GA16534@lst.de>
- <153c13f5-a829-1eab-a3c5-fecfb84127ff@lwfinger.net>
- <20190611060521.GA19512@lst.de>
- <5aaa600b-5b59-1f68-454f-20403c318f1a@lwfinger.net>
- <20190612065558.GA19585@lst.de>
- <d6d82c0d-4a40-a191-0414-6b9a64547f65@lwfinger.net>
- <05db995c55ad7c1002124374c139d2c0812ad034.camel@kernel.crashing.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45Pbjb4M8XzDr1c
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Jun 2019 17:59:12 +1000 (AEST)
+Received: by mail-pf1-x442.google.com with SMTP id c85so11327521pfc.1
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Jun 2019 00:59:12 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=axtens.net; s=google;
+ h=from:to:cc:subject:in-reply-to:references:date:message-id
+ :mime-version; bh=AiQqxw4R/mP5nZJTmbfe+nPv6amYJdmRUzyaWo162aI=;
+ b=b8Xguc9HO7ElsXe75nQ9YWSc2eOdY43shQUcAKE6QM8mtkZkBJEm0qXxt32u9hlmgA
+ 6rNQ2FcBwLQVh4zRKpSrCI1rij9D9lU5Mqb18V/YJp9OV/gdzscFz8Tcxwy2LgkyAnvi
+ tWHVgoCNZcF5dDm6Moqaj5nck9TeKMVeb9UBU=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:from:to:cc:subject:in-reply-to:references:date
+ :message-id:mime-version;
+ bh=AiQqxw4R/mP5nZJTmbfe+nPv6amYJdmRUzyaWo162aI=;
+ b=X2fbmLgIEFWrijLXVcId46zzA336DHv7SyTqyF9oHSQ73y0yXfGr+mvXO7MbXnwzQ4
+ FjLU77tVxjpxTL9vsZjZ3ynWhMJvPoq3BS2Cpn8X9x+6Vx71TrRnd+YHbcX0G6mZEEeI
+ sDugSOWlU7et56joNR4hALzAt0H6fbtcOiZaGOuCBnPYxsR02NHAA4tW5+18F2dx7wKm
+ 01QCYCd2ROnaDUd+Imo91y1jpw2cTk585DS9GuLa27Kakut1VTZkmnt3/pJww3JG8Z6P
+ 6+00ZgBQ87oTV2PzmHi+F77cHUXgFlRSnlYYBR5bBJ9IOx4r2CfWIkG8pTDEMoBc/8zc
+ Cw+w==
+X-Gm-Message-State: APjAAAUOC44JIyY1KEpziQcuYKiSezZj/4ybIBDMzp3Pa3E/W8uwohqS
+ q65flWCmov4MlWYoQFU4RHFXXQ==
+X-Google-Smtp-Source: APXvYqz5aR8FFtySCqF/Lf+ImGY85JLXiuziOa4LQAfbb1tKqh7097oS0x4Ja3bBf79hNEPzw0cKpQ==
+X-Received: by 2002:a63:649:: with SMTP id 70mr29521069pgg.445.1560412748685; 
+ Thu, 13 Jun 2019 00:59:08 -0700 (PDT)
+Received: from localhost (ppp167-251-205.static.internode.on.net.
+ [59.167.251.205])
+ by smtp.gmail.com with ESMTPSA id g5sm3165811pfm.54.2019.06.13.00.59.06
+ (version=TLS1_3 cipher=AEAD-AES256-GCM-SHA384 bits=256/256);
+ Thu, 13 Jun 2019 00:59:07 -0700 (PDT)
+From: Daniel Axtens <dja@axtens.net>
+To: Radu Rendec <radu.rendec@gmail.com>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH 0/1] PPC32: fix ptrace() access to FPU registers
+In-Reply-To: <20190610232758.19010-1-radu.rendec@gmail.com>
+References: <20190610232758.19010-1-radu.rendec@gmail.com>
+Date: Thu, 13 Jun 2019 17:59:03 +1000
+Message-ID: <874l4tq5ko.fsf@dja-thinkpad.axtens.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <05db995c55ad7c1002124374c139d2c0812ad034.camel@kernel.crashing.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -63,21 +86,157 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Aaro Koskinen <aaro.koskinen@iki.fi>, linux-wireless@vger.kernel.org,
- linux-kernel@vger.kernel.org, Christian Zigotzky <chzigotzky@xenosoft.de>,
- linuxppc-dev@lists.ozlabs.org, Christoph Hellwig <hch@lst.de>,
- Larry Finger <Larry.Finger@lwfinger.net>
+Cc: Radu Rendec <radu.rendec@gmail.com>, Paul Mackerras <paulus@samba.org>,
+ Oleg Nesterov <oleg@redhat.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, Jun 13, 2019 at 07:59:51AM +1000, Benjamin Herrenschmidt wrote:
-> > With the patch for Kconfig above, and the original patch setting 
-> > ARCH_ZONE_DMA_BITS to 30, everything works.
-> > 
-> > Do you have any ideas on what should trigger the change in ARCH_ZONE_BITS? 
-> > Should it be CONFIG_PPC32 defined, or perhaps CONFIG_G4_CPU defined?
-> 
-> I think CONFIG_PPC32 is fine
+Radu Rendec <radu.rendec@gmail.com> writes:
 
-I'll cook up a patch unless someone beats me to it.
+> Hi Everyone,
+>
+> I'm following up on the ptrace() problem that I reported a few days ago.
+> I believe my version of the code handles all cases correctly. While the
+> problem essentially boils down to dividing the fpidx by 2 on PPC32, it
+> becomes tricky when the same code must work correctly on both PPC32 and
+> PPC64.
+>
+> One other thing that I believe was handled incorrectly in the previous
+> version is the unused half of fpscr on PPC32. Note that while PT_FPSCR
+> is defined as (PT_FPR0 + 2*32 + 1), making only the upper half visible,
+> PT_FPR0 + 2*32 still corresponds to a possible address that userspace
+> can pass. In that case, comparing fpidx to (PT_FPSCR - PT_FPR0) would
+> cause an invalid access to the FPU registers array.
+>
+> I tested the patch on 4.9.179, but that part of the code is identical in
+> recent kernels so it should work just the same.
+
+I've been looking into this. Something is definitely up, but I'm not
+sure that we want to fix it in exactly the way you identified. I'll keep
+you updated.
+
+Regards,
+Daniel
+
+>
+> I wrote a simple test program than can be used to quickly test (on an
+> x86_64 host) that all cases are handled correctly for both PPC32/PPC64.
+> The code is included below.
+>
+> I also tested with gdbserver (test patch included below) and verified
+> that it generates two ptrace() calls for each FPU register, with
+> addresses between 0xc0 and 0x1bc.
+>
+> 8<--------------- Makefile ---------------------------------------------
+> .PHONY: all clean
+>
+> all: ptrace-fpregs-32 ptrace-fpregs-64
+>
+> ptrace-fpregs-32: ptrace-fpregs.c
+> 	$(CC) -o ptrace-fpregs-32 -Wall -O2 -m32 ptrace-fpregs.c
+>
+> ptrace-fpregs-64: ptrace-fpregs.c
+> 	$(CC) -o ptrace-fpregs-64 -Wall -O2 ptrace-fpregs.c
+>
+> clean:
+> 	rm -f ptrace-fpregs-32 ptrace-fpregs-64
+> 8<--------------- ptrace-fpregs.c --------------------------------------
+> #include <stdio.h>
+> #include <errno.h>
+>
+> #define PT_FPR0	48
+>
+> #ifndef __x86_64
+>
+> #define PT_FPR31 (PT_FPR0 + 2*31)
+> #define PT_FPSCR (PT_FPR0 + 2*32 + 1)
+>
+> #else
+>
+> #define PT_FPSCR (PT_FPR0 + 32)
+>
+> #endif
+>
+> int test_access(unsigned long addr)
+> {
+> 	int ret;
+>
+> 	do {
+> 		unsigned long index, fpidx;
+>
+> 		ret = -EIO;
+>
+> 		/* convert to index and check */
+> 		index = addr / sizeof(long);
+> 		if ((addr & (sizeof(long) - 1)) || (index > PT_FPSCR))
+> 			break;
+>
+> 		if (index < PT_FPR0) {
+> 			ret = printf("ptrace_put_reg(%lu)", index);
+> 			break;
+> 		}
+>
+> 		ret = 0;
+> #ifndef __x86_64
+> 		if (index == PT_FPSCR - 1) {
+> 			/* corner case for PPC32; do nothing */
+> 			printf("corner_case");
+> 			break;
+> 		}
+> #endif
+> 		if (index == PT_FPSCR) {
+> 			printf("fpscr");
+> 			break;
+> 		}
+>
+> 		/*
+> 		 * FPR is always 64-bit; on PPC32, userspace does two 32-bit
+> 		 * accesses. Add bit2 to allow accessing the upper half on
+> 		 * 32-bit; on 64-bit, bit2 is always 0 (we validate it above).
+> 		 */
+> 		fpidx = (addr - PT_FPR0 * sizeof(long)) / 8;
+> 		printf("TS_FPR[%lu] + %lu", fpidx, addr & 4);
+> 		break;
+> 	} while (0);
+>
+> 	return ret;
+> }
+>
+> int main(void)
+> {
+> 	unsigned long addr;
+> 	int rc;
+>
+> 	for (addr = 0; addr < PT_FPSCR * sizeof(long) + 16; addr++) {
+> 		printf("0x%04lx: ", addr);
+> 		rc = test_access(addr);
+> 		if (rc < 0)
+> 			printf("!err!");
+> 		printf("\t<%d>\n", rc);
+> 	}
+>
+> 	return 0;
+> }
+> 8<--------------- gdb.patch --------------------------------------------
+> --- gdb/gdbserver/linux-low.c.orig	2019-06-10 11:45:53.810882669 -0400
+> +++ gdb/gdbserver/linux-low.c	2019-06-10 11:49:32.272929766 -0400
+> @@ -4262,6 +4262,8 @@ store_register (struct regcache *regcach
+>    pid = lwpid_of (get_thread_lwp (current_inferior));
+>    for (i = 0; i < size; i += sizeof (PTRACE_XFER_TYPE))
+>      {
+> +      printf("writing register #%d offset %d at address %#x\n",
+> +             regno, i, (unsigned int)regaddr);
+>        errno = 0;
+>        ptrace (PTRACE_POKEUSER, pid,
+>  	    /* Coerce to a uintptr_t first to avoid potential gcc warning
+> 8<----------------------------------------------------------------------
+>
+> Radu Rendec (1):
+>   PPC32: fix ptrace() access to FPU registers
+>
+>  arch/powerpc/kernel/ptrace.c | 85 ++++++++++++++++++++++--------------
+>  1 file changed, 52 insertions(+), 33 deletions(-)
+>
+> -- 
+> 2.20.1
