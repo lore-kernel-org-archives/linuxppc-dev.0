@@ -7,21 +7,21 @@ X-Spam-Status: No, score=-6.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7693AC31E44
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 14 Jun 2019 10:19:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0DE8FC31E44
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 14 Jun 2019 10:21:18 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id EF28420665
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 14 Jun 2019 10:19:01 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 3E13420665
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 14 Jun 2019 10:21:17 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="aMGMnR3v"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EF28420665
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="tIxnMvOJ"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3E13420665
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45QGmM5QgdzDrVV
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 14 Jun 2019 20:18:59 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45QGpz2xFMzDrfR
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 14 Jun 2019 20:21:15 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=c-s.fr
  (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
@@ -29,59 +29,53 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="aMGMnR3v"; 
+ unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="tIxnMvOJ"; 
  dkim-atps=neutral
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45QGVQ5PDnzDrdQ
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Jun 2019 20:06:53 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45QGjS3xRgzDqBW
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Jun 2019 20:16:28 +1000 (AEST)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 45QGVJ0nt7z9vDbm;
- Fri, 14 Jun 2019 12:06:48 +0200 (CEST)
+ by localhost (Postfix) with ESMTP id 45QGjN0g7pz9vDbk;
+ Fri, 14 Jun 2019 12:16:24 +0200 (CEST)
 Authentication-Results: localhost; dkim=pass
  reason="1024-bit key; insecure key"
- header.d=c-s.fr header.i=@c-s.fr header.b=aMGMnR3v; dkim-adsp=pass;
+ header.d=c-s.fr header.i=@c-s.fr header.b=tIxnMvOJ; dkim-adsp=pass;
  dkim-atps=neutral
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id X4TVEgvEUXXh; Fri, 14 Jun 2019 12:06:48 +0200 (CEST)
+ with ESMTP id rFyjLjJ_nXpb; Fri, 14 Jun 2019 12:16:24 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 45QGVH6rw3z9vDbk;
- Fri, 14 Jun 2019 12:06:47 +0200 (CEST)
+ by pegase1.c-s.fr (Postfix) with ESMTP id 45QGjM6WLTz9vDbh;
+ Fri, 14 Jun 2019 12:16:23 +0200 (CEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
- t=1560506807; bh=H6U3dIX2SVKCwZUsFTw72sro38m1Gqkl8Z8i5rZXXBk=;
- h=Subject:To:Cc:References:From:Date:In-Reply-To:From;
- b=aMGMnR3vGNtc96FQA7Tlx/Xb6c2k5dcWmki0WikZ3pCbwAQ5boG68yvaraxbba0gA
- SmDmrwVTNjTIsBuCKtj2ADsZ/+uqrgL5K6rjuv6tuoLuYZylcEBbgrPXVO+yGDPymj
- LRH1EF2eY01DWKSxkoYMNtpIqFxfEAG5lIhoLS7A=
+ t=1560507383; bh=9DeXGpNI8qJjUi/BqXP/XURa6Hb+qZaQARtJRe/C4Nw=;
+ h=In-Reply-To:References:From:Subject:To:Cc:Date:From;
+ b=tIxnMvOJPxuSGiBerWrvK3RHJR82VBHGJ/bGnVVnnIXm4XZtvOvrLIhqAoMOxgQ4K
+ mGAcDGipZ3LP+wg4JfLldIeWhXNspzKDDz149MkfpbmKmR4y/wYUSKGm7zGqY+ZUoo
+ A6iGRdIA6h0lg9sdyf+AwgZPGWZY7dwfNpr5Ti2E=
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 27A3F8B7AD;
- Fri, 14 Jun 2019 12:06:49 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 163538B7AD;
+ Fri, 14 Jun 2019 12:16:25 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id 8qQm5fcEnkLQ; Fri, 14 Jun 2019 12:06:49 +0200 (CEST)
-Received: from PO15451 (po15451.idsi0.si.c-s.fr [172.25.230.107])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 02E4A8B7AC;
- Fri, 14 Jun 2019 12:06:49 +0200 (CEST)
-Subject: Re: [PATCH] powerpc: Enable kernel XZ compression option on PPC_85xx
-To: Michael Ellerman <mpe@ellerman.id.au>, Daniel Axtens <dja@axtens.net>,
- Pawel Dembicki <paweldembicki@gmail.com>
-References: <20190603164115.27471-1-paweldembicki@gmail.com>
- <877e9qp3ou.fsf@dja-thinkpad.axtens.net>
- <87ftodempa.fsf@concordia.ellerman.id.au>
+ with ESMTP id WHBkEVSZc18z; Fri, 14 Jun 2019 12:16:25 +0200 (CEST)
+Received: from PO15451.localdomain (po15451.idsi0.si.c-s.fr [172.25.230.107])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id F1B748B7AC;
+ Fri, 14 Jun 2019 12:16:24 +0200 (CEST)
+Received: by localhost.localdomain (Postfix, from userid 0)
+ id EABB068D78; Fri, 14 Jun 2019 10:16:24 +0000 (UTC)
+Message-Id: <65527a0bc6ab29e27913cc425fe51cb24f5b2fee.1560507284.git.christophe.leroy@c-s.fr>
+In-Reply-To: <1b4946c9e580b51b6ca2ddc5963d66406c013c2d.1560507284.git.christophe.leroy@c-s.fr>
+References: <1b4946c9e580b51b6ca2ddc5963d66406c013c2d.1560507284.git.christophe.leroy@c-s.fr>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Message-ID: <f988951c-3077-ab19-81eb-560418468d14@c-s.fr>
-Date: Fri, 14 Jun 2019 12:06:48 +0200
-User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:60.0) Gecko/20100101
- Thunderbird/60.7.0
-MIME-Version: 1.0
-In-Reply-To: <87ftodempa.fsf@concordia.ellerman.id.au>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: fr
-Content-Transfer-Encoding: 8bit
+Subject: [PATCH v3 2/3] powerpc/boot: Add lzma support for uImage
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
+Date: Fri, 14 Jun 2019 10:16:24 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -93,66 +87,79 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>,
- linux-kernel@vger.kernel.org, Christian Lamparter <chunkeey@gmail.com>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+This patch allows to generate lzma compressed uImage
 
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 
-Le 13/06/2019 à 13:42, Michael Ellerman a écrit :
-> Daniel Axtens <dja@axtens.net> writes:
->> Pawel Dembicki <paweldembicki@gmail.com> writes:
->>
->>> Enable kernel XZ compression option on PPC_85xx. Tested with
->>> simpleImage on TP-Link TL-WDR4900 (Freescale P1014 processor).
->>>
->>> Suggested-by: Christian Lamparter <chunkeey@gmail.com>
->>> Signed-off-by: Pawel Dembicki <paweldembicki@gmail.com>
->>> ---
->>>   arch/powerpc/Kconfig | 2 +-
->>>   1 file changed, 1 insertion(+), 1 deletion(-)
->>>
->>> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
->>> index 8c1c636308c8..daf4cb968922 100644
->>> --- a/arch/powerpc/Kconfig
->>> +++ b/arch/powerpc/Kconfig
->>> @@ -196,7 +196,7 @@ config PPC
->>>   	select HAVE_IOREMAP_PROT
->>>   	select HAVE_IRQ_EXIT_ON_IRQ_STACK
->>>   	select HAVE_KERNEL_GZIP
->>> -	select HAVE_KERNEL_XZ			if PPC_BOOK3S || 44x
->>> +	select HAVE_KERNEL_XZ			if PPC_BOOK3S || 44x || PPC_85xx
->>
->> (I'm not super well versed in the compression stuff, so apologies if
->> this is a dumb question.) If it's this simple, is there any reason we
->> can't turn it on generally, or convert it to a blacklist of platforms
->> known not to work?
-> 
-> For some platforms enabling XZ requires that your u-boot has XZ support,
-> and I'm not very clear on when that support landed in u-boot and what
-> boards have it. And there are boards out there with old/custom u-boots
-> that effectively can't be updated.
+---
+ v3: no change
+ v2: restore alphabetic order in Kconfig
+---
+ arch/powerpc/Kconfig       | 1 +
+ arch/powerpc/boot/Makefile | 2 ++
+ arch/powerpc/boot/wrapper  | 5 ++++-
+ 3 files changed, 7 insertions(+), 1 deletion(-)
 
-I don't think that it has anything to do with u-boot.
-AFAIK, today's mainline U-boot only supports GZIP (by default) and the 
-following optional ones: LZO, LZMA, LZ4.
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index 8c1c636308c8..5542430ba261 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -196,6 +196,7 @@ config PPC
+ 	select HAVE_IOREMAP_PROT
+ 	select HAVE_IRQ_EXIT_ON_IRQ_STACK
+ 	select HAVE_KERNEL_GZIP
++	select HAVE_KERNEL_LZMA			if DEFAULT_UIMAGE
+ 	select HAVE_KERNEL_XZ			if PPC_BOOK3S || 44x
+ 	select HAVE_KPROBES
+ 	select HAVE_KPROBES_ON_FTRACE
+diff --git a/arch/powerpc/boot/Makefile b/arch/powerpc/boot/Makefile
+index 73d1f3562978..9b7b11a22925 100644
+--- a/arch/powerpc/boot/Makefile
++++ b/arch/powerpc/boot/Makefile
+@@ -22,6 +22,7 @@ all: $(obj)/zImage
+ 
+ compress-$(CONFIG_KERNEL_GZIP) := CONFIG_KERNEL_GZIP
+ compress-$(CONFIG_KERNEL_XZ)   := CONFIG_KERNEL_XZ
++compress-$(CONFIG_KERNEL_LZMA) := CONFIG_KERNEL_LZMA
+ 
+ ifdef CROSS32_COMPILE
+     BOOTCC := $(CROSS32_COMPILE)gcc
+@@ -257,6 +258,7 @@ endif
+ 
+ compressor-$(CONFIG_KERNEL_GZIP) := gz
+ compressor-$(CONFIG_KERNEL_XZ)   := xz
++compressor-$(CONFIG_KERNEL_LZMA)   := lzma
+ 
+ # args (to if_changed): 1 = (this rule), 2 = platform, 3 = dts 4=dtb 5=initrd
+ quiet_cmd_wrap	= WRAP    $@
+diff --git a/arch/powerpc/boot/wrapper b/arch/powerpc/boot/wrapper
+index 85d97360b1c9..19887f6ad7c1 100755
+--- a/arch/powerpc/boot/wrapper
++++ b/arch/powerpc/boot/wrapper
+@@ -136,7 +136,7 @@ while [ "$#" -gt 0 ]; do
+     -Z)
+ 	shift
+ 	[ "$#" -gt 0 ] || usage
+-        [ "$1" != "gz" -o "$1" != "xz" -o "$1" != "none" ] || usage
++        [ "$1" != "gz" -o "$1" != "xz" -o "$1" != "lzma" -o "$1" != "none" ] || usage
+ 
+ 	compression=".$1"
+ 	uboot_comp=$1
+@@ -373,6 +373,9 @@ if [ -z "$cacheit" -o ! -f "$vmz$compression" -o "$vmz$compression" -ot "$kernel
+     .gz)
+         gzip -n -f -9 "$vmz.$$"
+         ;;
++    .lzma)
++        xz --format=lzma -f -6 "$vmz.$$"
++	;;
+     *)
+         # drop the compression suffix so the stripped vmlinux is used
+         compression=
+-- 
+2.13.3
 
-If we want to set additional compression types for u-boot, it is not 
-enough to select HAVE_KERNEL_XXXX, we also have to update uImage 
-generation scripts.
-
-See the series I sent some time ago: 
-https://patchwork.ozlabs.org/project/linuxppc-dev/list/?series=104153
-I'll resent it without bzip2 as today's uboot doesn't support bzip2 anymore.
-
-> 
-> But as a server guy I don't really know the details of all that very
-> well. So if someone tells me that we should enable XZ for everything, or
-> as you say just black list some platforms, then that's fine by me.
-> 
-
-I guess we first need to understand how this is used.
-
-Christophe
