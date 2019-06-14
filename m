@@ -2,26 +2,26 @@ Return-Path: <SRS0=UD/r=UN=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+X-Spam-Status: No, score=-3.7 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
-	version=3.4.0
+	SPF_HELO_NONE,SPF_PASS,UNWANTED_LANGUAGE_BODY,URIBL_BLOCKED
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3B511C31E44
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 14 Jun 2019 06:52:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5B4C8C31E44
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 14 Jun 2019 06:54:14 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B1D9620851
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 14 Jun 2019 06:52:18 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id D2BB820673
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 14 Jun 2019 06:54:13 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="R8nj2h+w"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B1D9620851
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="EqiASUxV"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D2BB820673
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45QB9r6kTqzDrGw
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 14 Jun 2019 16:52:16 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45QBD34hGdzDrSt
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 14 Jun 2019 16:54:11 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=c-s.fr
  (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
@@ -29,55 +29,55 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="R8nj2h+w"; 
+ unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="EqiASUxV"; 
  dkim-atps=neutral
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45Q9xm54MwzDrFS
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45Q9xm75f4zDrFb
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Jun 2019 16:41:48 +1000 (AEST)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 45Q9xg0stfz9v16s;
- Fri, 14 Jun 2019 08:41:43 +0200 (CEST)
+ by localhost (Postfix) with ESMTP id 45Q9xh1ZSbz9v16t;
+ Fri, 14 Jun 2019 08:41:44 +0200 (CEST)
 Authentication-Results: localhost; dkim=pass
  reason="1024-bit key; insecure key"
- header.d=c-s.fr header.i=@c-s.fr header.b=R8nj2h+w; dkim-adsp=pass;
+ header.d=c-s.fr header.i=@c-s.fr header.b=EqiASUxV; dkim-adsp=pass;
  dkim-atps=neutral
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id oYgfHCk5z3Qa; Fri, 14 Jun 2019 08:41:43 +0200 (CEST)
+ with ESMTP id Ck1ca0EJ4Fa3; Fri, 14 Jun 2019 08:41:44 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 45Q9xf6t9vz9v16l;
- Fri, 14 Jun 2019 08:41:42 +0200 (CEST)
+ by pegase1.c-s.fr (Postfix) with ESMTP id 45Q9xh0Y8Nz9v16l;
+ Fri, 14 Jun 2019 08:41:44 +0200 (CEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
- t=1560494503; bh=nw7s55nSCE5gZsdfCAQCVWUUIXEzDyTDYLqPEVTErBE=;
+ t=1560494504; bh=c1fjFHYo4plvZKawyOgV7g7CcRgoXZx1Z5piZT8xc9k=;
  h=In-Reply-To:References:From:Subject:To:Cc:Date:From;
- b=R8nj2h+wIEEM1sGIYTkCnzBcMDjqgqZJqkPAfTw1XOhoJWksPIMDOT33XgIuPnZ6g
- 4aqaOHJbZPFFruIPkvwyAtXb2Qr/teH8xX2FRsGqNIlJq9tOgKrhRVOKPwNJCmP6Nz
- Buc4WJiy5+zpDaTwsdUBs+FpVHtPawCOUIsdmx1g=
+ b=EqiASUxVF28rqSAbQ03YmmGbLYZpiJsvDVsuUnWvgk++Ib/N3iXsmhWrMLLL4WXFM
+ ruVna0XumBruSs+JsdGVCXu635LZbG3AERoDpu+KY1P6O/srA9qYy4HLrIVxPN2PPI
+ apJhlcJBG4BCjRJUrHMsHmxPJpEM1M9MWJ8VbWZo=
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id E16828B77A;
- Fri, 14 Jun 2019 08:41:43 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 044B08B77C;
+ Fri, 14 Jun 2019 08:41:45 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id usLywtSfl1_h; Fri, 14 Jun 2019 08:41:43 +0200 (CEST)
+ with ESMTP id XYzf5l_CfAvn; Fri, 14 Jun 2019 08:41:44 +0200 (CEST)
 Received: from PO15451.localdomain (po15451.idsi0.si.c-s.fr [172.25.230.107])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id C771D8B775;
- Fri, 14 Jun 2019 08:41:43 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id D134C8B77A;
+ Fri, 14 Jun 2019 08:41:44 +0200 (CEST)
 Received: by po16838vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id BB91E68D77; Fri, 14 Jun 2019 06:41:43 +0000 (UTC)
-Message-Id: <a1d95337709fb952b91890285ba01e4ec5121a3a.1560494349.git.christophe.leroy@c-s.fr>
+ id C229D68D77; Fri, 14 Jun 2019 06:41:44 +0000 (UTC)
+Message-Id: <e9091dc0cfedf4cd49b46f0dbf44bff31518be9d.1560494349.git.christophe.leroy@c-s.fr>
 In-Reply-To: <04852442b540e73be0a20e13f69ab8427fd102e0.1560494348.git.christophe.leroy@c-s.fr>
 References: <04852442b540e73be0a20e13f69ab8427fd102e0.1560494348.git.christophe.leroy@c-s.fr>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v3 06/10] powerpc/8xx: refactor printing of microcode patch
- name.
+Subject: [PATCH v3 07/10] powerpc/8xx: refactor programming of microcode CPM
+ params.
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, 
  oss@buserror.net
-Date: Fri, 14 Jun 2019 06:41:43 +0000 (UTC)
+Date: Fri, 14 Jun 2019 06:41:44 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -94,74 +94,112 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Define patch name together with the patch code, and refactor
-the associated printk() while replacing it by a pr_info()
+The CPM registers RCCR and CPMCR1..4 registers has to be set in
+accordance with the microcode patch beeing programmed. Lets
+define them as part of the patch set and refactor their
+programming from that definition.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
- arch/powerpc/platforms/8xx/micropatch.c | 14 ++++++++------
- 1 file changed, 8 insertions(+), 6 deletions(-)
+ arch/powerpc/platforms/8xx/micropatch.c | 45 ++++++++++++++++++++-------------
+ 1 file changed, 27 insertions(+), 18 deletions(-)
 
 diff --git a/arch/powerpc/platforms/8xx/micropatch.c b/arch/powerpc/platforms/8xx/micropatch.c
-index 410968a0b177..5e5ac2378d3f 100644
+index 5e5ac2378d3f..02490c54ebac 100644
 --- a/arch/powerpc/platforms/8xx/micropatch.c
 +++ b/arch/powerpc/platforms/8xx/micropatch.c
-@@ -26,6 +26,8 @@
+@@ -20,6 +20,14 @@
+ #include <asm/cpm.h>
+ #include <asm/cpm1.h>
  
- #ifdef CONFIG_I2C_SPI_UCODE_PATCH
++struct patch_params {
++	ushort rccr;
++	ushort cpmcr1;
++	ushort cpmcr2;
++	ushort cpmcr3;
++	ushort cpmcr4;
++};
++
+ /*
+  * I2C/SPI relocation patch arrays.
+  */
+@@ -28,6 +36,10 @@
  
-+static char patch_name[] __initdata = "I2C/SPI";
+ static char patch_name[] __initdata = "I2C/SPI";
+ 
++static struct patch_params patch_params __initdata = {
++	1, 0x802a, 0x8028, 0x802e, 0x802c,
++};
 +
  static uint patch_2000[] __initdata = {
  	0x7FFFEFD9, 0x3FFD0000, 0x7FFB49F7, 0x7FF90000,
  	0x5FEFADF7, 0x5F89ADF7, 0x5FEFAFF7, 0x5F89AFF7,
-@@ -78,6 +80,8 @@ static uint patch_2e00[] __initdata = {};
+@@ -82,6 +94,10 @@ static uint patch_2e00[] __initdata = {};
  
- #ifdef CONFIG_I2C_SPI_SMC1_UCODE_PATCH
+ static char patch_name[] __initdata = "I2C/SPI/SMC1";
  
-+static char patch_name[] __initdata = "I2C/SPI/SMC1";
++static struct patch_params patch_params __initdata = {
++	3, 0x8080, 0x808a, 0x8028, 0x802a,
++};
 +
  static uint patch_2000[] __initdata = {
  	0x3fff0000, 0x3ffd0000, 0x3ffb0000, 0x3ff90000,
  	0x5f13eff8, 0x5eb5eff8, 0x5f88adf7, 0x5fefadf7,
-@@ -194,6 +198,8 @@ static uint patch_2e00[] __initdata = {
+@@ -200,6 +216,10 @@ static uint patch_2e00[] __initdata = {
  
- #ifdef CONFIG_USB_SOF_UCODE_PATCH
+ static char patch_name[] __initdata = "USB SOF";
  
-+static char patch_name[] __initdata = "USB SOF";
++static struct patch_params patch_params __initdata = {
++	9,
++};
 +
  static uint patch_2000[] __initdata = {
  	0x7fff0000, 0x7ffd0000, 0x7ffb0000, 0x49f7ba5b,
  	0xba383ffb, 0xf9b8b46d, 0xe5ab4e07, 0xaf77bffe,
-@@ -235,8 +241,6 @@ void __init cpm_load_patch(cpm8xx_t *cp)
+@@ -239,10 +259,6 @@ void __init cpm_load_patch(cpm8xx_t *cp)
+ 	cpm_write_patch(cp, 0xf00, patch_2f00, sizeof(patch_2f00));
+ 	cpm_write_patch(cp, 0xe00, patch_2e00, sizeof(patch_2e00));
  
- #ifdef CONFIG_USB_SOF_UCODE_PATCH
- 	commproc->cp_rccr = 0x0009;
+-#ifdef CONFIG_USB_SOF_UCODE_PATCH
+-	commproc->cp_rccr = 0x0009;
+-#endif /* CONFIG_USB_SOF_UCODE_PATCH */
 -
--	printk("USB SOF microcode patch installed\n");
- #endif /* CONFIG_USB_SOF_UCODE_PATCH */
- 
  #if defined(CONFIG_I2C_SPI_UCODE_PATCH) || \
-@@ -257,8 +261,6 @@ void __init cpm_load_patch(cpm8xx_t *cp)
- 	commproc->cp_cpmcr3 = 0x802e;
- 	commproc->cp_cpmcr4 = 0x802c;
- 	commproc->cp_rccr = 1;
+     defined(CONFIG_I2C_SPI_SMC1_UCODE_PATCH)
+ 
+@@ -255,26 +271,19 @@ void __init cpm_load_patch(cpm8xx_t *cp)
+ 	spp = (struct spi_pram *)&commproc->cp_dparam[PROFF_SPI];
+ 	spp->rpbase = (RPBASE + sizeof(iic_t) + 31) & ~31;
+ 
+-# if defined(CONFIG_I2C_SPI_UCODE_PATCH)
+-	commproc->cp_cpmcr1 = 0x802a;
+-	commproc->cp_cpmcr2 = 0x8028;
+-	commproc->cp_cpmcr3 = 0x802e;
+-	commproc->cp_cpmcr4 = 0x802c;
+-	commproc->cp_rccr = 1;
+-# endif /* CONFIG_I2C_SPI_UCODE_PATCH */
 -
--	printk("I2C/SPI microcode patch installed.\n");
- # endif /* CONFIG_I2C_SPI_UCODE_PATCH */
- 
  # if defined(CONFIG_I2C_SPI_SMC1_UCODE_PATCH)
-@@ -270,9 +272,9 @@ void __init cpm_load_patch(cpm8xx_t *cp)
- 
+-	commproc->cp_cpmcr1 = 0x8080;
+-	commproc->cp_cpmcr2 = 0x808a;
+-	commproc->cp_cpmcr3 = 0x8028;
+-	commproc->cp_cpmcr4 = 0x802a;
+-	commproc->cp_rccr = 3;
+-
  	smp = (smc_uart_t *)&commproc->cp_dparam[PROFF_SMC1];
  	smp->smc_rpbase = 0x1FC0;
--
--	printk("I2C/SPI/SMC1 microcode patch installed.\n");
  # endif /* CONFIG_I2C_SPI_SMC1_UCODE_PATCH) */
  
  #endif /* some variation of the I2C/SPI patch was selected */
+ 
++	commproc->cp_cpmcr1 = patch_params.cpmcr1;
++	commproc->cp_cpmcr2 = patch_params.cpmcr2;
++	commproc->cp_cpmcr3 = patch_params.cpmcr3;
++	commproc->cp_cpmcr4 = patch_params.cpmcr4;
 +
-+	pr_info("%s microcode patch installed\n", patch_name);
++	commproc->cp_rccr = patch_params.rccr;
++
+ 	pr_info("%s microcode patch installed\n", patch_name);
  }
 -- 
 2.13.3
