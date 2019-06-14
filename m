@@ -2,23 +2,23 @@ Return-Path: <SRS0=UD/r=UN=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS
+X-Spam-Status: No, score=-3.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C0A73C31E4B
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 14 Jun 2019 20:40:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 38D00C31E4B
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 14 Jun 2019 20:46:44 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 4E3BF2084D
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 14 Jun 2019 20:40:02 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4E3BF2084D
+	by mail.kernel.org (Postfix) with ESMTPS id ACAD82084D
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 14 Jun 2019 20:46:43 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org ACAD82084D
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lwn.net
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45QXXw03hDzDrSg
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 15 Jun 2019 06:40:00 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45QXhd37D3zDsDy
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 15 Jun 2019 06:46:41 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=lwn.net
  (client-ip=45.79.88.28; helo=ms.lwn.net; envelope-from=corbet@lwn.net;
@@ -28,22 +28,21 @@ Authentication-Results: lists.ozlabs.org;
 Received: from ms.lwn.net (ms.lwn.net [45.79.88.28])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45QXT55b9czDrhh
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 15 Jun 2019 06:36:40 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45QXfL0hKVzDrbx
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 15 Jun 2019 06:44:41 +1000 (AEST)
 Received: from lwn.net (localhost [127.0.0.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ms.lwn.net (Postfix) with ESMTPSA id 656C91429;
- Fri, 14 Jun 2019 20:36:36 +0000 (UTC)
-Date: Fri, 14 Jun 2019 14:36:35 -0600
+ by ms.lwn.net (Postfix) with ESMTPSA id A74AE740;
+ Fri, 14 Jun 2019 20:44:39 +0000 (UTC)
+Date: Fri, 14 Jun 2019 14:44:38 -0600
 From: Jonathan Corbet <corbet@lwn.net>
-To: Mauro Carvalho Chehab <mchehab+samsung@kernel.org>
-Subject: Re: [PATCH v4 19/28] docs: powerpc: convert docs to ReST and rename
- to *.rst
-Message-ID: <20190614143635.3aff154d@lwn.net>
-In-Reply-To: <63560c1ee7174952e148a353840a17969fe0be2d.1560361364.git.mchehab+samsung@kernel.org>
-References: <cover.1560361364.git.mchehab+samsung@kernel.org>
- <63560c1ee7174952e148a353840a17969fe0be2d.1560361364.git.mchehab+samsung@kernel.org>
+To: Bhupesh Sharma <bhsharma@redhat.com>
+Subject: Re: [RESEND PATCH] Documentation/stackprotector: powerpc supports
+ stack protector
+Message-ID: <20190614144438.211b4dd0@lwn.net>
+In-Reply-To: <1560161019-3895-1-git-send-email-bhsharma@redhat.com>
+References: <1560161019-3895-1-git-send-email-bhsharma@redhat.com>
 Organization: LWN.net
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -59,88 +58,30 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Linux Doc Mailing List <linux-doc@vger.kernel.org>,
- linux-pci@vger.kernel.org, Oliver O'Halloran <oohall@gmail.com>,
- Qiang Zhao <qiang.zhao@nxp.com>, linux-scsi@vger.kernel.org,
- Jiri Slaby <jslaby@suse.com>, Linas Vepstas <linasvepstas@gmail.com>,
- Andrew Donnellan <ajd@linux.ibm.com>,
- Mauro Carvalho Chehab <mchehab@infradead.org>,
- "Manoj N. Kumar" <manoj@linux.ibm.com>, Bjorn Helgaas <bhelgaas@google.com>,
- linux-arm-kernel@lists.infradead.org, "Matthew R. Ochs" <mrochs@linux.ibm.com>,
- Uma Krishnan <ukrishn@linux.ibm.com>, Sam Bobroff <sbobroff@linux.ibm.com>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org,
- Li Yang <leoyang.li@nxp.com>, Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
- Frederic Barrat <fbarrat@linux.ibm.com>, Paul Mackerras <paulus@samba.org>,
- linuxppc-dev@lists.ozlabs.org
+Cc: arnd@arndb.de, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org,
+ paulus@samba.org, bhupesh.linux@gmail.com, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, 12 Jun 2019 14:52:55 -0300
-Mauro Carvalho Chehab <mchehab+samsung@kernel.org> wrote:
+On Mon, 10 Jun 2019 15:33:39 +0530
+Bhupesh Sharma <bhsharma@redhat.com> wrote:
 
-> Convert docs to ReST and add them to the arch-specific
-> book.
+> powerpc architecture (both 64-bit and 32-bit) supports stack protector
+> mechanism since some time now [see commit 06ec27aea9fc ("powerpc/64:
+> add stack protector support")].
 > 
-> The conversion here was trivial, as almost every file there
-> was already using an elegant format close to ReST standard.
+> Update stackprotector arch support documentation to reflect the same.
 > 
-> The changes were mostly to mark literal blocks and add a few
-> missing section title identifiers.
-> 
-> One note with regards to "--": on Sphinx, this can't be used
-> to identify a list, as it will format it badly. This can be
-> used, however, to identify a long hyphen - and "---" is an
-> even longer one.
-> 
-> At its new index.rst, let's add a :orphan: while this is not linked to
-> the main index.rst file, in order to avoid build warnings.
-> 
-> Signed-off-by: Mauro Carvalho Chehab <mchehab+samsung@kernel.org>
-> Acked-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com> # cxl
+> Cc: Jonathan Corbet <corbet@lwn.net>
+> Cc: Michael Ellerman <mpe@ellerman.id.au>
+> Cc: linux-doc@vger.kernel.org
+> Cc: linux-kernel@vger.kernel.org
+> Cc: linuxppc-dev@lists.ozlabs.org
+> Signed-off-by: Bhupesh Sharma <bhsharma@redhat.com>
+> ---
+> Resend, this time Cc'ing Jonathan and doc-list.
 
-This one fails to apply because ...
-
-[...]
-
-> diff --git a/Documentation/PCI/pci-error-recovery.rst b/Documentation/PCI/pci-error-recovery.rst
-> index 83db42092935..acc21ecca322 100644
-> --- a/Documentation/PCI/pci-error-recovery.rst
-> +++ b/Documentation/PCI/pci-error-recovery.rst
-> @@ -403,7 +403,7 @@ That is, the recovery API only requires that:
->  .. note::
->  
->     Implementation details for the powerpc platform are discussed in
-> -   the file Documentation/powerpc/eeh-pci-error-recovery.txt
-> +   the file Documentation/powerpc/eeh-pci-error-recovery.rst
->  
->     As of this writing, there is a growing list of device drivers with
->     patches implementing error recovery. Not all of these patches are in
-> @@ -422,3 +422,24 @@ That is, the recovery API only requires that:
->     - drivers/net/cxgb3
->     - drivers/net/s2io.c
->     - drivers/net/qlge
-> +
-> +>>> As of this writing, there is a growing list of device drivers with
-> +>>> patches implementing error recovery. Not all of these patches are in
-> +>>> mainline yet. These may be used as "examples":
-> +>>>
-> +>>> drivers/scsi/ipr
-> +>>> drivers/scsi/sym53c8xx_2
-> +>>> drivers/scsi/qla2xxx
-> +>>> drivers/scsi/lpfc
-> +>>> drivers/next/bnx2.c
-> +>>> drivers/next/e100.c
-> +>>> drivers/net/e1000
-> +>>> drivers/net/e1000e
-> +>>> drivers/net/ixgb
-> +>>> drivers/net/ixgbe
-> +>>> drivers/net/cxgb3
-> +>>> drivers/net/s2io.c
-> +>>> drivers/net/qlge  
-
-...of this, which has the look of a set of conflict markers that managed
-to get committed...?
+Applied, thanks.
 
 jon
-
