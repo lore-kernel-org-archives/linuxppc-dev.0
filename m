@@ -2,26 +2,26 @@ Return-Path: <SRS0=UD/r=UN=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.1 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+X-Spam-Status: No, score=-8.0 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_MUTT autolearn=unavailable
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_MUTT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 25BA3C31E4B
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 14 Jun 2019 13:56:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 85F3EC31E4B
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 14 Jun 2019 14:31:59 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6A04920850
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 14 Jun 2019 13:56:14 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id A3D3E20866
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 14 Jun 2019 14:31:58 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="ltHpPMHD"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6A04920850
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="eiq/xb+U"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A3D3E20866
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linuxfoundation.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45QMZz6RfgzDrJ7
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 14 Jun 2019 23:56:11 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45QNNC4M4nzDr7N
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 15 Jun 2019 00:31:55 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=linuxfoundation.org
  (client-ip=198.145.29.99; helo=mail.kernel.org;
@@ -29,27 +29,27 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=linuxfoundation.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="ltHpPMHD"; 
+ unprotected) header.d=kernel.org header.i=@kernel.org header.b="eiq/xb+U"; 
  dkim-atps=neutral
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45QMSZ07J4zDrPl
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Jun 2019 23:50:37 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45QNK33yhHzDrfv
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 15 Jun 2019 00:29:09 +1000 (AEST)
 Received: from localhost (83-86-89-107.cable.dynamic.v4.ziggo.nl
  [83.86.89.107])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id 2048120850;
- Fri, 14 Jun 2019 13:50:32 +0000 (UTC)
+ by mail.kernel.org (Postfix) with ESMTPSA id 9103420866;
+ Fri, 14 Jun 2019 14:29:06 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1560520233;
- bh=Gko3ADTpWvlugdQMPv4rjs/zDLbwe8iI2q557FWXTvg=;
- h=Date:From:To:Cc:Subject:From;
- b=ltHpPMHDvmk9Z3+wJTqeqQP9O7ax8nr7Wa5CcXcH8MJJr2QlbKOmWdWJlA5jWp0ds
- h5+4weyk1sPc8jQuVNQi13zHuCpxk1rTqdayPUF7n+uhbiZAnP0kCfB2nIGm8ta1wd
- EF/y/ZZw5n5PM+1gO+GjMWMIZht3aOqWvUglAeeI=
-Date: Fri, 14 Jun 2019 15:50:31 +0200
+ s=default; t=1560522547;
+ bh=cY7qQ7vl0+egy4AL6ZDqmTDm4h2jklkJUrmVOLowupA=;
+ h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+ b=eiq/xb+UdPxWqpEOmZmONEuKxa+SiiyvP9eYhCH3UgRBUIvfH0GN9HEM0EyX5u+nV
+ RUbpqwvtSYeCYQXjqaywHQzWTqhJFoHyZwqfs05GdA56xHZCJTfDvE9I0jozAGTEDQ
+ FNqGKrn/YTKGOEjp3fGLFj/D0RUOKHFpybtaugVk=
+Date: Fri, 14 Jun 2019 16:29:04 +0200
 From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 To: Breno =?iso-8859-1?Q?Leit=E3o?= <leitao@debian.org>,
  Nayna Jain <nayna@linux.ibm.com>,
@@ -57,13 +57,15 @@ To: Breno =?iso-8859-1?Q?Leit=E3o?= <leitao@debian.org>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
  Herbert Xu <herbert@gondor.apana.org.au>
-Subject: [PATCH] crypto: nx: no need to check return value of debugfs_create
- functions
-Message-ID: <20190614135031.GA5809@kroah.com>
+Subject: [PATCH v2] crypto: nx: no need to check return value of
+ debugfs_create functions
+Message-ID: <20190614142904.GA11066@kroah.com>
+References: <20190614135031.GA5809@kroah.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
+In-Reply-To: <20190614135031.GA5809@kroah.com>
 User-Agent: Mutt/1.12.0 (2019-05-25)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -101,6 +103,8 @@ Cc: linux-crypto@vger.kernel.org
 Cc: linuxppc-dev@lists.ozlabs.org
 Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 ---
+v2: fixed build error found by kbuild
+
  drivers/crypto/nx/nx.c         |  4 +-
  drivers/crypto/nx/nx.h         | 12 +-----
  drivers/crypto/nx/nx_debugfs.c | 71 +++++++++++-----------------------
@@ -157,7 +161,7 @@ index c3e54af18645..c6b5a3be02be 100644
  #else
  #define NX_DEBUGFS_INIT(drv)	(0)
 diff --git a/drivers/crypto/nx/nx_debugfs.c b/drivers/crypto/nx/nx_debugfs.c
-index 7ab2e8dcd9b4..3aa80a6e34a1 100644
+index 7ab2e8dcd9b4..add1d8d0d23c 100644
 --- a/drivers/crypto/nx/nx_debugfs.c
 +++ b/drivers/crypto/nx/nx_debugfs.c
 @@ -42,62 +42,37 @@
@@ -235,7 +239,7 @@ index 7ab2e8dcd9b4..3aa80a6e34a1 100644
 +	debugfs_create_u32("last_error", S_IRUSR | S_IRGRP | S_IROTH,
 +			   root, (u32 *)&drv->stats.last_error);
 +	debugfs_create_u32("last_error_pid", S_IRUSR | S_IRGRP | S_IROTH,
-+			   dfs_root, (u32 *)&drv->stats.last_error_pid);
++			   root, (u32 *)&drv->stats.last_error_pid);
  }
  
  void
