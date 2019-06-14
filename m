@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-8.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
 	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3250CC31E4B
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 14 Jun 2019 15:56:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9F6F1C31E4B
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 14 Jun 2019 15:58:10 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B35C62168B
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 14 Jun 2019 15:56:08 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B35C62168B
+	by mail.kernel.org (Postfix) with ESMTPS id 2EE6B2168B
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 14 Jun 2019 15:58:10 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2EE6B2168B
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45QQFK3g64zDrLK
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 15 Jun 2019 01:56:05 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45QQHg4VDyzDrGx
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 15 Jun 2019 01:58:07 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=none (mailfrom) smtp.mailfrom=linux.vnet.ibm.com
  (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
@@ -29,56 +29,55 @@ Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45QQ066xmdzDrPP
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45QQ070BkczDrg1
  for <linuxppc-dev@lists.ozlabs.org>; Sat, 15 Jun 2019 01:44:38 +1000 (AEST)
-Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x5EFhiYv107716
+Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
+ x5EFhJ32039774
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Jun 2019 11:44:36 -0400
-Received: from e06smtp03.uk.ibm.com (e06smtp03.uk.ibm.com [195.75.94.99])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2t4d34c4rh-1
+Received: from e06smtp01.uk.ibm.com (e06smtp01.uk.ibm.com [195.75.94.97])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2t4e17s8wv-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Jun 2019 11:44:35 -0400
 Received: from localhost
- by e06smtp03.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp01.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
- Fri, 14 Jun 2019 16:44:31 +0100
-Received: from b06cxnps4075.portsmouth.uk.ibm.com (9.149.109.197)
- by e06smtp03.uk.ibm.com (192.168.101.133) with IBM ESMTP SMTP Gateway:
+ Fri, 14 Jun 2019 16:44:34 +0100
+Received: from b06cxnps3074.portsmouth.uk.ibm.com (9.149.109.194)
+ by e06smtp01.uk.ibm.com (192.168.101.131) with IBM ESMTP SMTP Gateway:
  Authorized Use Only! Violators will be prosecuted; 
  (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Fri, 14 Jun 2019 16:44:28 +0100
+ Fri, 14 Jun 2019 16:44:32 +0100
 Received: from d06av25.portsmouth.uk.ibm.com (d06av25.portsmouth.uk.ibm.com
  [9.149.105.61])
- by b06cxnps4075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x5EFiQs445809880
+ by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x5EFiUqf54657188
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Fri, 14 Jun 2019 15:44:27 GMT
+ Fri, 14 Jun 2019 15:44:30 GMT
 Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id BE6D711C050;
- Fri, 14 Jun 2019 15:44:26 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 74F4311C054;
+ Fri, 14 Jun 2019 15:44:30 +0000 (GMT)
 Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 4724B11C04C;
- Fri, 14 Jun 2019 15:44:25 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id F211211C052;
+ Fri, 14 Jun 2019 15:44:28 +0000 (GMT)
 Received: from naverao1-tp.ibmuc.com (unknown [9.85.70.176])
  by d06av25.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Fri, 14 Jun 2019 15:44:25 +0000 (GMT)
+ Fri, 14 Jun 2019 15:44:28 +0000 (GMT)
 From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
 To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: [PATCH v2 3/9] powerpc/pseries: Factor out DTL buffer allocation and
- registration routines
-Date: Fri, 14 Jun 2019 21:14:01 +0530
+Subject: [PATCH v2 5/9] powerpc/pseries: Generalize hcall_vphn()
+Date: Fri, 14 Jun 2019 21:14:03 +0530
 X-Mailer: git-send-email 2.21.0
 In-Reply-To: <cover.1560526066.git.naveen.n.rao@linux.vnet.ibm.com>
 References: <cover.1560526066.git.naveen.n.rao@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-x-cbid: 19061415-0012-0000-0000-000003292D24
+x-cbid: 19061415-4275-0000-0000-000003425D1A
 X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19061415-0013-0000-0000-000021623E28
-Message-Id: <d08886278fbacadd303e07396b536717f3254574.1560526066.git.naveen.n.rao@linux.vnet.ibm.com>
+x-cbparentid: 19061415-4276-0000-0000-000038527B41
+Message-Id: <abcb1314522d21ca0360c7a2005fb48e792bf4df.1560526066.git.naveen.n.rao@linux.vnet.ibm.com>
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
  definitions=2019-06-14_07:, , signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
@@ -105,171 +104,87 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Introduce new helpers for DTL buffer allocation and registration and
-have the existing code use those.
+H_HOME_NODE_ASSOCIATIVITY hcall can take two different flags and return
+different associativity information in each case. Generalize the
+existing hcall_vphn() function to take flags as an argument and to
+return the result. Update the only existing user to pass the proper
+arguments.
 
 Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/plpar_wrappers.h |  2 +
- arch/powerpc/platforms/pseries/lpar.c     | 66 ++++++++++++++++-------
- arch/powerpc/platforms/pseries/setup.c    | 34 +-----------
- 3 files changed, 52 insertions(+), 50 deletions(-)
+ arch/powerpc/mm/book3s64/vphn.h |  8 ++++++++
+ arch/powerpc/mm/numa.c          | 27 +++++++++++++--------------
+ 2 files changed, 21 insertions(+), 14 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/plpar_wrappers.h b/arch/powerpc/include/asm/plpar_wrappers.h
-index cff5a411e595..d08feb1bc2bd 100644
---- a/arch/powerpc/include/asm/plpar_wrappers.h
-+++ b/arch/powerpc/include/asm/plpar_wrappers.h
-@@ -88,6 +88,8 @@ static inline long register_dtl(unsigned long cpu, unsigned long vpa)
- 	return vpa_call(H_VPA_REG_DTL, cpu, vpa);
- }
- 
-+extern void register_dtl_buffer(int cpu);
-+extern void alloc_dtl_buffers(void);
- extern void vpa_init(int cpu);
- 
- static inline long plpar_pte_enter(unsigned long flags,
-diff --git a/arch/powerpc/platforms/pseries/lpar.c b/arch/powerpc/platforms/pseries/lpar.c
-index 96c4677cf8ab..8c5377fe9985 100644
---- a/arch/powerpc/platforms/pseries/lpar.c
-+++ b/arch/powerpc/platforms/pseries/lpar.c
-@@ -52,13 +52,58 @@ EXPORT_SYMBOL(plpar_hcall);
- EXPORT_SYMBOL(plpar_hcall9);
- EXPORT_SYMBOL(plpar_hcall_norets);
- 
-+void alloc_dtl_buffers(void)
-+{
-+	int cpu;
-+	struct paca_struct *pp;
-+	struct dtl_entry *dtl;
-+
-+	for_each_possible_cpu(cpu) {
-+		pp = paca_ptrs[cpu];
-+		dtl = kmem_cache_alloc(dtl_cache, GFP_KERNEL);
-+		if (!dtl) {
-+			pr_warn("Failed to allocate dispatch trace log for cpu %d\n",
-+				cpu);
-+			pr_warn("Stolen time statistics will be unreliable\n");
-+			break;
-+		}
-+
-+		pp->dtl_ridx = 0;
-+		pp->dispatch_log = dtl;
-+		pp->dispatch_log_end = dtl + N_DISPATCH_LOG;
-+		pp->dtl_curr = dtl;
-+	}
-+}
-+
-+void register_dtl_buffer(int cpu)
-+{
-+	long ret;
-+	struct paca_struct *pp;
-+	struct dtl_entry *dtl;
-+	int hwcpu = get_hard_smp_processor_id(cpu);
-+
-+	pp = paca_ptrs[cpu];
-+	dtl = pp->dispatch_log;
-+	if (dtl) {
-+		pp->dtl_ridx = 0;
-+		pp->dtl_curr = dtl;
-+		lppaca_of(cpu).dtl_idx = 0;
-+
-+		/* hypervisor reads buffer length from this field */
-+		dtl->enqueue_to_dispatch_time = cpu_to_be32(DISPATCH_LOG_BYTES);
-+		ret = register_dtl(hwcpu, __pa(dtl));
-+		if (ret)
-+			pr_err("WARNING: DTL registration of cpu %d (hw %d) "
-+			       "failed with %ld\n", cpu, hwcpu, ret);
-+		lppaca_of(cpu).dtl_enable_mask = DTL_LOG_PREEMPT;
-+	}
-+}
-+
- void vpa_init(int cpu)
- {
- 	int hwcpu = get_hard_smp_processor_id(cpu);
- 	unsigned long addr;
- 	long ret;
--	struct paca_struct *pp;
--	struct dtl_entry *dtl;
- 
- 	/*
- 	 * The spec says it "may be problematic" if CPU x registers the VPA of
-@@ -99,22 +144,7 @@ void vpa_init(int cpu)
- 	/*
- 	 * Register dispatch trace log, if one has been allocated.
- 	 */
--	pp = paca_ptrs[cpu];
--	dtl = pp->dispatch_log;
--	if (dtl) {
--		pp->dtl_ridx = 0;
--		pp->dtl_curr = dtl;
--		lppaca_of(cpu).dtl_idx = 0;
--
--		/* hypervisor reads buffer length from this field */
--		dtl->enqueue_to_dispatch_time = cpu_to_be32(DISPATCH_LOG_BYTES);
--		ret = register_dtl(hwcpu, __pa(dtl));
--		if (ret)
--			pr_err("WARNING: DTL registration of cpu %d (hw %d) "
--			       "failed with %ld\n", smp_processor_id(),
--			       hwcpu, ret);
--		lppaca_of(cpu).dtl_enable_mask = DTL_LOG_PREEMPT;
--	}
-+	register_dtl_buffer(cpu);
- }
- 
- #ifdef CONFIG_PPC_BOOK3S_64
-diff --git a/arch/powerpc/platforms/pseries/setup.c b/arch/powerpc/platforms/pseries/setup.c
-index a643e45d0544..e4d75b958593 100644
---- a/arch/powerpc/platforms/pseries/setup.c
-+++ b/arch/powerpc/platforms/pseries/setup.c
-@@ -273,46 +273,16 @@ struct kmem_cache *dtl_cache;
+diff --git a/arch/powerpc/mm/book3s64/vphn.h b/arch/powerpc/mm/book3s64/vphn.h
+index f0b93c2dd578..f7ff1e0c3801 100644
+--- a/arch/powerpc/mm/book3s64/vphn.h
++++ b/arch/powerpc/mm/book3s64/vphn.h
+@@ -11,6 +11,14 @@
   */
- static int alloc_dispatch_logs(void)
+ #define VPHN_ASSOC_BUFSIZE (VPHN_REGISTER_COUNT*sizeof(u64)/sizeof(u16) + 1)
+ 
++/*
++ * The H_HOME_NODE_ASSOCIATIVITY hcall takes two values for flags:
++ * 1 for retrieving associativity information for a guest cpu
++ * 2 for retrieving associativity information for a host/hypervisor cpu
++ */
++#define VPHN_FLAG_VCPU	1
++#define VPHN_FLAG_PCPU	2
++
+ extern int vphn_unpack_associativity(const long *packed, __be32 *unpacked);
+ 
+ #endif
+diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
+index 917904d2fe97..42ea79514420 100644
+--- a/arch/powerpc/mm/numa.c
++++ b/arch/powerpc/mm/numa.c
+@@ -1083,6 +1083,17 @@ static void reset_topology_timer(void);
+ static int topology_timer_secs = 1;
+ static int topology_inited;
+ 
++static long hcall_vphn(unsigned long cpu, u64 flags, __be32 *associativity)
++{
++	long rc;
++	long retbuf[PLPAR_HCALL9_BUFSIZE] = {0};
++
++	rc = plpar_hcall9(H_HOME_NODE_ASSOCIATIVITY, retbuf, flags, cpu);
++	vphn_unpack_associativity(retbuf, associativity);
++
++	return rc;
++}
++
+ /*
+  * Change polling interval for associativity changes.
+  */
+@@ -1161,25 +1172,13 @@ static int update_cpu_associativity_changes_mask(void)
+  * Retrieve the new associativity information for a virtual processor's
+  * home node.
+  */
+-static long hcall_vphn(unsigned long cpu, __be32 *associativity)
+-{
+-	long rc;
+-	long retbuf[PLPAR_HCALL9_BUFSIZE] = {0};
+-	u64 flags = 1;
+-	int hwcpu = get_hard_smp_processor_id(cpu);
+-
+-	rc = plpar_hcall9(H_HOME_NODE_ASSOCIATIVITY, retbuf, flags, hwcpu);
+-	vphn_unpack_associativity(retbuf, associativity);
+-
+-	return rc;
+-}
+-
+ static long vphn_get_associativity(unsigned long cpu,
+ 					__be32 *associativity)
  {
--	int cpu, ret;
--	struct paca_struct *pp;
--	struct dtl_entry *dtl;
--
- 	if (!firmware_has_feature(FW_FEATURE_SPLPAR))
- 		return 0;
+ 	long rc;
  
- 	if (!dtl_cache)
- 		return 0;
+-	rc = hcall_vphn(cpu, associativity);
++	rc = hcall_vphn(get_hard_smp_processor_id(cpu),
++				VPHN_FLAG_VCPU, associativity);
  
--	for_each_possible_cpu(cpu) {
--		pp = paca_ptrs[cpu];
--		dtl = kmem_cache_alloc(dtl_cache, GFP_KERNEL);
--		if (!dtl) {
--			pr_warn("Failed to allocate dispatch trace log for cpu %d\n",
--				cpu);
--			pr_warn("Stolen time statistics will be unreliable\n");
--			break;
--		}
--
--		pp->dtl_ridx = 0;
--		pp->dispatch_log = dtl;
--		pp->dispatch_log_end = dtl + N_DISPATCH_LOG;
--		pp->dtl_curr = dtl;
--	}
-+	alloc_dtl_buffers();
- 
- 	/* Register the DTL for the current (boot) cpu */
--	dtl = get_paca()->dispatch_log;
--	get_paca()->dtl_ridx = 0;
--	get_paca()->dtl_curr = dtl;
--	get_paca()->lppaca_ptr->dtl_idx = 0;
--
--	/* hypervisor reads buffer length from this field */
--	dtl->enqueue_to_dispatch_time = cpu_to_be32(DISPATCH_LOG_BYTES);
--	ret = register_dtl(hard_smp_processor_id(), __pa(dtl));
--	if (ret)
--		pr_err("WARNING: DTL registration of cpu %d (hw %d) failed "
--		       "with %d\n", smp_processor_id(),
--		       hard_smp_processor_id(), ret);
--	get_paca()->lppaca_ptr->dtl_enable_mask = DTL_LOG_PREEMPT;
-+	register_dtl_buffer(smp_processor_id());
- 
- 	return 0;
- }
+ 	switch (rc) {
+ 	case H_FUNCTION:
 -- 
 2.21.0
 
