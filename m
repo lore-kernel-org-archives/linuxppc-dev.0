@@ -2,95 +2,55 @@ Return-Path: <SRS0=UD/r=UN=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A42F8C31E44
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 14 Jun 2019 08:47:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A6727C31E44
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 14 Jun 2019 10:04:10 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 22B832133D
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 14 Jun 2019 08:47:05 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 22B832133D
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id F28A121773
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 14 Jun 2019 10:04:09 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org F28A121773
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45QDkH16LNzDrDZ
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 14 Jun 2019 18:47:03 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45QGRC2Q8BzDrTy
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 14 Jun 2019 20:04:07 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
- (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=ldufour@linux.ibm.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=redhat.com
+ (client-ip=209.132.183.28; helo=mx1.redhat.com; envelope-from=david@redhat.com;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+ dmarc=pass (p=none dis=none) header.from=redhat.com
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45QDh42BG4zDq9H
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Jun 2019 18:45:07 +1000 (AEST)
-Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x5E8hK4g091610
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Jun 2019 04:45:06 -0400
-Received: from e06smtp02.uk.ibm.com (e06smtp02.uk.ibm.com [195.75.94.98])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2t4775avar-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Jun 2019 04:45:05 -0400
-Received: from localhost
- by e06smtp02.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <ldufour@linux.ibm.com>;
- Fri, 14 Jun 2019 09:45:02 +0100
-Received: from b06cxnps4075.portsmouth.uk.ibm.com (9.149.109.197)
- by e06smtp02.uk.ibm.com (192.168.101.132) with IBM ESMTP SMTP Gateway:
- Authorized Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Fri, 14 Jun 2019 09:44:52 +0100
-Received: from d06av26.portsmouth.uk.ibm.com (d06av26.portsmouth.uk.ibm.com
- [9.149.105.62])
- by b06cxnps4075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x5E8ioUG58589432
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Fri, 14 Jun 2019 08:44:50 GMT
-Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id C533CAE051;
- Fri, 14 Jun 2019 08:44:50 +0000 (GMT)
-Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 641BDAE045;
- Fri, 14 Jun 2019 08:44:48 +0000 (GMT)
-Received: from [9.145.160.23] (unknown [9.145.160.23])
- by d06av26.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Fri, 14 Jun 2019 08:44:48 +0000 (GMT)
-Subject: Re: [PATCH v12 00/31] Speculative page faults
-From: Laurent Dufour <ldufour@linux.ibm.com>
-To: Haiyan Song <haiyanx.song@intel.com>
-References: <20190416134522.17540-1-ldufour@linux.ibm.com>
- <20190606065129.d5s3534p23twksgp@haiyan.sh.intel.com>
- <3d3cefa2-0ebb-e86d-b060-7ba67c48a59f@linux.ibm.com>
-Date: Fri, 14 Jun 2019 10:44:47 +0200
-User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.14; rv:60.0)
- Gecko/20100101 Thunderbird/60.7.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45QGNd5m9GzDrTK
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Jun 2019 20:01:50 +1000 (AEST)
+Received: from smtp.corp.redhat.com (int-mx04.intmail.prod.int.phx2.redhat.com
+ [10.5.11.14])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by mx1.redhat.com (Postfix) with ESMTPS id 6C2B1356DA;
+ Fri, 14 Jun 2019 10:01:42 +0000 (UTC)
+Received: from t460s.redhat.com (ovpn-116-252.ams2.redhat.com [10.36.116.252])
+ by smtp.corp.redhat.com (Postfix) with ESMTP id CC6615D9D2;
+ Fri, 14 Jun 2019 10:01:33 +0000 (UTC)
+From: David Hildenbrand <david@redhat.com>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH v1 1/6] mm: Section numbers use the type "unsigned long"
+Date: Fri, 14 Jun 2019 12:01:09 +0200
+Message-Id: <20190614100114.311-2-david@redhat.com>
+In-Reply-To: <20190614100114.311-1-david@redhat.com>
+References: <20190614100114.311-1-david@redhat.com>
 MIME-Version: 1.0
-In-Reply-To: <3d3cefa2-0ebb-e86d-b060-7ba67c48a59f@linux.ibm.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: en-US
 Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-x-cbid: 19061408-0008-0000-0000-000002F3B0D9
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19061408-0009-0000-0000-00002260BA09
-Message-Id: <1c412ebe-c213-ee67-d261-c70ddcd34b79@linux.ibm.com>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2019-06-14_05:, , signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=777 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1810050000 definitions=main-1906140071
+X-Scanned-By: MIMEDefang 2.79 on 10.5.11.14
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.5.16
+ (mx1.redhat.com [10.5.110.30]); Fri, 14 Jun 2019 10:01:42 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -102,36 +62,152 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: jack@suse.cz, sergey.senozhatsky.work@gmail.com, peterz@infradead.org,
- Will Deacon <will.deacon@arm.com>, mhocko@kernel.org, linux-mm@kvack.org,
- paulus@samba.org, Punit Agrawal <punitagrawal@gmail.com>, hpa@zytor.com,
- Michel Lespinasse <walken@google.com>,
- Alexei Starovoitov <alexei.starovoitov@gmail.com>,
- Andrea Arcangeli <aarcange@redhat.com>, ak@linux.intel.com,
- Minchan Kim <minchan@kernel.org>, aneesh.kumar@linux.ibm.com, x86@kernel.org,
- Matthew Wilcox <willy@infradead.org>,
- Daniel Jordan <daniel.m.jordan@oracle.com>, Ingo Molnar <mingo@redhat.com>,
- David Rientjes <rientjes@google.com>, paulmck@linux.vnet.ibm.com,
- npiggin@gmail.com, sj38.park@gmail.com, Jerome Glisse <jglisse@redhat.com>,
- dave@stgolabs.net, kemi.wang@intel.com, kirill@shutemov.name,
- Thomas Gleixner <tglx@linutronix.de>, zhong jiang <zhongjiang@huawei.com>,
- Ganesh Mahendran <opensource.ganesh@gmail.com>,
- Yang Shi <yang.shi@linux.alibaba.com>, Mike Rapoport <rppt@linux.ibm.com>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
- vinayak menon <vinayakm.list@gmail.com>, akpm@linux-foundation.org,
- Tim Chen <tim.c.chen@linux.intel.com>, haren@linux.vnet.ibm.com
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, Michal Hocko <mhocko@suse.com>,
+ Pavel Tatashin <pasha.tatashin@oracle.com>, Baoquan He <bhe@redhat.com>,
+ David Hildenbrand <david@redhat.com>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ "Rafael J. Wysocki" <rafael@kernel.org>,
+ Mel Gorman <mgorman@techsingularity.net>, Wei Yang <richard.weiyang@gmail.com>,
+ linux-mm@kvack.org, linux-acpi@vger.kernel.org,
+ Mike Rapoport <rppt@linux.vnet.ibm.com>, Arun KS <arunks@codeaurora.org>,
+ Johannes Weiner <hannes@cmpxchg.org>, Dan Williams <dan.j.williams@intel.com>,
+ linuxppc-dev@lists.ozlabs.org, Andrew Morton <akpm@linux-foundation.org>,
+ Vlastimil Babka <vbabka@suse.cz>, Oscar Salvador <osalvador@suse.de>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Le 14/06/2019 à 10:37, Laurent Dufour a écrit :
-> Please find attached the script I run to get these numbers.
-> This would be nice if you could give it a try on your victim node and share the result.
+We are using a mixture of "int" and "unsigned long". Let's make this
+consistent by using "unsigned long" everywhere. We'll do the same with
+memory block ids next.
 
-Sounds that the Intel mail fitering system doesn't like the attached shell script.
-Please find it there: https://gist.github.com/ldu4/a5cc1a93f293108ea387d43d5d5e7f44
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: Vlastimil Babka <vbabka@suse.cz>
+Cc: Michal Hocko <mhocko@suse.com>
+Cc: Dan Williams <dan.j.williams@intel.com>
+Cc: Mel Gorman <mgorman@techsingularity.net>
+Cc: Wei Yang <richard.weiyang@gmail.com>
+Cc: Johannes Weiner <hannes@cmpxchg.org>
+Cc: Arun KS <arunks@codeaurora.org>
+Cc: Pavel Tatashin <pasha.tatashin@oracle.com>
+Cc: Oscar Salvador <osalvador@suse.de>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: Mike Rapoport <rppt@linux.vnet.ibm.com>
+Cc: Baoquan He <bhe@redhat.com>
+Signed-off-by: David Hildenbrand <david@redhat.com>
+---
+ drivers/base/memory.c  |  9 +++++----
+ include/linux/mmzone.h |  4 ++--
+ mm/sparse.c            | 12 ++++++------
+ 3 files changed, 13 insertions(+), 12 deletions(-)
 
-Thanks,
-Laurent.
+diff --git a/drivers/base/memory.c b/drivers/base/memory.c
+index 826dd76f662e..5b3a2fd250ba 100644
+--- a/drivers/base/memory.c
++++ b/drivers/base/memory.c
+@@ -34,7 +34,7 @@ static DEFINE_MUTEX(mem_sysfs_mutex);
+ 
+ static int sections_per_block;
+ 
+-static inline int base_memory_block_id(int section_nr)
++static inline int base_memory_block_id(unsigned long section_nr)
+ {
+ 	return section_nr / sections_per_block;
+ }
+@@ -691,10 +691,11 @@ static int init_memory_block(struct memory_block **memory, int block_id,
+ 	return ret;
+ }
+ 
+-static int add_memory_block(int base_section_nr)
++static int add_memory_block(unsigned long base_section_nr)
+ {
++	int ret, section_count = 0;
+ 	struct memory_block *mem;
+-	int i, ret, section_count = 0;
++	unsigned long i;
+ 
+ 	for (i = base_section_nr;
+ 	     i < base_section_nr + sections_per_block;
+@@ -822,7 +823,7 @@ static const struct attribute_group *memory_root_attr_groups[] = {
+  */
+ int __init memory_dev_init(void)
+ {
+-	unsigned int i;
++	unsigned long i;
+ 	int ret;
+ 	int err;
+ 	unsigned long block_sz;
+diff --git a/include/linux/mmzone.h b/include/linux/mmzone.h
+index 427b79c39b3c..83b6aae16f13 100644
+--- a/include/linux/mmzone.h
++++ b/include/linux/mmzone.h
+@@ -1220,7 +1220,7 @@ static inline struct mem_section *__nr_to_section(unsigned long nr)
+ 		return NULL;
+ 	return &mem_section[SECTION_NR_TO_ROOT(nr)][nr & SECTION_ROOT_MASK];
+ }
+-extern int __section_nr(struct mem_section* ms);
++extern unsigned long __section_nr(struct mem_section *ms);
+ extern unsigned long usemap_size(void);
+ 
+ /*
+@@ -1292,7 +1292,7 @@ static inline struct mem_section *__pfn_to_section(unsigned long pfn)
+ 	return __nr_to_section(pfn_to_section_nr(pfn));
+ }
+ 
+-extern int __highest_present_section_nr;
++extern unsigned long __highest_present_section_nr;
+ 
+ #ifndef CONFIG_HAVE_ARCH_PFN_VALID
+ static inline int pfn_valid(unsigned long pfn)
+diff --git a/mm/sparse.c b/mm/sparse.c
+index 1552c855d62a..e8c57e039be8 100644
+--- a/mm/sparse.c
++++ b/mm/sparse.c
+@@ -102,7 +102,7 @@ static inline int sparse_index_init(unsigned long section_nr, int nid)
+ #endif
+ 
+ #ifdef CONFIG_SPARSEMEM_EXTREME
+-int __section_nr(struct mem_section* ms)
++unsigned long __section_nr(struct mem_section *ms)
+ {
+ 	unsigned long root_nr;
+ 	struct mem_section *root = NULL;
+@@ -121,9 +121,9 @@ int __section_nr(struct mem_section* ms)
+ 	return (root_nr * SECTIONS_PER_ROOT) + (ms - root);
+ }
+ #else
+-int __section_nr(struct mem_section* ms)
++unsigned long __section_nr(struct mem_section *ms)
+ {
+-	return (int)(ms - mem_section[0]);
++	return (unsigned long)(ms - mem_section[0]);
+ }
+ #endif
+ 
+@@ -178,10 +178,10 @@ void __meminit mminit_validate_memmodel_limits(unsigned long *start_pfn,
+  * Keeping track of this gives us an easy way to break out of
+  * those loops early.
+  */
+-int __highest_present_section_nr;
++unsigned long __highest_present_section_nr;
+ static void section_mark_present(struct mem_section *ms)
+ {
+-	int section_nr = __section_nr(ms);
++	unsigned long section_nr = __section_nr(ms);
+ 
+ 	if (section_nr > __highest_present_section_nr)
+ 		__highest_present_section_nr = section_nr;
+@@ -189,7 +189,7 @@ static void section_mark_present(struct mem_section *ms)
+ 	ms->section_mem_map |= SECTION_MARKED_PRESENT;
+ }
+ 
+-static inline int next_present_section_nr(int section_nr)
++static inline unsigned long next_present_section_nr(unsigned long section_nr)
+ {
+ 	do {
+ 		section_nr++;
+-- 
+2.21.0
 
