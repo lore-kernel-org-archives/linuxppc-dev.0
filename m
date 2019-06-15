@@ -7,57 +7,56 @@ X-Spam-Status: No, score=-5.0 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	SPF_PASS,URIBL_BLOCKED,USER_AGENT_MUTT autolearn=ham autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A003EC31E47
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 15 Jun 2019 07:51:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4BF2AC31E47
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 15 Jun 2019 07:53:13 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 0E8CC206B7
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 15 Jun 2019 07:51:24 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id BDB5421848
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 15 Jun 2019 07:53:12 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ozlabs.org header.i=@ozlabs.org header.b="SYwry4YV"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0E8CC206B7
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ozlabs.org header.i=@ozlabs.org header.b="cckdYsiE"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BDB5421848
 Authentication-Results: mail.kernel.org; dmarc=pass (p=none dis=none) header.from=ozlabs.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45QqRZ4z3WzDrR9
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 15 Jun 2019 17:51:22 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+	by lists.ozlabs.org (Postfix) with ESMTP id 45QqTf32TLzDrdD
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 15 Jun 2019 17:53:10 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45QqMR2BKjzDrQS
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45QqMR2mDtzDrQw
  for <linuxppc-dev@lists.ozlabs.org>; Sat, 15 Jun 2019 17:47:47 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=ozlabs.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- secure) header.d=ozlabs.org header.i=@ozlabs.org header.b="SYwry4YV"; 
+ secure) header.d=ozlabs.org header.i=@ozlabs.org header.b="cckdYsiE"; 
  dkim-atps=neutral
 Received: by ozlabs.org (Postfix)
- id 45QqMQ6vDrz9sNt; Sat, 15 Jun 2019 17:47:46 +1000 (AEST)
+ id 45QqMR0G49z9sNy; Sat, 15 Jun 2019 17:47:47 +1000 (AEST)
 Received: by ozlabs.org (Postfix, from userid 1003)
- id 45QqMQ68b2z9sNT; Sat, 15 Jun 2019 17:47:46 +1000 (AEST)
+ id 45QqMQ6mFsz9sNC; Sat, 15 Jun 2019 17:47:46 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ozlabs.org; s=201707;
- t=1560584866; bh=Omhq+JfRZdaBwAdpC7ZMYBk9IkvNPM4ETCl/bppBLP4=;
+ t=1560584866; bh=U4SYbjz4U+6Wsqkyzvs7txI2fXrHWgxLLSwdp3uAUTI=;
  h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=SYwry4YVdi1T2o5VEEsKyPMbd3wqwA4NHhCqKjlzzhHPseX72gCQzM7tl3ABvBcQ+
- dhu7MjyeTDmSpxevdX8s2ibjbwFuvej4/KKFQpG/nu2as2W/a+GEUkicKmKkci55Xy
- axIzqd87vr3K1pLVzu58DfR2vxVyJeXpvxwSUmvgKNA3P69DMQo0NBjTaFIwLR7poI
- KK/ShRl8i3Q7hHkZsTkyeCs55htDxFhKhambnmHH0j9YmLWWzgQEYfLwtT9ql8vJ5V
- 3XlblyH+4McHXfzr4qvxB/DhHe/prTgbG60V+rY41fCTjgxfw4eAMr07QTDkJbUoR9
- lk+KGfwfMeRmQ==
-Date: Sat, 15 Jun 2019 17:47:43 +1000
+ b=cckdYsiEtfS4WN8bppW3NlL6eJH69EywRLSCJ5KMan3Z3pHuSmyo+JjWnmhg4lyaM
+ R2vIPIE1/4U5x5OyxofQVayM8j1QtjNMYYRhGu5aXdF2FCpfnhv9iTROBnZATJ56Tf
+ H5/fqg72ZcyM0944GSxv3aedZXpRIruvd/bdWsOuIj1psUVFIDlIlt5Wtp7ndZveUM
+ 8h+siEnzz5E9/IIZQMXyg6nPOVbP10V9jeOpvN2zmeNcT+5N7GvtNMXUQulXjfG+iM
+ jNvibLS5NDR/Qv5ITGNx8wCzX6OMTw1jEkqfpsRWqNvHgmGmGgVW5qw1KKn7Tqhpou
+ wDgL9Qg2/bo3w==
+Date: Sat, 15 Jun 2019 17:45:50 +1000
 From: Paul Mackerras <paulus@ozlabs.org>
 To: Claudio Carvalho <cclaudio@linux.ibm.com>
-Subject: Re: [PATCH v3 9/9] KVM: PPC: Ultravisor: Check for MSR_S during
- hv_reset_msr
-Message-ID: <20190615074743.GF24709@blackberry>
+Subject: Re: [PATCH v3 8/9] KVM: PPC: Ultravisor: Enter a secure guest
+Message-ID: <20190615074550.GE24709@blackberry>
 References: <20190606173614.32090-1-cclaudio@linux.ibm.com>
- <20190606173614.32090-10-cclaudio@linux.ibm.com>
+ <20190606173614.32090-9-cclaudio@linux.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20190606173614.32090-10-cclaudio@linux.ibm.com>
+In-Reply-To: <20190606173614.32090-9-cclaudio@linux.ibm.com>
 User-Agent: Mutt/1.5.24 (2015-08-30)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -80,22 +79,34 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, Jun 06, 2019 at 02:36:14PM -0300, Claudio Carvalho wrote:
-> From: Michael Anderson <andmike@linux.ibm.com>
+On Thu, Jun 06, 2019 at 02:36:13PM -0300, Claudio Carvalho wrote:
+> From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
 > 
->  - Check for MSR_S so that kvmppc_set_msr will include. Prior to this
-
-Will include what? "it" maybe?
-
->    change return to guest would not have the S bit set.
+> To enter a secure guest, we have to go through the ultravisor, therefore
+> we do a ucall when we are entering a secure guest.
 > 
->  - Patch based on comment from Paul Mackerras <pmac@au1.ibm.com>
+> This change is needed for any sort of entry to the secure guest from the
+> hypervisor, whether it is a return from an hcall, a return from a
+> hypervisor interrupt, or the first time that a secure guest vCPU is run.
 > 
-> Signed-off-by: Michael Anderson <andmike@linux.ibm.com>
+> If we are returning from an hcall, the results are already in the
+> appropriate registers (R3:12), except for R6,7, which need to be
+> restored before doing the ucall (UV_RETURN).
+> 
+> Have fast_guest_return check the kvm_arch.secure_guest field so that a
+> new CPU enters UV when started (in response to a RTAS start-cpu call).
+> 
+> Thanks to input from Paul Mackerras, Ram Pai and Mike Anderson.
+> 
+> Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+> [Pass SRR1 in r11 for UV_RETURN, fix kvmppc_msr_interrupt to preserve
+>  the MSR_S bit]
+> Signed-off-by: Paul Mackerras <paulus@ozlabs.org>
+> [Fix UV_RETURN token number and arch.secure_guest check]
+> Signed-off-by: Ram Pai <linuxram@us.ibm.com>
+> [Update commit message and ret_to_ultra comment]
 > Signed-off-by: Claudio Carvalho <cclaudio@linux.ibm.com>
 
 Acked-by: Paul Mackerras <paulus@ozlabs.org>
-
-but you should reword the commit message fix that first sentence.
 
 Paul.
