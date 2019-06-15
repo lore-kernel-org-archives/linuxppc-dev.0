@@ -2,62 +2,85 @@ Return-Path: <SRS0=8zLz=UO=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.0 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
-	SPF_PASS,URIBL_BLOCKED,USER_AGENT_MUTT autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-0.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4BF2AC31E47
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 15 Jun 2019 07:53:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D6EFBC31E47
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 15 Jun 2019 08:08:39 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id BDB5421848
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 15 Jun 2019 07:53:12 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 246CA2084D
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 15 Jun 2019 08:08:38 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ozlabs.org header.i=@ozlabs.org header.b="cckdYsiE"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BDB5421848
-Authentication-Results: mail.kernel.org; dmarc=pass (p=none dis=none) header.from=ozlabs.org
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="CFZCdvS6"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 246CA2084D
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45QqTf32TLzDrdD
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 15 Jun 2019 17:53:10 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45QqMR2mDtzDrQw
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 15 Jun 2019 17:47:47 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45QqqS4TZNzDrfw
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 15 Jun 2019 18:08:36 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=ozlabs.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- secure) header.d=ozlabs.org header.i=@ozlabs.org header.b="cckdYsiE"; 
+ spf=pass (mailfrom) smtp.mailfrom=c-s.fr
+ (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=c-s.fr
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="CFZCdvS6"; 
  dkim-atps=neutral
-Received: by ozlabs.org (Postfix)
- id 45QqMR0G49z9sNy; Sat, 15 Jun 2019 17:47:47 +1000 (AEST)
-Received: by ozlabs.org (Postfix, from userid 1003)
- id 45QqMQ6mFsz9sNC; Sat, 15 Jun 2019 17:47:46 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ozlabs.org; s=201707;
- t=1560584866; bh=U4SYbjz4U+6Wsqkyzvs7txI2fXrHWgxLLSwdp3uAUTI=;
- h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=cckdYsiEtfS4WN8bppW3NlL6eJH69EywRLSCJ5KMan3Z3pHuSmyo+JjWnmhg4lyaM
- R2vIPIE1/4U5x5OyxofQVayM8j1QtjNMYYRhGu5aXdF2FCpfnhv9iTROBnZATJ56Tf
- H5/fqg72ZcyM0944GSxv3aedZXpRIruvd/bdWsOuIj1psUVFIDlIlt5Wtp7ndZveUM
- 8h+siEnzz5E9/IIZQMXyg6nPOVbP10V9jeOpvN2zmeNcT+5N7GvtNMXUQulXjfG+iM
- jNvibLS5NDR/Qv5ITGNx8wCzX6OMTw1jEkqfpsRWqNvHgmGmGgVW5qw1KKn7Tqhpou
- wDgL9Qg2/bo3w==
-Date: Sat, 15 Jun 2019 17:45:50 +1000
-From: Paul Mackerras <paulus@ozlabs.org>
-To: Claudio Carvalho <cclaudio@linux.ibm.com>
-Subject: Re: [PATCH v3 8/9] KVM: PPC: Ultravisor: Enter a secure guest
-Message-ID: <20190615074550.GE24709@blackberry>
-References: <20190606173614.32090-1-cclaudio@linux.ibm.com>
- <20190606173614.32090-9-cclaudio@linux.ibm.com>
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45Qqnh6BlYzDrX4
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 15 Jun 2019 18:07:02 +1000 (AEST)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 45QqnX6hxKz9v0F9;
+ Sat, 15 Jun 2019 10:06:56 +0200 (CEST)
+Authentication-Results: localhost; dkim=pass
+ reason="1024-bit key; insecure key"
+ header.d=c-s.fr header.i=@c-s.fr header.b=CFZCdvS6; dkim-adsp=pass;
+ dkim-atps=neutral
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id hc2rOByaNF3V; Sat, 15 Jun 2019 10:06:56 +0200 (CEST)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 45QqnX5Gqkz9v0F8;
+ Sat, 15 Jun 2019 10:06:56 +0200 (CEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
+ t=1560586016; bh=1p6s1wDC21lFcLrW9LHAqnn+cIQAnQKI/I9iSnqTFsU=;
+ h=Subject:To:Cc:References:From:Date:In-Reply-To:From;
+ b=CFZCdvS6Gn44Gms6CdPAgtpa9H53SYlJJFfS68xOIrkZxayPk64IgDJI88xDV354W
+ YUTg0/LxuR+UPAdtUprz+7sTpVdF78EI+TcFZzuJjZLj1OU2Oi01DPmjcAOipLL3Gq
+ 9wjMJkVHKam+/9rCfdG+6q/sqIpKw2+fLOUwJHCI=
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id BA5A58B7B3;
+ Sat, 15 Jun 2019 10:06:57 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id FwFmC_wRUTFQ; Sat, 15 Jun 2019 10:06:57 +0200 (CEST)
+Received: from PO15451 (unknown [192.168.4.90])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 96D348B77A;
+ Sat, 15 Jun 2019 10:06:56 +0200 (CEST)
+Subject: Re: [PATCH v1 1/6] mm: Section numbers use the type "unsigned long"
+To: Andrew Morton <akpm@linux-foundation.org>,
+ David Hildenbrand <david@redhat.com>
+References: <20190614100114.311-1-david@redhat.com>
+ <20190614100114.311-2-david@redhat.com>
+ <20190614120036.00ae392e3f210e7bc9ec6960@linux-foundation.org>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Message-ID: <701e8feb-cbf8-04c1-758c-046da9394ac1@c-s.fr>
+Date: Sat, 15 Jun 2019 10:06:54 +0200
+User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:60.0) Gecko/20100101
+ Thunderbird/60.7.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20190606173614.32090-9-cclaudio@linux.ibm.com>
-User-Agent: Mutt/1.5.24 (2015-08-30)
+In-Reply-To: <20190614120036.00ae392e3f210e7bc9ec6960@linux-foundation.org>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: fr
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -69,44 +92,131 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>,
- Michael Anderson <andmike@linux.ibm.com>, Ram Pai <linuxram@us.ibm.com>,
- kvm-ppc@vger.kernel.org, Bharata B Rao <bharata@linux.ibm.com>,
- linuxppc-dev@ozlabs.org, Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
- Thiago Bauermann <bauermann@linux.ibm.com>,
- Anshuman Khandual <khandual@linux.vnet.ibm.com>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, Michal Hocko <mhocko@suse.com>,
+ Pavel Tatashin <pasha.tatashin@oracle.com>, linux-acpi@vger.kernel.org,
+ Baoquan He <bhe@redhat.com>, "Rafael J. Wysocki" <rafael@kernel.org>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, Wei Yang <richard.weiyang@gmail.com>,
+ linux-mm@kvack.org, Mike Rapoport <rppt@linux.vnet.ibm.com>,
+ Arun KS <arunks@codeaurora.org>, Johannes Weiner <hannes@cmpxchg.org>,
+ Dan Williams <dan.j.williams@intel.com>,
+ Mel Gorman <mgorman@techsingularity.net>, Vlastimil Babka <vbabka@suse.cz>,
+ Oscar Salvador <osalvador@suse.de>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, Jun 06, 2019 at 02:36:13PM -0300, Claudio Carvalho wrote:
-> From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-> 
-> To enter a secure guest, we have to go through the ultravisor, therefore
-> we do a ucall when we are entering a secure guest.
-> 
-> This change is needed for any sort of entry to the secure guest from the
-> hypervisor, whether it is a return from an hcall, a return from a
-> hypervisor interrupt, or the first time that a secure guest vCPU is run.
-> 
-> If we are returning from an hcall, the results are already in the
-> appropriate registers (R3:12), except for R6,7, which need to be
-> restored before doing the ucall (UV_RETURN).
-> 
-> Have fast_guest_return check the kvm_arch.secure_guest field so that a
-> new CPU enters UV when started (in response to a RTAS start-cpu call).
-> 
-> Thanks to input from Paul Mackerras, Ram Pai and Mike Anderson.
-> 
-> Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-> [Pass SRR1 in r11 for UV_RETURN, fix kvmppc_msr_interrupt to preserve
->  the MSR_S bit]
-> Signed-off-by: Paul Mackerras <paulus@ozlabs.org>
-> [Fix UV_RETURN token number and arch.secure_guest check]
-> Signed-off-by: Ram Pai <linuxram@us.ibm.com>
-> [Update commit message and ret_to_ultra comment]
-> Signed-off-by: Claudio Carvalho <cclaudio@linux.ibm.com>
 
-Acked-by: Paul Mackerras <paulus@ozlabs.org>
 
-Paul.
+Le 14/06/2019 à 21:00, Andrew Morton a écrit :
+> On Fri, 14 Jun 2019 12:01:09 +0200 David Hildenbrand <david@redhat.com> wrote:
+> 
+>> We are using a mixture of "int" and "unsigned long". Let's make this
+>> consistent by using "unsigned long" everywhere. We'll do the same with
+>> memory block ids next.
+>>
+>> ...
+>>
+>> -	int i, ret, section_count = 0;
+>> +	unsigned long i;
+>>
+>> ...
+>>
+>> -	unsigned int i;
+>> +	unsigned long i;
+> 
+> Maybe I did too much fortran back in the day, but I think the
+> expectation is that a variable called "i" has type "int".
+> 
+> This?
+> 
+> 
+> 
+> s/unsigned long i/unsigned long section_nr/
+
+ From my point of view you degrade readability by doing that.
+
+section_nr_to_pfn(mem->start_section_nr + section_nr);
+
+Three times the word 'section_nr' in one line, is that worth it ? Gives 
+me headache.
+
+Codying style says the following, which makes full sense in my opinion:
+
+LOCAL variable names should be short, and to the point.  If you have
+some random integer loop counter, it should probably be called ``i``.
+Calling it ``loop_counter`` is non-productive, if there is no chance of it
+being mis-understood.
+
+What about just naming it 'nr' if we want to use something else than 'i' ?
+
+Christophe
+
+
+> 
+> --- a/drivers/base/memory.c~mm-section-numbers-use-the-type-unsigned-long-fix
+> +++ a/drivers/base/memory.c
+> @@ -131,17 +131,17 @@ static ssize_t phys_index_show(struct de
+>   static ssize_t removable_show(struct device *dev, struct device_attribute *attr,
+>   			      char *buf)
+>   {
+> -	unsigned long i, pfn;
+> +	unsigned long section_nr, pfn;
+>   	int ret = 1;
+>   	struct memory_block *mem = to_memory_block(dev);
+>   
+>   	if (mem->state != MEM_ONLINE)
+>   		goto out;
+>   
+> -	for (i = 0; i < sections_per_block; i++) {
+> -		if (!present_section_nr(mem->start_section_nr + i))
+> +	for (section_nr = 0; section_nr < sections_per_block; section_nr++) {
+> +		if (!present_section_nr(mem->start_section_nr + section_nr))
+>   			continue;
+> -		pfn = section_nr_to_pfn(mem->start_section_nr + i);
+> +		pfn = section_nr_to_pfn(mem->start_section_nr + section_nr);
+>   		ret &= is_mem_section_removable(pfn, PAGES_PER_SECTION);
+>   	}
+>   
+> @@ -695,12 +695,12 @@ static int add_memory_block(unsigned lon
+>   {
+>   	int ret, section_count = 0;
+>   	struct memory_block *mem;
+> -	unsigned long i;
+> +	unsigned long section_nr;
+>   
+> -	for (i = base_section_nr;
+> -	     i < base_section_nr + sections_per_block;
+> -	     i++)
+> -		if (present_section_nr(i))
+> +	for (section_nr = base_section_nr;
+> +	     section_nr < base_section_nr + sections_per_block;
+> +	     section_nr++)
+> +		if (present_section_nr(section_nr))
+>   			section_count++;
+>   
+>   	if (section_count == 0)
+> @@ -823,7 +823,7 @@ static const struct attribute_group *mem
+>    */
+>   int __init memory_dev_init(void)
+>   {
+> -	unsigned long i;
+> +	unsigned long section_nr;
+>   	int ret;
+>   	int err;
+>   	unsigned long block_sz;
+> @@ -840,9 +840,9 @@ int __init memory_dev_init(void)
+>   	 * during boot and have been initialized
+>   	 */
+>   	mutex_lock(&mem_sysfs_mutex);
+> -	for (i = 0; i <= __highest_present_section_nr;
+> -		i += sections_per_block) {
+> -		err = add_memory_block(i);
+> +	for (section_nr = 0; section_nr <= __highest_present_section_nr;
+> +		section_nr += sections_per_block) {
+> +		err = add_memory_block(section_nr);
+>   		if (!ret)
+>   			ret = err;
+>   	}
+> _
+> 
