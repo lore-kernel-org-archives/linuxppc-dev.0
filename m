@@ -4,58 +4,60 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-5.0 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
-	SPF_PASS,USER_AGENT_MUTT autolearn=ham autolearn_force=no version=3.4.0
+	SPF_PASS,URIBL_BLOCKED,USER_AGENT_MUTT autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CF639C31E47
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 15 Jun 2019 07:49:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A003EC31E47
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 15 Jun 2019 07:51:25 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 51FF2206B7
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 15 Jun 2019 07:49:41 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 0E8CC206B7
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 15 Jun 2019 07:51:24 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ozlabs.org header.i=@ozlabs.org header.b="KTBzlzh+"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 51FF2206B7
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ozlabs.org header.i=@ozlabs.org header.b="SYwry4YV"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0E8CC206B7
 Authentication-Results: mail.kernel.org; dmarc=pass (p=none dis=none) header.from=ozlabs.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45QqPZ6rGtzDrR4
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 15 Jun 2019 17:49:38 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+	by lists.ozlabs.org (Postfix) with ESMTP id 45QqRZ4z3WzDrR9
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 15 Jun 2019 17:51:22 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45QqMR239FzDrQN
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45QqMR2BKjzDrQS
  for <linuxppc-dev@lists.ozlabs.org>; Sat, 15 Jun 2019 17:47:47 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=ozlabs.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- secure) header.d=ozlabs.org header.i=@ozlabs.org header.b="KTBzlzh+"; 
+ secure) header.d=ozlabs.org header.i=@ozlabs.org header.b="SYwry4YV"; 
  dkim-atps=neutral
 Received: by ozlabs.org (Postfix)
- id 45QqMR1CyRz9sNk; Sat, 15 Jun 2019 17:47:47 +1000 (AEST)
+ id 45QqMQ6vDrz9sNt; Sat, 15 Jun 2019 17:47:46 +1000 (AEST)
 Received: by ozlabs.org (Postfix, from userid 1003)
- id 45QqMR0FTCz9sNl; Sat, 15 Jun 2019 17:47:46 +1000 (AEST)
+ id 45QqMQ68b2z9sNT; Sat, 15 Jun 2019 17:47:46 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ozlabs.org; s=201707;
- t=1560584867; bh=RbVxzic/utIowZwLvmsu0ZqoiFt+kS5VBsZdtW+Utcc=;
+ t=1560584866; bh=Omhq+JfRZdaBwAdpC7ZMYBk9IkvNPM4ETCl/bppBLP4=;
  h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=KTBzlzh+vKbi32BAVrbFzAP8ZM8khVQoraLTz72U4uRj7oMEImg8+W93wiW5V0gXI
- ZEpWauGXSgcX/5cnNlH4vSEOomomYA2sLQhsa2PD71CN23j5ZT5CyvZ2NWkVAEvINJ
- GZB0CxHVHVzvrysEdmAYNDUhH1WWhftXdOkiaz0kCLNPxvXDN/jbqnV1yIZQ/UtfNq
- fbgpRI59KkSFj23SIcT4DLepKdeKbQ88QpOdJSTU0hcN/l52oSHagT79kvq/enb0lN
- P+7AT1nympiM2xIPoOUCraD1XuEAC+344cmM6gEE93W0npUa6xmhd55bv/55uurDtF
- c6NcXiGObMKHw==
-Date: Sat, 15 Jun 2019 17:43:34 +1000
+ b=SYwry4YVdi1T2o5VEEsKyPMbd3wqwA4NHhCqKjlzzhHPseX72gCQzM7tl3ABvBcQ+
+ dhu7MjyeTDmSpxevdX8s2ibjbwFuvej4/KKFQpG/nu2as2W/a+GEUkicKmKkci55Xy
+ axIzqd87vr3K1pLVzu58DfR2vxVyJeXpvxwSUmvgKNA3P69DMQo0NBjTaFIwLR7poI
+ KK/ShRl8i3Q7hHkZsTkyeCs55htDxFhKhambnmHH0j9YmLWWzgQEYfLwtT9ql8vJ5V
+ 3XlblyH+4McHXfzr4qvxB/DhHe/prTgbG60V+rY41fCTjgxfw4eAMr07QTDkJbUoR9
+ lk+KGfwfMeRmQ==
+Date: Sat, 15 Jun 2019 17:47:43 +1000
 From: Paul Mackerras <paulus@ozlabs.org>
 To: Claudio Carvalho <cclaudio@linux.ibm.com>
-Subject: Re: [PATCH v3 7/9] KVM: PPC: Ultravisor: Restrict LDBAR access
-Message-ID: <20190615074334.GD24709@blackberry>
+Subject: Re: [PATCH v3 9/9] KVM: PPC: Ultravisor: Check for MSR_S during
+ hv_reset_msr
+Message-ID: <20190615074743.GF24709@blackberry>
 References: <20190606173614.32090-1-cclaudio@linux.ibm.com>
- <20190606173614.32090-8-cclaudio@linux.ibm.com>
+ <20190606173614.32090-10-cclaudio@linux.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20190606173614.32090-8-cclaudio@linux.ibm.com>
+In-Reply-To: <20190606173614.32090-10-cclaudio@linux.ibm.com>
 User-Agent: Mutt/1.5.24 (2015-08-30)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -78,21 +80,22 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, Jun 06, 2019 at 02:36:12PM -0300, Claudio Carvalho wrote:
-> When the ultravisor firmware is available, it takes control over the
-> LDBAR register. In this case, thread-imc updates and save/restore
-> operations on the LDBAR register are handled by ultravisor.
+On Thu, Jun 06, 2019 at 02:36:14PM -0300, Claudio Carvalho wrote:
+> From: Michael Anderson <andmike@linux.ibm.com>
 > 
+>  - Check for MSR_S so that kvmppc_set_msr will include. Prior to this
+
+Will include what? "it" maybe?
+
+>    change return to guest would not have the S bit set.
+> 
+>  - Patch based on comment from Paul Mackerras <pmac@au1.ibm.com>
+> 
+> Signed-off-by: Michael Anderson <andmike@linux.ibm.com>
 > Signed-off-by: Claudio Carvalho <cclaudio@linux.ibm.com>
-> Signed-off-by: Ram Pai <linuxram@us.ibm.com>
 
 Acked-by: Paul Mackerras <paulus@ozlabs.org>
 
-Just a note on the signed-off-by: it's a bit weird to have Ram's
-signoff when he is neither the author nor the sender of the patch.
-The author is assumed to be Claudio; if that is not correct then the
-patch should have a From: line at the start telling us who the author
-is, and ideally that person should have a signoff line before
-Claudio's signoff as the sender of the patch.
+but you should reword the commit message fix that first sentence.
 
 Paul.
