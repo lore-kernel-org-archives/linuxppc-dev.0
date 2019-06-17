@@ -4,57 +4,57 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-5.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
-	SPF_PASS,URIBL_BLOCKED,USER_AGENT_NEOMUTT autolearn=ham autolearn_force=no
-	version=3.4.0
+	SPF_PASS,URIBL_BLOCKED,USER_AGENT_NEOMUTT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 878A6C31E44
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Jun 2019 05:40:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7AE1EC31E44
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Jun 2019 05:42:40 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 33EEE2189F
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Jun 2019 05:40:52 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 2877D20657
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Jun 2019 05:42:40 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ozlabs.org header.i=@ozlabs.org header.b="eD7AWdyT"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 33EEE2189F
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ozlabs.org header.i=@ozlabs.org header.b="q8UH+np3"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2877D20657
 Authentication-Results: mail.kernel.org; dmarc=pass (p=none dis=none) header.from=ozlabs.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45S0S15sgfzDqWR
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Jun 2019 15:40:49 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45S0V56v8bzDqQH
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Jun 2019 15:42:37 +1000 (AEST)
 Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45S0Ps5Q23zDqPK
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45S0Ps61yLzDqQC
  for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Jun 2019 15:38:57 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=ozlabs.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- secure) header.d=ozlabs.org header.i=@ozlabs.org header.b="eD7AWdyT"; 
+ secure) header.d=ozlabs.org header.i=@ozlabs.org header.b="q8UH+np3"; 
  dkim-atps=neutral
 Received: by ozlabs.org (Postfix, from userid 1003)
- id 45S0Ps3h6Wz9sBr; Mon, 17 Jun 2019 15:38:57 +1000 (AEST)
+ id 45S0Ps4DC5z9s7h; Mon, 17 Jun 2019 15:38:57 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ozlabs.org; s=201707;
- t=1560749937; bh=dZLUB0K5zrKTMsdEtdgkBMLfWZFYjrdP1VEZ//9dUfM=;
+ t=1560749937; bh=jR54jSADlnieO8pB4/tHH0OwHqfcoZjTjfV+h+EHZcg=;
  h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=eD7AWdyTBgymNpigRRjlwERLwtz6+5IChPlo6tHPrxOURmrv98db8J5lCApb6YzII
- UYl3AnywVl7MTAtOij4HF01ADdMY35yKXfvU6/8pMBTb8gXHGOf2mYLRm8HegSgQck
- qMHlW+/lnMQZCsSG75fQDuNcf17Izc3mLHUjShvRcjQ2B2GPTvPP19iznAPVzabihg
- /hQ1PUtN7jZqTYHlqJD5VQPAMRnZfXx0s4pAnM1c7kYei4KBoafU7PPaQGCcAiPqj/
- 4CS602Ceg11qIljPAT9rsVnOXFdPBHH+ViwSOKfXAKsCJo0vHeZSFT89Vt2BkuW+p2
- fg4dE4xYnjfyg==
-Date: Mon, 17 Jun 2019 15:37:56 +1000
+ b=q8UH+np3k8PiZHUFh7G7kdpoPLQbqzVVldUzKvRzM9Z/EajwRjN2hZ2E6c59i+z0U
+ xw12GhPxmJJ2LtmUd092wbw2V7mKpw/vb947ObuutVzuQX26xmCgKUi9wwW7u8aB5S
+ dfwNpEeMUWNE8ERsyrMYTlhTtKuoZhh4NTvpFUKWB6uJqP5BhEaT+gG3Ky4VKhNUS2
+ RDIjOe7x8YX3Tig3IxavQsVxhxPHJmU695FHZ6Ui1rwWzb2eBrAAZbz0idza3oGz1Q
+ 4I+lDT1c5EFyFGr4CnunnCKs+lknH2cmXDt1iWSy2Y22pgeO8fTSTVOmuDbcrGLSpq
+ 5VwSiRkpYsAyg==
+Date: Mon, 17 Jun 2019 15:38:54 +1000
 From: Paul Mackerras <paulus@ozlabs.org>
 To: Bharata B Rao <bharata@linux.ibm.com>
-Subject: Re: [PATCH v4 3/6] kvmppc: H_SVM_INIT_START and H_SVM_INIT_DONE hcalls
-Message-ID: <20190617053756.z4disbs5vncxneqj@oak.ozlabs.ibm.com>
+Subject: Re: [PATCH v4 4/6] kvmppc: Handle memory plug/unplug to secure VM
+Message-ID: <20190617053854.5niyzcrxeee7vvra@oak.ozlabs.ibm.com>
 References: <20190528064933.23119-1-bharata@linux.ibm.com>
- <20190528064933.23119-4-bharata@linux.ibm.com>
+ <20190528064933.23119-5-bharata@linux.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20190528064933.23119-4-bharata@linux.ibm.com>
+In-Reply-To: <20190528064933.23119-5-bharata@linux.ibm.com>
 User-Agent: NeoMutt/20170113 (1.7.2)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -74,22 +74,10 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, May 28, 2019 at 12:19:30PM +0530, Bharata B Rao wrote:
-> H_SVM_INIT_START: Initiate securing a VM
-> H_SVM_INIT_DONE: Conclude securing a VM
+On Tue, May 28, 2019 at 12:19:31PM +0530, Bharata B Rao wrote:
+> Register the new memslot with UV during plug and unregister
+> the memslot during unplug.
 > 
-> As part of H_SVM_INIT_START register all existing memslots with the UV.
-> H_SVM_INIT_DONE call by UV informs HV that transition of the guest
-> to secure mode is complete.
-
-It is worth mentioning here that setting any of the flag bits in
-kvm->arch.secure_guest will cause the assembly code that enters the
-guest to call the UV_RETURN ucall instead of trying to enter the guest
-directly.  That's not necessarily obvious to the reader as this patch
-doesn't touch that assembly code.
-
-Apart from that this patch looks fine.
-
 > Signed-off-by: Bharata B Rao <bharata@linux.ibm.com>
 
 Acked-by: Paul Mackerras <paulus@ozlabs.org>
