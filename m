@@ -2,89 +2,59 @@ Return-Path: <SRS0=FDsq=UQ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C1640C31E57
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Jun 2019 10:05:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7DCA0C31E57
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Jun 2019 10:37:12 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 520BC2089E
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Jun 2019 10:05:48 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 520BC2089E
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 0788F20833
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Jun 2019 10:37:11 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0788F20833
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45S6Kj5ZVZzDqGm
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Jun 2019 20:05:45 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45S71x2SdxzDqVJ
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Jun 2019 20:37:09 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=linux.vnet.ibm.com
- (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=huntbag@linux.vnet.ibm.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=linux.vnet.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45S6D21fwtzDqV7
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Jun 2019 20:00:49 +1000 (AEST)
-Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x5H9wqlD019203
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Jun 2019 06:00:47 -0400
-Received: from e06smtp01.uk.ibm.com (e06smtp01.uk.ibm.com [195.75.94.97])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2t66vb4ru2-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Jun 2019 06:00:47 -0400
-Received: from localhost
- by e06smtp01.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <huntbag@linux.vnet.ibm.com>;
- Mon, 17 Jun 2019 11:00:45 +0100
-Received: from b06cxnps3074.portsmouth.uk.ibm.com (9.149.109.194)
- by e06smtp01.uk.ibm.com (192.168.101.131) with IBM ESMTP SMTP Gateway:
- Authorized Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Mon, 17 Jun 2019 11:00:40 +0100
-Received: from d06av23.portsmouth.uk.ibm.com (d06av23.portsmouth.uk.ibm.com
- [9.149.105.59])
- by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x5HA0dQj54853752
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Mon, 17 Jun 2019 10:00:39 GMT
-Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id AE041A406B;
- Mon, 17 Jun 2019 10:00:39 +0000 (GMT)
-Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 3EABBA4051;
- Mon, 17 Jun 2019 10:00:38 +0000 (GMT)
-Received: from boston16h.aus.stglabs.ibm.com (unknown [9.3.23.78])
- by d06av23.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Mon, 17 Jun 2019 10:00:38 +0000 (GMT)
-From: Abhishek Goel <huntbag@linux.vnet.ibm.com>
-To: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-pm@vger.kernel.org
-Subject: [PATCH v2 1/1] cpuidle-powernv : forced wakeup for stop states
-Date: Mon, 17 Jun 2019 04:56:48 -0500
-X-Mailer: git-send-email 2.17.1
-In-Reply-To: <20190617095648.18847-1-huntbag@linux.vnet.ibm.com>
-References: <20190617095648.18847-1-huntbag@linux.vnet.ibm.com>
-X-TM-AS-GCONF: 00
-x-cbid: 19061710-4275-0000-0000-00000342FDA9
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19061710-4276-0000-0000-000038531FEB
-Message-Id: <20190617095648.18847-2-huntbag@linux.vnet.ibm.com>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2019-06-17_05:, , signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1810050000 definitions=main-1906170093
+ spf=pass (mailfrom) smtp.mailfrom=kaod.org
+ (client-ip=46.105.56.136; helo=1.mo6.mail-out.ovh.net;
+ envelope-from=clg@kaod.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=kaod.org
+Received: from 1.mo6.mail-out.ovh.net (1.mo6.mail-out.ovh.net [46.105.56.136])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
+ bits)) (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45S6yw3NpSzDqRG
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Jun 2019 20:34:27 +1000 (AEST)
+Received: from player168.ha.ovh.net (unknown [10.109.143.223])
+ by mo6.mail-out.ovh.net (Postfix) with ESMTP id F3D8A1CF8AF
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Jun 2019 11:06:40 +0200 (CEST)
+Received: from kaod.org (lfbn-1-10649-41.w90-89.abo.wanadoo.fr [90.89.235.41])
+ (Authenticated sender: clg@kaod.org)
+ by player168.ha.ovh.net (Postfix) with ESMTPSA id A99566CFA4E2;
+ Mon, 17 Jun 2019 09:06:34 +0000 (UTC)
+Subject: Re: [PATCH 0/2] Fix handling of h_set_dawr
+To: Suraj Jitindar Singh <sjitindarsingh@gmail.com>,
+ linuxppc-dev@lists.ozlabs.org
+References: <20190617071619.19360-1-sjitindarsingh@gmail.com>
+From: =?UTF-8?Q?C=c3=a9dric_Le_Goater?= <clg@kaod.org>
+Message-ID: <87e219c8-1db7-9976-03ce-5a566a8df7ab@kaod.org>
+Date: Mon, 17 Jun 2019 11:06:33 +0200
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.7.0
+MIME-Version: 1.0
+In-Reply-To: <20190617071619.19360-1-sjitindarsingh@gmail.com>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 8bit
+X-Ovh-Tracer-Id: 6350075477084113851
+X-VR-SPAMSTATE: OK
+X-VR-SPAMSCORE: -100
+X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgeduuddrudeijedguddvucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecuqfggjfdpvefjgfevmfevgfenuceurghilhhouhhtmecuhedttdenucesvcftvggtihhpihgvnhhtshculddquddttddm
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -96,104 +66,37 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: ego@linux.vnet.ibm.com, daniel.lezcano@linaro.org, rjw@rjwysocki.net,
- npiggin@gmail.com, Abhishek Goel <huntbag@linux.vnet.ibm.com>, dja@axtens.net
+Cc: mikey@neuling.org, kvm-ppc@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Currently, the cpuidle governors determine what idle state a idling CPU
-should enter into based on heuristics that depend on the idle history on
-that CPU. Given that no predictive heuristic is perfect, there are cases
-where the governor predicts a shallow idle state, hoping that the CPU will
-be busy soon. However, if no new workload is scheduled on that CPU in the
-near future, the CPU may end up in the shallow state.
+On 17/06/2019 09:16, Suraj Jitindar Singh wrote:
+> Series contains 2 patches to fix the host in kernel handling of the hcall
+> h_set_dawr.
+> 
+> First patch from Michael Neuling is just a resend added here for clarity.
+> 
+> Michael Neuling (1):
+>   KVM: PPC: Book3S HV: Fix r3 corruption in h_set_dabr()
+> 
+> Suraj Jitindar Singh (1):
+>   KVM: PPC: Book3S HV: Only write DAWR[X] when handling h_set_dawr in
+>     real mode
 
-This is problematic, when the predicted state in the aforementioned
-scenario is a shallow stop state on a tickless system. As we might get
-stuck into shallow states for hours, in absence of ticks or interrupts.
 
-To address this, We forcefully wakeup the cpu by setting the
-decrementer. The decrementer is set to a value that corresponds with the
-residency of the next available state. Thus firing up a timer that will
-forcefully wakeup the cpu. Few such iterations will essentially train the
-governor to select a deeper state for that cpu, as the timer here
-corresponds to the next available cpuidle state residency. Thus, cpu will
-eventually end up in the deepest possible state.
 
-Signed-off-by: Abhishek Goel <huntbag@linux.vnet.ibm.com>
----
+Reviewed-by: Cédric Le Goater <clg@kaod.org>
 
-Auto-promotion
- v1 : started as auto promotion logic for cpuidle states in generic
-driver
- v2 : Removed timeout_needed and rebased the code to upstream kernel
-Forced-wakeup
- v1 : New patch with name of forced wakeup started
- v2 : Extending the forced wakeup logic for all states. Setting the
-decrementer instead of queuing up a hrtimer to implement the logic.
+and 
 
- drivers/cpuidle/cpuidle-powernv.c | 38 +++++++++++++++++++++++++++++++
- 1 file changed, 38 insertions(+)
+Tested-by: Cédric Le Goater <clg@kaod.org>
 
-diff --git a/drivers/cpuidle/cpuidle-powernv.c b/drivers/cpuidle/cpuidle-powernv.c
-index 84b1ebe212b3..bc9ca18ae7e3 100644
---- a/drivers/cpuidle/cpuidle-powernv.c
-+++ b/drivers/cpuidle/cpuidle-powernv.c
-@@ -46,6 +46,26 @@ static struct stop_psscr_table stop_psscr_table[CPUIDLE_STATE_MAX] __read_mostly
- static u64 default_snooze_timeout __read_mostly;
- static bool snooze_timeout_en __read_mostly;
- 
-+static u64 forced_wakeup_timeout(struct cpuidle_device *dev,
-+				 struct cpuidle_driver *drv,
-+				 int index)
-+{
-+	int i;
-+
-+	for (i = index + 1; i < drv->state_count; i++) {
-+		struct cpuidle_state *s = &drv->states[i];
-+		struct cpuidle_state_usage *su = &dev->states_usage[i];
-+
-+		if (s->disabled || su->disable)
-+			continue;
-+
-+		return (s->target_residency + 2 * s->exit_latency) *
-+			tb_ticks_per_usec;
-+	}
-+
-+	return 0;
-+}
-+
- static u64 get_snooze_timeout(struct cpuidle_device *dev,
- 			      struct cpuidle_driver *drv,
- 			      int index)
-@@ -144,8 +164,26 @@ static int stop_loop(struct cpuidle_device *dev,
- 		     struct cpuidle_driver *drv,
- 		     int index)
- {
-+	u64 dec_expiry_tb, dec, timeout_tb, forced_wakeup;
-+
-+	dec = mfspr(SPRN_DEC);
-+	timeout_tb = forced_wakeup_timeout(dev, drv, index);
-+	forced_wakeup = 0;
-+
-+	if (timeout_tb && timeout_tb < dec) {
-+		forced_wakeup = 1;
-+		dec_expiry_tb = mftb() + dec;
-+	}
-+
-+	if (forced_wakeup)
-+		mtspr(SPRN_DEC, timeout_tb);
-+
- 	power9_idle_type(stop_psscr_table[index].val,
- 			 stop_psscr_table[index].mask);
-+
-+	if (forced_wakeup)
-+		mtspr(SPRN_DEC, dec_expiry_tb - mftb());
-+
- 	return index;
- }
- 
--- 
-2.17.1
+
+but I see slowdowns in nested as if the IPIs were not delivered. Have we
+touch this part in 5.2 ? 
+
+Thanks,
+
+C.
 
