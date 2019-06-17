@@ -2,79 +2,69 @@ Return-Path: <SRS0=FDsq=UQ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9708CC31E5C
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Jun 2019 21:30:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 26711C31E5B
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Jun 2019 21:34:35 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 1AFA7204FD
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Jun 2019 21:30:56 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="KJFiR+nt"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1AFA7204FD
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
+	by mail.kernel.org (Postfix) with ESMTPS id 37BF620657
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Jun 2019 21:34:34 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 37BF620657
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45SPXD3q4MzDqJ3
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Jun 2019 07:30:52 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45SPcQ6wYNzDqKJ
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Jun 2019 07:34:30 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=c-s.fr
- (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
- envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=c-s.fr
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="KJFiR+nt"; 
- dkim-atps=neutral
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ spf=pass (mailfrom) smtp.mailfrom=nefkom.net
+ (client-ip=2001:a60:0:28:0:1:25:1; helo=mail-out.m-online.net;
+ envelope-from=whitebox@nefkom.net; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=linux-m68k.org
+Received: from mail-out.m-online.net (mail-out.m-online.net
+ [IPv6:2001:a60:0:28:0:1:25:1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45SPB54Dy1zDqWr
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Jun 2019 07:15:09 +1000 (AEST)
-Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 45SPB14fs7z9v2jK;
- Mon, 17 Jun 2019 23:15:05 +0200 (CEST)
-Authentication-Results: localhost; dkim=pass
- reason="1024-bit key; insecure key"
- header.d=c-s.fr header.i=@c-s.fr header.b=KJFiR+nt; dkim-adsp=pass;
- dkim-atps=neutral
-X-Virus-Scanned: Debian amavisd-new at c-s.fr
-Received: from pegase1.c-s.fr ([192.168.12.234])
- by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id s1DIDXWioN8R; Mon, 17 Jun 2019 23:15:05 +0200 (CEST)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 45SPB13P8Hz9v2jJ;
- Mon, 17 Jun 2019 23:15:05 +0200 (CEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
- t=1560806105; bh=DMvYgdU1C1BDAhzjLFRBumNES+VZsVxjS2tmKfrAT24=;
- h=In-Reply-To:References:From:Subject:To:Cc:Date:From;
- b=KJFiR+ntJLQwHpU+e2mhrj3i69wwyvCE8anXY9qroL9G0pvOSLRFpM4fTSxUspRTC
- 7bAmwGlegpSCDnbtaN7fAxBNd7Np9kf1TrxtICKIkNqWDLMqMQMpH4aDRsN+ZYCW3+
- fo51p06rVF/rKfVLcdCCA8GcyIznYUcOBgUD8YKo=
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id A74398B84B;
- Mon, 17 Jun 2019 23:15:05 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id zVOkHRjZjeLC; Mon, 17 Jun 2019 23:15:05 +0200 (CEST)
-Received: from po16838vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 4CD1A8B7FF;
- Mon, 17 Jun 2019 23:15:05 +0200 (CEST)
-Received: by localhost.localdomain (Postfix, from userid 0)
- id 02535682B3; Mon, 17 Jun 2019 21:15:04 +0000 (UTC)
-Message-Id: <e760412b67ef8fe8bc122b710ed0dbaf870d4843.1560805614.git.christophe.leroy@c-s.fr>
-In-Reply-To: <cover.1560805614.git.christophe.leroy@c-s.fr>
-References: <cover.1560805614.git.christophe.leroy@c-s.fr>
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v4 3/4] crypto: talitos - fix hash on SEC1.
-To: Herbert Xu <herbert@gondor.apana.org.au>,
- "David S. Miller" <davem@davemloft.net>, horia.geanta@nxp.com
-Date: Mon, 17 Jun 2019 21:15:04 +0000 (UTC)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45SPLh1VbwzDqP7
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Jun 2019 07:22:36 +1000 (AEST)
+Received: from frontend01.mail.m-online.net (unknown [192.168.8.182])
+ by mail-out.m-online.net (Postfix) with ESMTP id 45SPLR482Fz1rWT1;
+ Mon, 17 Jun 2019 23:22:23 +0200 (CEST)
+Received: from localhost (dynscan1.mnet-online.de [192.168.6.70])
+ by mail.m-online.net (Postfix) with ESMTP id 45SPLR3Sk9z1qql7;
+ Mon, 17 Jun 2019 23:22:23 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at mnet-online.de
+Received: from mail.mnet-online.de ([192.168.8.182])
+ by localhost (dynscan1.mail.m-online.net [192.168.6.70]) (amavisd-new,
+ port 10024)
+ with ESMTP id Ofi2Vk0dQod8; Mon, 17 Jun 2019 23:22:22 +0200 (CEST)
+X-Auth-Info: kxoQWfsuvJNGfuKCoxPyz8lu9v+YflcEBGhwLMkqB17xmmElfILuca/iqbizjt6/
+Received: from igel.home (ppp-46-244-166-202.dynamic.mnet-online.de
+ [46.244.166.202])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by mail.mnet-online.de (Postfix) with ESMTPSA;
+ Mon, 17 Jun 2019 23:22:22 +0200 (CEST)
+Received: by igel.home (Postfix, from userid 1000)
+ id 852962C1101; Mon, 17 Jun 2019 23:22:20 +0200 (CEST)
+From: Andreas Schwab <schwab@linux-m68k.org>
+To: Christophe Leroy <christophe.leroy@c-s.fr>
+Subject: [PATCH] powerpc/mm/32s: fix condition that is always true
+References: <cover.1550775950.git.christophe.leroy@c-s.fr>
+ <1e412310cc18ea654fb2ce4c935654d8d1069f27.1550775950.git.christophe.leroy@c-s.fr>
+X-Yow: .. I have a VISION! It's a RANCID double-FISHWICH on an ENRICHED BUN!!
+Date: Mon, 17 Jun 2019 23:22:20 +0200
+In-Reply-To: <1e412310cc18ea654fb2ce4c935654d8d1069f27.1550775950.git.christophe.leroy@c-s.fr>
+ (Christophe Leroy's message of "Thu, 21 Feb 2019 19:08:49 +0000
+ (UTC)")
+Message-ID: <87muif52lv.fsf_-_@igel.home>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/26.2.90 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -86,221 +76,37 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-crypto@vger.kernel.org,
- linux-kernel@vger.kernel.org
+Cc: j.neuschaefer@gmx.net, linux-kernel@vger.kernel.org,
+ Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On SEC1, hash provides wrong result when performing hashing in several
-steps with input data SG list has more than one element. This was
-detected with CONFIG_CRYPTO_MANAGER_EXTRA_TESTS:
+Move a misplaced paren that makes the condition always true.
 
-[   44.185947] alg: hash: md5-talitos test failed (wrong result) on test vector 6, cfg="random: may_sleep use_finup src_divs=[<reimport>25.88%@+8063, <flush>24.19%@+9588, 28.63%@+16333, <reimport>4.60%@+6756, 16.70%@+16281] dst_divs=[71.61%@alignmask+16361, 14.36%@+7756, 14.3%@+"
-[   44.325122] alg: hash: sha1-talitos test failed (wrong result) on test vector 3, cfg="random: inplace use_final src_divs=[<flush,nosimd>16.56%@+16378, <reimport>52.0%@+16329, 21.42%@alignmask+16380, 10.2%@alignmask+16380] iv_offset=39"
-[   44.493500] alg: hash: sha224-talitos test failed (wrong result) on test vector 4, cfg="random: use_final nosimd src_divs=[<reimport>52.27%@+7401, <reimport>17.34%@+16285, <flush>17.71%@+26, 12.68%@+10644] iv_offset=43"
-[   44.673262] alg: hash: sha256-talitos test failed (wrong result) on test vector 4, cfg="random: may_sleep use_finup src_divs=[<reimport>60.6%@+12790, 17.86%@+1329, <reimport>12.64%@alignmask+16300, 8.29%@+15, 0.40%@+13506, <reimport>0.51%@+16322, <reimport>0.24%@+16339] dst_divs"
-
-This is due to two issues:
-- We have an overlap between the buffer used for copying the input
-data (SEC1 doesn't do scatter/gather) and the chained descriptor.
-- Data copy is wrong when the previous hash left less than one
-blocksize of data to hash, implying a complement of the previous
-block with a few bytes from the new request.
-
-Fix it by:
-- Moving the second descriptor after the buffer, as moving the buffer
-after the descriptor would make it more complex for other cipher
-operations (AEAD, ABLKCIPHER)
-- Skip the bytes taken from the new request to complete the previous
-one by moving the SG list forward.
-
-Fixes: 37b5e8897eb5 ("crypto: talitos - chain in buffered data for ahash on SEC1")
-Cc: stable@vger.kernel.org
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+Fixes: 63b2bc619565 ("powerpc/mm/32s: Use BATs for STRICT_KERNEL_RWX")
+Signed-off-by: Andreas Schwab <schwab@linux-m68k.org>
 ---
- drivers/crypto/talitos.c | 69 ++++++++++++++++++++++++++++--------------------
- 1 file changed, 41 insertions(+), 28 deletions(-)
+ arch/powerpc/mm/pgtable_32.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/crypto/talitos.c b/drivers/crypto/talitos.c
-index 95dc3957f358..ab6bd45addf7 100644
---- a/drivers/crypto/talitos.c
-+++ b/drivers/crypto/talitos.c
-@@ -320,6 +320,21 @@ static int talitos_submit(struct device *dev, int ch, struct talitos_desc *desc,
- 	return -EINPROGRESS;
- }
+diff --git a/arch/powerpc/mm/pgtable_32.c b/arch/powerpc/mm/pgtable_32.c
+index d53188dee18f..35cb96cfc258 100644
+--- a/arch/powerpc/mm/pgtable_32.c
++++ b/arch/powerpc/mm/pgtable_32.c
+@@ -360,7 +360,7 @@ void mark_initmem_nx(void)
+ 	unsigned long numpages = PFN_UP((unsigned long)_einittext) -
+ 				 PFN_DOWN((unsigned long)_sinittext);
  
-+static __be32 get_request_hdr(struct talitos_request *request, bool is_sec1)
-+{
-+	struct talitos_edesc *edesc;
-+
-+	if (!is_sec1)
-+		return request->desc->hdr;
-+
-+	if (!request->desc->next_desc)
-+		return request->desc->hdr1;
-+
-+	edesc = container_of(request->desc, struct talitos_edesc, desc);
-+
-+	return ((struct talitos_desc *)(edesc->buf + edesc->dma_len))->hdr1;
-+}
-+
- /*
-  * process what was done, notify callback of error if not
-  */
-@@ -341,12 +356,7 @@ static void flush_channel(struct device *dev, int ch, int error, int reset_ch)
- 
- 		/* descriptors with their done bits set don't get the error */
- 		rmb();
--		if (!is_sec1)
--			hdr = request->desc->hdr;
--		else if (request->desc->next_desc)
--			hdr = (request->desc + 1)->hdr1;
--		else
--			hdr = request->desc->hdr1;
-+		hdr = get_request_hdr(request, is_sec1);
- 
- 		if ((hdr & DESC_HDR_DONE) == DESC_HDR_DONE)
- 			status = 0;
-@@ -476,8 +486,14 @@ static u32 current_desc_hdr(struct device *dev, int ch)
- 		}
- 	}
- 
--	if (priv->chan[ch].fifo[iter].desc->next_desc == cur_desc)
--		return (priv->chan[ch].fifo[iter].desc + 1)->hdr;
-+	if (priv->chan[ch].fifo[iter].desc->next_desc == cur_desc) {
-+		struct talitos_edesc *edesc;
-+
-+		edesc = container_of(priv->chan[ch].fifo[iter].desc,
-+				     struct talitos_edesc, desc);
-+		return ((struct talitos_desc *)
-+			(edesc->buf + edesc->dma_len))->hdr;
-+	}
- 
- 	return priv->chan[ch].fifo[iter].desc->hdr;
- }
-@@ -1402,15 +1418,11 @@ static struct talitos_edesc *talitos_edesc_alloc(struct device *dev,
- 	edesc->dst_nents = dst_nents;
- 	edesc->iv_dma = iv_dma;
- 	edesc->dma_len = dma_len;
--	if (dma_len) {
--		void *addr = &edesc->link_tbl[0];
--
--		if (is_sec1 && !dst)
--			addr += sizeof(struct talitos_desc);
--		edesc->dma_link_tbl = dma_map_single(dev, addr,
-+	if (dma_len)
-+		edesc->dma_link_tbl = dma_map_single(dev, &edesc->link_tbl[0],
- 						     edesc->dma_len,
- 						     DMA_BIDIRECTIONAL);
--	}
-+
- 	return edesc;
- }
- 
-@@ -1722,14 +1734,16 @@ static void common_nonsnoop_hash_unmap(struct device *dev,
- 	struct talitos_private *priv = dev_get_drvdata(dev);
- 	bool is_sec1 = has_ftr_sec1(priv);
- 	struct talitos_desc *desc = &edesc->desc;
--	struct talitos_desc *desc2 = desc + 1;
-+	struct talitos_desc *desc2 = (struct talitos_desc *)
-+				     (edesc->buf + edesc->dma_len);
- 
- 	unmap_single_talitos_ptr(dev, &edesc->desc.ptr[5], DMA_FROM_DEVICE);
- 	if (desc->next_desc &&
- 	    desc->ptr[5].ptr != desc2->ptr[5].ptr)
- 		unmap_single_talitos_ptr(dev, &desc2->ptr[5], DMA_FROM_DEVICE);
- 
--	talitos_sg_unmap(dev, edesc, req_ctx->psrc, NULL, 0, 0);
-+	if (req_ctx->psrc)
-+		talitos_sg_unmap(dev, edesc, req_ctx->psrc, NULL, 0, 0);
- 
- 	/* When using hashctx-in, must unmap it. */
- 	if (from_talitos_ptr_len(&edesc->desc.ptr[1], is_sec1))
-@@ -1796,7 +1810,6 @@ static void talitos_handle_buggy_hash(struct talitos_ctx *ctx,
- 
- static int common_nonsnoop_hash(struct talitos_edesc *edesc,
- 				struct ahash_request *areq, unsigned int length,
--				unsigned int offset,
- 				void (*callback) (struct device *dev,
- 						  struct talitos_desc *desc,
- 						  void *context, int error))
-@@ -1835,9 +1848,7 @@ static int common_nonsnoop_hash(struct talitos_edesc *edesc,
- 
- 	sg_count = edesc->src_nents ?: 1;
- 	if (is_sec1 && sg_count > 1)
--		sg_pcopy_to_buffer(req_ctx->psrc, sg_count,
--				   edesc->buf + sizeof(struct talitos_desc),
--				   length, req_ctx->nbuf);
-+		sg_copy_to_buffer(req_ctx->psrc, sg_count, edesc->buf, length);
- 	else if (length)
- 		sg_count = dma_map_sg(dev, req_ctx->psrc, sg_count,
- 				      DMA_TO_DEVICE);
-@@ -1850,7 +1861,7 @@ static int common_nonsnoop_hash(struct talitos_edesc *edesc,
- 				       DMA_TO_DEVICE);
- 	} else {
- 		sg_count = talitos_sg_map(dev, req_ctx->psrc, length, edesc,
--					  &desc->ptr[3], sg_count, offset, 0);
-+					  &desc->ptr[3], sg_count, 0, 0);
- 		if (sg_count > 1)
- 			sync_needed = true;
- 	}
-@@ -1874,7 +1885,8 @@ static int common_nonsnoop_hash(struct talitos_edesc *edesc,
- 		talitos_handle_buggy_hash(ctx, edesc, &desc->ptr[3]);
- 
- 	if (is_sec1 && req_ctx->nbuf && length) {
--		struct talitos_desc *desc2 = desc + 1;
-+		struct talitos_desc *desc2 = (struct talitos_desc *)
-+					     (edesc->buf + edesc->dma_len);
- 		dma_addr_t next_desc;
- 
- 		memset(desc2, 0, sizeof(*desc2));
-@@ -1895,7 +1907,7 @@ static int common_nonsnoop_hash(struct talitos_edesc *edesc,
- 						      DMA_TO_DEVICE);
- 		copy_talitos_ptr(&desc2->ptr[2], &desc->ptr[2], is_sec1);
- 		sg_count = talitos_sg_map(dev, req_ctx->psrc, length, edesc,
--					  &desc2->ptr[3], sg_count, offset, 0);
-+					  &desc2->ptr[3], sg_count, 0, 0);
- 		if (sg_count > 1)
- 			sync_needed = true;
- 		copy_talitos_ptr(&desc2->ptr[5], &desc->ptr[5], is_sec1);
-@@ -2006,7 +2018,6 @@ static int ahash_process_req(struct ahash_request *areq, unsigned int nbytes)
- 	struct device *dev = ctx->dev;
- 	struct talitos_private *priv = dev_get_drvdata(dev);
- 	bool is_sec1 = has_ftr_sec1(priv);
--	int offset = 0;
- 	u8 *ctx_buf = req_ctx->buf[req_ctx->buf_idx];
- 
- 	if (!req_ctx->last && (nbytes + req_ctx->nbuf <= blocksize)) {
-@@ -2046,6 +2057,8 @@ static int ahash_process_req(struct ahash_request *areq, unsigned int nbytes)
- 			sg_chain(req_ctx->bufsl, 2, areq->src);
- 		req_ctx->psrc = req_ctx->bufsl;
- 	} else if (is_sec1 && req_ctx->nbuf && req_ctx->nbuf < blocksize) {
-+		int offset;
-+
- 		if (nbytes_to_hash > blocksize)
- 			offset = blocksize - req_ctx->nbuf;
- 		else
-@@ -2058,7 +2071,8 @@ static int ahash_process_req(struct ahash_request *areq, unsigned int nbytes)
- 		sg_copy_to_buffer(areq->src, nents,
- 				  ctx_buf + req_ctx->nbuf, offset);
- 		req_ctx->nbuf += offset;
--		req_ctx->psrc = areq->src;
-+		req_ctx->psrc = scatterwalk_ffwd(req_ctx->bufsl, areq->src,
-+						 offset);
- 	} else
- 		req_ctx->psrc = areq->src;
- 
-@@ -2098,8 +2112,7 @@ static int ahash_process_req(struct ahash_request *areq, unsigned int nbytes)
- 	if (ctx->keylen && (req_ctx->first || req_ctx->last))
- 		edesc->desc.hdr |= DESC_HDR_MODE0_MDEU_HMAC;
- 
--	return common_nonsnoop_hash(edesc, areq, nbytes_to_hash, offset,
--				    ahash_done);
-+	return common_nonsnoop_hash(edesc, areq, nbytes_to_hash, ahash_done);
- }
- 
- static int ahash_update(struct ahash_request *areq)
+-	if (v_block_mapped((unsigned long)_stext) + 1)
++	if (v_block_mapped((unsigned long)_stext + 1))
+ 		mmu_mark_initmem_nx();
+ 	else
+ 		change_page_attr(page, numpages, PAGE_KERNEL);
 -- 
-2.13.3
+2.22.0
 
+-- 
+Andreas Schwab, schwab@linux-m68k.org
+GPG Key fingerprint = 7578 EB47 D4E5 4D69 2510  2552 DF73 E780 A9DA AEC1
+"And now for something completely different."
