@@ -2,59 +2,56 @@ Return-Path: <SRS0=FDsq=UQ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7DCA0C31E57
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Jun 2019 10:37:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E76A5C31E57
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Jun 2019 11:52:55 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 0788F20833
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Jun 2019 10:37:11 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0788F20833
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
+	by mail.kernel.org (Postfix) with ESMTPS id 6518B2084D
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Jun 2019 11:52:55 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6518B2084D
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=glider.be
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45S71x2SdxzDqVJ
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Jun 2019 20:37:09 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45S8jJ1v2JzDqVC
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Jun 2019 21:52:52 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=kaod.org
- (client-ip=46.105.56.136; helo=1.mo6.mail-out.ovh.net;
- envelope-from=clg@kaod.org; receiver=<UNKNOWN>)
+ spf=none (mailfrom) smtp.mailfrom=linux-m68k.org
+ (client-ip=195.130.137.77; helo=leibniz.telenet-ops.be;
+ envelope-from=geert@linux-m68k.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=kaod.org
-Received: from 1.mo6.mail-out.ovh.net (1.mo6.mail-out.ovh.net [46.105.56.136])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
- bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45S6yw3NpSzDqRG
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Jun 2019 20:34:27 +1000 (AEST)
-Received: from player168.ha.ovh.net (unknown [10.109.143.223])
- by mo6.mail-out.ovh.net (Postfix) with ESMTP id F3D8A1CF8AF
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Jun 2019 11:06:40 +0200 (CEST)
-Received: from kaod.org (lfbn-1-10649-41.w90-89.abo.wanadoo.fr [90.89.235.41])
- (Authenticated sender: clg@kaod.org)
- by player168.ha.ovh.net (Postfix) with ESMTPSA id A99566CFA4E2;
- Mon, 17 Jun 2019 09:06:34 +0000 (UTC)
-Subject: Re: [PATCH 0/2] Fix handling of h_set_dawr
-To: Suraj Jitindar Singh <sjitindarsingh@gmail.com>,
- linuxppc-dev@lists.ozlabs.org
-References: <20190617071619.19360-1-sjitindarsingh@gmail.com>
-From: =?UTF-8?Q?C=c3=a9dric_Le_Goater?= <clg@kaod.org>
-Message-ID: <87e219c8-1db7-9976-03ce-5a566a8df7ab@kaod.org>
-Date: Mon, 17 Jun 2019 11:06:33 +0200
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
- Thunderbird/60.7.0
-MIME-Version: 1.0
-In-Reply-To: <20190617071619.19360-1-sjitindarsingh@gmail.com>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: 8bit
-X-Ovh-Tracer-Id: 6350075477084113851
-X-VR-SPAMSTATE: OK
-X-VR-SPAMSCORE: -100
-X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgeduuddrudeijedguddvucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecuqfggjfdpvefjgfevmfevgfenuceurghilhhouhhtmecuhedttdenucesvcftvggtihhpihgvnhhtshculddquddttddm
+ dmarc=none (p=none dis=none) header.from=glider.be
+Received: from leibniz.telenet-ops.be (leibniz.telenet-ops.be [195.130.137.77])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45S8g46y2QzDqXD
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Jun 2019 21:50:53 +1000 (AEST)
+Received: from andre.telenet-ops.be (andre.telenet-ops.be
+ [IPv6:2a02:1800:120:4::f00:15])
+ by leibniz.telenet-ops.be (Postfix) with ESMTPS id 45S8fv69d0zMqdb8
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Jun 2019 13:50:47 +0200 (CEST)
+Received: from ramsan ([84.194.111.163]) by andre.telenet-ops.be with bizsmtp
+ id Rnql2000j3XaVaC01nqmYk; Mon, 17 Jun 2019 13:50:47 +0200
+Received: from rox.of.borg ([192.168.97.57]) by ramsan with esmtp (Exim 4.90_1)
+ (envelope-from <geert@linux-m68k.org>)
+ id 1hcq9t-0001Ul-TG; Mon, 17 Jun 2019 13:50:45 +0200
+Received: from geert by rox.of.borg with local (Exim 4.90_1)
+ (envelope-from <geert@linux-m68k.org>)
+ id 1hcq9t-00019x-QS; Mon, 17 Jun 2019 13:50:45 +0200
+From: Geert Uytterhoeven <geert+renesas@glider.be>
+To: Geoff Levand <geoff@infradead.org>,
+ "David S . Miller" <davem@davemloft.net>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
+Subject: [PATCH] ps3_gelic: Use [] to denote a flexible array member
+Date: Mon, 17 Jun 2019 13:50:44 +0200
+Message-Id: <20190617115044.4406-1-geert+renesas@glider.be>
+X-Mailer: git-send-email 2.17.1
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -66,37 +63,33 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: mikey@neuling.org, kvm-ppc@vger.kernel.org
+Cc: netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 17/06/2019 09:16, Suraj Jitindar Singh wrote:
-> Series contains 2 patches to fix the host in kernel handling of the hcall
-> h_set_dawr.
-> 
-> First patch from Michael Neuling is just a resend added here for clarity.
-> 
-> Michael Neuling (1):
->   KVM: PPC: Book3S HV: Fix r3 corruption in h_set_dabr()
-> 
-> Suraj Jitindar Singh (1):
->   KVM: PPC: Book3S HV: Only write DAWR[X] when handling h_set_dawr in
->     real mode
+Flexible array members should be denoted using [] instead of [0], else
+gcc will not warn when they are no longer at the end of a struct.
 
+Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+---
+ drivers/net/ethernet/toshiba/ps3_gelic_net.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-
-Reviewed-by: Cédric Le Goater <clg@kaod.org>
-
-and 
-
-Tested-by: Cédric Le Goater <clg@kaod.org>
-
-
-but I see slowdowns in nested as if the IPIs were not delivered. Have we
-touch this part in 5.2 ? 
-
-Thanks,
-
-C.
+diff --git a/drivers/net/ethernet/toshiba/ps3_gelic_net.h b/drivers/net/ethernet/toshiba/ps3_gelic_net.h
+index 3ecddb72f45aa80f..051033580f0a6f9e 100644
+--- a/drivers/net/ethernet/toshiba/ps3_gelic_net.h
++++ b/drivers/net/ethernet/toshiba/ps3_gelic_net.h
+@@ -301,7 +301,7 @@ struct gelic_card {
+ 	 */
+ 	unsigned int irq;
+ 	struct gelic_descr *tx_top, *rx_top;
+-	struct gelic_descr descr[0]; /* must be the last */
++	struct gelic_descr descr[]; /* must be the last */
+ };
+ 
+ struct gelic_port {
+-- 
+2.17.1
 
