@@ -2,85 +2,100 @@ Return-Path: <SRS0=N2pq=UR=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.3 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_MUTT autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 35E9FC31E5F
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Jun 2019 15:11:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BD7F2C31E5B
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Jun 2019 15:28:19 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id BD65B21479
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Jun 2019 15:10:59 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BD65B21479
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 020072085A
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Jun 2019 15:28:18 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 020072085A
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=us.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45Ss3P4GFhzDqgk
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Jun 2019 01:10:57 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45SsRN06wwzDqfK
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Jun 2019 01:28:16 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45SsNc4XzszDqWx
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Jun 2019 01:25:52 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=linux.vnet.ibm.com
- (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=naveen.n.rao@linux.vnet.ibm.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=linux.vnet.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+ dmarc=none (p=none dis=none) header.from=us.ibm.com
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 45SsNb431Rz8t30
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Jun 2019 01:25:51 +1000 (AEST)
+Received: by ozlabs.org (Postfix)
+ id 45SsNb38gpz9sNl; Wed, 19 Jun 2019 01:25:51 +1000 (AEST)
+Authentication-Results: ozlabs.org;
+ spf=pass (mailfrom) smtp.mailfrom=us.ibm.com
+ (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
+ envelope-from=linuxram@us.ibm.com; receiver=<UNKNOWN>)
+Authentication-Results: ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=us.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45SrYz65Z7zDqd0
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Jun 2019 00:48:55 +1000 (AEST)
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x5IEmHgj162865
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Jun 2019 10:48:52 -0400
-Received: from e06smtp05.uk.ibm.com (e06smtp05.uk.ibm.com [195.75.94.101])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2t7101u765-1
+ by ozlabs.org (Postfix) with ESMTPS id 45SsNb05Jxz9sNT
+ for <linuxppc-dev@ozlabs.org>; Wed, 19 Jun 2019 01:25:50 +1000 (AEST)
+Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
+ x5IFNVTQ141601
+ for <linuxppc-dev@ozlabs.org>; Tue, 18 Jun 2019 11:25:48 -0400
+Received: from e06smtp03.uk.ibm.com (e06smtp03.uk.ibm.com [195.75.94.99])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2t71g33pm1-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Jun 2019 10:48:45 -0400
+ for <linuxppc-dev@ozlabs.org>; Tue, 18 Jun 2019 11:25:47 -0400
 Received: from localhost
- by e06smtp05.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp03.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
- Tue, 18 Jun 2019 15:47:48 +0100
-Received: from b06cxnps4076.portsmouth.uk.ibm.com (9.149.109.198)
- by e06smtp05.uk.ibm.com (192.168.101.135) with IBM ESMTP SMTP Gateway:
+ for <linuxppc-dev@ozlabs.org> from <linuxram@us.ibm.com>;
+ Tue, 18 Jun 2019 16:25:45 +0100
+Received: from b06cxnps3074.portsmouth.uk.ibm.com (9.149.109.194)
+ by e06smtp03.uk.ibm.com (192.168.101.133) with IBM ESMTP SMTP Gateway:
  Authorized Use Only! Violators will be prosecuted; 
  (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Tue, 18 Jun 2019 15:47:46 +0100
-Received: from d06av25.portsmouth.uk.ibm.com (d06av25.portsmouth.uk.ibm.com
- [9.149.105.61])
- by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x5IEljhm35455044
+ Tue, 18 Jun 2019 16:25:43 +0100
+Received: from d06av23.portsmouth.uk.ibm.com (d06av23.portsmouth.uk.ibm.com
+ [9.149.105.59])
+ by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x5IFPeHA50921594
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Tue, 18 Jun 2019 14:47:45 GMT
-Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 5CACF11C04A;
- Tue, 18 Jun 2019 14:47:45 +0000 (GMT)
-Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 7646611C052;
- Tue, 18 Jun 2019 14:47:43 +0000 (GMT)
-Received: from naverao1-tp.ibmuc.com (unknown [9.85.74.6])
- by d06av25.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Tue, 18 Jun 2019 14:47:43 +0000 (GMT)
-From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
-To: Michael Ellerman <mpe@ellerman.id.au>,
- Steven Rostedt <rostedt@goodmis.org>,
- Masami Hiramatsu <mhiramat@kernel.org>, Ingo Molnar <mingo@kernel.org>,
- Nicholas Piggin <npiggin@gmail.com>
-Subject: [PATCH 3/7] ftrace: Expose __ftrace_replace_code()
-Date: Tue, 18 Jun 2019 20:17:02 +0530
-X-Mailer: git-send-email 2.22.0
-In-Reply-To: <cover.1560868106.git.naveen.n.rao@linux.vnet.ibm.com>
-References: <cover.1560868106.git.naveen.n.rao@linux.vnet.ibm.com>
+ Tue, 18 Jun 2019 15:25:41 GMT
+Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id D95ECA404D;
+ Tue, 18 Jun 2019 15:25:40 +0000 (GMT)
+Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 26E2FA405D;
+ Tue, 18 Jun 2019 15:25:38 +0000 (GMT)
+Received: from ram.ibm.com (unknown [9.80.224.136])
+ by d06av23.portsmouth.uk.ibm.com (Postfix) with ESMTPS;
+ Tue, 18 Jun 2019 15:25:37 +0000 (GMT)
+Date: Tue, 18 Jun 2019 08:25:35 -0700
+From: Ram Pai <linuxram@us.ibm.com>
+To: Segher Boessenkool <segher@kernel.crashing.org>
+References: <20190606173614.32090-1-cclaudio@linux.ibm.com>
+ <20190606173614.32090-5-cclaudio@linux.ibm.com>
+ <20190617020632.yywfoqwfinjxs3pb@oak.ozlabs.ibm.com>
+ <20190618114701.GH7313@gate.crashing.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20190618114701.GH7313@gate.crashing.org>
+User-Agent: Mutt/1.5.21 (2010-09-15)
 X-TM-AS-GCONF: 00
-x-cbid: 19061814-0020-0000-0000-0000034B28F1
+x-cbid: 19061815-0012-0000-0000-0000032A305C
 X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19061814-0021-0000-0000-0000219E777E
-Message-Id: <cb295a341896b5400e957cb920ebb522bfcd2350.1560868106.git.naveen.n.rao@linux.vnet.ibm.com>
+x-cbparentid: 19061815-0013-0000-0000-000021634DF3
+Message-Id: <20190618152535.GD10806@ram.ibm.com>
+Subject: Re: Re: [PATCH v3 4/9] KVM: PPC: Ultravisor: Add generic ultravisor
+ call handler
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
  definitions=2019-06-18_07:, , signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
@@ -88,7 +103,7 @@ X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
  malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
  clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
  mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1810050000 definitions=main-1906180119
+ scancount=1 engine=8.0.1-1810050000 definitions=main-1906180123
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -100,66 +115,38 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Reply-To: Ram Pai <linuxram@us.ibm.com>
+Cc: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>,
+ Michael Anderson <andmike@linux.ibm.com>,
+ Claudio Carvalho <cclaudio@linux.ibm.com>, kvm-ppc@vger.kernel.org,
+ Bharata B Rao <bharata@linux.ibm.com>, linuxppc-dev@ozlabs.org,
+ Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
+ Thiago Bauermann <bauermann@linux.ibm.com>,
+ Anshuman Khandual <khandual@linux.vnet.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-While over-riding ftrace_replace_code(), we still want to reuse the
-existing __ftrace_replace_code() function. Rename the function and
-make it available for other kernel code.
+On Tue, Jun 18, 2019 at 06:47:01AM -0500, Segher Boessenkool wrote:
+> Hi Paul,
+> 
+> On Mon, Jun 17, 2019 at 12:06:32PM +1000, Paul Mackerras wrote:
+> > The thing we need to consider is that when SMFCTRL[E] = 0, a ucall
+> > instruction becomes a hcall (that is, sc 2 is executed as if it was
+> > sc 1).  In that case, the first argument to the ucall will be
+> > interpreted as the hcall number.  Mostly that will happen not to be a
+> > valid hcall number, but sometimes it might unavoidably be a valid but
+> > unintended hcall number.
+> 
+> Shouldn't a caller of the ultravisor *know* that it is talking to the
+> ultravisor in the first place?  And not to the hypervisor.
 
-Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
----
- include/linux/ftrace.h | 1 +
- kernel/trace/ftrace.c  | 8 ++++----
- 2 files changed, 5 insertions(+), 4 deletions(-)
+It may or may not.  But if it knows and still decides to make the ucall,
+   the hypervisor must gracefully handle it.  
+   
+ We can't control who makes a ucall. A normal process within the VM could
+ make a ucall too. Or a normal process running on top of the hypervisor
+ could make a ucall.
 
-diff --git a/include/linux/ftrace.h b/include/linux/ftrace.h
-index e97789c95c4e..fa653a561da5 100644
---- a/include/linux/ftrace.h
-+++ b/include/linux/ftrace.h
-@@ -456,6 +456,7 @@ ftrace_set_early_filter(struct ftrace_ops *ops, char *buf, int enable);
- /* defined in arch */
- extern int ftrace_ip_converted(unsigned long ip);
- extern int ftrace_dyn_arch_init(void);
-+extern int ftrace_replace_code_rec(struct dyn_ftrace *rec, int enable);
- extern void ftrace_replace_code(int enable);
- extern int ftrace_update_ftrace_func(ftrace_func_t func);
- extern void ftrace_caller(void);
-diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
-index 5710a6b3edc1..21d8e201ee80 100644
---- a/kernel/trace/ftrace.c
-+++ b/kernel/trace/ftrace.c
-@@ -2351,8 +2351,8 @@ unsigned long ftrace_get_addr_curr(struct dyn_ftrace *rec)
- 		return (unsigned long)FTRACE_ADDR;
- }
- 
--static int
--__ftrace_replace_code(struct dyn_ftrace *rec, int enable)
-+int
-+ftrace_replace_code_rec(struct dyn_ftrace *rec, int enable)
- {
- 	unsigned long ftrace_old_addr;
- 	unsigned long ftrace_addr;
-@@ -2403,7 +2403,7 @@ void __weak ftrace_replace_code(int mod_flags)
- 		if (rec->flags & FTRACE_FL_DISABLED)
- 			continue;
- 
--		failed = __ftrace_replace_code(rec, enable);
-+		failed = ftrace_replace_code_rec(rec, enable);
- 		if (failed) {
- 			ftrace_bug(failed, rec);
- 			/* Stop processing */
-@@ -5827,7 +5827,7 @@ void ftrace_module_enable(struct module *mod)
- 		rec->flags = cnt;
- 
- 		if (ftrace_start_up && cnt) {
--			int failed = __ftrace_replace_code(rec, 1);
-+			int failed = ftrace_replace_code_rec(rec, 1);
- 			if (failed) {
- 				ftrace_bug(failed, rec);
- 				goto out_loop;
--- 
-2.22.0
+RP
 
