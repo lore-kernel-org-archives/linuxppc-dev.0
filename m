@@ -2,53 +2,47 @@ Return-Path: <SRS0=N2pq=UR=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_MUTT autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9A659C31E5D
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Jun 2019 12:03:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 821B4C31E51
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Jun 2019 12:11:47 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 5A92D20679
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Jun 2019 12:03:10 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5A92D20679
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kernel.crashing.org
+	by mail.kernel.org (Postfix) with ESMTPS id CD79C20873
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Jun 2019 12:11:46 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CD79C20873
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45Smth1CXWzDqLs
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Jun 2019 22:03:08 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=permerror (mailfrom)
- smtp.mailfrom=kernel.crashing.org (client-ip=63.228.1.57;
- helo=gate.crashing.org; envelope-from=segher@kernel.crashing.org;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=kernel.crashing.org
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 45Sn4c1npwzDqR0
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Jun 2019 22:11:44 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45SmrN6rh6zDqKl
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Jun 2019 22:01:08 +1000 (AEST)
-Received: from gate.crashing.org (localhost.localdomain [127.0.0.1])
- by gate.crashing.org (8.14.1/8.14.1) with ESMTP id x5IC104O029314;
- Tue, 18 Jun 2019 07:01:00 -0500
-Received: (from segher@localhost)
- by gate.crashing.org (8.14.1/8.14.1/Submit) id x5IC0xm9029313;
- Tue, 18 Jun 2019 07:00:59 -0500
-X-Authentication-Warning: gate.crashing.org: segher set sender to
- segher@kernel.crashing.org using -f
-Date: Tue, 18 Jun 2019 07:00:59 -0500
-From: Segher Boessenkool <segher@kernel.crashing.org>
-To: Gustavo Romero <gromero@linux.vnet.ibm.com>
-Subject: Re: [PATCH] selftests/powerpc: Fix earlyclobber in tm-vmxcopy
-Message-ID: <20190618120059.GJ7313@gate.crashing.org>
-References: <1560806698-26651-1-git-send-email-gromero@linux.vnet.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1560806698-26651-1-git-send-email-gromero@linux.vnet.ibm.com>
-User-Agent: Mutt/1.4.2.3i
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45Sn0K6RPfzDqQr
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Jun 2019 22:08:01 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=ellerman.id.au
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
+ SHA256) (No client certificate requested)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 45Sn0K2sfJz9s3C;
+ Tue, 18 Jun 2019 22:08:01 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Vaibhav Jain <vaibhav@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH] powerpc/mm: Ensure Huge-page memory is free before
+ allocation
+In-Reply-To: <20190618044609.19997-1-vaibhav@linux.ibm.com>
+References: <20190618044609.19997-1-vaibhav@linux.ibm.com>
+Date: Tue, 18 Jun 2019 22:07:54 +1000
+Message-ID: <87v9x3p04l.fsf@concordia.ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -60,43 +54,53 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: mikey@neuling.org, linuxppc-dev@lists.ozlabs.org
+Cc: Hari Bathini <hbathini@linux.vnet.ibm.com>,
+ Vaibhav Jain <vaibhav@linux.ibm.com>,
+ Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, Jun 17, 2019 at 05:24:58PM -0400, Gustavo Romero wrote:
-> In some cases, compiler can allocate the same register for operand 'res'
-> and 'vecoutptr', resulting in segfault at 'stxvd2x 40,0,%[vecoutptr]'
-> because base register will contain 1, yielding a false-positive.
-> 
-> This is because output 'res' must be marked as an earlyclobber operand so
-> it may not overlap an input operand ('vecoutptr').
-> 
-> Signed-off-by: Gustavo Romero <gromero@linux.vnet.ibm.com>
+Vaibhav Jain <vaibhav@linux.ibm.com> writes:
+> We recently discovered an bug where physical memory meant for
+> allocation of Huge-pages was inadvertently allocated by another component
+> during early boot.
 
-Reviewed-by: Segher Boessenkool <segher@kernel.crashing.org>
+Can you give me some more detail on what that was? You're seemingly the
+only person who's ever hit this :)
 
+> The behavior of memblock_reserve() where it wont
+> indicate whether an existing reserved block overlaps with the
+> requested reservation only makes such bugs hard to investigate.
+>
+> Hence this patch proposes adding a memblock reservation check in
+> htab_dt_scan_hugepage_blocks() just before call to memblock_reserve()
+> to ensure that the physical memory thats being reserved for is not
+> already reserved by someone else. In case this happens we panic the
+> the kernel to ensure that user of this huge-page doesn't accidentally
+> stomp on memory allocated to someone else.
 
-Segher
+Do we really need to panic? Can't we just leave the block alone and not
+register it as huge page memory? With a big warning obviously.
 
+cheers
 
-> ---
->  tools/testing/selftests/powerpc/tm/tm-vmxcopy.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/tools/testing/selftests/powerpc/tm/tm-vmxcopy.c b/tools/testing/selftests/powerpc/tm/tm-vmxcopy.c
-> index 147c6dc..c1e788a 100644
-> --- a/tools/testing/selftests/powerpc/tm/tm-vmxcopy.c
-> +++ b/tools/testing/selftests/powerpc/tm/tm-vmxcopy.c
-> @@ -79,7 +79,7 @@ int test_vmxcopy()
->  
->  		"5:;"
->  		"stxvd2x 40,0,%[vecoutptr];"
-> -		: [res]"=r"(aborted)
-> +		: [res]"=&r"(aborted)
->  		: [vecinptr]"r"(&vecin),
->  		  [vecoutptr]"r"(&vecout),
->  		  [map]"r"(a)
+> diff --git a/arch/powerpc/mm/book3s64/hash_utils.c b/arch/powerpc/mm/book3s64/hash_utils.c
+> index 28ced26f2a00..a05be3adb8c9 100644
+> --- a/arch/powerpc/mm/book3s64/hash_utils.c
+> +++ b/arch/powerpc/mm/book3s64/hash_utils.c
+> @@ -516,6 +516,11 @@ static int __init htab_dt_scan_hugepage_blocks(unsigned long node,
+>  	printk(KERN_INFO "Huge page(16GB) memory: "
+>  			"addr = 0x%lX size = 0x%lX pages = %d\n",
+>  			phys_addr, block_size, expected_pages);
+> +
+> +	/* Ensure no one else has reserved memory for huge pages before */
+> +	BUG_ON(memblock_is_region_reserved(phys_addr,
+> +					   block_size * expected_pages));
+> +
+>  	if (phys_addr + block_size * expected_pages <= memblock_end_of_DRAM()) {
+>  		memblock_reserve(phys_addr, block_size * expected_pages);
+>  		pseries_add_gpage(phys_addr, block_size, expected_pages);
 > -- 
-> 2.7.4
+> 2.21.0
