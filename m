@@ -4,49 +4,62 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
-	autolearn=ham autolearn_force=no version=3.4.0
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3F38AC31E51
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Jun 2019 12:36:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1832DC31E51
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Jun 2019 12:38:58 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id F10D72084D
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Jun 2019 12:36:44 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org F10D72084D
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+	by mail.kernel.org (Postfix) with ESMTPS id 95D5F20679
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Jun 2019 12:38:57 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 95D5F20679
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45SndQ4pQYzDqdW
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Jun 2019 22:36:42 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45SnWV5tXDzDqbc
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Jun 2019 22:31:34 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45Sngz4Gs2zDqYB
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Jun 2019 22:38:55 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+ spf=pass (mailfrom) smtp.mailfrom=gmail.com
+ (client-ip=209.85.167.66; helo=mail-lf1-f66.google.com;
+ envelope-from=geert.uytterhoeven@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=ellerman.id.au
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+ header.from=linux-m68k.org
+Received: from mail-lf1-f66.google.com (mail-lf1-f66.google.com
+ [209.85.167.66])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
- SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 45SnWN5bq5z9s9y;
- Tue, 18 Jun 2019 22:31:28 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Christophe Leroy <christophe.leroy@c-s.fr>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, erhard_f@mailbox.org
-Subject: Re: [PATCH] powerpc/32s: fix initial setup of segment registers on
- secondary CPU
-In-Reply-To: <b60946f5-dc70-61ce-e266-af91890cb702@c-s.fr>
-References: <be07403806abc56ec027f6d47468411876e18bb5.1560267983.git.christophe.leroy@c-s.fr>
- <b60946f5-dc70-61ce-e266-af91890cb702@c-s.fr>
-Date: Tue, 18 Jun 2019 22:31:26 +1000
-Message-ID: <87h88noz1d.fsf@concordia.ellerman.id.au>
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45SnYy4qLxzDqTh
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Jun 2019 22:33:41 +1000 (AEST)
+Received: by mail-lf1-f66.google.com with SMTP id r15so9118340lfm.11
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Jun 2019 05:33:41 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+ :message-id:subject:to:cc;
+ bh=Uu5fsfeSKBLjAO6CcaXJptLAJKKL+GmQf7S6qdJonrA=;
+ b=j+vJdT5c9nSFkcmC22WaaHm8+udg6Gx8gXrUeZE3HoK8OExP8FDvXgwjZO2B8oIk6U
+ T5hucoq8gM7wOpykWC3wbz15RU/o8ABDfuDrvyDpt9f/dYTkZfyyQQ6MyESFR339zeGv
+ ImlIEKv1q7MrW6vezgO3OrKa+2dNK5nfXqA6trd90WMDRb7nGH4z0E5qGgEzhdKQk7yz
+ uKBJ3Ec1TsLcZrk84X3spJyseiRJTwWOCrGkoi2uD2mnqGUgZ9G3eo2x3JTZxnofrgPA
+ pneeyOai/zy1p8yrb9P+Cg6iX2+kJr8JQNtrAmfKzRyNqbw7s7evvUppszN0skwSkPZ2
+ wLew==
+X-Gm-Message-State: APjAAAXQkgYbpVotf8jM22rXRchTjDIGmy/5Z5JBRtyFTh1/PCKuC0ge
+ xDNUoQMOopuQReUXDNWmW/nBLXJx36p65BiXsLI=
+X-Google-Smtp-Source: APXvYqy3CG/KMiJNVvQajIRjle46rTcfCVT6YO7+mcJZq39Lg6zJSQkAHqPqU9bU+uF/n6qUszu159aqvOeo8pX1hpE=
+X-Received: by 2002:a19:6e41:: with SMTP id q1mr51131788lfk.20.1560861216107; 
+ Tue, 18 Jun 2019 05:33:36 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+References: <20190617145204.6810-1-geert+renesas@glider.be>
+ <87muifozfd.fsf@concordia.ellerman.id.au>
+In-Reply-To: <87muifozfd.fsf@concordia.ellerman.id.au>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Tue, 18 Jun 2019 14:33:23 +0200
+Message-ID: <CAMuHMdUXcT_pNmfwjt5-eWoNJY4vKeH245k2sFFJG=JavUzc-w@mail.gmail.com>
+Subject: Re: [PATCH] selftests/powerpc: Add missing newline at end of file
+To: Michael Ellerman <mpe@ellerman.id.au>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -58,40 +71,51 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: Geert Uytterhoeven <geert+renesas@glider.be>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ Paul Mackerras <paulus@samba.org>,
+ "open list:KERNEL SELFTEST FRAMEWORK" <linux-kselftest@vger.kernel.org>,
+ Shuah Khan <shuah@kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Christophe Leroy <christophe.leroy@c-s.fr> writes:
-> Le 11/06/2019 =C3=A0 17:47, Christophe Leroy a =C3=A9crit=C2=A0:
->> The patch referenced below moved the loading of segment registers
->> out of load_up_mmu() in order to do it earlier in the boot sequence.
->> However, the secondary CPU still needs it to be done when loading up
->> the MMU.
->>=20
->> Reported-by: Erhard F. <erhard_f@mailbox.org>
->> Fixes: 215b823707ce ("powerpc/32s: set up an early static hash table for=
- KASAN")
+Hi Michael,
+
+On Tue, Jun 18, 2019 at 2:23 PM Michael Ellerman <mpe@ellerman.id.au> wrote:
+> Geert Uytterhoeven <geert+renesas@glider.be> writes:
+> > "git diff" says:
+> >
+> >     \ No newline at end of file
+> >
+> > after modifying the file.
 >
-> Cc: stable@vger.kernel.org
+> Is that a problem?
+>
+> Just curious because it was presumably me that broke it :)
 
-Sorry patchwork didn't pick that up and I missed it. The AUTOSEL bot
-will probably pick it up anyway though.
+It looks messy ;-)
 
-cheers
+> > diff --git a/tools/testing/selftests/powerpc/mm/.gitignore b/tools/testing/selftests/powerpc/mm/.gitignore
+> > index ba919308fe3052f3..16861ab840f57e90 100644
+> > --- a/tools/testing/selftests/powerpc/mm/.gitignore
+> > +++ b/tools/testing/selftests/powerpc/mm/.gitignore
+> > @@ -3,4 +3,4 @@ subpage_prot
+> >  tempfile
+> >  prot_sao
+> >  segv_errors
+> > -wild_bctr
+> > \ No newline at end of file
+> > +wild_bctr
 
->> diff --git a/arch/powerpc/kernel/head_32.S b/arch/powerpc/kernel/head_32=
-.S
->> index 1d5f1bd0dacd..f255e22184b4 100644
->> --- a/arch/powerpc/kernel/head_32.S
->> +++ b/arch/powerpc/kernel/head_32.S
->> @@ -752,6 +752,7 @@ __secondary_start:
->>   	stw	r0,0(r3)
->>=20=20=20
->>   	/* load up the MMU */
->> +	bl	load_segment_registers
->>   	bl	load_up_mmu
->>=20=20=20
->>   	/* ptr to phys current thread */
->>=20
+Gr{oetje,eeting}s,
+
+                        Geert
+
+-- 
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
