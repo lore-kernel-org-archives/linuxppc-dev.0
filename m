@@ -2,47 +2,96 @@ Return-Path: <SRS0=CHEA=US=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_MUTT autolearn=ham
+X-Spam-Status: No, score=-0.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E780CC31E49
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Jun 2019 07:33:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 17D85C31E49
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Jun 2019 07:48:13 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 923412084A
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Jun 2019 07:33:01 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 923412084A
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
+	by mail.kernel.org (Postfix) with ESMTPS id 77BA921479
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Jun 2019 07:48:12 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 77BA921479
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45TGrW5KgvzDqHh
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Jun 2019 17:32:59 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45THB170g4zDqld
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Jun 2019 17:48:09 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=lst.de
- (client-ip=213.95.11.211; helo=newverein.lst.de; envelope-from=hch@lst.de;
- receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
+ (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
+ envelope-from=ravi.bangoria@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=lst.de
-Received: from newverein.lst.de (verein.lst.de [213.95.11.211])
+ dmarc=none (p=none dis=none) header.from=linux.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45TGmq3s4jzDqkp
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Jun 2019 17:29:47 +1000 (AEST)
-Received: by newverein.lst.de (Postfix, from userid 2407)
- id 7C82268B05; Wed, 19 Jun 2019 09:29:16 +0200 (CEST)
-Date: Wed, 19 Jun 2019 09:29:16 +0200
-From: Christoph Hellwig <hch@lst.de>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>
-Subject: Re: [PATCH kernel] powerpc/powernv/npu: Export symbols as GPL
-Message-ID: <20190619072916.GB6858@lst.de>
-References: <20190619041312.81217-1-aik@ozlabs.ru>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45TH7b5mwczDqhD
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Jun 2019 17:46:03 +1000 (AEST)
+Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
+ x5J7gVZ4111708
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Jun 2019 03:46:00 -0400
+Received: from e06smtp01.uk.ibm.com (e06smtp01.uk.ibm.com [195.75.94.97])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2t7gne90fx-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Jun 2019 03:46:00 -0400
+Received: from localhost
+ by e06smtp01.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <ravi.bangoria@linux.ibm.com>;
+ Wed, 19 Jun 2019 08:45:58 +0100
+Received: from b06cxnps3075.portsmouth.uk.ibm.com (9.149.109.195)
+ by e06smtp01.uk.ibm.com (192.168.101.131) with IBM ESMTP SMTP Gateway:
+ Authorized Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Wed, 19 Jun 2019 08:45:56 +0100
+Received: from d06av23.portsmouth.uk.ibm.com (d06av23.portsmouth.uk.ibm.com
+ [9.149.105.59])
+ by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x5J7jtFo48758878
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Wed, 19 Jun 2019 07:45:55 GMT
+Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 87263A4053;
+ Wed, 19 Jun 2019 07:45:55 +0000 (GMT)
+Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id E55DFA4040;
+ Wed, 19 Jun 2019 07:45:53 +0000 (GMT)
+Received: from [9.124.31.60] (unknown [9.124.31.60])
+ by d06av23.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Wed, 19 Jun 2019 07:45:53 +0000 (GMT)
+Subject: Re: [PATCH 5/5] Powerpc/Watchpoint: Fix length calculation for
+ unaligned target
+To: Michael Neuling <mikey@neuling.org>
+References: <20190618042732.5582-1-ravi.bangoria@linux.ibm.com>
+ <20190618042732.5582-6-ravi.bangoria@linux.ibm.com>
+ <707bc0b664b8ebbb843a1541155fed219c216035.camel@neuling.org>
+From: Ravi Bangoria <ravi.bangoria@linux.ibm.com>
+Date: Wed, 19 Jun 2019 13:15:53 +0530
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.6.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20190619041312.81217-1-aik@ozlabs.ru>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <707bc0b664b8ebbb843a1541155fed219c216035.camel@neuling.org>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
+X-TM-AS-GCONF: 00
+x-cbid: 19061907-4275-0000-0000-000003439F99
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 19061907-4276-0000-0000-00003853C9AB
+Message-Id: <8a8a17b6-bdd6-4efb-7937-b1af105e08e0@linux.ibm.com>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
+ definitions=2019-06-19_04:, , signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=943 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1810050000 definitions=main-1906190064
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -54,17 +103,66 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Alistair Popple <alistair@popple.id.au>, linuxppc-dev@lists.ozlabs.org,
- Piotr Jaroszynski <pjaroszynski@nvidia.com>, Reza Arbab <arbab@linux.ibm.com>,
- Christoph Hellwig <hch@lst.de>
+Cc: Ravi Bangoria <ravi.bangoria@linux.ibm.com>, linux-kernel@vger.kernel.org,
+ npiggin@gmail.com, paulus@samba.org, naveen.n.rao@linux.vnet.ibm.com,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, Jun 19, 2019 at 02:13:12PM +1000, Alexey Kardashevskiy wrote:
-> The out-of-tree NVIDIA driver has been re-licensed recently to MIT/GPL
-> so we can do the right thing and restrict the exported symbols to GPL
-> only.
 
-Which still does not matter until it actually is in mainline.  We don't
-keep kernel infrastructure for purely out of tree drivers around.
+
+On 6/18/19 7:02 PM, Michael Neuling wrote:
+> On Tue, 2019-06-18 at 09:57 +0530, Ravi Bangoria wrote:
+>> Watchpoint match range is always doubleword(8 bytes) aligned on
+>> powerpc. If the given range is crossing doubleword boundary, we
+>> need to increase the length such that next doubleword also get
+>> covered. Ex,
+>>
+>>           address   len = 6 bytes
+>>                 |=========.
+>>    |------------v--|------v--------|
+>>    | | | | | | | | | | | | | | | | |
+>>    |---------------|---------------|
+>>     <---8 bytes--->
+>>
+>> In such case, current code configures hw as:
+>>   start_addr = address & ~HW_BREAKPOINT_ALIGN
+>>   len = 8 bytes
+>>
+>> And thus read/write in last 4 bytes of the given range is ignored.
+>> Fix this by including next doubleword in the length. Watchpoint
+>> exception handler already ignores extraneous exceptions, so no
+>> changes required for that.
+> 
+> Nice catch. Thanks.
+> 
+> I assume this has been broken forever? Should we be CCing stable? If so, it
+> would be nice to have this self contained (separate from the refactor) so we can
+> more easily backport it.
+
+Yes this has been broken forever. I'll add Fixes: tag and cc stable.
+
+> 
+> Also, can you update 
+> tools/testing/selftests/powerpc/ptrace/ptrace-hwbreak.c to catch this issue?
+
+Sure, will add the test case.
+
+[...]
+
+>> +u16 hw_breakpoint_get_final_len(struct arch_hw_breakpoint *brk,
+>> +				unsigned long *start_addr,
+>> +				unsigned long *end_addr)
+> 
+> I don't really like this.  "final" is not a good name. Something like hardware
+> would be better.
+> 
+> Also, can you put the start_addr and end addr in the arch_hw_breakpoint rather
+> than doing what you have above.  Call them hw_start_addr, hw_end_addr.
+> 
+> We could even set these two new addresses where we set the set of
+> arch_hw_breakpoint rather than having this late call.
+
+Sure, will use 'hw_' prefix for them.
+
