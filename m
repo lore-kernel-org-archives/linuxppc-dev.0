@@ -2,43 +2,91 @@ Return-Path: <SRS0=CHEA=US=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+X-Spam-Status: No, score=-0.3 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
+	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
 	URIBL_BLOCKED autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 41845C31E5D
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Jun 2019 12:39:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 712D1C31E49
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Jun 2019 12:59:42 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B7E3A21530
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Jun 2019 12:39:13 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B7E3A21530
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+	by mail.kernel.org (Postfix) with ESMTPS id 90613208CB
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Jun 2019 12:59:41 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="hLeV4z41"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 90613208CB
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45TPdp6VX8zDqg7
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Jun 2019 22:39:10 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+	by lists.ozlabs.org (Postfix) with ESMTP id 45TQ5R05MSzDql9
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Jun 2019 22:59:39 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+ spf=pass (mailfrom) smtp.mailfrom=gmail.com
+ (client-ip=2607:f8b0:4864:20::d41; helo=mail-io1-xd41.google.com;
+ envelope-from=radu.rendec@gmail.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="hLeV4z41"; 
+ dkim-atps=neutral
+Received: from mail-io1-xd41.google.com (mail-io1-xd41.google.com
+ [IPv6:2607:f8b0:4864:20::d41])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45TPZY6d5TzDqF1
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Jun 2019 22:36:21 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=ellerman.id.au
-Received: by ozlabs.org (Postfix, from userid 1034)
- id 45TPZY50tMz9s7h; Wed, 19 Jun 2019 22:36:21 +1000 (AEST)
-X-powerpc-patch-notification: thanks
-X-powerpc-patch-commit: fabb2efcf0846e28b4910fc20bdc203d3d0170af
-X-Patchwork-Hint: ignore
-In-Reply-To: <20190617071619.19360-2-sjitindarsingh@gmail.com>
-To: Suraj Jitindar Singh <sjitindarsingh@gmail.com>,
- linuxppc-dev@lists.ozlabs.org
-From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Subject: Re: [PATCH 1/2] KVM: PPC: Book3S HV: Fix r3 corruption in h_set_dabr()
-Message-Id: <45TPZY50tMz9s7h@ozlabs.org>
-Date: Wed, 19 Jun 2019 22:36:21 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45TQ2d3jn0zDqk7
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Jun 2019 22:57:12 +1000 (AEST)
+Received: by mail-io1-xd41.google.com with SMTP id s7so37777110iob.11
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Jun 2019 05:57:12 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=message-id:subject:from:to:cc:date:in-reply-to:references
+ :user-agent:mime-version:content-transfer-encoding;
+ bh=fP5qSgJSDgK9U6LJ8lVXJsGqac/WrRbssr2rRHgbGvA=;
+ b=hLeV4z41l1xb1l3V6ymmGrRGMXrRmExc6E4GXCoUYnkpdOwp97hOuvt8auVxC1E18x
+ wTeaIDZDZ6O15bW2pjJ1B2gqzxn/R1aESBe1ZD5XvVe3hSFDehev6wYBfDoBH8MDZfMn
+ LnJ7ExOEKHg0SEv/y1a5qiFlnGmZSiQpwTTwpXnoYBTstyZoTQsOwO+6353aBWDxcNAF
+ fiFoMoza2ytmm04vhj7Y8+IFc+QAowmg+srbyHZXOosyzIyzwE99VfPC0AVdQQMk+biR
+ FtMwM02DbVmBfmvE8c5FjM+jwz381OrK/juMIzspWRBYIzLwIDXb6O4z4I/w2yOvULPk
+ RZ8A==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:message-id:subject:from:to:cc:date:in-reply-to
+ :references:user-agent:mime-version:content-transfer-encoding;
+ bh=fP5qSgJSDgK9U6LJ8lVXJsGqac/WrRbssr2rRHgbGvA=;
+ b=R0zoGwXIqlrw4PkV6+aTfxtWWaw8oIbd6XWxG6Ss8IePOPSRTeJ/H8T4gUS+ZLGuv0
+ mSHWkY0dkZrtu4swFuJx6V8k6PZmItPC9hZasXUwPR1ifgWDZq6Nz+TPH4aqR3TUmgPy
+ yFfEMwpPn4ZpVLrZ6a9ka1BWX+ZiBaLTUvHEAU4PJ7NQ9JbLi4CojxtMjCoLiBxhwPBm
+ +ebCRcDI/fE7Isj6tmXN0nvMYMj9sJZ3tPzWQQNn8oHVdKYv8VUq424kG0qBO0jFwox/
+ Xt5+7c0yPFVYLn5H2co/lbKLuAXwUvTanwxFl8lCMMS0jFvUznFEfVBZB98ZlH4okyps
+ 7o9Q==
+X-Gm-Message-State: APjAAAXkYsB7EeV6qFv2wuwPKdwUpbmSMhnGJ4Zv7GgrFa4n752L2d+6
+ fV5smrKfTiDrNXHXU5qpo1Y=
+X-Google-Smtp-Source: APXvYqy718WPm+O8VYDj79HVDS0LKIOywyOW+P6ycDrD2y8S3opxXLsC3s2Vgcvm9506WJJUzOH8Ow==
+X-Received: by 2002:a5d:948f:: with SMTP id v15mr86373851ioj.93.1560949029486; 
+ Wed, 19 Jun 2019 05:57:09 -0700 (PDT)
+Received: from bat.mindbit.ro (CPE00fc8d79db03-CM00fc8d79db00.cpe.net.fido.ca.
+ [72.140.67.131])
+ by smtp.gmail.com with ESMTPSA id c17sm13746913ioo.82.2019.06.19.05.57.08
+ (version=TLS1_3 cipher=AEAD-AES256-GCM-SHA384 bits=256/256);
+ Wed, 19 Jun 2019 05:57:09 -0700 (PDT)
+Message-ID: <fd936660cde0d5f151b732d0f885ddf0b6ba67eb.camel@gmail.com>
+Subject: Re: [PATCH 0/1] PPC32: fix ptrace() access to FPU registers
+From: Radu Rendec <radu.rendec@gmail.com>
+To: Daniel Axtens <dja@axtens.net>, Andreas Schwab <schwab@linux-m68k.org>
+Date: Wed, 19 Jun 2019 08:57:07 -0400
+In-Reply-To: <87k1di2yxg.fsf@dja-thinkpad.axtens.net>
+References: <20190610232758.19010-1-radu.rendec@gmail.com>
+ <87r27t2el0.fsf@dja-thinkpad.axtens.net>
+ <5fcdb5767b7cf4c7d5b7496c0032021e43115d39.camel@gmail.com>
+ <87muif2y4l.fsf@dja-thinkpad.axtens.net>
+ <fbf9f9cbb99fc40c7d7af86fee3984427c61b799.camel__46559.9162316479$1560860409$gmane$org@gmail.com>
+ <875zp2rcip.fsf@igel.home> <87k1di2yxg.fsf@dja-thinkpad.axtens.net>
+Content-Type: text/plain; charset="UTF-8"
+User-Agent: Evolution 3.30.5 (3.30.5-1.fc29) 
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -50,60 +98,102 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: mikey@neuling.org, clg@kaod.org, kvm-ppc@vger.kernel.org
+Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
+ Oleg Nesterov <oleg@redhat.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, 2019-06-17 at 07:16:18 UTC, Suraj Jitindar Singh wrote:
-> From: Michael Neuling <mikey@neuling.org>
+On Wed, 2019-06-19 at 10:36 +1000, Daniel Axtens wrote:
+> Andreas Schwab <
+> schwab@linux-m68k.org
+> > writes:
 > 
-> Commit c1fe190c0672 ("powerpc: Add force enable of DAWR on P9
-> option") screwed up some assembler and corrupted a pointer in
-> r3. This resulted in crashes like the below:
-> 
->   [   44.374746] BUG: Kernel NULL pointer dereference at 0x000013bf
->   [   44.374848] Faulting instruction address: 0xc00000000010b044
->   [   44.374906] Oops: Kernel access of bad area, sig: 11 [#1]
->   [   44.374951] LE PAGE_SIZE=64K MMU=Radix MMU=Hash SMP NR_CPUS=2048 NUMA pSeries
->   [   44.375018] Modules linked in: vhost_net vhost tap xt_CHECKSUM iptable_mangle xt_MASQUERADE iptable_nat nf_nat xt_conntrack nf_conntrack nf_defrag_ipv6 libcrc32c nf_defrag_ipv4 ipt_REJECT nf_reject_ipv4 xt_tcpudp bridge stp llc ebtable_filter ebtables ip6table_filter ip6_tables iptable_filter bpfilter vmx_crypto crct10dif_vpmsum crc32c_vpmsum kvm_hv kvm sch_fq_codel ip_tables x_tables autofs4 virtio_net net_failover virtio_scsi failover
->   [   44.375401] CPU: 8 PID: 1771 Comm: qemu-system-ppc Kdump: loaded Not tainted 5.2.0-rc4+ #3
->   [   44.375500] NIP:  c00000000010b044 LR: c0080000089dacf4 CTR: c00000000010aff4
->   [   44.375604] REGS: c00000179b397710 TRAP: 0300   Not tainted  (5.2.0-rc4+)
->   [   44.375691] MSR:  800000000280b033 <SF,VEC,VSX,EE,FP,ME,IR,DR,RI,LE>  CR: 42244842  XER: 00000000
->   [   44.375815] CFAR: c00000000010aff8 DAR: 00000000000013bf DSISR: 42000000 IRQMASK: 0
->   [   44.375815] GPR00: c0080000089dd6bc c00000179b3979a0 c008000008a04300 ffffffffffffffff
->   [   44.375815] GPR04: 0000000000000000 0000000000000003 000000002444b05d c0000017f11c45d0
->   [   44.375815] GPR08: 078000003e018dfe 0000000000000028 0000000000000001 0000000000000075
->   [   44.375815] GPR12: c00000000010aff4 c000000007ff6300 0000000000000000 0000000000000000
->   [   44.375815] GPR16: 0000000000000000 c0000017f11d0000 00000000ffffffff c0000017f11ca7a8
->   [   44.375815] GPR20: c0000017f11c42ec ffffffffffffffff 0000000000000000 000000000000000a
->   [   44.375815] GPR24: fffffffffffffffc 0000000000000000 c0000017f11c0000 c000000001a77ed8
->   [   44.375815] GPR28: c00000179af70000 fffffffffffffffc c0080000089ff170 c00000179ae88540
->   [   44.376673] NIP [c00000000010b044] kvmppc_h_set_dabr+0x50/0x68
->   [   44.376754] LR [c0080000089dacf4] kvmppc_pseries_do_hcall+0xa3c/0xeb0 [kvm_hv]
->   [   44.376849] Call Trace:
->   [   44.376886] [c00000179b3979a0] [c0000017f11c0000] 0xc0000017f11c0000 (unreliable)
->   [   44.376982] [c00000179b397a10] [c0080000089dd6bc] kvmppc_vcpu_run_hv+0x694/0xec0 [kvm_hv]
->   [   44.377084] [c00000179b397ae0] [c0080000093f8bcc] kvmppc_vcpu_run+0x34/0x48 [kvm]
->   [   44.377185] [c00000179b397b00] [c0080000093f522c] kvm_arch_vcpu_ioctl_run+0x2f4/0x400 [kvm]
->   [   44.377286] [c00000179b397b90] [c0080000093e3618] kvm_vcpu_ioctl+0x460/0x850 [kvm]
->   [   44.377384] [c00000179b397d00] [c0000000004ba6c4] do_vfs_ioctl+0xe4/0xb40
->   [   44.377464] [c00000179b397db0] [c0000000004bb1e4] ksys_ioctl+0xc4/0x110
->   [   44.377547] [c00000179b397e00] [c0000000004bb258] sys_ioctl+0x28/0x80
->   [   44.377628] [c00000179b397e20] [c00000000000b888] system_call+0x5c/0x70
->   [   44.377712] Instruction dump:
->   [   44.377765] 4082fff4 4c00012c 38600000 4e800020 e96280c0 896b0000 2c2b0000 3860ffff
->   [   44.377862] 4d820020 50852e74 508516f6 78840724 <f88313c0> f8a313c8 7c942ba6 7cbc2ba6
-> 
-> Fix the bug by only changing r3 when we are returning immediately.
-> 
-> Fixes: c1fe190c0672 ("powerpc: Add force enable of DAWR on P9 option")
-> Signed-off-by: Michael Neuling <mikey@neuling.org>
-> Reported-by: Cédric Le Goater <clg@kaod.org>
+> > On Jun 18 2019, Radu Rendec <
+> > radu.rendec@gmail.com
+> > > wrote:
+> > 
+> > > Since you already have a working setup, it would be nice if you could
+> > > add a printk to arch_ptrace() to print the address and confirm what I
+> > > believe happens (by reading the gdb source code).
+> > 
+> > A ppc32 ptrace syscall goes through compat_arch_ptrace.
 
-Series applied to powerpc fixes, thanks.
+Right. I completely overlooked that part.
 
-https://git.kernel.org/powerpc/c/fabb2efcf0846e28b4910fc20bdc203d3d0170af
+> Ah right, and that (in ptrace32.c) contains code that will work:
+> 
+> 
+> 			/*
+> 			 * the user space code considers the floating point
+> 			 * to be an array of unsigned int (32 bits) - the
+> 			 * index passed in is based on this assumption.
+> 			 */
+> 			tmp = ((unsigned int *)child->thread.fp_state.fpr)
+> 				[FPRINDEX(index)];
+> 
+> FPRINDEX is defined above to deal with the various manipulations you
+> need to do.
 
-cheers
+Correct. Basically it does the same that I did in my patch: it divides
+the index again by 2 (it's already divided by 4 in compat_arch_ptrace()
+so it ends up divided by 8), then takes the least significant bit and
+adds it to the index. I take bit 2 of the original address, which is the
+same thing (because in FPRHALF() the address is already divided by 4).
+
+So we have this in ptrace32.c:
+
+#define FPRNUMBER(i) (((i) - PT_FPR0) >> 1)
+#define FPRHALF(i) (((i) - PT_FPR0) & 1)
+#define FPRINDEX(i) TS_FPRWIDTH * FPRNUMBER(i) * 2 + FPRHALF(i)
+
+index = (unsigned long) addr >> 2;
+(unsigned int *)child->thread.fp_state.fpr)[FPRINDEX(index)]
+
+
+And we have this in my patch:
+
+fpidx = (addr - PT_FPR0 * sizeof(long)) / 8;
+(void *)&child->thread.TS_FPR(fpidx) + (addr & 4)
+
+> Radu: I think we want to copy that working code back into ptrace.c. 
+
+I'm not sure that would work. There's a subtle difference: the code in
+ptrace32.c is always compiled on a 64-bit kernel and the user space
+calling it is always 32-bit; on the other hand, the code in ptrace.c can
+be compiled on either a 64-bit kernel or a 32-bit kernel and the user
+space calling it always has the same "bitness" as the kernel.
+
+One difference is the size of the CPU registers. On 64-bit they are 8
+byte long and user space knows that and generates 8-byte aligned
+addresses. So you have to divide the address by 8 to calculate the CPU
+register index correctly, which compat_arch_ptrace() currently doesn't.
+
+Another difference is that on 64-bit `long` is 8 bytes, so user space
+can read a whole FPU register in a single ptrace call. 
+
+Now that we are all aware of compat_arch_ptrace() (which handles the
+special case of a 32-bit process running on a 64-bit kernel) I would say
+the patch is correct and does the right thing for both 32-bit and 64-bit 
+kernels and processes.
+
+> The challenge will be unpicking the awful mess of ifdefs in ptrace.c
+> and making it somewhat more comprehensible.
+
+I'm not sure what ifdefs you're thinking about. The only that are used
+inside arch_ptrace() are PT_FPR0, PT_FPSCR and TS_FPR, which seem to be
+correct.
+
+But perhaps it would be useful to change my patch and add a comment just
+before arch_ptrace() that explains how the math is done and that the
+code must work on both 32-bit and 64-bit, the user space address
+assumptions, etc.
+
+By the way, I'm not sure the code in compat_arch_ptrace() handles
+PT_FPSCR correctly. It might (just because fpscr is right next to fpr[]
+in memory - and that's a hack), but I can't figure out if it accesses
+the right half.
+
+Radu
+
+
