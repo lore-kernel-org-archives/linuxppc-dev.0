@@ -2,91 +2,84 @@ Return-Path: <SRS0=CHEA=US=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.3 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 712D1C31E49
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Jun 2019 12:59:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 777A9C31E49
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Jun 2019 13:23:06 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 90613208CB
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Jun 2019 12:59:41 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id A3A8E206E0
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Jun 2019 13:23:05 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="hLeV4z41"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 90613208CB
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="Ga0F0K7E"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A3A8E206E0
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45TQ5R05MSzDql9
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Jun 2019 22:59:39 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45TQcQ6g45zDqSy
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Jun 2019 23:23:02 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=2607:f8b0:4864:20::d41; helo=mail-io1-xd41.google.com;
- envelope-from=radu.rendec@gmail.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=c-s.fr
+ (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="hLeV4z41"; 
+ dmarc=none (p=none dis=none) header.from=c-s.fr
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="Ga0F0K7E"; 
  dkim-atps=neutral
-Received: from mail-io1-xd41.google.com (mail-io1-xd41.google.com
- [IPv6:2607:f8b0:4864:20::d41])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45TQ2d3jn0zDqk7
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Jun 2019 22:57:12 +1000 (AEST)
-Received: by mail-io1-xd41.google.com with SMTP id s7so37777110iob.11
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Jun 2019 05:57:12 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=message-id:subject:from:to:cc:date:in-reply-to:references
- :user-agent:mime-version:content-transfer-encoding;
- bh=fP5qSgJSDgK9U6LJ8lVXJsGqac/WrRbssr2rRHgbGvA=;
- b=hLeV4z41l1xb1l3V6ymmGrRGMXrRmExc6E4GXCoUYnkpdOwp97hOuvt8auVxC1E18x
- wTeaIDZDZ6O15bW2pjJ1B2gqzxn/R1aESBe1ZD5XvVe3hSFDehev6wYBfDoBH8MDZfMn
- LnJ7ExOEKHg0SEv/y1a5qiFlnGmZSiQpwTTwpXnoYBTstyZoTQsOwO+6353aBWDxcNAF
- fiFoMoza2ytmm04vhj7Y8+IFc+QAowmg+srbyHZXOosyzIyzwE99VfPC0AVdQQMk+biR
- FtMwM02DbVmBfmvE8c5FjM+jwz381OrK/juMIzspWRBYIzLwIDXb6O4z4I/w2yOvULPk
- RZ8A==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:message-id:subject:from:to:cc:date:in-reply-to
- :references:user-agent:mime-version:content-transfer-encoding;
- bh=fP5qSgJSDgK9U6LJ8lVXJsGqac/WrRbssr2rRHgbGvA=;
- b=R0zoGwXIqlrw4PkV6+aTfxtWWaw8oIbd6XWxG6Ss8IePOPSRTeJ/H8T4gUS+ZLGuv0
- mSHWkY0dkZrtu4swFuJx6V8k6PZmItPC9hZasXUwPR1ifgWDZq6Nz+TPH4aqR3TUmgPy
- yFfEMwpPn4ZpVLrZ6a9ka1BWX+ZiBaLTUvHEAU4PJ7NQ9JbLi4CojxtMjCoLiBxhwPBm
- +ebCRcDI/fE7Isj6tmXN0nvMYMj9sJZ3tPzWQQNn8oHVdKYv8VUq424kG0qBO0jFwox/
- Xt5+7c0yPFVYLn5H2co/lbKLuAXwUvTanwxFl8lCMMS0jFvUznFEfVBZB98ZlH4okyps
- 7o9Q==
-X-Gm-Message-State: APjAAAXkYsB7EeV6qFv2wuwPKdwUpbmSMhnGJ4Zv7GgrFa4n752L2d+6
- fV5smrKfTiDrNXHXU5qpo1Y=
-X-Google-Smtp-Source: APXvYqy718WPm+O8VYDj79HVDS0LKIOywyOW+P6ycDrD2y8S3opxXLsC3s2Vgcvm9506WJJUzOH8Ow==
-X-Received: by 2002:a5d:948f:: with SMTP id v15mr86373851ioj.93.1560949029486; 
- Wed, 19 Jun 2019 05:57:09 -0700 (PDT)
-Received: from bat.mindbit.ro (CPE00fc8d79db03-CM00fc8d79db00.cpe.net.fido.ca.
- [72.140.67.131])
- by smtp.gmail.com with ESMTPSA id c17sm13746913ioo.82.2019.06.19.05.57.08
- (version=TLS1_3 cipher=AEAD-AES256-GCM-SHA384 bits=256/256);
- Wed, 19 Jun 2019 05:57:09 -0700 (PDT)
-Message-ID: <fd936660cde0d5f151b732d0f885ddf0b6ba67eb.camel@gmail.com>
-Subject: Re: [PATCH 0/1] PPC32: fix ptrace() access to FPU registers
-From: Radu Rendec <radu.rendec@gmail.com>
-To: Daniel Axtens <dja@axtens.net>, Andreas Schwab <schwab@linux-m68k.org>
-Date: Wed, 19 Jun 2019 08:57:07 -0400
-In-Reply-To: <87k1di2yxg.fsf@dja-thinkpad.axtens.net>
-References: <20190610232758.19010-1-radu.rendec@gmail.com>
- <87r27t2el0.fsf@dja-thinkpad.axtens.net>
- <5fcdb5767b7cf4c7d5b7496c0032021e43115d39.camel@gmail.com>
- <87muif2y4l.fsf@dja-thinkpad.axtens.net>
- <fbf9f9cbb99fc40c7d7af86fee3984427c61b799.camel__46559.9162316479$1560860409$gmane$org@gmail.com>
- <875zp2rcip.fsf@igel.home> <87k1di2yxg.fsf@dja-thinkpad.axtens.net>
-Content-Type: text/plain; charset="UTF-8"
-User-Agent: Evolution 3.30.5 (3.30.5-1.fc29) 
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45TQWX34X1zDqlD
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Jun 2019 23:18:47 +1000 (AEST)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 45TQWN67qgzB09ZM;
+ Wed, 19 Jun 2019 15:18:40 +0200 (CEST)
+Authentication-Results: localhost; dkim=pass
+ reason="1024-bit key; insecure key"
+ header.d=c-s.fr header.i=@c-s.fr header.b=Ga0F0K7E; dkim-adsp=pass;
+ dkim-atps=neutral
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id eJHKCkKy6Csx; Wed, 19 Jun 2019 15:18:40 +0200 (CEST)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 45TQWN4sgfzB09ZJ;
+ Wed, 19 Jun 2019 15:18:40 +0200 (CEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
+ t=1560950320; bh=qiE5blyrEXjR+EvN4cIOjdw+vmQhFfJ4XznqchvkiBE=;
+ h=Subject:To:Cc:References:From:Date:In-Reply-To:From;
+ b=Ga0F0K7E3XoSDkoIpBC50ILQufEvplU5MlC4X6vPhMU1h2lHMVlSrVE5mHAB+nqNC
+ u3xzEP6IH5n8KFFmyPV57vrixG7l5hCWIOZ2C/GfThUKzBI/uYSic2p6jPyCT5mGlK
+ iHsxCiOKvH3UEOSNrHTp85AHc9HB4RkpVmLZLu9A=
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 0727F8B92B;
+ Wed, 19 Jun 2019 15:18:43 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id KNj3EcPtKvgV; Wed, 19 Jun 2019 15:18:42 +0200 (CEST)
+Received: from PO15451 (unknown [192.168.4.90])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id A64938B93C;
+ Wed, 19 Jun 2019 15:18:42 +0200 (CEST)
+Subject: Re: [PATCH 1/4] mm: Move ioremap page table mapping function to mm/
+To: Nicholas Piggin <npiggin@gmail.com>, linux-mm@kvack.org
+References: <20190610043838.27916-1-npiggin@gmail.com>
+ <86991f76-2101-8087-37db-d939d5d744fa@c-s.fr>
+ <1560915576.aqf69c3nf8.astroid@bobo.none>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Message-ID: <7218a243-0d9c-ad90-d409-87663893799e@c-s.fr>
+Date: Wed, 19 Jun 2019 15:18:29 +0200
+User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:60.0) Gecko/20100101
+ Thunderbird/60.7.1
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <1560915576.aqf69c3nf8.astroid@bobo.none>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: fr
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -98,102 +91,60 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
- Oleg Nesterov <oleg@redhat.com>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, 2019-06-19 at 10:36 +1000, Daniel Axtens wrote:
-> Andreas Schwab <
-> schwab@linux-m68k.org
-> > writes:
+
+
+Le 19/06/2019 à 05:43, Nicholas Piggin a écrit :
+> Christophe Leroy's on June 11, 2019 3:24 pm:
+>>
+>>
+>> Le 10/06/2019 à 06:38, Nicholas Piggin a écrit :
+
+[snip]
+
+>>> diff --git a/include/linux/vmalloc.h b/include/linux/vmalloc.h
+>>> index 51e131245379..812bea5866d6 100644
+>>> --- a/include/linux/vmalloc.h
+>>> +++ b/include/linux/vmalloc.h
+>>> @@ -147,6 +147,9 @@ extern struct vm_struct *find_vm_area(const void *addr);
+>>>    extern int map_vm_area(struct vm_struct *area, pgprot_t prot,
+>>>    			struct page **pages);
+>>>    #ifdef CONFIG_MMU
+>>> +extern int vmap_range(unsigned long addr,
+>>> +		       unsigned long end, phys_addr_t phys_addr, pgprot_t prot,
+>>> +		       unsigned int max_page_shift);
+>>
+>> Drop extern keyword here.
 > 
-> > On Jun 18 2019, Radu Rendec <
-> > radu.rendec@gmail.com
-> > > wrote:
-> > 
-> > > Since you already have a working setup, it would be nice if you could
-> > > add a printk to arch_ptrace() to print the address and confirm what I
-> > > believe happens (by reading the gdb source code).
-> > 
-> > A ppc32 ptrace syscall goes through compat_arch_ptrace.
+> I don't know if I was going crazy but at one point I was getting
+> duplicate symbol errors that were fixed by adding extern somewhere.
 
-Right. I completely overlooked that part.
+probably not on a function name ...
 
-> Ah right, and that (in ptrace32.c) contains code that will work:
+> Maybe sleep depravation. However...
 > 
+>> As checkpatch tells you, 'CHECK:AVOID_EXTERNS: extern prototypes should
+>> be avoided in .h files'
 > 
-> 			/*
-> 			 * the user space code considers the floating point
-> 			 * to be an array of unsigned int (32 bits) - the
-> 			 * index passed in is based on this assumption.
-> 			 */
-> 			tmp = ((unsigned int *)child->thread.fp_state.fpr)
-> 				[FPRINDEX(index)];
+> I prefer to follow existing style in surrounding code at the expense
+> of some checkpatch warnings. If somebody later wants to "fix" it
+> that's fine.
+
+I don't think that's fine to 'fix' later things that could be done right 
+from the begining. 'Cosmetic only' fixes never happen because they are a 
+nightmare for backports, and a shame for 'git blame'.
+
+In some patches, you add cleanups to make the code look nicer, and here 
+you have the opportunity to make the code nice from the begining and you 
+prefer repeating the errors done in the past ? You're surprising me.
+
+Christophe
+
 > 
-> FPRINDEX is defined above to deal with the various manipulations you
-> need to do.
-
-Correct. Basically it does the same that I did in my patch: it divides
-the index again by 2 (it's already divided by 4 in compat_arch_ptrace()
-so it ends up divided by 8), then takes the least significant bit and
-adds it to the index. I take bit 2 of the original address, which is the
-same thing (because in FPRHALF() the address is already divided by 4).
-
-So we have this in ptrace32.c:
-
-#define FPRNUMBER(i) (((i) - PT_FPR0) >> 1)
-#define FPRHALF(i) (((i) - PT_FPR0) & 1)
-#define FPRINDEX(i) TS_FPRWIDTH * FPRNUMBER(i) * 2 + FPRHALF(i)
-
-index = (unsigned long) addr >> 2;
-(unsigned int *)child->thread.fp_state.fpr)[FPRINDEX(index)]
-
-
-And we have this in my patch:
-
-fpidx = (addr - PT_FPR0 * sizeof(long)) / 8;
-(void *)&child->thread.TS_FPR(fpidx) + (addr & 4)
-
-> Radu: I think we want to copy that working code back into ptrace.c. 
-
-I'm not sure that would work. There's a subtle difference: the code in
-ptrace32.c is always compiled on a 64-bit kernel and the user space
-calling it is always 32-bit; on the other hand, the code in ptrace.c can
-be compiled on either a 64-bit kernel or a 32-bit kernel and the user
-space calling it always has the same "bitness" as the kernel.
-
-One difference is the size of the CPU registers. On 64-bit they are 8
-byte long and user space knows that and generates 8-byte aligned
-addresses. So you have to divide the address by 8 to calculate the CPU
-register index correctly, which compat_arch_ptrace() currently doesn't.
-
-Another difference is that on 64-bit `long` is 8 bytes, so user space
-can read a whole FPU register in a single ptrace call. 
-
-Now that we are all aware of compat_arch_ptrace() (which handles the
-special case of a 32-bit process running on a 64-bit kernel) I would say
-the patch is correct and does the right thing for both 32-bit and 64-bit 
-kernels and processes.
-
-> The challenge will be unpicking the awful mess of ifdefs in ptrace.c
-> and making it somewhat more comprehensible.
-
-I'm not sure what ifdefs you're thinking about. The only that are used
-inside arch_ptrace() are PT_FPR0, PT_FPSCR and TS_FPR, which seem to be
-correct.
-
-But perhaps it would be useful to change my patch and add a comment just
-before arch_ptrace() that explains how the math is done and that the
-code must work on both 32-bit and 64-bit, the user space address
-assumptions, etc.
-
-By the way, I'm not sure the code in compat_arch_ptrace() handles
-PT_FPSCR correctly. It might (just because fpscr is right next to fpr[]
-in memory - and that's a hack), but I can't figure out if it accesses
-the right half.
-
-Radu
-
-
+> Thanks,
+> Nick
+> 
