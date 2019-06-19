@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-8.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
 	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id ADA6CC31E49
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Jun 2019 13:34:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8ED8EC31E49
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Jun 2019 13:38:16 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 4053820B1F
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Jun 2019 13:34:16 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4053820B1F
+	by mail.kernel.org (Postfix) with ESMTPS id DC90A21743
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Jun 2019 13:38:15 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DC90A21743
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45TQsK6zJFzDqJY
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Jun 2019 23:34:13 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45TQxx2T9qzDqFJ
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Jun 2019 23:38:13 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
  (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
@@ -29,64 +29,64 @@ Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45TQl90xfhzDqMk
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45TQl911X6zDqq3
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Jun 2019 23:28:52 +1000 (AEST)
-Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
+Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x5JDH04r064343
+ x5JDHFTV036036
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Jun 2019 09:28:48 -0400
-Received: from e06smtp01.uk.ibm.com (e06smtp01.uk.ibm.com [195.75.94.97])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2t7mr5ckck-1
+Received: from e06smtp02.uk.ibm.com (e06smtp02.uk.ibm.com [195.75.94.98])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2t7nhasrr2-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Jun 2019 09:28:48 -0400
 Received: from localhost
- by e06smtp01.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp02.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <fbarrat@linux.ibm.com>;
- Wed, 19 Jun 2019 14:28:45 +0100
-Received: from b06cxnps3075.portsmouth.uk.ibm.com (9.149.109.195)
- by e06smtp01.uk.ibm.com (192.168.101.131) with IBM ESMTP SMTP Gateway:
+ Wed, 19 Jun 2019 14:28:46 +0100
+Received: from b06cxnps4074.portsmouth.uk.ibm.com (9.149.109.196)
+ by e06smtp02.uk.ibm.com (192.168.101.132) with IBM ESMTP SMTP Gateway:
  Authorized Use Only! Violators will be prosecuted; 
  (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
  Wed, 19 Jun 2019 14:28:43 +0100
 Received: from d06av23.portsmouth.uk.ibm.com (d06av23.portsmouth.uk.ibm.com
  [9.149.105.59])
- by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x5JDSfnt53411996
+ by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x5JDSgeb25493604
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Wed, 19 Jun 2019 13:28:41 GMT
+ Wed, 19 Jun 2019 13:28:42 GMT
 Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 9A30CA4040;
- Wed, 19 Jun 2019 13:28:41 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 6160DA4051;
+ Wed, 19 Jun 2019 13:28:42 +0000 (GMT)
 Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 4D12DA405D;
- Wed, 19 Jun 2019 13:28:41 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 1538AA404D;
+ Wed, 19 Jun 2019 13:28:42 +0000 (GMT)
 Received: from pic2.home (unknown [9.145.171.67])
  by d06av23.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Wed, 19 Jun 2019 13:28:41 +0000 (GMT)
+ Wed, 19 Jun 2019 13:28:42 +0000 (GMT)
 From: Frederic Barrat <fbarrat@linux.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org, andrew.donnellan@au1.ibm.com,
  clombard@linux.ibm.com
-Subject: [RFC 01/11] powerpc/powernv/ioda: Fix ref count for devices with
- their own PE
-Date: Wed, 19 Jun 2019 15:28:30 +0200
+Subject: [RFC 03/11] powerpc/powernv/ioda: set up PE on opencapi device when
+ enabling
+Date: Wed, 19 Jun 2019 15:28:32 +0200
 X-Mailer: git-send-email 2.21.0
 In-Reply-To: <20190619132840.27634-1-fbarrat@linux.ibm.com>
 References: <20190619132840.27634-1-fbarrat@linux.ibm.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-x-cbid: 19061913-4275-0000-0000-00000343B701
+x-cbid: 19061913-0008-0000-0000-000002F5227C
 X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19061913-4276-0000-0000-00003853E268
-Message-Id: <20190619132840.27634-2-fbarrat@linux.ibm.com>
+x-cbparentid: 19061913-0009-0000-0000-000022623E58
+Message-Id: <20190619132840.27634-4-fbarrat@linux.ibm.com>
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
  definitions=2019-06-19_08:, , signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
  priorityscore=1501
- malwarescore=0 suspectscore=2 phishscore=0 bulkscore=0 spamscore=0
+ malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
  clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=577 adultscore=0 classifier=spam adjust=0 reason=mlx
+ mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
  scancount=1 engine=8.0.1-1810050000 definitions=main-1906190109
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -105,62 +105,83 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Taking a reference on the pci_dev structure was required with initial
-commit 184cd4a3b962 ("powerpc/powernv: PCI support for p7IOC under
-OPAL v2"), where we we storing the pci dev in the pci_dn structure.
+The PE for an opencapi device was set as part of a late PHB fixup
+operation, when creating the PHB. To use the PCI hotplug framework,
+this is not going to work, as the PHB stays the same, it's only the
+devices underneath which are updated. For regular PCI devices, it is
+done as part of the reconfiguration of the bridge, but for opencapi
+PHBs, we don't have an intermediate bridge. So let's define the PE
+when the device is enabled. PEs are meaningless for opencapi, the NPU
+doesn't define them and opal is not doing anything with them.
 
-However, the pci_dev was later removed from the pci_dn structure, but
-the reference was kept. See 902bdc57451c ("powerpc/powernv/idoa:
-Remove unnecessary pcidev from pci_dn").
-
-The pnv_ioda_pe structure life cycle is the same as the pci_dev
-structure, the PE is freed when the device is released. So we don't
-need a reference for the pci_dev stored in the PE, otherwise the
-pci_dev will never be released. Which is not really a surprise as the
-comment (removed here as no longer needed) was stating as much.
-
-Fixes: 902bdc57451c ("powerpc/powernv/idoa: Remove unnecessary pcidev from pci_dn")
 Signed-off-by: Frederic Barrat <fbarrat@linux.ibm.com>
 ---
- arch/powerpc/platforms/powernv/pci-ioda.c | 11 +----------
- 1 file changed, 1 insertion(+), 10 deletions(-)
+ arch/powerpc/platforms/powernv/pci-ioda.c | 31 +++++++++++++++++------
+ 1 file changed, 23 insertions(+), 8 deletions(-)
 
 diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-index 10cc42b9e541..3082912e2600 100644
+index 2c063b05bb64..2cf06fb98978 100644
 --- a/arch/powerpc/platforms/powernv/pci-ioda.c
 +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-@@ -1060,14 +1060,6 @@ static struct pnv_ioda_pe *pnv_ioda_setup_dev_PE(struct pci_dev *dev)
- 		return NULL;
- 	}
+@@ -1258,8 +1258,6 @@ static void pnv_pci_ioda_setup_PEs(void)
+ {
+ 	struct pci_controller *hose;
+ 	struct pnv_phb *phb;
+-	struct pci_bus *bus;
+-	struct pci_dev *pdev;
+ 	struct pnv_ioda_pe *pe;
  
--	/* NOTE: We get only one ref to the pci_dev for the pdn, not for the
--	 * pointer in the PE data structure, both should be destroyed at the
--	 * same time. However, this needs to be looked at more closely again
--	 * once we actually start removing things (Hotplug, SR-IOV, ...)
--	 *
--	 * At some point we want to remove the PDN completely anyways
--	 */
--	pci_dev_get(dev);
- 	pdn->pe_number = pe->pe_number;
- 	pe->flags = PNV_IODA_PE_DEV;
- 	pe->pdev = dev;
-@@ -1082,7 +1074,6 @@ static struct pnv_ioda_pe *pnv_ioda_setup_dev_PE(struct pci_dev *dev)
- 		pnv_ioda_free_pe(pe);
- 		pdn->pe_number = IODA_INVALID_PE;
- 		pe->pdev = NULL;
--		pci_dev_put(dev);
- 		return NULL;
+ 	list_for_each_entry(hose, &hose_list, list_node) {
+@@ -1271,11 +1269,6 @@ static void pnv_pci_ioda_setup_PEs(void)
+ 			if (phb->model == PNV_PHB_MODEL_NPU2)
+ 				WARN_ON_ONCE(pnv_npu2_init(hose));
+ 		}
+-		if (phb->type == PNV_PHB_NPU_OCAPI) {
+-			bus = hose->bus;
+-			list_for_each_entry(pdev, &bus->devices, bus_list)
+-				pnv_ioda_setup_dev_PE(pdev);
+-		}
  	}
+ 	list_for_each_entry(hose, &hose_list, list_node) {
+ 		phb = hose->private_data;
+@@ -3373,6 +3366,28 @@ static bool pnv_pci_enable_device_hook(struct pci_dev *dev)
+ 	return true;
+ }
  
-@@ -1226,7 +1217,7 @@ static struct pnv_ioda_pe *pnv_ioda_setup_npu_PE(struct pci_dev *npu_pdev)
- 			 */
- 			dev_info(&npu_pdev->dev,
- 				"Associating to existing PE %x\n", pe_num);
--			pci_dev_get(npu_pdev);
-+			pci_dev_get(npu_pdev); // still needed after 902bdc57451c2c64aa139bbe24067f70a186db0a ?
- 			npu_pdn = pci_get_pdn(npu_pdev);
- 			rid = npu_pdev->bus->number << 8 | npu_pdn->devfn;
- 			npu_pdn->pe_number = pe_num;
++static bool pnv_ocapi_enable_device_hook(struct pci_dev *dev)
++{
++	struct pci_controller *hose = pci_bus_to_host(dev->bus);
++	struct pnv_phb *phb = hose->private_data;
++	struct pci_dn *pdn;
++	struct pnv_ioda_pe *pe;
++
++	if (!phb->initialized)
++		return true;
++
++	pdn = pci_get_pdn(dev);
++	if (!pdn)
++		return false;
++
++	if (pdn->pe_number == IODA_INVALID_PE) {
++		pe = pnv_ioda_setup_dev_PE(dev);
++		if (!pe)
++			return false;
++	}
++	return true;
++}
++
+ static long pnv_pci_ioda1_unset_window(struct iommu_table_group *table_group,
+ 				       int num)
+ {
+@@ -3613,7 +3628,7 @@ static const struct pci_controller_ops pnv_npu_ioda_controller_ops = {
+ };
+ 
+ static const struct pci_controller_ops pnv_npu_ocapi_ioda_controller_ops = {
+-	.enable_device_hook	= pnv_pci_enable_device_hook,
++	.enable_device_hook	= pnv_ocapi_enable_device_hook,
+ 	.window_alignment	= pnv_pci_window_alignment,
+ 	.reset_secondary_bus	= pnv_pci_reset_secondary_bus,
+ 	.shutdown		= pnv_pci_ioda_shutdown,
 -- 
 2.21.0
 
