@@ -2,89 +2,50 @@ Return-Path: <SRS0=CHEA=US=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9B16DC31E49
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Jun 2019 14:13:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BCC29C31E49
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Jun 2019 14:18:51 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 1DCAF20B1F
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Jun 2019 14:13:58 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1DCAF20B1F
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 49B8E2064A
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Jun 2019 14:18:51 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 49B8E2064A
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kernel.crashing.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45TRl83fV4zDqCg
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Jun 2019 00:13:56 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
- (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=fbarrat@linux.ibm.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 45TRrm448NzDqv2
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Jun 2019 00:18:48 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=permerror (mailfrom)
+ smtp.mailfrom=kernel.crashing.org (client-ip=63.228.1.57;
+ helo=gate.crashing.org; envelope-from=benh@kernel.crashing.org;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=kernel.crashing.org
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45TQmV04YczDqp7
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Jun 2019 23:30:01 +1000 (AEST)
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x5JDM4bc006858
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Jun 2019 09:29:59 -0400
-Received: from e06smtp04.uk.ibm.com (e06smtp04.uk.ibm.com [195.75.94.100])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2t7kj47qvn-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Jun 2019 09:29:57 -0400
-Received: from localhost
- by e06smtp04.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <fbarrat@linux.ibm.com>;
- Wed, 19 Jun 2019 14:28:46 +0100
-Received: from b06cxnps3075.portsmouth.uk.ibm.com (9.149.109.195)
- by e06smtp04.uk.ibm.com (192.168.101.134) with IBM ESMTP SMTP Gateway:
- Authorized Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Wed, 19 Jun 2019 14:28:42 +0100
-Received: from d06av23.portsmouth.uk.ibm.com (d06av23.portsmouth.uk.ibm.com
- [9.149.105.59])
- by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x5JDSfXq58916956
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Wed, 19 Jun 2019 13:28:41 GMT
-Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 3FAADA4051;
- Wed, 19 Jun 2019 13:28:41 +0000 (GMT)
-Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id E69DFA4055;
- Wed, 19 Jun 2019 13:28:40 +0000 (GMT)
-Received: from pic2.home (unknown [9.145.171.67])
- by d06av23.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Wed, 19 Jun 2019 13:28:40 +0000 (GMT)
-From: Frederic Barrat <fbarrat@linux.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org, andrew.donnellan@au1.ibm.com,
- clombard@linux.ibm.com
-Subject: [RFC 00/11] opencapi: enable card reset and link retraining
-Date: Wed, 19 Jun 2019 15:28:29 +0200
-X-Mailer: git-send-email 2.21.0
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-x-cbid: 19061913-0016-0000-0000-0000028A7853
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19061913-0017-0000-0000-000032E7CF71
-Message-Id: <20190619132840.27634-1-fbarrat@linux.ibm.com>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2019-06-19_08:, , signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=784 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1810050000 definitions=main-1906190109
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45TQqK0ZgpzDqP8
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Jun 2019 23:32:28 +1000 (AEST)
+Received: from localhost (localhost.localdomain [127.0.0.1])
+ by gate.crashing.org (8.14.1/8.14.1) with ESMTP id x5JDVjMj029809;
+ Wed, 19 Jun 2019 08:31:53 -0500
+Message-ID: <a5fc355e44fb5edea41274329f7c5d04a8dff6fc.camel@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc: enable a 30-bit ZONE_DMA for 32-bit pmac
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Michael Ellerman <mpe@ellerman.id.au>, Christoph Hellwig <hch@lst.de>,
+ paulus@samba.org
+Date: Wed, 19 Jun 2019 23:31:44 +1000
+In-Reply-To: <87tvcldacn.fsf@concordia.ellerman.id.au>
+References: <20190613082446.18685-1-hch@lst.de>
+ <20190619105039.GA10118@lst.de> <87tvcldacn.fsf@concordia.ellerman.id.au>
+Content-Type: text/plain; charset="UTF-8"
+X-Mailer: Evolution 3.28.5-0ubuntu0.18.04.1 
+Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -96,58 +57,100 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: aik@ozlabs.ru, arbab@linux.ibm.com, oohall@gmail.com, groug@kaod.org,
- alastair@au1.ibm.com
+Cc: aaro.koskinen@iki.fi, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, Larry.Finger@lwfinger.net
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This is the linux part of the work to use the PCI hotplug framework to
-control an opencapi card so that it can be reset and re-read after
-flashing a new FPGA image.
+On Wed, 2019-06-19 at 22:32 +1000, Michael Ellerman wrote:
+> Christoph Hellwig <hch@lst.de> writes:
+> > Any chance this could get picked up to fix the regression?
+> 
+> Was hoping Ben would Ack it. He's still powermac maintainer :)
+> 
+> I guess he OK'ed it in the other thread, will add it to my queue.
 
-It needs support in skiboot:
-http://patchwork.ozlabs.org/project/skiboot/list/?series=114803
-On an old skiboot, it will do nothing.
+Yeah ack. If I had written it myself, I would have made the DMA bits a
+variable and only set it down to 30 if I see that device in the DT
+early on, but I can't be bothered now, if it works, ship it :-)
 
-A virtual PCI slot is created for the opencapi adapter, and its state
-can be controlled through the pnv-php hotplug driver:
+Note: The patch affects all ppc32, though I don't think it will cause
+any significant issue on those who don't need it.
 
-  echo 0|1 > /sys/bus/pci/slots/OPENCAPI-<...>/power
+Cheers,
+Ben.
 
-Note that the power to the card is not really turned off, as the card
-needs to stay on to be flashed with a new image. Instead the card is
-placed in reset.
-
-The first part of the series mostly deals with the pci/ioda state, as
-the devices can now go away and the state needs to be cleaned up.
-
-The second part is modifications to the hotplug driver on powernv, so
-that a virtual slot is created for the opencapi adapters found in the
-device tree
-
-
-
-Frederic Barrat (11):
-  powerpc/powernv/ioda: Fix ref count for devices with their own PE
-  powerpc/powernv/ioda: Protect PE list
-  powerpc/powernv/ioda: set up PE on opencapi device when enabling
-  powerpc/powernv/ioda: Release opencapi device
-  powerpc/powernv/ioda: Find opencapi slot for a device node
-  pci/hotplug/pnv-php: Remove erroneous warning
-  pci/hotplug/pnv-php: Improve error msg on power state change failure
-  pci/hotplug/pnv-php: Register opencapi slots
-  pci/hotplug/pnv-php: Relax check when disabling slot
-  pci/hotplug/pnv-php: Wrap warnings in macro
-  ocxl: Add PCI hotplug dependency to Kconfig
-
- arch/powerpc/include/asm/pnv-pci.h        |   1 +
- arch/powerpc/platforms/powernv/pci-ioda.c | 106 ++++++++++++++--------
- arch/powerpc/platforms/powernv/pci.c      |  10 +-
- drivers/misc/ocxl/Kconfig                 |   1 +
- drivers/pci/hotplug/pnv_php.c             |  66 ++++++++------
- 5 files changed, 115 insertions(+), 69 deletions(-)
-
--- 
-2.21.0
+> cheers
+> 
+> > On Thu, Jun 13, 2019 at 10:24:46AM +0200, Christoph Hellwig wrote:
+> > > With the strict dma mask checking introduced with the switch to
+> > > the generic DMA direct code common wifi chips on 32-bit
+> > > powerbooks
+> > > stopped working.  Add a 30-bit ZONE_DMA to the 32-bit pmac builds
+> > > to allow them to reliably allocate dma coherent memory.
+> > > 
+> > > Fixes: 65a21b71f948 ("powerpc/dma: remove
+> > > dma_nommu_dma_supported")
+> > > Reported-by: Aaro Koskinen <aaro.koskinen@iki.fi>
+> > > Signed-off-by: Christoph Hellwig <hch@lst.de>
+> > > ---
+> > >  arch/powerpc/include/asm/page.h         | 7 +++++++
+> > >  arch/powerpc/mm/mem.c                   | 3 ++-
+> > >  arch/powerpc/platforms/powermac/Kconfig | 1 +
+> > >  3 files changed, 10 insertions(+), 1 deletion(-)
+> > > 
+> > > diff --git a/arch/powerpc/include/asm/page.h
+> > > b/arch/powerpc/include/asm/page.h
+> > > index b8286a2013b4..0d52f57fca04 100644
+> > > --- a/arch/powerpc/include/asm/page.h
+> > > +++ b/arch/powerpc/include/asm/page.h
+> > > @@ -319,6 +319,13 @@ struct vm_area_struct;
+> > >  #endif /* __ASSEMBLY__ */
+> > >  #include <asm/slice.h>
+> > >  
+> > > +/*
+> > > + * Allow 30-bit DMA for very limited Broadcom wifi chips on many
+> > > powerbooks.
+> > > + */
+> > > +#ifdef CONFIG_PPC32
+> > > +#define ARCH_ZONE_DMA_BITS 30
+> > > +#else
+> > >  #define ARCH_ZONE_DMA_BITS 31
+> > > +#endif
+> > >  
+> > >  #endif /* _ASM_POWERPC_PAGE_H */
+> > > diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
+> > > index cba29131bccc..2540d3b2588c 100644
+> > > --- a/arch/powerpc/mm/mem.c
+> > > +++ b/arch/powerpc/mm/mem.c
+> > > @@ -248,7 +248,8 @@ void __init paging_init(void)
+> > >  	       (long int)((top_of_ram - total_ram) >> 20));
+> > >  
+> > >  #ifdef CONFIG_ZONE_DMA
+> > > -	max_zone_pfns[ZONE_DMA]	= min(max_low_pfn, 0x7fffffffUL
+> > > >> PAGE_SHIFT);
+> > > +	max_zone_pfns[ZONE_DMA]	= min(max_low_pfn,
+> > > +			((1UL << ARCH_ZONE_DMA_BITS) - 1) >>
+> > > PAGE_SHIFT);
+> > >  #endif
+> > >  	max_zone_pfns[ZONE_NORMAL] = max_low_pfn;
+> > >  #ifdef CONFIG_HIGHMEM
+> > > diff --git a/arch/powerpc/platforms/powermac/Kconfig
+> > > b/arch/powerpc/platforms/powermac/Kconfig
+> > > index f834a19ed772..c02d8c503b29 100644
+> > > --- a/arch/powerpc/platforms/powermac/Kconfig
+> > > +++ b/arch/powerpc/platforms/powermac/Kconfig
+> > > @@ -7,6 +7,7 @@ config PPC_PMAC
+> > >  	select PPC_INDIRECT_PCI if PPC32
+> > >  	select PPC_MPC106 if PPC32
+> > >  	select PPC_NATIVE
+> > > +	select ZONE_DMA if PPC32
+> > >  	default y
+> > >  
+> > >  config PPC_PMAC64
+> > > -- 
+> > > 2.20.1
+> > 
+> > ---end quoted text---
 
