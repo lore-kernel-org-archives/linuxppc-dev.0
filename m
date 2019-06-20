@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-5.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
 	USER_AGENT_NEOMUTT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 834ECC43613
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Jun 2019 08:08:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6BFB5C43613
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Jun 2019 08:10:30 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 407162084A
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Jun 2019 08:08:34 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 407162084A
+	by mail.kernel.org (Postfix) with ESMTPS id 23B592084A
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Jun 2019 08:10:29 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 23B592084A
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=gondor.apana.org.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45Tvb41NBWzDrC0
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Jun 2019 18:08:32 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45TvdJ0FB4zDrF0
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Jun 2019 18:10:28 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=gondor.apana.org.au
  (client-ip=216.24.177.18; helo=deadmen.hmeau.com;
@@ -28,24 +28,25 @@ Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
 Received: from deadmen.hmeau.com (helcar.hmeau.com [216.24.177.18])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45TvXq2SDhzDqDL
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jun 2019 18:06:35 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45TvXr5bCyzDq5W
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jun 2019 18:06:36 +1000 (AEST)
 Received: from gondobar.mordor.me.apana.org.au ([192.168.128.4] helo=gondobar)
  by deadmen.hmeau.com with esmtps (Exim 4.89 #2 (Debian))
- id 1hds5N-0002E7-Qu; Thu, 20 Jun 2019 16:06:21 +0800
+ id 1hds5S-0002ED-0a; Thu, 20 Jun 2019 16:06:26 +0800
 Received: from herbert by gondobar with local (Exim 4.89)
  (envelope-from <herbert@gondor.apana.org.au>)
- id 1hds5I-0007W7-Ja; Thu, 20 Jun 2019 16:06:16 +0800
-Date: Thu, 20 Jun 2019 16:06:16 +0800
+ id 1hds5R-0007aV-M2; Thu, 20 Jun 2019 16:06:25 +0800
+Date: Thu, 20 Jun 2019 16:06:25 +0800
 From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Daniel Axtens <dja@axtens.net>
-Subject: Re: [PATCH] crypto: vmx - Document CTR mode counter width quirks
-Message-ID: <20190620080616.73fb2bq4yeeso4ia@gondor.apana.org.au>
-References: <20190611015431.26772-1-dja@axtens.net>
+To: Christophe Leroy <christophe.leroy@c-s.fr>
+Subject: Re: [PATCH] crypto: talitos - fix max key size for sha384 and sha512
+Message-ID: <20190620080625.5q5sok7ihh4ell2y@gondor.apana.org.au>
+References: <5f1004d33b2347dcfbc677551bafc9d469bb079e.1560318544.git.christophe.leroy@c-s.fr>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20190611015431.26772-1-dja@axtens.net>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <5f1004d33b2347dcfbc677551bafc9d469bb079e.1560318544.git.christophe.leroy@c-s.fr>
 User-Agent: NeoMutt/20170113 (1.7.2)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -58,26 +59,24 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: leo.barbosa@canonical.com, Stephan Mueller <smueller@chronox.de>,
- nayna@linux.ibm.com, omosnacek@gmail.com, ebiggers@kernel.org,
- leitao@debian.org, pfsmorigo@gmail.com, linux-crypto@vger.kernel.org,
- marcelo.cerri@canonical.com, gcwilson@linux.ibm.com,
- linuxppc-dev@lists.ozlabs.org
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ "David S. Miller" <davem@davemloft.net>, horia.geanta@nxp.com,
+ linux-crypto@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, Jun 11, 2019 at 11:54:31AM +1000, Daniel Axtens wrote:
-> The CTR code comes from OpenSSL, where it does a 32-bit counter.
-> The kernel has a 128-bit counter. This difference has lead to
-> issues.
+On Wed, Jun 12, 2019 at 05:49:50AM +0000, Christophe Leroy wrote:
+> Below commit came with a typo in the CONFIG_ symbol, leading
+> to a permanently reduced max key size regarless of the driver
+> capabilities.
 > 
-> Document it.
-> 
-> Signed-off-by: Daniel Axtens <dja@axtens.net>
+> Reported-by: Horia Geantă <horia.geanta@nxp.com>
+> Fixes: b8fbdc2bc4e7 ("crypto: talitos - reduce max key size for SEC1")
+> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 > ---
->  drivers/crypto/vmx/aesp8-ppc.pl | 22 ++++++++++++++++++++--
->  1 file changed, 20 insertions(+), 2 deletions(-)
+>  drivers/crypto/talitos.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 
 Patch applied.  Thanks.
 -- 
