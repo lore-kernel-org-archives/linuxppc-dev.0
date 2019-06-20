@@ -6,66 +6,67 @@ X-Spam-Status: No, score=-8.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
 	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E1565C43613
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Jun 2019 09:21:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9A4FBC43613
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Jun 2019 09:23:39 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6FD7A20656
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Jun 2019 09:21:33 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6FD7A20656
+	by mail.kernel.org (Postfix) with ESMTPS id 289272083B
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Jun 2019 09:23:38 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 289272083B
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45TxCH4FDyzDrCN
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Jun 2019 19:21:31 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45TxFh4xmSzDr8L
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Jun 2019 19:23:36 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
- (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
+ (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
  envelope-from=aneesh.kumar@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45Tx6Q3FK1zDr5l
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jun 2019 19:17:18 +1000 (AEST)
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45Tx6Z1yVLzDr7q
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jun 2019 19:17:25 +1000 (AEST)
+Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x5K9692V122435; Thu, 20 Jun 2019 05:17:13 -0400
+ x5K94omZ080648; Thu, 20 Jun 2019 05:17:19 -0400
 Received: from ppma01dal.us.ibm.com (83.d6.3fa9.ip4.static.sl-reverse.com
  [169.63.214.131])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2t871xrs45-1
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2t84kped6j-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 20 Jun 2019 05:17:13 -0400
+ Thu, 20 Jun 2019 05:17:19 -0400
 Received: from pps.filterd (ppma01dal.us.ibm.com [127.0.0.1])
- by ppma01dal.us.ibm.com (8.16.0.27/8.16.0.27) with SMTP id x5K94k2x024184;
- Thu, 20 Jun 2019 09:17:12 GMT
-Received: from b01cxnp23033.gho.pok.ibm.com (b01cxnp23033.gho.pok.ibm.com
- [9.57.198.28]) by ppma01dal.us.ibm.com with ESMTP id 2t75r12xet-1
+ by ppma01dal.us.ibm.com (8.16.0.27/8.16.0.27) with SMTP id x5K94lqP024187;
+ Thu, 20 Jun 2019 09:17:18 GMT
+Received: from b01cxnp23032.gho.pok.ibm.com (b01cxnp23032.gho.pok.ibm.com
+ [9.57.198.27]) by ppma01dal.us.ibm.com with ESMTP id 2t75r12xf9-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 20 Jun 2019 09:17:12 +0000
+ Thu, 20 Jun 2019 09:17:18 +0000
 Received: from b01ledav005.gho.pok.ibm.com (b01ledav005.gho.pok.ibm.com
  [9.57.199.110])
- by b01cxnp23033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x5K9HBam33227140
+ by b01cxnp23032.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x5K9HHae37945836
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Thu, 20 Jun 2019 09:17:11 GMT
+ Thu, 20 Jun 2019 09:17:17 GMT
 Received: from b01ledav005.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 9925AAE060;
- Thu, 20 Jun 2019 09:17:11 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 73630AE060;
+ Thu, 20 Jun 2019 09:17:17 +0000 (GMT)
 Received: from b01ledav005.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 18769AE05C;
- Thu, 20 Jun 2019 09:17:10 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id E6E91AE05C;
+ Thu, 20 Jun 2019 09:17:15 +0000 (GMT)
 Received: from skywalker.in.ibm.com (unknown [9.124.35.143])
  by b01ledav005.gho.pok.ibm.com (Postfix) with ESMTP;
- Thu, 20 Jun 2019 09:17:09 +0000 (GMT)
+ Thu, 20 Jun 2019 09:17:15 +0000 (GMT)
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
 To: dan.j.williams@intel.com
-Subject: [PATCH v4 1/6] nvdimm: Consider probe return -EOPNOTSUPP as success
-Date: Thu, 20 Jun 2019 14:46:21 +0530
-Message-Id: <20190620091626.31824-2-aneesh.kumar@linux.ibm.com>
+Subject: [PATCH v4 4/6] mm/nvdimm: Pick the right alignment default when
+ creating dax devices
+Date: Thu, 20 Jun 2019 14:46:24 +0530
+Message-Id: <20190620091626.31824-5-aneesh.kumar@linux.ibm.com>
 X-Mailer: git-send-email 2.21.0
 In-Reply-To: <20190620091626.31824-1-aneesh.kumar@linux.ibm.com>
 References: <20190620091626.31824-1-aneesh.kumar@linux.ibm.com>
@@ -76,7 +77,7 @@ X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
  definitions=2019-06-20_06:, , signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
  priorityscore=1501
- malwarescore=0 suspectscore=3 phishscore=0 bulkscore=0 spamscore=0
+ malwarescore=0 suspectscore=1 phishscore=0 bulkscore=0 spamscore=0
  clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
  mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
  scancount=1 engine=8.0.1-1810050000 definitions=main-1906200068
@@ -97,144 +98,287 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This patch add -EOPNOTSUPP as return from probe callback to
-indicate we were not able to initialize a namespace due to pfn superblock
-feature/version mismatch. We want to consider this a probe success so that
-we can create new namesapce seed and there by avoid marking the failed
-namespace as the seed namespace.
+Allow arch to provide the supported alignments and use hugepage alignment only
+if we support hugepage. Right now we depend on compile time configs whereas this
+patch switch this to runtime discovery.
+
+Architectures like ppc64 can have THP enabled in code, but then can have
+hugepage size disabled by the hypervisor. This allows us to create dax devices
+with PAGE_SIZE alignment in this case.
+
+Existing dax namespace with alignment larger than PAGE_SIZE will fail to
+initialize in this specific case. We still allow fsdax namespace initialization.
+
+With respect to identifying whether to enable hugepage fault for a dax device,
+if THP is enabled during compile, we default to taking hugepage fault and in dax
+fault handler if we find the fault size > alignment we retry with PAGE_SIZE
+fault size.
+
+This also addresses the below failure scenario on ppc64
+
+ndctl create-namespace --mode=devdax  | grep align
+ "align":16777216,
+ "align":16777216
+
+cat /sys/devices/ndbus0/region0/dax0.0/supported_alignments
+ 65536 16777216
+
+daxio.static-debug  -z -o /dev/dax0.0
+  Bus error (core dumped)
+
+  $ dmesg | tail
+   lpar: Failed hash pte insert with error -4
+   hash-mmu: mm: Hashing failure ! EA=0x7fff17000000 access=0x8000000000000006 current=daxio
+   hash-mmu:     trap=0x300 vsid=0x22cb7a3 ssize=1 base psize=2 psize 10 pte=0xc000000501002b86
+   daxio[3860]: bus error (7) at 7fff17000000 nip 7fff973c007c lr 7fff973bff34 code 2 in libpmem.so.1.0.0[7fff973b0000+20000]
+   daxio[3860]: code: 792945e4 7d494b78 e95f0098 7d494b78 f93f00a0 4800012c e93f0088 f93f0120
+   daxio[3860]: code: e93f00a0 f93f0128 e93f0120 e95f0128 <f9490000> e93f0088 39290008 f93f0110
+
+The failure was due to guest kernel using wrong page size.
+
+The namespaces created with 16M alignment will appear as below on a config with
+16M page size disabled.
+
+$ ndctl list -Ni
+[
+  {
+    "dev":"namespace0.1",
+    "mode":"fsdax",
+    "map":"dev",
+    "size":5351931904,
+    "uuid":"fc6e9667-461a-4718-82b4-69b24570bddb",
+    "align":16777216,
+    "blockdev":"pmem0.1",
+    "supported_alignments":[
+      65536
+    ]
+  },
+  {
+    "dev":"namespace0.0",
+    "mode":"fsdax",    <==== devdax 16M alignment marked disabled.
+    "map":"mem",
+    "size":5368709120,
+    "uuid":"a4bdf81a-f2ee-4bc6-91db-7b87eddd0484",
+    "state":"disabled"
+  }
+]
 
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
 ---
- drivers/nvdimm/bus.c         |  4 ++--
- drivers/nvdimm/nd-core.h     |  3 ++-
- drivers/nvdimm/pmem.c        | 26 ++++++++++++++++++++++----
- drivers/nvdimm/region_devs.c | 19 +++++++++++++++----
- 4 files changed, 41 insertions(+), 11 deletions(-)
+ arch/powerpc/include/asm/libnvdimm.h |  9 ++++++++
+ arch/powerpc/mm/Makefile             |  1 +
+ arch/powerpc/mm/nvdimm.c             | 34 ++++++++++++++++++++++++++++
+ arch/x86/include/asm/libnvdimm.h     | 19 ++++++++++++++++
+ drivers/nvdimm/nd.h                  |  6 -----
+ drivers/nvdimm/pfn_devs.c            | 32 +++++++++++++++++++++++++-
+ include/linux/huge_mm.h              |  7 +++++-
+ 7 files changed, 100 insertions(+), 8 deletions(-)
+ create mode 100644 arch/powerpc/include/asm/libnvdimm.h
+ create mode 100644 arch/powerpc/mm/nvdimm.c
+ create mode 100644 arch/x86/include/asm/libnvdimm.h
 
-diff --git a/drivers/nvdimm/bus.c b/drivers/nvdimm/bus.c
-index 2dca3034fee0..3b8ffb3966ab 100644
---- a/drivers/nvdimm/bus.c
-+++ b/drivers/nvdimm/bus.c
-@@ -92,8 +92,8 @@ static int nvdimm_bus_probe(struct device *dev)
- 
- 	nvdimm_bus_probe_start(nvdimm_bus);
- 	rc = nd_drv->probe(dev);
--	if (rc == 0)
--		nd_region_probe_success(nvdimm_bus, dev);
-+	if (rc == 0 || rc == -EOPNOTSUPP)
-+		nd_region_probe_success(nvdimm_bus, dev, rc);
- 	else
- 		nd_region_disable(nvdimm_bus, dev);
- 	nvdimm_bus_probe_end(nvdimm_bus);
-diff --git a/drivers/nvdimm/nd-core.h b/drivers/nvdimm/nd-core.h
-index 391e88de3a29..4e6ffa0d89bb 100644
---- a/drivers/nvdimm/nd-core.h
-+++ b/drivers/nvdimm/nd-core.h
-@@ -126,7 +126,8 @@ int __init nvdimm_bus_init(void);
- void nvdimm_bus_exit(void);
- void nvdimm_devs_exit(void);
- void nd_region_devs_exit(void);
--void nd_region_probe_success(struct nvdimm_bus *nvdimm_bus, struct device *dev);
-+void nd_region_probe_success(struct nvdimm_bus *nvdimm_bus,
-+			     struct device *dev, int ret);
- struct nd_region;
- void nd_region_create_ns_seed(struct nd_region *nd_region);
- void nd_region_create_btt_seed(struct nd_region *nd_region);
-diff --git a/drivers/nvdimm/pmem.c b/drivers/nvdimm/pmem.c
-index 24d7fe7c74ed..422b11c01301 100644
---- a/drivers/nvdimm/pmem.c
-+++ b/drivers/nvdimm/pmem.c
-@@ -497,6 +497,7 @@ static int pmem_attach_disk(struct device *dev,
- 
- static int nd_pmem_probe(struct device *dev)
- {
-+	int ret;
- 	struct nd_namespace_common *ndns;
- 
- 	ndns = nvdimm_namespace_common_probe(dev);
-@@ -512,12 +513,29 @@ static int nd_pmem_probe(struct device *dev)
- 	if (is_nd_pfn(dev))
- 		return pmem_attach_disk(dev, ndns);
- 
--	/* if we find a valid info-block we'll come back as that personality */
--	if (nd_btt_probe(dev, ndns) == 0 || nd_pfn_probe(dev, ndns) == 0
--			|| nd_dax_probe(dev, ndns) == 0)
-+	ret = nd_btt_probe(dev, ndns);
-+	if (ret == 0)
- 		return -ENXIO;
-+	else if (ret == -EOPNOTSUPP)
-+		return ret;
- 
--	/* ...otherwise we're just a raw pmem device */
-+	ret = nd_pfn_probe(dev, ndns);
-+	if (ret == 0)
-+		return -ENXIO;
-+	else if (ret == -EOPNOTSUPP)
-+		return ret;
+diff --git a/arch/powerpc/include/asm/libnvdimm.h b/arch/powerpc/include/asm/libnvdimm.h
+new file mode 100644
+index 000000000000..d35fd7f48603
+--- /dev/null
++++ b/arch/powerpc/include/asm/libnvdimm.h
+@@ -0,0 +1,9 @@
++/* SPDX-License-Identifier: GPL-2.0 */
++#ifndef _ASM_POWERPC_LIBNVDIMM_H
++#define _ASM_POWERPC_LIBNVDIMM_H
 +
-+	ret = nd_dax_probe(dev, ndns);
-+	if (ret == 0)
-+		return -ENXIO;
-+	else if (ret == -EOPNOTSUPP)
-+		return ret;
-+	/*
-+	 * We have two failure conditions here, there is no
-+	 * info reserver block or we found a valid info reserve block
-+	 * but failed to initialize the pfn superblock.
-+	 * Don't create a raw pmem disk for the second case.
-+	 */
- 	return pmem_attach_disk(dev, ndns);
++#define nd_pfn_supported_alignments nd_pfn_supported_alignments
++extern unsigned long *nd_pfn_supported_alignments(void);
++extern unsigned long nd_pfn_default_alignment(void);
++
++#endif
+diff --git a/arch/powerpc/mm/Makefile b/arch/powerpc/mm/Makefile
+index 0f499db315d6..42e4a399ba5d 100644
+--- a/arch/powerpc/mm/Makefile
++++ b/arch/powerpc/mm/Makefile
+@@ -20,3 +20,4 @@ obj-$(CONFIG_HIGHMEM)		+= highmem.o
+ obj-$(CONFIG_PPC_COPRO_BASE)	+= copro_fault.o
+ obj-$(CONFIG_PPC_PTDUMP)	+= ptdump/
+ obj-$(CONFIG_KASAN)		+= kasan/
++obj-$(CONFIG_NVDIMM_PFN)		+= nvdimm.o
+diff --git a/arch/powerpc/mm/nvdimm.c b/arch/powerpc/mm/nvdimm.c
+new file mode 100644
+index 000000000000..a29a4510715e
+--- /dev/null
++++ b/arch/powerpc/mm/nvdimm.c
+@@ -0,0 +1,34 @@
++// SPDX-License-Identifier: GPL-2.0
++
++#include <asm/pgtable.h>
++#include <asm/page.h>
++
++#include <linux/mm.h>
++/*
++ * We support only pte and pmd mappings for now.
++ */
++const unsigned long *nd_pfn_supported_alignments(void)
++{
++	static unsigned long supported_alignments[3];
++
++	supported_alignments[0] = PAGE_SIZE;
++
++	if (has_transparent_hugepage())
++		supported_alignments[1] = HPAGE_PMD_SIZE;
++	else
++		supported_alignments[1] = 0;
++
++	supported_alignments[2] = 0;
++	return supported_alignments;
++}
++
++/*
++ * Use pmd mapping if supported as default alignment
++ */
++unsigned long nd_pfn_default_alignment(void)
++{
++
++	if (has_transparent_hugepage())
++		return HPAGE_PMD_SIZE;
++	return PAGE_SIZE;
++}
+diff --git a/arch/x86/include/asm/libnvdimm.h b/arch/x86/include/asm/libnvdimm.h
+new file mode 100644
+index 000000000000..3d5361db9164
+--- /dev/null
++++ b/arch/x86/include/asm/libnvdimm.h
+@@ -0,0 +1,19 @@
++/* SPDX-License-Identifier: GPL-2.0 */
++#ifndef _ASM_X86_LIBNVDIMM_H
++#define _ASM_X86_LIBNVDIMM_H
++
++static inline unsigned long nd_pfn_default_alignment(void)
++{
++#ifdef CONFIG_TRANSPARENT_HUGEPAGE
++	return HPAGE_PMD_SIZE;
++#else
++	return PAGE_SIZE;
++#endif
++}
++
++static inline unsigned long nd_altmap_align_size(unsigned long nd_align)
++{
++	return PMD_SIZE;
++}
++
++#endif
+diff --git a/drivers/nvdimm/nd.h b/drivers/nvdimm/nd.h
+index d24304c0e6d7..e2fbb51fb361 100644
+--- a/drivers/nvdimm/nd.h
++++ b/drivers/nvdimm/nd.h
+@@ -288,12 +288,6 @@ static inline struct device *nd_btt_create(struct nd_region *nd_region)
+ struct nd_pfn *to_nd_pfn(struct device *dev);
+ #if IS_ENABLED(CONFIG_NVDIMM_PFN)
+ 
+-#ifdef CONFIG_TRANSPARENT_HUGEPAGE
+-#define PFN_DEFAULT_ALIGNMENT HPAGE_PMD_SIZE
+-#else
+-#define PFN_DEFAULT_ALIGNMENT PAGE_SIZE
+-#endif
+-
+ int nd_pfn_probe(struct device *dev, struct nd_namespace_common *ndns);
+ bool is_nd_pfn(struct device *dev);
+ struct device *nd_pfn_create(struct nd_region *nd_region);
+diff --git a/drivers/nvdimm/pfn_devs.c b/drivers/nvdimm/pfn_devs.c
+index 9410d2692913..29bb46ca92f2 100644
+--- a/drivers/nvdimm/pfn_devs.c
++++ b/drivers/nvdimm/pfn_devs.c
+@@ -10,6 +10,7 @@
+ #include <linux/slab.h>
+ #include <linux/fs.h>
+ #include <linux/mm.h>
++#include <asm/libnvdimm.h>
+ #include "nd-core.h"
+ #include "pfn.h"
+ #include "nd.h"
+@@ -103,6 +104,8 @@ static ssize_t align_show(struct device *dev,
+ 	return sprintf(buf, "%ld\n", nd_pfn->align);
  }
  
-diff --git a/drivers/nvdimm/region_devs.c b/drivers/nvdimm/region_devs.c
-index 4fed9ce9c2fe..1e74a1c9fdac 100644
---- a/drivers/nvdimm/region_devs.c
-+++ b/drivers/nvdimm/region_devs.c
-@@ -715,7 +715,7 @@ void nd_mapping_free_labels(struct nd_mapping *nd_mapping)
-  * disable the region.
-  */
- static void nd_region_notify_driver_action(struct nvdimm_bus *nvdimm_bus,
--		struct device *dev, bool probe)
-+					   struct device *dev, bool probe, int ret)
++#ifndef nd_pfn_supported_alignments
++#define nd_pfn_supported_alignments nd_pfn_supported_alignments
+ static const unsigned long *nd_pfn_supported_alignments(void)
  {
- 	struct nd_region *nd_region;
+ 	/*
+@@ -125,6 +128,7 @@ static const unsigned long *nd_pfn_supported_alignments(void)
  
-@@ -745,6 +745,16 @@ static void nd_region_notify_driver_action(struct nvdimm_bus *nvdimm_bus,
- 			nd_region_create_ns_seed(nd_region);
- 		nvdimm_bus_unlock(dev);
- 	}
+ 	return data;
+ }
++#endif
+ 
+ static ssize_t align_store(struct device *dev,
+ 		struct device_attribute *attr, const char *buf, size_t len)
+@@ -302,7 +306,7 @@ struct device *nd_pfn_devinit(struct nd_pfn *nd_pfn,
+ 		return NULL;
+ 
+ 	nd_pfn->mode = PFN_MODE_NONE;
+-	nd_pfn->align = PFN_DEFAULT_ALIGNMENT;
++	nd_pfn->align = nd_pfn_default_alignment();
+ 	dev = &nd_pfn->dev;
+ 	device_initialize(&nd_pfn->dev);
+ 	if (ndns && !__nd_attach_ndns(&nd_pfn->dev, ndns, &nd_pfn->ndns)) {
+@@ -412,6 +416,20 @@ static int nd_pfn_clear_memmap_errors(struct nd_pfn *nd_pfn)
+ 	return 0;
+ }
+ 
++static bool nd_supported_alignment(unsigned long align)
++{
++	int i;
++	const unsigned long *supported = nd_pfn_supported_alignments();
 +
-+	if (dev->parent && is_nd_region(dev->parent) &&
-+	    !probe && (ret == -EOPNOTSUPP)) {
-+		nd_region = to_nd_region(dev->parent);
-+		nvdimm_bus_lock(dev);
-+		if (nd_region->ns_seed == dev)
-+			nd_region_create_ns_seed(nd_region);
-+		nvdimm_bus_unlock(dev);
++	if (align == 0)
++		return false;
++
++	for (i = 0; supported[i]; i++)
++		if (align == supported[i])
++			return true;
++	return false;
++}
++
+ /**
+  * nd_pfn_validate - read and validate info-block
+  * @nd_pfn: fsdax namespace runtime state / properties
+@@ -498,6 +516,18 @@ int nd_pfn_validate(struct nd_pfn *nd_pfn, const char *sig)
+ 		return -EOPNOTSUPP;
+ 	}
+ 
++	/*
++	 * Check whether the we support the alignment. For Dax if the
++	 * superblock alignment is not matching, we won't initialize
++	 * the device.
++	 */
++	if (!nd_supported_alignment(align) &&
++	    !memcmp(pfn_sb->signature, DAX_SIG, PFN_SIG_LEN)) {
++		dev_err(&nd_pfn->dev, "init failed, alignment mismatch: "
++			"%ld:%ld\n", nd_pfn->align, align);
++		return -EOPNOTSUPP;
 +	}
 +
- 	if (is_nd_btt(dev) && probe) {
- 		struct nd_btt *nd_btt = to_nd_btt(dev);
+ 	if (!nd_pfn->uuid) {
+ 		/*
+ 		 * When probing a namepace via nd_pfn_probe() the uuid
+diff --git a/include/linux/huge_mm.h b/include/linux/huge_mm.h
+index 7cd5c150c21d..64d16794bb27 100644
+--- a/include/linux/huge_mm.h
++++ b/include/linux/huge_mm.h
+@@ -108,7 +108,12 @@ static inline bool __transparent_hugepage_enabled(struct vm_area_struct *vma)
  
-@@ -780,14 +790,15 @@ static void nd_region_notify_driver_action(struct nvdimm_bus *nvdimm_bus,
- 	}
- }
+ 	if (transparent_hugepage_flags & (1 << TRANSPARENT_HUGEPAGE_FLAG))
+ 		return true;
+-
++	/*
++	 * For dax let's try to do hugepage fault always. If we don't support
++	 * hugepages we will not have enabled namespaces with hugepage alignment.
++	 * This also means we try to handle hugepage fault on device with
++	 * smaller alignment. But for then we will return with VM_FAULT_FALLBACK
++	 */
+ 	if (vma_is_dax(vma))
+ 		return true;
  
--void nd_region_probe_success(struct nvdimm_bus *nvdimm_bus, struct device *dev)
-+void nd_region_probe_success(struct nvdimm_bus *nvdimm_bus,
-+			     struct device *dev, int ret)
- {
--	nd_region_notify_driver_action(nvdimm_bus, dev, true);
-+	nd_region_notify_driver_action(nvdimm_bus, dev, true, ret);
- }
- 
- void nd_region_disable(struct nvdimm_bus *nvdimm_bus, struct device *dev)
- {
--	nd_region_notify_driver_action(nvdimm_bus, dev, false);
-+	nd_region_notify_driver_action(nvdimm_bus, dev, false, 0);
- }
- 
- static ssize_t mappingN(struct device *dev, char *buf, int n)
 -- 
 2.21.0
 
