@@ -2,23 +2,23 @@ Return-Path: <SRS0=+cnT=UT=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 50210C43613
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Jun 2019 10:38:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C5B65C48BE2
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Jun 2019 10:39:53 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 9F1682070B
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Jun 2019 10:38:07 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9F1682070B
+	by mail.kernel.org (Postfix) with ESMTPS id 59FE02082C
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Jun 2019 10:39:53 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 59FE02082C
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45Tyvd0b2KzDrGn
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Jun 2019 20:38:05 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45Tyxg3DzszDrF1
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Jun 2019 20:39:51 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=redhat.com
  (client-ip=209.132.183.28; helo=mx1.redhat.com; envelope-from=david@redhat.com;
@@ -28,29 +28,27 @@ Authentication-Results: lists.ozlabs.org;
 Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45Tys074HHzDrDN
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jun 2019 20:35:48 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45Tys22Gq4zDrDN
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jun 2019 20:35:50 +1000 (AEST)
 Received: from smtp.corp.redhat.com (int-mx03.intmail.prod.int.phx2.redhat.com
  [10.5.11.13])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by mx1.redhat.com (Postfix) with ESMTPS id 074DF2E97C7;
- Thu, 20 Jun 2019 10:35:47 +0000 (UTC)
+ by mx1.redhat.com (Postfix) with ESMTPS id E1A41C1EB202;
+ Thu, 20 Jun 2019 10:35:34 +0000 (UTC)
 Received: from t460s.redhat.com (ovpn-117-88.ams2.redhat.com [10.36.117.88])
- by smtp.corp.redhat.com (Postfix) with ESMTP id D445160600;
- Thu, 20 Jun 2019 10:35:41 +0000 (UTC)
+ by smtp.corp.redhat.com (Postfix) with ESMTP id 6A49D608A7;
+ Thu, 20 Jun 2019 10:35:21 +0000 (UTC)
 From: David Hildenbrand <david@redhat.com>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH v2 2/6] drivers/base/memory: Use "unsigned long" for block ids
-Date: Thu, 20 Jun 2019 12:35:16 +0200
-Message-Id: <20190620103520.23481-3-david@redhat.com>
-In-Reply-To: <20190620103520.23481-1-david@redhat.com>
-References: <20190620103520.23481-1-david@redhat.com>
+Subject: [PATCH v2 0/6] mm: Further memory block device cleanups
+Date: Thu, 20 Jun 2019 12:35:14 +0200
+Message-Id: <20190620103520.23481-1-david@redhat.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-Scanned-By: MIMEDefang 2.79 on 10.5.11.13
 X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.5.16
- (mx1.redhat.com [10.5.110.29]); Thu, 20 Jun 2019 10:35:47 +0000 (UTC)
+ (mx1.redhat.com [10.5.110.32]); Thu, 20 Jun 2019 10:35:43 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -62,98 +60,66 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: David Hildenbrand <david@redhat.com>,
+Cc: Oscar Salvador <osalvador@suse.com>, Michal Hocko <mhocko@suse.com>,
+ David Hildenbrand <david@redhat.com>, Wei Yang <richard.weiyang@gmail.com>,
+ Keith Busch <keith.busch@intel.com>, linux-mm@kvack.org,
+ Arun KS <arunks@codeaurora.org>, Rashmica Gupta <rashmica.g@gmail.com>,
+ Thomas Gleixner <tglx@linutronix.de>, Stephen Rothwell <sfr@canb.auug.org.au>,
+ Michael Neuling <mikey@neuling.org>, Baoquan He <bhe@redhat.com>,
+ "Rafael J. Wysocki" <rafael@kernel.org>,
+ Pavel Tatashin <pasha.tatashin@oracle.com>, linux-acpi@vger.kernel.org,
+ Len Brown <lenb@kernel.org>, Pavel Tatashin <pavel.tatashin@microsoft.com>,
+ Pavel Tatashin <pasha.tatashin@soleen.com>,
+ Anshuman Khandual <anshuman.khandual@arm.com>,
+ "mike.travis@hpe.com" <mike.travis@hpe.com>, linuxppc-dev@lists.ozlabs.org,
+ Mike Rapoport <rppt@linux.vnet.ibm.com>, Qian Cai <cai@lca.pw>,
+ Dan Williams <dan.j.williams@intel.com>, Vlastimil Babka <vbabka@suse.cz>,
+ Oscar Salvador <osalvador@suse.de>, Juergen Gross <jgross@suse.com>,
+ Andrew Banman <andrew.banman@hpe.com>,
  Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- "Rafael J. Wysocki" <rafael@kernel.org>, linux-mm@kvack.org,
- linux-acpi@vger.kernel.org, Dan Williams <dan.j.williams@intel.com>,
- linuxppc-dev@lists.ozlabs.org, Andrew Morton <akpm@linux-foundation.org>
+ "Rafael J. Wysocki" <rjw@rjwysocki.net>, Johannes Weiner <hannes@cmpxchg.org>,
+ Paul Mackerras <paulus@samba.org>, Andrew Morton <akpm@linux-foundation.org>,
+ Mel Gorman <mgorman@techsingularity.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Block ids are just shifted section numbers, so let's also use
-"unsigned long" for them, too.
+@Andrew: Only patch 1 and 6 changed. The patches are based on the
+same state as the previous patches (replace the old ones if possible).
 
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>
-Signed-off-by: David Hildenbrand <david@redhat.com>
----
- drivers/base/memory.c | 22 +++++++++++-----------
- 1 file changed, 11 insertions(+), 11 deletions(-)
+Some further cleanups around memory block devices. Especially, clean up
+and simplify walk_memory_range(). Including some other minor cleanups.
 
-diff --git a/drivers/base/memory.c b/drivers/base/memory.c
-index 5947b5a5686d..c54e80fd25a8 100644
---- a/drivers/base/memory.c
-+++ b/drivers/base/memory.c
-@@ -34,12 +34,12 @@ static DEFINE_MUTEX(mem_sysfs_mutex);
- 
- static int sections_per_block;
- 
--static inline int base_memory_block_id(unsigned long section_nr)
-+static inline unsigned long base_memory_block_id(unsigned long section_nr)
- {
- 	return section_nr / sections_per_block;
- }
- 
--static inline int pfn_to_block_id(unsigned long pfn)
-+static inline unsigned long pfn_to_block_id(unsigned long pfn)
- {
- 	return base_memory_block_id(pfn_to_section_nr(pfn));
- }
-@@ -587,7 +587,7 @@ int __weak arch_get_memory_phys_device(unsigned long start_pfn)
-  * A reference for the returned object is held and the reference for the
-  * hinted object is released.
-  */
--static struct memory_block *find_memory_block_by_id(int block_id,
-+static struct memory_block *find_memory_block_by_id(unsigned long block_id,
- 						    struct memory_block *hint)
- {
- 	struct device *hintdev = hint ? &hint->dev : NULL;
-@@ -604,7 +604,7 @@ static struct memory_block *find_memory_block_by_id(int block_id,
- struct memory_block *find_memory_block_hinted(struct mem_section *section,
- 					      struct memory_block *hint)
- {
--	int block_id = base_memory_block_id(__section_nr(section));
-+	unsigned long block_id = base_memory_block_id(__section_nr(section));
- 
- 	return find_memory_block_by_id(block_id, hint);
- }
-@@ -663,8 +663,8 @@ int register_memory(struct memory_block *memory)
- 	return ret;
- }
- 
--static int init_memory_block(struct memory_block **memory, int block_id,
--			     unsigned long state)
-+static int init_memory_block(struct memory_block **memory,
-+			     unsigned long block_id, unsigned long state)
- {
- 	struct memory_block *mem;
- 	unsigned long start_pfn;
-@@ -729,8 +729,8 @@ static void unregister_memory(struct memory_block *memory)
-  */
- int create_memory_block_devices(unsigned long start, unsigned long size)
- {
--	const int start_block_id = pfn_to_block_id(PFN_DOWN(start));
--	int end_block_id = pfn_to_block_id(PFN_DOWN(start + size));
-+	const unsigned long start_block_id = pfn_to_block_id(PFN_DOWN(start));
-+	unsigned long end_block_id = pfn_to_block_id(PFN_DOWN(start + size));
- 	struct memory_block *mem;
- 	unsigned long block_id;
- 	int ret = 0;
-@@ -766,10 +766,10 @@ int create_memory_block_devices(unsigned long start, unsigned long size)
-  */
- void remove_memory_block_devices(unsigned long start, unsigned long size)
- {
--	const int start_block_id = pfn_to_block_id(PFN_DOWN(start));
--	const int end_block_id = pfn_to_block_id(PFN_DOWN(start + size));
-+	const unsigned long start_block_id = pfn_to_block_id(PFN_DOWN(start));
-+	const unsigned long end_block_id = pfn_to_block_id(PFN_DOWN(start + size));
- 	struct memory_block *mem;
--	int block_id;
-+	unsigned long block_id;
- 
- 	if (WARN_ON_ONCE(!IS_ALIGNED(start, memory_block_size_bytes()) ||
- 			 !IS_ALIGNED(size, memory_block_size_bytes())))
+Compiled + tested on x86 with DIMMs under QEMU.
+
+v1 -> v2:
+- "mm: Section numbers use the type "unsigned long""
+-- "unsigned long i" -> "unsigned long nr", in one case -> "int i"
+- "drivers/base/memory.c: Get rid of find_memory_block_hinted("
+-- Fix compilation error
+-- Get rid of the "hint" parameter completely
+
+David Hildenbrand (6):
+  mm: Section numbers use the type "unsigned long"
+  drivers/base/memory: Use "unsigned long" for block ids
+  mm: Make register_mem_sect_under_node() static
+  mm/memory_hotplug: Rename walk_memory_range() and pass start+size
+    instead of pfns
+  mm/memory_hotplug: Move and simplify walk_memory_blocks()
+  drivers/base/memory.c: Get rid of find_memory_block_hinted()
+
+ arch/powerpc/platforms/powernv/memtrace.c |  22 ++---
+ drivers/acpi/acpi_memhotplug.c            |  19 +---
+ drivers/base/memory.c                     | 115 ++++++++++++++--------
+ drivers/base/node.c                       |   8 +-
+ include/linux/memory.h                    |   5 +-
+ include/linux/memory_hotplug.h            |   2 -
+ include/linux/mmzone.h                    |   4 +-
+ include/linux/node.h                      |   7 --
+ mm/memory_hotplug.c                       |  57 +----------
+ mm/sparse.c                               |  12 +--
+ 10 files changed, 105 insertions(+), 146 deletions(-)
+
 -- 
 2.21.0
 
