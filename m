@@ -2,27 +2,26 @@ Return-Path: <SRS0=+cnT=UT=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.6 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-3.3 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
+	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
+	SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6474AC43613
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Jun 2019 07:06:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 82E41C43613
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Jun 2019 07:09:46 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 881922085A
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Jun 2019 07:06:52 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 02AC12084A
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Jun 2019 07:09:45 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="BHRBJIxO"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 881922085A
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="dYQXMd9p"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 02AC12084A
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45TtCt0yk0zDr8r
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Jun 2019 17:06:50 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45TtHC3cSfzDr8v
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Jun 2019 17:09:43 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=gmail.com
  (client-ip=2607:f8b0:4864:20::543; helo=mail-pg1-x543.google.com;
@@ -30,60 +29,58 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="BHRBJIxO"; 
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="dYQXMd9p"; 
  dkim-atps=neutral
 Received: from mail-pg1-x543.google.com (mail-pg1-x543.google.com
  [IPv6:2607:f8b0:4864:20::543])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45Tqn36r17zDqwN
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jun 2019 15:16:55 +1000 (AEST)
-Received: by mail-pg1-x543.google.com with SMTP id v9so904549pgr.13
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Jun 2019 22:16:55 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45Tqz12q18zDqjy
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jun 2019 15:25:33 +1000 (AEST)
+Received: by mail-pg1-x543.google.com with SMTP id y72so931835pgd.8
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Jun 2019 22:25:32 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=from:to:cc:subject:date:message-id:in-reply-to:references
- :mime-version:content-transfer-encoding;
- bh=kZmKdYuz//BUyLDyTXNiXDPLJjSgFKIRUQN4aB4XgaE=;
- b=BHRBJIxO+XYyOBUgVf626bJKrc8IXUJVL602jxNb2GUGjgW8tgzOkSPqqnq19Suhj2
- NZcXgPy5g7HRgOWDyZtTTpA1X8+xWtQqAj8RfCd3cKbFPBm4WpZf/38aY00fITr0pulP
- WmXcauF1qfD0Uw8ShG4QiW0LXk2eyZ9plixcR7poAOvBRB745tKgjaP7t2jO0cfXPaCa
- r5MaCxefNqCnUTaPwH3RvhsE1B85Hggw+tkOBl5T+c8wovCj65iIIV8tKqsk6xUs1R9X
- 7Jcq6EHGLj8BRVwD39CiFTpIOYL9So7Kx55n5rEnd6P30SzJPACDUSRMECgewgB9JDCE
- wigw==
+ h=date:from:subject:to:cc:references:in-reply-to:mime-version
+ :user-agent:message-id:content-transfer-encoding;
+ bh=zlU77qurwFBHY4ItXISiY+NZzcjBbiD22X4dtBHNWtU=;
+ b=dYQXMd9pHNzHz6HK2pXYsrRhHBwvsP7wJdPtTqX4UcubHVwuffRExKOkpyrHJ5Qx4W
+ 0hktkH8dgpFWn35KG4U5iMQEvPgXirPaWCN2d5Cy5p8qgIOLY/B/74d+vx15hj0xrrzb
+ 7pwHLsqTe+G6XqRL7WNcQRXZZbZtn7chXkzPPvGIn5U4UfufxM+jI4dsNcixbgL/RLAe
+ 6Vei0LuwvqnqlaRTateNDpYgHiEIkd2FXZhysojioH/5uKAP/YIhOxVu62TyAeU2eiUr
+ JBViTIvys1+cM3VFgaNXViIefNGz6PUDGXU+Mb5WTT+aaNT4RjS5yadFnG0/URWikP8R
+ M6SA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
- h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
- :references:mime-version:content-transfer-encoding;
- bh=kZmKdYuz//BUyLDyTXNiXDPLJjSgFKIRUQN4aB4XgaE=;
- b=cWR5xu5ly7/aBs0Z8ucOYobpYmXU8pmg7x0PfuJo2JHciQC0ElJjGNKoIU+h8OxOcs
- CrBkqLhwIXA0mWqRtzGVLI6O+mqZcwLfnYAObP6ZhrUf3DH0CzXdm/WTYxkAHWgAVDqw
- yjVWtSezfa+09X/j38qeIg1Tt9JvvMfvCwAbbSL0dbQm8TuKi+hkKzwxGeOYhQ84j1DR
- Gpm0Z15iGfbcrJESXo2331LYSdGsi5Y7bGTo9Em5W/yfcGksnG19dwbbTYpXTPvjBc2q
- 3MPO+c0ByoWqUx9o7hj0w0eGZzuv2RzoybOGUcFR5ylVYFrNCPln92A8knuXjH7ScAId
- KgVg==
-X-Gm-Message-State: APjAAAXKAj96egT2A7hqZJ3pcsGrfF0nFHU7aHRCMFDCHp1qraLdPXGb
- ctgm55ixkb04cRPZ7+GumYXXR2WW
-X-Google-Smtp-Source: APXvYqwiGNnqfXDEclALDw/u1/qStJzi9/CA7o8A21beDdfZmZpjCw1iAL/Is64Z62LshgpX3SVS1Q==
-X-Received: by 2002:a17:90a:b011:: with SMTP id
- x17mr1096424pjq.113.1561007813852; 
- Wed, 19 Jun 2019 22:16:53 -0700 (PDT)
-Received: from bobo.local0.net (193-116-72-140.tpgi.com.au. [193.116.72.140])
- by smtp.gmail.com with ESMTPSA id
- h12sm8235847pje.12.2019.06.19.22.16.52
+ h=x-gm-message-state:date:from:subject:to:cc:references:in-reply-to
+ :mime-version:user-agent:message-id:content-transfer-encoding;
+ bh=zlU77qurwFBHY4ItXISiY+NZzcjBbiD22X4dtBHNWtU=;
+ b=PiCZ4h2ZtjO9/MGNhEyHV7rpTDGk6my3wL1t2HOeDhvsImjViLWOuCAz1Oov0gOGKD
+ Gn47BjIDJSZy/Y9i/MNzEkBUt7RTjMDBzKTsb77H85iMi+EM4Uo+6ZF1UEqPixPZxgUW
+ 6D2kiRLcyQJxNg7yGo1XBBx2IMf0Zq2B6X8ABrphlRp8+qm0vi2nW3vOHGSZkooZPC+4
+ dpBi6/xKdAuIpO9/oRM8IVdOzAXmULtvXrx5unBD3zkUkIE3kPzyUDfpMjw5ba1Ki/JW
+ 1hVQgxagTliWJVco1bgY63AIYgwApw7XQRrwsqOcH3+tnixw7my34+5iixNvXAH3Fhn9
+ 77Vw==
+X-Gm-Message-State: APjAAAV6tVYppunmTcGYIf9DZzxVQf5DnaUdtm+CnaQWS1NxGwTWxvBS
+ KRLE52qcydvMkKvbaueFXqFtWMn4
+X-Google-Smtp-Source: APXvYqwGlNIh3qGSCHGTDNRkebDfOHC9wPc4sz46s7V/6RQiPr6YS1ATNPfWQ2H4D+vJDveyDEuVjQ==
+X-Received: by 2002:a63:c44f:: with SMTP id m15mr11085798pgg.34.1561008330349; 
+ Wed, 19 Jun 2019 22:25:30 -0700 (PDT)
+Received: from localhost (193-116-72-140.tpgi.com.au. [193.116.72.140])
+ by smtp.gmail.com with ESMTPSA id s24sm20437852pfh.133.2019.06.19.22.25.29
  (version=TLS1_3 cipher=AEAD-AES256-GCM-SHA384 bits=256/256);
- Wed, 19 Jun 2019 22:16:53 -0700 (PDT)
+ Wed, 19 Jun 2019 22:25:29 -0700 (PDT)
+Date: Thu, 20 Jun 2019 15:25:38 +1000
 From: Nicholas Piggin <npiggin@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v2 52/52] powerpc/64s/exception: add missing branch to self
- after RFI
-Date: Thu, 20 Jun 2019 15:14:59 +1000
-Message-Id: <20190620051459.29573-53-npiggin@gmail.com>
-X-Mailer: git-send-email 2.20.1
-In-Reply-To: <20190620051459.29573-1-npiggin@gmail.com>
-References: <20190620051459.29573-1-npiggin@gmail.com>
+Subject: Re: [PATCH v2] ocxl: Allow contexts to be attached with a NULL mm
+To: Alastair D'Silva <alastair@au1.ibm.com>, alastair@d-silva.org
+References: <20190620041203.12274-1-alastair@au1.ibm.com>
+In-Reply-To: <20190620041203.12274-1-alastair@au1.ibm.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+User-Agent: astroid/0.14.0 (https://github.com/astroidmail/astroid)
+Message-Id: <1561008239.9nxgz9ee3u.astroid@bobo.none>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -95,48 +92,32 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Nicholas Piggin <npiggin@gmail.com>
+Cc: Andrew Donnellan <ajd@linux.ibm.com>, Arnd Bergmann <arnd@arndb.de>,
+ linux-kernel@vger.kernel.org, Masahiro Yamada <yamada.masahiro@socionext.com>,
+ Paul Mackerras <paulus@samba.org>,
+ Suraj Jitindar Singh <sjitindarsingh@gmail.com>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Frederic Barrat <fbarrat@linux.ibm.com>,
+ Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
+ Thomas Gleixner <tglx@linutronix.de>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-For consistency. These may not be required on modern processors,
-and they don't quite fit with the RFI_TO macros, but they should
-be all removed in that case.
+Alastair D'Silva's on June 20, 2019 2:12 pm:
+> From: Alastair D'Silva <alastair@d-silva.org>
+>=20
+> If an OpenCAPI context is to be used directly by a kernel driver, there
+> may not be a suitable mm to use.
+>=20
+> The patch makes the mm parameter to ocxl_context_attach optional.
+>=20
+> Signed-off-by: Alastair D'Silva <alastair@d-silva.org>
 
-Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
----
- arch/powerpc/kernel/exceptions-64s.S | 3 +++
- 1 file changed, 3 insertions(+)
+Yeah I don't think you need to manage a kernel context explicitly
+because it will always be flushed with tlbie, comment helps. For
+the powerpc/mm bit,
 
-diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
-index e21bf047156d..cdf7d7ef0c0e 100644
---- a/arch/powerpc/kernel/exceptions-64s.S
-+++ b/arch/powerpc/kernel/exceptions-64s.S
-@@ -944,6 +944,7 @@ EXC_COMMON_BEGIN(system_reset_common)
- 
- 	EXCEPTION_RESTORE_REGS EXC_STD
- 	RFI_TO_USER_OR_KERNEL
-+	b	.
- 
- 
- EXC_REAL_BEGIN(machine_check, 0x200, 0x100)
-@@ -1111,6 +1112,7 @@ END_FTR_SECTION_IFSET(CPU_FTR_ARCH_206)
- 	bl	machine_check_queue_event
- 	MACHINE_CHECK_HANDLER_WINDUP
- 	RFI_TO_USER_OR_KERNEL
-+	b	.
- 
- deliver_mce:
- 	/* Deliver the machine check to host kernel in V mode. */
-@@ -1686,6 +1688,7 @@ TRAMP_REAL_BEGIN(hmi_exception_early)
- 
- 	EXCEPTION_RESTORE_REGS EXC_HV
- 	HRFI_TO_USER_OR_KERNEL
-+	b	.
- 
- 1:
- 	/*
--- 
-2.20.1
+Acked-by: Nicholas Piggin <npiggin@gmail.com>
 
+=
