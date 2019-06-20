@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-8.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
 	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B7173C48BE1
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Jun 2019 09:28:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DAA64C43613
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Jun 2019 09:30:00 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 156B02084A
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Jun 2019 09:28:05 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 156B02084A
+	by mail.kernel.org (Postfix) with ESMTPS id 6B3DB2084A
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Jun 2019 09:30:00 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6B3DB2084A
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45TxLq2JnVzDr9y
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Jun 2019 19:28:03 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45TxP22wnJzDrBn
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Jun 2019 19:29:58 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
  (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
@@ -29,44 +29,44 @@ Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45Tx6d36QBzDrCC
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jun 2019 19:17:29 +1000 (AEST)
-Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45Tx6f656czDr8R
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jun 2019 19:17:30 +1000 (AEST)
+Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
  by mx0b-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x5K94a1m146189; Thu, 20 Jun 2019 05:17:14 -0400
-Received: from ppma01wdc.us.ibm.com (fd.55.37a9.ip4.static.sl-reverse.com
- [169.55.85.253])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2t85ymbm00-1
+ x5K94S3o020974; Thu, 20 Jun 2019 05:17:21 -0400
+Received: from ppma04dal.us.ibm.com (7a.29.35a9.ip4.static.sl-reverse.com
+ [169.53.41.122])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2t85xnbjuf-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 20 Jun 2019 05:17:14 -0400
-Received: from pps.filterd (ppma01wdc.us.ibm.com [127.0.0.1])
- by ppma01wdc.us.ibm.com (8.16.0.27/8.16.0.27) with SMTP id x5K94kWQ032608;
- Thu, 20 Jun 2019 09:17:14 GMT
-Received: from b01cxnp22035.gho.pok.ibm.com (b01cxnp22035.gho.pok.ibm.com
- [9.57.198.25]) by ppma01wdc.us.ibm.com with ESMTP id 2t4ra70ntr-1
+ Thu, 20 Jun 2019 05:17:20 -0400
+Received: from pps.filterd (ppma04dal.us.ibm.com [127.0.0.1])
+ by ppma04dal.us.ibm.com (8.16.0.27/8.16.0.27) with SMTP id x5K94n4t009609;
+ Thu, 20 Jun 2019 09:17:20 GMT
+Received: from b01cxnp22034.gho.pok.ibm.com (b01cxnp22034.gho.pok.ibm.com
+ [9.57.198.24]) by ppma04dal.us.ibm.com with ESMTP id 2t4ra6gquf-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 20 Jun 2019 09:17:14 +0000
+ Thu, 20 Jun 2019 09:17:20 +0000
 Received: from b01ledav005.gho.pok.ibm.com (b01ledav005.gho.pok.ibm.com
  [9.57.199.110])
- by b01cxnp22035.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x5K9HDaN33489158
+ by b01cxnp22034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x5K9HJXN33882408
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Thu, 20 Jun 2019 09:17:13 GMT
+ Thu, 20 Jun 2019 09:17:19 GMT
 Received: from b01ledav005.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 834BEAE062;
- Thu, 20 Jun 2019 09:17:13 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 70168AE062;
+ Thu, 20 Jun 2019 09:17:19 +0000 (GMT)
 Received: from b01ledav005.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 0D4FCAE060;
- Thu, 20 Jun 2019 09:17:12 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id DB0FCAE05F;
+ Thu, 20 Jun 2019 09:17:17 +0000 (GMT)
 Received: from skywalker.in.ibm.com (unknown [9.124.35.143])
  by b01ledav005.gho.pok.ibm.com (Postfix) with ESMTP;
- Thu, 20 Jun 2019 09:17:11 +0000 (GMT)
+ Thu, 20 Jun 2019 09:17:17 +0000 (GMT)
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
 To: dan.j.williams@intel.com
-Subject: [PATCH v4 2/6] mm/nvdimm: Add page size and struct page size to pfn
- superblock
-Date: Thu, 20 Jun 2019 14:46:22 +0530
-Message-Id: <20190620091626.31824-3-aneesh.kumar@linux.ibm.com>
+Subject: [PATCH v4 5/6] mm/nvdimm: Use correct alignment when looking at first
+ pfn from a region
+Date: Thu, 20 Jun 2019 14:46:25 +0530
+Message-Id: <20190620091626.31824-6-aneesh.kumar@linux.ibm.com>
 X-Mailer: git-send-email 2.21.0
 In-Reply-To: <20190620091626.31824-1-aneesh.kumar@linux.ibm.com>
 References: <20190620091626.31824-1-aneesh.kumar@linux.ibm.com>
@@ -79,7 +79,7 @@ X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
  priorityscore=1501
  malwarescore=0 suspectscore=1 phishscore=0 bulkscore=0 spamscore=0
  clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
+ mlxlogscore=880 adultscore=0 classifier=spam adjust=0 reason=mlx
  scancount=1 engine=8.0.1-1810050000 definitions=main-1906200068
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -98,84 +98,36 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This is needed so that we don't wrongly initialize a namespace
-which doesn't have enough space reserved for holding struct pages
-with the current kernel.
+vmem_altmap_offset() adjust the section aligned base_pfn offset.
+So we need to make sure we account for the same when computing base_pfn.
+
+ie, for altmap_valid case, our pfn_first should be:
+
+pfn_first = altmap->base_pfn + vmem_altmap_offset(altmap);
 
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
 ---
- drivers/nvdimm/pfn.h      |  5 ++++-
- drivers/nvdimm/pfn_devs.c | 27 ++++++++++++++++++++++++++-
- 2 files changed, 30 insertions(+), 2 deletions(-)
+ kernel/memremap.c | 8 +++++---
+ 1 file changed, 5 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/nvdimm/pfn.h b/drivers/nvdimm/pfn.h
-index 7381673b7b70..acb19517f678 100644
---- a/drivers/nvdimm/pfn.h
-+++ b/drivers/nvdimm/pfn.h
-@@ -29,7 +29,10 @@ struct nd_pfn_sb {
- 	/* minor-version-2 record the base alignment of the mapping */
- 	__le32 align;
- 	/* minor-version-3 guarantee the padding and flags are zero */
--	u8 padding[4000];
-+	/* minor-version-4 record the page size and struct page size */
-+	__le32 page_size;
-+	__le16 page_struct_size;
-+	u8 padding[3994];
- 	__le64 checksum;
- };
+diff --git a/kernel/memremap.c b/kernel/memremap.c
+index a0e5f6b91b04..63800128844b 100644
+--- a/kernel/memremap.c
++++ b/kernel/memremap.c
+@@ -58,9 +58,11 @@ static unsigned long pfn_first(struct dev_pagemap *pgmap)
+ 	struct vmem_altmap *altmap = &pgmap->altmap;
+ 	unsigned long pfn;
  
-diff --git a/drivers/nvdimm/pfn_devs.c b/drivers/nvdimm/pfn_devs.c
-index 2537aa338bd0..cd722de0ae03 100644
---- a/drivers/nvdimm/pfn_devs.c
-+++ b/drivers/nvdimm/pfn_devs.c
-@@ -460,6 +460,15 @@ int nd_pfn_validate(struct nd_pfn *nd_pfn, const char *sig)
- 	if (__le16_to_cpu(pfn_sb->version_minor) < 2)
- 		pfn_sb->align = 0;
- 
-+	if (__le16_to_cpu(pfn_sb->version_minor) < 4) {
-+		/*
-+		 * For a large part we use PAGE_SIZE. But we
-+		 * do have some accounting code using SZ_4K.
-+		 */
-+		pfn_sb->page_struct_size = cpu_to_le16(64);
-+		pfn_sb->page_size = cpu_to_le32(PAGE_SIZE);
-+	}
+-	pfn = PHYS_PFN(res->start);
+-	if (pgmap->altmap_valid)
+-		pfn += vmem_altmap_offset(altmap);
++	if (pgmap->altmap_valid) {
++		pfn = altmap->base_pfn + vmem_altmap_offset(altmap);
++	} else
++		pfn = PHYS_PFN(res->start);
 +
- 	switch (le32_to_cpu(pfn_sb->mode)) {
- 	case PFN_MODE_RAM:
- 	case PFN_MODE_PMEM:
-@@ -475,6 +484,20 @@ int nd_pfn_validate(struct nd_pfn *nd_pfn, const char *sig)
- 		align = 1UL << ilog2(offset);
- 	mode = le32_to_cpu(pfn_sb->mode);
- 
-+	if (le32_to_cpu(pfn_sb->page_size) != PAGE_SIZE) {
-+		dev_err(&nd_pfn->dev,
-+			"init failed, page size mismatch %d\n",
-+			le32_to_cpu(pfn_sb->page_size));
-+		return -EOPNOTSUPP;
-+	}
-+
-+	if (le16_to_cpu(pfn_sb->page_struct_size) != sizeof(struct page)) {
-+		dev_err(&nd_pfn->dev,
-+			"init failed, struct page size mismatch %d\n",
-+			le16_to_cpu(pfn_sb->page_struct_size));
-+		return -EOPNOTSUPP;
-+	}
-+
- 	if (!nd_pfn->uuid) {
- 		/*
- 		 * When probing a namepace via nd_pfn_probe() the uuid
-@@ -723,8 +746,10 @@ static int nd_pfn_init(struct nd_pfn *nd_pfn)
- 	memcpy(pfn_sb->uuid, nd_pfn->uuid, 16);
- 	memcpy(pfn_sb->parent_uuid, nd_dev_to_uuid(&ndns->dev), 16);
- 	pfn_sb->version_major = cpu_to_le16(1);
--	pfn_sb->version_minor = cpu_to_le16(3);
-+	pfn_sb->version_minor = cpu_to_le16(4);
- 	pfn_sb->align = cpu_to_le32(nd_pfn->align);
-+	pfn_sb->page_struct_size = cpu_to_le16(sizeof(struct page));
-+	pfn_sb->page_size = cpu_to_le32(PAGE_SIZE);
- 	checksum = nd_sb_checksum((struct nd_gen_sb *) pfn_sb);
- 	pfn_sb->checksum = cpu_to_le64(checksum);
+ 	return pfn;
+ }
  
 -- 
 2.21.0
