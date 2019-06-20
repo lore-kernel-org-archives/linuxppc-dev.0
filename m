@@ -2,89 +2,55 @@ Return-Path: <SRS0=+cnT=UT=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.6 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BCE16C43613
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Jun 2019 10:18:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 50210C43613
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Jun 2019 10:38:08 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E024F20675
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Jun 2019 10:18:18 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="o2+Jg7pv"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E024F20675
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	by mail.kernel.org (Postfix) with ESMTPS id 9F1682070B
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Jun 2019 10:38:07 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9F1682070B
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45TySm3Qc9zDrFj
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Jun 2019 20:18:16 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45Tyvd0b2KzDrGn
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Jun 2019 20:38:05 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=2607:f8b0:4864:20::542; helo=mail-pg1-x542.google.com;
- envelope-from=npiggin@gmail.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=redhat.com
+ (client-ip=209.132.183.28; helo=mx1.redhat.com; envelope-from=david@redhat.com;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="o2+Jg7pv"; 
- dkim-atps=neutral
-Received: from mail-pg1-x542.google.com (mail-pg1-x542.google.com
- [IPv6:2607:f8b0:4864:20::542])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ dmarc=pass (p=none dis=none) header.from=redhat.com
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45TyQK240XzDr9S
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jun 2019 20:16:08 +1000 (AEST)
-Received: by mail-pg1-x542.google.com with SMTP id 145so1342087pgh.4
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jun 2019 03:16:08 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=date:from:subject:to:cc:references:in-reply-to:mime-version
- :user-agent:message-id:content-transfer-encoding;
- bh=r6MuAgpb0/2lJz7pVstqe3eWs0/BwcCgQyz1KMoDRzU=;
- b=o2+Jg7pvZhjcL+DDJKue0KURsf2/TOoCdCBBgrZJ16BHGrLN7F6dardFJAIuZMHsjH
- 3NWd4XyOTVBICM5+15b9AxNyx+PhbV0bv2O7nMl5NPm5eZh4ayT6AkZ5sjun7vMIsWKw
- N0cin0wsmIQgUmgzrondJzbBknZ65H1xH3G3bvH+25Qh9WwDNXtx9rBewwtLUH3uN9Of
- dssKR2CoTivLIBvH3/05Zic6SCU339rrilWE95FfyP9/lF8NoARa9+76hcd/Wp60mxXM
- wGSJYZdZucM/P7pzhhYjuYCMGfS9egtH/GWT7uUsRG1vR7COJlmOMMcSIV0RpF4kGO4h
- R+qw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:date:from:subject:to:cc:references:in-reply-to
- :mime-version:user-agent:message-id:content-transfer-encoding;
- bh=r6MuAgpb0/2lJz7pVstqe3eWs0/BwcCgQyz1KMoDRzU=;
- b=uZDkUuDTfQZgy6BHI8JSoChgSJWOmrFMTTSRCalwENS9hwBTNZadPVN+afTVAtNhvS
- D2WoUYQjhaKwBmb1VTZZVO8XM/Nnju56uo+NNXLUsxgMpuvnfh/z2iK9f+P/VmyrV+uE
- ytT874+Fy4zP4IVlrj1a2k9c6AYdsXTqNmq0SDGasgGmH0lSPD/xwoWRFQa/KSQtQetH
- phkxPVsM1Z67LMv+KgIqJ02tn0Wq/KQaga4U+O+ro6SXuQklLUJUYKiW5CVfAHT47xtk
- 5kfzUDHEW8NKlcce86LinrsGKHNOuObOJuda+FDsjGoDiFaR5/E6p827f612MFVZZAVl
- P4bw==
-X-Gm-Message-State: APjAAAW4zQfN3XxC1LoxX2zpKlMUaDKzLwmUN1uu0EruyZSdPSENmlKq
- p8mhxEw0BbNK2z+kLDAOcQjA6clh8/s=
-X-Google-Smtp-Source: APXvYqyFY3Vfy63I2tdPgxGfwA5K3Ut78PQP/xZI1LYN/3PfMdcpGoki3ehveLZpWNAcTmOEcT/kRA==
-X-Received: by 2002:a17:90a:b115:: with SMTP id
- z21mr2315020pjq.64.1561025766936; 
- Thu, 20 Jun 2019 03:16:06 -0700 (PDT)
-Received: from localhost ([203.220.63.126])
- by smtp.gmail.com with ESMTPSA id c133sm22498288pfb.111.2019.06.20.03.16.04
- (version=TLS1_3 cipher=AEAD-AES256-GCM-SHA384 bits=256/256);
- Thu, 20 Jun 2019 03:16:06 -0700 (PDT)
-Date: Thu, 20 Jun 2019 20:16:09 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
-Subject: Re: [PATCH v2 43/52] powerpc/64s/exception: machine check early only
- runs in HV mode
-To: mahesh@linux.vnet.ibm.com
-References: <20190620051459.29573-1-npiggin@gmail.com>
- <20190620051459.29573-44-npiggin@gmail.com>
- <20190620095329.rvrwxgtjsgkc4k5t@in.ibm.com>
-In-Reply-To: <20190620095329.rvrwxgtjsgkc4k5t@in.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45Tys074HHzDrDN
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jun 2019 20:35:48 +1000 (AEST)
+Received: from smtp.corp.redhat.com (int-mx03.intmail.prod.int.phx2.redhat.com
+ [10.5.11.13])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by mx1.redhat.com (Postfix) with ESMTPS id 074DF2E97C7;
+ Thu, 20 Jun 2019 10:35:47 +0000 (UTC)
+Received: from t460s.redhat.com (ovpn-117-88.ams2.redhat.com [10.36.117.88])
+ by smtp.corp.redhat.com (Postfix) with ESMTP id D445160600;
+ Thu, 20 Jun 2019 10:35:41 +0000 (UTC)
+From: David Hildenbrand <david@redhat.com>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH v2 2/6] drivers/base/memory: Use "unsigned long" for block ids
+Date: Thu, 20 Jun 2019 12:35:16 +0200
+Message-Id: <20190620103520.23481-3-david@redhat.com>
+In-Reply-To: <20190620103520.23481-1-david@redhat.com>
+References: <20190620103520.23481-1-david@redhat.com>
 MIME-Version: 1.0
-User-Agent: astroid/0.14.0 (https://github.com/astroidmail/astroid)
-Message-Id: <1561025688.p6bobskuv9.astroid@bobo.none>
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 8bit
+X-Scanned-By: MIMEDefang 2.79 on 10.5.11.13
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.5.16
+ (mx1.redhat.com [10.5.110.29]); Thu, 20 Jun 2019 10:35:47 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -96,28 +62,98 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org
+Cc: David Hildenbrand <david@redhat.com>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ "Rafael J. Wysocki" <rafael@kernel.org>, linux-mm@kvack.org,
+ linux-acpi@vger.kernel.org, Dan Williams <dan.j.williams@intel.com>,
+ linuxppc-dev@lists.ozlabs.org, Andrew Morton <akpm@linux-foundation.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Mahesh J Salgaonkar's on June 20, 2019 7:53 pm:
-> On 2019-06-20 15:14:50 Thu, Nicholas Piggin wrote:
->> machine_check_common_early and machine_check_handle_early only run in
->> HVMODE. Remove dead code.
->=20
-> That's not true. For pseries guest with FWNMI enabled hypervisor,
-> machine_check_common_early gets called in non-HV mode as well.
->=20
->    machine_check_fwnmi
->      machine_check_common_early
->        machine_check_handle_early
->          machine_check_early
->            pseries_machine_check_realmode
+Block ids are just shifted section numbers, so let's also use
+"unsigned long" for them, too.
 
-Yep, yep I was confused by the earlier patch. So we're only doing the
-early machine check path for the FWNMI case?
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>
+Signed-off-by: David Hildenbrand <david@redhat.com>
+---
+ drivers/base/memory.c | 22 +++++++++++-----------
+ 1 file changed, 11 insertions(+), 11 deletions(-)
 
-Thanks,
-Nick
-=
+diff --git a/drivers/base/memory.c b/drivers/base/memory.c
+index 5947b5a5686d..c54e80fd25a8 100644
+--- a/drivers/base/memory.c
++++ b/drivers/base/memory.c
+@@ -34,12 +34,12 @@ static DEFINE_MUTEX(mem_sysfs_mutex);
+ 
+ static int sections_per_block;
+ 
+-static inline int base_memory_block_id(unsigned long section_nr)
++static inline unsigned long base_memory_block_id(unsigned long section_nr)
+ {
+ 	return section_nr / sections_per_block;
+ }
+ 
+-static inline int pfn_to_block_id(unsigned long pfn)
++static inline unsigned long pfn_to_block_id(unsigned long pfn)
+ {
+ 	return base_memory_block_id(pfn_to_section_nr(pfn));
+ }
+@@ -587,7 +587,7 @@ int __weak arch_get_memory_phys_device(unsigned long start_pfn)
+  * A reference for the returned object is held and the reference for the
+  * hinted object is released.
+  */
+-static struct memory_block *find_memory_block_by_id(int block_id,
++static struct memory_block *find_memory_block_by_id(unsigned long block_id,
+ 						    struct memory_block *hint)
+ {
+ 	struct device *hintdev = hint ? &hint->dev : NULL;
+@@ -604,7 +604,7 @@ static struct memory_block *find_memory_block_by_id(int block_id,
+ struct memory_block *find_memory_block_hinted(struct mem_section *section,
+ 					      struct memory_block *hint)
+ {
+-	int block_id = base_memory_block_id(__section_nr(section));
++	unsigned long block_id = base_memory_block_id(__section_nr(section));
+ 
+ 	return find_memory_block_by_id(block_id, hint);
+ }
+@@ -663,8 +663,8 @@ int register_memory(struct memory_block *memory)
+ 	return ret;
+ }
+ 
+-static int init_memory_block(struct memory_block **memory, int block_id,
+-			     unsigned long state)
++static int init_memory_block(struct memory_block **memory,
++			     unsigned long block_id, unsigned long state)
+ {
+ 	struct memory_block *mem;
+ 	unsigned long start_pfn;
+@@ -729,8 +729,8 @@ static void unregister_memory(struct memory_block *memory)
+  */
+ int create_memory_block_devices(unsigned long start, unsigned long size)
+ {
+-	const int start_block_id = pfn_to_block_id(PFN_DOWN(start));
+-	int end_block_id = pfn_to_block_id(PFN_DOWN(start + size));
++	const unsigned long start_block_id = pfn_to_block_id(PFN_DOWN(start));
++	unsigned long end_block_id = pfn_to_block_id(PFN_DOWN(start + size));
+ 	struct memory_block *mem;
+ 	unsigned long block_id;
+ 	int ret = 0;
+@@ -766,10 +766,10 @@ int create_memory_block_devices(unsigned long start, unsigned long size)
+  */
+ void remove_memory_block_devices(unsigned long start, unsigned long size)
+ {
+-	const int start_block_id = pfn_to_block_id(PFN_DOWN(start));
+-	const int end_block_id = pfn_to_block_id(PFN_DOWN(start + size));
++	const unsigned long start_block_id = pfn_to_block_id(PFN_DOWN(start));
++	const unsigned long end_block_id = pfn_to_block_id(PFN_DOWN(start + size));
+ 	struct memory_block *mem;
+-	int block_id;
++	unsigned long block_id;
+ 
+ 	if (WARN_ON_ONCE(!IS_ALIGNED(start, memory_block_size_bytes()) ||
+ 			 !IS_ALIGNED(size, memory_block_size_bytes())))
+-- 
+2.21.0
+
