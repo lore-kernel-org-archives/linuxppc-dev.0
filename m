@@ -2,93 +2,87 @@ Return-Path: <SRS0=+cnT=UT=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.6 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EA38AC43613
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Jun 2019 04:15:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 863FFC43613
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Jun 2019 05:17:30 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 1E8F4208CB
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Jun 2019 04:15:18 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1E8F4208CB
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=au1.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id BF60D20675
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Jun 2019 05:17:29 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="ZyHfUyEl"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BF60D20675
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45TpPt18fRzDqs3
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Jun 2019 14:15:14 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45Tqnf5jQszDqvY
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Jun 2019 15:17:26 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=au1.ibm.com
- (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=alastair@au1.ibm.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=gmail.com
+ (client-ip=2607:f8b0:4864:20::444; helo=mail-pf1-x444.google.com;
+ envelope-from=npiggin@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=au1.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="ZyHfUyEl"; 
+ dkim-atps=neutral
+Received: from mail-pf1-x444.google.com (mail-pf1-x444.google.com
+ [IPv6:2607:f8b0:4864:20::444])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45TpMW6vLSzDqpd
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jun 2019 14:13:11 +1000 (AEST)
-Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x5K4CNeO084846
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jun 2019 00:13:08 -0400
-Received: from e06smtp01.uk.ibm.com (e06smtp01.uk.ibm.com [195.75.94.97])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2t80n7cbry-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jun 2019 00:13:07 -0400
-Received: from localhost
- by e06smtp01.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <alastair@au1.ibm.com>;
- Thu, 20 Jun 2019 05:13:05 +0100
-Received: from b06cxnps4076.portsmouth.uk.ibm.com (9.149.109.198)
- by e06smtp01.uk.ibm.com (192.168.101.131) with IBM ESMTP SMTP Gateway:
- Authorized Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Thu, 20 Jun 2019 05:13:01 +0100
-Received: from d06av22.portsmouth.uk.ibm.com (d06av22.portsmouth.uk.ibm.com
- [9.149.105.58])
- by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x5K4D0PO51970296
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Thu, 20 Jun 2019 04:13:00 GMT
-Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id A58AC4C04E;
- Thu, 20 Jun 2019 04:13:00 +0000 (GMT)
-Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 1342E4C044;
- Thu, 20 Jun 2019 04:13:00 +0000 (GMT)
-Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
- by d06av22.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Thu, 20 Jun 2019 04:13:00 +0000 (GMT)
-Received: from adsilva.ozlabs.ibm.com (haven.au.ibm.com [9.192.254.114])
- (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by ozlabs.au.ibm.com (Postfix) with ESMTPSA id AECBFA011C;
- Thu, 20 Jun 2019 14:12:57 +1000 (AEST)
-From: "Alastair D'Silva" <alastair@au1.ibm.com>
-To: alastair@d-silva.org
-Subject: [PATCH v2] ocxl: Allow contexts to be attached with a NULL mm
-Date: Thu, 20 Jun 2019 14:12:01 +1000
-X-Mailer: git-send-email 2.21.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45Tqkt28JdzDqtr
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jun 2019 15:15:01 +1000 (AEST)
+Received: by mail-pf1-x444.google.com with SMTP id q10so955919pff.9
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Jun 2019 22:15:01 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=from:to:cc:subject:date:message-id:in-reply-to:references
+ :mime-version:content-transfer-encoding;
+ bh=idRUfDTOPmJKt44j8Dd1KpqsUSCrx9gyOEFCK8ipJWY=;
+ b=ZyHfUyElwrubVLQ59tz8lyPAske1Vl78fnnuq8yjyk2kmA5Ing+MRF/qpg59FIu596
+ fE6dMsmvLd/zVVt11X96YhA6O1N005kD0ZjJb4dJq5vRKR6PS2inIZybxS5aA7BoBlwg
+ /PaFaGApjYQumjWnQcUMYwaP1TYRBcAEgwUvqynt1ADwQ+/VPxOEU14DmNgS44fhlcMg
+ XznowTJBpOoHLSuV5nkLBajfjHqr2gICK/2hPdwphm6F7Rhay+i+UinGOxvYkW+AXsHh
+ cXXRPt+aZRZJduKviYI8mQd5yug//ZHvraghnaYhp7lT8gkjUqYfNKYOiju/waKzfpyU
+ 0ExA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+ :references:mime-version:content-transfer-encoding;
+ bh=idRUfDTOPmJKt44j8Dd1KpqsUSCrx9gyOEFCK8ipJWY=;
+ b=Ep2KbkzkaSpAQtWvaAxcF0Ufu0YcgWYTt/5TTUcsYlgCIH71WktLFp9sEd/VjP1REB
+ tjytV/KJKJiYtbkSFhe3WZyPfJ+/8nZ6NTuJdJ/TgZOGiylbBPJik8QyHozoIxoKkzxB
+ /T9QpUoiSHDCseQGaSj8enzh0I+sFZAisgLiqE3Rp1n7miJwzL0gjp7QC7u3nNSqUf94
+ 1480PqStotxGcFmK0sb7BRxtX5sCq5wbODP73gdtuxCFNK4c4VhtAQ8eR219/y35HRZa
+ z2DXldPkqPJRJYeHOq14XvSksmOgrUH9lh60m3+AMVrfeTBv+i/+Sbno6VeudWWSyCFA
+ wZRQ==
+X-Gm-Message-State: APjAAAXiQ3JVZualwaLKugY0rywGTpFHRRe28vzlJdqv2lECeITn40bN
+ oppiX3WNrxY62wlyAY0dC9jPQ+Pp
+X-Google-Smtp-Source: APXvYqzNwuuL+KKJbCghhirtFEXaNE8l4aWWFdT1uOSTFd2Ri4lM5yohf+SWUNjrZW0jJsd2eH1yGw==
+X-Received: by 2002:aa7:92cb:: with SMTP id k11mr4103788pfa.126.1561007699512; 
+ Wed, 19 Jun 2019 22:14:59 -0700 (PDT)
+Received: from bobo.local0.net (193-116-72-140.tpgi.com.au. [193.116.72.140])
+ by smtp.gmail.com with ESMTPSA id
+ h12sm8235847pje.12.2019.06.19.22.14.57
+ (version=TLS1_3 cipher=AEAD-AES256-GCM-SHA384 bits=256/256);
+ Wed, 19 Jun 2019 22:14:59 -0700 (PDT)
+From: Nicholas Piggin <npiggin@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH v2 01/52] powerpc/64s/exception: fix line wrap and semicolon
+ inconsistencies in macros
+Date: Thu, 20 Jun 2019 15:14:08 +1000
+Message-Id: <20190620051459.29573-2-npiggin@gmail.com>
+X-Mailer: git-send-email 2.20.1
+In-Reply-To: <20190620051459.29573-1-npiggin@gmail.com>
+References: <20190620051459.29573-1-npiggin@gmail.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-x-cbid: 19062004-4275-0000-0000-00000343F20B
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19062004-4276-0000-0000-000038541FDE
-Message-Id: <20190620041203.12274-1-alastair@au1.ibm.com>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2019-06-20_03:, , signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- malwarescore=0 suspectscore=1 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=502 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1810050000 definitions=main-1906200032
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -100,136 +94,354 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Andrew Donnellan <ajd@linux.ibm.com>, Arnd Bergmann <arnd@arndb.de>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org,
- Nicholas Piggin <npiggin@gmail.com>,
- Masahiro Yamada <yamada.masahiro@socionext.com>,
- Paul Mackerras <paulus@samba.org>,
- Suraj Jitindar Singh <sjitindarsingh@gmail.com>,
- Frederic Barrat <fbarrat@linux.ibm.com>,
- Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
- Thomas Gleixner <tglx@linutronix.de>
+Cc: Nicholas Piggin <npiggin@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Alastair D'Silva <alastair@d-silva.org>
+By convention, all lines should be separated by a semicolons. Last line
+should have neither semicolon or line wrap.
 
-If an OpenCAPI context is to be used directly by a kernel driver, there
-may not be a suitable mm to use.
+No generated code change.
 
-The patch makes the mm parameter to ocxl_context_attach optional.
-
-Signed-off-by: Alastair D'Silva <alastair@d-silva.org>
+Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 ---
- arch/powerpc/mm/book3s64/radix_tlb.c |  5 +++++
- drivers/misc/ocxl/context.c          |  9 ++++++---
- drivers/misc/ocxl/link.c             | 28 ++++++++++++++++++++++++----
- 3 files changed, 35 insertions(+), 7 deletions(-)
+ arch/powerpc/include/asm/exception-64s.h | 36 ++++++-------
+ arch/powerpc/include/asm/head-64.h       | 68 ++++++++++++------------
+ 2 files changed, 52 insertions(+), 52 deletions(-)
 
-diff --git a/arch/powerpc/mm/book3s64/radix_tlb.c b/arch/powerpc/mm/book3s64/radix_tlb.c
-index bb9835681315..ce8a77fae6a7 100644
---- a/arch/powerpc/mm/book3s64/radix_tlb.c
-+++ b/arch/powerpc/mm/book3s64/radix_tlb.c
-@@ -666,6 +666,11 @@ EXPORT_SYMBOL(radix__flush_tlb_page);
- #define radix__flush_all_mm radix__local_flush_all_mm
- #endif /* CONFIG_SMP */
+diff --git a/arch/powerpc/include/asm/exception-64s.h b/arch/powerpc/include/asm/exception-64s.h
+index 841a0be6c1b2..d3987ce65857 100644
+--- a/arch/powerpc/include/asm/exception-64s.h
++++ b/arch/powerpc/include/asm/exception-64s.h
+@@ -185,11 +185,11 @@
+  */
+ #define LOAD_HANDLER(reg, label)					\
+ 	ld	reg,PACAKBASE(r13);	/* get high part of &label */	\
+-	ori	reg,reg,FIXED_SYMBOL_ABS_ADDR(label);
++	ori	reg,reg,FIXED_SYMBOL_ABS_ADDR(label)
  
-+/*
-+ * If kernel TLBIs ever become local rather than global, then
-+ * drivers/misc/ocxl/link.c:ocxl_link_add_pe will need some work, as it
-+ * assumes kernel TLBIs are global.
-+ */
- void radix__flush_tlb_kernel_range(unsigned long start, unsigned long end)
- {
- 	_tlbie_pid(0, RIC_FLUSH_ALL);
-diff --git a/drivers/misc/ocxl/context.c b/drivers/misc/ocxl/context.c
-index bab9c9364184..994563a078eb 100644
---- a/drivers/misc/ocxl/context.c
-+++ b/drivers/misc/ocxl/context.c
-@@ -69,6 +69,7 @@ static void xsl_fault_error(void *data, u64 addr, u64 dsisr)
- int ocxl_context_attach(struct ocxl_context *ctx, u64 amr, struct mm_struct *mm)
- {
- 	int rc;
-+	unsigned long pidr = 0;
+ #define __LOAD_HANDLER(reg, label)					\
+ 	ld	reg,PACAKBASE(r13);					\
+-	ori	reg,reg,(ABS_ADDR(label))@l;
++	ori	reg,reg,(ABS_ADDR(label))@l
  
- 	// Locks both status & tidr
- 	mutex_lock(&ctx->status_mutex);
-@@ -77,9 +78,11 @@ int ocxl_context_attach(struct ocxl_context *ctx, u64 amr, struct mm_struct *mm)
- 		goto out;
- 	}
+ /*
+  * Branches from unrelocated code (e.g., interrupts) to labels outside
+@@ -198,7 +198,7 @@
+ #define __LOAD_FAR_HANDLER(reg, label)					\
+ 	ld	reg,PACAKBASE(r13);					\
+ 	ori	reg,reg,(ABS_ADDR(label))@l;				\
+-	addis	reg,reg,(ABS_ADDR(label))@h;
++	addis	reg,reg,(ABS_ADDR(label))@h
  
--	rc = ocxl_link_add_pe(ctx->afu->fn->link, ctx->pasid,
--			mm->context.id, ctx->tidr, amr, mm,
--			xsl_fault_error, ctx);
-+	if (mm)
-+		pidr = mm->context.id;
-+
-+	rc = ocxl_link_add_pe(ctx->afu->fn->link, ctx->pasid, pidr, ctx->tidr,
-+			      amr, mm, xsl_fault_error, ctx);
- 	if (rc)
- 		goto out;
+ /* Exception register prefixes */
+ #define EXC_HV	H
+@@ -273,7 +273,7 @@ END_FTR_SECTION_NESTED(ftr,ftr,943)
+ 	OPT_SAVE_REG_TO_PACA(area+EX_CFAR, r10, CPU_FTR_CFAR);		\
+ 	INTERRUPT_TO_KERNEL;						\
+ 	SAVE_CTR(r10, area);						\
+-	mfcr	r9;
++	mfcr	r9
  
-diff --git a/drivers/misc/ocxl/link.c b/drivers/misc/ocxl/link.c
-index cce5b0d64505..58d111afd9f6 100644
---- a/drivers/misc/ocxl/link.c
-+++ b/drivers/misc/ocxl/link.c
-@@ -224,6 +224,17 @@ static irqreturn_t xsl_fault_handler(int irq, void *data)
- 		ack_irq(spa, ADDRESS_ERROR);
- 		return IRQ_HANDLED;
- 	}
-+
-+	if (!pe_data->mm) {
-+		/*
-+		 * translation fault from a kernel context - an OpenCAPI
-+		 * device tried to access a bad kernel address
-+		 */
-+		rcu_read_unlock();
-+		pr_warn("Unresolved OpenCAPI xsl fault in kernel context\n");
-+		ack_irq(spa, ADDRESS_ERROR);
-+		return IRQ_HANDLED;
-+	}
- 	WARN_ON(pe_data->mm->context.id != pid);
+ #define __EXCEPTION_PROLOG_1_POST(area)					\
+ 	std	r11,area+EX_R11(r13);					\
+@@ -290,7 +290,7 @@ END_FTR_SECTION_NESTED(ftr,ftr,943)
+ #define MASKABLE_EXCEPTION_PROLOG_1(area, extra, vec, bitmask)			\
+ 	__EXCEPTION_PROLOG_1_PRE(area);					\
+ 	extra(vec, bitmask);						\
+-	__EXCEPTION_PROLOG_1_POST(area);
++	__EXCEPTION_PROLOG_1_POST(area)
  
- 	if (mmget_not_zero(pe_data->mm)) {
-@@ -523,7 +534,13 @@ int ocxl_link_add_pe(void *link_handle, int pasid, u32 pidr, u32 tidr,
- 	pe->amr = cpu_to_be64(amr);
- 	pe->software_state = cpu_to_be32(SPA_PE_VALID);
+ /*
+  * This version of the EXCEPTION_PROLOG_1 is intended
+@@ -299,7 +299,7 @@ END_FTR_SECTION_NESTED(ftr,ftr,943)
+ #define _EXCEPTION_PROLOG_1(area, extra, vec)				\
+ 	__EXCEPTION_PROLOG_1_PRE(area);					\
+ 	extra(vec);							\
+-	__EXCEPTION_PROLOG_1_POST(area);
++	__EXCEPTION_PROLOG_1_POST(area)
  
--	mm_context_add_copro(mm);
-+	/*
-+	 * For user contexts, register a copro so that TLBIs are seen
-+	 * by the nest MMU. If we have a kernel context, TLBIs are
-+	 * already global.
-+	 */
-+	if (mm)
-+		mm_context_add_copro(mm);
- 	/*
- 	 * Barrier is to make sure PE is visible in the SPA before it
- 	 * is used by the device. It also helps with the global TLBI
-@@ -546,7 +563,8 @@ int ocxl_link_add_pe(void *link_handle, int pasid, u32 pidr, u32 tidr,
- 	 * have a reference on mm_users. Incrementing mm_count solves
- 	 * the problem.
- 	 */
--	mmgrab(mm);
-+	if (mm)
-+		mmgrab(mm);
- 	trace_ocxl_context_add(current->pid, spa->spa_mem, pasid, pidr, tidr);
- unlock:
- 	mutex_unlock(&spa->spa_lock);
-@@ -652,8 +670,10 @@ int ocxl_link_remove_pe(void *link_handle, int pasid)
- 	if (!pe_data) {
- 		WARN(1, "Couldn't find pe data when removing PE\n");
- 	} else {
--		mm_context_remove_copro(pe_data->mm);
--		mmdrop(pe_data->mm);
-+		if (pe_data->mm) {
-+			mm_context_remove_copro(pe_data->mm);
-+			mmdrop(pe_data->mm);
-+		}
- 		kfree_rcu(pe_data, rcu);
- 	}
- unlock:
+ #define EXCEPTION_PROLOG_1(area, extra, vec)				\
+ 	_EXCEPTION_PROLOG_1(area, extra, vec)
+@@ -307,7 +307,7 @@ END_FTR_SECTION_NESTED(ftr,ftr,943)
+ #define __EXCEPTION_PROLOG_2(label, h)					\
+ 	ld	r10,PACAKMSR(r13);	/* get MSR value for kernel */	\
+ 	mfspr	r11,SPRN_##h##SRR0;	/* save SRR0 */			\
+-	LOAD_HANDLER(r12,label)						\
++	LOAD_HANDLER(r12,label);					\
+ 	mtspr	SPRN_##h##SRR0,r12;					\
+ 	mfspr	r12,SPRN_##h##SRR1;	/* and SRR1 */			\
+ 	mtspr	SPRN_##h##SRR1,r10;					\
+@@ -321,7 +321,7 @@ END_FTR_SECTION_NESTED(ftr,ftr,943)
+ 	ld	r10,PACAKMSR(r13);	/* get MSR value for kernel */	\
+ 	xori	r10,r10,MSR_RI;		/* Clear MSR_RI */		\
+ 	mfspr	r11,SPRN_##h##SRR0;	/* save SRR0 */			\
+-	LOAD_HANDLER(r12,label)						\
++	LOAD_HANDLER(r12,label);					\
+ 	mtspr	SPRN_##h##SRR0,r12;					\
+ 	mfspr	r12,SPRN_##h##SRR1;	/* and SRR1 */			\
+ 	mtspr	SPRN_##h##SRR1,r10;					\
+@@ -335,7 +335,7 @@ END_FTR_SECTION_NESTED(ftr,ftr,943)
+ 	SET_SCRATCH0(r13);		/* save r13 */			\
+ 	EXCEPTION_PROLOG_0(area);					\
+ 	EXCEPTION_PROLOG_1(area, extra, vec);				\
+-	EXCEPTION_PROLOG_2(label, h);
++	EXCEPTION_PROLOG_2(label, h)
+ 
+ #define __KVMTEST(h, n)							\
+ 	lbz	r10,HSTATE_IN_GUEST(r13);				\
+@@ -409,7 +409,7 @@ END_FTR_SECTION_NESTED(ftr,ftr,943)
+ #define EXCEPTION_PROLOG_NORI(area, label, h, extra, vec)		\
+ 	EXCEPTION_PROLOG_0(area);					\
+ 	EXCEPTION_PROLOG_1(area, extra, vec);				\
+-	EXCEPTION_PROLOG_2_NORI(label, h);
++	EXCEPTION_PROLOG_2_NORI(label, h)
+ 
+ 
+ #define __KVM_HANDLER(area, h, n)					\
+@@ -546,16 +546,16 @@ END_FTR_SECTION_NESTED(ftr,ftr,943)
+ 
+ /* Version of above for when we have to branch out-of-line */
+ #define __OOL_EXCEPTION(vec, label, hdlr)			\
+-	SET_SCRATCH0(r13)					\
+-	EXCEPTION_PROLOG_0(PACA_EXGEN)				\
+-	b hdlr;
++	SET_SCRATCH0(r13);					\
++	EXCEPTION_PROLOG_0(PACA_EXGEN);				\
++	b hdlr
+ 
+ #define STD_EXCEPTION_OOL(vec, label)				\
+ 	EXCEPTION_PROLOG_1(PACA_EXGEN, KVMTEST_PR, vec);	\
+ 	EXCEPTION_PROLOG_2(label, EXC_STD)
+ 
+ #define STD_EXCEPTION_HV(loc, vec, label)			\
+-	EXCEPTION_PROLOG(PACA_EXGEN, label, EXC_HV, KVMTEST_HV, vec);
++	EXCEPTION_PROLOG(PACA_EXGEN, label, EXC_HV, KVMTEST_HV, vec)
+ 
+ #define STD_EXCEPTION_HV_OOL(vec, label)			\
+ 	EXCEPTION_PROLOG_1(PACA_EXGEN, KVMTEST_HV, vec);	\
+@@ -563,14 +563,14 @@ END_FTR_SECTION_NESTED(ftr,ftr,943)
+ 
+ #define STD_RELON_EXCEPTION(loc, vec, label)		\
+ 	/* No guest interrupts come through here */	\
+-	EXCEPTION_RELON_PROLOG(PACA_EXGEN, label, EXC_STD, NOTEST, vec);
++	EXCEPTION_RELON_PROLOG(PACA_EXGEN, label, EXC_STD, NOTEST, vec)
+ 
+ #define STD_RELON_EXCEPTION_OOL(vec, label)			\
+ 	EXCEPTION_PROLOG_1(PACA_EXGEN, NOTEST, vec);		\
+ 	EXCEPTION_PROLOG_2_RELON(label, EXC_STD)
+ 
+ #define STD_RELON_EXCEPTION_HV(loc, vec, label)		\
+-	EXCEPTION_RELON_PROLOG(PACA_EXGEN, label, EXC_HV, KVMTEST_HV, vec);
++	EXCEPTION_RELON_PROLOG(PACA_EXGEN, label, EXC_HV, KVMTEST_HV, vec)
+ 
+ #define STD_RELON_EXCEPTION_HV_OOL(vec, label)			\
+ 	EXCEPTION_PROLOG_1(PACA_EXGEN, KVMTEST_HV, vec);	\
+@@ -615,7 +615,7 @@ END_FTR_SECTION_NESTED(ftr,ftr,943)
+ 	SET_SCRATCH0(r13);    /* save r13 */				\
+ 	EXCEPTION_PROLOG_0(PACA_EXGEN);					\
+ 	MASKABLE_EXCEPTION_PROLOG_1(PACA_EXGEN, extra, vec, bitmask);	\
+-	EXCEPTION_PROLOG_2(label, h);
++	EXCEPTION_PROLOG_2(label, h)
+ 
+ #define MASKABLE_EXCEPTION(vec, label, bitmask)				\
+ 	__MASKABLE_EXCEPTION(vec, label, EXC_STD, SOFTEN_TEST_PR, bitmask)
+@@ -642,7 +642,7 @@ END_FTR_SECTION_NESTED(ftr,ftr,943)
+ 
+ #define MASKABLE_RELON_EXCEPTION_OOL(vec, label, bitmask)		\
+ 	MASKABLE_EXCEPTION_PROLOG_1(PACA_EXGEN, SOFTEN_NOTEST_PR, vec, bitmask);\
+-	EXCEPTION_PROLOG_2(label, EXC_STD);
++	EXCEPTION_PROLOG_2(label, EXC_STD)
+ 
+ #define MASKABLE_RELON_EXCEPTION_HV(vec, label, bitmask)		\
+ 	__MASKABLE_RELON_EXCEPTION(vec, label, EXC_HV, SOFTEN_TEST_HV, bitmask)
+diff --git a/arch/powerpc/include/asm/head-64.h b/arch/powerpc/include/asm/head-64.h
+index a4f947888744..e34b3d06bf61 100644
+--- a/arch/powerpc/include/asm/head-64.h
++++ b/arch/powerpc/include/asm/head-64.h
+@@ -255,135 +255,135 @@ end_##sname:
+ 
+ #define EXC_VIRT_NONE(start, size)				\
+ 	FIXED_SECTION_ENTRY_BEGIN_LOCATION(virt_vectors, exc_virt_##start##_##unused, start, size); \
+-	FIXED_SECTION_ENTRY_END_LOCATION(virt_vectors, exc_virt_##start##_##unused, start, size);
++	FIXED_SECTION_ENTRY_END_LOCATION(virt_vectors, exc_virt_##start##_##unused, start, size)
+ 
+ 
+ #define EXC_REAL(name, start, size)					\
+ 	EXC_REAL_BEGIN(name, start, size);				\
+ 	STD_EXCEPTION(start, name##_common);				\
+-	EXC_REAL_END(name, start, size);
++	EXC_REAL_END(name, start, size)
+ 
+ #define EXC_VIRT(name, start, size, realvec)				\
+ 	EXC_VIRT_BEGIN(name, start, size);				\
+ 	STD_RELON_EXCEPTION(start, realvec, name##_common);		\
+-	EXC_VIRT_END(name, start, size);
++	EXC_VIRT_END(name, start, size)
+ 
+ #define EXC_REAL_MASKABLE(name, start, size, bitmask)			\
+ 	EXC_REAL_BEGIN(name, start, size);				\
+ 	MASKABLE_EXCEPTION(start, name##_common, bitmask);		\
+-	EXC_REAL_END(name, start, size);
++	EXC_REAL_END(name, start, size)
+ 
+ #define EXC_VIRT_MASKABLE(name, start, size, realvec, bitmask)		\
+ 	EXC_VIRT_BEGIN(name, start, size);				\
+ 	MASKABLE_RELON_EXCEPTION(realvec, name##_common, bitmask);	\
+-	EXC_VIRT_END(name, start, size);
++	EXC_VIRT_END(name, start, size)
+ 
+ #define EXC_REAL_HV(name, start, size)					\
+ 	EXC_REAL_BEGIN(name, start, size);				\
+ 	STD_EXCEPTION_HV(start, start, name##_common);			\
+-	EXC_REAL_END(name, start, size);
++	EXC_REAL_END(name, start, size)
+ 
+ #define EXC_VIRT_HV(name, start, size, realvec)				\
+ 	EXC_VIRT_BEGIN(name, start, size);				\
+ 	STD_RELON_EXCEPTION_HV(start, realvec, name##_common);		\
+-	EXC_VIRT_END(name, start, size);
++	EXC_VIRT_END(name, start, size)
+ 
+ #define __EXC_REAL_OOL(name, start, size)				\
+ 	EXC_REAL_BEGIN(name, start, size);				\
+ 	__OOL_EXCEPTION(start, label, tramp_real_##name);		\
+-	EXC_REAL_END(name, start, size);
++	EXC_REAL_END(name, start, size)
+ 
+ #define __TRAMP_REAL_OOL(name, vec)					\
+ 	TRAMP_REAL_BEGIN(tramp_real_##name);				\
+-	STD_EXCEPTION_OOL(vec, name##_common);
++	STD_EXCEPTION_OOL(vec, name##_common)
+ 
+ #define EXC_REAL_OOL(name, start, size)					\
+ 	__EXC_REAL_OOL(name, start, size);				\
+-	__TRAMP_REAL_OOL(name, start);
++	__TRAMP_REAL_OOL(name, start)
+ 
+ #define __EXC_REAL_OOL_MASKABLE(name, start, size)			\
+-	__EXC_REAL_OOL(name, start, size);
++	__EXC_REAL_OOL(name, start, size)
+ 
+ #define __TRAMP_REAL_OOL_MASKABLE(name, vec, bitmask)			\
+ 	TRAMP_REAL_BEGIN(tramp_real_##name);				\
+-	MASKABLE_EXCEPTION_OOL(vec, name##_common, bitmask);
++	MASKABLE_EXCEPTION_OOL(vec, name##_common, bitmask)
+ 
+ #define EXC_REAL_OOL_MASKABLE(name, start, size, bitmask)		\
+ 	__EXC_REAL_OOL_MASKABLE(name, start, size);			\
+-	__TRAMP_REAL_OOL_MASKABLE(name, start, bitmask);
++	__TRAMP_REAL_OOL_MASKABLE(name, start, bitmask)
+ 
+ #define __EXC_REAL_OOL_HV_DIRECT(name, start, size, handler)		\
+ 	EXC_REAL_BEGIN(name, start, size);				\
+ 	__OOL_EXCEPTION(start, label, handler);				\
+-	EXC_REAL_END(name, start, size);
++	EXC_REAL_END(name, start, size)
+ 
+ #define __EXC_REAL_OOL_HV(name, start, size)				\
+-	__EXC_REAL_OOL(name, start, size);
++	__EXC_REAL_OOL(name, start, size)
+ 
+ #define __TRAMP_REAL_OOL_HV(name, vec)					\
+ 	TRAMP_REAL_BEGIN(tramp_real_##name);				\
+-	STD_EXCEPTION_HV_OOL(vec, name##_common);			\
++	STD_EXCEPTION_HV_OOL(vec, name##_common)
+ 
+ #define EXC_REAL_OOL_HV(name, start, size)				\
+ 	__EXC_REAL_OOL_HV(name, start, size);				\
+-	__TRAMP_REAL_OOL_HV(name, start);
++	__TRAMP_REAL_OOL_HV(name, start)
+ 
+ #define __EXC_REAL_OOL_MASKABLE_HV(name, start, size)			\
+-	__EXC_REAL_OOL(name, start, size);
++	__EXC_REAL_OOL(name, start, size)
+ 
+ #define __TRAMP_REAL_OOL_MASKABLE_HV(name, vec, bitmask)		\
+ 	TRAMP_REAL_BEGIN(tramp_real_##name);				\
+-	MASKABLE_EXCEPTION_HV_OOL(vec, name##_common, bitmask);		\
++	MASKABLE_EXCEPTION_HV_OOL(vec, name##_common, bitmask)
+ 
+ #define EXC_REAL_OOL_MASKABLE_HV(name, start, size, bitmask)		\
+ 	__EXC_REAL_OOL_MASKABLE_HV(name, start, size);			\
+-	__TRAMP_REAL_OOL_MASKABLE_HV(name, start, bitmask);
++	__TRAMP_REAL_OOL_MASKABLE_HV(name, start, bitmask)
+ 
+ #define __EXC_VIRT_OOL(name, start, size)				\
+ 	EXC_VIRT_BEGIN(name, start, size);				\
+ 	__OOL_EXCEPTION(start, label, tramp_virt_##name);		\
+-	EXC_VIRT_END(name, start, size);
++	EXC_VIRT_END(name, start, size)
+ 
+ #define __TRAMP_VIRT_OOL(name, realvec)					\
+ 	TRAMP_VIRT_BEGIN(tramp_virt_##name);				\
+-	STD_RELON_EXCEPTION_OOL(realvec, name##_common);
++	STD_RELON_EXCEPTION_OOL(realvec, name##_common)
+ 
+ #define EXC_VIRT_OOL(name, start, size, realvec)			\
+ 	__EXC_VIRT_OOL(name, start, size);				\
+-	__TRAMP_VIRT_OOL(name, realvec);
++	__TRAMP_VIRT_OOL(name, realvec)
+ 
+ #define __EXC_VIRT_OOL_MASKABLE(name, start, size)			\
+-	__EXC_VIRT_OOL(name, start, size);
++	__EXC_VIRT_OOL(name, start, size)
+ 
+ #define __TRAMP_VIRT_OOL_MASKABLE(name, realvec, bitmask)		\
+ 	TRAMP_VIRT_BEGIN(tramp_virt_##name);				\
+-	MASKABLE_RELON_EXCEPTION_OOL(realvec, name##_common, bitmask);
++	MASKABLE_RELON_EXCEPTION_OOL(realvec, name##_common, bitmask)
+ 
+ #define EXC_VIRT_OOL_MASKABLE(name, start, size, realvec, bitmask)	\
+ 	__EXC_VIRT_OOL_MASKABLE(name, start, size);			\
+-	__TRAMP_VIRT_OOL_MASKABLE(name, realvec, bitmask);
++	__TRAMP_VIRT_OOL_MASKABLE(name, realvec, bitmask)
+ 
+ #define __EXC_VIRT_OOL_HV(name, start, size)				\
+-	__EXC_VIRT_OOL(name, start, size);
++	__EXC_VIRT_OOL(name, start, size)
+ 
+ #define __TRAMP_VIRT_OOL_HV(name, realvec)				\
+ 	TRAMP_VIRT_BEGIN(tramp_virt_##name);				\
+-	STD_RELON_EXCEPTION_HV_OOL(realvec, name##_common);		\
++	STD_RELON_EXCEPTION_HV_OOL(realvec, name##_common)
+ 
+ #define EXC_VIRT_OOL_HV(name, start, size, realvec)			\
+ 	__EXC_VIRT_OOL_HV(name, start, size);				\
+-	__TRAMP_VIRT_OOL_HV(name, realvec);
++	__TRAMP_VIRT_OOL_HV(name, realvec)
+ 
+ #define __EXC_VIRT_OOL_MASKABLE_HV(name, start, size)			\
+-	__EXC_VIRT_OOL(name, start, size);
++	__EXC_VIRT_OOL(name, start, size)
+ 
+ #define __TRAMP_VIRT_OOL_MASKABLE_HV(name, realvec, bitmask)		\
+ 	TRAMP_VIRT_BEGIN(tramp_virt_##name);				\
+-	MASKABLE_RELON_EXCEPTION_HV_OOL(realvec, name##_common, bitmask);\
++	MASKABLE_RELON_EXCEPTION_HV_OOL(realvec, name##_common, bitmask)
+ 
+ #define EXC_VIRT_OOL_MASKABLE_HV(name, start, size, realvec, bitmask)	\
+ 	__EXC_VIRT_OOL_MASKABLE_HV(name, start, size);			\
+-	__TRAMP_VIRT_OOL_MASKABLE_HV(name, realvec, bitmask);
++	__TRAMP_VIRT_OOL_MASKABLE_HV(name, realvec, bitmask)
+ 
+ #define TRAMP_KVM(area, n)						\
+ 	TRAMP_KVM_BEGIN(do_kvm_##n);					\
+@@ -406,11 +406,11 @@ end_##sname:
+ 
+ #define EXC_COMMON(name, realvec, hdlr)					\
+ 	EXC_COMMON_BEGIN(name);						\
+-	STD_EXCEPTION_COMMON(realvec, name, hdlr);			\
++	STD_EXCEPTION_COMMON(realvec, name, hdlr)
+ 
+ #define EXC_COMMON_ASYNC(name, realvec, hdlr)				\
+ 	EXC_COMMON_BEGIN(name);						\
+-	STD_EXCEPTION_COMMON_ASYNC(realvec, name, hdlr);		\
++	STD_EXCEPTION_COMMON_ASYNC(realvec, name, hdlr)
+ 
+ #endif /* __ASSEMBLY__ */
+ 
 -- 
-2.21.0
+2.20.1
 
