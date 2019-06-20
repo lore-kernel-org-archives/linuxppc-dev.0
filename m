@@ -8,21 +8,21 @@ X-Spam-Status: No, score=-8.3 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
 	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C1C77C43613
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Jun 2019 01:53:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5A9BDC43613
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Jun 2019 01:55:18 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 4338B2147A
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Jun 2019 01:53:29 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id C89402147A
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Jun 2019 01:55:17 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="UkFBpkHn"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4338B2147A
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="qgNZHp/l"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C89402147A
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45TlGH2BZTzDqvT
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Jun 2019 11:53:27 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45TlJL2HNmzDqsm
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Jun 2019 11:55:14 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=gmail.com
  (client-ip=2607:f8b0:4864:20::543; helo=mail-pg1-x543.google.com;
@@ -30,52 +30,53 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="UkFBpkHn"; 
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="qgNZHp/l"; 
  dkim-atps=neutral
 Received: from mail-pg1-x543.google.com (mail-pg1-x543.google.com
  [IPv6:2607:f8b0:4864:20::543])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45Tl7H0SlnzDqrs
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jun 2019 11:47:22 +1000 (AEST)
-Received: by mail-pg1-x543.google.com with SMTP id v9so641559pgr.13
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Jun 2019 18:47:22 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45Tl7F0VwSzDqrZ
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jun 2019 11:47:20 +1000 (AEST)
+Received: by mail-pg1-x543.google.com with SMTP id 196so663559pgc.6
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Jun 2019 18:47:20 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
  h=from:to:cc:subject:date:message-id:in-reply-to:references;
- bh=Qzjpioy/P2IPckje2dj/C4MHof6bcToLS3p/Qy08+Dc=;
- b=UkFBpkHnaDzJ4EEr/gPxr3tB5VD3Lt6Sack+HpwPgZWu93UMoqsvLt3ySpWYJ1u+1o
- 9zlwxLM4Xo8bksXVPtVDp3gAm1SozhQxFWLe9i8u+VzmeNAaYXq3GqnueIJgh8wR4JVo
- Q759N28xmebe3thpfTU2dey91XPLNRBpXYbc6Rft+ZpV4DhdbEpH1xyct1APfOEtv2M8
- x8h2dli7Wzyp5UTdf6r2VAkvX9UYsn4yxka7OSBhHmGqTBANYM7kMH7XE5key0GiGxSM
- O8QBmiPI4HXHEMLM/qMZJaIy2VC/kYviJQ7VyTtmGb1DrLsrGlIDm4+ku5eJ4uFsPgIa
- pt6Q==
+ bh=mCIC2aboa3+r+s8FwQIzqoLVu7DilRd8Ln+aL0vqvn0=;
+ b=qgNZHp/lhGNyohg7ZT58DH0wNF+D5EwcPHyalSMFyf7j727/HvDLykynP9BGEC4SrY
+ EpU0MQeYT+JACzcMGkUhTJy59RpMLJYV/yB7RNZOdsPwZt+4h+zu9FeKxueyzEqT0+vw
+ 0y3n3wuaIyhCNKoh96673+B3zjlZ0p9X3wnDz/kQqRDEYmXSSgrwuZiNWrf+LLZHQyid
+ WDk5CSTtan+AxUk9jibW3Qc3PfO7Ye5VRERY5TCU7vjvC7z1iXEqTOcL3VC/Z6qM5eSk
+ xtn+nk4bKeFz3qLmIasf1XG0ffivOI7sFYzhWBmrrXl++VREgpZHFUSSbUrWIlWnA0hB
+ LgyA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
  :references;
- bh=Qzjpioy/P2IPckje2dj/C4MHof6bcToLS3p/Qy08+Dc=;
- b=FgTUVwCyPr//krCANQ28suXRYVfAhQWBFsbQvLsvJYqjC5avS/PlH6/Qm2tqIsRq9f
- 6xwtBZbESYHlOyQyKteWWT70mJGYPLkeE0wZ2pxiqCfDywRPADs5ETfu3Ba6uyi6mHoD
- q2CZ9R53ZUALrr5o6ZIeYo4Oy2gwXK6hT++XxZpklyGo4EuybhgV7Ed26XHtPrxQDsA6
- akDxoBCu37Yzw8m9UHKV/LJ2CsM2ZqgTTwq/24GolEZZsPCvKTk05YYAvfyle2CiRKQH
- vJrD+1zdweZckqpLlDkmfdq0AHclQsUjR/NoA2hkDqO3Z3whFR5bBCAaz3SLyWK55YbF
- V+gQ==
-X-Gm-Message-State: APjAAAWbDqaV/7Gy9qMjKeqIvF2HzR13BMsMLLbx+4NTq2VDU8dMNZGh
- rCcwDx1werx2S3teMcPP7/RV/B5E
-X-Google-Smtp-Source: APXvYqx+2IXeF0bK9VkWnbmx9WmhqjJFeWbAoAZDCTeAWgYBWnohz9q3fIehN5XzGYXsgtu+dH0rtw==
-X-Received: by 2002:a63:5a4b:: with SMTP id k11mr10562073pgm.143.1560995239808; 
- Wed, 19 Jun 2019 18:47:19 -0700 (PDT)
+ bh=mCIC2aboa3+r+s8FwQIzqoLVu7DilRd8Ln+aL0vqvn0=;
+ b=OVYDdUV+0ODJTPo7V+m7rc54uS9rXn7bZSCIEB1ffRIRJDa4CJ1w0r/bGbN0l0pw9N
+ GGQY8m95yt9ZFc15uzf4s9wUOsg9WloUxJm6mVh/PBiEUwAxS8/5n6qI11aupwreton3
+ gQPOKN2Yx1wVmQhEt9sZz+xWGQK8DicXcGsGQCPmSPbtVZNVVg6siHx6IHko3VYkH+KM
+ d7eJdbXq/0xRJSuoHncG9/4Kffije+UyIs/1DrcWVRc5QZzdAzcAkRxH1E+SSOo9IoE5
+ G0RMEiW1zI81vUF+ILVk5ZVRd4KlQcmwUEMZJIOKIZK64BRyPhOdxnpDeS1SoOBH1eps
+ VHYQ==
+X-Gm-Message-State: APjAAAUf/EbTgMKd0U4rRBqOFQsYPeSPRZ1I8m+8Whn5mRCePwZJvvV7
+ +DIVDoK/OxMyUST+lJHZsfK7j+8n
+X-Google-Smtp-Source: APXvYqzxxwvput0hwtg9iKYmnq2VzDGr9V32cZn/53fXeykdeqkBTdooGW36AwvHS58s9fIbCQCIbg==
+X-Received: by 2002:a17:90b:8d2:: with SMTP id
+ ds18mr290574pjb.132.1560995237014; 
+ Wed, 19 Jun 2019 18:47:17 -0700 (PDT)
 Received: from surajjs2.ozlabs.ibm.com ([122.99.82.10])
- by smtp.gmail.com with ESMTPSA id 23sm20763528pfn.176.2019.06.19.18.47.17
+ by smtp.gmail.com with ESMTPSA id 23sm20763528pfn.176.2019.06.19.18.47.14
  (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
- Wed, 19 Jun 2019 18:47:19 -0700 (PDT)
+ Wed, 19 Jun 2019 18:47:16 -0700 (PDT)
 From: Suraj Jitindar Singh <sjitindarsingh@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 3/3] KVM: PPC: Book3S HV: Clear pending decr exceptions on
- nested guest entry
-Date: Thu, 20 Jun 2019 11:46:51 +1000
-Message-Id: <20190620014651.7645-3-sjitindarsingh@gmail.com>
+Subject: [PATCH 2/3] KVM: PPC: Book3S HV: Signed extend decrementer value if
+ not using large decr
+Date: Thu, 20 Jun 2019 11:46:50 +1000
+Message-Id: <20190620014651.7645-2-sjitindarsingh@gmail.com>
 X-Mailer: git-send-email 2.13.6
 In-Reply-To: <20190620014651.7645-1-sjitindarsingh@gmail.com>
 References: <20190620014651.7645-1-sjitindarsingh@gmail.com>
@@ -95,56 +96,37 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-If we enter an L1 guest with a pending decrementer exception then this
-is cleared on guest exit if the guest has writtien a positive value into
-the decrementer (indicating that it handled the decrementer exception)
-since there is no other way to detect that the guest has handled the
-pending exception and that it should be dequeued. In the event that the
-L1 guest tries to run a nested (L2) guest immediately after this and the
-L2 guest decrementer is negative (which is loaded by L1 before making
-the H_ENTER_NESTED hcall), then the pending decrementer exception
-isn't cleared and the L2 entry is blocked since L1 has a pending
-exception, even though L1 may have already handled the exception and
-written a positive value for it's decrementer. This results in a loop of
-L1 trying to enter the L2 guest and L0 blocking the entry since L1 has
-an interrupt pending with the outcome being that L2 never gets to run
-and hangs.
+On POWER9 the decrementer can operate in large decrementer mode where
+the decrementer is 56 bits and signed extended to 64 bits. When not
+operating in this mode the decrementer behaves as a 32 bit decrementer
+which is NOT signed extended (as on POWER8).
 
-Fix this by clearing any pending decrementer exceptions when L1 makes
-the H_ENTER_NESTED hcall since it won't do this if it's decrementer has
-gone negative, and anyway it's decrementer has been communicated to L0
-in the hdec_expires field and L0 will return control to L1 when this
-goes negative by delivering an H_DECREMENTER exception.
+Currently when reading a guest decrementer value we don't take into
+account whether the large decrementer is enabled or not, and this means
+the value will be incorrect when the guest is not using the large
+decrementer. Fix this by sign extending the value read when the guest
+isn't using the large decrementer.
 
 Fixes: 95a6432ce903 "KVM: PPC: Book3S HV: Streamlined guest entry/exit path on P9 for radix guests"
 
 Signed-off-by: Suraj Jitindar Singh <sjitindarsingh@gmail.com>
 ---
- arch/powerpc/kvm/book3s_hv.c | 11 +++++++++--
- 1 file changed, 9 insertions(+), 2 deletions(-)
+ arch/powerpc/kvm/book3s_hv.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
 diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
-index 719fd2529eec..4a5eb29b952f 100644
+index d3684509da35..719fd2529eec 100644
 --- a/arch/powerpc/kvm/book3s_hv.c
 +++ b/arch/powerpc/kvm/book3s_hv.c
-@@ -4128,8 +4128,15 @@ int kvmhv_run_single_vcpu(struct kvm_run *kvm_run,
+@@ -3607,6 +3607,8 @@ int kvmhv_p9_guest_entry(struct kvm_vcpu *vcpu, u64 time_limit,
  
- 	preempt_enable();
- 
--	/* cancel pending decrementer exception if DEC is now positive */
--	if (get_tb() < vcpu->arch.dec_expires && kvmppc_core_pending_dec(vcpu))
-+	/*
-+	 * cancel pending decrementer exception if DEC is now positive, or if
-+	 * entering a nested guest in which case the decrementer is now owned
-+	 * by L2 and the L1 decrementer is provided in hdec_expires
-+	 */
-+	if (kvmppc_core_pending_dec(vcpu) &&
-+			((get_tb() < vcpu->arch.dec_expires) ||
-+			 (trap == BOOK3S_INTERRUPT_SYSCALL &&
-+			  kvmppc_get_gpr(vcpu, 3) == H_ENTER_NESTED)))
- 		kvmppc_core_dequeue_dec(vcpu);
- 
- 	trace_kvm_guest_exit(vcpu);
+ 	vcpu->arch.slb_max = 0;
+ 	dec = mfspr(SPRN_DEC);
++	if (!(lpcr & LPCR_LD)) /* Sign extend if not using large decrementer */
++		dec = (s32) dec;
+ 	tb = mftb();
+ 	vcpu->arch.dec_expires = dec + tb;
+ 	vcpu->cpu = -1;
 -- 
 2.13.6
 
