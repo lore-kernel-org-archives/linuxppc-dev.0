@@ -2,80 +2,86 @@ Return-Path: <SRS0=Jsh9=UU=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.3 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+X-Spam-Status: No, score=-8.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5F561C43613
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Jun 2019 01:49:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 750C3C43613
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Jun 2019 04:58:07 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id D474D2064B
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Jun 2019 01:49:03 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 9A0382070B
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Jun 2019 04:58:06 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="YwVLkyUO"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D474D2064B
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=fossix-org.20150623.gappssmtp.com header.i=@fossix-org.20150623.gappssmtp.com header.b="F3+75knu"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9A0382070B
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=fossix.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45VM6j4FL4zDrMQ
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Jun 2019 11:49:01 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45VRJr0fDBzDqQl
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Jun 2019 14:58:04 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=2607:f8b0:4864:20::d43; helo=mail-io1-xd43.google.com;
- envelope-from=oohall@gmail.com; receiver=<UNKNOWN>)
+ spf=none (mailfrom) smtp.mailfrom=fossix.org
+ (client-ip=2607:f8b0:4864:20::444; helo=mail-pf1-x444.google.com;
+ envelope-from=santosh@fossix.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
+ dmarc=none (p=none dis=none) header.from=fossix.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="YwVLkyUO"; 
+ unprotected) header.d=fossix-org.20150623.gappssmtp.com
+ header.i=@fossix-org.20150623.gappssmtp.com header.b="F3+75knu"; 
  dkim-atps=neutral
-Received: from mail-io1-xd43.google.com (mail-io1-xd43.google.com
- [IPv6:2607:f8b0:4864:20::d43])
+Received: from mail-pf1-x444.google.com (mail-pf1-x444.google.com
+ [IPv6:2607:f8b0:4864:20::444])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45VM4q5zP6zDrM1
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Jun 2019 11:47:21 +1000 (AEST)
-Received: by mail-io1-xd43.google.com with SMTP id k20so109124ios.10
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jun 2019 18:47:21 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=mime-version:references:in-reply-to:from:date:message-id:subject:to
- :cc; bh=9yrO084oxG4dfNiDRfSabLfvEkBQAcPHS7taeQ/jeGI=;
- b=YwVLkyUOFNcOL0L8d9UZznf+xeeBIZ3g7ZUlrHDcDXBqLeWn0K9Nh1qZw9MCgGaBqb
- bsZDq3fFnLiUXnPvImtfor3a/phBY9+2zH+Do1BBqFhffuGg56NP49qLr/2sqGmf4RoD
- dBPVR54f6mQoB6gvXOLPeez5jvChN+nQ+jpNmWMt+CFi5AMLJhrJuktKhq3OI26jj6DA
- GrvQT8G1lfOsQWFP47xVxQLMf3WpyB4aq7PWUKYCOwYSjf13bJjzA0lXyuF7XawLdCyO
- 7WDd+DM8NXTV1ediGy1tO6AcrJnwj7GMoiz5G4IZu2FIiAPzcKTPqdpqyD0E407nmjBU
- ZlPw==
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45VRGd1gD5zDqM3
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Jun 2019 14:56:09 +1000 (AEST)
+Received: by mail-pf1-x444.google.com with SMTP id i189so2914436pfg.10
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jun 2019 21:56:08 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=fossix-org.20150623.gappssmtp.com; s=20150623;
+ h=from:to:cc:subject:date:message-id:in-reply-to:references
+ :mime-version:content-transfer-encoding;
+ bh=h+d/dQulSsirIOKPqYl4FAJMvNn/8ZD+HSg3OI8Zr9U=;
+ b=F3+75knuxyecJAf5zLJzqUI4T3pwsFpTx+vR3R1BYpduiiac5NCmcQszDJHr3thXM+
+ M8CwwZCIU8Zm3mvz2eihgkgc6uYJaHc5WC5QvStFbKJAkzsN49IvdOu55v3iZYeMtyvq
+ +7Nc4nXLenbqAswg+1XybOVZD/TclyWN5ReHLF7WIAAoXdEajE6dYYpWRUO5aH3uIdF1
+ AcEAZUa3/0NDkWvitar/wWX0tJ2/Mi+SufGS7nUNzuBz1vNRoZMNe90uMZ7AazLwlCwk
+ Y6OZL1Hs3aJv7N2L0ZyuKSO0pIz2/yoF92s8heClYPLhiB/7c5a7ltWPQKyh+OMmlMbf
+ 82Ew==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
- h=x-gm-message-state:mime-version:references:in-reply-to:from:date
- :message-id:subject:to:cc;
- bh=9yrO084oxG4dfNiDRfSabLfvEkBQAcPHS7taeQ/jeGI=;
- b=iaP8JpxFs5y4WGngVfIuE0lv6gAFXkCJs0zhjawwz//Tu4lW4nCj9Dao3GGEnoeJMy
- cJScmZDXit5y6XSNO08LXORtzj3byirUZyFmoI5PMyod+VSwT/RqG1/NonaWfHnZPVnA
- Ox61Pl0i0Gu7Y8O0+KHBVgWNzIvpHWVSCzbcLnegBePEKBi8dD0Ko+XrX+ZxEVdIEH5G
- W3N7jnE7OCkVP6MbskECX/RA1gXqn/2AGmkXMbN3IjkFdGMRCac/Vzf4UrE+dtVqyM8J
- hqsWh4OfK/G4eq2a8l3fvl4EKtUFgNZyy/A68q9AbBHFUC9RdjKxonGOSS8v65HRmRHt
- oBWw==
-X-Gm-Message-State: APjAAAUTRjIdeDnJfUsfG0f6AQdp/G1r0X8ei7cP3RPHcl7MB5DfVxc1
- JtpHM3dWHuw9GA8zDJoQ+j7Elni9VgAoR9aIBSk=
-X-Google-Smtp-Source: APXvYqxR8Ec8V67QRIv0YSxrqeF2qZ0ENo0zWc+r/BTUyQHPOeP071K+gI3WACD+zZ/Y6TZ2ZUXUkDwEBHuqzlrfHGY=
-X-Received: by 2002:a5d:8497:: with SMTP id t23mr6017508iom.298.1561081638030; 
- Thu, 20 Jun 2019 18:47:18 -0700 (PDT)
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+ :references:mime-version:content-transfer-encoding;
+ bh=h+d/dQulSsirIOKPqYl4FAJMvNn/8ZD+HSg3OI8Zr9U=;
+ b=Q/4gWT2x/keH8gZUvhNjWg0liq0B5fUHjV0LsMMfJImAf0so7iU0KvTd3sZXc29wQ+
+ Tror3g3czti8JuERtRgzIlNeYJnYQnKxmncIRDxegBd1dgP//ly5aVAnrZKp9+LdxU6Q
+ Sl3PvLxW7jLtXK8iqy5KIg/nJLLI/ld5CqhPJxh6hW9ERoMO04AuJEkjPMdzNbv+UXUo
+ 2dKygUErWGJaKRWtm/bKp2Cx4xpW4U7P8ndc/nh/wvxStBxnXYKNsYzceE+FTPslzP61
+ fBh9Qgr7YonJcNPnkNKnYYQH6upP4Z8m44Om2v0FJclXhRKQ1pistWzLmnaiRkSLLZ2V
+ 16AA==
+X-Gm-Message-State: APjAAAVS1r1hU6xCGNTQIaxUS9JUw0m7zAOapRrK19UeasjFqL2KMGwc
+ ii0QIJiqgB2Uoz/5B5tO4ab65dA5197tlA==
+X-Google-Smtp-Source: APXvYqzm9GNaXw1oh9QA19P9oVGvyGnvLHap+JeO+GvcSWX++JwQxcgPH0am7F6Kthav3l/noi5Fog==
+X-Received: by 2002:a63:6986:: with SMTP id e128mr478310pgc.220.1561092966706; 
+ Thu, 20 Jun 2019 21:56:06 -0700 (PDT)
+Received: from santosiv.in.ibm.com ([129.41.84.77])
+ by smtp.gmail.com with ESMTPSA id q131sm1392069pfq.157.2019.06.20.21.56.03
+ (version=TLS1_3 cipher=AEAD-AES256-GCM-SHA384 bits=256/256);
+ Thu, 20 Jun 2019 21:56:06 -0700 (PDT)
+From: Santosh Sivaraj <santosh@fossix.org>
+To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Subject: [PATCH 01/13] powerpc/mce: Make machine_check_ue_event() static
+Date: Fri, 21 Jun 2019 10:25:43 +0530
+Message-Id: <4186db0183919bbd1ef7263833953dd91a526abe.1561020760.git.santosh@fossix.org>
+X-Mailer: git-send-email 2.20.1
+In-Reply-To: <cover.1561020760.git.santosh@fossix.org>
+References: <cover.1561020760.git.santosh@fossix.org>
 MIME-Version: 1.0
-References: <20190523074924.19659-1-hch@lst.de>
- <20190523074924.19659-3-hch@lst.de>
-In-Reply-To: <20190523074924.19659-3-hch@lst.de>
-From: "Oliver O'Halloran" <oohall@gmail.com>
-Date: Fri, 21 Jun 2019 11:47:07 +1000
-Message-ID: <CAOSf1CFu_T=7weW0eagzjTc8474ntVx1uCKdQh8sX85bfaPxCQ@mail.gmail.com>
-Subject: Re: [PATCH 2/4] powerpc/powernv: remove the unused tunneling exports
-To: Christoph Hellwig <hch@lst.de>
-Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -87,171 +93,45 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Andrew Donnellan <ajd@linux.ibm.com>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Paul Mackerras <paulus@samba.org>, Frederic Barrat <fbarrat@linux.ibm.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
+ Mahesh Salgaonkar <mahesh@linux.ibm.com>, Nicholas Piggin <npiggin@gmail.com>,
+ Chandan Rajendra <chandan@linux.vnet.ibm.com>,
+ Reza Arbab <arbab@linux.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, May 23, 2019 at 5:51 PM Christoph Hellwig <hch@lst.de> wrote:
->
-> These have been unused ever since they've been added to the kernel.
->
-> Signed-off-by: Christoph Hellwig <hch@lst.de>
-> ---
->  arch/powerpc/include/asm/pnv-pci.h        |  4 --
->  arch/powerpc/platforms/powernv/pci-ioda.c |  4 +-
->  arch/powerpc/platforms/powernv/pci.c      | 71 -----------------------
->  arch/powerpc/platforms/powernv/pci.h      |  1 -
->  4 files changed, 3 insertions(+), 77 deletions(-)
->
-> diff --git a/arch/powerpc/include/asm/pnv-pci.h b/arch/powerpc/include/asm/pnv-pci.h
-> index 9fcb0bc462c6..1ab4b0111abc 100644
-> --- a/arch/powerpc/include/asm/pnv-pci.h
-> +++ b/arch/powerpc/include/asm/pnv-pci.h
-> @@ -27,12 +27,8 @@ extern int pnv_pci_get_power_state(uint64_t id, uint8_t *state);
->  extern int pnv_pci_set_power_state(uint64_t id, uint8_t state,
->                                    struct opal_msg *msg);
->
-> -extern int pnv_pci_enable_tunnel(struct pci_dev *dev, uint64_t *asnind);
-> -extern int pnv_pci_disable_tunnel(struct pci_dev *dev);
->  extern int pnv_pci_set_tunnel_bar(struct pci_dev *dev, uint64_t addr,
->                                   int enable);
-> -extern int pnv_pci_get_as_notify_info(struct task_struct *task, u32 *lpid,
-> -                                     u32 *pid, u32 *tid);
+From: Reza Arbab <arbab@linux.ibm.com>
 
-IIRC as-notify was for CAPI which has an in-tree driver (cxl). Fred or
-Andrew (+cc), what's going on with this? Will it ever see the light of
-day?
+The function doesn't get used outside this file, so make it static.
 
->  int pnv_phb_to_cxl_mode(struct pci_dev *dev, uint64_t mode);
->  int pnv_cxl_ioda_msi_setup(struct pci_dev *dev, unsigned int hwirq,
->                            unsigned int virq);
-> diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-> index 126602b4e399..6b0caa2d0425 100644
-> --- a/arch/powerpc/platforms/powernv/pci-ioda.c
-> +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-> @@ -54,6 +54,8 @@
->  static const char * const pnv_phb_names[] = { "IODA1", "IODA2", "NPU_NVLINK",
->                                               "NPU_OCAPI" };
->
-> +static void pnv_pci_ioda2_set_bypass(struct pnv_ioda_pe *pe, bool enable);
-> +
->  void pe_level_printk(const struct pnv_ioda_pe *pe, const char *level,
->                             const char *fmt, ...)
->  {
-> @@ -2360,7 +2362,7 @@ static long pnv_pci_ioda2_set_window(struct iommu_table_group *table_group,
->         return 0;
->  }
->
-> -void pnv_pci_ioda2_set_bypass(struct pnv_ioda_pe *pe, bool enable)
-> +static void pnv_pci_ioda2_set_bypass(struct pnv_ioda_pe *pe, bool enable)
->  {
->         uint16_t window_id = (pe->pe_number << 1 ) + 1;
->         int64_t rc;
-> diff --git a/arch/powerpc/platforms/powernv/pci.c b/arch/powerpc/platforms/powernv/pci.c
-> index 8d28f2932c3b..fc69f5611020 100644
-> --- a/arch/powerpc/platforms/powernv/pci.c
-> +++ b/arch/powerpc/platforms/powernv/pci.c
-> @@ -868,54 +868,6 @@ struct device_node *pnv_pci_get_phb_node(struct pci_dev *dev)
->  }
->  EXPORT_SYMBOL(pnv_pci_get_phb_node);
->
-> -int pnv_pci_enable_tunnel(struct pci_dev *dev, u64 *asnind)
-> -{
-> -       struct device_node *np;
-> -       const __be32 *prop;
-> -       struct pnv_ioda_pe *pe;
-> -       uint16_t window_id;
-> -       int rc;
-> -
-> -       if (!radix_enabled())
-> -               return -ENXIO;
-> -
-> -       if (!(np = pnv_pci_get_phb_node(dev)))
-> -               return -ENXIO;
-> -
-> -       prop = of_get_property(np, "ibm,phb-indications", NULL);
-> -       of_node_put(np);
-> -
-> -       if (!prop || !prop[1])
-> -               return -ENXIO;
-> -
-> -       *asnind = (u64)be32_to_cpu(prop[1]);
-> -       pe = pnv_ioda_get_pe(dev);
-> -       if (!pe)
-> -               return -ENODEV;
-> -
-> -       /* Increase real window size to accept as_notify messages. */
-> -       window_id = (pe->pe_number << 1 ) + 1;
-> -       rc = opal_pci_map_pe_dma_window_real(pe->phb->opal_id, pe->pe_number,
-> -                                            window_id, pe->tce_bypass_base,
-> -                                            (uint64_t)1 << 48);
-> -       return opal_error_code(rc);
-> -}
-> -EXPORT_SYMBOL_GPL(pnv_pci_enable_tunnel);
-> -
-> -int pnv_pci_disable_tunnel(struct pci_dev *dev)
-> -{
-> -       struct pnv_ioda_pe *pe;
-> -
-> -       pe = pnv_ioda_get_pe(dev);
-> -       if (!pe)
-> -               return -ENODEV;
-> -
-> -       /* Restore default real window size. */
-> -       pnv_pci_ioda2_set_bypass(pe, true);
-> -       return 0;
-> -}
-> -EXPORT_SYMBOL_GPL(pnv_pci_disable_tunnel);
-> -
->  int pnv_pci_set_tunnel_bar(struct pci_dev *dev, u64 addr, int enable)
->  {
->         __be64 val;
-> @@ -970,29 +922,6 @@ int pnv_pci_set_tunnel_bar(struct pci_dev *dev, u64 addr, int enable)
->  }
->  EXPORT_SYMBOL_GPL(pnv_pci_set_tunnel_bar);
->
-> -#ifdef CONFIG_PPC64    /* for thread.tidr */
-> -int pnv_pci_get_as_notify_info(struct task_struct *task, u32 *lpid, u32 *pid,
-> -                              u32 *tid)
-> -{
-> -       struct mm_struct *mm = NULL;
-> -
-> -       if (task == NULL)
-> -               return -EINVAL;
-> -
-> -       mm = get_task_mm(task);
-> -       if (mm == NULL)
-> -               return -EINVAL;
-> -
-> -       *pid = mm->context.id;
-> -       mmput(mm);
-> -
-> -       *tid = task->thread.tidr;
-> -       *lpid = mfspr(SPRN_LPID);
-> -       return 0;
-> -}
-> -EXPORT_SYMBOL_GPL(pnv_pci_get_as_notify_info);
-> -#endif
-> -
->  void pnv_pci_shutdown(void)
->  {
->         struct pci_controller *hose;
-> diff --git a/arch/powerpc/platforms/powernv/pci.h b/arch/powerpc/platforms/powernv/pci.h
-> index 4f11c077af62..469c24463247 100644
-> --- a/arch/powerpc/platforms/powernv/pci.h
-> +++ b/arch/powerpc/platforms/powernv/pci.h
-> @@ -195,7 +195,6 @@ extern int pnv_setup_msi_irqs(struct pci_dev *pdev, int nvec, int type);
->  extern void pnv_teardown_msi_irqs(struct pci_dev *pdev);
->  extern struct pnv_ioda_pe *pnv_ioda_get_pe(struct pci_dev *dev);
->  extern void pnv_set_msi_irq_chip(struct pnv_phb *phb, unsigned int virq);
-> -extern void pnv_pci_ioda2_set_bypass(struct pnv_ioda_pe *pe, bool enable);
->  extern unsigned long pnv_pci_ioda2_get_table_size(__u32 page_shift,
->                 __u64 window_size, __u32 levels);
->  extern int pnv_eeh_post_init(void);
-> --
-> 2.20.1
->
+Signed-off-by: Reza Arbab <arbab@linux.ibm.com>
+---
+ arch/powerpc/kernel/mce.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/arch/powerpc/kernel/mce.c b/arch/powerpc/kernel/mce.c
+index b18df633eae9..e78c4f18ea0a 100644
+--- a/arch/powerpc/kernel/mce.c
++++ b/arch/powerpc/kernel/mce.c
+@@ -33,7 +33,7 @@ static DEFINE_PER_CPU(struct machine_check_event[MAX_MC_EVT],
+ 					mce_ue_event_queue);
+ 
+ static void machine_check_process_queued_event(struct irq_work *work);
+-void machine_check_ue_event(struct machine_check_event *evt);
++static void machine_check_ue_event(struct machine_check_event *evt);
+ static void machine_process_ue_event(struct work_struct *work);
+ 
+ static struct irq_work mce_event_process_work = {
+@@ -203,7 +203,7 @@ void release_mce_event(void)
+ /*
+  * Queue up the MCE event which then can be handled later.
+  */
+-void machine_check_ue_event(struct machine_check_event *evt)
++static void machine_check_ue_event(struct machine_check_event *evt)
+ {
+ 	int index;
+ 
+-- 
+2.20.1
+
