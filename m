@@ -2,41 +2,57 @@ Return-Path: <SRS0=Jsh9=UU=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+X-Spam-Status: No, score=-6.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+	URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 63C83C43613
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Jun 2019 05:26:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7B160C43613
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Jun 2019 05:38:26 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 2F3542083B
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Jun 2019 05:26:21 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2F3542083B
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ozlabs.ru
+	by mail.kernel.org (Postfix) with ESMTPS id C306120449
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Jun 2019 05:38:25 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C306120449
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=perches.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45VRxR1786zDqDN
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Jun 2019 15:26:19 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45VSCM3sMfzDqbs
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Jun 2019 15:38:23 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=ozlabs.ru
- (client-ip=107.173.13.209; helo=ozlabs.ru; envelope-from=aik@ozlabs.ru;
- receiver=<UNKNOWN>)
+ spf=none (mailfrom) smtp.mailfrom=perches.com
+ (client-ip=216.40.44.132; helo=smtprelay.hostedemail.com;
+ envelope-from=joe@perches.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=ozlabs.ru
-Received: from ozlabs.ru (ozlabs.ru [107.173.13.209])
- by lists.ozlabs.org (Postfix) with ESMTP id 45VRd239vDzDqYB
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Jun 2019 15:12:06 +1000 (AEST)
-Received: from fstn1-p1.ozlabs.ibm.com (localhost [IPv6:::1])
- by ozlabs.ru (Postfix) with ESMTP id A5B34AE8002D;
- Fri, 21 Jun 2019 01:11:32 -0400 (EDT)
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH kernel] powerpc/of/pci: Rewrite pci_parse_of_flags
-Date: Fri, 21 Jun 2019 15:11:27 +1000
-Message-Id: <20190621051127.78894-1-aik@ozlabs.ru>
-X-Mailer: git-send-email 2.17.1
+ dmarc=none (p=none dis=none) header.from=perches.com
+Received: from smtprelay.hostedemail.com (smtprelay0132.hostedemail.com
+ [216.40.44.132])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45VS9L3ClbzDqZH
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Jun 2019 15:36:37 +1000 (AEST)
+Received: from filter.hostedemail.com (clb03-v110.bra.tucows.net
+ [216.40.38.60])
+ by smtprelay08.hostedemail.com (Postfix) with ESMTP id 63F0D182CED2A;
+ Fri, 21 Jun 2019 05:36:32 +0000 (UTC)
+X-Session-Marker: 6A6F6540706572636865732E636F6D
+X-HE-Tag: crow71_38f2c0aecdf16
+X-Filterd-Recvd-Size: 3741
+Received: from XPS-9350 (cpe-23-242-196-136.socal.res.rr.com [23.242.196.136])
+ (Authenticated sender: joe@perches.com)
+ by omf02.hostedemail.com (Postfix) with ESMTPA;
+ Fri, 21 Jun 2019 05:36:31 +0000 (UTC)
+Message-ID: <df3a7ca31d2002ca447ab062f5b5e32ced9bec85.camel@perches.com>
+Subject: [PATCH] powerpc/powernv: Rename pe_level_printk to pe_printk and
+ embed KERN_LEVEL in format
+From: Joe Perches <joe@perches.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras
+ <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
+Date: Thu, 20 Jun 2019 22:36:29 -0700
+Content-Type: text/plain; charset="ISO-8859-1"
+User-Agent: Evolution 3.30.5-0ubuntu0.18.10.1 
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -48,98 +64,89 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Alexey Kardashevskiy <aik@ozlabs.ru>, Oliver O'Halloran <oohall@gmail.com>,
- Paul Mackerras <paulus@samba.org>, Sam Bobroff <sbobroff@linux.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel <linux-kernel@vger.kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The existing code uses bunch of hardcoded values from the PCI Bus Binding
-to IEEE Std 1275 spec; and it does so in quite non-obvious way.
+Remove the separate KERN_<LEVEL> from each pe_level_printk and
+instead add the KERN_<LEVEL> to the format.
 
-This defines fields from the cell#0 of the "reg" property of a PCI device
-and uses them for parsing.
+pfix in pe_level_printk could also be used uninitialized so
+add a new else and set pfx to the hex value of pe->flags.
 
-This should cause no behavioral change.
+Rename pe_level_printk to pe_printk and update the pe_<level>
+macros.
 
-Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+Signed-off-by: Joe Perches <joe@perches.com>
 ---
- arch/powerpc/kernel/pci_of_scan.c | 53 ++++++++++++++++++++++++++-----
- 1 file changed, 45 insertions(+), 8 deletions(-)
+ arch/powerpc/platforms/powernv/pci-ioda.c | 14 ++++++++++++--
+ arch/powerpc/platforms/powernv/pci.h      | 11 +++++------
+ 2 files changed, 17 insertions(+), 8 deletions(-)
 
-diff --git a/arch/powerpc/kernel/pci_of_scan.c b/arch/powerpc/kernel/pci_of_scan.c
-index 8078bce89bec..fc55ee710eb3 100644
---- a/arch/powerpc/kernel/pci_of_scan.c
-+++ b/arch/powerpc/kernel/pci_of_scan.c
-@@ -42,13 +42,50 @@ unsigned int pci_parse_of_flags(u32 addr0, int bridge)
- {
- 	unsigned int flags = 0;
+diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+index 10cc42b9e541..60fc36ae626a 100644
+--- a/arch/powerpc/platforms/powernv/pci-ioda.c
++++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+@@ -50,15 +50,23 @@
+ static const char * const pnv_phb_names[] = { "IODA1", "IODA2", "NPU_NVLINK",
+ 					      "NPU_OCAPI" };
  
--	if (addr0 & 0x02000000) {
-+/*
-+ * PCI Bus Binding to IEEE Std 1275-1994
-+ *
-+ * Bit#            33222222 22221111 11111100 00000000
-+ *                 10987654 32109876 54321098 76543210
-+ * phys.hi cell:   npt000ss bbbbbbbb dddddfff rrrrrrrr
-+ * phys.mid cell:  hhhhhhhh hhhhhhhh hhhhhhhh hhhhhhhh
-+ * phys.lo cell:   llllllll llllllll llllllll llllllll
-+ *
-+ * where:
-+ * n        is 0 if the address is relocatable, 1 otherwise
-+ * p        is 1 if the addressable region is "prefetchable", 0 otherwise
-+ * t        is 1 if the address is aliased (for non-relocatable I/O),
-+ *          below 1 MB (for Memory),or below 64 KB (for relocatable I/O).
-+ * ss       is the space code, denoting the address space
-+ * bbbbbbbb is the 8-bit Bus Number
-+ * ddddd    is the 5-bit Device Number
-+ * fff      is the 3-bit Function Number
-+ * rrrrrrrr is the 8-bit Register Number
-+ */
-+#define OF_PCI_ADDR0_SPACE_CODE(ss)	(((ss)&0x3UL)<<24)
-+#define OF_PCI_ADDR0_SPACE_CFG		OF_PCI_ADDR0_SPACE_CODE(0)
-+#define OF_PCI_ADDR0_SPACE_IO		OF_PCI_ADDR0_SPACE_CODE(1)
-+#define OF_PCI_ADDR0_SPACE_MMIO32	OF_PCI_ADDR0_SPACE_CODE(2)
-+#define OF_PCI_ADDR0_SPACE_MMIO64	OF_PCI_ADDR0_SPACE_CODE(3)
-+#define OF_PCI_ADDR0_SPACE_MMIO		(OF_PCI_ADDR0_SPACE_MMIO32 | \
-+					OF_PCI_ADDR0_SPACE_MMIO64)
-+#define OF_PCI_ADDR0_RELOC		(1UL<<31)
-+#define OF_PCI_ADDR0_PREFETCH		(1UL<<30)
-+#define OF_PCI_ADDR0_ALIAS		(1UL<<29)
-+#define OF_PCI_ADDR0_BUS		0x00FF0000UL
-+#define OF_PCI_ADDR0_DEV		0x0000F800UL
-+#define OF_PCI_ADDR0_FN			0x00000700UL
-+#define OF_PCI_ADDR0_BARREG		0x000000FFUL
+-void pe_level_printk(const struct pnv_ioda_pe *pe, const char *level,
+-			    const char *fmt, ...)
++void pe_printk(const struct pnv_ioda_pe *pe, const char *fmt, ...)
+ {
+ 	struct va_format vaf;
+ 	va_list args;
+ 	char pfix[32];
++	char level[PRINTK_MAX_SINGLE_HEADER_LEN + 1] = "\0";
+ 
+ 	va_start(args, fmt);
+ 
++	while (printk_get_level(fmt)) {
++		size_t size = printk_skip_level(fmt) - fmt;
 +
-+	if (addr0 & OF_PCI_ADDR0_SPACE_MMIO) {
- 		flags = IORESOURCE_MEM | PCI_BASE_ADDRESS_SPACE_MEMORY;
--		flags |= (addr0 >> 22) & PCI_BASE_ADDRESS_MEM_TYPE_64;
--		if (flags & PCI_BASE_ADDRESS_MEM_TYPE_64)
--			flags |= IORESOURCE_MEM_64;
--		flags |= (addr0 >> 28) & PCI_BASE_ADDRESS_MEM_TYPE_1M;
--		if (addr0 & 0x40000000)
-+		if ((addr0 & OF_PCI_ADDR0_SPACE_MMIO) ==
-+				OF_PCI_ADDR0_SPACE_MMIO64)
-+			flags |= PCI_BASE_ADDRESS_MEM_TYPE_64 |
-+				IORESOURCE_MEM_64;
-+		if (addr0 & OF_PCI_ADDR0_ALIAS)
-+			flags |= PCI_BASE_ADDRESS_MEM_TYPE_1M;
-+		if (addr0 & OF_PCI_ADDR0_PREFETCH)
- 			flags |= IORESOURCE_PREFETCH
- 				 | PCI_BASE_ADDRESS_MEM_PREFETCH;
- 		/* Note: We don't know whether the ROM has been left enabled
-@@ -56,9 +93,9 @@ unsigned int pci_parse_of_flags(u32 addr0, int bridge)
- 		 * not set the IORESOURCE_ROM_ENABLE flag) for now rather than
- 		 * do a config space read, it will be force-enabled if needed
- 		 */
--		if (!bridge && (addr0 & 0xff) == 0x30)
-+		if (!bridge && (addr0 & OF_PCI_ADDR0_BARREG) == PCI_ROM_ADDRESS)
- 			flags |= IORESOURCE_READONLY;
--	} else if (addr0 & 0x01000000)
-+	} else if (addr0 & OF_PCI_ADDR0_SPACE_IO)
- 		flags = IORESOURCE_IO | PCI_BASE_ADDRESS_SPACE_IO;
- 	if (flags)
- 		flags |= IORESOURCE_SIZEALIGN;
--- 
-2.17.1
++		memcpy(level, fmt,  size);
++		level[size] = '\0';
++		fmt += size;
++	}
++
+ 	vaf.fmt = fmt;
+ 	vaf.va = &args;
+ 
+@@ -74,6 +82,8 @@ void pe_level_printk(const struct pnv_ioda_pe *pe, const char *level,
+ 			(pe->rid & 0xff00) >> 8,
+ 			PCI_SLOT(pe->rid), PCI_FUNC(pe->rid));
+ #endif /* CONFIG_PCI_IOV*/
++	else
++		sprintf(pfix, "(flags: 0x%lx)", pe->flags);
+ 
+ 	printk("%spci %s: [PE# %.2x] %pV",
+ 	       level, pfix, pe->pe_number, &vaf);
+diff --git a/arch/powerpc/platforms/powernv/pci.h b/arch/powerpc/platforms/powernv/pci.h
+index be26ab3d99e0..870b21f55b3f 100644
+--- a/arch/powerpc/platforms/powernv/pci.h
++++ b/arch/powerpc/platforms/powernv/pci.h
+@@ -205,15 +205,14 @@ extern unsigned long pnv_pci_ioda2_get_table_size(__u32 page_shift,
+ 		__u64 window_size, __u32 levels);
+ extern int pnv_eeh_post_init(void);
+ 
+-__printf(3, 4)
+-extern void pe_level_printk(const struct pnv_ioda_pe *pe, const char *level,
+-			    const char *fmt, ...);
++__printf(2, 3)
++extern void pe_printk(const struct pnv_ioda_pe *pe, const char *fmt, ...);
+ #define pe_err(pe, fmt, ...)					\
+-	pe_level_printk(pe, KERN_ERR, fmt, ##__VA_ARGS__)
++	pe_printk(pe, KERN_ERR fmt, ##__VA_ARGS__)
+ #define pe_warn(pe, fmt, ...)					\
+-	pe_level_printk(pe, KERN_WARNING, fmt, ##__VA_ARGS__)
++	pe_printk(pe, KERN_WARNING fmt, ##__VA_ARGS__)
+ #define pe_info(pe, fmt, ...)					\
+-	pe_level_printk(pe, KERN_INFO, fmt, ##__VA_ARGS__)
++	pe_printk(pe, KERN_INFO fmt, ##__VA_ARGS__)
+ 
+ /* Nvlink functions */
+ extern void pnv_npu_try_dma_set_bypass(struct pci_dev *gpdev, bool bypass);
+
 
