@@ -2,65 +2,93 @@ Return-Path: <SRS0=Jsh9=UU=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-0.3 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
+	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C75E1C43613
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Jun 2019 23:45:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 78D10C48BE3
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Jun 2019 23:58:37 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id ED1842089E
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Jun 2019 23:45:38 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id F02CD20821
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Jun 2019 23:58:36 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="RDDEklul"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org ED1842089E
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linux-foundation.org
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="ZpPFzcp3"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org F02CD20821
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45VwKq0KbvzDqjG
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 22 Jun 2019 09:45:35 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45Vwcm3SBxzDqcQ
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 22 Jun 2019 09:58:32 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=linux-foundation.org
- (client-ip=198.145.29.99; helo=mail.kernel.org;
- envelope-from=akpm@linux-foundation.org; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=linux-foundation.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="RDDEklul"; 
+ spf=pass (mailfrom) smtp.mailfrom=gmail.com
+ (client-ip=2607:f8b0:4864:20::444; helo=mail-pf1-x444.google.com;
+ envelope-from=npiggin@gmail.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="ZpPFzcp3"; 
  dkim-atps=neutral
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pf1-x444.google.com (mail-pf1-x444.google.com
+ [IPv6:2607:f8b0:4864:20::444])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45VwGh4MvBzDq7w
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 22 Jun 2019 09:42:50 +1000 (AEST)
-Received: from akpm3.svl.corp.google.com (unknown [104.133.8.65])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id CC20B2084E;
- Fri, 21 Jun 2019 23:42:46 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1561160568;
- bh=9jNNQ6ZuBBOjZIW3HIow9t4gY+OUpSdjtQl5zrDEMdQ=;
- h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
- b=RDDEklul7g0TwzW9+rYABCiLxD3N9O7GjpeOksdPT5+/ufp4LUGpriR31HgIwLS4N
- su+rzFDliqa/VpGbuq7WC+iq0nUGUObMkXCICTQFtPxehIJZ4EugjMAlfNTPpNEqd2
- UO3XDcH6k2EANV4YmvD/OKPZrb5GXc3G08Mo32mA=
-Date: Fri, 21 Jun 2019 16:42:46 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: David Hildenbrand <david@redhat.com>
-Subject: Re: [PATCH v3 0/6] mm: Further memory block device cleanups
-Message-Id: <20190621164246.9a2354a571da41950bb74562@linux-foundation.org>
-In-Reply-To: <1c2edc22-afd7-2211-c4c7-40e54e5007e8@redhat.com>
-References: <20190620183139.4352-1-david@redhat.com>
- <1561130120.5154.47.camel@lca.pw>
- <1c2edc22-afd7-2211-c4c7-40e54e5007e8@redhat.com>
-X-Mailer: Sylpheed 3.7.0 (GTK+ 2.24.32; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45VwYH1tDgzDqbv
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 22 Jun 2019 09:55:28 +1000 (AEST)
+Received: by mail-pf1-x444.google.com with SMTP id x15so4375335pfq.0
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Jun 2019 16:55:28 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=date:from:subject:to:cc:references:in-reply-to:mime-version
+ :user-agent:message-id:content-transfer-encoding;
+ bh=x9bZV3T0S6eNYo6IXHrd+kECvmTbbAucaYzxDYrbdeI=;
+ b=ZpPFzcp36+Hh5jye0ZKjtgJ550NYI096FfX2rcFyQ99LOi8SMis6xF/dheI3yxj7vn
+ TBGcbHMLdJQh068I90oszy1lxCnmI5g4KVT7DQMh+oL+mOljJTN2ljZWYTmOt23yVg2h
+ LdyqXTNKqxAmKaI+JKi19peuQtNFJ/A6jfkfKGStmgPKTkapA12DT/MDePfRHMwpeCd2
+ tgrx+S6ckAPgkEN6TA/783NZNMh/U4UZX0873+4sMF+NwUUbApR86gBQBtLXNIwieoaL
+ GIkk0MteisbTCO2dsnPaZ8Qv7rsQ8XF4reLwhY4yUxl1spYYF0SWL0LStYP/hWINYrnP
+ HtFA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:date:from:subject:to:cc:references:in-reply-to
+ :mime-version:user-agent:message-id:content-transfer-encoding;
+ bh=x9bZV3T0S6eNYo6IXHrd+kECvmTbbAucaYzxDYrbdeI=;
+ b=Gqi6FL0CXvbfDZehxDOudLWxGq/ETUqa58O1dDch3kAqU3Ej5kG/+lsZa7ROpxnNhQ
+ +Jw6xwuzGkvR+MgJoL6yUqLC1++FSIpQA3HLU4pJz4p2XRU3HpqVLV5mqQI8jCXNJb4D
+ CPf0sFd1kyeiFlLHkwMgngfwFhJR20YbfK2ZGmCWBljNaw4+uRTNyCrZYJmRqyk1fUJE
+ O+21noV1bSmos6alpguNqdoTbS/y81DlXL5f7LWnmJbFh0+wIdbOhe8eZwwP8PJr2Lrr
+ ARpDiKKMHqCWPuVOlT6kqryQDVnvWY6u4Ku5ut7Ejgznk/2fZGDlNpiD3HvfFELAEnNf
+ X3Rw==
+X-Gm-Message-State: APjAAAWzFB0cFLeyVj0BfLdTHlu+PdSeto8UFqdmuHNW/wcL78cgfCAp
+ 4SIxjiG1vxYAVEha5mdTCyc=
+X-Google-Smtp-Source: APXvYqyqRRpjMOtRudskKnzHE+bVq170qVap7+EY5kc6j/qI6uUR3V4Zstw2KCShBoXYwoTuoCwbAg==
+X-Received: by 2002:a63:545c:: with SMTP id e28mr4210785pgm.374.1561161325219; 
+ Fri, 21 Jun 2019 16:55:25 -0700 (PDT)
+Received: from localhost ([1.144.144.251])
+ by smtp.gmail.com with ESMTPSA id 85sm4623425pfv.130.2019.06.21.16.55.23
+ (version=TLS1_3 cipher=AEAD-AES256-GCM-SHA384 bits=256/256);
+ Fri, 21 Jun 2019 16:55:24 -0700 (PDT)
+Date: Sat, 22 Jun 2019 09:55:09 +1000
+From: Nicholas Piggin <npiggin@gmail.com>
+Subject: Re: [PATCH 16/16] mm: pass get_user_pages_fast iterator arguments in
+ a structure
+To: Christoph Hellwig <hch@lst.de>, Linus Torvalds
+ <torvalds@linux-foundation.org>
+References: <20190611144102.8848-1-hch@lst.de>
+ <20190611144102.8848-17-hch@lst.de>
+ <1560300464.nijubslu3h.astroid@bobo.none>
+ <CAHk-=wjSo+TzkvYnAqrp=eFgzzc058DhSMTPr4-2quZTbGLfnw@mail.gmail.com>
+ <1561032202.0qfct43s2c.astroid@bobo.none>
+ <CAHk-=wh46y3x5O0HkR=R4ETh6e5pDCrEsJ94CtC0fyQiYYAf6A@mail.gmail.com>
+ <20190621081501.GA17718@lst.de>
+In-Reply-To: <20190621081501.GA17718@lst.de>
+MIME-Version: 1.0
+User-Agent: astroid/0.14.0 (https://github.com/astroidmail/astroid)
+Message-Id: <1561160786.mradw6fg2v.astroid@bobo.none>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -72,88 +100,52 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Oscar Salvador <osalvador@suse.com>, Michal Hocko <mhocko@suse.com>,
- "Rafael J. Wysocki" <rafael@kernel.org>, Wei Yang <richard.weiyang@gmail.com>,
- Keith Busch <keith.busch@intel.com>, linux-mm@kvack.org,
- Arun KS <arunks@codeaurora.org>, Rashmica Gupta <rashmica.g@gmail.com>,
- Thomas Gleixner <tglx@linutronix.de>, Stephen Rothwell <sfr@canb.auug.org.au>,
- Michael Neuling <mikey@neuling.org>, Baoquan He <bhe@redhat.com>,
- Pavel Tatashin <pasha.tatashin@oracle.com>, linux-acpi@vger.kernel.org,
- Len Brown <lenb@kernel.org>, Pavel Tatashin <pavel.tatashin@microsoft.com>,
- Pavel Tatashin <pasha.tatashin@soleen.com>,
- Anshuman Khandual <anshuman.khandual@arm.com>,
- "mike.travis@hpe.com" <mike.travis@hpe.com>, linuxppc-dev@lists.ozlabs.org,
- Mike Rapoport <rppt@linux.vnet.ibm.com>, Qian Cai <cai@lca.pw>,
- Dan Williams <dan.j.williams@intel.com>, Vlastimil Babka <vbabka@suse.cz>,
- Oscar Salvador <osalvador@suse.de>, Juergen Gross <jgross@suse.com>,
- Andrew Banman <andrew.banman@hpe.com>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org,
- Johannes Weiner <hannes@cmpxchg.org>, Paul Mackerras <paulus@samba.org>,
- Mel Gorman <mgorman@techsingularity.net>
+Cc: Rich Felker <dalias@libc.org>, Yoshinori Sato <ysato@users.sourceforge.jp>,
+ Linux-sh list <linux-sh@vger.kernel.org>, James Hogan <jhogan@kernel.org>,
+ the arch/x86 maintainers <x86@kernel.org>,
+ Linux List Kernel Mailing <linux-kernel@vger.kernel.org>,
+ linux-mips@vger.kernel.org, Linux-MM <linux-mm@kvack.org>,
+ Khalid Aziz <khalid.aziz@oracle.com>, Paul Burton <paul.burton@mips.com>,
+ Andrey Konovalov <andreyknvl@google.com>, sparclinux@vger.kernel.org,
+ Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
+ "David S. Miller" <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, 21 Jun 2019 20:24:59 +0200 David Hildenbrand <david@redhat.com> wrote:
+Christoph Hellwig's on June 21, 2019 6:15 pm:
+> On Thu, Jun 20, 2019 at 10:21:46AM -0700, Linus Torvalds wrote:
+>> Hmm. Honestly, I've never seen anything like that in any kernel profiles=
+.
+>>=20
+>> Compared to the problems I _do_ see (which is usually the obvious
+>> cache misses, and locking), it must either be in the noise or it's
+>> some problem specific to whatever CPU you are doing performance work
+>> on?
+>>=20
+>> I've occasionally seen pipeline hiccups in profiles, but it's usually
+>> been either some serious glass jaw of the core, or it's been something
+>> really stupid we did (or occasionally that the compiler did: one in
+>> particular I remember was how there was a time when gcc would narrow
+>> stores when it could, so if you set a bit in a word, it would do it
+>> with a byte store, and then when you read the whole word afterwards
+>> you'd get a major pipeline stall and it happened to show up in some
+>> really hot paths).
+>=20
+> I've not seen any difference in the GUP bench output here ar all.
+>=20
+> But I'm fine with skipping this patch for now, I have a potential
+> series I'm looking into that would benefit a lot from it, but we
+> can discusss it in that context and make sure all the other works gets in
+> in time.
+>=20
 
-> @Qian Cai, unfortunately I can't reproduce.
-> 
-> If you get the chance, it would be great if you could retry with
-> 
-> diff --git a/drivers/base/memory.c b/drivers/base/memory.c
-> index 972c5336bebf..742f99ddd148 100644
-> --- a/drivers/base/memory.c
-> +++ b/drivers/base/memory.c
-> @@ -868,6 +868,9 @@ int walk_memory_blocks(unsigned long start, unsigned
-> long size,
->         unsigned long block_id;
->         int ret = 0;
-> 
-> +       if (!size)
-> +               return;
-> +
->         for (block_id = start_block_id; block_id <= end_block_id;
-> block_id++) {
->                 mem = find_memory_block_by_id(block_id);
->                 if (!mem)
-> 
-> 
-> 
-> If both, start and size are 0, we would get a veeeery long loop. This
-> would mean that we have an online node that does not span any pages at
-> all (pgdat->node_start_pfn = 0, start_pfn + pgdat->node_spanned_pages = 0).
+If you can, that would be good. I don't like to object based on
+handwaving so I'll see if I can find any benchmarks that will give
+better confidence. Those old TPC-C tests were good, and there was
+some DB2 workload that was the reason I added gup fast in the first
+place. I'll do some digging.
 
-I think I'll make that a `return 0' and I won't drop patches 4-6 for
-now, as we appear to have this fixed.
-
-
-
-From: David Hildenbrand <david@redhat.com>
-Subject: drivers-base-memoryc-get-rid-of-find_memory_block_hinted-v3-fix
-
-handle zero-length walks
-
-Link: http://lkml.kernel.org/r/1c2edc22-afd7-2211-c4c7-40e54e5007e8@redhat.com
-Reported-by: Qian Cai <cai@lca.pw>
-Tested-by: Qian Cai <cai@lca.pw>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
----
-
- drivers/base/memory.c |    3 +++
- 1 file changed, 3 insertions(+)
-
---- a/drivers/base/memory.c~drivers-base-memoryc-get-rid-of-find_memory_block_hinted-v3-fix
-+++ a/drivers/base/memory.c
-@@ -866,6 +866,9 @@ int walk_memory_blocks(unsigned long sta
- 	unsigned long block_id;
- 	int ret = 0;
- 
-+	if (!size)
-+		return 0;
-+
- 	for (block_id = start_block_id; block_id <= end_block_id; block_id++) {
- 		mem = find_memory_block_by_id(block_id);
- 		if (!mem)
-
-
+Thanks,
+Nick
+=
