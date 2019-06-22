@@ -2,81 +2,85 @@ Return-Path: <SRS0=xZg/=UV=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.6 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+X-Spam-Status: No, score=-8.6 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 662FFC43613
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 22 Jun 2019 13:20:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5502DC43613
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 22 Jun 2019 13:24:24 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 9441D2063F
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 22 Jun 2019 13:20:21 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id C785520679
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 22 Jun 2019 13:24:23 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Idr03b5b"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9441D2063F
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="CCjaCQEH"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C785520679
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45WGPq6yQnzDqQ5
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 22 Jun 2019 23:20:15 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45WGVY3vKSzDqSG
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 22 Jun 2019 23:24:21 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=2607:f8b0:4864:20::644; helo=mail-pl1-x644.google.com;
+ (client-ip=2607:f8b0:4864:20::442; helo=mail-pf1-x442.google.com;
  envelope-from=npiggin@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="Idr03b5b"; 
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="CCjaCQEH"; 
  dkim-atps=neutral
-Received: from mail-pl1-x644.google.com (mail-pl1-x644.google.com
- [IPv6:2607:f8b0:4864:20::644])
+Received: from mail-pf1-x442.google.com (mail-pf1-x442.google.com
+ [IPv6:2607:f8b0:4864:20::442])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45WGKB2CL8zDqZw
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 22 Jun 2019 23:16:11 +1000 (AEST)
-Received: by mail-pl1-x644.google.com with SMTP id ay6so4320723plb.9
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 22 Jun 2019 06:16:11 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45WGKB2HY2zDqZy
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 22 Jun 2019 23:16:13 +1000 (AEST)
+Received: by mail-pf1-x442.google.com with SMTP id r1so4965752pfq.12
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 22 Jun 2019 06:16:13 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=from:to:cc:subject:date:message-id:mime-version
- :content-transfer-encoding;
- bh=QL1uDgv4erMWTBmggilBBtmiw/GulpX5jeFU7R2cQYA=;
- b=Idr03b5bxsC7ooc62sDFAiUK7kzRmf1X75r0AN3ObZMmMGxWz880G5zltctZzqvdGB
- B8C7nE0FwmpibRcSUhOty7b1c7qAITfMTHiT0AuDuWeRjOijUrE8oA5aw+5e7umayPTh
- w00r8FmIAGnErOxLLBhO6hZ9JRXIYeINczJT6tScUyFHwKl/TvqRYbu9fJIN5YTJO7Qs
- j/DmCAJT8BFM141qVhKmKFwgPZ1qTs8KC3bbvnDAa+UcFRxc2LFRa8UjolfqjWU/b2C0
- JY8o/j7xqiHftVMsufoeinpHA3/4YTMghxZWKaEiddmvKIE8TclsGa7BoZ6GUgvqDzCY
- Wl4w==
+ h=from:to:cc:subject:date:message-id:in-reply-to:references
+ :mime-version:content-transfer-encoding;
+ bh=wHzgK8ctsEMZ72tBLSQomgHgEoD5UHcPPI5IQtP9PQY=;
+ b=CCjaCQEHP6EjRjr2msEmk6KqEXfdzHah8RvzEcLLubbHS0rvPNs9+V6AApD0A4S8Xc
+ 5nlhh2NtILve+jBd05dRKh2zQKRKrxOsXf/JD/21ua9dlpA9TLEzpPRttwS3Ckv2v48M
+ trDx9uOp6BlAJjK7RSgk6taqmuwK6HLKu4NbkOmlTeFI4quiNKwAXgqpU9padNzFBlK0
+ Mlq+paAtuu8nVO6UzGsAMuwnNO1yfpUBFuqWdQvp9WZHdc1z7t9jyjfom4WvlndYYe0i
+ sCQ8iViC0RvqGWpQQGWpw9Uluh9tno10HnQ6Mc4yJSw1nqBiALXdk/NCxropmbuDb/k8
+ c5zA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
- h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
- :content-transfer-encoding;
- bh=QL1uDgv4erMWTBmggilBBtmiw/GulpX5jeFU7R2cQYA=;
- b=jPDWkp3yN3BxXC9od0jhbC0w9I5Vw5OmjmwJ4hGGItXYgmYDJWD5zzkY9HdL8X5lz6
- o4KwCAZ5E2u/I/8rsxOzmX58UWZVpVV9V+jZmR+oyeyha7J1fWJfHO9T0odfZ4v/AVLv
- nF/JYnED5GsqhVLHtJnl8irsK6CEZTCXMMXP/c+LlLO24U5QklDOgTjEW01nFJu3U4s7
- zkn+2Dp19KO3i2M2jL6mpFUcECg5ByfQMTq3I6j1WsF+32VcYwEah2S/3mF4AAzjMpXC
- rhg9dPRFEp876MI2J9FY3X1Qz7gosiBfIQWBnlyPhd4y1y1/N7LP3V4LFCzboufIcLyE
- 1hhw==
-X-Gm-Message-State: APjAAAVEe3seoFXciT2IOzqCoER1O9/tWoc5RpRq976yzmsd8quoLpj9
- u2tggfvGnjfoSBGcSl/vCkrI4Zi9
-X-Google-Smtp-Source: APXvYqwM5UUNxiuPEDv1U9E2X21dbWh7ASHt1JyJF8yzcByiZumdnQwjAGPWThTN5aABAG+ds30Mrw==
-X-Received: by 2002:a17:902:148:: with SMTP id
- 66mr128501283plb.143.1561209366556; 
- Sat, 22 Jun 2019 06:16:06 -0700 (PDT)
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+ :references:mime-version:content-transfer-encoding;
+ bh=wHzgK8ctsEMZ72tBLSQomgHgEoD5UHcPPI5IQtP9PQY=;
+ b=VwNutTyJrNFElKTBCD4GpfFrp+VfbaCTKOv+pfnBHWtEjYHZMz5b9d4M0LBLvqRI01
+ 9W0eFbjpW59GrNcqvIlbdb5jurDq+RQGAOui9kI3qNSeA4wqwmOcdvQrvJr1pz9C38tq
+ FjUjr0L/owa7HtfRYfsab+qGnTZ7Wc3vOW3X/Tvhbc0gGQR9kgDLZGnLBufG3xHXgBZn
+ kxeXmHZ/P9ttIh56kEccxEiGBXIObFBeM+zGjSTUUMzy0qCmlFg/yWMZurzU2VoxfwWH
+ v3io/lv9xDtpPR5FJ185cUpev302I5EgLCEjKXSoRv0djTnsBXbpTgQSM+ux3wlExj84
+ 8fww==
+X-Gm-Message-State: APjAAAX8cZgXhw410SN71chd38x2LBvuC5EtZ6cWwtr9TpQJkcp+/BO7
+ kmQslmoTMqZUvOkek+MPcZ28M7G0
+X-Google-Smtp-Source: APXvYqy+U4rOOJkh/8cQJYRFo65ziQYszumzy9X3ud9sr04kaw600CacGCr0gY1ANomb3hTapsqzlA==
+X-Received: by 2002:a17:90a:2768:: with SMTP id
+ o95mr13014802pje.37.1561209371540; 
+ Sat, 22 Jun 2019 06:16:11 -0700 (PDT)
 Received: from bobo.ozlabs.ibm.com ([1.144.136.2])
- by smtp.gmail.com with ESMTPSA id n1sm5192471pgv.15.2019.06.22.06.16.03
+ by smtp.gmail.com with ESMTPSA id n1sm5192471pgv.15.2019.06.22.06.16.09
  (version=TLS1_3 cipher=AEAD-AES256-GCM-SHA384 bits=256/256);
- Sat, 22 Jun 2019 06:16:05 -0700 (PDT)
+ Sat, 22 Jun 2019 06:16:11 -0700 (PDT)
 From: Nicholas Piggin <npiggin@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v3 00/25] powerpc/64s interrupt handler cleanups, gasification
-Date: Sat, 22 Jun 2019 23:15:10 +1000
-Message-Id: <20190622131535.20996-1-npiggin@gmail.com>
+Subject: [PATCH v3 02/25] powerpc/64s/exception: consolidate
+ EXCEPTION_PROLOG_2 with _NORI variant
+Date: Sat, 22 Jun 2019 23:15:12 +1000
+Message-Id: <20190622131535.20996-3-npiggin@gmail.com>
 X-Mailer: git-send-email 2.20.1
+In-Reply-To: <20190622131535.20996-1-npiggin@gmail.com>
+References: <20190622131535.20996-1-npiggin@gmail.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -95,54 +99,184 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-One more try at this, sorry for the spam. To reduce the chance of more
-problems I've gone back the other way and actually pulled out almost
-all the patches that altered generated code, leaving just a couple of
-simple cases.
+Switch to a gas macro that conditionally expands the RI clearing
+instruction.
 
-Thanks,
-Nick
+No generated code change.
 
-Nicholas Piggin (25):
-  powerpc/64s/exception: remove H concatenation for EXC_HV variants
-  powerpc/64s/exception: consolidate EXCEPTION_PROLOG_2 with _NORI
-    variant
-  powerpc/64s/exception: move and tidy EXCEPTION_PROLOG_2 variants
-  powerpc/64s/exception: fix sreset KVM test code
-  powerpc/64s/exception: remove the "extra" macro parameter
-  powerpc/64s/exception: consolidate maskable and non-maskable prologs
-  powerpc/64s/exception: merge KVM handler and skip variants
-  powerpc/64s/exception: KVM handler can set the HSRR trap bit
-  powerpc/64s/exception: Make EXCEPTION_PROLOG_0 a gas macro for
-    consistency with others
-  powerpc/64s/exception: Move EXCEPTION_COMMON handler and return
-    branches into callers
-  powerpc/64s/exception: Move EXCEPTION_COMMON additions into callers
-  powerpc/64s/exception: unwind exception-64s.h macros
-  powerpc/64s/exception: improve 0x500 handler code
-  powerpc/64s/exception: move EXCEPTION_PROLOG_2* to a more logical
-    place
-  powerpc/64s/exception: remove STD_EXCEPTION_COMMON variants
-  powerpc/64s/exception: move KVM related code together
-  powerpc/64s/exception: move exception-64s.h code to exception-64s.S
-    where it is used
-  powerpc/64s/exception: move head-64.h code to exception-64s.S where it
-    is used
-  powerpc/64s/exception: remove __BRANCH_TO_KVM
-  powerpc/64s/exception: remove unused BRANCH_TO_COMMON
-  powerpc/64s/exception: use a gas macro for system call handler code
-  powerpc/64s/exception: fix indenting irregularities
-  powerpc/64s/exception: generate regs clear instructions using .rept
-  powerpc/64s/exception: remove pointless EXCEPTION_PROLOG macro
-    indirection
-  powerpc/64s/exception: move paca save area offsets into
-    exception-64s.S
+Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+---
+ arch/powerpc/include/asm/exception-64s.h | 43 ++++++------------------
+ arch/powerpc/kernel/exceptions-64s.S     | 12 +++----
+ 2 files changed, 17 insertions(+), 38 deletions(-)
 
- arch/powerpc/include/asm/exception-64s.h |  604 +----------
- arch/powerpc/include/asm/head-64.h       |  202 ----
- arch/powerpc/kernel/exceptions-64s.S     | 1170 +++++++++++++++++-----
- 3 files changed, 941 insertions(+), 1035 deletions(-)
-
+diff --git a/arch/powerpc/include/asm/exception-64s.h b/arch/powerpc/include/asm/exception-64s.h
+index 1496e4089cee..94c4992188a7 100644
+--- a/arch/powerpc/include/asm/exception-64s.h
++++ b/arch/powerpc/include/asm/exception-64s.h
+@@ -319,32 +319,11 @@ END_FTR_SECTION_NESTED(ftr,ftr,943)
+ #define EXCEPTION_PROLOG_1(area, extra, vec)				\
+ 	_EXCEPTION_PROLOG_1(area, extra, vec)
+ 
+-.macro EXCEPTION_PROLOG_2 label, hsrr
+-	ld	r10,PACAKMSR(r13)	/* get MSR value for kernel */
+-	.if \hsrr
+-	mfspr	r11,SPRN_HSRR0		/* save HSRR0 */
+-	.else
+-	mfspr	r11,SPRN_SRR0		/* save SRR0 */
+-	.endif
+-	LOAD_HANDLER(r12,\label\())
+-	.if \hsrr
+-	mtspr	SPRN_HSRR0,r12
+-	mfspr	r12,SPRN_HSRR1		/* and HSRR1 */
+-	mtspr	SPRN_HSRR1,r10
+-	HRFI_TO_KERNEL
+-	.else
+-	mtspr	SPRN_SRR0,r12
+-	mfspr	r12,SPRN_SRR1		/* and SRR1 */
+-	mtspr	SPRN_SRR1,r10
+-	RFI_TO_KERNEL
+-	.endif
+-	b	.	/* prevent speculative execution */
+-.endm
+-
+-/* _NORI variant keeps MSR_RI clear */
+-.macro EXCEPTION_PROLOG_2_NORI label, hsrr
++.macro EXCEPTION_PROLOG_2 label, hsrr, set_ri
+ 	ld	r10,PACAKMSR(r13)	/* get MSR value for kernel */
++	.if ! \set_ri
+ 	xori	r10,r10,MSR_RI		/* Clear MSR_RI */
++	.endif
+ 	.if \hsrr
+ 	mfspr	r11,SPRN_HSRR0		/* save HSRR0 */
+ 	.else
+@@ -369,7 +348,7 @@ END_FTR_SECTION_NESTED(ftr,ftr,943)
+ 	SET_SCRATCH0(r13);		/* save r13 */			\
+ 	EXCEPTION_PROLOG_0(area);					\
+ 	EXCEPTION_PROLOG_1(area, extra, vec);				\
+-	EXCEPTION_PROLOG_2 label, h
++	EXCEPTION_PROLOG_2 label, h, 1
+ 
+ #ifdef CONFIG_KVM_BOOK3S_HV_POSSIBLE
+ /*
+@@ -438,7 +417,7 @@ END_FTR_SECTION_NESTED(ftr,ftr,943)
+ #define EXCEPTION_PROLOG_NORI(area, label, h, extra, vec)		\
+ 	EXCEPTION_PROLOG_0(area);					\
+ 	EXCEPTION_PROLOG_1(area, extra, vec);				\
+-	EXCEPTION_PROLOG_2_NORI label, h
++	EXCEPTION_PROLOG_2 label, h, 0
+ 
+ #ifdef CONFIG_KVM_BOOK3S_64_HANDLER
+ .macro KVMTEST hsrr, n
+@@ -595,14 +574,14 @@ END_FTR_SECTION_NESTED(ftr,ftr,943)
+ 
+ #define STD_EXCEPTION_OOL(vec, label)				\
+ 	EXCEPTION_PROLOG_1(PACA_EXGEN, KVMTEST_PR, vec);	\
+-	EXCEPTION_PROLOG_2 label, EXC_STD
++	EXCEPTION_PROLOG_2 label, EXC_STD, 1
+ 
+ #define STD_EXCEPTION_HV(loc, vec, label)			\
+ 	EXCEPTION_PROLOG(PACA_EXGEN, label, EXC_HV, KVMTEST_HV, vec)
+ 
+ #define STD_EXCEPTION_HV_OOL(vec, label)			\
+ 	EXCEPTION_PROLOG_1(PACA_EXGEN, KVMTEST_HV, vec);	\
+-	EXCEPTION_PROLOG_2 label, EXC_HV
++	EXCEPTION_PROLOG_2 label, EXC_HV, 1
+ 
+ #define STD_RELON_EXCEPTION(loc, vec, label)		\
+ 	/* No guest interrupts come through here */	\
+@@ -666,21 +645,21 @@ END_FTR_SECTION_NESTED(ftr,ftr,943)
+ 	SET_SCRATCH0(r13);    /* save r13 */				\
+ 	EXCEPTION_PROLOG_0(PACA_EXGEN);					\
+ 	MASKABLE_EXCEPTION_PROLOG_1(PACA_EXGEN, extra, vec, bitmask);	\
+-	EXCEPTION_PROLOG_2 label, h
++	EXCEPTION_PROLOG_2 label, h, 1
+ 
+ #define MASKABLE_EXCEPTION(vec, label, bitmask)				\
+ 	__MASKABLE_EXCEPTION(vec, label, EXC_STD, SOFTEN_TEST_PR, bitmask)
+ 
+ #define MASKABLE_EXCEPTION_OOL(vec, label, bitmask)			\
+ 	MASKABLE_EXCEPTION_PROLOG_1(PACA_EXGEN, SOFTEN_TEST_PR, vec, bitmask);\
+-	EXCEPTION_PROLOG_2 label, EXC_STD
++	EXCEPTION_PROLOG_2 label, EXC_STD, 1
+ 
+ #define MASKABLE_EXCEPTION_HV(vec, label, bitmask)			\
+ 	__MASKABLE_EXCEPTION(vec, label, EXC_HV, SOFTEN_TEST_HV, bitmask)
+ 
+ #define MASKABLE_EXCEPTION_HV_OOL(vec, label, bitmask)			\
+ 	MASKABLE_EXCEPTION_PROLOG_1(PACA_EXGEN, SOFTEN_TEST_HV, vec, bitmask);\
+-	EXCEPTION_PROLOG_2 label, EXC_HV
++	EXCEPTION_PROLOG_2 label, EXC_HV, 1
+ 
+ #define __MASKABLE_RELON_EXCEPTION(vec, label, h, extra, bitmask)	\
+ 	SET_SCRATCH0(r13);    /* save r13 */				\
+@@ -693,7 +672,7 @@ END_FTR_SECTION_NESTED(ftr,ftr,943)
+ 
+ #define MASKABLE_RELON_EXCEPTION_OOL(vec, label, bitmask)		\
+ 	MASKABLE_EXCEPTION_PROLOG_1(PACA_EXGEN, SOFTEN_NOTEST_PR, vec, bitmask);\
+-	EXCEPTION_PROLOG_2 label, EXC_STD
++	EXCEPTION_PROLOG_2 label, EXC_STD, 1
+ 
+ #define MASKABLE_RELON_EXCEPTION_HV(vec, label, bitmask)		\
+ 	__MASKABLE_RELON_EXCEPTION(vec, label, EXC_HV, SOFTEN_TEST_HV, bitmask)
+diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
+index 8996165fd357..32d1d1b89a2e 100644
+--- a/arch/powerpc/kernel/exceptions-64s.S
++++ b/arch/powerpc/kernel/exceptions-64s.S
+@@ -356,7 +356,7 @@ machine_check_pSeries_0:
+ 	 * nested machine check corrupts it. machine_check_common enables
+ 	 * MSR_RI.
+ 	 */
+-	EXCEPTION_PROLOG_2_NORI machine_check_common, EXC_STD
++	EXCEPTION_PROLOG_2 machine_check_common, EXC_STD, 0
+ 
+ TRAMP_KVM_SKIP(PACA_EXMC, 0x200)
+ 
+@@ -598,7 +598,7 @@ EXCEPTION_PROLOG_1(PACA_EXGEN, KVMTEST_PR, 0x300)
+ 	mfspr	r11,SPRN_DSISR
+ 	std	r10,PACA_EXGEN+EX_DAR(r13)
+ 	stw	r11,PACA_EXGEN+EX_DSISR(r13)
+-EXCEPTION_PROLOG_2 data_access_common, EXC_STD
++EXCEPTION_PROLOG_2 data_access_common, EXC_STD, 1
+ 
+ EXC_VIRT_BEGIN(data_access, 0x4300, 0x80)
+ SET_SCRATCH0(r13)		/* save r13 */
+@@ -645,7 +645,7 @@ TRAMP_REAL_BEGIN(tramp_real_data_access_slb)
+ EXCEPTION_PROLOG_1(PACA_EXSLB, KVMTEST_PR, 0x380)
+ 	mfspr	r10,SPRN_DAR
+ 	std	r10,PACA_EXSLB+EX_DAR(r13)
+-EXCEPTION_PROLOG_2 data_access_slb_common, EXC_STD
++EXCEPTION_PROLOG_2 data_access_slb_common, EXC_STD, 1
+ 
+ EXC_VIRT_BEGIN(data_access_slb, 0x4380, 0x80)
+ SET_SCRATCH0(r13)		/* save r13 */
+@@ -774,7 +774,7 @@ EXCEPTION_PROLOG_1(PACA_EXGEN, KVMTEST_PR, 0x600)
+ 	mfspr	r11,SPRN_DSISR
+ 	std	r10,PACA_EXGEN+EX_DAR(r13)
+ 	stw	r11,PACA_EXGEN+EX_DSISR(r13)
+-EXCEPTION_PROLOG_2 alignment_common, EXC_STD
++EXCEPTION_PROLOG_2 alignment_common, EXC_STD, 1
+ EXC_REAL_END(alignment, 0x600, 0x100)
+ 
+ EXC_VIRT_BEGIN(alignment, 0x4600, 0x100)
+@@ -1320,7 +1320,7 @@ EXC_REAL_BEGIN(denorm_exception_hv, 0x1500, 0x100)
+ #endif
+ 
+ 	KVMTEST_HV(0x1500)
+-	EXCEPTION_PROLOG_2 denorm_common, EXC_HV
++	EXCEPTION_PROLOG_2 denorm_common, EXC_HV, 1
+ EXC_REAL_END(denorm_exception_hv, 0x1500, 0x100)
+ 
+ #ifdef CONFIG_PPC_DENORMALISATION
+@@ -1442,7 +1442,7 @@ EXC_VIRT_NONE(0x5800, 0x100)
+ 	std	r12,PACA_EXGEN+EX_R12(r13);		\
+ 	GET_SCRATCH0(r10);				\
+ 	std	r10,PACA_EXGEN+EX_R13(r13);		\
+-	EXCEPTION_PROLOG_2 soft_nmi_common, _H
++	EXCEPTION_PROLOG_2 soft_nmi_common, _H, 1
+ 
+ /*
+  * Branch to soft_nmi_interrupt using the emergency stack. The emergency
 -- 
 2.20.1
 
