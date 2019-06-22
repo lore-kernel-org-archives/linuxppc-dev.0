@@ -8,76 +8,75 @@ X-Spam-Status: No, score=-8.6 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id F0F8FC48BE7
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 22 Jun 2019 13:26:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D67BEC43613
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 22 Jun 2019 13:30:15 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 738F920679
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 22 Jun 2019 13:26:56 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 5763420679
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 22 Jun 2019 13:30:15 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="osP+wm8A"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 738F920679
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="KgpDGsrx"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5763420679
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45WGYT16hFzDqPW
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 22 Jun 2019 23:26:53 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45WGdK3xmRzDqcV
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 22 Jun 2019 23:30:13 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=2607:f8b0:4864:20::42e; helo=mail-pf1-x42e.google.com;
+ (client-ip=2607:f8b0:4864:20::443; helo=mail-pf1-x443.google.com;
  envelope-from=npiggin@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="osP+wm8A"; 
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="KgpDGsrx"; 
  dkim-atps=neutral
-Received: from mail-pf1-x42e.google.com (mail-pf1-x42e.google.com
- [IPv6:2607:f8b0:4864:20::42e])
+Received: from mail-pf1-x443.google.com (mail-pf1-x443.google.com
+ [IPv6:2607:f8b0:4864:20::443])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45WGKB2FLjzDqZx
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 22 Jun 2019 23:16:12 +1000 (AEST)
-Received: by mail-pf1-x42e.google.com with SMTP id i189so4968545pfg.10
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 22 Jun 2019 06:16:12 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45WGKF0ggSzDqZw
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 22 Jun 2019 23:16:16 +1000 (AEST)
+Received: by mail-pf1-x443.google.com with SMTP id q10so4972068pff.9
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 22 Jun 2019 06:16:16 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
  h=from:to:cc:subject:date:message-id:in-reply-to:references
  :mime-version:content-transfer-encoding;
- bh=XBVvVZEJAJBNSIpPQMevIlt7wfk8C2BfvH3006hOVoQ=;
- b=osP+wm8A/jQDKUSIQ+4sK8b5kWTSziznMSOmy9f+yHfj0WJ3tOyZInVx/w4nYbu8yH
- kxyHE8atDKLmHnWUZdUchgztxW2g7LzR/iBtEgJAHnm1ItDso0cIfCVRAWVDzTUZ5crW
- PmXIetW/sleYoxsBCG4MjRild1Q3gNkDpXuxm+QjmtAJeRdiCUyuas6bL0OFpbqLvtGs
- I8TUG3fv14nOX8qQKf/hlrh4t/ifo42cahyKHMC7oTVVAYnOCmH02BF14keeOuJP/3wJ
- nC7dAitNYXRM7bq5VaoUDsPtQK3vlvqhqwFAEuouJH12a9vWsvB91Fgd85hKA1Mbe7+7
- JYeQ==
+ bh=1EOvCkUNlVcO2vq4osCfg88cp8jAev6t5Ge62wdNcBQ=;
+ b=KgpDGsrxOeQMTgOEkJO20G8iD4Fd4GGzIidSeZ/OO1UWR+P1jZmEqrulVyBwxWoc1d
+ MN5Ro35AjJ5FJjDN1WHnM3HcYB3JTZyQqtac8teTvzG8Ys6KiLWSDcnGtIMusFzHNLuf
+ LUlFM0gERufm7augETV0EOyhIbNaVEA4UXZZcice+tqs94fITDTh+rf4CNytRJa/jg3T
+ 0oxlsy3fQCN7lYSDbYhGUBnuJeS0jibxgX3eEa6Sc8nzUGiaEjt1Ak3I3OLw7yFLIxUo
+ FmFA3f/wVq2eW+7rtkDQ8ti6Z8162S7j8rSoUWGq1EKL7eDGRRMNDPInf20LFtEIEsbB
+ py4g==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
  :references:mime-version:content-transfer-encoding;
- bh=XBVvVZEJAJBNSIpPQMevIlt7wfk8C2BfvH3006hOVoQ=;
- b=jajXMe+Ra1Xwxd8NS6r52F/Ryk1/z9+OJe68JCPSdniOkGDH0fyHjIAHR+Z6zWQbaX
- pVEUeYZ5RhBrcE86TptXMiH3/0LP5Dupbb7oLkrTNDokZm7s3hC8gsAi8Ut3y6hUaaJq
- 4XvmF2+rVWVoTrL7dmyO4MZiOYTgy4DuBTJrsJfz3udaAKph3qKnXigKzJ9rT8Qzkh80
- 9PGPQIg4jSF63fsiZGhx3ogrlXqqtbSz8ZktE9P+JatTSnCNGVqWB3xCoPqeMr7wSPDd
- Iy0PyzCUHUMs7UdfFbdL6k6Vl69HgWLwyruh6pMsTj92/nWiAeu6XYjt0JF1+PG4+ZX0
- 6hTA==
-X-Gm-Message-State: APjAAAVwefNvZops+m4wsWAMFx98t8QvxSYjWgLiY/a3WwJFT+1a1Trl
- DxL0RcvLH05VV1EI7IKQbZHUKxJ9
-X-Google-Smtp-Source: APXvYqxyoewx9tOem2VpsLhUirDCAvha4olMifOk1MaU1tEDa3yZvCwNMjIi/dpeawd5wQ7F3lxycg==
-X-Received: by 2002:a17:90a:3548:: with SMTP id
- q66mr13198440pjb.17.1561209369167; 
- Sat, 22 Jun 2019 06:16:09 -0700 (PDT)
+ bh=1EOvCkUNlVcO2vq4osCfg88cp8jAev6t5Ge62wdNcBQ=;
+ b=Nzr/zNuxTkOjSkOxenQlCJuxdQ+5VnoxWplAq1P7LYzR9oBMOmhrthkoiNN96v4sgY
+ f4gSmBUcU/p/T2z6ysFgP8XynNJhqb9tF+5tC2ws2Yt7xBfcQoDJ+3Q4Vla3XfDBKAKW
+ 5oTF8x6VhA5U8UX40aOxP6DodnKCGTvQXgU++HIN5TMirNttWw5Oz9vSeJ+6f1oEGYwI
+ 2vMEcBuOJ4Wdsf79dggSVdf+JCLTWIjclJqi8KIXI4QeY6YLBr9Kwq+aLLzayovJKf0e
+ m7D//o2mMnr2rfD5/67jkPzK4UZqbRRWtOm/325jSIff2dXffuIl58OsjA0B59y9ukf6
+ Fs7A==
+X-Gm-Message-State: APjAAAVb83nL2ohD+dL2Ho2HuCd8VIj7u/Jsd+WwuWNAHSY0L+Cd/lJW
+ QDHDwKlulTzTgjEx8jhkv7dxVWACZO0=
+X-Google-Smtp-Source: APXvYqxEUQNLyQ6K269z9QemDahG6Aqx0rLDH+nvYFb7fzLB7WYx2AWk+yHaddY133dyZWNVgbo6Eg==
+X-Received: by 2002:a63:8d4c:: with SMTP id z73mr16854121pgd.95.1561209374007; 
+ Sat, 22 Jun 2019 06:16:14 -0700 (PDT)
 Received: from bobo.ozlabs.ibm.com ([1.144.136.2])
- by smtp.gmail.com with ESMTPSA id n1sm5192471pgv.15.2019.06.22.06.16.06
+ by smtp.gmail.com with ESMTPSA id n1sm5192471pgv.15.2019.06.22.06.16.11
  (version=TLS1_3 cipher=AEAD-AES256-GCM-SHA384 bits=256/256);
- Sat, 22 Jun 2019 06:16:08 -0700 (PDT)
+ Sat, 22 Jun 2019 06:16:13 -0700 (PDT)
 From: Nicholas Piggin <npiggin@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v3 01/25] powerpc/64s/exception: remove H concatenation for
- EXC_HV variants
-Date: Sat, 22 Jun 2019 23:15:11 +1000
-Message-Id: <20190622131535.20996-2-npiggin@gmail.com>
+Subject: [PATCH v3 03/25] powerpc/64s/exception: move and tidy
+ EXCEPTION_PROLOG_2 variants
+Date: Sat, 22 Jun 2019 23:15:13 +1000
+Message-Id: <20190622131535.20996-4-npiggin@gmail.com>
 X-Mailer: git-send-email 2.20.1
 In-Reply-To: <20190622131535.20996-1-npiggin@gmail.com>
 References: <20190622131535.20996-1-npiggin@gmail.com>
@@ -99,519 +98,236 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Replace all instances of this with gas macros that test the hsrr
-parameter and use the appropriate register names / labels.
+- Re-name the macros to _REAL and _VIRT suffixes rather than no and
+  _RELON suffix.
+
+- Move the macro definitions together in the file.
+
+- Move RELOCATABLE ifdef inside the _VIRT macro.
+
+Further consolidation between variants does not buy much here.
 
 No generated code change.
 
 Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 ---
- arch/powerpc/include/asm/exception-64s.h | 333 +++++++++++++----------
- arch/powerpc/include/asm/head-64.h       |   8 +-
- arch/powerpc/kernel/exceptions-64s.S     |  97 ++++---
- 3 files changed, 253 insertions(+), 185 deletions(-)
+ arch/powerpc/include/asm/exception-64s.h | 87 ++++++++++++------------
+ arch/powerpc/kernel/exceptions-64s.S     | 18 ++---
+ 2 files changed, 51 insertions(+), 54 deletions(-)
 
 diff --git a/arch/powerpc/include/asm/exception-64s.h b/arch/powerpc/include/asm/exception-64s.h
-index d3987ce65857..1496e4089cee 100644
+index 94c4992188a7..4aef70defcdd 100644
 --- a/arch/powerpc/include/asm/exception-64s.h
 +++ b/arch/powerpc/include/asm/exception-64s.h
-@@ -63,6 +63,8 @@
-  */
- #define EX_R3		EX_DAR
- 
-+#ifdef __ASSEMBLY__
-+
- #define STF_ENTRY_BARRIER_SLOT						\
- 	STF_ENTRY_BARRIER_FIXUP_SECTION;				\
- 	nop;								\
-@@ -144,38 +146,6 @@
- 	hrfid;								\
- 	b	hrfi_flush_fallback
- 
--#ifdef CONFIG_RELOCATABLE
--#define __EXCEPTION_PROLOG_2_RELON(label, h)				\
--	mfspr	r11,SPRN_##h##SRR0;	/* save SRR0 */			\
--	LOAD_HANDLER(r12,label);					\
--	mtctr	r12;							\
--	mfspr	r12,SPRN_##h##SRR1;	/* and SRR1 */			\
--	li	r10,MSR_RI;						\
--	mtmsrd 	r10,1;			/* Set RI (EE=0) */		\
--	bctr;
--#else
--/* If not relocatable, we can jump directly -- and save messing with LR */
--#define __EXCEPTION_PROLOG_2_RELON(label, h)				\
--	mfspr	r11,SPRN_##h##SRR0;	/* save SRR0 */			\
--	mfspr	r12,SPRN_##h##SRR1;	/* and SRR1 */			\
--	li	r10,MSR_RI;						\
--	mtmsrd 	r10,1;			/* Set RI (EE=0) */		\
--	b	label;
--#endif
--#define EXCEPTION_PROLOG_2_RELON(label, h)				\
--	__EXCEPTION_PROLOG_2_RELON(label, h)
--
--/*
-- * As EXCEPTION_PROLOG(), except we've already got relocation on so no need to
-- * rfid. Save LR in case we're CONFIG_RELOCATABLE, in which case
-- * EXCEPTION_PROLOG_2_RELON will be using LR.
-- */
--#define EXCEPTION_RELON_PROLOG(area, label, h, extra, vec)		\
--	SET_SCRATCH0(r13);		/* save r13 */			\
--	EXCEPTION_PROLOG_0(area);					\
--	EXCEPTION_PROLOG_1(area, extra, vec);				\
--	EXCEPTION_PROLOG_2_RELON(label, h)
--
- /*
-  * We're short on space and time in the exception prolog, so we can't
-  * use the normal LOAD_REG_IMMEDIATE macro to load the address of label.
-@@ -200,9 +170,54 @@
+@@ -170,8 +170,33 @@
  	ori	reg,reg,(ABS_ADDR(label))@l;				\
  	addis	reg,reg,(ABS_ADDR(label))@h
  
-+#ifdef CONFIG_RELOCATABLE
-+.macro EXCEPTION_PROLOG_2_RELON label, hsrr
-+	.if \hsrr
-+	mfspr	r11,SPRN_HSRR0	/* save HSRR0 */
-+	.else
-+	mfspr	r11,SPRN_SRR0	/* save SRR0 */
++.macro EXCEPTION_PROLOG_2_REAL label, hsrr, set_ri
++	ld	r10,PACAKMSR(r13)	/* get MSR value for kernel */
++	.if ! \set_ri
++	xori	r10,r10,MSR_RI		/* Clear MSR_RI */
 +	.endif
-+	LOAD_HANDLER(r12, \label\())
-+	mtctr	r12
-+	.if \hsrr
-+	mfspr	r12,SPRN_HSRR1	/* and HSRR1 */
-+	.else
-+	mfspr	r12,SPRN_SRR1	/* and HSRR1 */
-+	.endif
-+	li	r10,MSR_RI
-+	mtmsrd 	r10,1		/* Set RI (EE=0) */
-+	bctr
-+.endm
-+#else
-+/* If not relocatable, we can jump directly -- and save messing with LR */
-+.macro EXCEPTION_PROLOG_2_RELON label, hsrr
 +	.if \hsrr
 +	mfspr	r11,SPRN_HSRR0		/* save HSRR0 */
-+	mfspr	r12,SPRN_HSRR1		/* and HSRR1 */
 +	.else
 +	mfspr	r11,SPRN_SRR0		/* save SRR0 */
-+	mfspr	r12,SPRN_SRR1		/* and SRR1 */
 +	.endif
-+	li	r10,MSR_RI
-+	mtmsrd 	r10,1			/* Set RI (EE=0) */
-+	b	\label
++	LOAD_HANDLER(r12, \label\())
++	.if \hsrr
++	mtspr	SPRN_HSRR0,r12
++	mfspr	r12,SPRN_HSRR1		/* and HSRR1 */
++	mtspr	SPRN_HSRR1,r10
++	HRFI_TO_KERNEL
++	.else
++	mtspr	SPRN_SRR0,r12
++	mfspr	r12,SPRN_SRR1		/* and SRR1 */
++	mtspr	SPRN_SRR1,r10
++	RFI_TO_KERNEL
++	.endif
++	b	.	/* prevent speculative execution */
 +.endm
-+#endif
 +
-+/*
-+ * As EXCEPTION_PROLOG(), except we've already got relocation on so no need to
-+ * rfid. Save LR in case we're CONFIG_RELOCATABLE, in which case
-+ * EXCEPTION_PROLOG_2_RELON will be using LR.
-+ */
-+#define EXCEPTION_RELON_PROLOG(area, label, hsrr, extra, vec)		\
-+	SET_SCRATCH0(r13);		/* save r13 */			\
-+	EXCEPTION_PROLOG_0(area);					\
-+	EXCEPTION_PROLOG_1(area, extra, vec);				\
-+	EXCEPTION_PROLOG_2_RELON label, hsrr
-+
- /* Exception register prefixes */
--#define EXC_HV	H
--#define EXC_STD
-+#define EXC_HV		1
-+#define EXC_STD		0
++.macro EXCEPTION_PROLOG_2_VIRT label, hsrr
+ #ifdef CONFIG_RELOCATABLE
+-.macro EXCEPTION_PROLOG_2_RELON label, hsrr
+ 	.if \hsrr
+ 	mfspr	r11,SPRN_HSRR0	/* save HSRR0 */
+ 	.else
+@@ -187,10 +212,7 @@
+ 	li	r10,MSR_RI
+ 	mtmsrd 	r10,1		/* Set RI (EE=0) */
+ 	bctr
+-.endm
+ #else
+-/* If not relocatable, we can jump directly -- and save messing with LR */
+-.macro EXCEPTION_PROLOG_2_RELON label, hsrr
+ 	.if \hsrr
+ 	mfspr	r11,SPRN_HSRR0		/* save HSRR0 */
+ 	mfspr	r12,SPRN_HSRR1		/* and HSRR1 */
+@@ -201,19 +223,19 @@
+ 	li	r10,MSR_RI
+ 	mtmsrd 	r10,1			/* Set RI (EE=0) */
+ 	b	\label
+-.endm
+ #endif
++.endm
  
- #if defined(CONFIG_RELOCATABLE)
  /*
-@@ -304,43 +319,57 @@ END_FTR_SECTION_NESTED(ftr,ftr,943)
+  * As EXCEPTION_PROLOG(), except we've already got relocation on so no need to
+- * rfid. Save LR in case we're CONFIG_RELOCATABLE, in which case
+- * EXCEPTION_PROLOG_2_RELON will be using LR.
++ * rfid. Save CTR in case we're CONFIG_RELOCATABLE, in which case
++ * EXCEPTION_PROLOG_2_VIRT will be using CTR.
+  */
+ #define EXCEPTION_RELON_PROLOG(area, label, hsrr, extra, vec)		\
+ 	SET_SCRATCH0(r13);		/* save r13 */			\
+ 	EXCEPTION_PROLOG_0(area);					\
+ 	EXCEPTION_PROLOG_1(area, extra, vec);				\
+-	EXCEPTION_PROLOG_2_RELON label, hsrr
++	EXCEPTION_PROLOG_2_VIRT label, hsrr
+ 
+ /* Exception register prefixes */
+ #define EXC_HV		1
+@@ -319,36 +341,11 @@ END_FTR_SECTION_NESTED(ftr,ftr,943)
  #define EXCEPTION_PROLOG_1(area, extra, vec)				\
  	_EXCEPTION_PROLOG_1(area, extra, vec)
  
--#define __EXCEPTION_PROLOG_2(label, h)					\
--	ld	r10,PACAKMSR(r13);	/* get MSR value for kernel */	\
--	mfspr	r11,SPRN_##h##SRR0;	/* save SRR0 */			\
--	LOAD_HANDLER(r12,label);					\
--	mtspr	SPRN_##h##SRR0,r12;					\
--	mfspr	r12,SPRN_##h##SRR1;	/* and SRR1 */			\
--	mtspr	SPRN_##h##SRR1,r10;					\
--	h##RFI_TO_KERNEL;						\
-+.macro EXCEPTION_PROLOG_2 label, hsrr
-+	ld	r10,PACAKMSR(r13)	/* get MSR value for kernel */
-+	.if \hsrr
-+	mfspr	r11,SPRN_HSRR0		/* save HSRR0 */
-+	.else
-+	mfspr	r11,SPRN_SRR0		/* save SRR0 */
-+	.endif
-+	LOAD_HANDLER(r12,\label\())
-+	.if \hsrr
-+	mtspr	SPRN_HSRR0,r12
-+	mfspr	r12,SPRN_HSRR1		/* and HSRR1 */
-+	mtspr	SPRN_HSRR1,r10
-+	HRFI_TO_KERNEL
-+	.else
-+	mtspr	SPRN_SRR0,r12
-+	mfspr	r12,SPRN_SRR1		/* and SRR1 */
-+	mtspr	SPRN_SRR1,r10
-+	RFI_TO_KERNEL
-+	.endif
- 	b	.	/* prevent speculative execution */
--#define EXCEPTION_PROLOG_2(label, h)					\
--	__EXCEPTION_PROLOG_2(label, h)
-+.endm
- 
- /* _NORI variant keeps MSR_RI clear */
--#define __EXCEPTION_PROLOG_2_NORI(label, h)				\
--	ld	r10,PACAKMSR(r13);	/* get MSR value for kernel */	\
--	xori	r10,r10,MSR_RI;		/* Clear MSR_RI */		\
--	mfspr	r11,SPRN_##h##SRR0;	/* save SRR0 */			\
--	LOAD_HANDLER(r12,label);					\
--	mtspr	SPRN_##h##SRR0,r12;					\
--	mfspr	r12,SPRN_##h##SRR1;	/* and SRR1 */			\
--	mtspr	SPRN_##h##SRR1,r10;					\
--	h##RFI_TO_KERNEL;						\
-+.macro EXCEPTION_PROLOG_2_NORI label, hsrr
-+	ld	r10,PACAKMSR(r13)	/* get MSR value for kernel */
-+	xori	r10,r10,MSR_RI		/* Clear MSR_RI */
-+	.if \hsrr
-+	mfspr	r11,SPRN_HSRR0		/* save HSRR0 */
-+	.else
-+	mfspr	r11,SPRN_SRR0		/* save SRR0 */
-+	.endif
-+	LOAD_HANDLER(r12,\label\())
-+	.if \hsrr
-+	mtspr	SPRN_HSRR0,r12
-+	mfspr	r12,SPRN_HSRR1		/* and HSRR1 */
-+	mtspr	SPRN_HSRR1,r10
-+	HRFI_TO_KERNEL
-+	.else
-+	mtspr	SPRN_SRR0,r12
-+	mfspr	r12,SPRN_SRR1		/* and SRR1 */
-+	mtspr	SPRN_SRR1,r10
-+	RFI_TO_KERNEL
-+	.endif
- 	b	.	/* prevent speculative execution */
+-.macro EXCEPTION_PROLOG_2 label, hsrr, set_ri
+-	ld	r10,PACAKMSR(r13)	/* get MSR value for kernel */
+-	.if ! \set_ri
+-	xori	r10,r10,MSR_RI		/* Clear MSR_RI */
+-	.endif
+-	.if \hsrr
+-	mfspr	r11,SPRN_HSRR0		/* save HSRR0 */
+-	.else
+-	mfspr	r11,SPRN_SRR0		/* save SRR0 */
+-	.endif
+-	LOAD_HANDLER(r12,\label\())
+-	.if \hsrr
+-	mtspr	SPRN_HSRR0,r12
+-	mfspr	r12,SPRN_HSRR1		/* and HSRR1 */
+-	mtspr	SPRN_HSRR1,r10
+-	HRFI_TO_KERNEL
+-	.else
+-	mtspr	SPRN_SRR0,r12
+-	mfspr	r12,SPRN_SRR1		/* and SRR1 */
+-	mtspr	SPRN_SRR1,r10
+-	RFI_TO_KERNEL
+-	.endif
+-	b	.	/* prevent speculative execution */
+-.endm
 -
--#define EXCEPTION_PROLOG_2_NORI(label, h)				\
--	__EXCEPTION_PROLOG_2_NORI(label, h)
-+.endm
- 
  #define EXCEPTION_PROLOG(area, label, h, extra, vec)			\
  	SET_SCRATCH0(r13);		/* save r13 */			\
  	EXCEPTION_PROLOG_0(area);					\
  	EXCEPTION_PROLOG_1(area, extra, vec);				\
--	EXCEPTION_PROLOG_2(label, h)
--
--#define __KVMTEST(h, n)							\
--	lbz	r10,HSTATE_IN_GUEST(r13);				\
--	cmpwi	r10,0;							\
--	bne	do_kvm_##h##n
-+	EXCEPTION_PROLOG_2 label, h
+-	EXCEPTION_PROLOG_2 label, h, 1
++	EXCEPTION_PROLOG_2_REAL label, h, 1
  
  #ifdef CONFIG_KVM_BOOK3S_HV_POSSIBLE
  /*
-@@ -409,52 +438,66 @@ END_FTR_SECTION_NESTED(ftr,ftr,943)
+@@ -417,7 +414,7 @@ END_FTR_SECTION_NESTED(ftr,ftr,943)
  #define EXCEPTION_PROLOG_NORI(area, label, h, extra, vec)		\
  	EXCEPTION_PROLOG_0(area);					\
  	EXCEPTION_PROLOG_1(area, extra, vec);				\
--	EXCEPTION_PROLOG_2_NORI(label, h)
--
--
--#define __KVM_HANDLER(area, h, n)					\
--	BEGIN_FTR_SECTION_NESTED(947)					\
--	ld	r10,area+EX_CFAR(r13);					\
--	std	r10,HSTATE_CFAR(r13);					\
--	END_FTR_SECTION_NESTED(CPU_FTR_CFAR,CPU_FTR_CFAR,947);		\
--	BEGIN_FTR_SECTION_NESTED(948)					\
--	ld	r10,area+EX_PPR(r13);					\
--	std	r10,HSTATE_PPR(r13);					\
--	END_FTR_SECTION_NESTED(CPU_FTR_HAS_PPR,CPU_FTR_HAS_PPR,948);	\
--	ld	r10,area+EX_R10(r13);					\
--	std	r12,HSTATE_SCRATCH0(r13);				\
--	sldi	r12,r9,32;						\
--	ori	r12,r12,(n);						\
--	/* This reloads r9 before branching to kvmppc_interrupt */	\
--	__BRANCH_TO_KVM_EXIT(area, kvmppc_interrupt)
--
--#define __KVM_HANDLER_SKIP(area, h, n)					\
--	cmpwi	r10,KVM_GUEST_MODE_SKIP;				\
--	beq	89f;							\
--	BEGIN_FTR_SECTION_NESTED(948)					\
--	ld	r10,area+EX_PPR(r13);					\
--	std	r10,HSTATE_PPR(r13);					\
--	END_FTR_SECTION_NESTED(CPU_FTR_HAS_PPR,CPU_FTR_HAS_PPR,948);	\
--	ld	r10,area+EX_R10(r13);					\
--	std	r12,HSTATE_SCRATCH0(r13);				\
--	sldi	r12,r9,32;						\
--	ori	r12,r12,(n);						\
--	/* This reloads r9 before branching to kvmppc_interrupt */	\
--	__BRANCH_TO_KVM_EXIT(area, kvmppc_interrupt);			\
--89:	mtocrf	0x80,r9;						\
--	ld	r9,area+EX_R9(r13);					\
--	ld	r10,area+EX_R10(r13);					\
--	b	kvmppc_skip_##h##interrupt
-+	EXCEPTION_PROLOG_2_NORI label, h
+-	EXCEPTION_PROLOG_2 label, h, 0
++	EXCEPTION_PROLOG_2_REAL label, h, 0
  
  #ifdef CONFIG_KVM_BOOK3S_64_HANDLER
--#define KVMTEST(h, n)			__KVMTEST(h, n)
--#define KVM_HANDLER(area, h, n)		__KVM_HANDLER(area, h, n)
--#define KVM_HANDLER_SKIP(area, h, n)	__KVM_HANDLER_SKIP(area, h, n)
-+.macro KVMTEST hsrr, n
-+	lbz	r10,HSTATE_IN_GUEST(r13)
-+	cmpwi	r10,0
-+	.if \hsrr
-+	bne	do_kvm_H\n
-+	.else
-+	bne	do_kvm_\n
-+	.endif
-+.endm
-+
-+.macro KVM_HANDLER area, hsrr, n
-+	BEGIN_FTR_SECTION_NESTED(947)
-+	ld	r10,\area+EX_CFAR(r13)
-+	std	r10,HSTATE_CFAR(r13)
-+	END_FTR_SECTION_NESTED(CPU_FTR_CFAR,CPU_FTR_CFAR,947)
-+	BEGIN_FTR_SECTION_NESTED(948)
-+	ld	r10,\area+EX_PPR(r13)
-+	std	r10,HSTATE_PPR(r13)
-+	END_FTR_SECTION_NESTED(CPU_FTR_HAS_PPR,CPU_FTR_HAS_PPR,948)
-+	ld	r10,\area+EX_R10(r13)
-+	std	r12,HSTATE_SCRATCH0(r13)
-+	sldi	r12,r9,32
-+	ori	r12,r12,(\n)
-+	/* This reloads r9 before branching to kvmppc_interrupt */
-+	__BRANCH_TO_KVM_EXIT(\area, kvmppc_interrupt)
-+.endm
-+
-+.macro KVM_HANDLER_SKIP area, hsrr, n
-+	cmpwi	r10,KVM_GUEST_MODE_SKIP
-+	beq	89f
-+	BEGIN_FTR_SECTION_NESTED(948)
-+	ld	r10,\area+EX_PPR(r13)
-+	std	r10,HSTATE_PPR(r13)
-+	END_FTR_SECTION_NESTED(CPU_FTR_HAS_PPR,CPU_FTR_HAS_PPR,948)
-+	ld	r10,\area+EX_R10(r13)
-+	std	r12,HSTATE_SCRATCH0(r13)
-+	sldi	r12,r9,32
-+	ori	r12,r12,(\n)
-+	/* This reloads r9 before branching to kvmppc_interrupt */
-+	__BRANCH_TO_KVM_EXIT(\area, kvmppc_interrupt)
-+89:	mtocrf	0x80,r9
-+	ld	r9,\area+EX_R9(r13)
-+	ld	r10,\area+EX_R10(r13)
-+	.if \hsrr
-+	b	kvmppc_skip_Hinterrupt
-+	.else
-+	b	kvmppc_skip_interrupt
-+	.endif
-+.endm
- 
- #else
--#define KVMTEST(h, n)
--#define KVM_HANDLER(area, h, n)
--#define KVM_HANDLER_SKIP(area, h, n)
-+.macro KVMTEST hsrr, n
-+.endm
-+.macro KVM_HANDLER area, hsrr, n
-+.endm
-+.macro KVM_HANDLER_SKIP area, hsrr, n
-+.endm
- #endif
- 
- #define NOTEST(n)
-@@ -552,14 +595,14 @@ END_FTR_SECTION_NESTED(ftr,ftr,943)
+ .macro KVMTEST hsrr, n
+@@ -574,14 +571,14 @@ END_FTR_SECTION_NESTED(ftr,ftr,943)
  
  #define STD_EXCEPTION_OOL(vec, label)				\
  	EXCEPTION_PROLOG_1(PACA_EXGEN, KVMTEST_PR, vec);	\
--	EXCEPTION_PROLOG_2(label, EXC_STD)
-+	EXCEPTION_PROLOG_2 label, EXC_STD
+-	EXCEPTION_PROLOG_2 label, EXC_STD, 1
++	EXCEPTION_PROLOG_2_REAL label, EXC_STD, 1
  
  #define STD_EXCEPTION_HV(loc, vec, label)			\
  	EXCEPTION_PROLOG(PACA_EXGEN, label, EXC_HV, KVMTEST_HV, vec)
  
  #define STD_EXCEPTION_HV_OOL(vec, label)			\
  	EXCEPTION_PROLOG_1(PACA_EXGEN, KVMTEST_HV, vec);	\
--	EXCEPTION_PROLOG_2(label, EXC_HV)
-+	EXCEPTION_PROLOG_2 label, EXC_HV
+-	EXCEPTION_PROLOG_2 label, EXC_HV, 1
++	EXCEPTION_PROLOG_2_REAL label, EXC_HV, 1
  
  #define STD_RELON_EXCEPTION(loc, vec, label)		\
  	/* No guest interrupts come through here */	\
-@@ -567,89 +610,97 @@ END_FTR_SECTION_NESTED(ftr,ftr,943)
+@@ -589,14 +586,14 @@ END_FTR_SECTION_NESTED(ftr,ftr,943)
  
  #define STD_RELON_EXCEPTION_OOL(vec, label)			\
  	EXCEPTION_PROLOG_1(PACA_EXGEN, NOTEST, vec);		\
--	EXCEPTION_PROLOG_2_RELON(label, EXC_STD)
-+	EXCEPTION_PROLOG_2_RELON label, EXC_STD
+-	EXCEPTION_PROLOG_2_RELON label, EXC_STD
++	EXCEPTION_PROLOG_2_VIRT label, EXC_STD
  
  #define STD_RELON_EXCEPTION_HV(loc, vec, label)		\
  	EXCEPTION_RELON_PROLOG(PACA_EXGEN, label, EXC_HV, KVMTEST_HV, vec)
  
  #define STD_RELON_EXCEPTION_HV_OOL(vec, label)			\
  	EXCEPTION_PROLOG_1(PACA_EXGEN, KVMTEST_HV, vec);	\
--	EXCEPTION_PROLOG_2_RELON(label, EXC_HV)
--
--/* This associate vector numbers with bits in paca->irq_happened */
--#define SOFTEN_VALUE_0x500	PACA_IRQ_EE
--#define SOFTEN_VALUE_0x900	PACA_IRQ_DEC
--#define SOFTEN_VALUE_0x980	PACA_IRQ_DEC
--#define SOFTEN_VALUE_0xa00	PACA_IRQ_DBELL
--#define SOFTEN_VALUE_0xe80	PACA_IRQ_DBELL
--#define SOFTEN_VALUE_0xe60	PACA_IRQ_HMI
--#define SOFTEN_VALUE_0xea0	PACA_IRQ_EE
--#define SOFTEN_VALUE_0xf00	PACA_IRQ_PMI
--
--#define __SOFTEN_TEST(h, vec, bitmask)					\
--	lbz	r10,PACAIRQSOFTMASK(r13);				\
--	andi.	r10,r10,bitmask;					\
--	li	r10,SOFTEN_VALUE_##vec;					\
--	bne	masked_##h##interrupt
--
--#define _SOFTEN_TEST(h, vec, bitmask)	__SOFTEN_TEST(h, vec, bitmask)
-+	EXCEPTION_PROLOG_2_RELON label, EXC_HV
-+
-+.macro SOFTEN_TEST hsrr, vec, bitmask
-+	lbz	r10, PACAIRQSOFTMASK(r13)
-+	andi.	r10, r10, \bitmask
-+	/* This associates vector numbers with bits in paca->irq_happened */
-+	.if \vec == 0x500 || \vec == 0xea0
-+	li	r10, PACA_IRQ_EE
-+	.elseif \vec == 0x900 || \vec == 0xea0
-+	li	r10, PACA_IRQ_DEC
-+	.elseif \vec == 0xa00 || \vec == 0xe80
-+	li	r10, PACA_IRQ_DBELL
-+	.elseif \vec == 0xe60
-+	li	r10, PACA_IRQ_HMI
-+	.elseif \vec == 0xf00
-+	li	r10, PACA_IRQ_PMI
-+	.else
-+	.abort "Bad maskable vector"
-+	.endif
-+
-+
-+	.if \hsrr
-+	bne	masked_Hinterrupt
-+	.else
-+	bne	masked_interrupt
-+	.endif
-+.endm
+-	EXCEPTION_PROLOG_2_RELON label, EXC_HV
++	EXCEPTION_PROLOG_2_VIRT label, EXC_HV
  
- #define SOFTEN_TEST_PR(vec, bitmask)					\
--	KVMTEST(EXC_STD, vec);						\
--	_SOFTEN_TEST(EXC_STD, vec, bitmask)
-+	KVMTEST EXC_STD, vec ;						\
-+	SOFTEN_TEST EXC_STD, vec, bitmask
- 
- #define SOFTEN_TEST_HV(vec, bitmask)					\
--	KVMTEST(EXC_HV, vec);						\
--	_SOFTEN_TEST(EXC_HV, vec, bitmask)
-+	KVMTEST EXC_HV, vec ;						\
-+	SOFTEN_TEST EXC_HV, vec, bitmask
- 
- #define KVMTEST_PR(vec)							\
--	KVMTEST(EXC_STD, vec)
-+	KVMTEST EXC_STD, vec
- 
- #define KVMTEST_HV(vec)							\
--	KVMTEST(EXC_HV, vec)
-+	KVMTEST EXC_HV, vec
- 
--#define SOFTEN_NOTEST_PR(vec, bitmask)	_SOFTEN_TEST(EXC_STD, vec, bitmask)
--#define SOFTEN_NOTEST_HV(vec, bitmask)	_SOFTEN_TEST(EXC_HV, vec, bitmask)
-+#define SOFTEN_NOTEST_PR(vec, bitmask)	SOFTEN_TEST EXC_STD, vec, bitmask
-+#define SOFTEN_NOTEST_HV(vec, bitmask)	SOFTEN_TEST EXC_HV, vec, bitmask
- 
- #define __MASKABLE_EXCEPTION(vec, label, h, extra, bitmask)		\
+ .macro SOFTEN_TEST hsrr, vec, bitmask
+ 	lbz	r10, PACAIRQSOFTMASK(r13)
+@@ -645,41 +642,41 @@ END_FTR_SECTION_NESTED(ftr,ftr,943)
  	SET_SCRATCH0(r13);    /* save r13 */				\
  	EXCEPTION_PROLOG_0(PACA_EXGEN);					\
  	MASKABLE_EXCEPTION_PROLOG_1(PACA_EXGEN, extra, vec, bitmask);	\
--	EXCEPTION_PROLOG_2(label, h)
-+	EXCEPTION_PROLOG_2 label, h
+-	EXCEPTION_PROLOG_2 label, h, 1
++	EXCEPTION_PROLOG_2_REAL label, h, 1
  
  #define MASKABLE_EXCEPTION(vec, label, bitmask)				\
  	__MASKABLE_EXCEPTION(vec, label, EXC_STD, SOFTEN_TEST_PR, bitmask)
  
  #define MASKABLE_EXCEPTION_OOL(vec, label, bitmask)			\
  	MASKABLE_EXCEPTION_PROLOG_1(PACA_EXGEN, SOFTEN_TEST_PR, vec, bitmask);\
--	EXCEPTION_PROLOG_2(label, EXC_STD)
-+	EXCEPTION_PROLOG_2 label, EXC_STD
+-	EXCEPTION_PROLOG_2 label, EXC_STD, 1
++	EXCEPTION_PROLOG_2_REAL label, EXC_STD, 1
  
  #define MASKABLE_EXCEPTION_HV(vec, label, bitmask)			\
  	__MASKABLE_EXCEPTION(vec, label, EXC_HV, SOFTEN_TEST_HV, bitmask)
  
  #define MASKABLE_EXCEPTION_HV_OOL(vec, label, bitmask)			\
  	MASKABLE_EXCEPTION_PROLOG_1(PACA_EXGEN, SOFTEN_TEST_HV, vec, bitmask);\
--	EXCEPTION_PROLOG_2(label, EXC_HV)
-+	EXCEPTION_PROLOG_2 label, EXC_HV
+-	EXCEPTION_PROLOG_2 label, EXC_HV, 1
++	EXCEPTION_PROLOG_2_REAL label, EXC_HV, 1
  
  #define __MASKABLE_RELON_EXCEPTION(vec, label, h, extra, bitmask)	\
  	SET_SCRATCH0(r13);    /* save r13 */				\
  	EXCEPTION_PROLOG_0(PACA_EXGEN);					\
  	MASKABLE_EXCEPTION_PROLOG_1(PACA_EXGEN, extra, vec, bitmask);	\
--	EXCEPTION_PROLOG_2_RELON(label, h)
-+	EXCEPTION_PROLOG_2_RELON label, h
+-	EXCEPTION_PROLOG_2_RELON label, h
++	EXCEPTION_PROLOG_2_VIRT label, h
  
  #define MASKABLE_RELON_EXCEPTION(vec, label, bitmask)			\
  	__MASKABLE_RELON_EXCEPTION(vec, label, EXC_STD, SOFTEN_NOTEST_PR, bitmask)
  
  #define MASKABLE_RELON_EXCEPTION_OOL(vec, label, bitmask)		\
  	MASKABLE_EXCEPTION_PROLOG_1(PACA_EXGEN, SOFTEN_NOTEST_PR, vec, bitmask);\
--	EXCEPTION_PROLOG_2(label, EXC_STD)
-+	EXCEPTION_PROLOG_2 label, EXC_STD
+-	EXCEPTION_PROLOG_2 label, EXC_STD, 1
++	EXCEPTION_PROLOG_2_REAL label, EXC_STD, 1
  
  #define MASKABLE_RELON_EXCEPTION_HV(vec, label, bitmask)		\
  	__MASKABLE_RELON_EXCEPTION(vec, label, EXC_HV, SOFTEN_TEST_HV, bitmask)
  
  #define MASKABLE_RELON_EXCEPTION_HV_OOL(vec, label, bitmask)		\
  	MASKABLE_EXCEPTION_PROLOG_1(PACA_EXGEN, SOFTEN_TEST_HV, vec, bitmask);\
--	EXCEPTION_PROLOG_2_RELON(label, EXC_HV)
-+	EXCEPTION_PROLOG_2_RELON label, EXC_HV
+-	EXCEPTION_PROLOG_2_RELON label, EXC_HV
++	EXCEPTION_PROLOG_2_VIRT label, EXC_HV
  
  /*
   * Our exception common code can be passed various "additions"
-@@ -728,4 +779,6 @@ END_FTR_SECTION_IFSET(CPU_FTR_CAN_NAP)
- #define FINISH_NAP
- #endif
- 
-+#endif /* __ASSEMBLY__ */
-+
- #endif	/* _ASM_POWERPC_EXCEPTION_H */
-diff --git a/arch/powerpc/include/asm/head-64.h b/arch/powerpc/include/asm/head-64.h
-index e34b3d06bf61..4767d6c7b8fa 100644
---- a/arch/powerpc/include/asm/head-64.h
-+++ b/arch/powerpc/include/asm/head-64.h
-@@ -387,22 +387,22 @@ end_##sname:
- 
- #define TRAMP_KVM(area, n)						\
- 	TRAMP_KVM_BEGIN(do_kvm_##n);					\
--	KVM_HANDLER(area, EXC_STD, n);					\
-+	KVM_HANDLER area, EXC_STD, n
- 
- #define TRAMP_KVM_SKIP(area, n)						\
- 	TRAMP_KVM_BEGIN(do_kvm_##n);					\
--	KVM_HANDLER_SKIP(area, EXC_STD, n);				\
-+	KVM_HANDLER_SKIP area, EXC_STD, n
- 
- /*
-  * HV variant exceptions get the 0x2 bit added to their trap number.
-  */
- #define TRAMP_KVM_HV(area, n)						\
- 	TRAMP_KVM_BEGIN(do_kvm_H##n);					\
--	KVM_HANDLER(area, EXC_HV, n + 0x2);				\
-+	KVM_HANDLER area, EXC_HV, n + 0x2
- 
- #define TRAMP_KVM_HV_SKIP(area, n)					\
- 	TRAMP_KVM_BEGIN(do_kvm_H##n);					\
--	KVM_HANDLER_SKIP(area, EXC_HV, n + 0x2);			\
-+	KVM_HANDLER_SKIP area, EXC_HV, n + 0x2
- 
- #define EXC_COMMON(name, realvec, hdlr)					\
- 	EXC_COMMON_BEGIN(name);						\
 diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
-index 73ba246ca11d..8996165fd357 100644
+index 32d1d1b89a2e..4ebe39c74aa0 100644
 --- a/arch/powerpc/kernel/exceptions-64s.S
 +++ b/arch/powerpc/kernel/exceptions-64s.S
 @@ -356,7 +356,7 @@ machine_check_pSeries_0:
  	 * nested machine check corrupts it. machine_check_common enables
  	 * MSR_RI.
  	 */
--	EXCEPTION_PROLOG_2_NORI(machine_check_common, EXC_STD)
-+	EXCEPTION_PROLOG_2_NORI machine_check_common, EXC_STD
+-	EXCEPTION_PROLOG_2 machine_check_common, EXC_STD, 0
++	EXCEPTION_PROLOG_2_REAL machine_check_common, EXC_STD, 0
  
  TRAMP_KVM_SKIP(PACA_EXMC, 0x200)
  
@@ -619,8 +335,8 @@ index 73ba246ca11d..8996165fd357 100644
  	mfspr	r11,SPRN_DSISR
  	std	r10,PACA_EXGEN+EX_DAR(r13)
  	stw	r11,PACA_EXGEN+EX_DSISR(r13)
--EXCEPTION_PROLOG_2(data_access_common, EXC_STD)
-+EXCEPTION_PROLOG_2 data_access_common, EXC_STD
+-EXCEPTION_PROLOG_2 data_access_common, EXC_STD, 1
++EXCEPTION_PROLOG_2_REAL data_access_common, EXC_STD, 1
  
  EXC_VIRT_BEGIN(data_access, 0x4300, 0x80)
  SET_SCRATCH0(r13)		/* save r13 */
@@ -628,8 +344,8 @@ index 73ba246ca11d..8996165fd357 100644
  	mfspr	r11,SPRN_DSISR
  	std	r10,PACA_EXGEN+EX_DAR(r13)
  	stw	r11,PACA_EXGEN+EX_DSISR(r13)
--EXCEPTION_PROLOG_2_RELON(data_access_common, EXC_STD)
-+EXCEPTION_PROLOG_2_RELON data_access_common, EXC_STD
+-EXCEPTION_PROLOG_2_RELON data_access_common, EXC_STD
++EXCEPTION_PROLOG_2_VIRT data_access_common, EXC_STD
  EXC_VIRT_END(data_access, 0x4300, 0x80)
  
  TRAMP_KVM_SKIP(PACA_EXGEN, 0x300)
@@ -637,8 +353,8 @@ index 73ba246ca11d..8996165fd357 100644
  EXCEPTION_PROLOG_1(PACA_EXSLB, KVMTEST_PR, 0x380)
  	mfspr	r10,SPRN_DAR
  	std	r10,PACA_EXSLB+EX_DAR(r13)
--EXCEPTION_PROLOG_2(data_access_slb_common, EXC_STD)
-+EXCEPTION_PROLOG_2 data_access_slb_common, EXC_STD
+-EXCEPTION_PROLOG_2 data_access_slb_common, EXC_STD, 1
++EXCEPTION_PROLOG_2_REAL data_access_slb_common, EXC_STD, 1
  
  EXC_VIRT_BEGIN(data_access_slb, 0x4380, 0x80)
  SET_SCRATCH0(r13)		/* save r13 */
@@ -646,8 +362,8 @@ index 73ba246ca11d..8996165fd357 100644
  EXCEPTION_PROLOG_1(PACA_EXSLB, NOTEST, 0x380)
  	mfspr	r10,SPRN_DAR
  	std	r10,PACA_EXSLB+EX_DAR(r13)
--EXCEPTION_PROLOG_2_RELON(data_access_slb_common, EXC_STD)
-+EXCEPTION_PROLOG_2_RELON data_access_slb_common, EXC_STD
+-EXCEPTION_PROLOG_2_RELON data_access_slb_common, EXC_STD
++EXCEPTION_PROLOG_2_VIRT data_access_slb_common, EXC_STD
  EXC_VIRT_END(data_access_slb, 0x4380, 0x80)
  
  TRAMP_KVM_SKIP(PACA_EXSLB, 0x380)
@@ -655,8 +371,8 @@ index 73ba246ca11d..8996165fd357 100644
  	mfspr	r11,SPRN_DSISR
  	std	r10,PACA_EXGEN+EX_DAR(r13)
  	stw	r11,PACA_EXGEN+EX_DSISR(r13)
--EXCEPTION_PROLOG_2(alignment_common, EXC_STD)
-+EXCEPTION_PROLOG_2 alignment_common, EXC_STD
+-EXCEPTION_PROLOG_2 alignment_common, EXC_STD, 1
++EXCEPTION_PROLOG_2_REAL alignment_common, EXC_STD, 1
  EXC_REAL_END(alignment, 0x600, 0x100)
  
  EXC_VIRT_BEGIN(alignment, 0x4600, 0x100)
@@ -664,26 +380,17 @@ index 73ba246ca11d..8996165fd357 100644
  	mfspr	r11,SPRN_DSISR
  	std	r10,PACA_EXGEN+EX_DAR(r13)
  	stw	r11,PACA_EXGEN+EX_DSISR(r13)
--EXCEPTION_PROLOG_2_RELON(alignment_common, EXC_STD)
-+EXCEPTION_PROLOG_2_RELON alignment_common, EXC_STD
+-EXCEPTION_PROLOG_2_RELON alignment_common, EXC_STD
++EXCEPTION_PROLOG_2_VIRT alignment_common, EXC_STD
  EXC_VIRT_END(alignment, 0x4600, 0x100)
  
  TRAMP_KVM(PACA_EXGEN, 0x600)
-@@ -1053,7 +1053,7 @@ TRAMP_KVM_BEGIN(do_kvm_0xc00)
- 	SET_SCRATCH0(r10)
- 	std	r9,PACA_EXGEN+EX_R9(r13)
- 	mfcr	r9
--	KVM_HANDLER(PACA_EXGEN, EXC_STD, 0xc00)
-+	KVM_HANDLER PACA_EXGEN, EXC_STD, 0xc00
- #endif
- 
- 
 @@ -1320,7 +1320,7 @@ EXC_REAL_BEGIN(denorm_exception_hv, 0x1500, 0x100)
  #endif
  
  	KVMTEST_HV(0x1500)
--	EXCEPTION_PROLOG_2(denorm_common, EXC_HV)
-+	EXCEPTION_PROLOG_2 denorm_common, EXC_HV
+-	EXCEPTION_PROLOG_2 denorm_common, EXC_HV, 1
++	EXCEPTION_PROLOG_2_REAL denorm_common, EXC_HV, 1
  EXC_REAL_END(denorm_exception_hv, 0x1500, 0x100)
  
  #ifdef CONFIG_PPC_DENORMALISATION
@@ -691,102 +398,11 @@ index 73ba246ca11d..8996165fd357 100644
  	std	r12,PACA_EXGEN+EX_R12(r13);		\
  	GET_SCRATCH0(r10);				\
  	std	r10,PACA_EXGEN+EX_R13(r13);		\
--	EXCEPTION_PROLOG_2(soft_nmi_common, _H)
-+	EXCEPTION_PROLOG_2 soft_nmi_common, _H
+-	EXCEPTION_PROLOG_2 soft_nmi_common, _H, 1
++	EXCEPTION_PROLOG_2_REAL soft_nmi_common, _H, 1
  
  /*
   * Branch to soft_nmi_interrupt using the emergency stack. The emergency
-@@ -1477,35 +1477,50 @@ EXC_COMMON_BEGIN(soft_nmi_common)
-  * - Else it is one of PACA_IRQ_MUST_HARD_MASK, so hard disable and return.
-  * This is called with r10 containing the value to OR to the paca field.
-  */
--#define MASKED_INTERRUPT(_H)				\
--masked_##_H##interrupt:					\
--	std	r11,PACA_EXGEN+EX_R11(r13);		\
--	lbz	r11,PACAIRQHAPPENED(r13);		\
--	or	r11,r11,r10;				\
--	stb	r11,PACAIRQHAPPENED(r13);		\
--	cmpwi	r10,PACA_IRQ_DEC;			\
--	bne	1f;					\
--	lis	r10,0x7fff;				\
--	ori	r10,r10,0xffff;				\
--	mtspr	SPRN_DEC,r10;				\
--	b	MASKED_DEC_HANDLER_LABEL;		\
--1:	andi.	r10,r10,PACA_IRQ_MUST_HARD_MASK;	\
--	beq	2f;					\
--	mfspr	r10,SPRN_##_H##SRR1;			\
--	xori	r10,r10,MSR_EE; /* clear MSR_EE */	\
--	mtspr	SPRN_##_H##SRR1,r10;			\
--	ori	r11,r11,PACA_IRQ_HARD_DIS;		\
--	stb	r11,PACAIRQHAPPENED(r13);		\
--2:	/* done */					\
--	mtcrf	0x80,r9;				\
--	std	r1,PACAR1(r13);				\
--	ld	r9,PACA_EXGEN+EX_R9(r13);		\
--	ld	r10,PACA_EXGEN+EX_R10(r13);		\
--	ld	r11,PACA_EXGEN+EX_R11(r13);		\
--	/* returns to kernel where r13 must be set up, so don't restore it */ \
--	##_H##RFI_TO_KERNEL;				\
--	b	.;					\
--	MASKED_DEC_HANDLER(_H)
-+.macro MASKED_INTERRUPT hsrr
-+	.if \hsrr
-+masked_Hinterrupt:
-+	.else
-+masked_interrupt:
-+	.endif
-+	std	r11,PACA_EXGEN+EX_R11(r13)
-+	lbz	r11,PACAIRQHAPPENED(r13)
-+	or	r11,r11,r10
-+	stb	r11,PACAIRQHAPPENED(r13)
-+	cmpwi	r10,PACA_IRQ_DEC
-+	bne	1f
-+	lis	r10,0x7fff
-+	ori	r10,r10,0xffff
-+	mtspr	SPRN_DEC,r10
-+	b	MASKED_DEC_HANDLER_LABEL
-+1:	andi.	r10,r10,PACA_IRQ_MUST_HARD_MASK
-+	beq	2f
-+	.if \hsrr
-+	mfspr	r10,SPRN_HSRR1
-+	xori	r10,r10,MSR_EE	/* clear MSR_EE */
-+	mtspr	SPRN_HSRR1,r10
-+	.else
-+	mfspr	r10,SPRN_SRR1
-+	xori	r10,r10,MSR_EE	/* clear MSR_EE */
-+	mtspr	SPRN_SRR1,r10
-+	.endif
-+	ori	r11,r11,PACA_IRQ_HARD_DIS
-+	stb	r11,PACAIRQHAPPENED(r13)
-+2:	/* done */
-+	mtcrf	0x80,r9
-+	std	r1,PACAR1(r13)
-+	ld	r9,PACA_EXGEN+EX_R9(r13)
-+	ld	r10,PACA_EXGEN+EX_R10(r13)
-+	ld	r11,PACA_EXGEN+EX_R11(r13)
-+	/* returns to kernel where r13 must be set up, so don't restore it */
-+	.if \hsrr
-+	HRFI_TO_KERNEL
-+	.else
-+	RFI_TO_KERNEL
-+	.endif
-+	b	.
-+	MASKED_DEC_HANDLER(\hsrr\())
-+.endm
- 
- TRAMP_REAL_BEGIN(stf_barrier_fallback)
- 	std	r9,PACA_EXRFI+EX_R9(r13)
-@@ -1612,8 +1627,8 @@ TRAMP_REAL_BEGIN(hrfi_flush_fallback)
-  * cannot reach these if they are put there.
-  */
- USE_FIXED_SECTION(virt_trampolines)
--	MASKED_INTERRUPT()
--	MASKED_INTERRUPT(H)
-+	MASKED_INTERRUPT EXC_STD
-+	MASKED_INTERRUPT EXC_HV
- 
- #ifdef CONFIG_KVM_BOOK3S_64_HANDLER
- TRAMP_REAL_BEGIN(kvmppc_skip_interrupt)
 -- 
 2.20.1
 
