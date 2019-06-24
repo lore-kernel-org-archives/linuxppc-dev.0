@@ -7,21 +7,21 @@ X-Spam-Status: No, score=-6.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 73136C43613
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 24 Jun 2019 07:26:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DA315C43613
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 24 Jun 2019 07:28:05 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E699020674
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 24 Jun 2019 07:26:04 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 5D6CC20663
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 24 Jun 2019 07:28:05 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="f6rF5gt6"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E699020674
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="DJ7VtSfE"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5D6CC20663
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45XLS95hhTzDqQ1
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 24 Jun 2019 17:26:01 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45XLVW0K5bzDqVq
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 24 Jun 2019 17:28:03 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=c-s.fr
  (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
@@ -29,54 +29,55 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="f6rF5gt6"; 
+ unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="DJ7VtSfE"; 
  dkim-atps=neutral
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45XLKf0G5JzDqTK
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Jun 2019 17:20:21 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45XLKf0CZbzDqT9
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Jun 2019 17:20:19 +1000 (AEST)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 45XLKT2PPCz9vBmr;
- Mon, 24 Jun 2019 09:20:13 +0200 (CEST)
+ by localhost (Postfix) with ESMTP id 45XLKQ1dzlz9vBmm;
+ Mon, 24 Jun 2019 09:20:10 +0200 (CEST)
 Authentication-Results: localhost; dkim=pass
  reason="1024-bit key; insecure key"
- header.d=c-s.fr header.i=@c-s.fr header.b=f6rF5gt6; dkim-adsp=pass;
+ header.d=c-s.fr header.i=@c-s.fr header.b=DJ7VtSfE; dkim-adsp=pass;
  dkim-atps=neutral
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id yAlHfOfeUya4; Mon, 24 Jun 2019 09:20:13 +0200 (CEST)
+ with ESMTP id EVGMQM8g4W45; Mon, 24 Jun 2019 09:20:10 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 45XLKT1NPgz9vBmR;
- Mon, 24 Jun 2019 09:20:13 +0200 (CEST)
+ by pegase1.c-s.fr (Postfix) with ESMTP id 45XLKQ0cdBz9vBmR;
+ Mon, 24 Jun 2019 09:20:10 +0200 (CEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
- t=1561360813; bh=EhmPXZfGnYJpiSEZOI7XcomPFqzgecwsbBunVsRFXLI=;
+ t=1561360810; bh=qtRDjQOmzU0jcEi1abEzapHHsVFqfQHgt0aZqDG8tp8=;
  h=In-Reply-To:References:From:Subject:To:Cc:Date:From;
- b=f6rF5gt6uM2W6lU31UbmKnDHUHioKL/qzM2yLQtw8lhN+7V74Zkux+N4vrhkPeufn
- m7/knorL3FR/1jZyAruVc9ZI7Ic394cr5GAesYgudSvqKdf+hy2q28ll/HiixlaYe4
- iV7KbLHCUV8sMHzHnmxPTtDsas1CvIhkJ/432B5U=
+ b=DJ7VtSfEndHazbdObGLIennmW//Bzzp8tAt34vhHuMOl+sPiynwkGgZzcCD1LEWuz
+ JwVSzq6TFKybaFKNrYmhojmmxGaucIpAFYL7xQ4IlWcxdVjYv2V7Z9zS6WMU4J7WBX
+ uhb5ECl6I1ciWOzRGZTHr1a+dtViu5BNrRar8cWE=
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id BCF398B78B;
- Mon, 24 Jun 2019 09:20:17 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id A4AE68B787;
+ Mon, 24 Jun 2019 09:20:14 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id zfaVaFGTgYdb; Mon, 24 Jun 2019 09:20:17 +0200 (CEST)
+ with ESMTP id fI-BdEW2J8X1; Mon, 24 Jun 2019 09:20:14 +0200 (CEST)
 Received: from po16838vm.idsi0.si.c-s.fr (po15451.idsi0.si.c-s.fr
  [172.25.230.101])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 9A2DB8B787;
- Mon, 24 Jun 2019 09:20:17 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 832AD8B74C;
+ Mon, 24 Jun 2019 09:20:14 +0200 (CEST)
 Received: by po16838vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id 99A9867424; Mon, 24 Jun 2019 07:20:17 +0000 (UTC)
-Message-Id: <74dfa930b0b68da4096242feba6a1f002bf0bfd2.1561360551.git.christophe.leroy@c-s.fr>
+ id 86A6A67424; Mon, 24 Jun 2019 07:20:14 +0000 (UTC)
+Message-Id: <5271b86a5b6bea0bec068c01e1124fb0a3cfa750.1561360551.git.christophe.leroy@c-s.fr>
 In-Reply-To: <cover.1561360551.git.christophe.leroy@c-s.fr>
 References: <cover.1561360551.git.christophe.leroy@c-s.fr>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v5 4/4] crypto: talitos - drop icv_ool
+Subject: [PATCH v5 1/4] lib/scatterlist: Fix mapping iterator when sg->offset
+ is greater than PAGE_SIZE
 To: Herbert Xu <herbert@gondor.apana.org.au>,
  "David S. Miller" <davem@davemloft.net>, horia.geanta@nxp.com
-Date: Mon, 24 Jun 2019 07:20:17 +0000 (UTC)
+Date: Mon, 24 Jun 2019 07:20:14 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -94,49 +95,53 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-icv_ool is not used anymore, drop it.
+All mapping iterator logic is based on the assumption that sg->offset
+is always lower than PAGE_SIZE.
 
-Fixes: e345177ded17 ("crypto: talitos - fix AEAD processing.")
+But there are situations where sg->offset is such that the SG item
+is on the second page. In that case sg_copy_to_buffer() fails
+properly copying the data into the buffer. One of the reason is
+that the data will be outside the kmapped area used to access that
+data.
+
+This patch fixes the issue by adjusting the mapping iterator
+offset and pgoffset fields such that offset is always lower than
+PAGE_SIZE.
+
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+Fixes: 4225fc8555a9 ("lib/scatterlist: use page iterator in the mapping iterator")
+Cc: stable@vger.kernel.org
 ---
- drivers/crypto/talitos.c | 3 ---
- drivers/crypto/talitos.h | 2 --
- 2 files changed, 5 deletions(-)
+ lib/scatterlist.c | 9 +++++----
+ 1 file changed, 5 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/crypto/talitos.c b/drivers/crypto/talitos.c
-index ab6bd45addf7..c9d686a0e805 100644
---- a/drivers/crypto/talitos.c
-+++ b/drivers/crypto/talitos.c
-@@ -1285,9 +1285,6 @@ static int ipsec_esp(struct talitos_edesc *edesc, struct aead_request *areq,
- 				 is_ipsec_esp && !encrypt);
- 	tbl_off += ret;
+diff --git a/lib/scatterlist.c b/lib/scatterlist.c
+index 739dc9fe2c55..f0757a67affe 100644
+--- a/lib/scatterlist.c
++++ b/lib/scatterlist.c
+@@ -678,17 +678,18 @@ static bool sg_miter_get_next_page(struct sg_mapping_iter *miter)
+ {
+ 	if (!miter->__remaining) {
+ 		struct scatterlist *sg;
+-		unsigned long pgoffset;
  
--	/* ICV data */
--	edesc->icv_ool = !encrypt;
--
- 	if (!encrypt && is_ipsec_esp) {
- 		struct talitos_ptr *tbl_ptr = &edesc->link_tbl[tbl_off];
+ 		if (!__sg_page_iter_next(&miter->piter))
+ 			return false;
  
-diff --git a/drivers/crypto/talitos.h b/drivers/crypto/talitos.h
-index 95f78c6d9206..1469b956948a 100644
---- a/drivers/crypto/talitos.h
-+++ b/drivers/crypto/talitos.h
-@@ -46,7 +46,6 @@ struct talitos_desc {
-  * talitos_edesc - s/w-extended descriptor
-  * @src_nents: number of segments in input scatterlist
-  * @dst_nents: number of segments in output scatterlist
-- * @icv_ool: whether ICV is out-of-line
-  * @iv_dma: dma address of iv for checking continuity and link table
-  * @dma_len: length of dma mapped link_tbl space
-  * @dma_link_tbl: bus physical address of link_tbl/buf
-@@ -61,7 +60,6 @@ struct talitos_desc {
- struct talitos_edesc {
- 	int src_nents;
- 	int dst_nents;
--	bool icv_ool;
- 	dma_addr_t iv_dma;
- 	int dma_len;
- 	dma_addr_t dma_link_tbl;
+ 		sg = miter->piter.sg;
+-		pgoffset = miter->piter.sg_pgoffset;
+ 
+-		miter->__offset = pgoffset ? 0 : sg->offset;
++		miter->__offset = miter->piter.sg_pgoffset ? 0 : sg->offset;
++		miter->piter.sg_pgoffset += miter->__offset >> PAGE_SHIFT;
++		miter->__offset &= PAGE_SIZE - 1;
+ 		miter->__remaining = sg->offset + sg->length -
+-				(pgoffset << PAGE_SHIFT) - miter->__offset;
++				     (miter->piter.sg_pgoffset << PAGE_SHIFT) -
++				     miter->__offset;
+ 		miter->__remaining = min_t(unsigned long, miter->__remaining,
+ 					   PAGE_SIZE - miter->__offset);
+ 	}
 -- 
 2.13.3
 
