@@ -2,107 +2,59 @@ Return-Path: <SRS0=CiaY=UX=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.7 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_NEOMUTT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_MUTT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3CD5CC43613
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 24 Jun 2019 20:35:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AF3D3C4646B
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 24 Jun 2019 22:00:24 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 2AE6D20663
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 24 Jun 2019 20:35:57 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=wavesemi.onmicrosoft.com header.i=@wavesemi.onmicrosoft.com header.b="CKlrlyGm"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2AE6D20663
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=mips.com
+	by mail.kernel.org (Postfix) with ESMTPS id 06FC720665
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 24 Jun 2019 22:00:23 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 06FC720665
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=intel.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45XgzZ4QzpzDqTY
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Jun 2019 06:35:54 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45Xjs06xnGzDqTT
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Jun 2019 08:00:20 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=wavecomp.com
- (client-ip=40.107.68.127; helo=nam04-bn3-obe.outbound.protection.outlook.com;
- envelope-from=pburton@wavecomp.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=intel.com
+ (client-ip=192.55.52.120; helo=mga04.intel.com;
+ envelope-from=imre.deak@intel.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=mips.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=wavesemi.onmicrosoft.com
- header.i=@wavesemi.onmicrosoft.com header.b="CKlrlyGm"; 
- dkim-atps=neutral
-Received: from NAM04-BN3-obe.outbound.protection.outlook.com
- (mail-eopbgr680127.outbound.protection.outlook.com [40.107.68.127])
+ dmarc=pass (p=none dis=none) header.from=intel.com
+Received: from mga04.intel.com (mga04.intel.com [192.55.52.120])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45XgxX0qkVzDqNn
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jun 2019 06:34:05 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=wavesemi.onmicrosoft.com; s=selector1-wavesemi-onmicrosoft-com;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=Hpj2ln9PdF2iw8CTNKfMyvckw7/rfWmo7YDhUidEPTU=;
- b=CKlrlyGmhJ/QCyiCLX8NQhhVLKb9sH2j/eupCg474rMbmvTDeCr7AGHihTiJuz2GzMGdwvAfc3ovxv2uyeRMyCVj0tNtAPsBb31uv1OwnJNGzQ7YW+2gk5MlVJ1+ufcKyvCgj9DcHy2yEAfXvDPAWPE8Xp88uLXquvXCcLan3Rg=
-Received: from MWHPR2201MB1277.namprd22.prod.outlook.com (10.172.60.12) by
- MWHPR2201MB1054.namprd22.prod.outlook.com (10.174.169.140) with Microsoft
- SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.20.2008.16; Mon, 24 Jun 2019 20:33:58 +0000
-Received: from MWHPR2201MB1277.namprd22.prod.outlook.com
- ([fe80::6975:b632:c85b:9e40]) by MWHPR2201MB1277.namprd22.prod.outlook.com
- ([fe80::6975:b632:c85b:9e40%2]) with mapi id 15.20.2008.014; Mon, 24 Jun 2019
- 20:33:58 +0000
-From: Paul Burton <paul.burton@mips.com>
-To: Christoph Hellwig <hch@lst.de>
-Subject: Re: [PATCH 5/5] asm-generic: remove ptrace.h
-Thread-Topic: [PATCH 5/5] asm-generic: remove ptrace.h
-Thread-Index: AQHVKlBfN/z+ea/vT02hAZbwmFNTNqarQ6qA
-Date: Mon, 24 Jun 2019 20:33:58 +0000
-Message-ID: <20190624203357.cgybfqklcflll2ti@pburton-laptop>
-References: <20190624054728.30966-1-hch@lst.de>
- <20190624054728.30966-6-hch@lst.de>
-In-Reply-To: <20190624054728.30966-6-hch@lst.de>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-x-clientproxiedby: BYAPR21CA0016.namprd21.prod.outlook.com
- (2603:10b6:a03:114::26) To MWHPR2201MB1277.namprd22.prod.outlook.com
- (2603:10b6:301:18::12)
-user-agent: NeoMutt/20180716
-authentication-results: spf=none (sender IP is )
- smtp.mailfrom=pburton@wavecomp.com; 
-x-ms-exchange-messagesentrepresentingtype: 1
-x-originating-ip: [12.94.197.246]
-x-ms-publictraffictype: Email
-x-ms-office365-filtering-correlation-id: 00576424-0e94-4dec-ebb0-08d6f8e348bd
-x-microsoft-antispam: BCL:0; PCL:0;
- RULEID:(2390118)(7020095)(4652040)(8989299)(4534185)(4627221)(201703031133081)(201702281549075)(8990200)(5600148)(711020)(4605104)(1401327)(2017052603328)(7193020);
- SRVR:MWHPR2201MB1054; 
-x-ms-traffictypediagnostic: MWHPR2201MB1054:
-x-microsoft-antispam-prvs: <MWHPR2201MB10547E2A5FAB871CBCBC78F0C1E00@MWHPR2201MB1054.namprd22.prod.outlook.com>
-x-ms-oob-tlc-oobclassifiers: OLM:324;
-x-forefront-prvs: 007814487B
-x-forefront-antispam-report: SFV:NSPM;
- SFS:(10019020)(7916004)(376002)(346002)(366004)(136003)(39840400004)(396003)(199004)(189003)(4326008)(54906003)(8936002)(14454004)(58126008)(316002)(1076003)(7416002)(25786009)(6916009)(8676002)(73956011)(81166006)(81156014)(2906002)(66066001)(6436002)(66946007)(66446008)(3846002)(42882007)(64756008)(66556008)(6246003)(66476007)(6486002)(44832011)(6116002)(33716001)(9686003)(6512007)(486006)(26005)(11346002)(446003)(186003)(7736002)(68736007)(305945005)(476003)(229853002)(256004)(14444005)(478600001)(5660300002)(52116002)(76176011)(99286004)(53936002)(71190400001)(71200400001)(6506007)(386003)(102836004)(41533002);
- DIR:OUT; SFP:1102; SCL:1; SRVR:MWHPR2201MB1054;
- H:MWHPR2201MB1277.namprd22.prod.outlook.com; FPR:; SPF:None; LANG:en;
- PTR:InfoNoRecords; A:1; MX:1; 
-received-spf: None (protection.outlook.com: wavecomp.com does not designate
- permitted sender hosts)
-x-ms-exchange-senderadcheck: 1
-x-microsoft-antispam-message-info: 1o+p+e7S28HMuolVpWY64pfIILQb2dMbrDbcOGciaGoS1LXGJlr7ehnAHp9Ycl6pInnLSSHXLBrmjxD2nhzpvkx6BWCBDK9u52gqwDxJ5Fout54XxI2fy+MGo6qyttipUcv2XOOVnWqxCl/ILzLFSqGZVq5nKzK3lWtjeoHACRyLrV5zsqIYrfBupUjTEw33WanaTTvWYlcv+0mdWFX+DJsZ9kfHAoys2DAzHpb5kk5eWZEkcDMiY+t5uSNUS++2Xf7n8d+IVDrGCH1Z44Y9KNM2QJChm0zMIH8OPuwH6fU3+G65lSIQw1+O3zqWFgusIEIGrLtLxE+CapTrztWLmtxSFCG6D1aRDewri+FvG89kUg5pLHWFmexREBv+wmbnkWGGSSOGcbkW5TPEgJLSUdQnZhZaAx0W6d62WAPHBg8=
-Content-Type: text/plain; charset="us-ascii"
-Content-ID: <B945272A94CC124191D61CF8D0443342@namprd22.prod.outlook.com>
-Content-Transfer-Encoding: quoted-printable
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45Xbzs2qYDzDqRX
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jun 2019 03:35:39 +1000 (AEST)
+X-Amp-Result: UNKNOWN
+X-Amp-Original-Verdict: FILE UNKNOWN
+X-Amp-File-Uploaded: False
+Received: from fmsmga002.fm.intel.com ([10.253.24.26])
+ by fmsmga104.fm.intel.com with ESMTP/TLS/DHE-RSA-AES256-GCM-SHA384;
+ 24 Jun 2019 10:35:36 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="5.63,412,1557212400"; d="scan'208";a="187988905"
+Received: from ideak-desk.fi.intel.com ([10.237.72.204])
+ by fmsmga002.fm.intel.com with ESMTP; 24 Jun 2019 10:35:33 -0700
+Date: Mon, 24 Jun 2019 20:35:33 +0300
+From: Imre Deak <imre.deak@intel.com>
+To: Herbert Xu <herbert@gondor.apana.org.au>
+Subject: Re: [PATCH v4 1/4] lib/scatterlist: Fix mapping iterator when
+ sg->offset is greater than PAGE_SIZE
+Message-ID: <20190624173533.GA809@ideak-desk.fi.intel.com>
+References: <cover.1560805614.git.christophe.leroy@c-s.fr>
+ <f28c6b0e2f9510f42ca934f19c4315084e668c21.1560805614.git.christophe.leroy@c-s.fr>
+ <20190620060221.q4pbsqzsza3pxs42@gondor.apana.org.au>
 MIME-Version: 1.0
-X-OriginatorOrg: mips.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 00576424-0e94-4dec-ebb0-08d6f8e348bd
-X-MS-Exchange-CrossTenant-originalarrivaltime: 24 Jun 2019 20:33:58.4037 (UTC)
-X-MS-Exchange-CrossTenant-fromentityheader: Hosted
-X-MS-Exchange-CrossTenant-id: 463607d3-1db3-40a0-8a29-970c56230104
-X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
-X-MS-Exchange-CrossTenant-userprincipalname: pburton@wavecomp.com
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: MWHPR2201MB1054
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20190620060221.q4pbsqzsza3pxs42@gondor.apana.org.au>
+User-Agent: Mutt/1.9.4 (2018-02-28)
+X-Mailman-Approved-At: Tue, 25 Jun 2019 07:57:27 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -114,54 +66,65 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "linux-arch@vger.kernel.org" <linux-arch@vger.kernel.org>,
- Arnd Bergmann <arnd@arndb.de>,
- "linux-sh@vger.kernel.org" <linux-sh@vger.kernel.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "x86@kernel.org" <x86@kernel.org>, Oleg Nesterov <oleg@redhat.com>,
- "linux-mips@vger.kernel.org" <linux-mips@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Reply-To: imre.deak@intel.com
+Cc: horia.geanta@nxp.com, linux-kernel@vger.kernel.org,
+ linux-crypto@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ "David S. Miller" <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, Jun 24, 2019 at 07:47:28AM +0200, Christoph Hellwig wrote:
-> No one is using this header anymore.
->=20
-> Signed-off-by: Christoph Hellwig <hch@lst.de>
-> Acked-by: Arnd Bergmann <arnd@arndb.de>
-> Acked-by: Oleg Nesterov <oleg@redhat.com>
-> ---
->  MAINTAINERS                    |  1 -
->  arch/mips/include/asm/ptrace.h |  5 ---
->  include/asm-generic/ptrace.h   | 73 ----------------------------------
->  3 files changed, 79 deletions(-)
->  delete mode 100644 include/asm-generic/ptrace.h
+Hi,
 
-FWIW:
+On Thu, Jun 20, 2019 at 02:02:21PM +0800, Herbert Xu wrote:
+> On Mon, Jun 17, 2019 at 09:15:02PM +0000, Christophe Leroy wrote:
+> > All mapping iterator logic is based on the assumption that sg->offset
+> > is always lower than PAGE_SIZE.
+> > 
+> > But there are situations where sg->offset is such that the SG item
+> > is on the second page.
 
-    Acked-by: Paul Burton <paul.burton@mips.com>
+could you explain how sg->offset becomes >= PAGE_SIZE?
 
-Thanks,
-    Paul
+--Imre
 
-> diff --git a/arch/mips/include/asm/ptrace.h b/arch/mips/include/asm/ptrac=
-e.h
-> index b6578611dddb..1e76774b36dd 100644
-> --- a/arch/mips/include/asm/ptrace.h
-> +++ b/arch/mips/include/asm/ptrace.h
-> @@ -56,11 +56,6 @@ static inline unsigned long kernel_stack_pointer(struc=
-t pt_regs *regs)
->  	return regs->regs[31];
->  }
-> =20
-> -/*
-> - * Don't use asm-generic/ptrace.h it defines FP accessors that don't mak=
-e
-> - * sense on MIPS.  We rather want an error if they get invoked.
-> - */
-> -
->  static inline void instruction_pointer_set(struct pt_regs *regs,
->                                             unsigned long val)
->  {
+
+> > In that case sg_copy_to_buffer() fails
+> > properly copying the data into the buffer. One of the reason is
+> > that the data will be outside the kmapped area used to access that
+> > data.
+> > 
+> > This patch fixes the issue by adjusting the mapping iterator
+> > offset and pgoffset fields such that offset is always lower than
+> > PAGE_SIZE.
+> > 
+> > Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+> > Fixes: 4225fc8555a9 ("lib/scatterlist: use page iterator in the mapping iterator")
+> > Cc: stable@vger.kernel.org
+> > ---
+> >  lib/scatterlist.c | 9 +++++++--
+> >  1 file changed, 7 insertions(+), 2 deletions(-)
+> 
+> Good catch.
+> 
+> > @@ -686,7 +686,12 @@ static bool sg_miter_get_next_page(struct sg_mapping_iter *miter)
+> >  		sg = miter->piter.sg;
+> >  		pgoffset = miter->piter.sg_pgoffset;
+> >  
+> > -		miter->__offset = pgoffset ? 0 : sg->offset;
+> > +		offset = pgoffset ? 0 : sg->offset;
+> > +		while (offset >= PAGE_SIZE) {
+> > +			miter->piter.sg_pgoffset = ++pgoffset;
+> > +			offset -= PAGE_SIZE;
+> > +		}
+> 
+> How about
+> 
+> 	miter->piter.sg_pgoffset += offset >> PAGE_SHIFT;
+> 	offset &= PAGE_SIZE - 1;
+> 
+> Thanks,
+> -- 
+> Email: Herbert Xu <herbert@gondor.apana.org.au>
+> Home Page: http://gondor.apana.org.au/~herbert/
+> PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
