@@ -2,25 +2,26 @@ Return-Path: <SRS0=CiaY=UX=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B0B4FC43613
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 24 Jun 2019 05:51:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 24076C43613
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 24 Jun 2019 05:54:22 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3480C205F4
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 24 Jun 2019 05:51:52 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 6678D2083D
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 24 Jun 2019 05:54:21 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="ILvkzXYn"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3480C205F4
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="Geyx+EEj"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6678D2083D
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45XJMV1LWfzDqTq
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 24 Jun 2019 15:51:50 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45XJQL4XM7zDqB2
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 24 Jun 2019 15:54:18 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=none (mailfrom)
  smtp.mailfrom=bombadil.srs.infradead.org (client-ip=2607:7c80:54:e::133;
  helo=bombadil.infradead.org;
@@ -30,37 +31,39 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=infradead.org header.i=@infradead.org
- header.b="ILvkzXYn"; dkim-atps=neutral
+ header.b="Geyx+EEj"; dkim-atps=neutral
 Received: from bombadil.infradead.org (bombadil.infradead.org
  [IPv6:2607:7c80:54:e::133])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45XJGf42TdzDqST
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Jun 2019 15:47:37 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45XJGm2HXnzDqST
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Jun 2019 15:47:44 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
  d=infradead.org; s=bombadil.20170209; h=Content-Transfer-Encoding:
- MIME-Version:Message-Id:Date:Subject:Cc:To:From:Sender:Reply-To:Content-Type:
- Content-ID:Content-Description:Resent-Date:Resent-From:Resent-Sender:
- Resent-To:Resent-Cc:Resent-Message-ID:In-Reply-To:References:List-Id:
- List-Help:List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
- bh=NzVbzZxa/8BDA0K/gN2hfOrO5797OT+UZoKovaRFABE=; b=ILvkzXYnLHZr+WZE5Kgd4hi5U
- QLq0PAbCmBNzXLXt1JG4oxsORw00Wkl2IFjUORg5pLnWfnoQokiLAW/QY0xFSEKkA9ASxKUGDNMDn
- q/mBHvoX9S8s90WxlPWhEYGOYwQ2Hgae8pVsAfkk1BzrfDGh8LZwBE88sLh5IRDC27uvXjkiMjQo4
- 6vBYFwW0zeqLHROz7uUsMV/VXFu4x8KT9Pqklxo/IJwdtAPXTyDk+ctL8R36ap9BjVDs5KCQQ5z5l
- yayFf6MOP9vsIlocCfDUAMORJdaadbykBlLb2dcmyXpYk+kw/Zq/HcBuh2akJz/vbKk+VqssOcnLn
- ptKiB9bBQ==;
+ MIME-Version:References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:Sender
+ :Reply-To:Content-Type:Content-ID:Content-Description:Resent-Date:Resent-From
+ :Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:List-Help:
+ List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
+ bh=4Cn/I+p4O/dbVe7rVqc9HfZYCz1ua5PfF/f6FCO/YsM=; b=Geyx+EEj8T8Rvcz2Io7FLL5Jdm
+ Ogm9Jhc851oKHZT0kV/vC3eLhZ09tHwq3dWKNbe0D8Sedurnva0SuZEGd0WRmARR+Nz5ScmspEMUM
+ l/5opovU3wZ8IF6uIJRY88EYzfwdP41aU8I3PKX/0WQyXV7FP82MN4MGx9m1ox0VUC2ENEwpM7CpJ
+ yacLxsXR5hNZkK6+TZdMpUseUCLyLCLw78SG+EHnpY3+FU1PSQO2QdDxeXsd+614Mj6kk70bm+UEh
+ atxuArY7t6MJ9EFx21aV7qXqVlhdBelGPqoYJ3aa36BM6+kmColhuNQUyZGxO337kMY690JDvCLKG
+ 4X+91xqw==;
 Received: from 213-225-6-159.nat.highway.a1.net ([213.225.6.159]
  helo=localhost)
  by bombadil.infradead.org with esmtpsa (Exim 4.92 #3 (Red Hat Linux))
- id 1hfHpD-0000No-1q; Mon, 24 Jun 2019 05:47:31 +0000
+ id 1hfHpJ-0000Qb-9c; Mon, 24 Jun 2019 05:47:37 +0000
 From: Christoph Hellwig <hch@lst.de>
 To: Oleg Nesterov <oleg@redhat.com>,
 	Arnd Bergmann <arnd@arndb.de>
-Subject: remove asm-generic/ptrace.h v3
-Date: Mon, 24 Jun 2019 07:47:23 +0200
-Message-Id: <20190624054728.30966-1-hch@lst.de>
+Subject: [PATCH 2/5] powerpc: don't use asm-generic/ptrace.h
+Date: Mon, 24 Jun 2019 07:47:25 +0200
+Message-Id: <20190624054728.30966-3-hch@lst.de>
 X-Mailer: git-send-email 2.20.1
+In-Reply-To: <20190624054728.30966-1-hch@lst.de>
+References: <20190624054728.30966-1-hch@lst.de>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by
@@ -83,21 +86,61 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi all,
+Doing the indirection through macros for the regs accessors just
+makes them harder to read, so implement the helpers directly.
 
-asm-generic/ptrace.h is a little weird in that it doesn't actually
-implement any functionality, but it provided multiple layers of macros
-that just implement trivial inline functions.  We implement those
-directly in the few architectures and be off with a much simpler
-design.
+Note that only the helpers actually used are implemented now.
 
-I'm not sure which tree is the right place, but may this can go through
-the asm-generic tree since it removes an asm-generic header?
+Signed-off-by: Christoph Hellwig <hch@lst.de>
+---
+ arch/powerpc/include/asm/ptrace.h | 29 ++++++++++++++++++++++-------
+ 1 file changed, 22 insertions(+), 7 deletions(-)
 
+diff --git a/arch/powerpc/include/asm/ptrace.h b/arch/powerpc/include/asm/ptrace.h
+index faa5a338ac5a..feee1b21bbd5 100644
+--- a/arch/powerpc/include/asm/ptrace.h
++++ b/arch/powerpc/include/asm/ptrace.h
+@@ -111,18 +111,33 @@ struct pt_regs
+ 
+ #ifndef __ASSEMBLY__
+ 
+-#define GET_IP(regs)		((regs)->nip)
+-#define GET_USP(regs)		((regs)->gpr[1])
+-#define GET_FP(regs)		(0)
+-#define SET_FP(regs, val)
++static inline unsigned long instruction_pointer(struct pt_regs *regs)
++{
++	return regs->nip;
++}
++
++static inline void instruction_pointer_set(struct pt_regs *regs,
++		unsigned long val)
++{
++	regs->nip = val;
++}
++
++static inline unsigned long user_stack_pointer(struct pt_regs *regs)
++{
++	return regs->gpr[1];
++}
++
++static inline unsigned long frame_pointer(struct pt_regs *regs)
++{
++	return 0;
++}
+ 
+ #ifdef CONFIG_SMP
+ extern unsigned long profile_pc(struct pt_regs *regs);
+-#define profile_pc profile_pc
++#else
++#define profile_pc(regs) instruction_pointer(regs)
+ #endif
+ 
+-#include <asm-generic/ptrace.h>
+-
+ #define kernel_stack_pointer(regs) ((regs)->gpr[1])
+ static inline int is_syscall_success(struct pt_regs *regs)
+ {
+-- 
+2.20.1
 
-Changes since v2:
- - rebase to latest Linus' tree that added an SPDX tag to
-   asm-generic/ptrace.h
- - collected two more Acks from Oleg
-Changes since v1:
- - add a missing empty line between functions
