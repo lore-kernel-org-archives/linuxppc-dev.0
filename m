@@ -2,94 +2,72 @@ Return-Path: <SRS0=CiaY=UX=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 45D4DC43613
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 24 Jun 2019 05:38:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 208CAC43613
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 24 Jun 2019 05:49:54 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 8ACE32089F
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 24 Jun 2019 05:38:49 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8ACE32089F
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 98281205F4
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 24 Jun 2019 05:49:53 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="D9gsBXZ2"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 98281205F4
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45XJ4R3BfWzDqVs
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 24 Jun 2019 15:38:47 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45XJKC2FTszDqVr
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 24 Jun 2019 15:49:51 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=none (mailfrom)
+ smtp.mailfrom=bombadil.srs.infradead.org (client-ip=2607:7c80:54:e::133;
+ helo=bombadil.infradead.org;
+ envelope-from=batv+84882ec255bc51113d1a+5783+infradead.org+hch@bombadil.srs.infradead.org;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=linux.vnet.ibm.com
- (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=hegdevasant@linux.vnet.ibm.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=linux.vnet.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ dmarc=none (p=none dis=none) header.from=lst.de
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=infradead.org header.i=@infradead.org
+ header.b="D9gsBXZ2"; dkim-atps=neutral
+Received: from bombadil.infradead.org (bombadil.infradead.org
+ [IPv6:2607:7c80:54:e::133])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45XJ2P6NNxzDqSw
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Jun 2019 15:37:01 +1000 (AEST)
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x5O5aVgW116172
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Jun 2019 01:36:58 -0400
-Received: from e06smtp05.uk.ibm.com (e06smtp05.uk.ibm.com [195.75.94.101])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2taqng9hwa-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Jun 2019 01:36:57 -0400
-Received: from localhost
- by e06smtp05.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <hegdevasant@linux.vnet.ibm.com>;
- Mon, 24 Jun 2019 06:36:56 +0100
-Received: from b06cxnps3075.portsmouth.uk.ibm.com (9.149.109.195)
- by e06smtp05.uk.ibm.com (192.168.101.135) with IBM ESMTP SMTP Gateway:
- Authorized Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Mon, 24 Jun 2019 06:36:54 +0100
-Received: from b06wcsmtp001.portsmouth.uk.ibm.com
- (b06wcsmtp001.portsmouth.uk.ibm.com [9.149.105.160])
- by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x5O5arU855050298
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Mon, 24 Jun 2019 05:36:53 GMT
-Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 20464A405B;
- Mon, 24 Jun 2019 05:36:53 +0000 (GMT)
-Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 1558EA4054;
- Mon, 24 Jun 2019 05:36:52 +0000 (GMT)
-Received: from [9.109.241.95] (unknown [9.109.241.95])
- by b06wcsmtp001.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Mon, 24 Jun 2019 05:36:51 +0000 (GMT)
-Subject: Re: [PATCH v2 1/2] powerpc/powernv: Enhance opal message read
- interface
-To: linuxppc-dev@lists.ozlabs.org
-References: <20190605114650.19163-1-hegdevasant@linux.vnet.ibm.com>
-From: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>
-Date: Mon, 24 Jun 2019 11:06:51 +0530
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:52.0) Gecko/20100101
- Thunderbird/52.5.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45XJGj0DFrzDqSw
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Jun 2019 15:47:40 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+ d=infradead.org; s=bombadil.20170209; h=Content-Transfer-Encoding:
+ MIME-Version:References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:Sender
+ :Reply-To:Content-Type:Content-ID:Content-Description:Resent-Date:Resent-From
+ :Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:List-Help:
+ List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
+ bh=Ndfa+JKWTk3kzzF004ASgmL4z41nQdlLlRUSyqusF/U=; b=D9gsBXZ2YcAPTTbBmQS/vLmDfY
+ s9bF06g6zsYg1LipefmOqHzSZNCIb7D+W7rYfxuWPiBuRzs5aUYxVY30pRZGpgMh6+r2J2EVpi8sA
+ all3gvLNDH1nfd2YLU6628d5FVBaIiplH6OTA6TXFfU1pd1BdGA0iF/Y0BsqtD89FJ1hpPMie3DDi
+ nYzKJVXblcXA2+H3U8WjbiT6ornBfNhRo86ga8RV1uXp92mv/qjDT+nYrLyU2lVQu6dFqz/R/WpT5
+ XAlEQ0JxpQ9wb1w1kC3vmNie0oa/YIlld5OBLaid+3hu+FDEEw3aDL/7rdSpaTcWThHooNI+whX3M
+ KKRFPZ8Q==;
+Received: from 213-225-6-159.nat.highway.a1.net ([213.225.6.159]
+ helo=localhost)
+ by bombadil.infradead.org with esmtpsa (Exim 4.92 #3 (Red Hat Linux))
+ id 1hfHpF-0000OF-Th; Mon, 24 Jun 2019 05:47:34 +0000
+From: Christoph Hellwig <hch@lst.de>
+To: Oleg Nesterov <oleg@redhat.com>,
+	Arnd Bergmann <arnd@arndb.de>
+Subject: [PATCH 1/5] arm64: don't use asm-generic/ptrace.h
+Date: Mon, 24 Jun 2019 07:47:24 +0200
+Message-Id: <20190624054728.30966-2-hch@lst.de>
+X-Mailer: git-send-email 2.20.1
+In-Reply-To: <20190624054728.30966-1-hch@lst.de>
+References: <20190624054728.30966-1-hch@lst.de>
 MIME-Version: 1.0
-In-Reply-To: <20190605114650.19163-1-hegdevasant@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
-X-TM-AS-GCONF: 00
-x-cbid: 19062405-0020-0000-0000-0000034CC454
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19062405-0021-0000-0000-000021A02AF7
-Message-Id: <7a80b69e-20e8-1af2-5eca-4e3a07d12025@linux.vnet.ibm.com>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2019-06-24_05:, , signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- malwarescore=0 suspectscore=1 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1810050000 definitions=main-1906240047
+Content-Transfer-Encoding: 8bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by
+ bombadil.infradead.org. See http://www.infradead.org/rpr.html
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -101,107 +79,82 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: jk@ozlabs.org, Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+Cc: linux-arch@vger.kernel.org, linux-sh@vger.kernel.org,
+ Catalin Marinas <catalin.marinas@arm.com>, x86@kernel.org,
+ linux-mips@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 06/05/2019 05:16 PM, Vasant Hegde wrote:
-> Use "opal-msg-size" device tree property to allocate memory for "opal_msg".
-> 
+Doing the indirection through macros for the regs accessors just
+makes them harder to read, so implement the helpers directly.
 
-Michael,
+Note that only the helpers actually used are implemented now.
 
-    Can you please look into this patchset?
+Signed-off-by: Christoph Hellwig <hch@lst.de>
+Acked-by: Catalin Marinas <catalin.marinas@arm.com>
+---
+ arch/arm64/include/asm/ptrace.h | 31 +++++++++++++++++++------------
+ 1 file changed, 19 insertions(+), 12 deletions(-)
 
-Thanks
--Vasant
-
-> Cc: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
-> Cc: Jeremy Kerr <jk@ozlabs.org>
-> Signed-off-by: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>
-> ---
->   arch/powerpc/platforms/powernv/opal.c | 30 ++++++++++++++++++++----------
->   1 file changed, 20 insertions(+), 10 deletions(-)
-> 
-> diff --git a/arch/powerpc/platforms/powernv/opal.c b/arch/powerpc/platforms/powernv/opal.c
-> index 98c5d94b17fb..e6ea32f3b3c8 100644
-> --- a/arch/powerpc/platforms/powernv/opal.c
-> +++ b/arch/powerpc/platforms/powernv/opal.c
-> @@ -58,6 +58,8 @@ static DEFINE_SPINLOCK(opal_write_lock);
->   static struct atomic_notifier_head opal_msg_notifier_head[OPAL_MSG_TYPE_MAX];
->   static uint32_t opal_heartbeat;
->   static struct task_struct *kopald_tsk;
-> +static struct opal_msg *opal_msg;
-> +static uint64_t opal_msg_size;
-> 
->   void opal_configure_cores(void)
->   {
-> @@ -264,14 +266,9 @@ static void opal_message_do_notify(uint32_t msg_type, void *msg)
->   static void opal_handle_message(void)
->   {
->   	s64 ret;
-> -	/*
-> -	 * TODO: pre-allocate a message buffer depending on opal-msg-size
-> -	 * value in /proc/device-tree.
-> -	 */
-> -	static struct opal_msg msg;
->   	u32 type;
-> 
-> -	ret = opal_get_msg(__pa(&msg), sizeof(msg));
-> +	ret = opal_get_msg(__pa(opal_msg), opal_msg_size);
->   	/* No opal message pending. */
->   	if (ret == OPAL_RESOURCE)
->   		return;
-> @@ -283,14 +280,14 @@ static void opal_handle_message(void)
->   		return;
->   	}
-> 
-> -	type = be32_to_cpu(msg.msg_type);
-> +	type = be32_to_cpu(opal_msg->msg_type);
-> 
->   	/* Sanity check */
->   	if (type >= OPAL_MSG_TYPE_MAX) {
->   		pr_warn_once("%s: Unknown message type: %u\n", __func__, type);
->   		return;
->   	}
-> -	opal_message_do_notify(type, (void *)&msg);
-> +	opal_message_do_notify(type, (void *)opal_msg);
->   }
-> 
->   static irqreturn_t opal_message_notify(int irq, void *data)
-> @@ -299,9 +296,22 @@ static irqreturn_t opal_message_notify(int irq, void *data)
->   	return IRQ_HANDLED;
->   }
-> 
-> -static int __init opal_message_init(void)
-> +static int __init opal_message_init(struct device_node *opal_node)
->   {
->   	int ret, i, irq;
-> +	const __be32 *val;
-> +
-> +	val = of_get_property(opal_node, "opal-msg-size", NULL);
-> +	if (val)
-> +		opal_msg_size = be32_to_cpup(val);
-> +
-> +	/* If opal-msg-size property is not available then use default size */
-> +	if (!opal_msg_size)
-> +		opal_msg_size = sizeof(struct opal_msg);
-> +
-> +	opal_msg = kmalloc(opal_msg_size, GFP_KERNEL);
-> +	if (!opal_msg)
-> +		return -ENOMEM;
-> 
->   	for (i = 0; i < OPAL_MSG_TYPE_MAX; i++)
->   		ATOMIC_INIT_NOTIFIER_HEAD(&opal_msg_notifier_head[i]);
-> @@ -903,7 +913,7 @@ static int __init opal_init(void)
->   	}
-> 
->   	/* Initialise OPAL messaging system */
-> -	opal_message_init();
-> +	opal_message_init(opal_node);
-> 
->   	/* Initialise OPAL asynchronous completion interface */
->   	opal_async_comp_init();
-> 
+diff --git a/arch/arm64/include/asm/ptrace.h b/arch/arm64/include/asm/ptrace.h
+index dad858b6adc6..5a1e5025db96 100644
+--- a/arch/arm64/include/asm/ptrace.h
++++ b/arch/arm64/include/asm/ptrace.h
+@@ -217,11 +217,12 @@ static inline void forget_syscall(struct pt_regs *regs)
+ #define fast_interrupts_enabled(regs) \
+ 	(!((regs)->pstate & PSR_F_BIT))
+ 
+-#define GET_USP(regs) \
+-	(!compat_user_mode(regs) ? (regs)->sp : (regs)->compat_sp)
+-
+-#define SET_USP(ptregs, value) \
+-	(!compat_user_mode(regs) ? ((regs)->sp = value) : ((regs)->compat_sp = value))
++static inline unsigned long user_stack_pointer(struct pt_regs *regs)
++{
++	if (compat_user_mode(regs))
++		return regs->compat_sp;
++	return regs->sp;
++}
+ 
+ extern int regs_query_register_offset(const char *name);
+ extern unsigned long regs_get_kernel_stack_nth(struct pt_regs *regs,
+@@ -320,13 +321,20 @@ static inline unsigned long regs_get_kernel_argument(struct pt_regs *regs,
+ struct task_struct;
+ int valid_user_regs(struct user_pt_regs *regs, struct task_struct *task);
+ 
+-#define GET_IP(regs)		((unsigned long)(regs)->pc)
+-#define SET_IP(regs, value)	((regs)->pc = ((u64) (value)))
+-
+-#define GET_FP(ptregs)		((unsigned long)(ptregs)->regs[29])
+-#define SET_FP(ptregs, value)	((ptregs)->regs[29] = ((u64) (value)))
++static inline unsigned long instruction_pointer(struct pt_regs *regs)
++{
++	return regs->pc;
++}
++static inline void instruction_pointer_set(struct pt_regs *regs,
++		unsigned long val)
++{
++	regs->pc = val;
++}
+ 
+-#include <asm-generic/ptrace.h>
++static inline unsigned long frame_pointer(struct pt_regs *regs)
++{
++	return regs->regs[29];
++}
+ 
+ #define procedure_link_pointer(regs)	((regs)->regs[30])
+ 
+@@ -336,7 +344,6 @@ static inline void procedure_link_pointer_set(struct pt_regs *regs,
+ 	procedure_link_pointer(regs) = val;
+ }
+ 
+-#undef profile_pc
+ extern unsigned long profile_pc(struct pt_regs *regs);
+ 
+ #endif /* __ASSEMBLY__ */
+-- 
+2.20.1
 
