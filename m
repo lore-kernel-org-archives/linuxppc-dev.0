@@ -2,46 +2,90 @@ Return-Path: <SRS0=CiaY=UX=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D1332C43613
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 24 Jun 2019 14:49:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 30FDEC43613
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 24 Jun 2019 15:08:53 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 5A1602063F
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 24 Jun 2019 14:49:54 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5A1602063F
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+	by mail.kernel.org (Postfix) with ESMTPS id 5553520645
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 24 Jun 2019 15:08:52 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5553520645
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45XXJG3sMjzDqSC
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Jun 2019 00:49:50 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45XXk9693fzDqSB
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Jun 2019 01:08:49 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+ spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
+ (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
+ envelope-from=vaibhav@linux.ibm.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=linux.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45XXBQ6tJ8zDqKK;
- Tue, 25 Jun 2019 00:44:46 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=ellerman.id.au
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
- SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 45XXBP2K0pz9s6w;
- Tue, 25 Jun 2019 00:44:44 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: oss-security@lists.openwall.com
-Subject: CVE-2019-12817: Linux kernel: powerpc: Unrelated processes may be
- able to read/write to each other's virtual memory
-Date: Tue, 25 Jun 2019 00:44:31 +1000
-Message-ID: <87lfxr82ls.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45XXWR1wsqzDqPk
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jun 2019 00:59:30 +1000 (AEST)
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
+ x5OEwXqm029836
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Jun 2019 10:59:28 -0400
+Received: from e06smtp01.uk.ibm.com (e06smtp01.uk.ibm.com [195.75.94.97])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2tayjgcscr-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Jun 2019 10:59:27 -0400
+Received: from localhost
+ by e06smtp01.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <vaibhav@linux.ibm.com>;
+ Mon, 24 Jun 2019 15:59:24 +0100
+Received: from b06cxnps4074.portsmouth.uk.ibm.com (9.149.109.196)
+ by e06smtp01.uk.ibm.com (192.168.101.131) with IBM ESMTP SMTP Gateway:
+ Authorized Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Mon, 24 Jun 2019 15:59:22 +0100
+Received: from d06av24.portsmouth.uk.ibm.com (mk.ibm.com [9.149.105.60])
+ by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x5OExL7I48234560
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Mon, 24 Jun 2019 14:59:21 GMT
+Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id E30E042045;
+ Mon, 24 Jun 2019 14:59:20 +0000 (GMT)
+Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id EED8A42047;
+ Mon, 24 Jun 2019 14:59:18 +0000 (GMT)
+Received: from vajain21.in.ibm.com (unknown [9.109.195.176])
+ by d06av24.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Mon, 24 Jun 2019 14:59:18 +0000 (GMT)
+From: Vaibhav Jain <vaibhav@linux.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH 1/2] powerpc/papr_scm: Update drc_pmem_unbind() to use
+ H_SCM_UNBIND_ALL
+Date: Mon, 24 Jun 2019 20:29:12 +0530
+X-Mailer: git-send-email 2.21.0
+In-Reply-To: <20190624145913.20122-1-vaibhav@linux.ibm.com>
+References: <20190624145913.20122-1-vaibhav@linux.ibm.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="=-=-=";
- micalg=pgp-sha256; protocol="application/pgp-signature"
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+x-cbid: 19062414-4275-0000-0000-000003452D2B
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 19062414-4276-0000-0000-0000385565EE
+Message-Id: <20190624145913.20122-2-vaibhav@linux.ibm.com>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
+ definitions=2019-06-24_10:, , signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ malwarescore=0 suspectscore=1 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1810050000 definitions=main-1906240122
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -53,168 +97,121 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- linuxppc-users@lists.ozlabs.org
+Cc: "Aneesh Kumar K . V" <aneesh.kumar@linux.ibm.com>,
+ Oliver O'Halloran <oohall@gmail.com>, Vaibhav Jain <vaibhav@linux.ibm.com>,
+ Laurent Dufour <ldufour@linux.vnet.ibm.com>,
+ David Gibson <david@gibson.dropbear.id.au>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
---=-=-=
-Content-Type: text/plain
+The new hcall named H_SCM_UNBIND_ALL has been introduce that can
+unbind all the memory drc memory-blocks assigned to an lpar. This is
+more efficient than using H_SCM_UNBIND_MEM as currently we don't
+support partial unbind of drc memory-blocks.
 
-The Linux kernel for powerpc since 4.17 has a bug where unrelated processes may
-be able to read/write to each other's virtual memory under certain conditions.
+Hence this patch proposes following changes to drc_pmem_unbind():
 
-This bug only affects machines using 64-bit CPUs with the hash page table MMU,
-see below for more detail on affected CPUs.
+    * Update drc_pmem_unbind() to replace hcall H_SCM_UNBIND_MEM to
+      H_SCM_UNBIND_ALL.
 
-To trigger the bug a process must allocate memory above 512TB. That only happens
-if userspace explicitly requests it with mmap(). That process must then fork(),
-at this point the child incorrectly inherits the "context id" of the parent
-associated with the mapping above 512TB. It may then be possible for the
-parent/child to write to each other's mappings above 512TB, which should not be
-possible, and constitutes memory corruption.
+    * Update drc_pmem_unbind() to handles cases when PHYP asks the guest
+      kernel to wait for specific amount of time before retrying the
+      hcall via the 'LONG_BUSY' return value. In case it takes more
+      than 1 second to unbind the memory log a warning.
 
-If instead the child process exits, all its context ids are freed, including the
-context id that is still in use by the parent for the mapping above 512TB. That
-id can then be reallocated to a third process, that process can then read/write
-to the parent's mapping above 512TB. Additionally if the freed id is used for
-the third process's primary context id, then the parent is able to read/write to
-the third process's mappings *below* 512TB.
+    * Ensure appropriate error code is returned back from the function
+      in case of an error.
 
-If the parent and child both exit before another process is allocated the freed
-context id, the kernel will notice the double free of the id and print a warning
-such as:
+Signed-off-by: Vaibhav Jain <vaibhav@linux.ibm.com>
+---
+ arch/powerpc/include/asm/hvcall.h         |  2 +-
+ arch/powerpc/platforms/pseries/papr_scm.c | 37 ++++++++++++++++++++---
+ 2 files changed, 33 insertions(+), 6 deletions(-)
 
-  ida_free called for id=103 which is not allocated.
-  WARNING: CPU: 8 PID: 7293 at lib/idr.c:520 ida_free_rc+0x1b4/0x1d0
+diff --git a/arch/powerpc/include/asm/hvcall.h b/arch/powerpc/include/asm/hvcall.h
+index 463c63a9fcf1..bb56fa0f976c 100644
+--- a/arch/powerpc/include/asm/hvcall.h
++++ b/arch/powerpc/include/asm/hvcall.h
+@@ -302,7 +302,7 @@
+ #define H_SCM_UNBIND_MEM        0x3F0
+ #define H_SCM_QUERY_BLOCK_MEM_BINDING 0x3F4
+ #define H_SCM_QUERY_LOGICAL_MEM_BINDING 0x3F8
+-#define H_SCM_MEM_QUERY	        0x3FC
++#define H_SCM_UNBIND_ALL        0x3FC
+ #define H_SCM_BLOCK_CLEAR       0x400
+ #define MAX_HCALL_OPCODE	H_SCM_BLOCK_CLEAR
+ 
+diff --git a/arch/powerpc/platforms/pseries/papr_scm.c b/arch/powerpc/platforms/pseries/papr_scm.c
+index 96c53b23e58f..d790e4e4ffb3 100644
+--- a/arch/powerpc/platforms/pseries/papr_scm.c
++++ b/arch/powerpc/platforms/pseries/papr_scm.c
+@@ -11,11 +11,16 @@
+ #include <linux/sched.h>
+ #include <linux/libnvdimm.h>
+ #include <linux/platform_device.h>
++#include <linux/delay.h>
+ 
+ #include <asm/plpar_wrappers.h>
+ 
+ #define BIND_ANY_ADDR (~0ul)
+ 
++/* Scope args for H_SCM_UNBIND_ALL */
++#define H_UNBIND_SCOPE_ALL (0x1)
++#define H_UNBIND_SCOPE_DRC (0x2)
++
+ #define PAPR_SCM_DIMM_CMD_MASK \
+ 	((1ul << ND_CMD_GET_CONFIG_SIZE) | \
+ 	 (1ul << ND_CMD_GET_CONFIG_DATA) | \
+@@ -78,21 +83,43 @@ static int drc_pmem_unbind(struct papr_scm_priv *p)
+ {
+ 	unsigned long ret[PLPAR_HCALL_BUFSIZE];
+ 	uint64_t rc, token;
++	unsigned long starttime;
+ 
+ 	token = 0;
+ 
+-	/* NB: unbind has the same retry requirements mentioned above */
++	dev_dbg(&p->pdev->dev, "unbind drc %x\n", p->drc_index);
++
++	/* NB: unbind_all has the same retry requirements as drc_pmem_bind() */
++	starttime = HZ;
+ 	do {
+-		rc = plpar_hcall(H_SCM_UNBIND_MEM, ret, p->drc_index,
+-				p->bound_addr, p->blocks, token);
++		/* If this is taking too much time then log warning */
++		if (jiffies_to_msecs(HZ - starttime) > 1000) {
++			dev_warn(&p->pdev->dev,
++				 "unbind taking > 1s to complete\n");
++			starttime = HZ;
++		}
++
++		/* Unbind of all SCM resources associated with drcIndex */
++		rc = plpar_hcall(H_SCM_UNBIND_ALL, ret, H_UNBIND_SCOPE_DRC,
++				 p->drc_index, token);
+ 		token = ret[0];
+-		cond_resched();
++
++		/* Check if we are stalled for some time */
++		if (H_IS_LONG_BUSY(rc)) {
++			msleep(get_longbusy_msecs(rc));
++			rc = H_BUSY;
++			token = 0;
++
++		} else if (rc == H_BUSY) {
++			cond_resched();
++		}
++
+ 	} while (rc == H_BUSY);
+ 
+ 	if (rc)
+ 		dev_err(&p->pdev->dev, "unbind error: %lld\n", rc);
+ 
+-	return !!rc;
++	return rc == H_SUCCESS ? 0 : -ENXIO;
+ }
+ 
+ static int papr_scm_meta_get(struct papr_scm_priv *p,
+-- 
+2.21.0
 
-The bug was introduced in commit:
-  f384796c40dc ("powerpc/mm: Add support for handling > 512TB address in SLB miss")
-
-Which was originally merged in v4.17.
-
-Only machines using the hash page table (HPT) MMU are affected, eg. PowerPC 970
-(G5), PA6T, Power5/6/7/8/9. By default Power9 bare metal machines (powernv) use
-the Radix MMU and are not affected, unless the machine has been explicitly
-booted in HPT mode (using disable_radix on the kernel command line). KVM guests
-on Power9 may be affected if the host or guest is configured to use the HPT MMU.
-LPARs under PowerVM on Power9 are affected as they always use the HPT MMU.
-Kernels built with PAGE_SIZE=4K are not affected.
-
-The upstream fix is here:
-
-  https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=ca72d88378b2f2444d3ec145dd442d449d3fefbc
-
-There's also a kernel selftest to verify the fix:
-
-  https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=16391bfc862342f285195013b73c1394fab28b97
-
-Or a similar standalone version is included below.
-
-cheers
-
-
-cat > test.c <<EOF
-#undef NDEBUG
-
-#include <assert.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <sys/mman.h>
-#include <sys/types.h>
-#include <sys/wait.h>
-#include <unistd.h>
-
-#ifndef MAP_FIXED_NOREPLACE
-#define MAP_FIXED_NOREPLACE	MAP_FIXED	// "Should be safe" above 512TB
-#endif
-
-int main(void)
-{
-	int p2c[2], c2p[2], rc, status, c, *p;
-	unsigned long page_size;
-	pid_t pid;
-
-	page_size = sysconf(_SC_PAGESIZE);
-	if (page_size != 65536) {
-		printf("Unsupported page size - not affected\n");
-		return 1;
-	}
-
-	// Create a mapping at 512TB to allocate an extended_id
-	p = mmap((void *)(512ul << 40), page_size, PROT_READ | PROT_WRITE,
-		MAP_PRIVATE | MAP_ANONYMOUS | MAP_FIXED_NOREPLACE, -1, 0);
-	if (p == MAP_FAILED) {
-		perror("mmap");
-		printf("Error: couldn't mmap(), confirm kernel has 4TB support\n");
-		return 1;
-	}
-
-	printf("parent writing %p = 1\n", p);
-	*p = 1;
-
-	assert(pipe(p2c) != -1 && pipe(c2p) != -1);
-
-	pid = fork();
-	if (pid == 0) {
-		close(p2c[1]);
-		close(c2p[0]);
-		assert(read(p2c[0], &c, 1) == 1);
-
-		pid = getpid();
-		printf("child writing  %p = %d\n", p, pid);
-		*p = pid;
-
-		assert(write(c2p[1], &c, 1) == 1);
-		assert(read(p2c[0], &c, 1) == 1);
-		exit(0);
-	}
-	close(p2c[0]);
-	close(c2p[1]);
-
-	c = 0;
-	assert(write(p2c[1], &c, 1) == 1);
-	assert(read(c2p[0], &c, 1) == 1);
-
-	// Prevent compiler optimisation
-	asm volatile("" : : : "memory");
-
-	rc = 0;
-	printf("parent reading %p = %d\n", p, *p);
-	if (*p != 1) {
-		printf("Error: BUG! parent saw child's write! *p = %d\n", *p);
-		rc = 1;
-	}
-
-	assert(write(p2c[1], &c, 1) == 1);
-	assert(waitpid(pid, &status, 0) != -1);
-	assert(WIFEXITED(status) && WEXITSTATUS(status) == 0);
-
-	if (rc == 0)
-		printf("success: test completed OK\n");
-
-	return rc;
-}
-EOF
-
---=-=-=
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAEBCAAdFiEEJFGtCPCthwEv2Y/bUevqPMjhpYAFAl0Q4c8ACgkQUevqPMjh
-pYBBARAAqM95nzwHVCnSIMUqAqRSuLV3UOx4KxNylmdSu3ig42AgS75KeCYyBKuT
-q8bXq4sSKS5mZAp42/YgaIQpBtv8nOGutMSivZEJmMNnL3riEd7bT63BOw8EnA20
-ryhXsqf504anqzPXYv7P5xKeoQjEbK7MhuaN9d86erot/6cWh7tCcIF0SdiPGX3W
-PLlPrptRMnPCm0QhKCZxlKPxd3qd+HPNr2RVP2bIbv+8x0fldVTR+N2+gD+a5i5p
-rLsxERpaAsPvDbQNeXN/9Wck19wx+ZQMlCxStSY+VECM2jwsXty2f93hZmQ5Nm5E
-HV+nE57IF7tI/7lrlQfQ3Xml5bhVnFXwxQhbdeZfxg5vKm8YDSB0Vu0FaA59TqK7
-ANS2VLgGZV+F0VqCkWx3mVgmJsAAKfOrTjqsQAV0zH42siyYV9AvKZDdYYOxbbkf
-ZZjol8VGh684uKxZRlHeGMBL0kztUE32FiNqrhioJfpCkNhBKPcTljfVgHdPYfzz
-ULAd4QoIUcKa4RgNN5KQgMpxajXgaLxqk8K8R566dRz1KyZnpIn41v3Mq88ApBTv
-0UQarN0AYEyWyO+YI7Q0ngFWxrrcVhA9nFMRXdIdfI581hBqtWPbvItEMFVy30fZ
-3FXzj07zCVIqm7oy21QabFaLUPAEopARj7ByxutyPJT8efdhkRc=
-=21oU
------END PGP SIGNATURE-----
---=-=-=--
