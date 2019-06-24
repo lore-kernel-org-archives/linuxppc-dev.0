@@ -2,89 +2,90 @@ Return-Path: <SRS0=CiaY=UX=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6A72EC43613
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 24 Jun 2019 15:12:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4C495C43613
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 24 Jun 2019 15:15:41 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id EB47720645
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 24 Jun 2019 15:12:03 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EB47720645
+	by mail.kernel.org (Postfix) with ESMTPS id D1FDC20652
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 24 Jun 2019 15:15:40 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D1FDC20652
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45XXnr4gGHzDqSV
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Jun 2019 01:12:00 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45XXsw0ml7zDqSF
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Jun 2019 01:15:32 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
- (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
+ (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
  envelope-from=vaibhav@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45XXWZ5lW8zDqPk
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jun 2019 00:59:38 +1000 (AEST)
-Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x5OEwgEG099868
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Jun 2019 10:59:36 -0400
-Received: from e06smtp07.uk.ibm.com (e06smtp07.uk.ibm.com [195.75.94.103])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2tay97dfch-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45XXXD29PQzDqQR
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jun 2019 01:00:11 +1000 (AEST)
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
+ x5OEr7LU093442
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Jun 2019 11:00:09 -0400
+Received: from e06smtp03.uk.ibm.com (e06smtp03.uk.ibm.com [195.75.94.99])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2tay8m535q-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Jun 2019 10:59:35 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Jun 2019 10:59:53 -0400
 Received: from localhost
- by e06smtp07.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp03.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <vaibhav@linux.ibm.com>;
- Mon, 24 Jun 2019 15:59:23 +0100
-Received: from b06avi18878370.portsmouth.uk.ibm.com (9.149.26.194)
- by e06smtp07.uk.ibm.com (192.168.101.137) with IBM ESMTP SMTP Gateway:
+ Mon, 24 Jun 2019 15:59:28 +0100
+Received: from b06cxnps3074.portsmouth.uk.ibm.com (9.149.109.194)
+ by e06smtp03.uk.ibm.com (192.168.101.133) with IBM ESMTP SMTP Gateway:
  Authorized Use Only! Violators will be prosecuted; 
  (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Mon, 24 Jun 2019 15:59:20 +0100
-Received: from d06av24.portsmouth.uk.ibm.com (d06av24.portsmouth.uk.ibm.com
- [9.149.105.60])
- by b06avi18878370.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP
- id x5OExI6G37749188
+ Mon, 24 Jun 2019 15:59:24 +0100
+Received: from d06av24.portsmouth.uk.ibm.com (mk.ibm.com [9.149.105.60])
+ by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x5OExN4E36765742
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Mon, 24 Jun 2019 14:59:18 GMT
+ Mon, 24 Jun 2019 14:59:23 GMT
 Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 8E17A4203F;
- Mon, 24 Jun 2019 14:59:18 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 4548D42042;
+ Mon, 24 Jun 2019 14:59:23 +0000 (GMT)
 Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 2DAF042041;
- Mon, 24 Jun 2019 14:59:16 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 518CD42041;
+ Mon, 24 Jun 2019 14:59:21 +0000 (GMT)
 Received: from vajain21.in.ibm.com (unknown [9.109.195.176])
  by d06av24.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Mon, 24 Jun 2019 14:59:15 +0000 (GMT)
+ Mon, 24 Jun 2019 14:59:21 +0000 (GMT)
 From: Vaibhav Jain <vaibhav@linux.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 0/2] powerpc/papr_scm: Workaround for failure of drc bind
- after kexec
-Date: Mon, 24 Jun 2019 20:29:11 +0530
+Subject: [PATCH 2/2] powerpc/papr_scm: Force a scm-unbind if initial scm-bind
+ fails
+Date: Mon, 24 Jun 2019 20:29:13 +0530
 X-Mailer: git-send-email 2.21.0
+In-Reply-To: <20190624145913.20122-1-vaibhav@linux.ibm.com>
+References: <20190624145913.20122-1-vaibhav@linux.ibm.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-x-cbid: 19062414-0028-0000-0000-0000037D2021
+x-cbid: 19062414-0012-0000-0000-0000032BF4AB
 X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19062414-0029-0000-0000-0000243D3DE3
-Message-Id: <20190624145913.20122-1-vaibhav@linux.ibm.com>
+x-cbparentid: 19062414-0013-0000-0000-0000216525F7
+Message-Id: <20190624145913.20122-3-vaibhav@linux.ibm.com>
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
  definitions=2019-06-24_10:, , signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
  priorityscore=1501
  malwarescore=0 suspectscore=1 phishscore=0 bulkscore=0 spamscore=0
  clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=661 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1810050000 definitions=main-1906240122
+ mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1810050000 definitions=main-1906240121
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -104,71 +105,74 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Presently an error is returned in response to hcall H_SCM_BIND_MEM when a
-new kernel boots on lpar via kexec. This prevents papr_scm from registering
-drc memory regions with nvdimm. The error reported is of the form below:
+In some cases initial bind of scm memory for an lpar can fail if
+previously it wasn't released using a scm-unbind hcall. This situation
+can arise due to panic of the previous kernel or forced lpar reset. In
+such cases the H_SCM_BIND_MEM return a H_OVERLAP error.
 
-"papr_scm ibm,persistent-memory:ibm,pmemory@44100002: bind err: -68"
+To mitigate such cases the patch updates drc_pmem_bind() to force a
+call to drc_pmem_unbind() in case the initial bind of scm memory fails
+with H_OVERLAP error. In case scm-bind operation again fails after the
+forced scm-unbind then we follow the existing error path.
 
-On investigation it was revealed that phyp returns this error as previous
-kernel did not completely release bindings for drc scm-memory blocks and
-hence phyp rejected request for re-binding these block to lpar with error
-H_OVERLAP. Also support for a new H_SCM_UNBIND_ALL is recently added which
-is better suited for releasing all the bound scm-memory block from an lpar.
+Signed-off-by: Vaibhav Jain <vaibhav@linux.ibm.com>
+---
+ arch/powerpc/platforms/pseries/papr_scm.c | 23 ++++++++++++++++++++---
+ 1 file changed, 20 insertions(+), 3 deletions(-)
 
-So leveraging new hcall H_SCM_UNBIND_ALL, we can workaround H_OVERLAP issue
-during kexec by forcing an unbind of all drm scm-memory blocks and issuing
-H_SCM_BIND_MEM to re-bind the drc scm-memory blocks to lpar. This sequence
-will also be needed when a new kernel boot on lpar after previous kernel
-panicked and it never got an opportunity to call H_SCM_UNBIND_MEM/ALL.
-
-Hence this patch-set implements following changes to papr_scm module:
-
-* Update it to use H_SCM_UNBIND_ALL instead of H_SCM_UNBIND_MEM
-
-* In case hcall H_SCM_BIND_MEM fails with error H_OVERLAP, force
-  H_SCM_UNBIND_ALL and retry the bind operation again.
-
-With the patch-set applied re-bind of drc scm-memory to lpar succeeds after
-a kexec to new kernel as illustrated below:
-
-# Old kernel
-$ sudo ndctl list -R
-[
-  {
-    "dev":"region0",
-    <snip>
-    ....
-  }
-]
-# kexec to new kernel
-$ sudo kexec --initrd=... vmlinux
-...
-...
-I'm in purgatory
-...
-papr_scm ibm,persistent-memory:ibm,pmemory@44100002: Un-binding and retrying
-...
-# New kernel
-$ sudo ndctl list -R
-$ sudo ndctl list -R
-[
-  {
-    "dev":"region0",
-    <snip>
-    ....
-  }
-]
-
-
-Vaibhav Jain (2):
-  powerpc/papr_scm: Update drc_pmem_unbind() to use H_SCM_UNBIND_ALL
-  powerpc/papr_scm: Force a scm-unbind if initial scm-bind fails
-
- arch/powerpc/include/asm/hvcall.h         |  2 +-
- arch/powerpc/platforms/pseries/papr_scm.c | 60 ++++++++++++++++++++---
- 2 files changed, 53 insertions(+), 9 deletions(-)
-
+diff --git a/arch/powerpc/platforms/pseries/papr_scm.c b/arch/powerpc/platforms/pseries/papr_scm.c
+index d790e4e4ffb3..049d7927c0a4 100644
+--- a/arch/powerpc/platforms/pseries/papr_scm.c
++++ b/arch/powerpc/platforms/pseries/papr_scm.c
+@@ -44,19 +44,26 @@ struct papr_scm_priv {
+ 	struct nd_interleave_set nd_set;
+ };
+ 
++/* Forward declaration */
++static int drc_pmem_unbind(struct papr_scm_priv *);
++
+ static int drc_pmem_bind(struct papr_scm_priv *p)
+ {
+ 	unsigned long ret[PLPAR_HCALL_BUFSIZE];
+ 	uint64_t rc, token;
+-	uint64_t saved = 0;
++	uint64_t saved;
++	bool tried_unbind = false;
+ 
++	dev_dbg(&p->pdev->dev, "bind drc %x\n", p->drc_index);
+ 	/*
+ 	 * When the hypervisor cannot map all the requested memory in a single
+ 	 * hcall it returns H_BUSY and we call again with the token until
+ 	 * we get H_SUCCESS. Aborting the retry loop before getting H_SUCCESS
+ 	 * leave the system in an undefined state, so we wait.
+ 	 */
++retry:
+ 	token = 0;
++	saved = 0;
+ 
+ 	do {
+ 		rc = plpar_hcall(H_SCM_BIND_MEM, ret, p->drc_index, 0,
+@@ -68,8 +75,18 @@ static int drc_pmem_bind(struct papr_scm_priv *p)
+ 	} while (rc == H_BUSY);
+ 
+ 	if (rc) {
+-		dev_err(&p->pdev->dev, "bind err: %lld\n", rc);
+-		return -ENXIO;
++		/* retry after unbinding */
++		if (rc == H_OVERLAP &&  !tried_unbind) {
++			dev_warn(&p->pdev->dev, "Un-binding and retrying\n");
++			/* Try unbind and ignore any errors */
++			tried_unbind = true;
++			drc_pmem_unbind(p);
++			goto retry;
++
++		} else {
++			dev_err(&p->pdev->dev, "bind err: %lld\n", rc);
++			return -ENXIO;
++		}
+ 	}
+ 
+ 	p->bound_addr = saved;
 -- 
 2.21.0
 
