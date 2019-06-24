@@ -2,48 +2,47 @@ Return-Path: <SRS0=CiaY=UX=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=unavailable
+X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 936A6C43613
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 24 Jun 2019 08:03:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 265ECC43613
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 24 Jun 2019 08:05:26 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C057E2083D
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 24 Jun 2019 08:03:36 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C057E2083D
+	by mail.kernel.org (Postfix) with ESMTPS id D0C492083D
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 24 Jun 2019 08:05:25 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D0C492083D
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linutronix.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45XMHV1fpDzDqXN
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 24 Jun 2019 18:03:34 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45XMKY0YzjzDqRs
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 24 Jun 2019 18:05:21 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=none (mailfrom) smtp.mailfrom=linutronix.de
  (client-ip=2a0a:51c0:0:12e:550::1; helo=galois.linutronix.de;
  envelope-from=tglx@linutronix.de; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=linutronix.de
-X-Greylist: delayed 2324 seconds by postgrey-1.36 at bilbo;
- Mon, 24 Jun 2019 18:01:40 AEST
 Received: from Galois.linutronix.de (Galois.linutronix.de
  [IPv6:2a0a:51c0:0:12e:550::1])
  (using TLSv1.2 with cipher DHE-RSA-AES256-SHA256 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45XMFJ1KMLzDqQn
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Jun 2019 18:01:38 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45XMFN1bcdzDqRn
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Jun 2019 18:01:44 +1000 (AEST)
 Received: from p5b06daab.dip0.t-ipconnect.de ([91.6.218.171] helo=nanos)
  by Galois.linutronix.de with esmtpsa (TLS1.2:DHE_RSA_AES_256_CBC_SHA256:256)
  (Exim 4.80) (envelope-from <tglx@linutronix.de>)
- id 1hfJJf-0000cI-KY; Mon, 24 Jun 2019 09:23:03 +0200
-Date: Mon, 24 Jun 2019 09:23:02 +0200 (CEST)
+ id 1hfJJI-0000ag-5o; Mon, 24 Jun 2019 09:22:40 +0200
+Date: Mon, 24 Jun 2019 09:22:39 +0200 (CEST)
 From: Thomas Gleixner <tglx@linutronix.de>
 To: Christoph Hellwig <hch@lst.de>
-Subject: Re: remove asm-generic/ptrace.h v3
-In-Reply-To: <20190624054728.30966-1-hch@lst.de>
-Message-ID: <alpine.DEB.2.21.1906240922420.32342@nanos.tec.linutronix.de>
+Subject: Re: [PATCH 4/5] x86: don't use asm-generic/ptrace.h
+In-Reply-To: <20190624054728.30966-5-hch@lst.de>
+Message-ID: <alpine.DEB.2.21.1906240922270.32342@nanos.tec.linutronix.de>
 References: <20190624054728.30966-1-hch@lst.de>
+ <20190624054728.30966-5-hch@lst.de>
 User-Agent: Alpine 2.21 (DEB 202 2017-01-01)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -65,24 +64,21 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 Cc: linux-arch@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>,
  linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org, x86@kernel.org,
  Oleg Nesterov <oleg@redhat.com>, linux-mips@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
+ linuxppc-dev@lists.ozlabs.org, Ingo Molnar <mingo@kernel.org>,
+ linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
 On Mon, 24 Jun 2019, Christoph Hellwig wrote:
+
+> Doing the indirection through macros for the regs accessors just
+> makes them harder to read, so implement the helpers directly.
 > 
-> asm-generic/ptrace.h is a little weird in that it doesn't actually
-> implement any functionality, but it provided multiple layers of macros
-> that just implement trivial inline functions.  We implement those
-> directly in the few architectures and be off with a much simpler
-> design.
+> Note that only the helpers actually used are implemented now.
 > 
-> I'm not sure which tree is the right place, but may this can go through
-> the asm-generic tree since it removes an asm-generic header?
+> Signed-off-by: Christoph Hellwig <hch@lst.de>
+> Acked-by: Ingo Molnar <mingo@kernel.org>
+> Acked-by: Oleg Nesterov <oleg@redhat.com>
 
-Makes sense.
-
-Thanks,
-
-	tglx
+Reviewed-by: Thomas Gleixner <tglx@linutronix.de>
