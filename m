@@ -7,21 +7,21 @@ X-Spam-Status: No, score=-8.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 924A9C48BD4
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Jun 2019 15:22:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E872CC48BD5
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Jun 2019 15:30:00 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 17F492080C
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Jun 2019 15:22:36 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 37DB02080C
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Jun 2019 15:29:59 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="mx5wCxAm"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 17F492080C
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="k2Z56jK2"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 37DB02080C
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45Y8zY1VDwzDqJV
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Jun 2019 01:22:33 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45Y9843qb0zDqHq
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Jun 2019 01:29:56 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=none (mailfrom)
  smtp.mailfrom=bombadil.srs.infradead.org (client-ip=2607:7c80:54:e::133;
  helo=bombadil.infradead.org;
@@ -31,39 +31,39 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=infradead.org header.i=@infradead.org
- header.b="mx5wCxAm"; dkim-atps=neutral
+ header.b="k2Z56jK2"; dkim-atps=neutral
 Received: from bombadil.infradead.org (bombadil.infradead.org
  [IPv6:2607:7c80:54:e::133])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45Y80g62dkzDqGn
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jun 2019 00:38:27 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45Y80h6nMhzDqGM
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jun 2019 00:38:28 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
  d=infradead.org; s=bombadil.20170209; h=Content-Transfer-Encoding:
  MIME-Version:References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:Sender
  :Reply-To:Content-Type:Content-ID:Content-Description:Resent-Date:Resent-From
  :Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:List-Help:
  List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
- bh=IRyX7WezlAVDVbSdXLwEQAHdOH3yDAfA0drmqFGnM/g=; b=mx5wCxAmvZg0i6ol2LaSGyLT44
- CxvPd/9fdlWmr2TxFf5RpjGlB2FY1BoBYpf+v+X8HSpJ0s0LdN/ijmpHTycSjpjShxE3zRR5drKFc
- U/Zog/l582GPFD22R0swDs6BpMeeV2Ud4oOeEpKE+9rAJ/xEEjfVAnJM2D2BnTm7rmWApYQKyr0l9
- a4OMUcW+x4vyahFylZB/x4EbDFmQPEAV4DjHt3WK+fVqg13S+BlhFUb4EYB8w2A0tF0vc4NE2v9wW
- wUm+jx3C0i2aGls+NjKmOMMEizlMkujMCKOc6/NAtnG9tNswgPc/c6Q+H8rJLWAJg7b4b3dnP9/1i
- htToIvAQ==;
+ bh=xf8xwUJqGTGhdY5pjBOHQgYHNWWmClOkIpScch6iAnk=; b=k2Z56jK2d5xI+yMTjSN6h/vuiP
+ u0SXzPC5Gaaj+zKYS9DBaui94DW5JdYiyeLGMMheoNYb7P1thRVfck4ZdTInGgIhRsvlkKuVafPuT
+ qoEpZkZKHIQ/5Yo/qDaES8pLnbs8H4v49XR4BJswGTUAtFhXZ6YE/EB8y06wbIQVXnxShdZGCT/mg
+ oO6SyoF/565YBqQO+A8hQbcrcVfzoWPdpW0JqHQjy9NjYjmi6vmVYpj0yblBNGtKd6ZM5x0og1UTB
+ RPTRcqRD3JNKL9CoM58cLDWs9bCXv7Bra0aDAA5QpvIx11coqbSOkucnqEEJaTJsAzvMcQnEY09x9
+ vYVBnHwg==;
 Received: from 213-225-6-159.nat.highway.a1.net ([213.225.6.159]
  helo=localhost)
  by bombadil.infradead.org with esmtpsa (Exim 4.92 #3 (Red Hat Linux))
- id 1hfmaE-00087r-Qt; Tue, 25 Jun 2019 14:38:07 +0000
+ id 1hfmaI-0008BD-Qf; Tue, 25 Jun 2019 14:38:11 +0000
 From: Christoph Hellwig <hch@lst.de>
 To: Andrew Morton <akpm@linux-foundation.org>,
  Linus Torvalds <torvalds@linux-foundation.org>,
  Paul Burton <paul.burton@mips.com>, James Hogan <jhogan@kernel.org>,
  Yoshinori Sato <ysato@users.sourceforge.jp>, Rich Felker <dalias@libc.org>,
  "David S. Miller" <davem@davemloft.net>
-Subject: [PATCH 15/16] mm: switch gup_hugepte to use try_get_compound_head
-Date: Tue, 25 Jun 2019 16:37:14 +0200
-Message-Id: <20190625143715.1689-16-hch@lst.de>
+Subject: [PATCH 16/16] mm: mark the page referenced in gup_hugepte
+Date: Tue, 25 Jun 2019 16:37:15 +0200
+Message-Id: <20190625143715.1689-17-hch@lst.de>
 X-Mailer: git-send-email 2.20.1
 In-Reply-To: <20190625143715.1689-1-hch@lst.de>
 References: <20190625143715.1689-1-hch@lst.de>
@@ -92,30 +92,26 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This applies the overflow fixes from 8fde12ca79aff
-("mm: prevent get_user_pages() from overflowing page refcount")
-to the powerpc hugepd code and brings it back in sync with the
-other GUP cases.
+All other get_user_page_fast cases mark the page referenced, so do
+this here as well.
 
 Signed-off-by: Christoph Hellwig <hch@lst.de>
 ---
- mm/gup.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ mm/gup.c | 1 +
+ 1 file changed, 1 insertion(+)
 
 diff --git a/mm/gup.c b/mm/gup.c
-index 7077549bc8ea..e06447cff635 100644
+index e06447cff635..d9d022d835ca 100644
 --- a/mm/gup.c
 +++ b/mm/gup.c
-@@ -2006,7 +2006,8 @@ static int gup_hugepte(pte_t *ptep, unsigned long sz, unsigned long addr,
- 		refs++;
- 	} while (addr += PAGE_SIZE, addr != end);
- 
--	if (!page_cache_add_speculative(head, refs)) {
-+	head = try_get_compound_head(head, refs);
-+	if (!head) {
- 		*nr -= refs;
+@@ -2020,6 +2020,7 @@ static int gup_hugepte(pte_t *ptep, unsigned long sz, unsigned long addr,
  		return 0;
  	}
+ 
++	SetPageReferenced(head);
+ 	return 1;
+ }
+ 
 -- 
 2.20.1
 
