@@ -2,48 +2,67 @@ Return-Path: <SRS0=GBvC=UY=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.3 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_MUTT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	TVD_SUBJ_WIPE_DEBT,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C0B84C48BD5
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Jun 2019 07:59:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EC1EBC48BD4
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Jun 2019 08:17:41 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 80F0A20881
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Jun 2019 07:59:46 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 80F0A20881
+	by mail.kernel.org (Postfix) with ESMTPS id 69FEF204EC
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Jun 2019 08:17:40 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="jhngtguV"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 69FEF204EC
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45Xz8b5nr2zDqDb
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Jun 2019 17:59:43 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=lst.de
- (client-ip=213.95.11.211; helo=newverein.lst.de; envelope-from=hch@lst.de;
+	by lists.ozlabs.org (Postfix) with ESMTP id 45XzYF03ZVzDqP5
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Jun 2019 18:17:37 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=none (mailfrom)
+ smtp.mailfrom=bombadil.srs.infradead.org (client-ip=2607:7c80:54:e::133;
+ helo=bombadil.infradead.org;
+ envelope-from=batv+c5155a46dc30cc8634d8+5784+infradead.org+hch@bombadil.srs.infradead.org;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=lst.de
-Received: from newverein.lst.de (verein.lst.de [213.95.11.211])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from bombadil.infradead.org (bombadil.infradead.org
+ [IPv6:2607:7c80:54:e::133])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45Xz5x2GnyzDqBK
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jun 2019 17:57:25 +1000 (AEST)
-Received: by newverein.lst.de (Postfix, from userid 2407)
- id 1831068B02; Tue, 25 Jun 2019 09:56:51 +0200 (CEST)
-Date: Tue, 25 Jun 2019 09:56:50 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45XzVs5XLHzDqHj
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jun 2019 18:15:33 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+ d=infradead.org; s=bombadil.20170209; h=Content-Transfer-Encoding:
+ MIME-Version:Message-Id:Date:Subject:Cc:To:From:Sender:Reply-To:Content-Type:
+ Content-ID:Content-Description:Resent-Date:Resent-From:Resent-Sender:
+ Resent-To:Resent-Cc:Resent-Message-ID:In-Reply-To:References:List-Id:
+ List-Help:List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
+ bh=fswQqvuQetufWkfPveAE2qCX9AhSijRSF7A07bRfMgc=; b=jhngtguVQUQtx2aNKqBYQ7UBW
+ DunHNcATBrwFfvAMgTJdSWWWPdVk6cCgrOPI5gmI25P/b6prXCHVrqw57wYNq/IMw6kSZlOXISrv4
+ +pDIEqy4CdNISmAMVcRYPHrv/OzWEIDZvZJ74E+WzXCzdX3h3DQsi/+knGr3sVXROpwSXc0CgtoYY
+ fRsS+uqYOQznrRmpqjAtxOfUKOhJrbdgyLVC4yy7TF/gT+bZY27GXF2EA9mNwRSdA1ImTvUc6uh31
+ FuC1z9V/nb248cR3rwCF0+XLyqoF2pn0fnU7V6mDutU3/gnxHZTAWHCACHWVFTGNU6mvvksDnLHoG
+ MQxFVvAMw==;
+Received: from 213-225-6-159.nat.highway.a1.net ([213.225.6.159]
+ helo=localhost)
+ by bombadil.infradead.org with esmtpsa (Exim 4.92 #3 (Red Hat Linux))
+ id 1hfgbk-00071p-0n; Tue, 25 Jun 2019 08:15:16 +0000
 From: Christoph Hellwig <hch@lst.de>
-To: Jason Gunthorpe <jgg@ziepe.ca>
-Subject: Re: [PATCH 11/16] mm: consolidate the get_user_pages* implementations
-Message-ID: <20190625075650.GF30815@lst.de>
-References: <20190611144102.8848-1-hch@lst.de>
- <20190611144102.8848-12-hch@lst.de> <20190621144131.GQ19891@ziepe.ca>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
+Subject: remove unused powernv code v2
+Date: Tue, 25 Jun 2019 10:15:08 +0200
+Message-Id: <20190625081512.16704-1-hch@lst.de>
+X-Mailer: git-send-email 2.20.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20190621144131.GQ19891@ziepe.ca>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Content-Transfer-Encoding: 8bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by
+ bombadil.infradead.org. See http://www.infradead.org/rpr.html
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -55,43 +74,18 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: x86@kernel.org, Rich Felker <dalias@libc.org>,
- Yoshinori Sato <ysato@users.sourceforge.jp>, linux-sh@vger.kernel.org,
- James Hogan <jhogan@kernel.org>, linuxppc-dev@lists.ozlabs.org,
- Khalid Aziz <khalid.aziz@oracle.com>, Nicholas Piggin <npiggin@gmail.com>,
- "David S. Miller" <davem@davemloft.net>, linux-mm@kvack.org,
- Paul Burton <paul.burton@mips.com>, Paul Mackerras <paulus@samba.org>,
- Andrey Konovalov <andreyknvl@google.com>, sparclinux@vger.kernel.org,
- linux-mips@vger.kernel.org, Linus Torvalds <torvalds@linux-foundation.org>,
- Christoph Hellwig <hch@lst.de>, linux-kernel@vger.kernel.org
+Cc: Alexey Kardashevskiy <aik@ozlabs.ru>,
+ Frederic Barrat <fbarrat@linux.ibm.com>, Oliver O'Halloran <oohall@gmail.com>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, Jun 21, 2019 at 11:41:31AM -0300, Jason Gunthorpe wrote:
-> >  static bool gup_fast_permitted(unsigned long start, unsigned long end)
-> >  {
-> > -	return true;
-> > +	return IS_ENABLED(CONFIG_HAVE_FAST_GUP) ? true : false;
-> 
-> The ?: is needed with IS_ENABLED?
+Hi all,
 
-It shouldn't, I'll fix it up.
+the powerpc powernv port has a fairly large chunk of code that never
+had any upstream user.  We generally strive to not keep dead code
+around, and this was affirmed at least years Maintainer summit.
 
-> I'd suggest to revise this block a tiny bit:
-> 
-> -#ifndef gup_fast_permitted
-> +#if !IS_ENABLED(CONFIG_HAVE_FAST_GUP) || !defined(gup_fast_permitted)
->  /*
->   * Check if it's allowed to use __get_user_pages_fast() for the range, or
->   * we need to fall back to the slow version:
->   */
-> -bool gup_fast_permitted(unsigned long start, int nr_pages)
-> +static bool gup_fast_permitted(unsigned long start, int nr_pages)
->  {
-> 
-> Just in case some future arch code mismatches the header and kconfig..
-
-IS_ENABLED outside a function doesn't really make sense.  But I'll
-just life the IS_ENABLED(CONFIG_HAVE_FAST_GUP) checks into the two
-callers.
+Changes since v1:
+ - reword some commit message
