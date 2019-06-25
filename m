@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-2.3 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_MUTT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7FC71C48BD4
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Jun 2019 07:43:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8AE5FC48BD4
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Jun 2019 07:47:10 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3B1D320659
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Jun 2019 07:43:45 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3B1D320659
+	by mail.kernel.org (Postfix) with ESMTPS id EC28320659
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Jun 2019 07:47:09 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EC28320659
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45Xyp63LTJzDqHL
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Jun 2019 17:43:42 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45Xyt34BcyzDqFC
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Jun 2019 17:47:07 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=none (mailfrom) smtp.mailfrom=lst.de
  (client-ip=213.95.11.211; helo=newverein.lst.de; envelope-from=hch@lst.de;
@@ -28,16 +28,16 @@ Authentication-Results: lists.ozlabs.org;
 Received: from newverein.lst.de (verein.lst.de [213.95.11.211])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45Xyls5VlMzDq5b
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jun 2019 17:41:43 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45Xyq04S5zzDqJK
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jun 2019 17:44:28 +1000 (AEST)
 Received: by newverein.lst.de (Postfix, from userid 2407)
- id C953568B02; Tue, 25 Jun 2019 09:41:08 +0200 (CEST)
-Date: Tue, 25 Jun 2019 09:41:08 +0200
+ id 5891C68B02; Tue, 25 Jun 2019 09:43:54 +0200 (CEST)
+Date: Tue, 25 Jun 2019 09:43:53 +0200
 From: Christoph Hellwig <hch@lst.de>
 To: Jason Gunthorpe <jgg@ziepe.ca>
 Subject: Re: [PATCH 01/16] mm: use untagged_addr() for get_user_pages_fast
  addresses
-Message-ID: <20190625074108.GB30815@lst.de>
+Message-ID: <20190625074353.GC30815@lst.de>
 References: <20190611144102.8848-1-hch@lst.de>
  <20190611144102.8848-2-hch@lst.de> <20190621133911.GL19891@ziepe.ca>
 MIME-Version: 1.0
@@ -70,7 +70,6 @@ Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
 On Fri, Jun 21, 2019 at 10:39:11AM -0300, Jason Gunthorpe wrote:
-> 
 > Hmm, this function, and the other, goes on to do:
 > 
 >         if (unlikely(!access_ok((void __user *)start, len)))
@@ -80,5 +79,7 @@ On Fri, Jun 21, 2019 at 10:39:11AM -0300, Jason Gunthorpe wrote:
 > 
 > How about re-order it a bit?
 
-The patch doesn't really work as-as an misses the main
-get_user_pages_fast fast path, but I'll add something equivalent.
+Actually..  I we reorder this we'd need to to duplicate a few things
+due to the zero/negative length checking.  Given the feedback from
+Khalid I'd thus rather skip the reorder for now.  If we have a good
+reason we could add it back, but it would be a bit involved.
