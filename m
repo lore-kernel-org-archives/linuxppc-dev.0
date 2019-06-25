@@ -2,23 +2,23 @@ Return-Path: <SRS0=GBvC=UY=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EB033C48BD4
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Jun 2019 12:33:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C40E3C48BD5
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Jun 2019 12:36:07 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 79142213F2
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Jun 2019 12:33:33 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 79142213F2
+	by mail.kernel.org (Postfix) with ESMTPS id 4F3BF213F2
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Jun 2019 12:36:07 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4F3BF213F2
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45Y5DW426jzDqQb
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Jun 2019 22:33:31 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45Y5HT4J3dzDqNs
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Jun 2019 22:36:05 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
  (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
@@ -29,59 +29,58 @@ Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45Y55S0fHXzDqNb
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45Y55S0cG4zDqNZ
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jun 2019 22:27:23 +1000 (AEST)
-Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x5PCNslO017627
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jun 2019 08:27:20 -0400
-Received: from e06smtp03.uk.ibm.com (e06smtp03.uk.ibm.com [195.75.94.99])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2tbkgs0amt-1
+ x5PCMaBB100688
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jun 2019 08:27:19 -0400
+Received: from e06smtp05.uk.ibm.com (e06smtp05.uk.ibm.com [195.75.94.101])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2tbkc00tup-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jun 2019 08:27:20 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jun 2019 08:27:19 -0400
 Received: from localhost
- by e06smtp03.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp05.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <vaibhav@linux.ibm.com>;
- Tue, 25 Jun 2019 13:27:18 +0100
-Received: from b06cxnps3074.portsmouth.uk.ibm.com (9.149.109.194)
- by e06smtp03.uk.ibm.com (192.168.101.133) with IBM ESMTP SMTP Gateway:
+ Tue, 25 Jun 2019 13:27:17 +0100
+Received: from b06avi18878370.portsmouth.uk.ibm.com (9.149.26.194)
+ by e06smtp05.uk.ibm.com (192.168.101.135) with IBM ESMTP SMTP Gateway:
  Authorized Use Only! Violators will be prosecuted; 
  (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Tue, 25 Jun 2019 13:27:17 +0100
+ Tue, 25 Jun 2019 13:27:15 +0100
 Received: from d06av21.portsmouth.uk.ibm.com (d06av21.portsmouth.uk.ibm.com
  [9.149.105.232])
- by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x5PCRFew59900056
+ by b06avi18878370.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP
+ id x5PCRDBj41353632
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Tue, 25 Jun 2019 12:27:15 GMT
+ Tue, 25 Jun 2019 12:27:13 GMT
 Received: from d06av21.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id A89F852050;
- Tue, 25 Jun 2019 12:27:15 +0000 (GMT)
-Received: from vajain21.in.ibm.com (unknown [9.109.195.230])
- by d06av21.portsmouth.uk.ibm.com (Postfix) with ESMTP id BF16952052;
+ by IMSVA (Postfix) with ESMTP id 5C2A652051;
  Tue, 25 Jun 2019 12:27:13 +0000 (GMT)
+Received: from vajain21.in.ibm.com (unknown [9.109.195.230])
+ by d06av21.portsmouth.uk.ibm.com (Postfix) with ESMTP id 021905204E;
+ Tue, 25 Jun 2019 12:27:11 +0000 (GMT)
 From: Vaibhav Jain <vaibhav@linux.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v2 1/3] powerpc/pseries: Update SCM hcall op-codes in hvcall.h
-Date: Tue, 25 Jun 2019 17:57:07 +0530
+Subject: [PATCH v2 0/3] powerpc/papr_scm: Workaround for failure of drc bind
+ after kexec
+Date: Tue, 25 Jun 2019 17:57:06 +0530
 X-Mailer: git-send-email 2.21.0
-In-Reply-To: <20190625122709.11846-1-vaibhav@linux.ibm.com>
-References: <20190625122709.11846-1-vaibhav@linux.ibm.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-x-cbid: 19062512-0012-0000-0000-0000032C3DE3
+x-cbid: 19062512-0020-0000-0000-0000034D38F6
 X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19062512-0013-0000-0000-000021657315
-Message-Id: <20190625122709.11846-2-vaibhav@linux.ibm.com>
+x-cbparentid: 19062512-0021-0000-0000-000021A0A84C
+Message-Id: <20190625122709.11846-1-vaibhav@linux.ibm.com>
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
  definitions=2019-06-25_09:, , signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
  priorityscore=1501
  malwarescore=0 suspectscore=1 phishscore=0 bulkscore=0 spamscore=0
  clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=684 adultscore=0 classifier=spam adjust=0 reason=mlx
+ mlxlogscore=691 adultscore=0 classifier=spam adjust=0 reason=mlx
  scancount=1 engine=8.0.1-1810050000 definitions=main-1906250099
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -102,41 +101,78 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Update the hvcalls.h to include op-codes for new hcalls introduce to
-manage SCM memory. Also update existing hcall definitions to reflect
-current papr specification for SCM.
+Presently an error is returned in response to hcall H_SCM_BIND_MEM when a
+new kernel boots on lpar via kexec. This prevents papr_scm from registering
+drc memory regions with nvdimm. The error reported is of the form below:
 
-Signed-off-by: Vaibhav Jain <vaibhav@linux.ibm.com>
+"papr_scm ibm,persistent-memory:ibm,pmemory@44100002: bind err: -68"
+
+On investigation it was revealed that phyp returns this error as previous
+kernel did not completely release bindings for drc scm-memory blocks and
+hence phyp rejected request for re-binding these block to lpar with error
+H_OVERLAP. Also support for a new H_SCM_UNBIND_ALL is recently added which
+is better suited for releasing all the bound scm-memory block from an lpar.
+
+So leveraging new hcall H_SCM_UNBIND_ALL, we can workaround H_OVERLAP issue
+during kexec by forcing an unbind of all drm scm-memory blocks and issuing
+H_SCM_BIND_MEM to re-bind the drc scm-memory blocks to lpar. This sequence
+will also be needed when a new kernel boot on lpar after previous kernel
+panicked and it never got an opportunity to call H_SCM_UNBIND_MEM/ALL.
+
+Hence this patch-set implements following changes to papr_scm module:
+
+* Update hvcall.h to include opcodes for new hcall H_SCM_UNBIND_ALL.
+
+* Update it to use H_SCM_UNBIND_ALL instead of H_SCM_UNBIND_MEM
+
+* In case hcall H_SCM_BIND_MEM fails with error H_OVERLAP, force
+  H_SCM_UNBIND_ALL and retry the bind operation again.
+
+With the patch-set applied re-bind of drc scm-memory to lpar succeeds after
+a kexec to new kernel as illustrated below:
+
+# Old kernel
+$ sudo ndctl list -R
+[
+  {
+    "dev":"region0",
+    <snip>
+    ....
+  }
+]
+# kexec to new kernel
+$ sudo kexec --initrd=... vmlinux
+...
+...
+I'm in purgatory
+...
+papr_scm ibm,persistent-memory:ibm,pmemory@44100002: Un-binding and retrying
+...
+# New kernel
+$ sudo ndctl list -R
+[
+  {
+    "dev":"region0",
+    <snip>
+    ....
+  }
+]
+
 ---
 Change-log:
 
 v2:
-* None new patch in this series.
----
- arch/powerpc/include/asm/hvcall.h | 9 +++++++--
- 1 file changed, 7 insertions(+), 2 deletions(-)
+* Addressed review comments from Oliver on v1 patchset.
 
-diff --git a/arch/powerpc/include/asm/hvcall.h b/arch/powerpc/include/asm/hvcall.h
-index 463c63a9fcf1..1f5f917dae8c 100644
---- a/arch/powerpc/include/asm/hvcall.h
-+++ b/arch/powerpc/include/asm/hvcall.h
-@@ -302,9 +302,14 @@
- #define H_SCM_UNBIND_MEM        0x3F0
- #define H_SCM_QUERY_BLOCK_MEM_BINDING 0x3F4
- #define H_SCM_QUERY_LOGICAL_MEM_BINDING 0x3F8
--#define H_SCM_MEM_QUERY	        0x3FC
-+#define H_SCM_UNBIND_ALL        0x3FC
- #define H_SCM_BLOCK_CLEAR       0x400
--#define MAX_HCALL_OPCODE	H_SCM_BLOCK_CLEAR
-+#define H_SCM_PERFORMANCE_STATS 0x418
-+#define MAX_HCALL_OPCODE	H_SCM_PERFORMANCE_STATS
-+
-+/* Scope args for H_SCM_UNBIND_ALL */
-+#define H_UNBIND_SCOPE_ALL (0x1)
-+#define H_UNBIND_SCOPE_DRC (0x2)
- 
- /* H_VIOCTL functions */
- #define H_GET_VIOA_DUMP_SIZE	0x01
+Vaibhav Jain (3):
+  powerpc/pseries: Update SCM hcall op-codes in hvcall.h
+  powerpc/papr_scm: Update drc_pmem_unbind() to use H_SCM_UNBIND_ALL
+  powerpc/papr_scm: Force a scm-unbind if initial scm-bind fails
+
+ arch/powerpc/include/asm/hvcall.h         |  9 +++--
+ arch/powerpc/platforms/pseries/papr_scm.c | 44 ++++++++++++++++++-----
+ 2 files changed, 43 insertions(+), 10 deletions(-)
+
 -- 
 2.21.0
 
