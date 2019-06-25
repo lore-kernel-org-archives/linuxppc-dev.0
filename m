@@ -2,25 +2,26 @@ Return-Path: <SRS0=GBvC=UY=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+X-Spam-Status: No, score=-6.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 43AF3C48BD4
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Jun 2019 11:13:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 47136C48BD5
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Jun 2019 11:15:07 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B7C912133F
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Jun 2019 11:13:25 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id B49D02133F
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Jun 2019 11:15:06 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="ivAjQTJm"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B7C912133F
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="VIe/l6jM"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B49D02133F
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45Y3S34kNnzDqP9
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Jun 2019 21:13:23 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45Y3V04JQTzDqQJ
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Jun 2019 21:15:04 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=c-s.fr
  (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
@@ -28,54 +29,55 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="ivAjQTJm"; 
+ unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="VIe/l6jM"; 
  dkim-atps=neutral
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45Y36g5FrBzDqCG
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45Y36g59RLzDqB9
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jun 2019 20:58:19 +1000 (AEST)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 45Y36b3G0Nz9v18T;
- Tue, 25 Jun 2019 12:58:15 +0200 (CEST)
+ by localhost (Postfix) with ESMTP id 45Y36V2cl9z9v18N;
+ Tue, 25 Jun 2019 12:58:10 +0200 (CEST)
 Authentication-Results: localhost; dkim=pass
  reason="1024-bit key; insecure key"
- header.d=c-s.fr header.i=@c-s.fr header.b=ivAjQTJm; dkim-adsp=pass;
+ header.d=c-s.fr header.i=@c-s.fr header.b=VIe/l6jM; dkim-adsp=pass;
  dkim-atps=neutral
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id 0Rdr2kspqHQh; Tue, 25 Jun 2019 12:58:15 +0200 (CEST)
+ with ESMTP id FcjUiROpiEUK; Tue, 25 Jun 2019 12:58:10 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 45Y36b2F5Bz9v17d;
- Tue, 25 Jun 2019 12:58:15 +0200 (CEST)
+ by pegase1.c-s.fr (Postfix) with ESMTP id 45Y36V1YJFz9v17d;
+ Tue, 25 Jun 2019 12:58:10 +0200 (CEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
- t=1561460295; bh=JEDpiVOSNbycLFH1s25cCWsEjV3KHeUK6gZcigZxrzc=;
+ t=1561460290; bh=StjUch5P01PzFEUUOhMMbjBSfN9wcs3cPr5gebdfa+8=;
  h=In-Reply-To:References:From:Subject:To:Cc:Date:From;
- b=ivAjQTJmaHSsnk6IQOHo3Q+eq13mtDq6y314a4WO/B7juwp9uCXtzbSVrcFV2863J
- oY/Z17sUnXG4eYbc2oUgarcu2KyJYWEm3HRX4Zm5FQ99nkJYccyJ0gYN0DYCXb4Oam
- /exp/MXle1ybQS5M9YnBwiU0YoaHS+6D/GuVsPQc=
+ b=VIe/l6jMiLVslJR4MCXn/1Fs73YSBfMRl32z+ZsGmE3LLfSG1n20Lu0evKCfW31C6
+ 1sUE5H0DH+pCM8RqanCX8d5x/rzYev9eGah0998B/gUSnJXfeFZwKUFdwVRSxn4ytO
+ aZl2lWt4n8PrH+PGBOA8EeThyY91MCS6pa/UOgos=
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 863D18B874;
- Tue, 25 Jun 2019 12:58:16 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 5F47B8B87A;
+ Tue, 25 Jun 2019 12:58:11 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id MxAODSfKJ3KU; Tue, 25 Jun 2019 12:58:16 +0200 (CEST)
+ with ESMTP id UGa8wxA1cLAX; Tue, 25 Jun 2019 12:58:11 +0200 (CEST)
 Received: from pc17473vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 4835C8B87A;
- Tue, 25 Jun 2019 12:58:16 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 073038B879;
+ Tue, 25 Jun 2019 12:58:11 +0200 (CEST)
 Received: by pc17473vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id 23CDD68E1B; Tue, 25 Jun 2019 10:58:16 +0000 (UTC)
-Message-Id: <2c0d402b8915f7e6f17ce999de943d3c6e899c2a.1561459984.git.christophe.leroy@c-s.fr>
+ id EE8C068E1B; Tue, 25 Jun 2019 10:58:10 +0000 (UTC)
+Message-Id: <c87868803da367b6424063c4dd9058a71a110ba6.1561459984.git.christophe.leroy@c-s.fr>
 In-Reply-To: <cover.1561459983.git.christophe.leroy@c-s.fr>
 References: <cover.1561459983.git.christophe.leroy@c-s.fr>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [RFC PATCH v1 10/13] powerpc/ptrace: create ptrace_get_debugreg()
+Subject: [RFC PATCH v1 05/13] powerpc/ptrace: split out ALTIVEC related
+ functions.
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, 
  mikey@neuling.org
-Date: Tue, 25 Jun 2019 10:58:16 +0000 (UTC)
+Date: Tue, 25 Jun 2019 10:58:10 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -92,104 +94,336 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Create ptrace_get_debugreg() to handle PTRACE_GET_DEBUGREG and
-reduce ifdef mess
+Move CONFIG_ALTIVEC functions out of ptrace.c, into
+ptrace-altivec.c
 
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
- arch/powerpc/kernel/ptrace/ptrace-adv.c   |  9 +++++++++
- arch/powerpc/kernel/ptrace/ptrace-decl.h  |  2 ++
- arch/powerpc/kernel/ptrace/ptrace-noadv.c | 13 +++++++++++++
- arch/powerpc/kernel/ptrace/ptrace.c       | 18 ++----------------
- 4 files changed, 26 insertions(+), 16 deletions(-)
+ arch/powerpc/kernel/ptrace/Makefile         |   1 +
+ arch/powerpc/kernel/ptrace/ptrace-altivec.c | 151 ++++++++++++++++++++++++++++
+ arch/powerpc/kernel/ptrace/ptrace-decl.h    |   9 ++
+ arch/powerpc/kernel/ptrace/ptrace.c         | 124 -----------------------
+ 4 files changed, 161 insertions(+), 124 deletions(-)
+ create mode 100644 arch/powerpc/kernel/ptrace/ptrace-altivec.c
 
-diff --git a/arch/powerpc/kernel/ptrace/ptrace-adv.c b/arch/powerpc/kernel/ptrace/ptrace-adv.c
-index 86e71fa6c5c8..dcc765940344 100644
---- a/arch/powerpc/kernel/ptrace/ptrace-adv.c
-+++ b/arch/powerpc/kernel/ptrace/ptrace-adv.c
-@@ -83,6 +83,15 @@ void user_disable_single_step(struct task_struct *task)
- 	clear_tsk_thread_flag(task, TIF_SINGLESTEP);
- }
- 
-+int ptrace_get_debugreg(struct task_struct *child, unsigned long addr,
-+			unsigned long __user *datalp)
+diff --git a/arch/powerpc/kernel/ptrace/Makefile b/arch/powerpc/kernel/ptrace/Makefile
+index 238c27189078..522e6fd0b5b8 100644
+--- a/arch/powerpc/kernel/ptrace/Makefile
++++ b/arch/powerpc/kernel/ptrace/Makefile
+@@ -11,3 +11,4 @@ obj-$(CONFIG_VSX)		+= ptrace-vsx.o
+ ifneq ($(CONFIG_VSX),y)
+ obj-y				+= ptrace-novsx.o
+ endif
++obj-$(CONFIG_ALTIVEC)		+= ptrace-altivec.o
+diff --git a/arch/powerpc/kernel/ptrace/ptrace-altivec.c b/arch/powerpc/kernel/ptrace/ptrace-altivec.c
+new file mode 100644
+index 000000000000..0cb749164269
+--- /dev/null
++++ b/arch/powerpc/kernel/ptrace/ptrace-altivec.c
+@@ -0,0 +1,151 @@
++/* SPDX-License-Identifier: GPL-2.0-or-later */
++
++#include <linux/kernel.h>
++#include <linux/sched.h>
++#include <linux/mm.h>
++#include <linux/smp.h>
++#include <linux/errno.h>
++#include <linux/ptrace.h>
++#include <linux/regset.h>
++#include <linux/tracehook.h>
++#include <linux/elf.h>
++#include <linux/user.h>
++#include <linux/security.h>
++#include <linux/signal.h>
++#include <linux/seccomp.h>
++#include <linux/audit.h>
++#include <trace/syscall.h>
++#include <linux/hw_breakpoint.h>
++#include <linux/perf_event.h>
++#include <linux/context_tracking.h>
++#include <linux/nospec.h>
++
++#include <linux/uaccess.h>
++#include <linux/pkeys.h>
++#include <asm/page.h>
++#include <asm/pgtable.h>
++#include <asm/switch_to.h>
++#include <asm/tm.h>
++#include <asm/asm-prototypes.h>
++#include <asm/debug.h>
++#include <asm/hw_breakpoint.h>
++
++/*
++ * Get/set all the altivec registers vr0..vr31, vscr, vrsave, in one go.
++ * The transfer totals 34 quadword.  Quadwords 0-31 contain the
++ * corresponding vector registers.  Quadword 32 contains the vscr as the
++ * last word (offset 12) within that quadword.  Quadword 33 contains the
++ * vrsave as the first word (offset 0) within the quadword.
++ *
++ * This definition of the VMX state is compatible with the current PPC32
++ * ptrace interface.  This allows signal handling and ptrace to use the
++ * same structures.  This also simplifies the implementation of a bi-arch
++ * (combined (32- and 64-bit) gdb.
++ */
++
++int vr_active(struct task_struct *target, const struct user_regset *regset)
 +{
-+	/* We only support one DABR and no IABRS at the moment */
-+	if (addr > 0)
-+		return -EINVAL;
-+	return put_user(child->thread.debug.dac1, datalp);
++	flush_altivec_to_thread(target);
++	return target->thread.used_vr ? regset->n : 0;
 +}
 +
- int ptrace_set_debugreg(struct task_struct *task, unsigned long addr, unsigned long data)
- {
- 	/* For ppc64 we support one DABR and no IABR's at the moment (ppc64).
++/*
++ * Regardless of transactions, 'vr_state' holds the current running
++ * value of all the VMX registers and 'ckvr_state' holds the last
++ * checkpointed value of all the VMX registers for the current
++ * transaction to fall back on in case it aborts.
++ *
++ * Userspace interface buffer layout:
++ *
++ * struct data {
++ *	vector128	vr[32];
++ *	vector128	vscr;
++ *	vector128	vrsave;
++ * };
++ */
++int vr_get(struct task_struct *target, const struct user_regset *regset,
++	   unsigned int pos, unsigned int count, void *kbuf, void __user *ubuf)
++{
++	int ret;
++
++	flush_altivec_to_thread(target);
++
++	BUILD_BUG_ON(offsetof(struct thread_vr_state, vscr) !=
++		     offsetof(struct thread_vr_state, vr[32]));
++
++	ret = user_regset_copyout(&pos, &count, &kbuf, &ubuf,
++				  &target->thread.vr_state, 0,
++				  33 * sizeof(vector128));
++	if (!ret) {
++		/*
++		 * Copy out only the low-order word of vrsave.
++		 */
++		int start, end;
++		union {
++			elf_vrreg_t reg;
++			u32 word;
++		} vrsave;
++		memset(&vrsave, 0, sizeof(vrsave));
++
++		vrsave.word = target->thread.vrsave;
++
++		start = 33 * sizeof(vector128);
++		end = start + sizeof(vrsave);
++		ret = user_regset_copyout(&pos, &count, &kbuf, &ubuf, &vrsave,
++					  start, end);
++	}
++
++	return ret;
++}
++
++/*
++ * Regardless of transactions, 'vr_state' holds the current running
++ * value of all the VMX registers and 'ckvr_state' holds the last
++ * checkpointed value of all the VMX registers for the current
++ * transaction to fall back on in case it aborts.
++ *
++ * Userspace interface buffer layout:
++ *
++ * struct data {
++ *	vector128	vr[32];
++ *	vector128	vscr;
++ *	vector128	vrsave;
++ * };
++ */
++int vr_set(struct task_struct *target, const struct user_regset *regset,
++	   unsigned int pos, unsigned int count,
++	   const void *kbuf, const void __user *ubuf)
++{
++	int ret;
++
++	flush_altivec_to_thread(target);
++
++	BUILD_BUG_ON(offsetof(struct thread_vr_state, vscr) !=
++		     offsetof(struct thread_vr_state, vr[32]));
++
++	ret = user_regset_copyin(&pos, &count, &kbuf, &ubuf,
++				 &target->thread.vr_state, 0,
++				 33 * sizeof(vector128));
++	if (!ret && count > 0) {
++		/*
++		 * We use only the first word of vrsave.
++		 */
++		int start, end;
++		union {
++			elf_vrreg_t reg;
++			u32 word;
++		} vrsave;
++		memset(&vrsave, 0, sizeof(vrsave));
++
++		vrsave.word = target->thread.vrsave;
++
++		start = 33 * sizeof(vector128);
++		end = start + sizeof(vrsave);
++		ret = user_regset_copyin(&pos, &count, &kbuf, &ubuf, &vrsave,
++					 start, end);
++		if (!ret)
++			target->thread.vrsave = vrsave.word;
++	}
++
++	return ret;
++}
 diff --git a/arch/powerpc/kernel/ptrace/ptrace-decl.h b/arch/powerpc/kernel/ptrace/ptrace-decl.h
-index 078e7e5a7fa2..cd5b8256ba56 100644
+index fc4dc598bc1d..35c1d127fc64 100644
 --- a/arch/powerpc/kernel/ptrace/ptrace-decl.h
 +++ b/arch/powerpc/kernel/ptrace/ptrace-decl.h
-@@ -141,6 +141,8 @@ int tm_cgpr32_set(struct task_struct *target, const struct user_regset *regset,
- extern const struct user_regset_view user_ppc_native_view;
- 
- /* ptrace-(no)adv */
-+int ptrace_get_debugreg(struct task_struct *child, unsigned long addr,
-+			unsigned long __user *datalp);
- int ptrace_set_debugreg(struct task_struct *task, unsigned long addr, unsigned long data);
- long ppc_set_hwdebug(struct task_struct *child, struct ppc_hw_breakpoint *bp_info);
- long ppc_del_hwdebug(struct task_struct *child, long data);
-diff --git a/arch/powerpc/kernel/ptrace/ptrace-noadv.c b/arch/powerpc/kernel/ptrace/ptrace-noadv.c
-index 7db330c94538..985cca136f85 100644
---- a/arch/powerpc/kernel/ptrace/ptrace-noadv.c
-+++ b/arch/powerpc/kernel/ptrace/ptrace-noadv.c
-@@ -64,6 +64,19 @@ void user_disable_single_step(struct task_struct *task)
- 	clear_tsk_thread_flag(task, TIF_SINGLESTEP);
- }
- 
-+int ptrace_get_debugreg(struct task_struct *child, unsigned long addr,
-+			unsigned long __user *datalp)
-+{
-+	unsigned long dabr_fake;
+@@ -16,3 +16,12 @@ int vsr_get(struct task_struct *target, const struct user_regset *regset,
+ int vsr_set(struct task_struct *target, const struct user_regset *regset,
+ 	    unsigned int pos, unsigned int count,
+ 	    const void *kbuf, const void __user *ubuf);
 +
-+	/* We only support one DABR and no IABRS at the moment */
-+	if (addr > 0)
-+		return -EINVAL;
-+	dabr_fake = ((child->thread.hw_brk.address & (~HW_BRK_TYPE_DABR)) |
-+		     (child->thread.hw_brk.type & HW_BRK_TYPE_DABR));
-+	return put_user(dabr_fake, datalp);
-+}
++/* ptrace-altivec */
 +
- int ptrace_set_debugreg(struct task_struct *task, unsigned long addr, unsigned long data)
- {
- #ifdef CONFIG_HAVE_HW_BREAKPOINT
++int vr_active(struct task_struct *target, const struct user_regset *regset);
++int vr_get(struct task_struct *target, const struct user_regset *regset,
++	   unsigned int pos, unsigned int count, void *kbuf, void __user *ubuf);
++int vr_set(struct task_struct *target, const struct user_regset *regset,
++	   unsigned int pos, unsigned int count,
++	   const void *kbuf, const void __user *ubuf);
 diff --git a/arch/powerpc/kernel/ptrace/ptrace.c b/arch/powerpc/kernel/ptrace/ptrace.c
-index 377e0e541d5f..e789afae6f56 100644
+index 621a0181f6f7..141dc0b8f502 100644
 --- a/arch/powerpc/kernel/ptrace/ptrace.c
 +++ b/arch/powerpc/kernel/ptrace/ptrace.c
-@@ -211,23 +211,9 @@ long arch_ptrace(struct task_struct *child, long request,
- 		break;
- 	}
+@@ -417,130 +417,6 @@ static int gpr_set(struct task_struct *target, const struct user_regset *regset,
+ 	return ret;
+ }
  
--	case PTRACE_GET_DEBUGREG: {
--#ifndef CONFIG_PPC_ADV_DEBUG_REGS
--		unsigned long dabr_fake;
--#endif
--		ret = -EINVAL;
--		/* We only support one DABR and no IABRS at the moment */
--		if (addr > 0)
--			break;
--#ifdef CONFIG_PPC_ADV_DEBUG_REGS
--		ret = put_user(child->thread.debug.dac1, datalp);
--#else
--		dabr_fake = ((child->thread.hw_brk.address & (~HW_BRK_TYPE_DABR)) |
--			     (child->thread.hw_brk.type & HW_BRK_TYPE_DABR));
--		ret = put_user(dabr_fake, datalp);
--#endif
-+	case PTRACE_GET_DEBUGREG:
-+		ret = ptrace_get_debugreg(child, addr, datalp);
- 		break;
+-#ifdef CONFIG_ALTIVEC
+-/*
+- * Get/set all the altivec registers vr0..vr31, vscr, vrsave, in one go.
+- * The transfer totals 34 quadword.  Quadwords 0-31 contain the
+- * corresponding vector registers.  Quadword 32 contains the vscr as the
+- * last word (offset 12) within that quadword.  Quadword 33 contains the
+- * vrsave as the first word (offset 0) within the quadword.
+- *
+- * This definition of the VMX state is compatible with the current PPC32
+- * ptrace interface.  This allows signal handling and ptrace to use the
+- * same structures.  This also simplifies the implementation of a bi-arch
+- * (combined (32- and 64-bit) gdb.
+- */
+-
+-static int vr_active(struct task_struct *target,
+-		     const struct user_regset *regset)
+-{
+-	flush_altivec_to_thread(target);
+-	return target->thread.used_vr ? regset->n : 0;
+-}
+-
+-/*
+- * Regardless of transactions, 'vr_state' holds the current running
+- * value of all the VMX registers and 'ckvr_state' holds the last
+- * checkpointed value of all the VMX registers for the current
+- * transaction to fall back on in case it aborts.
+- *
+- * Userspace interface buffer layout:
+- *
+- * struct data {
+- *	vector128	vr[32];
+- *	vector128	vscr;
+- *	vector128	vrsave;
+- * };
+- */
+-static int vr_get(struct task_struct *target, const struct user_regset *regset,
+-		  unsigned int pos, unsigned int count,
+-		  void *kbuf, void __user *ubuf)
+-{
+-	int ret;
+-
+-	flush_altivec_to_thread(target);
+-
+-	BUILD_BUG_ON(offsetof(struct thread_vr_state, vscr) !=
+-		     offsetof(struct thread_vr_state, vr[32]));
+-
+-	ret = user_regset_copyout(&pos, &count, &kbuf, &ubuf,
+-				  &target->thread.vr_state, 0,
+-				  33 * sizeof(vector128));
+-	if (!ret) {
+-		/*
+-		 * Copy out only the low-order word of vrsave.
+-		 */
+-		int start, end;
+-		union {
+-			elf_vrreg_t reg;
+-			u32 word;
+-		} vrsave;
+-		memset(&vrsave, 0, sizeof(vrsave));
+-
+-		vrsave.word = target->thread.vrsave;
+-
+-		start = 33 * sizeof(vector128);
+-		end = start + sizeof(vrsave);
+-		ret = user_regset_copyout(&pos, &count, &kbuf, &ubuf, &vrsave,
+-					  start, end);
 -	}
+-
+-	return ret;
+-}
+-
+-/*
+- * Regardless of transactions, 'vr_state' holds the current running
+- * value of all the VMX registers and 'ckvr_state' holds the last
+- * checkpointed value of all the VMX registers for the current
+- * transaction to fall back on in case it aborts.
+- *
+- * Userspace interface buffer layout:
+- *
+- * struct data {
+- *	vector128	vr[32];
+- *	vector128	vscr;
+- *	vector128	vrsave;
+- * };
+- */
+-static int vr_set(struct task_struct *target, const struct user_regset *regset,
+-		  unsigned int pos, unsigned int count,
+-		  const void *kbuf, const void __user *ubuf)
+-{
+-	int ret;
+-
+-	flush_altivec_to_thread(target);
+-
+-	BUILD_BUG_ON(offsetof(struct thread_vr_state, vscr) !=
+-		     offsetof(struct thread_vr_state, vr[32]));
+-
+-	ret = user_regset_copyin(&pos, &count, &kbuf, &ubuf,
+-				 &target->thread.vr_state, 0,
+-				 33 * sizeof(vector128));
+-	if (!ret && count > 0) {
+-		/*
+-		 * We use only the first word of vrsave.
+-		 */
+-		int start, end;
+-		union {
+-			elf_vrreg_t reg;
+-			u32 word;
+-		} vrsave;
+-		memset(&vrsave, 0, sizeof(vrsave));
+-
+-		vrsave.word = target->thread.vrsave;
+-
+-		start = 33 * sizeof(vector128);
+-		end = start + sizeof(vrsave);
+-		ret = user_regset_copyin(&pos, &count, &kbuf, &ubuf, &vrsave,
+-					 start, end);
+-		if (!ret)
+-			target->thread.vrsave = vrsave.word;
+-	}
+-
+-	return ret;
+-}
+-#endif /* CONFIG_ALTIVEC */
+-
+ #ifdef CONFIG_SPE
  
- 	case PTRACE_SET_DEBUGREG:
- 		ret = ptrace_set_debugreg(child, addr, data);
+ /*
 -- 
 2.13.3
 
