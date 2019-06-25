@@ -2,48 +2,87 @@ Return-Path: <SRS0=GBvC=UY=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.3 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_MUTT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2B490C48BD5
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Jun 2019 12:30:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EB033C48BD4
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Jun 2019 12:33:33 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 8F5D9213F2
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Jun 2019 12:30:06 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8F5D9213F2
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
+	by mail.kernel.org (Postfix) with ESMTPS id 79142213F2
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Jun 2019 12:33:33 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 79142213F2
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45Y58W41XXzDqNj
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Jun 2019 22:30:03 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45Y5DW426jzDqQb
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Jun 2019 22:33:31 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=lst.de
- (client-ip=213.95.11.211; helo=newverein.lst.de; envelope-from=hch@lst.de;
- receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
+ (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
+ envelope-from=vaibhav@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=lst.de
-Received: from newverein.lst.de (verein.lst.de [213.95.11.211])
+ dmarc=none (p=none dis=none) header.from=linux.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45Y55N2TC0zDqNX
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jun 2019 22:27:17 +1000 (AEST)
-Received: by newverein.lst.de (Postfix, from userid 2407)
- id 9D66168B05; Tue, 25 Jun 2019 14:26:41 +0200 (CEST)
-Date: Tue, 25 Jun 2019 14:26:41 +0200
-From: Christoph Hellwig <hch@lst.de>
-To: Mark Greer <mgreer@animalcreek.com>,
- Paul Gortmaker <paul.gortmaker@windriver.com>,
- Dale Farnsworth <dale@farnsworth.org>
-Subject: DMA coherency in drivers/tty/serial/mpsc.c
-Message-ID: <20190625122641.GA4421@lst.de>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45Y55S0fHXzDqNb
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jun 2019 22:27:23 +1000 (AEST)
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
+ x5PCNslO017627
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jun 2019 08:27:20 -0400
+Received: from e06smtp03.uk.ibm.com (e06smtp03.uk.ibm.com [195.75.94.99])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2tbkgs0amt-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jun 2019 08:27:20 -0400
+Received: from localhost
+ by e06smtp03.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <vaibhav@linux.ibm.com>;
+ Tue, 25 Jun 2019 13:27:18 +0100
+Received: from b06cxnps3074.portsmouth.uk.ibm.com (9.149.109.194)
+ by e06smtp03.uk.ibm.com (192.168.101.133) with IBM ESMTP SMTP Gateway:
+ Authorized Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Tue, 25 Jun 2019 13:27:17 +0100
+Received: from d06av21.portsmouth.uk.ibm.com (d06av21.portsmouth.uk.ibm.com
+ [9.149.105.232])
+ by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x5PCRFew59900056
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Tue, 25 Jun 2019 12:27:15 GMT
+Received: from d06av21.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id A89F852050;
+ Tue, 25 Jun 2019 12:27:15 +0000 (GMT)
+Received: from vajain21.in.ibm.com (unknown [9.109.195.230])
+ by d06av21.portsmouth.uk.ibm.com (Postfix) with ESMTP id BF16952052;
+ Tue, 25 Jun 2019 12:27:13 +0000 (GMT)
+From: Vaibhav Jain <vaibhav@linux.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH v2 1/3] powerpc/pseries: Update SCM hcall op-codes in hvcall.h
+Date: Tue, 25 Jun 2019 17:57:07 +0530
+X-Mailer: git-send-email 2.21.0
+In-Reply-To: <20190625122709.11846-1-vaibhav@linux.ibm.com>
+References: <20190625122709.11846-1-vaibhav@linux.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-User-Agent: Mutt/1.5.17 (2007-11-01)
+X-TM-AS-GCONF: 00
+x-cbid: 19062512-0012-0000-0000-0000032C3DE3
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 19062512-0013-0000-0000-000021657315
+Message-Id: <20190625122709.11846-2-vaibhav@linux.ibm.com>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
+ definitions=2019-06-25_09:, , signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ malwarescore=0 suspectscore=1 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=684 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1810050000 definitions=main-1906250099
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -55,32 +94,49 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- linux-serial@vger.kernel.org
+Cc: "Aneesh Kumar K . V" <aneesh.kumar@linux.ibm.com>,
+ Oliver O'Halloran <oohall@gmail.com>, Vaibhav Jain <vaibhav@linux.ibm.com>,
+ Laurent Dufour <ldufour@linux.vnet.ibm.com>,
+ David Gibson <david@gibson.dropbear.id.au>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi Paul, Dale and Mark (I hope this reaches the right Mark),
+Update the hvcalls.h to include op-codes for new hcalls introduce to
+manage SCM memory. Also update existing hcall definitions to reflect
+current papr specification for SCM.
 
-I've started auditing all users of DMA_ATTR_NON_CONSISTENT ot prepare
-for major API improvements in that area.
+Signed-off-by: Vaibhav Jain <vaibhav@linux.ibm.com>
+---
+Change-log:
 
-One of the odd users is the mpsc ѕerial driver, which allocates DMA
-memory with the above flag, and then actually properly calls
-dma_cache_sync.  So far, so good.  But it turns out it also has
-"#if defined(CONFIG_PPC32) && !defined(CONFIG_NOT_COHERENT_CACHE)"
-ifdef blocks next to the dma_cache_sync calls that perform cache
-maintainance for platforms that according to the ifdef claim to
-be cache coherent.  According to the Kconfig the driver can
-only build if the MV64X60 symbol is set, which is a ppc embedded 6xx
-SOC, which appears to be configurable as either cache coherent, or
-not.  But according to the code in the driver at least this device
-always is not cache coherent.
+v2:
+* None new patch in this series.
+---
+ arch/powerpc/include/asm/hvcall.h | 9 +++++++--
+ 1 file changed, 7 insertions(+), 2 deletions(-)
 
-It seems like we need to always mark that platform as potentially
-not coherent, and then use the per-device flag to mark all device
-except for this one as coherent.  Or did I miss anything?  Maybe
-all this is actually dead code and can go away?
+diff --git a/arch/powerpc/include/asm/hvcall.h b/arch/powerpc/include/asm/hvcall.h
+index 463c63a9fcf1..1f5f917dae8c 100644
+--- a/arch/powerpc/include/asm/hvcall.h
++++ b/arch/powerpc/include/asm/hvcall.h
+@@ -302,9 +302,14 @@
+ #define H_SCM_UNBIND_MEM        0x3F0
+ #define H_SCM_QUERY_BLOCK_MEM_BINDING 0x3F4
+ #define H_SCM_QUERY_LOGICAL_MEM_BINDING 0x3F8
+-#define H_SCM_MEM_QUERY	        0x3FC
++#define H_SCM_UNBIND_ALL        0x3FC
+ #define H_SCM_BLOCK_CLEAR       0x400
+-#define MAX_HCALL_OPCODE	H_SCM_BLOCK_CLEAR
++#define H_SCM_PERFORMANCE_STATS 0x418
++#define MAX_HCALL_OPCODE	H_SCM_PERFORMANCE_STATS
++
++/* Scope args for H_SCM_UNBIND_ALL */
++#define H_UNBIND_SCOPE_ALL (0x1)
++#define H_UNBIND_SCOPE_DRC (0x2)
+ 
+ /* H_VIOCTL functions */
+ #define H_GET_VIOA_DUMP_SIZE	0x01
+-- 
+2.21.0
 
