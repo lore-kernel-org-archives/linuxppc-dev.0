@@ -7,21 +7,21 @@ X-Spam-Status: No, score=-8.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 68B6DC48BD4
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Jun 2019 08:24:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 41140C48BD7
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Jun 2019 08:25:58 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E166A215EA
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Jun 2019 08:24:00 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id BF18C2168B
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Jun 2019 08:25:57 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="Hq3LPWE5"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E166A215EA
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="PDWRtRfI"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BF18C2168B
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45XzhY23dTzDqP9
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Jun 2019 18:23:57 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45Xzkq35XSzDqQ5
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Jun 2019 18:25:55 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=none (mailfrom)
  smtp.mailfrom=bombadil.srs.infradead.org (client-ip=2607:7c80:54:e::133;
  helo=bombadil.infradead.org;
@@ -29,35 +29,39 @@ Authentication-Results: lists.ozlabs.org; spf=none (mailfrom)
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=lst.de
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=infradead.org header.i=@infradead.org
+ header.b="PDWRtRfI"; dkim-atps=neutral
 Received: from bombadil.infradead.org (bombadil.infradead.org
  [IPv6:2607:7c80:54:e::133])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45XzVw25GZzDqKP
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jun 2019 18:15:36 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45XzW06NWKzDqHj
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jun 2019 18:15:40 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
  d=infradead.org; s=bombadil.20170209; h=Content-Transfer-Encoding:
  MIME-Version:References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:Sender
  :Reply-To:Content-Type:Content-ID:Content-Description:Resent-Date:Resent-From
  :Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:List-Help:
  List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
- bh=goSg8xHBzM4SWTXBy5eLR+Rrz919LL3n9BgCq0hHcjU=; b=Hq3LPWE50UMEJZHLUR2BpXbE/z
- +lArmArUn3ORyxY5Ax5SmArc2BGDPfEeMs6LZR93MpFmROyfXTqp7RdsZnWTQ6n5KpAH9kvKN+EFy
- a26eIE9wuyMRkUNUsD78ZFlqj5IAIbGuezgzznhDJgL76Ruq0YKrrPTfnWRFzO40FAmrO1G8DNa8b
- VBpeerktPIC7pT3B+16G+JgSm9+rngRFO3iJMHrHInj14Fn5UZUxIyleTiA1dSXs+iHLjjTQKOKxm
- S5Dg54ufV0sjQbwMAshcKrsnuGu7Jq/jeC69f2iA4RsnDz+ES+m9UZwN2gv+lRR25ZRBQdOvu0lwi
- JG5T4xAA==;
+ bh=MzcmXp8wnK/YescI+t3wQCUL4rfo5P0eGxn4+g4lKJo=; b=PDWRtRfItEfb0aqadoNGznuv03
+ aVolzw05/YIJc2tcL900edvQ0ac/DPanDASM/YSSVC6Fq+YwJr9JsKGMASTfcfq20Mxm1/KNNo8k0
+ Ic2E9BaUGjJEHNIxyAFNG90BsBJUMp4wjKWX4GK6RUr0TgseMvVzQXxhkB7BAiCKJcuZK7GhKCdQ4
+ 9id7ey0Gqzx4WazsgPCOX0kwYZJfDv1uQPbYq3TqBbIatMX0A07wN52nNpLfp9IC2GNC1TjkK2JDB
+ xFlJK1G8ih7N1SMM3t+QAJ7vkcfRX45NkxTiVwW41q3kRe+J5ZZCL9fJ26GP2m1tlKa/oG2lE4jSn
+ jIVRF+hw==;
 Received: from 213-225-6-159.nat.highway.a1.net ([213.225.6.159]
  helo=localhost)
  by bombadil.infradead.org with esmtpsa (Exim 4.92 #3 (Red Hat Linux))
- id 1hfgbq-00072y-Qo; Tue, 25 Jun 2019 08:15:23 +0000
+ id 1hfgbx-00073o-7A; Tue, 25 Jun 2019 08:15:29 +0000
 From: Christoph Hellwig <hch@lst.de>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Subject: [PATCH 2/4] powerpc/powernv: remove the unused tunneling exports
-Date: Tue, 25 Jun 2019 10:15:10 +0200
-Message-Id: <20190625081512.16704-3-hch@lst.de>
+Subject: [PATCH 4/4] powerpc/powernv: remove the unused vas_win_paste_addr and
+ vas_win_id functions
+Date: Tue, 25 Jun 2019 10:15:12 +0200
+Message-Id: <20190625081512.16704-5-hch@lst.de>
 X-Mailer: git-send-email 2.20.1
 In-Reply-To: <20190625081512.16704-1-hch@lst.de>
 References: <20190625081512.16704-1-hch@lst.de>
@@ -83,157 +87,100 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-These have been unused anywhere in the kernel tree ever since they've
-been added to the kernel.
+These two function have never been used anywhere in the kernel tree
+since they were added to the kernel.
 
 Signed-off-by: Christoph Hellwig <hch@lst.de>
 ---
- arch/powerpc/include/asm/pnv-pci.h        |  4 --
- arch/powerpc/platforms/powernv/pci-ioda.c |  4 +-
- arch/powerpc/platforms/powernv/pci.c      | 71 -----------------------
- arch/powerpc/platforms/powernv/pci.h      |  1 -
- 4 files changed, 3 insertions(+), 77 deletions(-)
+ arch/powerpc/include/asm/vas.h              | 10 ----------
+ arch/powerpc/platforms/powernv/vas-window.c | 19 -------------------
+ arch/powerpc/platforms/powernv/vas.h        | 20 --------------------
+ 3 files changed, 49 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/pnv-pci.h b/arch/powerpc/include/asm/pnv-pci.h
-index 9fcb0bc462c6..1ab4b0111abc 100644
---- a/arch/powerpc/include/asm/pnv-pci.h
-+++ b/arch/powerpc/include/asm/pnv-pci.h
-@@ -27,12 +27,8 @@ extern int pnv_pci_get_power_state(uint64_t id, uint8_t *state);
- extern int pnv_pci_set_power_state(uint64_t id, uint8_t state,
- 				   struct opal_msg *msg);
+diff --git a/arch/powerpc/include/asm/vas.h b/arch/powerpc/include/asm/vas.h
+index 771456227496..9b5b7261df7b 100644
+--- a/arch/powerpc/include/asm/vas.h
++++ b/arch/powerpc/include/asm/vas.h
+@@ -167,14 +167,4 @@ int vas_copy_crb(void *crb, int offset);
+  */
+ int vas_paste_crb(struct vas_window *win, int offset, bool re);
  
--extern int pnv_pci_enable_tunnel(struct pci_dev *dev, uint64_t *asnind);
--extern int pnv_pci_disable_tunnel(struct pci_dev *dev);
- extern int pnv_pci_set_tunnel_bar(struct pci_dev *dev, uint64_t addr,
- 				  int enable);
--extern int pnv_pci_get_as_notify_info(struct task_struct *task, u32 *lpid,
--				      u32 *pid, u32 *tid);
- int pnv_phb_to_cxl_mode(struct pci_dev *dev, uint64_t mode);
- int pnv_cxl_ioda_msi_setup(struct pci_dev *dev, unsigned int hwirq,
- 			   unsigned int virq);
-diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-index 126602b4e399..6b0caa2d0425 100644
---- a/arch/powerpc/platforms/powernv/pci-ioda.c
-+++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-@@ -54,6 +54,8 @@
- static const char * const pnv_phb_names[] = { "IODA1", "IODA2", "NPU_NVLINK",
- 					      "NPU_OCAPI" };
+-/*
+- * Return a system-wide unique id for the VAS window @win.
+- */
+-extern u32 vas_win_id(struct vas_window *win);
+-
+-/*
+- * Return the power bus paste address associated with @win so the caller
+- * can map that address into their address space.
+- */
+-extern u64 vas_win_paste_addr(struct vas_window *win);
+ #endif /* __ASM_POWERPC_VAS_H */
+diff --git a/arch/powerpc/platforms/powernv/vas-window.c b/arch/powerpc/platforms/powernv/vas-window.c
+index e59e0e60e5b5..e48c44cb3a16 100644
+--- a/arch/powerpc/platforms/powernv/vas-window.c
++++ b/arch/powerpc/platforms/powernv/vas-window.c
+@@ -44,16 +44,6 @@ static void compute_paste_address(struct vas_window *window, u64 *addr, int *len
+ 	pr_debug("Txwin #%d: Paste addr 0x%llx\n", winid, *addr);
+ }
  
-+static void pnv_pci_ioda2_set_bypass(struct pnv_ioda_pe *pe, bool enable);
-+
- void pe_level_printk(const struct pnv_ioda_pe *pe, const char *level,
- 			    const char *fmt, ...)
+-u64 vas_win_paste_addr(struct vas_window *win)
+-{
+-	u64 addr;
+-
+-	compute_paste_address(win, &addr, NULL);
+-
+-	return addr;
+-}
+-EXPORT_SYMBOL(vas_win_paste_addr);
+-
+ static inline void get_hvwc_mmio_bar(struct vas_window *window,
+ 			u64 *start, int *len)
  {
-@@ -2360,7 +2362,7 @@ static long pnv_pci_ioda2_set_window(struct iommu_table_group *table_group,
+@@ -1268,12 +1258,3 @@ int vas_win_close(struct vas_window *window)
  	return 0;
  }
- 
--void pnv_pci_ioda2_set_bypass(struct pnv_ioda_pe *pe, bool enable)
-+static void pnv_pci_ioda2_set_bypass(struct pnv_ioda_pe *pe, bool enable)
- {
- 	uint16_t window_id = (pe->pe_number << 1 ) + 1;
- 	int64_t rc;
-diff --git a/arch/powerpc/platforms/powernv/pci.c b/arch/powerpc/platforms/powernv/pci.c
-index 8d28f2932c3b..fc69f5611020 100644
---- a/arch/powerpc/platforms/powernv/pci.c
-+++ b/arch/powerpc/platforms/powernv/pci.c
-@@ -868,54 +868,6 @@ struct device_node *pnv_pci_get_phb_node(struct pci_dev *dev)
+ EXPORT_SYMBOL_GPL(vas_win_close);
+-
+-/*
+- * Return a system-wide unique window id for the window @win.
+- */
+-u32 vas_win_id(struct vas_window *win)
+-{
+-	return encode_pswid(win->vinst->vas_id, win->winid);
+-}
+-EXPORT_SYMBOL_GPL(vas_win_id);
+diff --git a/arch/powerpc/platforms/powernv/vas.h b/arch/powerpc/platforms/powernv/vas.h
+index f5493dbdd7ff..551affaddd59 100644
+--- a/arch/powerpc/platforms/powernv/vas.h
++++ b/arch/powerpc/platforms/powernv/vas.h
+@@ -448,26 +448,6 @@ static inline u64 read_hvwc_reg(struct vas_window *win,
+ 	return in_be64(win->hvwc_map+reg);
  }
- EXPORT_SYMBOL(pnv_pci_get_phb_node);
  
--int pnv_pci_enable_tunnel(struct pci_dev *dev, u64 *asnind)
+-/*
+- * Encode/decode the Partition Send Window ID (PSWID) for a window in
+- * a way that we can uniquely identify any window in the system. i.e.
+- * we should be able to locate the 'struct vas_window' given the PSWID.
+- *
+- *	Bits	Usage
+- *	0:7	VAS id (8 bits)
+- *	8:15	Unused, 0 (3 bits)
+- *	16:31	Window id (16 bits)
+- */
+-static inline u32 encode_pswid(int vasid, int winid)
 -{
--	struct device_node *np;
--	const __be32 *prop;
--	struct pnv_ioda_pe *pe;
--	uint16_t window_id;
--	int rc;
+-	u32 pswid = 0;
 -
--	if (!radix_enabled())
--		return -ENXIO;
+-	pswid |= vasid << (31 - 7);
+-	pswid |= winid;
 -
--	if (!(np = pnv_pci_get_phb_node(dev)))
--		return -ENXIO;
--
--	prop = of_get_property(np, "ibm,phb-indications", NULL);
--	of_node_put(np);
--
--	if (!prop || !prop[1])
--		return -ENXIO;
--
--	*asnind = (u64)be32_to_cpu(prop[1]);
--	pe = pnv_ioda_get_pe(dev);
--	if (!pe)
--		return -ENODEV;
--
--	/* Increase real window size to accept as_notify messages. */
--	window_id = (pe->pe_number << 1 ) + 1;
--	rc = opal_pci_map_pe_dma_window_real(pe->phb->opal_id, pe->pe_number,
--					     window_id, pe->tce_bypass_base,
--					     (uint64_t)1 << 48);
--	return opal_error_code(rc);
+-	return pswid;
 -}
--EXPORT_SYMBOL_GPL(pnv_pci_enable_tunnel);
 -
--int pnv_pci_disable_tunnel(struct pci_dev *dev)
--{
--	struct pnv_ioda_pe *pe;
--
--	pe = pnv_ioda_get_pe(dev);
--	if (!pe)
--		return -ENODEV;
--
--	/* Restore default real window size. */
--	pnv_pci_ioda2_set_bypass(pe, true);
--	return 0;
--}
--EXPORT_SYMBOL_GPL(pnv_pci_disable_tunnel);
--
- int pnv_pci_set_tunnel_bar(struct pci_dev *dev, u64 addr, int enable)
+ static inline void decode_pswid(u32 pswid, int *vasid, int *winid)
  {
- 	__be64 val;
-@@ -970,29 +922,6 @@ int pnv_pci_set_tunnel_bar(struct pci_dev *dev, u64 addr, int enable)
- }
- EXPORT_SYMBOL_GPL(pnv_pci_set_tunnel_bar);
- 
--#ifdef CONFIG_PPC64	/* for thread.tidr */
--int pnv_pci_get_as_notify_info(struct task_struct *task, u32 *lpid, u32 *pid,
--			       u32 *tid)
--{
--	struct mm_struct *mm = NULL;
--
--	if (task == NULL)
--		return -EINVAL;
--
--	mm = get_task_mm(task);
--	if (mm == NULL)
--		return -EINVAL;
--
--	*pid = mm->context.id;
--	mmput(mm);
--
--	*tid = task->thread.tidr;
--	*lpid = mfspr(SPRN_LPID);
--	return 0;
--}
--EXPORT_SYMBOL_GPL(pnv_pci_get_as_notify_info);
--#endif
--
- void pnv_pci_shutdown(void)
- {
- 	struct pci_controller *hose;
-diff --git a/arch/powerpc/platforms/powernv/pci.h b/arch/powerpc/platforms/powernv/pci.h
-index 4f11c077af62..469c24463247 100644
---- a/arch/powerpc/platforms/powernv/pci.h
-+++ b/arch/powerpc/platforms/powernv/pci.h
-@@ -195,7 +195,6 @@ extern int pnv_setup_msi_irqs(struct pci_dev *pdev, int nvec, int type);
- extern void pnv_teardown_msi_irqs(struct pci_dev *pdev);
- extern struct pnv_ioda_pe *pnv_ioda_get_pe(struct pci_dev *dev);
- extern void pnv_set_msi_irq_chip(struct pnv_phb *phb, unsigned int virq);
--extern void pnv_pci_ioda2_set_bypass(struct pnv_ioda_pe *pe, bool enable);
- extern unsigned long pnv_pci_ioda2_get_table_size(__u32 page_shift,
- 		__u64 window_size, __u32 levels);
- extern int pnv_eeh_post_init(void);
+ 	if (vasid)
 -- 
 2.20.1
 
