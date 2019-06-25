@@ -2,105 +2,54 @@ Return-Path: <SRS0=GBvC=UY=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0C6EBC48BD5
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Jun 2019 21:24:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5928BC48BD5
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Jun 2019 22:49:05 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 8C87B205F4
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Jun 2019 21:24:18 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8C87B205F4
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 83F2020645
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Jun 2019 22:49:04 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 83F2020645
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linutronix.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45YK0w6JGGzDqXf
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Jun 2019 07:24:16 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45YJCP1yjBzDqT8
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jun 2019 06:48:17 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45YLtj5hv9zDqM4
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Jun 2019 08:49:01 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 45YJCN43Mqz8t9D
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jun 2019 06:48:16 +1000 (AEST)
-Received: by ozlabs.org (Postfix)
- id 45YJCN2mZHz9s5c; Wed, 26 Jun 2019 06:48:16 +1000 (AEST)
-Authentication-Results: ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
- (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=hbathini@linux.ibm.com; receiver=<UNKNOWN>)
-Authentication-Results: ozlabs.org;
- dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ spf=none (mailfrom) smtp.mailfrom=linutronix.de
+ (client-ip=2a0a:51c0:0:12e:550::1; helo=galois.linutronix.de;
+ envelope-from=tglx@linutronix.de; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=linutronix.de
+Received: from Galois.linutronix.de (Galois.linutronix.de
+ [IPv6:2a0a:51c0:0:12e:550::1])
+ (using TLSv1.2 with cipher DHE-RSA-AES256-SHA256 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 45YJCM4vXWz9s3l
- for <linuxppc-dev@ozlabs.org>; Wed, 26 Jun 2019 06:48:15 +1000 (AEST)
-Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x5PKl2uP083394
- for <linuxppc-dev@ozlabs.org>; Tue, 25 Jun 2019 16:48:13 -0400
-Received: from e06smtp05.uk.ibm.com (e06smtp05.uk.ibm.com [195.75.94.101])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2tbrybcj1c-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@ozlabs.org>; Tue, 25 Jun 2019 16:48:12 -0400
-Received: from localhost
- by e06smtp05.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <hbathini@linux.ibm.com>;
- Tue, 25 Jun 2019 21:48:10 +0100
-Received: from b06cxnps4075.portsmouth.uk.ibm.com (9.149.109.197)
- by e06smtp05.uk.ibm.com (192.168.101.135) with IBM ESMTP SMTP Gateway:
- Authorized Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Tue, 25 Jun 2019 21:48:07 +0100
-Received: from b06wcsmtp001.portsmouth.uk.ibm.com
- (b06wcsmtp001.portsmouth.uk.ibm.com [9.149.105.160])
- by b06cxnps4075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x5PKm6hj55967968
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Tue, 25 Jun 2019 20:48:06 GMT
-Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 321AAA405B;
- Tue, 25 Jun 2019 20:48:06 +0000 (GMT)
-Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 1622EA4066;
- Tue, 25 Jun 2019 20:48:04 +0000 (GMT)
-Received: from hbathini.in.ibm.com (unknown [9.102.0.234])
- by b06wcsmtp001.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Tue, 25 Jun 2019 20:48:03 +0000 (GMT)
-Subject: [PATCH v3 16/16] powernv/fadump: update documentation about option
- to release opalcore
-From: Hari Bathini <hbathini@linux.ibm.com>
-To: linuxppc-dev <linuxppc-dev@ozlabs.org>
-Date: Wed, 26 Jun 2019 02:18:03 +0530
-In-Reply-To: <156149548694.9094.3211954809582123798.stgit@hbathini.in.ibm.com>
-References: <156149548694.9094.3211954809582123798.stgit@hbathini.in.ibm.com>
-User-Agent: StGit/0.17.1-dirty
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45YLrc0zbBzDqXR
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jun 2019 08:47:11 +1000 (AEST)
+Received: from p5b06daab.dip0.t-ipconnect.de ([91.6.218.171] helo=nanos)
+ by Galois.linutronix.de with esmtpsa (TLS1.2:DHE_RSA_AES_256_CBC_SHA256:256)
+ (Exim 4.80) (envelope-from <tglx@linutronix.de>)
+ id 1hfuC6-0002Ou-9G; Wed, 26 Jun 2019 00:45:42 +0200
+Date: Wed, 26 Jun 2019 00:45:41 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Hoan Tran OS <hoan@os.amperecomputing.com>
+Subject: Re: [PATCH 3/5] x86: Kconfig: Remove CONFIG_NODES_SPAN_OTHER_NODES
+In-Reply-To: <1561501810-25163-4-git-send-email-Hoan@os.amperecomputing.com>
+Message-ID: <alpine.DEB.2.21.1906260032250.32342@nanos.tec.linutronix.de>
+References: <1561501810-25163-1-git-send-email-Hoan@os.amperecomputing.com>
+ <1561501810-25163-4-git-send-email-Hoan@os.amperecomputing.com>
+User-Agent: Alpine 2.21 (DEB 202 2017-01-01)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-X-TM-AS-GCONF: 00
-x-cbid: 19062520-0020-0000-0000-0000034D57A6
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19062520-0021-0000-0000-000021A0C90A
-Message-Id: <156149568309.9094.13654955387024370626.stgit@hbathini.in.ibm.com>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2019-06-25_13:, , signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1810050000 definitions=main-1906250158
+Content-Type: text/plain; charset=US-ASCII
+X-Linutronix-Spam-Score: -1.0
+X-Linutronix-Spam-Level: -
+X-Linutronix-Spam-Status: No , -1.0 points, 5.0 required, ALL_TRUSTED=-1,
+ SHORTCIRCUIT=-0.0001
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -112,59 +61,81 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Ananth N Mavinakayanahalli <ananth@linux.ibm.com>,
- Mahesh J Salgaonkar <mahesh@linux.ibm.com>,
- Vasant Hegde <hegdevasant@linux.ibm.com>, Oliver <oohall@gmail.com>,
- Nicholas Piggin <npiggin@gmail.com>, Stewart Smith <stewart@linux.ibm.com>,
- Daniel Axtens <dja@axtens.net>
+Cc: Michal Hocko <mhocko@suse.com>, Catalin Marinas <catalin.marinas@arm.com>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>,
+ "open list:MEMORY MANAGEMENT" <linux-mm@kvack.org>,
+ Paul Mackerras <paulus@samba.org>, "H . Peter Anvin" <hpa@zytor.com>,
+ "sparclinux@vger.kernel.org" <sparclinux@vger.kernel.org>,
+ Alexander Duyck <alexander.h.duyck@linux.intel.com>,
+ "linux-s390@vger.kernel.org" <linux-s390@vger.kernel.org>,
+ "x86@kernel.org" <x86@kernel.org>, Mike Rapoport <rppt@linux.ibm.com>,
+ Christian Borntraeger <borntraeger@de.ibm.com>, Ingo Molnar <mingo@redhat.com>,
+ Vlastimil Babka <vbabka@suse.cz>,
+ Open Source Submission <patches@amperecomputing.com>,
+ Pavel Tatashin <pavel.tatashin@microsoft.com>,
+ Vasily Gorbik <gor@linux.ibm.com>, Will Deacon <will.deacon@arm.com>,
+ Borislav Petkov <bp@alien8.de>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
+ Oscar Salvador <osalvador@suse.de>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "David S . Miller" <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-With /proc/opalcore support available on OPAL based machines and an
-option to release memory used by kernel in exporting /proc/opalcore,
-update FADump documentation with these details.
+Hoan,
 
-Signed-off-by: Hari Bathini <hbathini@linux.ibm.com>
----
- Documentation/powerpc/firmware-assisted-dump.txt |   19 +++++++++++++++++++
- 1 file changed, 19 insertions(+)
+On Tue, 25 Jun 2019, Hoan Tran OS wrote:
 
-diff --git a/Documentation/powerpc/firmware-assisted-dump.txt b/Documentation/powerpc/firmware-assisted-dump.txt
-index fa35593..5c7da42 100644
---- a/Documentation/powerpc/firmware-assisted-dump.txt
-+++ b/Documentation/powerpc/firmware-assisted-dump.txt
-@@ -107,6 +107,16 @@ capture kernel boot to process this crash data. Kernel config
- option CONFIG_PRESERVE_FA_DUMP has to be enabled on such kernel
- to ensure that crash data is preserved to process later.
- 
-+-- On OPAL based machines (PowerNV), if the kernel is build with
-+   CONFIG_OPAL_CORE=y, OPAL memory at the time of crash is also
-+   exported as /sys/kernel/opal/core file. This procfs file is
-+   helpful in debugging OPAL crashes with GDB. The kernel memory
-+   used for exporting this procfs file can be released by echo'ing
-+   '1' to /sys/kernel/fadump_release_opalcore node.
-+
-+   e.g.
-+     # echo 1 > /sys/kernel/fadump_release_opalcore
-+
- Implementation details:
- ----------------------
- 
-@@ -260,6 +270,15 @@ Here is the list of files under kernel sysfs:
-     enhanced to use this interface to release the memory reserved for
-     dump and continue without 2nd reboot.
- 
-+ /sys/kernel/fadump_release_opalcore
-+
-+    This file is available only on OPAL based machines when FADump is
-+    active during capture kernel. This is used to release the memory
-+    used by the kernel to export /sys/kernel/opal/core file. To release
-+    this memory, echo '1' to it:
-+
-+    echo 1  > /sys/kernel/fadump_release_opalcore
-+
- Here is the list of files under powerpc debugfs:
- (Assuming debugfs is mounted on /sys/kernel/debug directory.)
- 
+Please use 'x86/Kconfig: ' as prefix.
 
+> This patch removes CONFIG_NODES_SPAN_OTHER_NODES as it's
+> enabled by default with NUMA.
+
+Please do not use 'This patch' in changelogs. It's pointless because we
+already know that this is a patch.
+
+See also Documentation/process/submitting-patches.rst and search for 'This
+patch'
+
+Simply say:
+
+  Remove CONFIG_NODES_SPAN_OTHER_NODES as it's enabled by default with
+  NUMA.
+
+But .....
+
+> @@ -1567,15 +1567,6 @@ config X86_64_ACPI_NUMA
+>  	---help---
+>  	  Enable ACPI SRAT based node topology detection.
+>  
+> -# Some NUMA nodes have memory ranges that span
+> -# other nodes.  Even though a pfn is valid and
+> -# between a node's start and end pfns, it may not
+> -# reside on that node.  See memmap_init_zone()
+> -# for details.
+> -config NODES_SPAN_OTHER_NODES
+> -	def_bool y
+> -	depends on X86_64_ACPI_NUMA
+
+the changelog does not mention that this lifts the dependency on
+X86_64_ACPI_NUMA and therefore enables that functionality for anything
+which has NUMA enabled including 32bit.
+
+The core mm change gives no helpful information either. You just copied the
+above comment text from some random Kconfig.
+
+This needs a bit more data in the changelogs and the cover letter:
+
+     - Why is it useful to enable it unconditionally
+
+     - Why is it safe to do so, even if the architecture had constraints on
+       it
+
+     - What's the potential impact
+
+Thanks,
+
+	tglx
