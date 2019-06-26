@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-8.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
 	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4963AC48BD8
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Jun 2019 14:16:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 18A2DC48BD6
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Jun 2019 14:20:23 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id D0D672147A
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Jun 2019 14:16:25 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D0D672147A
+	by mail.kernel.org (Postfix) with ESMTPS id 9ACD02147A
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Jun 2019 14:20:22 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9ACD02147A
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45YlSk3JN0zDqX9
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Jun 2019 00:16:22 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45YlYH0d27zDqY7
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Jun 2019 00:20:19 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
  (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
@@ -29,59 +29,60 @@ Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45YlCK4ch8zDqZC
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jun 2019 00:04:45 +1000 (AEST)
-Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45YlCM2Z8szDqXl
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jun 2019 00:04:46 +1000 (AEST)
+Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
  by mx0b-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x5QE40J3038072
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jun 2019 10:04:42 -0400
-Received: from e06smtp03.uk.ibm.com (e06smtp03.uk.ibm.com [195.75.94.99])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2tc9my1jg3-1
+ x5QE2aWT029556
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jun 2019 10:04:44 -0400
+Received: from e06smtp04.uk.ibm.com (e06smtp04.uk.ibm.com [195.75.94.100])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2tca1dgeau-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jun 2019 10:04:41 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jun 2019 10:04:42 -0400
 Received: from localhost
- by e06smtp03.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp04.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <vaibhav@linux.ibm.com>;
- Wed, 26 Jun 2019 15:04:25 +0100
-Received: from b06cxnps3075.portsmouth.uk.ibm.com (9.149.109.195)
- by e06smtp03.uk.ibm.com (192.168.101.133) with IBM ESMTP SMTP Gateway:
+ Wed, 26 Jun 2019 15:04:30 +0100
+Received: from b06cxnps4075.portsmouth.uk.ibm.com (9.149.109.197)
+ by e06smtp04.uk.ibm.com (192.168.101.134) with IBM ESMTP SMTP Gateway:
  Authorized Use Only! Violators will be prosecuted; 
  (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Wed, 26 Jun 2019 15:04:22 +0100
+ Wed, 26 Jun 2019 15:04:27 +0100
 Received: from d06av21.portsmouth.uk.ibm.com (d06av21.portsmouth.uk.ibm.com
  [9.149.105.232])
- by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x5QE4LmE48496800
+ by b06cxnps4075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x5QE4QrA58851532
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Wed, 26 Jun 2019 14:04:21 GMT
+ Wed, 26 Jun 2019 14:04:26 GMT
 Received: from d06av21.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 53CEA5204F;
- Wed, 26 Jun 2019 14:04:21 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 3F19D52051;
+ Wed, 26 Jun 2019 14:04:26 +0000 (GMT)
 Received: from vajain21.in.ibm.com (unknown [9.109.195.183])
- by d06av21.portsmouth.uk.ibm.com (Postfix) with ESMTP id 592BD5204E;
- Wed, 26 Jun 2019 14:04:19 +0000 (GMT)
+ by d06av21.portsmouth.uk.ibm.com (Postfix) with ESMTP id 6AB9E5204F;
+ Wed, 26 Jun 2019 14:04:24 +0000 (GMT)
 From: Vaibhav Jain <vaibhav@linux.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v3 1/3] powerpc/pseries: Update SCM hcall op-codes in hvcall.h
-Date: Wed, 26 Jun 2019 19:34:02 +0530
+Subject: [PATCH v3 3/3] powerpc/papr_scm: Force a scm-unbind if initial
+ scm-bind fails
+Date: Wed, 26 Jun 2019 19:34:04 +0530
 X-Mailer: git-send-email 2.21.0
 In-Reply-To: <20190626140404.27448-1-vaibhav@linux.ibm.com>
 References: <20190626140404.27448-1-vaibhav@linux.ibm.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-x-cbid: 19062614-0012-0000-0000-0000032C9762
+x-cbid: 19062614-0016-0000-0000-0000028C8D8E
 X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19062614-0013-0000-0000-00002165D1B6
-Message-Id: <20190626140404.27448-2-vaibhav@linux.ibm.com>
+x-cbparentid: 19062614-0017-0000-0000-000032EA0673
+Message-Id: <20190626140404.27448-4-vaibhav@linux.ibm.com>
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
  definitions=2019-06-26_07:, , signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
  priorityscore=1501
  malwarescore=0 suspectscore=1 phishscore=0 bulkscore=0 spamscore=0
  clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=698 adultscore=0 classifier=spam adjust=0 reason=mlx
+ mlxlogscore=961 adultscore=0 classifier=spam adjust=0 reason=mlx
  scancount=1 engine=8.0.1-1810050000 definitions=main-1906260168
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -102,45 +103,76 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Update the hvcalls.h to include op-codes for new hcalls introduce to
-manage SCM memory. Also update existing hcall definitions to reflect
-current papr specification for SCM.
+In some cases initial bind of scm memory for an lpar can fail if
+previously it wasn't released using a scm-unbind hcall. This situation
+can arise due to panic of the previous kernel or forced lpar
+fadump. In such cases the H_SCM_BIND_MEM return a H_OVERLAP error.
 
+To mitigate such cases the patch updates papr_scm_probe() to force a
+call to drc_pmem_unbind() in case the initial bind of scm memory fails
+with EBUSY error. In case scm-bind operation again fails after the
+forced scm-unbind then we follow the existing error path. We also
+update drc_pmem_bind() to handle the H_OVERLAP error returned by phyp
+and indicate it as a EBUSY error back to the caller.
+
+Suggested-by: "Oliver O'Halloran" <oohall@gmail.com>
 Signed-off-by: Vaibhav Jain <vaibhav@linux.ibm.com>
+Reviewed-by: Oliver O'Halloran <oohall@gmail.com>
 ---
 Change-log:
-
 v3:
-* Added updated opcode for H_SCM_HEALTH [Oliver]
+* Minor update to a code comment. [Oliver]
 
 v2:
-* None new patch in this series.
+* Moved the retry code from drc_pmem_bind() to papr_scm_probe()
+  [Oliver]
+* Changed the type of variable 'rc' in drc_pmem_bind() to
+  int64_t. [Oliver]
 ---
- arch/powerpc/include/asm/hvcall.h | 11 ++++++++---
- 1 file changed, 8 insertions(+), 3 deletions(-)
+ arch/powerpc/platforms/pseries/papr_scm.c | 15 ++++++++++++++-
+ 1 file changed, 14 insertions(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/include/asm/hvcall.h b/arch/powerpc/include/asm/hvcall.h
-index 463c63a9fcf1..11112023e327 100644
---- a/arch/powerpc/include/asm/hvcall.h
-+++ b/arch/powerpc/include/asm/hvcall.h
-@@ -302,9 +302,14 @@
- #define H_SCM_UNBIND_MEM        0x3F0
- #define H_SCM_QUERY_BLOCK_MEM_BINDING 0x3F4
- #define H_SCM_QUERY_LOGICAL_MEM_BINDING 0x3F8
--#define H_SCM_MEM_QUERY	        0x3FC
--#define H_SCM_BLOCK_CLEAR       0x400
--#define MAX_HCALL_OPCODE	H_SCM_BLOCK_CLEAR
-+#define H_SCM_UNBIND_ALL        0x3FC
-+#define H_SCM_HEALTH            0x400
-+#define H_SCM_PERFORMANCE_STATS 0x418
-+#define MAX_HCALL_OPCODE	H_SCM_PERFORMANCE_STATS
-+
-+/* Scope args for H_SCM_UNBIND_ALL */
-+#define H_UNBIND_SCOPE_ALL (0x1)
-+#define H_UNBIND_SCOPE_DRC (0x2)
+diff --git a/arch/powerpc/platforms/pseries/papr_scm.c b/arch/powerpc/platforms/pseries/papr_scm.c
+index c01a03fd3ee7..7c5e10c063a0 100644
+--- a/arch/powerpc/platforms/pseries/papr_scm.c
++++ b/arch/powerpc/platforms/pseries/papr_scm.c
+@@ -43,8 +43,9 @@ struct papr_scm_priv {
+ static int drc_pmem_bind(struct papr_scm_priv *p)
+ {
+ 	unsigned long ret[PLPAR_HCALL_BUFSIZE];
+-	uint64_t rc, token;
+ 	uint64_t saved = 0;
++	uint64_t token;
++	int64_t rc;
  
- /* H_VIOCTL functions */
- #define H_GET_VIOA_DUMP_SIZE	0x01
+ 	/*
+ 	 * When the hypervisor cannot map all the requested memory in a single
+@@ -64,6 +65,10 @@ static int drc_pmem_bind(struct papr_scm_priv *p)
+ 	} while (rc == H_BUSY);
+ 
+ 	if (rc) {
++		/* H_OVERLAP needs a separate error path */
++		if (rc == H_OVERLAP)
++			return -EBUSY;
++
+ 		dev_err(&p->pdev->dev, "bind err: %lld\n", rc);
+ 		return -ENXIO;
+ 	}
+@@ -331,6 +336,14 @@ static int papr_scm_probe(struct platform_device *pdev)
+ 
+ 	/* request the hypervisor to bind this region to somewhere in memory */
+ 	rc = drc_pmem_bind(p);
++
++	/* If phyp says drc memory still bound then force unbound and retry */
++	if (rc == -EBUSY) {
++		dev_warn(&pdev->dev, "Retrying bind after unbinding\n");
++		drc_pmem_unbind(p);
++		rc = drc_pmem_bind(p);
++	}
++
+ 	if (rc)
+ 		goto err;
+ 
 -- 
 2.21.0
 
