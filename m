@@ -2,43 +2,166 @@ Return-Path: <SRS0=lNhQ=UZ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	HEXHASH_WORD,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2F696C48BD9
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Jun 2019 06:57:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E51FDC4646B
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Jun 2019 07:46:54 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B16582133F
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Jun 2019 06:57:43 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B16582133F
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=telegraphics.com.au
+	by mail.kernel.org (Postfix) with ESMTPS id 657C52086D
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Jun 2019 07:46:54 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ozlabs-ru.20150623.gappssmtp.com header.i=@ozlabs-ru.20150623.gappssmtp.com header.b="YUSikd56"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 657C52086D
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ozlabs.ru
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45YYkY3KvszDqLn
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Jun 2019 16:57:41 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45YZqH6QDwzDqTV
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Jun 2019 17:46:51 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=telegraphics.com.au
- (client-ip=98.124.60.144; helo=kvm5.telegraphics.com.au;
- envelope-from=fthain@telegraphics.com.au; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=telegraphics.com.au
-Received: from kvm5.telegraphics.com.au (kvm5.telegraphics.com.au
- [98.124.60.144])
- by lists.ozlabs.org (Postfix) with ESMTP id 45YYh96HqczDqM5
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jun 2019 16:55:37 +1000 (AEST)
-Received: from localhost (localhost.localdomain [127.0.0.1])
- by kvm5.telegraphics.com.au (Postfix) with ESMTP id 69FD428F1B;
- Tue, 25 Jun 2019 22:06:16 -0400 (EDT)
-Date: Wed, 26 Jun 2019 12:06:14 +1000 (AEST)
-From: Finn Thain <fthain@telegraphics.com.au>
-To: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: Bisected regression in v5.1 on PowerBook G3 (Wallstreet)
-Message-ID: <alpine.LNX.2.21.1906261134540.121@nippy.intranet>
+ spf=pass (mailfrom) smtp.mailfrom=ozlabs.ru
+ (client-ip=2607:f8b0:4864:20::442; helo=mail-pf1-x442.google.com;
+ envelope-from=aik@ozlabs.ru; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=ozlabs.ru
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=ozlabs-ru.20150623.gappssmtp.com
+ header.i=@ozlabs-ru.20150623.gappssmtp.com header.b="YUSikd56"; 
+ dkim-atps=neutral
+Received: from mail-pf1-x442.google.com (mail-pf1-x442.google.com
+ [IPv6:2607:f8b0:4864:20::442])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45YZmt576jzDqSL
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jun 2019 17:44:44 +1000 (AEST)
+Received: by mail-pf1-x442.google.com with SMTP id p184so890125pfp.7
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jun 2019 00:44:43 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=ozlabs-ru.20150623.gappssmtp.com; s=20150623;
+ h=subject:to:cc:references:from:openpgp:autocrypt:message-id:date
+ :user-agent:mime-version:in-reply-to:content-language
+ :content-transfer-encoding;
+ bh=vy6mQVlU0KOfUw4m/PI3XEvU3SSXTjzomsJoAAMbON4=;
+ b=YUSikd56FWQc8xGu7+N89iFRIVFfFnJfbW9shaFobiuEU31hKh9P/dBmyhbiYO8TtK
+ vRV4fvOBmwfTziDIlGDdXWKdArhbgJfd4oHoM3xiKORyUM9mZFia3qDidWmXwigAOYS+
+ eAxJHvkspnNn99FSU4qx+O75H7eRo2b3Pt3WFKbJCV4OVmGEmJetVjpTIy6qGxprs1s1
+ bwCvVdME5/n3BAHv3ATey7PSHKx+8bFeZvUxEGTxC19isD2oGE5oNRGKhOqDpHhgwxMY
+ AjcRP9vbyjYZx3+SiuuGXwFYnMGCKX2q3z2xhyJzYE7Z7CGFC5/9JOxAPuIpyb+zQOog
+ KGJA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:subject:to:cc:references:from:openpgp:autocrypt
+ :message-id:date:user-agent:mime-version:in-reply-to
+ :content-language:content-transfer-encoding;
+ bh=vy6mQVlU0KOfUw4m/PI3XEvU3SSXTjzomsJoAAMbON4=;
+ b=Eqma9/MjTrTmgmoPeqaXJRSejGl3MsLiyy4kpL5WyIVd0+iSXjSUS7SBFZ6PDCxiYT
+ j7sbxIKUnnF6lYxK6rASi3W6J/CwjOnlRb2yrhk58RhQ5U5UqSPno7lYYl5ZmQSv/p3V
+ XPp6ITb6bqQ0a+I1pREP09dhOXWx8asOPH4n2WuUap24uS+xdjyEP6gcJdvx0xjiYiky
+ xDev9ARs9cGriY1n0E6PesNPLEeXvIYTt5L7Piu6ZLj9FxVS8od+mMGZZ2R5A43H7Ofj
+ Ft8QBL+GFP+rhqfYx57xc4gEc7qHY8SGHMGHIoJDmPb5mT8H8WwA42npjhaQDDjjSxUf
+ HeJg==
+X-Gm-Message-State: APjAAAWkeUABaSr5ZwPEcSm0OPKqSeurT3hMK3+Xwj3zGYhkZB3bkMXn
+ S97F/03hSQzFKfFRD7QOOC6NoA==
+X-Google-Smtp-Source: APXvYqyG4Br7cvTylP+6sGJGQvf8P0Agwv7Ni5UVSIMe7FenQ8vvwk3hzk4PyyY1pmcZ7fNeeFI+UQ==
+X-Received: by 2002:a63:fb4b:: with SMTP id w11mr1555774pgj.415.1561535081832; 
+ Wed, 26 Jun 2019 00:44:41 -0700 (PDT)
+Received: from [10.61.2.175] ([122.99.82.10])
+ by smtp.gmail.com with ESMTPSA id s66sm7959162pgs.39.2019.06.26.00.44.37
+ (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
+ Wed, 26 Jun 2019 00:44:41 -0700 (PDT)
+Subject: Re: [RFC PATCH 03/12] powerpc/prom_init: Add the ESM call to prom_init
+To: Thiago Jung Bauermann <bauerman@linux.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org
+References: <20190521044912.1375-1-bauerman@linux.ibm.com>
+ <20190521044912.1375-4-bauerman@linux.ibm.com>
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+Openpgp: preference=signencrypt
+Autocrypt: addr=aik@ozlabs.ru; keydata=
+ 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
+Message-ID: <3b45cc84-273b-b333-831c-85c501b7e78e@ozlabs.ru>
+Date: Wed, 26 Jun 2019 17:44:35 +1000
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.7.2
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+In-Reply-To: <20190521044912.1375-4-bauerman@linux.ibm.com>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -50,364 +173,238 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, Stan <userm57@yahoo.com>
+Cc: Anshuman Khandual <anshuman.linux@gmail.com>,
+ Mike Anderson <andmike@linux.ibm.com>, Ram Pai <linuxram@us.ibm.com>,
+ linux-kernel@vger.kernel.org, Claudio Carvalho <cclaudio@linux.ibm.com>,
+ Paul Mackerras <paulus@samba.org>, Christoph Hellwig <hch@lst.de>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi Christophe,
-
-I received a report of a regression between v5.0 and v5.1 which causes the 
-current release to crash during boot with a machine check exception. 
-Please see console log below.
-
-Stan (whom I've Cc'd) tells me that this happens on every attempt to boot. 
-I asked him to try 'git bisect'. The results are given below. Can you see 
-anything in commit 93c4a162b014 that might explain this?
-
-I can also provide the .config if it would help.
 
 
-$ cat bisect.log
-5.0.0-pmac-ide-03515-g3478588b5136 #2 worked
-5.0.0-pmac-ide-05504-gda2577fe63f8 #3 worked
-5.0.0-pmac-ide-06224-g67e79a6dc266 #4 worked
-5.0.0-pmac-ide-06622-g1fc1cd8399ab #5 worked
-5.0.0-rc2-pmac-ide-00215=g9580b71b5a78 #6 failed
-5.0.0-rc2-pmac-ide-00113-gfe1ef6bcdb4f #7 worked
-5.0.0-rc2-pmac-ide-00164-gd5f17ee96447 #8 failed
-5.0.0-rc2-pmac-ide-00138-g84de6ab0e904 #9 failed
-5.0.0-rc2-pmac-ide-00125-ge995265252fa #10 worked
-5.0.0-rc2-pmac-ide-00131-g93c4a162b014 #11 failed
-5.0.0-rc2-pmac-ide-00128-g36da5ff0bea2 #12 worked
+On 21/05/2019 14:49, Thiago Jung Bauermann wrote:
+> From: Ram Pai <linuxram@us.ibm.com>
+> 
+> Make the Enter-Secure-Mode (ESM) ultravisor call to switch the VM to secure
+> mode. Add "svm=" command line option to turn off switching to secure mode.
+> Introduce CONFIG_PPC_SVM to control support for secure guests.
+> 
+> Signed-off-by: Ram Pai <linuxram@us.ibm.com>
+> [ Generate an RTAS os-term hcall when the ESM ucall fails. ]
+> Signed-off-by: Michael Anderson <andmike@linux.ibm.com>
+> [ Cleaned up the code a bit. ]
+> Signed-off-by: Thiago Jung Bauermann <bauerman@linux.ibm.com>
+> ---
+>  .../admin-guide/kernel-parameters.txt         |   5 +
+>  arch/powerpc/include/asm/ultravisor-api.h     |   1 +
+>  arch/powerpc/kernel/prom_init.c               | 124 ++++++++++++++++++
+>  3 files changed, 130 insertions(+)
+> 
+> diff --git a/Documentation/admin-guide/kernel-parameters.txt b/Documentation/admin-guide/kernel-parameters.txt
+> index c45a19d654f3..7237d86b25c6 100644
+> --- a/Documentation/admin-guide/kernel-parameters.txt
+> +++ b/Documentation/admin-guide/kernel-parameters.txt
+> @@ -4501,6 +4501,11 @@
+>  			/sys/power/pm_test). Only available when CONFIG_PM_DEBUG
+>  			is set. Default value is 5.
+>  
+> +	svm=		[PPC]
+> +			Format: { on | off | y | n | 1 | 0 }
+> +			This parameter controls use of the Protected
+> +			Execution Facility on pSeries.
+> +
+>  	swapaccount=[0|1]
+>  			[KNL] Enable accounting of swap in memory resource
+>  			controller if no parameter or 1 is given or disable
+> diff --git a/arch/powerpc/include/asm/ultravisor-api.h b/arch/powerpc/include/asm/ultravisor-api.h
+> index 15e6ce77a131..0e8b72081718 100644
+> --- a/arch/powerpc/include/asm/ultravisor-api.h
+> +++ b/arch/powerpc/include/asm/ultravisor-api.h
+> @@ -19,6 +19,7 @@
+>  
+>  /* opcodes */
+>  #define UV_WRITE_PATE			0xF104
+> +#define UV_ESM				0xF110
+>  #define UV_RETURN			0xF11C
+>  
+>  #endif /* _ASM_POWERPC_ULTRAVISOR_API_H */
+> diff --git a/arch/powerpc/kernel/prom_init.c b/arch/powerpc/kernel/prom_init.c
+> index 523bb99d7676..5d8a3efb54f2 100644
+> --- a/arch/powerpc/kernel/prom_init.c
+> +++ b/arch/powerpc/kernel/prom_init.c
+> @@ -44,6 +44,7 @@
+>  #include <asm/sections.h>
+>  #include <asm/machdep.h>
+>  #include <asm/asm-prototypes.h>
+> +#include <asm/ultravisor-api.h>
+>  
+>  #include <linux/linux_logo.h>
+>  
+> @@ -174,6 +175,10 @@ static unsigned long __prombss prom_tce_alloc_end;
+>  static bool __prombss prom_radix_disable;
+>  #endif
+>  
+> +#ifdef CONFIG_PPC_SVM
+> +static bool __prombss prom_svm_disable;
+> +#endif
+> +
+>  struct platform_support {
+>  	bool hash_mmu;
+>  	bool radix_mmu;
+> @@ -809,6 +814,17 @@ static void __init early_cmdline_parse(void)
+>  	if (prom_radix_disable)
+>  		prom_debug("Radix disabled from cmdline\n");
+>  #endif /* CONFIG_PPC_PSERIES */
+> +
+> +#ifdef CONFIG_PPC_SVM
+> +	opt = prom_strstr(prom_cmd_line, "svm=");
+> +	if (opt) {
+> +		bool val;
+> +
+> +		opt += sizeof("svm=") - 1;
+> +		if (!prom_strtobool(opt, &val))
+> +			prom_svm_disable = !val;
+> +	}
+> +#endif /* CONFIG_PPC_SVM */
+>  }
+>  
+>  #ifdef CONFIG_PPC_PSERIES
+> @@ -1707,6 +1723,43 @@ static void __init prom_close_stdin(void)
+>  	}
+>  }
+>  
+> +#ifdef CONFIG_PPC_SVM
+> +static int prom_rtas_os_term_hcall(uint64_t args)
 
 
-93c4a162b014d238a287f8264adb25c009c79e61 is the first bad commit
-commit 93c4a162b014d238a287f8264adb25c009c79e61
-Author: Christophe Leroy <christophe.leroy@c-s.fr>
-Date:   Thu Feb 21 10:37:55 2019 +0000
-
-    powerpc/6xx: Store PGDIR physical address in a SPRG
-
-    Use SPRN_SPRG2 to store the current thread PGDIR and
-    avoid reading thread_struct.pgdir at every TLB miss.
-
-    Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
-    Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
-
-:040000 040000 dcd7171dff5ba5bf895e4399d9d859c91c5a8293
-c51e7def7720499289420ace421cf755bf3bf37e M      arch
+This is just an rtas hcall, nothing special about "os-term".
 
 
-[    0.000000] printk: debug: ignoring loglevel setting.
-[    0.000000] Total memory = 512MB; using 1024kB for hash table (at (ptrval))
-[    0.000000] Linux version 5.1.0-pmac-ide (fthain@nippy) (gcc version 4.6.4 (btc)) #1 SMP Sun Jun 23 14:46:26 AEST 2019
-[    0.000000] Found a Gatwick mac-io controller, rev: 0, mapped at 0x(ptrval)
-[    0.000000] Found a Heathrow mac-io controller, rev: 0, mapped at 0x(ptrval)
-[    0.000000] PowerMac motherboard: PowerBook Wallstreet
-[    0.000000] PMU driver v2 initialized for PowerBook G3 Series, firmware: 0a
-[    0.000000] Using PowerMac machine description
-[    0.000000] printk: bootconsole [udbg0] enabled
-[    0.000000] CPU maps initialized for 1 thread per core
-[    0.000000]  (thread shift is 0)
-[    0.000000] -----------------------------------------------------
-[    0.000000] Hash_size         = 0x100000
-[    0.000000] phys_mem_size     = 0x20000000
-[    0.000000] dcache_bsize      = 0x20
-[    0.000000] icache_bsize      = 0x20
-[    0.000000] cpu_features      = 0x000000000501a008
-[    0.000000]   possible        = 0x000000002f7ff14b
-[    0.000000]   always          = 0x0000000001000000
-[    0.000000] cpu_user_features = 0x8c000001 0x00000000
-[    0.000000] mmu_features      = 0x00000001
-[    0.000000] Hash              = 0x(ptrval)
-[    0.000000] Hash_mask         = 0x3fff
-[    0.000000] -----------------------------------------------------
-[    0.000000] Found Grackle (MPC106) PCI host bridge at 0x0000000080000000. Firmware bus number: 0->0
-[    0.000000] PCI host bridge /pci (primary) ranges:
-[    0.000000]   IO 0x00000000fe000000..0x00000000fe7fffff -> 0x0000000000000000
-[    0.000000]  MEM 0x00000000fd000000..0x00000000fdffffff -> 0x0000000000000000 
-[    0.000000]  MEM 0x0000000080000000..0x00000000fcffffff -> 0x0000000080000000 
-[    0.000000] nvram: OF partition at 0x1800
-[    0.000000] nvram: XP partition at 0x1300
-[    0.000000] nvram: NR partition at 0x1400
-[    0.000000] Top of RAM: 0x20000000, Total RAM: 0x20000000
-[    0.000000] Memory hole size: 0MB
-[    0.000000] Zone ranges:
-[    0.000000]   Normal   [mem 0x0000000000000000-0x000000001fffffff]
-[    0.000000]   HighMem  empty
-[    0.000000] Movable zone start for each node
-[    0.000000] Early memory node ranges
-[    0.000000]   node   0: [mem 0x0000000000000000-0x000000001fffffff]
-[    0.000000] Initmem setup node 0 [mem 0x0000000000000000-0x000000001fffffff]
-[    0.000000] On node 0 totalpages: 131072
-[    0.000000]   Normal zone: 1024 pages used for memmap
-[    0.000000]   Normal zone: 0 pages reserved
-[    0.000000]   Normal zone: 131072 pages, LIFO batch:31
-[    0.000000] percpu: Embedded 14 pages/cpu s24972 r8192 d24180 u57344
-[    0.000000] pcpu-alloc: s24972 r8192 d24180 u57344 alloc=14*4096
-[    0.000000] pcpu-alloc: [0] 0 [0] 1 
-[    0.000000] Built 1 zonelists, mobility grouping on.  Total pages: 130048
-[    0.000000] Kernel command line: root=/dev/hda11 video=atyfb:vmode:14,cmode:32 ignore_loglevel printk.time console=ttyS0,9600n8 console=tty
-[    0.000000] Dentry cache hash table entries: 65536 (order: 6, 262144 bytes)
-[    0.000000] Inode-cache hash table entries: 32768 (order: 5, 131072 bytes)
-[    0.000000] Memory: 503332K/524288K available (5468K kernel code, 272K rwdata, 1364K rodata, 264K init, 182K bss, 20956K reserved, 0K cma-reserved, 0K highmem)
-[    0.000000] Kernel virtual memory layout:
-[    0.000000]   * 0xfffbf000..0xfffff000  : fixmap
-[    0.000000]   * 0xff800000..0xffc00000  : highmem PTEs
-[    0.000000]   * 0xfeefb000..0xff800000  : early ioremap
-[    0.000000]   * 0xe1000000..0xfeefb000  : vmalloc & ioremap
-[    0.000000] rcu: Hierarchical RCU implementation.
-[    0.000000] rcu: RCU calculated value of scheduler-enlistment delay is 10 jiffies.
-[    0.000000] NR_IRQS: 512, nr_irqs: 512, preallocated irqs: 16
-[    0.000000] irq: Found primary Apple PIC /pci/mac-io for 64 irqs
-[    0.000000] irq: Found slave Apple PIC /pci/mac-io for 64 irqs cascade: 27
-[    0.000000] irq: System has 128 possible interrupts
-[    0.000000] GMT Delta read from XPRAM: -360 minutes, DST: on
-[    0.000000] time_init: decrementer frequency = 16.671483 MHz
-[    0.000000] time_init: processor frequency   = 264.000000 MHz
-[    0.000064] clocksource: timebase: mask: 0xffffffffffffffff max_cycles: 0x3d84ef27e, max_idle_ns: 440795202259 ns
-[    0.000100] clocksource: timebase mult[3bfb9003] shift[24] registered
-[    0.000195] clockevent: decrementer mult[4449512] shift[32] cpu[0]
-[    0.001150] Console: colour dummy device 80x25
-[    0.001193] printk: console [tty0] enabled
-[    0.001239] printk: bootconsole [udbg0] disabled
-[    0.001625] pmac_zilog: serial modem detected
-[    4.977278] printk: console [ttyS0] enabled
-[    5.027516] pid_max: default: 32768 minimum: 301
-[    5.083376] Mount-cache hash table entries: 1024 (order: 0, 4096 bytes)
-[    5.162419] Mountpoint-cache hash table entries: 1024 (order: 0, 4096 bytes)
-[    5.248523] *** VALIDATE proc ***
-[    5.287109] *** VALIDATE cgroup1 ***
-[    5.329716] *** VALIDATE cgroup2 ***
-[    5.375172] rcu: Hierarchical SRCU implementation.
-[    5.431972] smp: Bringing up secondary CPUs ...
-[    5.484998] smp: Brought up 1 node, 1 CPU
-[    5.533075] Using standard scheduler topology
-[    5.586632] devtmpfs: initialized
-[    5.625731] Duplicate name in PowerPC,750, renamed to "l2-cache#1"
-[    5.702735] Duplicate name in pci, renamed to "mac-io#1"
-[    5.766262] Duplicate name in pci, renamed to "pccard#1"
-[    5.830071] random: get_random_u32 called from bucket_table_alloc+0x94/0x1c4 with crng_init=0
-[    5.932144] clocksource: jiffies: mask: 0xffffffff max_cycles: 0xffffffff, max_idle_ns: 19112604462750000 ns
-[    6.049531] futex hash table entries: 512 (order: 2, 16384 bytes)
-[    6.123224] NET: Registered protocol family 16
-[    6.181111] PMU i2c /pci/mac-io/via-pmu
-[    6.226470]  channel 1 bus <multibus>
-[    6.269024]  channel 2 bus <multibus>
-[    6.315157] PCI: Probing PCI hardware
-[    6.358004] PCI host bridge to bus 0000:00
-[    6.406370] pci_bus 0000:00: root bus resource [io  0x0000-0x7fffff]
-[    6.482602] pci_bus 0000:00: root bus resource [mem 0xfd000000-0xfdffffff] (bus address [0x00000000-0x00ffffff])
-[    6.604898] pci_bus 0000:00: root bus resource [mem 0x80000000-0xfcffffff]
-[    6.687515] pci_bus 0000:00: root bus resource [bus 00-ff]
-[    6.753382] pci_bus 0000:00: busn_res: [bus 00-ff] end is updated to ff
-[    6.833106] pci 0000:00:00.0: [1057:0002] type 00 class 0x060000
-[    6.906583] pci 0000:00:0d.0: [106b:0017] type 00 class 0xff0000
-[    6.977163] pci 0000:00:0d.0: reg 0x10: [mem 0xf4000000-0xf407ffff]
-[    7.053429] pci 0000:00:10.0: [106b:0017] type 00 class 0xff0000
-[    7.124631] pci 0000:00:10.0: reg 0x10: [mem 0xf3000000-0xf307ffff]
-[    7.200827] pci 0000:00:11.0: [1002:4c50] type 00 class 0x038000
-[    7.272082] pci 0000:00:11.0: reg 0x10: [mem 0x82000000-0x82ffffff]
-[    7.347336] pci 0000:00:11.0: reg 0x14: [io  0x0400-0x04ff]
-[    7.414246] pci 0000:00:11.0: reg 0x18: [mem 0x82fff000-0x82ffffff]
-[    7.489567] pci 0000:00:11.0: reg 0x30: [mem 0xfd000000-0xfd01ffff pref]
-[    7.570113] pci 0000:00:11.0: supports D1 D2
-[    7.622206] pci 0000:00:13.0: [104c:ac15] type 02 class 0x060700
-[    7.693527] pci 0000:00:13.0: reg 0x10: [mem 0x81803000-0x81803fff]
-[    7.769592] pci 0000:00:13.1: [104c:ac15] type 02 class 0x060700
-[    7.841140] pci 0000:00:13.1: reg 0x10: [mem 0x81802000-0x81802fff]
-[    7.918261] pci_bus 0000:01: extended config space not accessible
-[    7.990055] pci_bus 0000:01: busn_res: [bus 01-ff] end is updated to 04
-[    8.069175] pci_bus 0000:05: extended config space not accessible
-[    8.142536] pci_bus 0000:05: busn_res: [bus 05-ff] end is updated to 08
-[    8.221620] pci_bus 0000:00: busn_res: [bus 00-ff] end is updated to 08
-[    8.301308] PCI: Cannot allocate resource region 2 of device 0000:00:11.0, will remap
-[    8.395264] PCI 0000:00 Cannot reserve Legacy IO [io  0x0000-0x0fff]
-[    8.471672] pci 0000:00:13.0: BAR 9: assigned [mem 0x84000000-0x87ffffff pref]
-[    8.558317] pci 0000:00:13.0: BAR 10: assigned [mem 0x88000000-0x8bffffff]
-[    8.640898] pci 0000:00:13.1: BAR 9: assigned [mem 0x8c000000-0x8fffffff pref]
-[    8.727690] pci 0000:00:13.1: BAR 10: assigned [mem 0x90000000-0x93ffffff]
-[    8.810457] pci 0000:00:11.0: BAR 6: assigned [mem 0xfd000000-0xfd01ffff pref]
-[    8.897101] pci 0000:00:11.0: BAR 2: assigned [mem 0xfd020000-0xfd020fff]
-[    8.978667] pci 0000:00:13.0: BAR 7: assigned [io  0x1000-0x10ff]
-[    9.051864] pci 0000:00:13.0: BAR 8: assigned [io  0x1100-0x11ff]
-[    9.125064] pci 0000:00:13.1: BAR 7: assigned [io  0x1200-0x12ff]
-[    9.198269] pci 0000:00:13.1: BAR 8: assigned [io  0x1300-0x13ff]
-[    9.271483] pci 0000:00:13.0: CardBus bridge to [bus 01-04]
-[    9.338395] pci 0000:00:13.0:   bridge window [io  0x1000-0x10ff]
-[    9.411598] pci 0000:00:13.0:   bridge window [io  0x1100-0x11ff]
-[    9.484802] pci 0000:00:13.0:   bridge window [mem 0x84000000-0x87ffffff pref]
-[    9.571597] pci 0000:00:13.0:   bridge window [mem 0x88000000-0x8bffffff]
-[    9.653165] pci 0000:00:13.1: CardBus bridge to [bus 05-08]
-[    9.720086] pci 0000:00:13.1:   bridge window [io  0x1200-0x12ff]
-[    9.793366] pci 0000:00:13.1:   bridge window [io  0x1300-0x13ff]
-[    9.866498] pci 0000:00:13.1:   bridge window [mem 0x8c000000-0x8fffffff pref]
-[    9.953294] pci 0000:00:13.1:   bridge window [mem 0x90000000-0x93ffffff]
-[   10.034865] pci_bus 0000:00: resource 4 [io  0x0000-0x7fffff]
-[   10.103874] pci_bus 0000:00: resource 5 [mem 0xfd000000-0xfdffffff]
-[   10.179168] pci_bus 0000:00: resource 6 [mem 0x80000000-0xfcffffff]
-[   10.254461] pci_bus 0000:01: resource 0 [io  0x1000-0x10ff]
-[   10.321391] pci_bus 0000:01: resource 1 [io  0x1100-0x11ff]
-[   10.388316] pci_bus 0000:01: resource 2 [mem 0x84000000-0x87ffffff pref]
-[   10.468841] pci_bus 0000:01: resource 3 [mem 0x88000000-0x8bffffff]
-[   10.544134] pci_bus 0000:05: resource 0 [io  0x1200-0x12ff]
-[   10.611058] pci_bus 0000:05: resource 1 [io  0x1300-0x13ff]
-[   10.677989] pci_bus 0000:05: resource 2 [mem 0x8c000000-0x8fffffff pref]
-[   10.758507] pci_bus 0000:05: resource 3 [mem 0x90000000-0x93ffffff]
-[   10.898594] vgaarb: loaded
-[   10.931312] SCSI subsystem initialized
-[   10.975369] usbcore: registered new interface driver usbfs
-[   11.040901] usbcore: registered new interface driver hub
-[   11.104378] usbcore: registered new device driver usb
-[   11.170053] clocksource: Switched to clocksource timebase
-[   11.276916] NET: Registered protocol family 2
-[   11.330625] tcp_listen_portaddr_hash hash table entries: 512 (order: 0, 6144 bytes)
-[   11.420991] TCP established hash table entries: 4096 (order: 2, 16384 bytes)
-[   11.505653] TCP bind hash table entries: 4096 (order: 3, 32768 bytes)
-[   11.583095] TCP: Hash tables configured (established 4096 bind 4096)
-[   11.659434] UDP hash table entries: 256 (order: 1, 8192 bytes)
-[   11.729313] UDP-Lite hash table entries: 256 (order: 1, 8192 bytes)
-[   11.805155] NET: Registered protocol family 1
-[   11.857851] RPC: Registered named UNIX socket transport module.
-[   11.927797] RPC: Registered udp transport module.
-[   11.984240] RPC: Registered tcp transport module.
-[   12.040709] RPC: Registered tcp NFSv4.1 backchannel transport module.
-[   12.118278] PCI: CLS 32 bytes, default 32
-[   12.167681] Thermal assist unit 
-[   12.167688] using timers, 
-[   12.204947] shrink_timer: 200 jiffies
-[   12.285360] Initialise system trusted keyrings
-[   12.338272] workingset: timestamp_bits=30 max_order=17 bucket_order=0
-[   12.415177] squashfs: version 4.0 (2009/01/31) Phillip Lougher
-[   24.651142] Key type asymmetric registered
-[   24.698347] Asymmetric key parser 'x509' registered
-[   24.757356] Block layer SCSI generic (bsg) driver version 0.4 loaded (major 253)
-[   24.845895] io scheduler mq-deadline registered
-[   24.900069] io scheduler kyber registered
-[   24.949721] atyfb 0000:00:11.0: enabling device (0086 -> 0087)
-[   25.018669] atyfb: using auxiliary register aperture
-[   25.078882] atyfb: 3D RAGE LT PRO (Mach64 LP, PCI) [0x4c50 rev 0xdc]
-[   25.154242] atyfb: 4M SGRAM (1:1), 29.498928 MHz XTAL, 230 MHz PLL, 100 Mhz MCLK, 100 MHz XCLK
-[   25.311727] Console: switching to colour frame buffer device 128x48
-[   25.393746] atyfb: fb0: ATY Mach64 frame buffer device on PCI
-[   25.465544] pmac_zilog: 0.6 (Benjamin Herrenschmidt <benh@kernel.crashing.org>)
-[   25.553288] Non-volatile memory driver v1.3
-[   25.611564] brd: module loaded
-[   25.669889] loop: module loaded
-[   25.706428] MacIO PCI driver attached to Gatwick chipset
-[   25.769945] MacIO PCI driver attached to Heathrow chipset
-[   25.842400] swim3 0.00015000:floppy: [fd0] SWIM3 floppy controller in media bay
-[   25.932618] 0.00013020:ch-a: ttyS0 at MMIO 0xf3013020 (irq = 16, base_baud = 230400) is a Z85c30 ESCC - Serial port
-[   26.058459] 0.00013000:ch-b: ttyS1 at MMIO 0xf3013000 (irq = 17, base_baud = 230400) is a Z85c30 ESCC - Infrared port
-[   26.186786] macio: fixed media-bay irq on gatwick
-[   26.242712] macio: fixed left floppy irqs
-[   26.290523] swim3 1.00015000:floppy: [fd1] Couldn't request interrupt
-[   26.367458] swim3: probe of 1.00015000:floppy failed with error -16
-[   26.442501] macio: fixed left ide irqs
-[   26.487653] macio: fixed SCC irqs on gatwick
-[   26.539043] 1.00013020:ch-a: ttyS2 at MMIO 0xf4013020 (irq = 79, base_baud = 230400) is a Z85c30 ESCC - Internal modem
-[   26.668762] mediabay0: Registered Heathrow media-bay
-[   26.939422] mediabay1: Registered Heathrow media-bay
-[   26.997073] mediabay0: Bay contains an ATA device
-[   27.210473] PMU Backlight initialized (pmubl)
-[   27.262723] Uniform Multi-Platform E-IDE driver
-[   28.368835] ide-pmac: Found Apple Heathrow ATA controller (macio), bus ID 0, irq 30
-[   28.463347] Probing IDE interface ide0...
-[   28.869051] hda: SAMSUNG HM100JC, ATA DISK drive
-[   29.453887] random: fast init done
-[   29.570254] adb device [2]: 2 0xC3
-[   29.618380] adb device [3]: 3 0x1
-[   29.663900] adb device [7]: 7 0x1F
-[   29.720910] ADB keyboard at 2 has handler 0xC3
-[   29.776681] Detected ADB keyboard, type ANSI.
-[   29.831871] input: ADB keyboard as /devices/virtual/input/input0
-[   29.906693] hda: host max PIO4 wanted PIO255(auto-tune) selected PIO4
-[   29.986514] hda: MWDMA2 mode selected
-[   30.033814] input: ADB Powerbook buttons as /devices/virtual/input/input1
-[   30.118138] ide0 at 0xe1045000-0xe1045070,0xe1045160 on irq 30
-[   30.192469] ide-pmac: Found Apple Heathrow ATA controller (macio), bus ID 1 (mediabay), irq 36
-[   30.299391] Probing IDE interface ide1...
-[   30.412609] ADB mouse (trackpad) at 3 has handler 0x4
-[   30.476206] input: ADB mouse as /devices/virtual/input/input2
-[   30.889011] hdc: MATSHITADVD-ROM SR-8182, ATAPI CD/DVD-ROM drive
-[   31.379281] hdc: host max PIO4 wanted PIO255(auto-tune) selected PIO4
-[   31.459300] hdc: MWDMA2 mode selected
-[   31.506018] ide1 at 0xe104b000-0xe104b070,0xe104b160 on irq 36
-[   31.580403] ide-pmac: Found Apple Heathrow ATA controller (macio), bus ID 4 (mediabay), irq 36
-[   31.687369] genirq: Flags mismatch irq 36. 00000000 (ide2) vs. 00000000 (ide1)
-[   31.776841] ide2: disabled, unable to get IRQ 36
-[   31.834841] ide2: failed to initialize IDE interface
-[   31.897376] ide2: disabling port
-[   31.938867] ide-pmac: probe of 1.00021000:ata4 failed with error -1
-[   32.017021] ide-gd driver 1.18
-[   32.056731] hda: max request size: 1024KiB
-[   34.309043] hda: 195371568 sectors (100030 MB) w/8192KiB Cache, CHS=16383/255/63
-[   34.400766] hda: cache flushes supported
-[   34.463701]  hda: [mac] hda1 hda2 hda3 hda4 hda5 hda6 hda7 hda8 hda9 hda10 hda11 hda12 hda13 hda14 hda15
-[   34.589982] ide-cd driver 5.00
-[   34.633445] ide-cd: hdc: ATAPI 12X DVD-ROM drive, 512kB Cache
-[   34.705160] cdrom: Uniform CD-ROM driver Revision: 3.20
-[   34.777383] mesh: configured for synchronous 5 MB/s
-[   35.058944] mesh: performing initial bus reset...
-[   39.168977] scsi host0: MESH
-[   41.986409] eth0: BMAC at 00:05:02:07:5a:a6
-[   41.986423] 
-[   42.065206] aoe: cannot create debugfs directory
-[   42.124930] aoe: AoE v85 initialised.
-[   42.171200] ehci_hcd: USB 2.0 'Enhanced' Host Controller (EHCI) Driver
-[   42.252472] ehci-pci: EHCI PCI platform driver
-[   42.308931] ohci_hcd: USB 1.1 'Open' Host Controller (OHCI) Driver
-[   42.386046] ohci-pci: OHCI PCI platform driver
-[   42.442614] usbcore: registered new interface driver uas
-[   42.509535] usbcore: registered new interface driver usb-storage
-[   42.587749] mousedev: PS/2 mouse device common for all mice
-[   42.661012] rtc-generic rtc-generic: registered as rtc0
-[   42.727259] i2c /dev entries driver
-[   42.773732] PowerMac i2c bus pmu 2 registered
-[   42.830093] PowerMac i2c bus pmu 1 registered
-[   42.891093] usbcore: registered new interface driver usbhid
-[   42.960484] usbhid: USB HID core driver
-[   43.012330] NET: Registered protocol family 17
-[   43.068724] drmem: No dynamic reconfiguration memory found
-[   43.138959] Loading compiled-in X.509 certificates
-[   43.637737] EXT4-fs (hda11): mounting ext3 file system using the ext4 subsystem
-[   43.759598] EXT4-fs (hda11): mounted filesystem with ordered data mode. Opts: (null)
-[   43.855814] VFS: Mounted root (ext3 filesystem) readonly on device 3:11.
-[   43.941974] Freeing unused kernel memory: 264K
-[   43.997598] This architecture does not have kernel memory protection.
-[   44.077215] Run /sbin/init as init process
-[   46.583096] Disabling lock debugging due to kernel taint
-[   46.649135] Machine check in kernel mode.
-[   46.699359] Caused by (from SRR1=41020): Transfer error ack signal
-[   46.776706] Oops: Machine check, sig: 7 [#1]
-[   46.830093] BE PAGE_SIZE=4K MMU=Hash SMP NR_CPUS=2 PowerMac
-[   46.899131] Modules linked in:
-[   46.937774] CPU: 0 PID: 1 Comm: init Tainted: G   M              5.1.0-pmac-ide #1
-[   47.030839] NIP:  c0018aa8 LR: c0018fcc CTR: 00000000
-[   47.093580] REGS: df437d40 TRAP: 0200   Tainted: G   M               (5.1.0-pmac-ide)
-[   47.189853] MSR:  00041020 <ME,IR>  CR: 42428084  XER: 00000000
-[   47.263133] DAR: 00000000 DSISR: dec05da0 
-[   47.263133] GPR00: 00000bbb df437df0 df435160 000043cb b7ad4000 1ec0cb50 00000001 00020768 
-[   47.263133] GPR08: 00000000 00739578 00009032 8021e59e 20424084 00000000 00000000 00000000 
-[   47.263133] GPR16: 00000000 00000000 00000000 00000000 00000000 00000000 dec0c000 c0730000 
-[   47.263133] GPR24: dec0cb50 1fb21595 dec05da0 df437e18 dec07440 dffe13c0 1fb1e117 df437e18 
-[   47.733625] NIP [c0018aa8] flush_hash_pages+0x70/0x164
-[   47.797425] LR [c0018fcc] flush_tlb_page+0x54/0x78
-[   47.857012] Call Trace:
-[   47.888320] [df437df0] [dffe13c0] 0xdffe13c0 (unreliable)
-[   47.955245] [df437e00] [c00f9418] ptep_clear_flush+0x3c/0x58
-[   48.025313] [df437e10] [c00ecf34] wp_page_copy+0x198/0x530
-[   48.093280] [df437e50] [c00ef5e0] do_wp_page+0x188/0x604
-[   48.159151] [df437e90] [c00f0838] handle_mm_fault+0x2f8/0x99c
-[   48.230265] [df437f00] [c0016528] do_page_fault+0x2a0/0x6b8
-[   48.299289] [df437f40] [c0012314] handle_page_fault+0x14/0x40
-[   48.370397] --- interrupt: 301 at 0xb7ab6444
-[   48.370397]     LR = 0xb7ab634c
-[   48.465462] Instruction dump:
-[   48.502950] 38c6ffff 4bffffe0 1c633810 5480273e 1c000111 7c630214 546b3870 508b56be 
-[   48.598090] 656b8000 3d200074 39299578 8102009c <65080009> 7c004828 2c000000 4082000c 
-[   48.695375] ---[ end trace c4d36e2b09ab4631 ]---
-[   48.752918] 
+> +{
+> +	register uint64_t arg1 asm("r3") = 0xf000;
+> +	register uint64_t arg2 asm("r4") = args;
+> +
+> +	asm volatile("sc 1\n" : "=r" (arg1) :
+> +			"r" (arg1),
+> +			"r" (arg2) :);
+> +	return arg1;
+> +}
+> +
+> +static struct rtas_args __prombss os_term_args;
+> +
+> +static void __init prom_rtas_os_term(char *str)
+> +{
+> +	phandle rtas_node;
+> +	__be32 val;
+> +	u32 token;
+> +
+> +	prom_printf("%s: start...\n", __func__);
+> +	rtas_node = call_prom("finddevice", 1, 1, ADDR("/rtas"));
+> +	prom_printf("rtas_node: %x\n", rtas_node);
+> +	if (!PHANDLE_VALID(rtas_node))
+> +		return;
+> +
+> +	val = 0;
+> +	prom_getprop(rtas_node, "ibm,os-term", &val, sizeof(val));
+> +	token = be32_to_cpu(val);
+> +	prom_printf("ibm,os-term: %x\n", token);
+> +	if (token == 0)
+> +		prom_panic("Could not get token for ibm,os-term\n");
+> +	os_term_args.token = cpu_to_be32(token);
+> +	prom_rtas_os_term_hcall((uint64_t)&os_term_args);
+> +}
+> +#endif /* CONFIG_PPC_SVM */
+> +
+>  /*
+>   * Allocate room for and instantiate RTAS
+>   */
+> @@ -3162,6 +3215,74 @@ static void unreloc_toc(void)
+>  #endif
+>  #endif
+>  
+> +#ifdef CONFIG_PPC_SVM
+> +/*
+> + * The ESM blob is a data structure with information needed by the Ultravisor to
+> + * validate the integrity of the secure guest.
+> + */
+> +static void *get_esm_blob(void)
+> +{
+> +	/*
+> +	 * FIXME: We are still finalizing the details on how prom_init will grab
+> +	 * the ESM blob. When that is done, this function will be updated.
+> +	 */
+> +	return (void *)0xdeadbeef;
+> +}
+> +
+> +/*
+> + * Perform the Enter Secure Mode ultracall.
+> + */
+> +static int enter_secure_mode(void *esm_blob, void *retaddr, void *fdt)
+> +{
+> +	register uint64_t func asm("r0") = UV_ESM;
+> +	register uint64_t arg1 asm("r3") = (uint64_t)esm_blob;
+> +	register uint64_t arg2 asm("r4") = (uint64_t)retaddr;
+> +	register uint64_t arg3 asm("r5") = (uint64_t)fdt;
+> +
+> +	asm volatile("sc 2\n"
+> +		     : "=r"(arg1)
+> +		     : "r"(func), "0"(arg1), "r"(arg2), "r"(arg3)
+> +		     :);
+> +
+> +	return (int)arg1;
+> +}
+> +
+> +/*
+> + * Call the Ultravisor to transfer us to secure memory if we have an ESM blob.
+> + */
+> +static void setup_secure_guest(void *fdt)
+> +{
+> +	void *esm_blob;
+> +	int ret;
+> +
+> +	if (prom_svm_disable) {
+> +		prom_printf("Secure mode is OFF\n");
+> +		return;
+> +	}
+> +
+> +	esm_blob = get_esm_blob();
+> +	if (esm_blob == NULL)
+> +		/*
+> +		 * Absence of an ESM blob isn't an error, it just means we
+> +		 * shouldn't switch to secure mode.
+> +		 */
+> +		return;
+> +
+> +	/* Switch to secure mode. */
+> +	prom_printf("Switching to secure mode.\n");
+> +
+> +	ret = enter_secure_mode(esm_blob, NULL, fdt);
+> +	if (ret != U_SUCCESS) {
+> +		prom_printf("Returned %d from switching to secure mode.\n", ret);
+> +		prom_rtas_os_term("Switch to secure mode failed.\n");
+> +	}
+> +}
+> +#else
+> +static void setup_secure_guest(void *fdt)
+> +{
+> +}
+> +#endif /* CONFIG_PPC_SVM */
+> +
+>  /*
+>   * We enter here early on, when the Open Firmware prom is still
+>   * handling exceptions and the MMU hash table for us.
+> @@ -3360,6 +3481,9 @@ unsigned long __init prom_init(unsigned long r3, unsigned long r4,
+>  	unreloc_toc();
+>  #endif
+>  
+> +	/* Move to secure memory if we're supposed to be secure guests. */
+> +	setup_secure_guest((void *)hdr);
+> +
+>  	__start(hdr, kbase, 0, 0, 0, 0, 0);
+>  
+>  	return 0;
+> 
 
 -- 
+Alexey
