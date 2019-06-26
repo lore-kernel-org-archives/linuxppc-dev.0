@@ -2,49 +2,51 @@ Return-Path: <SRS0=lNhQ=UZ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_MUTT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.5 required=3.0 tests=INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_MUTT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CF00BC4646B
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Jun 2019 05:53:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8A4B2C4646B
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Jun 2019 06:13:45 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 8D313208CB
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Jun 2019 05:53:56 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8D313208CB
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
+	by mail.kernel.org (Postfix) with ESMTPS id C46BD2085A
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Jun 2019 06:13:44 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C46BD2085A
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45YXJy5TfMzDqX9
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Jun 2019 15:53:54 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45YXlp1ZrWzDqQQ
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Jun 2019 16:13:42 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=lst.de
- (client-ip=213.95.11.211; helo=newverein.lst.de; envelope-from=hch@lst.de;
+ spf=softfail (mailfrom) smtp.mailfrom=kernel.org
+ (client-ip=195.135.220.15; helo=mx1.suse.de; envelope-from=mhocko@kernel.org;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=lst.de
-Received: from newverein.lst.de (verein.lst.de [213.95.11.211])
+ dmarc=fail (p=none dis=none) header.from=kernel.org
+Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45YXDj2WG4zDqVn
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jun 2019 15:50:10 +1000 (AEST)
-Received: by newverein.lst.de (Postfix, from userid 2407)
- id 1443D68B05; Wed, 26 Jun 2019 07:49:35 +0200 (CEST)
-Date: Wed, 26 Jun 2019 07:49:34 +0200
-From: Christoph Hellwig <hch@lst.de>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 14/16] mm: move the powerpc hugepd code to mm/gup.c
-Message-ID: <20190626054934.GA23547@lst.de>
-References: <20190625143715.1689-1-hch@lst.de>
- <20190625143715.1689-15-hch@lst.de>
- <20190625123757.ec7e886747bb5a9bc364107d@linux-foundation.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45YXjY5T1HzDq7j
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jun 2019 16:11:41 +1000 (AEST)
+X-Virus-Scanned: by amavisd-new at test-mx.suse.de
+Received: from relay2.suse.de (unknown [195.135.220.254])
+ by mx1.suse.de (Postfix) with ESMTP id 96E90AF25;
+ Wed, 26 Jun 2019 06:11:36 +0000 (UTC)
+Date: Wed, 26 Jun 2019 08:11:34 +0200
+From: Michal Hocko <mhocko@kernel.org>
+To: Hoan Tran OS <hoan@os.amperecomputing.com>
+Subject: Re: [PATCH 1/5] mm: Enable CONFIG_NODES_SPAN_OTHER_NODES by default
+ for NUMA
+Message-ID: <20190626061134.GD17798@dhcp22.suse.cz>
+References: <1561501810-25163-1-git-send-email-Hoan@os.amperecomputing.com>
+ <1561501810-25163-2-git-send-email-Hoan@os.amperecomputing.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20190625123757.ec7e886747bb5a9bc364107d@linux-foundation.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <1561501810-25163-2-git-send-email-Hoan@os.amperecomputing.com>
+User-Agent: Mutt/1.10.1 (2018-07-13)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -56,31 +58,64 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: x86@kernel.org, Rich Felker <dalias@libc.org>,
- Yoshinori Sato <ysato@users.sourceforge.jp>, linux-sh@vger.kernel.org,
- James Hogan <jhogan@kernel.org>, linuxppc-dev@lists.ozlabs.org,
- Khalid Aziz <khalid.aziz@oracle.com>, Nicholas Piggin <npiggin@gmail.com>,
- "David S. Miller" <davem@davemloft.net>, linux-mm@kvack.org,
- Paul Burton <paul.burton@mips.com>, Paul Mackerras <paulus@samba.org>,
- Andrey Konovalov <andreyknvl@google.com>, sparclinux@vger.kernel.org,
- linux-mips@vger.kernel.org, Linus Torvalds <torvalds@linux-foundation.org>,
- Christoph Hellwig <hch@lst.de>, linux-kernel@vger.kernel.org
+Cc: Catalin Marinas <catalin.marinas@arm.com>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>,
+ "open list:MEMORY MANAGEMENT" <linux-mm@kvack.org>,
+ Paul Mackerras <paulus@samba.org>, "H . Peter Anvin" <hpa@zytor.com>,
+ "sparclinux@vger.kernel.org" <sparclinux@vger.kernel.org>,
+ Alexander Duyck <alexander.h.duyck@linux.intel.com>,
+ "linux-s390@vger.kernel.org" <linux-s390@vger.kernel.org>,
+ "x86@kernel.org" <x86@kernel.org>, Mike Rapoport <rppt@linux.ibm.com>,
+ Christian Borntraeger <borntraeger@de.ibm.com>, Ingo Molnar <mingo@redhat.com>,
+ Vlastimil Babka <vbabka@suse.cz>,
+ Open Source Submission <patches@amperecomputing.com>,
+ Pavel Tatashin <pavel.tatashin@microsoft.com>,
+ Vasily Gorbik <gor@linux.ibm.com>, Will Deacon <will.deacon@arm.com>,
+ Borislav Petkov <bp@alien8.de>, Thomas Gleixner <tglx@linutronix.de>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
+ Oscar Salvador <osalvador@suse.de>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "David S . Miller" <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, Jun 25, 2019 at 12:37:57PM -0700, Andrew Morton wrote:
-> On Tue, 25 Jun 2019 16:37:13 +0200 Christoph Hellwig <hch@lst.de> wrote:
-> 
-> > +static int gup_huge_pd(hugepd_t hugepd
-> 
-> Naming nitlet: we have hugepd and we also have huge_pd.  We have
-> hugepte and we also have huge_pte.  It make things a bit hard to
-> remember and it would be nice to make it all consistent sometime.
-> 
-> We're consistent with huge_pud and almost consistent with huge_pmd.
-> 
-> To be fully consistent I guess we should make all of them have the
-> underscore.  Or not have it.  
+On Tue 25-06-19 22:30:24, Hoan Tran OS wrote:
+> This patch enables CONFIG_NODES_SPAN_OTHER_NODES by default
+> for NUMA. As some NUMA nodes have memory ranges that span other
+> nodes. Even though a pfn is valid and between a node's start and
+> end pfns, it may not reside on that node.
 
-Either way is fine with me.  Feel free to fix up per your preference.
+Please describe the problem more thoroughly. What is the layout, what
+doesn't work with the default configuration and why do we need this
+particular fix rather than enabling of the config option for the
+specific HW.
+
+> 
+> Signed-off-by: Hoan Tran <Hoan@os.amperecomputing.com>
+> ---
+>  mm/page_alloc.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+> index d66bc8a..6335505 100644
+> --- a/mm/page_alloc.c
+> +++ b/mm/page_alloc.c
+> @@ -1413,7 +1413,7 @@ int __meminit early_pfn_to_nid(unsigned long pfn)
+>  }
+>  #endif
+>  
+> -#ifdef CONFIG_NODES_SPAN_OTHER_NODES
+> +#ifdef CONFIG_NUMA
+>  /* Only safe to use early in boot when initialisation is single-threaded */
+>  static inline bool __meminit early_pfn_in_nid(unsigned long pfn, int node)
+>  {
+> -- 
+> 2.7.4
+> 
+
+-- 
+Michal Hocko
+SUSE Labs
