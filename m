@@ -2,93 +2,91 @@ Return-Path: <SRS0=L8Yn=U2=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id ECC5DC48BD7
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Jun 2019 05:35:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E1940C48BD6
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Jun 2019 05:37:15 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 79389208E3
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Jun 2019 05:35:32 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 79389208E3
+	by mail.kernel.org (Postfix) with ESMTPS id 3EBAB2133F
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Jun 2019 05:37:15 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3EBAB2133F
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45Z7sG61smzDqTD
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Jun 2019 15:35:30 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45Z7vF0B5RzDqjW
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Jun 2019 15:37:13 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
- (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
+ (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
  envelope-from=nathanl@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45Z7lx5cHgzDqfB
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45Z7lx4Z6hzDqch
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jun 2019 15:30:53 +1000 (AEST)
-Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x5R5Taxh012965
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jun 2019 01:30:51 -0400
-Received: from e12.ny.us.ibm.com (e12.ny.us.ibm.com [129.33.205.202])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2tcqa60st0-1
+Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
+ x5R5RkLL003489
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jun 2019 01:30:49 -0400
+Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2tcnvbuxx3-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jun 2019 01:30:50 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jun 2019 01:30:49 -0400
 Received: from localhost
- by e12.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <nathanl@linux.ibm.com>;
- Thu, 27 Jun 2019 06:30:49 +0100
-Received: from b01cxnp22035.gho.pok.ibm.com (9.57.198.25)
- by e12.ny.us.ibm.com (146.89.104.199) with IBM ESMTP SMTP Gateway: Authorized
+ Thu, 27 Jun 2019 06:30:48 +0100
+Received: from b03cxnp08026.gho.boulder.ibm.com (9.17.130.18)
+ by e32.co.us.ibm.com (192.168.1.132) with IBM ESMTP SMTP Gateway: Authorized
  Use Only! Violators will be prosecuted; 
  (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Thu, 27 Jun 2019 06:30:47 +0100
-Received: from b01ledav001.gho.pok.ibm.com (b01ledav001.gho.pok.ibm.com
- [9.57.199.106])
- by b01cxnp22035.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x5R5Ukb654395352
+ Thu, 27 Jun 2019 06:30:46 +0100
+Received: from b03ledav006.gho.boulder.ibm.com
+ (b03ledav006.gho.boulder.ibm.com [9.17.130.237])
+ by b03cxnp08026.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x5R5UjY357868690
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jun 2019 05:30:46 GMT
-Received: from b01ledav001.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 355F82805E
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jun 2019 05:30:46 +0000 (GMT)
-Received: from b01ledav001.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 0F6902805A
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jun 2019 05:30:46 +0000 (GMT)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jun 2019 05:30:45 GMT
+Received: from b03ledav006.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 8C21CC6059
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jun 2019 05:30:45 +0000 (GMT)
+Received: from b03ledav006.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 4124CC6057
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jun 2019 05:30:45 +0000 (GMT)
 Received: from localhost (unknown [9.80.233.188])
- by b01ledav001.gho.pok.ibm.com (Postfix) with ESMTP
+ by b03ledav006.gho.boulder.ibm.com (Postfix) with ESMTP
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jun 2019 05:30:45 +0000 (GMT)
 From: Nathan Lynch <nathanl@linux.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 1/2] powerpc/pseries/mobility: set pr_fmt
-Date: Thu, 27 Jun 2019 00:30:43 -0500
+Subject: [PATCH 0/2] migration/prrn instrumentation tweaks
+Date: Thu, 27 Jun 2019 00:30:42 -0500
 X-Mailer: git-send-email 2.20.1
-In-Reply-To: <20190627053044.9238-1-nathanl@linux.ibm.com>
-References: <20190627053044.9238-1-nathanl@linux.ibm.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-x-cbid: 19062705-0060-0000-0000-00000356190B
+x-cbid: 19062705-0004-0000-0000-000015218A13
 X-IBM-SpamModules-Scores: 
 X-IBM-SpamModules-Versions: BY=3.00011338; HX=3.00000242; KW=3.00000007;
- PH=3.00000004; SC=3.00000286; SDB=6.01223855; UDB=6.00644098; IPR=6.01005043; 
+ PH=3.00000004; SC=3.00000286; SDB=6.01223854; UDB=6.00644098; IPR=6.01005043; 
  MB=3.00027484; MTD=3.00000008; XFM=3.00000015; UTC=2019-06-27 05:30:47
 X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19062705-0061-0000-0000-000049EC3D88
-Message-Id: <20190627053044.9238-2-nathanl@linux.ibm.com>
+x-cbparentid: 19062705-0005-0000-0000-00008C3CF60B
+Message-Id: <20190627053044.9238-1-nathanl@linux.ibm.com>
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
  definitions=2019-06-27_02:, , signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
  priorityscore=1501
  malwarescore=0 suspectscore=1 phishscore=0 bulkscore=0 spamscore=0
  clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
+ mlxlogscore=644 adultscore=0 classifier=spam adjust=0 reason=mlx
  scancount=1 engine=8.0.1-1810050000 definitions=main-1906270060
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -105,43 +103,16 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The pr_err callsites in mobility.c already manually include a
-"mobility:" prefix, let's make it official for the benefit of messages
-to be added later.
+Mainly this produces better information about what's happening with
+the device tree as a result of LPM or PRRN.
 
-Signed-off-by: Nathan Lynch <nathanl@linux.ibm.com>
----
- arch/powerpc/platforms/pseries/mobility.c | 7 +++++--
- 1 file changed, 5 insertions(+), 2 deletions(-)
+Nathan Lynch (2):
+  powerpc/pseries/mobility: set pr_fmt
+  powerpc/pseries/mobility: add pr_debug for device tree changes
 
-diff --git a/arch/powerpc/platforms/pseries/mobility.c b/arch/powerpc/platforms/pseries/mobility.c
-index b8c8096907d4..f9a1287925a8 100644
---- a/arch/powerpc/platforms/pseries/mobility.c
-+++ b/arch/powerpc/platforms/pseries/mobility.c
-@@ -9,6 +9,9 @@
-  * 2 as published by the Free Software Foundation.
-  */
- 
-+
-+#define pr_fmt(fmt) "mobility: " fmt
-+
- #include <linux/cpu.h>
- #include <linux/kernel.h>
- #include <linux/kobject.h>
-@@ -418,11 +421,11 @@ static int __init mobility_sysfs_init(void)
- 
- 	rc = sysfs_create_file(mobility_kobj, &class_attr_migration.attr);
- 	if (rc)
--		pr_err("mobility: unable to create migration sysfs file (%d)\n", rc);
-+		pr_err("unable to create migration sysfs file (%d)\n", rc);
- 
- 	rc = sysfs_create_file(mobility_kobj, &class_attr_api_version.attr.attr);
- 	if (rc)
--		pr_err("mobility: unable to create api_version sysfs file (%d)\n", rc);
-+		pr_err("unable to create api_version sysfs file (%d)\n", rc);
- 
- 	return 0;
- }
+ arch/powerpc/platforms/pseries/mobility.c | 15 +++++++++++++--
+ 1 file changed, 13 insertions(+), 2 deletions(-)
+
 -- 
 2.20.1
 
