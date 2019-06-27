@@ -2,50 +2,81 @@ Return-Path: <SRS0=L8Yn=U2=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-14.3 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
+	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3D01EC4321A
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Jun 2019 22:04:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0C85DC4321A
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Jun 2019 23:52:21 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id BD73C205F4
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Jun 2019 22:04:29 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BD73C205F4
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net
+	by mail.kernel.org (Postfix) with ESMTPS id 2E73520815
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Jun 2019 23:52:19 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="WlQMzQja"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2E73520815
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45ZYpM40DvzDqjZ
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Jun 2019 08:04:27 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45ZcBm20NjzDqjY
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Jun 2019 09:52:16 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=rjwysocki.net
- (client-ip=79.96.170.134; helo=cloudserver094114.home.pl;
- envelope-from=rjw@rjwysocki.net; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=gmail.com
+ (client-ip=2607:f8b0:4864:20::542; helo=mail-pg1-x542.google.com;
+ envelope-from=huangfq.daxian@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=rjwysocki.net
-Received: from cloudserver094114.home.pl (cloudserver094114.home.pl
- [79.96.170.134])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="WlQMzQja"; 
+ dkim-atps=neutral
+Received: from mail-pg1-x542.google.com (mail-pg1-x542.google.com
+ [IPv6:2607:f8b0:4864:20::542])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45ZYjM3dfFzDqgG
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Jun 2019 08:00:05 +1000 (AEST)
-Received: from 79.184.254.216.ipv4.supernova.orange.pl (79.184.254.216) (HELO
- kreacher.localnet)
- by serwer1319399.home.pl (79.96.170.134) with SMTP (IdeaSmtpServer 0.83.267)
- id b993f47717c4d2a7; Fri, 28 Jun 2019 00:00:00 +0200
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-To: Mathieu Malaterre <malat@debian.org>
-Subject: Re: [PATCH v2] powerpc/power: Expose pfn_is_nosave prototype
-Date: Fri, 28 Jun 2019 00:00:00 +0200
-Message-ID: <2178909.1BmBeJAm6j@kreacher>
-In-Reply-To: <20190524104418.17194-1-malat@debian.org>
-References: <20190523114736.30268-1-malat@debian.org>
- <20190524104418.17194-1-malat@debian.org>
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45ZRxq5XqwzDqdZ
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Jun 2019 03:40:28 +1000 (AEST)
+Received: by mail-pg1-x542.google.com with SMTP id z19so1328907pgl.12
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jun 2019 10:40:28 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=from:to:cc:subject:date:message-id;
+ bh=FR72I8Co0+MJGxYGED+5/dqb9dBV7h2vnmoy22KZs5Q=;
+ b=WlQMzQjaD6Aa5Vpx6UqUNwQtzaS+/ZnzexxXnYOYG0W1PYAgkbHfE2fYWoFKiBP7Zh
+ LEPR/SVzaF7l+Q0m/o+UQebDcRzFIfpgkyImNv/KS4nJvxOsSaAT7aN30UUxwZLvkXsZ
+ S9TZz5Czs4+GdrWidNougIDcp9M3vrswqrYypZU7hhTfV/t60PFVpiIsb9HBmx5S6jHd
+ XYri7Ee2gAkIhLJZTONReWvn31bZfWiomRHF24DigS8uElaw1RZfJHUfP4/QS8fFGm3R
+ OfXHhpgZfeWICB17eszaHC1hpsNgliz4hxuW3YOWDqR0CZKbTCr1WzSwm8Hs3BR1Oq1K
+ EqOQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:from:to:cc:subject:date:message-id;
+ bh=FR72I8Co0+MJGxYGED+5/dqb9dBV7h2vnmoy22KZs5Q=;
+ b=hDQpdJH0nNm7cS33HgVIRyYSLkdtD7/xEgKBJLVfzDuOiDurSN+qirkOLx/bUA8ZzF
+ 9VO3adUI+/aApDx8hDwzAd+7GpjgG4blKK0L09kzFPoPvvmXPtCO42zolVkPeosMeprt
+ cFR10TzPJyRW1ebFHhv68DKRDss8/pv+AsHZJ0HfhxA2KfotGzJJxb5WDLccmRhMMpYB
+ whz6iiklM5+peRw2qpErkPBPklH+oVAkmH+Z/5v1pcnA+RimGp7umzNC1VMViIIOuFIL
+ Vbtq6O4KTwrPP+UnFLOVbNwkCYCTpOtmeE5qcczuhH9BQ7bOVte8lALYvGZzIiZNNzJV
+ /62A==
+X-Gm-Message-State: APjAAAX3pzhlWKKOw2fcZ235uTcyo2uPJNMhFt0nFxI3Hx6BJxL7dkeG
+ 01/ZRCpF4JnufMLKNHwQi84=
+X-Google-Smtp-Source: APXvYqyafuSdTGPVAkCNuqSoaQIqQdl9g85tFTYZqmB4WSXYWLjMlnD3sWyW3Lsdj+lZO711wPLnpQ==
+X-Received: by 2002:a17:90a:9f08:: with SMTP id
+ n8mr7522337pjp.102.1561657226195; 
+ Thu, 27 Jun 2019 10:40:26 -0700 (PDT)
+Received: from hfq-skylake.ipads-lab.se.sjtu.edu.cn ([202.120.40.82])
+ by smtp.googlemail.com with ESMTPSA id o95sm1727758pjb.4.2019.06.27.10.40.22
+ (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
+ Thu, 27 Jun 2019 10:40:25 -0700 (PDT)
+From: Fuqian Huang <huangfq.daxian@gmail.com>
+To: 
+Subject: [PATCH 41/87] sound: ppc: remove memset after dma_alloc_coherent
+Date: Fri, 28 Jun 2019 01:40:17 +0800
+Message-Id: <20190627174018.4015-1-huangfq.daxian@gmail.com>
+X-Mailer: git-send-email 2.11.0
+X-Mailman-Approved-At: Fri, 28 Jun 2019 09:50:46 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -57,90 +88,37 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Len Brown <len.brown@intel.com>, linux-s390@vger.kernel.org,
- linux-pm@vger.kernel.org, Heiko Carstens <heiko.carstens@de.ibm.com>,
- linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
- Pavel Machek <pavel@ucw.cz>, Martin Schwidefsky <schwidefsky@de.ibm.com>,
- linuxppc-dev@lists.ozlabs.org
+Cc: Rob Herring <robh@kernel.org>, alsa-devel@alsa-project.org,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Takashi Iwai <tiwai@suse.com>,
+ Jaroslav Kysela <perex@perex.cz>, Paul Mackerras <paulus@samba.org>,
+ Fuqian Huang <huangfq.daxian@gmail.com>, Thomas Gleixner <tglx@linutronix.de>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Friday, May 24, 2019 12:44:18 PM CEST Mathieu Malaterre wrote:
-> The declaration for pfn_is_nosave is only available in
-> kernel/power/power.h. Since this function can be override in arch,
-> expose it globally. Having a prototype will make sure to avoid warning
-> (sometime treated as error with W=1) such as:
-> 
->   arch/powerpc/kernel/suspend.c:18:5: error: no previous prototype for 'pfn_is_nosave' [-Werror=missing-prototypes]
-> 
-> This moves the declaration into a globally visible header file and add
-> missing include to avoid a warning on powerpc. Also remove the
-> duplicated prototypes since not required anymore.
-> 
-> Cc: Christophe Leroy <christophe.leroy@c-s.fr>
-> Signed-off-by: Mathieu Malaterre <malat@debian.org>
-> ---
-> v2: As suggestion by christophe remove duplicates prototypes
-> 
->  arch/powerpc/kernel/suspend.c | 1 +
->  arch/s390/kernel/entry.h      | 1 -
->  include/linux/suspend.h       | 1 +
->  kernel/power/power.h          | 2 --
->  4 files changed, 2 insertions(+), 3 deletions(-)
-> 
-> diff --git a/arch/powerpc/kernel/suspend.c b/arch/powerpc/kernel/suspend.c
-> index a531154cc0f3..9e1b6b894245 100644
-> --- a/arch/powerpc/kernel/suspend.c
-> +++ b/arch/powerpc/kernel/suspend.c
-> @@ -8,6 +8,7 @@
->   */
->  
->  #include <linux/mm.h>
-> +#include <linux/suspend.h>
->  #include <asm/page.h>
->  #include <asm/sections.h>
->  
-> diff --git a/arch/s390/kernel/entry.h b/arch/s390/kernel/entry.h
-> index 20420c2b8a14..b2956d49b6ad 100644
-> --- a/arch/s390/kernel/entry.h
-> +++ b/arch/s390/kernel/entry.h
-> @@ -63,7 +63,6 @@ void __init startup_init(void);
->  void die(struct pt_regs *regs, const char *str);
->  int setup_profiling_timer(unsigned int multiplier);
->  void __init time_init(void);
-> -int pfn_is_nosave(unsigned long);
->  void s390_early_resume(void);
->  unsigned long prepare_ftrace_return(unsigned long parent, unsigned long sp, unsigned long ip);
->  
-> diff --git a/include/linux/suspend.h b/include/linux/suspend.h
-> index 6b3ea9ea6a9e..e8b8a7bede90 100644
-> --- a/include/linux/suspend.h
-> +++ b/include/linux/suspend.h
-> @@ -395,6 +395,7 @@ extern bool system_entering_hibernation(void);
->  extern bool hibernation_available(void);
->  asmlinkage int swsusp_save(void);
->  extern struct pbe *restore_pblist;
-> +int pfn_is_nosave(unsigned long pfn);
->  #else /* CONFIG_HIBERNATION */
->  static inline void register_nosave_region(unsigned long b, unsigned long e) {}
->  static inline void register_nosave_region_late(unsigned long b, unsigned long e) {}
-> diff --git a/kernel/power/power.h b/kernel/power/power.h
-> index 9e58bdc8a562..44bee462ff57 100644
-> --- a/kernel/power/power.h
-> +++ b/kernel/power/power.h
-> @@ -75,8 +75,6 @@ static inline void hibernate_reserved_size_init(void) {}
->  static inline void hibernate_image_size_init(void) {}
->  #endif /* !CONFIG_HIBERNATION */
->  
-> -extern int pfn_is_nosave(unsigned long);
-> -
->  #define power_attr(_name) \
->  static struct kobj_attribute _name##_attr = {	\
->  	.attr	= {				\
-> 
+In commit af7ddd8a627c
+("Merge tag 'dma-mapping-4.21' of git://git.infradead.org/users/hch/dma-mapping"),
+dma_alloc_coherent has already zeroed the memory.
+So memset is not needed.
 
-Applied, thanks!
+Signed-off-by: Fuqian Huang <huangfq.daxian@gmail.com>
+---
+ sound/ppc/pmac.c | 1 -
+ 1 file changed, 1 deletion(-)
 
-
+diff --git a/sound/ppc/pmac.c b/sound/ppc/pmac.c
+index 1b11e53f6a62..1ab12f4f8631 100644
+--- a/sound/ppc/pmac.c
++++ b/sound/ppc/pmac.c
+@@ -56,7 +56,6 @@ static int snd_pmac_dbdma_alloc(struct snd_pmac *chip, struct pmac_dbdma *rec, i
+ 	if (rec->space == NULL)
+ 		return -ENOMEM;
+ 	rec->size = size;
+-	memset(rec->space, 0, rsize);
+ 	rec->cmds = (void __iomem *)DBDMA_ALIGN(rec->space);
+ 	rec->addr = rec->dma_base + (unsigned long)((char *)rec->cmds - (char *)rec->space);
+ 
+-- 
+2.11.0
 
