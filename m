@@ -2,75 +2,73 @@ Return-Path: <SRS0=L8Yn=U2=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7FC27C48BD6
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Jun 2019 05:19:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D3539C48BD6
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Jun 2019 05:21:11 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 0780F218AD
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Jun 2019 05:19:19 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0780F218AD
+	by mail.kernel.org (Postfix) with ESMTPS id 172A7218AD
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Jun 2019 05:21:11 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 172A7218AD
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45Z7VX6jdRzDqRh
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Jun 2019 15:19:16 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45Z7Xh3QVGzDqck
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Jun 2019 15:21:08 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
- (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
+ (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
  envelope-from=nathanl@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45Z7QT6W3GzDqdX
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jun 2019 15:15:45 +1000 (AEST)
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x5R5Ce7x022286
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jun 2019 01:15:42 -0400
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45Z7QT6NkgzDqdM
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jun 2019 15:15:44 +1000 (AEST)
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
+ x5R5CEdt125449
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jun 2019 01:15:41 -0400
 Received: from ppma01dal.us.ibm.com (83.d6.3fa9.ip4.static.sl-reverse.com
  [169.63.214.131])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2tcmh5x3ga-1
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2tcmtw5jt7-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jun 2019 01:15:42 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jun 2019 01:15:41 -0400
 Received: from pps.filterd (ppma01dal.us.ibm.com [127.0.0.1])
- by ppma01dal.us.ibm.com (8.16.0.27/8.16.0.27) with SMTP id x5R5ExeN001915
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jun 2019 05:15:41 GMT
-Received: from b03cxnp08025.gho.boulder.ibm.com
- (b03cxnp08025.gho.boulder.ibm.com [9.17.130.17])
- by ppma01dal.us.ibm.com with ESMTP id 2t9by7c81k-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jun 2019 05:15:41 +0000
-Received: from b03ledav002.gho.boulder.ibm.com
- (b03ledav002.gho.boulder.ibm.com [9.17.130.233])
- by b03cxnp08025.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x5R5FeIE56099230
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK)
+ by ppma01dal.us.ibm.com (8.16.0.27/8.16.0.27) with SMTP id x5R5EvrU001903
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jun 2019 05:15:40 GMT
-Received: from b03ledav002.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id ED40B13605D
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jun 2019 05:15:39 +0000 (GMT)
-Received: from b03ledav002.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id A79F913604F
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jun 2019 05:15:39 +0000 (GMT)
+Received: from b03cxnp07028.gho.boulder.ibm.com
+ (b03cxnp07028.gho.boulder.ibm.com [9.17.130.15])
+ by ppma01dal.us.ibm.com with ESMTP id 2t9by7c81d-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jun 2019 05:15:40 +0000
+Received: from b03ledav003.gho.boulder.ibm.com
+ (b03ledav003.gho.boulder.ibm.com [9.17.130.234])
+ by b03cxnp07028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x5R5FcRY47776220
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jun 2019 05:15:38 GMT
+Received: from b03ledav003.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id B4EA36A04F
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jun 2019 05:15:38 +0000 (GMT)
+Received: from b03ledav003.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 606016A05D
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jun 2019 05:15:38 +0000 (GMT)
 Received: from localhost (unknown [9.80.233.188])
- by b03ledav002.gho.boulder.ibm.com (Postfix) with ESMTP
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jun 2019 05:15:39 +0000 (GMT)
+ by b03ledav003.gho.boulder.ibm.com (Postfix) with ESMTP
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jun 2019 05:15:38 +0000 (GMT)
 From: Nathan Lynch <nathanl@linux.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 1/4] powerpc/cacheinfo: set pr_fmt
-Date: Thu, 27 Jun 2019 00:15:34 -0500
-Message-Id: <20190627051537.7298-2-nathanl@linux.ibm.com>
+Subject: [PATCH 0/4] cacheinfo instrumentation tweaks
+Date: Thu, 27 Jun 2019 00:15:33 -0500
+Message-Id: <20190627051537.7298-1-nathanl@linux.ibm.com>
 X-Mailer: git-send-email 2.20.1
-In-Reply-To: <20190627051537.7298-1-nathanl@linux.ibm.com>
-References: <20190627051537.7298-1-nathanl@linux.ibm.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
@@ -80,7 +78,7 @@ X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
  priorityscore=1501
  malwarescore=0 suspectscore=1 phishscore=0 bulkscore=0 spamscore=0
  clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=680 adultscore=0 classifier=spam adjust=0 reason=mlx
+ mlxlogscore=735 adultscore=0 classifier=spam adjust=0 reason=mlx
  scancount=1 engine=8.0.1-1810050000 definitions=main-1906270056
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -97,26 +95,19 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Set pr_fmt so we get a nice prefix on messages.
+A few changes that would have aided debugging this code's interactions
+with partition migration, maybe they'll help with the next thing
+(hibernation?).
 
-Signed-off-by: Nathan Lynch <nathanl@linux.ibm.com>
----
- arch/powerpc/kernel/cacheinfo.c | 2 ++
- 1 file changed, 2 insertions(+)
+Nathan Lynch (4):
+  powerpc/cacheinfo: set pr_fmt
+  powerpc/cacheinfo: name@unit instead of full DT path in debug messages
+  powerpc/cacheinfo: improve diagnostics about malformed cache lists
+  powerpc/cacheinfo: warn if cache object chain becomes unordered
 
-diff --git a/arch/powerpc/kernel/cacheinfo.c b/arch/powerpc/kernel/cacheinfo.c
-index 42c559efe060..295af19e00f0 100644
---- a/arch/powerpc/kernel/cacheinfo.c
-+++ b/arch/powerpc/kernel/cacheinfo.c
-@@ -10,6 +10,8 @@
-  * 2 as published by the Free Software Foundation.
-  */
- 
-+#define pr_fmt(fmt) "cacheinfo: " fmt
-+
- #include <linux/cpu.h>
- #include <linux/cpumask.h>
- #include <linux/kernel.h>
+ arch/powerpc/kernel/cacheinfo.c | 37 ++++++++++++++++++++++++---------
+ 1 file changed, 27 insertions(+), 10 deletions(-)
+
 -- 
 2.20.1
 
