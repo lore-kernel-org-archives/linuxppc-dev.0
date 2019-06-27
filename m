@@ -2,23 +2,23 @@ Return-Path: <SRS0=L8Yn=U2=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EE0B6C48BD7
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Jun 2019 11:42:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5466BC48BD6
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Jun 2019 11:45:55 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 452D2204FD
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Jun 2019 11:42:33 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 452D2204FD
+	by mail.kernel.org (Postfix) with ESMTPS id CDA702086D
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Jun 2019 11:45:54 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CDA702086D
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45ZJ0k55hDzDqhC
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Jun 2019 21:42:30 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45ZJ4b6W5WzDqlY
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Jun 2019 21:45:51 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=none (mailfrom) smtp.mailfrom=linux.vnet.ibm.com
  (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
@@ -29,66 +29,68 @@ Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45ZHc12rJNzDqdn
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jun 2019 21:24:33 +1000 (AEST)
-Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45ZHgd625WzDqB3
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jun 2019 21:27:41 +1000 (AEST)
+Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x5RBMSoR103375
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jun 2019 07:24:26 -0400
-Received: from e06smtp04.uk.ibm.com (e06smtp04.uk.ibm.com [195.75.94.100])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2tcv1ntv02-1
+ x5RBPJ9s001994
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jun 2019 07:27:39 -0400
+Received: from e06smtp07.uk.ibm.com (e06smtp07.uk.ibm.com [195.75.94.103])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2tcvwpr422-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jun 2019 07:24:26 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jun 2019 07:27:38 -0400
 Received: from localhost
- by e06smtp04.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp07.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
- Thu, 27 Jun 2019 12:24:23 +0100
-Received: from b06avi18878370.portsmouth.uk.ibm.com (9.149.26.194)
- by e06smtp04.uk.ibm.com (192.168.101.134) with IBM ESMTP SMTP Gateway:
+ Thu, 27 Jun 2019 12:27:36 +0100
+Received: from b06cxnps4074.portsmouth.uk.ibm.com (9.149.109.196)
+ by e06smtp07.uk.ibm.com (192.168.101.137) with IBM ESMTP SMTP Gateway:
  Authorized Use Only! Violators will be prosecuted; 
  (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Thu, 27 Jun 2019 12:24:21 +0100
-Received: from b06wcsmtp001.portsmouth.uk.ibm.com
- (b06wcsmtp001.portsmouth.uk.ibm.com [9.149.105.160])
- by b06avi18878370.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP
- id x5RBOK7c25362722
+ Thu, 27 Jun 2019 12:27:33 +0100
+Received: from d06av26.portsmouth.uk.ibm.com (d06av26.portsmouth.uk.ibm.com
+ [9.149.105.62])
+ by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x5RBRWRZ47120586
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Thu, 27 Jun 2019 11:24:20 GMT
-Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 1EDE3A4062;
- Thu, 27 Jun 2019 11:24:20 +0000 (GMT)
-Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 21177A405F;
- Thu, 27 Jun 2019 11:24:18 +0000 (GMT)
-Received: from naverao1-tp.ibmuc.com (unknown [9.85.73.27])
- by b06wcsmtp001.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Thu, 27 Jun 2019 11:24:17 +0000 (GMT)
+ Thu, 27 Jun 2019 11:27:33 GMT
+Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id D886CAE057;
+ Thu, 27 Jun 2019 11:27:32 +0000 (GMT)
+Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 7048FAE053;
+ Thu, 27 Jun 2019 11:27:32 +0000 (GMT)
+Received: from localhost (unknown [9.85.73.27])
+ by d06av26.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Thu, 27 Jun 2019 11:27:32 +0000 (GMT)
+Date: Thu, 27 Jun 2019 16:57:31 +0530
 From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
-To: Michael Ellerman <mpe@ellerman.id.au>,
- Steven Rostedt <rostedt@goodmis.org>,
- Masami Hiramatsu <mhiramat@kernel.org>, Ingo Molnar <mingo@kernel.org>,
- Nicholas Piggin <npiggin@gmail.com>
-Subject: [PATCH v2 6/7] kprobes/ftrace: Use ftrace_location() when [dis]arming
- probes
-Date: Thu, 27 Jun 2019 16:53:54 +0530
-X-Mailer: git-send-email 2.22.0
-In-Reply-To: <cover.1561634177.git.naveen.n.rao@linux.vnet.ibm.com>
+Subject: Re: [PATCH v2 2/7] x86/ftrace: Fix use of flags in
+ ftrace_replace_code()
+To: Masami Hiramatsu <mhiramat@kernel.org>, Ingo Molnar <mingo@kernel.org>,
+ Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
+ Steven Rostedt <rostedt@goodmis.org>
 References: <cover.1561634177.git.naveen.n.rao@linux.vnet.ibm.com>
+ <abc56ad177f370ec423edcfc538d35b418c1808e.1561634177.git.naveen.n.rao@linux.vnet.ibm.com>
+In-Reply-To: <abc56ad177f370ec423edcfc538d35b418c1808e.1561634177.git.naveen.n.rao@linux.v
+ net.ibm.com>
+User-Agent: astroid/0.14.0 (https://github.com/astroidmail/astroid)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: quoted-printable
 X-TM-AS-GCONF: 00
-x-cbid: 19062711-0016-0000-0000-0000028CD924
+x-cbid: 19062711-0028-0000-0000-0000037E0DFC
 X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19062711-0017-0000-0000-000032EA5663
-Message-Id: <ecc6ba37ad1a2bf29cd1254083844d51bfaee1bf.1561634177.git.naveen.n.rao@linux.vnet.ibm.com>
+x-cbparentid: 19062711-0029-0000-0000-0000243E37C5
+Message-Id: <1561634775.r2ibb8ft78.naveen@linux.ibm.com>
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
  definitions=2019-06-27_06:, , signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
  priorityscore=1501
  malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
  clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
+ mlxlogscore=345 adultscore=0 classifier=spam adjust=0 reason=mlx
  scancount=1 engine=8.0.1-1810050000 definitions=main-1906270133
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -106,66 +108,25 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Ftrace location could include more than a single instruction in case of
-some architectures (powerpc64, for now). In this case, kprobe is
-permitted on any of those instructions, and uses ftrace infrastructure
-for functioning.
+Naveen N. Rao wrote:
+> In commit a0572f687fb3c ("ftrace: Allow ftrace_replace_code() to be
+> schedulable), the generic ftrace_replace_code() function was modified to
+> accept a flags argument in place of a single 'enable' flag. However, the
+> x86 version of this function was not updated. Fix the same.
+>=20
+> Fixes: a0572f687fb3c ("ftrace: Allow ftrace_replace_code() to be schedula=
+ble")
+> Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
+> ---
+>  arch/x86/kernel/ftrace.c | 3 ++-
+>  1 file changed, 2 insertions(+), 1 deletion(-)
 
-However, [dis]arm_kprobe_ftrace() uses the kprobe address when setting
-up ftrace filter IP. This won't work if the address points to any
-instruction apart from the one that has a branch to _mcount(). To
-resolve this, have [dis]arm_kprobe_ftrace() use ftrace_function() to
-identify the filter IP.
+If the rest of this series is ok, and if Ingo and Steven are ok to have=20
+this series go through the powerpc tree, then I can re-post this=20
+particular patch for x86 after -rc1.
 
-Acked-by: Masami Hiramatsu <mhiramat@kernel.org>
-Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
----
- kernel/kprobes.c | 10 +++++-----
- 1 file changed, 5 insertions(+), 5 deletions(-)
+Thanks,
+Naveen
 
-diff --git a/kernel/kprobes.c b/kernel/kprobes.c
-index 445337c107e0..282ee704e2d8 100644
---- a/kernel/kprobes.c
-+++ b/kernel/kprobes.c
-@@ -978,10 +978,10 @@ static int prepare_kprobe(struct kprobe *p)
- /* Caller must lock kprobe_mutex */
- static int arm_kprobe_ftrace(struct kprobe *p)
- {
-+	unsigned long ftrace_ip = ftrace_location((unsigned long)p->addr);
- 	int ret = 0;
- 
--	ret = ftrace_set_filter_ip(&kprobe_ftrace_ops,
--				   (unsigned long)p->addr, 0, 0);
-+	ret = ftrace_set_filter_ip(&kprobe_ftrace_ops, ftrace_ip, 0, 0);
- 	if (ret) {
- 		pr_debug("Failed to arm kprobe-ftrace at %pS (%d)\n",
- 			 p->addr, ret);
-@@ -1005,13 +1005,14 @@ static int arm_kprobe_ftrace(struct kprobe *p)
- 	 * non-empty filter_hash for IPMODIFY ops, we're safe from an accidental
- 	 * empty filter_hash which would undesirably trace all functions.
- 	 */
--	ftrace_set_filter_ip(&kprobe_ftrace_ops, (unsigned long)p->addr, 1, 0);
-+	ftrace_set_filter_ip(&kprobe_ftrace_ops, ftrace_ip, 1, 0);
- 	return ret;
- }
- 
- /* Caller must lock kprobe_mutex */
- static int disarm_kprobe_ftrace(struct kprobe *p)
- {
-+	unsigned long ftrace_ip = ftrace_location((unsigned long)p->addr);
- 	int ret = 0;
- 
- 	if (kprobe_ftrace_enabled == 1) {
-@@ -1022,8 +1023,7 @@ static int disarm_kprobe_ftrace(struct kprobe *p)
- 
- 	kprobe_ftrace_enabled--;
- 
--	ret = ftrace_set_filter_ip(&kprobe_ftrace_ops,
--			   (unsigned long)p->addr, 1, 0);
-+	ret = ftrace_set_filter_ip(&kprobe_ftrace_ops, ftrace_ip, 1, 0);
- 	WARN_ONCE(ret < 0, "Failed to disarm kprobe-ftrace at %pS (%d)\n",
- 		  p->addr, ret);
- 	return ret;
--- 
-2.22.0
+=
 
