@@ -2,92 +2,48 @@ Return-Path: <SRS0=L8Yn=U2=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E1940C48BD6
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Jun 2019 05:37:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 85CF8C48BD7
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Jun 2019 05:57:41 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3EBAB2133F
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Jun 2019 05:37:15 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3EBAB2133F
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id CEE5E2054F
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Jun 2019 05:57:40 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CEE5E2054F
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45Z7vF0B5RzDqjW
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Jun 2019 15:37:13 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
- (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=nathanl@linux.ibm.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 45Z8Lp00JXzDqFS
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Jun 2019 15:57:38 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45Z7lx4Z6hzDqch
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jun 2019 15:30:53 +1000 (AEST)
-Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x5R5RkLL003489
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jun 2019 01:30:49 -0400
-Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2tcnvbuxx3-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jun 2019 01:30:49 -0400
-Received: from localhost
- by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <nathanl@linux.ibm.com>;
- Thu, 27 Jun 2019 06:30:48 +0100
-Received: from b03cxnp08026.gho.boulder.ibm.com (9.17.130.18)
- by e32.co.us.ibm.com (192.168.1.132) with IBM ESMTP SMTP Gateway: Authorized
- Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Thu, 27 Jun 2019 06:30:46 +0100
-Received: from b03ledav006.gho.boulder.ibm.com
- (b03ledav006.gho.boulder.ibm.com [9.17.130.237])
- by b03cxnp08026.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x5R5UjY357868690
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jun 2019 05:30:45 GMT
-Received: from b03ledav006.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 8C21CC6059
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jun 2019 05:30:45 +0000 (GMT)
-Received: from b03ledav006.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 4124CC6057
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jun 2019 05:30:45 +0000 (GMT)
-Received: from localhost (unknown [9.80.233.188])
- by b03ledav006.gho.boulder.ibm.com (Postfix) with ESMTP
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jun 2019 05:30:45 +0000 (GMT)
-From: Nathan Lynch <nathanl@linux.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 0/2] migration/prrn instrumentation tweaks
-Date: Thu, 27 Jun 2019 00:30:42 -0500
-X-Mailer: git-send-email 2.20.1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45Z8Jj2J9szDq77
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jun 2019 15:55:49 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=ellerman.id.au
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
+ SHA256) (No client certificate requested)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 45Z8Jh17Szz9s4Y;
+ Thu, 27 Jun 2019 15:55:48 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>,
+ Steven Rostedt <rostedt@goodmis.org>,
+ Christophe Leroy <christophe.leroy@c-s.fr>
+Subject: Re: [PATCH] recordmcount: Fix spurious mcount entries on powerpc
+In-Reply-To: <20190626183801.31247-1-naveen.n.rao@linux.vnet.ibm.com>
+References: <20190626183801.31247-1-naveen.n.rao@linux.vnet.ibm.com>
+Date: Thu, 27 Jun 2019 15:55:47 +1000
+Message-ID: <8736jvtvvg.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-x-cbid: 19062705-0004-0000-0000-000015218A13
-X-IBM-SpamModules-Scores: 
-X-IBM-SpamModules-Versions: BY=3.00011338; HX=3.00000242; KW=3.00000007;
- PH=3.00000004; SC=3.00000286; SDB=6.01223854; UDB=6.00644098; IPR=6.01005043; 
- MB=3.00027484; MTD=3.00000008; XFM=3.00000015; UTC=2019-06-27 05:30:47
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19062705-0005-0000-0000-00008C3CF60B
-Message-Id: <20190627053044.9238-1-nathanl@linux.ibm.com>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2019-06-27_02:, , signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- malwarescore=0 suspectscore=1 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=644 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1810050000 definitions=main-1906270060
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -99,20 +55,77 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Mainly this produces better information about what's happening with
-the device tree as a result of LPM or PRRN.
+"Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> writes:
+> The recent change enabling HAVE_C_RECORDMCOUNT on powerpc started
+> showing the following issue:
+>
+>   # modprobe kprobe_example
+>    ftrace-powerpc: Not expected bl: opcode is 3c4c0001
+>    WARNING: CPU: 0 PID: 227 at kernel/trace/ftrace.c:2001 ftrace_bug+0x90/0x318
+>    Modules linked in:
+>    CPU: 0 PID: 227 Comm: modprobe Not tainted 5.2.0-rc6-00678-g1c329100b942 #2
+>    NIP:  c000000000264318 LR: c00000000025d694 CTR: c000000000f5cd30
+>    REGS: c000000001f2b7b0 TRAP: 0700   Not tainted  (5.2.0-rc6-00678-g1c329100b942)
+>    MSR:  900000010282b033 <SF,HV,VEC,VSX,EE,FP,ME,IR,DR,RI,LE,TM[E]>  CR: 28228222  XER: 00000000
+>    CFAR: c0000000002642fc IRQMASK: 0
+>    <snip>
+>    NIP [c000000000264318] ftrace_bug+0x90/0x318
+>    LR [c00000000025d694] ftrace_process_locs+0x4f4/0x5e0
+>    Call Trace:
+>    [c000000001f2ba40] [0000000000000004] 0x4 (unreliable)
+>    [c000000001f2bad0] [c00000000025d694] ftrace_process_locs+0x4f4/0x5e0
+>    [c000000001f2bb90] [c00000000020ff10] load_module+0x25b0/0x30c0
+>    [c000000001f2bd00] [c000000000210cb0] sys_finit_module+0xc0/0x130
+>    [c000000001f2be20] [c00000000000bda4] system_call+0x5c/0x70
+>    Instruction dump:
+>    419e0018 2f83ffff 419e00bc 2f83ffea 409e00cc 4800001c 0fe00000 3c62ff96
+>    39000001 39400000 386386d0 480000c4 <0fe00000> 3ce20003 39000001 3c62ff96
+>    ---[ end trace 4c438d5cebf78381 ]---
+>    ftrace failed to modify
+>    [<c0080000012a0008>] 0xc0080000012a0008
+>     actual:   01:00:4c:3c
+>    Initializing ftrace call sites
+>    ftrace record flags: 2000000
+>     (0)
+>     expected tramp: c00000000006af4c
 
-Nathan Lynch (2):
-  powerpc/pseries/mobility: set pr_fmt
-  powerpc/pseries/mobility: add pr_debug for device tree changes
+Aha, thanks. I saw that on one of my text boxes but hadn't pinned it
+down to this commit.
 
- arch/powerpc/platforms/pseries/mobility.c | 15 +++++++++++++--
- 1 file changed, 13 insertions(+), 2 deletions(-)
+> Fixes: c7d64b560ce80 ("powerpc/ftrace: Enable C Version of recordmcount")
 
--- 
-2.20.1
+That commit is the tip of my next, so I'll drop it for now and merge
+them in the other order so there's breakage.
 
+Steve are you OK if I merge this via the powerpc tree? I'll reword the
+commit message so that it makes sense coming prior to the commit
+mentioned above.
+
+cheers
+
+> Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
+> ---
+>  scripts/recordmcount.h | 3 ++-
+>  1 file changed, 2 insertions(+), 1 deletion(-)
+>
+> diff --git a/scripts/recordmcount.h b/scripts/recordmcount.h
+> index 13c5e6c8829c..47fca2c69a73 100644
+> --- a/scripts/recordmcount.h
+> +++ b/scripts/recordmcount.h
+> @@ -325,7 +325,8 @@ static uint_t *sift_rel_mcount(uint_t *mlocp,
+>  		if (!mcountsym)
+>  			mcountsym = get_mcountsym(sym0, relp, str0);
+>  
+> -		if (mcountsym == Elf_r_sym(relp) && !is_fake_mcount(relp)) {
+> +		if (mcountsym && mcountsym == Elf_r_sym(relp) &&
+> +				!is_fake_mcount(relp)) {
+>  			uint_t const addend =
+>  				_w(_w(relp->r_offset) - recval + mcount_adjust);
+>  			mrelp->r_offset = _w(offbase
+> -- 
+> 2.22.0
