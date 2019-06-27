@@ -2,51 +2,88 @@ Return-Path: <SRS0=L8Yn=U2=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_MUTT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 07992C48BD7
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Jun 2019 07:24:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 502A8C48BD6
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Jun 2019 08:40:53 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3B73F2063F
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Jun 2019 07:24:53 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3B73F2063F
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
+	by mail.kernel.org (Postfix) with ESMTPS id 9A867204FD
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Jun 2019 08:40:52 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9A867204FD
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45ZBHQ6PVWzDqk5
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Jun 2019 17:24:50 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45ZCz55jXrzDqdv
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Jun 2019 18:40:49 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=lst.de
- (client-ip=213.95.11.211; helo=newverein.lst.de; envelope-from=hch@lst.de;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=lst.de
-Received: from newverein.lst.de (verein.lst.de [213.95.11.211])
+ spf=none (mailfrom) smtp.mailfrom=linux.vnet.ibm.com
+ (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
+ envelope-from=aravinda@linux.vnet.ibm.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=linux.vnet.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45ZBFd6ZZbzDqWj
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jun 2019 17:23:15 +1000 (AEST)
-Received: by newverein.lst.de (Postfix, from userid 2407)
- id DCFEF68B20; Thu, 27 Jun 2019 09:22:40 +0200 (CEST)
-Date: Thu, 27 Jun 2019 09:22:40 +0200
-From: Christoph Hellwig <hch@lst.de>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>
-Subject: Re: [PATCH 3/4] powerpc/powernv: remove unused NPU DMA code
-Message-ID: <20190627072240.GA9916@lst.de>
-References: <20190625145239.2759-1-hch@lst.de>
- <20190625145239.2759-4-hch@lst.de>
- <7bde96e0-7bc5-d5fe-f151-52c29660633c@ozlabs.ru>
- <20190626074935.GA25452@lst.de>
- <027a5095-a22c-2799-8ff6-42d0bc4d2bc9@ozlabs.ru>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45ZCwj68NkzDqRk
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jun 2019 18:38:45 +1000 (AEST)
+Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
+ x5R8bY4A023444; Thu, 27 Jun 2019 04:38:39 -0400
+Received: from ppma01wdc.us.ibm.com (fd.55.37a9.ip4.static.sl-reverse.com
+ [169.55.85.253])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2tcrwc4ab1-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Thu, 27 Jun 2019 04:38:39 -0400
+Received: from pps.filterd (ppma01wdc.us.ibm.com [127.0.0.1])
+ by ppma01wdc.us.ibm.com (8.16.0.27/8.16.0.27) with SMTP id x5R8ZpjT017907;
+ Thu, 27 Jun 2019 08:38:37 GMT
+Received: from b01cxnp22036.gho.pok.ibm.com (b01cxnp22036.gho.pok.ibm.com
+ [9.57.198.26]) by ppma01wdc.us.ibm.com with ESMTP id 2t9by75530-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Thu, 27 Jun 2019 08:38:37 +0000
+Received: from b01ledav006.gho.pok.ibm.com (b01ledav006.gho.pok.ibm.com
+ [9.57.199.111])
+ by b01cxnp22036.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x5R8cbw515991788
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Thu, 27 Jun 2019 08:38:37 GMT
+Received: from b01ledav006.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 839B5AC05F;
+ Thu, 27 Jun 2019 08:38:37 +0000 (GMT)
+Received: from b01ledav006.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 04D49AC05B;
+ Thu, 27 Jun 2019 08:38:35 +0000 (GMT)
+Received: from [9.199.51.100] (unknown [9.199.51.100])
+ by b01ledav006.gho.pok.ibm.com (Postfix) with ESMTP;
+ Thu, 27 Jun 2019 08:38:35 +0000 (GMT)
+Subject: Re: [PATCH] powerpc/pseries: Fix maximum memory value
+To: Nathan Lynch <nathanl@linux.ibm.com>
+References: <156154180258.26182.5331913391297025368.stgit@aravinda>
+ <874l4ct1mg.fsf@linux.ibm.com>
+From: Aravinda Prasad <aravinda@linux.vnet.ibm.com>
+Message-ID: <cb7c0b3f-8b65-d4eb-9908-6b814ba67fcf@linux.vnet.ibm.com>
+Date: Thu, 27 Jun 2019 14:08:34 +0530
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:52.0) Gecko/20100101
+ Thunderbird/52.6.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <027a5095-a22c-2799-8ff6-42d0bc4d2bc9@ozlabs.ru>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <874l4ct1mg.fsf@linux.ibm.com>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
+ definitions=2019-06-27_03:, , signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1810050000 definitions=main-1906270100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -58,40 +95,49 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- linux-kernel@vger.kernel.org, Oliver O'Halloran <oohall@gmail.com>,
- Frederic Barrat <fbarrat@linux.ibm.com>, Paul Mackerras <paulus@samba.org>,
- linuxppc-dev@lists.ozlabs.org, Christoph Hellwig <hch@lst.de>
+Cc: naveen.n.rao@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, Jun 27, 2019 at 10:21:55AM +1000, Alexey Kardashevskiy wrote:
-> > Which comment?  Last time I asked you complaint "it is still used in
-> > exactly the same way as before" which you later clarified that you
-> > have a hidden out of tree user somewhere, and you only objected to
-> 
-> It is not hidden, anyone can download and inspect that GPL driver.
 
-For one no one has ever posted a link.  And second as mentioned
-countless times it doesn't matter, it only matters if it is in mainline,
-or as a special exception actively trying to go mainline.
 
-> > the word "dead".  That has been fixed and there were no further
-> > comments.
+On Thursday 27 June 2019 04:06 AM, Nathan Lynch wrote:
+> Aravinda Prasad <aravinda@linux.vnet.ibm.com> writes:
+>> Calculating the maximum memory based on the number of lmbs
+>> and lmb size does not account for the RMA region. Hence
+>> use drmem_lmb_memory_max(), which already accounts for the
+>> RMA region, to fetch the maximum memory value.
+>>
+>> Fixes: 772b039fd9a7: ("powerpc/pseries: Export maximum memory value")
+>> Signed-off-by: Aravinda Prasad <aravinda@linux.vnet.ibm.com>
+>> ---
+>>  arch/powerpc/platforms/pseries/lparcfg.c |    2 +-
+>>  1 file changed, 1 insertion(+), 1 deletion(-)
+>>
+>> diff --git a/arch/powerpc/platforms/pseries/lparcfg.c b/arch/powerpc/platforms/pseries/lparcfg.c
+>> index e33e8bc..f425842 100644
+>> --- a/arch/powerpc/platforms/pseries/lparcfg.c
+>> +++ b/arch/powerpc/platforms/pseries/lparcfg.c
+>> @@ -435,7 +435,7 @@ static void maxmem_data(struct seq_file *m)
+>>  {
+>>  	unsigned long maxmem = 0;
+>>  
+>> -	maxmem += drmem_info->n_lmbs * drmem_info->lmb_size;
+>> +	maxmem += drmem_lmb_memory_max();
 > 
-> You still have it in the cover letter so at very least 3/4 is not a part
-> of this patchset then.
-> 
-> And I still want to see a formal statement about out-of-tree drivers
-> support/tolerance. If you manage to remove this code, I'll have to post
-> a revert (again and again) but I would rather know the exact list of
-> what we do and what we do not do about such drivers and if the list 1)
-> exists 2) is reasonable then I could try to come up with a better
-> solution or point others to the policy and push them to do the right
-> thing. Right now it is just you pretending that the nVidia driver does
-> not exist, this is not helping. Thanks,
+> Would memory_hotplug_max() be better here? There's no guarantee an LPAR
+> will have the device tree node/properties that populate drmem.
 
-We had that discussion at kernel summit and it was reported.  Anyway,
-adding Greg, who usually has some pretty good prewritten letters for
-this kind of thing.
+I see memory_hotplug_max() calling drmem_lmb_memory_max() if "/rtas"
+node is not available or else it fetches from "ibm,lrdr-capacity". So I
+think memory_hotplug_max() can be used.
+
+Regards,
+Aravinda
+
+> 
+
+-- 
+Regards,
+Aravinda
