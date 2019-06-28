@@ -2,62 +2,95 @@ Return-Path: <SRS0=ywKm=U3=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
+X-Spam-Status: No, score=-0.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E3EF6C4321A
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Jun 2019 01:51:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A791FC4321A
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Jun 2019 02:01:04 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6F5622064A
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Jun 2019 01:51:56 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6F5622064A
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nxp.com
+	by mail.kernel.org (Postfix) with ESMTPS id 302262064A
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Jun 2019 02:01:04 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 302262064A
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45Zfrp3YW5zDqcW
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Jun 2019 11:51:54 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45Zg3L0QkgzDqkX
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Jun 2019 12:01:02 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=nxp.com
- (client-ip=92.121.34.13; helo=inva020.nxp.com;
- envelope-from=xiaowei.bao@nxp.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
+ (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
+ envelope-from=bauerman@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=nxp.com
-Received: from inva020.nxp.com (inva020.nxp.com [92.121.34.13])
+ dmarc=none (p=none dis=none) header.from=linux.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45Zfm775f7zDqkc
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Jun 2019 11:47:50 +1000 (AEST)
-Received: from inva020.nxp.com (localhost [127.0.0.1])
- by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id 0074A1A1052;
- Fri, 28 Jun 2019 03:47:46 +0200 (CEST)
-Received: from invc005.ap-rdc01.nxp.com (invc005.ap-rdc01.nxp.com
- [165.114.16.14])
- by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id 138801A104C;
- Fri, 28 Jun 2019 03:47:31 +0200 (CEST)
-Received: from titan.ap.freescale.net (TITAN.ap.freescale.net [10.192.208.233])
- by invc005.ap-rdc01.nxp.com (Postfix) with ESMTP id 8D10A4030E;
- Fri, 28 Jun 2019 09:47:18 +0800 (SGT)
-From: Xiaowei Bao <xiaowei.bao@nxp.com>
-To: bhelgaas@google.com, robh+dt@kernel.org, mark.rutland@arm.com,
- shawnguo@kernel.org, leoyang.li@nxp.com, kishon@ti.com,
- lorenzo.pieralisi@arm.com, arnd@arndb.de, gregkh@linuxfoundation.org,
- minghuan.Lian@nxp.com, mingkai.hu@nxp.com, roy.zang@nxp.com,
- kstewart@linuxfoundation.org, pombredanne@nexb.com,
- shawn.lin@rock-chips.com, linux-pci@vger.kernel.org,
- devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org
-Subject: [PATCHv3 2/2] PCI: layerscape: Add CONFIG_PCI_LAYERSCAPE_EP to build
- EP/RC separately
-Date: Fri, 28 Jun 2019 09:38:26 +0800
-Message-Id: <20190628013826.4705-2-xiaowei.bao@nxp.com>
-X-Mailer: git-send-email 2.14.1
-In-Reply-To: <20190628013826.4705-1-xiaowei.bao@nxp.com>
-References: <20190628013826.4705-1-xiaowei.bao@nxp.com>
-X-Virus-Scanned: ClamAV using ClamSMTP
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45Zg131Kz4zDqVR
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Jun 2019 11:59:02 +1000 (AEST)
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
+ x5S1vDtd041017; Thu, 27 Jun 2019 21:58:49 -0400
+Received: from ppma01wdc.us.ibm.com (fd.55.37a9.ip4.static.sl-reverse.com
+ [169.55.85.253])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2td76ad7mt-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Thu, 27 Jun 2019 21:58:49 -0400
+Received: from pps.filterd (ppma01wdc.us.ibm.com [127.0.0.1])
+ by ppma01wdc.us.ibm.com (8.16.0.27/8.16.0.27) with SMTP id x5S1tCOI009374;
+ Fri, 28 Jun 2019 01:58:48 GMT
+Received: from b03cxnp07029.gho.boulder.ibm.com
+ (b03cxnp07029.gho.boulder.ibm.com [9.17.130.16])
+ by ppma01wdc.us.ibm.com with ESMTP id 2t9by7ajaw-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Fri, 28 Jun 2019 01:58:48 +0000
+Received: from b03ledav005.gho.boulder.ibm.com
+ (b03ledav005.gho.boulder.ibm.com [9.17.130.236])
+ by b03cxnp07029.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x5S1wklw29294852
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Fri, 28 Jun 2019 01:58:46 GMT
+Received: from b03ledav005.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 989EABE04F;
+ Fri, 28 Jun 2019 01:58:46 +0000 (GMT)
+Received: from b03ledav005.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id C8451BE051;
+ Fri, 28 Jun 2019 01:58:42 +0000 (GMT)
+Received: from morokweng.localdomain (unknown [9.85.218.134])
+ by b03ledav005.gho.boulder.ibm.com (Postfix) with ESMTPS;
+ Fri, 28 Jun 2019 01:58:42 +0000 (GMT)
+References: <20190129134750-mutt-send-email-mst@kernel.org>
+ <877eefxvyb.fsf@morokweng.localdomain>
+ <20190204144048-mutt-send-email-mst@kernel.org>
+ <87ef71seve.fsf@morokweng.localdomain>
+ <20190320171027-mutt-send-email-mst@kernel.org>
+ <87tvfvbwpb.fsf@morokweng.localdomain>
+ <20190323165456-mutt-send-email-mst@kernel.org>
+ <87a7go71hz.fsf@morokweng.localdomain>
+ <20190520090939-mutt-send-email-mst@kernel.org>
+ <877ea26tk8.fsf@morokweng.localdomain>
+ <20190603211528-mutt-send-email-mst@kernel.org>
+User-agent: mu4e 1.2.0; emacs 26.2
+From: Thiago Jung Bauermann <bauerman@linux.ibm.com>
+To: "Michael S. Tsirkin" <mst@redhat.com>
+Subject: Re: [RFC PATCH] virtio_ring: Use DMA API if guest memory is encrypted
+In-reply-to: <20190603211528-mutt-send-email-mst@kernel.org>
+Date: Thu, 27 Jun 2019 22:58:40 -0300
+Message-ID: <877e96qxm7.fsf@morokweng.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain
+X-TM-AS-GCONF: 00
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
+ definitions=2019-06-27_15:, , signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1011 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1810050000 definitions=main-1906280014
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -69,74 +102,103 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Xiaowei Bao <xiaowei.bao@nxp.com>
+Cc: Mike Anderson <andmike@linux.ibm.com>,
+ Michael Roth <mdroth@linux.vnet.ibm.com>,
+ Jean-Philippe Brucker <jean-philippe.brucker@arm.com>,
+ Jason Wang <jasowang@redhat.com>, Alexey Kardashevskiy <aik@linux.ibm.com>,
+ Ram Pai <linuxram@us.ibm.com>, linux-kernel@vger.kernel.org,
+ virtualization@lists.linux-foundation.org, iommu@lists.linux-foundation.org,
+ linuxppc-dev@lists.ozlabs.org, Christoph Hellwig <hch@lst.de>,
+ David Gibson <david@gibson.dropbear.id.au>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Add CONFIG_PCI_LAYERSCAPE_EP to build EP/RC separately.
 
-Signed-off-by: Xiaowei Bao <xiaowei.bao@nxp.com>
----
-v2:
- - No change.
-v3:
- - modify the commit message.
+Michael S. Tsirkin <mst@redhat.com> writes:
 
- drivers/pci/controller/dwc/Kconfig  |   20 ++++++++++++++++++--
- drivers/pci/controller/dwc/Makefile |    3 ++-
- 2 files changed, 20 insertions(+), 3 deletions(-)
+> On Mon, Jun 03, 2019 at 10:13:59PM -0300, Thiago Jung Bauermann wrote:
+>>
+>>
+>> Michael S. Tsirkin <mst@redhat.com> writes:
+>>
+>> > On Wed, Apr 17, 2019 at 06:42:00PM -0300, Thiago Jung Bauermann wrote:
+>> >> I rephrased it in terms of address translation. What do you think of
+>> >> this version? The flag name is slightly different too:
+>> >>
+>> >>
+>> >> VIRTIO_F_ACCESS_PLATFORM_NO_TRANSLATION This feature has the same
+>> >>     meaning as VIRTIO_F_ACCESS_PLATFORM both when set and when not set,
+>> >>     with the exception that address translation is guaranteed to be
+>> >>     unnecessary when accessing memory addresses supplied to the device
+>> >>     by the driver. Which is to say, the device will always use physical
+>> >>     addresses matching addresses used by the driver (typically meaning
+>> >>     physical addresses used by the CPU) and not translated further. This
+>> >>     flag should be set by the guest if offered, but to allow for
+>> >>     backward-compatibility device implementations allow for it to be
+>> >>     left unset by the guest. It is an error to set both this flag and
+>> >>     VIRTIO_F_ACCESS_PLATFORM.
+>> >
+>> >
+>> > OK so VIRTIO_F_ACCESS_PLATFORM is designed to allow unpriveledged
+>> > drivers. This is why devices fail when it's not negotiated.
+>>
+>> Just to clarify, what do you mean by unprivileged drivers? Is it drivers
+>> implemented in guest userspace such as with VFIO? Or unprivileged in
+>> some other sense such as needing to use bounce buffers for some reason?
+>
+> I had drivers in guest userspace in mind.
 
-diff --git a/drivers/pci/controller/dwc/Kconfig b/drivers/pci/controller/dwc/Kconfig
-index a6ce1ee..a41ccf5 100644
---- a/drivers/pci/controller/dwc/Kconfig
-+++ b/drivers/pci/controller/dwc/Kconfig
-@@ -131,13 +131,29 @@ config PCI_KEYSTONE_EP
- 	  DesignWare core functions to implement the driver.
- 
- config PCI_LAYERSCAPE
--	bool "Freescale Layerscape PCIe controller"
-+	bool "Freescale Layerscape PCIe controller - Host mode"
- 	depends on OF && (ARM || ARCH_LAYERSCAPE || COMPILE_TEST)
- 	depends on PCI_MSI_IRQ_DOMAIN
- 	select MFD_SYSCON
- 	select PCIE_DW_HOST
- 	help
--	  Say Y here if you want PCIe controller support on Layerscape SoCs.
-+	  Say Y here if you want to enable PCIe controller support on Layerscape
-+	  SoCs to work in Host mode.
-+	  This controller can work either as EP or RC. The RCW[HOST_AGT_PEX]
-+	  determines which PCIe controller works in EP mode and which PCIe
-+	  controller works in RC mode.
-+
-+config PCI_LAYERSCAPE_EP
-+	bool "Freescale Layerscape PCIe controller - Endpoint mode"
-+	depends on OF && (ARM || ARCH_LAYERSCAPE || COMPILE_TEST)
-+	depends on PCI_ENDPOINT
-+	select PCIE_DW_EP
-+	help
-+	  Say Y here if you want to enable PCIe controller support on Layerscape
-+	  SoCs to work in Endpoint mode.
-+	  This controller can work either as EP or RC. The RCW[HOST_AGT_PEX]
-+	  determines which PCIe controller works in EP mode and which PCIe
-+	  controller works in RC mode.
- 
- config PCI_HISI
- 	depends on OF && (ARM64 || COMPILE_TEST)
-diff --git a/drivers/pci/controller/dwc/Makefile b/drivers/pci/controller/dwc/Makefile
-index b085dfd..824fde7 100644
---- a/drivers/pci/controller/dwc/Makefile
-+++ b/drivers/pci/controller/dwc/Makefile
-@@ -8,7 +8,8 @@ obj-$(CONFIG_PCI_EXYNOS) += pci-exynos.o
- obj-$(CONFIG_PCI_IMX6) += pci-imx6.o
- obj-$(CONFIG_PCIE_SPEAR13XX) += pcie-spear13xx.o
- obj-$(CONFIG_PCI_KEYSTONE) += pci-keystone.o
--obj-$(CONFIG_PCI_LAYERSCAPE) += pci-layerscape.o pci-layerscape-ep.o
-+obj-$(CONFIG_PCI_LAYERSCAPE) += pci-layerscape.o
-+obj-$(CONFIG_PCI_LAYERSCAPE_EP) += pci-layerscape-ep.o
- obj-$(CONFIG_PCIE_QCOM) += pcie-qcom.o
- obj-$(CONFIG_PCIE_ARMADA_8K) += pcie-armada8k.o
- obj-$(CONFIG_PCIE_ARTPEC6) += pcie-artpec6.o
--- 
-1.7.1
+Great. Thanks for clarifying.
 
+I don't think this flag would work for guest userspace drivers. Should I
+add a note about that in the flag definition?
+
+>> > This confuses me.
+>> > If driver is unpriveledged then what happens with this flag?
+>> > It can supply any address it wants. Will that corrupt kernel
+>> > memory?
+>>
+>> Not needing address translation doesn't necessarily mean that there's no
+>> IOMMU. On powerpc we don't use VIRTIO_F_ACCESS_PLATFORM but there's
+>> always an IOMMU present. And we also support VFIO drivers. The VFIO API
+>> for pseries (sPAPR section in Documentation/vfio.txt) has extra ioctls
+>> to program the IOMMU.
+>>
+>> For our use case, we don't need address translation because we set up an
+>> identity mapping in the IOMMU so that the device can use guest physical
+>> addresses.
+>
+> And can it access any guest physical address?
+
+Sorry, I was mistaken. We do support VFIO in guests but not for virtio
+devices, only for regular PCI devices. In which case they will use
+address translation.
+
+>> If the guest kernel is concerned that an unprivileged driver could
+>> jeopardize its integrity it should not negotiate this feature flag.
+>
+> Unfortunately flag negotiation is done through config space
+> and so can be overwritten by the driver.
+
+Ok, so the guest kernel has to forbid VFIO access on devices where this
+flag is advertised.
+
+>> Perhaps there should be a note about this in the flag definition? This
+>> concern is platform-dependant though. I don't believe it's an issue in
+>> pseries.
+>
+> Again ACCESS_PLATFORM has a pretty open definition. It does actually
+> say it's all up to the platform.
+>
+> Specifically how will VIRTIO_F_ACCESS_PLATFORM_NO_TRANSLATION be
+> implemented portably? virtio has no portable way to know
+> whether DMA API bypasses translation.
+
+The fact that VIRTIO_F_ACCESS_PLATFORM_NO_TRANSLATION is set
+communicates that knowledge to virtio. There is a shared understanding
+between the guest and the host about what this flag being set means.
+
+--
+Thiago Jung Bauermann
+IBM Linux Technology Center
