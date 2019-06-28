@@ -2,84 +2,85 @@ Return-Path: <SRS0=ywKm=U3=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+X-Spam-Status: No, score=-9.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+	URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7A4EEC4321A
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Jun 2019 20:19:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 76927C4321A
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Jun 2019 20:21:24 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 06D9C208C4
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Jun 2019 20:19:52 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 06D9C208C4
+	by mail.kernel.org (Postfix) with ESMTPS id F3DF7208CB
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Jun 2019 20:21:23 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org F3DF7208CB
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45b7RC0zWZzDr37
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 29 Jun 2019 06:19:51 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45b7Sy1XpvzDr1Z
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 29 Jun 2019 06:21:22 +1000 (AEST)
 Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45b7Bd1bb2zDqxG
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 29 Jun 2019 06:08:57 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45b7Bk0sw9zDqxL
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 29 Jun 2019 06:09:02 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=linux.ibm.com
 Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 45b7Bc5zFXz8vLj
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 29 Jun 2019 06:08:56 +1000 (AEST)
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 45b7Bj1CJxz8wH2
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 29 Jun 2019 06:09:01 +1000 (AEST)
 Received: by ozlabs.org (Postfix)
- id 45b7Bc1gK4z9sBb; Sat, 29 Jun 2019 06:08:56 +1000 (AEST)
+ id 45b7Bh5W6pz9sPY; Sat, 29 Jun 2019 06:09:00 +1000 (AEST)
 Authentication-Results: ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
- (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
+ (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
  envelope-from=cclaudio@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: ozlabs.org;
  dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 45b7Bb0r9Lz9sBp;
- Sat, 29 Jun 2019 06:08:54 +1000 (AEST)
-Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x5SK6tcl020422; Fri, 28 Jun 2019 16:08:52 -0400
+ by ozlabs.org (Postfix) with ESMTPS id 45b7Bg3kZ6z9s8m;
+ Sat, 29 Jun 2019 06:08:59 +1000 (AEST)
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
+ x5SK6qWj054758; Fri, 28 Jun 2019 16:08:57 -0400
 Received: from ppma01wdc.us.ibm.com (fd.55.37a9.ip4.static.sl-reverse.com
  [169.55.85.253])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2tdpffpd2x-1
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2tdrq3hxjx-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Fri, 28 Jun 2019 16:08:52 -0400
+ Fri, 28 Jun 2019 16:08:57 -0400
 Received: from pps.filterd (ppma01wdc.us.ibm.com [127.0.0.1])
- by ppma01wdc.us.ibm.com (8.16.0.27/8.16.0.27) with SMTP id x5SK6skk014160;
- Fri, 28 Jun 2019 20:08:50 GMT
+ by ppma01wdc.us.ibm.com (8.16.0.27/8.16.0.27) with SMTP id x5SK6spQ014163;
+ Fri, 28 Jun 2019 20:08:56 GMT
 Received: from b03cxnp07029.gho.boulder.ibm.com
  (b03cxnp07029.gho.boulder.ibm.com [9.17.130.16])
- by ppma01wdc.us.ibm.com with ESMTP id 2t9by7fq0f-1
+ by ppma01wdc.us.ibm.com with ESMTP id 2t9by7fq1h-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Fri, 28 Jun 2019 20:08:50 +0000
+ Fri, 28 Jun 2019 20:08:56 +0000
 Received: from b03ledav004.gho.boulder.ibm.com
  (b03ledav004.gho.boulder.ibm.com [9.17.130.235])
  by b03cxnp07029.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x5SK8mhT48169454
+ x5SK8sdq59244990
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Fri, 28 Jun 2019 20:08:48 GMT
+ Fri, 28 Jun 2019 20:08:54 GMT
 Received: from b03ledav004.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 8F43D7805C;
- Fri, 28 Jun 2019 20:08:48 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id D08757805F;
+ Fri, 28 Jun 2019 20:08:54 +0000 (GMT)
 Received: from b03ledav004.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id CD57C7805E;
- Fri, 28 Jun 2019 20:08:45 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 1B9417805C;
+ Fri, 28 Jun 2019 20:08:52 +0000 (GMT)
 Received: from rino.br.ibm.com (unknown [9.18.235.108])
  by b03ledav004.gho.boulder.ibm.com (Postfix) with ESMTP;
- Fri, 28 Jun 2019 20:08:45 +0000 (GMT)
+ Fri, 28 Jun 2019 20:08:51 +0000 (GMT)
 From: Claudio Carvalho <cclaudio@linux.ibm.com>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH v4 6/8] KVM: PPC: Ultravisor: Restrict LDBAR access
-Date: Fri, 28 Jun 2019 17:08:23 -0300
-Message-Id: <20190628200825.31049-7-cclaudio@linux.ibm.com>
+Subject: [PATCH v4 8/8] KVM: PPC: Ultravisor: Check for MSR_S during
+ hv_reset_msr
+Date: Fri, 28 Jun 2019 17:08:25 -0300
+Message-Id: <20190628200825.31049-9-cclaudio@linux.ibm.com>
 X-Mailer: git-send-email 2.20.1
 In-Reply-To: <20190628200825.31049-1-cclaudio@linux.ibm.com>
 References: <20190628200825.31049-1-cclaudio@linux.ibm.com>
@@ -116,75 +117,32 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-When the ultravisor firmware is available, it takes control over the
-LDBAR register. In this case, thread-imc updates and save/restore
-operations on the LDBAR register are handled by ultravisor.
+From: Michael Anderson <andmike@linux.ibm.com>
 
+ - Check for MSR_S so that kvmppc_set_msr will include it. Prior to this
+   change return to guest would not have the S bit set.
+
+ - Patch based on comment from Paul Mackerras <pmac@au1.ibm.com>
+
+Signed-off-by: Michael Anderson <andmike@linux.ibm.com>
 Signed-off-by: Claudio Carvalho <cclaudio@linux.ibm.com>
-Reviewed-by: Ram Pai <linuxram@us.ibm.com>
-Reviewed-by: Ryan Grimm <grimm@linux.ibm.com>
-Acked-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
 Acked-by: Paul Mackerras <paulus@ozlabs.org>
 ---
- arch/powerpc/kvm/book3s_hv_rmhandlers.S   | 2 ++
- arch/powerpc/platforms/powernv/idle.c     | 6 ++++--
- arch/powerpc/platforms/powernv/opal-imc.c | 4 ++++
- 3 files changed, 10 insertions(+), 2 deletions(-)
+ arch/powerpc/kvm/book3s_64_mmu_hv.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/arch/powerpc/kvm/book3s_hv_rmhandlers.S b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-index f9b2620fbecd..cffb365d9d02 100644
---- a/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-+++ b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-@@ -375,8 +375,10 @@ BEGIN_FTR_SECTION
- 	mtspr	SPRN_RPR, r0
- 	ld	r0, KVM_SPLIT_PMMAR(r6)
- 	mtspr	SPRN_PMMAR, r0
-+BEGIN_FW_FTR_SECTION_NESTED(70)
- 	ld	r0, KVM_SPLIT_LDBAR(r6)
- 	mtspr	SPRN_LDBAR, r0
-+END_FW_FTR_SECTION_NESTED(FW_FEATURE_ULTRAVISOR, 0, 70)
- 	isync
- FTR_SECTION_ELSE
- 	/* On P9 we use the split_info for coordinating LPCR changes */
-diff --git a/arch/powerpc/platforms/powernv/idle.c b/arch/powerpc/platforms/powernv/idle.c
-index 77f2e0a4ee37..5593a2d55959 100644
---- a/arch/powerpc/platforms/powernv/idle.c
-+++ b/arch/powerpc/platforms/powernv/idle.c
-@@ -679,7 +679,8 @@ static unsigned long power9_idle_stop(unsigned long psscr, bool mmu_on)
- 		sprs.ptcr	= mfspr(SPRN_PTCR);
- 		sprs.rpr	= mfspr(SPRN_RPR);
- 		sprs.tscr	= mfspr(SPRN_TSCR);
--		sprs.ldbar	= mfspr(SPRN_LDBAR);
-+		if (!firmware_has_feature(FW_FEATURE_ULTRAVISOR))
-+			sprs.ldbar	= mfspr(SPRN_LDBAR);
+diff --git a/arch/powerpc/kvm/book3s_64_mmu_hv.c b/arch/powerpc/kvm/book3s_64_mmu_hv.c
+index ab3d484c5e2e..ab62a66f9b4e 100644
+--- a/arch/powerpc/kvm/book3s_64_mmu_hv.c
++++ b/arch/powerpc/kvm/book3s_64_mmu_hv.c
+@@ -295,6 +295,7 @@ static void kvmppc_mmu_book3s_64_hv_reset_msr(struct kvm_vcpu *vcpu)
+ 		msr |= MSR_TS_S;
+ 	else
+ 		msr |= vcpu->arch.shregs.msr & MSR_TS_MASK;
++	msr |= vcpu->arch.shregs.msr & MSR_S;
+ 	kvmppc_set_msr(vcpu, msr);
+ }
  
- 		sprs_saved = true;
- 
-@@ -762,7 +763,8 @@ static unsigned long power9_idle_stop(unsigned long psscr, bool mmu_on)
- 	mtspr(SPRN_PTCR,	sprs.ptcr);
- 	mtspr(SPRN_RPR,		sprs.rpr);
- 	mtspr(SPRN_TSCR,	sprs.tscr);
--	mtspr(SPRN_LDBAR,	sprs.ldbar);
-+	if (!firmware_has_feature(FW_FEATURE_ULTRAVISOR))
-+		mtspr(SPRN_LDBAR,	sprs.ldbar);
- 
- 	if (pls >= pnv_first_tb_loss_level) {
- 		/* TB loss */
-diff --git a/arch/powerpc/platforms/powernv/opal-imc.c b/arch/powerpc/platforms/powernv/opal-imc.c
-index 1b6932890a73..5fe2d4526cbc 100644
---- a/arch/powerpc/platforms/powernv/opal-imc.c
-+++ b/arch/powerpc/platforms/powernv/opal-imc.c
-@@ -254,6 +254,10 @@ static int opal_imc_counters_probe(struct platform_device *pdev)
- 	bool core_imc_reg = false, thread_imc_reg = false;
- 	u32 type;
- 
-+	/* Disable IMC devices, when Ultravisor is enabled. */
-+	if (firmware_has_feature(FW_FEATURE_ULTRAVISOR))
-+		return -EACCES;
-+
- 	/*
- 	 * Check whether this is kdump kernel. If yes, force the engines to
- 	 * stop and return.
 -- 
 2.20.1
 
