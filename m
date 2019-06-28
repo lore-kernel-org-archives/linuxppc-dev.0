@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
 	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7AA19C4321A
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Jun 2019 02:30:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8DA18C4321A
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Jun 2019 02:32:18 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 08422206A2
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Jun 2019 02:30:33 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 08422206A2
+	by mail.kernel.org (Postfix) with ESMTPS id 19458206A2
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Jun 2019 02:32:17 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 19458206A2
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45ZgjM42lPzDqRp
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Jun 2019 12:30:31 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45ZglM6Fl5zDqlF
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Jun 2019 12:32:15 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
  (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
@@ -29,50 +29,51 @@ Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45ZgTd5C19zDql0
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Jun 2019 12:20:21 +1000 (AEST)
-Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45ZgTl632zzDqgZ
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Jun 2019 12:20:27 +1000 (AEST)
+Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x5S2GWVX098034; Thu, 27 Jun 2019 22:19:57 -0400
+ x5S2I3fg026032; Thu, 27 Jun 2019 22:20:14 -0400
 Received: from pps.reinject (localhost [127.0.0.1])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2td9m2rwe4-1
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2td8xhj8ch-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 27 Jun 2019 22:19:57 -0400
-Received: from m0098410.ppops.net (m0098410.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.27/8.16.0.27) with SMTP id x5S2Ge4p098387;
- Thu, 27 Jun 2019 22:19:56 -0400
-Received: from ppma01wdc.us.ibm.com (fd.55.37a9.ip4.static.sl-reverse.com
- [169.55.85.253])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2td9m2rwdj-1
+ Thu, 27 Jun 2019 22:20:14 -0400
+Received: from m0098394.ppops.net (m0098394.ppops.net [127.0.0.1])
+ by pps.reinject (8.16.0.27/8.16.0.27) with SMTP id x5S2KD70045408;
+ Thu, 27 Jun 2019 22:20:13 -0400
+Received: from ppma01dal.us.ibm.com (83.d6.3fa9.ip4.static.sl-reverse.com
+ [169.63.214.131])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2td8xhj8bt-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 27 Jun 2019 22:19:56 -0400
-Received: from pps.filterd (ppma01wdc.us.ibm.com [127.0.0.1])
- by ppma01wdc.us.ibm.com (8.16.0.27/8.16.0.27) with SMTP id x5S2JV5H031813;
- Fri, 28 Jun 2019 02:19:55 GMT
-Received: from b01cxnp23032.gho.pok.ibm.com (b01cxnp23032.gho.pok.ibm.com
- [9.57.198.27]) by ppma01wdc.us.ibm.com with ESMTP id 2t9by7anqc-1
+ Thu, 27 Jun 2019 22:20:13 -0400
+Received: from pps.filterd (ppma01dal.us.ibm.com [127.0.0.1])
+ by ppma01dal.us.ibm.com (8.16.0.27/8.16.0.27) with SMTP id x5S2JYlV031936;
+ Fri, 28 Jun 2019 02:20:12 GMT
+Received: from b01cxnp23034.gho.pok.ibm.com (b01cxnp23034.gho.pok.ibm.com
+ [9.57.198.29]) by ppma01dal.us.ibm.com with ESMTP id 2t9by7jp17-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Fri, 28 Jun 2019 02:19:55 +0000
+ Fri, 28 Jun 2019 02:20:12 +0000
 Received: from b01ledav004.gho.pok.ibm.com (b01ledav004.gho.pok.ibm.com
  [9.57.199.109])
- by b01cxnp23032.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x5S2Jt7i19398924
+ by b01cxnp23034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x5S2KBlC12190118
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Fri, 28 Jun 2019 02:19:55 GMT
+ Fri, 28 Jun 2019 02:20:11 GMT
 Received: from b01ledav004.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 18003112061;
- Fri, 28 Jun 2019 02:19:55 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 4D066112065;
+ Fri, 28 Jun 2019 02:20:11 +0000 (GMT)
 Received: from b01ledav004.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id E983F112062;
- Fri, 28 Jun 2019 02:19:50 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id D497E112063;
+ Fri, 28 Jun 2019 02:20:07 +0000 (GMT)
 Received: from morokweng.localdomain.com (unknown [9.85.218.134])
  by b01ledav004.gho.pok.ibm.com (Postfix) with ESMTP;
- Fri, 28 Jun 2019 02:19:50 +0000 (GMT)
+ Fri, 28 Jun 2019 02:20:07 +0000 (GMT)
 From: Thiago Jung Bauermann <bauerman@linux.ibm.com>
 To: linux-integrity@vger.kernel.org
-Subject: [PATCH v12 01/11] MODSIGN: Export module signature definitions
-Date: Thu, 27 Jun 2019 23:19:24 -0300
-Message-Id: <20190628021934.4260-2-bauerman@linux.ibm.com>
+Subject: [PATCH v12 05/11] ima: Add modsig appraise_type option for
+ module-style appended signatures
+Date: Thu, 27 Jun 2019 23:19:28 -0300
+Message-Id: <20190628021934.4260-6-bauerman@linux.ibm.com>
 X-Mailer: git-send-email 2.21.0
 In-Reply-To: <20190628021934.4260-1-bauerman@linux.ibm.com>
 References: <20190628021934.4260-1-bauerman@linux.ibm.com>
@@ -84,7 +85,7 @@ X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
  priorityscore=1501
  malwarescore=0 suspectscore=1 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ clxscore=1011 lowpriorityscore=0 mlxscore=0 impostorscore=0
  mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
  scancount=1 engine=8.0.1-1810050000 definitions=main-1906280019
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -113,292 +114,180 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-IMA will use the module_signature format for append signatures, so export
-the relevant definitions and factor out the code which verifies that the
-appended signature trailer is valid.
+Introduce the modsig keyword to the IMA policy syntax to specify that
+a given hook should expect the file to have the IMA signature appended
+to it. Here is how it can be used in a rule:
 
-Also, create a CONFIG_MODULE_SIG_FORMAT option so that IMA can select it
-and be able to use mod_check_sig() without having to depend on either
-CONFIG_MODULE_SIG or CONFIG_MODULES.
+appraise func=KEXEC_KERNEL_CHECK appraise_type=imasig|modsig
 
+With this rule, IMA will accept either a signature stored in the extended
+attribute or an appended signature.
+
+For now, the rule above will behave exactly the same as if
+appraise_type=imasig was specified. The actual modsig implementation
+will be introduced separately.
+
+Suggested-by: Mimi Zohar <zohar@linux.ibm.com>
 Signed-off-by: Thiago Jung Bauermann <bauerman@linux.ibm.com>
-Reviewed-by: Mimi Zohar <zohar@linux.ibm.com>
-Cc: Jessica Yu <jeyu@kernel.org>
 ---
- include/linux/module.h           |  3 --
- include/linux/module_signature.h | 44 +++++++++++++++++++++++++
- init/Kconfig                     |  6 +++-
- kernel/Makefile                  |  1 +
- kernel/module.c                  |  1 +
- kernel/module_signature.c        | 46 ++++++++++++++++++++++++++
- kernel/module_signing.c          | 56 +++++---------------------------
- scripts/Makefile                 |  2 +-
- 8 files changed, 106 insertions(+), 53 deletions(-)
+ Documentation/ABI/testing/ima_policy |  6 +++++-
+ security/integrity/ima/Kconfig       | 10 +++++++++
+ security/integrity/ima/Makefile      |  1 +
+ security/integrity/ima/ima.h         |  9 ++++++++
+ security/integrity/ima/ima_modsig.c  | 31 ++++++++++++++++++++++++++++
+ security/integrity/ima/ima_policy.c  | 12 +++++++++--
+ security/integrity/integrity.h       |  1 +
+ 7 files changed, 67 insertions(+), 3 deletions(-)
 
-diff --git a/include/linux/module.h b/include/linux/module.h
-index 188998d3dca9..aa56f531cf1e 100644
---- a/include/linux/module.h
-+++ b/include/linux/module.h
-@@ -25,9 +25,6 @@
- #include <linux/percpu.h>
- #include <asm/module.h>
+diff --git a/Documentation/ABI/testing/ima_policy b/Documentation/ABI/testing/ima_policy
+index fc376a323908..29ebe9afdac4 100644
+--- a/Documentation/ABI/testing/ima_policy
++++ b/Documentation/ABI/testing/ima_policy
+@@ -37,7 +37,7 @@ Description:
+ 			euid:= decimal value
+ 			fowner:= decimal value
+ 		lsm:  	are LSM specific
+-		option:	appraise_type:= [imasig]
++		option:	appraise_type:= [imasig] [imasig|modsig]
+ 			template:= name of a defined IMA template type
+ 			(eg, ima-ng). Only valid when action is "measure".
+ 			pcr:= decimal value
+@@ -105,3 +105,7 @@ Description:
  
--/* In stripped ARM and x86-64 modules, ~ is surprisingly rare. */
--#define MODULE_SIG_STRING "~Module signature appended~\n"
--
- /* Not Yet Implemented */
- #define MODULE_SUPPORTED_DEVICE(name)
+ 			measure func=KEXEC_KERNEL_CHECK pcr=4
+ 			measure func=KEXEC_INITRAMFS_CHECK pcr=5
++
++		Example of appraise rule allowing modsig appended signatures:
++
++			appraise func=KEXEC_KERNEL_CHECK appraise_type=imasig|modsig
+diff --git a/security/integrity/ima/Kconfig b/security/integrity/ima/Kconfig
+index df65d2d41905..6fa78fbc8c30 100644
+--- a/security/integrity/ima/Kconfig
++++ b/security/integrity/ima/Kconfig
+@@ -232,6 +232,16 @@ config IMA_APPRAISE_BOOTPARAM
+ 	  This option enables the different "ima_appraise=" modes
+ 	  (eg. fix, log) from the boot command line.
  
-diff --git a/include/linux/module_signature.h b/include/linux/module_signature.h
++config IMA_APPRAISE_MODSIG
++	bool "Support module-style signatures for appraisal"
++	depends on IMA_APPRAISE
++	default n
++	help
++	   Adds support for signatures appended to files. The format of the
++	   appended signature is the same used for signed kernel modules.
++	   The modsig keyword can be used in the IMA policy to allow a hook
++	   to accept such signatures.
++
+ config IMA_TRUSTED_KEYRING
+ 	bool "Require all keys on the .ima keyring be signed (deprecated)"
+ 	depends on IMA_APPRAISE && SYSTEM_TRUSTED_KEYRING
+diff --git a/security/integrity/ima/Makefile b/security/integrity/ima/Makefile
+index d921dc4f9eb0..31d57cdf2421 100644
+--- a/security/integrity/ima/Makefile
++++ b/security/integrity/ima/Makefile
+@@ -9,5 +9,6 @@ obj-$(CONFIG_IMA) += ima.o
+ ima-y := ima_fs.o ima_queue.o ima_init.o ima_main.o ima_crypto.o ima_api.o \
+ 	 ima_policy.o ima_template.o ima_template_lib.o
+ ima-$(CONFIG_IMA_APPRAISE) += ima_appraise.o
++ima-$(CONFIG_IMA_APPRAISE_MODSIG) += ima_modsig.o
+ ima-$(CONFIG_HAVE_IMA_KEXEC) += ima_kexec.o
+ obj-$(CONFIG_IMA_BLACKLIST_KEYRING) += ima_mok.o
+diff --git a/security/integrity/ima/ima.h b/security/integrity/ima/ima.h
+index 6aa28ab53d27..904f7dd78007 100644
+--- a/security/integrity/ima/ima.h
++++ b/security/integrity/ima/ima.h
+@@ -306,6 +306,15 @@ static inline int ima_read_xattr(struct dentry *dentry,
+ 
+ #endif /* CONFIG_IMA_APPRAISE */
+ 
++#ifdef CONFIG_IMA_APPRAISE_MODSIG
++bool ima_hook_supports_modsig(enum ima_hooks func);
++#else
++static inline bool ima_hook_supports_modsig(enum ima_hooks func)
++{
++	return false;
++}
++#endif /* CONFIG_IMA_APPRAISE_MODSIG */
++
+ /* LSM based policy rules require audit */
+ #ifdef CONFIG_IMA_LSM_RULES
+ 
+diff --git a/security/integrity/ima/ima_modsig.c b/security/integrity/ima/ima_modsig.c
 new file mode 100644
-index 000000000000..523617fc5b6a
+index 000000000000..87503bfe8c8b
 --- /dev/null
-+++ b/include/linux/module_signature.h
-@@ -0,0 +1,44 @@
-+/* SPDX-License-Identifier: GPL-2.0+ */
-+/*
-+ * Module signature handling.
-+ *
-+ * Copyright (C) 2012 Red Hat, Inc. All Rights Reserved.
-+ * Written by David Howells (dhowells@redhat.com)
-+ */
-+
-+#ifndef _LINUX_MODULE_SIGNATURE_H
-+#define _LINUX_MODULE_SIGNATURE_H
-+
-+/* In stripped ARM and x86-64 modules, ~ is surprisingly rare. */
-+#define MODULE_SIG_STRING "~Module signature appended~\n"
-+
-+enum pkey_id_type {
-+	PKEY_ID_PGP,		/* OpenPGP generated key ID */
-+	PKEY_ID_X509,		/* X.509 arbitrary subjectKeyIdentifier */
-+	PKEY_ID_PKCS7,		/* Signature in PKCS#7 message */
-+};
-+
-+/*
-+ * Module signature information block.
-+ *
-+ * The constituents of the signature section are, in order:
-+ *
-+ *	- Signer's name
-+ *	- Key identifier
-+ *	- Signature data
-+ *	- Information block
-+ */
-+struct module_signature {
-+	u8	algo;		/* Public-key crypto algorithm [0] */
-+	u8	hash;		/* Digest algorithm [0] */
-+	u8	id_type;	/* Key identifier type [PKEY_ID_PKCS7] */
-+	u8	signer_len;	/* Length of signer's name [0] */
-+	u8	key_id_len;	/* Length of key identifier [0] */
-+	u8	__pad[3];
-+	__be32	sig_len;	/* Length of signature data */
-+};
-+
-+int mod_check_sig(const struct module_signature *ms, size_t file_len,
-+		  const char *name);
-+
-+#endif /* _LINUX_MODULE_SIGNATURE_H */
-diff --git a/init/Kconfig b/init/Kconfig
-index 8b9ffe236e4f..c2286a3c74c5 100644
---- a/init/Kconfig
-+++ b/init/Kconfig
-@@ -1852,6 +1852,10 @@ config BASE_SMALL
- 	default 0 if BASE_FULL
- 	default 1 if !BASE_FULL
- 
-+config MODULE_SIG_FORMAT
-+	def_bool n
-+	select SYSTEM_DATA_VERIFICATION
-+
- menuconfig MODULES
- 	bool "Enable loadable module support"
- 	option modules
-@@ -1929,7 +1933,7 @@ config MODULE_SRCVERSION_ALL
- config MODULE_SIG
- 	bool "Module signature verification"
- 	depends on MODULES
--	select SYSTEM_DATA_VERIFICATION
-+	select MODULE_SIG_FORMAT
- 	help
- 	  Check modules for valid signatures upon load: the signature
- 	  is simply appended to the module. For more information see
-diff --git a/kernel/Makefile b/kernel/Makefile
-index 33824f0385b3..f29ae2997a43 100644
---- a/kernel/Makefile
-+++ b/kernel/Makefile
-@@ -58,6 +58,7 @@ endif
- obj-$(CONFIG_UID16) += uid16.o
- obj-$(CONFIG_MODULES) += module.o
- obj-$(CONFIG_MODULE_SIG) += module_signing.o
-+obj-$(CONFIG_MODULE_SIG_FORMAT) += module_signature.o
- obj-$(CONFIG_KALLSYMS) += kallsyms.o
- obj-$(CONFIG_BSD_PROCESS_ACCT) += acct.o
- obj-$(CONFIG_CRASH_CORE) += crash_core.o
-diff --git a/kernel/module.c b/kernel/module.c
-index 6e6712b3aaf5..2712f4d217f5 100644
---- a/kernel/module.c
-+++ b/kernel/module.c
-@@ -19,6 +19,7 @@
- #include <linux/export.h>
- #include <linux/extable.h>
- #include <linux/moduleloader.h>
-+#include <linux/module_signature.h>
- #include <linux/trace_events.h>
- #include <linux/init.h>
- #include <linux/kallsyms.h>
-diff --git a/kernel/module_signature.c b/kernel/module_signature.c
-new file mode 100644
-index 000000000000..4224a1086b7d
---- /dev/null
-+++ b/kernel/module_signature.c
-@@ -0,0 +1,46 @@
++++ b/security/integrity/ima/ima_modsig.c
+@@ -0,0 +1,31 @@
 +// SPDX-License-Identifier: GPL-2.0+
 +/*
-+ * Module signature checker
++ * IMA support for appraising module-style appended signatures.
 + *
-+ * Copyright (C) 2012 Red Hat, Inc. All Rights Reserved.
-+ * Written by David Howells (dhowells@redhat.com)
++ * Copyright (C) 2019  IBM Corporation
++ *
++ * Author:
++ * Thiago Jung Bauermann <bauerman@linux.ibm.com>
 + */
 +
-+#include <linux/errno.h>
-+#include <linux/printk.h>
-+#include <linux/module_signature.h>
-+#include <asm/byteorder.h>
++#include "ima.h"
 +
 +/**
-+ * mod_check_sig - check that the given signature is sane
++ * ima_hook_supports_modsig - can the policy allow modsig for this hook?
 + *
-+ * @ms:		Signature to check.
-+ * @file_len:	Size of the file to which @ms is appended.
-+ * @name:	What is being checked. Used for error messages.
++ * modsig is only supported by hooks using ima_post_read_file(), because only
++ * they preload the contents of the file in a buffer. FILE_CHECK does that in
++ * some cases, but not when reached from vfs_open(). POLICY_CHECK can support
++ * it, but it's not useful in practice because it's a text file so deny.
 + */
-+int mod_check_sig(const struct module_signature *ms, size_t file_len,
-+		  const char *name)
++bool ima_hook_supports_modsig(enum ima_hooks func)
 +{
-+	if (be32_to_cpu(ms->sig_len) >= file_len - sizeof(*ms))
-+		return -EBADMSG;
-+
-+	if (ms->id_type != PKEY_ID_PKCS7) {
-+		pr_err("%s: Module is not signed with expected PKCS#7 message\n",
-+		       name);
-+		return -ENOPKG;
++	switch (func) {
++	case KEXEC_KERNEL_CHECK:
++	case KEXEC_INITRAMFS_CHECK:
++	case MODULE_CHECK:
++		return true;
++	default:
++		return false;
 +	}
-+
-+	if (ms->algo != 0 ||
-+	    ms->hash != 0 ||
-+	    ms->signer_len != 0 ||
-+	    ms->key_id_len != 0 ||
-+	    ms->__pad[0] != 0 ||
-+	    ms->__pad[1] != 0 ||
-+	    ms->__pad[2] != 0) {
-+		pr_err("%s: PKCS#7 signature info has unexpected non-zero params\n",
-+		       name);
-+		return -EBADMSG;
-+	}
-+
-+	return 0;
 +}
-diff --git a/kernel/module_signing.c b/kernel/module_signing.c
-index 6b9a926fd86b..cdd04a6b8074 100644
---- a/kernel/module_signing.c
-+++ b/kernel/module_signing.c
-@@ -11,37 +11,13 @@
+diff --git a/security/integrity/ima/ima_policy.c b/security/integrity/ima/ima_policy.c
+index a3058b03a955..ac258df2f1f4 100644
+--- a/security/integrity/ima/ima_policy.c
++++ b/security/integrity/ima/ima_policy.c
+@@ -1132,6 +1132,10 @@ static int ima_parse_rule(char *rule, struct ima_rule_entry *entry)
+ 			ima_log_string(ab, "appraise_type", args[0].from);
+ 			if ((strcmp(args[0].from, "imasig")) == 0)
+ 				entry->flags |= IMA_DIGSIG_REQUIRED;
++			else if (ima_hook_supports_modsig(entry->func) &&
++				 strcmp(args[0].from, "imasig|modsig") == 0)
++				entry->flags |= IMA_DIGSIG_REQUIRED |
++						IMA_MODSIG_ALLOWED;
+ 			else
+ 				result = -EINVAL;
+ 			break;
+@@ -1451,8 +1455,12 @@ int ima_policy_show(struct seq_file *m, void *v)
+ 	}
+ 	if (entry->template)
+ 		seq_printf(m, "template=%s ", entry->template->name);
+-	if (entry->flags & IMA_DIGSIG_REQUIRED)
+-		seq_puts(m, "appraise_type=imasig ");
++	if (entry->flags & IMA_DIGSIG_REQUIRED) {
++		if (entry->flags & IMA_MODSIG_ALLOWED)
++			seq_puts(m, "appraise_type=imasig|modsig ");
++		else
++			seq_puts(m, "appraise_type=imasig ");
++	}
+ 	if (entry->flags & IMA_PERMIT_DIRECTIO)
+ 		seq_puts(m, "permit_directio ");
+ 	rcu_read_unlock();
+diff --git a/security/integrity/integrity.h b/security/integrity/integrity.h
+index 88a29f72a74f..0e7330a36a9d 100644
+--- a/security/integrity/integrity.h
++++ b/security/integrity/integrity.h
+@@ -36,6 +36,7 @@
+ #define IMA_NEW_FILE		0x04000000
+ #define EVM_IMMUTABLE_DIGSIG	0x08000000
+ #define IMA_FAIL_UNVERIFIABLE_SIGS	0x10000000
++#define IMA_MODSIG_ALLOWED	0x20000000
  
- #include <linux/kernel.h>
- #include <linux/errno.h>
-+#include <linux/module.h>
-+#include <linux/module_signature.h>
- #include <linux/string.h>
- #include <linux/verification.h>
- #include <crypto/public_key.h>
- #include "module-internal.h"
- 
--enum pkey_id_type {
--	PKEY_ID_PGP,		/* OpenPGP generated key ID */
--	PKEY_ID_X509,		/* X.509 arbitrary subjectKeyIdentifier */
--	PKEY_ID_PKCS7,		/* Signature in PKCS#7 message */
--};
--
--/*
-- * Module signature information block.
-- *
-- * The constituents of the signature section are, in order:
-- *
-- *	- Signer's name
-- *	- Key identifier
-- *	- Signature data
-- *	- Information block
-- */
--struct module_signature {
--	u8	algo;		/* Public-key crypto algorithm [0] */
--	u8	hash;		/* Digest algorithm [0] */
--	u8	id_type;	/* Key identifier type [PKEY_ID_PKCS7] */
--	u8	signer_len;	/* Length of signer's name [0] */
--	u8	key_id_len;	/* Length of key identifier [0] */
--	u8	__pad[3];
--	__be32	sig_len;	/* Length of signature data */
--};
--
- /*
-  * Verify the signature on a module.
-  */
-@@ -49,6 +25,7 @@ int mod_verify_sig(const void *mod, struct load_info *info)
- {
- 	struct module_signature ms;
- 	size_t sig_len, modlen = info->len;
-+	int ret;
- 
- 	pr_devel("==>%s(,%zu)\n", __func__, modlen);
- 
-@@ -56,32 +33,15 @@ int mod_verify_sig(const void *mod, struct load_info *info)
- 		return -EBADMSG;
- 
- 	memcpy(&ms, mod + (modlen - sizeof(ms)), sizeof(ms));
--	modlen -= sizeof(ms);
-+
-+	ret = mod_check_sig(&ms, modlen, info->name);
-+	if (ret)
-+		return ret;
- 
- 	sig_len = be32_to_cpu(ms.sig_len);
--	if (sig_len >= modlen)
--		return -EBADMSG;
--	modlen -= sig_len;
-+	modlen -= sig_len + sizeof(ms);
- 	info->len = modlen;
- 
--	if (ms.id_type != PKEY_ID_PKCS7) {
--		pr_err("%s: Module is not signed with expected PKCS#7 message\n",
--		       info->name);
--		return -ENOPKG;
--	}
--
--	if (ms.algo != 0 ||
--	    ms.hash != 0 ||
--	    ms.signer_len != 0 ||
--	    ms.key_id_len != 0 ||
--	    ms.__pad[0] != 0 ||
--	    ms.__pad[1] != 0 ||
--	    ms.__pad[2] != 0) {
--		pr_err("%s: PKCS#7 signature info has unexpected non-zero params\n",
--		       info->name);
--		return -EBADMSG;
--	}
--
- 	return verify_pkcs7_signature(mod, modlen, mod + modlen, sig_len,
- 				      VERIFY_USE_SECONDARY_KEYRING,
- 				      VERIFYING_MODULE_SIGNATURE,
-diff --git a/scripts/Makefile b/scripts/Makefile
-index 9d442ee050bd..52098b080ab7 100644
---- a/scripts/Makefile
-+++ b/scripts/Makefile
-@@ -17,7 +17,7 @@ hostprogs-$(CONFIG_VT)           += conmakehash
- hostprogs-$(BUILD_C_RECORDMCOUNT) += recordmcount
- hostprogs-$(CONFIG_BUILDTIME_EXTABLE_SORT) += sortextable
- hostprogs-$(CONFIG_ASN1)	 += asn1_compiler
--hostprogs-$(CONFIG_MODULE_SIG)	 += sign-file
-+hostprogs-$(CONFIG_MODULE_SIG_FORMAT) += sign-file
- hostprogs-$(CONFIG_SYSTEM_TRUSTED_KEYRING) += extract-cert
- hostprogs-$(CONFIG_SYSTEM_EXTRA_CERTIFICATE) += insert-sys-cert
- 
+ #define IMA_DO_MASK		(IMA_MEASURE | IMA_APPRAISE | IMA_AUDIT | \
+ 				 IMA_HASH | IMA_APPRAISE_SUBMASK)
