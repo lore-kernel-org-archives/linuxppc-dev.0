@@ -2,81 +2,48 @@ Return-Path: <SRS0=ywKm=U3=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-14.3 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=no
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 23F74C4321A
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Jun 2019 02:58:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BF720C4321A
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Jun 2019 03:17:19 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 4E76B208CB
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Jun 2019 02:58:53 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="IhxJ2cyQ"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4E76B208CB
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	by mail.kernel.org (Postfix) with ESMTPS id 0DCBA206A2
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Jun 2019 03:17:18 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0DCBA206A2
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45ZhL30HX7zDqp7
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Jun 2019 12:58:51 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=2607:f8b0:4864:20::643; helo=mail-pl1-x643.google.com;
- envelope-from=huangfq.daxian@gmail.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="IhxJ2cyQ"; 
- dkim-atps=neutral
-Received: from mail-pl1-x643.google.com (mail-pl1-x643.google.com
- [IPv6:2607:f8b0:4864:20::643])
+	by lists.ozlabs.org (Postfix) with ESMTP id 45ZhlJ0cGYzDqhR
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Jun 2019 13:17:16 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45Zh963mYdzDqQd
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Jun 2019 12:51:06 +1000 (AEST)
-Received: by mail-pl1-x643.google.com with SMTP id bi6so2349282plb.12
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jun 2019 19:51:06 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=from:to:cc:subject:date:message-id;
- bh=FR72I8Co0+MJGxYGED+5/dqb9dBV7h2vnmoy22KZs5Q=;
- b=IhxJ2cyQo1/nvunCFvFfS0lEbh/0091c04NKKkhNShMj9sWqyfADIGoFXQl05TpjYZ
- 7j9A1FXpIIEdEwYze1FTKINBI27EiSaozaS7oQ9bNK1BFztQRxa22TtkmWEFmUKAQ+ZB
- Nzy0w3v1kP9zev1mkPZoA9lp3fLcgU4t6y3NmEjraSL8V+oHQ6LknVwFeNHupu+NLP73
- Q8YBHbhPZtOVyBiwviEQHq0703WzQ6nsqSlyYrcGslLgXO3uwcIsdDebNOqrEuhe0uPS
- 29oPRFdsznFFLxhrSOb7M5UCeR5+K1sx5WNlxrRdHaRg5YW1mkMs3kIi/offf8HJ0AZ8
- ngdA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:from:to:cc:subject:date:message-id;
- bh=FR72I8Co0+MJGxYGED+5/dqb9dBV7h2vnmoy22KZs5Q=;
- b=RHMijB0eAtMFsgzu9tWxBJsgslWlixandB9zOmjFa7BER6APLohz0aK3kSiov8X3OM
- w3+Or+mZCnlPpdOC7D0A/FJBF9rLQYBODOb/lPhGvgkdaYAqovY5aHhErMsHwZrsKvu/
- codoZ847fRqp64w4UeD+0K++wchVXZUBWFhn8+9KWT4pesLo/kHMXtl2SmKPM4OXQg8d
- JOQJqi4fdxSj39M4azPDQ0CuKxzOiX4haX25TSQp8K17xwP/nMovIRav3k5FatqDSzih
- EZ9QkdDr4FsKGaJZeaQ1oOqucXkOqWQYFZGJTHG5XV48CONGYIp6Rb+Qhr4qsn79jAsC
- 1yTQ==
-X-Gm-Message-State: APjAAAWjHDV9wcZsnqOPtNQUUo35ox071Ios0PGor3wdldyiaS+3SZkq
- z3VoVvtJ2ZEaepnySzmV7As=
-X-Google-Smtp-Source: APXvYqzL32mC6au/7C3TzD/kwMbOVnb1DJlzl+HtOU7wDCsXVoSrKw2C4o6YPmea15yYB/y61C1tKg==
-X-Received: by 2002:a17:902:868f:: with SMTP id
- g15mr8558096plo.67.1561690262921; 
- Thu, 27 Jun 2019 19:51:02 -0700 (PDT)
-Received: from hfq-skylake.ipads-lab.se.sjtu.edu.cn ([202.120.40.82])
- by smtp.googlemail.com with ESMTPSA id b1sm457294pfi.91.2019.06.27.19.50.59
- (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
- Thu, 27 Jun 2019 19:51:02 -0700 (PDT)
-From: Fuqian Huang <huangfq.daxian@gmail.com>
-To: 
-Subject: [PATCH v2 27/27] sound: ppc: remove unneeded memset after
- dma_alloc_coherent
-Date: Fri, 28 Jun 2019 10:50:54 +0800
-Message-Id: <20190628025055.16242-1-huangfq.daxian@gmail.com>
-X-Mailer: git-send-email 2.11.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45ZhfG1M8tzDqg9
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Jun 2019 13:12:54 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=ellerman.id.au
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
+ SHA256) (No client certificate requested)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 45ZhfD3QYHz9s3l;
+ Fri, 28 Jun 2019 13:12:52 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Qian Cai <cai@lca.pw>, "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
+ Anju T Sudhakar <anju@linux.vnet.ibm.com>
+Subject: Re: power9 NUMA crash while reading debugfs imc_cmd
+In-Reply-To: <1561670472.5154.98.camel@lca.pw>
+References: <1561670472.5154.98.camel@lca.pw>
+Date: Fri, 28 Jun 2019 13:12:48 +1000
+Message-ID: <87lfxms8r3.fsf@concordia.ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -88,38 +55,144 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Rob Herring <robh@kernel.org>, alsa-devel@alsa-project.org,
- linux-kernel@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Takashi Iwai <tiwai@suse.com>, Jaroslav Kysela <perex@perex.cz>,
- Richard Fontana <rfontana@redhat.com>, Paul Mackerras <paulus@samba.org>,
- Fuqian Huang <huangfq.daxian@gmail.com>, Thomas Gleixner <tglx@linutronix.de>,
- linuxppc-dev@lists.ozlabs.org, Allison Randal <allison@lohutok.net>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-In commit af7ddd8a627c
-("Merge tag 'dma-mapping-4.21' of git://git.infradead.org/users/hch/dma-mapping"),
-dma_alloc_coherent has already zeroed the memory.
-So memset is not needed.
+Qian Cai <cai@lca.pw> writes:
+> Read of=C2=A0debugfs imc_cmd file for a memory-less node will trigger a c=
+rash below
+> on this power9 machine which has the following NUMA layout.
 
-Signed-off-by: Fuqian Huang <huangfq.daxian@gmail.com>
----
- sound/ppc/pmac.c | 1 -
- 1 file changed, 1 deletion(-)
+What type of machine is it?
 
-diff --git a/sound/ppc/pmac.c b/sound/ppc/pmac.c
-index 1b11e53f6a62..1ab12f4f8631 100644
---- a/sound/ppc/pmac.c
-+++ b/sound/ppc/pmac.c
-@@ -56,7 +56,6 @@ static int snd_pmac_dbdma_alloc(struct snd_pmac *chip, struct pmac_dbdma *rec, i
- 	if (rec->space == NULL)
- 		return -ENOMEM;
- 	rec->size = size;
--	memset(rec->space, 0, rsize);
- 	rec->cmds = (void __iomem *)DBDMA_ALIGN(rec->space);
- 	rec->addr = rec->dma_base + (unsigned long)((char *)rec->cmds - (char *)rec->space);
- 
--- 
-2.11.0
+cheers
 
+> I don't understand why I only saw it recently on linux-next where it
+> was tested everyday. I can reproduce it back to 4.20 where 4.18 seems
+> work fine.
+>
+> # cat /sys/kernel/debug/powerpc/imc/imc_cmd_252 (On a 4.18-based kernel)
+> 0x0000000000000000
+>
+> # numactl -H
+> available: 6 nodes (0,8,252-255)
+> node 0 cpus: 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 2=
+3 24 25
+> 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48 49 5=
+0 51 52
+> 53 54 55 56 57 58 59 60 61 62 63
+> node 0 size: 130210 MB
+> node 0 free: 128406 MB
+> node 8 cpus: 64 65 66 67 68 69 70 71 72 73 74 75 76 77 78 79 80 81 82 83 =
+84 85
+> 86 87 88 89 90 91 92 93 94 95 96 97 98 99 100 101 102 103 104 105 106 107=
+ 108
+> 109 110 111 112 113 114 115 116 117 118 119 120 121 122 123 124 125 126 1=
+27
+> node 8 size: 130784 MB
+> node 8 free: 130051 MB
+> node 252 cpus:
+> node 252 size: 0 MB
+> node 252 free: 0 MB
+> node 253 cpus:
+> node 253 size: 0 MB
+> node 253 free: 0 MB
+> node 254 cpus:
+> node 254 size: 0 MB
+> node 254 free: 0 MB
+> node 255 cpus:
+> node 255 size: 0 MB
+> node 255 free: 0 MB
+> node distances:
+> node=C2=A0=C2=A0=C2=A00=C2=A0=C2=A0=C2=A08=C2=A0=C2=A0252=C2=A0=C2=A0253=
+=C2=A0=C2=A0254=C2=A0=C2=A0255=C2=A0
+> =C2=A0 0:=C2=A0=C2=A010=C2=A0=C2=A040=C2=A0=C2=A080=C2=A0=C2=A080=C2=A0=
+=C2=A080=C2=A0=C2=A080=C2=A0
+> =C2=A0 8:=C2=A0=C2=A040=C2=A0=C2=A010=C2=A0=C2=A080=C2=A0=C2=A080=C2=A0=
+=C2=A080=C2=A0=C2=A080=C2=A0
+> =C2=A0252:=C2=A0=C2=A080=C2=A0=C2=A080=C2=A0=C2=A010=C2=A0=C2=A080=C2=A0=
+=C2=A080=C2=A0=C2=A080=C2=A0
+> =C2=A0253:=C2=A0=C2=A080=C2=A0=C2=A080=C2=A0=C2=A080=C2=A0=C2=A010=C2=A0=
+=C2=A080=C2=A0=C2=A080=C2=A0
+> =C2=A0254:=C2=A0=C2=A080=C2=A0=C2=A080=C2=A0=C2=A080=C2=A0=C2=A080=C2=A0=
+=C2=A010=C2=A0=C2=A080=C2=A0
+> =C2=A0255:=C2=A0=C2=A080=C2=A0=C2=A080=C2=A0=C2=A080=C2=A0=C2=A080=C2=A0=
+=C2=A080=C2=A0=C2=A010
+>
+> # cat /sys/kernel/debug/powerpc/imc/imc_cmd_252
+>
+> [ 1139.415461][ T5301] Faulting instruction address: 0xc0000000000d0d58
+> [ 1139.415492][ T5301] Oops: Kernel access of bad area, sig: 11 [#1]
+> [ 1139.415509][ T5301] LE PAGE_SIZE=3D64K MMU=3DRadix MMU=3DHash SMP NR_C=
+PUS=3D256
+> DEBUG_PAGEALLOC NUMA PowerNV
+> [ 1139.415542][ T5301] Modules linked in: i2c_opal i2c_core ip_tables x_t=
+ables
+> xfs sd_mod bnx2x mdio ahci libahci tg3 libphy libata firmware_class dm_mi=
+rror
+> dm_region_hash dm_log dm_mod
+> [ 1139.415595][ T5301] CPU: 67 PID: 5301 Comm: cat Not tainted 5.2.0-rc6-=
+next-
+> 20190627+ #19
+> [ 1139.415634][ T5301] NIP:=C2=A0=C2=A0c0000000000d0d58 LR: c00000000049a=
+a18 CTR:
+> c0000000000d0d50
+> [ 1139.415675][ T5301] REGS: c00020194548f9e0 TRAP: 0300=C2=A0=C2=A0=C2=
+=A0Not tainted=C2=A0=C2=A0(5.2.0-
+> rc6-next-20190627+)
+> [ 1139.415705][ T5301] MSR:=C2=A0=C2=A09000000000009033 <SF,HV,EE,ME,IR,D=
+R,RI,LE>=C2=A0=C2=A0CR:
+> 28022822=C2=A0=C2=A0XER: 00000000
+> [ 1139.415777][ T5301] CFAR: c00000000049aa14 DAR: 000000000003fc08 DSISR:
+> 40000000 IRQMASK: 0=C2=A0
+> [ 1139.415777][ T5301] GPR00: c00000000049aa18 c00020194548fc70 c00000000=
+16f8b00
+> 000000000003fc08=C2=A0
+> [ 1139.415777][ T5301] GPR04: c00020194548fcd0 0000000000000000 000000001=
+4884e73
+> ffffffff00011eaa=C2=A0
+> [ 1139.415777][ T5301] GPR08: 000000007eea5a52 c0000000000d0d50 000000000=
+0000000
+> 0000000000000000=C2=A0
+> [ 1139.415777][ T5301] GPR12: c0000000000d0d50 c000201fff7f8c00 000000000=
+0000000
+> 0000000000000000=C2=A0
+> [ 1139.415777][ T5301] GPR16: 000000000000000d 00007fffeb0c3368 fffffffff=
+fffffff
+> 0000000000000000=C2=A0
+> [ 1139.415777][ T5301] GPR20: 0000000000000000 0000000000000000 000000000=
+0000000
+> 0000000000020000=C2=A0
+> [ 1139.415777][ T5301] GPR24: 0000000000000000 0000000000000000 000000000=
+0020000
+> 000000010ec90000=C2=A0
+> [ 1139.415777][ T5301] GPR28: c00020194548fdf0 c00020049a584ef8 000000000=
+0000000
+> c00020049a584ea8=C2=A0
+> [ 1139.416116][ T5301] NIP [c0000000000d0d58] imc_mem_get+0x8/0x20
+> [ 1139.416143][ T5301] LR [c00000000049aa18] simple_attr_read+0x118/0x170
+> [ 1139.416158][ T5301] Call Trace:
+> [ 1139.416182][ T5301] [c00020194548fc70] [c00000000049a970]
+> simple_attr_read+0x70/0x170 (unreliable)
+> [ 1139.416255][ T5301] [c00020194548fd10] [c00000000054385c]
+> debugfs_attr_read+0x6c/0xb0
+> [ 1139.416305][ T5301] [c00020194548fd60] [c000000000454c1c]
+> __vfs_read+0x3c/0x70
+> [ 1139.416363][ T5301] [c00020194548fd80] [c000000000454d0c] vfs_read+0xb=
+c/0x1a0
+> [ 1139.416392][ T5301] [c00020194548fdd0] [c00000000045519c]
+> ksys_read+0x7c/0x140
+> [ 1139.416434][ T5301] [c00020194548fe20] [c00000000000b108]
+> system_call+0x5c/0x70
+> [ 1139.416473][ T5301] Instruction dump:
+> [ 1139.416511][ T5301] 4e800020 60000000 7c0802a6 60000000 7c801d28 38600=
+000
+> 4e800020 60000000=C2=A0
+> [ 1139.416572][ T5301] 60000000 60000000 7c0802a6 60000000 <7d201c28> 386=
+00000
+> f9240000 4e800020=C2=A0
+> [ 1139.416636][ T5301] ---[ end trace c44d1fb4ace04784 ]---
+> [ 1139.520686][ T5301]=C2=A0
+> [ 1140.520820][ T5301] Kernel panic - not syncing: Fatal exception
