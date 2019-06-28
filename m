@@ -2,26 +2,25 @@ Return-Path: <SRS0=ywKm=U3=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-14.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1771AC4321A
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Jun 2019 12:38:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A8E76C4321A
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Jun 2019 12:41:31 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 8E4A2208E3
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Jun 2019 12:38:00 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id D611020644
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Jun 2019 12:41:30 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="ByUoDHNg"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8E4A2208E3
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="e+2o4PfT"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D611020644
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45ZxBG3cJ7zDqYS
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Jun 2019 22:37:58 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45ZxGH324HzDqQ6
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Jun 2019 22:41:27 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=none (mailfrom)
  smtp.mailfrom=bombadil.infradead.org (client-ip=2607:7c80:54:e::133;
  helo=bombadil.infradead.org; envelope-from=mchehab@bombadil.infradead.org;
@@ -30,41 +29,42 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=infradead.org header.i=@infradead.org
- header.b="ByUoDHNg"; dkim-atps=neutral
+ header.b="e+2o4PfT"; dkim-atps=neutral
 Received: from bombadil.infradead.org (bombadil.infradead.org
  [IPv6:2607:7c80:54:e::133])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45Zx1y4DzFzDqg9
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Jun 2019 22:30:46 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45Zx2B0MWPzDql9
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Jun 2019 22:30:57 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
  d=infradead.org; s=bombadil.20170209; h=Sender:Content-Transfer-Encoding:
- MIME-Version:References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:
- Reply-To:Content-Type:Content-ID:Content-Description:Resent-Date:Resent-From:
+ Content-Type:MIME-Version:References:In-Reply-To:Message-Id:Date:Subject:Cc:
+ To:From:Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
  Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:List-Help:
  List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
- bh=W01P5QS3uRV3PL5GrkuJuIMkN8UN/CJyWU+iu5QOvQA=; b=ByUoDHNg+0H8Qs/m1RN9jnjl/g
- PhZlReBVQCQ3ubxdw/1nfki4i9C5SCMEmdI5EK0zLPc/vtAimnvml3RD5uzaSgL1ieLaEcBU5L9hh
- WqE3AvSTzrPjsXctTwJgmEkewDkOHrMYoRPGlmnopzJnnnsHviXNLdbtpRRXKJpvQdnhsO8l4K9OR
- zJCA5B68YSVtoweOX3wcUK7mtgCp50FtvkFedNESwqKroYKhsou4+04rIhVM4LpoXDRfFX1bLDYHP
- 3ujCWwkxnzB11zGX5d8rBGrRibdqgaCwlhGsiwHlbiwfAPHihY/JS6TrVuoWqHLc9mn/h1jU8QtS1
- /T8MUoXA==;
+ bh=/ACtFTJ8t0rgRWDNSeADECk30Wwk28wX2Poo52xAGI8=; b=e+2o4PfTUqmLAP9+yVgRTSMqCY
+ Tnf5U0x2uPJDPkns5j2lSPUa//SkDRojN/zK7V3DPohSOh24J2v2XKdQVQPgWUQRkknLsIsR2a8sw
+ vIAtdmC4K3NnPyXm2z2HalcpZEHRSrjqde3msUjYzWYE60G4cwtqKGBoAYWj4cxEpZ9n8vkk4NQTY
+ 1+enRTu9Mq7VFZJn9umR7TD5TBCMyx72vxi0UDfoSYRsI6HfJ0L9lPadMMeWB5FaFlAffVzHajfi7
+ eN3oY5WswA3cPdrB9qfCaBwvbmkCjuN4BFIdR7nw0X6L23eBpFfBVPgLZAKHqt7pbT7NyOgMG4Gb8
+ qPMmGZ4w==;
 Received: from [186.213.242.156] (helo=bombadil.infradead.org)
  by bombadil.infradead.org with esmtpsa (Exim 4.92 #3 (Red Hat Linux))
- id 1hgq1U-00055o-O0; Fri, 28 Jun 2019 12:30:36 +0000
+ id 1hgq1U-00055C-Fo; Fri, 28 Jun 2019 12:30:36 +0000
 Received: from mchehab by bombadil.infradead.org with local (Exim 4.92)
  (envelope-from <mchehab@bombadil.infradead.org>)
- id 1hgq1S-0005TR-PP; Fri, 28 Jun 2019 09:30:34 -0300
+ id 1hgq1S-0005Rx-94; Fri, 28 Jun 2019 09:30:34 -0300
 From: Mauro Carvalho Chehab <mchehab+samsung@kernel.org>
 To: Linux Doc Mailing List <linux-doc@vger.kernel.org>
-Subject: [PATCH 32/39] docs: serial: move it to the driver-api
-Date: Fri, 28 Jun 2019 09:30:25 -0300
-Message-Id: <98ded3b9747e187413aab3406da2d5e7c89f53cb.1561724493.git.mchehab+samsung@kernel.org>
+Subject: [PATCH 13/39] docs: add arch doc directories to the index
+Date: Fri, 28 Jun 2019 09:30:06 -0300
+Message-Id: <df4b7dbf72f2ca0695adc6e5997ad852be2332a7.1561724493.git.mchehab+samsung@kernel.org>
 X-Mailer: git-send-email 2.21.0
 In-Reply-To: <cover.1561724493.git.mchehab+samsung@kernel.org>
 References: <cover.1561724493.git.mchehab+samsung@kernel.org>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -77,193 +77,150 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Timur Tabi <timur@kernel.org>, Jonathan Corbet <corbet@lwn.net>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org,
- Mauro Carvalho Chehab <mchehab@infradead.org>, linux-serial@vger.kernel.org,
- Jiri Slaby <jslaby@suse.com>,
+Cc: linux-s390@vger.kernel.org, Albert Ou <aou@eecs.berkeley.edu>,
+ Vasily Gorbik <gor@linux.ibm.com>, Jonathan Corbet <corbet@lwn.net>,
+ Catalin Marinas <catalin.marinas@arm.com>, Palmer Dabbelt <palmer@sifive.com>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>, linux-kernel@vger.kernel.org,
+ Mauro Carvalho Chehab <mchehab@infradead.org>,
+ Christian Borntraeger <borntraeger@de.ibm.com>,
+ Paul Mackerras <paulus@samba.org>,
  Mauro Carvalho Chehab <mchehab+samsung@kernel.org>,
- linuxppc-dev@lists.ozlabs.org
+ linux-riscv@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
+ Will Deacon <will@kernel.org>, linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The contents of this directory is mostly driver-api stuff.
+Now that several arch documents were converted to ReST,
+add their indexes to Documentation/index.rst and remove the
+:orphan:  from them.
 
 Signed-off-by: Mauro Carvalho Chehab <mchehab+samsung@kernel.org>
 ---
- Documentation/driver-api/index.rst                       | 1 +
- Documentation/{ => driver-api}/serial/cyclades_z.rst     | 0
- Documentation/{ => driver-api}/serial/driver.rst         | 2 +-
- Documentation/{ => driver-api}/serial/index.rst          | 2 +-
- Documentation/{ => driver-api}/serial/moxa-smartio.rst   | 0
- Documentation/{ => driver-api}/serial/n_gsm.rst          | 0
- Documentation/{ => driver-api}/serial/rocket.rst         | 0
- Documentation/{ => driver-api}/serial/serial-iso7816.rst | 0
- Documentation/{ => driver-api}/serial/serial-rs485.rst   | 0
- Documentation/{ => driver-api}/serial/tty.rst            | 0
- MAINTAINERS                                              | 6 +++---
- drivers/tty/Kconfig                                      | 4 ++--
- drivers/tty/serial/ucc_uart.c                            | 2 +-
- include/linux/serial_core.h                              | 2 +-
- 14 files changed, 10 insertions(+), 9 deletions(-)
- rename Documentation/{ => driver-api}/serial/cyclades_z.rst (100%)
- rename Documentation/{ => driver-api}/serial/driver.rst (99%)
- rename Documentation/{ => driver-api}/serial/index.rst (90%)
- rename Documentation/{ => driver-api}/serial/moxa-smartio.rst (100%)
- rename Documentation/{ => driver-api}/serial/n_gsm.rst (100%)
- rename Documentation/{ => driver-api}/serial/rocket.rst (100%)
- rename Documentation/{ => driver-api}/serial/serial-iso7816.rst (100%)
- rename Documentation/{ => driver-api}/serial/serial-rs485.rst (100%)
- rename Documentation/{ => driver-api}/serial/tty.rst (100%)
+ Documentation/arm/index.rst     |  2 --
+ Documentation/arm64/index.rst   |  2 --
+ Documentation/ia64/index.rst    |  2 --
+ Documentation/index.rst         | 10 ++++++++++
+ Documentation/m68k/index.rst    |  2 +-
+ Documentation/powerpc/index.rst |  2 +-
+ Documentation/riscv/index.rst   |  2 --
+ Documentation/s390/index.rst    |  2 --
+ Documentation/sparc/index.rst   |  2 --
+ Documentation/xtensa/index.rst  |  2 +-
+ 10 files changed, 13 insertions(+), 15 deletions(-)
 
-diff --git a/Documentation/driver-api/index.rst b/Documentation/driver-api/index.rst
-index f44a3140f95d..d6f532c8d824 100644
---- a/Documentation/driver-api/index.rst
-+++ b/Documentation/driver-api/index.rst
-@@ -88,6 +88,7 @@ available subsections can be seen below.
-    pti_intel_mid
-    pwm
-    rfkill
-+   serial/index
-    sgi-ioc4
-    sm501
-    smsc_ece1099
-diff --git a/Documentation/serial/cyclades_z.rst b/Documentation/driver-api/serial/cyclades_z.rst
-similarity index 100%
-rename from Documentation/serial/cyclades_z.rst
-rename to Documentation/driver-api/serial/cyclades_z.rst
-diff --git a/Documentation/serial/driver.rst b/Documentation/driver-api/serial/driver.rst
-similarity index 99%
-rename from Documentation/serial/driver.rst
-rename to Documentation/driver-api/serial/driver.rst
-index 4537119bf624..31bd4e16fb1f 100644
---- a/Documentation/serial/driver.rst
-+++ b/Documentation/driver-api/serial/driver.rst
-@@ -311,7 +311,7 @@ hardware.
- 	This call must not sleep
+diff --git a/Documentation/arm/index.rst b/Documentation/arm/index.rst
+index bd316d1a1802..9c2f781f4685 100644
+--- a/Documentation/arm/index.rst
++++ b/Documentation/arm/index.rst
+@@ -1,5 +1,3 @@
+-﻿:orphan:
+-
+ ================
+ ARM Architecture
+ ================
+diff --git a/Documentation/arm64/index.rst b/Documentation/arm64/index.rst
+index 018b7836ecb7..96b696ba4e6c 100644
+--- a/Documentation/arm64/index.rst
++++ b/Documentation/arm64/index.rst
+@@ -1,5 +1,3 @@
+-:orphan:
+-
+ ==================
+ ARM64 Architecture
+ ==================
+diff --git a/Documentation/ia64/index.rst b/Documentation/ia64/index.rst
+index a3e3052ad6e2..ef99475f672b 100644
+--- a/Documentation/ia64/index.rst
++++ b/Documentation/ia64/index.rst
+@@ -1,5 +1,3 @@
+-:orphan:
+-
+ ==================
+ IA-64 Architecture
+ ==================
+diff --git a/Documentation/index.rst b/Documentation/index.rst
+index 95db26bf2899..f898def833f4 100644
+--- a/Documentation/index.rst
++++ b/Documentation/index.rst
+@@ -118,7 +118,17 @@ implementation.
+    :maxdepth: 2
  
-   set_ldisc(port,termios)
--	Notifier for discipline change. See Documentation/serial/tty.rst.
-+	Notifier for discipline change. See Documentation/driver-api/serial/tty.rst.
+    sh/index
++   arm/index
++   arm64/index
++   ia64/index
++   m68k/index
++   powerpc/index
++   riscv/index
++   s390/index
++   sh/index
++   sparc/index
+    x86/index
++   xtensa/index
  
- 	Locking: caller holds tty_port->mutex
- 
-diff --git a/Documentation/serial/index.rst b/Documentation/driver-api/serial/index.rst
-similarity index 90%
-rename from Documentation/serial/index.rst
-rename to Documentation/driver-api/serial/index.rst
-index d0ba22ea23bf..33ad10d05b26 100644
---- a/Documentation/serial/index.rst
-+++ b/Documentation/driver-api/serial/index.rst
+ Filesystem Documentation
+ ------------------------
+diff --git a/Documentation/m68k/index.rst b/Documentation/m68k/index.rst
+index f3273ec075c3..3a5ba7fe1703 100644
+--- a/Documentation/m68k/index.rst
++++ b/Documentation/m68k/index.rst
 @@ -1,4 +1,4 @@
 -:orphan:
 +.. SPDX-License-Identifier: GPL-2.0
  
- ==========================
- Support for Serial devices
-diff --git a/Documentation/serial/moxa-smartio.rst b/Documentation/driver-api/serial/moxa-smartio.rst
-similarity index 100%
-rename from Documentation/serial/moxa-smartio.rst
-rename to Documentation/driver-api/serial/moxa-smartio.rst
-diff --git a/Documentation/serial/n_gsm.rst b/Documentation/driver-api/serial/n_gsm.rst
-similarity index 100%
-rename from Documentation/serial/n_gsm.rst
-rename to Documentation/driver-api/serial/n_gsm.rst
-diff --git a/Documentation/serial/rocket.rst b/Documentation/driver-api/serial/rocket.rst
-similarity index 100%
-rename from Documentation/serial/rocket.rst
-rename to Documentation/driver-api/serial/rocket.rst
-diff --git a/Documentation/serial/serial-iso7816.rst b/Documentation/driver-api/serial/serial-iso7816.rst
-similarity index 100%
-rename from Documentation/serial/serial-iso7816.rst
-rename to Documentation/driver-api/serial/serial-iso7816.rst
-diff --git a/Documentation/serial/serial-rs485.rst b/Documentation/driver-api/serial/serial-rs485.rst
-similarity index 100%
-rename from Documentation/serial/serial-rs485.rst
-rename to Documentation/driver-api/serial/serial-rs485.rst
-diff --git a/Documentation/serial/tty.rst b/Documentation/driver-api/serial/tty.rst
-similarity index 100%
-rename from Documentation/serial/tty.rst
-rename to Documentation/driver-api/serial/tty.rst
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 055db86fdd77..856db8015edd 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -10723,7 +10723,7 @@ F:	include/uapi/linux/meye.h
- MOXA SMARTIO/INDUSTIO/INTELLIO SERIAL CARD
- M:	Jiri Slaby <jirislaby@gmail.com>
- S:	Maintained
--F:	Documentation/serial/moxa-smartio.rst
-+F:	Documentation/driver-api/serial/moxa-smartio.rst
- F:	drivers/tty/mxser.*
+ =================
+ m68k Architecture
+diff --git a/Documentation/powerpc/index.rst b/Documentation/powerpc/index.rst
+index 1ff17268db46..549b1cdd77ae 100644
+--- a/Documentation/powerpc/index.rst
++++ b/Documentation/powerpc/index.rst
+@@ -1,4 +1,4 @@
+-:orphan:
++.. SPDX-License-Identifier: GPL-2.0
  
- MR800 AVERMEDIA USB FM RADIO DRIVER
-@@ -13637,7 +13637,7 @@ ROCKETPORT DRIVER
- P:	Comtrol Corp.
- W:	http://www.comtrol.com
- S:	Maintained
--F:	Documentation/serial/rocket.rst
-+F:	Documentation/driver-api/serial/rocket.rst
- F:	drivers/tty/rocket*
+ =======
+ powerpc
+diff --git a/Documentation/riscv/index.rst b/Documentation/riscv/index.rst
+index c4b906d9b5a7..e3ca0922a8c2 100644
+--- a/Documentation/riscv/index.rst
++++ b/Documentation/riscv/index.rst
+@@ -1,5 +1,3 @@
+-:orphan:
+-
+ ===================
+ RISC-V architecture
+ ===================
+diff --git a/Documentation/s390/index.rst b/Documentation/s390/index.rst
+index 1a914da2a07b..4602312909d3 100644
+--- a/Documentation/s390/index.rst
++++ b/Documentation/s390/index.rst
+@@ -1,5 +1,3 @@
+-:orphan:
+-
+ =================
+ s390 Architecture
+ =================
+diff --git a/Documentation/sparc/index.rst b/Documentation/sparc/index.rst
+index 91f7d6643dd5..71cff621f243 100644
+--- a/Documentation/sparc/index.rst
++++ b/Documentation/sparc/index.rst
+@@ -1,5 +1,3 @@
+-:orphan:
+-
+ ==================
+ Sparc Architecture
+ ==================
+diff --git a/Documentation/xtensa/index.rst b/Documentation/xtensa/index.rst
+index 5a24e365e35f..52fa04eb39a3 100644
+--- a/Documentation/xtensa/index.rst
++++ b/Documentation/xtensa/index.rst
+@@ -1,4 +1,4 @@
+-:orphan:
++.. SPDX-License-Identifier: GPL-2.0
  
- ROCKETPORT EXPRESS/INFINITY DRIVER
-@@ -16170,7 +16170,7 @@ M:	Greg Kroah-Hartman <gregkh@linuxfoundation.org>
- M:	Jiri Slaby <jslaby@suse.com>
- S:	Supported
- T:	git git://git.kernel.org/pub/scm/linux/kernel/git/gregkh/tty.git
--F:	Documentation/serial/
-+F:	Documentation/driver-api/serial/
- F:	drivers/tty/
- F:	drivers/tty/serial/serial_core.c
- F:	include/linux/serial_core.h
-diff --git a/drivers/tty/Kconfig b/drivers/tty/Kconfig
-index ee51b9514225..c7623f99ac0f 100644
---- a/drivers/tty/Kconfig
-+++ b/drivers/tty/Kconfig
-@@ -175,7 +175,7 @@ config ROCKETPORT
- 	  This driver supports Comtrol RocketPort and RocketModem PCI boards.   
-           These boards provide 2, 4, 8, 16, or 32 high-speed serial ports or
-           modems.  For information about the RocketPort/RocketModem  boards
--          and this driver read <file:Documentation/serial/rocket.rst>.
-+          and this driver read <file:Documentation/driver-api/serial/rocket.rst>.
- 
- 	  To compile this driver as a module, choose M here: the
- 	  module will be called rocket.
-@@ -193,7 +193,7 @@ config CYCLADES
- 	  your Linux box, for instance in order to become a dial-in server.
- 
- 	  For information about the Cyclades-Z card, read
--	  <file:Documentation/serial/cyclades_z.rst>.
-+	  <file:Documentation/driver-api/serial/cyclades_z.rst>.
- 
- 	  To compile this driver as a module, choose M here: the
- 	  module will be called cyclades.
-diff --git a/drivers/tty/serial/ucc_uart.c b/drivers/tty/serial/ucc_uart.c
-index 6e3c66ab0e62..a0555ae2b1ef 100644
---- a/drivers/tty/serial/ucc_uart.c
-+++ b/drivers/tty/serial/ucc_uart.c
-@@ -1081,7 +1081,7 @@ static int qe_uart_verify_port(struct uart_port *port,
- }
- /* UART operations
-  *
-- * Details on these functions can be found in Documentation/serial/driver.rst
-+ * Details on these functions can be found in Documentation/driver-api/serial/driver.rst
-  */
- static const struct uart_ops qe_uart_pops = {
- 	.tx_empty       = qe_uart_tx_empty,
-diff --git a/include/linux/serial_core.h b/include/linux/serial_core.h
-index 05b179015d6c..2b78cc734719 100644
---- a/include/linux/serial_core.h
-+++ b/include/linux/serial_core.h
-@@ -32,7 +32,7 @@ struct device;
- 
- /*
-  * This structure describes all the operations that can be done on the
-- * physical hardware.  See Documentation/serial/driver.rst for details.
-+ * physical hardware.  See Documentation/driver-api/serial/driver.rst for details.
-  */
- struct uart_ops {
- 	unsigned int	(*tx_empty)(struct uart_port *);
+ ===================
+ Xtensa Architecture
 -- 
 2.21.0
 
