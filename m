@@ -2,96 +2,64 @@ Return-Path: <SRS0=ywKm=U3=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
-	SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1FFBFC4321A
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Jun 2019 04:09:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D02F0C4321A
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Jun 2019 04:12:08 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 8E95B20656
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Jun 2019 04:09:40 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 52AD12133F
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Jun 2019 04:12:08 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=russell.cc header.i=@russell.cc header.b="yBmL4jvp";
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b="VWqN69+v"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8E95B20656
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=russell.cc
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=canb.auug.org.au header.i=@canb.auug.org.au header.b="ZgAP40Fd"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 52AD12133F
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=canb.auug.org.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45Zjvk0mG8zDqmf
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Jun 2019 14:09:38 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=russell.cc
- (client-ip=64.147.123.19; helo=wout3-smtp.messagingengine.com;
- envelope-from=ruscur@russell.cc; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=russell.cc
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=russell.cc header.i=@russell.cc header.b="yBmL4jvp"; 
- dkim=pass (2048-bit key;
- unprotected) header.d=messagingengine.com header.i=@messagingengine.com
- header.b="VWqN69+v"; dkim-atps=neutral
-Received: from wout3-smtp.messagingengine.com (wout3-smtp.messagingengine.com
- [64.147.123.19])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 45ZjyZ1kzjzDqfj
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Jun 2019 14:12:06 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45ZhQ81tvMzDqfd
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Jun 2019 13:02:23 +1000 (AEST)
-Received: from compute6.internal (compute6.nyi.internal [10.202.2.46])
- by mailout.west.internal (Postfix) with ESMTP id F20F13BD;
- Thu, 27 Jun 2019 23:02:19 -0400 (EDT)
-Received: from mailfrontend2 ([10.202.2.163])
- by compute6.internal (MEProxy); Thu, 27 Jun 2019 23:02:20 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=russell.cc; h=
- message-id:subject:from:to:cc:date:in-reply-to:references
- :content-type:mime-version:content-transfer-encoding; s=fm2; bh=
- 0nIuPza9JXPm3s5p5IiEosU7RutHY/f00ebuDHdt7wE=; b=yBmL4jvp7rsPCcLb
- IFhKyImO+XZO73g5TJWxS8NOeQ5IbHCf7weaSg5c4SRoAy7LhC5Tnu4REDcKdS16
- GDTwQMxvlucc2qIRQ2+5u5cryC5vZhqMQNCYsk6Lopy2CyveX3N0g35P99xUK+32
- QSei7TgwqhnavXquPrZhUTG+NPimxeOKCaRMlXRv1ljVJQSZymj6u+aoMvBSLli8
- QO1qzdatYoyqNHPAADcsxX7W9bY6lod/m7z72c0r5clLVeIIpFXzx75nFUAM3m+x
- ag6smrGFXtHT/GL8CXwi3ZF7BIbm4ULFiS0vLO6qtOGP3T61M78/Oj2ESKJL9Eat
- R47dIw==
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
- messagingengine.com; h=cc:content-transfer-encoding:content-type
- :date:from:in-reply-to:message-id:mime-version:references
- :subject:to:x-me-proxy:x-me-proxy:x-me-sender:x-me-sender
- :x-sasl-enc; s=fm3; bh=0nIuPza9JXPm3s5p5IiEosU7RutHY/f00ebuDHdt7
- wE=; b=VWqN69+vW80b8fJeaUpDr3ZtpRa5initaPO3nllJh1y8C09Ny2bps/qtv
- Am5Lm85JkJW5fPAJUAYQBqzxTnXYfhjxp2b5iN+bs8bVhSmb0vApwpklxozJz8nN
- 9pGguPWYeG+A9XHKJYvqyWnErNWAGdFOp4xB9MeIuRL7ZcONCKBVQJtLdCkJlFur
- QTpGEicvP3gNnMYCjjdH0b4dzzeJGm7k8e97SKNQ+bGdeJCdhoiXb7SV211QEJ/B
- yW/ELRvOLIXOCKNKuGcczLyjBRYx3sf/bf71uHkF2GPW2puBlAN4EA5RCsQrqc4l
- 0b8n5UF0WkfJsGArK+pjpgpHSxo+g==
-X-ME-Sender: <xms:OYMVXdWSnAhGXFUij_cwVzqcpyRXb60ehByjbd6TZe9afTgioDttCw>
-X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgeduvddrudelgdeiiecutefuodetggdotefrodftvf
- curfhrohhfihhlvgemucfhrghsthforghilhdpqfgfvfdpuffrtefokffrpgfnqfghnecu
- uegrihhlohhuthemuceftddtnecufghrlhcuvffnffculdeftddmnecujfgurhepkffuhf
- fvffgjfhgtfggggfesthejredttderjeenucfhrhhomheptfhushhsvghllhcuvehurhhr
- vgihuceorhhushgtuhhrsehruhhsshgvlhhlrdgttgeqnecukfhppeduvdegrddujedurd
- ejvddrudegfeenucfrrghrrghmpehmrghilhhfrhhomheprhhushgtuhhrsehruhhsshgv
- lhhlrdgttgenucevlhhushhtvghrufhiiigvpedt
-X-ME-Proxy: <xmx:OYMVXRgqHDdtoR6Hjpq70ACrAlC9WqVYKFF3C0Pspeen7-kJZgmOFQ>
- <xmx:OYMVXR68rKtKTSmx-QPU2ES6WC5DvklTpYGDzFYDsutFxxMnYThzKA>
- <xmx:OYMVXZ4dEytgzHDjJXuQ7kSI5Az4q9MRwIRzQPt5OUShJNAULBiNQQ>
- <xmx:O4MVXTt8JfGAHUz5QQQXn31QqxAwrUUWv21HndsriD6gcJ40BiobZQ>
-Received: from crackle.ozlabs.ibm.com (124-171-72-143.dyn.iinet.net.au
- [124.171.72.143])
- by mail.messagingengine.com (Postfix) with ESMTPA id EA70C380076;
- Thu, 27 Jun 2019 23:02:14 -0400 (EDT)
-Message-ID: <b21dc7e6aa44f984fe64a2bd6c9a3158c6a10bf8.camel@russell.cc>
-Subject: Re: [PATCH] powerpc/eeh_cache: fix a W=1 kernel-doc warning
-From: Russell Currey <ruscur@russell.cc>
-To: Qian Cai <cai@lca.pw>, mpe@ellerman.id.au
-Date: Fri, 28 Jun 2019 13:02:11 +1000
-In-Reply-To: <1559767579-7151-1-git-send-email-cai@lca.pw>
-References: <1559767579-7151-1-git-send-email-cai@lca.pw>
-Content-Type: text/plain; charset="UTF-8"
-User-Agent: Evolution 3.32.3 
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45ZjwX5DHqzDq5t
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Jun 2019 14:10:20 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=canb.auug.org.au
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ secure) header.d=canb.auug.org.au header.i=@canb.auug.org.au
+ header.b="ZgAP40Fd"; dkim-atps=neutral
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
+ SHA256) (No client certificate requested)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 45ZjwW4qpwz9s3Z;
+ Fri, 28 Jun 2019 14:10:19 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=canb.auug.org.au;
+ s=201702; t=1561695020;
+ bh=I55zkrMesqKne3KNEzZE8U42iz5xAdNYBrsAy1XmwNg=;
+ h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
+ b=ZgAP40FdlZjb2yEhOECndGyeLh1QfrT2/DbfoBVqZy3lC+bAJCo+Xa28DynCRqdBn
+ EUS89x1QjDGxmVnVe7ZSwoduC5otYHiMeR5FCaZCyJxoRiLzyElm9QP6nbisMT1DA6
+ mrEa5DsH3PUg03A5Q2OOWbBhMGRpHo8Wy4oSV3DJYLttTIfBpFtCAhIAvMCTwCEBHS
+ +RWL7nKUZVjDDh3uYaOytL5fBnRaGws9jyD2r2DPCL3QRFM1/n8qer7OgkUSoY2SYC
+ jSrshrGn+4SJ5ZeN+eZeW0WwppwwSdBvJwETBB3smrnqwEdB2ncwdYCClO5bSk0YN9
+ OtGx6H4eqjorw==
+Date: Fri, 28 Jun 2019 14:10:18 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Anshuman Khandual <anshuman.khandual@arm.com>
+Subject: Re: [PATCH] powerpc/64s/radix: Define arch_ioremap_p4d_supported()
+Message-ID: <20190628141018.5ad2603d@canb.auug.org.au>
+In-Reply-To: <6d201cb8-4c39-b7ea-84e6-f84607cc8b4f@arm.com>
+References: <1561555260-17335-1-git-send-email-anshuman.khandual@arm.com>
+ <87d0iztz0f.fsf@concordia.ellerman.id.au>
+ <6d201cb8-4c39-b7ea-84e6-f84607cc8b4f@arm.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ boundary="Sig_/wq/1diQb=+V7OS3bGVMftw9"; protocol="application/pgp-signature"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -103,28 +71,50 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: sbobroff@linux.ibm.com, linux-kernel@vger.kernel.org, oohall@gmail.com,
- paulus@samba.org, linuxppc-dev@lists.ozlabs.org
+Cc: linux-kernel@vger.kernel.org, Nicholas Piggin <npiggin@gmail.com>,
+ linux-mm@kvack.org, linux-next@vger.kernel.org,
+ Paul Mackerras <paulus@samba.org>,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
+ Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, 2019-06-05 at 16:46 -0400, Qian Cai wrote:
-> The opening comment mark "/**" is reserved for kernel-doc comments,
-> so
-> it will generate a warning with "make W=1".
-> 
-> arch/powerpc/kernel/eeh_cache.c:37: warning: cannot understand
-> function
-> prototype: 'struct pci_io_addr_range
-> 
-> Since this is not a kernel-doc for the struct below, but rather an
-> overview of this source eeh_cache.c, just use the free-form comments
-> kernel-doc syntax instead.
-> 
-> Signed-off-by: Qian Cai <cai@lca.pw>
+--Sig_/wq/1diQb=+V7OS3bGVMftw9
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 
-Looks good to me.
+Hi Anshuman,
 
-Acked-by: Russell Currey <ruscur@russell.cc>
+On Fri, 28 Jun 2019 09:14:46 +0530 Anshuman Khandual <anshuman.khandual@arm=
+.com> wrote:
+>
+> On linux-next (next-20190627) this change has already been applied though=
+ a
+> merge commit 153083a99fe431 ("Merge branch 'akpm-current/current'"). So we
+> are good on this ? Or shall I send out a V2 for the original patch. Please
+> suggest. Thank you.
 
+Please send Andrew a v2.
+
+--=20
+Cheers,
+Stephen Rothwell
+
+--Sig_/wq/1diQb=+V7OS3bGVMftw9
+Content-Type: application/pgp-signature
+Content-Description: OpenPGP digital signature
+
+-----BEGIN PGP SIGNATURE-----
+
+iQEzBAEBCAAdFiEENIC96giZ81tWdLgKAVBC80lX0GwFAl0VkyoACgkQAVBC80lX
+0Gw6+gf/Y06x3WT9WXSTWwMk6GeiltDHujuBd130HVkWnVGWvwg8RQc9/VfvqINS
+XV0T6wzeSBWrWx5oPcbhTjvWy6a69nYs6x4gxHE9WUWyg5NVK8qFwhQ7h7oQEgDq
+hHSxZ29YSp8yx1SN/JG7Lsebpkfo8JHbSLI6e7icI4odv/D/p6WeOgJI2cIGvkkb
+PJaw6nO/shGvtqI9VyLHlcut0Ay42x4/jvXwrPyZWYJpdJ6I2ssw2tXFNzMHAiJa
+k5Hj69KXCXolZ7fZlYUmf+zMA0EcMvGIWjoa/rwSZYwnrRc0mYAMburImlu4FnCT
+u+TtTQ6frusmg5BqSfuN3Z7I9nFz7Q==
+=PTBt
+-----END PGP SIGNATURE-----
+
+--Sig_/wq/1diQb=+V7OS3bGVMftw9--
