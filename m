@@ -2,83 +2,52 @@ Return-Path: <SRS0=ywKm=U3=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.3 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CA1B1C4321A
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Jun 2019 08:54:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 16FADC5B579
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Jun 2019 08:56:41 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 4CAFC205ED
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Jun 2019 08:54:53 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="iZJV4WTx"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4CAFC205ED
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
+	by mail.kernel.org (Postfix) with ESMTPS id C812B206E0
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Jun 2019 08:56:40 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C812B206E0
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=suse.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45ZrDq3KRRzDqMG
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Jun 2019 18:54:51 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45ZrGt4nKZzDqvg
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Jun 2019 18:56:38 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=c-s.fr
- (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
- envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=suse.de
+ (client-ip=195.135.220.15; helo=mx1.suse.de; envelope-from=tiwai@suse.de;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=c-s.fr
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="iZJV4WTx"; 
- dkim-atps=neutral
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ dmarc=none (p=none dis=none) header.from=suse.de
+Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45ZrC5453lzDqKr
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Jun 2019 18:53:20 +1000 (AEST)
-Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 45ZrBx4KdTz9v1dc;
- Fri, 28 Jun 2019 10:53:13 +0200 (CEST)
-Authentication-Results: localhost; dkim=pass
- reason="1024-bit key; insecure key"
- header.d=c-s.fr header.i=@c-s.fr header.b=iZJV4WTx; dkim-adsp=pass;
- dkim-atps=neutral
-X-Virus-Scanned: Debian amavisd-new at c-s.fr
-Received: from pegase1.c-s.fr ([192.168.12.234])
- by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id hpEMNWuvYw_w; Fri, 28 Jun 2019 10:53:13 +0200 (CEST)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 45ZrBx3HBlz9v1dW;
- Fri, 28 Jun 2019 10:53:13 +0200 (CEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
- t=1561711993; bh=QNUEzs2e6ZJPJ8ysIU+hR3hVhhJUmwBw6ciMTdldx7A=;
- h=Subject:To:Cc:References:From:Date:In-Reply-To:From;
- b=iZJV4WTxJKKUSiKol7dhPzbHdXh3ec9EIn5pAU5cZ0JJKx73Odp0IwloU69qraA7r
- 6Zo4TMx5/pg6etpO2hsuq1/xSK17qLVslIfBbTtCtJCzaD2XNn9p0YS/2cehaW+aTE
- uyhro8CTUATQmvLZSsNKhWp6axzRPO3dqo66674w=
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 7148C8B965;
- Fri, 28 Jun 2019 10:53:14 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id h0xoail7aHWy; Fri, 28 Jun 2019 10:53:14 +0200 (CEST)
-Received: from [172.25.230.101] (po15451.idsi0.si.c-s.fr [172.25.230.101])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 436C08B961;
- Fri, 28 Jun 2019 10:53:14 +0200 (CEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45ZrDb3fTkzDqvK
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Jun 2019 18:54:39 +1000 (AEST)
+X-Virus-Scanned: by amavisd-new at test-mx.suse.de
+Received: from relay2.suse.de (unknown [195.135.220.254])
+ by mx1.suse.de (Postfix) with ESMTP id 06705AE36;
+ Fri, 28 Jun 2019 08:54:35 +0000 (UTC)
+Date: Fri, 28 Jun 2019 10:54:34 +0200
+Message-ID: <s5hmui26qet.wl-tiwai@suse.de>
+From: Takashi Iwai <tiwai@suse.de>
+To: Christophe Leroy <christophe.leroy@c-s.fr>
 Subject: Re: [PATCH 41/87] sound: ppc: remove memset after dma_alloc_coherent
-To: Takashi Iwai <tiwai@suse.de>, Fuqian Huang <huangfq.daxian@gmail.com>
+In-Reply-To: <b5f24a12-7fcf-63d3-4ca0-578aabbcbb8f@c-s.fr>
 References: <20190627174018.4015-1-huangfq.daxian@gmail.com>
  <s5htvca6qp1.wl-tiwai@suse.de>
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Message-ID: <b5f24a12-7fcf-63d3-4ca0-578aabbcbb8f@c-s.fr>
-Date: Fri, 28 Jun 2019 10:53:14 +0200
-User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:60.0) Gecko/20100101
- Thunderbird/60.7.2
-MIME-Version: 1.0
-In-Reply-To: <s5htvca6qp1.wl-tiwai@suse.de>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: fr
+ <b5f24a12-7fcf-63d3-4ca0-578aabbcbb8f@c-s.fr>
+User-Agent: Wanderlust/2.15.9 (Almost Unreal) SEMI/1.14.6 (Maruoka)
+ FLIM/1.14.9 (=?UTF-8?B?R29qxY0=?=) APEL/10.8 Emacs/25.3
+ (x86_64-suse-linux-gnu) MULE/6.0 (HANACHIRUSATO)
+MIME-Version: 1.0 (generated by SEMI 1.14.6 - "Maruoka")
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -94,27 +63,35 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 Cc: Rob Herring <robh@kernel.org>, alsa-devel@alsa-project.org,
  Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org,
  Jaroslav Kysela <perex@perex.cz>, Paul Mackerras <paulus@samba.org>,
- Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@lists.ozlabs.org
+ Fuqian Huang <huangfq.daxian@gmail.com>, Thomas Gleixner <tglx@linutronix.de>,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-
-
-Le 28/06/2019 à 10:48, Takashi Iwai a écrit :
-> On Thu, 27 Jun 2019 19:40:17 +0200,
-> Fuqian Huang wrote:
->>
->> In commit af7ddd8a627c
->> ("Merge tag 'dma-mapping-4.21' of git://git.infradead.org/users/hch/dma-mapping"),
->> dma_alloc_coherent has already zeroed the memory.
->> So memset is not needed.
->>
->> Signed-off-by: Fuqian Huang <huangfq.daxian@gmail.com>
+On Fri, 28 Jun 2019 10:53:14 +0200,
+Christophe Leroy wrote:
 > 
-> Applied, thanks.
 > 
+> 
+> Le 28/06/2019 à 10:48, Takashi Iwai a écrit :
+> > On Thu, 27 Jun 2019 19:40:17 +0200,
+> > Fuqian Huang wrote:
+> >>
+> >> In commit af7ddd8a627c
+> >> ("Merge tag 'dma-mapping-4.21' of git://git.infradead.org/users/hch/dma-mapping"),
+> >> dma_alloc_coherent has already zeroed the memory.
+> >> So memset is not needed.
+> >>
+> >> Signed-off-by: Fuqian Huang <huangfq.daxian@gmail.com>
+> >
+> > Applied, thanks.
+> >
+> 
+> Euh ... looks like a v2 of this series was sent out.
 
-Euh ... looks like a v2 of this series was sent out.
+OK, then I take back.  Luckily, the tree wasn't pushed out yet.
+Thanks for the quick notice.
 
-Christophe
+
+Takashi
