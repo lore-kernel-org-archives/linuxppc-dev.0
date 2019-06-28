@@ -7,21 +7,21 @@ X-Spam-Status: No, score=-6.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 02171C4321A
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Jun 2019 15:52:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A7E6FC4321A
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Jun 2019 15:53:55 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 7EB2C20828
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Jun 2019 15:52:19 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 285AD20828
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Jun 2019 15:53:55 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="NzqGAvxs"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7EB2C20828
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="eLbff2yA"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 285AD20828
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45b1VT0cSyzDqtd
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 29 Jun 2019 01:52:17 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45b1XK1p0kzDqwh
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 29 Jun 2019 01:53:53 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=c-s.fr
  (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
@@ -29,54 +29,54 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="NzqGAvxs"; 
+ unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="eLbff2yA"; 
  dkim-atps=neutral
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45b1PV3vjyzDqv4
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 29 Jun 2019 01:47:57 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45b1PV3rBMzDqtQ
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 29 Jun 2019 01:47:56 +1000 (AEST)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 45b1PN540LzB09ZS;
- Fri, 28 Jun 2019 17:47:52 +0200 (CEST)
+ by localhost (Postfix) with ESMTP id 45b1PL2y79zB09ZQ;
+ Fri, 28 Jun 2019 17:47:50 +0200 (CEST)
 Authentication-Results: localhost; dkim=pass
  reason="1024-bit key; insecure key"
- header.d=c-s.fr header.i=@c-s.fr header.b=NzqGAvxs; dkim-adsp=pass;
+ header.d=c-s.fr header.i=@c-s.fr header.b=eLbff2yA; dkim-adsp=pass;
  dkim-atps=neutral
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id jIDfCeUKZQ4E; Fri, 28 Jun 2019 17:47:52 +0200 (CEST)
+ with ESMTP id iiL7FYjKr6zA; Fri, 28 Jun 2019 17:47:50 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 45b1PN3sqGzB09ZN;
- Fri, 28 Jun 2019 17:47:52 +0200 (CEST)
+ by pegase1.c-s.fr (Postfix) with ESMTP id 45b1PL1qN4zB09ZN;
+ Fri, 28 Jun 2019 17:47:50 +0200 (CEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
- t=1561736872; bh=550P1CoXgG6ywMpcxaUOSrNayar1hHXACatHa7PwUDQ=;
+ t=1561736870; bh=WmP4bKhnfBYlSSGQ//frf/dAVmCAzNuL14conWVzh18=;
  h=In-Reply-To:References:From:Subject:To:Cc:Date:From;
- b=NzqGAvxsE54Z2woHZ+SUPok9D8ZkgU3mB2YPF/pWL7DxaT/V4wNJWi+C5mzqqzxWF
- /27PL9BOX19m91/Y+ZOsVmv/XLC9eiWuAob+cknxLwfQ4/SXLFI71XF5OQ6aPw9OL6
- kPnqFRohz6kORRMR8PHba6KDs3Xd3BLw7Rjz4ywM=
+ b=eLbff2yAwf4Sx2EDT4g7EvkoEDZQWJWVYdRgj+nDDJuZg0Zd8MCOiBSOuJjjo2GZG
+ lrHs2lCejz93KhHbBg4OBzjrvL93ErU3tVimaMWEMZFpnREahoPvegUT/mBgphJfBB
+ scdGGZMJpky1lJ75/DgcJrI8TZG1q2sShnz8LdS0=
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id DC0C48B955;
- Fri, 28 Jun 2019 17:47:53 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 715CE8B955;
+ Fri, 28 Jun 2019 17:47:51 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id jbLOjUbh2oYv; Fri, 28 Jun 2019 17:47:53 +0200 (CEST)
+ with ESMTP id HkwAnLYF9rVD; Fri, 28 Jun 2019 17:47:51 +0200 (CEST)
 Received: from localhost.localdomain (po15451.idsi0.si.c-s.fr [172.25.230.101])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 00D5E8B978;
- Fri, 28 Jun 2019 17:47:52 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id E3FE98B976;
+ Fri, 28 Jun 2019 17:47:50 +0200 (CEST)
 Received: by localhost.localdomain (Postfix, from userid 0)
- id B01FD68DD7; Fri, 28 Jun 2019 15:47:52 +0000 (UTC)
-Message-Id: <c308b286e4fac4bea6544079b450aef7d3510dc8.1561735587.git.christophe.leroy@c-s.fr>
+ id A6EE668DBC; Fri, 28 Jun 2019 15:47:50 +0000 (UTC)
+Message-Id: <4b371c54e2c15cab57585ad538d9fcb33bcf2725.1561735587.git.christophe.leroy@c-s.fr>
 In-Reply-To: <cover.1561735587.git.christophe.leroy@c-s.fr>
 References: <cover.1561735587.git.christophe.leroy@c-s.fr>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [RFC PATCH v2 03/12] powerpc/ptrace: drop PARAMETER_SAVE_AREA_OFFSET
+Subject: [RFC PATCH v2 01/12] powerpc: move ptrace into a subdirectory.
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, 
  mikey@neuling.org
-Date: Fri, 28 Jun 2019 15:47:52 +0000 (UTC)
+Date: Fri, 28 Jun 2019 15:47:50 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -93,34 +93,76 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-PARAMETER_SAVE_AREA_OFFSET is not used, drop it.
+In order to allow splitting of ptrace depending on the
+different CONFIG_ options, create a subdirectory dedicated to
+ptrace and move ptrace.c and ptrace32.c into it.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
- arch/powerpc/kernel/ptrace/ptrace.c | 10 ----------
- 1 file changed, 10 deletions(-)
+ arch/powerpc/kernel/Makefile                | 7 +++----
+ arch/powerpc/kernel/ptrace/Makefile         | 9 +++++++++
+ arch/powerpc/kernel/{ => ptrace}/ptrace.c   | 0
+ arch/powerpc/kernel/{ => ptrace}/ptrace32.c | 0
+ 4 files changed, 12 insertions(+), 4 deletions(-)
+ create mode 100644 arch/powerpc/kernel/ptrace/Makefile
+ rename arch/powerpc/kernel/{ => ptrace}/ptrace.c (100%)
+ rename arch/powerpc/kernel/{ => ptrace}/ptrace32.c (100%)
 
-diff --git a/arch/powerpc/kernel/ptrace/ptrace.c b/arch/powerpc/kernel/ptrace/ptrace.c
-index 0afb223c4d57..cc8efcb404d6 100644
---- a/arch/powerpc/kernel/ptrace/ptrace.c
-+++ b/arch/powerpc/kernel/ptrace/ptrace.c
-@@ -48,16 +48,6 @@
- #define CREATE_TRACE_POINTS
- #include <trace/events/syscalls.h>
+diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
+index 0ea6c4aa3a20..c522464fa56a 100644
+--- a/arch/powerpc/kernel/Makefile
++++ b/arch/powerpc/kernel/Makefile
+@@ -3,8 +3,6 @@
+ # Makefile for the linux kernel.
+ #
  
--/*
-- * The parameter save area on the stack is used to store arguments being passed
-- * to callee function and is located at fixed offset from stack pointer.
-- */
--#ifdef CONFIG_PPC32
--#define PARAMETER_SAVE_AREA_OFFSET	24  /* bytes */
--#else /* CONFIG_PPC32 */
--#define PARAMETER_SAVE_AREA_OFFSET	48  /* bytes */
--#endif
+-CFLAGS_ptrace.o		+= -DUTS_MACHINE='"$(UTS_MACHINE)"'
 -
- struct pt_regs_offset {
- 	const char *name;
- 	int offset;
+ # Disable clang warning for using setjmp without setjmp.h header
+ CFLAGS_crash.o		+= $(call cc-disable-warning, builtin-requires-header)
+ 
+@@ -43,15 +41,16 @@ CFLAGS_prom_init.o += -DDISABLE_BRANCH_PROFILING
+ CFLAGS_btext.o += -DDISABLE_BRANCH_PROFILING
+ endif
+ 
+-obj-y				:= cputable.o ptrace.o syscalls.o \
++obj-y				:= cputable.o syscalls.o \
+ 				   irq.o align.o signal_32.o pmc.o vdso.o \
+ 				   process.o systbl.o idle.o \
+ 				   signal.o sysfs.o cacheinfo.o time.o \
+ 				   prom.o traps.o setup-common.o \
+ 				   udbg.o misc.o io.o misc_$(BITS).o \
+ 				   of_platform.o prom_parse.o
++obj-y				+= ptrace/
+ obj-$(CONFIG_PPC64)		+= setup_64.o sys_ppc32.o \
+-				   signal_64.o ptrace32.o \
++				   signal_64.o \
+ 				   paca.o nvram_64.o firmware.o
+ obj-$(CONFIG_VDSO32)		+= vdso32/
+ obj-$(CONFIG_PPC_WATCHDOG)	+= watchdog.o
+diff --git a/arch/powerpc/kernel/ptrace/Makefile b/arch/powerpc/kernel/ptrace/Makefile
+new file mode 100644
+index 000000000000..02fb28eb3b55
+--- /dev/null
++++ b/arch/powerpc/kernel/ptrace/Makefile
+@@ -0,0 +1,9 @@
++# SPDX-License-Identifier: GPL-2.0
++#
++# Makefile for the linux kernel.
++#
++
++CFLAGS_ptrace.o		+= -DUTS_MACHINE='"$(UTS_MACHINE)"'
++
++obj-y				+= ptrace.o
++obj-$(CONFIG_PPC64)		+= ptrace32.o
+diff --git a/arch/powerpc/kernel/ptrace.c b/arch/powerpc/kernel/ptrace/ptrace.c
+similarity index 100%
+rename from arch/powerpc/kernel/ptrace.c
+rename to arch/powerpc/kernel/ptrace/ptrace.c
+diff --git a/arch/powerpc/kernel/ptrace32.c b/arch/powerpc/kernel/ptrace/ptrace32.c
+similarity index 100%
+rename from arch/powerpc/kernel/ptrace32.c
+rename to arch/powerpc/kernel/ptrace/ptrace32.c
 -- 
 2.13.3
 
