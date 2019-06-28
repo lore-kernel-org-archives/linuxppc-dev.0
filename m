@@ -2,78 +2,81 @@ Return-Path: <SRS0=ywKm=U3=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+X-Spam-Status: No, score=-6.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AB2BEC4321A
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Jun 2019 14:07:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 02171C4321A
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Jun 2019 15:52:20 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 32ECA208E3
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Jun 2019 14:07:29 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 7EB2C20828
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Jun 2019 15:52:19 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=lca.pw header.i=@lca.pw header.b="F96K1IIC"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 32ECA208E3
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lca.pw
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="NzqGAvxs"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7EB2C20828
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45Zz9V3rmgzDqty
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 29 Jun 2019 00:07:26 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45b1VT0cSyzDqtd
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 29 Jun 2019 01:52:17 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=lca.pw
- (client-ip=2607:f8b0:4864:20::844; helo=mail-qt1-x844.google.com;
- envelope-from=cai@lca.pw; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=c-s.fr
+ (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=lca.pw
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=lca.pw header.i=@lca.pw header.b="F96K1IIC"; 
+ dmarc=none (p=none dis=none) header.from=c-s.fr
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="NzqGAvxs"; 
  dkim-atps=neutral
-Received: from mail-qt1-x844.google.com (mail-qt1-x844.google.com
- [IPv6:2607:f8b0:4864:20::844])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45Zz5h6Hs8zDqtV
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 29 Jun 2019 00:04:08 +1000 (AEST)
-Received: by mail-qt1-x844.google.com with SMTP id d23so6403326qto.2
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Jun 2019 07:04:08 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=lca.pw; s=google;
- h=from:to:cc:subject:date:message-id;
- bh=TtCBV3dv3lEbG+/Fl3MOz0T0TVohkkYJU98cwcixuvQ=;
- b=F96K1IICnsJfZn53/kwRm1vvbIo7q8vJIYhCCu2yi2d30Eq+0mjKuqbd4a8FDTuvtV
- Negyxz/Lb1dJrZQ7AAw0xmX7Szb810eOW9PgnsFaT00jtGVSWVOam+Vpbj7Edt5/DiID
- 9R0oQr9sCrD9pG+tjppcckcdPjmzzRJ3lto2wfwQ60IZgRubQVkPdfG6DOOm17g1lQ31
- OXBSXrpHLdn1O9afeOR5WUWH0EuLf1p3tHqhFqYev/WEDtHJm0lEUXzATje+mVMuk/AB
- 8d81bjziN1zLAPVYsOQP5KS/2Vwk3aiau8NcU84Evk+E1FljELYSd7N09bKp796Na0c0
- /5Bg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:from:to:cc:subject:date:message-id;
- bh=TtCBV3dv3lEbG+/Fl3MOz0T0TVohkkYJU98cwcixuvQ=;
- b=rLwXTG4HSQ4gtYiBah9QdAnKUE3iDeFsAOZ7Sk60zDpbHdaXLApGLSoA0+HvH6rIJz
- Avx4zQ/FL5LcVWSUZEVeEUcmRNWCjpeViSB0/U/ZH1CxuzAQTaXviY1bzCICzO+gJgWg
- AK7GmaqnJbjIm6xHzHwWEWzsxksKssOIaFzy+OgwxqzCgHDvbyK+tvrgqlR1vqvLCCby
- tgggnezT+xXxL07YFbDk1G3nGBhdb5GIqfKI1MI/bbDRu621z7zlCnTXKK3muH92ooV5
- zU8qbO79ZpKPQJ5RIvcRCgx3VLEpFnHGay1z/uD1Xzn3i2xbuU5txCAr9E2t0E6hkOz6
- hNUA==
-X-Gm-Message-State: APjAAAU2+gVgE0bngb/84+fWbc0bg8Ic16IYLSOiaztWG7u0dzHAfoxS
- OHUdt9YyoNH3LsBEqvYRFDdO5w==
-X-Google-Smtp-Source: APXvYqyjeSciFcaL48I+xGOjSfb9/Tjy2YGnp7YoXOFLumU17Q7I47Wu9sCEP5Uc0iMXMHLJZ6pNyA==
-X-Received: by 2002:aed:3fb0:: with SMTP id s45mr8442028qth.136.1561730644147; 
- Fri, 28 Jun 2019 07:04:04 -0700 (PDT)
-Received: from qcai.nay.com (nat-pool-bos-t.redhat.com. [66.187.233.206])
- by smtp.gmail.com with ESMTPSA id 139sm1076137qkg.127.2019.06.28.07.04.02
- (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
- Fri, 28 Jun 2019 07:04:03 -0700 (PDT)
-From: Qian Cai <cai@lca.pw>
-To: mpe@ellerman.id.au
-Subject: [PATCH v3] powerpc/setup_64: fix -Wempty-body warnings
-Date: Fri, 28 Jun 2019 10:03:49 -0400
-Message-Id: <1561730629-5025-1-git-send-email-cai@lca.pw>
-X-Mailer: git-send-email 1.8.3.1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45b1PV3vjyzDqv4
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 29 Jun 2019 01:47:57 +1000 (AEST)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 45b1PN540LzB09ZS;
+ Fri, 28 Jun 2019 17:47:52 +0200 (CEST)
+Authentication-Results: localhost; dkim=pass
+ reason="1024-bit key; insecure key"
+ header.d=c-s.fr header.i=@c-s.fr header.b=NzqGAvxs; dkim-adsp=pass;
+ dkim-atps=neutral
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id jIDfCeUKZQ4E; Fri, 28 Jun 2019 17:47:52 +0200 (CEST)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 45b1PN3sqGzB09ZN;
+ Fri, 28 Jun 2019 17:47:52 +0200 (CEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
+ t=1561736872; bh=550P1CoXgG6ywMpcxaUOSrNayar1hHXACatHa7PwUDQ=;
+ h=In-Reply-To:References:From:Subject:To:Cc:Date:From;
+ b=NzqGAvxsE54Z2woHZ+SUPok9D8ZkgU3mB2YPF/pWL7DxaT/V4wNJWi+C5mzqqzxWF
+ /27PL9BOX19m91/Y+ZOsVmv/XLC9eiWuAob+cknxLwfQ4/SXLFI71XF5OQ6aPw9OL6
+ kPnqFRohz6kORRMR8PHba6KDs3Xd3BLw7Rjz4ywM=
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id DC0C48B955;
+ Fri, 28 Jun 2019 17:47:53 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id jbLOjUbh2oYv; Fri, 28 Jun 2019 17:47:53 +0200 (CEST)
+Received: from localhost.localdomain (po15451.idsi0.si.c-s.fr [172.25.230.101])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 00D5E8B978;
+ Fri, 28 Jun 2019 17:47:52 +0200 (CEST)
+Received: by localhost.localdomain (Postfix, from userid 0)
+ id B01FD68DD7; Fri, 28 Jun 2019 15:47:52 +0000 (UTC)
+Message-Id: <c308b286e4fac4bea6544079b450aef7d3510dc8.1561735587.git.christophe.leroy@c-s.fr>
+In-Reply-To: <cover.1561735587.git.christophe.leroy@c-s.fr>
+References: <cover.1561735587.git.christophe.leroy@c-s.fr>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Subject: [RFC PATCH v2 03/12] powerpc/ptrace: drop PARAMETER_SAVE_AREA_OFFSET
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, 
+ mikey@neuling.org
+Date: Fri, 28 Jun 2019 15:47:52 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -85,63 +88,39 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-kernel@vger.kernel.org, paulus@samba.org, tyreld@linux.vnet.ibm.com,
- joe@perches.com, Qian Cai <cai@lca.pw>, linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-At the beginning of setup_64.c, it has,
+PARAMETER_SAVE_AREA_OFFSET is not used, drop it.
 
-  #ifdef DEBUG
-  #define DBG(fmt...) udbg_printf(fmt)
-  #else
-  #define DBG(fmt...)
-  #endif
-
-where DBG() could be compiled away, and generate warnings,
-
-arch/powerpc/kernel/setup_64.c: In function 'initialize_cache_info':
-arch/powerpc/kernel/setup_64.c:579:49: warning: suggest braces around
-empty body in an 'if' statement [-Wempty-body]
-    DBG("Argh, can't find dcache properties !\n");
-                                                 ^
-arch/powerpc/kernel/setup_64.c:582:49: warning: suggest braces around
-empty body in an 'if' statement [-Wempty-body]
-    DBG("Argh, can't find icache properties !\n");
-
-Fix it by using the no_printk() macro, and make sure that format and
-argument are always verified by the compiler.
-
-Suggested-by: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
-Suggested-by: Joe Perches <joe@perches.com>
-Signed-off-by: Qian Cai <cai@lca.pw>
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
+ arch/powerpc/kernel/ptrace/ptrace.c | 10 ----------
+ 1 file changed, 10 deletions(-)
 
-v3: Use no_printk() macro, and make sure that format and argument are always
-    verified by the compiler using a more generic form ##__VA_ARGS__ per Joe.
-
-v2: Fix it by using a NOP while loop per Tyrel.
-
- arch/powerpc/kernel/setup_64.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
-index 44b4c432a273..cea933a43f0a 100644
---- a/arch/powerpc/kernel/setup_64.c
-+++ b/arch/powerpc/kernel/setup_64.c
-@@ -69,9 +69,9 @@
- #include "setup.h"
+diff --git a/arch/powerpc/kernel/ptrace/ptrace.c b/arch/powerpc/kernel/ptrace/ptrace.c
+index 0afb223c4d57..cc8efcb404d6 100644
+--- a/arch/powerpc/kernel/ptrace/ptrace.c
++++ b/arch/powerpc/kernel/ptrace/ptrace.c
+@@ -48,16 +48,6 @@
+ #define CREATE_TRACE_POINTS
+ #include <trace/events/syscalls.h>
  
- #ifdef DEBUG
--#define DBG(fmt...) udbg_printf(fmt)
-+#define DBG(fmt, ...) udbg_printf(fmt, ##__VA_ARGS__)
- #else
--#define DBG(fmt...)
-+#define DBG(fmt, ...) no_printk(fmt, ##__VA_ARGS__)
- #endif
- 
- int spinning_secondaries;
+-/*
+- * The parameter save area on the stack is used to store arguments being passed
+- * to callee function and is located at fixed offset from stack pointer.
+- */
+-#ifdef CONFIG_PPC32
+-#define PARAMETER_SAVE_AREA_OFFSET	24  /* bytes */
+-#else /* CONFIG_PPC32 */
+-#define PARAMETER_SAVE_AREA_OFFSET	48  /* bytes */
+-#endif
+-
+ struct pt_regs_offset {
+ 	const char *name;
+ 	int offset;
 -- 
-1.8.3.1
+2.13.3
 
