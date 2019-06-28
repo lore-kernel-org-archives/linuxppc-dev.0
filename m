@@ -2,53 +2,96 @@ Return-Path: <SRS0=ywKm=U3=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
+	SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 247C8C4321A
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Jun 2019 04:05:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1FFBFC4321A
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Jun 2019 04:09:41 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 5940D2070D
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Jun 2019 04:05:19 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5940D2070D
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
+	by mail.kernel.org (Postfix) with ESMTPS id 8E95B20656
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Jun 2019 04:09:40 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=russell.cc header.i=@russell.cc header.b="yBmL4jvp";
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b="VWqN69+v"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8E95B20656
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=russell.cc
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45Zjpj0xkLzDqld
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Jun 2019 14:05:17 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45Zjvk0mG8zDqmf
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Jun 2019 14:09:38 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=redhat.com
- (client-ip=209.132.183.28; helo=mx1.redhat.com;
- envelope-from=jsavitz@redhat.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=russell.cc
+ (client-ip=64.147.123.19; helo=wout3-smtp.messagingengine.com;
+ envelope-from=ruscur@russell.cc; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=redhat.com
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ dmarc=none (p=none dis=none) header.from=russell.cc
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=russell.cc header.i=@russell.cc header.b="yBmL4jvp"; 
+ dkim=pass (2048-bit key;
+ unprotected) header.d=messagingengine.com header.i=@messagingengine.com
+ header.b="VWqN69+v"; dkim-atps=neutral
+Received: from wout3-smtp.messagingengine.com (wout3-smtp.messagingengine.com
+ [64.147.123.19])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45ZhKt3pzpzDqbv
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Jun 2019 12:58:38 +1000 (AEST)
-Received: from smtp.corp.redhat.com (int-mx02.intmail.prod.int.phx2.redhat.com
- [10.5.11.12])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by mx1.redhat.com (Postfix) with ESMTPS id B92A8356D4;
- Fri, 28 Jun 2019 02:58:33 +0000 (UTC)
-Received: from jsavitz.bos.com (ovpn-123-72.rdu2.redhat.com [10.10.123.72])
- by smtp.corp.redhat.com (Postfix) with ESMTP id B46BC60BE0;
- Fri, 28 Jun 2019 02:58:29 +0000 (UTC)
-From: Joel Savitz <jsavitz@redhat.com>
-To: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v2] PCI: rpaphp: Avoid a sometimes-uninitialized warning
-Date: Thu, 27 Jun 2019 22:57:54 -0400
-Message-Id: <1561690674-5880-1-git-send-email-jsavitz@redhat.com>
-In-Reply-To: <20190603221157.58502-1-natechancellor@gmail.com>
-X-Scanned-By: MIMEDefang 2.79 on 10.5.11.12
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.5.16
- (mx1.redhat.com [10.5.110.30]); Fri, 28 Jun 2019 02:58:36 +0000 (UTC)
-X-Mailman-Approved-At: Fri, 28 Jun 2019 14:03:42 +1000
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45ZhQ81tvMzDqfd
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Jun 2019 13:02:23 +1000 (AEST)
+Received: from compute6.internal (compute6.nyi.internal [10.202.2.46])
+ by mailout.west.internal (Postfix) with ESMTP id F20F13BD;
+ Thu, 27 Jun 2019 23:02:19 -0400 (EDT)
+Received: from mailfrontend2 ([10.202.2.163])
+ by compute6.internal (MEProxy); Thu, 27 Jun 2019 23:02:20 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=russell.cc; h=
+ message-id:subject:from:to:cc:date:in-reply-to:references
+ :content-type:mime-version:content-transfer-encoding; s=fm2; bh=
+ 0nIuPza9JXPm3s5p5IiEosU7RutHY/f00ebuDHdt7wE=; b=yBmL4jvp7rsPCcLb
+ IFhKyImO+XZO73g5TJWxS8NOeQ5IbHCf7weaSg5c4SRoAy7LhC5Tnu4REDcKdS16
+ GDTwQMxvlucc2qIRQ2+5u5cryC5vZhqMQNCYsk6Lopy2CyveX3N0g35P99xUK+32
+ QSei7TgwqhnavXquPrZhUTG+NPimxeOKCaRMlXRv1ljVJQSZymj6u+aoMvBSLli8
+ QO1qzdatYoyqNHPAADcsxX7W9bY6lod/m7z72c0r5clLVeIIpFXzx75nFUAM3m+x
+ ag6smrGFXtHT/GL8CXwi3ZF7BIbm4ULFiS0vLO6qtOGP3T61M78/Oj2ESKJL9Eat
+ R47dIw==
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
+ messagingengine.com; h=cc:content-transfer-encoding:content-type
+ :date:from:in-reply-to:message-id:mime-version:references
+ :subject:to:x-me-proxy:x-me-proxy:x-me-sender:x-me-sender
+ :x-sasl-enc; s=fm3; bh=0nIuPza9JXPm3s5p5IiEosU7RutHY/f00ebuDHdt7
+ wE=; b=VWqN69+vW80b8fJeaUpDr3ZtpRa5initaPO3nllJh1y8C09Ny2bps/qtv
+ Am5Lm85JkJW5fPAJUAYQBqzxTnXYfhjxp2b5iN+bs8bVhSmb0vApwpklxozJz8nN
+ 9pGguPWYeG+A9XHKJYvqyWnErNWAGdFOp4xB9MeIuRL7ZcONCKBVQJtLdCkJlFur
+ QTpGEicvP3gNnMYCjjdH0b4dzzeJGm7k8e97SKNQ+bGdeJCdhoiXb7SV211QEJ/B
+ yW/ELRvOLIXOCKNKuGcczLyjBRYx3sf/bf71uHkF2GPW2puBlAN4EA5RCsQrqc4l
+ 0b8n5UF0WkfJsGArK+pjpgpHSxo+g==
+X-ME-Sender: <xms:OYMVXdWSnAhGXFUij_cwVzqcpyRXb60ehByjbd6TZe9afTgioDttCw>
+X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgeduvddrudelgdeiiecutefuodetggdotefrodftvf
+ curfhrohhfihhlvgemucfhrghsthforghilhdpqfgfvfdpuffrtefokffrpgfnqfghnecu
+ uegrihhlohhuthemuceftddtnecufghrlhcuvffnffculdeftddmnecujfgurhepkffuhf
+ fvffgjfhgtfggggfesthejredttderjeenucfhrhhomheptfhushhsvghllhcuvehurhhr
+ vgihuceorhhushgtuhhrsehruhhsshgvlhhlrdgttgeqnecukfhppeduvdegrddujedurd
+ ejvddrudegfeenucfrrghrrghmpehmrghilhhfrhhomheprhhushgtuhhrsehruhhsshgv
+ lhhlrdgttgenucevlhhushhtvghrufhiiigvpedt
+X-ME-Proxy: <xmx:OYMVXRgqHDdtoR6Hjpq70ACrAlC9WqVYKFF3C0Pspeen7-kJZgmOFQ>
+ <xmx:OYMVXR68rKtKTSmx-QPU2ES6WC5DvklTpYGDzFYDsutFxxMnYThzKA>
+ <xmx:OYMVXZ4dEytgzHDjJXuQ7kSI5Az4q9MRwIRzQPt5OUShJNAULBiNQQ>
+ <xmx:O4MVXTt8JfGAHUz5QQQXn31QqxAwrUUWv21HndsriD6gcJ40BiobZQ>
+Received: from crackle.ozlabs.ibm.com (124-171-72-143.dyn.iinet.net.au
+ [124.171.72.143])
+ by mail.messagingengine.com (Postfix) with ESMTPA id EA70C380076;
+ Thu, 27 Jun 2019 23:02:14 -0400 (EDT)
+Message-ID: <b21dc7e6aa44f984fe64a2bd6c9a3158c6a10bf8.camel@russell.cc>
+Subject: Re: [PATCH] powerpc/eeh_cache: fix a W=1 kernel-doc warning
+From: Russell Currey <ruscur@russell.cc>
+To: Qian Cai <cai@lca.pw>, mpe@ellerman.id.au
+Date: Fri, 28 Jun 2019 13:02:11 +1000
+In-Reply-To: <1559767579-7151-1-git-send-email-cai@lca.pw>
+References: <1559767579-7151-1-git-send-email-cai@lca.pw>
+Content-Type: text/plain; charset="UTF-8"
+User-Agent: Evolution 3.32.3 
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -60,58 +103,28 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Tyrel Datwyler <tyreld@linux.ibm.com>,
- Nick Desaulniers <ndesaulniers@google.com>, linux-pci@vger.kernel.org,
- clang-built-linux@googlegroups.com, Paul Mackerras <paulus@samba.org>,
- Bjorn Helgaas <bhelgaas@google.com>,
- Nathan Chancellor <natechancellor@gmail.com>, linuxppc-dev@lists.ozlabs.org,
- Joel Savitz <jsavitz@redhat.com>
+Cc: sbobroff@linux.ibm.com, linux-kernel@vger.kernel.org, oohall@gmail.com,
+ paulus@samba.org, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
->On Mon, Jun 03, 2019 at 03:11:58PM -0700, Nathan Chancellor wrote:
->> When building with -Wsometimes-uninitialized, clang warns:
->> 
->> drivers/pci/hotplug/rpaphp_core.c:243:14: warning: variable 'fndit' is
->> used uninitialized whenever 'for' loop exits because its condition is
->> false [-Wsometimes-uninitialized]
->>         for (j = 0; j < entries; j++) {
->>                     ^~~~~~~~~~~
->> drivers/pci/hotplug/rpaphp_core.c:256:6: note: uninitialized use occurs
->> here
->>         if (fndit)
->>             ^~~~~
->> drivers/pci/hotplug/rpaphp_core.c:243:14: note: remove the condition if
->> it is always true
->>         for (j = 0; j < entries; j++) {
->>                     ^~~~~~~~~~~
->> drivers/pci/hotplug/rpaphp_core.c:233:14: note: initialize the variable
->> 'fndit' to silence this warning
->>         int j, fndit;
->>                     ^
->>                      = 0
->> 
->> fndit is only used to gate a sprintf call, which can be moved into the
->> loop to simplify the code and eliminate the local variable, which will
->> fix this warning.
->> 
->> Link: https://github.com/ClangBuiltLinux/linux/issues/504
->> Fixes: 2fcf3ae508c2 ("hotplug/drc-info: Add code to search ibm,drc-info property")
->> Suggested-by: Nick Desaulniers <ndesaulniers@google.com>
->> Signed-off-by: Nathan Chancellor <natechancellor@gmail.com>
->> ---
->> 
->> v1 -> v2:
->> 
->> * Eliminate fndit altogether by shuffling the sprintf call into the for
->>   loop and changing the if conditional, as suggested by Nick.
+On Wed, 2019-06-05 at 16:46 -0400, Qian Cai wrote:
+> The opening comment mark "/**" is reserved for kernel-doc comments,
+> so
+> it will generate a warning with "make W=1".
 > 
->>  drivers/pci/hotplug/rpaphp_core.c | 18 +++++++-----------
->>  1 file changed, 7 insertions(+), 11 deletions(-)
+> arch/powerpc/kernel/eeh_cache.c:37: warning: cannot understand
+> function
+> prototype: 'struct pci_io_addr_range
+> 
+> Since this is not a kernel-doc for the struct below, but rather an
+> overview of this source eeh_cache.c, just use the free-form comments
+> kernel-doc syntax instead.
+> 
+> Signed-off-by: Qian Cai <cai@lca.pw>
 
->> Gentle ping, can someone pick this up?
+Looks good to me.
 
-Looks a good simplification of somewhat convoluted control flow.
+Acked-by: Russell Currey <ruscur@russell.cc>
 
-Acked-by: Joel Savitz <jsavitz@redhat.com>
