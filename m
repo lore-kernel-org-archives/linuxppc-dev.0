@@ -2,90 +2,97 @@ Return-Path: <SRS0=ywKm=U3=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=no
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3E9AEC4321A
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Jun 2019 20:10:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 81DC3C4321A
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Jun 2019 20:12:25 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id BC8E3208C4
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Jun 2019 20:10:56 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BC8E3208C4
+	by mail.kernel.org (Postfix) with ESMTPS id 0374A208C4
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Jun 2019 20:12:24 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0374A208C4
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45b7Dt0fz2zDqHf
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 29 Jun 2019 06:10:54 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45b7Gb17GGzDqx9
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 29 Jun 2019 06:12:23 +1000 (AEST)
 Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45b7BL0zZyzDqBh
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 29 Jun 2019 06:08:42 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45b7BM2fDzzDqBh
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 29 Jun 2019 06:08:43 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=linux.ibm.com
 Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 45b7BK1nhhz8tDC
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 29 Jun 2019 06:08:41 +1000 (AEST)
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 45b7BM0bhjz8tDC
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 29 Jun 2019 06:08:43 +1000 (AEST)
 Received: by ozlabs.org (Postfix)
- id 45b7BK0lz5z9s4V; Sat, 29 Jun 2019 06:08:41 +1000 (AEST)
+ id 45b7BL6X1rz9sDn; Sat, 29 Jun 2019 06:08:42 +1000 (AEST)
 Authentication-Results: ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
- (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
+ (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
  envelope-from=cclaudio@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: ozlabs.org;
  dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 45b7BJ3w6Sz9sLt;
- Sat, 29 Jun 2019 06:08:40 +1000 (AEST)
-Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x5SK6pgc088817; Fri, 28 Jun 2019 16:08:38 -0400
-Received: from ppma01wdc.us.ibm.com (fd.55.37a9.ip4.static.sl-reverse.com
- [169.55.85.253])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2tdqe84t8e-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Fri, 28 Jun 2019 16:08:38 -0400
-Received: from pps.filterd (ppma01wdc.us.ibm.com [127.0.0.1])
- by ppma01wdc.us.ibm.com (8.16.0.27/8.16.0.27) with SMTP id x5SK6xqv014201;
- Fri, 28 Jun 2019 20:08:37 GMT
-Received: from b03cxnp07028.gho.boulder.ibm.com
- (b03cxnp07028.gho.boulder.ibm.com [9.17.130.15])
- by ppma01wdc.us.ibm.com with ESMTP id 2t9by7fpy9-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Fri, 28 Jun 2019 20:08:37 +0000
+ by ozlabs.org (Postfix) with ESMTPS id 45b7BK5prMz9s4V
+ for <linuxppc-dev@ozlabs.org>; Sat, 29 Jun 2019 06:08:40 +1000 (AEST)
+Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
+ x5SK7PbV115617
+ for <linuxppc-dev@ozlabs.org>; Fri, 28 Jun 2019 16:08:35 -0400
+Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2tdnvt007q-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@ozlabs.org>; Fri, 28 Jun 2019 16:08:35 -0400
+Received: from localhost
+ by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <cclaudio@linux.ibm.com>;
+ Fri, 28 Jun 2019 21:08:33 +0100
+Received: from b03cxnp07028.gho.boulder.ibm.com (9.17.130.15)
+ by e32.co.us.ibm.com (192.168.1.132) with IBM ESMTP SMTP Gateway: Authorized
+ Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Fri, 28 Jun 2019 21:08:30 +0100
 Received: from b03ledav004.gho.boulder.ibm.com
  (b03ledav004.gho.boulder.ibm.com [9.17.130.235])
  by b03cxnp07028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x5SK8Z1l46727510
+ x5SK8TKG21692774
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Fri, 28 Jun 2019 20:08:35 GMT
+ Fri, 28 Jun 2019 20:08:29 GMT
 Received: from b03ledav004.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id AB4B37805C;
- Fri, 28 Jun 2019 20:08:35 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 5C5BA78067;
+ Fri, 28 Jun 2019 20:08:29 +0000 (GMT)
 Received: from b03ledav004.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id E6BBE78068;
- Fri, 28 Jun 2019 20:08:32 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 9824378063;
+ Fri, 28 Jun 2019 20:08:26 +0000 (GMT)
 Received: from rino.br.ibm.com (unknown [9.18.235.108])
  by b03ledav004.gho.boulder.ibm.com (Postfix) with ESMTP;
- Fri, 28 Jun 2019 20:08:32 +0000 (GMT)
+ Fri, 28 Jun 2019 20:08:26 +0000 (GMT)
 From: Claudio Carvalho <cclaudio@linux.ibm.com>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH v4 2/8] powerpc: Introduce FW_FEATURE_ULTRAVISOR
-Date: Fri, 28 Jun 2019 17:08:19 -0300
-Message-Id: <20190628200825.31049-3-cclaudio@linux.ibm.com>
+Subject: [PATCH v4 0/8] kvmppc: Paravirtualize KVM to support ultravisor
+Date: Fri, 28 Jun 2019 17:08:17 -0300
 X-Mailer: git-send-email 2.20.1
-In-Reply-To: <20190628200825.31049-1-cclaudio@linux.ibm.com>
-References: <20190628200825.31049-1-cclaudio@linux.ibm.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
+x-cbid: 19062820-0004-0000-0000-000015221C8C
+X-IBM-SpamModules-Scores: 
+X-IBM-SpamModules-Versions: BY=3.00011348; HX=3.00000242; KW=3.00000007;
+ PH=3.00000004; SC=3.00000286; SDB=6.01224623; UDB=6.00644561; IPR=6.01005816; 
+ MB=3.00027511; MTD=3.00000008; XFM=3.00000015; UTC=2019-06-28 20:08:32
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 19062820-0005-0000-0000-00008C421A18
+Message-Id: <20190628200825.31049-1-cclaudio@linux.ibm.com>
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
  definitions=2019-06-28_09:, , signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
@@ -116,131 +123,145 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This feature tells if the ultravisor firmware is available to handle
-ucalls.
+POWER platforms that supports the Protected Execution Facility (PEF)
+introduce features that combine hardware facilities and firmware to
+enable secure virtual machines. That includes a new processor mode
+(ultravisor mode) and the ultravisor firmware.
 
-Signed-off-by: Claudio Carvalho <cclaudio@linux.ibm.com>
-[ Device node name to "ibm,ultravisor" ]
-Signed-off-by: Michael Anderson <andmike@linux.ibm.com>
+In PEF enabled systems, the ultravisor firmware runs at a privilege
+level above the hypervisor and also takes control over some system
+resources. The hypervisor, though, can make system calls to access these
+resources. Such system calls, a.k.a. ucalls, are handled by the
+ultravisor firmware.
+
+The processor allows part of the system memory to be configured as
+secure memory, and introduces a a new mode, called secure mode, where
+any software entity in that mode can access secure memory. The
+hypervisor doesn't (and can't) run in secure mode, but a secure guest
+and the ultravisor firmware do.
+
+This patch set adds support for ultravisor calls and do some preparation
+for running secure guests.
+
 ---
- arch/powerpc/include/asm/firmware.h   |  5 +++--
- arch/powerpc/include/asm/ultravisor.h | 15 +++++++++++++++
- arch/powerpc/kernel/Makefile          |  1 +
- arch/powerpc/kernel/prom.c            |  4 ++++
- arch/powerpc/kernel/ultravisor.c      | 24 ++++++++++++++++++++++++
- 5 files changed, 47 insertions(+), 2 deletions(-)
+Changelog:
+---
+
+v3->v4:
+
+- Patch "KVM: PPC: Ultravisor: Add PPC_UV config option":
+  - Moved to the patchset "kvmppc: HMM driver to manage pages of secure
+    guest" v5 that will be posted by Bharata Rao.
+
+- Patch "powerpc: Introduce FW_FEATURE_ULTRAVISOR":
+  - Changed to depend only on CONFIG_PPC_POWERNV.
+
+- Patch "KVM: PPC: Ultravisor: Add generic ultravisor call handler":
+  - Fixed whitespaces in ucall.S and in ultravisor-api.h.
+  - Changed to depend only on CONFIG_PPC_POWERNV.
+  - Changed the ucall wrapper to pass the ucall number in R3.
+
+- Patch "KVM: PPC: Ultravisor: Use UV_WRITE_PATE ucall to register a
+  PATE:
+  - Changed to depend only on CONFIG_PPC_POWERNV.
+
+- Patch "KVM: PPC: Ultravisor: Restrict LDBAR access":
+  - Fixed comment in opal-imc.c to be "Disable IMC devices, when
+    Ultravisor is enabled.
+  - Fixed signed-off-by.
+
+- Patch "KVM: PPC: Ultravisor: Enter a secure guest":
+  - Changed the UV_RETURN assembly call to save the actual R3 in
+    R0 for the ultravisor and pass the UV_RETURN call number in R3.
+
+- Patch "KVM: PPC: Ultravisor: Check for MSR_S during hv_reset_msr":
+  - Fixed commit message.
+
+- Rebased to powerpc/next.
+
+v2->v3:
+
+- Squashed patches:
+  - "KVM: PPC: Ultravisor: Return to UV for hcalls from SVM"
+  - "KVM: PPC: Book3S HV: Fixed for running secure guests"
+- Renamed patch from/to:
+  - "KVM: PPC: Ultravisor: Return to UV for hcalls from SVM"
+  - "KVM: PPC: Ultravisor: Enter a secure guest
+- Rebased
+- Addressed comments from Paul Mackerras
+  - Dropped ultravisor checks made in power8 code
+  - Updated the commit message for:
+       "KVM: PPC: Ultravisor: Enter a secure guest"
+- Addressed comments from Maddy
+  - Dropped imc-pmu.c changes
+- Changed opal-imc.c to fail the probe when the ultravisor is enabled
+- Fixed "ucall defined but not used" issue when CONFIG_PPC_UV not set 
+
+v1->v2:
+
+- Addressed comments from Paul Mackerras:
+  - Write the pate in HV's table before doing that in UV's
+  - Renamed and better documented the ultravisor header files. Also added
+    all possible return codes for each ucall
+  - Updated the commit message that introduces the MSR_S bit 
+  - Moved ultravisor.c and ucall.S to arch/powerpc/kernel
+  - Changed ucall.S to not save CR
+- Rebased
+- Changed the patches order
+- Updated several commit messages
+- Added FW_FEATURE_ULTRAVISOR to enable use of firmware_has_feature()
+- Renamed CONFIG_PPC_KVM_UV to CONFIG_PPC_UV and used it to ifdef the ucall
+  handler and the code that populates the powerpc_firmware_features for 
+  ultravisor
+- Exported the ucall symbol. KVM may be built as module.
+- Restricted LDBAR access if the ultravisor firmware is available
+- Dropped patches:
+  - "[PATCH 06/13] KVM: PPC: Ultravisor: UV_RESTRICTED_SPR_WRITE ucall"
+  - "[PATCH 07/13] KVM: PPC: Ultravisor: UV_RESTRICTED_SPR_READ ucall"
+  - "[PATCH 08/13] KVM: PPC: Ultravisor: fix mtspr and mfspr"
+- Squashed patches:
+  - "[PATCH 09/13] KVM: PPC: Ultravisor: Return to UV for hcalls from SVM"
+  - "[PATCH 13/13] KVM: PPC: UV: Have fast_guest_return check secure_guest"
+
+Claudio Carvalho (2):
+  powerpc: Introduce FW_FEATURE_ULTRAVISOR
+  KVM: PPC: Ultravisor: Restrict LDBAR access
+
+Michael Anderson (2):
+  KVM: PPC: Ultravisor: Use UV_WRITE_PATE ucall to register a PATE
+  KVM: PPC: Ultravisor: Check for MSR_S during hv_reset_msr
+
+Ram Pai (2):
+  KVM: PPC: Ultravisor: Add generic ultravisor call handler
+  KVM: PPC: Ultravisor: Restrict flush of the partition tlb cache
+
+Sukadev Bhattiprolu (2):
+  KVM: PPC: Ultravisor: Introduce the MSR_S bit
+  KVM: PPC: Ultravisor: Enter a secure guest
+
+ arch/powerpc/include/asm/firmware.h       |  5 +-
+ arch/powerpc/include/asm/kvm_host.h       |  1 +
+ arch/powerpc/include/asm/reg.h            |  3 ++
+ arch/powerpc/include/asm/ultravisor-api.h | 24 +++++++++
+ arch/powerpc/include/asm/ultravisor.h     | 49 +++++++++++++++++
+ arch/powerpc/kernel/Makefile              |  1 +
+ arch/powerpc/kernel/asm-offsets.c         |  1 +
+ arch/powerpc/kernel/prom.c                |  4 ++
+ arch/powerpc/kernel/ucall.S               | 30 +++++++++++
+ arch/powerpc/kernel/ultravisor.c          | 28 ++++++++++
+ arch/powerpc/kvm/book3s_64_mmu_hv.c       |  1 +
+ arch/powerpc/kvm/book3s_hv_rmhandlers.S   | 42 ++++++++++++---
+ arch/powerpc/mm/book3s64/hash_utils.c     |  3 +-
+ arch/powerpc/mm/book3s64/pgtable.c        | 65 +++++++++++++++++------
+ arch/powerpc/mm/book3s64/radix_pgtable.c  |  9 ++--
+ arch/powerpc/platforms/powernv/idle.c     |  6 ++-
+ arch/powerpc/platforms/powernv/opal-imc.c |  4 ++
+ 17 files changed, 246 insertions(+), 30 deletions(-)
+ create mode 100644 arch/powerpc/include/asm/ultravisor-api.h
  create mode 100644 arch/powerpc/include/asm/ultravisor.h
+ create mode 100644 arch/powerpc/kernel/ucall.S
  create mode 100644 arch/powerpc/kernel/ultravisor.c
 
-diff --git a/arch/powerpc/include/asm/firmware.h b/arch/powerpc/include/asm/firmware.h
-index 00bc42d95679..43b48c4d3ca9 100644
---- a/arch/powerpc/include/asm/firmware.h
-+++ b/arch/powerpc/include/asm/firmware.h
-@@ -54,6 +54,7 @@
- #define FW_FEATURE_DRC_INFO	ASM_CONST(0x0000000800000000)
- #define FW_FEATURE_BLOCK_REMOVE ASM_CONST(0x0000001000000000)
- #define FW_FEATURE_PAPR_SCM 	ASM_CONST(0x0000002000000000)
-+#define FW_FEATURE_ULTRAVISOR	ASM_CONST(0x0000004000000000)
- 
- #ifndef __ASSEMBLY__
- 
-@@ -72,9 +73,9 @@ enum {
- 		FW_FEATURE_TYPE1_AFFINITY | FW_FEATURE_PRRN |
- 		FW_FEATURE_HPT_RESIZE | FW_FEATURE_DRMEM_V2 |
- 		FW_FEATURE_DRC_INFO | FW_FEATURE_BLOCK_REMOVE |
--		FW_FEATURE_PAPR_SCM,
-+		FW_FEATURE_PAPR_SCM | FW_FEATURE_ULTRAVISOR,
- 	FW_FEATURE_PSERIES_ALWAYS = 0,
--	FW_FEATURE_POWERNV_POSSIBLE = FW_FEATURE_OPAL,
-+	FW_FEATURE_POWERNV_POSSIBLE = FW_FEATURE_OPAL | FW_FEATURE_ULTRAVISOR,
- 	FW_FEATURE_POWERNV_ALWAYS = 0,
- 	FW_FEATURE_PS3_POSSIBLE = FW_FEATURE_LPAR | FW_FEATURE_PS3_LV1,
- 	FW_FEATURE_PS3_ALWAYS = FW_FEATURE_LPAR | FW_FEATURE_PS3_LV1,
-diff --git a/arch/powerpc/include/asm/ultravisor.h b/arch/powerpc/include/asm/ultravisor.h
-new file mode 100644
-index 000000000000..e5009b0d84ea
---- /dev/null
-+++ b/arch/powerpc/include/asm/ultravisor.h
-@@ -0,0 +1,15 @@
-+/* SPDX-License-Identifier: GPL-2.0 */
-+/*
-+ * Ultravisor definitions
-+ *
-+ * Copyright 2019, IBM Corporation.
-+ *
-+ */
-+#ifndef _ASM_POWERPC_ULTRAVISOR_H
-+#define _ASM_POWERPC_ULTRAVISOR_H
-+
-+/* Internal functions */
-+extern int early_init_dt_scan_ultravisor(unsigned long node, const char *uname,
-+					 int depth, void *data);
-+
-+#endif	/* _ASM_POWERPC_ULTRAVISOR_H */
-diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
-index 0ea6c4aa3a20..f0caa302c8c0 100644
---- a/arch/powerpc/kernel/Makefile
-+++ b/arch/powerpc/kernel/Makefile
-@@ -154,6 +154,7 @@ endif
- 
- obj-$(CONFIG_EPAPR_PARAVIRT)	+= epapr_paravirt.o epapr_hcalls.o
- obj-$(CONFIG_KVM_GUEST)		+= kvm.o kvm_emul.o
-+obj-$(CONFIG_PPC_POWERNV)	+= ultravisor.o
- 
- # Disable GCOV, KCOV & sanitizers in odd or sensitive code
- GCOV_PROFILE_prom_init.o := n
-diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
-index 4221527b082f..67a2c1b39252 100644
---- a/arch/powerpc/kernel/prom.c
-+++ b/arch/powerpc/kernel/prom.c
-@@ -59,6 +59,7 @@
- #include <asm/firmware.h>
- #include <asm/dt_cpu_ftrs.h>
- #include <asm/drmem.h>
-+#include <asm/ultravisor.h>
- 
- #include <mm/mmu_decl.h>
- 
-@@ -706,6 +707,9 @@ void __init early_init_devtree(void *params)
- #ifdef CONFIG_PPC_POWERNV
- 	/* Some machines might need OPAL info for debugging, grab it now. */
- 	of_scan_flat_dt(early_init_dt_scan_opal, NULL);
-+
-+	/* Scan tree for ultravisor feature */
-+	of_scan_flat_dt(early_init_dt_scan_ultravisor, NULL);
- #endif
- 
- #ifdef CONFIG_FA_DUMP
-diff --git a/arch/powerpc/kernel/ultravisor.c b/arch/powerpc/kernel/ultravisor.c
-new file mode 100644
-index 000000000000..dc6021f63c97
---- /dev/null
-+++ b/arch/powerpc/kernel/ultravisor.c
-@@ -0,0 +1,24 @@
-+// SPDX-License-Identifier: GPL-2.0
-+/*
-+ * Ultravisor high level interfaces
-+ *
-+ * Copyright 2019, IBM Corporation.
-+ *
-+ */
-+#include <linux/init.h>
-+#include <linux/printk.h>
-+#include <linux/string.h>
-+
-+#include <asm/ultravisor.h>
-+#include <asm/firmware.h>
-+
-+int __init early_init_dt_scan_ultravisor(unsigned long node, const char *uname,
-+					 int depth, void *data)
-+{
-+	if (depth != 1 || strcmp(uname, "ibm,ultravisor") != 0)
-+		return 0;
-+
-+	powerpc_firmware_features |= FW_FEATURE_ULTRAVISOR;
-+	pr_debug("Ultravisor detected!\n");
-+	return 1;
-+}
 -- 
 2.20.1
 
