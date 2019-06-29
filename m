@@ -2,47 +2,43 @@ Return-Path: <SRS0=7W7S=U4=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EC514C4321A
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 29 Jun 2019 11:36:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3D521C4321A
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 29 Jun 2019 11:39:33 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 720CB20828
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 29 Jun 2019 11:36:38 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 720CB20828
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=the-dreams.de
+	by mail.kernel.org (Postfix) with ESMTPS id E665F214AF
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 29 Jun 2019 11:39:32 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E665F214AF
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45bWn051zZzDqwy
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 29 Jun 2019 21:36:36 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=the-dreams.de
- (client-ip=88.99.104.3; helo=pokefinder.org; envelope-from=wsa@the-dreams.de;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=the-dreams.de
-Received: from pokefinder.org (sauhun.de [88.99.104.3])
- by lists.ozlabs.org (Postfix) with ESMTP id 45bWkZ6rwGzDqlw
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 29 Jun 2019 21:34:28 +1000 (AEST)
-Received: from localhost (p5486CA23.dip0.t-ipconnect.de [84.134.202.35])
- by pokefinder.org (Postfix) with ESMTPSA id D8D302C047A;
- Sat, 29 Jun 2019 13:34:24 +0200 (CEST)
-Date: Sat, 29 Jun 2019 13:34:24 +0200
-From: Wolfram Sang <wsa@the-dreams.de>
-To: Vasyl Gomonovych <gomonovych@gmail.com>, jochen@scram.de
-Subject: Re: [PATCH] i2c: remove casting dma_alloc
-Message-ID: <20190629113424.GH1685@kunai>
-References: <20190623211354.24181-1-gomonovych@gmail.com>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
- protocol="application/pgp-signature"; boundary="y9PDtDHaFrXNoMPU"
-Content-Disposition: inline
-In-Reply-To: <20190623211354.24181-1-gomonovych@gmail.com>
-User-Agent: Mutt/1.10.1 (2018-07-13)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45bWrL63z6zDqx4
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 29 Jun 2019 21:39:30 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45bWpV2V51zDqQR
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 29 Jun 2019 21:37:54 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=ellerman.id.au
+Received: by ozlabs.org (Postfix, from userid 1034)
+ id 45bWpV1jWCz9s5c; Sat, 29 Jun 2019 21:37:54 +1000 (AEST)
+X-powerpc-patch-notification: thanks
+X-powerpc-patch-commit: e13e7cd4c0c1cc9984d9b6a8663e10d76b53f2aa
+X-Patchwork-Hint: ignore
+In-Reply-To: <20190621225554.1913-1-npiggin@gmail.com>
+To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
+From: Michael Ellerman <patch-notifications@ellerman.id.au>
+Subject: Re: [PATCH] powerpc/64s/exception: Fix machine check early corrupting
+ AMR
+Message-Id: <45bWpV1jWCz9s5c@ozlabs.org>
+Date: Sat, 29 Jun 2019 21:37:54 +1000 (AEST)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -54,71 +50,28 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-i2c@vger.kernel.org,
- linux-kernel@vger.kernel.org
+Cc: Nicholas Piggin <npiggin@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+On Fri, 2019-06-21 at 22:55:54 UTC, Nicholas Piggin wrote:
+> The early machine check runs in real mode, so locking is unnecessary.
+> Worse, the windup does not restore AMR, so this can result in a false
+> KUAP fault after a recoverable machine check hits inside a user copy
+> operation.
+> 
+> Fix this similarly to HMI by just avoiding the kuap lock in the
+> early machine check handler (it will be set by the late handler that
+> runs in virtual mode if that runs). If the virtual mode handler is
+> reached, it will lock and restore the AMR.
+> 
+> Fixes: 890274c2dc4c0 ("powerpc/64s: Implement KUAP for Radix MMU")
+> Cc: Russell Currey <ruscur@russell.cc>
+> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 
---y9PDtDHaFrXNoMPU
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Applied to powerpc fixes, thanks.
 
-On Sun, Jun 23, 2019 at 11:13:53PM +0200, Vasyl Gomonovych wrote:
-> From: Vasyl <gomonovych@gmail.com>
->=20
-> Generated by:  alloc_cast.cocci
->=20
-> Signed-off-by: Vasyl <gomonovych@gmail.com>
+https://git.kernel.org/powerpc/c/e13e7cd4c0c1cc9984d9b6a8663e10d76b53f2aa
 
-Your other patches in git history have your full name. Why not this one?
-
-@Jochen: are you still there, your ack would be very welcome.
-
-> ---
->  drivers/i2c/busses/i2c-cpm.c | 4 +++-
->  1 file changed, 3 insertions(+), 1 deletion(-)
->=20
-> diff --git a/drivers/i2c/busses/i2c-cpm.c b/drivers/i2c/busses/i2c-cpm.c
-> index 187900594e3d..1213e1932ccb 100644
-> --- a/drivers/i2c/busses/i2c-cpm.c
-> +++ b/drivers/i2c/busses/i2c-cpm.c
-> @@ -531,7 +531,9 @@ static int cpm_i2c_setup(struct cpm_i2c *cpm)
->  		}
->  		out_be32(&rbdf[i].cbd_bufaddr, ((cpm->rxdma[i] + 1) & ~1));
-> =20
-> -		cpm->txbuf[i] =3D (unsigned char *)dma_alloc_coherent(&cpm->ofdev->dev=
-, CPM_MAX_READ + 1, &cpm->txdma[i], GFP_KERNEL);
-> +		cpm->txbuf[i] =3D dma_alloc_coherent(&cpm->ofdev->dev,
-> +						   CPM_MAX_READ + 1,
-> +						   &cpm->txdma[i], GFP_KERNEL);
->  		if (!cpm->txbuf[i]) {
->  			ret =3D -ENOMEM;
->  			goto out_muram;
-> --=20
-> 2.17.1
->=20
-
---y9PDtDHaFrXNoMPU
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCgAdFiEEOZGx6rniZ1Gk92RdFA3kzBSgKbYFAl0XTMAACgkQFA3kzBSg
-KbbtTA/8CKiZdKog33gW6PoBX6p+88KQrLj2ch57lMoEuUHNLFusfVpo/mxBGASN
-eMDZbZgZlXF3YZRIVxXigVTHKO+I/fx0CU/G/zbzRrbOykS/u0JxlowZuIHEUcVG
-d/SmfHLMZ/36XDkQV9vi7DIDS9SkLPPq4YQz4hO6FeqaljcJTQ2aeZ8Co2afWXk3
-efA5Zf0X+PAc7JOBWblEpL9bLKhIC0tyYHC9HyWfvEyttHIjhpVWYQIjn7fcA4gO
-UGAAvl+v8sfhbytVhYJdzVthivL07FGT+kY8JTZSGL8iL//uVaH+w5KQBRh4ct1i
-xkGCpqoh5DdOeWC3ShLnI+eYrC88cE+YWwzJ1YpxKz4GU2us1VwuTUEPcWDCcF6L
-btxg4cot43//m8Rrs6j06SALIx4kNoh+SVh+X2CwoKYEsVgvZw1Z/xXPq1z+Bkdc
-sMj76QpJXBTtNZf45HuepA5zZoNdxRwiAyCwrdbjjpG7KwDsxXcymzpDnlQxgSB7
-IlwV4MqUJHFuGSyolQboAOGRVM6WeaTcl78hA5kTa6U4+/idJ9kSM/4Ejy30q3cv
-2Tu/4JVhU/eJySNSCLdElPJ0drIVpNFcSlURY7n9PcI5aCG6XV+7Cw8DYGxZwhp+
-SHYUGsLjLGSBWxvAenpt/dzLDQUo+0+VBJfPpootMuOkp7oxufU=
-=IpTl
------END PGP SIGNATURE-----
-
---y9PDtDHaFrXNoMPU--
+cheers
