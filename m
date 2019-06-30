@@ -2,53 +2,44 @@ Return-Path: <SRS0=xcTM=U5=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 36EC2C5B576
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 30 Jun 2019 04:42:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0E74AC5B57E
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 30 Jun 2019 08:39:35 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B6535206A2
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 30 Jun 2019 04:42:37 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B6535206A2
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 803CE2070D
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 30 Jun 2019 08:39:34 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 803CE2070D
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45byXq4Bk8zDqpy
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 30 Jun 2019 14:42:35 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=arm.com
- (client-ip=217.140.110.172; helo=foss.arm.com;
- envelope-from=anshuman.khandual@arm.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=arm.com
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
- by lists.ozlabs.org (Postfix) with ESMTP id 45byVr1mYdzDqp7
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 30 Jun 2019 14:40:50 +1000 (AEST)
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
- by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 5A8E728;
- Sat, 29 Jun 2019 21:40:47 -0700 (PDT)
-Received: from [192.168.0.129] (unknown [172.31.20.19])
- by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 5ECD73F706;
- Sat, 29 Jun 2019 21:40:37 -0700 (PDT)
-From: Anshuman Khandual <anshuman.khandual@arm.com>
-Subject: Re: [PATCH] mm: Generalize and rename notify_page_fault() as
- kprobe_page_fault()
-To: Guenter Roeck <linux@roeck-us.net>
-References: <1560420444-25737-1-git-send-email-anshuman.khandual@arm.com>
- <20190629145009.GA28613@roeck-us.net>
-Message-ID: <78863cd0-8cb5-c4fd-ed06-b1136bdbb6ef@arm.com>
-Date: Sun, 30 Jun 2019 10:11:03 +0530
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:52.0) Gecko/20100101
- Thunderbird/52.9.1
-MIME-Version: 1.0
-In-Reply-To: <20190629145009.GA28613@roeck-us.net>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
+	by lists.ozlabs.org (Postfix) with ESMTP id 45c3pC3VqTzDqpr
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 30 Jun 2019 18:39:31 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45c3lh0RsNzDqKs
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 30 Jun 2019 18:37:20 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=ellerman.id.au
+Received: by ozlabs.org (Postfix, from userid 1034)
+ id 45c3lg68Lrz9sBr; Sun, 30 Jun 2019 18:37:19 +1000 (AEST)
+X-powerpc-patch-notification: thanks
+X-powerpc-patch-commit: 9c4e4c90ec24652921e31e9551fcaedc26eec86d
+X-Patchwork-Hint: ignore
+In-Reply-To: <7b15f4a18ab2d9fb54559acbadf2cd83a7d147f7.1557469839.git.christophe.leroy@c-s.fr>
+To: Christophe Leroy <christophe.leroy@c-s.fr>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Russell Currey <ruscur@russell.cc>
+From: Michael Ellerman <patch-notifications@ellerman.id.au>
+Subject: Re: [PATCH] powerpc/64: mark start_here_multiplatform as __ref
+Message-Id: <45c3lg68Lrz9sBr@ozlabs.org>
+Date: Sun, 30 Jun 2019 18:37:19 +1000 (AEST)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -60,71 +51,26 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Mark Rutland <mark.rutland@arm.com>, Michal Hocko <mhocko@suse.com>,
- linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org,
- Peter Zijlstra <peterz@infradead.org>, James Hogan <jhogan@kernel.org>,
- Dave Hansen <dave.hansen@linux.intel.com>, Will Deacon <will.deacon@arm.com>,
- linux-mips@vger.kernel.org, linux-mm@kvack.org,
- Paul Mackerras <paulus@samba.org>, sparclinux@vger.kernel.org,
- Stephen Rothwell <sfr@canb.auug.org.au>,
- Yoshinori Sato <ysato@users.sourceforge.jp>, x86@kernel.org,
- Russell King <linux@armlinux.org.uk>, Matthew Wilcox <willy@infradead.org>,
- Ingo Molnar <mingo@redhat.com>, Catalin Marinas <catalin.marinas@arm.com>,
- linux-snps-arc@lists.infradead.org, Fenghua Yu <fenghua.yu@intel.com>,
- linux-s390@vger.kernel.org, Andrey Konovalov <andreyknvl@google.com>,
- Andy Lutomirski <luto@kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
- linux-arm-kernel@lists.infradead.org, Tony Luck <tony.luck@intel.com>,
- Heiko Carstens <heiko.carstens@de.ibm.com>, Vineet Gupta <vgupta@synopsys.com>,
- linux-kernel@vger.kernel.org, Ralf Baechle <ralf@linux-mips.org>,
- Paul Burton <paul.burton@mips.com>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>,
- Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
- "David S. Miller" <davem@davemloft.net>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hello Guenter,
+On Fri, 2019-05-10 at 06:31:28 UTC, Christophe Leroy wrote:
+> Otherwise, the following warning is encountered:
+> 
+> WARNING: vmlinux.o(.text+0x3dc6): Section mismatch in reference from the variable start_here_multiplatform to the function .init.text:.early_setup()
+> The function start_here_multiplatform() references
+> the function __init .early_setup().
+> This is often because start_here_multiplatform lacks a __init
+> annotation or the annotation of .early_setup is wrong.
+> 
+> Fixes: 56c46bba9bbf ("powerpc/64: Fix booting large kernels with STRICT_KERNEL_RWX")
+> Cc: Russell Currey <ruscur@russell.cc>
+> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 
-On 06/29/2019 08:20 PM, Guenter Roeck wrote:
-> Hi,
-> 
-> On Thu, Jun 13, 2019 at 03:37:24PM +0530, Anshuman Khandual wrote:
->> Architectures which support kprobes have very similar boilerplate around
->> calling kprobe_fault_handler(). Use a helper function in kprobes.h to unify
->> them, based on the x86 code.
->>
->> This changes the behaviour for other architectures when preemption is
->> enabled. Previously, they would have disabled preemption while calling the
->> kprobe handler. However, preemption would be disabled if this fault was
->> due to a kprobe, so we know the fault was not due to a kprobe handler and
->> can simply return failure.
->>
->> This behaviour was introduced in the commit a980c0ef9f6d ("x86/kprobes:
->> Refactor kprobes_fault() like kprobe_exceptions_notify()")
->>
-> 
-> With this patch applied, parisc:allmodconfig images no longer build.
-> 
-> In file included from arch/parisc/mm/fixmap.c:8:
-> include/linux/kprobes.h: In function 'kprobe_page_fault':
-> include/linux/kprobes.h:477:9: error:
-> 	implicit declaration of function 'kprobe_fault_handler'; did you mean 'kprobe_page_fault'?
+Applied to powerpc next, thanks.
 
-Yikes.. Arch parisc does not even define (unlike mips which did but never exported)
-now required function kprobe_fault_handler() when CONFIG_KPROBES is enabled.
+https://git.kernel.org/powerpc/c/9c4e4c90ec24652921e31e9551fcaedc26eec86d
 
-I believe rather than defining one stub version only for parsic it would be better
-to have an weak symbol generic stub definition for kprobe_fault_handler() in file
-include/linux/kprobes.h when CONFIG_KPROBES is enabled along side the other stub
-definition when !CONFIG_KPROBES. But arch which wants to use kprobe_page_fault()
-cannot use stub kprobe_fault_handler() definition and will have to provide one.
-I will probably add a comment regarding this.
-
-> 
-> Reverting the patch fixes the problem.
-> 
-> Guenter
-> 
-
-Thanks for reporting the problem.
+cheers
