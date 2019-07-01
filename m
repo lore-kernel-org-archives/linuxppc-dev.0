@@ -2,50 +2,53 @@ Return-Path: <SRS0=ROWL=U6=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
+X-Spam-Status: No, score=-8.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
 	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CD4BFC0650E
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Jul 2019 09:46:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B18E2C0650E
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Jul 2019 09:59:24 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 87BAC20B7C
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Jul 2019 09:46:14 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 87BAC20B7C
+	by mail.kernel.org (Postfix) with ESMTPS id 0CBD320881
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Jul 2019 09:59:23 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0CBD320881
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45cjDh4pSfzDqX3
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Jul 2019 19:46:12 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45cjWt09gFzDqXr
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Jul 2019 19:59:22 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=arm.com
  (client-ip=217.140.110.172; helo=foss.arm.com;
- envelope-from=catalin.marinas@arm.com; receiver=<UNKNOWN>)
+ envelope-from=steven.price@arm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=arm.com
 Received: from foss.arm.com (foss.arm.com [217.140.110.172])
- by lists.ozlabs.org (Postfix) with ESMTP id 45cjBk4ps8zDqTG
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  1 Jul 2019 19:44:25 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTP id 45cjTY1ClfzDqGm
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  1 Jul 2019 19:57:16 +1000 (AEST)
 Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
- by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id E1E752B;
- Mon,  1 Jul 2019 02:44:20 -0700 (PDT)
-Received: from arrakis.emea.arm.com (arrakis.cambridge.arm.com [10.1.196.78])
- by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id
- 727AD3F718; Mon,  1 Jul 2019 02:44:19 -0700 (PDT)
-Date: Mon, 1 Jul 2019 10:44:17 +0100
-From: Catalin Marinas <catalin.marinas@arm.com>
-To: Nicholas Piggin <npiggin@gmail.com>
+ by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id CCCC92B;
+ Mon,  1 Jul 2019 02:57:14 -0700 (PDT)
+Received: from [10.1.196.133] (e112269-lin.cambridge.arm.com [10.1.196.133])
+ by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 8156A3F718;
+ Mon,  1 Jul 2019 02:57:10 -0700 (PDT)
 Subject: Re: [PATCH v2 1/3] arm64: mm: Add p?d_large() definitions
-Message-ID: <20190701094417.GB21774@arrakis.emea.arm.com>
+To: Nicholas Piggin <npiggin@gmail.com>,
+ "linux-mm @ kvack . org" <linux-mm@kvack.org>
 References: <20190701064026.970-1-npiggin@gmail.com>
  <20190701064026.970-2-npiggin@gmail.com>
+From: Steven Price <steven.price@arm.com>
+Message-ID: <0a3e0833-908d-b7eb-e6e7-6413b2e37094@arm.com>
+Date: Mon, 1 Jul 2019 10:57:09 +0100
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.7.2
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
 In-Reply-To: <20190701064026.970-2-npiggin@gmail.com>
-User-Agent: Mutt/1.10.1 (2018-07-13)
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-GB
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -58,11 +61,10 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 Cc: Mark Rutland <mark.rutland@arm.com>,
+ Ard Biesheuvel <ard.biesheuvel@linaro.org>,
+ Catalin Marinas <catalin.marinas@arm.com>,
  Anshuman Khandual <anshuman.khandual@arm.com>,
- Ard Biesheuvel <ard.biesheuvel@linaro.org>, Will Deacon <will.deacon@arm.com>,
- Steven Price <steven.price@arm.com>,
- "linux-mm @ kvack . org" <linux-mm@kvack.org>,
- Andrew Morton <akpm@linux-foundation.org>,
+ Will Deacon <will.deacon@arm.com>, Andrew Morton <akpm@linux-foundation.org>,
  "linuxppc-dev @ lists . ozlabs . org" <linuxppc-dev@lists.ozlabs.org>,
  "linux-arm-kernel @ lists . infradead . org"
  <linux-arm-kernel@lists.infradead.org>
@@ -70,7 +72,7 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, Jul 01, 2019 at 04:40:24PM +1000, Nicholas Piggin wrote:
+On 01/07/2019 07:40, Nicholas Piggin wrote:
 > walk_page_range() is going to be allowed to walk page tables other than
 > those of user space. For this it needs to know when it has reached a
 > 'leaf' entry in the page tables. This information will be provided by the
@@ -91,4 +93,63 @@ On Mon, Jul 01, 2019 at 04:40:24PM +1000, Nicholas Piggin wrote:
 > Cc: Will Deacon <will.deacon@arm.com>
 > Signed-off-by: Steven Price <steven.price@arm.com>
 
-Acked-by: Catalin Marinas <catalin.marinas@arm.com>
+Hi Nicolas,
+
+This appears to my patch which I originally posted as part of converting
+x86/arm64 to use a generic page walk code[1]. I'm not sure that this
+patch makes much sense on its own, in particular it was working up to
+having a generic macro[2] which means the _large() macros could be used
+across all architectures.
+
+Also as a matter of courtesy please can you ensure the authorship
+information is preserved when posting other people's patches (there
+should be a From: line with my name on). You should also include your
+own Signed-off-by: line (see submitting-patches[3]) after mine.
+
+Apologies to anyone that has been following my patch series, I've been
+on holiday so not actively working on it. My aim is to combine the
+series with a generic ptdump implementation[4] which should improve the
+diff state. I should be able to post that in the next few weeks.
+
+Thanks,
+
+Steve
+
+[1] Series: https://patchwork.kernel.org/cover/10883885/
+    Last posting of this patch:
+	https://patchwork.kernel.org/patch/10883899/
+
+[2] https://patchwork.kernel.org/patch/10883965/
+
+[3]
+https://www.kernel.org/doc/html/latest/process/submitting-patches.html#developer-s-certificate-of-origin-1-1
+
+[4] RFC version here:
+https://lore.kernel.org/lkml/20190417143423.26665-1-steven.price@arm.com/
+
+> ---
+>  arch/arm64/include/asm/pgtable.h | 2 ++
+>  1 file changed, 2 insertions(+)
+> 
+> diff --git a/arch/arm64/include/asm/pgtable.h b/arch/arm64/include/asm/pgtable.h
+> index fca26759081a..0e973201bc16 100644
+> --- a/arch/arm64/include/asm/pgtable.h
+> +++ b/arch/arm64/include/asm/pgtable.h
+> @@ -417,6 +417,7 @@ extern pgprot_t phys_mem_access_prot(struct file *file, unsigned long pfn,
+>  				 PMD_TYPE_TABLE)
+>  #define pmd_sect(pmd)		((pmd_val(pmd) & PMD_TYPE_MASK) == \
+>  				 PMD_TYPE_SECT)
+> +#define pmd_large(pmd)		pmd_sect(pmd)
+>  
+>  #if defined(CONFIG_ARM64_64K_PAGES) || CONFIG_PGTABLE_LEVELS < 3
+>  #define pud_sect(pud)		(0)
+> @@ -499,6 +500,7 @@ static inline void pte_unmap(pte_t *pte) { }
+>  #define pud_none(pud)		(!pud_val(pud))
+>  #define pud_bad(pud)		(!(pud_val(pud) & PUD_TABLE_BIT))
+>  #define pud_present(pud)	pte_present(pud_pte(pud))
+> +#define pud_large(pud)		pud_sect(pud)
+>  #define pud_valid(pud)		pte_valid(pud_pte(pud))
+>  
+>  static inline void set_pud(pud_t *pudp, pud_t pud)
+> 
+
