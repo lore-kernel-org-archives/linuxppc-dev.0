@@ -2,66 +2,89 @@ Return-Path: <SRS0=ROWL=U6=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8D7B7C0650E
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Jul 2019 10:45:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EE8B8C0650E
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Jul 2019 10:59:13 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id BA156208E4
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Jul 2019 10:45:11 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="sP19+PAp"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BA156208E4
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	by mail.kernel.org (Postfix) with ESMTPS id 7DD2D20673
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Jul 2019 10:59:13 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7DD2D20673
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45ckXj576HzDqbC
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Jul 2019 20:45:09 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45ckrv20QMzDqTj
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Jul 2019 20:59:11 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=kernel.org
- (client-ip=198.145.29.99; helo=mail.kernel.org; envelope-from=will@kernel.org;
- receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
+ (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
+ envelope-from=aneesh.kumar@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=kernel.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="sP19+PAp"; 
- dkim-atps=neutral
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ dmarc=none (p=none dis=none) header.from=linux.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45cjtG5rNczDqSW
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  1 Jul 2019 20:15:18 +1000 (AEST)
-Received: from willie-the-truck (236.31.169.217.in-addr.arpa [217.169.31.236])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
- bits)) (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id E4D9B2089F;
- Mon,  1 Jul 2019 10:15:13 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1561976116;
- bh=BmE0pK+B/9WbeNo5hd8jhUkYwvz6tMUWGRtqHWxTqgc=;
- h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=sP19+PAprJCKT1vB2Suu5r3ulKn8GQeG57tpiJg4Kq6zGPN+/cs009iqz4lq9XT8P
- aS/2Xw+qDBagxlS3Sg9TyU3BpqemUimAwUvQ74vmxYe9LmJI/U6wQXOt9has6j0+4+
- jlBkGuGr5Sr7XbAj39iTiIYD3i4UfJv49TwVkpuU=
-Date: Mon, 1 Jul 2019 11:15:10 +0100
-From: Will Deacon <will@kernel.org>
-To: Steven Price <steven.price@arm.com>
-Subject: Re: Re: [PATCH 1/3] arm64: mm: Add p?d_large() definitions
-Message-ID: <20190701101510.qup3nd6vm6cbdgjv@willie-the-truck>
-References: <20190623094446.28722-1-npiggin@gmail.com>
- <20190623094446.28722-2-npiggin@gmail.com>
- <20190701092756.s4u5rdjr7gazvu66@willie-the-truck>
- <3d002af8-d8cd-f750-132e-12109e1e3039@arm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45ckpt4pjtzDqT4
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  1 Jul 2019 20:57:25 +1000 (AEST)
+Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
+ x61Av7M1034905
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 1 Jul 2019 06:57:21 -0400
+Received: from e06smtp03.uk.ibm.com (e06smtp03.uk.ibm.com [195.75.94.99])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2tfgnmrswm-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 01 Jul 2019 06:57:20 -0400
+Received: from localhost
+ by e06smtp03.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.ibm.com>;
+ Mon, 1 Jul 2019 11:57:19 +0100
+Received: from b06cxnps3074.portsmouth.uk.ibm.com (9.149.109.194)
+ by e06smtp03.uk.ibm.com (192.168.101.133) with IBM ESMTP SMTP Gateway:
+ Authorized Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Mon, 1 Jul 2019 11:57:15 +0100
+Received: from d06av21.portsmouth.uk.ibm.com (d06av21.portsmouth.uk.ibm.com
+ [9.149.105.232])
+ by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x61AvFCE46137400
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Mon, 1 Jul 2019 10:57:15 GMT
+Received: from d06av21.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id EE5DB52050;
+ Mon,  1 Jul 2019 10:57:14 +0000 (GMT)
+Received: from skywalker.linux.ibm.com (unknown [9.85.81.231])
+ by d06av21.portsmouth.uk.ibm.com (Postfix) with ESMTP id BB4865204F;
+ Mon,  1 Jul 2019 10:57:13 +0000 (GMT)
+X-Mailer: emacs 26.2 (via feedmail 11-beta-1 I)
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
+To: "Oliver O'Halloran" <oohall@gmail.com>
+Subject: Re: [PATCH] powerpc/mm/nvdimm: Add an informative message if we fail
+ to allocate altmap block
+In-Reply-To: <CAOSf1CH_X7TG7Cato4hBt+U5=5HHHwR3hXQYC-z_GiBQiWnB1w@mail.gmail.com>
+References: <20190629073813.12973-1-aneesh.kumar@linux.ibm.com>
+ <CAOSf1CH_X7TG7Cato4hBt+U5=5HHHwR3hXQYC-z_GiBQiWnB1w@mail.gmail.com>
+Date: Mon, 01 Jul 2019 16:27:12 +0530
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <3d002af8-d8cd-f750-132e-12109e1e3039@arm.com>
-User-Agent: NeoMutt/20170113 (1.7.2)
-X-Mailman-Approved-At: Mon, 01 Jul 2019 20:42:20 +1000
+Content-Type: text/plain
+X-TM-AS-GCONF: 00
+x-cbid: 19070110-0012-0000-0000-0000032E23E1
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 19070110-0013-0000-0000-000021676CE6
+Message-Id: <874l46nhtj.fsf@linux.ibm.com>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
+ definitions=2019-07-01_08:, , signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1810050000 definitions=main-1907010136
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -73,40 +96,63 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Mark Rutland <mark.rutland@arm.com>,
- Anshuman Khandual <anshuman.khandual@arm.com>,
- Catalin Marinas <catalin.marinas@arm.com>,
- Ard Biesheuvel <ard.biesheuvel@linaro.org>, Will Deacon <will.deacon@arm.com>,
- Nicholas Piggin <npiggin@gmail.com>, linux-mm@kvack.org,
- Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
- linux-arm-kernel@lists.infradead.org
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Paul Mackerras <paulus@samba.org>, Nicholas Piggin <npiggin@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, Jul 01, 2019 at 11:03:51AM +0100, Steven Price wrote:
-> On 01/07/2019 10:27, Will Deacon wrote:
-> > On Sun, Jun 23, 2019 at 07:44:44PM +1000, Nicholas Piggin wrote:
-> >> walk_page_range() is going to be allowed to walk page tables other than
-> >> those of user space. For this it needs to know when it has reached a
-> >> 'leaf' entry in the page tables. This information will be provided by the
-> >> p?d_large() functions/macros.
-> > 
-> > I can't remember whether or not I asked this before, but why not call
-> > this macro p?d_leaf() if that's what it's identifying? "Large" and "huge"
-> > are usually synonymous, so I find this naming needlessly confusing based
-> > on this patch in isolation.
-> 
-> You replied to my posting of this patch before[1], to which you said:
-> 
-> > I've have thought p?d_leaf() might match better with your description
-> > above, but I'm not going to quibble on naming.
+"Oliver O'Halloran" <oohall@gmail.com> writes:
 
-That explains the sense of deja vu.
+> On Sat, Jun 29, 2019 at 5:39 PM Aneesh Kumar K.V
+> <aneesh.kumar@linux.ibm.com> wrote:
+>>
+>> Allocation from altmap area can fail based on vmemmap page size used. Add kernel
+>> info message to indicate the failure. That allows the user to identify whether they
+>> are really using persistent memory reserved space for per-page metadata.
+>>
+>> The message looks like:
+>> [  136.587212] altmap block allocation failed, falling back to system memory
+>>
+>> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
+>> ---
+>>  arch/powerpc/mm/init_64.c | 6 +++++-
+>>  1 file changed, 5 insertions(+), 1 deletion(-)
+>>
+>> diff --git a/arch/powerpc/mm/init_64.c b/arch/powerpc/mm/init_64.c
+>> index a4e17a979e45..57c0573650dc 100644
+>> --- a/arch/powerpc/mm/init_64.c
+>> +++ b/arch/powerpc/mm/init_64.c
+>> @@ -194,8 +194,12 @@ int __meminit vmemmap_populate(unsigned long start, unsigned long end, int node,
+>>                  * fail due to alignment issues when using 16MB hugepages, so
+>>                  * fall back to system memory if the altmap allocation fail.
+>>                  */
+>> -               if (altmap)
+>> +               if (altmap) {
+>>                         p = altmap_alloc_block_buf(page_size, altmap);
+>> +                       if (!p)
+>
+>> +                               pr_info("altmap block allocation failed, " \
+>> +                                       "falling back to system memory");
+>
+> I think this is kind of misleading. If you're mapping a large amount
+> of memory you can have most of the vmemmap backing allocated from the
+> altmap and one extra block allocated from normal memory. E.g. If you
+> have 32MB of altmap space, one 16MB block will be allocated from the
+> altmap, but the 2nd 16MB block is probably unusable due to the
+> reserved pages at the start of the altmap. Maybe this should be a
+> pr_debug() so it's only printed along with the "vmemmap_populate ..."
+> message above?
 
-> Have you changed your mind about quibbling? ;)
+Will switch to pr_debug. What I really wanted was an indication of which
+pfn device failed to allocate  per page meata data in the device. But
+we really don't have device details here and we don't end up calling
+this function if there is already a 16MB mapping in DRAM for this area.
 
-Ha, I suppose I have! If it's not loads of effort to use p?d_leaf() instead
-of p?d_large, then I'd certainly prefer that.
+>
+> Also, isn't kernel style to keep printf()s, even long ones, on one line?
 
-Will
+I was not sure. It do print to kernel log in one line.
+
+-aneesh
+
