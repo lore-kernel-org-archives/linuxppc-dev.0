@@ -2,91 +2,92 @@ Return-Path: <SRS0=ROWL=U6=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.0 required=3.0
-	tests=HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
+X-Spam-Status: No, score=-2.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_2 autolearn=no
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E1B87C0650E
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Jul 2019 14:59:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 59C23C0650E
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Jul 2019 15:03:57 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 746FB2064B
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Jul 2019 14:59:57 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 746FB2064B
+	by mail.kernel.org (Postfix) with ESMTPS id E15AC206E0
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Jul 2019 15:03:56 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E15AC206E0
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45crBg169HzDq5y
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Jul 2019 00:59:55 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45crHF4gl6zDqYd
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Jul 2019 01:03:53 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
  (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=aneesh.kumar@linux.ibm.com; receiver=<UNKNOWN>)
+ envelope-from=zohar@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=linux.ibm.com
 Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45cqhS2bn3zDqSK
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Jul 2019 00:37:12 +1000 (AEST)
-Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45cqlR1K8FzDqYq
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Jul 2019 00:39:40 +1000 (AEST)
+Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x61ESsTL054388; Mon, 1 Jul 2019 10:37:07 -0400
-Received: from pps.reinject (localhost [127.0.0.1])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2tfjtdn4j1-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 01 Jul 2019 10:37:07 -0400
-Received: from m0098393.ppops.net (m0098393.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.27/8.16.0.27) with SMTP id x61EU2IK058600;
- Mon, 1 Jul 2019 10:37:06 -0400
-Received: from ppma01wdc.us.ibm.com (fd.55.37a9.ip4.static.sl-reverse.com
- [169.55.85.253])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2tfjtdn4gq-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 01 Jul 2019 10:37:06 -0400
-Received: from pps.filterd (ppma01wdc.us.ibm.com [127.0.0.1])
- by ppma01wdc.us.ibm.com (8.16.0.27/8.16.0.27) with SMTP id x61EYpYZ028894;
- Mon, 1 Jul 2019 14:37:05 GMT
-Received: from b03cxnp07029.gho.boulder.ibm.com
- (b03cxnp07029.gho.boulder.ibm.com [9.17.130.16])
- by ppma01wdc.us.ibm.com with ESMTP id 2tdym6fghw-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 01 Jul 2019 14:37:05 +0000
-Received: from b03ledav002.gho.boulder.ibm.com
- (b03ledav002.gho.boulder.ibm.com [9.17.130.233])
- by b03cxnp07029.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x61Eb4Ew56951290
+ x61EdXNQ117210
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 1 Jul 2019 10:39:38 -0400
+Received: from e06smtp03.uk.ibm.com (e06smtp03.uk.ibm.com [195.75.94.99])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2tfjqddkey-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 01 Jul 2019 10:39:37 -0400
+Received: from localhost
+ by e06smtp03.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <zohar@linux.ibm.com>;
+ Mon, 1 Jul 2019 15:39:13 +0100
+Received: from b06cxnps3075.portsmouth.uk.ibm.com (9.149.109.195)
+ by e06smtp03.uk.ibm.com (192.168.101.133) with IBM ESMTP SMTP Gateway:
+ Authorized Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Mon, 1 Jul 2019 15:39:08 +0100
+Received: from d06av25.portsmouth.uk.ibm.com (d06av25.portsmouth.uk.ibm.com
+ [9.149.105.61])
+ by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x61Ed71s22806580
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Mon, 1 Jul 2019 14:37:05 GMT
-Received: from b03ledav002.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id D8276136063;
- Mon,  1 Jul 2019 14:37:04 +0000 (GMT)
-Received: from b03ledav002.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 8CA47136053;
- Mon,  1 Jul 2019 14:37:02 +0000 (GMT)
-Received: from skywalker.ibmuc.com (unknown [9.85.81.231])
- by b03ledav002.gho.boulder.ibm.com (Postfix) with ESMTP;
- Mon,  1 Jul 2019 14:37:02 +0000 (GMT)
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
-To: npiggin@gmail.com, paulus@samba.org, mpe@ellerman.id.au
-Subject: [PATCH] powerpc: Remove unused variable declaration
-Date: Mon,  1 Jul 2019 20:07:00 +0530
-Message-Id: <20190701143700.17894-1-aneesh.kumar@linux.ibm.com>
-X-Mailer: git-send-email 2.21.0
-MIME-Version: 1.0
+ Mon, 1 Jul 2019 14:39:07 GMT
+Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 3AE3A11C058;
+ Mon,  1 Jul 2019 14:39:07 +0000 (GMT)
+Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 3E9E411C050;
+ Mon,  1 Jul 2019 14:39:05 +0000 (GMT)
+Received: from localhost.localdomain (unknown [9.80.81.204])
+ by d06av25.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Mon,  1 Jul 2019 14:39:05 +0000 (GMT)
+Subject: Re: [PATCH v12 00/11] Appended signatures support for IMA appraisal
+From: Mimi Zohar <zohar@linux.ibm.com>
+To: Thiago Jung Bauermann <bauerman@linux.ibm.com>,
+ linux-integrity@vger.kernel.org
+Date: Mon, 01 Jul 2019 10:38:54 -0400
+In-Reply-To: <20190628021934.4260-1-bauerman@linux.ibm.com>
+References: <20190628021934.4260-1-bauerman@linux.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+X-Mailer: Evolution 3.20.5 (3.20.5-1.fc24) 
+Mime-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
+x-cbid: 19070114-0012-0000-0000-0000032E3548
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 19070114-0013-0000-0000-000021677F70
+Message-Id: <1561991934.4067.17.camel@linux.ibm.com>
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
  definitions=2019-07-01_09:, , signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
  priorityscore=1501
  malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=970 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1810050000 definitions=main-1907010179
+ clxscore=1011 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1810050000 definitions=main-1907010180
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -98,31 +99,31 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
- linuxppc-dev@lists.ozlabs.org
+Cc: Herbert Xu <herbert@gondor.apana.org.au>, linux-doc@vger.kernel.org,
+ Dmitry Kasatkin <dmitry.kasatkin@gmail.com>,
+ "David S. Miller" <davem@davemloft.net>, Jonathan Corbet <corbet@lwn.net>,
+ linux-kernel@vger.kernel.org, James Morris <jmorris@namei.org>,
+ David Howells <dhowells@redhat.com>, "AKASHI,
+ Takahiro" <takahiro.akashi@linaro.org>, linux-security-module@vger.kernel.org,
+ keyrings@vger.kernel.org, linux-crypto@vger.kernel.org,
+ Jessica Yu <jeyu@kernel.org>, linuxppc-dev@lists.ozlabs.org,
+ David Woodhouse <dwmw2@infradead.org>, "Serge E. Hallyn" <serge@hallyn.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-__kernel_virt_size is not used anymore.
+On Thu, 2019-06-27 at 23:19 -0300, Thiago Jung Bauermann wrote:
+> Hello,
+> 
+> This version is essentially identical to the last one.
+> 
+> It is only a rebase on top of today's linux-integrity/next-queued-testing,
+> prompted by conflicts with Prakhar Srivastava's patches to measure the
+> kernel command line. It also drops two patches that are already present in
+> that branch.
 
-Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
----
- arch/powerpc/include/asm/book3s/64/pgtable.h | 1 -
- 1 file changed, 1 deletion(-)
+Thanks, Thiago.  These patches are now in next-queued-testing waiting
+for some additional reviews/acks.
 
-diff --git a/arch/powerpc/include/asm/book3s/64/pgtable.h b/arch/powerpc/include/asm/book3s/64/pgtable.h
-index 7dede2e34b70..a3eab10f5a27 100644
---- a/arch/powerpc/include/asm/book3s/64/pgtable.h
-+++ b/arch/powerpc/include/asm/book3s/64/pgtable.h
-@@ -275,7 +275,6 @@ extern unsigned long __vmalloc_end;
- #define VMALLOC_END	__vmalloc_end
- 
- extern unsigned long __kernel_virt_start;
--extern unsigned long __kernel_virt_size;
- extern unsigned long __kernel_io_start;
- extern unsigned long __kernel_io_end;
- #define KERN_VIRT_START __kernel_virt_start
--- 
-2.21.0
+Mimi
 
