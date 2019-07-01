@@ -2,91 +2,63 @@ Return-Path: <SRS0=ROWL=U6=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no
+X-Spam-Status: No, score=-7.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=ham autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 359CAC0650E
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Jul 2019 16:44:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 63322C0650E
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Jul 2019 17:11:51 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 7235521473
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Jul 2019 16:44:02 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7235521473
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 46E172146F
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Jul 2019 17:11:50 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=duncanthrax.net header.i=@duncanthrax.net header.b="ZdE/vRjP"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 46E172146F
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=stackframe.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45ctVm1jyLzDqX8
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Jul 2019 02:44:00 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45cv6q2NZmzDqMy
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Jul 2019 03:11:47 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
- (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=nathanl@linux.ibm.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+ spf=none (mailfrom) smtp.mailfrom=stackframe.org
+ (client-ip=2001:470:70c5:1111::170; helo=smtp.duncanthrax.net;
+ envelope-from=svens@stackframe.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=stackframe.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=duncanthrax.net header.i=@duncanthrax.net
+ header.b="ZdE/vRjP"; dkim-atps=neutral
+Received: from smtp.duncanthrax.net (smtp.duncanthrax.net
+ [IPv6:2001:470:70c5:1111::170])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45ctTD6bDpzDqWw
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Jul 2019 02:42:40 +1000 (AEST)
-Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x61GZYTw054148; Mon, 1 Jul 2019 12:42:32 -0400
-Received: from pps.reinject (localhost [127.0.0.1])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2tfmsgbure-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 01 Jul 2019 12:42:31 -0400
-Received: from m0098409.ppops.net (m0098409.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.27/8.16.0.27) with SMTP id x61Gbe32060086;
- Mon, 1 Jul 2019 12:42:31 -0400
-Received: from ppma01wdc.us.ibm.com (fd.55.37a9.ip4.static.sl-reverse.com
- [169.55.85.253])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2tfmsgbuqx-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 01 Jul 2019 12:42:31 -0400
-Received: from pps.filterd (ppma01wdc.us.ibm.com [127.0.0.1])
- by ppma01wdc.us.ibm.com (8.16.0.27/8.16.0.27) with SMTP id x61GYqjN012322;
- Mon, 1 Jul 2019 16:42:30 GMT
-Received: from b01cxnp22035.gho.pok.ibm.com (b01cxnp22035.gho.pok.ibm.com
- [9.57.198.25]) by ppma01wdc.us.ibm.com with ESMTP id 2tdym6g6d3-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 01 Jul 2019 16:42:30 +0000
-Received: from b01ledav005.gho.pok.ibm.com (b01ledav005.gho.pok.ibm.com
- [9.57.199.110])
- by b01cxnp22035.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x61GgTKw52298226
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Mon, 1 Jul 2019 16:42:29 GMT
-Received: from b01ledav005.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id B2130AE060;
- Mon,  1 Jul 2019 16:42:29 +0000 (GMT)
-Received: from b01ledav005.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 94F95AE05F;
- Mon,  1 Jul 2019 16:42:29 +0000 (GMT)
-Received: from localhost (unknown [9.41.179.236])
- by b01ledav005.gho.pok.ibm.com (Postfix) with ESMTP;
- Mon,  1 Jul 2019 16:42:29 +0000 (GMT)
-From: Nathan Lynch <nathanl@linux.ibm.com>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
-Subject: Re: ["RFC PATCH" 1/2] powerpc/mm: Fix node look up with numa=off boot
-In-Reply-To: <1329fd62-c2ad-f2c9-d3df-731f543dd3ea@linux.ibm.com>
-References: <20190629083629.29037-1-aneesh.kumar@linux.ibm.com>
- <1329fd62-c2ad-f2c9-d3df-731f543dd3ea@linux.ibm.com>
-Date: Mon, 01 Jul 2019 11:42:29 -0500
-Message-ID: <87imslso3u.fsf@linux.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45cv3k49dzzDqVn
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Jul 2019 03:09:06 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+ d=duncanthrax.net; s=dkim; h=In-Reply-To:Content-Type:MIME-Version:References
+ :Message-ID:Subject:Cc:To:From:Date;
+ bh=lMzex8jlUCJ2Gwea4xwdWvbCtAAUxSDLkgjI9TE9va0=; b=ZdE/vRjPVuJYU9QL+q2GQwaSjq
+ qeaGU3B+ntdQjmLgoZc6V6wW40HUteu1CTDy6jkHHjWywYcj36MCoQbPCuT/ufIwd+gCZCsCwfUk9
+ IqU54V7HHV4AFAjIk89VwcSCw2Lt4ly1qCt1JF10kSnBpRIko28/gILQyjAaYuWMiuZM=;
+Received: from [134.3.44.134] (helo=t470p.stackframe.org)
+ by smtp.eurescom.eu with esmtpsa (TLS1.2:ECDHE_RSA_AES_256_GCM_SHA384:256)
+ (Exim 4.86_2) (envelope-from <svens@stackframe.org>)
+ id 1hhznT-0006GR-8o; Mon, 01 Jul 2019 19:08:55 +0200
+Date: Mon, 1 Jul 2019 19:08:53 +0200
+From: Sven Schnelle <svens@stackframe.org>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: [PATCH RFC] generic ELF support for kexec
+Message-ID: <20190701170853.GD19243@t470p.stackframe.org>
+References: <20190625185433.GA10934@t470p.stackframe.org>
+ <87o92isbxg.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain
-X-TM-AS-GCONF: 00
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2019-07-01_10:, , signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- malwarescore=0 suspectscore=1 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1810050000 definitions=main-1907010200
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <87o92isbxg.fsf@concordia.ellerman.id.au>
+User-Agent: Mutt/1.10.1 (2018-07-13)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -98,38 +70,66 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Vaibhav Jain <vaibhav@linux.ibm.com>, paulus@samba.org,
- linuxppc-dev@lists.ozlabs.org, npiggin@gmail.com
+Cc: linux-s390@vger.kernel.org, deller@gmx.de, kexec@lists.infradead.org,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-"Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com> writes:
-> I guess we should have here.
->
-> modified   arch/powerpc/mm/numa.c
-> @@ -416,12 +416,11 @@ static int of_get_assoc_arrays(struct assoc_arrays 
-> *aa)
->   static int of_drconf_to_nid_single(struct drmem_lmb *lmb)
->   {
->   	struct assoc_arrays aa = { .arrays = NULL };
-> -	/* is that correct? */
->   	int default_nid = 0;
->   	int nid = default_nid;
->   	int rc, index;
->
-> -	if (!numa_enabled)
-> +	if ((min_common_depth < 0) || !numa_enabled)
->   		return NUMA_NO_NODE;
->
->   	rc = of_get_assoc_arrays(&aa);
->
->
-> Nathan,
->
-> Can you check this?
+Hi Michael,
 
-Looks like it would do the right thing.
+On Fri, Jun 28, 2019 at 12:04:11PM +1000, Michael Ellerman wrote:
+> Sven Schnelle <svens@stackframe.org> writes:
+>   https://github.com/linuxppc/wiki/wiki/Booting-with-Qemu
+> 
+> But I'm not sure where you get a version of kexec that uses kexec_file().
 
-Just checking: do people still need numa=off? Seems like it's a
-maintenance burden :-)
+kexec-tools HEAD supports it, so that's not a problem.
+
+> > If that change is acceptable i would finish the patch and submit it. I think
+> > best would be to push this change through Helge's parisc tree, so we don't
+> > have any dependencies to sort out.
+> 
+> That will work for you but could cause us problems if we have any
+> changes that touch that code.
+> 
+> It's easy enough to create a topic branch with just that patch that both
+> of us merge.
+
+What should be the base branch for that patch? Christophe suggested the
+powerpc/merge branch?
+
+> >  #include <linux/elf.h>
+> >  #include <linux/kexec.h>
+> >  #include <linux/libfdt.h>
+> > @@ -31,540 +29,6 @@
+> >  #include <linux/slab.h>
+> >  #include <linux/types.h>
+> >  
+> > -#define PURGATORY_STACK_SIZE	(16 * 1024)
+> 
+> This is unused AFAICS. We should probably remove it explicitly rather
+> than as part of this patch.
+
+I have one patch right now. If wanted i can split up all the changes
+suggested during the review into smaller pieces, whatever you prefer.
+
+> Or that.
+> 
+> > +#include <linux/slab.h>
+> > +#include <linux/types.h>
+> > +
+> > +#define elf_addr_to_cpu	elf64_to_cpu
+> 
+> Why are we doing that rather than just using elf64_to_cpu directly?
+> 
+> > +#ifndef Elf_Rel
+> > +#define Elf_Rel		Elf64_Rel
+> > +#endif /* Elf_Rel */
+> 
+> And that?
+
+Don't know - ask the PPC people :-)
+
+Regards
+Sven
