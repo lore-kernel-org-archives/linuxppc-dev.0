@@ -2,92 +2,87 @@ Return-Path: <SRS0=fll7=U7=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 55DF1C5B578
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Jul 2019 03:36:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7B60EC5B57D
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Jul 2019 05:23:38 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 8C33F21479
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Jul 2019 03:35:59 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8C33F21479
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 9A8FA21479
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Jul 2019 05:23:37 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=fossix-org.20150623.gappssmtp.com header.i=@fossix-org.20150623.gappssmtp.com header.b="PlNjRfhR"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9A8FA21479
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=fossix.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45d8yz71qpzDqWN
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Jul 2019 13:35:55 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45dCMC0mDlzDqXQ
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Jul 2019 15:23:35 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
- (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=aneesh.kumar@linux.ibm.com; receiver=<UNKNOWN>)
+ spf=none (mailfrom) smtp.mailfrom=fossix.org
+ (client-ip=2607:f8b0:4864:20::542; helo=mail-pg1-x542.google.com;
+ envelope-from=santosh@fossix.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ dmarc=none (p=none dis=none) header.from=fossix.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=fossix-org.20150623.gappssmtp.com
+ header.i=@fossix-org.20150623.gappssmtp.com header.b="PlNjRfhR"; 
+ dkim-atps=neutral
+Received: from mail-pg1-x542.google.com (mail-pg1-x542.google.com
+ [IPv6:2607:f8b0:4864:20::542])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45d8ww1x7nzDqTj
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Jul 2019 13:34:06 +1000 (AEST)
-Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x623XTdP105584
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 1 Jul 2019 23:34:03 -0400
-Received: from e06smtp02.uk.ibm.com (e06smtp02.uk.ibm.com [195.75.94.98])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2tfwyrayhh-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 01 Jul 2019 23:34:03 -0400
-Received: from localhost
- by e06smtp02.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.ibm.com>;
- Tue, 2 Jul 2019 04:34:02 +0100
-Received: from b06avi18626390.portsmouth.uk.ibm.com (9.149.26.192)
- by e06smtp02.uk.ibm.com (192.168.101.132) with IBM ESMTP SMTP Gateway:
- Authorized Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Tue, 2 Jul 2019 04:33:58 +0100
-Received: from d06av22.portsmouth.uk.ibm.com (d06av22.portsmouth.uk.ibm.com
- [9.149.105.58])
- by b06avi18626390.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP
- id x623Xk7G33030492
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Tue, 2 Jul 2019 03:33:46 GMT
-Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 763C64C046;
- Tue,  2 Jul 2019 03:33:57 +0000 (GMT)
-Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 2857A4C044;
- Tue,  2 Jul 2019 03:33:56 +0000 (GMT)
-Received: from skywalker.linux.ibm.com (unknown [9.85.91.212])
- by d06av22.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Tue,  2 Jul 2019 03:33:55 +0000 (GMT)
-X-Mailer: emacs 26.2 (via feedmail 11-beta-1 I)
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] mm/nvdimm: Add is_ioremap_addr and use that to check
- ioremap address
-In-Reply-To: <20190701165152.7a55299eb670b0ca326f24dd@linux-foundation.org>
-References: <20190701134038.14165-1-aneesh.kumar@linux.ibm.com>
- <20190701165152.7a55299eb670b0ca326f24dd@linux-foundation.org>
-Date: Tue, 02 Jul 2019 09:03:54 +0530
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45dCH54fVNzDqJ7
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Jul 2019 15:20:01 +1000 (AEST)
+Received: by mail-pg1-x542.google.com with SMTP id i8so3878921pgm.13
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 01 Jul 2019 22:20:01 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=fossix-org.20150623.gappssmtp.com; s=20150623;
+ h=from:to:cc:subject:date:message-id:in-reply-to:references
+ :mime-version:content-transfer-encoding;
+ bh=eTxRJjN3pTPMOz/LuyvMrNd6bnn7wmfAl4QIN2ZzQNE=;
+ b=PlNjRfhR61wr/pBxo3O490uasub6KA8gK3idricPfUia6mCBtttURrhky0PAAQIQcd
+ yMZLgmbmc8eVw4PcSoE0HUX080zoxiR6H8Ita3pmERdH8sqeNCjDSxUh8UECDVCOTaX+
+ V60hZ1LcntSuw8UKo5lbTBAgHtVzDGscvmlAX+NVSAG4zgsRdcu7hvbZMAd1Swfa2LtT
+ bzDEIdTPyrNYdvj37tAnJb7Fh4FNT92+kGRWWxOhNY+D+akrZze9xFEk7YttjTZf9g0E
+ +jWZ/n87YSyK79NK5Edk0VYP1dUYIX95pkaH+oDZWGRaQnNS2gEZk0bDyAwGTTsygdDx
+ yanA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+ :references:mime-version:content-transfer-encoding;
+ bh=eTxRJjN3pTPMOz/LuyvMrNd6bnn7wmfAl4QIN2ZzQNE=;
+ b=gBQ6vK102KeDK9AEHsZ7jxm19+SrWrsF/2N74TWKzHxKpo9NqnIeUGo+koYh+9Rd0o
+ iQxAAq1jdGlaCFkfawNOi3VS2GJfFMVNlVvLvo/F3MVhkv2wvSe1ODbGOad5VB+7XWDd
+ KP+8WuDACmFS0gIN1+QJEBGQnste7RANvmFURJF1l/L7MHTvd1nR/DwJRz9Lqyc4cGTH
+ UeVOBwFHfnFtOifhs113VcEviXhW21WML9PQ/3UxvCArn0+Z8C1/hNcnbejsG4GJ5Xm7
+ DI2nf9bGXT9mz1sZZ1QY4eNpyR475jrVEX93FqQx8OvJK8xA/avgNZ01lNFRlvOASAF3
+ HgGw==
+X-Gm-Message-State: APjAAAUzdOJBKMm4nNJtpzbAdkM2n7KEeZd/oL9Qu58/zYzTPRmH/YCY
+ wFlTmGFeknKaN0k+1Z1K7z77FHafMjJ2Ow==
+X-Google-Smtp-Source: APXvYqzGWOI8L6L9hiZ0MjSD4G2DuIe7MS9vmoLpBc8Ya17KaPdFSSH7+7s0T8dLU9/Am4/Wi75e1g==
+X-Received: by 2002:a63:2a83:: with SMTP id
+ q125mr28233038pgq.102.1562044799561; 
+ Mon, 01 Jul 2019 22:19:59 -0700 (PDT)
+Received: from santosiv.in.ibm.com ([129.41.84.67])
+ by smtp.gmail.com with ESMTPSA id t9sm1106898pji.18.2019.07.01.22.19.56
+ (version=TLS1_3 cipher=AEAD-AES256-GCM-SHA384 bits=256/256);
+ Mon, 01 Jul 2019 22:19:59 -0700 (PDT)
+From: Santosh Sivaraj <santosh@fossix.org>
+To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Subject: [v2 05/12] powerpc/mce: Allow notifier callback to handle MCE
+Date: Tue,  2 Jul 2019 10:49:25 +0530
+Message-Id: <20190702051932.511-6-santosh@fossix.org>
+X-Mailer: git-send-email 2.20.1
+In-Reply-To: <20190702051932.511-1-santosh@fossix.org>
+References: <20190702051932.511-1-santosh@fossix.org>
 MIME-Version: 1.0
-Content-Type: text/plain
-X-TM-AS-GCONF: 00
-x-cbid: 19070203-0008-0000-0000-000002F8F824
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19070203-0009-0000-0000-000022663F0B
-Message-Id: <87r2792jq5.fsf@linux.ibm.com>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2019-07-02_02:, , signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=711 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1810050000 definitions=main-1907020036
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -99,28 +94,132 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-mm@kvack.org, dan.j.williams@intel.com, linuxppc-dev@lists.ozlabs.org,
- linux-nvdimm@lists.01.org
+Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
+ Mahesh Salgaonkar <mahesh@linux.ibm.com>, Nicholas Piggin <npiggin@gmail.com>,
+ Chandan Rajendra <chandan@linux.vnet.ibm.com>,
+ Reza Arbab <arbab@linux.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Andrew Morton <akpm@linux-foundation.org> writes:
+From: Reza Arbab <arbab@linux.ibm.com>
 
-> On Mon,  1 Jul 2019 19:10:38 +0530 "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com> wrote:
->
->> Architectures like powerpc use different address range to map ioremap
->> and vmalloc range. The memunmap() check used by the nvdimm layer was
->> wrongly using is_vmalloc_addr() to check for ioremap range which fails for
->> ppc64. This result in ppc64 not freeing the ioremap mapping. The side effect
->> of this is an unbind failure during module unload with papr_scm nvdimm driver
->
-> The patch applies to 5.1.  Does it need a Fixes: and a Cc:stable?
+If a notifier returns NOTIFY_STOP, consider the MCE handled, just as we
+do when machine_check_early() returns 1.
 
-Actually, we want it to be backported to an older kernel possibly one
-that added papr-scm driver, b5beae5e224f ("powerpc/pseries: Add driver
-for PAPR SCM regions"). But that doesn't apply easily. It does apply
-without conflicts to 5.0
+Signed-off-by: Reza Arbab <arbab@linux.ibm.com>
+---
+ arch/powerpc/include/asm/asm-prototypes.h |  2 +-
+ arch/powerpc/include/asm/mce.h            |  3 +-
+ arch/powerpc/kernel/exceptions-64s.S      |  3 ++
+ arch/powerpc/kernel/mce.c                 | 37 ++++++++++++++++++-----
+ 4 files changed, 35 insertions(+), 10 deletions(-)
 
--aneesh
+diff --git a/arch/powerpc/include/asm/asm-prototypes.h b/arch/powerpc/include/asm/asm-prototypes.h
+index f66f26ef3ce0..49ee8f08de2a 100644
+--- a/arch/powerpc/include/asm/asm-prototypes.h
++++ b/arch/powerpc/include/asm/asm-prototypes.h
+@@ -72,7 +72,7 @@ void machine_check_exception(struct pt_regs *regs);
+ void emulation_assist_interrupt(struct pt_regs *regs);
+ long do_slb_fault(struct pt_regs *regs, unsigned long ea);
+ void do_bad_slb_fault(struct pt_regs *regs, unsigned long ea, long err);
+-void machine_check_notify(struct pt_regs *regs);
++long machine_check_notify(struct pt_regs *regs);
+ 
+ /* signals, syscalls and interrupts */
+ long sys_swapcontext(struct ucontext __user *old_ctx,
+diff --git a/arch/powerpc/include/asm/mce.h b/arch/powerpc/include/asm/mce.h
+index 948bef579086..240dd1fdfe35 100644
+--- a/arch/powerpc/include/asm/mce.h
++++ b/arch/powerpc/include/asm/mce.h
+@@ -122,7 +122,8 @@ struct machine_check_event {
+ 			enum MCE_UeErrorType ue_error_type:8;
+ 			u8		effective_address_provided;
+ 			u8		physical_address_provided;
+-			u8		reserved_1[5];
++			u8		process_event;
++			u8		reserved_1[4];
+ 			u64		effective_address;
+ 			u64		physical_address;
+ 			u8		reserved_2[8];
+diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
+index 2e56014fca21..c83e38a403fd 100644
+--- a/arch/powerpc/kernel/exceptions-64s.S
++++ b/arch/powerpc/kernel/exceptions-64s.S
+@@ -460,6 +460,9 @@ EXC_COMMON_BEGIN(machine_check_handle_early)
+ 
+ 	addi	r3,r1,STACK_FRAME_OVERHEAD
+ 	bl	machine_check_notify
++	ld	r11,RESULT(r1)
++	or	r3,r3,r11
++	std	r3,RESULT(r1)
+ 
+ 	ld	r12,_MSR(r1)
+ BEGIN_FTR_SECTION
+diff --git a/arch/powerpc/kernel/mce.c b/arch/powerpc/kernel/mce.c
+index 0ab171b41ede..4a37928ab30e 100644
+--- a/arch/powerpc/kernel/mce.c
++++ b/arch/powerpc/kernel/mce.c
+@@ -157,6 +157,8 @@ void save_mce_event(struct pt_regs *regs, long handled,
+ 			mce->u.ue_error.physical_address_provided = true;
+ 			mce->u.ue_error.physical_address = phys_addr;
+ 		}
++
++		mce->u.ue_error.process_event = true;
+ 	}
+ 	return;
+ }
+@@ -241,6 +243,10 @@ void machine_check_queue_event(void)
+ 	if (!get_mce_event(&evt, MCE_EVENT_RELEASE))
+ 		return;
+ 
++	if (evt.error_type == MCE_ERROR_TYPE_UE &&
++	    !evt.u.ue_error.process_event)
++		return;
++
+ 	index = __this_cpu_inc_return(mce_queue_count) - 1;
+ 	/* If queue is full, just return for now. */
+ 	if (index >= MAX_MC_EVT) {
+@@ -647,16 +653,31 @@ long hmi_exception_realmode(struct pt_regs *regs)
+ 	return 1;
+ }
+ 
+-void machine_check_notify(struct pt_regs *regs)
++long machine_check_notify(struct pt_regs *regs)
+ {
+-	struct machine_check_event evt;
++	int index = __this_cpu_read(mce_nest_count) - 1;
++	struct machine_check_event *evt;
++	int rc;
+ 
+-	if (!get_mce_event(&evt, MCE_EVENT_DONTRELEASE))
+-		return;
++	if (index < 0 || index >= MAX_MC_EVT)
++		return 0;
+ 
+-	blocking_notifier_call_chain(&mce_notifier_list, 0, &evt);
++	evt = this_cpu_ptr(&mce_event[index]);
+ 
+-	if (evt.error_type == MCE_ERROR_TYPE_UE &&
+-	    evt.u.ue_error.physical_address_provided)
+-		machine_check_ue_event(&evt);
++	rc = blocking_notifier_call_chain(&mce_notifier_list, 0, evt);
++	if (rc & NOTIFY_STOP_MASK) {
++		if (evt->error_type == MCE_ERROR_TYPE_UE)
++			evt->u.ue_error.process_event = false;
++
++		if ((rc & NOTIFY_STOP_MASK) && (regs->msr & MSR_RI))
++			evt->disposition = MCE_DISPOSITION_RECOVERED;
++
++		return 1;
++	}
++
++	if (evt->error_type == MCE_ERROR_TYPE_UE &&
++	    evt->u.ue_error.physical_address_provided)
++		machine_check_ue_event(evt);
++
++	return 0;
+ }
+-- 
+2.20.1
 
