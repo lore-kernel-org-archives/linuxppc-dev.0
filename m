@@ -2,51 +2,111 @@ Return-Path: <SRS0=8MEZ=VA=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.5 required=3.0 tests=FROM_EXCESS_BASE64,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_SANE_2 autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	HTML_MESSAGE,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 89CA4C5B578
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Jul 2019 21:17:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1B31FC5B578
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Jul 2019 21:24:58 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 0B0EF218A0
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Jul 2019 21:17:40 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0B0EF218A0
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=suse.de
+	by mail.kernel.org (Postfix) with ESMTPS id 5D42A21882
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Jul 2019 21:24:57 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5D42A21882
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45fDTY6G92zDqXD
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Jul 2019 07:17:37 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45fDdz0db2zDqLY
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Jul 2019 07:24:55 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45f7c83d2HzDqNQ
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Jul 2019 03:38:00 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=suse.de
- (client-ip=195.135.220.15; helo=mx1.suse.de; envelope-from=msuchanek@suse.de;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=suse.de
-Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
+ dmarc=none (p=none dis=none) header.from=linux.ibm.com
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 45f7c71qthz8t0S
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Jul 2019 03:37:59 +1000 (AEST)
+Received: by ozlabs.org (Postfix)
+ id 45f7c71RKyz9sLt; Thu,  4 Jul 2019 03:37:59 +1000 (AEST)
+Authentication-Results: ozlabs.org;
+ spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
+ (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
+ envelope-from=hbathini@linux.ibm.com; receiver=<UNKNOWN>)
+Authentication-Results: ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=linux.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45fDRp0qxtzDq5W
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Jul 2019 07:16:04 +1000 (AEST)
-X-Virus-Scanned: by amavisd-new at test-mx.suse.de
-Received: from relay2.suse.de (unknown [195.135.220.254])
- by mx1.suse.de (Postfix) with ESMTP id 8A966AF4C;
- Wed,  3 Jul 2019 21:16:00 +0000 (UTC)
-Date: Wed, 3 Jul 2019 23:15:59 +0200
-From: Michal =?UTF-8?B?U3VjaMOhbmVr?= <msuchanek@suse.de>
-To: Sachin Sant <sachinp@linux.vnet.ibm.com>
-Subject: Re: Kernel Bug/oops during boot (PowerVM LPAR w/vTPM)
-Message-ID: <20190703231559.29d54c5c@kitsune.suse.cz>
-In-Reply-To: <20190703131716.7e16d840@naga>
-References: <49B804EE-726B-4EB4-9BED-116F8FB5B374@linux.vnet.ibm.com>
- <20190703131716.7e16d840@naga>
-Organization: SUSE Linux
-X-Mailer: Claws Mail 3.17.1 (GTK+ 2.24.31; x86_64-suse-linux-gnu)
+ by ozlabs.org (Postfix) with ESMTPS id 45f7c65KgRz9sBp
+ for <linuxppc-dev@ozlabs.org>; Thu,  4 Jul 2019 03:37:58 +1000 (AEST)
+Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
+ x63HbojE137584
+ for <linuxppc-dev@ozlabs.org>; Wed, 3 Jul 2019 13:37:56 -0400
+Received: from e06smtp03.uk.ibm.com (e06smtp03.uk.ibm.com [195.75.94.99])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2th0vt82jx-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@ozlabs.org>; Wed, 03 Jul 2019 13:37:55 -0400
+Received: from localhost
+ by e06smtp03.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <hbathini@linux.ibm.com>;
+ Wed, 3 Jul 2019 18:37:06 +0100
+Received: from b06avi18626390.portsmouth.uk.ibm.com (9.149.26.192)
+ by e06smtp03.uk.ibm.com (192.168.101.133) with IBM ESMTP SMTP Gateway:
+ Authorized Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Wed, 3 Jul 2019 18:37:03 +0100
+Received: from d06av25.portsmouth.uk.ibm.com (d06av25.portsmouth.uk.ibm.com
+ [9.149.105.61])
+ by b06avi18626390.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP
+ id x63HapWi30212376
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Wed, 3 Jul 2019 17:36:51 GMT
+Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 00C8F11C04A;
+ Wed,  3 Jul 2019 17:37:02 +0000 (GMT)
+Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 116E711C050;
+ Wed,  3 Jul 2019 17:37:00 +0000 (GMT)
+Received: from [9.85.84.54] (unknown [9.85.84.54])
+ by d06av25.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Wed,  3 Jul 2019 17:36:59 +0000 (GMT)
+Subject: Re: [PATCH v3 01/16] powerpc/fadump: move internal fadump code to a
+ new file
+To: "Oliver O'Halloran" <oohall@gmail.com>,
+ linuxppc-dev <linuxppc-dev@ozlabs.org>
+References: <156149548694.9094.3211954809582123798.stgit@hbathini.in.ibm.com>
+ <156149554689.9094.13274886908174068943.stgit@hbathini.in.ibm.com>
+ <5f4b28e4df2049506a9fa03eead6cfbad9d7cdf3.camel@gmail.com>
+From: Hari Bathini <hbathini@linux.ibm.com>
+Date: Wed, 3 Jul 2019 23:06:59 +0530
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.7.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+In-Reply-To: <5f4b28e4df2049506a9fa03eead6cfbad9d7cdf3.camel@gmail.com>
+Content-Type: multipart/alternative;
+ boundary="------------6A163100F895494BA737EF9F"
+Content-Language: en-US
+X-TM-AS-GCONF: 00
+x-cbid: 19070317-0012-0000-0000-0000032EE58D
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 19070317-0013-0000-0000-000021683985
+Message-Id: <6c560e11-eb57-a6d5-b8e9-9a43053ca36f@linux.ibm.com>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
+ definitions=2019-07-03_04:, , signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1810050000 definitions=main-1907030214
+X-Mailman-Approved-At: Thu, 04 Jul 2019 07:23:14 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -58,35 +118,68 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: nayna@linux.ibm.com, linuxppc-dev@lists.ozlabs.org, gcwilson@linux.ibm.com
+Cc: Ananth N Mavinakayanahalli <ananth@linux.ibm.com>,
+ Mahesh J Salgaonkar <mahesh@linux.ibm.com>,
+ Vasant Hegde <hegdevasant@linux.ibm.com>, Nicholas Piggin <npiggin@gmail.com>,
+ Stewart Smith <stewart@linux.ibm.com>, Daniel Axtens <dja@axtens.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, 3 Jul 2019 13:17:16 +0200
-Michal Such=C3=A1nek <msuchanek@suse.de> wrote:
+This is a multi-part message in MIME format.
+--------------6A163100F895494BA737EF9F
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
 
-> On Wed, 3 Jul 2019 15:54:59 +0530
-> Sachin Sant <sachinp@linux.vnet.ibm.com> wrote:
->=20
-> > Booting mainline kernel on PowerVM LPAR with vTPM enabled results
-> > into a kernel crash.
-> >=20
-> > [    0.365989] BUG: Kernel NULL pointer dereference at 0x00000012
-...
-> > [    0.366085] NIP [c00000000073dd80] tpm1_pcr_extend+0x130/0x230
-> > [    0.366090] LR [c00000000073dcd0] tpm1_pcr_extend+0x80/0x230
-...
->=20
-> You need to revert (or fix up) commit 0b6cf6b97b7e ("tpm: pass an array
-> of tpm_extend_digest structures to tpm_pcr_extend()". At least
-> reverting it fixes the issue for me.
 
-FTR this is the revert on lkml https://lkml.org/lkml/2019/7/1/423
+On 03/07/19 9:00 AM, Oliver O'Halloran wrote:
+> On Wed, 2019-06-26 at 02:15 +0530, Hari Bathini wrote:
+>> Refactoring fadump code means internal fadump code is referenced from
+>> different places. For ease, move internal code to a new file.
+> Can you elaborate a bit? I don't really get what the difference between
+> fadump and fadump-internal code is supposed to be. Why can't all this
+> just live in fadump.c?
 
->=20
-> Thanks
->=20
-> Michal
->=20
+I am trying to keep the code referenced by both platforms (platform/pseries &
+platform/powernv) in an internal file while using include/asm/fadump.h for
+the interface with other kernel components..
+
+
+--------------6A163100F895494BA737EF9F
+Content-Type: text/html; charset=utf-8
+Content-Transfer-Encoding: 7bit
+
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  </head>
+  <body text="#000000" bgcolor="#FFFFFF">
+    <p><br>
+    </p>
+    <div class="moz-cite-prefix">On 03/07/19 9:00 AM, Oliver O'Halloran
+      wrote:<br>
+    </div>
+    <blockquote type="cite"
+      cite="mid:5f4b28e4df2049506a9fa03eead6cfbad9d7cdf3.camel@gmail.com">
+      <pre class="moz-quote-pre" wrap="">On Wed, 2019-06-26 at 02:15 +0530, Hari Bathini wrote:
+</pre>
+      <blockquote type="cite">
+        <pre class="moz-quote-pre" wrap="">Refactoring fadump code means internal fadump code is referenced from
+different places. For ease, move internal code to a new file.
+</pre>
+      </blockquote>
+      <pre class="moz-quote-pre" wrap="">
+Can you elaborate a bit? I don't really get what the difference between
+fadump and fadump-internal code is supposed to be. Why can't all this
+just live in fadump.c?
+</pre>
+    </blockquote>
+    <pre>
+I am trying to keep the code referenced by both platforms (platform/pseries &amp;
+platform/powernv) in an internal file while using include/asm/fadump.h for
+the interface with other kernel components..</pre>
+  </body>
+</html>
+
+--------------6A163100F895494BA737EF9F--
 
