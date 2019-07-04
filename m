@@ -7,19 +7,19 @@ X-Spam-Status: No, score=-10.0 required=3.0
 	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AB091C0651F
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Jul 2019 14:41:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AE600C0651F
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Jul 2019 14:43:50 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 30EE82083B
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Jul 2019 14:41:49 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 30EE82083B
+	by mail.kernel.org (Postfix) with ESMTPS id 3B59A2083B
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Jul 2019 14:43:50 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3B59A2083B
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45fgfM0p42zDqcp
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Jul 2019 00:41:47 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45fghg6Xb8zDqKw
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Jul 2019 00:43:47 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=none (mailfrom) smtp.mailfrom=linux.vnet.ibm.com
  (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
@@ -30,62 +30,62 @@ Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45fgVd4zVqzDqQ4
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Jul 2019 00:35:05 +1000 (AEST)
-Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45fgVh4t0mzDqQ4
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Jul 2019 00:35:08 +1000 (AEST)
+Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x64EPQEQ121458
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 4 Jul 2019 10:35:02 -0400
-Received: from e06smtp04.uk.ibm.com (e06smtp04.uk.ibm.com [195.75.94.100])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2thh3pcygr-1
+ x64EPNAp079532
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 4 Jul 2019 10:35:05 -0400
+Received: from e06smtp01.uk.ibm.com (e06smtp01.uk.ibm.com [195.75.94.97])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2thgqux4y9-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 04 Jul 2019 10:35:01 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 04 Jul 2019 10:35:05 -0400
 Received: from localhost
- by e06smtp04.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp01.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
- Thu, 4 Jul 2019 15:34:58 +0100
-Received: from b06cxnps4074.portsmouth.uk.ibm.com (9.149.109.196)
- by e06smtp04.uk.ibm.com (192.168.101.134) with IBM ESMTP SMTP Gateway:
+ Thu, 4 Jul 2019 15:35:02 +0100
+Received: from b06avi18878370.portsmouth.uk.ibm.com (9.149.26.194)
+ by e06smtp01.uk.ibm.com (192.168.101.131) with IBM ESMTP SMTP Gateway:
  Authorized Use Only! Violators will be prosecuted; 
  (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Thu, 4 Jul 2019 15:34:56 +0100
+ Thu, 4 Jul 2019 15:34:59 +0100
 Received: from d06av26.portsmouth.uk.ibm.com (d06av26.portsmouth.uk.ibm.com
  [9.149.105.62])
- by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x64EYtVg45547656
+ by b06avi18878370.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP
+ id x64EYww439453020
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Thu, 4 Jul 2019 14:34:55 GMT
+ Thu, 4 Jul 2019 14:34:58 GMT
 Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 3BD11AE053;
+ by IMSVA (Postfix) with ESMTP id B4282AE045;
+ Thu,  4 Jul 2019 14:34:58 +0000 (GMT)
+Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id A97BEAE04D;
  Thu,  4 Jul 2019 14:34:55 +0000 (GMT)
-Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id C5843AE04D;
- Thu,  4 Jul 2019 14:34:53 +0000 (GMT)
 Received: from naverao1-tp.ibmuc.com (unknown [9.85.70.183])
  by d06av26.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Thu,  4 Jul 2019 14:34:53 +0000 (GMT)
+ Thu,  4 Jul 2019 14:34:55 +0000 (GMT)
 From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
 To: Steven Rostedt <rostedt@goodmis.org>
-Subject: [PATCH 1/2] ftrace: Fix NULL pointer dereference in t_probe_next()
-Date: Thu,  4 Jul 2019 20:04:41 +0530
+Subject: [PATCH 2/2] ftrace: Check for successful allocation of hash
+Date: Thu,  4 Jul 2019 20:04:42 +0530
 X-Mailer: git-send-email 2.22.0
 In-Reply-To: <cover.1562249521.git.naveen.n.rao@linux.vnet.ibm.com>
 References: <cover.1562249521.git.naveen.n.rao@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-x-cbid: 19070414-0016-0000-0000-0000028F3BAE
+x-cbid: 19070414-4275-0000-0000-00000349248A
 X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19070414-0017-0000-0000-000032ECDB16
-Message-Id: <05e021f757625cbbb006fad41380323dbe4e3b43.1562249521.git.naveen.n.rao@linux.vnet.ibm.com>
+x-cbparentid: 19070414-4276-0000-0000-0000385943CD
+Message-Id: <26e92574f25ad23e7cafa3cf5f7a819de1832cbe.1562249521.git.naveen.n.rao@linux.vnet.ibm.com>
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
  definitions=2019-07-04_07:, , signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
  priorityscore=1501
  malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
  clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
+ mlxlogscore=952 adultscore=0 classifier=spam adjust=0 reason=mlx
  scancount=1 engine=8.0.1-1810050000 definitions=main-1907040181
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -103,69 +103,32 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-LTP testsuite on powerpc results in the below crash:
-
-  Unable to handle kernel paging request for data at address 0x00000000
-  Faulting instruction address: 0xc00000000029d800
-  Oops: Kernel access of bad area, sig: 11 [#1]
-  LE SMP NR_CPUS=2048 NUMA PowerNV
-  ...
-  CPU: 68 PID: 96584 Comm: cat Kdump: loaded Tainted: G        W
-  NIP:  c00000000029d800 LR: c00000000029dac4 CTR: c0000000001e6ad0
-  REGS: c0002017fae8ba10 TRAP: 0300   Tainted: G        W
-  MSR:  9000000000009033 <SF,HV,EE,ME,IR,DR,RI,LE>  CR: 28022422  XER: 20040000
-  CFAR: c00000000029d90c DAR: 0000000000000000 DSISR: 40000000 IRQMASK: 0
-  ...
-  NIP [c00000000029d800] t_probe_next+0x60/0x180
-  LR [c00000000029dac4] t_mod_start+0x1a4/0x1f0
-  Call Trace:
-  [c0002017fae8bc90] [c000000000cdbc40] _cond_resched+0x10/0xb0 (unreliable)
-  [c0002017fae8bce0] [c0000000002a15b0] t_start+0xf0/0x1c0
-  [c0002017fae8bd30] [c0000000004ec2b4] seq_read+0x184/0x640
-  [c0002017fae8bdd0] [c0000000004a57bc] sys_read+0x10c/0x300
-  [c0002017fae8be30] [c00000000000b388] system_call+0x5c/0x70
-
-The test (ftrace_set_ftrace_filter.sh) is part of ftrace stress tests
-and the crash happens when the test does 'cat
-$TRACING_PATH/set_ftrace_filter'.
-
-The address points to the second line below, in t_probe_next(), where
-filter_hash is dereferenced:
-  hash = iter->probe->ops.func_hash->filter_hash;
-  size = 1 << hash->size_bits;
-
-This happens due to a race with register_ftrace_function_probe(). A new
-ftrace_func_probe is created and added into the func_probes list in
-trace_array under ftrace_lock. However, before initializing the filter,
-we drop ftrace_lock, and re-acquire it after acquiring regex_lock. If
-another process is trying to read set_ftrace_filter, it will be able to
-acquire ftrace_lock during this window and it will end up seeing a NULL
-filter_hash.
-
-Fix this by just checking for a NULL filter_hash in t_probe_next(). If
-the filter_hash is NULL, then this probe is just being added and we can
-simply return from here.
+In register_ftrace_function_probe(), we are not checking the return
+value of alloc_and_copy_ftrace_hash(). The subsequent call to
+ftrace_match_records() may end up dereferencing the same. Add a check to
+ensure this doesn't happen.
 
 Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
 ---
- kernel/trace/ftrace.c | 4 ++++
- 1 file changed, 4 insertions(+)
+ kernel/trace/ftrace.c | 5 +++++
+ 1 file changed, 5 insertions(+)
 
 diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
-index 7b037295a1f1..0791eafb693d 100644
+index 0791eafb693d..0d5f7d4a4936 100644
 --- a/kernel/trace/ftrace.c
 +++ b/kernel/trace/ftrace.c
-@@ -3093,6 +3093,10 @@ t_probe_next(struct seq_file *m, loff_t *pos)
- 		hnd = &iter->probe_entry->hlist;
+@@ -4328,6 +4328,11 @@ register_ftrace_function_probe(char *glob, struct trace_array *tr,
+ 	old_hash = *orig_hash;
+ 	hash = alloc_and_copy_ftrace_hash(FTRACE_HASH_DEFAULT_BITS, old_hash);
  
- 	hash = iter->probe->ops.func_hash->filter_hash;
++	if (!hash) {
++		ret = -ENOMEM;
++		goto out;
++	}
 +
-+	if (!hash)
-+		return NULL;
-+
- 	size = 1 << hash->size_bits;
+ 	ret = ftrace_match_records(hash, glob, strlen(glob));
  
-  retry:
+ 	/* Nothing found? */
 -- 
 2.22.0
 
