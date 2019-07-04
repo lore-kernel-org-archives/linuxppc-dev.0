@@ -2,53 +2,42 @@ Return-Path: <SRS0=vYn1=VB=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.5 required=3.0 tests=FROM_EXCESS_BASE64,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
-	SPF_PASS,USER_AGENT_SANE_2 autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 67CCBC0651F
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Jul 2019 15:34:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 02BC2C0651F
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Jul 2019 15:54:50 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id EA2842184B
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Jul 2019 15:34:24 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EA2842184B
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=suse.de
+	by mail.kernel.org (Postfix) with ESMTPS id 78AE02085A
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Jul 2019 15:54:49 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 78AE02085A
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45fhq26cL8zDqTQ
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Jul 2019 01:34:22 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=suse.de
- (client-ip=195.135.220.15; helo=mx1.suse.de; envelope-from=msuchanek@suse.de;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=suse.de
-Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 45fjGZ36r7zDqSS
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Jul 2019 01:54:46 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45fhn147dczDqDS
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Jul 2019 01:32:36 +1000 (AEST)
-X-Virus-Scanned: by amavisd-new at test-mx.suse.de
-Received: from relay2.suse.de (unknown [195.135.220.254])
- by mx1.suse.de (Postfix) with ESMTP id 66563AF81;
- Thu,  4 Jul 2019 15:32:32 +0000 (UTC)
-Date: Thu, 4 Jul 2019 17:32:31 +0200
-From: Michal =?UTF-8?B?U3VjaMOhbmVr?= <msuchanek@suse.de>
-To: Sachin Sant <sachinp@linux.vnet.ibm.com>
-Subject: Re: [PATCH] tpm: fixes uninitialized allocated banks for IBM vtpm
- driver
-Message-ID: <20190704173231.27365b51@kitsune.suse.cz>
-In-Reply-To: <0EDE02C7-3716-47A2-B7B0-007025F28567@linux.vnet.ibm.com>
-References: <1562211121-2188-1-git-send-email-nayna@linux.ibm.com>
- <1562241547.6165.81.camel@linux.ibm.com>
- <0EDE02C7-3716-47A2-B7B0-007025F28567@linux.vnet.ibm.com>
-Organization: SUSE Linux
-X-Mailer: Claws Mail 3.17.1 (GTK+ 2.24.31; x86_64-suse-linux-gnu)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45fjDF3FSbzDqQK
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Jul 2019 01:52:45 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=ellerman.id.au
+Received: by ozlabs.org (Postfix, from userid 1034)
+ id 45fjDD6cxvz9sNw; Fri,  5 Jul 2019 01:52:44 +1000 (AEST)
+X-powerpc-patch-notification: thanks
+X-powerpc-patch-commit: 548c54acba5bd1388d50727a9a126a42d0cd4ad0
+In-Reply-To: <20190604030037.9424-1-mikey@neuling.org>
+To: Michael Neuling <mikey@neuling.org>
+From: Michael Ellerman <patch-notifications@ellerman.id.au>
+Subject: Re: [PATCH v5 1/2] powerpc: silence a -Wcast-function-type warning in
+ dawr_write_file_bool
+Message-Id: <45fjDD6cxvz9sNw@ozlabs.org>
+Date: Fri,  5 Jul 2019 01:52:44 +1000 (AEST)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -60,46 +49,35 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Nayna Jain <nayna@linux.ibm.com>, linux-kernel@vger.kernel.org,
- Mimi Zohar <zohar@linux.ibm.com>, Jason Gunthorpe <jgg@ziepe.ca>,
- Jarkko Sakkinen <jarkko.sakkinen@linux.intel.com>,
- linux-integrity@vger.kernel.org, George Wilson <gcwilson@linux.ibm.com>,
- linuxppc-dev@lists.ozlabs.org, Peter Huewe <peterhuewe@gmx.de>
+Cc: Mathieu Malaterre <malat@debian.org>, hch@infradead.org, mikey@neuling.org,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, 4 Jul 2019 19:26:36 +0530
-Sachin Sant <sachinp@linux.vnet.ibm.com> wrote:
+On Tue, 2019-06-04 at 03:00:36 UTC, Michael Neuling wrote:
+> From: Mathieu Malaterre <malat@debian.org>
+> 
+> In commit c1fe190c0672 ("powerpc: Add force enable of DAWR on P9
+> option") the following piece of code was added:
+> 
+>    smp_call_function((smp_call_func_t)set_dawr, &null_brk, 0);
+> 
+> Since GCC 8 this triggers the following warning about incompatible
+> function types:
+> 
+>   arch/powerpc/kernel/hw_breakpoint.c:408:21: error: cast between incompatible function types from 'int (*)(struct arch_hw_breakpoint *)' to 'void (*)(void *)' [-Werror=cast-function-type]
+> 
+> Since the warning is there for a reason, and should not be hidden behind
+> a cast, provide an intermediate callback function to avoid the warning.
+> 
+> Fixes: c1fe190c0672 ("powerpc: Add force enable of DAWR on P9 option")
+> Suggested-by: Christoph Hellwig <hch@infradead.org>
+> Signed-off-by: Mathieu Malaterre <malat@debian.org>
+> Signed-off-by: Michael Neuling <mikey@neuling.org>
 
-> > On 04-Jul-2019, at 5:29 PM, Mimi Zohar <zohar@linux.ibm.com> wrote:
-> >=20
-> > On Wed, 2019-07-03 at 23:32 -0400, Nayna Jain wrote: =20
-> >> The nr_allocated_banks and allocated banks are initialized as part of
-> >> tpm_chip_register. Currently, this is done as part of auto startup
-> >> function. However, some drivers, like the ibm vtpm driver, do not run
-> >> auto startup during initialization. This results in uninitialized memo=
-ry
-> >> issue and causes a kernel panic during boot.
-> >>=20
-> >> This patch moves the pcr allocation outside the auto startup function
-> >> into tpm_chip_register. This ensures that allocated banks are initiali=
-zed
-> >> in any case.
-> >>=20
-> >> Fixes: 879b589210a9 ("tpm: retrieve digest size of unknown algorithms =
-with
-> >> PCR read")
-> >> Signed-off-by: Nayna Jain <nayna@linux.ibm.com> =20
-> > Reviewed-by: Mimi Zohar <zohar@linux.ibm.com> =20
->=20
-> Thanks for the fix. Kernel boots fine with this fix.
->=20
-> Tested-by: Sachin Sant <sachinp@linux.vnet.ibm.com>
->=20
+Series applied to powerpc next, thanks.
 
-Tested-by: Michal Such=C3=A1nek <msuchanek@suse.de>
+https://git.kernel.org/powerpc/c/548c54acba5bd1388d50727a9a126a42d0cd4ad0
 
-Thanks
-
-Michal
+cheers
