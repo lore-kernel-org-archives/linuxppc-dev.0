@@ -6,37 +6,39 @@ X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
 	URIBL_BLOCKED autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 01E1CC0651F
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Jul 2019 16:07:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 98D7AC0651F
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Jul 2019 16:09:04 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B13652085A
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Jul 2019 16:07:13 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B13652085A
+	by mail.kernel.org (Postfix) with ESMTPS id 4FD162083B
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Jul 2019 16:09:04 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4FD162083B
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45fjXv2SNnzDqcy
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Jul 2019 02:07:11 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45fjb232FqzDqcT
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Jul 2019 02:09:02 +1000 (AEST)
 Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45fjDQ2Z0gzDqQV
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Jul 2019 01:52:54 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45fjDR2fzlzDqQd
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Jul 2019 01:52:55 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
+Received: by ozlabs.org (Postfix)
+ id 45fjDQ3Nwtz9sNf; Fri,  5 Jul 2019 01:52:54 +1000 (AEST)
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 45fjDN4QP0z9sPY; Fri,  5 Jul 2019 01:52:52 +1000 (AEST)
+ id 45fjDQ09rsz9sPV; Fri,  5 Jul 2019 01:52:53 +1000 (AEST)
 X-powerpc-patch-notification: thanks
-X-powerpc-patch-commit: 24911acd64cee411c9e626d3d0ca0733805b009b
-In-Reply-To: <20190629080359.23182-1-hch@lst.de>
-To: Christoph Hellwig <hch@lst.de>, paulus@samba.org
+X-powerpc-patch-commit: 1efd8caa9a9192e6820d267c780c110a9f54336f
+In-Reply-To: <20190702082801.29975-1-mpe@ellerman.id.au>
+To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Subject: Re: [PATCH] powerpc: remove device_to_mask
-Message-Id: <45fjDN4QP0z9sPY@ozlabs.org>
-Date: Fri,  5 Jul 2019 01:52:52 +1000 (AEST)
+Subject: Re: [PATCH] powerpc/64s/exception: Remove unused SOFTEN_VALUE_0x980
+Message-Id: <45fjDQ09rsz9sPV@ozlabs.org>
+Date: Fri,  5 Jul 2019 01:52:53 +1000 (AEST)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -48,19 +50,20 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org
+Cc: npiggin@gmail.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Sat, 2019-06-29 at 08:03:59 UTC, Christoph Hellwig wrote:
-> Use the dma_get_mask helper from dma-mapping.h instead.
+On Tue, 2019-07-02 at 08:28:01 UTC, Michael Ellerman wrote:
+> Remove SOFTEN_VALUE_0x980, it's been unused since commit
+> dabe859ec636 ("powerpc: Give hypervisor decrementer interrupts their
+> own handler") (Sep 2012).
 > 
-> Signed-off-by: Christoph Hellwig <hch@lst.de>
-> Reviewed-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 
-Applied to powerpc next, thanks.
+Applied to powerpc next.
 
-https://git.kernel.org/powerpc/c/24911acd64cee411c9e626d3d0ca0733805b009b
+https://git.kernel.org/powerpc/c/1efd8caa9a9192e6820d267c780c110a9f54336f
 
 cheers
