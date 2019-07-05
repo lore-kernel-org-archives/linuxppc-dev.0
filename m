@@ -7,42 +7,41 @@ X-Spam-Status: No, score=-10.0 required=3.0
 	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
 	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5FB0EC5B57D
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Jul 2019 06:44:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 12724C5B57D
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Jul 2019 06:46:24 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E0861218BA
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Jul 2019 06:44:02 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E0861218BA
+	by mail.kernel.org (Postfix) with ESMTPS id 4EFE9218BA
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Jul 2019 06:46:23 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4EFE9218BA
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=huawei.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45g50c1ZhRzDqcN
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Jul 2019 16:44:00 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45g53J5Rd7zDqSd
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Jul 2019 16:46:20 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=huawei.com
- (client-ip=45.249.212.190; helo=huawei.com; envelope-from=yanaijie@huawei.com;
+ (client-ip=45.249.212.35; helo=huawei.com; envelope-from=yanaijie@huawei.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=huawei.com
-Received: from huawei.com (szxga04-in.huawei.com [45.249.212.190])
+Received: from huawei.com (szxga07-in.huawei.com [45.249.212.35])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45g4tQ0b5YzDqch
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Jul 2019 16:38:35 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45g4tq56YQzDqSZ
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Jul 2019 16:38:59 +1000 (AEST)
 Received: from DGGEMS404-HUB.china.huawei.com (unknown [172.30.72.60])
- by Forcepoint Email with ESMTP id 6993594B9213E0FB1257
+ by Forcepoint Email with ESMTP id 7EB193BCDCC1128F2958
  for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Jul 2019 14:23:08 +0800 (CST)
 Received: from huawei.com (10.175.124.28) by DGGEMS404-HUB.china.huawei.com
  (10.3.19.204) with Microsoft SMTP Server id 14.3.439.0; Fri, 5 Jul 2019
- 14:22:59 +0800
+ 14:22:58 +0800
 From: Jason Yan <yanaijie@huawei.com>
 To: <mpe@ellerman.id.au>, <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH 3/3] powerpc: move memstart_addr and kernstart_addr to
- init-common.c
-Date: Fri, 5 Jul 2019 14:39:54 +0800
-Message-ID: <20190705063954.11674-4-yanaijie@huawei.com>
+Subject: [PATCH 1/3] powerpc/fsl_booke: replace PAGE_OFFSET with KERNELBASE
+Date: Fri, 5 Jul 2019 14:39:52 +0800
+Message-ID: <20190705063954.11674-2-yanaijie@huawei.com>
 X-Mailer: git-send-email 2.17.2
 In-Reply-To: <20190705063954.11674-1-yanaijie@huawei.com>
 References: <20190705063954.11674-1-yanaijie@huawei.com>
@@ -66,64 +65,30 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-These two variables are both defined in init_32.c and init_64.c. Move
-them to init-common.c.
+We setup a mapping in PAGE_OFFSET and jump to KERNELBASE. This is not a
+problem when PAGE_OFFSET = KERNELBASE. Replace PAGE_OFFSET with
+KERNELBASE here to make it consistent.
 
 Signed-off-by: Jason Yan <yanaijie@huawei.com>
 ---
- arch/powerpc/mm/init-common.c | 5 +++++
- arch/powerpc/mm/init_32.c     | 5 -----
- arch/powerpc/mm/init_64.c     | 5 -----
- 3 files changed, 5 insertions(+), 10 deletions(-)
+ arch/powerpc/kernel/fsl_booke_entry_mapping.S | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/mm/init-common.c b/arch/powerpc/mm/init-common.c
-index a84da92920f7..9273c38009cb 100644
---- a/arch/powerpc/mm/init-common.c
-+++ b/arch/powerpc/mm/init-common.c
-@@ -21,6 +21,11 @@
- #include <asm/pgtable.h>
- #include <asm/kup.h>
- 
-+phys_addr_t memstart_addr = (phys_addr_t)~0ull;
-+EXPORT_SYMBOL(memstart_addr);
-+phys_addr_t kernstart_addr;
-+EXPORT_SYMBOL(kernstart_addr);
-+
- static bool disable_kuep = !IS_ENABLED(CONFIG_PPC_KUEP);
- static bool disable_kuap = !IS_ENABLED(CONFIG_PPC_KUAP);
- 
-diff --git a/arch/powerpc/mm/init_32.c b/arch/powerpc/mm/init_32.c
-index b04896a88d79..872df48ae41b 100644
---- a/arch/powerpc/mm/init_32.c
-+++ b/arch/powerpc/mm/init_32.c
-@@ -56,11 +56,6 @@
- phys_addr_t total_memory;
- phys_addr_t total_lowmem;
- 
--phys_addr_t memstart_addr = (phys_addr_t)~0ull;
--EXPORT_SYMBOL(memstart_addr);
--phys_addr_t kernstart_addr;
--EXPORT_SYMBOL(kernstart_addr);
--
- #ifdef CONFIG_RELOCATABLE
- /* Used in __va()/__pa() */
- long long virt_phys_offset;
-diff --git a/arch/powerpc/mm/init_64.c b/arch/powerpc/mm/init_64.c
-index a4e17a979e45..59fe3db82d38 100644
---- a/arch/powerpc/mm/init_64.c
-+++ b/arch/powerpc/mm/init_64.c
-@@ -63,11 +63,6 @@
- 
- #include <mm/mmu_decl.h>
- 
--phys_addr_t memstart_addr = ~0;
--EXPORT_SYMBOL_GPL(memstart_addr);
--phys_addr_t kernstart_addr;
--EXPORT_SYMBOL_GPL(kernstart_addr);
--
- #ifdef CONFIG_SPARSEMEM_VMEMMAP
- /*
-  * Given an address within the vmemmap, determine the pfn of the page that
+diff --git a/arch/powerpc/kernel/fsl_booke_entry_mapping.S b/arch/powerpc/kernel/fsl_booke_entry_mapping.S
+index ea065282b303..235ae622e2ab 100644
+--- a/arch/powerpc/kernel/fsl_booke_entry_mapping.S
++++ b/arch/powerpc/kernel/fsl_booke_entry_mapping.S
+@@ -171,8 +171,8 @@ skpinv:	addi	r6,r6,1				/* Increment */
+ 	lis	r6,(MAS1_VALID|MAS1_IPROT)@h
+ 	ori	r6,r6,(MAS1_TSIZE(BOOK3E_PAGESZ_64M))@l
+ 	mtspr	SPRN_MAS1,r6
+-	lis	r6,MAS2_VAL(PAGE_OFFSET, BOOK3E_PAGESZ_64M, M_IF_NEEDED)@h
+-	ori	r6,r6,MAS2_VAL(PAGE_OFFSET, BOOK3E_PAGESZ_64M, M_IF_NEEDED)@l
++	lis	r6,MAS2_VAL(KERNELBASE, BOOK3E_PAGESZ_64M, M_IF_NEEDED)@h
++	ori	r6,r6,MAS2_VAL(KERNELBASE, BOOK3E_PAGESZ_64M, M_IF_NEEDED)@l
+ 	mtspr	SPRN_MAS2,r6
+ 	mtspr	SPRN_MAS3,r8
+ 	tlbwe
 -- 
 2.17.2
 
