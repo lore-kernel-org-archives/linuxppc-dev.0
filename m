@@ -2,47 +2,86 @@ Return-Path: <SRS0=Ef5B=VC=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 593EAC46499
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Jul 2019 18:46:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 40E9AC46499
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Jul 2019 21:31:45 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id D068F20989
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Jul 2019 18:46:31 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D068F20989
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=the-dreams.de
+	by mail.kernel.org (Postfix) with ESMTPS id 5C6A4216E3
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Jul 2019 21:31:44 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=fossix-org.20150623.gappssmtp.com header.i=@fossix-org.20150623.gappssmtp.com header.b="jfQEjTnk"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5C6A4216E3
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=fossix.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45gP2F4gkXzDqfj
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  6 Jul 2019 04:46:29 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45gShs65rnzDqft
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  6 Jul 2019 07:31:41 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=the-dreams.de
- (client-ip=88.99.104.3; helo=pokefinder.org; envelope-from=wsa@the-dreams.de;
- receiver=<UNKNOWN>)
+ spf=none (mailfrom) smtp.mailfrom=fossix.org
+ (client-ip=2607:f8b0:4864:20::444; helo=mail-pf1-x444.google.com;
+ envelope-from=santosh@fossix.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=the-dreams.de
-Received: from pokefinder.org (sauhun.de [88.99.104.3])
- by lists.ozlabs.org (Postfix) with ESMTP id 45gP086gjdzDqdd
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  6 Jul 2019 04:44:38 +1000 (AEST)
-Received: from localhost (p54B334DF.dip0.t-ipconnect.de [84.179.52.223])
- by pokefinder.org (Postfix) with ESMTPSA id D69772C0398;
- Fri,  5 Jul 2019 20:44:33 +0200 (CEST)
-Date: Fri, 5 Jul 2019 20:44:33 +0200
-From: Wolfram Sang <wsa@the-dreams.de>
-To: Vasyl Gomonovych <gomonovych@gmail.com>
-Subject: Re: [PATCH] i2c: remove casting dma_alloc
-Message-ID: <20190705184433.GI4717@kunai>
-References: <20190623211354.24181-1-gomonovych@gmail.com>
+ dmarc=none (p=none dis=none) header.from=fossix.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=fossix-org.20150623.gappssmtp.com
+ header.i=@fossix-org.20150623.gappssmtp.com header.b="jfQEjTnk"; 
+ dkim-atps=neutral
+Received: from mail-pf1-x444.google.com (mail-pf1-x444.google.com
+ [IPv6:2607:f8b0:4864:20::444])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45gSbV1MM9zDqDD
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  6 Jul 2019 07:27:02 +1000 (AEST)
+Received: by mail-pf1-x444.google.com with SMTP id i189so4786309pfg.10
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 05 Jul 2019 14:27:01 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=fossix-org.20150623.gappssmtp.com; s=20150623;
+ h=from:to:cc:subject:date:message-id:in-reply-to:references
+ :mime-version:content-transfer-encoding;
+ bh=BcXNj0V5J0vzNKvRmRBKPvDo98GIk5DFm0hE0qX8TyY=;
+ b=jfQEjTnkV6wdrek1BzaZzxHfG44DALpfRjaRTDHQ7lbR6n2gTrvyR9TAP4mtbeU4D0
+ XU7d5rGuxp34NWs4aEimwbQ7jfYA9LaUsvRRfarVdfSl8t60/G3sKVlJNMHIO5Lo+X24
+ ImNwudQAOS9jSVcTMzr4BTTOlXpvY+H2bO7UuliHvUJOiMPGmhhI5TEJ8dTFQkoNPodU
+ gZweZfIxusi5lVtEJ4SIHALy770CUHuXdVaxA/KHOa5dos6+XGeHKB7ToszIoYz/QJjy
+ +gXYMYWUuR2n0lnwCUwVza1tYGtPR8huv1x1MIEow/80Rn/SFqoz5q4PdwYnJvHXTamB
+ QlwA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+ :references:mime-version:content-transfer-encoding;
+ bh=BcXNj0V5J0vzNKvRmRBKPvDo98GIk5DFm0hE0qX8TyY=;
+ b=ZUGnZ3HcuDVLhp2WSlZFCc71zP12RjxFmmncJsbM3xss6u3bLhnB/PSpO0TQ/l5NZa
+ /hZNoA8qlowjQP7K8GgZ3vZYBqNih0ZtzGzUix6rmoOCgnII8rFMWyS2+1m9VMxK/UdE
+ gto72Ao/n3dYuREOQQ9S+KEPI/YasW6Ylf1xucU/QD2ueP9+s/m3Zio154v+hH+UYAr4
+ E+LID77dR+8cMWV8Ig/Jx57HBiqirHs1vFlz/g/P9Vs5Sr7N6leaCkI5PyTyUgMfUOzP
+ QE5xFphsuxWbscENH1FXx0PA+IStvXRSIVr8NCkvoMY5Mg31rORsLXmjguRQqn+QaI1e
+ jXYg==
+X-Gm-Message-State: APjAAAWlQyPv9Af9HK/R9/fSQ7Bhe23JEMDZVq9WN0hkVcKC2oA5Btdi
+ Q5UJgZ57ZRnDasJx7KcEe/mZcK+B8LC8pQ==
+X-Google-Smtp-Source: APXvYqwojXpxAEStqHeqax4ld1xKz8Ycfa6SmWTApC5kF8rnB4KXIEDQIC7A/5PO1mwmAuviZ30aSA==
+X-Received: by 2002:a63:56:: with SMTP id 83mr7770381pga.145.1562362019689;
+ Fri, 05 Jul 2019 14:26:59 -0700 (PDT)
+Received: from santosiv.in.ibm.com ([49.205.217.222])
+ by smtp.gmail.com with ESMTPSA id o13sm9321389pje.28.2019.07.05.14.26.56
+ (version=TLS1_3 cipher=AEAD-AES256-GCM-SHA384 bits=256/256);
+ Fri, 05 Jul 2019 14:26:59 -0700 (PDT)
+From: Santosh Sivaraj <santosh@fossix.org>
+To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Subject: [v3 1/7] powerpc/mce: Make machine_check_ue_event() static
+Date: Sat,  6 Jul 2019 02:56:41 +0530
+Message-Id: <20190705212647.21750-2-santosh@fossix.org>
+X-Mailer: git-send-email 2.20.1
+In-Reply-To: <20190705212647.21750-1-santosh@fossix.org>
+References: <20190705212647.21750-1-santosh@fossix.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
- protocol="application/pgp-signature"; boundary="Az4VpBrmI9+OyhK/"
-Content-Disposition: inline
-In-Reply-To: <20190623211354.24181-1-gomonovych@gmail.com>
-User-Agent: Mutt/1.10.1 (2018-07-13)
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -54,47 +93,46 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-i2c@vger.kernel.org
+Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
+ Mahesh Salgaonkar <mahesh@linux.ibm.com>, Nicholas Piggin <npiggin@gmail.com>,
+ Chandan Rajendra <chandan@linux.vnet.ibm.com>,
+ Reza Arbab <arbab@linux.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+From: Reza Arbab <arbab@linux.ibm.com>
 
---Az4VpBrmI9+OyhK/
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+The function doesn't get used outside this file, so make it static.
 
-On Sun, Jun 23, 2019 at 11:13:53PM +0200, Vasyl Gomonovych wrote:
-> From: Vasyl <gomonovych@gmail.com>
->=20
-> Generated by:  alloc_cast.cocci
->=20
-> Signed-off-by: Vasyl <gomonovych@gmail.com>
+Signed-off-by: Reza Arbab <arbab@linux.ibm.com>
+Signed-off-by: Santosh Sivaraj <santosh@fossix.org>
+---
+ arch/powerpc/kernel/mce.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-Applied to for-next, thanks! I fixed the missing full name for you, but
-please fix your setup.
+diff --git a/arch/powerpc/kernel/mce.c b/arch/powerpc/kernel/mce.c
+index b18df633eae9..e78c4f18ea0a 100644
+--- a/arch/powerpc/kernel/mce.c
++++ b/arch/powerpc/kernel/mce.c
+@@ -33,7 +33,7 @@ static DEFINE_PER_CPU(struct machine_check_event[MAX_MC_EVT],
+ 					mce_ue_event_queue);
+ 
+ static void machine_check_process_queued_event(struct irq_work *work);
+-void machine_check_ue_event(struct machine_check_event *evt);
++static void machine_check_ue_event(struct machine_check_event *evt);
+ static void machine_process_ue_event(struct work_struct *work);
+ 
+ static struct irq_work mce_event_process_work = {
+@@ -203,7 +203,7 @@ void release_mce_event(void)
+ /*
+  * Queue up the MCE event which then can be handled later.
+  */
+-void machine_check_ue_event(struct machine_check_event *evt)
++static void machine_check_ue_event(struct machine_check_event *evt)
+ {
+ 	int index;
+ 
+-- 
+2.20.1
 
-
---Az4VpBrmI9+OyhK/
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCgAdFiEEOZGx6rniZ1Gk92RdFA3kzBSgKbYFAl0fmpEACgkQFA3kzBSg
-KbapiQ//RulLYA/Vhf6vaqi1yN51qtVTkoWd0biT0etVBbgXqytgIvXRwikrruqK
-lyZkaTSuftFynpK2x+XRmB8ZVfNCV0ecOdggPqPs6F3VZ4FQmegkrq5XgVmWlr1A
-5sOgR2HHaQkmkyFyPAPPrGk4UAHQyewA+7aA0aZLqQvN4cxejbOyW+KTxaih4JBW
-aXoD2wo+UK3crsUuP/pDkOEFl+VUlkHZ5MCEhP5ZdCixrol3faT84zS+jSmq1LXz
-2Q5BQlc2hIfduO+C0GZtabrR2uvWg/y8D8isR/AJhJRL7xDFsrCGuDEQUFu6ysnO
-12T90vOmr9KI/xFC9qBT6zySjMSJFG1pFvdAXg3r4PYGgcc3cXoxuNT2XHpGwMip
-vP+Q271MGX00B6KNaXh0f6kaN9shj5tHGznvF67QPxhdHS1VED2kSGaje/ji406V
-YednRzTWb4p0/FYoyIW5MSr3E7Bdh8TpMo70vXlCFKKitgx2pJMtvxt4rsPHexvN
-05SRjv90aQYfVz4+kELjRh2YzruOOjSlDK8+mNHkjwnil8xxX4GruqwP6lkZQo/O
-EOpgaxQbZ/C/NQaMPGavah1Bo37rcJZ1fSKDiV8gJ4hvstAJ4fON16W42TPf/ME6
-JyG/19ECAf/IylSmNpUNzhOaEKOn7T4fr6KdkfSG4AaHLRCNffw=
-=+lNR
------END PGP SIGNATURE-----
-
---Az4VpBrmI9+OyhK/--
