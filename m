@@ -2,58 +2,97 @@ Return-Path: <SRS0=Ef5B=VC=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-4.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_SANE_2 autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B9ADEC46499
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Jul 2019 11:04:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A7260C46499
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Jul 2019 13:02:54 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 44B5F2133F
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Jul 2019 11:04:14 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 44B5F2133F
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.intel.com
+	by mail.kernel.org (Postfix) with ESMTPS id DED4F216E3
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Jul 2019 13:02:53 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DED4F216E3
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45gBmq5jZ5zDqfr
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Jul 2019 21:04:11 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45gFPl3J3hzDqQ1
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Jul 2019 23:02:51 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=linux.intel.com
- (client-ip=192.55.52.88; helo=mga01.intel.com;
- envelope-from=jarkko.sakkinen@linux.intel.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=linux.intel.com
-Received: from mga01.intel.com (mga01.intel.com [192.55.52.88])
+ spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
+ (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
+ envelope-from=prudo@linux.ibm.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=linux.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45gBkb5VtCzDq9H
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Jul 2019 21:02:14 +1000 (AEST)
-X-Amp-Result: SKIPPED(no attachment in message)
-X-Amp-File-Uploaded: False
-Received: from orsmga006.jf.intel.com ([10.7.209.51])
- by fmsmga101.fm.intel.com with ESMTP/TLS/DHE-RSA-AES256-GCM-SHA384;
- 05 Jul 2019 04:02:11 -0700
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.63,454,1557212400"; d="scan'208";a="169647925"
-Received: from jsakkine-mobl1.tm.intel.com ([10.237.50.189])
- by orsmga006.jf.intel.com with ESMTP; 05 Jul 2019 04:02:07 -0700
-Message-ID: <f161616a3681994680c70e66c51afd537a2f3423.camel@linux.intel.com>
-Subject: Re: [PATCH] tpm: fixes uninitialized allocated banks for IBM vtpm
- driver
-From: Jarkko Sakkinen <jarkko.sakkinen@linux.intel.com>
-To: Nayna Jain <nayna@linux.ibm.com>, linux-integrity@vger.kernel.org, 
- linuxppc-dev@lists.ozlabs.org, Michal Suchanek <msuchanek@suse.de>
-Date: Fri, 05 Jul 2019 14:02:06 +0300
-In-Reply-To: <f315356e7c00378c8785bd20d5869c9046ece2f2.camel@linux.intel.com>
-References: <1562211121-2188-1-git-send-email-nayna@linux.ibm.com>
- <f315356e7c00378c8785bd20d5869c9046ece2f2.camel@linux.intel.com>
-Organization: Intel Finland Oy - BIC 0357606-4 - Westendinkatu 7, 02160 Espoo
-Content-Type: text/plain; charset="UTF-8"
-User-Agent: Evolution 3.32.1-2 
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45gFLr0JhLzDqdr
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Jul 2019 23:00:18 +1000 (AEST)
+Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
+ x65CvBgZ052616
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 5 Jul 2019 09:00:13 -0400
+Received: from e06smtp07.uk.ibm.com (e06smtp07.uk.ibm.com [195.75.94.103])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2tj6fu1fuj-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 05 Jul 2019 09:00:13 -0400
+Received: from localhost
+ by e06smtp07.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <prudo@linux.ibm.com>;
+ Fri, 5 Jul 2019 14:00:10 +0100
+Received: from b06cxnps3074.portsmouth.uk.ibm.com (9.149.109.194)
+ by e06smtp07.uk.ibm.com (192.168.101.137) with IBM ESMTP SMTP Gateway:
+ Authorized Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Fri, 5 Jul 2019 14:00:03 +0100
+Received: from d06av23.portsmouth.uk.ibm.com (d06av23.portsmouth.uk.ibm.com
+ [9.149.105.59])
+ by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x65D025O43581636
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Fri, 5 Jul 2019 13:00:02 GMT
+Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 29A68A4040;
+ Fri,  5 Jul 2019 13:00:02 +0000 (GMT)
+Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 99C9DA404D;
+ Fri,  5 Jul 2019 13:00:01 +0000 (GMT)
+Received: from laptop-ibm (unknown [9.152.212.201])
+ by d06av23.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Fri,  5 Jul 2019 13:00:01 +0000 (GMT)
+Date: Fri, 5 Jul 2019 15:00:00 +0200
+From: Philipp Rudo <prudo@linux.ibm.com>
+To: Thiago Jung Bauermann <bauerman@linux.ibm.com>
+Subject: Re: [PATCH v12 01/11] MODSIGN: Export module signature definitions
+In-Reply-To: <874l41ocf5.fsf@morokweng.localdomain>
+References: <20190628021934.4260-1-bauerman@linux.ibm.com>
+ <20190628021934.4260-2-bauerman@linux.ibm.com>
+ <20190701144752.GC25484@linux-8ccs>
+ <87lfxel2q6.fsf@morokweng.localdomain>
+ <20190704125427.31146026@laptop-ibm>
+ <874l41ocf5.fsf@morokweng.localdomain>
+Organization: IBM
+X-Mailer: Claws Mail 3.17.3 (GTK+ 2.24.32; x86_64-redhat-linux-gnu)
 MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-TM-AS-GCONF: 00
+x-cbid: 19070513-0028-0000-0000-000003812FA9
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 19070513-0029-0000-0000-0000244131CF
+Message-Id: <20190705150000.372345b0@laptop-ibm>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
+ definitions=2019-07-05_05:, , signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1810050000 definitions=main-1907050156
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -65,40 +104,101 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Sachin Sant <sachinp@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
- Mimi Zohar <zohar@linux.ibm.com>, Jason Gunthorpe <jgg@ziepe.ca>,
- Peter Huewe <peterhuewe@gmx.de>, George Wilson <gcwilson@linux.ibm.com>
+Cc: linux-s390@vger.kernel.org, Herbert Xu <herbert@gondor.apana.org.au>,
+ linux-doc@vger.kernel.org, Dmitry Kasatkin <dmitry.kasatkin@gmail.com>,
+ "David S. Miller" <davem@davemloft.net>, Jonathan Corbet <corbet@lwn.net>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>, linux-kernel@vger.kernel.org,
+ Mimi Zohar <zohar@linux.ibm.com>, James Morris <jmorris@namei.org>, David
+ Howells <dhowells@redhat.com>, "AKASHI,
+ Takahiro" <takahiro.akashi@linaro.org>, linux-security-module@vger.kernel.org,
+ keyrings@vger.kernel.org, linux-crypto@vger.kernel.org,
+ Jessica Yu <jeyu@kernel.org>, linux-integrity@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, David Woodhouse <dwmw2@infradead.org>,
+ "Serge E. Hallyn" <serge@hallyn.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, 2019-07-05 at 13:42 +0300, Jarkko Sakkinen wrote:
-> On Wed, 2019-07-03 at 23:32 -0400, Nayna Jain wrote:
-> > The nr_allocated_banks and allocated banks are initialized as part of
-> > tpm_chip_register. Currently, this is done as part of auto startup
-> > function. However, some drivers, like the ibm vtpm driver, do not run
-> > auto startup during initialization. This results in uninitialized memory
-> > issue and causes a kernel panic during boot.
-> > 
-> > This patch moves the pcr allocation outside the auto startup function
-> > into tpm_chip_register. This ensures that allocated banks are initialized
-> > in any case.
-> > 
-> > Fixes: 879b589210a9 ("tpm: retrieve digest size of unknown algorithms with
-> > PCR read")
-> > Signed-off-by: Nayna Jain <nayna@linux.ibm.com>
-> 
-> Please add
-> 
-> Reported-by: Michal Suchanek <msuchanek@suse.de>
-> 
-> It is missing. Michal is there a chance you could try this out once
-> Nayna send a new version?
+Hi Thiago,
 
-Hey, I saw Michal's tested-by. I can do that minor reorg cosmetic
-bits myeslf and add Micha's tag.
+On Thu, 04 Jul 2019 15:57:34 -0300
+Thiago Jung Bauermann <bauerman@linux.ibm.com> wrote:
 
-Some issue with the network but I'll push a commit soonish.
+> Hello Philipp,
+> 
+> Philipp Rudo <prudo@linux.ibm.com> writes:
+> 
+> > Hi Thiago,
+> >
+> >
+> > On Thu, 04 Jul 2019 03:42:57 -0300
+> > Thiago Jung Bauermann <bauerman@linux.ibm.com> wrote:
+> >  
+> >> Jessica Yu <jeyu@kernel.org> writes:
+> >>   
+> >> > +++ Thiago Jung Bauermann [27/06/19 23:19 -0300]:    
+> >> >>IMA will use the module_signature format for append signatures, so export
+> >> >>the relevant definitions and factor out the code which verifies that the
+> >> >>appended signature trailer is valid.
+> >> >>
+> >> >>Also, create a CONFIG_MODULE_SIG_FORMAT option so that IMA can select it
+> >> >>and be able to use mod_check_sig() without having to depend on either
+> >> >>CONFIG_MODULE_SIG or CONFIG_MODULES.
+> >> >>
+> >> >>Signed-off-by: Thiago Jung Bauermann <bauerman@linux.ibm.com>
+> >> >>Reviewed-by: Mimi Zohar <zohar@linux.ibm.com>
+> >> >>Cc: Jessica Yu <jeyu@kernel.org>
+> >> >>---
+> >> >> include/linux/module.h           |  3 --
+> >> >> include/linux/module_signature.h | 44 +++++++++++++++++++++++++
+> >> >> init/Kconfig                     |  6 +++-
+> >> >> kernel/Makefile                  |  1 +
+> >> >> kernel/module.c                  |  1 +
+> >> >> kernel/module_signature.c        | 46 ++++++++++++++++++++++++++
+> >> >> kernel/module_signing.c          | 56 +++++---------------------------
+> >> >> scripts/Makefile                 |  2 +-
+> >> >> 8 files changed, 106 insertions(+), 53 deletions(-)
+> >> >>
+> >> >>diff --git a/include/linux/module.h b/include/linux/module.h
+> >> >>index 188998d3dca9..aa56f531cf1e 100644
+> >> >>--- a/include/linux/module.h
+> >> >>+++ b/include/linux/module.h
+> >> >>@@ -25,9 +25,6 @@
+> >> >> #include <linux/percpu.h>
+> >> >> #include <asm/module.h>
+> >> >>
+> >> >>-/* In stripped ARM and x86-64 modules, ~ is surprisingly rare. */
+> >> >>-#define MODULE_SIG_STRING "~Module signature appended~\n"
+> >> >>-    
+> >> >
+> >> > Hi Thiago, apologies for the delay.    
+> >> 
+> >> Hello Jessica, thanks for reviewing the patch!
+> >>   
+> >> > It looks like arch/s390/kernel/machine_kexec_file.c also relies on
+> >> > MODULE_SIG_STRING being defined, so module_signature.h will need to be
+> >> > included there too, otherwise we'll run into a compilation error.    
+> >> 
+> >> Indeed. Thanks for spotting that. The patch below fixes it. It's
+> >> identical to the previous version except for the changes in 
+> >> arch/s390/kernel/machine_kexec_file.c and their description in the
+> >> commit message. I'm also copying some s390 people in this email.  
+> >
+> > to me the s390 part looks good but for one minor nit.  
+> 
+> Thanks for the prompt review!
+> 
+> > In arch/s390/Kconfig KEXEC_VERIFY_SIG currently depends on
+> > SYSTEM_DATA_VERIFICATION. I'd prefer when you update this to the new
+> > MODULE_SIG_FORMAT. It shouldn't make any difference right now, as we don't
+> > use mod_check_sig in our code path. But it could cause problems in the future,
+> > when more code might be shared.  
+> 
+> Makes sense. Here is the updated patch with the Kconfig change.
+> 
 
-/Jarkko
+The patch looks good now.
+
+Thanks a lot
+PHilipp
 
