@@ -2,59 +2,75 @@ Return-Path: <SRS0=Ef5B=VC=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.0 required=3.0
-	tests=HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D224CC5B57D
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Jul 2019 09:21:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3E8D6C4649B
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Jul 2019 10:02:02 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 5B285218A3
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Jul 2019 09:21:46 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5B285218A3
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=zte.com.cn
+	by mail.kernel.org (Postfix) with ESMTPS id 7E23A218BB
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Jul 2019 10:02:01 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=nifty.com header.i=@nifty.com header.b="drq8MaMb"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7E23A218BB
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=socionext.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45g8Vc31RLzDqdh
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Jul 2019 19:21:44 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45g9P31X4XzDqf0
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Jul 2019 20:01:59 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=zte.com.cn
- (client-ip=202.103.147.169; helo=mxct.zte.com.cn;
- envelope-from=wen.yang99@zte.com.cn; receiver=<UNKNOWN>)
+ spf=softfail (mailfrom) smtp.mailfrom=socionext.com
+ (client-ip=210.131.2.90; helo=conssluserg-05.nifty.com;
+ envelope-from=yamada.masahiro@socionext.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=zte.com.cn
-X-Greylist: delayed 954 seconds by postgrey-1.36 at bilbo;
- Fri, 05 Jul 2019 19:20:03 AEST
-Received: from mxct.zte.com.cn (mx7.zte.com.cn [202.103.147.169])
+ dmarc=none (p=none dis=none) header.from=socionext.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=nifty.com header.i=@nifty.com header.b="drq8MaMb"; 
+ dkim-atps=neutral
+Received: from conssluserg-05.nifty.com (conssluserg-05.nifty.com
+ [210.131.2.90])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45g8Sg36Q8zDqPG
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Jul 2019 19:20:02 +1000 (AEST)
-Received: from mse-fl1.zte.com.cn (unknown [10.30.14.238])
- by Forcepoint Email with ESMTPS id 823F65DFFAA7B06D2835;
- Fri,  5 Jul 2019 17:04:00 +0800 (CST)
-Received: from notes_smtp.zte.com.cn ([10.30.1.239])
- by mse-fl1.zte.com.cn with ESMTP id x6591Fw5033077;
- Fri, 5 Jul 2019 17:01:15 +0800 (GMT-8)
- (envelope-from wen.yang99@zte.com.cn)
-Received: from fox-host8.localdomain ([10.74.120.8])
- by szsmtp06.zte.com.cn (Lotus Domino Release 8.5.3FP6)
- with ESMTP id 2019070517014955-2109273 ;
- Fri, 5 Jul 2019 17:01:49 +0800 
-From: Wen Yang <wen.yang99@zte.com.cn>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH] powerpc: fix use-after-free on fixup_port_irq()
-Date: Fri, 5 Jul 2019 16:59:36 +0800
-Message-Id: <1562317176-13317-1-git-send-email-wen.yang99@zte.com.cn>
-X-Mailer: git-send-email 1.8.3.1
-X-MIMETrack: Itemize by SMTP Server on SZSMTP06/server/zte_ltd(Release
- 8.5.3FP6|November 21, 2013) at 2019-07-05 17:01:49,
- Serialize by Router on notes_smtp/zte_ltd(Release 9.0.1FP7|August  17, 2016) at
- 2019-07-05 17:01:21, Serialize complete at 2019-07-05 17:01:21
-X-MAIL: mse-fl1.zte.com.cn x6591Fw5033077
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45g9M05KRKzDqZQ
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Jul 2019 20:00:10 +1000 (AEST)
+Received: from mail-vs1-f54.google.com (mail-vs1-f54.google.com
+ [209.85.217.54]) (authenticated)
+ by conssluserg-05.nifty.com with ESMTP id x659xmLi010239
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 5 Jul 2019 18:59:48 +0900
+DKIM-Filter: OpenDKIM Filter v2.10.3 conssluserg-05.nifty.com x659xmLi010239
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nifty.com;
+ s=dec2015msa; t=1562320788;
+ bh=7vo4tVVjFp2kF3CCv5uSappoveKorG1+DyG5PCqC1mo=;
+ h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+ b=drq8MaMbdGESVV4jgCedEiZm6fgkjP+o5bmM0K9cOYi9ZwIVTd+iZfK2wFELQfdFC
+ 3WQ9Y8bSjaL3K4DNSYE6U+9pH49/yvNX4Wc5fFfUeFsnUexvpwQ/4XvMLvMduoD3QJ
+ 80IumNwsZg1SARySsPtcLCMlEsm6IYzLRHDS8Or9zOxzUtHowKUe235BAQ9JnhmB4y
+ dq+fUaULEbCGZx5p6TgacoqjHJQfOVua4lVbFd6Vcohdo9tK5QaBp9SuyiU+Ybatqg
+ 31zCY2tAq3x8JrUrvXukE1b3C3R67GWUjZ2MwW5aBdZst2q4mn4Mim98GGVKVYkgRS
+ Vr/OBAbNQlICw==
+X-Nifty-SrcIP: [209.85.217.54]
+Received: by mail-vs1-f54.google.com with SMTP id j26so3487342vsn.10
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 05 Jul 2019 02:59:48 -0700 (PDT)
+X-Gm-Message-State: APjAAAWvKpuh9RHBWbnPEV2knRezUD2AB/JPrpwXsz5xX7ofLbkVM+XS
+ MHEFnrTHvpEClZagss5IuIqDmV+ujym+Hs9KTrk=
+X-Google-Smtp-Source: APXvYqw/AUFCUUd5jXpPkprJCwIFt7JAmja2F/erzSFp296eLvhPJ66gWzHHWXgUX0GCg6HvO6LlFAxsNEuazgKizc0=
+X-Received: by 2002:a67:fc45:: with SMTP id p5mr1635301vsq.179.1562320787446; 
+ Fri, 05 Jul 2019 02:59:47 -0700 (PDT)
+MIME-Version: 1.0
+References: <1557756964-13087-1-git-send-email-yamada.masahiro@socionext.com>
+ <87v9wibq5z.fsf@concordia.ellerman.id.au>
+In-Reply-To: <87v9wibq5z.fsf@concordia.ellerman.id.au>
+From: Masahiro Yamada <yamada.masahiro@socionext.com>
+Date: Fri, 5 Jul 2019 18:59:11 +0900
+X-Gmail-Original-Message-ID: <CAK7LNASK=z68pqPcPw8OGM1Y9SGSHOAMDygsbmNvOW1oOsQFRA@mail.gmail.com>
+Message-ID: <CAK7LNASK=z68pqPcPw8OGM1Y9SGSHOAMDygsbmNvOW1oOsQFRA@mail.gmail.com>
+Subject: Re: [PATCH v2] powerpc/boot: pass CONFIG options in a simpler and
+ more robust way
+To: Michael Ellerman <mpe@ellerman.id.au>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -66,74 +82,70 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: wang.yi59@zte.com.cn, Rob Herring <robh@kernel.org>,
- Paul Mackerras <paulus@samba.org>, xue.zhihong@zte.com.cn,
- cheng.shengyu@zte.com.cn, linuxppc-dev@lists.ozlabs.org,
- Wen Yang <wen.yang99@zte.com.cn>
+Cc: Rob Herring <robh@kernel.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ Nicholas Piggin <npiggin@gmail.com>, Mark Greer <mgreer@animalcreek.com>,
+ Oliver O'Halloran <oohall@gmail.com>, Joel Stanley <joel@jms.id.au>,
+ Paul Mackerras <paulus@samba.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-There is a possible use-after-free issue in the fixup_port_irq():
+On Thu, Jul 4, 2019 at 9:26 AM Michael Ellerman <mpe@ellerman.id.au> wrote:
+>
+> Masahiro Yamada <yamada.masahiro@socionext.com> writes:
+>
+> > Commit 5e9dcb6188a4 ("powerpc/boot: Expose Kconfig symbols to wrapper")
+> > was wrong, but commit e41b93a6be57 ("powerpc/boot: Fix build failures
+> > with -j 1") was also wrong.
+> >
+> > The correct dependency is:
+> >
+> >   $(obj)/serial.o: $(obj)/autoconf.h
+> >
+> > However, I do not see the reason why we need to copy autoconf.h to
+> > arch/power/boot/. Nor do I see consistency in the way of passing
+> > CONFIG options.
+> >
+> > decompress.c references CONFIG_KERNEL_GZIP and CONFIG_KERNEL_XZ, which
+> > are passed via the command line.
+> >
+> > serial.c includes autoconf.h to reference a couple of CONFIG options,
+> > but this is fragile because we often forget to include "autoconf.h"
+> > from source files.
+> >
+> > In fact, it is already broken.
+> >
+> > ppc_asm.h references CONFIG_PPC_8xx, but utils.S is not given any way
+> > to access CONFIG options. So, CONFIG_PPC_8xx is never defined here.
+> >
+> > Pass $(LINUXINCLUDE) to make sure CONFIG options are accessible from
+> > all .c and .S files in arch/powerpc/boot/.
+>
+> This breaks our skiroot_defconfig, I don't know why yet:
+>
+>   In file included from /kisskb/src/arch/powerpc/boot/../../../lib/decompress_unxz.c:236:0,
+>                    from /kisskb/src/arch/powerpc/boot/decompress.c:42:
+>   /kisskb/src/arch/powerpc/boot/../../../lib/xz/xz_dec_bcj.c: In function 'bcj_powerpc':
+>   /kisskb/src/arch/powerpc/boot/../../../lib/xz/xz_dec_bcj.c:166:11: warning: implicit declaration of function 'get_unaligned_be32' [-Wimplicit-function-declaration]
+>      instr = get_unaligned_be32(buf + i);
 
-460 static void __init fixup_port_irq(int index,
-461                                   struct device_node *np,
-462                                   struct plat_serial8250_port *port)
-463 {
-...
-469         if (!virq && legacy_serial_infos[index].irq_check_parent) {
-470                 np = of_get_parent(np);  --> modified here.
-...
-474                 of_node_put(np); ---> released here
-475         }
-...
-481 #ifdef CONFIG_SERIAL_8250_FSL
-482   if (of_device_is_compatible(np, "fsl,ns16550")) --> dereferenced here
-...
-484 #endif
-485 }
 
-We solve this problem by introducing a new parent_np variable.
+OK, now I see the cause of the error.
 
-Fixes: 9deaa53ac7fa ("serial: add irq handler for Freescale 16550 errata.")
-Signed-off-by: Wen Yang <wen.yang99@zte.com.cn>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Rob Herring <robh@kernel.org>
-Cc: linuxppc-dev@lists.ozlabs.org
-Cc: linux-kernel@vger.kernel.org
----
- arch/powerpc/kernel/legacy_serial.c | 9 +++++----
- 1 file changed, 5 insertions(+), 4 deletions(-)
+I will insert a new patch in v3.
 
-diff --git a/arch/powerpc/kernel/legacy_serial.c b/arch/powerpc/kernel/legacy_serial.c
-index 7cea597..0105f3e 100644
---- a/arch/powerpc/kernel/legacy_serial.c
-+++ b/arch/powerpc/kernel/legacy_serial.c
-@@ -461,17 +461,18 @@ static void __init fixup_port_irq(int index,
- 				  struct device_node *np,
- 				  struct plat_serial8250_port *port)
- {
-+	struct device_node *parent_np;
- 	unsigned int virq;
- 
- 	DBG("fixup_port_irq(%d)\n", index);
- 
- 	virq = irq_of_parse_and_map(np, 0);
- 	if (!virq && legacy_serial_infos[index].irq_check_parent) {
--		np = of_get_parent(np);
--		if (np == NULL)
-+		parent_np = of_get_parent(np);
-+		if (parent_np == NULL)
- 			return;
--		virq = irq_of_parse_and_map(np, 0);
--		of_node_put(np);
-+		virq = irq_of_parse_and_map(parent_np, 0);
-+		of_node_put(parent_np);
- 	}
- 	if (!virq)
- 		return;
+Thanks.
+
+
+>
+> http://kisskb.ellerman.id.au/kisskb/buildresult/13862914/
+>
+> cheers
+
+
+
 -- 
-2.9.5
-
+Best Regards
+Masahiro Yamada
