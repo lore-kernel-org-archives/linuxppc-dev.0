@@ -2,25 +2,26 @@ Return-Path: <SRS0=Ef5B=VC=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DC6EEC46499
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Jul 2019 21:33:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8054FC46499
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Jul 2019 21:34:41 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 5E045216E3
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Jul 2019 21:33:12 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id F2927216E3
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Jul 2019 21:34:40 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=fossix-org.20150623.gappssmtp.com header.i=@fossix-org.20150623.gappssmtp.com header.b="168I2zPt"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5E045216E3
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=fossix-org.20150623.gappssmtp.com header.i=@fossix-org.20150623.gappssmtp.com header.b="1muHSdZv"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org F2927216E3
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=fossix.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45gSkY4kjZzDqhb
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  6 Jul 2019 07:33:09 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45gSmH1LS7zDqQ9
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  6 Jul 2019 07:34:39 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=none (mailfrom) smtp.mailfrom=fossix.org
  (client-ip=2607:f8b0:4864:20::443; helo=mail-pf1-x443.google.com;
@@ -29,55 +30,57 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=fossix.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=fossix-org.20150623.gappssmtp.com
- header.i=@fossix-org.20150623.gappssmtp.com header.b="168I2zPt"; 
+ header.i=@fossix-org.20150623.gappssmtp.com header.b="1muHSdZv"; 
  dkim-atps=neutral
 Received: from mail-pf1-x443.google.com (mail-pf1-x443.google.com
  [IPv6:2607:f8b0:4864:20::443])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45gSbT4N6QzDqfP
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  6 Jul 2019 07:27:00 +1000 (AEST)
-Received: by mail-pf1-x443.google.com with SMTP id t16so4783698pfe.11
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 05 Jul 2019 14:26:59 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45gSbX5y42zDqDD
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  6 Jul 2019 07:27:04 +1000 (AEST)
+Received: by mail-pf1-x443.google.com with SMTP id p184so4788896pfp.7
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 05 Jul 2019 14:27:04 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=fossix-org.20150623.gappssmtp.com; s=20150623;
- h=from:to:cc:subject:date:message-id:mime-version
- :content-transfer-encoding;
- bh=E0moOdNtFVpgVON7xVz7uI9w8zScR8+0JEeDXobhC38=;
- b=168I2zPt5FpADkvZfdddePkwrGHsrVGznzkOJ4o+xVS/qxueTqeWUGtdGG4pseXaC9
- ctfxQIVeYCrNdcO/JT42Rm6OoB06Bo2BmbkiRgJio6isb5u3fGa2ETMfumNnmSa/ixtD
- E5yjK7QxW/JgZChzoL180QkFx2Bpn4I5qxs4r2VP1DBjCxbXI9AryDKk+mZOsVQpJkMQ
- zUDSw6LODh9W5XVJRxSk0C+ks4hxTql1oXa7y6CDvDrTuZYnjXbbIQ6QeIjwpZfssvQg
- /QzZ8z8Az87W5Y9gRwKrHMSfaUz2Z9Jn2Xygf84YlUiCj5un+fjc/yAGiVUpl2QmVLrX
- Y2Pg==
+ h=from:to:cc:subject:date:message-id:in-reply-to:references
+ :mime-version:content-transfer-encoding;
+ bh=8FLyyUZijz/9yTl40JPivx76FPoflI2SBpNAwf5JCCQ=;
+ b=1muHSdZvKofN4sVJKwvO5wlkz6uihjyfewo+FYSDw9wCHsTwpvwpG663oJgHIX5f5S
+ p+9uF8NrxPZmYlW9vedszr5Qujrf72Tdm5jN7OxL6+Zmov1H1lDPg91JtFW2kC6DLxu8
+ To/i13Hn9ovWIDTOX/3nY/14kSDCFZmcGmCOxtuts2DyAW712fF8ds1TZrl+4RB9F1km
+ R7R3WRhLjv6q5Qe7GsaTNLvHCfRLTtDzjGV2HC0uWliVOpaseMUDbX4yffT41kdO0IfI
+ bJ2q0Uu8shCfBOQhUfOh67o2VaBzQnE/MO12WOZAoMS7mJvg/4fsgYpObjURwrOc/17/
+ WiLg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
- h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
- :content-transfer-encoding;
- bh=E0moOdNtFVpgVON7xVz7uI9w8zScR8+0JEeDXobhC38=;
- b=egqaczTWa0zqlH6L8x9aJ5LbcNf2VIG/6WFq/8GVTYsTeiq5VQE/+p1e3FbITrNe72
- CPw+SjTGfBdhnBbPYm1EWELW+4TxtyiTFdtYbGEXTmINXLbLPtKSI+JqrzWUd8qwrcYW
- ScFoCDBWWu8dYNRcB2NBBXlPeq0zCwcC4wr91FL9xWJ5PB/5Qn0sBim744kbD0HW7p0y
- BR+QGsxLaOJh8pRqcscbwBC0Slfa7WquNPK+kGzrHd9fHloy+O64tEuUGip/wWqWrBik
- fFbFVfOq9wyRzr24XWFgsnpnsLFP28TzxhT/nrCU9uLSq+YFmc9Q8En0Pr2EhRGl6CRB
- gusg==
-X-Gm-Message-State: APjAAAUv4XmX+84k4Scy5c1ZbtWN4s5ZXxAqNJGwJX/fCFz2nsFgU7lR
- g1hy4UYio4ZlMhKg7XL+ZjVDg05R7U8=
-X-Google-Smtp-Source: APXvYqzZqU4wY/34qhYYAwHq4/JTSG+22m4kFrWVtu4puWLfgr7iAzvf3hThgkjb1dTp8/ETw1GMpw==
-X-Received: by 2002:a17:90a:35e6:: with SMTP id
- r93mr8038421pjb.20.1562362016696; 
- Fri, 05 Jul 2019 14:26:56 -0700 (PDT)
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+ :references:mime-version:content-transfer-encoding;
+ bh=8FLyyUZijz/9yTl40JPivx76FPoflI2SBpNAwf5JCCQ=;
+ b=SBD5IDXIs8wqfLP2y7HrJknEK6TYetOWezsZVV16E+joZwxXX2MJic1+gJ4t4P4hCX
+ Tr6hObhKFJPiGukR2qg8Ar9Kawgi23cFpOUT9hDh6laFfSB+JcSHUzWyfOFKE2Kb4g0e
+ NgLhceNu5BU/bTh1haJuVvILS8m+LpkI7pDSsRVINjdDzxzcwTS+t8hUWOkh9rcqhii5
+ H/wCaUeex11Iarp6kC6AY9D5YVF3cLXiTqycgBQDpao/0SZgsyvclV7UsqNtTGrpYXHv
+ u/5bwU3iGHbB7IyhscZw5vud+NKEgREW00eMUA9F2GBvKyTNKf1OJiXeRbZq0kImqhty
+ N1hQ==
+X-Gm-Message-State: APjAAAWyApqGtI+22X8gGTILpX1xujhLslm8G7+DxT55pHNSRPtwTXn0
+ vEEb/bJceZ4quqnySPatnF32PrlDClFtNA==
+X-Google-Smtp-Source: APXvYqzlTs1/8u3ZzLhJcPPXlYEzJhKGzFusMDmdDLCnY3umjMbUAhzWmf597hezbp++Zt2yCe9MBQ==
+X-Received: by 2002:a17:90a:21cc:: with SMTP id
+ q70mr8192721pjc.56.1562362022675; 
+ Fri, 05 Jul 2019 14:27:02 -0700 (PDT)
 Received: from santosiv.in.ibm.com ([49.205.217.222])
- by smtp.gmail.com with ESMTPSA id o13sm9321389pje.28.2019.07.05.14.26.53
+ by smtp.gmail.com with ESMTPSA id o13sm9321389pje.28.2019.07.05.14.27.00
  (version=TLS1_3 cipher=AEAD-AES256-GCM-SHA384 bits=256/256);
- Fri, 05 Jul 2019 14:26:56 -0700 (PDT)
+ Fri, 05 Jul 2019 14:27:02 -0700 (PDT)
 From: Santosh Sivaraj <santosh@fossix.org>
 To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Subject: [v3 0/7] powerpc: implement machine check safe memcpy
-Date: Sat,  6 Jul 2019 02:56:40 +0530
-Message-Id: <20190705212647.21750-1-santosh@fossix.org>
+Subject: [v3 2/7] powerpc/mce: Bug fixes for MCE handling in kernel space
+Date: Sat,  6 Jul 2019 02:56:42 +0530
+Message-Id: <20190705212647.21750-3-santosh@fossix.org>
 X-Mailer: git-send-email 2.20.1
+In-Reply-To: <20190705212647.21750-1-santosh@fossix.org>
+References: <20190705212647.21750-1-santosh@fossix.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -99,97 +102,142 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-During a memcpy from a pmem device, if a machine check exception is
-generated we end up in a panic. In case of fsdax read, this should
-only result in a -EIO. Avoid MCE by implementing memcpy_mcsafe.
+From: Balbir Singh <bsingharora@gmail.com>
 
-Before this patch series:
+The code currently assumes PAGE_SHIFT as the shift value of
+the pfn, this works correctly (mostly) for user space pages,
+but the correct thing to do is
 
-```
-bash-4.4# mount -o dax /dev/pmem0 /mnt/pmem/
-[ 7621.714094] Disabling lock debugging due to kernel taint
-[ 7621.714099] MCE: CPU0: machine check (Severe) Host UE Load/Store [Not recovered]
-[ 7621.714104] MCE: CPU0: NIP: [c000000000088978] memcpy_power7+0x418/0x7e0
-[ 7621.714107] MCE: CPU0: Hardware error
-[ 7621.714112] opal: Hardware platform error: Unrecoverable Machine Check exception
-[ 7621.714118] CPU: 0 PID: 1368 Comm: mount Tainted: G   M              5.2.0-rc5-00239-g241e39004581 #50
-[ 7621.714123] NIP:  c000000000088978 LR: c0000000008e16f8 CTR: 00000000000001de
-[ 7621.714129] REGS: c0000000fffbfd70 TRAP: 0200   Tainted: G   M               (5.2.0-rc5-00239-g241e39004581)
-[ 7621.714131] MSR:  9000000002209033 <SF,HV,VEC,EE,ME,IR,DR,RI,LE>  CR: 24428840  XER: 00040000
-[ 7621.714160] CFAR: c0000000000889a8 DAR: deadbeefdeadbeef DSISR: 00008000 IRQMASK: 0
-[ 7621.714171] GPR00: 000000000e000000 c0000000f0b8b1e0 c0000000012cf100 c0000000ed8e1100 
-[ 7621.714186] GPR04: c000020000001100 0000000000010000 0000000000000200 03fffffff1272000 
-[ 7621.714201] GPR08: 0000000080000000 0000000000000010 0000000000000020 0000000000000030 
-[ 7621.714216] GPR12: 0000000000000040 00007fffb8c6d390 0000000000000050 0000000000000060 
-[ 7621.714232] GPR16: 0000000000000070 0000000000000000 0000000000000001 c0000000f0b8b960 
-[ 7621.714247] GPR20: 0000000000000001 c0000000f0b8b940 0000000000000001 0000000000010000 
-[ 7621.714262] GPR24: c000000001382560 c00c0000003b6380 c00c0000003b6380 0000000000010000 
-[ 7621.714277] GPR28: 0000000000000000 0000000000010000 c000020000000000 0000000000010000 
-[ 7621.714294] NIP [c000000000088978] memcpy_power7+0x418/0x7e0
-[ 7621.714298] LR [c0000000008e16f8] pmem_do_bvec+0xf8/0x430
-... <snip> ...
-```
+1. Extract the shift value returned via the pte-walk API's
+2. Use the shift value to access the instruction address.
 
-After this patch series:
+Note, the final physical address still use PAGE_SHIFT for
+computation. handle_ierror() is not modified and handle_derror()
+is modified just for extracting the correct instruction
+address.
 
-```
-bash-4.4# mount -o dax /dev/pmem0 /mnt/pmem/
-[25302.883978] Buffer I/O error on dev pmem0, logical block 0, async page read
-[25303.020816] EXT4-fs (pmem0): DAX enabled. Warning: EXPERIMENTAL, use at your own risk
-[25303.021236] EXT4-fs (pmem0): Can't read superblock on 2nd try
-[25303.152515] EXT4-fs (pmem0): DAX enabled. Warning: EXPERIMENTAL, use at your own risk
-[25303.284031] EXT4-fs (pmem0): DAX enabled. Warning: EXPERIMENTAL, use at your own risk
-[25304.084100] UDF-fs: bad mount option "dax" or missing value
-mount: /mnt/pmem: wrong fs type, bad option, bad superblock on /dev/pmem0, missing codepage or helper program, or other error.
-```
+This is largely due to __find_linux_pte() returning pfn's
+shifted by pdshift. The code is much more generic and can
+handle shift values returned.
 
-MCE is injected on a pmem address using mambo. The last patch which adds a nop
-is only for testing on mambo, where r13 is not restored upon hitting vector 200.
+Fixes: ba41e1e1ccb9 ("powerpc/mce: Hookup derror (load/store) UE errors")
 
-The memcpy code can be optimised by adding VMX optimizations and GAS macros can
-be used to enable code reusablity, which I will send as another series.
-
+Signed-off-by: Balbir Singh <bsingharora@gmail.com>
+[arbab@linux.ibm.com: Fixup pseries_do_memory_failure()]
+Signed-off-by: Reza Arbab <arbab@linux.ibm.com>
+Signed-off-by: Santosh Sivaraj <santosh@fossix.org>
 ---
-Change-log:
+ arch/powerpc/include/asm/mce.h       |  3 ++-
+ arch/powerpc/kernel/mce_power.c      | 26 ++++++++++++++++----------
+ arch/powerpc/platforms/pseries/ras.c |  6 ++++--
+ 3 files changed, 22 insertions(+), 13 deletions(-)
 
-v3:
-* Drop patch which enables DR/IR for external modules
-* Drop notifier call chain, we don't want to do that in real mode
-* Return remaining bytes from memcpy_mcsafe correctly
-* We no longer restore r13 for simulator tests, rather use a nop at 
-  vector 0x200 [workaround for simulator; not to be merged]
-
-v2:
-* Don't set RI bit explicitly [mahesh]
-* Re-ordered series to get r13 workaround as the last patch
-
----
-Balbir Singh (2):
-  powerpc/mce: Bug fixes for MCE handling in kernel space
-  powerpc/memcpy: Add memcpy_mcsafe for pmem
-
-Reza Arbab (2):
-  powerpc/mce: Make machine_check_ue_event() static
-  powerpc/64s: save r13 in MCE handler (simulator workaroud)
-
-Santosh Sivaraj (3):
-  powerpc/mce: Handle UE event for memcpy_mcsafe
-  powerpc/memcpy_mcsafe: return remaining bytes
-  powerpc: add machine check safe copy_to_user
-
- arch/powerpc/Kconfig                 |   1 +
- arch/powerpc/include/asm/mce.h       |   7 +-
- arch/powerpc/include/asm/string.h    |   2 +
- arch/powerpc/include/asm/uaccess.h   |  12 ++
- arch/powerpc/kernel/exceptions-64s.S |   1 +
- arch/powerpc/kernel/mce.c            |  11 +-
- arch/powerpc/kernel/mce_power.c      |  41 +++--
- arch/powerpc/lib/Makefile            |   2 +-
- arch/powerpc/lib/memcpy_mcsafe_64.S  | 239 +++++++++++++++++++++++++++
- arch/powerpc/platforms/pseries/ras.c |   6 +-
- 10 files changed, 302 insertions(+), 20 deletions(-)
- create mode 100644 arch/powerpc/lib/memcpy_mcsafe_64.S
-
+diff --git a/arch/powerpc/include/asm/mce.h b/arch/powerpc/include/asm/mce.h
+index a4c6a74ad2fb..94888a7025b3 100644
+--- a/arch/powerpc/include/asm/mce.h
++++ b/arch/powerpc/include/asm/mce.h
+@@ -209,7 +209,8 @@ extern void release_mce_event(void);
+ extern void machine_check_queue_event(void);
+ extern void machine_check_print_event_info(struct machine_check_event *evt,
+ 					   bool user_mode, bool in_guest);
+-unsigned long addr_to_pfn(struct pt_regs *regs, unsigned long addr);
++unsigned long addr_to_pfn(struct pt_regs *regs, unsigned long addr,
++			  unsigned int *shift);
+ #ifdef CONFIG_PPC_BOOK3S_64
+ void flush_and_reload_slb(void);
+ #endif /* CONFIG_PPC_BOOK3S_64 */
+diff --git a/arch/powerpc/kernel/mce_power.c b/arch/powerpc/kernel/mce_power.c
+index e39536aad30d..04666c0b40a8 100644
+--- a/arch/powerpc/kernel/mce_power.c
++++ b/arch/powerpc/kernel/mce_power.c
+@@ -23,7 +23,8 @@
+  * Convert an address related to an mm to a PFN. NOTE: we are in real
+  * mode, we could potentially race with page table updates.
+  */
+-unsigned long addr_to_pfn(struct pt_regs *regs, unsigned long addr)
++unsigned long addr_to_pfn(struct pt_regs *regs, unsigned long addr,
++			  unsigned int *shift)
+ {
+ 	pte_t *ptep;
+ 	unsigned long flags;
+@@ -36,13 +37,15 @@ unsigned long addr_to_pfn(struct pt_regs *regs, unsigned long addr)
+ 
+ 	local_irq_save(flags);
+ 	if (mm == current->mm)
+-		ptep = find_current_mm_pte(mm->pgd, addr, NULL, NULL);
++		ptep = find_current_mm_pte(mm->pgd, addr, NULL, shift);
+ 	else
+-		ptep = find_init_mm_pte(addr, NULL);
++		ptep = find_init_mm_pte(addr, shift);
+ 	local_irq_restore(flags);
+ 	if (!ptep || pte_special(*ptep))
+ 		return ULONG_MAX;
+-	return pte_pfn(*ptep);
++	if (!*shift)
++		*shift = PAGE_SHIFT;
++	return (pte_val(*ptep) & PTE_RPN_MASK) >> *shift;
+ }
+ 
+ /* flush SLBs and reload */
+@@ -358,15 +361,16 @@ static int mce_find_instr_ea_and_pfn(struct pt_regs *regs, uint64_t *addr,
+ 	unsigned long pfn, instr_addr;
+ 	struct instruction_op op;
+ 	struct pt_regs tmp = *regs;
++	unsigned int shift;
+ 
+-	pfn = addr_to_pfn(regs, regs->nip);
++	pfn = addr_to_pfn(regs, regs->nip, &shift);
+ 	if (pfn != ULONG_MAX) {
+-		instr_addr = (pfn << PAGE_SHIFT) + (regs->nip & ~PAGE_MASK);
++		instr_addr = (pfn << shift) + (regs->nip & ((1 << shift) - 1));
+ 		instr = *(unsigned int *)(instr_addr);
+ 		if (!analyse_instr(&op, &tmp, instr)) {
+-			pfn = addr_to_pfn(regs, op.ea);
++			pfn = addr_to_pfn(regs, op.ea, &shift);
+ 			*addr = op.ea;
+-			*phys_addr = (pfn << PAGE_SHIFT);
++			*phys_addr = (pfn << shift);
+ 			return 0;
+ 		}
+ 		/*
+@@ -442,12 +446,14 @@ static int mce_handle_ierror(struct pt_regs *regs,
+ 			if (mce_err->sync_error &&
+ 				table[i].error_type == MCE_ERROR_TYPE_UE) {
+ 				unsigned long pfn;
++				unsigned int shift;
+ 
+ 				if (get_paca()->in_mce < MAX_MCE_DEPTH) {
+-					pfn = addr_to_pfn(regs, regs->nip);
++					pfn = addr_to_pfn(regs, regs->nip,
++							  &shift);
+ 					if (pfn != ULONG_MAX) {
+ 						*phys_addr =
+-							(pfn << PAGE_SHIFT);
++							(pfn << shift);
+ 					}
+ 				}
+ 			}
+diff --git a/arch/powerpc/platforms/pseries/ras.c b/arch/powerpc/platforms/pseries/ras.c
+index f16fdd0f71f7..5e43283d3300 100644
+--- a/arch/powerpc/platforms/pseries/ras.c
++++ b/arch/powerpc/platforms/pseries/ras.c
+@@ -740,12 +740,14 @@ static void pseries_do_memory_failure(struct pt_regs *regs,
+ 		paddr = be64_to_cpu(mce_log->logical_address);
+ 	} else if (mce_log->sub_err_type & UE_EFFECTIVE_ADDR_PROVIDED) {
+ 		unsigned long pfn;
++		unsigned int shift;
+ 
+ 		pfn = addr_to_pfn(regs,
+-				  be64_to_cpu(mce_log->effective_address));
++				  be64_to_cpu(mce_log->effective_address),
++				  &shift);
+ 		if (pfn == ULONG_MAX)
+ 			return;
+-		paddr = pfn << PAGE_SHIFT;
++		paddr = pfn << shift;
+ 	} else {
+ 		return;
+ 	}
 -- 
 2.20.1
 
