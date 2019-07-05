@@ -2,51 +2,57 @@ Return-Path: <SRS0=Ef5B=VC=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.5 required=3.0 tests=FROM_EXCESS_BASE64,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
-	SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_2 autolearn=unavailable
+X-Spam-Status: No, score=-4.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS autolearn=no
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9A323C4649B
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Jul 2019 10:54:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B9ADEC46499
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Jul 2019 11:04:14 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 1C57D216E3
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Jul 2019 10:54:05 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1C57D216E3
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=suse.de
+	by mail.kernel.org (Postfix) with ESMTPS id 44B5F2133F
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Jul 2019 11:04:14 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 44B5F2133F
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.intel.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45gBY70KpBzDqg4
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Jul 2019 20:54:03 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45gBmq5jZ5zDqfr
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Jul 2019 21:04:11 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=suse.de
- (client-ip=195.135.220.15; helo=mx1.suse.de; envelope-from=msuchanek@suse.de;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=suse.de
-Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
+ spf=none (mailfrom) smtp.mailfrom=linux.intel.com
+ (client-ip=192.55.52.88; helo=mga01.intel.com;
+ envelope-from=jarkko.sakkinen@linux.intel.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=linux.intel.com
+Received: from mga01.intel.com (mga01.intel.com [192.55.52.88])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45gBVt5fTBzDq9R
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Jul 2019 20:52:05 +1000 (AEST)
-X-Virus-Scanned: by amavisd-new at test-mx.suse.de
-Received: from relay2.suse.de (unknown [195.135.220.254])
- by mx1.suse.de (Postfix) with ESMTP id 2E458AD8A;
- Fri,  5 Jul 2019 10:52:01 +0000 (UTC)
-Date: Fri, 5 Jul 2019 12:51:58 +0200
-From: Michal =?UTF-8?B?U3VjaMOhbmVr?= <msuchanek@suse.de>
-To: Jarkko Sakkinen <jarkko.sakkinen@linux.intel.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45gBkb5VtCzDq9H
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Jul 2019 21:02:14 +1000 (AEST)
+X-Amp-Result: SKIPPED(no attachment in message)
+X-Amp-File-Uploaded: False
+Received: from orsmga006.jf.intel.com ([10.7.209.51])
+ by fmsmga101.fm.intel.com with ESMTP/TLS/DHE-RSA-AES256-GCM-SHA384;
+ 05 Jul 2019 04:02:11 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="5.63,454,1557212400"; d="scan'208";a="169647925"
+Received: from jsakkine-mobl1.tm.intel.com ([10.237.50.189])
+ by orsmga006.jf.intel.com with ESMTP; 05 Jul 2019 04:02:07 -0700
+Message-ID: <f161616a3681994680c70e66c51afd537a2f3423.camel@linux.intel.com>
 Subject: Re: [PATCH] tpm: fixes uninitialized allocated banks for IBM vtpm
  driver
-Message-ID: <20190705125158.72f79929@naga>
+From: Jarkko Sakkinen <jarkko.sakkinen@linux.intel.com>
+To: Nayna Jain <nayna@linux.ibm.com>, linux-integrity@vger.kernel.org, 
+ linuxppc-dev@lists.ozlabs.org, Michal Suchanek <msuchanek@suse.de>
+Date: Fri, 05 Jul 2019 14:02:06 +0300
 In-Reply-To: <f315356e7c00378c8785bd20d5869c9046ece2f2.camel@linux.intel.com>
 References: <1562211121-2188-1-git-send-email-nayna@linux.ibm.com>
  <f315356e7c00378c8785bd20d5869c9046ece2f2.camel@linux.intel.com>
-X-Mailer: Claws Mail 3.17.3 (GTK+ 2.24.32; x86_64-suse-linux-gnu)
+Organization: Intel Finland Oy - BIC 0357606-4 - Westendinkatu 7, 02160 Espoo
+Content-Type: text/plain; charset="UTF-8"
+User-Agent: Evolution 3.32.1-2 
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -59,18 +65,14 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Sachin Sant <sachinp@linux.vnet.ibm.com>, Nayna Jain <nayna@linux.ibm.com>,
- linux-kernel@vger.kernel.org, Mimi Zohar <zohar@linux.ibm.com>,
- Jason Gunthorpe <jgg@ziepe.ca>, linux-integrity@vger.kernel.org,
- George Wilson <gcwilson@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- Peter Huewe <peterhuewe@gmx.de>
+Cc: Sachin Sant <sachinp@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
+ Mimi Zohar <zohar@linux.ibm.com>, Jason Gunthorpe <jgg@ziepe.ca>,
+ Peter Huewe <peterhuewe@gmx.de>, George Wilson <gcwilson@linux.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, 05 Jul 2019 13:42:18 +0300
-Jarkko Sakkinen <jarkko.sakkinen@linux.intel.com> wrote:
-
+On Fri, 2019-07-05 at 13:42 +0300, Jarkko Sakkinen wrote:
 > On Wed, 2019-07-03 at 23:32 -0400, Nayna Jain wrote:
 > > The nr_allocated_banks and allocated banks are initialized as part of
 > > tpm_chip_register. Currently, this is done as part of auto startup
@@ -84,7 +86,7 @@ Jarkko Sakkinen <jarkko.sakkinen@linux.intel.com> wrote:
 > > 
 > > Fixes: 879b589210a9 ("tpm: retrieve digest size of unknown algorithms with
 > > PCR read")
-> > Signed-off-by: Nayna Jain <nayna@linux.ibm.com>  
+> > Signed-off-by: Nayna Jain <nayna@linux.ibm.com>
 > 
 > Please add
 > 
@@ -93,9 +95,10 @@ Jarkko Sakkinen <jarkko.sakkinen@linux.intel.com> wrote:
 > It is missing. Michal is there a chance you could try this out once
 > Nayna send a new version?
 
-Should be easy to test. Without the patch the machine crashes on boot
-so it is quite obvious case. I have a few VMs with the vTPM available.
+Hey, I saw Michal's tested-by. I can do that minor reorg cosmetic
+bits myeslf and add Micha's tag.
 
-Thanks
+Some issue with the network but I'll push a commit soonish.
 
-Michal
+/Jarkko
+
