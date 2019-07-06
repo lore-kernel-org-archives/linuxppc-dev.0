@@ -2,69 +2,88 @@ Return-Path: <SRS0=RFqx=VD=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.0 required=3.0 tests=MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-3.8 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
+	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
+	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9441CC5B57D
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  6 Jul 2019 00:53:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DAEFAC5B578
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  6 Jul 2019 05:21:37 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 57D412085A
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  6 Jul 2019 00:53:26 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 57D412085A
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=bugzilla.kernel.org
+	by mail.kernel.org (Postfix) with ESMTPS id 1BB4A21670
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  6 Jul 2019 05:21:36 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Wpao8niE"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1BB4A21670
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45gY9b4HcjzDqYb
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  6 Jul 2019 10:53:23 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45gg725k2NzDqk9
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  6 Jul 2019 15:21:34 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=bugzilla.kernel.org
- (client-ip=198.145.29.98; helo=mail.wl.linuxfoundation.org;
- envelope-from=bugzilla-daemon@bugzilla.kernel.org; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=bugzilla.kernel.org
-Received: from mail.wl.linuxfoundation.org (mail.wl.linuxfoundation.org
- [198.145.29.98])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ spf=pass (mailfrom) smtp.mailfrom=gmail.com
+ (client-ip=2607:f8b0:4864:20::62a; helo=mail-pl1-x62a.google.com;
+ envelope-from=npiggin@gmail.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="Wpao8niE"; 
+ dkim-atps=neutral
+Received: from mail-pl1-x62a.google.com (mail-pl1-x62a.google.com
+ [IPv6:2607:f8b0:4864:20::62a])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45gY7q2RnCzDqgF
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  6 Jul 2019 10:51:50 +1000 (AEST)
-Received: from mail.wl.linuxfoundation.org (localhost [127.0.0.1])
- by mail.wl.linuxfoundation.org (Postfix) with ESMTP id 1EE2228AE1
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  6 Jul 2019 00:51:48 +0000 (UTC)
-Received: by mail.wl.linuxfoundation.org (Postfix, from userid 486)
- id 0A55428AFC; Sat,  6 Jul 2019 00:51:48 +0000 (UTC)
-From: bugzilla-daemon@bugzilla.kernel.org
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [Bug 203839] Kernel 5.2-rc3 fails to boot on a PowerMac G4 3,6:
- systemd[1]: Failed to bump fs.file-max, ignoring: invalid argument
-Date: Sat, 06 Jul 2019 00:51:46 +0000
-X-Bugzilla-Reason: None
-X-Bugzilla-Type: changed
-X-Bugzilla-Watch-Reason: AssignedTo platform_ppc-32@kernel-bugs.osdl.org
-X-Bugzilla-Product: Platform Specific/Hardware
-X-Bugzilla-Component: PPC-32
-X-Bugzilla-Version: 2.5
-X-Bugzilla-Keywords: 
-X-Bugzilla-Severity: normal
-X-Bugzilla-Who: erhard_f@mailbox.org
-X-Bugzilla-Status: RESOLVED
-X-Bugzilla-Resolution: CODE_FIX
-X-Bugzilla-Priority: P1
-X-Bugzilla-Assigned-To: platform_ppc-32@kernel-bugs.osdl.org
-X-Bugzilla-Flags: 
-X-Bugzilla-Changed-Fields: bug_status resolution
-Message-ID: <bug-203839-206035-O02E25UFoz@https.bugzilla.kernel.org/>
-In-Reply-To: <bug-203839-206035@https.bugzilla.kernel.org/>
-References: <bug-203839-206035@https.bugzilla.kernel.org/>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-X-Bugzilla-URL: https://bugzilla.kernel.org/
-Auto-Submitted: auto-generated
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45gg5K1hTRzDqfL
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  6 Jul 2019 15:20:02 +1000 (AEST)
+Received: by mail-pl1-x62a.google.com with SMTP id t14so2414930plr.11
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 05 Jul 2019 22:20:02 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=date:from:subject:to:cc:references:in-reply-to:mime-version
+ :user-agent:message-id:content-transfer-encoding;
+ bh=bFE47XNw2Gl9DS/M2rRtIWV/q37wjpho88mXjviiy8A=;
+ b=Wpao8niEisECWInKj53YlrkhJcJKSk03lVamO/l+rlY0mNZATafEu+QqflNugvP/hU
+ BV8ffw3OJ1xh7hgDh8eZocyaft6Tn8nqis1HURnCZvADtj2AqRDRkJApqMDqfTfqIrMl
+ 53JtBcMOXVI0Qto/ohW1rV4oBjqfcIEAHCWHaOEzspTIVIG8UD9WNbpPACPqkgYi9V3o
+ 9BXFAYStg4ZvkhW9y1X7PE6061hFPc5J/p2ibrRO9s3Stw9gy1f36yzM91O6E/H+4miB
+ 0nvbkH0IzHR6L1a56BUw3anjIppFATyA0Oq6hX/8eTcni+SoItxjLNst4bS/z2uCKJfS
+ GDVg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:date:from:subject:to:cc:references:in-reply-to
+ :mime-version:user-agent:message-id:content-transfer-encoding;
+ bh=bFE47XNw2Gl9DS/M2rRtIWV/q37wjpho88mXjviiy8A=;
+ b=lpUrPo5D0rDvrad0mDoOx4nR0qPSbcl+/B+7A/QacxiR79042Lkj6K9fTXmo06HgbA
+ +KNfXOaOuCEDqhhEre28uhxs4Zmnci47Ix956HHWXtFy2Bf6NYUTocvmkuligAVgfMuz
+ cG4EhYG3Arp1BvyUKqkX+INmJPS/DmRzaXIzxberI5cAc5KTuJXXpp6Vhg+z7ewMo6/N
+ y9+cQrcWXLekTKBcFdbDyyIYAvDizzn/5iuVUXKqi1Fpmm4It2hosJW8shXbYTs+jqsi
+ y1oppKpIPU1Ksa7vyi2G1Hi/3Vm0Itp2Off1QGEi/dOR+8GQZLMO9JrdXb69c5PY3Nqj
+ G3Lw==
+X-Gm-Message-State: APjAAAU9xYmUCK5JAbvnrcgQzdzVNn0YPN3ld6Fgx4NfEAMF+ebzhLEU
+ Ts24nIHUXY+J1Pdb/LFtcuXxAAUD
+X-Google-Smtp-Source: APXvYqyInsEaVMKCF8MFXPWFEuQRJoJLP8pQOjk97dEpMZkgPLymQBPNvh9N2G8PAWyBtAItgpIveQ==
+X-Received: by 2002:a17:902:722:: with SMTP id
+ 31mr9487031pli.163.1562390399608; 
+ Fri, 05 Jul 2019 22:19:59 -0700 (PDT)
+Received: from localhost (203-213-47-159.tpgi.com.au. [203.213.47.159])
+ by smtp.gmail.com with ESMTPSA id q1sm18361054pfn.178.2019.07.05.22.19.57
+ (version=TLS1_3 cipher=AEAD-AES256-GCM-SHA384 bits=256/256);
+ Fri, 05 Jul 2019 22:19:58 -0700 (PDT)
+Date: Sat, 06 Jul 2019 15:18:28 +1000
+From: Nicholas Piggin <npiggin@gmail.com>
+Subject: Re: [v3 1/7] powerpc/mce: Make machine_check_ue_event() static
+To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Santosh Sivaraj
+ <santosh@fossix.org>
+References: <20190705212647.21750-1-santosh@fossix.org>
+ <20190705212647.21750-2-santosh@fossix.org>
+In-Reply-To: <20190705212647.21750-2-santosh@fossix.org>
 MIME-Version: 1.0
-X-Virus-Scanned: ClamAV using ClamSMTP
+User-Agent: astroid/0.14.0 (https://github.com/astroidmail/astroid)
+Message-Id: <1562390260.x5ujybyvrp.astroid@bobo.none>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -76,23 +95,22 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
+ Mahesh Salgaonkar <mahesh@linux.ibm.com>,
+ Chandan Rajendra <chandan@linux.vnet.ibm.com>,
+ Reza Arbab <arbab@linux.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-https://bugzilla.kernel.org/show_bug.cgi?id=3D203839
+Santosh Sivaraj's on July 6, 2019 7:26 am:
+> From: Reza Arbab <arbab@linux.ibm.com>
+>=20
+> The function doesn't get used outside this file, so make it static.
+>=20
+> Signed-off-by: Reza Arbab <arbab@linux.ibm.com>
+> Signed-off-by: Santosh Sivaraj <santosh@fossix.org>
 
-Erhard F. (erhard_f@mailbox.org) changed:
+Reviewed-by: Nicholas Piggin <npiggin@gmail.com>
 
-           What    |Removed                     |Added
-----------------------------------------------------------------------------
-             Status|NEW                         |RESOLVED
-         Resolution|---                         |CODE_FIX
-
---- Comment #10 from Erhard F. (erhard_f@mailbox.org) ---
-The fix meanwhile found it's way in kernel 5.2-rc7 which boots just fine.
-Thanks!
-
---=20
-You are receiving this mail because:
-You are watching the assignee of the bug.=
+=
