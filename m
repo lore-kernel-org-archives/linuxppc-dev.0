@@ -2,24 +2,23 @@ Return-Path: <SRS0=RFqx=VD=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-4.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	UNWANTED_LANGUAGE_BODY,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
-	version=3.4.0
+	URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 72984C0650E
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  6 Jul 2019 19:04:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5C6D2C0650E
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  6 Jul 2019 19:07:36 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 00CB52075C
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  6 Jul 2019 19:04:36 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 00CB52075C
+	by mail.kernel.org (Postfix) with ESMTPS id DEC9A2075B
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  6 Jul 2019 19:07:35 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DEC9A2075B
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=cyphar.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45h1Nd4JNczDqWL
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  7 Jul 2019 05:04:33 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45h1S56HfhzDqMT
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  7 Jul 2019 05:07:33 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=cyphar.com
  (client-ip=2001:67c:2050:104:0:1:25:1; helo=mx1.mailbox.org;
@@ -30,28 +29,28 @@ Received: from mx1.mailbox.org (mx1.mailbox.org
  [IPv6:2001:67c:2050:104:0:1:25:1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45h1HQ0XKKzDqW8
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  7 Jul 2019 04:59:58 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45h1HQ3PwJzDqLW
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  7 Jul 2019 05:00:01 +1000 (AEST)
 Received: from smtp1.mailbox.org (smtp1.mailbox.org
  [IPv6:2001:67c:2050:105:465:1:1:0])
  (using TLSv1.2 with cipher ECDHE-RSA-CHACHA20-POLY1305 (256/256 bits))
  (No client certificate requested)
- by mx1.mailbox.org (Postfix) with ESMTPS id 5557250266;
- Sat,  6 Jul 2019 17:00:50 +0200 (CEST)
+ by mx1.mailbox.org (Postfix) with ESMTPS id 132D05052D;
+ Sat,  6 Jul 2019 17:00:15 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at heinlein-support.de
 Received: from smtp1.mailbox.org ([80.241.60.240])
- by hefe.heinlein-support.de (hefe.heinlein-support.de [91.198.250.172])
- (amavisd-new, port 10030)
- with ESMTP id AhUDKWrxSzUZ; Sat,  6 Jul 2019 17:00:43 +0200 (CEST)
+ by spamfilter02.heinlein-hosting.de (spamfilter02.heinlein-hosting.de
+ [80.241.56.116]) (amavisd-new, port 10030)
+ with ESMTP id 26ZZkkdPpKbl; Sat,  6 Jul 2019 17:00:10 +0200 (CEST)
 From: Aleksa Sarai <cyphar@cyphar.com>
 To: Al Viro <viro@zeniv.linux.org.uk>, Jeff Layton <jlayton@kernel.org>,
  "J. Bruce Fields" <bfields@fieldses.org>, Arnd Bergmann <arnd@arndb.de>,
  David Howells <dhowells@redhat.com>, Shuah Khan <shuah@kernel.org>,
  Shuah Khan <skhan@linuxfoundation.org>
-Subject: [PATCH v9 09/10] kselftest: save-and-restore errno to allow for %m
- formatting
-Date: Sun,  7 Jul 2019 00:57:36 +1000
-Message-Id: <20190706145737.5299-10-cyphar@cyphar.com>
+Subject: [PATCH v9 07/10] namei: aggressively check for nd->root escape on
+ ".." resolution
+Date: Sun,  7 Jul 2019 00:57:34 +1000
+Message-Id: <20190706145737.5299-8-cyphar@cyphar.com>
 In-Reply-To: <20190706145737.5299-1-cyphar@cyphar.com>
 References: <20190706145737.5299-1-cyphar@cyphar.com>
 MIME-Version: 1.0
@@ -88,123 +87,169 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Previously, using "%m" in a ksft_* format string can result in strange
-output because the errno value wasn't saved before calling other libc
-functions. The solution is to simply save and restore the errno before
-we format the user-supplied format string.
+This patch allows for LOOKUP_BENEATH and LOOKUP_IN_ROOT to safely permit
+".." resolution (in the case of LOOKUP_BENEATH the resolution will still
+fail if ".." resolution would resolve a path outside of the root --
+while LOOKUP_IN_ROOT will chroot(2)-style scope it). magic-link jumps
+are still disallowed entirely because now they could result in
+inconsistent behaviour if resolution encounters a subsequent "..".
 
+The need for this patch is explained by observing there is a fairly
+easy-to-exploit race condition with chroot(2) (and thus by extension
+LOOKUP_IN_ROOT and LOOKUP_BENEATH if ".." is allowed) where a rename(2)
+of a path can be used to "skip over" nd->root and thus escape to the
+filesystem above nd->root.
+
+  thread1 [attacker]:
+    for (;;)
+      renameat2(AT_FDCWD, "/a/b/c", AT_FDCWD, "/a/d", RENAME_EXCHANGE);
+  thread2 [victim]:
+    for (;;)
+      resolveat(dirb, "b/c/../../etc/shadow", RESOLVE_IN_ROOT);
+
+With fairly significant regularity, thread2 will resolve to
+"/etc/shadow" rather than "/a/b/etc/shadow". There is also a similar
+(though somewhat more privileged) attack using MS_MOVE.
+
+With this patch, such cases will be detected *during* ".." resolution
+(which is the weak point of chroot(2) -- since walking *into* a
+subdirectory tautologically cannot result in you walking *outside*
+nd->root -- except through a bind-mount or magic-link). By detecting
+this at ".." resolution (rather than checking only at the end of the
+entire resolution) we can both correct escapes by jumping back to the
+root (in the case of LOOKUP_IN_ROOT), as well as avoid revealing to
+attackers the structure of the filesystem outside of the root (through
+timing attacks for instance).
+
+In order to avoid a quadratic lookup with each ".." entry, we only
+activate the slow path if a write through &rename_lock or &mount_lock
+has occurred during path resolution (&rename_lock and &mount_lock are
+re-taken to further optimise the lookup). Since the primary attack being
+protected against is MS_MOVE or rename(2), not doing additional checks
+unless a mount or rename have occurred avoids making the common case
+slow.
+
+The use of path_is_under() here might seem suspect, but on further
+inspection of the most important race (a path was *inside* the root but
+is now *outside*), there appears to be no attack potential:
+
+  * If path_is_under() occurs before the rename, then the path will be
+    resolved -- however the path was originally inside the root and thus
+    there is no escape (and to userspace it'd look like the rename
+    occurred after the path was resolved). If path_is_under() occurs
+    afterwards, the resolution is blocked.
+
+  * Subsequent ".." jumps are guaranteed to check path_is_under() -- by
+    construction, &rename_lock or &mount_lock must have been taken by
+    the attacker after path_is_under() returned in the victim. Thus ".."
+    will not be able to escape from the previously-inside-root path.
+
+  * Walking down in the moved path is still safe since the entire
+    subtree was moved (either by rename(2) or MS_MOVE) and because (as
+    discussed above) walking down is safe.
+
+I have run a variant of the above attack in a loop on several machines
+with this patch, and no instances of a breakout were detected. While
+this is not concrete proof that this is safe, when combined with the
+above argument it should lend some trustworthiness to this construction.
+
+Cc: Al Viro <viro@zeniv.linux.org.uk>
+Cc: Jann Horn <jannh@google.com>
+Cc: Kees Cook <keescook@chromium.org>
 Signed-off-by: Aleksa Sarai <cyphar@cyphar.com>
 ---
- tools/testing/selftests/kselftest.h | 15 +++++++++++++++
- 1 file changed, 15 insertions(+)
+ fs/namei.c | 48 +++++++++++++++++++++++++++++++++---------------
+ 1 file changed, 33 insertions(+), 15 deletions(-)
 
-diff --git a/tools/testing/selftests/kselftest.h b/tools/testing/selftests/kselftest.h
-index ec15c4f6af55..0ac49d91a260 100644
---- a/tools/testing/selftests/kselftest.h
-+++ b/tools/testing/selftests/kselftest.h
-@@ -10,6 +10,7 @@
- #ifndef __KSELFTEST_H
- #define __KSELFTEST_H
- 
-+#include <errno.h>
- #include <stdlib.h>
- #include <unistd.h>
- #include <stdarg.h>
-@@ -81,58 +82,68 @@ static inline void ksft_print_cnts(void)
- 
- static inline void ksft_print_msg(const char *msg, ...)
+diff --git a/fs/namei.c b/fs/namei.c
+index ff016b9e9082..a3f527494791 100644
+--- a/fs/namei.c
++++ b/fs/namei.c
+@@ -491,7 +491,7 @@ struct nameidata {
+ 	struct path	root;
+ 	struct inode	*inode; /* path.dentry.d_inode */
+ 	unsigned int	flags;
+-	unsigned	seq, m_seq;
++	unsigned	seq, m_seq, r_seq;
+ 	int		last_type;
+ 	unsigned	depth;
+ 	int		total_link_count;
+@@ -1828,19 +1828,35 @@ static inline int may_lookup(struct nameidata *nd)
+ static inline int handle_dots(struct nameidata *nd, int type)
  {
-+	int saved_errno = errno;
- 	va_list args;
- 
- 	va_start(args, msg);
- 	printf("# ");
-+	errno = saved_errno;
- 	vprintf(msg, args);
- 	va_end(args);
+ 	if (type == LAST_DOTDOT) {
+-		/*
+-		 * LOOKUP_BENEATH resolving ".." is not currently safe -- races can
+-		 * cause our parent to have moved outside of the root and us to skip
+-		 * over it.
+-		 */
+-		if (unlikely(nd->flags & (LOOKUP_BENEATH | LOOKUP_IN_ROOT)))
+-			return -EXDEV;
++		int error = 0;
++
+ 		if (!nd->root.mnt)
+ 			set_root(nd);
+-		if (nd->flags & LOOKUP_RCU) {
+-			return follow_dotdot_rcu(nd);
+-		} else
+-			return follow_dotdot(nd);
++		if (nd->flags & LOOKUP_RCU)
++			error = follow_dotdot_rcu(nd);
++		else
++			error = follow_dotdot(nd);
++		if (error)
++			return error;
++
++		if (unlikely(nd->flags & (LOOKUP_BENEATH | LOOKUP_IN_ROOT))) {
++			bool m_retry = read_seqretry(&mount_lock, nd->m_seq);
++			bool r_retry = read_seqretry(&rename_lock, nd->r_seq);
++
++			/*
++			 * Don't bother checking unless there's a racing
++			 * rename(2) or MS_MOVE.
++			 */
++			if (likely(!m_retry && !r_retry))
++				return 0;
++
++			if (m_retry && !(nd->flags & LOOKUP_RCU))
++				nd->m_seq = read_seqbegin(&mount_lock);
++			if (r_retry)
++				nd->r_seq = read_seqbegin(&rename_lock);
++			if (!path_is_under(&nd->path, &nd->root))
++				return -EXDEV;
++		}
+ 	}
+ 	return 0;
  }
+@@ -2361,6 +2377,11 @@ static const char *path_init(struct nameidata *nd, unsigned flags)
+ 	nd->last_type = LAST_ROOT; /* if there are only slashes... */
+ 	nd->flags = flags | LOOKUP_JUMPED | LOOKUP_PARENT;
+ 	nd->depth = 0;
++
++	nd->m_seq = read_seqbegin(&mount_lock);
++	if (unlikely(flags & (LOOKUP_BENEATH | LOOKUP_IN_ROOT)))
++		nd->r_seq = read_seqbegin(&rename_lock);
++
+ 	if (flags & LOOKUP_ROOT) {
+ 		struct dentry *root = nd->root.dentry;
+ 		struct inode *inode = root->d_inode;
+@@ -2371,7 +2392,6 @@ static const char *path_init(struct nameidata *nd, unsigned flags)
+ 		if (flags & LOOKUP_RCU) {
+ 			nd->seq = __read_seqcount_begin(&nd->path.dentry->d_seq);
+ 			nd->root_seq = nd->seq;
+-			nd->m_seq = read_seqbegin(&mount_lock);
+ 		} else {
+ 			path_get(&nd->path);
+ 		}
+@@ -2382,8 +2402,6 @@ static const char *path_init(struct nameidata *nd, unsigned flags)
+ 	nd->path.mnt = NULL;
+ 	nd->path.dentry = NULL;
  
- static inline void ksft_test_result_pass(const char *msg, ...)
- {
-+	int saved_errno = errno;
- 	va_list args;
- 
- 	ksft_cnt.ksft_pass++;
- 
- 	va_start(args, msg);
- 	printf("ok %d ", ksft_test_num());
-+	errno = saved_errno;
- 	vprintf(msg, args);
- 	va_end(args);
- }
- 
- static inline void ksft_test_result_fail(const char *msg, ...)
- {
-+	int saved_errno = errno;
- 	va_list args;
- 
- 	ksft_cnt.ksft_fail++;
- 
- 	va_start(args, msg);
- 	printf("not ok %d ", ksft_test_num());
-+	errno = saved_errno;
- 	vprintf(msg, args);
- 	va_end(args);
- }
- 
- static inline void ksft_test_result_skip(const char *msg, ...)
- {
-+	int saved_errno = errno;
- 	va_list args;
- 
- 	ksft_cnt.ksft_xskip++;
- 
- 	va_start(args, msg);
- 	printf("not ok %d # SKIP ", ksft_test_num());
-+	errno = saved_errno;
- 	vprintf(msg, args);
- 	va_end(args);
- }
- 
- static inline void ksft_test_result_error(const char *msg, ...)
- {
-+	int saved_errno = errno;
- 	va_list args;
- 
- 	ksft_cnt.ksft_error++;
- 
- 	va_start(args, msg);
- 	printf("not ok %d # error ", ksft_test_num());
-+	errno = saved_errno;
- 	vprintf(msg, args);
- 	va_end(args);
- }
-@@ -152,10 +163,12 @@ static inline int ksft_exit_fail(void)
- 
- static inline int ksft_exit_fail_msg(const char *msg, ...)
- {
-+	int saved_errno = errno;
- 	va_list args;
- 
- 	va_start(args, msg);
- 	printf("Bail out! ");
-+	errno = saved_errno;
- 	vprintf(msg, args);
- 	va_end(args);
- 
-@@ -178,10 +191,12 @@ static inline int ksft_exit_xpass(void)
- static inline int ksft_exit_skip(const char *msg, ...)
- {
- 	if (msg) {
-+		int saved_errno = errno;
- 		va_list args;
- 
- 		va_start(args, msg);
- 		printf("not ok %d # SKIP ", 1 + ksft_test_num());
-+		errno = saved_errno;
- 		vprintf(msg, args);
- 		va_end(args);
- 	} else {
+-	nd->m_seq = read_seqbegin(&mount_lock);
+-
+ 	if (unlikely(nd->flags & (LOOKUP_BENEATH | LOOKUP_IN_ROOT))) {
+ 		error = dirfd_path_init(nd);
+ 		if (unlikely(error))
 -- 
 2.22.0
 
