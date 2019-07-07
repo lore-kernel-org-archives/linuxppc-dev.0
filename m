@@ -1,58 +1,91 @@
-Return-Path: <SRS0=RFqx=VD=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
+Return-Path: <SRS0=WV6v=VE=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-10.0 required=3.0
+	tests=HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3135DC0650E
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  6 Jul 2019 19:18:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DB748C5B578
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  7 Jul 2019 00:20:42 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 80CC12075B
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  6 Jul 2019 19:18:03 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 80CC12075B
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=cyphar.com
+	by mail.kernel.org (Postfix) with ESMTPS id 2DF1120830
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  7 Jul 2019 00:20:41 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2DF1120830
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45h1h84C8MzDqPN
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  7 Jul 2019 05:18:00 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45h8PM5Y3szDqGk
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  7 Jul 2019 10:20:39 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=cyphar.com
- (client-ip=80.241.60.212; helo=mx1.mailbox.org;
- envelope-from=cyphar@cyphar.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
+ (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
+ envelope-from=nayna@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=cyphar.com
-Received: from mx1.mailbox.org (mx1.mailbox.org [80.241.60.212])
+ dmarc=none (p=none dis=none) header.from=linux.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45h1cg557yzDqP2
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  7 Jul 2019 05:14:58 +1000 (AEST)
-Received: from smtp1.mailbox.org (smtp1.mailbox.org
- [IPv6:2001:67c:2050:105:465:1:1:0])
- (using TLSv1.2 with cipher ECDHE-RSA-CHACHA20-POLY1305 (256/256 bits))
- (No client certificate requested)
- by mx1.mailbox.org (Postfix) with ESMTPS id 3B29C501CB;
- Sat,  6 Jul 2019 16:59:48 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at heinlein-support.de
-Received: from smtp1.mailbox.org ([80.241.60.240])
- by hefe.heinlein-support.de (hefe.heinlein-support.de [91.198.250.172])
- (amavisd-new, port 10030)
- with ESMTP id fwSGhtcYU9ka; Sat,  6 Jul 2019 16:59:37 +0200 (CEST)
-From: Aleksa Sarai <cyphar@cyphar.com>
-To: Al Viro <viro@zeniv.linux.org.uk>, Jeff Layton <jlayton@kernel.org>,
- "J. Bruce Fields" <bfields@fieldses.org>, Arnd Bergmann <arnd@arndb.de>,
- David Howells <dhowells@redhat.com>, Shuah Khan <shuah@kernel.org>,
- Shuah Khan <skhan@linuxfoundation.org>
-Subject: [PATCH v9 05/10] namei: O_BENEATH-style path resolution flags
-Date: Sun,  7 Jul 2019 00:57:32 +1000
-Message-Id: <20190706145737.5299-6-cyphar@cyphar.com>
-In-Reply-To: <20190706145737.5299-1-cyphar@cyphar.com>
-References: <20190706145737.5299-1-cyphar@cyphar.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45h8Mj6dYwzDqRy
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  7 Jul 2019 10:19:13 +1000 (AEST)
+Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
+ x670HLbV036023
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 6 Jul 2019 20:19:09 -0400
+Received: from e06smtp07.uk.ibm.com (e06smtp07.uk.ibm.com [195.75.94.103])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2tjr58kfr8-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 06 Jul 2019 20:19:08 -0400
+Received: from localhost
+ by e06smtp07.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <nayna@linux.ibm.com>;
+ Sun, 7 Jul 2019 01:19:06 +0100
+Received: from b06cxnps4076.portsmouth.uk.ibm.com (9.149.109.198)
+ by e06smtp07.uk.ibm.com (192.168.101.137) with IBM ESMTP SMTP Gateway:
+ Authorized Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Sun, 7 Jul 2019 01:19:03 +0100
+Received: from d06av26.portsmouth.uk.ibm.com (d06av26.portsmouth.uk.ibm.com
+ [9.149.105.62])
+ by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x670J2XS23331042
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Sun, 7 Jul 2019 00:19:02 GMT
+Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id F353DAE051;
+ Sun,  7 Jul 2019 00:19:01 +0000 (GMT)
+Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 1E826AE053;
+ Sun,  7 Jul 2019 00:18:59 +0000 (GMT)
+Received: from swastik.ibm.com (unknown [9.80.232.154])
+ by d06av26.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Sun,  7 Jul 2019 00:18:58 +0000 (GMT)
+From: Nayna Jain <nayna@linux.ibm.com>
+To: linux-integrity@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH v2] tpm: tpm_ibm_vtpm: Fix unallocated banks
+Date: Sat,  6 Jul 2019 20:18:45 -0400
+X-Mailer: git-send-email 1.8.3.1
 MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+x-cbid: 19070700-0028-0000-0000-000003817FD5
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 19070700-0029-0000-0000-0000244184A4
+Message-Id: <1562458725-15999-1-git-send-email-nayna@linux.ibm.com>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
+ definitions=2019-07-06_07:, , signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1810050000 definitions=main-1907070003
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -64,308 +97,189 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org,
- Alexei Starovoitov <ast@kernel.org>, Oleg Nesterov <oleg@redhat.com>,
- linux-kselftest@vger.kernel.org, sparclinux@vger.kernel.org,
- linux-arch@vger.kernel.org, linux-s390@vger.kernel.org,
- Tycho Andersen <tycho@tycho.ws>, Aleksa Sarai <asarai@suse.de>,
- linux-arm-kernel@lists.infradead.org, linux-mips@vger.kernel.org,
- linux-xtensa@linux-xtensa.org, Kees Cook <keescook@chromium.org>,
- Jann Horn <jannh@google.com>, linuxppc-dev@lists.ozlabs.org,
- Aleksa Sarai <cyphar@cyphar.com>, Andy Lutomirski <luto@kernel.org>,
- David Drysdale <drysdale@google.com>, Christian Brauner <christian@brauner.io>,
- linux-parisc@vger.kernel.org, linux-m68k@lists.linux-m68k.org,
- linux-api@vger.kernel.org, Chanho Min <chanho.min@lge.com>,
- linux-kernel@vger.kernel.org, Eric Biederman <ebiederm@xmission.com>,
- linux-alpha@vger.kernel.org, linux-fsdevel@vger.kernel.org,
- Andrew Morton <akpm@linux-foundation.org>,
- Linus Torvalds <torvalds@linux-foundation.org>,
- containers@lists.linux-foundation.org
+Cc: Sachin Sant <sachinp@linux.vnet.ibm.com>,
+ Michal Suchanek <msuchanek@suse.de>, Nayna Jain <nayna@linux.ibm.com>,
+ linux-kernel@vger.kernel.org,
+ Jarkko Sakkinen <jarkko.sakkinen@linux.intel.com>,
+ Jason Gunthorpe <jgg@ziepe.ca>, Mimi Zohar <zohar@linux.ibm.com>,
+ Peter Huewe <peterhuewe@gmx.de>, George Wilson <gcwilson@linux.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Add the following flags to allow various restrictions on path
-resolution (these affect the *entire* resolution, rather than just the
-final path component -- as is the case with most other AT_* flags).
+The nr_allocated_banks and allocated banks are initialized as part of
+tpm_chip_register. Currently, this is done as part of auto startup
+function. However, some drivers, like the ibm vtpm driver, do not run
+auto startup during initialization. This results in uninitialized memory
+issue and causes a kernel panic during boot.
 
-The primary justification for these flags is to allow for programs to be
-far more strict about how they want path resolution to handle symlinks,
-mountpoint crossings, and paths that escape the dirfd (through an
-absolute path or ".." shenanigans).
+This patch moves the pcr allocation outside the auto startup function
+into tpm_chip_register. This ensures that allocated banks are initialized
+in any case.
 
-This is of particular concern to container runtimes that want to be very
-careful about malicious root filesystems that a container's init might
-have screwed around with (and there is no real way to protect against
-this in userspace if you consider potential races against a malicious
-container's init). More classical applications (which have their own
-potentially buggy userspace path sanitisation code) include web
-servers, archive extraction tools, network file servers, and so on.
-
-These flags are exposed to userspace in a later patchset.
-
-* LOOKUP_XDEV: Disallow mount-point crossing (both *down* into one, or
-  *up* from one). The primary "scoping" use is to blocking resolution
-  that crosses a bind-mount, which has a similar property to a symlink
-  (in the way that it allows for escape from the starting-point). Since
-  it is not possible to differentiate bind-mounts However since
-  bind-mounting requires privileges (in ways symlinks don't) this has
-  been split from LOOKUP_BENEATH. The naming is based on "find -xdev" as
-  well as -EXDEV (though find(1) doesn't walk upwards, the semantics
-  seem obvious).
-
-* LOOKUP_NO_MAGICLINKS: Disallows ->get_link "symlink" jumping. This is
-  a very specific restriction, and it exists because /proc/$pid/fd/...
-  "symlinks" allow for access outside nd->root and pose risk to
-  container runtimes that don't want to be tricked into accessing a host
-  path (but do want to allow no-funny-business symlink resolution).
-
-* LOOKUP_NO_SYMLINKS: Disallows symlink jumping *of any kind*. Implies
-  LOOKUP_NO_MAGICLINKS (obviously).
-
-* LOOKUP_BENEATH: Disallow "escapes" from the starting point of the
-  filesystem tree during resolution (you must stay "beneath" the
-  starting point at all times). Currently this is done by disallowing
-  ".." and absolute paths (either in the given path or found during
-  symlink resolution) entirely, as well as all magic-link jumping.
-
-  The wholesale banning of ".." is because it is currently not safe to
-  allow ".." resolution (races can cause the path to be moved outside of
-  the root -- this is conceptually similar to historical chroot(2)
-  escape attacks). Future patches in this series will address this, and
-  will re-enable ".." resolution once it is safe. With those patches,
-  ".." resolution will only be allowed if it remains in the root
-  throughout resolution (such as "a/../b" not "a/../../outside/b").
-
-  The banning of magic-link jumping is done because it is not clear
-  whether semantically they should be allowed -- while some magic-links
-  are safe there are many that can cause escapes (and once a
-  resolution is outside of the root, O_BENEATH will no longer detect
-  it). Future patches may re-enable magic-link jumping when such jumps
-  would remain inside the root.
-
-The LOOKUP_NO_*LINK flags return -ELOOP if path resolution would
-violates their requirement, while the others all return -EXDEV.
-
-This is a refresh of Al's AT_NO_JUMPS patchset[1] (which was a variation
-on David Drysdale's O_BENEATH patchset[2], which in turn was based on
-the Capsicum project[3]). Input from Linus and Andy in the AT_NO_JUMPS
-thread[4] determined most of the API changes made in this refresh.
-
-[1]: https://lwn.net/Articles/721443/
-[2]: https://lwn.net/Articles/619151/
-[3]: https://lwn.net/Articles/603929/
-[4]: https://lwn.net/Articles/723057/
-
-Cc: Christian Brauner <christian@brauner.io>
-Suggested-by: David Drysdale <drysdale@google.com>
-Suggested-by: Al Viro <viro@zeniv.linux.org.uk>
-Suggested-by: Andy Lutomirski <luto@kernel.org>
-Suggested-by: Linus Torvalds <torvalds@linux-foundation.org>
-Signed-off-by: Aleksa Sarai <cyphar@cyphar.com>
+Fixes: 879b589210a9 ("tpm: retrieve digest size of unknown algorithms with
+PCR read")
+Reported-by: Michal Suchanek <msuchanek@suse.de>
+Signed-off-by: Nayna Jain <nayna@linux.ibm.com>
+Reviewed-by: Mimi Zohar <zohar@linux.ibm.com>
+Tested-by: Sachin Sant <sachinp@linux.vnet.ibm.com>
+Tested-by: Michal Suchánek <msuchanek@suse.de>
 ---
- fs/namei.c            | 74 ++++++++++++++++++++++++++++++++++++-------
- include/linux/namei.h |  7 ++++
- 2 files changed, 70 insertions(+), 11 deletions(-)
+Changelog:
 
-diff --git a/fs/namei.c b/fs/namei.c
-index b490bcf855f8..9c3ed597466b 100644
---- a/fs/namei.c
-+++ b/fs/namei.c
-@@ -852,6 +852,13 @@ static inline void path_to_nameidata(const struct path *path,
- 
- static int nd_jump_root(struct nameidata *nd)
- {
-+	if (unlikely(nd->flags & LOOKUP_BENEATH))
-+		return -EXDEV;
-+	if (unlikely(nd->flags & LOOKUP_XDEV)) {
-+		/* Absolute path arguments to path_init() are allowed. */
-+		if (nd->path.mnt != NULL && nd->path.mnt != nd->root.mnt)
-+			return -EXDEV;
-+	}
- 	if (nd->flags & LOOKUP_RCU) {
- 		struct dentry *d;
- 		nd->path = nd->root;
-@@ -1104,6 +1111,9 @@ const char *get_link(struct nameidata *nd, bool trailing)
- 	int error;
- 	const char *res;
- 
-+	if (unlikely(nd->flags & LOOKUP_NO_SYMLINKS))
-+		return ERR_PTR(-ELOOP);
-+
- 	if (!(nd->flags & LOOKUP_RCU)) {
- 		touch_atime(&last->link);
- 		cond_resched();
-@@ -1136,6 +1146,11 @@ const char *get_link(struct nameidata *nd, bool trailing)
- 		}
- 		/* If we just jumped it was because of a magic-link. */
- 		if (unlikely(nd->flags & LOOKUP_JUMPED)) {
-+			if (unlikely(nd->flags & LOOKUP_NO_MAGICLINKS))
-+				return ERR_PTR(-ELOOP);
-+			/* Not currently safe. */
-+			if (unlikely(nd->flags & LOOKUP_BENEATH))
-+				return ERR_PTR(-EXDEV);
- 			/*
- 			 * For trailing_symlink we check whether the symlink's
- 			 * mode allows us to do what we want through acc_mode.
-@@ -1178,8 +1193,9 @@ const char *get_link(struct nameidata *nd, bool trailing)
- 	if (*res == '/') {
- 		if (!nd->root.mnt)
- 			set_root(nd);
--		if (unlikely(nd_jump_root(nd)))
--			return ERR_PTR(-ECHILD);
-+		error = nd_jump_root(nd);
-+		if (unlikely(error))
-+			return ERR_PTR(error);
- 		while (unlikely(*++res == '/'))
- 			;
- 	}
-@@ -1360,12 +1376,16 @@ static int follow_managed(struct path *path, struct nameidata *nd)
- 		break;
- 	}
- 
--	if (need_mntput && path->mnt == mnt)
--		mntput(path->mnt);
-+	if (need_mntput) {
-+		if (path->mnt == mnt)
-+			mntput(path->mnt);
-+		if (unlikely(nd->flags & LOOKUP_XDEV))
-+			ret = -EXDEV;
-+		else
-+			nd->flags |= LOOKUP_JUMPED;
-+	}
- 	if (ret == -EISDIR || !ret)
- 		ret = 1;
--	if (need_mntput)
--		nd->flags |= LOOKUP_JUMPED;
- 	if (unlikely(ret < 0))
- 		path_put_conditional(path, nd);
- 	return ret;
-@@ -1422,6 +1442,8 @@ static bool __follow_mount_rcu(struct nameidata *nd, struct path *path,
- 		mounted = __lookup_mnt(path->mnt, path->dentry);
- 		if (!mounted)
- 			break;
-+		if (unlikely(nd->flags & LOOKUP_XDEV))
-+			return false;
- 		path->mnt = &mounted->mnt;
- 		path->dentry = mounted->mnt.mnt_root;
- 		nd->flags |= LOOKUP_JUMPED;
-@@ -1442,8 +1464,11 @@ static int follow_dotdot_rcu(struct nameidata *nd)
- 	struct inode *inode = nd->inode;
- 
- 	while (1) {
--		if (path_equal(&nd->path, &nd->root))
-+		if (path_equal(&nd->path, &nd->root)) {
-+			if (unlikely(nd->flags & LOOKUP_BENEATH))
-+				return -EXDEV;
- 			break;
-+		}
- 		if (nd->path.dentry != nd->path.mnt->mnt_root) {
- 			struct dentry *old = nd->path.dentry;
- 			struct dentry *parent = old->d_parent;
-@@ -1468,6 +1493,8 @@ static int follow_dotdot_rcu(struct nameidata *nd)
- 				return -ECHILD;
- 			if (&mparent->mnt == nd->path.mnt)
- 				break;
-+			if (unlikely(nd->flags & LOOKUP_XDEV))
-+				return -EXDEV;
- 			/* we know that mountpoint was pinned */
- 			nd->path.dentry = mountpoint;
- 			nd->path.mnt = &mparent->mnt;
-@@ -1482,6 +1509,8 @@ static int follow_dotdot_rcu(struct nameidata *nd)
- 			return -ECHILD;
- 		if (!mounted)
- 			break;
-+		if (unlikely(nd->flags & LOOKUP_XDEV))
-+			return -EXDEV;
- 		nd->path.mnt = &mounted->mnt;
- 		nd->path.dentry = mounted->mnt.mnt_root;
- 		inode = nd->path.dentry->d_inode;
-@@ -1570,8 +1599,11 @@ static int path_parent_directory(struct path *path)
- static int follow_dotdot(struct nameidata *nd)
- {
- 	while(1) {
--		if (path_equal(&nd->path, &nd->root))
-+		if (path_equal(&nd->path, &nd->root)) {
-+			if (unlikely(nd->flags & LOOKUP_BENEATH))
-+				return -EXDEV;
- 			break;
-+		}
- 		if (nd->path.dentry != nd->path.mnt->mnt_root) {
- 			int ret = path_parent_directory(&nd->path);
- 			if (ret)
-@@ -1580,6 +1612,8 @@ static int follow_dotdot(struct nameidata *nd)
- 		}
- 		if (!follow_up(&nd->path))
- 			break;
-+		if (unlikely(nd->flags & LOOKUP_XDEV))
-+			return -EXDEV;
- 	}
- 	follow_mount(&nd->path);
- 	nd->inode = nd->path.dentry->d_inode;
-@@ -1794,6 +1828,13 @@ static inline int may_lookup(struct nameidata *nd)
- static inline int handle_dots(struct nameidata *nd, int type)
- {
- 	if (type == LAST_DOTDOT) {
-+		/*
-+		 * LOOKUP_BENEATH resolving ".." is not currently safe -- races can
-+		 * cause our parent to have moved outside of the root and us to skip
-+		 * over it.
-+		 */
-+		if (unlikely(nd->flags & LOOKUP_BENEATH))
-+			return -EXDEV;
- 		if (!nd->root.mnt)
- 			set_root(nd);
- 		if (nd->flags & LOOKUP_RCU) {
-@@ -2342,6 +2383,15 @@ static const char *path_init(struct nameidata *nd, unsigned flags)
- 	nd->path.dentry = NULL;
- 
- 	nd->m_seq = read_seqbegin(&mount_lock);
-+
-+	if (unlikely(nd->flags & LOOKUP_BENEATH)) {
-+		error = dirfd_path_init(nd);
-+		if (unlikely(error))
-+			return ERR_PTR(error);
-+		nd->root = nd->path;
-+		if (!(nd->flags & LOOKUP_RCU))
-+			path_get(&nd->root);
-+	}
- 	if (*s == '/') {
- 		if (likely(!nd->root.mnt))
- 			set_root(nd);
-@@ -2350,9 +2400,11 @@ static const char *path_init(struct nameidata *nd, unsigned flags)
- 			s = ERR_PTR(error);
- 		return s;
- 	}
--	error = dirfd_path_init(nd);
--	if (unlikely(error))
--		return ERR_PTR(error);
-+	if (likely(!nd->path.mnt)) {
-+		error = dirfd_path_init(nd);
-+		if (unlikely(error))
-+			return ERR_PTR(error);
-+	}
- 	return s;
+v2:
+* Includes Jarkko's feedbacks
+  * fixes the function name to tpm_get_pcr_allocation()
+  * adds new function tpm1_get_pcr_allocation()
+  * updates patch summary line
+  * fixes alignment
+  * adds Reported-by: Michal Suchanek <msuchanek@suse.de>
+* Includes Stefan's feedbacks
+  * Fixes overwriting of return code
+  * Fixes misplacing of tpm_chip_stop()
+* Adds Reviewed-by, Tested-by
+
+ drivers/char/tpm/tpm-chip.c | 22 ++++++++++++++++++++++
+ drivers/char/tpm/tpm.h      |  2 ++
+ drivers/char/tpm/tpm1-cmd.c | 36 ++++++++++++++++++++++++------------
+ drivers/char/tpm/tpm2-cmd.c |  6 +-----
+ 4 files changed, 49 insertions(+), 17 deletions(-)
+
+diff --git a/drivers/char/tpm/tpm-chip.c b/drivers/char/tpm/tpm-chip.c
+index 8804c9e916fd..6589291df355 100644
+--- a/drivers/char/tpm/tpm-chip.c
++++ b/drivers/char/tpm/tpm-chip.c
+@@ -550,6 +550,22 @@ static int tpm_add_hwrng(struct tpm_chip *chip)
+ 	return hwrng_register(&chip->hwrng);
  }
  
-diff --git a/include/linux/namei.h b/include/linux/namei.h
-index 9138b4471dbf..7bc819ad0cd3 100644
---- a/include/linux/namei.h
-+++ b/include/linux/namei.h
-@@ -50,6 +50,13 @@ enum {LAST_NORM, LAST_ROOT, LAST_DOT, LAST_DOTDOT, LAST_BIND};
- #define LOOKUP_EMPTY		0x4000
- #define LOOKUP_DOWN		0x8000
- 
-+/* Scoping flags for lookup. */
-+#define LOOKUP_BENEATH		0x010000 /* No escaping from starting point. */
-+#define LOOKUP_XDEV		0x020000 /* No mountpoint crossing. */
-+#define LOOKUP_NO_MAGICLINKS	0x040000 /* No /proc/$pid/fd/ "symlink" crossing. */
-+#define LOOKUP_NO_SYMLINKS	0x080000 /* No symlink crossing *at all*.
-+					    Implies LOOKUP_NO_MAGICLINKS. */
++/*
++ * tpm_get_pcr_allocation() - initialize the chip allocated banks for PCRs
++ * @chip: TPM chip to use.
++ */
++static int tpm_get_pcr_allocation(struct tpm_chip *chip)
++{
++	int rc;
 +
- extern int path_pts(struct path *path);
++	if (chip->flags & TPM_CHIP_FLAG_TPM2)
++		rc = tpm2_get_pcr_allocation(chip);
++	else
++		rc = tpm1_get_pcr_allocation(chip);
++
++	return rc;
++}
++
+ /*
+  * tpm_chip_register() - create a character device for the TPM chip
+  * @chip: TPM chip to use.
+@@ -569,6 +585,12 @@ int tpm_chip_register(struct tpm_chip *chip)
+ 	if (rc)
+ 		return rc;
+ 	rc = tpm_auto_startup(chip);
++	if (rc) {
++		tpm_chip_stop(chip);
++		return rc;
++	}
++
++	rc = tpm_get_pcr_allocation(chip);
+ 	tpm_chip_stop(chip);
+ 	if (rc)
+ 		return rc;
+diff --git a/drivers/char/tpm/tpm.h b/drivers/char/tpm/tpm.h
+index 2cce072f25b5..d571df3694c3 100644
+--- a/drivers/char/tpm/tpm.h
++++ b/drivers/char/tpm/tpm.h
+@@ -399,6 +399,7 @@ int tpm1_pcr_read(struct tpm_chip *chip, u32 pcr_idx, u8 *res_buf);
+ ssize_t tpm1_getcap(struct tpm_chip *chip, u32 subcap_id, cap_t *cap,
+ 		    const char *desc, size_t min_cap_length);
+ int tpm1_get_random(struct tpm_chip *chip, u8 *out, size_t max);
++int tpm1_get_pcr_allocation(struct tpm_chip *chip);
+ unsigned long tpm_calc_ordinal_duration(struct tpm_chip *chip, u32 ordinal);
+ int tpm_pm_suspend(struct device *dev);
+ int tpm_pm_resume(struct device *dev);
+@@ -454,6 +455,7 @@ int tpm2_unseal_trusted(struct tpm_chip *chip,
+ ssize_t tpm2_get_tpm_pt(struct tpm_chip *chip, u32 property_id,
+ 			u32 *value, const char *desc);
  
- extern int user_path_at_empty(int, const char __user *, unsigned, struct path *, int *empty);
++ssize_t tpm2_get_pcr_allocation(struct tpm_chip *chip);
+ int tpm2_auto_startup(struct tpm_chip *chip);
+ void tpm2_shutdown(struct tpm_chip *chip, u16 shutdown_type);
+ unsigned long tpm2_calc_ordinal_duration(struct tpm_chip *chip, u32 ordinal);
+diff --git a/drivers/char/tpm/tpm1-cmd.c b/drivers/char/tpm/tpm1-cmd.c
+index 85dcf2654d11..260a3917f0fe 100644
+--- a/drivers/char/tpm/tpm1-cmd.c
++++ b/drivers/char/tpm/tpm1-cmd.c
+@@ -696,18 +696,6 @@ int tpm1_auto_startup(struct tpm_chip *chip)
+ 		goto out;
+ 	}
+ 
+-	chip->allocated_banks = kcalloc(1, sizeof(*chip->allocated_banks),
+-					GFP_KERNEL);
+-	if (!chip->allocated_banks) {
+-		rc = -ENOMEM;
+-		goto out;
+-	}
+-
+-	chip->allocated_banks[0].alg_id = TPM_ALG_SHA1;
+-	chip->allocated_banks[0].digest_size = hash_digest_size[HASH_ALGO_SHA1];
+-	chip->allocated_banks[0].crypto_id = HASH_ALGO_SHA1;
+-	chip->nr_allocated_banks = 1;
+-
+ 	return rc;
+ out:
+ 	if (rc > 0)
+@@ -776,3 +764,27 @@ int tpm1_pm_suspend(struct tpm_chip *chip, u32 tpm_suspend_pcr)
+ 	return rc;
+ }
+ 
++/**
++ * tpm1_get_pcr_allocation() - initialize the allocated bank
++ * @chip: TPM chip to use.
++ *
++ * The function initializes the SHA1 allocated bank to extend PCR
++ *
++ * Return:
++ * * 0 on success,
++ * * < 0 on error.
++ */
++int tpm1_get_pcr_allocation(struct tpm_chip *chip)
++{
++	chip->allocated_banks = kcalloc(1, sizeof(*chip->allocated_banks),
++					GFP_KERNEL);
++	if (!chip->allocated_banks)
++		return -ENOMEM;
++
++	chip->allocated_banks[0].alg_id = TPM_ALG_SHA1;
++	chip->allocated_banks[0].digest_size = hash_digest_size[HASH_ALGO_SHA1];
++	chip->allocated_banks[0].crypto_id = HASH_ALGO_SHA1;
++	chip->nr_allocated_banks = 1;
++
++	return 0;
++}
+diff --git a/drivers/char/tpm/tpm2-cmd.c b/drivers/char/tpm/tpm2-cmd.c
+index e74c5b7b64bf..b4384d0e3741 100644
+--- a/drivers/char/tpm/tpm2-cmd.c
++++ b/drivers/char/tpm/tpm2-cmd.c
+@@ -841,7 +841,7 @@ struct tpm2_pcr_selection {
+ 	u8  pcr_select[3];
+ } __packed;
+ 
+-static ssize_t tpm2_get_pcr_allocation(struct tpm_chip *chip)
++ssize_t tpm2_get_pcr_allocation(struct tpm_chip *chip)
+ {
+ 	struct tpm2_pcr_selection pcr_selection;
+ 	struct tpm_buf buf;
+@@ -1041,10 +1041,6 @@ int tpm2_auto_startup(struct tpm_chip *chip)
+ 			goto out;
+ 	}
+ 
+-	rc = tpm2_get_pcr_allocation(chip);
+-	if (rc)
+-		goto out;
+-
+ 	rc = tpm2_get_cc_attrs_tbl(chip);
+ 
+ out:
 -- 
-2.22.0
+2.20.1
 
