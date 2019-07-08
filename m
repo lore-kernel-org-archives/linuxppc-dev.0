@@ -4,40 +4,41 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS
-	autolearn=ham autolearn_force=no version=3.4.0
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8E8D6C0650E
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Jul 2019 01:53:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 915B1C0650E
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Jul 2019 01:54:53 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 49605204EC
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Jul 2019 01:53:18 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 49605204EC
+	by mail.kernel.org (Postfix) with ESMTPS id 4D5192053B
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Jul 2019 01:54:53 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4D5192053B
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45hpPm2CFWzDqWK
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Jul 2019 11:53:16 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+	by lists.ozlabs.org (Postfix) with ESMTP id 45hpRb2hx0zDqJS
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Jul 2019 11:54:51 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45hng23gGGzDqQN
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45hng26vQDzDqQV
  for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Jul 2019 11:19:42 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 45hng16MfYz9sNx; Mon,  8 Jul 2019 11:19:41 +1000 (AEST)
+ id 45hng20xqlz9sNs; Mon,  8 Jul 2019 11:19:42 +1000 (AEST)
 X-powerpc-patch-notification: thanks
-X-powerpc-patch-commit: 3ab3a0689e74e6aa5b41360bc18861040ddef5b1
-In-Reply-To: <20190615152313.26288-1-chunkeey@gmail.com>
-To: Christian Lamparter <chunkeey@gmail.com>, linuxppc-dev@lists.ozlabs.org
+X-powerpc-patch-commit: 7b570361f6f66c91443541b19121038c076e7d64
+In-Reply-To: <20190617145204.6810-1-geert+renesas@glider.be>
+To: Geert Uytterhoeven <geert+renesas@glider.be>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Shuah Khan <shuah@kernel.org>
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Subject: Re: [PATCH] powerpc/4xx/uic: clear pending interrupt after irq
- type/pol change
-Message-Id: <45hng16MfYz9sNx@ozlabs.org>
-Date: Mon,  8 Jul 2019 11:19:41 +1000 (AEST)
+Subject: Re: [PATCH] selftests/powerpc: Add missing newline at end of file
+Message-Id: <45hng20xqlz9sNs@ozlabs.org>
+Date: Mon,  8 Jul 2019 11:19:42 +1000 (AEST)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -49,25 +50,23 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Paul Mackerras <paulus@samba.org>
+Cc: linux-kselftest@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Sat, 2019-06-15 at 15:23:13 UTC, Christian Lamparter wrote:
-> When testing out gpio-keys with a button, a spurious
-> interrupt (and therefore a key press or release event)
-> gets triggered as soon as the driver enables the irq
-> line for the first time.
+On Mon, 2019-06-17 at 14:52:04 UTC, Geert Uytterhoeven wrote:
+> "git diff" says:
 > 
-> This patch clears any potential bogus generated interrupt
-> that was caused by the switching of the associated irq's
-> type and polarity.
+>     \ No newline at end of file
 > 
-> Signed-off-by: Christian Lamparter <chunkeey@gmail.com>
+> after modifying the file.
+> 
+> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
 
 Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/3ab3a0689e74e6aa5b41360bc18861040ddef5b1
+https://git.kernel.org/powerpc/c/7b570361f6f66c91443541b19121038c076e7d64
 
 cheers
