@@ -3,44 +3,41 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
 X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS
-	autolearn=unavailable autolearn_force=no version=3.4.0
+	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E5C37C0650E
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Jul 2019 01:35:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DFC9AC0650E
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Jul 2019 01:37:07 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id A09BD20665
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Jul 2019 01:35:20 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A09BD20665
+	by mail.kernel.org (Postfix) with ESMTPS id 93C9820665
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Jul 2019 01:37:07 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 93C9820665
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45hp115Tt9zDqKV
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Jul 2019 11:35:17 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+	by lists.ozlabs.org (Postfix) with ESMTP id 45hp352kT4zDqSt
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Jul 2019 11:37:05 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45hnft15T8zDqQ9
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45hnft6sNPzDqQ9
  for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Jul 2019 11:19:34 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 45hnfs0rpPz9sP6; Mon,  8 Jul 2019 11:19:32 +1000 (AEST)
+ id 45hnfs4k9gz9sNs; Mon,  8 Jul 2019 11:19:33 +1000 (AEST)
 X-powerpc-patch-notification: thanks
-X-powerpc-patch-commit: 22e9c88d486a0536d337d6e0973968be0a4cd4b2
-In-Reply-To: <d6f628ffdeb9c7863da722a8f6ef2949e57bb360.1557824379.git.christophe.leroy@c-s.fr>
-To: Christophe Leroy <christophe.leroy@c-s.fr>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Oliver O'Halloran <oohall@gmail.com>,
- Segher Boessenkool <segher@kernel.crashing.org>
+X-powerpc-patch-commit: 6d3ca7e73642ce17398f4cd5df1780da4a1ccdaf
+In-Reply-To: <1558444404-12254-1-git-send-email-yamada.masahiro@socionext.com>
+To: Masahiro Yamada <yamada.masahiro@socionext.com>,
+ linuxppc-dev@lists.ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Subject: Re: [PATCH 4/4] powerpc/64: reuse PPC32 static inline
- flush_dcache_range()
-Message-Id: <45hnfs0rpPz9sP6@ozlabs.org>
-Date: Mon,  8 Jul 2019 11:19:32 +1000 (AEST)
+Subject: Re: [PATCH v2] powerpc/mm: mark more tlb functions as __always_inline
+Message-Id: <45hnfs4k9gz9sNs@ozlabs.org>
+Date: Mon,  8 Jul 2019 11:19:33 +1000 (AEST)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -52,56 +49,40 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, Nicholas Piggin <npiggin@gmail.com>,
+ Masahiro Yamada <yamada.masahiro@socionext.com>,
+ Paul Mackerras <paulus@samba.org>,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ Suraj Jitindar Singh <sjitindarsingh@gmail.com>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ David Gibson <david@gibson.dropbear.id.au>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, 2019-05-14 at 09:05:16 UTC, Christophe Leroy wrote:
-> This patch drops the assembly PPC64 version of flush_dcache_range()
-> and re-uses the PPC32 static inline version.
+On Tue, 2019-05-21 at 13:13:24 UTC, Masahiro Yamada wrote:
+> With CONFIG_OPTIMIZE_INLINING enabled, Laura Abbott reported error
+> with gcc 9.1.1:
 > 
-> With GCC 8.1, the following code is generated:
+>   arch/powerpc/mm/book3s64/radix_tlb.c: In function '_tlbiel_pid':
+>   arch/powerpc/mm/book3s64/radix_tlb.c:104:2: warning: asm operand 3 probably doesn't match constraints
+>     104 |  asm volatile(PPC_TLBIEL(%0, %4, %3, %2, %1)
+>         |  ^~~
+>   arch/powerpc/mm/book3s64/radix_tlb.c:104:2: error: impossible constraint in 'asm'
 > 
-> void flush_test(unsigned long start, unsigned long stop)
-> {
-> 	flush_dcache_range(start, stop);
-> }
+> Fixing _tlbiel_pid() is enough to address the warning above, but I
+> inlined more functions to fix all potential issues.
 > 
-> 0000000000000130 <.flush_test>:
->  130:	3d 22 00 00 	addis   r9,r2,0
-> 			132: R_PPC64_TOC16_HA	.data+0x8
->  134:	81 09 00 00 	lwz     r8,0(r9)
-> 			136: R_PPC64_TOC16_LO	.data+0x8
->  138:	3d 22 00 00 	addis   r9,r2,0
-> 			13a: R_PPC64_TOC16_HA	.data+0xc
->  13c:	80 e9 00 00 	lwz     r7,0(r9)
-> 			13e: R_PPC64_TOC16_LO	.data+0xc
->  140:	7d 48 00 d0 	neg     r10,r8
->  144:	7d 43 18 38 	and     r3,r10,r3
->  148:	7c 00 04 ac 	hwsync
->  14c:	4c 00 01 2c 	isync
->  150:	39 28 ff ff 	addi    r9,r8,-1
->  154:	7c 89 22 14 	add     r4,r9,r4
->  158:	7c 83 20 50 	subf    r4,r3,r4
->  15c:	7c 89 3c 37 	srd.    r9,r4,r7
->  160:	41 82 00 1c 	beq     17c <.flush_test+0x4c>
->  164:	7d 29 03 a6 	mtctr   r9
->  168:	60 00 00 00 	nop
->  16c:	60 00 00 00 	nop
->  170:	7c 00 18 ac 	dcbf    0,r3
->  174:	7c 63 42 14 	add     r3,r3,r8
->  178:	42 00 ff f8 	bdnz    170 <.flush_test+0x40>
->  17c:	7c 00 04 ac 	hwsync
->  180:	4c 00 01 2c 	isync
->  184:	4e 80 00 20 	blr
->  188:	60 00 00 00 	nop
->  18c:	60 00 00 00 	nop
+> To meet the "i" (immediate) constraint for the asm operands, functions
+> propagating "ric" must be always inlined.
 > 
-> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+> Fixes: 9012d011660e ("compiler: allow all arches to enable CONFIG_OPTIMIZE_INLINING")
+> Reported-by: Laura Abbott <labbott@redhat.com>
+> Signed-off-by: Masahiro Yamada <yamada.masahiro@socionext.com>
+> Reviewed-by: Christophe Leroy <christophe.leroy@c-s.fr>
 
 Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/22e9c88d486a0536d337d6e0973968be0a4cd4b2
+https://git.kernel.org/powerpc/c/6d3ca7e73642ce17398f4cd5df1780da4a1ccdaf
 
 cheers
