@@ -2,62 +2,103 @@ Return-Path: <SRS0=cjtt=VF=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-2.3 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DC810C606BD
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Jul 2019 15:18:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C41C7C606C2
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Jul 2019 15:27:37 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 4967A216FD
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Jul 2019 15:18:52 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4967A216FD
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.intel.com
+	by mail.kernel.org (Postfix) with ESMTPS id 5B5DD20665
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Jul 2019 15:27:37 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5B5DD20665
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45j8HF6kdPzDqJH
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Jul 2019 01:18:49 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45j8TL1ZlXzDqSj
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Jul 2019 01:27:34 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=linux.intel.com
- (client-ip=192.55.52.43; helo=mga05.intel.com;
- envelope-from=jarkko.sakkinen@linux.intel.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=linux.intel.com
-Received: from mga05.intel.com (mga05.intel.com [192.55.52.43])
+ spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
+ (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
+ envelope-from=arbab@linux.ibm.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=linux.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45j88F0KdXzDqSq
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Jul 2019 01:12:44 +1000 (AEST)
-X-Amp-Result: SKIPPED(no attachment in message)
-X-Amp-File-Uploaded: False
-Received: from orsmga008.jf.intel.com ([10.7.209.65])
- by fmsmga105.fm.intel.com with ESMTP/TLS/DHE-RSA-AES256-GCM-SHA384;
- 08 Jul 2019 08:12:41 -0700
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.63,466,1557212400"; d="scan'208";a="159148707"
-Received: from jsakkine-mobl1.tm.intel.com ([10.237.50.189])
- by orsmga008.jf.intel.com with ESMTP; 08 Jul 2019 08:12:37 -0700
-Message-ID: <d0f07f81542abfd6579379de552e819a4e3c481d.camel@linux.intel.com>
-Subject: Re: [PATCH] tpm: fixes uninitialized allocated banks for IBM vtpm
- driver
-From: Jarkko Sakkinen <jarkko.sakkinen@linux.intel.com>
-To: Nayna <nayna@linux.vnet.ibm.com>, Stefan Berger <stefanb@linux.ibm.com>,
- Nayna Jain <nayna@linux.ibm.com>, linux-integrity@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org
-Date: Mon, 08 Jul 2019 18:12:39 +0300
-In-Reply-To: <bd961ef2-baed-8fc3-7f21-566bbcf9da8b@linux.vnet.ibm.com>
-References: <1562211121-2188-1-git-send-email-nayna@linux.ibm.com>
- <1998ebcf-1521-778f-2c80-55ad2c855023@linux.ibm.com>
- <164b9c6e-9b6d-324d-9df8-d2f7d1ac8cfc@linux.vnet.ibm.com>
- <1270cd6ab2ceae1ad01e4b83b75fc4c6fc70027d.camel@linux.intel.com>
- <bd961ef2-baed-8fc3-7f21-566bbcf9da8b@linux.vnet.ibm.com>
-Organization: Intel Finland Oy - BIC 0357606-4 - Westendinkatu 7, 02160 Espoo
-Content-Type: text/plain; charset="UTF-8"
-User-Agent: Evolution 3.32.1-2 
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45j8P50yS7zDqRp
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Jul 2019 01:23:52 +1000 (AEST)
+Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
+ x68FNRl6078339; Mon, 8 Jul 2019 11:23:37 -0400
+Received: from pps.reinject (localhost [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2tm8960e7u-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Mon, 08 Jul 2019 11:23:36 -0400
+Received: from m0098396.ppops.net (m0098396.ppops.net [127.0.0.1])
+ by pps.reinject (8.16.0.27/8.16.0.27) with SMTP id x68FNYTq078804;
+ Mon, 8 Jul 2019 11:23:34 -0400
+Received: from ppma01dal.us.ibm.com (83.d6.3fa9.ip4.static.sl-reverse.com
+ [169.63.214.131])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2tm8960e1v-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Mon, 08 Jul 2019 11:23:32 -0400
+Received: from pps.filterd (ppma01dal.us.ibm.com [127.0.0.1])
+ by ppma01dal.us.ibm.com (8.16.0.27/8.16.0.27) with SMTP id x68FJXl2009898;
+ Mon, 8 Jul 2019 15:23:20 GMT
+Received: from b03cxnp08026.gho.boulder.ibm.com
+ (b03cxnp08026.gho.boulder.ibm.com [9.17.130.18])
+ by ppma01dal.us.ibm.com with ESMTP id 2tjk96y0fn-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Mon, 08 Jul 2019 15:23:20 +0000
+Received: from b03ledav003.gho.boulder.ibm.com
+ (b03ledav003.gho.boulder.ibm.com [9.17.130.234])
+ by b03cxnp08026.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x68FNJmC57082318
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Mon, 8 Jul 2019 15:23:19 GMT
+Received: from b03ledav003.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id A4C896A04F;
+ Mon,  8 Jul 2019 15:23:19 +0000 (GMT)
+Received: from b03ledav003.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 86E4C6A047;
+ Mon,  8 Jul 2019 15:23:19 +0000 (GMT)
+Received: from arbab-laptop.localdomain (unknown [9.53.179.210])
+ by b03ledav003.gho.boulder.ibm.com (Postfix) with ESMTP;
+ Mon,  8 Jul 2019 15:23:19 +0000 (GMT)
+Received: from arbab-laptop.localdomain (arbab-laptop.localdomain [IPv6:::1])
+ by arbab-laptop.localdomain (Postfix) with ESMTP id 35873460563;
+ Mon,  8 Jul 2019 10:23:18 -0500 (CDT)
+Date: Mon, 8 Jul 2019 10:23:18 -0500
+From: Reza Arbab <arbab@linux.ibm.com>
+To: Nicholas Piggin <npiggin@gmail.com>
+Subject: Re: [v2 09/12] powerpc/mce: Enable MCE notifiers in external modules
+Message-ID: <20190708152317.t7rx7n5bxhrhv4dz@arbab-laptop.localdomain>
+References: <20190702051932.511-1-santosh@fossix.org>
+ <20190702051932.511-10-santosh@fossix.org>
+ <1562047959.5y756f60wn.astroid@bobo.none>
+ <20190703172008.aiyofnhqgbzi6ckw@arbab-vm>
+ <1562207031.05iwu5t2xm.astroid@bobo.none>
+ <20190705025042.nnov5s45jc4jd5ld@arbab-vm>
+ <1562304274.ecukc5yx4t.astroid@bobo.none>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Disposition: inline
+In-Reply-To: <1562304274.ecukc5yx4t.astroid@bobo.none>
+Organization: IBM Linux Technology Center
+User-Agent: NeoMutt/20180716
+X-TM-AS-GCONF: 00
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
+ definitions=2019-07-08_05:, , signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=621 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1810050000 definitions=main-1907080192
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -69,19 +110,25 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Sachin Sant <sachinp@linux.vnet.ibm.com>,
- Michal Suchanek <msuchanek@suse.de>, linux-kernel@vger.kernel.org,
- Mimi Zohar <zohar@linux.ibm.com>, Jason Gunthorpe <jgg@ziepe.ca>,
- Peter Huewe <peterhuewe@gmx.de>, George Wilson <gcwilson@linux.ibm.com>
+Cc: Santosh Sivaraj <santosh@fossix.org>,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
+ Mahesh Salgaonkar <mahesh@linux.ibm.com>,
+ Chandan Rajendra <chandan@linux.vnet.ibm.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Sat, 2019-07-06 at 20:25 -0400, Nayna wrote:
-> Thanks Jarkko. I just now posted the v2 version that includes your and
-> Stefan's feedbacks.
+On Fri, Jul 05, 2019 at 03:29:39PM +1000, Nicholas Piggin wrote:
+>Okay. It might be possible to save the address in the kernel and
+>then notify the driver afterward. For user-mode and any non-atomic
+>user copy AFAIK the irq_work should practically run synchronously
+>after the machine check returns so it might be enough to have a
+>notifier in the irq work processing.
 
-Looks almost legit :-)
+We can pick up this thread later, but if I remember correctly the 
+sticking point we ran into was that we never got that far. Instead of 
+returning from the MCE, we went down the fatal codepath.
 
-/Jarkko
-
+-- 
+Reza Arbab
