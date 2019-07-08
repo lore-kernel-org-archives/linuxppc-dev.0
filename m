@@ -2,53 +2,96 @@ Return-Path: <SRS0=cjtt=VF=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5B801C0650E
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Jul 2019 03:34:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0E927C48BE7
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Jul 2019 03:42:56 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id ABE1C20659
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Jul 2019 03:34:43 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org ABE1C20659
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 9224220665
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Jul 2019 03:42:55 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9224220665
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45hrfn2HLTzDqWQ
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Jul 2019 13:34:41 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45hrrF3RRvzDqWG
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Jul 2019 13:42:53 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=arm.com
- (client-ip=217.140.110.172; helo=foss.arm.com;
- envelope-from=anshuman.khandual@arm.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
+ (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
+ envelope-from=ravi.bangoria@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=arm.com
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
- by lists.ozlabs.org (Postfix) with ESMTP id 45hrcs0MbyzDqH4
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Jul 2019 13:32:59 +1000 (AEST)
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
- by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id B57842B;
- Sun,  7 Jul 2019 20:32:56 -0700 (PDT)
-Received: from [10.162.43.130] (p8cg001049571a15.blr.arm.com [10.162.43.130])
- by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id
- A45B13F738; Sun,  7 Jul 2019 20:32:43 -0700 (PDT)
-Subject: Re: [PATCH] mm/kprobes: Add generic kprobe_fault_handler() fallback
- definition
-To: Masami Hiramatsu <mhiramat@kernel.org>
-References: <1562304629-29376-1-git-send-email-anshuman.khandual@arm.com>
- <20190705193028.f9e08fe9cf1ee86bc5c0bb82@kernel.org>
-From: Anshuman Khandual <anshuman.khandual@arm.com>
-Message-ID: <3aee1f30-241c-d1c2-2ff5-ff521db47755@arm.com>
-Date: Mon, 8 Jul 2019 09:03:13 +0530
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:52.0) Gecko/20100101
- Thunderbird/52.9.1
+ dmarc=none (p=none dis=none) header.from=linux.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45hrpC4xfKzDqKK
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Jul 2019 13:41:06 +1000 (AEST)
+Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
+ x683aX0G107487
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 7 Jul 2019 23:41:03 -0400
+Received: from e06smtp04.uk.ibm.com (e06smtp04.uk.ibm.com [195.75.94.100])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2tkrh2fk9u-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 07 Jul 2019 23:41:03 -0400
+Received: from localhost
+ by e06smtp04.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <ravi.bangoria@linux.ibm.com>;
+ Mon, 8 Jul 2019 04:41:01 +0100
+Received: from b06cxnps4074.portsmouth.uk.ibm.com (9.149.109.196)
+ by e06smtp04.uk.ibm.com (192.168.101.134) with IBM ESMTP SMTP Gateway:
+ Authorized Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Mon, 8 Jul 2019 04:40:57 +0100
+Received: from d06av22.portsmouth.uk.ibm.com (d06av22.portsmouth.uk.ibm.com
+ [9.149.105.58])
+ by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x683eu5u51445900
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Mon, 8 Jul 2019 03:40:56 GMT
+Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id A6FC94C046;
+ Mon,  8 Jul 2019 03:40:56 +0000 (GMT)
+Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 70A794C050;
+ Mon,  8 Jul 2019 03:40:55 +0000 (GMT)
+Received: from [9.124.31.136] (unknown [9.124.31.136])
+ by d06av22.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Mon,  8 Jul 2019 03:40:55 +0000 (GMT)
+Subject: Re: [PATCH] powerpc/hw_breakpoint: move instruction stepping out of
+ hw_breakpoint_handler()
+To: Christophe Leroy <christophe.leroy@c-s.fr>
+References: <f8cdc3f1c66ad3c43ebc568abcc6c39ed4676284.1561737231.git.christophe.leroy@c-s.fr>
+ <57148696-b9a5-d3c1-1e29-82673c558927@linux.ibm.com>
+ <bef43f48-fa40-284e-a299-bc73ebc3e725@c-s.fr>
+From: Ravi Bangoria <ravi.bangoria@linux.ibm.com>
+Date: Mon, 8 Jul 2019 09:10:54 +0530
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.7.0
 MIME-Version: 1.0
-In-Reply-To: <20190705193028.f9e08fe9cf1ee86bc5c0bb82@kernel.org>
+In-Reply-To: <bef43f48-fa40-284e-a299-bc73ebc3e725@c-s.fr>
 Content-Type: text/plain; charset=utf-8
 Content-Language: en-US
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+x-cbid: 19070803-0016-0000-0000-000002902123
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 19070803-0017-0000-0000-000032EDCB64
+Message-Id: <d0358cc8-00e2-cd5a-9a4f-f9eae1548026@linux.ibm.com>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
+ definitions=2019-07-08_01:, , signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=796 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1810050000 definitions=main-1907080044
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -60,127 +103,50 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Kate Stewart <kstewart@linuxfoundation.org>,
- Mark Rutland <mark.rutland@arm.com>, Rich Felker <dalias@libc.org>,
- linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org,
- Heiko Carstens <heiko.carstens@de.ibm.com>, linux-mips@vger.kernel.org,
- linux-mm@kvack.org, Paul Mackerras <paulus@samba.org>,
- "H. Peter Anvin" <hpa@zytor.com>, sparclinux@vger.kernel.org,
- Will Deacon <will@kernel.org>, linux-s390@vger.kernel.org,
- Yoshinori Sato <ysato@users.sourceforge.jp>, x86@kernel.org,
- Russell King <linux@armlinux.org.uk>,
- Anil S Keshavamurthy <anil.s.keshavamurthy@intel.com>,
- Christian Borntraeger <borntraeger@de.ibm.com>, Ingo Molnar <mingo@redhat.com>,
- linux-arm-kernel@lists.infradead.org,
- Catalin Marinas <catalin.marinas@arm.com>, James Hogan <jhogan@kernel.org>,
- linux-snps-arc@lists.infradead.org, Guenter Roeck <linux@roeck-us.net>,
- Fenghua Yu <fenghua.yu@intel.com>, Vasily Gorbik <gor@linux.ibm.com>,
- linuxppc-dev@lists.ozlabs.org, "Naveen N. Rao" <naveen.n.rao@linux.ibm.com>,
- Borislav Petkov <bp@alien8.de>, Thomas Gleixner <tglx@linutronix.de>,
- Allison Randal <allison@lohutok.net>, Tony Luck <tony.luck@intel.com>,
- Richard Fontana <rfontana@redhat.com>, Vineet Gupta <vgupta@synopsys.com>,
- linux-kernel@vger.kernel.org, Ralf Baechle <ralf@linux-mips.org>,
- Paul Burton <paul.burton@mips.com>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Andrew Morton <akpm@linux-foundation.org>, Enrico Weigelt <info@metux.net>,
- "David S. Miller" <davem@davemloft.net>
+Cc: Ravi Bangoria <ravi.bangoria@linux.ibm.com>, linux-kernel@vger.kernel.org,
+ Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
 
 
-On 07/05/2019 04:00 PM, Masami Hiramatsu wrote:
-> Hi Anshuman,
-
-
-Hello Masami,
-
+On 7/6/19 1:56 PM, Christophe Leroy wrote:
 > 
-> On Fri,  5 Jul 2019 11:00:29 +0530
-> Anshuman Khandual <anshuman.khandual@arm.com> wrote:
 > 
->> Architectures like parisc enable CONFIG_KROBES without having a definition
->> for kprobe_fault_handler() which results in a build failure.
+> Le 03/07/2019 à 08:20, Ravi Bangoria a écrit :
+>>
+>>
+>> On 6/28/19 9:25 PM, Christophe Leroy wrote:
+>>> On 8xx, breakpoints stop after executing the instruction, so
+>>> stepping/emulation is not needed. Move it into a sub-function and
+>>> remove the #ifdefs.
+>>>
+>>> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+>>> ---
+>>
+>> Reviewed-by: Ravi Bangoria <ravi.bangoria@linux.ibm.com>
+>>
+>> Just one neat below...
 > 
-> Hmm, as far as I can see, kprobe_fault_handler() is closed inside each arch
-> specific code. The reason why include/linux/kprobes.h defines
-> dummy inline function is only for !CONFIG_KPROBES case.
-
-IIRC Andrew mentioned [1] that we should remove this stub from the generic kprobes
-header because this is very much architecture specific. As we see in this proposed
-patch, except x86 there is no other current user which actually calls this from
-some where when CONFIG_KPROBES is not enabled.
-
-[1] https://www.spinics.net/lists/linux-mm/msg182649.html
+> Thanks for the review.
 > 
->> Arch needs to
->> provide kprobe_fault_handler() as it is platform specific and cannot have
->> a generic working alternative. But in the event when platform lacks such a
->> definition there needs to be a fallback.
+>>
+>> [...]
+>>
+>>> -#ifndef CONFIG_PPC_8xx
+>>> -    /* Do not emulate user-space instructions, instead single-step them */
+>>> -    if (user_mode(regs)) {
+>>> -        current->thread.last_hit_ubp = bp;
+>>> -        regs->msr |= MSR_SE;
+>>> +    if (!IS_ENABLED(CONFIG_PPC_8xx) && !stepping_handler(regs, bp, info->address))
+>>
+>> May be split this line. It's 86 chars long and checkpatch.pl is warning
+>> about this:
 > 
-> Wait, indeed that each arch need to implement it, but that is for calling
-> kprobe->fault_handler() as user expected.
-> Hmm, why not fixing those architecture implementations?
-
-After the recent change which introduced a generic kprobe_page_fault() every
-architecture enabling CONFIG_KPROBES must have a kprobe_fault_handler() which
-was not the case earlier. Architectures like parisc which does enable KPROBES but
-never used (kprobe_page_fault or kprobe->fault_handler) kprobe_fault_handler() now
-needs one as well. I am not sure and will probably require inputs from arch parsic
-folks whether it at all needs one. We dont have a stub or fallback definition for
-kprobe_fault_handler() when CONFIG_KPROBES is enabled just to prevent a build
-failure in such cases.
-
-In such a situation it might be better defining a stub symbol fallback than to try
-to implement one definition which the architecture previously never needed or used.
-AFAICS there is no generic MM callers for kprobe_fault_handler() as well which would
-have made it mandatory for parisc to define a real one.
-
+> Didn't you use arch/powerpc/tools/checkpatch.sh ?
 > 
->> This adds a stub kprobe_fault_handler() definition which not only prevents
->> a build failure but also makes sure that kprobe_page_fault() if called will
->> always return negative in absence of a sane platform specific alternative.
-> 
-> I don't like introducing this complicated macro only for avoiding (not fixing)
-> build error. To fix that, kprobes on parisc should implement kprobe_fault_handler
-> correctly (and call kprobe->fault_handler).
+> powerpc accepts 90 chars per line.
 
-As I mentioned before parsic might not need a real one. But you are right this
-complicated (if perceived as such) change can be just avoided at least for the
-build failure problem by just defining a stub definition kprobe_fault_handler()
-for arch parsic when CONFIG_KPROBES is enabled. But this patch does some more
-and solves the kprobe_fault_handler() symbol dependency in a more generic way and
-forces kprobe_page_fault() to fail in absence a real arch kprobe_fault_handler().
-Is not it worth solving in this way ?
+Hmm.. wasn't aware of it. Thanks!
 
-> 
-> BTW, even if you need such generic stub, please use a weak function instead
-> of macros for every arch headers.
-
-There is a bit problem with that. The existing definitions are with different
-signatures and an weak function will need them to be exact same for override
-requiring more code changes. Hence choose to go with a macro in each header.
-
-arch/arc/include/asm/kprobes.h:int kprobe_fault_handler(struct pt_regs *regs, unsigned long cause);
-arch/arm/include/asm/kprobes.h:int kprobe_fault_handler(struct pt_regs *regs, unsigned int fsr);
-arch/arm64/include/asm/kprobes.h:int kprobe_fault_handler(struct pt_regs *regs, unsigned int fsr);
-arch/ia64/include/asm/kprobes.h:extern int kprobe_fault_handler(struct pt_regs *regs, int trapnr);
-arch/powerpc/include/asm/kprobes.h:extern int kprobe_fault_handler(struct pt_regs *regs, int trapnr);
-arch/s390/include/asm/kprobes.h:int kprobe_fault_handler(struct pt_regs *regs, int trapnr);
-arch/sh/include/asm/kprobes.h:extern int kprobe_fault_handler(struct pt_regs *regs, int trapnr);
-arch/sparc/include/asm/kprobes.h:int kprobe_fault_handler(struct pt_regs *regs, int trapnr);
-arch/x86/include/asm/kprobes.h:extern int kprobe_fault_handler(struct pt_regs *regs, int trapnr);
-
-> 
->> While here wrap kprobe_page_fault() in CONFIG_KPROBES. This enables stud
->> definitions for generic kporbe_fault_handler() and kprobes_built_in() can
->> just be dropped. Only on x86 it needs to be added back locally as it gets
->> used in a !CONFIG_KPROBES function do_general_protection().
-> 
-> If you want to remove kprobes_built_in(), you should replace it with
-> IS_ENABLED(CONFIG_KPROBES), instead of this...
-
-Apart from kprobes_built_in() the intent was to remove !CONFIG_KPROBES
-stub for kprobe_fault_handler() as well which required making generic
-kprobe_page_fault() to be empty in such case.
