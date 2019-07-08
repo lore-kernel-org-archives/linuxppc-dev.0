@@ -6,42 +6,38 @@ X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A41B1C0650E
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Jul 2019 02:12:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 63DDCC0650E
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Jul 2019 02:14:20 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6294A20665
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Jul 2019 02:12:58 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6294A20665
+	by mail.kernel.org (Postfix) with ESMTPS id 1D79120665
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Jul 2019 02:14:20 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1D79120665
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45hprS2BgFzDqXf
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Jul 2019 12:12:56 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+	by lists.ozlabs.org (Postfix) with ESMTP id 45hpt21HgdzDqWQ
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Jul 2019 12:14:18 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45hngC3C3xzDqQ9
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45hngC1pRwzDqQH
  for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Jul 2019 11:19:51 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 45hngB2dh1z9sNx; Mon,  8 Jul 2019 11:19:48 +1000 (AEST)
+ id 45hng72Df7z9sNs; Mon,  8 Jul 2019 11:19:47 +1000 (AEST)
 X-powerpc-patch-notification: thanks
-X-powerpc-patch-commit: c197922f0a8072d286dff8001f8ad0d4b95ec1dd
-In-Reply-To: <38870b7604726c87e468f365ebe9236994c33f29.1482203132.git.geliangtang@gmail.com>
-To: Geliang Tang <geliangtang@gmail.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>,
- Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
- Alexey Kardashevskiy <aik@ozlabs.ru>,
- David Gibson <david@gibson.dropbear.id.au>
+X-powerpc-patch-commit: 4f44e8aeaf1937d9148dfcc4c028cd8aff27902e
+In-Reply-To: <1562169853-12593-1-git-send-email-info@metux.net>
+To: "Enrico Weigelt, metux IT consult" <info@metux.net>,
+ linux-kernel@vger.kernel.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Subject: Re: [PATCH] powerpc/perf/24x7: use rb_entry
-Message-Id: <45hngB2dh1z9sNx@ozlabs.org>
-Date: Mon,  8 Jul 2019 11:19:48 +1000 (AEST)
+Subject: Re: [PATCH] arch: powerpc: Kconfig: pedantic formatting
+Message-Id: <45hng72Df7z9sNs@ozlabs.org>
+Date: Mon,  8 Jul 2019 11:19:47 +1000 (AEST)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -53,20 +49,22 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Geliang Tang <geliangtang@gmail.com>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+Cc: oss@buserror.net, alistair@popple.id.au, linuxppc-dev@lists.ozlabs.org,
+ kvm-ppc@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, 2016-12-20 at 14:02:17 UTC, Geliang Tang wrote:
-> To make the code clearer, use rb_entry() instead of container_of() to
-> deal with rbtree.
+On Wed, 2019-07-03 at 16:04:13 UTC, "Enrico Weigelt, metux IT consult" wrote:
+> Formatting of Kconfig files doesn't look so pretty, so let the
+> Great White Handkerchief come around and clean it up.
 > 
-> Signed-off-by: Geliang Tang <geliangtang@gmail.com>
+> Also convert "---help---" as requested on lkml.
+> 
+> Signed-off-by: Enrico Weigelt, metux IT consult <info@metux.net>
 
 Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/c197922f0a8072d286dff8001f8ad0d4b95ec1dd
+https://git.kernel.org/powerpc/c/4f44e8aeaf1937d9148dfcc4c028cd8aff27902e
 
 cheers
