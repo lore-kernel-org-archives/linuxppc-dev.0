@@ -6,40 +6,41 @@ X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7E4F3C0650E
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Jul 2019 01:31:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 71BE6C0650E
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Jul 2019 01:33:31 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3852D20665
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Jul 2019 01:31:55 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3852D20665
+	by mail.kernel.org (Postfix) with ESMTPS id E444420665
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Jul 2019 01:33:30 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E444420665
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45hnx46CfHzDqSQ
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Jul 2019 11:31:52 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+	by lists.ozlabs.org (Postfix) with ESMTP id 45hnyw6GBlzDqJN
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Jul 2019 11:33:28 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45hnfr6QhvzDqQ9
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45hnfr6FrLzDqQ8
  for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Jul 2019 11:19:32 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 45hnfr1rqRz9sNC; Mon,  8 Jul 2019 11:19:32 +1000 (AEST)
+ id 45hnfq75mmz9sNF; Mon,  8 Jul 2019 11:19:31 +1000 (AEST)
 X-powerpc-patch-notification: thanks
-X-powerpc-patch-commit: d98fc70fc139b72ae098d24fde42ad70c8ff2f81
-In-Reply-To: <139368cc27b054f6fe155011dad63ef753db036e.1557824379.git.christophe.leroy@c-s.fr>
+X-powerpc-patch-commit: 1cfb725fb1899dc6fdc88f8b5354a65e8ad260c6
+In-Reply-To: <239d1c8f15b8bedc161a234f9f1a22a07160dbdf.1557824379.git.christophe.leroy@c-s.fr>
 To: Christophe Leroy <christophe.leroy@c-s.fr>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Oliver O'Halloran <oohall@gmail.com>,
  Segher Boessenkool <segher@kernel.crashing.org>
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Subject: Re: [PATCH 3/4] powerpc/32: define helpers to get L1 cache sizes.
-Message-Id: <45hnfr1rqRz9sNC@ozlabs.org>
-Date: Mon,  8 Jul 2019 11:19:32 +1000 (AEST)
+Subject: Re: [PATCH 1/4] powerpc/64: flush_inval_dcache_range() becomes
+ flush_dcache_range()
+Message-Id: <45hnfq75mmz9sNF@ozlabs.org>
+Date: Mon,  8 Jul 2019 11:19:31 +1000 (AEST)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -56,14 +57,23 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, 2019-05-14 at 09:05:15 UTC, Christophe Leroy wrote:
-> This patch defines C helpers to retrieve the size of
-> cache blocks and uses them in the cacheflush functions.
+On Tue, 2019-05-14 at 09:05:13 UTC, Christophe Leroy wrote:
+> On most arches having function flush_dcache_range(), including PPC32,
+> this function does a writeback and invalidation of the cache bloc.
+> 
+> On PPC64, flush_dcache_range() only does a writeback while
+> flush_inval_dcache_range() does the invalidation in addition.
+> 
+> In addition it looks like within arch/powerpc/, there are no PPC64
+> platforms using flush_dcache_range()
+> 
+> This patch drops the existing 64 bits version of flush_dcache_range()
+> and renames flush_inval_dcache_range() into flush_dcache_range().
 > 
 > Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 
 Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/d98fc70fc139b72ae098d24fde42ad70c8ff2f81
+https://git.kernel.org/powerpc/c/1cfb725fb1899dc6fdc88f8b5354a65e8ad260c6
 
 cheers
