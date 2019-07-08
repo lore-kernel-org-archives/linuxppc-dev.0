@@ -6,39 +6,38 @@ X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS
 	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7FC1AC0650E
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Jul 2019 02:03:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 417A9C0650E
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Jul 2019 02:05:17 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3A63B2053B
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Jul 2019 02:03:41 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3A63B2053B
+	by mail.kernel.org (Postfix) with ESMTPS id B69202053B
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Jul 2019 02:05:16 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B69202053B
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45hpdl3XMJzDqDN
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Jul 2019 12:03:39 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+	by lists.ozlabs.org (Postfix) with ESMTP id 45hpgY4nyfzDqF3
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Jul 2019 12:05:13 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45hng66j5fzDqQM
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Jul 2019 11:19:46 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45hng70fr9zDqQS
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Jul 2019 11:19:47 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 45hng56x6Zz9sPM; Mon,  8 Jul 2019 11:19:45 +1000 (AEST)
+ id 45hng62SXsz9sP0; Mon,  8 Jul 2019 11:19:46 +1000 (AEST)
 X-powerpc-patch-notification: thanks
-X-powerpc-patch-commit: ea9f5b702fe0215188fba2eda117419e4ae90a67
-In-Reply-To: <20190701143626.17628-1-aneesh.kumar@linux.ibm.com>
+X-powerpc-patch-commit: b8c8a524ccad1244916a203ae40292e2786e1b26
+In-Reply-To: <20190701143700.17894-1-aneesh.kumar@linux.ibm.com>
 To: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>, npiggin@gmail.com,
  paulus@samba.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Subject: Re: [PATCH v2 1/3] powerpc/mm/drconf: Use NUMA_NO_NODE on failures
- instead of node 0
-Message-Id: <45hng56x6Zz9sPM@ozlabs.org>
-Date: Mon,  8 Jul 2019 11:19:45 +1000 (AEST)
+Subject: Re: [PATCH] powerpc: Remove unused variable declaration
+Message-Id: <45hng62SXsz9sP0@ozlabs.org>
+Date: Mon,  8 Jul 2019 11:19:46 +1000 (AEST)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -50,21 +49,19 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Vaibhav Jain <vaibhav@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
+Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, 2019-07-01 at 14:36:24 UTC, "Aneesh Kumar K.V" wrote:
-> If we fail to parse the associativity array we should default to
-> NUMA_NO_NODE instead of NODE 0. Rest of the code fallback to the
-> right default if we find the numa node value NUMA_NO_NODE.
+On Mon, 2019-07-01 at 14:37:00 UTC, "Aneesh Kumar K.V" wrote:
+> __kernel_virt_size is not used anymore.
 > 
 > Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
 
-Series applied to powerpc next, thanks.
+Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/ea9f5b702fe0215188fba2eda117419e4ae90a67
+https://git.kernel.org/powerpc/c/b8c8a524ccad1244916a203ae40292e2786e1b26
 
 cheers
