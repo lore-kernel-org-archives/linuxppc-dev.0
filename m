@@ -2,131 +2,113 @@ Return-Path: <SRS0=cjtt=VF=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2A61BC606C1
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Jul 2019 15:32:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 565B7C606BD
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Jul 2019 17:37:52 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id AACD0204EC
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Jul 2019 15:32:10 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=web.de header.i=@web.de header.b="Z4+TYFdS"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org AACD0204EC
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=web.de
+	by mail.kernel.org (Postfix) with ESMTPS id 9EB5020644
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Jul 2019 17:37:51 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9EB5020644
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45j8Zb5kcfzDqKX
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Jul 2019 01:32:07 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45jCMd0Zs8zDqfY
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Jul 2019 03:37:49 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45jCKt27JKzDqGX
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Jul 2019 03:36:18 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=web.de
- (client-ip=212.227.17.12; helo=mout.web.de;
- envelope-from=markus.elfring@web.de; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=web.de
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- secure) header.d=web.de header.i=@web.de header.b="Z4+TYFdS"; 
- dkim-atps=neutral
-X-Greylist: delayed 346 seconds by postgrey-1.36 at bilbo;
- Tue, 09 Jul 2019 01:28:20 AEST
-Received: from mout.web.de (mout.web.de [212.227.17.12])
+ dmarc=none (p=none dis=none) header.from=linux.ibm.com
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 45jCKs2MNdz8t0f
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Jul 2019 03:36:17 +1000 (AEST)
+Received: by ozlabs.org (Postfix)
+ id 45jCKs14nXz9sNq; Tue,  9 Jul 2019 03:36:17 +1000 (AEST)
+Authentication-Results: ozlabs.org;
+ spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
+ (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
+ envelope-from=janani@linux.ibm.com; receiver=<UNKNOWN>)
+Authentication-Results: ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=linux.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45j8VD3jHdzDqGk
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Jul 2019 01:28:20 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=web.de;
- s=dbaedf251592; t=1562599684;
- bh=5jkFKCmR2GUwlsa0zrqotc5apw9/xdj6vpIuoJNsaqY=;
- h=X-UI-Sender-Class:Cc:References:Subject:To:From:Date:In-Reply-To;
- b=Z4+TYFdSY7LPaxw7H9P+dCcgUn1/YFKTXshEpkpUqK+Djl09gntbAhOtiN4HRrRrX
- 97EsnZJ+9gYDf5/+uM1/jPPx0Z6tVYXSifuqpRHeENfjSgFKTMcEhEtDS5nH8yP5JX
- pSdc/QJ1oa3oTKdX3GjznoR9qIo7wwXy0anVPu3o=
-X-UI-Sender-Class: c548c8c5-30a9-4db5-a2e7-cb6cb037b8f9
-Received: from [192.168.1.2] ([2.243.165.233]) by smtp.web.de (mrweb101
- [213.165.67.124]) with ESMTPSA (Nemesis) id 0LxweO-1iY5Jl29zQ-015Fl3; Mon, 08
- Jul 2019 17:22:01 +0200
-References: <1562317084-13140-1-git-send-email-wen.yang99@zte.com.cn>
-Subject: Re: powerpc/83xx: fix use-after-free on mpc831x_usb_cfg()
-To: Wen Yang <wen.yang99@zte.com.cn>, linuxppc-dev@lists.ozlabs.org
-From: Markus Elfring <Markus.Elfring@web.de>
-Openpgp: preference=signencrypt
-Autocrypt: addr=Markus.Elfring@web.de; prefer-encrypt=mutual; keydata=
- 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 FEE=
-Message-ID: <99840e11-e0e6-b3f4-e35b-56ef4ec39417@web.de>
-Date: Mon, 8 Jul 2019 17:21:48 +0200
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
- Thunderbird/60.7.2
+ by ozlabs.org (Postfix) with ESMTPS id 45jCKr3yJMz9sMr
+ for <linuxppc-dev@ozlabs.org>; Tue,  9 Jul 2019 03:36:16 +1000 (AEST)
+Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
+ x68HY9A3122915
+ for <linuxppc-dev@ozlabs.org>; Mon, 8 Jul 2019 13:36:13 -0400
+Received: from e14.ny.us.ibm.com (e14.ny.us.ibm.com [129.33.205.204])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2tm7m5f164-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@ozlabs.org>; Mon, 08 Jul 2019 13:36:13 -0400
+Received: from localhost
+ by e14.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <janani@linux.ibm.com>;
+ Mon, 8 Jul 2019 18:36:12 +0100
+Received: from b01cxnp22036.gho.pok.ibm.com (9.57.198.26)
+ by e14.ny.us.ibm.com (146.89.104.201) with IBM ESMTP SMTP Gateway: Authorized
+ Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Mon, 8 Jul 2019 18:36:09 +0100
+Received: from b01ledav006.gho.pok.ibm.com (b01ledav006.gho.pok.ibm.com
+ [9.57.199.111])
+ by b01cxnp22036.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x68Ha8Qs34734410
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Mon, 8 Jul 2019 17:36:08 GMT
+Received: from b01ledav006.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 5B90EAC05E;
+ Mon,  8 Jul 2019 17:36:08 +0000 (GMT)
+Received: from b01ledav006.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 3C490AC059;
+ Mon,  8 Jul 2019 17:36:07 +0000 (GMT)
+Received: from ltc.linux.ibm.com (unknown [9.16.170.189])
+ by b01ledav006.gho.pok.ibm.com (Postfix) with ESMTP;
+ Mon,  8 Jul 2019 17:36:07 +0000 (GMT)
 MIME-Version: 1.0
-In-Reply-To: <1562317084-13140-1-git-send-email-wen.yang99@zte.com.cn>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:ckcR2+VKOSFUJ6uGz6jX9tWXCfRXHX1jSP4nJJRSoovyDhyYsES
- DkzoLdCYgB93ThN0rp+s/yzpSNxRzSHPwuVEsuRVwmNYjgFPY4hwabDTX4BTCmQ2HJzNOom
- 7I205/htlkGNrag104lMhr74ihYdlMTHjC2t9Q03CgF/X4hTOyPTiEfrN6k6obTMYPawblv
- ifzD29BWnQf9hE0T4z4eg==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:Fd8ESU9rTrk=:tqCGgW+09IZBjqd5OtfbIh
- ue8UPlMtYLdo6LQv8kz1spHceKBMSN4qFx9aQca2y4Edhprun4iQFl0eZ4ENREKq1zqiwT5Gz
- hsNzhGGRTxARVoejXbearo9DrpfXFgbDFsi8vBo0vyQMOXZLYqzfzmPlXj/jZg5BFpOgXrvqB
- 2XGi2FeoJ6zfGo/Y4gulSdTq5ZSwdljkQ8A76JufvlTV8QNkbyF+SYHYbOM42nA+PBJHOC64Y
- eioO8JzCFfp5gDwrit4f/ZULB/vblExj7OyxEcsAgeCBzGTVb3cpjuP4468jQ+yhVrst2+zsw
- 9T+Ko7Rd6EQTNwRQbxEEBdV1y7+AzvnaeVp6Ca1jlfKQ522whA72tKxFUWygmLvdUAZJnY/Ky
- 5HK6KIEHzwpX6oujh4uYeGpfrEHubMn2DwaSqZRLBFUTsuAr8xbWqrj/+f84ohAts7ihHVnPE
- RaMmnpUjKIlWv0l68mqw8S2U5oM/siPCJXTF0xNE3TCVYzU5tEq3J+dLVMAQbs99r6oWUHRWW
- 18KgZUk+VnovEsrS44e8YBi/k/klfsB1enKyHngfyrsetnhIKDmw2YGplI5Qg/hX/uNesSalH
- R9Yo0dU6rbJssvs/xvtZkZwKBDHdhkwGrRXxf9L21sgqla5HIRZsbkFjGsdEXLXTuXzbh72MU
- ho4aHvsgRPZb+yNZZjBQbL7FgAivl9/7len7HbrwXGyk9vYJ2wM78O3HHVacNzxPlebbCGSIs
- kPohBdPGBr30n+BHuwKV1N2ToRk5t3jd2Ezf7GIXe7+k3nLNWIt6T2czswvm0J5HKyqx+zrUH
- hhaGSBt9I2Asolr4J5JkQaLplauiygJKg9D2ANXDYsTSL5j3enrKhGKTPfaQ65U61bPrS7E7u
- gPPBYG6EZs0rPnvOiL/3EqZ4cWX4r8p3YcjxBU6y2xyjFKk8/rXIQZmfjgGkUmmTsUewVyQbS
- epwoGjezgg/1CJk4cMZH019NUzimnGeasVitZ5m/icXyZA5IJH5hBz7SjrdOFHR7np6GXNhiu
- jf+zd0mWWdFoagjxWo2+jSnmDhynvxOLtWct6RYbUj1ZANE160t8TkQxrblMJ5+lAj0qhX4cO
- R3t3on1pTtEUlgcgr9NNgeio/nRj6hs4pNk
+Content-Type: text/plain; charset=US-ASCII;
+ format=flowed
+Content-Transfer-Encoding: 7bit
+Date: Mon, 08 Jul 2019 12:38:32 -0500
+From: janani <janani@linux.ibm.com>
+To: Claudio Carvalho <cclaudio@linux.ibm.com>
+Subject: Re: [PATCH v4 1/8] KVM: PPC: Ultravisor: Introduce the MSR_S bit
+Organization: IBM
+Mail-Reply-To: janani@linux.ibm.com
+In-Reply-To: <20190628200825.31049-2-cclaudio@linux.ibm.com>
+References: <20190628200825.31049-1-cclaudio@linux.ibm.com>
+ <20190628200825.31049-2-cclaudio@linux.ibm.com>
+X-Sender: janani@linux.ibm.com
+User-Agent: Roundcube Webmail/1.0.1
+X-TM-AS-GCONF: 00
+x-cbid: 19070817-0052-0000-0000-000003DBD376
+X-IBM-SpamModules-Scores: 
+X-IBM-SpamModules-Versions: BY=3.00011397; HX=3.00000242; KW=3.00000007;
+ PH=3.00000004; SC=3.00000286; SDB=6.01229301; UDB=6.00647407; IPR=6.01010561; 
+ MB=3.00027636; MTD=3.00000008; XFM=3.00000015; UTC=2019-07-08 17:36:11
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 19070817-0053-0000-0000-0000619D051D
+Message-Id: <ccd9bdbcc2e4dad9f8c2e7acbb222d5e@linux.vnet.ibm.com>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
+ definitions=2019-07-08_05:, , signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1011 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=888 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1810050000 definitions=main-1907080216
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -138,31 +120,76 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Yi Wang <wang.yi59@zte.com.cn>, Cheng Shengyu <cheng.shengyu@zte.com.cn>,
- kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org,
- Scott Wood <oss@buserror.net>, Paul Mackerras <paulus@samba.org>,
- Xue Zhihong <xue.zhihong@zte.com.cn>
+Reply-To: janani@linux.ibm.com
+Cc: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>,
+ Michael Anderson <andmike@linux.ibm.com>, Ram Pai <linuxram@us.ibm.com>,
+ kvm-ppc@vger.kernel.org, Bharata B Rao <bharata@linux.ibm.com>,
+ linuxppc-dev@ozlabs.org, Ryan Grimm <grimm@linux.ibm.com>,
+ Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
+ Thiago Bauermann <bauerman@linux.ibm.com>,
+ Anshuman Khandual <khandual@linux.vnet.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-> The np variable is still being used after the of_node_put() call,
+On 2019-06-28 15:08, Claudio Carvalho wrote:
+> From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+> 
+> The ultravisor processor mode is introduced in POWER platforms that
+> supports the Protected Execution Facility (PEF). Ultravisor is higher
+> privileged than hypervisor mode.
+> 
+> In PEF enabled platforms, the MSR_S bit is used to indicate if the
+> thread is in secure state. With the MSR_S bit, the privilege state of
+> the thread is now determined by MSR_S, MSR_HV and MSR_PR, as follows:
+> 
+> S   HV  PR
+> -----------------------
+> 0   x   1   problem
+> 1   0   1   problem
+> x   x   0   privileged
+> x   1   0   hypervisor
+> 1   1   0   ultravisor
+> 1   1   1   reserved
+> 
+> The hypervisor doesn't (and can't) run with the MSR_S bit set, but a
+> secure guest and the ultravisor firmware do.
+> 
+> Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+> Signed-off-by: Ram Pai <linuxram@us.ibm.com>
+> [ Update the commit message ]
+> Signed-off-by: Claudio Carvalho <cclaudio@linux.ibm.com>
+  Reviewed-by: Janani Janakiraman <janani@linux.ibm.com>
+> ---
+>  arch/powerpc/include/asm/reg.h | 3 +++
+>  1 file changed, 3 insertions(+)
+> 
+> diff --git a/arch/powerpc/include/asm/reg.h 
+> b/arch/powerpc/include/asm/reg.h
+> index 10caa145f98b..39b4c0a519f5 100644
+> --- a/arch/powerpc/include/asm/reg.h
+> +++ b/arch/powerpc/include/asm/reg.h
+> @@ -38,6 +38,7 @@
+>  #define MSR_TM_LG	32		/* Trans Mem Available */
+>  #define MSR_VEC_LG	25	        /* Enable AltiVec */
+>  #define MSR_VSX_LG	23		/* Enable VSX */
+> +#define MSR_S_LG	22		/* Secure VM bit */
+>  #define MSR_POW_LG	18		/* Enable Power Management */
+>  #define MSR_WE_LG	18		/* Wait State Enable */
+>  #define MSR_TGPR_LG	17		/* TLB Update registers in use */
+> @@ -71,11 +72,13 @@
+>  #define MSR_SF		__MASK(MSR_SF_LG)	/* Enable 64 bit mode */
+>  #define MSR_ISF		__MASK(MSR_ISF_LG)	/* Interrupt 64b mode valid on 630 
+> */
+>  #define MSR_HV 		__MASK(MSR_HV_LG)	/* Hypervisor state */
+> +#define MSR_S		__MASK(MSR_S_LG)	/* Secure state */
+>  #else
+>  /* so tests for these bits fail on 32-bit */
+>  #define MSR_SF		0
+>  #define MSR_ISF		0
+>  #define MSR_HV		0
+> +#define MSR_S		0
+>  #endif
+> 
+>  /*
 
-> which may result in use-after-free.
-
-> We fix this issue by calling of_node_put() after the last usage.
-
-
-I imagine that this commit description can be improved a bit more
-(by mentioning the influence of =E2=80=9Cimmr_node=E2=80=9D?).
-How do you think about to omit the word =E2=80=9CWe=E2=80=9D here?
-
-
-> This patatch also do some cleanup.
-
-
-Should the renaming of a jump label be contributed in a separate update
-step of a small patch series besides a wording without a typo?
-
-Regards,
-Markus
