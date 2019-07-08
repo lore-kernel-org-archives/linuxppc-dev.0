@@ -6,40 +6,40 @@ X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 81E95C0650E
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Jul 2019 01:24:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8AF68C0650E
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Jul 2019 01:25:45 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 2E5B72064A
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Jul 2019 01:24:13 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2E5B72064A
+	by mail.kernel.org (Postfix) with ESMTPS id 4535C2064A
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Jul 2019 01:25:45 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4535C2064A
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45hnmB74H2zDq9P
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Jul 2019 11:24:10 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45hnnz00VfzDqL2
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Jul 2019 11:25:43 +1000 (AEST)
 Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45hnfp15X0zDqPk
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45hnfp2DsCzDqQ6
  for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Jul 2019 11:19:30 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 45hnfn6gBsz9sNf; Mon,  8 Jul 2019 11:19:29 +1000 (AEST)
+ id 45hnfp1QQwz9sNj; Mon,  8 Jul 2019 11:19:30 +1000 (AEST)
 X-powerpc-patch-notification: thanks
-X-powerpc-patch-commit: 2200bbec12c428d7b276fb450e5755cdfe435ae5
-In-Reply-To: <5c04f72569b508cd5477fa1bf15f0166d376cd3a.1555427420.git.nishadkamdar@gmail.com>
-To: Nishad Kamdar <nishadkamdar@gmail.com>,
- Frederic Barrat <fbarrat@linux.ibm.com>,
- Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+X-powerpc-patch-commit: 7f9c929a7ff203eae60b4225bb6824c3eb31796c
+In-Reply-To: <298f344bdb21ab566271f5d18c6782ed20f072b7.1556865423.git.christophe.leroy@c-s.fr>
+To: Christophe Leroy <christophe.leroy@c-s.fr>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Subject: Re: [PATCH v3 3/5] powerpc: Use the correct style for SPDX License
- Identifier
-Message-Id: <45hnfn6gBsz9sNf@ozlabs.org>
-Date: Mon,  8 Jul 2019 11:19:29 +1000 (AEST)
+Subject: Re: [PATCH v3 1/3] powerpc: Move PPC_HA() PPC_HI() and PPC_LO() to
+ ppc-opcode.h
+Message-Id: <45hnfp1QQwz9sNj@ozlabs.org>
+Date: Mon,  8 Jul 2019 11:19:30 +1000 (AEST)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -51,24 +51,19 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
- Uwe =?utf-8?q?Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>,
- Joe Perches <joe@perches.com>, linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, 2019-04-16 at 15:28:57 UTC, Nishad Kamdar wrote:
-> This patch corrects the SPDX License Identifier style
-> in the powerpc Hardware Architecture related files.
+On Fri, 2019-05-03 at 06:40:15 UTC, Christophe Leroy wrote:
+> PPC_HA() PPC_HI() and PPC_LO() macros are nice macros. Move them
+> from module64.c to ppc-opcode.h in order to use them in other places.
 > 
-> Suggested-by: Joe Perches <joe@perches.com>
-> Signed-off-by: Nishad Kamdar <nishadkamdar@gmail.com>
-> Acked-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 
-Applied to powerpc next, thanks.
+Series applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/2200bbec12c428d7b276fb450e5755cdfe435ae5
+https://git.kernel.org/powerpc/c/7f9c929a7ff203eae60b4225bb6824c3eb31796c
 
 cheers
