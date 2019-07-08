@@ -6,38 +6,38 @@ X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS
 	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C69D3C0650E
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Jul 2019 01:40:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 03799C0650E
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Jul 2019 01:42:00 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 80F3620673
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Jul 2019 01:40:17 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 80F3620673
+	by mail.kernel.org (Postfix) with ESMTPS id B472920673
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Jul 2019 01:41:59 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B472920673
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45hp6k3gM8zDqLs
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Jul 2019 11:40:14 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+	by lists.ozlabs.org (Postfix) with ESMTP id 45hp8j2QvxzDqSK
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Jul 2019 11:41:57 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45hnfw1WgHzDqQG
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Jul 2019 11:19:36 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45hnfy3jRVzDqQG
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Jul 2019 11:19:37 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 45hnfv17DWz9sNx; Mon,  8 Jul 2019 11:19:34 +1000 (AEST)
+ id 45hnfv38ZKz9sP2; Mon,  8 Jul 2019 11:19:35 +1000 (AEST)
 X-powerpc-patch-notification: thanks
-X-powerpc-patch-commit: 2230ebf6e6dd0b7751e2921b40f6cfe34f09bb16
-In-Reply-To: <20190528053626.2756-1-aneesh.kumar@linux.ibm.com>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>, npiggin@gmail.com,
- paulus@samba.org
+X-powerpc-patch-commit: 7505a13f85bdcb8713551a067dfc92ac3c7ba902
+In-Reply-To: <20190604054257.30703-1-anton@ozlabs.org>
+To: Anton Blanchard <anton@ozlabs.org>, paulus@samba.org, npiggin@gmail.com,
+ aneesh.kumar@linux.vnet.ibm.com
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Subject: Re: [PATCH v2 1/3] powerpc/mm: Handle page table allocation failures
-Message-Id: <45hnfv17DWz9sNx@ozlabs.org>
-Date: Mon,  8 Jul 2019 11:19:34 +1000 (AEST)
+Subject: Re: [PATCH] powerpc/configs: Disable latencytop
+Message-Id: <45hnfv38ZKz9sP2@ozlabs.org>
+Date: Mon,  8 Jul 2019 11:19:35 +1000 (AEST)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -49,21 +49,19 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
- linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, 2019-05-28 at 05:36:24 UTC, "Aneesh Kumar K.V" wrote:
-> This fixes kernel crash that arises due to not handling page table allocation
-> failures while allocating hugetlb page table.
+On Tue, 2019-06-04 at 05:42:57 UTC, Anton Blanchard wrote:
+> latencytop adds almost 4kB to each and every task struct and as such
+> it doesn't deserve to be in our defconfigs.
 > 
-> Fixes: e2b3d202d1db ("powerpc: Switch 16GB and 16MB explicit hugepages to a different page table format")
-> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
+> Signed-off-by: Anton Blanchard <anton@ozlabs.org>
 
-Series applied to powerpc next, thanks.
+Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/2230ebf6e6dd0b7751e2921b40f6cfe34f09bb16
+https://git.kernel.org/powerpc/c/7505a13f85bdcb8713551a067dfc92ac3c7ba902
 
 cheers
