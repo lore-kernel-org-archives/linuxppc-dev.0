@@ -4,42 +4,41 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS
-	autolearn=unavailable autolearn_force=no version=3.4.0
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A04C7C0650E
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Jul 2019 01:43:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BE3FFC0650E
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Jul 2019 01:45:10 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 56F0820673
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Jul 2019 01:43:28 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 56F0820673
+	by mail.kernel.org (Postfix) with ESMTPS id 7588820673
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Jul 2019 01:45:10 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7588820673
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45hpBQ2gK6zDq83
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Jul 2019 11:43:26 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+	by lists.ozlabs.org (Postfix) with ESMTP id 45hpDN28dszDqLs
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Jul 2019 11:45:08 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45hnfz4PLmzDqQC
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45hnfz5k3BzDqQQ
  for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Jul 2019 11:19:39 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 45hnfw1DV0z9sP8; Mon,  8 Jul 2019 11:19:35 +1000 (AEST)
+ id 45hnfz3WXDz9sNC; Mon,  8 Jul 2019 11:19:39 +1000 (AEST)
 X-powerpc-patch-notification: thanks
-X-powerpc-patch-commit: 14b2f7d908c374df57792410bc0100dd71be4e5c
-In-Reply-To: <1559635233-21385-1-git-send-email-krzk@kernel.org>
-To: Krzysztof Kozlowski <krzk@kernel.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+X-powerpc-patch-commit: 53e80bd042773c8ddeed856bd1b68ca74c3b8b46
+In-Reply-To: <20190607064511.25083-1-aneesh.kumar@linux.ibm.com>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>, npiggin@gmail.com,
+ paulus@samba.org, oohall@gmail.com
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Subject: Re: [PATCH] powerpc/configs: Remove useless UEVENT_HELPER_PATH
-Message-Id: <45hnfw1DV0z9sP8@ozlabs.org>
-Date: Mon,  8 Jul 2019 11:19:35 +1000 (AEST)
+Subject: Re: [PATCH v2] powerpc/nvdimm: Add support for multibyte read/write
+ for metadata
+Message-Id: <45hnfz3WXDz9sNC@ozlabs.org>
+Date: Mon,  8 Jul 2019 11:19:37 +1000 (AEST)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -51,28 +50,29 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Geert Uytterhoeven <geert+renesas@glider.be>,
- Krzysztof Kozlowski <krzk@kernel.org>
+Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, 2019-06-04 at 08:00:33 UTC, Krzysztof Kozlowski wrote:
-> Remove the CONFIG_UEVENT_HELPER_PATH because:
-> 1. It is disabled since commit 1be01d4a5714 ("driver: base: Disable
->    CONFIG_UEVENT_HELPER by default") as its dependency (UEVENT_HELPER) was
->    made default to 'n',
-> 2. It is not recommended (help message: "This should not be used today
->    [...] creates a high system load") and was kept only for ancient
->    userland,
-> 3. Certain userland specifically requests it to be disabled (systemd
->    README: "Legacy hotplug slows down the system and confuses udev").
+On Fri, 2019-06-07 at 06:45:11 UTC, "Aneesh Kumar K.V" wrote:
+> SCM_READ/WRITE_MEATADATA hcall supports multibyte read/write. This patch
+> updates the metadata read/write to use 1, 2, 4 or 8 byte read/write as
+> mentioned in PAPR document.
 > 
-> Signed-off-by: Krzysztof Kozlowski <krzk@kernel.org>
-> Acked-by: Geert Uytterhoeven <geert+renesas@glider.be>
+> READ/WRITE_METADATA hcall supports the 1, 2, 4, or 8 bytes read/write.
+> For other values hcall results H_P3.
+> 
+> Hypervisor stores the metadata contents in big-endian format and in-order
+> to enable read/write in different granularity, we need to switch the contents
+> to big-endian before calling HCALL.
+> 
+> Based on an patch from Oliver O'Halloran <oohall@gmail.com>
+> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
 
 Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/14b2f7d908c374df57792410bc0100dd71be4e5c
+https://git.kernel.org/powerpc/c/53e80bd042773c8ddeed856bd1b68ca74c3b8b46
 
 cheers
