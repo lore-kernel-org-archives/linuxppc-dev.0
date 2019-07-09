@@ -4,80 +4,79 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-9.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3C350C73C42
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Jul 2019 12:30:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id ACD07C73C41
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Jul 2019 12:33:01 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B3441214AF
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Jul 2019 12:30:18 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 34D51214AF
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Jul 2019 12:33:01 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=fossix-org.20150623.gappssmtp.com header.i=@fossix-org.20150623.gappssmtp.com header.b="WEJjn3sL"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B3441214AF
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=fossix-org.20150623.gappssmtp.com header.i=@fossix-org.20150623.gappssmtp.com header.b="Aq4tw2DO"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 34D51214AF
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=fossix.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45jhVJ4p58zDqHK
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Jul 2019 22:30:16 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45jhYR1GBszDqXf
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Jul 2019 22:32:59 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=none (mailfrom) smtp.mailfrom=fossix.org
- (client-ip=2607:f8b0:4864:20::641; helo=mail-pl1-x641.google.com;
+ (client-ip=2607:f8b0:4864:20::643; helo=mail-pl1-x643.google.com;
  envelope-from=santosh@fossix.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=fossix.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=fossix-org.20150623.gappssmtp.com
- header.i=@fossix-org.20150623.gappssmtp.com header.b="WEJjn3sL"; 
+ header.i=@fossix-org.20150623.gappssmtp.com header.b="Aq4tw2DO"; 
  dkim-atps=neutral
-Received: from mail-pl1-x641.google.com (mail-pl1-x641.google.com
- [IPv6:2607:f8b0:4864:20::641])
+Received: from mail-pl1-x643.google.com (mail-pl1-x643.google.com
+ [IPv6:2607:f8b0:4864:20::643])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45jh9x3VrTzDqV8
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Jul 2019 22:16:05 +1000 (AEST)
-Received: by mail-pl1-x641.google.com with SMTP id b7so10013779pls.6
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 09 Jul 2019 05:16:05 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45jhB83DthzDqBG
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Jul 2019 22:16:16 +1000 (AEST)
+Received: by mail-pl1-x643.google.com with SMTP id b7so10014037pls.6
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 09 Jul 2019 05:16:16 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=fossix-org.20150623.gappssmtp.com; s=20150623;
  h=from:to:cc:subject:date:message-id:in-reply-to:references
  :mime-version:content-transfer-encoding;
- bh=/D6q9IqqnCEzUrYRXPENA3CK9dVtXBM9qraf2QWS3cw=;
- b=WEJjn3sLVMMM3G8F3q0pi5X+7zVo+wy1uS2MncY8uprFUFCsiDqJn7M0uGznLEo9k1
- zTWo+dAv6u+rHQ4QFhWqEAEKtkPFA5bxtJ1kmTL6PVrfjoDjGnOpwZBu+UcLaES1NRuh
- jp4rGE4KUTOIVMa9e+XvozV5BvHS/2k5bBSW85BmmIBbfmnk7NInLhR2SLvCyeTWzoWD
- ZTbFqdJajckNS54NRHSMJKq0VZ3cK4JUqET1JUmUqRs1HUaefEkP0LasrySTbpnFg6FJ
- pSmjS1GiBLfd1kD82Lco3aQyd2FeOHcB8o0pj9a0dKmK2zr0UV0qoVqgOCcCu1M8SIcD
- +7Tw==
+ bh=fkBqb9r0ZPOja9LVgBYQkYAhfvXLkyoq2mrWQ0Pvb1g=;
+ b=Aq4tw2DOBGdNB98EMhXA4w+2ylAiJ1OoZ3NSWIh34kOBQUPX8LuS0VRymUQpuGOvBu
+ rGEaItVxkNkDUTz//EY+aLVdfR4b+kKkRdiV4ho1cD1ug5FrdeOBgb36izjxxDzVAevZ
+ ACC7a/9tkGYTXuxqeg6ltiNNN2XwoW6yMImECQU0a+vdSq6ZyNXDKtgxo/+vOMqGVigQ
+ cJ+kK1ZmrHspDe0nIbIFYWf7UctJ7R5JkluYqRyXrpkNZjH1OBNty7GLFMXo2C//icqj
+ FPwKWlEeesGB2W6zZEt7aN04czkEoS9wHXmO+xYnZUnWPewITL541qK60sdqPQU2ALZx
+ QouQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
  :references:mime-version:content-transfer-encoding;
- bh=/D6q9IqqnCEzUrYRXPENA3CK9dVtXBM9qraf2QWS3cw=;
- b=uCzGqk3oC+ut5NbQ+r/owXFvsR193q06VzlyxI5f+yw7nfmhxN2zDzXHwAFzBOdF/8
- aUbvB/XTnElcUvbK461NjeJ4hVhLrDemD04tJePEO+zxsjgWdHQjGHojYX4N3HcbhWo2
- VJ0jEThorWCUXbCDuerTtNUfDceBede5vpZrRScMQfht+yZY42vEXC0cj6QRogQBeoLa
- ixIvo99Qcy+T655BYSHyHn84bo0UqDV2eUbM2+x5aHuksTi+P3rTphSsyqB/2OTy52/j
- l5b/sY5SSIaBJOVovmXnPmAp8ZBQAFh0b7FnO3VjZ7NqWkzYgcnxoXnIzUGFR2/E/vZG
- xq/Q==
-X-Gm-Message-State: APjAAAVSP+JCK/X3Rm74YE3piuL5UymCBicZqyWeECZAmv/sIM416sHY
- 0cQ7NGqOFbtGpFjd28pBds0h3XM+CJ5R2nN2
-X-Google-Smtp-Source: APXvYqxLH/fsm+5ph64L/SdYOrJ1SjqBJSSYJsWOK2/V2bl4VN5e1fFMneN0NSUGDoXmU6TsAaIQkA==
-X-Received: by 2002:a17:902:204:: with SMTP id
- 4mr31128589plc.178.1562674563091; 
- Tue, 09 Jul 2019 05:16:03 -0700 (PDT)
+ bh=fkBqb9r0ZPOja9LVgBYQkYAhfvXLkyoq2mrWQ0Pvb1g=;
+ b=sWNe7gkOsws36ko/S2genxclYccFOgLVs3IEs80DwuW4RgziXdxbXeYLuxfl5hVAza
+ rZUldJnjHw/N0ZSOhqHK/ZApds5KdudB1g4HXIK1M78CBeR9drinXko9jJYZVNNHWoiQ
+ 4nl60IrBqYS4WEIZ5BSncoz+LMPGIouTEH5kyfA2YwFtC3dPXQ6um8sON/lFbGSSJeyI
+ 9WqsiaNITUToN6GGjGuPUGigLNJjHf1f/oE9tNnEohlNfPsgzJWq5nquk1EGd+j2qLnp
+ u+g76dOOAr0h4d1JW6J6stbWCG3XqpaWkGPMNtjpe/UBhzpvQLtHO5HeUH6TzugBV9Qc
+ seGQ==
+X-Gm-Message-State: APjAAAVC6MRD54g8QRgUyET7P7AOg0QX250it7ilE0+4QNogsdSbdJFT
+ p8EoAGLLL794/9date+XY+dwpQtIh47zLJUi
+X-Google-Smtp-Source: APXvYqxoJPumP2n/U3rz8WfX3Lh81RLahpQDrCmW2U3rK49Lkf/SP3QFjcTITL8TkqaPWIT1ztqrew==
+X-Received: by 2002:a17:902:24c:: with SMTP id 70mr31615139plc.2.1562674574365; 
+ Tue, 09 Jul 2019 05:16:14 -0700 (PDT)
 Received: from santosiv.in.ibm.com ([223.186.121.175])
- by smtp.gmail.com with ESMTPSA id o15sm21243933pgj.18.2019.07.09.05.15.56
+ by smtp.gmail.com with ESMTPSA id o15sm21243933pgj.18.2019.07.09.05.16.09
  (version=TLS1_3 cipher=AEAD-AES256-GCM-SHA384 bits=256/256);
- Tue, 09 Jul 2019 05:16:02 -0700 (PDT)
+ Tue, 09 Jul 2019 05:16:14 -0700 (PDT)
 From: Santosh Sivaraj <santosh@fossix.org>
 To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, linux-kernel@vger.kernel.org
-Subject: [v5 4/6] extable: Add function to search only kernel exception table
-Date: Tue,  9 Jul 2019 17:45:22 +0530
-Message-Id: <20190709121524.18762-5-santosh@fossix.org>
+Subject: [v5 6/6] powerpc: add machine check safe copy_to_user
+Date: Tue,  9 Jul 2019 17:45:24 +0530
+Message-Id: <20190709121524.18762-7-santosh@fossix.org>
 X-Mailer: git-send-email 2.20.1
 In-Reply-To: <20190709121524.18762-1-santosh@fossix.org>
 References: <20190709121524.18762-1-santosh@fossix.org>
@@ -97,69 +96,56 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
  Mahesh Salgaonkar <mahesh@linux.ibm.com>, Nicholas Piggin <npiggin@gmail.com>,
  Chandan Rajendra <chandan@linux.vnet.ibm.com>,
- Thomas Gleixner <tglx@linutronix.de>, Reza Arbab <arbab@linux.ibm.com>,
- Ingo Molnar <mingo@kernel.org>
+ Reza Arbab <arbab@linux.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-In real mode, the search_exception tables cannot be called because
-it also searches the module exception tables if entry is not found
-in the kernel exception tables.
+Use  memcpy_mcsafe() implementation to define copy_to_user_mcsafe()
 
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Ingo Molnar <mingo@kernel.org>
-Cc: Nicholas Piggin <npiggin@gmail.com>
 Signed-off-by: Santosh Sivaraj <santosh@fossix.org>
 ---
- include/linux/extable.h |  2 ++
- kernel/extable.c        | 16 +++++++++++++---
- 2 files changed, 15 insertions(+), 3 deletions(-)
+ arch/powerpc/Kconfig               |  1 +
+ arch/powerpc/include/asm/uaccess.h | 14 ++++++++++++++
+ 2 files changed, 15 insertions(+)
 
-diff --git a/include/linux/extable.h b/include/linux/extable.h
-index 41c5b3a25f67..0c2819ba67f0 100644
---- a/include/linux/extable.h
-+++ b/include/linux/extable.h
-@@ -19,6 +19,8 @@ void trim_init_extable(struct module *m);
- 
- /* Given an address, look for it in the exception tables */
- const struct exception_table_entry *search_exception_tables(unsigned long add);
-+const struct
-+exception_table_entry *search_kernel_exception_table(unsigned long addr);
- 
- #ifdef CONFIG_MODULES
- /* For extable.c to search modules' exception tables. */
-diff --git a/kernel/extable.c b/kernel/extable.c
-index e23cce6e6092..6d544cb79fff 100644
---- a/kernel/extable.c
-+++ b/kernel/extable.c
-@@ -40,13 +40,23 @@ void __init sort_main_extable(void)
- 	}
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index 8c1c636308c8..a173b392c272 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -134,6 +134,7 @@ config PPC
+ 	select ARCH_HAS_STRICT_KERNEL_RWX	if ((PPC_BOOK3S_64 || PPC32) && !RELOCATABLE && !HIBERNATION)
+ 	select ARCH_HAS_TICK_BROADCAST		if GENERIC_CLOCKEVENTS_BROADCAST
+ 	select ARCH_HAS_UACCESS_FLUSHCACHE	if PPC64
++	select ARCH_HAS_UACCESS_MCSAFE		if PPC64
+ 	select ARCH_HAS_UBSAN_SANITIZE_ALL
+ 	select ARCH_HAS_ZONE_DEVICE		if PPC_BOOK3S_64
+ 	select ARCH_HAVE_NMI_SAFE_CMPXCHG
+diff --git a/arch/powerpc/include/asm/uaccess.h b/arch/powerpc/include/asm/uaccess.h
+index 76f34346b642..8899864a5552 100644
+--- a/arch/powerpc/include/asm/uaccess.h
++++ b/arch/powerpc/include/asm/uaccess.h
+@@ -386,6 +386,20 @@ static inline unsigned long raw_copy_to_user(void __user *to,
+ 	return ret;
  }
  
--/* Given an address, look for it in the exception tables. */
-+/* For the given address, look for it in the kernel exception table */
-+const
-+struct exception_table_entry *search_kernel_exception_table(unsigned long addr)
++static __always_inline unsigned long __must_check
++copy_to_user_mcsafe(void __user *to, const void *from, unsigned long n)
 +{
-+	return search_extable(__start___ex_table,
-+			      __stop___ex_table - __start___ex_table, addr);
++	if (likely(check_copy_size(from, n, true))) {
++		if (access_ok(to, n)) {
++			allow_write_to_user(to, n);
++			n = memcpy_mcsafe((void *)to, from, n);
++			prevent_write_to_user(to, n);
++		}
++	}
++
++	return n;
 +}
 +
-+/*
-+ * Given an address, look for it in the kernel and the module exception
-+ * tables.
-+ */
- const struct exception_table_entry *search_exception_tables(unsigned long addr)
- {
- 	const struct exception_table_entry *e;
+ extern unsigned long __clear_user(void __user *addr, unsigned long size);
  
--	e = search_extable(__start___ex_table,
--			   __stop___ex_table - __start___ex_table, addr);
-+	e = search_kernel_exception_table(addr);
- 	if (!e)
- 		e = search_module_extables(addr);
- 	return e;
+ static inline unsigned long clear_user(void __user *addr, unsigned long size)
 -- 
 2.20.1
 
