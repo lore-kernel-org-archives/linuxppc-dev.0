@@ -2,82 +2,57 @@ Return-Path: <SRS0=CkO+=VG=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.3 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-0.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,UNPARSEABLE_RELAY autolearn=no
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 66952C606CF
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Jul 2019 02:22:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EDF70C606B0
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Jul 2019 02:23:57 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id A61AE21537
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Jul 2019 02:22:12 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="OMGu7W8A"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A61AE21537
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	by mail.kernel.org (Postfix) with ESMTPS id 8050C2166E
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Jul 2019 02:23:57 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8050C2166E
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=zte.com.cn
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45jR0f0YqWzDqPy
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Jul 2019 12:22:10 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45jR2g2sJHzDqB7
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Jul 2019 12:23:55 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=2607:f8b0:4864:20::d41; helo=mail-io1-xd41.google.com;
- envelope-from=oohall@gmail.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=zte.com.cn
+ (client-ip=202.103.147.169; helo=mxct.zte.com.cn;
+ envelope-from=wen.yang99@zte.com.cn; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="OMGu7W8A"; 
- dkim-atps=neutral
-Received: from mail-io1-xd41.google.com (mail-io1-xd41.google.com
- [IPv6:2607:f8b0:4864:20::d41])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ dmarc=none (p=none dis=none) header.from=zte.com.cn
+Received: from mxct.zte.com.cn (mx7.zte.com.cn [202.103.147.169])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45jQyg4wyczDq6M
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Jul 2019 12:20:27 +1000 (AEST)
-Received: by mail-io1-xd41.google.com with SMTP id s7so39790281iob.11
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 08 Jul 2019 19:20:27 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=mime-version:references:in-reply-to:from:date:message-id:subject:to
- :cc; bh=PqqLzTYgfQxqS7WeMJ8j0MU1nn2fiHKsb4BBFyiKEmI=;
- b=OMGu7W8ASNA2F50nIS4M1xfIwcL/esB9I9lXSnfIXcIbD874tTTaEF1ABDM8SALR6I
- n4S1WMnJCTe3/W6z9o8Lx7wq1YFF65hvl68HKz1nvhu5cygsDrkUVtXB+EksGde1w1mR
- rwC7HnmzOfAJfnECJ7lsdg+9CFA3OV601tC5q9MNIwItgRxOX+WafU/xHe6rGzCdl9ds
- FOHOQGhVTdyhq3RFBTvV1asJ7PQD+ajEoGch0X06+xtwe9svY1vXfyBC+1W3Qv7SB+EH
- T+1fJs8HsgLu+yOZkjJJ26e7x3HqY+fNFKD6CCOSlqCOksT9F5CIYwRpiovXz0oPELzQ
- YY1A==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:mime-version:references:in-reply-to:from:date
- :message-id:subject:to:cc;
- bh=PqqLzTYgfQxqS7WeMJ8j0MU1nn2fiHKsb4BBFyiKEmI=;
- b=UFuCEbdWKvOqW7trTaEK/Gt2gRCjiG89Ylwo2sZi/x+d3R7EaHyTpbqaKnWkoTZbEB
- jax31bRYSPRWe4ZZnff6xoEbaTAtnwRwLb3UEJGXDYJCvPJzb+7QBbjODQe7glqRfbxX
- T/K5Vbpz4UeuEUD7BrkcdriqPDB/Bpailum2b1G+jNuMmxi8prYW/dLQnX45rFgv9K+s
- 4sdCorWNBg7wQauG/QZ/eKTZPtstxqur8yPLUKN+nFOyoVjLL8aNE1DNBhwFrj2W0K2o
- SQb+LPvgkzDfK/PRw6pzgDcDS5Ui23boRrc+M68DK95zDO454iDUgmuwIkcwkHXxVUU1
- dGkQ==
-X-Gm-Message-State: APjAAAVJPePss02o4wh2gNvGCgKSmG/VNM7L3MK/WcLcp0nS7TGxaSqi
- G6NISYxemvvgwhoi6TllJ2RmIhD255IBa5DA/tNQuzBqM7A=
-X-Google-Smtp-Source: APXvYqzwwSPcBygzgpPc++VFRInbOx3Vxz9b08adPYXTcT1Fz+zr8amDiOvv+RltV/YRKkW51A1K3UDPLktZFZDjEIU=
-X-Received: by 2002:a5d:8497:: with SMTP id t23mr2052187iom.298.1562638823991; 
- Mon, 08 Jul 2019 19:20:23 -0700 (PDT)
-MIME-Version: 1.0
-References: <239d1c8f15b8bedc161a234f9f1a22a07160dbdf.1557824379.git.christophe.leroy@c-s.fr>
- <d6f628ffdeb9c7863da722a8f6ef2949e57bb360.1557824379.git.christophe.leroy@c-s.fr>
- <87y318d2th.fsf@linux.ibm.com>
-In-Reply-To: <87y318d2th.fsf@linux.ibm.com>
-From: "Oliver O'Halloran" <oohall@gmail.com>
-Date: Tue, 9 Jul 2019 12:20:12 +1000
-Message-ID: <CAOSf1CG-oxpSDsAPw8xHV5367MrMn2Ty_yDpPY9TvA6wMrMZHA@mail.gmail.com>
-Subject: Re: [PATCH 4/4] powerpc/64: reuse PPC32 static inline
- flush_dcache_range()
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45jR0D5HMxzDqQC
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Jul 2019 12:21:46 +1000 (AEST)
+Received: from mse-fl1.zte.com.cn (unknown [10.30.14.238])
+ by Forcepoint Email with ESMTPS id 5BA317F284F9B25786FF;
+ Tue,  9 Jul 2019 10:21:38 +0800 (CST)
+Received: from kjyxapp03.zte.com.cn ([10.30.12.202])
+ by mse-fl1.zte.com.cn with SMTP id x692Jw8x080692;
+ Tue, 9 Jul 2019 10:19:58 +0800 (GMT-8)
+ (envelope-from wen.yang99@zte.com.cn)
+Received: from mapi (kjyxapp04[null]) by mapi (Zmail) with MAPI id mid14;
+ Tue, 9 Jul 2019 10:19:58 +0800 (CST)
+Date: Tue, 9 Jul 2019 10:19:58 +0800 (CST)
+X-Zmail-TransId: 2b065d23f9ce25f25cd5
+X-Mailer: Zmail v1.0
+Message-ID: <201907091019586328815@zte.com.cn>
+In-Reply-To: <99840e11-e0e6-b3f4-e35b-56ef4ec39417@web.de>
+References: 1562317084-13140-1-git-send-email-wen.yang99@zte.com.cn,
+ 99840e11-e0e6-b3f4-e35b-56ef4ec39417@web.de
+Mime-Version: 1.0
+From: <wen.yang99@zte.com.cn>
+To: <Markus.Elfring@web.de>
+Subject: =?UTF-8?B?UmU6IHBvd2VycGMvODN4eDogZml4IHVzZS1hZnRlci1mcmVlIG9uIG1wYzgzMXhfdXNiX2NmZygp?=
+Content-Type: multipart/mixed;
+	boundary="=====_001_next====="
+X-MAIL: mse-fl1.zte.com.cn x692Jw8x080692
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -89,48 +64,40 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Paul Mackerras <paulus@samba.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Cc: wang.yi59@zte.com.cn, cheng.shengyu@zte.com.cn,
+ kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org,
+ oss@buserror.net, paulus@samba.org, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, Jul 9, 2019 at 12:22 AM Aneesh Kumar K.V
-<aneesh.kumar@linux.ibm.com> wrote:
->
-> Christophe Leroy <christophe.leroy@c-s.fr> writes:
->
-> > *snip*
-> > +     if (IS_ENABLED(CONFIG_PPC64))
-> > +             isync();
-> >  }
->
->
-> Was checking with Michael about why we need that extra isync. Michael
-> pointed this came via
->
-> https://github.com/mpe/linux-fullhistory/commit/faa5ee3743ff9b6df9f9a03600e34fdae596cfb2#diff-67c7ffa8e420c7d4206cae4a9e888e14
->
-> for 970 which doesn't have coherent icache. So possibly isync there is
-> to flush the prefetch instructions? But even so we would need an icbi
-> there before that isync.
 
-I don't think it's that, there's some magic in flush_icache_range() to
-handle dropping prefetched instructions on 970.
 
-> So overall wondering why we need that extra barriers there.
+--=====_001_next=====
+Content-Type: multipart/alternative;
+	boundary="=====_003_next====="
 
-I think the isync is needed there because the architecture only
-requires sync to provide ordering. A sync alone doesn't guarantee the
-dcbfs have actually completed so the isync is necessary to ensure the
-flushed cache lines are back in memory. That said, as far as I know
-all the IBM book3s chips from power4 onwards will wait for pending
-dcbfs when they hit a sync, but that might change in the future.
 
-If it's a problem we could add a cpu-feature section around the isync
-to no-op it in the common case. However, when I had a look with perf
-it always showed that the sync was the hotspot so I don't think it'll
-help much.
+--=====_003_next=====
+Content-Type: text/plain;
+	charset="UTF-8"
+Content-Transfer-Encoding: base64
 
-Oliver
+PiA+IFRoZSBucCB2YXJpYWJsZSBpcyBzdGlsbCBiZWluZyB1c2VkIGFmdGVyIHRoZSBvZl9ub2Rl
+X3B1dCgpIGNhbGwsCj4gCj4gPiB3aGljaCBtYXkgcmVzdWx0IGluIHVzZS1hZnRlci1mcmVlLgo+
+IAo+ID4gV2UgZml4IHRoaXMgaXNzdWUgYnkgY2FsbGluZyBvZl9ub2RlX3B1dCgpIGFmdGVyIHRo
+ZSBsYXN0IHVzYWdlLgo+IAo+IAo+IEkgaW1hZ2luZSB0aGF0IHRoaXMgY29tbWl0IGRlc2NyaXB0
+aW9uIGNhbiBiZSBpbXByb3ZlZCBhIGJpdCBtb3JlCj4gKGJ5IG1lbnRpb25pbmcgdGhlIGluZmx1
+ZW5jZSBvZiDigJxpbW1yX25vZGXigJ0/KS4KPiBIb3cgZG8geW91IHRoaW5rIGFib3V0IHRvIG9t
+aXQgdGhlIHdvcmQg4oCcV2XigJ0gaGVyZT8KPiAKPiAKPiA+IFRoaXMgcGF0YXRjaCBhbHNvIGRv
+IHNvbWUgY2xlYW51cC4KPiAKPiAKPiBTaG91bGQgdGhlIHJlbmFtaW5nIG9mIGEganVtcCBsYWJl
+bCBiZSBjb250cmlidXRlZCBpbiBhIHNlcGFyYXRlIHVwZGF0ZQo+IHN0ZXAgb2YgYSBzbWFsbCBw
+YXRjaCBzZXJpZXMgYmVzaWRlcyBhIHdvcmRpbmcgd2l0aG91dCBhIHR5cG8/CgpUaGFuayB5b3Ug
+Zm9yIHlvdXIgY29tbWVudHMuCldlIHdpbGwgaW1wcm92ZSB0aGUgY29tbWl0IGRlc2NyaXB0aW9u
+IGFuZCBzZW5kIHYyIGFzIHNvb24gYXMgcG9zc2libGUuCgotLQpSZWdhcmRzLApXZW4=
+
+
+--=====_003_next=====--
+
+--=====_001_next=====--
+
