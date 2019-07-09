@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-2.3 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A2FCFC73C46
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Jul 2019 14:34:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BD68BC73C46
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Jul 2019 14:42:39 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 2AFEC20844
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Jul 2019 14:34:46 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2AFEC20844
+	by mail.kernel.org (Postfix) with ESMTPS id 778C821537
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Jul 2019 14:42:39 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 778C821537
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45jlFv30T0zDqT2
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Jul 2019 00:34:43 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45jlR11QxDzDqZF
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Jul 2019 00:42:37 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=none (mailfrom) smtp.mailfrom=lst.de
  (client-ip=213.95.11.211; helo=verein.lst.de; envelope-from=hch@lst.de;
@@ -28,16 +28,16 @@ Authentication-Results: lists.ozlabs.org;
 Received: from verein.lst.de (verein.lst.de [213.95.11.211])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45jlCq46nPzDqSP
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jul 2019 00:32:55 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45jlP16S3yzDqJB
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jul 2019 00:40:53 +1000 (AEST)
 Received: by verein.lst.de (Postfix, from userid 2407)
- id 9E60368B05; Tue,  9 Jul 2019 16:32:51 +0200 (CEST)
-Date: Tue, 9 Jul 2019 16:32:51 +0200
+ id 7B68B68B02; Tue,  9 Jul 2019 16:40:49 +0200 (CEST)
+Date: Tue, 9 Jul 2019 16:40:49 +0200
 From: Christoph Hellwig <hch@lst.de>
 To: Max Gurtovoy <maxg@mellanox.com>
 Subject: Re: [PATCH 1/3] powerpc/powernv: remove the unused pnv_pci_set_p2p
  function
-Message-ID: <20190709143251.GA3222@lst.de>
+Message-ID: <20190709144049.GA3364@lst.de>
 References: <20190426124917.23789-1-hch@lst.de>
  <20190426124917.23789-2-hch@lst.de>
  <99c4c4a9-8a18-61ed-174a-9ffaec3d2e44@linux.ibm.com>
@@ -45,10 +45,12 @@ References: <20190426124917.23789-1-hch@lst.de>
  <AM0PR05MB5810FF3B4A45B3CA722489EEB6F10@AM0PR05MB5810.eurprd05.prod.outlook.com>
  <20190709135935.GA2511@lst.de>
  <ec1f8638-d97d-bfc7-23e1-9af555654562@mellanox.com>
+ <20190709143251.GA3222@lst.de>
+ <d9430488-e4ef-7d1f-6b74-c2b8158e4a59@mellanox.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <ec1f8638-d97d-bfc7-23e1-9af555654562@mellanox.com>
+In-Reply-To: <d9430488-e4ef-7d1f-6b74-c2b8158e4a59@mellanox.com>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -63,15 +65,29 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 Cc: "'gregkh@linuxfoundation.org'" <gregkh@linuxfoundation.org>,
  Shlomi Nimrodi <shlomin@mellanox.com>, Paul Mackerras <paulus@samba.org>,
- Frederic Barrat <fbarrat@linux.ibm.com>, Oren Duer <oren@mellanox.com>,
- Idan Werpoler <Idanw@mellanox.com>,
+ Bodong Wang <bodong@mellanox.com>, Frederic Barrat <fbarrat@linux.ibm.com>,
+ Oren Duer <oren@mellanox.com>, Idan Werpoler <Idanw@mellanox.com>,
  "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
  Christoph Hellwig <hch@lst.de>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, Jul 09, 2019 at 05:31:37PM +0300, Max Gurtovoy wrote:
-> Are we ok with working on a solution during kernel-5.3 cycle ?
+On Tue, Jul 09, 2019 at 05:37:18PM +0300, Max Gurtovoy wrote:
+>
+> On 7/9/2019 5:32 PM, Christoph Hellwig wrote:
+>> On Tue, Jul 09, 2019 at 05:31:37PM +0300, Max Gurtovoy wrote:
+>>> Are we ok with working on a solution during kernel-5.3 cycle ?
+>> You can start working on it any time, no need to ask for permission.
+>
+> I just want to make sure we don't remove it from the kernel before we send 
+> a general API solution.
 
-You can start working on it any time, no need to ask for permission.
+The code is gone in this merge window.
+
+> This way we'll make sure that all the kernel versions has this 
+> functionality...
+
+Again, we do not provide functionality for out of tree modules.  We've
+had the p2p API for about a year now, its not like you didn't have
+plenty of time.
