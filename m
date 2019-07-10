@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-1.0 required=3.0 tests=MAILING_LIST_MULTI,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 425B6C74A21
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Jul 2019 16:17:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 96435C74A21
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Jul 2019 16:19:27 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id F1371208E4
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Jul 2019 16:17:32 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org F1371208E4
+	by mail.kernel.org (Postfix) with ESMTPS id 22AB8208E4
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Jul 2019 16:19:27 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 22AB8208E4
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=bugzilla.kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45kPV26mWlzDqsR
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Jul 2019 02:17:30 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45kPXF0zhqzDqsX
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Jul 2019 02:19:25 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=bugzilla.kernel.org
  (client-ip=198.145.29.98; helo=mail.wl.linuxfoundation.org;
@@ -29,18 +29,18 @@ Received: from mail.wl.linuxfoundation.org (mail.wl.linuxfoundation.org
  [198.145.29.98])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45kP3S36CvzDqpJ
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jul 2019 01:57:56 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45kPDn02qkzDqqD
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jul 2019 02:04:52 +1000 (AEST)
 Received: from mail.wl.linuxfoundation.org (localhost [127.0.0.1])
- by mail.wl.linuxfoundation.org (Postfix) with ESMTP id BCDEC28908
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jul 2019 15:57:53 +0000 (UTC)
+ by mail.wl.linuxfoundation.org (Postfix) with ESMTP id 111CA284B9
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jul 2019 16:04:50 +0000 (UTC)
 Received: by mail.wl.linuxfoundation.org (Postfix, from userid 486)
- id AFBC328936; Wed, 10 Jul 2019 15:57:53 +0000 (UTC)
+ id 05948289CB; Wed, 10 Jul 2019 16:04:50 +0000 (UTC)
 From: bugzilla-daemon@bugzilla.kernel.org
 To: linuxppc-dev@lists.ozlabs.org
 Subject: [Bug 204125] FTBFS on ppc64 big endian and gcc9 because of
  -mcall-aixdesc and missing __linux__
-Date: Wed, 10 Jul 2019 15:57:53 +0000
+Date: Wed, 10 Jul 2019 16:04:49 +0000
 X-Bugzilla-Reason: None
 X-Bugzilla-Type: changed
 X-Bugzilla-Watch-Reason: AssignedTo platform_ppc-64@kernel-bugs.osdl.org
@@ -56,7 +56,7 @@ X-Bugzilla-Priority: P1
 X-Bugzilla-Assigned-To: platform_ppc-64@kernel-bugs.osdl.org
 X-Bugzilla-Flags: 
 X-Bugzilla-Changed-Fields: 
-Message-ID: <bug-204125-206035-pqLCUfVU02@https.bugzilla.kernel.org/>
+Message-ID: <bug-204125-206035-OLFURELS5x@https.bugzilla.kernel.org/>
 In-Reply-To: <bug-204125-206035@https.bugzilla.kernel.org/>
 References: <bug-204125-206035@https.bugzilla.kernel.org/>
 Content-Type: text/plain; charset="UTF-8"
@@ -82,10 +82,19 @@ Sender: "Linuxppc-dev"
 
 https://bugzilla.kernel.org/show_bug.cgi?id=3D204125
 
---- Comment #3 from Daniel Kolesa (linux@octaforge.org) ---
-Also, reported in gcc: https://gcc.gnu.org/bugzilla/show_bug.cgi?id=3D91135
-
-Let's see what the compiler people have to say...
+--- Comment #5 from Daniel Kolesa (linux@octaforge.org) ---
+I have an entire distro built with it. A small number of things require min=
+or
+patches. Some of these have been upstreamed, some of these are pending (for
+example, to make OpenSSL assembly work on BE/ELFv2, it requires about 5 lin=
+es
+of changes to pass all of the testsuite, and a PR for that is up). Glibc us=
+ed
+to not work about a year ago I think, these days it works perfectly fine an=
+d we
+generally have no major issues with any software that already worked on BE =
+in
+the first place.
 
 --=20
 You are receiving this mail because:
