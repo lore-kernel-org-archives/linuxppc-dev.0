@@ -7,21 +7,21 @@ X-Spam-Status: No, score=-8.3 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1
 	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5E7BCC74A2B
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Jul 2019 14:57:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B3768C74A21
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Jul 2019 15:06:29 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id D5D122064B
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Jul 2019 14:57:32 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 335372064A
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Jul 2019 15:06:29 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="kLZtyL5l"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D5D122064B
+	dkim=pass (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="BJ4sWu48"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 335372064A
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45kMjk39q4zDqLS
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Jul 2019 00:57:30 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45kMw22dKzzDqjh
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Jul 2019 01:06:26 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=c-s.fr
  (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
@@ -29,55 +29,54 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="kLZtyL5l"; 
+ unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="BJ4sWu48"; 
  dkim-atps=neutral
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45kMg714j6zDq67
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jul 2019 00:55:13 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45kMqf3dHTzDqQW
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jul 2019 01:02:38 +1000 (AEST)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 45kMg011QGz9vBL9;
- Wed, 10 Jul 2019 16:55:08 +0200 (CEST)
+ by localhost (Postfix) with ESMTP id 45kMqX5g0Zz9vBK6;
+ Wed, 10 Jul 2019 17:02:32 +0200 (CEST)
 Authentication-Results: localhost; dkim=pass
  reason="1024-bit key; insecure key"
- header.d=c-s.fr header.i=@c-s.fr header.b=kLZtyL5l; dkim-adsp=pass;
+ header.d=c-s.fr header.i=@c-s.fr header.b=BJ4sWu48; dkim-adsp=pass;
  dkim-atps=neutral
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id S2QPTAofV8Wp; Wed, 10 Jul 2019 16:55:08 +0200 (CEST)
+ with ESMTP id uJEqSXiV2ybC; Wed, 10 Jul 2019 17:02:32 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 45kMg000CBz9vBKx;
- Wed, 10 Jul 2019 16:55:08 +0200 (CEST)
+ by pegase1.c-s.fr (Postfix) with ESMTP id 45kMqX4b86z9vBJX;
+ Wed, 10 Jul 2019 17:02:32 +0200 (CEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
- t=1562770508; bh=f04mWvdmBZY2FUDsS/VFc17IYEz8iYcB6pvDdm6nJ/c=;
+ t=1562770952; bh=p0Ol0rmBzFzZQpkrGhuxgq2fbJl2jXBPenG5CrgDc3A=;
  h=Subject:To:Cc:References:From:Date:In-Reply-To:From;
- b=kLZtyL5lE7nBm1ErK3byyuVey5XaQgz9Me5sRtZy3qLtE5xZFeB58gmCeDFnGVXsl
- +hwIN+jk8NgpDdkg/kYhjiatwapZFBaK/LNQL6HnfdhtNYQdkLvx8leP/IRnacpVmD
- 5xeDrGiNJQqXyznSlzNxjcO49nbyv3gqtCGNcEnA=
+ b=BJ4sWu480Or7vHdI+GpJfMMdYqr3S2ortsnyas2gueBIzi017w123fgbdaphQ12V1
+ hODB2wowkEr5/NuyEPeL41eecQHhSqClJHdA0HW7yGbKmWCBP3PvTkIT9ZrPTvZ3Mx
+ obrsTaDx6xAHGqT1Kg7663yn2lqHo0A4dZZXYERY=
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 890A58B80B;
- Wed, 10 Jul 2019 16:55:09 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 369738B80B;
+ Wed, 10 Jul 2019 17:02:34 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id eDcK6_YkQYDa; Wed, 10 Jul 2019 16:55:09 +0200 (CEST)
+ with ESMTP id rezQS68riQaZ; Wed, 10 Jul 2019 17:02:34 +0200 (CEST)
 Received: from [172.25.230.101] (po15451.idsi0.si.c-s.fr [172.25.230.101])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 3F8438B808;
- Wed, 10 Jul 2019 16:55:09 +0200 (CEST)
-Subject: Re: [PATCH v3 7/7] kexec_elf: remove unused variable in
- kexec_elf_load()
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id D97958B807;
+ Wed, 10 Jul 2019 17:02:33 +0200 (CEST)
+Subject: Re: [PATCH v3 6/7] kexec_elf: remove Elf_Rel macro
 To: Sven Schnelle <svens@stackframe.org>, kexec@lists.infradead.org
 References: <20190710142944.2774-1-svens@stackframe.org>
- <20190710142944.2774-8-svens@stackframe.org>
+ <20190710142944.2774-7-svens@stackframe.org>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Message-ID: <5ff70f9b-905d-000d-af59-cba5c37f9328@c-s.fr>
-Date: Wed, 10 Jul 2019 16:55:06 +0200
+Message-ID: <e9ad2137-f0a9-38e1-87a6-f4e215c87b53@c-s.fr>
+Date: Wed, 10 Jul 2019 17:02:31 +0200
 User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:60.0) Gecko/20100101
  Thunderbird/60.7.2
 MIME-Version: 1.0
-In-Reply-To: <20190710142944.2774-8-svens@stackframe.org>
+In-Reply-To: <20190710142944.2774-7-svens@stackframe.org>
 Content-Type: text/plain; charset=utf-8; format=flowed
 Content-Language: fr
 Content-Transfer-Encoding: 8bit
@@ -100,10 +99,9 @@ Sender: "Linuxppc-dev"
 
 
 Le 10/07/2019 à 16:29, Sven Schnelle a écrit :
-> base was never unsigned, so we can remove it.
+> It wasn't used anywhere, so lets drop it.
 
-Do you mean never assigned ?
-
+And also, it is already defined in asm-generic/module.h
 
 > 
 > Signed-off-by: Sven Schnelle <svens@stackframe.org>
@@ -111,39 +109,22 @@ Do you mean never assigned ?
 Reviewed-by: Christophe Leroy <christophe.leroy@c-s.fr>
 
 > ---
->   kernel/kexec_elf.c | 7 ++-----
->   1 file changed, 2 insertions(+), 5 deletions(-)
+>   kernel/kexec_elf.c | 4 ----
+>   1 file changed, 4 deletions(-)
 > 
 > diff --git a/kernel/kexec_elf.c b/kernel/kexec_elf.c
-> index b7e47ddd7cad..a56ec5481e71 100644
+> index 99e6d63b5dfc..b7e47ddd7cad 100644
 > --- a/kernel/kexec_elf.c
 > +++ b/kernel/kexec_elf.c
-> @@ -348,7 +348,7 @@ int kexec_elf_load(struct kimage *image, struct elfhdr *ehdr,
->   			 struct kexec_buf *kbuf,
->   			 unsigned long *lowest_load_addr)
->   {
-> -	unsigned long base = 0, lowest_addr = UINT_MAX;
-> +	unsigned long lowest_addr = UINT_MAX;
->   	int ret;
->   	size_t i;
+> @@ -8,10 +8,6 @@
+>   #include <linux/slab.h>
+>   #include <linux/types.h>
 >   
-> @@ -370,7 +370,7 @@ int kexec_elf_load(struct kimage *image, struct elfhdr *ehdr,
->   		kbuf->bufsz = size;
->   		kbuf->memsz = phdr->p_memsz;
->   		kbuf->buf_align = phdr->p_align;
-> -		kbuf->buf_min = phdr->p_paddr + base;
-> +		kbuf->buf_min = phdr->p_paddr;
->   		ret = kexec_add_buffer(kbuf);
->   		if (ret)
->   			goto out;
-> @@ -380,9 +380,6 @@ int kexec_elf_load(struct kimage *image, struct elfhdr *ehdr,
->   			lowest_addr = load_addr;
->   	}
->   
-> -	/* Update entry point to reflect new load address. */
-> -	ehdr->e_entry += base;
+> -#ifndef Elf_Rel
+> -#define Elf_Rel		Elf64_Rel
+> -#endif /* Elf_Rel */
 > -
->   	*lowest_load_addr = lowest_addr;
->   	ret = 0;
->    out:
+>   static inline bool elf_is_elf_file(const struct elfhdr *ehdr)
+>   {
+>   	return memcmp(ehdr->e_ident, ELFMAG, SELFMAG) == 0;
 > 
