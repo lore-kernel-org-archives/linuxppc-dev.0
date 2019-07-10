@@ -2,43 +2,84 @@ Return-Path: <SRS0=3PCM=VH=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.4 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
+	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B054DC74A21
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Jul 2019 15:11:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AA7FDC74A21
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Jul 2019 15:13:21 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3CA5C20651
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Jul 2019 15:11:28 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3CA5C20651
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+	by mail.kernel.org (Postfix) with ESMTPS id 2DA192064B
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Jul 2019 15:13:21 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="bqWFXMQD"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2DA192064B
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45kN1p3JMtzDqLk
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Jul 2019 01:11:26 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+	by lists.ozlabs.org (Postfix) with ESMTP id 45kN3x75frzDqkm
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Jul 2019 01:13:17 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+ spf=pass (mailfrom) smtp.mailfrom=gmail.com
+ (client-ip=2607:f8b0:4864:20::442; helo=mail-pf1-x442.google.com;
+ envelope-from=oohall@gmail.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="bqWFXMQD"; 
+ dkim-atps=neutral
+Received: from mail-pf1-x442.google.com (mail-pf1-x442.google.com
+ [IPv6:2607:f8b0:4864:20::442])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45kMty29R8zDqhK
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jul 2019 01:05:30 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=ellerman.id.au
-Received: by ozlabs.org (Postfix, from userid 1034)
- id 45kMtx2lmXz9sPj; Thu, 11 Jul 2019 01:05:29 +1000 (AEST)
-X-powerpc-patch-notification: thanks
-X-powerpc-patch-commit: 9e005b761e7ad153dcf40a6cba1d681fe0830ac6
-In-Reply-To: <20190705100144.28785-1-yamada.masahiro@socionext.com>
-To: Masahiro Yamada <yamada.masahiro@socionext.com>,
- linuxppc-dev@lists.ozlabs.org
-From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Subject: Re: [PATCH v3 1/2] powerpc/boot: add {get,
- put}_unaligned_be32 to xz_config.h
-Message-Id: <45kMtx2lmXz9sPj@ozlabs.org>
-Date: Thu, 11 Jul 2019 01:05:29 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45kMv45vq2zDqK6
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jul 2019 01:05:36 +1000 (AEST)
+Received: by mail-pf1-x442.google.com with SMTP id j2so1239951pfe.6
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jul 2019 08:05:36 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=from:to:cc:subject:date:message-id:mime-version
+ :content-transfer-encoding;
+ bh=OQkYrDXEoPAwahUlxQSh3bo+WaXqj1sBXJsMMIRkjL4=;
+ b=bqWFXMQDp0txd8hirsascY1d4GCJId8RLV7ZU8r2wwJOkK+tP5KUXJA8AydLO9goG4
+ cfQ/bcEHbaVXfY7zOwD5EJVXeCnsZfv/DJbcIlP7GobDaqfdCJzHqSYYiTD0JekQ5hfC
+ 6pEKDIzbZDCYzkinYvBO21qlp275Io/sztTC8m4/kVA/2BU/wOMyW+tlWEXOkypLsT57
+ ZxhIyzaFYHY8AZEt7g++xw9gUnfYEaqDfme5NW03oZjGTDHR2ST0Uy2q3Oc4GBTmqK2C
+ vNLNmo8k3gEa+f7YLLRwlkYO/fap0H4o9Fot/MdMdU6VzaCBIaLqzpjMqES+W5qvdajy
+ Rshw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+ :content-transfer-encoding;
+ bh=OQkYrDXEoPAwahUlxQSh3bo+WaXqj1sBXJsMMIRkjL4=;
+ b=FRiSqe2np0V79NpRDXylidyl5MRfKXe1BWIx6CBIbJj5UhqrZKe2c/lgrRcURSZ0Il
+ 5kSXGCZBIXiloWonjD/iUXQ4cSJNIsYG8O9lzP3svVrZh9bw8VXIkTuBAMd7Yqqw2Bty
+ 1zlAfF7nbYODf1Co0y58yttewwjxlEuW7Gj452w8WSmrcGdw+/URRZlv9Rqknaismt0q
+ SfumOwYd5buB/kluIIWNA62Vty4ImXtPKmfgWErxk+gRt8X4YZ9YY4xBfEBorJC/7RKC
+ lYOPyV6clKenV51Jq+FiBQhe71Eg0v7QPUfJkdSpE0Tz7BVyRq30BzswLRcOlt7tS7em
+ 432g==
+X-Gm-Message-State: APjAAAXjN1PDwU9wXUAKanWtjX/NFhyIGKBHWcatwIiwoEuSO2N83KWg
+ rk2MrX0+9fTIhCGl1xhsiA4GC6wE
+X-Google-Smtp-Source: APXvYqx4Fql17cuoC5a6bd5beAF2tI8PDMDyQlVhAQzDuSltdTIfsqTbLaqP5S86a8ET+1WYyAmvpA==
+X-Received: by 2002:a63:f941:: with SMTP id q1mr38110557pgk.350.1562771131821; 
+ Wed, 10 Jul 2019 08:05:31 -0700 (PDT)
+Received: from 192-168-1-9.tpgi.com.au (123-243-231-26.tpgi.com.au.
+ [123.243.231.26])
+ by smtp.gmail.com with ESMTPSA id a3sm3347656pfo.49.2019.07.10.08.05.29
+ (version=TLS1_3 cipher=AEAD-AES256-GCM-SHA384 bits=256/256);
+ Wed, 10 Jul 2019 08:05:31 -0700 (PDT)
+From: Oliver O'Halloran <oohall@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] powerpc/eeh: Handle hugepages in ioremap space
+Date: Thu, 11 Jul 2019 01:05:17 +1000
+Message-Id: <20190710150517.27114-1-oohall@gmail.com>
+X-Mailer: git-send-email 2.21.0
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -50,66 +91,69 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Masahiro Yamada <yamada.masahiro@socionext.com>,
- Paul Mackerras <paulus@samba.org>, linux-kernel@vger.kernel.org
+Cc: Sachin Sant <sachinp@linux.vnet.ibm.com>,
+ Oliver O'Halloran <oohall@gmail.com>, Nicholas Piggin <npiggin@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, 2019-07-05 at 10:01:43 UTC, Masahiro Yamada wrote:
-> The next commit will make the way of passing CONFIG options more robust.
-> Unfortunately, it would uncover another hidden issue; without this
-> commit, skiroot_defconfig would be broken like this:
-> 
-> |   WRAP    arch/powerpc/boot/zImage.pseries
-> | arch/powerpc/boot/wrapper.a(decompress.o): In function `bcj_powerpc.isra.10':
-> | decompress.c:(.text+0x720): undefined reference to `get_unaligned_be32'
-> | decompress.c:(.text+0x7a8): undefined reference to `put_unaligned_be32'
-> | make[1]: *** [arch/powerpc/boot/Makefile;383: arch/powerpc/boot/zImage.pseries] Error 1
-> | make: *** [arch/powerpc/Makefile;295: zImage] Error 2
-> 
-> skiroot_defconfig is the only defconfig that enables CONFIG_KERNEL_XZ
-> for ppc, which has never been correctly built before.
-> 
-> I figured out the root cause in lib/decompress_unxz.c:
-> 
-> | #ifdef CONFIG_PPC
-> | #      define XZ_DEC_POWERPC
-> | #endif
-> 
-> CONFIG_PPC is undefined here in the ppc bootwrapper because autoconf.h
-> is not included except by arch/powerpc/boot/serial.c
-> 
-> XZ_DEC_POWERPC is not defined, therefore, bcj_powerpc() is not compiled
-> for the bootwrapper.
-> 
-> With the next commit passing CONFIG_PPC correctly, we would realize that
-> {get,put}_unaligned_be32 was missing.
-> 
-> Unlike the other decompressors, the ppc bootwrapper duplicates all the
-> necessary helpers in arch/powerpc/boot/.
-> 
-> The other architectures define __KERNEL__ and pull in helpers for
-> building the decompressors.
-> 
-> If ppc bootwrapper had defined __KERNEL__, lib/xz/xz_private.h would
-> have included <asm/unaligned.h>:
-> 
-> | #ifdef __KERNEL__
-> | #       include <linux/xz.h>
-> | #       include <linux/kernel.h>
-> | #       include <asm/unaligned.h>
-> 
-> However, doing so would cause tons of definition conflicts since the
-> bootwrapper has duplicated everything.
-> 
-> I just added copies of {get,put}_unaligned_be32, following the
-> bootwrapper coding convention.
-> 
-> Signed-off-by: Masahiro Yamada <yamada.masahiro@socionext.com>
+In commit 4a7b06c157a2 ("powerpc/eeh: Handle hugepages in ioremap
+space") support for using hugepages in the vmalloc and ioremap areas was
+enabled for radix. Unfortunately this broke EEH MMIO error checking.
 
-Series applied to powerpc next, thanks.
+Detection works by inserting a hook which checks the results of the
+ioreadXX() set of functions.  When a read returns a 0xFFs response we
+need to check for an error which we do by mapping the (virtual) MMIO
+address back to a physical address, then mapping physical address to a
+PCI device via an interval tree.
 
-https://git.kernel.org/powerpc/c/9e005b761e7ad153dcf40a6cba1d681fe0830ac6
+When translating virt -> phys we currently assume the ioremap space is
+only populated by PAGE_SIZE mappings. If a hugepage mapping is found we
+emit a WARN_ON(), but otherwise handles the check as though a normal
+page was found. In pathalogical cases such as copying a buffer
+containing a lot of 0xFFs from BAR memory this can result in the system
+not booting because it's too busy printing WARN_ON()s.
 
-cheers
+There's no real reason to assume huge pages can't be present and we're
+prefectly capable of handling them, so do that.
+
+Cc: Nicholas Piggin <npiggin@gmail.com>
+Fixes: 4a7b06c157a2 ("powerpc/eeh: Handle hugepages in ioremap space")
+Reported-by: Sachin Sant <sachinp@linux.vnet.ibm.com>
+Signed-off-by: Oliver O'Halloran <oohall@gmail.com>
+---
+I'm assuming that we aren't going to be doing THP in the ioremap area.
+---
+ arch/powerpc/kernel/eeh.c | 15 ++++++++++++---
+ 1 file changed, 12 insertions(+), 3 deletions(-)
+
+diff --git a/arch/powerpc/kernel/eeh.c b/arch/powerpc/kernel/eeh.c
+index 4557fb1aeb2c..976ca0496442 100644
+--- a/arch/powerpc/kernel/eeh.c
++++ b/arch/powerpc/kernel/eeh.c
+@@ -354,10 +354,19 @@ static inline unsigned long eeh_token_to_phys(unsigned long token)
+ 	ptep = find_init_mm_pte(token, &hugepage_shift);
+ 	if (!ptep)
+ 		return token;
+-	WARN_ON(hugepage_shift);
+-	pa = pte_pfn(*ptep) << PAGE_SHIFT;
+ 
+-	return pa | (token & (PAGE_SIZE-1));
++	pa = pte_pfn(*ptep);
++
++	/* On radix we can do hugepage mappings for io, so handle that */
++	if (hugepage_shift) {
++		pa <<= hugepage_shift;
++		pa |= token & ((1ul << hugepage_shift) - 1);
++	} else {
++		pa <<= PAGE_SHIFT;
++		pa |= token & (PAGE_SIZE - 1);
++	}
++
++	return pa;
+ }
+ 
+ /*
+-- 
+2.21.0
+
