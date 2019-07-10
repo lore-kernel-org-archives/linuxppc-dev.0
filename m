@@ -2,84 +2,42 @@ Return-Path: <SRS0=3PCM=VH=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.3 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B3768C74A21
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Jul 2019 15:06:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 25C5FC74A21
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Jul 2019 15:09:40 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 335372064A
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Jul 2019 15:06:29 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="BJ4sWu48"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 335372064A
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
+	by mail.kernel.org (Postfix) with ESMTPS id 8825720844
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Jul 2019 15:09:39 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8825720844
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45kMw22dKzzDqjh
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Jul 2019 01:06:26 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=c-s.fr
- (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
- envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=c-s.fr
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="BJ4sWu48"; 
- dkim-atps=neutral
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 45kMzj04MTzDqMd
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Jul 2019 01:09:37 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45kMqf3dHTzDqQW
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jul 2019 01:02:38 +1000 (AEST)
-Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 45kMqX5g0Zz9vBK6;
- Wed, 10 Jul 2019 17:02:32 +0200 (CEST)
-Authentication-Results: localhost; dkim=pass
- reason="1024-bit key; insecure key"
- header.d=c-s.fr header.i=@c-s.fr header.b=BJ4sWu48; dkim-adsp=pass;
- dkim-atps=neutral
-X-Virus-Scanned: Debian amavisd-new at c-s.fr
-Received: from pegase1.c-s.fr ([192.168.12.234])
- by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id uJEqSXiV2ybC; Wed, 10 Jul 2019 17:02:32 +0200 (CEST)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 45kMqX4b86z9vBJX;
- Wed, 10 Jul 2019 17:02:32 +0200 (CEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
- t=1562770952; bh=p0Ol0rmBzFzZQpkrGhuxgq2fbJl2jXBPenG5CrgDc3A=;
- h=Subject:To:Cc:References:From:Date:In-Reply-To:From;
- b=BJ4sWu480Or7vHdI+GpJfMMdYqr3S2ortsnyas2gueBIzi017w123fgbdaphQ12V1
- hODB2wowkEr5/NuyEPeL41eecQHhSqClJHdA0HW7yGbKmWCBP3PvTkIT9ZrPTvZ3Mx
- obrsTaDx6xAHGqT1Kg7663yn2lqHo0A4dZZXYERY=
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 369738B80B;
- Wed, 10 Jul 2019 17:02:34 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id rezQS68riQaZ; Wed, 10 Jul 2019 17:02:34 +0200 (CEST)
-Received: from [172.25.230.101] (po15451.idsi0.si.c-s.fr [172.25.230.101])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id D97958B807;
- Wed, 10 Jul 2019 17:02:33 +0200 (CEST)
-Subject: Re: [PATCH v3 6/7] kexec_elf: remove Elf_Rel macro
-To: Sven Schnelle <svens@stackframe.org>, kexec@lists.infradead.org
-References: <20190710142944.2774-1-svens@stackframe.org>
- <20190710142944.2774-7-svens@stackframe.org>
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Message-ID: <e9ad2137-f0a9-38e1-87a6-f4e215c87b53@c-s.fr>
-Date: Wed, 10 Jul 2019 17:02:31 +0200
-User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:60.0) Gecko/20100101
- Thunderbird/60.7.2
-MIME-Version: 1.0
-In-Reply-To: <20190710142944.2774-7-svens@stackframe.org>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: fr
-Content-Transfer-Encoding: 8bit
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45kMtw2MTNzDqMh
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jul 2019 01:05:28 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=ellerman.id.au
+Received: by ozlabs.org (Postfix, from userid 1034)
+ id 45kMtw0SYPz9sPV; Thu, 11 Jul 2019 01:05:27 +1000 (AEST)
+X-powerpc-patch-notification: thanks
+X-powerpc-patch-commit: 73a2b047c81046a7f734a5759ab5fdedbb6968fd
+In-Reply-To: <20190605111545.19762-1-fbarrat@linux.ibm.com>
+To: Frederic Barrat <fbarrat@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ alastair@au1.ibm.com, ajd@linux.ibm.com, clombard@linux.ibm.com
+From: Michael Ellerman <patch-notifications@ellerman.id.au>
+Subject: Re: [PATCH] ocxl: Update for AFU descriptor template version 1.1
+Message-Id: <45kMtw0SYPz9sPV@ozlabs.org>
+Date: Thu, 11 Jul 2019 01:05:26 +1000 (AEST)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -91,40 +49,30 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: deller@gmx.de, linuxppc-dev@lists.ozlabs.org
+Cc: groug@kaod.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-
-
-Le 10/07/2019 à 16:29, Sven Schnelle a écrit :
-> It wasn't used anywhere, so lets drop it.
-
-And also, it is already defined in asm-generic/module.h
-
+On Wed, 2019-06-05 at 11:15:45 UTC, Frederic Barrat wrote:
+> From: Alastair D'Silva <alastair@d-silva.org>
 > 
-> Signed-off-by: Sven Schnelle <svens@stackframe.org>
-
-Reviewed-by: Christophe Leroy <christophe.leroy@c-s.fr>
-
-> ---
->   kernel/kexec_elf.c | 4 ----
->   1 file changed, 4 deletions(-)
+> The OpenCAPI discovery and configuration specification has been
+> updated and introduces version 1.1 of the AFU descriptor template,
+> with new fields to better define the memory layout of an OpenCAPI
+> adapter.
 > 
-> diff --git a/kernel/kexec_elf.c b/kernel/kexec_elf.c
-> index 99e6d63b5dfc..b7e47ddd7cad 100644
-> --- a/kernel/kexec_elf.c
-> +++ b/kernel/kexec_elf.c
-> @@ -8,10 +8,6 @@
->   #include <linux/slab.h>
->   #include <linux/types.h>
->   
-> -#ifndef Elf_Rel
-> -#define Elf_Rel		Elf64_Rel
-> -#endif /* Elf_Rel */
-> -
->   static inline bool elf_is_elf_file(const struct elfhdr *ehdr)
->   {
->   	return memcmp(ehdr->e_ident, ELFMAG, SELFMAG) == 0;
+> The ocxl driver doesn't do much yet to support LPC memory but as we
+> start seeing (non-LPC) AFU images using the new template, this patch
+> updates the config space parsing code to avoid spitting a warning.
 > 
+> Signed-off-by: Alastair D'Silva <alastair@d-silva.org>
+> Signed-off-by: Frederic Barrat <fbarrat@linux.ibm.com>
+> Reviewed-by: Christophe Lombard <clombard@linux.vnet.ibm.com>
+> Acked-by: Andrew Donnellan <ajd@linux.ibm.com>
+
+Applied to powerpc next, thanks.
+
+https://git.kernel.org/powerpc/c/73a2b047c81046a7f734a5759ab5fdedbb6968fd
+
+cheers
