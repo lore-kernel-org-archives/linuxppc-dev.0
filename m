@@ -2,25 +2,26 @@ Return-Path: <SRS0=3PCM=VH=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B9C85C74A21
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Jul 2019 14:33:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CD3F1C74A21
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Jul 2019 14:36:21 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 1F86620651
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Jul 2019 14:33:21 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id E407820651
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Jul 2019 14:36:20 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=duncanthrax.net header.i=@duncanthrax.net header.b="qFUgm1H6"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1F86620651
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=duncanthrax.net header.i=@duncanthrax.net header.b="QxH/mK2+"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E407820651
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=stackframe.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45kM9p60b9zDqKT
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Jul 2019 00:33:18 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45kMFF5v2VzDqgj
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Jul 2019 00:36:17 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=none (mailfrom) smtp.mailfrom=stackframe.org
  (client-ip=2001:470:70c5:1111::170; helo=smtp.duncanthrax.net;
@@ -29,29 +30,31 @@ Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=stackframe.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=duncanthrax.net header.i=@duncanthrax.net
- header.b="qFUgm1H6"; dkim-atps=neutral
+ header.b="QxH/mK2+"; dkim-atps=neutral
 Received: from smtp.duncanthrax.net (smtp.duncanthrax.net
  [IPv6:2001:470:70c5:1111::170])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45kM6L0Rl7zDqG1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45kM6L2f6WzDqPb
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jul 2019 00:30:17 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
  d=duncanthrax.net; s=dkim; h=Content-Transfer-Encoding:MIME-Version:
- Message-Id:Date:Subject:Cc:To:From;
- bh=hQBC/hvq+BCaNtDhw4z/VJLTgPoTPP4x+PgvCWk6Ysg=; b=qFUgm1H6jOaYHyIt4RRMSIrSjR
- 0FVZYXa39xxE0VJyJ0wqivCtnrKz2O2gkSMZ/ayWJcTVDo5u0O5Kco/M3bSPHP/d/SwMT2SglBWXk
- 5sCzKrJRsmGebHlFnra561fre3XR08lPpaDsbBAmQlzNEcc1Ydf++r2j9v6J9NhxRR6g=;
+ References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From;
+ bh=roPkL3987tSUlgZQQbJuu94Oaf/ohBLtK+a05FWNfM0=; b=QxH/mK2+ygCWTqNfYpHfoX+3iG
+ 0D6K5MvnMxAFqeOBY7HZ8ndNwp0Zw5mSTVJlwYDKBjbevaBDrer4y2vGZAvPVgcRjm1Po1EdZS8eF
+ 4A5oA7bndBOYwDR8zf9JQfjoEZ/gy2R1Atf5tTeGKgUqjov6OBvMJDYDHDolCktW3f4Q=;
 Received: from [134.3.44.134] (helo=t470p.stackframe.org)
  by smtp.eurescom.eu with esmtpsa (TLS1.2:ECDHE_RSA_AES_128_GCM_SHA256:128)
  (Exim 4.86_2) (envelope-from <svens@stackframe.org>)
- id 1hlDbp-0004hm-EO; Wed, 10 Jul 2019 16:30:13 +0200
+ id 1hlDbq-0004hm-Kp; Wed, 10 Jul 2019 16:30:14 +0200
 From: Sven Schnelle <svens@stackframe.org>
 To: kexec@lists.infradead.org
-Subject: [PATCH v3 0/7] kexec: add generic support for elf kernel images
-Date: Wed, 10 Jul 2019 16:29:37 +0200
-Message-Id: <20190710142944.2774-1-svens@stackframe.org>
+Subject: [PATCH v3 6/7] kexec_elf: remove Elf_Rel macro
+Date: Wed, 10 Jul 2019 16:29:43 +0200
+Message-Id: <20190710142944.2774-7-svens@stackframe.org>
 X-Mailer: git-send-email 2.20.1
+In-Reply-To: <20190710142944.2774-1-svens@stackframe.org>
+References: <20190710142944.2774-1-svens@stackframe.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -71,43 +74,28 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi List,
+It wasn't used anywhere, so lets drop it.
 
-this is the same changeset as v2, but (hopefully) with git format-patch -C.
+Signed-off-by: Sven Schnelle <svens@stackframe.org>
+---
+ kernel/kexec_elf.c | 4 ----
+ 1 file changed, 4 deletions(-)
 
-Changes to v2:
- - use git format-patch -C
-
-Changes to v1:
- - split up patch into smaller pieces
- - rebase onto powerpc/next
- - remove unused variable in kexec_elf_load()
-
-Changes to RFC version:
- - remove unused Elf_Rel macro
- - remove section header parsing
- - remove PURGATORY_STACK_SIZE
- - change order of elf_*_to_cpu() functions
- - remove elf_addr_to_cpu macro
-
-Sven Schnelle (7):
-  kexec: add KEXEC_ELF
-  kexec_elf: change order of elf_*_to_cpu() functions
-  kexec_elf: remove parsing of section headers
-  kexec_elf: remove PURGATORY_STACK_SIZE
-  kexec_elf: remove elf_addr_to_cpu macro
-  kexec_elf: remove Elf_Rel macro
-  kexec_elf: remove unused variable in kexec_elf_load()
-
- arch/Kconfig                       |   3 +
- arch/powerpc/Kconfig               |   1 +
- arch/powerpc/kernel/kexec_elf_64.c | 551 +----------------------------
- include/linux/kexec.h              |  23 ++
- kernel/Makefile                    |   1 +
- kernel/kexec_elf.c                 | 389 ++++++++++++++++++++
- 6 files changed, 427 insertions(+), 541 deletions(-)
- create mode 100644 kernel/kexec_elf.c
-
+diff --git a/kernel/kexec_elf.c b/kernel/kexec_elf.c
+index 99e6d63b5dfc..b7e47ddd7cad 100644
+--- a/kernel/kexec_elf.c
++++ b/kernel/kexec_elf.c
+@@ -8,10 +8,6 @@
+ #include <linux/slab.h>
+ #include <linux/types.h>
+ 
+-#ifndef Elf_Rel
+-#define Elf_Rel		Elf64_Rel
+-#endif /* Elf_Rel */
+-
+ static inline bool elf_is_elf_file(const struct elfhdr *ehdr)
+ {
+ 	return memcmp(ehdr->e_ident, ELFMAG, SELFMAG) == 0;
 -- 
 2.20.1
 
