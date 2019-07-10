@@ -2,51 +2,100 @@ Return-Path: <SRS0=3PCM=VH=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D8B84C73C7C
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Jul 2019 10:08:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 63A14C74A22
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Jul 2019 13:26:31 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 33D4D20838
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Jul 2019 10:08:58 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 33D4D20838
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net
+	by mail.kernel.org (Postfix) with ESMTPS id ACEE02064B
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Jul 2019 13:26:30 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org ACEE02064B
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45kFJm1PtNzDqdG
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Jul 2019 20:08:56 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45kKhg5HBGzDqb5
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Jul 2019 23:26:27 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=rjwysocki.net
- (client-ip=79.96.170.134; helo=cloudserver094114.home.pl;
- envelope-from=rjw@rjwysocki.net; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
+ (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
+ envelope-from=janani@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=rjwysocki.net
-Received: from cloudserver094114.home.pl (cloudserver094114.home.pl
- [79.96.170.134])
+ dmarc=none (p=none dis=none) header.from=linux.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45kFGj65SQzDqcN
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jul 2019 20:07:08 +1000 (AEST)
-Received: from 79.184.253.121.ipv4.supernova.orange.pl (79.184.253.121) (HELO
- kreacher.localnet)
- by serwer1319399.home.pl (79.96.170.134) with SMTP (IdeaSmtpServer 0.83.267)
- id fb1402abfa64d0e0; Wed, 10 Jul 2019 12:07:03 +0200
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-To: Viresh Kumar <viresh.kumar@linaro.org>, Wen Yang <wen.yang99@zte.com.cn>
-Subject: Re: [PATCH v5] cpufreq/pasemi: fix an use-after-free in
- pas_cpufreq_cpu_init()
-Date: Wed, 10 Jul 2019 12:07:03 +0200
-Message-ID: <2173177.H4fXhsoBLG@kreacher>
-In-Reply-To: <20190709081205.a5sjsqo2el6zt24b@vireshk-i7>
-References: <1562659447-39989-1-git-send-email-wen.yang99@zte.com.cn>
- <20190709081205.a5sjsqo2el6zt24b@vireshk-i7>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45kKcH2FRnzDqbG
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jul 2019 23:22:37 +1000 (AEST)
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
+ x6ADI9jh118415
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jul 2019 09:22:31 -0400
+Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2tne92eqb8-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jul 2019 09:22:31 -0400
+Received: from localhost
+ by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <janani@linux.ibm.com>;
+ Wed, 10 Jul 2019 14:22:30 +0100
+Received: from b03cxnp08025.gho.boulder.ibm.com (9.17.130.17)
+ by e33.co.us.ibm.com (192.168.1.133) with IBM ESMTP SMTP Gateway: Authorized
+ Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Wed, 10 Jul 2019 14:22:28 +0100
+Received: from b03ledav003.gho.boulder.ibm.com
+ (b03ledav003.gho.boulder.ibm.com [9.17.130.234])
+ by b03cxnp08025.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x6ADMQHe37355980
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Wed, 10 Jul 2019 13:22:26 GMT
+Received: from b03ledav003.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id B9DA06A047;
+ Wed, 10 Jul 2019 13:22:26 +0000 (GMT)
+Received: from b03ledav003.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 5F6FF6A057;
+ Wed, 10 Jul 2019 13:22:26 +0000 (GMT)
+Received: from ltc.linux.ibm.com (unknown [9.16.170.189])
+ by b03ledav003.gho.boulder.ibm.com (Postfix) with ESMTP;
+ Wed, 10 Jul 2019 13:22:26 +0000 (GMT)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset=US-ASCII;
+ format=flowed
+Content-Transfer-Encoding: 7bit
+Date: Wed, 10 Jul 2019 08:24:56 -0500
+From: janani <janani@linux.ibm.com>
+To: Bharata B Rao <bharata@linux.ibm.com>
+Subject: Re: [PATCH v5 7/7] KVM: PPC: Ultravisor: Add PPC_UV config option
+Organization: IBM
+Mail-Reply-To: janani@linux.ibm.com
+In-Reply-To: <20190709102545.9187-8-bharata@linux.ibm.com>
+References: <20190709102545.9187-1-bharata@linux.ibm.com>
+ <20190709102545.9187-8-bharata@linux.ibm.com>
+X-Sender: janani@linux.ibm.com
+User-Agent: Roundcube Webmail/1.0.1
+X-TM-AS-GCONF: 00
+x-cbid: 19071013-0036-0000-0000-00000AD591AA
+X-IBM-SpamModules-Scores: 
+X-IBM-SpamModules-Versions: BY=3.00011404; HX=3.00000242; KW=3.00000007;
+ PH=3.00000004; SC=3.00000286; SDB=6.01230167; UDB=6.00647931; IPR=6.01011436; 
+ MB=3.00027665; MTD=3.00000008; XFM=3.00000015; UTC=2019-07-10 13:22:30
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 19071013-0037-0000-0000-00004C890942
+Message-Id: <6759c8a79b2962d07ed99f2b1cd05637@linux.vnet.ibm.com>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
+ definitions=2019-07-10_05:, , signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1810050000 definitions=main-1907100155
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -58,91 +107,62 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: wang.yi59@zte.com.cn, linux-pm@vger.kernel.org,
- linux-kernel@vger.kernel.org, xue.zhihong@zte.com.cn, cheng.shengyu@zte.com.cn,
- linuxppc-dev@lists.ozlabs.org
+Reply-To: janani@linux.ibm.com
+Cc: linuxram@us.ibm.com, cclaudio@linux.ibm.com, kvm-ppc@vger.kernel.org,
+ Linuxppc-dev <linuxppc-dev-bounces+janani=linux.ibm.com@lists.ozlabs.org>,
+ linux-mm@kvack.org, jglisse@redhat.com, aneesh.kumar@linux.vnet.ibm.com,
+ paulus@au1.ibm.com, sukadev@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org,
+ Anshuman Khandual <khandual@linux.vnet.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tuesday, July 9, 2019 10:12:05 AM CEST Viresh Kumar wrote:
-> On 09-07-19, 16:04, Wen Yang wrote:
-> > The cpu variable is still being used in the of_get_property() call
-> > after the of_node_put() call, which may result in use-after-free.
-> > 
-> > Fixes: a9acc26b75f ("cpufreq/pasemi: fix possible object reference leak")
-> > Signed-off-by: Wen Yang <wen.yang99@zte.com.cn>
-> > Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-> > Cc: Viresh Kumar <viresh.kumar@linaro.org>
-> > Cc: Michael Ellerman <mpe@ellerman.id.au>
-> > Cc: linuxppc-dev@lists.ozlabs.org
-> > Cc: linux-pm@vger.kernel.org
-> > Cc: linux-kernel@vger.kernel.org
-
-Patch applied.
-
-> > ---
-> > v5: put together the code to get, use, and release cpu device_node.
-> > v4: restore the blank line.
-> > v3: fix a leaked reference.
-> > v2: clean up the code according to the advice of viresh.
-> > 
-> >  drivers/cpufreq/pasemi-cpufreq.c | 21 +++++++++------------
-> >  1 file changed, 9 insertions(+), 12 deletions(-)
-> > 
-> > diff --git a/drivers/cpufreq/pasemi-cpufreq.c b/drivers/cpufreq/pasemi-cpufreq.c
-> > index 6b1e4ab..1f0beb7 100644
-> > --- a/drivers/cpufreq/pasemi-cpufreq.c
-> > +++ b/drivers/cpufreq/pasemi-cpufreq.c
-> > @@ -131,10 +131,17 @@ static int pas_cpufreq_cpu_init(struct cpufreq_policy *policy)
-> >  	int err = -ENODEV;
-> >  
-> >  	cpu = of_get_cpu_node(policy->cpu, NULL);
-> > -
-> > -	of_node_put(cpu);
-> >  	if (!cpu)
-> >  		goto out;
+On 2019-07-09 05:25, Bharata B Rao wrote:
+> From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 > 
-> I would have loved a blank line here :)
-
-And I added the blank line.
-
-> > +	max_freqp = of_get_property(cpu, "clock-frequency", NULL);
-> > +	of_node_put(cpu);
-> > +	if (!max_freqp) {
-> > +		err = -EINVAL;
-> > +		goto out;
-> > +	}
-> > +
-> > +	/* we need the freq in kHz */
-> > +	max_freq = *max_freqp / 1000;
-> >  
-> >  	dn = of_find_compatible_node(NULL, NULL, "1682m-sdc");
-> >  	if (!dn)
-> > @@ -171,16 +178,6 @@ static int pas_cpufreq_cpu_init(struct cpufreq_policy *policy)
-> >  	}
-> >  
-> >  	pr_debug("init cpufreq on CPU %d\n", policy->cpu);
-> > -
-> > -	max_freqp = of_get_property(cpu, "clock-frequency", NULL);
-> > -	if (!max_freqp) {
-> > -		err = -EINVAL;
-> > -		goto out_unmap_sdcpwr;
-> > -	}
-> > -
-> > -	/* we need the freq in kHz */
-> > -	max_freq = *max_freqp / 1000;
-> > -
-> >  	pr_debug("max clock-frequency is at %u kHz\n", max_freq);
-> >  	pr_debug("initializing frequency table\n");
+> CONFIG_PPC_UV adds support for ultravisor.
 > 
-> Though, enough versions have happened now.
+> Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+> Signed-off-by: Bharata B Rao <bharata@linux.ibm.com>
+> Signed-off-by: Ram Pai <linuxram@us.ibm.com>
+> [ Update config help and commit message ]
+> Signed-off-by: Claudio Carvalho <cclaudio@linux.ibm.com>
+  Reviewed-by: Janani Janakiraman <janani@linux.ibm.com>
+> ---
+>  arch/powerpc/Kconfig | 20 ++++++++++++++++++++
+>  1 file changed, 20 insertions(+)
 > 
-> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+> index f0e5b38d52e8..20c6c213d2be 100644
+> --- a/arch/powerpc/Kconfig
+> +++ b/arch/powerpc/Kconfig
+> @@ -440,6 +440,26 @@ config PPC_TRANSACTIONAL_MEM
+>         ---help---
+>           Support user-mode Transactional Memory on POWERPC.
 > 
-> 
-
-Thanks!
-
-
+> +config PPC_UV
+> +	bool "Ultravisor support"
+> +	depends on KVM_BOOK3S_HV_POSSIBLE
+> +	select HMM_MIRROR
+> +	select HMM
+> +	select ZONE_DEVICE
+> +	select MIGRATE_VMA_HELPER
+> +	select DEV_PAGEMAP_OPS
+> +	select DEVICE_PRIVATE
+> +	select MEMORY_HOTPLUG
+> +	select MEMORY_HOTREMOVE
+> +	default n
+> +	help
+> +	  This option paravirtualizes the kernel to run in POWER platforms 
+> that
+> +	  supports the Protected Execution Facility (PEF). In such platforms,
+> +	  the ultravisor firmware runs at a privilege level above the
+> +	  hypervisor.
+> +
+> +	  If unsure, say "N".
+> +
+>  config LD_HEAD_STUB_CATCH
+>  	bool "Reserve 256 bytes to cope with linker stubs in HEAD text" if 
+> EXPERT
+>  	depends on PPC64
 
