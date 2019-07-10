@@ -2,75 +2,128 @@ Return-Path: <SRS0=3PCM=VH=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.0 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=ham
+X-Spam-Status: No, score=-1.9 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BDF48C73C7C
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Jul 2019 07:58:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BFA28C73C7C
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Jul 2019 09:27:37 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 4CE9920693
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Jul 2019 07:58:04 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 02B0C20838
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Jul 2019 09:27:36 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=xenosoft.de header.i=@xenosoft.de header.b="auvFnbbF"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4CE9920693
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=xenosoft.de
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=web.de header.i=@web.de header.b="XRoYyZXY"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 02B0C20838
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=web.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45kBPj69y3zDqby
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Jul 2019 17:58:01 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45kDP21j5NzDqcJ
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Jul 2019 19:27:34 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (helo) smtp.helo=mo6-p00-ob.smtp.rzone.de
- (client-ip=2a01:238:20a:202:5300::5; helo=mo6-p00-ob.smtp.rzone.de;
- envelope-from=chzigotzky@xenosoft.de; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=web.de
+ (client-ip=212.227.17.12; helo=mout.web.de;
+ envelope-from=markus.elfring@web.de; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=xenosoft.de
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=xenosoft.de header.i=@xenosoft.de header.b="auvFnbbF"; 
+ dmarc=none (p=none dis=none) header.from=web.de
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ secure) header.d=web.de header.i=@web.de header.b="XRoYyZXY"; 
  dkim-atps=neutral
-Received: from mo6-p00-ob.smtp.rzone.de (mo6-p00-ob.smtp.rzone.de
- [IPv6:2a01:238:20a:202:5300::5])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange ECDHE (P-384) server-signature RSA-PSS (2048 bits) server-digest
- SHA256) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45kBMx1dktzDqQW
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jul 2019 17:56:24 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; t=1562745376;
- s=strato-dkim-0002; d=xenosoft.de;
- h=In-Reply-To:Date:Message-ID:From:References:To:Subject:
- X-RZG-CLASS-ID:X-RZG-AUTH:From:Subject:Sender;
- bh=L4p4B2iUo/5zhgLYvS5YlOgcGDvoyf0lT1HWf6lgos8=;
- b=auvFnbbF+JdvHpMGItf2UNtz/+d2O6cKL1vDpU8MJCxnaD5G1iYTi+WZm9OhrTtGQU
- QYWXK3j7q4K23MsZ0leZY4dkmvKfM1JYYrn9YZPhmD2zMmxrU8dQ+ce4iAh8eI/LzpE7
- iE8GIaqv7t3navIEnnZ+v1pxqBvzV6ZJsMKzYAiQy7oeaMixavHxEB+YFPBbk73pnj+y
- dt1wqnrmrPSPqrayTdDKk/ReOGwzgy007k85oDxVyAR7TJaoqVp7qjG2RAGtI0IRmTUL
- /r5Eatfl8SqpBdqBJi3wyvuEyp+Xc9CLwf7rCvYpFXv3z1gfzvWlp58/VZskjF0bWM1n
- zBeg==
-X-RZG-AUTH: ":L2QefEenb+UdBJSdRCXu93KJ1bmSGnhMdmOod1DhGM4l4Hio94KKxRySfLxnHfJ+Dkjp5DdBJSrwuuqxvPgGLoYnXJxg669q60jyrLIz5LGVnA=="
-X-RZG-CLASS-ID: mo00
-Received: from [IPv6:2a02:8109:89c0:ebfc:e822:8ba9:ed65:5a5c]
- by smtp.strato.de (RZmta 44.24 AUTH) with ESMTPSA id U0b154v6A7tsFEy
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (curve secp521r1 with
- 521 ECDH bits, eq. 15360 bits RSA))
- (Client did not present a certificate);
- Wed, 10 Jul 2019 09:55:54 +0200 (CEST)
-Subject: [PATCH v3] cpufreq/pasemi: fix an use-after-free
- inpas_cpufreq_cpu_init()
-To: wen.yang99@zte.com.cn, linuxppc-dev@lists.ozlabs.org
-References: <201907090939164296374@zte.com.cn>
-From: Christian Zigotzky <chzigotzky@xenosoft.de>
-Message-ID: <98d26400-ceab-ffd9-aea5-9bdf613bd5dc@xenosoft.de>
-Date: Wed, 10 Jul 2019 09:55:54 +0200
+Received: from mout.web.de (mout.web.de [212.227.17.12])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45kDLY2YVVzDqKw
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jul 2019 19:25:22 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=web.de;
+ s=dbaedf251592; t=1562750690;
+ bh=UWQsBYlELnAYysk2mtM7AdDfEOErIPJ0ROaaHxCVQxs=;
+ h=X-UI-Sender-Class:Subject:To:Cc:References:From:Date:In-Reply-To;
+ b=XRoYyZXYDivkNcB/t/1j7EiIQApsYPOkhM/geeTahr2vEQEADhDHgnHBQq8Yc6p/L
+ YJko79Jp5XLc/ZhOI82urXCnKKykSMZmBtNxuKPMVazdcJ891WPv5IGc5xrCR3U1WU
+ TJNyNwUvsvJZyTR+0DO8hl3lmTZ5+Bd2C9N/PRkc=
+X-UI-Sender-Class: c548c8c5-30a9-4db5-a2e7-cb6cb037b8f9
+Received: from [192.168.1.2] ([93.132.42.76]) by smtp.web.de (mrweb102
+ [213.165.67.124]) with ESMTPSA (Nemesis) id 0LzsGF-1iXj3B1Cqp-014zk9; Wed, 10
+ Jul 2019 11:24:50 +0200
+Subject: Re: [1/2] powerpc/83xx: fix use-after-free in mpc831x_usb_cfg()
+To: Wen Yang <wen.yang99@zte.com.cn>, linuxppc-dev@lists.ozlabs.org
+References: <201907101533443009168@zte.com.cn>
+From: Markus Elfring <Markus.Elfring@web.de>
+Openpgp: preference=signencrypt
+Autocrypt: addr=Markus.Elfring@web.de; prefer-encrypt=mutual; keydata=
+ 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 FEE=
+Message-ID: <ef968d9a-785e-dbf7-dfe6-9572fc241e63@web.de>
+Date: Wed, 10 Jul 2019 11:24:45 +0200
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
  Thunderbird/60.7.2
 MIME-Version: 1.0
-In-Reply-To: <201907090939164296374@zte.com.cn>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 8bit
-Content-Language: de-DE
+In-Reply-To: <201907101533443009168@zte.com.cn>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+X-Provags-ID: V03:K1:u8YF1F7kU0eryeuNCAgxxNLtq1skRg8kO+bDl9Qx1VNi5KbWU52
+ da522RyNmIHaH5nwXU4VySQbrXiQ90rR7mAg65Dca2oSG6TJVOIyckD5vPH27HsvPNzpqtF
+ K2G+GKRzevvkWBpuVT0TH6PwMTre/wxnDnrtvhHFiOVfnKs3eNH5pttzQ707WRdLo7nTS0X
+ 8Tgp8R/Oakl9JGYopBZKQ==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:jVmT6SyvKd0=:jEbVcml8nJtdSC97HCysHC
+ SW+yUsScvjRFJEQi6t22gIrim5WE5ffuwlLP4L5LUvN37lttkAAC4QoNrPdX6jwNb/8qsWQtF
+ /w3Xer4ieL4obybJDnQ567SvRdJVAqB9SutbrNDwW8ireuR3/7ODd9nlxgGgGTjNNLeHQmhnb
+ 3lSj0Y0oj8Fo8JHp7rH/dibh+FO4sAGJrm7sfg32p+MdRknp+dwwyqIh1VXnJtDyGiMh1LW8N
+ VBdhOaVMepRmEV8Z/qLZCzUgkF8U133PY021jG+b6ysDM3ov1swSIhv8Mie92oELoisOmls7y
+ iV9MVUqpTXs1hayQIDtf6K8ma4yc9rD2A6ke7W4G/HWByQiuiLQGbZTES8UoKspqjwVLDNQ2Z
+ FsInyzcFecqOsTJa2dEDRZsk95u0F51nSFSFXVOHf1Q+i1n9MOer3VQWPsYloCyir8HvcJy/h
+ rErpqjY4+pQWkeU/jB6sfJK3T9IpEnD+kppalZdKjRQnph95evGKn2QI3g59bCi4RWorrC3QB
+ dJRXmoqx7+veiFdHYzAyJig8K62Ax18/hZvUujdVT9u9GWLrWWDS7m2hcbWkpTCPtZch2HSTV
+ xD6MRI8+Hj+vlz/lx2oay5mrZIrdahxV1Jdc7aAZBRlf3Wz2XnKc+FFfVnKgAxpINYzgndqx2
+ +P+OOM2ZbGNHY+AF4kOnG3e22vJT9jxhqBK6rnV76GthSrjgJc+Z7w4Ugl0Fl+wSBd5QvHdM5
+ sUb5zFqhk8Td6ui5oSYMx/HrAeqNkrEEk9xOxGI/pGIB4RKXYQXA/LLC3gSW7LAi8zUW4PrQF
+ d3gqRtAXr9gGo6VdgKrGi5C+arvWoTwUEI/J3Grl89mRTPd5lKtjMhMIMpR96H30c4qgwhym2
+ ETpaC/1Xk8QkUc8zOmhRDWWT+biYg9xtEjvCd0t7iD1wuyNNjQXyFRUk2o2yOxRac8XoQNOwB
+ IddJQVb0Y/9AbpezJ0DMga4ZjQk7j/sCIhREQ0LbxgLeCGLsCu+mLfa5O5YmiOdUB2ICyyRFd
+ vY9rOwYYPMn7aEcJbDkFUnFkSFZiKKfJPevIgJv5gMOe2tzNgvsitt5Bs93SpkJsftsUSwd8j
+ W/JNwrvn2nQvJvY1CwMVgdNGyT2F6s74ugX
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -82,86 +135,23 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: Yi Wang <wang.yi59@zte.com.cn>, Cheng Shengyu <cheng.shengyu@zte.com.cn>,
+ kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org,
+ Scott Wood <oss@buserror.net>, Paul Mackerras <paulus@samba.org>,
+ Xue Zhihong <xue.zhihong@zte.com.cn>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Is a final patch available for testing? Please do not release it without 
-testing.
+> we developed a coccinelle script to detect such problems.
 
-- Christian
+How do you think about to give any attribution to this development software
+in your commit descriptions?
 
-On 09-07-19, 16:04, Wen Yang wrote:
- > The cpu variable is still being used in the of_get_property() call
- > after the of_node_put() call, which may result in use-after-free.
- >
- > Fixes: a9acc26b75f ("cpufreq/pasemi: fix possible object reference leak")
- > Signed-off-by: Wen Yang <wen.yang99 at zte.com.cn>
- > Cc: "Rafael J. Wysocki" <rjw at rjwysocki.net>
- > Cc: Viresh Kumar <viresh.kumar at linaro.org>
- > Cc: Michael Ellerman <mpe at ellerman.id.au>
- > Cc: linuxppc-dev at lists.ozlabs.org
- > Cc: linux-pm at vger.kernel.org
- > Cc: linux-kernel at vger.kernel.org
- > ---
- > v5: put together the code to get, use, and release cpu device_node.
- > v4: restore the blank line.
- > v3: fix a leaked reference.
- > v2: clean up the code according to the advice of viresh.
- >
- >  drivers/cpufreq/pasemi-cpufreq.c | 21 +++++++++------------
- >  1 file changed, 9 insertions(+), 12 deletions(-)
- >
- > diff --git a/drivers/cpufreq/pasemi-cpufreq.c 
-b/drivers/cpufreq/pasemi-cpufreq.c
- > index 6b1e4ab..1f0beb7 100644
- > --- a/drivers/cpufreq/pasemi-cpufreq.c
- > +++ b/drivers/cpufreq/pasemi-cpufreq.c
- > @@ -131,10 +131,17 @@ static int pas_cpufreq_cpu_init(struct 
-cpufreq_policy *policy)
- >      int err = -ENODEV;
- >
- >      cpu = of_get_cpu_node(policy->cpu, NULL);
- > -
- > -    of_node_put(cpu);
- >      if (!cpu)
- >          goto out;
 
-I would have loved a blank line here :)
+> After a period of testing, we will send it to the LMKL mailing list later.
 
- > +    max_freqp = of_get_property(cpu, "clock-frequency", NULL);
- > +    of_node_put(cpu);
- > +    if (!max_freqp) {
- > +        err = -EINVAL;
- > +        goto out;
- > +    }
- > +
- > +    /* we need the freq in kHz */
- > +    max_freq = *max_freqp / 1000;
- >
- >      dn = of_find_compatible_node(NULL, NULL, "1682m-sdc");
- >      if (!dn)
- > @@ -171,16 +178,6 @@ static int pas_cpufreq_cpu_init(struct 
-cpufreq_policy *policy)
- >      }
- >
- >      pr_debug("init cpufreq on CPU %d\n", policy->cpu);
- > -
- > -    max_freqp = of_get_property(cpu, "clock-frequency", NULL);
- > -    if (!max_freqp) {
- > -        err = -EINVAL;
- > -        goto out_unmap_sdcpwr;
- > -    }
- > -
- > -    /* we need the freq in kHz */
- > -    max_freq = *max_freqp / 1000;
- > -
- >      pr_debug("max clock-frequency is at %u kHz\n", max_freq);
- >      pr_debug("initializing frequency table\n");
+I am also curious then on how this area will evolve further.
 
-Though, enough versions have happened now.
-
-Acked-by: Viresh Kumar <viresh.kumar at linaro.org>
-
--- 
-viresh
+Regards,
+Markus
