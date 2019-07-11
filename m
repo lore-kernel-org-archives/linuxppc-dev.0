@@ -2,46 +2,87 @@ Return-Path: <SRS0=Bl8b=VI=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.7 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 13E57C74A3F
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Jul 2019 00:28:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6E62CC74A36
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Jul 2019 02:28:49 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 559D020844
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Jul 2019 00:28:20 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 559D020844
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=telegraphics.com.au
+	by mail.kernel.org (Postfix) with ESMTPS id 9CDB421019
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Jul 2019 02:28:48 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="PQTJMwXf"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9CDB421019
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45kcNK2Y1fzDqgf
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Jul 2019 10:28:17 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45kg3L23ynzDqgZ
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Jul 2019 12:28:46 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=telegraphics.com.au
- (client-ip=98.124.60.144; helo=kvm5.telegraphics.com.au;
- envelope-from=fthain@telegraphics.com.au; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=telegraphics.com.au
-Received: from kvm5.telegraphics.com.au (kvm5.telegraphics.com.au
- [98.124.60.144])
- by lists.ozlabs.org (Postfix) with ESMTP id 45kcLK0GJ0zDqg8
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jul 2019 10:26:32 +1000 (AEST)
-Received: from localhost (localhost.localdomain [127.0.0.1])
- by kvm5.telegraphics.com.au (Postfix) with ESMTP id DAB0F297D3;
- Wed, 10 Jul 2019 20:26:27 -0400 (EDT)
-Date: Thu, 11 Jul 2019 10:26:27 +1000 (AEST)
-From: Finn Thain <fthain@telegraphics.com.au>
-To: linuxppc-dev@lists.ozlabs.org, linux-ide@vger.kernel.org
-Subject: Re: pata-macio on PowerBook G3: stuck interrupt with MATSHITA CR-174
- CD-ROM
-In-Reply-To: <alpine.LNX.2.21.1906271717080.68@nippy.intranet>
-Message-ID: <alpine.LNX.2.21.1906291014050.119@nippy.intranet>
-References: <alpine.LNX.2.21.1906271717080.68@nippy.intranet>
+ spf=pass (mailfrom) smtp.mailfrom=gmail.com
+ (client-ip=2607:f8b0:4864:20::544; helo=mail-pg1-x544.google.com;
+ envelope-from=npiggin@gmail.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="PQTJMwXf"; 
+ dkim-atps=neutral
+Received: from mail-pg1-x544.google.com (mail-pg1-x544.google.com
+ [IPv6:2607:f8b0:4864:20::544])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45kg1P2gt7zDqdx
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jul 2019 12:27:05 +1000 (AEST)
+Received: by mail-pg1-x544.google.com with SMTP id f25so2128120pgv.10
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jul 2019 19:27:04 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=from:to:cc:subject:date:message-id:in-reply-to:references
+ :mime-version:content-transfer-encoding;
+ bh=gJuAUoOdyToKgMwqSNbHlMjfwEjXvPhYqQpbrzkQAkc=;
+ b=PQTJMwXfOp4jtr1CY5d0F0VI87zTQyJPPYJnbySk9G17ykXHqks8BoBEEV9sxuj1Li
+ y6lTJfzJOsiOSSZ2iaEgVcgGw8Gx+0Gn6u/xirUIBLvUygj3eQ7/xMtTB8Z/ZlcZ3W+z
+ +lf0vcSdUuenwAZCaxNUn/c8JrFt3NeNKpAi9FxOPurVI69QxB8O8DDWGN7WJcTS6dB5
+ dK94jtJHXb/5K8z2ceN/bk3GQiz4ZDjhM7EZv50kwPhYqWOopwX/7sVCqAQu37hyHqFr
+ bGOkmC935bQp+nB+A7oOUkekprqo4LzOfpZdJtxGlWV7YZDgoqY/bWfUJRd3fMQwLYG7
+ 8OaA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+ :references:mime-version:content-transfer-encoding;
+ bh=gJuAUoOdyToKgMwqSNbHlMjfwEjXvPhYqQpbrzkQAkc=;
+ b=qMW4pCZo5LqM1i08GGxQyGgzHrGGpMCJsS8fQyi4y2b8UGoTy6Gbbj9hF9akS4+kae
+ dxZ423x0RgNPWNts9biKtAsCSRTg54GLPl5J78rC3O6CM5oaJhwRay/0j21MQz6OEo0+
+ H7CxYA1e7SBSfqLElIpqY6qAkTZYFhq9BZ/v3Cvh3s5f7j0XpA1w42NGFhtz5uiGTJZw
+ 2oHCumOycPrnxRancI12fe/fnnU/AqnP8vZo/75UdhAoinlKEcTtq9RajkzikXh1gQD+
+ 0Cv/O637pJ8o3JWtjC0a7o3CIU9exP11r/TD34Wfa9CaOYp5ya0i9XKf9e513SPycUKX
+ HE/A==
+X-Gm-Message-State: APjAAAV1KuunlJqw/esoIqoZJyFp+S9mwLkkJj23CNhtrgfTx8AhHpyk
+ GTJkdBo4fNcRwogtOwW92EgjJM9G
+X-Google-Smtp-Source: APXvYqz+tbKJRdvp4/48Xw0Z1zUKf95IA9mS8Jo6lctauxZsgwIhwyXK4q/docLABNO1/oe2TAiW2w==
+X-Received: by 2002:a17:90a:214e:: with SMTP id
+ a72mr1960265pje.0.1562812023231; 
+ Wed, 10 Jul 2019 19:27:03 -0700 (PDT)
+Received: from bobo.local0.net (203-213-47-85.tpgi.com.au. [203.213.47.85])
+ by smtp.gmail.com with ESMTPSA id t26sm2820205pgu.43.2019.07.10.19.27.01
+ (version=TLS1_3 cipher=AEAD-AES256-GCM-SHA384 bits=256/256);
+ Wed, 10 Jul 2019 19:27:02 -0700 (PDT)
+From: Nicholas Piggin <npiggin@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH 2/2] powerpc/64s: Remove idle workaround code from
+ restore_cpu_cpufeatures
+Date: Thu, 11 Jul 2019 12:24:04 +1000
+Message-Id: <20190711022404.18132-2-npiggin@gmail.com>
+X-Mailer: git-send-email 2.20.1
+In-Reply-To: <20190711022404.18132-1-npiggin@gmail.com>
+References: <20190711022404.18132-1-npiggin@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -53,58 +94,65 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Stan <userm57@yahoo.com>
+Cc: Nicholas Piggin <npiggin@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, 28 Jun 2019, Finn Thain wrote:
+Idle code no longer uses the .cpu_restore CPU operation to restore
+SPRs, so this workaround is no longer required.
 
-> Hi All,
-> 
-> I've received a bug report concerning the pata-macio driver, when running 
-> on a PowerBook G3 (Wallstreet).
-> 
-> With CONFIG_PATA_MACIO=n && CONFIG_BLK_DEV_IDE_PMAC=y, everything works.
-> 
-> With CONFIG_PATA_MACIO=y && CONFIG_BLK_DEV_IDE_PMAC=n, the CD-ROM fails.
-> 
-> When the CD-ROM mediabay module is swapped for a DVD-ROM mediabay module, 
-> everything works (either pata-macio or ide-pmac driver works fine).
-> 
-> I'm not familiar with ATA device drivers or the "Heathrow" chipset and its 
-> ATA interfaces so any hints as to how to debug this would be appreciated.
-> 
-...
-> 
-> These logs are from v4.20 but the problem is the same in v5.2-rc2.
-> 
+Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+---
+ arch/powerpc/kernel/dt_cpu_ftrs.c | 21 +--------------------
+ 1 file changed, 1 insertion(+), 20 deletions(-)
 
-In the linux-ide list archive I found the same bug reported in 2.6.33-rc2, 
-shortly after the pata-macio driver was merged.
-
-https://lore.kernel.org/linux-ide/19254.17766.674348.933702@pilspetsen.it.uu.se/
-
-That report also involves a Matshita CD-ROM and a Heathrow controller 
-(beige G3).
-
-In that thread Ben suggested that the cause may be a firmware bug in the 
-drive. Is there a quirk or other workaround for that kind of bug?
-
-I tried removing the controller reset but there was no improvement...
-
-diff --git a/drivers/ata/pata_macio.c b/drivers/ata/pata_macio.c
-index 57f2ec71cfc3..b2fd5e20367f 100644
---- a/drivers/ata/pata_macio.c
-+++ b/drivers/ata/pata_macio.c
-@@ -1096,7 +1096,7 @@ static int pata_macio_common_init(struct pata_macio_priv *priv,
- 	priv->host->ports[0]->private_data = priv;
+diff --git a/arch/powerpc/kernel/dt_cpu_ftrs.c b/arch/powerpc/kernel/dt_cpu_ftrs.c
+index c66fd3ce6478..78db3e6eb45e 100644
+--- a/arch/powerpc/kernel/dt_cpu_ftrs.c
++++ b/arch/powerpc/kernel/dt_cpu_ftrs.c
+@@ -71,7 +71,6 @@ static int hv_mode;
  
- 	/* hard-reset the controller */
--	pata_macio_reset_hw(priv, 0);
-+//	pata_macio_reset_hw(priv, 0);
- 	pata_macio_apply_timings(priv->host->ports[0], 0);
+ static struct {
+ 	u64	lpcr;
+-	u64	lpcr_clear;
+ 	u64	hfscr;
+ 	u64	fscr;
+ } system_registers;
+@@ -80,24 +79,7 @@ static void (*init_pmu_registers)(void);
  
- 	/* Enable bus master if necessary */
-
+ static void __restore_cpu_cpufeatures(void)
+ {
+-	u64 lpcr;
+-
+-	/*
+-	 * LPCR is restored by the power on engine already. It can be changed
+-	 * after early init e.g., by radix enable, and we have no unified API
+-	 * for saving and restoring such SPRs.
+-	 *
+-	 * This ->restore hook should really be removed from idle and register
+-	 * restore moved directly into the idle restore code, because this code
+-	 * doesn't know how idle is implemented or what it needs restored here.
+-	 *
+-	 * The best we can do to accommodate secondary boot and idle restore
+-	 * for now is "or" LPCR with existing.
+-	 */
+-	lpcr = mfspr(SPRN_LPCR);
+-	lpcr |= system_registers.lpcr;
+-	lpcr &= ~system_registers.lpcr_clear;
+-	mtspr(SPRN_LPCR, lpcr);
++	mtspr(SPRN_LPCR, system_registers.lpcr);
+ 	if (hv_mode) {
+ 		mtspr(SPRN_LPID, 0);
+ 		mtspr(SPRN_HFSCR, system_registers.hfscr);
+@@ -318,7 +300,6 @@ static int __init feat_enable_mmu_hash_v3(struct dt_cpu_feature *f)
+ {
+ 	u64 lpcr;
+ 
+-	system_registers.lpcr_clear |= (LPCR_ISL | LPCR_UPRT | LPCR_HR);
+ 	lpcr = mfspr(SPRN_LPCR);
+ 	lpcr &= ~(LPCR_ISL | LPCR_UPRT | LPCR_HR);
+ 	mtspr(SPRN_LPCR, lpcr);
 -- 
+2.20.1
+
