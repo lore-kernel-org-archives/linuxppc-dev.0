@@ -7,21 +7,21 @@ X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A302AC742A1
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Jul 2019 23:32:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4C3CFC742A2
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Jul 2019 23:33:44 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 1B7972084B
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Jul 2019 23:32:02 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id C66102084B
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Jul 2019 23:33:43 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=os.amperecomputing.com header.i=@os.amperecomputing.com header.b="ReMtk1NS"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1B7972084B
+	dkim=pass (1024-bit key) header.d=os.amperecomputing.com header.i=@os.amperecomputing.com header.b="RCSyljDi"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C66102084B
 Authentication-Results: mail.kernel.org; dmarc=fail (p=quarantine dis=none) header.from=os.amperecomputing.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45lC4w647HzDqTp
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Jul 2019 09:32:00 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45lC6s2SkNzDqg7
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Jul 2019 09:33:41 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (mailfrom)
  smtp.mailfrom=os.amperecomputing.com (client-ip=40.107.74.135;
  helo=nam01-bn3-obe.outbound.protection.outlook.com;
@@ -30,20 +30,20 @@ Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=os.amperecomputing.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=os.amperecomputing.com header.i=@os.amperecomputing.com
- header.b="ReMtk1NS"; dkim-atps=neutral
+ header.b="RCSyljDi"; dkim-atps=neutral
 Received: from NAM01-BN3-obe.outbound.protection.outlook.com
  (mail-eopbgr740135.outbound.protection.outlook.com [40.107.74.135])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45lBxs5jVNzDqf5
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Jul 2019 09:25:53 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45lBxt4ltWzDqf5
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Jul 2019 09:25:54 +1000 (AEST)
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=X4vXsban/ZKB+8ROlk9ZJVQf010WgWSTIcMznQStaiLD6SK7boxTUQnZxashxZ+Ba3SC+AGLWALrBXlBrlUj3FsobSoe7byYBPqk5JkXZvv9T/mnyeJGgfY0ZymtWt95ohuieZNyZVElf9jwpFAEnwzeoDeRh0E641K0KljLm6YjCHWlbuTmKSz4CH15D71eM5i+6cX0xbbNs5aFVty+Hk0vCHgX0iPEbjFRrw2c5+jMTAYTeQJP4i6aircSknSObn28qL2NdaToJwUg2LbYPVZW/PzsgMJJGuHp298Q/R96qy18/ZSGUC55V3eoS8nBFs+ezPottZcDlOEtApAUyw==
+ b=nR5+TqydjcMHq22Z3jsKQcuLdcIdCmw84S6kSj9pXnL/xsCuR3PwCHPywFGkEFnYpehSaSUbw/rmX+JQFDgIW195hafOs8SoVaDfC5ieZC1XQs+hcB9MI+hLE1gN24k6LlngXzMbjSOABDqNOEdMhOr6gjCDmV4CLYMAyuG/6pls3GQ2KmBIFgAtj3s7v7hQqZOLbTBuaj17eYACF4ySIc66HYie1+W6KRP9XYcq9BalHXJY4uqzk9kGhpi1Z02O3ZOKF391HHHGBNhTF5lN1hPC7Anc2IPoGSUcLSBqqTFV0GhxaXHN/7rrODwzA3VrmLr+QLnBv7+FFqmNYvvwoQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com; 
  s=arcselector9901;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=nv9Pvxp/gDaeRKsmwNevq52lzFBVsYZWQfbDDaOzjpI=;
- b=I/H/AS8orDud9iDIzKy/EZrnn33RmZMJcBW+KvjPhWeozEk6OyvYRKnucB3zHSYBSptEoQ9CueSanl5aYr8POdnSCID0DKjikfYu31Xb7T5uZJ0bBM0OV9kFL5H64ZMQK5skP17R89ZOqOMEQzIMHxoOOURuuGQqu+kAbfcVv/M6XutXvG78gz/nVVuYpuGA2qtf2JYplIbf4+WjpSJQFOprE42Dw5udQUsMnppebnIJg8Pvqlo6HQBueuocae5FCG5EROlNq5SCmhenJE4cs/ITNwGNX7AYpENW5xKwVln5kjqL8iTyyDn2U1Y3aDJ7QqUR+Tuap5UBetL4Ff/1Yw==
+ bh=qWV1MOUNxiDDw+u8HgB9VwvU/aKqnCn2F/F6C9LIbhY=;
+ b=Wvxz9J5qCCU9HqOY8DrUx/SN7DYqL9g3g4kdo0e/uIgqQjl9KviDQD90ZlykgjXlpd7tkSA9AQzZCEECyxIQkgsB0q96SSgmnnWfd098auHShkalM4OWxCRtYVoE+0Sn4K99/1SAdwF2fXgTniW+Vt75tqxFHCy8k/VItT9A/4ToA5/4x9qopeYUbSn/NHYwiVD/niCtLa00gGQNG6T6C0ZKuv+qruETD3CJSC8JrAVW7Pb/Pz5fjagQvPgTkaOrLHdvK6P+pWM6tPt+3XUlswxx5Cg4CbLRpFQqmPBf59tImOLyAJ81OEX1b53CxogmFoMdgLpvREdGuB2MWAP7jw==
 ARC-Authentication-Results: i=1; mx.microsoft.com 1;spf=pass
  smtp.mailfrom=os.amperecomputing.com;dmarc=pass action=none
  header.from=os.amperecomputing.com;dkim=pass
@@ -51,16 +51,16 @@ ARC-Authentication-Results: i=1; mx.microsoft.com 1;spf=pass
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=os.amperecomputing.com; s=selector1;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=nv9Pvxp/gDaeRKsmwNevq52lzFBVsYZWQfbDDaOzjpI=;
- b=ReMtk1NSKkckNw209I1pj6PpDd206QLAoZuUccoQ+U9xLEuTKf2c2lNtPoIJa7bbNMibSCca/DVQvHIYZr39u5AUNsWGjVVAsqKiEtWh4Fydz4R7TEKMh2zMIzyWBSdGyIL6J43K+1dnXo0A9ttoD4OINMN9vib9lnQYX99KjUs=
+ bh=qWV1MOUNxiDDw+u8HgB9VwvU/aKqnCn2F/F6C9LIbhY=;
+ b=RCSyljDiR/TMyiVIyYNiUkKu406+E574hzvAZMQ7e2IDGkIn5xe6bFqNC6GXeBc1/R2bhrqt8ySEVkgzwm3cJ7S6ndKzHR6FOHiNRmRQ/lNY912cKV5Tjvv5yaaXDHJ4GU30QhLUWcoCBJu9+EMAmwROIpMWCQNzQQVweqgmtCU=
 Received: from BYAPR01MB4085.prod.exchangelabs.com (52.135.237.22) by
  BYAPR01MB5557.prod.exchangelabs.com (20.179.88.205) with Microsoft SMTP
  Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.20.2073.10; Thu, 11 Jul 2019 23:25:49 +0000
+ 15.20.2073.10; Thu, 11 Jul 2019 23:25:52 +0000
 Received: from BYAPR01MB4085.prod.exchangelabs.com
  ([fe80::9dbb:1b4c:bace:ef80]) by BYAPR01MB4085.prod.exchangelabs.com
  ([fe80::9dbb:1b4c:bace:ef80%7]) with mapi id 15.20.2052.020; Thu, 11 Jul 2019
- 23:25:49 +0000
+ 23:25:51 +0000
 From: Hoan Tran OS <hoan@os.amperecomputing.com>
 To: Catalin Marinas <catalin.marinas@arm.com>, Will Deacon
  <will.deacon@arm.com>, Andrew Morton <akpm@linux-foundation.org>, Michal
@@ -74,12 +74,11 @@ To: Catalin Marinas <catalin.marinas@arm.com>, Will Deacon
  <hpa@zytor.com>, "David S . Miller" <davem@davemloft.net>, Heiko Carstens
  <heiko.carstens@de.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>, Christian
  Borntraeger <borntraeger@de.ibm.com>
-Subject: [PATCH v2 2/5] powerpc: Kconfig: Remove CONFIG_NODES_SPAN_OTHER_NODES
-Thread-Topic: [PATCH v2 2/5] powerpc: Kconfig: Remove
- CONFIG_NODES_SPAN_OTHER_NODES
-Thread-Index: AQHVOD/57/uJcWsU4EKBP/fxzyJHWw==
-Date: Thu, 11 Jul 2019 23:25:49 +0000
-Message-ID: <1562887528-5896-3-git-send-email-Hoan@os.amperecomputing.com>
+Subject: [PATCH v2 3/5] x86: Kconfig: Remove CONFIG_NODES_SPAN_OTHER_NODES
+Thread-Topic: [PATCH v2 3/5] x86: Kconfig: Remove CONFIG_NODES_SPAN_OTHER_NODES
+Thread-Index: AQHVOD/6mMbG4b3xtkKwY5B+a64Pmg==
+Date: Thu, 11 Jul 2019 23:25:51 +0000
+Message-ID: <1562887528-5896-4-git-send-email-Hoan@os.amperecomputing.com>
 References: <1562887528-5896-1-git-send-email-Hoan@os.amperecomputing.com>
 In-Reply-To: <1562887528-5896-1-git-send-email-Hoan@os.amperecomputing.com>
 Accept-Language: en-US
@@ -95,12 +94,12 @@ x-ms-exchange-messagesentrepresentingtype: 1
 x-mailer: git-send-email 2.7.4
 x-originating-ip: [4.28.12.214]
 x-ms-publictraffictype: Email
-x-ms-office365-filtering-correlation-id: dc67312c-bd1d-4ac6-2268-08d706571b83
+x-ms-office365-filtering-correlation-id: 60e6bd66-cb09-4bd8-7c4e-08d706571cf4
 x-microsoft-antispam: BCL:0; PCL:0;
  RULEID:(2390118)(7020095)(4652040)(8989299)(4534185)(4627221)(201703031133081)(201702281549075)(8990200)(5600148)(711020)(4605104)(1401327)(2017052603328)(7193020);
  SRVR:BYAPR01MB5557; 
 x-ms-traffictypediagnostic: BYAPR01MB5557:
-x-microsoft-antispam-prvs: <BYAPR01MB55570D96BF58823729B3BA1FF1F30@BYAPR01MB5557.prod.exchangelabs.com>
+x-microsoft-antispam-prvs: <BYAPR01MB5557239AD4D7113B3B7ADD13F1F30@BYAPR01MB5557.prod.exchangelabs.com>
 x-ms-oob-tlc-oobclassifiers: OLM:3383;
 x-forefront-prvs: 0095BCF226
 x-forefront-antispam-report: SFV:NSPM;
@@ -111,13 +110,13 @@ x-forefront-antispam-report: SFV:NSPM;
 received-spf: None (protection.outlook.com: os.amperecomputing.com does not
  designate permitted sender hosts)
 x-ms-exchange-senderadcheck: 1
-x-microsoft-antispam-message-info: izT+63HRnUuAKD5eGQE8YKlxJrqgWZx0flLjKl/QWe6GzX9REGSnQmtmPQEHM+Nb7SoECE7IHtcSR/0MAmMRDwAqNOJomwkyv8FLL1J2BX2KQSmTEoXofPO43EwIMPbl2dEGPQJ2bdnlbA/u/D+U0iZAVdoIDLDMP2a93+1SIMSSeVKLE5AFoI8dKv5oIkRhidLD3R0KGJX2ZslNvRF5ULYgNZxwyQxPuatZw+KuS2J24LSK6WbmSwfnPvnfQ2oEI8RHlikLOL2wkTPFlmdjjzXsZ7sBC1I6get/tead9+DbSFP8sRhTXA6sUCv9LJs6Z0vPUqxS8bJiDfwxpivxFm38e/ZR5AjUUI512L3kodi4FaZHfbUzHHYn+zB0kLMs2okuu/Iyn/MQ/fXHY+vUlaH1tjB+IWfRuA6MeCfCx/U=
+x-microsoft-antispam-message-info: +yD719DBgEH8rntLj0mGEtqpmWqARyiJM3JmReTrowtXLYcEkce3BJ+Tbd8hXmVF8TIDhHZ80KU1sC4uoLl7ZNHxc+Pqdw+J88LRaDtq0nHrmLM0Cn1nKNiS3589Xvar6n6GbAvvJLxPKKQ8pKcrK3Si6Lv7VhB+GUJTE1NyokRYTutBsj7Hv6kqhv7u1jtY3cvwJ0PPV05AikvwNjhsladmz394WfVMPSpnPaKrIujOgi0/ERXzvu53KywSzCJlQlkwtY3cs+oyb/xonwlfFLGtj6ki8sBbJvmdoYus+98UewK4fmG79RHNYRxaDKh2giGUarUOwVWbuGUuSWnIBE6W44Myl9zRNHbg4Moun1fzPdpOl94U3xF5L49W56OEtJUajSMJue12CuCucmItSAnK9UXqNdg5VvPjksaaiLc=
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 MIME-Version: 1.0
 X-OriginatorOrg: os.amperecomputing.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: dc67312c-bd1d-4ac6-2268-08d706571b83
-X-MS-Exchange-CrossTenant-originalarrivaltime: 11 Jul 2019 23:25:49.3382 (UTC)
+X-MS-Exchange-CrossTenant-Network-Message-Id: 60e6bd66-cb09-4bd8-7c4e-08d706571cf4
+X-MS-Exchange-CrossTenant-originalarrivaltime: 11 Jul 2019 23:25:51.7318 (UTC)
 X-MS-Exchange-CrossTenant-fromentityheader: Hosted
 X-MS-Exchange-CrossTenant-id: 3bc2b170-fd94-476d-b0ce-4229bdc904a7
 X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
@@ -147,21 +146,21 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Remove CONFIG_NODES_SPAN_OTHER_NODES as it's enabled by
-default with NUMA.
+Remove CONFIG_NODES_SPAN_OTHER_NODES as it's enabled
+by default with NUMA.
 
 Signed-off-by: Hoan Tran <Hoan@os.amperecomputing.com>
 ---
- arch/powerpc/Kconfig | 9 ---------
+ arch/x86/Kconfig | 9 ---------
  1 file changed, 9 deletions(-)
 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 8c1c636..bdde8bc 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -629,15 +629,6 @@ config ARCH_MEMORY_PROBE
- 	def_bool y
- 	depends on MEMORY_HOTPLUG
+diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
+index 2bbbd4d..fa9318c 100644
+--- a/arch/x86/Kconfig
++++ b/arch/x86/Kconfig
+@@ -1567,15 +1567,6 @@ config X86_64_ACPI_NUMA
+ 	---help---
+ 	  Enable ACPI SRAT based node topology detection.
 =20
 -# Some NUMA nodes have memory ranges that span
 -# other nodes.  Even though a pfn is valid and
@@ -170,11 +169,11 @@ index 8c1c636..bdde8bc 100644
 -# for details.
 -config NODES_SPAN_OTHER_NODES
 -	def_bool y
--	depends on NEED_MULTIPLE_NODES
+-	depends on X86_64_ACPI_NUMA
 -
- config STDBINUTILS
- 	bool "Using standard binutils settings"
- 	depends on 44x
+ config NUMA_EMU
+ 	bool "NUMA emulation"
+ 	depends on NUMA
 --=20
 2.7.4
 
