@@ -2,52 +2,48 @@ Return-Path: <SRS0=Nfv6=VJ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.3 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2AE20C742BE
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Jul 2019 12:59:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E1AE7C742BA
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Jul 2019 13:12:53 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 815D820863
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Jul 2019 12:59:57 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 815D820863
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=zeniv.linux.org.uk
+	by mail.kernel.org (Postfix) with ESMTPS id 729932080A
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Jul 2019 13:12:53 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 729932080A
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45lY150YgZzDqxG
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Jul 2019 22:59:53 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=ftp.linux.org.uk
- (client-ip=195.92.253.2; helo=zeniv.linux.org.uk;
- envelope-from=viro@ftp.linux.org.uk; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=zeniv.linux.org.uk
-Received: from ZenIV.linux.org.uk (zeniv.linux.org.uk [195.92.253.2])
+	by lists.ozlabs.org (Postfix) with ESMTP id 45lYJ268lkzDqyB
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Jul 2019 23:12:50 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45lXx52fp0zDqwF
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Jul 2019 22:56:25 +1000 (AEST)
-Received: from viro by ZenIV.linux.org.uk with local (Exim 4.92 #3 (Red Hat
- Linux)) id 1hlv5c-0007Pc-Mt; Fri, 12 Jul 2019 12:55:52 +0000
-Date: Fri, 12 Jul 2019 13:55:52 +0100
-From: Al Viro <viro@zeniv.linux.org.uk>
-To: Aleksa Sarai <cyphar@cyphar.com>
-Subject: Re: [PATCH v9 05/10] namei: O_BENEATH-style path resolution flags
-Message-ID: <20190712125552.GL17978@ZenIV.linux.org.uk>
-References: <20190706145737.5299-1-cyphar@cyphar.com>
- <20190706145737.5299-6-cyphar@cyphar.com>
- <20190712043341.GI17978@ZenIV.linux.org.uk>
- <20190712105745.nruaftgeat6irhzr@yavin>
- <20190712123924.GK17978@ZenIV.linux.org.uk>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45lYD00VYYzDqpg
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Jul 2019 23:09:20 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=ellerman.id.au
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
+ SHA256) (No client certificate requested)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 45lYCz49PFz9s3l;
+ Fri, 12 Jul 2019 23:09:19 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Suraj Jitindar Singh <sjitindarsingh@gmail.com>,
+ linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH] powerpc: mm: Limit rma_size to 1TB when running without
+ HV mode
+In-Reply-To: <20190710052018.14628-1-sjitindarsingh@gmail.com>
+References: <20190710052018.14628-1-sjitindarsingh@gmail.com>
+Date: Fri, 12 Jul 2019 23:09:18 +1000
+Message-ID: <87o91ze6wx.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20190712123924.GK17978@ZenIV.linux.org.uk>
-User-Agent: Mutt/1.11.3 (2019-02-01)
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -59,64 +55,69 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org,
- Alexei Starovoitov <ast@kernel.org>, linux-kernel@vger.kernel.org,
- David Howells <dhowells@redhat.com>, linux-kselftest@vger.kernel.org,
- sparclinux@vger.kernel.org, Shuah Khan <shuah@kernel.org>,
- linux-arch@vger.kernel.org, linux-s390@vger.kernel.org,
- Tycho Andersen <tycho@tycho.ws>, Aleksa Sarai <asarai@suse.de>,
- linux-arm-kernel@lists.infradead.org, linux-mips@vger.kernel.org,
- linux-xtensa@linux-xtensa.org, Kees Cook <keescook@chromium.org>,
- Arnd Bergmann <arnd@arndb.de>, Jann Horn <jannh@google.com>,
- linuxppc-dev@lists.ozlabs.org, linux-m68k@lists.linux-m68k.org,
- Andy Lutomirski <luto@kernel.org>, Shuah Khan <skhan@linuxfoundation.org>,
- David Drysdale <drysdale@google.com>, Christian Brauner <christian@brauner.io>,
- "J. Bruce Fields" <bfields@fieldses.org>, linux-parisc@vger.kernel.org,
- linux-api@vger.kernel.org, Chanho Min <chanho.min@lge.com>,
- Jeff Layton <jlayton@kernel.org>, Oleg Nesterov <oleg@redhat.com>,
- Eric Biederman <ebiederm@xmission.com>, linux-alpha@vger.kernel.org,
- linux-fsdevel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
- Linus Torvalds <torvalds@linux-foundation.org>,
- containers@lists.linux-foundation.org
+Cc: sjitindarsingh@gmail.com, kvm-ppc@vger.kernel.org,
+ david@gibson.dropbear.id.au
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, Jul 12, 2019 at 01:39:24PM +0100, Al Viro wrote:
-> On Fri, Jul 12, 2019 at 08:57:45PM +1000, Aleksa Sarai wrote:
-> 
-> > > > @@ -2350,9 +2400,11 @@ static const char *path_init(struct nameidata *nd, unsigned flags)
-> > > >  			s = ERR_PTR(error);
-> > > >  		return s;
-> > > >  	}
-> > > > -	error = dirfd_path_init(nd);
-> > > > -	if (unlikely(error))
-> > > > -		return ERR_PTR(error);
-> > > > +	if (likely(!nd->path.mnt)) {
-> > > 
-> > > Is that a weird way of saying "if we hadn't already called dirfd_path_init()"?
-> > 
-> > Yes. I did it to be more consistent with the other "have we got the
-> > root" checks elsewhere. Is there another way you'd prefer I do it?
-> 
-> "Have we got the root" checks are inevitable evil; here you are making the
-> control flow in a single function hard to follow.
-> 
-> I *think* what you are doing is
-> 	absolute pathname, no LOOKUP_BENEATH:
-> 		set_root
-> 		error = nd_jump_root(nd)
-> 	else
-> 		error = dirfd_path_init(nd)
-> 	return unlikely(error) ? ERR_PTR(error) : s;
-> which should be a lot easier to follow (not to mention shorter), but I might
-> be missing something in all of that.
+Suraj Jitindar Singh <sjitindarsingh@gmail.com> writes:
+> The virtual real mode addressing (VRMA) mechanism is used when a
+> partition is using HPT (Hash Page Table) translation and performs
+> real mode accesses (MSR[IR|DR] = 0) in non-hypervisor mode. In this
+> mode effective address bits 0:23 are treated as zero (i.e. the access
+> is aliased to 0) and the access is performed using an implicit 1TB SLB
+> entry.
+>
+> The size of the RMA (Real Memory Area) is communicated to the guest as
+> the size of the first memory region in the device tree. And because of
+> the mechanism described above can be expected to not exceed 1TB. In the
+> event that the host erroneously represents the RMA as being larger than
+> 1TB, guest accesses in real mode to memory addresses above 1TB will be
+> aliased down to below 1TB. This means that a memory access performed in
+> real mode may differ to one performed in virtual mode for the same memory
+> address, which would likely have unintended consequences.
+>
+> To avoid this outcome have the guest explicitly limit the size of the
+> RMA to the current maximum, which is 1TB. This means that even if the
+> first memory block is larger than 1TB, only the first 1TB should be
+> accessed in real mode.
+>
+> Signed-off-by: Suraj Jitindar Singh <sjitindarsingh@gmail.com>
 
-PS: if that's what's going on, I would be tempted to turn the entire
-path_init() part into this:
-	if (flags & LOOKUP_BENEATH)
-		while (*s == '/')
-			s++;
-in the very beginning (plus the handling of nd_jump_root() prototype
-change, but that belongs with nd_jump_root() change itself, obviously).
-Again, I might be missing something here...
+I added:
+
+Fixes: c3ab300ea555 ("powerpc: Add POWER9 cputable entry")
+Cc: stable@vger.kernel.org # v4.6+
+
+
+Which is not exactly correct, but probably good enough?
+
+cheers
+
+> diff --git a/arch/powerpc/mm/book3s64/hash_utils.c b/arch/powerpc/mm/book3s64/hash_utils.c
+> index 28ced26f2a00..4d0e2cce9cd5 100644
+> --- a/arch/powerpc/mm/book3s64/hash_utils.c
+> +++ b/arch/powerpc/mm/book3s64/hash_utils.c
+> @@ -1901,11 +1901,19 @@ void hash__setup_initial_memory_limit(phys_addr_t first_memblock_base,
+>  	 *
+>  	 * For guests on platforms before POWER9, we clamp the it limit to 1G
+>  	 * to avoid some funky things such as RTAS bugs etc...
+> +	 * On POWER9 we limit to 1TB in case the host erroneously told us that
+> +	 * the RMA was >1TB. Effective address bits 0:23 are treated as zero
+> +	 * (meaning the access is aliased to zero i.e. addr = addr % 1TB)
+> +	 * for virtual real mode addressing and so it doesn't make sense to
+> +	 * have an area larger than 1TB as it can't be addressed.
+>  	 */
+>  	if (!early_cpu_has_feature(CPU_FTR_HVMODE)) {
+>  		ppc64_rma_size = first_memblock_size;
+>  		if (!early_cpu_has_feature(CPU_FTR_ARCH_300))
+>  			ppc64_rma_size = min_t(u64, ppc64_rma_size, 0x40000000);
+> +		else
+> +			ppc64_rma_size = min_t(u64, ppc64_rma_size,
+> +					       1UL << SID_SHIFT_1T);
+>  
+>  		/* Finally limit subsequent allocations */
+>  		memblock_set_current_limit(ppc64_rma_size);
+> -- 
+> 2.13.6
