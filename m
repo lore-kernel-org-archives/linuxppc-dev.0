@@ -2,69 +2,64 @@ Return-Path: <SRS0=Nfv6=VJ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.0 required=3.0 tests=MAILING_LIST_MULTI,
-	MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.1 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 05B70C742A2
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Jul 2019 02:13:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 038A5C742A2
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Jul 2019 02:48:24 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id AF4C32084B
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Jul 2019 02:13:46 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org AF4C32084B
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=bugzilla.kernel.org
+	by mail.kernel.org (Postfix) with ESMTPS id 44C82214AF
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Jul 2019 02:48:23 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="Wwvuit12"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 44C82214AF
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45lGgW5LGVzDqKf
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Jul 2019 12:13:43 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45lHRR4Wz6zDqly
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Jul 2019 12:48:19 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=bugzilla.kernel.org
- (client-ip=198.145.29.98; helo=mail.wl.linuxfoundation.org;
- envelope-from=bugzilla-daemon@bugzilla.kernel.org; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=bugzilla.kernel.org
-Received: from mail.wl.linuxfoundation.org (mail.wl.linuxfoundation.org
- [198.145.29.98])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ spf=none (mailfrom) smtp.mailfrom=infradead.org
+ (client-ip=2607:7c80:54:e::133; helo=bombadil.infradead.org;
+ envelope-from=willy@infradead.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=infradead.org
+Received: from bombadil.infradead.org (bombadil.infradead.org
+ [IPv6:2607:7c80:54:e::133])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45lGdT1VTJzDqPb
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Jul 2019 12:11:57 +1000 (AEST)
-Received: from mail.wl.linuxfoundation.org (localhost [127.0.0.1])
- by mail.wl.linuxfoundation.org (Postfix) with ESMTP id B1C0A28B9A
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Jul 2019 02:11:54 +0000 (UTC)
-Received: by mail.wl.linuxfoundation.org (Postfix, from userid 486)
- id A432D28BB1; Fri, 12 Jul 2019 02:11:54 +0000 (UTC)
-From: bugzilla-daemon@bugzilla.kernel.org
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [Bug 204125] FTBFS on ppc64 big endian and gcc9 because of
- -mcall-aixdesc and missing __linux__
-Date: Fri, 12 Jul 2019 02:11:54 +0000
-X-Bugzilla-Reason: None
-X-Bugzilla-Type: changed
-X-Bugzilla-Watch-Reason: AssignedTo platform_ppc-64@kernel-bugs.osdl.org
-X-Bugzilla-Product: Platform Specific/Hardware
-X-Bugzilla-Component: PPC-64
-X-Bugzilla-Version: 2.5
-X-Bugzilla-Keywords: 
-X-Bugzilla-Severity: high
-X-Bugzilla-Who: linux@octaforge.org
-X-Bugzilla-Status: NEW
-X-Bugzilla-Resolution: 
-X-Bugzilla-Priority: P1
-X-Bugzilla-Assigned-To: platform_ppc-64@kernel-bugs.osdl.org
-X-Bugzilla-Flags: 
-X-Bugzilla-Changed-Fields: 
-Message-ID: <bug-204125-206035-kQY53L22PG@https.bugzilla.kernel.org/>
-In-Reply-To: <bug-204125-206035@https.bugzilla.kernel.org/>
-References: <bug-204125-206035@https.bugzilla.kernel.org/>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-X-Bugzilla-URL: https://bugzilla.kernel.org/
-Auto-Submitted: auto-generated
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45lHPB4gjzzDqkp
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Jul 2019 12:46:22 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+ d=infradead.org; s=bombadil.20170209; h=In-Reply-To:Content-Type:MIME-Version
+ :References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
+ Content-Transfer-Encoding:Content-ID:Content-Description:Resent-Date:
+ Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:
+ List-Help:List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
+ bh=CE9lRDNR3rg1yz6aah5KMfonhpsYj2jNZxnH84MyUXA=; b=Wwvuit121V9ZexPPxKanwzYwi
+ ddflUWN9v4CPX9+H9bPbsvo6jxG2wAC3BBUGG9cauFnrXCTSOlPmcxTfJ4cy1SoI/qV0rZFfQ8wXK
+ twKXl0uRqWh6MZCEQ4HqlEM/PWywXXcbt23O50K/7l8UCi6eUz+0WWlTABE3X/EmQ8vMCNgrdJOUI
+ XmrxItz1Xzoi+k4KF8fMeEEpmheizoVHxyVD+cHZm12cjh4pB42mf75Kc1mH4q1gaP9QIS4uoV1m1
+ wCsORVvxaufFYS8GiSdvH5t76Q0DsCgP2JngRttI2f6/InFGOA/gWbNVKK/mNSfIwMK1nlVEdHuym
+ hVorcePaw==;
+Received: from willy by bombadil.infradead.org with local (Exim 4.92 #3 (Red
+ Hat Linux)) id 1hllYv-0001rK-Qf; Fri, 12 Jul 2019 02:45:29 +0000
+Date: Thu, 11 Jul 2019 19:45:29 -0700
+From: Matthew Wilcox <willy@infradead.org>
+To: Hoan Tran OS <hoan@os.amperecomputing.com>
+Subject: Re: [PATCH v2 0/5] mm: Enable CONFIG_NODES_SPAN_OTHER_NODES by
+ default for NUMA
+Message-ID: <20190712024529.GU32320@bombadil.infradead.org>
+References: <1562887528-5896-1-git-send-email-Hoan@os.amperecomputing.com>
 MIME-Version: 1.0
-X-Virus-Scanned: ClamAV using ClamSMTP
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1562887528-5896-1-git-send-email-Hoan@os.amperecomputing.com>
+User-Agent: Mutt/1.11.4 (2019-03-13)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -76,21 +71,53 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: Michal Hocko <mhocko@suse.com>, Catalin Marinas <catalin.marinas@arm.com>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>,
+ "open list:MEMORY MANAGEMENT" <linux-mm@kvack.org>,
+ Paul Mackerras <paulus@samba.org>, "H . Peter Anvin" <hpa@zytor.com>,
+ "sparclinux@vger.kernel.org" <sparclinux@vger.kernel.org>,
+ Alexander Duyck <alexander.h.duyck@linux.intel.com>,
+ "linux-s390@vger.kernel.org" <linux-s390@vger.kernel.org>,
+ "x86@kernel.org" <x86@kernel.org>, Mike Rapoport <rppt@linux.ibm.com>,
+ Christian Borntraeger <borntraeger@de.ibm.com>, Ingo Molnar <mingo@redhat.com>,
+ Vlastimil Babka <vbabka@suse.cz>,
+ Open Source Submission <patches@amperecomputing.com>,
+ Pavel Tatashin <pavel.tatashin@microsoft.com>,
+ Vasily Gorbik <gor@linux.ibm.com>, Will Deacon <will.deacon@arm.com>,
+ Borislav Petkov <bp@alien8.de>, Thomas Gleixner <tglx@linutronix.de>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
+ Oscar Salvador <osalvador@suse.de>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "David S . Miller" <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-https://bugzilla.kernel.org/show_bug.cgi?id=3D204125
+On Thu, Jul 11, 2019 at 11:25:44PM +0000, Hoan Tran OS wrote:
+> In NUMA layout which nodes have memory ranges that span across other nodes,
+> the mm driver can detect the memory node id incorrectly.
+> 
+> For example, with layout below
+> Node 0 address: 0000 xxxx 0000 xxxx
+> Node 1 address: xxxx 1111 xxxx 1111
+> 
+> Note:
+>  - Memory from low to high
+>  - 0/1: Node id
+>  - x: Invalid memory of a node
+> 
+> When mm probes the memory map, without CONFIG_NODES_SPAN_OTHER_NODES
+> config, mm only checks the memory validity but not the node id.
+> Because of that, Node 1 also detects the memory from node 0 as below
+> when it scans from the start address to the end address of node 1.
+> 
+> Node 0 address: 0000 xxxx xxxx xxxx
+> Node 1 address: xxxx 1111 1111 1111
+> 
+> This layout could occur on any architecture. This patch enables
+> CONFIG_NODES_SPAN_OTHER_NODES by default for NUMA to fix this issue.
 
---- Comment #7 from Daniel Kolesa (linux@octaforge.org) ---
-Btw, turns out an ELFv2 BE kernel requires little to no changes, these two
-commits produce a working kernel:
-
-https://github.com/smaeul/linux/commit/7a9d26b7be68c21fd1be524ee4bf797d7b8c=
-3c37
-https://github.com/smaeul/linux/commit/c972894da682eff8905d9dbc7efd1bd0f105=
-1bbf
-
---=20
-You are receiving this mail because:
-You are watching the assignee of the bug.=
+How do you know it could occur on any architecture?  Surely you should
+just enable this for the architecture where you've noticed the problem.
