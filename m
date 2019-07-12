@@ -2,58 +2,55 @@ Return-Path: <SRS0=Nfv6=VJ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-14.8 required=3.0
+	tests=HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,UNPARSEABLE_RELAY,
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 245A4C742A5
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Jul 2019 02:50:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 35018C742A5
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Jul 2019 03:30:47 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id ADDAB208E4
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Jul 2019 02:50:36 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org ADDAB208E4
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=zte.com.cn
+	by mail.kernel.org (Postfix) with ESMTPS id 82864208E4
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Jul 2019 03:30:46 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 82864208E4
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.alibaba.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45lHV20TXHzDqLn
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Jul 2019 12:50:34 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45lJNM4LsvzDqkZ
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Jul 2019 13:30:43 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=zte.com.cn
- (client-ip=202.103.147.169; helo=mxct.zte.com.cn;
- envelope-from=wen.yang99@zte.com.cn; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=zte.com.cn
-Received: from mxct.zte.com.cn (mx7.zte.com.cn [202.103.147.169])
+ spf=pass (mailfrom) smtp.mailfrom=linux.alibaba.com
+ (client-ip=115.124.30.57; helo=out30-57.freemail.mail.aliyun.com;
+ envelope-from=alex.shi@linux.alibaba.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=linux.alibaba.com
+Received: from out30-57.freemail.mail.aliyun.com
+ (out30-57.freemail.mail.aliyun.com [115.124.30.57])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45lHPt3z0zzDqmR
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Jul 2019 12:46:55 +1000 (AEST)
-Received: from mse-fl1.zte.com.cn (unknown [10.30.14.238])
- by Forcepoint Email with ESMTPS id 02851B7E4E108A4CE88C;
- Fri, 12 Jul 2019 10:46:50 +0800 (CST)
-Received: from notes_smtp.zte.com.cn ([10.30.1.239])
- by mse-fl1.zte.com.cn with ESMTP id x6C2kBEq014401;
- Fri, 12 Jul 2019 10:46:11 +0800 (GMT-8)
- (envelope-from wen.yang99@zte.com.cn)
-Received: from fox-host8.localdomain ([10.74.120.8])
- by szsmtp06.zte.com.cn (Lotus Domino Release 8.5.3FP6)
- with ESMTP id 2019071210464634-2302204 ;
- Fri, 12 Jul 2019 10:46:46 +0800 
-From: Wen Yang <wen.yang99@zte.com.cn>
-To: rjw@rjwysocki.net
-Subject: [PATCH v6] cpufreq/pasemi: fix an use-after-free in
- pas_cpufreq_cpu_init()
-Date: Fri, 12 Jul 2019 10:44:21 +0800
-Message-Id: <1562899461-24045-1-git-send-email-wen.yang99@zte.com.cn>
-X-Mailer: git-send-email 1.8.3.1
-X-MIMETrack: Itemize by SMTP Server on SZSMTP06/server/zte_ltd(Release
- 8.5.3FP6|November 21, 2013) at 2019-07-12 10:46:46,
- Serialize by Router on notes_smtp/zte_ltd(Release 9.0.1FP7|August  17, 2016) at
- 2019-07-12 10:46:17, Serialize complete at 2019-07-12 10:46:17
-X-MAIL: mse-fl1.zte.com.cn x6C2kBEq014401
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45lGqg457TzDqlm
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Jul 2019 12:20:41 +1000 (AEST)
+X-Alimail-AntiSpam: AC=PASS; BC=-1|-1; BR=01201311R161e4; CH=green; DM=||false|;
+ FP=0|-1|-1|-1|0|-1|-1|-1; HT=e01e04426; MF=alex.shi@linux.alibaba.com; NM=1;
+ PH=DS; RN=19; SR=0; TI=SMTPD_---0TWfK5gO_1562898032; 
+Received: from localhost(mailfrom:alex.shi@linux.alibaba.com
+ fp:SMTPD_---0TWfK5gO_1562898032) by smtp.aliyun-inc.com(127.0.0.1);
+ Fri, 12 Jul 2019 10:20:33 +0800
+From: Alex Shi <alex.shi@linux.alibaba.com>
+To: linux-doc@vger.kernel.org,
+	Jonathan Corbet <corbet@lwn.net>
+Subject: [PATCH 07/12] Documentation/parisc: repointer docs to
+ Documentation/arch/
+Date: Fri, 12 Jul 2019 10:20:13 +0800
+Message-Id: <20190712022018.27989-7-alex.shi@linux.alibaba.com>
+X-Mailer: git-send-email 2.19.1.856.g8858448bb
+In-Reply-To: <20190712022018.27989-1-alex.shi@linux.alibaba.com>
+References: <20190712022018.27989-1-alex.shi@linux.alibaba.com>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+X-Mailman-Approved-At: Fri, 12 Jul 2019 13:28:54 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -65,88 +62,42 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: wang.yi59@zte.com.cn, linux-pm@vger.kernel.org, viresh.kumar@linaro.org,
- linux-kernel@vger.kernel.org, xue.zhihong@zte.com.cn, cheng.shengyu@zte.com.cn,
- linuxppc-dev@lists.ozlabs.org, Wen Yang <wen.yang99@zte.com.cn>
+Cc: linux-s390@vger.kernel.org, linux-fbdev@vger.kernel.org,
+ linux-omap@vger.kernel.org, linux-ia64@vger.kernel.org,
+ linux-scsi@vger.kernel.org, linux-parisc@vger.kernel.org,
+ linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linux-mips@vger.kernel.org, linux-samsung-soc@vger.kernel.org,
+ kvm@vger.kernel.org, Mauro Carvalho Chehab <mchehab+samsung@kernel.org>,
+ linux-riscv@lists.infradead.org, Alex Shi <alex.shi@linux.alibaba.com>,
+ linuxppc-dev@lists.ozlabs.org, linux-stm32@st-md-mailman.stormreply.com,
+ linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The cpu variable is still being used in the of_get_property() call
-after the of_node_put() call, which may result in use-after-free.
+Since we move Documentation/parisc docs to Documentation/arch/parisc
+dir, redirect the doc pointer to them.
 
-Fixes: a9acc26b75f6 ("cpufreq/pasemi: fix possible object reference leak")
-Signed-off-by: Wen Yang <wen.yang99@zte.com.cn>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org
-Cc: linux-pm@vger.kernel.org
+Signed-off-by: Alex Shi <alex.shi@linux.alibaba.com>
+Cc: Mauro Carvalho Chehab <mchehab+samsung@kernel.org>
 Cc: linux-kernel@vger.kernel.org
 ---
-v6: keep the blank line and fix warning: label 'out_unmap_sdcpwr' defined but not used.
-v5: put together the code to get, use, and release cpu device_node.
-v4: restore the blank line.
-v3: fix a leaked reference.
-v2: clean up the code according to the advice of viresh.
+ MAINTAINERS | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
- drivers/cpufreq/pasemi-cpufreq.c | 26 ++++++++++++++------------
- 1 file changed, 14 insertions(+), 12 deletions(-)
-
-diff --git a/drivers/cpufreq/pasemi-cpufreq.c b/drivers/cpufreq/pasemi-cpufreq.c
-index 6b1e4ab..7d557f9 100644
---- a/drivers/cpufreq/pasemi-cpufreq.c
-+++ b/drivers/cpufreq/pasemi-cpufreq.c
-@@ -131,10 +131,18 @@ static int pas_cpufreq_cpu_init(struct cpufreq_policy *policy)
- 	int err = -ENODEV;
- 
- 	cpu = of_get_cpu_node(policy->cpu, NULL);
-+	if (!cpu)
-+		goto out;
- 
-+	max_freqp = of_get_property(cpu, "clock-frequency", NULL);
- 	of_node_put(cpu);
--	if (!cpu)
-+	if (!max_freqp) {
-+		err = -EINVAL;
- 		goto out;
-+	}
-+
-+	/* we need the freq in kHz */
-+	max_freq = *max_freqp / 1000;
- 
- 	dn = of_find_compatible_node(NULL, NULL, "1682m-sdc");
- 	if (!dn)
-@@ -171,16 +179,6 @@ static int pas_cpufreq_cpu_init(struct cpufreq_policy *policy)
- 	}
- 
- 	pr_debug("init cpufreq on CPU %d\n", policy->cpu);
--
--	max_freqp = of_get_property(cpu, "clock-frequency", NULL);
--	if (!max_freqp) {
--		err = -EINVAL;
--		goto out_unmap_sdcpwr;
--	}
--
--	/* we need the freq in kHz */
--	max_freq = *max_freqp / 1000;
--
- 	pr_debug("max clock-frequency is at %u kHz\n", max_freq);
- 	pr_debug("initializing frequency table\n");
- 
-@@ -196,7 +194,11 @@ static int pas_cpufreq_cpu_init(struct cpufreq_policy *policy)
- 	policy->cur = pas_freqs[cur_astate].frequency;
- 	ppc_proc_freq = policy->cur * 1000ul;
- 
--	return cpufreq_generic_init(policy, pas_freqs, get_gizmo_latency());
-+	err = cpufreq_generic_init(policy, pas_freqs, get_gizmo_latency());
-+	if (err)
-+		goto out_unmap_sdcpwr;
-+
-+	return 0;
- 
- out_unmap_sdcpwr:
- 	iounmap(sdcpwr_mapbase);
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 03a8c687f87f..e1aad1b8224c 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -12000,7 +12000,7 @@ T:	git git://git.kernel.org/pub/scm/linux/kernel/git/jejb/parisc-2.6.git
+ T:	git git://git.kernel.org/pub/scm/linux/kernel/git/deller/parisc-linux.git
+ S:	Maintained
+ F:	arch/parisc/
+-F:	Documentation/parisc/
++F:	Documentation/arch/parisc/
+ F:	drivers/parisc/
+ F:	drivers/char/agp/parisc-agp.c
+ F:	drivers/input/serio/gscps2.c
 -- 
-2.9.5
+2.19.1.856.g8858448bb
 
