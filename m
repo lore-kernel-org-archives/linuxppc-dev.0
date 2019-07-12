@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-2.3 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5068AC742BB
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Jul 2019 12:45:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2AE20C742BE
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Jul 2019 12:59:58 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id D22DF20645
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Jul 2019 12:45:04 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D22DF20645
+	by mail.kernel.org (Postfix) with ESMTPS id 815D820863
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Jul 2019 12:59:57 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 815D820863
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=zeniv.linux.org.uk
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45lXgx3z1qzDqS5
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Jul 2019 22:45:01 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45lY150YgZzDqxG
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Jul 2019 22:59:53 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=none (mailfrom) smtp.mailfrom=ftp.linux.org.uk
  (client-ip=195.92.253.2; helo=zeniv.linux.org.uk;
@@ -29,23 +29,24 @@ Received: from ZenIV.linux.org.uk (zeniv.linux.org.uk [195.92.253.2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45lXZL3VQ1zDqgs
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Jul 2019 22:40:04 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45lXx52fp0zDqwF
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Jul 2019 22:56:25 +1000 (AEST)
 Received: from viro by ZenIV.linux.org.uk with local (Exim 4.92 #3 (Red Hat
- Linux)) id 1hlupg-0006xX-Tg; Fri, 12 Jul 2019 12:39:25 +0000
-Date: Fri, 12 Jul 2019 13:39:24 +0100
+ Linux)) id 1hlv5c-0007Pc-Mt; Fri, 12 Jul 2019 12:55:52 +0000
+Date: Fri, 12 Jul 2019 13:55:52 +0100
 From: Al Viro <viro@zeniv.linux.org.uk>
 To: Aleksa Sarai <cyphar@cyphar.com>
 Subject: Re: [PATCH v9 05/10] namei: O_BENEATH-style path resolution flags
-Message-ID: <20190712123924.GK17978@ZenIV.linux.org.uk>
+Message-ID: <20190712125552.GL17978@ZenIV.linux.org.uk>
 References: <20190706145737.5299-1-cyphar@cyphar.com>
  <20190706145737.5299-6-cyphar@cyphar.com>
  <20190712043341.GI17978@ZenIV.linux.org.uk>
  <20190712105745.nruaftgeat6irhzr@yavin>
+ <20190712123924.GK17978@ZenIV.linux.org.uk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20190712105745.nruaftgeat6irhzr@yavin>
+In-Reply-To: <20190712123924.GK17978@ZenIV.linux.org.uk>
 User-Agent: Mutt/1.11.3 (2019-02-01)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -81,31 +82,41 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, Jul 12, 2019 at 08:57:45PM +1000, Aleksa Sarai wrote:
-
-> > > @@ -2350,9 +2400,11 @@ static const char *path_init(struct nameidata *nd, unsigned flags)
-> > >  			s = ERR_PTR(error);
-> > >  		return s;
-> > >  	}
-> > > -	error = dirfd_path_init(nd);
-> > > -	if (unlikely(error))
-> > > -		return ERR_PTR(error);
-> > > +	if (likely(!nd->path.mnt)) {
-> > 
-> > Is that a weird way of saying "if we hadn't already called dirfd_path_init()"?
+On Fri, Jul 12, 2019 at 01:39:24PM +0100, Al Viro wrote:
+> On Fri, Jul 12, 2019 at 08:57:45PM +1000, Aleksa Sarai wrote:
 > 
-> Yes. I did it to be more consistent with the other "have we got the
-> root" checks elsewhere. Is there another way you'd prefer I do it?
+> > > > @@ -2350,9 +2400,11 @@ static const char *path_init(struct nameidata *nd, unsigned flags)
+> > > >  			s = ERR_PTR(error);
+> > > >  		return s;
+> > > >  	}
+> > > > -	error = dirfd_path_init(nd);
+> > > > -	if (unlikely(error))
+> > > > -		return ERR_PTR(error);
+> > > > +	if (likely(!nd->path.mnt)) {
+> > > 
+> > > Is that a weird way of saying "if we hadn't already called dirfd_path_init()"?
+> > 
+> > Yes. I did it to be more consistent with the other "have we got the
+> > root" checks elsewhere. Is there another way you'd prefer I do it?
+> 
+> "Have we got the root" checks are inevitable evil; here you are making the
+> control flow in a single function hard to follow.
+> 
+> I *think* what you are doing is
+> 	absolute pathname, no LOOKUP_BENEATH:
+> 		set_root
+> 		error = nd_jump_root(nd)
+> 	else
+> 		error = dirfd_path_init(nd)
+> 	return unlikely(error) ? ERR_PTR(error) : s;
+> which should be a lot easier to follow (not to mention shorter), but I might
+> be missing something in all of that.
 
-"Have we got the root" checks are inevitable evil; here you are making the
-control flow in a single function hard to follow.
-
-I *think* what you are doing is
-	absolute pathname, no LOOKUP_BENEATH:
-		set_root
-		error = nd_jump_root(nd)
-	else
-		error = dirfd_path_init(nd)
-	return unlikely(error) ? ERR_PTR(error) : s;
-which should be a lot easier to follow (not to mention shorter), but I might
-be missing something in all of that.
+PS: if that's what's going on, I would be tempted to turn the entire
+path_init() part into this:
+	if (flags & LOOKUP_BENEATH)
+		while (*s == '/')
+			s++;
+in the very beginning (plus the handling of nd_jump_root() prototype
+change, but that belongs with nd_jump_root() change itself, obviously).
+Again, I might be missing something here...
