@@ -2,49 +2,50 @@ Return-Path: <SRS0=Nfv6=VJ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	UNPARSEABLE_RELAY,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-14.7 required=3.0
+	tests=HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,UNPARSEABLE_RELAY,
+	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 84DC0C742A8
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Jul 2019 03:50:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 801C9C742A8
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Jul 2019 03:52:30 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 184262080A
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Jul 2019 03:50:18 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 184262080A
+	by mail.kernel.org (Postfix) with ESMTPS id 0CD7220644
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Jul 2019 03:52:29 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0CD7220644
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.alibaba.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45lJpv0NDKzDqN8
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Jul 2019 13:50:15 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45lJsR5stCzDqW0
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Jul 2019 13:52:27 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=linux.alibaba.com
- (client-ip=115.124.30.130; helo=out30-130.freemail.mail.aliyun.com;
+ (client-ip=115.124.30.131; helo=out30-131.freemail.mail.aliyun.com;
  envelope-from=alex.shi@linux.alibaba.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=linux.alibaba.com
-Received: from out30-130.freemail.mail.aliyun.com
- (out30-130.freemail.mail.aliyun.com [115.124.30.130])
+Received: from out30-131.freemail.mail.aliyun.com
+ (out30-131.freemail.mail.aliyun.com [115.124.30.131])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45lGrZ3GMBzDqlX
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Jul 2019 12:21:34 +1000 (AEST)
-X-Alimail-AntiSpam: AC=PASS; BC=-1|-1; BR=01201311R961e4; CH=green; DM=||false|;
- FP=0|-1|-1|-1|0|-1|-1|-1; HT=e01e04426; MF=alex.shi@linux.alibaba.com; NM=1;
- PH=DS; RN=22; SR=0; TI=SMTPD_---0TWfV4.F_1562898033; 
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45lGxT2mLPzDqkp
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Jul 2019 12:25:48 +1000 (AEST)
+X-Alimail-AntiSpam: AC=PASS; BC=-1|-1; BR=01201311R131e4; CH=green; DM=||false|;
+ FP=0|-1|-1|-1|0|-1|-1|-1; HT=e01e04400; MF=alex.shi@linux.alibaba.com; NM=1;
+ PH=DS; RN=21; SR=0; TI=SMTPD_---0TWfJjLT_1562898031; 
 Received: from localhost(mailfrom:alex.shi@linux.alibaba.com
- fp:SMTPD_---0TWfV4.F_1562898033) by smtp.aliyun-inc.com(127.0.0.1);
- Fri, 12 Jul 2019 10:20:33 +0800
+ fp:SMTPD_---0TWfJjLT_1562898031) by smtp.aliyun-inc.com(127.0.0.1);
+ Fri, 12 Jul 2019 10:20:32 +0800
 From: Alex Shi <alex.shi@linux.alibaba.com>
 To: linux-doc@vger.kernel.org,
 	Jonathan Corbet <corbet@lwn.net>
-Subject: [PATCH 08/12] Dcumentation/powerpc: repointer docs to
+Subject: [PATCH 05/12] Documentation/s390: repointer docs to
  Documentation/arch/
-Date: Fri, 12 Jul 2019 10:20:14 +0800
-Message-Id: <20190712022018.27989-8-alex.shi@linux.alibaba.com>
+Date: Fri, 12 Jul 2019 10:20:11 +0800
+Message-Id: <20190712022018.27989-5-alex.shi@linux.alibaba.com>
 X-Mailer: git-send-email 2.19.1.856.g8858448bb
 In-Reply-To: <20190712022018.27989-1-alex.shi@linux.alibaba.com>
 References: <20190712022018.27989-1-alex.shi@linux.alibaba.com>
@@ -62,160 +63,206 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "Manoj N. Kumar" <manoj@linux.ibm.com>, linux-s390@vger.kernel.org,
+Cc: Vasily Gorbik <gor@linux.ibm.com>, linux-s390@vger.kernel.org,
  linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org,
  linux-ia64@vger.kernel.org, linux-scsi@vger.kernel.org,
  linux-parisc@vger.kernel.org, linux-sh@vger.kernel.org,
- Sam Bobroff <sbobroff@linux.ibm.com>, linux-kernel@vger.kernel.org,
- linux-mips@vger.kernel.org, linux-samsung-soc@vger.kernel.org,
- Uma Krishnan <ukrishn@linux.ibm.com>, kvm@vger.kernel.org,
+ Heiko Carstens <heiko.carstens@de.ibm.com>, linux-kernel@vger.kernel.org,
+ linux-mips@vger.kernel.org, Christian Borntraeger <borntraeger@de.ibm.com>,
+ linux-samsung-soc@vger.kernel.org, kvm@vger.kernel.org,
  linux-riscv@lists.infradead.org, Alex Shi <alex.shi@linux.alibaba.com>,
  linuxppc-dev@lists.ozlabs.org, linux-stm32@st-md-mailman.stormreply.com,
- linux-arm-kernel@lists.infradead.org, "Matthew R. Ochs" <mrochs@linux.ibm.com>
+ linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Since we move Documentation/powerpc docs to Documentation/arch/powerpc
+Since we move Documentation/s390 docs to Documentation/arch/s390
 dir, redirect the doc pointer to them.
 
 Signed-off-by: Alex Shi <alex.shi@linux.alibaba.com>
-Cc: Sam Bobroff <sbobroff@linux.ibm.com>
 Cc: Jonathan Corbet <corbet@lwn.net>
-Cc: "Manoj N. Kumar" <manoj@linux.ibm.com>
-Cc: "Matthew R. Ochs" <mrochs@linux.ibm.com>
-Cc: Uma Krishnan <ukrishn@linux.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org
+Cc: Heiko Carstens <heiko.carstens@de.ibm.com>
+Cc: Vasily Gorbik <gor@linux.ibm.com>
+Cc: Christian Borntraeger <borntraeger@de.ibm.com>
 Cc: linux-doc@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org
+Cc: linux-s390@vger.kernel.org
+Cc: kvm@vger.kernel.org
 ---
- Documentation/PCI/pci-error-recovery.txt | 2 +-
- Documentation/arch/powerpc/cxlflash.txt  | 2 +-
- MAINTAINERS                              | 8 ++++----
- arch/powerpc/kernel/exceptions-64s.S     | 2 +-
- drivers/soc/fsl/qe/qe.c                  | 2 +-
- drivers/tty/hvc/hvcs.c                   | 2 +-
- include/soc/fsl/qe/qe.h                  | 2 +-
- 7 files changed, 10 insertions(+), 10 deletions(-)
+ Documentation/admin-guide/kernel-parameters.txt | 4 ++--
+ Documentation/arch/s390/cds.rst                 | 2 +-
+ Documentation/arch/s390/common_io.rst           | 2 +-
+ Documentation/arch/s390/vfio-ccw.rst            | 2 +-
+ Documentation/driver-api/s390-drivers.rst       | 4 ++--
+ MAINTAINERS                                     | 6 +++---
+ arch/s390/Kconfig                               | 4 ++--
+ arch/s390/include/asm/debug.h                   | 4 ++--
+ drivers/s390/char/zcore.c                       | 2 +-
+ 9 files changed, 15 insertions(+), 15 deletions(-)
 
-diff --git a/Documentation/PCI/pci-error-recovery.txt b/Documentation/PCI/pci-error-recovery.txt
-index 0b6bb3ef449e..339e7394ef1d 100644
---- a/Documentation/PCI/pci-error-recovery.txt
-+++ b/Documentation/PCI/pci-error-recovery.txt
-@@ -389,7 +389,7 @@ platforms aren't supposed to share interrupts between many devices
- anyway :)
+diff --git a/Documentation/admin-guide/kernel-parameters.txt b/Documentation/admin-guide/kernel-parameters.txt
+index f1c433daef6b..4ceb4691245b 100644
+--- a/Documentation/admin-guide/kernel-parameters.txt
++++ b/Documentation/admin-guide/kernel-parameters.txt
+@@ -478,7 +478,7 @@
+ 			others).
  
- >>> Implementation details for the powerpc platform are discussed in
-->>> the file Documentation/powerpc/eeh-pci-error-recovery.txt
-+>>> the file Documentation/arch/powerpc/eeh-pci-error-recovery.txt
+ 	ccw_timeout_log	[S390]
+-			See Documentation/s390/common_io.rst for details.
++			See Documentation/arch/s390/common_io.rst for details.
  
- >>> As of this writing, there is a growing list of device drivers with
- >>> patches implementing error recovery. Not all of these patches are in
-diff --git a/Documentation/arch/powerpc/cxlflash.txt b/Documentation/arch/powerpc/cxlflash.txt
-index a64bdaa0a1cf..479cdb9a44f4 100644
---- a/Documentation/arch/powerpc/cxlflash.txt
-+++ b/Documentation/arch/powerpc/cxlflash.txt
-@@ -28,7 +28,7 @@ Introduction
-     responsible for the initialization of the adapter, setting up the
-     special path for user space access, and performing error recovery. It
-     communicates directly the Flash Accelerator Functional Unit (AFU)
--    as described in Documentation/powerpc/cxl.txt.
-+    as described in Documentation/arch/powerpc/cxl.txt.
+ 	cgroup_disable=	[KNL] Disable a particular controller
+ 			Format: {name of the controller(s) to disable}
+@@ -516,7 +516,7 @@
+ 				/selinux/checkreqprot.
  
-     The cxlflash driver supports two, mutually exclusive, modes of
-     operation at the device (LUN) level:
+ 	cio_ignore=	[S390]
+-			See Documentation/s390/common_io.rst for details.
++			See Documentation/arch/s390/common_io.rst for details.
+ 	clk_ignore_unused
+ 			[CLK]
+ 			Prevents the clock framework from automatically gating
+diff --git a/Documentation/arch/s390/cds.rst b/Documentation/arch/s390/cds.rst
+index 7006d8209d2e..bcad2a14244a 100644
+--- a/Documentation/arch/s390/cds.rst
++++ b/Documentation/arch/s390/cds.rst
+@@ -39,7 +39,7 @@ some of them are ESA/390 platform specific.
+ 
+ Note:
+   In order to write a driver for S/390, you also need to look into the interface
+-  described in Documentation/s390/driver-model.rst.
++  described in Documentation/arch/s390/driver-model.rst.
+ 
+ Note for porting drivers from 2.4:
+ 
+diff --git a/Documentation/arch/s390/common_io.rst b/Documentation/arch/s390/common_io.rst
+index 846485681ce7..6dcb40cb7145 100644
+--- a/Documentation/arch/s390/common_io.rst
++++ b/Documentation/arch/s390/common_io.rst
+@@ -136,5 +136,5 @@ debugfs entries
+ 
+   The level of logging can be changed to be more or less verbose by piping to
+   /sys/kernel/debug/s390dbf/cio_*/level a number between 0 and 6; see the
+-  documentation on the S/390 debug feature (Documentation/s390/s390dbf.rst)
++  documentation on the S/390 debug feature (Documentation/arch/s390/s390dbf.rst)
+   for details.
+diff --git a/Documentation/arch/s390/vfio-ccw.rst b/Documentation/arch/s390/vfio-ccw.rst
+index 1f6d0b56d53e..2e15139e9189 100644
+--- a/Documentation/arch/s390/vfio-ccw.rst
++++ b/Documentation/arch/s390/vfio-ccw.rst
+@@ -321,6 +321,6 @@ Reference
+ 1. ESA/s390 Principles of Operation manual (IBM Form. No. SA22-7832)
+ 2. ESA/390 Common I/O Device Commands manual (IBM Form. No. SA22-7204)
+ 3. https://en.wikipedia.org/wiki/Channel_I/O
+-4. Documentation/s390/cds.rst
++4. Documentation/arch/s390/cds.rst
+ 5. Documentation/vfio.txt
+ 6. Documentation/vfio-mediated-device.txt
+diff --git a/Documentation/driver-api/s390-drivers.rst b/Documentation/driver-api/s390-drivers.rst
+index 5158577bc29b..8c0845c4eee7 100644
+--- a/Documentation/driver-api/s390-drivers.rst
++++ b/Documentation/driver-api/s390-drivers.rst
+@@ -27,7 +27,7 @@ not strictly considered I/O devices. They are considered here as well,
+ although they are not the focus of this document.
+ 
+ Some additional information can also be found in the kernel source under
+-Documentation/s390/driver-model.rst.
++Documentation/arch/s390/driver-model.rst.
+ 
+ The css bus
+ ===========
+@@ -38,7 +38,7 @@ into several categories:
+ * Standard I/O subchannels, for use by the system. They have a child
+   device on the ccw bus and are described below.
+ * I/O subchannels bound to the vfio-ccw driver. See
+-  Documentation/s390/vfio-ccw.rst.
++  Documentation/arch/s390/vfio-ccw.rst.
+ * Message subchannels. No Linux driver currently exists.
+ * CHSC subchannels (at most one). The chsc subchannel driver can be used
+   to send asynchronous chsc commands.
 diff --git a/MAINTAINERS b/MAINTAINERS
-index e1aad1b8224c..7a245d3f02fd 100644
+index 583c35cba7bc..2c1e65c236db 100644
 --- a/MAINTAINERS
 +++ b/MAINTAINERS
-@@ -4420,7 +4420,7 @@ F:	arch/powerpc/platforms/powernv/pci-cxl.c
- F:	drivers/misc/cxl/
- F:	include/misc/cxl*
- F:	include/uapi/misc/cxl.h
--F:	Documentation/powerpc/cxl.txt
-+F:	Documentation/arch/powerpc/cxl.txt
- F:	Documentation/ABI/testing/sysfs-class-cxl
- 
- CXLFLASH (IBM Coherent Accelerator Processor Interface CAPI Flash) SCSI DRIVER
-@@ -4431,7 +4431,7 @@ L:	linux-scsi@vger.kernel.org
+@@ -13717,7 +13717,7 @@ T:	git git://git.kernel.org/pub/scm/linux/kernel/git/s390/linux.git
  S:	Supported
- F:	drivers/scsi/cxlflash/
- F:	include/uapi/scsi/cxlflash_ioctl.h
--F:	Documentation/powerpc/cxlflash.txt
-+F:	Documentation/arch/powerpc/cxlflash.txt
+ F:	arch/s390/
+ F:	drivers/s390/
+-F:	Documentation/s390/
++F:	Documentation/arch/s390/
+ F:	Documentation/driver-api/s390-drivers.rst
  
- CYBERPRO FB DRIVER
- M:	Russell King <linux@armlinux.org.uk>
-@@ -9101,7 +9101,7 @@ F:	Documentation/ABI/stable/sysfs-firmware-opal-*
- F:	Documentation/devicetree/bindings/powerpc/
- F:	Documentation/devicetree/bindings/rtc/rtc-opal.txt
- F:	Documentation/devicetree/bindings/i2c/i2c-opal.txt
--F:	Documentation/powerpc/
-+F:	Documentation/arch/powerpc/
- F:	arch/powerpc/
- F:	drivers/char/tpm/tpm_ibmvtpm*
- F:	drivers/crypto/nx/
-@@ -12235,7 +12235,7 @@ F:	Documentation/PCI/pci-error-recovery.txt
- F:	drivers/pci/pcie/aer.c
- F:	drivers/pci/pcie/dpc.c
- F:	drivers/pci/pcie/err.c
--F:	Documentation/powerpc/eeh-pci-error-recovery.txt
-+F:	Documentation/arch/powerpc/eeh-pci-error-recovery.txt
- F:	arch/powerpc/kernel/eeh*.c
- F:	arch/powerpc/platforms/*/eeh*.c
- F:	arch/powerpc/include/*/eeh*.h
-diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
-index 73ba246ca11d..5fa2a348a28e 100644
---- a/arch/powerpc/kernel/exceptions-64s.S
-+++ b/arch/powerpc/kernel/exceptions-64s.S
-@@ -910,7 +910,7 @@ EXC_COMMON(trap_0b_common, 0xb00, unknown_exception)
-  *
-  * Call convention:
-  *
-- * syscall register convention is in Documentation/powerpc/syscall64-abi.txt
-+ * syscall register convention is in Documentation/arch/powerpc/syscall64-abi.txt
-  *
-  * For hypercalls, the register convention is as follows:
-  * r0 volatile
-diff --git a/drivers/soc/fsl/qe/qe.c b/drivers/soc/fsl/qe/qe.c
-index 62c6ba17991a..c83467942b70 100644
---- a/drivers/soc/fsl/qe/qe.c
-+++ b/drivers/soc/fsl/qe/qe.c
-@@ -419,7 +419,7 @@ static void qe_upload_microcode(const void *base,
+ S390 COMMON I/O LAYER
+@@ -13780,7 +13780,7 @@ L:	linux-s390@vger.kernel.org
+ L:	kvm@vger.kernel.org
+ S:	Supported
+ F:	drivers/s390/cio/vfio_ccw*
+-F:	Documentation/s390/vfio-ccw.rst
++F:	Documentation/arch/s390/vfio-ccw.rst
+ F:	include/uapi/linux/vfio_ccw.h
+ 
+ S390 ZCRYPT DRIVER
+@@ -13800,7 +13800,7 @@ S:	Supported
+ F:	drivers/s390/crypto/vfio_ap_drv.c
+ F:	drivers/s390/crypto/vfio_ap_private.h
+ F:	drivers/s390/crypto/vfio_ap_ops.c
+-F:	Documentation/s390/vfio-ap.rst
++F:	Documentation/arch/s390/vfio-ap.rst
+ 
+ S390 ZFCP DRIVER
+ M:	Steffen Maier <maier@linux.ibm.com>
+diff --git a/arch/s390/Kconfig b/arch/s390/Kconfig
+index fdb4246265a5..63d1b9cd4de9 100644
+--- a/arch/s390/Kconfig
++++ b/arch/s390/Kconfig
+@@ -815,9 +815,9 @@ config CRASH_DUMP
+ 	  Crash dump kernels are loaded in the main kernel with kexec-tools
+ 	  into a specially reserved region and then later executed after
+ 	  a crash by kdump/kexec.
+-	  Refer to <file:Documentation/s390/zfcpdump.rst> for more details on this.
++	  Refer to <file:Documentation/arch/s390/zfcpdump.rst> for more details on this.
+ 	  This option also enables s390 zfcpdump.
+-	  See also <file:Documentation/s390/zfcpdump.rst>
++	  See also <file:Documentation/arch/s390/zfcpdump.rst>
+ 
+ endmenu
+ 
+diff --git a/arch/s390/include/asm/debug.h b/arch/s390/include/asm/debug.h
+index 310134015541..97f6ef690159 100644
+--- a/arch/s390/include/asm/debug.h
++++ b/arch/s390/include/asm/debug.h
+@@ -212,7 +212,7 @@ static inline debug_entry_t *debug_text_event(debug_info_t *id, int level,
+ 
  /*
-  * Upload a microcode to the I-RAM at a specific address.
-  *
-- * See Documentation/powerpc/qe_firmware.txt for information on QE microcode
-+ * See Documentation/arch/powerpc/qe_firmware.txt for information on QE microcode
-  * uploading.
-  *
-  * Currently, only version 1 is supported, so the 'version' field must be
-diff --git a/drivers/tty/hvc/hvcs.c b/drivers/tty/hvc/hvcs.c
-index cb4db1b3ca3c..5a1c76055117 100644
---- a/drivers/tty/hvc/hvcs.c
-+++ b/drivers/tty/hvc/hvcs.c
-@@ -47,7 +47,7 @@
-  * using the 2.6 Linux kernel kref construct.
-  *
-  * For direction on installation and usage of this driver please reference
-- * Documentation/powerpc/hvcs.txt.
-+ * Documentation/arch/powerpc/hvcs.txt.
+  * IMPORTANT: Use "%s" in sprintf format strings with care! Only pointers are
+- * stored in the s390dbf. See Documentation/s390/s390dbf.rst for more details!
++ * stored in the s390dbf. See Documentation/arch/s390/s390dbf.rst for more details!
   */
+ extern debug_entry_t *
+ __debug_sprintf_event(debug_info_t *id, int level, char *string, ...)
+@@ -340,7 +340,7 @@ static inline debug_entry_t *debug_text_exception(debug_info_t *id, int level,
  
- #include <linux/device.h>
-diff --git a/include/soc/fsl/qe/qe.h b/include/soc/fsl/qe/qe.h
-index 3f9d6b6a5691..c07872582b30 100644
---- a/include/soc/fsl/qe/qe.h
-+++ b/include/soc/fsl/qe/qe.h
-@@ -259,7 +259,7 @@ static inline int qe_alive_during_sleep(void)
- 
- /* Structure that defines QE firmware binary files.
-  *
-- * See Documentation/powerpc/qe_firmware.txt for a description of these
-+ * See Documentation/arch/powerpc/qe_firmware.txt for a description of these
-  * fields.
+ /*
+  * IMPORTANT: Use "%s" in sprintf format strings with care! Only pointers are
+- * stored in the s390dbf. See Documentation/s390/s390dbf.rst for more details!
++ * stored in the s390dbf. See Documentation/arch/s390/s390dbf.rst for more details!
   */
- struct qe_firmware {
+ extern debug_entry_t *
+ __debug_sprintf_exception(debug_info_t *id, int level, char *string, ...)
+diff --git a/drivers/s390/char/zcore.c b/drivers/s390/char/zcore.c
+index 08f812475f5e..3b00dfeeba49 100644
+--- a/drivers/s390/char/zcore.c
++++ b/drivers/s390/char/zcore.c
+@@ -4,7 +4,7 @@
+  * dumps on SCSI disks (zfcpdump). The "zcore/mem" debugfs file shows the same
+  * dump format as s390 standalone dumps.
+  *
+- * For more information please refer to Documentation/s390/zfcpdump.rst
++ * For more information please refer to Documentation/arch/s390/zfcpdump.rst
+  *
+  * Copyright IBM Corp. 2003, 2008
+  * Author(s): Michael Holzheu
 -- 
 2.19.1.856.g8858448bb
 
