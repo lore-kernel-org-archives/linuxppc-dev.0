@@ -2,44 +2,55 @@ Return-Path: <SRS0=Nfv6=VJ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 119A4C742B2
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Jul 2019 09:56:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 83AA1C742B2
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Jul 2019 09:59:51 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 8D81F20863
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Jul 2019 09:56:07 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8D81F20863
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ozlabs.ru
+	by mail.kernel.org (Postfix) with ESMTPS id 1090F208E4
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Jul 2019 09:59:50 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1090F208E4
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45lSx05xd3zDqdv
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Jul 2019 19:56:04 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45lT1J6D5MzDqkk
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Jul 2019 19:59:48 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=ozlabs.ru
- (client-ip=107.173.13.209; helo=ozlabs.ru; envelope-from=aik@ozlabs.ru;
- receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=arm.com
+ (client-ip=217.140.110.172; helo=foss.arm.com;
+ envelope-from=anshuman.khandual@arm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=ozlabs.ru
-Received: from ozlabs.ru (ozlabs.ru [107.173.13.209])
- by lists.ozlabs.org (Postfix) with ESMTP id 45lSjG5ng4zDqv3
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Jul 2019 19:45:54 +1000 (AEST)
-Received: from fstn1-p1.ozlabs.ibm.com (localhost [IPv6:::1])
- by ozlabs.ru (Postfix) with ESMTP id 6B024AE807DD;
- Fri, 12 Jul 2019 05:45:20 -0400 (EDT)
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH kernel v4 3/4] powerpc/powernv/ioda2: Allocate TCE table
- levels on demand for default DMA window
-Date: Fri, 12 Jul 2019 19:45:08 +1000
-Message-Id: <20190712094509.56695-4-aik@ozlabs.ru>
-X-Mailer: git-send-email 2.17.1
-In-Reply-To: <20190712094509.56695-1-aik@ozlabs.ru>
-References: <20190712094509.56695-1-aik@ozlabs.ru>
+ dmarc=none (p=none dis=none) header.from=arm.com
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+ by lists.ozlabs.org (Postfix) with ESMTP id 45lSzC31wmzDqDG
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Jul 2019 19:57:57 +1000 (AEST)
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+ by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 054A42B;
+ Fri, 12 Jul 2019 02:57:55 -0700 (PDT)
+Received: from [10.162.41.115] (p8cg001049571a15.blr.arm.com [10.162.41.115])
+ by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id
+ C4A683F71F; Fri, 12 Jul 2019 02:57:50 -0700 (PDT)
+Subject: Re: [PATCH V2] mm/ioremap: Probe platform for p4d huge map support
+To: Michael Ellerman <mpe@ellerman.id.au>,
+ Andrew Morton <akpm@linux-foundation.org>
+References: <1561699231-20991-1-git-send-email-anshuman.khandual@arm.com>
+ <20190702160630.25de5558e9fe2d7d845f3472@linux-foundation.org>
+ <fbc147c7-bec2-daed-b828-c4ae170010a9@arm.com>
+ <87tvbrennf.fsf@concordia.ellerman.id.au>
+From: Anshuman Khandual <anshuman.khandual@arm.com>
+Message-ID: <b0525e42-6ba0-593f-5662-dc6271db2f4f@arm.com>
+Date: Fri, 12 Jul 2019 15:28:22 +0530
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:52.0) Gecko/20100101
+ Thunderbird/52.9.1
+MIME-Version: 1.0
+In-Reply-To: <87tvbrennf.fsf@concordia.ellerman.id.au>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -51,269 +62,54 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Sam Bobroff <sbobroff@linux.ibm.com>,
- Alistair Popple <alistair@popple.id.au>, Oliver O'Halloran <oohall@gmail.com>,
- Alexey Kardashevskiy <aik@ozlabs.ru>,
- David Gibson <david@gibson.dropbear.id.au>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, x86@kernel.org,
+ Peter Zijlstra <peterz@infradead.org>,
+ Catalin Marinas <catalin.marinas@arm.com>,
+ Dave Hansen <dave.hansen@linux.intel.com>, Will Deacon <will.deacon@arm.com>,
+ Michal Hocko <mhocko@kernel.org>, linux-mm@kvack.org,
+ Ingo Molnar <mingo@redhat.com>, linux-arm-kernel@lists.infradead.org,
+ Andy Lutomirski <luto@kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
+ linuxppc-dev@lists.ozlabs.org,
+ "Kirill A . Shutemov" <kirill.shutemov@linux.intel.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-We allocate only the first level of multilevel TCE tables for KVM
-already (alloc_userspace_copy==true), and the rest is allocated on demand.
-This is not enabled though for bare metal.
-
-This removes the KVM limitation (implicit, via the alloc_userspace_copy
-parameter) and always allocates just the first level. The on-demand
-allocation of missing levels is already implemented.
-
-As from now on DMA map might happen with disabled interrupts, this
-allocates TCEs with GFP_ATOMIC; otherwise lockdep reports errors 1].
-In practice just a single page is allocated there so chances for failure
-are quite low.
-
-To save time when creating a new clean table, this skips non-allocated
-indirect TCE entries in pnv_tce_free just like we already do in
-the VFIO IOMMU TCE driver.
-
-This changes the default level number from 1 to 2 to reduce the amount
-of memory required for the default 32bit DMA window at the boot time.
-The default window size is up to 2GB which requires 4MB of TCEs which is
-unlikely to be used entirely or at all as most devices these days are
-64bit capable so by switching to 2 levels by default we save 4032KB of
-RAM per a device.
-
-While at this, add __GFP_NOWARN to alloc_pages_node() as the userspace
-can trigger this path via VFIO, see the failure and try creating a table
-again with different parameters which might succeed.
-
-[1]:
-===
-BUG: sleeping function called from invalid context at mm/page_alloc.c:4596
-in_atomic(): 1, irqs_disabled(): 1, pid: 1038, name: scsi_eh_1
-2 locks held by scsi_eh_1/1038:
- #0: 000000005efd659a (&host->eh_mutex){+.+.}, at: ata_eh_acquire+0x34/0x80
- #1: 0000000006cf56a6 (&(&host->lock)->rlock){....}, at: ata_exec_internal_sg+0xb0/0x5c0
-irq event stamp: 500
-hardirqs last  enabled at (499): [<c000000000cb8a74>] _raw_spin_unlock_irqrestore+0x94/0xd0
-hardirqs last disabled at (500): [<c000000000cb85c4>] _raw_spin_lock_irqsave+0x44/0x120
-softirqs last  enabled at (0): [<c000000000101120>] copy_process.isra.4.part.5+0x640/0x1a80
-softirqs last disabled at (0): [<0000000000000000>] 0x0
-CPU: 73 PID: 1038 Comm: scsi_eh_1 Not tainted 5.2.0-rc6-le_nv2_aikATfstn1-p1 #634
-Call Trace:
-[c000003d064cef50] [c000000000c8e6c4] dump_stack+0xe8/0x164 (unreliable)
-[c000003d064cefa0] [c00000000014ed78] ___might_sleep+0x2f8/0x310
-[c000003d064cf020] [c0000000003ca084] __alloc_pages_nodemask+0x2a4/0x1560
-[c000003d064cf220] [c0000000000c2530] pnv_alloc_tce_level.isra.0+0x90/0x130
-[c000003d064cf290] [c0000000000c2888] pnv_tce+0x128/0x3b0
-[c000003d064cf360] [c0000000000c2c00] pnv_tce_build+0xb0/0xf0
-[c000003d064cf3c0] [c0000000000bbd9c] pnv_ioda2_tce_build+0x3c/0xb0
-[c000003d064cf400] [c00000000004cfe0] ppc_iommu_map_sg+0x210/0x550
-[c000003d064cf510] [c00000000004b7a4] dma_iommu_map_sg+0x74/0xb0
-[c000003d064cf530] [c000000000863944] ata_qc_issue+0x134/0x470
-[c000003d064cf5b0] [c000000000863ec4] ata_exec_internal_sg+0x244/0x5c0
-[c000003d064cf700] [c0000000008642d0] ata_exec_internal+0x90/0xe0
-[c000003d064cf780] [c0000000008650ac] ata_dev_read_id+0x2ec/0x640
-[c000003d064cf8d0] [c000000000878e28] ata_eh_recover+0x948/0x16d0
-[c000003d064cfa10] [c00000000087d760] sata_pmp_error_handler+0x480/0xbf0
-[c000003d064cfbc0] [c000000000884624] ahci_error_handler+0x74/0xe0
-[c000003d064cfbf0] [c000000000879fa8] ata_scsi_port_error_handler+0x2d8/0x7c0
-[c000003d064cfca0] [c00000000087a544] ata_scsi_error+0xb4/0x100
-[c000003d064cfd00] [c000000000802450] scsi_error_handler+0x120/0x510
-[c000003d064cfdb0] [c000000000140c48] kthread+0x1b8/0x1c0
-[c000003d064cfe20] [c00000000000bd8c] ret_from_kernel_thread+0x5c/0x70
-ata1: SATA link up 6.0 Gbps (SStatus 133 SControl 300)
-irq event stamp: 2305
-
-========================================================
-hardirqs last  enabled at (2305): [<c00000000000e4c8>] fast_exc_return_irq+0x28/0x34
-hardirqs last disabled at (2303): [<c000000000cb9fd0>] __do_softirq+0x4a0/0x654
-WARNING: possible irq lock inversion dependency detected
-5.2.0-rc6-le_nv2_aikATfstn1-p1 #634 Tainted: G        W
-softirqs last  enabled at (2304): [<c000000000cba054>] __do_softirq+0x524/0x654
-softirqs last disabled at (2297): [<c00000000010f278>] irq_exit+0x128/0x180
---------------------------------------------------------
-swapper/0/0 just changed the state of lock:
-0000000006cf56a6 (&(&host->lock)->rlock){-...}, at: ahci_single_level_irq_intr+0xac/0x120
-but this lock took another, HARDIRQ-unsafe lock in the past:
- (fs_reclaim){+.+.}
 
 
-and interrupts could create inverse lock ordering between them.
+On 07/12/2019 12:37 PM, Michael Ellerman wrote:
+> Anshuman Khandual <anshuman.khandual@arm.com> writes:
+>> On 07/03/2019 04:36 AM, Andrew Morton wrote:
+>>> On Fri, 28 Jun 2019 10:50:31 +0530 Anshuman Khandual <anshuman.khandual@arm.com> wrote:
+>>>
+>>>> Finishing up what the commit c2febafc67734a ("mm: convert generic code to
+>>>> 5-level paging") started out while levelling up P4D huge mapping support
+>>>> at par with PUD and PMD. A new arch call back arch_ioremap_p4d_supported()
+>>>> is being added which just maintains status quo (P4D huge map not supported)
+>>>> on x86, arm64 and powerpc.
+>>>
+>>> Does this have any runtime effects?  If so, what are they and why?  If
+>>> not, what's the actual point?
+>>
+>> It just finishes up what the previous commit c2febafc67734a ("mm: convert
+>> generic code to 5-level paging") left off with respect p4d based huge page
+>> enablement for ioremap. When HAVE_ARCH_HUGE_VMAP is enabled its just a simple
+>> check from the arch about the support, hence runtime effects are minimal.
+> 
+> The return value of arch_ioremap_p4d_supported() is stored in the
+> variable ioremap_p4d_capable which is then returned by
+> ioremap_p4d_enabled().
+> 
+> That is used by ioremap_try_huge_p4d() called from ioremap_p4d_range()
+> from ioremap_page_range().
 
+That is right.
 
-other info that might help us debug this:
- Possible interrupt unsafe locking scenario:
+> 
+> The runtime effect is that it prevents ioremap_page_range() from trying
+> to create huge mappings at the p4d level on arches that don't support
+> it.
 
-       CPU0                    CPU1
-       ----                    ----
-  lock(fs_reclaim);
-                               local_irq_disable();
-                               lock(&(&host->lock)->rlock);
-                               lock(fs_reclaim);
-  <Interrupt>
-    lock(&(&host->lock)->rlock);
-
- *** DEADLOCK ***
-
-no locks held by swapper/0/0.
-
-the shortest dependencies between 2nd lock and 1st lock:
- -> (fs_reclaim){+.+.} ops: 167579 {
-    HARDIRQ-ON-W at:
-                      lock_acquire+0xf8/0x2a0
-                      fs_reclaim_acquire.part.23+0x44/0x60
-                      kmem_cache_alloc_node_trace+0x80/0x590
-                      alloc_desc+0x64/0x270
-                      __irq_alloc_descs+0x2e4/0x3a0
-                      irq_domain_alloc_descs+0xb0/0x150
-                      irq_create_mapping+0x168/0x2c0
-                      xics_smp_probe+0x2c/0x98
-                      pnv_smp_probe+0x40/0x9c
-                      smp_prepare_cpus+0x524/0x6c4
-                      kernel_init_freeable+0x1b4/0x650
-                      kernel_init+0x2c/0x148
-                      ret_from_kernel_thread+0x5c/0x70
-    SOFTIRQ-ON-W at:
-                      lock_acquire+0xf8/0x2a0
-                      fs_reclaim_acquire.part.23+0x44/0x60
-                      kmem_cache_alloc_node_trace+0x80/0x590
-                      alloc_desc+0x64/0x270
-                      __irq_alloc_descs+0x2e4/0x3a0
-                      irq_domain_alloc_descs+0xb0/0x150
-                      irq_create_mapping+0x168/0x2c0
-                      xics_smp_probe+0x2c/0x98
-                      pnv_smp_probe+0x40/0x9c
-                      smp_prepare_cpus+0x524/0x6c4
-                      kernel_init_freeable+0x1b4/0x650
-                      kernel_init+0x2c/0x148
-                      ret_from_kernel_thread+0x5c/0x70
-    INITIAL USE at:
-                     lock_acquire+0xf8/0x2a0
-                     fs_reclaim_acquire.part.23+0x44/0x60
-                     kmem_cache_alloc_node_trace+0x80/0x590
-                     alloc_desc+0x64/0x270
-                     __irq_alloc_descs+0x2e4/0x3a0
-                     irq_domain_alloc_descs+0xb0/0x150
-                     irq_create_mapping+0x168/0x2c0
-                     xics_smp_probe+0x2c/0x98
-                     pnv_smp_probe+0x40/0x9c
-                     smp_prepare_cpus+0x524/0x6c4
-                     kernel_init_freeable+0x1b4/0x650
-                     kernel_init+0x2c/0x148
-                     ret_from_kernel_thread+0x5c/0x70
-  }
-===
-
-Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
-Reviewed-by: Alistair Popple <alistair@popple.id.au>
----
-Changes:
-v4:
-* added lockdep output to the commit log to justify ATOMIC in alloc_pages_node
-
-v2:
-* added __GFP_NOWARN to alloc_pages_node
----
- arch/powerpc/platforms/powernv/pci.h          |  2 +-
- arch/powerpc/platforms/powernv/pci-ioda-tce.c | 20 +++++++++----------
- 2 files changed, 11 insertions(+), 11 deletions(-)
-
-diff --git a/arch/powerpc/platforms/powernv/pci.h b/arch/powerpc/platforms/powernv/pci.h
-index 469c24463247..f914f0b14e4e 100644
---- a/arch/powerpc/platforms/powernv/pci.h
-+++ b/arch/powerpc/platforms/powernv/pci.h
-@@ -219,7 +219,7 @@ extern struct iommu_table_group *pnv_npu_compound_attach(
- 		struct pnv_ioda_pe *pe);
- 
- /* pci-ioda-tce.c */
--#define POWERNV_IOMMU_DEFAULT_LEVELS	1
-+#define POWERNV_IOMMU_DEFAULT_LEVELS	2
- #define POWERNV_IOMMU_MAX_LEVELS	5
- 
- extern int pnv_tce_build(struct iommu_table *tbl, long index, long npages,
-diff --git a/arch/powerpc/platforms/powernv/pci-ioda-tce.c b/arch/powerpc/platforms/powernv/pci-ioda-tce.c
-index 8d6569590161..a0b9c0c23ed2 100644
---- a/arch/powerpc/platforms/powernv/pci-ioda-tce.c
-+++ b/arch/powerpc/platforms/powernv/pci-ioda-tce.c
-@@ -36,7 +36,8 @@ static __be64 *pnv_alloc_tce_level(int nid, unsigned int shift)
- 	struct page *tce_mem = NULL;
- 	__be64 *addr;
- 
--	tce_mem = alloc_pages_node(nid, GFP_KERNEL, shift - PAGE_SHIFT);
-+	tce_mem = alloc_pages_node(nid, GFP_ATOMIC | __GFP_NOWARN,
-+			shift - PAGE_SHIFT);
- 	if (!tce_mem) {
- 		pr_err("Failed to allocate a TCE memory, level shift=%d\n",
- 				shift);
-@@ -169,6 +170,9 @@ void pnv_tce_free(struct iommu_table *tbl, long index, long npages)
- 
- 		if (ptce)
- 			*ptce = cpu_to_be64(0);
-+		else
-+			/* Skip the rest of the level */
-+			i |= tbl->it_level_size - 1;
- 	}
- }
- 
-@@ -268,7 +272,6 @@ long pnv_pci_ioda2_table_alloc_pages(int nid, __u64 bus_offset,
- 	unsigned int table_shift = max_t(unsigned int, entries_shift + 3,
- 			PAGE_SHIFT);
- 	const unsigned long tce_table_size = 1UL << table_shift;
--	unsigned int tmplevels = levels;
- 
- 	if (!levels || (levels > POWERNV_IOMMU_MAX_LEVELS))
- 		return -EINVAL;
-@@ -276,9 +279,6 @@ long pnv_pci_ioda2_table_alloc_pages(int nid, __u64 bus_offset,
- 	if (!is_power_of_2(window_size))
- 		return -EINVAL;
- 
--	if (alloc_userspace_copy && (window_size > (1ULL << 32)))
--		tmplevels = 1;
--
- 	/* Adjust direct table size from window_size and levels */
- 	entries_shift = (entries_shift + levels - 1) / levels;
- 	level_shift = entries_shift + 3;
-@@ -289,7 +289,7 @@ long pnv_pci_ioda2_table_alloc_pages(int nid, __u64 bus_offset,
- 
- 	/* Allocate TCE table */
- 	addr = pnv_pci_ioda2_table_do_alloc_pages(nid, level_shift,
--			tmplevels, tce_table_size, &offset, &total_allocated);
-+			1, tce_table_size, &offset, &total_allocated);
- 
- 	/* addr==NULL means that the first level allocation failed */
- 	if (!addr)
-@@ -300,18 +300,18 @@ long pnv_pci_ioda2_table_alloc_pages(int nid, __u64 bus_offset,
- 	 * we did not allocate as much as we wanted,
- 	 * release partially allocated table.
- 	 */
--	if (tmplevels == levels && offset < tce_table_size)
-+	if (levels == 1 && offset < tce_table_size)
- 		goto free_tces_exit;
- 
- 	/* Allocate userspace view of the TCE table */
- 	if (alloc_userspace_copy) {
- 		offset = 0;
- 		uas = pnv_pci_ioda2_table_do_alloc_pages(nid, level_shift,
--				tmplevels, tce_table_size, &offset,
-+				1, tce_table_size, &offset,
- 				&total_allocated_uas);
- 		if (!uas)
- 			goto free_tces_exit;
--		if (tmplevels == levels && (offset < tce_table_size ||
-+		if (levels == 1 && (offset < tce_table_size ||
- 				total_allocated_uas != total_allocated))
- 			goto free_uas_exit;
- 	}
-@@ -326,7 +326,7 @@ long pnv_pci_ioda2_table_alloc_pages(int nid, __u64 bus_offset,
- 
- 	pr_debug("Created TCE table: ws=%08llx ts=%lx @%08llx base=%lx uas=%p levels=%d/%d\n",
- 			window_size, tce_table_size, bus_offset, tbl->it_base,
--			tbl->it_userspace, tmplevels, levels);
-+			tbl->it_userspace, 1, levels);
- 
- 	return 0;
- 
--- 
-2.17.1
-
+But now after first checking with an arch callback. Previously p4d huge
+mappings were disabled on all platforms as ioremap_p4d_capable remained
+clear through out being a static.
