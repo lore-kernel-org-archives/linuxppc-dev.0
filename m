@@ -6,47 +6,44 @@ X-Spam-Status: No, score=-2.3 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4BDBBC742BD
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Jul 2019 15:13:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8F45EC742C7
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Jul 2019 15:17:19 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 0B5E82084B
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Jul 2019 15:13:50 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0B5E82084B
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
+	by mail.kernel.org (Postfix) with ESMTPS id 132F6206B8
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Jul 2019 15:17:18 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 132F6206B8
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=zeniv.linux.org.uk
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45lbzc3scVzDqYq
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 13 Jul 2019 01:13:48 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45lc3c0z3XzDq6Q
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 13 Jul 2019 01:17:16 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=lst.de
- (client-ip=213.95.11.211; helo=verein.lst.de; envelope-from=hch@lst.de;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=lst.de
-Received: from verein.lst.de (verein.lst.de [213.95.11.211])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ spf=none (mailfrom) smtp.mailfrom=ftp.linux.org.uk
+ (client-ip=195.92.253.2; helo=zeniv.linux.org.uk;
+ envelope-from=viro@ftp.linux.org.uk; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=zeniv.linux.org.uk
+Received: from ZenIV.linux.org.uk (zeniv.linux.org.uk [195.92.253.2])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45lbx30SjMzDqKZ
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 13 Jul 2019 01:11:33 +1000 (AEST)
-Received: by verein.lst.de (Postfix, from userid 2407)
- id 7887F227A81; Fri, 12 Jul 2019 17:11:29 +0200 (CEST)
-Date: Fri, 12 Jul 2019 17:11:29 +0200
-From: Christoph Hellwig <hch@lst.de>
-To: Halil Pasic <pasic@linux.ibm.com>
-Subject: Re: [PATCH 3/3] fs/core/vmcore: Move sev_active() reference to x86
- arch code
-Message-ID: <20190712151129.GA30636@lst.de>
-References: <20190712053631.9814-1-bauerman@linux.ibm.com>
- <20190712053631.9814-4-bauerman@linux.ibm.com>
- <20190712150912.3097215e.pasic@linux.ibm.com> <20190712140812.GA29628@lst.de>
- <20190712165153.78d49095.pasic@linux.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45lbxJ707fzDqfb
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 13 Jul 2019 01:11:48 +1000 (AEST)
+Received: from viro by ZenIV.linux.org.uk with local (Exim 4.92 #3 (Red Hat
+ Linux)) id 1hlxCg-0002L3-Bv; Fri, 12 Jul 2019 15:11:18 +0000
+Date: Fri, 12 Jul 2019 16:11:18 +0100
+From: Al Viro <viro@zeniv.linux.org.uk>
+To: Aleksa Sarai <cyphar@cyphar.com>
+Subject: Re: [PATCH v9 00/10] namei: openat2(2) path resolution restrictions
+Message-ID: <20190712151118.GP17978@ZenIV.linux.org.uk>
+References: <20190706145737.5299-1-cyphar@cyphar.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20190712165153.78d49095.pasic@linux.ibm.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <20190706145737.5299-1-cyphar@cyphar.com>
+User-Agent: Mutt/1.11.3 (2019-02-01)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -58,30 +55,36 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-s390@vger.kernel.org, Mike Anderson <andmike@linux.ibm.com>,
- Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>,
- Robin Murphy <robin.murphy@arm.com>, x86@kernel.org,
- Ram Pai <linuxram@us.ibm.com>, linux-kernel@vger.kernel.org,
- Alexey Dobriyan <adobriyan@gmail.com>, iommu@lists.linux-foundation.org,
- Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>,
- "H. Peter Anvin" <hpa@zytor.com>, linux-fsdevel@vger.kernel.org,
- Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@lists.ozlabs.org,
- Christoph Hellwig <hch@lst.de>, Thiago Jung Bauermann <bauerman@linux.ibm.com>,
- Marek Szyprowski <m.szyprowski@samsung.com>
+Cc: linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org,
+ Alexei Starovoitov <ast@kernel.org>, linux-kernel@vger.kernel.org,
+ David Howells <dhowells@redhat.com>, linux-kselftest@vger.kernel.org,
+ sparclinux@vger.kernel.org, Shuah Khan <shuah@kernel.org>,
+ linux-arch@vger.kernel.org, linux-s390@vger.kernel.org,
+ Tycho Andersen <tycho@tycho.ws>, Aleksa Sarai <asarai@suse.de>,
+ linux-arm-kernel@lists.infradead.org, linux-mips@vger.kernel.org,
+ linux-xtensa@linux-xtensa.org, Kees Cook <keescook@chromium.org>,
+ Arnd Bergmann <arnd@arndb.de>, Jann Horn <jannh@google.com>,
+ linuxppc-dev@lists.ozlabs.org, linux-m68k@lists.linux-m68k.org,
+ Andy Lutomirski <luto@kernel.org>, Shuah Khan <skhan@linuxfoundation.org>,
+ David Drysdale <drysdale@google.com>, Christian Brauner <christian@brauner.io>,
+ "J. Bruce Fields" <bfields@fieldses.org>, linux-parisc@vger.kernel.org,
+ linux-api@vger.kernel.org, containers@lists.linux-foundation.org,
+ Jeff Layton <jlayton@kernel.org>, Oleg Nesterov <oleg@redhat.com>,
+ Eric Biederman <ebiederm@xmission.com>, linux-alpha@vger.kernel.org,
+ linux-fsdevel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+ Linus Torvalds <torvalds@linux-foundation.org>,
+ Chanho Min <chanho.min@lge.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, Jul 12, 2019 at 04:51:53PM +0200, Halil Pasic wrote:
-> Thank you very much! I will have another look, but it seems to me,
-> without further measures taken, this would break protected virtualization
-> support on s390. The effect of the che for s390 is that
-> force_dma_unencrypted() will always return false instead calling into
-> the platform code like it did before the patch, right?
-> 
-> Should I send a  Fixes: e67a5ed1f86f "dma-direct: Force unencrypted DMA
-> under SME for certain DMA masks" (Tom Lendacky, 2019-07-10) patch that
-> rectifies things for s390 or how do we want handle this?
+On Sun, Jul 07, 2019 at 12:57:27AM +1000, Aleksa Sarai wrote:
+> Patch changelog:
+>   v9:
+>     * Replace resolveat(2) with openat2(2). [Linus]
+>     * Output a warning to dmesg if may_open_magiclink() is violated.
+>     * Add an openat2(O_CREAT) testcase.
 
-Yes, please do.  I hadn't noticed the s390 support had landed in
-mainline already.
+One general note for the future, BTW: for such series it's generally
+a good idea to put it into a public git tree somewhere and mention that
+in the announcement...
