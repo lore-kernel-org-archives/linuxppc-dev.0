@@ -4,22 +4,21 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
-	version=3.4.0
+	URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 44F3FC742B2
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Jul 2019 09:50:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 39CEFC742B2
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Jul 2019 09:52:07 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C1DB82064B
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Jul 2019 09:50:12 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C1DB82064B
+	by mail.kernel.org (Postfix) with ESMTPS id BF2F72064B
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Jul 2019 09:52:06 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BF2F72064B
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ozlabs.ru
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45lSpB41hMzDqtY
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Jul 2019 19:50:10 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45lSrN60DyzDqvy
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Jul 2019 19:52:04 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=ozlabs.ru
  (client-ip=107.173.13.209; helo=ozlabs.ru; envelope-from=aik@ozlabs.ru;
@@ -27,17 +26,17 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=ozlabs.ru
 Received: from ozlabs.ru (ozlabs.ru [107.173.13.209])
- by lists.ozlabs.org (Postfix) with ESMTP id 45lShd5VmNzDqLC
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Jul 2019 19:45:21 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTP id 45lShl2RTpzDqvg
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Jul 2019 19:45:27 +1000 (AEST)
 Received: from fstn1-p1.ozlabs.ibm.com (localhost [IPv6:::1])
- by ozlabs.ru (Postfix) with ESMTP id 27987AE80597;
- Fri, 12 Jul 2019 05:45:15 -0400 (EDT)
+ by ozlabs.ru (Postfix) with ESMTP id 5CA03AE807DE;
+ Fri, 12 Jul 2019 05:45:22 -0400 (EDT)
 From: Alexey Kardashevskiy <aik@ozlabs.ru>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH kernel v4 1/4] powerpc/powernv/ioda: Fix race in TCE level
- allocation
-Date: Fri, 12 Jul 2019 19:45:06 +1000
-Message-Id: <20190712094509.56695-2-aik@ozlabs.ru>
+Subject: [PATCH kernel v4 4/4] powerpc/powernv/ioda2: Create bigger default
+ window with 64k IOMMU pages
+Date: Fri, 12 Jul 2019 19:45:09 +1000
+Message-Id: <20190712094509.56695-5-aik@ozlabs.ru>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20190712094509.56695-1-aik@ozlabs.ru>
 References: <20190712094509.56695-1-aik@ozlabs.ru>
@@ -53,86 +52,273 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 Cc: Sam Bobroff <sbobroff@linux.ibm.com>,
- Alistair Popple <alistair@popple.id.au>, stable@vger.kernel.org,
- Alexey Kardashevskiy <aik@ozlabs.ru>, Oliver O'Halloran <oohall@gmail.com>,
+ Alistair Popple <alistair@popple.id.au>, Oliver O'Halloran <oohall@gmail.com>,
+ Alexey Kardashevskiy <aik@ozlabs.ru>,
  David Gibson <david@gibson.dropbear.id.au>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-pnv_tce() returns a pointer to a TCE entry and originally a TCE table
-would be pre-allocated. For the default case of 2GB window the table
-needs only a single level and that is fine. However if more levels are
-requested, it is possible to get a race when 2 threads want a pointer
-to a TCE entry from the same page of TCEs.
+At the moment we create a small window only for 32bit devices, the window
+maps 0..2GB of the PCI space only. For other devices we either use
+a sketchy bypass or hardware bypass but the former can only work if
+the amount of RAM is no bigger than the device's DMA mask and the latter
+requires devices to support at least 59bit DMA.
 
-This adds cmpxchg to handle the race. Note that once TCE is non-zero,
-it cannot become zero again.
+This extends the default DMA window to the maximum size possible to allow
+a wider DMA mask than just 32bit. The default window size is now limited
+by the the iommu_table::it_map allocation bitmap which is a contiguous
+array, 1 bit per an IOMMU page.
 
-CC: stable@vger.kernel.org # v4.19+
-Fixes: a68bd1267b72 ("powerpc/powernv/ioda: Allocate indirect TCE levels on demand")
+This increases the default IOMMU page size from hard coded 4K to
+the system page size to allow wider DMA masks.
+
+This increases the level number to not exceed the max order allocation
+limit per TCE level. By the same time, this keeps minimal levels number
+as 2 in order to save memory.
+
+As the extended window now overlaps the 32bit MMIO region, this adds
+an area reservation to iommu_init_table().
+
+After this change the default window size is 0x80000000000==1<<43 so
+devices limited to DMA mask smaller than the amount of system RAM can
+still use more than just 2GB of memory for DMA.
+
+With the on-demand allocation of indirect TCE table levels enabled and
+2 levels, the first TCE level size is just
+1<<ceil((log2(0x7ffffffffff+1)-16)/2)=16384 TCEs or 2 system pages.
+
 Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
 ---
-
-The race occurs about 30 times in the first 3 minutes of copying files
-via rsync and that's about it.
-
-This fixes EEH's from
-https://patchwork.ozlabs.org/project/linuxppc-dev/list/?series=110810
-
----
 Changes:
-v2:
-* replaced spin_lock with cmpxchg+readonce
----
- arch/powerpc/platforms/powernv/pci-ioda-tce.c | 18 +++++++++++++-----
- 1 file changed, 13 insertions(+), 5 deletions(-)
+v4:
+* fixed take/release ownership handlers
+* fixed reserved region for tables with it_offset!=0 (this is not going
+to be exploited here but still this is a correct behavior)
 
-diff --git a/arch/powerpc/platforms/powernv/pci-ioda-tce.c b/arch/powerpc/platforms/powernv/pci-ioda-tce.c
-index e28f03e1eb5e..8d6569590161 100644
---- a/arch/powerpc/platforms/powernv/pci-ioda-tce.c
-+++ b/arch/powerpc/platforms/powernv/pci-ioda-tce.c
-@@ -48,6 +48,9 @@ static __be64 *pnv_alloc_tce_level(int nid, unsigned int shift)
- 	return addr;
+v3:
+* fixed tce levels calculation
+
+v2:
+* adjusted level number to the max order
+---
+ arch/powerpc/include/asm/iommu.h          |  8 ++-
+ arch/powerpc/kernel/iommu.c               | 74 ++++++++++++++++-------
+ arch/powerpc/platforms/powernv/pci-ioda.c | 40 ++++++++++--
+ 3 files changed, 92 insertions(+), 30 deletions(-)
+
+diff --git a/arch/powerpc/include/asm/iommu.h b/arch/powerpc/include/asm/iommu.h
+index 18d342b815e4..a527a5fe1b01 100644
+--- a/arch/powerpc/include/asm/iommu.h
++++ b/arch/powerpc/include/asm/iommu.h
+@@ -111,6 +111,8 @@ struct iommu_table {
+ 	struct iommu_table_ops *it_ops;
+ 	struct kref    it_kref;
+ 	int it_nid;
++	unsigned long it_reserved_start; /* Start of not-DMA-able (MMIO) area */
++	unsigned long it_reserved_end;
+ };
+ 
+ #define IOMMU_TABLE_USERSPACE_ENTRY_RO(tbl, entry) \
+@@ -149,8 +151,10 @@ extern int iommu_tce_table_put(struct iommu_table *tbl);
+ /* Initializes an iommu_table based in values set in the passed-in
+  * structure
+  */
+-extern struct iommu_table *iommu_init_table(struct iommu_table * tbl,
+-					    int nid);
++extern struct iommu_table *iommu_init_table_res(struct iommu_table *tbl,
++		int nid, unsigned long res_start, unsigned long res_end);
++#define iommu_init_table(tbl, nid) iommu_init_table_res((tbl), (nid), 0, 0)
++
+ #define IOMMU_TABLE_GROUP_MAX_TABLES	2
+ 
+ struct iommu_table_group;
+diff --git a/arch/powerpc/kernel/iommu.c b/arch/powerpc/kernel/iommu.c
+index 0a67ce9f827e..2b501dc15352 100644
+--- a/arch/powerpc/kernel/iommu.c
++++ b/arch/powerpc/kernel/iommu.c
+@@ -633,11 +633,54 @@ static void iommu_table_clear(struct iommu_table *tbl)
+ #endif
  }
  
-+static void pnv_pci_ioda2_table_do_free_pages(__be64 *addr,
-+		unsigned long size, unsigned int levels);
++static void iommu_table_reserve_pages(struct iommu_table *tbl,
++		unsigned long res_start, unsigned long res_end)
++{
++	int i;
 +
- static __be64 *pnv_tce(struct iommu_table *tbl, bool user, long idx, bool alloc)
++	WARN_ON_ONCE(res_end >= res_start);
++	/*
++	 * Reserve page 0 so it will not be used for any mappings.
++	 * This avoids buggy drivers that consider page 0 to be invalid
++	 * to crash the machine or even lose data.
++	 */
++	if (tbl->it_offset == 0)
++		set_bit(0, tbl->it_map);
++
++	tbl->it_reserved_start = res_start;
++	tbl->it_reserved_end = res_end;
++
++	/* Check if res_start..res_end isn't empty and overlaps the table */
++	if (res_start && res_end &&
++			(tbl->it_offset + tbl->it_size < res_start ||
++			 res_end < tbl->it_offset))
++		return;
++
++	for (i = tbl->it_reserved_start; i < tbl->it_reserved_end; ++i)
++		set_bit(i - tbl->it_offset, tbl->it_map);
++}
++
++static void iommu_table_release_pages(struct iommu_table *tbl)
++{
++	int i;
++
++	/*
++	 * In case we have reserved the first bit, we should not emit
++	 * the warning below.
++	 */
++	if (tbl->it_offset == 0)
++		clear_bit(0, tbl->it_map);
++
++	for (i = tbl->it_reserved_start; i < tbl->it_reserved_end; ++i)
++		clear_bit(i - tbl->it_offset, tbl->it_map);
++}
++
+ /*
+  * Build a iommu_table structure.  This contains a bit map which
+  * is used to manage allocation of the tce space.
+  */
+-struct iommu_table *iommu_init_table(struct iommu_table *tbl, int nid)
++struct iommu_table *iommu_init_table_res(struct iommu_table *tbl, int nid,
++		unsigned long res_start, unsigned long res_end)
  {
- 	__be64 *tmp = user ? tbl->it_userspace : (__be64 *) tbl->it_base;
-@@ -57,9 +60,9 @@ static __be64 *pnv_tce(struct iommu_table *tbl, bool user, long idx, bool alloc)
+ 	unsigned long sz;
+ 	static int welcomed = 0;
+@@ -656,13 +699,7 @@ struct iommu_table *iommu_init_table(struct iommu_table *tbl, int nid)
+ 	tbl->it_map = page_address(page);
+ 	memset(tbl->it_map, 0, sz);
  
- 	while (level) {
- 		int n = (idx & mask) >> (level * shift);
--		unsigned long tce;
-+		unsigned long oldtce, tce = be64_to_cpu(READ_ONCE(tmp[n]));
+-	/*
+-	 * Reserve page 0 so it will not be used for any mappings.
+-	 * This avoids buggy drivers that consider page 0 to be invalid
+-	 * to crash the machine or even lose data.
+-	 */
+-	if (tbl->it_offset == 0)
+-		set_bit(0, tbl->it_map);
++	iommu_table_reserve_pages(tbl, res_start, res_end);
  
--		if (tmp[n] == 0) {
-+		if (!tce) {
- 			__be64 *tmp2;
+ 	/* We only split the IOMMU table if we have 1GB or more of space */
+ 	if ((tbl->it_size << tbl->it_page_shift) >= (1UL * 1024 * 1024 * 1024))
+@@ -714,12 +751,7 @@ static void iommu_table_free(struct kref *kref)
+ 		return;
+ 	}
  
- 			if (!alloc)
-@@ -70,10 +73,15 @@ static __be64 *pnv_tce(struct iommu_table *tbl, bool user, long idx, bool alloc)
- 			if (!tmp2)
- 				return NULL;
+-	/*
+-	 * In case we have reserved the first bit, we should not emit
+-	 * the warning below.
+-	 */
+-	if (tbl->it_offset == 0)
+-		clear_bit(0, tbl->it_map);
++	iommu_table_release_pages(tbl);
  
--			tmp[n] = cpu_to_be64(__pa(tmp2) |
--					TCE_PCI_READ | TCE_PCI_WRITE);
-+			tce = __pa(tmp2) | TCE_PCI_READ | TCE_PCI_WRITE;
-+			oldtce = be64_to_cpu(cmpxchg(&tmp[n], 0,
-+					cpu_to_be64(tce)));
-+			if (oldtce) {
-+				pnv_pci_ioda2_table_do_free_pages(tmp2,
-+					ilog2(tbl->it_level_size) + 3, 1);
-+				tce = oldtce;
-+			}
- 		}
--		tce = be64_to_cpu(tmp[n]);
+ 	/* verify that table contains no entries */
+ 	if (!bitmap_empty(tbl->it_map, tbl->it_size))
+@@ -1024,15 +1056,14 @@ int iommu_take_ownership(struct iommu_table *tbl)
+ 	for (i = 0; i < tbl->nr_pools; i++)
+ 		spin_lock(&tbl->pools[i].lock);
  
- 		tmp = __va(tce & ~(TCE_PCI_READ | TCE_PCI_WRITE));
- 		idx &= ~mask;
+-	if (tbl->it_offset == 0)
+-		clear_bit(0, tbl->it_map);
++	iommu_table_release_pages(tbl);
+ 
+ 	if (!bitmap_empty(tbl->it_map, tbl->it_size)) {
+ 		pr_err("iommu_tce: it_map is not empty");
+ 		ret = -EBUSY;
+-		/* Restore bit#0 set by iommu_init_table() */
+-		if (tbl->it_offset == 0)
+-			set_bit(0, tbl->it_map);
++		/* Undo iommu_table_release_pages, i.e. restore bit#0, etc */
++		iommu_table_reserve_pages(tbl, tbl->it_reserved_start,
++				tbl->it_reserved_end);
+ 	} else {
+ 		memset(tbl->it_map, 0xff, sz);
+ 	}
+@@ -1055,9 +1086,8 @@ void iommu_release_ownership(struct iommu_table *tbl)
+ 
+ 	memset(tbl->it_map, 0, sz);
+ 
+-	/* Restore bit#0 set by iommu_init_table() */
+-	if (tbl->it_offset == 0)
+-		set_bit(0, tbl->it_map);
++	iommu_table_reserve_pages(tbl, tbl->it_reserved_start,
++			tbl->it_reserved_end);
+ 
+ 	for (i = 0; i < tbl->nr_pools; i++)
+ 		spin_unlock(&tbl->pools[i].lock);
+diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+index d8080558d020..874909c6f314 100644
+--- a/arch/powerpc/platforms/powernv/pci-ioda.c
++++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+@@ -2420,6 +2420,7 @@ static long pnv_pci_ioda2_setup_default_config(struct pnv_ioda_pe *pe)
+ {
+ 	struct iommu_table *tbl = NULL;
+ 	long rc;
++	unsigned long res_start, res_end;
+ 
+ 	/*
+ 	 * crashkernel= specifies the kdump kernel's maximum memory at
+@@ -2433,19 +2434,46 @@ static long pnv_pci_ioda2_setup_default_config(struct pnv_ioda_pe *pe)
+ 	 * DMA window can be larger than available memory, which will
+ 	 * cause errors later.
+ 	 */
+-	const u64 window_size = min((u64)pe->table_group.tce32_size, max_memory);
++	const u64 maxblock = 1UL << (PAGE_SHIFT + MAX_ORDER - 1);
+ 
+-	rc = pnv_pci_ioda2_create_table(&pe->table_group, 0,
+-			IOMMU_PAGE_SHIFT_4K,
+-			window_size,
+-			POWERNV_IOMMU_DEFAULT_LEVELS, false, &tbl);
++	/*
++	 * We create the default window as big as we can. The constraint is
++	 * the max order of allocation possible. The TCE tableis likely to
++	 * end up being multilevel and with on-demand allocation in place,
++	 * the initial use is not going to be huge as the default window aims
++	 * to support cripplied devices (i.e. not fully 64bit DMAble) only.
++	 */
++	/* iommu_table::it_map uses 1 bit per IOMMU page, hence 8 */
++	const u64 window_size = min((maxblock * 8) << PAGE_SHIFT, max_memory);
++	/* Each TCE level cannot exceed maxblock so go multilevel if needed */
++	unsigned long tces_order = ilog2(window_size >> PAGE_SHIFT);
++	unsigned long tcelevel_order = ilog2(maxblock >> 3);
++	unsigned int levels = tces_order / tcelevel_order;
++
++	if (tces_order % tcelevel_order)
++		levels += 1;
++	/*
++	 * We try to stick to default levels (which is >1 at the moment) in
++	 * order to save memory by relying on on-demain TCE level allocation.
++	 */
++	levels = max_t(unsigned int, levels, POWERNV_IOMMU_DEFAULT_LEVELS);
++
++	rc = pnv_pci_ioda2_create_table(&pe->table_group, 0, PAGE_SHIFT,
++			window_size, levels, false, &tbl);
+ 	if (rc) {
+ 		pe_err(pe, "Failed to create 32-bit TCE table, err %ld",
+ 				rc);
+ 		return rc;
+ 	}
+ 
+-	iommu_init_table(tbl, pe->phb->hose->node);
++	/* We use top part of 32bit space for MMIO so exclude it from DMA */
++	res_start = 0;
++	res_end = 0;
++	if (window_size > pe->phb->ioda.m32_pci_base) {
++		res_start = pe->phb->ioda.m32_pci_base >> tbl->it_page_shift;
++		res_end = min(window_size, SZ_4G) >> tbl->it_page_shift;
++	}
++	iommu_init_table_res(tbl, pe->phb->hose->node, res_start, res_end);
+ 
+ 	rc = pnv_pci_ioda2_set_window(&pe->table_group, 0, tbl);
+ 	if (rc) {
 -- 
 2.17.1
 
