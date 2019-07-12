@@ -2,23 +2,23 @@ Return-Path: <SRS0=Nfv6=VJ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1
-	autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.3 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 65021C742A8
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Jul 2019 04:17:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3CE64C742A5
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Jul 2019 04:23:11 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 8A26C20644
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Jul 2019 04:17:44 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8A26C20644
+	by mail.kernel.org (Postfix) with ESMTPS id BD49820645
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Jul 2019 04:23:10 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BD49820645
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=zeniv.linux.org.uk
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45lKQZ2qGRzDqqK
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Jul 2019 14:17:42 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45lKXr5YJLzDqq8
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Jul 2019 14:23:08 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=none (mailfrom) smtp.mailfrom=ftp.linux.org.uk
  (client-ip=195.92.253.2; helo=zeniv.linux.org.uk;
@@ -29,21 +29,22 @@ Received: from ZenIV.linux.org.uk (zeniv.linux.org.uk [195.92.253.2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45lKNH5rCLzDqg9
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Jul 2019 14:15:41 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45lKVq4b2HzDqjH
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Jul 2019 14:21:23 +1000 (AEST)
 Received: from viro by ZenIV.linux.org.uk with local (Exim 4.92 #3 (Red Hat
- Linux)) id 1hlmxT-000330-0Q; Fri, 12 Jul 2019 04:14:55 +0000
-Date: Fri, 12 Jul 2019 05:14:54 +0100
+ Linux)) id 1hln3C-0003A0-92; Fri, 12 Jul 2019 04:20:50 +0000
+Date: Fri, 12 Jul 2019 05:20:50 +0100
 From: Al Viro <viro@zeniv.linux.org.uk>
 To: Aleksa Sarai <cyphar@cyphar.com>
-Subject: Re: [PATCH v9 01/10] namei: obey trailing magic-link DAC permissions
-Message-ID: <20190712041454.GG17978@ZenIV.linux.org.uk>
+Subject: Re: [PATCH v9 04/10] namei: split out nd->dfd handling to
+ dirfd_path_init
+Message-ID: <20190712042050.GH17978@ZenIV.linux.org.uk>
 References: <20190706145737.5299-1-cyphar@cyphar.com>
- <20190706145737.5299-2-cyphar@cyphar.com>
+ <20190706145737.5299-5-cyphar@cyphar.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20190706145737.5299-2-cyphar@cyphar.com>
+In-Reply-To: <20190706145737.5299-5-cyphar@cyphar.com>
 User-Agent: Mutt/1.11.3 (2019-02-01)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -79,78 +80,26 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Sun, Jul 07, 2019 at 12:57:28AM +1000, Aleksa Sarai wrote:
+On Sun, Jul 07, 2019 at 12:57:31AM +1000, Aleksa Sarai wrote:
+> Previously, path_init's handling of *at(dfd, ...) was only done once,
+> but with LOOKUP_BENEATH (and LOOKUP_IN_ROOT) we have to parse the
+> initial nd->path at different times (before or after absolute path
+> handling) depending on whether we have been asked to scope resolution
+> within a root.
 
-> @@ -514,7 +516,14 @@ static void set_nameidata(struct nameidata *p, int dfd, struct filename *name)
->  	p->stack = p->internal;
->  	p->dfd = dfd;
->  	p->name = name;
-> -	p->total_link_count = old ? old->total_link_count : 0;
-> +	p->total_link_count = 0;
-> +	p->acc_mode = 0;
-> +	p->opath_mask = FMODE_PATH_READ | FMODE_PATH_WRITE;
-> +	if (old) {
-> +		p->total_link_count = old->total_link_count;
-> +		p->acc_mode = old->acc_mode;
-> +		p->opath_mask = old->opath_mask;
-> +	}
+>  	if (*s == '/') {
+> -		set_root(nd);
+> -		if (likely(!nd_jump_root(nd)))
+> -			return s;
+> -		return ERR_PTR(-ECHILD);
 
-Huh?  Could somebody explain why traversals of NFS4 referrals should inherit
-->acc_mode and ->opath_mask?
+> +		if (likely(!nd->root.mnt))
+> +			set_root(nd);
 
->  static __always_inline
-> -const char *get_link(struct nameidata *nd)
-> +const char *get_link(struct nameidata *nd, bool trailing)
->  {
->  	struct saved *last = nd->stack + nd->depth - 1;
->  	struct dentry *dentry = last->link.dentry;
-> @@ -1081,6 +1134,44 @@ const char *get_link(struct nameidata *nd)
->  		} else {
->  			res = get(dentry, inode, &last->done);
->  		}
-> +		/* If we just jumped it was because of a magic-link. */
-> +		if (unlikely(nd->flags & LOOKUP_JUMPED)) {
+How can we get there with non-NULL nd->root.mnt, when LOOKUP_ROOT case
+has been already handled by that point?
 
-That's not quite guaranteed (it is possible to bind a symlink on top
-of a regular file, and you will get LOOKUP_JUMPED on the entry into
-trailing_symlink() when looking the result up).  Moreover, why bother
-with LOOKUP_JUMPED here?  See that
-	nd->last_type = LAST_BIND;
-several lines prior?  That's precisely to be able to recognize those
-suckers.
+> +		error = nd_jump_root(nd);
+> +		if (unlikely(error))
+> +			s = ERR_PTR(error);
 
-And _that_ would've avoided another piece of ugliness - your LOOKUP_JUMPED
-kludge forces you to handle that cra^Wsclero^Wvaluable security hardening
-in get_link(), instead of trailing_symlink() where you apparently want
-it to be.  Simply because nd_jump_root() done later in get_link() will set
-LOOKUP_JUMPED for absolute symlinks, confusing your test.
-
-Moreover, I'm not sure that trailing_symlink() is the right place for
-that either - I would be rather tempted to fold do_o_path() into
-path_openat(), inline path_lookupat() there (as in
-        s = path_init(nd, flags);
-
-        while (!(error = link_path_walk(s, nd))
-                && ((error = lookup_last(nd)) > 0)) {
-                s = trailing_symlink(nd);
-        }
-        if (!error)
-                error = complete_walk(nd);
-        if (!error && nd->flags & LOOKUP_DIRECTORY)
-                if (!d_can_lookup(nd->path.dentry))
-                        error = -ENOTDIR;
-        if (!error) {
-                audit_inode(nd->name, nd->path.dentry, 0);
-                error = vfs_open(&nd->path, file);
-        }
-        terminate_walk(nd);
-- we don't need LOOKUP_DOWN there) and then we only care about the
-two callers of trailing_symlink() that are in path_openat().  Which
-is where you have your ->acc_mode and ->opath_mask without the need
-to dump them into nameidata.  Or to bring that mess into the
-things like stat(2) et.al. - it simply doesn't belong there.
-
-In any case, this "bool trailing" is completely wrong; whether that
-check belongs in trailing_symlink() or (some of) its callers, putting
-it into get_link() is a mistake, forced by kludgy check for procfs-style
-symlinks.
