@@ -2,50 +2,66 @@ Return-Path: <SRS0=Nfv6=VJ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 70AA9C742BD
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Jul 2019 14:12:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id F0B4BC742BD
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Jul 2019 14:40:22 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 2E26A206B8
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Jul 2019 14:12:03 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2E26A206B8
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
+	by mail.kernel.org (Postfix) with ESMTPS id 2E1CC208E4
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Jul 2019 14:40:22 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="oSDuCh7A"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2E1CC208E4
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45lZcJ3DzBzDqYC
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 13 Jul 2019 00:12:00 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45lbDz673HzDqS7
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 13 Jul 2019 00:40:19 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=lst.de
- (client-ip=213.95.11.211; helo=verein.lst.de; envelope-from=hch@lst.de;
+ spf=pass (mailfrom) smtp.mailfrom=kernel.org
+ (client-ip=198.145.29.99; helo=mail.kernel.org; envelope-from=will@kernel.org;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=lst.de
-Received: from verein.lst.de (verein.lst.de [213.95.11.211])
+ dmarc=pass (p=none dis=none) header.from=kernel.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=kernel.org header.i=@kernel.org header.b="oSDuCh7A"; 
+ dkim-atps=neutral
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45lZX44HrkzDqwb
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 13 Jul 2019 00:08:18 +1000 (AEST)
-Received: by verein.lst.de (Postfix, from userid 2407)
- id DF601227A81; Fri, 12 Jul 2019 16:08:12 +0200 (CEST)
-Date: Fri, 12 Jul 2019 16:08:12 +0200
-From: Christoph Hellwig <hch@lst.de>
-To: Halil Pasic <pasic@linux.ibm.com>
-Subject: Re: [PATCH 3/3] fs/core/vmcore: Move sev_active() reference to x86
- arch code
-Message-ID: <20190712140812.GA29628@lst.de>
-References: <20190712053631.9814-1-bauerman@linux.ibm.com>
- <20190712053631.9814-4-bauerman@linux.ibm.com>
- <20190712150912.3097215e.pasic@linux.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45lb9x1WD0zDqsx
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 13 Jul 2019 00:37:40 +1000 (AEST)
+Received: from willie-the-truck (236.31.169.217.in-addr.arpa [217.169.31.236])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
+ bits)) (No client certificate requested)
+ by mail.kernel.org (Postfix) with ESMTPSA id 997A82080A;
+ Fri, 12 Jul 2019 14:37:33 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+ s=default; t=1562942258;
+ bh=Q0fQ8cIZPQQvRl+HqtEP93tavumXUJrRQeEzq/T0ZjU=;
+ h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+ b=oSDuCh7A+Xs42MXbXEieBsFty+Z7wObUN12OgwqLbOFW9oih/BmQBTm6f9I5uATLs
+ k3FxtcxVs2OyWqrnzMXueSISfTrdrWEpEWu7/gxb4zS9dLiXyM0oMjuEOYKj4+vyf3
+ slAytCaCOnyinCVXlJAAWb5BUeKOp+4U+rFpZcIw=
+Date: Fri, 12 Jul 2019 15:37:30 +0100
+From: Will Deacon <will@kernel.org>
+To: Michal Hocko <mhocko@kernel.org>
+Subject: Re: [PATCH v2 0/5] mm: Enable CONFIG_NODES_SPAN_OTHER_NODES by
+ default for NUMA
+Message-ID: <20190712143730.au3662g4ua2tjudu@willie-the-truck>
+References: <1562887528-5896-1-git-send-email-Hoan@os.amperecomputing.com>
+ <20190712070247.GM29483@dhcp22.suse.cz>
+ <586ae736-a429-cf94-1520-1a94ffadad88@os.amperecomputing.com>
+ <20190712121223.GR29483@dhcp22.suse.cz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20190712150912.3097215e.pasic@linux.ibm.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <20190712121223.GR29483@dhcp22.suse.cz>
+User-Agent: NeoMutt/20170113 (1.7.2)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -57,34 +73,54 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-s390@vger.kernel.org, Mike Anderson <andmike@linux.ibm.com>,
- Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>,
- Robin Murphy <robin.murphy@arm.com>, x86@kernel.org,
- Ram Pai <linuxram@us.ibm.com>, linux-kernel@vger.kernel.org,
- Alexey Dobriyan <adobriyan@gmail.com>, iommu@lists.linux-foundation.org,
- Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>,
- "H. Peter Anvin" <hpa@zytor.com>, linux-fsdevel@vger.kernel.org,
- Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@lists.ozlabs.org,
- Christoph Hellwig <hch@lst.de>, Thiago Jung Bauermann <bauerman@linux.ibm.com>,
- Marek Szyprowski <m.szyprowski@samsung.com>
+Cc: Heiko Carstens <heiko.carstens@de.ibm.com>,
+ "open list:MEMORY MANAGEMENT" <linux-mm@kvack.org>,
+ Paul Mackerras <paulus@samba.org>, "H . Peter Anvin" <hpa@zytor.com>,
+ "sparclinux@vger.kernel.org" <sparclinux@vger.kernel.org>,
+ Alexander Duyck <alexander.h.duyck@linux.intel.com>,
+ "linux-s390@vger.kernel.org" <linux-s390@vger.kernel.org>,
+ "x86@kernel.org" <x86@kernel.org>, willy@infradead.org,
+ Mike Rapoport <rppt@linux.ibm.com>,
+ Christian Borntraeger <borntraeger@de.ibm.com>, Ingo Molnar <mingo@redhat.com>,
+ Hoan Tran OS <hoan@os.amperecomputing.com>,
+ Catalin Marinas <catalin.marinas@arm.com>,
+ Open Source Submission <patches@amperecomputing.com>,
+ Pavel Tatashin <pavel.tatashin@microsoft.com>,
+ Vasily Gorbik <gor@linux.ibm.com>, Will Deacon <will.deacon@arm.com>,
+ Borislav Petkov <bp@alien8.de>, Thomas Gleixner <tglx@linutronix.de>,
+ Vlastimil Babka <vbabka@suse.cz>, Oscar Salvador <osalvador@suse.de>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "David S . Miller" <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, Jul 12, 2019 at 03:09:12PM +0200, Halil Pasic wrote:
-> This is the implementation for the guys that don't
-> have ARCH_HAS_MEM_ENCRYPT.
-> 
-> Means sev_active() may not be used in such code after this
-> patch. What about 
-> 
-> static inline bool force_dma_unencrypted(void)
-> {
->         return sev_active();
-> }
-> 
-> in kernel/dma/direct.c?
+Hi all,
 
-FYI, I have this pending in the dma-mapping tree:
+On Fri, Jul 12, 2019 at 02:12:23PM +0200, Michal Hocko wrote:
+> On Fri 12-07-19 10:56:47, Hoan Tran OS wrote:
+> [...]
+> > It would be good if we can enable it by-default. Otherwise, let arch 
+> > enables it by them-self. Do you have any suggestions?
+> 
+> I can hardly make any suggestions when it is not really clear _why_ you
+> want to remove this config option in the first place. Please explain
+> what motivated you to make this change.
 
-http://git.infradead.org/users/hch/dma-mapping.git/commitdiff/e67a5ed1f86f4370991c601f2fcad9ebf9e1eebb
+Sorry, I think this confusion might actually be my fault and Hoan has just
+been implementing my vague suggestion here:
+
+https://lore.kernel.org/linux-arm-kernel/20190625101245.s4vxfosoop52gl4e@willie-the-truck/
+
+If the preference of the mm folks is to leave CONFIG_NODES_SPAN_OTHER_NODES
+as it is, then we can define it for arm64. I just find it a bit weird that
+the majority of NUMA-capable architectures have to add a symbol in the arch
+Kconfig file, for what appears to be a performance optimisation applicable
+only to ia64, mips and sh.
+
+At the very least we could make the thing selectable.
+
+Will
