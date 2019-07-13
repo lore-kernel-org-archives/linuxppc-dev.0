@@ -2,62 +2,48 @@ Return-Path: <SRS0=T3p7=VK=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-6.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C8FB9C742D7
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 13 Jul 2019 03:24:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 34033C742A7
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 13 Jul 2019 03:50:29 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 0FBD9208E4
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 13 Jul 2019 03:24:16 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=nifty.com header.i=@nifty.com header.b="H+3dgelz"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0FBD9208E4
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=socionext.com
+	by mail.kernel.org (Postfix) with ESMTPS id 47A3B20830
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 13 Jul 2019 03:50:28 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 47A3B20830
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45lwBQ3wvkzDqlc
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 13 Jul 2019 13:24:14 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
- spf=softfail (mailfrom) smtp.mailfrom=socionext.com
- (client-ip=210.131.2.77; helo=conuserg-10.nifty.com;
- envelope-from=yamada.masahiro@socionext.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=socionext.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=nifty.com header.i=@nifty.com header.b="H+3dgelz"; 
- dkim-atps=neutral
-Received: from conuserg-10.nifty.com (conuserg-10.nifty.com [210.131.2.77])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 45lwmd4PSRzDqYJ
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 13 Jul 2019 13:50:25 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45lw802FVbzDqn1
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 13 Jul 2019 13:22:07 +1000 (AEST)
-Received: from grover.flets-west.jp (softbank126026094249.bbtec.net
- [126.26.94.249]) (authenticated)
- by conuserg-10.nifty.com with ESMTP id x6D3LCS2001105;
- Sat, 13 Jul 2019 12:21:13 +0900
-DKIM-Filter: OpenDKIM Filter v2.10.3 conuserg-10.nifty.com x6D3LCS2001105
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nifty.com;
- s=dec2015msa; t=1562988073;
- bh=1IdPDx4QX0euUr4uIRn/uQ11mnE9aURyo1Zm0ZEzzSs=;
- h=From:To:Cc:Subject:Date:From;
- b=H+3dgelzRhySedQpLwoncmnFJlhOAC6smKw42tgxGW66g4TX+fG+zinNh4AGqdkBV
- sDGCcJP/3jlpIUG+9H4jbL5ashVrZTqBN9PoDIP1bG9kY/0MaTaWYJ4vBpWTxX4Omf
- RqW5HPyA59GEjvtFZ1wcuentYVv5NNZkFEWlYZ9ZehokwLXXZUshr7g+PqbMuvcy50
- SzPi5sTmajRUbguE4yWfcNru+V6pjhCXQaux7lpKlKU9UnUp/SKGF9Fj6AQYfpeOG8
- YIUYRITsvVlb8B8NQYEZJcn7roPqrgX41eu2sOvXQ7hqe6g0yNBm2702TTuTtq5KU+
- bWX8tcpizGxbg==
-X-Nifty-SrcIP: [126.26.94.249]
-From: Masahiro Yamada <yamada.masahiro@socionext.com>
-To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] powerpc: remove meaningless KBUILD_ARFLAGS addition
-Date: Sat, 13 Jul 2019 12:21:06 +0900
-Message-Id: <20190713032106.8509-1-yamada.masahiro@socionext.com>
-X-Mailer: git-send-email 2.17.1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45lwjl1cXQzDqt0
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 13 Jul 2019 13:47:55 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=ellerman.id.au
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
+ SHA256) (No client certificate requested)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 45lwjj75Vwz9sNf;
+ Sat, 13 Jul 2019 13:47:53 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Suraj Jitindar Singh <sjitindarsingh@gmail.com>,
+ linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH 1/3] KVM: PPC: Book3S HV: Always save guest pmu for guest
+ capable of nesting
+In-Reply-To: <20190703012022.15644-1-sjitindarsingh@gmail.com>
+References: <20190703012022.15644-1-sjitindarsingh@gmail.com>
+Date: Sat, 13 Jul 2019 13:47:51 +1000
+Message-ID: <87lfx2egt4.fsf@concordia.ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -69,48 +55,64 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-kernel@vger.kernel.org,
- Nicholas Piggin <npiggin@gmail.com>,
- Masahiro Yamada <yamada.masahiro@socionext.com>,
- Paul Mackerras <paulus@samba.org>
+Cc: sjitindarsingh@gmail.com, kvm-ppc@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The KBUILD_ARFLAGS addition in arch/powerpc/Makefile has never worked
-in a useful way because it is always overridden by the following code
-in the top Makefile:
+Suraj Jitindar Singh <sjitindarsingh@gmail.com> writes:
+> The performance monitoring unit (PMU) registers are saved on guest exit
+> when the guest has set the pmcregs_in_use flag in its lppaca, if it
+> exists, or unconditionally if it doesn't. If a nested guest is being
+> run then the hypervisor doesn't, and in most cases can't, know if the
+> pmu registers are in use since it doesn't know the location of the lppaca
+> for the nested guest, although it may have one for its immediate guest.
+> This results in the values of these registers being lost across nested
+> guest entry and exit in the case where the nested guest was making use
+> of the performance monitoring facility while it's nested guest hypervisor
+> wasn't.
+>
+> Further more the hypervisor could interrupt a guest hypervisor between
+> when it has loaded up the pmu registers and it calling H_ENTER_NESTED or
+> between returning from the nested guest to the guest hypervisor and the
+> guest hypervisor reading the pmu registers, in kvmhv_p9_guest_entry().
+> This means that it isn't sufficient to just save the pmu registers when
+> entering or exiting a nested guest, but that it is necessary to always
+> save the pmu registers whenever a guest is capable of running nested guests
+> to ensure the register values aren't lost in the context switch.
+>
+> Ensure the pmu register values are preserved by always saving their
+> value into the vcpu struct when a guest is capable of running nested
+> guests.
+>
+> This should have minimal performance impact however any impact can be
+> avoided by booting a guest with "-machine pseries,cap-nested-hv=false"
+> on the qemu commandline.
+>
+> Fixes: 95a6432ce903 "KVM: PPC: Book3S HV: Streamlined guest entry/exit path on P9 for radix guests"
 
-  # use the deterministic mode of AR if available
-  KBUILD_ARFLAGS := $(call ar-option,D)
+I'm not clear why this and the next commit are marked as fixing the
+above commit. Wasn't it broken prior to that commit as well?
 
-The code in the top Makefile was added in 2011, by commit 40df759e2b9e
-("kbuild: Fix build with binutils <= 2.19").
+cheers
 
-The KBUILD_ARFLAGS addition for ppc has always been dead code from the
-beginning.
-
-Nobody has reported a problem since 43c9127d94d6 ("powerpc: Add option
-to use thin archives"), so this code was unneeded.
-
-Signed-off-by: Masahiro Yamada <yamada.masahiro@socionext.com>
----
-
- arch/powerpc/Makefile | 1 -
- 1 file changed, 1 deletion(-)
-
-diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
-index c345b79414a9..46ed198a3aa3 100644
---- a/arch/powerpc/Makefile
-+++ b/arch/powerpc/Makefile
-@@ -112,7 +112,6 @@ ifeq ($(HAS_BIARCH),y)
- KBUILD_CFLAGS	+= -m$(BITS)
- KBUILD_AFLAGS	+= -m$(BITS) -Wl,-a$(BITS)
- KBUILD_LDFLAGS	+= -m elf$(BITS)$(LDEMULATION)
--KBUILD_ARFLAGS	+= --target=elf$(BITS)-$(GNUTARGET)
- endif
- 
- cflags-$(CONFIG_STACKPROTECTOR)	+= -mstack-protector-guard=tls
--- 
-2.17.1
-
+> Signed-off-by: Suraj Jitindar Singh <sjitindarsingh@gmail.com>
+> ---
+>  arch/powerpc/kvm/book3s_hv.c | 2 ++
+>  1 file changed, 2 insertions(+)
+>
+> diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
+> index ec1804f822af..b682a429f3ef 100644
+> --- a/arch/powerpc/kvm/book3s_hv.c
+> +++ b/arch/powerpc/kvm/book3s_hv.c
+> @@ -3654,6 +3654,8 @@ int kvmhv_p9_guest_entry(struct kvm_vcpu *vcpu, u64 time_limit,
+>  		vcpu->arch.vpa.dirty = 1;
+>  		save_pmu = lp->pmcregs_in_use;
+>  	}
+> +	/* Must save pmu if this guest is capable of running nested guests */
+> +	save_pmu |= nesting_enabled(vcpu->kvm);
+>  
+>  	kvmhv_save_guest_pmu(vcpu, save_pmu);
+>  
+> -- 
+> 2.13.6
