@@ -5,19 +5,19 @@ X-Spam-Level:
 X-Spam-Status: No, score=-1.0 required=3.0 tests=MAILING_LIST_MULTI,
 	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6D668C73C66
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 14 Jul 2019 10:47:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E5C94C73C66
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 14 Jul 2019 10:49:40 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E40612064A
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 14 Jul 2019 10:47:55 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E40612064A
+	by mail.kernel.org (Postfix) with ESMTPS id 6382F2064A
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 14 Jul 2019 10:49:40 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6382F2064A
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=bugzilla.kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45mjzs3wqKzDqhm
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 14 Jul 2019 20:47:53 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45mk1t4YMczDqTM
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 14 Jul 2019 20:49:38 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=bugzilla.kernel.org
  (client-ip=198.145.29.98; helo=mail.wl.linuxfoundation.org;
@@ -28,18 +28,18 @@ Received: from mail.wl.linuxfoundation.org (mail.wl.linuxfoundation.org
  [198.145.29.98])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45mjxx2GyQzDqSw
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 14 Jul 2019 20:46:12 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45mjz62dDCzDqcX
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 14 Jul 2019 20:47:14 +1000 (AEST)
 Received: from mail.wl.linuxfoundation.org (localhost [127.0.0.1])
- by mail.wl.linuxfoundation.org (Postfix) with ESMTP id F056827FB0
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 14 Jul 2019 10:46:10 +0000 (UTC)
+ by mail.wl.linuxfoundation.org (Postfix) with ESMTP id 0006F27FB0
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 14 Jul 2019 10:47:11 +0000 (UTC)
 Received: by mail.wl.linuxfoundation.org (Postfix, from userid 486)
- id E42CB283AF; Sun, 14 Jul 2019 10:46:10 +0000 (UTC)
+ id E8424283B0; Sun, 14 Jul 2019 10:47:11 +0000 (UTC)
 From: bugzilla-daemon@bugzilla.kernel.org
 To: linuxppc-dev@lists.ozlabs.org
 Subject: [Bug 200055] WARNING: CPU: 0 PID: 1 at kernel/locking/lockdep.c:3214
  .__lockdep_init_map+0x260/0x270
-Date: Sun, 14 Jul 2019 10:46:08 +0000
+Date: Sun, 14 Jul 2019 10:47:11 +0000
 X-Bugzilla-Reason: None
 X-Bugzilla-Type: changed
 X-Bugzilla-Watch-Reason: AssignedTo platform_ppc-64@kernel-bugs.osdl.org
@@ -55,7 +55,7 @@ X-Bugzilla-Priority: P1
 X-Bugzilla-Assigned-To: platform_ppc-64@kernel-bugs.osdl.org
 X-Bugzilla-Flags: 
 X-Bugzilla-Changed-Fields: attachments.created
-Message-ID: <bug-200055-206035-KsIYST9c7z@https.bugzilla.kernel.org/>
+Message-ID: <bug-200055-206035-LNyKJikX5H@https.bugzilla.kernel.org/>
 In-Reply-To: <bug-200055-206035@https.bugzilla.kernel.org/>
 References: <bug-200055-206035@https.bugzilla.kernel.org/>
 Content-Type: text/plain; charset="UTF-8"
@@ -81,19 +81,10 @@ Sender: "Linuxppc-dev"
 
 https://bugzilla.kernel.org/show_bug.cgi?id=3D200055
 
---- Comment #15 from Erhard F. (erhard_f@mailbox.org) ---
-Created attachment 283675
-  --> https://bugzilla.kernel.org/attachment.cgi?id=3D283675&action=3Dedit
-dmesg.txt (G5 11,2 + kernel 4.9.184)
-
-By running some older kernels from the stable series I noticed that 4.4.x a=
-nd
-4.9.x are not affected by this lockdep issue. First stable series it shows =
-up=20
-is 4.14.x.
-
-I am rather curious what a bisect will throw up when I have time to do it. =
-;)
+--- Comment #16 from Erhard F. (erhard_f@mailbox.org) ---
+Created attachment 283677
+  --> https://bugzilla.kernel.org/attachment.cgi?id=3D283677&action=3Dedit
+dmesg.txt (G5 11,2 + kernel 4.14.132)
 
 --=20
 You are receiving this mail because:
