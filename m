@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-2.3 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B59D1C7618F
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Jul 2019 11:01:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7A253C7618F
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Jul 2019 11:13:19 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 12088206B8
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Jul 2019 11:01:07 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 12088206B8
+	by mail.kernel.org (Postfix) with ESMTPS id F210D20665
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Jul 2019 11:13:18 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org F210D20665
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45nLDd5d8JzDqV2
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Jul 2019 21:01:05 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45nLVh2sBQzDqZD
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Jul 2019 21:13:16 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=redhat.com
  (client-ip=209.132.183.28; helo=mx1.redhat.com; envelope-from=david@redhat.com;
@@ -28,23 +28,24 @@ Authentication-Results: lists.ozlabs.org;
 Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45nL9f074VzDqMG
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Jul 2019 20:58:30 +1000 (AEST)
-Received: from smtp.corp.redhat.com (int-mx04.intmail.prod.int.phx2.redhat.com
- [10.5.11.14])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45nLRh4VyLzDqV2
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Jul 2019 21:10:40 +1000 (AEST)
+Received: from smtp.corp.redhat.com (int-mx07.intmail.prod.int.phx2.redhat.com
+ [10.5.11.22])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by mx1.redhat.com (Postfix) with ESMTPS id 10740356C4;
- Mon, 15 Jul 2019 10:58:28 +0000 (UTC)
+ by mx1.redhat.com (Postfix) with ESMTPS id B4EAA308427C;
+ Mon, 15 Jul 2019 11:10:38 +0000 (UTC)
 Received: from [10.36.117.137] (ovpn-117-137.ams2.redhat.com [10.36.117.137])
- by smtp.corp.redhat.com (Postfix) with ESMTP id 2036C5D9D2;
- Mon, 15 Jul 2019 10:58:22 +0000 (UTC)
-Subject: Re: [PATCH v3 09/11] mm/memory_hotplug: Remove memory block devices
- before arch_remove_memory()
-To: Michal Hocko <mhocko@kernel.org>
+ by smtp.corp.redhat.com (Postfix) with ESMTP id F17431001B18;
+ Mon, 15 Jul 2019 11:10:34 +0000 (UTC)
+Subject: Re: [PATCH v3 10/11] mm/memory_hotplug: Make
+ unregister_memory_block_under_nodes() never fail
+To: Michal Hocko <mhocko@kernel.org>, Oscar Salvador <osalvador@suse.de>
 References: <20190527111152.16324-1-david@redhat.com>
- <20190527111152.16324-10-david@redhat.com>
- <20190701084129.GI6376@dhcp22.suse.cz>
+ <20190527111152.16324-11-david@redhat.com>
+ <20190701085144.GJ6376@dhcp22.suse.cz> <20190701093640.GA17349@linux>
+ <20190701102756.GO6376@dhcp22.suse.cz>
 From: David Hildenbrand <david@redhat.com>
 Openpgp: preference=signencrypt
 Autocrypt: addr=david@redhat.com; prefer-encrypt=mutual; keydata=
@@ -91,18 +92,18 @@ Autocrypt: addr=david@redhat.com; prefer-encrypt=mutual; keydata=
  +8Umfre0Xt4713VxMygW0PnQt5aSQdMD58jHFxTk092mU+yIHj5LeYgvwSgZN4airXk5yRXl
  SE+xAvmumFBY
 Organization: Red Hat GmbH
-Message-ID: <54a2f873-374e-b132-ae0f-4924a7e332c0@redhat.com>
-Date: Mon, 15 Jul 2019 12:58:22 +0200
+Message-ID: <d450488d-7a82-f7a9-c8d3-b69a0bca48c6@redhat.com>
+Date: Mon, 15 Jul 2019 13:10:33 +0200
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
  Thunderbird/60.7.2
 MIME-Version: 1.0
-In-Reply-To: <20190701084129.GI6376@dhcp22.suse.cz>
+In-Reply-To: <20190701102756.GO6376@dhcp22.suse.cz>
 Content-Type: text/plain; charset=utf-8
 Content-Language: en-US
-Content-Transfer-Encoding: 7bit
-X-Scanned-By: MIMEDefang 2.79 on 10.5.11.14
+Content-Transfer-Encoding: 8bit
+X-Scanned-By: MIMEDefang 2.84 on 10.5.11.22
 X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.5.16
- (mx1.redhat.com [10.5.110.30]); Mon, 15 Jul 2019 10:58:28 +0000 (UTC)
+ (mx1.redhat.com [10.5.110.40]); Mon, 15 Jul 2019 11:10:39 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -114,56 +115,46 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org,
- Wei Yang <richard.weiyang@gmail.com>, linux-mm@kvack.org,
- Arun KS <arunks@codeaurora.org>, Ingo Molnar <mingo@kernel.org>,
- linux-s390@vger.kernel.org, "Rafael J. Wysocki" <rafael@kernel.org>,
- Pavel Tatashin <pavel.tatashin@microsoft.com>,
- "mike.travis@hpe.com" <mike.travis@hpe.com>, Mark Brown <broonie@kernel.org>,
+Cc: linux-s390@vger.kernel.org, linux-ia64@vger.kernel.org,
+ linux-sh@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Mark Brown <broonie@kernel.org>, "Rafael J. Wysocki" <rafael@kernel.org>,
+ linux-kernel@vger.kernel.org, Wei Yang <richard.weiyang@gmail.com>,
+ linux-mm@kvack.org, "David S. Miller" <davem@davemloft.net>,
  Jonathan Cameron <Jonathan.Cameron@huawei.com>,
- Dan Williams <dan.j.williams@intel.com>,
- Chris Wilson <chris@chris-wilson.co.uk>, linux-arm-kernel@lists.infradead.org,
- Oscar Salvador <osalvador@suse.de>, Andrew Banman <andrew.banman@hpe.com>,
- Mathieu Malaterre <malat@debian.org>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org,
  Alex Deucher <alexander.deucher@amd.com>, Igor Mammedov <imammedo@redhat.com>,
- akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org,
- "David S. Miller" <davem@davemloft.net>
+ akpm@linux-foundation.org, Chris Wilson <chris@chris-wilson.co.uk>,
+ linuxppc-dev@lists.ozlabs.org, Dan Williams <dan.j.williams@intel.com>,
+ linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 01.07.19 10:41, Michal Hocko wrote:
-> On Mon 27-05-19 13:11:50, David Hildenbrand wrote:
->> Let's factor out removing of memory block devices, which is only
->> necessary for memory added via add_memory() and friends that created
->> memory block devices. Remove the devices before calling
->> arch_remove_memory().
+On 01.07.19 12:27, Michal Hocko wrote:
+> On Mon 01-07-19 11:36:44, Oscar Salvador wrote:
+>> On Mon, Jul 01, 2019 at 10:51:44AM +0200, Michal Hocko wrote:
+>>> Yeah, we do not allow to offline multi zone (node) ranges so the current
+>>> code seems to be over engineered.
+>>>
+>>> Anyway, I am wondering why do we have to strictly check for already
+>>> removed nodes links. Is the sysfs code going to complain we we try to
+>>> remove again?
 >>
->> This finishes factoring out memory block device handling from
->> arch_add_memory() and arch_remove_memory().
+>> No, sysfs will silently "fail" if the symlink has already been removed.
+>> At least that is what I saw last time I played with it.
+>>
+>> I guess the question is what if sysfs handling changes in the future
+>> and starts dropping warnings when trying to remove a symlink is not there.
+>> Maybe that is unlikely to happen?
 > 
-> OK, this makes sense again. Just a nit. Calling find_memory_block_by_id
-> for each memory block looks a bit suboptimal, especially when we are
-> removing consequent physical memblocks. I have to confess that I do not
-> know how expensive is the search and I also expect that there won't be
-> that many memblocks in the removed range anyway as large setups have
-> large memblocks.
+> And maybe we handle it then rather than have a static allocation that
+> everybody with hotremove configured has to pay for.
 > 
 
-The devices are not allocated sequentially, so there is no easy way to
-look them up.
+So what's the suggestion? Dropping the nodemask_t completely and calling
+sysfs_remove_link() on already potentially removed links?
 
-There is a comment for find_memory_block():
-
-"For now, we have a linear search to go find the appropriate
-memory_block corresponding to a particular phys_index. If this gets to
-be a real problem, we can always use a radix tree or something here."
-
-So if this becomes a problem, we need a separate data structure to speed
-up the lookup. (IOW, this was already the same in the old code)
-
-Thanks!
+Of course, we can also just use mem_blk->nid and rest assured that it
+will never be called for memory blocks belonging to multiple nodes.
 
 -- 
 
