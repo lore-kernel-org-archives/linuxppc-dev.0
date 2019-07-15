@@ -2,52 +2,42 @@ Return-Path: <SRS0=O2mS=VM=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 418C4C7618A
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Jul 2019 04:52:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 90E7CC7618A
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Jul 2019 05:26:35 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C586B2067C
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Jul 2019 04:52:37 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C586B2067C
+	by mail.kernel.org (Postfix) with ESMTPS id DEEA620644
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Jul 2019 05:26:34 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DEEA620644
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45nB3R3NsszDr2c
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Jul 2019 14:52:35 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45nBpc1YL5zDqS6
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Jul 2019 15:26:32 +1000 (AEST)
 Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45n9w13WG0zDqV4
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Jul 2019 14:46:09 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45nBmW1HGvzDqJ5
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Jul 2019 15:24:43 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
-Received: by ozlabs.org (Postfix)
- id 45n9w069wZz9sBF; Mon, 15 Jul 2019 14:46:08 +1000 (AEST)
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
- SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 45n9vy6tNVz9s3l;
- Mon, 15 Jul 2019 14:46:06 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Claudio Carvalho <cclaudio@linux.ibm.com>, linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH v4 3/8] KVM: PPC: Ultravisor: Add generic ultravisor call
- handler
-In-Reply-To: <45cb74bc-442c-e1c5-6636-93e9ab7f323a@linux.ibm.com>
-References: <20190628200825.31049-1-cclaudio@linux.ibm.com>
- <20190628200825.31049-4-cclaudio@linux.ibm.com>
- <87lfx4g253.fsf@concordia.ellerman.id.au>
- <45cb74bc-442c-e1c5-6636-93e9ab7f323a@linux.ibm.com>
-Date: Mon, 15 Jul 2019 14:46:06 +1000
-Message-ID: <875zo3aos1.fsf@concordia.ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain
+Received: by ozlabs.org (Postfix, from userid 1034)
+ id 45nBmW0N43z9sNF; Mon, 15 Jul 2019 15:24:43 +1000 (AEST)
+X-powerpc-patch-notification: thanks
+X-powerpc-patch-commit: f5a9e488d62360c91c5770bd55a0b40e419a71ce
+In-Reply-To: <20190702105836.26695-1-maddy@linux.vnet.ibm.com>
+To: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+From: Michael Ellerman <patch-notifications@ellerman.id.au>
+Subject: Re: [PATCH] powerpc/powernv/idle: Fix restore of SPRN_LDBAR for
+ POWER9 stop state.
+Message-Id: <45nBmW0N43z9sNF@ozlabs.org>
+Date: Mon, 15 Jul 2019 15:24:43 +1000 (AEST)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -59,79 +49,28 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>,
- Michael Anderson <andmike@linux.ibm.com>, Ram Pai <linuxram@us.ibm.com>,
- kvm-ppc@vger.kernel.org, Bharata B Rao <bharata@linux.ibm.com>,
- Ryan Grimm <grimm@linux.ibm.com>,
- Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
- Thiago Bauermann <bauerman@linux.ibm.com>,
- Anshuman Khandual <khandual@linux.vnet.ibm.com>
+Cc: ego@linux.vnet.ibm.com, Athira Rajeev <atrajeev@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org, npiggin@gmail.com,
+ Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Claudio Carvalho <cclaudio@linux.ibm.com> writes:
-> On 7/11/19 9:57 AM, Michael Ellerman wrote:
->> Claudio Carvalho <cclaudio@linux.ibm.com> writes:
->>> From: Ram Pai <linuxram@us.ibm.com>
->>>
->>> Add the ucall() function, which can be used to make ultravisor calls
->>> with varied number of in and out arguments. Ultravisor calls can be made
->>> from the host or guests.
->>>
->>> This copies the implementation of plpar_hcall().
->> .. with quite a few changes?
->>
->> This is one of the things I'd like to see in a Documentation file, so
->> that people can review the implementation vs the specification.
->
-> I will document this (and other things) in a file under Documentation/powerpc.
+On Tue, 2019-07-02 at 10:58:36 UTC, Madhavan Srinivasan wrote:
+> From: Athira Rajeev <atrajeev@linux.vnet.ibm.com>
+> 
+> commit 10d91611f426 ("powerpc/64s: Reimplement book3s idle code in C")
+> reimplemented book3S code to pltform/powernv/idle.c. But when doing so
+> missed to add the per-thread LDBAR update in the core_woken path of
+> the power9_idle_stop(). Patch fixes the same.
+> 
+> Fixes: 10d91611f426 ("powerpc/64s: Reimplement book3s idle code in C")
+> Signed-off-by: Athira Rajeev <atrajeev@linux.vnet.ibm.com>
+> Signed-off-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+> Reviewed-by: Nicholas Piggin <npiggin@gmail.com>
 
-Thanks.
+Applied to powerpc next, thanks.
 
->>> +/* API functions */
->>> +#define UCALL_BUFSIZE 4
->> Please don't copy this design from the hcall code, it has led to bugs in
->> the past.
->>
->> See my (still unmerged) attempt to fix this for the hcall case:
->>   https://patchwork.ozlabs.org/patch/683577/
->>
->> Basically instead of asking callers nicely to define a certain sized
->> buffer, and them forgetting, define a proper type that has the right size.
->
-> I will keep that in mind. For now I think we don't need that since the v5
-> will have ucall_norets() instead.
-
-OK.
-
->>> diff --git a/arch/powerpc/kernel/ultravisor.c b/arch/powerpc/kernel/ultravisor.c
->>> index dc6021f63c97..02ddf79a9522 100644
->>> --- a/arch/powerpc/kernel/ultravisor.c
->>> +++ b/arch/powerpc/kernel/ultravisor.c
->>> @@ -8,10 +8,14 @@
->>>  #include <linux/init.h>
->>>  #include <linux/printk.h>
->>>  #include <linux/string.h>
->>> +#include <linux/export.h>
->>>  
->>>  #include <asm/ultravisor.h>
->>>  #include <asm/firmware.h>
->>>  
->>> +/* in ucall.S */
->>> +EXPORT_SYMBOL_GPL(ucall);
->> This should be in ucall.S
->
-> Here I'm following the same way that hypercall wrapper symbols are exported.
-
-Yeah we used to not be able to export from .S but that was fixed a few
-years ago.
-
-> Last time I tried to export that in ucall.S the linker complained that the
-> ucall
-> symbol will not be versioned. Something like this:
-> https://patchwork.kernel.org/patch/9452759/
-
-I think you just need to include <asm/export.h> in the .S ?
+https://git.kernel.org/powerpc/c/f5a9e488d62360c91c5770bd55a0b40e419a71ce
 
 cheers
