@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-2.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 19C75C76188
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Jul 2019 11:11:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5CEA5C76188
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Jul 2019 11:14:00 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 4EE322173C
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Jul 2019 11:11:31 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4EE322173C
+	by mail.kernel.org (Postfix) with ESMTPS id E3A8F2173B
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Jul 2019 11:13:59 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E3A8F2173B
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45nyQ80z4JzDqS8
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Jul 2019 21:11:28 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45nyT157jNzDq6N
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Jul 2019 21:13:57 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=redhat.com
  (client-ip=209.132.183.28; helo=mx1.redhat.com; envelope-from=david@redhat.com;
@@ -28,17 +28,17 @@ Authentication-Results: lists.ozlabs.org;
 Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45nyMQ1GWxzDqRY
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Jul 2019 21:09:05 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45nyMb2yTMzDqY7
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Jul 2019 21:09:15 +1000 (AEST)
 Received: from smtp.corp.redhat.com (int-mx08.intmail.prod.int.phx2.redhat.com
  [10.5.11.23])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by mx1.redhat.com (Postfix) with ESMTPS id E40DD30832E9;
- Tue, 16 Jul 2019 11:09:02 +0000 (UTC)
+ by mx1.redhat.com (Postfix) with ESMTPS id 623062BE9A;
+ Tue, 16 Jul 2019 11:09:13 +0000 (UTC)
 Received: from [10.36.116.218] (ovpn-116-218.ams2.redhat.com [10.36.116.218])
- by smtp.corp.redhat.com (Postfix) with ESMTP id 8BC1419C59;
- Tue, 16 Jul 2019 11:08:57 +0000 (UTC)
+ by smtp.corp.redhat.com (Postfix) with ESMTP id 6DC9519C68;
+ Tue, 16 Jul 2019 11:09:07 +0000 (UTC)
 Subject: Re: [PATCH v3 10/11] mm/memory_hotplug: Make
  unregister_memory_block_under_nodes() never fail
 To: Oscar Salvador <osalvador@suse.de>
@@ -94,8 +94,8 @@ Autocrypt: addr=david@redhat.com; prefer-encrypt=mutual; keydata=
  +8Umfre0Xt4713VxMygW0PnQt5aSQdMD58jHFxTk092mU+yIHj5LeYgvwSgZN4airXk5yRXl
  SE+xAvmumFBY
 Organization: Red Hat GmbH
-Message-ID: <d9e63646-f81d-c349-a54c-e17cdccb0760@redhat.com>
-Date: Tue, 16 Jul 2019 13:08:56 +0200
+Message-ID: <eb51f770-b0a3-f50c-daa4-babe6e8d3fc4@redhat.com>
+Date: Tue, 16 Jul 2019 13:09:06 +0200
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
  Thunderbird/60.7.2
 MIME-Version: 1.0
@@ -105,7 +105,7 @@ Content-Language: en-US
 Content-Transfer-Encoding: 7bit
 X-Scanned-By: MIMEDefang 2.84 on 10.5.11.23
 X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.5.16
- (mx1.redhat.com [10.5.110.44]); Tue, 16 Jul 2019 11:09:03 +0000 (UTC)
+ (mx1.redhat.com [10.5.110.39]); Tue, 16 Jul 2019 11:09:13 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -176,7 +176,7 @@ On 16.07.19 10:46, Oscar Salvador wrote:
 As far as I can tell we
 
 a) don't allow offlining of memory that belongs to multiple nodes
-already (as pointed out by Michael recently)
+already (as pointed out by Michal recently)
 
 b) users cannot add memory blocks that belong to multiple nodes via
 add_memory()
