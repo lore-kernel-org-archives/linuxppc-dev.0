@@ -6,82 +6,82 @@ X-Spam-Status: No, score=-6.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS
 	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 39C21C76188
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Jul 2019 12:00:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 308EBC76188
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Jul 2019 12:02:36 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 5E8AF2145D
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Jul 2019 12:00:08 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5E8AF2145D
+	by mail.kernel.org (Postfix) with ESMTPS id B5F352145D
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Jul 2019 12:02:35 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B5F352145D
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45nzVG1jNQzDqRP
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Jul 2019 22:00:06 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+	by lists.ozlabs.org (Postfix) with ESMTP id 45nzY53sQzzDqcM
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Jul 2019 22:02:33 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45nyvy0PzZzDqWm
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Jul 2019 21:33:50 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45nyw61GFTzDqSx
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Jul 2019 21:33:58 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 45nyvx6ZC6z8t9P
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Jul 2019 21:33:49 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 45nyw54M7Lz8t9P
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Jul 2019 21:33:57 +1000 (AEST)
 Received: by ozlabs.org (Postfix)
- id 45nyvx55FZz9s8m; Tue, 16 Jul 2019 21:33:49 +1000 (AEST)
+ id 45nyw52R0Mz9sN4; Tue, 16 Jul 2019 21:33:57 +1000 (AEST)
 Authentication-Results: ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
- (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
+ (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
  envelope-from=hbathini@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: ozlabs.org;
  dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 45nyvx0cyWz9s7T
- for <linuxppc-dev@ozlabs.org>; Tue, 16 Jul 2019 21:33:48 +1000 (AEST)
-Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x6GBNAIE066501
- for <linuxppc-dev@ozlabs.org>; Tue, 16 Jul 2019 07:33:47 -0400
-Received: from e06smtp03.uk.ibm.com (e06smtp03.uk.ibm.com [195.75.94.99])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2tscphayfx-1
+ by ozlabs.org (Postfix) with ESMTPS id 45nyw46BScz9s8m
+ for <linuxppc-dev@ozlabs.org>; Tue, 16 Jul 2019 21:33:56 +1000 (AEST)
+Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
+ x6GBMaa8080330
+ for <linuxppc-dev@ozlabs.org>; Tue, 16 Jul 2019 07:33:55 -0400
+Received: from e06smtp07.uk.ibm.com (e06smtp07.uk.ibm.com [195.75.94.103])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2tsbp5dftn-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@ozlabs.org>; Tue, 16 Jul 2019 07:33:46 -0400
+ for <linuxppc-dev@ozlabs.org>; Tue, 16 Jul 2019 07:33:54 -0400
 Received: from localhost
- by e06smtp03.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp07.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <hbathini@linux.ibm.com>;
- Tue, 16 Jul 2019 12:33:45 +0100
-Received: from b06cxnps4075.portsmouth.uk.ibm.com (9.149.109.197)
- by e06smtp03.uk.ibm.com (192.168.101.133) with IBM ESMTP SMTP Gateway:
+ Tue, 16 Jul 2019 12:33:52 +0100
+Received: from b06cxnps4074.portsmouth.uk.ibm.com (9.149.109.196)
+ by e06smtp07.uk.ibm.com (192.168.101.137) with IBM ESMTP SMTP Gateway:
  Authorized Use Only! Violators will be prosecuted; 
  (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Tue, 16 Jul 2019 12:33:42 +0100
-Received: from d06av25.portsmouth.uk.ibm.com (d06av25.portsmouth.uk.ibm.com
- [9.149.105.61])
- by b06cxnps4075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x6GBXecl59965588
+ Tue, 16 Jul 2019 12:33:49 +0100
+Received: from d06av26.portsmouth.uk.ibm.com (d06av26.portsmouth.uk.ibm.com
+ [9.149.105.62])
+ by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x6GBXmxg52625484
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Tue, 16 Jul 2019 11:33:40 GMT
-Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 7BACA11C052;
- Tue, 16 Jul 2019 11:33:40 +0000 (GMT)
-Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 09E3211C05B;
- Tue, 16 Jul 2019 11:33:39 +0000 (GMT)
+ Tue, 16 Jul 2019 11:33:48 GMT
+Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 25AD6AE053;
+ Tue, 16 Jul 2019 11:33:48 +0000 (GMT)
+Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 8A05BAE04D;
+ Tue, 16 Jul 2019 11:33:46 +0000 (GMT)
 Received: from hbathini.in.ibm.com (unknown [9.184.183.117])
- by d06av25.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Tue, 16 Jul 2019 11:33:38 +0000 (GMT)
-Subject: [PATCH v4 14/25] powernv/fadump: process the crashdump by exporting
- it as /proc/vmcore
+ by d06av26.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Tue, 16 Jul 2019 11:33:46 +0000 (GMT)
+Subject: [PATCH v4 15/25] powerpc/fadump: Update documentation about OPAL
+ platform support
 From: Hari Bathini <hbathini@linux.ibm.com>
 To: linuxppc-dev <linuxppc-dev@ozlabs.org>
-Date: Tue, 16 Jul 2019 17:03:38 +0530
+Date: Tue, 16 Jul 2019 17:03:45 +0530
 In-Reply-To: <156327668777.27462.5297279227799429100.stgit@hbathini.in.ibm.com>
 References: <156327668777.27462.5297279227799429100.stgit@hbathini.in.ibm.com>
 User-Agent: StGit/0.17.1-dirty
@@ -89,15 +89,15 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 X-TM-AS-GCONF: 00
-x-cbid: 19071611-0012-0000-0000-0000033309C1
+x-cbid: 19071611-0028-0000-0000-00000384AD6D
 X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19071611-0013-0000-0000-0000216C8315
-Message-Id: <156327681824.27462.1314030665685342118.stgit@hbathini.in.ibm.com>
+x-cbparentid: 19071611-0029-0000-0000-00002444CE7F
+Message-Id: <156327682571.27462.17734716839038675848.stgit@hbathini.in.ibm.com>
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
  definitions=2019-07-16_03:, , signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
  priorityscore=1501
- malwarescore=0 suspectscore=2 phishscore=0 bulkscore=0 spamscore=0
+ malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
  clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
  mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
  scancount=1 engine=8.0.1-1810050000 definitions=main-1907160145
@@ -121,266 +121,153 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Add support in the kernel to process the crash'ed kernel's memory
-preserved during MPIPL and export it as /proc/vmcore file for the
-userland scripts to filter and analyze it later.
+With FADump support now available on both pseries and OPAL platforms,
+update FADump documentation with these details.
 
 Signed-off-by: Hari Bathini <hbathini@linux.ibm.com>
 ---
- arch/powerpc/platforms/powernv/opal-fadump.c |  190 ++++++++++++++++++++++++++
- 1 file changed, 187 insertions(+), 3 deletions(-)
+ Documentation/powerpc/firmware-assisted-dump.txt |  104 +++++++++++++---------
+ 1 file changed, 63 insertions(+), 41 deletions(-)
 
-diff --git a/arch/powerpc/platforms/powernv/opal-fadump.c b/arch/powerpc/platforms/powernv/opal-fadump.c
-index 9c68c83..dffc0e7 100644
---- a/arch/powerpc/platforms/powernv/opal-fadump.c
-+++ b/arch/powerpc/platforms/powernv/opal-fadump.c
-@@ -18,6 +18,7 @@
- #include <linux/of_fdt.h>
- #include <linux/libfdt.h>
- #include <linux/mm.h>
-+#include <linux/crash_dump.h>
+diff --git a/Documentation/powerpc/firmware-assisted-dump.txt b/Documentation/powerpc/firmware-assisted-dump.txt
+index 0c6a28c..cd48776 100644
+--- a/Documentation/powerpc/firmware-assisted-dump.txt
++++ b/Documentation/powerpc/firmware-assisted-dump.txt
+@@ -70,7 +70,8 @@ as follows:
+    normal.
  
- #include <asm/page.h>
- #include <asm/opal.h>
-@@ -25,6 +26,7 @@
- #include "../../kernel/fadump-common.h"
- #include "opal-fadump.h"
+ -- The freshly booted kernel will notice that there is a new
+-   node (ibm,dump-kernel) in the device tree, indicating that
++   node (ibm,dump-kernel on PSeries or ibm,opal/dump/result-table
++   on OPAL platform) in the device tree, indicating that
+    there is crash data available from a previous boot. During
+    the early boot OS will reserve rest of the memory above
+    boot memory size effectively booting with restricted memory
+@@ -93,7 +94,9 @@ as follows:
  
-+static const struct opal_fadump_mem_struct *opal_fdm_active;
- static struct opal_fadump_mem_struct *opal_fdm;
+ Please note that the firmware-assisted dump feature
+ is only available on Power6 and above systems with recent
+-firmware versions.
++firmware versions on PSeries (PowerVM) platform and Power9
++and above systems with recent firmware versions on PowerNV
++(OPAL) platform.
  
- static void opal_fadump_update_config(struct fw_dump *fadump_conf,
-@@ -41,6 +43,50 @@ static void opal_fadump_update_config(struct fw_dump *fadump_conf,
- 		 fadump_conf->boot_mem_dest_addr);
+ Implementation details:
+ ----------------------
+@@ -108,57 +111,76 @@ that are run. If there is dump data, then the
+ /sys/kernel/fadump_release_mem file is created, and the reserved
+ memory is held.
  
- 	fadump_conf->fadumphdr_addr = fdm->fadumphdr_addr;
+-If there is no waiting dump data, then only the memory required
+-to hold CPU state, HPTE region, boot memory dump and elfcore
+-header, is usually reserved at an offset greater than boot memory
+-size (see Fig. 1). This area is *not* released: this region will
+-be kept permanently reserved, so that it can act as a receptacle
+-for a copy of the boot memory content in addition to CPU state
+-and HPTE region, in the case a crash does occur. Since this reserved
+-memory area is used only after the system crash, there is no point in
+-blocking this significant chunk of memory from production kernel.
+-Hence, the implementation uses the Linux kernel's Contiguous Memory
+-Allocator (CMA) for memory reservation if CMA is configured for kernel.
+-With CMA reservation this memory will be available for applications to
+-use it, while kernel is prevented from using it. With this FADump will
+-still be able to capture all of the kernel memory and most of the user
+-space memory except the user pages that were present in CMA region.
++If there is no waiting dump data, then only the memory required to
++hold CPU state, HPTE region, boot memory dump, FADump header and
++elfcore header, is usually reserved at an offset greater than boot
++memory size (see Fig. 1). This area is *not* released: this region
++will be kept permanently reserved, so that it can act as a receptacle
++for a copy of the boot memory content in addition to CPU state and
++HPTE region, in the case a crash does occur.
 +
-+	/* Start address of preserve area (permanent reservation) */
-+	fadump_conf->preserv_area_start = fadump_conf->boot_mem_dest_addr;
-+	pr_debug("Preserve area start address: 0x%lx\n",
-+		 fadump_conf->preserv_area_start);
-+}
-+
-+/*
-+ * This function is called in the capture kernel to get configuration details
-+ * from metadata setup by the first kernel.
-+ */
-+static void opal_fadump_get_config(struct fw_dump *fadump_conf,
-+				   const struct opal_fadump_mem_struct *fdm)
-+{
-+	unsigned long base, size, last_end, hole_size;
-+	int i;
-+
-+	if (!fadump_conf->dump_active)
-+		return;
-+
-+	last_end = 0;
-+	hole_size = 0;
-+	fadump_conf->boot_memory_size = 0;
-+
-+	if (fdm->region_cnt)
-+		pr_debug("Boot memory regions:\n");
-+
-+	for (i = 0; i < fdm->region_cnt; i++) {
-+		base = fdm->rgn[i].src;
-+		size = fdm->rgn[i].size;
-+		pr_debug("\t%d. base: 0x%lx, size: 0x%lx\n",
-+			 (i + 1), base, size);
-+
-+		fadump_conf->boot_mem_addr[i] = base;
-+		fadump_conf->boot_mem_size[i] = size;
-+		fadump_conf->boot_memory_size += size;
-+		hole_size += (base - last_end);
-+
-+		last_end = base + size;
-+	}
-+
-+	fadump_conf->boot_mem_top = (fadump_conf->boot_memory_size + hole_size);
-+	fadump_conf->boot_mem_regs_cnt = fdm->region_cnt;
-+	opal_fadump_update_config(fadump_conf, fdm);
- }
++Since this reserved memory area is used only after the system crash,
++there is no point in blocking this significant chunk of memory from
++production kernel. Hence, the implementation uses the Linux kernel's
++Contiguous Memory Allocator (CMA) for memory reservation if CMA is
++configured for kernel. With CMA reservation this memory will be
++available for applications to use it, while kernel is prevented from
++using it. With this FADump will still be able to capture all of the
++kernel memory and most of the user space memory except the user pages
++that were present in CMA region.
  
- static ulong opal_fadump_init_mem_struct(struct fw_dump *fadump_conf)
-@@ -174,27 +220,127 @@ static int opal_fadump_unregister_fadump(struct fw_dump *fadump_conf)
+   o Memory Reservation during first kernel
  
- static int opal_fadump_invalidate_fadump(struct fw_dump *fadump_conf)
- {
--	return -EIO;
-+	s64 rc;
-+
-+	rc = opal_mpipl_update(OPAL_MPIPL_FREE_PRESERVED_MEMORY, 0, 0, 0);
-+	if (rc) {
-+		pr_err("Failed to invalidate - unexpected Error(%lld).\n", rc);
-+		return -EIO;
-+	}
-+
-+	fadump_conf->dump_active = 0;
-+	opal_fdm_active = NULL;
-+	return 0;
-+}
-+
-+/*
-+ * Convert CPU state data saved at the time of crash into ELF notes.
-+ */
-+static int __init opal_fadump_build_cpu_notes(struct fw_dump *fadump_conf)
-+{
-+	u32 num_cpus, *note_buf;
-+	struct fadump_crash_info_header *fdh = NULL;
-+
-+	num_cpus = 1;
-+	/* Allocate buffer to hold cpu crash notes. */
-+	fadump_conf->cpu_notes_buf_size = num_cpus * sizeof(note_buf_t);
-+	fadump_conf->cpu_notes_buf_size =
-+		PAGE_ALIGN(fadump_conf->cpu_notes_buf_size);
-+	note_buf = fadump_cpu_notes_buf_alloc(fadump_conf->cpu_notes_buf_size);
-+	if (!note_buf) {
-+		pr_err("Failed to allocate 0x%lx bytes for cpu notes buffer\n",
-+		       fadump_conf->cpu_notes_buf_size);
-+		return -ENOMEM;
-+	}
-+	fadump_conf->cpu_notes_buf = __pa(note_buf);
-+
-+	pr_debug("Allocated buffer for cpu notes of size %ld at %p\n",
-+		 (num_cpus * sizeof(note_buf_t)), note_buf);
-+
-+	if (fadump_conf->fadumphdr_addr)
-+		fdh = __va(fadump_conf->fadumphdr_addr);
-+
-+	if (fdh && (fdh->crashing_cpu != FADUMP_CPU_UNKNOWN)) {
-+		note_buf = fadump_regs_to_elf_notes(note_buf, &(fdh->regs));
-+		final_note(note_buf);
-+
-+		pr_debug("Updating elfcore header (%llx) with cpu notes\n",
-+			 fdh->elfcorehdr_addr);
-+		fadump_update_elfcore_header(fadump_conf,
-+					     __va(fdh->elfcorehdr_addr));
-+	}
-+
-+	return 0;
- }
+-  Low memory                                                Top of memory
+-  0      boot memory size      |<--Reserved dump area --->|      |
+-  |           |                |   Permanent Reservation  |      |
+-  V           V                |   (Preserve area)        |      V
+-  +-----------+----------/ /---+---+----+--------+---+----+------+
+-  |           |                |CPU|HPTE|  DUMP  |HDR|ELF |      |
+-  +-----------+----------/ /---+---+----+--------+---+----+------+
+-        |                                   ^      ^
+-        |                                   |      |
+-        \                                   /      |
+-         -----------------------------------     FADump Header
+-          Boot memory content gets transferred   (meta area)
+-          to reserved area by firmware at the
+-          time of crash
++  Low memory                                                 Top of memory
++  0    boot memory size   |<--- Reserved dump area --->|       |
++  |           |           |    Permanent Reservation   |       |
++  V           V           |       (Preserve area)      |       V
++  +-----------+-----/ /---+---+----+-------+-----+-----+----+--+
++  |           |           |///|////|  DUMP | HDR | ELF |////|  |
++  +-----------+-----/ /---+---+----+-------+-----+-----+----+--+
++        |                   ^    ^     ^      ^           ^
++        |                   |    |     |      |           |
++        \                  CPU  HPTE   /      |           |
++         ------------------------------       |           |
++      Boot memory content gets transferred    |           |
++      to reserved area by firmware at the     |           |
++      time of crash.                          |           |
++                                          FADump Header   |
++                                           (meta area)    |
++                                                          |
++                                                          |
++                      Metadata: This area holds a metadata struture whose
++                      address is registered with f/w and retrieved in the
++                      second kernel after crash, on platforms that support
++                      tags (OPAL). Having such structure with info needed
++                      to process the crashdump eases dump capture process.
  
- static int __init opal_fadump_process_fadump(struct fw_dump *fadump_conf)
- {
--	return -EINVAL;
-+	struct fadump_crash_info_header *fdh;
-+	int rc = 0;
-+
-+	if (!opal_fdm_active || !fadump_conf->fadumphdr_addr)
-+		return -EINVAL;
-+
-+	/* Validate the fadump crash info header */
-+	fdh = __va(fadump_conf->fadumphdr_addr);
-+	if (fdh->magic_number != FADUMP_CRASH_INFO_MAGIC) {
-+		pr_err("Crash info header is not valid.\n");
-+		return -EINVAL;
-+	}
-+
-+	/*
-+	 * TODO: To build cpu notes, find a way to map PIR to logical id.
-+	 *       Also, we may need different method for pseries and powernv.
-+	 *       The currently booted kernel could have a different PIR to
-+	 *       logical id mapping. So, try saving info of previous kernel's
-+	 *       paca to get the right PIR to logical id mapping.
-+	 */
-+	rc = opal_fadump_build_cpu_notes(fadump_conf);
-+	if (rc)
-+		return rc;
-+
-+	/*
-+	 * We are done validating dump info and elfcore header is now ready
-+	 * to be exported. set elfcorehdr_addr so that vmcore module will
-+	 * export the elfcore header through '/proc/vmcore'.
-+	 */
-+	elfcorehdr_addr = fdh->elfcorehdr_addr;
-+
-+	return rc;
- }
+                    Fig. 1
  
- static void opal_fadump_region_show(struct fw_dump *fadump_conf,
- 				    struct seq_file *m)
- {
- 	int i;
--	const struct opal_fadump_mem_struct *fdm_ptr = opal_fdm;
-+	const struct opal_fadump_mem_struct *fdm_ptr;
- 	u64 dumped_bytes = 0;
  
-+	if (fadump_conf->dump_active)
-+		fdm_ptr = opal_fdm_active;
-+	else
-+		fdm_ptr = opal_fdm;
-+
- 	for (i = 0; i < fdm_ptr->region_cnt; i++) {
-+		/*
-+		 * Only regions that are registered for MPIPL
-+		 * would have dump data.
-+		 */
-+		if ((fadump_conf->dump_active) &&
-+		    (i < fdm_ptr->registered_regions))
-+			dumped_bytes = fdm_ptr->rgn[i].size;
-+
- 		seq_printf(m, "DUMP: Src: %#016llx, Dest: %#016llx, ",
- 			   fdm_ptr->rgn[i].src, fdm_ptr->rgn[i].dest);
- 		seq_printf(m, "Size: %#llx, Dumped: %#llx bytes\n",
- 			   fdm_ptr->rgn[i].size, dumped_bytes);
- 	}
-+
-+	/* Dump is active. Show reserved area start address. */
-+	if (fadump_conf->dump_active) {
-+		seq_printf(m, "\nMemory above %#016lx is reserved for saving crash dump\n",
-+			   fadump_conf->reserve_dump_area_start);
-+	}
- }
+   o Memory Reservation during second kernel after crash
  
- static void opal_fadump_trigger(struct fadump_crash_info_header *fdh,
-@@ -225,6 +371,7 @@ static struct fadump_ops opal_fadump_ops = {
- int __init opal_fadump_dt_scan(struct fw_dump *fadump_conf, ulong node)
- {
- 	unsigned long dn;
-+	const __be32 *prop;
+-  Low memory                                                Top of memory
+-  0      boot memory size                                        |
+-  |           |<------------- Reserved dump area --------------->|
+-  V           V                |<---- Preserve area ----->|      V
+-  +-----------+----------/ /---+---+----+--------+---+----+------+
+-  |           |                |CPU|HPTE|  DUMP  |HDR|ELF |      |
+-  +-----------+----------/ /---+---+----+--------+---+----+------+
+-        |                                              |
+-        V                                              V
+-   Used by second                                /proc/vmcore
++  Low memory                                              Top of memory
++  0      boot memory size                                      |
++  |           |<------------ Reserved dump area -------------->|
++  V           V           |<---- Preserve area ------->|       |
++  +-----------+-----/ /---+---+----+-------+-----+-----+----+--+
++  |           |           |///|////|  DUMP | HDR | ELF |////|  |
++  +-----------+-----/ /---+---+----+-------+-----+-----+----+--+
++        |                                           |
++        V                                           V
++   Used by second                             /proc/vmcore
+    kernel to boot
++
++        +---+
++        |///| -> Regions (CPU, HPTE & Metadata) marked like this in the above
++        +---+    figures are not always present. For example, OPAL platform
++                 does not have CPU & HPTE regions while Metadata region is
++                 not supported on pSeries currently.
++
+                    Fig. 2
  
- 	/*
- 	 * Check if Firmware-Assisted Dump is supported. if yes, check
-@@ -251,5 +398,42 @@ int __init opal_fadump_dt_scan(struct fw_dump *fadump_conf, ulong node)
- 	 */
- 	fadump_conf->max_copy_size = _ALIGN_DOWN(U32_MAX, PAGE_SIZE);
- 
-+	/*
-+	 * Check if dump has been initiated on last reboot.
-+	 */
-+	prop = of_get_flat_dt_prop(dn, "mpipl-boot", NULL);
-+	if (prop) {
-+		u64 addr = 0;
-+		s64 ret;
-+		const struct opal_fadump_mem_struct *r_opal_fdm_active;
 +
-+		ret = opal_mpipl_query_tag(OPAL_MPIPL_TAG_KERNEL, &addr);
-+		if ((ret != OPAL_SUCCESS) || !addr) {
-+			pr_err("Failed to get Kernel metadata (%lld)\n", ret);
-+			return 1;
-+		}
-+
-+		addr = be64_to_cpu(addr);
-+		pr_debug("Kernel metadata addr: %llx\n", addr);
-+
-+		opal_fdm_active = __va(addr);
-+		r_opal_fdm_active = (void *)addr;
-+		if (r_opal_fdm_active->version != OPAL_FADUMP_VERSION) {
-+			pr_err("FADump active but version (%u) unsupported!\n",
-+			       r_opal_fdm_active->version);
-+			return 1;
-+		}
-+
-+		/* Kernel regions not registered with f/w  for MPIPL */
-+		if (r_opal_fdm_active->registered_regions == 0) {
-+			opal_fdm_active = NULL;
-+			return 1;
-+		}
-+
-+		pr_info("Firmware-assisted dump is active.\n");
-+		fadump_conf->dump_active = 1;
-+		opal_fadump_get_config(fadump_conf, r_opal_fdm_active);
-+	}
-+
- 	return 1;
- }
+ Currently the dump will be copied from /proc/vmcore to a new file upon
+ user intervention. The dump data available through /proc/vmcore will be
+ in ELF format. Hence the existing kdump infrastructure (kdump scripts)
 
