@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-8.3 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
 	USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2D9F5C76188
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Jul 2019 03:59:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A518EC76188
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Jul 2019 04:01:51 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id AC0C920693
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Jul 2019 03:59:36 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org AC0C920693
+	by mail.kernel.org (Postfix) with ESMTPS id F1F4120693
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Jul 2019 04:01:50 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org F1F4120693
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45nmqp1yn5zDqRy
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Jul 2019 13:59:34 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45nmtN5P6lzDqTV
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Jul 2019 14:01:48 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
  (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
@@ -29,64 +29,63 @@ Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45nmkm11H2zDqTh
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Jul 2019 13:55:11 +1000 (AEST)
-Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45nml95rvMzDqSC
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Jul 2019 13:55:33 +1000 (AEST)
+Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x6G3pgT2017194
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Jul 2019 23:55:07 -0400
-Received: from e06smtp03.uk.ibm.com (e06smtp03.uk.ibm.com [195.75.94.99])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2ts5t72bg7-1
+ x6G3q1PS085947
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Jul 2019 23:55:30 -0400
+Received: from e06smtp02.uk.ibm.com (e06smtp02.uk.ibm.com [195.75.94.98])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2ts63d9vab-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Jul 2019 23:55:07 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Jul 2019 23:55:30 -0400
 Received: from localhost
- by e06smtp03.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp02.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <sbobroff@linux.ibm.com>;
- Tue, 16 Jul 2019 04:55:05 +0100
-Received: from b06cxnps3074.portsmouth.uk.ibm.com (9.149.109.194)
- by e06smtp03.uk.ibm.com (192.168.101.133) with IBM ESMTP SMTP Gateway:
+ Tue, 16 Jul 2019 04:55:28 +0100
+Received: from b06cxnps4076.portsmouth.uk.ibm.com (9.149.109.198)
+ by e06smtp02.uk.ibm.com (192.168.101.132) with IBM ESMTP SMTP Gateway:
  Authorized Use Only! Violators will be prosecuted; 
  (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Tue, 16 Jul 2019 04:55:03 +0100
-Received: from d06av26.portsmouth.uk.ibm.com (d06av26.portsmouth.uk.ibm.com
- [9.149.105.62])
- by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x6G3t28a28180684
+ Tue, 16 Jul 2019 04:55:25 +0100
+Received: from d06av22.portsmouth.uk.ibm.com (d06av22.portsmouth.uk.ibm.com
+ [9.149.105.58])
+ by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x6G3tPQo50987050
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Tue, 16 Jul 2019 03:55:02 GMT
-Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 4AA62AE045;
- Tue, 16 Jul 2019 03:55:02 +0000 (GMT)
-Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id EB92FAE051;
- Tue, 16 Jul 2019 03:55:01 +0000 (GMT)
+ Tue, 16 Jul 2019 03:55:25 GMT
+Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 06D3D4C046;
+ Tue, 16 Jul 2019 03:55:25 +0000 (GMT)
+Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id A728F4C040;
+ Tue, 16 Jul 2019 03:55:24 +0000 (GMT)
 Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
- by d06av26.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Tue, 16 Jul 2019 03:55:01 +0000 (GMT)
+ by d06av22.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Tue, 16 Jul 2019 03:55:24 +0000 (GMT)
 Received: from tungsten.ozlabs.ibm.com (haven.au.ibm.com [9.192.254.114])
  (using TLSv1.2 with cipher AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.au.ibm.com (Postfix) with ESMTPSA id D692AA01A7;
- Tue, 16 Jul 2019 13:55:00 +1000 (AEST)
-Date: Tue, 16 Jul 2019 13:54:59 +1000
+ by ozlabs.au.ibm.com (Postfix) with ESMTPSA id 91C2CA01A7;
+ Tue, 16 Jul 2019 13:55:23 +1000 (AEST)
+Date: Tue, 16 Jul 2019 13:55:22 +1000
 From: Sam Bobroff <sbobroff@linux.ibm.com>
 To: "Oliver O'Halloran" <oohall@gmail.com>
-Subject: Re: [PATCH 3/5] powerpc/eeh_sysfs: ifdef pseries sr-iov sysfs
- properties
+Subject: Re: [PATCH 4/5] powerpc/eeh_sysfs: Remove double pci_dn lookup.
 References: <20190715085612.8802-1-oohall@gmail.com>
- <20190715085612.8802-4-oohall@gmail.com>
+ <20190715085612.8802-5-oohall@gmail.com>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha512;
- protocol="application/pgp-signature"; boundary="/e2eDi0V/xtL+Mc8"
+ protocol="application/pgp-signature"; boundary="+B+y8wtTXqdUj1xM"
 Content-Disposition: inline
-In-Reply-To: <20190715085612.8802-4-oohall@gmail.com>
+In-Reply-To: <20190715085612.8802-5-oohall@gmail.com>
 User-Agent: Mutt/1.10.1 (2018-07-13)
 X-TM-AS-GCONF: 00
-x-cbid: 19071603-0012-0000-0000-00000332EC88
+x-cbid: 19071603-0008-0000-0000-000002FD89DC
 X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19071603-0013-0000-0000-0000216C648B
-Message-Id: <20190716035459.GC3645@tungsten.ozlabs.ibm.com>
+x-cbparentid: 19071603-0009-0000-0000-0000226AFE06
+Message-Id: <20190716035521.GD3645@tungsten.ozlabs.ibm.com>
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
  definitions=2019-07-16_01:, , signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
@@ -112,77 +111,57 @@ Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
 
---/e2eDi0V/xtL+Mc8
+--+B+y8wtTXqdUj1xM
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Mon, Jul 15, 2019 at 06:56:10PM +1000, Oliver O'Halloran wrote:
-> There are several EEH sysfs properties that only exists when the
-> "ibm,is-open-sriov-pf" property appears in the device tree node of the PCI
-> device. This used on pseries to indicate to the guest that the hypervisor
-> allows the guest to configure the SR-IOV capability. Doing this requires
-> some handshaking between the guest, hypervisor and userspace when a VF is
-> EEH frozen which is why these properties exist.
->=20
-> This is all dead code on non-pseries platforms so wrap it in an #ifdef
-> CONFIG_PPC_PSERIES to make the dependency clearer.
-
-Looks good and a test compile without pSeries platform support
-configured seemed to work, so:
-
-Tested-by: Sam Bobroff <sbobroff@linux.ibm.com>
-Reviewed-by: Sam Bobroff <sbobroff@linux.ibm.com>
-
+On Mon, Jul 15, 2019 at 06:56:11PM +1000, Oliver O'Halloran wrote:
+> In eeh_notify_resume_show() the pci_dn for the device is looked up once in
+> the declaration block and then once after checking for a NULL eeh_dev.
+> Remove the second lookup since it's pointless.
 >=20
 > Signed-off-by: Oliver O'Halloran <oohall@gmail.com>
+
+Reviewed-by: Sam Bobroff <sbobroff@linux.ibm.com>
+Tested-by: Sam Bobroff <sbobroff@linux.ibm.com>
+
 > ---
->  arch/powerpc/kernel/eeh_sysfs.c | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
+>  arch/powerpc/kernel/eeh_sysfs.c | 1 -
+>  1 file changed, 1 deletion(-)
 >=20
 > diff --git a/arch/powerpc/kernel/eeh_sysfs.c b/arch/powerpc/kernel/eeh_sy=
 sfs.c
-> index 6a2c2886f..3adf8cd 100644
+> index 3adf8cd..c4cc8fc 100644
 > --- a/arch/powerpc/kernel/eeh_sysfs.c
 > +++ b/arch/powerpc/kernel/eeh_sysfs.c
-> @@ -91,7 +91,7 @@ static ssize_t eeh_pe_state_store(struct device *dev,
+> @@ -102,7 +102,6 @@ static ssize_t eeh_notify_resume_show(struct device *=
+dev,
+>  	if (!edev || !edev->pe)
+>  		return -ENODEV;
 > =20
->  static DEVICE_ATTR_RW(eeh_pe_state);
+> -	pdn =3D pci_get_pdn(pdev);
+>  	return sprintf(buf, "%d\n", pdn->last_allow_rc);
+>  }
 > =20
-> -#ifdef CONFIG_PCI_IOV
-> +#if defined(CONFIG_PCI_IOV) && defined(CONFIG_PPC_PSERIES)
->  static ssize_t eeh_notify_resume_show(struct device *dev,
->  				      struct device_attribute *attr, char *buf)
->  {
-> @@ -148,7 +148,7 @@ static void eeh_notify_resume_remove(struct pci_dev *=
-pdev)
->  #else
->  static inline int eeh_notify_resume_add(struct pci_dev *pdev) { return 0=
-; }
->  static inline void eeh_notify_resume_remove(struct pci_dev *pdev) { }
-> -#endif /* CONFIG_PCI_IOV */
-> +#endif /* CONFIG_PCI_IOV && CONFIG PPC_PSERIES*/
-> =20
->  void eeh_sysfs_add_device(struct pci_dev *pdev)
->  {
 > --=20
 > 2.9.5
 >=20
 
---/e2eDi0V/xtL+Mc8
+--+B+y8wtTXqdUj1xM
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQEzBAABCgAdFiEELWWF8pdtWK5YQRohMX8w6AQl/iIFAl0tSpMACgkQMX8w6AQl
-/iLVWQf/ct0opSr7vxY8Cs2kTcduxRGi6x/PDRjd6YaVDouSkkenEzqeVd5c/uPz
-mfwB4mrimi91AdA/Xsk5soI10j5yYUFgkb41y4VfLBw/Tm985yabqk2uVgw2RD4g
-Iv0o2DamlJu2YvIjMuxcjpPfPVP+aYAuFV5jlmAtpeo6P7XeY5UgVbLiS6d9M0wU
-jubxncPUHl32QXxedd7NMjh7vCmrOoy2a05aSio/Z587w7eW0NuWdKPJBMT4yw8m
-ICtKz/vcKL490W8NUbOvQW9CYgY8Cc8hnJJRsPF+4+CGGq1rOx7JzK+uhH7dMTPv
-LzW938qO2HC1ePqaPpA6DoKlusQqCA==
-=d2Uv
+iQEzBAABCgAdFiEELWWF8pdtWK5YQRohMX8w6AQl/iIFAl0tSqkACgkQMX8w6AQl
+/iKbZggAhZQKWemYO0vJzG0Tk2Gh4hQ8dKIUyL+x3K9/leM//aoBcaP6PWgEhSqT
+FgufE/7f6we1twUJNoFVlokFrID8zUClF1U5Az9C9ebE2viPQj8gOTiGsEaYGA8n
+KA3HZHcTczKVnzxGCYSij4OScF6xTxrwZSXKewykc8RKWhKyL8+XjgrT2IRCgQcf
+o/W7fRKlbITDkztci4r4KOn5dNG0r+it2+bQWMUW+zJb9BAocjqQSrfLzgVcmUCb
+sSaXXk0Lmi2L7pSY9Z75kdO9r+PiEvpnvaes3dfwv1qTb5QhV3t9bd/TjJP/IAuI
+JOvp/vdLZk9PKrbt+je+l+L2Dect7A==
+=RRm9
 -----END PGP SIGNATURE-----
 
---/e2eDi0V/xtL+Mc8--
+--+B+y8wtTXqdUj1xM--
 
