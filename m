@@ -2,49 +2,53 @@ Return-Path: <SRS0=Uyyo=VO=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 52BC0C76186
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Jul 2019 07:56:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D6C07C76186
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Jul 2019 07:57:55 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id D84822077C
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Jul 2019 07:56:07 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D84822077C
+	by mail.kernel.org (Postfix) with ESMTPS id 68A612077C
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Jul 2019 07:57:55 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 68A612077C
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=huawei.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45pV2F5BmNzDqP6
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Jul 2019 17:56:05 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45pV4J6LV0zDqRX
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Jul 2019 17:57:52 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=huawei.com
- (client-ip=45.249.212.35; helo=huawei.com; envelope-from=yanaijie@huawei.com;
+ (client-ip=45.249.212.190; helo=huawei.com; envelope-from=yanaijie@huawei.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=huawei.com
-Received: from huawei.com (szxga07-in.huawei.com [45.249.212.35])
+Received: from huawei.com (szxga04-in.huawei.com [45.249.212.190])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45pTtY4mntzDqPW
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Jul 2019 17:49:25 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45pTtb6lJSzDqPW
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Jul 2019 17:49:27 +1000 (AEST)
 Received: from DGGEMS402-HUB.china.huawei.com (unknown [172.30.72.59])
- by Forcepoint Email with ESMTP id 065F0D14F2AEA957AF71;
- Wed, 17 Jul 2019 15:49:19 +0800 (CST)
+ by Forcepoint Email with ESMTP id 0FB9C652299FCEA7A774;
+ Wed, 17 Jul 2019 15:49:24 +0800 (CST)
 Received: from huawei.com (10.175.124.28) by DGGEMS402-HUB.china.huawei.com
  (10.3.19.202) with Microsoft SMTP Server id 14.3.439.0; Wed, 17 Jul 2019
- 15:49:11 +0800
+ 15:49:17 +0800
 From: Jason Yan <yanaijie@huawei.com>
 To: <mpe@ellerman.id.au>, <linuxppc-dev@lists.ozlabs.org>,
  <diana.craciun@nxp.com>, <christophe.leroy@c-s.fr>,
  <benh@kernel.crashing.org>, <paulus@samba.org>, <npiggin@gmail.com>,
  <keescook@chromium.org>, <kernel-hardening@lists.openwall.com>
-Subject: [RFC PATCH 00/10] implement KASLR for powerpc/fsl_booke/32
-Date: Wed, 17 Jul 2019 16:06:11 +0800
-Message-ID: <20190717080621.40424-1-yanaijie@huawei.com>
+Subject: [RFC PATCH 08/10] powerpc/fsl_booke/kaslr: clear the original kernel
+ if randomized
+Date: Wed, 17 Jul 2019 16:06:19 +0800
+Message-ID: <20190717080621.40424-9-yanaijie@huawei.com>
 X-Mailer: git-send-email 2.17.2
+In-Reply-To: <20190717080621.40424-1-yanaijie@huawei.com>
+References: <20190717080621.40424-1-yanaijie@huawei.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 X-Originating-IP: [10.175.124.28]
@@ -67,74 +71,68 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This series implements KASLR for powerpc/fsl_booke/32, as a security
-feature that deters exploit attempts relying on knowledge of the location
-of kernel internals.
+The original kernel still exists in the memory, clear it now.
 
-Since CONFIG_RELOCATABLE has already supported, what we need to do is
-map or copy kernel to a proper place and relocate. Freescale Book-E
-parts expect lowmem to be mapped by fixed TLB entries(TLB1). The TLB1
-entries are not suitable to map the kernel directly in a randomized
-region, so we chose to copy the kernel to a proper place and restart to
-relocate.
+Signed-off-by: Jason Yan <yanaijie@huawei.com>
+Cc: Diana Craciun <diana.craciun@nxp.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Christophe Leroy <christophe.leroy@c-s.fr>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Nicholas Piggin <npiggin@gmail.com>
+Cc: Kees Cook <keescook@chromium.org>
+---
+ arch/powerpc/kernel/kaslr_booke.c  | 11 +++++++++++
+ arch/powerpc/mm/mmu_decl.h         |  2 ++
+ arch/powerpc/mm/nohash/fsl_booke.c |  1 +
+ 3 files changed, 14 insertions(+)
 
-Entropy is derived from the banner and timer base, which will change every
-build and boot. This not so much safe so additionally the bootloader may
-pass entropy via the /chosen/kaslr-seed node in device tree.
-
-We will use the first 512M of the low memory to randomize the kernel
-image. The memory will be split in 64M zones. We will use the lower 8
-bit of the entropy to decide the index of the 64M zone. Then we chose a
-16K aligned offset inside the 64M zone to put the kernel in.
-
-    KERNELBASE
-
-        |-->   64M   <--|
-        |               |
-        +---------------+    +----------------+---------------+
-        |               |....|    |kernel|    |               |
-        +---------------+    +----------------+---------------+
-        |                         |
-        |----->   offset    <-----|
-
-                              kimage_vaddr
-
-We also check if we will overlap with some areas like the dtb area, the
-initrd area or the crashkernel area. If we cannot find a proper area,
-kaslr will be disabled and boot from the original kernel.
-
-Jason Yan (10):
-  powerpc: unify definition of M_IF_NEEDED
-  powerpc: move memstart_addr and kernstart_addr to init-common.c
-  powerpc: introduce kimage_vaddr to store the kernel base
-  powerpc/fsl_booke/32: introduce create_tlb_entry() helper
-  powerpc/fsl_booke/32: introduce reloc_kernel_entry() helper
-  powerpc/fsl_booke/32: implement KASLR infrastructure
-  powerpc/fsl_booke/32: randomize the kernel image offset
-  powerpc/fsl_booke/kaslr: clear the original kernel if randomized
-  powerpc/fsl_booke/kaslr: support nokaslr cmdline parameter
-  powerpc/fsl_booke/kaslr: dump out kernel offset information on panic
-
- arch/powerpc/Kconfig                          |  11 +
- arch/powerpc/include/asm/nohash/mmu-book3e.h  |  10 +
- arch/powerpc/include/asm/page.h               |   7 +
- arch/powerpc/kernel/Makefile                  |   1 +
- arch/powerpc/kernel/early_32.c                |   2 +-
- arch/powerpc/kernel/exceptions-64e.S          |  10 -
- arch/powerpc/kernel/fsl_booke_entry_mapping.S |  23 +-
- arch/powerpc/kernel/head_fsl_booke.S          |  61 ++-
- arch/powerpc/kernel/kaslr_booke.c             | 439 ++++++++++++++++++
- arch/powerpc/kernel/machine_kexec.c           |   1 +
- arch/powerpc/kernel/misc_64.S                 |   5 -
- arch/powerpc/kernel/setup-common.c            |  23 +
- arch/powerpc/mm/init-common.c                 |   7 +
- arch/powerpc/mm/init_32.c                     |   5 -
- arch/powerpc/mm/init_64.c                     |   5 -
- arch/powerpc/mm/mmu_decl.h                    |  10 +
- arch/powerpc/mm/nohash/fsl_booke.c            |   8 +-
- 17 files changed, 580 insertions(+), 48 deletions(-)
- create mode 100644 arch/powerpc/kernel/kaslr_booke.c
-
+diff --git a/arch/powerpc/kernel/kaslr_booke.c b/arch/powerpc/kernel/kaslr_booke.c
+index 90357f4bd313..00339c05879f 100644
+--- a/arch/powerpc/kernel/kaslr_booke.c
++++ b/arch/powerpc/kernel/kaslr_booke.c
+@@ -412,3 +412,14 @@ notrace void __init kaslr_early_init(void *dt_ptr, phys_addr_t size)
+ 
+ 	reloc_kernel_entry(dt_ptr, kimage_vaddr);
+ }
++
++void __init kaslr_second_init(void)
++{
++	/* If randomized, clear the original kernel */
++	if (kimage_vaddr != KERNELBASE) {
++		unsigned long kernel_sz;
++
++		kernel_sz = (unsigned long)_end - kimage_vaddr;
++		memset((void *)KERNELBASE, 0, kernel_sz);
++	}
++}
+diff --git a/arch/powerpc/mm/mmu_decl.h b/arch/powerpc/mm/mmu_decl.h
+index 754ae1e69f92..9912ee598f9b 100644
+--- a/arch/powerpc/mm/mmu_decl.h
++++ b/arch/powerpc/mm/mmu_decl.h
+@@ -150,8 +150,10 @@ extern void loadcam_multi(int first_idx, int num, int tmp_idx);
+ 
+ #ifdef CONFIG_RANDOMIZE_BASE
+ extern void kaslr_early_init(void *dt_ptr, phys_addr_t size);
++extern void kaslr_second_init(void);
+ #else
+ static inline void kaslr_early_init(void *dt_ptr, phys_addr_t size) {}
++static inline void kaslr_second_init(void) {}
+ #endif
+ 
+ struct tlbcam {
+diff --git a/arch/powerpc/mm/nohash/fsl_booke.c b/arch/powerpc/mm/nohash/fsl_booke.c
+index 8d25a8dc965f..fa5a87f5c08e 100644
+--- a/arch/powerpc/mm/nohash/fsl_booke.c
++++ b/arch/powerpc/mm/nohash/fsl_booke.c
+@@ -269,6 +269,7 @@ notrace void __init relocate_init(u64 dt_ptr, phys_addr_t start)
+ 	kernstart_addr = start;
+ 	if (is_second_reloc) {
+ 		virt_phys_offset = PAGE_OFFSET - memstart_addr;
++		kaslr_second_init();
+ 		return;
+ 	}
+ 
 -- 
 2.17.2
 
