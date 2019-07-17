@@ -2,90 +2,56 @@ Return-Path: <SRS0=Uyyo=VO=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.0 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EE840C76186
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Jul 2019 06:07:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7BC70C76186
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Jul 2019 07:52:08 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3A9C020818
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Jul 2019 06:07:58 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ozlabs-ru.20150623.gappssmtp.com header.i=@ozlabs-ru.20150623.gappssmtp.com header.b="xqjUUR/T"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3A9C020818
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ozlabs.ru
+	by mail.kernel.org (Postfix) with ESMTPS id CBA8220818
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Jul 2019 07:52:07 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CBA8220818
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=huawei.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45pRdR1s8HzDqJt
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Jul 2019 16:07:55 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45pTxd2VrbzDqQK
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Jul 2019 17:52:05 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=ozlabs.ru
- (client-ip=2607:f8b0:4864:20::443; helo=mail-pf1-x443.google.com;
- envelope-from=aik@ozlabs.ru; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=huawei.com
+ (client-ip=45.249.212.35; helo=huawei.com; envelope-from=yanaijie@huawei.com;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=ozlabs.ru
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ozlabs-ru.20150623.gappssmtp.com
- header.i=@ozlabs-ru.20150623.gappssmtp.com header.b="xqjUUR/T"; 
- dkim-atps=neutral
-Received: from mail-pf1-x443.google.com (mail-pf1-x443.google.com
- [IPv6:2607:f8b0:4864:20::443])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ dmarc=none (p=none dis=none) header.from=huawei.com
+Received: from huawei.com (szxga07-in.huawei.com [45.249.212.35])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45pRbW2wtszDq8B
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Jul 2019 16:06:15 +1000 (AEST)
-Received: by mail-pf1-x443.google.com with SMTP id c73so10272544pfb.13
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Jul 2019 23:06:15 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=ozlabs-ru.20150623.gappssmtp.com; s=20150623;
- h=subject:to:cc:references:from:message-id:date:user-agent
- :mime-version:in-reply-to:content-language:content-transfer-encoding;
- bh=hjSRJ4YFCU0lYiLqwmRkJofNaFJUzFbZrYaG3+MIzz0=;
- b=xqjUUR/TnIzPra5VVDK6t/XlkiIRdr8u3x5c3Sc/by7d5XEwnyENR8KkNyXsM1Lc9M
- Kbt5439jOhA0HsD4kINfvjFNzZu26jZauuMo+NAjPhJDKxHAy+sMIwwyojD/oBG2mq+6
- c2vS+EhsphsGNav7eUX5LJx+lTq8qJIW4SFsPF4ZAOR4bN74mwQuRbUczrrELe65Zist
- CCvoB3HW2NAwC4tcyqG4aGWVsbhHhcqGxi/HR+dWkuOhbM1/NSUD52Z1jze/34jm4OXO
- +KAI3jLaXO8jxyv4CktPIyPjWVQAheSkCDdESChQOn7zjycebyCeXMMku5v7LIhIQuMg
- +kSg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:subject:to:cc:references:from:message-id:date
- :user-agent:mime-version:in-reply-to:content-language
- :content-transfer-encoding;
- bh=hjSRJ4YFCU0lYiLqwmRkJofNaFJUzFbZrYaG3+MIzz0=;
- b=c+oAYka1PXO0zbNWWhv+jy1JMEtqi4w354tgYYdFUC81b2k49Djk3r1rtQ5WnTquST
- dfKDgJxeO6aMR4cfuKCWK5/1/OfX0ByPF8F4h3b5Rmz3Go9ZTt9x0BQwOf9hiRk74x4f
- p2HzzN6wDp3xfxTSZHunK9Qh7KSyUUOlVNHOaiCtyPK2tfWM+Pz5IjWiRzFfi7fk/j9b
- NOQ4KmZOrskiCkErI4ctET2vDPsKsyTfA+NZsHkFMrgA7bWdIyM4wZ4r08wGsdCb4tF0
- okWUn8tYAHEsv5OUgAzTOqtUo4RHd3KN6T2K4+dcS3s81Y3M0MH9NIZ3Oct5S1RGWp83
- zlOg==
-X-Gm-Message-State: APjAAAUFr+VVylPQlqaNbZ4gpb3J1BuXjekTuJIdCZt0rky2hYjPnIh9
- KM0BjYz4dvEUDxV5Wx1GREE=
-X-Google-Smtp-Source: APXvYqxD3ptjV2+047E6gnKu7klYdG/CfO8QbUFcV0UjBis0geyqVqWF/Dt0Mi2+47sbEeF0I1pNWQ==
-X-Received: by 2002:a63:2606:: with SMTP id m6mr38882494pgm.436.1563343572118; 
- Tue, 16 Jul 2019 23:06:12 -0700 (PDT)
-Received: from [10.61.2.175] ([122.99.82.10])
- by smtp.gmail.com with ESMTPSA id f64sm24121901pfa.115.2019.07.16.23.06.08
- (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
- Tue, 16 Jul 2019 23:06:11 -0700 (PDT)
-Subject: Re: [PATCH kernel v3] powerpc/xive: Drop deregistered irqs
-To: linuxppc-dev@lists.ozlabs.org
-References: <20190717050028.85926-1-aik@ozlabs.ru>
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
-Message-ID: <299e14d3-0820-7a11-7111-423093cc3e50@ozlabs.ru>
-Date: Wed, 17 Jul 2019 16:06:06 +1000
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
- Thunderbird/60.7.2
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45pTtY4sQTzDqTp
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Jul 2019 17:49:24 +1000 (AEST)
+Received: from DGGEMS402-HUB.china.huawei.com (unknown [172.30.72.60])
+ by Forcepoint Email with ESMTP id D1CF81AA459E5CF7EB43;
+ Wed, 17 Jul 2019 15:49:18 +0800 (CST)
+Received: from huawei.com (10.175.124.28) by DGGEMS402-HUB.china.huawei.com
+ (10.3.19.202) with Microsoft SMTP Server id 14.3.439.0; Wed, 17 Jul 2019
+ 15:49:12 +0800
+From: Jason Yan <yanaijie@huawei.com>
+To: <mpe@ellerman.id.au>, <linuxppc-dev@lists.ozlabs.org>,
+ <diana.craciun@nxp.com>, <christophe.leroy@c-s.fr>,
+ <benh@kernel.crashing.org>, <paulus@samba.org>, <npiggin@gmail.com>,
+ <keescook@chromium.org>, <kernel-hardening@lists.openwall.com>
+Subject: [RFC PATCH 01/10] powerpc: unify definition of M_IF_NEEDED
+Date: Wed, 17 Jul 2019 16:06:12 +0800
+Message-ID: <20190717080621.40424-2-yanaijie@huawei.com>
+X-Mailer: git-send-email 2.17.2
+In-Reply-To: <20190717080621.40424-1-yanaijie@huawei.com>
+References: <20190717080621.40424-1-yanaijie@huawei.com>
 MIME-Version: 1.0
-In-Reply-To: <20190717050028.85926-1-aik@ozlabs.ru>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: en-US
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-Originating-IP: [10.175.124.28]
+X-CFilter-Loop: Reflected
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -97,131 +63,109 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Daniel Henrique Barboza <danielhb413@gmail.com>, Greg Kurz <groug@kaod.org>,
- Nicholas Piggin <npiggin@gmail.com>, Paul Mackerras <paulus@samba.org>,
- =?UTF-8?Q?C=c3=a9dric_Le_Goater?= <clg@kaod.org>,
- Alistair Popple <alistair@popple.id.au>,
- David Gibson <david@gibson.dropbear.id.au>
+Cc: wangkefeng.wang@huawei.com, Jason Yan <yanaijie@huawei.com>,
+ linux-kernel@vger.kernel.org, jingxiangfeng@huawei.com,
+ thunder.leizhen@huawei.com, fanchengyang@huawei.com, yebin10@huawei.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+M_IF_NEEDED is defined too many times. Move it to a common place.
 
+Signed-off-by: Jason Yan <yanaijie@huawei.com>
+Cc: Diana Craciun <diana.craciun@nxp.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Christophe Leroy <christophe.leroy@c-s.fr>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Nicholas Piggin <npiggin@gmail.com>
+Cc: Kees Cook <keescook@chromium.org>
+---
+ arch/powerpc/include/asm/nohash/mmu-book3e.h  | 10 ++++++++++
+ arch/powerpc/kernel/exceptions-64e.S          | 10 ----------
+ arch/powerpc/kernel/fsl_booke_entry_mapping.S | 10 ----------
+ arch/powerpc/kernel/misc_64.S                 |  5 -----
+ 4 files changed, 10 insertions(+), 25 deletions(-)
 
-On 17/07/2019 15:00, Alexey Kardashevskiy wrote:
-> There is a race between releasing an irq on one cpu and fetching it
-> from XIVE on another cpu as there does not seem to be any locking between
-> these, probably because xive_irq_chip::irq_shutdown() is supposed to
-> remove the irq from all queues in the system which it does not do.
-> 
-> As a result, when such released irq appears in a queue, we take it
-> from the queue but we do not change the current priority on that cpu and
-> since there is no handler for the irq, EOI is never called and the cpu
-> current priority remains elevated (7 vs. 0xff==unmasked). If another irq
-> is assigned to the same cpu, then that device stops working until irq
-> is moved to another cpu or the device is reset.
-> 
-> This adds a new ppc_md.orphan_irq callback which is called if no irq
-> descriptor is found. The XIVE implementation drops the current priority
-> to 0xff which effectively unmasks interrupts in a current CPU.
-> 
-> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
-> Reviewed-by: Cédric Le Goater <clg@kaod.org>
-
-Of course I missed this:
-
-
-Fixes: 243e25112d06 ("powerpc/xive: Native exploitation of the XIVE 
-interrupt controller")
-
-
-
-
-> ---
-> Changes:
-> v3:
-> * added a comment above xive_orphan_irq()
-> 
-> v2:
-> * added ppc_md.orphan_irq
-> ---
->   arch/powerpc/include/asm/machdep.h |  3 +++
->   arch/powerpc/kernel/irq.c          |  9 ++++++---
->   arch/powerpc/sysdev/xive/common.c  | 18 ++++++++++++++++++
->   3 files changed, 27 insertions(+), 3 deletions(-)
-> 
-> diff --git a/arch/powerpc/include/asm/machdep.h b/arch/powerpc/include/asm/machdep.h
-> index c43d6eca9edd..6cc14e28e89a 100644
-> --- a/arch/powerpc/include/asm/machdep.h
-> +++ b/arch/powerpc/include/asm/machdep.h
-> @@ -59,6 +59,9 @@ struct machdep_calls {
->   	/* Return an irq, or 0 to indicate there are none pending. */
->   	unsigned int	(*get_irq)(void);
->   
-> +	/* Drops irq if it does not have a valid descriptor */
-> +	void		(*orphan_irq)(unsigned int irq);
-> +
->   	/* PCI stuff */
->   	/* Called after allocating resources */
->   	void		(*pcibios_fixup)(void);
-> diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
-> index bc68c53af67c..b4e06d05bdba 100644
-> --- a/arch/powerpc/kernel/irq.c
-> +++ b/arch/powerpc/kernel/irq.c
-> @@ -632,10 +632,13 @@ void __do_irq(struct pt_regs *regs)
->   	may_hard_irq_enable();
->   
->   	/* And finally process it */
-> -	if (unlikely(!irq))
-> +	if (unlikely(!irq)) {
->   		__this_cpu_inc(irq_stat.spurious_irqs);
-> -	else
-> -		generic_handle_irq(irq);
-> +	} else if (generic_handle_irq(irq)) {
-> +		if (ppc_md.orphan_irq)
-> +			ppc_md.orphan_irq(irq);
-> +		__this_cpu_inc(irq_stat.spurious_irqs);
-> +	}
->   
->   	trace_irq_exit(regs);
->   
-> diff --git a/arch/powerpc/sysdev/xive/common.c b/arch/powerpc/sysdev/xive/common.c
-> index 082c7e1c20f0..17e696b2d71b 100644
-> --- a/arch/powerpc/sysdev/xive/common.c
-> +++ b/arch/powerpc/sysdev/xive/common.c
-> @@ -283,6 +283,23 @@ static unsigned int xive_get_irq(void)
->   	return irq;
->   }
->   
-> +/*
-> + * Handles the case when a target CPU catches an interrupt which is being shut
-> + * down on another CPU. generic_handle_irq() returns an error in such case
-> + * and then the orphan_irq() handler restores the CPPR to reenable interrupts.
-> + *
-> + * Without orphan_irq() and valid irq_desc, there is no other way to restore
-> + * the CPPR. This executes on a CPU which caught the interrupt.
-> + */
-> +static void xive_orphan_irq(unsigned int irq)
-> +{
-> +	struct xive_cpu *xc = __this_cpu_read(xive_cpu);
-> +
-> +	xc->cppr = 0xff;
-> +	out_8(xive_tima + xive_tima_offset + TM_CPPR, 0xff);
-> +	DBG_VERBOSE("orphan_irq: irq %d, adjusting CPPR to 0xff\n", irq);
-> +}
-> +
->   /*
->    * After EOI'ing an interrupt, we need to re-check the queue
->    * to see if another interrupt is pending since multiple
-> @@ -1419,6 +1436,7 @@ bool __init xive_core_init(const struct xive_ops *ops, void __iomem *area, u32 o
->   	xive_irq_priority = max_prio;
->   
->   	ppc_md.get_irq = xive_get_irq;
-> +	ppc_md.orphan_irq = xive_orphan_irq;
->   	__xive_enabled = true;
->   
->   	pr_devel("Initializing host..\n");
-> 
-
+diff --git a/arch/powerpc/include/asm/nohash/mmu-book3e.h b/arch/powerpc/include/asm/nohash/mmu-book3e.h
+index 4c9777d256fb..0877362e48fa 100644
+--- a/arch/powerpc/include/asm/nohash/mmu-book3e.h
++++ b/arch/powerpc/include/asm/nohash/mmu-book3e.h
+@@ -221,6 +221,16 @@
+ #define TLBILX_T_CLASS2			6
+ #define TLBILX_T_CLASS3			7
+ 
++/*
++ * The mapping only needs to be cache-coherent on SMP, except on
++ * Freescale e500mc derivatives where it's also needed for coherent DMA.
++ */
++#if defined(CONFIG_SMP) || defined(CONFIG_PPC_E500MC)
++#define M_IF_NEEDED	MAS2_M
++#else
++#define M_IF_NEEDED	0
++#endif
++
+ #ifndef __ASSEMBLY__
+ #include <asm/bug.h>
+ 
+diff --git a/arch/powerpc/kernel/exceptions-64e.S b/arch/powerpc/kernel/exceptions-64e.S
+index 1cfb3da4a84a..fd49ec07ce4a 100644
+--- a/arch/powerpc/kernel/exceptions-64e.S
++++ b/arch/powerpc/kernel/exceptions-64e.S
+@@ -1342,16 +1342,6 @@ skpinv:	addi	r6,r6,1				/* Increment */
+ 	sync
+ 	isync
+ 
+-/*
+- * The mapping only needs to be cache-coherent on SMP, except on
+- * Freescale e500mc derivatives where it's also needed for coherent DMA.
+- */
+-#if defined(CONFIG_SMP) || defined(CONFIG_PPC_E500MC)
+-#define M_IF_NEEDED	MAS2_M
+-#else
+-#define M_IF_NEEDED	0
+-#endif
+-
+ /* 6. Setup KERNELBASE mapping in TLB[0]
+  *
+  * r3 = MAS0 w/TLBSEL & ESEL for the entry we started in
+diff --git a/arch/powerpc/kernel/fsl_booke_entry_mapping.S b/arch/powerpc/kernel/fsl_booke_entry_mapping.S
+index ea065282b303..de0980945510 100644
+--- a/arch/powerpc/kernel/fsl_booke_entry_mapping.S
++++ b/arch/powerpc/kernel/fsl_booke_entry_mapping.S
+@@ -153,16 +153,6 @@ skpinv:	addi	r6,r6,1				/* Increment */
+ 	tlbivax 0,r9
+ 	TLBSYNC
+ 
+-/*
+- * The mapping only needs to be cache-coherent on SMP, except on
+- * Freescale e500mc derivatives where it's also needed for coherent DMA.
+- */
+-#if defined(CONFIG_SMP) || defined(CONFIG_PPC_E500MC)
+-#define M_IF_NEEDED	MAS2_M
+-#else
+-#define M_IF_NEEDED	0
+-#endif
+-
+ #if defined(ENTRY_MAPPING_BOOT_SETUP)
+ 
+ /* 6. Setup KERNELBASE mapping in TLB1[0] */
+diff --git a/arch/powerpc/kernel/misc_64.S b/arch/powerpc/kernel/misc_64.S
+index b55a7b4cb543..26074f92d4bc 100644
+--- a/arch/powerpc/kernel/misc_64.S
++++ b/arch/powerpc/kernel/misc_64.S
+@@ -432,11 +432,6 @@ kexec_create_tlb:
+ 	rlwimi	r9,r10,16,4,15		/* Setup MAS0 = TLBSEL | ESEL(r9) */
+ 
+ /* Set up a temp identity mapping v:0 to p:0 and return to it. */
+-#if defined(CONFIG_SMP) || defined(CONFIG_PPC_E500MC)
+-#define M_IF_NEEDED	MAS2_M
+-#else
+-#define M_IF_NEEDED	0
+-#endif
+ 	mtspr	SPRN_MAS0,r9
+ 
+ 	lis	r9,(MAS1_VALID|MAS1_IPROT)@h
 -- 
-Alexey
+2.17.2
+
