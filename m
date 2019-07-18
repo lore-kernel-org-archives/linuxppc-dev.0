@@ -3,22 +3,22 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
 X-Spam-Status: No, score=-5.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EA6A0C76191
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Jul 2019 08:46:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id F2A42C76191
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Jul 2019 08:48:54 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id AA3E02173E
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Jul 2019 08:46:57 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org AA3E02173E
+	by mail.kernel.org (Postfix) with ESMTPS id AB0E1208C0
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Jul 2019 08:48:54 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org AB0E1208C0
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45q76Q2zVDzDqbF
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Jul 2019 18:46:54 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45q78h0WzSzDqFS
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Jul 2019 18:48:52 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=none (mailfrom) smtp.mailfrom=lst.de
  (client-ip=213.95.11.211; helo=verein.lst.de; envelope-from=hch@lst.de;
@@ -28,21 +28,22 @@ Authentication-Results: lists.ozlabs.org;
 Received: from verein.lst.de (verein.lst.de [213.95.11.211])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45q71Q4nRSzDqXC
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Jul 2019 18:42:34 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45q71x5jr8zDqTk
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Jul 2019 18:43:01 +1000 (AEST)
 Received: by verein.lst.de (Postfix, from userid 2407)
- id 7AC8568B05; Thu, 18 Jul 2019 10:42:30 +0200 (CEST)
-Date: Thu, 18 Jul 2019 10:42:30 +0200
+ id 9FFC668B05; Thu, 18 Jul 2019 10:42:58 +0200 (CEST)
+Date: Thu, 18 Jul 2019 10:42:58 +0200
 From: Christoph Hellwig <hch@lst.de>
 To: Thiago Jung Bauermann <bauerman@linux.ibm.com>
-Subject: Re: [PATCH v3 3/6] dma-mapping: Remove dma_check_mask()
-Message-ID: <20190718084230.GB24562@lst.de>
+Subject: Re: [PATCH v3 4/6] x86,s390/mm: Move sme_active() and sme_me_mask
+ to x86-specific header
+Message-ID: <20190718084258.GC24562@lst.de>
 References: <20190718032858.28744-1-bauerman@linux.ibm.com>
- <20190718032858.28744-4-bauerman@linux.ibm.com>
+ <20190718032858.28744-5-bauerman@linux.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20190718032858.28744-4-bauerman@linux.ibm.com>
+In-Reply-To: <20190718032858.28744-5-bauerman@linux.ibm.com>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -69,11 +70,14 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, Jul 18, 2019 at 12:28:55AM -0300, Thiago Jung Bauermann wrote:
-> sme_active() is an x86-specific function so it's better not to call it from
-> generic code. Christoph Hellwig mentioned that "There is no reason why we
-> should have a special debug printk just for one specific reason why there
-> is a requirement for a large DMA mask.", so just remove dma_check_mask().
+On Thu, Jul 18, 2019 at 12:28:56AM -0300, Thiago Jung Bauermann wrote:
+> Now that generic code doesn't reference them, move sme_active() and
+> sme_me_mask to x86's <asm/mem_encrypt.h>.
+> 
+> Also remove the export for sme_active() since it's only used in files that
+> won't be built as modules. sme_me_mask on the other hand is used in
+> arch/x86/kvm/svm.c (via __sme_set() and __psp_pa()) which can be built as a
+> module so its export needs to stay.
 > 
 > Signed-off-by: Thiago Jung Bauermann <bauerman@linux.ibm.com>
 
