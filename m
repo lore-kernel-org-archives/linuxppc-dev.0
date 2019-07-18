@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
 	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EA739C76186
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Jul 2019 03:38:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C77A1C76186
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Jul 2019 03:41:26 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 7900F2077C
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Jul 2019 03:38:45 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7900F2077C
+	by mail.kernel.org (Postfix) with ESMTPS id 51D6F2077C
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Jul 2019 03:41:26 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 51D6F2077C
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45q0Gq2H8zzDqP8
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Jul 2019 13:38:43 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45q0Kw0GPlzDqD2
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Jul 2019 13:41:24 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
  (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
@@ -29,61 +29,65 @@ Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45q04T3ykQzDqJB
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Jul 2019 13:29:45 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45q04Y43gJzDqXq
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Jul 2019 13:29:49 +1000 (AEST)
 Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x6I3S3k2020823; Wed, 17 Jul 2019 23:29:32 -0400
-Received: from pps.reinject (localhost [127.0.0.1])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2ttd5fxwnb-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 17 Jul 2019 23:29:31 -0400
-Received: from m0098417.ppops.net (m0098417.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.27/8.16.0.27) with SMTP id x6I3TVL6023563;
- Wed, 17 Jul 2019 23:29:31 -0400
-Received: from ppma03dal.us.ibm.com (b.bd.3ea9.ip4.static.sl-reverse.com
- [169.62.189.11])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2ttd5fxwmp-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 17 Jul 2019 23:29:31 -0400
-Received: from pps.filterd (ppma03dal.us.ibm.com [127.0.0.1])
- by ppma03dal.us.ibm.com (8.16.0.27/8.16.0.27) with SMTP id x6I3Q8gY026039;
- Thu, 18 Jul 2019 03:29:30 GMT
-Received: from b01cxnp22036.gho.pok.ibm.com (b01cxnp22036.gho.pok.ibm.com
- [9.57.198.26]) by ppma03dal.us.ibm.com with ESMTP id 2tq6x7mhxw-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 18 Jul 2019 03:29:30 +0000
+ x6I3S4ld020840
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Jul 2019 23:29:45 -0400
+Received: from e16.ny.us.ibm.com (e16.ny.us.ibm.com [129.33.205.206])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2ttd5fxwud-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Jul 2019 23:29:45 -0400
+Received: from localhost
+ by e16.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <bauerman@linux.ibm.com>;
+ Thu, 18 Jul 2019 04:29:45 +0100
+Received: from b01cxnp23033.gho.pok.ibm.com (9.57.198.28)
+ by e16.ny.us.ibm.com (146.89.104.203) with IBM ESMTP SMTP Gateway: Authorized
+ Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Thu, 18 Jul 2019 04:29:39 +0100
 Received: from b01ledav005.gho.pok.ibm.com (b01ledav005.gho.pok.ibm.com
  [9.57.199.110])
- by b01cxnp22036.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x6I3TT2E14156636
+ by b01cxnp23033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x6I3TcUT49086816
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Thu, 18 Jul 2019 03:29:29 GMT
+ Thu, 18 Jul 2019 03:29:38 GMT
 Received: from b01ledav005.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 767D3AE060;
- Thu, 18 Jul 2019 03:29:29 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 84326AE05F;
+ Thu, 18 Jul 2019 03:29:38 +0000 (GMT)
 Received: from b01ledav005.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 466E4AE05C;
- Thu, 18 Jul 2019 03:29:25 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 94DE3AE05C;
+ Thu, 18 Jul 2019 03:29:34 +0000 (GMT)
 Received: from morokweng.localdomain.com (unknown [9.85.129.123])
  by b01ledav005.gho.pok.ibm.com (Postfix) with ESMTP;
- Thu, 18 Jul 2019 03:29:25 +0000 (GMT)
+ Thu, 18 Jul 2019 03:29:34 +0000 (GMT)
 From: Thiago Jung Bauermann <bauerman@linux.ibm.com>
 To: x86@kernel.org
-Subject: [PATCH v3 3/6] dma-mapping: Remove dma_check_mask()
-Date: Thu, 18 Jul 2019 00:28:55 -0300
-Message-Id: <20190718032858.28744-4-bauerman@linux.ibm.com>
+Subject: [PATCH v3 5/6] fs/core/vmcore: Move sev_active() reference to x86
+ arch code
+Date: Thu, 18 Jul 2019 00:28:57 -0300
 X-Mailer: git-send-email 2.21.0
 In-Reply-To: <20190718032858.28744-1-bauerman@linux.ibm.com>
 References: <20190718032858.28744-1-bauerman@linux.ibm.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
+x-cbid: 19071803-0072-0000-0000-0000044A8A6A
+X-IBM-SpamModules-Scores: 
+X-IBM-SpamModules-Versions: BY=3.00011449; HX=3.00000242; KW=3.00000007;
+ PH=3.00000004; SC=3.00000286; SDB=6.01233737; UDB=6.00650106; IPR=6.01015064; 
+ MB=3.00027770; MTD=3.00000008; XFM=3.00000015; UTC=2019-07-18 03:29:43
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 19071803-0073-0000-0000-00004CBADC98
+Message-Id: <20190718032858.28744-6-bauerman@linux.ibm.com>
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
  definitions=2019-07-18_01:, , signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
  priorityscore=1501
- malwarescore=0 suspectscore=3 phishscore=0 bulkscore=0 spamscore=0
+ malwarescore=0 suspectscore=38 phishscore=0 bulkscore=0 spamscore=0
  clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
  mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
  scancount=1 engine=8.0.1-1810050000 definitions=main-1907180037
@@ -112,46 +116,110 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-sme_active() is an x86-specific function so it's better not to call it from
-generic code. Christoph Hellwig mentioned that "There is no reason why we
-should have a special debug printk just for one specific reason why there
-is a requirement for a large DMA mask.", so just remove dma_check_mask().
+Secure Encrypted Virtualization is an x86-specific feature, so it shouldn't
+appear in generic kernel code because it forces non-x86 architectures to
+define the sev_active() function, which doesn't make a lot of sense.
+
+To solve this problem, add an x86 elfcorehdr_read() function to override
+the generic weak implementation. To do that, it's necessary to make
+read_from_oldmem() public so that it can be used outside of vmcore.c.
+
+Also, remove the export for sev_active() since it's only used in files that
+won't be built as modules.
 
 Signed-off-by: Thiago Jung Bauermann <bauerman@linux.ibm.com>
 ---
- kernel/dma/mapping.c | 8 --------
- 1 file changed, 8 deletions(-)
+ arch/x86/kernel/crash_dump_64.c |  5 +++++
+ arch/x86/mm/mem_encrypt.c       |  1 -
+ fs/proc/vmcore.c                |  8 ++++----
+ include/linux/crash_dump.h      | 14 ++++++++++++++
+ include/linux/mem_encrypt.h     |  1 -
+ 5 files changed, 23 insertions(+), 6 deletions(-)
 
-diff --git a/kernel/dma/mapping.c b/kernel/dma/mapping.c
-index 1f628e7ac709..61eeefbfcb36 100644
---- a/kernel/dma/mapping.c
-+++ b/kernel/dma/mapping.c
-@@ -291,12 +291,6 @@ void dma_free_attrs(struct device *dev, size_t size, void *cpu_addr,
- }
- EXPORT_SYMBOL(dma_free_attrs);
- 
--static inline void dma_check_mask(struct device *dev, u64 mask)
--{
--	if (sme_active() && (mask < (((u64)sme_get_me_mask() << 1) - 1)))
--		dev_warn(dev, "SME is active, device will require DMA bounce buffers\n");
--}
--
- int dma_supported(struct device *dev, u64 mask)
+diff --git a/arch/x86/kernel/crash_dump_64.c b/arch/x86/kernel/crash_dump_64.c
+index 22369dd5de3b..045e82e8945b 100644
+--- a/arch/x86/kernel/crash_dump_64.c
++++ b/arch/x86/kernel/crash_dump_64.c
+@@ -70,3 +70,8 @@ ssize_t copy_oldmem_page_encrypted(unsigned long pfn, char *buf, size_t csize,
  {
- 	const struct dma_map_ops *ops = get_dma_ops(dev);
-@@ -327,7 +321,6 @@ int dma_set_mask(struct device *dev, u64 mask)
- 		return -EIO;
- 
- 	arch_dma_set_mask(dev, mask);
--	dma_check_mask(dev, mask);
- 	*dev->dma_mask = mask;
- 	return 0;
+ 	return __copy_oldmem_page(pfn, buf, csize, offset, userbuf, true);
  }
-@@ -345,7 +338,6 @@ int dma_set_coherent_mask(struct device *dev, u64 mask)
- 	if (!dma_supported(dev, mask))
- 		return -EIO;
- 
--	dma_check_mask(dev, mask);
- 	dev->coherent_dma_mask = mask;
- 	return 0;
++
++ssize_t elfcorehdr_read(char *buf, size_t count, u64 *ppos)
++{
++	return read_from_oldmem(buf, count, ppos, 0, sev_active());
++}
+diff --git a/arch/x86/mm/mem_encrypt.c b/arch/x86/mm/mem_encrypt.c
+index 7139f2f43955..b1e823441093 100644
+--- a/arch/x86/mm/mem_encrypt.c
++++ b/arch/x86/mm/mem_encrypt.c
+@@ -349,7 +349,6 @@ bool sev_active(void)
+ {
+ 	return sme_me_mask && sev_enabled;
  }
+-EXPORT_SYMBOL(sev_active);
+ 
+ /* Override for DMA direct allocation check - ARCH_HAS_FORCE_DMA_UNENCRYPTED */
+ bool force_dma_unencrypted(struct device *dev)
+diff --git a/fs/proc/vmcore.c b/fs/proc/vmcore.c
+index 57957c91c6df..ca1f20bedd8c 100644
+--- a/fs/proc/vmcore.c
++++ b/fs/proc/vmcore.c
+@@ -100,9 +100,9 @@ static int pfn_is_ram(unsigned long pfn)
+ }
+ 
+ /* Reads a page from the oldmem device from given offset. */
+-static ssize_t read_from_oldmem(char *buf, size_t count,
+-				u64 *ppos, int userbuf,
+-				bool encrypted)
++ssize_t read_from_oldmem(char *buf, size_t count,
++			 u64 *ppos, int userbuf,
++			 bool encrypted)
+ {
+ 	unsigned long pfn, offset;
+ 	size_t nr_bytes;
+@@ -166,7 +166,7 @@ void __weak elfcorehdr_free(unsigned long long addr)
+  */
+ ssize_t __weak elfcorehdr_read(char *buf, size_t count, u64 *ppos)
+ {
+-	return read_from_oldmem(buf, count, ppos, 0, sev_active());
++	return read_from_oldmem(buf, count, ppos, 0, false);
+ }
+ 
+ /*
+diff --git a/include/linux/crash_dump.h b/include/linux/crash_dump.h
+index f774c5eb9e3c..4664fc1871de 100644
+--- a/include/linux/crash_dump.h
++++ b/include/linux/crash_dump.h
+@@ -115,4 +115,18 @@ static inline int vmcore_add_device_dump(struct vmcoredd_data *data)
+ 	return -EOPNOTSUPP;
+ }
+ #endif /* CONFIG_PROC_VMCORE_DEVICE_DUMP */
++
++#ifdef CONFIG_PROC_VMCORE
++ssize_t read_from_oldmem(char *buf, size_t count,
++			 u64 *ppos, int userbuf,
++			 bool encrypted);
++#else
++static inline ssize_t read_from_oldmem(char *buf, size_t count,
++				       u64 *ppos, int userbuf,
++				       bool encrypted)
++{
++	return -EOPNOTSUPP;
++}
++#endif /* CONFIG_PROC_VMCORE */
++
+ #endif /* LINUX_CRASHDUMP_H */
+diff --git a/include/linux/mem_encrypt.h b/include/linux/mem_encrypt.h
+index 0c5b0ff9eb29..5c4a18a91f89 100644
+--- a/include/linux/mem_encrypt.h
++++ b/include/linux/mem_encrypt.h
+@@ -19,7 +19,6 @@
+ #else	/* !CONFIG_ARCH_HAS_MEM_ENCRYPT */
+ 
+ static inline bool mem_encrypt_active(void) { return false; }
+-static inline bool sev_active(void) { return false; }
+ 
+ #endif	/* CONFIG_ARCH_HAS_MEM_ENCRYPT */
+ 
+
