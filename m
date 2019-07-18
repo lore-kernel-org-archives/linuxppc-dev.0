@@ -2,23 +2,23 @@ Return-Path: <SRS0=Nz1t=VP=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id F2A42C76191
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Jul 2019 08:48:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id F075AC76191
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Jul 2019 08:50:47 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id AB0E1208C0
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Jul 2019 08:48:54 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org AB0E1208C0
+	by mail.kernel.org (Postfix) with ESMTPS id 8CB11208C0
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Jul 2019 08:50:47 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8CB11208C0
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45q78h0WzSzDqFS
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Jul 2019 18:48:52 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45q7Bs6SFYzDqRh
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Jul 2019 18:50:45 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=none (mailfrom) smtp.mailfrom=lst.de
  (client-ip=213.95.11.211; helo=verein.lst.de; envelope-from=hch@lst.de;
@@ -28,22 +28,22 @@ Authentication-Results: lists.ozlabs.org;
 Received: from verein.lst.de (verein.lst.de [213.95.11.211])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45q71x5jr8zDqTk
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Jul 2019 18:43:01 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45q73R6Yw4zDqRx
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Jul 2019 18:44:19 +1000 (AEST)
 Received: by verein.lst.de (Postfix, from userid 2407)
- id 9FFC668B05; Thu, 18 Jul 2019 10:42:58 +0200 (CEST)
-Date: Thu, 18 Jul 2019 10:42:58 +0200
+ id D492968B05; Thu, 18 Jul 2019 10:44:16 +0200 (CEST)
+Date: Thu, 18 Jul 2019 10:44:16 +0200
 From: Christoph Hellwig <hch@lst.de>
 To: Thiago Jung Bauermann <bauerman@linux.ibm.com>
-Subject: Re: [PATCH v3 4/6] x86,s390/mm: Move sme_active() and sme_me_mask
- to x86-specific header
-Message-ID: <20190718084258.GC24562@lst.de>
+Subject: Re: [PATCH v3 5/6] fs/core/vmcore: Move sev_active() reference to
+ x86 arch code
+Message-ID: <20190718084416.GD24562@lst.de>
 References: <20190718032858.28744-1-bauerman@linux.ibm.com>
- <20190718032858.28744-5-bauerman@linux.ibm.com>
+ <20190718032858.28744-6-bauerman@linux.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20190718032858.28744-5-bauerman@linux.ibm.com>
+In-Reply-To: <20190718032858.28744-6-bauerman@linux.ibm.com>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -70,17 +70,21 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, Jul 18, 2019 at 12:28:56AM -0300, Thiago Jung Bauermann wrote:
-> Now that generic code doesn't reference them, move sme_active() and
-> sme_me_mask to x86's <asm/mem_encrypt.h>.
+On Thu, Jul 18, 2019 at 12:28:57AM -0300, Thiago Jung Bauermann wrote:
+> Secure Encrypted Virtualization is an x86-specific feature, so it shouldn't
+> appear in generic kernel code because it forces non-x86 architectures to
+> define the sev_active() function, which doesn't make a lot of sense.
 > 
-> Also remove the export for sme_active() since it's only used in files that
-> won't be built as modules. sme_me_mask on the other hand is used in
-> arch/x86/kvm/svm.c (via __sme_set() and __psp_pa()) which can be built as a
-> module so its export needs to stay.
+> To solve this problem, add an x86 elfcorehdr_read() function to override
+> the generic weak implementation. To do that, it's necessary to make
+> read_from_oldmem() public so that it can be used outside of vmcore.c.
 > 
-> Signed-off-by: Thiago Jung Bauermann <bauerman@linux.ibm.com>
+> Also, remove the export for sev_active() since it's only used in files that
+> won't be built as modules.
 
-Looks good,
+I have to say I find the __weak overrides of the vmcore files very
+confusing and which we'd have a better scheme there.  But as this fits
+into that scheme and allows to remove the AMD SME vs SEV knowledge from
+the core I'm fine with it.
 
 Reviewed-by: Christoph Hellwig <hch@lst.de>
