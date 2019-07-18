@@ -2,95 +2,81 @@ Return-Path: <SRS0=Nz1t=VP=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 86FA8C7618F
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Jul 2019 19:35:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CF0F3C7618F
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Jul 2019 19:38:01 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 04F582173B
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Jul 2019 19:35:40 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 04F582173B
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 4A2A3208C0
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Jul 2019 19:38:01 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="bxDHW8OF"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4A2A3208C0
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45qPVz1csszDqdh
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Jul 2019 05:35:39 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45qPYf6JdxzDqD8
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Jul 2019 05:37:58 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
- (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=nathanl@linux.ibm.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=gmail.com
+ (client-ip=2a00:1450:4864:20::242; helo=mail-lj1-x242.google.com;
+ envelope-from=gomonovych@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="bxDHW8OF"; 
+ dkim-atps=neutral
+Received: from mail-lj1-x242.google.com (mail-lj1-x242.google.com
+ [IPv6:2a00:1450:4864:20::242])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45qPNF3lvjzDqcw
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Jul 2019 05:29:49 +1000 (AEST)
-Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x6IJQrqB002959
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Jul 2019 15:29:45 -0400
-Received: from e12.ny.us.ibm.com (e12.ny.us.ibm.com [129.33.205.202])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2ttvupd0tb-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Jul 2019 15:29:44 -0400
-Received: from localhost
- by e12.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <nathanl@linux.ibm.com>;
- Thu, 18 Jul 2019 20:29:43 +0100
-Received: from b01cxnp23034.gho.pok.ibm.com (9.57.198.29)
- by e12.ny.us.ibm.com (146.89.104.199) with IBM ESMTP SMTP Gateway: Authorized
- Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Thu, 18 Jul 2019 20:29:42 +0100
-Received: from b01ledav006.gho.pok.ibm.com (b01ledav006.gho.pok.ibm.com
- [9.57.199.111])
- by b01cxnp23034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x6IJTfS347972608
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Jul 2019 19:29:41 GMT
-Received: from b01ledav006.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 7051CAC059
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Jul 2019 19:29:41 +0000 (GMT)
-Received: from b01ledav006.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 55966AC05B
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Jul 2019 19:29:41 +0000 (GMT)
-Received: from localhost (unknown [9.41.179.236])
- by b01ledav006.gho.pok.ibm.com (Postfix) with ESMTP
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Jul 2019 19:29:41 +0000 (GMT)
-From: Nathan Lynch <nathanl@linux.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 1/2] powerpc/rtas: use device model APIs and serialization
- during LPM
-Date: Thu, 18 Jul 2019 14:29:39 -0500
-X-Mailer: git-send-email 2.20.1
-In-Reply-To: <20190718192940.16103-1-nathanl@linux.ibm.com>
-References: <20190718192940.16103-1-nathanl@linux.ibm.com>
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-x-cbid: 19071819-0060-0000-0000-00000362D8AE
-X-IBM-SpamModules-Scores: 
-X-IBM-SpamModules-Versions: BY=3.00011453; HX=3.00000242; KW=3.00000007;
- PH=3.00000004; SC=3.00000287; SDB=6.01234057; UDB=6.00650298; IPR=6.01015385; 
- MB=3.00027783; MTD=3.00000008; XFM=3.00000015; UTC=2019-07-18 19:29:43
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19071819-0061-0000-0000-00004A3445EF
-Message-Id: <20190718192940.16103-2-nathanl@linux.ibm.com>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2019-07-18_09:, , signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- malwarescore=0 suspectscore=3 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1810050000 definitions=main-1907180199
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45qPQK68hvzDqdb
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Jul 2019 05:31:36 +1000 (AEST)
+Received: by mail-lj1-x242.google.com with SMTP id t28so28480486lje.9
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Jul 2019 12:31:36 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=from:to:cc:subject:date:message-id;
+ bh=qcL3LovIaG2I+4/Ya4EZq8QuwXXlyROXKp2x+863zag=;
+ b=bxDHW8OFGKYh0iChgAPve01fDS61WHbwQNju+rrB0FSCA+XHKytTf+UIw0WXhxeDH8
+ IH2MQR1ydnwuDrKJB/yeqqg3tKgrXHMbBYNpTCRDxyW3+GzIub5F1P036SSsx1keDjsN
+ 2T3AuKSXyI6IoAG1MAMqr0UdfxvVcDD+K3p6RsKKUHEEurWWIh5lRqZZuiuVCe0e2dsQ
+ PyCLFDKcwCmNCTb17Ba+ZU2xm+QBUBwpxAocdg2IIHvMXB1hMQqChTRc0Ceyd08nr1HU
+ 6v3l0BlgbcImFhLdwzi9fcf1BFH9uH+IslFAQvgUeSxv8aYQpoVcZwNHz2Qg3Px+RugR
+ Bs6g==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:from:to:cc:subject:date:message-id;
+ bh=qcL3LovIaG2I+4/Ya4EZq8QuwXXlyROXKp2x+863zag=;
+ b=FpWAD4gLrLImM6bN0jox0U6+fmoNRfQiUJJ9Jza8sJZeLTnt37XBgQAHYWZr322V3X
+ 38hfMDOGfqwE5mFDvazjZnZ91sFcfaXlydmvwTCwdYydiSO/OQEBIRY5kR/Z8+mPtxyw
+ QpNQaqpACwWrDAQi/Cwh4wfCl7Cpn7uZQ7s/RdxnjyovWtW32RlXGb6Wy1Un7w/X2U4x
+ aSyXMJvvuD5hMHbtJVkIHxS8jUmhM7xuvobtg8K8UB06Ao5lDeAhp/ONdwByrTWXQEET
+ eIuoNs10bw+B9dSsi5oC+xufzVlIKnD7JSZ+NFOgl8m2SqWuNwGHlcmi2CeCgBcFYIeK
+ JfIQ==
+X-Gm-Message-State: APjAAAXdHy2XSesN9j+qA/G5q+jsOYcKNGLs6F5k1ZrXMbqDunbL792P
+ +ykRdtCljkq0EP93b5DPD3g=
+X-Google-Smtp-Source: APXvYqyVZBlbCBK1Y7Pv7LjJuRnTwXIED6u/+IBJTZFH9W7ohhUCtmgd+v2B/Rpb3qJcXdxW/jwBUw==
+X-Received: by 2002:a2e:870f:: with SMTP id m15mr25339251lji.223.1563478289408; 
+ Thu, 18 Jul 2019 12:31:29 -0700 (PDT)
+Received: from ul001888.eu.tieto.com ([91.90.160.140])
+ by smtp.gmail.com with ESMTPSA id x137sm4124120lff.23.2019.07.18.12.31.28
+ (version=TLS1_3 cipher=AEAD-AES256-GCM-SHA384 bits=256/256);
+ Thu, 18 Jul 2019 12:31:28 -0700 (PDT)
+From: Vasyl Gomonovych <gomonovych@gmail.com>
+To: tyreld@linux.ibm.com, benh@kernel.crashing.org, paulus@samba.org,
+ mpe@ellerman.id.au, jejb@linux.ibm.com, martin.petersen@oracle.com,
+ linux-scsi@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] scsi: ibmvscsi: remove casting dma_alloc_coherent
+Date: Thu, 18 Jul 2019 21:31:12 +0200
+Message-Id: <20190718193112.17709-1-gomonovych@gmail.com>
+X-Mailer: git-send-email 2.17.1
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -102,104 +88,33 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: Vasyl Gomonovych <gomonovych@gmail.com>, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-During LPAR migration, cpu hotplug and migration operations can
-interleave like so:
+Fix allocation style
+Generated by:  alloc_cast.cocci
 
-cd /sys/devices/system/cpu/cpu7/ | drmgr -m -c pmig -p pre \
-echo 0 > online                  | -s 0xd7a884f83d830e6d -t 19 \
-echo 1 > online                  | -n -d 1 5
----------------------------------+-------------------------------------------
-online_store() {                 |
-  device_offline() {             |
-    cpu_subsys_offline() {       |
-      cpu_down(7);               |
-    }                            |
-    dev->offline = true;         |
-  }                              | migration_store() {
-}                                |   rtas_ibm_suspend_me() {
-                                 |     rtas_online_cpus_mask() {
-                                 |       cpu_up(7);
-				 |     }
-                                 |     cpu_hotplug_disable();
-                                 |     on_each_cpu(rtas_percpu_suspend_me());
-                                 |     cpu_hotplug_enable();
-online_store() {                 |
-  device_online() {              |
-    cpu_subsys_online() {        |
-      cpu_up(7);                 |
-    }                            |
-    dev->offline = false;        |
-  }                              |     rtas_offline_cpus_mask() {
-}                                |       rtas_cpu_state_change_mask() {
-                                 |         cpu_down(7);
-				 |       }
-				 |     }
-				 |   }
-				 | }
-
-This leaves cpu7 in a state where the driver core considers the cpu
-device online, but in all other respects it is offline and
-unused. Attempts to online the cpu via sysfs appear to succeed but the
-driver core actually does not pass the request to the lower-level
-cpuhp support code. This makes the cpu unusable until the system is
-rebooted.
-
-Instead of directly calling cpu_up/cpu_down, the migration code should
-use the higher-level device core APIs to maintain consistent state and
-serialize operations.
-
-Fixes: 120496ac2d2d ("powerpc: Bring all threads online prior to migration/hibernation")
-Signed-off-by: Nathan Lynch <nathanl@linux.ibm.com>
+Signed-off-by: Vasyl Gomonovych <gomonovych@gmail.com>
 ---
- arch/powerpc/kernel/rtas.c | 11 ++++++++---
- 1 file changed, 8 insertions(+), 3 deletions(-)
+ drivers/scsi/ibmvscsi/ibmvscsi.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/kernel/rtas.c b/arch/powerpc/kernel/rtas.c
-index 9b4d2a2ffb4f..fbefd9ff6dab 100644
---- a/arch/powerpc/kernel/rtas.c
-+++ b/arch/powerpc/kernel/rtas.c
-@@ -875,15 +875,17 @@ static int rtas_cpu_state_change_mask(enum rtas_cpu_state state,
- 		return 0;
+diff --git a/drivers/scsi/ibmvscsi/ibmvscsi.c b/drivers/scsi/ibmvscsi/ibmvscsi.c
+index 7f66a7783209..7e9b3e409851 100644
+--- a/drivers/scsi/ibmvscsi/ibmvscsi.c
++++ b/drivers/scsi/ibmvscsi/ibmvscsi.c
+@@ -715,8 +715,7 @@ static int map_sg_data(struct scsi_cmnd *cmd,
  
- 	for_each_cpu(cpu, cpus) {
-+		struct device *dev = get_cpu_device(cpu);
-+
- 		switch (state) {
- 		case DOWN:
--			cpuret = cpu_down(cpu);
-+			cpuret = device_offline(dev);
- 			break;
- 		case UP:
--			cpuret = cpu_up(cpu);
-+			cpuret = device_online(dev);
- 			break;
- 		}
--		if (cpuret) {
-+		if (cpuret < 0) {
- 			pr_debug("%s: cpu_%s for cpu#%d returned %d.\n",
- 					__func__,
- 					((state == UP) ? "up" : "down"),
-@@ -972,6 +974,8 @@ int rtas_ibm_suspend_me(u64 handle)
- 	data.token = rtas_token("ibm,suspend-me");
- 	data.complete = &done;
- 
-+	lock_device_hotplug();
-+
- 	/* All present CPUs must be online */
- 	cpumask_andnot(offline_mask, cpu_present_mask, cpu_online_mask);
- 	cpuret = rtas_online_cpus_mask(offline_mask);
-@@ -1011,6 +1015,7 @@ int rtas_ibm_suspend_me(u64 handle)
- 				__func__);
- 
- out:
-+	unlock_device_hotplug();
- 	free_cpumask_var(offline_mask);
- 	return atomic_read(&data.error);
- }
+ 	/* get indirect table */
+ 	if (!evt_struct->ext_list) {
+-		evt_struct->ext_list = (struct srp_direct_buf *)
+-			dma_alloc_coherent(dev,
++		evt_struct->ext_list = dma_alloc_coherent(dev,
+ 					   SG_ALL * sizeof(struct srp_direct_buf),
+ 					   &evt_struct->ext_list_token, 0);
+ 		if (!evt_struct->ext_list) {
 -- 
-2.20.1
+2.17.1
 
