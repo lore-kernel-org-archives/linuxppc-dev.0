@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-5.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
 	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 21EB2C76191
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Jul 2019 08:44:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EA6A0C76191
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Jul 2019 08:46:57 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 9A3412173E
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Jul 2019 08:44:39 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9A3412173E
+	by mail.kernel.org (Postfix) with ESMTPS id AA3E02173E
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Jul 2019 08:46:57 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org AA3E02173E
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45q73k5fW0zDqLG
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Jul 2019 18:44:34 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45q76Q2zVDzDqbF
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Jul 2019 18:46:54 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=none (mailfrom) smtp.mailfrom=lst.de
  (client-ip=213.95.11.211; helo=verein.lst.de; envelope-from=hch@lst.de;
@@ -28,21 +28,21 @@ Authentication-Results: lists.ozlabs.org;
 Received: from verein.lst.de (verein.lst.de [213.95.11.211])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45q7196W7szDqFS
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Jul 2019 18:42:19 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45q71Q4nRSzDqXC
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Jul 2019 18:42:34 +1000 (AEST)
 Received: by verein.lst.de (Postfix, from userid 2407)
- id A8FCC68B05; Thu, 18 Jul 2019 10:42:13 +0200 (CEST)
-Date: Thu, 18 Jul 2019 10:42:13 +0200
+ id 7AC8568B05; Thu, 18 Jul 2019 10:42:30 +0200 (CEST)
+Date: Thu, 18 Jul 2019 10:42:30 +0200
 From: Christoph Hellwig <hch@lst.de>
 To: Thiago Jung Bauermann <bauerman@linux.ibm.com>
-Subject: Re: [PATCH v3 2/6] swiotlb: Remove call to sme_active()
-Message-ID: <20190718084213.GA24562@lst.de>
+Subject: Re: [PATCH v3 3/6] dma-mapping: Remove dma_check_mask()
+Message-ID: <20190718084230.GB24562@lst.de>
 References: <20190718032858.28744-1-bauerman@linux.ibm.com>
- <20190718032858.28744-3-bauerman@linux.ibm.com>
+ <20190718032858.28744-4-bauerman@linux.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20190718032858.28744-3-bauerman@linux.ibm.com>
+In-Reply-To: <20190718032858.28744-4-bauerman@linux.ibm.com>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -69,13 +69,11 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, Jul 18, 2019 at 12:28:54AM -0300, Thiago Jung Bauermann wrote:
+On Thu, Jul 18, 2019 at 12:28:55AM -0300, Thiago Jung Bauermann wrote:
 > sme_active() is an x86-specific function so it's better not to call it from
-> generic code.
-> 
-> There's no need to mention which memory encryption feature is active, so
-> just use a more generic message. Besides, other architectures will have
-> different names for similar technology.
+> generic code. Christoph Hellwig mentioned that "There is no reason why we
+> should have a special debug printk just for one specific reason why there
+> is a requirement for a large DMA mask.", so just remove dma_check_mask().
 > 
 > Signed-off-by: Thiago Jung Bauermann <bauerman@linux.ibm.com>
 
