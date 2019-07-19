@@ -4,23 +4,24 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 43480C76188
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Jul 2019 04:53:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E131BC76188
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Jul 2019 04:56:54 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id AE5B12082F
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Jul 2019 04:53:54 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 308662082F
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Jul 2019 04:56:54 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="QkIvhWMv"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org AE5B12082F
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="G7OL7vZT"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 308662082F
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45qdv42VrKzDqTh
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Jul 2019 14:53:52 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45qdyW1gylzDqlc
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Jul 2019 14:56:51 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=kernel.org
  (client-ip=198.145.29.99; helo=mail.kernel.org;
@@ -28,33 +29,33 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="QkIvhWMv"; 
+ unprotected) header.d=kernel.org header.i=@kernel.org header.b="G7OL7vZT"; 
  dkim-atps=neutral
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45qcq804lXzDqdh
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Jul 2019 14:05:24 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45qcqH1ks8zDqGT
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Jul 2019 14:05:31 +1000 (AEST)
 Received: from sasha-vm.mshome.net (c-73-47-72-35.hsd1.nh.comcast.net
  [73.47.72.35])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id 25F7B21852;
- Fri, 19 Jul 2019 04:05:21 +0000 (UTC)
+ by mail.kernel.org (Postfix) with ESMTPSA id 0B253218E2;
+ Fri, 19 Jul 2019 04:05:27 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1563509121;
- bh=4C3GOrjknXPI85zfXqF36miPxIgMOCcb0/OZJSd8Rqc=;
+ s=default; t=1563509128;
+ bh=UNNHjSUea73XQtP2sJpouflk6cSLLjJmgglAMEIweN8=;
  h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=QkIvhWMv7kJjWVgpsH9d/vKorl5Q/0kJIHfnRyy60wrLI1GDJFdqdKThTWk3CpnYi
- XZh31HkeshReMEoWQO4cIEjeYv1wfAeqLnKnsrkdp71Mjf1sCNcauaO3N5Fi769LwZ
- E5KN1qUtlbMmABWSce18fUKc8bhXRUTchhLGkZ9k=
+ b=G7OL7vZTp6tsT+V6sAZ8WKqNeGybgUdHlUT8e3oHNYVf+jHloLwQlnKy+PN3e+iK8
+ M3vCZCVzzIXDJSNHk5h+C+rwND4jrkbskNjgHDOhO8QGA7k98l+hKETaAC5jhtS0Wn
+ kUNGNP20yD05C+Fv+ZceDtioxHkrzfv6DlQ8cR7s=
 From: Sasha Levin <sashal@kernel.org>
 To: linux-kernel@vger.kernel.org,
 	stable@vger.kernel.org
-Subject: [PATCH AUTOSEL 5.1 081/141] powerpc/4xx/uic: clear pending interrupt
- after irq type/pol change
-Date: Fri, 19 Jul 2019 00:01:46 -0400
-Message-Id: <20190719040246.15945-81-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 5.1 086/141] powerpc/mm: Handle page table allocation
+ failures
+Date: Fri, 19 Jul 2019 00:01:51 -0400
+Message-Id: <20190719040246.15945-86-sashal@kernel.org>
 X-Mailer: git-send-email 2.20.1
 In-Reply-To: <20190719040246.15945-1-sashal@kernel.org>
 References: <20190719040246.15945-1-sashal@kernel.org>
@@ -73,44 +74,66 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Sasha Levin <sashal@kernel.org>, linuxppc-dev@lists.ozlabs.org,
- Christian Lamparter <chunkeey@gmail.com>
+Cc: Sasha Levin <sashal@kernel.org>,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Christian Lamparter <chunkeey@gmail.com>
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
 
-[ Upstream commit 3ab3a0689e74e6aa5b41360bc18861040ddef5b1 ]
+[ Upstream commit 2230ebf6e6dd0b7751e2921b40f6cfe34f09bb16 ]
 
-When testing out gpio-keys with a button, a spurious
-interrupt (and therefore a key press or release event)
-gets triggered as soon as the driver enables the irq
-line for the first time.
+This fixes kernel crash that arises due to not handling page table allocation
+failures while allocating hugetlb page table.
 
-This patch clears any potential bogus generated interrupt
-that was caused by the switching of the associated irq's
-type and polarity.
-
-Signed-off-by: Christian Lamparter <chunkeey@gmail.com>
+Fixes: e2b3d202d1db ("powerpc: Switch 16GB and 16MB explicit hugepages to a different page table format")
+Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- arch/powerpc/platforms/4xx/uic.c | 1 +
- 1 file changed, 1 insertion(+)
+ arch/powerpc/mm/hugetlbpage.c | 8 ++++++++
+ 1 file changed, 8 insertions(+)
 
-diff --git a/arch/powerpc/platforms/4xx/uic.c b/arch/powerpc/platforms/4xx/uic.c
-index 8b4dd0da0839..9e27cfe27026 100644
---- a/arch/powerpc/platforms/4xx/uic.c
-+++ b/arch/powerpc/platforms/4xx/uic.c
-@@ -158,6 +158,7 @@ static int uic_set_irq_type(struct irq_data *d, unsigned int flow_type)
- 
- 	mtdcr(uic->dcrbase + UIC_PR, pr);
- 	mtdcr(uic->dcrbase + UIC_TR, tr);
-+	mtdcr(uic->dcrbase + UIC_SR, ~mask);
- 
- 	raw_spin_unlock_irqrestore(&uic->lock, flags);
- 
+diff --git a/arch/powerpc/mm/hugetlbpage.c b/arch/powerpc/mm/hugetlbpage.c
+index 9e732bb2c84a..88888e098a08 100644
+--- a/arch/powerpc/mm/hugetlbpage.c
++++ b/arch/powerpc/mm/hugetlbpage.c
+@@ -154,6 +154,8 @@ pte_t *huge_pte_alloc(struct mm_struct *mm, unsigned long addr, unsigned long sz
+ 	} else {
+ 		pdshift = PUD_SHIFT;
+ 		pu = pud_alloc(mm, pg, addr);
++		if (!pu)
++			return NULL;
+ 		if (pshift == PUD_SHIFT)
+ 			return (pte_t *)pu;
+ 		else if (pshift > PMD_SHIFT) {
+@@ -162,6 +164,8 @@ pte_t *huge_pte_alloc(struct mm_struct *mm, unsigned long addr, unsigned long sz
+ 		} else {
+ 			pdshift = PMD_SHIFT;
+ 			pm = pmd_alloc(mm, pu, addr);
++			if (!pm)
++				return NULL;
+ 			if (pshift == PMD_SHIFT)
+ 				/* 16MB hugepage */
+ 				return (pte_t *)pm;
+@@ -178,12 +182,16 @@ pte_t *huge_pte_alloc(struct mm_struct *mm, unsigned long addr, unsigned long sz
+ 	} else {
+ 		pdshift = PUD_SHIFT;
+ 		pu = pud_alloc(mm, pg, addr);
++		if (!pu)
++			return NULL;
+ 		if (pshift >= PUD_SHIFT) {
+ 			ptl = pud_lockptr(mm, pu);
+ 			hpdp = (hugepd_t *)pu;
+ 		} else {
+ 			pdshift = PMD_SHIFT;
+ 			pm = pmd_alloc(mm, pu, addr);
++			if (!pm)
++				return NULL;
+ 			ptl = pmd_lockptr(mm, pm);
+ 			hpdp = (hugepd_t *)pm;
+ 		}
 -- 
 2.20.1
 
