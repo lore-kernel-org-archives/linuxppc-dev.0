@@ -2,23 +2,23 @@ Return-Path: <SRS0=Rj2I=VR=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=no
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E0ED5C7618F
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 20 Jul 2019 01:31:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E648CC7618F
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 20 Jul 2019 01:33:29 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 00FD920873
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 20 Jul 2019 01:31:52 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 00FD920873
+	by mail.kernel.org (Postfix) with ESMTPS id 9FC0920873
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 20 Jul 2019 01:33:29 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9FC0920873
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ozlabs.ru
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45r9MV184vzDqwt
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 20 Jul 2019 11:31:50 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45r9PM3WYLzDqyx
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 20 Jul 2019 11:33:27 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=ozlabs.ru
  (client-ip=107.173.13.209; helo=ozlabs.ru; envelope-from=aik@ozlabs.ru;
@@ -26,20 +26,17 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=ozlabs.ru
 Received: from ozlabs.ru (ozlabs.ru [107.173.13.209])
- by lists.ozlabs.org (Postfix) with ESMTP id 45r9Js4zDtzDqwL
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 20 Jul 2019 11:29:33 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTP id 45r9KM2bMNzDqwT
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 20 Jul 2019 11:29:59 +1000 (AEST)
 Received: from fstn1-p1.ozlabs.ibm.com (localhost [IPv6:::1])
- by ozlabs.ru (Postfix) with ESMTP id 506A6AE807F9;
- Fri, 19 Jul 2019 21:29:25 -0400 (EDT)
+ by ozlabs.ru (Postfix) with ESMTP id 921C0AE807F5;
+ Fri, 19 Jul 2019 21:29:20 -0400 (EDT)
 From: Alexey Kardashevskiy <aik@ozlabs.ru>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH kernel RFC 2/2] powerpc/pseries: Kexec style ibm,
- client-architecture-support support
-Date: Sat, 20 Jul 2019 11:29:19 +1000
-Message-Id: <20190720012919.14417-3-aik@ozlabs.ru>
+Subject: [PATCH kernel RFC 0/2] powerpc/pseries: Kexec style boot
+Date: Sat, 20 Jul 2019 11:29:17 +1000
+Message-Id: <20190720012919.14417-1-aik@ozlabs.ru>
 X-Mailer: git-send-email 2.17.1
-In-Reply-To: <20190720012919.14417-1-aik@ozlabs.ru>
-References: <20190720012919.14417-1-aik@ozlabs.ru>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -52,131 +49,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 Cc: Alexey Kardashevskiy <aik@ozlabs.ru>, kvm-ppc@vger.kernel.org,
- David Gibson <david@gibson.dropbear.id.au>
+ Paul Mackerras <paulus@samba.org>, David Gibson <david@gibson.dropbear.id.au>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This checks the FDT for "/chosen/qemu,h_cas" and calls H_CAS when present.
-The H_CAS hcall is implemented in QEMU for ages and currently returns
-an FDT with a diff to the initial FDT which SLOF updates and returns to
-the OS. For this patch to work, QEMU needs to provide the full tree
-instead, so when QEMU is run with the "-machine pseries,bios=no",
-it reads the existing FDT from the OS, updats it and writes back on top.
+There is a funny excercise to run a guest under QEMU without
+the SLOF firmware and boot into a kernel directly to use petitboot as
+a boot loader (a more power boot loader than grub and yum),
+the patchset is posted as "spapr: Kexec style boot".
 
-This changes prom_check_platform_support() not to call the client
-interface's prom_getproplen() as the kexec-style boot does not provide
-the client interface services.
+Since there is no SLOF, i.e. no client interface and no RTAS blob,
+we need to avoid the former and call the latter directly. Also,
+this implements "client-architecture-support" substiitute for
+the new environment.
 
-Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
----
- arch/powerpc/kernel/prom_init.c | 12 ++++++----
- arch/powerpc/kernel/setup_64.c  | 41 +++++++++++++++++++++++++++++++++
- 2 files changed, 49 insertions(+), 4 deletions(-)
+This is based on sha1
+a2b6f26c264e Christophe Leroy "powerpc/module64: Use symbolic instructions names.".
 
-diff --git a/arch/powerpc/kernel/prom_init.c b/arch/powerpc/kernel/prom_init.c
-index 514707ef6779..6d8e35cb3c57 100644
---- a/arch/powerpc/kernel/prom_init.c
-+++ b/arch/powerpc/kernel/prom_init.c
-@@ -1261,7 +1261,7 @@ static void __init prom_parse_platform_support(u8 index, u8 val,
- 	}
- }
- 
--static void __init prom_check_platform_support(void)
-+struct ibm_arch_vec __init *prom_check_platform_support(int prop_len)
- {
- 	struct platform_support supported = {
- 		.hash_mmu = false,
-@@ -1269,8 +1269,6 @@ static void __init prom_check_platform_support(void)
- 		.radix_gtse = false,
- 		.xive = false
- 	};
--	int prop_len = prom_getproplen(prom.chosen,
--				       "ibm,arch-vec-5-platform-support");
- 
- 	/*
- 	 * First copy the architecture vec template
-@@ -1319,7 +1317,12 @@ static void __init prom_check_platform_support(void)
- 		prom_debug("Asking for XIVE\n");
- 		ibm_architecture_vec.vec5.intarch = OV5_FEAT(OV5_XIVE_EXPLOIT);
- 	}
-+
-+	ibm_architecture_vec.vec5.max_cpus = cpu_to_be32(NR_CPUS);
-+
-+	return &ibm_architecture_vec;
- }
-+EXPORT_SYMBOL_GPL(prom_check_platform_support);
- 
- static void __init prom_send_capabilities(void)
- {
-@@ -1328,7 +1331,8 @@ static void __init prom_send_capabilities(void)
- 	u32 cores;
- 
- 	/* Check ibm,arch-vec-5-platform-support and fixup vec5 if required */
--	prom_check_platform_support();
-+	prom_check_platform_support(prom_getproplen(prom.chosen,
-+				"ibm,arch-vec-5-platform-support"));
- 
- 	root = call_prom("open", 1, 1, ADDR("/"));
- 	if (root != 0) {
-diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
-index 44b4c432a273..6fa384278180 100644
---- a/arch/powerpc/kernel/setup_64.c
-+++ b/arch/powerpc/kernel/setup_64.c
-@@ -284,12 +284,53 @@ void __init record_spr_defaults(void)
-  * device-tree is not accessible via normal means at this point.
-  */
- 
-+/*
-+ * The architecture vector has an array of PVR mask/value pairs,
-+ * followed by # option vectors - 1, followed by the option vectors.
-+ *
-+ * See prom.h for the definition of the bits specified in the
-+ * architecture vector.
-+ */
-+
-+extern struct ibm_arch_vec __init *prom_check_platform_support(
-+		int vec5_prop_len);
-+
-+int __init early_init_dt_scan_chosen_h_cas(unsigned long node,
-+		const char *uname, int depth, void *data)
-+{
-+	int l;
-+	const char *p;
-+
-+	if (depth != 1 || !data ||
-+	    (strcmp(uname, "chosen") != 0 && strcmp(uname, "chosen@0") != 0))
-+		return 0;
-+	p = of_get_flat_dt_prop(node, "qemu,h_cas", &l);
-+	if (p != NULL && l > 0)
-+		*(bool *) data = be32_to_cpu(*(uint32_t *) p) != 0;
-+
-+	return 1;
-+}
-+
- void __init early_setup(unsigned long dt_ptr)
- {
- 	static __initdata struct paca_struct boot_paca;
-+	struct ibm_arch_vec *vec = prom_check_platform_support(0);
- 
- 	/* -------- printk is _NOT_ safe to use here ! ------- */
- 
-+	/* ibm,client-architecture-support support */
-+#define KVMPPC_HCALL_BASE       0xf000
-+#define KVMPPC_H_CAS            (KVMPPC_HCALL_BASE + 0x2)
-+#define FDT_MAX_SIZE 0x100000
-+	bool do_h_cas = false;
-+
-+	if (early_init_dt_verify(__va(dt_ptr))) {
-+		of_scan_flat_dt(early_init_dt_scan_chosen_h_cas, &do_h_cas);
-+		if (do_h_cas)
-+			plpar_hcall_norets(KVMPPC_H_CAS, vec, dt_ptr,
-+					FDT_MAX_SIZE);
-+	}
-+
- 	/* Try new device tree based feature discovery ... */
- 	if (!dt_cpu_ftrs_init(__va(dt_ptr)))
- 		/* Otherwise use the old style CPU table */
+Please comment. Thanks.
+
+
+
+Alexey Kardashevskiy (2):
+  powerpc/pseries: Call RTAS directly
+  powerpc/pseries: Kexec style ibm,client-architecture-support support
+
+ arch/powerpc/include/asm/rtas.h |  1 +
+ arch/powerpc/kernel/prom_init.c | 12 ++++++---
+ arch/powerpc/kernel/rtas.c      | 47 +++++++++++++++------------------
+ arch/powerpc/kernel/setup_64.c  | 41 ++++++++++++++++++++++++++++
+ 4 files changed, 71 insertions(+), 30 deletions(-)
+
 -- 
 2.17.1
 
