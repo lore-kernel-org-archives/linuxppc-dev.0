@@ -2,57 +2,43 @@ Return-Path: <SRS0=Gm8F=VT=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.3 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_SANE_2 autolearn=unavailable autolearn_force=no version=3.4.0
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 62A86C76188
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Jul 2019 13:28:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B953EC76190
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Jul 2019 13:31:21 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id AA3922190F
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Jul 2019 13:28:52 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org AA3922190F
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=pengutronix.de
+	by mail.kernel.org (Postfix) with ESMTPS id 3F1FD2190F
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Jul 2019 13:31:21 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3F1FD2190F
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45sj9t5pRzzDqDh
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Jul 2019 23:28:50 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=pengutronix.de
- (client-ip=2001:67c:670:201:290:27ff:fe1d:cc33; helo=metis.ext.pengutronix.de;
- envelope-from=l.stach@pengutronix.de; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=pengutronix.de
-Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
- [IPv6:2001:67c:670:201:290:27ff:fe1d:cc33])
+	by lists.ozlabs.org (Postfix) with ESMTP id 45sjDl0RYkzDqDG
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Jul 2019 23:31:19 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest
- SHA256) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45shdl2jWfzDqCl
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Jul 2019 23:04:27 +1000 (AEST)
-Received: from kresse.hi.pengutronix.de ([2001:67c:670:100:1d::2a])
- by metis.ext.pengutronix.de with esmtp (Exim 4.92)
- (envelope-from <l.stach@pengutronix.de>)
- id 1hpXs2-0005L4-03; Mon, 22 Jul 2019 14:56:50 +0200
-Message-ID: <1563800209.2311.10.camel@pengutronix.de>
-Subject: Re: [PATCH 06/10] ASoC: dt-bindings: Document dl_mask property
-From: Lucas Stach <l.stach@pengutronix.de>
-To: Daniel Baluta <daniel.baluta@nxp.com>, broonie@kernel.org
-Date: Mon, 22 Jul 2019 14:56:49 +0200
-In-Reply-To: <20190722124833.28757-7-daniel.baluta@nxp.com>
-References: <20190722124833.28757-1-daniel.baluta@nxp.com>
- <20190722124833.28757-7-daniel.baluta@nxp.com>
-Content-Type: text/plain; charset="UTF-8"
-X-Mailer: Evolution 3.22.6-1+deb9u2 
-Mime-Version: 1.0
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45sj2r1CFnzDqM2
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Jul 2019 23:22:44 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=ellerman.id.au
+Received: by ozlabs.org (Postfix)
+ id 45sj2p5GbJz9s4Y; Mon, 22 Jul 2019 23:22:42 +1000 (AEST)
+Received: by ozlabs.org (Postfix, from userid 1034)
+ id 45sj2n4jwQz9s8m; Mon, 22 Jul 2019 23:22:41 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] powerpc: Wire up clone3 syscall
+Date: Mon, 22 Jul 2019 23:22:31 +1000
+Message-Id: <20190722132231.10169-1-mpe@ellerman.id.au>
+X-Mailer: git-send-email 2.20.1
+MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-SA-Exim-Connect-IP: 2001:67c:670:100:1d::2a
-X-SA-Exim-Mail-From: l.stach@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de);
- SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linuxppc-dev@lists.ozlabs.org
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -64,41 +50,64 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: alsa-devel@alsa-project.org, viorel.suman@nxp.com, timur@kernel.org,
- Xiubo.Lee@gmail.com, linuxppc-dev@lists.ozlabs.org, shengjiu.wang@nxp.com,
- angus@akkea.ca, tiwai@suse.com, perex@perex.cz, nicoleotsuka@gmail.com,
- linux-imx@nxp.com, kernel@pengutronix.de, festevam@gmail.com,
- linux-kernel@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, christian@brauner.io
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Am Montag, den 22.07.2019, 15:48 +0300 schrieb Daniel Baluta:
-> SAI supports up to 8 data lines. This property let the user
-> configure how many data lines should be used per transfer
-> direction (Tx/Rx).
-> 
-> > Signed-off-by: Daniel Baluta <daniel.baluta@nxp.com>
-> ---
->  Documentation/devicetree/bindings/sound/fsl-sai.txt | 5 +++++
->  1 file changed, 5 insertions(+)
-> 
-> diff --git a/Documentation/devicetree/bindings/sound/fsl-sai.txt b/Documentation/devicetree/bindings/sound/fsl-sai.txt
-> index 2e726b983845..59f4d965a5fb 100644
-> --- a/Documentation/devicetree/bindings/sound/fsl-sai.txt
-> +++ b/Documentation/devicetree/bindings/sound/fsl-sai.txt
-> @@ -49,6 +49,11 @@ Optional properties:
->  
-> >    - big-endian		: Boolean property, required if all the SAI
-> >  			  registers are big-endian rather than little-endian.
-> > +  - fsl,dl_mask		: list of two integers (bitmask, first for RX, second
-> > +			  for TX) representing enabled datalines. Bit 0
-> > +			  represents first data line, bit 1 represents second
-> > +			  data line and so on. Data line is enabled if
-> > +			  corresponding bit is set to 1.
+Wire up the new clone3 syscall added in commit 7f192e3cd316 ("fork:
+add clone3").
 
-No underscores in property names, please. Also this should document the
-default value used by the driver when the property is absent.
+This requires a ppc_clone3 wrapper, in order to save the non-volatile
+GPRs before calling into the generic syscall code. Otherwise we hit
+the BUG_ON in CHECK_FULL_REGS in copy_thread().
 
-Regards,
-Lucas
+Lightly tested using Christian's test code on a Power8 LE VM.
+
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+---
+ arch/powerpc/include/asm/unistd.h        | 1 +
+ arch/powerpc/kernel/entry_64.S           | 5 +++++
+ arch/powerpc/kernel/syscalls/syscall.tbl | 1 +
+ 3 files changed, 7 insertions(+)
+
+diff --git a/arch/powerpc/include/asm/unistd.h b/arch/powerpc/include/asm/unistd.h
+index 68473c3c471c..b0720c7c3fcf 100644
+--- a/arch/powerpc/include/asm/unistd.h
++++ b/arch/powerpc/include/asm/unistd.h
+@@ -49,6 +49,7 @@
+ #define __ARCH_WANT_SYS_FORK
+ #define __ARCH_WANT_SYS_VFORK
+ #define __ARCH_WANT_SYS_CLONE
++#define __ARCH_WANT_SYS_CLONE3
+ 
+ #endif		/* __ASSEMBLY__ */
+ #endif /* _ASM_POWERPC_UNISTD_H_ */
+diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
+index d9105fcf4021..0a0b5310f54a 100644
+--- a/arch/powerpc/kernel/entry_64.S
++++ b/arch/powerpc/kernel/entry_64.S
+@@ -487,6 +487,11 @@ _GLOBAL(ppc_clone)
+ 	bl	sys_clone
+ 	b	.Lsyscall_exit
+ 
++_GLOBAL(ppc_clone3)
++       bl      save_nvgprs
++       bl      sys_clone3
++       b       .Lsyscall_exit
++
+ _GLOBAL(ppc32_swapcontext)
+ 	bl	save_nvgprs
+ 	bl	compat_sys_swapcontext
+diff --git a/arch/powerpc/kernel/syscalls/syscall.tbl b/arch/powerpc/kernel/syscalls/syscall.tbl
+index f2c3bda2d39f..6886ecb590d5 100644
+--- a/arch/powerpc/kernel/syscalls/syscall.tbl
++++ b/arch/powerpc/kernel/syscalls/syscall.tbl
+@@ -516,3 +516,4 @@
+ 432	common	fsmount				sys_fsmount
+ 433	common	fspick				sys_fspick
+ 434	common	pidfd_open			sys_pidfd_open
++435	common	clone3				ppc_clone3
+-- 
+2.20.1
+
