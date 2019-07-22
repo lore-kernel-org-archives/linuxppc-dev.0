@@ -2,24 +2,24 @@ Return-Path: <SRS0=Gm8F=VT=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	UNWANTED_LANGUAGE_BODY,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id F1D49C76188
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Jul 2019 12:52:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1B139C76188
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Jul 2019 12:54:25 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 7A8F7218DA
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Jul 2019 12:52:09 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7A8F7218DA
+	by mail.kernel.org (Postfix) with ESMTPS id 964852084D
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Jul 2019 12:54:24 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 964852084D
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nxp.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45shMV3LT3zDqDJ
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Jul 2019 22:52:06 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45shQ63tHPzDqHg
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Jul 2019 22:54:22 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=nxp.com
  (client-ip=92.121.34.21; helo=inva021.nxp.com;
@@ -29,24 +29,24 @@ Authentication-Results: lists.ozlabs.org;
 Received: from inva021.nxp.com (inva021.nxp.com [92.121.34.21])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45shHt1k7VzDqRD
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45shHv0bkyzDqRD
  for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Jul 2019 22:48:55 +1000 (AEST)
 Received: from inva021.nxp.com (localhost [127.0.0.1])
- by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id 2F5E02002E1;
- Mon, 22 Jul 2019 14:48:52 +0200 (CEST)
+ by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id 00EC82000B2;
+ Mon, 22 Jul 2019 14:48:53 +0200 (CEST)
 Received: from inva024.eu-rdc02.nxp.com (inva024.eu-rdc02.nxp.com
  [134.27.226.22])
- by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id 21AF02002E0;
+ by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id E822D200094;
  Mon, 22 Jul 2019 14:48:52 +0200 (CEST)
 Received: from fsr-ub1864-103.ea.freescale.net
  (fsr-ub1864-103.ea.freescale.net [10.171.82.17])
- by inva024.eu-rdc02.nxp.com (Postfix) with ESMTP id 69390205DB;
- Mon, 22 Jul 2019 14:48:51 +0200 (CEST)
+ by inva024.eu-rdc02.nxp.com (Postfix) with ESMTP id 326CC205DB;
+ Mon, 22 Jul 2019 14:48:52 +0200 (CEST)
 From: Daniel Baluta <daniel.baluta@nxp.com>
 To: broonie@kernel.org
-Subject: [PATCH 05/10] ASoC: fsl_sai: Add support to enable multiple data lines
-Date: Mon, 22 Jul 2019 15:48:28 +0300
-Message-Id: <20190722124833.28757-6-daniel.baluta@nxp.com>
+Subject: [PATCH 06/10] ASoC: dt-bindings: Document dl_mask property
+Date: Mon, 22 Jul 2019 15:48:29 +0300
+Message-Id: <20190722124833.28757-7-daniel.baluta@nxp.com>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20190722124833.28757-1-daniel.baluta@nxp.com>
 References: <20190722124833.28757-1-daniel.baluta@nxp.com>
@@ -72,73 +72,31 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-SAI supports up to 8 Rx/Tx data lines which can be enabled
-using TCE/RCE bits of TCR3/RCR3 registers.
-
-Data lines to be enabled are read from DT fsl,dl_mask property.
-By default (if no DT entry is provided) only data line 0 is enabled.
-
-Note:
-We can only enable consecutive data lines starting with data line #0.
+SAI supports up to 8 data lines. This property let the user
+configure how many data lines should be used per transfer
+direction (Tx/Rx).
 
 Signed-off-by: Daniel Baluta <daniel.baluta@nxp.com>
 ---
- sound/soc/fsl/fsl_sai.c | 10 +++++++++-
- sound/soc/fsl/fsl_sai.h |  6 ++++--
- 2 files changed, 13 insertions(+), 3 deletions(-)
+ Documentation/devicetree/bindings/sound/fsl-sai.txt | 5 +++++
+ 1 file changed, 5 insertions(+)
 
-diff --git a/sound/soc/fsl/fsl_sai.c b/sound/soc/fsl/fsl_sai.c
-index 768341608695..d0fa02188b7c 100644
---- a/sound/soc/fsl/fsl_sai.c
-+++ b/sound/soc/fsl/fsl_sai.c
-@@ -601,7 +601,7 @@ static int fsl_sai_startup(struct snd_pcm_substream *substream,
+diff --git a/Documentation/devicetree/bindings/sound/fsl-sai.txt b/Documentation/devicetree/bindings/sound/fsl-sai.txt
+index 2e726b983845..59f4d965a5fb 100644
+--- a/Documentation/devicetree/bindings/sound/fsl-sai.txt
++++ b/Documentation/devicetree/bindings/sound/fsl-sai.txt
+@@ -49,6 +49,11 @@ Optional properties:
  
- 	regmap_update_bits(sai->regmap, FSL_SAI_xCR3(tx),
- 			   FSL_SAI_CR3_TRCE_MASK,
--			   FSL_SAI_CR3_TRCE);
-+			   FSL_SAI_CR3_TRCE(sai->soc_data->dl_mask[tx]);
+   - big-endian		: Boolean property, required if all the SAI
+ 			  registers are big-endian rather than little-endian.
++  - fsl,dl_mask		: list of two integers (bitmask, first for RX, second
++			  for TX) representing enabled datalines. Bit 0
++			  represents first data line, bit 1 represents second
++			  data line and so on. Data line is enabled if
++			  corresponding bit is set to 1.
  
- 	ret = snd_pcm_hw_constraint_list(substream->runtime, 0,
- 			SNDRV_PCM_HW_PARAM_RATE, &fsl_sai_rate_constraints);
-@@ -887,6 +887,14 @@ static int fsl_sai_probe(struct platform_device *pdev)
- 		}
- 	}
+ Optional properties (for mx6ul):
  
-+	/* active data lines mask for TX/RX, defaults to 1 (only the first
-+	 * data line is enabled
-+	 */
-+	sai->dl_mask[RX] = 1;
-+	sai->dl_mask[TX] = 1;
-+	of_property_read_u32_index(np, "fsl,dl_mask", RX, &sai->dl_mask[RX]);
-+	of_property_read_u32_index(np, "fsl,dl_mask", TX, &sai->dl_mask[TX]);
-+
- 	irq = platform_get_irq(pdev, 0);
- 	if (irq < 0) {
- 		dev_err(&pdev->dev, "no irq for node %s\n", pdev->name);
-diff --git a/sound/soc/fsl/fsl_sai.h b/sound/soc/fsl/fsl_sai.h
-index b1abeed2f78e..6d32f0950ec5 100644
---- a/sound/soc/fsl/fsl_sai.h
-+++ b/sound/soc/fsl/fsl_sai.h
-@@ -109,8 +109,8 @@
- #define FSL_SAI_CR2_DIV_MASK	0xff
- 
- /* SAI Transmit and Receive Configuration 3 Register */
--#define FSL_SAI_CR3_TRCE	BIT(16)
--#define FSL_SAI_CR3_TRCE_MASK	GENMASK(16, 23)
-+#define FSL_SAI_CR3_TRCE(x)	((x) << 16)
-+#define FSL_SAI_CR3_TRCE_MASK	GENMASK(23, 16)
- #define FSL_SAI_CR3_WDFL(x)	(x)
- #define FSL_SAI_CR3_WDFL_MASK	0x1f
- 
-@@ -176,6 +176,8 @@ struct fsl_sai {
- 	unsigned int slots;
- 	unsigned int slot_width;
- 
-+	unsigned int dl_mask[2];
-+
- 	const struct fsl_sai_soc_data *soc_data;
- 	struct snd_dmaengine_dai_dma_data dma_params_rx;
- 	struct snd_dmaengine_dai_dma_data dma_params_tx;
 -- 
 2.17.1
 
