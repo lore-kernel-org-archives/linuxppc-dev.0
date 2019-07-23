@@ -2,95 +2,93 @@ Return-Path: <SRS0=ex+5=VV=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_GIT autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 96CE2C76186
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Jul 2019 03:37:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4F3F5C76186
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Jul 2019 03:39:15 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 1C91C229ED
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Jul 2019 03:37:13 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1C91C229ED
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id B7B91218F0
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Jul 2019 03:39:14 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="GLW0xIF/"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B7B91218F0
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linaro.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45tgyH1WxJzDqQN
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Jul 2019 13:37:11 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45th0c3JxDzDqPW
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Jul 2019 13:39:12 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
- (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=sbobroff@linux.ibm.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=linaro.org
+ (client-ip=2607:f8b0:4864:20::542; helo=mail-pg1-x542.google.com;
+ envelope-from=viresh.kumar@linaro.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ dmarc=pass (p=none dis=none) header.from=linaro.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=linaro.org header.i=@linaro.org header.b="GLW0xIF/"; 
+ dkim-atps=neutral
+Received: from mail-pg1-x542.google.com (mail-pg1-x542.google.com
+ [IPv6:2607:f8b0:4864:20::542])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45t49B5p2kzDqSk
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Jul 2019 13:44:30 +1000 (AEST)
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x6N3hXXL046097
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Jul 2019 23:44:28 -0400
-Received: from e06smtp04.uk.ibm.com (e06smtp04.uk.ibm.com [195.75.94.100])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2twrpw3gby-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Jul 2019 23:44:28 -0400
-Received: from localhost
- by e06smtp04.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <sbobroff@linux.ibm.com>;
- Tue, 23 Jul 2019 04:44:26 +0100
-Received: from b06cxnps4076.portsmouth.uk.ibm.com (9.149.109.198)
- by e06smtp04.uk.ibm.com (192.168.101.134) with IBM ESMTP SMTP Gateway:
- Authorized Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Tue, 23 Jul 2019 04:44:24 +0100
-Received: from b06wcsmtp001.portsmouth.uk.ibm.com
- (b06wcsmtp001.portsmouth.uk.ibm.com [9.149.105.160])
- by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x6N3iNmW53543024
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Tue, 23 Jul 2019 03:44:23 GMT
-Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 7A5C5A4054;
- Tue, 23 Jul 2019 03:44:23 +0000 (GMT)
-Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 27984A405F;
- Tue, 23 Jul 2019 03:44:23 +0000 (GMT)
-Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
- by b06wcsmtp001.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Tue, 23 Jul 2019 03:44:23 +0000 (GMT)
-Received: from tungsten.ozlabs.ibm.com (haven.au.ibm.com [9.192.254.114])
- (using TLSv1.2 with cipher DHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by ozlabs.au.ibm.com (Postfix) with ESMTPSA id 87FAAA03BE;
- Tue, 23 Jul 2019 13:44:20 +1000 (AEST)
-From: Sam Bobroff <sbobroff@linux.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v3 7/9] powerpc/eeh: Add bdfn field to eeh_dev
-Date: Tue, 23 Jul 2019 13:44:18 +1000
-X-Mailer: git-send-email 2.22.0.216.g00a2a96fc9
-In-Reply-To: <cover.1563853440.git.sbobroff@linux.ibm.com>
-References: <cover.1563853440.git.sbobroff@linux.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45t7V92KL1zDqRp
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Jul 2019 16:14:23 +1000 (AEST)
+Received: by mail-pg1-x542.google.com with SMTP id w10so18867594pgj.7
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Jul 2019 23:14:23 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linaro.org; s=google;
+ h=from:to:cc:subject:date:message-id:mime-version
+ :content-transfer-encoding;
+ bh=vuhDAdrwQAvGhhF1l4sTnH2/cYgn8v3uFIkNwLOWcSI=;
+ b=GLW0xIF/ikmhDxxaWkwedXQ3YAtiEnzbtfMJ9HikV4tL95rqEh2fkcB6NkefS0TByU
+ +QQ1hhPN/eokT2aVxg0eTyR+90qMUvCEVt61eF45mxKmxYTxyaL9RYps9BAZTMO/3cDb
+ 9C4NZ3uhWr2iKuhcCIrARd0ii+fMDfM0DIeWksAUC6ORyiERFbDn1C2vq8S/hkwYbIHB
+ g/xyhH2PR0cFm9DdI53v5Y67tYeflXFdxVK6L0Q8ZnqYVmdDUpOGII7k1z1MNqs5JNRA
+ OPWC2yrAd7K4gFy5nbRUzC6OGpMxbNPocvSPv+RbcxEN1BWEsoCoEgPiI4t0kVS5DIyX
+ 10dw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+ :content-transfer-encoding;
+ bh=vuhDAdrwQAvGhhF1l4sTnH2/cYgn8v3uFIkNwLOWcSI=;
+ b=N0CJrC6KF7tz6+qyBCcd8+OsyB6YCO7zQFcovMaoxG+IEOusVVuVy1Z6EZy0okRXCD
+ 5u94dyc09Pe7D2A+ET1+o+0+ihHT0/p0qdXkyxKmqW+F80dGe2Hg7gs1qT5vmgUK1+DP
+ H5RvGcuZoo7tni04MBJ02oXEU0hQx5t8U0i6CHzyTk6CGqz+fJE+8waqkn40vaDZ1skA
+ p3Hrr3/2U3F+wJQ4v42Hp5fTNmcp4vPFK/PHKNxbfkhKG1O6qNnlQA3RSjkh2369vF3q
+ nBxsPHYSlIu7RZba/Kp9sv+frog4kFlPeNQYdnRZOPAaeQY22haETKlFidLyad6S9/Mq
+ gGsg==
+X-Gm-Message-State: APjAAAWGNCXtjEr7mRuqosBgdAyRrJYHPd0oyTIfsyj/OX6BboXxa+3Z
+ 0j75GUYHsOLmFGFlHQ1ciYDcyg==
+X-Google-Smtp-Source: APXvYqxP6bnPVRQ1MCBwzGR7VTcX3M/ry8bfvkqazsDReUg7h0RInIBa5NIHj45OVf4NXWgl6klj/w==
+X-Received: by 2002:a63:c106:: with SMTP id w6mr75584400pgf.422.1563862461180; 
+ Mon, 22 Jul 2019 23:14:21 -0700 (PDT)
+Received: from localhost ([122.172.28.117])
+ by smtp.gmail.com with ESMTPSA id o95sm36186558pjb.4.2019.07.22.23.14.19
+ (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
+ Mon, 22 Jul 2019 23:14:19 -0700 (PDT)
+From: Viresh Kumar <viresh.kumar@linaro.org>
+To: Rafael Wysocki <rjw@rjwysocki.net>,
+ Amit Daniel Kachhap <amit.kachhap@gmail.com>,
+ Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Daniel Lezcano <daniel.lezcano@linaro.org>,
+ Eduardo Valentin <edubezval@gmail.com>,
+ Erik Schmauss <erik.schmauss@intel.com>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Javi Merino <javi.merino@kernel.org>, Jonathan Corbet <corbet@lwn.net>,
+ Len Brown <lenb@kernel.org>, "Rafael J. Wysocki" <rafael@kernel.org>,
+ Robert Moore <robert.moore@intel.com>,
+ Viresh Kumar <viresh.kumar@linaro.org>, Zhang Rui <rui.zhang@intel.com>
+Subject: [PATCH V2 00/10] cpufreq: Migrate users of policy notifiers to QoS
+ requests
+Date: Tue, 23 Jul 2019 11:44:00 +0530
+Message-Id: <cover.1563862014.git.viresh.kumar@linaro.org>
+X-Mailer: git-send-email 2.21.0.rc0.269.g1a574e7a288b
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-x-cbid: 19072303-0016-0000-0000-0000029548A4
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19072303-0017-0000-0000-000032F335ED
-Message-Id: <1cd007696df2db87a0b1e5677520806d4d9b3e24.1563853440.git.sbobroff@linux.ibm.com>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2019-07-23_03:, , signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- malwarescore=0 suspectscore=1 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=928 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1810050000 definitions=main-1907230030
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -102,68 +100,72 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: aik@ozlabs.ru, oohall@gmail.com, tyreld@linux.vnet.ibm.com
+Cc: linux-fbdev@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>,
+ linux-doc@vger.kernel.org, linux-pm@vger.kernel.org,
+ linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org,
+ linux-acpi@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, devel@acpica.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Oliver O'Halloran <oohall@gmail.com>
+Hello,
 
-Preparation for removing pci_dn from the powernv EEH code. The only
-thing we really use pci_dn for is to get the bdfn of the device for
-config space accesses, so adding that information to eeh_dev reduces
-the need to carry around the pci_dn.
+Now that cpufreq core supports taking QoS requests for min/max cpu
+frequencies, lets migrate rest of the users to using them instead of the
+policy notifiers.
 
-Signed-off-by: Oliver O'Halloran <oohall@gmail.com>
-[SB: Re-wrapped commit message, fixed whitespace damage.]
-Signed-off-by: Sam Bobroff <sbobroff@linux.ibm.com>
----
-v3 * New in this version.
+The CPUFREQ_NOTIFY and CPUFREQ_ADJUST events of the policy notifiers are
+removed as a result, but we have to add CPUFREQ_CREATE_POLICY and
+CPUFREQ_REMOVE_POLICY events to it for the acpi stuff specifically,
+though they are also used by arch_topology stuff now. So the policy
+notifiers aren't completely removed.
 
- arch/powerpc/include/asm/eeh.h     | 2 ++
- arch/powerpc/include/asm/ppc-pci.h | 2 ++
- arch/powerpc/kernel/eeh_dev.c      | 2 ++
- 3 files changed, 6 insertions(+)
+Boot tested on my x86 PC and ARM hikey board.
 
-diff --git a/arch/powerpc/include/asm/eeh.h b/arch/powerpc/include/asm/eeh.h
-index 7f9404a0c3bb..bbe0798f6624 100644
---- a/arch/powerpc/include/asm/eeh.h
-+++ b/arch/powerpc/include/asm/eeh.h
-@@ -121,6 +121,8 @@ static inline bool eeh_pe_passed(struct eeh_pe *pe)
- struct eeh_dev {
- 	int mode;			/* EEH mode			*/
- 	int class_code;			/* Class code of the device	*/
-+	int bdfn;			/* bdfn of device (for cfg ops) */
-+	struct pci_controller *controller;
- 	int pe_config_addr;		/* PE config address		*/
- 	u32 config_space[16];		/* Saved PCI config space	*/
- 	int pcix_cap;			/* Saved PCIx capability	*/
-diff --git a/arch/powerpc/include/asm/ppc-pci.h b/arch/powerpc/include/asm/ppc-pci.h
-index cec2d6409515..72860de205a0 100644
---- a/arch/powerpc/include/asm/ppc-pci.h
-+++ b/arch/powerpc/include/asm/ppc-pci.h
-@@ -74,6 +74,8 @@ static inline const char *eeh_driver_name(struct pci_dev *pdev)
- 
- #endif /* CONFIG_EEH */
- 
-+#define PCI_BUSNO(bdfn) ((bdfn >> 8) & 0xff)
-+
- #else /* CONFIG_PCI */
- static inline void init_pci_config_tokens(void) { }
- #endif /* !CONFIG_PCI */
-diff --git a/arch/powerpc/kernel/eeh_dev.c b/arch/powerpc/kernel/eeh_dev.c
-index c4317c452d98..7370185c7a05 100644
---- a/arch/powerpc/kernel/eeh_dev.c
-+++ b/arch/powerpc/kernel/eeh_dev.c
-@@ -47,6 +47,8 @@ struct eeh_dev *eeh_dev_init(struct pci_dn *pdn)
- 	/* Associate EEH device with OF node */
- 	pdn->edev = edev;
- 	edev->pdn = pdn;
-+	edev->bdfn = (pdn->busno << 8) | pdn->devfn;
-+	edev->controller = pdn->phb;
- 
- 	return edev;
- }
+This has already gone through build bot for a few days now.
+
+V1->V2:
+- Added Acked-by tags
+- Reordered to keep cleanups at the bottom
+- Rebased over 5.3-rc1
+
+--
+viresh
+
+Viresh Kumar (10):
+  cpufreq: Add policy create/remove notifiers
+  thermal: cpu_cooling: Switch to QoS requests instead of cpufreq
+    notifier
+  powerpc: macintosh: Switch to QoS requests instead of cpufreq notifier
+  cpufreq: powerpc_cbe: Switch to QoS requests instead of cpufreq
+    notifier
+  ACPI: cpufreq: Switch to QoS requests instead of cpufreq notifier
+  arch_topology: Use CPUFREQ_CREATE_POLICY instead of CPUFREQ_NOTIFY
+  video: sa1100fb: Remove cpufreq policy notifier
+  video: pxafb: Remove cpufreq policy notifier
+  cpufreq: Remove CPUFREQ_ADJUST and CPUFREQ_NOTIFY policy notifier
+    events
+  Documentation: cpufreq: Update policy notifier documentation
+
+ Documentation/cpu-freq/core.txt            |  16 +--
+ drivers/acpi/processor_driver.c            |  44 ++++++++-
+ drivers/acpi/processor_perflib.c           | 106 +++++++++-----------
+ drivers/acpi/processor_thermal.c           |  81 ++++++++-------
+ drivers/base/arch_topology.c               |   2 +-
+ drivers/cpufreq/cpufreq.c                  |  51 ++++------
+ drivers/cpufreq/ppc_cbe_cpufreq.c          |  19 +++-
+ drivers/cpufreq/ppc_cbe_cpufreq.h          |   8 ++
+ drivers/cpufreq/ppc_cbe_cpufreq_pmi.c      |  96 +++++++++++-------
+ drivers/macintosh/windfarm_cpufreq_clamp.c |  77 ++++++++++-----
+ drivers/thermal/cpu_cooling.c              | 110 +++++----------------
+ drivers/video/fbdev/pxafb.c                |  21 ----
+ drivers/video/fbdev/pxafb.h                |   1 -
+ drivers/video/fbdev/sa1100fb.c             |  27 -----
+ drivers/video/fbdev/sa1100fb.h             |   1 -
+ include/acpi/processor.h                   |  22 +++--
+ include/linux/cpufreq.h                    |   4 +-
+ 17 files changed, 327 insertions(+), 359 deletions(-)
+
 -- 
-2.22.0.216.g00a2a96fc9
+2.21.0.rc0.269.g1a574e7a288b
 
