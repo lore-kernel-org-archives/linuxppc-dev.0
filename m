@@ -6,85 +6,86 @@ X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
 	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EA412C76186
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Jul 2019 04:06:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C18CFC76186
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Jul 2019 04:08:03 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6ACBA21670
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Jul 2019 04:06:25 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6ACBA21670
+	by mail.kernel.org (Postfix) with ESMTPS id 4B58720856
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Jul 2019 04:08:03 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4B58720856
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45thbz41GWzDqDD
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Jul 2019 14:06:23 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45thds1DZSzDqQg
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Jul 2019 14:08:01 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
- (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
+ (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
  envelope-from=vaibhav@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45tNpK38wYzDqPl
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Jul 2019 02:14:17 +1000 (AEST)
-Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x6NGCWVh127584
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Jul 2019 12:14:14 -0400
-Received: from e06smtp05.uk.ibm.com (e06smtp05.uk.ibm.com [195.75.94.101])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2tx54j992v-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45tNpM6pXlzDqPk
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Jul 2019 02:14:19 +1000 (AEST)
+Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
+ x6NGCXCP053388
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Jul 2019 12:14:17 -0400
+Received: from e06smtp03.uk.ibm.com (e06smtp03.uk.ibm.com [195.75.94.99])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2tx3tmw97r-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Jul 2019 12:14:14 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Jul 2019 12:14:16 -0400
 Received: from localhost
- by e06smtp05.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp03.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <vaibhav@linux.ibm.com>;
- Tue, 23 Jul 2019 17:14:12 +0100
-Received: from b06cxnps3075.portsmouth.uk.ibm.com (9.149.109.195)
- by e06smtp05.uk.ibm.com (192.168.101.135) with IBM ESMTP SMTP Gateway:
+ Tue, 23 Jul 2019 17:14:14 +0100
+Received: from b06cxnps3074.portsmouth.uk.ibm.com (9.149.109.194)
+ by e06smtp03.uk.ibm.com (192.168.101.133) with IBM ESMTP SMTP Gateway:
  Authorized Use Only! Violators will be prosecuted; 
  (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Tue, 23 Jul 2019 17:14:09 +0100
+ Tue, 23 Jul 2019 17:14:12 +0100
 Received: from b06wcsmtp001.portsmouth.uk.ibm.com
  (b06wcsmtp001.portsmouth.uk.ibm.com [9.149.105.160])
- by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x6NGE8nT28049454
+ by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x6NGEAfA28442764
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Tue, 23 Jul 2019 16:14:08 GMT
+ Tue, 23 Jul 2019 16:14:10 GMT
 Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 030D8A4054;
+ by IMSVA (Postfix) with ESMTP id C41E5A405F;
+ Tue, 23 Jul 2019 16:14:10 +0000 (GMT)
+Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 73E47A4054;
  Tue, 23 Jul 2019 16:14:08 +0000 (GMT)
-Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 86E80A4062;
- Tue, 23 Jul 2019 16:14:05 +0000 (GMT)
 Received: from vajain21.in.ibm.com (unknown [9.109.195.195])
  by b06wcsmtp001.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Tue, 23 Jul 2019 16:14:05 +0000 (GMT)
+ Tue, 23 Jul 2019 16:14:08 +0000 (GMT)
 From: Vaibhav Jain <vaibhav@linux.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v5 2/4] powerpc/pseries: Update SCM hcall op-codes in hvcall.h
-Date: Tue, 23 Jul 2019 21:43:55 +0530
+Subject: [PATCH v5 3/4] powerpc/papr_scm: Update drc_pmem_unbind() to use
+ H_SCM_UNBIND_ALL
+Date: Tue, 23 Jul 2019 21:43:56 +0530
 X-Mailer: git-send-email 2.21.0
 In-Reply-To: <20190723161357.26718-1-vaibhav@linux.ibm.com>
 References: <20190723161357.26718-1-vaibhav@linux.ibm.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-x-cbid: 19072316-0020-0000-0000-0000035678F1
+x-cbid: 19072316-0012-0000-0000-000003357F38
 X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19072316-0021-0000-0000-000021AA64C3
-Message-Id: <20190723161357.26718-3-vaibhav@linux.ibm.com>
+x-cbparentid: 19072316-0013-0000-0000-0000216F1048
+Message-Id: <20190723161357.26718-4-vaibhav@linux.ibm.com>
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
  definitions=2019-07-23_07:, , signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
  priorityscore=1501
  malwarescore=0 suspectscore=1 phishscore=0 bulkscore=0 spamscore=0
  clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=918 adultscore=0 classifier=spam adjust=0 reason=mlx
+ mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
  scancount=1 engine=8.0.1-1810050000 definitions=main-1907230163
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -105,15 +106,24 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Update the hvcalls.h to include op-codes for new hcalls introduce to
-manage SCM memory. Also update existing hcall definitions to reflect
-current papr specification for SCM.
+The new hcall named H_SCM_UNBIND_ALL has been introduce that can
+unbind all or specific scm memory assigned to an lpar. This is
+more efficient than using H_SCM_UNBIND_MEM as currently we don't
+support partial unbind of scm memory.
 
-The removed hcall op-codes H_SCM_MEM_QUERY, H_SCM_BLOCK_CLEAR were
-transient proposals and there support was never implemented by
-Power-VM nor they were used anywhere in Linux kernel. Hence we don't
-expect anyone to be impacted by this change.
+Hence this patch proposes following changes to drc_pmem_unbind():
 
+    * Update drc_pmem_unbind() to replace hcall H_SCM_UNBIND_MEM to
+      H_SCM_UNBIND_ALL.
+
+    * Update drc_pmem_unbind() to handles cases when PHYP asks the guest
+      kernel to wait for specific amount of time before retrying the
+      hcall via the 'LONG_BUSY' return value.
+
+    * Ensure appropriate error code is returned back from the function
+      in case of an error.
+
+Reviewed-by: Oliver O'Halloran <oohall@gmail.com>
 Signed-off-by: Vaibhav Jain <vaibhav@linux.ibm.com>
 ---
 Change-log:
@@ -122,40 +132,80 @@ v5:
 * None. Re-spinning the patchset.
 
 v4:
-* Updated the patch description mentioned current status of removed
-  hcall opcodes. [Mpe]
+* None. Re-spinning the patchset.
 
 v3:
-* Added updated opcode for H_SCM_HEALTH [Oliver]
+* Fixed a build warning reported by kbuild-robot.
+* Updated patch description to put emphasis on 'scm memory' instead of
+  'scm drc memory blocks' as for phyp there is a stark difference
+  between how drc are managed for scm memory v/s regular memory. [Oliver]
 
 v2:
-* None new patch in this series.
+* Added a dev_dbg when unbind operation succeeds [Oliver]
+* Changed type of variable 'rc' to int64_t [Oliver]
+* Removed the code that was logging a warning in case bind operation
+  takes >1-seconds [Oliver]
+* Spinned off changes to hvcall.h as a separate patch. [Oliver]
 ---
- arch/powerpc/include/asm/hvcall.h | 11 ++++++++---
- 1 file changed, 8 insertions(+), 3 deletions(-)
+ arch/powerpc/platforms/pseries/papr_scm.c | 29 +++++++++++++++++------
+ 1 file changed, 22 insertions(+), 7 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/hvcall.h b/arch/powerpc/include/asm/hvcall.h
-index 463c63a9fcf1..11112023e327 100644
---- a/arch/powerpc/include/asm/hvcall.h
-+++ b/arch/powerpc/include/asm/hvcall.h
-@@ -302,9 +302,14 @@
- #define H_SCM_UNBIND_MEM        0x3F0
- #define H_SCM_QUERY_BLOCK_MEM_BINDING 0x3F4
- #define H_SCM_QUERY_LOGICAL_MEM_BINDING 0x3F8
--#define H_SCM_MEM_QUERY	        0x3FC
--#define H_SCM_BLOCK_CLEAR       0x400
--#define MAX_HCALL_OPCODE	H_SCM_BLOCK_CLEAR
-+#define H_SCM_UNBIND_ALL        0x3FC
-+#define H_SCM_HEALTH            0x400
-+#define H_SCM_PERFORMANCE_STATS 0x418
-+#define MAX_HCALL_OPCODE	H_SCM_PERFORMANCE_STATS
-+
-+/* Scope args for H_SCM_UNBIND_ALL */
-+#define H_UNBIND_SCOPE_ALL (0x1)
-+#define H_UNBIND_SCOPE_DRC (0x2)
+diff --git a/arch/powerpc/platforms/pseries/papr_scm.c b/arch/powerpc/platforms/pseries/papr_scm.c
+index c8ec670ee924..82568a7e0a7c 100644
+--- a/arch/powerpc/platforms/pseries/papr_scm.c
++++ b/arch/powerpc/platforms/pseries/papr_scm.c
+@@ -11,6 +11,7 @@
+ #include <linux/sched.h>
+ #include <linux/libnvdimm.h>
+ #include <linux/platform_device.h>
++#include <linux/delay.h>
  
- /* H_VIOCTL functions */
- #define H_GET_VIOA_DUMP_SIZE	0x01
+ #include <asm/plpar_wrappers.h>
+ 
+@@ -78,22 +79,36 @@ static int drc_pmem_bind(struct papr_scm_priv *p)
+ static int drc_pmem_unbind(struct papr_scm_priv *p)
+ {
+ 	unsigned long ret[PLPAR_HCALL_BUFSIZE];
+-	uint64_t rc, token;
++	uint64_t token = 0;
++	int64_t rc;
+ 
+-	token = 0;
++	dev_dbg(&p->pdev->dev, "unbind drc %x\n", p->drc_index);
+ 
+-	/* NB: unbind has the same retry requirements mentioned above */
++	/* NB: unbind has the same retry requirements as drc_pmem_bind() */
+ 	do {
+-		rc = plpar_hcall(H_SCM_UNBIND_MEM, ret, p->drc_index,
+-				p->bound_addr, p->blocks, token);
++
++		/* Unbind of all SCM resources associated with drcIndex */
++		rc = plpar_hcall(H_SCM_UNBIND_ALL, ret, H_UNBIND_SCOPE_DRC,
++				 p->drc_index, token);
+ 		token = ret[0];
+-		cond_resched();
++
++		/* Check if we are stalled for some time */
++		if (H_IS_LONG_BUSY(rc)) {
++			msleep(get_longbusy_msecs(rc));
++			rc = H_BUSY;
++		} else if (rc == H_BUSY) {
++			cond_resched();
++		}
++
+ 	} while (rc == H_BUSY);
+ 
+ 	if (rc)
+ 		dev_err(&p->pdev->dev, "unbind error: %lld\n", rc);
++	else
++		dev_dbg(&p->pdev->dev, "unbind drc %x complete\n",
++			p->drc_index);
+ 
+-	return !!rc;
++	return rc == H_SUCCESS ? 0 : -ENXIO;
+ }
+ 
+ static int papr_scm_meta_get(struct papr_scm_priv *p,
 -- 
 2.21.0
 
