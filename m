@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
 	URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 79E77C76186
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Jul 2019 03:48:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5206EC76186
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Jul 2019 03:49:43 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 0248B20840
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Jul 2019 03:48:03 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0248B20840
+	by mail.kernel.org (Postfix) with ESMTPS id D514821E70
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Jul 2019 03:49:42 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D514821E70
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45t4FG1P4SzDqXf
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Jul 2019 13:48:02 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45t4H84pZzzDqXr
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Jul 2019 13:49:40 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
  (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
@@ -29,67 +29,64 @@ Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45t49B4dv5zDqSS
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Jul 2019 13:44:29 +1000 (AEST)
-Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45t49B5rBlzDqSl
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Jul 2019 13:44:30 +1000 (AEST)
+Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
  by mx0b-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x6N3hICQ035646
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Jul 2019 23:44:25 -0400
-Received: from e06smtp07.uk.ibm.com (e06smtp07.uk.ibm.com [195.75.94.103])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2twrsbu82g-1
+ x6N3hYAE046208
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Jul 2019 23:44:27 -0400
+Received: from e06smtp04.uk.ibm.com (e06smtp04.uk.ibm.com [195.75.94.100])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2twrpw3gbp-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Jul 2019 23:44:25 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Jul 2019 23:44:27 -0400
 Received: from localhost
- by e06smtp07.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp04.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <sbobroff@linux.ibm.com>;
- Tue, 23 Jul 2019 04:44:24 +0100
-Received: from b06avi18626390.portsmouth.uk.ibm.com (9.149.26.192)
- by e06smtp07.uk.ibm.com (192.168.101.137) with IBM ESMTP SMTP Gateway:
+ Tue, 23 Jul 2019 04:44:25 +0100
+Received: from b06cxnps4076.portsmouth.uk.ibm.com (9.149.109.198)
+ by e06smtp04.uk.ibm.com (192.168.101.134) with IBM ESMTP SMTP Gateway:
  Authorized Use Only! Violators will be prosecuted; 
  (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Tue, 23 Jul 2019 04:44:22 +0100
-Received: from d06av26.portsmouth.uk.ibm.com (d06av26.portsmouth.uk.ibm.com
- [9.149.105.62])
- by b06avi18626390.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP
- id x6N3i7DV31916440
+ Tue, 23 Jul 2019 04:44:24 +0100
+Received: from d06av21.portsmouth.uk.ibm.com (d06av21.portsmouth.uk.ibm.com
+ [9.149.105.232])
+ by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x6N3iN5545285440
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Tue, 23 Jul 2019 03:44:07 GMT
-Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 00754AE053;
- Tue, 23 Jul 2019 03:44:22 +0000 (GMT)
-Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id A0ACCAE045;
- Tue, 23 Jul 2019 03:44:21 +0000 (GMT)
+ Tue, 23 Jul 2019 03:44:23 GMT
+Received: from d06av21.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 6C6235205F;
+ Tue, 23 Jul 2019 03:44:23 +0000 (GMT)
 Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
- by d06av26.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Tue, 23 Jul 2019 03:44:21 +0000 (GMT)
+ by d06av21.portsmouth.uk.ibm.com (Postfix) with ESMTP id 1A21B52052;
+ Tue, 23 Jul 2019 03:44:23 +0000 (GMT)
 Received: from tungsten.ozlabs.ibm.com (haven.au.ibm.com [9.192.254.114])
  (using TLSv1.2 with cipher DHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by ozlabs.au.ibm.com (Postfix) with ESMTPSA id 55431A026F;
+ by ozlabs.au.ibm.com (Postfix) with ESMTPSA id 8A6E9A03BF;
  Tue, 23 Jul 2019 13:44:20 +1000 (AEST)
 From: Sam Bobroff <sbobroff@linux.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v3 1/9] powerpc/64: Adjust order in pcibios_init()
-Date: Tue, 23 Jul 2019 13:44:12 +1000
+Subject: [PATCH v3 8/9] powerpc/eeh: Introduce EEH edev logging macros
+Date: Tue, 23 Jul 2019 13:44:19 +1000
 X-Mailer: git-send-email 2.22.0.216.g00a2a96fc9
 In-Reply-To: <cover.1563853440.git.sbobroff@linux.ibm.com>
 References: <cover.1563853440.git.sbobroff@linux.ibm.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-x-cbid: 19072303-0028-0000-0000-00000386F729
+x-cbid: 19072303-0016-0000-0000-0000029548A3
 X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19072303-0029-0000-0000-000024472D41
-Message-Id: <e1379598d3b3df2653ae3ab88ec7588ce609451a.1563853440.git.sbobroff@linux.ibm.com>
+x-cbparentid: 19072303-0017-0000-0000-000032F335EC
+Message-Id: <fa19ba9df4a46e5ed72bce1d6eeb786ca0255f8e.1563853440.git.sbobroff@linux.ibm.com>
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
  definitions=2019-07-23_03:, , signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
  priorityscore=1501
- malwarescore=0 suspectscore=29 phishscore=0 bulkscore=0 spamscore=0
+ malwarescore=0 suspectscore=1 phishscore=0 bulkscore=0 spamscore=0
  clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
+ mlxlogscore=909 adultscore=0 classifier=spam adjust=0 reason=mlx
  scancount=1 engine=8.0.1-1810050000 definitions=main-1907230030
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -107,87 +104,74 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The pcibios_init() function for 64 bit PowerPC currently calls
-pci_bus_add_devices() before pcibios_resource_survey(), which seems
-incorrect because it adds devices and attempts to bind their drivers
-before allocating their resources (although no problems seem to be
-apparent).
+Now that struct eeh_dev includes the BDFN of it's PCI device, make use
+of it to replace eeh_edev_info() with a set of dev_dbg()-style macros
+that only need a struct edev.
 
-So move the call to pci_bus_add_devices() to after
-pcibios_resource_survey(), while extracting call to the
-pcibios_fixup() hook so that it remains in the same location.
+With the BDFN available without the struct pci_dev, eeh_pci_name() is
+now unnecessary, so remove it.
 
-This will also allow the ppc_md.pcibios_bus_add_device() hooks to
-perform actions that depend on PCI resources, both during rescanning
-(where this is already the case) and at boot time, to support future
-work.
+While only the "info" level function is used here, the others will be
+used in followup work.
 
 Signed-off-by: Sam Bobroff <sbobroff@linux.ibm.com>
-Reviewed-by: Alexey Kardashevskiy <aik@ozlabs.ru>
 ---
- arch/powerpc/kernel/pci-common.c |  4 ----
- arch/powerpc/kernel/pci_32.c     |  4 ++++
- arch/powerpc/kernel/pci_64.c     | 12 +++++++++---
- 3 files changed, 13 insertions(+), 7 deletions(-)
+v3 * New in this version.
 
-diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-common.c
-index f627e15bb43c..1c448cf25506 100644
---- a/arch/powerpc/kernel/pci-common.c
-+++ b/arch/powerpc/kernel/pci-common.c
-@@ -1379,10 +1379,6 @@ void __init pcibios_resource_survey(void)
- 		pr_debug("PCI: Assigning unassigned resources...\n");
- 		pci_assign_unassigned_resources();
+ arch/powerpc/include/asm/eeh.h   | 11 +++++++++++
+ arch/powerpc/kernel/eeh_driver.c | 17 -----------------
+ 2 files changed, 11 insertions(+), 17 deletions(-)
+
+diff --git a/arch/powerpc/include/asm/eeh.h b/arch/powerpc/include/asm/eeh.h
+index bbe0798f6624..e1023a556721 100644
+--- a/arch/powerpc/include/asm/eeh.h
++++ b/arch/powerpc/include/asm/eeh.h
+@@ -138,6 +138,17 @@ struct eeh_dev {
+ 	struct pci_dev *physfn;		/* Associated SRIOV PF		*/
+ };
+ 
++/* "fmt" must be a simple literal string */
++#define EEH_EDEV_PRINT(level, edev, fmt, ...) \
++	pr_##level("PCI %04x:%02x:%02x.%x#%04x: EEH: " fmt, \
++	(edev)->controller->global_number, PCI_BUSNO((edev)->bdfn), \
++	PCI_SLOT((edev)->bdfn), PCI_FUNC((edev)->bdfn), \
++	((edev)->pe ? (edev)->pe_config_addr : 0xffff), ##__VA_ARGS__)
++#define eeh_edev_dbg(edev, fmt, ...) EEH_EDEV_PRINT(debug, (edev), fmt, ##__VA_ARGS__)
++#define eeh_edev_info(edev, fmt, ...) EEH_EDEV_PRINT(info, (edev), fmt, ##__VA_ARGS__)
++#define eeh_edev_warn(edev, fmt, ...) EEH_EDEV_PRINT(warn, (edev), fmt, ##__VA_ARGS__)
++#define eeh_edev_err(edev, fmt, ...) EEH_EDEV_PRINT(err, (edev), fmt, ##__VA_ARGS__)
++
+ static inline struct pci_dn *eeh_dev_to_pdn(struct eeh_dev *edev)
+ {
+ 	return edev ? edev->pdn : NULL;
+diff --git a/arch/powerpc/kernel/eeh_driver.c b/arch/powerpc/kernel/eeh_driver.c
+index d6f54840a3a9..29424d5e5fea 100644
+--- a/arch/powerpc/kernel/eeh_driver.c
++++ b/arch/powerpc/kernel/eeh_driver.c
+@@ -82,23 +82,6 @@ static const char *pci_ers_result_name(enum pci_ers_result result)
  	}
+ };
+ 
+-static __printf(2, 3) void eeh_edev_info(const struct eeh_dev *edev,
+-					 const char *fmt, ...)
+-{
+-	struct va_format vaf;
+-	va_list args;
 -
--	/* Call machine dependent fixup */
--	if (ppc_md.pcibios_fixup)
--		ppc_md.pcibios_fixup();
- }
- 
- /* This is used by the PCI hotplug driver to allocate resource
-diff --git a/arch/powerpc/kernel/pci_32.c b/arch/powerpc/kernel/pci_32.c
-index 50942a1d1a5f..b49e1060a3bf 100644
---- a/arch/powerpc/kernel/pci_32.c
-+++ b/arch/powerpc/kernel/pci_32.c
-@@ -263,6 +263,10 @@ static int __init pcibios_init(void)
- 	/* Call common code to handle resource allocation */
- 	pcibios_resource_survey();
- 
-+	/* Call machine dependent fixup */
-+	if (ppc_md.pcibios_fixup)
-+		ppc_md.pcibios_fixup();
-+
- 	/* Call machine dependent post-init code */
- 	if (ppc_md.pcibios_after_init)
- 		ppc_md.pcibios_after_init();
-diff --git a/arch/powerpc/kernel/pci_64.c b/arch/powerpc/kernel/pci_64.c
-index b7030b1189d0..f83d1f69b1dd 100644
---- a/arch/powerpc/kernel/pci_64.c
-+++ b/arch/powerpc/kernel/pci_64.c
-@@ -54,14 +54,20 @@ static int __init pcibios_init(void)
- 	pci_add_flags(PCI_ENABLE_PROC_DOMAINS | PCI_COMPAT_DOMAIN_0);
- 
- 	/* Scan all of the recorded PCI controllers.  */
--	list_for_each_entry_safe(hose, tmp, &hose_list, list_node) {
-+	list_for_each_entry_safe(hose, tmp, &hose_list, list_node)
- 		pcibios_scan_phb(hose);
--		pci_bus_add_devices(hose->bus);
--	}
- 
- 	/* Call common code to handle resource allocation */
- 	pcibios_resource_survey();
- 
-+	/* Add devices. */
-+	list_for_each_entry_safe(hose, tmp, &hose_list, list_node)
-+		pci_bus_add_devices(hose->bus);
-+
-+	/* Call machine dependent fixup */
-+	if (ppc_md.pcibios_fixup)
-+		ppc_md.pcibios_fixup();
-+
- 	printk(KERN_DEBUG "PCI: Probing PCI hardware done\n");
- 
- 	return 0;
+-	va_start(args, fmt);
+-
+-	vaf.fmt = fmt;
+-	vaf.va = &args;
+-
+-	printk(KERN_INFO "EEH: PE#%x (PCI %s): %pV\n", edev->pe_config_addr,
+-	       edev->pdev ? dev_name(&edev->pdev->dev) : "none", &vaf);
+-
+-	va_end(args);
+-}
+-
+ static enum pci_ers_result pci_ers_merge_result(enum pci_ers_result old,
+ 						enum pci_ers_result new)
+ {
 -- 
 2.22.0.216.g00a2a96fc9
 
