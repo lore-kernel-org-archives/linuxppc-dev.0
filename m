@@ -2,48 +2,93 @@ Return-Path: <SRS0=ex+5=VV=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS
+X-Spam-Status: No, score=-5.3 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
 	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AD383C76186
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Jul 2019 03:47:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id ADC22C7618F
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Jul 2019 03:49:38 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 370182070D
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Jul 2019 03:47:52 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 370182070D
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+	by mail.kernel.org (Postfix) with ESMTPS id 3AC932070D
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Jul 2019 03:49:38 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3AC932070D
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45thBY1gqrzDqCp
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Jul 2019 13:47:49 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45tFgf62j6zDqQT
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Jul 2019 20:53:02 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45thDc2Q4dzDqN2
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Jul 2019 13:49:36 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+ spf=none (mailfrom) smtp.mailfrom=linux.vnet.ibm.com
+ (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
+ envelope-from=anju@linux.vnet.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=ellerman.id.au
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
- SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 45tFgc4qyyz9s4Y;
- Tue, 23 Jul 2019 20:53:00 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [RFC PATCH 1/4] powerpc/64s/radix: Fix memory hotplug section
- page table creation
-In-Reply-To: <20190722174700.11483-2-npiggin@gmail.com>
-References: <20190722174700.11483-1-npiggin@gmail.com>
- <20190722174700.11483-2-npiggin@gmail.com>
-Date: Tue, 23 Jul 2019 20:52:59 +1000
-Message-ID: <87tvbd58fo.fsf@concordia.ellerman.id.au>
+ header.from=linux.vnet.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45tGSq1f3RzDqQj
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Jul 2019 21:28:42 +1000 (AEST)
+Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
+ x6NBSSx5106818
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Jul 2019 07:28:38 -0400
+Received: from e06smtp04.uk.ibm.com (e06smtp04.uk.ibm.com [195.75.94.100])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2twypbvxd3-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Jul 2019 07:28:35 -0400
+Received: from localhost
+ by e06smtp04.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <anju@linux.vnet.ibm.com>;
+ Tue, 23 Jul 2019 12:27:34 +0100
+Received: from b06avi18626390.portsmouth.uk.ibm.com (9.149.26.192)
+ by e06smtp04.uk.ibm.com (192.168.101.134) with IBM ESMTP SMTP Gateway:
+ Authorized Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Tue, 23 Jul 2019 12:27:31 +0100
+Received: from d06av21.portsmouth.uk.ibm.com (d06av21.portsmouth.uk.ibm.com
+ [9.149.105.232])
+ by b06avi18626390.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP
+ id x6NBRGhF36110744
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Tue, 23 Jul 2019 11:27:16 GMT
+Received: from d06av21.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id D298452050;
+ Tue, 23 Jul 2019 11:27:30 +0000 (GMT)
+Received: from localhost.localdomain (unknown [9.124.35.72])
+ by d06av21.portsmouth.uk.ibm.com (Postfix) with ESMTPS id 1CC5052052;
+ Tue, 23 Jul 2019 11:27:29 +0000 (GMT)
+Subject: Re: [PATCH v2] powerpc/imc: Dont create debugfs files for cpu-less
+ nodes
+To: Qian Cai <cai@lca.pw>, Michael Ellerman <mpe@ellerman.id.au>,
+ Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+References: <20190702092112.4015-1-maddy@linux.vnet.ibm.com>
+ <87d0ihgojp.fsf@concordia.ellerman.id.au> <1563216075.4610.3.camel@lca.pw>
+From: Anju T Sudhakar <anju@linux.vnet.ibm.com>
+Date: Tue, 23 Jul 2019 16:57:28 +0530
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.6.1
 MIME-Version: 1.0
-Content-Type: text/plain
+In-Reply-To: <1563216075.4610.3.camel@lca.pw>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 8bit
+Content-Language: en-US
+X-TM-AS-GCONF: 00
+x-cbid: 19072311-0016-0000-0000-00000295652C
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 19072311-0017-0000-0000-000032F354C9
+Message-Id: <b1d6a06f-5f3b-d887-27cf-ba8c0255c4b0@linux.vnet.ibm.com>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
+ definitions=2019-07-23_05:, , signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ malwarescore=0 suspectscore=27 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1810050000 definitions=main-1907230113
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -55,46 +100,89 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Anju T Sudhakar <anju@linux.vnet.ibm.com>,
- Madhavan Srinivasan <maddy@linux.vnet.ibm.com>,
- Nicholas Piggin <npiggin@gmail.com>, Reza Arbab <arbab@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Nicholas Piggin <npiggin@gmail.com> writes:
-> create_physical_mapping expects physical addresses, but creating and
-> splitting these mappings after boot is supplying virtual (effective)
-> addresses. This can be hit by booting with limited memory then probing
-> new physical memory sections.
+Hi Qian,
+
+On 7/16/19 12:11 AM, Qian Cai wrote:
+> On Thu, 2019-07-11 at 14:53 +1000, Michael Ellerman wrote:
+>> Hi Maddy,
+>>
+>> Madhavan Srinivasan <maddy@linux.vnet.ibm.com> writes:
+>>> diff --git a/arch/powerpc/platforms/powernv/opal-imc.c
+>>> b/arch/powerpc/platforms/powernv/opal-imc.c
+>>> index 186109bdd41b..e04b20625cb9 100644
+>>> --- a/arch/powerpc/platforms/powernv/opal-imc.c
+>>> +++ b/arch/powerpc/platforms/powernv/opal-imc.c
+>>> @@ -69,20 +69,20 @@ static void export_imc_mode_and_cmd(struct device_node
+>>> *node,
+>>>   	if (of_property_read_u32(node, "cb_offset", &cb_offset))
+>>>   		cb_offset = IMC_CNTL_BLK_OFFSET;
+>>>   
+>>> -	for_each_node(nid) {
+>>> -		loc = (u64)(pmu_ptr->mem_info[chip].vbase) + cb_offset;
+>>> +	while (ptr->vbase != NULL) {
+>> This means you'll bail out as soon as you find a node with no vbase, but
+>> it's possible we could have a CPU-less node intermingled with other
+>> nodes.
+>>
+>> So I think you want to keep the for loop, but continue if you see a NULL
+>> vbase?
+> Not sure if this will also takes care of some of those messages during the boot
+> on today's linux-next even without this patch.
 >
-> Cc: Reza Arbab <arbab@linux.vnet.ibm.com>
-> Fixes: 6cc27341b21a8 ("powerpc/mm: add radix__create_section_mapping()")
-> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+>
+> [   18.077780][    T1] debugfs: Directory 'imc' with parent 'powerpc' already
+> present!
+>
+>
 
-This is not catastrophic because create_physical_mapping() just uses
-start/end to construct virtual addresses anyway, and __va(__va(x)) == __va(x) ?
+This is introduced by a recent commit: c33d442328f55 (debugfs: make 
+error message a bit more verbose).
 
-Although we do pass those through as region_start/end which then go to
-memblock_alloc_try_nid(). But I guess that doesn't happen after boot,
-which is the case you're talking about.
+So basically, the debugfs imc_* file is created per node, and is created 
+by the first nest unit which is
 
-So I think looks good, change log could use a bit more detail though :)
+being registered. For the subsequent nest units, debugfs_create_dir() 
+will just return since the imc_* file already
 
-cheers
+exist.
 
-> diff --git a/arch/powerpc/mm/book3s64/radix_pgtable.c b/arch/powerpc/mm/book3s64/radix_pgtable.c
-> index b4ca9e95e678..c5cc16ab1954 100644
-> --- a/arch/powerpc/mm/book3s64/radix_pgtable.c
-> +++ b/arch/powerpc/mm/book3s64/radix_pgtable.c
-> @@ -902,7 +902,7 @@ int __meminit radix__create_section_mapping(unsigned long start, unsigned long e
->  		return -1;
->  	}
->  
-> -	return create_physical_mapping(start, end, nid);
-> +	return create_physical_mapping(__pa(start), __pa(end), nid);
->  }
->  
->  int __meminit radix__remove_section_mapping(unsigned long start, unsigned long end)
-> -- 
-> 2.20.1
+The commit "c33d442328f55 (debugfs: make error message a bit more 
+verbose)", prints
+
+a message if the debugfs file already exists in debugfs_create_dir(). 
+That is why we are encountering these
+
+messages now.
+
+
+This patch (i.e, powerpc/imc: Dont create debugfs files for cpu-less 
+nodes) will address the initial issue, i.e
+
+"numa crash while reading imc_* debugfs files for cpu less nodes", and 
+will not address these debugfs messages.
+
+
+But yeah this is a good catch. We can have some checks to avoid these 
+debugfs messages.
+
+
+Hi Michael,
+
+Do we need to have a separate patch to address these debugfs messages, 
+or can we address the same
+
+in the next version of this patch itself?
+
+
+Thanks,
+
+Anju
+
+
+
+
