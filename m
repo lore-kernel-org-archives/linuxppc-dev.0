@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
 	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6777AC76186
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Jul 2019 03:32:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 845D3C76186
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Jul 2019 03:34:54 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E291322387
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Jul 2019 03:32:40 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E291322387
+	by mail.kernel.org (Postfix) with ESMTPS id 11A7A22387
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Jul 2019 03:34:53 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 11A7A22387
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45tgs26vR9zDqBG
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Jul 2019 13:32:38 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45tgvb5S4TzDqP9
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Jul 2019 13:34:51 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
  (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
@@ -29,57 +29,60 @@ Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45t49C4jhHzDqSm
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Jul 2019 13:44:31 +1000 (AEST)
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x6N3hXZ7046106
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Jul 2019 23:44:29 -0400
-Received: from e06smtp01.uk.ibm.com (e06smtp01.uk.ibm.com [195.75.94.97])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2twrpw3gcx-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45t4Bk1jm9zDqSt
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Jul 2019 13:45:50 +1000 (AEST)
+Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
+ x6N3jhbc065152
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Jul 2019 23:45:47 -0400
+Received: from e06smtp03.uk.ibm.com (e06smtp03.uk.ibm.com [195.75.94.99])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2twtfhr6nu-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Jul 2019 23:44:29 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Jul 2019 23:45:45 -0400
 Received: from localhost
- by e06smtp01.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp03.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <sbobroff@linux.ibm.com>;
  Tue, 23 Jul 2019 04:44:27 +0100
-Received: from b06cxnps4076.portsmouth.uk.ibm.com (9.149.109.198)
- by e06smtp01.uk.ibm.com (192.168.101.131) with IBM ESMTP SMTP Gateway:
+Received: from b06avi18626390.portsmouth.uk.ibm.com (9.149.26.192)
+ by e06smtp03.uk.ibm.com (192.168.101.133) with IBM ESMTP SMTP Gateway:
  Authorized Use Only! Violators will be prosecuted; 
  (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
  Tue, 23 Jul 2019 04:44:24 +0100
-Received: from d06av21.portsmouth.uk.ibm.com (d06av21.portsmouth.uk.ibm.com
- [9.149.105.232])
- by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x6N3iNk453543028
+Received: from d06av22.portsmouth.uk.ibm.com (d06av22.portsmouth.uk.ibm.com
+ [9.149.105.58])
+ by b06avi18626390.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP
+ id x6N3i9sa40960448
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Tue, 23 Jul 2019 03:44:23 GMT
-Received: from d06av21.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id AEEE252050;
+ Tue, 23 Jul 2019 03:44:09 GMT
+Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id C54914C04A;
+ Tue, 23 Jul 2019 03:44:23 +0000 (GMT)
+Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 2AE244C044;
  Tue, 23 Jul 2019 03:44:23 +0000 (GMT)
 Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
- by d06av21.portsmouth.uk.ibm.com (Postfix) with ESMTP id 17F075204F;
+ by d06av22.portsmouth.uk.ibm.com (Postfix) with ESMTP;
  Tue, 23 Jul 2019 03:44:23 +0000 (GMT)
 Received: from tungsten.ozlabs.ibm.com (haven.au.ibm.com [9.192.254.114])
  (using TLSv1.2 with cipher DHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by ozlabs.au.ibm.com (Postfix) with ESMTPSA id 7675AA03B7;
+ by ozlabs.au.ibm.com (Postfix) with ESMTPSA id 98172A03C2;
  Tue, 23 Jul 2019 13:44:20 +1000 (AEST)
 From: Sam Bobroff <sbobroff@linux.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v3 5/9] powerpc/eeh: EEH for pSeries hot plug
-Date: Tue, 23 Jul 2019 13:44:16 +1000
+Subject: [PATCH v3 9/9] powerpc/eeh: Convert log messages to eeh_edev_* macros
+Date: Tue, 23 Jul 2019 13:44:20 +1000
 X-Mailer: git-send-email 2.22.0.216.g00a2a96fc9
 In-Reply-To: <cover.1563853440.git.sbobroff@linux.ibm.com>
 References: <cover.1563853440.git.sbobroff@linux.ibm.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-x-cbid: 19072303-4275-0000-0000-0000034FB572
+x-cbid: 19072303-0012-0000-0000-00000335512C
 X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19072303-4276-0000-0000-0000385FD880
-Message-Id: <291106c5283d7b54a4010219de13d8756350fe00.1563853440.git.sbobroff@linux.ibm.com>
+x-cbparentid: 19072303-0013-0000-0000-0000216EDF94
+Message-Id: <d5bbb2e9a39da905d656524bdf9e1b6705fd526a.1563853440.git.sbobroff@linux.ibm.com>
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
  definitions=2019-07-23_03:, , signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
@@ -104,219 +107,392 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On PowerNV and pSeries, devices currently acquire EEH support from
-several different places: Boot-time devices from eeh_probe_devices()
-and eeh_addr_cache_build(), Virtual Function devices from the pcibios
-bus add device hooks and hot plugged devices from pci_hp_add_devices()
-(with other platforms using other methods as well).  Unfortunately,
-pSeries machines currently discover hot plugged devices using
-pci_rescan_bus(), not pci_hp_add_devices(), and so those devices do
-not receive EEH support.
+Convert existing messages, where appropriate, to use the eeh_edev_*
+logging macros.
 
-Rather than adding another case for pci_rescan_bus(), this change
-widens the scope of the pcibios bus add device hooks so that they can
-handle all devices. As a side effect this also supports devices
-discovered after manually rescanning via /sys/bus/pci/rescan.
+The only effect should be minor adjustments to the log messages, apart
+from:
 
-Note that on PowerNV, this change allows the EEH subsystem to become
-enabled after boot as long as it has not been forced off, which was
-not previously possible (it was already possible on pSeries).
+- A new message in pseries_eeh_probe() "Probing device" to match the
+powernv case.
+- The "Probing device" message in pnv_eeh_probe() is now generated
+slightly later, which will mean that it is no longer emitted for
+devices that aren't probed due to the initial checks.
 
 Signed-off-by: Sam Bobroff <sbobroff@linux.ibm.com>
 ---
- arch/powerpc/kernel/eeh.c                    |  2 +-
- arch/powerpc/kernel/of_platform.c            |  3 +-
- arch/powerpc/platforms/powernv/eeh-powernv.c | 39 +++++++++-----
- arch/powerpc/platforms/pseries/eeh_pseries.c | 54 ++++++++++----------
- 4 files changed, 56 insertions(+), 42 deletions(-)
+v3 * New in this version.
 
+ arch/powerpc/include/asm/ppc-pci.h           |  5 --
+ arch/powerpc/kernel/eeh.c                    | 19 +++-----
+ arch/powerpc/kernel/eeh_cache.c              |  8 +--
+ arch/powerpc/kernel/eeh_driver.c             |  4 +-
+ arch/powerpc/kernel/eeh_pe.c                 | 51 +++++---------------
+ arch/powerpc/platforms/powernv/eeh-powernv.c | 17 ++-----
+ arch/powerpc/platforms/pseries/eeh_pseries.c | 21 +++-----
+ 7 files changed, 38 insertions(+), 87 deletions(-)
+
+diff --git a/arch/powerpc/include/asm/ppc-pci.h b/arch/powerpc/include/asm/ppc-pci.h
+index 72860de205a0..7f4be5a05eb3 100644
+--- a/arch/powerpc/include/asm/ppc-pci.h
++++ b/arch/powerpc/include/asm/ppc-pci.h
+@@ -62,11 +62,6 @@ void eeh_pe_dev_mode_mark(struct eeh_pe *pe, int mode);
+ void eeh_sysfs_add_device(struct pci_dev *pdev);
+ void eeh_sysfs_remove_device(struct pci_dev *pdev);
+ 
+-static inline const char *eeh_pci_name(struct pci_dev *pdev) 
+-{ 
+-	return pdev ? pci_name(pdev) : "<null>";
+-} 
+-
+ static inline const char *eeh_driver_name(struct pci_dev *pdev)
+ {
+ 	return (pdev && pdev->driver) ? pdev->driver->name : "<null>";
 diff --git a/arch/powerpc/kernel/eeh.c b/arch/powerpc/kernel/eeh.c
-index ca8b0c58a6a7..87edac6f2fd9 100644
+index c0ec1b6b1e69..b6683f367f7f 100644
 --- a/arch/powerpc/kernel/eeh.c
 +++ b/arch/powerpc/kernel/eeh.c
-@@ -1272,7 +1272,7 @@ void eeh_add_device_late(struct pci_dev *dev)
- 	struct pci_dn *pdn;
- 	struct eeh_dev *edev;
+@@ -461,8 +461,7 @@ int eeh_dev_check_failure(struct eeh_dev *edev)
+ 	/* Access to IO BARs might get this far and still not want checking. */
+ 	if (!pe) {
+ 		eeh_stats.ignored_check++;
+-		pr_debug("EEH: Ignored check for %s\n",
+-			eeh_pci_name(dev));
++		eeh_edev_dbg(edev, "Ignored check\n");
+ 		return 0;
+ 	}
  
--	if (!dev || !eeh_enabled())
-+	if (!dev)
+@@ -502,12 +501,11 @@ int eeh_dev_check_failure(struct eeh_dev *edev)
+ 			if (dn)
+ 				location = of_get_property(dn, "ibm,loc-code",
+ 						NULL);
+-			printk(KERN_ERR "EEH: %d reads ignored for recovering device at "
+-				"location=%s driver=%s pci addr=%s\n",
++			eeh_edev_err(edev, "%d reads ignored for recovering device at location=%s driver=%s\n",
+ 				pe->check_count,
+ 				location ? location : "unknown",
+-				eeh_driver_name(dev), eeh_pci_name(dev));
+-			printk(KERN_ERR "EEH: Might be infinite loop in %s driver\n",
++				eeh_driver_name(dev));
++			eeh_edev_err(edev, "Might be infinite loop in %s driver\n",
+ 				eeh_driver_name(dev));
+ 			dump_stack();
+ 		}
+@@ -1268,12 +1266,11 @@ void eeh_add_device_late(struct pci_dev *dev)
+ 	if (!dev)
  		return;
  
- 	pr_debug("EEH: Adding device %s\n", pci_name(dev));
-diff --git a/arch/powerpc/kernel/of_platform.c b/arch/powerpc/kernel/of_platform.c
-index 427fc22f72b6..11c807468ab5 100644
---- a/arch/powerpc/kernel/of_platform.c
-+++ b/arch/powerpc/kernel/of_platform.c
-@@ -81,7 +81,8 @@ static int of_pci_phb_probe(struct platform_device *dev)
- 	pcibios_claim_one_bus(phb->bus);
- 
- 	/* Finish EEH setup */
--	eeh_add_device_tree_late(phb->bus);
-+	if (!eeh_has_flag(EEH_FORCE_DISABLED))
-+		eeh_add_device_tree_late(phb->bus);
- 
- 	/* Add probed PCI devices to the device model */
- 	pci_bus_add_devices(phb->bus);
-diff --git a/arch/powerpc/platforms/powernv/eeh-powernv.c b/arch/powerpc/platforms/powernv/eeh-powernv.c
-index 629f9390d9af..77cc2f51c2ea 100644
---- a/arch/powerpc/platforms/powernv/eeh-powernv.c
-+++ b/arch/powerpc/platforms/powernv/eeh-powernv.c
-@@ -43,7 +43,7 @@ void pnv_pcibios_bus_add_device(struct pci_dev *pdev)
- {
- 	struct pci_dn *pdn = pci_get_pdn(pdev);
- 
--	if (!pdev->is_virtfn)
-+	if (eeh_has_flag(EEH_FORCE_DISABLED))
- 		return;
- 
- 	pr_debug("%s: EEH: Setting up device %s.\n", __func__, pci_name(pdev));
-@@ -222,6 +222,25 @@ static const struct file_operations eeh_tree_state_debugfs_ops = {
- 
- #endif /* CONFIG_DEBUG_FS */
- 
-+void pnv_eeh_enable_phbs(void)
-+{
-+	struct pci_controller *hose;
-+	struct pnv_phb *phb;
-+
-+	list_for_each_entry(hose, &hose_list, list_node) {
-+		phb = hose->private_data;
-+		/*
-+		 * If EEH is enabled, we're going to rely on that.
-+		 * Otherwise, we restore to conventional mechanism
-+		 * to clear frozen PE during PCI config access.
-+		 */
-+		if (eeh_enabled())
-+			phb->flags |= PNV_PHB_FLAG_EEH;
-+		else
-+			phb->flags &= ~PNV_PHB_FLAG_EEH;
-+	}
-+}
-+
- /**
-  * pnv_eeh_post_init - EEH platform dependent post initialization
-  *
-@@ -260,19 +279,11 @@ int pnv_eeh_post_init(void)
- 	if (!eeh_enabled())
- 		disable_irq(eeh_event_irq);
- 
-+	pnv_eeh_enable_phbs();
-+
- 	list_for_each_entry(hose, &hose_list, list_node) {
- 		phb = hose->private_data;
- 
--		/*
--		 * If EEH is enabled, we're going to rely on that.
--		 * Otherwise, we restore to conventional mechanism
--		 * to clear frozen PE during PCI config access.
--		 */
--		if (eeh_enabled())
--			phb->flags |= PNV_PHB_FLAG_EEH;
--		else
--			phb->flags &= ~PNV_PHB_FLAG_EEH;
+-	pr_debug("EEH: Adding device %s\n", pci_name(dev));
 -
- 		/* Create debugfs entries */
- #ifdef CONFIG_DEBUG_FS
- 		if (phb->has_dbgfs || !phb->dbgfs)
-@@ -483,7 +494,11 @@ static void *pnv_eeh_probe(struct pci_dn *pdn, void *data)
- 	 * Enable EEH explicitly so that we will do EEH check
- 	 * while accessing I/O stuff
- 	 */
--	eeh_add_flag(EEH_ENABLED);
-+	if (!eeh_has_flag(EEH_ENABLED)) {
-+		enable_irq(eeh_event_irq);
-+		pnv_eeh_enable_phbs();
-+		eeh_add_flag(EEH_ENABLED);
-+	}
- 
- 	/* Save memory bars */
- 	eeh_save_bars(edev);
-diff --git a/arch/powerpc/platforms/pseries/eeh_pseries.c b/arch/powerpc/platforms/pseries/eeh_pseries.c
-index 31733f6d642c..96ad41fbf96b 100644
---- a/arch/powerpc/platforms/pseries/eeh_pseries.c
-+++ b/arch/powerpc/platforms/pseries/eeh_pseries.c
-@@ -42,44 +42,44 @@ static int ibm_get_config_addr_info;
- static int ibm_get_config_addr_info2;
- static int ibm_configure_pe;
- 
--#ifdef CONFIG_PCI_IOV
- void pseries_pcibios_bus_add_device(struct pci_dev *pdev)
- {
- 	struct pci_dn *pdn = pci_get_pdn(pdev);
--	struct pci_dn *physfn_pdn;
--	struct eeh_dev *edev;
- 
--	if (!pdev->is_virtfn)
-+	if (eeh_has_flag(EEH_FORCE_DISABLED))
+ 	pdn = pci_get_pdn_by_devfn(dev->bus, dev->devfn);
+ 	edev = pdn_to_eeh_dev(pdn);
++	eeh_edev_dbg(edev, "Adding device\n");
+ 	if (edev->pdev == dev) {
+-		pr_debug("EEH: Device %s already referenced!\n", pci_name(dev));
++		eeh_edev_dbg(edev, "Device already referenced!\n");
  		return;
+ 	}
  
- 	pr_debug("%s: EEH: Setting up device %s.\n", __func__, pci_name(pdev));
-+#ifdef CONFIG_PCI_IOV
-+	if (pdev->is_virtfn) {
-+		struct pci_dn *physfn_pdn;
+@@ -1374,10 +1371,10 @@ void eeh_remove_device(struct pci_dev *dev)
+ 	edev = pci_dev_to_eeh_dev(dev);
  
--	pdn->device_id  =  pdev->device;
--	pdn->vendor_id  =  pdev->vendor;
--	pdn->class_code =  pdev->class;
--	/*
--	 * Last allow unfreeze return code used for retrieval
--	 * by user space in eeh-sysfs to show the last command
--	 * completion from platform.
--	 */
--	pdn->last_allow_rc =  0;
--	physfn_pdn      =  pci_get_pdn(pdev->physfn);
--	pdn->pe_number  =  physfn_pdn->pe_num_map[pdn->vf_index];
--	edev = pdn_to_eeh_dev(pdn);
--
--	/*
--	 * The following operations will fail if VF's sysfs files
--	 * aren't created or its resources aren't finalized.
--	 */
-+		pdn->device_id  =  pdev->device;
-+		pdn->vendor_id  =  pdev->vendor;
-+		pdn->class_code =  pdev->class;
-+		/*
-+		 * Last allow unfreeze return code used for retrieval
-+		 * by user space in eeh-sysfs to show the last command
-+		 * completion from platform.
-+		 */
-+		pdn->last_allow_rc =  0;
-+		physfn_pdn      =  pci_get_pdn(pdev->physfn);
-+		pdn->pe_number  =  physfn_pdn->pe_num_map[pdn->vf_index];
-+	}
-+#endif
- 	eeh_add_device_early(pdn);
- 	eeh_add_device_late(pdev);
--	edev->pe_config_addr =  (pdn->busno << 16) | (pdn->devfn << 8);
--	eeh_rmv_from_parent_pe(edev); /* Remove as it is adding to bus pe */
--	eeh_add_to_parent_pe(edev);   /* Add as VF PE type */
--	eeh_sysfs_add_device(pdev);
-+#ifdef CONFIG_PCI_IOV
-+	if (pdev->is_virtfn) {
-+		struct eeh_dev *edev = pdn_to_eeh_dev(pdn);
+ 	/* Unregister the device with the EEH/PCI address search system */
+-	pr_debug("EEH: Removing device %s\n", pci_name(dev));
++	dev_dbg(&dev->dev, "EEH: Removing device\n");
  
--}
-+		edev->pe_config_addr =  (pdn->busno << 16) | (pdn->devfn << 8);
-+		eeh_rmv_from_parent_pe(edev); /* Remove as it is adding to bus pe */
-+		eeh_add_to_parent_pe(edev);   /* Add as VF PE type */
-+	}
- #endif
-+	eeh_sysfs_add_device(pdev);
-+}
+ 	if (!edev || !edev->pdev || !edev->pe) {
+-		pr_debug("EEH: Not referenced !\n");
++		dev_dbg(&dev->dev, "EEH: Device not referenced!\n");
+ 		return;
+ 	}
  
- /*
-  * Buffer for reporting slot-error-detail rtas calls. Its here
-@@ -146,10 +146,8 @@ static int pseries_eeh_init(void)
- 	/* Set EEH probe mode */
- 	eeh_add_flag(EEH_PROBE_MODE_DEVTREE | EEH_ENABLE_IO_FOR_LOG);
+diff --git a/arch/powerpc/kernel/eeh_cache.c b/arch/powerpc/kernel/eeh_cache.c
+index 8c8649172e97..45360b9eab90 100644
+--- a/arch/powerpc/kernel/eeh_cache.c
++++ b/arch/powerpc/kernel/eeh_cache.c
+@@ -145,8 +145,8 @@ eeh_addr_cache_insert(struct pci_dev *dev, resource_size_t alo,
+ 	piar->pcidev = dev;
+ 	piar->flags = flags;
  
--#ifdef CONFIG_PCI_IOV
- 	/* Set EEH machine dependent code */
- 	ppc_md.pcibios_bus_add_device = pseries_pcibios_bus_add_device;
--#endif
+-	pr_debug("PIAR: insert range=[%pap:%pap] dev=%s\n",
+-		 &alo, &ahi, pci_name(dev));
++	eeh_edev_dbg(piar->edev, "PIAR: insert range=[%pap:%pap]\n",
++		 &alo, &ahi);
+ 
+ 	rb_link_node(&piar->rb_node, parent, p);
+ 	rb_insert_color(&piar->rb_node, &pci_io_addr_cache_root.rb_root);
+@@ -226,8 +226,8 @@ static inline void __eeh_addr_cache_rmv_dev(struct pci_dev *dev)
+ 		piar = rb_entry(n, struct pci_io_addr_range, rb_node);
+ 
+ 		if (piar->pcidev == dev) {
+-			pr_debug("PIAR: remove range=[%pap:%pap] dev=%s\n",
+-				 &piar->addr_lo, &piar->addr_hi, pci_name(dev));
++			eeh_edev_dbg(piar->edev, "PIAR: remove range=[%pap:%pap]\n",
++				 &piar->addr_lo, &piar->addr_hi);
+ 			rb_erase(n, &pci_io_addr_cache_root.rb_root);
+ 			kfree(piar);
+ 			goto restart;
+diff --git a/arch/powerpc/kernel/eeh_driver.c b/arch/powerpc/kernel/eeh_driver.c
+index 29424d5e5fea..87e531bafe75 100644
+--- a/arch/powerpc/kernel/eeh_driver.c
++++ b/arch/powerpc/kernel/eeh_driver.c
+@@ -460,9 +460,7 @@ static void *eeh_add_virt_device(struct eeh_dev *edev)
+ 	struct pci_dn *pdn = eeh_dev_to_pdn(edev);
+ 
+ 	if (!(edev->physfn)) {
+-		pr_warn("%s: EEH dev %04x:%02x:%02x.%01x not for VF\n",
+-			__func__, pdn->phb->global_number, pdn->busno,
+-			PCI_SLOT(pdn->devfn), PCI_FUNC(pdn->devfn));
++		eeh_edev_warn(edev, "Not for VF\n");
+ 		return NULL;
+ 	}
+ 
+diff --git a/arch/powerpc/kernel/eeh_pe.c b/arch/powerpc/kernel/eeh_pe.c
+index 854cef7b18f4..317a31624526 100644
+--- a/arch/powerpc/kernel/eeh_pe.c
++++ b/arch/powerpc/kernel/eeh_pe.c
+@@ -379,8 +379,7 @@ int eeh_add_to_parent_pe(struct eeh_dev *edev)
+ 
+ 	/* Check if the PE number is valid */
+ 	if (!eeh_has_flag(EEH_VALID_PE_ZERO) && !edev->pe_config_addr) {
+-		pr_err("%s: Invalid PE#0 for edev 0x%x on PHB#%x\n",
+-		       __func__, config_addr, pdn->phb->global_number);
++		eeh_edev_err(edev, "PE#0 is invalid for this PHB!\n");
+ 		return -EINVAL;
+ 	}
+ 
+@@ -398,12 +397,7 @@ int eeh_add_to_parent_pe(struct eeh_dev *edev)
+ 
+ 		/* Put the edev to PE */
+ 		list_add_tail(&edev->entry, &pe->edevs);
+-		pr_debug("EEH: Add %04x:%02x:%02x.%01x to Bus PE#%x\n",
+-			 pdn->phb->global_number,
+-			 pdn->busno,
+-			 PCI_SLOT(pdn->devfn),
+-			 PCI_FUNC(pdn->devfn),
+-			 pe->addr);
++		eeh_edev_dbg(edev, "Added to bus PE\n");
+ 		return 0;
+ 	} else if (pe && (pe->type & EEH_PE_INVALID)) {
+ 		list_add_tail(&edev->entry, &pe->edevs);
+@@ -420,13 +414,8 @@ int eeh_add_to_parent_pe(struct eeh_dev *edev)
+ 			parent = parent->parent;
+ 		}
+ 
+-		pr_debug("EEH: Add %04x:%02x:%02x.%01x to Device "
+-			 "PE#%x, Parent PE#%x\n",
+-			 pdn->phb->global_number,
+-			 pdn->busno,
+-			 PCI_SLOT(pdn->devfn),
+-			 PCI_FUNC(pdn->devfn),
+-			 pe->addr, pe->parent->addr);
++		eeh_edev_dbg(edev, "Added to device PE (parent: PE#%x)\n",
++			     pe->parent->addr);
+ 		return 0;
+ 	}
+ 
+@@ -468,13 +457,8 @@ int eeh_add_to_parent_pe(struct eeh_dev *edev)
+ 	list_add_tail(&pe->child, &parent->child_list);
+ 	list_add_tail(&edev->entry, &pe->edevs);
+ 	edev->pe = pe;
+-	pr_debug("EEH: Add %04x:%02x:%02x.%01x to "
+-		 "Device PE#%x, Parent PE#%x\n",
+-		 pdn->phb->global_number,
+-		 pdn->busno,
+-		 PCI_SLOT(pdn->devfn),
+-		 PCI_FUNC(pdn->devfn),
+-		 pe->addr, pe->parent->addr);
++	eeh_edev_dbg(edev, "Added to device PE (parent: PE#%x)\n",
++		     pe->parent->addr);
  
  	return 0;
  }
+@@ -492,15 +476,10 @@ int eeh_rmv_from_parent_pe(struct eeh_dev *edev)
+ {
+ 	struct eeh_pe *pe, *parent, *child;
+ 	int cnt;
+-	struct pci_dn *pdn = eeh_dev_to_pdn(edev);
+ 
+ 	pe = eeh_dev_to_pe(edev);
+ 	if (!pe) {
+-		pr_debug("%s: No PE found for device %04x:%02x:%02x.%01x\n",
+-			 __func__,  pdn->phb->global_number,
+-			 pdn->busno,
+-			 PCI_SLOT(pdn->devfn),
+-			 PCI_FUNC(pdn->devfn));
++		eeh_edev_dbg(edev, "No PE found for device.\n");
+ 		return -EEXIST;
+ 	}
+ 
+@@ -717,17 +696,13 @@ static void eeh_bridge_check_link(struct eeh_dev *edev)
+ 	if (!(edev->mode & (EEH_DEV_ROOT_PORT | EEH_DEV_DS_PORT)))
+ 		return;
+ 
+-	pr_debug("%s: Check PCIe link for %04x:%02x:%02x.%01x ...\n",
+-		 __func__, pdn->phb->global_number,
+-		 pdn->busno,
+-		 PCI_SLOT(pdn->devfn),
+-		 PCI_FUNC(pdn->devfn));
++	eeh_edev_dbg(edev, "Checking PCIe link...\n");
+ 
+ 	/* Check slot status */
+ 	cap = edev->pcie_cap;
+ 	eeh_ops->read_config(pdn, cap + PCI_EXP_SLTSTA, 2, &val);
+ 	if (!(val & PCI_EXP_SLTSTA_PDS)) {
+-		pr_debug("  No card in the slot (0x%04x) !\n", val);
++		eeh_edev_dbg(edev, "No card in the slot (0x%04x) !\n", val);
+ 		return;
+ 	}
+ 
+@@ -736,7 +711,7 @@ static void eeh_bridge_check_link(struct eeh_dev *edev)
+ 	if (val & PCI_EXP_SLTCAP_PCP) {
+ 		eeh_ops->read_config(pdn, cap + PCI_EXP_SLTCTL, 2, &val);
+ 		if (val & PCI_EXP_SLTCTL_PCC) {
+-			pr_debug("  In power-off state, power it on ...\n");
++			eeh_edev_dbg(edev, "In power-off state, power it on ...\n");
+ 			val &= ~(PCI_EXP_SLTCTL_PCC | PCI_EXP_SLTCTL_PIC);
+ 			val |= (0x0100 & PCI_EXP_SLTCTL_PIC);
+ 			eeh_ops->write_config(pdn, cap + PCI_EXP_SLTCTL, 2, val);
+@@ -752,7 +727,7 @@ static void eeh_bridge_check_link(struct eeh_dev *edev)
+ 	/* Check link */
+ 	eeh_ops->read_config(pdn, cap + PCI_EXP_LNKCAP, 4, &val);
+ 	if (!(val & PCI_EXP_LNKCAP_DLLLARC)) {
+-		pr_debug("  No link reporting capability (0x%08x) \n", val);
++		eeh_edev_dbg(edev, "No link reporting capability (0x%08x) \n", val);
+ 		msleep(1000);
+ 		return;
+ 	}
+@@ -769,10 +744,10 @@ static void eeh_bridge_check_link(struct eeh_dev *edev)
+ 	}
+ 
+ 	if (val & PCI_EXP_LNKSTA_DLLLA)
+-		pr_debug("  Link up (%s)\n",
++		eeh_edev_dbg(edev, "Link up (%s)\n",
+ 			 (val & PCI_EXP_LNKSTA_CLS_2_5GB) ? "2.5GB" : "5GB");
+ 	else
+-		pr_debug("  Link not ready (0x%04x)\n", val);
++		eeh_edev_dbg(edev, "Link not ready (0x%04x)\n", val);
+ }
+ 
+ #define BYTE_SWAP(OFF)	(8*((OFF)/4)+3-(OFF))
+diff --git a/arch/powerpc/platforms/powernv/eeh-powernv.c b/arch/powerpc/platforms/powernv/eeh-powernv.c
+index 7ee0df9ba2c8..43c3b7d81794 100644
+--- a/arch/powerpc/platforms/powernv/eeh-powernv.c
++++ b/arch/powerpc/platforms/powernv/eeh-powernv.c
+@@ -46,7 +46,7 @@ void pnv_pcibios_bus_add_device(struct pci_dev *pdev)
+ 	if (eeh_has_flag(EEH_FORCE_DISABLED))
+ 		return;
+ 
+-	pr_debug("%s: EEH: Setting up device %s.\n", __func__, pci_name(pdev));
++	dev_dbg(&pdev->dev, "EEH: Setting up device\n");
+ 	eeh_add_device_early(pdn);
+ 	eeh_add_device_late(pdev);
+ 	eeh_sysfs_add_device(pdev);
+@@ -399,10 +399,6 @@ static void *pnv_eeh_probe(struct pci_dn *pdn, void *data)
+ 	int ret;
+ 	int config_addr = (pdn->busno << 8) | (pdn->devfn);
+ 
+-	pr_debug("%s: probing %04x:%02x:%02x.%01x\n",
+-		__func__, hose->global_number, pdn->busno,
+-		PCI_SLOT(pdn->devfn), PCI_FUNC(pdn->devfn));
+-
+ 	/*
+ 	 * When probing the root bridge, which doesn't have any
+ 	 * subordinate PCI devices. We don't have OF node for
+@@ -416,6 +412,8 @@ static void *pnv_eeh_probe(struct pci_dn *pdn, void *data)
+ 	if ((pdn->class_code >> 8) == PCI_CLASS_BRIDGE_ISA)
+ 		return NULL;
+ 
++	eeh_edev_dbg(edev, "Probing device\n");
++
+ 	/* Initialize eeh device */
+ 	edev->class_code = pdn->class_code;
+ 	edev->mode	&= 0xFFFFFF00;
+@@ -441,9 +439,7 @@ static void *pnv_eeh_probe(struct pci_dn *pdn, void *data)
+ 	/* Create PE */
+ 	ret = eeh_add_to_parent_pe(edev);
+ 	if (ret) {
+-		pr_warn("%s: Can't add PCI dev %04x:%02x:%02x.%01x to parent PE (%x)\n",
+-			__func__, hose->global_number, pdn->busno,
+-			PCI_SLOT(pdn->devfn), PCI_FUNC(pdn->devfn), ret);
++		eeh_edev_warn(edev, "Failed to add device to PE (code %d)\n", ret);
+ 		return NULL;
+ 	}
+ 
+@@ -501,10 +497,7 @@ static void *pnv_eeh_probe(struct pci_dn *pdn, void *data)
+ 	/* Save memory bars */
+ 	eeh_save_bars(edev);
+ 
+-	pr_debug("%s: EEH enabled on %02x:%02x.%01x PHB#%x-PE#%x\n",
+-		__func__, pdn->busno, PCI_SLOT(pdn->devfn),
+-		PCI_FUNC(pdn->devfn), edev->pe->phb->global_number,
+-		edev->pe->addr);
++	eeh_edev_dbg(edev, "EEH enabled on device\n");
+ 
+ 	return NULL;
+ }
+diff --git a/arch/powerpc/platforms/pseries/eeh_pseries.c b/arch/powerpc/platforms/pseries/eeh_pseries.c
+index 96ad41fbf96b..517982197451 100644
+--- a/arch/powerpc/platforms/pseries/eeh_pseries.c
++++ b/arch/powerpc/platforms/pseries/eeh_pseries.c
+@@ -49,7 +49,7 @@ void pseries_pcibios_bus_add_device(struct pci_dev *pdev)
+ 	if (eeh_has_flag(EEH_FORCE_DISABLED))
+ 		return;
+ 
+-	pr_debug("%s: EEH: Setting up device %s.\n", __func__, pci_name(pdev));
++	dev_dbg(&pdev->dev, "EEH: Setting up device\n");
+ #ifdef CONFIG_PCI_IOV
+ 	if (pdev->is_virtfn) {
+ 		struct pci_dn *physfn_pdn;
+@@ -238,10 +238,6 @@ static void *pseries_eeh_probe(struct pci_dn *pdn, void *data)
+ 	int enable = 0;
+ 	int ret;
+ 
+-	pr_debug("%s: probing %04x:%02x:%02x.%01x\n",
+-		__func__, pdn->phb->global_number, pdn->busno,
+-		PCI_SLOT(pdn->devfn), PCI_FUNC(pdn->devfn));
+-
+ 	/* Retrieve OF node and eeh device */
+ 	edev = pdn_to_eeh_dev(pdn);
+ 	if (!edev || edev->pe)
+@@ -255,6 +251,8 @@ static void *pseries_eeh_probe(struct pci_dn *pdn, void *data)
+         if ((pdn->class_code >> 8) == PCI_CLASS_BRIDGE_ISA)
+ 		return NULL;
+ 
++	eeh_edev_dbg(edev, "Probing device\n");
++
+ 	/*
+ 	 * Update class code and mode of eeh device. We need
+ 	 * correctly reflects that current device is root port
+@@ -284,12 +282,10 @@ static void *pseries_eeh_probe(struct pci_dn *pdn, void *data)
+ 	pe.config_addr = (pdn->busno << 16) | (pdn->devfn << 8);
+ 
+ 	/* Enable EEH on the device */
++	eeh_edev_dbg(edev, "Enabling EEH on device\n");
+ 	ret = eeh_ops->set_option(&pe, EEH_OPT_ENABLE);
+ 	if (ret) {
+-		pr_debug("%s: EEH failed to enable on %02x:%02x.%01x PHB#%x-PE#%x (code %d)\n",
+-			__func__, pdn->busno, PCI_SLOT(pdn->devfn),
+-			PCI_FUNC(pdn->devfn), pe.phb->global_number,
+-			pe.addr, ret);
++		eeh_edev_dbg(edev, "EEH failed to enable on device (code %d)\n", ret);
+ 	} else {
+ 		/* Retrieve PE address */
+ 		edev->pe_config_addr = eeh_ops->get_pe_addr(&pe);
+@@ -314,11 +310,8 @@ static void *pseries_eeh_probe(struct pci_dn *pdn, void *data)
+ 			edev->pe_config_addr = pdn_to_eeh_dev(pdn->parent)->pe_config_addr;
+ 			eeh_add_to_parent_pe(edev);
+ 		}
+-		pr_debug("%s: EEH %s on %02x:%02x.%01x PHB#%x-PE#%x (code %d)\n",
+-			__func__, (enable ? "enabled" : "unsupported"),
+-			pdn->busno, PCI_SLOT(pdn->devfn),
+-			PCI_FUNC(pdn->devfn), pe.phb->global_number,
+-			pe.addr, ret);
++		eeh_edev_dbg(edev, "EEH is %s on device (code %d)\n",
++			     (enable ? "enabled" : "unsupported"), ret);
+ 	}
+ 
+ 	/* Save memory bars */
 -- 
 2.22.0.216.g00a2a96fc9
 
