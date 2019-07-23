@@ -1,92 +1,96 @@
-Return-Path: <SRS0=YPWW=VU=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
+Return-Path: <SRS0=ex+5=VV=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
 X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5206EC76186
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Jul 2019 03:49:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CBCA2C76186
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Jul 2019 03:24:22 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id D514821E70
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Jul 2019 03:49:42 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D514821E70
+	by mail.kernel.org (Postfix) with ESMTPS id 1EA382182B
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Jul 2019 03:24:21 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1EA382182B
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45t4H84pZzzDqXr
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Jul 2019 13:49:40 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45tggP447jzDqMb
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Jul 2019 13:24:17 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
- (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
+ (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
  envelope-from=sbobroff@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45t49B5rBlzDqSl
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45t49C2GgFzDqM7
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Jul 2019 13:44:30 +1000 (AEST)
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x6N3hYAE046208
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Jul 2019 23:44:27 -0400
-Received: from e06smtp04.uk.ibm.com (e06smtp04.uk.ibm.com [195.75.94.100])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2twrpw3gbp-1
+Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
+ x6N3gifs081932
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Jul 2019 23:44:28 -0400
+Received: from e06smtp03.uk.ibm.com (e06smtp03.uk.ibm.com [195.75.94.99])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2twqq4w3w8-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Jul 2019 23:44:27 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Jul 2019 23:44:28 -0400
 Received: from localhost
- by e06smtp04.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp03.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <sbobroff@linux.ibm.com>;
  Tue, 23 Jul 2019 04:44:25 +0100
-Received: from b06cxnps4076.portsmouth.uk.ibm.com (9.149.109.198)
- by e06smtp04.uk.ibm.com (192.168.101.134) with IBM ESMTP SMTP Gateway:
+Received: from b06avi18626390.portsmouth.uk.ibm.com (9.149.26.192)
+ by e06smtp03.uk.ibm.com (192.168.101.133) with IBM ESMTP SMTP Gateway:
  Authorized Use Only! Violators will be prosecuted; 
  (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Tue, 23 Jul 2019 04:44:24 +0100
-Received: from d06av21.portsmouth.uk.ibm.com (d06av21.portsmouth.uk.ibm.com
- [9.149.105.232])
- by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x6N3iN5545285440
+ Tue, 23 Jul 2019 04:44:23 +0100
+Received: from d06av25.portsmouth.uk.ibm.com (d06av25.portsmouth.uk.ibm.com
+ [9.149.105.61])
+ by b06avi18626390.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP
+ id x6N3i7Ru32309706
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Tue, 23 Jul 2019 03:44:23 GMT
-Received: from d06av21.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 6C6235205F;
- Tue, 23 Jul 2019 03:44:23 +0000 (GMT)
+ Tue, 23 Jul 2019 03:44:07 GMT
+Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 3DBF811C04A;
+ Tue, 23 Jul 2019 03:44:22 +0000 (GMT)
+Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 9A68811C04C;
+ Tue, 23 Jul 2019 03:44:21 +0000 (GMT)
 Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
- by d06av21.portsmouth.uk.ibm.com (Postfix) with ESMTP id 1A21B52052;
- Tue, 23 Jul 2019 03:44:23 +0000 (GMT)
+ by d06av25.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Tue, 23 Jul 2019 03:44:21 +0000 (GMT)
 Received: from tungsten.ozlabs.ibm.com (haven.au.ibm.com [9.192.254.114])
  (using TLSv1.2 with cipher DHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by ozlabs.au.ibm.com (Postfix) with ESMTPSA id 8A6E9A03BF;
+ by ozlabs.au.ibm.com (Postfix) with ESMTPSA id 660C3A038A;
  Tue, 23 Jul 2019 13:44:20 +1000 (AEST)
 From: Sam Bobroff <sbobroff@linux.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v3 8/9] powerpc/eeh: Introduce EEH edev logging macros
-Date: Tue, 23 Jul 2019 13:44:19 +1000
+Subject: [PATCH v3 3/9] powerpc/eeh: Improve debug messages around device
+ addition
+Date: Tue, 23 Jul 2019 13:44:14 +1000
 X-Mailer: git-send-email 2.22.0.216.g00a2a96fc9
 In-Reply-To: <cover.1563853440.git.sbobroff@linux.ibm.com>
 References: <cover.1563853440.git.sbobroff@linux.ibm.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-x-cbid: 19072303-0016-0000-0000-0000029548A3
+x-cbid: 19072303-0012-0000-0000-00000335512A
 X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19072303-0017-0000-0000-000032F335EC
-Message-Id: <fa19ba9df4a46e5ed72bce1d6eeb786ca0255f8e.1563853440.git.sbobroff@linux.ibm.com>
+x-cbparentid: 19072303-0013-0000-0000-0000216EDF92
+Message-Id: <17b952606c300e4a43ab33aefc6e7043bd82d1c9.1563853440.git.sbobroff@linux.ibm.com>
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
  definitions=2019-07-23_03:, , signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
  priorityscore=1501
- malwarescore=0 suspectscore=1 phishscore=0 bulkscore=0 spamscore=0
+ malwarescore=0 suspectscore=29 phishscore=0 bulkscore=0 spamscore=0
  clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=909 adultscore=0 classifier=spam adjust=0 reason=mlx
+ mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
  scancount=1 engine=8.0.1-1810050000 definitions=main-1907230030
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -104,74 +108,130 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Now that struct eeh_dev includes the BDFN of it's PCI device, make use
-of it to replace eeh_edev_info() with a set of dev_dbg()-style macros
-that only need a struct edev.
-
-With the BDFN available without the struct pci_dev, eeh_pci_name() is
-now unnecessary, so remove it.
-
-While only the "info" level function is used here, the others will be
-used in followup work.
+Also remove useless comment.
 
 Signed-off-by: Sam Bobroff <sbobroff@linux.ibm.com>
+Reviewed-by: Alexey Kardashevskiy <aik@ozlabs.ru>
 ---
-v3 * New in this version.
+ arch/powerpc/kernel/eeh.c                    |  2 +-
+ arch/powerpc/platforms/powernv/eeh-powernv.c | 14 ++++++++----
+ arch/powerpc/platforms/pseries/eeh_pseries.c | 23 +++++++++++++++-----
+ 3 files changed, 28 insertions(+), 11 deletions(-)
 
- arch/powerpc/include/asm/eeh.h   | 11 +++++++++++
- arch/powerpc/kernel/eeh_driver.c | 17 -----------------
- 2 files changed, 11 insertions(+), 17 deletions(-)
-
-diff --git a/arch/powerpc/include/asm/eeh.h b/arch/powerpc/include/asm/eeh.h
-index bbe0798f6624..e1023a556721 100644
---- a/arch/powerpc/include/asm/eeh.h
-+++ b/arch/powerpc/include/asm/eeh.h
-@@ -138,6 +138,17 @@ struct eeh_dev {
- 	struct pci_dev *physfn;		/* Associated SRIOV PF		*/
- };
- 
-+/* "fmt" must be a simple literal string */
-+#define EEH_EDEV_PRINT(level, edev, fmt, ...) \
-+	pr_##level("PCI %04x:%02x:%02x.%x#%04x: EEH: " fmt, \
-+	(edev)->controller->global_number, PCI_BUSNO((edev)->bdfn), \
-+	PCI_SLOT((edev)->bdfn), PCI_FUNC((edev)->bdfn), \
-+	((edev)->pe ? (edev)->pe_config_addr : 0xffff), ##__VA_ARGS__)
-+#define eeh_edev_dbg(edev, fmt, ...) EEH_EDEV_PRINT(debug, (edev), fmt, ##__VA_ARGS__)
-+#define eeh_edev_info(edev, fmt, ...) EEH_EDEV_PRINT(info, (edev), fmt, ##__VA_ARGS__)
-+#define eeh_edev_warn(edev, fmt, ...) EEH_EDEV_PRINT(warn, (edev), fmt, ##__VA_ARGS__)
-+#define eeh_edev_err(edev, fmt, ...) EEH_EDEV_PRINT(err, (edev), fmt, ##__VA_ARGS__)
-+
- static inline struct pci_dn *eeh_dev_to_pdn(struct eeh_dev *edev)
- {
- 	return edev ? edev->pdn : NULL;
-diff --git a/arch/powerpc/kernel/eeh_driver.c b/arch/powerpc/kernel/eeh_driver.c
-index d6f54840a3a9..29424d5e5fea 100644
---- a/arch/powerpc/kernel/eeh_driver.c
-+++ b/arch/powerpc/kernel/eeh_driver.c
-@@ -82,23 +82,6 @@ static const char *pci_ers_result_name(enum pci_ers_result result)
+diff --git a/arch/powerpc/kernel/eeh.c b/arch/powerpc/kernel/eeh.c
+index d44533bba642..846cc697030c 100644
+--- a/arch/powerpc/kernel/eeh.c
++++ b/arch/powerpc/kernel/eeh.c
+@@ -1278,7 +1278,7 @@ void eeh_add_device_late(struct pci_dev *dev)
+ 	pdn = pci_get_pdn_by_devfn(dev->bus, dev->devfn);
+ 	edev = pdn_to_eeh_dev(pdn);
+ 	if (edev->pdev == dev) {
+-		pr_debug("EEH: Already referenced !\n");
++		pr_debug("EEH: Device %s already referenced!\n", pci_name(dev));
+ 		return;
  	}
- };
  
--static __printf(2, 3) void eeh_edev_info(const struct eeh_dev *edev,
--					 const char *fmt, ...)
--{
--	struct va_format vaf;
--	va_list args;
+diff --git a/arch/powerpc/platforms/powernv/eeh-powernv.c b/arch/powerpc/platforms/powernv/eeh-powernv.c
+index 1cd5ebd7299c..629f9390d9af 100644
+--- a/arch/powerpc/platforms/powernv/eeh-powernv.c
++++ b/arch/powerpc/platforms/powernv/eeh-powernv.c
+@@ -46,10 +46,7 @@ void pnv_pcibios_bus_add_device(struct pci_dev *pdev)
+ 	if (!pdev->is_virtfn)
+ 		return;
+ 
+-	/*
+-	 * The following operations will fail if VF's sysfs files
+-	 * aren't created or its resources aren't finalized.
+-	 */
++	pr_debug("%s: EEH: Setting up device %s.\n", __func__, pci_name(pdev));
+ 	eeh_add_device_early(pdn);
+ 	eeh_add_device_late(pdev);
+ 	eeh_sysfs_add_device(pdev);
+@@ -393,6 +390,10 @@ static void *pnv_eeh_probe(struct pci_dn *pdn, void *data)
+ 	int ret;
+ 	int config_addr = (pdn->busno << 8) | (pdn->devfn);
+ 
++	pr_debug("%s: probing %04x:%02x:%02x.%01x\n",
++		__func__, hose->global_number, pdn->busno,
++		PCI_SLOT(pdn->devfn), PCI_FUNC(pdn->devfn));
++
+ 	/*
+ 	 * When probing the root bridge, which doesn't have any
+ 	 * subordinate PCI devices. We don't have OF node for
+@@ -487,6 +488,11 @@ static void *pnv_eeh_probe(struct pci_dn *pdn, void *data)
+ 	/* Save memory bars */
+ 	eeh_save_bars(edev);
+ 
++	pr_debug("%s: EEH enabled on %02x:%02x.%01x PHB#%x-PE#%x\n",
++		__func__, pdn->busno, PCI_SLOT(pdn->devfn),
++		PCI_FUNC(pdn->devfn), edev->pe->phb->global_number,
++		edev->pe->addr);
++
+ 	return NULL;
+ }
+ 
+diff --git a/arch/powerpc/platforms/pseries/eeh_pseries.c b/arch/powerpc/platforms/pseries/eeh_pseries.c
+index 07e3fc2667aa..31733f6d642c 100644
+--- a/arch/powerpc/platforms/pseries/eeh_pseries.c
++++ b/arch/powerpc/platforms/pseries/eeh_pseries.c
+@@ -52,6 +52,8 @@ void pseries_pcibios_bus_add_device(struct pci_dev *pdev)
+ 	if (!pdev->is_virtfn)
+ 		return;
+ 
++	pr_debug("%s: EEH: Setting up device %s.\n", __func__, pci_name(pdev));
++
+ 	pdn->device_id  =  pdev->device;
+ 	pdn->vendor_id  =  pdev->vendor;
+ 	pdn->class_code =  pdev->class;
+@@ -238,6 +240,10 @@ static void *pseries_eeh_probe(struct pci_dn *pdn, void *data)
+ 	int enable = 0;
+ 	int ret;
+ 
++	pr_debug("%s: probing %04x:%02x:%02x.%01x\n",
++		__func__, pdn->phb->global_number, pdn->busno,
++		PCI_SLOT(pdn->devfn), PCI_FUNC(pdn->devfn));
++
+ 	/* Retrieve OF node and eeh device */
+ 	edev = pdn_to_eeh_dev(pdn);
+ 	if (!edev || edev->pe)
+@@ -281,7 +287,12 @@ static void *pseries_eeh_probe(struct pci_dn *pdn, void *data)
+ 
+ 	/* Enable EEH on the device */
+ 	ret = eeh_ops->set_option(&pe, EEH_OPT_ENABLE);
+-	if (!ret) {
++	if (ret) {
++		pr_debug("%s: EEH failed to enable on %02x:%02x.%01x PHB#%x-PE#%x (code %d)\n",
++			__func__, pdn->busno, PCI_SLOT(pdn->devfn),
++			PCI_FUNC(pdn->devfn), pe.phb->global_number,
++			pe.addr, ret);
++	} else {
+ 		/* Retrieve PE address */
+ 		edev->pe_config_addr = eeh_ops->get_pe_addr(&pe);
+ 		pe.addr = edev->pe_config_addr;
+@@ -297,11 +308,6 @@ static void *pseries_eeh_probe(struct pci_dn *pdn, void *data)
+ 		if (enable) {
+ 			eeh_add_flag(EEH_ENABLED);
+ 			eeh_add_to_parent_pe(edev);
 -
--	va_start(args, fmt);
--
--	vaf.fmt = fmt;
--	vaf.va = &args;
--
--	printk(KERN_INFO "EEH: PE#%x (PCI %s): %pV\n", edev->pe_config_addr,
--	       edev->pdev ? dev_name(&edev->pdev->dev) : "none", &vaf);
--
--	va_end(args);
--}
--
- static enum pci_ers_result pci_ers_merge_result(enum pci_ers_result old,
- 						enum pci_ers_result new)
- {
+-			pr_debug("%s: EEH enabled on %02x:%02x.%01x PHB#%x-PE#%x\n",
+-				__func__, pdn->busno, PCI_SLOT(pdn->devfn),
+-				PCI_FUNC(pdn->devfn), pe.phb->global_number,
+-				pe.addr);
+ 		} else if (pdn->parent && pdn_to_eeh_dev(pdn->parent) &&
+ 			   (pdn_to_eeh_dev(pdn->parent))->pe) {
+ 			/* This device doesn't support EEH, but it may have an
+@@ -310,6 +316,11 @@ static void *pseries_eeh_probe(struct pci_dn *pdn, void *data)
+ 			edev->pe_config_addr = pdn_to_eeh_dev(pdn->parent)->pe_config_addr;
+ 			eeh_add_to_parent_pe(edev);
+ 		}
++		pr_debug("%s: EEH %s on %02x:%02x.%01x PHB#%x-PE#%x (code %d)\n",
++			__func__, (enable ? "enabled" : "unsupported"),
++			pdn->busno, PCI_SLOT(pdn->devfn),
++			PCI_FUNC(pdn->devfn), pe.phb->global_number,
++			pe.addr, ret);
+ 	}
+ 
+ 	/* Save memory bars */
 -- 
 2.22.0.216.g00a2a96fc9
 
