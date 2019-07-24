@@ -2,42 +2,46 @@ Return-Path: <SRS0=ex+5=VV=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-10.8 required=3.0
+	tests=HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PULL_REQUEST,MAILING_LIST_MULTI,
+	MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7C32FC7618B
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Jul 2019 13:36:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 98B8FC7618B
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Jul 2019 13:45:31 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id D4D3B2083B
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Jul 2019 13:36:31 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D4D3B2083B
+	by mail.kernel.org (Postfix) with ESMTPS id 174AA2190F
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Jul 2019 13:45:30 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 174AA2190F
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45txFm4QBLzDqMG
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Jul 2019 23:36:28 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+	by lists.ozlabs.org (Postfix) with ESMTP id 45txS8731yzDqNH
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Jul 2019 23:45:28 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45tx9d0twszDqHx
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Jul 2019 23:32:53 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45txNp12LkzDqL2
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Jul 2019 23:42:34 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
-Received: by ozlabs.org (Postfix, from userid 1034)
- id 45tx9c3l56z9s8m; Wed, 24 Jul 2019 23:32:52 +1000 (AEST)
-X-powerpc-patch-notification: thanks
-X-powerpc-patch-commit: 6d140e7569db89a1b596c1c2d1c2293d5c594432
-In-Reply-To: <20190629160610.23402-2-vaibhav@linux.ibm.com>
-To: Vaibhav Jain <vaibhav@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
-From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Subject: Re: [PATCH v4 1/3] powerpc/pseries: Update SCM hcall op-codes in
- hvcall.h
-Message-Id: <45tx9c3l56z9s8m@ozlabs.org>
-Date: Wed, 24 Jul 2019 23:32:52 +1000 (AEST)
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
+ SHA256) (No client certificate requested)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 45txNn1zS9z9s3l;
+ Wed, 24 Jul 2019 23:42:33 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: [GIT PULL] Please pull powerpc/linux.git powerpc-5.3-2 tag
+Date: Wed, 24 Jul 2019 23:42:31 +1000
+Message-ID: <87o91j5z20.fsf@concordia.ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -49,29 +53,130 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "Aneesh Kumar K . V" <aneesh.kumar@linux.ibm.com>,
- Laurent Dufour <ldufour@linux.vnet.ibm.com>,
- Oliver O'Halloran <oohall@gmail.com>,
- David Gibson <david@gibson.dropbear.id.au>,
- Vaibhav Jain <vaibhav@linux.ibm.com>
+Cc: aarcange@redhat.com, ego@linux.vnet.ibm.com, mikey@neuling.org,
+ shawn@anastas.io, linux-kernel@vger.kernel.org, clg@kaod.org,
+ sjitindarsingh@gmail.com, vaibhav@linux.ibm.com, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Sat, 2019-06-29 at 16:06:08 UTC, Vaibhav Jain wrote:
-> Update the hvcalls.h to include op-codes for new hcalls introduce to
-> manage SCM memory. Also update existing hcall definitions to reflect
-> current papr specification for SCM.
-> 
-> The removed hcall op-codes H_SCM_MEM_QUERY, H_SCM_BLOCK_CLEAR were
-> transient proposals and there support was never implemented by
-> Power-VM nor they were used anywhere in Linux kernel. Hence we don't
-> expect anyone to be impacted by this change.
-> 
-> Signed-off-by: Vaibhav Jain <vaibhav@linux.ibm.com>
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
-Series applied to powerpc fixes, thanks.
+Hi Linus,
 
-https://git.kernel.org/powerpc/c/6d140e7569db89a1b596c1c2d1c2293d5c594432
+Please pull some powerpc fixes for 5.3:
 
-cheers
+The following changes since commit 192f0f8e9db7efe4ac98d47f5fa4334e43c1204d:
+
+  Merge tag 'powerpc-5.3-1' of git://git.kernel.org/pub/scm/linux/kernel/gi=
+t/powerpc/linux (2019-07-13 16:08:36 -0700)
+
+are available in the git repository at:
+
+  https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git tags/po=
+werpc-5.3-2
+
+for you to fetch changes up to 3a855b7ac7d5021674aa3e1cc9d3bfd6b604e9c0:
+
+  powerpc/papr_scm: Force a scm-unbind if initial scm-bind fails (2019-07-2=
+2 23:31:00 +1000)
+
+- ------------------------------------------------------------------
+powerpc fixes for 5.3 #2
+
+An assortment of non-regression fixes that have accumulated since the start=
+ of
+the merge window.
+
+A fix for a user triggerable oops on machines where transactional memory is
+disabled, eg. Power9 bare metal, Power8 with TM disabled on the command lin=
+e, or
+all Power7 or earlier machines.
+
+Three fixes for handling of PMU and power saving registers when running nes=
+ted
+KVM on Power9.
+
+Two fixes for bugs found while stress testing the XIVE interrupt controller
+code, also on Power9.
+
+A fix to allow guests to boot under Qemu/KVM on Power9 using the the Hash M=
+MU
+with >=3D 1TB of memory.
+
+Two fixes for bugs in the recent DMA cleanup, one of which could lead to
+checkstops.
+
+And finally three fixes for the PAPR SCM nvdimm driver.
+
+Thanks to:
+  Alexey Kardashevskiy, Andrea Arcangeli, C=C3=A9dric Le Goater, Christoph =
+Hellwig,
+  David Gibson, Gautham R. Shenoy, Michael Neuling, Oliver O'Halloran,, Sat=
+heesh
+  Rajendran, Shawn Anastasio, Suraj Jitindar Singh, Vaibhav Jain.
+
+- ------------------------------------------------------------------
+Andrea Arcangeli (1):
+      powerpc: fix off by one in max_zone_pfn initialization for ZONE_DMA
+
+C=C3=A9dric Le Goater (1):
+      KVM: PPC: Book3S HV: XIVE: fix rollback when kvmppc_xive_create fails
+
+Gautham R. Shenoy (1):
+      powerpc/xive: Fix loop exit-condition in xive_find_target_in_mask()
+
+Michael Neuling (1):
+      powerpc/tm: Fix oops on sigreturn on systems without TM
+
+Shawn Anastasio (1):
+      powerpc/dma: Fix invalid DMA mmap behavior
+
+Suraj Jitindar Singh (4):
+      powerpc/mm: Limit rma_size to 1TB when running without HV mode
+      KVM: PPC: Book3S HV: Always save guest pmu for guest capable of nesti=
+ng
+      powerpc/pmu: Set pmcregs_in_use in paca when running as LPAR
+      KVM: PPC: Book3S HV: Save and restore guest visible PSSCR bits on pse=
+ries
+
+Vaibhav Jain (3):
+      powerpc/pseries: Update SCM hcall op-codes in hvcall.h
+      powerpc/papr_scm: Update drc_pmem_unbind() to use H_SCM_UNBIND_ALL
+      powerpc/papr_scm: Force a scm-unbind if initial scm-bind fails
+
+
+ arch/powerpc/Kconfig                      |  1 +
+ arch/powerpc/include/asm/hvcall.h         | 11 +++++---
+ arch/powerpc/include/asm/pmc.h            |  5 ++--
+ arch/powerpc/kernel/Makefile              |  3 ++-
+ arch/powerpc/kernel/dma-common.c          | 17 ++++++++++++
+ arch/powerpc/kernel/signal_32.c           |  3 +++
+ arch/powerpc/kernel/signal_64.c           |  5 ++++
+ arch/powerpc/kvm/book3s_hv.c              | 13 +++++++++
+ arch/powerpc/kvm/book3s_xive.c            |  4 +--
+ arch/powerpc/kvm/book3s_xive_native.c     |  4 +--
+ arch/powerpc/mm/book3s64/hash_utils.c     |  9 +++++++
+ arch/powerpc/mm/mem.c                     |  2 +-
+ arch/powerpc/platforms/pseries/papr_scm.c | 44 +++++++++++++++++++++++++--=
+----
+ arch/powerpc/sysdev/xive/common.c         |  7 +++--
+ 14 files changed, 103 insertions(+), 25 deletions(-)
+ create mode 100644 arch/powerpc/kernel/dma-common.c
+-----BEGIN PGP SIGNATURE-----
+
+iQIcBAEBAgAGBQJdOF+PAAoJEFHr6jzI4aWAEQ4P/iw1q7wyO11sSAc+oNsdCFDh
+tT7fPzQruFlulyDr67BqXrUPJ5OoDN7k2eiwa5/Gbte9YgyYQkgw8UspoRTPUNTt
+1tjoeEC7KtdWByYdZ9yrhqhzN0OVhc8FSwFvqdprzdfsCyWx0Fuh9uhXShteqpiV
+nU8qG7WmS4KmY/+FWuOzH3s75w80UscezZ5WU3SGNoTrZYItlmNrtwFcyU3k5KcE
+XWwktFBQP1dQQ81gZTX6L6E2rKHPQ0jphbmLrNhk2qTwv7Z7uq7BDT6b83nS7/sK
+DtUTNVD7Cp1HUtRUlla3GhFIW3WP4t8OtZaDLMYL2v1a/B04kSb0iMYQIeLv6Ti0
+UvACpGss2s6JLMyGrJrxnzjQcHIk4jYeM/sa+viJ+XYu3rC8Li533MOkNzpyaZ4d
+ueAiORVlH02yz6fezhJhXCCN2L7cS7ifufpPpnBWX+hkp7zthxG+1wVhuHnZ53MD
+Muz8avaNBF0K3/1/dGDeX3WBKpQoEQP96yyfP+MtmRJsEfIEr/cJdOixetBhwZkU
+9DvBGFibUFF4l2aAbv1fGkKak54iOrXzJiBbjvOXmErwYaHnBIKARLHvlgOlykrg
+789enXFL3wH2wRtrLwQGC8jh6RyQio6vzbOxlJ011SmtueD/lbnMD67C+TdoYjGc
+08eecoUyDMeoW62I9yhH
+=3Dtkyv
+-----END PGP SIGNATURE-----
