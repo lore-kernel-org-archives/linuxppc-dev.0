@@ -7,21 +7,21 @@ X-Spam-Status: No, score=-9.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9DCC6C7618B
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Jul 2019 06:43:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7D279C7618B
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Jul 2019 06:45:39 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 23AA321852
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Jul 2019 06:43:48 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id ED1D821852
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Jul 2019 06:45:38 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="cyR1V4LD"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 23AA321852
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="LLTDjV7o"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org ED1D821852
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45vN35521WzDq5W
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Jul 2019 16:43:45 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45vN5D00v5zDqJt
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Jul 2019 16:45:36 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=none (mailfrom)
  smtp.mailfrom=bombadil.srs.infradead.org (client-ip=2607:7c80:54:e::133;
  helo=bombadil.infradead.org;
@@ -34,29 +34,29 @@ Received: from bombadil.infradead.org (bombadil.infradead.org
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45vMrG63Q0zDqHW
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Jul 2019 16:34:22 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45vMrL4LC7zDqLW
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Jul 2019 16:34:26 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
  d=infradead.org; s=bombadil.20170209; h=Content-Transfer-Encoding:
  MIME-Version:References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:Sender
  :Reply-To:Content-Type:Content-ID:Content-Description:Resent-Date:Resent-From
  :Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:List-Help:
  List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
- bh=ExZhdM1UHu57MIHolwY1h/5Id6++hihVRHXGruO7a6Q=; b=cyR1V4LDu0wHTwAVK8KD9woC4/
- /GPziovh/5dK+4R2fPtwdg2QBSldSGvsP7t049Bqbtjf+nMYCf4K7RONxDp1c2Fjbf0Ab59qZYrFo
- Dx11XGm7NjzsB9rwXYvUZnKDy5OdVUY3whG4E0KkmUcgceTeCcdfLdq10TThkIhWXs8YvfOw2ZnCH
- Gg6OP9pyqFpjM7GA7TZ5QY4IPhwI+XtO3R5i/z/U1/VR3oxbz87ak3DYBzyGm5lBPn2vIVRvrhyj9
- EDkwxj4z0gdP24gL8DSeP92ar95dgguHLSFGvznVTAUXJvapE0SIJ5dZKZ6pX1YC7b3h6998vVDUo
- TTHv2A3g==;
+ bh=dRYLE4wAMZUXc1bapMWQYiU6+gIHdEfanG26NMQ1nBw=; b=LLTDjV7o5RqKxbZAvmS7LEBsw2
+ 9fWW/cmwf9GAjKeC9Tz9rvREtJ8XHMgQoL8mXhTe/El7RQHLAZXx4zAYw6NXkRXnXjPwd39Uxl7pV
+ WkYtgRBC8qQsI22Uu/kGUOX+gZp/pSV8I71sclnrlOl6082t4WnpAr5UkE3k9BnG/9JPqi9f1ZEpq
+ Q2KNXn3iTMoHq1parkveJjKK3uOQQK0vdx7PS/E31lFqUPzQ97WmUPWEE6nikB8YVXAaKPB0b5+JD
+ MTrhz4mW+W8JCH1xhku+A5sJCQBmfZI6PGHnGa86WbcBtNGkqnIvqlndqdALd4rFLPj2naqcaiWL+
+ iuTFkkYg==;
 Received: from p57b3f613.dip0.t-ipconnect.de ([87.179.246.19] helo=localhost)
  by bombadil.infradead.org with esmtpsa (Exim 4.92 #3 (Red Hat Linux))
- id 1hqXKO-0000IS-N7; Thu, 25 Jul 2019 06:34:13 +0000
+ id 1hqXKT-0000ND-SE; Thu, 25 Jul 2019 06:34:18 +0000
 From: Christoph Hellwig <hch@lst.de>
 To: iommu@lists.linux-foundation.org,
  Marek Szyprowski <m.szyprowski@samsung.com>
-Subject: [PATCH 3/5] dma-mapping: explicitly wire up ->mmap and ->get_sgtable
-Date: Thu, 25 Jul 2019 08:33:59 +0200
-Message-Id: <20190725063401.29904-4-hch@lst.de>
+Subject: [PATCH 5/5] dma-mapping: remove ARCH_NO_COHERENT_DMA_MMAP
+Date: Thu, 25 Jul 2019 08:34:01 +0200
+Message-Id: <20190725063401.29904-6-hch@lst.de>
 X-Mailer: git-send-email 2.20.1
 In-Reply-To: <20190725063401.29904-1-hch@lst.de>
 References: <20190725063401.29904-1-hch@lst.de>
@@ -84,258 +84,154 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-While the default ->mmap and ->get_sgtable implementations work for the
-majority of our dma_map_ops impementations they are inherently safe
-for others that don't use the page allocator or CMA and/or use their
-own way of remapping not covered by the common code.  So remove the
-defaults if these methods are not wired up, but instead wire up the
-default implementations for all safe instances.
+Now that we never use a default ->mmap implementation, and non-coherent
+architectures can control the presence of ->mmap support by enabling
+ARCH_HAS_DMA_COHERENT_TO_PFN for the dma direct implementation there
+is no need for a global config option to control the availability
+of dma_common_mmap.
 
-Fixes: e1c7e324539a ("dma-mapping: always provide the dma_map_ops based implementation")
 Signed-off-by: Christoph Hellwig <hch@lst.de>
 ---
- arch/alpha/kernel/pci_iommu.c           |  2 ++
- arch/ia64/hp/common/sba_iommu.c         |  2 ++
- arch/ia64/sn/pci/pci_dma.c              |  2 ++
- arch/mips/jazz/jazzdma.c                |  2 ++
- arch/powerpc/kernel/dma-iommu.c         |  2 ++
- arch/powerpc/platforms/ps3/system-bus.c |  4 ++++
- arch/powerpc/platforms/pseries/vio.c    |  2 ++
- arch/s390/pci/pci_dma.c                 |  2 ++
- arch/sparc/kernel/iommu.c               |  2 ++
- arch/sparc/kernel/pci_sun4v.c           |  2 ++
- arch/x86/kernel/amd_gart_64.c           |  2 ++
- arch/x86/kernel/pci-calgary_64.c        |  2 ++
- drivers/iommu/amd_iommu.c               |  2 ++
- drivers/iommu/intel-iommu.c             |  2 ++
- kernel/dma/mapping.c                    | 20 ++++++++++++--------
- 15 files changed, 42 insertions(+), 8 deletions(-)
+ arch/Kconfig            |  3 ---
+ arch/c6x/Kconfig        |  1 -
+ arch/m68k/Kconfig       |  1 -
+ arch/microblaze/Kconfig |  1 -
+ arch/parisc/Kconfig     |  1 -
+ arch/sh/Kconfig         |  1 -
+ arch/xtensa/Kconfig     |  1 -
+ kernel/dma/mapping.c    |  4 ----
+ sound/core/pcm_native.c | 10 +---------
+ 9 files changed, 1 insertion(+), 22 deletions(-)
 
-diff --git a/arch/alpha/kernel/pci_iommu.c b/arch/alpha/kernel/pci_iommu.c
-index 242108439f42..7f1925a32c99 100644
---- a/arch/alpha/kernel/pci_iommu.c
-+++ b/arch/alpha/kernel/pci_iommu.c
-@@ -955,5 +955,7 @@ const struct dma_map_ops alpha_pci_ops = {
- 	.map_sg			= alpha_pci_map_sg,
- 	.unmap_sg		= alpha_pci_unmap_sg,
- 	.dma_supported		= alpha_pci_supported,
-+	.mmap			= dma_common_mmap,
-+	.get_sgtable		= dma_common_get_sgtable,
- };
- EXPORT_SYMBOL(alpha_pci_ops);
-diff --git a/arch/ia64/hp/common/sba_iommu.c b/arch/ia64/hp/common/sba_iommu.c
-index 3d24cc43385b..4c0ea6c2833d 100644
---- a/arch/ia64/hp/common/sba_iommu.c
-+++ b/arch/ia64/hp/common/sba_iommu.c
-@@ -2183,6 +2183,8 @@ const struct dma_map_ops sba_dma_ops = {
- 	.map_sg			= sba_map_sg_attrs,
- 	.unmap_sg		= sba_unmap_sg_attrs,
- 	.dma_supported		= sba_dma_supported,
-+	.mmap			= dma_common_mmap,
-+	.get_sgtable		= dma_common_get_sgtable,
- };
+diff --git a/arch/Kconfig b/arch/Kconfig
+index a7b57dd42c26..ec2834206d08 100644
+--- a/arch/Kconfig
++++ b/arch/Kconfig
+@@ -790,9 +790,6 @@ config COMPAT_32BIT_TIME
+ 	  This is relevant on all 32-bit architectures, and 64-bit architectures
+ 	  as part of compat syscall handling.
  
- void sba_dma_init(void)
-diff --git a/arch/ia64/sn/pci/pci_dma.c b/arch/ia64/sn/pci/pci_dma.c
-index b7d42e4edc1f..12ffb9c0d738 100644
---- a/arch/ia64/sn/pci/pci_dma.c
-+++ b/arch/ia64/sn/pci/pci_dma.c
-@@ -438,6 +438,8 @@ static struct dma_map_ops sn_dma_ops = {
- 	.unmap_sg		= sn_dma_unmap_sg,
- 	.dma_supported		= sn_dma_supported,
- 	.get_required_mask	= sn_dma_get_required_mask,
-+	.mmap			= dma_common_mmap,
-+	.get_sgtable		= dma_common_get_sgtable,
- };
+-config ARCH_NO_COHERENT_DMA_MMAP
+-	bool
+-
+ config ARCH_NO_PREEMPT
+ 	bool
  
- void sn_dma_init(void)
-diff --git a/arch/mips/jazz/jazzdma.c b/arch/mips/jazz/jazzdma.c
-index 1804dc9d8136..a01e14955187 100644
---- a/arch/mips/jazz/jazzdma.c
-+++ b/arch/mips/jazz/jazzdma.c
-@@ -682,5 +682,7 @@ const struct dma_map_ops jazz_dma_ops = {
- 	.sync_sg_for_device	= jazz_dma_sync_sg_for_device,
- 	.dma_supported		= dma_direct_supported,
- 	.cache_sync		= arch_dma_cache_sync,
-+	.mmap			= dma_common_mmap,
-+	.get_sgtable		= dma_common_get_sgtable,
- };
- EXPORT_SYMBOL(jazz_dma_ops);
-diff --git a/arch/powerpc/kernel/dma-iommu.c b/arch/powerpc/kernel/dma-iommu.c
-index a0879674a9c8..2f5a53874f6d 100644
---- a/arch/powerpc/kernel/dma-iommu.c
-+++ b/arch/powerpc/kernel/dma-iommu.c
-@@ -208,4 +208,6 @@ const struct dma_map_ops dma_iommu_ops = {
- 	.sync_single_for_device	= dma_iommu_sync_for_device,
- 	.sync_sg_for_cpu	= dma_iommu_sync_sg_for_cpu,
- 	.sync_sg_for_device	= dma_iommu_sync_sg_for_device,
-+	.mmap			= dma_common_mmap,
-+	.get_sgtable		= dma_common_get_sgtable,
- };
-diff --git a/arch/powerpc/platforms/ps3/system-bus.c b/arch/powerpc/platforms/ps3/system-bus.c
-index 98410119c47b..70fcc9736a8c 100644
---- a/arch/powerpc/platforms/ps3/system-bus.c
-+++ b/arch/powerpc/platforms/ps3/system-bus.c
-@@ -700,6 +700,8 @@ static const struct dma_map_ops ps3_sb_dma_ops = {
- 	.get_required_mask = ps3_dma_get_required_mask,
- 	.map_page = ps3_sb_map_page,
- 	.unmap_page = ps3_unmap_page,
-+	.mmap = dma_common_mmap,
-+	.get_sgtable = dma_common_get_sgtable,
- };
+diff --git a/arch/c6x/Kconfig b/arch/c6x/Kconfig
+index b4fb61c83494..e65e8d82442a 100644
+--- a/arch/c6x/Kconfig
++++ b/arch/c6x/Kconfig
+@@ -20,7 +20,6 @@ config C6X
+ 	select OF_EARLY_FLATTREE
+ 	select GENERIC_CLOCKEVENTS
+ 	select MODULES_USE_ELF_RELA
+-	select ARCH_NO_COHERENT_DMA_MMAP
+ 	select MMU_GATHER_NO_RANGE if MMU
  
- static const struct dma_map_ops ps3_ioc0_dma_ops = {
-@@ -711,6 +713,8 @@ static const struct dma_map_ops ps3_ioc0_dma_ops = {
- 	.get_required_mask = ps3_dma_get_required_mask,
- 	.map_page = ps3_ioc0_map_page,
- 	.unmap_page = ps3_unmap_page,
-+	.mmap = dma_common_mmap,
-+	.get_sgtable = dma_common_get_sgtable,
- };
- 
- /**
-diff --git a/arch/powerpc/platforms/pseries/vio.c b/arch/powerpc/platforms/pseries/vio.c
-index 6601b9d404dc..3473eef7628c 100644
---- a/arch/powerpc/platforms/pseries/vio.c
-+++ b/arch/powerpc/platforms/pseries/vio.c
-@@ -605,6 +605,8 @@ static const struct dma_map_ops vio_dma_mapping_ops = {
- 	.unmap_page        = vio_dma_iommu_unmap_page,
- 	.dma_supported     = dma_iommu_dma_supported,
- 	.get_required_mask = dma_iommu_get_required_mask,
-+	.mmap		   = dma_common_mmap,
-+	.get_sgtable	   = dma_common_get_sgtable,
- };
- 
- /**
-diff --git a/arch/s390/pci/pci_dma.c b/arch/s390/pci/pci_dma.c
-index 9e52d1527f71..03d8c1c9f82f 100644
---- a/arch/s390/pci/pci_dma.c
-+++ b/arch/s390/pci/pci_dma.c
-@@ -668,6 +668,8 @@ const struct dma_map_ops s390_pci_dma_ops = {
- 	.unmap_sg	= s390_dma_unmap_sg,
- 	.map_page	= s390_dma_map_pages,
- 	.unmap_page	= s390_dma_unmap_pages,
-+	.mmap		= dma_common_mmap,
-+	.get_sgtable	= dma_common_get_sgtable,
- 	/* dma_supported is unconditionally true without a callback */
- };
- EXPORT_SYMBOL_GPL(s390_pci_dma_ops);
-diff --git a/arch/sparc/kernel/iommu.c b/arch/sparc/kernel/iommu.c
-index 4ae7388b1bff..c915a7cbcc91 100644
---- a/arch/sparc/kernel/iommu.c
-+++ b/arch/sparc/kernel/iommu.c
-@@ -763,6 +763,8 @@ static const struct dma_map_ops sun4u_dma_ops = {
- 	.sync_single_for_cpu	= dma_4u_sync_single_for_cpu,
- 	.sync_sg_for_cpu	= dma_4u_sync_sg_for_cpu,
- 	.dma_supported		= dma_4u_supported,
-+	.mmap			= dma_common_mmap,
-+	.get_sgtable		= dma_common_get_sgtable,
- };
- 
- const struct dma_map_ops *dma_ops = &sun4u_dma_ops;
-diff --git a/arch/sparc/kernel/pci_sun4v.c b/arch/sparc/kernel/pci_sun4v.c
-index 14b93c5564e3..ab6909642ae1 100644
---- a/arch/sparc/kernel/pci_sun4v.c
-+++ b/arch/sparc/kernel/pci_sun4v.c
-@@ -692,6 +692,8 @@ static const struct dma_map_ops sun4v_dma_ops = {
- 	.map_sg				= dma_4v_map_sg,
- 	.unmap_sg			= dma_4v_unmap_sg,
- 	.dma_supported			= dma_4v_supported,
-+	.mmap				= dma_common_mmap,
-+	.get_sgtable			= dma_common_get_sgtable,
- };
- 
- static void pci_sun4v_scan_bus(struct pci_pbm_info *pbm, struct device *parent)
-diff --git a/arch/x86/kernel/amd_gart_64.c b/arch/x86/kernel/amd_gart_64.c
-index a585ea6f686a..a65b4a9c7f87 100644
---- a/arch/x86/kernel/amd_gart_64.c
-+++ b/arch/x86/kernel/amd_gart_64.c
-@@ -678,6 +678,8 @@ static const struct dma_map_ops gart_dma_ops = {
- 	.alloc				= gart_alloc_coherent,
- 	.free				= gart_free_coherent,
- 	.dma_supported			= dma_direct_supported,
-+	.mmap				= dma_common_mmap,
-+	.get_sgtable			= dma_common_get_sgtable,
- };
- 
- static void gart_iommu_shutdown(void)
-diff --git a/arch/x86/kernel/pci-calgary_64.c b/arch/x86/kernel/pci-calgary_64.c
-index 9d4343aa481b..23fdec030c37 100644
---- a/arch/x86/kernel/pci-calgary_64.c
-+++ b/arch/x86/kernel/pci-calgary_64.c
-@@ -468,6 +468,8 @@ static const struct dma_map_ops calgary_dma_ops = {
- 	.map_page = calgary_map_page,
- 	.unmap_page = calgary_unmap_page,
- 	.dma_supported = dma_direct_supported,
-+	.mmap = dma_common_mmap,
-+	.get_sgtable = dma_common_get_sgtable,
- };
- 
- static inline void __iomem * busno_to_bbar(unsigned char num)
-diff --git a/drivers/iommu/amd_iommu.c b/drivers/iommu/amd_iommu.c
-index b607a92791d3..2e74ad659985 100644
---- a/drivers/iommu/amd_iommu.c
-+++ b/drivers/iommu/amd_iommu.c
-@@ -2722,6 +2722,8 @@ static const struct dma_map_ops amd_iommu_dma_ops = {
- 	.map_sg		= map_sg,
- 	.unmap_sg	= unmap_sg,
- 	.dma_supported	= amd_iommu_dma_supported,
-+	.mmap		= dma_common_mmap,
-+	.get_sgtable	= dma_common_get_sgtable,
- };
- 
- static int init_reserved_iova_ranges(void)
-diff --git a/drivers/iommu/intel-iommu.c b/drivers/iommu/intel-iommu.c
-index ac4172c02244..f6776b359977 100644
---- a/drivers/iommu/intel-iommu.c
-+++ b/drivers/iommu/intel-iommu.c
-@@ -3737,6 +3737,8 @@ static const struct dma_map_ops intel_dma_ops = {
- 	.map_resource = intel_map_resource,
- 	.unmap_resource = intel_unmap_resource,
- 	.dma_supported = dma_direct_supported,
-+	.mmap = dma_common_mmap,
-+	.get_sgtable = dma_common_get_sgtable,
- };
- 
- static inline int iommu_domain_cache_init(void)
+ config MMU
+diff --git a/arch/m68k/Kconfig b/arch/m68k/Kconfig
+index c518d695c376..614b355ae338 100644
+--- a/arch/m68k/Kconfig
++++ b/arch/m68k/Kconfig
+@@ -8,7 +8,6 @@ config M68K
+ 	select ARCH_HAS_DMA_PREP_COHERENT if HAS_DMA && MMU && !COLDFIRE
+ 	select ARCH_HAS_SYNC_DMA_FOR_DEVICE if HAS_DMA
+ 	select ARCH_MIGHT_HAVE_PC_PARPORT if ISA
+-	select ARCH_NO_COHERENT_DMA_MMAP if !MMU
+ 	select ARCH_NO_PREEMPT if !COLDFIRE
+ 	select BINFMT_FLAT_ARGVP_ENVP_ON_STACK
+ 	select DMA_DIRECT_REMAP if HAS_DMA && MMU && !COLDFIRE
+diff --git a/arch/microblaze/Kconfig b/arch/microblaze/Kconfig
+index d411de05b628..632c9477a0f6 100644
+--- a/arch/microblaze/Kconfig
++++ b/arch/microblaze/Kconfig
+@@ -9,7 +9,6 @@ config MICROBLAZE
+ 	select ARCH_HAS_SYNC_DMA_FOR_CPU
+ 	select ARCH_HAS_SYNC_DMA_FOR_DEVICE
+ 	select ARCH_MIGHT_HAVE_PC_PARPORT
+-	select ARCH_NO_COHERENT_DMA_MMAP if !MMU
+ 	select ARCH_WANT_IPC_PARSE_VERSION
+ 	select BUILDTIME_EXTABLE_SORT
+ 	select TIMER_OF
+diff --git a/arch/parisc/Kconfig b/arch/parisc/Kconfig
+index 6d732e451071..e9dd88b7f81e 100644
+--- a/arch/parisc/Kconfig
++++ b/arch/parisc/Kconfig
+@@ -52,7 +52,6 @@ config PARISC
+ 	select GENERIC_SCHED_CLOCK
+ 	select HAVE_UNSTABLE_SCHED_CLOCK if SMP
+ 	select GENERIC_CLOCKEVENTS
+-	select ARCH_NO_COHERENT_DMA_MMAP
+ 	select CPU_NO_EFFICIENT_FFS
+ 	select NEED_DMA_MAP_STATE
+ 	select NEED_SG_DMA_LENGTH
+diff --git a/arch/sh/Kconfig b/arch/sh/Kconfig
+index 6b1b5941b618..f356ee674d89 100644
+--- a/arch/sh/Kconfig
++++ b/arch/sh/Kconfig
+@@ -5,7 +5,6 @@ config SUPERH
+ 	select ARCH_HAS_PTE_SPECIAL
+ 	select ARCH_HAS_TICK_BROADCAST if GENERIC_CLOCKEVENTS_BROADCAST
+ 	select ARCH_MIGHT_HAVE_PC_PARPORT
+-	select ARCH_NO_COHERENT_DMA_MMAP if !MMU
+ 	select HAVE_PATA_PLATFORM
+ 	select CLKDEV_LOOKUP
+ 	select DMA_DECLARE_COHERENT
+diff --git a/arch/xtensa/Kconfig b/arch/xtensa/Kconfig
+index ebc135bda921..70653aed3005 100644
+--- a/arch/xtensa/Kconfig
++++ b/arch/xtensa/Kconfig
+@@ -5,7 +5,6 @@ config XTENSA
+ 	select ARCH_HAS_BINFMT_FLAT if !MMU
+ 	select ARCH_HAS_SYNC_DMA_FOR_CPU
+ 	select ARCH_HAS_SYNC_DMA_FOR_DEVICE
+-	select ARCH_NO_COHERENT_DMA_MMAP if !MMU
+ 	select ARCH_USE_QUEUED_RWLOCKS
+ 	select ARCH_USE_QUEUED_SPINLOCKS
+ 	select ARCH_WANT_FRAME_POINTERS
 diff --git a/kernel/dma/mapping.c b/kernel/dma/mapping.c
-index 4ceb5b9016d8..cdb157cd70e7 100644
+index 7dff1829c8c5..815446f76995 100644
 --- a/kernel/dma/mapping.c
 +++ b/kernel/dma/mapping.c
-@@ -153,11 +153,12 @@ int dma_get_sgtable_attrs(struct device *dev, struct sg_table *sgt,
+@@ -169,7 +169,6 @@ int dma_common_mmap(struct device *dev, struct vm_area_struct *vma,
+ 		void *cpu_addr, dma_addr_t dma_addr, size_t size,
+ 		unsigned long attrs)
  {
- 	const struct dma_map_ops *ops = get_dma_ops(dev);
+-#ifndef CONFIG_ARCH_NO_COHERENT_DMA_MMAP
+ 	unsigned long user_count = vma_pages(vma);
+ 	unsigned long count = PAGE_ALIGN(size) >> PAGE_SHIFT;
+ 	unsigned long off = vma->vm_pgoff;
+@@ -198,9 +197,6 @@ int dma_common_mmap(struct device *dev, struct vm_area_struct *vma,
  
--	if (!dma_is_direct(ops) && ops->get_sgtable)
--		return ops->get_sgtable(dev, sgt, cpu_addr, dma_addr, size,
--					attrs);
--	return dma_common_get_sgtable(dev, sgt, cpu_addr, dma_addr, size,
--			attrs);
-+	if (dma_is_direct(ops))
-+		return dma_common_get_sgtable(dev, sgt, cpu_addr, dma_addr,
-+				size, attrs);
-+	if (!ops->get_sgtable)
-+		return -ENXIO;
-+	return ops->get_sgtable(dev, sgt, cpu_addr, dma_addr, size, attrs);
+ 	return remap_pfn_range(vma, vma->vm_start, pfn + vma->vm_pgoff,
+ 			user_count << PAGE_SHIFT, vma->vm_page_prot);
+-#else
+-	return -ENXIO;
+-#endif /* !CONFIG_ARCH_NO_COHERENT_DMA_MMAP */
  }
- EXPORT_SYMBOL(dma_get_sgtable_attrs);
  
-@@ -221,9 +222,12 @@ int dma_mmap_attrs(struct device *dev, struct vm_area_struct *vma,
+ /**
+diff --git a/sound/core/pcm_native.c b/sound/core/pcm_native.c
+index 860543a4c840..2dadc708343a 100644
+--- a/sound/core/pcm_native.c
++++ b/sound/core/pcm_native.c
+@@ -218,15 +218,7 @@ int snd_pcm_info_user(struct snd_pcm_substream *substream,
+ 
+ static bool hw_support_mmap(struct snd_pcm_substream *substream)
  {
- 	const struct dma_map_ops *ops = get_dma_ops(dev);
- 
--	if (!dma_is_direct(ops) && ops->mmap)
--		return ops->mmap(dev, vma, cpu_addr, dma_addr, size, attrs);
--	return dma_common_mmap(dev, vma, cpu_addr, dma_addr, size, attrs);
-+	if (dma_is_direct(ops))
-+		return dma_common_mmap(dev, vma, cpu_addr, dma_addr, size,
-+				attrs);
-+	if (!ops->mmap)
-+		return -ENXIO;
-+	return ops->mmap(dev, vma, cpu_addr, dma_addr, size, attrs);
+-	if (!(substream->runtime->hw.info & SNDRV_PCM_INFO_MMAP))
+-		return false;
+-	/* architecture supports dma_mmap_coherent()? */
+-#if defined(CONFIG_ARCH_NO_COHERENT_DMA_MMAP) || !defined(CONFIG_HAS_DMA)
+-	if (!substream->ops->mmap &&
+-	    substream->dma_buffer.dev.type == SNDRV_DMA_TYPE_DEV)
+-		return false;
+-#endif
+-	return true;
++	return substream->runtime->hw.info & SNDRV_PCM_INFO_MMAP;
  }
- EXPORT_SYMBOL(dma_mmap_attrs);
  
+ static int constrain_mask_params(struct snd_pcm_substream *substream,
 -- 
 2.20.1
 
