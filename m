@@ -2,90 +2,115 @@ Return-Path: <SRS0=gipK=VX=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 594FBC7618F
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Jul 2019 05:09:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E9A1CC7618B
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Jul 2019 07:07:01 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id D986721951
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Jul 2019 05:09:44 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D986721951
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 16A212189F
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Jul 2019 07:07:00 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (1024-bit key) header.d=nxp.com header.i=@nxp.com header.b="M5UggdHJ"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 16A212189F
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nxp.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45vxw66CNczDqRX
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Jul 2019 15:09:42 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45w0WQ2KpqzDqQr
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Jul 2019 17:06:58 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
- (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=bharata@linux.ibm.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=nxp.com
+ (client-ip=40.107.3.73; helo=eur03-am5-obe.outbound.protection.outlook.com;
+ envelope-from=diana.craciun@nxp.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ dmarc=pass (p=none dis=none) header.from=nxp.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=nxp.com header.i=@nxp.com header.b="M5UggdHJ"; 
+ dkim-atps=neutral
+Received: from EUR03-AM5-obe.outbound.protection.outlook.com
+ (mail-eopbgr30073.outbound.protection.outlook.com [40.107.3.73])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45vxpd0jkwzDqQD
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Jul 2019 15:04:56 +1000 (AEST)
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x6Q51hnp020060
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Jul 2019 01:04:54 -0400
-Received: from e06smtp04.uk.ibm.com (e06smtp04.uk.ibm.com [195.75.94.100])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2tytbhsgbb-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Jul 2019 01:04:53 -0400
-Received: from localhost
- by e06smtp04.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <bharata@linux.ibm.com>;
- Fri, 26 Jul 2019 06:04:51 +0100
-Received: from b06avi18878370.portsmouth.uk.ibm.com (9.149.26.194)
- by e06smtp04.uk.ibm.com (192.168.101.134) with IBM ESMTP SMTP Gateway:
- Authorized Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Fri, 26 Jul 2019 06:04:48 +0100
-Received: from d06av24.portsmouth.uk.ibm.com (mk.ibm.com [9.149.105.60])
- by b06avi18878370.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP
- id x6Q54lSa40567148
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Fri, 26 Jul 2019 05:04:47 GMT
-Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 3169A42047;
- Fri, 26 Jul 2019 05:04:47 +0000 (GMT)
-Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 01C0842049;
- Fri, 26 Jul 2019 05:04:46 +0000 (GMT)
-Received: from bharata.ibmuc.com (unknown [9.199.51.213])
- by d06av24.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Fri, 26 Jul 2019 05:04:45 +0000 (GMT)
-From: Bharata B Rao <bharata@linux.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v3 1/2] powerpc/mm/radix: Fix PTE/PMD fragment count for early
- page table mappings
-Date: Fri, 26 Jul 2019 10:34:39 +0530
-X-Mailer: git-send-email 2.21.0
-In-Reply-To: <20190726050440.24798-1-bharata@linux.ibm.com>
-References: <20190726050440.24798-1-bharata@linux.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45w0Sm6tDfzDqPK
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Jul 2019 17:04:37 +1000 (AEST)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=in3P9loI2HM/DasnN/PUjhiXwuZRcYDr/DMhp1Ca8qqpiJ/UKujGDOhs0v89NqtOLjKEfVVIDlxSK0sAd+A+4pwhigphIGN0COpwt5KyUZZ1egVcKUrk9csSzPgviSQNa414HLvLZDYD1gXsX8HrOW28Rvw0+6z1pBuuFowCyfT5b6slGMzesI50FXkeVwmPNCMQZZDN9f2lLnyl3HOOLMD1eiOUOuYgPFP6Tc8FZOfcSOps+951ncKjYDW+iTgKVtG629TeR//ubUosV/tj4UIbkscxz6vtMu1/4+4iGKbiii/XR0AQITzv7wWSI7OO6Dk49/G6/48s1sAE/eQ3EA==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com; 
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=ihqVZlLNAhUY5mTR6ZiUtPGPS5aid2Ki/bYcV1tM0rY=;
+ b=dqQBFaG1GqRanmbpnuK1JBY+/7vi6wzSGV8hiq54CLJWUZULSBcEqxX/Jk4/hCfK9GVzYa3gR+PvZ7MTaPkvlY50Z2FBFJsDoVpg162QESVBhYc6ARNJ1yR4yiBZTk5WIgqZ2C0S/mjnGvcPgv8HRcgBAIlnTl6xohV5Q8XiwGstbSNlHz9k8xV4nPKyoh264azFs6rdPpB/BMCnVHQYrelHrqRS4MxJGb9BGu+T90XD0azk5e06MXNwAW4sRIj8RZxbWkbHaCnTY+b8QAo2rBsnXPx0j/RsSmjwUeJWWDBEl/NWUQys/FhZPG34gId6kFl47DUK3XEqu2nlqcg+BQ==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1;spf=pass
+ smtp.mailfrom=nxp.com;dmarc=pass action=none header.from=nxp.com;dkim=pass
+ header.d=nxp.com;arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nxp.com; s=selector2; 
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=ihqVZlLNAhUY5mTR6ZiUtPGPS5aid2Ki/bYcV1tM0rY=;
+ b=M5UggdHJbrVrcDych1TU+omfjPhm77eSPeQW4AYHHuEOd8cqfPWtdB64t72DmiPWUeqUH/YjsupMD54Uc5LhKScFxzIFBG/bm2RZGgtb2tq7Ix7Ds3Cg97C0J1LG/MGrdWf4NXXdSSf0LBzuAsKFucZhJLk6471ULrXMcBb9a6k=
+Received: from VI1PR0401MB2463.eurprd04.prod.outlook.com (10.168.61.13) by
+ VI1PR0401MB2317.eurprd04.prod.outlook.com (10.169.133.21) with Microsoft SMTP
+ Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.20.2115.10; Fri, 26 Jul 2019 07:04:31 +0000
+Received: from VI1PR0401MB2463.eurprd04.prod.outlook.com
+ ([fe80::98e7:5870:e0e0:6c7a]) by VI1PR0401MB2463.eurprd04.prod.outlook.com
+ ([fe80::98e7:5870:e0e0:6c7a%7]) with mapi id 15.20.2094.013; Fri, 26 Jul 2019
+ 07:04:31 +0000
+From: Diana Madalina Craciun <diana.craciun@nxp.com>
+To: Jason Yan <yanaijie@huawei.com>, "mpe@ellerman.id.au"
+ <mpe@ellerman.id.au>, "linuxppc-dev@lists.ozlabs.org"
+ <linuxppc-dev@lists.ozlabs.org>, "christophe.leroy@c-s.fr"
+ <christophe.leroy@c-s.fr>, "benh@kernel.crashing.org"
+ <benh@kernel.crashing.org>, "paulus@samba.org" <paulus@samba.org>,
+ "npiggin@gmail.com" <npiggin@gmail.com>, "keescook@chromium.org"
+ <keescook@chromium.org>, "kernel-hardening@lists.openwall.com"
+ <kernel-hardening@lists.openwall.com>
+Subject: Re: [RFC PATCH 00/10] implement KASLR for powerpc/fsl_booke/32
+Thread-Topic: [RFC PATCH 00/10] implement KASLR for powerpc/fsl_booke/32
+Thread-Index: AQHVPHQmPxsZ5ebrqkOb0IKUtKxd9g==
+Date: Fri, 26 Jul 2019 07:04:31 +0000
+Message-ID: <VI1PR0401MB24632CD6AB1C5EDCFF817705FFC00@VI1PR0401MB2463.eurprd04.prod.outlook.com>
+References: <20190717080621.40424-1-yanaijie@huawei.com>
+ <e6ad41bc-5d5a-cf3f-b308-e1863b4fef99@huawei.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+authentication-results: spf=none (sender IP is )
+ smtp.mailfrom=diana.craciun@nxp.com; 
+x-originating-ip: [92.121.36.197]
+x-ms-publictraffictype: Email
+x-ms-office365-filtering-correlation-id: a651a730-ed13-463e-11b4-08d7119781d9
+x-ms-office365-filtering-ht: Tenant
+x-microsoft-antispam: BCL:0; PCL:0;
+ RULEID:(2390118)(7020095)(4652040)(8989299)(4534185)(4627221)(201703031133081)(201702281549075)(8990200)(5600148)(711020)(4605104)(1401327)(4618075)(2017052603328)(7193020);
+ SRVR:VI1PR0401MB2317; 
+x-ms-traffictypediagnostic: VI1PR0401MB2317:
+x-microsoft-antispam-prvs: <VI1PR0401MB2317EFE7000D2A836F74576EFFC00@VI1PR0401MB2317.eurprd04.prod.outlook.com>
+x-ms-oob-tlc-oobclassifiers: OLM:6108;
+x-forefront-prvs: 01106E96F6
+x-forefront-antispam-report: SFV:NSPM;
+ SFS:(10009020)(979002)(4636009)(396003)(39860400002)(346002)(366004)(136003)(376002)(189003)(199004)(53754006)(102836004)(66446008)(76116006)(91956017)(4326008)(33656002)(53546011)(86362001)(229853002)(6506007)(6436002)(7696005)(66066001)(186003)(7736002)(66946007)(71200400001)(476003)(256004)(446003)(55016002)(64756008)(2906002)(7416002)(99286004)(478600001)(14444005)(66556008)(81156014)(316002)(6116002)(66476007)(8676002)(110136005)(74316002)(81166006)(305945005)(68736007)(486006)(2501003)(5660300002)(54906003)(26005)(2201001)(14454004)(71190400001)(6246003)(3846002)(52536014)(8936002)(9686003)(76176011)(25786009)(53936002)(969003)(989001)(999001)(1009001)(1019001);
+ DIR:OUT; SFP:1101; SCL:1; SRVR:VI1PR0401MB2317;
+ H:VI1PR0401MB2463.eurprd04.prod.outlook.com; FPR:; SPF:None; LANG:en;
+ PTR:InfoNoRecords; MX:1; A:1; 
+received-spf: None (protection.outlook.com: nxp.com does not designate
+ permitted sender hosts)
+x-ms-exchange-senderadcheck: 1
+x-microsoft-antispam-message-info: vmmXnKhBHQB3xChoDonEV578S+Vyo+bwpgGmRuWIc0b9Pfr7F2KruV7YjmIKf3s7G9uOuPeSzEci6bHyULke/nzNq1FWD3s5Hm/XFlK3Wk+W1onbuHwbkmiFx7srwyQ48VU635T5oSu4dem2BJ01ksM16WbHfLK5dBLoaLjaJVbf9+OC/mSRA3ITXt2YMzq0EWbtkEy7Kaj2FOeny7fmuiopEnMVxYhvhbyttxgClhYtdr9wQZt9N75wzAHqqZ35RI0H3e+zFhEpo8sEVjcI/bvgraOXdpV+5TohzIi8+a4Uxkjutuehc3Zf31b7b2kgDZxEHYinRm91JD11y1edlM4tHtYo6uTIdVWWOrKDb40mW9d9Coja+XKv4+YQt9BGVzZIZl/OKVhWOqDjSIzuVbXNxxwYRqsJMd0ExNlCoIE=
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-x-cbid: 19072605-0016-0000-0000-0000029653C8
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19072605-0017-0000-0000-000032F45226
-Message-Id: <20190726050440.24798-2-bharata@linux.ibm.com>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2019-07-26_03:, , signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- malwarescore=0 suspectscore=3 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1906280000 definitions=main-1907260067
+X-OriginatorOrg: nxp.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: a651a730-ed13-463e-11b4-08d7119781d9
+X-MS-Exchange-CrossTenant-originalarrivaltime: 26 Jul 2019 07:04:31.0433 (UTC)
+X-MS-Exchange-CrossTenant-fromentityheader: Hosted
+X-MS-Exchange-CrossTenant-id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
+X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
+X-MS-Exchange-CrossTenant-userprincipalname: diana.craciun@nxp.com
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: VI1PR0401MB2317
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -97,359 +122,106 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: sraithal@linux.vnet.ibm.com, aneesh.kumar@linux.vnet.ibm.com,
- npiggin@gmail.com, Bharata B Rao <bharata@linux.ibm.com>
+Cc: "wangkefeng.wang@huawei.com" <wangkefeng.wang@huawei.com>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "jingxiangfeng@huawei.com" <jingxiangfeng@huawei.com>,
+ "thunder.leizhen@huawei.com" <thunder.leizhen@huawei.com>,
+ "fanchengyang@huawei.com" <fanchengyang@huawei.com>,
+ "yebin10@huawei.com" <yebin10@huawei.com>,
+ Laurentiu Tudor <laurentiu.tudor@nxp.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-We can hit the following BUG_ONs during memory unplug
-
-kernel BUG at arch/powerpc/mm/pgtable-frag.c:113!
- remove_pagetable+0x594/0x6a0
- (unreliable)
- remove_pagetable+0x94/0x6a0
- vmemmap_free+0x394/0x410
- sparse_remove_one_section+0x26c/0x2e8
- __remove_pages+0x428/0x540
- arch_remove_memory+0xd0/0x170
- __remove_memory+0xd4/0x1a0
- dlpar_remove_lmb+0xbc/0x110
- dlpar_memory+0xa80/0xd20
- handle_dlpar_errorlog+0xa8/0x160
- pseries_hp_work_fn+0x2c/0x60
- process_one_work+0x46c/0x860
- worker_thread+0x364/0x5e0
- kthread+0x1b0/0x1c0
- ret_from_kernel_thread+0x5c/0x68
-
-kernel BUG at arch/powerpc/mm/book3s64/pgtable.c:331!
- remove_pagetable+0x604/0x6a0
- (unreliable)
- remove_pagetable+0x2cc/0x6a0
- radix__remove_section_mapping+0x18/0x2c
- remove_section_mapping+0x8c/0xb0
- arch_remove_memory+0xf8/0x160
- __remove_memory+0xd4/0x190
- dlpar_remove_lmb+0xbc/0x110
- dlpar_memory+0xa90/0xd30
- handle_dlpar_errorlog+0xa8/0x160
- pseries_hp_work_fn+0x2c/0x60
- process_one_work+0x46c/0x860
- worker_thread+0x364/0x5e0
- kthread+0x1b0/0x1c0
- ret_from_kernel_thread+0x5c/0x68
-
-These occur when unplug is attempted for such memory which has
-been mapped using memblock pages as part of early kernel page
-table setup. We wouldn't have initialized the PMD or PTE fragment
-count for those PMD or PTE pages.
-
-Fixing this includes 3 parts:
-
-- Re-walk the init_mm page tables from mem_init() and initialize
-  the PMD and PTE fragment count to 1.
-- When freeing PUD, PMD and PTE page table pages, check explicitly
-  if they come from memblock and if so free then appropriately.
-- When we do early memblock based allocation of PMD and PUD pages,
-  allocate in PAGE_SIZE granularity so that we are sure the
-  complete page is used as pagetable page.
-
-Since we now do PAGE_SIZE allocations for both PUD table and
-PMD table (Note that PTE table allocation is already of PAGE_SIZE),
-we end up allocating more memory for the same amount of system RAM.
-Here is a comparision of how much more we need for a 64T and 2G
-system after this patch:
-
-1. 64T system
--------------
-64T RAM would need 64G for vmemmap with struct page size being 64B.
-
-128 PUD tables for 64T memory (1G mappings)
-1 PUD table and 64 PMD tables for 64G vmemmap (2M mappings)
-
-With default PUD[PMD]_TABLE_SIZE(4K), (128+1+64)*4K=772K
-With PAGE_SIZE(64K) table allocations, (128+1+64)*64K=12352K
-
-2. 2G system
-------------
-2G RAM would need 2M for vmemmap with struct page size being 64B.
-
-1 PUD table for 2G memory (1G mapping)
-1 PUD table and 1 PMD table for 2M vmemmap (2M mappings)
-
-With default PUD[PMD]_TABLE_SIZE(4K), (1+1+1)*4K=12K
-With new PAGE_SIZE(64K) table allocations, (1+1+1)*64K=192K
-
-Reported-by: Srikanth Aithal <sraithal@linux.vnet.ibm.com>
-Signed-off-by: Bharata B Rao <bharata@linux.ibm.com>
----
-Changes in v3:
-- Commit message corrections and added example to show the extra
-  memory usage for a small(2G) system in addition to 64T system.
-- Handle freeing of memblock allocated page table pages separately
-  for PUD, PMD and PTE pages. I had earlier converted the PMD and
-  PTE from reserved to normal pages during fragments fixup so that
-  they can be freed w/o special casing them. However that won't work
-  because there are slight differences b/n these three types of pages:
-  - Kernel PTE pages don't need _dtor routines to be run
-  - PMD pages need _dtor routines to be run for all pages
-    (Removing _ctor setup and ptlock init for kernel PMD pages
-     is an optimization that can be done separately)
-  - PUD pages go to kmem_cache during free
-  So in anycase these 3 types need to be handled differently.
-
- arch/powerpc/include/asm/book3s/64/pgalloc.h | 11 +++-
- arch/powerpc/include/asm/book3s/64/radix.h   |  1 +
- arch/powerpc/include/asm/sparsemem.h         |  1 +
- arch/powerpc/mm/book3s64/pgtable.c           | 31 ++++++++-
- arch/powerpc/mm/book3s64/radix_pgtable.c     | 68 +++++++++++++++++++-
- arch/powerpc/mm/mem.c                        |  5 ++
- arch/powerpc/mm/pgtable-frag.c               |  9 ++-
- 7 files changed, 119 insertions(+), 7 deletions(-)
-
-diff --git a/arch/powerpc/include/asm/book3s/64/pgalloc.h b/arch/powerpc/include/asm/book3s/64/pgalloc.h
-index d5a44912902f..84acef634d72 100644
---- a/arch/powerpc/include/asm/book3s/64/pgalloc.h
-+++ b/arch/powerpc/include/asm/book3s/64/pgalloc.h
-@@ -111,7 +111,16 @@ static inline pud_t *pud_alloc_one(struct mm_struct *mm, unsigned long addr)
- 
- static inline void pud_free(struct mm_struct *mm, pud_t *pud)
- {
--	kmem_cache_free(PGT_CACHE(PUD_CACHE_INDEX), pud);
-+	struct page *page = virt_to_page(pud);
-+
-+	/*
-+	 * Early pud pages allocated via memblock allocator
-+	 * can't be directly freed to slab
-+	 */
-+	if (PageReserved(page))
-+		free_reserved_page(page);
-+	else
-+		kmem_cache_free(PGT_CACHE(PUD_CACHE_INDEX), pud);
- }
- 
- static inline void pud_populate(struct mm_struct *mm, pud_t *pud, pmd_t *pmd)
-diff --git a/arch/powerpc/include/asm/book3s/64/radix.h b/arch/powerpc/include/asm/book3s/64/radix.h
-index e04a839cb5b9..a0b43e122cde 100644
---- a/arch/powerpc/include/asm/book3s/64/radix.h
-+++ b/arch/powerpc/include/asm/book3s/64/radix.h
-@@ -288,6 +288,7 @@ static inline unsigned long radix__get_tree_size(void)
- #ifdef CONFIG_MEMORY_HOTPLUG
- int radix__create_section_mapping(unsigned long start, unsigned long end, int nid);
- int radix__remove_section_mapping(unsigned long start, unsigned long end);
-+void radix__fixup_pgtable_fragments(void);
- #endif /* CONFIG_MEMORY_HOTPLUG */
- #endif /* __ASSEMBLY__ */
- #endif
-diff --git a/arch/powerpc/include/asm/sparsemem.h b/arch/powerpc/include/asm/sparsemem.h
-index 3192d454a733..e662f9232d35 100644
---- a/arch/powerpc/include/asm/sparsemem.h
-+++ b/arch/powerpc/include/asm/sparsemem.h
-@@ -15,6 +15,7 @@
- #ifdef CONFIG_MEMORY_HOTPLUG
- extern int create_section_mapping(unsigned long start, unsigned long end, int nid);
- extern int remove_section_mapping(unsigned long start, unsigned long end);
-+void fixup_pgtable_fragments(void);
- 
- #ifdef CONFIG_PPC_BOOK3S_64
- extern int resize_hpt_for_hotplug(unsigned long new_mem_size);
-diff --git a/arch/powerpc/mm/book3s64/pgtable.c b/arch/powerpc/mm/book3s64/pgtable.c
-index 7d0e0d0d22c4..3ef0e817d88c 100644
---- a/arch/powerpc/mm/book3s64/pgtable.c
-+++ b/arch/powerpc/mm/book3s64/pgtable.c
-@@ -186,6 +186,13 @@ int __meminit remove_section_mapping(unsigned long start, unsigned long end)
- 
- 	return hash__remove_section_mapping(start, end);
- }
-+
-+void fixup_pgtable_fragments(void)
-+{
-+	if (radix_enabled())
-+		radix__fixup_pgtable_fragments();
-+}
-+
- #endif /* CONFIG_MEMORY_HOTPLUG */
- 
- void __init mmu_partition_table_init(void)
-@@ -319,13 +326,23 @@ void pmd_fragment_free(unsigned long *pmd)
- 
- 	BUG_ON(atomic_read(&page->pt_frag_refcount) <= 0);
- 	if (atomic_dec_and_test(&page->pt_frag_refcount)) {
--		pgtable_pmd_page_dtor(page);
--		__free_page(page);
-+		/*
-+		 * Early pmd pages allocated via memblock
-+		 * allocator wouldn't have called _ctor
-+		 */
-+		if (PageReserved(page))
-+			free_reserved_page(page);
-+		else {
-+			pgtable_pmd_page_dtor(page);
-+			__free_page(page);
-+		}
- 	}
- }
- 
- static inline void pgtable_free(void *table, int index)
- {
-+	struct page *page;
-+
- 	switch (index) {
- 	case PTE_INDEX:
- 		pte_fragment_free(table, 0);
-@@ -334,7 +351,15 @@ static inline void pgtable_free(void *table, int index)
- 		pmd_fragment_free(table);
- 		break;
- 	case PUD_INDEX:
--		kmem_cache_free(PGT_CACHE(PUD_CACHE_INDEX), table);
-+		page = virt_to_page(table);
-+		/*
-+		 * Early pud pages allocated via memblock
-+		 * allocator need to be freed differently
-+		 */
-+		if (PageReserved(page))
-+			free_reserved_page(page);
-+		else
-+			kmem_cache_free(PGT_CACHE(PUD_CACHE_INDEX), table);
- 		break;
- #if defined(CONFIG_PPC_4K_PAGES) && defined(CONFIG_HUGETLB_PAGE)
- 		/* 16M hugepd directory at pud level */
-diff --git a/arch/powerpc/mm/book3s64/radix_pgtable.c b/arch/powerpc/mm/book3s64/radix_pgtable.c
-index b4ca9e95e678..c440446ee00f 100644
---- a/arch/powerpc/mm/book3s64/radix_pgtable.c
-+++ b/arch/powerpc/mm/book3s64/radix_pgtable.c
-@@ -33,6 +33,70 @@
- unsigned int mmu_pid_bits;
- unsigned int mmu_base_pid;
- 
-+static void fixup_pte_fragments(pmd_t *pmd)
-+{
-+	int i;
-+
-+	for (i = 0; i < PTRS_PER_PMD; i++, pmd++) {
-+		pte_t *pte;
-+		struct page *page;
-+
-+		if (pmd_none(*pmd))
-+			continue;
-+		if (pmd_is_leaf(*pmd))
-+			continue;
-+
-+		pte = pte_offset_kernel(pmd, 0);
-+		page = virt_to_page(pte);
-+		atomic_inc(&page->pt_frag_refcount);
-+	}
-+}
-+
-+static void fixup_pmd_fragments(pud_t *pud)
-+{
-+	int i;
-+
-+	for (i = 0; i < PTRS_PER_PUD; i++, pud++) {
-+		pmd_t *pmd;
-+		struct page *page;
-+
-+		if (pud_none(*pud))
-+			continue;
-+		if (pud_is_leaf(*pud))
-+			continue;
-+
-+		pmd = pmd_offset(pud, 0);
-+		page = virt_to_page(pmd);
-+		atomic_inc(&page->pt_frag_refcount);
-+		fixup_pte_fragments(pmd);
-+	}
-+}
-+
-+/*
-+ * Walk the init_mm page tables and fixup the PMD and PTE fragment
-+ * counts. This allows the PUD, PMD and PTE pages to be freed
-+ * back to buddy allocator properly during memory unplug.
-+ */
-+void radix__fixup_pgtable_fragments(void)
-+{
-+	int i;
-+	pgd_t *pgd = pgd_offset_k(0UL);
-+
-+	spin_lock(&init_mm.page_table_lock);
-+	for (i = 0; i < PTRS_PER_PGD; i++, pgd++) {
-+		pud_t *pud;
-+
-+		if (pgd_none(*pgd))
-+			continue;
-+		if (pgd_is_leaf(*pgd))
-+			continue;
-+
-+		pud = pud_offset(pgd, 0);
-+		fixup_pmd_fragments(pud);
-+	}
-+	spin_unlock(&init_mm.page_table_lock);
-+}
-+
- static int native_register_process_table(unsigned long base, unsigned long pg_sz,
- 					 unsigned long table_size)
- {
-@@ -81,7 +145,7 @@ static int early_map_kernel_page(unsigned long ea, unsigned long pa,
- 
- 	pgdp = pgd_offset_k(ea);
- 	if (pgd_none(*pgdp)) {
--		pudp = early_alloc_pgtable(PUD_TABLE_SIZE, nid,
-+		pudp = early_alloc_pgtable(PAGE_SIZE, nid,
- 						region_start, region_end);
- 		pgd_populate(&init_mm, pgdp, pudp);
- 	}
-@@ -91,7 +155,7 @@ static int early_map_kernel_page(unsigned long ea, unsigned long pa,
- 		goto set_the_pte;
- 	}
- 	if (pud_none(*pudp)) {
--		pmdp = early_alloc_pgtable(PMD_TABLE_SIZE, nid,
-+		pmdp = early_alloc_pgtable(PAGE_SIZE, nid,
- 						region_start, region_end);
- 		pud_populate(&init_mm, pudp, pmdp);
- 	}
-diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
-index 9259337d7374..e04ca98a74cb 100644
---- a/arch/powerpc/mm/mem.c
-+++ b/arch/powerpc/mm/mem.c
-@@ -51,6 +51,10 @@
- 
- #include <mm/mmu_decl.h>
- 
-+void __weak fixup_pgtable_fragments(void)
-+{
-+}
-+
- #ifndef CPU_FTR_COHERENT_ICACHE
- #define CPU_FTR_COHERENT_ICACHE	0	/* XXX for now */
- #define CPU_FTR_NOEXECUTE	0
-@@ -267,6 +271,7 @@ void __init mem_init(void)
- 	set_max_mapnr(max_pfn);
- 	memblock_free_all();
- 
-+	fixup_pgtable_fragments();
- #ifdef CONFIG_HIGHMEM
- 	{
- 		unsigned long pfn, highmem_mapnr;
-diff --git a/arch/powerpc/mm/pgtable-frag.c b/arch/powerpc/mm/pgtable-frag.c
-index a7b05214760c..8ef6527d2c78 100644
---- a/arch/powerpc/mm/pgtable-frag.c
-+++ b/arch/powerpc/mm/pgtable-frag.c
-@@ -114,6 +114,13 @@ void pte_fragment_free(unsigned long *table, int kernel)
- 	if (atomic_dec_and_test(&page->pt_frag_refcount)) {
- 		if (!kernel)
- 			pgtable_page_dtor(page);
--		__free_page(page);
-+		/*
-+		 * Early pte pages allocated via memblock
-+		 * allocator need to be freed differently
-+		 */
-+		if (PageReserved(page))
-+			free_reserved_page(page);
-+		else
-+			__free_page(page);
- 	}
- }
--- 
-2.21.0
-
+Hi Jason,=0A=
+=0A=
+I have briefly tested yesterday on a P4080 board and did not see any=0A=
+issues. I do not have much expertise on KASLR, but I will take a look=0A=
+over the code.=0A=
+=0A=
+Regards,=0A=
+Diana=0A=
+=0A=
+On 7/25/2019 10:16 AM, Jason Yan wrote:=0A=
+> Hi all, any comments?=0A=
+>=0A=
+>=0A=
+> On 2019/7/17 16:06, Jason Yan wrote:=0A=
+>> This series implements KASLR for powerpc/fsl_booke/32, as a security=0A=
+>> feature that deters exploit attempts relying on knowledge of the locatio=
+n=0A=
+>> of kernel internals.=0A=
+>>=0A=
+>> Since CONFIG_RELOCATABLE has already supported, what we need to do is=0A=
+>> map or copy kernel to a proper place and relocate. Freescale Book-E=0A=
+>> parts expect lowmem to be mapped by fixed TLB entries(TLB1). The TLB1=0A=
+>> entries are not suitable to map the kernel directly in a randomized=0A=
+>> region, so we chose to copy the kernel to a proper place and restart to=
+=0A=
+>> relocate.=0A=
+>>=0A=
+>> Entropy is derived from the banner and timer base, which will change eve=
+ry=0A=
+>> build and boot. This not so much safe so additionally the bootloader may=
+=0A=
+>> pass entropy via the /chosen/kaslr-seed node in device tree.=0A=
+>>=0A=
+>> We will use the first 512M of the low memory to randomize the kernel=0A=
+>> image. The memory will be split in 64M zones. We will use the lower 8=0A=
+>> bit of the entropy to decide the index of the 64M zone. Then we chose a=
+=0A=
+>> 16K aligned offset inside the 64M zone to put the kernel in.=0A=
+>>=0A=
+>>      KERNELBASE=0A=
+>>=0A=
+>>          |-->   64M   <--|=0A=
+>>          |               |=0A=
+>>          +---------------+    +----------------+---------------+=0A=
+>>          |               |....|    |kernel|    |               |=0A=
+>>          +---------------+    +----------------+---------------+=0A=
+>>          |                         |=0A=
+>>          |----->   offset    <-----|=0A=
+>>=0A=
+>>                                kimage_vaddr=0A=
+>>=0A=
+>> We also check if we will overlap with some areas like the dtb area, the=
+=0A=
+>> initrd area or the crashkernel area. If we cannot find a proper area,=0A=
+>> kaslr will be disabled and boot from the original kernel.=0A=
+>>=0A=
+>> Jason Yan (10):=0A=
+>>    powerpc: unify definition of M_IF_NEEDED=0A=
+>>    powerpc: move memstart_addr and kernstart_addr to init-common.c=0A=
+>>    powerpc: introduce kimage_vaddr to store the kernel base=0A=
+>>    powerpc/fsl_booke/32: introduce create_tlb_entry() helper=0A=
+>>    powerpc/fsl_booke/32: introduce reloc_kernel_entry() helper=0A=
+>>    powerpc/fsl_booke/32: implement KASLR infrastructure=0A=
+>>    powerpc/fsl_booke/32: randomize the kernel image offset=0A=
+>>    powerpc/fsl_booke/kaslr: clear the original kernel if randomized=0A=
+>>    powerpc/fsl_booke/kaslr: support nokaslr cmdline parameter=0A=
+>>    powerpc/fsl_booke/kaslr: dump out kernel offset information on panic=
+=0A=
+>>=0A=
+>>   arch/powerpc/Kconfig                          |  11 +=0A=
+>>   arch/powerpc/include/asm/nohash/mmu-book3e.h  |  10 +=0A=
+>>   arch/powerpc/include/asm/page.h               |   7 +=0A=
+>>   arch/powerpc/kernel/Makefile                  |   1 +=0A=
+>>   arch/powerpc/kernel/early_32.c                |   2 +-=0A=
+>>   arch/powerpc/kernel/exceptions-64e.S          |  10 -=0A=
+>>   arch/powerpc/kernel/fsl_booke_entry_mapping.S |  23 +-=0A=
+>>   arch/powerpc/kernel/head_fsl_booke.S          |  61 ++-=0A=
+>>   arch/powerpc/kernel/kaslr_booke.c             | 439 ++++++++++++++++++=
+=0A=
+>>   arch/powerpc/kernel/machine_kexec.c           |   1 +=0A=
+>>   arch/powerpc/kernel/misc_64.S                 |   5 -=0A=
+>>   arch/powerpc/kernel/setup-common.c            |  23 +=0A=
+>>   arch/powerpc/mm/init-common.c                 |   7 +=0A=
+>>   arch/powerpc/mm/init_32.c                     |   5 -=0A=
+>>   arch/powerpc/mm/init_64.c                     |   5 -=0A=
+>>   arch/powerpc/mm/mmu_decl.h                    |  10 +=0A=
+>>   arch/powerpc/mm/nohash/fsl_booke.c            |   8 +-=0A=
+>>   17 files changed, 580 insertions(+), 48 deletions(-)=0A=
+>>   create mode 100644 arch/powerpc/kernel/kaslr_booke.c=0A=
+>>=0A=
+>=0A=
+=0A=
