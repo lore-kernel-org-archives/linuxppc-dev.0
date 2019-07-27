@@ -2,41 +2,40 @@ Return-Path: <SRS0=3nuO=VY=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
-	version=3.4.0
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 34529C433FF
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Jul 2019 15:54:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0B8D2C433FF
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Jul 2019 15:56:37 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C0CF42075C
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Jul 2019 15:54:49 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C0CF42075C
+	by mail.kernel.org (Postfix) with ESMTPS id 932442085A
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Jul 2019 15:56:36 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 932442085A
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=huawei.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45wr9z0rDgzDqf3
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 28 Jul 2019 01:54:47 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45wrD21lj1zDqdT
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 28 Jul 2019 01:56:34 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=huawei.com
- (client-ip=45.249.212.191; helo=huawei.com;
- envelope-from=yuehaibing@huawei.com; receiver=<UNKNOWN>)
+ (client-ip=45.249.212.32; helo=huawei.com; envelope-from=yuehaibing@huawei.com;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=huawei.com
-Received: from huawei.com (szxga05-in.huawei.com [45.249.212.191])
+Received: from huawei.com (szxga06-in.huawei.com [45.249.212.32])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45wqCG2yChzDqBg
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 28 Jul 2019 01:10:50 +1000 (AEST)
-Received: from DGGEMS403-HUB.china.huawei.com (unknown [172.30.72.58])
- by Forcepoint Email with ESMTP id A5D4DC60B1121CA152E4;
- Sat, 27 Jul 2019 23:10:45 +0800 (CST)
-Received: from localhost (10.133.213.239) by DGGEMS403-HUB.china.huawei.com
- (10.3.19.203) with Microsoft SMTP Server id 14.3.439.0; Sat, 27 Jul 2019
- 23:10:38 +0800
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45wqCJ6H5GzDqHk
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 28 Jul 2019 01:10:52 +1000 (AEST)
+Received: from DGGEMS401-HUB.china.huawei.com (unknown [172.30.72.59])
+ by Forcepoint Email with ESMTP id 24576B60E5A2ED3E2B3F;
+ Sat, 27 Jul 2019 23:10:50 +0800 (CST)
+Received: from localhost (10.133.213.239) by DGGEMS401-HUB.china.huawei.com
+ (10.3.19.201) with Microsoft SMTP Server id 14.3.439.0; Sat, 27 Jul 2019
+ 23:10:41 +0800
 From: YueHaibing <yuehaibing@huawei.com>
 To: <lgirdwood@gmail.com>, <broonie@kernel.org>, <perex@perex.cz>,
  <tiwai@suse.com>, <eric@anholt.net>, <wahrenst@gmx.net>,
@@ -52,10 +51,10 @@ To: <lgirdwood@gmail.com>, <broonie@kernel.org>, <perex@perex.cz>,
  <wens@csie.org>, <thierry.reding@gmail.com>, <jonathanh@nvidia.com>,
  <yamada.masahiro@socionext.com>, <michal.simek@xilinx.com>,
  <jcmvbkbc@gmail.com>
-Subject: [PATCH -next 25/34] ASoC: meson: g12a-tohdmitx: use
+Subject: [PATCH -next 26/34] ASoC: meson: axg-tdm-formatter: use
  devm_platform_ioremap_resource() to simplify code
-Date: Sat, 27 Jul 2019 23:07:29 +0800
-Message-ID: <20190727150738.54764-26-yuehaibing@huawei.com>
+Date: Sat, 27 Jul 2019 23:07:30 +0800
+Message-ID: <20190727150738.54764-27-yuehaibing@huawei.com>
 X-Mailer: git-send-email 2.10.2.windows.1
 In-Reply-To: <20190727150738.54764-1-yuehaibing@huawei.com>
 References: <20190727150738.54764-1-yuehaibing@huawei.com>
@@ -90,20 +89,24 @@ This is detected by coccinelle.
 Reported-by: Hulk Robot <hulkci@huawei.com>
 Signed-off-by: YueHaibing <yuehaibing@huawei.com>
 ---
- sound/soc/meson/g12a-tohdmitx.c | 4 +---
+ sound/soc/meson/axg-tdm-formatter.c | 4 +---
  1 file changed, 1 insertion(+), 3 deletions(-)
 
-diff --git a/sound/soc/meson/g12a-tohdmitx.c b/sound/soc/meson/g12a-tohdmitx.c
-index 707ccb1..6ae0c4f 100644
---- a/sound/soc/meson/g12a-tohdmitx.c
-+++ b/sound/soc/meson/g12a-tohdmitx.c
-@@ -378,12 +378,10 @@ MODULE_DEVICE_TABLE(of, g12a_tohdmitx_of_match);
- static int g12a_tohdmitx_probe(struct platform_device *pdev)
- {
+diff --git a/sound/soc/meson/axg-tdm-formatter.c b/sound/soc/meson/axg-tdm-formatter.c
+index 2e49820..21c735a 100644
+--- a/sound/soc/meson/axg-tdm-formatter.c
++++ b/sound/soc/meson/axg-tdm-formatter.c
+@@ -253,7 +253,6 @@ int axg_tdm_formatter_probe(struct platform_device *pdev)
  	struct device *dev = &pdev->dev;
+ 	const struct axg_tdm_formatter_driver *drv;
+ 	struct axg_tdm_formatter *formatter;
 -	struct resource *res;
  	void __iomem *regs;
- 	struct regmap *map;
+ 	int ret;
+ 
+@@ -269,8 +268,7 @@ int axg_tdm_formatter_probe(struct platform_device *pdev)
+ 	platform_set_drvdata(pdev, formatter);
+ 	formatter->drv = drv;
  
 -	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
 -	regs = devm_ioremap_resource(dev, res);
