@@ -7,36 +7,36 @@ X-Spam-Status: No, score=-9.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CA179C433FF
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Jul 2019 15:37:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B4C1FC7618B
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Jul 2019 15:39:29 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 5DC5620840
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Jul 2019 15:37:40 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5DC5620840
+	by mail.kernel.org (Postfix) with ESMTPS id 4FBC420840
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Jul 2019 15:39:29 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4FBC420840
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=huawei.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45wqpB3c0jzDqV1
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 28 Jul 2019 01:37:38 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45wqrH3pRSzDqS8
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 28 Jul 2019 01:39:27 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=huawei.com
- (client-ip=45.249.212.190; helo=huawei.com;
- envelope-from=yuehaibing@huawei.com; receiver=<UNKNOWN>)
+ (client-ip=45.249.212.35; helo=huawei.com; envelope-from=yuehaibing@huawei.com;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=huawei.com
-Received: from huawei.com (szxga04-in.huawei.com [45.249.212.190])
+Received: from huawei.com (szxga07-in.huawei.com [45.249.212.35])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45wqBf1NBczDqKJ
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 28 Jul 2019 01:10:17 +1000 (AEST)
-Received: from DGGEMS409-HUB.china.huawei.com (unknown [172.30.72.58])
- by Forcepoint Email with ESMTP id 866B8E69F17AE7967257;
- Sat, 27 Jul 2019 23:10:14 +0800 (CST)
-Received: from localhost (10.133.213.239) by DGGEMS409-HUB.china.huawei.com
- (10.3.19.209) with Microsoft SMTP Server id 14.3.439.0; Sat, 27 Jul 2019
- 23:10:04 +0800
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45wqBj09jqzDqK6
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 28 Jul 2019 01:10:20 +1000 (AEST)
+Received: from DGGEMS413-HUB.china.huawei.com (unknown [172.30.72.59])
+ by Forcepoint Email with ESMTP id 01CF66C90E18C1F42A26;
+ Sat, 27 Jul 2019 23:10:17 +0800 (CST)
+Received: from localhost (10.133.213.239) by DGGEMS413-HUB.china.huawei.com
+ (10.3.19.213) with Microsoft SMTP Server id 14.3.439.0; Sat, 27 Jul 2019
+ 23:10:10 +0800
 From: YueHaibing <yuehaibing@huawei.com>
 To: <lgirdwood@gmail.com>, <broonie@kernel.org>, <perex@perex.cz>,
  <tiwai@suse.com>, <eric@anholt.net>, <wahrenst@gmx.net>,
@@ -52,10 +52,10 @@ To: <lgirdwood@gmail.com>, <broonie@kernel.org>, <perex@perex.cz>,
  <wens@csie.org>, <thierry.reding@gmail.com>, <jonathanh@nvidia.com>,
  <yamada.masahiro@socionext.com>, <michal.simek@xilinx.com>,
  <jcmvbkbc@gmail.com>
-Subject: [PATCH -next 14/34] ASoC: xtfpga-i2s: use
+Subject: [PATCH -next 16/34] ASoC: codecs: msm8916-wcd: use
  devm_platform_ioremap_resource() to simplify code
-Date: Sat, 27 Jul 2019 23:07:18 +0800
-Message-ID: <20190727150738.54764-15-yuehaibing@huawei.com>
+Date: Sat, 27 Jul 2019 23:07:20 +0800
+Message-ID: <20190727150738.54764-17-yuehaibing@huawei.com>
 X-Mailer: git-send-email 2.10.2.windows.1
 In-Reply-To: <20190727150738.54764-1-yuehaibing@huawei.com>
 References: <20190727150738.54764-1-yuehaibing@huawei.com>
@@ -90,31 +90,31 @@ This is detected by coccinelle.
 Reported-by: Hulk Robot <hulkci@huawei.com>
 Signed-off-by: YueHaibing <yuehaibing@huawei.com>
 ---
- sound/soc/xtensa/xtfpga-i2s.c | 4 +---
+ sound/soc/codecs/msm8916-wcd-digital.c | 4 +---
  1 file changed, 1 insertion(+), 3 deletions(-)
 
-diff --git a/sound/soc/xtensa/xtfpga-i2s.c b/sound/soc/xtensa/xtfpga-i2s.c
-index 9ce2c75..9da395d 100644
---- a/sound/soc/xtensa/xtfpga-i2s.c
-+++ b/sound/soc/xtensa/xtfpga-i2s.c
-@@ -531,7 +531,6 @@ static int xtfpga_i2s_runtime_resume(struct device *dev)
- static int xtfpga_i2s_probe(struct platform_device *pdev)
- {
- 	struct xtfpga_i2s *i2s;
--	struct resource *mem;
- 	int err, irq;
+diff --git a/sound/soc/codecs/msm8916-wcd-digital.c b/sound/soc/codecs/msm8916-wcd-digital.c
+index 1db7e43..9fa5d44 100644
+--- a/sound/soc/codecs/msm8916-wcd-digital.c
++++ b/sound/soc/codecs/msm8916-wcd-digital.c
+@@ -1143,7 +1143,6 @@ static int msm8916_wcd_digital_probe(struct platform_device *pdev)
+ 	struct msm8916_wcd_digital_priv *priv;
+ 	struct device *dev = &pdev->dev;
+ 	void __iomem *base;
+-	struct resource *mem_res;
+ 	struct regmap *digital_map;
+ 	int ret;
  
- 	i2s = devm_kzalloc(&pdev->dev, sizeof(*i2s), GFP_KERNEL);
-@@ -543,8 +542,7 @@ static int xtfpga_i2s_probe(struct platform_device *pdev)
- 	i2s->dev = &pdev->dev;
- 	dev_dbg(&pdev->dev, "dev: %p, i2s: %p\n", &pdev->dev, i2s);
+@@ -1151,8 +1150,7 @@ static int msm8916_wcd_digital_probe(struct platform_device *pdev)
+ 	if (!priv)
+ 		return -ENOMEM;
  
--	mem = platform_get_resource(pdev, IORESOURCE_MEM, 0);
--	i2s->regs = devm_ioremap_resource(&pdev->dev, mem);
-+	i2s->regs = devm_platform_ioremap_resource(pdev, 0);
- 	if (IS_ERR(i2s->regs)) {
- 		err = PTR_ERR(i2s->regs);
- 		goto err;
+-	mem_res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+-	base = devm_ioremap_resource(&pdev->dev, mem_res);
++	base = devm_platform_ioremap_resource(pdev, 0);
+ 	if (IS_ERR(base))
+ 		return PTR_ERR(base);
+ 
 -- 
 2.7.4
 
