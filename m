@@ -7,36 +7,36 @@ X-Spam-Status: No, score=-9.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3F4F4C7618B
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Jul 2019 15:41:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3F54BC433FF
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Jul 2019 15:43:12 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 7B85D20840
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Jul 2019 15:41:18 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7B85D20840
+	by mail.kernel.org (Postfix) with ESMTPS id C32B020840
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Jul 2019 15:43:11 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C32B020840
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=huawei.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45wqtN38yRzDqMd
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 28 Jul 2019 01:41:16 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45wqwY49hCzDqZF
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 28 Jul 2019 01:43:09 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=huawei.com
- (client-ip=45.249.212.35; helo=huawei.com; envelope-from=yuehaibing@huawei.com;
- receiver=<UNKNOWN>)
+ (client-ip=45.249.212.190; helo=huawei.com;
+ envelope-from=yuehaibing@huawei.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=huawei.com
-Received: from huawei.com (szxga07-in.huawei.com [45.249.212.35])
+Received: from huawei.com (szxga04-in.huawei.com [45.249.212.190])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45wqBl0PYRzDqK5
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 28 Jul 2019 01:10:22 +1000 (AEST)
-Received: from DGGEMS401-HUB.china.huawei.com (unknown [172.30.72.58])
- by Forcepoint Email with ESMTP id A46AD9911FF182FFAE54;
- Sat, 27 Jul 2019 23:10:19 +0800 (CST)
-Received: from localhost (10.133.213.239) by DGGEMS401-HUB.china.huawei.com
- (10.3.19.201) with Microsoft SMTP Server id 14.3.439.0; Sat, 27 Jul 2019
- 23:10:13 +0800
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45wqBs6XnQzDqKJ
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 28 Jul 2019 01:10:29 +1000 (AEST)
+Received: from DGGEMS413-HUB.china.huawei.com (unknown [172.30.72.59])
+ by Forcepoint Email with ESMTP id 204F26CBACB8CC91259D;
+ Sat, 27 Jul 2019 23:10:27 +0800 (CST)
+Received: from localhost (10.133.213.239) by DGGEMS413-HUB.china.huawei.com
+ (10.3.19.213) with Microsoft SMTP Server id 14.3.439.0; Sat, 27 Jul 2019
+ 23:10:16 +0800
 From: YueHaibing <yuehaibing@huawei.com>
 To: <lgirdwood@gmail.com>, <broonie@kernel.org>, <perex@perex.cz>,
  <tiwai@suse.com>, <eric@anholt.net>, <wahrenst@gmx.net>,
@@ -52,10 +52,10 @@ To: <lgirdwood@gmail.com>, <broonie@kernel.org>, <perex@perex.cz>,
  <wens@csie.org>, <thierry.reding@gmail.com>, <jonathanh@nvidia.com>,
  <yamada.masahiro@socionext.com>, <michal.simek@xilinx.com>,
  <jcmvbkbc@gmail.com>
-Subject: [PATCH -next 17/34] ASoC: codecs: jz4725b: use
+Subject: [PATCH -next 18/34] ASoC: mmp-sspa: use
  devm_platform_ioremap_resource() to simplify code
-Date: Sat, 27 Jul 2019 23:07:21 +0800
-Message-ID: <20190727150738.54764-18-yuehaibing@huawei.com>
+Date: Sat, 27 Jul 2019 23:07:22 +0800
+Message-ID: <20190727150738.54764-19-yuehaibing@huawei.com>
 X-Mailer: git-send-email 2.10.2.windows.1
 In-Reply-To: <20190727150738.54764-1-yuehaibing@huawei.com>
 References: <20190727150738.54764-1-yuehaibing@huawei.com>
@@ -90,29 +90,30 @@ This is detected by coccinelle.
 Reported-by: Hulk Robot <hulkci@huawei.com>
 Signed-off-by: YueHaibing <yuehaibing@huawei.com>
 ---
- sound/soc/codecs/jz4725b.c | 4 +---
+ sound/soc/pxa/mmp-sspa.c | 4 +---
  1 file changed, 1 insertion(+), 3 deletions(-)
 
-diff --git a/sound/soc/codecs/jz4725b.c b/sound/soc/codecs/jz4725b.c
-index 766354c..2567a5d 100644
---- a/sound/soc/codecs/jz4725b.c
-+++ b/sound/soc/codecs/jz4725b.c
-@@ -545,15 +545,13 @@ static int jz4725b_codec_probe(struct platform_device *pdev)
+diff --git a/sound/soc/pxa/mmp-sspa.c b/sound/soc/pxa/mmp-sspa.c
+index 72f4364..e3e5425 100644
+--- a/sound/soc/pxa/mmp-sspa.c
++++ b/sound/soc/pxa/mmp-sspa.c
+@@ -399,7 +399,6 @@ static const struct snd_soc_component_driver mmp_sspa_component = {
+ static int asoc_mmp_sspa_probe(struct platform_device *pdev)
  {
- 	struct device *dev = &pdev->dev;
- 	struct jz_icdc *icdc;
--	struct resource *mem;
- 	int ret;
+ 	struct sspa_priv *priv;
+-	struct resource *res;
  
- 	icdc = devm_kzalloc(dev, sizeof(*icdc), GFP_KERNEL);
- 	if (!icdc)
+ 	priv = devm_kzalloc(&pdev->dev,
+ 				sizeof(struct sspa_priv), GFP_KERNEL);
+@@ -417,8 +416,7 @@ static int asoc_mmp_sspa_probe(struct platform_device *pdev)
+ 	if (priv->dma_params == NULL)
  		return -ENOMEM;
  
--	mem = platform_get_resource(pdev, IORESOURCE_MEM, 0);
--	icdc->base = devm_ioremap_resource(dev, mem);
-+	icdc->base = devm_platform_ioremap_resource(pdev, 0);
- 	if (IS_ERR(icdc->base))
- 		return PTR_ERR(icdc->base);
+-	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+-	priv->sspa->mmio_base = devm_ioremap_resource(&pdev->dev, res);
++	priv->sspa->mmio_base = devm_platform_ioremap_resource(pdev, 0);
+ 	if (IS_ERR(priv->sspa->mmio_base))
+ 		return PTR_ERR(priv->sspa->mmio_base);
  
 -- 
 2.7.4
