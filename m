@@ -2,81 +2,58 @@ Return-Path: <SRS0=fO6x=VZ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.5 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-11.7 required=3.0
+	tests=HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A0DB3C433FF
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 28 Jul 2019 01:16:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8FFCDC433FF
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 28 Jul 2019 01:17:29 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 231452070D
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 28 Jul 2019 01:16:14 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="T+UzIYi/"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 231452070D
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	by mail.kernel.org (Postfix) with ESMTPS id 20ACF2070D
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 28 Jul 2019 01:17:29 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 20ACF2070D
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=cyphar.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45x4dm2yHXzDqW3
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 28 Jul 2019 11:16:12 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45x4gC1fJ6zDqjV
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 28 Jul 2019 11:17:27 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=2607:f8b0:4864:20::441; helo=mail-pf1-x441.google.com;
- envelope-from=afcidk@gmail.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=cyphar.com
+ (client-ip=80.241.60.215; helo=mx2.mailbox.org;
+ envelope-from=cyphar@cyphar.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="T+UzIYi/"; 
- dkim-atps=neutral
-Received: from mail-pf1-x441.google.com (mail-pf1-x441.google.com
- [IPv6:2607:f8b0:4864:20::441])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ dmarc=none (p=none dis=none) header.from=cyphar.com
+Received: from mx2.mailbox.org (mx2.mailbox.org [80.241.60.215])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45wp6X0fDPzDqJh
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 28 Jul 2019 00:21:36 +1000 (AEST)
-Received: by mail-pf1-x441.google.com with SMTP id 19so25842669pfa.4
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 27 Jul 2019 07:21:36 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=from:to:cc:subject:date:message-id;
- bh=y63nlDdoReiitfVEZgVBo7xRRyCxoDD8AEYgo5/VomM=;
- b=T+UzIYi/1THcC8I6GGTQVftBbmYmneEqyzoZFaOOV0bsgkD4/yotJY+aT39yhYMbKU
- hP7XuGXa26yH/rd2Nj/oFrTDYEcp5JUuY3kmmuDDU7fPuMGddkQghGbGlfTO+H8pKvVB
- pSe3h0PTMAUsbiz2LBWk2Z19ayzMznrnydOiG1Hn9M1yV6yTmgyr6pygeBUIKivIxRkK
- AslNgkHOQWvuyAhddym0LYgEWCybK94ah26A3c+j6bFoy1BFojsB3uQ/zIoW1PPLaFzG
- iRc8ls7OCAbEHg78NFqB9lL8kFZRs8DzukHcVHBv38OGkga6Mp045UeW3iThwjfRKg8C
- KTCg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:from:to:cc:subject:date:message-id;
- bh=y63nlDdoReiitfVEZgVBo7xRRyCxoDD8AEYgo5/VomM=;
- b=c8Oc7r6TmYyc8jlfGETHIWxLdW3tlKr52QKSTXzXnaNlK/rqm5A7zfv0OOUQ94pta3
- 4ZuYrUBO1KlDK6/dXxf32cVgC3e+qtmQSZmD9MiBBrAO7SslyWHW6iQYdyKVhKzyhBBD
- qO4NFUe4GXMCLaMNQFBMjdkcPG+gfvQncD5pdr1m2A4ufc0JKoiN5oMIMTF/ohXMCjM1
- jUZwLehj+AggCzWPD052AbSXi/YxXmSpUMr92w7iM5txg9kXaUO806R2YDa7/8G/rB2P
- f5cJkKqT5aZZTdDnbWEPMj95Mfww2YJpBRVpLOJOGPUGKvF9KJVmtHZyPiIOHJjfX84d
- w3SQ==
-X-Gm-Message-State: APjAAAUHwZcE6kQoCQPQ6C96g5Y1g20zTqt2NkXEa3FzoI39ELQ1QB/b
- WHxOW/BwYE/0N6NCtPsBzzQ=
-X-Google-Smtp-Source: APXvYqwImUJ0RccHZPsxX4PaZHY9X78k754oNQpfDLf2SEuy6uSlyklXeLtGbLK7+kjMFAkrLZ0G0A==
-X-Received: by 2002:a65:5cca:: with SMTP id b10mr98493196pgt.365.1564237291919; 
- Sat, 27 Jul 2019 07:21:31 -0700 (PDT)
-Received: from localhost.localdomain (36-238-206-183.dynamic-ip.hinet.net.
- [36.238.206.183])
- by smtp.googlemail.com with ESMTPSA id c8sm63671109pjq.2.2019.07.27.07.21.26
- (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
- Sat, 27 Jul 2019 07:21:31 -0700 (PDT)
-From: Pei Hsuan Hung <afcidk@gmail.com>
-To: 
-Subject: [PATCH] Fix typo reigster to register
-Date: Sat, 27 Jul 2019 22:21:09 +0800
-Message-Id: <20190727142111.20039-1-afcidk@gmail.com>
-X-Mailer: git-send-email 2.17.1
-X-Mailman-Approved-At: Sun, 28 Jul 2019 11:11:13 +1000
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45x4Ts3MB4zDqWq
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 28 Jul 2019 11:09:21 +1000 (AEST)
+Received: from smtp2.mailbox.org (smtp2.mailbox.org
+ [IPv6:2001:67c:2050:105:465:1:2:0])
+ (using TLSv1.2 with cipher ECDHE-RSA-CHACHA20-POLY1305 (256/256 bits))
+ (No client certificate requested)
+ by mx2.mailbox.org (Postfix) with ESMTPS id A33E4A1C0F;
+ Sun, 28 Jul 2019 03:09:17 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at heinlein-support.de
+Received: from smtp2.mailbox.org ([80.241.60.241])
+ by spamfilter04.heinlein-hosting.de (spamfilter04.heinlein-hosting.de
+ [80.241.56.122]) (amavisd-new, port 10030)
+ with ESMTP id TuVfRFvZMo2r; Sun, 28 Jul 2019 03:09:07 +0200 (CEST)
+From: Aleksa Sarai <cyphar@cyphar.com>
+To: Al Viro <viro@zeniv.linux.org.uk>, Jeff Layton <jlayton@kernel.org>,
+ "J. Bruce Fields" <bfields@fieldses.org>, Arnd Bergmann <arnd@arndb.de>,
+ David Howells <dhowells@redhat.com>, Shuah Khan <shuah@kernel.org>,
+ Shuah Khan <skhan@linuxfoundation.org>
+Subject: [PATCH v11 7/8] open: openat2(2) syscall
+Date: Sun, 28 Jul 2019 11:02:06 +1000
+Message-Id: <20190728010207.9781-8-cyphar@cyphar.com>
+In-Reply-To: <20190728010207.9781-1-cyphar@cyphar.com>
+References: <20190728010207.9781-1-cyphar@cyphar.com>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -88,147 +65,637 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: David Airlie <airlied@linux.ie>, Liviu Dudau <liviu.dudau@arm.com>,
- dri-devel@lists.freedesktop.org, Oliver O'Halloran <oohall@gmail.com>,
- Ping-Ke Shih <pkshih@realtek.com>, linux-scsi@vger.kernel.org,
- James Smart <james.smart@broadcom.com>, Chanwoo Choi <cw00.choi@samsung.com>,
- MyungJoo Ham <myungjoo.ham@samsung.com>, afcidk@gmail.com,
- Dick Kennedy <dick.kennedy@broadcom.com>, Arnd Bergmann <arnd@arndb.de>,
- "James E.J. Bottomley" <jejb@linux.ibm.com>,
- Alexander Viro <viro@zeniv.linux.org.uk>, Kalle Valo <kvalo@codeaurora.org>,
- trivial@kernel.org, "Martin K. Petersen" <martin.petersen@oracle.com>,
- Sam Bobroff <sbobroff@linux.ibm.com>, netdev@vger.kernel.org,
- linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org,
- Brian Starkey <brian.starkey@arm.com>, Jeremy Kerr <jk@ozlabs.org>,
- Daniel Vetter <daniel@ffwll.ch>, linux-fsdevel@vger.kernel.org,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
- "David S. Miller" <davem@davemloft.net>,
- Larry Finger <Larry.Finger@lwfinger.net>
+Cc: linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org,
+ Alexei Starovoitov <ast@kernel.org>, Oleg Nesterov <oleg@redhat.com>,
+ linux-kselftest@vger.kernel.org, sparclinux@vger.kernel.org,
+ linux-arch@vger.kernel.org, linux-s390@vger.kernel.org,
+ Tycho Andersen <tycho@tycho.ws>, Aleksa Sarai <asarai@suse.de>,
+ linux-arm-kernel@lists.infradead.org, linux-mips@vger.kernel.org,
+ linux-xtensa@linux-xtensa.org, Kees Cook <keescook@chromium.org>,
+ Jann Horn <jannh@google.com>, linuxppc-dev@lists.ozlabs.org,
+ Aleksa Sarai <cyphar@cyphar.com>, Andy Lutomirski <luto@kernel.org>,
+ David Drysdale <drysdale@google.com>, Christian Brauner <christian@brauner.io>,
+ linux-parisc@vger.kernel.org, linux-m68k@lists.linux-m68k.org,
+ linux-api@vger.kernel.org, Chanho Min <chanho.min@lge.com>,
+ linux-kernel@vger.kernel.org, Eric Biederman <ebiederm@xmission.com>,
+ linux-alpha@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Linus Torvalds <torvalds@linux-foundation.org>,
+ containers@lists.linux-foundation.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Signed-off-by: Pei Hsuan Hung <afcidk@gmail.com>
-Cc: trivial@kernel.org
----
- arch/powerpc/kernel/eeh.c                           | 2 +-
- arch/powerpc/platforms/cell/spufs/switch.c          | 4 ++--
- drivers/extcon/extcon-rt8973a.c                     | 2 +-
- drivers/gpu/drm/arm/malidp_regs.h                   | 2 +-
- drivers/net/wireless/realtek/rtlwifi/rtl8192se/fw.h | 2 +-
- drivers/scsi/lpfc/lpfc_hbadisc.c                    | 4 ++--
- fs/userfaultfd.c                                    | 2 +-
- 7 files changed, 9 insertions(+), 9 deletions(-)
+The most obvious syscall to add support for the new LOOKUP_* scoping
+flags would be openat(2). However, there are a few reasons why this is
+not the best course of action:
 
-diff --git a/arch/powerpc/kernel/eeh.c b/arch/powerpc/kernel/eeh.c
-index c0e4b73191f3..d75c9c24ec4d 100644
---- a/arch/powerpc/kernel/eeh.c
-+++ b/arch/powerpc/kernel/eeh.c
-@@ -1030,7 +1030,7 @@ int __init eeh_ops_register(struct eeh_ops *ops)
+ * The new LOOKUP_* flags are intended to be security features, and
+   openat(2) will silently ignore all unknown flags. This means that
+   users would need to avoid foot-gunning themselves constantly when
+   using this interface if it were part of openat(2). This can be fixed
+   by having userspace libraries handle this for users[1], but should be
+   avoided if possible.
+
+ * Resolution scoping feels like a different operation to the existing
+   O_* flags. And since openat(2) has limited flag space, it seems to be
+   quite wasteful to clutter it with 5 flags that are all
+   resolution-related. Arguably O_NOFOLLOW is also a resolution flag but
+   its entire purpose is to error out if you encounter a trailing
+   symlink -- not to scope resolution.
+
+ * Other systems would be able to reimplement this syscall allowing for
+   cross-OS standardisation rather than being hidden amongst O_* flags
+   which may result in it not being used by all the parties that might
+   want to use it (file servers, web servers, container runtimes, etc).
+
+ * It gives us the opportunity to iterate on the O_PATH interface. In
+   particular, the new @how->upgrade_mask field for fd re-opening is
+   only possible because we have a clean slate without needing to re-use
+   the ACC_MODE flag design nor the existing openat(2) @mode semantics.
+
+To this end, we introduce the openat2(2) syscall. It provides all of the
+features of openat(2) through the @how->flags argument, but also
+also provides a new @how->resolve argument which exposes RESOLVE_* flags
+that map to our new LOOKUP_* flags. It also eliminates the long-standing
+ugliness of variadic-open(2) by embedding it in a struct.
+
+In order to allow for userspace to lock down their usage of file
+descriptor re-opening, openat2(2) has the ability for users to disallow
+certain re-opening modes through @how->upgrade_mask. At the moment,
+there is no UPGRADE_NOEXEC. The open_how struct is padded to 64 bytes
+for future extensions (all of the reserved bits must be zeroed).
+
+[1]: https://github.com/openSUSE/libpathrs
+
+Suggested-by: Christian Brauner <christian@brauner.io>
+Signed-off-by: Aleksa Sarai <cyphar@cyphar.com>
+---
+ arch/alpha/kernel/syscalls/syscall.tbl      |   1 +
+ arch/arm/tools/syscall.tbl                  |   1 +
+ arch/arm64/include/asm/unistd.h             |   2 +-
+ arch/arm64/include/asm/unistd32.h           |   2 +
+ arch/ia64/kernel/syscalls/syscall.tbl       |   1 +
+ arch/m68k/kernel/syscalls/syscall.tbl       |   1 +
+ arch/microblaze/kernel/syscalls/syscall.tbl |   1 +
+ arch/mips/kernel/syscalls/syscall_n32.tbl   |   1 +
+ arch/mips/kernel/syscalls/syscall_n64.tbl   |   1 +
+ arch/mips/kernel/syscalls/syscall_o32.tbl   |   1 +
+ arch/parisc/kernel/syscalls/syscall.tbl     |   1 +
+ arch/powerpc/kernel/syscalls/syscall.tbl    |   1 +
+ arch/s390/kernel/syscalls/syscall.tbl       |   1 +
+ arch/sh/kernel/syscalls/syscall.tbl         |   1 +
+ arch/sparc/kernel/syscalls/syscall.tbl      |   1 +
+ arch/x86/entry/syscalls/syscall_32.tbl      |   1 +
+ arch/x86/entry/syscalls/syscall_64.tbl      |   1 +
+ arch/xtensa/kernel/syscalls/syscall.tbl     |   1 +
+ fs/open.c                                   | 106 ++++++++++++++++----
+ include/linux/fcntl.h                       |  15 ++-
+ include/linux/fs.h                          |   4 +-
+ include/linux/syscalls.h                    |  17 +++-
+ include/uapi/asm-generic/unistd.h           |   5 +-
+ include/uapi/linux/fcntl.h                  |  42 ++++++++
+ 24 files changed, 179 insertions(+), 30 deletions(-)
+
+diff --git a/arch/alpha/kernel/syscalls/syscall.tbl b/arch/alpha/kernel/syscalls/syscall.tbl
+index 728fe028c02c..9f374f7d9514 100644
+--- a/arch/alpha/kernel/syscalls/syscall.tbl
++++ b/arch/alpha/kernel/syscalls/syscall.tbl
+@@ -475,3 +475,4 @@
+ 543	common	fspick				sys_fspick
+ 544	common	pidfd_open			sys_pidfd_open
+ # 545 reserved for clone3
++547	common	openat2				sys_openat2
+diff --git a/arch/arm/tools/syscall.tbl b/arch/arm/tools/syscall.tbl
+index 6da7dc4d79cc..4ba54bc7e19a 100644
+--- a/arch/arm/tools/syscall.tbl
++++ b/arch/arm/tools/syscall.tbl
+@@ -449,3 +449,4 @@
+ 433	common	fspick				sys_fspick
+ 434	common	pidfd_open			sys_pidfd_open
+ 435	common	clone3				sys_clone3
++437	common	openat2				sys_openat2
+diff --git a/arch/arm64/include/asm/unistd.h b/arch/arm64/include/asm/unistd.h
+index 2629a68b8724..8aa00ccb0b96 100644
+--- a/arch/arm64/include/asm/unistd.h
++++ b/arch/arm64/include/asm/unistd.h
+@@ -38,7 +38,7 @@
+ #define __ARM_NR_compat_set_tls		(__ARM_NR_COMPAT_BASE + 5)
+ #define __ARM_NR_COMPAT_END		(__ARM_NR_COMPAT_BASE + 0x800)
+ 
+-#define __NR_compat_syscalls		436
++#define __NR_compat_syscalls		438
+ #endif
+ 
+ #define __ARCH_WANT_SYS_CLONE
+diff --git a/arch/arm64/include/asm/unistd32.h b/arch/arm64/include/asm/unistd32.h
+index 94ab29cf4f00..57f6f592d460 100644
+--- a/arch/arm64/include/asm/unistd32.h
++++ b/arch/arm64/include/asm/unistd32.h
+@@ -879,6 +879,8 @@ __SYSCALL(__NR_fspick, sys_fspick)
+ __SYSCALL(__NR_pidfd_open, sys_pidfd_open)
+ #define __NR_clone3 435
+ __SYSCALL(__NR_clone3, sys_clone3)
++#define __NR_openat2 437
++__SYSCALL(__NR_openat2, sys_openat2)
+ 
+ /*
+  * Please add new compat syscalls above this comment and update
+diff --git a/arch/ia64/kernel/syscalls/syscall.tbl b/arch/ia64/kernel/syscalls/syscall.tbl
+index 36d5faf4c86c..8d36f2e2dc89 100644
+--- a/arch/ia64/kernel/syscalls/syscall.tbl
++++ b/arch/ia64/kernel/syscalls/syscall.tbl
+@@ -356,3 +356,4 @@
+ 433	common	fspick				sys_fspick
+ 434	common	pidfd_open			sys_pidfd_open
+ # 435 reserved for clone3
++437	common	openat2				sys_openat2
+diff --git a/arch/m68k/kernel/syscalls/syscall.tbl b/arch/m68k/kernel/syscalls/syscall.tbl
+index a88a285a0e5f..2559925f1924 100644
+--- a/arch/m68k/kernel/syscalls/syscall.tbl
++++ b/arch/m68k/kernel/syscalls/syscall.tbl
+@@ -435,3 +435,4 @@
+ 433	common	fspick				sys_fspick
+ 434	common	pidfd_open			sys_pidfd_open
+ # 435 reserved for clone3
++437	common	openat2				sys_openat2
+diff --git a/arch/microblaze/kernel/syscalls/syscall.tbl b/arch/microblaze/kernel/syscalls/syscall.tbl
+index 09b0cd7dab0a..c04385e60833 100644
+--- a/arch/microblaze/kernel/syscalls/syscall.tbl
++++ b/arch/microblaze/kernel/syscalls/syscall.tbl
+@@ -441,3 +441,4 @@
+ 433	common	fspick				sys_fspick
+ 434	common	pidfd_open			sys_pidfd_open
+ 435	common	clone3				sys_clone3
++437	common	openat2				sys_openat2
+diff --git a/arch/mips/kernel/syscalls/syscall_n32.tbl b/arch/mips/kernel/syscalls/syscall_n32.tbl
+index c9c879ec9b6d..ba06cae655c6 100644
+--- a/arch/mips/kernel/syscalls/syscall_n32.tbl
++++ b/arch/mips/kernel/syscalls/syscall_n32.tbl
+@@ -374,3 +374,4 @@
+ 433	n32	fspick				sys_fspick
+ 434	n32	pidfd_open			sys_pidfd_open
+ # 435 reserved for clone3
++437	n32	openat2				sys_openat2
+diff --git a/arch/mips/kernel/syscalls/syscall_n64.tbl b/arch/mips/kernel/syscalls/syscall_n64.tbl
+index bbce9159caa1..0f3de320ae51 100644
+--- a/arch/mips/kernel/syscalls/syscall_n64.tbl
++++ b/arch/mips/kernel/syscalls/syscall_n64.tbl
+@@ -350,3 +350,4 @@
+ 433	n64	fspick				sys_fspick
+ 434	n64	pidfd_open			sys_pidfd_open
+ # 435 reserved for clone3
++437	n64	openat2				sys_openat2
+diff --git a/arch/mips/kernel/syscalls/syscall_o32.tbl b/arch/mips/kernel/syscalls/syscall_o32.tbl
+index 9653591428ec..f108464d09a3 100644
+--- a/arch/mips/kernel/syscalls/syscall_o32.tbl
++++ b/arch/mips/kernel/syscalls/syscall_o32.tbl
+@@ -423,3 +423,4 @@
+ 433	o32	fspick				sys_fspick
+ 434	o32	pidfd_open			sys_pidfd_open
+ # 435 reserved for clone3
++437	o32	openat2				sys_openat2			sys_openat2
+diff --git a/arch/parisc/kernel/syscalls/syscall.tbl b/arch/parisc/kernel/syscalls/syscall.tbl
+index 670d1371aca1..45ddc4485844 100644
+--- a/arch/parisc/kernel/syscalls/syscall.tbl
++++ b/arch/parisc/kernel/syscalls/syscall.tbl
+@@ -432,3 +432,4 @@
+ 433	common	fspick				sys_fspick
+ 434	common	pidfd_open			sys_pidfd_open
+ 435	common	clone3				sys_clone3_wrapper
++437	common	openat2				sys_openat2
+diff --git a/arch/powerpc/kernel/syscalls/syscall.tbl b/arch/powerpc/kernel/syscalls/syscall.tbl
+index 3331749aab20..a89952a4bc7f 100644
+--- a/arch/powerpc/kernel/syscalls/syscall.tbl
++++ b/arch/powerpc/kernel/syscalls/syscall.tbl
+@@ -517,3 +517,4 @@
+ 433	common	fspick				sys_fspick
+ 434	common	pidfd_open			sys_pidfd_open
+ # 435 reserved for clone3
++437	common	openat2				sys_openat2
+diff --git a/arch/s390/kernel/syscalls/syscall.tbl b/arch/s390/kernel/syscalls/syscall.tbl
+index a90d3e945445..23a50a776a91 100644
+--- a/arch/s390/kernel/syscalls/syscall.tbl
++++ b/arch/s390/kernel/syscalls/syscall.tbl
+@@ -438,3 +438,4 @@
+ 433  common	fspick			sys_fspick			sys_fspick
+ 434  common	pidfd_open		sys_pidfd_open			sys_pidfd_open
+ # 435 reserved for clone3
++437  common	openat2			sys_openat2			sys_openat2
+diff --git a/arch/sh/kernel/syscalls/syscall.tbl b/arch/sh/kernel/syscalls/syscall.tbl
+index b5ed26c4c005..a7185cc18626 100644
+--- a/arch/sh/kernel/syscalls/syscall.tbl
++++ b/arch/sh/kernel/syscalls/syscall.tbl
+@@ -438,3 +438,4 @@
+ 433	common	fspick				sys_fspick
+ 434	common	pidfd_open			sys_pidfd_open
+ # 435 reserved for clone3
++437	common	openat2				sys_openat2
+diff --git a/arch/sparc/kernel/syscalls/syscall.tbl b/arch/sparc/kernel/syscalls/syscall.tbl
+index 8c8cc7537fb2..b11c19552022 100644
+--- a/arch/sparc/kernel/syscalls/syscall.tbl
++++ b/arch/sparc/kernel/syscalls/syscall.tbl
+@@ -481,3 +481,4 @@
+ 433	common	fspick				sys_fspick
+ 434	common	pidfd_open			sys_pidfd_open
+ # 435 reserved for clone3
++437	common	openat2			sys_openat2
+diff --git a/arch/x86/entry/syscalls/syscall_32.tbl b/arch/x86/entry/syscalls/syscall_32.tbl
+index c00019abd076..dfa1dc5c8587 100644
+--- a/arch/x86/entry/syscalls/syscall_32.tbl
++++ b/arch/x86/entry/syscalls/syscall_32.tbl
+@@ -440,3 +440,4 @@
+ 433	i386	fspick			sys_fspick			__ia32_sys_fspick
+ 434	i386	pidfd_open		sys_pidfd_open			__ia32_sys_pidfd_open
+ 435	i386	clone3			sys_clone3			__ia32_sys_clone3
++437	i386	openat2			sys_openat2			__ia32_sys_openat2
+diff --git a/arch/x86/entry/syscalls/syscall_64.tbl b/arch/x86/entry/syscalls/syscall_64.tbl
+index c29976eca4a8..9035647ef236 100644
+--- a/arch/x86/entry/syscalls/syscall_64.tbl
++++ b/arch/x86/entry/syscalls/syscall_64.tbl
+@@ -357,6 +357,7 @@
+ 433	common	fspick			__x64_sys_fspick
+ 434	common	pidfd_open		__x64_sys_pidfd_open
+ 435	common	clone3			__x64_sys_clone3/ptregs
++437	common	openat2			__x64_sys_openat2
+ 
+ #
+ # x32-specific system call numbers start at 512 to avoid cache impact
+diff --git a/arch/xtensa/kernel/syscalls/syscall.tbl b/arch/xtensa/kernel/syscalls/syscall.tbl
+index 25f4de729a6d..f0a68013c038 100644
+--- a/arch/xtensa/kernel/syscalls/syscall.tbl
++++ b/arch/xtensa/kernel/syscalls/syscall.tbl
+@@ -406,3 +406,4 @@
+ 433	common	fspick				sys_fspick
+ 434	common	pidfd_open			sys_pidfd_open
+ 435	common	clone3				sys_clone3
++437	common	openat2				sys_openat2
+diff --git a/fs/open.c b/fs/open.c
+index bdca45528524..062761136f21 100644
+--- a/fs/open.c
++++ b/fs/open.c
+@@ -928,19 +928,29 @@ struct file *open_with_fake_path(const struct path *path, int flags,
+ }
+ EXPORT_SYMBOL(open_with_fake_path);
+ 
+-static inline int build_open_flags(int flags, umode_t mode, struct open_flags *op)
++static inline int build_open_flags(const struct open_how *how,
++				   struct open_flags *op)
+ {
++	int flags = how->flags;
+ 	int lookup_flags = 0;
++	int opath_mask = 0;
+ 	int acc_mode = ACC_MODE(flags);
+ 
+ 	/*
+-	 * Clear out all open flags we don't know about so that we don't report
+-	 * them in fcntl(F_GETFD) or similar interfaces.
++	 * Older syscalls still clear these bits before calling
++	 * build_open_flags(), but openat2(2) checks all its arguments.
+ 	 */
+-	flags &= VALID_OPEN_FLAGS;
++	if (flags & ~VALID_OPEN_FLAGS)
++		return -EINVAL;
++	if (how->resolve & ~VALID_RESOLVE_FLAGS)
++		return -EINVAL;
++	if (!(how->flags & (O_PATH | O_CREAT | __O_TMPFILE)) && how->mode != 0)
++		return -EINVAL;
++	if (memchr_inv(how->reserved, 0, sizeof(how->reserved)))
++		return -EINVAL;
+ 
+ 	if (flags & (O_CREAT | __O_TMPFILE))
+-		op->mode = (mode & S_IALLUGO) | S_IFREG;
++		op->mode = (how->mode & S_IALLUGO) | S_IFREG;
+ 	else
+ 		op->mode = 0;
+ 
+@@ -968,6 +978,14 @@ static inline int build_open_flags(int flags, umode_t mode, struct open_flags *o
+ 		 */
+ 		flags &= O_DIRECTORY | O_NOFOLLOW | O_PATH;
+ 		acc_mode = 0;
++
++		/* Allow userspace to restrict the re-opening of O_PATH fds. */
++		if (how->upgrade_mask & ~VALID_UPGRADE_FLAGS)
++			return -EINVAL;
++		if (!(how->upgrade_mask & UPGRADE_NOREAD))
++			opath_mask |= FMODE_PATH_READ;
++		if (!(how->upgrade_mask & UPGRADE_NOWRITE))
++			opath_mask |= FMODE_PATH_WRITE;
+ 	}
+ 
+ 	op->open_flag = flags;
+@@ -983,8 +1001,7 @@ static inline int build_open_flags(int flags, umode_t mode, struct open_flags *o
+ 
+ 	op->acc_mode = acc_mode;
+ 	op->intent = flags & O_PATH ? 0 : LOOKUP_OPEN;
+-	/* For O_PATH backwards-compatibility we default to an all-set mask. */
+-	op->opath_mask = FMODE_PATH_READ | FMODE_PATH_WRITE;
++	op->opath_mask = opath_mask;
+ 
+ 	if (flags & O_CREAT) {
+ 		op->intent |= LOOKUP_CREATE;
+@@ -998,6 +1015,18 @@ static inline int build_open_flags(int flags, umode_t mode, struct open_flags *o
+ 		lookup_flags |= LOOKUP_FOLLOW;
+ 	if (flags & O_EMPTYPATH)
+ 		lookup_flags |= LOOKUP_EMPTY;
++
++	if (how->resolve & RESOLVE_NO_XDEV)
++		lookup_flags |= LOOKUP_NO_XDEV;
++	if (how->resolve & RESOLVE_NO_MAGICLINKS)
++		lookup_flags |= LOOKUP_NO_MAGICLINKS;
++	if (how->resolve & RESOLVE_NO_SYMLINKS)
++		lookup_flags |= LOOKUP_NO_SYMLINKS;
++	if (how->resolve & RESOLVE_BENEATH)
++		lookup_flags |= LOOKUP_BENEATH;
++	if (how->resolve & RESOLVE_IN_ROOT)
++		lookup_flags |= LOOKUP_IN_ROOT;
++
+ 	op->lookup_flags = lookup_flags;
+ 	return 0;
+ }
+@@ -1016,8 +1045,14 @@ static inline int build_open_flags(int flags, umode_t mode, struct open_flags *o
+ struct file *file_open_name(struct filename *name, int flags, umode_t mode)
+ {
+ 	struct open_flags op;
+-	int err = build_open_flags(flags, mode, &op);
+-	return err ? ERR_PTR(err) : do_filp_open(AT_FDCWD, name, &op);
++	struct open_how how = {
++		.flags = flags & VALID_OPEN_FLAGS,
++		.mode = OPENHOW_MODE(flags, mode),
++	};
++	int err = build_open_flags(&how, &op);
++	if (err)
++		return ERR_PTR(err);
++	return do_filp_open(AT_FDCWD, name, &op);
  }
  
  /**
-- * eeh_ops_unregister - Unreigster platform dependent EEH operations
-+ * eeh_ops_unregister - Unregister platform dependent EEH operations
-  * @name: name of EEH platform operations
-  *
-  * Unregister the platform dependent EEH operation callback
-diff --git a/arch/powerpc/platforms/cell/spufs/switch.c b/arch/powerpc/platforms/cell/spufs/switch.c
-index 5c3f5d088c3b..9548a086937b 100644
---- a/arch/powerpc/platforms/cell/spufs/switch.c
-+++ b/arch/powerpc/platforms/cell/spufs/switch.c
-@@ -574,7 +574,7 @@ static inline void save_mfc_rag(struct spu_state *csa, struct spu *spu)
+@@ -1048,17 +1083,22 @@ struct file *file_open_root(struct dentry *dentry, struct vfsmount *mnt,
+ 			    const char *filename, int flags, umode_t mode)
  {
- 	/* Save, Step 38:
- 	 *     Save RA_GROUP_ID register and the
--	 *     RA_ENABLE reigster in the CSA.
-+	 *     RA_ENABLE register in the CSA.
- 	 */
- 	csa->priv1.resource_allocation_groupID_RW =
- 		spu_resource_allocation_groupID_get(spu);
-@@ -1227,7 +1227,7 @@ static inline void restore_mfc_rag(struct spu_state *csa, struct spu *spu)
- {
- 	/* Restore, Step 29:
- 	 *     Restore RA_GROUP_ID register and the
--	 *     RA_ENABLE reigster from the CSA.
-+	 *     RA_ENABLE register from the CSA.
- 	 */
- 	spu_resource_allocation_groupID_set(spu,
- 			csa->priv1.resource_allocation_groupID_RW);
-diff --git a/drivers/extcon/extcon-rt8973a.c b/drivers/extcon/extcon-rt8973a.c
-index 40c07f4d656e..e75c03792398 100644
---- a/drivers/extcon/extcon-rt8973a.c
-+++ b/drivers/extcon/extcon-rt8973a.c
-@@ -270,7 +270,7 @@ static int rt8973a_muic_get_cable_type(struct rt8973a_muic_info *info)
- 	}
- 	cable_type = adc & RT8973A_REG_ADC_MASK;
+ 	struct open_flags op;
+-	int err = build_open_flags(flags, mode, &op);
++	struct open_how how = {
++		.flags = flags & VALID_OPEN_FLAGS,
++		.mode = OPENHOW_MODE(flags, mode),
++	};
++	int err = build_open_flags(&how, &op);
+ 	if (err)
+ 		return ERR_PTR(err);
+ 	return do_file_open_root(dentry, mnt, filename, &op);
+ }
+ EXPORT_SYMBOL(file_open_root);
  
--	/* Read Device 1 reigster to identify correct cable type */
-+	/* Read Device 1 register to identify correct cable type */
- 	ret = regmap_read(info->regmap, RT8973A_REG_DEV1, &dev1);
- 	if (ret) {
- 		dev_err(info->dev, "failed to read DEV1 register\n");
-diff --git a/drivers/gpu/drm/arm/malidp_regs.h b/drivers/gpu/drm/arm/malidp_regs.h
-index 993031542fa1..0d81b34a4212 100644
---- a/drivers/gpu/drm/arm/malidp_regs.h
-+++ b/drivers/gpu/drm/arm/malidp_regs.h
-@@ -145,7 +145,7 @@
- #define     MALIDP_SE_COEFFTAB_DATA_MASK	0x3fff
- #define     MALIDP_SE_SET_COEFFTAB_DATA(x) \
- 		((x) & MALIDP_SE_COEFFTAB_DATA_MASK)
--/* Enhance coeffents reigster offset */
-+/* Enhance coeffents register offset */
- #define MALIDP_SE_IMAGE_ENH			0x3C
- /* ENH_LIMITS offset 0x0 */
- #define     MALIDP_SE_ENH_LOW_LEVEL		24
-diff --git a/drivers/net/wireless/realtek/rtlwifi/rtl8192se/fw.h b/drivers/net/wireless/realtek/rtlwifi/rtl8192se/fw.h
-index 99c6f7eefd85..d03c8f12a15c 100644
---- a/drivers/net/wireless/realtek/rtlwifi/rtl8192se/fw.h
-+++ b/drivers/net/wireless/realtek/rtlwifi/rtl8192se/fw.h
-@@ -58,7 +58,7 @@ struct fw_priv {
- 	/* 0x81: PCI-AP, 01:PCIe, 02: 92S-U,
- 	 * 0x82: USB-AP, 0x12: 72S-U, 03:SDIO */
- 	u8 hci_sel;
--	/* the same value as reigster value  */
-+	/* the same value as register value  */
- 	u8 chip_version;
- 	/* customer  ID low byte */
- 	u8 customer_id_0;
-diff --git a/drivers/scsi/lpfc/lpfc_hbadisc.c b/drivers/scsi/lpfc/lpfc_hbadisc.c
-index 28ecaa7fc715..9e116bd79836 100644
---- a/drivers/scsi/lpfc/lpfc_hbadisc.c
-+++ b/drivers/scsi/lpfc/lpfc_hbadisc.c
-@@ -6551,7 +6551,7 @@ lpfc_sli4_unregister_fcf(struct lpfc_hba *phba)
-  * lpfc_unregister_fcf_rescan - Unregister currently registered fcf and rescan
-  * @phba: Pointer to hba context object.
-  *
-- * This function unregisters the currently reigstered FCF. This function
-+ * This function unregisters the currently registered FCF. This function
-  * also tries to find another FCF for discovery by rescan the HBA FCF table.
+-long do_sys_open(int dfd, const char __user *filename, int flags, umode_t mode)
++long do_sys_open(int dfd, const char __user *filename,
++		 struct open_how *how)
+ {
+ 	struct open_flags op;
+-	int fd = build_open_flags(flags, mode, &op);
++	int fd = build_open_flags(how, &op);
+ 	int empty = 0;
+ 	struct filename *tmp;
+ 
+@@ -1071,7 +1111,7 @@ long do_sys_open(int dfd, const char __user *filename, int flags, umode_t mode)
+ 	if (!empty)
+ 		op.open_flag &= ~O_EMPTYPATH;
+ 
+-	fd = get_unused_fd_flags(flags);
++	fd = get_unused_fd_flags(how->flags);
+ 	if (fd >= 0) {
+ 		struct file *f = do_filp_open(dfd, tmp, &op);
+ 		if (IS_ERR(f)) {
+@@ -1088,19 +1128,35 @@ long do_sys_open(int dfd, const char __user *filename, int flags, umode_t mode)
+ 
+ SYSCALL_DEFINE3(open, const char __user *, filename, int, flags, umode_t, mode)
+ {
+-	if (force_o_largefile())
+-		flags |= O_LARGEFILE;
+-
+-	return do_sys_open(AT_FDCWD, filename, flags, mode);
++	return ksys_open(filename, flags, mode);
+ }
+ 
+ SYSCALL_DEFINE4(openat, int, dfd, const char __user *, filename, int, flags,
+ 		umode_t, mode)
+ {
++	struct open_how how = {
++		.flags = flags & VALID_OPEN_FLAGS,
++		.mode = OPENHOW_MODE(flags, mode),
++	};
++
++	if (force_o_largefile())
++		how.flags |= O_LARGEFILE;
++
++	return do_sys_open(dfd, filename, &how);
++}
++
++SYSCALL_DEFINE3(openat2, int, dfd, const char __user *, filename,
++		const struct open_how __user *, how)
++{
++	struct open_how tmp;
++
++	if (copy_from_user(&tmp, how, sizeof(tmp)))
++		return -EFAULT;
++
+ 	if (force_o_largefile())
+-		flags |= O_LARGEFILE;
++		tmp.flags |= O_LARGEFILE;
+ 
+-	return do_sys_open(dfd, filename, flags, mode);
++	return do_sys_open(dfd, filename, &tmp);
+ }
+ 
+ #ifdef CONFIG_COMPAT
+@@ -1110,7 +1166,11 @@ SYSCALL_DEFINE4(openat, int, dfd, const char __user *, filename, int, flags,
   */
- void
-@@ -6609,7 +6609,7 @@ lpfc_unregister_fcf_rescan(struct lpfc_hba *phba)
-  * lpfc_unregister_fcf - Unregister the currently registered fcf record
-  * @phba: Pointer to hba context object.
-  *
-- * This function just unregisters the currently reigstered FCF. It does not
-+ * This function just unregisters the currently registered FCF. It does not
-  * try to find another FCF for discovery.
-  */
- void
-diff --git a/fs/userfaultfd.c b/fs/userfaultfd.c
-index ccbdbd62f0d8..612dc1240f90 100644
---- a/fs/userfaultfd.c
-+++ b/fs/userfaultfd.c
-@@ -267,7 +267,7 @@ static inline bool userfaultfd_huge_must_wait(struct userfaultfd_ctx *ctx,
- #endif /* CONFIG_HUGETLB_PAGE */
+ COMPAT_SYSCALL_DEFINE3(open, const char __user *, filename, int, flags, umode_t, mode)
+ {
+-	return do_sys_open(AT_FDCWD, filename, flags, mode);
++	struct open_how how = {
++		.flags = flags & VALID_OPEN_FLAGS,
++		.mode = OPENHOW_MODE(flags, mode),
++	};
++	return do_sys_open(AT_FDCWD, filename, &how);
+ }
  
  /*
-- * Verify the pagetables are still not ok after having reigstered into
-+ * Verify the pagetables are still not ok after having registered into
-  * the fault_pending_wqh to avoid userland having to UFFDIO_WAKE any
-  * userfault that has already been resolved, if userfaultfd_read and
-  * UFFDIO_COPY|ZEROPAGE are being run simultaneously on two different
+@@ -1119,7 +1179,11 @@ COMPAT_SYSCALL_DEFINE3(open, const char __user *, filename, int, flags, umode_t,
+  */
+ COMPAT_SYSCALL_DEFINE4(openat, int, dfd, const char __user *, filename, int, flags, umode_t, mode)
+ {
+-	return do_sys_open(dfd, filename, flags, mode);
++	struct open_how how = {
++		.flags = flags & VALID_OPEN_FLAGS,
++		.mode = OPENHOW_MODE(flags, mode),
++	};
++	return do_sys_open(dfd, filename, &how);
+ }
+ #endif
+ 
+diff --git a/include/linux/fcntl.h b/include/linux/fcntl.h
+index 2868ae6c8fc1..f7f378e1f43c 100644
+--- a/include/linux/fcntl.h
++++ b/include/linux/fcntl.h
+@@ -4,13 +4,26 @@
+ 
+ #include <uapi/linux/fcntl.h>
+ 
+-/* list of all valid flags for the open/openat flags argument: */
++/* Should open_how.mode be set for older syscalls wrappers? */
++#define OPENHOW_MODE(flags, mode) \
++	(((flags) & (O_CREAT | __O_TMPFILE)) ? (mode) : 0)
++
++/* List of all valid flags for the open/openat flags argument: */
+ #define VALID_OPEN_FLAGS \
+ 	(O_RDONLY | O_WRONLY | O_RDWR | O_CREAT | O_EXCL | O_NOCTTY | O_TRUNC | \
+ 	 O_APPEND | O_NDELAY | O_NONBLOCK | O_NDELAY | __O_SYNC | O_DSYNC | \
+ 	 FASYNC	| O_DIRECT | O_LARGEFILE | O_DIRECTORY | O_NOFOLLOW | \
+ 	 O_NOATIME | O_CLOEXEC | O_PATH | __O_TMPFILE | O_EMPTYPATH)
+ 
++/* List of all valid flags for the how->upgrade_mask argument: */
++#define VALID_UPGRADE_FLAGS \
++	(UPGRADE_NOWRITE | UPGRADE_NOREAD)
++
++/* List of all valid flags for the how->resolve argument: */
++#define VALID_RESOLVE_FLAGS \
++	(RESOLVE_NO_XDEV | RESOLVE_NO_MAGICLINKS | RESOLVE_NO_SYMLINKS | \
++	 RESOLVE_BENEATH | RESOLVE_IN_ROOT)
++
+ #ifndef force_o_largefile
+ #define force_o_largefile() (!IS_ENABLED(CONFIG_ARCH_32BIT_OFF_T))
+ #endif
+diff --git a/include/linux/fs.h b/include/linux/fs.h
+index dc0f5660af43..88f51af9ecb6 100644
+--- a/include/linux/fs.h
++++ b/include/linux/fs.h
+@@ -2498,8 +2498,8 @@ extern int do_truncate(struct dentry *, loff_t start, unsigned int time_attrs,
+ 		       struct file *filp);
+ extern int vfs_fallocate(struct file *file, int mode, loff_t offset,
+ 			loff_t len);
+-extern long do_sys_open(int dfd, const char __user *filename, int flags,
+-			umode_t mode);
++extern long do_sys_open(int dfd, const char __user *filename,
++			struct open_how *how);
+ extern struct file *file_open_name(struct filename *, int, umode_t);
+ extern struct file *filp_open(const char *, int, umode_t);
+ extern struct file *file_open_root(struct dentry *, struct vfsmount *,
+diff --git a/include/linux/syscalls.h b/include/linux/syscalls.h
+index 88145da7d140..a4f2f135001e 100644
+--- a/include/linux/syscalls.h
++++ b/include/linux/syscalls.h
+@@ -69,6 +69,7 @@ struct rseq;
+ union bpf_attr;
+ struct io_uring_params;
+ struct clone_args;
++struct open_how;
+ 
+ #include <linux/types.h>
+ #include <linux/aio_abi.h>
+@@ -439,6 +440,8 @@ asmlinkage long sys_fchownat(int dfd, const char __user *filename, uid_t user,
+ asmlinkage long sys_fchown(unsigned int fd, uid_t user, gid_t group);
+ asmlinkage long sys_openat(int dfd, const char __user *filename, int flags,
+ 			   umode_t mode);
++asmlinkage long sys_openat2(int dfd, const char __user *filename,
++			    const struct open_how *how);
+ asmlinkage long sys_close(unsigned int fd);
+ asmlinkage long sys_vhangup(void);
+ 
+@@ -1374,15 +1377,21 @@ static inline int ksys_close(unsigned int fd)
+ 	return __close_fd(current->files, fd);
+ }
+ 
+-extern long do_sys_open(int dfd, const char __user *filename, int flags,
+-			umode_t mode);
++extern long do_sys_open(int dfd, const char __user *filename,
++			struct open_how *how);
+ 
+ static inline long ksys_open(const char __user *filename, int flags,
+ 			     umode_t mode)
+ {
++	struct open_how how = {
++		.flags = flags & VALID_OPEN_FLAGS,
++		.mode = OPENHOW_MODE(flags, mode),
++	};
++
+ 	if (force_o_largefile())
+-		flags |= O_LARGEFILE;
+-	return do_sys_open(AT_FDCWD, filename, flags, mode);
++		how.flags |= O_LARGEFILE;
++
++	return do_sys_open(AT_FDCWD, filename, &how);
+ }
+ 
+ extern long do_sys_truncate(const char __user *pathname, loff_t length);
+diff --git a/include/uapi/asm-generic/unistd.h b/include/uapi/asm-generic/unistd.h
+index 1be0e798e362..b28c11b338ee 100644
+--- a/include/uapi/asm-generic/unistd.h
++++ b/include/uapi/asm-generic/unistd.h
+@@ -851,8 +851,11 @@ __SYSCALL(__NR_pidfd_open, sys_pidfd_open)
+ __SYSCALL(__NR_clone3, sys_clone3)
+ #endif
+ 
++#define __NR_openat2 437
++__SYSCALL(__NR_openat2, sys_openat2)
++
+ #undef __NR_syscalls
+-#define __NR_syscalls 436
++#define __NR_syscalls 438
+ 
+ /*
+  * 32 bit systems traditionally used different
+diff --git a/include/uapi/linux/fcntl.h b/include/uapi/linux/fcntl.h
+index 1d338357df8a..ebfc97b3d8aa 100644
+--- a/include/uapi/linux/fcntl.h
++++ b/include/uapi/linux/fcntl.h
+@@ -93,5 +93,47 @@
+ 
+ #define AT_RECURSIVE		0x8000	/* Apply to the entire subtree */
+ 
++/**
++ * Arguments for how openat2(2) should open the target path. If @resolve is
++ * zero, then openat2(2) operates identically to openat(2).
++ *
++ * However, unlike openat(2), unknown bits in @flags result in -EINVAL rather
++ * than being silently ignored. In addition, @mode (or @upgrade_mask) must be
++ * zero unless one of {O_CREAT, O_TMPFILE, O_PATH} are set.
++ *
++ * @flags: O_* flags.
++ * @mode: O_CREAT/O_TMPFILE file mode.
++ * @upgrade_mask: UPGRADE_* flags (to restrict O_PATH re-opening).
++ * @resolve: RESOLVE_* flags.
++ * @reserved: reserved for future extensions, must be zeroed.
++ */
++struct open_how {
++	__u32 flags;
++	union {
++		__u16 mode;
++		__u16 upgrade_mask;
++	};
++	__u16 resolve;
++	__u64 reserved[7]; /* must be zeroed */
++};
++
++/* how->resolve flags for openat2(2). */
++#define RESOLVE_NO_XDEV		0x01 /* Block mount-point crossings
++					(includes bind-mounts). */
++#define RESOLVE_NO_MAGICLINKS	0x02 /* Block traversal through procfs-style
++					"magic-links". */
++#define RESOLVE_NO_SYMLINKS	0x04 /* Block traversal through all symlinks
++					(implies OEXT_NO_MAGICLINKS) */
++#define RESOLVE_BENEATH		0x08 /* Block "lexical" trickery like
++					"..", symlinks, and absolute
++					paths which escape the dirfd. */
++#define RESOLVE_IN_ROOT		0x10 /* Make all jumps to "/" and ".."
++					be scoped inside the dirfd
++					(similar to chroot(2)). */
++
++/* how->upgrade flags for openat2(2). */
++/* First bit is reserved for a future UPGRADE_NOEXEC flag. */
++#define UPGRADE_NOREAD		0x02 /* Block re-opening with MAY_READ. */
++#define UPGRADE_NOWRITE		0x04 /* Block re-opening with MAY_WRITE. */
+ 
+ #endif /* _UAPI_LINUX_FCNTL_H */
 -- 
-2.17.1
+2.22.0
 
