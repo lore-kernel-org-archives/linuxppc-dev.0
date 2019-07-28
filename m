@@ -2,65 +2,67 @@ Return-Path: <SRS0=fO6x=VZ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0BEB9C433FF
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 28 Jul 2019 21:37:59 +0000 (UTC)
-Received: from lists.ozlabs.org (unknown [203.11.71.2])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 39030C433FF
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 28 Jul 2019 21:39:24 +0000 (UTC)
+Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3AF602070B
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 28 Jul 2019 21:37:58 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3AF602070B
+	by mail.kernel.org (Postfix) with ESMTPS id BBFD52070B
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 28 Jul 2019 21:39:23 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BBFD52070B
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linux.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45xblR2xS5zDqTP
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Jul 2019 07:37:55 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45xbn60ds6zDqT1
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Jul 2019 07:39:22 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=209.85.208.195; helo=mail-lj1-f195.google.com;
+ (client-ip=209.85.208.193; helo=mail-lj1-f193.google.com;
  envelope-from=yefremov.denis@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=linux.com
-Received: from mail-lj1-f195.google.com (mail-lj1-f195.google.com
- [209.85.208.195])
+Received: from mail-lj1-f193.google.com (mail-lj1-f193.google.com
+ [209.85.208.193])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45xZ4t3FPzzDqQf
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Jul 2019 06:22:49 +1000 (AEST)
-Received: by mail-lj1-f195.google.com with SMTP id p17so56489388ljg.1
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 28 Jul 2019 13:22:48 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45xZ5J4zJ5zDqQf
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Jul 2019 06:23:16 +1000 (AEST)
+Received: by mail-lj1-f193.google.com with SMTP id m23so56399636lje.12
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 28 Jul 2019 13:23:16 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
- h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
- :content-transfer-encoding;
- bh=H30JE1TBEsAuw94izU6UpoMxwvUnP+RXDRNZnh1O8pc=;
- b=uPjtM/lpXsew345llBPaeG7P1DUbKm9J73z8QE/pLIWfhnYqZ9QlKPzAkYuwJHk7WD
- CrRxo5J2gKJWxe1TYnbF4FAVJJ4f85M2OAGaMZ69JRGC52VSZd4DHNNvAejSP6tMqxuN
- 7Oq+aXQDI0cqDId37cmnzp4DgQGApHuBCUmOqH+YobgHFiii1y3TnjINAVJ0+PszOJic
- +Ce7NNvJW+lAevEAy8Yj8JhBmfhAuG7p6/7w0nTr4XKjloejDhF7oaqT2+9qEv7uiPdD
- /AFsLv5vmcZCAP+R+b6vGph80lKnCIv76pdnoYA3vDrX8lwhIeN7MoZA/BKGnLefug4C
- oZ8w==
-X-Gm-Message-State: APjAAAVxiXqBqMepHTXli4x0dDm+IswrNilGnwspQ+4ca1UWQhLy2bdt
- CQH3XYXU2ab5MB//ml6uz4o=
-X-Google-Smtp-Source: APXvYqygX2Y5dS/gnwNqOZKPSCByVOdOdiau/6PoALAhMf0ml07RPwI9uM2EKDeRpNnJ5yE9cYpa9g==
-X-Received: by 2002:a2e:814e:: with SMTP id t14mr20112908ljg.167.1564345365258; 
- Sun, 28 Jul 2019 13:22:45 -0700 (PDT)
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+ :references:mime-version:content-transfer-encoding;
+ bh=svIZnH3LFn3SCsAf3hZ7NcuCk5uSXQPw/o877w6XO80=;
+ b=apqzKxWadJ+bSWR1MqO6EEgMGbP0uy2TpFcLs00z1y01uYXVQxnE2mNY/5uteUqM7u
+ gyV2zfWuUQxjrQentmP1HoAH53noBxIa4R7mhrRFvKsfz1zE/V5vyS4G1+uoGxO4quLq
+ yTN/HMdDyOEpX8GRKZkkhmr1/GB8sFasbV/Py2JlfXtzL4W17IXqcRFnQAwrS2QMwZ1K
+ 96DNXCXbrAvmtDmjP4fmai9jWZdrAcYeBCu2zHAhQ3JmR1hCuTgGJMolDt+zF7Bq3nDb
+ 45A6aKOAsjqmft4gy5UpGYgV59m/ooynGAGRdmYDarxGKH0YtXFdekljK099cEbdT0w2
+ LNDA==
+X-Gm-Message-State: APjAAAXqDn7uDW0oHcD2VzWthdGfvJBRr5Z4GHU/QNQ+J7lWNoDNy9PQ
+ 6lGe90nkn5dFCDXAPf2ebog=
+X-Google-Smtp-Source: APXvYqwiuHhdBpv2paJX0RbGJe6B84YT/HQ+J9VmSQk0WANqERsY6PXq3IkxDXDz0lW7cj/3nr+4EA==
+X-Received: by 2002:a2e:2993:: with SMTP id p19mr54104888ljp.202.1564345393166; 
+ Sun, 28 Jul 2019 13:23:13 -0700 (PDT)
 Received: from localhost.localdomain (broadband-188-32-48-208.ip.moscow.rt.ru.
  [188.32.48.208])
- by smtp.googlemail.com with ESMTPSA id z17sm12395917ljc.37.2019.07.28.13.22.44
+ by smtp.googlemail.com with ESMTPSA id z17sm12395917ljc.37.2019.07.28.13.23.12
  (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
- Sun, 28 Jul 2019 13:22:44 -0700 (PDT)
+ Sun, 28 Jul 2019 13:23:12 -0700 (PDT)
 From: Denis Efremov <efremov@linux.com>
 To: Bjorn Helgaas <bhelgaas@google.com>
-Subject: [PATCH 0/5] PCI: Convert pci_resource_to_user() to a weak function
-Date: Sun, 28 Jul 2019 23:22:08 +0300
-Message-Id: <20190728202213.15550-1-efremov@linux.com>
+Subject: [PATCH 1/5] PCI: Convert pci_resource_to_user to a weak function
+Date: Sun, 28 Jul 2019 23:22:09 +0300
+Message-Id: <20190728202213.15550-2-efremov@linux.com>
 X-Mailer: git-send-email 2.21.0
+In-Reply-To: <20190728202213.15550-1-efremov@linux.com>
+References: <20190728202213.15550-1-efremov@linux.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-Mailman-Approved-At: Mon, 29 Jul 2019 07:36:11 +1000
@@ -85,26 +87,69 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Architectures currently define HAVE_ARCH_PCI_RESOURCE_TO_USER if they want
-to provide their own pci_resource_to_user() implementation. This could be
-simplified if we make the generic version a weak function. Thus,
-architecture specific versions will automatically override the generic one.
+The patch turns pci_resource_to_user() to a weak function. Thus,
+architecture-specific versions will automatically override the generic
+one. This allows to remove the HAVE_ARCH_PCI_RESOURCE_TO_USER macro and
+avoid the conditional compilation for this single function.
 
-Denis Efremov (5):
-  PCI: Convert pci_resource_to_user to a weak function
-  microblaze/PCI: Remove HAVE_ARCH_PCI_RESOURCE_TO_USER
-  mips/PCI: Remove HAVE_ARCH_PCI_RESOURCE_TO_USER
-  powerpc/PCI: Remove HAVE_ARCH_PCI_RESOURCE_TO_USER
-  spark/PCI: Remove HAVE_ARCH_PCI_RESOURCE_TO_USER
+Signed-off-by: Denis Efremov <efremov@linux.com>
+---
+ drivers/pci/pci.c   |  8 ++++++++
+ include/linux/pci.h | 18 +++---------------
+ 2 files changed, 11 insertions(+), 15 deletions(-)
 
- arch/microblaze/include/asm/pci.h |  2 --
- arch/mips/include/asm/pci.h       |  1 -
- arch/powerpc/include/asm/pci.h    |  2 --
- arch/sparc/include/asm/pci.h      |  2 --
- drivers/pci/pci.c                 |  8 ++++++++
- include/linux/pci.h               | 18 +++---------------
- 6 files changed, 11 insertions(+), 22 deletions(-)
-
+diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
+index 29ed5ec1ac27..f9dc7563a8b9 100644
+--- a/drivers/pci/pci.c
++++ b/drivers/pci/pci.c
+@@ -5932,6 +5932,14 @@ resource_size_t __weak pcibios_default_alignment(void)
+ 	return 0;
+ }
+ 
++void __weak pci_resource_to_user(const struct pci_dev *dev, int bar,
++		const struct resource *rsrc, resource_size_t *start,
++		resource_size_t *end)
++{
++	*start = rsrc->start;
++	*end = rsrc->end;
++}
++
+ #define RESOURCE_ALIGNMENT_PARAM_SIZE COMMAND_LINE_SIZE
+ static char resource_alignment_param[RESOURCE_ALIGNMENT_PARAM_SIZE] = {0};
+ static DEFINE_SPINLOCK(resource_alignment_lock);
+diff --git a/include/linux/pci.h b/include/linux/pci.h
+index 9e700d9f9f28..1a19d0151b0a 100644
+--- a/include/linux/pci.h
++++ b/include/linux/pci.h
+@@ -1870,25 +1870,13 @@ static inline const char *pci_name(const struct pci_dev *pdev)
+ 	return dev_name(&pdev->dev);
+ }
+ 
+-
+ /*
+  * Some archs don't want to expose struct resource to userland as-is
+  * in sysfs and /proc
+  */
+-#ifdef HAVE_ARCH_PCI_RESOURCE_TO_USER
+-void pci_resource_to_user(const struct pci_dev *dev, int bar,
+-			  const struct resource *rsrc,
+-			  resource_size_t *start, resource_size_t *end);
+-#else
+-static inline void pci_resource_to_user(const struct pci_dev *dev, int bar,
+-		const struct resource *rsrc, resource_size_t *start,
+-		resource_size_t *end)
+-{
+-	*start = rsrc->start;
+-	*end = rsrc->end;
+-}
+-#endif /* HAVE_ARCH_PCI_RESOURCE_TO_USER */
+-
++void __weak pci_resource_to_user(const struct pci_dev *dev, int bar,
++				 const struct resource *rsrc,
++				 resource_size_t *start, resource_size_t *end);
+ 
+ /*
+  * The world is not perfect and supplies us with broken PCI devices.
 -- 
 2.21.0
 
