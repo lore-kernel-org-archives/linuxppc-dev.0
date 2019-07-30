@@ -2,84 +2,56 @@ Return-Path: <SRS0=hRxk=V3=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.3 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D0D9BC0650F
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Jul 2019 07:04:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 05EBBC433FF
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Jul 2019 07:28:38 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 13384206E0
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Jul 2019 07:04:44 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="eW4f61P8"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 13384206E0
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
+	by mail.kernel.org (Postfix) with ESMTPS id 2E27F2087F
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Jul 2019 07:28:37 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2E27F2087F
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=huawei.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45ySGy35s7zDqT2
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Jul 2019 17:04:42 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45ySpV654rzDqPR
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Jul 2019 17:28:34 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=c-s.fr
- (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
- envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=huawei.com
+ (client-ip=45.249.212.191; helo=huawei.com; envelope-from=yanaijie@huawei.com;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=c-s.fr
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="eW4f61P8"; 
- dkim-atps=neutral
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ dmarc=none (p=none dis=none) header.from=huawei.com
+Received: from huawei.com (szxga05-in.huawei.com [45.249.212.191])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45ySDn5nfFzDqCh
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Jul 2019 17:02:48 +1000 (AEST)
-Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 45ySDh686Mz9v4h1;
- Tue, 30 Jul 2019 09:02:44 +0200 (CEST)
-Authentication-Results: localhost; dkim=pass
- reason="1024-bit key; insecure key"
- header.d=c-s.fr header.i=@c-s.fr header.b=eW4f61P8; dkim-adsp=pass;
- dkim-atps=neutral
-X-Virus-Scanned: Debian amavisd-new at c-s.fr
-Received: from pegase1.c-s.fr ([192.168.12.234])
- by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id QcEtw8KqWF5p; Tue, 30 Jul 2019 09:02:44 +0200 (CEST)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 45ySDh4cr1z9v4h0;
- Tue, 30 Jul 2019 09:02:44 +0200 (CEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
- t=1564470164; bh=bWFtKsw+3UAAT5I5cI+YLfmPdp4W+J6fqe8KYjCREkI=;
- h=Subject:To:Cc:References:From:Date:In-Reply-To:From;
- b=eW4f61P8Noa8AZB3iSyf7Hb0Bt3dw3pzEADfkhidVc6H8KGeuP+TZhVbMVg06uPDP
- ejZE21GlJgmWv0nG3WGrhV2Cepz+HnJI1ib3XUhUsN4lLM65NybPMbBG54Cu49tcnC
- bTWz3kyR0MSOc2sLN4Pn1VoZZFyKJpl7pQauqBHI=
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 6D3768B7F3;
- Tue, 30 Jul 2019 09:02:45 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id OXFoUiHJ8vv9; Tue, 30 Jul 2019 09:02:45 +0200 (CEST)
-Received: from [172.25.230.101] (po15451.idsi0.si.c-s.fr [172.25.230.101])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 448228B74F;
- Tue, 30 Jul 2019 09:02:45 +0200 (CEST)
-Subject: Re: [PATCH] powerpc: Support CMDLINE_EXTEND
-To: Chris Packham <chris.packham@alliedtelesis.co.nz>,
- benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
-References: <20190724053303.24317-1-chris.packham@alliedtelesis.co.nz>
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Message-ID: <59674457-eda5-fe3b-65e0-29c20102fe4d@c-s.fr>
-Date: Tue, 30 Jul 2019 09:02:45 +0200
-User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:60.0) Gecko/20100101
- Thunderbird/60.8.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45ySl33FjzzDqJ1
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Jul 2019 17:25:33 +1000 (AEST)
+Received: from DGGEMS413-HUB.china.huawei.com (unknown [172.30.72.60])
+ by Forcepoint Email with ESMTP id EA7D461F1782D299E9AC;
+ Tue, 30 Jul 2019 15:25:29 +0800 (CST)
+Received: from huawei.com (10.175.124.28) by DGGEMS413-HUB.china.huawei.com
+ (10.3.19.213) with Microsoft SMTP Server id 14.3.439.0; Tue, 30 Jul 2019
+ 15:25:23 +0800
+From: Jason Yan <yanaijie@huawei.com>
+To: <mpe@ellerman.id.au>, <linuxppc-dev@lists.ozlabs.org>,
+ <diana.craciun@nxp.com>, <christophe.leroy@c-s.fr>,
+ <benh@kernel.crashing.org>, <paulus@samba.org>, <npiggin@gmail.com>,
+ <keescook@chromium.org>, <kernel-hardening@lists.openwall.com>
+Subject: [PATCH v2 01/10] powerpc: unify definition of M_IF_NEEDED
+Date: Tue, 30 Jul 2019 15:42:16 +0800
+Message-ID: <20190730074225.39544-2-yanaijie@huawei.com>
+X-Mailer: git-send-email 2.17.2
+In-Reply-To: <20190730074225.39544-1-yanaijie@huawei.com>
+References: <20190730074225.39544-1-yanaijie@huawei.com>
 MIME-Version: 1.0
-In-Reply-To: <20190724053303.24317-1-chris.packham@alliedtelesis.co.nz>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: fr
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-Originating-IP: [10.175.124.28]
+X-CFilter-Loop: Reflected
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -91,61 +63,111 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: wangkefeng.wang@huawei.com, Jason Yan <yanaijie@huawei.com>,
+ linux-kernel@vger.kernel.org, jingxiangfeng@huawei.com,
+ zhaohongjiang@huawei.com, thunder.leizhen@huawei.com, fanchengyang@huawei.com,
+ yebin10@huawei.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+M_IF_NEEDED is defined too many times. Move it to a common place.
 
+Signed-off-by: Jason Yan <yanaijie@huawei.com>
+Cc: Diana Craciun <diana.craciun@nxp.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Christophe Leroy <christophe.leroy@c-s.fr>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Nicholas Piggin <npiggin@gmail.com>
+Cc: Kees Cook <keescook@chromium.org>
+Reviewed-by: Christophe Leroy <christophe.leroy@c-s.fr>
+---
+ arch/powerpc/include/asm/nohash/mmu-book3e.h  | 10 ++++++++++
+ arch/powerpc/kernel/exceptions-64e.S          | 10 ----------
+ arch/powerpc/kernel/fsl_booke_entry_mapping.S | 10 ----------
+ arch/powerpc/kernel/misc_64.S                 |  5 -----
+ 4 files changed, 10 insertions(+), 25 deletions(-)
 
-Le 24/07/2019 à 07:33, Chris Packham a écrit :
-> Device tree aware platforms can make use of CMDLINE_EXTEND to extend the
-> kernel command line provided by the bootloader. This is particularly
-> useful to set parameters for built-in modules that would otherwise be
-> done at module insertion. Add support for this in the powerpc
-> architecture.
-> 
-> Signed-off-by: Chris Packham <chris.packham@alliedtelesis.co.nz>
-> ---
->   arch/powerpc/Kconfig | 12 ++++++++++++
+diff --git a/arch/powerpc/include/asm/nohash/mmu-book3e.h b/arch/powerpc/include/asm/nohash/mmu-book3e.h
+index 4c9777d256fb..0877362e48fa 100644
+--- a/arch/powerpc/include/asm/nohash/mmu-book3e.h
++++ b/arch/powerpc/include/asm/nohash/mmu-book3e.h
+@@ -221,6 +221,16 @@
+ #define TLBILX_T_CLASS2			6
+ #define TLBILX_T_CLASS3			7
+ 
++/*
++ * The mapping only needs to be cache-coherent on SMP, except on
++ * Freescale e500mc derivatives where it's also needed for coherent DMA.
++ */
++#if defined(CONFIG_SMP) || defined(CONFIG_PPC_E500MC)
++#define M_IF_NEEDED	MAS2_M
++#else
++#define M_IF_NEEDED	0
++#endif
++
+ #ifndef __ASSEMBLY__
+ #include <asm/bug.h>
+ 
+diff --git a/arch/powerpc/kernel/exceptions-64e.S b/arch/powerpc/kernel/exceptions-64e.S
+index 1cfb3da4a84a..fd49ec07ce4a 100644
+--- a/arch/powerpc/kernel/exceptions-64e.S
++++ b/arch/powerpc/kernel/exceptions-64e.S
+@@ -1342,16 +1342,6 @@ skpinv:	addi	r6,r6,1				/* Increment */
+ 	sync
+ 	isync
+ 
+-/*
+- * The mapping only needs to be cache-coherent on SMP, except on
+- * Freescale e500mc derivatives where it's also needed for coherent DMA.
+- */
+-#if defined(CONFIG_SMP) || defined(CONFIG_PPC_E500MC)
+-#define M_IF_NEEDED	MAS2_M
+-#else
+-#define M_IF_NEEDED	0
+-#endif
+-
+ /* 6. Setup KERNELBASE mapping in TLB[0]
+  *
+  * r3 = MAS0 w/TLBSEL & ESEL for the entry we started in
+diff --git a/arch/powerpc/kernel/fsl_booke_entry_mapping.S b/arch/powerpc/kernel/fsl_booke_entry_mapping.S
+index ea065282b303..de0980945510 100644
+--- a/arch/powerpc/kernel/fsl_booke_entry_mapping.S
++++ b/arch/powerpc/kernel/fsl_booke_entry_mapping.S
+@@ -153,16 +153,6 @@ skpinv:	addi	r6,r6,1				/* Increment */
+ 	tlbivax 0,r9
+ 	TLBSYNC
+ 
+-/*
+- * The mapping only needs to be cache-coherent on SMP, except on
+- * Freescale e500mc derivatives where it's also needed for coherent DMA.
+- */
+-#if defined(CONFIG_SMP) || defined(CONFIG_PPC_E500MC)
+-#define M_IF_NEEDED	MAS2_M
+-#else
+-#define M_IF_NEEDED	0
+-#endif
+-
+ #if defined(ENTRY_MAPPING_BOOT_SETUP)
+ 
+ /* 6. Setup KERNELBASE mapping in TLB1[0] */
+diff --git a/arch/powerpc/kernel/misc_64.S b/arch/powerpc/kernel/misc_64.S
+index b55a7b4cb543..26074f92d4bc 100644
+--- a/arch/powerpc/kernel/misc_64.S
++++ b/arch/powerpc/kernel/misc_64.S
+@@ -432,11 +432,6 @@ kexec_create_tlb:
+ 	rlwimi	r9,r10,16,4,15		/* Setup MAS0 = TLBSEL | ESEL(r9) */
+ 
+ /* Set up a temp identity mapping v:0 to p:0 and return to it. */
+-#if defined(CONFIG_SMP) || defined(CONFIG_PPC_E500MC)
+-#define M_IF_NEEDED	MAS2_M
+-#else
+-#define M_IF_NEEDED	0
+-#endif
+ 	mtspr	SPRN_MAS0,r9
+ 
+ 	lis	r9,(MAS1_VALID|MAS1_IPROT)@h
+-- 
+2.17.2
 
-I think you also have to implement some stuff in early_cmdline_parse() 
-in arch/powerpc/kernel/prom_init.c
-
-Maybe look at https://patchwork.ozlabs.org/patch/1074126/
-
-Christophe
-
->   1 file changed, 12 insertions(+)
-> 
-> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-> index d8dcd8820369..cd9b3974aa36 100644
-> --- a/arch/powerpc/Kconfig
-> +++ b/arch/powerpc/Kconfig
-> @@ -851,6 +851,11 @@ config CMDLINE
->   	  some command-line options at build time by entering them here.  In
->   	  most cases you will need to specify the root device here.
->   
-> +choice
-> +	prompt "Kernel command line type" if CMDLINE != ""
-> +	default CMDLINE_FORCE
-> +	depends on CMDLINE_BOOL
-> +
->   config CMDLINE_FORCE
->   	bool "Always use the default kernel command string"
->   	depends on CMDLINE_BOOL
-> @@ -860,6 +865,13 @@ config CMDLINE_FORCE
->   	  This is useful if you cannot or don't want to change the
->   	  command-line options your boot loader passes to the kernel.
->   
-> +config CMDLINE_EXTEND
-> +	bool "Extend bootloader kernel arguments"
-> +	help
-> +	  The command-line arguments provided by the boot loader will be
-> +	  appended to the default kernel command string.
-> +endchoice
-> +
->   config EXTRA_TARGETS
->   	string "Additional default image types"
->   	help
-> 
