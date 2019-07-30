@@ -7,19 +7,19 @@ X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DCDFDC0650F
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Jul 2019 07:38:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7A999C0650F
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Jul 2019 07:40:30 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6ABFD206E0
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Jul 2019 07:38:34 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6ABFD206E0
+	by mail.kernel.org (Postfix) with ESMTPS id 03F5B206E0
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Jul 2019 07:40:29 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 03F5B206E0
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=huawei.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45yT201ZrJzDqV1
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Jul 2019 17:38:32 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45yT4C6tTMzDqVL
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Jul 2019 17:40:27 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=huawei.com
  (client-ip=45.249.212.190; helo=huawei.com; envelope-from=yanaijie@huawei.com;
@@ -29,23 +29,23 @@ Authentication-Results: lists.ozlabs.org;
 Received: from huawei.com (szxga04-in.huawei.com [45.249.212.190])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45ySl60WvnzDqMT
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Jul 2019 17:25:37 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45ySl64lQ8zDqN9
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Jul 2019 17:25:38 +1000 (AEST)
 Received: from DGGEMS413-HUB.china.huawei.com (unknown [172.30.72.59])
- by Forcepoint Email with ESMTP id 1F43123172E3DF422327;
+ by Forcepoint Email with ESMTP id 2F3E277AC9FFDE2842E2;
  Tue, 30 Jul 2019 15:25:35 +0800 (CST)
 Received: from huawei.com (10.175.124.28) by DGGEMS413-HUB.china.huawei.com
  (10.3.19.213) with Microsoft SMTP Server id 14.3.439.0; Tue, 30 Jul 2019
- 15:25:25 +0800
+ 15:25:24 +0800
 From: Jason Yan <yanaijie@huawei.com>
 To: <mpe@ellerman.id.au>, <linuxppc-dev@lists.ozlabs.org>,
  <diana.craciun@nxp.com>, <christophe.leroy@c-s.fr>,
  <benh@kernel.crashing.org>, <paulus@samba.org>, <npiggin@gmail.com>,
  <keescook@chromium.org>, <kernel-hardening@lists.openwall.com>
-Subject: [PATCH v2 03/10] powerpc: introduce kimage_vaddr to store the kernel
- base
-Date: Tue, 30 Jul 2019 15:42:18 +0800
-Message-ID: <20190730074225.39544-4-yanaijie@huawei.com>
+Subject: [PATCH v2 02/10] powerpc: move memstart_addr and kernstart_addr to
+ init-common.c
+Date: Tue, 30 Jul 2019 15:42:17 +0800
+Message-ID: <20190730074225.39544-3-yanaijie@huawei.com>
 X-Mailer: git-send-email 2.17.2
 In-Reply-To: <20190730074225.39544-1-yanaijie@huawei.com>
 References: <20190730074225.39544-1-yanaijie@huawei.com>
@@ -72,8 +72,8 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Now the kernel base is a fixed value - KERNELBASE. To support KASLR, we
-need a variable to store the kernel base.
+These two variables are both defined in init_32.c and init_64.c. Move
+them to init-common.c.
 
 Signed-off-by: Jason Yan <yanaijie@huawei.com>
 Cc: Diana Craciun <diana.craciun@nxp.com>
@@ -84,36 +84,59 @@ Cc: Paul Mackerras <paulus@samba.org>
 Cc: Nicholas Piggin <npiggin@gmail.com>
 Cc: Kees Cook <keescook@chromium.org>
 ---
- arch/powerpc/include/asm/page.h | 2 ++
- arch/powerpc/mm/init-common.c   | 2 ++
- 2 files changed, 4 insertions(+)
+ arch/powerpc/mm/init-common.c | 5 +++++
+ arch/powerpc/mm/init_32.c     | 5 -----
+ arch/powerpc/mm/init_64.c     | 5 -----
+ 3 files changed, 5 insertions(+), 10 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/page.h b/arch/powerpc/include/asm/page.h
-index 0d52f57fca04..60a68d3a54b1 100644
---- a/arch/powerpc/include/asm/page.h
-+++ b/arch/powerpc/include/asm/page.h
-@@ -315,6 +315,8 @@ void arch_free_page(struct page *page, int order);
- 
- struct vm_area_struct;
- 
-+extern unsigned long kimage_vaddr;
-+
- #include <asm-generic/memory_model.h>
- #endif /* __ASSEMBLY__ */
- #include <asm/slice.h>
 diff --git a/arch/powerpc/mm/init-common.c b/arch/powerpc/mm/init-common.c
-index 152ae0d21435..d4801ce48dc5 100644
+index a84da92920f7..152ae0d21435 100644
 --- a/arch/powerpc/mm/init-common.c
 +++ b/arch/powerpc/mm/init-common.c
-@@ -25,6 +25,8 @@ phys_addr_t memstart_addr = (phys_addr_t)~0ull;
- EXPORT_SYMBOL_GPL(memstart_addr);
- phys_addr_t kernstart_addr;
- EXPORT_SYMBOL_GPL(kernstart_addr);
-+unsigned long kimage_vaddr = KERNELBASE;
-+EXPORT_SYMBOL_GPL(kimage_vaddr);
+@@ -21,6 +21,11 @@
+ #include <asm/pgtable.h>
+ #include <asm/kup.h>
  
++phys_addr_t memstart_addr = (phys_addr_t)~0ull;
++EXPORT_SYMBOL_GPL(memstart_addr);
++phys_addr_t kernstart_addr;
++EXPORT_SYMBOL_GPL(kernstart_addr);
++
  static bool disable_kuep = !IS_ENABLED(CONFIG_PPC_KUEP);
  static bool disable_kuap = !IS_ENABLED(CONFIG_PPC_KUAP);
+ 
+diff --git a/arch/powerpc/mm/init_32.c b/arch/powerpc/mm/init_32.c
+index b04896a88d79..872df48ae41b 100644
+--- a/arch/powerpc/mm/init_32.c
++++ b/arch/powerpc/mm/init_32.c
+@@ -56,11 +56,6 @@
+ phys_addr_t total_memory;
+ phys_addr_t total_lowmem;
+ 
+-phys_addr_t memstart_addr = (phys_addr_t)~0ull;
+-EXPORT_SYMBOL(memstart_addr);
+-phys_addr_t kernstart_addr;
+-EXPORT_SYMBOL(kernstart_addr);
+-
+ #ifdef CONFIG_RELOCATABLE
+ /* Used in __va()/__pa() */
+ long long virt_phys_offset;
+diff --git a/arch/powerpc/mm/init_64.c b/arch/powerpc/mm/init_64.c
+index a44f6281ca3a..c836f1269ee7 100644
+--- a/arch/powerpc/mm/init_64.c
++++ b/arch/powerpc/mm/init_64.c
+@@ -63,11 +63,6 @@
+ 
+ #include <mm/mmu_decl.h>
+ 
+-phys_addr_t memstart_addr = ~0;
+-EXPORT_SYMBOL_GPL(memstart_addr);
+-phys_addr_t kernstart_addr;
+-EXPORT_SYMBOL_GPL(kernstart_addr);
+-
+ #ifdef CONFIG_SPARSEMEM_VMEMMAP
+ /*
+  * Given an address within the vmemmap, determine the pfn of the page that
 -- 
 2.17.2
 
