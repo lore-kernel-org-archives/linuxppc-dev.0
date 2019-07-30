@@ -2,48 +2,47 @@ Return-Path: <SRS0=hRxk=V3=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=no
+X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS autolearn=no
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 82B95C0650F
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Jul 2019 11:19:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 116CBC433FF
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Jul 2019 11:27:59 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C5FB320693
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Jul 2019 11:19:43 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C5FB320693
+	by mail.kernel.org (Postfix) with ESMTPS id C23812087F
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Jul 2019 11:27:58 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C23812087F
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45yYx65p9TzDqXD
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Jul 2019 21:19:38 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+	by lists.ozlabs.org (Postfix) with ESMTP id 45yZ6g6GmkzDqVZ
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Jul 2019 21:27:55 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45yYv36JFvzDqV6
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Jul 2019 21:17:51 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45yZ4W1clDzDqMm
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Jul 2019 21:26:03 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
  SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 45yYv11BhNz9s8m;
- Tue, 30 Jul 2019 21:17:48 +1000 (AEST)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 45yZ4V3tzcz9s3Z;
+ Tue, 30 Jul 2019 21:26:02 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Arnd Bergmann <arnd@arndb.de>,
- Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc: workaround clang codegen bug in dcbz
-In-Reply-To: <CAK8P3a1GQSyCj1L8fFG4Pah8dr5Lanw=1yuimX1o+53ARzOX+Q@mail.gmail.com>
-References: <20190729202542.205309-1-ndesaulniers@google.com>
- <20190729203246.GA117371@archlinux-threadripper>
- <20190729215200.GN31406@gate.crashing.org>
- <CAK8P3a1GQSyCj1L8fFG4Pah8dr5Lanw=1yuimX1o+53ARzOX+Q@mail.gmail.com>
-Date: Tue, 30 Jul 2019 21:17:43 +1000
-Message-ID: <87h873zs88.fsf@concordia.ellerman.id.au>
+To: David Gibson <david@gibson.dropbear.id.au>,
+ Vaibhav Jain <vaibhav@linux.ibm.com>
+Subject: Re: [PATCH v5 2/4] powerpc/pseries: Update SCM hcall op-codes in
+ hvcall.h
+In-Reply-To: <20190726085300.GA4865@umbus>
+References: <20190723161357.26718-1-vaibhav@linux.ibm.com>
+ <20190723161357.26718-3-vaibhav@linux.ibm.com> <20190726085300.GA4865@umbus>
+Date: Tue, 30 Jul 2019 21:26:01 +1000
+Message-ID: <87ef27zrue.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -57,55 +56,34 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: kbuild test robot <lkp@intel.com>,
- Nick Desaulniers <ndesaulniers@google.com>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- clang-built-linux <clang-built-linux@googlegroups.com>,
- Paul Mackerras <paulus@samba.org>,
- Nathan Chancellor <natechancellor@gmail.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Cc: Oliver O'Halloran <oohall@gmail.com>,
+ Laurent Dufour <ldufour@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ "Aneesh Kumar K . V" <aneesh.kumar@linux.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Arnd Bergmann <arnd@arndb.de> writes:
-> On Mon, Jul 29, 2019 at 11:52 PM Segher Boessenkool
-> <segher@kernel.crashing.org> wrote:
->> On Mon, Jul 29, 2019 at 01:32:46PM -0700, Nathan Chancellor wrote:
->> > For the record:
->> >
->> > https://godbolt.org/z/z57VU7
->> >
->> > This seems consistent with what Michael found so I don't think a revert
->> > is entirely unreasonable.
->>
->> Try this:
->>
->>   https://godbolt.org/z/6_ZfVi
->>
->> This matters in non-trivial loops, for example.  But all current cases
->> where such non-trivial loops are done with cache block instructions are
->> actually written in real assembler already, using two registers.
->> Because performance matters.  Not that I recommend writing code as
->> critical as memset in C with inline asm :-)
+David Gibson <david@gibson.dropbear.id.au> writes:
+> On Tue, Jul 23, 2019 at 09:43:55PM +0530, Vaibhav Jain wrote:
+>> Update the hvcalls.h to include op-codes for new hcalls introduce to
+>> manage SCM memory. Also update existing hcall definitions to reflect
+>> current papr specification for SCM.
+>> 
+>> The removed hcall op-codes H_SCM_MEM_QUERY, H_SCM_BLOCK_CLEAR were
+>> transient proposals and there support was never implemented by
+>> Power-VM nor they were used anywhere in Linux kernel. Hence we don't
+>> expect anyone to be impacted by this change.
+>> 
+>> Signed-off-by: Vaibhav Jain <vaibhav@linux.ibm.com>
 >
-> Upon a second look, I think the issue is that the "Z" is an input argument
-> when it should be an output. clang decides that it can make a copy of the
-> input and pass that into the inline asm. This is not the most efficient
-> way, but it seems entirely correct according to the constraints.
->
-> Changing it to an output "=Z" constraint seems to make it work:
->
-> https://godbolt.org/z/FwEqHf
->
-> Clang still doesn't use the optimum form, but it passes the correct pointer.
+> They really should not have been merged while only interim proposals.
+> But since they have changed, better to update them than not, obviously.
 
-Thanks Arnd. This seems like a better solution.
+Yes, absolutely agree. It wasn't clear when I merged them that they were
+*unpublished* and *unstable*.
 
-I'll drop the revert I have staged.
-
-Segher does this look OK to you?
-
-Nathan/Nick, are one of you able to test this with your clang CI?
+Unfortunately we can't realistically wait for these APIs to be in a
+published PAPR spec because it seems to take about 5 years for a PAPR
+spec to escape the IBM firewall.
 
 cheers
