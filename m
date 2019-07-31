@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-1.0 required=3.0 tests=MAILING_LIST_MULTI,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 15015C433FF
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Jul 2019 09:55:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D870DC433FF
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Jul 2019 09:57:24 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 8A4E1206A3
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Jul 2019 09:55:14 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8A4E1206A3
+	by mail.kernel.org (Postfix) with ESMTPS id 8FAE8206A3
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Jul 2019 09:57:24 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8FAE8206A3
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=bugzilla.kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45z81C32MmzDqWb
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Jul 2019 19:55:11 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45z83k456bzDqVv
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Jul 2019 19:57:22 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=bugzilla.kernel.org
  (client-ip=198.145.29.98; helo=mail.wl.linuxfoundation.org;
@@ -29,18 +29,18 @@ Received: from mail.wl.linuxfoundation.org (mail.wl.linuxfoundation.org
  [198.145.29.98])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45z7dz0MNzzDqBb
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Jul 2019 19:38:30 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45z7gG1z4vzDqdf
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Jul 2019 19:39:38 +1000 (AEST)
 Received: from mail.wl.linuxfoundation.org (localhost [127.0.0.1])
- by mail.wl.linuxfoundation.org (Postfix) with ESMTP id 3B60028775
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Jul 2019 09:38:28 +0000 (UTC)
+ by mail.wl.linuxfoundation.org (Postfix) with ESMTP id 4AA7728775
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Jul 2019 09:39:36 +0000 (UTC)
 Received: by mail.wl.linuxfoundation.org (Postfix, from userid 486)
- id 2F2A9288DD; Wed, 31 Jul 2019 09:38:28 +0000 (UTC)
+ id 3F105287EF; Wed, 31 Jul 2019 09:39:36 +0000 (UTC)
 From: bugzilla-daemon@bugzilla.kernel.org
 To: linuxppc-dev@lists.ozlabs.org
 Subject: [Bug 204375] kernel 5.2.4 w. KASAN enabled fails to boot on a
  PowerMac G4 3,6 at very early stage
-Date: Wed, 31 Jul 2019 09:38:27 +0000
+Date: Wed, 31 Jul 2019 09:39:34 +0000
 X-Bugzilla-Reason: None
 X-Bugzilla-Type: changed
 X-Bugzilla-Watch-Reason: AssignedTo platform_ppc-32@kernel-bugs.osdl.org
@@ -56,7 +56,7 @@ X-Bugzilla-Priority: P1
 X-Bugzilla-Assigned-To: platform_ppc-32@kernel-bugs.osdl.org
 X-Bugzilla-Flags: 
 X-Bugzilla-Changed-Fields: attachments.created
-Message-ID: <bug-204375-206035-DNhRTmsafY@https.bugzilla.kernel.org/>
+Message-ID: <bug-204375-206035-eLzWdV7Hnl@https.bugzilla.kernel.org/>
 In-Reply-To: <bug-204375-206035@https.bugzilla.kernel.org/>
 References: <bug-204375-206035@https.bugzilla.kernel.org/>
 Content-Type: text/plain; charset="UTF-8"
@@ -82,12 +82,12 @@ Sender: "Linuxppc-dev"
 
 https://bugzilla.kernel.org/show_bug.cgi?id=3D204375
 
---- Comment #7 from Christophe Leroy (christophe.leroy@c-s.fr) ---
-Created attachment 284059
-  --> https://bugzilla.kernel.org/attachment.cgi?id=3D284059&action=3Dedit
-Screenshot1
+--- Comment #8 from Christophe Leroy (christophe.leroy@c-s.fr) ---
+Created attachment 284061
+  --> https://bugzilla.kernel.org/attachment.cgi?id=3D284061&action=3Dedit
+Screenshot2
 
-When booting QEMU in graphic mode, it first hangs for some time here.
+Then it reverts to text mode and continue booting
 
 --=20
 You are receiving this mail because:
