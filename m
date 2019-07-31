@@ -7,45 +7,45 @@ X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EA752C433FF
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Jul 2019 09:37:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9C33EC433FF
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Jul 2019 09:39:20 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6464720665
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Jul 2019 09:37:31 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6464720665
+	by mail.kernel.org (Postfix) with ESMTPS id CA34D206A3
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Jul 2019 09:39:19 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CA34D206A3
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=huawei.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45z7cm604VzDqdX
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Jul 2019 19:37:28 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45z7fs3tw2zDqdc
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Jul 2019 19:39:17 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=huawei.com
- (client-ip=45.249.212.35; helo=huawei.com; envelope-from=yanaijie@huawei.com;
+ (client-ip=45.249.212.191; helo=huawei.com; envelope-from=yanaijie@huawei.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=huawei.com
-Received: from huawei.com (szxga07-in.huawei.com [45.249.212.35])
+Received: from huawei.com (szxga05-in.huawei.com [45.249.212.191])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45z7N32WxyzDqR2
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Jul 2019 19:26:26 +1000 (AEST)
-Received: from DGGEMS405-HUB.china.huawei.com (unknown [172.30.72.60])
- by Forcepoint Email with ESMTP id 79E502E14D9CF9EC46E7;
- Wed, 31 Jul 2019 17:26:23 +0800 (CST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45z7N45N7fzDqRj
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Jul 2019 19:26:28 +1000 (AEST)
+Received: from DGGEMS405-HUB.china.huawei.com (unknown [172.30.72.59])
+ by Forcepoint Email with ESMTP id 6415EE926006C7F60C56;
+ Wed, 31 Jul 2019 17:26:18 +0800 (CST)
 Received: from huawei.com (10.175.124.28) by DGGEMS405-HUB.china.huawei.com
  (10.3.19.205) with Microsoft SMTP Server id 14.3.439.0; Wed, 31 Jul 2019
- 17:26:13 +0800
+ 17:26:10 +0800
 From: Jason Yan <yanaijie@huawei.com>
 To: <mpe@ellerman.id.au>, <linuxppc-dev@lists.ozlabs.org>,
  <diana.craciun@nxp.com>, <christophe.leroy@c-s.fr>,
  <benh@kernel.crashing.org>, <paulus@samba.org>, <npiggin@gmail.com>,
  <keescook@chromium.org>, <kernel-hardening@lists.openwall.com>
-Subject: [PATCH v3 05/10] powerpc/fsl_booke/32: introduce reloc_kernel_entry()
- helper
-Date: Wed, 31 Jul 2019 17:43:13 +0800
-Message-ID: <20190731094318.26538-6-yanaijie@huawei.com>
+Subject: [PATCH v3 02/10] powerpc: move memstart_addr and kernstart_addr to
+ init-common.c
+Date: Wed, 31 Jul 2019 17:43:10 +0800
+Message-ID: <20190731094318.26538-3-yanaijie@huawei.com>
 X-Mailer: git-send-email 2.17.2
 In-Reply-To: <20190731094318.26538-1-yanaijie@huawei.com>
 References: <20190731094318.26538-1-yanaijie@huawei.com>
@@ -72,9 +72,8 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Add a new helper reloc_kernel_entry() to jump back to the start of the
-new kernel. After we put the new kernel in a randomized place we can use
-this new helper to enter the kernel and begin to relocate again.
+These two variables are both defined in init_32.c and init_64.c. Move
+them to init-common.c.
 
 Signed-off-by: Jason Yan <yanaijie@huawei.com>
 Cc: Diana Craciun <diana.craciun@nxp.com>
@@ -86,46 +85,59 @@ Cc: Nicholas Piggin <npiggin@gmail.com>
 Cc: Kees Cook <keescook@chromium.org>
 Reviewed-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
- arch/powerpc/kernel/head_fsl_booke.S | 13 +++++++++++++
- arch/powerpc/mm/mmu_decl.h           |  1 +
- 2 files changed, 14 insertions(+)
+ arch/powerpc/mm/init-common.c | 5 +++++
+ arch/powerpc/mm/init_32.c     | 5 -----
+ arch/powerpc/mm/init_64.c     | 5 -----
+ 3 files changed, 5 insertions(+), 10 deletions(-)
 
-diff --git a/arch/powerpc/kernel/head_fsl_booke.S b/arch/powerpc/kernel/head_fsl_booke.S
-index 04d124fee17d..2083382dd662 100644
---- a/arch/powerpc/kernel/head_fsl_booke.S
-+++ b/arch/powerpc/kernel/head_fsl_booke.S
-@@ -1143,6 +1143,19 @@ _GLOBAL(create_tlb_entry)
- 	sync
- 	blr
+diff --git a/arch/powerpc/mm/init-common.c b/arch/powerpc/mm/init-common.c
+index a84da92920f7..152ae0d21435 100644
+--- a/arch/powerpc/mm/init-common.c
++++ b/arch/powerpc/mm/init-common.c
+@@ -21,6 +21,11 @@
+ #include <asm/pgtable.h>
+ #include <asm/kup.h>
  
-+/*
-+ * Return to the start of the relocated kernel and run again
-+ * r3 - virtual address of fdt
-+ * r4 - entry of the kernel
-+ */
-+_GLOBAL(reloc_kernel_entry)
-+	mfmsr	r7
-+	rlwinm	r7, r7, 0, ~(MSR_IS | MSR_DS)
++phys_addr_t memstart_addr = (phys_addr_t)~0ull;
++EXPORT_SYMBOL_GPL(memstart_addr);
++phys_addr_t kernstart_addr;
++EXPORT_SYMBOL_GPL(kernstart_addr);
 +
-+	mtspr	SPRN_SRR0,r4
-+	mtspr	SPRN_SRR1,r7
-+	rfi
-+
+ static bool disable_kuep = !IS_ENABLED(CONFIG_PPC_KUEP);
+ static bool disable_kuap = !IS_ENABLED(CONFIG_PPC_KUAP);
+ 
+diff --git a/arch/powerpc/mm/init_32.c b/arch/powerpc/mm/init_32.c
+index b04896a88d79..872df48ae41b 100644
+--- a/arch/powerpc/mm/init_32.c
++++ b/arch/powerpc/mm/init_32.c
+@@ -56,11 +56,6 @@
+ phys_addr_t total_memory;
+ phys_addr_t total_lowmem;
+ 
+-phys_addr_t memstart_addr = (phys_addr_t)~0ull;
+-EXPORT_SYMBOL(memstart_addr);
+-phys_addr_t kernstart_addr;
+-EXPORT_SYMBOL(kernstart_addr);
+-
+ #ifdef CONFIG_RELOCATABLE
+ /* Used in __va()/__pa() */
+ long long virt_phys_offset;
+diff --git a/arch/powerpc/mm/init_64.c b/arch/powerpc/mm/init_64.c
+index a44f6281ca3a..c836f1269ee7 100644
+--- a/arch/powerpc/mm/init_64.c
++++ b/arch/powerpc/mm/init_64.c
+@@ -63,11 +63,6 @@
+ 
+ #include <mm/mmu_decl.h>
+ 
+-phys_addr_t memstart_addr = ~0;
+-EXPORT_SYMBOL_GPL(memstart_addr);
+-phys_addr_t kernstart_addr;
+-EXPORT_SYMBOL_GPL(kernstart_addr);
+-
+ #ifdef CONFIG_SPARSEMEM_VMEMMAP
  /*
-  * Create a tlb entry with the same effective and physical address as
-  * the tlb entry used by the current running code. But set the TS to 1.
-diff --git a/arch/powerpc/mm/mmu_decl.h b/arch/powerpc/mm/mmu_decl.h
-index a09f89d3aa0f..804da298beb3 100644
---- a/arch/powerpc/mm/mmu_decl.h
-+++ b/arch/powerpc/mm/mmu_decl.h
-@@ -143,6 +143,7 @@ extern void adjust_total_lowmem(void);
- extern int switch_to_as1(void);
- extern void restore_to_as0(int esel, int offset, void *dt_ptr, int bootcpu);
- void create_tlb_entry(phys_addr_t phys, unsigned long virt, int entry);
-+void reloc_kernel_entry(void *fdt, int addr);
- #endif
- extern void loadcam_entry(unsigned int index);
- extern void loadcam_multi(int first_idx, int num, int tmp_idx);
+  * Given an address within the vmemmap, determine the pfn of the page that
 -- 
 2.17.2
 
