@@ -7,21 +7,21 @@ X-Spam-Status: No, score=-11.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 22C4FC433FF
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Jul 2019 12:56:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CD0BBC433FF
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Jul 2019 13:00:11 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 65032206B8
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Jul 2019 12:56:42 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 4CB08208C3
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Jul 2019 13:00:11 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=sirena.org.uk header.i=@sirena.org.uk header.b="YnCi+cRy"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 65032206B8
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=sirena.org.uk header.i=@sirena.org.uk header.b="RlIk0YLH"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4CB08208C3
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45zD2c41H3zDqf3
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Jul 2019 22:56:40 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45zD6c75MlzDqVR
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Jul 2019 23:00:08 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=none (mailfrom) smtp.mailfrom=sirena.org.uk
  (client-ip=2a01:7e01::f03c:91ff:fed4:a3b6; helo=heliosphere.sirena.org.uk;
@@ -30,13 +30,13 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=sirena.org.uk header.i=@sirena.org.uk
- header.b="YnCi+cRy"; dkim-atps=neutral
+ header.b="RlIk0YLH"; dkim-atps=neutral
 Received: from heliosphere.sirena.org.uk (heliosphere.sirena.org.uk
  [IPv6:2a01:7e01::f03c:91ff:fed4:a3b6])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest
  SHA256) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45zB6p4h44zDqQM
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45zB6q042KzDqQv
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Jul 2019 21:30:10 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
  d=sirena.org.uk; s=20170815-heliosphere; h=Date:Message-Id:In-Reply-To:
@@ -44,25 +44,26 @@ DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
  Content-Transfer-Encoding:Content-ID:Content-Description:Resent-Date:
  Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:References:
  List-Id:List-Help:List-Unsubscribe:List-Subscribe:List-Post:List-Owner:
- List-Archive; bh=hqElXS8Bos/S9Ngud8UOIoqIvdLmiVyGr0j4JbIF298=; b=YnCi+cRys2p+
- ETBDw3sxOp99kmF90lFGdWwgqtLlK9mYUIyZL5ZuT/kYNfjx61Q3OOjiu++JuJHAO8W8Hf/U8KDFT
- XpPL2/Xvl0kOuVTeS3UIabqFidqT+PXGyDuIe6U2p+ytnwFyMuy2u/a3y0Ir2cJDDQGqv9wip9Mi0
- h52AQ=;
-Received: from ypsilon.sirena.org.uk ([2001:470:1f1d:6b5::7])
+ List-Archive; bh=1Z+F6QUabMuhysJXB4rv5gFQzac5zbJf3kwbZUm/7OU=; b=RlIk0YLHjEkQ
+ Sb8ghmQr/T709OmLHv8onYWg5ir/BTCRkGpT4qPb3Xci7ZxUNouYfg/BcOajeILMLPHdmh/zcsEPy
+ 4opSlct2h1yQQBravf+rp+UBHg25J+yIqgmYrDdOzfMx16pabL4C11TBWc6XM+HqzzafQ+65GiOnE
+ NcrNs=;
+Received: from cpc102320-sgyl38-2-0-cust46.18-2.cable.virginm.net
+ ([82.37.168.47] helo=ypsilon.sirena.org.uk)
  by heliosphere.sirena.org.uk with esmtpsa
  (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256) (Exim 4.92)
  (envelope-from <broonie@sirena.org.uk>)
- id 1hsmnn-0001oq-0R; Wed, 31 Jul 2019 11:29:51 +0000
+ id 1hsmnl-0001oA-Fw; Wed, 31 Jul 2019 11:29:49 +0000
 Received: by ypsilon.sirena.org.uk (Postfix, from userid 1000)
- id A06DF2742CC3; Wed, 31 Jul 2019 12:29:49 +0100 (BST)
+ id E90DA2742CDE; Wed, 31 Jul 2019 12:29:48 +0100 (BST)
 From: Mark Brown <broonie@kernel.org>
 To: YueHaibing <yuehaibing@huawei.com>
-Subject: Applied "ASoC: mt8173: use devm_platform_ioremap_resource() to
+Subject: Applied "ASoC: imx-audmux: use devm_platform_ioremap_resource() to
  simplify code" to the asoc tree
-In-Reply-To: <20190727150738.54764-6-yuehaibing@huawei.com>
+In-Reply-To: <20190727150738.54764-8-yuehaibing@huawei.com>
 X-Patchwork-Hint: ignore
-Message-Id: <20190731112949.A06DF2742CC3@ypsilon.sirena.org.uk>
-Date: Wed, 31 Jul 2019 12:29:49 +0100 (BST)
+Message-Id: <20190731112948.E90DA2742CDE@ypsilon.sirena.org.uk>
+Date: Wed, 31 Jul 2019 12:29:48 +0100 (BST)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -99,7 +100,7 @@ Sender: "Linuxppc-dev"
 
 The patch
 
-   ASoC: mt8173: use devm_platform_ioremap_resource() to simplify code
+   ASoC: imx-audmux: use devm_platform_ioremap_resource() to simplify code
 
 has been applied to the asoc tree at
 
@@ -124,10 +125,10 @@ to this mail.
 Thanks,
 Mark
 
-From fceef72b68d63593d8543a8d608ccc8427e13d56 Mon Sep 17 00:00:00 2001
+From d003e3081c1d069b94d1b5f4c3bc8234d4603282 Mon Sep 17 00:00:00 2001
 From: YueHaibing <yuehaibing@huawei.com>
-Date: Sat, 27 Jul 2019 23:07:09 +0800
-Subject: [PATCH] ASoC: mt8173: use devm_platform_ioremap_resource() to
+Date: Sat, 27 Jul 2019 23:07:11 +0800
+Subject: [PATCH] ASoC: imx-audmux: use devm_platform_ioremap_resource() to
  simplify code
 
 Use devm_platform_ioremap_resource() to simplify the code a bit.
@@ -135,33 +136,29 @@ This is detected by coccinelle.
 
 Reported-by: Hulk Robot <hulkci@huawei.com>
 Signed-off-by: YueHaibing <yuehaibing@huawei.com>
-Link: https://lore.kernel.org/r/20190727150738.54764-6-yuehaibing@huawei.com
+Link: https://lore.kernel.org/r/20190727150738.54764-8-yuehaibing@huawei.com
 Signed-off-by: Mark Brown <broonie@kernel.org>
 ---
- sound/soc/mediatek/mt8173/mt8173-afe-pcm.c | 4 +---
+ sound/soc/fsl/imx-audmux.c | 4 +---
  1 file changed, 1 insertion(+), 3 deletions(-)
 
-diff --git a/sound/soc/mediatek/mt8173/mt8173-afe-pcm.c b/sound/soc/mediatek/mt8173/mt8173-afe-pcm.c
-index 0382896c162e..90bd2c92cae7 100644
---- a/sound/soc/mediatek/mt8173/mt8173-afe-pcm.c
-+++ b/sound/soc/mediatek/mt8173/mt8173-afe-pcm.c
-@@ -1056,7 +1056,6 @@ static int mt8173_afe_pcm_dev_probe(struct platform_device *pdev)
- 	int irq_id;
- 	struct mtk_base_afe *afe;
- 	struct mt8173_afe_private *afe_priv;
--	struct resource *res;
+diff --git a/sound/soc/fsl/imx-audmux.c b/sound/soc/fsl/imx-audmux.c
+index b2351cd33b0f..7595f24a006e 100644
+--- a/sound/soc/fsl/imx-audmux.c
++++ b/sound/soc/fsl/imx-audmux.c
+@@ -298,12 +298,10 @@ static int imx_audmux_parse_dt_defaults(struct platform_device *pdev,
  
- 	ret = dma_set_mask_and_coherent(&pdev->dev, DMA_BIT_MASK(33));
- 	if (ret)
-@@ -1086,8 +1085,7 @@ static int mt8173_afe_pcm_dev_probe(struct platform_device *pdev)
- 		return ret;
- 	}
+ static int imx_audmux_probe(struct platform_device *pdev)
+ {
+-	struct resource *res;
+ 	const struct of_device_id *of_id =
+ 			of_match_device(imx_audmux_dt_ids, &pdev->dev);
  
 -	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
--	afe->base_addr = devm_ioremap_resource(&pdev->dev, res);
-+	afe->base_addr = devm_platform_ioremap_resource(pdev, 0);
- 	if (IS_ERR(afe->base_addr))
- 		return PTR_ERR(afe->base_addr);
+-	audmux_base = devm_ioremap_resource(&pdev->dev, res);
++	audmux_base = devm_platform_ioremap_resource(pdev, 0);
+ 	if (IS_ERR(audmux_base))
+ 		return PTR_ERR(audmux_base);
  
 -- 
 2.20.1
