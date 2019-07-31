@@ -7,21 +7,21 @@ X-Spam-Status: No, score=-11.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A9C4DC32751
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Jul 2019 12:08:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C8A1DC433FF
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Jul 2019 12:11:25 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C6DB1206A2
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Jul 2019 12:08:31 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 4A17620659
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Jul 2019 12:11:25 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=sirena.org.uk header.i=@sirena.org.uk header.b="ihT25jHU"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C6DB1206A2
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=sirena.org.uk header.i=@sirena.org.uk header.b="D10VQ49Q"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4A17620659
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45zBz13Y8XzDqgl
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Jul 2019 22:08:29 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45zC2L2T9vzDqh3
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Jul 2019 22:11:22 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=none (mailfrom) smtp.mailfrom=sirena.org.uk
  (client-ip=2a01:7e01::f03c:91ff:fed4:a3b6; helo=heliosphere.sirena.org.uk;
@@ -30,13 +30,13 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=sirena.org.uk header.i=@sirena.org.uk
- header.b="ihT25jHU"; dkim-atps=neutral
+ header.b="D10VQ49Q"; dkim-atps=neutral
 Received: from heliosphere.sirena.org.uk (heliosphere.sirena.org.uk
  [IPv6:2a01:7e01::f03c:91ff:fed4:a3b6])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest
  SHA256) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45zB6k6XbPzDqcP
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45zB6k6TZ4zDqcK
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Jul 2019 21:30:04 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
  d=sirena.org.uk; s=20170815-heliosphere; h=Date:Message-Id:In-Reply-To:
@@ -44,25 +44,26 @@ DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
  Content-Transfer-Encoding:Content-ID:Content-Description:Resent-Date:
  Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:References:
  List-Id:List-Help:List-Unsubscribe:List-Subscribe:List-Post:List-Owner:
- List-Archive; bh=cK1vz8+0xV+/8vIYWcrTtuW8y1HSMdiwgDBudDrZFN8=; b=ihT25jHUakqo
- m+HFL4SyxvJXKRT/G8kxavz5W8YywsONCdMYHWemT134FPdywioslbidwAvOZXyu5Cp1Pk19YCwzV
- GCgoTvjM12/rEEBRqdoOdLXc5gX2JeDPOAGij7d6dbwCN9eeAPZvKuX9YgMpE0tCc+sCFCi0lU0vv
- fH66s=;
-Received: from ypsilon.sirena.org.uk ([2001:470:1f1d:6b5::7])
+ List-Archive; bh=kf++0n0/P0qzAOEm7iMuFPfvM6eTDtZm3AGZFRD7ba8=; b=D10VQ49Q1dfn
+ KoTLAjChiNu+e4zSNLg6W02jNpXjG/FssPXbDz+WcOUu/zPpB2tjTZLYtXWPb03sB4NmgW4AOwN1M
+ q+MjYSDtG6hv0+Mgf0LUcNh8Mdrz9trFqLbO+P9uT8+4FT68utpw66obY6mOrWQxljrE91RdfBQ6P
+ Uy80g=;
+Received: from cpc102320-sgyl38-2-0-cust46.18-2.cable.virginm.net
+ ([82.37.168.47] helo=ypsilon.sirena.org.uk)
  by heliosphere.sirena.org.uk with esmtpsa
  (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256) (Exim 4.92)
  (envelope-from <broonie@sirena.org.uk>)
- id 1hsmnf-0001lb-I1; Wed, 31 Jul 2019 11:29:43 +0000
+ id 1hsmng-0001ll-Es; Wed, 31 Jul 2019 11:29:44 +0000
 Received: by ypsilon.sirena.org.uk (Postfix, from userid 1000)
- id EDB972742CC3; Wed, 31 Jul 2019 12:29:42 +0100 (BST)
+ id 025422742C99; Wed, 31 Jul 2019 12:29:43 +0100 (BST)
 From: Mark Brown <broonie@kernel.org>
 To: YueHaibing <yuehaibing@huawei.com>
-Subject: Applied "ASoC: sun8i-codec: use devm_platform_ioremap_resource() to
- simplify code" to the asoc tree
-In-Reply-To: <20190727150738.54764-35-yuehaibing@huawei.com>
+Subject: Applied "ASoC: xlnx: use devm_platform_ioremap_resource() to simplify
+ code" to the asoc tree
+In-Reply-To: <20190727150738.54764-32-yuehaibing@huawei.com>
 X-Patchwork-Hint: ignore
-Message-Id: <20190731112942.EDB972742CC3@ypsilon.sirena.org.uk>
-Date: Wed, 31 Jul 2019 12:29:42 +0100 (BST)
+Message-Id: <20190731112944.025422742C99@ypsilon.sirena.org.uk>
+Date: Wed, 31 Jul 2019 12:29:43 +0100 (BST)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -99,7 +100,7 @@ Sender: "Linuxppc-dev"
 
 The patch
 
-   ASoC: sun8i-codec: use devm_platform_ioremap_resource() to simplify code
+   ASoC: xlnx: use devm_platform_ioremap_resource() to simplify code
 
 has been applied to the asoc tree at
 
@@ -124,45 +125,60 @@ to this mail.
 Thanks,
 Mark
 
-From 790b36578e23264ff05be2ba8466ebcf7d3db38a Mon Sep 17 00:00:00 2001
+From cf80aa2c1359f5d014981e251049bcc21a2217bc Mon Sep 17 00:00:00 2001
 From: YueHaibing <yuehaibing@huawei.com>
-Date: Sat, 27 Jul 2019 23:07:38 +0800
-Subject: [PATCH] ASoC: sun8i-codec: use devm_platform_ioremap_resource() to
- simplify code
+Date: Sat, 27 Jul 2019 23:07:35 +0800
+Subject: [PATCH] ASoC: xlnx: use devm_platform_ioremap_resource() to simplify
+ code
 
 Use devm_platform_ioremap_resource() to simplify the code a bit.
 This is detected by coccinelle.
 
 Reported-by: Hulk Robot <hulkci@huawei.com>
 Signed-off-by: YueHaibing <yuehaibing@huawei.com>
-Link: https://lore.kernel.org/r/20190727150738.54764-35-yuehaibing@huawei.com
+Link: https://lore.kernel.org/r/20190727150738.54764-32-yuehaibing@huawei.com
 Signed-off-by: Mark Brown <broonie@kernel.org>
 ---
- sound/soc/sunxi/sun8i-codec.c | 4 +---
- 1 file changed, 1 insertion(+), 3 deletions(-)
+ sound/soc/xilinx/xlnx_i2s.c   | 4 +---
+ sound/soc/xilinx/xlnx_spdif.c | 3 +--
+ 2 files changed, 2 insertions(+), 5 deletions(-)
 
-diff --git a/sound/soc/sunxi/sun8i-codec.c b/sound/soc/sunxi/sun8i-codec.c
-index 0e0e8ebaa571..55798bc8eae2 100644
---- a/sound/soc/sunxi/sun8i-codec.c
-+++ b/sound/soc/sunxi/sun8i-codec.c
-@@ -533,7 +533,6 @@ static const struct regmap_config sun8i_codec_regmap_config = {
+diff --git a/sound/soc/xilinx/xlnx_i2s.c b/sound/soc/xilinx/xlnx_i2s.c
+index 8b353166ad44..cc641e582c82 100644
+--- a/sound/soc/xilinx/xlnx_i2s.c
++++ b/sound/soc/xilinx/xlnx_i2s.c
+@@ -95,7 +95,6 @@ MODULE_DEVICE_TABLE(of, xlnx_i2s_of_match);
  
- static int sun8i_codec_probe(struct platform_device *pdev)
+ static int xlnx_i2s_probe(struct platform_device *pdev)
  {
--	struct resource *res_base;
- 	struct sun8i_codec *scodec;
+-	struct resource *res;
  	void __iomem *base;
+ 	struct snd_soc_dai_driver *dai_drv;
  	int ret;
-@@ -556,8 +555,7 @@ static int sun8i_codec_probe(struct platform_device *pdev)
- 		return PTR_ERR(scodec->clk_bus);
+@@ -107,8 +106,7 @@ static int xlnx_i2s_probe(struct platform_device *pdev)
+ 	if (!dai_drv)
+ 		return -ENOMEM;
+ 
+-	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+-	base = devm_ioremap_resource(&pdev->dev, res);
++	base = devm_platform_ioremap_resource(pdev, 0);
+ 	if (IS_ERR(base))
+ 		return PTR_ERR(base);
+ 
+diff --git a/sound/soc/xilinx/xlnx_spdif.c b/sound/soc/xilinx/xlnx_spdif.c
+index 3b9000fd8c49..e2ca087adee6 100644
+--- a/sound/soc/xilinx/xlnx_spdif.c
++++ b/sound/soc/xilinx/xlnx_spdif.c
+@@ -260,8 +260,7 @@ static int xlnx_spdif_probe(struct platform_device *pdev)
+ 		return ret;
  	}
  
--	res_base = platform_get_resource(pdev, IORESOURCE_MEM, 0);
--	base = devm_ioremap_resource(&pdev->dev, res_base);
-+	base = devm_platform_ioremap_resource(pdev, 0);
- 	if (IS_ERR(base)) {
- 		dev_err(&pdev->dev, "Failed to map the registers\n");
- 		return PTR_ERR(base);
+-	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+-	ctx->base = devm_ioremap_resource(dev, res);
++	ctx->base = devm_platform_ioremap_resource(pdev, 0);
+ 	if (IS_ERR(ctx->base)) {
+ 		ret = PTR_ERR(ctx->base);
+ 		goto clk_err;
 -- 
 2.20.1
 
