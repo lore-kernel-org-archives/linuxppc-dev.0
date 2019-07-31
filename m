@@ -7,21 +7,21 @@ X-Spam-Status: No, score=-11.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8F81AC433FF
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Jul 2019 12:00:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9959AC433FF
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Jul 2019 12:03:22 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 0BD57206A3
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Jul 2019 12:00:52 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 1A719206A3
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Jul 2019 12:03:22 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=sirena.org.uk header.i=@sirena.org.uk header.b="aGtkSSze"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0BD57206A3
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=sirena.org.uk header.i=@sirena.org.uk header.b="x0nZ8Dh+"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1A719206A3
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45zBp95v1LzDqTl
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Jul 2019 22:00:49 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45zBs36qY0zDqMb
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Jul 2019 22:03:19 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=none (mailfrom) smtp.mailfrom=sirena.org.uk
  (client-ip=2a01:7e01::f03c:91ff:fed4:a3b6; helo=heliosphere.sirena.org.uk;
@@ -30,13 +30,13 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=sirena.org.uk header.i=@sirena.org.uk
- header.b="aGtkSSze"; dkim-atps=neutral
+ header.b="x0nZ8Dh+"; dkim-atps=neutral
 Received: from heliosphere.sirena.org.uk (heliosphere.sirena.org.uk
  [IPv6:2a01:7e01::f03c:91ff:fed4:a3b6])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest
  SHA256) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45zB6k5sRGzDqb5
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45zB6k6PRkzDqbr
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Jul 2019 21:30:04 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
  d=sirena.org.uk; s=20170815-heliosphere; h=Date:Message-Id:In-Reply-To:
@@ -44,25 +44,25 @@ DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
  Content-Transfer-Encoding:Content-ID:Content-Description:Resent-Date:
  Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:References:
  List-Id:List-Help:List-Unsubscribe:List-Subscribe:List-Post:List-Owner:
- List-Archive; bh=EqyAK/JNK2ARshSsWcKdC1rIHp0lvAvnPMamc2x2Z18=; b=aGtkSSze11Tk
- RNv0zggKrfH3lr4GNOKToag2m1vAa+pyWnexSuF0wx2X/1xCX2dV1AUqZZ42hPs5TG5Q5yUpETI4u
- 2l+X6nMhC+dJZMZt7yarJSnsXvUIlFi7m/lc7kMPSwUqdq9Pk0wU93MgMIj4MKfPx6o2x2cnWujOB
- uPtxg=;
+ List-Archive; bh=gmUgplfRgoLx/Ho336+mi2jQWCucl34mq2Ls927DCX0=; b=x0nZ8Dh+LOsk
+ YVxizAc39JXcM2EVZGSLy2O437SojY9m9RrFlbiHxfejxbFz7CrCRZhNadNyPVHXT2yr/RtdfaHhe
+ D0ZG+9c3xbQmySGxeoJSkoX4B0oseO3ypykvChBHYZX/G5P8DZ7WT6Rx29qv9JpudyNVO17qKledt
+ iG4rs=;
 Received: from ypsilon.sirena.org.uk ([2001:470:1f1d:6b5::7])
  by heliosphere.sirena.org.uk with esmtpsa
  (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256) (Exim 4.92)
  (envelope-from <broonie@sirena.org.uk>)
- id 1hsmnc-0001l5-K0; Wed, 31 Jul 2019 11:29:40 +0000
+ id 1hsmni-0001ml-Qv; Wed, 31 Jul 2019 11:29:46 +0000
 Received: by ypsilon.sirena.org.uk (Postfix, from userid 1000)
- id 0A1CB2742CDE; Wed, 31 Jul 2019 12:29:39 +0100 (BST)
+ id 40D3E2742C99; Wed, 31 Jul 2019 12:29:46 +0100 (BST)
 From: Mark Brown <broonie@kernel.org>
 To: YueHaibing <yuehaibing@huawei.com>
-Subject: Applied "ASoC: uniphier: aio-dma: use
- devm_platform_ioremap_resource() to simplify code" to the asoc tree
-In-Reply-To: <20190727150738.54764-23-yuehaibing@huawei.com>
+Subject: Applied "ASoC: xtfpga-i2s: use devm_platform_ioremap_resource() to
+ simplify code" to the asoc tree
+In-Reply-To: <20190727150738.54764-15-yuehaibing@huawei.com>
 X-Patchwork-Hint: ignore
-Message-Id: <20190731112940.0A1CB2742CDE@ypsilon.sirena.org.uk>
-Date: Wed, 31 Jul 2019 12:29:39 +0100 (BST)
+Message-Id: <20190731112946.40D3E2742C99@ypsilon.sirena.org.uk>
+Date: Wed, 31 Jul 2019 12:29:46 +0100 (BST)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -99,7 +99,7 @@ Sender: "Linuxppc-dev"
 
 The patch
 
-   ASoC: uniphier: aio-dma: use devm_platform_ioremap_resource() to simplify code
+   ASoC: xtfpga-i2s: use devm_platform_ioremap_resource() to simplify code
 
 has been applied to the asoc tree at
 
@@ -124,41 +124,45 @@ to this mail.
 Thanks,
 Mark
 
-From b885c9fa363fa4604d78ea00adfed64db656fb78 Mon Sep 17 00:00:00 2001
+From ebdd7be5415c7795c77609ad908222038e441835 Mon Sep 17 00:00:00 2001
 From: YueHaibing <yuehaibing@huawei.com>
-Date: Sat, 27 Jul 2019 23:07:26 +0800
-Subject: [PATCH] ASoC: uniphier: aio-dma: use devm_platform_ioremap_resource()
- to simplify code
+Date: Sat, 27 Jul 2019 23:07:18 +0800
+Subject: [PATCH] ASoC: xtfpga-i2s: use devm_platform_ioremap_resource() to
+ simplify code
 
 Use devm_platform_ioremap_resource() to simplify the code a bit.
 This is detected by coccinelle.
 
 Reported-by: Hulk Robot <hulkci@huawei.com>
 Signed-off-by: YueHaibing <yuehaibing@huawei.com>
-Link: https://lore.kernel.org/r/20190727150738.54764-23-yuehaibing@huawei.com
+Link: https://lore.kernel.org/r/20190727150738.54764-15-yuehaibing@huawei.com
 Signed-off-by: Mark Brown <broonie@kernel.org>
 ---
- sound/soc/uniphier/aio-dma.c | 4 +---
+ sound/soc/xtensa/xtfpga-i2s.c | 4 +---
  1 file changed, 1 insertion(+), 3 deletions(-)
 
-diff --git a/sound/soc/uniphier/aio-dma.c b/sound/soc/uniphier/aio-dma.c
-index fa001d3c1a88..862346d66774 100644
---- a/sound/soc/uniphier/aio-dma.c
-+++ b/sound/soc/uniphier/aio-dma.c
-@@ -276,12 +276,10 @@ int uniphier_aiodma_soc_register_platform(struct platform_device *pdev)
+diff --git a/sound/soc/xtensa/xtfpga-i2s.c b/sound/soc/xtensa/xtfpga-i2s.c
+index 9ce2c75186b9..9da395d14a8d 100644
+--- a/sound/soc/xtensa/xtfpga-i2s.c
++++ b/sound/soc/xtensa/xtfpga-i2s.c
+@@ -531,7 +531,6 @@ static int xtfpga_i2s_runtime_resume(struct device *dev)
+ static int xtfpga_i2s_probe(struct platform_device *pdev)
  {
- 	struct uniphier_aio_chip *chip = platform_get_drvdata(pdev);
- 	struct device *dev = &pdev->dev;
--	struct resource *res;
- 	void __iomem *preg;
- 	int irq, ret;
+ 	struct xtfpga_i2s *i2s;
+-	struct resource *mem;
+ 	int err, irq;
  
--	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
--	preg = devm_ioremap_resource(dev, res);
-+	preg = devm_platform_ioremap_resource(pdev, 0);
- 	if (IS_ERR(preg))
- 		return PTR_ERR(preg);
+ 	i2s = devm_kzalloc(&pdev->dev, sizeof(*i2s), GFP_KERNEL);
+@@ -543,8 +542,7 @@ static int xtfpga_i2s_probe(struct platform_device *pdev)
+ 	i2s->dev = &pdev->dev;
+ 	dev_dbg(&pdev->dev, "dev: %p, i2s: %p\n", &pdev->dev, i2s);
  
+-	mem = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+-	i2s->regs = devm_ioremap_resource(&pdev->dev, mem);
++	i2s->regs = devm_platform_ioremap_resource(pdev, 0);
+ 	if (IS_ERR(i2s->regs)) {
+ 		err = PTR_ERR(i2s->regs);
+ 		goto err;
 -- 
 2.20.1
 
