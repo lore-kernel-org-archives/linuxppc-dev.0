@@ -4,24 +4,23 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-11.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
-	version=3.4.0
+	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AB885C32751
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Jul 2019 12:39:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5D311C32751
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Jul 2019 12:45:18 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id AF25E20C01
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Jul 2019 12:39:55 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id D15C8208E3
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Jul 2019 12:45:17 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=sirena.org.uk header.i=@sirena.org.uk header.b="lAmN1Muw"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org AF25E20C01
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=sirena.org.uk header.i=@sirena.org.uk header.b="MWl7ooSD"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D15C8208E3
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45zCgF1nGRzDqY4
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Jul 2019 22:39:53 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45zCnQ3KW5zDqRY
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Jul 2019 22:45:14 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=none (mailfrom) smtp.mailfrom=sirena.org.uk
  (client-ip=2a01:7e01::f03c:91ff:fed4:a3b6; helo=heliosphere.sirena.org.uk;
@@ -30,40 +29,40 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=sirena.org.uk header.i=@sirena.org.uk
- header.b="lAmN1Muw"; dkim-atps=neutral
+ header.b="MWl7ooSD"; dkim-atps=neutral
 Received: from heliosphere.sirena.org.uk (heliosphere.sirena.org.uk
  [IPv6:2a01:7e01::f03c:91ff:fed4:a3b6])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest
  SHA256) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45zB6m4LHXzDqQ1
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Jul 2019 21:30:08 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45zB6p2b71zDqQP
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Jul 2019 21:30:09 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
  d=sirena.org.uk; s=20170815-heliosphere; h=Date:Message-Id:In-Reply-To:
  Subject:Cc:To:From:Sender:Reply-To:MIME-Version:Content-Type:
  Content-Transfer-Encoding:Content-ID:Content-Description:Resent-Date:
  Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:References:
  List-Id:List-Help:List-Unsubscribe:List-Subscribe:List-Post:List-Owner:
- List-Archive; bh=z0IHM+7vogbfAEDA0ioqx+jvax0cqC8LrOI2sqD0W9M=; b=lAmN1MuwJSWu
- IoJ9vIugvMB2Q5xCujcndl3SeVb3COQIhkyb0hyPV6UMHAsiNu5JqxaBvCt/jlk4NZ0LOYBQThKji
- Kiyen2jXzOnaSMFj8qm+BEw6konfk3YB5YQ9OWxyenRnxZJeV4fWxw0cUMLmw5fjGuvBuZ4RMNST8
- 4Tg7k=;
+ List-Archive; bh=Oc00lErgK9TOIwDxfVL0TGkToNOIUPKLzcyDE4l8jTo=; b=MWl7ooSDiy8l
+ ZsfUmwvPp4rcYzXloF5d28C1TXqzuFMWJ810qZ/0v1KdizN5/T0Zsx78LlaNpT0z6MLwpKJjTPhPR
+ U5qxJ51R5u7pfTmCvaJrmn92PN1OtazSkegLpgphoQgyXBEo+x3+IYE5RNWF5q+GRz1sqH/nIg3YG
+ 5YRLo=;
 Received: from cpc102320-sgyl38-2-0-cust46.18-2.cable.virginm.net
  ([82.37.168.47] helo=ypsilon.sirena.org.uk)
  by heliosphere.sirena.org.uk with esmtpsa
  (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256) (Exim 4.92)
  (envelope-from <broonie@sirena.org.uk>)
- id 1hsmnn-0001oz-56; Wed, 31 Jul 2019 11:29:51 +0000
+ id 1hsmnl-0001ns-5M; Wed, 31 Jul 2019 11:29:49 +0000
 Received: by ypsilon.sirena.org.uk (Postfix, from userid 1000)
- id 07FCF2742CDE; Wed, 31 Jul 2019 12:29:49 +0100 (BST)
+ id 8D5682742CC3; Wed, 31 Jul 2019 12:29:48 +0100 (BST)
 From: Mark Brown <broonie@kernel.org>
 To: YueHaibing <yuehaibing@huawei.com>
-Subject: Applied "ASoC: ep93xx-i2s: use devm_platform_ioremap_resource() to
+Subject: Applied "ASoC: fsl_audmix: use devm_platform_ioremap_resource() to
  simplify code" to the asoc tree
-In-Reply-To: <20190727150738.54764-5-yuehaibing@huawei.com>
+In-Reply-To: <20190727150738.54764-9-yuehaibing@huawei.com>
 X-Patchwork-Hint: ignore
-Message-Id: <20190731112950.07FCF2742CDE@ypsilon.sirena.org.uk>
-Date: Wed, 31 Jul 2019 12:29:49 +0100 (BST)
+Message-Id: <20190731112948.8D5682742CC3@ypsilon.sirena.org.uk>
+Date: Wed, 31 Jul 2019 12:29:48 +0100 (BST)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -100,7 +99,7 @@ Sender: "Linuxppc-dev"
 
 The patch
 
-   ASoC: ep93xx-i2s: use devm_platform_ioremap_resource() to simplify code
+   ASoC: fsl_audmix: use devm_platform_ioremap_resource() to simplify code
 
 has been applied to the asoc tree at
 
@@ -125,10 +124,10 @@ to this mail.
 Thanks,
 Mark
 
-From 4b3540074361fc7b97f2da54365c55ceca6333d2 Mon Sep 17 00:00:00 2001
+From 959bb6b54d708652fe06097feecc3acd4d6b8c89 Mon Sep 17 00:00:00 2001
 From: YueHaibing <yuehaibing@huawei.com>
-Date: Sat, 27 Jul 2019 23:07:08 +0800
-Subject: [PATCH] ASoC: ep93xx-i2s: use devm_platform_ioremap_resource() to
+Date: Sat, 27 Jul 2019 23:07:12 +0800
+Subject: [PATCH] ASoC: fsl_audmix: use devm_platform_ioremap_resource() to
  simplify code
 
 Use devm_platform_ioremap_resource() to simplify the code a bit.
@@ -136,32 +135,33 @@ This is detected by coccinelle.
 
 Reported-by: Hulk Robot <hulkci@huawei.com>
 Signed-off-by: YueHaibing <yuehaibing@huawei.com>
-Link: https://lore.kernel.org/r/20190727150738.54764-5-yuehaibing@huawei.com
+Link: https://lore.kernel.org/r/20190727150738.54764-9-yuehaibing@huawei.com
 Signed-off-by: Mark Brown <broonie@kernel.org>
 ---
- sound/soc/cirrus/ep93xx-i2s.c | 4 +---
+ sound/soc/fsl/fsl_audmix.c | 4 +---
  1 file changed, 1 insertion(+), 3 deletions(-)
 
-diff --git a/sound/soc/cirrus/ep93xx-i2s.c b/sound/soc/cirrus/ep93xx-i2s.c
-index 0b4355e95f84..7d9cf67129d4 100644
---- a/sound/soc/cirrus/ep93xx-i2s.c
-+++ b/sound/soc/cirrus/ep93xx-i2s.c
-@@ -430,15 +430,13 @@ static const struct snd_soc_component_driver ep93xx_i2s_component = {
- static int ep93xx_i2s_probe(struct platform_device *pdev)
+diff --git a/sound/soc/fsl/fsl_audmix.c b/sound/soc/fsl/fsl_audmix.c
+index 3897a54a11fe..c7e4e9757dce 100644
+--- a/sound/soc/fsl/fsl_audmix.c
++++ b/sound/soc/fsl/fsl_audmix.c
+@@ -458,7 +458,6 @@ static int fsl_audmix_probe(struct platform_device *pdev)
  {
- 	struct ep93xx_i2s_info *info;
+ 	struct device *dev = &pdev->dev;
+ 	struct fsl_audmix *priv;
 -	struct resource *res;
- 	int err;
- 
- 	info = devm_kzalloc(&pdev->dev, sizeof(*info), GFP_KERNEL);
- 	if (!info)
+ 	const char *mdrv;
+ 	const struct of_device_id *of_id;
+ 	void __iomem *regs;
+@@ -475,8 +474,7 @@ static int fsl_audmix_probe(struct platform_device *pdev)
  		return -ENOMEM;
  
+ 	/* Get the addresses */
 -	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
--	info->regs = devm_ioremap_resource(&pdev->dev, res);
-+	info->regs = devm_platform_ioremap_resource(pdev, 0);
- 	if (IS_ERR(info->regs))
- 		return PTR_ERR(info->regs);
+-	regs = devm_ioremap_resource(dev, res);
++	regs = devm_platform_ioremap_resource(pdev, 0);
+ 	if (IS_ERR(regs))
+ 		return PTR_ERR(regs);
  
 -- 
 2.20.1
