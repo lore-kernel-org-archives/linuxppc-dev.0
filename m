@@ -2,50 +2,50 @@ Return-Path: <SRS0=JiTK=V4=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	UNWANTED_LANGUAGE_BODY,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 61B7CC32753
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Jul 2019 09:48:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B7040C433FF
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Jul 2019 09:50:42 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id DF4942089E
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Jul 2019 09:48:23 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DF4942089E
+	by mail.kernel.org (Postfix) with ESMTPS id 411DD20665
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Jul 2019 09:50:42 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 411DD20665
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=huawei.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45z7sK462czDqT4
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Jul 2019 19:48:21 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45z7vw6X85zDqdM
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Jul 2019 19:50:36 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=huawei.com
- (client-ip=45.249.212.190; helo=huawei.com; envelope-from=yanaijie@huawei.com;
+ (client-ip=45.249.212.35; helo=huawei.com; envelope-from=yanaijie@huawei.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=huawei.com
-Received: from huawei.com (szxga04-in.huawei.com [45.249.212.190])
+Received: from huawei.com (szxga07-in.huawei.com [45.249.212.35])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45z7N70zmdzDqRj
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Jul 2019 19:26:30 +1000 (AEST)
-Received: from DGGEMS405-HUB.china.huawei.com (unknown [172.30.72.58])
- by Forcepoint Email with ESMTP id A827E9F6CE9843E65794;
- Wed, 31 Jul 2019 17:26:23 +0800 (CST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45z7N9102DzDqYp
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Jul 2019 19:26:32 +1000 (AEST)
+Received: from DGGEMS405-HUB.china.huawei.com (unknown [172.30.72.59])
+ by Forcepoint Email with ESMTP id 87BAE11AE981243BE807;
+ Wed, 31 Jul 2019 17:26:28 +0800 (CST)
 Received: from huawei.com (10.175.124.28) by DGGEMS405-HUB.china.huawei.com
  (10.3.19.205) with Microsoft SMTP Server id 14.3.439.0; Wed, 31 Jul 2019
- 17:26:16 +0800
+ 17:26:18 +0800
 From: Jason Yan <yanaijie@huawei.com>
 To: <mpe@ellerman.id.au>, <linuxppc-dev@lists.ozlabs.org>,
  <diana.craciun@nxp.com>, <christophe.leroy@c-s.fr>,
  <benh@kernel.crashing.org>, <paulus@samba.org>, <npiggin@gmail.com>,
  <keescook@chromium.org>, <kernel-hardening@lists.openwall.com>
-Subject: [PATCH v3 08/10] powerpc/fsl_booke/kaslr: clear the original kernel
- if randomized
-Date: Wed, 31 Jul 2019 17:43:16 +0800
-Message-ID: <20190731094318.26538-9-yanaijie@huawei.com>
+Subject: [PATCH v3 10/10] powerpc/fsl_booke/kaslr: dump out kernel offset
+ information on panic
+Date: Wed, 31 Jul 2019 17:43:18 +0800
+Message-ID: <20190731094318.26538-11-yanaijie@huawei.com>
 X-Mailer: git-send-email 2.17.2
 In-Reply-To: <20190731094318.26538-1-yanaijie@huawei.com>
 References: <20190731094318.26538-1-yanaijie@huawei.com>
@@ -72,7 +72,9 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The original kernel still exists in the memory, clear it now.
+When kaslr is enabled, the kernel offset is different for every boot.
+This brings some difficult to debug the kernel. Dump out the kernel
+offset when panic so that we can easily debug the kernel.
 
 Signed-off-by: Jason Yan <yanaijie@huawei.com>
 Cc: Diana Craciun <diana.craciun@nxp.com>
@@ -84,57 +86,75 @@ Cc: Nicholas Piggin <npiggin@gmail.com>
 Cc: Kees Cook <keescook@chromium.org>
 Reviewed-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
- arch/powerpc/kernel/kaslr_booke.c  | 11 +++++++++++
- arch/powerpc/mm/mmu_decl.h         |  2 ++
- arch/powerpc/mm/nohash/fsl_booke.c |  1 +
- 3 files changed, 14 insertions(+)
+ arch/powerpc/include/asm/page.h     |  5 +++++
+ arch/powerpc/kernel/machine_kexec.c |  1 +
+ arch/powerpc/kernel/setup-common.c  | 19 +++++++++++++++++++
+ 3 files changed, 25 insertions(+)
 
-diff --git a/arch/powerpc/kernel/kaslr_booke.c b/arch/powerpc/kernel/kaslr_booke.c
-index 97250cad71de..4b3f19a663fc 100644
---- a/arch/powerpc/kernel/kaslr_booke.c
-+++ b/arch/powerpc/kernel/kaslr_booke.c
-@@ -400,3 +400,14 @@ notrace void __init kaslr_early_init(void *dt_ptr, phys_addr_t size)
+diff --git a/arch/powerpc/include/asm/page.h b/arch/powerpc/include/asm/page.h
+index 60a68d3a54b1..cd3ac530e58d 100644
+--- a/arch/powerpc/include/asm/page.h
++++ b/arch/powerpc/include/asm/page.h
+@@ -317,6 +317,11 @@ struct vm_area_struct;
  
- 	reloc_kernel_entry(dt_ptr, kimage_vaddr);
- }
-+
-+void __init kaslr_late_init(void)
+ extern unsigned long kimage_vaddr;
+ 
++static inline unsigned long kaslr_offset(void)
 +{
-+	/* If randomized, clear the original kernel */
-+	if (kimage_vaddr != KERNELBASE) {
-+		unsigned long kernel_sz;
-+
-+		kernel_sz = (unsigned long)_end - kimage_vaddr;
-+		memzero_explicit((void *)KERNELBASE, kernel_sz);
-+	}
++	return kimage_vaddr - KERNELBASE;
 +}
-diff --git a/arch/powerpc/mm/mmu_decl.h b/arch/powerpc/mm/mmu_decl.h
-index 9332772c8a66..f0a461482dba 100644
---- a/arch/powerpc/mm/mmu_decl.h
-+++ b/arch/powerpc/mm/mmu_decl.h
-@@ -150,8 +150,10 @@ extern void loadcam_multi(int first_idx, int num, int tmp_idx);
- 
- #ifdef CONFIG_RANDOMIZE_BASE
- void kaslr_early_init(void *dt_ptr, phys_addr_t size);
-+void kaslr_late_init(void);
- #else
- static inline void kaslr_early_init(void *dt_ptr, phys_addr_t size) {}
-+static inline void kaslr_late_init(void) {}
++
+ #include <asm-generic/memory_model.h>
+ #endif /* __ASSEMBLY__ */
+ #include <asm/slice.h>
+diff --git a/arch/powerpc/kernel/machine_kexec.c b/arch/powerpc/kernel/machine_kexec.c
+index c4ed328a7b96..078fe3d76feb 100644
+--- a/arch/powerpc/kernel/machine_kexec.c
++++ b/arch/powerpc/kernel/machine_kexec.c
+@@ -86,6 +86,7 @@ void arch_crash_save_vmcoreinfo(void)
+ 	VMCOREINFO_STRUCT_SIZE(mmu_psize_def);
+ 	VMCOREINFO_OFFSET(mmu_psize_def, shift);
  #endif
++	vmcoreinfo_append_str("KERNELOFFSET=%lx\n", kaslr_offset());
+ }
  
- struct tlbcam {
-diff --git a/arch/powerpc/mm/nohash/fsl_booke.c b/arch/powerpc/mm/nohash/fsl_booke.c
-index 8d25a8dc965f..e88fcc367600 100644
---- a/arch/powerpc/mm/nohash/fsl_booke.c
-+++ b/arch/powerpc/mm/nohash/fsl_booke.c
-@@ -269,6 +269,7 @@ notrace void __init relocate_init(u64 dt_ptr, phys_addr_t start)
- 	kernstart_addr = start;
- 	if (is_second_reloc) {
- 		virt_phys_offset = PAGE_OFFSET - memstart_addr;
-+		kaslr_late_init();
+ /*
+diff --git a/arch/powerpc/kernel/setup-common.c b/arch/powerpc/kernel/setup-common.c
+index 1f8db666468d..064075f02837 100644
+--- a/arch/powerpc/kernel/setup-common.c
++++ b/arch/powerpc/kernel/setup-common.c
+@@ -715,12 +715,31 @@ static struct notifier_block ppc_panic_block = {
+ 	.priority = INT_MIN /* may not return; must be done last */
+ };
+ 
++/*
++ * Dump out kernel offset information on panic.
++ */
++static int dump_kernel_offset(struct notifier_block *self, unsigned long v,
++			      void *p)
++{
++	pr_emerg("Kernel Offset: 0x%lx from 0x%lx\n",
++		 kaslr_offset(), KERNELBASE);
++
++	return 0;
++}
++
++static struct notifier_block kernel_offset_notifier = {
++	.notifier_call = dump_kernel_offset
++};
++
+ void __init setup_panic(void)
+ {
+ 	/* PPC64 always does a hard irq disable in its panic handler */
+ 	if (!IS_ENABLED(CONFIG_PPC64) && !ppc_md.panic)
  		return;
- 	}
+ 	atomic_notifier_chain_register(&panic_notifier_list, &ppc_panic_block);
++	if (IS_ENABLED(CONFIG_RANDOMIZE_BASE) && kaslr_offset() > 0)
++		atomic_notifier_chain_register(&panic_notifier_list,
++					       &kernel_offset_notifier);
+ }
  
+ #ifdef CONFIG_CHECK_CACHE_COHERENCY
 -- 
 2.17.2
 
