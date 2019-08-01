@@ -2,65 +2,68 @@ Return-Path: <SRS0=4G4N=V5=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.3 required=3.0
-	tests=HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-1.0 required=3.0 tests=MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C7820C19759
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Aug 2019 11:43:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 752CAC433FF
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Aug 2019 11:55:12 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id D08EC20B7C
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Aug 2019 11:43:39 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D08EC20B7C
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
+	by mail.kernel.org (Postfix) with ESMTPS id E9EBD2087E
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Aug 2019 11:55:11 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E9EBD2087E
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=bugzilla.kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45zpMs1wyvzDqxm
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Aug 2019 21:43:37 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45zpd95T13zDqsw
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Aug 2019 21:55:09 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=kaod.org
- (client-ip=46.105.63.230; helo=7.mo68.mail-out.ovh.net;
- envelope-from=clg@kaod.org; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=kaod.org
-X-Greylist: delayed 606 seconds by postgrey-1.36 at bilbo;
- Thu, 01 Aug 2019 21:42:01 AEST
-Received: from 7.mo68.mail-out.ovh.net (7.mo68.mail-out.ovh.net
- [46.105.63.230])
+ spf=pass (mailfrom) smtp.mailfrom=bugzilla.kernel.org
+ (client-ip=198.145.29.98; helo=mail.wl.linuxfoundation.org;
+ envelope-from=bugzilla-daemon@bugzilla.kernel.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=bugzilla.kernel.org
+Received: from mail.wl.linuxfoundation.org (mail.wl.linuxfoundation.org
+ [198.145.29.98])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45zpL14hJFzDqmh
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Aug 2019 21:41:56 +1000 (AEST)
-Received: from player758.ha.ovh.net (unknown [10.108.57.18])
- by mo68.mail-out.ovh.net (Postfix) with ESMTP id C367813A3CE
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Aug 2019 13:31:47 +0200 (CEST)
-Received: from kaod.org (lfbn-1-2240-157.w90-76.abo.wanadoo.fr [90.76.60.157])
- (Authenticated sender: clg@kaod.org)
- by player758.ha.ovh.net (Postfix) with ESMTPSA id 1E73F88D821D;
- Thu,  1 Aug 2019 11:31:36 +0000 (UTC)
-Subject: Re: [PATCH] powerpc/xive: Add some error handling code to
- 'xive_spapr_init()'
-To: Christophe JAILLET <christophe.jaillet@wanadoo.fr>,
- benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
- allison@lohutok.net, tglx@linutronix.de, groug@kaod.org
-References: <20190801110956.8517-1-christophe.jaillet@wanadoo.fr>
-From: =?UTF-8?Q?C=c3=a9dric_Le_Goater?= <clg@kaod.org>
-Message-ID: <bb72af16-d775-de39-498b-5e64976d93de@kaod.org>
-Date: Thu, 1 Aug 2019 13:31:35 +0200
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
- Thunderbird/60.8.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45zpbB1Q0DzDqnD
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Aug 2019 21:53:25 +1000 (AEST)
+Received: from mail.wl.linuxfoundation.org (localhost [127.0.0.1])
+ by mail.wl.linuxfoundation.org (Postfix) with ESMTP id F18DF26E3E
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Aug 2019 11:53:22 +0000 (UTC)
+Received: by mail.wl.linuxfoundation.org (Postfix, from userid 486)
+ id E61782859E; Thu,  1 Aug 2019 11:53:22 +0000 (UTC)
+From: bugzilla-daemon@bugzilla.kernel.org
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [Bug 204375] kernel 5.2.4 w. KASAN enabled fails to boot on a
+ PowerMac G4 3,6 at very early stage
+Date: Thu, 01 Aug 2019 11:53:22 +0000
+X-Bugzilla-Reason: None
+X-Bugzilla-Type: changed
+X-Bugzilla-Watch-Reason: AssignedTo platform_ppc-32@kernel-bugs.osdl.org
+X-Bugzilla-Product: Platform Specific/Hardware
+X-Bugzilla-Component: PPC-32
+X-Bugzilla-Version: 2.5
+X-Bugzilla-Keywords: 
+X-Bugzilla-Severity: normal
+X-Bugzilla-Who: erhard_f@mailbox.org
+X-Bugzilla-Status: NEW
+X-Bugzilla-Resolution: 
+X-Bugzilla-Priority: P1
+X-Bugzilla-Assigned-To: platform_ppc-32@kernel-bugs.osdl.org
+X-Bugzilla-Flags: 
+X-Bugzilla-Changed-Fields: 
+Message-ID: <bug-204375-206035-HclSNTzICk@https.bugzilla.kernel.org/>
+In-Reply-To: <bug-204375-206035@https.bugzilla.kernel.org/>
+References: <bug-204375-206035@https.bugzilla.kernel.org/>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+X-Bugzilla-URL: https://bugzilla.kernel.org/
+Auto-Submitted: auto-generated
 MIME-Version: 1.0
-In-Reply-To: <20190801110956.8517-1-christophe.jaillet@wanadoo.fr>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
-X-Ovh-Tracer-Id: 14817687201574521713
-X-VR-SPAMSTATE: OK
-X-VR-SPAMSCORE: -100
-X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgeduvddrleejgdeflecutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfqggfjpdevjffgvefmvefgnecuuegrihhlohhuthemucehtddtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmd
+X-Virus-Scanned: ClamAV using ClamSMTP
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -72,130 +75,30 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: kernel-janitors@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 01/08/2019 13:09, Christophe JAILLET wrote:
-> 'xive_irq_bitmap_add()' can return -ENOMEM.
-> In this case, we should free the memory already allocated and return
-> 'false' to the caller.
-> 
-> Also add an error path which undoes the 'tima = ioremap(...)'
-> 
-> Signed-off-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
-> ---
-> NOT compile tested (I don't have a cross compiler and won't install one).
+https://bugzilla.kernel.org/show_bug.cgi?id=3D204375
 
-All distros have a packaged powerpc cross compiler. 
+--- Comment #13 from Erhard F. (erhard_f@mailbox.org) ---
+Thanks for the hint! But adding KASAN_SANITIZE :=3D n to lib/mpi/Makefile d=
+id not
+make a change in this case.
 
-Then, you need to compile a kernel for a pseries machine and run a pseries
-machine with it under QEMU. You can use a simple ppc initrd, a net install 
-one for example.
+However I had the idea to disable btrfs (at all) and boot from my other ext4
+partition. This worked out and I got further. After other stacktraces flyin=
+g by
+the boot process now stalls at offb switching over to radeondrmfb. Again re=
+boot
+after timer kicks in after 10min.
 
-You could also hack the device tree in QEMU to torture the XIVE sPAPR driver.
-Nothing too complex, all is here : 
+Seems btrfs is not in the best condition on ppc32 with 4K pagesize..
 
-https://git.qemu.org/?p=qemu.git;a=blob;f=hw/intc/spapr_xive.c;h=097f88d4608d8ba160526756a3a224e5176b6e0f;hb=HEAD#l1427
+I would test this on the G5 or Talos II too, but there is no kernel option =
+to
+enable 'KASAN: runtime memory debugging' on ppc64.
 
-
-> So if some correction or improvement are needed, feel free to propose and
-> commit it directly.
-
-Yes there is I think. I would move at the end all the code that needs a 
-rollback.
-
-Thanks for taking a look, I might do that one day.
-
-Cheers,
-C.  
-
-
-> ---
->  arch/powerpc/sysdev/xive/spapr.c | 36 +++++++++++++++++++++++++-------
->  1 file changed, 28 insertions(+), 8 deletions(-)
-> 
-> diff --git a/arch/powerpc/sysdev/xive/spapr.c b/arch/powerpc/sysdev/xive/spapr.c
-> index 52198131c75e..b3ae0b76c433 100644
-> --- a/arch/powerpc/sysdev/xive/spapr.c
-> +++ b/arch/powerpc/sysdev/xive/spapr.c
-> @@ -64,6 +64,17 @@ static int xive_irq_bitmap_add(int base, int count)
->  	return 0;
->  }
->  
-> +static void xive_irq_bitmap_remove_all(void)
-> +{
-> +	struct xive_irq_bitmap *xibm, *tmp;
-> +
-> +	list_for_each_entry_safe(xibm, tmp, &xive_irq_bitmaps, list) {
-> +		list_del(&xibm->list);
-> +		kfree(xibm->bitmap);
-> +		kfree(xibm);
-> +	}
-> +}
-> +
->  static int __xive_irq_bitmap_alloc(struct xive_irq_bitmap *xibm)
->  {
->  	int irq;
-> @@ -723,7 +734,7 @@ bool __init xive_spapr_init(void)
->  	u32 val;
->  	u32 len;
->  	const __be32 *reg;
-> -	int i;
-> +	int i, err;
->  
->  	if (xive_spapr_disabled())
->  		return false;
-> @@ -748,23 +759,26 @@ bool __init xive_spapr_init(void)
->  	}
->  
->  	if (!xive_get_max_prio(&max_prio))
-> -		return false;
-> +		goto err_unmap;
->  
->  	/* Feed the IRQ number allocator with the ranges given in the DT */
->  	reg = of_get_property(np, "ibm,xive-lisn-ranges", &len);
->  	if (!reg) {
->  		pr_err("Failed to read 'ibm,xive-lisn-ranges' property\n");
-> -		return false;
-> +		goto err_unmap;
->  	}
->  
->  	if (len % (2 * sizeof(u32)) != 0) {
->  		pr_err("invalid 'ibm,xive-lisn-ranges' property\n");
-> -		return false;
-> +		goto err_unmap;
->  	}
->  
-> -	for (i = 0; i < len / (2 * sizeof(u32)); i++, reg += 2)
-> -		xive_irq_bitmap_add(be32_to_cpu(reg[0]),
-> -				    be32_to_cpu(reg[1]));
-> +	for (i = 0; i < len / (2 * sizeof(u32)); i++, reg += 2) {
-> +		err = xive_irq_bitmap_add(be32_to_cpu(reg[0]),
-> +					  be32_to_cpu(reg[1]));
-> +		if (err < 0)
-> +			goto err_mem_free;
-> +	}
->  
->  	/* Iterate the EQ sizes and pick one */
->  	of_property_for_each_u32(np, "ibm,xive-eq-sizes", prop, reg, val) {
-> @@ -775,8 +789,14 @@ bool __init xive_spapr_init(void)
->  
->  	/* Initialize XIVE core with our backend */
->  	if (!xive_core_init(&xive_spapr_ops, tima, TM_QW1_OS, max_prio))
-> -		return false;
-> +		goto err_mem_free;
->  
->  	pr_info("Using %dkB queues\n", 1 << (xive_queue_shift - 10));
->  	return true;
-> +
-> +err_mem_free:
-> +	xive_irq_bitmap_remove_all();
-> +err_unmap:
-> +	iounmap(tima);
-> +	return false;
->  }
-> 
-
+--=20
+You are receiving this mail because:
+You are watching the assignee of the bug.=
