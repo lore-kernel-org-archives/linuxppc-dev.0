@@ -2,52 +2,63 @@ Return-Path: <SRS0=4G4N=V5=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+X-Spam-Status: No, score=-8.3 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+	URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D05D0C19759
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Aug 2019 08:37:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id F1D4CC19759
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Aug 2019 09:38:09 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 86219214DA
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Aug 2019 08:37:48 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 86219214DA
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=wanadoo.fr
+	by mail.kernel.org (Postfix) with ESMTPS id 47A3120644
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Aug 2019 09:38:09 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 47A3120644
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 45zkFP0BqhzDqx2
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Aug 2019 18:37:45 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 45zlb22vR7zDqw0
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Aug 2019 19:38:06 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=wanadoo.fr
- (client-ip=80.12.242.126; helo=smtp.smtpout.orange.fr;
- envelope-from=christophe.jaillet@wanadoo.fr; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=kaod.org
+ (client-ip=87.98.172.249; helo=8.mo3.mail-out.ovh.net;
+ envelope-from=clg@kaod.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=wanadoo.fr
-Received: from smtp.smtpout.orange.fr (smtp04.smtpout.orange.fr
- [80.12.242.126])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45zk7X0TM8zDqtQ
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Aug 2019 18:32:39 +1000 (AEST)
-Received: from localhost.localdomain ([176.167.121.156]) by mwinf5d80 with ME
- id jkYb2000U3NZnML03kYcJj; Thu, 01 Aug 2019 10:32:36 +0200
-X-ME-Helo: localhost.localdomain
-X-ME-Auth: Y2hyaXN0b3BoZS5qYWlsbGV0QHdhbmFkb28uZnI=
-X-ME-Date: Thu, 01 Aug 2019 10:32:36 +0200
-X-ME-IP: 176.167.121.156
-From: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
-To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
- allison@lohutok.net, tglx@linutronix.de, clg@kaod.org, groug@kaod.org
-Subject: [PATCH 2/2] powerpc/xive: Add a check for memory allocation failure
-Date: Thu,  1 Aug 2019 10:32:42 +0200
-Message-Id: <cc53462734dfeaf15b6bad0e626b483de18656b4.1564647619.git.christophe.jaillet@wanadoo.fr>
-X-Mailer: git-send-email 2.20.1
-In-Reply-To: <cover.1564647619.git.christophe.jaillet@wanadoo.fr>
+ dmarc=none (p=none dis=none) header.from=kaod.org
+Received: from 8.mo3.mail-out.ovh.net (8.mo3.mail-out.ovh.net [87.98.172.249])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
+ bits)) (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45zlXn21CczDqXb
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Aug 2019 19:36:06 +1000 (AEST)
+Received: from player791.ha.ovh.net (unknown [10.108.35.74])
+ by mo3.mail-out.ovh.net (Postfix) with ESMTP id AD7CE221EC9
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Aug 2019 10:58:57 +0200 (CEST)
+Received: from kaod.org (lfbn-1-2240-157.w90-76.abo.wanadoo.fr [90.76.60.157])
+ (Authenticated sender: clg@kaod.org)
+ by player791.ha.ovh.net (Postfix) with ESMTPSA id EAA2686678C9;
+ Thu,  1 Aug 2019 08:58:45 +0000 (UTC)
+Subject: Re: [PATCH 1/2] powerpc/xive: Use GFP_KERNEL instead of GFP_ATOMIC in
+ 'xive_irq_bitmap_add()'
+To: Christophe JAILLET <christophe.jaillet@wanadoo.fr>,
+ benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
+ allison@lohutok.net, tglx@linutronix.de, groug@kaod.org
 References: <cover.1564647619.git.christophe.jaillet@wanadoo.fr>
+ <85d5d247ce753befd6aa63c473f7823de6520ccd.1564647619.git.christophe.jaillet@wanadoo.fr>
+From: =?UTF-8?Q?C=c3=a9dric_Le_Goater?= <clg@kaod.org>
+Message-ID: <669a1566-4048-1d81-f719-45e4ac05758b@kaod.org>
+Date: Thu, 1 Aug 2019 10:58:45 +0200
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.8.0
 MIME-Version: 1.0
+In-Reply-To: <85d5d247ce753befd6aa63c473f7823de6520ccd.1564647619.git.christophe.jaillet@wanadoo.fr>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
 Content-Transfer-Encoding: 8bit
+X-Ovh-Tracer-Id: 12236561665022528369
+X-VR-SPAMSTATE: OK
+X-VR-SPAMSCORE: -100
+X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgeduvddrleejgddtkecutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfqggfjpdevjffgvefmvefgnecuuegrihhlohhuthemucehtddtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmd
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -59,44 +70,44 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: kernel-janitors@vger.kernel.org,
- Christophe JAILLET <christophe.jaillet@wanadoo.fr>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: kernel-janitors@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The result of this kzalloc is not checked. Add a check and corresponding
-error handling code.
+On 01/08/2019 10:32, Christophe JAILLET wrote:
+> There is no need to use GFP_ATOMIC here. GFP_KERNEL should be enough.
+> GFP_KERNEL is also already used for another allocation just a few lines
+> below.
 
-Signed-off-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
----
-Note that 'xive_irq_bitmap_add()' failures are not handled in
-'xive_spapr_init()'
-I guess that it is not really an issue. This function is _init, so if a
-memory allocation occures here, it is likely that the system will
-already be in bad shape.
-Anyway, the check added here would at least keep the data linked in
-'xive_irq_bitmaps' usable.
----
- arch/powerpc/sysdev/xive/spapr.c | 4 ++++
- 1 file changed, 4 insertions(+)
-
-diff --git a/arch/powerpc/sysdev/xive/spapr.c b/arch/powerpc/sysdev/xive/spapr.c
-index b4f5eb9e0f82..52198131c75e 100644
---- a/arch/powerpc/sysdev/xive/spapr.c
-+++ b/arch/powerpc/sysdev/xive/spapr.c
-@@ -53,6 +53,10 @@ static int xive_irq_bitmap_add(int base, int count)
- 	xibm->base = base;
- 	xibm->count = count;
- 	xibm->bitmap = kzalloc(xibm->count, GFP_KERNEL);
-+	if (!xibm->bitmap) {
-+		kfree(xibm);
-+		return -ENOMEM;
-+	}
- 	list_add(&xibm->list, &xive_irq_bitmaps);
+This is correct.
  
- 	pr_info("Using IRQ range [%x-%x]", xibm->base,
--- 
-2.20.1
+> Signed-off-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
+
+
+Reviewed-by: Cédric Le Goater <clg@kaod.org>
+
+Thanks,
+
+C.
+
+> ---
+>  arch/powerpc/sysdev/xive/spapr.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/arch/powerpc/sysdev/xive/spapr.c b/arch/powerpc/sysdev/xive/spapr.c
+> index 8ef9cf4ebb1c..b4f5eb9e0f82 100644
+> --- a/arch/powerpc/sysdev/xive/spapr.c
+> +++ b/arch/powerpc/sysdev/xive/spapr.c
+> @@ -45,7 +45,7 @@ static int xive_irq_bitmap_add(int base, int count)
+>  {
+>  	struct xive_irq_bitmap *xibm;
+>  
+> -	xibm = kzalloc(sizeof(*xibm), GFP_ATOMIC);
+> +	xibm = kzalloc(sizeof(*xibm), GFP_KERNEL);
+>  	if (!xibm)
+>  		return -ENOMEM;
+>  
+> 
 
