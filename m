@@ -6,32 +6,32 @@ X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
 	URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B8861C433FF
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  2 Aug 2019 04:24:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A4F88C32750
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  2 Aug 2019 04:26:05 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3EC3F206A2
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  2 Aug 2019 04:24:24 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3EC3F206A2
+	by mail.kernel.org (Postfix) with ESMTPS id 2357E206A2
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  2 Aug 2019 04:26:05 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2357E206A2
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=informatik.wtf
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 460DZY6zqbzDr6x
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  2 Aug 2019 14:24:21 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+	by lists.ozlabs.org (Postfix) with ESMTP id 460DcV4r3wzDr1D
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  2 Aug 2019 14:26:02 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 460DT22ZQ0zDqkV
+ by lists.ozlabs.org (Postfix) with ESMTPS id 460DT26NxNzDqkV
  for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Aug 2019 14:19:34 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=informatik.wtf
 Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 460DT21yLxz8t7p
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 460DT25qXpz8t7p
  for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Aug 2019 14:19:34 +1000 (AEST)
 Received: by ozlabs.org (Postfix)
- id 460DT21jJmz9sBF; Fri,  2 Aug 2019 14:19:34 +1000 (AEST)
+ id 460DT25bGFz9sBF; Fri,  2 Aug 2019 14:19:34 +1000 (AEST)
 Authentication-Results: ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=informatik.wtf
  (client-ip=131.153.2.43; helo=h2.fbrelay.privateemail.com;
@@ -42,25 +42,26 @@ Received: from h2.fbrelay.privateemail.com (h2.fbrelay.privateemail.com
  [131.153.2.43])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 460DT16lYgz9sNp
- for <linuxppc-dev@ozlabs.org>; Fri,  2 Aug 2019 14:19:33 +1000 (AEST)
+ by ozlabs.org (Postfix) with ESMTPS id 460DT21BMvz9s3Z
+ for <linuxppc-dev@ozlabs.org>; Fri,  2 Aug 2019 14:19:34 +1000 (AEST)
 Received: from MTA-06-3.privateemail.com (mta-06.privateemail.com
  [68.65.122.16])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by h1.fbrelay.privateemail.com (Postfix) with ESMTPS id 65A19814C8
- for <linuxppc-dev@ozlabs.org>; Fri,  2 Aug 2019 00:19:30 -0400 (EDT)
+ by h1.fbrelay.privateemail.com (Postfix) with ESMTPS id DA2D9814DC
+ for <linuxppc-dev@ozlabs.org>; Fri,  2 Aug 2019 00:19:31 -0400 (EDT)
 Received: from MTA-06.privateemail.com (localhost [127.0.0.1])
- by MTA-06.privateemail.com (Postfix) with ESMTP id 82D6C6004D;
- Fri,  2 Aug 2019 00:19:26 -0400 (EDT)
+ by MTA-06.privateemail.com (Postfix) with ESMTP id 8A46860045;
+ Fri,  2 Aug 2019 00:19:28 -0400 (EDT)
 Received: from wrwlf0000.attlocal.net (unknown [10.20.151.234])
- by MTA-06.privateemail.com (Postfix) with ESMTPA id 1BAD260045;
- Fri,  2 Aug 2019 04:19:26 +0000 (UTC)
+ by MTA-06.privateemail.com (Postfix) with ESMTPA id 236B160039;
+ Fri,  2 Aug 2019 04:19:28 +0000 (UTC)
 From: "Christopher M. Riedl" <cmr@informatik.wtf>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH v2 1/3] powerpc/spinlocks: Refactor SHARED_PROCESSOR
-Date: Thu,  1 Aug 2019 23:22:31 -0500
-Message-Id: <20190802042233.20835-2-cmr@informatik.wtf>
+Subject: [PATCH v2 3/3] powerpc/spinlocks: Fix oops in shared-processor
+ spinlocks
+Date: Thu,  1 Aug 2019 23:22:33 -0500
+Message-Id: <20190802042233.20835-4-cmr@informatik.wtf>
 X-Mailer: git-send-email 2.22.0
 In-Reply-To: <20190802042233.20835-1-cmr@informatik.wtf>
 References: <20190802042233.20835-1-cmr@informatik.wtf>
@@ -84,85 +85,142 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Determining if a processor is in shared processor mode is not a constant
-so don't hide it behind a #define.
+Booting w/ ppc64le_defconfig + CONFIG_PREEMPT results in the attached
+kernel trace due to calling shared-processor spinlocks while not running
+in an SPLPAR. Previously, the out-of-line spinlocks implementations were
+selected based on CONFIG_PPC_SPLPAR at compile time without a runtime
+shared-processor LPAR check.
+
+To fix, call the actual spinlock implementations from a set of common
+functions, spin_yield() and rw_yield(), which check for shared-processor
+LPAR during runtime and select the appropriate lock implementation.
+
+[    0.430878] BUG: Kernel NULL pointer dereference at 0x00000100
+[    0.431991] Faulting instruction address: 0xc000000000097f88
+[    0.432934] Oops: Kernel access of bad area, sig: 7 [#1]
+[    0.433448] LE PAGE_SIZE=64K MMU=Radix MMU=Hash PREEMPT SMP NR_CPUS=2048 NUMA PowerNV
+[    0.434479] Modules linked in:
+[    0.435055] CPU: 0 PID: 2 Comm: kthreadd Not tainted 5.2.0-rc6-00491-g249155c20f9b #28
+[    0.435730] NIP:  c000000000097f88 LR: c000000000c07a88 CTR: c00000000015ca10
+[    0.436383] REGS: c0000000727079f0 TRAP: 0300   Not tainted  (5.2.0-rc6-00491-g249155c20f9b)
+[    0.437004] MSR:  9000000002009033 <SF,HV,VEC,EE,ME,IR,DR,RI,LE>  CR: 84000424  XER: 20040000
+[    0.437874] CFAR: c000000000c07a84 DAR: 0000000000000100 DSISR: 00080000 IRQMASK: 1
+[    0.437874] GPR00: c000000000c07a88 c000000072707c80 c000000001546300 c00000007be38a80
+[    0.437874] GPR04: c0000000726f0c00 0000000000000002 c00000007279c980 0000000000000100
+[    0.437874] GPR08: c000000001581b78 0000000080000001 0000000000000008 c00000007279c9b0
+[    0.437874] GPR12: 0000000000000000 c000000001730000 c000000000142558 0000000000000000
+[    0.437874] GPR16: 0000000000000000 0000000000000000 0000000000000000 0000000000000000
+[    0.437874] GPR20: 0000000000000000 0000000000000000 0000000000000000 0000000000000000
+[    0.437874] GPR24: c00000007be38a80 c000000000c002f4 0000000000000000 0000000000000000
+[    0.437874] GPR28: c000000072221a00 c0000000726c2600 c00000007be38a80 c00000007be38a80
+[    0.443992] NIP [c000000000097f88] __spin_yield+0x48/0xa0
+[    0.444523] LR [c000000000c07a88] __raw_spin_lock+0xb8/0xc0
+[    0.445080] Call Trace:
+[    0.445670] [c000000072707c80] [c000000072221a00] 0xc000000072221a00 (unreliable)
+[    0.446425] [c000000072707cb0] [c000000000bffb0c] __schedule+0xbc/0x850
+[    0.447078] [c000000072707d70] [c000000000c002f4] schedule+0x54/0x130
+[    0.447694] [c000000072707da0] [c0000000001427dc] kthreadd+0x28c/0x2b0
+[    0.448389] [c000000072707e20] [c00000000000c1cc] ret_from_kernel_thread+0x5c/0x70
+[    0.449143] Instruction dump:
+[    0.449821] 4d9e0020 552a043e 210a07ff 79080fe0 0b080000 3d020004 3908b878 794a1f24
+[    0.450587] e8e80000 7ce7502a e8e70000 38e70100 <7ca03c2c> 70a70001 78a50020 4d820020
+[    0.452808] ---[ end trace 474d6b2b8fc5cb7e ]---
 
 Signed-off-by: Christopher M. Riedl <cmr@informatik.wtf>
-Reviewed-by: Andrew Donnellan <ajd@linux.ibm.com>
 ---
- arch/powerpc/include/asm/spinlock.h | 24 ++++++++++++++++++------
- 1 file changed, 18 insertions(+), 6 deletions(-)
+ arch/powerpc/include/asm/spinlock.h | 36 ++++++++++++++++++++---------
+ 1 file changed, 25 insertions(+), 11 deletions(-)
 
 diff --git a/arch/powerpc/include/asm/spinlock.h b/arch/powerpc/include/asm/spinlock.h
-index a47f827bc5f1..dc5fcea1f006 100644
+index 0a8270183770..6aed8a83b180 100644
 --- a/arch/powerpc/include/asm/spinlock.h
 +++ b/arch/powerpc/include/asm/spinlock.h
-@@ -101,15 +101,27 @@ static inline int arch_spin_trylock(arch_spinlock_t *lock)
- 
- #if defined(CONFIG_PPC_SPLPAR)
+@@ -103,11 +103,9 @@ static inline int arch_spin_trylock(arch_spinlock_t *lock)
  /* We only yield to the hypervisor if we are in shared processor mode */
--#define SHARED_PROCESSOR (lppaca_shared_proc(local_paca->lppaca_ptr))
- extern void __spin_yield(arch_spinlock_t *lock);
- extern void __rw_yield(arch_rwlock_t *lock);
+ void splpar_spin_yield(arch_spinlock_t *lock);
+ void splpar_rw_yield(arch_rwlock_t *lock);
+-#define __spin_yield(x) splpar_spin_yield(x)
+-#define __rw_yield(x) splpar_rw_yield(x)
  #else /* SPLPAR */
- #define __spin_yield(x)	barrier()
- #define __rw_yield(x)	barrier()
--#define SHARED_PROCESSOR	0
+-#define __spin_yield(x)	barrier()
+-#define __rw_yield(x)	barrier()
++static inline void splpar_spin_yield(arch_spinlock_t *lock) {};
++static inline void splpar_rw_yield(arch_rwlock_t *lock) {};
  #endif
  
-+static inline bool is_shared_processor(void)
+ static inline bool is_shared_processor(void)
+@@ -124,6 +122,22 @@ static inline bool is_shared_processor(void)
+ #endif
+ }
+ 
++static inline void spin_yield(arch_spinlock_t *lock)
 +{
-+/*
-+ * LPPACA is only available on BOOK3S so guard anything LPPACA related to
-+ * allow other platforms (which include this common header) to compile.
-+ */
-+#ifdef CONFIG_PPC_BOOK3S
-+	return (IS_ENABLED(CONFIG_PPC_SPLPAR) &&
-+		lppaca_shared_proc(local_paca->lppaca_ptr));
-+#else
-+	return false;
-+#endif
++	if (is_shared_processor())
++		splpar_spin_yield(lock);
++	else
++		barrier();
++}
++
++static inline void rw_yield(arch_rwlock_t *lock)
++{
++	if (is_shared_processor())
++		splpar_rw_yield(lock);
++	else
++		barrier();
 +}
 +
  static inline void arch_spin_lock(arch_spinlock_t *lock)
  {
  	while (1) {
-@@ -117,7 +129,7 @@ static inline void arch_spin_lock(arch_spinlock_t *lock)
- 			break;
+@@ -132,7 +146,7 @@ static inline void arch_spin_lock(arch_spinlock_t *lock)
  		do {
  			HMT_low();
--			if (SHARED_PROCESSOR)
-+			if (is_shared_processor())
- 				__spin_yield(lock);
+ 			if (is_shared_processor())
+-				__spin_yield(lock);
++				spin_yield(lock);
  		} while (unlikely(lock->slock != 0));
  		HMT_medium();
-@@ -136,7 +148,7 @@ void arch_spin_lock_flags(arch_spinlock_t *lock, unsigned long flags)
- 		local_irq_restore(flags);
+ 	}
+@@ -151,7 +165,7 @@ void arch_spin_lock_flags(arch_spinlock_t *lock, unsigned long flags)
  		do {
  			HMT_low();
--			if (SHARED_PROCESSOR)
-+			if (is_shared_processor())
- 				__spin_yield(lock);
+ 			if (is_shared_processor())
+-				__spin_yield(lock);
++				spin_yield(lock);
  		} while (unlikely(lock->slock != 0));
  		HMT_medium();
-@@ -226,7 +238,7 @@ static inline void arch_read_lock(arch_rwlock_t *rw)
- 			break;
+ 		local_irq_restore(flags_dis);
+@@ -241,7 +255,7 @@ static inline void arch_read_lock(arch_rwlock_t *rw)
  		do {
  			HMT_low();
--			if (SHARED_PROCESSOR)
-+			if (is_shared_processor())
- 				__rw_yield(rw);
+ 			if (is_shared_processor())
+-				__rw_yield(rw);
++				rw_yield(rw);
  		} while (unlikely(rw->lock < 0));
  		HMT_medium();
-@@ -240,7 +252,7 @@ static inline void arch_write_lock(arch_rwlock_t *rw)
- 			break;
+ 	}
+@@ -255,7 +269,7 @@ static inline void arch_write_lock(arch_rwlock_t *rw)
  		do {
  			HMT_low();
--			if (SHARED_PROCESSOR)
-+			if (is_shared_processor())
- 				__rw_yield(rw);
+ 			if (is_shared_processor())
+-				__rw_yield(rw);
++				rw_yield(rw);
  		} while (unlikely(rw->lock != 0));
  		HMT_medium();
+ 	}
+@@ -295,9 +309,9 @@ static inline void arch_write_unlock(arch_rwlock_t *rw)
+ 	rw->lock = 0;
+ }
+ 
+-#define arch_spin_relax(lock)	__spin_yield(lock)
+-#define arch_read_relax(lock)	__rw_yield(lock)
+-#define arch_write_relax(lock)	__rw_yield(lock)
++#define arch_spin_relax(lock)	spin_yield(lock)
++#define arch_read_relax(lock)	rw_yield(lock)
++#define arch_write_relax(lock)	rw_yield(lock)
+ 
+ /* See include/linux/spinlock.h */
+ #define smp_mb__after_spinlock()   smp_mb()
 -- 
 2.22.0
 
