@@ -2,23 +2,23 @@ Return-Path: <SRS0=WT2w=V6=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=no
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9F023C433FF
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  2 Aug 2019 19:31:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9AA9AC433FF
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  2 Aug 2019 19:33:44 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C6A0F20880
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  2 Aug 2019 19:31:51 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C6A0F20880
+	by mail.kernel.org (Postfix) with ESMTPS id 258D920880
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  2 Aug 2019 19:33:44 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 258D920880
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 460cjd2GDrzDqNL
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  3 Aug 2019 05:31:49 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 460clp0YpHzDrFm
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  3 Aug 2019 05:33:42 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
  (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
@@ -29,48 +29,45 @@ Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 460cg11LN3zDrCP
+ by lists.ozlabs.org (Postfix) with ESMTPS id 460cg10Qh6zDrCN
  for <linuxppc-dev@lists.ozlabs.org>; Sat,  3 Aug 2019 05:29:32 +1000 (AEST)
-Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x72JRP27012252
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 2 Aug 2019 15:29:30 -0400
-Received: from ppma03dal.us.ibm.com (b.bd.3ea9.ip4.static.sl-reverse.com
- [169.62.189.11])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2u4sk2c075-1
+ x72JRQqZ086833
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 2 Aug 2019 15:29:29 -0400
+Received: from ppma05wdc.us.ibm.com (1b.90.2fa9.ip4.static.sl-reverse.com
+ [169.47.144.27])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2u4s99cqtx-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 02 Aug 2019 15:29:30 -0400
-Received: from pps.filterd (ppma03dal.us.ibm.com [127.0.0.1])
- by ppma03dal.us.ibm.com (8.16.0.27/8.16.0.27) with SMTP id x72JOJeN024513
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 2 Aug 2019 19:29:29 GMT
-Received: from b01cxnp22033.gho.pok.ibm.com (b01cxnp22033.gho.pok.ibm.com
- [9.57.198.23]) by ppma03dal.us.ibm.com with ESMTP id 2u0e87g3vb-1
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 02 Aug 2019 15:29:28 -0400
+Received: from pps.filterd (ppma05wdc.us.ibm.com [127.0.0.1])
+ by ppma05wdc.us.ibm.com (8.16.0.27/8.16.0.27) with SMTP id x72JOX1p023376
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 2 Aug 2019 19:29:27 GMT
+Received: from b01cxnp23032.gho.pok.ibm.com (b01cxnp23032.gho.pok.ibm.com
+ [9.57.198.27]) by ppma05wdc.us.ibm.com with ESMTP id 2u0e85x0c7-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 02 Aug 2019 19:29:29 +0000
-Received: from b01ledav004.gho.pok.ibm.com (b01ledav004.gho.pok.ibm.com
- [9.57.199.109])
- by b01cxnp22033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x72JTS3447907186
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 02 Aug 2019 19:29:27 +0000
+Received: from b01ledav003.gho.pok.ibm.com (b01ledav003.gho.pok.ibm.com
+ [9.57.199.108])
+ by b01cxnp23032.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x72JTRWB53215638
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 2 Aug 2019 19:29:28 GMT
-Received: from b01ledav004.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id A392F112061
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Aug 2019 19:29:28 +0000 (GMT)
-Received: from b01ledav004.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 8985E112066
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Aug 2019 19:29:28 +0000 (GMT)
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 2 Aug 2019 19:29:27 GMT
+Received: from b01ledav003.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 3E012B206A
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Aug 2019 19:29:27 +0000 (GMT)
+Received: from b01ledav003.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 1B535B205F
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Aug 2019 19:29:27 +0000 (GMT)
 Received: from localhost (unknown [9.80.205.161])
- by b01ledav004.gho.pok.ibm.com (Postfix) with ESMTP
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Aug 2019 19:29:28 +0000 (GMT)
+ by b01ledav003.gho.pok.ibm.com (Postfix) with ESMTP
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Aug 2019 19:29:26 +0000 (GMT)
 From: Nathan Lynch <nathanl@linux.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v2 3/3] powerpc/pseries/mobility: use cond_resched when
- updating device tree
-Date: Fri,  2 Aug 2019 14:29:26 -0500
-Message-Id: <20190802192926.19277-4-nathanl@linux.ibm.com>
+Subject: [PATCH v2 0/3] more migration vs CPU hotplug fixes etc
+Date: Fri,  2 Aug 2019 14:29:23 -0500
+Message-Id: <20190802192926.19277-1-nathanl@linux.ibm.com>
 X-Mailer: git-send-email 2.20.1
-In-Reply-To: <20190802192926.19277-1-nathanl@linux.ibm.com>
-References: <20190802192926.19277-1-nathanl@linux.ibm.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
@@ -79,8 +76,8 @@ X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
  priorityscore=1501
  malwarescore=0 suspectscore=1 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
+ clxscore=1011 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=975 adultscore=0 classifier=spam adjust=0 reason=mlx
  scancount=1 engine=8.0.1-1906280000 definitions=main-1908020205
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -97,60 +94,25 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-After a partition migration, pseries_devicetree_update() processes
-changes to the device tree communicated from the platform to
-Linux. This is a relatively heavyweight operation, with multiple
-device tree searches, memory allocations, and conversations with
-partition firmware.
+Despite recent fixes, userspace-initiated CPU hotplug still can
+destructively race with the migration code's CPU state
+manipulations. And parts of the LPM implementation have potentially
+long-running code, especially on larger systems, that ties up the CPU
+causing RCU stalls etc.
 
-There's a few levels of nested loops which are bounded only by
-decisions made by the platform, outside of Linux's control, and indeed
-we have seen RCU stalls on large systems while executing this call
-graph. Use cond_resched() in these loops so that the cpu is yielded
-when needed.
+Changes since v1:
+- Correct description of cpu hotplug vs LPM race.
+- Add fix for long-running code in pseries_devicetree_update and friends
 
-Signed-off-by: Nathan Lynch <nathanl@linux.ibm.com>
----
- arch/powerpc/platforms/pseries/mobility.c | 9 +++++++++
- 1 file changed, 9 insertions(+)
+Nathan Lynch (3):
+  powerpc/rtas: use device model APIs and serialization during LPM
+  powerpc/rtas: allow rescheduling while changing cpu states
+  powerpc/pseries/mobility: use cond_resched when updating device tree
 
-diff --git a/arch/powerpc/platforms/pseries/mobility.c b/arch/powerpc/platforms/pseries/mobility.c
-index fe812bebdf5e..b571285f6c14 100644
---- a/arch/powerpc/platforms/pseries/mobility.c
-+++ b/arch/powerpc/platforms/pseries/mobility.c
-@@ -9,6 +9,7 @@
- #include <linux/cpu.h>
- #include <linux/kernel.h>
- #include <linux/kobject.h>
-+#include <linux/sched.h>
- #include <linux/smp.h>
- #include <linux/stat.h>
- #include <linux/completion.h>
-@@ -207,7 +208,11 @@ static int update_dt_node(__be32 phandle, s32 scope)
- 
- 				prop_data += vd;
- 			}
-+
-+			cond_resched();
- 		}
-+
-+		cond_resched();
- 	} while (rtas_rc == 1);
- 
- 	of_node_put(dn);
-@@ -310,8 +315,12 @@ int pseries_devicetree_update(s32 scope)
- 					add_dt_node(phandle, drc_index);
- 					break;
- 				}
-+
-+				cond_resched();
- 			}
- 		}
-+
-+		cond_resched();
- 	} while (rc == 1);
- 
- 	kfree(rtas_buf);
+ arch/powerpc/kernel/rtas.c                | 13 ++++++++++---
+ arch/powerpc/platforms/pseries/mobility.c |  9 +++++++++
+ 2 files changed, 19 insertions(+), 3 deletions(-)
+
 -- 
 2.20.1
 
