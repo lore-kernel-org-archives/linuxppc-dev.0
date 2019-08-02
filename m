@@ -4,23 +4,24 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CD1D6C433FF
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  2 Aug 2019 13:29:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1AC82C41514
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  2 Aug 2019 13:33:54 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 4DC52217D6
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  2 Aug 2019 13:29:06 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 936242073D
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  2 Aug 2019 13:33:53 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="h7YmwDd9"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4DC52217D6
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="0kF+BRTJ"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 936242073D
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 460Sg31ZRFzDr2h
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  2 Aug 2019 23:29:03 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 460Smb3fs5zDr9v
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  2 Aug 2019 23:33:51 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=kernel.org
  (client-ip=198.145.29.99; helo=mail.kernel.org;
@@ -28,34 +29,36 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="h7YmwDd9"; 
+ unprotected) header.d=kernel.org header.i=@kernel.org header.b="0kF+BRTJ"; 
  dkim-atps=neutral
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 460SSX04kVzDqww
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Aug 2019 23:19:55 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 460STn0wgCzDqD0
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Aug 2019 23:20:59 +1000 (AEST)
 Received: from sasha-vm.mshome.net (c-73-47-72-35.hsd1.nh.comcast.net
  [73.47.72.35])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id 7AC9B2087C;
- Fri,  2 Aug 2019 13:19:52 +0000 (UTC)
+ by mail.kernel.org (Postfix) with ESMTPSA id B56B021849;
+ Fri,  2 Aug 2019 13:20:56 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1564751993;
- bh=kXFROHAYkXRIULUzuGLUVrpHYOTI4dMpB7Q5h8lnU3c=;
- h=From:To:Cc:Subject:Date:From;
- b=h7YmwDd9mlv87T7+94X0HrK0Gz57lzDWJYqXJlFqId3Q+Sos/zLMk4TyeR3PtSVk9
- 5mhZBiLCBrQIe3ICyujYYS/GPK1mYkh1q/16l9Vv/Dua6r/TbU88gYffLb6sJZg71B
- +ZQfN4YqZqmc94pcDrBjguwh2iX1QsNM5ByWDZi4=
+ s=default; t=1564752057;
+ bh=T2iFgkP0UDzAXbiI2k0wz3wf1VnOxEi+QvaaMJHeMfY=;
+ h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+ b=0kF+BRTJZKkb5JLOblpAsbxxZg0n8Zvuc4nU16qfG0+LLsDH7jrEuIz9etLt/N86b
+ qRuWi0dmy095lQ8E112Dyg2G5ZHgaIs3tTy3KwUw5pHqoifdLGHsOFrKCMQgNUqM2Q
+ pKsb99G+cMJdFfUksXwsi9CHQikSKMsfOdOymcvM=
 From: Sasha Levin <sashal@kernel.org>
 To: linux-kernel@vger.kernel.org,
 	stable@vger.kernel.org
-Subject: [PATCH AUTOSEL 5.2 01/76] powerpc: fix off by one in max_zone_pfn
- initialization for ZONE_DMA
-Date: Fri,  2 Aug 2019 09:18:35 -0400
-Message-Id: <20190802131951.11600-1-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 5.2 37/76] powerpc/papr_scm: Force a scm-unbind if
+ initial scm-bind fails
+Date: Fri,  2 Aug 2019 09:19:11 -0400
+Message-Id: <20190802131951.11600-37-sashal@kernel.org>
 X-Mailer: git-send-email 2.20.1
+In-Reply-To: <20190802131951.11600-1-sashal@kernel.org>
+References: <20190802131951.11600-1-sashal@kernel.org>
 MIME-Version: 1.0
 X-stable: review
 X-Patchwork-Hint: Ignore
@@ -71,54 +74,79 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Andrea Arcangeli <aarcange@redhat.com>, Sasha Levin <sashal@kernel.org>,
- Zorro Lang <zlang@redhat.com>, linuxppc-dev@lists.ozlabs.org,
- Christoph Hellwig <hch@lst.de>
+Cc: Sasha Levin <sashal@kernel.org>, Vaibhav Jain <vaibhav@linux.ibm.com>,
+ Oliver O'Halloran <oohall@gmail.com>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Andrea Arcangeli <aarcange@redhat.com>
+From: Vaibhav Jain <vaibhav@linux.ibm.com>
 
-[ Upstream commit 03800e0526ee25ed7c843ca1e57b69ac2a5af642 ]
+[ Upstream commit 3a855b7ac7d5021674aa3e1cc9d3bfd6b604e9c0 ]
 
-25078dc1f74be16b858e914f52cc8f4d03c2271a first introduced an off by
-one error in the ZONE_DMA initialization of PPC_BOOK3E_64=y and since
-9739ab7eda459f0669ec9807e0d9be5020bab88c the off by one applies to
-PPC32=y too. This simply corrects the off by one and should resolve
-crashes like below:
+In some cases initial bind of scm memory for an lpar can fail if
+previously it wasn't released using a scm-unbind hcall. This situation
+can arise due to panic of the previous kernel or forced lpar
+fadump. In such cases the H_SCM_BIND_MEM return a H_OVERLAP error.
 
-[   65.179101] page 0x7fff outside node 0 zone DMA [ 0x0 - 0x7fff ]
+To mitigate such cases the patch updates papr_scm_probe() to force a
+call to drc_pmem_unbind() in case the initial bind of scm memory fails
+with EBUSY error. In case scm-bind operation again fails after the
+forced scm-unbind then we follow the existing error path. We also
+update drc_pmem_bind() to handle the H_OVERLAP error returned by phyp
+and indicate it as a EBUSY error back to the caller.
 
-Unfortunately in various MM places "max" means a non inclusive end of
-range. free_area_init_nodes max_zone_pfn parameter is one case and
-MAX_ORDER is another one (unrelated) that comes by memory.
-
-Reported-by: Zorro Lang <zlang@redhat.com>
-Fixes: 25078dc1f74b ("powerpc: use mm zones more sensibly")
-Fixes: 9739ab7eda45 ("powerpc: enable a 30-bit ZONE_DMA for 32-bit pmac")
-Signed-off-by: Andrea Arcangeli <aarcange@redhat.com>
-Reviewed-by: Christoph Hellwig <hch@lst.de>
+Suggested-by: "Oliver O'Halloran" <oohall@gmail.com>
+Signed-off-by: Vaibhav Jain <vaibhav@linux.ibm.com>
+Reviewed-by: Oliver O'Halloran <oohall@gmail.com>
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
-Link: https://lore.kernel.org/r/20190625141727.2883-1-aarcange@redhat.com
+Link: https://lore.kernel.org/r/20190629160610.23402-4-vaibhav@linux.ibm.com
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- arch/powerpc/mm/mem.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/powerpc/platforms/pseries/papr_scm.c | 15 ++++++++++++++-
+ 1 file changed, 14 insertions(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
-index 2540d3b2588c3..2eda1ec36f552 100644
---- a/arch/powerpc/mm/mem.c
-+++ b/arch/powerpc/mm/mem.c
-@@ -249,7 +249,7 @@ void __init paging_init(void)
+diff --git a/arch/powerpc/platforms/pseries/papr_scm.c b/arch/powerpc/platforms/pseries/papr_scm.c
+index 96c53b23e58f9..dad9825e40874 100644
+--- a/arch/powerpc/platforms/pseries/papr_scm.c
++++ b/arch/powerpc/platforms/pseries/papr_scm.c
+@@ -42,8 +42,9 @@ struct papr_scm_priv {
+ static int drc_pmem_bind(struct papr_scm_priv *p)
+ {
+ 	unsigned long ret[PLPAR_HCALL_BUFSIZE];
+-	uint64_t rc, token;
+ 	uint64_t saved = 0;
++	uint64_t token;
++	int64_t rc;
  
- #ifdef CONFIG_ZONE_DMA
- 	max_zone_pfns[ZONE_DMA]	= min(max_low_pfn,
--			((1UL << ARCH_ZONE_DMA_BITS) - 1) >> PAGE_SHIFT);
-+				      1UL << (ARCH_ZONE_DMA_BITS - PAGE_SHIFT));
- #endif
- 	max_zone_pfns[ZONE_NORMAL] = max_low_pfn;
- #ifdef CONFIG_HIGHMEM
+ 	/*
+ 	 * When the hypervisor cannot map all the requested memory in a single
+@@ -63,6 +64,10 @@ static int drc_pmem_bind(struct papr_scm_priv *p)
+ 	} while (rc == H_BUSY);
+ 
+ 	if (rc) {
++		/* H_OVERLAP needs a separate error path */
++		if (rc == H_OVERLAP)
++			return -EBUSY;
++
+ 		dev_err(&p->pdev->dev, "bind err: %lld\n", rc);
+ 		return -ENXIO;
+ 	}
+@@ -316,6 +321,14 @@ static int papr_scm_probe(struct platform_device *pdev)
+ 
+ 	/* request the hypervisor to bind this region to somewhere in memory */
+ 	rc = drc_pmem_bind(p);
++
++	/* If phyp says drc memory still bound then force unbound and retry */
++	if (rc == -EBUSY) {
++		dev_warn(&pdev->dev, "Retrying bind after unbinding\n");
++		drc_pmem_unbind(p);
++		rc = drc_pmem_bind(p);
++	}
++
+ 	if (rc)
+ 		goto err;
+ 
 -- 
 2.20.1
 
