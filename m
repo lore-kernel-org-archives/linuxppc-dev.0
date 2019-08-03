@@ -1,96 +1,55 @@
-Return-Path: <SRS0=WT2w=V6=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
+Return-Path: <SRS0=OXx8=V7=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 75302C433FF
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  2 Aug 2019 19:38:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D0A30C433FF
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  3 Aug 2019 06:50:11 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E87272067D
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  2 Aug 2019 19:38:02 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E87272067D
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 24F582166E
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  3 Aug 2019 06:50:10 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 24F582166E
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 460crm3MypzDrFl
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  3 Aug 2019 05:38:00 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 460vmG6f7xzDrCp
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  3 Aug 2019 16:50:06 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
- (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=nathanl@linux.ibm.com; receiver=<UNKNOWN>)
+ spf=none (mailfrom) smtp.mailfrom=lst.de
+ (client-ip=213.95.11.211; helo=verein.lst.de; envelope-from=hch@lst.de;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+ dmarc=none (p=none dis=none) header.from=lst.de
+Received: from verein.lst.de (verein.lst.de [213.95.11.211])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 460cg33TVYzDrCM
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  3 Aug 2019 05:29:35 +1000 (AEST)
-Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x72JRbSY100416
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 2 Aug 2019 15:29:31 -0400
-Received: from e16.ny.us.ibm.com (e16.ny.us.ibm.com [129.33.205.206])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2u4sm343vk-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 02 Aug 2019 15:29:31 -0400
-Received: from localhost
- by e16.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <nathanl@linux.ibm.com>;
- Fri, 2 Aug 2019 20:29:30 +0100
-Received: from b01cxnp23033.gho.pok.ibm.com (9.57.198.28)
- by e16.ny.us.ibm.com (146.89.104.203) with IBM ESMTP SMTP Gateway: Authorized
- Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Fri, 2 Aug 2019 20:29:28 +0100
-Received: from b01ledav002.gho.pok.ibm.com (b01ledav002.gho.pok.ibm.com
- [9.57.199.107])
- by b01cxnp23033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x72JTRUj50397548
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 2 Aug 2019 19:29:27 GMT
-Received: from b01ledav002.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id B41CF124058
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Aug 2019 19:29:27 +0000 (GMT)
-Received: from b01ledav002.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 90C0D124053
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Aug 2019 19:29:27 +0000 (GMT)
-Received: from localhost (unknown [9.80.205.161])
- by b01ledav002.gho.pok.ibm.com (Postfix) with ESMTP
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Aug 2019 19:29:27 +0000 (GMT)
-From: Nathan Lynch <nathanl@linux.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v2 1/3] powerpc/rtas: use device model APIs and serialization
- during LPM
-Date: Fri,  2 Aug 2019 14:29:24 -0500
-X-Mailer: git-send-email 2.20.1
-In-Reply-To: <20190802192926.19277-1-nathanl@linux.ibm.com>
-References: <20190802192926.19277-1-nathanl@linux.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 460vkG3qT5zDrBm
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  3 Aug 2019 16:48:20 +1000 (AEST)
+Received: by verein.lst.de (Postfix, from userid 2407)
+ id 3208868BFE; Sat,  3 Aug 2019 08:48:13 +0200 (CEST)
+Date: Sat, 3 Aug 2019 08:48:12 +0200
+From: Christoph Hellwig <hch@lst.de>
+To: Will Deacon <will@kernel.org>
+Subject: Re: [PATCH] dma-mapping: fix page attributes for dma_mmap_*
+Message-ID: <20190803064812.GA29746@lst.de>
+References: <20190801142118.21225-1-hch@lst.de>
+ <20190801142118.21225-2-hch@lst.de>
+ <20190801162305.3m32chycsdjmdejk@willie-the-truck>
+ <20190801163457.GB26588@lst.de>
+ <20190801164411.kmsl4japtfkgvzxe@willie-the-truck>
+ <20190802081441.GA9725@lst.de>
+ <20190802103803.3qrbhqwxlasojsco@willie-the-truck>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-x-cbid: 19080219-0072-0000-0000-000004500F0C
-X-IBM-SpamModules-Scores: 
-X-IBM-SpamModules-Versions: BY=3.00011539; HX=3.00000242; KW=3.00000007;
- PH=3.00000004; SC=3.00000287; SDB=6.01241144; UDB=6.00654544; IPR=6.01022576; 
- MB=3.00028013; MTD=3.00000008; XFM=3.00000015; UTC=2019-08-02 19:29:29
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19080219-0073-0000-0000-00004CC10F40
-Message-Id: <20190802192926.19277-2-nathanl@linux.ibm.com>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2019-08-02_08:, , signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- malwarescore=0 suspectscore=3 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1906280000 definitions=main-1908020205
+In-Reply-To: <20190802103803.3qrbhqwxlasojsco@willie-the-truck>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -102,90 +61,55 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: Shawn Anastasio <shawn@anastas.io>, linuxppc-dev@lists.ozlabs.org,
+ Russell King <linux@armlinux.org.uk>, linux-kernel@vger.kernel.org,
+ iommu@lists.linux-foundation.org, Catalin Marinas <catalin.marinas@arm.com>,
+ Robin Murphy <robin.murphy@arm.com>, Christoph Hellwig <hch@lst.de>,
+ linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The LPAR migration implementation and userspace-initiated cpu hotplug
-can interleave their executions like so:
+On Fri, Aug 02, 2019 at 11:38:03AM +0100, Will Deacon wrote:
+> 
+> So this boils down to a terminology mismatch. The Arm architecture doesn't have
+> anything called "write combine", so in Linux we instead provide what the Arm
+> architecture calls "Normal non-cacheable" memory for pgprot_writecombine().
+> Amongst other things, this memory type permits speculation, unaligned accesses
+> and merging of writes. I found something in the architecture spec about
+> non-cachable memory, but it's written in Armglish[1].
+> 
+> pgprot_noncached(), on the other hand, provides what the architecture calls
+> Strongly Ordered or Device-nGnRnE memory. This is intended for mapping MMIO
+> (i.e. PCI config space) and therefore forbids speculation, preserves access
+> size, requires strict alignment and also forces write responses to come from
+> the endpoint.
+> 
+> I think the naming mismatch is historical, but on arm64 we wanted to use the
+> same names as arm32 so that any drivers using these things directly would get
+> the same behaviour.
 
-1. Set cpu 7 offline via sysfs.
+That all makes sense, but it totally needs a comment.  I'll try to draft
+one based on this.  I've also looked at the arm32 code a bit more, and
+it seems arm always (?) supported Normal non-cacheable attribute, but
+Linux only optionally uses it for arm v6+ because of fears of drivers
+missing barriers.  The other really weird things is that in arm32
+pgprot_dmacoherent incudes the L_PTE_XN bit, which from my understanding
+is the no-execture bit, but pgprot_writecombine does not.  This seems to
+not very unintentional.  So minus that the whole DMA_ATTR_WRITE_COMBІNE
+seems to be about flagging old arm specific drivers as having the proper
+barriers in places and otherwise is a no-op.
 
-2. Begin a partition migration, whose implementation requires the OS
-   to ensure all present cpus are online; cpu 7 is onlined:
+Here is my tentative plan:
 
-     rtas_ibm_suspend_me -> rtas_online_cpus_mask -> cpu_up
-
-   This sets cpu 7 online in all respects except for the cpu's
-   corresponding struct device; dev->offline remains true.
-
-3. Set cpu 7 online via sysfs. _cpu_up() determines that cpu 7 is
-   already online and returns success. The driver core (device_online)
-   sets dev->offline = false.
-
-4. The migration completes and restores cpu 7 to offline state:
-
-     rtas_ibm_suspend_me -> rtas_offline_cpus_mask -> cpu_down
-
-This leaves cpu7 in a state where the driver core considers the cpu
-device online, but in all other respects it is offline and
-unused. Attempts to online the cpu via sysfs appear to succeed but the
-driver core actually does not pass the request to the lower-level
-cpuhp support code. This makes the cpu unusable until the cpu device
-is manually set offline and then online again via sysfs.
-
-Instead of directly calling cpu_up/cpu_down, the migration code should
-use the higher-level device core APIs to maintain consistent state and
-serialize operations.
-
-Fixes: 120496ac2d2d ("powerpc: Bring all threads online prior to migration/hibernation")
-Signed-off-by: Nathan Lynch <nathanl@linux.ibm.com>
----
- arch/powerpc/kernel/rtas.c | 11 ++++++++---
- 1 file changed, 8 insertions(+), 3 deletions(-)
-
-diff --git a/arch/powerpc/kernel/rtas.c b/arch/powerpc/kernel/rtas.c
-index 5faf0a64c92b..05824eb4323b 100644
---- a/arch/powerpc/kernel/rtas.c
-+++ b/arch/powerpc/kernel/rtas.c
-@@ -871,15 +871,17 @@ static int rtas_cpu_state_change_mask(enum rtas_cpu_state state,
- 		return 0;
- 
- 	for_each_cpu(cpu, cpus) {
-+		struct device *dev = get_cpu_device(cpu);
-+
- 		switch (state) {
- 		case DOWN:
--			cpuret = cpu_down(cpu);
-+			cpuret = device_offline(dev);
- 			break;
- 		case UP:
--			cpuret = cpu_up(cpu);
-+			cpuret = device_online(dev);
- 			break;
- 		}
--		if (cpuret) {
-+		if (cpuret < 0) {
- 			pr_debug("%s: cpu_%s for cpu#%d returned %d.\n",
- 					__func__,
- 					((state == UP) ? "up" : "down"),
-@@ -968,6 +970,8 @@ int rtas_ibm_suspend_me(u64 handle)
- 	data.token = rtas_token("ibm,suspend-me");
- 	data.complete = &done;
- 
-+	lock_device_hotplug();
-+
- 	/* All present CPUs must be online */
- 	cpumask_andnot(offline_mask, cpu_present_mask, cpu_online_mask);
- 	cpuret = rtas_online_cpus_mask(offline_mask);
-@@ -1006,6 +1010,7 @@ int rtas_ibm_suspend_me(u64 handle)
- 				__func__);
- 
- out:
-+	unlock_device_hotplug();
- 	free_cpumask_var(offline_mask);
- 	return atomic_read(&data.error);
- }
--- 
-2.20.1
-
+ - respin this patch with a small fix to handle the
+   DMA_ATTR_NON_CONSISTENT (as in ignore it unless actually supported),
+   but keep the name as-is to avoid churn.  This should allow 5.3
+   inclusion and backports
+ - remove DMA_ATTR_WRITE_COMBINE support from mips, probably also 5.3
+   material.
+ - move all architectures but arm over to just define
+   pgprot_dmacoherent, including a comment with the above explanation
+   for arm64.
+ - make DMA_ATTR_WRITE_COMBINE a no-op and schedule it for removal,
+   thus removing the last instances of arch_dma_mmap_pgprot
