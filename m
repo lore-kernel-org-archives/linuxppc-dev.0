@@ -2,61 +2,88 @@ Return-Path: <SRS0=0OA4=WB=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-9.5 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
+	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4C1E9C0650F
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  5 Aug 2019 04:27:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 05A0AC0650F
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  5 Aug 2019 04:36:14 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id CA0AE2070D
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  5 Aug 2019 04:27:29 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CA0AE2070D
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nxp.com
+	by mail.kernel.org (Postfix) with ESMTPS id 78A542070D
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  5 Aug 2019 04:36:13 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="IvagmT+J"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 78A542070D
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4624Vl6cv4zDqZS
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  5 Aug 2019 14:27:27 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4624hq20WhzDqWN
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  5 Aug 2019 14:36:11 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=nxp.com
- (client-ip=92.121.34.13; helo=inva020.nxp.com;
- envelope-from=xiaowei.bao@nxp.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=gmail.com
+ (client-ip=2607:f8b0:4864:20::442; helo=mail-pf1-x442.google.com;
+ envelope-from=john.hubbard@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=nxp.com
-Received: from inva020.nxp.com (inva020.nxp.com [92.121.34.13])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="IvagmT+J"; 
+ dkim-atps=neutral
+Received: from mail-pf1-x442.google.com (mail-pf1-x442.google.com
+ [IPv6:2607:f8b0:4864:20::442])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4624Nb206RzDqWd
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 Aug 2019 14:22:05 +1000 (AEST)
-Received: from inva020.nxp.com (localhost [127.0.0.1])
- by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id E27CD1A00F2;
- Mon,  5 Aug 2019 06:14:47 +0200 (CEST)
-Received: from invc005.ap-rdc01.nxp.com (invc005.ap-rdc01.nxp.com
- [165.114.16.14])
- by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id C5A7D1A0084;
- Mon,  5 Aug 2019 06:14:36 +0200 (CEST)
-Received: from titan.ap.freescale.net (TITAN.ap.freescale.net [10.192.208.233])
- by invc005.ap-rdc01.nxp.com (Postfix) with ESMTP id 9EF42402B5;
- Mon,  5 Aug 2019 12:14:23 +0800 (SGT)
-From: Xiaowei Bao <xiaowei.bao@nxp.com>
-To: bhelgaas@google.com, robh+dt@kernel.org, mark.rutland@arm.com,
- shawnguo@kernel.org, leoyang.li@nxp.com, kishon@ti.com,
- lorenzo.pieralisi@arm.com, arnd@arndb.de, gregkh@linuxfoundation.org,
- minghuan.Lian@nxp.com, mingkai.hu@nxp.com, zhiqiang.hou@nxp.com,
- roy.zang@nxp.com, kstewart@linuxfoundation.org, pombredanne@nexb.com,
- shawn.lin@rock-chips.com, linux-pci@vger.kernel.org,
- devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org
-Subject: [PATCHv2 2/3] arm64: dts: ls1028a: Add PCIe controller DT nodes
-Date: Mon,  5 Aug 2019 12:04:52 +0800
-Message-Id: <20190805040453.48009-2-xiaowei.bao@nxp.com>
-X-Mailer: git-send-email 2.9.5
-In-Reply-To: <20190805040453.48009-1-xiaowei.bao@nxp.com>
-References: <20190805040453.48009-1-xiaowei.bao@nxp.com>
-X-Virus-Scanned: ClamAV using ClamSMTP
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46225004H0zDqVK
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 Aug 2019 12:38:24 +1000 (AEST)
+Received: by mail-pf1-x442.google.com with SMTP id p184so38805742pfp.7
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 04 Aug 2019 19:38:24 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=from:to:cc:subject:date:message-id:mime-version
+ :content-transfer-encoding;
+ bh=30MQZ7ywyXKAPoZ0MqYExKYsjkeLdKEHUByfnmRZCb0=;
+ b=IvagmT+JjyfUCHaWI+oWVe83Vd/BxQOf8lwVAIUGNrLrImKDoBg69DgWJgweIFVTTb
+ t9Fd81BoXyIbeQKtADBPM518HlERGQ3S9QcdZHl5GHiZ+3CZc/mG3ldNB0DFVA+oLUky
+ 4YoCR5Kn54jmKeO0SgOFTU8UIG8AhTiXpPY6aJvZHzWR0iW1+d6D4ft05gUFQbHqtsLD
+ 2zVi6PAEyNlZ9Rcwg5VvXyY5LHWfMMKMh+VnR92xmXqN8pMV8+STxr2eXC203UO1Tpla
+ uNVcRsRdtOQH81N2Ng5sIXu+JR5jaekJfCc+SvAJlP4bu/MpAl9h4hDu3E/NASSFtOhS
+ NHbA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+ :content-transfer-encoding;
+ bh=30MQZ7ywyXKAPoZ0MqYExKYsjkeLdKEHUByfnmRZCb0=;
+ b=VtgUnOHn7AY4Fyo7PJ3qZbDKTslX1sAXRrB3yRVHUzkm6Mu6eg0neiTMf+rl6q6FZY
+ 8klOkDP30wAvTpAu0ue6qUyN/70LwZ1Z3kCBs5HYH2xrzqpsdj/o+Y9p4Nd41QDPoVAs
+ NN/QUkv+rQOkasVi1Gme2F4Q1fMnMNQSPkjSiNVUDAxcgovl+/MDjb7YQRrGil9vrFh0
+ u7v/r8pKs6REYtBUjg4JSiKxzSLkqQNiIiKOlm7roLCNCSHiiHyiY3yrOVsEfnGY2XvH
+ AVD3KzFDfpSfZ7tUVFydPFgwI9nqhox0iTbnoyIjyThWi17BR4nu/TPMfO4YL49adIQF
+ ZRAA==
+X-Gm-Message-State: APjAAAXvv7tRnMbkbh/X1REHVkJkMcqMFaJXapsGeH+XhVozBI6tToUK
+ TrJmudJsozmd51+rp+TPTfc=
+X-Google-Smtp-Source: APXvYqxhbQJILXTxhwn1nUnYV8i/zFa6et+z4o7S2/4wOMnlr3FWVDcMtMr/x65TCuwWLuIgS9IZbw==
+X-Received: by 2002:a62:7a8a:: with SMTP id
+ v132mr70688812pfc.103.1564972702334; 
+ Sun, 04 Aug 2019 19:38:22 -0700 (PDT)
+Received: from blueforge.nvidia.com (searspoint.nvidia.com. [216.228.112.21])
+ by smtp.gmail.com with ESMTPSA id
+ p13sm25433972pjb.30.2019.08.04.19.38.21
+ (version=TLS1_3 cipher=AEAD-AES256-GCM-SHA384 bits=256/256);
+ Sun, 04 Aug 2019 19:38:21 -0700 (PDT)
+From: john.hubbard@gmail.com
+X-Google-Original-From: jhubbard@nvidia.com
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH] powerpc: convert put_page() to put_user_page*()
+Date: Sun,  4 Aug 2019 19:38:19 -0700
+Message-Id: <20190805023819.11001-1-jhubbard@nvidia.com>
+X-Mailer: git-send-email 2.22.0
+MIME-Version: 1.0
+X-NVConfidentiality: public
+Content-Transfer-Encoding: 8bit
+X-Mailman-Approved-At: Mon, 05 Aug 2019 14:34:14 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -68,84 +95,157 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Xiaowei Bao <xiaowei.bao@nxp.com>
+Cc: Jan Kara <jack@suse.cz>, linux-mm@kvack.org,
+ John Hubbard <jhubbard@nvidia.com>, linuxppc-dev@lists.ozlabs.org,
+ LKML <linux-kernel@vger.kernel.org>, Christoph Hellwig <hch@infradead.org>,
+ Jason Gunthorpe <jgg@ziepe.ca>, Jerome Glisse <jglisse@redhat.com>,
+ linux-fsdevel@vger.kernel.org, Ira Weiny <ira.weiny@intel.com>,
+ Christoph Hellwig <hch@lst.de>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-LS1028a implements 2 PCIe 3.0 controllers.
+From: John Hubbard <jhubbard@nvidia.com>
 
-Signed-off-by: Xiaowei Bao <xiaowei.bao@nxp.com>
+For pages that were retained via get_user_pages*(), release those pages
+via the new put_user_page*() routines, instead of via put_page() or
+release_pages().
+
+This is part a tree-wide conversion, as described in commit fc1d8e7cca2d
+("mm: introduce put_user_page*(), placeholder versions").
+
+Note that this effectively changes the code's behavior in
+mm_iommu_unpin(): it now ultimately calls set_page_dirty_lock(),
+instead of set_page_dirty(). This is probably more accurate.
+
+As Christoph Hellwig put it, "set_page_dirty() is only safe if we are
+dealing with a file backed page where we have reference on the inode it
+hangs off." [1]
+
+[1] https://lore.kernel.org/r/20190723153640.GB720@lst.de
+
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Christoph Hellwig <hch@lst.de>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: linuxppc-dev@lists.ozlabs.org
+Signed-off-by: John Hubbard <jhubbard@nvidia.com>
 ---
-v2:
- - Fix up the legacy INTx allocate failed issue.
+ arch/powerpc/kvm/book3s_64_mmu_hv.c    |  4 ++--
+ arch/powerpc/kvm/book3s_64_mmu_radix.c | 19 ++++++++++++++-----
+ arch/powerpc/kvm/e500_mmu.c            |  3 +--
+ arch/powerpc/mm/book3s64/iommu_api.c   | 11 +++++------
+ 4 files changed, 22 insertions(+), 15 deletions(-)
 
- arch/arm64/boot/dts/freescale/fsl-ls1028a.dtsi | 52 ++++++++++++++++++++++++++
- 1 file changed, 52 insertions(+)
-
-diff --git a/arch/arm64/boot/dts/freescale/fsl-ls1028a.dtsi b/arch/arm64/boot/dts/freescale/fsl-ls1028a.dtsi
-index aef5b06..0b542ed 100644
---- a/arch/arm64/boot/dts/freescale/fsl-ls1028a.dtsi
-+++ b/arch/arm64/boot/dts/freescale/fsl-ls1028a.dtsi
-@@ -503,6 +503,58 @@
- 			status = "disabled";
- 		};
+diff --git a/arch/powerpc/kvm/book3s_64_mmu_hv.c b/arch/powerpc/kvm/book3s_64_mmu_hv.c
+index 9a75f0e1933b..18646b738ce1 100644
+--- a/arch/powerpc/kvm/book3s_64_mmu_hv.c
++++ b/arch/powerpc/kvm/book3s_64_mmu_hv.c
+@@ -731,7 +731,7 @@ int kvmppc_book3s_hv_page_fault(struct kvm_run *run, struct kvm_vcpu *vcpu,
+ 		 * we have to drop the reference on the correct tail
+ 		 * page to match the get inside gup()
+ 		 */
+-		put_page(pages[0]);
++		put_user_page(pages[0]);
+ 	}
+ 	return ret;
  
-+		pcie@3400000 {
-+			compatible = "fsl,ls1028a-pcie";
-+			reg = <0x00 0x03400000 0x0 0x00100000   /* controller registers */
-+			       0x80 0x00000000 0x0 0x00002000>; /* configuration space */
-+			reg-names = "regs", "config";
-+			interrupts = <GIC_SPI 108 IRQ_TYPE_LEVEL_HIGH>, /* PME interrupt */
-+				     <GIC_SPI 109 IRQ_TYPE_LEVEL_HIGH>; /* aer interrupt */
-+			interrupt-names = "pme", "aer";
-+			#address-cells = <3>;
-+			#size-cells = <2>;
-+			device_type = "pci";
-+			dma-coherent;
-+			num-lanes = <4>;
-+			bus-range = <0x0 0xff>;
-+			ranges = <0x81000000 0x0 0x00000000 0x80 0x00010000 0x0 0x00010000   /* downstream I/O */
-+				  0x82000000 0x0 0x40000000 0x80 0x40000000 0x0 0x40000000>; /* non-prefetchable memory */
-+			msi-parent = <&its>;
-+			#interrupt-cells = <1>;
-+			interrupt-map-mask = <0 0 0 7>;
-+			interrupt-map = <0000 0 0 1 &gic 0 0 GIC_SPI 109 IRQ_TYPE_LEVEL_HIGH>,
-+					<0000 0 0 2 &gic 0 0 GIC_SPI 110 IRQ_TYPE_LEVEL_HIGH>,
-+					<0000 0 0 3 &gic 0 0 GIC_SPI 111 IRQ_TYPE_LEVEL_HIGH>,
-+					<0000 0 0 4 &gic 0 0 GIC_SPI 112 IRQ_TYPE_LEVEL_HIGH>;
-+			status = "disabled";
-+		};
-+
-+		pcie@3500000 {
-+			compatible = "fsl,ls1028a-pcie";
-+			reg = <0x00 0x03500000 0x0 0x00100000   /* controller registers */
-+			       0x88 0x00000000 0x0 0x00002000>; /* configuration space */
-+			reg-names = "regs", "config";
-+			interrupts = <GIC_SPI 113 IRQ_TYPE_LEVEL_HIGH>,
-+				     <GIC_SPI 114 IRQ_TYPE_LEVEL_HIGH>;
-+			interrupt-names = "pme", "aer";
-+			#address-cells = <3>;
-+			#size-cells = <2>;
-+			device_type = "pci";
-+			dma-coherent;
-+			num-lanes = <4>;
-+			bus-range = <0x0 0xff>;
-+			ranges = <0x81000000 0x0 0x00000000 0x88 0x00010000 0x0 0x00010000   /* downstream I/O */
-+				  0x82000000 0x0 0x40000000 0x88 0x40000000 0x0 0x40000000>; /* non-prefetchable memory */
-+			msi-parent = <&its>;
-+			#interrupt-cells = <1>;
-+			interrupt-map-mask = <0 0 0 7>;
-+			interrupt-map = <0000 0 0 1 &gic 0 0 GIC_SPI 114 IRQ_TYPE_LEVEL_HIGH>,
-+					<0000 0 0 2 &gic 0 0 GIC_SPI 115 IRQ_TYPE_LEVEL_HIGH>,
-+					<0000 0 0 3 &gic 0 0 GIC_SPI 116 IRQ_TYPE_LEVEL_HIGH>,
-+					<0000 0 0 4 &gic 0 0 GIC_SPI 117 IRQ_TYPE_LEVEL_HIGH>;
-+			status = "disabled";
-+		};
-+
- 		pcie@1f0000000 { /* Integrated Endpoint Root Complex */
- 			compatible = "pci-host-ecam-generic";
- 			reg = <0x01 0xf0000000 0x0 0x100000>;
+@@ -1206,7 +1206,7 @@ void kvmppc_unpin_guest_page(struct kvm *kvm, void *va, unsigned long gpa,
+ 	unsigned long gfn;
+ 	int srcu_idx;
+ 
+-	put_page(page);
++	put_user_page(page);
+ 
+ 	if (!dirty)
+ 		return;
+diff --git a/arch/powerpc/kvm/book3s_64_mmu_radix.c b/arch/powerpc/kvm/book3s_64_mmu_radix.c
+index 2d415c36a61d..f53273fbfa2d 100644
+--- a/arch/powerpc/kvm/book3s_64_mmu_radix.c
++++ b/arch/powerpc/kvm/book3s_64_mmu_radix.c
+@@ -821,8 +821,12 @@ int kvmppc_book3s_instantiate_page(struct kvm_vcpu *vcpu,
+ 	 */
+ 	if (!ptep) {
+ 		local_irq_enable();
+-		if (page)
+-			put_page(page);
++		if (page) {
++			if (upgrade_write)
++				put_user_page(page);
++			else
++				put_page(page);
++		}
+ 		return RESUME_GUEST;
+ 	}
+ 	pte = *ptep;
+@@ -870,9 +874,14 @@ int kvmppc_book3s_instantiate_page(struct kvm_vcpu *vcpu,
+ 		*levelp = level;
+ 
+ 	if (page) {
+-		if (!ret && (pte_val(pte) & _PAGE_WRITE))
+-			set_page_dirty_lock(page);
+-		put_page(page);
++		bool dirty = !ret && (pte_val(pte) & _PAGE_WRITE);
++		if (upgrade_write)
++			put_user_pages_dirty_lock(&page, 1, dirty);
++		else {
++			if (dirty)
++				set_page_dirty_lock(page);
++			put_page(page);
++		}
+ 	}
+ 
+ 	/* Increment number of large pages if we (successfully) inserted one */
+diff --git a/arch/powerpc/kvm/e500_mmu.c b/arch/powerpc/kvm/e500_mmu.c
+index 2d910b87e441..67bb8d59d4b1 100644
+--- a/arch/powerpc/kvm/e500_mmu.c
++++ b/arch/powerpc/kvm/e500_mmu.c
+@@ -850,8 +850,7 @@ int kvm_vcpu_ioctl_config_tlb(struct kvm_vcpu *vcpu,
+  free_privs_first:
+ 	kfree(privs[0]);
+  put_pages:
+-	for (i = 0; i < num_pages; i++)
+-		put_page(pages[i]);
++	put_user_pages(pages, num_pages);
+  free_pages:
+ 	kfree(pages);
+ 	return ret;
+diff --git a/arch/powerpc/mm/book3s64/iommu_api.c b/arch/powerpc/mm/book3s64/iommu_api.c
+index b056cae3388b..e126193ba295 100644
+--- a/arch/powerpc/mm/book3s64/iommu_api.c
++++ b/arch/powerpc/mm/book3s64/iommu_api.c
+@@ -170,9 +170,8 @@ static long mm_iommu_do_alloc(struct mm_struct *mm, unsigned long ua,
+ 	return 0;
+ 
+ free_exit:
+-	/* free the reference taken */
+-	for (i = 0; i < pinned; i++)
+-		put_page(mem->hpages[i]);
++	/* free the references taken */
++	put_user_pages(mem->hpages, pinned);
+ 
+ 	vfree(mem->hpas);
+ 	kfree(mem);
+@@ -203,6 +202,7 @@ static void mm_iommu_unpin(struct mm_iommu_table_group_mem_t *mem)
+ {
+ 	long i;
+ 	struct page *page = NULL;
++	bool dirty = false;
+ 
+ 	if (!mem->hpas)
+ 		return;
+@@ -215,10 +215,9 @@ static void mm_iommu_unpin(struct mm_iommu_table_group_mem_t *mem)
+ 		if (!page)
+ 			continue;
+ 
+-		if (mem->hpas[i] & MM_IOMMU_TABLE_GROUP_PAGE_DIRTY)
+-			SetPageDirty(page);
++		dirty = mem->hpas[i] & MM_IOMMU_TABLE_GROUP_PAGE_DIRTY;
+ 
+-		put_page(page);
++		put_user_pages_dirty_lock(&page, 1, dirty);
+ 		mem->hpas[i] = 0;
+ 	}
+ }
 -- 
-2.9.5
+2.22.0
 
