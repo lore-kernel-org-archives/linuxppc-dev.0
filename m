@@ -7,21 +7,21 @@ X-Spam-Status: No, score=-9.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C6457C433FF
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  5 Aug 2019 09:25:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 649E2C0650F
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  5 Aug 2019 09:27:46 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 46B9F20880
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  5 Aug 2019 09:25:24 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id DD97520880
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  5 Aug 2019 09:27:45 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="Sd4QHDwu"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 46B9F20880
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="BnCU6qOa"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DD97520880
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 462C6V2zT6zDqlL
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  5 Aug 2019 19:25:22 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 462C9C1hl0zDqfb
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  5 Aug 2019 19:27:43 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=none (mailfrom)
  smtp.mailfrom=bombadil.srs.infradead.org (client-ip=2607:7c80:54:e::133;
  helo=bombadil.infradead.org;
@@ -31,36 +31,35 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=infradead.org header.i=@infradead.org
- header.b="Sd4QHDwu"; dkim-atps=neutral
+ header.b="BnCU6qOa"; dkim-atps=neutral
 Received: from bombadil.infradead.org (bombadil.infradead.org
  [IPv6:2607:7c80:54:e::133])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 462BqW4vxTzDqrC
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 Aug 2019 19:12:23 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 462BqY5rn6zDqsb
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 Aug 2019 19:12:25 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
  d=infradead.org; s=bombadil.20170209; h=Content-Transfer-Encoding:
  MIME-Version:References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:Sender
  :Reply-To:Content-Type:Content-ID:Content-Description:Resent-Date:Resent-From
  :Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:List-Help:
  List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
- bh=r7VigzYU3BuHUi2BBP1jIMsKqnBbu0+Xmxj4lDWNmG0=; b=Sd4QHDwuC8t+6vutznxfjeQukI
- 02e7uLEYeS7f/4D+3POuYv4ZxgWMNVY7eDp6J7tleaoYU7pppL8xXSM6f81jDZVjJTLDl22ru67IU
- f4gkXp/yZcv9v0g6Fe0e6IpRC8jSvYiygY/FH5YpQ7cEhg+2bqRMibPUsHrhM1CkxwgHILjqwKIjr
- w9S/Ulsek9D8832JzD+E1gwns8BTtn/sJUlKJf0FgkxU8wSe/i/Pt3Ogoo/zqFupnMC400hE/3RW6
- 02BmOfALUs2NKEFGJNMHjow/YYbsDC0A9FZEEd6mweswxwTRO0uOaFyhTGmmbxcsxHZurxCwtQotm
- Oy4PGlhw==;
+ bh=MC0YAzXDv4UW9aVepSWPET61pXC/qRZc/Q3SPMyp+PQ=; b=BnCU6qOapxKxAiOYshoyO0Pn42
+ xqlgYlEAswW2CCDXcDvEHUmDLhQqCFIi0ELw0LxvatqpGEl0+HtpTMhstvk64Klhas3C3RpR3GbAk
+ p0Er1aGH/ojYTgIUNRrXmwx72gkxjm7RMwmzzAgppKLW8ExOnTd4fpidg3bXjozKpuPrBgHQMC3Iy
+ mgrTFGLaU+oqCIKb+dP1XcMbBmewkR7ra/p6CUfZub0a/0/rOmi0OHjyzvoE/9oOiXk1ACJ6/Y84m
+ Fb8ST6DCMzHeeEtysG9MTm0XswA0C3NrSu293IgfRJ+QVYPrtqQVmoM6HXC+UBf+cZfGTuR9r6eTU
+ ZpksCIGg==;
 Received: from [195.167.85.94] (helo=localhost)
  by bombadil.infradead.org with esmtpsa (Exim 4.92 #3 (Red Hat Linux))
- id 1huZ2L-0004ys-Hw; Mon, 05 Aug 2019 09:12:14 +0000
+ id 1huZ2P-00052F-37; Mon, 05 Aug 2019 09:12:17 +0000
 From: Christoph Hellwig <hch@lst.de>
 To: iommu@lists.linux-foundation.org,
  Marek Szyprowski <m.szyprowski@samsung.com>
-Subject: [PATCH 4/7] ALSA: pcm: use dma_can_mmap() to check if a device
- supports dma_mmap_*
-Date: Mon,  5 Aug 2019 12:11:56 +0300
-Message-Id: <20190805091159.7826-5-hch@lst.de>
+Subject: [PATCH 5/7] m68knommu: add a pgprot_noncached stub
+Date: Mon,  5 Aug 2019 12:11:57 +0300
+Message-Id: <20190805091159.7826-6-hch@lst.de>
 X-Mailer: git-send-email 2.20.1
 In-Reply-To: <20190805091159.7826-1-hch@lst.de>
 References: <20190805091159.7826-1-hch@lst.de>
@@ -88,32 +87,28 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Replace the local hack with the dma_can_mmap helper to check if
-a given device supports mapping DMA allocations to userspace.
+Provide a pgprot_noncached like all the other nommu ports so that
+common code can rely on it being able to be present.  Note that this is
+generally code that is not actually run on nommu, but at least we can
+avoid nasty ifdefs by having a stub.
 
 Signed-off-by: Christoph Hellwig <hch@lst.de>
 ---
- sound/core/pcm_native.c | 5 ++---
- 1 file changed, 2 insertions(+), 3 deletions(-)
+ arch/m68k/include/asm/pgtable_no.h | 2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/sound/core/pcm_native.c b/sound/core/pcm_native.c
-index 703857aab00f..81c82c3ee8a2 100644
---- a/sound/core/pcm_native.c
-+++ b/sound/core/pcm_native.c
-@@ -220,12 +220,11 @@ static bool hw_support_mmap(struct snd_pcm_substream *substream)
- {
- 	if (!(substream->runtime->hw.info & SNDRV_PCM_INFO_MMAP))
- 		return false;
--	/* architecture supports dma_mmap_coherent()? */
--#if defined(CONFIG_ARCH_NO_COHERENT_DMA_MMAP) || !defined(CONFIG_HAS_DMA)
-+	if (!dma_can_mmap(substream->dma_buffer.dev.dev))
-+		return false;
- 	if (!substream->ops->mmap &&
- 	    substream->dma_buffer.dev.type == SNDRV_DMA_TYPE_DEV)
- 		return false;
--#endif
- 	return true;
- }
+diff --git a/arch/m68k/include/asm/pgtable_no.h b/arch/m68k/include/asm/pgtable_no.h
+index fc3a96c77bd8..06194c7ba151 100644
+--- a/arch/m68k/include/asm/pgtable_no.h
++++ b/arch/m68k/include/asm/pgtable_no.h
+@@ -29,6 +29,8 @@
+ #define PAGE_READONLY	__pgprot(0)
+ #define PAGE_KERNEL	__pgprot(0)
+ 
++#define pgprot_noncached(prot)   (prot)
++
+ extern void paging_init(void);
+ #define swapper_pg_dir ((pgd_t *) 0)
  
 -- 
 2.20.1
