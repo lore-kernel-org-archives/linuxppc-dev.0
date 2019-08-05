@@ -2,87 +2,57 @@ Return-Path: <SRS0=0OA4=WB=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7348CC0650F
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  5 Aug 2019 06:39:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 44B44C433FF
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  5 Aug 2019 06:43:22 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E9A102086D
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  5 Aug 2019 06:39:48 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=fossix-org.20150623.gappssmtp.com header.i=@fossix-org.20150623.gappssmtp.com header.b="ofzpa4RM"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E9A102086D
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=fossix.org
+	by mail.kernel.org (Postfix) with ESMTPS id C480F2086D
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  5 Aug 2019 06:43:21 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C480F2086D
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=huawei.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4627RQ3bCLzDqXW
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  5 Aug 2019 16:39:46 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4627WW5NRCzDqg5
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  5 Aug 2019 16:43:19 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=fossix.org
- (client-ip=2607:f8b0:4864:20::541; helo=mail-pg1-x541.google.com;
- envelope-from=santosh@fossix.org; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=huawei.com
+ (client-ip=45.249.212.35; helo=huawei.com; envelope-from=yanaijie@huawei.com;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=fossix.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=fossix-org.20150623.gappssmtp.com
- header.i=@fossix-org.20150623.gappssmtp.com header.b="ofzpa4RM"; 
- dkim-atps=neutral
-Received: from mail-pg1-x541.google.com (mail-pg1-x541.google.com
- [IPv6:2607:f8b0:4864:20::541])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ dmarc=none (p=none dis=none) header.from=huawei.com
+Received: from huawei.com (szxga07-in.huawei.com [45.249.212.35])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4627460JTvzDqXW
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 Aug 2019 16:23:01 +1000 (AEST)
-Received: by mail-pg1-x541.google.com with SMTP id n190so4030641pgn.0
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 04 Aug 2019 23:23:01 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=fossix-org.20150623.gappssmtp.com; s=20150623;
- h=from:to:cc:subject:date:message-id:in-reply-to:references
- :mime-version:content-transfer-encoding;
- bh=wTlpYyZD/0q9aMn5q4HeUbQoatHU8kq64x9EtI8Wul4=;
- b=ofzpa4RMVAg9SEnJH93KWyT5+FnI3bDtLrgWsm3zOuSoKpwJefrzrWUNT5B8mPsCo5
- FHqW38pd2ClHxZp3vHitq4XQikfaDrcGann4aQk3idg3ZMoEdRPmo8Bh7u0SHZk9mnk3
- Qm/PWosgezMuZvPx/H1J4tRxnrFttBph68j+lK7tVvrHoeQ4gDxyiJGtQe8zjp/XvT42
- 9WBBVjSoW3kbtpzPZJhWwNp5bQjwYoGN+p0v6Tqv+anrZTt6/9+6fwdl9DD+lVPgOqnd
- iKglAljvNwz+aLB/fzPM5QUO6O98NQV4eEY83+LDRp+m+svmXRJZAZ6PpoRZEQU0SUk7
- Anmg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
- :references:mime-version:content-transfer-encoding;
- bh=wTlpYyZD/0q9aMn5q4HeUbQoatHU8kq64x9EtI8Wul4=;
- b=CeyIXPLYGDdNliZaQ+QH6XToUuKFmwz5c+lOcNSr4nevojdHfllUJ4gMulQaFZdSFL
- KiviXChIGFsMXUgHuAD+TqwdgIUS5G184jVClwkedatRkNWmOaOKyWDCoPx04jTbHEdB
- 6KanyI7kMY0eAcPvtEr8Xh2nX/+SEX5PO+L1wA0J5eJiNxdeDbqnSUsmD5NF76bMaRGb
- fccY2no2NqY41NNXHURBW/3hy2Nkqc6fz64nnt1w9aW0RbGuNJyq2/QVDlohpFWY8BJb
- kf1FOrV7ZGN823rMHBfczCW1Yw1dGN8JFCcsK5LUNZPqilER8mYML9akaQowbGbUlkCT
- HgKg==
-X-Gm-Message-State: APjAAAW9/ddQGa4bRxGhw0XXxAhipdxfeYPoLIpAY3A1yGwLkZ/oJ8UQ
- gnkSHyrhatBTLp2zmIQYTbJzLBlG9aI1bw==
-X-Google-Smtp-Source: APXvYqx2a53J7+K3AmO8itomjLV2KyMw6dQquJOLFFdxZSKfiDrkTVsqjyaK3xoFqKxYlp7ye3PD6A==
-X-Received: by 2002:a17:90a:7148:: with SMTP id
- g8mr16739525pjs.51.1564986179854; 
- Sun, 04 Aug 2019 23:22:59 -0700 (PDT)
-Received: from santosiv.in.ibm.com ([129.41.84.66])
- by smtp.gmail.com with ESMTPSA id i14sm124680082pfk.0.2019.08.04.23.22.56
- (version=TLS1_3 cipher=AEAD-AES256-GCM-SHA384 bits=256/256);
- Sun, 04 Aug 2019 23:22:59 -0700 (PDT)
-From: Santosh Sivaraj <santosh@fossix.org>
-To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, linux-kernel@vger.kernel.org
-Subject: [PATCH v7 7/7] powerpc: add machine check safe copy_to_user
-Date: Mon,  5 Aug 2019 11:52:25 +0530
-Message-Id: <20190805062225.4354-8-santosh@fossix.org>
-X-Mailer: git-send-email 2.20.1
-In-Reply-To: <20190805062225.4354-1-santosh@fossix.org>
-References: <20190805062225.4354-1-santosh@fossix.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46278N4SvJzDqTT
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 Aug 2019 16:26:44 +1000 (AEST)
+Received: from DGGEMS414-HUB.china.huawei.com (unknown [172.30.72.58])
+ by Forcepoint Email with ESMTP id 2F7A7A7224D5A53CE50D;
+ Mon,  5 Aug 2019 14:26:37 +0800 (CST)
+Received: from huawei.com (10.175.124.28) by DGGEMS414-HUB.china.huawei.com
+ (10.3.19.214) with Microsoft SMTP Server id 14.3.439.0; Mon, 5 Aug 2019
+ 14:26:27 +0800
+From: Jason Yan <yanaijie@huawei.com>
+To: <mpe@ellerman.id.au>, <linuxppc-dev@lists.ozlabs.org>,
+ <diana.craciun@nxp.com>, <christophe.leroy@c-s.fr>,
+ <benh@kernel.crashing.org>, <paulus@samba.org>, <npiggin@gmail.com>,
+ <keescook@chromium.org>, <kernel-hardening@lists.openwall.com>
+Subject: [PATCH v4 02/10] powerpc: move memstart_addr and kernstart_addr to
+ init-common.c
+Date: Mon, 5 Aug 2019 14:43:27 +0800
+Message-ID: <20190805064335.19156-3-yanaijie@huawei.com>
+X-Mailer: git-send-email 2.17.2
+In-Reply-To: <20190805064335.19156-1-yanaijie@huawei.com>
+References: <20190805064335.19156-1-yanaijie@huawei.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-Originating-IP: [10.175.124.28]
+X-CFilter-Loop: Reflected
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -94,59 +64,82 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
- Mahesh Salgaonkar <mahesh@linux.ibm.com>, Nicholas Piggin <npiggin@gmail.com>,
- Chandan Rajendra <chandan@linux.vnet.ibm.com>,
- Reza Arbab <arbab@linux.ibm.com>
+Cc: wangkefeng.wang@huawei.com, Jason Yan <yanaijie@huawei.com>,
+ linux-kernel@vger.kernel.org, jingxiangfeng@huawei.com,
+ zhaohongjiang@huawei.com, thunder.leizhen@huawei.com, fanchengyang@huawei.com,
+ yebin10@huawei.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Use  memcpy_mcsafe() implementation to define copy_to_user_mcsafe()
+These two variables are both defined in init_32.c and init_64.c. Move
+them to init-common.c.
 
-Signed-off-by: Santosh Sivaraj <santosh@fossix.org>
+Signed-off-by: Jason Yan <yanaijie@huawei.com>
+Cc: Diana Craciun <diana.craciun@nxp.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Christophe Leroy <christophe.leroy@c-s.fr>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Nicholas Piggin <npiggin@gmail.com>
+Cc: Kees Cook <keescook@chromium.org>
+Reviewed-by: Christophe Leroy <christophe.leroy@c-s.fr>
+Reviewed-by: Diana Craciun <diana.craciun@nxp.com>
+Tested-by: Diana Craciun <diana.craciun@nxp.com>
 ---
- arch/powerpc/Kconfig               |  1 +
- arch/powerpc/include/asm/uaccess.h | 14 ++++++++++++++
- 2 files changed, 15 insertions(+)
+ arch/powerpc/mm/init-common.c | 5 +++++
+ arch/powerpc/mm/init_32.c     | 5 -----
+ arch/powerpc/mm/init_64.c     | 5 -----
+ 3 files changed, 5 insertions(+), 10 deletions(-)
 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 77f6ebf97113..4316e36095a2 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -137,6 +137,7 @@ config PPC
- 	select ARCH_HAS_STRICT_KERNEL_RWX	if ((PPC_BOOK3S_64 || PPC32) && !RELOCATABLE && !HIBERNATION)
- 	select ARCH_HAS_TICK_BROADCAST		if GENERIC_CLOCKEVENTS_BROADCAST
- 	select ARCH_HAS_UACCESS_FLUSHCACHE	if PPC64
-+	select ARCH_HAS_UACCESS_MCSAFE		if PPC64
- 	select ARCH_HAS_UBSAN_SANITIZE_ALL
- 	select ARCH_HAVE_NMI_SAFE_CMPXCHG
- 	select ARCH_KEEP_MEMBLOCK
-diff --git a/arch/powerpc/include/asm/uaccess.h b/arch/powerpc/include/asm/uaccess.h
-index 8b03eb44e876..15002b51ff18 100644
---- a/arch/powerpc/include/asm/uaccess.h
-+++ b/arch/powerpc/include/asm/uaccess.h
-@@ -387,6 +387,20 @@ static inline unsigned long raw_copy_to_user(void __user *to,
- 	return ret;
- }
+diff --git a/arch/powerpc/mm/init-common.c b/arch/powerpc/mm/init-common.c
+index a84da92920f7..152ae0d21435 100644
+--- a/arch/powerpc/mm/init-common.c
++++ b/arch/powerpc/mm/init-common.c
+@@ -21,6 +21,11 @@
+ #include <asm/pgtable.h>
+ #include <asm/kup.h>
  
-+static __always_inline unsigned long __must_check
-+copy_to_user_mcsafe(void __user *to, const void *from, unsigned long n)
-+{
-+	if (likely(check_copy_size(from, n, true))) {
-+		if (access_ok(to, n)) {
-+			allow_write_to_user(to, n);
-+			n = memcpy_mcsafe((void *)to, from, n);
-+			prevent_write_to_user(to, n);
-+		}
-+	}
++phys_addr_t memstart_addr = (phys_addr_t)~0ull;
++EXPORT_SYMBOL_GPL(memstart_addr);
++phys_addr_t kernstart_addr;
++EXPORT_SYMBOL_GPL(kernstart_addr);
 +
-+	return n;
-+}
-+
- extern unsigned long __clear_user(void __user *addr, unsigned long size);
+ static bool disable_kuep = !IS_ENABLED(CONFIG_PPC_KUEP);
+ static bool disable_kuap = !IS_ENABLED(CONFIG_PPC_KUAP);
  
- static inline unsigned long clear_user(void __user *addr, unsigned long size)
+diff --git a/arch/powerpc/mm/init_32.c b/arch/powerpc/mm/init_32.c
+index b04896a88d79..872df48ae41b 100644
+--- a/arch/powerpc/mm/init_32.c
++++ b/arch/powerpc/mm/init_32.c
+@@ -56,11 +56,6 @@
+ phys_addr_t total_memory;
+ phys_addr_t total_lowmem;
+ 
+-phys_addr_t memstart_addr = (phys_addr_t)~0ull;
+-EXPORT_SYMBOL(memstart_addr);
+-phys_addr_t kernstart_addr;
+-EXPORT_SYMBOL(kernstart_addr);
+-
+ #ifdef CONFIG_RELOCATABLE
+ /* Used in __va()/__pa() */
+ long long virt_phys_offset;
+diff --git a/arch/powerpc/mm/init_64.c b/arch/powerpc/mm/init_64.c
+index a44f6281ca3a..c836f1269ee7 100644
+--- a/arch/powerpc/mm/init_64.c
++++ b/arch/powerpc/mm/init_64.c
+@@ -63,11 +63,6 @@
+ 
+ #include <mm/mmu_decl.h>
+ 
+-phys_addr_t memstart_addr = ~0;
+-EXPORT_SYMBOL_GPL(memstart_addr);
+-phys_addr_t kernstart_addr;
+-EXPORT_SYMBOL_GPL(kernstart_addr);
+-
+ #ifdef CONFIG_SPARSEMEM_VMEMMAP
+ /*
+  * Given an address within the vmemmap, determine the pfn of the page that
 -- 
-2.20.1
+2.17.2
 
