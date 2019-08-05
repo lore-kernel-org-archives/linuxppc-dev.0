@@ -7,21 +7,21 @@ X-Spam-Status: No, score=-9.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2F545C433FF
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  5 Aug 2019 09:23:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C6457C433FF
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  5 Aug 2019 09:25:24 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id A41DD20880
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  5 Aug 2019 09:23:11 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 46B9F20880
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  5 Aug 2019 09:25:24 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="t/QmNF9K"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A41DD20880
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="Sd4QHDwu"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 46B9F20880
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 462C3x4hx5zDqrm
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  5 Aug 2019 19:23:09 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 462C6V2zT6zDqlL
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  5 Aug 2019 19:25:22 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=none (mailfrom)
  smtp.mailfrom=bombadil.srs.infradead.org (client-ip=2607:7c80:54:e::133;
  helo=bombadil.infradead.org;
@@ -31,35 +31,36 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=infradead.org header.i=@infradead.org
- header.b="t/QmNF9K"; dkim-atps=neutral
+ header.b="Sd4QHDwu"; dkim-atps=neutral
 Received: from bombadil.infradead.org (bombadil.infradead.org
  [IPv6:2607:7c80:54:e::133])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 462BqT1C4KzDqdc
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 Aug 2019 19:12:20 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 462BqW4vxTzDqrC
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 Aug 2019 19:12:23 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
  d=infradead.org; s=bombadil.20170209; h=Content-Transfer-Encoding:
  MIME-Version:References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:Sender
  :Reply-To:Content-Type:Content-ID:Content-Description:Resent-Date:Resent-From
  :Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:List-Help:
  List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
- bh=urEmUUgdHQK/RXisjgziTewBbi9Y6Q1gTs0AWjfkJa4=; b=t/QmNF9K0u3YouJ4rprzdwLiu3
- pq0Ju27OXGFCUDZNcHEg1LqwhycGIlPuO9U6/SIVaWFJ3jJJq32TokI9y+h6Y7nhet9HM9ZQF/6Bi
- 43+BNkAzi4O31w4OniYVzgQ+zBiJ5QxviAimO5OFhNLV5sHoBI2AyB2LMVuj7S0/TbTPB5tlQhODs
- hPdLd+WCQj4Cckuo2FZHSP27KP/5vA+VqCt+emHHWH/89phj6Iu0X+UgrEdmFrZ+ZpB4dsa6VcnIm
- GFA3VknvjrcVZbn0/OIVzey1wxfRVSmbi/SwzhAkTswnvvqZz9QHC67atngF7ukZiGzmNlg+BGbKK
- TtYIr4tQ==;
+ bh=r7VigzYU3BuHUi2BBP1jIMsKqnBbu0+Xmxj4lDWNmG0=; b=Sd4QHDwuC8t+6vutznxfjeQukI
+ 02e7uLEYeS7f/4D+3POuYv4ZxgWMNVY7eDp6J7tleaoYU7pppL8xXSM6f81jDZVjJTLDl22ru67IU
+ f4gkXp/yZcv9v0g6Fe0e6IpRC8jSvYiygY/FH5YpQ7cEhg+2bqRMibPUsHrhM1CkxwgHILjqwKIjr
+ w9S/Ulsek9D8832JzD+E1gwns8BTtn/sJUlKJf0FgkxU8wSe/i/Pt3Ogoo/zqFupnMC400hE/3RW6
+ 02BmOfALUs2NKEFGJNMHjow/YYbsDC0A9FZEEd6mweswxwTRO0uOaFyhTGmmbxcsxHZurxCwtQotm
+ Oy4PGlhw==;
 Received: from [195.167.85.94] (helo=localhost)
  by bombadil.infradead.org with esmtpsa (Exim 4.92 #3 (Red Hat Linux))
- id 1huZ2I-0004x8-6E; Mon, 05 Aug 2019 09:12:11 +0000
+ id 1huZ2L-0004ys-Hw; Mon, 05 Aug 2019 09:12:14 +0000
 From: Christoph Hellwig <hch@lst.de>
 To: iommu@lists.linux-foundation.org,
  Marek Szyprowski <m.szyprowski@samsung.com>
-Subject: [PATCH 3/7] dma-mapping: add a dma_can_mmap helper
-Date: Mon,  5 Aug 2019 12:11:55 +0300
-Message-Id: <20190805091159.7826-4-hch@lst.de>
+Subject: [PATCH 4/7] ALSA: pcm: use dma_can_mmap() to check if a device
+ supports dma_mmap_*
+Date: Mon,  5 Aug 2019 12:11:56 +0300
+Message-Id: <20190805091159.7826-5-hch@lst.de>
 X-Mailer: git-send-email 2.20.1
 In-Reply-To: <20190805091159.7826-1-hch@lst.de>
 References: <20190805091159.7826-1-hch@lst.de>
@@ -87,72 +88,33 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Add a helper to check if DMA allocations for a specific device can be
-mapped to userspace using dma_mmap_*.
+Replace the local hack with the dma_can_mmap helper to check if
+a given device supports mapping DMA allocations to userspace.
 
 Signed-off-by: Christoph Hellwig <hch@lst.de>
 ---
- include/linux/dma-mapping.h |  5 +++++
- kernel/dma/mapping.c        | 23 +++++++++++++++++++++++
- 2 files changed, 28 insertions(+)
+ sound/core/pcm_native.c | 5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
 
-diff --git a/include/linux/dma-mapping.h b/include/linux/dma-mapping.h
-index f7d1eea32c78..17271857be5d 100644
---- a/include/linux/dma-mapping.h
-+++ b/include/linux/dma-mapping.h
-@@ -462,6 +462,7 @@ int dma_get_sgtable_attrs(struct device *dev, struct sg_table *sgt,
- int dma_mmap_attrs(struct device *dev, struct vm_area_struct *vma,
- 		void *cpu_addr, dma_addr_t dma_addr, size_t size,
- 		unsigned long attrs);
-+bool dma_can_mmap(struct device *dev);
- int dma_supported(struct device *dev, u64 mask);
- int dma_set_mask(struct device *dev, u64 mask);
- int dma_set_coherent_mask(struct device *dev, u64 mask);
-@@ -552,6 +553,10 @@ static inline int dma_mmap_attrs(struct device *dev, struct vm_area_struct *vma,
+diff --git a/sound/core/pcm_native.c b/sound/core/pcm_native.c
+index 703857aab00f..81c82c3ee8a2 100644
+--- a/sound/core/pcm_native.c
++++ b/sound/core/pcm_native.c
+@@ -220,12 +220,11 @@ static bool hw_support_mmap(struct snd_pcm_substream *substream)
  {
- 	return -ENXIO;
- }
-+static inline bool dma_can_mmap(struct device *dev)
-+{
-+	return false;
-+}
- static inline int dma_supported(struct device *dev, u64 mask)
- {
- 	return 0;
-diff --git a/kernel/dma/mapping.c b/kernel/dma/mapping.c
-index cdb157cd70e7..ab6aa355e1a0 100644
---- a/kernel/dma/mapping.c
-+++ b/kernel/dma/mapping.c
-@@ -203,6 +203,29 @@ int dma_common_mmap(struct device *dev, struct vm_area_struct *vma,
- #endif /* !CONFIG_ARCH_NO_COHERENT_DMA_MMAP */
+ 	if (!(substream->runtime->hw.info & SNDRV_PCM_INFO_MMAP))
+ 		return false;
+-	/* architecture supports dma_mmap_coherent()? */
+-#if defined(CONFIG_ARCH_NO_COHERENT_DMA_MMAP) || !defined(CONFIG_HAS_DMA)
++	if (!dma_can_mmap(substream->dma_buffer.dev.dev))
++		return false;
+ 	if (!substream->ops->mmap &&
+ 	    substream->dma_buffer.dev.type == SNDRV_DMA_TYPE_DEV)
+ 		return false;
+-#endif
+ 	return true;
  }
  
-+/**
-+ * dma_can_mmap - check if a given device supports dma_mmap_*
-+ * @dev: device to check
-+ *
-+ * Returns %true if @dev supports dma_mmap_coherent() and dma_mmap_attrs() to
-+ * map DMA allocations to userspace.
-+ */
-+bool dma_can_mmap(struct device *dev)
-+{
-+	const struct dma_map_ops *ops = get_dma_ops(dev);
-+
-+	if (IS_ENABLED(CONFIG_ARCH_NO_COHERENT_DMA_MMAP))
-+		return false;
-+
-+	if (dma_is_direct(ops)) {
-+		return dev_is_dma_coherent(dev) ||
-+			IS_ENABLED(CONFIG_ARCH_HAS_DMA_COHERENT_TO_PFN);
-+	}
-+
-+	return ops->mmap != NULL;
-+}
-+EXPORT_SYMBOL_GPL(dma_can_mmap);
-+
- /**
-  * dma_mmap_attrs - map a coherent DMA allocation into user space
-  * @dev: valid struct device pointer, or NULL for ISA and EISA-like devices
 -- 
 2.20.1
 
