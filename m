@@ -7,45 +7,45 @@ X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B0C49C0650F
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  5 Aug 2019 06:57:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 30D6BC0650F
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  5 Aug 2019 06:59:23 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 01F9C206C1
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  5 Aug 2019 06:57:28 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 01F9C206C1
+	by mail.kernel.org (Postfix) with ESMTPS id AC168206C1
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  5 Aug 2019 06:59:22 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org AC168206C1
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=huawei.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4627qp58kHzDqHP
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  5 Aug 2019 16:57:26 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4627t02Kq2zDqjQ
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  5 Aug 2019 16:59:20 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=huawei.com
- (client-ip=45.249.212.190; helo=huawei.com; envelope-from=yanaijie@huawei.com;
+ (client-ip=45.249.212.35; helo=huawei.com; envelope-from=yanaijie@huawei.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=huawei.com
-Received: from huawei.com (szxga04-in.huawei.com [45.249.212.190])
+Received: from huawei.com (szxga07-in.huawei.com [45.249.212.35])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46278W2GwNzDqYK
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 Aug 2019 16:26:50 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46278X3QFgzDqXf
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 Aug 2019 16:26:52 +1000 (AEST)
 Received: from DGGEMS414-HUB.china.huawei.com (unknown [172.30.72.58])
- by Forcepoint Email with ESMTP id 2D11D5AC1884040C1DD1;
- Mon,  5 Aug 2019 14:26:42 +0800 (CST)
+ by Forcepoint Email with ESMTP id 3B389BDC3C4B824952CB;
+ Mon,  5 Aug 2019 14:26:37 +0800 (CST)
 Received: from huawei.com (10.175.124.28) by DGGEMS414-HUB.china.huawei.com
  (10.3.19.214) with Microsoft SMTP Server id 14.3.439.0; Mon, 5 Aug 2019
- 14:26:32 +0800
+ 14:26:28 +0800
 From: Jason Yan <yanaijie@huawei.com>
 To: <mpe@ellerman.id.au>, <linuxppc-dev@lists.ozlabs.org>,
  <diana.craciun@nxp.com>, <christophe.leroy@c-s.fr>,
  <benh@kernel.crashing.org>, <paulus@samba.org>, <npiggin@gmail.com>,
  <keescook@chromium.org>, <kernel-hardening@lists.openwall.com>
-Subject: [PATCH v4 08/10] powerpc/fsl_booke/kaslr: clear the original kernel
- if randomized
-Date: Mon, 5 Aug 2019 14:43:33 +0800
-Message-ID: <20190805064335.19156-9-yanaijie@huawei.com>
+Subject: [PATCH v4 03/10] powerpc: introduce kimage_vaddr to store the kernel
+ base
+Date: Mon, 5 Aug 2019 14:43:28 +0800
+Message-ID: <20190805064335.19156-4-yanaijie@huawei.com>
 X-Mailer: git-send-email 2.17.2
 In-Reply-To: <20190805064335.19156-1-yanaijie@huawei.com>
 References: <20190805064335.19156-1-yanaijie@huawei.com>
@@ -72,7 +72,8 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The original kernel still exists in the memory, clear it now.
+Now the kernel base is a fixed value - KERNELBASE. To support KASLR, we
+need a variable to store the kernel base.
 
 Signed-off-by: Jason Yan <yanaijie@huawei.com>
 Cc: Diana Craciun <diana.craciun@nxp.com>
@@ -86,57 +87,36 @@ Reviewed-by: Christophe Leroy <christophe.leroy@c-s.fr>
 Reviewed-by: Diana Craciun <diana.craciun@nxp.com>
 Tested-by: Diana Craciun <diana.craciun@nxp.com>
 ---
- arch/powerpc/kernel/kaslr_booke.c  | 11 +++++++++++
- arch/powerpc/mm/mmu_decl.h         |  2 ++
- arch/powerpc/mm/nohash/fsl_booke.c |  1 +
- 3 files changed, 14 insertions(+)
+ arch/powerpc/include/asm/page.h | 2 ++
+ arch/powerpc/mm/init-common.c   | 2 ++
+ 2 files changed, 4 insertions(+)
 
-diff --git a/arch/powerpc/kernel/kaslr_booke.c b/arch/powerpc/kernel/kaslr_booke.c
-index 97250cad71de..4b3f19a663fc 100644
---- a/arch/powerpc/kernel/kaslr_booke.c
-+++ b/arch/powerpc/kernel/kaslr_booke.c
-@@ -400,3 +400,14 @@ notrace void __init kaslr_early_init(void *dt_ptr, phys_addr_t size)
+diff --git a/arch/powerpc/include/asm/page.h b/arch/powerpc/include/asm/page.h
+index 0d52f57fca04..60a68d3a54b1 100644
+--- a/arch/powerpc/include/asm/page.h
++++ b/arch/powerpc/include/asm/page.h
+@@ -315,6 +315,8 @@ void arch_free_page(struct page *page, int order);
  
- 	reloc_kernel_entry(dt_ptr, kimage_vaddr);
- }
+ struct vm_area_struct;
+ 
++extern unsigned long kimage_vaddr;
 +
-+void __init kaslr_late_init(void)
-+{
-+	/* If randomized, clear the original kernel */
-+	if (kimage_vaddr != KERNELBASE) {
-+		unsigned long kernel_sz;
-+
-+		kernel_sz = (unsigned long)_end - kimage_vaddr;
-+		memzero_explicit((void *)KERNELBASE, kernel_sz);
-+	}
-+}
-diff --git a/arch/powerpc/mm/mmu_decl.h b/arch/powerpc/mm/mmu_decl.h
-index 9332772c8a66..f0a461482dba 100644
---- a/arch/powerpc/mm/mmu_decl.h
-+++ b/arch/powerpc/mm/mmu_decl.h
-@@ -150,8 +150,10 @@ extern void loadcam_multi(int first_idx, int num, int tmp_idx);
+ #include <asm-generic/memory_model.h>
+ #endif /* __ASSEMBLY__ */
+ #include <asm/slice.h>
+diff --git a/arch/powerpc/mm/init-common.c b/arch/powerpc/mm/init-common.c
+index 152ae0d21435..d4801ce48dc5 100644
+--- a/arch/powerpc/mm/init-common.c
++++ b/arch/powerpc/mm/init-common.c
+@@ -25,6 +25,8 @@ phys_addr_t memstart_addr = (phys_addr_t)~0ull;
+ EXPORT_SYMBOL_GPL(memstart_addr);
+ phys_addr_t kernstart_addr;
+ EXPORT_SYMBOL_GPL(kernstart_addr);
++unsigned long kimage_vaddr = KERNELBASE;
++EXPORT_SYMBOL_GPL(kimage_vaddr);
  
- #ifdef CONFIG_RANDOMIZE_BASE
- void kaslr_early_init(void *dt_ptr, phys_addr_t size);
-+void kaslr_late_init(void);
- #else
- static inline void kaslr_early_init(void *dt_ptr, phys_addr_t size) {}
-+static inline void kaslr_late_init(void) {}
- #endif
- 
- struct tlbcam {
-diff --git a/arch/powerpc/mm/nohash/fsl_booke.c b/arch/powerpc/mm/nohash/fsl_booke.c
-index 8d25a8dc965f..e88fcc367600 100644
---- a/arch/powerpc/mm/nohash/fsl_booke.c
-+++ b/arch/powerpc/mm/nohash/fsl_booke.c
-@@ -269,6 +269,7 @@ notrace void __init relocate_init(u64 dt_ptr, phys_addr_t start)
- 	kernstart_addr = start;
- 	if (is_second_reloc) {
- 		virt_phys_offset = PAGE_OFFSET - memstart_addr;
-+		kaslr_late_init();
- 		return;
- 	}
- 
+ static bool disable_kuep = !IS_ENABLED(CONFIG_PPC_KUEP);
+ static bool disable_kuap = !IS_ENABLED(CONFIG_PPC_KUAP);
 -- 
 2.17.2
 
