@@ -7,21 +7,21 @@ X-Spam-Status: No, score=-9.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C738BC433FF
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  5 Aug 2019 09:21:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2F545C433FF
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  5 Aug 2019 09:23:12 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 496E320B1F
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  5 Aug 2019 09:21:05 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id A41DD20880
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  5 Aug 2019 09:23:11 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="PbJHTzeY"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 496E320B1F
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="t/QmNF9K"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A41DD20880
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 462C1V32yHzDqxk
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  5 Aug 2019 19:21:02 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 462C3x4hx5zDqrm
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  5 Aug 2019 19:23:09 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=none (mailfrom)
  smtp.mailfrom=bombadil.srs.infradead.org (client-ip=2607:7c80:54:e::133;
  helo=bombadil.infradead.org;
@@ -31,36 +31,35 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=infradead.org header.i=@infradead.org
- header.b="PbJHTzeY"; dkim-atps=neutral
+ header.b="t/QmNF9K"; dkim-atps=neutral
 Received: from bombadil.infradead.org (bombadil.infradead.org
  [IPv6:2607:7c80:54:e::133])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 462BqN5sLMzDqsK
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 Aug 2019 19:12:16 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 462BqT1C4KzDqdc
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 Aug 2019 19:12:20 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
  d=infradead.org; s=bombadil.20170209; h=Content-Transfer-Encoding:
  MIME-Version:References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:Sender
  :Reply-To:Content-Type:Content-ID:Content-Description:Resent-Date:Resent-From
  :Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:List-Help:
  List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
- bh=k0Kys8RnDnHWhgPJ7TG+mio71r1htN8piJsJ6T2mgUo=; b=PbJHTzeYOe8VupEzPq5Wp8YI5X
- ZhGMXSNSeuXp3rceOuQOLItUaPso7OLjEbeA2IzkdNm9eHZzq4d9eyOzK8SgxFMBvJtRsZf+oYVYO
- LAQtqMNQ7+y4l14CXhtpEOxOhXawf3dCJMlNjwrLyVvo0ApMcJ7kqVc3CFwsHPDVLqVFWq9Cbum9t
- 9qzA6YeVpBQDfIGJ2Q44nIIaw+9nG3fc1LafVo7/7iK7RxDlqjsWkn+zjtZM1BMLV+Rd0iqAp3e0z
- rPx+Sw0zfi7nqe/jelnVWp76rq+/6g/8LrRHMTbv/tnEVdwIbvwby+W7ft1TnK/gBzeYEBVE49YeK
- khESSfKg==;
+ bh=urEmUUgdHQK/RXisjgziTewBbi9Y6Q1gTs0AWjfkJa4=; b=t/QmNF9K0u3YouJ4rprzdwLiu3
+ pq0Ju27OXGFCUDZNcHEg1LqwhycGIlPuO9U6/SIVaWFJ3jJJq32TokI9y+h6Y7nhet9HM9ZQF/6Bi
+ 43+BNkAzi4O31w4OniYVzgQ+zBiJ5QxviAimO5OFhNLV5sHoBI2AyB2LMVuj7S0/TbTPB5tlQhODs
+ hPdLd+WCQj4Cckuo2FZHSP27KP/5vA+VqCt+emHHWH/89phj6Iu0X+UgrEdmFrZ+ZpB4dsa6VcnIm
+ GFA3VknvjrcVZbn0/OIVzey1wxfRVSmbi/SwzhAkTswnvvqZz9QHC67atngF7ukZiGzmNlg+BGbKK
+ TtYIr4tQ==;
 Received: from [195.167.85.94] (helo=localhost)
  by bombadil.infradead.org with esmtpsa (Exim 4.92 #3 (Red Hat Linux))
- id 1huZ2B-0004t2-UD; Mon, 05 Aug 2019 09:12:04 +0000
+ id 1huZ2I-0004x8-6E; Mon, 05 Aug 2019 09:12:11 +0000
 From: Christoph Hellwig <hch@lst.de>
 To: iommu@lists.linux-foundation.org,
  Marek Szyprowski <m.szyprowski@samsung.com>
-Subject: [PATCH 1/7] dma-mapping: move the dma_get_sgtable API comments from
- arm to common code
-Date: Mon,  5 Aug 2019 12:11:53 +0300
-Message-Id: <20190805091159.7826-2-hch@lst.de>
+Subject: [PATCH 3/7] dma-mapping: add a dma_can_mmap helper
+Date: Mon,  5 Aug 2019 12:11:55 +0300
+Message-Id: <20190805091159.7826-4-hch@lst.de>
 X-Mailer: git-send-email 2.20.1
 In-Reply-To: <20190805091159.7826-1-hch@lst.de>
 References: <20190805091159.7826-1-hch@lst.de>
@@ -88,59 +87,72 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The comments are spot on and should be near the central API, not just
-near a single implementation.
+Add a helper to check if DMA allocations for a specific device can be
+mapped to userspace using dma_mmap_*.
 
 Signed-off-by: Christoph Hellwig <hch@lst.de>
 ---
- arch/arm/mm/dma-mapping.c | 11 -----------
- kernel/dma/mapping.c      | 11 +++++++++++
- 2 files changed, 11 insertions(+), 11 deletions(-)
+ include/linux/dma-mapping.h |  5 +++++
+ kernel/dma/mapping.c        | 23 +++++++++++++++++++++++
+ 2 files changed, 28 insertions(+)
 
-diff --git a/arch/arm/mm/dma-mapping.c b/arch/arm/mm/dma-mapping.c
-index 6774b03aa405..4410af33c5c4 100644
---- a/arch/arm/mm/dma-mapping.c
-+++ b/arch/arm/mm/dma-mapping.c
-@@ -877,17 +877,6 @@ static void arm_coherent_dma_free(struct device *dev, size_t size, void *cpu_add
- 	__arm_dma_free(dev, size, cpu_addr, handle, attrs, true);
+diff --git a/include/linux/dma-mapping.h b/include/linux/dma-mapping.h
+index f7d1eea32c78..17271857be5d 100644
+--- a/include/linux/dma-mapping.h
++++ b/include/linux/dma-mapping.h
+@@ -462,6 +462,7 @@ int dma_get_sgtable_attrs(struct device *dev, struct sg_table *sgt,
+ int dma_mmap_attrs(struct device *dev, struct vm_area_struct *vma,
+ 		void *cpu_addr, dma_addr_t dma_addr, size_t size,
+ 		unsigned long attrs);
++bool dma_can_mmap(struct device *dev);
+ int dma_supported(struct device *dev, u64 mask);
+ int dma_set_mask(struct device *dev, u64 mask);
+ int dma_set_coherent_mask(struct device *dev, u64 mask);
+@@ -552,6 +553,10 @@ static inline int dma_mmap_attrs(struct device *dev, struct vm_area_struct *vma,
+ {
+ 	return -ENXIO;
  }
- 
--/*
-- * The whole dma_get_sgtable() idea is fundamentally unsafe - it seems
-- * that the intention is to allow exporting memory allocated via the
-- * coherent DMA APIs through the dma_buf API, which only accepts a
-- * scattertable.  This presents a couple of problems:
-- * 1. Not all memory allocated via the coherent DMA APIs is backed by
-- *    a struct page
-- * 2. Passing coherent DMA memory into the streaming APIs is not allowed
-- *    as we will try to flush the memory through a different alias to that
-- *    actually being used (and the flushes are redundant.)
-- */
- int arm_dma_get_sgtable(struct device *dev, struct sg_table *sgt,
- 		 void *cpu_addr, dma_addr_t handle, size_t size,
- 		 unsigned long attrs)
++static inline bool dma_can_mmap(struct device *dev)
++{
++	return false;
++}
+ static inline int dma_supported(struct device *dev, u64 mask)
+ {
+ 	return 0;
 diff --git a/kernel/dma/mapping.c b/kernel/dma/mapping.c
-index b945239621d8..4ceb5b9016d8 100644
+index cdb157cd70e7..ab6aa355e1a0 100644
 --- a/kernel/dma/mapping.c
 +++ b/kernel/dma/mapping.c
-@@ -136,6 +136,17 @@ int dma_common_get_sgtable(struct device *dev, struct sg_table *sgt,
- 	return ret;
+@@ -203,6 +203,29 @@ int dma_common_mmap(struct device *dev, struct vm_area_struct *vma,
+ #endif /* !CONFIG_ARCH_NO_COHERENT_DMA_MMAP */
  }
  
-+/*
-+ * The whole dma_get_sgtable() idea is fundamentally unsafe - it seems
-+ * that the intention is to allow exporting memory allocated via the
-+ * coherent DMA APIs through the dma_buf API, which only accepts a
-+ * scattertable.  This presents a couple of problems:
-+ * 1. Not all memory allocated via the coherent DMA APIs is backed by
-+ *    a struct page
-+ * 2. Passing coherent DMA memory into the streaming APIs is not allowed
-+ *    as we will try to flush the memory through a different alias to that
-+ *    actually being used (and the flushes are redundant.)
++/**
++ * dma_can_mmap - check if a given device supports dma_mmap_*
++ * @dev: device to check
++ *
++ * Returns %true if @dev supports dma_mmap_coherent() and dma_mmap_attrs() to
++ * map DMA allocations to userspace.
 + */
- int dma_get_sgtable_attrs(struct device *dev, struct sg_table *sgt,
- 		void *cpu_addr, dma_addr_t dma_addr, size_t size,
- 		unsigned long attrs)
++bool dma_can_mmap(struct device *dev)
++{
++	const struct dma_map_ops *ops = get_dma_ops(dev);
++
++	if (IS_ENABLED(CONFIG_ARCH_NO_COHERENT_DMA_MMAP))
++		return false;
++
++	if (dma_is_direct(ops)) {
++		return dev_is_dma_coherent(dev) ||
++			IS_ENABLED(CONFIG_ARCH_HAS_DMA_COHERENT_TO_PFN);
++	}
++
++	return ops->mmap != NULL;
++}
++EXPORT_SYMBOL_GPL(dma_can_mmap);
++
+ /**
+  * dma_mmap_attrs - map a coherent DMA allocation into user space
+  * @dev: valid struct device pointer, or NULL for ISA and EISA-like devices
 -- 
 2.20.1
 
