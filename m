@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-1.0 required=3.0 tests=MAILING_LIST_MULTI,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 71428C31E40
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  6 Aug 2019 20:51:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 60297C433FF
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  6 Aug 2019 20:53:35 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 265812173B
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  6 Aug 2019 20:51:35 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 265812173B
+	by mail.kernel.org (Postfix) with ESMTPS id D30DA20C01
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  6 Aug 2019 20:53:34 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D30DA20C01
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=bugzilla.kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4636Hn4dRpzDr6d
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  7 Aug 2019 06:51:33 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4636L40pw9zDqvd
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  7 Aug 2019 06:53:32 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=bugzilla.kernel.org
  (client-ip=198.145.29.98; helo=mail.wl.linuxfoundation.org;
@@ -29,18 +29,18 @@ Received: from mail.wl.linuxfoundation.org (mail.wl.linuxfoundation.org
  [198.145.29.98])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4636Cz5BXgzDr0y
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Aug 2019 06:48:15 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4636J90lKqzDqGk
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Aug 2019 06:51:52 +1000 (AEST)
 Received: from mail.wl.linuxfoundation.org (localhost [127.0.0.1])
- by mail.wl.linuxfoundation.org (Postfix) with ESMTP id 995C828981
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Aug 2019 20:48:11 +0000 (UTC)
+ by mail.wl.linuxfoundation.org (Postfix) with ESMTP id B2DFC28994
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Aug 2019 20:51:50 +0000 (UTC)
 Received: by mail.wl.linuxfoundation.org (Postfix, from userid 486)
- id 8C903289A0; Tue,  6 Aug 2019 20:48:11 +0000 (UTC)
+ id A67A52899D; Tue,  6 Aug 2019 20:51:50 +0000 (UTC)
 From: bugzilla-daemon@bugzilla.kernel.org
 To: linuxppc-dev@lists.ozlabs.org
 Subject: [Bug 204371] BUG kmalloc-4k (Tainted: G        W        ): Object
  padding overwritten
-Date: Tue, 06 Aug 2019 20:48:11 +0000
+Date: Tue, 06 Aug 2019 20:51:50 +0000
 X-Bugzilla-Reason: CC
 X-Bugzilla-Type: changed
 X-Bugzilla-Watch-Reason: None
@@ -56,7 +56,7 @@ X-Bugzilla-Priority: P1
 X-Bugzilla-Assigned-To: akpm@linux-foundation.org
 X-Bugzilla-Flags: 
 X-Bugzilla-Changed-Fields: attachments.created
-Message-ID: <bug-204371-206035-jo7cqVtml5@https.bugzilla.kernel.org/>
+Message-ID: <bug-204371-206035-RMgwCz5sEW@https.bugzilla.kernel.org/>
 In-Reply-To: <bug-204371-206035@https.bugzilla.kernel.org/>
 References: <bug-204371-206035@https.bugzilla.kernel.org/>
 Content-Type: text/plain; charset="UTF-8"
@@ -82,10 +82,10 @@ Sender: "Linuxppc-dev"
 
 https://bugzilla.kernel.org/show_bug.cgi?id=3D204371
 
---- Comment #7 from Erhard F. (erhard_f@mailbox.org) ---
-Created attachment 284241
-  --> https://bugzilla.kernel.org/attachment.cgi?id=3D284241&action=3Dedit
-dmesg (PowerMac G5 11,2, kernel 5.3-rc3)
+--- Comment #8 from Erhard F. (erhard_f@mailbox.org) ---
+Created attachment 284243
+  --> https://bugzilla.kernel.org/attachment.cgi?id=3D284243&action=3Dedit
+kernel .config (PowerMac G5 11,2, kernel 5.3-rc3)
 
 --=20
 You are receiving this mail because:
