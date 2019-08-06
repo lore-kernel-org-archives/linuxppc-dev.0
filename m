@@ -2,118 +2,86 @@ Return-Path: <SRS0=eg2t=WC=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.9 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.0 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0EE69C31E40
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  6 Aug 2019 16:49:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DD226C433FF
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  6 Aug 2019 16:51:09 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 4A02620C01
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  6 Aug 2019 16:49:19 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 4021320C01
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  6 Aug 2019 16:51:09 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=os.amperecomputing.com header.i=@os.amperecomputing.com header.b="TC7OSRko"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4A02620C01
-Authentication-Results: mail.kernel.org; dmarc=fail (p=quarantine dis=none) header.from=os.amperecomputing.com
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=armlinux.org.uk header.i=@armlinux.org.uk header.b="eZwyX0IY"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4021320C01
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=armlinux.org.uk
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4630wD63fHzDr6d
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  7 Aug 2019 02:49:16 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (mailfrom)
- smtp.mailfrom=os.amperecomputing.com (client-ip=40.107.73.99;
- helo=nam05-dm3-obe.outbound.protection.outlook.com;
- envelope-from=hoan@os.amperecomputing.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=os.amperecomputing.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=os.amperecomputing.com header.i=@os.amperecomputing.com
- header.b="TC7OSRko"; dkim-atps=neutral
-Received: from NAM05-DM3-obe.outbound.protection.outlook.com
- (mail-eopbgr730099.outbound.protection.outlook.com [40.107.73.99])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 4630yJ3GMCzDr1f
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  7 Aug 2019 02:51:04 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+ spf=none (mailfrom) smtp.mailfrom=armlinux.org.uk
+ (client-ip=2001:4d48:ad52:3201:214:fdff:fe10:1be6;
+ helo=pandora.armlinux.org.uk;
+ envelope-from=linux+linuxppc-dev=lists.ozlabs.org@armlinux.org.uk;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none)
+ header.from=armlinux.org.uk
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=armlinux.org.uk header.i=@armlinux.org.uk
+ header.b="eZwyX0IY"; dkim-atps=neutral
+X-Greylist: delayed 173 seconds by postgrey-1.36 at bilbo;
+ Wed, 07 Aug 2019 02:48:26 AEST
+Received: from pandora.armlinux.org.uk (pandora.armlinux.org.uk
+ [IPv6:2001:4d48:ad52:3201:214:fdff:fe10:1be6])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4630t54Q0KzDqmT
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Aug 2019 02:47:24 +1000 (AEST)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=WAAQZ5U9VK0nfqnww9K6q3aXKU5H2jEtvHmZBhATJUQo7r1cwj2XZiQ6wpMCsRtWbbklKHomDc3b7+piseMzuoHl1qaVLX7lbG8/dNg1Nhf/bGeZ7z2UXGvZ4kACizEMsvgROQ1zjwxBChtE9awrQLQkaXKhRLHwuHSw20jj1pfUQJdaIROZMa/VlRAY71dHI/jlZQqg2kzcsEPvnEK00YYkrobq+HsexkcDhI5q1ce+5SQ6ZEWc2Rjrj8xQKeKf2f8flcc6GuIWVh27Afs04XuthPhYDvWHOxvED3WcC+bQFjG4Wgot4AIu9BwV9InpnnsljTF/T/j1iw96X0/Qow==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com; 
- s=arcselector9901;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=1q4pi+o5btussKVzkefj+dnCarsO1mLnz4hoIdPDodU=;
- b=IxSukqaw9/jYzlehclZ3kPJlr49jQXuqDhSv2MIh0+Sy6uEDWEIia/igYSIFIo+ImI2S3afB/pwYG36GO/AANadKN2+G234qmPydOFXZ71SK4IU2hxYIrMeMtaLHvnCohrnKaPUtejLCREFpJwmE2ryN9NrZ2/rAcRHWFGZ3+f/gPgSa4Sq+iN3S+ddwvOLn6GmxsXPdLar2lkhTq/2KNPTPNXE5hXP0Uy4DeZKgQ90ZIXtRZ8xyHwI8EH4tJOJXGCBNnqXAtDlz/WSxeboqBW0d7fZ8nhgv47MsxEZfMNBqrmCA09KrcC9sGRCxuY3Rcz2tHPymzKzQwIJNz3mB3w==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=os.amperecomputing.com; dmarc=pass action=none
- header.from=os.amperecomputing.com; dkim=pass
- header.d=os.amperecomputing.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=os.amperecomputing.com; s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=1q4pi+o5btussKVzkefj+dnCarsO1mLnz4hoIdPDodU=;
- b=TC7OSRkoTwLBAfNE+1PMd8V1wo35CPIfx6smg0BqvOCvElobRUYcbkMZU6cN9vZUYo+unKDBr6G+2BW+InX3roFjvN2mJcSC+Adn9kI1A5HU0tbrNCyfb1LufSTvr4WC2ugW+1mv1OJOkkcgYHUek0mZV2AxmerRs6ZyiyvM/1s=
-Received: from DM6PR01MB4090.prod.exchangelabs.com (20.176.105.203) by
- DM6PR01MB5433.prod.exchangelabs.com (20.179.55.146) with Microsoft SMTP
- Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.20.2157.13; Tue, 6 Aug 2019 16:47:12 +0000
-Received: from DM6PR01MB4090.prod.exchangelabs.com
- ([fe80::612a:862d:745e:ba9a]) by DM6PR01MB4090.prod.exchangelabs.com
- ([fe80::612a:862d:745e:ba9a%3]) with mapi id 15.20.2136.018; Tue, 6 Aug 2019
- 16:47:12 +0000
-From: Hoan Tran OS <hoan@os.amperecomputing.com>
-To: Thomas Gleixner <tglx@linutronix.de>, Catalin Marinas
- <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>
-Subject: Re: [PATCH v2 3/5] x86: Kconfig: Remove CONFIG_NODES_SPAN_OTHER_NODES
-Thread-Topic: [PATCH v2 3/5] x86: Kconfig: Remove CONFIG_NODES_SPAN_OTHER_NODES
-Thread-Index: AQHVOD/6mMbG4b3xtkKwY5B+a64PmqbMCfcAgCJyqYA=
-Date: Tue, 6 Aug 2019 16:47:12 +0000
-Message-ID: <910accd6-c491-acfd-237a-97edec7c0b42@os.amperecomputing.com>
-References: <1562887528-5896-1-git-send-email-Hoan@os.amperecomputing.com>
- <1562887528-5896-4-git-send-email-Hoan@os.amperecomputing.com>
- <alpine.DEB.2.21.1907152042110.1767@nanos.tec.linutronix.de>
-In-Reply-To: <alpine.DEB.2.21.1907152042110.1767@nanos.tec.linutronix.de>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-x-clientproxiedby: CY4PR1101CA0013.namprd11.prod.outlook.com
- (2603:10b6:910:15::23) To DM6PR01MB4090.prod.exchangelabs.com
- (2603:10b6:5:27::11)
-authentication-results: spf=none (sender IP is )
- smtp.mailfrom=hoan@os.amperecomputing.com; 
-x-ms-exchange-messagesentrepresentingtype: 1
-x-originating-ip: [4.28.12.214]
-x-ms-publictraffictype: Email
-x-ms-office365-filtering-correlation-id: c93d5fa5-ac1f-49fd-a8ac-08d71a8dbab7
-x-microsoft-antispam: BCL:0; PCL:0;
- RULEID:(2390118)(7020095)(4652040)(8989299)(4534185)(4627221)(201703031133081)(201702281549075)(8990200)(5600148)(711020)(4605104)(1401327)(2017052603328)(7193020);
- SRVR:DM6PR01MB5433; 
-x-ms-traffictypediagnostic: DM6PR01MB5433:
-x-ms-exchange-transport-forked: True
-x-microsoft-antispam-prvs: <DM6PR01MB5433497C54778940D6030A34F1D50@DM6PR01MB5433.prod.exchangelabs.com>
-x-ms-oob-tlc-oobclassifiers: OLM:7691;
-x-forefront-prvs: 0121F24F22
-x-forefront-antispam-report: SFV:NSPM;
- SFS:(10019020)(4636009)(346002)(376002)(396003)(136003)(39840400004)(366004)(189003)(199004)(6486002)(476003)(2616005)(305945005)(25786009)(31696002)(102836004)(7736002)(229853002)(86362001)(446003)(8936002)(6246003)(4326008)(107886003)(81156014)(14454004)(81166006)(2906002)(256004)(6512007)(186003)(68736007)(53936002)(8676002)(11346002)(26005)(478600001)(31686004)(52116002)(99286004)(110136005)(54906003)(6116002)(76176011)(3846002)(5660300002)(6436002)(66066001)(316002)(66446008)(7416002)(386003)(6506007)(71190400001)(71200400001)(53546011)(486006)(64756008)(66476007)(66556008)(66946007);
- DIR:OUT; SFP:1102; SCL:1; SRVR:DM6PR01MB5433;
- H:DM6PR01MB4090.prod.exchangelabs.com; FPR:; SPF:None; LANG:en;
- PTR:InfoNoRecords; MX:1; A:0; 
-received-spf: None (protection.outlook.com: os.amperecomputing.com does not
- designate permitted sender hosts)
-x-ms-exchange-senderadcheck: 1
-x-microsoft-antispam-message-info: 3TNs1b7ZsCFx1KxEXxgLO/GCjIDmgIU/jlKbs0U+kgzd9i6WRN6dNfv4Gf3J3G0MZSYUE7dA+M3jjAWnvRUJ0RZQQWkN886BBHkiSeOAzCI4jjOvaxwfp5w/v/NkdgdbLHnSFHCW6WUBS1tFEZfkLwOrtdnQvfDfHYmO04FVUGfTzFQCiA27szJBnvOxCq1/poAnprv++8NnMrI06RFlRJh0mf9opefB1QedOZqqroxlAjaX33JXsxqTzX9ClLWqCo/FCTx9hDgCMXxHV28K6SVbDltdJj+xxjpqg3Jmc4+b6S9g6Nwx9SDFTgCtgYL9mmg5dtj+aY3L76q32j+gCi/AwETvA4FarogJcurviSS56JG8TS8Oy5NhzNcK9B28yk1IkcXJVFlPpVnZMjBZr9Lpwz+STX1tQbG68YienVM=
-Content-Type: text/plain; charset="utf-8"
-Content-ID: <56E2A1BBE7566D44917A8A23D9C7B097@prod.exchangelabs.com>
-Content-Transfer-Encoding: base64
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4630vG3rlPzDr08
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Aug 2019 02:48:26 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+ d=armlinux.org.uk; s=pandora-2019; h=Sender:In-Reply-To:
+ Content-Transfer-Encoding:Content-Type:MIME-Version:References:Message-ID:
+ Subject:Cc:To:From:Date:Reply-To:Content-ID:Content-Description:Resent-Date:
+ Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:
+ List-Help:List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
+ bh=2xbU9eGH8Hn5AbLibXFA8i2BhIbjPGsDxSHEGclO7DY=; b=eZwyX0IYZ2o1mynwE2Hz8BgOn
+ 1IYSUKBfERotJIfG9zTtzX0bg4i08mQ5mMz6MCpMov84N9NI9dKaErTO39e8hveags+aR+z+d61qP
+ W3w6jej9QozJBNVBhiIvdTj7/8x21XG296MB4TCw5PA3XToUIUHcmZVo2bgcj29giaXjSaRwo5m1i
+ apKc2Nx+v1j2CSPgt0VzhW9CxMtyl+lhnoPIf1/QpSd7MesE+kISmudz2+Jf9n3t9voIsXSyen3WY
+ +ze92NX2gq4pRI9lO51qHr+H7EmvaTCALnfcgZUyl64IRxEtq2PKmgi/japG58C1Z2+kdJ8eNmMbW
+ Nmv4H0fpQ==;
+Received: from shell.armlinux.org.uk
+ ([2002:4e20:1eda:1:5054:ff:fe00:4ec]:49228)
+ by pandora.armlinux.org.uk with esmtpsa
+ (TLSv1.2:ECDHE-RSA-AES256-GCM-SHA384:256) (Exim 4.90_1)
+ (envelope-from <linux@armlinux.org.uk>)
+ id 1hv2dF-0000TH-Ou; Tue, 06 Aug 2019 17:48:17 +0100
+Received: from linux by shell.armlinux.org.uk with local (Exim 4.92)
+ (envelope-from <linux@shell.armlinux.org.uk>)
+ id 1hv2dE-0000fq-Mb; Tue, 06 Aug 2019 17:48:16 +0100
+Date: Tue, 6 Aug 2019 17:48:16 +0100
+From: Russell King - ARM Linux admin <linux@armlinux.org.uk>
+To: Will Deacon <will@kernel.org>
+Subject: Re: [PATCH] dma-mapping: fix page attributes for dma_mmap_*
+Message-ID: <20190806164816.GE1330@shell.armlinux.org.uk>
+References: <20190801142118.21225-1-hch@lst.de>
+ <20190801142118.21225-2-hch@lst.de>
+ <20190801162305.3m32chycsdjmdejk@willie-the-truck>
+ <20190801163457.GB26588@lst.de>
+ <20190801164411.kmsl4japtfkgvzxe@willie-the-truck>
+ <20190802081441.GA9725@lst.de>
+ <20190802103803.3qrbhqwxlasojsco@willie-the-truck>
+ <20190803064812.GA29746@lst.de>
+ <20190806160854.htk67msiyadlrl4m@willie-the-truck>
+ <20190806164503.GD1330@shell.armlinux.org.uk>
 MIME-Version: 1.0
-X-OriginatorOrg: os.amperecomputing.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: c93d5fa5-ac1f-49fd-a8ac-08d71a8dbab7
-X-MS-Exchange-CrossTenant-originalarrivaltime: 06 Aug 2019 16:47:12.6231 (UTC)
-X-MS-Exchange-CrossTenant-fromentityheader: Hosted
-X-MS-Exchange-CrossTenant-id: 3bc2b170-fd94-476d-b0ce-4229bdc904a7
-X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
-X-MS-Exchange-CrossTenant-userprincipalname: Hoan@os.amperecomputing.com
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: DM6PR01MB5433
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20190806164503.GD1330@shell.armlinux.org.uk>
+User-Agent: Mutt/1.10.1 (2018-07-13)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -125,45 +93,134 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Michal Hocko <mhocko@suse.com>, Heiko Carstens <heiko.carstens@de.ibm.com>,
- "open list:MEMORY MANAGEMENT" <linux-mm@kvack.org>,
- Paul Mackerras <paulus@samba.org>, "H . Peter Anvin" <hpa@zytor.com>,
- "sparclinux@vger.kernel.org" <sparclinux@vger.kernel.org>,
- Alexander Duyck <alexander.h.duyck@linux.intel.com>,
- "linux-s390@vger.kernel.org" <linux-s390@vger.kernel.org>,
- "x86@kernel.org" <x86@kernel.org>, Mike Rapoport <rppt@linux.ibm.com>,
- Christian Borntraeger <borntraeger@de.ibm.com>, Ingo Molnar <mingo@redhat.com>,
- Vlastimil Babka <vbabka@suse.cz>,
- Open Source Submission <patches@amperecomputing.com>,
- Pavel Tatashin <pavel.tatashin@microsoft.com>,
- Vasily Gorbik <gor@linux.ibm.com>, Borislav Petkov <bp@alien8.de>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
- Oscar Salvador <osalvador@suse.de>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Andrew Morton <akpm@linux-foundation.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "David S . Miller" <davem@davemloft.net>
+Cc: Shawn Anastasio <shawn@anastas.io>, linux-kernel@vger.kernel.org,
+ iommu@lists.linux-foundation.org, Catalin Marinas <catalin.marinas@arm.com>,
+ linuxppc-dev@lists.ozlabs.org, Christoph Hellwig <hch@lst.de>,
+ linux-arm-kernel@lists.infradead.org, Robin Murphy <robin.murphy@arm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-SGkgVGhvbWFzLA0KDQoNCk9uIDcvMTUvMTkgMTE6NDMgQU0sIFRob21hcyBHbGVpeG5lciB3cm90
-ZToNCj4gT24gVGh1LCAxMSBKdWwgMjAxOSwgSG9hbiBUcmFuIE9TIHdyb3RlOg0KPiANCj4+IFJl
-bW92ZSBDT05GSUdfTk9ERVNfU1BBTl9PVEhFUl9OT0RFUyBhcyBpdCdzIGVuYWJsZWQNCj4+IGJ5
-IGRlZmF1bHQgd2l0aCBOVU1BLg0KPiANCj4gQXMgSSB0b2xkIHlvdSBiZWZvcmUgdGhpcyBkb2Vz
-IG5vdCBtZW50aW9uIHRoYXQgdGhlIG9wdGlvbiBpcyBub3cgZW5hYmxlZA0KPiBldmVuIGZvciB4
-ODYoMzJiaXQpIGNvbmZpZ3VyYXRpb25zIHdoaWNoIGRpZCBub3QgZW5hYmxlIGl0IGJlZm9yZSBh
-bmQgZG9lcw0KPiBub3QgbG9uZ2VyIGRlcGVuZCBvbiBYODZfNjRfQUNQSV9OVU1BLg0KDQpBZ3Jl
-ZWQsIGxldCBtZSBhZGQgaXQgaW50byB0aGlzIHBhdGNoIGRlc2NyaXB0aW9uLg0KDQo+IA0KPiBB
-bmQgdGhlcmUgaXMgc3RpbGwgbm8gcmF0aW9uYWxlIHdoeSB0aGlzIG1ha2VzIHNlbnNlLg0KPiAN
-Cg0KQXMgd2Uga25vdyBhYm91dCB0aGUgbWVtbWFwX2luaXRfem9uZSgpIGZ1bmN0aW9uLCBpdCBp
-cyB1c2VkIHRvIA0KaW5pdGlhbGl6ZSBhbGwgcGFnZXMuIER1cmluZyBpbml0aWFsaXppbmcsIGVh
-cmx5X3Bmbl9pbl9uaWQoKSBmdW5jdGlvbiANCm1ha2VzIHN1cmUgdGhlIHBhZ2UgaXMgaW4gdGhl
-IHNhbWUgbm9kZSBpZC4gT3RoZXJ3aXNlLCANCm1lbW1hcF9pbml0X3pvbmUoKSBvbmx5IGNoZWNr
-cyB0aGUgcGFnZSB2YWxpZGl0eS4gSXQgd29uJ3Qgd29yayB3aXRoIA0Kbm9kZSBtZW1vcnkgc3Bh
-bnMgYWNyb3NzIHRoZSBvdGhlcnMuDQoNClRoZSBvcHRpb24gQ09ORklHX05PREVTX1NQQU5fT1RI
-RVJfTk9ERVMgaXMgb25seSB1c2VkIHRvIGVuYWJsZSANCmVhcmx5X3Bmbl9pbl9uaWQoKSBmdW5j
-dGlvbi4NCg0KSXQgb2NjdXJzIGR1cmluZyBib290LXRpbWUgYW5kIHdvbid0IGFmZmVjdCB0aGUg
-cnVuLXRpbWUgcGVyZm9ybWFuY2UuDQpBbmQgSSBzYXcgdGhlIG1ham9yaXR5IE5VTUEgYXJjaGl0
-ZWN0dXJlcyBlbmFibGUgdGhpcyBvcHRpb24gYnkgZGVmYXVsdCANCndpdGggTlVNQS4NCg0KVGhh
-bmtzIGFuZCBSZWdhcmRzDQpIb2FuDQoNCg0KPiBUaGFua3MsDQo+IA0KPiAJdGdseA0KPiANCg==
+On Tue, Aug 06, 2019 at 05:45:03PM +0100, Russell King - ARM Linux admin wrote:
+> On Tue, Aug 06, 2019 at 05:08:54PM +0100, Will Deacon wrote:
+> > On Sat, Aug 03, 2019 at 08:48:12AM +0200, Christoph Hellwig wrote:
+> > > On Fri, Aug 02, 2019 at 11:38:03AM +0100, Will Deacon wrote:
+> > > > 
+> > > > So this boils down to a terminology mismatch. The Arm architecture doesn't have
+> > > > anything called "write combine", so in Linux we instead provide what the Arm
+> > > > architecture calls "Normal non-cacheable" memory for pgprot_writecombine().
+> > > > Amongst other things, this memory type permits speculation, unaligned accesses
+> > > > and merging of writes. I found something in the architecture spec about
+> > > > non-cachable memory, but it's written in Armglish[1].
+> > > > 
+> > > > pgprot_noncached(), on the other hand, provides what the architecture calls
+> > > > Strongly Ordered or Device-nGnRnE memory. This is intended for mapping MMIO
+> > > > (i.e. PCI config space) and therefore forbids speculation, preserves access
+> > > > size, requires strict alignment and also forces write responses to come from
+> > > > the endpoint.
+> > > > 
+> > > > I think the naming mismatch is historical, but on arm64 we wanted to use the
+> > > > same names as arm32 so that any drivers using these things directly would get
+> > > > the same behaviour.
+> > > 
+> > > That all makes sense, but it totally needs a comment.  I'll try to draft
+> > > one based on this.  I've also looked at the arm32 code a bit more, and
+> > > it seems arm always (?) supported Normal non-cacheable attribute, but
+> > > Linux only optionally uses it for arm v6+ because of fears of drivers
+> > > missing barriers.
+> > 
+> > I think it was also to do with aliasing, but I don't recall all of the
+> > details.
+> 
+> ARMv6+ is where the architecture significantly changed to introduce
+> the idea of [Normal, Device, Strongly Ordered] where Normal has the
+> cache attributes.
+> 
+> Before that, we had just "uncached/unbuffered, uncached/buffered,
+> cached/unbuffered, cached/buffered" modes.
+> 
+> The write buffer (enabled by buffered modes) has no architected
+> guarantees about how long writes will sit in it, and there is only
+> the "drain write buffer" instruction to push writes out.
+> 
+> Up to and including ARMv5, we took the easy approach of just using
+> the "uncached/unbuffered" mode since that is (a) the safest, and (b)
+> avoids write buffers that alias when there are multiple different
+> mappings.
+> 
+> We could have used a different approach, making all IO writes contain
+> a "drain write buffer" instruction, and map DMA memory as "buffered",
+> but as there were no Linux barriers defined to order memory accesses
+> to DMA memory (so, for example, ring buffers can be updated in the
+> correct order) back in those days, using the uncached/unbuffered mode
+> was the sanest and most reliable solution.
+> 
+> > 
+> > > The other really weird things is that in arm32
+> > > pgprot_dmacoherent incudes the L_PTE_XN bit, which from my understanding
+> > > is the no-execture bit, but pgprot_writecombine does not.  This seems to
+> > > not very unintentional.  So minus that the whole DMA_ATTR_WRITE_COMBІNE
+> > > seems to be about flagging old arm specific drivers as having the proper
+> > > barriers in places and otherwise is a no-op.
+> > 
+> > I think it only matters for Armv7 CPUs, but yes, we should probably be
+> > setting L_PTE_XN for both of these memory types.
+> 
+> Conventionally, pgprot_writecombine() has only been used to change
+> the memory type and not the permissions.  Since writecombine memory
+> is still capable of being executed, I don't see any reason to set XN
+> for it.
+> 
+> If the user wishes to mmap() using PROT_READ|PROT_EXEC, then is there
+> really a reason for writecombine to set XN overriding the user?
+> 
+> That said, pgprot_writecombine() is mostly used for framebuffers, which
+> arguably shouldn't be executable anyway - but who'd want to mmap() the
+> framebuffer with PROT_EXEC?
+> 
+> > 
+> > > Here is my tentative plan:
+> > > 
+> > >  - respin this patch with a small fix to handle the
+> > >    DMA_ATTR_NON_CONSISTENT (as in ignore it unless actually supported),
+> > >    but keep the name as-is to avoid churn.  This should allow 5.3
+> > >    inclusion and backports
+> > >  - remove DMA_ATTR_WRITE_COMBINE support from mips, probably also 5.3
+> > >    material.
+> > >  - move all architectures but arm over to just define
+> > >    pgprot_dmacoherent, including a comment with the above explanation
+> > >    for arm64.
+> > 
+> > That would be great, thanks.
+> > 
+> > >  - make DMA_ATTR_WRITE_COMBINE a no-op and schedule it for removal,
+> > >    thus removing the last instances of arch_dma_mmap_pgprot
+> > 
+> > All sounds good to me, although I suppose 32-bit Arm platforms without
+> > CONFIG_ARM_DMA_MEM_BUFFERABLE may run into issues if DMA_ATTR_WRITE_COMBINE
+> > disappears. Only one way to find out...
+> 
+> Looking at the results of grep, I think only OMAP2+ and Exynos may be
+> affected.
+> 
+> However, removing writecombine support from the DMA API is going to
+> have a huge impact for framebuffers on earlier ARMs - that's where we
+> do expect framebuffers to be mapped "uncached/buffered" for performance
+> reasons and not "uncached/unbuffered".  It's quite literally the
+> difference between console scrolling being usable and totally unusable.
+> 
+> Given what I've said above, switching to using buffered mode for normal
+> DMA mappings is data-corrupting risky - as in your filesystem could get
+> fried.  I don't think we should play fast and loose with people's data
+> by randomly changing that "because we'd like to", and I don't see that
+> screwing the console is really an option either.
+
+Sorry, I forgot to explain - the reason is dma_alloc_writecombine()
+internally uses DMA_ATTR_WRITE_COMBINE, which I'd forgotten about
+when grepping - so there's potentially way more users than my greps
+above found.
+
+-- 
+RMK's Patch system: https://www.armlinux.org.uk/developer/patches/
+FTTC broadband for 0.8mile line in suburbia: sync at 12.1Mbps down 622kbps up
+According to speedtest.net: 11.9Mbps down 500kbps up
