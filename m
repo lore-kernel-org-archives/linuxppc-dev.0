@@ -2,67 +2,51 @@ Return-Path: <SRS0=H2dX=WD=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
-	autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E558EC32751
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  7 Aug 2019 11:48:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1C436C32751
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  7 Aug 2019 13:06:01 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 17C9A21BF6
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  7 Aug 2019 11:48:42 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=anastas.io header.i=@anastas.io header.b="hP9u2rSZ"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 17C9A21BF6
-Authentication-Results: mail.kernel.org; dmarc=fail (p=quarantine dis=none) header.from=anastas.io
+	by mail.kernel.org (Postfix) with ESMTPS id 4FB4021BE3
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  7 Aug 2019 13:06:00 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4FB4021BE3
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 463VBw5PyxzDr6b
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  7 Aug 2019 21:48:40 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=anastas.io
- (client-ip=104.248.188.109; helo=alpha.anastas.io;
- envelope-from=shawn@anastas.io; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none)
- header.from=anastas.io
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=anastas.io header.i=@anastas.io header.b="hP9u2rSZ"; 
- dkim-atps=neutral
-Received: from alpha.anastas.io (alpha.anastas.io [104.248.188.109])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 463Ww42LlHzDqpy
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  7 Aug 2019 23:05:56 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 463V8S2nTQzDqcv
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Aug 2019 21:46:32 +1000 (AEST)
-Received: from authenticated-user (alpha.anastas.io [104.248.188.109])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by alpha.anastas.io (Postfix) with ESMTPSA id 4E68D7F6C7;
- Wed,  7 Aug 2019 06:45:56 -0500 (CDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=anastas.io; s=mail;
- t=1565178359; bh=446J/ks+11OkveMVUDF0cNPnmfj1n92jZbU24O7P9/w=;
- h=Subject:To:Cc:References:From:Date:In-Reply-To:From;
- b=hP9u2rSZ2plqV7LSihnZ4KMQVILfq7Ta2sV8HqIs1xbk2MqAhVpRJ6umqGgci1XIw
- hvh77x7f8n37Psb6kp4uuHgh1P6AfAITszpAvWuCtCDloHJlE5k+uWk9f/dQej3UDU
- qMHsetLafrL3ESTZBFd89wh1+uVXTW3/D3TX+Bpwv2+kSdwrkuePe9f0Clec/3r7iH
- 7yIC+pqI+WIPPbX9PsepRnRJZLc921VqOzBwDqsh6FmLCalWwMFybFzndKvL3JEuXi
- 5dqTaMkGqM4FXMkjra5WMd5s7geBuqsT9BcRdnx5ncHjHaUtqJtFLGYWb97FotCml5
- CVyfcDxoPGXew==
-Subject: Re: [PATCH 1/2] dma-mapping: fix page attributes for dma_mmap_*
-To: Christoph Hellwig <hch@lst.de>
-References: <20190805080145.5694-1-hch@lst.de>
- <20190805080145.5694-2-hch@lst.de>
- <7df95ffb-6df3-b118-284c-ee32cad81199@anastas.io>
- <20190807060432.GD6627@lst.de>
-From: Shawn Anastasio <shawn@anastas.io>
-Message-ID: <765a7f25-0e3d-3edc-3f6d-9a17e2379253@anastas.io>
-Date: Wed, 7 Aug 2019 13:45:51 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 463Wr941vgzDqgw
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Aug 2019 23:02:33 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=ellerman.id.au
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
+ SHA256) (No client certificate requested)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 463Wr74L2Pz9sBF;
+ Wed,  7 Aug 2019 23:02:31 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Jason Yan <yanaijie@huawei.com>, linuxppc-dev@lists.ozlabs.org,
+ diana.craciun@nxp.com, christophe.leroy@c-s.fr, benh@kernel.crashing.org,
+ paulus@samba.org, npiggin@gmail.com, keescook@chromium.org,
+ kernel-hardening@lists.openwall.com
+Subject: Re: [PATCH v5 02/10] powerpc: move memstart_addr and kernstart_addr
+ to init-common.c
+In-Reply-To: <20190807065706.11411-3-yanaijie@huawei.com>
+References: <20190807065706.11411-1-yanaijie@huawei.com>
+ <20190807065706.11411-3-yanaijie@huawei.com>
+Date: Wed, 07 Aug 2019 23:02:26 +1000
+Message-ID: <874l2tuo0t.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-In-Reply-To: <20190807060432.GD6627@lst.de>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -74,47 +58,48 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Gavin Li <git@thegavinli.com>, linux-kernel@vger.kernel.org,
- Will Deacon <will@kernel.org>, linuxppc-dev@lists.ozlabs.org,
- Russell King <linux@armlinux.org.uk>, linux-mips@vger.kernel.org,
- iommu@lists.linux-foundation.org, Paul Burton <paul.burton@mips.com>,
- Catalin Marinas <catalin.marinas@arm.com>, James Hogan <jhogan@kernel.org>,
- Robin Murphy <robin.murphy@arm.com>, linux-arm-kernel@lists.infradead.org
+Cc: wangkefeng.wang@huawei.com, Jason Yan <yanaijie@huawei.com>,
+ linux-kernel@vger.kernel.org, jingxiangfeng@huawei.com,
+ zhaohongjiang@huawei.com, thunder.leizhen@huawei.com, fanchengyang@huawei.com,
+ yebin10@huawei.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 8/7/19 8:04 AM, Christoph Hellwig wrote:
-> Actually it is typical modern Linux style to just provide a prototype
-> and then use "if (IS_ENABLED(CONFIG_FOO))" to guard the call(s) to it.
+Jason Yan <yanaijie@huawei.com> writes:
+> These two variables are both defined in init_32.c and init_64.c. Move
+> them to init-common.c.
+>
+> Signed-off-by: Jason Yan <yanaijie@huawei.com>
+> Cc: Diana Craciun <diana.craciun@nxp.com>
+> Cc: Michael Ellerman <mpe@ellerman.id.au>
+> Cc: Christophe Leroy <christophe.leroy@c-s.fr>
+> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Cc: Paul Mackerras <paulus@samba.org>
+> Cc: Nicholas Piggin <npiggin@gmail.com>
+> Cc: Kees Cook <keescook@chromium.org>
+> Reviewed-by: Christophe Leroy <christophe.leroy@c-s.fr>
+> Reviewed-by: Diana Craciun <diana.craciun@nxp.com>
+> Tested-by: Diana Craciun <diana.craciun@nxp.com>
+> ---
+>  arch/powerpc/mm/init-common.c | 5 +++++
+>  arch/powerpc/mm/init_32.c     | 5 -----
+>  arch/powerpc/mm/init_64.c     | 5 -----
+>  3 files changed, 5 insertions(+), 10 deletions(-)
+>
+> diff --git a/arch/powerpc/mm/init-common.c b/arch/powerpc/mm/init-common.c
+> index a84da92920f7..152ae0d21435 100644
+> --- a/arch/powerpc/mm/init-common.c
+> +++ b/arch/powerpc/mm/init-common.c
+> @@ -21,6 +21,11 @@
+>  #include <asm/pgtable.h>
+>  #include <asm/kup.h>
+>  
+> +phys_addr_t memstart_addr = (phys_addr_t)~0ull;
+> +EXPORT_SYMBOL_GPL(memstart_addr);
+> +phys_addr_t kernstart_addr;
+> +EXPORT_SYMBOL_GPL(kernstart_addr);
 
-I see.
+Would be nice if these can be __ro_after_init ?
 
->> Also, like Will mentioned earlier, the function name isn't entirely
->> accurate anymore. I second the suggestion of using something like
->> arch_dma_noncoherent_pgprot().
-> 
-> As mentioned I plan to remove arch_dma_mmap_pgprot for 5.4, so I'd
-> rather avoid churn for the short period of time.
-
-Yeah, fair enough.
-
->> As for your idea of defining
->> pgprot_dmacoherent for all architectures as
->>
->> #ifndef pgprot_dmacoherent
->> #define pgprot_dmacoherent pgprot_noncached
->> #endif
->>
->> I think that the name here is kind of misleading too, since this
->> definition will only be used when there is no support for proper
->> DMA coherency.
-> 
-> Do you have a suggestion for a better name?  I'm pretty bad at naming,
-> so just reusing the arm name seemed like a good way to avoid having
-> to make naming decisions myself.
-
-Good question. Perhaps something like `pgprot_dmacoherent_fallback`
-would better convey that this is only used for devices that don't
-support DMA coherency? Or maybe `pgprot_dma_noncoherent`?
-
+cheers
