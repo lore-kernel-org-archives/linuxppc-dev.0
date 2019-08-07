@@ -6,87 +6,90 @@ X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
 	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 355F9C19759
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  7 Aug 2019 03:56:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5FD79C433FF
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  7 Aug 2019 03:57:55 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id AE18C214C6
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  7 Aug 2019 03:56:20 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org AE18C214C6
+	by mail.kernel.org (Postfix) with ESMTPS id DCABB21743
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  7 Aug 2019 03:57:54 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DCABB21743
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 463Hjt3zPrzDrJq
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  7 Aug 2019 13:56:18 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 463Hlh6l82zDrDX
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  7 Aug 2019 13:57:52 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
- (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
+ (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
  envelope-from=sbobroff@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 463HSm5kfqzDqnZ
+ by lists.ozlabs.org (Postfix) with ESMTPS id 463HSm607wzDr0y
  for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Aug 2019 13:44:56 +1000 (AEST)
-Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
+Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x773fqVe039320
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 6 Aug 2019 23:44:53 -0400
-Received: from e06smtp01.uk.ibm.com (e06smtp01.uk.ibm.com [195.75.94.97])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2u7nnxtaxu-1
+ x773fpqd103569
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 6 Aug 2019 23:44:54 -0400
+Received: from e06smtp04.uk.ibm.com (e06smtp04.uk.ibm.com [195.75.94.100])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2u7pyag1cw-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 06 Aug 2019 23:44:53 -0400
 Received: from localhost
- by e06smtp01.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp04.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <sbobroff@linux.ibm.com>;
- Wed, 7 Aug 2019 04:44:51 +0100
-Received: from b06avi18878370.portsmouth.uk.ibm.com (9.149.26.194)
- by e06smtp01.uk.ibm.com (192.168.101.131) with IBM ESMTP SMTP Gateway:
+ Wed, 7 Aug 2019 04:44:52 +0100
+Received: from b06cxnps4075.portsmouth.uk.ibm.com (9.149.109.197)
+ by e06smtp04.uk.ibm.com (192.168.101.134) with IBM ESMTP SMTP Gateway:
  Authorized Use Only! Violators will be prosecuted; 
  (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Wed, 7 Aug 2019 04:44:48 +0100
-Received: from d06av21.portsmouth.uk.ibm.com (d06av21.portsmouth.uk.ibm.com
- [9.149.105.232])
- by b06avi18878370.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP
- id x773ilxf30736856
+ Wed, 7 Aug 2019 04:44:49 +0100
+Received: from d06av26.portsmouth.uk.ibm.com (d06av26.portsmouth.uk.ibm.com
+ [9.149.105.62])
+ by b06cxnps4075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x773im6o60358778
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Wed, 7 Aug 2019 03:44:47 GMT
-Received: from d06av21.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 567D352052;
- Wed,  7 Aug 2019 03:44:47 +0000 (GMT)
+ Wed, 7 Aug 2019 03:44:49 GMT
+Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id DC22FAE051;
+ Wed,  7 Aug 2019 03:44:48 +0000 (GMT)
+Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 89AB5AE04D;
+ Wed,  7 Aug 2019 03:44:48 +0000 (GMT)
 Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
- by d06av21.portsmouth.uk.ibm.com (Postfix) with ESMTP id 047A25204F;
- Wed,  7 Aug 2019 03:44:47 +0000 (GMT)
+ by d06av26.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Wed,  7 Aug 2019 03:44:48 +0000 (GMT)
 Received: from tungsten.ozlabs.ibm.com (haven.au.ibm.com [9.192.254.114])
  (using TLSv1.2 with cipher DHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by ozlabs.au.ibm.com (Postfix) with ESMTPSA id 15AA1A039A;
+ by ozlabs.au.ibm.com (Postfix) with ESMTPSA id 47017A03BF;
  Wed,  7 Aug 2019 13:44:43 +1000 (AEST)
 From: Sam Bobroff <sbobroff@linux.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v4 2/9] powerpc/eeh: Clear stale EEH_DEV_NO_HANDLER flag
-Date: Wed,  7 Aug 2019 13:44:35 +1000
+Subject: [PATCH v4 7/9] powerpc/eeh: Add bdfn field to eeh_dev
+Date: Wed,  7 Aug 2019 13:44:40 +1000
 X-Mailer: git-send-email 2.22.0.216.g00a2a96fc9
 In-Reply-To: <cover.1565149456.git.sbobroff@linux.ibm.com>
 References: <cover.1565149456.git.sbobroff@linux.ibm.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-x-cbid: 19080703-4275-0000-0000-000003561631
+x-cbid: 19080703-0016-0000-0000-0000029B01F7
 X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19080703-4276-0000-0000-0000386816BC
-Message-Id: <014fe615d70ace9747d0d178807d15653f257470.1565149456.git.sbobroff@linux.ibm.com>
+x-cbparentid: 19080703-0017-0000-0000-000032FA11C4
+Message-Id: <1cd007696df2db87a0b1e5677520806d4d9b3e24.1565149456.git.sbobroff@linux.ibm.com>
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
  definitions=2019-08-07_01:, , signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
  priorityscore=1501
  malwarescore=0 suspectscore=1 phishscore=0 bulkscore=0 spamscore=0
  clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=756 adultscore=0 classifier=spam adjust=0 reason=mlx
+ mlxlogscore=925 adultscore=0 classifier=spam adjust=0 reason=mlx
  scancount=1 engine=8.0.1-1906280000 definitions=main-1908070036
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -104,66 +107,61 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The EEH_DEV_NO_HANDLER flag is used by the EEH system to prevent the
-use of driver callbacks in drivers that have been bound part way
-through the recovery process. This is necessary to prevent later stage
-handlers from being called when the earlier stage handlers haven't,
-which can be confusing for drivers.
+From: Oliver O'Halloran <oohall@gmail.com>
 
-However, the flag is set for all devices that are added after boot
-time and only cleared at the end of the EEH recovery process. This
-results in hot plugged devices erroneously having the flag set during
-the first recovery after they are added (causing their driver's
-handlers to be incorrectly ignored).
+Preparation for removing pci_dn from the powernv EEH code. The only
+thing we really use pci_dn for is to get the bdfn of the device for
+config space accesses, so adding that information to eeh_dev reduces
+the need to carry around the pci_dn.
 
-To remedy this, clear the flag at the beginning of recovery
-processing. The flag is still cleared at the end of recovery
-processing, although it is no longer really necessary.
-
-Also clear the flag during eeh_handle_special_event(), for the same
-reasons.
-
+Signed-off-by: Oliver O'Halloran <oohall@gmail.com>
+[SB: Re-wrapped commit message, fixed whitespace damage.]
 Signed-off-by: Sam Bobroff <sbobroff@linux.ibm.com>
 ---
- arch/powerpc/kernel/eeh_driver.c | 11 ++++++++++-
- 1 file changed, 10 insertions(+), 1 deletion(-)
+ arch/powerpc/include/asm/eeh.h     | 2 ++
+ arch/powerpc/include/asm/ppc-pci.h | 2 ++
+ arch/powerpc/kernel/eeh_dev.c      | 2 ++
+ 3 files changed, 6 insertions(+)
 
-diff --git a/arch/powerpc/kernel/eeh_driver.c b/arch/powerpc/kernel/eeh_driver.c
-index 6f3ee30565dd..d6f54840a3a9 100644
---- a/arch/powerpc/kernel/eeh_driver.c
-+++ b/arch/powerpc/kernel/eeh_driver.c
-@@ -819,6 +819,10 @@ void eeh_handle_normal_event(struct eeh_pe *pe)
- 		result = PCI_ERS_RESULT_DISCONNECT;
- 	}
+diff --git a/arch/powerpc/include/asm/eeh.h b/arch/powerpc/include/asm/eeh.h
+index 7f9404a0c3bb..bbe0798f6624 100644
+--- a/arch/powerpc/include/asm/eeh.h
++++ b/arch/powerpc/include/asm/eeh.h
+@@ -121,6 +121,8 @@ static inline bool eeh_pe_passed(struct eeh_pe *pe)
+ struct eeh_dev {
+ 	int mode;			/* EEH mode			*/
+ 	int class_code;			/* Class code of the device	*/
++	int bdfn;			/* bdfn of device (for cfg ops) */
++	struct pci_controller *controller;
+ 	int pe_config_addr;		/* PE config address		*/
+ 	u32 config_space[16];		/* Saved PCI config space	*/
+ 	int pcix_cap;			/* Saved PCIx capability	*/
+diff --git a/arch/powerpc/include/asm/ppc-pci.h b/arch/powerpc/include/asm/ppc-pci.h
+index cec2d6409515..72860de205a0 100644
+--- a/arch/powerpc/include/asm/ppc-pci.h
++++ b/arch/powerpc/include/asm/ppc-pci.h
+@@ -74,6 +74,8 @@ static inline const char *eeh_driver_name(struct pci_dev *pdev)
  
-+	eeh_for_each_pe(pe, tmp_pe)
-+		eeh_pe_for_each_dev(tmp_pe, edev, tmp)
-+			edev->mode &= ~EEH_DEV_NO_HANDLER;
-+
- 	/* Walk the various device drivers attached to this slot through
- 	 * a reset sequence, giving each an opportunity to do what it needs
- 	 * to accomplish the reset.  Each child gets a report of the
-@@ -1009,7 +1013,8 @@ void eeh_handle_normal_event(struct eeh_pe *pe)
-  */
- void eeh_handle_special_event(void)
- {
--	struct eeh_pe *pe, *phb_pe;
-+	struct eeh_pe *pe, *phb_pe, *tmp_pe;
-+	struct eeh_dev *edev, *tmp_edev;
- 	struct pci_bus *bus;
- 	struct pci_controller *hose;
- 	unsigned long flags;
-@@ -1078,6 +1083,10 @@ void eeh_handle_special_event(void)
- 				    (phb_pe->state & EEH_PE_RECOVERING))
- 					continue;
+ #endif /* CONFIG_EEH */
  
-+				eeh_for_each_pe(pe, tmp_pe)
-+					eeh_pe_for_each_dev(tmp_pe, edev, tmp_edev)
-+						edev->mode &= ~EEH_DEV_NO_HANDLER;
++#define PCI_BUSNO(bdfn) ((bdfn >> 8) & 0xff)
 +
- 				/* Notify all devices to be down */
- 				eeh_pe_state_clear(pe, EEH_PE_PRI_BUS, true);
- 				eeh_set_channel_state(pe, pci_channel_io_perm_failure);
+ #else /* CONFIG_PCI */
+ static inline void init_pci_config_tokens(void) { }
+ #endif /* !CONFIG_PCI */
+diff --git a/arch/powerpc/kernel/eeh_dev.c b/arch/powerpc/kernel/eeh_dev.c
+index c4317c452d98..7370185c7a05 100644
+--- a/arch/powerpc/kernel/eeh_dev.c
++++ b/arch/powerpc/kernel/eeh_dev.c
+@@ -47,6 +47,8 @@ struct eeh_dev *eeh_dev_init(struct pci_dn *pdn)
+ 	/* Associate EEH device with OF node */
+ 	pdn->edev = edev;
+ 	edev->pdn = pdn;
++	edev->bdfn = (pdn->busno << 8) | pdn->devfn;
++	edev->controller = pdn->phb;
+ 
+ 	return edev;
+ }
 -- 
 2.22.0.216.g00a2a96fc9
 
