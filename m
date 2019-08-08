@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-1.0 required=3.0 tests=MAILING_LIST_MULTI,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 06687C0650F
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Aug 2019 21:57:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 583EDC0650F
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Aug 2019 22:00:00 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id ACB832166E
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Aug 2019 21:57:38 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org ACB832166E
+	by mail.kernel.org (Postfix) with ESMTPS id E4B8D2166E
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Aug 2019 21:59:59 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E4B8D2166E
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=bugzilla.kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 464Mg41cyhzDqdr
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Aug 2019 07:57:36 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 464Mjn5MsMzDqfs
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Aug 2019 07:59:57 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=bugzilla.kernel.org
  (client-ip=198.145.29.98; helo=mail.wl.linuxfoundation.org;
@@ -29,17 +29,17 @@ Received: from mail.wl.linuxfoundation.org (mail.wl.linuxfoundation.org
  [198.145.29.98])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 464Mck18PQzDqjX
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Aug 2019 07:55:33 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 464MgW6LgSzDqCw
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Aug 2019 07:57:59 +1000 (AEST)
 Received: from mail.wl.linuxfoundation.org (localhost [127.0.0.1])
- by mail.wl.linuxfoundation.org (Postfix) with ESMTP id 682BA28BB3
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Aug 2019 21:55:30 +0000 (UTC)
+ by mail.wl.linuxfoundation.org (Postfix) with ESMTP id 87BB428826
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Aug 2019 21:57:57 +0000 (UTC)
 Received: by mail.wl.linuxfoundation.org (Postfix, from userid 486)
- id 5C7E028BD7; Thu,  8 Aug 2019 21:55:30 +0000 (UTC)
+ id 7C12D28BD5; Thu,  8 Aug 2019 21:57:57 +0000 (UTC)
 From: bugzilla-daemon@bugzilla.kernel.org
 To: linuxppc-dev@lists.ozlabs.org
 Subject: [Bug 204479] KASAN hit at modprobe zram
-Date: Thu, 08 Aug 2019 21:55:28 +0000
+Date: Thu, 08 Aug 2019 21:57:55 +0000
 X-Bugzilla-Reason: CC
 X-Bugzilla-Type: changed
 X-Bugzilla-Watch-Reason: None
@@ -54,8 +54,8 @@ X-Bugzilla-Resolution:
 X-Bugzilla-Priority: P1
 X-Bugzilla-Assigned-To: dwmw2@infradead.org
 X-Bugzilla-Flags: 
-X-Bugzilla-Changed-Fields: attachments.isobsolete attachments.created
-Message-ID: <bug-204479-206035-mXElBeT7Rp@https.bugzilla.kernel.org/>
+X-Bugzilla-Changed-Fields: 
+Message-ID: <bug-204479-206035-1qc1NAmGNE@https.bugzilla.kernel.org/>
 In-Reply-To: <bug-204479-206035@https.bugzilla.kernel.org/>
 References: <bug-204479-206035@https.bugzilla.kernel.org/>
 Content-Type: text/plain; charset="UTF-8"
@@ -81,17 +81,15 @@ Sender: "Linuxppc-dev"
 
 https://bugzilla.kernel.org/show_bug.cgi?id=3D204479
 
-Erhard F. (erhard_f@mailbox.org) changed:
-
-           What    |Removed                     |Added
-----------------------------------------------------------------------------
- Attachment #284177|0                           |1
-        is obsolete|                            |
-
---- Comment #5 from Erhard F. (erhard_f@mailbox.org) ---
-Created attachment 284271
-  --> https://bugzilla.kernel.org/attachment.cgi?id=3D284271&action=3Dedit
-kernel .config (5.3-rc3, PowerMac G4 DP)
+--- Comment #6 from Erhard F. (erhard_f@mailbox.org) ---
+(In reply to Christophe Leroy from comment #4)
+> We need to identify if the allocation of KASAN shadow area at module
+> allocation fails, or if kasan accesses outside of the allocated area.
+>=20
+> Could you please run again with the below trace:=20
+The patch did not apply to the mainstream kernnel with 'patch -p1 < ...' bu=
+t I
+inserted the code manually. Please find the new results attached.
 
 --=20
 You are receiving this mail because:
