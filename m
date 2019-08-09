@@ -7,51 +7,49 @@ X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D5BBEC433FF
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Aug 2019 10:53:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 146B8C32756
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Aug 2019 10:55:08 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 8AD742086D
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Aug 2019 10:53:07 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8AD742086D
+	by mail.kernel.org (Postfix) with ESMTPS id 87CE521783
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Aug 2019 10:55:07 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 87CE521783
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nxp.com
-Authentication-Results: mail.kernel.org; spf=tempfail smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
+Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 464hss1fM4zDqPn
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Aug 2019 20:53:05 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 464hw90Jt6zDqb9
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Aug 2019 20:55:05 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=nxp.com
- (client-ip=92.121.34.13; helo=inva020.nxp.com;
+ (client-ip=92.121.34.21; helo=inva021.nxp.com;
  envelope-from=shengjiu.wang@nxp.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=nxp.com
-Received: from inva020.nxp.com (inva020.nxp.com [92.121.34.13])
+Received: from inva021.nxp.com (inva021.nxp.com [92.121.34.21])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 464hqJ63hpzDqb9
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Aug 2019 20:50:51 +1000 (AEST)
-Received: from inva020.nxp.com (localhost [127.0.0.1])
- by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id 068D21A013B;
- Fri,  9 Aug 2019 12:50:48 +0200 (CEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 464hqJ6635zDqbF
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Aug 2019 20:50:50 +1000 (AEST)
+Received: from inva021.nxp.com (localhost [127.0.0.1])
+ by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id DC16D200378;
+ Fri,  9 Aug 2019 12:50:46 +0200 (CEST)
 Received: from invc005.ap-rdc01.nxp.com (invc005.ap-rdc01.nxp.com
  [165.114.16.14])
- by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id E5F101A0068;
- Fri,  9 Aug 2019 12:50:42 +0200 (CEST)
+ by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id C6B7E200072;
+ Fri,  9 Aug 2019 12:50:41 +0200 (CEST)
 Received: from localhost.localdomain (shlinux2.ap.freescale.net
  [10.192.224.44])
- by invc005.ap-rdc01.nxp.com (Postfix) with ESMTP id 696B04029A;
- Fri,  9 Aug 2019 18:50:36 +0800 (SGT)
+ by invc005.ap-rdc01.nxp.com (Postfix) with ESMTP id 4A51940293;
+ Fri,  9 Aug 2019 18:50:35 +0800 (SGT)
 From: Shengjiu Wang <shengjiu.wang@nxp.com>
 To: timur@kernel.org, nicoleotsuka@gmail.com, Xiubo.Lee@gmail.com,
  festevam@gmail.com, broonie@kernel.org, alsa-devel@alsa-project.org,
  robh+dt@kernel.org, mark.rutland@arm.com
-Subject: [PATCH 2/2] ASoC: fsl_esai: Add new compatible string for imx6ull
-Date: Fri,  9 Aug 2019 18:27:47 +0800
-Message-Id: <1565346467-5769-2-git-send-email-shengjiu.wang@nxp.com>
+Subject: [PATCH 1/2] ASoC: fsl_esai: Add compatible string for imx6ull
+Date: Fri,  9 Aug 2019 18:27:46 +0800
+Message-Id: <1565346467-5769-1-git-send-email-shengjiu.wang@nxp.com>
 X-Mailer: git-send-email 2.7.4
-In-Reply-To: <1565346467-5769-1-git-send-email-shengjiu.wang@nxp.com>
-References: <1565346467-5769-1-git-send-email-shengjiu.wang@nxp.com>
 X-Virus-Scanned: ClamAV using ClamSMTP
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -70,31 +68,26 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Add new compatible string "fsl,imx6ull-esai" in the binding document.
+Add compatible string for imx6ull, from imx6ull platform,
+the issue of channel swap after xrun is fixed in hardware.
 
 Signed-off-by: Shengjiu Wang <shengjiu.wang@nxp.com>
 ---
- Documentation/devicetree/bindings/sound/fsl,esai.txt | 7 +++++--
- 1 file changed, 5 insertions(+), 2 deletions(-)
+ sound/soc/fsl/fsl_esai.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/Documentation/devicetree/bindings/sound/fsl,esai.txt b/Documentation/devicetree/bindings/sound/fsl,esai.txt
-index 5b9914367610..0e6e2166f76c 100644
---- a/Documentation/devicetree/bindings/sound/fsl,esai.txt
-+++ b/Documentation/devicetree/bindings/sound/fsl,esai.txt
-@@ -7,8 +7,11 @@ other DSPs. It has up to six transmitters and four receivers.
- 
- Required properties:
- 
--  - compatible		: Compatible list, must contain "fsl,imx35-esai" or
--			  "fsl,vf610-esai"
-+  - compatible		: Compatible list, should contain one of the following
-+			  compatibles:
-+			  "fsl,imx35-esai",
-+			  "fsl,vf610-esai",
-+			  "fsl,imx6ull-esai",
- 
-   - reg			: Offset and length of the register set for the device.
- 
+diff --git a/sound/soc/fsl/fsl_esai.c b/sound/soc/fsl/fsl_esai.c
+index 10d2210c91ef..4b4a8e831e9e 100644
+--- a/sound/soc/fsl/fsl_esai.c
++++ b/sound/soc/fsl/fsl_esai.c
+@@ -920,6 +920,7 @@ static int fsl_esai_remove(struct platform_device *pdev)
+ static const struct of_device_id fsl_esai_dt_ids[] = {
+ 	{ .compatible = "fsl,imx35-esai", },
+ 	{ .compatible = "fsl,vf610-esai", },
++	{ .compatible = "fsl,imx6ull-esai", },
+ 	{}
+ };
+ MODULE_DEVICE_TABLE(of, fsl_esai_dt_ids);
 -- 
 2.21.0
 
