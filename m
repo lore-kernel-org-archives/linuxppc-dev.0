@@ -2,53 +2,67 @@ Return-Path: <SRS0=hB4d=WF=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.3 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-1.0 required=3.0 tests=MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 53F92C31E40
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Aug 2019 10:37:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 798B8C31E40
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Aug 2019 10:46:11 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 9B7442086A
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Aug 2019 10:37:32 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9B7442086A
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 2E9C92086A
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Aug 2019 10:46:11 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2E9C92086A
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=bugzilla.kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 464hWs6bCXzDqbc
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Aug 2019 20:37:29 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 464hjs0wh6zDr0q
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Aug 2019 20:46:09 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=arm.com
- (client-ip=217.140.110.172; helo=foss.arm.com;
- envelope-from=anshuman.khandual@arm.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=arm.com
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
- by lists.ozlabs.org (Postfix) with ESMTP id 464hTf3C7PzDqTR
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Aug 2019 20:35:32 +1000 (AEST)
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
- by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 0ABCD1596;
- Fri,  9 Aug 2019 03:35:30 -0700 (PDT)
-Received: from [10.163.1.243] (unknown [10.163.1.243])
- by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 31FBE3F575;
- Fri,  9 Aug 2019 03:35:11 -0700 (PDT)
-Subject: Re: [RFC V2 0/1] mm/debug: Add tests for architecture exported page
- table helpers
-To: Matthew Wilcox <willy@infradead.org>
-References: <1565335998-22553-1-git-send-email-anshuman.khandual@arm.com>
- <20190809101632.GM5482@bombadil.infradead.org>
-From: Anshuman Khandual <anshuman.khandual@arm.com>
-Message-ID: <a5aab7ff-f7fd-9cc1-6e37-e4185eee65ac@arm.com>
-Date: Fri, 9 Aug 2019 16:05:07 +0530
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:52.0) Gecko/20100101
- Thunderbird/52.9.1
+ spf=pass (mailfrom) smtp.mailfrom=bugzilla.kernel.org
+ (client-ip=198.145.29.98; helo=mail.wl.linuxfoundation.org;
+ envelope-from=bugzilla-daemon@bugzilla.kernel.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=bugzilla.kernel.org
+Received: from mail.wl.linuxfoundation.org (mail.wl.linuxfoundation.org
+ [198.145.29.98])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 464hgX1DLBzDqlh
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Aug 2019 20:44:07 +1000 (AEST)
+Received: from mail.wl.linuxfoundation.org (localhost [127.0.0.1])
+ by mail.wl.linuxfoundation.org (Postfix) with ESMTP id 9308C28C58
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Aug 2019 10:44:04 +0000 (UTC)
+Received: by mail.wl.linuxfoundation.org (Postfix, from userid 486)
+ id 84E5128C6A; Fri,  9 Aug 2019 10:44:04 +0000 (UTC)
+From: bugzilla-daemon@bugzilla.kernel.org
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [Bug 204479] KASAN hit at modprobe zram
+Date: Fri, 09 Aug 2019 10:44:03 +0000
+X-Bugzilla-Reason: CC
+X-Bugzilla-Type: changed
+X-Bugzilla-Watch-Reason: None
+X-Bugzilla-Product: Drivers
+X-Bugzilla-Component: Flash/Memory Technology Devices
+X-Bugzilla-Version: 2.5
+X-Bugzilla-Keywords: 
+X-Bugzilla-Severity: normal
+X-Bugzilla-Who: erhard_f@mailbox.org
+X-Bugzilla-Status: NEW
+X-Bugzilla-Resolution: 
+X-Bugzilla-Priority: P1
+X-Bugzilla-Assigned-To: dwmw2@infradead.org
+X-Bugzilla-Flags: 
+X-Bugzilla-Changed-Fields: attachments.created
+Message-ID: <bug-204479-206035-FuUis2rM2G@https.bugzilla.kernel.org/>
+In-Reply-To: <bug-204479-206035@https.bugzilla.kernel.org/>
+References: <bug-204479-206035@https.bugzilla.kernel.org/>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+X-Bugzilla-URL: https://bugzilla.kernel.org/
+Auto-Submitted: auto-generated
 MIME-Version: 1.0
-In-Reply-To: <20190809101632.GM5482@bombadil.infradead.org>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
+X-Virus-Scanned: ClamAV using ClamSMTP
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -60,50 +74,19 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Mark Rutland <mark.rutland@arm.com>, linux-ia64@vger.kernel.org,
- linux-sh@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>,
- James Hogan <jhogan@kernel.org>,
- Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>,
- Heiko Carstens <heiko.carstens@de.ibm.com>, Michal Hocko <mhocko@kernel.org>,
- linux-mm@kvack.org, Dave Hansen <dave.hansen@intel.com>,
- Paul Mackerras <paulus@samba.org>, sparclinux@vger.kernel.org,
- Thomas Gleixner <tglx@linutronix.de>, linux-s390@vger.kernel.org,
- x86@kernel.org, Russell King - ARM Linux <linux@armlinux.org.uk>,
- Steven Price <Steven.Price@arm.com>, Jason Gunthorpe <jgg@ziepe.ca>,
- linux-arm-kernel@lists.infradead.org, linux-snps-arc@lists.infradead.org,
- Kees Cook <keescook@chromium.org>,
- Masahiro Yamada <yamada.masahiro@socionext.com>,
- Mark Brown <broonie@kernel.org>, Dan Williams <dan.j.williams@intel.com>,
- Vlastimil Babka <vbabka@suse.cz>, Sri Krishna chowdary <schowdary@nvidia.com>,
- Ard Biesheuvel <ard.biesheuvel@linaro.org>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-mips@vger.kernel.org,
- Ralf Baechle <ralf@linux-mips.org>, linux-kernel@vger.kernel.org,
- Paul Burton <paul.burton@mips.com>, Mike Rapoport <rppt@linux.vnet.ibm.com>,
- Vineet Gupta <vgupta@synopsys.com>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>,
- Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
- "David S. Miller" <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+https://bugzilla.kernel.org/show_bug.cgi?id=3D204479
 
+--- Comment #10 from Erhard F. (erhard_f@mailbox.org) ---
+Created attachment 284297
+  --> https://bugzilla.kernel.org/attachment.cgi?id=3D284297&action=3Dedit
+dmesg (kernel 5.3-rc3 + patch, without CONFIG_SMP, PowerMac G4 DP)
 
-On 08/09/2019 03:46 PM, Matthew Wilcox wrote:
-> On Fri, Aug 09, 2019 at 01:03:17PM +0530, Anshuman Khandual wrote:
->> Should alloc_gigantic_page() be made available as an interface for general
->> use in the kernel. The test module here uses very similar implementation from
->> HugeTLB to allocate a PUD aligned memory block. Similar for mm_alloc() which
->> needs to be exported through a header.
-> 
-> Why are you allocating memory at all instead of just using some
-> known-to-exist PFNs like I suggested?
+Here's the dmesg with the kernel built without CONFIG_SMP.
 
-We needed PFN to be PUD aligned for pfn_pud() and PMD aligned for mk_pmd().
-Now walking the kernel page table for a known symbol like kernel_init()
-as you had suggested earlier we might encounter page table page entries at PMD
-and PUD which might not be PMD or PUD aligned respectively. It seemed to me
-that alignment requirement is applicable only for mk_pmd() and pfn_pud()
-which create large mappings at those levels but that requirement does not
-exist for page table pages pointing to next level. Is not that correct ? Or
-I am missing something here ?
+--=20
+You are receiving this mail because:
+You are on the CC list for the bug.=
