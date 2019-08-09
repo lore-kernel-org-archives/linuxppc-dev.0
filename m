@@ -7,21 +7,21 @@ X-Spam-Status: No, score=-6.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 604A7C31E40
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Aug 2019 15:03:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CB922C31E40
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Aug 2019 15:06:07 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id D07C5208C4
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Aug 2019 15:03:23 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 4AE9E204EC
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Aug 2019 15:06:07 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="wBBD7uxa"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D07C5208C4
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="YOcgMf1h"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4AE9E204EC
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 464pQd3zdPzDqRx
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 10 Aug 2019 01:03:21 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 464pTm5SnpzDqPS
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 10 Aug 2019 01:06:04 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=c-s.fr
  (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
@@ -29,53 +29,53 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="wBBD7uxa"; 
+ unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="YOcgMf1h"; 
  dkim-atps=neutral
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 464pJl377SzDrBR
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Aug 2019 00:58:14 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 464pJl3C8zzDrBY
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Aug 2019 00:58:13 +1000 (AEST)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 464pJd3KZgz9vBKq;
- Fri,  9 Aug 2019 16:58:09 +0200 (CEST)
+ by localhost (Postfix) with ESMTP id 464pJc491Gz9v9Lt;
+ Fri,  9 Aug 2019 16:58:08 +0200 (CEST)
 Authentication-Results: localhost; dkim=pass
  reason="1024-bit key; insecure key"
- header.d=c-s.fr header.i=@c-s.fr header.b=wBBD7uxa; dkim-adsp=pass;
+ header.d=c-s.fr header.i=@c-s.fr header.b=YOcgMf1h; dkim-adsp=pass;
  dkim-atps=neutral
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id Cvo_N0a9b-Hv; Fri,  9 Aug 2019 16:58:09 +0200 (CEST)
+ with ESMTP id dMzvzm16RGoj; Fri,  9 Aug 2019 16:58:08 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 464pJd2FCkz9v0kX;
- Fri,  9 Aug 2019 16:58:09 +0200 (CEST)
+ by pegase1.c-s.fr (Postfix) with ESMTP id 464pJc31Fpz9v0kX;
+ Fri,  9 Aug 2019 16:58:08 +0200 (CEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
- t=1565362689; bh=jnwvD3eHfzg727GCKpNYMBBq8MQSB/2iKHBYfp3GV3Y=;
+ t=1565362688; bh=uS1jNVpwmb5N8K9IEZ09SgUJwJejQ+76qRLy/TeTloI=;
  h=From:Subject:To:Cc:Date:From;
- b=wBBD7uxanzsldevnXdS22COWYSDKAReGj+IPpqHcIb7ESRMXVIeNoJ4vbCOqaEumG
- QRILwNEIwYLOExNK46ijWpfBXDRYb8evy5CJOC+ME0geNEXudO6hiqphC2Ipua1Bnc
- jM2RSQX2TZMGMLBEhygDzz7SNPcsiEABOQU/uyis=
+ b=YOcgMf1hWlFa/BcWuVvq1yzvwOZERfZqSDbY66qElZatRg3+BJzW3XySTByWHH/q1
+ mKWeUnwTxeMc/NULiYvnw0CVnj2Xf43QCPDDR0sr4hWbijy8xMh3cdwqBirbZGwAeb
+ Atla0ezhLqy1PV8uKbidykWa2a5eDKhPuqihB2rg=
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id EC0DB8B8C0;
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 1E8298B8C0;
  Fri,  9 Aug 2019 16:58:10 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id 7xOW2bcTKR7u; Fri,  9 Aug 2019 16:58:10 +0200 (CEST)
+ with ESMTP id t_O8RwnRf-6V; Fri,  9 Aug 2019 16:58:10 +0200 (CEST)
 Received: from pc17473vm.idsi0.si.c-s.fr (po15451.idsi0.si.c-s.fr
  [172.25.230.101])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id CA9778B8BB;
- Fri,  9 Aug 2019 16:58:10 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id F06E48B8BB;
+ Fri,  9 Aug 2019 16:58:09 +0200 (CEST)
 Received: by pc17473vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id CF60D69641; Fri,  9 Aug 2019 14:58:10 +0000 (UTC)
-Message-Id: <4f887e9b77d0d725cbb52035c7ece485c1c5fc14.1565361881.git.christophe.leroy@c-s.fr>
+ id BE65A69641; Fri,  9 Aug 2019 14:58:09 +0000 (UTC)
+Message-Id: <c97284f912128cbc3f2fe09d68e90e65fb3e6026.1565361876.git.christophe.leroy@c-s.fr>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH] powerpc/kasan: fix shadow area set up for modules.
+Subject: [PATCH] powerpc/kasan: fix parallele loading of modules.
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
  Erhard F. <erhard_f@mailbox.org>
-Date: Fri,  9 Aug 2019 14:58:10 +0000 (UTC)
+Date: Fri,  9 Aug 2019 14:58:09 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -92,36 +92,69 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-When loading modules, from time to time an Oops is encountered
-during the init of shadow area for globals. This is due to the
-last page not always being mapped depending on the exact distance
-between the start and the end of the shadow area and the alignment
-with the page addresses.
+Parallele loading of modules may lead to bad setup of shadow
+page table entries.
 
-Fix this by aligning the starting address with the page address.
+First, lets align modules so that two modules never share the same
+shadow page.
 
-Reported-by: Erhard F. <erhard_f@mailbox.org>
-Link: https://bugzilla.kernel.org/show_bug.cgi?id=204479
+Second, ensure that two modules cannot allocate two page tables for
+the same PMD entry at the same time. This is done by using
+init_mm.page_table_lock in the same way as __pte_alloc_kernel()
+
 Fixes: 2edb16efc899 ("powerpc/32: Add KASAN support")
 Cc: stable@vger.kernel.org
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
- arch/powerpc/mm/kasan/kasan_init_32.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/powerpc/mm/kasan/kasan_init_32.c | 21 +++++++++++++++++++--
+ 1 file changed, 19 insertions(+), 2 deletions(-)
 
 diff --git a/arch/powerpc/mm/kasan/kasan_init_32.c b/arch/powerpc/mm/kasan/kasan_init_32.c
-index 74f4555a62ba..99eac3fab83c 100644
+index 99eac3fab83c..802387b231ad 100644
 --- a/arch/powerpc/mm/kasan/kasan_init_32.c
 +++ b/arch/powerpc/mm/kasan/kasan_init_32.c
-@@ -74,7 +74,7 @@ static int __ref kasan_init_region(void *start, size_t size)
- 	if (!slab_is_available())
- 		block = memblock_alloc(k_end - k_start, PAGE_SIZE);
+@@ -5,6 +5,7 @@
+ #include <linux/kasan.h>
+ #include <linux/printk.h>
+ #include <linux/memblock.h>
++#include <linux/moduleloader.h>
+ #include <linux/sched/task.h>
+ #include <linux/vmalloc.h>
+ #include <asm/pgalloc.h>
+@@ -46,7 +47,19 @@ static int __ref kasan_init_shadow_page_tables(unsigned long k_start, unsigned l
+ 			kasan_populate_pte(new, PAGE_READONLY);
+ 		else
+ 			kasan_populate_pte(new, PAGE_KERNEL_RO);
+-		pmd_populate_kernel(&init_mm, pmd, new);
++
++		smp_wmb(); /* See comment in __pte_alloc */
++
++		spin_lock(&init_mm.page_table_lock);
++			/* Has another populated it ? */
++		if (likely((void *)pmd_page_vaddr(*pmd) == kasan_early_shadow_pte)) {
++			pmd_populate_kernel(&init_mm, pmd, new);
++			new = NULL;
++		}
++		spin_unlock(&init_mm.page_table_lock);
++
++		if (new && slab_is_available())
++			pte_free_kernel(&init_mm, new);
+ 	}
+ 	return 0;
+ }
+@@ -137,7 +150,11 @@ void __init kasan_init(void)
+ #ifdef CONFIG_MODULES
+ void *module_alloc(unsigned long size)
+ {
+-	void *base = vmalloc_exec(size);
++	void *base;
++
++	base = __vmalloc_node_range(size, MODULE_ALIGN, VMALLOC_START, VMALLOC_END,
++				    GFP_KERNEL, PAGE_KERNEL_EXEC, VM_FLUSH_RESET_PERMS,
++				    NUMA_NO_NODE, __builtin_return_address(0));
  
--	for (k_cur = k_start; k_cur < k_end; k_cur += PAGE_SIZE) {
-+	for (k_cur = k_start & PAGE_MASK; k_cur < k_end; k_cur += PAGE_SIZE) {
- 		pmd_t *pmd = pmd_offset(pud_offset(pgd_offset_k(k_cur), k_cur), k_cur);
- 		void *va = block ? block + k_cur - k_start : kasan_get_one_page();
- 		pte_t pte = pfn_pte(PHYS_PFN(__pa(va)), PAGE_KERNEL);
+ 	if (!base)
+ 		return NULL;
 -- 
 2.13.3
 
