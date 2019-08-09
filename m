@@ -2,57 +2,67 @@ Return-Path: <SRS0=hB4d=WF=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-2.1 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3B1DEC433FF
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Aug 2019 10:19:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 224F4C32756
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Aug 2019 10:21:42 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6D8412171F
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Aug 2019 10:19:02 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6D8412171F
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=huawei.com
+	by mail.kernel.org (Postfix) with ESMTPS id 92DB62085A
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Aug 2019 10:21:41 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="pag4yExu"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 92DB62085A
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 464h6X0KP1zDqPy
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Aug 2019 20:19:00 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 464h9b2L3bzDqNS
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Aug 2019 20:21:39 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=huawei.com
- (client-ip=45.249.212.35; helo=huawei.com; envelope-from=yanaijie@huawei.com;
- receiver=<UNKNOWN>)
+ spf=none (mailfrom) smtp.mailfrom=infradead.org
+ (client-ip=2607:7c80:54:e::133; helo=bombadil.infradead.org;
+ envelope-from=willy@infradead.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=huawei.com
-Received: from huawei.com (szxga07-in.huawei.com [45.249.212.35])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ dmarc=none (p=none dis=none) header.from=infradead.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=infradead.org header.i=@infradead.org
+ header.b="pag4yExu"; dkim-atps=neutral
+Received: from bombadil.infradead.org (bombadil.infradead.org
+ [IPv6:2607:7c80:54:e::133])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 464gWb5GwWzDqmF
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Aug 2019 19:52:11 +1000 (AEST)
-Received: from DGGEMS403-HUB.china.huawei.com (unknown [172.30.72.59])
- by Forcepoint Email with ESMTP id 2663DFF7A30CC5A09723;
- Fri,  9 Aug 2019 17:52:08 +0800 (CST)
-Received: from huawei.com (10.175.124.28) by DGGEMS403-HUB.china.huawei.com
- (10.3.19.203) with Microsoft SMTP Server id 14.3.439.0; Fri, 9 Aug 2019
- 17:51:58 +0800
-From: Jason Yan <yanaijie@huawei.com>
-To: <mpe@ellerman.id.au>, <linuxppc-dev@lists.ozlabs.org>,
- <diana.craciun@nxp.com>, <christophe.leroy@c-s.fr>,
- <benh@kernel.crashing.org>, <paulus@samba.org>, <npiggin@gmail.com>,
- <keescook@chromium.org>, <kernel-hardening@lists.openwall.com>
-Subject: [PATCH v6 11/12] powerpc/fsl_booke/kaslr: export offset in VMCOREINFO
- ELF notes
-Date: Fri, 9 Aug 2019 18:07:59 +0800
-Message-ID: <20190809100800.5426-12-yanaijie@huawei.com>
-X-Mailer: git-send-email 2.17.2
-In-Reply-To: <20190809100800.5426-1-yanaijie@huawei.com>
-References: <20190809100800.5426-1-yanaijie@huawei.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 464h4Q0kSczDqN9
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Aug 2019 20:17:10 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+ d=infradead.org; s=bombadil.20170209; h=In-Reply-To:Content-Type:MIME-Version
+ :References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
+ Content-Transfer-Encoding:Content-ID:Content-Description:Resent-Date:
+ Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:
+ List-Help:List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
+ bh=qtavp7CPHfZNeNkYBrPvAtPsbANfqFLQtCdliW3pDao=; b=pag4yExuYAml6RAwW8ClSI/8O
+ 4SvhyG05DRb/VW/V9CDsF+zHeZ5UXFBZuSEmH6L2R/TkkFTUdvg0G5X+mChPhSDo0bv/G81bqVcOE
+ H0+ebgEssg+HPPdNYRmJesf50lZppQPNOWSyxdr7otHpaF8cn8K9ckBUuEcdXQR2moiTTpd1jGx/f
+ vjh5YbK7fMXAxAHvYpu7bjS0cCBSZ//FEHycRa1QcZu/mYorpr133FpqiXnyp7o6RFhVYguPt/B8f
+ P2fGNwRrQbpxYk76nYUeyruj+MAsigriKyn6idQDkNDTkIb9YC0oHITHhwpJDVUNGhDUhHSp0NaMd
+ UOTH8wydQ==;
+Received: from willy by bombadil.infradead.org with local (Exim 4.92 #3 (Red
+ Hat Linux)) id 1hw1wn-0006xR-4P; Fri, 09 Aug 2019 10:16:33 +0000
+Date: Fri, 9 Aug 2019 03:16:33 -0700
+From: Matthew Wilcox <willy@infradead.org>
+To: Anshuman Khandual <anshuman.khandual@arm.com>
+Subject: Re: [RFC V2 0/1] mm/debug: Add tests for architecture exported page
+ table helpers
+Message-ID: <20190809101632.GM5482@bombadil.infradead.org>
+References: <1565335998-22553-1-git-send-email-anshuman.khandual@arm.com>
 MIME-Version: 1.0
-Content-Type: text/plain
-X-Originating-IP: [10.175.124.28]
-X-CFilter-Loop: Reflected
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1565335998-22553-1-git-send-email-anshuman.khandual@arm.com>
+User-Agent: Mutt/1.11.4 (2019-03-13)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -64,44 +74,38 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: wangkefeng.wang@huawei.com, Jason Yan <yanaijie@huawei.com>,
- linux-kernel@vger.kernel.org, jingxiangfeng@huawei.com,
- zhaohongjiang@huawei.com, thunder.leizhen@huawei.com, fanchengyang@huawei.com,
- yebin10@huawei.com
+Cc: Mark Rutland <mark.rutland@arm.com>, linux-ia64@vger.kernel.org,
+ linux-sh@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>,
+ James Hogan <jhogan@kernel.org>,
+ Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>, Michal Hocko <mhocko@kernel.org>,
+ linux-mm@kvack.org, Dave Hansen <dave.hansen@intel.com>,
+ Paul Mackerras <paulus@samba.org>, sparclinux@vger.kernel.org,
+ Thomas Gleixner <tglx@linutronix.de>, linux-s390@vger.kernel.org,
+ x86@kernel.org, Russell King - ARM Linux <linux@armlinux.org.uk>,
+ Steven Price <Steven.Price@arm.com>, Jason Gunthorpe <jgg@ziepe.ca>,
+ linux-arm-kernel@lists.infradead.org, linux-snps-arc@lists.infradead.org,
+ Kees Cook <keescook@chromium.org>,
+ Masahiro Yamada <yamada.masahiro@socionext.com>,
+ Mark Brown <broonie@kernel.org>, Dan Williams <dan.j.williams@intel.com>,
+ Vlastimil Babka <vbabka@suse.cz>, Sri Krishna chowdary <schowdary@nvidia.com>,
+ Ard Biesheuvel <ard.biesheuvel@linaro.org>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-mips@vger.kernel.org,
+ Ralf Baechle <ralf@linux-mips.org>, linux-kernel@vger.kernel.org,
+ Paul Burton <paul.burton@mips.com>, Mike Rapoport <rppt@linux.vnet.ibm.com>,
+ Vineet Gupta <vgupta@synopsys.com>,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>,
+ Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
+ "David S. Miller" <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Like all other architectures such as x86 or arm64, include KASLR offset
-in VMCOREINFO ELF notes to assist in debugging. After this, we can use
-crash --kaslr option to parse vmcore generated from a kaslr kernel.
+On Fri, Aug 09, 2019 at 01:03:17PM +0530, Anshuman Khandual wrote:
+> Should alloc_gigantic_page() be made available as an interface for general
+> use in the kernel. The test module here uses very similar implementation from
+> HugeTLB to allocate a PUD aligned memory block. Similar for mm_alloc() which
+> needs to be exported through a header.
 
-Note: The crash tool needs to support --kaslr too.
-
-Signed-off-by: Jason Yan <yanaijie@huawei.com>
-Cc: Diana Craciun <diana.craciun@nxp.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Christophe Leroy <christophe.leroy@c-s.fr>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Nicholas Piggin <npiggin@gmail.com>
-Cc: Kees Cook <keescook@chromium.org>
----
- arch/powerpc/kernel/machine_kexec.c | 1 +
- 1 file changed, 1 insertion(+)
-
-diff --git a/arch/powerpc/kernel/machine_kexec.c b/arch/powerpc/kernel/machine_kexec.c
-index c4ed328a7b96..078fe3d76feb 100644
---- a/arch/powerpc/kernel/machine_kexec.c
-+++ b/arch/powerpc/kernel/machine_kexec.c
-@@ -86,6 +86,7 @@ void arch_crash_save_vmcoreinfo(void)
- 	VMCOREINFO_STRUCT_SIZE(mmu_psize_def);
- 	VMCOREINFO_OFFSET(mmu_psize_def, shift);
- #endif
-+	vmcoreinfo_append_str("KERNELOFFSET=%lx\n", kaslr_offset());
- }
- 
- /*
--- 
-2.17.2
-
+Why are you allocating memory at all instead of just using some
+known-to-exist PFNs like I suggested?
