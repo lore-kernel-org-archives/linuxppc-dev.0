@@ -2,67 +2,53 @@ Return-Path: <SRS0=hB4d=WF=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.1 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.3 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 224F4C32756
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Aug 2019 10:21:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 53F92C31E40
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Aug 2019 10:37:33 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 92DB62085A
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Aug 2019 10:21:41 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="pag4yExu"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 92DB62085A
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
+	by mail.kernel.org (Postfix) with ESMTPS id 9B7442086A
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Aug 2019 10:37:32 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9B7442086A
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 464h9b2L3bzDqNS
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Aug 2019 20:21:39 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 464hWs6bCXzDqbc
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Aug 2019 20:37:29 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=infradead.org
- (client-ip=2607:7c80:54:e::133; helo=bombadil.infradead.org;
- envelope-from=willy@infradead.org; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=arm.com
+ (client-ip=217.140.110.172; helo=foss.arm.com;
+ envelope-from=anshuman.khandual@arm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=infradead.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=infradead.org header.i=@infradead.org
- header.b="pag4yExu"; dkim-atps=neutral
-Received: from bombadil.infradead.org (bombadil.infradead.org
- [IPv6:2607:7c80:54:e::133])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 464h4Q0kSczDqN9
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Aug 2019 20:17:10 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
- d=infradead.org; s=bombadil.20170209; h=In-Reply-To:Content-Type:MIME-Version
- :References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
- Content-Transfer-Encoding:Content-ID:Content-Description:Resent-Date:
- Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:
- List-Help:List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
- bh=qtavp7CPHfZNeNkYBrPvAtPsbANfqFLQtCdliW3pDao=; b=pag4yExuYAml6RAwW8ClSI/8O
- 4SvhyG05DRb/VW/V9CDsF+zHeZ5UXFBZuSEmH6L2R/TkkFTUdvg0G5X+mChPhSDo0bv/G81bqVcOE
- H0+ebgEssg+HPPdNYRmJesf50lZppQPNOWSyxdr7otHpaF8cn8K9ckBUuEcdXQR2moiTTpd1jGx/f
- vjh5YbK7fMXAxAHvYpu7bjS0cCBSZ//FEHycRa1QcZu/mYorpr133FpqiXnyp7o6RFhVYguPt/B8f
- P2fGNwRrQbpxYk76nYUeyruj+MAsigriKyn6idQDkNDTkIb9YC0oHITHhwpJDVUNGhDUhHSp0NaMd
- UOTH8wydQ==;
-Received: from willy by bombadil.infradead.org with local (Exim 4.92 #3 (Red
- Hat Linux)) id 1hw1wn-0006xR-4P; Fri, 09 Aug 2019 10:16:33 +0000
-Date: Fri, 9 Aug 2019 03:16:33 -0700
-From: Matthew Wilcox <willy@infradead.org>
-To: Anshuman Khandual <anshuman.khandual@arm.com>
+ dmarc=none (p=none dis=none) header.from=arm.com
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+ by lists.ozlabs.org (Postfix) with ESMTP id 464hTf3C7PzDqTR
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Aug 2019 20:35:32 +1000 (AEST)
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+ by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 0ABCD1596;
+ Fri,  9 Aug 2019 03:35:30 -0700 (PDT)
+Received: from [10.163.1.243] (unknown [10.163.1.243])
+ by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 31FBE3F575;
+ Fri,  9 Aug 2019 03:35:11 -0700 (PDT)
 Subject: Re: [RFC V2 0/1] mm/debug: Add tests for architecture exported page
  table helpers
-Message-ID: <20190809101632.GM5482@bombadil.infradead.org>
+To: Matthew Wilcox <willy@infradead.org>
 References: <1565335998-22553-1-git-send-email-anshuman.khandual@arm.com>
+ <20190809101632.GM5482@bombadil.infradead.org>
+From: Anshuman Khandual <anshuman.khandual@arm.com>
+Message-ID: <a5aab7ff-f7fd-9cc1-6e37-e4185eee65ac@arm.com>
+Date: Fri, 9 Aug 2019 16:05:07 +0530
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:52.0) Gecko/20100101
+ Thunderbird/52.9.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1565335998-22553-1-git-send-email-anshuman.khandual@arm.com>
-User-Agent: Mutt/1.11.4 (2019-03-13)
+In-Reply-To: <20190809101632.GM5482@bombadil.infradead.org>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -101,11 +87,23 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, Aug 09, 2019 at 01:03:17PM +0530, Anshuman Khandual wrote:
-> Should alloc_gigantic_page() be made available as an interface for general
-> use in the kernel. The test module here uses very similar implementation from
-> HugeTLB to allocate a PUD aligned memory block. Similar for mm_alloc() which
-> needs to be exported through a header.
 
-Why are you allocating memory at all instead of just using some
-known-to-exist PFNs like I suggested?
+
+On 08/09/2019 03:46 PM, Matthew Wilcox wrote:
+> On Fri, Aug 09, 2019 at 01:03:17PM +0530, Anshuman Khandual wrote:
+>> Should alloc_gigantic_page() be made available as an interface for general
+>> use in the kernel. The test module here uses very similar implementation from
+>> HugeTLB to allocate a PUD aligned memory block. Similar for mm_alloc() which
+>> needs to be exported through a header.
+> 
+> Why are you allocating memory at all instead of just using some
+> known-to-exist PFNs like I suggested?
+
+We needed PFN to be PUD aligned for pfn_pud() and PMD aligned for mk_pmd().
+Now walking the kernel page table for a known symbol like kernel_init()
+as you had suggested earlier we might encounter page table page entries at PMD
+and PUD which might not be PMD or PUD aligned respectively. It seemed to me
+that alignment requirement is applicable only for mk_pmd() and pfn_pud()
+which create large mappings at those levels but that requirement does not
+exist for page table pages pointing to next level. Is not that correct ? Or
+I am missing something here ?
