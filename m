@@ -3,21 +3,22 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
 X-Spam-Status: No, score=-1.0 required=3.0 tests=MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BCFADC433FF
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Aug 2019 17:52:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5960BC433FF
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Aug 2019 17:54:31 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 302082086D
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Aug 2019 17:52:28 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 302082086D
+	by mail.kernel.org (Postfix) with ESMTPS id 1704C2086D
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Aug 2019 17:54:30 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1704C2086D
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=bugzilla.kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 464t9j6jqzzDqhs
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 10 Aug 2019 03:52:25 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 464tD44FNyzDqgC
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 10 Aug 2019 03:54:28 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=bugzilla.kernel.org
  (client-ip=198.145.29.98; helo=mail.wl.linuxfoundation.org;
@@ -28,17 +29,17 @@ Received: from mail.wl.linuxfoundation.org (mail.wl.linuxfoundation.org
  [198.145.29.98])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 464t7B2H4PzDrHF
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Aug 2019 03:50:13 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 464t9N3lgfzDqgH
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Aug 2019 03:52:08 +1000 (AEST)
 Received: from mail.wl.linuxfoundation.org (localhost [127.0.0.1])
- by mail.wl.linuxfoundation.org (Postfix) with ESMTP id 928E820500
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Aug 2019 17:50:10 +0000 (UTC)
+ by mail.wl.linuxfoundation.org (Postfix) with ESMTP id 394571FF14
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Aug 2019 17:52:06 +0000 (UTC)
 Received: by mail.wl.linuxfoundation.org (Postfix, from userid 486)
- id 86FDA205F6; Fri,  9 Aug 2019 17:50:10 +0000 (UTC)
+ id 2D527212D6; Fri,  9 Aug 2019 17:52:06 +0000 (UTC)
 From: bugzilla-daemon@bugzilla.kernel.org
 To: linuxppc-dev@lists.ozlabs.org
 Subject: [Bug 204479] KASAN hit at modprobe zram
-Date: Fri, 09 Aug 2019 17:50:08 +0000
+Date: Fri, 09 Aug 2019 17:52:05 +0000
 X-Bugzilla-Reason: CC
 X-Bugzilla-Type: changed
 X-Bugzilla-Watch-Reason: None
@@ -54,7 +55,7 @@ X-Bugzilla-Priority: P1
 X-Bugzilla-Assigned-To: dwmw2@infradead.org
 X-Bugzilla-Flags: 
 X-Bugzilla-Changed-Fields: attachments.created
-Message-ID: <bug-204479-206035-VbgWFeorJA@https.bugzilla.kernel.org/>
+Message-ID: <bug-204479-206035-xkfFoLsC75@https.bugzilla.kernel.org/>
 In-Reply-To: <bug-204479-206035@https.bugzilla.kernel.org/>
 References: <bug-204479-206035@https.bugzilla.kernel.org/>
 Content-Type: text/plain; charset="UTF-8"
@@ -80,14 +81,16 @@ Sender: "Linuxppc-dev"
 
 https://bugzilla.kernel.org/show_bug.cgi?id=3D204479
 
---- Comment #13 from Erhard F. (erhard_f@mailbox.org) ---
-Created attachment 284301
-  --> https://bugzilla.kernel.org/attachment.cgi?id=3D284301&action=3Dedit
-dmesg (kernel 5.3-rc3 + patch + 2nd patch, without CONFIG_SMP, PowerMac G4 =
+--- Comment #14 from Erhard F. (erhard_f@mailbox.org) ---
+Created attachment 284303
+  --> https://bugzilla.kernel.org/attachment.cgi?id=3D284303&action=3Dedit
+dmesg (kernel 5.3-rc3 + patch + 2nd patch, without CONFIG_SMP, v2, PowerMac=
+ G4
 DP)
 
-Definitely an improvement with the latest patch. b43legacy and nfs load now
-reliably without Oops.
+However the radeon module und btrfs (if built as module) still freeze the
+machine until the 2min reboot timer kicks in. Also some EHCI driver modules
+oopses, but not always.
 
 --=20
 You are receiving this mail because:
