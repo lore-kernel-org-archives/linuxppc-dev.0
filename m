@@ -2,68 +2,49 @@ Return-Path: <SRS0=hB4d=WF=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.0 required=3.0 tests=MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=no
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 97614C433FF
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Aug 2019 12:28:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E678DC31E40
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Aug 2019 12:34:55 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 365CF208C3
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Aug 2019 12:28:25 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 365CF208C3
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=bugzilla.kernel.org
+	by mail.kernel.org (Postfix) with ESMTPS id 6D8A7208C3
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Aug 2019 12:34:55 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6D8A7208C3
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 464kzp4hdrzDqJ3
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Aug 2019 22:28:22 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=bugzilla.kernel.org
- (client-ip=198.145.29.98; helo=mail.wl.linuxfoundation.org;
- envelope-from=bugzilla-daemon@bugzilla.kernel.org; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=bugzilla.kernel.org
-Received: from mail.wl.linuxfoundation.org (mail.wl.linuxfoundation.org
- [198.145.29.98])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 464l7J50dtzDrCG
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Aug 2019 22:34:52 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 464kx400fZzDqBM
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Aug 2019 22:25:59 +1000 (AEST)
-Received: from mail.wl.linuxfoundation.org (localhost [127.0.0.1])
- by mail.wl.linuxfoundation.org (Postfix) with ESMTP id 7EF3828C79
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Aug 2019 12:25:56 +0000 (UTC)
-Received: by mail.wl.linuxfoundation.org (Postfix, from userid 486)
- id 732CE28C0C; Fri,  9 Aug 2019 12:25:56 +0000 (UTC)
-From: bugzilla-daemon@bugzilla.kernel.org
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [Bug 204375] kernel 5.2.4 w. KASAN enabled fails to boot on a
- PowerMac G4 3,6 at very early stage
-Date: Fri, 09 Aug 2019 12:25:55 +0000
-X-Bugzilla-Reason: None
-X-Bugzilla-Type: changed
-X-Bugzilla-Watch-Reason: AssignedTo platform_ppc-32@kernel-bugs.osdl.org
-X-Bugzilla-Product: Platform Specific/Hardware
-X-Bugzilla-Component: PPC-32
-X-Bugzilla-Version: 2.5
-X-Bugzilla-Keywords: 
-X-Bugzilla-Severity: normal
-X-Bugzilla-Who: michael@ellerman.id.au
-X-Bugzilla-Status: CLOSED
-X-Bugzilla-Resolution: CODE_FIX
-X-Bugzilla-Priority: P1
-X-Bugzilla-Assigned-To: platform_ppc-32@kernel-bugs.osdl.org
-X-Bugzilla-Flags: 
-X-Bugzilla-Changed-Fields: bug_status cc
-Message-ID: <bug-204375-206035-UfZ9EuBmzf@https.bugzilla.kernel.org/>
-In-Reply-To: <bug-204375-206035@https.bugzilla.kernel.org/>
-References: <bug-204375-206035@https.bugzilla.kernel.org/>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-X-Bugzilla-URL: https://bugzilla.kernel.org/
-Auto-Submitted: auto-generated
+ by lists.ozlabs.org (Postfix) with ESMTPS id 464l3J3DFrzDqP9
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Aug 2019 22:31:24 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=ellerman.id.au
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
+ SHA256) (No client certificate requested)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 464l3F4BlGz9sP7;
+ Fri,  9 Aug 2019 22:31:21 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: bugzilla-daemon@bugzilla.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-btrfs@vger.kernel.org
+Subject: Re: [Bug 204371] BUG kmalloc-4k (Tainted: G W ): Object padding
+ overwritten
+In-Reply-To: <bug-204371-206035-3TOBxXIdie@https.bugzilla.kernel.org/>
+References: <bug-204371-206035@https.bugzilla.kernel.org/>
+ <bug-204371-206035-3TOBxXIdie@https.bugzilla.kernel.org/>
+Date: Fri, 09 Aug 2019 22:31:21 +1000
+Message-ID: <8736iatt9i.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-X-Virus-Scanned: ClamAV using ClamSMTP
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -79,15 +60,41 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-https://bugzilla.kernel.org/show_bug.cgi?id=3D204375
+bugzilla-daemon@bugzilla.kernel.org writes:
+> https://bugzilla.kernel.org/show_bug.cgi?id=204371
+>
+> --- Comment #10 from David Sterba (dsterba@suse.com) ---
+> In my case it happened on 5.3-rc3, with a strestest. The same machine has been
+> running fstests periodically, with slab debug on, but there are no slab reports
+> like that.
+>
+> [ 8516.870046] BUG kmalloc-4k (Not tainted): Poison overwritten                 
+> [ 8516.875873]
+> -----------------------------------------------------------------------------   
+>
+> [ 8516.885864] Disabling lock debugging due to kernel taint                     
+> [ 8516.891312] INFO: 0x000000001c70c8c9-0x000000003cd1e164. First byte 0x16
+> instead of 0x6b                                                                 
+> [ 8516.899717] INFO: Allocated in btrfs_read_tree_root+0x46/0x120 [btrfs]
+> age=1769 cpu=7 pid=8717                                                         
+> [ 8516.908544]  __slab_alloc.isra.53+0x3e/0x70                                  
+> [ 8516.912861]  kmem_cache_alloc_trace+0x1b0/0x330                              
+> [ 8516.917581]  btrfs_read_tree_root+0x46/0x120 [btrfs]                         
+> [ 8516.922737]  btrfs_read_fs_root+0xe/0x40 [btrfs]                             
+> [ 8516.927552]  create_reloc_root+0x17f/0x2a0 [btrfs]                           
+> [ 8516.932536]  btrfs_init_reloc_root+0x72/0xe0 [btrfs]                         
+> [ 8516.937686]  record_root_in_trans+0xbb/0xf0 [btrfs]                          
+> [ 8516.942750]  btrfs_record_root_in_trans+0x50/0x70 [btrfs]                    
+> [ 8516.948340]  start_transaction+0xa1/0x550 [btrfs]                            
+> [ 8516.953237]  __btrfs_prealloc_file_range+0xca/0x490 [btrfs]                  
+> [ 8516.959003]  btrfs_prealloc_file_range+0x10/0x20 [btrfs]                     
+> [ 8516.964509]  prealloc_file_extent_cluster+0x13e/0x2b0 [btrfs]                
+> [ 8516.970447]  relocate_file_extent_cluster+0x8d/0x530 [btrfs]                 
+> [ 8516.976305]  relocate_data_extent+0x80/0x110 [btrfs]                         
+> [ 8516.981469]  relocate_block_group+0x473/0x720 [btrfs]                        
+> [ 8516.986711]  btrfs_relocate_block_group+0x15f/0x2c0 [btrfs]                  
 
-Michael Ellerman (michael@ellerman.id.au) changed:
+So this is looking more like it could be a btrfs bug, given you've both
+hit it using btrfs but on different platforms.
 
-           What    |Removed                     |Added
-----------------------------------------------------------------------------
-             Status|RESOLVED                    |CLOSED
-                 CC|                            |michael@ellerman.id.au
-
---=20
-You are receiving this mail because:
-You are watching the assignee of the bug.=
+cheers
