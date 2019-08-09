@@ -7,44 +7,45 @@ X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3F54FC31E40
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Aug 2019 10:00:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E12F4C31E40
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Aug 2019 10:03:10 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id BDA7B2166E
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Aug 2019 10:00:25 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BDA7B2166E
+	by mail.kernel.org (Postfix) with ESMTPS id 67FF92166E
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Aug 2019 10:03:10 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 67FF92166E
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=huawei.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 464gj26nVYzDqwg
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Aug 2019 20:00:22 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 464gmD0FxKzDr31
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Aug 2019 20:03:08 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=huawei.com
- (client-ip=45.249.212.190; helo=huawei.com; envelope-from=yanaijie@huawei.com;
+ (client-ip=45.249.212.191; helo=huawei.com; envelope-from=yanaijie@huawei.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=huawei.com
-Received: from huawei.com (szxga04-in.huawei.com [45.249.212.190])
+Received: from huawei.com (szxga05-in.huawei.com [45.249.212.191])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 464gWS2VySzDqmJ
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Aug 2019 19:52:03 +1000 (AEST)
-Received: from DGGEMS403-HUB.china.huawei.com (unknown [172.30.72.59])
- by Forcepoint Email with ESMTP id 0EB28268C8A2CAD4D479;
- Fri,  9 Aug 2019 17:51:58 +0800 (CST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 464gWV4nVczDqmF
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Aug 2019 19:52:06 +1000 (AEST)
+Received: from DGGEMS403-HUB.china.huawei.com (unknown [172.30.72.58])
+ by Forcepoint Email with ESMTP id 2E6B37C03D5BCA4197A6;
+ Fri,  9 Aug 2019 17:52:03 +0800 (CST)
 Received: from huawei.com (10.175.124.28) by DGGEMS403-HUB.china.huawei.com
  (10.3.19.203) with Microsoft SMTP Server id 14.3.439.0; Fri, 9 Aug 2019
- 17:51:50 +0800
+ 17:51:52 +0800
 From: Jason Yan <yanaijie@huawei.com>
 To: <mpe@ellerman.id.au>, <linuxppc-dev@lists.ozlabs.org>,
  <diana.craciun@nxp.com>, <christophe.leroy@c-s.fr>,
  <benh@kernel.crashing.org>, <paulus@samba.org>, <npiggin@gmail.com>,
  <keescook@chromium.org>, <kernel-hardening@lists.openwall.com>
-Subject: [PATCH v6 01/12] powerpc: unify definition of M_IF_NEEDED
-Date: Fri, 9 Aug 2019 18:07:49 +0800
-Message-ID: <20190809100800.5426-2-yanaijie@huawei.com>
+Subject: [PATCH v6 04/12] powerpc/fsl_booke/32: introduce create_tlb_entry()
+ helper
+Date: Fri, 9 Aug 2019 18:07:52 +0800
+Message-ID: <20190809100800.5426-5-yanaijie@huawei.com>
 X-Mailer: git-send-email 2.17.2
 In-Reply-To: <20190809100800.5426-1-yanaijie@huawei.com>
 References: <20190809100800.5426-1-yanaijie@huawei.com>
@@ -71,8 +72,9 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-M_IF_NEEDED is defined too many times. Move it to a common place and
-rename it to MAS2_M_IF_NEEDED which is much readable.
+Add a new helper create_tlb_entry() to create a tlb entry by the virtual
+and physical address. This is a preparation to support boot kernel at a
+randomized address.
 
 Signed-off-by: Jason Yan <yanaijie@huawei.com>
 Cc: Diana Craciun <diana.craciun@nxp.com>
@@ -86,119 +88,62 @@ Reviewed-by: Christophe Leroy <christophe.leroy@c-s.fr>
 Reviewed-by: Diana Craciun <diana.craciun@nxp.com>
 Tested-by: Diana Craciun <diana.craciun@nxp.com>
 ---
- arch/powerpc/include/asm/nohash/mmu-book3e.h  | 10 ++++++++++
- arch/powerpc/kernel/exceptions-64e.S          | 12 +-----------
- arch/powerpc/kernel/fsl_booke_entry_mapping.S | 14 ++------------
- arch/powerpc/kernel/misc_64.S                 |  7 +------
- 4 files changed, 14 insertions(+), 29 deletions(-)
+ arch/powerpc/kernel/head_fsl_booke.S | 29 ++++++++++++++++++++++++++++
+ arch/powerpc/mm/mmu_decl.h           |  1 +
+ 2 files changed, 30 insertions(+)
 
-diff --git a/arch/powerpc/include/asm/nohash/mmu-book3e.h b/arch/powerpc/include/asm/nohash/mmu-book3e.h
-index 4c9777d256fb..fa3efc2d310f 100644
---- a/arch/powerpc/include/asm/nohash/mmu-book3e.h
-+++ b/arch/powerpc/include/asm/nohash/mmu-book3e.h
-@@ -221,6 +221,16 @@
- #define TLBILX_T_CLASS2			6
- #define TLBILX_T_CLASS3			7
+diff --git a/arch/powerpc/kernel/head_fsl_booke.S b/arch/powerpc/kernel/head_fsl_booke.S
+index adf0505dbe02..04d124fee17d 100644
+--- a/arch/powerpc/kernel/head_fsl_booke.S
++++ b/arch/powerpc/kernel/head_fsl_booke.S
+@@ -1114,6 +1114,35 @@ __secondary_hold_acknowledge:
+ 	.long	-1
+ #endif
  
 +/*
-+ * The mapping only needs to be cache-coherent on SMP, except on
-+ * Freescale e500mc derivatives where it's also needed for coherent DMA.
++ * Create a 64M tlb by address and entry
++ * r3/r4 - physical address
++ * r5 - virtual address
++ * r6 - entry
 + */
-+#if defined(CONFIG_SMP) || defined(CONFIG_PPC_E500MC)
-+#define MAS2_M_IF_NEEDED	MAS2_M
-+#else
-+#define MAS2_M_IF_NEEDED	0
-+#endif
++_GLOBAL(create_tlb_entry)
++	lis     r7,0x1000               /* Set MAS0(TLBSEL) = 1 */
++	rlwimi  r7,r6,16,4,15           /* Setup MAS0 = TLBSEL | ESEL(r6) */
++	mtspr   SPRN_MAS0,r7            /* Write MAS0 */
 +
- #ifndef __ASSEMBLY__
- #include <asm/bug.h>
- 
-diff --git a/arch/powerpc/kernel/exceptions-64e.S b/arch/powerpc/kernel/exceptions-64e.S
-index 1cfb3da4a84a..c5bc09b5e281 100644
---- a/arch/powerpc/kernel/exceptions-64e.S
-+++ b/arch/powerpc/kernel/exceptions-64e.S
-@@ -1342,16 +1342,6 @@ skpinv:	addi	r6,r6,1				/* Increment */
- 	sync
- 	isync
- 
--/*
-- * The mapping only needs to be cache-coherent on SMP, except on
-- * Freescale e500mc derivatives where it's also needed for coherent DMA.
-- */
--#if defined(CONFIG_SMP) || defined(CONFIG_PPC_E500MC)
--#define M_IF_NEEDED	MAS2_M
--#else
--#define M_IF_NEEDED	0
--#endif
--
- /* 6. Setup KERNELBASE mapping in TLB[0]
-  *
-  * r3 = MAS0 w/TLBSEL & ESEL for the entry we started in
-@@ -1364,7 +1354,7 @@ skpinv:	addi	r6,r6,1				/* Increment */
- 	ori	r6,r6,(MAS1_TSIZE(BOOK3E_PAGESZ_1GB))@l
- 	mtspr	SPRN_MAS1,r6
- 
--	LOAD_REG_IMMEDIATE(r6, PAGE_OFFSET | M_IF_NEEDED)
-+	LOAD_REG_IMMEDIATE(r6, PAGE_OFFSET | MAS2_M_IF_NEEDED)
- 	mtspr	SPRN_MAS2,r6
- 
- 	rlwinm	r5,r5,0,0,25
-diff --git a/arch/powerpc/kernel/fsl_booke_entry_mapping.S b/arch/powerpc/kernel/fsl_booke_entry_mapping.S
-index ea065282b303..f4d3eaae54a9 100644
---- a/arch/powerpc/kernel/fsl_booke_entry_mapping.S
-+++ b/arch/powerpc/kernel/fsl_booke_entry_mapping.S
-@@ -153,16 +153,6 @@ skpinv:	addi	r6,r6,1				/* Increment */
- 	tlbivax 0,r9
- 	TLBSYNC
- 
--/*
-- * The mapping only needs to be cache-coherent on SMP, except on
-- * Freescale e500mc derivatives where it's also needed for coherent DMA.
-- */
--#if defined(CONFIG_SMP) || defined(CONFIG_PPC_E500MC)
--#define M_IF_NEEDED	MAS2_M
--#else
--#define M_IF_NEEDED	0
--#endif
--
- #if defined(ENTRY_MAPPING_BOOT_SETUP)
- 
- /* 6. Setup KERNELBASE mapping in TLB1[0] */
-@@ -171,8 +161,8 @@ skpinv:	addi	r6,r6,1				/* Increment */
- 	lis	r6,(MAS1_VALID|MAS1_IPROT)@h
- 	ori	r6,r6,(MAS1_TSIZE(BOOK3E_PAGESZ_64M))@l
- 	mtspr	SPRN_MAS1,r6
--	lis	r6,MAS2_VAL(PAGE_OFFSET, BOOK3E_PAGESZ_64M, M_IF_NEEDED)@h
--	ori	r6,r6,MAS2_VAL(PAGE_OFFSET, BOOK3E_PAGESZ_64M, M_IF_NEEDED)@l
-+	lis	r6,MAS2_VAL(PAGE_OFFSET, BOOK3E_PAGESZ_64M, MAS2_M_IF_NEEDED)@h
-+	ori	r6,r6,MAS2_VAL(PAGE_OFFSET, BOOK3E_PAGESZ_64M, MAS2_M_IF_NEEDED)@l
- 	mtspr	SPRN_MAS2,r6
- 	mtspr	SPRN_MAS3,r8
- 	tlbwe
-diff --git a/arch/powerpc/kernel/misc_64.S b/arch/powerpc/kernel/misc_64.S
-index b55a7b4cb543..2062a299a22d 100644
---- a/arch/powerpc/kernel/misc_64.S
-+++ b/arch/powerpc/kernel/misc_64.S
-@@ -432,18 +432,13 @@ kexec_create_tlb:
- 	rlwimi	r9,r10,16,4,15		/* Setup MAS0 = TLBSEL | ESEL(r9) */
- 
- /* Set up a temp identity mapping v:0 to p:0 and return to it. */
--#if defined(CONFIG_SMP) || defined(CONFIG_PPC_E500MC)
--#define M_IF_NEEDED	MAS2_M
--#else
--#define M_IF_NEEDED	0
--#endif
- 	mtspr	SPRN_MAS0,r9
- 
- 	lis	r9,(MAS1_VALID|MAS1_IPROT)@h
- 	ori	r9,r9,(MAS1_TSIZE(BOOK3E_PAGESZ_1GB))@l
- 	mtspr	SPRN_MAS1,r9
- 
--	LOAD_REG_IMMEDIATE(r9, 0x0 | M_IF_NEEDED)
-+	LOAD_REG_IMMEDIATE(r9, 0x0 | MAS2_M_IF_NEEDED)
- 	mtspr	SPRN_MAS2,r9
- 
- 	LOAD_REG_IMMEDIATE(r9, 0x0 | MAS3_SR | MAS3_SW | MAS3_SX)
++	lis     r6,(MAS1_VALID|MAS1_IPROT)@h
++	ori     r6,r6,(MAS1_TSIZE(BOOK3E_PAGESZ_64M))@l
++	mtspr   SPRN_MAS1,r6            /* Write MAS1 */
++
++	lis     r6,MAS2_EPN_MASK(BOOK3E_PAGESZ_64M)@h
++	ori     r6,r6,MAS2_EPN_MASK(BOOK3E_PAGESZ_64M)@l
++	and     r6,r6,r5
++	ori	r6,r6,MAS2_M@l
++	mtspr   SPRN_MAS2,r6            /* Write MAS2(EPN) */
++
++	ori     r8,r4,(MAS3_SW|MAS3_SR|MAS3_SX)
++	mtspr   SPRN_MAS3,r8            /* Write MAS3(RPN) */
++
++	tlbwe                           /* Write TLB */
++	isync
++	sync
++	blr
++
+ /*
+  * Create a tlb entry with the same effective and physical address as
+  * the tlb entry used by the current running code. But set the TS to 1.
+diff --git a/arch/powerpc/mm/mmu_decl.h b/arch/powerpc/mm/mmu_decl.h
+index 32c1a191c28a..a09f89d3aa0f 100644
+--- a/arch/powerpc/mm/mmu_decl.h
++++ b/arch/powerpc/mm/mmu_decl.h
+@@ -142,6 +142,7 @@ extern unsigned long calc_cam_sz(unsigned long ram, unsigned long virt,
+ extern void adjust_total_lowmem(void);
+ extern int switch_to_as1(void);
+ extern void restore_to_as0(int esel, int offset, void *dt_ptr, int bootcpu);
++void create_tlb_entry(phys_addr_t phys, unsigned long virt, int entry);
+ #endif
+ extern void loadcam_entry(unsigned int index);
+ extern void loadcam_multi(int first_idx, int num, int tmp_idx);
 -- 
 2.17.2
 
