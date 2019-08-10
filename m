@@ -4,41 +4,40 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-8.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS
-	autolearn=unavailable autolearn_force=no version=3.4.0
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BB5DCC32751
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 10 Aug 2019 10:27:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4799DC32751
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 10 Aug 2019 10:29:43 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 65F9A2166E
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 10 Aug 2019 10:27:44 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 65F9A2166E
+	by mail.kernel.org (Postfix) with ESMTPS id BC96C2166E
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 10 Aug 2019 10:29:42 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BC96C2166E
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 465JG62vGpzDqYV
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 10 Aug 2019 20:27:42 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+	by lists.ozlabs.org (Postfix) with ESMTP id 465JJP0ZfLzDqKN
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 10 Aug 2019 20:29:41 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 465J5r3YQYzDqdp
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Aug 2019 20:20:32 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 465J5t07B0zDqyq
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Aug 2019 20:20:34 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 465J5r1JLQz9sNk; Sat, 10 Aug 2019 20:20:32 +1000 (AEST)
+ id 465J5s4MBZz9sNm; Sat, 10 Aug 2019 20:20:33 +1000 (AEST)
 X-powerpc-patch-notification: thanks
-X-powerpc-patch-commit: 9616dda1aaddb2080122aaeab96ad7fc064e36b4
-In-Reply-To: <20190801225251.17864-1-leonardo@linux.ibm.com>
-To: Leonardo Bras <leonardo@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+X-powerpc-patch-commit: 1ebe0dcce1750109181d666394b7dfd9af9ff645
+In-Reply-To: <20190802000835.26191-1-jniethe5@gmail.com>
+To: Jordan Niethe <jniethe5@gmail.com>, linuxppc-dev@lists.ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Subject: Re: [PATCH 1/1] pseries/hotplug-memory.c: Replace nested ifs by
- switch-case
-Message-Id: <465J5r1JLQz9sNk@ozlabs.org>
-Date: Sat, 10 Aug 2019 20:20:32 +1000 (AEST)
+Subject: Re: [PATCH] powerpc/xive: Update comment referencing magic loads from
+ an ESB
+Message-Id: <465J5s4MBZz9sNm@ozlabs.org>
+Date: Sat, 10 Aug 2019 20:20:33 +1000 (AEST)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -50,28 +49,23 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Nathan Lynch <nathanl@linux.ibm.com>,
- Pavel Tatashin <pavel.tatashin@microsoft.com>,
- David Hildenbrand <david@redhat.com>,
- Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>,
- YueHaibing <yuehaibing@huawei.com>, Paul Mackerras <paulus@samba.org>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Nathan Fontenot <nfont@linux.vnet.ibm.com>,
- Andrew Morton <akpm@linux-foundation.org>, Rob Herring <robh@kernel.org>,
- Leonardo Bras <leonardo@linux.ibm.com>
+Cc: Jordan Niethe <jniethe5@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, 2019-08-01 at 22:52:51 UTC, Leonardo Bras wrote:
-> I noticed these nested ifs can be easily replaced by switch-cases,
-> which can improve readability.
+On Fri, 2019-08-02 at 00:08:35 UTC, Jordan Niethe wrote:
+> The comment above xive_esb_read() references magic loads from an ESB as
+> described xive.h. This has been inaccurate since commit 12c1f339cd49
+> ("powerpc/xive: Move definition of ESB bits") which moved the
+> description. Update the comment to reference the new location of the
+> description in xive-regs.h
 > 
-> Signed-off-by: Leonardo Bras <leonardo@linux.ibm.com>
-> Reviewed-by: David Hildenbrand <david@redhat.com>
+> Signed-off-by: Jordan Niethe <jniethe5@gmail.com>
+> Acked-by: Stewart Smith <stewart@linux.ibm.com>
 
-Series applied to powerpc next, thanks.
+Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/9616dda1aaddb2080122aaeab96ad7fc064e36b4
+https://git.kernel.org/powerpc/c/1ebe0dcce1750109181d666394b7dfd9af9ff645
 
 cheers
