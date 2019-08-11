@@ -2,71 +2,69 @@ Return-Path: <SRS0=y8Rr=WH=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-1.0 required=3.0 tests=MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BEF71C433FF
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 11 Aug 2019 08:19:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 427F6C0650F
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 11 Aug 2019 20:09:13 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3DE7E208C2
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 11 Aug 2019 08:19:54 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="Wd/MLYXc"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3DE7E208C2
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
+	by mail.kernel.org (Postfix) with ESMTPS id 8684C2085A
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 11 Aug 2019 20:09:12 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8684C2085A
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=bugzilla.kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 465sN75czWzDqNb
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 11 Aug 2019 18:19:51 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=none (mailfrom)
- smtp.mailfrom=bombadil.srs.infradead.org (client-ip=2607:7c80:54:e::133;
- helo=bombadil.infradead.org;
- envelope-from=batv+ae155d32c5e98ef18dee+5831+infradead.org+hch@bombadil.srs.infradead.org;
- receiver=<UNKNOWN>)
+	by lists.ozlabs.org (Postfix) with ESMTP id 46696Y5Fv9zDqg5
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Aug 2019 06:09:09 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=lst.de
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=infradead.org header.i=@infradead.org
- header.b="Wd/MLYXc"; dkim-atps=neutral
-Received: from bombadil.infradead.org (bombadil.infradead.org
- [IPv6:2607:7c80:54:e::133])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ spf=pass (mailfrom) smtp.mailfrom=bugzilla.kernel.org
+ (client-ip=198.145.29.98; helo=mail.wl.linuxfoundation.org;
+ envelope-from=bugzilla-daemon@bugzilla.kernel.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=bugzilla.kernel.org
+Received: from mail.wl.linuxfoundation.org (mail.wl.linuxfoundation.org
+ [198.145.29.98])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 465s492wDjzDqj1
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 11 Aug 2019 18:06:01 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
- d=infradead.org; s=bombadil.20170209; h=Content-Transfer-Encoding:
- MIME-Version:References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:Sender
- :Reply-To:Content-Type:Content-ID:Content-Description:Resent-Date:Resent-From
- :Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:List-Help:
- List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
- bh=3t34NdMYaxK3b7q79OweXtc3LDVxX2AkiLPLkSCTGmc=; b=Wd/MLYXcWw0RcxlthtcL1M20zy
- 3bKATolABUJyp/PAgkQ4isIzv+9iROyEB1CcZ4Ml1Wi3ZnAy4EOi3+/rg1Xny12A0iq9qRSOMEqZa
- Nbk/hVRbubwVuY2/kv++6zEIq1+31DKl3O+lUg8hlojvJVESHBqyreHowXtg8HUx/MxToZvM3TyIi
- /mGely6wTaaqz/q+rfs1GIvjoeWuxn/W3PSj/6hwcgD19UG1ZFWNPDAo2LSio+dvq8ZhXo2EgfB6v
- gm+4ZM2IgnbwIXhK3NKrv9vstUDV5KKfTSSSxGKaLE5dTMpuLRcbZLstlxanB4X3rU4Ie6P0oSDV1
- xs8Di//Q==;
-Received: from [2001:4bb8:180:1ec3:c70:4a89:bc61:2] (helo=localhost)
- by bombadil.infradead.org with esmtpsa (Exim 4.92 #3 (Red Hat Linux))
- id 1hwir6-0001ut-IN; Sun, 11 Aug 2019 08:05:33 +0000
-From: Christoph Hellwig <hch@lst.de>
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Maxime Chevallier <maxime.chevallier@bootlin.com>
-Subject: [PATCH 2/6] usb: add a hcd_uses_dma helper
-Date: Sun, 11 Aug 2019 10:05:16 +0200
-Message-Id: <20190811080520.21712-3-hch@lst.de>
-X-Mailer: git-send-email 2.20.1
-In-Reply-To: <20190811080520.21712-1-hch@lst.de>
-References: <20190811080520.21712-1-hch@lst.de>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4668zb3VlGzDqdm
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Aug 2019 06:03:06 +1000 (AEST)
+Received: from mail.wl.linuxfoundation.org (localhost [127.0.0.1])
+ by mail.wl.linuxfoundation.org (Postfix) with ESMTP id 2BD4827E71
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 11 Aug 2019 20:03:03 +0000 (UTC)
+Received: by mail.wl.linuxfoundation.org (Postfix, from userid 486)
+ id 1F8C027F81; Sun, 11 Aug 2019 20:03:03 +0000 (UTC)
+From: bugzilla-daemon@bugzilla.kernel.org
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [Bug 204371] BUG kmalloc-4k (Tainted: G        W        ): Object
+ padding overwritten
+Date: Sun, 11 Aug 2019 20:03:02 +0000
+X-Bugzilla-Reason: CC
+X-Bugzilla-Type: changed
+X-Bugzilla-Watch-Reason: None
+X-Bugzilla-Product: Memory Management
+X-Bugzilla-Component: Slab Allocator
+X-Bugzilla-Version: 2.5
+X-Bugzilla-Keywords: 
+X-Bugzilla-Severity: normal
+X-Bugzilla-Who: erhard_f@mailbox.org
+X-Bugzilla-Status: NEW
+X-Bugzilla-Resolution: 
+X-Bugzilla-Priority: P1
+X-Bugzilla-Assigned-To: akpm@linux-foundation.org
+X-Bugzilla-Flags: 
+X-Bugzilla-Changed-Fields: 
+Message-ID: <bug-204371-206035-fpumxeh8kf@https.bugzilla.kernel.org/>
+In-Reply-To: <bug-204371-206035@https.bugzilla.kernel.org/>
+References: <bug-204371-206035@https.bugzilla.kernel.org/>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+X-Bugzilla-URL: https://bugzilla.kernel.org/
+Auto-Submitted: auto-generated
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by
- bombadil.infradead.org. See http://www.infradead.org/rpr.html
+X-Virus-Scanned: ClamAV using ClamSMTP
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -78,135 +76,37 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-arch@vger.kernel.org, Olav Kongas <ok@artecdesign.ee>,
- Gavin Li <git@thegavinli.com>, linuxppc-dev@lists.ozlabs.org,
- Mathias Nyman <mathias.nyman@intel.com>, Geoff Levand <geoff@infradead.org>,
- Fabio Estevam <festevam@gmail.com>, Sascha Hauer <s.hauer@pengutronix.de>,
- linux-usb@vger.kernel.org, Michal Simek <michal.simek@xilinx.com>,
- linux-kernel@vger.kernel.org, Tony Prisk <linux@prisktech.co.nz>,
- iommu@lists.linux-foundation.org, Alan Stern <stern@rowland.harvard.edu>,
- NXP Linux Team <linux-imx@nxp.com>,
- Pengutronix Kernel Team <kernel@pengutronix.de>,
- Minas Harutyunyan <hminas@synopsys.com>, Shawn Guo <shawnguo@kernel.org>,
- Bin Liu <b-liu@ti.com>, linux-arm-kernel@lists.infradead.org,
- Laurentiu Tudor <laurentiu.tudor@nxp.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The USB buffer allocation code is the only place in the usb core (and in
-fact the whole kernel) that uses is_device_dma_capable, while the URB
-mapping code uses the uses_dma flag in struct usb_bus.  Switch the buffer
-allocation to use the uses_dma flag used by the rest of the USB code,
-and create a helper in hcd.h that checks this flag as well as the
-CONFIG_HAS_DMA to simplify the caller a bit.
+https://bugzilla.kernel.org/show_bug.cgi?id=3D204371
 
-Signed-off-by: Christoph Hellwig <hch@lst.de>
----
- drivers/usb/core/buffer.c | 10 +++-------
- drivers/usb/core/hcd.c    |  4 ++--
- drivers/usb/dwc2/hcd.c    |  2 +-
- include/linux/usb.h       |  2 +-
- include/linux/usb/hcd.h   |  3 +++
- 5 files changed, 10 insertions(+), 11 deletions(-)
+--- Comment #12 from Erhard F. (erhard_f@mailbox.org) ---
+On Fri, 09 Aug 2019 12:31:26 +0000
+bugzilla-daemon@bugzilla.kernel.org wrote:
 
-diff --git a/drivers/usb/core/buffer.c b/drivers/usb/core/buffer.c
-index 1a5b3dcae930..6cf22c27f2d2 100644
---- a/drivers/usb/core/buffer.c
-+++ b/drivers/usb/core/buffer.c
-@@ -66,9 +66,7 @@ int hcd_buffer_create(struct usb_hcd *hcd)
- 	char		name[16];
- 	int		i, size;
- 
--	if (hcd->localmem_pool ||
--	    !IS_ENABLED(CONFIG_HAS_DMA) ||
--	    !is_device_dma_capable(hcd->self.sysdev))
-+	if (hcd->localmem_pool || !hcd_uses_dma(hcd))
- 		return 0;
- 
- 	for (i = 0; i < HCD_BUFFER_POOLS; i++) {
-@@ -129,8 +127,7 @@ void *hcd_buffer_alloc(
- 		return gen_pool_dma_alloc(hcd->localmem_pool, size, dma);
- 
- 	/* some USB hosts just use PIO */
--	if (!IS_ENABLED(CONFIG_HAS_DMA) ||
--	    !is_device_dma_capable(bus->sysdev)) {
-+	if (!hcd_uses_dma(hcd)) {
- 		*dma = ~(dma_addr_t) 0;
- 		return kmalloc(size, mem_flags);
- 	}
-@@ -160,8 +157,7 @@ void hcd_buffer_free(
- 		return;
- 	}
- 
--	if (!IS_ENABLED(CONFIG_HAS_DMA) ||
--	    !is_device_dma_capable(bus->sysdev)) {
-+	if (!hcd_uses_dma(hcd)) {
- 		kfree(addr);
- 		return;
- 	}
-diff --git a/drivers/usb/core/hcd.c b/drivers/usb/core/hcd.c
-index 2ccbc2f83570..8592c0344fe8 100644
---- a/drivers/usb/core/hcd.c
-+++ b/drivers/usb/core/hcd.c
-@@ -1412,7 +1412,7 @@ int usb_hcd_map_urb_for_dma(struct usb_hcd *hcd, struct urb *urb,
- 	if (usb_endpoint_xfer_control(&urb->ep->desc)) {
- 		if (hcd->self.uses_pio_for_control)
- 			return ret;
--		if (IS_ENABLED(CONFIG_HAS_DMA) && hcd->self.uses_dma) {
-+		if (hcd_uses_dma(hcd)) {
- 			if (is_vmalloc_addr(urb->setup_packet)) {
- 				WARN_ONCE(1, "setup packet is not dma capable\n");
- 				return -EAGAIN;
-@@ -1446,7 +1446,7 @@ int usb_hcd_map_urb_for_dma(struct usb_hcd *hcd, struct urb *urb,
- 	dir = usb_urb_dir_in(urb) ? DMA_FROM_DEVICE : DMA_TO_DEVICE;
- 	if (urb->transfer_buffer_length != 0
- 	    && !(urb->transfer_flags & URB_NO_TRANSFER_DMA_MAP)) {
--		if (IS_ENABLED(CONFIG_HAS_DMA) && hcd->self.uses_dma) {
-+		if (hcd_uses_dma(hcd)) {
- 			if (urb->num_sgs) {
- 				int n;
- 
-diff --git a/drivers/usb/dwc2/hcd.c b/drivers/usb/dwc2/hcd.c
-index ee144ff8af5b..111787a137ee 100644
---- a/drivers/usb/dwc2/hcd.c
-+++ b/drivers/usb/dwc2/hcd.c
-@@ -4608,7 +4608,7 @@ static int _dwc2_hcd_urb_enqueue(struct usb_hcd *hcd, struct urb *urb,
- 
- 	buf = urb->transfer_buffer;
- 
--	if (hcd->self.uses_dma) {
-+	if (hcd_uses_dma(hcd)) {
- 		if (!buf && (urb->transfer_dma & 3)) {
- 			dev_err(hsotg->dev,
- 				"%s: unaligned transfer with no transfer_buffer",
-diff --git a/include/linux/usb.h b/include/linux/usb.h
-index 83d35d993e8c..e87826e23d59 100644
---- a/include/linux/usb.h
-+++ b/include/linux/usb.h
-@@ -1457,7 +1457,7 @@ typedef void (*usb_complete_t)(struct urb *);
-  * field rather than determining a dma address themselves.
-  *
-  * Note that transfer_buffer must still be set if the controller
-- * does not support DMA (as indicated by bus.uses_dma) and when talking
-+ * does not support DMA (as indicated by hcd_uses_dma()) and when talking
-  * to root hub. If you have to trasfer between highmem zone and the device
-  * on such controller, create a bounce buffer or bail out with an error.
-  * If transfer_buffer cannot be set (is in highmem) and the controller is DMA
-diff --git a/include/linux/usb/hcd.h b/include/linux/usb/hcd.h
-index bab27ccc8ff5..a20e7815d814 100644
---- a/include/linux/usb/hcd.h
-+++ b/include/linux/usb/hcd.h
-@@ -422,6 +422,9 @@ static inline bool hcd_periodic_completion_in_progress(struct usb_hcd *hcd,
- 	return hcd->high_prio_bh.completing_ep == ep;
- }
- 
-+#define hcd_uses_dma(hcd) \
-+	(IS_ENABLED(CONFIG_HAS_DMA) && (hcd)->self.uses_dma)
-+
- extern int usb_hcd_link_urb_to_ep(struct usb_hcd *hcd, struct urb *urb);
- extern int usb_hcd_check_unlink_urb(struct usb_hcd *hcd, struct urb *urb,
- 		int status);
--- 
-2.20.1
+> https://bugzilla.kernel.org/show_bug.cgi?id=3D204371
+>=20
 
+Tried a few LTS kernels on the G4 DP. Looks like 4.19.x is affected (tested
+4.19.66) whereas 4.14.x (tested 4.14.138) is not.
+
+Also found a way to trigger the bug without the need of a btrfs root partit=
+ion:
+btrfs still built into the kernel. Mount another btrfs partition via /etc/f=
+stab
+at boot, e.g.
+LABEL=3D"tmp"             /var/tmp/portage        btrfs   compress=3Dlzo,no=
+atime=20=20=20
+0 1
+
+Mounting /var/tmp/portage in my case works without problems. But I reliably=
+ get
+the BUG kmalloc-4k at unmounting /var/tmp/portage.
+
+I'll try to bisect the next few days and report back.
+
+--=20
+You are receiving this mail because:
+You are on the CC list for the bug.=
