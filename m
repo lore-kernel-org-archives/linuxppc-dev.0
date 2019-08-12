@@ -2,60 +2,86 @@ Return-Path: <SRS0=KtgK=WI=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.4 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-13.4 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3B827C433FF
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Aug 2019 05:13:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AC026C433FF
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Aug 2019 05:39:43 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id D203520684
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Aug 2019 05:13:25 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id CC7C420820
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Aug 2019 05:39:42 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=ozlabs.org header.i=@ozlabs.org header.b="oDvVG3Fs"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D203520684
-Authentication-Results: mail.kernel.org; dmarc=pass (p=none dis=none) header.from=ozlabs.org
+	dkim=pass (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="X5Zrx/RX"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CC7C420820
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 466PBW5qbYzDqTT
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Aug 2019 15:13:23 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 466P4J3Rc6zDqT3
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Aug 2019 15:08:00 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 466Pmr39LtzDqdW
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Aug 2019 15:39:40 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=ozlabs.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- secure) header.d=ozlabs.org header.i=@ozlabs.org header.b="oDvVG3Fs"; 
+ spf=pass (mailfrom) smtp.mailfrom=c-s.fr
+ (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=c-s.fr
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="X5Zrx/RX"; 
  dkim-atps=neutral
-Received: by ozlabs.org (Postfix)
- id 466P4H6g4jz9sPV; Mon, 12 Aug 2019 15:07:59 +1000 (AEST)
-Received: by ozlabs.org (Postfix, from userid 1003)
- id 466P4H5sBqz9sPL; Mon, 12 Aug 2019 15:07:59 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ozlabs.org; s=201707;
- t=1565586479; bh=CU/IVBOZY4ovRPGfmMIyzlhYIcx/FjkhGpipSlv0MnU=;
- h=Date:From:To:Cc:Subject:From;
- b=oDvVG3FsOHrDwZDr66JuqL1WwKGgQFW6D2OqL5M32C4J4kpnKhiw0P0bXns46W2s6
- xRO15mubH/r6hBVcJpWjZg/eO8235otESO3Mjc5kZMuDrYA/cn2ZPzj/yZxbNtlxMi
- +jhb4XRyGNz1w4+8kvE9eoG8t3iwKZx5jSxL71pEVi9OKs5XsZdlhx7BuLT5lSd7Cl
- d3meypCKZclN+RxAIA6zmZc1Cysfp8qPDq6w3XEpL6UdCNIMMN0hN7pnAbTT3YYoOm
- jPYflPall27X7CLD6pt3f6cCPHW2FrB+NTKy60ronObIPyrEIIeluKXwe8nvN/ITfM
- b8KaranTZVs0w==
-Date: Mon, 12 Aug 2019 15:06:23 +1000
-From: Paul Mackerras <paulus@ozlabs.org>
-To: linuxppc-dev@ozlabs.org, kvm@vger.kernel.org
-Subject: [PATCH 0/2] powerpc/xive: Fix race condition leading to host crashes
- and hangs
-Message-ID: <20190812050623.ltla46gh5futsqv4@oak.ozlabs.ibm.com>
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 466Pkv3KdzzDqPg
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Aug 2019 15:37:58 +1000 (AEST)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 466Pkg1rcXzB09b6;
+ Mon, 12 Aug 2019 07:37:47 +0200 (CEST)
+Authentication-Results: localhost; dkim=pass
+ reason="1024-bit key; insecure key"
+ header.d=c-s.fr header.i=@c-s.fr header.b=X5Zrx/RX; dkim-adsp=pass;
+ dkim-atps=neutral
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id 0YC7Mo5kUr_h; Mon, 12 Aug 2019 07:37:47 +0200 (CEST)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 466Pkg0mpxzB09Zx;
+ Mon, 12 Aug 2019 07:37:47 +0200 (CEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
+ t=1565588267; bh=zPe15F+ILVBJRhKhdywc5kLzTzCdvp6RH6BIPfn1N74=;
+ h=Subject:To:Cc:References:From:Date:In-Reply-To:From;
+ b=X5Zrx/RXi/1fNWx7+BFLq+zHp0ZniXnyyKmusuRcixROTUiRtVKRXeQcHhDNfq+/4
+ bCMf8RFOzID7B/1Yqi4RvcZA8hHE8XeWjQSFDQcf4ko/Ki+7VZ00UhQFQaOmGSnXYU
+ VtY3DFWXwGAK4sGuHiUhrPrHkObcNCV4vN7jQ2cY=
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 032B38B791;
+ Mon, 12 Aug 2019 07:37:52 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id 3WTBnr-EQg93; Mon, 12 Aug 2019 07:37:51 +0200 (CEST)
+Received: from [172.25.230.101] (po15451.idsi0.si.c-s.fr [172.25.230.101])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id CCB228B752;
+ Mon, 12 Aug 2019 07:37:51 +0200 (CEST)
+Subject: Re: [PATCH] powerpc: Avoid clang warnings around setjmp and longjmp
+To: Nathan Chancellor <natechancellor@gmail.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Nick Desaulniers <ndesaulniers@google.com>
+References: <20190812023214.107817-1-natechancellor@gmail.com>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Message-ID: <5da5478f-9320-43bd-0f5e-430db2ee9195@c-s.fr>
+Date: Mon, 12 Aug 2019 07:37:51 +0200
+User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:60.0) Gecko/20100101
+ Thunderbird/60.8.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
+In-Reply-To: <20190812023214.107817-1-natechancellor@gmail.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: fr
 Content-Transfer-Encoding: 8bit
-User-Agent: NeoMutt/20170113 (1.7.2)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -67,28 +93,76 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: kvm-ppc@vger.kernel.org, David Gibson <david@gibson.dropbear.id.au>
+Cc: clang-built-linux@googlegroups.com, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, stable@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This series fixes a race condition that has been observed in testing
-on POWER9 machines running KVM guests.  An interrupt being freed by
-free_irq() can have an instance present in a XIVE interrupt queue,
-which can then be presented to the generic interrupt code after the
-data structures for it have been freed, leading to a variety of
-crashes and hangs.
 
-This series is based on current upstream kernel source plus C�dric Le
-Goater's patch "KVM: PPC: Book3S HV: XIVE: Free escalation interrupts
-before disabling the VP", which is a pre-requisite for this series.
-As it touches both KVM and generic PPC code, this series will probably
-go in via Michael Ellerman's powerpc tree.
 
-Paul.
+Le 12/08/2019 à 04:32, Nathan Chancellor a écrit :
+> Commit aea447141c7e ("powerpc: Disable -Wbuiltin-requires-header when
+> setjmp is used") disabled -Wbuiltin-requires-header because of a warning
+> about the setjmp and longjmp declarations.
+> 
+> r367387 in clang added another diagnostic around this, complaining that
+> there is no jmp_buf declaration.
+> 
+[...]
 
- arch/powerpc/include/asm/xive.h         |  8 +++
- arch/powerpc/kvm/book3s_hv_rmhandlers.S | 23 ++++++---
- arch/powerpc/kvm/book3s_xive.c          | 31 ++++++++++++
- arch/powerpc/sysdev/xive/common.c       | 87 ++++++++++++++++++++++++---------
- 4 files changed, 119 insertions(+), 30 deletions(-)
+> 
+> Cc: stable@vger.kernel.org # 4.19+
+> Link: https://github.com/ClangBuiltLinux/linux/issues/625
+> Link: https://github.com/llvm/llvm-project/commit/3be25e79477db2d31ac46493d97eca8c20592b07
+> Signed-off-by: Nathan Chancellor <natechancellor@gmail.com>
+> ---
+> 
+[...]
+
+> 
+>   arch/powerpc/kernel/Makefile | 5 +++--
+>   arch/powerpc/xmon/Makefile   | 5 +++--
+
+What about scripts/recordmcount.c and scripts/sortextable.c which 
+contains calls to setjmp() and longjmp() ?
+
+And arch/um/ ?
+
+Christophe
+
+>   2 files changed, 6 insertions(+), 4 deletions(-)
+> 
+> diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
+> index ea0c69236789..44e340ed4722 100644
+> --- a/arch/powerpc/kernel/Makefile
+> +++ b/arch/powerpc/kernel/Makefile
+> @@ -5,8 +5,9 @@
+>   
+>   CFLAGS_ptrace.o		+= -DUTS_MACHINE='"$(UTS_MACHINE)"'
+>   
+> -# Disable clang warning for using setjmp without setjmp.h header
+> -CFLAGS_crash.o		+= $(call cc-disable-warning, builtin-requires-header)
+> +# Avoid clang warnings about longjmp and setjmp built-ins (inclusion of setjmp.h and declaration of jmp_buf type)
+> +CFLAGS_crash.o		+= $(call cc-disable-warning, builtin-requires-header) \
+> +			   $(call cc-disable-warning, incomplete-setjmp-declaration)
+>   
+>   ifdef CONFIG_PPC64
+>   CFLAGS_prom_init.o	+= $(NO_MINIMAL_TOC)
+> diff --git a/arch/powerpc/xmon/Makefile b/arch/powerpc/xmon/Makefile
+> index f142570ad860..53f341391210 100644
+> --- a/arch/powerpc/xmon/Makefile
+> +++ b/arch/powerpc/xmon/Makefile
+> @@ -1,8 +1,9 @@
+>   # SPDX-License-Identifier: GPL-2.0
+>   # Makefile for xmon
+>   
+> -# Disable clang warning for using setjmp without setjmp.h header
+> -subdir-ccflags-y := $(call cc-disable-warning, builtin-requires-header)
+> +# Avoid clang warnings about longjmp and setjmp built-ins (inclusion of setjmp.h and declaration of jmp_buf type)
+> +subdir-ccflags-y := $(call cc-disable-warning, builtin-requires-header) \
+> +		    $(call cc-disable-warning, incomplete-setjmp-declaration)
+>   
+>   GCOV_PROFILE := n
+>   KCOV_INSTRUMENT := n
+> 
