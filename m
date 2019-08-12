@@ -7,21 +7,21 @@ X-Spam-Status: No, score=-11.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CC1D1C433FF
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Aug 2019 13:13:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 50B19C31E40
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Aug 2019 13:16:37 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 4A1A820684
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Aug 2019 13:13:52 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id C30C020842
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Aug 2019 13:16:36 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=sirena.org.uk header.i=@sirena.org.uk header.b="KdB9P4pB"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4A1A820684
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=sirena.org.uk header.i=@sirena.org.uk header.b="LdlKbGc7"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C30C020842
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 466brs4cCBzDqf4
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Aug 2019 23:13:49 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 466bw30SQQzDqLl
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Aug 2019 23:16:35 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=sirena.co.uk
  (client-ip=2a01:7e01::f03c:91ff:fed4:a3b6; helo=heliosphere.sirena.org.uk;
@@ -30,13 +30,13 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=sirena.org.uk header.i=@sirena.org.uk
- header.b="KdB9P4pB"; dkim-atps=neutral
+ header.b="LdlKbGc7"; dkim-atps=neutral
 Received: from heliosphere.sirena.org.uk (heliosphere.sirena.org.uk
  [IPv6:2a01:7e01::f03c:91ff:fed4:a3b6])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest
  SHA256) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 466bmV4lQbzDqdf
+ by lists.ozlabs.org (Postfix) with ESMTPS id 466bmV4FC3zDqdd
  for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Aug 2019 23:10:01 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
  d=sirena.org.uk; s=20170815-heliosphere; h=Date:Message-Id:In-Reply-To:
@@ -44,26 +44,25 @@ DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
  Content-Transfer-Encoding:Content-ID:Content-Description:Resent-Date:
  Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:References:
  List-Id:List-Help:List-Unsubscribe:List-Subscribe:List-Post:List-Owner:
- List-Archive; bh=G+NhmvpynvEkdk6GHQHvKh69Oy4SC2WPQyF4nmoq5Wc=; b=KdB9P4pBQa3j
- VwGjSS0Bhi6Xs/J3wrSyEU5sbYJ7siMRamPSMiflutt0FLjkua/MF9eFOuyHy+uY8sy2OCMD6nebx
- aS38FVV9sUi7yi9FWXRZ0Ltk33x3pjrCIcDOUgMCmcD9wlV/EjDjMsVJwEQF7u06xApWjSNbuvSoe
- XxhDk=;
-Received: from cpc102320-sgyl38-2-0-cust46.18-2.cable.virginm.net
- ([82.37.168.47] helo=ypsilon.sirena.org.uk)
+ List-Archive; bh=Q9qcnlkxDXzQ76coxQL/CdrXQ/CkPfBxp6V88YMLlQI=; b=LdlKbGc7EU4i
+ ze96X1m3Zp+EPrzGQLJ2Nho6DedV4JwLZGHGG76uyiUlIOpLiVkqRJHZQ4XK/WQMPPQFLI3ccZToJ
+ uWovDRVa9xJKbqXAiCW0b9zIBQW5pR/M+F1EfV1mbOvvXyzs4juE/0dhgQmfYLmA68Rtc0RxKTPXI
+ z91Nw=;
+Received: from ypsilon.sirena.org.uk ([2001:470:1f1d:6b5::7])
  by heliosphere.sirena.org.uk with esmtpsa
  (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256) (Exim 4.92)
  (envelope-from <broonie@sirena.co.uk>)
- id 1hxA59-0001MA-LS; Mon, 12 Aug 2019 13:09:51 +0000
+ id 1hxA59-0001M4-Ff; Mon, 12 Aug 2019 13:09:51 +0000
 Received: by ypsilon.sirena.org.uk (Postfix, from userid 1000)
- id 2CA162740CBD; Mon, 12 Aug 2019 14:09:51 +0100 (BST)
+ id DBD082740CB7; Mon, 12 Aug 2019 14:09:50 +0100 (BST)
 From: Mark Brown <broonie@kernel.org>
 To: Shengjiu Wang <shengjiu.wang@nxp.com>
-Subject: Applied "ASoC: fsl_esai: Add compatible string for imx6ull" to the
- asoc tree
-In-Reply-To: <1565346467-5769-1-git-send-email-shengjiu.wang@nxp.com>
+Subject: Applied "ASoC: fsl_esai: Add new compatible string for imx6ull" to
+ the asoc tree
+In-Reply-To: <1565346467-5769-2-git-send-email-shengjiu.wang@nxp.com>
 X-Patchwork-Hint: ignore
-Message-Id: <20190812130951.2CA162740CBD@ypsilon.sirena.org.uk>
-Date: Mon, 12 Aug 2019 14:09:51 +0100 (BST)
+Message-Id: <20190812130950.DBD082740CB7@ypsilon.sirena.org.uk>
+Date: Mon, 12 Aug 2019 14:09:50 +0100 (BST)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -86,7 +85,7 @@ Sender: "Linuxppc-dev"
 
 The patch
 
-   ASoC: fsl_esai: Add compatible string for imx6ull
+   ASoC: fsl_esai: Add new compatible string for imx6ull
 
 has been applied to the asoc tree at
 
@@ -111,34 +110,39 @@ to this mail.
 Thanks,
 Mark
 
-From 9c2806c4941641a6c75736f8c4303c89d2013cc4 Mon Sep 17 00:00:00 2001
+From 9ea08f2a6d27b6a26d33dae5c58e4099672d6bb3 Mon Sep 17 00:00:00 2001
 From: Shengjiu Wang <shengjiu.wang@nxp.com>
-Date: Fri, 9 Aug 2019 18:27:46 +0800
-Subject: [PATCH] ASoC: fsl_esai: Add compatible string for imx6ull
+Date: Fri, 9 Aug 2019 18:27:47 +0800
+Subject: [PATCH] ASoC: fsl_esai: Add new compatible string for imx6ull
 
-Add compatible string for imx6ull, from imx6ull platform,
-the issue of channel swap after xrun is fixed in hardware.
+Add new compatible string "fsl,imx6ull-esai" in the binding document.
 
 Signed-off-by: Shengjiu Wang <shengjiu.wang@nxp.com>
 Acked-by: Nicolin Chen <nicoleotsuka@gmail.com>
-Link: https://lore.kernel.org/r/1565346467-5769-1-git-send-email-shengjiu.wang@nxp.com
+Link: https://lore.kernel.org/r/1565346467-5769-2-git-send-email-shengjiu.wang@nxp.com
 Signed-off-by: Mark Brown <broonie@kernel.org>
 ---
- sound/soc/fsl/fsl_esai.c | 1 +
- 1 file changed, 1 insertion(+)
+ Documentation/devicetree/bindings/sound/fsl,esai.txt | 7 +++++--
+ 1 file changed, 5 insertions(+), 2 deletions(-)
 
-diff --git a/sound/soc/fsl/fsl_esai.c b/sound/soc/fsl/fsl_esai.c
-index 5832144beb9f..a78e4ab478df 100644
---- a/sound/soc/fsl/fsl_esai.c
-+++ b/sound/soc/fsl/fsl_esai.c
-@@ -1049,6 +1049,7 @@ static int fsl_esai_remove(struct platform_device *pdev)
- static const struct of_device_id fsl_esai_dt_ids[] = {
- 	{ .compatible = "fsl,imx35-esai", },
- 	{ .compatible = "fsl,vf610-esai", },
-+	{ .compatible = "fsl,imx6ull-esai", },
- 	{}
- };
- MODULE_DEVICE_TABLE(of, fsl_esai_dt_ids);
+diff --git a/Documentation/devicetree/bindings/sound/fsl,esai.txt b/Documentation/devicetree/bindings/sound/fsl,esai.txt
+index 5b9914367610..0e6e2166f76c 100644
+--- a/Documentation/devicetree/bindings/sound/fsl,esai.txt
++++ b/Documentation/devicetree/bindings/sound/fsl,esai.txt
+@@ -7,8 +7,11 @@ other DSPs. It has up to six transmitters and four receivers.
+ 
+ Required properties:
+ 
+-  - compatible		: Compatible list, must contain "fsl,imx35-esai" or
+-			  "fsl,vf610-esai"
++  - compatible		: Compatible list, should contain one of the following
++			  compatibles:
++			  "fsl,imx35-esai",
++			  "fsl,vf610-esai",
++			  "fsl,imx6ull-esai",
+ 
+   - reg			: Offset and length of the register set for the device.
+ 
 -- 
 2.20.1
 
