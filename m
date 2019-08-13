@@ -2,62 +2,106 @@ Return-Path: <SRS0=6DYt=WJ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.3 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.3 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 74020C433FF
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Aug 2019 10:18:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3399DC32750
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Aug 2019 10:43:47 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E5D952067D
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Aug 2019 10:18:00 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=ozlabs.org header.i=@ozlabs.org header.b="crUdEllt"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E5D952067D
-Authentication-Results: mail.kernel.org; dmarc=pass (p=none dis=none) header.from=ozlabs.org
+	by mail.kernel.org (Postfix) with ESMTPS id 797BA20673
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Aug 2019 10:43:46 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 797BA20673
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4677vV6QHZzDqh3
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Aug 2019 20:17:58 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4678TD0LsVzDqfG
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Aug 2019 20:43:44 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4677jc4dPrzDqRy
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Aug 2019 20:09:24 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=ozlabs.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- secure) header.d=ozlabs.org header.i=@ozlabs.org header.b="crUdEllt"; 
- dkim-atps=neutral
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4678R85zKnzDqbc
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Aug 2019 20:41:56 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=linux.vnet.ibm.com
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 4678R83QYkz8tTb
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Aug 2019 20:41:56 +1000 (AEST)
 Received: by ozlabs.org (Postfix)
- id 4677jc2dyKz9sP3; Tue, 13 Aug 2019 20:09:24 +1000 (AEST)
-Received: by ozlabs.org (Postfix, from userid 1003)
- id 4677jc1lGMz9sN6; Tue, 13 Aug 2019 20:09:24 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ozlabs.org; s=201707;
- t=1565690964; bh=BqwFEf1B6kCIBKtH5IBJUpVI6jeZDbf+DZLAvQciEns=;
- h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=crUdElltByHccnwmoDmOW13jVQ9/O9qgxrm6gmZ4ZNbHEk1HnxtZgRZ7iPUOfIBaz
- P1i2b6h7dvQuQDmh7V7c3jx2YbfPhtB1gmHTED2h7244DKRCJUOJs7QZjiiE8UhLUi
- HNr4FU02+4k19MlkncAhf2cUEV7e5F6A69Pa1CzHs0Zro1cTbA4+UuygBh7vKgFbUA
- kwWbhcK01GDGBX1KnOsYJJVu/UhAmG9BuUAYBi4zeNJu+9XijoD6yvi7mSFTVK19dm
- F1vLQDdeBVcxqsA9l4t4QpYv+SaUs1PMbNpwDFnQAOeoO3iv9bhFGbPF9ksWshP1un
- TMgzq9Usfg+Gg==
-Date: Tue, 13 Aug 2019 20:03:49 +1000
-From: Paul Mackerras <paulus@ozlabs.org>
-To: linuxppc-dev@ozlabs.org, kvm@vger.kernel.org
-Subject: [PATCH v2 1/3] KVM: PPC: Book3S HV: Fix race in re-enabling XIVE
- escalation interrupts
-Message-ID: <20190813100349.GD9567@blackberry>
-References: <20190813095845.GA9567@blackberry>
+ id 4678R813D0z9sNF; Tue, 13 Aug 2019 20:41:56 +1000 (AEST)
+Authentication-Results: ozlabs.org;
+ spf=none (mailfrom) smtp.mailfrom=linux.vnet.ibm.com
+ (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
+ envelope-from=mahesh@linux.vnet.ibm.com; receiver=<UNKNOWN>)
+Authentication-Results: ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=linux.vnet.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 4678R70p5lz9sN6
+ for <linuxppc-dev@ozlabs.org>; Tue, 13 Aug 2019 20:41:53 +1000 (AEST)
+Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
+ x7DAfWsV007783
+ for <linuxppc-dev@ozlabs.org>; Tue, 13 Aug 2019 06:41:50 -0400
+Received: from e06smtp05.uk.ibm.com (e06smtp05.uk.ibm.com [195.75.94.101])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2ubtr2t86e-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@ozlabs.org>; Tue, 13 Aug 2019 06:41:50 -0400
+Received: from localhost
+ by e06smtp05.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <mahesh@linux.vnet.ibm.com>;
+ Tue, 13 Aug 2019 11:41:48 +0100
+Received: from b06avi18626390.portsmouth.uk.ibm.com (9.149.26.192)
+ by e06smtp05.uk.ibm.com (192.168.101.135) with IBM ESMTP SMTP Gateway:
+ Authorized Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Tue, 13 Aug 2019 11:41:45 +0100
+Received: from d06av22.portsmouth.uk.ibm.com (d06av22.portsmouth.uk.ibm.com
+ [9.149.105.58])
+ by b06avi18626390.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP
+ id x7DAfPPE38404474
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Tue, 13 Aug 2019 10:41:25 GMT
+Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 30E774C044;
+ Tue, 13 Aug 2019 10:41:44 +0000 (GMT)
+Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 4567E4C046;
+ Tue, 13 Aug 2019 10:41:40 +0000 (GMT)
+Received: from in.ibm.com (unknown [9.193.100.20])
+ by d06av22.portsmouth.uk.ibm.com (Postfix) with ESMTPS;
+ Tue, 13 Aug 2019 10:41:39 +0000 (GMT)
+Date: Tue, 13 Aug 2019 16:11:37 +0530
+From: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
+To: Hari Bathini <hbathini@linux.ibm.com>
+Subject: Re: [PATCH v4 11/25] powernv/fadump: register kernel metadata
+ address with opal
+References: <156327668777.27462.5297279227799429100.stgit@hbathini.in.ibm.com>
+ <156327679568.27462.14864917663459855788.stgit@hbathini.in.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20190813095845.GA9567@blackberry>
-User-Agent: Mutt/1.5.24 (2015-08-30)
+In-Reply-To: <156327679568.27462.14864917663459855788.stgit@hbathini.in.ibm.com>
+User-Agent: NeoMutt/20180716
+X-TM-AS-GCONF: 00
+x-cbid: 19081310-0020-0000-0000-0000035F1CD7
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 19081310-0021-0000-0000-000021B430B6
+Message-Id: <20190813104137.xsyommcjdrnpa6u6@in.ibm.com>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
+ definitions=2019-08-13_04:, , signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1906280000 definitions=main-1908130116
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -69,114 +113,97 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: kvm-ppc@vger.kernel.org, David Gibson <david@gibson.dropbear.id.au>
+Reply-To: mahesh@linux.vnet.ibm.com
+Cc: Ananth N Mavinakayanahalli <ananth@linux.ibm.com>,
+ Mahesh J Salgaonkar <mahesh@linux.ibm.com>,
+ Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev <linuxppc-dev@ozlabs.org>,
+ Oliver <oohall@gmail.com>, Vasant Hegde <hegdevasant@linux.ibm.com>,
+ Stewart Smith <stewart@linux.ibm.com>, Daniel Axtens <dja@axtens.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Escalation interrupts are interrupts sent to the host by the XIVE
-hardware when it has an interrupt to deliver to a guest VCPU but that
-VCPU is not running anywhere in the system.  Hence we disable the
-escalation interrupt for the VCPU being run when we enter the guest
-and re-enable it when the guest does an H_CEDE hypercall indicating
-it is idle.
+On 2019-07-16 17:03:15 Tue, Hari Bathini wrote:
+> OPAL allows registering address with it in the first kernel and
+> retrieving it after MPIPL. Setup kernel metadata and register its
+> address with OPAL to use it for processing the crash dump.
+> 
+> Signed-off-by: Hari Bathini <hbathini@linux.ibm.com>
+> ---
+>  arch/powerpc/kernel/fadump-common.h          |    4 +
+>  arch/powerpc/kernel/fadump.c                 |   65 ++++++++++++++---------
+>  arch/powerpc/platforms/powernv/opal-fadump.c |   73 ++++++++++++++++++++++++++
+>  arch/powerpc/platforms/powernv/opal-fadump.h |   37 +++++++++++++
+>  arch/powerpc/platforms/pseries/rtas-fadump.c |   32 +++++++++--
+>  5 files changed, 177 insertions(+), 34 deletions(-)
+>  create mode 100644 arch/powerpc/platforms/powernv/opal-fadump.h
+> 
+[...]
+> @@ -346,30 +349,42 @@ int __init fadump_reserve_mem(void)
+>  		 * use memblock_find_in_range() here since it doesn't allocate
+>  		 * from bottom to top.
+>  		 */
+> -		for (base = fw_dump.boot_memory_size;
+> -		     base <= (memory_boundary - size);
+> -		     base += size) {
+> +		while (base <= (memory_boundary - size)) {
+>  			if (memblock_is_region_memory(base, size) &&
+>  			    !memblock_is_region_reserved(base, size))
+>  				break;
+> +
+> +			base += size;
+>  		}
+> -		if ((base > (memory_boundary - size)) ||
+> -		    memblock_reserve(base, size)) {
+> +
+> +		if (base > (memory_boundary - size)) {
+> +			pr_err("Failed to find memory chunk for reservation\n");
+> +			goto error_out;
+> +		}
+> +		fw_dump.reserve_dump_area_start = base;
+> +
+> +		/*
+> +		 * Calculate the kernel metadata address and register it with
+> +		 * f/w if the platform supports.
+> +		 */
+> +		if (fw_dump.ops->setup_kernel_metadata(&fw_dump) < 0)
+> +			goto error_out;
 
-It is possible that an escalation interrupt gets generated just as we
-are entering the guest.  In that case the escalation interrupt may be
-using a queue entry in one of the interrupt queues, and that queue
-entry may not have been processed when the guest exits with an H_CEDE.
-The existing entry code detects this situation and does not clear the
-vcpu->arch.xive_esc_on flag as an indication that there is a pending
-queue entry (if the queue entry gets processed, xive_esc_irq() will
-clear the flag).  There is a comment in the code saying that if the
-flag is still set on H_CEDE, we have to abort the cede rather than
-re-enabling the escalation interrupt, lest we end up with two
-occurrences of the escalation interrupt in the interrupt queue.
+I see setup_kernel_metadata() registers the metadata address with opal without
+having any minimum data initialized in it. Secondaly, why can't this wait until
+registration ? I think we should defer this until fadump registration.
+What if kernel crashes before metadata area is initialized ?
 
-However, the exit code doesn't do that; it aborts the cede in the sense
-that vcpu->arch.ceded gets cleared, but it still enables the escalation
-interrupt by setting the source's PQ bits to 00.  Instead we need to
-set the PQ bits to 10, indicating that an interrupt has been triggered.
-We also need to avoid setting vcpu->arch.xive_esc_on in this case
-(i.e. vcpu->arch.xive_esc_on seen to be set on H_CEDE) because
-xive_esc_irq() will run at some point and clear it, and if we race with
-that we may end up with an incorrect result (i.e. xive_esc_on set when
-the escalation interrupt has just been handled).
+> +
+> +		if (memblock_reserve(base, size)) {
+>  			pr_err("Failed to reserve memory\n");
+> -			return 0;
+> +			goto error_out;
+>  		}
+[...]
+> -
+>  static struct fadump_ops rtas_fadump_ops = {
+> -	.init_fadump_mem_struct	= rtas_fadump_init_mem_struct,
+> -	.register_fadump	= rtas_fadump_register_fadump,
+> -	.unregister_fadump	= rtas_fadump_unregister_fadump,
+> -	.invalidate_fadump	= rtas_fadump_invalidate_fadump,
+> -	.process_fadump		= rtas_fadump_process_fadump,
+> -	.fadump_region_show	= rtas_fadump_region_show,
+> -	.fadump_trigger		= rtas_fadump_trigger,
+> +	.init_fadump_mem_struct		= rtas_fadump_init_mem_struct,
+> +	.get_kernel_metadata_size	= rtas_fadump_get_kernel_metadata_size,
+> +	.setup_kernel_metadata		= rtas_fadump_setup_kernel_metadata,
+> +	.register_fadump		= rtas_fadump_register_fadump,
+> +	.unregister_fadump		= rtas_fadump_unregister_fadump,
+> +	.invalidate_fadump		= rtas_fadump_invalidate_fadump,
+> +	.process_fadump			= rtas_fadump_process_fadump,
+> +	.fadump_region_show		= rtas_fadump_region_show,
+> +	.fadump_trigger			= rtas_fadump_trigger,
 
-It is extremely unlikely that having two queue entries would cause
-observable problems; theoretically it could cause queue overflow, but
-the CPU would have to have thousands of interrupts targetted to it for
-that to be possible.  However, this fix will also make it possible to
-determine accurately whether there is an unhandled escalation
-interrupt in the queue, which will be needed by the following patch.
+Can you make the tab space changes in your previous patch where these
+were initially introduced ? So that this patch can only show new members
+that are added.
 
-Cc: stable@vger.kernel.org # v4.16+
-Fixes: 9b9b13a6d153 ("KVM: PPC: Book3S HV: Keep XIVE escalation interrupt masked unless ceded")
-Signed-off-by: Paul Mackerras <paulus@ozlabs.org>
----
-v2: don't set xive_esc_on if we're not using a XIVE escalation
-interrupt.
-
- arch/powerpc/kvm/book3s_hv_rmhandlers.S | 36 +++++++++++++++++++++------------
- 1 file changed, 23 insertions(+), 13 deletions(-)
-
-diff --git a/arch/powerpc/kvm/book3s_hv_rmhandlers.S b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-index 337e644..2e7e788 100644
---- a/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-+++ b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-@@ -2831,29 +2831,39 @@ kvm_cede_prodded:
- kvm_cede_exit:
- 	ld	r9, HSTATE_KVM_VCPU(r13)
- #ifdef CONFIG_KVM_XICS
--	/* Abort if we still have a pending escalation */
-+	/* are we using XIVE with single escalation? */
-+	ld	r10, VCPU_XIVE_ESC_VADDR(r9)
-+	cmpdi	r10, 0
-+	beq	3f
-+	li	r6, XIVE_ESB_SET_PQ_00
-+	/*
-+	 * If we still have a pending escalation, abort the cede,
-+	 * and we must set PQ to 10 rather than 00 so that we don't
-+	 * potentially end up with two entries for the escalation
-+	 * interrupt in the XIVE interrupt queue.  In that case
-+	 * we also don't want to set xive_esc_on to 1 here in
-+	 * case we race with xive_esc_irq().
-+	 */
- 	lbz	r5, VCPU_XIVE_ESC_ON(r9)
- 	cmpwi	r5, 0
--	beq	1f
-+	beq	4f
- 	li	r0, 0
- 	stb	r0, VCPU_CEDED(r9)
--1:	/* Enable XIVE escalation */
--	li	r5, XIVE_ESB_SET_PQ_00
-+	li	r6, XIVE_ESB_SET_PQ_10
-+	b	5f
-+4:	li	r0, 1
-+	stb	r0, VCPU_XIVE_ESC_ON(r9)
-+	/* make sure store to xive_esc_on is seen before xive_esc_irq runs */
-+	sync
-+5:	/* Enable XIVE escalation */
- 	mfmsr	r0
- 	andi.	r0, r0, MSR_DR		/* in real mode? */
- 	beq	1f
--	ld	r10, VCPU_XIVE_ESC_VADDR(r9)
--	cmpdi	r10, 0
--	beq	3f
--	ldx	r0, r10, r5
-+	ldx	r0, r10, r6
- 	b	2f
- 1:	ld	r10, VCPU_XIVE_ESC_RADDR(r9)
--	cmpdi	r10, 0
--	beq	3f
--	ldcix	r0, r10, r5
-+	ldcix	r0, r10, r6
- 2:	sync
--	li	r0, 1
--	stb	r0, VCPU_XIVE_ESC_ON(r9)
- #endif /* CONFIG_KVM_XICS */
- 3:	b	guest_exit_cont
- 
--- 
-2.7.4
+Thanks,
+-Mahesh.
 
