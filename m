@@ -2,95 +2,81 @@ Return-Path: <SRS0=6DYt=WJ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no
+X-Spam-Status: No, score=-6.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4E102C32750
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Aug 2019 18:16:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7EB3FC32750
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Aug 2019 20:21:39 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 9961920665
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Aug 2019 18:16:10 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9961920665
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id F0BF420651
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Aug 2019 20:21:38 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="WVI/sWHH"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org F0BF420651
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 467LWB6CgNzDqZB
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Aug 2019 04:16:06 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 467PHy3cKJzDqGb
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Aug 2019 06:21:34 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
- (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=nathanl@linux.ibm.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=c-s.fr
+ (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+ dmarc=none (p=none dis=none) header.from=c-s.fr
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="WVI/sWHH"; 
+ dkim-atps=neutral
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 467LT75jZlzDqV8
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Aug 2019 04:14:18 +1000 (AEST)
-Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x7DIC1OC023818
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Aug 2019 14:14:12 -0400
-Received: from pps.reinject (localhost [127.0.0.1])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2uc113bd3p-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Aug 2019 14:14:12 -0400
-Received: from m0098394.ppops.net (m0098394.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.27/8.16.0.27) with SMTP id x7DIC489024332
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Aug 2019 14:14:11 -0400
-Received: from ppma04wdc.us.ibm.com (1a.90.2fa9.ip4.static.sl-reverse.com
- [169.47.144.26])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2uc113bd31-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Tue, 13 Aug 2019 14:14:11 -0400
-Received: from pps.filterd (ppma04wdc.us.ibm.com [127.0.0.1])
- by ppma04wdc.us.ibm.com (8.16.0.27/8.16.0.27) with SMTP id x7DI9fbf024859;
- Tue, 13 Aug 2019 18:14:10 GMT
-Received: from b03cxnp07029.gho.boulder.ibm.com
- (b03cxnp07029.gho.boulder.ibm.com [9.17.130.16])
- by ppma04wdc.us.ibm.com with ESMTP id 2u9nj6ax6n-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Tue, 13 Aug 2019 18:14:10 +0000
-Received: from b03ledav006.gho.boulder.ibm.com
- (b03ledav006.gho.boulder.ibm.com [9.17.130.237])
- by b03cxnp07029.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x7DIE9Ip61538592
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Tue, 13 Aug 2019 18:14:09 GMT
-Received: from b03ledav006.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 84445C605A;
- Tue, 13 Aug 2019 18:14:09 +0000 (GMT)
-Received: from b03ledav006.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 6C952C6059;
- Tue, 13 Aug 2019 18:14:09 +0000 (GMT)
-Received: from localhost (unknown [9.41.101.192])
- by b03ledav006.gho.boulder.ibm.com (Postfix) with ESMTP;
- Tue, 13 Aug 2019 18:14:09 +0000 (GMT)
-From: Nathan Lynch <nathanl@linux.ibm.com>
-To: Gautham R Shenoy <ego.lkml@gmail.com>
-Subject: Re: [PATCH v2 2/3] powerpc/rtas: allow rescheduling while changing
- cpu states
-In-Reply-To: <CAHZ_5WyBjss+C2rY_zhr_BDFHEDNOq7-3T6um38uVj-Tj6jHtA@mail.gmail.com>
-References: <20190802192926.19277-1-nathanl@linux.ibm.com>
- <20190802192926.19277-3-nathanl@linux.ibm.com>
- <CAHZ_5WyBjss+C2rY_zhr_BDFHEDNOq7-3T6um38uVj-Tj6jHtA@mail.gmail.com>
-Date: Tue, 13 Aug 2019 13:14:09 -0500
-Message-ID: <87zhkdrkzy.fsf@linux.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain
-X-TM-AS-GCONF: 00
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2019-08-13_06:, , signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- malwarescore=0 suspectscore=1 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=649 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1906280000 definitions=main-1908130171
+ by lists.ozlabs.org (Postfix) with ESMTPS id 467P4b2MTkzDqJq
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Aug 2019 06:11:43 +1000 (AEST)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 467P4T39FRz9v0CN;
+ Tue, 13 Aug 2019 22:11:37 +0200 (CEST)
+Authentication-Results: localhost; dkim=pass
+ reason="1024-bit key; insecure key"
+ header.d=c-s.fr header.i=@c-s.fr header.b=WVI/sWHH; dkim-adsp=pass;
+ dkim-atps=neutral
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id jma1B7RXAY28; Tue, 13 Aug 2019 22:11:37 +0200 (CEST)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 467P4T26hXz9v0CM;
+ Tue, 13 Aug 2019 22:11:37 +0200 (CEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
+ t=1565727097; bh=D4rnDjt76MjLP9FCo1mtrw2GgE/1jNpQh3hpE9TrM5c=;
+ h=In-Reply-To:References:From:Subject:To:Cc:Date:From;
+ b=WVI/sWHHHTEaXelA/2N8dAgRlqEiGx+OFPnzq9sQ1falzv0J6JlHJsVtuUhzGKkuS
+ PjburZRD38LHh+/hAoWP4AsRsdzBmnkUS4AERicMKt6CX4atPCMeDnptzPn1zRMold
+ C358R6UqfnkfcodQcLfDNA4nCeYETR42CS9QnxaI=
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 69EA88B7F2;
+ Tue, 13 Aug 2019 22:11:37 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id boINXiBMs1Qc; Tue, 13 Aug 2019 22:11:37 +0200 (CEST)
+Received: from pc17473vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 25AE98B7F0;
+ Tue, 13 Aug 2019 22:11:37 +0200 (CEST)
+Received: by pc17473vm.idsi0.si.c-s.fr (Postfix, from userid 0)
+ id 0D89669632; Tue, 13 Aug 2019 20:11:36 +0000 (UTC)
+Message-Id: <da225f763855771763723d7bb01ededb50fbb839.1565726867.git.christophe.leroy@c-s.fr>
+In-Reply-To: <6bc35eca507359075528bc0e55938bc1ce8ee485.1565726867.git.christophe.leroy@c-s.fr>
+References: <6bc35eca507359075528bc0e55938bc1ce8ee485.1565726867.git.christophe.leroy@c-s.fr>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Subject: [PATCH v1 04/10] powerpc/mm: move ioremap_prot() into ioremap.c
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, 
+ npiggin@gmail.com
+Date: Tue, 13 Aug 2019 20:11:36 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -102,24 +88,117 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: ego@linux.vnet.ibm.com, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Gautham R Shenoy <ego.lkml@gmail.com> writes:
+Both ioremap_prot() are idenfical, move them into ioremap.c
 
-> On Sat, Aug 3, 2019 at 1:03 AM Nathan Lynch <nathanl@linux.ibm.com> wrote:
->>
->> rtas_cpu_state_change_mask() potentially operates on scores of cpus,
->> so explicitly allow rescheduling in the loop body.
->>
->
-> Are we seeing softlockups/rcu stalls while running this ?
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+---
+ arch/powerpc/mm/ioremap.c    | 19 +++++++++++++++++++
+ arch/powerpc/mm/pgtable_32.c | 17 -----------------
+ arch/powerpc/mm/pgtable_64.c | 24 ------------------------
+ 3 files changed, 19 insertions(+), 41 deletions(-)
 
-I have not seen a report yet, but since the loop is bound only by the
-number of processors in the LPAR I suspect it's only a matter of time.
+diff --git a/arch/powerpc/mm/ioremap.c b/arch/powerpc/mm/ioremap.c
+index 89479ee88344..a44d9e4c948a 100644
+--- a/arch/powerpc/mm/ioremap.c
++++ b/arch/powerpc/mm/ioremap.c
+@@ -50,3 +50,22 @@ void __iomem *ioremap_coherent(phys_addr_t addr, unsigned long size)
+ 		return iowa_ioremap(addr, size, prot, caller);
+ 	return __ioremap_caller(addr, size, prot, caller);
+ }
++
++void __iomem *ioremap_prot(phys_addr_t addr, unsigned long size, unsigned long flags)
++{
++	pte_t pte = __pte(flags);
++	void *caller = __builtin_return_address(0);
++
++	/* writeable implies dirty for kernel addresses */
++	if (pte_write(pte))
++		pte = pte_mkdirty(pte);
++
++	/* we don't want to let _PAGE_USER and _PAGE_EXEC leak out */
++	pte = pte_exprotect(pte);
++	pte = pte_mkprivileged(pte);
++
++	if (iowa_is_active())
++		return iowa_ioremap(addr, size, pte_pgprot(pte), caller);
++	return __ioremap_caller(addr, size, pte_pgprot(pte), caller);
++}
++EXPORT_SYMBOL(ioremap_prot);
+diff --git a/arch/powerpc/mm/pgtable_32.c b/arch/powerpc/mm/pgtable_32.c
+index 1999ec11706d..8126c2d1afbf 100644
+--- a/arch/powerpc/mm/pgtable_32.c
++++ b/arch/powerpc/mm/pgtable_32.c
+@@ -39,23 +39,6 @@ EXPORT_SYMBOL(ioremap_bot);	/* aka VMALLOC_END */
+ extern char etext[], _stext[], _sinittext[], _einittext[];
+ 
+ void __iomem *
+-ioremap_prot(phys_addr_t addr, unsigned long size, unsigned long flags)
+-{
+-	pte_t pte = __pte(flags);
+-
+-	/* writeable implies dirty for kernel addresses */
+-	if (pte_write(pte))
+-		pte = pte_mkdirty(pte);
+-
+-	/* we don't want to let _PAGE_USER and _PAGE_EXEC leak out */
+-	pte = pte_exprotect(pte);
+-	pte = pte_mkprivileged(pte);
+-
+-	return __ioremap_caller(addr, size, pte_pgprot(pte), __builtin_return_address(0));
+-}
+-EXPORT_SYMBOL(ioremap_prot);
+-
+-void __iomem *
+ __ioremap_caller(phys_addr_t addr, unsigned long size, pgprot_t prot, void *caller)
+ {
+ 	unsigned long v, i;
+diff --git a/arch/powerpc/mm/pgtable_64.c b/arch/powerpc/mm/pgtable_64.c
+index 3ad921ac4862..6fa2e969bf0e 100644
+--- a/arch/powerpc/mm/pgtable_64.c
++++ b/arch/powerpc/mm/pgtable_64.c
+@@ -204,29 +204,6 @@ void __iomem * __ioremap_caller(phys_addr_t addr, unsigned long size,
+ 	return ret;
+ }
+ 
+-void __iomem * ioremap_prot(phys_addr_t addr, unsigned long size,
+-			     unsigned long flags)
+-{
+-	pte_t pte = __pte(flags);
+-	void *caller = __builtin_return_address(0);
+-
+-	/* writeable implies dirty for kernel addresses */
+-	if (pte_write(pte))
+-		pte = pte_mkdirty(pte);
+-
+-	/* we don't want to let _PAGE_EXEC leak out */
+-	pte = pte_exprotect(pte);
+-	/*
+-	 * Force kernel mapping.
+-	 */
+-	pte = pte_mkprivileged(pte);
+-
+-	if (iowa_is_active())
+-		return iowa_ioremap(addr, size, pte_pgprot(pte), caller);
+-	return __ioremap_caller(addr, size, pte_pgprot(pte), caller);
+-}
+-
+-
+ /*  
+  * Unmap an IO region and remove it from imalloc'd list.
+  * Access to IO memory should be serialized by driver.
+@@ -253,7 +230,6 @@ void iounmap(volatile void __iomem *token)
+ 	__iounmap(token);
+ }
+ 
+-EXPORT_SYMBOL(ioremap_prot);
+ EXPORT_SYMBOL(__ioremap_at);
+ EXPORT_SYMBOL(iounmap);
+ EXPORT_SYMBOL(__iounmap);
+-- 
+2.13.3
 
-> Reviewed-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
-
-Thanks!
