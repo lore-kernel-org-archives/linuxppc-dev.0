@@ -4,22 +4,21 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
-	version=3.4.0
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7032AC433FF
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Aug 2019 07:26:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2A4BBC433FF
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Aug 2019 07:28:59 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B4DFA206C2
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Aug 2019 07:26:55 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B4DFA206C2
+	by mail.kernel.org (Postfix) with ESMTPS id 826CA206C2
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Aug 2019 07:28:58 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 826CA206C2
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nxp.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 467h3d0prXzDqss
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Aug 2019 17:26:53 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 467h603HmNzDqX2
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Aug 2019 17:28:56 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=nxp.com
  (client-ip=92.121.34.13; helo=inva020.nxp.com; envelope-from=yinbo.zhu@nxp.com;
@@ -29,18 +28,18 @@ Authentication-Results: lists.ozlabs.org;
 Received: from inva020.nxp.com (inva020.nxp.com [92.121.34.13])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 467h153f8ZzDqbD
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Aug 2019 17:24:35 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 467h153bqgzDqbC
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Aug 2019 17:24:36 +1000 (AEST)
 Received: from inva020.nxp.com (localhost [127.0.0.1])
- by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id 182A11A0142;
- Wed, 14 Aug 2019 09:24:31 +0200 (CEST)
+ by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id 749981A0348;
+ Wed, 14 Aug 2019 09:24:33 +0200 (CEST)
 Received: from invc005.ap-rdc01.nxp.com (invc005.ap-rdc01.nxp.com
  [165.114.16.14])
- by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id 3015B1A0060;
- Wed, 14 Aug 2019 09:24:20 +0200 (CEST)
+ by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id C2BAA1A00E8;
+ Wed, 14 Aug 2019 09:24:22 +0200 (CEST)
 Received: from localhost.localdomain (mega.ap.freescale.net [10.192.208.232])
- by invc005.ap-rdc01.nxp.com (Postfix) with ESMTP id 620FA40305;
- Wed, 14 Aug 2019 15:24:07 +0800 (SGT)
+ by invc005.ap-rdc01.nxp.com (Postfix) with ESMTP id 9341F402EC;
+ Wed, 14 Aug 2019 15:24:09 +0800 (SGT)
 From: Yinbo Zhu <yinbo.zhu@nxp.com>
 To: Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>,
  Catalin Marinas <catalin.marinas@arm.com>,
@@ -51,10 +50,12 @@ To: Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>,
  Rajesh Bhagat <rajesh.bhagat@nxp.com>, Ashish Kumar <Ashish.Kumar@nxp.com>,
  devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
  linux-kernel@vger.kernel.org, linux-mmc@vger.kernel.org
-Subject: [PATCH v1 1/4] arm64: dts: ls1028a-rdb: enable emmc hs400 mode
-Date: Wed, 14 Aug 2019 15:26:46 +0800
-Message-Id: <20190814072649.8237-1-yinbo.zhu@nxp.com>
+Subject: [PATCH v1 2/4] soc: fsl: guts: Add definition for LS1028A
+Date: Wed, 14 Aug 2019 15:26:47 +0800
+Message-Id: <20190814072649.8237-2-yinbo.zhu@nxp.com>
 X-Mailer: git-send-email 2.17.1
+In-Reply-To: <20190814072649.8237-1-yinbo.zhu@nxp.com>
+References: <20190814072649.8237-1-yinbo.zhu@nxp.com>
 X-Virus-Scanned: ClamAV using ClamSMTP
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -76,29 +77,38 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This patch is to enable emmc hs400 mode for ls1028ardb
+Adding compatible string "ls1028a-dcfg" to initialize guts driver
+for ls1028 and SoC die attribute definition for LS1028A
 
 Signed-off-by: Yinbo Zhu <yinbo.zhu@nxp.com>
 ---
- arch/arm64/boot/dts/freescale/fsl-ls1028a-rdb.dts | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+ drivers/soc/fsl/guts.c | 6 ++++++
+ 1 file changed, 6 insertions(+)
 
-diff --git a/arch/arm64/boot/dts/freescale/fsl-ls1028a-rdb.dts b/arch/arm64/boot/dts/freescale/fsl-ls1028a-rdb.dts
-index 8a725409e881..f1e46cc4cea1 100644
---- a/arch/arm64/boot/dts/freescale/fsl-ls1028a-rdb.dts
-+++ b/arch/arm64/boot/dts/freescale/fsl-ls1028a-rdb.dts
-@@ -92,8 +92,10 @@
- 	};
+diff --git a/drivers/soc/fsl/guts.c b/drivers/soc/fsl/guts.c
+index 1ef8068c8dd3..34810f9bb2ee 100644
+--- a/drivers/soc/fsl/guts.c
++++ b/drivers/soc/fsl/guts.c
+@@ -102,6 +102,11 @@ static const struct fsl_soc_die_attr fsl_soc_die[] = {
+ 	  .svr          = 0x87360000,
+ 	  .mask         = 0xff3f0000,
+ 	},
++	/* Die: LS1028A, SoC: LS1028A */
++	{ .die          = "LS1028A",
++	  .svr          = 0x870b0000,
++	  .mask         = 0xff3f0000,
++	},
+ 	{ },
+ };
  
- &esdhc1 {
--	status = "okay";
- 	mmc-hs200-1_8v;
-+	mmc-hs400-1_8v;
-+	bus-width = <8>;
-+	status = "okay";
- 	};
- 
- &i2c0 {
+@@ -224,6 +229,7 @@ static const struct of_device_id fsl_guts_of_match[] = {
+ 	{ .compatible = "fsl,ls1012a-dcfg", },
+ 	{ .compatible = "fsl,ls1046a-dcfg", },
+ 	{ .compatible = "fsl,lx2160a-dcfg", },
++	{ .compatible = "fsl,ls1028a-dcfg", },
+ 	{}
+ };
+ MODULE_DEVICE_TABLE(of, fsl_guts_of_match);
 -- 
 2.17.1
 
