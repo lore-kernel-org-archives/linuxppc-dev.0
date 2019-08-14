@@ -2,51 +2,50 @@ Return-Path: <SRS0=FJcg=WK=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id ACC05C433FF
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Aug 2019 10:48:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9EB21C433FF
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Aug 2019 10:56:27 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E71072063F
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Aug 2019 10:48:00 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E71072063F
+	by mail.kernel.org (Postfix) with ESMTPS id 289EC206C1
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Aug 2019 10:56:27 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 289EC206C1
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 467mWd4cByzDqwF
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Aug 2019 20:47:57 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+	by lists.ozlabs.org (Postfix) with ESMTP id 467mjN70pzzDqsC
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Aug 2019 20:56:24 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 467mTl050qzDqSH
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Aug 2019 20:46:19 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 467mft2y4XzDqP3
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Aug 2019 20:54:14 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
-Received: by ozlabs.org (Postfix)
- id 467mTk2Bg5z9sDB; Wed, 14 Aug 2019 20:46:18 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
  SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 467mTj4qzZz9sNC;
- Wed, 14 Aug 2019 20:46:17 +1000 (AEST)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 467mfs4Z3Mz9sN1;
+ Wed, 14 Aug 2019 20:54:13 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Claudio Carvalho <cclaudio@linux.ibm.com>, linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH v5 2/7] powerpc/kernel: Add ucall_norets() ultravisor call
- handler
-In-Reply-To: <20190808040555.2371-3-cclaudio@linux.ibm.com>
-References: <20190808040555.2371-1-cclaudio@linux.ibm.com>
- <20190808040555.2371-3-cclaudio@linux.ibm.com>
-Date: Wed, 14 Aug 2019 20:46:15 +1000
-Message-ID: <87wofgqb2g.fsf@concordia.ellerman.id.au>
+To: Thiago Jung Bauermann <bauerman@linux.ibm.com>
+Subject: Re: [PATCH v3 08/16] powerpc/pseries/svm: Use shared memory for
+ LPPACA structures
+In-Reply-To: <87sgq6gium.fsf@morokweng.localdomain>
+References: <20190806052237.12525-1-bauerman@linux.ibm.com>
+ <20190806052237.12525-9-bauerman@linux.ibm.com>
+ <875zn2sgqs.fsf@concordia.ellerman.id.au>
+ <87sgq6gium.fsf@morokweng.localdomain>
+Date: Wed, 14 Aug 2019 20:54:12 +1000
+Message-ID: <87tvakqap7.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -58,53 +57,70 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>,
- Michael Anderson <andmike@linux.ibm.com>, Ram Pai <linuxram@us.ibm.com>,
- Claudio Carvalho <cclaudio@linux.ibm.com>, kvm-ppc@vger.kernel.org,
- Bharata B Rao <bharata@linux.ibm.com>, Ryan Grimm <grimm@linux.ibm.com>,
- Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
- Guerney Hunt <gdhh@linux.ibm.com>, Thiago Bauermann <bauerman@linux.ibm.com>
+Cc: Anshuman Khandual <anshuman.linux@gmail.com>,
+ Alexey Kardashevskiy <aik@ozlabs.ru>, Mike Anderson <andmike@linux.ibm.com>,
+ Ram Pai <linuxram@us.ibm.com>, linux-kernel@vger.kernel.org,
+ Claudio Carvalho <cclaudio@linux.ibm.com>, Paul Mackerras <paulus@samba.org>,
+ "Paul E. McKenney" <paulmck@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ Christoph Hellwig <hch@lst.de>,
+ Anshuman Khandual <khandual@linux.vnet.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Claudio Carvalho <cclaudio@linux.ibm.com> writes:
-> diff --git a/arch/powerpc/kernel/ucall.S b/arch/powerpc/kernel/ucall.S
-> new file mode 100644
-> index 000000000000..de9133e45d21
-> --- /dev/null
-> +++ b/arch/powerpc/kernel/ucall.S
-> @@ -0,0 +1,20 @@
-> +/* SPDX-License-Identifier: GPL-2.0 */
-> +/*
-> + * Generic code to perform an ultravisor call.
-> + *
-> + * Copyright 2019, IBM Corporation.
-> + *
-> + */
-> +#include <asm/ppc_asm.h>
-> +#include <asm/export.h>
-> +
-> +_GLOBAL(ucall_norets)
-> +EXPORT_SYMBOL_GPL(ucall_norets)
-> +	mfcr	r0
-> +	stw	r0,8(r1)
-> +
-> +	sc	2		/* Invoke the ultravisor */
-> +
-> +	lwz	r0,8(r1)
-> +	mtcrf	0xff,r0
-> +	blr			/* Return r3 =3D status */
+Thiago Jung Bauermann <bauerman@linux.ibm.com> writes:
+> Michael Ellerman <mpe@ellerman.id.au> writes:
+>> Thiago Jung Bauermann <bauerman@linux.ibm.com> writes:
+>>> From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+>>>
+>>> LPPACA structures need to be shared with the host. Hence they need to be in
+>>> shared memory. Instead of allocating individual chunks of memory for a
+>>> given structure from memblock, a contiguous chunk of memory is allocated
+>>> and then converted into shared memory. Subsequent allocation requests will
+>>> come from the contiguous chunk which will be always shared memory for all
+>>> structures.
+>>>
+>>> While we are able to use a kmem_cache constructor for the Debug Trace Log,
+>>> LPPACAs are allocated very early in the boot process (before SLUB is
+>>> available) so we need to use a simpler scheme here.
+>>>
+>>> Introduce helper is_svm_platform() which uses the S bit of the MSR to tell
+>>> whether we're running as a secure guest.
+>>>
+>>> Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+>>> Signed-off-by: Thiago Jung Bauermann <bauerman@linux.ibm.com>
+>>> ---
+>>>  arch/powerpc/include/asm/svm.h | 26 ++++++++++++++++++++
+>>>  arch/powerpc/kernel/paca.c     | 43 +++++++++++++++++++++++++++++++++-
+>>>  2 files changed, 68 insertions(+), 1 deletion(-)
+>>>
+>>> diff --git a/arch/powerpc/include/asm/svm.h b/arch/powerpc/include/asm/svm.h
+>>> new file mode 100644
+>>> index 000000000000..fef3740f46a6
+>>> --- /dev/null
+>>> +++ b/arch/powerpc/include/asm/svm.h
+>>> @@ -0,0 +1,26 @@
+>>> +/* SPDX-License-Identifier: GPL-2.0+ */
+>>> +/*
+>>> + * SVM helper functions
+>>> + *
+>>> + * Copyright 2019 Anshuman Khandual, IBM Corporation.
+>>
+>> Are we sure this copyright date is correct?
+>
+> I may be confused about which year the copyright refers to. I thought it
+> was the year when the patch was committed. If it is the first time the
+> patch was published then this one should be 2018.
 
-Paulus points that we shouldn't need to save CR here. Our caller will
-have already saved it if it needed to, and we don't use CR in this
-function so we don't need to save it.
+I'm not a lawyer etc. but AIUI the date above is about the authorship,
+ie. when it was originally written, not when it was published or
+committed.
 
-That's assuming the Ultravisor follows the hcall ABI in which CR2-4 are
-non-volatile (PAPR =C2=A7 14.5.3).
+In general I don't think it matters too much, but in this case I'm
+pretty sure Anshuman can't have possibly written it in 2019 on behalf of
+IBM :)
 
-I know plpar_hcall_norets() does save CR, but it shouldn't need to, that
-seems to be historical. aka. no one knows why it does it but it always
-has.
+So we can either change the date to 2018, or drop his name and just say
+it's copyright 2019 by IBM.
 
 cheers
