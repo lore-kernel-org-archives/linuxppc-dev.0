@@ -2,95 +2,85 @@ Return-Path: <SRS0=FJcg=WK=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=0.6 required=3.0 tests=BIGNUM_EMAILS,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,UNPARSEABLE_RELAY,USER_AGENT_SANE_1
-	autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.3 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
+	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0E497C433FF
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Aug 2019 22:06:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 89121C433FF
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Aug 2019 22:12:19 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 8094D2133F
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Aug 2019 22:06:38 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 0075220665
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Aug 2019 22:12:18 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=oracle.com header.i=@oracle.com header.b="ZbWpJN7E"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8094D2133F
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=oracle.com
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="BTIl/9Tk"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0075220665
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4683Zh5tdczDr02
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Aug 2019 08:06:36 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4683jD2szRzDqNb
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Aug 2019 08:12:16 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=oracle.com
- (client-ip=141.146.126.78; helo=aserp2120.oracle.com;
- envelope-from=dan.carpenter@oracle.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=gmail.com
+ (client-ip=2607:f8b0:4864:20::544; helo=mail-pg1-x544.google.com;
+ envelope-from=robdclark@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=oracle.com
+ dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=oracle.com header.i=@oracle.com header.b="ZbWpJN7E"; 
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="BTIl/9Tk"; 
  dkim-atps=neutral
-X-Greylist: delayed 27858 seconds by postgrey-1.36 at bilbo;
- Thu, 15 Aug 2019 08:04:21 AEST
-Received: from aserp2120.oracle.com (aserp2120.oracle.com [141.146.126.78])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pg1-x544.google.com (mail-pg1-x544.google.com
+ [IPv6:2607:f8b0:4864:20::544])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4683X560yVzDr0v
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Aug 2019 08:04:20 +1000 (AEST)
-Received: from pps.filterd (aserp2120.oracle.com [127.0.0.1])
- by aserp2120.oracle.com (8.16.0.27/8.16.0.27) with SMTP id x7EEIxcr121624;
- Wed, 14 Aug 2019 14:19:51 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com;
- h=date : from : to : cc
- : subject : message-id : mime-version : content-type; s=corp-2019-08-05;
- bh=ae+YYtL1vgPhLbM0a9S2evjC1FwIggJXIW0M4o4SGyI=;
- b=ZbWpJN7E57uCEuErcNfUc/phFeBdGWKv4R9ZxHVmqM6esvnxsn1TTTYyIXbCGZ+UnITA
- lZNbN5WXD70uPPgZ3Se2Jg16w9RBCLxrn+Z2YAKvcKzjzub3eSA11LJ36a2Ge300CEi7
- liCLfQteJP1THCVbkud2T3KHezjXzPGF/zFA/i38egZ6bDSAUWlCjaZSlOCzzmfIgUGi
- Uuad4CyK1W65wQLKuxCrulgv/lIeXK7K0sI77vAg7w73VnCcOHHP5kSlv7QcZv9702gX
- 21BlI8Ufv6eM9yuC4/nxwquR+08X8+1Y72CXFfHI9uy9A3tWV1s8mSx734U3CCACUMhW 6w== 
-Received: from aserp3020.oracle.com (aserp3020.oracle.com [141.146.126.70])
- by aserp2120.oracle.com with ESMTP id 2u9nvpd85d-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Wed, 14 Aug 2019 14:19:50 +0000
-Received: from pps.filterd (aserp3020.oracle.com [127.0.0.1])
- by aserp3020.oracle.com (8.16.0.27/8.16.0.27) with SMTP id x7EEIiq3168890;
- Wed, 14 Aug 2019 14:19:50 GMT
-Received: from aserv0121.oracle.com (aserv0121.oracle.com [141.146.126.235])
- by aserp3020.oracle.com with ESMTP id 2ubwcy2m7h-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Wed, 14 Aug 2019 14:19:50 +0000
-Received: from abhmp0015.oracle.com (abhmp0015.oracle.com [141.146.116.21])
- by aserv0121.oracle.com (8.14.4/8.13.8) with ESMTP id x7EEJhcB022563;
- Wed, 14 Aug 2019 14:19:48 GMT
-Received: from mwanda (/41.57.98.10) by default (Oracle Beehive Gateway v4.0)
- with ESMTP ; Wed, 14 Aug 2019 07:19:43 -0700
-Date: Wed, 14 Aug 2019 17:19:38 +0300
-From: Dan Carpenter <dan.carpenter@oracle.com>
-To: anton@samba.org
-Subject: [bug report] powerpc/iommu: Implement IOMMU pools to improve
- multiqueue adapter performance
-Message-ID: <20190814141938.GA587@mwanda>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4683fl4y5RzDq6y
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Aug 2019 08:10:07 +1000 (AEST)
+Received: by mail-pg1-x544.google.com with SMTP id e11so294058pga.5
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Aug 2019 15:10:07 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=from:to:cc:subject:date:message-id:in-reply-to:references
+ :mime-version:content-transfer-encoding;
+ bh=EgMxpqnDCUKKSviaeDfqej3uE+25ke/kBD5EQ8QhSvk=;
+ b=BTIl/9TkKL1+c9ssk34W7XBCbm+8s/A7Aw49hrbdu/fvCvAhPq7IzZM6LQxNWC2QoE
+ 43Fy8M+wBoAaew0rOCWEYQwW7hi4OWCZw6V6ljV8i60R6zk3xV1oqtX+5OAjikb7TOo1
+ euYSXyToMva4nrJeLoOG98FDCZPQBFYfVuK757KSMnKyMdqqDJ7hJn9O82GWwbVWL9Va
+ YaafGnFOnoXjFAO3qaf7hnVlz6fUzZ9nRvXAT9cifyZdFjtDpGNfVhryES6wHppUEFRl
+ N8nXSFKxcF2k8iMc+4q6OzgcKiepinofnK8FF77cgrT+mIe6oir15Gjrwq/AEM4yw+XV
+ l75g==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+ :references:mime-version:content-transfer-encoding;
+ bh=EgMxpqnDCUKKSviaeDfqej3uE+25ke/kBD5EQ8QhSvk=;
+ b=PZ0JRc4JXelVu53Z8dSJ3AQDBrcMWQ6CGmNr8PjpFawh5z9nR9e1E+0ekjySf8gZcm
+ r2EeiJj03XdZELrj5Em1BM0m5HgzmkVMAjri67StxVLDY0ejxYyxyTP8ixw2AasuVqSs
+ l4syTR3PXdoD9DFaEof19lrojBs9fhR+6pVbeP+rR+3547rQJXIIG8H5pIiQtOnbA/uH
+ CdlvtT9fA9wWdVi3xbaPKvwwYEs9ClTesYGcmUasmF+51DlhF7r6rfWB7ulKkAhX5XEI
+ UxuNMY/2QzAOGq9x/1oHR46KbUEVZtrvSsX9F4qTzdw9UGwWo+wFkl7p3gvWO7Mcrv+O
+ sWXA==
+X-Gm-Message-State: APjAAAXwh2+21PzbMM8rDpU3ProQPIZti4bJO+dHWPo/Ofj/21N1sMpn
+ c6favsEDx7i5dEyTJddaV5I=
+X-Google-Smtp-Source: APXvYqxT0bYRzWmURPra22SeQuhBS+23yZe3pSx10q32MZ/PWreU7JH+YXqDftobAJdodjbhda6e0Q==
+X-Received: by 2002:a63:de4c:: with SMTP id y12mr1125128pgi.264.1565820604373; 
+ Wed, 14 Aug 2019 15:10:04 -0700 (PDT)
+Received: from localhost ([100.118.89.196])
+ by smtp.gmail.com with ESMTPSA id a189sm929015pfa.60.2019.08.14.15.10.03
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Wed, 14 Aug 2019 15:10:03 -0700 (PDT)
+From: Rob Clark <robdclark@gmail.com>
+To: dri-devel@lists.freedesktop.org
+Subject: [PATCH 3/6] powerpc: export arch_sync_dma_for_*()
+Date: Wed, 14 Aug 2019 14:59:58 -0700
+Message-Id: <20190814220011.26934-4-robdclark@gmail.com>
+X-Mailer: git-send-email 2.21.0
+In-Reply-To: <20190814220011.26934-1-robdclark@gmail.com>
+References: <20190814220011.26934-1-robdclark@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.10.1 (2018-07-13)
-X-Proofpoint-Virus-Version: vendor=nai engine=6000 definitions=9348
- signatures=668684
-X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 suspectscore=1
- malwarescore=0
- phishscore=0 bulkscore=0 spamscore=0 mlxscore=0 mlxlogscore=632
- adultscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.0.1-1906280000 definitions=main-1908140149
-X-Proofpoint-Virus-Version: vendor=nai engine=6000 definitions=9348
- signatures=668684
-X-Proofpoint-Spam-Details: rule=notspam policy=default score=0
- priorityscore=1501 malwarescore=0
- suspectscore=1 phishscore=0 bulkscore=0 spamscore=0 clxscore=1011
- lowpriorityscore=0 mlxscore=0 impostorscore=0 mlxlogscore=682 adultscore=0
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.0.1-1906280000
- definitions=main-1908140149
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -102,46 +92,40 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org
+Cc: Rob Clark <robdclark@chromium.org>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+ Thomas Gleixner <tglx@linutronix.de>, Enrico Weigelt <info@metux.net>,
+ Christoph Hellwig <hch@lst.de>, Allison Randal <allison@lohutok.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-[ Ancient code.  The warning is correct but the bug seems harmless.
-  -- dan ]
+From: Rob Clark <robdclark@chromium.org>
 
-Hello Anton Blanchard,
+Signed-off-by: Rob Clark <robdclark@chromium.org>
+---
+ arch/powerpc/mm/dma-noncoherent.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
-The patch b4c3a8729ae5: "powerpc/iommu: Implement IOMMU pools to
-improve multiqueue adapter performance" from Jun 7, 2012, leads to
-the following static checker warning:
+diff --git a/arch/powerpc/mm/dma-noncoherent.c b/arch/powerpc/mm/dma-noncoherent.c
+index c617282d5b2a..80d53b950821 100644
+--- a/arch/powerpc/mm/dma-noncoherent.c
++++ b/arch/powerpc/mm/dma-noncoherent.c
+@@ -401,12 +401,14 @@ void arch_sync_dma_for_device(struct device *dev, phys_addr_t paddr,
+ {
+ 	__dma_sync_page(paddr, size, dir);
+ }
++EXPORT_SYMBOL_GPL(arch_sync_dma_for_device);
+ 
+ void arch_sync_dma_for_cpu(struct device *dev, phys_addr_t paddr,
+ 		size_t size, enum dma_data_direction dir)
+ {
+ 	__dma_sync_page(paddr, size, dir);
+ }
++EXPORT_SYMBOL_GPL(arch_sync_dma_for_cpu);
+ 
+ /*
+  * Return the PFN for a given cpu virtual address returned by arch_dma_alloc.
+-- 
+2.21.0
 
-	arch/powerpc/kernel/iommu.c:377 get_pool()
-	warn: array off by one? '*tbl->pools + pool_nr'
-
-arch/powerpc/kernel/iommu.c
-   364  static struct iommu_pool *get_pool(struct iommu_table *tbl,
-   365                                     unsigned long entry)
-   366  {
-   367          struct iommu_pool *p;
-   368          unsigned long largepool_start = tbl->large_pool.start;
-   369  
-   370          /* The large pool is the last pool at the top of the table */
-   371          if (entry >= largepool_start) {
-   372                  p = &tbl->large_pool;
-   373          } else {
-   374                  unsigned int pool_nr = entry / tbl->poolsize;
-   375  
-   376                  BUG_ON(pool_nr > tbl->nr_pools);
-                                       ^
-This should be ">=".  The tbl->nr_pools value is either 1 or
-IOMMU_NR_POOLS and the tbl->pools[] array has IOMMU_NR_POOLS elements.
-
-   377                  p = &tbl->pools[pool_nr];
-   378          }
-   379  
-   380          return p;
-   381  }
-
-regards,
-dan carpenter
