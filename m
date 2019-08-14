@@ -2,68 +2,57 @@ Return-Path: <SRS0=FJcg=WK=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.0 required=3.0 tests=MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=no
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 26C6CC32753
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Aug 2019 16:13:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3551FC433FF
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Aug 2019 16:25:28 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id CACBC2083B
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Aug 2019 16:13:53 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CACBC2083B
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=bugzilla.kernel.org
+	by mail.kernel.org (Postfix) with ESMTPS id DF05920665
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Aug 2019 16:25:27 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DF05920665
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 467vlh1w5czDq6y
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Aug 2019 02:13:52 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 467w112cytzDqv1
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Aug 2019 02:25:25 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=bugzilla.kernel.org
- (client-ip=198.145.29.98; helo=mail.wl.linuxfoundation.org;
- envelope-from=bugzilla-daemon@bugzilla.kernel.org; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=bugzilla.kernel.org
-Received: from mail.wl.linuxfoundation.org (mail.wl.linuxfoundation.org
- [198.145.29.98])
+ spf=pass (mailfrom) smtp.mailfrom=kaod.org
+ (client-ip=46.105.58.91; helo=7.mo178.mail-out.ovh.net;
+ envelope-from=clg@kaod.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=kaod.org
+X-Greylist: delayed 1197 seconds by postgrey-1.36 at bilbo;
+ Thu, 15 Aug 2019 02:23:21 AEST
+Received: from 7.mo178.mail-out.ovh.net (7.mo178.mail-out.ovh.net
+ [46.105.58.91])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 467vhL58g2zDqgs
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Aug 2019 02:10:57 +1000 (AEST)
-Received: from mail.wl.linuxfoundation.org (localhost [127.0.0.1])
- by mail.wl.linuxfoundation.org (Postfix) with ESMTP id BB20B28538
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Aug 2019 16:10:54 +0000 (UTC)
-Received: by mail.wl.linuxfoundation.org (Postfix, from userid 486)
- id AFAD728876; Wed, 14 Aug 2019 16:10:54 +0000 (UTC)
-From: bugzilla-daemon@bugzilla.kernel.org
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [Bug 204371] BUG kmalloc-4k (Tainted: G        W        ): Object
- padding overwritten
-Date: Wed, 14 Aug 2019 16:10:53 +0000
-X-Bugzilla-Reason: CC
-X-Bugzilla-Type: changed
-X-Bugzilla-Watch-Reason: None
-X-Bugzilla-Product: Memory Management
-X-Bugzilla-Component: Slab Allocator
-X-Bugzilla-Version: 2.5
-X-Bugzilla-Keywords: 
-X-Bugzilla-Severity: normal
-X-Bugzilla-Who: christophe.leroy@c-s.fr
-X-Bugzilla-Status: NEW
-X-Bugzilla-Resolution: 
-X-Bugzilla-Priority: P1
-X-Bugzilla-Assigned-To: akpm@linux-foundation.org
-X-Bugzilla-Flags: 
-X-Bugzilla-Changed-Fields: attachments.created
-Message-ID: <bug-204371-206035-h95dgLVMIh@https.bugzilla.kernel.org/>
-In-Reply-To: <bug-204371-206035@https.bugzilla.kernel.org/>
-References: <bug-204371-206035@https.bugzilla.kernel.org/>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-X-Bugzilla-URL: https://bugzilla.kernel.org/
-Auto-Submitted: auto-generated
+ by lists.ozlabs.org (Postfix) with ESMTPS id 467vyd06PyzDqT9
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Aug 2019 02:23:16 +1000 (AEST)
+Received: from player770.ha.ovh.net (unknown [10.109.143.232])
+ by mo178.mail-out.ovh.net (Postfix) with ESMTP id 25A8475300
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Aug 2019 17:48:05 +0200 (CEST)
+Received: from kaod.org (lfbn-1-2240-157.w90-76.abo.wanadoo.fr [90.76.60.157])
+ (Authenticated sender: clg@kaod.org)
+ by player770.ha.ovh.net (Postfix) with ESMTPSA id 60E0C8DDB607;
+ Wed, 14 Aug 2019 15:47:59 +0000 (UTC)
+From: =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Subject: [PATCH 0/3] powerpc/xmon: Fix dump of XIVE interrupt under pseries
+Date: Wed, 14 Aug 2019 17:47:51 +0200
+Message-Id: <20190814154754.23682-1-clg@kaod.org>
+X-Mailer: git-send-email 2.21.0
 MIME-Version: 1.0
-X-Virus-Scanned: ClamAV using ClamSMTP
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-Ovh-Tracer-Id: 3257228433189997489
+X-VR-SPAMSTATE: OK
+X-VR-SPAMSCORE: -100
+X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgeduvddruddvledgfedtucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecuqfggjfdpvefjgfevmfevgfenuceurghilhhouhhtmecuhedttdenucesvcftvggtihhpihgvnhhtshculddquddttddm
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -75,22 +64,37 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>,
+ =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>,
+ Nicholas Piggin <npiggin@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-https://bugzilla.kernel.org/show_bug.cgi?id=3D204371
+Hello,
 
---- Comment #19 from Christophe Leroy (christophe.leroy@c-s.fr) ---
-Created attachment 284389
-  --> https://bugzilla.kernel.org/attachment.cgi?id=3D284389&action=3Dedit
-Patch to trace misaligned destination in copy_page() in asm on PPC32
+The xmon 'dx*' commands call OPAL to query information on XIVE but
+this can only be done on baremetal (PowerNV) and it crashes a pseries
+machine. This little series fixes support on pseries and extend the
+'dxi' command.
 
-Oops.
+Thanks,
 
-Can you test with this new patch which implements the warning directly in
-assembly.? This time it only modifies misc_32.S and It builds ok.
+C.
 
---=20
-You are receiving this mail because:
-You are on the CC list for the bug.=
+Cédric Le Goater (3):
+  powerpc/xmon: Check for HV mode when dumping XIVE info from OPAL
+  powerpc/xive: Fix dump of XIVE interrupt under pseries
+  powerpc/xmon: Add a dump of all XIVE interrupts
+
+ arch/powerpc/include/asm/xive.h          |  2 +
+ arch/powerpc/sysdev/xive/xive-internal.h |  2 +
+ arch/powerpc/sysdev/xive/common.c        |  7 ++++
+ arch/powerpc/sysdev/xive/native.c        | 15 +++++++
+ arch/powerpc/sysdev/xive/spapr.c         | 51 ++++++++++++++++++++++++
+ arch/powerpc/xmon/xmon.c                 | 50 +++++++++++++++++------
+ 6 files changed, 114 insertions(+), 13 deletions(-)
+
+-- 
+2.21.0
+
