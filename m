@@ -2,48 +2,48 @@ Return-Path: <SRS0=FJcg=WK=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2A497C433FF
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Aug 2019 11:35:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 87A40C32753
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Aug 2019 12:07:09 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6CC6A205F4
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Aug 2019 11:35:11 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6CC6A205F4
+	by mail.kernel.org (Postfix) with ESMTPS id 0D5042083B
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Aug 2019 12:07:08 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0D5042083B
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 467nZ46wL5zDqmX
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Aug 2019 21:35:08 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 467pGy4G4mzDqpp
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Aug 2019 22:07:06 +1000 (AEST)
 Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 467nWw3mhdzDqRg
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Aug 2019 21:33:16 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 467pDN4TgwzDqmf
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Aug 2019 22:04:52 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: by ozlabs.org (Postfix)
- id 467nWv5gt6z9sNC; Wed, 14 Aug 2019 21:33:15 +1000 (AEST)
+ id 467pDM3mp9z9sN1; Wed, 14 Aug 2019 22:04:51 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
  SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 467nWv37MQz9sN1;
- Wed, 14 Aug 2019 21:33:15 +1000 (AEST)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 467pDL4Wbvz9sDB;
+ Wed, 14 Aug 2019 22:04:50 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: Claudio Carvalho <cclaudio@linux.ibm.com>, linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH v5 4/7] powerpc/mm: Use UV_WRITE_PATE ucall to register a
- PATE
-In-Reply-To: <20190808040555.2371-5-cclaudio@linux.ibm.com>
+Subject: Re: [PATCH v5 5/7] powerpc/mm: Write to PTCR only if ultravisor
+ disabled
+In-Reply-To: <20190808040555.2371-6-cclaudio@linux.ibm.com>
 References: <20190808040555.2371-1-cclaudio@linux.ibm.com>
- <20190808040555.2371-5-cclaudio@linux.ibm.com>
-Date: Wed, 14 Aug 2019 21:33:12 +1000
-Message-ID: <871rxo7zif.fsf@concordia.ellerman.id.au>
+ <20190808040555.2371-6-cclaudio@linux.ibm.com>
+Date: Wed, 14 Aug 2019 22:04:49 +1000
+Message-ID: <87wofg6jha.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -57,8 +57,7 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Ryan Grimm <grimm@linux.vnet.ibm.com>,
- Madhavan Srinivasan <maddy@linux.vnet.ibm.com>,
+Cc: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>,
  Michael Anderson <andmike@linux.ibm.com>, Ram Pai <linuxram@us.ibm.com>,
  Claudio Carvalho <cclaudio@linux.ibm.com>, kvm-ppc@vger.kernel.org,
  Bharata B Rao <bharata@linux.ibm.com>, Ryan Grimm <grimm@linux.ibm.com>,
@@ -68,117 +67,67 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi Claudio,
-
 Claudio Carvalho <cclaudio@linux.ibm.com> writes:
-> From: Michael Anderson <andmike@linux.ibm.com>
+> In ultravisor enabled systems, PTCR becomes ultravisor privileged only
+> for writing and an attempt to write to it will cause a Hypervisor
+> Emulation Assitance interrupt.
 >
-> In ultravisor enabled systems, the ultravisor creates and maintains the
-> partition table in secure memory where the hypervisor cannot access, and
-                                   ^
-                                   which?
-
-> therefore, the hypervisor have to do the UV_WRITE_PATE ucall whenever it
-                            ^          ^
-                            has        a
-> wants to set a partition table entry (PATE).
+> This patch adds the try_set_ptcr(val) macro as an accessor to
+> mtspr(SPRN_PTCR, val), which will be executed only if ultravisor
+> disabled.
 >
-> This patch adds the UV_WRITE_PATE ucall and uses it to set a PATE if
-> ultravisor is enabled. Additionally, this also also keeps a copy of the
-> partition table because the nestMMU does not have access to secure
-> memory. Such copy has entries for nonsecure and hypervisor partition.
+> Signed-off-by: Claudio Carvalho <cclaudio@linux.ibm.com>
+> ---
+>  arch/powerpc/include/asm/reg.h           | 13 +++++++++++++
+>  arch/powerpc/mm/book3s64/hash_utils.c    |  4 ++--
+>  arch/powerpc/mm/book3s64/pgtable.c       |  2 +-
+>  arch/powerpc/mm/book3s64/radix_pgtable.c |  6 +++---
+>  4 files changed, 19 insertions(+), 6 deletions(-)
+>
+> diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
+> index 10caa145f98b..14139b1ebdb8 100644
+> --- a/arch/powerpc/include/asm/reg.h
+> +++ b/arch/powerpc/include/asm/reg.h
+> @@ -15,6 +15,7 @@
+>  #include <asm/cputable.h>
+>  #include <asm/asm-const.h>
+>  #include <asm/feature-fixups.h>
+> +#include <asm/firmware.h>
 
-I'm having trouble parsing the last sentence there.
+reg.h is already too big and unwieldy.
 
-Or at least it doesn't seem to match the code, or I don't understand
-either the code or the comment. More below.
+Can you put this in ultravisor.h and include that in the appropriate places.
 
-> diff --git a/arch/powerpc/mm/book3s64/pgtable.c b/arch/powerpc/mm/book3s64/pgtable.c
-> index 85bc81abd286..033731f5dbaa 100644
-> --- a/arch/powerpc/mm/book3s64/pgtable.c
-> +++ b/arch/powerpc/mm/book3s64/pgtable.c
-> @@ -213,34 +223,50 @@ void __init mmu_partition_table_init(void)
->  	powernv_set_nmmu_ptcr(ptcr);
+> @@ -1452,6 +1453,18 @@ static inline void update_power8_hid0(unsigned long hid0)
+>  	 */
+>  	asm volatile("sync; mtspr %0,%1; isync":: "i"(SPRN_HID0), "r"(hid0));
 >  }
->  
-> -void mmu_partition_table_set_entry(unsigned int lpid, unsigned long dw0,
-> -				   unsigned long dw1)
+> +
 > +/*
-> + * Global flush of TLBs and partition table caches for this lpid. The type of
-> + * flush (hash or radix) depends on what the previous use of this partition ID
-> + * was, not the new use.
+> + * In ultravisor enabled systems, PTCR becomes ultravisor privileged only for
+> + * writing and an attempt to write to it will cause a Hypervisor Emulation
+> + * Assistance interrupt.
 > + */
-> +static void flush_partition(unsigned int lpid, unsigned long old_patb0)
+> +#define try_set_ptcr(val)						\
+> +	do {								\
+> +		if (!firmware_has_feature(FW_FEATURE_ULTRAVISOR))	\
+> +			mtspr(SPRN_PTCR, val);				\
+> +	} while (0)
 
-A nicer API would be for the 2nd param to be a "bool radix", and have
-the caller worry about the fact that it comes from (patb0 & PATB_HR).
+This should be a static inline please, not a macro.
 
->  {
-> -	unsigned long old = be64_to_cpu(partition_tb[lpid].patb0);
-> -
-> -	partition_tb[lpid].patb0 = cpu_to_be64(dw0);
-> -	partition_tb[lpid].patb1 = cpu_to_be64(dw1);
-> -
-> -	/*
-> -	 * Global flush of TLBs and partition table caches for this lpid.
-> -	 * The type of flush (hash or radix) depends on what the previous
-> -	 * use of this partition ID was, not the new use.
-> -	 */
->  	asm volatile("ptesync" : : : "memory");
-> -	if (old & PATB_HR) {
-> -		asm volatile(PPC_TLBIE_5(%0,%1,2,0,1) : :
-> +	if (old_patb0 & PATB_HR) {
-> +		asm volatile(PPC_TLBIE_5(%0, %1, 2, 0, 1) : :
->  			     "r" (TLBIEL_INVAL_SET_LPID), "r" (lpid));
-> -		asm volatile(PPC_TLBIE_5(%0,%1,2,1,1) : :
-> +		asm volatile(PPC_TLBIE_5(%0, %1, 2, 1, 1) : :
+Sorry, I don't like the name, we're not trying to set it, we know when
+to set it and when not to.
 
-That looks like an unrelated whitespace change.
+It is awkward to come up with a good name because we don't have a term
+for "hypervisor that's not running under an ultravisor".
 
->  			     "r" (TLBIEL_INVAL_SET_LPID), "r" (lpid));
->  		trace_tlbie(lpid, 0, TLBIEL_INVAL_SET_LPID, lpid, 2, 0, 1);
->  	} else {
-> -		asm volatile(PPC_TLBIE_5(%0,%1,2,0,0) : :
-> +		asm volatile(PPC_TLBIE_5(%0, %1, 2, 0, 0) : :
+Maybe set_ptcr_when_no_uv()
 
-Ditto.
+Which is kinda messy, someone feel free to come up with something
+better.
 
->  			     "r" (TLBIEL_INVAL_SET_LPID), "r" (lpid));
->  		trace_tlbie(lpid, 0, TLBIEL_INVAL_SET_LPID, lpid, 2, 0, 0);
->  	}
->  	/* do we need fixup here ?*/
->  	asm volatile("eieio; tlbsync; ptesync" : : : "memory");
->  }
-> +
-> +void mmu_partition_table_set_entry(unsigned int lpid, unsigned long dw0,
-> +				  unsigned long dw1)
-> +{
-> +	unsigned long old = be64_to_cpu(partition_tb[lpid].patb0);
-> +
-> +	partition_tb[lpid].patb0 = cpu_to_be64(dw0);
-> +	partition_tb[lpid].patb1 = cpu_to_be64(dw1);
-
-ie. here we always update the copy of the partition table, regardless of
-whether we're running under an ultravisor or not. So the copy is a
-complete copy isn't it?
-
-> +	/*
-> +	 * In ultravisor enabled systems, the ultravisor maintains the partition
-> +	 * table in secure memory where we don't have access, therefore, we have
-> +	 * to do a ucall to set an entry.
-> +	 */
-> +	if (firmware_has_feature(FW_FEATURE_ULTRAVISOR)) {
-> +		uv_register_pate(lpid, dw0, dw1);
-> +		pr_info("PATE registered by ultravisor: dw0 = 0x%lx, dw1 = 0x%lx\n",
-> +			dw0, dw1);
-> +	} else {
-> +		flush_partition(lpid, old);
-> +	}
-
-What is different is whether we flush or not.
-
-And don't we still need to do the flush for the nestMMU? I assume we're
-saying the ultravisor will broadcast a flush for us, which will also
-handle the nestMMU case?
+I also see some more accesses to the PTCR in
+arch/powerpc/platforms/powernv/idle.c which you haven't patched?
 
 cheers
