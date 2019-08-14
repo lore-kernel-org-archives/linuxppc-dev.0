@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-1.0 required=3.0 tests=MAILING_LIST_MULTI,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C1E95C32753
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Aug 2019 17:49:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B8ADCC433FF
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Aug 2019 17:52:05 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 7FDE8214DA
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Aug 2019 17:49:15 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7FDE8214DA
+	by mail.kernel.org (Postfix) with ESMTPS id 48399206C2
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Aug 2019 17:52:05 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 48399206C2
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=bugzilla.kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 467xsj6j49zDqSM
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Aug 2019 03:49:13 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 467xwz1H4mzDqNB
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Aug 2019 03:52:03 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=bugzilla.kernel.org
  (client-ip=198.145.29.98; helo=mail.wl.linuxfoundation.org;
@@ -29,18 +29,18 @@ Received: from mail.wl.linuxfoundation.org (mail.wl.linuxfoundation.org
  [198.145.29.98])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 467xnq3rc2zDqw3
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Aug 2019 03:45:51 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 467xrl3BzDzDqTZ
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Aug 2019 03:48:23 +1000 (AEST)
 Received: from mail.wl.linuxfoundation.org (localhost [127.0.0.1])
- by mail.wl.linuxfoundation.org (Postfix) with ESMTP id F2EB52888B
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Aug 2019 17:45:48 +0000 (UTC)
+ by mail.wl.linuxfoundation.org (Postfix) with ESMTP id CB337288A2
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Aug 2019 17:48:20 +0000 (UTC)
 Received: by mail.wl.linuxfoundation.org (Postfix, from userid 486)
- id E6EFB2889C; Wed, 14 Aug 2019 17:45:48 +0000 (UTC)
+ id BC93B288AF; Wed, 14 Aug 2019 17:48:20 +0000 (UTC)
 From: bugzilla-daemon@bugzilla.kernel.org
 To: linuxppc-dev@lists.ozlabs.org
 Subject: [Bug 204371] BUG kmalloc-4k (Tainted: G        W        ): Object
  padding overwritten
-Date: Wed, 14 Aug 2019 17:45:48 +0000
+Date: Wed, 14 Aug 2019 17:48:20 +0000
 X-Bugzilla-Reason: CC
 X-Bugzilla-Type: changed
 X-Bugzilla-Watch-Reason: None
@@ -55,8 +55,8 @@ X-Bugzilla-Resolution:
 X-Bugzilla-Priority: P1
 X-Bugzilla-Assigned-To: akpm@linux-foundation.org
 X-Bugzilla-Flags: 
-X-Bugzilla-Changed-Fields: attachments.created
-Message-ID: <bug-204371-206035-e6aqoWSjFI@https.bugzilla.kernel.org/>
+X-Bugzilla-Changed-Fields: attachments.isobsolete attachments.created
+Message-ID: <bug-204371-206035-t1fSrYorXp@https.bugzilla.kernel.org/>
 In-Reply-To: <bug-204371-206035@https.bugzilla.kernel.org/>
 References: <bug-204371-206035@https.bugzilla.kernel.org/>
 Content-Type: text/plain; charset="UTF-8"
@@ -82,12 +82,17 @@ Sender: "Linuxppc-dev"
 
 https://bugzilla.kernel.org/show_bug.cgi?id=3D204371
 
---- Comment #21 from Erhard F. (erhard_f@mailbox.org) ---
-Created attachment 284399
-  --> https://bugzilla.kernel.org/attachment.cgi?id=3D284399&action=3Dedit
-dmesg (PowerMac G4 DP, kernel 5.3-rc4 + debug patch)
+Erhard F. (erhard_f@mailbox.org) changed:
 
-/dev/sdb2 mounted at boot, dmesg after unmounting.
+           What    |Removed                     |Added
+----------------------------------------------------------------------------
+ Attachment #284071|0                           |1
+        is obsolete|                            |
+
+--- Comment #22 from Erhard F. (erhard_f@mailbox.org) ---
+Created attachment 284401
+  --> https://bugzilla.kernel.org/attachment.cgi?id=3D284401&action=3Dedit
+kernel .config (PowerMac G4 DP, kernel 5.3-rc4)
 
 --=20
 You are receiving this mail because:
