@@ -2,47 +2,59 @@ Return-Path: <SRS0=FJcg=WK=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.1 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D36F3C32750
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Aug 2019 02:08:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6093CC433FF
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Aug 2019 02:14:23 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E1C2420842
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Aug 2019 02:08:16 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E1C2420842
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+	by mail.kernel.org (Postfix) with ESMTPS id 10BD4208C2
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Aug 2019 02:14:23 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ozlabs.org header.i=@ozlabs.org header.b="OP/Amg57"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 10BD4208C2
+Authentication-Results: mail.kernel.org; dmarc=pass (p=none dis=none) header.from=ozlabs.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 467Xzx6jDjzDqfs
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Aug 2019 12:08:13 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 467Y6z32JVzDqgG
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Aug 2019 12:14:19 +1000 (AEST)
 Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 467Xxn3Y2BzDqHG
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Aug 2019 12:06:21 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=ellerman.id.au
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
- SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 467Xxm5bc9z9s7T;
- Wed, 14 Aug 2019 12:06:20 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [RFC PATCH] powerpc/64s/radix: introduce option to disable
- broadcast tlbie
-In-Reply-To: <20190731123203.6370-1-npiggin@gmail.com>
-References: <20190731123203.6370-1-npiggin@gmail.com>
-Date: Wed, 14 Aug 2019 12:06:19 +1000
-Message-ID: <87zhkcqz50.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 467Y345Hk5zDqMm
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Aug 2019 12:10:56 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=ozlabs.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ secure) header.d=ozlabs.org header.i=@ozlabs.org header.b="OP/Amg57"; 
+ dkim-atps=neutral
+Received: by ozlabs.org (Postfix, from userid 1003)
+ id 467Y344Lhfz9sN1; Wed, 14 Aug 2019 12:10:56 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ozlabs.org; s=201707;
+ t=1565748656; bh=rn8nn7nDZW6prBqqprg63BKRnGn4fJeOHCTFgi95aSM=;
+ h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+ b=OP/Amg578H5HPYz9pLx7vbI154SYRemAbBtahq9i6PsUxSZWDR3+BR8fULNDSeFeT
+ lN69qph71OpRbZxQZhsadgnswfMK1QV/clTsnapeSNkeUkRKYQQ4LSjNDbU274LrOF
+ ldpdZIDuYSInULN7X+isqlJzTNXPYG8oM18g4tKWYb550qlvqPF/fjB72hsn+NMeQi
+ Z1dFASQTsVXoC4N10wAtLxS7KKB63r/mmlAf7tKGmYoHNTY0brp4LWnWEo0MEHCNbG
+ n8UVQ8NF2Q774Dm7CJYeh/k3SanuVkQHtyipth09R4+PBmEqmmUDNamcoL/9srZHMD
+ 03bI8d2GqLCEQ==
+Date: Wed, 14 Aug 2019 12:08:03 +1000
+From: Paul Mackerras <paulus@ozlabs.org>
+To: Christophe Leroy <christophe.leroy@c-s.fr>
+Subject: Re: [PATCH 1/2] powerpc: rewrite LOAD_REG_IMMEDIATE() as an
+ intelligent macro
+Message-ID: <20190814020803.it7i7mjxyruu4vy3@oak.ozlabs.ibm.com>
+References: <61d2a0b6f0c89b1ee546851ce9b6bd345e5ec968.1565690241.git.christophe.leroy@c-s.fr>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <61d2a0b6f0c89b1ee546851ce9b6bd345e5ec968.1565690241.git.christophe.leroy@c-s.fr>
+User-Agent: NeoMutt/20170113 (1.7.2)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -54,84 +66,39 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "Aneesh Kumar K . V" <aneesh.kumar@linux.ibm.com>,
- Paul Mackerras <paulus@samba.org>, Nicholas Piggin <npiggin@gmail.com>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi Nick,
+On Tue, Aug 13, 2019 at 09:59:35AM +0000, Christophe Leroy wrote:
 
-Just a few comments.
+[snip]
 
-Nicholas Piggin <npiggin@gmail.com> writes:
-> diff --git a/arch/powerpc/mm/book3s64/radix_tlb.c b/arch/powerpc/mm/book3s64/radix_tlb.c
-> index 71f7fede2fa4..56ceecbd3d5c 100644
-> --- a/arch/powerpc/mm/book3s64/radix_tlb.c
-> +++ b/arch/powerpc/mm/book3s64/radix_tlb.c
-> @@ -285,6 +286,30 @@ static inline void _tlbie_pid(unsigned long pid, unsigned long ric)
->  	asm volatile("eieio; tlbsync; ptesync": : :"memory");
->  }
->  
-> +struct tlbiel_pid {
-> +	unsigned long pid;
-> +	unsigned long ric;
-> +};
-> +
-> +static void do_tlbiel_pid(void *info)
-> +{
-> +	struct tlbiel_pid *t = info;
-> +
-> +	if (t->ric == RIC_FLUSH_TLB)
-> +		_tlbiel_pid(t->pid, RIC_FLUSH_TLB);
-> +	else if (t->ric == RIC_FLUSH_PWC)
-> +		_tlbiel_pid(t->pid, RIC_FLUSH_PWC);
-> +	else
-> +		_tlbiel_pid(t->pid, RIC_FLUSH_ALL);
-> +}
-> +
-> +static inline void _tlbiel_pid_broadcast(const struct cpumask *cpus,
-> +				unsigned long pid, unsigned long ric)
+> +.macro __LOAD_REG_IMMEDIATE r, x
+> +	.if \x & ~0xffffffff != 0
+> +		__LOAD_REG_IMMEDIATE_32 \r, (\x) >> 32
+> +		rldicr	\r, \r, 32, 31
+> +		.if (\x) & 0xffff0000 != 0
+> +			oris \r, \r, (\x)@__AS_ATHIGH
+> +		.endif
+> +		.if (\x) & 0xffff != 0
+> +			oris \r, \r, (\x)@l
+> +		.endif
+> +	.else
+> +		__LOAD_REG_IMMEDIATE_32 \r, \x
+> +	.endif
+> +.endm
 
-Can we call these "multicast" instead of "broadcast"?
+Doesn't this force all negative constants, even small ones, to use
+the long sequence?  For example, __LOAD_REG_IMMEDIATE r3, -1 will
+generate (as far as I can see):
 
-I think that's more accurate, and avoids confusion with tlbie which
-literally does a broadcast (at least architecturally).
+	li	r3, -1
+	rldicr	r3, r3, 32, 31
+	oris	r3, r3, 0xffff
+	ori	r3, r3, 0xffff
 
-> @@ -524,6 +604,12 @@ static bool mm_needs_flush_escalation(struct mm_struct *mm)
->  	return false;
->  }
->  
-> +static bool tlbie_enabled = true;
-> +static bool use_tlbie(void)
-> +{
-> +	return tlbie_enabled;
-> +}
+which seems suboptimal.
 
-No synchronisation, but that's OK. Would probably be good to have
-a comment though explaining why.
-
-We could use a static_key but I guess the overhead of a comparison and
-branch is in the noise vs the tlbie/tlbiel.
-
-> @@ -1100,3 +1221,13 @@ extern void radix_kvm_prefetch_workaround(struct mm_struct *mm)
->  }
->  EXPORT_SYMBOL_GPL(radix_kvm_prefetch_workaround);
->  #endif /* CONFIG_KVM_BOOK3S_HV_POSSIBLE */
-> +
-> +static int __init radix_tlb_setup(void)
-> +{
-> +	debugfs_create_bool("tlbie_enabled", 0600,
-> +			powerpc_debugfs_root,
-> +			&tlbie_enabled);
-> +
-> +	return 0;
-> +}
-> +arch_initcall(radix_tlb_setup);
-
-For working around hardware bugs we would want a command line parameter
-or other boot time way to flip this. But I guess you're saying because
-we haven't converted all uses of tlbie we can't really support that
-anyway, and so a runtime switch is sufficient?
-
-cheers
+Paul.
