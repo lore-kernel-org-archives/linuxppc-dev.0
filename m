@@ -2,54 +2,55 @@ Return-Path: <SRS0=FJcg=WK=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3551FC433FF
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Aug 2019 16:25:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A6952C433FF
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Aug 2019 16:27:30 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id DF05920665
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Aug 2019 16:25:27 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DF05920665
+	by mail.kernel.org (Postfix) with ESMTPS id DB6AB208C2
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Aug 2019 16:27:29 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DB6AB208C2
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 467w112cytzDqv1
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Aug 2019 02:25:25 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 467w3M4fyJzDqwW
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Aug 2019 02:27:27 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=kaod.org
- (client-ip=46.105.58.91; helo=7.mo178.mail-out.ovh.net;
+ (client-ip=188.165.43.173; helo=6.mo3.mail-out.ovh.net;
  envelope-from=clg@kaod.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=kaod.org
-X-Greylist: delayed 1197 seconds by postgrey-1.36 at bilbo;
- Thu, 15 Aug 2019 02:23:21 AEST
-Received: from 7.mo178.mail-out.ovh.net (7.mo178.mail-out.ovh.net
- [46.105.58.91])
+X-Greylist: delayed 1799 seconds by postgrey-1.36 at bilbo;
+ Thu, 15 Aug 2019 02:23:53 AEST
+Received: from 6.mo3.mail-out.ovh.net (6.mo3.mail-out.ovh.net [188.165.43.173])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 467vyd06PyzDqT9
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Aug 2019 02:23:16 +1000 (AEST)
-Received: from player770.ha.ovh.net (unknown [10.109.143.232])
- by mo178.mail-out.ovh.net (Postfix) with ESMTP id 25A8475300
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Aug 2019 17:48:05 +0200 (CEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 467vzF2lQ7zDqsK
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Aug 2019 02:23:52 +1000 (AEST)
+Received: from player770.ha.ovh.net (unknown [10.109.159.123])
+ by mo3.mail-out.ovh.net (Postfix) with ESMTP id 4F365223473
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Aug 2019 17:48:24 +0200 (CEST)
 Received: from kaod.org (lfbn-1-2240-157.w90-76.abo.wanadoo.fr [90.76.60.157])
  (Authenticated sender: clg@kaod.org)
- by player770.ha.ovh.net (Postfix) with ESMTPSA id 60E0C8DDB607;
- Wed, 14 Aug 2019 15:47:59 +0000 (UTC)
+ by player770.ha.ovh.net (Postfix) with ESMTPSA id CECC78DDB6B2;
+ Wed, 14 Aug 2019 15:48:17 +0000 (UTC)
 From: =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>
 To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: [PATCH 0/3] powerpc/xmon: Fix dump of XIVE interrupt under pseries
-Date: Wed, 14 Aug 2019 17:47:51 +0200
-Message-Id: <20190814154754.23682-1-clg@kaod.org>
+Subject: [PATCH 3/3] powerpc/xmon: Add a dump of all XIVE interrupts
+Date: Wed, 14 Aug 2019 17:47:54 +0200
+Message-Id: <20190814154754.23682-4-clg@kaod.org>
 X-Mailer: git-send-email 2.21.0
+In-Reply-To: <20190814154754.23682-1-clg@kaod.org>
+References: <20190814154754.23682-1-clg@kaod.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
-X-Ovh-Tracer-Id: 3257228433189997489
+X-Ovh-Tracer-Id: 3262857933774490545
 X-VR-SPAMSTATE: OK
 X-VR-SPAMSCORE: -100
 X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgeduvddruddvledgfedtucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecuqfggjfdpvefjgfevmfevgfenuceurghilhhouhhtmecuhedttdenucesvcftvggtihhpihgvnhhtshculddquddttddm
@@ -71,30 +72,53 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hello,
+Modify the xmon 'dxi' command to query all interrupts if no IRQ number
+is specified.
 
-The xmon 'dx*' commands call OPAL to query information on XIVE but
-this can only be done on baremetal (PowerNV) and it crashes a pseries
-machine. This little series fixes support on pseries and extend the
-'dxi' command.
+Signed-off-by: Cédric Le Goater <clg@kaod.org>
+---
+ arch/powerpc/xmon/xmon.c | 21 +++++++++++++++++++++
+ 1 file changed, 21 insertions(+)
 
-Thanks,
-
-C.
-
-Cédric Le Goater (3):
-  powerpc/xmon: Check for HV mode when dumping XIVE info from OPAL
-  powerpc/xive: Fix dump of XIVE interrupt under pseries
-  powerpc/xmon: Add a dump of all XIVE interrupts
-
- arch/powerpc/include/asm/xive.h          |  2 +
- arch/powerpc/sysdev/xive/xive-internal.h |  2 +
- arch/powerpc/sysdev/xive/common.c        |  7 ++++
- arch/powerpc/sysdev/xive/native.c        | 15 +++++++
- arch/powerpc/sysdev/xive/spapr.c         | 51 ++++++++++++++++++++++++
- arch/powerpc/xmon/xmon.c                 | 50 +++++++++++++++++------
- 6 files changed, 114 insertions(+), 13 deletions(-)
-
+diff --git a/arch/powerpc/xmon/xmon.c b/arch/powerpc/xmon/xmon.c
+index 4ea53e05053f..dc9832e06256 100644
+--- a/arch/powerpc/xmon/xmon.c
++++ b/arch/powerpc/xmon/xmon.c
+@@ -2584,6 +2584,25 @@ static void dump_one_xive_irq(u32 num)
+ 		    num, target, prio, lirq, rc);
+ }
+ 
++static void dump_all_xive_irq(void)
++{
++	unsigned int i;
++	struct irq_desc *desc;
++
++	for_each_irq_desc(i, desc) {
++		struct irq_data *d = irq_desc_get_irq_data(desc);
++		unsigned int hwirq;
++
++		if (!d)
++			continue;
++
++		hwirq = (unsigned int)irqd_to_hwirq(d);
++		/* IPIs are special (HW number 0) */
++		if (hwirq)
++			dump_one_xive_irq(hwirq);
++	}
++}
++
+ static void dump_xives(void)
+ {
+ 	unsigned long num;
+@@ -2601,6 +2620,8 @@ static void dump_xives(void)
+ 	} else if (c == 'i') {
+ 		if (scanhex(&num))
+ 			dump_one_xive_irq(num);
++		else
++			dump_all_xive_irq();
+ 		return;
+ 	}
+ 
 -- 
 2.21.0
 
