@@ -2,116 +2,66 @@ Return-Path: <SRS0=to3W=WL=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.3 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
+X-Spam-Status: No, score=-8.1 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DA4C0C3A589
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Aug 2019 12:57:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2B3C8C3A589
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Aug 2019 13:06:16 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6408D206C1
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Aug 2019 12:57:26 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6408D206C1
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
+	by mail.kernel.org (Postfix) with ESMTPS id A11A1206C1
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Aug 2019 13:06:15 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="uwl+0uYf"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A11A1206C1
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linuxfoundation.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 468RLW6KrFzDr5d
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Aug 2019 22:57:23 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 468RXh6b1dzDr6V
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Aug 2019 23:06:12 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=redhat.com
- (client-ip=209.85.210.47; helo=mail-ot1-f47.google.com;
- envelope-from=major@redhat.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=redhat.com
-Received: from mail-ot1-f47.google.com (mail-ot1-f47.google.com
- [209.85.210.47])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ spf=pass (mailfrom) smtp.mailfrom=linuxfoundation.org
+ (client-ip=198.145.29.99; helo=mail.kernel.org;
+ envelope-from=gregkh@linuxfoundation.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=linuxfoundation.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=kernel.org header.i=@kernel.org header.b="uwl+0uYf"; 
+ dkim-atps=neutral
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 468Ql23smczDqys
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Aug 2019 22:30:02 +1000 (AEST)
-Received: by mail-ot1-f47.google.com with SMTP id g17so4628219otl.2
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Aug 2019 05:30:02 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:to:from:subject:openpgp:autocrypt:message-id
- :date:user-agent:mime-version:content-language
- :content-transfer-encoding;
- bh=KKU7UbalSrVbXSUJT0kVbQnj+ra9PQW6VmQSkR2qXss=;
- b=kP9TfaDXPukS9v8+IY7LOe5/vEHupSdtkTof1lVHbKhrnJbWGZz3yJxAmnDNcyrhLG
- huTkcgbBJYt7OIxelUjG96oUO+T5DgiFLNzXdivTUdM5lg5wwBcaghamV3Pd0oRxotdi
- dwpSrmJVhjwT1PyyoS2m/qQINVtk4Cwz6QJ14YVspYrEtinSesB4tyeebyqwi6Vi9RFB
- yqDg/jz9HBQUbJQgysBazKA6rCdtQgmw87Qf8u0GAtuYoPOEVw0Oz8flkEmhipaZju//
- hA1PSm7tccQz1/IhGfrMXe1hVNOvx8mIzsynPYsJV17JwwiVt6INTXYQX5li0Q4P8smj
- WOHA==
-X-Gm-Message-State: APjAAAUo5FLBdJkRffuC1fWYZVDd8aJR8Z2OCHbH4FVVCCjvFHJn02sg
- ua1XbR6Xl0XDnBf7sNLRMwAPY6iX4oE=
-X-Google-Smtp-Source: APXvYqxkxGI4tiDuhUG3NZL6dIlnrJeuahKuTuRm+DOTRAsYClY6wBLeJmP3ql0d3Ijr3evm1oNIxw==
-X-Received: by 2002:a9d:4590:: with SMTP id x16mr2877214ote.254.1565872199106; 
- Thu, 15 Aug 2019 05:29:59 -0700 (PDT)
-Received: from [192.168.10.164] (cpe-24-243-36-151.satx.res.rr.com.
- [24.243.36.151])
- by smtp.gmail.com with ESMTPSA id a29sm392828oiy.39.2019.08.15.05.29.58
- for <linuxppc-dev@lists.ozlabs.org>
- (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
- Thu, 15 Aug 2019 05:29:58 -0700 (PDT)
-To: linuxppc-dev@lists.ozlabs.org
-From: Major Hayden <major@redhat.com>
-Subject: ppc64le kernel panic on 5.2.9-rc1
-Openpgp: preference=signencrypt
-Autocrypt: addr=major@redhat.com; prefer-encrypt=mutual; keydata=
- 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 UNdR
-Message-ID: <2ff51999-cf99-2190-2707-acf2f2ca3dc5@redhat.com>
-Date: Thu, 15 Aug 2019 07:29:58 -0500
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
- Thunderbird/60.8.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 468RTZ49dvzDr4Q
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Aug 2019 23:03:30 +1000 (AEST)
+Received: from localhost (83-86-89-107.cable.dynamic.v4.ziggo.nl
+ [83.86.89.107])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by mail.kernel.org (Postfix) with ESMTPSA id 3B2B2206C1;
+ Thu, 15 Aug 2019 13:03:27 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+ s=default; t=1565874207;
+ bh=05FKrWR8u7yXNSzvDhK14jodYXXtJLhq05DEOB370o0=;
+ h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+ b=uwl+0uYfDOJT/3Ymv4Xv86Es37VhW5Szs/xP6ombz3PRSN6J0RcO0roRJ6TqaUrJ4
+ WSmNGttTeaVHYBoDy9MKtrR1Llvej761IhslQEAv61f/O4h2cwf8/2SbbMxIjcxa/O
+ n3hqpkpGHdq3IH3OCwePPEUClxHF6VmSJ+8p6W2E=
+Date: Thu, 15 Aug 2019 15:03:25 +0200
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+To: Christoph Hellwig <hch@lst.de>
+Subject: Re: [PATCH 6/6] driver core: initialize a default DMA mask for
+ platform device
+Message-ID: <20190815130325.GB17065@kroah.com>
+References: <20190811080520.21712-1-hch@lst.de>
+ <20190811080520.21712-7-hch@lst.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
-X-Mailman-Approved-At: Thu, 15 Aug 2019 22:53:43 +1000
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20190811080520.21712-7-hch@lst.de>
+User-Agent: Mutt/1.12.1 (2019-06-15)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -123,18 +73,95 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: Gavin Li <git@thegavinli.com>, Fabio Estevam <festevam@gmail.com>,
+ linux-arch@vger.kernel.org, Michal Simek <michal.simek@xilinx.com>,
+ Maxime Chevallier <maxime.chevallier@bootlin.com>,
+ Alan Stern <stern@rowland.harvard.edu>, NXP Linux Team <linux-imx@nxp.com>,
+ Mathias Nyman <mathias.nyman@intel.com>, Sascha Hauer <s.hauer@pengutronix.de>,
+ Minas Harutyunyan <hminas@synopsys.com>, Olav Kongas <ok@artecdesign.ee>,
+ Bin Liu <b-liu@ti.com>, linux-arm-kernel@lists.infradead.org,
+ Laurentiu Tudor <laurentiu.tudor@nxp.com>, Geoff Levand <geoff@infradead.org>,
+ Shawn Guo <shawnguo@kernel.org>, linux-usb@vger.kernel.org,
+ linux-kernel@vger.kernel.org, Tony Prisk <linux@prisktech.co.nz>,
+ iommu@lists.linux-foundation.org,
+ Pengutronix Kernel Team <kernel@pengutronix.de>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hello there,
+On Sun, Aug 11, 2019 at 10:05:20AM +0200, Christoph Hellwig wrote:
+> We still treat devices without a DMA mask as defaulting to 32-bits for
+> both mask, but a few releases ago we've started warning about such
+> cases, as they require special cases to work around this sloppyness.
+> Add a dma_mask field to struct platform_object so that we can initialize
+> the dma_mask pointer in struct device and initialize both masks to
+> 32-bits by default.  Architectures can still override this in
+> arch_setup_pdev_archdata if needed.
+> 
+> Note that the code looks a little odd with the various conditionals
+> because we have to support platform_device structures that are
+> statically allocated.
+> 
+> Signed-off-by: Christoph Hellwig <hch@lst.de>
+> ---
+>  drivers/base/platform.c         | 15 +++++++++++++--
+>  include/linux/platform_device.h |  1 +
+>  2 files changed, 14 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/base/platform.c b/drivers/base/platform.c
+> index ec974ba9c0c4..b216fcb0a8af 100644
+> --- a/drivers/base/platform.c
+> +++ b/drivers/base/platform.c
+> @@ -264,6 +264,17 @@ struct platform_object {
+>  	char name[];
+>  };
+>  
+> +static void setup_pdev_archdata(struct platform_device *pdev)
+> +{
+> +	if (!pdev->dev.coherent_dma_mask)
+> +		pdev->dev.coherent_dma_mask = DMA_BIT_MASK(32);
+> +	if (!pdev->dma_mask)
+> +		pdev->dma_mask = DMA_BIT_MASK(32);
+> +	if (!pdev->dev.dma_mask)
+> +		pdev->dev.dma_mask = &pdev->dma_mask;
+> +	arch_setup_pdev_archdata(pdev);
+> +};
+> +
+>  /**
+>   * platform_device_put - destroy a platform device
+>   * @pdev: platform device to free
+> @@ -310,7 +321,7 @@ struct platform_device *platform_device_alloc(const char *name, int id)
+>  		pa->pdev.id = id;
+>  		device_initialize(&pa->pdev.dev);
+>  		pa->pdev.dev.release = platform_device_release;
+> -		arch_setup_pdev_archdata(&pa->pdev);
+> +		setup_pdev_archdata(&pa->pdev);
+>  	}
+>  
+>  	return pa ? &pa->pdev : NULL;
+> @@ -512,7 +523,7 @@ EXPORT_SYMBOL_GPL(platform_device_del);
+>  int platform_device_register(struct platform_device *pdev)
+>  {
+>  	device_initialize(&pdev->dev);
+> -	arch_setup_pdev_archdata(pdev);
+> +	setup_pdev_archdata(pdev);
+>  	return platform_device_add(pdev);
+>  }
+>  EXPORT_SYMBOL_GPL(platform_device_register);
+> diff --git a/include/linux/platform_device.h b/include/linux/platform_device.h
+> index 9bc36b589827..a2abde2aef25 100644
+> --- a/include/linux/platform_device.h
+> +++ b/include/linux/platform_device.h
+> @@ -24,6 +24,7 @@ struct platform_device {
+>  	int		id;
+>  	bool		id_auto;
+>  	struct device	dev;
+> +	u64		dma_mask;
 
-The CKI Project just found a kernel panic while running the blktests test suite on stable 5.2.9-rc1[0]. Michael Ellerman requested for this list to be copied on these ppc64le failures.
+Why is the dma_mask in 'struct device' which is part of this structure,
+not sufficient here?  Shouldn't the "platform" be setting that up
+correctly already in the "archdata" type callback?
 
-We have some logs[1] for these failures and they start with "ppc64le_host_2_Storage_blktests*". We hope this helps!
+confused,
 
-[0] https://lore.kernel.org/stable/255f9af4-6087-7f56-5860-5aa0397a7631@redhat.com/T/#t
-[1] https://artifacts.cki-project.org/pipelines/100875/logs/
-
---
-Major Hayden
+greg k-h
