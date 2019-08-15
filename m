@@ -7,90 +7,68 @@ X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CFB63C433FF
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Aug 2019 04:58:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 460C2C31E40
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Aug 2019 05:04:55 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 220FD208C2
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Aug 2019 04:58:08 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 220FD208C2
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=au1.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id C4B09208C2
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Aug 2019 05:04:54 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C4B09208C2
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=informatik.wtf
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 468DjT3rmNzDqfr
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Aug 2019 14:58:05 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=au1.ibm.com
- (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=alastair@au1.ibm.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=au1.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+	by lists.ozlabs.org (Postfix) with ESMTP id 468DsJ5GCNzDql6
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Aug 2019 15:04:52 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 468DqC5rcmzDqk9
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Aug 2019 15:03:03 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=informatik.wtf
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 468DqC4fPpz8tT1
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Aug 2019 15:03:03 +1000 (AEST)
+Received: by ozlabs.org (Postfix)
+ id 468DqC4Dz2z9sNf; Thu, 15 Aug 2019 15:03:03 +1000 (AEST)
+Authentication-Results: ozlabs.org;
+ spf=pass (mailfrom) smtp.mailfrom=informatik.wtf
+ (client-ip=131.153.2.44; helo=h3.fbrelay.privateemail.com;
+ envelope-from=cmr@informatik.wtf; receiver=<UNKNOWN>)
+Authentication-Results: ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=informatik.wtf
+Received: from h3.fbrelay.privateemail.com (h3.fbrelay.privateemail.com
+ [131.153.2.44])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 468DgS5Q4YzDqT6
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Aug 2019 14:56:20 +1000 (AEST)
-Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x7F4sYuY099718
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Aug 2019 00:56:17 -0400
-Received: from e06smtp05.uk.ibm.com (e06smtp05.uk.ibm.com [195.75.94.101])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2ucxppbgk1-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Aug 2019 00:56:17 -0400
-Received: from localhost
- by e06smtp05.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <alastair@au1.ibm.com>;
- Thu, 15 Aug 2019 05:56:14 +0100
-Received: from b06cxnps3075.portsmouth.uk.ibm.com (9.149.109.195)
- by e06smtp05.uk.ibm.com (192.168.101.135) with IBM ESMTP SMTP Gateway:
- Authorized Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Thu, 15 Aug 2019 05:56:11 +0100
-Received: from d06av22.portsmouth.uk.ibm.com (d06av22.portsmouth.uk.ibm.com
- [9.149.105.58])
- by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x7F4uAvG50528284
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Thu, 15 Aug 2019 04:56:10 GMT
-Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 91B8D4C040;
- Thu, 15 Aug 2019 04:56:10 +0000 (GMT)
-Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 3F72B4C044;
- Thu, 15 Aug 2019 04:56:10 +0000 (GMT)
-Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
- by d06av22.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Thu, 15 Aug 2019 04:56:10 +0000 (GMT)
-Received: from adsilva.ozlabs.ibm.com (haven.au.ibm.com [9.192.254.114])
- (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ by ozlabs.org (Postfix) with ESMTPS id 468DqB5B6Vz9sN6
+ for <linuxppc-dev@ozlabs.org>; Thu, 15 Aug 2019 15:03:02 +1000 (AEST)
+Received: from MTA-06-3.privateemail.com (mta-06.privateemail.com
+ [68.65.122.16])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.au.ibm.com (Postfix) with ESMTPSA id 1F234A01BD;
- Thu, 15 Aug 2019 14:56:07 +1000 (AEST)
-From: "Alastair D'Silva" <alastair@au1.ibm.com>
-To: alastair@d-silva.org, mpe@ellerman.id.au
-Subject: [PATCH] powerpc: Allow flush_(inval_)dcache_range to work across
- ranges >4GB
-Date: Thu, 15 Aug 2019 14:55:42 +1000
-X-Mailer: git-send-email 2.21.0
+ by h3.fbrelay.privateemail.com (Postfix) with ESMTPS id B489D814B3
+ for <linuxppc-dev@ozlabs.org>; Thu, 15 Aug 2019 01:02:58 -0400 (EDT)
+Received: from MTA-06.privateemail.com (localhost [127.0.0.1])
+ by MTA-06.privateemail.com (Postfix) with ESMTP id 587C76006A;
+ Thu, 15 Aug 2019 01:02:54 -0400 (EDT)
+Received: from wrwlf0000.attlocal.net (unknown [10.20.151.220])
+ by MTA-06.privateemail.com (Postfix) with ESMTPA id EC2D360063;
+ Thu, 15 Aug 2019 05:02:53 +0000 (UTC)
+From: "Christopher M. Riedl" <cmr@informatik.wtf>
+To: linuxppc-dev@ozlabs.org,
+	kernel-hardening@lists.openwall.com
+Subject: [RFC PATCH v4 2/2] powerpc/xmon: Restrict when kernel is locked down
+Date: Thu, 15 Aug 2019 00:06:16 -0500
+Message-Id: <20190815050616.2547-3-cmr@informatik.wtf>
+X-Mailer: git-send-email 2.22.0
+In-Reply-To: <20190815050616.2547-1-cmr@informatik.wtf>
+References: <20190815050616.2547-1-cmr@informatik.wtf>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-x-cbid: 19081504-0020-0000-0000-0000035FED72
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19081504-0021-0000-0000-000021B50A83
-Message-Id: <20190815045543.16325-1-alastair@au1.ibm.com>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2019-08-15_02:, , signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=844 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1906280000 definitions=main-1908150051
+X-Virus-Scanned: ClamAV using ClamSMTP
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -102,54 +80,222 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-kernel@vger.kernel.org, stable@vger.kernel.org,
- Paul Mackerras <paulus@samba.org>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@lists.ozlabs.org,
- Allison Randal <allison@lohutok.net>
+Cc: Andrew Donnellan <ajd@linux.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Alastair D'Silva <alastair@d-silva.org>
+Xmon should be either fully or partially disabled depending on the
+kernel lockdown state.
 
-Heads Up: This patch cannot be submitted to Linus's tree, as the affected
-assembler functions have already been converted to C.
+Put xmon into read-only mode for lockdown=integrity and completely
+disable xmon when lockdown=confidentiality. Xmon checks the lockdown
+state and takes appropriate action:
 
-When calling flush_(inval_)dcache_range with a size >4GB, we were masking
-off the upper 32 bits, so we would incorrectly flush a range smaller
-than intended.
+ (1) during xmon_setup to prevent early xmon'ing
 
-This patch replaces the 32 bit shifts with 64 bit ones, so that
-the full size is accounted for.
+ (2) when triggered via sysrq
 
-Signed-off-by: Alastair D'Silva <alastair@d-silva.org>
+ (3) when toggled via debugfs
+
+ (4) when triggered via a previously enabled breakpoint
+
+The following lockdown state transitions are handled:
+
+ (1) lockdown=none -> lockdown=integrity
+     set xmon read-only mode
+
+ (2) lockdown=none -> lockdown=confidentiality
+     clear all breakpoints, set xmon read-only mode,
+     prevent re-entry into xmon
+
+ (3) lockdown=integrity -> lockdown=confidentiality
+     clear all breakpoints, set xmon read-only mode,
+     prevent re-entry into xmon
+
+Suggested-by: Andrew Donnellan <ajd@linux.ibm.com>
+Signed-off-by: Christopher M. Riedl <cmr@informatik.wtf>
 ---
- arch/powerpc/kernel/misc_64.S | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ arch/powerpc/xmon/xmon.c     | 59 ++++++++++++++++++++++++++++++++++--
+ include/linux/security.h     |  2 ++
+ security/lockdown/lockdown.c |  2 ++
+ 3 files changed, 60 insertions(+), 3 deletions(-)
 
-diff --git a/arch/powerpc/kernel/misc_64.S b/arch/powerpc/kernel/misc_64.S
-index 1ad4089dd110..d4d096f80f4b 100644
---- a/arch/powerpc/kernel/misc_64.S
-+++ b/arch/powerpc/kernel/misc_64.S
-@@ -130,7 +130,7 @@ _GLOBAL_TOC(flush_dcache_range)
- 	subf	r8,r6,r4		/* compute length */
- 	add	r8,r8,r5		/* ensure we get enough */
- 	lwz	r9,DCACHEL1LOGBLOCKSIZE(r10)	/* Get log-2 of dcache block size */
--	srw.	r8,r8,r9		/* compute line count */
-+	srd.	r8,r8,r9		/* compute line count */
- 	beqlr				/* nothing to do? */
- 	mtctr	r8
- 0:	dcbst	0,r6
-@@ -148,7 +148,7 @@ _GLOBAL(flush_inval_dcache_range)
- 	subf	r8,r6,r4		/* compute length */
- 	add	r8,r8,r5		/* ensure we get enough */
- 	lwz	r9,DCACHEL1LOGBLOCKSIZE(r10)/* Get log-2 of dcache block size */
--	srw.	r8,r8,r9		/* compute line count */
-+	srd.	r8,r8,r9		/* compute line count */
- 	beqlr				/* nothing to do? */
- 	sync
- 	isync
+diff --git a/arch/powerpc/xmon/xmon.c b/arch/powerpc/xmon/xmon.c
+index bb63ecc599fd..8fd79369974e 100644
+--- a/arch/powerpc/xmon/xmon.c
++++ b/arch/powerpc/xmon/xmon.c
+@@ -25,6 +25,7 @@
+ #include <linux/nmi.h>
+ #include <linux/ctype.h>
+ #include <linux/highmem.h>
++#include <linux/security.h>
+ 
+ #include <asm/debugfs.h>
+ #include <asm/ptrace.h>
+@@ -187,6 +188,9 @@ static void dump_tlb_44x(void);
+ static void dump_tlb_book3e(void);
+ #endif
+ 
++static void clear_all_bpt(void);
++static void xmon_init(int);
++
+ #ifdef CONFIG_PPC64
+ #define REG		"%.16lx"
+ #else
+@@ -283,10 +287,41 @@ Commands:\n\
+ "  U	show uptime information\n"
+ "  ?	help\n"
+ "  # n	limit output to n lines per page (for dp, dpa, dl)\n"
+-"  zr	reboot\n\
+-  zh	halt\n"
++"  zr	reboot\n"
++"  zh	halt\n"
+ ;
+ 
++#ifdef CONFIG_SECURITY
++static bool xmon_is_locked_down(void)
++{
++	static bool lockdown;
++
++	if (!lockdown) {
++		lockdown = !!security_locked_down(LOCKDOWN_XMON_RW);
++		if (lockdown) {
++			printf("xmon: Disabled due to kernel lockdown\n");
++			xmon_is_ro = true;
++			xmon_on = 0;
++			xmon_init(0);
++			clear_all_bpt();
++		}
++	}
++
++	if (!xmon_is_ro) {
++		xmon_is_ro = !!security_locked_down(LOCKDOWN_XMON_WR);
++		if (xmon_is_ro)
++			printf("xmon: Read-only due to kernel lockdown\n");
++	}
++
++	return lockdown;
++}
++#else /* CONFIG_SECURITY */
++static inline bool xmon_is_locked_down(void)
++{
++	return false;
++}
++#endif
++
+ static struct pt_regs *xmon_regs;
+ 
+ static inline void sync(void)
+@@ -704,6 +739,9 @@ static int xmon_bpt(struct pt_regs *regs)
+ 	struct bpt *bp;
+ 	unsigned long offset;
+ 
++	if (xmon_is_locked_down())
++		return 0;
++
+ 	if ((regs->msr & (MSR_IR|MSR_PR|MSR_64BIT)) != (MSR_IR|MSR_64BIT))
+ 		return 0;
+ 
+@@ -735,6 +773,9 @@ static int xmon_sstep(struct pt_regs *regs)
+ 
+ static int xmon_break_match(struct pt_regs *regs)
+ {
++	if (xmon_is_locked_down())
++		return 0;
++
+ 	if ((regs->msr & (MSR_IR|MSR_PR|MSR_64BIT)) != (MSR_IR|MSR_64BIT))
+ 		return 0;
+ 	if (dabr.enabled == 0)
+@@ -745,6 +786,9 @@ static int xmon_break_match(struct pt_regs *regs)
+ 
+ static int xmon_iabr_match(struct pt_regs *regs)
+ {
++	if (xmon_is_locked_down())
++		return 0;
++
+ 	if ((regs->msr & (MSR_IR|MSR_PR|MSR_64BIT)) != (MSR_IR|MSR_64BIT))
+ 		return 0;
+ 	if (iabr == NULL)
+@@ -3750,6 +3794,9 @@ static void xmon_init(int enable)
+ #ifdef CONFIG_MAGIC_SYSRQ
+ static void sysrq_handle_xmon(int key)
+ {
++	if (xmon_is_locked_down())
++		return;
++
+ 	/* ensure xmon is enabled */
+ 	xmon_init(1);
+ 	debugger(get_irq_regs());
+@@ -3771,7 +3818,6 @@ static int __init setup_xmon_sysrq(void)
+ device_initcall(setup_xmon_sysrq);
+ #endif /* CONFIG_MAGIC_SYSRQ */
+ 
+-#ifdef CONFIG_DEBUG_FS
+ static void clear_all_bpt(void)
+ {
+ 	int i;
+@@ -3793,8 +3839,12 @@ static void clear_all_bpt(void)
+ 	printf("xmon: All breakpoints cleared\n");
+ }
+ 
++#ifdef CONFIG_DEBUG_FS
+ static int xmon_dbgfs_set(void *data, u64 val)
+ {
++	if (xmon_is_locked_down())
++		return 0;
++
+ 	xmon_on = !!val;
+ 	xmon_init(xmon_on);
+ 
+@@ -3853,6 +3903,9 @@ early_param("xmon", early_parse_xmon);
+ 
+ void __init xmon_setup(void)
+ {
++	if (xmon_is_locked_down())
++		return;
++
+ 	if (xmon_on)
+ 		xmon_init(1);
+ 	if (xmon_early)
+diff --git a/include/linux/security.h b/include/linux/security.h
+index 807dc0d24982..379b74b5d545 100644
+--- a/include/linux/security.h
++++ b/include/linux/security.h
+@@ -116,12 +116,14 @@ enum lockdown_reason {
+ 	LOCKDOWN_MODULE_PARAMETERS,
+ 	LOCKDOWN_MMIOTRACE,
+ 	LOCKDOWN_DEBUGFS,
++	LOCKDOWN_XMON_WR,
+ 	LOCKDOWN_INTEGRITY_MAX,
+ 	LOCKDOWN_KCORE,
+ 	LOCKDOWN_KPROBES,
+ 	LOCKDOWN_BPF_READ,
+ 	LOCKDOWN_PERF,
+ 	LOCKDOWN_TRACEFS,
++	LOCKDOWN_XMON_RW,
+ 	LOCKDOWN_CONFIDENTIALITY_MAX,
+ };
+ 
+diff --git a/security/lockdown/lockdown.c b/security/lockdown/lockdown.c
+index f6c74cf6a798..79d1799a62ca 100644
+--- a/security/lockdown/lockdown.c
++++ b/security/lockdown/lockdown.c
+@@ -31,12 +31,14 @@ static char *lockdown_reasons[LOCKDOWN_CONFIDENTIALITY_MAX+1] = {
+ 	[LOCKDOWN_MODULE_PARAMETERS] = "unsafe module parameters",
+ 	[LOCKDOWN_MMIOTRACE] = "unsafe mmio",
+ 	[LOCKDOWN_DEBUGFS] = "debugfs access",
++	[LOCKDOWN_XMON_WR] = "xmon write access",
+ 	[LOCKDOWN_INTEGRITY_MAX] = "integrity",
+ 	[LOCKDOWN_KCORE] = "/proc/kcore access",
+ 	[LOCKDOWN_KPROBES] = "use of kprobes",
+ 	[LOCKDOWN_BPF_READ] = "use of bpf to read kernel RAM",
+ 	[LOCKDOWN_PERF] = "unsafe use of perf",
+ 	[LOCKDOWN_TRACEFS] = "use of tracefs",
++	[LOCKDOWN_XMON_RW] = "xmon read and write access",
+ 	[LOCKDOWN_CONFIDENTIALITY_MAX] = "confidentiality",
+ };
+ 
 -- 
-2.21.0
+2.22.0
 
