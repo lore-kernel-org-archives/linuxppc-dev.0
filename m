@@ -2,61 +2,49 @@ Return-Path: <SRS0=to3W=WL=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-2.3 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0870EC433FF
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Aug 2019 09:08:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 31EEFC31E40
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Aug 2019 10:52:03 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 8AE60218AD
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Aug 2019 09:08:54 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8AE60218AD
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nxp.com
+	by mail.kernel.org (Postfix) with ESMTPS id 64C13208C2
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Aug 2019 10:52:02 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 64C13208C2
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 468LGr3s9JzDqq3
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Aug 2019 19:08:52 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 468NYq4S4WzDr7h
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Aug 2019 20:51:59 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=nxp.com
- (client-ip=92.121.34.13; helo=inva020.nxp.com;
- envelope-from=xiaowei.bao@nxp.com; receiver=<UNKNOWN>)
+ spf=none (mailfrom) smtp.mailfrom=lst.de
+ (client-ip=213.95.11.211; helo=verein.lst.de; envelope-from=hch@lst.de;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=nxp.com
-Received: from inva020.nxp.com (inva020.nxp.com [92.121.34.13])
+ dmarc=none (p=none dis=none) header.from=lst.de
+Received: from verein.lst.de (verein.lst.de [213.95.11.211])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 468Kpq4ZN5zDr10
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Aug 2019 18:48:03 +1000 (AEST)
-Received: from inva020.nxp.com (localhost [127.0.0.1])
- by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id C62BC1A03EE;
- Thu, 15 Aug 2019 10:48:00 +0200 (CEST)
-Received: from invc005.ap-rdc01.nxp.com (invc005.ap-rdc01.nxp.com
- [165.114.16.14])
- by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id 1E0881A0031;
- Thu, 15 Aug 2019 10:47:52 +0200 (CEST)
-Received: from titan.ap.freescale.net (TITAN.ap.freescale.net [10.192.208.233])
- by invc005.ap-rdc01.nxp.com (Postfix) with ESMTP id 1343640327;
- Thu, 15 Aug 2019 16:47:40 +0800 (SGT)
-From: Xiaowei Bao <xiaowei.bao@nxp.com>
-To: jingoohan1@gmail.com, gustavo.pimentel@synopsys.com, bhelgaas@google.com,
- robh+dt@kernel.org, mark.rutland@arm.com, shawnguo@kernel.org,
- leoyang.li@nxp.com, kishon@ti.com, lorenzo.pieralisi@arm.com,
- arnd@arndb.de, gregkh@linuxfoundation.org, minghuan.Lian@nxp.com,
- mingkai.hu@nxp.com, roy.zang@nxp.com, linux-pci@vger.kernel.org,
- devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 10/10] misc: pci_endpoint_test: Add LS1088a in pci_device_id
- table
-Date: Thu, 15 Aug 2019 16:37:16 +0800
-Message-Id: <20190815083716.4715-10-xiaowei.bao@nxp.com>
-X-Mailer: git-send-email 2.9.5
-In-Reply-To: <20190815083716.4715-1-xiaowei.bao@nxp.com>
-References: <20190815083716.4715-1-xiaowei.bao@nxp.com>
-X-Virus-Scanned: ClamAV using ClamSMTP
+ by lists.ozlabs.org (Postfix) with ESMTPS id 468NWq4kr8zDqSh
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Aug 2019 20:50:13 +1000 (AEST)
+Received: by verein.lst.de (Postfix, from userid 2407)
+ id 9FC9468AFE; Thu, 15 Aug 2019 12:50:03 +0200 (CEST)
+Date: Thu, 15 Aug 2019 12:50:02 +0200
+From: Christoph Hellwig <hch@lst.de>
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+Subject: Re: [PATCH 7/8] parisc: don't set ARCH_NO_COHERENT_DMA_MMAP
+Message-ID: <20190815105002.GA30805@lst.de>
+References: <20190808160005.10325-1-hch@lst.de>
+ <20190808160005.10325-8-hch@lst.de>
+ <1565861152.2963.7.camel@HansenPartnership.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1565861152.2963.7.camel@HansenPartnership.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -68,31 +56,67 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Xiaowei Bao <xiaowei.bao@nxp.com>
+Cc: linux-xtensa@linux-xtensa.org, Michal Simek <monstr@monstr.eu>,
+ Vladimir Murzin <vladimir.murzin@arm.com>, linux-parisc@vger.kernel.org,
+ linux-sh@vger.kernel.org, Takashi Iwai <tiwai@suse.de>,
+ linuxppc-dev@lists.ozlabs.org, Helge Deller <deller@gmx.de>, x86@kernel.org,
+ linux-m68k@lists.linux-m68k.org, linux-kernel@vger.kernel.org,
+ iommu@lists.linux-foundation.org, Robin Murphy <robin.murphy@arm.com>,
+ Christoph Hellwig <hch@lst.de>, linux-arm-kernel@lists.infradead.org,
+ Marek Szyprowski <m.szyprowski@samsung.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Add LS1088a in pci_device_id table so that pci-epf-test can be used
-for testing PCIe EP in LS1088a.
+On Thu, Aug 15, 2019 at 10:25:52AM +0100, James Bottomley wrote:
+> >  which means exporting normally cachable memory to userspace is
+> > relatively dangrous due to cache aliasing.
+> > 
+> > But normally cachable memory is only allocated by dma_alloc_coherent
+> > on parisc when using the sba_iommu or ccio_iommu drivers, so just
+> > remove the .mmap implementation for them so that we don't have to set
+> > ARCH_NO_COHERENT_DMA_MMAP, which I plan to get rid of.
+> 
+> So I don't think this is quite right.  We have three architectural
+> variants essentially (hidden behind about 12 cpu types):
+> 
+>    1. pa70xx: These can't turn off page caching, so they were the non
+>       coherent problem case
+>    2. pa71xx: These can manufacture coherent memory simply by turning off
+>       the cache on a per page basis
+>    3. pa8xxx: these have a full cache flush coherence mechanism.
+> 
+> (I might have this slightly wrong: I vaguely remember the pa71xxlc
+> variants have some weird cache quirks for DMA as well)
+> 
+> So I think pa70xx we can't mmap.  pa71xx we can provided we mark the
+> page as uncached ... which should already have happened in the allocate
+> and pa8xxx which can always mmap dma memory without any special tricks.
 
-Signed-off-by: Xiaowei Bao <xiaowei.bao@nxp.com>
----
- drivers/misc/pci_endpoint_test.c | 1 +
- 1 file changed, 1 insertion(+)
+Except for the different naming scheme vs the code this matches my
+assumptions.
 
-diff --git a/drivers/misc/pci_endpoint_test.c b/drivers/misc/pci_endpoint_test.c
-index 6e208a0..d531951 100644
---- a/drivers/misc/pci_endpoint_test.c
-+++ b/drivers/misc/pci_endpoint_test.c
-@@ -793,6 +793,7 @@ static const struct pci_device_id pci_endpoint_test_tbl[] = {
- 	{ PCI_DEVICE(PCI_VENDOR_ID_TI, PCI_DEVICE_ID_TI_DRA74x) },
- 	{ PCI_DEVICE(PCI_VENDOR_ID_TI, PCI_DEVICE_ID_TI_DRA72x) },
- 	{ PCI_DEVICE(PCI_VENDOR_ID_FREESCALE, 0x81c0) },
-+	{ PCI_DEVICE(PCI_VENDOR_ID_FREESCALE, 0x80c0) },
- 	{ PCI_DEVICE_DATA(SYNOPSYS, EDDA, NULL) },
- 	{ PCI_DEVICE(PCI_VENDOR_ID_TI, PCI_DEVICE_ID_TI_AM654),
- 	  .driver_data = (kernel_ulong_t)&am654_data
--- 
-2.9.5
+In the code we have three cases (and a fourth EISA case mention in
+comments, but not actually implemented as far as I can tell):
 
+arch/parisc/kernel/pci-dma.c says in the top of file comments:
+
+** AFAIK, all PA7100LC and PA7300LC platforms can use this code.
+
+and the handles two different case.  for cpu_type == pcxl or pcxl2
+it maps the memory as uncached for dma_alloc_coherent, and for all
+other cpu types it fails the coherent allocations.
+
+In addition to that there are the ccio and sba iommu drivers, of which
+according to your above comment one is always present for pa8xxx.
+
+Which brings us back to this patch, which ensures that no cacheable
+memory is exported to userspace by removing ->mmap from ccio and sba.
+It then enabled dma_mmap_coherent for the pcxl or pcxl2 case that
+allocates uncached memory, which dma_mmap_coherent does not work
+because dma_alloc_coherent already failed for the !pcxl && !pcxl2
+and thus there is no memory to mmap.
+
+So if the description is too confusing please suggest a better
+one, I'm a little lost between all these code names and product
+names (arch/parisc/include/asm/dma-mapping.h uses yet another set).
