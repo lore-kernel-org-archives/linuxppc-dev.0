@@ -2,85 +2,71 @@ Return-Path: <SRS0=to3W=WL=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+X-Spam-Status: No, score=-8.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+	URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9030FC31E40
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Aug 2019 11:39:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 56D2DC433FF
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Aug 2019 11:52:14 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 19F522086C
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Aug 2019 11:39:30 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 19F522086C
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 1DA9E2083B
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Aug 2019 11:52:12 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1DA9E2083B
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=intel.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 468Pcb6YqzzDr5D
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Aug 2019 21:39:27 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 468PvG0yv1zDqxH
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Aug 2019 21:52:10 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
- (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=gromero@linux.ibm.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=intel.com
+ (client-ip=192.55.52.115; helo=mga14.intel.com;
+ envelope-from=adrian.hunter@intel.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+ dmarc=pass (p=none dis=none) header.from=intel.com
+Received: from mga14.intel.com (mga14.intel.com [192.55.52.115])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46822k19q3zDqs3
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Aug 2019 06:57:17 +1000 (AEST)
-Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x7EKphVL087301
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Aug 2019 16:57:12 -0400
-Received: from ppma01dal.us.ibm.com (83.d6.3fa9.ip4.static.sl-reverse.com
- [169.63.214.131])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2ucsg70kq0-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Aug 2019 16:57:12 -0400
-Received: from pps.filterd (ppma01dal.us.ibm.com [127.0.0.1])
- by ppma01dal.us.ibm.com (8.16.0.27/8.16.0.27) with SMTP id x7EKt07j020923
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Aug 2019 20:57:11 GMT
-Received: from b03cxnp08026.gho.boulder.ibm.com
- (b03cxnp08026.gho.boulder.ibm.com [9.17.130.18])
- by ppma01dal.us.ibm.com with ESMTP id 2ucr3q0km9-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Aug 2019 20:57:11 +0000
-Received: from b03ledav006.gho.boulder.ibm.com
- (b03ledav006.gho.boulder.ibm.com [9.17.130.237])
- by b03cxnp08026.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x7EKv9HJ50921972
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Wed, 14 Aug 2019 20:57:09 GMT
-Received: from b03ledav006.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 85DB8C6055;
- Wed, 14 Aug 2019 20:57:09 +0000 (GMT)
-Received: from b03ledav006.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 5976EC6057;
- Wed, 14 Aug 2019 20:57:07 +0000 (GMT)
-Received: from localhost.localdomain (unknown [9.85.161.5])
- by b03ledav006.gho.boulder.ibm.com (Postfix) with ESMTP;
- Wed, 14 Aug 2019 20:57:06 +0000 (GMT)
-From: Gustavo Romero <gromero@linux.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 2/2] selftests/powerpc: Ignore generated files
-Date: Wed, 14 Aug 2019 15:56:38 -0500
-Message-Id: <20190814205638.25322-2-gromero@linux.ibm.com>
-X-Mailer: git-send-email 2.17.1
-In-Reply-To: <20190814205638.25322-1-gromero@linux.ibm.com>
-References: <20190814205638.25322-1-gromero@linux.ibm.com>
-X-TM-AS-GCONF: 00
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2019-08-14_07:, , signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- malwarescore=0 suspectscore=1 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1906280000 definitions=main-1908140189
-X-Mailman-Approved-At: Thu, 15 Aug 2019 21:33:39 +1000
+ by lists.ozlabs.org (Postfix) with ESMTPS id 468Ps32p33zDqxk
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Aug 2019 21:50:08 +1000 (AEST)
+X-Amp-Result: SKIPPED(no attachment in message)
+X-Amp-File-Uploaded: False
+Received: from fmsmga003.fm.intel.com ([10.253.24.29])
+ by fmsmga103.fm.intel.com with ESMTP/TLS/DHE-RSA-AES256-GCM-SHA384;
+ 15 Aug 2019 04:50:05 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="5.64,389,1559545200"; d="scan'208";a="184601005"
+Received: from ahunter-desktop.fi.intel.com (HELO [10.237.72.122])
+ ([10.237.72.122])
+ by FMSMGA003.fm.intel.com with ESMTP; 15 Aug 2019 04:50:00 -0700
+Subject: Re: [PATCH v1 4/4] mmc: sdhci-of-esdhc: add erratum A011334 support
+ in ls1028a 1.0 SoC
+To: Yinbo Zhu <yinbo.zhu@nxp.com>, Rob Herring <robh+dt@kernel.org>,
+ Mark Rutland <mark.rutland@arm.com>,
+ Catalin Marinas <catalin.marinas@arm.com>, Will Deacon
+ <will.deacon@arm.com>, Ulf Hansson <ulf.hansson@linaro.org>,
+ Li Yang <leoyang.li@nxp.com>, Claudiu Manoil <claudiu.manoil@nxp.com>,
+ Amit Jain <amit.jain_1@nxp.com>, Yangbo Lu <yangbo.lu@nxp.com>,
+ Vabhav Sharma <vabhav.sharma@nxp.com>, Rajesh Bhagat
+ <rajesh.bhagat@nxp.com>, Ashish Kumar <Ashish.Kumar@nxp.com>,
+ devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ linux-kernel@vger.kernel.org, linux-mmc@vger.kernel.org
+References: <20190814072649.8237-1-yinbo.zhu@nxp.com>
+ <20190814072649.8237-4-yinbo.zhu@nxp.com>
+From: Adrian Hunter <adrian.hunter@intel.com>
+Organization: Intel Finland Oy, Registered Address: PL 281, 00181 Helsinki,
+ Business Identity Code: 0357606 - 4, Domiciled in Helsinki
+Message-ID: <eeaf2862-8f05-e813-917b-a8358e6d90ab@intel.com>
+Date: Thu, 15 Aug 2019 14:48:51 +0300
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.8.0
+MIME-Version: 1.0
+In-Reply-To: <20190814072649.8237-4-yinbo.zhu@nxp.com>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -92,77 +78,37 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Gustavo Romero <gromero@linux.ibm.com>
+Cc: Alison Wang <alison.wang@nxp.com>,
+ Alex Marginean <alexandru.marginean@nxp.com>, xiaobo.xie@nxp.com,
+ Catalin Horghidan <catalin.horghidan@nxp.com>,
+ Rajat Srivastava <rajat.srivastava@nxp.com>, jiafei.pan@nxp.com,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Currently some binary files which are generated when tests are compiled
-are not ignored by git, so 'git status' catch them.
+On 14/08/19 10:26 AM, Yinbo Zhu wrote:
+> This patch is to add erratum A011334 support in ls1028a 1.0 SoC
+> 
+> Signed-off-by: Yinbo Zhu <yinbo.zhu@nxp.com>
 
-For copyloops test, fix wrong binary names already in .gitignore. For
-ptrace, security, and stringloops tests add missing binary names to the
-.gitignore file.
+Acked-by: Adrian Hunter <adrian.hunter@intel.com>
 
-Signed-off-by: Gustavo Romero <gromero@linux.ibm.com>
----
- tools/testing/selftests/powerpc/copyloops/.gitignore   | 8 ++++----
- tools/testing/selftests/powerpc/ptrace/.gitignore      | 3 +++
- tools/testing/selftests/powerpc/security/.gitignore    | 1 +
- tools/testing/selftests/powerpc/stringloops/.gitignore | 5 ++++-
- 4 files changed, 12 insertions(+), 5 deletions(-)
- create mode 100644 tools/testing/selftests/powerpc/security/.gitignore
-
-diff --git a/tools/testing/selftests/powerpc/copyloops/.gitignore b/tools/testing/selftests/powerpc/copyloops/.gitignore
-index ce12cd0e2967..de158104912a 100644
---- a/tools/testing/selftests/powerpc/copyloops/.gitignore
-+++ b/tools/testing/selftests/powerpc/copyloops/.gitignore
-@@ -1,13 +1,13 @@
- copyuser_64_t0
- copyuser_64_t1
- copyuser_64_t2
--copyuser_power7_t0
--copyuser_power7_t1
-+copyuser_p7_t0
-+copyuser_p7_t1
- memcpy_64_t0
- memcpy_64_t1
- memcpy_64_t2
--memcpy_power7_t0
--memcpy_power7_t1
-+memcpy_p7_t0
-+memcpy_p7_t1
- copyuser_64_exc_t0
- copyuser_64_exc_t1
- copyuser_64_exc_t2
-diff --git a/tools/testing/selftests/powerpc/ptrace/.gitignore b/tools/testing/selftests/powerpc/ptrace/.gitignore
-index 07ec449a2767..dce19f221c46 100644
---- a/tools/testing/selftests/powerpc/ptrace/.gitignore
-+++ b/tools/testing/selftests/powerpc/ptrace/.gitignore
-@@ -10,3 +10,6 @@ ptrace-tm-spd-vsx
- ptrace-tm-spr
- ptrace-hwbreak
- perf-hwbreak
-+core-pkey
-+ptrace-pkey
-+ptrace-syscall
-diff --git a/tools/testing/selftests/powerpc/security/.gitignore b/tools/testing/selftests/powerpc/security/.gitignore
-new file mode 100644
-index 000000000000..0b969fba3beb
---- /dev/null
-+++ b/tools/testing/selftests/powerpc/security/.gitignore
-@@ -0,0 +1 @@
-+rfi_flush
-diff --git a/tools/testing/selftests/powerpc/stringloops/.gitignore b/tools/testing/selftests/powerpc/stringloops/.gitignore
-index 0b43da74ee46..31a17e0ba884 100644
---- a/tools/testing/selftests/powerpc/stringloops/.gitignore
-+++ b/tools/testing/selftests/powerpc/stringloops/.gitignore
-@@ -1 +1,4 @@
--memcmp
-+memcmp_64
-+memcmp_32
-+strlen
-+strlen_32
--- 
-2.17.1
+> ---
+>  drivers/mmc/host/sdhci-of-esdhc.c | 1 +
+>  1 file changed, 1 insertion(+)
+> 
+> diff --git a/drivers/mmc/host/sdhci-of-esdhc.c b/drivers/mmc/host/sdhci-of-esdhc.c
+> index b16f7d440f78..eb2b290447fc 100644
+> --- a/drivers/mmc/host/sdhci-of-esdhc.c
+> +++ b/drivers/mmc/host/sdhci-of-esdhc.c
+> @@ -1006,6 +1006,7 @@ static struct soc_device_attribute soc_incorrect_hostver[] = {
+>  static struct soc_device_attribute soc_fixup_sdhc_clkdivs[] = {
+>  	{ .family = "QorIQ LX2160A", .revision = "1.0", },
+>  	{ .family = "QorIQ LX2160A", .revision = "2.0", },
+> +	{ .family = "QorIQ LS1028A", .revision = "1.0", },
+>  	{ },
+>  };
+>  
+> 
 
