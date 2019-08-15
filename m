@@ -2,61 +2,61 @@ Return-Path: <SRS0=to3W=WL=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.3 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=3.4.0
+	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0A555C433FF
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Aug 2019 08:17:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 46763C433FF
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Aug 2019 08:50:28 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3DAF52064A
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Aug 2019 08:17:30 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3DAF52064A
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
+	by mail.kernel.org (Postfix) with ESMTPS id 8EB85218C9
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Aug 2019 08:50:27 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8EB85218C9
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nxp.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 468K7W6PpzzDr6P
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Aug 2019 18:17:27 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 468KsY2ltqzDr2w
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Aug 2019 18:50:25 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=kaod.org
- (client-ip=46.105.59.63; helo=4.mo68.mail-out.ovh.net;
- envelope-from=clg@kaod.org; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=nxp.com
+ (client-ip=92.121.34.13; helo=inva020.nxp.com;
+ envelope-from=xiaowei.bao@nxp.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=kaod.org
-Received: from 4.mo68.mail-out.ovh.net (4.mo68.mail-out.ovh.net [46.105.59.63])
+ dmarc=pass (p=none dis=none) header.from=nxp.com
+Received: from inva020.nxp.com (inva020.nxp.com [92.121.34.13])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 468K5T00LGzDr0v
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Aug 2019 18:15:36 +1000 (AEST)
-Received: from player797.ha.ovh.net (unknown [10.109.143.72])
- by mo68.mail-out.ovh.net (Postfix) with ESMTP id F06871400C2
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Aug 2019 10:15:31 +0200 (CEST)
-Received: from kaod.org (lfbn-1-2240-157.w90-76.abo.wanadoo.fr [90.76.60.157])
- (Authenticated sender: clg@kaod.org)
- by player797.ha.ovh.net (Postfix) with ESMTPSA id 8DC168F83BE8;
- Thu, 15 Aug 2019 08:15:26 +0000 (UTC)
-Subject: Re: [PATCH 1/3] powerpc/xmon: Check for HV mode when dumping XIVE
- info from OPAL
-To: Jordan Niethe <jniethe5@gmail.com>, Michael Ellerman <mpe@ellerman.id.au>
-References: <20190814154754.23682-1-clg@kaod.org>
- <20190814154754.23682-2-clg@kaod.org>
- <21746c620de5ac0b9489a10cdc1f584f94d592fd.camel@gmail.com>
-From: =?UTF-8?Q?C=c3=a9dric_Le_Goater?= <clg@kaod.org>
-Message-ID: <294237fc-13eb-a0eb-3c28-db4141140e8d@kaod.org>
-Date: Thu, 15 Aug 2019 10:15:25 +0200
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
- Thunderbird/60.8.0
-MIME-Version: 1.0
-In-Reply-To: <21746c620de5ac0b9489a10cdc1f584f94d592fd.camel@gmail.com>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: 8bit
-X-Ovh-Tracer-Id: 1487032305732455363
-X-VR-SPAMSTATE: OK
-X-VR-SPAMSCORE: -100
-X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgeduvddrudefuddgtdduucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecuqfggjfdpvefjgfevmfevgfenuceurghilhhouhhtmecuhedttdenucesvcftvggtihhpihgvnhhtshculddquddttddm
+ by lists.ozlabs.org (Postfix) with ESMTPS id 468KpY4KFqzDr1G
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Aug 2019 18:47:47 +1000 (AEST)
+Received: from inva020.nxp.com (localhost [127.0.0.1])
+ by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id 1AE3D1A0467;
+ Thu, 15 Aug 2019 10:47:45 +0200 (CEST)
+Received: from invc005.ap-rdc01.nxp.com (invc005.ap-rdc01.nxp.com
+ [165.114.16.14])
+ by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id 638CC1A0013;
+ Thu, 15 Aug 2019 10:47:36 +0200 (CEST)
+Received: from titan.ap.freescale.net (TITAN.ap.freescale.net [10.192.208.233])
+ by invc005.ap-rdc01.nxp.com (Postfix) with ESMTP id 952794030E;
+ Thu, 15 Aug 2019 16:47:25 +0800 (SGT)
+From: Xiaowei Bao <xiaowei.bao@nxp.com>
+To: jingoohan1@gmail.com, gustavo.pimentel@synopsys.com, bhelgaas@google.com,
+ robh+dt@kernel.org, mark.rutland@arm.com, shawnguo@kernel.org,
+ leoyang.li@nxp.com, kishon@ti.com, lorenzo.pieralisi@arm.com,
+ arnd@arndb.de, gregkh@linuxfoundation.org, minghuan.Lian@nxp.com,
+ mingkai.hu@nxp.com, roy.zang@nxp.com, linux-pci@vger.kernel.org,
+ devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH 02/10] PCI: designware-ep: Add the doorbell mode of MSI-X in
+ EP mode
+Date: Thu, 15 Aug 2019 16:37:08 +0800
+Message-Id: <20190815083716.4715-2-xiaowei.bao@nxp.com>
+X-Mailer: git-send-email 2.9.5
+In-Reply-To: <20190815083716.4715-1-xiaowei.bao@nxp.com>
+References: <20190815083716.4715-1-xiaowei.bao@nxp.com>
+X-Virus-Scanned: ClamAV using ClamSMTP
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -68,66 +68,83 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
- Nicholas Piggin <npiggin@gmail.com>
+Cc: Xiaowei Bao <xiaowei.bao@nxp.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 15/08/2019 09:30, Jordan Niethe wrote:
-> On Wed, 2019-08-14 at 17:47 +0200, Cédric Le Goater wrote:
->> Currently, the xmon 'dx' command calls OPAL to dump the XIVE state in
->> the OPAL logs and also outputs some of the fields of the internal
->> XIVE
->> structures in Linux. The OPAL calls can only be done on baremetal
->> (PowerNV) and they crash a pseries machine. Fix by checking the
->> hypervisor feature of the CPU.
->>
->> Signed-off-by: Cédric Le Goater <clg@kaod.org>
->> ---
->>  arch/powerpc/xmon/xmon.c | 17 ++++++++++-------
->>  1 file changed, 10 insertions(+), 7 deletions(-)
->>
->> diff --git a/arch/powerpc/xmon/xmon.c b/arch/powerpc/xmon/xmon.c
->> index 14e56c25879f..25d4adccf750 100644
->> --- a/arch/powerpc/xmon/xmon.c
->> +++ b/arch/powerpc/xmon/xmon.c
->> @@ -2534,13 +2534,16 @@ static void dump_pacas(void)
->>  static void dump_one_xive(int cpu)
->>  {
->>  	unsigned int hwid = get_hard_smp_processor_id(cpu);
->> -
->> -	opal_xive_dump(XIVE_DUMP_TM_HYP, hwid);
->> -	opal_xive_dump(XIVE_DUMP_TM_POOL, hwid);
->> -	opal_xive_dump(XIVE_DUMP_TM_OS, hwid);
->> -	opal_xive_dump(XIVE_DUMP_TM_USER, hwid);
->> -	opal_xive_dump(XIVE_DUMP_VP, hwid);
->> -	opal_xive_dump(XIVE_DUMP_EMU_STATE, hwid);
->> +	bool hv = cpu_has_feature(CPU_FTR_HVMODE);
->> +
->> +	if (hv) {
->> +		opal_xive_dump(XIVE_DUMP_TM_HYP, hwid);
->> +		opal_xive_dump(XIVE_DUMP_TM_POOL, hwid);
->> +		opal_xive_dump(XIVE_DUMP_TM_OS, hwid);
->> +		opal_xive_dump(XIVE_DUMP_TM_USER, hwid);
->> +		opal_xive_dump(XIVE_DUMP_VP, hwid);
->> +		opal_xive_dump(XIVE_DUMP_EMU_STATE, hwid);
->> +	}
->>  
->>  	if (setjmp(bus_error_jmp) != 0) {
->>  		catch_memory_errors = 0;
-> dump_one_xive() / other xive functions are guarded by #ifdef
-> CONFIG_PPC_POWERNV in xmon.c aren't they? With this series would it be
-> that these guards can be removed?
+Add the doorbell mode of MSI-X in EP mode.
 
-One could compile without CONFIG_PPC_POWERNV but we would still want 
-these commands to be available for pseries. I missed that.
+Signed-off-by: Xiaowei Bao <xiaowei.bao@nxp.com>
+---
+ drivers/pci/controller/dwc/pcie-designware-ep.c | 14 ++++++++++++++
+ drivers/pci/controller/dwc/pcie-designware.h    | 14 ++++++++++++++
+ 2 files changed, 28 insertions(+)
 
-I think we should move the opal_xive_dump calls to some other command, 
-dxo for 'dump_xive_opal' may be, as they only output in the OPAL logs.
+diff --git a/drivers/pci/controller/dwc/pcie-designware-ep.c b/drivers/pci/controller/dwc/pcie-designware-ep.c
+index 75e2955..e3a7cdf 100644
+--- a/drivers/pci/controller/dwc/pcie-designware-ep.c
++++ b/drivers/pci/controller/dwc/pcie-designware-ep.c
+@@ -454,6 +454,20 @@ int dw_pcie_ep_raise_msi_irq(struct dw_pcie_ep *ep, u8 func_no,
+ 	return 0;
+ }
+ 
++int dw_pcie_ep_raise_msix_irq_doorbell(struct dw_pcie_ep *ep, u8 func_no,
++				       u16 interrupt_num)
++{
++	struct dw_pcie *pci = to_dw_pcie_from_ep(ep);
++	u32 msg_data;
++
++	msg_data = (func_no << PCIE_MSIX_DOORBELL_PF_SHIFT) |
++		   (interrupt_num - 1);
++
++	dw_pcie_writel_dbi(pci, PCIE_MSIX_DOORBELL, msg_data);
++
++	return 0;
++}
++
+ int dw_pcie_ep_raise_msix_irq(struct dw_pcie_ep *ep, u8 func_no,
+ 			      u16 interrupt_num)
+ {
+diff --git a/drivers/pci/controller/dwc/pcie-designware.h b/drivers/pci/controller/dwc/pcie-designware.h
+index 2b291e8..cd903e9 100644
+--- a/drivers/pci/controller/dwc/pcie-designware.h
++++ b/drivers/pci/controller/dwc/pcie-designware.h
+@@ -88,6 +88,11 @@
+ #define PCIE_MISC_CONTROL_1_OFF		0x8BC
+ #define PCIE_DBI_RO_WR_EN		BIT(0)
+ 
++#define PCIE_MSIX_DOORBELL		0x948
++#define PCIE_MSIX_DOORBELL_PF_SHIFT	24
++#define PCIE_MSIX_DOORBELL_VF_SHIFT	16
++#define PCIE_MSIX_DOORBELL_VF_ACTIVE	BIT(15)
++
+ /*
+  * iATU Unroll-specific register definitions
+  * From 4.80 core version the address translation will be made by unroll
+@@ -399,6 +404,8 @@ int dw_pcie_ep_raise_msi_irq(struct dw_pcie_ep *ep, u8 func_no,
+ 			     u8 interrupt_num);
+ int dw_pcie_ep_raise_msix_irq(struct dw_pcie_ep *ep, u8 func_no,
+ 			     u16 interrupt_num);
++int dw_pcie_ep_raise_msix_irq_doorbell(struct dw_pcie_ep *ep, u8 func_no,
++				       u16 interrupt_num);
+ void dw_pcie_ep_reset_bar(struct dw_pcie *pci, enum pci_barno bar);
+ #else
+ static inline void dw_pcie_ep_linkup(struct dw_pcie_ep *ep)
+@@ -431,6 +438,13 @@ static inline int dw_pcie_ep_raise_msix_irq(struct dw_pcie_ep *ep, u8 func_no,
+ 	return 0;
+ }
+ 
++static inline int dw_pcie_ep_raise_msix_irq_doorbell(struct dw_pcie_ep *ep,
++						     u8 func_no,
++						     u16 interrupt_num)
++{
++	return 0;
++}
++
+ static inline void dw_pcie_ep_reset_bar(struct dw_pcie *pci, enum pci_barno bar)
+ {
+ }
+-- 
+2.9.5
 
-This needs some rework.
-
-Thanks,
-
-C.
