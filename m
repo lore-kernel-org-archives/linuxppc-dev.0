@@ -2,88 +2,87 @@ Return-Path: <SRS0=to3W=WL=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.3 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+X-Spam-Status: No, score=-8.1 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1BD39C32759
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Aug 2019 07:33:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A65B3C433FF
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Aug 2019 07:38:12 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 8D8A42064A
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Aug 2019 07:33:46 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 26AC32084D
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Aug 2019 07:38:12 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="H9fLupZW"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8D8A42064A
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="t7BLZTw6"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 26AC32084D
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 468J941twyzDr4C
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Aug 2019 17:33:44 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 468JG96lt3zDqTD
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Aug 2019 17:38:09 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=2607:f8b0:4864:20::542; helo=mail-pg1-x542.google.com;
- envelope-from=jniethe5@gmail.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=c-s.fr
+ (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="H9fLupZW"; 
+ dmarc=none (p=none dis=none) header.from=c-s.fr
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="t7BLZTw6"; 
  dkim-atps=neutral
-Received: from mail-pg1-x542.google.com (mail-pg1-x542.google.com
- [IPv6:2607:f8b0:4864:20::542])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 468J5D3fCvzDr13
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Aug 2019 17:30:23 +1000 (AEST)
-Received: by mail-pg1-x542.google.com with SMTP id n190so974112pgn.0
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Aug 2019 00:30:23 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=message-id:subject:from:to:cc:date:in-reply-to:references
- :user-agent:mime-version:content-transfer-encoding;
- bh=Sm9TAmkSpAhUtSYfkqdqY81YGhX5MdgdcjDuv5xtvoE=;
- b=H9fLupZWXgITRZXBBVP5vaTvYveIMd3FTlV529biKXxqImSQNMH8j3Zf9KBVWG/BPK
- 5AP80vBT9s4RRuD1Ii9UQHAjyVTwovrZTGU1R7vIvroBaqlC/ODzgvs+o9WFnh6Idtzq
- M+Je3yWQ9F12isplm5kXB9Q2sBViuM9ct03YKLEZhn1KQLRgMP/PwwxLQg2P2yXBhvzp
- 9VFdg35EjbtkwtOydrsIsHLELTEyH00QAdLsRBX3SBYAQ35IktGLulQYmW6SOHXIRv+z
- c2qUS5S1uSRuBu/yfI1K9bVGWbDIdNqx8ADsOr31rWdByaJU7/dbDQCg8N3b/vQiKQrP
- idDg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:message-id:subject:from:to:cc:date:in-reply-to
- :references:user-agent:mime-version:content-transfer-encoding;
- bh=Sm9TAmkSpAhUtSYfkqdqY81YGhX5MdgdcjDuv5xtvoE=;
- b=ccBOWAducmu4qLs+MchnSmsirbt5QMPhI5PacCBHwlq9e8cn3l6R4rxFcFTdkj/XAc
- lwhY2QYxSg5ePD7RFZoyawXGDpVP5tUdKVDmKMIHjgtzAvHywfKP4dSc8Io1U5MnH/df
- Fb0tzONq6IEWVpDddw7vEA0eblpwegZ3dsBMD4pQ34WYUdRVCKBCJ78zcPYnsJIyavfv
- W3v0c5ilbKrnUkREhk0Mtti/MT/ssj1Xe9GVdvD0tMQ7qARorlBnU6Sk2C1wQrwV3Y9A
- 85hoYFO6YtBl5Q2Px+DiEQO+/JHtYZ8DtyhzWAgcRlTr/vHQiCrBu3RW2Gi7N4XN/dSL
- FNHg==
-X-Gm-Message-State: APjAAAWZ3nnwpu+ZhWtnJ+RAp3GMM9IDuBOp2tKzbBCKwtkseCThx01k
- vFVMseuOkvjD0PikEnfC+y8=
-X-Google-Smtp-Source: APXvYqy+6VH7xIi3h+OAf6vwpDbUxaBglIMQEy1oCU2ewIlqWc0wQ16ORmkb4hrYM61h8CR96w+g/Q==
-X-Received: by 2002:a65:6546:: with SMTP id a6mr2600863pgw.220.1565854220757; 
- Thu, 15 Aug 2019 00:30:20 -0700 (PDT)
-Received: from pasglop.ozlabs.ibm.com ([122.99.82.10])
- by smtp.gmail.com with ESMTPSA id i124sm2137065pfe.61.2019.08.15.00.30.17
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Thu, 15 Aug 2019 00:30:19 -0700 (PDT)
-Message-ID: <21746c620de5ac0b9489a10cdc1f584f94d592fd.camel@gmail.com>
-Subject: Re: [PATCH 1/3] powerpc/xmon: Check for HV mode when dumping XIVE
- info from OPAL
-From: Jordan Niethe <jniethe5@gmail.com>
-To: =?ISO-8859-1?Q?C=E9dric?= Le Goater <clg@kaod.org>, Michael Ellerman
- <mpe@ellerman.id.au>
-Date: Thu, 15 Aug 2019 17:30:15 +1000
-In-Reply-To: <20190814154754.23682-2-clg@kaod.org>
-References: <20190814154754.23682-1-clg@kaod.org>
- <20190814154754.23682-2-clg@kaod.org>
-Content-Type: text/plain; charset="UTF-8"
-User-Agent: Evolution 3.30.1 (3.30.1-1.fc29) 
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 468JD803BczDqMF
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Aug 2019 17:36:24 +1000 (AEST)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 468JD30rcTz9tyg8;
+ Thu, 15 Aug 2019 09:36:19 +0200 (CEST)
+Authentication-Results: localhost; dkim=pass
+ reason="1024-bit key; insecure key"
+ header.d=c-s.fr header.i=@c-s.fr header.b=t7BLZTw6; dkim-adsp=pass;
+ dkim-atps=neutral
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id HIJrNzoNiyNv; Thu, 15 Aug 2019 09:36:19 +0200 (CEST)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 468JD26cH8z9tyg7;
+ Thu, 15 Aug 2019 09:36:18 +0200 (CEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
+ t=1565854578; bh=mmIOgbK+JKM5jqW9/BcwHJtcKEwnCjuq52vwowq/M/k=;
+ h=Subject:To:Cc:References:From:Date:In-Reply-To:From;
+ b=t7BLZTw6TKXeDRRYgbMR6vS0jqTejMQ0wIwScx/uyvfr8pfdY6az2/5oTQi+z4+ZE
+ CpSYrQoZQBUgOU/dnXo/sdKOxHQSLtzmXCitW+lv81+sK/RC80tDwgXcaHPxmb8iLJ
+ g3MRjTITtwC/83OVnsCL+nos7wM2M0at4qyt6Ssw=
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 09DCF8B782;
+ Thu, 15 Aug 2019 09:36:20 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id 0xetyh4uG_O4; Thu, 15 Aug 2019 09:36:19 +0200 (CEST)
+Received: from [192.168.232.53] (unknown [192.168.232.53])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 359E18B755;
+ Thu, 15 Aug 2019 09:36:19 +0200 (CEST)
+Subject: Re: [PATCH 4/6] powerpc: Chunk calls to flush_dcache_range in
+ arch_*_memory
+To: Alastair D'Silva <alastair@au1.ibm.com>, alastair@d-silva.org
+References: <20190815041057.13627-1-alastair@au1.ibm.com>
+ <20190815041057.13627-5-alastair@au1.ibm.com>
+From: christophe leroy <christophe.leroy@c-s.fr>
+Message-ID: <366f94bd-c61b-d454-b202-d3feb81a14c3@c-s.fr>
+Date: Thu, 15 Aug 2019 09:36:06 +0200
+User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:60.0) Gecko/20100101
+ Thunderbird/60.7.2
+MIME-Version: 1.0
+In-Reply-To: <20190815041057.13627-5-alastair@au1.ibm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: fr
 Content-Transfer-Encoding: 8bit
+X-Antivirus: Avast (VPS 190814-8, 14/08/2019), Outbound message
+X-Antivirus-Status: Clean
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -95,54 +94,101 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
- Nicholas Piggin <npiggin@gmail.com>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ David Hildenbrand <david@redhat.com>, linux-kernel@vger.kernel.org,
+ Nicholas Piggin <npiggin@gmail.com>, Mike Rapoport <rppt@linux.vnet.ibm.com>,
+ Qian Cai <cai@lca.pw>, Paul Mackerras <paulus@samba.org>,
+ Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@lists.ozlabs.org,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Allison Randal <allison@lohutok.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, 2019-08-14 at 17:47 +0200, Cédric Le Goater wrote:
-> Currently, the xmon 'dx' command calls OPAL to dump the XIVE state in
-> the OPAL logs and also outputs some of the fields of the internal
-> XIVE
-> structures in Linux. The OPAL calls can only be done on baremetal
-> (PowerNV) and they crash a pseries machine. Fix by checking the
-> hypervisor feature of the CPU.
+
+
+Le 15/08/2019 à 06:10, Alastair D'Silva a écrit :
+> From: Alastair D'Silva <alastair@d-silva.org>
 > 
-> Signed-off-by: Cédric Le Goater <clg@kaod.org>
+> When presented with large amounts of memory being hotplugged
+> (in my test case, ~890GB), the call to flush_dcache_range takes
+> a while (~50 seconds), triggering RCU stalls.
+> 
+> This patch breaks up the call into 16GB chunks, calling
+> cond_resched() inbetween to allow the scheduler to run.
+
+Is 16GB small enough ? If 890GB takes 50s, 16GB still takes about 1s.
+I'd use 1GB chuncks to remain below 100ms.
+
+> 
+> Signed-off-by: Alastair D'Silva <alastair@d-silva.org>
 > ---
->  arch/powerpc/xmon/xmon.c | 17 ++++++++++-------
->  1 file changed, 10 insertions(+), 7 deletions(-)
+>   arch/powerpc/mm/mem.c | 16 ++++++++++++++--
+>   1 file changed, 14 insertions(+), 2 deletions(-)
 > 
-> diff --git a/arch/powerpc/xmon/xmon.c b/arch/powerpc/xmon/xmon.c
-> index 14e56c25879f..25d4adccf750 100644
-> --- a/arch/powerpc/xmon/xmon.c
-> +++ b/arch/powerpc/xmon/xmon.c
-> @@ -2534,13 +2534,16 @@ static void dump_pacas(void)
->  static void dump_one_xive(int cpu)
->  {
->  	unsigned int hwid = get_hard_smp_processor_id(cpu);
-> -
-> -	opal_xive_dump(XIVE_DUMP_TM_HYP, hwid);
-> -	opal_xive_dump(XIVE_DUMP_TM_POOL, hwid);
-> -	opal_xive_dump(XIVE_DUMP_TM_OS, hwid);
-> -	opal_xive_dump(XIVE_DUMP_TM_USER, hwid);
-> -	opal_xive_dump(XIVE_DUMP_VP, hwid);
-> -	opal_xive_dump(XIVE_DUMP_EMU_STATE, hwid);
-> +	bool hv = cpu_has_feature(CPU_FTR_HVMODE);
+> diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
+> index 5400da87a804..fb0d5e9aa11b 100644
+> --- a/arch/powerpc/mm/mem.c
+> +++ b/arch/powerpc/mm/mem.c
+> @@ -104,11 +104,14 @@ int __weak remove_section_mapping(unsigned long start, unsigned long end)
+>   	return -ENODEV;
+>   }
+>   
+> +#define FLUSH_CHUNK_SIZE (16ull * 1024ull * 1024ull * 1024ull)
+
+Can we use SZ_16GB ?
+
 > +
-> +	if (hv) {
-> +		opal_xive_dump(XIVE_DUMP_TM_HYP, hwid);
-> +		opal_xive_dump(XIVE_DUMP_TM_POOL, hwid);
-> +		opal_xive_dump(XIVE_DUMP_TM_OS, hwid);
-> +		opal_xive_dump(XIVE_DUMP_TM_USER, hwid);
-> +		opal_xive_dump(XIVE_DUMP_VP, hwid);
-> +		opal_xive_dump(XIVE_DUMP_EMU_STATE, hwid);
+>   int __ref arch_add_memory(int nid, u64 start, u64 size,
+>   			struct mhp_restrictions *restrictions)
+>   {
+>   	unsigned long start_pfn = start >> PAGE_SHIFT;
+>   	unsigned long nr_pages = size >> PAGE_SHIFT;
+> +	unsigned long i;
+>   	int rc;
+>   
+>   	resize_hpt_for_hotplug(memblock_phys_mem_size());
+> @@ -120,7 +123,11 @@ int __ref arch_add_memory(int nid, u64 start, u64 size,
+>   			start, start + size, rc);
+>   		return -EFAULT;
+>   	}
+> -	flush_dcache_range(start, start + size);
+> +
+> +	for (i = 0; i < size; i += FLUSH_CHUNK_SIZE) {
+> +		flush_dcache_range(start + i, min(start + size, start + i + FLUSH_CHUNK_SIZE));
+
+Isn't the line a bit long (I have not checked).
+
+> +		cond_resched();
 > +	}
->  
->  	if (setjmp(bus_error_jmp) != 0) {
->  		catch_memory_errors = 0;
-dump_one_xive() / other xive functions are guarded by #ifdef
-CONFIG_PPC_POWERNV in xmon.c aren't they? With this series would it be
-that these guards can be removed?
+>   
+>   	return __add_pages(nid, start_pfn, nr_pages, restrictions);
+>   }
+> @@ -131,13 +138,18 @@ void __ref arch_remove_memory(int nid, u64 start, u64 size,
+>   	unsigned long start_pfn = start >> PAGE_SHIFT;
+>   	unsigned long nr_pages = size >> PAGE_SHIFT;
+>   	struct page *page = pfn_to_page(start_pfn) + vmem_altmap_offset(altmap);
+> +	unsigned long i;
+>   	int ret;
+>   
+>   	__remove_pages(page_zone(page), start_pfn, nr_pages, altmap);
+>   
+>   	/* Remove htab bolted mappings for this section of memory */
+>   	start = (unsigned long)__va(start);
+> -	flush_dcache_range(start, start + size);
+> +	for (i = 0; i < size; i += FLUSH_CHUNK_SIZE) {
+> +		flush_dcache_range(start + i, min(start + size, start + i + FLUSH_CHUNK_SIZE));
+> +		cond_resched();
+> +	}
+> +
+>   	ret = remove_section_mapping(start, start + size);
+>   	WARN_ON_ONCE(ret);
+>   
+> 
+
+Christophe
+
+---
+L'absence de virus dans ce courrier électronique a été vérifiée par le logiciel antivirus Avast.
+https://www.avast.com/antivirus
 
