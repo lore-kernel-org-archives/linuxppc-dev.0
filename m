@@ -2,78 +2,68 @@ Return-Path: <SRS0=to3W=WL=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.1 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_SANE_2 autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-1.0 required=3.0 tests=MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 309C3C3A589
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Aug 2019 14:19:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7FCE0C3A589
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Aug 2019 14:43:45 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 895062084D
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Aug 2019 14:19:36 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=hansenpartnership.com header.i=@hansenpartnership.com header.b="txS1ipMi";
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=hansenpartnership.com header.i=@hansenpartnership.com header.b="OlWfXIG7"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 895062084D
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=HansenPartnership.com
+	by mail.kernel.org (Postfix) with ESMTPS id C74D820644
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Aug 2019 14:43:44 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C74D820644
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=bugzilla.kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 468T9L1kjQzDqQY
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 16 Aug 2019 00:19:34 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (mailfrom)
- smtp.mailfrom=hansenpartnership.com (client-ip=66.63.167.143;
- helo=bedivere.hansenpartnership.com;
- envelope-from=james.bottomley@hansenpartnership.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none)
- header.from=HansenPartnership.com
-Received: from bedivere.hansenpartnership.com (bedivere.hansenpartnership.com
- [66.63.167.143])
+	by lists.ozlabs.org (Postfix) with ESMTP id 468Tj96X68zDqss
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 16 Aug 2019 00:43:41 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+ spf=pass (mailfrom) smtp.mailfrom=bugzilla.kernel.org
+ (client-ip=198.145.29.98; helo=mail.wl.linuxfoundation.org;
+ envelope-from=bugzilla-daemon@bugzilla.kernel.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=bugzilla.kernel.org
+Received: from mail.wl.linuxfoundation.org (mail.wl.linuxfoundation.org
+ [198.145.29.98])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 468T3B55LbzDr94
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Aug 2019 00:14:12 +1000 (AEST)
-Received: from localhost (localhost [127.0.0.1])
- by bedivere.hansenpartnership.com (Postfix) with ESMTP id 8AEBC8EE1FB;
- Thu, 15 Aug 2019 02:26:05 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=hansenpartnership.com;
- s=20151216; t=1565861165;
- bh=ChiJO460CwqJr6bCz/k4RtKNXSI3O1ZZt8g3+Id8X0Q=;
- h=Subject:From:To:Cc:Date:In-Reply-To:References:From;
- b=txS1ipMiR7CUHSlUoHY7Yr340RD45sludbWwlFZbAST/wJTgB93X+NH4hXMHmM+sf
- fNgzpuZSnLQC7esRTxpsajyQxQCp08OzyfabL7vdCWupMwcui8U+xdDnveqEPNhWv9
- Z8o5cDslbreqbUwKWCvykOv3uCBIKZbKtc9/CFHc=
-Received: from bedivere.hansenpartnership.com ([127.0.0.1])
- by localhost (bedivere.hansenpartnership.com [127.0.0.1]) (amavisd-new,
- port 10024)
- with ESMTP id xdeaREgeheqG; Thu, 15 Aug 2019 02:26:04 -0700 (PDT)
-Received: from [192.168.1.74] (host31-48-63-146.range31-48.btcentralplus.com
- [31.48.63.146])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by bedivere.hansenpartnership.com (Postfix) with ESMTPSA id 68D8F8EE0BF;
- Thu, 15 Aug 2019 02:25:57 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=hansenpartnership.com;
- s=20151216; t=1565861164;
- bh=ChiJO460CwqJr6bCz/k4RtKNXSI3O1ZZt8g3+Id8X0Q=;
- h=Subject:From:To:Cc:Date:In-Reply-To:References:From;
- b=OlWfXIG7zOd1sAz8WOHgBIsq+CjD6O6sa7mniwoVsb5xfY6YsyfecX180meWmNBEE
- AScnlELkp6geKt+seKwyCwqWGyxc9X+k5anMN1Vuga1ATt8Sq1gJxaFt33pFzZ4vBU
- rFECwrGGAhoFxx6qCn0IkP2mtfuU8za0Eta3XNl4=
-Message-ID: <1565861152.2963.7.camel@HansenPartnership.com>
-Subject: Re: [PATCH 7/8] parisc: don't set ARCH_NO_COHERENT_DMA_MMAP
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Christoph Hellwig <hch@lst.de>, iommu@lists.linux-foundation.org, Marek
- Szyprowski <m.szyprowski@samsung.com>
-Date: Thu, 15 Aug 2019 10:25:52 +0100
-In-Reply-To: <20190808160005.10325-8-hch@lst.de>
-References: <20190808160005.10325-1-hch@lst.de>
- <20190808160005.10325-8-hch@lst.de>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 468Tbg6ytvzDr5g
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Aug 2019 00:38:54 +1000 (AEST)
+Received: from mail.wl.linuxfoundation.org (localhost [127.0.0.1])
+ by mail.wl.linuxfoundation.org (Postfix) with ESMTP id 4992528931
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Aug 2019 14:38:52 +0000 (UTC)
+Received: by mail.wl.linuxfoundation.org (Postfix, from userid 486)
+ id 3E13F286B3; Thu, 15 Aug 2019 14:38:52 +0000 (UTC)
+From: bugzilla-daemon@bugzilla.kernel.org
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [Bug 204371] BUG kmalloc-4k (Tainted: G        W        ): Object
+ padding overwritten
+Date: Thu, 15 Aug 2019 14:38:50 +0000
+X-Bugzilla-Reason: CC
+X-Bugzilla-Type: changed
+X-Bugzilla-Watch-Reason: None
+X-Bugzilla-Product: Memory Management
+X-Bugzilla-Component: Slab Allocator
+X-Bugzilla-Version: 2.5
+X-Bugzilla-Keywords: 
+X-Bugzilla-Severity: normal
+X-Bugzilla-Who: erhard_f@mailbox.org
+X-Bugzilla-Status: NEW
+X-Bugzilla-Resolution: 
+X-Bugzilla-Priority: P1
+X-Bugzilla-Assigned-To: akpm@linux-foundation.org
+X-Bugzilla-Flags: 
+X-Bugzilla-Changed-Fields: 
+Message-ID: <bug-204371-206035-lujGcLTj5J@https.bugzilla.kernel.org/>
+In-Reply-To: <bug-204371-206035@https.bugzilla.kernel.org/>
+References: <bug-204371-206035@https.bugzilla.kernel.org/>
 Content-Type: text/plain; charset="UTF-8"
-X-Mailer: Evolution 3.26.6 
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: quoted-printable
+X-Bugzilla-URL: https://bugzilla.kernel.org/
+Auto-Submitted: auto-generated
+MIME-Version: 1.0
+X-Virus-Scanned: ClamAV using ClamSMTP
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -85,46 +75,105 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-xtensa@linux-xtensa.org, Michal Simek <monstr@monstr.eu>,
- Vladimir Murzin <vladimir.murzin@arm.com>, linux-parisc@vger.kernel.org,
- linux-sh@vger.kernel.org, Takashi Iwai <tiwai@suse.de>,
- linuxppc-dev@lists.ozlabs.org, Helge Deller <deller@gmx.de>, x86@kernel.org,
- linux-kernel@vger.kernel.org, linux-m68k@lists.linux-m68k.org,
- Robin Murphy <robin.murphy@arm.com>, linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, 2019-08-08 at 19:00 +0300, Christoph Hellwig wrote:
-> parisc is the only architecture that sets ARCH_NO_COHERENT_DMA_MMAP
-> when an MMU is enabled.  AFAIK this is because parisc CPUs use VIVT
-> caches,
+https://bugzilla.kernel.org/show_bug.cgi?id=3D204371
 
-We're actually VIPT but the same principle applies.
+--- Comment #26 from Erhard F. (erhard_f@mailbox.org) ---
+On Wed, 14 Aug 2019 20:33:51 +0000
+bugzilla-daemon@bugzilla.kernel.org wrote:
 
->  which means exporting normally cachable memory to userspace is
-> relatively dangrous due to cache aliasing.
-> 
-> But normally cachable memory is only allocated by dma_alloc_coherent
-> on parisc when using the sba_iommu or ccio_iommu drivers, so just
-> remove the .mmap implementation for them so that we don't have to set
-> ARCH_NO_COHERENT_DMA_MMAP, which I plan to get rid of.
 
-So I don't think this is quite right.  We have three architectural
-variants essentially (hidden behind about 12 cpu types):
+> https://bugzilla.kernel.org/show_bug.cgi?id=3D204371
+>
+>--- Comment #24 from Christophe Leroy (christophe.leroy@c-s.fr) ---
+>It confirms what I suspected: due to some debug options, kzalloc() doesn't
+>provide aligned areas.
+>
+>In __load_free_space_cache() can you replace=20
+>e->bitmap =3D kzalloc(PAGE_SIZE, GFP_NOFS);
+>By
+>e->bitmap =3D (void *)__get_free_page(GFP_NOFS | __GFP_ZERO);
+>
+>And same in insert_into_bitmap()
+>
+>Then replace the three kfree() which free bitmaps by something like
+>free_page((unsigned long)entry->bitmap)
+>=20
+> --- Comment #25 from Christophe Leroy (christophe.leroy@c-s.fr) ---
+> You can use get_zeroed_page(GFP_NOFS) instead of __get_free_page(GFP_NOFS=
+ |
+> __GFP_ZERO)
+Think I got everything right after a bit of searching...
 
-   1. pa70xx: These can't turn off page caching, so they were the non
-      coherent problem case
-   2. pa71xx: These can manufacture coherent memory simply by turning off
-      the cache on a per page basis
-   3. pa8xxx: these have a full cache flush coherence mechanism.
+Now I get this nice compact output:
+[..]
+[   46.579181] ------------[ cut here ]------------
+[   46.579378] kernel BUG at mm/slub.c:3952!
+[   46.579513] Oops: Exception in kernel mode, sig: 5 [#1]
+[   46.579699] BE PAGE_SIZE=3D4K MMU=3DHash SMP NR_CPUS=3D2 PowerMac
+[   46.579898] Modules linked in: b43legacy led_class mac80211 cfg80211
+snd_aoa_codec_tas snd_aoa_fabric_layout snd_aoa rfkill libarc4 evdev btrfs
+therm_windtunnel ohci_pci xor zstd_decompress zstd_compress zlib_deflate
+raid6_pq zlib_inflate radeon sr_mod firewire_ohci sungem hwmon snd_aoa_i2sb=
+us
+i2c_algo_bit backlight cdrom firewire_core sungem_phy crc_itu_t
+snd_aoa_soundbus snd_pcm drm_kms_helper ohci_hcd syscopyarea ehci_pci snd_t=
+imer
+sysfillrect snd sysimgblt fb_sys_fops ttm ehci_hcd soundcore drm
+drm_panel_orientation_quirks usbcore uninorth_agp usb_common agpgart ssb lzo
+lzo_compress lzo_decompress zram zsmalloc
+[   46.582252] CPU: 0 PID: 261 Comm: umount Tainted: G        W=20=20=20=20=
+=20=20=20=20
+5.3.0-rc4+ #2
+[   46.582533] NIP:  c0198228 LR: c0198204 CTR: c01981a4
+[   46.582708] REGS: dbbc1c10 TRAP: 0700   Tainted: G        W=20=20=20=20=
+=20=20=20=20=20
+(5.3.0-rc4+)
+[   46.582990] MSR:  00029032 <EE,ME,IR,DR,RI>  CR: 22008824  XER: 00000000
+[   46.583243]=20
+               GPR00: f110b444 dbbc1cc8 ec2944a0 ef4329f4 c07fe5f8 8950b76e
+00001032 00000000=20
+               GPR08: 2854c000 00000001 00000000 dbbc1d18 c01981a4 008f5ff4
+00000000 00000000=20
+               GPR16: 00000000 00000000 bff5d9dc bff5d9c4 00000001 00000000
+00000000 00000000=20
+               GPR24: 00000000 f110b444 00000100 dba800b8 f11b0000 c07fe5f8
+ed3d5000 ef4329f4=20
+[   46.584505] NIP [c0198228] kfree+0x84/0x29c
+[   46.584642] LR [c0198204] kfree+0x60/0x29c
+[   46.584774] Call Trace:
+[   46.585254] [dbbc1cc8] [f110b4e0]
+__btrfs_remove_free_space_cache_locked+0x58/0x6c [btrfs] (unreliable)
+[   46.585717] [dbbc1d18] [f110b444] free_bitmap+0x24/0x68 [btrfs]
+[   46.586008] [dbbc1d38] [f110b4f0]
+__btrfs_remove_free_space_cache_locked+0x68/0x6c [btrfs]
+[   46.586388] [dbbc1d58] [f110e6ac] btrfs_remove_free_space_cache+0x38/0x84
+[btrfs]
+[   46.586732] [dbbc1d78] [f10a77a4] btrfs_free_block_groups+0x164/0x24c
+[btrfs]
+[   46.587073] [dbbc1db8] [f10b993c] close_ctree+0x230/0x2c4 [btrfs]
+[   46.587303] [dbbc1df8] [c01ab508] generic_shutdown_super+0x80/0x110
+[   46.587531] [dbbc1e18] [c01ab718] kill_anon_super+0x18/0x30
+[   46.587802] [dbbc1e38] [f10908b4] btrfs_kill_super+0x18/0x30 [btrfs]
+[   46.588039] [dbbc1e58] [c01abdbc] deactivate_locked_super+0x54/0xa4
+[   46.588269] [dbbc1e78] [c01cbcb4] cleanup_mnt+0x6c/0xe4
+[   46.588456] [dbbc1ea8] [c0054f50] task_work_run+0xa0/0xc0
+[   46.588645] [dbbc1ed8] [c000bc44] do_notify_resume+0x160/0x2c8
+[   46.588857] [dbbc1f38] [c0014800] do_user_signal+0x2c/0x34
+[   46.589052] --- interrupt: c00 at 0x7593d4
+                   LR =3D 0x7593b8
+[   46.589252] Instruction dump:
+[   46.589340] 4bffade1 7c7f1b78 4bffadbd 81230000 71290200 40a200f8 813f00=
+00
+552987ff=20
+[   46.589644] 4082000c 813f0004 552907fe 69290001 <0f090000> 7fe3fb78 4bff=
+adcd
+7c641b78=20
+[   46.589961] ---[ end trace 0164244520bfd23a ]---
 
-(I might have this slightly wrong: I vaguely remember the pa71xxlc
-variants have some weird cache quirks for DMA as well)
-
-So I think pa70xx we can't mmap.  pa71xx we can provided we mark the
-page as uncached ... which should already have happened in the allocate
-and pa8xxx which can always mmap dma memory without any special tricks.
-
-James
-
+--=20
+You are receiving this mail because:
+You are on the CC list for the bug.=
