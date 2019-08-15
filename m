@@ -2,73 +2,50 @@ Return-Path: <SRS0=to3W=WL=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+X-Spam-Status: No, score=-6.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+	URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 60504C31E40
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Aug 2019 05:08:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4ACD0C31E40
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Aug 2019 06:32:07 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id D85C1206C2
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Aug 2019 05:08:25 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D85C1206C2
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=informatik.wtf
+	by mail.kernel.org (Postfix) with ESMTPS id 915C82086C
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Aug 2019 06:32:06 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 915C82086C
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 468DxM3bvkzDqnM
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Aug 2019 15:08:23 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+	by lists.ozlabs.org (Postfix) with ESMTP id 468Gnw0JrhzDr49
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Aug 2019 16:32:04 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 468DqC6CX9zDqkR
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Aug 2019 15:03:03 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 468Glk1rZ5zDr43
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Aug 2019 16:30:10 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=informatik.wtf
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 468DqC4P67z8t9Z
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Aug 2019 15:03:03 +1000 (AEST)
-Received: by ozlabs.org (Postfix)
- id 468DqC3zXLz9sNm; Thu, 15 Aug 2019 15:03:03 +1000 (AEST)
-Authentication-Results: ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=informatik.wtf
- (client-ip=131.153.2.44; helo=h3.fbrelay.privateemail.com;
- envelope-from=cmr@informatik.wtf; receiver=<UNKNOWN>)
-Authentication-Results: ozlabs.org; dmarc=none (p=none dis=none)
- header.from=informatik.wtf
-Received: from h3.fbrelay.privateemail.com (h3.fbrelay.privateemail.com
- [131.153.2.44])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 468DqB5j9rz9sNf
- for <linuxppc-dev@ozlabs.org>; Thu, 15 Aug 2019 15:03:02 +1000 (AEST)
-Received: from MTA-06-3.privateemail.com (mta-06.privateemail.com
- [68.65.122.16])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by h3.fbrelay.privateemail.com (Postfix) with ESMTPS id CAC14814B6
- for <linuxppc-dev@ozlabs.org>; Thu, 15 Aug 2019 01:02:58 -0400 (EDT)
-Received: from MTA-06.privateemail.com (localhost [127.0.0.1])
- by MTA-06.privateemail.com (Postfix) with ESMTP id D110660067;
- Thu, 15 Aug 2019 01:02:53 -0400 (EDT)
-Received: from wrwlf0000.attlocal.net (unknown [10.20.151.220])
- by MTA-06.privateemail.com (Postfix) with ESMTPA id 82E7860063;
- Thu, 15 Aug 2019 05:02:53 +0000 (UTC)
-From: "Christopher M. Riedl" <cmr@informatik.wtf>
-To: linuxppc-dev@ozlabs.org,
-	kernel-hardening@lists.openwall.com
-Subject: [RFC PATCH v4 1/2] powerpc/xmon: Allow listing active breakpoints in
- read-only mode
-Date: Thu, 15 Aug 2019 00:06:15 -0500
-Message-Id: <20190815050616.2547-2-cmr@informatik.wtf>
-X-Mailer: git-send-email 2.22.0
-In-Reply-To: <20190815050616.2547-1-cmr@informatik.wtf>
-References: <20190815050616.2547-1-cmr@informatik.wtf>
+ header.from=ellerman.id.au
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
+ SHA256) (No client certificate requested)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 468Glh3XBXz9sN1;
+ Thu, 15 Aug 2019 16:30:08 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Thiago Jung Bauermann <bauerman@linux.ibm.com>
+Subject: Re: [PATCH v3 11/16] powerpc/pseries/svm: Export guest SVM status to
+ user space via sysfs
+In-Reply-To: <87r25qgeb5.fsf@morokweng.localdomain>
+References: <20190806052237.12525-1-bauerman@linux.ibm.com>
+ <20190806052237.12525-12-bauerman@linux.ibm.com>
+ <8736i6sfhn.fsf@concordia.ellerman.id.au>
+ <87r25qgeb5.fsf@morokweng.localdomain>
+Date: Thu, 15 Aug 2019 16:30:07 +1000
+Message-ID: <87sgq36ivk.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-Virus-Scanned: ClamAV using ClamSMTP
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -80,82 +57,113 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: Anshuman Khandual <anshuman.linux@gmail.com>,
+ Alexey Kardashevskiy <aik@ozlabs.ru>, Mike Anderson <andmike@linux.ibm.com>,
+ Ram Pai <linuxram@us.ibm.com>, linux-kernel@vger.kernel.org,
+ Claudio Carvalho <cclaudio@linux.ibm.com>,
+ Ryan Grimm <grimm@linux.vnet.ibm.com>, Paul Mackerras <paulus@samba.org>,
+ linuxppc-dev@lists.ozlabs.org, Christoph Hellwig <hch@lst.de>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Xmon can enter read-only mode dynamically due to changes in kernel
-lockdown state. This transition does not clear active breakpoints and
-any these breakpoints should remain visible to the xmon'er.
+Thiago Jung Bauermann <bauerman@linux.ibm.com> writes:
+> Michael Ellerman <mpe@ellerman.id.au> writes:
+>> Thiago Jung Bauermann <bauerman@linux.ibm.com> writes:
+>>> From: Ryan Grimm <grimm@linux.vnet.ibm.com>
+>>> User space might want to know it's running in a secure VM.  It can't do
+>>> a mfmsr because mfmsr is a privileged instruction.
+>>>
+>>> The solution here is to create a cpu attribute:
+>>>
+>>> /sys/devices/system/cpu/svm
+>>>
+>>> which will read 0 or 1 based on the S bit of the guest's CPU 0.
+>>
+>> Why CPU 0?
+>>
+>> If we have different CPUs running with different MSR_S then something
+>> has gone badly wrong, no?
+>
+> Yes, that would be very bad.
+>
+>> So can't we just read the MSR on whatever CPU the sysfs code happens to
+>> run on.
+>
+> Good point. I made the change in the patch below.
 
-Signed-off-by: Christopher M. Riedl <cmr@informatik.wtf>
----
- arch/powerpc/xmon/xmon.c | 19 ++++++++++++++-----
- 1 file changed, 14 insertions(+), 5 deletions(-)
+The patch looks good. Although, it raises the question of whether it
+should be an attribute of the CPU at all.
 
-diff --git a/arch/powerpc/xmon/xmon.c b/arch/powerpc/xmon/xmon.c
-index d0620d762a5a..bb63ecc599fd 100644
---- a/arch/powerpc/xmon/xmon.c
-+++ b/arch/powerpc/xmon/xmon.c
-@@ -1045,10 +1045,6 @@ cmds(struct pt_regs *excp)
- 			set_lpp_cmd();
- 			break;
- 		case 'b':
--			if (xmon_is_ro) {
--				printf(xmon_ro_msg);
--				break;
--			}
- 			bpt_cmds();
- 			break;
- 		case 'C':
-@@ -1317,11 +1313,16 @@ bpt_cmds(void)
- 	struct bpt *bp;
- 
- 	cmd = inchar();
-+
- 	switch (cmd) {
- #ifndef CONFIG_PPC_8xx
- 	static const char badaddr[] = "Only kernel addresses are permitted for breakpoints\n";
- 	int mode;
- 	case 'd':	/* bd - hardware data breakpoint */
-+		if (xmon_is_ro) {
-+			printf(xmon_ro_msg);
-+			break;
-+		}
- 		if (!ppc_breakpoint_available()) {
- 			printf("Hardware data breakpoint not supported on this cpu\n");
- 			break;
-@@ -1349,6 +1350,10 @@ bpt_cmds(void)
- 		break;
- 
- 	case 'i':	/* bi - hardware instr breakpoint */
-+		if (xmon_is_ro) {
-+			printf(xmon_ro_msg);
-+			break;
-+		}
- 		if (!cpu_has_feature(CPU_FTR_ARCH_207S)) {
- 			printf("Hardware instruction breakpoint "
- 			       "not supported on this cpu\n");
-@@ -1372,6 +1377,10 @@ bpt_cmds(void)
- #endif
- 
- 	case 'c':
-+		if (xmon_is_ro) {
-+			printf(xmon_ro_msg);
-+			break;
-+		}
- 		if (!scanhex(&a)) {
- 			/* clear all breakpoints */
- 			for (i = 0; i < NBPTS; ++i)
-@@ -1407,7 +1416,7 @@ bpt_cmds(void)
- 			break;
- 		}
- 		termch = cmd;
--		if (!scanhex(&a)) {
-+		if (xmon_is_ro || !scanhex(&a)) {
- 			/* print all breakpoints */
- 			printf("   type            address\n");
- 			if (dabr.enabled) {
--- 
-2.22.0
+I guess there's not obviously anywhere better for it.
 
+Still you should document the attribute in Documentation/ABI/testing/sysfs-devices-system-cpu
+
+cheers
+
+> From 2d951305e118bf286f8e83cbf396448085186357 Mon Sep 17 00:00:00 2001
+> From: Ryan Grimm <grimm@linux.vnet.ibm.com>
+> Date: Tue, 15 Jan 2019 11:56:29 -0600
+> Subject: [PATCH] powerpc/pseries/svm: Export guest SVM status to user space
+>  via sysfs
+>
+> User space might want to know it's running in a secure VM.  It can't do
+> a mfmsr because mfmsr is a privileged instruction.
+>
+> The solution here is to create a cpu attribute:
+>
+> /sys/devices/system/cpu/svm
+>
+> which will read 0 or 1 based on the S bit of the current CPU.
+>
+> Signed-off-by: Ryan Grimm <grimm@linux.vnet.ibm.com>
+> Signed-off-by: Thiago Jung Bauermann <bauerman@linux.ibm.com>
+> ---
+>  arch/powerpc/kernel/sysfs.c | 20 ++++++++++++++++++++
+>  1 file changed, 20 insertions(+)
+>
+> diff --git a/arch/powerpc/kernel/sysfs.c b/arch/powerpc/kernel/sysfs.c
+> index e2147d7c9e72..80a676da11cb 100644
+> --- a/arch/powerpc/kernel/sysfs.c
+> +++ b/arch/powerpc/kernel/sysfs.c
+> @@ -19,6 +19,7 @@
+>  #include <asm/smp.h>
+>  #include <asm/pmc.h>
+>  #include <asm/firmware.h>
+> +#include <asm/svm.h>
+>  
+>  #include "cacheinfo.h"
+>  #include "setup.h"
+> @@ -715,6 +716,23 @@ static struct device_attribute pa6t_attrs[] = {
+>  #endif /* HAS_PPC_PMC_PA6T */
+>  #endif /* HAS_PPC_PMC_CLASSIC */
+>  
+> +#ifdef CONFIG_PPC_SVM
+> +static ssize_t show_svm(struct device *dev, struct device_attribute *attr, char *buf)
+> +{
+> +	return sprintf(buf, "%u\n", is_secure_guest());
+> +}
+> +static DEVICE_ATTR(svm, 0444, show_svm, NULL);
+> +
+> +static void create_svm_file(void)
+> +{
+> +	device_create_file(cpu_subsys.dev_root, &dev_attr_svm);
+> +}
+> +#else
+> +static void create_svm_file(void)
+> +{
+> +}
+> +#endif /* CONFIG_PPC_SVM */
+> +
+>  static int register_cpu_online(unsigned int cpu)
+>  {
+>  	struct cpu *c = &per_cpu(cpu_devices, cpu);
+> @@ -1058,6 +1076,8 @@ static int __init topology_init(void)
+>  	sysfs_create_dscr_default();
+>  #endif /* CONFIG_PPC64 */
+>  
+> +	create_svm_file();
+> +
+>  	return 0;
+>  }
+>  subsys_initcall(topology_init);
