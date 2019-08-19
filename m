@@ -2,82 +2,88 @@ Return-Path: <SRS0=1Kal=WP=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-3.3 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
+	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
+	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BB294C3A5A0
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Aug 2019 14:13:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D094FC3A5A0
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Aug 2019 14:15:58 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 35F0A206BB
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Aug 2019 14:13:08 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 534C2206BB
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Aug 2019 14:15:58 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="b+qZijNH"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 35F0A206BB
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="hAn16Ept"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 534C2206BB
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46Bwr14gGtzDqWN
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Aug 2019 00:13:05 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 46BwvF6PlBzDr2J
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Aug 2019 00:15:53 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=c-s.fr
- (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
- envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=gmail.com
+ (client-ip=2607:f8b0:4864:20::642; helo=mail-pl1-x642.google.com;
+ envelope-from=npiggin@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=c-s.fr
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="b+qZijNH"; 
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="hAn16Ept"; 
  dkim-atps=neutral
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pl1-x642.google.com (mail-pl1-x642.google.com
+ [IPv6:2607:f8b0:4864:20::642])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46BwVw3QykzDqnK
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Aug 2019 23:58:16 +1000 (AEST)
-Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 46BwVl4yKDz9txwR;
- Mon, 19 Aug 2019 15:58:07 +0200 (CEST)
-Authentication-Results: localhost; dkim=pass
- reason="1024-bit key; insecure key"
- header.d=c-s.fr header.i=@c-s.fr header.b=b+qZijNH; dkim-adsp=pass;
- dkim-atps=neutral
-X-Virus-Scanned: Debian amavisd-new at c-s.fr
-Received: from pegase1.c-s.fr ([192.168.12.234])
- by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id 3LAFpjc5ZZEF; Mon, 19 Aug 2019 15:58:07 +0200 (CEST)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 46BwVl3dH2z9txvq;
- Mon, 19 Aug 2019 15:58:07 +0200 (CEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
- t=1566223087; bh=I3GscCUL+tagamYjLpeA1pHPoXl+L8tdwdhXghWn5l0=;
- h=In-Reply-To:References:From:Subject:To:Cc:Date:From;
- b=b+qZijNHwV2liAFXQ5G4UoQOQ4n6EJhBi5iFQe57jnHb9FKofxzxWI0l08oXemYoj
- a201+iYI7S8StDrVvP5HlhCKhQy1TNRbqJbJGSd2TMpHAHa40mSsQbzZNCPZJfvWcb
- 3iuqSFGUglNaozE51hq20VgT+Dqyo+HQuiCihuvI=
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 0E9B78B7B9;
- Mon, 19 Aug 2019 15:58:13 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id jphAGcmKo54y; Mon, 19 Aug 2019 15:58:12 +0200 (CEST)
-Received: from pc17473vm.idsi0.si.c-s.fr (po15451.idsi0.si.c-s.fr
- [172.25.230.101])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id CEF1D8B7B7;
- Mon, 19 Aug 2019 15:58:12 +0200 (CEST)
-Received: by pc17473vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id CDD536B70A; Mon, 19 Aug 2019 13:58:12 +0000 (UTC)
-Message-Id: <92bf50b31f5f78cc76ed055b11a492e8e9e2c731.1566223054.git.christophe.leroy@c-s.fr>
-In-Reply-To: <be2b971c89b1af30d680cedd14e99a83138ef40a.1566223054.git.christophe.leroy@c-s.fr>
-References: <be2b971c89b1af30d680cedd14e99a83138ef40a.1566223054.git.christophe.leroy@c-s.fr>
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v3 3/3] powerpc/64: optimise LOAD_REG_IMMEDIATE_SYM()
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, 
- segher@kernel.crashing.org
-Date: Mon, 19 Aug 2019 13:58:12 +0000 (UTC)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46BwlL3Sb6zDqT3
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Aug 2019 00:09:02 +1000 (AEST)
+Received: by mail-pl1-x642.google.com with SMTP id z3so1029828pln.6
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Aug 2019 07:09:02 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=date:from:subject:to:cc:references:in-reply-to:mime-version
+ :user-agent:message-id:content-transfer-encoding;
+ bh=GSLHXu1mOtlkzdO0Aoy6ALFWdjQmUSGB2auJNt7fmaY=;
+ b=hAn16EptkwYbIsimrtCVoLm3Vy2/0maL2p4sTLH/uJOqrzgirMoRwVwobxhbxRutWh
+ Hoj/J+0xMDQQ+DRUIjfbV6AyjSf9wPse+GBYiR7P21FBQHEarrOe62Oti+ue+vs+3QIR
+ 1ExfSZZC/TKj6jUNxFScZ86jbWp98Z2VfasIRWdrhAHCkJdZncoo06ryvn8WpySQw751
+ V+fss1tF3DpVSyjKRwkpPZ+fQ9EksfRmL8tqpVyiDVQs4SvyK7q2aLnABiNjdxSvIBHF
+ lqsQfmxVD5MU+L+Ey2i1jAJ57tedIzgJ06XZ6WRhOQvaGWqDX8CGZ7vuZ/VIGDJqyHK4
+ uxGA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:date:from:subject:to:cc:references:in-reply-to
+ :mime-version:user-agent:message-id:content-transfer-encoding;
+ bh=GSLHXu1mOtlkzdO0Aoy6ALFWdjQmUSGB2auJNt7fmaY=;
+ b=R6lROkq53A2teAr+nCIIkndFgQ18RKPzF58BnSbiFFExeH3v/zFHfnUlKYx5HXZQfB
+ CHgpSWJX2e9QUNNmafJYO5ZOx1zaGWRFod8KxZJRVqcAeJIAoxghSEcEaqvmFsOuQQXW
+ GpIm5ZnF/2vefc3wmsmS8ELxFM1nvID7lcjSgssYH9U/EdT56YnRCK9N+HGJzXddCmTJ
+ DNd3jLBubm3RcYmU2SKOKo37P8lbDC4ncrv0TyHeV+yllU+nvfQT1DGnV4c2bK++Y1a6
+ 3s9enqWWN9WSaHhPKTjULti+QWFTAE0ILxtJn7O5BKG6gQBvtA1U5ZNRzBdW5VJvp1V/
+ 9JOQ==
+X-Gm-Message-State: APjAAAXIjicSuCsg+aLhqezMEwc5E/JAveaBgaUrxZdSPiVsuep+FQ+2
+ /dQ1+uiNfxG57Lf1VYkeQbA=
+X-Google-Smtp-Source: APXvYqzFRu4lTXAtTaDQiAyQr6JuJk/LzOC6VfLDOvSW4lLPPVsn2jAzVwCGW6lZVtESwmhasPcgDQ==
+X-Received: by 2002:a17:902:b702:: with SMTP id
+ d2mr23407917pls.259.1566223738387; 
+ Mon, 19 Aug 2019 07:08:58 -0700 (PDT)
+Received: from localhost (193-116-95-121.tpgi.com.au. [193.116.95.121])
+ by smtp.gmail.com with ESMTPSA id d6sm14454537pgf.55.2019.08.19.07.08.56
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Mon, 19 Aug 2019 07:08:57 -0700 (PDT)
+Date: Tue, 20 Aug 2019 00:08:46 +1000
+From: Nicholas Piggin <npiggin@gmail.com>
+Subject: Re: [PATCH v10 1/7] powerpc/mce: Schedule work from irq_work
+To: Linux Kernel <linux-kernel@vger.kernel.org>, linuxppc-dev
+ <linuxppc-dev@lists.ozlabs.org>, Santosh Sivaraj <santosh@fossix.org>
+References: <20190815003941.18655-1-santosh@fossix.org>
+ <20190815003941.18655-2-santosh@fossix.org>
+In-Reply-To: <20190815003941.18655-2-santosh@fossix.org>
+MIME-Version: 1.0
+User-Agent: astroid/0.15.0 (https://github.com/astroidmail/astroid)
+Message-Id: <1566223307.ypgtanp5uk.astroid@bobo.none>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -89,114 +95,41 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
+ Mahesh Salgaonkar <mahesh@linux.ibm.com>, stable@vger.kernel.org,
+ Chandan Rajendra <chandan@linux.ibm.com>,
+ Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>,
+ Reza Arbab <arbab@linux.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Optimise LOAD_REG_IMMEDIATE_SYM() using a temporary register to
-parallelise operations.
+Santosh Sivaraj's on August 15, 2019 10:39 am:
+> schedule_work() cannot be called from MCE exception context as MCE can
+> interrupt even in interrupt disabled context.
 
-It reduces the path from 5 to 3 instructions.
+The powernv code doesn't do this in general, rather defers kernel
+MCEs. My patch series converts the pseries machine check exception
+code over to the same.
 
-Suggested-by: Segher Boessenkool <segher@kernel.crashing.org>
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+However there remain special cases where that's not true for
+powernv, e.g., the machine check stack overflow or unrecoverable
+MCE paths try to force it through so something gets printed. We
+probably shouldn't even try to do memory failure in these cases.
 
----
-v3: new
----
- arch/powerpc/include/asm/ppc_asm.h   | 12 ++++++------
- arch/powerpc/kernel/exceptions-64e.S | 22 +++++++++++++---------
- arch/powerpc/kernel/head_64.S        |  2 +-
- 3 files changed, 20 insertions(+), 16 deletions(-)
+Still, shouldn't hurt to make this change and fixes the existing
+"different" pseries code.
 
-diff --git a/arch/powerpc/include/asm/ppc_asm.h b/arch/powerpc/include/asm/ppc_asm.h
-index aa8717c1571a..9d55bff9a73c 100644
---- a/arch/powerpc/include/asm/ppc_asm.h
-+++ b/arch/powerpc/include/asm/ppc_asm.h
-@@ -347,12 +347,12 @@ GLUE(.,name):
- 
- #define LOAD_REG_IMMEDIATE(reg, expr) __LOAD_REG_IMMEDIATE reg, expr
- 
--#define LOAD_REG_IMMEDIATE_SYM(reg,expr)	\
--	lis     reg,(expr)@highest;		\
--	ori     reg,reg,(expr)@higher;	\
--	rldicr  reg,reg,32,31;		\
--	oris    reg,reg,(expr)@__AS_ATHIGH;	\
--	ori     reg,reg,(expr)@l;
-+#define LOAD_REG_IMMEDIATE_SYM(reg, tmp, expr)	\
-+	lis	reg, (expr)@highest;		\
-+	lis	tmp, (expr)@__AS_ATHIGH;	\
-+	ori	reg, reg, (expr)@higher;	\
-+	ori	tmp, reg, (expr)@l;		\
-+	rldimi	reg, tmp, 32, 0
- 
- #define LOAD_REG_ADDR(reg,name)			\
- 	ld	reg,name@got(r2)
-diff --git a/arch/powerpc/kernel/exceptions-64e.S b/arch/powerpc/kernel/exceptions-64e.S
-index 898aae6da167..829950b96d29 100644
---- a/arch/powerpc/kernel/exceptions-64e.S
-+++ b/arch/powerpc/kernel/exceptions-64e.S
-@@ -750,12 +750,14 @@ END_FTR_SECTION_IFSET(CPU_FTR_ALTIVEC)
- 	ld	r15,PACATOC(r13)
- 	ld	r14,interrupt_base_book3e@got(r15)
- 	ld	r15,__end_interrupts@got(r15)
--#else
--	LOAD_REG_IMMEDIATE_SYM(r14,interrupt_base_book3e)
--	LOAD_REG_IMMEDIATE_SYM(r15,__end_interrupts)
--#endif
- 	cmpld	cr0,r10,r14
- 	cmpld	cr1,r10,r15
-+#else
-+	LOAD_REG_IMMEDIATE_SYM(r14, r15, interrupt_base_book3e)
-+	cmpld	cr0, r10, r14
-+	LOAD_REG_IMMEDIATE_SYM(r14, r15, __end_interrupts)
-+	cmpld	cr1, r10, r14
-+#endif
- 	blt+	cr0,1f
- 	bge+	cr1,1f
- 
-@@ -820,12 +822,14 @@ kernel_dbg_exc:
- 	ld	r15,PACATOC(r13)
- 	ld	r14,interrupt_base_book3e@got(r15)
- 	ld	r15,__end_interrupts@got(r15)
--#else
--	LOAD_REG_IMMEDIATE_SYM(r14,interrupt_base_book3e)
--	LOAD_REG_IMMEDIATE_SYM(r15,__end_interrupts)
--#endif
- 	cmpld	cr0,r10,r14
- 	cmpld	cr1,r10,r15
-+#else
-+	LOAD_REG_IMMEDIATE_SYM(r14, r15, interrupt_base_book3e)
-+	cmpld	cr0, r10, r14
-+	LOAD_REG_IMMEDIATE_SYM(r14, r15,__end_interrupts)
-+	cmpld	cr1, r10, r14
-+#endif
- 	blt+	cr0,1f
- 	bge+	cr1,1f
- 
-@@ -1449,7 +1453,7 @@ a2_tlbinit_code_start:
- a2_tlbinit_after_linear_map:
- 
- 	/* Now we branch the new virtual address mapped by this entry */
--	LOAD_REG_IMMEDIATE_SYM(r3,1f)
-+	LOAD_REG_IMMEDIATE_SYM(r3, r5, 1f)
- 	mtctr	r3
- 	bctr
- 
-diff --git a/arch/powerpc/kernel/head_64.S b/arch/powerpc/kernel/head_64.S
-index 1fd44761e997..0f2d61af47cc 100644
---- a/arch/powerpc/kernel/head_64.S
-+++ b/arch/powerpc/kernel/head_64.S
-@@ -635,7 +635,7 @@ __after_prom_start:
- 	sub	r5,r5,r11
- #else
- 	/* just copy interrupts */
--	LOAD_REG_IMMEDIATE_SYM(r5, FIXED_SYMBOL_ABS_ADDR(__end_interrupts))
-+	LOAD_REG_IMMEDIATE_SYM(r5, r11, FIXED_SYMBOL_ABS_ADDR(__end_interrupts))
- #endif
- 	b	5f
- 3:
--- 
-2.13.3
+Thanks,
+Nick
 
+> fixes: 733e4a4c ("powerpc/mce: hookup memory_failure for UE errors")
+> Suggested-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+> Signed-off-by: Santosh Sivaraj <santosh@fossix.org>
+> Reviewed-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+> Acked-by: Balbir Singh <bsingharora@gmail.com>
+> Cc: stable@vger.kernel.org # v4.15+
+
+Reviewed-by: Nicholas Piggin <npiggin@gmail.com>
+
+=
