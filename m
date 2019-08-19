@@ -2,54 +2,89 @@ Return-Path: <SRS0=1Kal=WP=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.3 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
+	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A93F0C3A5A0
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Aug 2019 13:27:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 97F45C3A5A0
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Aug 2019 13:47:49 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 5EF0A2085A
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Aug 2019 13:27:16 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5EF0A2085A
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kernel.crashing.org
+	by mail.kernel.org (Postfix) with ESMTPS id 9BE3A2082C
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Aug 2019 13:47:48 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="tYFXZFFl"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9BE3A2082C
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46Bvq549cXzDqWj
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Aug 2019 23:27:13 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=permerror (mailfrom)
- smtp.mailfrom=kernel.crashing.org (client-ip=63.228.1.57;
- helo=gate.crashing.org; envelope-from=segher@kernel.crashing.org;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=kernel.crashing.org
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 46BwGn0L6tzDqdv
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Aug 2019 23:47:45 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+ spf=pass (mailfrom) smtp.mailfrom=gmail.com
+ (client-ip=2607:f8b0:4864:20::444; helo=mail-pf1-x444.google.com;
+ envelope-from=npiggin@gmail.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="tYFXZFFl"; 
+ dkim-atps=neutral
+Received: from mail-pf1-x444.google.com (mail-pf1-x444.google.com
+ [IPv6:2607:f8b0:4864:20::444])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46Bvkw0LV3zDq5t
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Aug 2019 23:23:35 +1000 (AEST)
-Received: from gate.crashing.org (localhost.localdomain [127.0.0.1])
- by gate.crashing.org (8.14.1/8.14.1) with ESMTP id x7JDNEqX018624;
- Mon, 19 Aug 2019 08:23:14 -0500
-Received: (from segher@localhost)
- by gate.crashing.org (8.14.1/8.14.1/Submit) id x7JDND50018616;
- Mon, 19 Aug 2019 08:23:13 -0500
-X-Authentication-Warning: gate.crashing.org: segher set sender to
- segher@kernel.crashing.org using -f
-Date: Mon, 19 Aug 2019 08:23:13 -0500
-From: Segher Boessenkool <segher@kernel.crashing.org>
-To: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: Re: [PATCH 3/3] powerpc: use __builtin_trap() in BUG/WARN macros.
-Message-ID: <20190819132313.GH31406@gate.crashing.org>
-References: <a6781075192afe0c909ce7d091de7931183a5d93.1566219503.git.christophe.leroy@c-s.fr>
- <20510ce03cc9463f1c9e743c1d93b939de501b53.1566219503.git.christophe.leroy@c-s.fr>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20510ce03cc9463f1c9e743c1d93b939de501b53.1566219503.git.christophe.leroy@c-s.fr>
-User-Agent: Mutt/1.4.2.3i
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46Bw9C6m7YzDqXG
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Aug 2019 23:42:55 +1000 (AEST)
+Received: by mail-pf1-x444.google.com with SMTP id g2so1209964pfq.0
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Aug 2019 06:42:55 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=date:from:subject:to:cc:references:in-reply-to:mime-version
+ :user-agent:message-id:content-transfer-encoding;
+ bh=RjbLMcxR301rQtXMpcTgwA0dW/K8YBmt5+fW+awk5+E=;
+ b=tYFXZFFlCozav7Vs9/mMpjspNezP2YD/DBroefG0UIAcNPFVG9JQQQ7Rxqj/Zqby86
+ ldGz6i23RyjklvekeUwHOk3PHKT/kEfffzORWCBTrKLm7yrr+YTzsYpABEraWMIMhYI+
+ +eHAc7kuoP5C2YDEQMsPhbl+UL21IEyWyYB8YtEBg3LKrTkSzXO7s+ZmHpwa8P+/76Dj
+ U049W6xuNbvAOe6NDpeVnvEUbwoHpnHq/yh0DCDpS62aqeyFiKWIMpeXrgMrAuwr4Pmf
+ XisguPW0xxY8ZfQRMu/kYGoIEGN1wROyWbGBRricaiYnRc+VKLxUooyfalIfIRMhd48H
+ IClw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:date:from:subject:to:cc:references:in-reply-to
+ :mime-version:user-agent:message-id:content-transfer-encoding;
+ bh=RjbLMcxR301rQtXMpcTgwA0dW/K8YBmt5+fW+awk5+E=;
+ b=hre9sRHNAbWhrcG0m0qgVfXPgQ54t0wvsMCK4QcQ6CPJ5TsMNNDW7CS9CkBkurvT0Z
+ orqRKCO6XfKcFsJkSvo0Bnp7Jokv2WHwht0257iwtc3W91V/rH0xSjqTckytUS85myTp
+ pNkKH79t2MSh1KE8e1gHgUwEcpCMVS5fZHYHHiI3FR2T/lteHRvabhnOmhYjPhjt+r0v
+ 6pVxgx/P3R/oB5AIY67ZK2BhcrR4WDamuYswH3pgseAyODAnIjhHSgEZFOvaLF3ertBz
+ pC8VK4ydoljPSdgqB/iJlJnJA2BP7JPq7nRzp0b+caZSOKQAIpQ/2xnjqRVgCH6kvlon
+ MkfA==
+X-Gm-Message-State: APjAAAVRhFqeIJ+AcasVSyuGk8E0Cud8TyqFKcAMWh0Mml8YRoJjImaX
+ +bGMblQ/G0RiDTnAOTeATj0=
+X-Google-Smtp-Source: APXvYqyatnsZKZ+5EQfsnms5KbYq265xLWw8O++dMuVzDWl78HSBpjjn//fYUYM0KZVsiHE3eJmmhw==
+X-Received: by 2002:a63:e14d:: with SMTP id h13mr19901841pgk.431.1566222170475; 
+ Mon, 19 Aug 2019 06:42:50 -0700 (PDT)
+Received: from localhost (193-116-95-121.tpgi.com.au. [193.116.95.121])
+ by smtp.gmail.com with ESMTPSA id v12sm13863260pgr.86.2019.08.19.06.42.49
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Mon, 19 Aug 2019 06:42:49 -0700 (PDT)
+Date: Mon, 19 Aug 2019 23:42:38 +1000
+From: Nicholas Piggin <npiggin@gmail.com>
+Subject: Re: [PATCH v1 05/10] powerpc/mm: Do early ioremaps from top to bottom
+ on PPC64 too.
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Christophe Leroy
+ <christophe.leroy@c-s.fr>, Michael Ellerman <mpe@ellerman.id.au>,
+ Paul Mackerras <paulus@samba.org>
+References: <6bc35eca507359075528bc0e55938bc1ce8ee485.1565726867.git.christophe.leroy@c-s.fr>
+ <019c5d90f7027ccff00e38a3bcd633d290f6af59.1565726867.git.christophe.leroy@c-s.fr>
+In-Reply-To: <019c5d90f7027ccff00e38a3bcd633d290f6af59.1565726867.git.christophe.leroy@c-s.fr>
+MIME-Version: 1.0
+User-Agent: astroid/0.15.0 (https://github.com/astroidmail/astroid)
+Message-Id: <1566221500.6f5zxv68dm.astroid@bobo.none>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -61,23 +96,28 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>,
- linux-kernel@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, Aug 19, 2019 at 01:06:31PM +0000, Christophe Leroy wrote:
-> Note that we keep using an assembly text using "twi 31, 0, 0" for
-> inconditional traps because GCC drops all code after
-> __builtin_trap() when the condition is always true at build time.
+Christophe Leroy's on August 14, 2019 6:11 am:
+> Until vmalloc system is up and running, ioremap basically
+> allocates addresses at the border of the IOREMAP area.
+>=20
+> On PPC32, addresses are allocated down from the top of the area
+> while on PPC64, addresses are allocated up from the base of the
+> area.
+=20
+This series looks pretty good to me, but I'm not sure about this patch.
 
-As I said, it can also do this for conditional traps, if it can prove
-the condition is always true.
+It seems like quite a small divergence in terms of code, and it looks
+like the final result still has some ifdefs in these functions. Maybe
+you could just keep existing behaviour for this cleanup series so it
+does not risk triggering some obscure regression? Merging behaviour
+could be proposed at the end.
 
-Can you put the bug table asm *before* the __builtin_trap maybe?  That
-should make it all work fine...  If you somehow can tell what machine
-instruction is that trap, anyway.
+Thanks,
+Nick
 
-
-Segher
+=
