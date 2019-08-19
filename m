@@ -2,84 +2,54 @@ Return-Path: <SRS0=1Kal=WP=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.0 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4E446C3A5A0
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Aug 2019 14:19:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8F325C3A5A0
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Aug 2019 14:23:08 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6D700206BB
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Aug 2019 14:19:20 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="D9UpJAtA"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6D700206BB
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
+	by mail.kernel.org (Postfix) with ESMTPS id 426A720651
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Aug 2019 14:23:08 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 426A720651
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kernel.crashing.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46BwzB27yYzDqdx
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Aug 2019 00:19:18 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=c-s.fr
- (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
- envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=c-s.fr
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="D9UpJAtA"; 
- dkim-atps=neutral
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 46Bx3X6yQTzDqLh
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Aug 2019 00:23:04 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=permerror (mailfrom)
+ smtp.mailfrom=kernel.crashing.org (client-ip=63.228.1.57;
+ helo=gate.crashing.org; envelope-from=segher@kernel.crashing.org;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=kernel.crashing.org
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46BwlP3dWfzDqfp
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Aug 2019 00:09:05 +1000 (AEST)
-Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 46BwlB45qYz9v0B8;
- Mon, 19 Aug 2019 16:08:54 +0200 (CEST)
-Authentication-Results: localhost; dkim=pass
- reason="1024-bit key; insecure key"
- header.d=c-s.fr header.i=@c-s.fr header.b=D9UpJAtA; dkim-adsp=pass;
- dkim-atps=neutral
-X-Virus-Scanned: Debian amavisd-new at c-s.fr
-Received: from pegase1.c-s.fr ([192.168.12.234])
- by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id 8kUMQgQRGl4d; Mon, 19 Aug 2019 16:08:54 +0200 (CEST)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 46BwlB2pNCz9v0B6;
- Mon, 19 Aug 2019 16:08:54 +0200 (CEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
- t=1566223734; bh=1VZ4PKMgRBwn63Tarnn17tA8xLBbqrhGpSViPPzJK0I=;
- h=Subject:To:Cc:References:From:Date:In-Reply-To:From;
- b=D9UpJAtAx9VtM10EP87SXkeqhMpV1ifdecxFK22Oeqy7Ad8awxkVFPkbI/FQeQH6f
- qeShL30Gi/dklCcpCvX69xiBb+W58NFO/9NndmFZmFbUr4c/x3cPyx9L4m5EGBiA6t
- xyu/xmfoxwJn1616ekF/KiEBCbxXabNidKJ6Twn8=
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id EC53F8B7BB;
- Mon, 19 Aug 2019 16:08:59 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id fwAM8N0yBjsL; Mon, 19 Aug 2019 16:08:59 +0200 (CEST)
-Received: from [172.25.230.101] (po15451.idsi0.si.c-s.fr [172.25.230.101])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id BC5048B7B9;
- Mon, 19 Aug 2019 16:08:59 +0200 (CEST)
-Subject: Re: [PATCH 3/3] powerpc: use __builtin_trap() in BUG/WARN macros.
-To: Segher Boessenkool <segher@kernel.crashing.org>
-References: <a6781075192afe0c909ce7d091de7931183a5d93.1566219503.git.christophe.leroy@c-s.fr>
- <20510ce03cc9463f1c9e743c1d93b939de501b53.1566219503.git.christophe.leroy@c-s.fr>
- <20190819132313.GH31406@gate.crashing.org>
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Message-ID: <dbafc03a-6eda-d9a3-c451-d242f03b01d9@c-s.fr>
-Date: Mon, 19 Aug 2019 16:08:43 +0200
-User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:60.0) Gecko/20100101
- Thunderbird/60.8.0
-MIME-Version: 1.0
-In-Reply-To: <20190819132313.GH31406@gate.crashing.org>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: fr
-Content-Transfer-Encoding: 8bit
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46BwwX6KrQzDqFB
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Aug 2019 00:17:00 +1000 (AEST)
+Received: from gate.crashing.org (localhost.localdomain [127.0.0.1])
+ by gate.crashing.org (8.14.1/8.14.1) with ESMTP id x7JEGjfs021854;
+ Mon, 19 Aug 2019 09:16:45 -0500
+Received: (from segher@localhost)
+ by gate.crashing.org (8.14.1/8.14.1/Submit) id x7JEGjuS021851;
+ Mon, 19 Aug 2019 09:16:45 -0500
+X-Authentication-Warning: gate.crashing.org: segher set sender to
+ segher@kernel.crashing.org using -f
+Date: Mon, 19 Aug 2019 09:16:45 -0500
+From: Segher Boessenkool <segher@kernel.crashing.org>
+To: Christophe Leroy <christophe.leroy@c-s.fr>
+Subject: Re: [PATCH v3 1/3] powerpc: rewrite LOAD_REG_IMMEDIATE() as an
+ intelligent macro
+Message-ID: <20190819141645.GI31406@gate.crashing.org>
+References: <be2b971c89b1af30d680cedd14e99a83138ef40a.1566223054.git.christophe.leroy@c-s.fr>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <be2b971c89b1af30d680cedd14e99a83138ef40a.1566223054.git.christophe.leroy@c-s.fr>
+User-Agent: Mutt/1.4.2.3i
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -97,55 +67,27 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+Hi Christophe,
+
+On Mon, Aug 19, 2019 at 01:58:10PM +0000, Christophe Leroy wrote:
+> +.macro __LOAD_REG_IMMEDIATE r, x
+> +	.if (\x) >= 0x80000000 || (\x) < -0x80000000
+> +		__LOAD_REG_IMMEDIATE_32 \r, (\x) >> 32
+> +		sldi	\r, \r, 32
+> +		.if (\x) & 0xffff0000 != 0
+> +			oris \r, \r, (\x)@__AS_ATHIGH
+> +		.endif
+> +		.if (\x) & 0xffff != 0
+> +			oris \r, \r, (\x)@l
+> +		.endif
+> +	.else
+> +		__LOAD_REG_IMMEDIATE_32 \r, \x
+> +	.endif
+> +.endm
+
+How did you test this?  That last "oris" should be "ori"?
+
+Rest looks good :-)
 
 
-Le 19/08/2019 à 15:23, Segher Boessenkool a écrit :
-> On Mon, Aug 19, 2019 at 01:06:31PM +0000, Christophe Leroy wrote:
->> Note that we keep using an assembly text using "twi 31, 0, 0" for
->> inconditional traps because GCC drops all code after
->> __builtin_trap() when the condition is always true at build time.
-> 
-> As I said, it can also do this for conditional traps, if it can prove
-> the condition is always true.
-
-But we have another branch for 'always true' and 'always false' using 
-__builtin_constant_p(), which don't use __builtin_trap(). Is there 
-anything wrong with that ?:
-
-#define BUG_ON(x) do {						\
-	if (__builtin_constant_p(x)) {				\
-		if (x)						\
-			BUG();					\
-	} else {						\
-		if (x)						\
-			__builtin_trap();			\
-		BUG_ENTRY("", 0);				\
-	}							\
-} while (0)
-
-#define WARN_ON(x) ({						\
-	int __ret_warn_on = !!(x);				\
-	if (__builtin_constant_p(__ret_warn_on)) {		\
-		if (__ret_warn_on)				\
-			__WARN_TAINT(TAINT_WARN);		\
-	} else {						\
-		if (__ret_warn_on)				\
-			__builtin_trap();			\
-		BUG_ENTRY("", BUGFLAG_WARNING | BUGFLAG_TAINT(TAINT_WARN));	\
-	}							\
-	unlikely(__ret_warn_on);				\
-})
-
-
-> 
-> Can you put the bug table asm *before* the __builtin_trap maybe?  That
-> should make it all work fine...  If you somehow can tell what machine
-> instruction is that trap, anyway.
-
-And how can I tell that ?
-
-When I put it *after*, it always points to the trap instruction. When I 
-put it *before* it usually points on the first instruction used to 
-prepare the registers for the trap condition.
-
-Christophe
+Segher
