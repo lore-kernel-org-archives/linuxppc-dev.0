@@ -2,23 +2,24 @@ Return-Path: <SRS0=bLNb=WQ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-11.7 required=3.0
+	tests=HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1267DC3A589
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Aug 2019 10:53:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 61E4EC3A589
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Aug 2019 10:55:31 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 8E68B206DF
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Aug 2019 10:53:28 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8E68B206DF
+	by mail.kernel.org (Postfix) with ESMTPS id DDF66206DD
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Aug 2019 10:55:30 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DDF66206DD
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=cyphar.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46CSMB3VpxzDr7Q
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Aug 2019 20:53:26 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 46CSPX20R5zDr0R
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Aug 2019 20:55:28 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=cyphar.com
  (client-ip=2001:67c:2050:104:0:2:25:2; helo=mx2.mailbox.org;
@@ -29,28 +30,26 @@ Received: from mx2.mailbox.org (mx2a.mailbox.org
  [IPv6:2001:67c:2050:104:0:2:25:2])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46CS6W5rPKzDqs1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46CS6W5vFSzDqsr
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Aug 2019 20:42:27 +1000 (AEST)
-Received: from smtp2.mailbox.org (smtp2.mailbox.org
- [IPv6:2001:67c:2050:105:465:1:2:0])
+Received: from smtp2.mailbox.org (smtp2.mailbox.org [80.241.60.241])
  (using TLSv1.2 with cipher ECDHE-RSA-CHACHA20-POLY1305 (256/256 bits))
  (No client certificate requested)
- by mx2.mailbox.org (Postfix) with ESMTPS id 284FBA0C2B;
- Tue, 20 Aug 2019 05:35:27 +0200 (CEST)
+ by mx2.mailbox.org (Postfix) with ESMTPS id 24DEAA1677;
+ Tue, 20 Aug 2019 05:36:30 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at heinlein-support.de
 Received: from smtp2.mailbox.org ([80.241.60.241])
- by gerste.heinlein-support.de (gerste.heinlein-support.de [91.198.250.173])
- (amavisd-new, port 10030)
- with ESMTP id iPNXPGgi2zto; Tue, 20 Aug 2019 05:35:18 +0200 (CEST)
+ by spamfilter02.heinlein-hosting.de (spamfilter02.heinlein-hosting.de
+ [80.241.56.116]) (amavisd-new, port 10030)
+ with ESMTP id xqSfHLrxNCZI; Tue, 20 Aug 2019 05:36:18 +0200 (CEST)
 From: Aleksa Sarai <cyphar@cyphar.com>
 To: Al Viro <viro@zeniv.linux.org.uk>, Jeff Layton <jlayton@kernel.org>,
  "J. Bruce Fields" <bfields@fieldses.org>, Arnd Bergmann <arnd@arndb.de>,
  David Howells <dhowells@redhat.com>, Shuah Khan <shuah@kernel.org>,
  Shuah Khan <skhan@linuxfoundation.org>
-Subject: [PATCH RESEND v11 3/8] open: O_EMPTYPATH: procfs-less file descriptor
- re-opening
-Date: Tue, 20 Aug 2019 13:34:01 +1000
-Message-Id: <20190820033406.29796-4-cyphar@cyphar.com>
+Subject: [PATCH RESEND v11 7/8] open: openat2(2) syscall
+Date: Tue, 20 Aug 2019 13:34:05 +1000
+Message-Id: <20190820033406.29796-8-cyphar@cyphar.com>
 In-Reply-To: <20190820033406.29796-1-cyphar@cyphar.com>
 References: <20190820033406.29796-1-cyphar@cyphar.com>
 MIME-Version: 1.0
@@ -87,223 +86,616 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Userspace has made use of /proc/self/fd very liberally to allow for
-descriptors to be re-opened. There are a wide variety of uses for this
-feature, but it has always required constructing a pathname and could
-not be done without procfs mounted. The obvious solution for this is to
-extend openat(2) to have an AT_EMPTY_PATH-equivalent -- O_EMPTYPATH.
+The most obvious syscall to add support for the new LOOKUP_* scoping
+flags would be openat(2). However, there are a few reasons why this is
+not the best course of action:
 
-Now that descriptor re-opening has been made safe through the new
-magic-link resolution restrictions, we can replicate these restrictions
-for O_EMPTYPATH. In particular, we only allow "upgrading" the file
-descriptor if the corresponding FMODE_PATH_* bit is set (or the
-FMODE_{READ,WRITE} cases for non-O_PATH file descriptors).
+ * The new LOOKUP_* flags are intended to be security features, and
+   openat(2) will silently ignore all unknown flags. This means that
+   users would need to avoid foot-gunning themselves constantly when
+   using this interface if it were part of openat(2). This can be fixed
+   by having userspace libraries handle this for users[1], but should be
+   avoided if possible.
 
-When doing openat(O_EMPTYPATH|O_PATH), O_PATH takes precedence and
-O_EMPTYPATH is ignored. Very few users ever have a need to O_PATH
-re-open an existing file descriptor, and so accommodating them at the
-expense of further complicating O_PATH makes little sense. Ultimately,
-if users ask for this we can always add RESOLVE_EMPTY_PATH to
-resolveat(2) in the future.
+ * Resolution scoping feels like a different operation to the existing
+   O_* flags. And since openat(2) has limited flag space, it seems to be
+   quite wasteful to clutter it with 5 flags that are all
+   resolution-related. Arguably O_NOFOLLOW is also a resolution flag but
+   its entire purpose is to error out if you encounter a trailing
+   symlink -- not to scope resolution.
 
+ * Other systems would be able to reimplement this syscall allowing for
+   cross-OS standardisation rather than being hidden amongst O_* flags
+   which may result in it not being used by all the parties that might
+   want to use it (file servers, web servers, container runtimes, etc).
+
+ * It gives us the opportunity to iterate on the O_PATH interface. In
+   particular, the new @how->upgrade_mask field for fd re-opening is
+   only possible because we have a clean slate without needing to re-use
+   the ACC_MODE flag design nor the existing openat(2) @mode semantics.
+
+To this end, we introduce the openat2(2) syscall. It provides all of the
+features of openat(2) through the @how->flags argument, but also
+also provides a new @how->resolve argument which exposes RESOLVE_* flags
+that map to our new LOOKUP_* flags. It also eliminates the long-standing
+ugliness of variadic-open(2) by embedding it in a struct.
+
+In order to allow for userspace to lock down their usage of file
+descriptor re-opening, openat2(2) has the ability for users to disallow
+certain re-opening modes through @how->upgrade_mask. At the moment,
+there is no UPGRADE_NOEXEC. The open_how struct is padded to 64 bytes
+for future extensions (all of the reserved bits must be zeroed).
+
+[1]: https://github.com/openSUSE/libpathrs
+
+Suggested-by: Christian Brauner <christian@brauner.io>
 Signed-off-by: Aleksa Sarai <cyphar@cyphar.com>
 ---
- arch/alpha/include/uapi/asm/fcntl.h  |  1 +
- arch/parisc/include/uapi/asm/fcntl.h | 39 ++++++++++++++--------------
- arch/sparc/include/uapi/asm/fcntl.h  |  1 +
- fs/fcntl.c                           |  2 +-
- fs/namei.c                           | 20 ++++++++++++++
- fs/open.c                            |  7 ++++-
- include/linux/fcntl.h                |  2 +-
- include/uapi/asm-generic/fcntl.h     |  4 +++
- 8 files changed, 54 insertions(+), 22 deletions(-)
+ arch/alpha/kernel/syscalls/syscall.tbl      |   1 +
+ arch/arm/tools/syscall.tbl                  |   1 +
+ arch/arm64/include/asm/unistd.h             |   2 +-
+ arch/arm64/include/asm/unistd32.h           |   2 +
+ arch/ia64/kernel/syscalls/syscall.tbl       |   1 +
+ arch/m68k/kernel/syscalls/syscall.tbl       |   1 +
+ arch/microblaze/kernel/syscalls/syscall.tbl |   1 +
+ arch/mips/kernel/syscalls/syscall_n32.tbl   |   1 +
+ arch/mips/kernel/syscalls/syscall_n64.tbl   |   1 +
+ arch/mips/kernel/syscalls/syscall_o32.tbl   |   1 +
+ arch/parisc/kernel/syscalls/syscall.tbl     |   1 +
+ arch/powerpc/kernel/syscalls/syscall.tbl    |   1 +
+ arch/s390/kernel/syscalls/syscall.tbl       |   1 +
+ arch/sh/kernel/syscalls/syscall.tbl         |   1 +
+ arch/sparc/kernel/syscalls/syscall.tbl      |   1 +
+ arch/x86/entry/syscalls/syscall_32.tbl      |   1 +
+ arch/x86/entry/syscalls/syscall_64.tbl      |   1 +
+ arch/xtensa/kernel/syscalls/syscall.tbl     |   1 +
+ fs/open.c                                   | 106 ++++++++++++++++----
+ include/linux/fcntl.h                       |  15 ++-
+ include/linux/fs.h                          |   4 +-
+ include/linux/syscalls.h                    |  17 +++-
+ include/uapi/asm-generic/unistd.h           |   5 +-
+ include/uapi/linux/fcntl.h                  |  42 ++++++++
+ 24 files changed, 179 insertions(+), 30 deletions(-)
 
-diff --git a/arch/alpha/include/uapi/asm/fcntl.h b/arch/alpha/include/uapi/asm/fcntl.h
-index 50bdc8e8a271..1f879bade68b 100644
---- a/arch/alpha/include/uapi/asm/fcntl.h
-+++ b/arch/alpha/include/uapi/asm/fcntl.h
-@@ -34,6 +34,7 @@
+diff --git a/arch/alpha/kernel/syscalls/syscall.tbl b/arch/alpha/kernel/syscalls/syscall.tbl
+index 728fe028c02c..9f374f7d9514 100644
+--- a/arch/alpha/kernel/syscalls/syscall.tbl
++++ b/arch/alpha/kernel/syscalls/syscall.tbl
+@@ -475,3 +475,4 @@
+ 543	common	fspick				sys_fspick
+ 544	common	pidfd_open			sys_pidfd_open
+ # 545 reserved for clone3
++547	common	openat2				sys_openat2
+diff --git a/arch/arm/tools/syscall.tbl b/arch/arm/tools/syscall.tbl
+index 6da7dc4d79cc..4ba54bc7e19a 100644
+--- a/arch/arm/tools/syscall.tbl
++++ b/arch/arm/tools/syscall.tbl
+@@ -449,3 +449,4 @@
+ 433	common	fspick				sys_fspick
+ 434	common	pidfd_open			sys_pidfd_open
+ 435	common	clone3				sys_clone3
++437	common	openat2				sys_openat2
+diff --git a/arch/arm64/include/asm/unistd.h b/arch/arm64/include/asm/unistd.h
+index 2629a68b8724..8aa00ccb0b96 100644
+--- a/arch/arm64/include/asm/unistd.h
++++ b/arch/arm64/include/asm/unistd.h
+@@ -38,7 +38,7 @@
+ #define __ARM_NR_compat_set_tls		(__ARM_NR_COMPAT_BASE + 5)
+ #define __ARM_NR_COMPAT_END		(__ARM_NR_COMPAT_BASE + 0x800)
  
- #define O_PATH		040000000
- #define __O_TMPFILE	0100000000
-+#define O_EMPTYPATH	0200000000
+-#define __NR_compat_syscalls		436
++#define __NR_compat_syscalls		438
+ #endif
  
- #define F_GETLK		7
- #define F_SETLK		8
-diff --git a/arch/parisc/include/uapi/asm/fcntl.h b/arch/parisc/include/uapi/asm/fcntl.h
-index 03ce20e5ad7d..5d709058a76f 100644
---- a/arch/parisc/include/uapi/asm/fcntl.h
-+++ b/arch/parisc/include/uapi/asm/fcntl.h
-@@ -2,26 +2,27 @@
- #ifndef _PARISC_FCNTL_H
- #define _PARISC_FCNTL_H
+ #define __ARCH_WANT_SYS_CLONE
+diff --git a/arch/arm64/include/asm/unistd32.h b/arch/arm64/include/asm/unistd32.h
+index 94ab29cf4f00..57f6f592d460 100644
+--- a/arch/arm64/include/asm/unistd32.h
++++ b/arch/arm64/include/asm/unistd32.h
+@@ -879,6 +879,8 @@ __SYSCALL(__NR_fspick, sys_fspick)
+ __SYSCALL(__NR_pidfd_open, sys_pidfd_open)
+ #define __NR_clone3 435
+ __SYSCALL(__NR_clone3, sys_clone3)
++#define __NR_openat2 437
++__SYSCALL(__NR_openat2, sys_openat2)
  
--#define O_APPEND	000000010
--#define O_BLKSEEK	000000100 /* HPUX only */
--#define O_CREAT		000000400 /* not fcntl */
--#define O_EXCL		000002000 /* not fcntl */
--#define O_LARGEFILE	000004000
--#define __O_SYNC	000100000
-+#define O_APPEND	0000000010
-+#define O_BLKSEEK	0000000100 /* HPUX only */
-+#define O_CREAT		0000000400 /* not fcntl */
-+#define O_EXCL		0000002000 /* not fcntl */
-+#define O_LARGEFILE	0000004000
-+#define __O_SYNC	0000100000
- #define O_SYNC		(__O_SYNC|O_DSYNC)
--#define O_NONBLOCK	000200004 /* HPUX has separate NDELAY & NONBLOCK */
--#define O_NOCTTY	000400000 /* not fcntl */
--#define O_DSYNC		001000000 /* HPUX only */
--#define O_RSYNC		002000000 /* HPUX only */
--#define O_NOATIME	004000000
--#define O_CLOEXEC	010000000 /* set close_on_exec */
--
--#define O_DIRECTORY	000010000 /* must be a directory */
--#define O_NOFOLLOW	000000200 /* don't follow links */
--#define O_INVISIBLE	004000000 /* invisible I/O, for DMAPI/XDSM */
--
--#define O_PATH		020000000
--#define __O_TMPFILE	040000000
-+#define O_NONBLOCK	0000200004 /* HPUX has separate NDELAY & NONBLOCK */
-+#define O_NOCTTY	0000400000 /* not fcntl */
-+#define O_DSYNC		0001000000 /* HPUX only */
-+#define O_RSYNC		0002000000 /* HPUX only */
-+#define O_NOATIME	0004000000
-+#define O_CLOEXEC	0010000000 /* set close_on_exec */
-+
-+#define O_DIRECTORY	0000010000 /* must be a directory */
-+#define O_NOFOLLOW	0000000200 /* don't follow links */
-+#define O_INVISIBLE	0004000000 /* invisible I/O, for DMAPI/XDSM */
-+
-+#define O_PATH		0020000000
-+#define __O_TMPFILE	0040000000
-+#define O_EMPTYPATH	0100000000
+ /*
+  * Please add new compat syscalls above this comment and update
+diff --git a/arch/ia64/kernel/syscalls/syscall.tbl b/arch/ia64/kernel/syscalls/syscall.tbl
+index 36d5faf4c86c..8d36f2e2dc89 100644
+--- a/arch/ia64/kernel/syscalls/syscall.tbl
++++ b/arch/ia64/kernel/syscalls/syscall.tbl
+@@ -356,3 +356,4 @@
+ 433	common	fspick				sys_fspick
+ 434	common	pidfd_open			sys_pidfd_open
+ # 435 reserved for clone3
++437	common	openat2				sys_openat2
+diff --git a/arch/m68k/kernel/syscalls/syscall.tbl b/arch/m68k/kernel/syscalls/syscall.tbl
+index a88a285a0e5f..2559925f1924 100644
+--- a/arch/m68k/kernel/syscalls/syscall.tbl
++++ b/arch/m68k/kernel/syscalls/syscall.tbl
+@@ -435,3 +435,4 @@
+ 433	common	fspick				sys_fspick
+ 434	common	pidfd_open			sys_pidfd_open
+ # 435 reserved for clone3
++437	common	openat2				sys_openat2
+diff --git a/arch/microblaze/kernel/syscalls/syscall.tbl b/arch/microblaze/kernel/syscalls/syscall.tbl
+index 09b0cd7dab0a..c04385e60833 100644
+--- a/arch/microblaze/kernel/syscalls/syscall.tbl
++++ b/arch/microblaze/kernel/syscalls/syscall.tbl
+@@ -441,3 +441,4 @@
+ 433	common	fspick				sys_fspick
+ 434	common	pidfd_open			sys_pidfd_open
+ 435	common	clone3				sys_clone3
++437	common	openat2				sys_openat2
+diff --git a/arch/mips/kernel/syscalls/syscall_n32.tbl b/arch/mips/kernel/syscalls/syscall_n32.tbl
+index c9c879ec9b6d..ba06cae655c6 100644
+--- a/arch/mips/kernel/syscalls/syscall_n32.tbl
++++ b/arch/mips/kernel/syscalls/syscall_n32.tbl
+@@ -374,3 +374,4 @@
+ 433	n32	fspick				sys_fspick
+ 434	n32	pidfd_open			sys_pidfd_open
+ # 435 reserved for clone3
++437	n32	openat2				sys_openat2
+diff --git a/arch/mips/kernel/syscalls/syscall_n64.tbl b/arch/mips/kernel/syscalls/syscall_n64.tbl
+index bbce9159caa1..0f3de320ae51 100644
+--- a/arch/mips/kernel/syscalls/syscall_n64.tbl
++++ b/arch/mips/kernel/syscalls/syscall_n64.tbl
+@@ -350,3 +350,4 @@
+ 433	n64	fspick				sys_fspick
+ 434	n64	pidfd_open			sys_pidfd_open
+ # 435 reserved for clone3
++437	n64	openat2				sys_openat2
+diff --git a/arch/mips/kernel/syscalls/syscall_o32.tbl b/arch/mips/kernel/syscalls/syscall_o32.tbl
+index 9653591428ec..f108464d09a3 100644
+--- a/arch/mips/kernel/syscalls/syscall_o32.tbl
++++ b/arch/mips/kernel/syscalls/syscall_o32.tbl
+@@ -423,3 +423,4 @@
+ 433	o32	fspick				sys_fspick
+ 434	o32	pidfd_open			sys_pidfd_open
+ # 435 reserved for clone3
++437	o32	openat2				sys_openat2			sys_openat2
+diff --git a/arch/parisc/kernel/syscalls/syscall.tbl b/arch/parisc/kernel/syscalls/syscall.tbl
+index 670d1371aca1..45ddc4485844 100644
+--- a/arch/parisc/kernel/syscalls/syscall.tbl
++++ b/arch/parisc/kernel/syscalls/syscall.tbl
+@@ -432,3 +432,4 @@
+ 433	common	fspick				sys_fspick
+ 434	common	pidfd_open			sys_pidfd_open
+ 435	common	clone3				sys_clone3_wrapper
++437	common	openat2				sys_openat2
+diff --git a/arch/powerpc/kernel/syscalls/syscall.tbl b/arch/powerpc/kernel/syscalls/syscall.tbl
+index 43f736ed47f2..a8b5ecb5b602 100644
+--- a/arch/powerpc/kernel/syscalls/syscall.tbl
++++ b/arch/powerpc/kernel/syscalls/syscall.tbl
+@@ -517,3 +517,4 @@
+ 433	common	fspick				sys_fspick
+ 434	common	pidfd_open			sys_pidfd_open
+ 435	nospu	clone3				ppc_clone3
++437	common	openat2				sys_openat2
+diff --git a/arch/s390/kernel/syscalls/syscall.tbl b/arch/s390/kernel/syscalls/syscall.tbl
+index 3054e9c035a3..16b571c06161 100644
+--- a/arch/s390/kernel/syscalls/syscall.tbl
++++ b/arch/s390/kernel/syscalls/syscall.tbl
+@@ -438,3 +438,4 @@
+ 433  common	fspick			sys_fspick			sys_fspick
+ 434  common	pidfd_open		sys_pidfd_open			sys_pidfd_open
+ 435  common	clone3			sys_clone3			sys_clone3
++437  common	openat2			sys_openat2			sys_openat2
+diff --git a/arch/sh/kernel/syscalls/syscall.tbl b/arch/sh/kernel/syscalls/syscall.tbl
+index b5ed26c4c005..a7185cc18626 100644
+--- a/arch/sh/kernel/syscalls/syscall.tbl
++++ b/arch/sh/kernel/syscalls/syscall.tbl
+@@ -438,3 +438,4 @@
+ 433	common	fspick				sys_fspick
+ 434	common	pidfd_open			sys_pidfd_open
+ # 435 reserved for clone3
++437	common	openat2				sys_openat2
+diff --git a/arch/sparc/kernel/syscalls/syscall.tbl b/arch/sparc/kernel/syscalls/syscall.tbl
+index 8c8cc7537fb2..b11c19552022 100644
+--- a/arch/sparc/kernel/syscalls/syscall.tbl
++++ b/arch/sparc/kernel/syscalls/syscall.tbl
+@@ -481,3 +481,4 @@
+ 433	common	fspick				sys_fspick
+ 434	common	pidfd_open			sys_pidfd_open
+ # 435 reserved for clone3
++437	common	openat2			sys_openat2
+diff --git a/arch/x86/entry/syscalls/syscall_32.tbl b/arch/x86/entry/syscalls/syscall_32.tbl
+index c00019abd076..dfa1dc5c8587 100644
+--- a/arch/x86/entry/syscalls/syscall_32.tbl
++++ b/arch/x86/entry/syscalls/syscall_32.tbl
+@@ -440,3 +440,4 @@
+ 433	i386	fspick			sys_fspick			__ia32_sys_fspick
+ 434	i386	pidfd_open		sys_pidfd_open			__ia32_sys_pidfd_open
+ 435	i386	clone3			sys_clone3			__ia32_sys_clone3
++437	i386	openat2			sys_openat2			__ia32_sys_openat2
+diff --git a/arch/x86/entry/syscalls/syscall_64.tbl b/arch/x86/entry/syscalls/syscall_64.tbl
+index c29976eca4a8..9035647ef236 100644
+--- a/arch/x86/entry/syscalls/syscall_64.tbl
++++ b/arch/x86/entry/syscalls/syscall_64.tbl
+@@ -357,6 +357,7 @@
+ 433	common	fspick			__x64_sys_fspick
+ 434	common	pidfd_open		__x64_sys_pidfd_open
+ 435	common	clone3			__x64_sys_clone3/ptregs
++437	common	openat2			__x64_sys_openat2
  
- #define F_GETLK64	8
- #define F_SETLK64	9
-diff --git a/arch/sparc/include/uapi/asm/fcntl.h b/arch/sparc/include/uapi/asm/fcntl.h
-index 67dae75e5274..dc86c9eaf950 100644
---- a/arch/sparc/include/uapi/asm/fcntl.h
-+++ b/arch/sparc/include/uapi/asm/fcntl.h
-@@ -37,6 +37,7 @@
- 
- #define O_PATH		0x1000000
- #define __O_TMPFILE	0x2000000
-+#define O_EMPTYPATH	0x4000000
- 
- #define F_GETOWN	5	/*  for sockets. */
- #define F_SETOWN	6	/*  for sockets. */
-diff --git a/fs/fcntl.c b/fs/fcntl.c
-index 3d40771e8e7c..4cf05a2fd162 100644
---- a/fs/fcntl.c
-+++ b/fs/fcntl.c
-@@ -1031,7 +1031,7 @@ static int __init fcntl_init(void)
- 	 * Exceptions: O_NONBLOCK is a two bit define on parisc; O_NDELAY
- 	 * is defined as O_NONBLOCK on some platforms and not on others.
- 	 */
--	BUILD_BUG_ON(21 - 1 /* for O_RDONLY being 0 */ !=
-+	BUILD_BUG_ON(22 - 1 /* for O_RDONLY being 0 */ !=
- 		HWEIGHT32(
- 			(VALID_OPEN_FLAGS & ~(O_NONBLOCK | O_NDELAY)) |
- 			__FMODE_EXEC | __FMODE_NONOTIFY));
-diff --git a/fs/namei.c b/fs/namei.c
-index 54d57dad0f91..e39b573fcc4d 100644
---- a/fs/namei.c
-+++ b/fs/namei.c
-@@ -3571,6 +3571,24 @@ static int trailing_magiclink(struct nameidata *nd, int acc_mode,
- 	return may_open_magiclink(upgrade_mask, acc_mode);
- }
- 
-+static int do_emptypath(struct nameidata *nd, const struct open_flags *op,
-+			struct file *file)
-+{
-+	int error;
-+	/* We don't support AT_FDCWD (since O_PATH is disallowed here). */
-+	struct fd f = fdget_raw(nd->dfd);
-+
-+	if (!f.file)
-+		return -EBADF;
-+
-+	/* Apply trailing_magiclink()-like restrictions. */
-+	error = may_open_magiclink(f.file->f_mode, op->acc_mode);
-+	if (!error)
-+		error = vfs_open(&f.file->f_path, file);
-+	fdput(f);
-+	return error;
-+}
-+
- static struct file *path_openat(struct nameidata *nd,
- 			const struct open_flags *op, unsigned flags)
- {
-@@ -3583,6 +3601,8 @@ static struct file *path_openat(struct nameidata *nd,
- 
- 	if (unlikely(file->f_flags & __O_TMPFILE)) {
- 		error = do_tmpfile(nd, flags, op, file);
-+	} else if (unlikely(file->f_flags & O_EMPTYPATH)) {
-+		error = do_emptypath(nd, op, file);
- 	} else if (unlikely(file->f_flags & O_PATH)) {
- 		/* Inlined path_lookupat() with a trailing_magiclink() check. */
- 		fmode_t opath_mask = op->opath_mask;
+ #
+ # x32-specific system call numbers start at 512 to avoid cache impact
+diff --git a/arch/xtensa/kernel/syscalls/syscall.tbl b/arch/xtensa/kernel/syscalls/syscall.tbl
+index 25f4de729a6d..f0a68013c038 100644
+--- a/arch/xtensa/kernel/syscalls/syscall.tbl
++++ b/arch/xtensa/kernel/syscalls/syscall.tbl
+@@ -406,3 +406,4 @@
+ 433	common	fspick				sys_fspick
+ 434	common	pidfd_open			sys_pidfd_open
+ 435	common	clone3				sys_clone3
++437	common	openat2				sys_openat2
 diff --git a/fs/open.c b/fs/open.c
-index 806a75d685e1..310b896eecf0 100644
+index 310b896eecf0..0f050b5e6921 100644
 --- a/fs/open.c
 +++ b/fs/open.c
-@@ -1015,6 +1015,8 @@ static inline int build_open_flags(int flags, umode_t mode, struct open_flags *o
- 		lookup_flags |= LOOKUP_DIRECTORY;
- 	if (!(flags & O_NOFOLLOW))
+@@ -947,19 +947,29 @@ struct file *open_with_fake_path(const struct path *path, int flags,
+ }
+ EXPORT_SYMBOL(open_with_fake_path);
+ 
+-static inline int build_open_flags(int flags, umode_t mode, struct open_flags *op)
++static inline int build_open_flags(const struct open_how *how,
++				   struct open_flags *op)
+ {
++	int flags = how->flags;
+ 	int lookup_flags = 0;
++	int opath_mask = 0;
+ 	int acc_mode = ACC_MODE(flags);
+ 
+ 	/*
+-	 * Clear out all open flags we don't know about so that we don't report
+-	 * them in fcntl(F_GETFD) or similar interfaces.
++	 * Older syscalls still clear these bits before calling
++	 * build_open_flags(), but openat2(2) checks all its arguments.
+ 	 */
+-	flags &= VALID_OPEN_FLAGS;
++	if (flags & ~VALID_OPEN_FLAGS)
++		return -EINVAL;
++	if (how->resolve & ~VALID_RESOLVE_FLAGS)
++		return -EINVAL;
++	if (!(how->flags & (O_PATH | O_CREAT | __O_TMPFILE)) && how->mode != 0)
++		return -EINVAL;
++	if (memchr_inv(how->reserved, 0, sizeof(how->reserved)))
++		return -EINVAL;
+ 
+ 	if (flags & (O_CREAT | __O_TMPFILE))
+-		op->mode = (mode & S_IALLUGO) | S_IFREG;
++		op->mode = (how->mode & S_IALLUGO) | S_IFREG;
+ 	else
+ 		op->mode = 0;
+ 
+@@ -987,6 +997,14 @@ static inline int build_open_flags(int flags, umode_t mode, struct open_flags *o
+ 		 */
+ 		flags &= O_DIRECTORY | O_NOFOLLOW | O_PATH;
+ 		acc_mode = 0;
++
++		/* Allow userspace to restrict the re-opening of O_PATH fds. */
++		if (how->upgrade_mask & ~VALID_UPGRADE_FLAGS)
++			return -EINVAL;
++		if (!(how->upgrade_mask & UPGRADE_NOREAD))
++			opath_mask |= FMODE_PATH_READ;
++		if (!(how->upgrade_mask & UPGRADE_NOWRITE))
++			opath_mask |= FMODE_PATH_WRITE;
+ 	}
+ 
+ 	op->open_flag = flags;
+@@ -1002,8 +1020,7 @@ static inline int build_open_flags(int flags, umode_t mode, struct open_flags *o
+ 
+ 	op->acc_mode = acc_mode;
+ 	op->intent = flags & O_PATH ? 0 : LOOKUP_OPEN;
+-	/* For O_PATH backwards-compatibility we default to an all-set mask. */
+-	op->opath_mask = FMODE_PATH_READ | FMODE_PATH_WRITE;
++	op->opath_mask = opath_mask;
+ 
+ 	if (flags & O_CREAT) {
+ 		op->intent |= LOOKUP_CREATE;
+@@ -1017,6 +1034,18 @@ static inline int build_open_flags(int flags, umode_t mode, struct open_flags *o
  		lookup_flags |= LOOKUP_FOLLOW;
-+	if (flags & O_EMPTYPATH)
-+		lookup_flags |= LOOKUP_EMPTY;
+ 	if (flags & O_EMPTYPATH)
+ 		lookup_flags |= LOOKUP_EMPTY;
++
++	if (how->resolve & RESOLVE_NO_XDEV)
++		lookup_flags |= LOOKUP_NO_XDEV;
++	if (how->resolve & RESOLVE_NO_MAGICLINKS)
++		lookup_flags |= LOOKUP_NO_MAGICLINKS;
++	if (how->resolve & RESOLVE_NO_SYMLINKS)
++		lookup_flags |= LOOKUP_NO_SYMLINKS;
++	if (how->resolve & RESOLVE_BENEATH)
++		lookup_flags |= LOOKUP_BENEATH;
++	if (how->resolve & RESOLVE_IN_ROOT)
++		lookup_flags |= LOOKUP_IN_ROOT;
++
  	op->lookup_flags = lookup_flags;
  	return 0;
  }
-@@ -1076,14 +1078,17 @@ long do_sys_open(int dfd, const char __user *filename, int flags, umode_t mode)
+@@ -1035,8 +1064,14 @@ static inline int build_open_flags(int flags, umode_t mode, struct open_flags *o
+ struct file *file_open_name(struct filename *name, int flags, umode_t mode)
  {
  	struct open_flags op;
- 	int fd = build_open_flags(flags, mode, &op);
-+	int empty = 0;
+-	int err = build_open_flags(flags, mode, &op);
+-	return err ? ERR_PTR(err) : do_filp_open(AT_FDCWD, name, &op);
++	struct open_how how = {
++		.flags = flags & VALID_OPEN_FLAGS,
++		.mode = OPENHOW_MODE(flags, mode),
++	};
++	int err = build_open_flags(&how, &op);
++	if (err)
++		return ERR_PTR(err);
++	return do_filp_open(AT_FDCWD, name, &op);
+ }
+ 
+ /**
+@@ -1067,17 +1102,22 @@ struct file *file_open_root(struct dentry *dentry, struct vfsmount *mnt,
+ 			    const char *filename, int flags, umode_t mode)
+ {
+ 	struct open_flags op;
+-	int err = build_open_flags(flags, mode, &op);
++	struct open_how how = {
++		.flags = flags & VALID_OPEN_FLAGS,
++		.mode = OPENHOW_MODE(flags, mode),
++	};
++	int err = build_open_flags(&how, &op);
+ 	if (err)
+ 		return ERR_PTR(err);
+ 	return do_file_open_root(dentry, mnt, filename, &op);
+ }
+ EXPORT_SYMBOL(file_open_root);
+ 
+-long do_sys_open(int dfd, const char __user *filename, int flags, umode_t mode)
++long do_sys_open(int dfd, const char __user *filename,
++		 struct open_how *how)
+ {
+ 	struct open_flags op;
+-	int fd = build_open_flags(flags, mode, &op);
++	int fd = build_open_flags(how, &op);
+ 	int empty = 0;
  	struct filename *tmp;
  
- 	if (fd)
- 		return fd;
+@@ -1090,7 +1130,7 @@ long do_sys_open(int dfd, const char __user *filename, int flags, umode_t mode)
+ 	if (!empty)
+ 		op.open_flag &= ~O_EMPTYPATH;
  
--	tmp = getname(filename);
-+	tmp = getname_flags(filename, op.lookup_flags, &empty);
- 	if (IS_ERR(tmp))
- 		return PTR_ERR(tmp);
-+	if (!empty)
-+		op.open_flag &= ~O_EMPTYPATH;
- 
- 	fd = get_unused_fd_flags(flags);
+-	fd = get_unused_fd_flags(flags);
++	fd = get_unused_fd_flags(how->flags);
  	if (fd >= 0) {
+ 		struct file *f = do_filp_open(dfd, tmp, &op);
+ 		if (IS_ERR(f)) {
+@@ -1107,19 +1147,35 @@ long do_sys_open(int dfd, const char __user *filename, int flags, umode_t mode)
+ 
+ SYSCALL_DEFINE3(open, const char __user *, filename, int, flags, umode_t, mode)
+ {
+-	if (force_o_largefile())
+-		flags |= O_LARGEFILE;
+-
+-	return do_sys_open(AT_FDCWD, filename, flags, mode);
++	return ksys_open(filename, flags, mode);
+ }
+ 
+ SYSCALL_DEFINE4(openat, int, dfd, const char __user *, filename, int, flags,
+ 		umode_t, mode)
+ {
++	struct open_how how = {
++		.flags = flags & VALID_OPEN_FLAGS,
++		.mode = OPENHOW_MODE(flags, mode),
++	};
++
++	if (force_o_largefile())
++		how.flags |= O_LARGEFILE;
++
++	return do_sys_open(dfd, filename, &how);
++}
++
++SYSCALL_DEFINE3(openat2, int, dfd, const char __user *, filename,
++		const struct open_how __user *, how)
++{
++	struct open_how tmp;
++
++	if (copy_from_user(&tmp, how, sizeof(tmp)))
++		return -EFAULT;
++
+ 	if (force_o_largefile())
+-		flags |= O_LARGEFILE;
++		tmp.flags |= O_LARGEFILE;
+ 
+-	return do_sys_open(dfd, filename, flags, mode);
++	return do_sys_open(dfd, filename, &tmp);
+ }
+ 
+ #ifdef CONFIG_COMPAT
+@@ -1129,7 +1185,11 @@ SYSCALL_DEFINE4(openat, int, dfd, const char __user *, filename, int, flags,
+  */
+ COMPAT_SYSCALL_DEFINE3(open, const char __user *, filename, int, flags, umode_t, mode)
+ {
+-	return do_sys_open(AT_FDCWD, filename, flags, mode);
++	struct open_how how = {
++		.flags = flags & VALID_OPEN_FLAGS,
++		.mode = OPENHOW_MODE(flags, mode),
++	};
++	return do_sys_open(AT_FDCWD, filename, &how);
+ }
+ 
+ /*
+@@ -1138,7 +1198,11 @@ COMPAT_SYSCALL_DEFINE3(open, const char __user *, filename, int, flags, umode_t,
+  */
+ COMPAT_SYSCALL_DEFINE4(openat, int, dfd, const char __user *, filename, int, flags, umode_t, mode)
+ {
+-	return do_sys_open(dfd, filename, flags, mode);
++	struct open_how how = {
++		.flags = flags & VALID_OPEN_FLAGS,
++		.mode = OPENHOW_MODE(flags, mode),
++	};
++	return do_sys_open(dfd, filename, &how);
+ }
+ #endif
+ 
 diff --git a/include/linux/fcntl.h b/include/linux/fcntl.h
-index d019df946cb2..2868ae6c8fc1 100644
+index 2868ae6c8fc1..f7f378e1f43c 100644
 --- a/include/linux/fcntl.h
 +++ b/include/linux/fcntl.h
-@@ -9,7 +9,7 @@
+@@ -4,13 +4,26 @@
+ 
+ #include <uapi/linux/fcntl.h>
+ 
+-/* list of all valid flags for the open/openat flags argument: */
++/* Should open_how.mode be set for older syscalls wrappers? */
++#define OPENHOW_MODE(flags, mode) \
++	(((flags) & (O_CREAT | __O_TMPFILE)) ? (mode) : 0)
++
++/* List of all valid flags for the open/openat flags argument: */
+ #define VALID_OPEN_FLAGS \
  	(O_RDONLY | O_WRONLY | O_RDWR | O_CREAT | O_EXCL | O_NOCTTY | O_TRUNC | \
  	 O_APPEND | O_NDELAY | O_NONBLOCK | O_NDELAY | __O_SYNC | O_DSYNC | \
  	 FASYNC	| O_DIRECT | O_LARGEFILE | O_DIRECTORY | O_NOFOLLOW | \
--	 O_NOATIME | O_CLOEXEC | O_PATH | __O_TMPFILE)
-+	 O_NOATIME | O_CLOEXEC | O_PATH | __O_TMPFILE | O_EMPTYPATH)
+ 	 O_NOATIME | O_CLOEXEC | O_PATH | __O_TMPFILE | O_EMPTYPATH)
  
++/* List of all valid flags for the how->upgrade_mask argument: */
++#define VALID_UPGRADE_FLAGS \
++	(UPGRADE_NOWRITE | UPGRADE_NOREAD)
++
++/* List of all valid flags for the how->resolve argument: */
++#define VALID_RESOLVE_FLAGS \
++	(RESOLVE_NO_XDEV | RESOLVE_NO_MAGICLINKS | RESOLVE_NO_SYMLINKS | \
++	 RESOLVE_BENEATH | RESOLVE_IN_ROOT)
++
  #ifndef force_o_largefile
  #define force_o_largefile() (!IS_ENABLED(CONFIG_ARCH_32BIT_OFF_T))
-diff --git a/include/uapi/asm-generic/fcntl.h b/include/uapi/asm-generic/fcntl.h
-index 9dc0bf0c5a6e..ae6862f69cc2 100644
---- a/include/uapi/asm-generic/fcntl.h
-+++ b/include/uapi/asm-generic/fcntl.h
-@@ -89,6 +89,10 @@
- #define __O_TMPFILE	020000000
+ #endif
+diff --git a/include/linux/fs.h b/include/linux/fs.h
+index a9ad596b28e2..135e4fa773fc 100644
+--- a/include/linux/fs.h
++++ b/include/linux/fs.h
+@@ -2498,8 +2498,8 @@ extern int do_truncate(struct dentry *, loff_t start, unsigned int time_attrs,
+ 		       struct file *filp);
+ extern int vfs_fallocate(struct file *file, int mode, loff_t offset,
+ 			loff_t len);
+-extern long do_sys_open(int dfd, const char __user *filename, int flags,
+-			umode_t mode);
++extern long do_sys_open(int dfd, const char __user *filename,
++			struct open_how *how);
+ extern struct file *file_open_name(struct filename *, int, umode_t);
+ extern struct file *filp_open(const char *, int, umode_t);
+ extern struct file *file_open_root(struct dentry *, struct vfsmount *,
+diff --git a/include/linux/syscalls.h b/include/linux/syscalls.h
+index 88145da7d140..a4f2f135001e 100644
+--- a/include/linux/syscalls.h
++++ b/include/linux/syscalls.h
+@@ -69,6 +69,7 @@ struct rseq;
+ union bpf_attr;
+ struct io_uring_params;
+ struct clone_args;
++struct open_how;
+ 
+ #include <linux/types.h>
+ #include <linux/aio_abi.h>
+@@ -439,6 +440,8 @@ asmlinkage long sys_fchownat(int dfd, const char __user *filename, uid_t user,
+ asmlinkage long sys_fchown(unsigned int fd, uid_t user, gid_t group);
+ asmlinkage long sys_openat(int dfd, const char __user *filename, int flags,
+ 			   umode_t mode);
++asmlinkage long sys_openat2(int dfd, const char __user *filename,
++			    const struct open_how *how);
+ asmlinkage long sys_close(unsigned int fd);
+ asmlinkage long sys_vhangup(void);
+ 
+@@ -1374,15 +1377,21 @@ static inline int ksys_close(unsigned int fd)
+ 	return __close_fd(current->files, fd);
+ }
+ 
+-extern long do_sys_open(int dfd, const char __user *filename, int flags,
+-			umode_t mode);
++extern long do_sys_open(int dfd, const char __user *filename,
++			struct open_how *how);
+ 
+ static inline long ksys_open(const char __user *filename, int flags,
+ 			     umode_t mode)
+ {
++	struct open_how how = {
++		.flags = flags & VALID_OPEN_FLAGS,
++		.mode = OPENHOW_MODE(flags, mode),
++	};
++
+ 	if (force_o_largefile())
+-		flags |= O_LARGEFILE;
+-	return do_sys_open(AT_FDCWD, filename, flags, mode);
++		how.flags |= O_LARGEFILE;
++
++	return do_sys_open(AT_FDCWD, filename, &how);
+ }
+ 
+ extern long do_sys_truncate(const char __user *pathname, loff_t length);
+diff --git a/include/uapi/asm-generic/unistd.h b/include/uapi/asm-generic/unistd.h
+index 1be0e798e362..b28c11b338ee 100644
+--- a/include/uapi/asm-generic/unistd.h
++++ b/include/uapi/asm-generic/unistd.h
+@@ -851,8 +851,11 @@ __SYSCALL(__NR_pidfd_open, sys_pidfd_open)
+ __SYSCALL(__NR_clone3, sys_clone3)
  #endif
  
-+#ifndef O_EMPTYPATH
-+#define O_EMPTYPATH 040000000
-+#endif
++#define __NR_openat2 437
++__SYSCALL(__NR_openat2, sys_openat2)
 +
- /* a horrid kludge trying to make sure that this will fail on old kernels */
- #define O_TMPFILE (__O_TMPFILE | O_DIRECTORY)
- #define O_TMPFILE_MASK (__O_TMPFILE | O_DIRECTORY | O_CREAT)      
+ #undef __NR_syscalls
+-#define __NR_syscalls 436
++#define __NR_syscalls 438
+ 
+ /*
+  * 32 bit systems traditionally used different
+diff --git a/include/uapi/linux/fcntl.h b/include/uapi/linux/fcntl.h
+index 1d338357df8a..ebfc97b3d8aa 100644
+--- a/include/uapi/linux/fcntl.h
++++ b/include/uapi/linux/fcntl.h
+@@ -93,5 +93,47 @@
+ 
+ #define AT_RECURSIVE		0x8000	/* Apply to the entire subtree */
+ 
++/**
++ * Arguments for how openat2(2) should open the target path. If @resolve is
++ * zero, then openat2(2) operates identically to openat(2).
++ *
++ * However, unlike openat(2), unknown bits in @flags result in -EINVAL rather
++ * than being silently ignored. In addition, @mode (or @upgrade_mask) must be
++ * zero unless one of {O_CREAT, O_TMPFILE, O_PATH} are set.
++ *
++ * @flags: O_* flags.
++ * @mode: O_CREAT/O_TMPFILE file mode.
++ * @upgrade_mask: UPGRADE_* flags (to restrict O_PATH re-opening).
++ * @resolve: RESOLVE_* flags.
++ * @reserved: reserved for future extensions, must be zeroed.
++ */
++struct open_how {
++	__u32 flags;
++	union {
++		__u16 mode;
++		__u16 upgrade_mask;
++	};
++	__u16 resolve;
++	__u64 reserved[7]; /* must be zeroed */
++};
++
++/* how->resolve flags for openat2(2). */
++#define RESOLVE_NO_XDEV		0x01 /* Block mount-point crossings
++					(includes bind-mounts). */
++#define RESOLVE_NO_MAGICLINKS	0x02 /* Block traversal through procfs-style
++					"magic-links". */
++#define RESOLVE_NO_SYMLINKS	0x04 /* Block traversal through all symlinks
++					(implies OEXT_NO_MAGICLINKS) */
++#define RESOLVE_BENEATH		0x08 /* Block "lexical" trickery like
++					"..", symlinks, and absolute
++					paths which escape the dirfd. */
++#define RESOLVE_IN_ROOT		0x10 /* Make all jumps to "/" and ".."
++					be scoped inside the dirfd
++					(similar to chroot(2)). */
++
++/* how->upgrade flags for openat2(2). */
++/* First bit is reserved for a future UPGRADE_NOEXEC flag. */
++#define UPGRADE_NOREAD		0x02 /* Block re-opening with MAY_READ. */
++#define UPGRADE_NOWRITE		0x04 /* Block re-opening with MAY_WRITE. */
+ 
+ #endif /* _UAPI_LINUX_FCNTL_H */
 -- 
 2.22.0
 
