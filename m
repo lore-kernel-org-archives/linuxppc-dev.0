@@ -7,77 +7,76 @@ X-Spam-Status: No, score=-9.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 917C6C3A5A0
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Aug 2019 02:51:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4240EC3A5A0
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Aug 2019 02:53:13 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 09A7D22CE8
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Aug 2019 02:51:07 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id ADA5320644
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Aug 2019 02:53:12 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=fossix-org.20150623.gappssmtp.com header.i=@fossix-org.20150623.gappssmtp.com header.b="qjEdBKJm"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 09A7D22CE8
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=fossix-org.20150623.gappssmtp.com header.i=@fossix-org.20150623.gappssmtp.com header.b="G7q+ko/V"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org ADA5320644
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=fossix.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46CFfd6bMpzDqSV
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Aug 2019 12:51:05 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 46CFj22QvTzDrND
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Aug 2019 12:53:10 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=none (mailfrom) smtp.mailfrom=fossix.org
- (client-ip=2607:f8b0:4864:20::641; helo=mail-pl1-x641.google.com;
+ (client-ip=2607:f8b0:4864:20::441; helo=mail-pf1-x441.google.com;
  envelope-from=santosh@fossix.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=fossix.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=fossix-org.20150623.gappssmtp.com
- header.i=@fossix-org.20150623.gappssmtp.com header.b="qjEdBKJm"; 
+ header.i=@fossix-org.20150623.gappssmtp.com header.b="G7q+ko/V"; 
  dkim-atps=neutral
-Received: from mail-pl1-x641.google.com (mail-pl1-x641.google.com
- [IPv6:2607:f8b0:4864:20::641])
+Received: from mail-pf1-x441.google.com (mail-pf1-x441.google.com
+ [IPv6:2607:f8b0:4864:20::441])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46CFCK1S8XzDqSM
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Aug 2019 12:30:53 +1000 (AEST)
-Received: by mail-pl1-x641.google.com with SMTP id m12so1921035plt.5
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Aug 2019 19:30:53 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46CFCP0R0LzDqDy
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Aug 2019 12:30:56 +1000 (AEST)
+Received: by mail-pf1-x441.google.com with SMTP id v12so2361394pfn.10
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Aug 2019 19:30:56 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=fossix-org.20150623.gappssmtp.com; s=20150623;
  h=from:to:cc:subject:date:message-id:in-reply-to:references
  :mime-version:content-transfer-encoding;
- bh=Qq56//6HrDlZTmG7xZZ0OM/lUfEFS8TPmLJ3glb0ZRc=;
- b=qjEdBKJmbmtTZXx7oBzvY7DP6okIr1jo+AjkYULZIyflg/uE8NBJsYKa8QnlJTeuVv
- hBx4Dl4CHXpuRxBjhtOiT19wbE3/qPeFpfhlqWfqBjXofhUCeSEZRuJS4BqSV8gUaNXW
- W0n9fqtxuigxJgrSPVCA/hqRozypPmWt2h27jFmtfwri9nEvTtHFMusFOaDTeNzgKuOs
- UloaOzaxu4Rxas0KEx1nr6s759Mgk7qhHl73qUANPbASElrjMKtqOrCvzAzjByL1n+AT
- S45y10a+4JdZE2NZ5tbNO8mszadmeOsKqhQj9sgfYmJKDVGsFC+ccsnJ3lZrNe9yB07C
- VXIA==
+ bh=0/zBKPGADema8PTabkbpcNdo0O0x3dFv15ClNPcc4ZM=;
+ b=G7q+ko/V95socZ8BQ6+93qpdNgcQQRNvxxkU96NEhJYiaYxMH6kh4P88CoazoqNu3v
+ WXHoTN2QPBgkjYhckgb/2YMGinRoIPxl7NtQS4cw63mQnvp0KpI1yLdn6AaTowtjSX2M
+ tzPOZjJxJuEksFBSgKsKzuKvNeglSywR4hIPgBaZrPebvetR9ERPvBMldoEgJ1lyjPKD
+ CLk7RZmpk/y3YTcDD4xv+qxIPWt11nUPIENu81V/nGZw8j1psSP6gBraESh9/b0kvk4D
+ a4ENMxUJxczyOPBDuVBAUzxBJdgLy5k0ScrXnj7esbsSkxf1q4TOV+fEPowTyO4ThbtM
+ cWvg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
  :references:mime-version:content-transfer-encoding;
- bh=Qq56//6HrDlZTmG7xZZ0OM/lUfEFS8TPmLJ3glb0ZRc=;
- b=YCPN4BzkQbaxRYgIjHtOYvjlfGvvFX7E/IIf9SfNbZ5F9jIPmCdZ1DbooEg4Dixubk
- QdKfLS3qEAk6y0dlL4WFmsNnpvPgFUSNLA253S/yR6LTBAUndHG6T6C/kzjJMR+c4McU
- 0SMJ7o3jg9X29Do3fXEYj0LBv/zN7+RDwB8XQ1CwTHeto72kFLEWwaBUaI4qoa6oUMOA
- 5ACsRE6G+bHfCHIcRrYEP/yMR6yH+bSRYGyP31qpzlKlIGN61xulLg9V6jSLF6E7Cknr
- f9OeBu7klnu3cdP1LeYkNlhyThQe28v1Pi2UKjMfIctkq3dwgdmPf78tQyguvr9kR8d2
- YwoQ==
-X-Gm-Message-State: APjAAAVI//0cdJn36qnlyOTHeA72EJ0p2ZamaXzARthqGQhbZuRRL1ad
- HYgBeqGzMJhqHdxRYR0XfNAhBy1ojio=
-X-Google-Smtp-Source: APXvYqzZUPl5UjLLKgmmtmxXBI73at06n0V8a8zTl1JYpi9Xb6V20JPQWPhStSbRUPRZ2NEHDvt/jQ==
-X-Received: by 2002:a17:902:e48d:: with SMTP id
- cj13mr3112391plb.177.1566268249082; 
- Mon, 19 Aug 2019 19:30:49 -0700 (PDT)
+ bh=0/zBKPGADema8PTabkbpcNdo0O0x3dFv15ClNPcc4ZM=;
+ b=JFWhXiMQlGkfd2GICmePqDpBlyGGKmcqeoEVwFFXh/89x3GsXX/Yy5/WRuUfaFlRuY
+ E4KZFNZTRzzDHdeIldLsZV8KaCUOrKUH/9/0c8eN35UJ/0lc0b1XaEpJwi4G9sYoaT9t
+ qVPYHRJIDUpXYWpEgFrfQzQn8J7ZGn1CBFIaePTxEcxDHvSWUPuZjbKcns5tDPb3vFG0
+ aEHDe3DV/vp5nBeTfFGHGKgP2wRVlf+dMTYXYgXlX3p32dFssnJcmt4Im+/gw5+I2RE1
+ VY9ekuZton/yNyyvpBU/kDfjR0L8MfJLnNCUhO8zp1367gyhn2gvSLfq2Cuwyol9sPoF
+ 61Ug==
+X-Gm-Message-State: APjAAAWWcZKlk7IIANx7mNte3qu5AlMtk0eLXb5iefyNMgn6fRAjxH6e
+ Kk3K1jmRxutb0y6cwCK58o8kzP3jyoo=
+X-Google-Smtp-Source: APXvYqzxg40A+FEVU2/K7ooPNe3ipm3IKML8wjI50kC1LoBtksSJ9z2q+EUpOs0SU7wDP+saHZKFjg==
+X-Received: by 2002:aa7:9ab8:: with SMTP id x24mr26878209pfi.98.1566268253550; 
+ Mon, 19 Aug 2019 19:30:53 -0700 (PDT)
 Received: from santosiv.in.ibm.com ([49.205.218.65])
- by smtp.gmail.com with ESMTPSA id j15sm17609220pfr.146.2019.08.19.19.30.46
+ by smtp.gmail.com with ESMTPSA id j15sm17609220pfr.146.2019.08.19.19.30.51
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Mon, 19 Aug 2019 19:30:48 -0700 (PDT)
+ Mon, 19 Aug 2019 19:30:53 -0700 (PDT)
 From: Santosh Sivaraj <santosh@fossix.org>
 To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH 1/3] powerpc/mce: Add MCE notification chain
-Date: Tue, 20 Aug 2019 08:00:28 +0530
-Message-Id: <20190820023030.18232-2-santosh@fossix.org>
+Subject: [PATCH 3/3] papr/scm: Add bad memory ranges to nvdimm bad ranges
+Date: Tue, 20 Aug 2019 08:00:30 +0530
+Message-Id: <20190820023030.18232-4-santosh@fossix.org>
 X-Mailer: git-send-email 2.21.0
 In-Reply-To: <20190820023030.18232-1-santosh@fossix.org>
 References: <20190820023030.18232-1-santosh@fossix.org>
@@ -100,61 +99,155 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This is needed to report bad blocks for persistent memory.
+Subscribe to the MCE notification and add the physical address which
+generated a memory error to nvdimm bad range.
 
 Signed-off-by: Santosh Sivaraj <santosh@fossix.org>
 ---
- arch/powerpc/include/asm/mce.h |  3 +++
- arch/powerpc/kernel/mce.c      | 15 +++++++++++++++
- 2 files changed, 18 insertions(+)
+ arch/powerpc/platforms/pseries/papr_scm.c | 86 ++++++++++++++++++++++-
+ 1 file changed, 85 insertions(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/include/asm/mce.h b/arch/powerpc/include/asm/mce.h
-index e1931c8c2743..b1c6363f924c 100644
---- a/arch/powerpc/include/asm/mce.h
-+++ b/arch/powerpc/include/asm/mce.h
-@@ -212,6 +212,9 @@ extern void machine_check_queue_event(void);
- extern void machine_check_print_event_info(struct machine_check_event *evt,
- 					   bool user_mode, bool in_guest);
- unsigned long addr_to_phys(struct pt_regs *regs, unsigned long addr);
-+int mce_register_notifier(struct notifier_block *nb);
-+int mce_unregister_notifier(struct notifier_block *nb);
-+
- #ifdef CONFIG_PPC_BOOK3S_64
- void flush_and_reload_slb(void);
- #endif /* CONFIG_PPC_BOOK3S_64 */
-diff --git a/arch/powerpc/kernel/mce.c b/arch/powerpc/kernel/mce.c
-index ec4b3e1087be..a78210ca6cd9 100644
---- a/arch/powerpc/kernel/mce.c
-+++ b/arch/powerpc/kernel/mce.c
-@@ -47,6 +47,20 @@ static struct irq_work mce_ue_event_irq_work = {
+diff --git a/arch/powerpc/platforms/pseries/papr_scm.c b/arch/powerpc/platforms/pseries/papr_scm.c
+index a5ac371a3f06..e38f7febc5d9 100644
+--- a/arch/powerpc/platforms/pseries/papr_scm.c
++++ b/arch/powerpc/platforms/pseries/papr_scm.c
+@@ -12,6 +12,8 @@
+ #include <linux/libnvdimm.h>
+ #include <linux/platform_device.h>
+ #include <linux/delay.h>
++#include <linux/nd.h>
++#include <asm/mce.h>
  
- DECLARE_WORK(mce_ue_event_work, machine_process_ue_event);
+ #include <asm/plpar_wrappers.h>
  
-+static BLOCKING_NOTIFIER_HEAD(mce_notifier_list);
+@@ -39,8 +41,12 @@ struct papr_scm_priv {
+ 	struct resource res;
+ 	struct nd_region *region;
+ 	struct nd_interleave_set nd_set;
++	struct list_head region_list;
+ };
+ 
++LIST_HEAD(papr_nd_regions);
++DEFINE_MUTEX(papr_ndr_lock);
 +
-+int mce_register_notifier(struct notifier_block *nb)
-+{
-+	return blocking_notifier_chain_register(&mce_notifier_list, nb);
-+}
-+EXPORT_SYMBOL_GPL(mce_register_notifier);
-+
-+int mce_unregister_notifier(struct notifier_block *nb)
-+{
-+	return blocking_notifier_chain_unregister(&mce_notifier_list, nb);
-+}
-+EXPORT_SYMBOL_GPL(mce_unregister_notifier);
-+
- static void mce_set_error_info(struct machine_check_event *mce,
- 			       struct mce_error_info *mce_err)
+ static int drc_pmem_bind(struct papr_scm_priv *p)
  {
-@@ -263,6 +277,7 @@ static void machine_process_ue_event(struct work_struct *work)
- 	while (__this_cpu_read(mce_ue_count) > 0) {
- 		index = __this_cpu_read(mce_ue_count) - 1;
- 		evt = this_cpu_ptr(&mce_ue_event_queue[index]);
-+		blocking_notifier_call_chain(&mce_notifier_list, 0, evt);
- #ifdef CONFIG_MEMORY_FAILURE
- 		/*
- 		 * This should probably queued elsewhere, but
+ 	unsigned long ret[PLPAR_HCALL_BUFSIZE];
+@@ -364,6 +370,10 @@ static int papr_scm_nvdimm_init(struct papr_scm_priv *p)
+ 		dev_info(dev, "Region registered with target node %d and online node %d",
+ 			 target_nid, online_nid);
+ 
++	mutex_lock(&papr_ndr_lock);
++	list_add_tail(&p->region_list, &papr_nd_regions);
++	mutex_unlock(&papr_ndr_lock);
++
+ 	return 0;
+ 
+ err:	nvdimm_bus_unregister(p->bus);
+@@ -371,6 +381,57 @@ err:	nvdimm_bus_unregister(p->bus);
+ 	return -ENXIO;
+ }
+ 
++static int handle_mce_ue(struct notifier_block *nb, unsigned long val,
++			 void *data)
++{
++	struct machine_check_event *evt = data;
++	struct papr_scm_priv *p;
++	u64 phys_addr, aligned_addr;
++	bool found = false;
++
++	if (evt->error_type != MCE_ERROR_TYPE_UE)
++		return NOTIFY_DONE;
++
++	if (list_empty(&papr_nd_regions))
++		return NOTIFY_DONE;
++
++	phys_addr = evt->u.ue_error.physical_address +
++		(evt->u.ue_error.effective_address & ~PAGE_MASK);
++
++	if (!evt->u.ue_error.physical_address_provided ||
++	    !is_zone_device_page(pfn_to_page(phys_addr >> PAGE_SHIFT)))
++		return NOTIFY_DONE;
++
++	mutex_lock(&papr_ndr_lock);
++	list_for_each_entry(p, &papr_nd_regions, region_list) {
++		struct resource res = p->res;
++
++		if (phys_addr >= res.start && phys_addr <= res.end) {
++			found = true;
++			break;
++		}
++	}
++	mutex_unlock(&papr_ndr_lock);
++
++	if (!found)
++		return NOTIFY_DONE;
++
++	aligned_addr = ALIGN_DOWN(phys_addr, L1_CACHE_BYTES);
++	if (nvdimm_bus_add_badrange(p->bus, aligned_addr, L1_CACHE_BYTES))
++		return NOTIFY_DONE;
++
++	pr_debug("Add memory range (0x%llx -- 0x%llx) as bad range\n",
++		 aligned_addr, aligned_addr + L1_CACHE_BYTES);
++
++	nvdimm_region_notify(p->region, NVDIMM_REVALIDATE_POISON);
++
++	return NOTIFY_OK;
++}
++
++static struct notifier_block mce_ue_nb = {
++	.notifier_call = handle_mce_ue
++};
++
+ static int papr_scm_probe(struct platform_device *pdev)
+ {
+ 	struct device_node *dn = pdev->dev.of_node;
+@@ -456,6 +517,7 @@ static int papr_scm_probe(struct platform_device *pdev)
+ 		goto err2;
+ 
+ 	platform_set_drvdata(pdev, p);
++	mce_register_notifier(&mce_ue_nb);
+ 
+ 	return 0;
+ 
+@@ -468,6 +530,10 @@ static int papr_scm_remove(struct platform_device *pdev)
+ {
+ 	struct papr_scm_priv *p = platform_get_drvdata(pdev);
+ 
++	mutex_lock(&papr_ndr_lock);
++	list_del(&(p->region_list));
++	mutex_unlock(&papr_ndr_lock);
++
+ 	nvdimm_bus_unregister(p->bus);
+ 	drc_pmem_unbind(p);
+ 	kfree(p);
+@@ -490,7 +556,25 @@ static struct platform_driver papr_scm_driver = {
+ 	},
+ };
+ 
+-module_platform_driver(papr_scm_driver);
++static int __init papr_scm_init(void)
++{
++	int ret;
++
++	ret = platform_driver_register(&papr_scm_driver);
++	if (!ret)
++		mce_register_notifier(&mce_ue_nb);
++
++	return ret;
++}
++module_init(papr_scm_init);
++
++static void __exit papr_scm_exit(void)
++{
++	mce_unregister_notifier(&mce_ue_nb);
++	platform_driver_unregister(&papr_scm_driver);
++}
++module_exit(papr_scm_exit);
++
+ MODULE_DEVICE_TABLE(of, papr_scm_match);
+ MODULE_LICENSE("GPL");
+ MODULE_AUTHOR("IBM Corporation");
 -- 
 2.21.0
 
