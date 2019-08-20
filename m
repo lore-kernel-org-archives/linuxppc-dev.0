@@ -6,32 +6,32 @@ X-Spam-Status: No, score=-6.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS
 	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C411FC3A589
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Aug 2019 13:27:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 24F44C3A589
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Aug 2019 13:30:52 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 4F626214DA
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Aug 2019 13:27:46 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4F626214DA
+	by mail.kernel.org (Postfix) with ESMTPS id 6ADDC214DA
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Aug 2019 13:30:51 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6ADDC214DA
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46CWnB3flfzDqc2
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Aug 2019 23:27:42 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 46CWrn0zn1zDqhD
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Aug 2019 23:30:49 +1000 (AEST)
 Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46CV0v1csrzDr0d
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Aug 2019 22:07:43 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46CV105jChzDqwg
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Aug 2019 22:07:48 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 46CV0t6wlYz8vRG
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Aug 2019 22:07:42 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 46CV1049Lzz8tFS
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Aug 2019 22:07:48 +1000 (AEST)
 Received: by ozlabs.org (Postfix)
- id 46CV0t4TqCz9sBF; Tue, 20 Aug 2019 22:07:42 +1000 (AEST)
+ id 46CV101K7Jz9sBF; Tue, 20 Aug 2019 22:07:48 +1000 (AEST)
 Authentication-Results: ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
  (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
@@ -42,46 +42,46 @@ Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 46CV0s6qbjz9s3Z
- for <linuxppc-dev@ozlabs.org>; Tue, 20 Aug 2019 22:07:41 +1000 (AEST)
-Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
+ by ozlabs.org (Postfix) with ESMTPS id 46CV0y5YBKz9s3Z
+ for <linuxppc-dev@ozlabs.org>; Tue, 20 Aug 2019 22:07:46 +1000 (AEST)
+Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
  by mx0b-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x7KC7WXv004165
- for <linuxppc-dev@ozlabs.org>; Tue, 20 Aug 2019 08:07:40 -0400
+ x7KC7Wqr122579
+ for <linuxppc-dev@ozlabs.org>; Tue, 20 Aug 2019 08:07:44 -0400
 Received: from e06smtp01.uk.ibm.com (e06smtp01.uk.ibm.com [195.75.94.97])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2ugefpwuty-1
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2uggfnredn-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@ozlabs.org>; Tue, 20 Aug 2019 08:07:38 -0400
+ for <linuxppc-dev@ozlabs.org>; Tue, 20 Aug 2019 08:07:44 -0400
 Received: from localhost
  by e06smtp01.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <hbathini@linux.ibm.com>;
- Tue, 20 Aug 2019 13:07:20 +0100
-Received: from b06avi18626390.portsmouth.uk.ibm.com (9.149.26.192)
+ Tue, 20 Aug 2019 13:07:42 +0100
+Received: from b06cxnps4075.portsmouth.uk.ibm.com (9.149.109.197)
  by e06smtp01.uk.ibm.com (192.168.101.131) with IBM ESMTP SMTP Gateway:
  Authorized Use Only! Violators will be prosecuted; 
  (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Tue, 20 Aug 2019 13:07:17 +0100
-Received: from d06av22.portsmouth.uk.ibm.com (d06av22.portsmouth.uk.ibm.com
- [9.149.105.58])
- by b06avi18626390.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP
- id x7KC6tdA18022744
+ Tue, 20 Aug 2019 13:07:40 +0100
+Received: from d06av23.portsmouth.uk.ibm.com (d06av23.portsmouth.uk.ibm.com
+ [9.149.105.59])
+ by b06cxnps4075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x7KC7cP550856146
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Tue, 20 Aug 2019 12:06:55 GMT
-Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 734834C052;
- Tue, 20 Aug 2019 12:07:15 +0000 (GMT)
-Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id D21834C040;
- Tue, 20 Aug 2019 12:07:13 +0000 (GMT)
+ Tue, 20 Aug 2019 12:07:38 GMT
+Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 6414CA4053;
+ Tue, 20 Aug 2019 12:07:38 +0000 (GMT)
+Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id CCA94A4040;
+ Tue, 20 Aug 2019 12:07:36 +0000 (GMT)
 Received: from hbathini.in.ibm.com (unknown [9.184.183.117])
- by d06av22.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Tue, 20 Aug 2019 12:07:13 +0000 (GMT)
-Subject: [PATCH v5 25/31] powernv/fadump: add support to preserve crash data
- on FADUMP disabled kernel
+ by d06av23.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Tue, 20 Aug 2019 12:07:36 +0000 (GMT)
+Subject: [PATCH v5 28/31] powernv/opalcore: provide an option to invalidate
+ /sys/firmware/opal/core file
 From: Hari Bathini <hbathini@linux.ibm.com>
 To: linuxppc-dev <linuxppc-dev@ozlabs.org>
-Date: Tue, 20 Aug 2019 17:37:12 +0530
+Date: Tue, 20 Aug 2019 17:37:36 +0530
 In-Reply-To: <156630261682.8896.3418665808003586786.stgit@hbathini.in.ibm.com>
 References: <156630261682.8896.3418665808003586786.stgit@hbathini.in.ibm.com>
 User-Agent: StGit/0.17.1-dirty
@@ -89,10 +89,10 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 X-TM-AS-GCONF: 00
-x-cbid: 19082012-4275-0000-0000-0000035B1365
+x-cbid: 19082012-4275-0000-0000-0000035B136B
 X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19082012-4276-0000-0000-0000386D3350
-Message-Id: <156630283293.8896.17685034018378110649.stgit@hbathini.in.ibm.com>
+x-cbparentid: 19082012-4276-0000-0000-0000386D3356
+Message-Id: <156630285597.8896.17941343221506447509.stgit@hbathini.in.ibm.com>
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
  definitions=2019-08-20_04:, , signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
@@ -120,325 +120,75 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Add a new kernel config option, CONFIG_PRESERVE_FA_DUMP that ensures
-that crash data, from previously crash'ed kernel, is preserved. This
-helps in cases where FADump is not enabled but the subsequent memory
-preserving kernel boot is likely to process this crash data. One
-typical usecase for this config option is petitboot kernel.
-
-As OPAL allows registering address with it in the first kernel and
-retrieving it after MPIPL, use it to store the top of boot memory.
-A kernel that intends to preserve crash data retrieves it and avoids
-using memory beyond this address.
-
-Move arch_reserved_kernel_pages() function as it is needed for both
-FA_DUMP and PRESERVE_FA_DUMP configurations.
+Writing '1' to /sys/kernel/fadump_release_opalcore would release the
+memory held by kernel in exporting /sys/firmware/opal/core file.
 
 Signed-off-by: Hari Bathini <hbathini@linux.ibm.com>
 ---
- arch/powerpc/Kconfig                         |    9 +++
- arch/powerpc/include/asm/fadump.h            |    9 ++-
- arch/powerpc/kernel/Makefile                 |    6 ++
- arch/powerpc/kernel/fadump-common.h          |   11 ++++
- arch/powerpc/kernel/fadump.c                 |   43 +++++++++++++--
- arch/powerpc/kernel/prom.c                   |    4 +
- arch/powerpc/platforms/powernv/Makefile      |    1 
- arch/powerpc/platforms/powernv/opal-fadump.c |   76 ++++++++++++++++++++++++++
- 8 files changed, 148 insertions(+), 11 deletions(-)
+ arch/powerpc/platforms/powernv/opal-core.c |   38 ++++++++++++++++++++++++++++
+ 1 file changed, 38 insertions(+)
 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index fc4ecfe..2be9b96 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -580,6 +580,15 @@ config FA_DUMP
- 	  If unsure, say "y". Only special kernels like petitboot may
- 	  need to say "N" here.
+diff --git a/arch/powerpc/platforms/powernv/opal-core.c b/arch/powerpc/platforms/powernv/opal-core.c
+index 2f1c8c1..a534f3d 100644
+--- a/arch/powerpc/platforms/powernv/opal-core.c
++++ b/arch/powerpc/platforms/powernv/opal-core.c
+@@ -15,6 +15,8 @@
+ #include <linux/proc_fs.h>
+ #include <linux/elf.h>
+ #include <linux/elfcore.h>
++#include <linux/kobject.h>
++#include <linux/sysfs.h>
+ #include <linux/slab.h>
+ #include <linux/crash_core.h>
+ #include <linux/of.h>
+@@ -558,6 +560,36 @@ static void opalcore_cleanup(void)
+ }
+ __exitcall(opalcore_cleanup);
  
-+config PRESERVE_FA_DUMP
-+	bool "Preserve Firmware-assisted dump"
-+	depends on PPC64 && PPC_POWERNV && !FA_DUMP
-+	help
-+	  On a kernel with FA_DUMP disabled, this option helps to preserve
-+	  crash data from a previously crash'ed kernel. Useful when the next
-+	  memory preserving kernel boot would process this crash data.
-+	  Petitboot kernel is the typical usecase for this option.
++static ssize_t fadump_release_opalcore_store(struct kobject *kobj,
++					     struct kobj_attribute *attr,
++					     const char *buf, size_t count)
++{
++	int input = -1;
 +
- config IRQ_ALL_CPUS
- 	bool "Distribute interrupts on all CPUs by default"
- 	depends on SMP
-diff --git a/arch/powerpc/include/asm/fadump.h b/arch/powerpc/include/asm/fadump.h
-index e608d34..fd990d8 100644
---- a/arch/powerpc/include/asm/fadump.h
-+++ b/arch/powerpc/include/asm/fadump.h
-@@ -14,9 +14,6 @@
- extern int crashing_cpu;
- 
- extern int is_fadump_memory_area(u64 addr, ulong size);
--extern int early_init_dt_scan_fw_dump(unsigned long node,
--		const char *uname, int depth, void *data);
--extern int fadump_reserve_mem(void);
- extern int setup_fadump(void);
- extern int is_fadump_active(void);
- extern int should_fadump_crash(void);
-@@ -29,4 +26,10 @@ static inline int should_fadump_crash(void) { return 0; }
- static inline void crash_fadump(struct pt_regs *regs, const char *str) { }
- static inline void fadump_cleanup(void) { }
- #endif /* !CONFIG_FA_DUMP */
++	if (kstrtoint(buf, 0, &input))
++		return -EINVAL;
 +
-+#if defined(CONFIG_FA_DUMP) || defined(CONFIG_PRESERVE_FA_DUMP)
-+extern int early_init_dt_scan_fw_dump(unsigned long node, const char *uname,
-+				      int depth, void *data);
-+extern int fadump_reserve_mem(void);
-+#endif
- #endif /* __PPC64_FA_DUMP_H__ */
-diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
-index 439d548..6abaead 100644
---- a/arch/powerpc/kernel/Makefile
-+++ b/arch/powerpc/kernel/Makefile
-@@ -78,7 +78,11 @@ obj-$(CONFIG_EEH)              += eeh.o eeh_pe.o eeh_dev.o eeh_cache.o \
- 				  eeh_driver.o eeh_event.o eeh_sysfs.o
- obj-$(CONFIG_GENERIC_TBSYNC)	+= smp-tbsync.o
- obj-$(CONFIG_CRASH_DUMP)	+= crash_dump.o
--obj-$(CONFIG_FA_DUMP)		+= fadump.o fadump-common.o
-+ifeq ($(CONFIG_FA_DUMP),y)
-+obj-y				+= fadump.o fadump-common.o
-+else
-+obj-$(CONFIG_PRESERVE_FA_DUMP)	+= fadump.o
-+endif
- ifdef CONFIG_PPC32
- obj-$(CONFIG_E500)		+= idle_e500.o
- endif
-diff --git a/arch/powerpc/kernel/fadump-common.h b/arch/powerpc/kernel/fadump-common.h
-index d1ff5b2..ba8481b 100644
---- a/arch/powerpc/kernel/fadump-common.h
-+++ b/arch/powerpc/kernel/fadump-common.h
-@@ -12,6 +12,7 @@
- #ifndef __PPC64_FA_DUMP_INTERNAL_H__
- #define __PPC64_FA_DUMP_INTERNAL_H__
- 
-+#ifndef CONFIG_PRESERVE_FA_DUMP
- /*
-  * The RMA region will be saved for later dumping when kernel crashes.
-  * RMA is Real Mode Area, the first block of logical memory address owned
-@@ -157,6 +158,16 @@ void fadump_update_elfcore_header(struct fw_dump *fadump_config, char *bufp);
- int is_fadump_boot_mem_contiguous(struct fw_dump *fadump_conf);
- int is_fadump_reserved_mem_contiguous(struct fw_dump *fadump_conf);
- 
-+#else /* !CONFIG_PRESERVE_FA_DUMP */
++	if (input == 1) {
++		if (oc_conf == NULL) {
++			pr_err("'/sys/firmware/opal/core' file not accessible!\n");
++			return -EPERM;
++		}
 +
-+/* Firmware-assisted dump configuration details. */
-+struct fw_dump {
-+	unsigned long	boot_mem_top;
-+	unsigned long	dump_active;
-+};
++		/*
++		 * Take away '/sys/firmware/opal/core' and release all memory
++		 * used for exporting this file.
++		 */
++		opalcore_cleanup();
++	} else
++		return -EINVAL;
 +
-+#endif /* CONFIG_PRESERVE_FA_DUMP */
++	return count;
++}
 +
- #ifdef CONFIG_PPC_PSERIES
- extern int rtas_fadump_dt_scan(struct fw_dump *fadump_config, ulong node);
- #else
-diff --git a/arch/powerpc/kernel/fadump.c b/arch/powerpc/kernel/fadump.c
-index 665104a..43038f5 100644
---- a/arch/powerpc/kernel/fadump.c
-+++ b/arch/powerpc/kernel/fadump.c
-@@ -37,6 +37,7 @@ static struct fw_dump fw_dump;
++static struct kobj_attribute opalcore_rel_attr = __ATTR(fadump_release_opalcore,
++						0200, NULL,
++						fadump_release_opalcore_store);
++
+ /* Init function for opalcore module. */
+ static int __init opalcore_init(void)
+ {
+@@ -590,6 +622,12 @@ static int __init opalcore_init(void)
+ 		return rc;
+ 	}
  
- static void __init fadump_reserve_crash_area(unsigned long base);
- 
-+#ifndef CONFIG_PRESERVE_FA_DUMP
- static DEFINE_MUTEX(fadump_mutex);
- struct fadump_mrange_info crash_mrange_info = { "crash", NULL, 0, 0, 0 };
- struct fadump_mrange_info reserved_mrange_info = { "reserved", NULL, 0, 0, 0 };
-@@ -384,11 +385,6 @@ int __init fadump_reserve_mem(void)
++	rc = sysfs_create_file(kernel_kobj, &opalcore_rel_attr.attr);
++	if (rc) {
++		pr_warn("unable to create sysfs file fadump_release_opalcore (%d)\n",
++			rc);
++	}
++
  	return 0;
  }
- 
--unsigned long __init arch_reserved_kernel_pages(void)
--{
--	return memblock_reserved_size() / PAGE_SIZE;
--}
--
- /* Look for fadump= cmdline option. */
- static int __init early_fadump_param(char *p)
- {
-@@ -1221,6 +1217,38 @@ int __init setup_fadump(void)
- 	return 1;
- }
- subsys_initcall(setup_fadump);
-+#else /* !CONFIG_PRESERVE_FA_DUMP */
-+
-+/* Scan the Firmware Assisted dump configuration details. */
-+int __init early_init_dt_scan_fw_dump(unsigned long node, const char *uname,
-+				      int depth, void *data)
-+{
-+	if ((depth != 1) || (strcmp(uname, "ibm,opal") != 0))
-+		return 0;
-+
-+	return opal_fadump_dt_scan(&fw_dump, node);
-+}
-+
-+/*
-+ * When dump is active but PRESERVE_FA_DUMP is enabled on the kernel,
-+ * preserve crash data. The subsequent memory preserving kernel boot
-+ * is likely to process this crash data.
-+ */
-+int __init fadump_reserve_mem(void)
-+{
-+	if (fw_dump.dump_active) {
-+		/*
-+		 * If last boot has crashed then reserve all the memory
-+		 * above boot memory to preserve crash data.
-+		 */
-+		pr_info("Preserving crash data for processing in next boot.\n");
-+		fadump_reserve_crash_area(PAGE_ALIGN(fw_dump.boot_mem_top));
-+	} else
-+		pr_debug("FADump-aware kernel..\n");
-+
-+	return 1;
-+}
-+#endif /* CONFIG_PRESERVE_FA_DUMP */
- 
- /* Preserve everything above the base address */
- static void __init fadump_reserve_crash_area(unsigned long base)
-@@ -1245,3 +1273,8 @@ static void __init fadump_reserve_crash_area(unsigned long base)
- 		memblock_reserve(mstart, msize);
- 	}
- }
-+
-+unsigned long __init arch_reserved_kernel_pages(void)
-+{
-+	return memblock_reserved_size() / PAGE_SIZE;
-+}
-diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
-index 7159e79..9c3861bd 100644
---- a/arch/powerpc/kernel/prom.c
-+++ b/arch/powerpc/kernel/prom.c
-@@ -704,7 +704,7 @@ void __init early_init_devtree(void *params)
- 	of_scan_flat_dt(early_init_dt_scan_opal, NULL);
- #endif
- 
--#ifdef CONFIG_FA_DUMP
-+#if defined(CONFIG_FA_DUMP) || defined(CONFIG_PRESERVE_FA_DUMP)
- 	/* scan tree to see if dump is active during last boot */
- 	of_scan_flat_dt(early_init_dt_scan_fw_dump, NULL);
- #endif
-@@ -731,7 +731,7 @@ void __init early_init_devtree(void *params)
- 	if (PHYSICAL_START > MEMORY_START)
- 		memblock_reserve(MEMORY_START, 0x8000);
- 	reserve_kdump_trampoline();
--#ifdef CONFIG_FA_DUMP
-+#if defined(CONFIG_FA_DUMP) || defined(CONFIG_PRESERVE_FA_DUMP)
- 	/*
- 	 * If we fail to reserve memory for firmware-assisted dump then
- 	 * fallback to kexec based kdump.
-diff --git a/arch/powerpc/platforms/powernv/Makefile b/arch/powerpc/platforms/powernv/Makefile
-index 43a6e1c..b4a8022 100644
---- a/arch/powerpc/platforms/powernv/Makefile
-+++ b/arch/powerpc/platforms/powernv/Makefile
-@@ -7,6 +7,7 @@ obj-y			+= opal-kmsg.o opal-powercap.o opal-psr.o opal-sensor-groups.o
- 
- obj-$(CONFIG_SMP)	+= smp.o subcore.o subcore-asm.o
- obj-$(CONFIG_FA_DUMP)	+= opal-fadump.o
-+obj-$(CONFIG_PRESERVE_FA_DUMP)	+= opal-fadump.o
- obj-$(CONFIG_PCI)	+= pci.o pci-ioda.o npu-dma.o pci-ioda-tce.o
- obj-$(CONFIG_CXL_BASE)	+= pci-cxl.o
- obj-$(CONFIG_EEH)	+= eeh-powernv.o
-diff --git a/arch/powerpc/platforms/powernv/opal-fadump.c b/arch/powerpc/platforms/powernv/opal-fadump.c
-index 9a32a7f..85a89c0 100644
---- a/arch/powerpc/platforms/powernv/opal-fadump.c
-+++ b/arch/powerpc/platforms/powernv/opal-fadump.c
-@@ -22,6 +22,70 @@
- #include "../../kernel/fadump-common.h"
- #include "opal-fadump.h"
- 
-+
-+#ifdef CONFIG_PRESERVE_FA_DUMP
-+/*
-+ * When dump is active but PRESERVE_FA_DUMP is enabled on the kernel,
-+ * ensure crash data is preserved in hope that the subsequent memory
-+ * preserving kernel boot is going to process this crash data.
-+ */
-+int __init opal_fadump_dt_scan(struct fw_dump *fadump_conf, ulong node)
-+{
-+	unsigned long dn;
-+	const __be32 *prop;
-+
-+	dn = of_get_flat_dt_subnode_by_name(node, "dump");
-+	if (dn == -FDT_ERR_NOTFOUND)
-+		return 1;
-+
-+	/*
-+	 * Check if dump has been initiated on last reboot.
-+	 */
-+	prop = of_get_flat_dt_prop(dn, "mpipl-boot", NULL);
-+	if (prop) {
-+		u64 addr = 0;
-+		s64 ret;
-+		const struct opal_fadump_mem_struct *r_opal_fdm_active;
-+
-+		ret = opal_mpipl_query_tag(OPAL_MPIPL_TAG_KERNEL, &addr);
-+		if ((ret != OPAL_SUCCESS) || !addr) {
-+			pr_debug("Could not get Kernel metadata (%lld)\n", ret);
-+			return 1;
-+		}
-+
-+		/*
-+		 * Preserve memory only if kernel memory regions are registered
-+		 * with f/w for MPIPL.
-+		 */
-+		addr = be64_to_cpu(addr);
-+		pr_debug("Kernel metadata addr: %llx\n", addr);
-+		r_opal_fdm_active = (void *)addr;
-+		if (r_opal_fdm_active->registered_regions == 0)
-+			return 1;
-+
-+		ret = opal_mpipl_query_tag(OPAL_MPIPL_TAG_BOOT_MEM, &addr);
-+		if ((ret != OPAL_SUCCESS) || !addr) {
-+			pr_err("Failed to get boot memory tag (%lld)\n", ret);
-+			return 1;
-+		}
-+
-+		/*
-+		 * Anything below this address can be used for booting a
-+		 * capture kernel or petitboot kernel. Preserve everything
-+		 * above this address for processing crashdump.
-+		 */
-+		fadump_conf->boot_mem_top = be64_to_cpu(addr);
-+		pr_debug("Preserve everything above %lx\n",
-+			 fadump_conf->boot_mem_top);
-+
-+		pr_info("Firmware-assisted dump is active.\n");
-+		fadump_conf->dump_active = 1;
-+	}
-+
-+	return 1;
-+}
-+
-+#else /* CONFIG_PRESERVE_FA_DUMP */
- static const struct opal_fadump_mem_struct *opal_fdm_active;
- static const struct opal_mpipl_fadump *opal_cpu_metadata;
- static struct opal_fadump_mem_struct *opal_fdm;
-@@ -189,6 +253,17 @@ static int opal_fadump_setup_metadata(struct fw_dump *fadump_conf)
- 		err = -EPERM;
- 	}
- 
-+	/*
-+	 * Register boot memory top address with f/w. Should be retrieved
-+	 * by a kernel that intends to preserve crash'ed kernel's memory.
-+	 */
-+	ret = opal_mpipl_register_tag(OPAL_MPIPL_TAG_BOOT_MEM,
-+				      fadump_conf->boot_memory_size);
-+	if (ret != OPAL_SUCCESS) {
-+		pr_err("Failed to set boot memory tag!\n");
-+		err = -EPERM;
-+	}
-+
- 	return err;
- }
- 
-@@ -654,3 +729,4 @@ int __init opal_fadump_dt_scan(struct fw_dump *fadump_conf, ulong node)
- 
- 	return 1;
- }
-+#endif /* !CONFIG_PRESERVE_FA_DUMP */
+ fs_initcall(opalcore_init);
 
