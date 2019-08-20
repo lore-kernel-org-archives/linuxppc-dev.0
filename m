@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-5.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
 	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9C7A4C3A589
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Aug 2019 22:26:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 28C7AC3A589
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Aug 2019 22:28:22 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id AF81822DA7
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Aug 2019 22:26:20 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org AF81822DA7
+	by mail.kernel.org (Postfix) with ESMTPS id D0D1D22DA7
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Aug 2019 22:28:21 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D0D1D22DA7
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46Clkf1CdgzDrC7
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 21 Aug 2019 08:26:18 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 46Clmz1qCCzDqvy
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 21 Aug 2019 08:28:19 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=none (mailfrom) smtp.mailfrom=lst.de
  (client-ip=213.95.11.211; helo=verein.lst.de; envelope-from=hch@lst.de;
@@ -28,22 +28,21 @@ Authentication-Results: lists.ozlabs.org;
 Received: from verein.lst.de (verein.lst.de [213.95.11.211])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46ClhJ3kS8zDqvL
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Aug 2019 08:24:14 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46Clj708FgzDrFL
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Aug 2019 08:24:58 +1000 (AEST)
 Received: by verein.lst.de (Postfix, from userid 2407)
- id E13A868B20; Wed, 21 Aug 2019 00:24:07 +0200 (CEST)
-Date: Wed, 21 Aug 2019 00:24:07 +0200
+ id 812CD68B20; Wed, 21 Aug 2019 00:24:54 +0200 (CEST)
+Date: Wed, 21 Aug 2019 00:24:54 +0200
 From: Christoph Hellwig <hch@lst.de>
 To: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: Re: [PATCH v2 02/12] powerpc/ps3: replace __ioremap() by
- ioremap_prot()
-Message-ID: <20190820222407.GA18433@lst.de>
+Subject: Re: [PATCH v2 04/12] powerpc/mm: drop function __ioremap()
+Message-ID: <20190820222454.GB18433@lst.de>
 References: <cover.1566309262.git.christophe.leroy@c-s.fr>
- <36bff5d875ff562889c5e12dab63e5d7c5d1fbd8.1566309262.git.christophe.leroy@c-s.fr>
+ <ccc439f481a0884e00a6be1bab44bab2a4477fea.1566309262.git.christophe.leroy@c-s.fr>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <36bff5d875ff562889c5e12dab63e5d7c5d1fbd8.1566309262.git.christophe.leroy@c-s.fr>
+In-Reply-To: <ccc439f481a0884e00a6be1bab44bab2a4477fea.1566309262.git.christophe.leroy@c-s.fr>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -62,19 +61,13 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, Aug 20, 2019 at 02:07:10PM +0000, Christophe Leroy wrote:
-> __ioremap() is similar to ioremap_prot() except that ioremap_prot()
-> does a few sanity changes in addition.
-> 
-> The flags used by PS3 are not impacted by those changes so for
-> PS3 both functions are equivalent.
-> 
-> At the same time, drop parts of the comment that have been invalid
-> since commit e58e87adc8bf ("powerpc/mm: Update _PAGE_KERNEL_RO")
+On Tue, Aug 20, 2019 at 02:07:12PM +0000, Christophe Leroy wrote:
+> __ioremap() is not used anymore, drop it.
 > 
 > Suggested-by: Christoph Hellwig <hch@lst.de>
 > Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 
-Looks good,
+Looks good, I've already dropped my version of this from the generic
+ioremap series:
 
 Reviewed-by: Christoph Hellwig <hch@lst.de>
