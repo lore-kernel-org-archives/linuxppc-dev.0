@@ -2,48 +2,80 @@ Return-Path: <SRS0=bLNb=WQ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6D0E9C3A5A2
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Aug 2019 22:33:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D2706C3A589
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Aug 2019 22:56:25 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 2654C22DA7
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Aug 2019 22:33:07 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2654C22DA7
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
+	by mail.kernel.org (Postfix) with ESMTPS id 1C56120C01
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Aug 2019 22:56:25 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1C56120C01
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46CltS6wJ6zDrMp
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 21 Aug 2019 08:33:04 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 46CmPK6W2CzDr8D
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 21 Aug 2019 08:56:21 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=lst.de
- (client-ip=213.95.11.211; helo=verein.lst.de; envelope-from=hch@lst.de;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=lst.de
-Received: from verein.lst.de (verein.lst.de [213.95.11.211])
+ spf=none (mailfrom) smtp.mailfrom=linux.vnet.ibm.com
+ (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
+ envelope-from=gromero@linux.vnet.ibm.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=linux.vnet.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46Clnn4Y2YzDrCW
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Aug 2019 08:29:01 +1000 (AEST)
-Received: by verein.lst.de (Postfix, from userid 2407)
- id DDC1B68BFE; Wed, 21 Aug 2019 00:28:56 +0200 (CEST)
-Date: Wed, 21 Aug 2019 00:28:56 +0200
-From: Christoph Hellwig <hch@lst.de>
-To: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: Re: [PATCH v2 07/12] powerpc/mm: move ioremap_prot() into ioremap.c
-Message-ID: <20190820222856.GD18433@lst.de>
-References: <cover.1566309262.git.christophe.leroy@c-s.fr>
- <0b3eb0e0f1490a99fd6c983e166fb8946233f151.1566309262.git.christophe.leroy@c-s.fr>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <0b3eb0e0f1490a99fd6c983e166fb8946233f151.1566309262.git.christophe.leroy@c-s.fr>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46CmMN2kVdzDr4N
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Aug 2019 08:54:35 +1000 (AEST)
+Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
+ x7KMh2QX099093; Tue, 20 Aug 2019 18:54:32 -0400
+Received: from ppma04dal.us.ibm.com (7a.29.35a9.ip4.static.sl-reverse.com
+ [169.53.41.122])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2ugpjw84m4-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Tue, 20 Aug 2019 18:54:31 -0400
+Received: from pps.filterd (ppma04dal.us.ibm.com [127.0.0.1])
+ by ppma04dal.us.ibm.com (8.16.0.27/8.16.0.27) with SMTP id x7KMjFfv018717;
+ Tue, 20 Aug 2019 22:54:30 GMT
+Received: from b01cxnp22034.gho.pok.ibm.com (b01cxnp22034.gho.pok.ibm.com
+ [9.57.198.24]) by ppma04dal.us.ibm.com with ESMTP id 2ue977009y-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Tue, 20 Aug 2019 22:54:30 +0000
+Received: from b01ledav005.gho.pok.ibm.com (b01ledav005.gho.pok.ibm.com
+ [9.57.199.110])
+ by b01cxnp22034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x7KMsTKk50528738
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Tue, 20 Aug 2019 22:54:29 GMT
+Received: from b01ledav005.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 57744AE063;
+ Tue, 20 Aug 2019 22:54:29 +0000 (GMT)
+Received: from b01ledav005.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id C7FCDAE05C;
+ Tue, 20 Aug 2019 22:54:26 +0000 (GMT)
+Received: from localhost.localdomain (unknown [9.80.218.139])
+ by b01ledav005.gho.pok.ibm.com (Postfix) with ESMTP;
+ Tue, 20 Aug 2019 22:54:26 +0000 (GMT)
+From: Gustavo Romero <gromero@linux.vnet.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] selftests/powerpc: Retry on host facility unavailable
+Date: Tue, 20 Aug 2019 18:54:11 -0400
+Message-Id: <1566341651-19747-1-git-send-email-gromero@linux.vnet.ibm.com>
+X-Mailer: git-send-email 2.7.4
+X-TM-AS-GCONF: 00
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
+ definitions=2019-08-20_11:, , signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ malwarescore=0 suspectscore=1 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1011 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1906280000 definitions=main-1908200208
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -55,13 +87,36 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-kernel@vger.kernel.org, npiggin@gmail.com,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org, hch@lst.de
+Cc: desnesn@linux.ibm.com, mikey@neuling.org, gromero@linux.vnet.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, Aug 20, 2019 at 02:07:15PM +0000, Christophe Leroy wrote:
-> Both ioremap_prot() are idenfical, move them into ioremap.c
+TM test tm-unavailable must take into account aborts due to host aborting
+a transactin because of a facility unavailable exception, just like it
+already does for aborts on reschedules (TM_CAUSE_KVM_RESCHED).
 
-s/idenfical/identical/
+Reported-by: Desnes A. Nunes do Rosario <desnesn@linux.ibm.com>
+Tested-by: Desnes A. Nunes do Rosario <desnesn@linux.ibm.com>
+Signed-off-by: Gustavo Romero <gromero@linux.vnet.ibm.com>
+---
+ tools/testing/selftests/powerpc/tm/tm.h | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/tools/testing/selftests/powerpc/tm/tm.h b/tools/testing/selftests/powerpc/tm/tm.h
+index 97f9f49..c402464 100644
+--- a/tools/testing/selftests/powerpc/tm/tm.h
++++ b/tools/testing/selftests/powerpc/tm/tm.h
+@@ -55,7 +55,8 @@ static inline bool failure_is_unavailable(void)
+ static inline bool failure_is_reschedule(void)
+ {
+ 	if ((failure_code() & TM_CAUSE_RESCHED) == TM_CAUSE_RESCHED ||
+-	    (failure_code() & TM_CAUSE_KVM_RESCHED) == TM_CAUSE_KVM_RESCHED)
++	    (failure_code() & TM_CAUSE_KVM_RESCHED) == TM_CAUSE_KVM_RESCHED ||
++	    (failure_code() & TM_CAUSE_KVM_FAC_UNAV) == TM_CAUSE_KVM_FAC_UNAV)
+ 		return true;
+ 
+ 	return false;
+-- 
+2.7.4
+
