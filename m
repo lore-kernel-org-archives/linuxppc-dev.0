@@ -2,72 +2,84 @@ Return-Path: <SRS0=bLNb=WQ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.0 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+X-Spam-Status: No, score=-0.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
+	URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C4F8AC3A5A0
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Aug 2019 02:56:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 29A7EC3A5A0
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Aug 2019 02:58:32 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 0521C206DF
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Aug 2019 02:56:41 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 9A7F4206DF
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Aug 2019 02:58:31 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="mH0VY+ov"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0521C206DF
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=fossix-org.20150623.gappssmtp.com header.i=@fossix-org.20150623.gappssmtp.com header.b="pswuKn21"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9A7F4206DF
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=fossix.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46CFn35pb1zDqcP
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Aug 2019 12:56:39 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=none (mailfrom)
- smtp.mailfrom=bombadil.srs.infradead.org (client-ip=2607:7c80:54:e::133;
- helo=bombadil.infradead.org;
- envelope-from=batv+4c12766ace4795e6d293+5840+infradead.org+hch@bombadil.srs.infradead.org;
- receiver=<UNKNOWN>)
+	by lists.ozlabs.org (Postfix) with ESMTP id 46CFq954QczDr6y
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Aug 2019 12:58:29 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=infradead.org
-Received: from bombadil.infradead.org (bombadil.infradead.org
- [IPv6:2607:7c80:54:e::133])
+ spf=none (mailfrom) smtp.mailfrom=fossix.org
+ (client-ip=2607:f8b0:4864:20::442; helo=mail-pf1-x442.google.com;
+ envelope-from=santosh@fossix.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=fossix.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=fossix-org.20150623.gappssmtp.com
+ header.i=@fossix-org.20150623.gappssmtp.com header.b="pswuKn21"; 
+ dkim-atps=neutral
+Received: from mail-pf1-x442.google.com (mail-pf1-x442.google.com
+ [IPv6:2607:f8b0:4864:20::442])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46CFCG349PzDqVR
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Aug 2019 12:30:49 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
- d=infradead.org; s=bombadil.20170209; h=In-Reply-To:Content-Type:MIME-Version
- :References:Message-ID:Subject:To:From:Date:Sender:Reply-To:Cc:
- Content-Transfer-Encoding:Content-ID:Content-Description:Resent-Date:
- Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:
- List-Help:List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
- bh=uPXPHVEYMLe1+2GVdYIOdPqr5CMV8EsylIRmKkmRT3Q=; b=mH0VY+ovyP9mQQyeA2pygVd+6
- jlgtHzACKYGkOPyDVHPZ1PjKaSFzvetqdR5EDtZcKQm5AZEUs7VM7R3dfG5jl0z5n+Ie4leAPKsGJ
- u/vM7LKI6mT/GNbP7XvILp+P6nx6S71Mv/CoaZ8idyC8hOQQZ3gwCUl+ZL/B2nzffjhxYzGyJWJNx
- KkcWSK7fwws93Q69B/L7lCriRIvh7VSGlJDyi2G4DHiyHNQM5dJK2HV73vxCCrwNwGaSZCu3Wc5P1
- McDsO+eyJSOiseL+x6zSQ+MN5Ix3KK3HW8EocfpujB8ickMfRLColHq2KFtkfRL3/UjGP4IDHSW+j
- s8IxFRwEg==;
-Received: from hch by bombadil.infradead.org with local (Exim 4.92 #3 (Red Hat
- Linux)) id 1hztup-0001lf-QO; Tue, 20 Aug 2019 02:30:31 +0000
-Date: Mon, 19 Aug 2019 19:30:31 -0700
-From: Christoph Hellwig <hch@infradead.org>
-To: dsterba@suse.cz, Christophe Leroy <christophe.leroy@c-s.fr>,
- erhard_f@mailbox.org, Chris Mason <clm@fb.com>,
- Josef Bacik <josef@toxicpanda.com>, David Sterba <dsterba@suse.com>,
- Andrew Morton <akpm@linux-foundation.org>,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-btrfs@vger.kernel.org, linux-mm@kvack.org, stable@vger.kernel.org
-Subject: Re: [PATCH] btrfs: fix allocation of bitmap pages.
-Message-ID: <20190820023031.GC9594@infradead.org>
-References: <20190817074439.84C6C1056A3@localhost.localdomain>
- <20190819174600.GN24086@twin.jikos.cz>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46CFJQ1RWdzDqKX
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Aug 2019 12:35:17 +1000 (AEST)
+Received: by mail-pf1-x442.google.com with SMTP id 129so2374594pfa.4
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Aug 2019 19:35:17 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=fossix-org.20150623.gappssmtp.com; s=20150623;
+ h=from:to:cc:subject:in-reply-to:references:date:message-id
+ :mime-version; bh=ffi2SxRQ+E3PZYurd3qDET06onxGoFR36uGgneUPMUo=;
+ b=pswuKn21BEAOTPZmtgFe3mkMBnsnPK68Ayq3xpO84IFIxRmFfZHUpGFGcCitzUSyQt
+ /l7cgTHrwqczhd76VaYn+QC9TxpyM/myrhgtU8w0usjJbaXBQl9S0B/ue/98IBDJT+lW
+ KtC5dD8knuvVpmuhv+1lzciEBQqnGq9HOR7jCFChvSaTDUNRsVnn8/ogU7bfG5c+Ga9O
+ jukN9wd7uy+ahnkfdcR6oXPfTYtsbm7M9lVKp3jut6auVdBAhdZUjoR866aPifel22IH
+ SS4VUt/ev2Aqg2cax0eq2ybHlMAfxOeK630J4A7ZS2wJMsjAHCjwcPdp77f65rMaWiA0
+ gZvw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:from:to:cc:subject:in-reply-to:references:date
+ :message-id:mime-version;
+ bh=ffi2SxRQ+E3PZYurd3qDET06onxGoFR36uGgneUPMUo=;
+ b=j5I4SOw8jxc+ATCid8UGehu0C5sZ4SWROFyKydPxPfVTCWejKzzchlF8z+KjtVnN6A
+ 3oyBNa+RkOf+zdUJQean8lclALpcnyHLf7m0uxHGdwL0DFI8zuuD5EiRdyX4FcCqetkH
+ MdgeMj2lKOHXLJDFA60vUTVjs6O29xFNAcPTDL6HOxqdUD76OZn1gcVz9xkYAHHHIC/z
+ /KPr/WKdJUZgXrxpvdHt89WHOl25qUGkwta3Hdb/iB+f8me9lhYf+CB7uPqLJO7ub9/4
+ vf2UP2CvWhVtnCcQ42nWOaqU9sYCn/ux5le8kXGo45cJS3NXn2wVLF9jZLKDQ7xruHEQ
+ Cy2A==
+X-Gm-Message-State: APjAAAUrpiOeZEtzGNsp8DZKxXnn+o4WyoEXtGMLQXfTunp8rUlUNduc
+ c3XjiUMeXfa1fNBfO4yDc+WIAVoiBxo=
+X-Google-Smtp-Source: APXvYqzeC0Cp8Jv1qUjtr6ALhEoYw335xsxuOa0VExg8ouNLHw/ZNf9F0FpGMH/8qK0E79rnMrlKDw==
+X-Received: by 2002:a62:db86:: with SMTP id
+ f128mr26983286pfg.159.1566268515781; 
+ Mon, 19 Aug 2019 19:35:15 -0700 (PDT)
+Received: from localhost ([49.205.218.65])
+ by smtp.gmail.com with ESMTPSA id p1sm17788849pfn.83.2019.08.19.19.35.14
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Mon, 19 Aug 2019 19:35:15 -0700 (PDT)
+From: Santosh Sivaraj <santosh@fossix.org>
+To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Subject: Re: [PATCH 0/3] Add bad pmem bad blocks to bad range
+In-Reply-To: <20190820023030.18232-1-santosh@fossix.org>
+References: <20190820023030.18232-1-santosh@fossix.org>
+Date: Tue, 20 Aug 2019 08:05:12 +0530
+Message-ID: <87a7c4pnrz.fsf@santosiv.in.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20190819174600.GN24086@twin.jikos.cz>
-User-Agent: Mutt/1.11.4 (2019-03-13)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by
- bombadil.infradead.org. See http://www.infradead.org/rpr.html
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -79,25 +91,34 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: Chandan Rajendra <chandan@linux.ibm.com>,
+ Oliver O'Halloran <oohall@gmail.com>, Mahesh Salgaonkar <mahesh@linux.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, Aug 19, 2019 at 07:46:00PM +0200, David Sterba wrote:
-> Another thing that is lost is the slub debugging support for all
-> architectures, because get_zeroed_pages lacking the red zones and sanity
-> checks.
-> 
-> I find working with raw pages in this code a bit inconsistent with the
-> rest of btrfs code, but that's rather minor compared to the above.
-> 
-> Summing it up, I think that the proper fix should go to copy_page
-> implementation on architectures that require it or make it clear what
-> are the copy_page constraints.
+Santosh Sivaraj <santosh@fossix.org> writes:
 
-The whole point of copy_page is to copy exactly one page and it makes
-sense to assume that is aligned.  A sane memcpy would use the same
-underlying primitives as well after checking they fit.  So I think the
-prime issue here is btrfs' use of copy_page instead of memcpy.  The
-secondary issue is slub fucking up alignments for no good reason.  We
-just got bitten by that crap again in XFS as well :(
+> This series, which should be based on top of the still un-merged
+> "powerpc: implement machine check safe memcpy" series, adds support
+> to add the bad blocks which generated an MCE to the NVDIMM bad blocks.
+> The next access of the same memory will be blocked by the NVDIMM layer
+> itself.
+
+This is the v2 series. Missed to add in the subject.
+
+>
+> ---
+> Santosh Sivaraj (3):
+>   powerpc/mce: Add MCE notification chain
+>   of_pmem: Add memory ranges which took a mce to bad range
+>   papr/scm: Add bad memory ranges to nvdimm bad ranges
+>
+>  arch/powerpc/include/asm/mce.h            |   3 +
+>  arch/powerpc/kernel/mce.c                 |  15 +++
+>  arch/powerpc/platforms/pseries/papr_scm.c |  86 +++++++++++-
+>  drivers/nvdimm/of_pmem.c                  | 151 +++++++++++++++++++---
+>  4 files changed, 234 insertions(+), 21 deletions(-)
+>
+> -- 
+> 2.21.0
