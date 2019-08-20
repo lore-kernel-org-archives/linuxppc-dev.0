@@ -2,51 +2,81 @@ Return-Path: <SRS0=bLNb=WQ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9A3A8C3A589
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Aug 2019 13:59:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A9930C3A589
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Aug 2019 14:11:39 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 4E44322CF7
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Aug 2019 13:59:08 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4E44322CF7
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+	by mail.kernel.org (Postfix) with ESMTPS id C0136214DA
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Aug 2019 14:11:38 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="jrAPZmUP"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C0136214DA
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46CXTQ0fcnzDqQc
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Aug 2019 23:59:06 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	by lists.ozlabs.org (Postfix) with ESMTP id 46CXlr1YzlzDr45
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 21 Aug 2019 00:11:36 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+ spf=pass (mailfrom) smtp.mailfrom=c-s.fr
+ (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=c-s.fr
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="jrAPZmUP"; 
+ dkim-atps=neutral
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46CVnT3MGvzDqdb
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Aug 2019 22:42:53 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=ellerman.id.au
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
- SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 46CVnP0JhKz9s3Z;
- Tue, 20 Aug 2019 22:42:48 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Christophe Leroy <christophe.leroy@c-s.fr>,
- Nicholas Piggin <npiggin@gmail.com>
-Subject: Re: [PATCH v4 1/2] powerpc/time: Only set
- CONFIG_ARCH_HAS_SCALED_CPUTIME on PPC64
-In-Reply-To: <26969bb5-c01b-0674-5773-027f1851bd44@c-s.fr>
-References: <d9ac8da98f53debb4758b98d0227979aca9196f7.1528292284.git.christophe.leroy@c-s.fr>
- <20180607114304.327c4ab5@roar.ozlabs.ibm.com>
- <26969bb5-c01b-0674-5773-027f1851bd44@c-s.fr>
-Date: Tue, 20 Aug 2019 22:42:39 +1000
-Message-ID: <87imqs57pc.fsf@concordia.ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46CXfq6m0VzDr3j
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Aug 2019 00:07:13 +1000 (AEST)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 46CXfk2zsjz9v0Gd;
+ Tue, 20 Aug 2019 16:07:10 +0200 (CEST)
+Authentication-Results: localhost; dkim=pass
+ reason="1024-bit key; insecure key"
+ header.d=c-s.fr header.i=@c-s.fr header.b=jrAPZmUP; dkim-adsp=pass;
+ dkim-atps=neutral
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id cpWiJ5Agsxq7; Tue, 20 Aug 2019 16:07:10 +0200 (CEST)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 46CXfk1qL2z9v0GZ;
+ Tue, 20 Aug 2019 16:07:10 +0200 (CEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
+ t=1566310030; bh=T5uG7mG7FB/c459qUonEdQYtjb7qA4SseH9TqeFbrkM=;
+ h=In-Reply-To:References:From:Subject:To:Cc:Date:From;
+ b=jrAPZmUPsblAorp3HRCw9glee11alBdjilbQ1iRtfwcj2d3ilsqLqZ9xWDDa9vmlh
+ VmhZeGhqmnYwL2yNhKqIeOZ1Kz9zfqSAY4DXYjCyRrwOs9+s/s/v1wuPXccQ8C8Xxa
+ QcG/uzH1rdek6qDHn3IduPLfiw+jkP0Xl4ga19No=
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 95F048B7D0;
+ Tue, 20 Aug 2019 16:07:10 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id rQvR8mqpXLe9; Tue, 20 Aug 2019 16:07:10 +0200 (CEST)
+Received: from pc16032vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 632018B7C9;
+ Tue, 20 Aug 2019 16:07:10 +0200 (CEST)
+Received: by pc16032vm.idsi0.si.c-s.fr (Postfix, from userid 0)
+ id 4FA846B734; Tue, 20 Aug 2019 14:07:10 +0000 (UTC)
+Message-Id: <36bff5d875ff562889c5e12dab63e5d7c5d1fbd8.1566309262.git.christophe.leroy@c-s.fr>
+In-Reply-To: <cover.1566309262.git.christophe.leroy@c-s.fr>
+References: <cover.1566309262.git.christophe.leroy@c-s.fr>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Subject: [PATCH v2 02/12] powerpc/ps3: replace __ioremap() by ioremap_prot()
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, 
+ npiggin@gmail.com, hch@lst.de
+Date: Tue, 20 Aug 2019 14:07:10 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -58,45 +88,54 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
- Frederic Weisbecker <fweisbec@gmail.com>, linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Christophe Leroy <christophe.leroy@c-s.fr> writes:
-> Hi Nick,
->
->
-> Le 07/06/2018 =C3=A0 03:43, Nicholas Piggin a =C3=A9crit=C2=A0:
->> On Wed,  6 Jun 2018 14:21:08 +0000 (UTC)
->> Christophe Leroy <christophe.leroy@c-s.fr> wrote:
->>=20
->>> scaled cputime is only meaningfull when the processor has
->>> SPURR and/or PURR, which means only on PPC64.
->>>
->
-> [...]
->
->>=20
->> I wonder if we could make this depend on PPC_PSERIES or even
->> PPC_SPLPAR as well? (That would be for a later patch)
->
-> Can we go further on this ?
->
-> Do we know exactly which configuration support scaled cputime, in=20
-> extenso have SPRN_SPURR and/or SPRN_PURR ?
+__ioremap() is similar to ioremap_prot() except that ioremap_prot()
+does a few sanity changes in addition.
 
-PURR is Power5/6/7/8/9 and PA6T (pasemi). SPURR is Power6/7/8/9.
+The flags used by PS3 are not impacted by those changes so for
+PS3 both functions are equivalent.
 
-So we could easily flip PPC64 for PPC_BOOK3S_64, which would mean 64-bit
-Book3E CPUs don't get that overhead.
+At the same time, drop parts of the comment that have been invalid
+since commit e58e87adc8bf ("powerpc/mm: Update _PAGE_KERNEL_RO")
 
-Beyond that is not so simple. We probably don't need that selected for
-bare metal kernels (powernv). But in practice all the distros build a
-multi platform kernel with powernv+pseries anyway.
+Suggested-by: Christoph Hellwig <hch@lst.de>
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+---
+ arch/powerpc/platforms/ps3/spu.c | 10 +++-------
+ 1 file changed, 3 insertions(+), 7 deletions(-)
 
-We could turn it off on G5s (PPC970), by making it depend on POWERNV ||
-PSERIES || PPC_PASEMI, but I'm not sure if it's worth the trouble.
+diff --git a/arch/powerpc/platforms/ps3/spu.c b/arch/powerpc/platforms/ps3/spu.c
+index bdaeaecdc06b..1193c294b8d0 100644
+--- a/arch/powerpc/platforms/ps3/spu.c
++++ b/arch/powerpc/platforms/ps3/spu.c
+@@ -184,10 +184,7 @@ static void spu_unmap(struct spu *spu)
+  * setup_areas - Map the spu regions into the address space.
+  *
+  * The current HV requires the spu shadow regs to be mapped with the
+- * PTE page protection bits set as read-only (PP=3).  This implementation
+- * uses the low level __ioremap() to bypass the page protection settings
+- * inforced by ioremap_prot() to get the needed PTE bits set for the
+- * shadow regs.
++ * PTE page protection bits set as read-only.
+  */
+ 
+ static int __init setup_areas(struct spu *spu)
+@@ -195,9 +192,8 @@ static int __init setup_areas(struct spu *spu)
+ 	struct table {char* name; unsigned long addr; unsigned long size;};
+ 	unsigned long shadow_flags = pgprot_val(pgprot_noncached_wc(PAGE_KERNEL_RO));
+ 
+-	spu_pdata(spu)->shadow = __ioremap(spu_pdata(spu)->shadow_addr,
+-					   sizeof(struct spe_shadow),
+-					   shadow_flags);
++	spu_pdata(spu)->shadow = ioremap_prot(spu_pdata(spu)->shadow_addr,
++					      sizeof(struct spe_shadow), shadow_flags);
+ 	if (!spu_pdata(spu)->shadow) {
+ 		pr_debug("%s:%d: ioremap shadow failed\n", __func__, __LINE__);
+ 		goto fail_ioremap;
+-- 
+2.13.3
 
-cheers
