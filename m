@@ -6,82 +6,82 @@ X-Spam-Status: No, score=-6.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS
 	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E09B7C3A589
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Aug 2019 13:24:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C411FC3A589
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Aug 2019 13:27:46 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 68F36214DA
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Aug 2019 13:24:32 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 68F36214DA
+	by mail.kernel.org (Postfix) with ESMTPS id 4F626214DA
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Aug 2019 13:27:46 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4F626214DA
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46CWjT5JL2zDr1x
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Aug 2019 23:24:29 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+	by lists.ozlabs.org (Postfix) with ESMTP id 46CWnB3flfzDqc2
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Aug 2019 23:27:42 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46CV0v1Hx5zDqyw
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46CV0v1csrzDr0d
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Aug 2019 22:07:43 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 46CV0s64zlz8tFS
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Aug 2019 22:07:41 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 46CV0t6wlYz8vRG
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Aug 2019 22:07:42 +1000 (AEST)
 Received: by ozlabs.org (Postfix)
- id 46CV0s3bQpz9sML; Tue, 20 Aug 2019 22:07:41 +1000 (AEST)
+ id 46CV0t4TqCz9sBF; Tue, 20 Aug 2019 22:07:42 +1000 (AEST)
 Authentication-Results: ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
- (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
+ (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
  envelope-from=hbathini@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: ozlabs.org;
  dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 46CV0r5vS5z9s3Z
- for <linuxppc-dev@ozlabs.org>; Tue, 20 Aug 2019 22:07:40 +1000 (AEST)
-Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x7KC7Pj4013327
- for <linuxppc-dev@ozlabs.org>; Tue, 20 Aug 2019 08:07:39 -0400
-Received: from e06smtp04.uk.ibm.com (e06smtp04.uk.ibm.com [195.75.94.100])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2ugfc7uhu6-1
+ by ozlabs.org (Postfix) with ESMTPS id 46CV0s6qbjz9s3Z
+ for <linuxppc-dev@ozlabs.org>; Tue, 20 Aug 2019 22:07:41 +1000 (AEST)
+Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
+ x7KC7WXv004165
+ for <linuxppc-dev@ozlabs.org>; Tue, 20 Aug 2019 08:07:40 -0400
+Received: from e06smtp01.uk.ibm.com (e06smtp01.uk.ibm.com [195.75.94.97])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2ugefpwuty-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
  for <linuxppc-dev@ozlabs.org>; Tue, 20 Aug 2019 08:07:38 -0400
 Received: from localhost
- by e06smtp04.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp01.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <hbathini@linux.ibm.com>;
- Tue, 20 Aug 2019 13:07:36 +0100
-Received: from b06cxnps3074.portsmouth.uk.ibm.com (9.149.109.194)
- by e06smtp04.uk.ibm.com (192.168.101.134) with IBM ESMTP SMTP Gateway:
+ Tue, 20 Aug 2019 13:07:20 +0100
+Received: from b06avi18626390.portsmouth.uk.ibm.com (9.149.26.192)
+ by e06smtp01.uk.ibm.com (192.168.101.131) with IBM ESMTP SMTP Gateway:
  Authorized Use Only! Violators will be prosecuted; 
  (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Tue, 20 Aug 2019 13:07:32 +0100
+ Tue, 20 Aug 2019 13:07:17 +0100
 Received: from d06av22.portsmouth.uk.ibm.com (d06av22.portsmouth.uk.ibm.com
  [9.149.105.58])
- by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x7KC7Ujp53674200
+ by b06avi18626390.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP
+ id x7KC6tdA18022744
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Tue, 20 Aug 2019 12:07:30 GMT
+ Tue, 20 Aug 2019 12:06:55 GMT
 Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id B971C4C044;
- Tue, 20 Aug 2019 12:07:30 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 734834C052;
+ Tue, 20 Aug 2019 12:07:15 +0000 (GMT)
 Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 1BF624C04A;
- Tue, 20 Aug 2019 12:07:29 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id D21834C040;
+ Tue, 20 Aug 2019 12:07:13 +0000 (GMT)
 Received: from hbathini.in.ibm.com (unknown [9.184.183.117])
  by d06av22.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Tue, 20 Aug 2019 12:07:28 +0000 (GMT)
-Subject: [PATCH v5 27/31] powernv/opalcore: export /sys/firmware/opal/core
- for analysing opal crashes
+ Tue, 20 Aug 2019 12:07:13 +0000 (GMT)
+Subject: [PATCH v5 25/31] powernv/fadump: add support to preserve crash data
+ on FADUMP disabled kernel
 From: Hari Bathini <hbathini@linux.ibm.com>
 To: linuxppc-dev <linuxppc-dev@ozlabs.org>
-Date: Tue, 20 Aug 2019 17:37:28 +0530
+Date: Tue, 20 Aug 2019 17:37:12 +0530
 In-Reply-To: <156630261682.8896.3418665808003586786.stgit@hbathini.in.ibm.com>
 References: <156630261682.8896.3418665808003586786.stgit@hbathini.in.ibm.com>
 User-Agent: StGit/0.17.1-dirty
@@ -89,15 +89,15 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 X-TM-AS-GCONF: 00
-x-cbid: 19082012-0016-0000-0000-000002A0AFE4
+x-cbid: 19082012-4275-0000-0000-0000035B1365
 X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19082012-0017-0000-0000-00003300DEFC
-Message-Id: <156630284820.8896.1423921950458004376.stgit@hbathini.in.ibm.com>
+x-cbparentid: 19082012-4276-0000-0000-0000386D3350
+Message-Id: <156630283293.8896.17685034018378110649.stgit@hbathini.in.ibm.com>
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
  definitions=2019-08-20_04:, , signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
  priorityscore=1501
- malwarescore=0 suspectscore=2 phishscore=0 bulkscore=0 spamscore=0
+ malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
  clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
  mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
  scancount=1 engine=8.0.1-1906280000 definitions=main-1908200129
@@ -120,859 +120,325 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Hari Bathini <hbathini@linux.vnet.ibm.com>
+Add a new kernel config option, CONFIG_PRESERVE_FA_DUMP that ensures
+that crash data, from previously crash'ed kernel, is preserved. This
+helps in cases where FADump is not enabled but the subsequent memory
+preserving kernel boot is likely to process this crash data. One
+typical usecase for this config option is petitboot kernel.
 
-Export /sys/firmware/opal/core file to analyze opal crashes. Since OPAL
-core can be generated independent of CONFIG_FA_DUMP support in kernel,
-add this support under a new kernel config option CONFIG_OPAL_CORE.
-Also, avoid code duplication by moving common code used while exporting
-/proc/vmcore and/or /sys/firmware/opal/core file(s).
+As OPAL allows registering address with it in the first kernel and
+retrieving it after MPIPL, use it to store the top of boot memory.
+A kernel that intends to preserve crash data retrieves it and avoids
+using memory beyond this address.
 
-Signed-off-by: Hari Bathini <hbathini@linux.vnet.ibm.com>
+Move arch_reserved_kernel_pages() function as it is needed for both
+FA_DUMP and PRESERVE_FA_DUMP configurations.
+
+Signed-off-by: Hari Bathini <hbathini@linux.ibm.com>
 ---
- arch/powerpc/Kconfig                         |    9 
+ arch/powerpc/Kconfig                         |    9 +++
+ arch/powerpc/include/asm/fadump.h            |    9 ++-
+ arch/powerpc/kernel/Makefile                 |    6 ++
+ arch/powerpc/kernel/fadump-common.h          |   11 ++++
+ arch/powerpc/kernel/fadump.c                 |   43 +++++++++++++--
+ arch/powerpc/kernel/prom.c                   |    4 +
  arch/powerpc/platforms/powernv/Makefile      |    1 
- arch/powerpc/platforms/powernv/opal-core.c   |  595 ++++++++++++++++++++++++++
- arch/powerpc/platforms/powernv/opal-fadump.c |   84 +---
- arch/powerpc/platforms/powernv/opal-fadump.h |   72 +++
- 5 files changed, 694 insertions(+), 67 deletions(-)
- create mode 100644 arch/powerpc/platforms/powernv/opal-core.c
+ arch/powerpc/platforms/powernv/opal-fadump.c |   76 ++++++++++++++++++++++++++
+ 8 files changed, 148 insertions(+), 11 deletions(-)
 
 diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 2be9b96..d91460a 100644
+index fc4ecfe..2be9b96 100644
 --- a/arch/powerpc/Kconfig
 +++ b/arch/powerpc/Kconfig
-@@ -589,6 +589,15 @@ config PRESERVE_FA_DUMP
- 	  memory preserving kernel boot would process this crash data.
- 	  Petitboot kernel is the typical usecase for this option.
+@@ -580,6 +580,15 @@ config FA_DUMP
+ 	  If unsure, say "y". Only special kernels like petitboot may
+ 	  need to say "N" here.
  
-+config OPAL_CORE
-+	bool "Export OPAL memory as /sys/firmware/opal/core"
-+	depends on PPC64 && PPC_POWERNV
++config PRESERVE_FA_DUMP
++	bool "Preserve Firmware-assisted dump"
++	depends on PPC64 && PPC_POWERNV && !FA_DUMP
 +	help
-+	  This option uses the MPIPL support in firmware to provide an
-+	  ELF core of OPAL memory after a crash. The ELF core is exported
-+	  as /sys/firmware/opal/core file which is helpful in debugging
-+	  OPAL crashes using GDB.
++	  On a kernel with FA_DUMP disabled, this option helps to preserve
++	  crash data from a previously crash'ed kernel. Useful when the next
++	  memory preserving kernel boot would process this crash data.
++	  Petitboot kernel is the typical usecase for this option.
 +
  config IRQ_ALL_CPUS
  	bool "Distribute interrupts on all CPUs by default"
  	depends on SMP
+diff --git a/arch/powerpc/include/asm/fadump.h b/arch/powerpc/include/asm/fadump.h
+index e608d34..fd990d8 100644
+--- a/arch/powerpc/include/asm/fadump.h
++++ b/arch/powerpc/include/asm/fadump.h
+@@ -14,9 +14,6 @@
+ extern int crashing_cpu;
+ 
+ extern int is_fadump_memory_area(u64 addr, ulong size);
+-extern int early_init_dt_scan_fw_dump(unsigned long node,
+-		const char *uname, int depth, void *data);
+-extern int fadump_reserve_mem(void);
+ extern int setup_fadump(void);
+ extern int is_fadump_active(void);
+ extern int should_fadump_crash(void);
+@@ -29,4 +26,10 @@ static inline int should_fadump_crash(void) { return 0; }
+ static inline void crash_fadump(struct pt_regs *regs, const char *str) { }
+ static inline void fadump_cleanup(void) { }
+ #endif /* !CONFIG_FA_DUMP */
++
++#if defined(CONFIG_FA_DUMP) || defined(CONFIG_PRESERVE_FA_DUMP)
++extern int early_init_dt_scan_fw_dump(unsigned long node, const char *uname,
++				      int depth, void *data);
++extern int fadump_reserve_mem(void);
++#endif
+ #endif /* __PPC64_FA_DUMP_H__ */
+diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
+index 439d548..6abaead 100644
+--- a/arch/powerpc/kernel/Makefile
++++ b/arch/powerpc/kernel/Makefile
+@@ -78,7 +78,11 @@ obj-$(CONFIG_EEH)              += eeh.o eeh_pe.o eeh_dev.o eeh_cache.o \
+ 				  eeh_driver.o eeh_event.o eeh_sysfs.o
+ obj-$(CONFIG_GENERIC_TBSYNC)	+= smp-tbsync.o
+ obj-$(CONFIG_CRASH_DUMP)	+= crash_dump.o
+-obj-$(CONFIG_FA_DUMP)		+= fadump.o fadump-common.o
++ifeq ($(CONFIG_FA_DUMP),y)
++obj-y				+= fadump.o fadump-common.o
++else
++obj-$(CONFIG_PRESERVE_FA_DUMP)	+= fadump.o
++endif
+ ifdef CONFIG_PPC32
+ obj-$(CONFIG_E500)		+= idle_e500.o
+ endif
+diff --git a/arch/powerpc/kernel/fadump-common.h b/arch/powerpc/kernel/fadump-common.h
+index d1ff5b2..ba8481b 100644
+--- a/arch/powerpc/kernel/fadump-common.h
++++ b/arch/powerpc/kernel/fadump-common.h
+@@ -12,6 +12,7 @@
+ #ifndef __PPC64_FA_DUMP_INTERNAL_H__
+ #define __PPC64_FA_DUMP_INTERNAL_H__
+ 
++#ifndef CONFIG_PRESERVE_FA_DUMP
+ /*
+  * The RMA region will be saved for later dumping when kernel crashes.
+  * RMA is Real Mode Area, the first block of logical memory address owned
+@@ -157,6 +158,16 @@ void fadump_update_elfcore_header(struct fw_dump *fadump_config, char *bufp);
+ int is_fadump_boot_mem_contiguous(struct fw_dump *fadump_conf);
+ int is_fadump_reserved_mem_contiguous(struct fw_dump *fadump_conf);
+ 
++#else /* !CONFIG_PRESERVE_FA_DUMP */
++
++/* Firmware-assisted dump configuration details. */
++struct fw_dump {
++	unsigned long	boot_mem_top;
++	unsigned long	dump_active;
++};
++
++#endif /* CONFIG_PRESERVE_FA_DUMP */
++
+ #ifdef CONFIG_PPC_PSERIES
+ extern int rtas_fadump_dt_scan(struct fw_dump *fadump_config, ulong node);
+ #else
+diff --git a/arch/powerpc/kernel/fadump.c b/arch/powerpc/kernel/fadump.c
+index 665104a..43038f5 100644
+--- a/arch/powerpc/kernel/fadump.c
++++ b/arch/powerpc/kernel/fadump.c
+@@ -37,6 +37,7 @@ static struct fw_dump fw_dump;
+ 
+ static void __init fadump_reserve_crash_area(unsigned long base);
+ 
++#ifndef CONFIG_PRESERVE_FA_DUMP
+ static DEFINE_MUTEX(fadump_mutex);
+ struct fadump_mrange_info crash_mrange_info = { "crash", NULL, 0, 0, 0 };
+ struct fadump_mrange_info reserved_mrange_info = { "reserved", NULL, 0, 0, 0 };
+@@ -384,11 +385,6 @@ int __init fadump_reserve_mem(void)
+ 	return 0;
+ }
+ 
+-unsigned long __init arch_reserved_kernel_pages(void)
+-{
+-	return memblock_reserved_size() / PAGE_SIZE;
+-}
+-
+ /* Look for fadump= cmdline option. */
+ static int __init early_fadump_param(char *p)
+ {
+@@ -1221,6 +1217,38 @@ int __init setup_fadump(void)
+ 	return 1;
+ }
+ subsys_initcall(setup_fadump);
++#else /* !CONFIG_PRESERVE_FA_DUMP */
++
++/* Scan the Firmware Assisted dump configuration details. */
++int __init early_init_dt_scan_fw_dump(unsigned long node, const char *uname,
++				      int depth, void *data)
++{
++	if ((depth != 1) || (strcmp(uname, "ibm,opal") != 0))
++		return 0;
++
++	return opal_fadump_dt_scan(&fw_dump, node);
++}
++
++/*
++ * When dump is active but PRESERVE_FA_DUMP is enabled on the kernel,
++ * preserve crash data. The subsequent memory preserving kernel boot
++ * is likely to process this crash data.
++ */
++int __init fadump_reserve_mem(void)
++{
++	if (fw_dump.dump_active) {
++		/*
++		 * If last boot has crashed then reserve all the memory
++		 * above boot memory to preserve crash data.
++		 */
++		pr_info("Preserving crash data for processing in next boot.\n");
++		fadump_reserve_crash_area(PAGE_ALIGN(fw_dump.boot_mem_top));
++	} else
++		pr_debug("FADump-aware kernel..\n");
++
++	return 1;
++}
++#endif /* CONFIG_PRESERVE_FA_DUMP */
+ 
+ /* Preserve everything above the base address */
+ static void __init fadump_reserve_crash_area(unsigned long base)
+@@ -1245,3 +1273,8 @@ static void __init fadump_reserve_crash_area(unsigned long base)
+ 		memblock_reserve(mstart, msize);
+ 	}
+ }
++
++unsigned long __init arch_reserved_kernel_pages(void)
++{
++	return memblock_reserved_size() / PAGE_SIZE;
++}
+diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
+index 7159e79..9c3861bd 100644
+--- a/arch/powerpc/kernel/prom.c
++++ b/arch/powerpc/kernel/prom.c
+@@ -704,7 +704,7 @@ void __init early_init_devtree(void *params)
+ 	of_scan_flat_dt(early_init_dt_scan_opal, NULL);
+ #endif
+ 
+-#ifdef CONFIG_FA_DUMP
++#if defined(CONFIG_FA_DUMP) || defined(CONFIG_PRESERVE_FA_DUMP)
+ 	/* scan tree to see if dump is active during last boot */
+ 	of_scan_flat_dt(early_init_dt_scan_fw_dump, NULL);
+ #endif
+@@ -731,7 +731,7 @@ void __init early_init_devtree(void *params)
+ 	if (PHYSICAL_START > MEMORY_START)
+ 		memblock_reserve(MEMORY_START, 0x8000);
+ 	reserve_kdump_trampoline();
+-#ifdef CONFIG_FA_DUMP
++#if defined(CONFIG_FA_DUMP) || defined(CONFIG_PRESERVE_FA_DUMP)
+ 	/*
+ 	 * If we fail to reserve memory for firmware-assisted dump then
+ 	 * fallback to kexec based kdump.
 diff --git a/arch/powerpc/platforms/powernv/Makefile b/arch/powerpc/platforms/powernv/Makefile
-index b4a8022..e659afd 100644
+index 43a6e1c..b4a8022 100644
 --- a/arch/powerpc/platforms/powernv/Makefile
 +++ b/arch/powerpc/platforms/powernv/Makefile
-@@ -8,6 +8,7 @@ obj-y			+= opal-kmsg.o opal-powercap.o opal-psr.o opal-sensor-groups.o
+@@ -7,6 +7,7 @@ obj-y			+= opal-kmsg.o opal-powercap.o opal-psr.o opal-sensor-groups.o
+ 
  obj-$(CONFIG_SMP)	+= smp.o subcore.o subcore-asm.o
  obj-$(CONFIG_FA_DUMP)	+= opal-fadump.o
- obj-$(CONFIG_PRESERVE_FA_DUMP)	+= opal-fadump.o
-+obj-$(CONFIG_OPAL_CORE)	+= opal-core.o
++obj-$(CONFIG_PRESERVE_FA_DUMP)	+= opal-fadump.o
  obj-$(CONFIG_PCI)	+= pci.o pci-ioda.o npu-dma.o pci-ioda-tce.o
  obj-$(CONFIG_CXL_BASE)	+= pci-cxl.o
  obj-$(CONFIG_EEH)	+= eeh-powernv.o
-diff --git a/arch/powerpc/platforms/powernv/opal-core.c b/arch/powerpc/platforms/powernv/opal-core.c
-new file mode 100644
-index 0000000..2f1c8c1
---- /dev/null
-+++ b/arch/powerpc/platforms/powernv/opal-core.c
-@@ -0,0 +1,595 @@
-+// SPDX-License-Identifier: GPL-2.0-only
+diff --git a/arch/powerpc/platforms/powernv/opal-fadump.c b/arch/powerpc/platforms/powernv/opal-fadump.c
+index 9a32a7f..85a89c0 100644
+--- a/arch/powerpc/platforms/powernv/opal-fadump.c
++++ b/arch/powerpc/platforms/powernv/opal-fadump.c
+@@ -22,6 +22,70 @@
+ #include "../../kernel/fadump-common.h"
+ #include "opal-fadump.h"
+ 
++
++#ifdef CONFIG_PRESERVE_FA_DUMP
 +/*
-+ * Interface for exporting the OPAL ELF core.
-+ * Heavily inspired from fs/proc/vmcore.c
-+ *
-+ * Copyright 2019, IBM Corp.
-+ * Author: Hari Bathini <hbathini@linux.ibm.com>
++ * When dump is active but PRESERVE_FA_DUMP is enabled on the kernel,
++ * ensure crash data is preserved in hope that the subsequent memory
++ * preserving kernel boot is going to process this crash data.
 + */
-+
-+#undef DEBUG
-+#define pr_fmt(fmt) "opalcore: " fmt
-+
-+#include <linux/memblock.h>
-+#include <linux/uaccess.h>
-+#include <linux/proc_fs.h>
-+#include <linux/elf.h>
-+#include <linux/elfcore.h>
-+#include <linux/slab.h>
-+#include <linux/crash_core.h>
-+#include <linux/of.h>
-+
-+#include <asm/page.h>
-+#include <asm/opal.h>
-+
-+#include "../../kernel/fadump-common.h"
-+#include "opal-fadump.h"
-+
-+#define MAX_PT_LOAD_CNT		8
-+
-+/* NT_AUXV note related info */
-+#define AUXV_CNT		1
-+#define AUXV_DESC_SZ		(((2 * AUXV_CNT) + 1) * sizeof(Elf64_Off))
-+
-+struct opalcore_config {
-+	unsigned int		num_cpus;
-+	/* PIR value of crashing CPU */
-+	unsigned int		crashing_cpu;
-+
-+	/* CPU state data info from F/W */
-+	unsigned long		cpu_state_destination_addr;
-+	unsigned long		cpu_state_data_size;
-+	unsigned long		cpu_state_entry_size;
-+
-+	/* OPAL memory to be exported as PT_LOAD segments */
-+	unsigned long		ptload_addr[MAX_PT_LOAD_CNT];
-+	unsigned long		ptload_size[MAX_PT_LOAD_CNT];
-+	unsigned long		ptload_cnt;
-+
-+	/* Pointer to the first PT_LOAD in the ELF core file */
-+	Elf64_Phdr		*ptload_phdr;
-+
-+	/* Total size of opalcore file. */
-+	size_t			opalcore_size;
-+
-+	/* Buffer for all the ELF core headers and the PT_NOTE */
-+	size_t			opalcorebuf_sz;
-+	char			*opalcorebuf;
-+
-+	/* NT_AUXV buffer */
-+	char			auxv_buf[AUXV_DESC_SZ];
-+};
-+
-+struct opalcore {
-+	struct list_head list;
-+	unsigned long long paddr;
-+	unsigned long long size;
-+	loff_t offset;
-+};
-+
-+static LIST_HEAD(opalcore_list);
-+static struct opalcore_config *oc_conf;
-+static const struct opal_mpipl_fadump *opalc_metadata;
-+static const struct opal_mpipl_fadump *opalc_cpu_metadata;
-+
-+/*
-+ * Set crashing CPU's signal to SIGUSR1. if the kernel is triggered
-+ * by kernel, SIGTERM otherwise.
-+ */
-+bool kernel_initiated;
-+
-+static struct opalcore * __init get_new_element(void)
++int __init opal_fadump_dt_scan(struct fw_dump *fadump_conf, ulong node)
 +{
-+	return kzalloc(sizeof(struct opalcore), GFP_KERNEL);
-+}
-+
-+static inline int is_opalcore_usable(void)
-+{
-+	return (oc_conf && oc_conf->opalcorebuf != NULL) ? 1 : 0;
-+}
-+
-+static Elf64_Word *append_elf64_note(Elf64_Word *buf, char *name,
-+				     unsigned int type, void *data,
-+				     size_t data_len)
-+{
-+	Elf64_Nhdr *note = (Elf64_Nhdr *)buf;
-+	Elf64_Word namesz = strlen(name) + 1;
-+
-+	note->n_namesz = cpu_to_be32(namesz);
-+	note->n_descsz = cpu_to_be32(data_len);
-+	note->n_type   = cpu_to_be32(type);
-+	buf += DIV_ROUND_UP(sizeof(*note), sizeof(Elf64_Word));
-+	memcpy(buf, name, namesz);
-+	buf += DIV_ROUND_UP(namesz, sizeof(Elf64_Word));
-+	memcpy(buf, data, data_len);
-+	buf += DIV_ROUND_UP(data_len, sizeof(Elf64_Word));
-+
-+	return buf;
-+}
-+
-+static void fill_prstatus(struct elf_prstatus *prstatus, int pir,
-+			  struct pt_regs *regs)
-+{
-+	memset(prstatus, 0, sizeof(struct elf_prstatus));
-+	elf_core_copy_kernel_regs(&(prstatus->pr_reg), regs);
-+
-+	/*
-+	 * Overload PID with PIR value.
-+	 * As a PIR value could also be '0', add an offset of '100'
-+	 * to every PIR to avoid misinterpretations in GDB.
-+	 */
-+	prstatus->pr_pid  = cpu_to_be32(100 + pir);
-+	prstatus->pr_ppid = cpu_to_be32(1);
-+
-+	/*
-+	 * Indicate SIGUSR1 for crash initiated from kernel.
-+	 * SIGTERM otherwise.
-+	 */
-+	if (pir == oc_conf->crashing_cpu) {
-+		short sig;
-+
-+		sig = kernel_initiated ? SIGUSR1 : SIGTERM;
-+		prstatus->pr_cursig = cpu_to_be16(sig);
-+	}
-+}
-+
-+static Elf64_Word *auxv_to_elf64_notes(Elf64_Word *buf,
-+				       uint64_t opal_boot_entry)
-+{
-+	int idx = 0;
-+	Elf64_Off *bufp = (Elf64_Off *)oc_conf->auxv_buf;
-+
-+	memset(bufp, 0, AUXV_DESC_SZ);
-+
-+	/* Entry point of OPAL */
-+	bufp[idx++] = cpu_to_be64(AT_ENTRY);
-+	bufp[idx++] = cpu_to_be64(opal_boot_entry);
-+
-+	/* end of vector */
-+	bufp[idx++] = cpu_to_be64(AT_NULL);
-+
-+	buf = append_elf64_note(buf, CRASH_CORE_NOTE_NAME, NT_AUXV,
-+				oc_conf->auxv_buf, AUXV_DESC_SZ);
-+	return buf;
-+}
-+
-+/*
-+ * Read from the ELF header and then the crash dump.
-+ * Returns number of bytes read on success, -errno on failure.
-+ */
-+static ssize_t read_opalcore(struct file *file, struct kobject *kobj,
-+			     struct bin_attribute *bin_attr, char *to,
-+			     loff_t pos, size_t count)
-+{
-+	struct opalcore *m;
-+	ssize_t tsz, avail;
-+	loff_t tpos = pos;
-+
-+	if (pos >= oc_conf->opalcore_size)
-+		return 0;
-+
-+	/* Adjust count if it goes beyond opalcore size */
-+	avail = oc_conf->opalcore_size - pos;
-+	if (count > avail)
-+		count = avail;
-+
-+	if (count == 0)
-+		return 0;
-+
-+	/* Read ELF core header and/or PT_NOTE segment */
-+	if (tpos < oc_conf->opalcorebuf_sz) {
-+		tsz = min_t(size_t, oc_conf->opalcorebuf_sz - tpos, count);
-+		memcpy(to, oc_conf->opalcorebuf + tpos, tsz);
-+		to += tsz;
-+		tpos += tsz;
-+		count -= tsz;
-+	}
-+
-+	list_for_each_entry(m, &opalcore_list, list) {
-+		/* nothing more to read here */
-+		if (count == 0)
-+			break;
-+
-+		if (tpos < m->offset + m->size) {
-+			void *addr;
-+
-+			tsz = min_t(size_t, m->offset + m->size - tpos, count);
-+			addr = (void *)(m->paddr + tpos - m->offset);
-+			memcpy(to, __va(addr), tsz);
-+			to += tsz;
-+			tpos += tsz;
-+			count -= tsz;
-+		}
-+	}
-+
-+	return (tpos - pos);
-+}
-+
-+static struct bin_attribute opal_core_attr = {
-+	.attr = {.name = "core", .mode = 0400},
-+	.read = read_opalcore
-+};
-+
-+/*
-+ * Read CPU state dump data and convert it into ELF notes.
-+ *
-+ * Each register entry is of 16 bytes, A numerical identifier along with
-+ * a GPR/SPR flag in the first 8 bytes and the register value in the next
-+ * 8 bytes. For more details refer to F/W documentation.
-+ */
-+static Elf64_Word * __init opalcore_append_cpu_notes(Elf64_Word *buf)
-+{
-+	struct hdat_fadump_thread_hdr *thdr;
-+	unsigned long addr;
-+	u32 thread_pir;
-+	char *bufp;
-+	Elf64_Word *first_cpu_note;
-+	struct pt_regs regs;
-+	struct elf_prstatus prstatus;
-+	unsigned int size_of_each_thread;
-+	unsigned int regs_offset, regs_cnt, reg_esize;
-+	int i;
-+
-+	size_of_each_thread = oc_conf->cpu_state_entry_size;
-+
-+	addr = oc_conf->cpu_state_destination_addr;
-+	bufp = __va(addr);
-+
-+	/*
-+	 * Offset for register entries, entry size and registers count is
-+	 * duplicated in every thread header in keeping with HDAT format.
-+	 * Use these values from the first thread header.
-+	 */
-+	thdr = (struct hdat_fadump_thread_hdr *)bufp;
-+	regs_offset = (offsetof(struct hdat_fadump_thread_hdr, offset) +
-+		       be32_to_cpu(thdr->offset));
-+	reg_esize = be32_to_cpu(thdr->esize);
-+	regs_cnt  = be32_to_cpu(thdr->ecnt);
-+
-+	pr_debug("--------CPU State Data------------\n");
-+	pr_debug("NumCpus     : %u\n", oc_conf->num_cpus);
-+	pr_debug("\tOffset: %u, Entry size: %u, Cnt: %u\n",
-+		 regs_offset, reg_esize, regs_cnt);
-+
-+	/*
-+	 * Skip past the first CPU note. Fill this note with the
-+	 * crashing CPU's prstatus.
-+	 */
-+	first_cpu_note = buf;
-+	buf = append_elf64_note(buf, CRASH_CORE_NOTE_NAME, NT_PRSTATUS,
-+				&prstatus, sizeof(prstatus));
-+
-+	for (i = 0; i < oc_conf->num_cpus; i++, bufp += size_of_each_thread) {
-+		thdr = (struct hdat_fadump_thread_hdr *)bufp;
-+		thread_pir = be32_to_cpu(thdr->pir);
-+
-+		pr_debug("%04d) PIR: 0x%x, core state: 0x%02x\n",
-+			 (i + 1), thread_pir, thdr->core_state);
-+
-+		/*
-+		 * Register state data of MAX cores is provided by firmware,
-+		 * but some of this cores may not be active. So, while
-+		 * processing register state data, check core state and
-+		 * skip threads that belong to inactive cores.
-+		 */
-+		if (is_thread_core_inactive(thdr->core_state))
-+			continue;
-+
-+		opal_fadump_read_regs((bufp + regs_offset), regs_cnt,
-+				      reg_esize, false, &regs);
-+
-+		pr_debug("PIR 0x%x - R1 : 0x%llx, NIP : 0x%llx\n", thread_pir,
-+			 be64_to_cpu(regs.gpr[1]), be64_to_cpu(regs.nip));
-+		fill_prstatus(&prstatus, thread_pir, &regs);
-+
-+		if (thread_pir != oc_conf->crashing_cpu) {
-+			buf = append_elf64_note(buf, CRASH_CORE_NOTE_NAME,
-+						NT_PRSTATUS, &prstatus,
-+						sizeof(prstatus));
-+		} else {
-+			/*
-+			 * Add crashing CPU as the first NT_PRSTATUS note for
-+			 * GDB to process the core file appropriately.
-+			 */
-+			append_elf64_note(first_cpu_note, CRASH_CORE_NOTE_NAME,
-+					  NT_PRSTATUS, &prstatus,
-+					  sizeof(prstatus));
-+		}
-+	}
-+
-+	return buf;
-+}
-+
-+static int __init create_opalcore(void)
-+{
-+	int hdr_size, cpu_notes_size, order, count;
-+	int i, ret;
-+	unsigned int numcpus;
-+	unsigned long paddr;
-+	Elf64_Ehdr *elf;
-+	Elf64_Phdr *phdr;
-+	loff_t opalcore_off;
-+	struct opalcore *new;
-+	struct page *page;
-+	char *bufp;
-+	struct device_node *dn;
-+	uint64_t opal_base_addr;
-+	uint64_t opal_boot_entry;
-+
-+
-+	if ((oc_conf->ptload_cnt == 0) ||
-+	    (oc_conf->ptload_cnt > MAX_PT_LOAD_CNT)) {
-+		pr_err("Invalid PT_LOAD count: %lu\n", oc_conf->ptload_cnt);
-+		return -EINVAL;
-+	}
-+
-+	numcpus = oc_conf->num_cpus;
-+	hdr_size = (sizeof(Elf64_Ehdr) +
-+		    ((oc_conf->ptload_cnt + 1) * sizeof(Elf64_Phdr)));
-+	cpu_notes_size = ((numcpus * (CRASH_CORE_NOTE_HEAD_BYTES +
-+			  CRASH_CORE_NOTE_NAME_BYTES +
-+			  CRASH_CORE_NOTE_DESC_BYTES)) +
-+			  (CRASH_CORE_NOTE_HEAD_BYTES +
-+			  CRASH_CORE_NOTE_NAME_BYTES + AUXV_DESC_SZ));
-+	oc_conf->opalcorebuf_sz = (hdr_size + cpu_notes_size);
-+	order = get_order(oc_conf->opalcorebuf_sz);
-+	oc_conf->opalcorebuf =
-+		(char *)__get_free_pages(GFP_KERNEL|__GFP_ZERO, order);
-+	if (!oc_conf->opalcorebuf) {
-+		pr_err("Not enough memory to setup opalcore (size: %lu)\n",
-+		       oc_conf->opalcorebuf_sz);
-+		oc_conf->opalcorebuf_sz = 0;
-+		return -ENOMEM;
-+	}
-+
-+	pr_debug("opalcorebuf = 0x%lx\n", (unsigned long)oc_conf->opalcorebuf);
-+
-+	count = 1 << order;
-+	page = virt_to_page(oc_conf->opalcorebuf);
-+	for (i = 0; i < count; i++)
-+		SetPageReserved(page + i);
-+
-+	/* Read OPAL related device-tree entries */
-+	dn = of_find_node_by_name(NULL, "ibm,opal");
-+	if (dn) {
-+		ret = of_property_read_u64(dn, "opal-base-address",
-+					   &opal_base_addr);
-+		pr_debug("opal-base-address: %llx\n", opal_base_addr);
-+		ret |= of_property_read_u64(dn, "opal-boot-address",
-+					    &opal_boot_entry);
-+		pr_debug("opal-boot-address: %llx\n", opal_boot_entry);
-+	}
-+	if (!dn || ret)
-+		pr_warn("WARNING: Failed to read OPAL base & entry values\n");
-+
-+	/* Use count to keep track of the program headers */
-+	count = 0;
-+
-+	bufp = oc_conf->opalcorebuf;
-+	elf = (Elf64_Ehdr *)bufp;
-+	bufp += sizeof(Elf64_Ehdr);
-+	memcpy(elf->e_ident, ELFMAG, SELFMAG);
-+	elf->e_ident[EI_CLASS] = ELF_CLASS;
-+	elf->e_ident[EI_DATA] = ELFDATA2MSB;
-+	elf->e_ident[EI_VERSION] = EV_CURRENT;
-+	elf->e_ident[EI_OSABI] = ELF_OSABI;
-+	memset(elf->e_ident+EI_PAD, 0, EI_NIDENT-EI_PAD);
-+	elf->e_type = cpu_to_be16(ET_CORE);
-+	elf->e_machine = cpu_to_be16(ELF_ARCH);
-+	elf->e_version = cpu_to_be32(EV_CURRENT);
-+	elf->e_entry = 0;
-+	elf->e_phoff = cpu_to_be64(sizeof(Elf64_Ehdr));
-+	elf->e_shoff = 0;
-+	elf->e_flags = 0;
-+
-+	elf->e_ehsize = cpu_to_be16(sizeof(Elf64_Ehdr));
-+	elf->e_phentsize = cpu_to_be16(sizeof(Elf64_Phdr));
-+	elf->e_phnum = 0;
-+	elf->e_shentsize = 0;
-+	elf->e_shnum = 0;
-+	elf->e_shstrndx = 0;
-+
-+	phdr = (Elf64_Phdr *)bufp;
-+	bufp += sizeof(Elf64_Phdr);
-+	phdr->p_type	= cpu_to_be32(PT_NOTE);
-+	phdr->p_flags	= 0;
-+	phdr->p_align	= 0;
-+	phdr->p_paddr	= phdr->p_vaddr = 0;
-+	phdr->p_offset	= cpu_to_be64(hdr_size);
-+	phdr->p_filesz	= phdr->p_memsz = cpu_to_be64(cpu_notes_size);
-+	count++;
-+
-+	opalcore_off = oc_conf->opalcorebuf_sz;
-+	oc_conf->ptload_phdr  = (Elf64_Phdr *)bufp;
-+	paddr = 0;
-+	for (i = 0; i < oc_conf->ptload_cnt; i++) {
-+		phdr = (Elf64_Phdr *)bufp;
-+		bufp += sizeof(Elf64_Phdr);
-+		phdr->p_type	= cpu_to_be32(PT_LOAD);
-+		phdr->p_flags	= cpu_to_be32(PF_R|PF_W|PF_X);
-+		phdr->p_align	= 0;
-+
-+		new = get_new_element();
-+		if (!new)
-+			return -ENOMEM;
-+		new->paddr  = oc_conf->ptload_addr[i];
-+		new->size   = oc_conf->ptload_size[i];
-+		new->offset = opalcore_off;
-+		list_add_tail(&new->list, &opalcore_list);
-+
-+		phdr->p_paddr	= cpu_to_be64(paddr);
-+		phdr->p_vaddr	= cpu_to_be64(opal_base_addr + paddr);
-+		phdr->p_filesz	= phdr->p_memsz  =
-+			cpu_to_be64(oc_conf->ptload_size[i]);
-+		phdr->p_offset	= cpu_to_be64(opalcore_off);
-+
-+		count++;
-+		opalcore_off += oc_conf->ptload_size[i];
-+		paddr += oc_conf->ptload_size[i];
-+	}
-+
-+	elf->e_phnum = cpu_to_be16(count);
-+
-+	bufp = (char *)opalcore_append_cpu_notes((Elf64_Word *)bufp);
-+	bufp = (char *)auxv_to_elf64_notes((Elf64_Word *)bufp, opal_boot_entry);
-+
-+	oc_conf->opalcore_size = opalcore_off;
-+	return 0;
-+}
-+
-+static void __init opalcore_config_init(void)
-+{
-+	struct device_node *np;
++	unsigned long dn;
 +	const __be32 *prop;
-+	uint64_t addr = 0;
-+	uint32_t idx, cpu_data_version;
-+	int i, ret;
 +
-+
-+	np = of_find_node_by_path("/ibm,opal/dump");
-+	if (np == NULL)
-+		return;
-+
-+	if (!of_device_is_compatible(np, "ibm,opal-dump")) {
-+		pr_err("Support missing for this f/w version!\n");
-+		return;
-+	}
++	dn = of_get_flat_dt_subnode_by_name(node, "dump");
++	if (dn == -FDT_ERR_NOTFOUND)
++		return 1;
 +
 +	/*
 +	 * Check if dump has been initiated on last reboot.
 +	 */
-+	prop = of_get_property(np, "mpipl-boot", NULL);
-+	if (!prop)
-+		goto out;
++	prop = of_get_flat_dt_prop(dn, "mpipl-boot", NULL);
++	if (prop) {
++		u64 addr = 0;
++		s64 ret;
++		const struct opal_fadump_mem_struct *r_opal_fdm_active;
 +
-+	ret = opal_mpipl_query_tag(OPAL_MPIPL_TAG_OPAL, &addr);
-+	if ((ret != OPAL_SUCCESS) || !addr) {
-+		pr_err("Failed to get OPAL metadata (%d)\n", ret);
-+		goto out;
++		ret = opal_mpipl_query_tag(OPAL_MPIPL_TAG_KERNEL, &addr);
++		if ((ret != OPAL_SUCCESS) || !addr) {
++			pr_debug("Could not get Kernel metadata (%lld)\n", ret);
++			return 1;
++		}
++
++		/*
++		 * Preserve memory only if kernel memory regions are registered
++		 * with f/w for MPIPL.
++		 */
++		addr = be64_to_cpu(addr);
++		pr_debug("Kernel metadata addr: %llx\n", addr);
++		r_opal_fdm_active = (void *)addr;
++		if (r_opal_fdm_active->registered_regions == 0)
++			return 1;
++
++		ret = opal_mpipl_query_tag(OPAL_MPIPL_TAG_BOOT_MEM, &addr);
++		if ((ret != OPAL_SUCCESS) || !addr) {
++			pr_err("Failed to get boot memory tag (%lld)\n", ret);
++			return 1;
++		}
++
++		/*
++		 * Anything below this address can be used for booting a
++		 * capture kernel or petitboot kernel. Preserve everything
++		 * above this address for processing crashdump.
++		 */
++		fadump_conf->boot_mem_top = be64_to_cpu(addr);
++		pr_debug("Preserve everything above %lx\n",
++			 fadump_conf->boot_mem_top);
++
++		pr_info("Firmware-assisted dump is active.\n");
++		fadump_conf->dump_active = 1;
 +	}
 +
-+	addr = be64_to_cpu(addr);
-+	pr_debug("OPAL metadata addr: %llx\n", addr);
-+	opalc_metadata = __va(addr);
-+	if (opalc_metadata->version != MPIPL_FADUMP_VERSION) {
-+		pr_err("OPAL metadata version (%u) not supported by kernel!\n",
-+		       opalc_metadata->version);
-+		goto out;
-+	}
-+
-+	ret = opal_mpipl_query_tag(OPAL_MPIPL_TAG_CPU, &addr);
-+	if ((ret != OPAL_SUCCESS) || !addr) {
-+		pr_err("Failed to get OPAL CPU metadata (%d)\n", ret);
-+		goto out;
-+	}
-+
-+	addr = be64_to_cpu(addr);
-+	pr_debug("CPU metadata addr: %llx\n", addr);
-+	opalc_cpu_metadata = __va(addr);
-+	cpu_data_version = be32_to_cpu(opalc_cpu_metadata->cpu_data_version);
-+	if (cpu_data_version != HDAT_FADUMP_CPU_DATA_VERSION) {
-+		pr_err("CPU data version (%u) not supported by kernel!\n",
-+		       cpu_data_version);
-+		goto out;
-+	}
-+
-+	oc_conf = kzalloc(sizeof(struct opalcore_config), GFP_KERNEL);
-+	if (oc_conf == NULL)
-+		goto out;
-+
-+	oc_conf->ptload_cnt = 0;
-+	idx = be32_to_cpu(opalc_metadata->region_cnt);
-+	if (idx > MAX_PT_LOAD_CNT) {
-+		pr_warn("OPAL regions count (%d) adjusted to limit (%d)",
-+			MAX_PT_LOAD_CNT, idx);
-+		idx = MAX_PT_LOAD_CNT;
-+	}
-+	for (i = 0; i < idx; i++) {
-+		oc_conf->ptload_addr[oc_conf->ptload_cnt] =
-+				be64_to_cpu(opalc_metadata->region[i].dest);
-+		oc_conf->ptload_size[oc_conf->ptload_cnt++] =
-+				be64_to_cpu(opalc_metadata->region[i].size);
-+	}
-+	oc_conf->ptload_cnt = i;
-+	oc_conf->crashing_cpu = be32_to_cpu(opalc_metadata->crashing_pir);
-+
-+	oc_conf->cpu_state_destination_addr =
-+			be64_to_cpu(opalc_cpu_metadata->region[0].dest);
-+	oc_conf->cpu_state_data_size =
-+			be64_to_cpu(opalc_cpu_metadata->region[0].size);
-+	oc_conf->cpu_state_entry_size =
-+			be32_to_cpu(opalc_cpu_metadata->cpu_data_size);
-+
-+	oc_conf->num_cpus = (oc_conf->cpu_state_data_size /
-+			     oc_conf->cpu_state_entry_size);
-+
-+out:
-+	of_node_put(np);
++	return 1;
 +}
 +
-+/* Cleanup function for opalcore module. */
-+static void opalcore_cleanup(void)
-+{
-+	unsigned long order, count, i;
-+	struct page *page;
-+
-+	if (oc_conf == NULL)
-+		return;
-+
-+	sysfs_remove_bin_file(opal_kobj, &opal_core_attr);
-+	oc_conf->ptload_phdr = NULL;
-+	oc_conf->ptload_cnt = 0;
-+
-+	/* free core buffer */
-+	if ((oc_conf->opalcorebuf != NULL) && (oc_conf->opalcorebuf_sz != 0)) {
-+		order = get_order(oc_conf->opalcorebuf_sz);
-+		count = 1 << order;
-+		page = virt_to_page(oc_conf->opalcorebuf);
-+		for (i = 0; i < count; i++)
-+			ClearPageReserved(page + i);
-+		__free_pages(page, order);
-+
-+		oc_conf->opalcorebuf = NULL;
-+		oc_conf->opalcorebuf_sz = 0;
-+	}
-+
-+	kfree(oc_conf);
-+	oc_conf = NULL;
-+}
-+__exitcall(opalcore_cleanup);
-+
-+/* Init function for opalcore module. */
-+static int __init opalcore_init(void)
-+{
-+	int rc = -1;
-+
-+	opalcore_config_init();
-+
-+	if (oc_conf == NULL)
-+		return rc;
-+
-+	create_opalcore();
-+
-+	/*
-+	 * If oc_conf->opalcorebuf= is set in the 2nd kernel,
-+	 * then capture the dump.
-+	 */
-+	if (!(is_opalcore_usable())) {
-+		pr_err("Failed to export /sys/firmware/opal/core\n");
-+		opalcore_cleanup();
-+		return rc;
-+	}
-+
-+	/* Set opal core size */
-+	opal_core_attr.size = oc_conf->opalcore_size;
-+
-+	rc = sysfs_create_bin_file(opal_kobj, &opal_core_attr);
-+	if (rc != 0) {
-+		pr_err("Failed to export /sys/firmware/opal/core\n");
-+		opalcore_cleanup();
-+		return rc;
-+	}
-+
-+	return 0;
-+}
-+fs_initcall(opalcore_init);
-diff --git a/arch/powerpc/platforms/powernv/opal-fadump.c b/arch/powerpc/platforms/powernv/opal-fadump.c
-index 85a89c0..58faa38 100644
---- a/arch/powerpc/platforms/powernv/opal-fadump.c
-+++ b/arch/powerpc/platforms/powernv/opal-fadump.c
-@@ -90,6 +90,10 @@ static const struct opal_fadump_mem_struct *opal_fdm_active;
++#else /* CONFIG_PRESERVE_FA_DUMP */
+ static const struct opal_fadump_mem_struct *opal_fdm_active;
  static const struct opal_mpipl_fadump *opal_cpu_metadata;
  static struct opal_fadump_mem_struct *opal_fdm;
- 
-+#ifdef CONFIG_OPAL_CORE
-+extern bool kernel_initiated;
-+#endif
-+
- static int opal_fadump_unregister(struct fw_dump *fadump_conf);
- 
- static void opal_fadump_update_config(struct fw_dump *fadump_conf,
-@@ -358,72 +362,6 @@ static void opal_fadump_cleanup(struct fw_dump *fadump_conf)
- 		pr_warn("Could not reset (%llu) kernel metadata tag!\n", ret);
- }
- 
--static inline void opal_fadump_set_regval_regnum(struct pt_regs *regs,
--						 u32 reg_type, u32 reg_num,
--						 u64 reg_val)
--{
--	if (reg_type == HDAT_FADUMP_REG_TYPE_GPR) {
--		if (reg_num < 32)
--			regs->gpr[reg_num] = reg_val;
--		return;
--	}
--
--	switch (reg_num) {
--	case SPRN_CTR:
--		regs->ctr = reg_val;
--		break;
--	case SPRN_LR:
--		regs->link = reg_val;
--		break;
--	case SPRN_XER:
--		regs->xer = reg_val;
--		break;
--	case SPRN_DAR:
--		regs->dar = reg_val;
--		break;
--	case SPRN_DSISR:
--		regs->dsisr = reg_val;
--		break;
--	case HDAT_FADUMP_REG_ID_NIP:
--		regs->nip = reg_val;
--		break;
--	case HDAT_FADUMP_REG_ID_MSR:
--		regs->msr = reg_val;
--		break;
--	case HDAT_FADUMP_REG_ID_CCR:
--		regs->ccr = reg_val;
--		break;
--	}
--}
--
--static inline void opal_fadump_read_regs(char *bufp, unsigned int regs_cnt,
--					 unsigned int reg_entry_size,
--					 struct pt_regs *regs)
--{
--	int i;
--	struct hdat_fadump_reg_entry *reg_entry;
--
--	memset(regs, 0, sizeof(struct pt_regs));
--
--	for (i = 0; i < regs_cnt; i++, bufp += reg_entry_size) {
--		reg_entry = (struct hdat_fadump_reg_entry *)bufp;
--		opal_fadump_set_regval_regnum(regs,
--					      be32_to_cpu(reg_entry->reg_type),
--					      be32_to_cpu(reg_entry->reg_num),
--					      be64_to_cpu(reg_entry->reg_val));
--	}
--}
--
--static inline bool __init is_thread_core_inactive(u8 core_state)
--{
--	bool is_inactive = false;
--
--	if (core_state == HDAT_FADUMP_CORE_INACTIVE)
--		is_inactive = true;
--
--	return is_inactive;
--}
--
- /*
-  * Convert CPU state data saved at the time of crash into ELF notes.
-  *
-@@ -530,7 +468,7 @@ static int __init opal_fadump_build_cpu_notes(struct fw_dump *fadump_conf)
- 		}
- 
- 		opal_fadump_read_regs((bufp + regs_offset), regs_cnt,
--				      reg_esize, &regs);
-+				      reg_esize, true, &regs);
- 
- 		note_buf = fadump_regs_to_elf_notes(note_buf, &regs);
- 		pr_debug("CPU PIR: 0x%x - R1 : 0x%lx, NIP : 0x%lx\n",
-@@ -564,6 +502,18 @@ static int __init opal_fadump_process(struct fw_dump *fadump_conf)
- 		return -EINVAL;
+@@ -189,6 +253,17 @@ static int opal_fadump_setup_metadata(struct fw_dump *fadump_conf)
+ 		err = -EPERM;
  	}
  
-+#ifdef CONFIG_OPAL_CORE
 +	/*
-+	 * If this is a kernel initiated crash, crashing_cpu would be set
-+	 * appropriately and register data of the crashing CPU saved by
-+	 * crashing kernel. Add this saved register data of crashing CPU
-+	 * to elf notes and populate the pt_regs for the remaining CPUs
-+	 * from register state data provided by firmware.
++	 * Register boot memory top address with f/w. Should be retrieved
++	 * by a kernel that intends to preserve crash'ed kernel's memory.
 +	 */
-+	if (fdh->crashing_cpu != FADUMP_CPU_UNKNOWN)
-+		kernel_initiated = true;
-+#endif
-+
- 	rc = opal_fadump_build_cpu_notes(fadump_conf);
- 	if (rc)
- 		return rc;
-diff --git a/arch/powerpc/platforms/powernv/opal-fadump.h b/arch/powerpc/platforms/powernv/opal-fadump.h
-index ce4c522..b1a340b 100644
---- a/arch/powerpc/platforms/powernv/opal-fadump.h
-+++ b/arch/powerpc/platforms/powernv/opal-fadump.h
-@@ -9,6 +9,8 @@
- #ifndef __PPC64_OPAL_FA_DUMP_H__
- #define __PPC64_OPAL_FA_DUMP_H__
- 
-+#include <asm/reg.h>
-+
- /* OPAL FADump structure format version */
- #define OPAL_FADUMP_VERSION			0x1
- 
-@@ -69,4 +71,74 @@ struct hdat_fadump_reg_entry {
- 	__be64		reg_val;
- } __attribute__((packed));
- 
-+static inline bool __init is_thread_core_inactive(u8 core_state)
-+{
-+	bool is_inactive = false;
-+
-+	if (core_state == HDAT_FADUMP_CORE_INACTIVE)
-+		is_inactive = true;
-+
-+	return is_inactive;
-+}
-+
-+static inline void opal_fadump_set_regval_regnum(struct pt_regs *regs,
-+						 u32 reg_type, u32 reg_num,
-+						 u64 reg_val)
-+{
-+	if (reg_type == HDAT_FADUMP_REG_TYPE_GPR) {
-+		if (reg_num < 32)
-+			regs->gpr[reg_num] = reg_val;
-+		return;
++	ret = opal_mpipl_register_tag(OPAL_MPIPL_TAG_BOOT_MEM,
++				      fadump_conf->boot_memory_size);
++	if (ret != OPAL_SUCCESS) {
++		pr_err("Failed to set boot memory tag!\n");
++		err = -EPERM;
 +	}
 +
-+	switch (reg_num) {
-+	case SPRN_CTR:
-+		regs->ctr = reg_val;
-+		break;
-+	case SPRN_LR:
-+		regs->link = reg_val;
-+		break;
-+	case SPRN_XER:
-+		regs->xer = reg_val;
-+		break;
-+	case SPRN_DAR:
-+		regs->dar = reg_val;
-+		break;
-+	case SPRN_DSISR:
-+		regs->dsisr = reg_val;
-+		break;
-+	case HDAT_FADUMP_REG_ID_NIP:
-+		regs->nip = reg_val;
-+		break;
-+	case HDAT_FADUMP_REG_ID_MSR:
-+		regs->msr = reg_val;
-+		break;
-+	case HDAT_FADUMP_REG_ID_CCR:
-+		regs->ccr = reg_val;
-+		break;
-+	}
-+}
-+
-+static inline void opal_fadump_read_regs(char *bufp, unsigned int regs_cnt,
-+					 unsigned int reg_entry_size,
-+					 bool cpu_endian,
-+					 struct pt_regs *regs)
-+{
-+	int i;
-+	u64 val;
-+	struct hdat_fadump_reg_entry *reg_entry;
-+
-+	memset(regs, 0, sizeof(struct pt_regs));
-+
-+	for (i = 0; i < regs_cnt; i++, bufp += reg_entry_size) {
-+		reg_entry = (struct hdat_fadump_reg_entry *)bufp;
-+		val = (cpu_endian ? be64_to_cpu(reg_entry->reg_val) :
-+		       reg_entry->reg_val);
-+		opal_fadump_set_regval_regnum(regs,
-+					      be32_to_cpu(reg_entry->reg_type),
-+					      be32_to_cpu(reg_entry->reg_num),
-+					      val);
-+	}
-+}
-+
- #endif /* __PPC64_OPAL_FA_DUMP_H__ */
+ 	return err;
+ }
+ 
+@@ -654,3 +729,4 @@ int __init opal_fadump_dt_scan(struct fw_dump *fadump_conf, ulong node)
+ 
+ 	return 1;
+ }
++#endif /* !CONFIG_PRESERVE_FA_DUMP */
 
