@@ -2,87 +2,72 @@ Return-Path: <SRS0=bLNb=WQ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.0 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2D07EC3A5A0
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Aug 2019 02:54:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C4F8AC3A5A0
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Aug 2019 02:56:42 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 9F50520644
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Aug 2019 02:54:48 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 0521C206DF
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Aug 2019 02:56:41 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=fossix-org.20150623.gappssmtp.com header.i=@fossix-org.20150623.gappssmtp.com header.b="AgBOS3TM"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9F50520644
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=fossix.org
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="mH0VY+ov"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0521C206DF
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46CFkt3DSXzDqY3
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Aug 2019 12:54:46 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 46CFn35pb1zDqcP
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Aug 2019 12:56:39 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=none (mailfrom)
+ smtp.mailfrom=bombadil.srs.infradead.org (client-ip=2607:7c80:54:e::133;
+ helo=bombadil.infradead.org;
+ envelope-from=batv+4c12766ace4795e6d293+5840+infradead.org+hch@bombadil.srs.infradead.org;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=fossix.org
- (client-ip=2607:f8b0:4864:20::642; helo=mail-pl1-x642.google.com;
- envelope-from=santosh@fossix.org; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=fossix.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=fossix-org.20150623.gappssmtp.com
- header.i=@fossix-org.20150623.gappssmtp.com header.b="AgBOS3TM"; 
- dkim-atps=neutral
-Received: from mail-pl1-x642.google.com (mail-pl1-x642.google.com
- [IPv6:2607:f8b0:4864:20::642])
+ dmarc=none (p=none dis=none) header.from=infradead.org
+Received: from bombadil.infradead.org (bombadil.infradead.org
+ [IPv6:2607:7c80:54:e::133])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46CFCN0HTMzDqcy
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Aug 2019 12:30:54 +1000 (AEST)
-Received: by mail-pl1-x642.google.com with SMTP id m12so1921064plt.5
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Aug 2019 19:30:54 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=fossix-org.20150623.gappssmtp.com; s=20150623;
- h=from:to:cc:subject:date:message-id:in-reply-to:references
- :mime-version:content-transfer-encoding;
- bh=OJQ1JtMDNV5nsiORd0r0n+pnVyqaZzwyevr5Q3dpk9c=;
- b=AgBOS3TM72SW5SpcpxjRhYoUxz8mE4LQe67bOlYZniZQT7lgKQnnb3Bm8J1wk5N5ne
- X1gxHv2SEDrnFNCixLJJixtE4yM/RG0A7KUGFJEftCzue1Zw0aOvxmOvioih5cD21ZlT
- ODFUGMq4K7tKgoypSFamDFqZiG18Qs9ATgG4NyphvUVQi5OlqFqpMqrmVulDgIU7KkNv
- GrPHt939xXSiUmUBZ+jpKMtklycqij3bKfalvCe2WOZaMb9+3/+L33RX+ItL4D+Pio+/
- JbjWdedw1BOXm2QoNBfHcmeoVb2VpetM2TCWaNmT2rRfnEh+lt1t2BuvfIt259kzdwu1
- z4XA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
- :references:mime-version:content-transfer-encoding;
- bh=OJQ1JtMDNV5nsiORd0r0n+pnVyqaZzwyevr5Q3dpk9c=;
- b=P5R3d+ql9+efFNdPiekq8Ip7GI5hJBS45o3y1Axu4/aYyz9tTRbR8/0ywN1DKVZ7Ez
- Hwsmb2XZJSqUAi58hTRwS9jgfhmTTpPGMMRa7aeCOQWvhrQcU/PdG9i4x8IqPzULvjfA
- tVraCwDJSlTuNhUlrfRttf4d38FYZHfW4VrLeUml4jNSum+OG9OhNcQAmao9q2D/wiXZ
- y8NaXq5Msrz3uSiyxM2RuPvr5JJNbx8Vdca1EriGbvefGZ74+YfLo1QJZ2ZC2qcMpN7m
- ZtNzqLu5hdUWHe9lGo6qSm8iWqFK8z+I7ueog/6FLEns6azPenf0abbnZ2GGHtn9azHG
- hw+w==
-X-Gm-Message-State: APjAAAVEwsja9URJBm9AfcGf70j0gGCYSnvsvcpqZxpw9jY5BUALeK9M
- 4HvqOBsKJ+RsP0odZ2OPecW/RkLkxcg=
-X-Google-Smtp-Source: APXvYqwsbFnmzgBIiwT+TKGBoKUJJYnN/NEfgfNYlsuxKbb2JAh9S4eEmu3pcgN5jh37RHgnoEzHCg==
-X-Received: by 2002:a17:902:4ac2:: with SMTP id
- q2mr24247995plh.30.1566268251151; 
- Mon, 19 Aug 2019 19:30:51 -0700 (PDT)
-Received: from santosiv.in.ibm.com ([49.205.218.65])
- by smtp.gmail.com with ESMTPSA id j15sm17609220pfr.146.2019.08.19.19.30.49
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Mon, 19 Aug 2019 19:30:50 -0700 (PDT)
-From: Santosh Sivaraj <santosh@fossix.org>
-To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH 2/3] of_pmem: Add memory ranges which took a mce to bad range
-Date: Tue, 20 Aug 2019 08:00:29 +0530
-Message-Id: <20190820023030.18232-3-santosh@fossix.org>
-X-Mailer: git-send-email 2.21.0
-In-Reply-To: <20190820023030.18232-1-santosh@fossix.org>
-References: <20190820023030.18232-1-santosh@fossix.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46CFCG349PzDqVR
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Aug 2019 12:30:49 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+ d=infradead.org; s=bombadil.20170209; h=In-Reply-To:Content-Type:MIME-Version
+ :References:Message-ID:Subject:To:From:Date:Sender:Reply-To:Cc:
+ Content-Transfer-Encoding:Content-ID:Content-Description:Resent-Date:
+ Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:
+ List-Help:List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
+ bh=uPXPHVEYMLe1+2GVdYIOdPqr5CMV8EsylIRmKkmRT3Q=; b=mH0VY+ovyP9mQQyeA2pygVd+6
+ jlgtHzACKYGkOPyDVHPZ1PjKaSFzvetqdR5EDtZcKQm5AZEUs7VM7R3dfG5jl0z5n+Ie4leAPKsGJ
+ u/vM7LKI6mT/GNbP7XvILp+P6nx6S71Mv/CoaZ8idyC8hOQQZ3gwCUl+ZL/B2nzffjhxYzGyJWJNx
+ KkcWSK7fwws93Q69B/L7lCriRIvh7VSGlJDyi2G4DHiyHNQM5dJK2HV73vxCCrwNwGaSZCu3Wc5P1
+ McDsO+eyJSOiseL+x6zSQ+MN5Ix3KK3HW8EocfpujB8ickMfRLColHq2KFtkfRL3/UjGP4IDHSW+j
+ s8IxFRwEg==;
+Received: from hch by bombadil.infradead.org with local (Exim 4.92 #3 (Red Hat
+ Linux)) id 1hztup-0001lf-QO; Tue, 20 Aug 2019 02:30:31 +0000
+Date: Mon, 19 Aug 2019 19:30:31 -0700
+From: Christoph Hellwig <hch@infradead.org>
+To: dsterba@suse.cz, Christophe Leroy <christophe.leroy@c-s.fr>,
+ erhard_f@mailbox.org, Chris Mason <clm@fb.com>,
+ Josef Bacik <josef@toxicpanda.com>, David Sterba <dsterba@suse.com>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-btrfs@vger.kernel.org, linux-mm@kvack.org, stable@vger.kernel.org
+Subject: Re: [PATCH] btrfs: fix allocation of bitmap pages.
+Message-ID: <20190820023031.GC9594@infradead.org>
+References: <20190817074439.84C6C1056A3@localhost.localdomain>
+ <20190819174600.GN24086@twin.jikos.cz>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20190819174600.GN24086@twin.jikos.cz>
+User-Agent: Mutt/1.11.4 (2019-03-13)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by
+ bombadil.infradead.org. See http://www.infradead.org/rpr.html
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -94,222 +79,25 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Chandan Rajendra <chandan@linux.ibm.com>,
- Oliver O'Halloran <oohall@gmail.com>, Mahesh Salgaonkar <mahesh@linux.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Subscribe to the MCE notification and add the physical address which
-generated a memory error to nvdimm bad range.
+On Mon, Aug 19, 2019 at 07:46:00PM +0200, David Sterba wrote:
+> Another thing that is lost is the slub debugging support for all
+> architectures, because get_zeroed_pages lacking the red zones and sanity
+> checks.
+> 
+> I find working with raw pages in this code a bit inconsistent with the
+> rest of btrfs code, but that's rather minor compared to the above.
+> 
+> Summing it up, I think that the proper fix should go to copy_page
+> implementation on architectures that require it or make it clear what
+> are the copy_page constraints.
 
-Signed-off-by: Santosh Sivaraj <santosh@fossix.org>
----
- drivers/nvdimm/of_pmem.c | 151 +++++++++++++++++++++++++++++++++------
- 1 file changed, 131 insertions(+), 20 deletions(-)
-
-diff --git a/drivers/nvdimm/of_pmem.c b/drivers/nvdimm/of_pmem.c
-index a0c8dcfa0bf9..155e56862fdf 100644
---- a/drivers/nvdimm/of_pmem.c
-+++ b/drivers/nvdimm/of_pmem.c
-@@ -8,6 +8,9 @@
- #include <linux/module.h>
- #include <linux/ioport.h>
- #include <linux/slab.h>
-+#include <linux/string.h>
-+#include <linux/nd.h>
-+#include <asm/mce.h>
- 
- static const struct attribute_group *region_attr_groups[] = {
- 	&nd_region_attribute_group,
-@@ -25,11 +28,77 @@ struct of_pmem_private {
- 	struct nvdimm_bus *bus;
- };
- 
-+struct of_pmem_region {
-+	struct of_pmem_private *priv;
-+	struct nd_region_desc *region_desc;
-+	struct nd_region *region;
-+	struct list_head region_list;
-+};
-+
-+LIST_HEAD(pmem_regions);
-+DEFINE_MUTEX(pmem_region_lock);
-+
-+static int handle_mce_ue(struct notifier_block *nb, unsigned long val,
-+			 void *data)
-+{
-+	struct machine_check_event *evt = data;
-+	struct of_pmem_region *pmem_region;
-+	u64 aligned_addr, phys_addr;
-+	bool found = false;
-+
-+	if (evt->error_type != MCE_ERROR_TYPE_UE)
-+		return NOTIFY_DONE;
-+
-+	if (list_empty(&pmem_regions))
-+		return NOTIFY_DONE;
-+
-+	phys_addr = evt->u.ue_error.physical_address +
-+		(evt->u.ue_error.effective_address & ~PAGE_MASK);
-+
-+	if (!evt->u.ue_error.physical_address_provided ||
-+	    !is_zone_device_page(pfn_to_page(phys_addr >> PAGE_SHIFT)))
-+		return NOTIFY_DONE;
-+
-+	mutex_lock(&pmem_region_lock);
-+	list_for_each_entry(pmem_region, &pmem_regions, region_list) {
-+		struct resource *res = pmem_region->region_desc->res;
-+
-+		if (phys_addr >= res->start && phys_addr <= res->end) {
-+			found = true;
-+			break;
-+		}
-+	}
-+	mutex_unlock(&pmem_region_lock);
-+
-+	if (!found)
-+		return NOTIFY_DONE;
-+
-+	aligned_addr = ALIGN_DOWN(phys_addr, L1_CACHE_BYTES);
-+
-+	if (nvdimm_bus_add_badrange(pmem_region->priv->bus, aligned_addr,
-+				    L1_CACHE_BYTES))
-+		return NOTIFY_DONE;
-+
-+	pr_debug("Add memory range (0x%llx -- 0x%llx) as bad range\n",
-+		 aligned_addr, aligned_addr + L1_CACHE_BYTES);
-+
-+
-+	nvdimm_region_notify(pmem_region->region, NVDIMM_REVALIDATE_POISON);
-+
-+	return NOTIFY_OK;
-+}
-+
-+static struct notifier_block mce_ue_nb = {
-+	.notifier_call = handle_mce_ue
-+};
-+
- static int of_pmem_region_probe(struct platform_device *pdev)
- {
- 	struct of_pmem_private *priv;
- 	struct device_node *np;
- 	struct nvdimm_bus *bus;
-+	struct of_pmem_region *pmem_region;
-+	struct nd_region_desc *ndr_desc;
- 	bool is_volatile;
- 	int i;
- 
-@@ -58,32 +127,49 @@ static int of_pmem_region_probe(struct platform_device *pdev)
- 			is_volatile ? "volatile" : "non-volatile",  np);
- 
- 	for (i = 0; i < pdev->num_resources; i++) {
--		struct nd_region_desc ndr_desc;
- 		struct nd_region *region;
- 
--		/*
--		 * NB: libnvdimm copies the data from ndr_desc into it's own
--		 * structures so passing a stack pointer is fine.
--		 */
--		memset(&ndr_desc, 0, sizeof(ndr_desc));
--		ndr_desc.attr_groups = region_attr_groups;
--		ndr_desc.numa_node = dev_to_node(&pdev->dev);
--		ndr_desc.target_node = ndr_desc.numa_node;
--		ndr_desc.res = &pdev->resource[i];
--		ndr_desc.of_node = np;
--		set_bit(ND_REGION_PAGEMAP, &ndr_desc.flags);
-+		ndr_desc = kzalloc(sizeof(struct nd_region_desc), GFP_KERNEL);
-+		if (!ndr_desc) {
-+			nvdimm_bus_unregister(priv->bus);
-+			kfree(priv);
-+			return -ENOMEM;
-+		}
-+
-+		ndr_desc->attr_groups = region_attr_groups;
-+		ndr_desc->numa_node = dev_to_node(&pdev->dev);
-+		ndr_desc->target_node = ndr_desc->numa_node;
-+		ndr_desc->res = &pdev->resource[i];
-+		ndr_desc->of_node = np;
-+		set_bit(ND_REGION_PAGEMAP, &ndr_desc->flags);
- 
- 		if (is_volatile)
--			region = nvdimm_volatile_region_create(bus, &ndr_desc);
-+			region = nvdimm_volatile_region_create(bus, ndr_desc);
- 		else
--			region = nvdimm_pmem_region_create(bus, &ndr_desc);
-+			region = nvdimm_pmem_region_create(bus, ndr_desc);
- 
--		if (!region)
-+		if (!region) {
- 			dev_warn(&pdev->dev, "Unable to register region %pR from %pOF\n",
--					ndr_desc.res, np);
--		else
--			dev_dbg(&pdev->dev, "Registered region %pR from %pOF\n",
--					ndr_desc.res, np);
-+					ndr_desc->res, np);
-+			continue;
-+		}
-+
-+		dev_dbg(&pdev->dev, "Registered region %pR from %pOF\n",
-+			ndr_desc->res, np);
-+
-+		pmem_region = kzalloc(sizeof(struct of_pmem_region),
-+				      GFP_KERNEL);
-+		if (!pmem_region)
-+			continue;
-+
-+		pmem_region->region_desc = ndr_desc;
-+		pmem_region->region = region;
-+		pmem_region->priv = priv;
-+
-+		/* Save regions registered for use by the notification code */
-+		mutex_lock(&pmem_region_lock);
-+		list_add_tail(&pmem_region->region_list, &pmem_regions);
-+		mutex_unlock(&pmem_region_lock);
- 	}
- 
- 	return 0;
-@@ -92,6 +178,13 @@ static int of_pmem_region_probe(struct platform_device *pdev)
- static int of_pmem_region_remove(struct platform_device *pdev)
- {
- 	struct of_pmem_private *priv = platform_get_drvdata(pdev);
-+	struct of_pmem_region *r, *t;
-+
-+	list_for_each_entry_safe(r, t, &pmem_regions, region_list) {
-+		list_del(&(r->region_list));
-+		kfree(r->region_desc);
-+		kfree(r);
-+	}
- 
- 	nvdimm_bus_unregister(priv->bus);
- 	kfree(priv);
-@@ -113,7 +206,25 @@ static struct platform_driver of_pmem_region_driver = {
- 	},
- };
- 
--module_platform_driver(of_pmem_region_driver);
-+static int __init of_pmem_init(void)
-+{
-+	int ret;
-+
-+	ret = platform_driver_register(&of_pmem_region_driver);
-+	if (!ret)
-+		mce_register_notifier(&mce_ue_nb);
-+
-+	return ret;
-+}
-+module_init(of_pmem_init);
-+
-+static void __exit of_pmem_exit(void)
-+{
-+	mce_unregister_notifier(&mce_ue_nb);
-+	platform_driver_unregister(&of_pmem_region_driver);
-+}
-+module_exit(of_pmem_exit);
-+
- MODULE_DEVICE_TABLE(of, of_pmem_region_match);
- MODULE_LICENSE("GPL");
- MODULE_AUTHOR("IBM Corporation");
--- 
-2.21.0
-
+The whole point of copy_page is to copy exactly one page and it makes
+sense to assume that is aligned.  A sane memcpy would use the same
+underlying primitives as well after checking they fit.  So I think the
+prime issue here is btrfs' use of copy_page instead of memcpy.  The
+secondary issue is slub fucking up alignments for no good reason.  We
+just got bitten by that crap again in XFS as well :(
