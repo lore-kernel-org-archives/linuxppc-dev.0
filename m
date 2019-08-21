@@ -2,85 +2,57 @@ Return-Path: <SRS0=9oUV=WR=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.4 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D3F61C3A59E
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 21 Aug 2019 11:52:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id F1508C3A59E
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 21 Aug 2019 12:19:11 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 50A4722CF7
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 21 Aug 2019 11:52:41 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="HvVs/yaQ"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 50A4722CF7
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
+	by mail.kernel.org (Postfix) with ESMTPS id 7F20E22D6D
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 21 Aug 2019 12:19:11 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7F20E22D6D
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kernel.crashing.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46D5d31wCFzDr86
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 21 Aug 2019 21:52:39 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=c-s.fr
- (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
- envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=c-s.fr
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="HvVs/yaQ"; 
- dkim-atps=neutral
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 46D6Cc5pHMzDr1P
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 21 Aug 2019 22:19:08 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=permerror (mailfrom)
+ smtp.mailfrom=kernel.crashing.org (client-ip=63.228.1.57;
+ helo=gate.crashing.org; envelope-from=segher@kernel.crashing.org;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=kernel.crashing.org
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46D5b532MJzDqC0
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Aug 2019 21:50:56 +1000 (AEST)
-Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 46D5Zy67rpzB09b3;
- Wed, 21 Aug 2019 13:50:50 +0200 (CEST)
-Authentication-Results: localhost; dkim=pass
- reason="1024-bit key; insecure key"
- header.d=c-s.fr header.i=@c-s.fr header.b=HvVs/yaQ; dkim-adsp=pass;
- dkim-atps=neutral
-X-Virus-Scanned: Debian amavisd-new at c-s.fr
-Received: from pegase1.c-s.fr ([192.168.12.234])
- by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id ywIX-tXvc-mO; Wed, 21 Aug 2019 13:50:50 +0200 (CEST)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 46D5Zy53lvzB09b2;
- Wed, 21 Aug 2019 13:50:50 +0200 (CEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
- t=1566388250; bh=7RP7bC0Mb79ze8O7NICNrze709hQamG70VPvErmYljc=;
- h=Subject:To:Cc:References:From:Date:In-Reply-To:From;
- b=HvVs/yaQ04JU4Jl1JqigHX5ohMGAgtCOizipBqzrnHdn7GEmOYjQwOMLiod1EiKXD
- eYxse9i2hw/qfeooYPx7rIY9D1evLN1TYdVGj52b93U+zhu8TAvmKYqCfw5xsE5bIl
- TtzXoiSUJAKIMtY8xAmsJcxMNyIfDSxWopo66q8Q=
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id AE5678B7E7;
- Wed, 21 Aug 2019 13:50:52 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id XxaowlNMu_d0; Wed, 21 Aug 2019 13:50:52 +0200 (CEST)
-Received: from [172.25.230.101] (po15451.idsi0.si.c-s.fr [172.25.230.101])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 920A68B7E0;
- Wed, 21 Aug 2019 13:50:52 +0200 (CEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46D67W0QsczDr1C
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Aug 2019 22:15:33 +1000 (AEST)
+Received: from gate.crashing.org (localhost.localdomain [127.0.0.1])
+ by gate.crashing.org (8.14.1/8.14.1) with ESMTP id x7LCFHgj004071;
+ Wed, 21 Aug 2019 07:15:18 -0500
+Received: (from segher@localhost)
+ by gate.crashing.org (8.14.1/8.14.1/Submit) id x7LCFHnI004070;
+ Wed, 21 Aug 2019 07:15:17 -0500
+X-Authentication-Warning: gate.crashing.org: segher set sender to
+ segher@kernel.crashing.org using -f
+Date: Wed, 21 Aug 2019 07:15:17 -0500
+From: Segher Boessenkool <segher@kernel.crashing.org>
+To: Christophe Leroy <christophe.leroy@c-s.fr>
 Subject: Re: [PATCH] powerpc/vdso64: inline __get_datapage()
-To: Segher Boessenkool <segher@kernel.crashing.org>,
- Santosh Sivaraj <santosh@fossix.org>
+Message-ID: <20190821121517.GD31406@gate.crashing.org>
 References: <6662919bd80773aaf339e85b14af1ea1ddbfd841.camel@kernel.crashing.org>
  <20190821092959.16066-1-santosh@fossix.org>
  <20190821114423.GC31406@gate.crashing.org>
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Message-ID: <b7cc5d77-dfca-1cf7-f316-636a4f603b04@c-s.fr>
-Date: Wed, 21 Aug 2019 13:50:52 +0200
-User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:60.0) Gecko/20100101
- Thunderbird/60.8.0
-MIME-Version: 1.0
-In-Reply-To: <20190821114423.GC31406@gate.crashing.org>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: fr
+ <b7cc5d77-dfca-1cf7-f316-636a4f603b04@c-s.fr>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
+In-Reply-To: <b7cc5d77-dfca-1cf7-f316-636a4f603b04@c-s.fr>
+User-Agent: Mutt/1.4.2.3i
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -92,56 +64,59 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Cc: Santosh Sivaraj <santosh@fossix.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-
-
-Le 21/08/2019 Ã  13:44, Segher Boessenkool a Ã©critÂ :
-> Hi!
+On Wed, Aug 21, 2019 at 01:50:52PM +0200, Christophe Leroy wrote:
+> Le 21/08/2019 à 13:44, Segher Boessenkool a écrit :
+> >Calls are cheap, in principle...  It is the LR stuff that can make it
+> >slower on some cores, and a lot of calling sequence stuff may have
+> >considerable overhead of course.
 > 
-> On Wed, Aug 21, 2019 at 02:59:59PM +0530, Santosh Sivaraj wrote:
->> except for a couple of calls (1 or 2 nsec reduction), there are no
->> improvements in the call times. Or is 10 nsec the minimum granularity??
->>
->> So I don't know if its even worth updating vdso64 except to keep vdso32 and
->> vdso64 equal.
+> On an 8xx, a taken branch is 2 cycles and a non taken branch in 1 cycle 
+> (+ the refetch if that was not the anticipate branch).
+
+Yup.  And on the big cores they are all 0 cycles, if correctly predicted.
+(Taken branches end your fetch group, of course, there are small
+inefficiencies everywhere, but that's about the gist of it).
+
+> >>+.macro get_datapage ptr, tmp
+> >>+	bcl	20,31,888f
+> >>+888:
+> >>+	mflr	\ptr
+> >>+	addi	\ptr, \ptr, __kernel_datapage_offset - 888b
+> >>+	lwz	\tmp, 0(\ptr)
+> >>+	add	\ptr, \tmp, \ptr
+> >>+.endm
+> >
+> >(You can just write that as
+> >	bcl 20,31,$+4
+> >	mflr \ptr
+> >etc.  Useless labels are useless :-) )
 > 
-> Calls are cheap, in principle...  It is the LR stuff that can make it
-> slower on some cores, and a lot of calling sequence stuff may have
-> considerable overhead of course.
+> Nice trick. Will use that.
 
-On an 8xx, a taken branch is 2 cycles and a non taken branch in 1 cycle 
-(+ the refetch if that was not the anticipate branch).
+Or .+4 if you like that syntax better...  It's all the same thing.
 
+> >One thing you might want to do to improve performance is to do this without
+> >the bcl etc., because you cannot really hide the LR latency of that.  But
+> >that isn't very many ns either...  Superscalar helps, OoO helps, but it is
+> >mostly just that >100MHz helps ;-)
 > 
->> +.macro get_datapage ptr, tmp
->> +	bcl	20,31,888f
->> +888:
->> +	mflr	\ptr
->> +	addi	\ptr, \ptr, __kernel_datapage_offset - 888b
->> +	lwz	\tmp, 0(\ptr)
->> +	add	\ptr, \tmp, \ptr
->> +.endm
-> 
-> (You can just write that as
-> 	bcl 20,31,$+4
-> 	mflr \ptr
-> etc.  Useless labels are useless :-) )
+> Good idea. Did you have a look at my vdso32 similar patch ? 
+> https://patchwork.ozlabs.org/patch/1148274/
 
-Nice trick. Will use that.
+Yes, I saw it.
 
-> 
-> One thing you might want to do to improve performance is to do this without
-> the bcl etc., because you cannot really hide the LR latency of that.  But
-> that isn't very many ns either...  Superscalar helps, OoO helps, but it is
-> mostly just that >100MHz helps ;-)
+> Do you have any idea on how to avoid that bcl/mflr stuff ?
 
-Good idea. Did you have a look at my vdso32 similar patch ? 
-https://patchwork.ozlabs.org/patch/1148274/
+Do a load from some fixed address?  Maybe an absolute address, even?
+lwz r3,-12344(0)  or similar (that address is in kernel space...)
 
-Do you have any idea on how to avoid that bcl/mflr stuff ?
+There aren't many options, and certainly not many *good* options!
 
-Christophe
+
+Segher
