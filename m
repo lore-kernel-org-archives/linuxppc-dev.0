@@ -6,32 +6,32 @@ X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
 	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id F0FB9C3A59D
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Aug 2019 03:59:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 19299C3A59D
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Aug 2019 04:01:45 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 798452173E
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Aug 2019 03:59:43 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 798452173E
+	by mail.kernel.org (Postfix) with ESMTPS id 96A732173E
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Aug 2019 04:01:44 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 96A732173E
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46DW4s3xGLzDqKZ
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Aug 2019 13:59:41 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+	by lists.ozlabs.org (Postfix) with ESMTP id 46DW786rNKzDqKg
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Aug 2019 14:01:40 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46DVrm44DYzDr3t
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Aug 2019 13:49:12 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46DVrs49BkzDr39
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Aug 2019 13:49:17 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=linux.ibm.com
 Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 46DVrl6r07z8t5T
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Aug 2019 13:49:11 +1000 (AEST)
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 46DVrs0gFHz8t5T
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Aug 2019 13:49:17 +1000 (AEST)
 Received: by ozlabs.org (Postfix)
- id 46DVrl081Tz9sN1; Thu, 22 Aug 2019 13:49:11 +1000 (AEST)
+ id 46DVrr4fK9z9sBp; Thu, 22 Aug 2019 13:49:16 +1000 (AEST)
 Authentication-Results: ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
  (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
@@ -42,44 +42,45 @@ Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 46DVrj750pz9sDQ;
- Thu, 22 Aug 2019 13:49:09 +1000 (AEST)
-Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
+ by ozlabs.org (Postfix) with ESMTPS id 46DVrq6ljsz9sN1;
+ Thu, 22 Aug 2019 13:49:15 +1000 (AEST)
+Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x7M3mpWw027689; Wed, 21 Aug 2019 23:49:08 -0400
+ x7M3kee5039191; Wed, 21 Aug 2019 23:49:13 -0400
 Received: from ppma03dal.us.ibm.com (b.bd.3ea9.ip4.static.sl-reverse.com
  [169.62.189.11])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2uhjx5ru0v-1
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2uhg8gn8se-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 21 Aug 2019 23:49:07 -0400
+ Wed, 21 Aug 2019 23:49:12 -0400
 Received: from pps.filterd (ppma03dal.us.ibm.com [127.0.0.1])
- by ppma03dal.us.ibm.com (8.16.0.27/8.16.0.27) with SMTP id x7M3iRpT030499;
- Thu, 22 Aug 2019 03:49:07 GMT
-Received: from b03cxnp07028.gho.boulder.ibm.com
- (b03cxnp07028.gho.boulder.ibm.com [9.17.130.15])
- by ppma03dal.us.ibm.com with ESMTP id 2ue9770nek-1
+ by ppma03dal.us.ibm.com (8.16.0.27/8.16.0.27) with SMTP id x7M3iQjv030493;
+ Thu, 22 Aug 2019 03:49:11 GMT
+Received: from b03cxnp08027.gho.boulder.ibm.com
+ (b03cxnp08027.gho.boulder.ibm.com [9.17.130.19])
+ by ppma03dal.us.ibm.com with ESMTP id 2ue9770ney-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 22 Aug 2019 03:49:06 +0000
+ Thu, 22 Aug 2019 03:49:11 +0000
 Received: from b03ledav006.gho.boulder.ibm.com
  (b03ledav006.gho.boulder.ibm.com [9.17.130.237])
- by b03cxnp07028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x7M3n5Hf35193314
+ by b03cxnp08027.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x7M3n9gG55312884
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Thu, 22 Aug 2019 03:49:05 GMT
+ Thu, 22 Aug 2019 03:49:09 GMT
 Received: from b03ledav006.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 0B56DC605F;
+ by IMSVA (Postfix) with ESMTP id 0BC3CC605D;
+ Thu, 22 Aug 2019 03:49:09 +0000 (GMT)
+Received: from b03ledav006.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 778C5C6057;
  Thu, 22 Aug 2019 03:49:05 +0000 (GMT)
-Received: from b03ledav006.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 59F76C6057;
- Thu, 22 Aug 2019 03:49:01 +0000 (GMT)
 Received: from rino.ibm.com (unknown [9.80.203.17])
  by b03ledav006.gho.boulder.ibm.com (Postfix) with ESMTP;
- Thu, 22 Aug 2019 03:49:01 +0000 (GMT)
+ Thu, 22 Aug 2019 03:49:05 +0000 (GMT)
 From: Claudio Carvalho <cclaudio@linux.ibm.com>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH v6 5/7] powerpc/mm: Write to PTCR only if ultravisor disabled
-Date: Thu, 22 Aug 2019 00:48:36 -0300
-Message-Id: <20190822034838.27876-6-cclaudio@linux.ibm.com>
+Subject: [PATCH v6 6/7] powerpc/powernv: Access LDBAR only if ultravisor
+ disabled
+Date: Thu, 22 Aug 2019 00:48:37 -0300
+Message-Id: <20190822034838.27876-7-cclaudio@linux.ibm.com>
 X-Mailer: git-send-email 2.20.1
 In-Reply-To: <20190822034838.27876-1-cclaudio@linux.ibm.com>
 References: <20190822034838.27876-1-cclaudio@linux.ibm.com>
@@ -92,7 +93,7 @@ X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
  priorityscore=1501
  malwarescore=0 suspectscore=1 phishscore=0 bulkscore=0 spamscore=0
  clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=990 adultscore=0 classifier=spam adjust=0 reason=mlx
+ mlxlogscore=800 adultscore=0 classifier=spam adjust=0 reason=mlx
  scancount=1 engine=8.0.1-1906280000 definitions=main-1908220037
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -115,117 +116,51 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-In ultravisor enabled systems, PTCR becomes ultravisor privileged only
-for writing and an attempt to write to it will cause a Hypervisor
-Emulation Assitance interrupt.
+LDBAR is a per-thread SPR populated and used by the thread-imc pmu
+driver to dump the data counter into memory. It contains memory along
+with few other configuration bits. LDBAR is populated and enabled only
+when any of the thread imc pmu events are monitored.
 
-This patch uses the set_ptcr_when_no_uv() function to restrict PTCR
-writing to only when ultravisor is disabled.
+In ultravisor enabled systems, LDBAR becomes ultravisor privileged and
+an attempt to write to it will cause a Hypervisor Emulation Assistance
+interrupt.
+
+In ultravisor enabled systems, the ultravisor is responsible to maintain
+the LDBAR (e.g. save and restore it).
+
+This restricts LDBAR access to only when ultravisor is disabled.
 
 Signed-off-by: Claudio Carvalho <cclaudio@linux.ibm.com>
+Reviewed-by: Ram Pai <linuxram@us.ibm.com>
+Reviewed-by: Ryan Grimm <grimm@linux.ibm.com>
 ---
- arch/powerpc/include/asm/ultravisor.h    | 12 ++++++++++++
- arch/powerpc/mm/book3s64/hash_utils.c    |  5 +++--
- arch/powerpc/mm/book3s64/pgtable.c       |  2 +-
- arch/powerpc/mm/book3s64/radix_pgtable.c |  8 +++++---
- 4 files changed, 21 insertions(+), 6 deletions(-)
+ arch/powerpc/platforms/powernv/idle.c | 6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/ultravisor.h b/arch/powerpc/include/asm/ultravisor.h
-index 6fe1f365dec8..d7aa97aa7834 100644
---- a/arch/powerpc/include/asm/ultravisor.h
-+++ b/arch/powerpc/include/asm/ultravisor.h
-@@ -10,10 +10,22 @@
+diff --git a/arch/powerpc/platforms/powernv/idle.c b/arch/powerpc/platforms/powernv/idle.c
+index 09f49eed7fb8..78599bca66c2 100644
+--- a/arch/powerpc/platforms/powernv/idle.c
++++ b/arch/powerpc/platforms/powernv/idle.c
+@@ -675,7 +675,8 @@ static unsigned long power9_idle_stop(unsigned long psscr, bool mmu_on)
+ 		sprs.ptcr	= mfspr(SPRN_PTCR);
+ 		sprs.rpr	= mfspr(SPRN_RPR);
+ 		sprs.tscr	= mfspr(SPRN_TSCR);
+-		sprs.ldbar	= mfspr(SPRN_LDBAR);
++		if (!firmware_has_feature(FW_FEATURE_ULTRAVISOR))
++			sprs.ldbar = mfspr(SPRN_LDBAR);
  
- #include <asm/asm-prototypes.h>
- #include <asm/ultravisor-api.h>
-+#include <asm/firmware.h>
+ 		sprs_saved = true;
  
- int early_init_dt_scan_ultravisor(unsigned long node, const char *uname,
- 				  int depth, void *data);
- 
-+/*
-+ * In ultravisor enabled systems, PTCR becomes ultravisor privileged only for
-+ * writing and an attempt to write to it will cause a Hypervisor Emulation
-+ * Assistance interrupt.
-+ */
-+static inline void set_ptcr_when_no_uv(u64 val)
-+{
+@@ -789,7 +790,8 @@ static unsigned long power9_idle_stop(unsigned long psscr, bool mmu_on)
+ 	mtspr(SPRN_MMCR0,	sprs.mmcr0);
+ 	mtspr(SPRN_MMCR1,	sprs.mmcr1);
+ 	mtspr(SPRN_MMCR2,	sprs.mmcr2);
+-	mtspr(SPRN_LDBAR,	sprs.ldbar);
 +	if (!firmware_has_feature(FW_FEATURE_ULTRAVISOR))
-+		mtspr(SPRN_PTCR, val);
-+}
-+
- static inline int uv_register_pate(u64 lpid, u64 dw0, u64 dw1)
- {
- 	return ucall_norets(UV_WRITE_PATE, lpid, dw0, dw1);
-diff --git a/arch/powerpc/mm/book3s64/hash_utils.c b/arch/powerpc/mm/book3s64/hash_utils.c
-index c3bfef08dcf8..4d0bb194ed70 100644
---- a/arch/powerpc/mm/book3s64/hash_utils.c
-+++ b/arch/powerpc/mm/book3s64/hash_utils.c
-@@ -62,6 +62,7 @@
- #include <asm/ps3.h>
- #include <asm/pte-walk.h>
- #include <asm/asm-prototypes.h>
-+#include <asm/ultravisor.h>
++		mtspr(SPRN_LDBAR, sprs.ldbar);
  
- #include <mm/mmu_decl.h>
+ 	mtspr(SPRN_SPRG3,	local_paca->sprg_vdso);
  
-@@ -1076,8 +1077,8 @@ void hash__early_init_mmu_secondary(void)
- 		if (!cpu_has_feature(CPU_FTR_ARCH_300))
- 			mtspr(SPRN_SDR1, _SDR1);
- 		else
--			mtspr(SPRN_PTCR,
--			      __pa(partition_tb) | (PATB_SIZE_SHIFT - 12));
-+			set_ptcr_when_no_uv(__pa(partition_tb) |
-+					    (PATB_SIZE_SHIFT - 12));
- 	}
- 	/* Initialize SLB */
- 	slb_initialize();
-diff --git a/arch/powerpc/mm/book3s64/pgtable.c b/arch/powerpc/mm/book3s64/pgtable.c
-index 4173f6931009..01a7570c10e0 100644
---- a/arch/powerpc/mm/book3s64/pgtable.c
-+++ b/arch/powerpc/mm/book3s64/pgtable.c
-@@ -207,7 +207,7 @@ void __init mmu_partition_table_init(void)
- 	 * 64 K size.
- 	 */
- 	ptcr = __pa(partition_tb) | (PATB_SIZE_SHIFT - 12);
--	mtspr(SPRN_PTCR, ptcr);
-+	set_ptcr_when_no_uv(ptcr);
- 	powernv_set_nmmu_ptcr(ptcr);
- }
- 
-diff --git a/arch/powerpc/mm/book3s64/radix_pgtable.c b/arch/powerpc/mm/book3s64/radix_pgtable.c
-index 2204d8eeb784..ec3560b96177 100644
---- a/arch/powerpc/mm/book3s64/radix_pgtable.c
-+++ b/arch/powerpc/mm/book3s64/radix_pgtable.c
-@@ -27,6 +27,7 @@
- #include <asm/sections.h>
- #include <asm/trace.h>
- #include <asm/uaccess.h>
-+#include <asm/ultravisor.h>
- 
- #include <trace/events/thp.h>
- 
-@@ -650,8 +651,9 @@ void radix__early_init_mmu_secondary(void)
- 		lpcr = mfspr(SPRN_LPCR);
- 		mtspr(SPRN_LPCR, lpcr | LPCR_UPRT | LPCR_HR);
- 
--		mtspr(SPRN_PTCR,
--		      __pa(partition_tb) | (PATB_SIZE_SHIFT - 12));
-+		set_ptcr_when_no_uv(__pa(partition_tb) |
-+				    (PATB_SIZE_SHIFT - 12));
-+
- 		radix_init_amor();
- 	}
- 
-@@ -667,7 +669,7 @@ void radix__mmu_cleanup_all(void)
- 	if (!firmware_has_feature(FW_FEATURE_LPAR)) {
- 		lpcr = mfspr(SPRN_LPCR);
- 		mtspr(SPRN_LPCR, lpcr & ~LPCR_UPRT);
--		mtspr(SPRN_PTCR, 0);
-+		set_ptcr_when_no_uv(0);
- 		powernv_set_nmmu_ptcr(0);
- 		radix__flush_tlb_all();
- 	}
 -- 
 2.20.1
 
