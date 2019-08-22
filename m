@@ -2,80 +2,92 @@ Return-Path: <SRS0=ljjX=WS=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CFBEFC3A5A1
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Aug 2019 16:55:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 031F5C3A5A1
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Aug 2019 16:58:35 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 4F81A21743
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Aug 2019 16:55:53 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="lhnl3XYt"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4F81A21743
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
+	by mail.kernel.org (Postfix) with ESMTPS id 82F7A21743
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Aug 2019 16:58:34 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 82F7A21743
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46DrJR1CwyzDrL9
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 23 Aug 2019 02:55:51 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 46DrMX3rPhzDqdZ
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 23 Aug 2019 02:58:32 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=c-s.fr
- (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
- envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
+ (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
+ envelope-from=nathanl@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=c-s.fr
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="lhnl3XYt"; 
- dkim-atps=neutral
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ dmarc=none (p=none dis=none) header.from=linux.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46DqqS5SgzzDrTs
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Aug 2019 02:34:12 +1000 (AEST)
-Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 46DqqK5g1dz9v0d9;
- Thu, 22 Aug 2019 18:34:05 +0200 (CEST)
-Authentication-Results: localhost; dkim=pass
- reason="1024-bit key; insecure key"
- header.d=c-s.fr header.i=@c-s.fr header.b=lhnl3XYt; dkim-adsp=pass;
- dkim-atps=neutral
-X-Virus-Scanned: Debian amavisd-new at c-s.fr
-Received: from pegase1.c-s.fr ([192.168.12.234])
- by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id ICs6f2pPk8DL; Thu, 22 Aug 2019 18:34:05 +0200 (CEST)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 46DqqK4fVjz9v0d3;
- Thu, 22 Aug 2019 18:34:05 +0200 (CEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
- t=1566491645; bh=rDwOZc+1kwejUHMuYtIRr+S6e2LDgMgUE9GuQBU06PY=;
- h=In-Reply-To:References:From:Subject:To:Cc:Date:From;
- b=lhnl3XYtE5hOHdJwxzX4SnOSrN06Cg6qcnzUeZVdpLv3QgcZA1kKUrwq7AYWGw6YZ
- YZhxU+tUY/WhhamK15W57cuOtb+c4cD/qP7WtWaNUlIn2Fv3nqKJJ80fDMYG+DEpyL
- ibgeZ7RCQft0D576vk3Ge1TFYmD/Uxd33CPENfnA=
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 59B028B84C;
- Thu, 22 Aug 2019 18:34:07 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id 19iNAiDvTBSW; Thu, 22 Aug 2019 18:34:07 +0200 (CEST)
-Received: from pc16032vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 2A2A68B81D;
- Thu, 22 Aug 2019 18:34:07 +0200 (CEST)
-Received: by pc16032vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id F2F646B730; Thu, 22 Aug 2019 16:34:06 +0000 (UTC)
-Message-Id: <f4b92057c405e78c2a2a51f6f1ca2a9e356063d5.1566491310.git.christophe.leroy@c-s.fr>
-In-Reply-To: <cover.1566491310.git.christophe.leroy@c-s.fr>
-References: <cover.1566491310.git.christophe.leroy@c-s.fr>
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v2 6/8] powerpc/vdso32: use LOAD_REG_IMMEDIATE()
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Date: Thu, 22 Aug 2019 16:34:06 +0000 (UTC)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46Dqzm5bThzDrcR
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Aug 2019 02:41:24 +1000 (AEST)
+Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
+ x7MGJYsl084600; Thu, 22 Aug 2019 12:41:16 -0400
+Received: from pps.reinject (localhost [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2uhw2c4vdu-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Thu, 22 Aug 2019 12:41:15 -0400
+Received: from m0098414.ppops.net (m0098414.ppops.net [127.0.0.1])
+ by pps.reinject (8.16.0.27/8.16.0.27) with SMTP id x7MGKfAZ088399;
+ Thu, 22 Aug 2019 12:41:15 -0400
+Received: from ppma03dal.us.ibm.com (b.bd.3ea9.ip4.static.sl-reverse.com
+ [169.62.189.11])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2uhw2c4vdb-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Thu, 22 Aug 2019 12:41:15 -0400
+Received: from pps.filterd (ppma03dal.us.ibm.com [127.0.0.1])
+ by ppma03dal.us.ibm.com (8.16.0.27/8.16.0.27) with SMTP id x7MGVZep013805;
+ Thu, 22 Aug 2019 16:41:14 GMT
+Received: from b01cxnp22033.gho.pok.ibm.com (b01cxnp22033.gho.pok.ibm.com
+ [9.57.198.23]) by ppma03dal.us.ibm.com with ESMTP id 2ue97759t7-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Thu, 22 Aug 2019 16:41:14 +0000
+Received: from b01ledav002.gho.pok.ibm.com (b01ledav002.gho.pok.ibm.com
+ [9.57.199.107])
+ by b01cxnp22033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x7MGfD2k46792998
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Thu, 22 Aug 2019 16:41:13 GMT
+Received: from b01ledav002.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 8CFE812405A;
+ Thu, 22 Aug 2019 16:41:13 +0000 (GMT)
+Received: from b01ledav002.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 70995124054;
+ Thu, 22 Aug 2019 16:41:13 +0000 (GMT)
+Received: from localhost (unknown [9.41.101.192])
+ by b01ledav002.gho.pok.ibm.com (Postfix) with ESMTP;
+ Thu, 22 Aug 2019 16:41:13 +0000 (GMT)
+From: Nathan Lynch <nathanl@linux.ibm.com>
+To: Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH 1/3] powerpc/vphn: Check for error from hcall_vphn
+In-Reply-To: <20190822144235.19398-2-srikar@linux.vnet.ibm.com>
+References: <20190822144235.19398-1-srikar@linux.vnet.ibm.com>
+ <20190822144235.19398-2-srikar@linux.vnet.ibm.com>
+Date: Thu, 22 Aug 2019 11:41:13 -0500
+Message-ID: <87imqprw46.fsf@linux.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain
+X-TM-AS-GCONF: 00
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
+ definitions=2019-08-22_10:, , signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ malwarescore=0 suspectscore=1 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1906280000 definitions=main-1908220154
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -87,42 +99,65 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
+ Nicholas Piggin <npiggin@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Use LOAD_REG_IMMEDIATE() to load registers with immediate value.
+Hi Srikar,
 
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
----
- arch/powerpc/kernel/vdso32/gettimeofday.S | 6 ++----
- 1 file changed, 2 insertions(+), 4 deletions(-)
+Srikar Dronamraju <srikar@linux.vnet.ibm.com> writes:
+> There is no point in unpacking associativity, if
+> H_HOME_NODE_ASSOCIATIVITY hcall has returned an error.
+>
+> Also added error messages for H_PARAMETER and default case in
+> vphn_get_associativity.
 
-diff --git a/arch/powerpc/kernel/vdso32/gettimeofday.S b/arch/powerpc/kernel/vdso32/gettimeofday.S
-index 3e55cba19f44..0f87be0ebf7e 100644
---- a/arch/powerpc/kernel/vdso32/gettimeofday.S
-+++ b/arch/powerpc/kernel/vdso32/gettimeofday.S
-@@ -40,8 +40,7 @@ V_FUNCTION_BEGIN(__kernel_gettimeofday)
- 	get_datapage	r9, r0
- 	cmplwi	r10,0			/* check if tv is NULL */
- 	beq	3f
--	lis	r7,1000000@ha		/* load up USEC_PER_SEC */
--	addi	r7,r7,1000000@l		/* so we get microseconds in r4 */
-+	LOAD_REG_IMMEDIATE(r7, 1000000)	/* load up USEC_PER_SEC */
- 	bl	__do_get_tspec@local	/* get sec/usec from tb & kernel */
- 	stw	r3,TVAL32_TV_SEC(r10)
- 	stw	r4,TVAL32_TV_USEC(r10)
-@@ -84,8 +83,7 @@ V_FUNCTION_BEGIN(__kernel_clock_gettime)
-   .cfi_register lr,r12
- 	mr	r11,r4			/* r11 saves tp */
- 	get_datapage	r9, r0
--	lis	r7,NSEC_PER_SEC@h	/* want nanoseconds */
--	ori	r7,r7,NSEC_PER_SEC@l
-+	LOAD_REG_IMMEDIATE(r7, NSEC_PER_SEC)	/* load up NSEC_PER_SEC */
- 	beq	cr5, .Lcoarse_clocks
- .Lprecise_clocks:
- 	bl	__do_get_tspec@local	/* get sec/nsec from tb & kernel */
--- 
-2.13.3
+These are two logical changes and should be separated IMO.
 
+
+> diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
+> index 50d68d2..88b5157 100644
+> --- a/arch/powerpc/mm/numa.c
+> +++ b/arch/powerpc/mm/numa.c
+> @@ -1191,6 +1191,10 @@ static long vphn_get_associativity(unsigned long cpu,
+>  				VPHN_FLAG_VCPU, associativity);
+>  
+>  	switch (rc) {
+> +	case H_SUCCESS:
+> +		dbg("VPHN hcall succeeded. Reset polling...\n");
+> +		timed_topology_update(0);
+> +		break;
+>  	case H_FUNCTION:
+>  		printk_once(KERN_INFO
+>  			"VPHN is not supported. Disabling polling...\n");
+> @@ -1202,9 +1206,15 @@ static long vphn_get_associativity(unsigned long cpu,
+>  			"preventing VPHN. Disabling polling...\n");
+>  		stop_topology_update();
+>  		break;
+> -	case H_SUCCESS:
+> -		dbg("VPHN hcall succeeded. Reset polling...\n");
+> -		timed_topology_update(0);
+> +	case H_PARAMETER:
+> +		printk(KERN_ERR
+> +			"hcall_vphn() was passed an invalid parameter."
+> +			"Disabling polling...\n");
+
+This will come out as:
+
+hcall_vphn() was passed an invalid parameter.Disabling polling...
+                                             ^
+
+And it's misleading to say VPHN polling is being disabled when this case
+does not invoke stop_topology_update().
+
+> +		break;
+> +	default:
+> +		printk(KERN_ERR
+> +			"hcall_vphn() returned %ld. Disabling polling \n", rc);
+> +		stop_topology_update();
+>  		break;
+
+Any added prints in this routine must be _once or _ratelimited to avoid
+log floods. Also use the pr_ APIs instead of printk please.
