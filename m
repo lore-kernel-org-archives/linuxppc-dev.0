@@ -2,59 +2,58 @@ Return-Path: <SRS0=Va0a=WT=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.0 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
-	SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=unavailable
+X-Spam-Status: No, score=-7.1 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 68BD2C3A5A2
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 23 Aug 2019 05:34:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8C119C3A5A2
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 23 Aug 2019 05:36:33 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B3BE221848
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 23 Aug 2019 05:34:39 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 0770D21848
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 23 Aug 2019 05:36:32 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ozlabs.org header.i=@ozlabs.org header.b="P8HigVev"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B3BE221848
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ozlabs.org header.i=@ozlabs.org header.b="J/JhSKyJ"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0770D21848
 Authentication-Results: mail.kernel.org; dmarc=pass (p=none dis=none) header.from=ozlabs.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46F97x2QGDzDrgx
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 23 Aug 2019 15:34:37 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+	by lists.ozlabs.org (Postfix) with ESMTP id 46F9B64RQVzDrgf
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 23 Aug 2019 15:36:30 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46F95r1rc2zDrfd
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46F95r3DCVzDrff
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Aug 2019 15:32:48 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=ozlabs.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- secure) header.d=ozlabs.org header.i=@ozlabs.org header.b="P8HigVev"; 
+ secure) header.d=ozlabs.org header.i=@ozlabs.org header.b="J/JhSKyJ"; 
  dkim-atps=neutral
 Received: by ozlabs.org (Postfix, from userid 1003)
- id 46F95q6CgFz9sDQ; Fri, 23 Aug 2019 15:32:47 +1000 (AEST)
+ id 46F95q6lYyz9s3Z; Fri, 23 Aug 2019 15:32:47 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ozlabs.org; s=201707;
- t=1566538367; bh=/vm4RWX8jxrnP7cIg16ozDOrP8OuPgLDgomlE32zxpU=;
+ t=1566538367; bh=z02FCq36ZOlybuIQo9saHjlkCOE1r+GbTnZ2u8ZYozQ=;
  h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=P8HigVevzTu+3Tb//Q1o3LAWFtPM7klSM61MKFFh8zFR70YFK0za4auOtyoPWaErv
- TTRMNU3BgsKp8kzMvE+09FLNs6cgbqcoy+3MbP6fz3epmKSub/oBfZE+3y9xGxL8z3
- HUifoYQSKeLourEy4BOtd1iIWvPzGbYf4W24ZHMCOeNr3EDs7YMRaNF16ekT9RQfGF
- +UphyLJafV6Q+sQWMNUZL+kkggVV2Iy1Ey54S1nDR+MpAh1qaOPGwduDtof0SeLHz9
- bl1d+Mx9pKp6VS4mH0VZSV5HXOIpcRQxeLO+v/1TpTthBNlSRb+/VniheK9AyXaYzi
- 5k5d8XDbyGDZg==
-Date: Fri, 23 Aug 2019 15:32:41 +1000
+ b=J/JhSKyJna3dO+hzVwvKqr555OfMsYkSc6rEU4HDI6t7UXTZHTXFw0kUqNtRyy1fT
+ XZyG/guq1JZXAD1JYZyREjzSKwT6GNg2EdxDMBXY+ve7kgOG8szGrIaMMU/8EKCnyd
+ aqmdM2IfW0NRJlzhmm0iNJfc2uKXKdhv4xxiOzyxO5RBad4beOWcisAo4QRjQvL3uZ
+ L08pjXagLF/YR+8V5WEbqt0bH/8AvagOKgWfNO33k8vwEm3ehMt6BldhXCpwlAKll+
+ Swt7Wc9SWo0muhF2IbJRhtyIOpv1eFZ2DG4ba8glK3yeGGJCS6v7LuIh+B0hvTl8zy
+ vgO9sc3zYRUcA==
+Date: Fri, 23 Aug 2019 14:17:47 +1000
 From: Paul Mackerras <paulus@ozlabs.org>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>
-Subject: Re: [PATCH kernel] vfio/spapr_tce: Fix incorrect tce_iommu_group
- memory free
-Message-ID: <20190823053241.hogc44em2ccwdwq4@oak.ozlabs.ibm.com>
-References: <20190819015117.94878-1-aik@ozlabs.ru>
+To: Bharata B Rao <bharata@linux.ibm.com>
+Subject: Re: [PATCH v7 0/7] KVMPPC driver to manage secure guest pages
+Message-ID: <20190823041747.ctquda5uwvy2eiqz@oak.ozlabs.ibm.com>
+References: <20190822102620.21897-1-bharata@linux.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20190819015117.94878-1-aik@ozlabs.ru>
+In-Reply-To: <20190822102620.21897-1-bharata@linux.ibm.com>
 User-Agent: NeoMutt/20170113 (1.7.2)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -67,26 +66,47 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: kvm@vger.kernel.org, Jose Ricardo Ziviani <joserz@linux.ibm.com>,
- kvm-ppc@vger.kernel.org, Alex Williamson <alex.williamson@redhat.com>,
- linuxppc-dev@lists.ozlabs.org, David Gibson <david@gibson.dropbear.id.au>
+Cc: linuxram@us.ibm.com, cclaudio@linux.ibm.com, kvm-ppc@vger.kernel.org,
+ linux-mm@kvack.org, jglisse@redhat.com, aneesh.kumar@linux.vnet.ibm.com,
+ paulus@au1.ibm.com, sukadev@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org,
+ hch@lst.de
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, Aug 19, 2019 at 11:51:17AM +1000, Alexey Kardashevskiy wrote:
-> The @tcegrp variable is used in 1) a loop over attached groups
-> 2) it stores a pointer to a newly allocated tce_iommu_group if 1) found
-> nothing. However the error handler does not distinguish how we got there
-> and incorrectly releases memory for a found+incompatible group.
+On Thu, Aug 22, 2019 at 03:56:13PM +0530, Bharata B Rao wrote:
+> Hi,
 > 
-> This fixes it by adding another error handling case.
+> A pseries guest can be run as a secure guest on Ultravisor-enabled
+> POWER platforms. On such platforms, this driver will be used to manage
+> the movement of guest pages between the normal memory managed by
+> hypervisor(HV) and secure memory managed by Ultravisor(UV).
 > 
-> Fixes: 0bd971676e68 ("powerpc/powernv/npu: Add compound IOMMU groups")
-> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+> Private ZONE_DEVICE memory equal to the amount of secure memory
+> available in the platform for running secure guests is created.
+> Whenever a page belonging to the guest becomes secure, a page from
+> this private device memory is used to represent and track that secure
+> page on the HV side. The movement of pages between normal and secure
+> memory is done via migrate_vma_pages(). The reverse movement is driven
+> via pagemap_ops.migrate_to_ram().
+> 
+> The page-in or page-out requests from UV will come to HV as hcalls and
+> HV will call back into UV via uvcalls to satisfy these page requests.
+> 
+> These patches are against hmm.git
+> (https://git.kernel.org/pub/scm/linux/kernel/git/rdma/rdma.git/log/?h=hmm)
+> 
+> plus
+> 
+> Claudio Carvalho's base ultravisor enablement patchset v6
+> (https://lore.kernel.org/linuxppc-dev/20190822034838.27876-1-cclaudio@linux.ibm.com/T/#t)
 
-Good catch.  This is potentially nasty since it is a double free.
-Alex, are you going to take this, or would you prefer it goes via
-Michael Ellerman's tree?
+How are you thinking these patches will go upstream?  Are you going to
+send them via the hmm tree?
 
-Reviewed-by: Paul Mackerras <paulus@ozlabs.org>
+I assume you need Claudio's patchset as a prerequisite for your series
+to compile, which means the hmm maintainers would need to pull in a
+topic branch from Michael Ellerman's powerpc tree, or something like
+that.
+
+Paul.
