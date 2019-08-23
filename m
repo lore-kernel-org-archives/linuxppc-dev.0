@@ -2,48 +2,82 @@ Return-Path: <SRS0=Va0a=WT=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4120FC3A5A2
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 23 Aug 2019 12:51:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 74696C3A5A2
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 23 Aug 2019 12:55:05 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 9FCDC2173E
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 23 Aug 2019 12:51:37 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9FCDC2173E
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+	by mail.kernel.org (Postfix) with ESMTPS id E775222CEC
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 23 Aug 2019 12:55:04 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="LAoNsyoT"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E775222CEC
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46FLr43s0dzDrXR
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 23 Aug 2019 22:51:32 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 46FLw559khzDqjZ
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 23 Aug 2019 22:55:01 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+ spf=pass (mailfrom) smtp.mailfrom=c-s.fr
+ (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=c-s.fr
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="LAoNsyoT"; 
+ dkim-atps=neutral
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46FLm75dxvzDr2p
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Aug 2019 22:48:07 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=ellerman.id.au
-Received: by ozlabs.org (Postfix)
- id 46FLm71L5gz9sDQ; Fri, 23 Aug 2019 22:48:07 +1000 (AEST)
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
- SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 46FLm659cnz9s7T;
- Fri, 23 Aug 2019 22:48:06 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Claudio Carvalho <cclaudio@linux.ibm.com>, linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH v2] powerpc/powernv: Add ultravisor message log interface
-In-Reply-To: <20190823060654.28842-1-cclaudio@linux.ibm.com>
-References: <20190823060654.28842-1-cclaudio@linux.ibm.com>
-Date: Fri, 23 Aug 2019 22:48:03 +1000
-Message-ID: <87o90g3v5o.fsf@concordia.ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46FLpm2N7CzDrYy
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Aug 2019 22:50:24 +1000 (AEST)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 46FLpd4cyxz9txM0;
+ Fri, 23 Aug 2019 14:50:17 +0200 (CEST)
+Authentication-Results: localhost; dkim=pass
+ reason="1024-bit key; insecure key"
+ header.d=c-s.fr header.i=@c-s.fr header.b=LAoNsyoT; dkim-adsp=pass;
+ dkim-atps=neutral
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id SfhwT4Mbyq1G; Fri, 23 Aug 2019 14:50:17 +0200 (CEST)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 46FLpd3bh2z9txLw;
+ Fri, 23 Aug 2019 14:50:17 +0200 (CEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
+ t=1566564617; bh=4cukybuxYzyKh4osdIe5zLMQPeJ6BNChd4Ex1TqwbvQ=;
+ h=In-Reply-To:References:From:Subject:To:Cc:Date:From;
+ b=LAoNsyoTy/Uy/TxiLZs39kyssTYThEDlkklrbs8dyKpjOEBfYoGCIa57RhK1nAicq
+ 0t7DH2XkOxAmEsWyrGNJdU7vfSM/HHBbVZdn7ffytF2jdWJ7K6QohNrWzAjJn+q7Mq
+ 9ym0Zv7t3Jsn72G5EuwnnBwy8U5Zeqd64JdjrKx8=
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id E53A38B87B;
+ Fri, 23 Aug 2019 14:50:18 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id 7gNk9FgxzWR6; Fri, 23 Aug 2019 14:50:18 +0200 (CEST)
+Received: from pc16032vm.idsi0.si.c-s.fr (po15451.idsi0.si.c-s.fr
+ [172.25.230.103])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id C8D298B866;
+ Fri, 23 Aug 2019 14:50:18 +0200 (CEST)
+Received: by pc16032vm.idsi0.si.c-s.fr (Postfix, from userid 0)
+ id B688B639BC; Fri, 23 Aug 2019 12:50:18 +0000 (UTC)
+Message-Id: <331759c1bcba5797d30f8eace74afb16ac5f3c36.1566564560.git.christophe.leroy@c-s.fr>
+In-Reply-To: <b51b96090138aba1920d2cf7c0e0e348667f9a69.1566564560.git.christophe.leroy@c-s.fr>
+References: <b51b96090138aba1920d2cf7c0e0e348667f9a69.1566564560.git.christophe.leroy@c-s.fr>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Subject: [PATCH 2/2] powerpc/83xx: map IMMR with a BAT.
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, 
+ oss@buserror.net, galak@kernel.crashing.org
+Date: Fri, 23 Aug 2019 12:50:18 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -55,47 +89,51 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>,
- Michael Anderson <andmike@linux.ibm.com>, Ram Pai <linuxram@us.ibm.com>,
- Claudio Carvalho <cclaudio@linux.ibm.com>, kvm-ppc@vger.kernel.org,
- Ryan Grimm <grimm@linux.ibm.com>, Oliver O'Halloran <oohall@gmail.com>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi Claudio,
+On mpc83xx with a QE, IMMR is 2Mbytes.
+On mpc83xx without a QE, IMMR is 1Mbytes.
+Each driver will map a part of it to access the registers it needs.
+Some driver will map the same part of IMMR as other drivers.
 
-Claudio Carvalho <cclaudio@linux.ibm.com> writes:
-> Ultravisor (UV) provides an in-memory console which follows the OPAL
-> in-memory console structure.
->
-> This patch extends the OPAL msglog code to also initialize the UV memory
-> console and provide a sysfs interface (uv_msglog) for userspace to view
-> the UV message log.
->
-> CC: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-> CC: Oliver O'Halloran <oohall@gmail.com>
-> Signed-off-by: Claudio Carvalho <cclaudio@linux.ibm.com>
-> ---
-> This patch depends on the "kvmppc: Paravirtualize KVM to support
-> ultravisor" patchset submitted by Claudio Carvalho.
-> ---
->  arch/powerpc/platforms/powernv/opal-msglog.c | 99 ++++++++++++++------
->  1 file changed, 72 insertions(+), 27 deletions(-)
+In order to reduce TLB misses, map the full IMMR with a BAT.
 
-I think the code changes look mostly OK here.
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+---
+ arch/powerpc/platforms/83xx/misc.c | 10 ++++++++++
+ 1 file changed, 10 insertions(+)
 
-But I'm not sure about the end result in sysfs.
+diff --git a/arch/powerpc/platforms/83xx/misc.c b/arch/powerpc/platforms/83xx/misc.c
+index f46d7bf3b140..1e395b01c535 100644
+--- a/arch/powerpc/platforms/83xx/misc.c
++++ b/arch/powerpc/platforms/83xx/misc.c
+@@ -18,6 +18,8 @@
+ #include <sysdev/fsl_soc.h>
+ #include <sysdev/fsl_pci.h>
+ 
++#include <mm/mmu_decl.h>
++
+ #include "mpc83xx.h"
+ 
+ static __be32 __iomem *restart_reg_base;
+@@ -145,6 +147,14 @@ void __init mpc83xx_setup_arch(void)
+ 	if (ppc_md.progress)
+ 		ppc_md.progress("mpc83xx_setup_arch()", 0);
+ 
++	if (!__map_without_bats) {
++		int immrsize = IS_ENABLED(CONFIG_QUICC_ENGINE) ? SZ_2M : SZ_1M;
++
++		ioremap_bot = ALIGN_DOWN(ioremap_bot - immrsize, immrsize);
++		setbat(-1, ioremap_bot, get_immrbase(), immrsize, PAGE_KERNEL_NCG);
++		update_bats();
++	}
++
+ 	mpc83xx_setup_pci();
+ }
+ 
+-- 
+2.13.3
 
-If I'm reading it right this will create:
-
- /sys/firmware/opal/uv_msglog
-
-Which I think is a little weird, because the UV is not OPAL.
-
-So I guess I wonder if the file should be created elsewhere to avoid any
-confusion and keep things nicely separated.
-
-Possibly /sys/firmware/ultravisor/msglog ?
-
-cheers
