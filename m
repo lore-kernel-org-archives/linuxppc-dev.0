@@ -1,49 +1,109 @@
-Return-Path: <SRS0=/o0J=WU=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
+Return-Path: <SRS0=uTVD=WV=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.3 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.3 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 85A80C3A59E
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 24 Aug 2019 22:36:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2C41BC3A59E
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 25 Aug 2019 02:21:25 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id D6BA42133F
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 24 Aug 2019 22:36:55 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D6BA42133F
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
+	by mail.kernel.org (Postfix) with ESMTPS id 6D5F420850
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 25 Aug 2019 02:21:24 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6D5F420850
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46GCn13g9QzDrT0
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 25 Aug 2019 08:36:53 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 46GJm147nDzDrSM
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 25 Aug 2019 12:21:21 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46GJjw0KFbzDrQ1
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 25 Aug 2019 12:19:32 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=lst.de
- (client-ip=213.95.11.211; helo=verein.lst.de; envelope-from=hch@lst.de;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=lst.de
-Received: from verein.lst.de (verein.lst.de [213.95.11.211])
+ dmarc=none (p=none dis=none) header.from=linux.ibm.com
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 46GJjv1p3Kz8syQ
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 25 Aug 2019 12:19:31 +1000 (AEST)
+Received: by ozlabs.org (Postfix)
+ id 46GJjv1HJqz9sBp; Sun, 25 Aug 2019 12:19:31 +1000 (AEST)
+Authentication-Results: ozlabs.org;
+ spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
+ (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
+ envelope-from=cclaudio@linux.ibm.com; receiver=<UNKNOWN>)
+Authentication-Results: ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=linux.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46GCks1dRyzDrQh
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 25 Aug 2019 08:34:58 +1000 (AEST)
-Received: by verein.lst.de (Postfix, from userid 2407)
- id 3E93268AEF; Sun, 25 Aug 2019 00:34:50 +0200 (CEST)
-Date: Sun, 25 Aug 2019 00:34:49 +0200
-From: Christoph Hellwig <hch@lst.de>
-To: Paul Burton <paul.burton@mips.com>
-Subject: Re: cleanup the dma_pgprot handling
-Message-ID: <20190824223449.GC21729@lst.de>
-References: <20190816070754.15653-1-hch@lst.de>
- <20190823215759.zprrwotlbva46y33@pburton-laptop>
+ by ozlabs.org (Postfix) with ESMTPS id 46GJjs5H2Vz9sBF;
+ Sun, 25 Aug 2019 12:19:28 +1000 (AEST)
+Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
+ x7P2H8vA071029; Sat, 24 Aug 2019 22:19:24 -0400
+Received: from pps.reinject (localhost [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2uk1chnna7-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Sat, 24 Aug 2019 22:19:24 -0400
+Received: from m0098414.ppops.net (m0098414.ppops.net [127.0.0.1])
+ by pps.reinject (8.16.0.27/8.16.0.27) with SMTP id x7P2I9pY072935;
+ Sat, 24 Aug 2019 22:19:24 -0400
+Received: from ppma02wdc.us.ibm.com (aa.5b.37a9.ip4.static.sl-reverse.com
+ [169.55.91.170])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2uk1chnna0-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Sat, 24 Aug 2019 22:19:24 -0400
+Received: from pps.filterd (ppma02wdc.us.ibm.com [127.0.0.1])
+ by ppma02wdc.us.ibm.com (8.16.0.27/8.16.0.27) with SMTP id x7P2Fk5E019438;
+ Sun, 25 Aug 2019 02:19:23 GMT
+Received: from b01cxnp22034.gho.pok.ibm.com (b01cxnp22034.gho.pok.ibm.com
+ [9.57.198.24]) by ppma02wdc.us.ibm.com with ESMTP id 2ujvv64ywy-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Sun, 25 Aug 2019 02:19:23 +0000
+Received: from b01ledav005.gho.pok.ibm.com (b01ledav005.gho.pok.ibm.com
+ [9.57.199.110])
+ by b01cxnp22034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x7P2JN3Y48103776
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Sun, 25 Aug 2019 02:19:23 GMT
+Received: from b01ledav005.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 12EF1AE05C;
+ Sun, 25 Aug 2019 02:19:23 +0000 (GMT)
+Received: from b01ledav005.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id B3BE3AE05F;
+ Sun, 25 Aug 2019 02:19:20 +0000 (GMT)
+Received: from [9.80.232.108] (unknown [9.80.232.108])
+ by b01ledav005.gho.pok.ibm.com (Postfix) with ESMTP;
+ Sun, 25 Aug 2019 02:19:20 +0000 (GMT)
+Subject: Re: [PATCH v2] powerpc/powernv: Add ultravisor message log interface
+To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
+References: <20190823060654.28842-1-cclaudio@linux.ibm.com>
+ <87o90g3v5o.fsf@concordia.ellerman.id.au>
+From: Claudio Carvalho <cclaudio@linux.ibm.com>
+Message-ID: <4e577a36-4ce1-410b-3ceb-d31bbf564b3d@linux.ibm.com>
+Date: Sat, 24 Aug 2019 23:19:19 -0300
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.6.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20190823215759.zprrwotlbva46y33@pburton-laptop>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <87o90g3v5o.fsf@concordia.ellerman.id.au>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
+Content-Language: en-US
+X-TM-AS-GCONF: 00
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
+ definitions=2019-08-25_01:, , signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1906280000 definitions=main-1908250023
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -55,34 +115,63 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Shawn Anastasio <shawn@anastas.io>, Will Deacon <will@kernel.org>,
- "linux-m68k@lists.linux-m68k.org" <linux-m68k@lists.linux-m68k.org>,
- Catalin Marinas <catalin.marinas@arm.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Russell King <linux@armlinux.org.uk>,
- "linux-mips@vger.kernel.org" <linux-mips@vger.kernel.org>,
- "iommu@lists.linux-foundation.org" <iommu@lists.linux-foundation.org>,
- Geert Uytterhoeven <geert@linux-m68k.org>, James Hogan <jhogan@kernel.org>,
- Guan Xuetao <gxt@pku.edu.cn>, Christoph Hellwig <hch@lst.de>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
- Robin Murphy <robin.murphy@arm.com>
+Cc: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>,
+ Michael Anderson <andmike@linux.ibm.com>, Ram Pai <linuxram@us.ibm.com>,
+ kvm-ppc@vger.kernel.org, Ryan Grimm <grimm@linux.ibm.com>,
+ Oliver O'Halloran <oohall@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, Aug 23, 2019 at 09:58:04PM +0000, Paul Burton wrote:
-> So I believe uncached & uncached accelerated are another case like that
-> described above - they're 2 different CCAs but the same "access type",
-> namely uncached.
-> 
-> Section 4.9 then goes on to forbid mixing access types, but not CCAs.
-> 
-> It would be nice if the precise mapping from CCA to access type was
-> provided, but I don't see that anywhere. I can check with the
-> architecture team to be sure, but to my knowledge we're fine to mix
-> access via kseg1 (ie. uncached) & mappings with CCA=7 (uncached
-> accelerated).
 
-Ok.  Looks like we can keep it then and I'll add a comment to the
-code with the above reference.
+On 8/23/19 9:48 AM, Michael Ellerman wrote:
+> Hi Claudio,
+
+Hi Michael,
+
+>
+> Claudio Carvalho <cclaudio@linux.ibm.com> writes:
+>> Ultravisor (UV) provides an in-memory console which follows the OPAL
+>> in-memory console structure.
+>>
+>> This patch extends the OPAL msglog code to also initialize the UV memory
+>> console and provide a sysfs interface (uv_msglog) for userspace to view
+>> the UV message log.
+>>
+>> CC: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+>> CC: Oliver O'Halloran <oohall@gmail.com>
+>> Signed-off-by: Claudio Carvalho <cclaudio@linux.ibm.com>
+>> ---
+>> This patch depends on the "kvmppc: Paravirtualize KVM to support
+>> ultravisor" patchset submitted by Claudio Carvalho.
+>> ---
+>>  arch/powerpc/platforms/powernv/opal-msglog.c | 99 ++++++++++++++------
+>>  1 file changed, 72 insertions(+), 27 deletions(-)
+> I think the code changes look mostly OK here.
+>
+> But I'm not sure about the end result in sysfs.
+>
+> If I'm reading it right this will create:
+>
+>  /sys/firmware/opal/uv_msglog
+>
+> Which I think is a little weird, because the UV is not OPAL.
+>
+> So I guess I wonder if the file should be created elsewhere to avoid any
+> confusion and keep things nicely separated.
+>
+> Possibly /sys/firmware/ultravisor/msglog ?
+
+
+Yes, makes sense. I will do that.
+
+Currently, the ultravisor memory console DT property is in
+/ibm,opal/ibm,opal-uv-memcons. I think we should move it to
+/ibm,ultravisor/ibm,uv-firmware/ibm,uv-memcons. What do you think?
+
+Thanks,
+Claudio
+
+
+>
+> cheers
