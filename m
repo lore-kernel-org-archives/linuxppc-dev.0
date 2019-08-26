@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
 	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E56CDC3A59E
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Aug 2019 06:26:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0A2AEC3A59E
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Aug 2019 06:28:09 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 682EB2173E
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Aug 2019 06:26:31 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 682EB2173E
+	by mail.kernel.org (Postfix) with ESMTPS id 84E51206BB
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Aug 2019 06:28:08 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 84E51206BB
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ozlabs.ru
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46H28P2xSNzDqH5
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Aug 2019 16:26:29 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 46H2BG5LCHzDqbc
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Aug 2019 16:28:06 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=ozlabs.ru
  (client-ip=107.173.13.209; helo=ozlabs.ru; envelope-from=aik@ozlabs.ru;
@@ -26,16 +26,17 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=ozlabs.ru
 Received: from ozlabs.ru (ozlabs.ru [107.173.13.209])
- by lists.ozlabs.org (Postfix) with ESMTP id 46H1yV50ChzDqb1
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Aug 2019 16:17:54 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTP id 46H1yY5MQ9zDqbW
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Aug 2019 16:17:57 +1000 (AEST)
 Received: from fstn1-p1.ozlabs.ibm.com (localhost [IPv6:::1])
- by ozlabs.ru (Postfix) with ESMTP id 7A381AE80597;
- Mon, 26 Aug 2019 02:17:01 -0400 (EDT)
+ by ozlabs.ru (Postfix) with ESMTP id BD4BBAE805A5;
+ Mon, 26 Aug 2019 02:17:03 -0400 (EDT)
 From: Alexey Kardashevskiy <aik@ozlabs.ru>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH kernel v2 3/4] vfio/spapr_tce: Invalidate multiple TCEs at once
-Date: Mon, 26 Aug 2019 16:17:04 +1000
-Message-Id: <20190826061705.92048-4-aik@ozlabs.ru>
+Subject: [PATCH kernel v2 4/4] powerpc/powernv/ioda: Remove obsolete
+ iommu_table_ops::exchange callbacks
+Date: Mon, 26 Aug 2019 16:17:05 +1000
+Message-Id: <20190826061705.92048-5-aik@ozlabs.ru>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20190826061705.92048-1-aik@ozlabs.ru>
 References: <20190826061705.92048-1-aik@ozlabs.ru>
@@ -58,86 +59,163 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Invalidating a TCE cache entry for each updated TCE is quite expensive.
-This makes use of the new iommu_table_ops::xchg_no_kill()/tce_kill()
-callbacks to bring down the time spent in mapping a huge guest DMA window.
+As now we have xchg_no_kill/tce_kill, these are not used anymore so
+remove them.
 
 Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
 ---
- drivers/vfio/vfio_iommu_spapr_tce.c | 18 ++++++++++++------
- 1 file changed, 12 insertions(+), 6 deletions(-)
+ arch/powerpc/include/asm/iommu.h          | 10 -----
+ arch/powerpc/kernel/iommu.c               | 26 +-----------
+ arch/powerpc/platforms/powernv/pci-ioda.c | 50 -----------------------
+ 3 files changed, 1 insertion(+), 85 deletions(-)
 
-diff --git a/drivers/vfio/vfio_iommu_spapr_tce.c b/drivers/vfio/vfio_iommu_spapr_tce.c
-index babef8b00daf..3b18fa4d090a 100644
---- a/drivers/vfio/vfio_iommu_spapr_tce.c
-+++ b/drivers/vfio/vfio_iommu_spapr_tce.c
-@@ -435,7 +435,7 @@ static int tce_iommu_clear(struct tce_container *container,
- 	unsigned long oldhpa;
- 	long ret;
- 	enum dma_data_direction direction;
--	unsigned long lastentry = entry + pages;
-+	unsigned long lastentry = entry + pages, firstentry = entry;
- 
- 	for ( ; entry < lastentry; ++entry) {
- 		if (tbl->it_indirect_levels && tbl->it_userspace) {
-@@ -460,7 +460,7 @@ static int tce_iommu_clear(struct tce_container *container,
- 
- 		direction = DMA_NONE;
- 		oldhpa = 0;
--		ret = iommu_tce_xchg(container->mm, tbl, entry, &oldhpa,
-+		ret = iommu_tce_xchg_no_kill(container->mm, tbl, entry, &oldhpa,
- 				&direction);
- 		if (ret)
- 			continue;
-@@ -476,6 +476,8 @@ static int tce_iommu_clear(struct tce_container *container,
- 		tce_iommu_unuse_page(container, oldhpa);
- 	}
- 
-+	iommu_tce_kill(tbl, firstentry, pages);
-+
- 	return 0;
+diff --git a/arch/powerpc/include/asm/iommu.h b/arch/powerpc/include/asm/iommu.h
+index 837b5122f257..350101e11ddb 100644
+--- a/arch/powerpc/include/asm/iommu.h
++++ b/arch/powerpc/include/asm/iommu.h
+@@ -48,16 +48,6 @@ struct iommu_table_ops {
+ 	 * returns old TCE and DMA direction mask.
+ 	 * @tce is a physical address.
+ 	 */
+-	int (*exchange)(struct iommu_table *tbl,
+-			long index,
+-			unsigned long *hpa,
+-			enum dma_data_direction *direction);
+-	/* Real mode */
+-	int (*exchange_rm)(struct iommu_table *tbl,
+-			long index,
+-			unsigned long *hpa,
+-			enum dma_data_direction *direction);
+-
+ 	int (*xchg_no_kill)(struct iommu_table *tbl,
+ 			long index,
+ 			unsigned long *hpa,
+diff --git a/arch/powerpc/kernel/iommu.c b/arch/powerpc/kernel/iommu.c
+index 070492f9b46e..9704f3f76e63 100644
+--- a/arch/powerpc/kernel/iommu.c
++++ b/arch/powerpc/kernel/iommu.c
+@@ -1013,30 +1013,6 @@ int iommu_tce_check_gpa(unsigned long page_shift, unsigned long gpa)
  }
+ EXPORT_SYMBOL_GPL(iommu_tce_check_gpa);
  
-@@ -518,8 +520,8 @@ static long tce_iommu_build(struct tce_container *container,
+-long iommu_tce_xchg(struct mm_struct *mm, struct iommu_table *tbl,
+-		unsigned long entry, unsigned long *hpa,
+-		enum dma_data_direction *direction)
+-{
+-	long ret;
+-	unsigned long size = 0;
+-
+-	ret = tbl->it_ops->exchange(tbl, entry, hpa, direction);
+-
+-	if (!ret && ((*direction == DMA_FROM_DEVICE) ||
+-			(*direction == DMA_BIDIRECTIONAL)) &&
+-			!mm_iommu_is_devmem(mm, *hpa, tbl->it_page_shift,
+-					&size))
+-		SetPageDirty(pfn_to_page(*hpa >> PAGE_SHIFT));
+-
+-	/* if (unlikely(ret))
+-		pr_err("iommu_tce: %s failed on hwaddr=%lx ioba=%lx kva=%lx ret=%d\n",
+-			__func__, hwaddr, entry << tbl->it_page_shift,
+-				hwaddr, ret); */
+-
+-	return ret;
+-}
+-EXPORT_SYMBOL_GPL(iommu_tce_xchg);
+-
+ extern long iommu_tce_xchg_no_kill(struct mm_struct *mm,
+ 		struct iommu_table *tbl,
+ 		unsigned long entry, unsigned long *hpa,
+@@ -1076,7 +1052,7 @@ int iommu_take_ownership(struct iommu_table *tbl)
+ 	 * requires exchange() callback defined so if it is not
+ 	 * implemented, we disallow taking ownership over the table.
+ 	 */
+-	if (!tbl->it_ops->exchange)
++	if (!tbl->it_ops->xchg_no_kill)
+ 		return -EINVAL;
  
- 		hpa |= offset;
- 		dirtmp = direction;
--		ret = iommu_tce_xchg(container->mm, tbl, entry + i, &hpa,
--				&dirtmp);
-+		ret = iommu_tce_xchg_no_kill(container->mm, tbl, entry + i,
-+				&hpa, &dirtmp);
- 		if (ret) {
- 			tce_iommu_unuse_page(container, hpa);
- 			pr_err("iommu_tce: %s failed ioba=%lx, tce=%lx, ret=%ld\n",
-@@ -536,6 +538,8 @@ static long tce_iommu_build(struct tce_container *container,
+ 	spin_lock_irqsave(&tbl->large_pool.lock, flags);
+diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+index 4e56b2c620ec..c28d0d9b7ee0 100644
+--- a/arch/powerpc/platforms/powernv/pci-ioda.c
++++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+@@ -1946,28 +1946,6 @@ static int pnv_ioda_tce_xchg_no_kill(struct iommu_table *tbl, long index,
+ {
+ 	return pnv_tce_xchg(tbl, index, hpa, direction, !realmode);
+ }
+-
+-static int pnv_ioda1_tce_xchg(struct iommu_table *tbl, long index,
+-		unsigned long *hpa, enum dma_data_direction *direction)
+-{
+-	long ret = pnv_tce_xchg(tbl, index, hpa, direction, true);
+-
+-	if (!ret)
+-		pnv_pci_p7ioc_tce_invalidate(tbl, index, 1, false);
+-
+-	return ret;
+-}
+-
+-static int pnv_ioda1_tce_xchg_rm(struct iommu_table *tbl, long index,
+-		unsigned long *hpa, enum dma_data_direction *direction)
+-{
+-	long ret = pnv_tce_xchg(tbl, index, hpa, direction, false);
+-
+-	if (!ret)
+-		pnv_pci_p7ioc_tce_invalidate(tbl, index, 1, true);
+-
+-	return ret;
+-}
+ #endif
  
- 	if (ret)
- 		tce_iommu_clear(container, tbl, entry, i);
-+	else
-+		iommu_tce_kill(tbl, entry, pages);
- 
+ static void pnv_ioda1_tce_free(struct iommu_table *tbl, long index,
+@@ -1981,8 +1959,6 @@ static void pnv_ioda1_tce_free(struct iommu_table *tbl, long index,
+ static struct iommu_table_ops pnv_ioda1_iommu_ops = {
+ 	.set = pnv_ioda1_tce_build,
+ #ifdef CONFIG_IOMMU_API
+-	.exchange = pnv_ioda1_tce_xchg,
+-	.exchange_rm = pnv_ioda1_tce_xchg_rm,
+ 	.xchg_no_kill = pnv_ioda_tce_xchg_no_kill,
+ 	.tce_kill = pnv_pci_p7ioc_tce_invalidate,
+ 	.useraddrptr = pnv_tce_useraddrptr,
+@@ -2113,30 +2089,6 @@ static int pnv_ioda2_tce_build(struct iommu_table *tbl, long index,
  	return ret;
  }
-@@ -572,8 +576,8 @@ static long tce_iommu_build_v2(struct tce_container *container,
- 		if (mm_iommu_mapped_inc(mem))
- 			break;
  
--		ret = iommu_tce_xchg(container->mm, tbl, entry + i, &hpa,
--				&dirtmp);
-+		ret = iommu_tce_xchg_no_kill(container->mm, tbl, entry + i,
-+				&hpa, &dirtmp);
- 		if (ret) {
- 			/* dirtmp cannot be DMA_NONE here */
- 			tce_iommu_unuse_page_v2(container, tbl, entry + i);
-@@ -593,6 +597,8 @@ static long tce_iommu_build_v2(struct tce_container *container,
- 
- 	if (ret)
- 		tce_iommu_clear(container, tbl, entry, i);
-+	else
-+		iommu_tce_kill(tbl, entry, pages);
- 
- 	return ret;
- }
+-#ifdef CONFIG_IOMMU_API
+-static int pnv_ioda2_tce_xchg(struct iommu_table *tbl, long index,
+-		unsigned long *hpa, enum dma_data_direction *direction)
+-{
+-	long ret = pnv_tce_xchg(tbl, index, hpa, direction, true);
+-
+-	if (!ret)
+-		pnv_pci_ioda2_tce_invalidate(tbl, index, 1, false);
+-
+-	return ret;
+-}
+-
+-static int pnv_ioda2_tce_xchg_rm(struct iommu_table *tbl, long index,
+-		unsigned long *hpa, enum dma_data_direction *direction)
+-{
+-	long ret = pnv_tce_xchg(tbl, index, hpa, direction, false);
+-
+-	if (!ret)
+-		pnv_pci_ioda2_tce_invalidate(tbl, index, 1, true);
+-
+-	return ret;
+-}
+-#endif
+-
+ static void pnv_ioda2_tce_free(struct iommu_table *tbl, long index,
+ 		long npages)
+ {
+@@ -2148,8 +2100,6 @@ static void pnv_ioda2_tce_free(struct iommu_table *tbl, long index,
+ static struct iommu_table_ops pnv_ioda2_iommu_ops = {
+ 	.set = pnv_ioda2_tce_build,
+ #ifdef CONFIG_IOMMU_API
+-	.exchange = pnv_ioda2_tce_xchg,
+-	.exchange_rm = pnv_ioda2_tce_xchg_rm,
+ 	.xchg_no_kill = pnv_ioda_tce_xchg_no_kill,
+ 	.tce_kill = pnv_pci_ioda2_tce_invalidate,
+ 	.useraddrptr = pnv_tce_useraddrptr,
 -- 
 2.17.1
 
