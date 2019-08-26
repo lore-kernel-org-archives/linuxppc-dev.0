@@ -2,49 +2,84 @@ Return-Path: <SRS0=H2FS=WW=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 83772C3A59F
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Aug 2019 11:43:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 819A8C3A59F
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Aug 2019 11:48:08 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 0C7F820679
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Aug 2019 11:43:23 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0C7F820679
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+	by mail.kernel.org (Postfix) with ESMTPS id EF1A620874
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Aug 2019 11:48:07 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="pjRaJmdD"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EF1A620874
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linux.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46H9B15X2szDqhN
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Aug 2019 21:43:21 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+	by lists.ozlabs.org (Postfix) with ESMTP id 46H9HT344PzDqWY
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Aug 2019 21:48:05 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+ spf=pass (mailfrom) smtp.mailfrom=gmail.com
+ (client-ip=2a00:1450:4864:20::342; helo=mail-wm1-x342.google.com;
+ envelope-from=kswilczynski@gmail.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=linux.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="pjRaJmdD"; 
+ dkim-atps=neutral
+Received: from mail-wm1-x342.google.com (mail-wm1-x342.google.com
+ [IPv6:2a00:1450:4864:20::342])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46H9870tSVzDqNB
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Aug 2019 21:41:43 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=ellerman.id.au
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
- SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 46H98664TJz9sMr;
- Mon, 26 Aug 2019 21:41:42 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Christophe Leroy <christophe.leroy@c-s.fr>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH] powerpc/time: use feature fixup in __USE_RTC() instead of
- cpu feature.
-In-Reply-To: <55c267ac6e0cd289970accfafbf9dda11a324c2e.1566802736.git.christophe.leroy@c-s.fr>
-References: <55c267ac6e0cd289970accfafbf9dda11a324c2e.1566802736.git.christophe.leroy@c-s.fr>
-Date: Mon, 26 Aug 2019 21:41:39 +1000
-Message-ID: <87blwc40i4.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46H6jS2TZZzDqXW
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Aug 2019 19:51:49 +1000 (AEST)
+Received: by mail-wm1-x342.google.com with SMTP id d16so15184725wme.2
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Aug 2019 02:51:49 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=sender:from:to:cc:subject:date:message-id:mime-version
+ :content-transfer-encoding;
+ bh=bdmKhVsf2XwxhKkj21KNp57P6t/lfQgh9WrNnl0h77Q=;
+ b=pjRaJmdDhBq6nrZeEPzuRis8Uk9Kz4zPHfrfq0xCRFIJorlN6KPMu6gpYzYcrN/Lxg
+ bkk9FyFsaRb9RjNKLFPWjbUe/vvucGzLSWvkOLgh225dTGlezgAk3JjgTCYQRCMUait2
+ F62atwh0b3M3sjEYNkGLu9DZHnhhKzD4GeZspT6pkR9uGwm9KdFu/KAuOu04GMIeVsI0
+ WKbRby1S8wbq2kaG70eV71THRo/5dPmbAhDNSHAdEEGGeQ0RVWjhy6T8jVa1cjGmnVDC
+ WadyLhobcN45osbOAitpxZpfbvzRnhhX6Ky2NUdAXqtCtH7IuFJ+f52UH4KiU8GDv0Vk
+ AKAA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:sender:from:to:cc:subject:date:message-id
+ :mime-version:content-transfer-encoding;
+ bh=bdmKhVsf2XwxhKkj21KNp57P6t/lfQgh9WrNnl0h77Q=;
+ b=miJ8VzfbzOzG/6td/PT/Nht037ach9cZQ8ZIwHxNkz6Q2ZxM9ETrnAaxvPsR/NQfXw
+ FLX3+S5NRYjC+y0LFfqy8nDCLBaooQ0gDm4F5Xj5j39tkVQnsFKGLXyM2sSUTw+rzxX0
+ zxQi2b3F0AXHvlZZaw7JdxgRo3HbURWfXzw50Ef5lSxs/PJ2LS+dLKNyVzKG44lX9DqT
+ Fg6AwZttjd41RqJqik2UeDPuBtj5jC8cus9INR5dl5oraBdnYRsUcOOdgjBsB+9Y/dPv
+ ALED+Q8QaQ2U7fomwWJhXqwGFrbi22aAWfv4ZMEwChpeQ0SCUK6lAwRqwDTub0rrFhJ0
+ 3EIQ==
+X-Gm-Message-State: APjAAAUkoi8Bvz41NmgdW8XvBdgFFrWzFpv4H6AI6k09vdZl4zmF5XeB
+ 7VZXk+rPE2kBrwl3kzfcH8M=
+X-Google-Smtp-Source: APXvYqyfSXYCXi59//fK6HqOrzjSVNVIFBBxyHN7H9vziw7LDfK15wJcF/6Ao7CJ8feIDd5iU66a3A==
+X-Received: by 2002:a1c:f103:: with SMTP id p3mr19846034wmh.18.1566813105790; 
+ Mon, 26 Aug 2019 02:51:45 -0700 (PDT)
+Received: from localhost.localdomain (ip5b4096c3.dynamic.kabel-deutschland.de.
+ [91.64.150.195])
+ by smtp.gmail.com with ESMTPSA id a17sm6121113wmm.47.2019.08.26.02.51.43
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Mon, 26 Aug 2019 02:51:44 -0700 (PDT)
+From: Krzysztof Wilczynski <kw@linux.com>
+To: Scott Murray <scott@spiteful.org>
+Subject: [PATCH] PCI: hotplug: Remove surplus return from a void function
+Date: Mon, 26 Aug 2019 11:51:43 +0200
+Message-Id: <20190826095143.21353-1-kw@linux.com>
+X-Mailer: git-send-email 2.22.1
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Transfer-Encoding: 8bit
+X-Mailman-Approved-At: Mon, 26 Aug 2019 21:45:20 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -56,57 +91,123 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: Tyrel Datwyler <tyreld@linux.ibm.com>, YueHaibing <yuehaibing@huawei.com>,
+ Sebastian Ott <sebott@linux.ibm.com>, linux-pci@vger.kernel.org,
+ "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org,
+ Andy Shevchenko <andy.shevchenko@gmail.com>, Lukas Wunner <lukas@wunner.de>,
+ Bjorn Helgaas <helgaas@kernel.org>, Paul Mackerras <paulus@samba.org>,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Christophe Leroy <christophe.leroy@c-s.fr> writes:
-> sched_clock(), used by printk(), calls __USE_RTC() to know
-> whether to use realtime clock or timebase.
->
-> __USE_RTC() uses cpu_has_feature() which is initialised by
-> machine_init(). Before machine_init(), __USE_RTC() returns true,
-> leading to a program check exception on CPUs not having realtime
-> clock.
->
-> In order to be able to use printk() earlier, use feature fixup.
-> Feature fixups are applies in early_init(), enabling the use of
-> printk() earlier.
->
-> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
-> ---
->  arch/powerpc/include/asm/time.h | 9 ++++++++-
->  1 file changed, 8 insertions(+), 1 deletion(-)
+Remove unnecessary empty return statement at the end of a void
+function in the following:
 
-The other option would be just to make this a compile time decision, eg.
-add CONFIG_PPC_601 and use that to gate whether we use RTC.
+  - drivers/pci/hotplug/cpci_hotplug_core.c: cleanup_slots()
+  - drivers/pci/hotplug/cpqphp_core.c: pci_print_IRQ_route()
+  - drivers/pci/hotplug/cpqphp_ctrl.c: cpqhp_pushbutton_thread()
+  - drivers/pci/hotplug/cpqphp_ctrl.c: interrupt_event_handler()
+  - drivers/pci/hotplug/cpqphp_nvram.h: compaq_nvram_init()
+  - drivers/pci/hotplug/rpadlpar_core.c: rpadlpar_io_init()
+  - drivers/pci/hotplug/rpaphp_core.c: cleanup_slots()
 
-Given how many 601 users there are, maybe 1?, I think that would be a
-simpler option and avoids complicating the code / binary for everyone
-else.
+Signed-off-by: Krzysztof Wilczynski <kw@linux.com>
+---
+ drivers/pci/hotplug/cpci_hotplug_core.c | 1 -
+ drivers/pci/hotplug/cpqphp_core.c       | 1 -
+ drivers/pci/hotplug/cpqphp_ctrl.c       | 4 ----
+ drivers/pci/hotplug/cpqphp_nvram.h      | 5 +----
+ drivers/pci/hotplug/rpadlpar_core.c     | 1 -
+ drivers/pci/hotplug/rpaphp_core.c       | 1 -
+ 6 files changed, 1 insertion(+), 12 deletions(-)
 
-cheers
+diff --git a/drivers/pci/hotplug/cpci_hotplug_core.c b/drivers/pci/hotplug/cpci_hotplug_core.c
+index 603eadf3d965..d0559d2faf50 100644
+--- a/drivers/pci/hotplug/cpci_hotplug_core.c
++++ b/drivers/pci/hotplug/cpci_hotplug_core.c
+@@ -563,7 +563,6 @@ cleanup_slots(void)
+ 	}
+ cleanup_null:
+ 	up_write(&list_rwsem);
+-	return;
+ }
+ 
+ int
+diff --git a/drivers/pci/hotplug/cpqphp_core.c b/drivers/pci/hotplug/cpqphp_core.c
+index 16bbb183695a..b8aacb41a83c 100644
+--- a/drivers/pci/hotplug/cpqphp_core.c
++++ b/drivers/pci/hotplug/cpqphp_core.c
+@@ -173,7 +173,6 @@ static void pci_print_IRQ_route(void)
+ 		dbg("%d %d %d %d\n", tbus, tdevice >> 3, tdevice & 0x7, tslot);
+ 
+ 	}
+-	return;
+ }
+ 
+ 
+diff --git a/drivers/pci/hotplug/cpqphp_ctrl.c b/drivers/pci/hotplug/cpqphp_ctrl.c
+index b7f4e1f099d9..68de958a9be8 100644
+--- a/drivers/pci/hotplug/cpqphp_ctrl.c
++++ b/drivers/pci/hotplug/cpqphp_ctrl.c
+@@ -1872,8 +1872,6 @@ static void interrupt_event_handler(struct controller *ctrl)
+ 			}
+ 		}		/* End of FOR loop */
+ 	}
+-
+-	return;
+ }
+ 
+ 
+@@ -1943,8 +1941,6 @@ void cpqhp_pushbutton_thread(struct timer_list *t)
+ 
+ 		p_slot->state = STATIC_STATE;
+ 	}
+-
+-	return;
+ }
+ 
+ 
+diff --git a/drivers/pci/hotplug/cpqphp_nvram.h b/drivers/pci/hotplug/cpqphp_nvram.h
+index 918ff8dbfe62..70e879b6a23f 100644
+--- a/drivers/pci/hotplug/cpqphp_nvram.h
++++ b/drivers/pci/hotplug/cpqphp_nvram.h
+@@ -16,10 +16,7 @@
+ 
+ #ifndef CONFIG_HOTPLUG_PCI_COMPAQ_NVRAM
+ 
+-static inline void compaq_nvram_init(void __iomem *rom_start)
+-{
+-	return;
+-}
++static inline void compaq_nvram_init(void __iomem *rom_start) { }
+ 
+ static inline int compaq_nvram_load(void __iomem *rom_start, struct controller *ctrl)
+ {
+diff --git a/drivers/pci/hotplug/rpadlpar_core.c b/drivers/pci/hotplug/rpadlpar_core.c
+index 182f9e3443ee..977946e4e613 100644
+--- a/drivers/pci/hotplug/rpadlpar_core.c
++++ b/drivers/pci/hotplug/rpadlpar_core.c
+@@ -473,7 +473,6 @@ int __init rpadlpar_io_init(void)
+ void rpadlpar_io_exit(void)
+ {
+ 	dlpar_sysfs_exit();
+-	return;
+ }
+ 
+ module_init(rpadlpar_io_init);
+diff --git a/drivers/pci/hotplug/rpaphp_core.c b/drivers/pci/hotplug/rpaphp_core.c
+index c3899ee1db99..18627bb21e9e 100644
+--- a/drivers/pci/hotplug/rpaphp_core.c
++++ b/drivers/pci/hotplug/rpaphp_core.c
+@@ -408,7 +408,6 @@ static void __exit cleanup_slots(void)
+ 		pci_hp_deregister(&slot->hotplug_slot);
+ 		dealloc_slot_struct(slot);
+ 	}
+-	return;
+ }
+ 
+ static int __init rpaphp_init(void)
+-- 
+2.22.1
 
-> diff --git a/arch/powerpc/include/asm/time.h b/arch/powerpc/include/asm/time.h
-> index 54f4ec1f9fab..3455cb54c333 100644
-> --- a/arch/powerpc/include/asm/time.h
-> +++ b/arch/powerpc/include/asm/time.h
-> @@ -42,7 +42,14 @@ struct div_result {
->  /* Accessor functions for the timebase (RTC on 601) registers. */
->  /* If one day CONFIG_POWER is added just define __USE_RTC as 1 */
->  #ifdef CONFIG_PPC_BOOK3S_32
-> -#define __USE_RTC()	(cpu_has_feature(CPU_FTR_USE_RTC))
-> +static inline bool __USE_RTC(void)
-> +{
-> +	asm_volatile_goto(ASM_FTR_IFCLR("nop;", "b %1;", %0) ::
-> +			  "i" (CPU_FTR_USE_RTC) :: l_use_rtc);
-> +	return false;
-> +l_use_rtc:
-> +	return true;
-> +}
->  #else
->  #define __USE_RTC()	0
->  #endif
-> -- 
-> 2.13.3
