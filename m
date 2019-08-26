@@ -2,49 +2,75 @@ Return-Path: <SRS0=H2FS=WW=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1
-	autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.1 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id ECF8FC3A59E
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Aug 2019 07:08:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6FF59C3A59E
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Aug 2019 07:44:44 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id A3CCB20874
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Aug 2019 07:08:35 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A3CCB20874
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
+	by mail.kernel.org (Postfix) with ESMTPS id AE0802080C
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Aug 2019 07:44:43 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="f6XJLfxe"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org AE0802080C
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46H34x2d5rzDqNP
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Aug 2019 17:08:33 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 46H3tc5yCVzDqQt
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Aug 2019 17:44:40 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=lst.de
- (client-ip=213.95.11.211; helo=verein.lst.de; envelope-from=hch@lst.de;
- receiver=<UNKNOWN>)
+ spf=none (mailfrom) smtp.mailfrom=infradead.org
+ (client-ip=2607:7c80:54:e::133; helo=bombadil.infradead.org;
+ envelope-from=peterz@infradead.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=lst.de
-Received: from verein.lst.de (verein.lst.de [213.95.11.211])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ dmarc=none (p=none dis=none) header.from=infradead.org
+Received: from bombadil.infradead.org (bombadil.infradead.org
+ [IPv6:2607:7c80:54:e::133])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46H31x4YxlzDqNP
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Aug 2019 17:05:56 +1000 (AEST)
-Received: by verein.lst.de (Postfix, from userid 2407)
- id 58F5D68B02; Mon, 26 Aug 2019 09:05:50 +0200 (CEST)
-Date: Mon, 26 Aug 2019 09:05:50 +0200
-From: Christoph Hellwig <hch@lst.de>
-To: Nicolas Saenz Julienne <nsaenzjulienne@suse.de>
-Subject: Re: [PATCH v2 09/11] dma-direct: turn ARCH_ZONE_DMA_BITS into a
- variable
-Message-ID: <20190826070550.GA11331@lst.de>
-References: <20190820145821.27214-1-nsaenzjulienne@suse.de>
- <20190820145821.27214-10-nsaenzjulienne@suse.de>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46H3rJ74R7zDqKV
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Aug 2019 17:42:39 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+ d=infradead.org; s=bombadil.20170209; h=In-Reply-To:Content-Type:MIME-Version
+ :References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
+ Content-Transfer-Encoding:Content-ID:Content-Description:Resent-Date:
+ Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:
+ List-Help:List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
+ bh=lIut4B8w/K6qaNO5//JKDXgxZBzz15ddgNf2zVVfQ1E=; b=f6XJLfxeBVv9Hyb0B1vtj9oxL
+ i8iw5LMMkKhG+T6Xu47kb2+iCLpMrKBQjXS1NBw74AP7B3pgxUBsbndSWQGizhRtNCAgW99j5+OeI
+ c+T+1uJAk4oCoRSmOm0NE/wm6iL8VH+qSfESDzvXkGeSKy+GyCJWsD5r3LnItvz8EK4g8tAXBgRgi
+ JMSMaRtxN+OddwD4UaHD/oWS7Za8/f15E/5LTf3nBtMiL8X2OQpSYRhvIozCuZOKt/2bBeTu5XD5k
+ MSr7q1wHFvaw9hwCCzoDKZY0xDJWDWNsCSapSfqxfwjWoZuh5bxf2qBIOtw+RF3Jx2EN1us7T239k
+ nCed49xqA==;
+Received: from j217100.upc-j.chello.nl ([24.132.217.100]
+ helo=noisy.programming.kicks-ass.net)
+ by bombadil.infradead.org with esmtpsa (Exim 4.92 #3 (Red Hat Linux))
+ id 1i29dr-0004v1-6h; Mon, 26 Aug 2019 07:42:19 +0000
+Received: from hirez.programming.kicks-ass.net
+ (hirez.programming.kicks-ass.net [192.168.1.225])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (Client did not present a certificate)
+ by noisy.programming.kicks-ass.net (Postfix) with ESMTPS id 3BB083075FE;
+ Mon, 26 Aug 2019 09:41:42 +0200 (CEST)
+Received: by hirez.programming.kicks-ass.net (Postfix, from userid 1000)
+ id 9740120B33552; Mon, 26 Aug 2019 09:42:15 +0200 (CEST)
+Date: Mon, 26 Aug 2019 09:42:15 +0200
+From: Peter Zijlstra <peterz@infradead.org>
+To: Changbin Du <changbin.du@gmail.com>
+Subject: Re: [PATCH 03/11] asm-generic: add generic dwarf definition
+Message-ID: <20190826074215.GL2369@hirez.programming.kicks-ass.net>
+References: <20190825132330.5015-1-changbin.du@gmail.com>
+ <20190825132330.5015-4-changbin.du@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20190820145821.27214-10-nsaenzjulienne@suse.de>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <20190825132330.5015-4-changbin.du@gmail.com>
+User-Agent: Mutt/1.10.1 (2018-07-13)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -56,22 +82,48 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: catalin.marinas@arm.com, Heiko Carstens <heiko.carstens@de.ibm.com>,
- eric@anholt.net, Paul Mackerras <paulus@samba.org>,
- linux-riscv@lists.infradead.org, will@kernel.org, hch@lst.de,
- Marek Szyprowski <m.szyprowski@samsung.com>, linux-arch@vger.kernel.org,
- linux-s390@vger.kernel.org, f.fainelli@gmail.com, frowand.list@gmail.com,
- Christian Borntraeger <borntraeger@de.ibm.com>, devicetree@vger.kernel.org,
- Vasily Gorbik <gor@linux.ibm.com>, marc.zyngier@arm.com, robh+dt@kernel.org,
- linux-rpi-kernel@lists.infradead.org, linux-arm-kernel@lists.infradead.org,
- phill@raspberryi.org, mbrugger@suse.com, linux-mm@kvack.org,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- iommu@lists.linux-foundation.org, wahrenst@gmx.net, akpm@linux-foundation.org,
- Robin Murphy <robin.murphy@arm.com>
+Cc: linux-arch@vger.kernel.org, linux-s390@vger.kernel.org,
+ linux-parisc@vger.kernel.org, Jonathan Corbet <corbet@lwn.net>,
+ linux-sh@vger.kernel.org, x86@kernel.org, linux-doc@vger.kernel.org,
+ linux-kernel@vger.kernel.org, Steven Rostedt <rostedt@goodmis.org>,
+ linux-mips@vger.kernel.org, Ingo Molnar <mingo@redhat.com>,
+ Jessica Yu <jeyu@kernel.org>, sparclinux@vger.kernel.org,
+ linux-kbuild@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+ linuxppc-dev@lists.ozlabs.org, linux-riscv@lists.infradead.org,
+ linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Looks good,
+On Sun, Aug 25, 2019 at 09:23:22PM +0800, Changbin Du wrote:
+> Add generic DWARF constant definitions. We will use it later.
+> 
+> Signed-off-by: Changbin Du <changbin.du@gmail.com>
+> ---
+>  include/asm-generic/dwarf.h | 199 ++++++++++++++++++++++++++++++++++++
+>  1 file changed, 199 insertions(+)
+>  create mode 100644 include/asm-generic/dwarf.h
+> 
+> diff --git a/include/asm-generic/dwarf.h b/include/asm-generic/dwarf.h
+> new file mode 100644
+> index 000000000000..c705633c2a8f
+> --- /dev/null
+> +++ b/include/asm-generic/dwarf.h
+> @@ -0,0 +1,199 @@
+> +/* SPDX-License-Identifier: GPL-2.0
+> + *
+> + * Architecture independent definitions of DWARF.
+> + *
+> + * Copyright (C) 2019 Changbin Du <changbin.du@gmail.com>
 
-Reviewed-by: Christoph Hellwig <hch@lst.de>
+You're claiming copyright on dwarf definitions? ;-)
+
+I'm thinking only Oracle was daft enough to think stuff like that was
+copyrightable.
+
+Also; I think it would be very good to not use/depend on DWARF for this.
+
+You really don't need all of DWARF; I'm thikning you only need a few
+types; for location we already have regs_get_kernel_argument() which
+has all the logic to find the n-th argument.
+
