@@ -2,57 +2,48 @@ Return-Path: <SRS0=ZD8a=WX=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.7 required=3.0 tests=DATE_IN_FUTURE_06_12,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 67B12C3A5A3
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 27 Aug 2019 03:58:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C6708C3A5A3
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 27 Aug 2019 04:50:28 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id AE72D206E0
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 27 Aug 2019 03:58:32 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org AE72D206E0
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nxp.com
+	by mail.kernel.org (Postfix) with ESMTPS id 79EDC20828
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 27 Aug 2019 04:50:28 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 79EDC20828
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46HZqB4l6nzDqv3
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 27 Aug 2019 13:58:30 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=nxp.com
- (client-ip=92.121.34.13; helo=inva020.nxp.com;
- envelope-from=shengjiu.wang@nxp.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=nxp.com
-Received: from inva020.nxp.com (inva020.nxp.com [92.121.34.13])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 46Hbz56gLbzDqmq
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 27 Aug 2019 14:50:25 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46HZmy2pCgzDqg7
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Aug 2019 13:56:32 +1000 (AEST)
-Received: from inva020.nxp.com (localhost [127.0.0.1])
- by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id A8CA41A05A0;
- Tue, 27 Aug 2019 05:56:27 +0200 (CEST)
-Received: from invc005.ap-rdc01.nxp.com (invc005.ap-rdc01.nxp.com
- [165.114.16.14])
- by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id 8DA431A009E;
- Tue, 27 Aug 2019 05:56:19 +0200 (CEST)
-Received: from localhost.localdomain (shlinux2.ap.freescale.net
- [10.192.224.44])
- by invc005.ap-rdc01.nxp.com (Postfix) with ESMTP id 92751402A5;
- Tue, 27 Aug 2019 11:56:09 +0800 (SGT)
-From: Shengjiu Wang <shengjiu.wang@nxp.com>
-To: timur@kernel.org, nicoleotsuka@gmail.com, Xiubo.Lee@gmail.com,
- festevam@gmail.com, broonie@kernel.org, lgirdwood@gmail.com,
- perex@perex.cz, tiwai@suse.com, shawnguo@kernel.org,
- s.hauer@pengutronix.de, kernel@pengutronix.de, alsa-devel@alsa-project.org,
- viorel.suman@nxp.com
-Subject: [PATCH] ASoC: imx-audmix: register the card on a proper dev
-Date: Tue, 27 Aug 2019 11:55:15 -0400
-Message-Id: <1566921315-23402-1-git-send-email-shengjiu.wang@nxp.com>
-X-Mailer: git-send-email 2.7.4
-X-Virus-Scanned: ClamAV using ClamSMTP
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46Hbx60YhQzDqlS
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Aug 2019 14:48:42 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=ellerman.id.au
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
+ SHA256) (No client certificate requested)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 46Hbx52WCgz9s00;
+ Tue, 27 Aug 2019 14:48:41 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Alexey Kardashevskiy <aik@ozlabs.ru>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH kernel v2 4/4] powerpc/powernv/ioda: Remove obsolete
+ iommu_table_ops::exchange callbacks
+In-Reply-To: <20190826061705.92048-5-aik@ozlabs.ru>
+References: <20190826061705.92048-1-aik@ozlabs.ru>
+ <20190826061705.92048-5-aik@ozlabs.ru>
+Date: Tue, 27 Aug 2019 14:48:41 +1000
+Message-ID: <87mufv2oye.fsf@concordia.ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -64,45 +55,32 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-imx@nxp.com,
- linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+Cc: kvm@vger.kernel.org, Alexey Kardashevskiy <aik@ozlabs.ru>,
+ Alistair Popple <alistair@popple.id.au>, kvm-ppc@vger.kernel.org,
+ Alex Williamson <alex.williamson@redhat.com>,
+ David Gibson <david@gibson.dropbear.id.au>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This platform device is registered from "fsl_audmix", which is
-its parent device. If use pdev->dev.parent for the priv->card.dev,
-the value set by dev_set_drvdata in parent device will be covered
-by the value in child device.
+Alexey Kardashevskiy <aik@ozlabs.ru> writes:
+> As now we have xchg_no_kill/tce_kill, these are not used anymore so
+> remove them.
+>
+> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+> ---
+>  arch/powerpc/include/asm/iommu.h          | 10 -----
+>  arch/powerpc/kernel/iommu.c               | 26 +-----------
+>  arch/powerpc/platforms/powernv/pci-ioda.c | 50 -----------------------
+>  3 files changed, 1 insertion(+), 85 deletions(-)
 
-Fixes: b86ef5367761 ("ASoC: fsl: Add Audio Mixer machine driver")
-Signed-off-by: Viorel Suman <viorel.suman@nxp.com>
-Signed-off-by: Shengjiu Wang <shengjiu.wang@nxp.com>
----
- sound/soc/fsl/imx-audmix.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+This doesn't build:
 
-diff --git a/sound/soc/fsl/imx-audmix.c b/sound/soc/fsl/imx-audmix.c
-index 9e1cb18859ce..71590ca6394b 100644
---- a/sound/soc/fsl/imx-audmix.c
-+++ b/sound/soc/fsl/imx-audmix.c
-@@ -325,14 +325,14 @@ static int imx_audmix_probe(struct platform_device *pdev)
- 	priv->card.num_configs = priv->num_dai_conf;
- 	priv->card.dapm_routes = priv->dapm_routes;
- 	priv->card.num_dapm_routes = priv->num_dapm_routes;
--	priv->card.dev = pdev->dev.parent;
-+	priv->card.dev = &pdev->dev;
- 	priv->card.owner = THIS_MODULE;
- 	priv->card.name = "imx-audmix";
- 
- 	platform_set_drvdata(pdev, &priv->card);
- 	snd_soc_card_set_drvdata(&priv->card, priv);
- 
--	ret = devm_snd_soc_register_card(pdev->dev.parent, &priv->card);
-+	ret = devm_snd_soc_register_card(&pdev->dev, &priv->card);
- 	if (ret) {
- 		dev_err(&pdev->dev, "snd_soc_register_card failed\n");
- 		return ret;
--- 
-2.21.0
+arch/powerpc/platforms/pseries/iommu.c:652:3: error: 'struct iommu_table_ops' has no member named 'exchange'
+  .exchange = tce_exchange_pseries,
+   ^~~~~~~~
+arch/powerpc/platforms/pseries/iommu.c:652:14: error: initialization of 'int (*)(struct iommu_table *, long int,  long unsigned int *, enum dma_data_direction *, bool)' {aka 'int (*)(struct iommu_table *, long int,  long unsigned int *, enum dma_data_direction *, _Bool)'} from incompatible pointer type 'int (*)(struct iommu_table *, long int,  long unsigned int *, enum dma_data_direction *)' [-Werror=incompatible-pointer-types]
+  .exchange = tce_exchange_pseries,
+              ^~~~~~~~~~~~~~~~~~~~
 
+cheers
