@@ -2,23 +2,23 @@ Return-Path: <SRS0=F8gr=WY=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_2 autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_SANE_2 autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AA7EFC3A5A1
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Aug 2019 04:09:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D2D87C3A5A1
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Aug 2019 04:21:24 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3077D20830
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Aug 2019 04:09:59 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3077D20830
+	by mail.kernel.org (Postfix) with ESMTPS id 13BF821883
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Aug 2019 04:21:24 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 13BF821883
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=buserror.net
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46JC1x0lBczDr0X
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Aug 2019 14:09:57 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 46JCH609XQzDqvt
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Aug 2019 14:21:22 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=none (mailfrom) smtp.mailfrom=buserror.net
  (client-ip=165.227.176.147; helo=baldur.buserror.net;
@@ -28,37 +28,35 @@ Authentication-Results: lists.ozlabs.org;
 Received: from baldur.buserror.net (baldur.buserror.net [165.227.176.147])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46JBzY1BctzDqvt
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Aug 2019 14:07:52 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46JCDh6fBdzDqq7
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Aug 2019 14:19:16 +1000 (AEST)
 Received: from [2601:449:8400:7293:12bf:48ff:fe84:c9a0]
  by baldur.buserror.net with esmtpsa (TLS1.2:ECDHE_RSA_AES_256_GCM_SHA384:256)
  (Exim 4.89) (envelope-from <oss@buserror.net>)
- id 1i2pDA-0007By-1u; Tue, 27 Aug 2019 23:05:32 -0500
-Message-ID: <a39b81562bcdeda7ffe0c2c29a60ff08c77047a6.camel@buserror.net>
+ id 1i2pQN-0007F3-6K; Tue, 27 Aug 2019 23:19:12 -0500
+Message-ID: <b535dcfc3d6b06ca583dc26703d4adc958eacdd8.camel@buserror.net>
 From: Scott Wood <oss@buserror.net>
-To: Jason Yan <yanaijie@huawei.com>, mpe@ellerman.id.au, 
- linuxppc-dev@lists.ozlabs.org, diana.craciun@nxp.com,
- christophe.leroy@c-s.fr,  benh@kernel.crashing.org, paulus@samba.org,
- npiggin@gmail.com,  keescook@chromium.org,
- kernel-hardening@lists.openwall.com
-Date: Tue, 27 Aug 2019 23:05:30 -0500
-In-Reply-To: <20190809100800.5426-1-yanaijie@huawei.com>
-References: <20190809100800.5426-1-yanaijie@huawei.com>
+To: Valentin Longchamp <valentin@longchamp.me>, Madalin-cristian Bucur
+ <madalin.bucur@nxp.com>
+Date: Tue, 27 Aug 2019 23:19:10 -0500
+In-Reply-To: <CADYrJDxsQ3H7b_BHOfmfTNb1OuXt+vzTg4k8Goj8tKPaaOMz_g@mail.gmail.com>
+References: <20190714200501.1276-1-valentin@longchamp.me>
+ <CADYrJDwvwVThmOwHZ4Moqenf=-iqoHC+yJ_uxtrD8sDso33rjg@mail.gmail.com>
+ <2243421e574c72c5e75d27cc0122338e2e0bde63.camel@buserror.net>
+ <VI1PR04MB55679AAE8DDC3160B9CCE073ECDC0@VI1PR04MB5567.eurprd04.prod.outlook.com>
+ <CADYrJDxsQ3H7b_BHOfmfTNb1OuXt+vzTg4k8Goj8tKPaaOMz_g@mail.gmail.com>
 Organization: Red Hat
 Content-Type: text/plain; charset="UTF-8"
 X-Mailer: Evolution 3.28.5-0ubuntu0.18.04.1 
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 X-SA-Exim-Connect-IP: 2601:449:8400:7293:12bf:48ff:fe84:c9a0
-X-SA-Exim-Rcpt-To: yanaijie@huawei.com, mpe@ellerman.id.au,
- linuxppc-dev@lists.ozlabs.org, diana.craciun@nxp.com, christophe.leroy@c-s.fr,
- benh@kernel.crashing.org, paulus@samba.org, npiggin@gmail.com,
- keescook@chromium.org, kernel-hardening@lists.openwall.com,
- wangkefeng.wang@huawei.com, linux-kernel@vger.kernel.org,
- jingxiangfeng@huawei.com, zhaohongjiang@huawei.com, thunder.leizhen@huawei.com,
- fanchengyang@huawei.com, yebin10@huawei.com
+X-SA-Exim-Rcpt-To: valentin@longchamp.me, madalin.bucur@nxp.com,
+ linuxppc-dev@lists.ozlabs.org, galak@kernel.crashing.org,
+ netdev@vger.kernel.org
 X-SA-Exim-Mail-From: oss@buserror.net
-Subject: Re: [PATCH v6 00/12] implement KASLR for powerpc/fsl_booke/32
+Subject: Re: [PATCH] powerpc/kmcent2: update the ethernet devices' phy
+ properties
 X-SA-Exim-Version: 4.2.1 (built Tue, 02 Aug 2016 21:08:31 +0000)
 X-SA-Exim-Scanned: Yes (on baldur.buserror.net)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -72,40 +70,80 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: wangkefeng.wang@huawei.com, linux-kernel@vger.kernel.org,
- jingxiangfeng@huawei.com, zhaohongjiang@huawei.com, thunder.leizhen@huawei.com,
- fanchengyang@huawei.com, yebin10@huawei.com
+Cc: "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, 2019-08-09 at 18:07 +0800, Jason Yan wrote:
-> This series implements KASLR for powerpc/fsl_booke/32, as a security
-> feature that deters exploit attempts relying on knowledge of the location
-> of kernel internals.
+On Thu, 2019-08-08 at 23:09 +0200, Valentin Longchamp wrote:
+> Le mar. 30 juil. 2019 à 11:44, Madalin-cristian Bucur
+> <madalin.bucur@nxp.com> a écrit :
+> > 
+> > > -----Original Message-----
+> > > 
+> > > > Le dim. 14 juil. 2019 à 22:05, Valentin Longchamp
+> > > > <valentin@longchamp.me> a écrit :
+> > > > > 
+> > > > > Change all phy-connection-type properties to phy-mode that are
+> > > > > better
+> > > > > supported by the fman driver.
+> > > > > 
+> > > > > Use the more readable fixed-link node for the 2 sgmii links.
+> > > > > 
+> > > > > Change the RGMII link to rgmii-id as the clock delays are added by
+> > > > > the
+> > > > > phy.
+> > > > > 
+> > > > > Signed-off-by: Valentin Longchamp <valentin@longchamp.me>
+> > > 
+> > > I don't see any other uses of phy-mode in arch/powerpc/boot/dts/fsl, and
+> > > I see
+> > > lots of phy-connection-type with fman.  Madalin, does this patch look
+> > > OK?
+> > > 
+> > > -Scott
+> > 
+> > Hi,
+> > 
+> > we are using "phy-connection-type" not "phy-mode" for the NXP (former
+> > Freescale)
+> > DPAA platforms. While the two seem to be interchangeable ("phy-mode" seems
+> > to be
+> > more recent, looking at the device tree bindings), the driver code in
+> > Linux seems
+> > to use one or the other, not both so one should stick with the variant the
+> > driver
+> > is using. To make things more complex, there may be dependencies in
+> > bootloaders,
+> > I see code in u-boot using only "phy-connection-type" or only "phy-mode".
+> > 
+> > I'd leave "phy-connection-type" as is.
 > 
-> Since CONFIG_RELOCATABLE has already supported, what we need to do is
-> map or copy kernel to a proper place and relocate.
-
-Have you tested this with a kernel that was loaded at a non-zero address?  I
-tried loading a kernel at 0x04000000 (by changing the address in the uImage,
-and setting bootm_low to 04000000 in U-Boot), and it works without
-CONFIG_RANDOMIZE and fails with.
-
->  Freescale Book-E
-> parts expect lowmem to be mapped by fixed TLB entries(TLB1). The TLB1
-> entries are not suitable to map the kernel directly in a randomized
-> region, so we chose to copy the kernel to a proper place and restart to
-> relocate.
+> So I have finally had time to have a look and now I understand what
+> happens. You are right, there are bootloader dependencies: u-boot
+> calls fdt_fixup_phy_connection() that somehow in our case adds (or
+> changes if already in the device tree) the phy-connection-type
+> property to a wrong value ! By having a phy-mode in the device tree,
+> that is not changed by u-boot and by chance picked up by the kernel
+> fman driver (of_get_phy_mode() ) over phy-connection-mode, the below
+> patch fixes it for us.
 > 
-> Entropy is derived from the banner and timer base, which will change every
-> build and boot. This not so much safe so additionally the bootloader may
-> pass entropy via the /chosen/kaslr-seed node in device tree.
+> I agree with you, it's not correct to have both phy-connection-type
+> and phy-mode. Ideally, u-boot on the board should be reworked so that
+> it does not perform the above wrong fixup. However, in an "unfixed"
+> .dtb (I have disabled fdt_fixup_phy_connection), the device tree in
+> the end only has either phy-connection-type or phy-mode, according to
+> what was chosen in the .dts file. And the fman driver works well with
+> both (thanks to the call to of_get_phy_mode() ). I would therefore
+> argue that even if all other DPAA platforms use phy-connection-type,
+> phy-mode is valid as well. (Furthermore we already have hundreds of
+> such boards in the field and we don't really support "remote" u-boot
+> update, so the u-boot fix is going to be difficult for us to pull).
+> 
+> Valentin
 
-How complicated would it be to directly access the HW RNG (if present) that
-early in the boot?  It'd be nice if a U-Boot update weren't required (and
-particularly concerning that KASLR would appear to work without a U-Boot
-update, but without decent entropy).
+Madalin, are you OK with the patch given this explanation?
 
 -Scott
 
