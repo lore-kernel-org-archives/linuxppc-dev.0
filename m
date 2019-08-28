@@ -2,53 +2,49 @@ Return-Path: <SRS0=F8gr=WY=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EF118C3A5A1
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Aug 2019 06:09:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 966D1C3A5A1
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Aug 2019 06:12:32 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3C11D2173E
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Aug 2019 06:09:50 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3C11D2173E
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
+	by mail.kernel.org (Postfix) with ESMTPS id 489962173E
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Aug 2019 06:12:32 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 489962173E
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46JFhC1V8YzDr3k
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Aug 2019 16:09:47 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 46JFlK6bpNzDqk9
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Aug 2019 16:12:29 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=redhat.com
- (client-ip=209.132.183.28; helo=mx1.redhat.com; envelope-from=thuth@redhat.com;
+ spf=none (mailfrom) smtp.mailfrom=lst.de
+ (client-ip=213.95.11.211; helo=verein.lst.de; envelope-from=hch@lst.de;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=redhat.com
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ dmarc=none (p=none dis=none) header.from=lst.de
+Received: from verein.lst.de (verein.lst.de [213.95.11.211])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46JFdv6xNKzDr3L
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Aug 2019 16:07:47 +1000 (AEST)
-Received: from smtp.corp.redhat.com (int-mx07.intmail.prod.int.phx2.redhat.com
- [10.5.11.22])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by mx1.redhat.com (Postfix) with ESMTPS id C64DEA53264;
- Wed, 28 Aug 2019 06:07:44 +0000 (UTC)
-Received: from thuth.com (ovpn-116-90.ams2.redhat.com [10.36.116.90])
- by smtp.corp.redhat.com (Postfix) with ESMTP id D85581001956;
- Wed, 28 Aug 2019 06:07:41 +0000 (UTC)
-From: Thomas Huth <thuth@redhat.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46JFj21sXvzDr3L
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Aug 2019 16:10:29 +1000 (AEST)
+Received: by verein.lst.de (Postfix, from userid 2407)
+ id CC44868AFE; Wed, 28 Aug 2019 08:10:23 +0200 (CEST)
+Date: Wed, 28 Aug 2019 08:10:23 +0200
+From: Christoph Hellwig <hch@lst.de>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] powerpc: Replace GPL boilerplate with SPDX identifiers
-Date: Wed, 28 Aug 2019 08:07:37 +0200
-Message-Id: <20190828060737.32531-1-thuth@redhat.com>
-X-Scanned-By: MIMEDefang 2.84 on 10.5.11.22
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.6.2
- (mx1.redhat.com [10.5.110.68]); Wed, 28 Aug 2019 06:07:45 +0000 (UTC)
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: [PATCH] powerpc: use the generic dma coherent remap allocator
+Message-ID: <20190828061023.GB21592@lst.de>
+References: <20190814132230.31874-1-hch@lst.de>
+ <20190814132230.31874-2-hch@lst.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20190814132230.31874-2-hch@lst.de>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -60,143 +56,13 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Sam Bobroff <sbobroff@linux.ibm.com>, Oliver O'Halloran <oohall@gmail.com>,
- linux-kernel@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>
+Cc: linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The FSF does not reside in "675 Mass Ave, Cambridge" anymore...
-let's simply use proper SPDX identifiers instead.
+Michael,
 
-Signed-off-by: Thomas Huth <thuth@redhat.com>
----
- arch/powerpc/include/uapi/asm/spu_info.h   | 14 --------------
- arch/powerpc/kernel/eeh_driver.c           | 18 +-----------------
- arch/powerpc/kernel/eeh_sysfs.c            | 18 +-----------------
- arch/powerpc/platforms/pseries/pci_dlpar.c | 18 +-----------------
- 4 files changed, 3 insertions(+), 65 deletions(-)
-
-diff --git a/arch/powerpc/include/uapi/asm/spu_info.h b/arch/powerpc/include/uapi/asm/spu_info.h
-index cabfcbba9eac..45f97150587b 100644
---- a/arch/powerpc/include/uapi/asm/spu_info.h
-+++ b/arch/powerpc/include/uapi/asm/spu_info.h
-@@ -5,20 +5,6 @@
-  * (C) Copyright 2006 IBM Corp.
-  *
-  * Author: Dwayne Grant McConnell <decimal@us.ibm.com>
-- *
-- * This program is free software; you can redistribute it and/or modify
-- * it under the terms of the GNU General Public License as published by
-- * the Free Software Foundation; either version 2, or (at your option)
-- * any later version.
-- *
-- * This program is distributed in the hope that it will be useful,
-- * but WITHOUT ANY WARRANTY; without even the implied warranty of
-- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.	See the
-- * GNU General Public License for more details.
-- *
-- * You should have received a copy of the GNU General Public License
-- * along with this program; if not, write to the Free Software
-- * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-  */
- 
- #ifndef _UAPI_SPU_INFO_H
-diff --git a/arch/powerpc/kernel/eeh_driver.c b/arch/powerpc/kernel/eeh_driver.c
-index 89623962c727..3bb27ded9daa 100644
---- a/arch/powerpc/kernel/eeh_driver.c
-+++ b/arch/powerpc/kernel/eeh_driver.c
-@@ -1,25 +1,9 @@
-+// SPDX-License-Identifier: GPL-2.0-or-later
- /*
-  * PCI Error Recovery Driver for RPA-compliant PPC64 platform.
-  * Copyright IBM Corp. 2004 2005
-  * Copyright Linas Vepstas <linas@linas.org> 2004, 2005
-  *
-- * All rights reserved.
-- *
-- * This program is free software; you can redistribute it and/or modify
-- * it under the terms of the GNU General Public License as published by
-- * the Free Software Foundation; either version 2 of the License, or (at
-- * your option) any later version.
-- *
-- * This program is distributed in the hope that it will be useful, but
-- * WITHOUT ANY WARRANTY; without even the implied warranty of
-- * MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE, GOOD TITLE or
-- * NON INFRINGEMENT.  See the GNU General Public License for more
-- * details.
-- *
-- * You should have received a copy of the GNU General Public License
-- * along with this program; if not, write to the Free Software
-- * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-- *
-  * Send comments and feedback to Linas Vepstas <linas@austin.ibm.com>
-  */
- #include <linux/delay.h>
-diff --git a/arch/powerpc/kernel/eeh_sysfs.c b/arch/powerpc/kernel/eeh_sysfs.c
-index 3fa04dda1737..ab44d965a53c 100644
---- a/arch/powerpc/kernel/eeh_sysfs.c
-+++ b/arch/powerpc/kernel/eeh_sysfs.c
-@@ -1,25 +1,9 @@
-+// SPDX-License-Identifier: GPL-2.0-or-later
- /*
-  * Sysfs entries for PCI Error Recovery for PAPR-compliant platform.
-  * Copyright IBM Corporation 2007
-  * Copyright Linas Vepstas <linas@austin.ibm.com> 2007
-  *
-- * All rights reserved.
-- *
-- * This program is free software; you can redistribute it and/or modify
-- * it under the terms of the GNU General Public License as published by
-- * the Free Software Foundation; either version 2 of the License, or (at
-- * your option) any later version.
-- *
-- * This program is distributed in the hope that it will be useful, but
-- * WITHOUT ANY WARRANTY; without even the implied warranty of
-- * MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE, GOOD TITLE or
-- * NON INFRINGEMENT.  See the GNU General Public License for more
-- * details.
-- *
-- * You should have received a copy of the GNU General Public License
-- * along with this program; if not, write to the Free Software
-- * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-- *
-  * Send comments and feedback to Linas Vepstas <linas@austin.ibm.com>
-  */
- #include <linux/pci.h>
-diff --git a/arch/powerpc/platforms/pseries/pci_dlpar.c b/arch/powerpc/platforms/pseries/pci_dlpar.c
-index 561917fa54a8..361986e4354e 100644
---- a/arch/powerpc/platforms/pseries/pci_dlpar.c
-+++ b/arch/powerpc/platforms/pseries/pci_dlpar.c
-@@ -1,3 +1,4 @@
-+// SPDX-License-Identifier: GPL-2.0-or-later
- /*
-  * PCI Dynamic LPAR, PCI Hot Plug and PCI EEH recovery code
-  * for RPA-compliant PPC64 platform.
-@@ -6,23 +7,6 @@
-  *
-  * Updates, 2005, John Rose <johnrose@austin.ibm.com>
-  * Updates, 2005, Linas Vepstas <linas@austin.ibm.com>
-- *
-- * All rights reserved.
-- *
-- * This program is free software; you can redistribute it and/or modify
-- * it under the terms of the GNU General Public License as published by
-- * the Free Software Foundation; either version 2 of the License, or (at
-- * your option) any later version.
-- *
-- * This program is distributed in the hope that it will be useful, but
-- * WITHOUT ANY WARRANTY; without even the implied warranty of
-- * MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE, GOOD TITLE or
-- * NON INFRINGEMENT.  See the GNU General Public License for more
-- * details.
-- *
-- * You should have received a copy of the GNU General Public License
-- * along with this program; if not, write to the Free Software
-- * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-  */
- 
- #include <linux/pci.h>
--- 
-2.18.1
-
+do oyu plan to pick this up?  Otherwise I'd love to pick it up through
+the dma-mapping tree as that would avoid one trivial conflict with
+another pending patch.
