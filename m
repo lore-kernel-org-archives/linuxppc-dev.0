@@ -6,38 +6,38 @@ X-Spam-Status: No, score=-8.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
 	URIBL_BLOCKED autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E6864C3A5A1
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Aug 2019 04:30:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2CCADC3A5A1
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Aug 2019 04:32:44 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 26D792064A
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Aug 2019 04:30:41 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 26D792064A
+	by mail.kernel.org (Postfix) with ESMTPS id D20F52064A
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Aug 2019 04:32:43 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D20F52064A
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46JCTp3bRYzDqVj
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Aug 2019 14:30:38 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+	by lists.ozlabs.org (Postfix) with ESMTP id 46JCX96KKrzDqht
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Aug 2019 14:32:41 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46JCM323X3zDqqJ
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Aug 2019 14:24:47 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46JCM40PzlzDqsr
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Aug 2019 14:24:48 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: by ozlabs.org (Postfix)
- id 46JCM30cbJz9sDB; Wed, 28 Aug 2019 14:24:47 +1000 (AEST)
+ id 46JCM36VN6z9sN1; Wed, 28 Aug 2019 14:24:47 +1000 (AEST)
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 46JCM30MgNz9sDQ; Wed, 28 Aug 2019 14:24:47 +1000 (AEST)
+ id 46JCM36C7Dz9sNf; Wed, 28 Aug 2019 14:24:47 +1000 (AEST)
 X-powerpc-patch-notification: thanks
-X-powerpc-patch-commit: d8f0e0b073e1ec52a05f0c2a56318b47387d2f10
-In-Reply-To: <20190524024647.381-1-cmr@informatik.wtf>
+X-powerpc-patch-commit: d57b78353a99f5d813248954dd7d0527a01751ac
+In-Reply-To: <20190813031314.1828-2-cmr@informatik.wtf>
 To: "Christopher M. Riedl" <cmr@informatik.wtf>, linuxppc-dev@ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Subject: Re: [PATCH v5] powerpc/64s: support nospectre_v2 cmdline option
-Message-Id: <46JCM30MgNz9sDQ@ozlabs.org>
+Subject: Re: [PATCH v4 1/3] powerpc/spinlocks: Refactor SHARED_PROCESSOR
+Message-Id: <46JCM36C7Dz9sNf@ozlabs.org>
 Date: Wed, 28 Aug 2019 14:24:47 +1000 (AEST)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -50,23 +50,20 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "Christopher M. Riedl" <cmr@informatik.wtf>,
- Andrew Donnellan <ajd@linux.ibm.com>
+Cc: Andrew Donnellan <ajd@linux.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, 2019-05-24 at 02:46:48 UTC, "Christopher M. Riedl" wrote:
-> Add support for disabling the kernel implemented spectre v2 mitigation
-> (count cache flush on context switch) via the nospectre_v2 and
-> mitigations=off cmdline options.
+On Tue, 2019-08-13 at 03:13:12 UTC, "Christopher M. Riedl" wrote:
+> Determining if a processor is in shared processor mode is not a constant
+> so don't hide it behind a #define.
 > 
-> Suggested-by: Michael Ellerman <mpe@ellerman.id.au>
 > Signed-off-by: Christopher M. Riedl <cmr@informatik.wtf>
 > Reviewed-by: Andrew Donnellan <ajd@linux.ibm.com>
 
-Applied to powerpc next, thanks.
+Series applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/d8f0e0b073e1ec52a05f0c2a56318b47387d2f10
+https://git.kernel.org/powerpc/c/d57b78353a99f5d813248954dd7d0527a01751ac
 
 cheers
