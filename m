@@ -2,49 +2,64 @@ Return-Path: <SRS0=F8gr=WY=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_2 autolearn=no
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CEA9AC3A5A1
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Aug 2019 16:55:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 67114C3A5A1
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Aug 2019 16:57:42 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 88CE222CED
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Aug 2019 16:55:13 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 88CE222CED
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=suse.de
+	by mail.kernel.org (Postfix) with ESMTPS id E517E22CED
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Aug 2019 16:57:41 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E517E22CED
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=buserror.net
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46JX0v1sLjzDr10
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Aug 2019 02:55:11 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 46JX3l5c1jzDqyp
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Aug 2019 02:57:39 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=suse.de
- (client-ip=195.135.220.15; helo=mx1.suse.de; envelope-from=msuchanek@suse.de;
- receiver=<UNKNOWN>)
+ spf=none (mailfrom) smtp.mailfrom=buserror.net
+ (client-ip=165.227.176.147; helo=baldur.buserror.net;
+ envelope-from=oss@buserror.net; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=suse.de
-Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
+ dmarc=none (p=none dis=none) header.from=buserror.net
+Received: from baldur.buserror.net (baldur.buserror.net [165.227.176.147])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46JWm332npzDr5D
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Aug 2019 02:44:03 +1000 (AEST)
-X-Virus-Scanned: by amavisd-new at test-mx.suse.de
-Received: from relay2.suse.de (unknown [195.135.220.254])
- by mx1.suse.de (Postfix) with ESMTP id 40A84B63B;
- Wed, 28 Aug 2019 16:44:00 +0000 (UTC)
-From: Michal Suchanek <msuchanek@suse.de>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v3 4/4] powerpc/64: Make COMPAT user-selectable disabled on
- littleendian by default.
-Date: Wed, 28 Aug 2019 18:43:51 +0200
-Message-Id: <0fee1d8d0bc2507b95971d5d55bff53be85fae8b.1567007242.git.msuchanek@suse.de>
-X-Mailer: git-send-email 2.22.0
-In-Reply-To: <cover.1567007242.git.msuchanek@suse.de>
-References: <cover.1567007242.git.msuchanek@suse.de>
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46JWt96grLzDqdw
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Aug 2019 02:49:20 +1000 (AEST)
+Received: from [2601:449:8400:7293:12bf:48ff:fe84:c9a0]
+ by baldur.buserror.net with esmtpsa (TLS1.2:ECDHE_RSA_AES_256_GCM_SHA384:256)
+ (Exim 4.89) (envelope-from <oss@buserror.net>)
+ id 1i313y-0002t0-PH; Wed, 28 Aug 2019 11:44:51 -0500
+Message-ID: <457508f39b96caab15ed4bf7ff0d586ffdc850f8.camel@buserror.net>
+From: Scott Wood <oss@buserror.net>
+To: Jason Yan <yanaijie@huawei.com>
+Date: Wed, 28 Aug 2019 11:44:48 -0500
+In-Reply-To: <de603506-5c4e-4ca3-bd77-e3a69af9faef@huawei.com>
+References: <20190809100800.5426-1-yanaijie@huawei.com>
+ <20190809100800.5426-7-yanaijie@huawei.com>
+ <20190828045454.GB17757@home.buserror.net>
+ <de603506-5c4e-4ca3-bd77-e3a69af9faef@huawei.com>
+Organization: Red Hat
+Content-Type: text/plain; charset="UTF-8"
+X-Mailer: Evolution 3.28.5-0ubuntu0.18.04.1 
+Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-SA-Exim-Connect-IP: 2601:449:8400:7293:12bf:48ff:fe84:c9a0
+X-SA-Exim-Rcpt-To: yanaijie@huawei.com, wangkefeng.wang@huawei.com,
+ keescook@chromium.org, kernel-hardening@lists.openwall.com,
+ thunder.leizhen@huawei.com, linux-kernel@vger.kernel.org, npiggin@gmail.com,
+ jingxiangfeng@huawei.com, diana.craciun@nxp.com, paulus@samba.org,
+ zhaohongjiang@huawei.com, fanchengyang@huawei.com,
+ linuxppc-dev@lists.ozlabs.org, yebin10@huawei.com
+X-SA-Exim-Mail-From: oss@buserror.net
+Subject: Re: [PATCH v6 06/12] powerpc/fsl_booke/32: implement KASLR
+ infrastructure
+X-SA-Exim-Version: 4.2.1 (built Tue, 02 Aug 2016 21:08:31 +0000)
+X-SA-Exim-Scanned: Yes (on baldur.buserror.net)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -56,49 +71,42 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: David Hildenbrand <david@redhat.com>,
- Heiko Carstens <heiko.carstens@de.ibm.com>,
- David Howells <dhowells@redhat.com>, Paul Mackerras <paulus@samba.org>,
- Breno Leitao <leitao@debian.org>, Michael Neuling <mikey@neuling.org>,
- Nicolai Stange <nstange@suse.de>, Allison Randal <allison@lohutok.net>,
- Geert Uytterhoeven <geert@linux-m68k.org>, Joel Stanley <joel@jms.id.au>,
- Firoz Khan <firoz.khan@linaro.org>, Michal Suchanek <msuchanek@suse.de>,
- Arnd Bergmann <arnd@arndb.de>, Nicholas Piggin <npiggin@gmail.com>,
- Thomas Gleixner <tglx@linutronix.de>, Christian Brauner <christian@brauner.io>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org,
- "Eric W. Biederman" <ebiederm@xmission.com>,
- Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
- Hari Bathini <hbathini@linux.ibm.com>
+Cc: wangkefeng.wang@huawei.com, keescook@chromium.org,
+ kernel-hardening@lists.openwall.com, linux-kernel@vger.kernel.org,
+ npiggin@gmail.com, jingxiangfeng@huawei.com, diana.craciun@nxp.com,
+ paulus@samba.org, zhaohongjiang@huawei.com, thunder.leizhen@huawei.com,
+ fanchengyang@huawei.com, linuxppc-dev@lists.ozlabs.org, yebin10@huawei.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On bigendian ppc64 it is common to have 32bit legacy binaries but much
-less so on littleendian.
+On Wed, 2019-08-28 at 19:03 +0800, Jason Yan wrote:
+> 
+> On 2019/8/28 12:54, Scott Wood wrote:
+> > On Fri, Aug 09, 2019 at 06:07:54PM +0800, Jason Yan wrote:
+> > > +/*
+> > > + * To see if we need to relocate the kernel to a random offset
+> > > + * void *dt_ptr - address of the device tree
+> > > + * phys_addr_t size - size of the first memory block
+> > > + */
+> > > +notrace void __init kaslr_early_init(void *dt_ptr, phys_addr_t size)
+> > > +{
+> > > +	unsigned long tlb_virt;
+> > > +	phys_addr_t tlb_phys;
+> > > +	unsigned long offset;
+> > > +	unsigned long kernel_sz;
+> > > +
+> > > +	kernel_sz = (unsigned long)_end - KERNELBASE;
+> > 
+> > Why KERNELBASE and not kernstart_addr?
+> > 
+> 
+> Did you mean kernstart_virt_addr? It should be kernstart_virt_addr.
 
-Signed-off-by: Michal Suchanek <msuchanek@suse.de>
----
-v3: make configurable
----
- arch/powerpc/Kconfig | 5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
+Yes, kernstart_virt_addr.  KERNELBASE will be incorrect if the kernel was
+loaded at a nonzero physical address without CONFIG_PHYSICAL_START being
+adjusted to match.
 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 5bab0bb6b833..b0339e892329 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -264,8 +264,9 @@ config PANIC_TIMEOUT
- 	default 180
- 
- config COMPAT
--	bool
--	default y if PPC64
-+	bool "Enable support for 32bit binaries"
-+	depends on PPC64
-+	default y if !CPU_LITTLE_ENDIAN
- 	select COMPAT_BINFMT_ELF
- 	select ARCH_WANT_OLD_COMPAT_IPC
- 	select COMPAT_OLD_SIGACTION
--- 
-2.22.0
+-Scott
+
 
