@@ -6,38 +6,39 @@ X-Spam-Status: No, score=-8.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
 	URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8FF39C3A5A1
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Aug 2019 04:39:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8BF6AC3A5A1
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Aug 2019 04:41:40 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 470972189D
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Aug 2019 04:39:38 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 470972189D
+	by mail.kernel.org (Postfix) with ESMTPS id 4323E2189D
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Aug 2019 04:41:40 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4323E2189D
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46JCh8025yzDr3f
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Aug 2019 14:39:36 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 46JCkT6h40zDr0V
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Aug 2019 14:41:37 +1000 (AEST)
 Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46JCM60NZ6zDqsr
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46JCM6242HzDqtK
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Aug 2019 14:24:50 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 46JCM551djz9sNp; Wed, 28 Aug 2019 14:24:49 +1000 (AEST)
+ id 46JCM570Xkz9sP6; Wed, 28 Aug 2019 14:24:49 +1000 (AEST)
 X-powerpc-patch-notification: thanks
-X-powerpc-patch-commit: f0f8d7ae3924ed93453e30123e4aaf6f888ca555
-In-Reply-To: <7b1668941ad1041d08b19167030868de5840b153.1566309262.git.christophe.leroy@c-s.fr>
+X-powerpc-patch-commit: c691b4b83b6a348f7b9d13c36916e73c2e1d85e4
+In-Reply-To: <d60ce8dd3a383c7adbfc322bf1d53d81724a6000.1566311636.git.christophe.leroy@c-s.fr>
 To: Christophe Leroy <christophe.leroy@c-s.fr>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, npiggin@gmail.com, hch@lst.de
+ Paul Mackerras <paulus@samba.org>, segher@kernel.crashing.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Subject: Re: [PATCH v2 01/12] powerpc: remove the ppc44x ocm.c file
-Message-Id: <46JCM551djz9sNp@ozlabs.org>
+Subject: Re: [PATCH v4 1/3] powerpc: rewrite LOAD_REG_IMMEDIATE() as an
+ intelligent macro
+Message-Id: <46JCM570Xkz9sP6@ozlabs.org>
 Date: Wed, 28 Aug 2019 14:24:49 +1000 (AEST)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -55,17 +56,37 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, 2019-08-20 at 14:07:09 UTC, Christophe Leroy wrote:
-> From: Christoph Hellwig <hch@lst.de>
+On Tue, 2019-08-20 at 14:34:12 UTC, Christophe Leroy wrote:
+> Today LOAD_REG_IMMEDIATE() is a basic #define which loads all
+> parts on a value into a register, including the parts that are NUL.
 > 
-> The on chip memory allocator is entirely unused in the kernel tree.
+> This means always 2 instructions on PPC32 and always 5 instructions
+> on PPC64. And those instructions cannot run in parallele as they are
+> updating the same register.
 > 
-> Signed-off-by: Christoph Hellwig <hch@lst.de>
-> Acked-by: Christophe Leroy <christophe.leroy@c-s.fr>
+> Ex: LOAD_REG_IMMEDIATE(r1,THREAD_SIZE) in head_64.S results in:
+> 
+> 3c 20 00 00     lis     r1,0
+> 60 21 00 00     ori     r1,r1,0
+> 78 21 07 c6     rldicr  r1,r1,32,31
+> 64 21 00 00     oris    r1,r1,0
+> 60 21 40 00     ori     r1,r1,16384
+> 
+> Rewrite LOAD_REG_IMMEDIATE() with GAS macro in order to skip
+> the parts that are NUL.
+> 
+> Rename existing LOAD_REG_IMMEDIATE() as LOAD_REG_IMMEDIATE_SYM()
+> and use that one for loading value of symbols which are not known
+> at compile time.
+> 
+> Now LOAD_REG_IMMEDIATE(r1,THREAD_SIZE) in head_64.S results in:
+> 
+> 38 20 40 00     li      r1,16384
+> 
 > Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 
 Series applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/f0f8d7ae3924ed93453e30123e4aaf6f888ca555
+https://git.kernel.org/powerpc/c/c691b4b83b6a348f7b9d13c36916e73c2e1d85e4
 
 cheers
