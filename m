@@ -2,63 +2,41 @@ Return-Path: <SRS0=F8gr=WY=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_SANE_2 autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D2D87C3A5A1
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Aug 2019 04:21:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 58B9FC3A5A1
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Aug 2019 04:27:01 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 13BF821883
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Aug 2019 04:21:24 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 13BF821883
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=buserror.net
+	by mail.kernel.org (Postfix) with ESMTPS id 0E6C02080F
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Aug 2019 04:26:58 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0E6C02080F
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46JCH609XQzDqvt
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Aug 2019 14:21:22 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=buserror.net
- (client-ip=165.227.176.147; helo=baldur.buserror.net;
- envelope-from=oss@buserror.net; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=buserror.net
-Received: from baldur.buserror.net (baldur.buserror.net [165.227.176.147])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 46JCPX30zzzDqyZ
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Aug 2019 14:26:56 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46JCDh6fBdzDqq7
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Aug 2019 14:19:16 +1000 (AEST)
-Received: from [2601:449:8400:7293:12bf:48ff:fe84:c9a0]
- by baldur.buserror.net with esmtpsa (TLS1.2:ECDHE_RSA_AES_256_GCM_SHA384:256)
- (Exim 4.89) (envelope-from <oss@buserror.net>)
- id 1i2pQN-0007F3-6K; Tue, 27 Aug 2019 23:19:12 -0500
-Message-ID: <b535dcfc3d6b06ca583dc26703d4adc958eacdd8.camel@buserror.net>
-From: Scott Wood <oss@buserror.net>
-To: Valentin Longchamp <valentin@longchamp.me>, Madalin-cristian Bucur
- <madalin.bucur@nxp.com>
-Date: Tue, 27 Aug 2019 23:19:10 -0500
-In-Reply-To: <CADYrJDxsQ3H7b_BHOfmfTNb1OuXt+vzTg4k8Goj8tKPaaOMz_g@mail.gmail.com>
-References: <20190714200501.1276-1-valentin@longchamp.me>
- <CADYrJDwvwVThmOwHZ4Moqenf=-iqoHC+yJ_uxtrD8sDso33rjg@mail.gmail.com>
- <2243421e574c72c5e75d27cc0122338e2e0bde63.camel@buserror.net>
- <VI1PR04MB55679AAE8DDC3160B9CCE073ECDC0@VI1PR04MB5567.eurprd04.prod.outlook.com>
- <CADYrJDxsQ3H7b_BHOfmfTNb1OuXt+vzTg4k8Goj8tKPaaOMz_g@mail.gmail.com>
-Organization: Red Hat
-Content-Type: text/plain; charset="UTF-8"
-X-Mailer: Evolution 3.28.5-0ubuntu0.18.04.1 
-Mime-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-SA-Exim-Connect-IP: 2601:449:8400:7293:12bf:48ff:fe84:c9a0
-X-SA-Exim-Rcpt-To: valentin@longchamp.me, madalin.bucur@nxp.com,
- linuxppc-dev@lists.ozlabs.org, galak@kernel.crashing.org,
- netdev@vger.kernel.org
-X-SA-Exim-Mail-From: oss@buserror.net
-Subject: Re: [PATCH] powerpc/kmcent2: update the ethernet devices' phy
- properties
-X-SA-Exim-Version: 4.2.1 (built Tue, 02 Aug 2016 21:08:31 +0000)
-X-SA-Exim-Scanned: Yes (on baldur.buserror.net)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46JCM33JTDzDqsr
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Aug 2019 14:24:47 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=ellerman.id.au
+Received: by ozlabs.org (Postfix, from userid 1034)
+ id 46JCM32Km6z9sN6; Wed, 28 Aug 2019 14:24:47 +1000 (AEST)
+X-powerpc-patch-notification: thanks
+X-powerpc-patch-commit: 7e04a46d84f73ef0f21d2257d6ba2a194c0f1511
+In-Reply-To: <20190627053008.29315-1-dja@axtens.net>
+To: Daniel Axtens <dja@axtens.net>, linuxppc-dev@lists.ozlabs.org
+From: Michael Ellerman <patch-notifications@ellerman.id.au>
+Subject: Re: [PATCH] powerpc/configs: Disable /dev/port in skiroot defconfig
+Message-Id: <46JCM32Km6z9sN6@ozlabs.org>
+Date: Wed, 28 Aug 2019 14:24:47 +1000 (AEST)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -70,81 +48,21 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Cc: Daniel Axtens <dja@axtens.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, 2019-08-08 at 23:09 +0200, Valentin Longchamp wrote:
-> Le mar. 30 juil. 2019 à 11:44, Madalin-cristian Bucur
-> <madalin.bucur@nxp.com> a écrit :
-> > 
-> > > -----Original Message-----
-> > > 
-> > > > Le dim. 14 juil. 2019 à 22:05, Valentin Longchamp
-> > > > <valentin@longchamp.me> a écrit :
-> > > > > 
-> > > > > Change all phy-connection-type properties to phy-mode that are
-> > > > > better
-> > > > > supported by the fman driver.
-> > > > > 
-> > > > > Use the more readable fixed-link node for the 2 sgmii links.
-> > > > > 
-> > > > > Change the RGMII link to rgmii-id as the clock delays are added by
-> > > > > the
-> > > > > phy.
-> > > > > 
-> > > > > Signed-off-by: Valentin Longchamp <valentin@longchamp.me>
-> > > 
-> > > I don't see any other uses of phy-mode in arch/powerpc/boot/dts/fsl, and
-> > > I see
-> > > lots of phy-connection-type with fman.  Madalin, does this patch look
-> > > OK?
-> > > 
-> > > -Scott
-> > 
-> > Hi,
-> > 
-> > we are using "phy-connection-type" not "phy-mode" for the NXP (former
-> > Freescale)
-> > DPAA platforms. While the two seem to be interchangeable ("phy-mode" seems
-> > to be
-> > more recent, looking at the device tree bindings), the driver code in
-> > Linux seems
-> > to use one or the other, not both so one should stick with the variant the
-> > driver
-> > is using. To make things more complex, there may be dependencies in
-> > bootloaders,
-> > I see code in u-boot using only "phy-connection-type" or only "phy-mode".
-> > 
-> > I'd leave "phy-connection-type" as is.
+On Thu, 2019-06-27 at 05:30:08 UTC, Daniel Axtens wrote:
+> While reviewing lockdown patches, I discovered that we still enable
+> /dev/port (CONFIG_DEVPORT) in skiroot.
 > 
-> So I have finally had time to have a look and now I understand what
-> happens. You are right, there are bootloader dependencies: u-boot
-> calls fdt_fixup_phy_connection() that somehow in our case adds (or
-> changes if already in the device tree) the phy-connection-type
-> property to a wrong value ! By having a phy-mode in the device tree,
-> that is not changed by u-boot and by chance picked up by the kernel
-> fman driver (of_get_phy_mode() ) over phy-connection-mode, the below
-> patch fixes it for us.
+> We don't need it. Deselect CONFIG_DEVPORT for skiroot.
 > 
-> I agree with you, it's not correct to have both phy-connection-type
-> and phy-mode. Ideally, u-boot on the board should be reworked so that
-> it does not perform the above wrong fixup. However, in an "unfixed"
-> .dtb (I have disabled fdt_fixup_phy_connection), the device tree in
-> the end only has either phy-connection-type or phy-mode, according to
-> what was chosen in the .dts file. And the fman driver works well with
-> both (thanks to the call to of_get_phy_mode() ). I would therefore
-> argue that even if all other DPAA platforms use phy-connection-type,
-> phy-mode is valid as well. (Furthermore we already have hundreds of
-> such boards in the field and we don't really support "remote" u-boot
-> update, so the u-boot fix is going to be difficult for us to pull).
-> 
-> Valentin
+> Signed-off-by: Daniel Axtens <dja@axtens.net>
 
-Madalin, are you OK with the patch given this explanation?
+Applied to powerpc next, thanks.
 
--Scott
+https://git.kernel.org/powerpc/c/7e04a46d84f73ef0f21d2257d6ba2a194c0f1511
 
-
+cheers
