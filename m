@@ -2,49 +2,50 @@ Return-Path: <SRS0=F8gr=WY=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=no
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 28BB9C3A5A6
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Aug 2019 13:05:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 77155C3A5A1
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Aug 2019 13:07:59 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 9B99F2341C
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Aug 2019 13:05:13 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9B99F2341C
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=suse.cz
+	by mail.kernel.org (Postfix) with ESMTPS id 2E7E122CED
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Aug 2019 13:07:59 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2E7E122CED
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46JQvV5mwRzDr7l
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Aug 2019 23:05:10 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=suse.cz
- (client-ip=195.135.220.15; helo=mx1.suse.de; envelope-from=pvorel@suse.cz;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=suse.cz
-Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 46JQyh6KyWzDqKv
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Aug 2019 23:07:56 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46JQq94VPvzDr6f
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Aug 2019 23:01:17 +1000 (AEST)
-X-Virus-Scanned: by amavisd-new at test-mx.suse.de
-Received: from relay2.suse.de (unknown [195.135.220.254])
- by mx1.suse.de (Postfix) with ESMTP id 66372AF1E;
- Wed, 28 Aug 2019 13:01:14 +0000 (UTC)
-Date: Wed, 28 Aug 2019 15:01:11 +0200
-From: Petr Vorel <pvorel@suse.cz>
-To: Mimi Zohar <zohar@linux.ibm.com>
-Subject: Re: [PATCH] sefltest/ima: support appended signatures (modsig)
-Message-ID: <20190828130111.GA19006@dell5510>
-References: <1566995946-6582-1-git-send-email-zohar@linux.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46JQqM5pZnzDr75
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Aug 2019 23:01:35 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=ellerman.id.au
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
+ SHA256) (No client certificate requested)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 46JQqK61lWz9sBF;
+ Wed, 28 Aug 2019 23:01:33 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Scott Wood <oss@buserror.net>
+Subject: Re: [PATCH v6 00/12] implement KASLR for powerpc/fsl_booke/32
+In-Reply-To: <827cc152757906a0ebc04bbe56cdf44683721eb4.camel@buserror.net>
+References: <20190809100800.5426-1-yanaijie@huawei.com>
+ <ed96199d-715c-3f1c-39db-10a569ba6601@huawei.com>
+ <529fd908-42d6-f96f-daa2-9010f3035879@huawei.com>
+ <878srf4cjk.fsf@concordia.ellerman.id.au>
+ <827cc152757906a0ebc04bbe56cdf44683721eb4.camel@buserror.net>
+Date: Wed, 28 Aug 2019 23:01:28 +1000
+Message-ID: <87h861v3yv.fsf@mpe.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1566995946-6582-1-git-send-email-zohar@linux.ibm.com>
-User-Agent: Mutt/1.11.3 (2019-02-01)
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -56,21 +57,33 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Reply-To: Petr Vorel <pvorel@suse.cz>
-Cc: Dave Young <dyoung@redhat.com>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, linux-kselftest@vger.kernel.org,
- Jessica Yu <jeyu@kernel.org>, linux-integrity@vger.kernel.org,
- shuah <shuah@kernel.org>, Thiago Jung Bauermann <bauerman@linux.ibm.com>
+Cc: wangkefeng.wang@huawei.com, keescook@chromium.org,
+ Jason Yan <yanaijie@huawei.com>, kernel-hardening@lists.openwall.com,
+ linux-kernel@vger.kernel.org, npiggin@gmail.com, jingxiangfeng@huawei.com,
+ diana.craciun@nxp.com, paulus@samba.org, zhaohongjiang@huawei.com,
+ thunder.leizhen@huawei.com, fanchengyang@huawei.com,
+ linuxppc-dev@lists.ozlabs.org, yebin10@huawei.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi Mimi,
+Scott Wood <oss@buserror.net> writes:
+> On Tue, 2019-08-27 at 11:33 +1000, Michael Ellerman wrote:
+>> Jason Yan <yanaijie@huawei.com> writes:
+>> > A polite ping :)
+>> > 
+>> > What else should I do now?
+>> 
+>> That's a good question.
+>> 
+>> Scott, are you still maintaining FSL bits, 
+>
+> Sort of... now that it's become very low volume, it's easy to forget when
+> something does show up (or miss it if I'm not CCed).  It'd probably help if I
+> were to just ack patches instead of thinking "I'll do a pull request for this
+> later" when it's just one or two patches per cycle.
 
-> Detect and allow appended signatures.
+Yep, understand. Just sending acks is totally fine if you don't have
+enough for a pull request.
 
-> Signed-off-by: Mimi Zohar <zohar@linux.ibm.com>
-Reviewed-by: Petr Vorel <pvorel@suse.cz>
-
-Kind regards,
-Petr
+cheers
