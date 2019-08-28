@@ -2,86 +2,87 @@ Return-Path: <SRS0=F8gr=WY=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.7 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
-	autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EDA9EC3A5A1
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Aug 2019 11:59:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B6734C3A5A1
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Aug 2019 12:42:29 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 1440522CED
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Aug 2019 11:59:30 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="El3u9MP9"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1440522CED
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	by mail.kernel.org (Postfix) with ESMTPS id C91872173E
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Aug 2019 12:42:28 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C91872173E
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46JPRh4gbDzDr8p
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Aug 2019 21:59:28 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 46JQPF10llzDrB8
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Aug 2019 22:42:25 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=2607:f8b0:4864:20::541; helo=mail-pg1-x541.google.com;
- envelope-from=npiggin@gmail.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
+ (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
+ envelope-from=zohar@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="El3u9MP9"; 
- dkim-atps=neutral
-Received: from mail-pg1-x541.google.com (mail-pg1-x541.google.com
- [IPv6:2607:f8b0:4864:20::541])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ dmarc=none (p=none dis=none) header.from=linux.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46JPPg0ndPzDr7m
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Aug 2019 21:57:42 +1000 (AEST)
-Received: by mail-pg1-x541.google.com with SMTP id p3so1341757pgb.9
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Aug 2019 04:57:42 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=date:from:subject:to:references:in-reply-to:mime-version:user-agent
- :message-id:content-transfer-encoding;
- bh=6Z0PYX4Cyn3loSxBT18GyPUmeXrOJsbeBH+CebVQ+IU=;
- b=El3u9MP9frjfoSu+zPdt6SqI4iO5Y334Rg7zY2atQMmjQ4vl0BIXsBwgMwC6svSUDb
- s7y8thEO9c2UjfXJb8Y2s8IgH7Sbu1iiDByV0ioI8hp86iPu5tDMZ8cyktBelp9ToBCD
- ImHHfHKv97mvQ+cr7ko41eXPfco5lV3Sv8gfDyuhD+8NEDJbYbB8djo/rnOuaykd9/K2
- Kg8mewXI2yM7OOxlpGsDqc1mkQc7L84l1alpsuTJqe/aPf9zcFCECsCP1G4cTE4OTUQ6
- FZIDattXKrSfkl31gGHnSBSM2nxyvb0/acHtgVWSlZS9GGS6MzG7S1NE89WO238dR7Ps
- Q/3g==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:date:from:subject:to:references:in-reply-to
- :mime-version:user-agent:message-id:content-transfer-encoding;
- bh=6Z0PYX4Cyn3loSxBT18GyPUmeXrOJsbeBH+CebVQ+IU=;
- b=bWxyIzM2pO0wD6uum0w8Z8CDZhWRjmD5m8yjtCPRWiFUjPwWsEsHttAPvSsqkOLPWU
- Tonrs1efJM6AZRu+itGmfVZcgJCnQSgQLy4Z3f82QeCy4dpsU2nVACPeD8HdHuua4m9F
- C0pdpV1//Ecorim2Y+r7QTFlz39ugPUAyyJle1hXDbxzrE+X2RkgKgkNzIDqJkzfmGkz
- YcHcYDQXCvPDBCfhVs+MzYHtN0KAvPag420NURmAr+9sqC7DEVJlSq9khTFuUrfGb/M/
- cQHy7kw2w4Y4CQxWvZOwcIPWeUrKT3RIbB5uQHyybwLzBTRJ01Vu9XZoGyx9hvL7uGOi
- B88g==
-X-Gm-Message-State: APjAAAVTtFPWR515f/+EyNzp98wXlaFdu8asIM84c6gWiYQZdL193w+n
- HuuFbNwRdL/doQJIw2JtIrI=
-X-Google-Smtp-Source: APXvYqw7vsfsxCmiIy/ApCXiiWqjZt/9mL3p8Ba12+dLUHbWaNexoGE5bsW6lvi460la8JnnN4ZWqw==
-X-Received: by 2002:a63:7e17:: with SMTP id z23mr3170037pgc.14.1566993459651; 
- Wed, 28 Aug 2019 04:57:39 -0700 (PDT)
-Received: from localhost (14-202-91-55.tpgi.com.au. [14.202.91.55])
- by smtp.gmail.com with ESMTPSA id b6sm3331361pgq.26.2019.08.28.04.57.38
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Wed, 28 Aug 2019 04:57:39 -0700 (PDT)
-Date: Wed, 28 Aug 2019 21:56:25 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
-Subject: Re: [PATCH] powerpc/64: interrupt return in C
-To: Christophe Leroy <christophe.leroy@c-s.fr>, linuxppc-dev@lists.ozlabs.org
-References: <20190828090606.5028-1-npiggin@gmail.com>
- <33052597-ce23-780d-bb38-f50ecd78ff3a@c-s.fr>
-In-Reply-To: <33052597-ce23-780d-bb38-f50ecd78ff3a@c-s.fr>
-MIME-Version: 1.0
-User-Agent: astroid/0.15.0 (https://github.com/astroidmail/astroid)
-Message-Id: <1566993326.4dy67dpuzt.astroid@bobo.none>
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46JQKt1B3zzDr6t
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Aug 2019 22:39:28 +1000 (AEST)
+Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
+ x7SCahdi106083
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Aug 2019 08:39:25 -0400
+Received: from e06smtp03.uk.ibm.com (e06smtp03.uk.ibm.com [195.75.94.99])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2unsptrauh-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Aug 2019 08:39:25 -0400
+Received: from localhost
+ by e06smtp03.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <zohar@linux.ibm.com>;
+ Wed, 28 Aug 2019 13:39:23 +0100
+Received: from b06cxnps4075.portsmouth.uk.ibm.com (9.149.109.197)
+ by e06smtp03.uk.ibm.com (192.168.101.133) with IBM ESMTP SMTP Gateway:
+ Authorized Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Wed, 28 Aug 2019 13:39:19 +0100
+Received: from b06wcsmtp001.portsmouth.uk.ibm.com
+ (b06wcsmtp001.portsmouth.uk.ibm.com [9.149.105.160])
+ by b06cxnps4075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x7SCdHOH55574588
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Wed, 28 Aug 2019 12:39:17 GMT
+Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 5E37EA4064;
+ Wed, 28 Aug 2019 12:39:17 +0000 (GMT)
+Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 1646CA4060;
+ Wed, 28 Aug 2019 12:39:16 +0000 (GMT)
+Received: from localhost.ibm.com (unknown [9.85.129.156])
+ by b06wcsmtp001.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Wed, 28 Aug 2019 12:39:15 +0000 (GMT)
+From: Mimi Zohar <zohar@linux.ibm.com>
+To: linux-integrity@vger.kernel.org
+Subject: [PATCH] sefltest/ima: support appended signatures (modsig)
+Date: Wed, 28 Aug 2019 08:39:06 -0400
+X-Mailer: git-send-email 2.7.5
+X-TM-AS-GCONF: 00
+x-cbid: 19082812-0012-0000-0000-00000343E072
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 19082812-0013-0000-0000-0000217E1D40
+Message-Id: <1566995946-6582-1-git-send-email-zohar@linux.ibm.com>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
+ definitions=2019-08-28_06:, , signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ malwarescore=0 suspectscore=1 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1011 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=753 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1906280000 definitions=main-1908280134
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -93,32 +94,101 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: Dave Young <dyoung@redhat.com>, linuxppc-dev@lists.ozlabs.org,
+ Mimi Zohar <zohar@linux.ibm.com>, linux-kernel@vger.kernel.org,
+ Petr Vorel <pvorel@suse.cz>, linux-kselftest@vger.kernel.org,
+ Jessica Yu <jeyu@kernel.org>, shuah <shuah@kernel.org>,
+ Thiago Jung Bauermann <bauerman@linux.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Christophe Leroy's on August 28, 2019 7:28 pm:
->=20
->=20
-> Le 28/08/2019 =C3=A0 11:06, Nicholas Piggin a =C3=A9crit=C2=A0:
->> This is a work in progress that goes on top of the syscalls in C patch.
->> It's not quite complete, 64e low level exit is not taken care of, and
->> the new return is hacked into the existing interrupt handlers pretty
->> quickly (e.g., full gprs handling is still ugly and could be cleaned),
->> but that code touches exception-64s.S which is under heavy modification
->> in parallel so I will rebase on top of that before polishing it properly=
-.
->> I will also try to convert to more IS_ENABLED() for Christophe.
->=20
-> I am flattered.
->=20
-> I guess at the end you are not doing it for me but because it is on=20
-> purpose in your code improvement process.
+Detect and allow appended signatures.
 
-Heh :) Yeah I agree it's almost always nicer code. Sometimes I just
-forget about it so I appreciate you pointing out improvements.
+Signed-off-by: Mimi Zohar <zohar@linux.ibm.com>
+---
+ .../selftests/kexec/test_kexec_file_load.sh        | 38 +++++++++++++++++++---
+ 1 file changed, 34 insertions(+), 4 deletions(-)
 
-Thanks,
-Nick
+diff --git a/tools/testing/selftests/kexec/test_kexec_file_load.sh b/tools/testing/selftests/kexec/test_kexec_file_load.sh
+index fa7c24e8eefb..2ff600388c30 100755
+--- a/tools/testing/selftests/kexec/test_kexec_file_load.sh
++++ b/tools/testing/selftests/kexec/test_kexec_file_load.sh
+@@ -37,11 +37,20 @@ is_ima_sig_required()
+ 	# sequentially.  As a result, a policy rule may be defined, but
+ 	# might not necessarily be used.  This test assumes if a policy
+ 	# rule is specified, that is the intent.
++
++	# First check for appended signature (modsig), then xattr
+ 	if [ $ima_read_policy -eq 1 ]; then
+ 		check_ima_policy "appraise" "func=KEXEC_KERNEL_CHECK" \
+-			"appraise_type=imasig"
++			"appraise_type=imasig|modsig"
+ 		ret=$?
+-		[ $ret -eq 1 ] && log_info "IMA signature required";
++		if [ $ret -eq 1 ]; then
++			log_info "IMA or appended(modsig) signature required"
++		else
++			check_ima_policy "appraise" "func=KEXEC_KERNEL_CHECK" \
++				"appraise_type=imasig"
++			ret=$?
++			[ $ret -eq 1 ] && log_info "IMA signature required";
++		fi
+ 	fi
+ 	return $ret
+ }
+@@ -84,6 +93,22 @@ check_for_imasig()
+ 	return $ret
+ }
+ 
++# Return 1 for appended signature (modsig) found and 0 for not found.
++check_for_modsig()
++{
++	local module_sig_string="~Module signature appended~"
++	local sig="$(tail --bytes $((${#module_sig_string} + 1)) $KERNEL_IMAGE)"
++	local ret=0
++
++	if [ "$sig" == "$module_sig_string" ]; then
++		ret=1
++		log_info "kexec kernel image modsig signed"
++	else
++		log_info "kexec kernel image not modsig signed"
++	fi
++	return $ret
++}
++
+ kexec_file_load_test()
+ {
+ 	local succeed_msg="kexec_file_load succeeded"
+@@ -98,7 +123,8 @@ kexec_file_load_test()
+ 		# In secureboot mode with an architecture  specific
+ 		# policy, make sure either an IMA or PE signature exists.
+ 		if [ $secureboot -eq 1 ] && [ $arch_policy -eq 1 ] && \
+-			[ $ima_signed -eq 0 ] && [ $pe_signed -eq 0 ]; then
++			[ $ima_signed -eq 0 ] && [ $pe_signed -eq 0 ] \
++			  && [ $ima_modsig -eq 0 ]; then
+ 			log_fail "$succeed_msg (missing sig)"
+ 		fi
+ 
+@@ -107,7 +133,8 @@ kexec_file_load_test()
+ 			log_fail "$succeed_msg (missing PE sig)"
+ 		fi
+ 
+-		if [ $ima_sig_required -eq 1 ] && [ $ima_signed -eq 0 ]; then
++		if [ $ima_sig_required -eq 1 ] && [ $ima_signed -eq 0 ] \
++		     && [ $ima_modsig -eq 0 ]; then
+ 			log_fail "$succeed_msg (missing IMA sig)"
+ 		fi
+ 
+@@ -204,5 +231,8 @@ pe_signed=$?
+ check_for_imasig
+ ima_signed=$?
+ 
++check_for_modsig
++ima_modsig=$?
++
+ # Test loading the kernel image via kexec_file_load syscall
+ kexec_file_load_test
+-- 
+2.7.5
 
-=
