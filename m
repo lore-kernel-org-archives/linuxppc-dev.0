@@ -2,80 +2,67 @@ Return-Path: <SRS0=F8gr=WY=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.5 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 66A24C3A5A1
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Aug 2019 18:05:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3EF4CC3A5A1
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Aug 2019 18:19:10 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B13BB206BB
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Aug 2019 18:05:10 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=google.com header.i=@google.com header.b="rOtj7avi"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B13BB206BB
-Authentication-Results: mail.kernel.org; dmarc=fail (p=reject dis=none) header.from=google.com
+	by mail.kernel.org (Postfix) with ESMTPS id 8102222CF5
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Aug 2019 18:19:09 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8102222CF5
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=xmission.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46JYYb45jgzDqWx
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Aug 2019 04:05:07 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 46JYsk4bprzDr2m
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Aug 2019 04:19:06 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=google.com
- (client-ip=2607:f8b0:4864:20::544; helo=mail-pg1-x544.google.com;
- envelope-from=ndesaulniers@google.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=xmission.com
+ (client-ip=166.70.13.233; helo=out03.mta.xmission.com;
+ envelope-from=ebiederm@xmission.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=reject dis=none) header.from=google.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=google.com header.i=@google.com header.b="rOtj7avi"; 
- dkim-atps=neutral
-Received: from mail-pg1-x544.google.com (mail-pg1-x544.google.com
- [IPv6:2607:f8b0:4864:20::544])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46JYTS5XHYzDrJj
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Aug 2019 04:01:31 +1000 (AEST)
-Received: by mail-pg1-x544.google.com with SMTP id o13so118469pgp.12
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Aug 2019 11:01:31 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=20161025;
- h=mime-version:references:in-reply-to:from:date:message-id:subject:to
- :cc; bh=/9cEynbX19AvJzoEgiHwKGteceFTE1ys9oyagJjkZAw=;
- b=rOtj7aviFrxSPtDu5RCopbB3+BGnL8mph6ucHa2CIA7ygi0sOSsEibJuEbbJj94fpQ
- x66iT79k3dbCO/mCbxrmkq9BxvyshcXfzaUejmsf0qfi0qYGAbJCU8dC6nkMp133T8kN
- eGMqnQ6ai9vsiu2yIbbfsiXK4AD5JOIThmRseYbjF6Ocr6f/D3XA5QqyRqTDjmdB+KIW
- bP8eQgpGqZMAzoub5+TCB1FsSsrKQjgf6aCd00I60WHxUq2KP0UoLSTRveezMmwkQFkY
- WkNHgVFaRt5C/18B4Q9hr18vzFE9nwUhW55/xNAUM2v1DnTrw3y74yGKFtwRnA4avGBl
- kBRg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:mime-version:references:in-reply-to:from:date
- :message-id:subject:to:cc;
- bh=/9cEynbX19AvJzoEgiHwKGteceFTE1ys9oyagJjkZAw=;
- b=r1AUYuNI4mxR5wYgO/AkkLvtV7wcCXcuaGe7vdHcJ+EOYWpkKJ9EioqWWecd2CdLoD
- z3aKfOs/GnedAWPYyBouYc32hdg1fc1eRR3S6FRaRYSKx7EgQgABqLpg4iojGw9IAOBw
- wmVx4INLmKEO5lQABYwc6kCMhVauydAHsj6t4v+hUOJDWIwiIRd5Pa3IJ2JTJ3NnynFz
- 169z4xZTVwOu7b3FCeRlTbB22IyIenoRxzf+RCZzu9iC8gRTdP1+NuXtUPMlYBzUu52f
- gl9ZadqUC5lKmORNWTCKHxpIfIAxjODc95tGCuEwphmZf33lZXfX5H52XrXtLmQSLOUx
- it1w==
-X-Gm-Message-State: APjAAAUq55L1EPrpPxAfTxzzOsd+j7iu5/myAbSjlxLETpTyaSTVdxpk
- WLZSJ1pb97iN4X/EbtNH7T0QrOSCXFLdWVzC/8KyHw==
-X-Google-Smtp-Source: APXvYqwLIJGTP7b3E1+6DKIHKO+TMUth/mMe1NLek/YikeEOUIvfeSOCsus777R/aF0jN7WKBM1D3IrXGdGNjXlUYYo=
-X-Received: by 2002:a63:61cd:: with SMTP id v196mr4621079pgb.263.1567015286046; 
- Wed, 28 Aug 2019 11:01:26 -0700 (PDT)
+ dmarc=pass (p=none dis=none) header.from=xmission.com
+X-Greylist: delayed 219 seconds by postgrey-1.36 at bilbo;
+ Thu, 29 Aug 2019 04:17:09 AEST
+Received: from out03.mta.xmission.com (out03.mta.xmission.com [166.70.13.233])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
+ bits)) (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46JYqT2DWvzDqwj
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Aug 2019 04:17:09 +1000 (AEST)
+Received: from in01.mta.xmission.com ([166.70.13.51])
+ by out03.mta.xmission.com with esmtps
+ (TLS1.2:ECDHE_RSA_AES_128_GCM_SHA256:128) (Exim 4.87)
+ (envelope-from <ebiederm@xmission.com>)
+ id 1i32VH-0004Ux-5M; Wed, 28 Aug 2019 12:17:07 -0600
+Received: from ip68-227-160-95.om.om.cox.net ([68.227.160.95]
+ helo=x220.xmission.com) by in01.mta.xmission.com with esmtpsa
+ (TLS1.2:ECDHE_RSA_AES_256_GCM_SHA384:256) (Exim 4.87)
+ (envelope-from <ebiederm@xmission.com>)
+ id 1i32VG-0000s0-FB; Wed, 28 Aug 2019 12:17:06 -0600
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Michal Suchanek <msuchanek@suse.de>
+References: <cover.1566936688.git.msuchanek@suse.de>
+ <80b1955b86fb81e4642881d498068b5a540ef029.1566936688.git.msuchanek@suse.de>
+ <8736hlyx8r.fsf@x220.int.ebiederm.org>
+Date: Wed, 28 Aug 2019 13:16:55 -0500
+In-Reply-To: <8736hlyx8r.fsf@x220.int.ebiederm.org> (Eric W. Biederman's
+ message of "Wed, 28 Aug 2019 13:13:08 -0500")
+Message-ID: <87y2zdxii0.fsf@x220.int.ebiederm.org>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/26.1 (gnu/linux)
 MIME-Version: 1.0
-References: <20190812023214.107817-1-natechancellor@gmail.com>
- <878srdv206.fsf@mpe.ellerman.id.au>
- <20190828175322.GA121833@archlinux-threadripper>
-In-Reply-To: <20190828175322.GA121833@archlinux-threadripper>
-From: Nick Desaulniers <ndesaulniers@google.com>
-Date: Wed, 28 Aug 2019 11:01:14 -0700
-Message-ID: <CAKwvOdmXbYrR6n-cxKt3XxkE4Lmj0sSoZBUtHVb0V2LTUFHmug@mail.gmail.com>
-Subject: Re: [PATCH] powerpc: Avoid clang warnings around setjmp and longjmp
-To: Nathan Chancellor <natechancellor@gmail.com>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain
+X-XM-SPF: eid=1i32VG-0000s0-FB; ; ; mid=<87y2zdxii0.fsf@x220.int.ebiederm.org>;
+ ; ; hst=in01.mta.xmission.com; ; ; ip=68.227.160.95; ; ;
+ frm=ebiederm@xmission.com; ; ; spf=neutral
+X-XM-AID: U2FsdGVkX19FPHoR0c45QWgnOndw3RBOZkvxMXRg2is=
+X-SA-Exim-Connect-IP: 68.227.160.95
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+Subject: Re: [PATCH 1/4] fs: always build llseek.
+X-SA-Exim-Version: 4.2.1 (built Thu, 05 May 2016 13:38:54 -0600)
+X-SA-Exim-Scanned: Yes (on in01.mta.xmission.com)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -87,91 +74,39 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: LKML <linux-kernel@vger.kernel.org>, "# 3.4.x" <stable@vger.kernel.org>,
- clang-built-linux <clang-built-linux@googlegroups.com>,
- Paul Mackerras <paulus@samba.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Cc: David Hildenbrand <david@redhat.com>, "Dmitry V. Levin" <ldv@altlinux.org>,
+ Max Filippov <jcmvbkbc@gmail.com>, Paul Mackerras <paulus@samba.org>,
+ Breno Leitao <leitao@debian.org>, Michael Neuling <mikey@neuling.org>,
+ Firoz Khan <firoz.khan@linaro.org>, Hari Bathini <hbathini@linux.ibm.com>,
+ Joel Stanley <joel@jms.id.au>, Nicholas Piggin <npiggin@gmail.com>,
+ Steven Rostedt <rostedt@goodmis.org>, Thomas Gleixner <tglx@linutronix.de>,
+ Allison Randal <allison@lohutok.net>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org,
+ Andrew Donnellan <andrew.donnellan@au1.ibm.com>, linux-fsdevel@vger.kernel.org,
+ Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
+ Alexander Viro <viro@zeniv.linux.org.uk>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, Aug 28, 2019 at 10:53 AM Nathan Chancellor
-<natechancellor@gmail.com> wrote:
->
-> On Wed, Aug 28, 2019 at 11:43:53PM +1000, Michael Ellerman wrote:
-> > Nathan Chancellor <natechancellor@gmail.com> writes:
-> >
-> > > Commit aea447141c7e ("powerpc: Disable -Wbuiltin-requires-header when
-> > > setjmp is used") disabled -Wbuiltin-requires-header because of a warning
-> > > about the setjmp and longjmp declarations.
-> > >
-> > > r367387 in clang added another diagnostic around this, complaining that
-> > > there is no jmp_buf declaration.
-> > >
-> > > In file included from ../arch/powerpc/xmon/xmon.c:47:
-> > > ../arch/powerpc/include/asm/setjmp.h:10:13: error: declaration of
-> > > built-in function 'setjmp' requires the declaration of the 'jmp_buf'
-> > > type, commonly provided in the header <setjmp.h>.
-> > > [-Werror,-Wincomplete-setjmp-declaration]
-> > > extern long setjmp(long *);
-> > >             ^
-> > > ../arch/powerpc/include/asm/setjmp.h:11:13: error: declaration of
-> > > built-in function 'longjmp' requires the declaration of the 'jmp_buf'
-> > > type, commonly provided in the header <setjmp.h>.
-> > > [-Werror,-Wincomplete-setjmp-declaration]
-> > > extern void longjmp(long *, long);
-> > >             ^
-> > > 2 errors generated.
-> > >
-> > > Take the same approach as the above commit by disabling the warning for
-> > > the same reason, we provide our own longjmp/setjmp function.
-> > >
-> > > Cc: stable@vger.kernel.org # 4.19+
-> > > Link: https://github.com/ClangBuiltLinux/linux/issues/625
-> > > Link: https://github.com/llvm/llvm-project/commit/3be25e79477db2d31ac46493d97eca8c20592b07
-> > > Signed-off-by: Nathan Chancellor <natechancellor@gmail.com>
-> > > ---
-> > >
-> > > It may be worth using -fno-builtin-setjmp and -fno-builtin-longjmp
-> > > instead as it makes it clear to clang that we are not using the builtin
-> > > longjmp and setjmp functions, which I think is why these warnings are
-> > > appearing (at least according to the commit that introduced this waring).
-> > >
-> > > Sample patch:
-> > > https://github.com/ClangBuiltLinux/linux/issues/625#issuecomment-519251372
-> >
-> > Couldn't we just add those flags to CFLAGS for the whole kernel? Rather
-> > than making them per-file.
->
-> Yes, I don't think this would be unreasonable. Are you referring to the
-> cc-disable-warning flags or the -fno-builtin flags? I personally think
-> the -fno-builtin flags convey to clang what the kernel is intending to
-> do better than disabling the warnings outright.
+ebiederm@xmission.com (Eric W. Biederman) writes:
 
-The `-f` family of flags have dire implications for codegen, I'd
-really prefer we think long and hard before adding/removing them to
-suppress warnings.  I don't think it's a solution for this particular
-problem.
+> Michal Suchanek <msuchanek@suse.de> writes:
+>
+>> 64bit !COMPAT does not build because the llseek syscall is in the
+>> tables.
+>
+> Do I read this right you have a 128 bit offset to llseek on ppc64?
+>
+> Looking at the signature it does not appear to make sense to build this
+> function on any 64bit platform.
+>
+> Perhaps the proper fix to to take llseek out of your syscall tables?
 
->
-> > I mean there's no kernel code that wants to use clang's builtin
-> > setjmp/longjmp implementation at all right?
-> >
-> > cheers
->
-> I did a quick search of the tree and it looks like powerpc and x86/um
-> are the only architectures that do anything with setjmp/longjmp. x86/um
-> avoids this by using a define flag to change setjmp to kernel_setjmp:
->
-> arch/um/Makefile: -Dlongjmp=kernel_longjmp -Dsetjmp=kernel_setjmp \
->
-> Seems like adding those flags should be safe.
->
-> Cheers,
-> Nathan
+Sorry I missed seeing the 2 newer version of the patchset in my inbox
+it seems you have already made the change I am suggesting.
 
+Never mind.
 
+Eric
 
--- 
-Thanks,
-~Nick Desaulniers
