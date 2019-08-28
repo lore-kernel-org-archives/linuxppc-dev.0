@@ -2,87 +2,84 @@ Return-Path: <SRS0=F8gr=WY=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.7 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
-	autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.4 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A0473C3A5A1
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Aug 2019 09:52:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C6DA6C3A5A1
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Aug 2019 09:57:56 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 1CE992054F
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Aug 2019 09:52:28 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 334AA2054F
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Aug 2019 09:57:56 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="fd5ytO3m"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1CE992054F
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	dkim=pass (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="VzaiixhY"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 334AA2054F
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46JLd54rhLzDqv6
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Aug 2019 19:52:25 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 46JLlP5wYVzDr4Q
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Aug 2019 19:57:53 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=2607:f8b0:4864:20::644; helo=mail-pl1-x644.google.com;
- envelope-from=npiggin@gmail.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=c-s.fr
+ (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="fd5ytO3m"; 
+ dmarc=none (p=none dis=none) header.from=c-s.fr
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="VzaiixhY"; 
  dkim-atps=neutral
-Received: from mail-pl1-x644.google.com (mail-pl1-x644.google.com
- [IPv6:2607:f8b0:4864:20::644])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46JLZx2Rn1zDqtt
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Aug 2019 19:50:33 +1000 (AEST)
-Received: by mail-pl1-x644.google.com with SMTP id y8so983359plr.12
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Aug 2019 02:50:32 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=date:from:subject:to:references:in-reply-to:mime-version:user-agent
- :message-id:content-transfer-encoding;
- bh=paZOslhKnw8TpDSRRjRT/6S6+pm+zhq58hLrsqp6oq0=;
- b=fd5ytO3muKOvgMSw6HgGkDTUO7CEG/t2hHoPJ7x963boUxx7wBzwKyXc/F+5caWkF1
- 6xY61bFhZaZhRlnxyqeasgEfoUqIKnqgDzbBewIVJBwB05cZJgOHu2mtgjzWfVkR+UhM
- 8hiq4B6VjD0yMVAroD5H6bTdzmtS0i1dZrxE3l6kIRMdnUf6EsQAJR9sPt0v9gHf6Ocz
- bxOGZcDrJd7I3Fa9oIcRmi57ocreB/NLBu9pmXCxOPY7kjABrFsgUvTFFvxGYdXOzeLq
- AoCTo8bAfpnO/REZczISD6NipysGdC8VcnFMbK5HtB6LC3Pp86wVit5qHL1XVlMikavp
- VlCQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:date:from:subject:to:references:in-reply-to
- :mime-version:user-agent:message-id:content-transfer-encoding;
- bh=paZOslhKnw8TpDSRRjRT/6S6+pm+zhq58hLrsqp6oq0=;
- b=LUTzJ585XRwcVr5x4k0Dvwrjp9laZPP5fGsNIPoNIEEwupQBkrb5NRjX8tTNmWDTL9
- gEkbgfUwuvVfYxYk07S7Y9tV2ZmUgwFnptrymqfWK+wpe8w/hsq2Nwocv0pUkxgfc45/
- re8BQMBcT7b1P6z9kcUjDEqJVVymf1pm26vxH86DyFW0XzR7/QgNIKxIjke0c1bIaOtc
- LBtisaMlfdVUD5JN7hCsDp+0hchDHccWcYEP9T///ayKdWv6MwylmrFQ7GVnBhegjFgk
- hIqoQf+U+PKuTQmqAPVa16/BS+DTfjebrEPoJ+Ymw81kaUU5CliCvRgoVD9ovzCNAola
- VTCw==
-X-Gm-Message-State: APjAAAVi1qsHihsWGRWxfAYxJUJWbUIZUIdbkvMPyNKpti4K7vTADXHR
- 590AicvgoHnG7OrwnJgL8CM=
-X-Google-Smtp-Source: APXvYqzQv/ma85T1uHvLBCnXyHbfyAvj+NxRJp9F6fKjGZuDp5N0ojdZrwR8SjOday58YFhLrQkneg==
-X-Received: by 2002:a17:902:465:: with SMTP id
- 92mr3528226ple.128.1566985830529; 
- Wed, 28 Aug 2019 02:50:30 -0700 (PDT)
-Received: from localhost (14-202-91-55.tpgi.com.au. [14.202.91.55])
- by smtp.gmail.com with ESMTPSA id a142sm4712014pfd.147.2019.08.28.02.50.29
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Wed, 28 Aug 2019 02:50:30 -0700 (PDT)
-Date: Wed, 28 Aug 2019 19:49:20 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46JLj25c4yzDqVn
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Aug 2019 19:55:50 +1000 (AEST)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 46JLhx4SJhz9vBKv;
+ Wed, 28 Aug 2019 11:55:45 +0200 (CEST)
+Authentication-Results: localhost; dkim=pass
+ reason="1024-bit key; insecure key"
+ header.d=c-s.fr header.i=@c-s.fr header.b=VzaiixhY; dkim-adsp=pass;
+ dkim-atps=neutral
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id DFg0hZsLD2nr; Wed, 28 Aug 2019 11:55:45 +0200 (CEST)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 46JLhx31Tgz9vBKr;
+ Wed, 28 Aug 2019 11:55:45 +0200 (CEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
+ t=1566986145; bh=KPXuPE3m67n2skydH1PwRibMi0kncUovKH2JeL8/dRU=;
+ h=Subject:To:References:From:Date:In-Reply-To:From;
+ b=VzaiixhYH3gLKP+yYZn+q7yr2To3KDjRHNDiLuevj5kdvxGZvi19IZE7ktethdAaR
+ k0dIKhAtZhTZZ0+VqUB2P2V1qZm/JuFNv9Rd6b4lsYTs8Non0ZCncZUgoCW/wnQXcK
+ y20MTlpnOu8xzzBaR+zgv1PY5C35Jp1LBb1Xl+dI=
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 8A8EA8B87E;
+ Wed, 28 Aug 2019 11:55:46 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id cHRPq9vyM5vn; Wed, 28 Aug 2019 11:55:46 +0200 (CEST)
+Received: from [172.25.230.105] (po15451.idsi0.si.c-s.fr [172.25.230.105])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 4C5408B856;
+ Wed, 28 Aug 2019 11:55:46 +0200 (CEST)
 Subject: Re: [PATCH v2 0/4] powerpc/64: syscalls in C
-To: Christophe Leroy <christophe.leroy@c-s.fr>, linuxppc-dev@lists.ozlabs.org
+To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
 References: <20190827135548.21457-1-npiggin@gmail.com>
  <5ecd9d1a-d35e-dc8c-9ad4-a830a8b1a952@c-s.fr>
-In-Reply-To: <5ecd9d1a-d35e-dc8c-9ad4-a830a8b1a952@c-s.fr>
+ <1566985278.ehbnos9t6c.astroid@bobo.none>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Message-ID: <4d0359d8-0958-583f-7727-10a51bd3c7c6@c-s.fr>
+Date: Wed, 28 Aug 2019 11:55:46 +0200
+User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:60.0) Gecko/20100101
+ Thunderbird/60.8.0
 MIME-Version: 1.0
-User-Agent: astroid/0.15.0 (https://github.com/astroidmail/astroid)
-Message-Id: <1566985278.ehbnos9t6c.astroid@bobo.none>
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+In-Reply-To: <1566985278.ehbnos9t6c.astroid@bobo.none>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: fr
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -98,33 +95,37 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Christophe Leroy's on August 28, 2019 7:06 pm:
->=20
->=20
-> Le 27/08/2019 =C3=A0 15:55, Nicholas Piggin a =C3=A9crit=C2=A0:
->> Accounted for some feedback.
->>=20
->> Nicholas Piggin (4):
->>    powerpc: convert to copy_thread_tls
->>    powerpc/64: remove support for kernel-mode syscalls
->>    powerpc/64: system call remove non-volatile GPR save optimisation
->>    powerpc/64: system call implement the bulk of the logic in C
->=20
-> Would it be possible to split in the following parts:
->=20
-> 1/ Implement in C whatever can be implemented without removing=20
-> non-volatile GPR save optimisation
-> 2/ Remove non-volatile GPR save optimisation
-> 3/ Implement in C everything else
 
-Hmm. I'll have a look but I would rather not go back and add the
-intermediate state I was hoping to avoid. I'll think about it and
-if it's not too difficult I will try to add something. I have an
-idea.
 
-With your nvregs performance test on ppc32, are you doing the
-nvgpr restore? The fast path should be able to avoid that.
+Le 28/08/2019 à 11:49, Nicholas Piggin a écrit :
+> Christophe Leroy's on August 28, 2019 7:06 pm:
+>>
+>>
+>> Le 27/08/2019 à 15:55, Nicholas Piggin a écrit :
+>>> Accounted for some feedback.
+>>>
+>>> Nicholas Piggin (4):
+>>>     powerpc: convert to copy_thread_tls
+>>>     powerpc/64: remove support for kernel-mode syscalls
+>>>     powerpc/64: system call remove non-volatile GPR save optimisation
+>>>     powerpc/64: system call implement the bulk of the logic in C
+>>
+>> Would it be possible to split in the following parts:
+>>
+>> 1/ Implement in C whatever can be implemented without removing
+>> non-volatile GPR save optimisation
+>> 2/ Remove non-volatile GPR save optimisation
+>> 3/ Implement in C everything else
+> 
+> Hmm. I'll have a look but I would rather not go back and add the
+> intermediate state I was hoping to avoid. I'll think about it and
+> if it's not too difficult I will try to add something. I have an
+> idea.
+> 
+> With your nvregs performance test on ppc32, are you doing the
+> nvgpr restore? The fast path should be able to avoid that.
 
-Thanks,
-Nick
-=
+I only added the SAVE_NVGPRS call in the syscall entry macro just after 
+the saving of volatile regs, and changed the trap from \trapno+1 to \trapno
+
+Christophe
