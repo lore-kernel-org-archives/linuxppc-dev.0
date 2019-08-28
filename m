@@ -2,86 +2,61 @@ Return-Path: <SRS0=F8gr=WY=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.4 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
-	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 36D24C3A5A1
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Aug 2019 10:00:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5BCAAC3A5A1
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Aug 2019 10:10:24 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6D908217F5
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Aug 2019 10:00:20 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="go/KEl1g"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6D908217F5
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	by mail.kernel.org (Postfix) with ESMTPS id DB1DA208CB
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Aug 2019 10:10:23 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DB1DA208CB
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.intel.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46JLpB0CN5zDqY2
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Aug 2019 20:00:18 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 46JM1n1NXjzDr5R
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Aug 2019 20:10:21 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=2607:f8b0:4864:20::541; helo=mail-pg1-x541.google.com;
- envelope-from=npiggin@gmail.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="go/KEl1g"; 
- dkim-atps=neutral
-Received: from mail-pg1-x541.google.com (mail-pg1-x541.google.com
- [IPv6:2607:f8b0:4864:20::541])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ spf=none (mailfrom) smtp.mailfrom=linux.intel.com
+ (client-ip=134.134.136.126; helo=mga18.intel.com;
+ envelope-from=andriy.shevchenko@linux.intel.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=linux.intel.com
+Received: from mga18.intel.com (mga18.intel.com [134.134.136.126])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46JLjP3cwSzDqZD
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Aug 2019 19:56:09 +1000 (AEST)
-Received: by mail-pg1-x541.google.com with SMTP id m3so1166514pgv.13
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Aug 2019 02:56:09 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=date:from:subject:to:cc:references:in-reply-to:mime-version
- :user-agent:message-id:content-transfer-encoding;
- bh=gtLw2PD4vdmVI8TU44xrSxSJ1jQdArNsk+f5nXQyUHY=;
- b=go/KEl1geboy4c2V5Cp8XN/QsY82eAeesBzguIwJYhAw4muPV1Brgy5C0xfgun+ELg
- UWLOBgp6lVGbafMMH7hQDx2U1/eNHDQhxx5IW4key7x65bK2qdmZo/8QY+48kNzCk+St
- tkOAWyi0HlAzV4eV936GCe4Ml5q/EIJqL8JDAN+sKdKsn8TWBAlXA3WnrhG9ElXtkwSx
- jwHhf0q2QYh3i2cy5/+9GJ8UhLJmEtqjx2TUPqCEmfMT5YeZ4/TwzG40jPEpBrF959XO
- lU22MP1hrJ0q/nS+vRnGyPancQ5p8++uMLaJEfZ7u+TyxSHcPsUYHGZWGbjk73TUQjRD
- FRgg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:date:from:subject:to:cc:references:in-reply-to
- :mime-version:user-agent:message-id:content-transfer-encoding;
- bh=gtLw2PD4vdmVI8TU44xrSxSJ1jQdArNsk+f5nXQyUHY=;
- b=Uxc5vaGVsn9t8+Z8PeTBCBr4ZETycHcRJgCQeJgC9iCS539SadxM8RydMpDc6I7awV
- xlLWXlbDMp3h7sauQlWxYpVqY3+P09osxCaG9g6U1YIaTNXft8VHhnYHUS97ZJqDd9pi
- qxVdLB98SE+oUITxnPd8rfVB37YCHDtoANqlvaw3UnwX5x81ZGGLsu+32AARUvf6Eg6+
- HbUP8HyGQOE8bOLU28I/NY/3gc3yXfJNI54ooMoYYRQCWkoKWCXj5WI07myRZrZq0ACi
- fXB0O89OvUyGfoiIAWyQYqPxYyALGkWiNcsPTuttT1ANIqHfuK6or1qqr2LCQn21GRpb
- qSoQ==
-X-Gm-Message-State: APjAAAW1ARX7stJhMTHb6xi3Svx4SCjOt6XZYy89nP8nB3M2SJ2JJ70v
- hOW0rT/d9E5Qvl+4qiAhSLthWLcL
-X-Google-Smtp-Source: APXvYqy+022yXMXjRoNYay9Eddr6hIUiGUKFmMvrwAjs2j3EAMYn1nKDVHKODu1ZNNheAKFJtXSlRg==
-X-Received: by 2002:a63:460d:: with SMTP id t13mr2611381pga.205.1566986165793; 
- Wed, 28 Aug 2019 02:56:05 -0700 (PDT)
-Received: from localhost (14-202-91-55.tpgi.com.au. [14.202.91.55])
- by smtp.gmail.com with ESMTPSA id a10sm4445051pfl.159.2019.08.28.02.56.04
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Wed, 28 Aug 2019 02:56:05 -0700 (PDT)
-Date: Wed, 28 Aug 2019 19:54:55 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
-Subject: Re: [DOC][PATCH v2] powerpc: Provide initial documentation for PAPR
- hcalls
-To: linuxppc-dev@lists.ozlabs.org, Vaibhav Jain <vaibhav@linux.ibm.com>
-References: <20190828082729.16695-1-vaibhav@linux.ibm.com>
-In-Reply-To: <20190828082729.16695-1-vaibhav@linux.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46JLyr10d6zDqjY
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Aug 2019 20:07:46 +1000 (AEST)
+X-Amp-Result: UNSCANNABLE
+X-Amp-File-Uploaded: False
+Received: from fmsmga002.fm.intel.com ([10.253.24.26])
+ by orsmga106.jf.intel.com with ESMTP/TLS/DHE-RSA-AES256-GCM-SHA384;
+ 28 Aug 2019 03:07:42 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="5.64,440,1559545200"; d="scan'208";a="210115035"
+Received: from smile.fi.intel.com (HELO smile) ([10.237.68.40])
+ by fmsmga002.fm.intel.com with ESMTP; 28 Aug 2019 03:07:40 -0700
+Received: from andy by smile with local (Exim 4.92.1)
+ (envelope-from <andriy.shevchenko@linux.intel.com>)
+ id 1i2urb-0006RD-2L; Wed, 28 Aug 2019 13:07:39 +0300
+Date: Wed, 28 Aug 2019 13:07:39 +0300
+From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+To: Kuppuswamy Sathyanarayanan <sathyanarayanan.kuppuswamy@linux.intel.com>
+Subject: Re: [PATCH v1 2/2] PCI/AER: Update parameter descriptions to satisfy
+ kernel-doc validator
+Message-ID: <20190828100739.GJ2680@smile.fi.intel.com>
+References: <20190827151823.75312-1-andriy.shevchenko@linux.intel.com>
+ <20190827151823.75312-2-andriy.shevchenko@linux.intel.com>
+ <71eb8108-61a7-2815-4082-75c21f8bbf03@linux.intel.com>
 MIME-Version: 1.0
-User-Agent: astroid/0.15.0 (https://github.com/astroidmail/astroid)
-Message-Id: <1566986020.cw3ahh8v0v.astroid@bobo.none>
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <71eb8108-61a7-2815-4082-75c21f8bbf03@linux.intel.com>
+Organization: Intel Finland Oy - BIC 0357606-4 - Westendinkatu 7, 02160 Espoo
+User-Agent: Mutt/1.10.1 (2018-07-13)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -93,38 +68,35 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Laurent Dufour <ldufour@linux.vnet.ibm.com>,
- "Aneesh Kumar K . V" <aneesh.kumar@linux.ibm.com>,
- Oliver O'Halloran <oohall@gmail.com>, msuchanek@suse.de,
- David Gibson <david@gibson.dropbear.id.au>
+Cc: Sam Bobroff <sbobroff@linux.ibm.com>, linux-pci@vger.kernel.org,
+ Oliver O'Halloran <oohall@gmail.com>, Bjorn Helgaas <bhelgaas@google.com>,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Vaibhav Jain's on August 28, 2019 6:27 pm:
-> This doc patch provides an initial description of the hcall op-codes
-> that are used by Linux kernel running as a guest (LPAR) on top of
-> PowerVM or any other sPAPR compliant hyper-visor (e.g qemu).
->=20
-> Apart from documenting the hcalls the doc-patch also provides a
-> rudimentary overview of how hcall ABI, how they are issued with the
-> Linux kernel and how information/control flows between the guest and
-> hypervisor.
->=20
-> Signed-off-by: Vaibhav Jain <vaibhav@linux.ibm.com>
-> ---
-> Change-log:
->=20
-> v2:
-> * Added a section on Register conventions to be followed when invoking
->   hcalls. [Nick]
-> * Updated section on HCALL ABI to clarify that byte ordering only
->   matters to in/out values passed by a memory buffer. [Laurent]
-> * Updated a code comment in 'exceptions-64s.S' describing hypercall
->   register conventions to point it to 'papr_hcalls.rst' [Nick]
+On Tue, Aug 27, 2019 at 10:06:54AM -0700, Kuppuswamy Sathyanarayanan wrote:
+> 
+> On 8/27/19 8:18 AM, Andy Shevchenko wrote:
+> > Kernel-doc validator complains:
+> > 
+> > aer.c:207: warning: Function parameter or member 'str' not described in 'pcie_ecrc_get_policy'
+> > aer.c:1209: warning: Function parameter or member 'irq' not described in 'aer_isr'
+> > aer.c:1209: warning: Function parameter or member 'context' not described in 'aer_isr'
+> > aer.c:1209: warning: Excess function parameter 'work' description in 'aer_isr'
+> > 
+> > Fix the above accordingly.
+> > 
+> > Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 
-Thanks for that!
+> Reviewed-by: Kuppuswamy Sathyanarayanan
+> <sathyanarayanan.kuppuswamy@linux.intel.com>
 
-Acked-by: Nicholas Piggin <npiggin@gmail.com>
+Thanks!
+JFYI: Keep your tag on one line. Some bots require this IIRC (patchwork).
 
-=
+-- 
+With Best Regards,
+Andy Shevchenko
+
+
