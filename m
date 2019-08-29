@@ -2,90 +2,99 @@ Return-Path: <SRS0=bIL3=WZ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 68EA7C3A59F
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Aug 2019 06:38:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2785DC3A59F
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Aug 2019 06:42:15 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E00AC2073F
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Aug 2019 06:38:22 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E00AC2073F
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 7C6522073F
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Aug 2019 06:42:14 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (1024-bit key) header.d=axtens.net header.i=@axtens.net header.b="q1HORZW0"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7C6522073F
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=axtens.net
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46JtGj1ks7zDrL1
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Aug 2019 16:38:21 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
- (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=aneesh.kumar@linux.ibm.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 46JtM80ftVzDrN1
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Aug 2019 16:42:12 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46JtC94jNMzDr61
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Aug 2019 16:35:17 +1000 (AEST)
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x7T6ZBqj069369; Thu, 29 Aug 2019 02:35:11 -0400
-Received: from pps.reinject (localhost [127.0.0.1])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2up5runp3a-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 29 Aug 2019 02:35:10 -0400
-Received: from m0098417.ppops.net (m0098417.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.27/8.16.0.27) with SMTP id x7T6ZApn069308;
- Thu, 29 Aug 2019 02:35:10 -0400
-Received: from ppma04wdc.us.ibm.com (1a.90.2fa9.ip4.static.sl-reverse.com
- [169.47.144.26])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2up5runnk8-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 29 Aug 2019 02:35:09 -0400
-Received: from pps.filterd (ppma04wdc.us.ibm.com [127.0.0.1])
- by ppma04wdc.us.ibm.com (8.16.0.27/8.16.0.27) with SMTP id x7T6TW8i028119;
- Thu, 29 Aug 2019 06:33:56 GMT
-Received: from b03cxnp07028.gho.boulder.ibm.com
- (b03cxnp07028.gho.boulder.ibm.com [9.17.130.15])
- by ppma04wdc.us.ibm.com with ESMTP id 2ujvv6tswj-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 29 Aug 2019 06:33:56 +0000
-Received: from b03ledav006.gho.boulder.ibm.com
- (b03ledav006.gho.boulder.ibm.com [9.17.130.237])
- by b03cxnp07028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x7T6XsiV20251084
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Thu, 29 Aug 2019 06:33:54 GMT
-Received: from b03ledav006.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id CEF7CC6055;
- Thu, 29 Aug 2019 06:33:54 +0000 (GMT)
-Received: from b03ledav006.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id F37B2C6057;
- Thu, 29 Aug 2019 06:33:52 +0000 (GMT)
-Received: from skywalker.in.ibm.com (unknown [9.124.35.73])
- by b03ledav006.gho.boulder.ibm.com (Postfix) with ESMTP;
- Thu, 29 Aug 2019 06:33:52 +0000 (GMT)
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
-To: mpe@ellerman.id.au
-Subject: [PATCH 1/2] powerpc/nvdimm: Use HCALL error as the return value
-Date: Thu, 29 Aug 2019 12:03:46 +0530
-Message-Id: <20190829063347.13966-1-aneesh.kumar@linux.ibm.com>
-X-Mailer: git-send-email 2.21.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46JtJs4DSBzDrKh
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Aug 2019 16:40:13 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=axtens.net
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=axtens.net header.i=@axtens.net header.b="q1HORZW0"; 
+ dkim-atps=neutral
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 46JtJs3Gg5z8vpr
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Aug 2019 16:40:13 +1000 (AEST)
+Received: by ozlabs.org (Postfix)
+ id 46JtJs2cjLz9sN1; Thu, 29 Aug 2019 16:40:13 +1000 (AEST)
+Authentication-Results: ozlabs.org;
+ spf=pass (mailfrom) smtp.mailfrom=axtens.net
+ (client-ip=2607:f8b0:4864:20::643; helo=mail-pl1-x643.google.com;
+ envelope-from=dja@axtens.net; receiver=<UNKNOWN>)
+Authentication-Results: ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=axtens.net
+Authentication-Results: ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=axtens.net header.i=@axtens.net header.b="q1HORZW0"; 
+ dkim-atps=neutral
+Received: from mail-pl1-x643.google.com (mail-pl1-x643.google.com
+ [IPv6:2607:f8b0:4864:20::643])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 46JtJr0f68z9sNm
+ for <linuxppc-dev@ozlabs.org>; Thu, 29 Aug 2019 16:40:11 +1000 (AEST)
+Received: by mail-pl1-x643.google.com with SMTP id o3so1090316plb.13
+ for <linuxppc-dev@ozlabs.org>; Wed, 28 Aug 2019 23:40:11 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=axtens.net; s=google;
+ h=from:to:cc:subject:in-reply-to:references:date:message-id
+ :mime-version; bh=ORK7X7Ak0hv9l57pH4NKaklPes9OoYBlRdCvb9W3dTo=;
+ b=q1HORZW0OWUjI/oO7K00q9t+5S+cjgOt8RQe/7PnPWJMWD9OhqHBvLnu4qgDe/tVT/
+ gTg+qo2wqsSu9VsdHm7FxWpN0UtNKq45SLZlnHpeGQuaC8HD1/H2wu36mcgAqbKSvIu0
+ vkouxC4mK+bdT56ChNbGZAgyewi1tZ9h+qpfE=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:from:to:cc:subject:in-reply-to:references:date
+ :message-id:mime-version;
+ bh=ORK7X7Ak0hv9l57pH4NKaklPes9OoYBlRdCvb9W3dTo=;
+ b=unXH4G9AKOya7RjXCQRCz4+rE/XLWAt+AZklwYO7UN6mRmPID1XpvtmzJgNlfO8vfr
+ 0e73yt4NUyOKvTCfPN474QW4uUAjFRdwtMKDwprubJYMYXMNzJcXhyzF/O00xkFv+uaU
+ Kp65OkrtHhtx6Vh3DzzlC4KIa7YLiVTVxaMblJOT1q0pXai6vQW1InWY37WWGkYNScdC
+ unzeGc7Wlwv1tWrydYL2mqQOxlDjgonTYNtPINQUYngMyKI16aHV5XYnGPsJ8C4Xk/cS
+ mZZt9ejsuxA+GlpxTZB8SYsC6DigAHRt6OlIzLNfnqM6rdBZCHinIijuDMGRd5zDPoUr
+ DCAw==
+X-Gm-Message-State: APjAAAWk716T3tivQxIsrbtLv4OOnLGrOYnJekvz+z0a3HR6syL+dNcq
+ MZhsXfydPqp3Sfnftce1NdSNrQ==
+X-Google-Smtp-Source: APXvYqxDJtWozUOTxlziw7Ld/8on+Ta0l+4nJ5okDn71QH5EXiS01UtjM/Lq+WdusL28oQRhpF6Dwg==
+X-Received: by 2002:a17:902:a50a:: with SMTP id
+ s10mr8198619plq.108.1567060808510; 
+ Wed, 28 Aug 2019 23:40:08 -0700 (PDT)
+Received: from localhost (ppp167-251-205.static.internode.on.net.
+ [59.167.251.205])
+ by smtp.gmail.com with ESMTPSA id r3sm1634491pfr.101.2019.08.28.23.40.06
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Wed, 28 Aug 2019 23:40:07 -0700 (PDT)
+From: Daniel Axtens <dja@axtens.net>
+To: "Christopher M. Riedl" <cmr@informatik.wtf>, linuxppc-dev@ozlabs.org,
+ kernel-hardening@lists.openwall.com
+Subject: Re: [PATCH v5 1/2] powerpc/xmon: Allow listing and clearing
+ breakpoints in read-only mode
+In-Reply-To: <20190828034613.14750-2-cmr@informatik.wtf>
+References: <20190828034613.14750-1-cmr@informatik.wtf>
+ <20190828034613.14750-2-cmr@informatik.wtf>
+Date: Thu, 29 Aug 2019 16:40:03 +1000
+Message-ID: <87ef14v5j0.fsf@dja-thinkpad.axtens.net>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2019-08-29_04:, , signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- malwarescore=0 suspectscore=1 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=992 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1906280000 definitions=main-1908290070
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -97,91 +106,35 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Vaibhav Jain <vaibhav@linux.ibm.com>, Oliver O'Halloran <oohall@gmail.com>,
- linuxppc-dev@lists.ozlabs.org, "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
+Cc: ajd@linux.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This simplifies the error handling and also enable us to switch to
-H_SCM_QUERY hcall in a later patch on H_OVERLAP error.
+Hi Chris,
 
-We also do some kernel print formatting fixup in this patch.
+> Read-only mode should not prevent listing and clearing any active
+> breakpoints.
 
-Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
----
- arch/powerpc/platforms/pseries/papr_scm.c | 24 ++++++++++-------------
- 1 file changed, 10 insertions(+), 14 deletions(-)
+I tested this and it works for me:
 
-diff --git a/arch/powerpc/platforms/pseries/papr_scm.c b/arch/powerpc/platforms/pseries/papr_scm.c
-index a5ac371a3f06..220e595cb579 100644
---- a/arch/powerpc/platforms/pseries/papr_scm.c
-+++ b/arch/powerpc/platforms/pseries/papr_scm.c
-@@ -66,28 +66,22 @@ static int drc_pmem_bind(struct papr_scm_priv *p)
- 	} while (rc == H_BUSY);
- 
- 	if (rc) {
--		/* H_OVERLAP needs a separate error path */
--		if (rc == H_OVERLAP)
--			return -EBUSY;
--
- 		dev_err(&p->pdev->dev, "bind err: %lld\n", rc);
--		return -ENXIO;
-+		return rc;
- 	}
- 
- 	p->bound_addr = saved;
--
--	dev_dbg(&p->pdev->dev, "bound drc %x to %pR\n", p->drc_index, &p->res);
--
-+	dev_dbg(&p->pdev->dev, "bound drc 0x%x to %pR\n", p->drc_index, &p->res);
- 	return 0;
- }
- 
--static int drc_pmem_unbind(struct papr_scm_priv *p)
-+static void drc_pmem_unbind(struct papr_scm_priv *p)
- {
- 	unsigned long ret[PLPAR_HCALL_BUFSIZE];
- 	uint64_t token = 0;
- 	int64_t rc;
- 
--	dev_dbg(&p->pdev->dev, "unbind drc %x\n", p->drc_index);
-+	dev_dbg(&p->pdev->dev, "unbind drc 0x%x\n", p->drc_index);
- 
- 	/* NB: unbind has the same retry requirements as drc_pmem_bind() */
- 	do {
-@@ -110,10 +104,10 @@ static int drc_pmem_unbind(struct papr_scm_priv *p)
- 	if (rc)
- 		dev_err(&p->pdev->dev, "unbind error: %lld\n", rc);
- 	else
--		dev_dbg(&p->pdev->dev, "unbind drc %x complete\n",
-+		dev_dbg(&p->pdev->dev, "unbind drc 0x%x complete\n",
- 			p->drc_index);
- 
--	return rc == H_SUCCESS ? 0 : -ENXIO;
-+	return;
- }
- 
- static int papr_scm_meta_get(struct papr_scm_priv *p,
-@@ -436,14 +430,16 @@ static int papr_scm_probe(struct platform_device *pdev)
- 	rc = drc_pmem_bind(p);
- 
- 	/* If phyp says drc memory still bound then force unbound and retry */
--	if (rc == -EBUSY) {
-+	if (rc == H_OVERLAP) {
- 		dev_warn(&pdev->dev, "Retrying bind after unbinding\n");
- 		drc_pmem_unbind(p);
- 		rc = drc_pmem_bind(p);
- 	}
- 
--	if (rc)
-+	if (rc != H_SUCCESS) {
-+		rc = -ENXIO;
- 		goto err;
-+	}
- 
- 	/* setup the resource for the newly bound range */
- 	p->res.start = p->bound_addr;
--- 
-2.21.0
+Tested-by: Daniel Axtens <dja@axtens.net>
 
+> +		if (xmon_is_ro || !scanhex(&a)) {
+
+It took me a while to figure out what this line does: as I understand
+it, the 'b' command can also be used to install a breakpoint (as well as
+bi/bd). If we are in ro mode or if the input after 'b' doesn't scan as a
+hex string, print the list of breakpoints instead. Anyway, I'm now
+happy with it, so:
+
+Reviewed-by: Daniel Axtens <dja@axtens.net>
+
+Regards,
+Daniel
+
+>  			/* print all breakpoints */
+>  			printf("   type            address\n");
+>  			if (dabr.enabled) {
+> -- 
+> 2.23.0
