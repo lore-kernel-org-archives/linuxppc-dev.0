@@ -4,22 +4,21 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
-	version=3.4.0
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2FB90C3A59F
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Aug 2019 12:38:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5B47EC3A59F
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Aug 2019 12:40:55 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id DCAFC205ED
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Aug 2019 12:38:08 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DCAFC205ED
+	by mail.kernel.org (Postfix) with ESMTPS id 1363D2339E
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Aug 2019 12:40:55 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1363D2339E
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=suse.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46K2Fp1PpwzDrSq
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Aug 2019 22:38:06 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 46K2Jz41lzzDq77
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Aug 2019 22:40:51 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=suse.de
  (client-ip=195.135.220.15; helo=mx1.suse.de; envelope-from=msuchanek@suse.de;
@@ -29,17 +28,17 @@ Authentication-Results: lists.ozlabs.org;
 Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46K26x0JpfzDrQN
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46K26w6JH8zDrQL
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Aug 2019 22:32:08 +1000 (AEST)
 X-Virus-Scanned: by amavisd-new at test-mx.suse.de
 Received: from relay2.suse.de (unknown [195.135.220.254])
- by mx1.suse.de (Postfix) with ESMTP id DBFB9AF77;
+ by mx1.suse.de (Postfix) with ESMTP id 64EC4AE74;
  Thu, 29 Aug 2019 12:32:05 +0000 (UTC)
 From: Michal Suchanek <msuchanek@suse.de>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 3/3] scsi: ibmvscsi: tgt: Fix fallthrough warnings.
-Date: Thu, 29 Aug 2019 14:32:02 +0200
-Message-Id: <7a621bd1a818c76c320cfd69ab13a17369e3c979.1567081143.git.msuchanek@suse.de>
+Subject: [PATCH 2/3] scsi: ibmvfc: Fix fallthrough warnings.
+Date: Thu, 29 Aug 2019 14:32:01 +0200
+Message-Id: <1302692ee9813ba49e647b7e6203db5e99e65007.1567081143.git.msuchanek@suse.de>
 X-Mailer: git-send-email 2.22.0
 In-Reply-To: <cover.1567081143.git.msuchanek@suse.de>
 References: <cover.1567081143.git.msuchanek@suse.de>
@@ -56,10 +55,9 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-scsi@vger.kernel.org,
+Cc: Tyrel Datwyler <tyreld@linux.ibm.com>, linux-scsi@vger.kernel.org,
  "Martin K. Petersen" <martin.petersen@oracle.com>,
  "James E.J. Bottomley" <jejb@linux.ibm.com>, linux-kernel@vger.kernel.org,
- Michael Cyr <mikecyr@linux.ibm.com>, target-devel@vger.kernel.org,
  Paul Mackerras <paulus@samba.org>, Michal Suchanek <msuchanek@suse.de>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
@@ -69,32 +67,37 @@ Add fallthrough comments where they are missing.
 
 Signed-off-by: Michal Suchanek <msuchanek@suse.de>
 ---
- drivers/scsi/ibmvscsi_tgt/ibmvscsi_tgt.c | 3 +++
+ drivers/scsi/ibmvscsi/ibmvfc.c | 3 +++
  1 file changed, 3 insertions(+)
 
-diff --git a/drivers/scsi/ibmvscsi_tgt/ibmvscsi_tgt.c b/drivers/scsi/ibmvscsi_tgt/ibmvscsi_tgt.c
-index 7f9535392a93..57475dbcae0f 100644
---- a/drivers/scsi/ibmvscsi_tgt/ibmvscsi_tgt.c
-+++ b/drivers/scsi/ibmvscsi_tgt/ibmvscsi_tgt.c
-@@ -1581,6 +1581,7 @@ static long ibmvscsis_adapter_info(struct scsi_info *vscsi,
- 	case H_PERMISSION:
- 		if (connection_broken(vscsi))
- 			flag_bits = (RESPONSE_Q_DOWN | CLIENT_FAILED);
+diff --git a/drivers/scsi/ibmvscsi/ibmvfc.c b/drivers/scsi/ibmvscsi/ibmvfc.c
+index 8cdbac076a1b..2a06a5b4d3a5 100644
+--- a/drivers/scsi/ibmvscsi/ibmvfc.c
++++ b/drivers/scsi/ibmvscsi/ibmvfc.c
+@@ -1830,6 +1830,7 @@ static int ibmvfc_bsg_request(struct bsg_job *job)
+ 		port_id = (bsg_request->rqst_data.h_els.port_id[0] << 16) |
+ 			(bsg_request->rqst_data.h_els.port_id[1] << 8) |
+ 			bsg_request->rqst_data.h_els.port_id[2];
 +		/* fallthrough */
- 	default:
- 		dev_err(&vscsi->dev, "adapter_info: h_copy_rdma to client failed, rc %ld\n",
- 			rc);
-@@ -2492,8 +2493,10 @@ static long ibmvscsis_ping_response(struct scsi_info *vscsi)
+ 	case FC_BSG_RPT_ELS:
+ 		fc_flags = IBMVFC_FC_ELS;
  		break;
- 	case H_CLOSED:
- 		vscsi->flags |= CLIENT_FAILED;
+@@ -1838,6 +1839,7 @@ static int ibmvfc_bsg_request(struct bsg_job *job)
+ 		port_id = (bsg_request->rqst_data.h_ct.port_id[0] << 16) |
+ 			(bsg_request->rqst_data.h_ct.port_id[1] << 8) |
+ 			bsg_request->rqst_data.h_ct.port_id[2];
 +		/* fallthrough */
- 	case H_DROPPED:
- 		vscsi->flags |= RESPONSE_Q_DOWN;
+ 	case FC_BSG_RPT_CT:
+ 		fc_flags = IBMVFC_FC_CT_IU;
+ 		break;
+@@ -4020,6 +4022,7 @@ static void ibmvfc_npiv_login_done(struct ibmvfc_event *evt)
+ 		return;
+ 	case IBMVFC_MAD_CRQ_ERROR:
+ 		ibmvfc_retry_host_init(vhost);
 +		/* fallthrough */
- 	case H_REMOTE_PARM:
- 		dev_err(&vscsi->dev, "ping_response: h_send_crq failed, rc %ld\n",
- 			rc);
+ 	case IBMVFC_MAD_DRIVER_FAILED:
+ 		ibmvfc_free_event(evt);
+ 		return;
 -- 
 2.12.3
 
