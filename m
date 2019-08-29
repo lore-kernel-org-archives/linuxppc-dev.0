@@ -2,48 +2,52 @@ Return-Path: <SRS0=bIL3=WZ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-5.2 required=3.0 tests=FROM_EXCESS_BASE64,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_2 autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AE4D6C3A59F
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Aug 2019 09:44:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1CF12C3A59F
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Aug 2019 10:04:17 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 46C41233A1
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Aug 2019 09:44:16 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 46C41233A1
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+	by mail.kernel.org (Postfix) with ESMTPS id 97A142339E
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Aug 2019 10:04:16 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 97A142339E
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=suse.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46JyPB2XBtzDrPl
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Aug 2019 19:44:14 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	by lists.ozlabs.org (Postfix) with ESMTP id 46JyrG0M1lzDrHl
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Aug 2019 20:04:14 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+ spf=pass (mailfrom) smtp.mailfrom=suse.de
+ (client-ip=195.135.220.15; helo=mx1.suse.de; envelope-from=msuchanek@suse.de;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=suse.de
+Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46JyM50f59zDrNk
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Aug 2019 19:42:25 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=ellerman.id.au
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
- SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 46JyM35CvPz9s4Y;
- Thu, 29 Aug 2019 19:42:23 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Christoph Hellwig <hch@lst.de>
-Subject: Re: [PATCH] powerpc: use the generic dma coherent remap allocator
-In-Reply-To: <20190828142546.GA29960@lst.de>
-References: <20190814132230.31874-1-hch@lst.de>
- <20190814132230.31874-2-hch@lst.de> <20190828061023.GB21592@lst.de>
- <87blw9v2ge.fsf@mpe.ellerman.id.au> <20190828142546.GA29960@lst.de>
-Date: Thu, 29 Aug 2019 19:42:15 +1000
-Message-ID: <87zhjstiiw.fsf@mpe.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46Jynt69hGzDrRP
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Aug 2019 20:02:09 +1000 (AEST)
+X-Virus-Scanned: by amavisd-new at test-mx.suse.de
+Received: from relay2.suse.de (unknown [195.135.220.254])
+ by mx1.suse.de (Postfix) with ESMTP id A15BDB654;
+ Thu, 29 Aug 2019 10:02:05 +0000 (UTC)
+Date: Thu, 29 Aug 2019 12:01:45 +0200
+From: Michal =?UTF-8?B?U3VjaMOhbmVr?= <msuchanek@suse.de>
+To: Christoph Hellwig <hch@infradead.org>
+Subject: Re: [PATCH v3 3/4] powerpc/64: make buildable without CONFIG_COMPAT
+Message-ID: <20190829120145.5201174f@naga>
+In-Reply-To: <20190829064624.GA28508@infradead.org>
+References: <cover.1567007242.git.msuchanek@suse.de>
+ <0ad51b41aebf65b3f3fcb9922f0f00b47932725d.1567007242.git.msuchanek@suse.de>
+ <20190829064624.GA28508@infradead.org>
+X-Mailer: Claws Mail 3.17.4 (GTK+ 2.24.32; x86_64-suse-linux-gnu)
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -55,31 +59,55 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>,
- Christoph Hellwig <hch@lst.de>
+Cc: Michael Neuling <mikey@neuling.org>, Allison Randal <allison@lohutok.net>,
+ Arnd Bergmann <arnd@arndb.de>, Nicolai Stange <nstange@suse.de>,
+ David Hildenbrand <david@redhat.com>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Christian Brauner <christian@brauner.io>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>, linux-kernel@vger.kernel.org,
+ Nicholas Piggin <npiggin@gmail.com>, Geert Uytterhoeven <geert@linux-m68k.org>,
+ David Howells <dhowells@redhat.com>, Paul Mackerras <paulus@samba.org>,
+ Joel Stanley <joel@jms.id.au>, Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
+ Breno Leitao <leitao@debian.org>, Firoz Khan <firoz.khan@linaro.org>,
+ Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@lists.ozlabs.org,
+ Hari Bathini <hbathini@linux.ibm.com>,
+ "Eric W. Biederman" <ebiederm@xmission.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Christoph Hellwig <hch@lst.de> writes:
-> On Wed, Aug 28, 2019 at 11:34:09PM +1000, Michael Ellerman wrote:
->> Christoph Hellwig <hch@lst.de> writes:
->> > Michael,
->> >
->> > do oyu plan to pick this up?  Otherwise I'd love to pick it up through
->> > the dma-mapping tree as that would avoid one trivial conflict with
->> > another pending patch.
->> 
->> It conflicts a bit with the ioremap changes I already have in next.
->> 
->> And it would be good for it to get some testing on my machines here. So
->> I guess I'd rather it went via the powerpc tree?
->
-> Sure, feel free to queue it up through the ppc tree.  I am about to
-> queue up a patch to move the dma_atomic_pool_init call to common code,
-> so as linux-next / Linus fixup we'll have to eventually remove
-> atomic_pool_init() again.
+On Wed, 28 Aug 2019 23:46:24 -0700
+Christoph Hellwig <hch@infradead.org> wrote:
 
-OK.
+> On Wed, Aug 28, 2019 at 06:43:50PM +0200, Michal Suchanek wrote:
+> > +ifdef CONFIG_COMPAT
+> > +obj-y				+= sys_ppc32.o ptrace32.o signal_32.o
+> > +endif  
+> 
+> This should be:
+> 
+> obj-$(CONFIG_COMPAT)		+= sys_ppc32.o ptrace32.o signal_32.o
 
-cheers
+Yes, looks better.
+> 
+> >  /* This value is used to mark exception frames on the stack. */
+> >  exception_marker:
+> > diff --git a/arch/powerpc/kernel/signal.c b/arch/powerpc/kernel/signal.c
+> > index 60436432399f..73d0f53ffc1a 100644
+> > --- a/arch/powerpc/kernel/signal.c
+> > +++ b/arch/powerpc/kernel/signal.c
+> > @@ -277,7 +277,7 @@ static void do_signal(struct task_struct *tsk)
+> >  
+> >  	rseq_signal_deliver(&ksig, tsk->thread.regs);
+> >  
+> > -	if (is32) {
+> > +	if ((IS_ENABLED(CONFIG_PPC32) || IS_ENABLED(CONFIG_COMPAT)) && is32) {  
+> 
+> I think we should fix the is_32bit_task definitions instead so that
+> callers don't need this mess.  
+
+Yes, that makes sense.
+
+Thanks
+
+Michal
