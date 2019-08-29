@@ -7,19 +7,19 @@ X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E1927C3A59F
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Aug 2019 09:00:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D1008C3A59F
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Aug 2019 09:02:26 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6F51D215EA
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Aug 2019 09:00:04 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6F51D215EA
+	by mail.kernel.org (Postfix) with ESMTPS id 8A364215EA
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Aug 2019 09:02:26 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8A364215EA
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ozlabs.ru
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46JxQB20b5zDqRj
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Aug 2019 19:00:02 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 46JxSw2WW4zDqSV
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Aug 2019 19:02:24 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=ozlabs.ru
  (client-ip=107.173.13.209; helo=ozlabs.ru; envelope-from=aik@ozlabs.ru;
@@ -27,16 +27,16 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=ozlabs.ru
 Received: from ozlabs.ru (ozlabs.ru [107.173.13.209])
- by lists.ozlabs.org (Postfix) with ESMTP id 46JxG80p6BzDqLv
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Aug 2019 18:53:04 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTP id 46JxGB0jNLzDqLv
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Aug 2019 18:53:06 +1000 (AEST)
 Received: from fstn1-p1.ozlabs.ibm.com (localhost [IPv6:::1])
- by ozlabs.ru (Postfix) with ESMTP id 318D5AE80382;
- Thu, 29 Aug 2019 04:52:39 -0400 (EDT)
+ by ozlabs.ru (Postfix) with ESMTP id 46E3BAE80570;
+ Thu, 29 Aug 2019 04:52:41 -0400 (EDT)
 From: Alexey Kardashevskiy <aik@ozlabs.ru>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH kernel v3 3/5] vfio/spapr_tce: Invalidate multiple TCEs at once
-Date: Thu, 29 Aug 2019 18:52:50 +1000
-Message-Id: <20190829085252.72370-4-aik@ozlabs.ru>
+Subject: [PATCH kernel v3 4/5] powerpc/pseries/iommu: Switch to xchg_no_kill
+Date: Thu, 29 Aug 2019 18:52:51 +1000
+Message-Id: <20190829085252.72370-5-aik@ozlabs.ru>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20190829085252.72370-1-aik@ozlabs.ru>
 References: <20190829085252.72370-1-aik@ozlabs.ru>
@@ -59,86 +59,45 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Invalidating a TCE cache entry for each updated TCE is quite expensive.
-This makes use of the new iommu_table_ops::xchg_no_kill()/tce_kill()
-callbacks to bring down the time spent in mapping a huge guest DMA window.
+This is the last implementation of iommu_table_ops::exchange() which
+we are about to remove.
+
+This implements xchg_no_kill() for pseries. Since it is paravirtual
+platform, the hypervisor does TCE invalidations and we do not have
+to deal with it here, hence no tce_kill() hook.
 
 Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
 ---
- drivers/vfio/vfio_iommu_spapr_tce.c | 18 ++++++++++++------
- 1 file changed, 12 insertions(+), 6 deletions(-)
+Changes:
+v3:
+* new to the series and it fixes compile error from v2
+---
+ arch/powerpc/platforms/pseries/iommu.c | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/vfio/vfio_iommu_spapr_tce.c b/drivers/vfio/vfio_iommu_spapr_tce.c
-index babef8b00daf..3b18fa4d090a 100644
---- a/drivers/vfio/vfio_iommu_spapr_tce.c
-+++ b/drivers/vfio/vfio_iommu_spapr_tce.c
-@@ -435,7 +435,7 @@ static int tce_iommu_clear(struct tce_container *container,
- 	unsigned long oldhpa;
- 	long ret;
- 	enum dma_data_direction direction;
--	unsigned long lastentry = entry + pages;
-+	unsigned long lastentry = entry + pages, firstentry = entry;
+diff --git a/arch/powerpc/platforms/pseries/iommu.c b/arch/powerpc/platforms/pseries/iommu.c
+index 42fb03253334..df7db33ca93b 100644
+--- a/arch/powerpc/platforms/pseries/iommu.c
++++ b/arch/powerpc/platforms/pseries/iommu.c
+@@ -621,7 +621,8 @@ static void pci_dma_bus_setup_pSeries(struct pci_bus *bus)
  
- 	for ( ; entry < lastentry; ++entry) {
- 		if (tbl->it_indirect_levels && tbl->it_userspace) {
-@@ -460,7 +460,7 @@ static int tce_iommu_clear(struct tce_container *container,
- 
- 		direction = DMA_NONE;
- 		oldhpa = 0;
--		ret = iommu_tce_xchg(container->mm, tbl, entry, &oldhpa,
-+		ret = iommu_tce_xchg_no_kill(container->mm, tbl, entry, &oldhpa,
- 				&direction);
- 		if (ret)
- 			continue;
-@@ -476,6 +476,8 @@ static int tce_iommu_clear(struct tce_container *container,
- 		tce_iommu_unuse_page(container, oldhpa);
- 	}
- 
-+	iommu_tce_kill(tbl, firstentry, pages);
-+
- 	return 0;
- }
- 
-@@ -518,8 +520,8 @@ static long tce_iommu_build(struct tce_container *container,
- 
- 		hpa |= offset;
- 		dirtmp = direction;
--		ret = iommu_tce_xchg(container->mm, tbl, entry + i, &hpa,
--				&dirtmp);
-+		ret = iommu_tce_xchg_no_kill(container->mm, tbl, entry + i,
-+				&hpa, &dirtmp);
- 		if (ret) {
- 			tce_iommu_unuse_page(container, hpa);
- 			pr_err("iommu_tce: %s failed ioba=%lx, tce=%lx, ret=%ld\n",
-@@ -536,6 +538,8 @@ static long tce_iommu_build(struct tce_container *container,
- 
- 	if (ret)
- 		tce_iommu_clear(container, tbl, entry, i);
-+	else
-+		iommu_tce_kill(tbl, entry, pages);
- 
- 	return ret;
- }
-@@ -572,8 +576,8 @@ static long tce_iommu_build_v2(struct tce_container *container,
- 		if (mm_iommu_mapped_inc(mem))
- 			break;
- 
--		ret = iommu_tce_xchg(container->mm, tbl, entry + i, &hpa,
--				&dirtmp);
-+		ret = iommu_tce_xchg_no_kill(container->mm, tbl, entry + i,
-+				&hpa, &dirtmp);
- 		if (ret) {
- 			/* dirtmp cannot be DMA_NONE here */
- 			tce_iommu_unuse_page_v2(container, tbl, entry + i);
-@@ -593,6 +597,8 @@ static long tce_iommu_build_v2(struct tce_container *container,
- 
- 	if (ret)
- 		tce_iommu_clear(container, tbl, entry, i);
-+	else
-+		iommu_tce_kill(tbl, entry, pages);
- 
- 	return ret;
- }
+ #ifdef CONFIG_IOMMU_API
+ static int tce_exchange_pseries(struct iommu_table *tbl, long index, unsigned
+-				long *tce, enum dma_data_direction *direction)
++				long *tce, enum dma_data_direction *direction,
++				bool realmode)
+ {
+ 	long rc;
+ 	unsigned long ioba = (unsigned long) index << tbl->it_page_shift;
+@@ -649,7 +650,7 @@ static int tce_exchange_pseries(struct iommu_table *tbl, long index, unsigned
+ struct iommu_table_ops iommu_table_lpar_multi_ops = {
+ 	.set = tce_buildmulti_pSeriesLP,
+ #ifdef CONFIG_IOMMU_API
+-	.exchange = tce_exchange_pseries,
++	.xchg_no_kill = tce_exchange_pseries,
+ #endif
+ 	.clear = tce_freemulti_pSeriesLP,
+ 	.get = tce_get_pSeriesLP
 -- 
 2.17.1
 
