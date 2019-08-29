@@ -2,45 +2,82 @@ Return-Path: <SRS0=bIL3=WZ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-0.4 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
+	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 602D9C3A59F
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Aug 2019 09:06:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B17A8C3A59F
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Aug 2019 09:09:49 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id DDB21215EA
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Aug 2019 09:06:52 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DDB21215EA
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ozlabs.ru
+	by mail.kernel.org (Postfix) with ESMTPS id 322B42073F
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Aug 2019 09:09:48 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="e6bI7Ffc"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 322B42073F
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46JxZ21ddczDqQc
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Aug 2019 19:06:50 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 46JxdQ44tLzDqc6
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Aug 2019 19:09:46 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=ozlabs.ru
- (client-ip=107.173.13.209; helo=ozlabs.ru; envelope-from=aik@ozlabs.ru;
- receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=gmail.com
+ (client-ip=2607:f8b0:4864:20::d43; helo=mail-io1-xd43.google.com;
+ envelope-from=oohall@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=ozlabs.ru
-Received: from ozlabs.ru (ozlabs.ru [107.173.13.209])
- by lists.ozlabs.org (Postfix) with ESMTP id 46JxGd60gJzDqQs
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Aug 2019 18:53:29 +1000 (AEST)
-Received: from fstn1-p1.ozlabs.ibm.com (localhost [IPv6:::1])
- by ozlabs.ru (Postfix) with ESMTP id ADD2FAE800AD;
- Thu, 29 Aug 2019 04:52:34 -0400 (EDT)
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH kernel v3 1/5] powerpc/powernv/ioda: Split out TCE
- invalidation from TCE updates
-Date: Thu, 29 Aug 2019 18:52:48 +1000
-Message-Id: <20190829085252.72370-2-aik@ozlabs.ru>
-X-Mailer: git-send-email 2.17.1
-In-Reply-To: <20190829085252.72370-1-aik@ozlabs.ru>
-References: <20190829085252.72370-1-aik@ozlabs.ru>
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="e6bI7Ffc"; 
+ dkim-atps=neutral
+Received: from mail-io1-xd43.google.com (mail-io1-xd43.google.com
+ [IPv6:2607:f8b0:4864:20::d43])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46JxJR3DqwzDqnT
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Aug 2019 18:55:03 +1000 (AEST)
+Received: by mail-io1-xd43.google.com with SMTP id z3so5482119iog.0
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Aug 2019 01:55:03 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+ :cc; bh=OjWLoL0Sytp716R0t7m77BSmrg6hly7xS9TtDDFlQW0=;
+ b=e6bI7FfcuzokBO7bf+PPxbq9uh6UddvVAUKKcmnYm7I7jdNpv2KOJTjamShhsl0F7c
+ TIrMvA2TKjkQxG7PrXIlQoGFb0ia0nWbOtL+JRkJSZEwi+SxxhwuZSK++6YBsOnZwWRf
+ v23NpMf84gPCO5gW99XN9057VPN6Q8JYTkIpgLu6ie9N7p3AFCo52DsmdsLEkT4q70Og
+ rr6bsGPdP1ctItbMcayqNng5aE1TjYyesfHwatZLfjY/Erp/Zvle/6h1gg1sWHsQThlN
+ VCaLfnLboHf+fjucVmGs/TJgmqzJ/ewq7wwuE5a4bElQmK2WGYeHtdZ/+L0ZKUhAUQoY
+ /UGw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+ :message-id:subject:to:cc;
+ bh=OjWLoL0Sytp716R0t7m77BSmrg6hly7xS9TtDDFlQW0=;
+ b=rcMnEYo/LKBR7fbrgHlGrmysuYfzqlX4s2knQzsLlUTqIdtw/q0hKDOoksNUKei/OB
+ qoSvt42/OEIRXrIbLr3S9p2QG+iexfJh+JdsOPqx6fpZ2zrb77Xo+yAoLs8G3PuWi5i+
+ SQ/ZBFVCJ65K8Ikzion4atAuLkygPqrnIbdFddvmilggXosG4PF3U3OYDXSaglcH6k85
+ HBwkoUwD0YfVlWq61FmcChj3D+e9ItN5YtSckA0jRYZ07E+IirihxQTlIgi/6S8Xgq9k
+ +VIAHv0l3N9jt44qq1SiENrYjpouVWVDrI5YBenEcq9n99bQAA+QmwDVSnWYLCyuyYSs
+ Bo6w==
+X-Gm-Message-State: APjAAAXtg03B0GflbruQYvdzt3j4cPEzc9672Q0kr6Bw97O7VYoT4bmn
+ NHyp+guuOBzabcRNsS/QmIvrwEJr5fge8AhTq2M=
+X-Google-Smtp-Source: APXvYqyLLqVvLAQXPV3n+6MqExnVFy6MeU140oq3mKXjoQ+Fp5kDk7+yAlDnGOoveXPfVMt+QbPpDiOxyZ2PLG0wQjI=
+X-Received: by 2002:a5d:9b02:: with SMTP id y2mr2810596ion.146.1567068899708; 
+ Thu, 29 Aug 2019 01:54:59 -0700 (PDT)
+MIME-Version: 1.0
+References: <20190829063347.13966-1-aneesh.kumar@linux.ibm.com>
+ <20190829063347.13966-2-aneesh.kumar@linux.ibm.com>
+ <CAOSf1CFuU7tCzKfYNDTe5Tut=Mz+2gL+nnvQ74y75PyrhTP7AA@mail.gmail.com>
+ <93c5f8b0-36c9-d9e7-ac4d-5fb625cab89c@linux.ibm.com>
+In-Reply-To: <93c5f8b0-36c9-d9e7-ac4d-5fb625cab89c@linux.ibm.com>
+From: "Oliver O'Halloran" <oohall@gmail.com>
+Date: Thu, 29 Aug 2019 18:54:47 +1000
+Message-ID: <CAOSf1CE+uhJ3gVbVKTXY2c1qLkwr+x1fAthqgztQOc73ibgxKg@mail.gmail.com>
+Subject: Re: [PATCH 2/2] powerpc/nvdimm: use H_SCM_QUERY hcall on H_OVERLAP
+ error
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -52,156 +89,70 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: kvm@vger.kernel.org, Alexey Kardashevskiy <aik@ozlabs.ru>,
- Alistair Popple <alistair@popple.id.au>, kvm-ppc@vger.kernel.org,
- Alex Williamson <alex.williamson@redhat.com>,
- David Gibson <david@gibson.dropbear.id.au>
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Vaibhav Jain <vaibhav@linux.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-At the moment updates in a TCE table are made by iommu_table_ops::exchange
-which update one TCE and invalidates an entry in the PHB/NPU TCE cache
-via set of registers called "TCE Kill" (hence the naming).
-Writing a TCE is a simple xchg() but invalidating the TCE cache is
-a relatively expensive OPAL call. Mapping a 100GB guest with PCI+NPU
-passed through devices takes about 20s.
+On Thu, Aug 29, 2019 at 6:21 PM Aneesh Kumar K.V
+<aneesh.kumar@linux.ibm.com> wrote:
+>
+> On 8/29/19 1:29 PM, Oliver O'Halloran wrote:
+> > On Thu, Aug 29, 2019 at 4:34 PM Aneesh Kumar K.V
+> > <aneesh.kumar@linux.ibm.com> wrote:
+> >>
+> >> Right now we force an unbind of SCM memory at drcindex on H_OVERLAP error.
+> >> This really slows down operations like kexec where we get the H_OVERLAP
+> >> error because we don't go through a full hypervisor re init.
+> >
+> > Maybe we should be unbinding it on a kexec().
+> >
+>
+> shouldn't ?
 
-Thankfully we can do better. Since such big mappings happen at the boot
-time and when memory is plugged/onlined (i.e. not often), these requests
-come in 512 pages so we call call OPAL 512 times less which brings 20s
-from the above to less than 10s. Also, since TCE caches can be flushed
-entirely, calling OPAL for 512 TCEs helps skiboot [1] to decide whether
-to flush the entire cache or not.
+I mean in the previous kernel. We don't have a shutdown() method
+defined for the driver so I figured it was leaving the bind intact
+across kexec, hence the patch. I was thinking that we should have the
+previous kernel unbind it rather than letting the kernel deal with the
+H_OVERLAP error. I suppose we'll have to do that in kdump case anyway.
 
-This implements 2 new iommu_table_ops callbacks:
-- xchg_no_kill() to update a single TCE with no TCE invalidation;
-- tce_kill() to invalidate multiple TCEs.
-This uses the same xchg_no_kill() callback for IODA1/2.
+> >> H_OVERLAP error for a H_SCM_BIND_MEM hcall indicates that SCM memory at
+> >> drc index is already bound. Since we don't specify a logical memory
+> >> address for bind hcall, we can use the H_SCM_QUERY hcall to query
+> >> the already bound logical address.
+> >
+> > This is a little sketchy since we might have crashed during the
+> > initial bind. Checking if the last block is bound to where we expect
+> > it to be might be a good idea. If it's not where we expect it to be,
+> > then an unbind->bind cycle is the only sane thing to do.
+> >
+>
+> I would not have expected hypervisor to not mark the drc index bound if
+> we failed the previous BIND request.
 
-This implements 2 new wrappers on top of the new callbacks similar to
-the existing iommu_tce_xchg().
+I was thinking of the partial-bind case where the driver started
+binding, but never exits the loop in drc_pmem_bind() due to a kernel
+panic or whatever.
 
-This does not use the new callbacks yet, the next patches will;
-so this should not cause any behavioral change.
+> I can query start block and last block logical address and check whether
+> the full blocks is indeed mapped.
+>
+>
+> >> Boot time difference with and without patch is:
+> >>
+> >> [    5.583617] IOMMU table initialized, virtual merging enabled
+> >> [    5.603041] papr_scm ibm,persistent-memory:ibm,pmemory@44104001: Retrying bind after unbinding
+> >> [  301.514221] papr_scm ibm,persistent-memory:ibm,pmemory@44108001: Retrying bind after unbinding
+> >> [  340.057238] hv-24x7: read 1530 catalog entries, created 537 event attrs (0 failures), 275 descs
+> >
+> > Is the unbind significantly slower than a bind? Or is the region here
+> > just massive?
+> >
+>
+> on unbind. We go two regions one of 60G and other of 10G
 
-Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
----
- arch/powerpc/include/asm/iommu.h          | 17 ++++++++++++++
- arch/powerpc/kernel/iommu.c               | 27 +++++++++++++++++++++++
- arch/powerpc/platforms/powernv/pci-ioda.c | 12 ++++++++++
- 3 files changed, 56 insertions(+)
+Assuming you mean "it's slow on unbind" then that sounds like a
+hypervisor bug tbh.
 
-diff --git a/arch/powerpc/include/asm/iommu.h b/arch/powerpc/include/asm/iommu.h
-index d7bf1f104c15..837b5122f257 100644
---- a/arch/powerpc/include/asm/iommu.h
-+++ b/arch/powerpc/include/asm/iommu.h
-@@ -58,6 +58,17 @@ struct iommu_table_ops {
- 			unsigned long *hpa,
- 			enum dma_data_direction *direction);
- 
-+	int (*xchg_no_kill)(struct iommu_table *tbl,
-+			long index,
-+			unsigned long *hpa,
-+			enum dma_data_direction *direction,
-+			bool realmode);
-+
-+	void (*tce_kill)(struct iommu_table *tbl,
-+			unsigned long index,
-+			unsigned long pages,
-+			bool realmode);
-+
- 	__be64 *(*useraddrptr)(struct iommu_table *tbl, long index, bool alloc);
- #endif
- 	void (*clear)(struct iommu_table *tbl,
-@@ -209,6 +220,12 @@ extern void iommu_del_device(struct device *dev);
- extern long iommu_tce_xchg(struct mm_struct *mm, struct iommu_table *tbl,
- 		unsigned long entry, unsigned long *hpa,
- 		enum dma_data_direction *direction);
-+extern long iommu_tce_xchg_no_kill(struct mm_struct *mm,
-+		struct iommu_table *tbl,
-+		unsigned long entry, unsigned long *hpa,
-+		enum dma_data_direction *direction);
-+extern void iommu_tce_kill(struct iommu_table *tbl,
-+		unsigned long entry, unsigned long pages);
- #else
- static inline void iommu_register_group(struct iommu_table_group *table_group,
- 					int pci_domain_number,
-diff --git a/arch/powerpc/kernel/iommu.c b/arch/powerpc/kernel/iommu.c
-index e7a2b160d4c6..070492f9b46e 100644
---- a/arch/powerpc/kernel/iommu.c
-+++ b/arch/powerpc/kernel/iommu.c
-@@ -1037,6 +1037,33 @@ long iommu_tce_xchg(struct mm_struct *mm, struct iommu_table *tbl,
- }
- EXPORT_SYMBOL_GPL(iommu_tce_xchg);
- 
-+extern long iommu_tce_xchg_no_kill(struct mm_struct *mm,
-+		struct iommu_table *tbl,
-+		unsigned long entry, unsigned long *hpa,
-+		enum dma_data_direction *direction)
-+{
-+	long ret;
-+	unsigned long size = 0;
-+
-+	ret = tbl->it_ops->xchg_no_kill(tbl, entry, hpa, direction, false);
-+	if (!ret && ((*direction == DMA_FROM_DEVICE) ||
-+			(*direction == DMA_BIDIRECTIONAL)) &&
-+			!mm_iommu_is_devmem(mm, *hpa, tbl->it_page_shift,
-+					&size))
-+		SetPageDirty(pfn_to_page(*hpa >> PAGE_SHIFT));
-+
-+	return ret;
-+}
-+EXPORT_SYMBOL_GPL(iommu_tce_xchg_no_kill);
-+
-+void iommu_tce_kill(struct iommu_table *tbl,
-+		unsigned long entry, unsigned long pages)
-+{
-+	if (tbl->it_ops->tce_kill)
-+		tbl->it_ops->tce_kill(tbl, entry, pages, false);
-+}
-+EXPORT_SYMBOL_GPL(iommu_tce_kill);
-+
- int iommu_take_ownership(struct iommu_table *tbl)
- {
- 	unsigned long flags, i, sz = (tbl->it_size + 7) >> 3;
-diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-index ec48ea25a674..4e56b2c620ec 100644
---- a/arch/powerpc/platforms/powernv/pci-ioda.c
-+++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-@@ -1939,6 +1939,14 @@ static int pnv_ioda1_tce_build(struct iommu_table *tbl, long index,
- }
- 
- #ifdef CONFIG_IOMMU_API
-+/* Common for IODA1 and IODA2 */
-+static int pnv_ioda_tce_xchg_no_kill(struct iommu_table *tbl, long index,
-+		unsigned long *hpa, enum dma_data_direction *direction,
-+		bool realmode)
-+{
-+	return pnv_tce_xchg(tbl, index, hpa, direction, !realmode);
-+}
-+
- static int pnv_ioda1_tce_xchg(struct iommu_table *tbl, long index,
- 		unsigned long *hpa, enum dma_data_direction *direction)
- {
-@@ -1975,6 +1983,8 @@ static struct iommu_table_ops pnv_ioda1_iommu_ops = {
- #ifdef CONFIG_IOMMU_API
- 	.exchange = pnv_ioda1_tce_xchg,
- 	.exchange_rm = pnv_ioda1_tce_xchg_rm,
-+	.xchg_no_kill = pnv_ioda_tce_xchg_no_kill,
-+	.tce_kill = pnv_pci_p7ioc_tce_invalidate,
- 	.useraddrptr = pnv_tce_useraddrptr,
- #endif
- 	.clear = pnv_ioda1_tce_free,
-@@ -2140,6 +2150,8 @@ static struct iommu_table_ops pnv_ioda2_iommu_ops = {
- #ifdef CONFIG_IOMMU_API
- 	.exchange = pnv_ioda2_tce_xchg,
- 	.exchange_rm = pnv_ioda2_tce_xchg_rm,
-+	.xchg_no_kill = pnv_ioda_tce_xchg_no_kill,
-+	.tce_kill = pnv_pci_ioda2_tce_invalidate,
- 	.useraddrptr = pnv_tce_useraddrptr,
- #endif
- 	.clear = pnv_ioda2_tce_free,
--- 
-2.17.1
-
+Oliver
