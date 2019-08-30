@@ -2,23 +2,24 @@ Return-Path: <SRS0=2dbP=W2=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 015E3C3A59B
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Aug 2019 19:00:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C41E6C3A59B
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Aug 2019 19:02:28 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 8521223427
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Aug 2019 19:00:21 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8521223427
+	by mail.kernel.org (Postfix) with ESMTPS id 01F9E23427
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Aug 2019 19:02:27 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 01F9E23427
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=suse.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46KphM1KKQzDqXs
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 31 Aug 2019 05:00:19 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 46Kpkp06fXzDqXs
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 31 Aug 2019 05:02:26 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=suse.de
  (client-ip=195.135.220.15; helo=mx1.suse.de; envelope-from=msuchanek@suse.de;
@@ -28,18 +29,20 @@ Authentication-Results: lists.ozlabs.org;
 Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46Kpds3CKbzDqrm
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46Kpds3FHJzDqsD
  for <linuxppc-dev@lists.ozlabs.org>; Sat, 31 Aug 2019 04:58:09 +1000 (AEST)
 X-Virus-Scanned: by amavisd-new at test-mx.suse.de
 Received: from relay2.suse.de (unknown [195.135.220.254])
- by mx1.suse.de (Postfix) with ESMTP id B4572ABD6;
- Fri, 30 Aug 2019 18:58:04 +0000 (UTC)
+ by mx1.suse.de (Postfix) with ESMTP id B3993ABE9;
+ Fri, 30 Aug 2019 18:58:05 +0000 (UTC)
 From: Michal Suchanek <msuchanek@suse.de>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v6 0/6] Disable compat cruft on ppc64le v6
-Date: Fri, 30 Aug 2019 20:57:51 +0200
-Message-Id: <cover.1567188299.git.msuchanek@suse.de>
+Subject: [PATCH v6 1/6] powerpc: make llseek 32bit-only.
+Date: Fri, 30 Aug 2019 20:57:52 +0200
+Message-Id: <bb6d25c6baae315d05b571d8c508f0e8fa90027c.1567188299.git.msuchanek@suse.de>
 X-Mailer: git-send-email 2.22.0
+In-Reply-To: <cover.1567188299.git.msuchanek@suse.de>
+References: <cover.1567188299.git.msuchanek@suse.de>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -70,57 +73,38 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Less code means less bugs so add a knob to skip the compat stuff.
+The llseek syscall is not built in fs/read_write.c when !64bit && !COMPAT
+With the syscall marked as common in syscall.tbl build fails in this
+case.
 
-This is tested on ppc64le top of
+The llseek interface does not make sense on 64bit and it is explicitly
+described as 32bit interface. Use on 64bit is not well-defined so just
+drop it for 64bit.
 
-https://patchwork.ozlabs.org/cover/1153556/
+Fixes: caf6f9c8a326 ("asm-generic: Remove unneeded __ARCH_WANT_SYS_LLSEEK macro")
+Link: https://lore.kernel.org/lkml/20190828151552.GA16855@infradead.org/
+Link: https://lore.kernel.org/lkml/20190829214319.498c7de2@naga/
 
-Changes in v2: saner CONFIG_COMPAT ifdefs
-Changes in v3:
- - change llseek to 32bit instead of builing it unconditionally in fs
- - clanup the makefile conditionals
- - remove some ifdefs or convert to IS_DEFINED where possible
-Changes in v4:
- - cleanup is_32bit_task and current_is_64bit
- - more makefile cleanup
-Changes in v5:
- - more current_is_64bit cleanup
- - split off callchain.c 32bit and 64bit parts
-Changes in v6:
- - cleanup makefile after split
- - consolidate read_user_stack_32
- - fix some checkpatch warnings
+Signed-off-by: Michal Suchanek <msuchanek@suse.de>
+---
+v5: update commit message.
+---
+ arch/powerpc/kernel/syscalls/syscall.tbl | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Michal Suchanek (6):
-  powerpc: make llseek 32bit-only.
-  powerpc: move common register copy functions from signal_32.c to
-    signal.c
-  powerpc/perf: consolidate read_user_stack_32
-  powerpc/64: make buildable without CONFIG_COMPAT
-  powerpc/64: Make COMPAT user-selectable disabled on littleendian by
-    default.
-  powerpc/perf: split callchain.c by bitness
-
- arch/powerpc/Kconfig                     |   5 +-
- arch/powerpc/include/asm/thread_info.h   |   4 +-
- arch/powerpc/kernel/Makefile             |   7 +-
- arch/powerpc/kernel/entry_64.S           |   2 +
- arch/powerpc/kernel/signal.c             | 144 ++++++++-
- arch/powerpc/kernel/signal_32.c          | 140 ---------
- arch/powerpc/kernel/syscall_64.c         |   6 +-
- arch/powerpc/kernel/syscalls/syscall.tbl |   2 +-
- arch/powerpc/kernel/vdso.c               |   5 +-
- arch/powerpc/perf/Makefile               |   5 +-
- arch/powerpc/perf/callchain.c            | 377 +----------------------
- arch/powerpc/perf/callchain.h            |  11 +
- arch/powerpc/perf/callchain_32.c         | 204 ++++++++++++
- arch/powerpc/perf/callchain_64.c         | 185 +++++++++++
- 14 files changed, 564 insertions(+), 533 deletions(-)
- create mode 100644 arch/powerpc/perf/callchain.h
- create mode 100644 arch/powerpc/perf/callchain_32.c
- create mode 100644 arch/powerpc/perf/callchain_64.c
-
+diff --git a/arch/powerpc/kernel/syscalls/syscall.tbl b/arch/powerpc/kernel/syscalls/syscall.tbl
+index 010b9f445586..53e427606f6c 100644
+--- a/arch/powerpc/kernel/syscalls/syscall.tbl
++++ b/arch/powerpc/kernel/syscalls/syscall.tbl
+@@ -188,7 +188,7 @@
+ 137	common	afs_syscall			sys_ni_syscall
+ 138	common	setfsuid			sys_setfsuid
+ 139	common	setfsgid			sys_setfsgid
+-140	common	_llseek				sys_llseek
++140	32	_llseek				sys_llseek
+ 141	common	getdents			sys_getdents			compat_sys_getdents
+ 142	common	_newselect			sys_select			compat_sys_select
+ 143	common	flock				sys_flock
 -- 
 2.22.0
 
