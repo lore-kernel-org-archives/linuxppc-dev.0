@@ -2,71 +2,67 @@ Return-Path: <SRS0=2dbP=W2=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=no
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 62560C3A59F
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Aug 2019 03:36:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 55F91C3A5A6
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Aug 2019 03:38:27 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 881F420644
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Aug 2019 03:36:20 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 881F420644
+	by mail.kernel.org (Postfix) with ESMTPS id D269821670
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Aug 2019 03:38:26 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D269821670
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=informatik.wtf
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46KQBB1YfSzDrRC
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Aug 2019 13:36:18 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+	by lists.ozlabs.org (Postfix) with ESMTP id 46KQDc1ksfzDrQG
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Aug 2019 13:38:24 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46KQ845kzrzDrDp
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46KQ846sFGzDrFj
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Aug 2019 13:34:28 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=informatik.wtf
 Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 46KQ844Njwz8vsx
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 46KQ844GQkz8sxl
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Aug 2019 13:34:28 +1000 (AEST)
 Received: by ozlabs.org (Postfix)
- id 46KQ843Bfpz9sNk; Fri, 30 Aug 2019 13:34:28 +1000 (AEST)
+ id 46KQ843BhRz9sNp; Fri, 30 Aug 2019 13:34:28 +1000 (AEST)
 Authentication-Results: ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=informatik.wtf
- (client-ip=131.153.2.44; helo=h3.fbrelay.privateemail.com;
+ (client-ip=131.153.2.43; helo=h2.fbrelay.privateemail.com;
  envelope-from=cmr@informatik.wtf; receiver=<UNKNOWN>)
 Authentication-Results: ozlabs.org; dmarc=none (p=none dis=none)
  header.from=informatik.wtf
-Received: from h3.fbrelay.privateemail.com (h3.fbrelay.privateemail.com
- [131.153.2.44])
+Received: from h2.fbrelay.privateemail.com (h2.fbrelay.privateemail.com
+ [131.153.2.43])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 46KQ826hqXz9sBp
+ by ozlabs.org (Postfix) with ESMTPS id 46KQ826htSz9sN6
  for <linuxppc-dev@ozlabs.org>; Fri, 30 Aug 2019 13:34:26 +1000 (AEST)
 Received: from MTA-08-4.privateemail.com (mta-08.privateemail.com
  [68.65.122.18])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by h3.fbrelay.privateemail.com (Postfix) with ESMTPS id 4978580837
+ by h1.fbrelay.privateemail.com (Postfix) with ESMTPS id 92278808C8
  for <linuxppc-dev@ozlabs.org>; Thu, 29 Aug 2019 23:34:22 -0400 (EDT)
 Received: from MTA-08.privateemail.com (localhost [127.0.0.1])
- by MTA-08.privateemail.com (Postfix) with ESMTP id B4FEA60044;
+ by MTA-08.privateemail.com (Postfix) with ESMTP id 228CB6003E;
  Thu, 29 Aug 2019 23:34:17 -0400 (EDT)
 Received: from wrwlf0000.attlocal.net (unknown [10.20.151.237])
- by MTA-08.privateemail.com (Postfix) with ESMTPA id 3C78C60033;
- Fri, 30 Aug 2019 03:34:17 +0000 (UTC)
+ by MTA-08.privateemail.com (Postfix) with ESMTPA id B38F560033;
+ Fri, 30 Aug 2019 03:34:16 +0000 (UTC)
 From: "Christopher M. Riedl" <cmr@informatik.wtf>
 To: linuxppc-dev@ozlabs.org,
 	kernel-hardening@lists.openwall.com
-Subject: [PATCH v6 1/2] powerpc/xmon: Allow listing and clearing breakpoints
- in read-only mode
-Date: Thu, 29 Aug 2019 22:37:43 -0500
-Message-Id: <20190830033744.1392-2-cmr@informatik.wtf>
+Subject: [PATCH v6 0/2] Restrict xmon when kernel is locked down
+Date: Thu, 29 Aug 2019 22:37:42 -0500
+Message-Id: <20190830033744.1392-1-cmr@informatik.wtf>
 X-Mailer: git-send-email 2.23.0
-In-Reply-To: <20190830033744.1392-1-cmr@informatik.wtf>
-References: <20190830033744.1392-1-cmr@informatik.wtf>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-Virus-Scanned: ClamAV using ClamSMTP
@@ -81,74 +77,53 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: ajd@linux.ibm.com, Daniel Axtens <dja@axtens.net>
+Cc: ajd@linux.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Read-only mode should not prevent listing and clearing any active
-breakpoints.
+Xmon should be either fully or partially disabled depending on the
+kernel lockdown state.
 
-Tested-by: Daniel Axtens <dja@axtens.net>
-Reviewed-by: Daniel Axtens <dja@axtens.net>
-Signed-off-by: Christopher M. Riedl <cmr@informatik.wtf>
----
- arch/powerpc/xmon/xmon.c | 16 +++++++++++-----
- 1 file changed, 11 insertions(+), 5 deletions(-)
+Put xmon into read-only mode for lockdown=integrity and completely
+disable xmon when lockdown=confidentiality. Since this can occur
+dynamically, there may be pre-existing, active breakpoints in xmon when
+transitioning into read-only mode. These breakpoints will still trigger,
+so allow them to be listed and cleared using xmon.
 
-diff --git a/arch/powerpc/xmon/xmon.c b/arch/powerpc/xmon/xmon.c
-index d0620d762a5a..ed94de614938 100644
---- a/arch/powerpc/xmon/xmon.c
-+++ b/arch/powerpc/xmon/xmon.c
-@@ -1045,10 +1045,6 @@ cmds(struct pt_regs *excp)
- 			set_lpp_cmd();
- 			break;
- 		case 'b':
--			if (xmon_is_ro) {
--				printf(xmon_ro_msg);
--				break;
--			}
- 			bpt_cmds();
- 			break;
- 		case 'C':
-@@ -1317,11 +1313,16 @@ bpt_cmds(void)
- 	struct bpt *bp;
- 
- 	cmd = inchar();
-+
- 	switch (cmd) {
- #ifndef CONFIG_PPC_8xx
- 	static const char badaddr[] = "Only kernel addresses are permitted for breakpoints\n";
- 	int mode;
- 	case 'd':	/* bd - hardware data breakpoint */
-+		if (xmon_is_ro) {
-+			printf(xmon_ro_msg);
-+			break;
-+		}
- 		if (!ppc_breakpoint_available()) {
- 			printf("Hardware data breakpoint not supported on this cpu\n");
- 			break;
-@@ -1349,6 +1350,10 @@ bpt_cmds(void)
- 		break;
- 
- 	case 'i':	/* bi - hardware instr breakpoint */
-+		if (xmon_is_ro) {
-+			printf(xmon_ro_msg);
-+			break;
-+		}
- 		if (!cpu_has_feature(CPU_FTR_ARCH_207S)) {
- 			printf("Hardware instruction breakpoint "
- 			       "not supported on this cpu\n");
-@@ -1407,7 +1412,8 @@ bpt_cmds(void)
- 			break;
- 		}
- 		termch = cmd;
--		if (!scanhex(&a)) {
-+
-+		if (xmon_is_ro || !scanhex(&a)) {
- 			/* print all breakpoints */
- 			printf("   type            address\n");
- 			if (dabr.enabled) {
+Changes since v5:
+ - Do not spam print messages when attempting to enter xmon when
+   lockdown=confidentiality
+
+Changes since v4:
+ - Move lockdown state checks into xmon_core
+ - Allow clearing of breakpoints in xmon read-only mode
+ - Test simple scenarios (combinations of xmon and lockdown cmdline
+   options, setting breakpoints and changing lockdown state, etc) in
+   QEMU and on an actual POWER8 VM
+ - Rebase onto security/next-lockdown
+   b602614a81078bf29c82b2671bb96a63488f68d6
+
+Changes since v3:
+ - Allow active breakpoints to be shown/listed in read-only mode
+
+Changes since v2:
+ - Rebased onto v36 of https://patchwork.kernel.org/cover/11049461/
+   (based on: f632a8170a6b667ee4e3f552087588f0fe13c4bb)
+ - Do not clear existing breakpoints when transitioning from
+   lockdown=none to lockdown=integrity
+ - Remove line continuation and dangling quote (confuses checkpatch.pl)
+   from the xmon command help/usage string
+
+Christopher M. Riedl (2):
+  powerpc/xmon: Allow listing and clearing breakpoints in read-only mode
+  powerpc/xmon: Restrict when kernel is locked down
+
+ arch/powerpc/xmon/xmon.c     | 108 +++++++++++++++++++++++++++--------
+ include/linux/security.h     |   2 +
+ security/lockdown/lockdown.c |   2 +
+ 3 files changed, 87 insertions(+), 25 deletions(-)
+
 -- 
 2.23.0
 
