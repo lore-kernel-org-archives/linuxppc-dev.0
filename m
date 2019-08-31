@@ -2,26 +2,25 @@ Return-Path: <SRS0=6mHU=W3=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+X-Spam-Status: No, score=-6.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
-	version=3.4.0
+	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E4009C3A59F
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 31 Aug 2019 10:30:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A7F3AC3A59F
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 31 Aug 2019 10:33:06 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 632DD22CE9
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 31 Aug 2019 10:30:57 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 25ED422CE9
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 31 Aug 2019 10:33:06 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="Jmj/RO2l"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 632DD22CE9
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="ipp/MOCh"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 25ED422CE9
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46LCL55TtqzDqLt
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 31 Aug 2019 20:30:53 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 46LCNc0chmzDrHl
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 31 Aug 2019 20:33:04 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=c-s.fr
  (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
@@ -29,54 +28,54 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="Jmj/RO2l"; 
+ unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="ipp/MOCh"; 
  dkim-atps=neutral
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46LC3w1l7BzDrBm
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46LC3w0ffkzDrBh
  for <linuxppc-dev@lists.ozlabs.org>; Sat, 31 Aug 2019 20:18:36 +1000 (AEST)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 46LC3q1zqXz9v4gc;
- Sat, 31 Aug 2019 12:18:31 +0200 (CEST)
+ by localhost (Postfix) with ESMTP id 46LC3p1htKz9v4gb;
+ Sat, 31 Aug 2019 12:18:30 +0200 (CEST)
 Authentication-Results: localhost; dkim=pass
  reason="1024-bit key; insecure key"
- header.d=c-s.fr header.i=@c-s.fr header.b=Jmj/RO2l; dkim-adsp=pass;
+ header.d=c-s.fr header.i=@c-s.fr header.b=ipp/MOCh; dkim-adsp=pass;
  dkim-atps=neutral
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id jafzeWdXOY5n; Sat, 31 Aug 2019 12:18:31 +0200 (CEST)
+ with ESMTP id 8RpTSmImh0lt; Sat, 31 Aug 2019 12:18:30 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 46LC3q0zZjz9v4gL;
- Sat, 31 Aug 2019 12:18:31 +0200 (CEST)
+ by pegase1.c-s.fr (Postfix) with ESMTP id 46LC3p0ZV0z9v4gL;
+ Sat, 31 Aug 2019 12:18:30 +0200 (CEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
- t=1567246711; bh=0xISFeXI6V/VCCOBsr0ouHlrTV7K42C7OEIEr4+IWgQ=;
+ t=1567246710; bh=uFiRLpIkjK57Hf5CaAnRZcWsB6+unevIPvAia3/sItM=;
  h=In-Reply-To:References:From:Subject:To:Cc:Date:From;
- b=Jmj/RO2l4WetigK6XG738kWgb7OdVdK9Xi7B91eZf6ZOHOAkedigP8ow6/szcGceX
- UviE0n/X3952teG9t8O0K0GCFf52W+qCU9sFBLLDQSCAV7X7hev3GowszR3LPCQmgX
- fvdq5A/LjRXWqGnoDnqT8rMEXijy1+RrNqR8lLUU=
+ b=ipp/MOChQD3z0aaX19rY5DO/Q6Kqk0L0usfgBPTqVvdqru8SJk9u7Fus587Veog3k
+ 1dJpYgM5vYF2I5mEinFzizoMU+Ro0E4poBq1mdvAc+jvvVI2maYwrBivpgHMr3MiQx
+ KXwOHikwm3YPU8hGlXeMWJ6fAcId2oO1LB2RuA5A=
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 7B91B8B7B9;
- Sat, 31 Aug 2019 12:18:32 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 6B84D8B7B9;
+ Sat, 31 Aug 2019 12:18:31 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id 0vs0TmwIuvJt; Sat, 31 Aug 2019 12:18:32 +0200 (CEST)
+ with ESMTP id RnAFIdvWqsKv; Sat, 31 Aug 2019 12:18:31 +0200 (CEST)
 Received: from pc16032vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 48D4B8B789;
- Sat, 31 Aug 2019 12:18:32 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 363718B789;
+ Sat, 31 Aug 2019 12:18:31 +0200 (CEST)
 Received: by pc16032vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id 0EEEB6985C; Sat, 31 Aug 2019 10:18:31 +0000 (UTC)
-Message-Id: <b86ace4b0c34da731859fae0f44dbc079b603b09.1567245404.git.christophe.leroy@c-s.fr>
+ id F134B6985C; Sat, 31 Aug 2019 10:18:30 +0000 (UTC)
+Message-Id: <0c7e0184b94856503b5b32cf9159788ea76d96bf.1567245404.git.christophe.leroy@c-s.fr>
 In-Reply-To: <cover.1567245404.git.christophe.leroy@c-s.fr>
 References: <cover.1567245404.git.christophe.leroy@c-s.fr>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [RFC PATCH v2 07/10] powerpc/8xx: split breakpoint exception
+Subject: [RFC PATCH v2 06/10] powerpc/8xx: move DataStoreTLBMiss perf handler
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, 
  npiggin@gmail.com, dja@axtens.net
-Date: Sat, 31 Aug 2019 10:18:31 +0000 (UTC)
+Date: Sat, 31 Aug 2019 10:18:30 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -93,52 +92,56 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Breakpoint exception is big.
-
-Split it to support future growth on exception prolog.
+Move DataStoreTLBMiss perf handler in order to cope
+with future growing exception prolog.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
- arch/powerpc/kernel/head_8xx.S | 19 ++++++++++---------
- 1 file changed, 10 insertions(+), 9 deletions(-)
+ arch/powerpc/kernel/head_8xx.S | 24 ++++++++++++------------
+ 1 file changed, 12 insertions(+), 12 deletions(-)
 
 diff --git a/arch/powerpc/kernel/head_8xx.S b/arch/powerpc/kernel/head_8xx.S
-index d194cff6528b..2fa02ae7a88c 100644
+index 4a3459c7d708..d194cff6528b 100644
 --- a/arch/powerpc/kernel/head_8xx.S
 +++ b/arch/powerpc/kernel/head_8xx.S
-@@ -497,14 +497,7 @@ DARFixed:/* Return from dcbx instruction bug workaround */
+@@ -171,18 +171,6 @@ SystemCall:
+  */
+ 	EXCEPTION(0x1000, SoftEmu, program_check_exception, EXC_XFER_STD)
+ 
+-/* Called from DataStoreTLBMiss when perf TLB misses events are activated */
+-#ifdef CONFIG_PERF_EVENTS
+-	patch_site	0f, patch__dtlbmiss_perf
+-0:	lwz	r10, (dtlb_miss_counter - PAGE_OFFSET)@l(0)
+-	addi	r10, r10, 1
+-	stw	r10, (dtlb_miss_counter - PAGE_OFFSET)@l(0)
+-	mfspr	r10, SPRN_DAR
+-	mtspr	SPRN_DAR, r11	/* Tag DAR */
+-	mfspr	r11, SPRN_M_TW
+-	rfi
+-#endif
+-
+ 
+ 	. = 0x1100
+ /*
+@@ -493,6 +481,18 @@ DARFixed:/* Return from dcbx instruction bug workaround */
+ 	/* 0x300 is DataAccess exception, needed by bad_page_fault() */
+ 	EXC_XFER_LITE(0x300, handle_page_fault)
+ 
++/* Called from DataStoreTLBMiss when perf TLB misses events are activated */
++#ifdef CONFIG_PERF_EVENTS
++	patch_site	0f, patch__dtlbmiss_perf
++0:	lwz	r10, (dtlb_miss_counter - PAGE_OFFSET)@l(0)
++	addi	r10, r10, 1
++	stw	r10, (dtlb_miss_counter - PAGE_OFFSET)@l(0)
++	mfspr	r10, SPRN_DAR
++	mtspr	SPRN_DAR, r11	/* Tag DAR */
++	mfspr	r11, SPRN_M_TW
++	rfi
++#endif
++
+ /* On the MPC8xx, these next four traps are used for development
   * support of breakpoints and such.  Someday I will get around to
   * using them.
-  */
--	. = 0x1c00
--DataBreakpoint:
--	EXCEPTION_PROLOG_0
--	mfspr	r11, SPRN_SRR0
--	cmplwi	cr0, r11, (.Ldtlbie - PAGE_OFFSET)@l
--	cmplwi	cr7, r11, (.Litlbie - PAGE_OFFSET)@l
--	beq-	cr0, 11f
--	beq-	cr7, 11f
-+do_databreakpoint:
- 	EXCEPTION_PROLOG_1
- 	EXCEPTION_PROLOG_2
- 	addi	r3,r1,STACK_FRAME_OVERHEAD
-@@ -512,7 +505,15 @@ DataBreakpoint:
- 	stw	r4,_DAR(r11)
- 	mfspr	r5,SPRN_DSISR
- 	EXC_XFER_STD(0x1c00, do_break)
--11:
-+
-+	. = 0x1c00
-+DataBreakpoint:
-+	EXCEPTION_PROLOG_0
-+	mfspr	r11, SPRN_SRR0
-+	cmplwi	cr0, r11, (.Ldtlbie - PAGE_OFFSET)@l
-+	cmplwi	cr7, r11, (.Litlbie - PAGE_OFFSET)@l
-+	cror	4*cr0+eq, 4*cr0+eq, 4*cr7+eq
-+	bne	do_databreakpoint
- 	mtcr	r10
- 	mfspr	r10, SPRN_SPRG_SCRATCH0
- 	mfspr	r11, SPRN_SPRG_SCRATCH1
 -- 
 2.13.3
 
