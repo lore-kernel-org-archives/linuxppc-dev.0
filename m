@@ -7,36 +7,36 @@ X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5DEE4C3A59F
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 31 Aug 2019 07:31:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 72D65C3A59F
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 31 Aug 2019 07:33:30 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id DA67E23429
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 31 Aug 2019 07:31:29 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DA67E23429
+	by mail.kernel.org (Postfix) with ESMTPS id EE96423697
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 31 Aug 2019 07:33:29 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EE96423697
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=huawei.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46L7M36QHTzDql2
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 31 Aug 2019 17:31:27 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 46L7PM4zq3zDqZT
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 31 Aug 2019 17:33:27 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=huawei.com
- (client-ip=45.249.212.35; helo=huawei.com;
+ (client-ip=45.249.212.190; helo=huawei.com;
  envelope-from=linyunsheng@huawei.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=huawei.com
-Received: from huawei.com (szxga07-in.huawei.com [45.249.212.35])
+Received: from huawei.com (szxga04-in.huawei.com [45.249.212.190])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46L5pQ48R3zDr7x
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 31 Aug 2019 16:21:34 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46L5pX5QkpzDr7x
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 31 Aug 2019 16:21:40 +1000 (AEST)
 Received: from DGGEMS404-HUB.china.huawei.com (unknown [172.30.72.58])
- by Forcepoint Email with ESMTP id 0E1E0CC4B3888329B67F;
- Sat, 31 Aug 2019 14:00:42 +0800 (CST)
+ by Forcepoint Email with ESMTP id 01665F323856A90C7C6B;
+ Sat, 31 Aug 2019 14:00:47 +0800 (CST)
 Received: from localhost.localdomain (10.67.212.75) by
  DGGEMS404-HUB.china.huawei.com (10.3.19.204) with Microsoft SMTP Server id
- 14.3.439.0; Sat, 31 Aug 2019 14:00:33 +0800
+ 14.3.439.0; Sat, 31 Aug 2019 14:00:37 +0800
 From: Yunsheng Lin <linyunsheng@huawei.com>
 To: <catalin.marinas@arm.com>, <will@kernel.org>, <mingo@redhat.com>,
  <bp@alien8.de>, <rth@twiddle.net>, <ink@jurassic.park.msu.ru>,
@@ -45,9 +45,10 @@ To: <catalin.marinas@arm.com>, <will@kernel.org>, <mingo@redhat.com>,
  <borntraeger@de.ibm.com>, <ysato@users.sourceforge.jp>, <dalias@libc.org>,
  <davem@davemloft.net>, <ralf@linux-mips.org>, <paul.burton@mips.com>,
  <jhogan@kernel.org>, <jiaxun.yang@flygoat.com>, <chenhc@lemote.com>
-Subject: [PATCH v2 1/9] arm64: numa: check the node id consistently for arm64
-Date: Sat, 31 Aug 2019 13:58:15 +0800
-Message-ID: <1567231103-13237-2-git-send-email-linyunsheng@huawei.com>
+Subject: [PATCH v2 9/9] mips: numa: check the node id consistently for mips
+ loongson64
+Date: Sat, 31 Aug 2019 13:58:23 +0800
+Message-ID: <1567231103-13237-10-git-send-email-linyunsheng@huawei.com>
 X-Mailer: git-send-email 2.8.1
 In-Reply-To: <1567231103-13237-1-git-send-email-linyunsheng@huawei.com>
 References: <1567231103-13237-1-git-send-email-linyunsheng@huawei.com>
@@ -90,90 +91,43 @@ associations within a machine. _PXM evaluates to an integer
 that identifies a device as belonging to a Proximity Domain
 defined in the System Resource Affinity Table (SRAT).
 
-When enabling KASAN and bios has not implemented the proximity
-domain of the hns3 device, there is a global-out-of-bounds error
-below:
-
-[   42.970381] ==================================================================
-[   42.977595] BUG: KASAN: global-out-of-bounds in __bitmap_weight+0x48/0xb0
-[   42.984370] Read of size 8 at addr ffff20008cdf8790 by task kworker/0:1/13
-[   42.991230]
-[   42.992712] CPU: 0 PID: 13 Comm: kworker/0:1 Tainted: G           O      5.2.0-rc4-g8bde06a-dirty #3
-[   43.001830] Hardware name: Huawei TaiShan 2280 V2/BC82AMDA, BIOS TA BIOS 2280-A CS V2.B050.01 08/08/2019
-[   43.011298] Workqueue: events work_for_cpu_fn
-[   43.015643] Call trace:
-[   43.018078]  dump_backtrace+0x0/0x1e8
-[   43.021727]  show_stack+0x14/0x20
-[   43.025031]  dump_stack+0xc4/0xfc
-[   43.028335]  print_address_description+0x178/0x270
-[   43.033113]  __kasan_report+0x164/0x1b8
-[   43.036936]  kasan_report+0xc/0x18
-[   43.040325]  __asan_load8+0x84/0xa8
-[   43.043801]  __bitmap_weight+0x48/0xb0
-[   43.047552]  hclge_init_ae_dev+0x988/0x1e78 [hclge]
-[   43.052418]  hnae3_register_ae_dev+0xcc/0x278 [hnae3]
-[   43.057467]  hns3_probe+0xe0/0x120 [hns3]
-[   43.061464]  local_pci_probe+0x74/0xf0
-[   43.065200]  work_for_cpu_fn+0x2c/0x48
-[   43.068937]  process_one_work+0x3c0/0x878
-[   43.072934]  worker_thread+0x400/0x670
-[   43.076670]  kthread+0x1b0/0x1b8
-[   43.079885]  ret_from_fork+0x10/0x18
-[   43.083446]
-[   43.084925] The buggy address belongs to the variable:
-[   43.090052]  numa_distance+0x30/0x40
-[   43.093613]
-[   43.095091] Memory state around the buggy address:
-[   43.099870]  ffff20008cdf8680: fa fa fa fa 04 fa fa fa fa fa fa fa 00 00 fa fa
-[   43.107078]  ffff20008cdf8700: fa fa fa fa 04 fa fa fa fa fa fa fa 00 fa fa fa
-[   43.114286] >ffff20008cdf8780: fa fa fa fa 00 00 00 00 00 00 00 00 fa fa fa fa
-[   43.121494]                          ^
-[   43.125230]  ffff20008cdf8800: 01 fa fa fa fa fa fa fa 04 fa fa fa fa fa fa fa
-[   43.132439]  ffff20008cdf8880: fa fa fa fa fa fa fa fa 00 00 fa fa fa fa fa fa
-[   43.139646] ==================================================================
-
-This patch checks node id with the below case before returning
-node_to_cpumask_map[node]:
-1. if node_id >= nr_node_ids, return cpu_none_mask
+Since mips loongson64 uses __node_data instead of
+node_to_cpumask_map, this patch checks node id with the below
+case before returning &__node_data[node]->cpumask:
+1. if node_id >= MAX_NUMNODES, return cpu_none_mask
 2. if node_id < 0, return cpu_online_mask
-3. if node_to_cpumask_map[node_id] is NULL, return cpu_online_mask
+3. if hub_data(node) is NULL, return cpu_online_mask
+
+[1] https://uefi.org/sites/default/files/resources/ACPI_6_3_final_Jan30.pdf
 
 Signed-off-by: Yunsheng Lin <linyunsheng@huawei.com>
 ---
- arch/arm64/include/asm/numa.h | 6 ++++++
- arch/arm64/mm/numa.c          | 2 +-
- 2 files changed, 7 insertions(+), 1 deletion(-)
+ arch/mips/include/asm/mach-loongson64/topology.h | 12 +++++++++++-
+ 1 file changed, 11 insertions(+), 1 deletion(-)
 
-diff --git a/arch/arm64/include/asm/numa.h b/arch/arm64/include/asm/numa.h
-index 626ad01..65a0ef6 100644
---- a/arch/arm64/include/asm/numa.h
-+++ b/arch/arm64/include/asm/numa.h
-@@ -25,6 +25,12 @@ const struct cpumask *cpumask_of_node(int node);
- /* Returns a pointer to the cpumask of CPUs on Node 'node'. */
- static inline const struct cpumask *cpumask_of_node(int node)
- {
-+	if (node >= nr_node_ids)
+diff --git a/arch/mips/include/asm/mach-loongson64/topology.h b/arch/mips/include/asm/mach-loongson64/topology.h
+index 7ff819a..b19b983 100644
+--- a/arch/mips/include/asm/mach-loongson64/topology.h
++++ b/arch/mips/include/asm/mach-loongson64/topology.h
+@@ -5,7 +5,17 @@
+ #ifdef CONFIG_NUMA
+ 
+ #define cpu_to_node(cpu)	(cpu_logical_map(cpu) >> 2)
+-#define cpumask_of_node(node)	(&__node_data[(node)]->cpumask)
++
++static inline const struct cpumask *cpumask_of_node(int node)
++{
++	if (node >= MAX_NUMNODES)
 +		return cpu_none_mask;
 +
-+	if (node < 0 || !node_to_cpumask_map[node])
++	if (node < 0 || !__node_data[node])
 +		return cpu_online_mask;
 +
- 	return node_to_cpumask_map[node];
- }
- #endif
-diff --git a/arch/arm64/mm/numa.c b/arch/arm64/mm/numa.c
-index 4f241cc..7eca267 100644
---- a/arch/arm64/mm/numa.c
-+++ b/arch/arm64/mm/numa.c
-@@ -49,7 +49,7 @@ const struct cpumask *cpumask_of_node(int node)
- 	if (WARN_ON(node >= nr_node_ids))
- 		return cpu_none_mask;
++	return &__node_data[node]->cpumask;
++}
  
--	if (WARN_ON(node_to_cpumask_map[node] == NULL))
-+	if (WARN_ON(node < 0 || !node_to_cpumask_map[node]))
- 		return cpu_online_mask;
- 
- 	return node_to_cpumask_map[node];
+ struct pci_bus;
+ extern int pcibus_to_node(struct pci_bus *);
 -- 
 2.8.1
 
