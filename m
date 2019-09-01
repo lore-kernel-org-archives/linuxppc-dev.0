@@ -1,59 +1,59 @@
-Return-Path: <SRS0=6mHU=W3=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
+Return-Path: <SRS0=xyAZ=W4=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no
+X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8CC25C3A5A6
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 31 Aug 2019 20:09:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 25636C3A5A4
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  1 Sep 2019 07:53:55 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id CB3B722CE9
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 31 Aug 2019 20:09:43 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CB3B722CE9
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=davemloft.net
+	by mail.kernel.org (Postfix) with ESMTPS id 37C4A22CF7
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  1 Sep 2019 07:53:54 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 37C4A22CF7
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nxp.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46LS9w2wvBzDqfF
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  1 Sep 2019 06:09:40 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 46LlpQ5RQqzDqnR
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  1 Sep 2019 17:53:50 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=davemloft.net
- (client-ip=2620:137:e000::1:9; helo=shards.monkeyblade.net;
- envelope-from=davem@davemloft.net; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=nxp.com
+ (client-ip=92.121.34.21; helo=inva021.nxp.com;
+ envelope-from=xiaowei.bao@nxp.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=davemloft.net
-Received: from shards.monkeyblade.net (shards.monkeyblade.net
- [IPv6:2620:137:e000::1:9])
+ dmarc=pass (p=none dis=none) header.from=nxp.com
+Received: from inva021.nxp.com (inva021.nxp.com [92.121.34.21])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46LS2H6M2ZzDqxW
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  1 Sep 2019 06:03:00 +1000 (AEST)
-Received: from localhost (unknown [IPv6:2601:601:9f80:35cd::d71])
- (using TLSv1 with cipher AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- (Authenticated sender: davem-davemloft)
- by shards.monkeyblade.net (Postfix) with ESMTPSA id 57E3B14BBC0EC;
- Sat, 31 Aug 2019 13:02:53 -0700 (PDT)
-Date: Sat, 31 Aug 2019 13:02:50 -0700 (PDT)
-Message-Id: <20190831.130250.1236116087422472663.davem@davemloft.net>
-To: linyunsheng@huawei.com
-Subject: Re: [PATCH v2 7/9] sparc64: numa: check the node id consistently
- for sparc64
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <0195eb73-99ae-fec2-3e11-2cb9e6677926@huawei.com>
-References: <1567231103-13237-8-git-send-email-linyunsheng@huawei.com>
- <20190830.235337.570776316111294728.davem@davemloft.net>
- <0195eb73-99ae-fec2-3e11-2cb9e6677926@huawei.com>
-X-Mailer: Mew version 6.8 on Emacs 26.1
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender succeeded SMTP AUTH, not delayed by milter-greylist-4.5.12
- (shards.monkeyblade.net [149.20.54.216]);
- Sat, 31 Aug 2019 13:02:54 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46LlmD59sjzDqlj
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  1 Sep 2019 17:51:55 +1000 (AEST)
+Received: from inva021.nxp.com (localhost [127.0.0.1])
+ by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id 9D4812001BC;
+ Sun,  1 Sep 2019 09:51:52 +0200 (CEST)
+Received: from invc005.ap-rdc01.nxp.com (invc005.ap-rdc01.nxp.com
+ [165.114.16.14])
+ by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id A743B20058B;
+ Sun,  1 Sep 2019 09:51:45 +0200 (CEST)
+Received: from titan.ap.freescale.net (TITAN.ap.freescale.net [10.192.208.233])
+ by invc005.ap-rdc01.nxp.com (Postfix) with ESMTP id E4AC1402FB;
+ Sun,  1 Sep 2019 15:51:36 +0800 (SGT)
+From: Xiaowei Bao <xiaowei.bao@nxp.com>
+To: robh+dt@kernel.org, mark.rutland@arm.com, shawnguo@kernel.org,
+ leoyang.li@nxp.com, minghuan.Lian@nxp.com, mingkai.hu@nxp.com,
+ roy.zang@nxp.com, lorenzo.pieralisi@arm.com, linux-pci@vger.kernel.org,
+ devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH v5 3/3] PCI: layerscape: Add LS1028a support
+Date: Sun,  1 Sep 2019 15:41:34 +0800
+Message-Id: <20190901074134.24455-3-xiaowei.bao@nxp.com>
+X-Mailer: git-send-email 2.9.5
+In-Reply-To: <20190901074134.24455-1-xiaowei.bao@nxp.com>
+References: <20190901074134.24455-1-xiaowei.bao@nxp.com>
+X-Virus-Scanned: ClamAV using ClamSMTP
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -65,37 +65,41 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: dalias@libc.org, linux-sh@vger.kernel.org, peterz@infradead.org,
- catalin.marinas@arm.com, dave.hansen@linux.intel.com,
- heiko.carstens@de.ibm.com, linuxarm@huawei.com, jiaxun.yang@flygoat.com,
- linux-mips@vger.kernel.org, mwb@linux.vnet.ibm.com, paulus@samba.org,
- hpa@zytor.com, sparclinux@vger.kernel.org, chenhc@lemote.com, will@kernel.org,
- cai@lca.pw, linux-s390@vger.kernel.org, ysato@users.sourceforge.jp,
- x86@kernel.org, rppt@linux.ibm.com, borntraeger@de.ibm.com,
- dledford@redhat.com, mingo@redhat.com, jeffrey.t.kirsher@intel.com,
- jhogan@kernel.org, nfont@linux.vnet.ibm.com, mattst88@gmail.com,
- len.brown@intel.com, gor@linux.ibm.com, anshuman.khandual@arm.com,
- bp@alien8.de, luto@kernel.org, tglx@linutronix.de,
- naveen.n.rao@linux.vnet.ibm.com, linux-arm-kernel@lists.infradead.org,
- rth@twiddle.net, axboe@kernel.dk, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, ralf@linux-mips.org, tbogendoerfer@suse.de,
- paul.burton@mips.com, linux-alpha@vger.kernel.org, ink@jurassic.park.msu.ru,
- akpm@linux-foundation.org, robin.murphy@arm.com
+Cc: bhelgaas@google.com, Hou Zhiqiang <Zhiqiang.Hou@nxp.com>,
+ Xiaowei Bao <xiaowei.bao@nxp.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Yunsheng Lin <linyunsheng@huawei.com>
-Date: Sat, 31 Aug 2019 16:57:04 +0800
+Add support for the LS1028a PCIe controller.
 
-> Did you mean sparc64 system does not has ACPI, the device's node id will
-> not specified by ACPI, so the ACPI is unrelated here?
+Signed-off-by: Xiaowei Bao <xiaowei.bao@nxp.com>
+Signed-off-by: Hou Zhiqiang <Zhiqiang.Hou@nxp.com>
+---
+v2:
+ - No change.
+v3:
+ - Reuse the ls2088 driver data structurt.
+v4:
+ - No change.
+v5:
+ - No change.
 
-Yes, sparc64 never has and never will have ACPI.
+ drivers/pci/controller/dwc/pci-layerscape.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-This is also true for several other platforms where you have made this
-change.
+diff --git a/drivers/pci/controller/dwc/pci-layerscape.c b/drivers/pci/controller/dwc/pci-layerscape.c
+index 3a5fa26..f24f79a 100644
+--- a/drivers/pci/controller/dwc/pci-layerscape.c
++++ b/drivers/pci/controller/dwc/pci-layerscape.c
+@@ -263,6 +263,7 @@ static const struct ls_pcie_drvdata ls2088_drvdata = {
+ static const struct of_device_id ls_pcie_of_match[] = {
+ 	{ .compatible = "fsl,ls1012a-pcie", .data = &ls1046_drvdata },
+ 	{ .compatible = "fsl,ls1021a-pcie", .data = &ls1021_drvdata },
++	{ .compatible = "fsl,ls1028a-pcie", .data = &ls2088_drvdata },
+ 	{ .compatible = "fsl,ls1043a-pcie", .data = &ls1043_drvdata },
+ 	{ .compatible = "fsl,ls1046a-pcie", .data = &ls1046_drvdata },
+ 	{ .compatible = "fsl,ls2080a-pcie", .data = &ls2080_drvdata },
+-- 
+2.9.5
 
-The assumption of your entire patch set is that the semantics of the
-NUMA node ID are somehow completely defined by ACPI semantics.  Which
-is not true.
