@@ -4,55 +4,53 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
-	version=3.4.0
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 25423C3A5A4
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  1 Sep 2019 07:55:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6F9E3C3A5A4
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  1 Sep 2019 07:57:28 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id A0AE522CF7
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  1 Sep 2019 07:55:40 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A0AE522CF7
+	by mail.kernel.org (Postfix) with ESMTPS id 2455222CF7
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  1 Sep 2019 07:57:28 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2455222CF7
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nxp.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46LlrT4mCPzDqnp
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  1 Sep 2019 17:55:37 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 46LltZ0m1jzDqS2
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  1 Sep 2019 17:57:26 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=nxp.com
- (client-ip=92.121.34.21; helo=inva021.nxp.com;
+ (client-ip=92.121.34.13; helo=inva020.nxp.com;
  envelope-from=xiaowei.bao@nxp.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=nxp.com
-Received: from inva021.nxp.com (inva021.nxp.com [92.121.34.21])
+Received: from inva020.nxp.com (inva020.nxp.com [92.121.34.13])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46LlmD5FLczDqlr
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46LlmD5CXczDqlm
  for <linuxppc-dev@lists.ozlabs.org>; Sun,  1 Sep 2019 17:51:54 +1000 (AEST)
-Received: from inva021.nxp.com (localhost [127.0.0.1])
- by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id E5B352005C1;
- Sun,  1 Sep 2019 09:51:50 +0200 (CEST)
+Received: from inva020.nxp.com (localhost [127.0.0.1])
+ by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id A20E41A02AC;
+ Sun,  1 Sep 2019 09:51:49 +0200 (CEST)
 Received: from invc005.ap-rdc01.nxp.com (invc005.ap-rdc01.nxp.com
  [165.114.16.14])
- by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id C056F2001C5;
- Sun,  1 Sep 2019 09:51:43 +0200 (CEST)
+ by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id AE8CB1A0211;
+ Sun,  1 Sep 2019 09:51:42 +0200 (CEST)
 Received: from titan.ap.freescale.net (TITAN.ap.freescale.net [10.192.208.233])
- by invc005.ap-rdc01.nxp.com (Postfix) with ESMTP id 72036402BE;
- Sun,  1 Sep 2019 15:51:35 +0800 (SGT)
+ by invc005.ap-rdc01.nxp.com (Postfix) with ESMTP id E7A8F402F0;
+ Sun,  1 Sep 2019 15:51:33 +0800 (SGT)
 From: Xiaowei Bao <xiaowei.bao@nxp.com>
 To: robh+dt@kernel.org, mark.rutland@arm.com, shawnguo@kernel.org,
  leoyang.li@nxp.com, minghuan.Lian@nxp.com, mingkai.hu@nxp.com,
  roy.zang@nxp.com, lorenzo.pieralisi@arm.com, linux-pci@vger.kernel.org,
  devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
  linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v5 2/3] arm64: dts: ls1028a: Add PCIe controller DT nodes
-Date: Sun,  1 Sep 2019 15:41:33 +0800
-Message-Id: <20190901074134.24455-2-xiaowei.bao@nxp.com>
+Subject: [PATCH v5 1/3] dt-bindings: pci: layerscape-pci: add compatible
+ strings "fsl, ls1028a-pcie"
+Date: Sun,  1 Sep 2019 15:41:32 +0800
+Message-Id: <20190901074134.24455-1-xiaowei.bao@nxp.com>
 X-Mailer: git-send-email 2.9.5
-In-Reply-To: <20190901074134.24455-1-xiaowei.bao@nxp.com>
-References: <20190901074134.24455-1-xiaowei.bao@nxp.com>
 X-Virus-Scanned: ClamAV using ClamSMTP
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -71,86 +69,36 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-LS1028a implements 2 PCIe 3.0 controllers.
+Add the PCIe compatible string for LS1028A
 
 Signed-off-by: Xiaowei Bao <xiaowei.bao@nxp.com>
 Signed-off-by: Hou Zhiqiang <Zhiqiang.Hou@nxp.com>
+Reviewed-by: Rob Herring <robh@kernel.org>
 ---
 v2:
- - Fix up the legacy INTx allocate failed issue.
+ - No change.
 v3:
  - No change.
 v4:
- - Remove the num-lanes property.
+ - No change.
 v5:
- - Add the num-viewport property.
+ - No change.
 
- arch/arm64/boot/dts/freescale/fsl-ls1028a.dtsi | 52 ++++++++++++++++++++++++++
- 1 file changed, 52 insertions(+)
+ Documentation/devicetree/bindings/pci/layerscape-pci.txt | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/arch/arm64/boot/dts/freescale/fsl-ls1028a.dtsi b/arch/arm64/boot/dts/freescale/fsl-ls1028a.dtsi
-index 72b9a75..c043b1d 100644
---- a/arch/arm64/boot/dts/freescale/fsl-ls1028a.dtsi
-+++ b/arch/arm64/boot/dts/freescale/fsl-ls1028a.dtsi
-@@ -625,6 +625,58 @@
- 			};
- 		};
- 
-+		pcie@3400000 {
-+			compatible = "fsl,ls1028a-pcie";
-+			reg = <0x00 0x03400000 0x0 0x00100000   /* controller registers */
-+			       0x80 0x00000000 0x0 0x00002000>; /* configuration space */
-+			reg-names = "regs", "config";
-+			interrupts = <GIC_SPI 108 IRQ_TYPE_LEVEL_HIGH>, /* PME interrupt */
-+				     <GIC_SPI 109 IRQ_TYPE_LEVEL_HIGH>; /* aer interrupt */
-+			interrupt-names = "pme", "aer";
-+			#address-cells = <3>;
-+			#size-cells = <2>;
-+			device_type = "pci";
-+			dma-coherent;
-+			num-viewport = <6>;
-+			bus-range = <0x0 0xff>;
-+			ranges = <0x81000000 0x0 0x00000000 0x80 0x00010000 0x0 0x00010000   /* downstream I/O */
-+				  0x82000000 0x0 0x40000000 0x80 0x40000000 0x0 0x40000000>; /* non-prefetchable memory */
-+			msi-parent = <&its>;
-+			#interrupt-cells = <1>;
-+			interrupt-map-mask = <0 0 0 7>;
-+			interrupt-map = <0000 0 0 1 &gic 0 0 GIC_SPI 109 IRQ_TYPE_LEVEL_HIGH>,
-+					<0000 0 0 2 &gic 0 0 GIC_SPI 110 IRQ_TYPE_LEVEL_HIGH>,
-+					<0000 0 0 3 &gic 0 0 GIC_SPI 111 IRQ_TYPE_LEVEL_HIGH>,
-+					<0000 0 0 4 &gic 0 0 GIC_SPI 112 IRQ_TYPE_LEVEL_HIGH>;
-+			status = "disabled";
-+		};
-+
-+		pcie@3500000 {
-+			compatible = "fsl,ls1028a-pcie";
-+			reg = <0x00 0x03500000 0x0 0x00100000   /* controller registers */
-+			       0x88 0x00000000 0x0 0x00002000>; /* configuration space */
-+			reg-names = "regs", "config";
-+			interrupts = <GIC_SPI 113 IRQ_TYPE_LEVEL_HIGH>,
-+				     <GIC_SPI 114 IRQ_TYPE_LEVEL_HIGH>;
-+			interrupt-names = "pme", "aer";
-+			#address-cells = <3>;
-+			#size-cells = <2>;
-+			device_type = "pci";
-+			dma-coherent;
-+			num-viewport = <6>;
-+			bus-range = <0x0 0xff>;
-+			ranges = <0x81000000 0x0 0x00000000 0x88 0x00010000 0x0 0x00010000   /* downstream I/O */
-+				  0x82000000 0x0 0x40000000 0x88 0x40000000 0x0 0x40000000>; /* non-prefetchable memory */
-+			msi-parent = <&its>;
-+			#interrupt-cells = <1>;
-+			interrupt-map-mask = <0 0 0 7>;
-+			interrupt-map = <0000 0 0 1 &gic 0 0 GIC_SPI 114 IRQ_TYPE_LEVEL_HIGH>,
-+					<0000 0 0 2 &gic 0 0 GIC_SPI 115 IRQ_TYPE_LEVEL_HIGH>,
-+					<0000 0 0 3 &gic 0 0 GIC_SPI 116 IRQ_TYPE_LEVEL_HIGH>,
-+					<0000 0 0 4 &gic 0 0 GIC_SPI 117 IRQ_TYPE_LEVEL_HIGH>;
-+			status = "disabled";
-+		};
-+
- 		pcie@1f0000000 { /* Integrated Endpoint Root Complex */
- 			compatible = "pci-host-ecam-generic";
- 			reg = <0x01 0xf0000000 0x0 0x100000>;
+diff --git a/Documentation/devicetree/bindings/pci/layerscape-pci.txt b/Documentation/devicetree/bindings/pci/layerscape-pci.txt
+index e20ceaa..99a386e 100644
+--- a/Documentation/devicetree/bindings/pci/layerscape-pci.txt
++++ b/Documentation/devicetree/bindings/pci/layerscape-pci.txt
+@@ -21,6 +21,7 @@ Required properties:
+         "fsl,ls1046a-pcie"
+         "fsl,ls1043a-pcie"
+         "fsl,ls1012a-pcie"
++        "fsl,ls1028a-pcie"
+   EP mode:
+ 	"fsl,ls1046a-pcie-ep", "fsl,ls-pcie-ep"
+ - reg: base addresses and lengths of the PCIe controller register blocks.
 -- 
 2.9.5
 
