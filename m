@@ -2,77 +2,108 @@ Return-Path: <SRS0=Itbs=W5=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 04B34C3A59B
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Sep 2019 07:16:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 39077C3A59B
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Sep 2019 07:31:09 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id D04D6214AE
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Sep 2019 07:16:32 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D04D6214AE
+	by mail.kernel.org (Postfix) with ESMTPS id B47D923774
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Sep 2019 07:31:08 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B47D923774
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46MLwt2SDxzDqfF
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Sep 2019 17:16:30 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46MLtN5QDmzDqGB
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Sep 2019 17:14:20 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 46MMFk6D0DzDqd1
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Sep 2019 17:31:06 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- dmarc=fail (p=none dis=none) header.from=redhat.com
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 46MLtN1MsPz8t3b
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Sep 2019 17:14:20 +1000 (AEST)
-Received: by ozlabs.org (Postfix)
- id 46MLtN14Cyz9sN1; Mon,  2 Sep 2019 17:14:20 +1000 (AEST)
-Authentication-Results: ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=redhat.com
- (client-ip=209.132.183.28; helo=mx1.redhat.com;
- envelope-from=dhowells@redhat.com; receiver=<UNKNOWN>)
-Authentication-Results: ozlabs.org;
+ (client-ip=209.132.183.28; helo=mx1.redhat.com; envelope-from=david@redhat.com;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=redhat.com
 Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 46MLtM4Ybgz9s7T
- for <linuxppc-dev@ozlabs.org>; Mon,  2 Sep 2019 17:14:19 +1000 (AEST)
-Received: from smtp.corp.redhat.com (int-mx03.intmail.prod.int.phx2.redhat.com
- [10.5.11.13])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46MMCH3bPNzDqbk
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Sep 2019 17:28:59 +1000 (AEST)
+Received: from smtp.corp.redhat.com (int-mx05.intmail.prod.int.phx2.redhat.com
+ [10.5.11.15])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by mx1.redhat.com (Postfix) with ESMTPS id 506FA81F1B;
- Mon,  2 Sep 2019 07:14:17 +0000 (UTC)
-Received: from warthog.procyon.org.uk (ovpn-120-255.rdu2.redhat.com
- [10.10.120.255])
- by smtp.corp.redhat.com (Postfix) with ESMTP id 0256360920;
- Mon,  2 Sep 2019 07:14:15 +0000 (UTC)
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
- Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
- Kingdom.
- Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <11986.1567178014@warthog.procyon.org.uk>
-References: <11986.1567178014@warthog.procyon.org.uk>
- <85B7196E-D717-4F19-A7E8-82A18287A3DE@linux.vnet.ibm.com>
-To: Hillf Danton <hdanton@sina.com>
-Subject: Re: Oops (request_key_auth_describe) while running cve-2016-7042 from
- LTP
+ by mx1.redhat.com (Postfix) with ESMTPS id BADED8980E1;
+ Mon,  2 Sep 2019 07:28:56 +0000 (UTC)
+Received: from [10.36.117.11] (ovpn-117-11.ams2.redhat.com [10.36.117.11])
+ by smtp.corp.redhat.com (Postfix) with ESMTP id 6D93E5D6B7;
+ Mon,  2 Sep 2019 07:28:53 +0000 (UTC)
+Subject: Re: [PATCH] powerpc: Perform a bounds check in arch_add_memory
+To: Alastair D'Silva <alastair@au1.ibm.com>, Michal Hocko <mhocko@kernel.org>
+References: <20190827052047.31547-1-alastair@au1.ibm.com>
+ <20190827062844.GQ7538@dhcp22.suse.cz>
+ <ea9e43fff6b6531af0620f9df62e015af66d4535.camel@au1.ibm.com>
+ <1f2d967a-57a1-d3a3-4eb7-306b43709fee@redhat.com>
+ <7e8e34ece6386bd3b0703f218a3b4688c83886d7.camel@au1.ibm.com>
+From: David Hildenbrand <david@redhat.com>
+Openpgp: preference=signencrypt
+Autocrypt: addr=david@redhat.com; prefer-encrypt=mutual; keydata=
+ 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
+ SE+xAvmumFBY
+Organization: Red Hat GmbH
+Message-ID: <5ce9f700-8e70-c669-32fa-9598a01eb8ba@redhat.com>
+Date: Mon, 2 Sep 2019 09:28:52 +0200
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.8.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-ID: <760.1567408455.1@warthog.procyon.org.uk>
-Content-Transfer-Encoding: quoted-printable
-Date: Mon, 02 Sep 2019 08:14:15 +0100
-Message-ID: <761.1567408455@warthog.procyon.org.uk>
-X-Scanned-By: MIMEDefang 2.79 on 10.5.11.13
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.5.16
- (mx1.redhat.com [10.5.110.27]); Mon, 02 Sep 2019 07:14:17 +0000 (UTC)
+In-Reply-To: <7e8e34ece6386bd3b0703f218a3b4688c83886d7.camel@au1.ibm.com>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 8bit
+X-Scanned-By: MIMEDefang 2.79 on 10.5.11.15
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.6.2
+ (mx1.redhat.com [10.5.110.67]); Mon, 02 Sep 2019 07:28:57 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -84,92 +115,94 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: dhowells@redhat.com, Sachin Sant <sachinp@linux.vnet.ibm.com>,
- keyrings@vger.kernel.org, linux-kernel@vger.kernel.org,
- linuxppc-dev@ozlabs.org
+Cc: linux-kernel@vger.kernel.org, Mike Rapoport <rppt@linux.vnet.ibm.com>,
+ Paul Mackerras <paulus@samba.org>,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
+ Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi Hillf,
+On 02.09.19 01:54, Alastair D'Silva wrote:
+> On Tue, 2019-08-27 at 09:13 +0200, David Hildenbrand wrote:
+>> On 27.08.19 08:39, Alastair D'Silva wrote:
+>>> On Tue, 2019-08-27 at 08:28 +0200, Michal Hocko wrote:
+>>>> On Tue 27-08-19 15:20:46, Alastair D'Silva wrote:
+>>>>> From: Alastair D'Silva <alastair@d-silva.org>
+>>>>>
+>>>>> It is possible for firmware to allocate memory ranges outside
+>>>>> the range of physical memory that we support
+>>>>> (MAX_PHYSMEM_BITS).
+>>>>
+>>>> Doesn't that count as a FW bug? Do you have any evidence of that
+>>>> in
+>>>> the
+>>>> field? Just wondering...
+>>>>
+>>>
+>>> Not outside our lab, but OpenCAPI attached LPC memory is assigned
+>>> addresses based on the slot/NPU it is connected to. These addresses
+>>> prior to:
+>>> 4ffe713b7587 ("powerpc/mm: Increase the max addressable memory to
+>>> 2PB")
+>>> were inaccessible and resulted in bogus sections - see our
+>>> discussion
+>>> on 'mm: Trigger bug on if a section is not found in __section_nr'.
+>>> Doing this check here was your suggestion :)
+>>>
+>>> It's entirely possible that a similar problem will occur in the
+>>> future,
+>>> and it's cheap to guard against, which is why I've added this.
+>>>
+>>
+>> If you keep it here, I guess this should be wrapped by a
+>> WARN_ON_ONCE().
+>>
+>> If we move it to common code (e.g., __add_pages() or add_memory()),
+>> then
+>> probably not. I can see that s390x allows to configure
+>> MAX_PHYSMEM_BITS,
+>> so the check could actually make sense.
+>>
+> 
+> I couldn't see a nice platform indepedent way to determine the
+> allowable address range, but if there is, then I'll move this to the
+> generic code instead.
+> 
 
-Would you like to me to put you down as the author of this patch?  If so, =
-I'll
-need a Signed-off-by from you.
+At least on the !ZONE_DEVICE path we have
 
-David
----
-commit df882ad6d4e24a3763719c1798ea58e87d56c2d7
-Author: Hillf Danton <hdanton@sina.com>
-Date:   Fri Aug 30 15:54:33 2019 +0100
+__add_memory() -> register_memory_resource() ...
 
-    keys: Fix missing null pointer check in request_key_auth_describe()
-    =
+return ERR_PTR(-E2BIG);
 
-    If a request_key authentication token key gets revoked, there's a wind=
-ow in
-    which request_key_auth_describe() can see it with a NULL payload - but=
- it
-    makes no check for this and something like the following oops may occu=
-r:
-    =
 
-            BUG: Kernel NULL pointer dereference at 0x00000038
-            Faulting instruction address: 0xc0000000004ddf30
-            Oops: Kernel access of bad area, sig: 11 [#1]
-            ...
-            NIP [...] request_key_auth_describe+0x90/0xd0
-            LR [...] request_key_auth_describe+0x54/0xd0
-            Call Trace:
-            [...] request_key_auth_describe+0x54/0xd0 (unreliable)
-            [...] proc_keys_show+0x308/0x4c0
-            [...] seq_read+0x3d0/0x540
-            [...] proc_reg_read+0x90/0x110
-            [...] __vfs_read+0x3c/0x70
-            [...] vfs_read+0xb4/0x1b0
-            [...] ksys_read+0x7c/0x130
-            [...] system_call+0x5c/0x70
-    =
+I was thinking about something like
 
-    Fix this by checking for a NULL pointer when describing such a key.
-    =
+int add_pages()
+{
+	if ((start + size - 1) >> MAX_PHYSMEM_BITS)
+		return -E2BIG;	
 
-    Also make the read routine check for a NULL pointer to be on the safe =
-side.
-    =
+	return arch_add_memory(...)
+}
 
-    Fixes: 04c567d9313e ("[PATCH] Keys: Fix race between two instantiators=
- of a key")
-    Reported-by: Sachin Sant <sachinp@linux.vnet.ibm.com>
-    Signed-off-by: David Howells <dhowells@redhat.com>
-    Tested-by: Sachin Sant <sachinp@linux.vnet.ibm.com>
+And switching users of arch_add_memory() to add_pages(). However, x86
+already has an add_pages() function, so that would need some more thought.
 
-diff --git a/security/keys/request_key_auth.c b/security/keys/request_key_=
-auth.c
-index e73ec040e250..ecba39c93fd9 100644
---- a/security/keys/request_key_auth.c
-+++ b/security/keys/request_key_auth.c
-@@ -66,6 +66,9 @@ static void request_key_auth_describe(const struct key *=
-key,
- {
- 	struct request_key_auth *rka =3D dereference_key_rcu(key);
- =
+Maybe simply renaming the existing add_pages() to arch_add_pages().
 
-+	if (!rka)
-+		return;
-+
- 	seq_puts(m, "key:");
- 	seq_puts(m, key->description);
- 	if (key_is_positive(key))
-@@ -83,6 +86,9 @@ static long request_key_auth_read(const struct key *key,
- 	size_t datalen;
- 	long ret;
- =
+add_pages(): Create virtual mapping
+__add_pages(): Don't create virtual mapping
 
-+	if (!rka)
-+		return -EKEYREVOKED;
-+
- 	datalen =3D rka->callout_len;
- 	ret =3D datalen;
- =
+arch_add_memory(): Arch backend for add_pages()
+arch_add_pages(): Arch backend for __add_pages()
 
+It would be even more consistent if we would have arch_add_pages() vs.
+__arch_add_pages().
+
+-- 
+
+Thanks,
+
+David / dhildenb
