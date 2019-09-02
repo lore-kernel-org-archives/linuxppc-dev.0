@@ -2,47 +2,57 @@ Return-Path: <SRS0=Itbs=W5=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
+	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0688AC3A59B
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Sep 2019 04:18:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 535E5C3A59B
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Sep 2019 04:20:24 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 84A3F21897
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Sep 2019 04:18:37 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 84A3F21897
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+	by mail.kernel.org (Postfix) with ESMTPS id A1D0121897
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Sep 2019 04:20:23 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A1D0121897
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nxp.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46MGzb4wGmzDqfv
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Sep 2019 14:18:35 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	by lists.ozlabs.org (Postfix) with ESMTP id 46MH1c5dVxzDqJt
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Sep 2019 14:20:20 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+ spf=pass (mailfrom) smtp.mailfrom=nxp.com
+ (client-ip=92.121.34.21; helo=inva021.nxp.com;
+ envelope-from=xiaowei.bao@nxp.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=nxp.com
+Received: from inva021.nxp.com (inva021.nxp.com [92.121.34.21])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46MGQZ6Qy2zDqQm
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Sep 2019 13:53:26 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=ellerman.id.au
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
- SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 46MGQV10K4z9sDQ;
- Mon,  2 Sep 2019 13:53:22 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Michal Suchanek <msuchanek@suse.de>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH v7 3/6] powerpc/perf: consolidate read_user_stack_32
-In-Reply-To: <ea3783a1640b707ef9ce4740562850ef1152829b.1567198491.git.msuchanek@suse.de>
-References: <cover.1567198491.git.msuchanek@suse.de>
- <ea3783a1640b707ef9ce4740562850ef1152829b.1567198491.git.msuchanek@suse.de>
-Date: Mon, 02 Sep 2019 13:53:21 +1000
-Message-ID: <87a7bntkum.fsf@mpe.ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46MGQn61yszDqV1
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Sep 2019 13:53:37 +1000 (AEST)
+Received: from inva021.nxp.com (localhost [127.0.0.1])
+ by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id 7AF7F20011C;
+ Mon,  2 Sep 2019 05:53:34 +0200 (CEST)
+Received: from invc005.ap-rdc01.nxp.com (invc005.ap-rdc01.nxp.com
+ [165.114.16.14])
+ by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id 85FB8200679;
+ Mon,  2 Sep 2019 05:53:27 +0200 (CEST)
+Received: from titan.ap.freescale.net (TITAN.ap.freescale.net [10.192.208.233])
+ by invc005.ap-rdc01.nxp.com (Postfix) with ESMTP id BCE2F402B7;
+ Mon,  2 Sep 2019 11:53:18 +0800 (SGT)
+From: Xiaowei Bao <xiaowei.bao@nxp.com>
+To: robh+dt@kernel.org, mark.rutland@arm.com, shawnguo@kernel.org,
+ leoyang.li@nxp.com, minghuan.Lian@nxp.com, mingkai.hu@nxp.com,
+ roy.zang@nxp.com, lorenzo.pieralisi@arm.com, linux-pci@vger.kernel.org,
+ devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH v6 1/3] dt-bindings: pci: layerscape-pci: add compatible
+ strings "fsl, ls1028a-pcie"
+Date: Mon,  2 Sep 2019 11:43:17 +0800
+Message-Id: <20190902034319.14026-1-xiaowei.bao@nxp.com>
+X-Mailer: git-send-email 2.9.5
+X-Virus-Scanned: ClamAV using ClamSMTP
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -54,99 +64,44 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>,
- David Hildenbrand <david@redhat.com>,
- Heiko Carstens <heiko.carstens@de.ibm.com>, Paul Mackerras <paulus@samba.org>,
- Breno Leitao <leitao@debian.org>, Michael Neuling <mikey@neuling.org>,
- Diana Craciun <diana.craciun@nxp.com>, Firoz Khan <firoz.khan@linaro.org>,
- Hari Bathini <hbathini@linux.ibm.com>, Michal Suchanek <msuchanek@suse.de>,
- Joel Stanley <joel@jms.id.au>, Arnd Bergmann <arnd@arndb.de>,
- Nicholas Piggin <npiggin@gmail.com>, Alexander Viro <viro@zeniv.linux.org.uk>,
- Thomas Gleixner <tglx@linutronix.de>, Allison Randal <allison@lohutok.net>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org,
- "Eric W. Biederman" <ebiederm@xmission.com>,
- Andrew Donnellan <andrew.donnellan@au1.ibm.com>, linux-fsdevel@vger.kernel.org,
- Andrew Morton <akpm@linux-foundation.org>
+Cc: bhelgaas@google.com, Hou Zhiqiang <Zhiqiang.Hou@nxp.com>,
+ Xiaowei Bao <xiaowei.bao@nxp.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Michal Suchanek <msuchanek@suse.de> writes:
+Add the PCIe compatible string for LS1028A
 
-> There are two almost identical copies for 32bit and 64bit.
->
-> The function is used only in 32bit code which will be split out in next
-> patch so consolidate to one function.
->
-> Signed-off-by: Michal Suchanek <msuchanek@suse.de>
-> Reviewed-by: Christophe Leroy <christophe.leroy@c-s.fr>
-> ---
-> new patch in v6
-> ---
->  arch/powerpc/perf/callchain.c | 25 +++++++++----------------
->  1 file changed, 9 insertions(+), 16 deletions(-)
->
-> diff --git a/arch/powerpc/perf/callchain.c b/arch/powerpc/perf/callchain.c
-> index c84bbd4298a0..b7cdcce20280 100644
-> --- a/arch/powerpc/perf/callchain.c
-> +++ b/arch/powerpc/perf/callchain.c
-> @@ -165,22 +165,6 @@ static int read_user_stack_64(unsigned long __user *ptr, unsigned long *ret)
->  	return read_user_stack_slow(ptr, ret, 8);
->  }
->  
-> -static int read_user_stack_32(unsigned int __user *ptr, unsigned int *ret)
-> -{
-> -	if ((unsigned long)ptr > TASK_SIZE - sizeof(unsigned int) ||
-> -	    ((unsigned long)ptr & 3))
-> -		return -EFAULT;
-> -
-> -	pagefault_disable();
-> -	if (!__get_user_inatomic(*ret, ptr)) {
-> -		pagefault_enable();
-> -		return 0;
-> -	}
-> -	pagefault_enable();
-> -
-> -	return read_user_stack_slow(ptr, ret, 4);
-> -}
-> -
->  static inline int valid_user_sp(unsigned long sp, int is_64)
->  {
->  	if (!sp || (sp & 7) || sp > (is_64 ? TASK_SIZE : 0x100000000UL) - 32)
-> @@ -295,6 +279,12 @@ static inline int current_is_64bit(void)
->  }
->  
->  #else  /* CONFIG_PPC64 */
-> +static int read_user_stack_slow(void __user *ptr, void *buf, int nb)
-> +{
-> +	return 0;
-> +}
-> +#endif /* CONFIG_PPC64 */
+Signed-off-by: Xiaowei Bao <xiaowei.bao@nxp.com>
+Signed-off-by: Hou Zhiqiang <Zhiqiang.Hou@nxp.com>
+Reviewed-by: Rob Herring <robh@kernel.org>
+---
+v2:
+ - No change.
+v3:
+ - No change.
+v4:
+ - No change.
+v5:
+ - No change.
+v6:
+ - No change.
 
-Ending the PPC64 else case here, and then restarting it below with an
-ifndef means we end up with two parts of the file that define 32-bit
-code, with a common chunk in the middle, which I dislike.
+ Documentation/devicetree/bindings/pci/layerscape-pci.txt | 1 +
+ 1 file changed, 1 insertion(+)
 
-I'd rather you add the empty read_user_stack_slow() in the existing
-#else section and then move read_user_stack_32() below the whole ifdef
-PPC64/else/endif section.
+diff --git a/Documentation/devicetree/bindings/pci/layerscape-pci.txt b/Documentation/devicetree/bindings/pci/layerscape-pci.txt
+index e20ceaa..99a386e 100644
+--- a/Documentation/devicetree/bindings/pci/layerscape-pci.txt
++++ b/Documentation/devicetree/bindings/pci/layerscape-pci.txt
+@@ -21,6 +21,7 @@ Required properties:
+         "fsl,ls1046a-pcie"
+         "fsl,ls1043a-pcie"
+         "fsl,ls1012a-pcie"
++        "fsl,ls1028a-pcie"
+   EP mode:
+ 	"fsl,ls1046a-pcie-ep", "fsl,ls-pcie-ep"
+ - reg: base addresses and lengths of the PCIe controller register blocks.
+-- 
+2.9.5
 
-Is there some reason that doesn't work?
-
-cheers
-
-> @@ -313,9 +303,12 @@ static int read_user_stack_32(unsigned int __user *ptr, unsigned int *ret)
->  	rc = __get_user_inatomic(*ret, ptr);
->  	pagefault_enable();
->  
-> +	if (IS_ENABLED(CONFIG_PPC64) && rc)
-> +		return read_user_stack_slow(ptr, ret, 4);
->  	return rc;
->  }
->  
-> +#ifndef CONFIG_PPC64
->  static inline void perf_callchain_user_64(struct perf_callchain_entry_ctx *entry,
->  					  struct pt_regs *regs)
->  {
-> -- 
-> 2.22.0
