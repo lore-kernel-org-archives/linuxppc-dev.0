@@ -2,23 +2,24 @@ Return-Path: <SRS0=Itbs=W5=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.2 required=3.0 tests=FROM_EXCESS_BASE64,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_SANE_2 autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4A5B3C3A59B
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Sep 2019 08:28:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 66A03C3A59B
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Sep 2019 08:49:28 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C7DAB21874
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Sep 2019 08:28:52 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C7DAB21874
+	by mail.kernel.org (Postfix) with ESMTPS id 1B5F62173E
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Sep 2019 08:49:28 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1B5F62173E
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=suse.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46MNXL1Q8MzDqcM
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Sep 2019 18:28:50 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 46MP056xZXzDqcN
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Sep 2019 18:49:25 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=suse.de
  (client-ip=195.135.220.15; helo=mx1.suse.de; envelope-from=msuchanek@suse.de;
@@ -28,26 +29,23 @@ Authentication-Results: lists.ozlabs.org;
 Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46MNVG3h3tzDqW1
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Sep 2019 18:27:01 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46MNy63r7DzDqVS
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Sep 2019 18:47:41 +1000 (AEST)
 X-Virus-Scanned: by amavisd-new at test-mx.suse.de
 Received: from relay2.suse.de (unknown [195.135.220.254])
- by mx1.suse.de (Postfix) with ESMTP id EF187AF0D;
- Mon,  2 Sep 2019 08:26:56 +0000 (UTC)
-Date: Mon, 2 Sep 2019 10:26:53 +0200
-From: Michal =?UTF-8?B?U3VjaMOhbmVr?= <msuchanek@suse.de>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [PATCH v7 3/6] powerpc/perf: consolidate read_user_stack_32
-Message-ID: <20190902102653.6d477e16@naga>
-In-Reply-To: <877e6rtkhe.fsf@mpe.ellerman.id.au>
-References: <cover.1567198491.git.msuchanek@suse.de>
- <ea3783a1640b707ef9ce4740562850ef1152829b.1567198491.git.msuchanek@suse.de>
- <87a7bntkum.fsf@mpe.ellerman.id.au>
- <877e6rtkhe.fsf@mpe.ellerman.id.au>
-X-Mailer: Claws Mail 3.17.4 (GTK+ 2.24.32; x86_64-suse-linux-gnu)
+ by mx1.suse.de (Postfix) with ESMTP id D9537B6C9;
+ Mon,  2 Sep 2019 08:47:37 +0000 (UTC)
+From: Michal Suchanek <msuchanek@suse.de>
+To: linuxppc-dev@lists.ozlabs.org,
+ Suraj Jitindar Singh <sjitindarsingh@gmail.com>
+Subject: [PATCH] Revert "powerpc: Add barrier_nospec to raw_copy_in_user()"
+Date: Mon,  2 Sep 2019 10:47:26 +0200
+Message-Id: <20190902084726.14515-1-msuchanek@suse.de>
+X-Mailer: git-send-email 2.22.0
+In-Reply-To: <20190821153656.57fabe9c@kitsune.suse.cz>
+References: 
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -59,55 +57,36 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>,
- David Hildenbrand <david@redhat.com>,
- Heiko Carstens <heiko.carstens@de.ibm.com>, Paul Mackerras <paulus@samba.org>,
- Breno Leitao <leitao@debian.org>, Michael Neuling <mikey@neuling.org>,
- Diana Craciun <diana.craciun@nxp.com>, Firoz Khan <firoz.khan@linaro.org>,
- Joel Stanley <joel@jms.id.au>, Arnd Bergmann <arnd@arndb.de>,
- Nicholas Piggin <npiggin@gmail.com>, Alexander Viro <viro@zeniv.linux.org.uk>,
- Thomas Gleixner <tglx@linutronix.de>, Allison Randal <allison@lohutok.net>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org,
- Hari Bathini <hbathini@linux.ibm.com>, "Eric W.
- Biederman" <ebiederm@xmission.com>,
- Andrew Donnellan <andrew.donnellan@au1.ibm.com>, linux-fsdevel@vger.kernel.org,
- Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org
+Cc: Mathieu Malaterre <malat@debian.org>, linux-kernel@vger.kernel.org,
+ Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>,
+ Michal Suchanek <msuchanek@suse.de>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, 02 Sep 2019 14:01:17 +1000
-Michael Ellerman <mpe@ellerman.id.au> wrote:
 
-> Michael Ellerman <mpe@ellerman.id.au> writes:
-> > Michal Suchanek <msuchanek@suse.de> writes:  
-> ...
-> >> @@ -295,6 +279,12 @@ static inline int current_is_64bit(void)
-> >>  }
-> >>  
-> >>  #else  /* CONFIG_PPC64 */
-> >> +static int read_user_stack_slow(void __user *ptr, void *buf, int nb)
-> >> +{
-> >> +	return 0;
-> >> +}
-> >> +#endif /* CONFIG_PPC64 */  
-> >
-> > Ending the PPC64 else case here, and then restarting it below with an
-> > ifndef means we end up with two parts of the file that define 32-bit
-> > code, with a common chunk in the middle, which I dislike.
-> >
-> > I'd rather you add the empty read_user_stack_slow() in the existing
-> > #else section and then move read_user_stack_32() below the whole ifdef
-> > PPC64/else/endif section.
-> >
-> > Is there some reason that doesn't work?  
-> 
-> Gah, I missed that you split the whole file later in the series. Any
-> reason you did it in two steps rather than moving patch 6 earlier in the
-> series?
+This reverts commit 6fbcdd59094ade30db63f32316e9502425d7b256.
 
-To make this patch readable.
+Not needed. Data handled by raw_copy_in_user must be loaded through
+copy_from_user to be used in the kernel which already has the barrier.
 
-Thanks
+Signed-off-by: Michal Suchanek <msuchanek@suse.de>
+---
+ arch/powerpc/include/asm/uaccess.h | 1 -
+ 1 file changed, 1 deletion(-)
 
-Michal
+diff --git a/arch/powerpc/include/asm/uaccess.h b/arch/powerpc/include/asm/uaccess.h
+index 8b03eb44e876..76f34346b642 100644
+--- a/arch/powerpc/include/asm/uaccess.h
++++ b/arch/powerpc/include/asm/uaccess.h
+@@ -312,7 +312,6 @@ raw_copy_in_user(void __user *to, const void __user *from, unsigned long n)
+ {
+ 	unsigned long ret;
+ 
+-	barrier_nospec();
+ 	allow_user_access(to, from, n);
+ 	ret = __copy_tofrom_user(to, from, n);
+ 	prevent_user_access(to, from, n);
+-- 
+2.22.0
+
