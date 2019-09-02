@@ -2,84 +2,56 @@ Return-Path: <SRS0=Itbs=W5=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.0 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-2.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2A5CBC3A59E
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Sep 2019 13:00:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 995A7C3A59E
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Sep 2019 13:04:14 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 68D0021881
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Sep 2019 13:00:49 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="hbKCmxrh"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 68D0021881
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
+	by mail.kernel.org (Postfix) with ESMTPS id 26A54217F4
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Sep 2019 13:04:14 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 26A54217F4
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kernel.crashing.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46MVZ75K1bzDqL5
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Sep 2019 23:00:47 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=infradead.org
- (client-ip=2607:7c80:54:e::133; helo=bombadil.infradead.org;
- envelope-from=peterz@infradead.org; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=infradead.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=infradead.org header.i=@infradead.org
- header.b="hbKCmxrh"; dkim-atps=neutral
-Received: from bombadil.infradead.org (bombadil.infradead.org
- [IPv6:2607:7c80:54:e::133])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	by lists.ozlabs.org (Postfix) with ESMTP id 46MVf26tB2zDqC3
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Sep 2019 23:04:10 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=permerror (mailfrom)
+ smtp.mailfrom=kernel.crashing.org (client-ip=63.228.1.57;
+ helo=gate.crashing.org; envelope-from=segher@kernel.crashing.org;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=kernel.crashing.org
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46MVVD18lxzDqV2
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Sep 2019 22:57:23 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
- d=infradead.org; s=bombadil.20170209; h=In-Reply-To:Content-Type:MIME-Version
- :References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
- Content-Transfer-Encoding:Content-ID:Content-Description:Resent-Date:
- Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:
- List-Help:List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
- bh=9h13EkBbQnZFZZifKdj3rs2HLYagXdgFWT2AUzdmgpI=; b=hbKCmxrhUY1zqpP0uzODVohmc
- 7Gc3fRoEvRGtWXSR1YHAsRyqeOQZ+xSo3xueOYK0vZkz2wXZDvUnLNC21905DicvN9MPBAs4DBoHP
- 3bEPPX3Lah67+Yt2YExpC+47yEB1NRTiRlG2syuXFfZuBnYx1rgsSfXzIhagdqy2nJMJMcIGaOkBm
- jqE6smn69C/mhsZ+W09pCKWboIYlgkXz4x5ucnn1GxJP4fgNnVDc7NhwfOC1XwO1DTcx+XifaEChK
- ej/28hnJz2yhxza7ykMLMj5I6MCx6KdQRmTPPejmkQG2Pu2wo4ajJdOKDSq+MquqSIw54tqAYCWoV
- lCZUHOQWA==;
-Received: from j217100.upc-j.chello.nl ([24.132.217.100]
- helo=noisy.programming.kicks-ass.net)
- by bombadil.infradead.org with esmtpsa (Exim 4.92 #3 (Red Hat Linux))
- id 1i4lt4-0006FG-Ob; Mon, 02 Sep 2019 12:56:51 +0000
-Received: from hirez.programming.kicks-ass.net
- (hirez.programming.kicks-ass.net [192.168.1.225])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (Client did not present a certificate)
- by noisy.programming.kicks-ass.net (Postfix) with ESMTPS id B054A30116F;
- Mon,  2 Sep 2019 14:56:08 +0200 (CEST)
-Received: by hirez.programming.kicks-ass.net (Postfix, from userid 1000)
- id 695CA29B408C9; Mon,  2 Sep 2019 14:56:44 +0200 (CEST)
-Date: Mon, 2 Sep 2019 14:56:44 +0200
-From: Peter Zijlstra <peterz@infradead.org>
-To: Yunsheng Lin <linyunsheng@huawei.com>
-Subject: Re: [PATCH v2 2/9] x86: numa: check the node id consistently for x86
-Message-ID: <20190902125644.GQ2369@hirez.programming.kicks-ass.net>
-References: <1567231103-13237-1-git-send-email-linyunsheng@huawei.com>
- <1567231103-13237-3-git-send-email-linyunsheng@huawei.com>
- <20190831085539.GG2369@hirez.programming.kicks-ass.net>
- <4d89c688-49e4-a2aa-32ee-65e36edcd913@huawei.com>
- <20190831161247.GM2369@hirez.programming.kicks-ass.net>
- <ae64285f-5134-4147-7b02-34bb5d519e8c@huawei.com>
- <20190902072542.GN2369@hirez.programming.kicks-ass.net>
- <5fa2aa99-89fa-cd41-b090-36a23cfdeb73@huawei.com>
-MIME-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46MVZL3rj9zDqgp
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Sep 2019 23:00:58 +1000 (AEST)
+Received: from gate.crashing.org (localhost.localdomain [127.0.0.1])
+ by gate.crashing.org (8.14.1/8.14.1) with ESMTP id x82D0CbT029470;
+ Mon, 2 Sep 2019 08:00:12 -0500
+Received: (from segher@localhost)
+ by gate.crashing.org (8.14.1/8.14.1/Submit) id x82D09fF029469;
+ Mon, 2 Sep 2019 08:00:09 -0500
+X-Authentication-Warning: gate.crashing.org: segher set sender to
+ segher@kernel.crashing.org using -f
+Date: Mon, 2 Sep 2019 08:00:08 -0500
+From: Segher Boessenkool <segher@kernel.crashing.org>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: [PATCH v7 5/6] powerpc/64: Make COMPAT user-selectable disabled
+ on littleendian by default.
+Message-ID: <20190902130008.GZ31406@gate.crashing.org>
+References: <cover.1567198491.git.msuchanek@suse.de>
+ <c7c88e88408588fa6fcf858a5ae503b5e2f4ec0b.1567198492.git.msuchanek@suse.de>
+ <87ftlftpy7.fsf@mpe.ellerman.id.au>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <5fa2aa99-89fa-cd41-b090-36a23cfdeb73@huawei.com>
-User-Agent: Mutt/1.10.1 (2018-07-13)
+In-Reply-To: <87ftlftpy7.fsf@mpe.ellerman.id.au>
+User-Agent: Mutt/1.4.2.3i
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -91,88 +63,46 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: dalias@libc.org, linux-sh@vger.kernel.org, catalin.marinas@arm.com,
- dave.hansen@linux.intel.com, heiko.carstens@de.ibm.com, linuxarm@huawei.com,
- jiaxun.yang@flygoat.com, linux-mips@vger.kernel.org, mwb@linux.vnet.ibm.com,
- paulus@samba.org, hpa@zytor.com, sparclinux@vger.kernel.org, chenhc@lemote.com,
- will@kernel.org, bp@alien8.de, linux-s390@vger.kernel.org,
- ysato@users.sourceforge.jp, x86@kernel.org, rppt@linux.ibm.com,
- borntraeger@de.ibm.com, dledford@redhat.com, mingo@redhat.com,
- jeffrey.t.kirsher@intel.com, jhogan@kernel.org, nfont@linux.vnet.ibm.com,
- mattst88@gmail.com, len.brown@intel.com, gor@linux.ibm.com,
- anshuman.khandual@arm.com, Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- ink@jurassic.park.msu.ru, luto@kernel.org, tglx@linutronix.de,
- naveen.n.rao@linux.vnet.ibm.com, linux-arm-kernel@lists.infradead.org,
- rth@twiddle.net, axboe@kernel.dk, linuxppc-dev@lists.ozlabs.org,
- "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org,
- ralf@linux-mips.org, tbogendoerfer@suse.de, paul.burton@mips.com,
- linux-alpha@vger.kernel.org, cai@lca.pw, akpm@linux-foundation.org,
- robin.murphy@arm.com, davem@davemloft.net
+Cc: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>,
+ David Hildenbrand <david@redhat.com>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>, Paul Mackerras <paulus@samba.org>,
+ Breno Leitao <leitao@debian.org>, Michael Neuling <mikey@neuling.org>,
+ Diana Craciun <diana.craciun@nxp.com>, Firoz Khan <firoz.khan@linaro.org>,
+ Hari Bathini <hbathini@linux.ibm.com>, Michal Suchanek <msuchanek@suse.de>,
+ Joel Stanley <joel@jms.id.au>, Arnd Bergmann <arnd@arndb.de>,
+ Nicholas Piggin <npiggin@gmail.com>, Alexander Viro <viro@zeniv.linux.org.uk>,
+ Thomas Gleixner <tglx@linutronix.de>, Allison Randal <allison@lohutok.net>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org,
+ "Eric W. Biederman" <ebiederm@xmission.com>,
+ Andrew Donnellan <andrew.donnellan@au1.ibm.com>, linux-fsdevel@vger.kernel.org,
+ Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, Sep 02, 2019 at 08:25:24PM +0800, Yunsheng Lin wrote:
-> On 2019/9/2 15:25, Peter Zijlstra wrote:
-> > On Mon, Sep 02, 2019 at 01:46:51PM +0800, Yunsheng Lin wrote:
-> >> On 2019/9/1 0:12, Peter Zijlstra wrote:
-> > 
-> >>> 1) because even it is not set, the device really does belong to a node.
-> >>> It is impossible a device will have magic uniform access to memory when
-> >>> CPUs cannot.
-> >>
-> >> So it means dev_to_node() will return either NUMA_NO_NODE or a
-> >> valid node id?
-> > 
-> > NUMA_NO_NODE := -1, which is not a valid node number. It is also, like I
-> > said, not a valid device location on a NUMA system.
-> > 
-> > Just because ACPI/BIOS is shit, doesn't mean the device doesn't have a
-> > node association. It just means we don't know and might have to guess.
+On Mon, Sep 02, 2019 at 12:03:12PM +1000, Michael Ellerman wrote:
+> Michal Suchanek <msuchanek@suse.de> writes:
+> > On bigendian ppc64 it is common to have 32bit legacy binaries but much
+> > less so on littleendian.
 > 
-> How do we guess the device's location when ACPI/BIOS does not set it?
+> I think the toolchain people will tell you that there is no 32-bit
+> little endian ABI defined at all, if anything works it's by accident.
 
-See device_add(), it looks to the device's parent and on NO_NODE, puts
-it there.
+There of course is a lot of powerpcle-* support.  The ABI used for it
+on linux is the SYSV ABI, just like on BE 32-bit.
 
-Lacking any hints, just stick it to node0 and print a FW_BUG or
-something.
+There also is specific powerpcle-linux support in GCC, and in binutils,
+too.  Also, config.guess/config.sub supports it.  Half a year ago this
+all built fine (no, I don't test it often either).
 
-> It seems dev_to_node() does not do anything about that and leave the
-> job to the caller or whatever function that get called with its return
-> value, such as cpumask_of_node().
+I don't think glibc supports it though, so I wonder if anyone builds an
+actual system with it?  Maybe busybox or the like?
 
-Well, dev_to_node() doesn't do anything; nor should it. It are the
-callers of set_dev_node() that should be taking care.
+> So I think we should not make this selectable, unless someone puts their
+> hand up to say they want it and are willing to test it and keep it
+> working.
 
-Also note how device_add() sets the device node to the parent device's
-node on NUMA_NO_NODE. Arguably we should change it to complain when it
-finds NUMA_NO_NODE and !parent.
+What about actual 32-bit LE systems?  Does anyone still use those?
 
----
- drivers/base/core.c | 12 ++++++++++--
- 1 file changed, 10 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/base/core.c b/drivers/base/core.c
-index f0dd8e38fee3..2caf204966a0 100644
---- a/drivers/base/core.c
-+++ b/drivers/base/core.c
-@@ -2120,8 +2120,16 @@ int device_add(struct device *dev)
- 		dev->kobj.parent = kobj;
- 
- 	/* use parent numa_node */
--	if (parent && (dev_to_node(dev) == NUMA_NO_NODE))
--		set_dev_node(dev, dev_to_node(parent));
-+	if (dev_to_node(dev) == NUMA_NO_NODE) {
-+		if (parent)
-+			set_dev_node(dev, dev_to_node(parent));
-+#ifdef CONFIG_NUMA
-+		else {
-+			pr_err("device: '%s': has no assigned NUMA node\n", dev_name(dev));
-+			set_dev_node(dev, 0);
-+		}
-+#endif
-+	}
- 
- 	/* first, register with generic layer. */
- 	/* we require the name to be set before, and pass NULL */
+Segher
