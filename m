@@ -2,79 +2,49 @@ Return-Path: <SRS0=Itbs=W5=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.0 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-2.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 37392C41514
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Sep 2019 07:33:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A1A39C3A59B
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Sep 2019 07:56:05 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 73AC1206B8
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Sep 2019 07:33:20 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="RSg8SK30"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 73AC1206B8
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
+	by mail.kernel.org (Postfix) with ESMTPS id E63752190F
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Sep 2019 07:56:04 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E63752190F
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46MMJG1WQlzDqdx
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Sep 2019 17:33:18 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 46MMpV3lRszDqYL
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Sep 2019 17:56:02 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=infradead.org
- (client-ip=2001:8b0:10b:1231::1; helo=merlin.infradead.org;
- envelope-from=peterz@infradead.org; receiver=<UNKNOWN>)
+ spf=none (mailfrom) smtp.mailfrom=lst.de
+ (client-ip=213.95.11.211; helo=verein.lst.de; envelope-from=hch@lst.de;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=infradead.org
-Received: from merlin.infradead.org (merlin.infradead.org
- [IPv6:2001:8b0:10b:1231::1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46MMCY03kWzDqTV
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Sep 2019 17:29:13 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
- d=infradead.org; s=merlin.20170209; h=In-Reply-To:Content-Type:MIME-Version:
- References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
- Content-Transfer-Encoding:Content-ID:Content-Description:Resent-Date:
- Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:
- List-Help:List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
- bh=kuvYA3T0maxhdGUw985D46q7bOf4rHWESmnw46BzIyU=; b=RSg8SK30rWjj+TGxS+skngBb9
- 2fH0Zbvox/26y8ns9l17onRj+Z0upMjen1Jy9C225gpAYncbszcWwsNoaRVXtRhycw5sQPRXxvqZF
- MZcgdzGUMBphpdnOn16uYyMgLt+qN6EW1z0DTDeFTlEiZTt3odbqEu+DJSqCou9wwYKKH0FxT6dWN
- I+zp9Ai4QHlNhoBhF21uUvEYbhfjZl2GTj5O4kluEqPaq3MIV3nvvVSecP3gXpoqPTIw8UHW+LeG+
- 00NHCbD42nXGQS4hidMqlBA/pQDia+x5u1X7c5K0Y5fMyiWYIiSoxiwz3DDXxm0RHe9+pK3isf+sd
- NVR1Me1xA==;
-Received: from j217100.upc-j.chello.nl ([24.132.217.100]
- helo=noisy.programming.kicks-ass.net)
- by merlin.infradead.org with esmtpsa (Exim 4.92 #3 (Red Hat Linux))
- id 1i4gik-0004XZ-Fx; Mon, 02 Sep 2019 07:25:50 +0000
-Received: from hirez.programming.kicks-ass.net
- (hirez.programming.kicks-ass.net [192.168.1.225])
+ dmarc=none (p=none dis=none) header.from=lst.de
+Received: from verein.lst.de (verein.lst.de [213.95.11.211])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (Client did not present a certificate)
- by noisy.programming.kicks-ass.net (Postfix) with ESMTPS id 6DC0530116F;
- Mon,  2 Sep 2019 09:25:06 +0200 (CEST)
-Received: by hirez.programming.kicks-ass.net (Postfix, from userid 1000)
- id 1636C29B6185F; Mon,  2 Sep 2019 09:25:42 +0200 (CEST)
-Date: Mon, 2 Sep 2019 09:25:42 +0200
-From: Peter Zijlstra <peterz@infradead.org>
-To: Yunsheng Lin <linyunsheng@huawei.com>
-Subject: Re: [PATCH v2 2/9] x86: numa: check the node id consistently for x86
-Message-ID: <20190902072542.GN2369@hirez.programming.kicks-ass.net>
-References: <1567231103-13237-1-git-send-email-linyunsheng@huawei.com>
- <1567231103-13237-3-git-send-email-linyunsheng@huawei.com>
- <20190831085539.GG2369@hirez.programming.kicks-ass.net>
- <4d89c688-49e4-a2aa-32ee-65e36edcd913@huawei.com>
- <20190831161247.GM2369@hirez.programming.kicks-ass.net>
- <ae64285f-5134-4147-7b02-34bb5d519e8c@huawei.com>
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46MMmF2Y7hzDqYJ
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Sep 2019 17:54:03 +1000 (AEST)
+Received: by verein.lst.de (Postfix, from userid 2407)
+ id 3F54F227A8A; Mon,  2 Sep 2019 09:53:56 +0200 (CEST)
+Date: Mon, 2 Sep 2019 09:53:56 +0200
+From: Christoph Hellwig <hch@lst.de>
+To: Bharata B Rao <bharata@linux.ibm.com>
+Subject: Re: [PATCH v7 1/7] kvmppc: Driver to manage pages of secure guest
+Message-ID: <20190902075356.GA28967@lst.de>
+References: <20190822102620.21897-1-bharata@linux.ibm.com>
+ <20190822102620.21897-2-bharata@linux.ibm.com>
+ <20190829083810.GA13039@lst.de> <20190830034259.GD31913@in.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <ae64285f-5134-4147-7b02-34bb5d519e8c@huawei.com>
-User-Agent: Mutt/1.10.1 (2018-07-13)
+In-Reply-To: <20190830034259.GD31913@in.ibm.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -86,91 +56,72 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: dalias@libc.org, linux-sh@vger.kernel.org, catalin.marinas@arm.com,
- dave.hansen@linux.intel.com, heiko.carstens@de.ibm.com, linuxarm@huawei.com,
- jiaxun.yang@flygoat.com, linux-kernel@vger.kernel.org, mwb@linux.vnet.ibm.com,
- paulus@samba.org, hpa@zytor.com, sparclinux@vger.kernel.org, chenhc@lemote.com,
- will@kernel.org, linux-s390@vger.kernel.org, ysato@users.sourceforge.jp,
- x86@kernel.org, rppt@linux.ibm.com, borntraeger@de.ibm.com,
- dledford@redhat.com, mingo@redhat.com, jeffrey.t.kirsher@intel.com,
- jhogan@kernel.org, nfont@linux.vnet.ibm.com, mattst88@gmail.com,
- len.brown@intel.com, gor@linux.ibm.com, anshuman.khandual@arm.com,
- ink@jurassic.park.msu.ru, cai@lca.pw, luto@kernel.org, tglx@linutronix.de,
- naveen.n.rao@linux.vnet.ibm.com, linux-arm-kernel@lists.infradead.org,
- rth@twiddle.net, axboe@kernel.dk, robin.murphy@arm.com,
- linux-mips@vger.kernel.org, ralf@linux-mips.org, tbogendoerfer@suse.de,
- paul.burton@mips.com, linux-alpha@vger.kernel.org, bp@alien8.de,
- akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org, davem@davemloft.net
+Cc: linuxram@us.ibm.com, cclaudio@linux.ibm.com, kvm-ppc@vger.kernel.org,
+ linux-mm@kvack.org, jglisse@redhat.com, aneesh.kumar@linux.vnet.ibm.com,
+ paulus@au1.ibm.com, sukadev@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org,
+ Christoph Hellwig <hch@lst.de>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, Sep 02, 2019 at 01:46:51PM +0800, Yunsheng Lin wrote:
-> On 2019/9/1 0:12, Peter Zijlstra wrote:
-
-> > 1) because even it is not set, the device really does belong to a node.
-> > It is impossible a device will have magic uniform access to memory when
-> > CPUs cannot.
+On Fri, Aug 30, 2019 at 09:12:59AM +0530, Bharata B Rao wrote:
+> On Thu, Aug 29, 2019 at 10:38:10AM +0200, Christoph Hellwig wrote:
+> > On Thu, Aug 22, 2019 at 03:56:14PM +0530, Bharata B Rao wrote:
+> > > +/*
+> > > + * Bits 60:56 in the rmap entry will be used to identify the
+> > > + * different uses/functions of rmap.
+> > > + */
+> > > +#define KVMPPC_RMAP_DEVM_PFN	(0x2ULL << 56)
+> > 
+> > How did you come up with this specific value?
 > 
-> So it means dev_to_node() will return either NUMA_NO_NODE or a
-> valid node id?
-
-NUMA_NO_NODE := -1, which is not a valid node number. It is also, like I
-said, not a valid device location on a NUMA system.
-
-Just because ACPI/BIOS is shit, doesn't mean the device doesn't have a
-node association. It just means we don't know and might have to guess.
-
-> > 2) is already true today, cpumask_of_node() requires a valid node_id.
+> Different usage types of RMAP array are being defined.
+> https://patchwork.ozlabs.org/patch/1149791/
 > 
-> Ok, most of the user does check node_id before calling
-> cpumask_of_node(), but does a little different type of checking:
+> The above value is reserved for device pfn usage.
+
+Shouldn't all these defintions go in together in a patch?  Also is bi
+t 56+ a set of values, so is there 1 << 56 and 3 << 56 as well?  Seems
+like even that other patch doesn't fully define these "pfn" values.
+
+> > No need for !! when returning a bool.  Also the helper seems a little
+> > pointless, just opencoding it would make the code more readable in my
+> > opinion.
 > 
-> 1) some does " < 0" check;
-> 2) some does "== NUMA_NO_NODE" check;
-> 3) some does ">= MAX_NUMNODES" check;
-> 4) some does "< 0 || >= MAX_NUMNODES || !node_online(node)" check.
+> I expect similar routines for other usages of RMAP to come up.
 
-The one true way is:
+Please drop them all.  Having to wade through a header to check for
+a specific bit that also is set manually elsewhere in related code
+just obsfucates it for the reader.
 
-	'(unsigned)node_id >= nr_node_ids'
-
-> > 3) is just wrong and increases overhead for everyone.
+> > > +	*mig->dst = migrate_pfn(page_to_pfn(dpage)) | MIGRATE_PFN_LOCKED;
+> > > +	return 0;
+> > > +}
+> > 
+> > I think you can just merge this trivial helper into the only caller.
 > 
-> Ok, cpumask_of_node() is also used in some critical path such
-> as scheduling, which may not need those checking, the overhead
-> is unnecessary.
-> 
-> But for non-critical path such as setup or configuration path,
-> it better to have consistent checking, and also simplify the
-> user code that calls cpumask_of_node().
-> 
-> Do you think it is worth the trouble to add a new function
-> such as cpumask_of_node_check(maybe some other name) to do
-> consistent checking?
-> 
-> Or caller just simply check if dev_to_node()'s return value is
-> NUMA_NO_NODE before calling cpumask_of_node()?
+> Yes I can, but felt it is nicely abstracted out to a function right now.
 
-It is not a matter of convenience. The function is called
-cpumask_of_node(), when node < 0 || node >= nr_node_ids, it is not a
-valid node, therefore the function shouldn't return anything except an
-error.
+Not really.  It just fits the old calling conventions before I removed
+the indirection.
 
-Also note that the CONFIG_DEBUG_PER_CPU_MAPS version of
-cpumask_of_node() already does this (although it wants the below fix).
+> > Here we actually have two callers, but they have a fair amount of
+> > duplicate code in them.  I think you want to move that common
+> > code (including setting up the migrate_vma structure) into this
+> > function and maybe also give it a more descriptive name.
+> 
+> Sure, I will give this a try. The name is already very descriptive, will
+> come up with an appropriate name.
 
----
-diff --git a/arch/x86/mm/numa.c b/arch/x86/mm/numa.c
-index e6dad600614c..5f49c10201c7 100644
---- a/arch/x86/mm/numa.c
-+++ b/arch/x86/mm/numa.c
-@@ -861,7 +861,7 @@ void numa_remove_cpu(int cpu)
-  */
- const struct cpumask *cpumask_of_node(int node)
- {
--	if (node >= nr_node_ids) {
-+	if ((unsigned)node >= nr_node_ids) {
- 		printk(KERN_WARNING
- 			"cpumask_of_node(%d): node > nr_node_ids(%u)\n",
- 			node, nr_node_ids);
+I don't think alloc_and_copy is very helpful.  It matches some of the
+implementation, but not the intent.  Why not kvmppc_svm_page_in/out
+similar to the hypervisor calls calling them?  Yes, for one case it
+also gets called from the pagefault handler, but it still performs
+these basic page in/out actions.
+
+> BTW this file and the fuction prefixes in this file started out with
+> kvmppc_hmm, switched to kvmppc_devm when HMM routines weren't used anymore.
+> Now with the use of only non-dev versions, planning to swtich to
+> kvmppc_uvmem_
+
+That prefix sounds fine to me as well.
