@@ -7,19 +7,19 @@ X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B3B4DC3A59B
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Sep 2019 03:46:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2BE09C3A59B
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Sep 2019 03:48:08 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3B0A121874
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Sep 2019 03:46:25 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3B0A121874
+	by mail.kernel.org (Postfix) with ESMTPS id A344B21881
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Sep 2019 03:48:07 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A344B21881
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nxp.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46MGGQ5JTGzDqLL
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Sep 2019 13:46:22 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 46MGJQ08RWzDqdj
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Sep 2019 13:48:06 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=nxp.com
  (client-ip=92.121.34.21; helo=inva021.nxp.com;
@@ -29,18 +29,18 @@ Authentication-Results: lists.ozlabs.org;
 Received: from inva021.nxp.com (inva021.nxp.com [92.121.34.21])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46MFs56ksQzDqXP
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Sep 2019 13:27:53 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46MFs72fDpzDqXW
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Sep 2019 13:27:54 +1000 (AEST)
 Received: from inva021.nxp.com (localhost [127.0.0.1])
- by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id A30A1200668;
- Mon,  2 Sep 2019 05:27:50 +0200 (CEST)
+ by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id 10C90200658;
+ Mon,  2 Sep 2019 05:27:52 +0200 (CEST)
 Received: from invc005.ap-rdc01.nxp.com (invc005.ap-rdc01.nxp.com
  [165.114.16.14])
- by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id 20B0B200658;
- Mon,  2 Sep 2019 05:27:42 +0200 (CEST)
+ by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id 4CA65200659;
+ Mon,  2 Sep 2019 05:27:43 +0200 (CEST)
 Received: from titan.ap.freescale.net (TITAN.ap.freescale.net [10.192.208.233])
- by invc005.ap-rdc01.nxp.com (Postfix) with ESMTP id 473874031F;
- Mon,  2 Sep 2019 11:27:31 +0800 (SGT)
+ by invc005.ap-rdc01.nxp.com (Postfix) with ESMTP id 1AA9340320;
+ Mon,  2 Sep 2019 11:27:33 +0800 (SGT)
 From: Xiaowei Bao <xiaowei.bao@nxp.com>
 To: robh+dt@kernel.org, mark.rutland@arm.com, shawnguo@kernel.org,
  leoyang.li@nxp.com, kishon@ti.com, lorenzo.pieralisi@arm.com,
@@ -49,9 +49,10 @@ To: robh+dt@kernel.org, mark.rutland@arm.com, shawnguo@kernel.org,
  linux-pci@vger.kernel.org, devicetree@vger.kernel.org,
  linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
  linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v3 08/11] PCI: layerscape: Modify the MSIX to the doorbell mode
-Date: Mon,  2 Sep 2019 11:17:13 +0800
-Message-Id: <20190902031716.43195-9-xiaowei.bao@nxp.com>
+Subject: [PATCH v3 09/11] PCI: layerscape: Add EP mode support for ls1088a and
+ ls2088a
+Date: Mon,  2 Sep 2019 11:17:14 +0800
+Message-Id: <20190902031716.43195-10-xiaowei.bao@nxp.com>
 X-Mailer: git-send-email 2.9.5
 In-Reply-To: <20190902031716.43195-1-xiaowei.bao@nxp.com>
 References: <20190902031716.43195-1-xiaowei.bao@nxp.com>
@@ -73,37 +74,145 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-dw_pcie_ep_raise_msix_irq was never called in the exisitng driver
-before, because the ls1046a platform don't support the MSIX feature
-and msix_capable was always set to false.
-Now that add the ls1088a platform with MSIX support, but the existing
-dw_pcie_ep_raise_msix_irq doesn't work, so use the doorbell method to
-support the MSIX feature.
+Add PCIe EP mode support for ls1088a and ls2088a, there are some
+difference between LS1 and LS2 platform, so refactor the code of
+the EP driver.
 
 Signed-off-by: Xiaowei Bao <xiaowei.bao@nxp.com>
 ---
 v2: 
- - No change
+ - This is a new patch for supporting the ls1088a and ls2088a platform.
 v3:
- - Modify the commit message make it clearly.
+ - Adjust the some struct assignment order in probe function.
 
- drivers/pci/controller/dwc/pci-layerscape-ep.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ drivers/pci/controller/dwc/pci-layerscape-ep.c | 72 +++++++++++++++++++-------
+ 1 file changed, 53 insertions(+), 19 deletions(-)
 
 diff --git a/drivers/pci/controller/dwc/pci-layerscape-ep.c b/drivers/pci/controller/dwc/pci-layerscape-ep.c
-index 1e07287..5f0cb99 100644
+index 5f0cb99..723bbe5 100644
 --- a/drivers/pci/controller/dwc/pci-layerscape-ep.c
 +++ b/drivers/pci/controller/dwc/pci-layerscape-ep.c
-@@ -79,7 +79,8 @@ static int ls_pcie_ep_raise_irq(struct dw_pcie_ep *ep, u8 func_no,
- 	case PCI_EPC_IRQ_MSI:
- 		return dw_pcie_ep_raise_msi_irq(ep, func_no, interrupt_num);
- 	case PCI_EPC_IRQ_MSIX:
--		return dw_pcie_ep_raise_msix_irq(ep, func_no, interrupt_num);
-+		return dw_pcie_ep_raise_msix_irq_doorbell(ep, func_no,
-+							  interrupt_num);
- 	default:
- 		dev_err(pci->dev, "UNKNOWN IRQ type\n");
- 		return -EINVAL;
+@@ -20,27 +20,29 @@
+ 
+ #define PCIE_DBI2_OFFSET		0x1000	/* DBI2 base address*/
+ 
+-struct ls_pcie_ep {
+-	struct dw_pcie		*pci;
+-	struct pci_epc_features	*ls_epc;
++#define to_ls_pcie_ep(x)	dev_get_drvdata((x)->dev)
++
++struct ls_pcie_ep_drvdata {
++	u32				func_offset;
++	const struct dw_pcie_ep_ops	*ops;
++	const struct dw_pcie_ops	*dw_pcie_ops;
+ };
+ 
+-#define to_ls_pcie_ep(x)	dev_get_drvdata((x)->dev)
++struct ls_pcie_ep {
++	struct dw_pcie			*pci;
++	struct pci_epc_features		*ls_epc;
++	const struct ls_pcie_ep_drvdata *drvdata;
++};
+ 
+ static int ls_pcie_establish_link(struct dw_pcie *pci)
+ {
+ 	return 0;
+ }
+ 
+-static const struct dw_pcie_ops ls_pcie_ep_ops = {
++static const struct dw_pcie_ops dw_ls_pcie_ep_ops = {
+ 	.start_link = ls_pcie_establish_link,
+ };
+ 
+-static const struct of_device_id ls_pcie_ep_of_match[] = {
+-	{ .compatible = "fsl,ls-pcie-ep",},
+-	{ },
+-};
+-
+ static const struct pci_epc_features*
+ ls_pcie_ep_get_features(struct dw_pcie_ep *ep)
+ {
+@@ -87,10 +89,39 @@ static int ls_pcie_ep_raise_irq(struct dw_pcie_ep *ep, u8 func_no,
+ 	}
+ }
+ 
+-static const struct dw_pcie_ep_ops pcie_ep_ops = {
++static unsigned int ls_pcie_ep_func_conf_select(struct dw_pcie_ep *ep,
++						u8 func_no)
++{
++	struct dw_pcie *pci = to_dw_pcie_from_ep(ep);
++	struct ls_pcie_ep *pcie = to_ls_pcie_ep(pci);
++
++	WARN_ON(func_no && !pcie->drvdata->func_offset);
++	return pcie->drvdata->func_offset * func_no;
++}
++
++static const struct dw_pcie_ep_ops ls_pcie_ep_ops = {
+ 	.ep_init = ls_pcie_ep_init,
+ 	.raise_irq = ls_pcie_ep_raise_irq,
+ 	.get_features = ls_pcie_ep_get_features,
++	.func_conf_select = ls_pcie_ep_func_conf_select,
++};
++
++static const struct ls_pcie_ep_drvdata ls1_ep_drvdata = {
++	.ops = &ls_pcie_ep_ops,
++	.dw_pcie_ops = &dw_ls_pcie_ep_ops,
++};
++
++static const struct ls_pcie_ep_drvdata ls2_ep_drvdata = {
++	.func_offset = 0x20000,
++	.ops = &ls_pcie_ep_ops,
++	.dw_pcie_ops = &dw_ls_pcie_ep_ops,
++};
++
++static const struct of_device_id ls_pcie_ep_of_match[] = {
++	{ .compatible = "fsl,ls1046a-pcie-ep", .data = &ls1_ep_drvdata },
++	{ .compatible = "fsl,ls1088a-pcie-ep", .data = &ls2_ep_drvdata },
++	{ .compatible = "fsl,ls2088a-pcie-ep", .data = &ls2_ep_drvdata },
++	{ },
+ };
+ 
+ static int __init ls_add_pcie_ep(struct ls_pcie_ep *pcie,
+@@ -103,7 +134,7 @@ static int __init ls_add_pcie_ep(struct ls_pcie_ep *pcie,
+ 	int ret;
+ 
+ 	ep = &pci->ep;
+-	ep->ops = &pcie_ep_ops;
++	ep->ops = pcie->drvdata->ops;
+ 
+ 	res = platform_get_resource_byname(pdev, IORESOURCE_MEM, "addr_space");
+ 	if (!res)
+@@ -142,20 +173,23 @@ static int __init ls_pcie_ep_probe(struct platform_device *pdev)
+ 	if (!ls_epc)
+ 		return -ENOMEM;
+ 
+-	dbi_base = platform_get_resource_byname(pdev, IORESOURCE_MEM, "regs");
+-	pci->dbi_base = devm_pci_remap_cfg_resource(dev, dbi_base);
+-	if (IS_ERR(pci->dbi_base))
+-		return PTR_ERR(pci->dbi_base);
++	pcie->drvdata = of_device_get_match_data(dev);
+ 
+-	pci->dbi_base2 = pci->dbi_base + PCIE_DBI2_OFFSET;
+ 	pci->dev = dev;
+-	pci->ops = &ls_pcie_ep_ops;
+-	pcie->pci = pci;
++	pci->ops = pcie->drvdata->dw_pcie_ops;
+ 
+ 	ls_epc->bar_fixed_64bit = (1 << BAR_2) | (1 << BAR_4),
+ 
++	pcie->pci = pci;
+ 	pcie->ls_epc = ls_epc;
+ 
++	dbi_base = platform_get_resource_byname(pdev, IORESOURCE_MEM, "regs");
++	pci->dbi_base = devm_pci_remap_cfg_resource(dev, dbi_base);
++	if (IS_ERR(pci->dbi_base))
++		return PTR_ERR(pci->dbi_base);
++
++	pci->dbi_base2 = pci->dbi_base + PCIE_DBI2_OFFSET;
++
+ 	platform_set_drvdata(pdev, pcie);
+ 
+ 	ret = ls_add_pcie_ep(pcie, pdev);
 -- 
 2.9.5
 
