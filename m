@@ -2,67 +2,110 @@ Return-Path: <SRS0=+4wI=W6=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-2.3 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 78D58C3A5A7
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Sep 2019 16:37:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3F7D9C3A5A8
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Sep 2019 16:41:19 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id F20BA23711
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Sep 2019 16:37:23 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="ujWY6HiW"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org F20BA23711
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	by mail.kernel.org (Postfix) with ESMTPS id C0F5E233A1
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Sep 2019 16:41:18 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C0F5E233A1
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46NCKY21m0zDqZB
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Sep 2019 02:37:21 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 46NCQ32S2XzDqHR
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Sep 2019 02:41:15 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46NC6Y3PN9zDqjY
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Sep 2019 02:27:49 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=kernel.org
- (client-ip=198.145.29.99; helo=mail.kernel.org;
- envelope-from=sashal@kernel.org; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=kernel.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="ujWY6HiW"; 
- dkim-atps=neutral
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ dmarc=none (p=none dis=none) header.from=linux.ibm.com
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 46NC6W6RwQz8vx8
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Sep 2019 02:27:47 +1000 (AEST)
+Received: by ozlabs.org (Postfix)
+ id 46NC6W3Hm4z9sQt; Wed,  4 Sep 2019 02:27:47 +1000 (AEST)
+Authentication-Results: ozlabs.org;
+ spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
+ (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
+ envelope-from=hbathini@linux.ibm.com; receiver=<UNKNOWN>)
+Authentication-Results: ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=linux.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46NC6R5xd4zDqhS
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Sep 2019 02:27:43 +1000 (AEST)
-Received: from sasha-vm.mshome.net (c-73-47-72-35.hsd1.nh.comcast.net
- [73.47.72.35])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id 412DB238C6;
- Tue,  3 Sep 2019 16:27:39 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1567528060;
- bh=ZsVtxklk/JzEFceQMjTt/P8EYOL7MvwBNXU5d/AO3OY=;
- h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=ujWY6HiW4GpGlOspq1d0ui5xjyL3VRz+sVcumWaZE++oXvME+HCMtNbtybq9f83xd
- YRazMsMhFHOq/7EHDV3dVjWARKTKWmQzZ8Zvu7VN8LKlh8cmAJvr5RVFBw9R6NWbLp
- E6kmK3q3BUmd6clepjjemP+NSW0JfCoVCDl6nhsI=
-From: Sasha Levin <sashal@kernel.org>
-To: linux-kernel@vger.kernel.org,
-	stable@vger.kernel.org
-Subject: [PATCH AUTOSEL 4.19 075/167] powerpc/kvm: Save and restore host
- AMR/IAMR/UAMOR
-Date: Tue,  3 Sep 2019 12:23:47 -0400
-Message-Id: <20190903162519.7136-75-sashal@kernel.org>
-X-Mailer: git-send-email 2.20.1
-In-Reply-To: <20190903162519.7136-1-sashal@kernel.org>
-References: <20190903162519.7136-1-sashal@kernel.org>
+ by ozlabs.org (Postfix) with ESMTPS id 46NC6V4Czwz9sPk
+ for <linuxppc-dev@ozlabs.org>; Wed,  4 Sep 2019 02:27:46 +1000 (AEST)
+Received: from pps.filterd (m0187473.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
+ x83GNHoR064100
+ for <linuxppc-dev@ozlabs.org>; Tue, 3 Sep 2019 12:27:43 -0400
+Received: from e06smtp04.uk.ibm.com (e06smtp04.uk.ibm.com [195.75.94.100])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2usu16h90m-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@ozlabs.org>; Tue, 03 Sep 2019 12:27:38 -0400
+Received: from localhost
+ by e06smtp04.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <hbathini@linux.ibm.com>;
+ Tue, 3 Sep 2019 17:27:33 +0100
+Received: from b06cxnps4074.portsmouth.uk.ibm.com (9.149.109.196)
+ by e06smtp04.uk.ibm.com (192.168.101.134) with IBM ESMTP SMTP Gateway:
+ Authorized Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Tue, 3 Sep 2019 17:27:29 +0100
+Received: from d06av23.portsmouth.uk.ibm.com (d06av23.portsmouth.uk.ibm.com
+ [9.149.105.59])
+ by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x83GRS6Q53149702
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Tue, 3 Sep 2019 16:27:28 GMT
+Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id EC854A4051;
+ Tue,  3 Sep 2019 16:27:27 +0000 (GMT)
+Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id C644FA4055;
+ Tue,  3 Sep 2019 16:27:25 +0000 (GMT)
+Received: from [9.85.81.203] (unknown [9.85.81.203])
+ by d06av23.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Tue,  3 Sep 2019 16:27:25 +0000 (GMT)
+Subject: Re: [PATCH v5 07/31] powerpc/fadump: release all the memory above
+ boot memory size
+To: Michael Ellerman <mpe@ellerman.id.au>,
+ linuxppc-dev <linuxppc-dev@ozlabs.org>
+References: <156630261682.8896.3418665808003586786.stgit@hbathini.in.ibm.com>
+ <156630269797.8896.13397199124372832591.stgit@hbathini.in.ibm.com>
+ <87v9u9r5yi.fsf@mpe.ellerman.id.au>
+From: Hari Bathini <hbathini@linux.ibm.com>
+Date: Tue, 3 Sep 2019 21:57:24 +0530
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.8.0
 MIME-Version: 1.0
-X-stable: review
-X-Patchwork-Hint: Ignore
-Content-Transfer-Encoding: 8bit
+In-Reply-To: <87v9u9r5yi.fsf@mpe.ellerman.id.au>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
+X-TM-AS-GCONF: 00
+x-cbid: 19090316-0016-0000-0000-000002A62E8B
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 19090316-0017-0000-0000-0000330697D9
+Message-Id: <0b124ab8-8e8c-4a55-dab1-d8373b265d00@linux.ibm.com>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
+ definitions=2019-09-03_03:, , signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=547 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1906280000 definitions=main-1909030167
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -74,138 +117,30 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Sasha Levin <sashal@kernel.org>, kvm-ppc@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org
+Cc: Ananth N Mavinakayanahalli <ananth@linux.ibm.com>,
+ Mahesh J Salgaonkar <mahesh@linux.ibm.com>,
+ Nicholas Piggin <npiggin@gmail.com>, Oliver <oohall@gmail.com>,
+ Vasant Hegde <hegdevasant@linux.ibm.com>, Daniel Axtens <dja@axtens.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Michael Ellerman <mpe@ellerman.id.au>
 
-[ Upstream commit c3c7470c75566a077c8dc71dcf8f1948b8ddfab4 ]
 
-When the hash MMU is active the AMR, IAMR and UAMOR are used for
-pkeys. The AMR is directly writable by user space, and the UAMOR masks
-those writes, meaning both registers are effectively user register
-state. The IAMR is used to create an execute only key.
+On 03/09/19 4:40 PM, Michael Ellerman wrote:
+> Hari Bathini <hbathini@linux.ibm.com> writes:
+> 
+>> Except for reserve dump area which is permanent reserved, all memory
+>                                         permanently
+> 
+>> above boot memory size is released when the dump is invalidated. Make
+>> this a bit more explicit in the code.
+> 
+> I'm not clear on what you mean by "boot memory size"?
 
-Also we must maintain the value of at least the AMR when running in
-process context, so that any memory accesses done by the kernel on
-behalf of the process are correctly controlled by the AMR.
+boot memory size is the amount of memory used to boot the capture kernel. Basically,
+the amount of memory required for the kernel to boot successfully when booted with
+restricted memory..
 
-Although we are correctly switching all registers when going into a
-guest, on returning to the host we just write 0 into all regs, except
-on Power9 where we restore the IAMR correctly.
-
-This could be observed by a user process if it writes the AMR, then
-runs a guest and we then return immediately to it without
-rescheduling. Because we have written 0 to the AMR that would have the
-effect of granting read/write permission to pages that the process was
-trying to protect.
-
-In addition, when using the Radix MMU, the AMR can prevent inadvertent
-kernel access to userspace data, writing 0 to the AMR disables that
-protection.
-
-So save and restore AMR, IAMR and UAMOR.
-
-Fixes: cf43d3b26452 ("powerpc: Enable pkey subsystem")
-Cc: stable@vger.kernel.org # v4.16+
-Signed-off-by: Russell Currey <ruscur@russell.cc>
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
-Acked-by: Paul Mackerras <paulus@ozlabs.org>
-Signed-off-by: Sasha Levin <sashal@kernel.org>
----
- arch/powerpc/kvm/book3s_hv_rmhandlers.S | 26 ++++++++++++++++---------
- 1 file changed, 17 insertions(+), 9 deletions(-)
-
-diff --git a/arch/powerpc/kvm/book3s_hv_rmhandlers.S b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-index 1d14046124a01..5902a60f92268 100644
---- a/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-+++ b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-@@ -56,6 +56,8 @@ END_FTR_SECTION_IFCLR(CPU_FTR_ARCH_300)
- #define STACK_SLOT_DAWR		(SFS-56)
- #define STACK_SLOT_DAWRX	(SFS-64)
- #define STACK_SLOT_HFSCR	(SFS-72)
-+#define STACK_SLOT_AMR		(SFS-80)
-+#define STACK_SLOT_UAMOR	(SFS-88)
- 
- /*
-  * Call kvmppc_hv_entry in real mode.
-@@ -760,11 +762,9 @@ BEGIN_FTR_SECTION
- 	mfspr	r5, SPRN_TIDR
- 	mfspr	r6, SPRN_PSSCR
- 	mfspr	r7, SPRN_PID
--	mfspr	r8, SPRN_IAMR
- 	std	r5, STACK_SLOT_TID(r1)
- 	std	r6, STACK_SLOT_PSSCR(r1)
- 	std	r7, STACK_SLOT_PID(r1)
--	std	r8, STACK_SLOT_IAMR(r1)
- 	mfspr	r5, SPRN_HFSCR
- 	std	r5, STACK_SLOT_HFSCR(r1)
- END_FTR_SECTION_IFSET(CPU_FTR_ARCH_300)
-@@ -772,11 +772,18 @@ BEGIN_FTR_SECTION
- 	mfspr	r5, SPRN_CIABR
- 	mfspr	r6, SPRN_DAWR
- 	mfspr	r7, SPRN_DAWRX
-+	mfspr	r8, SPRN_IAMR
- 	std	r5, STACK_SLOT_CIABR(r1)
- 	std	r6, STACK_SLOT_DAWR(r1)
- 	std	r7, STACK_SLOT_DAWRX(r1)
-+	std	r8, STACK_SLOT_IAMR(r1)
- END_FTR_SECTION_IFSET(CPU_FTR_ARCH_207S)
- 
-+	mfspr	r5, SPRN_AMR
-+	std	r5, STACK_SLOT_AMR(r1)
-+	mfspr	r6, SPRN_UAMOR
-+	std	r6, STACK_SLOT_UAMOR(r1)
-+
- BEGIN_FTR_SECTION
- 	/* Set partition DABR */
- 	/* Do this before re-enabling PMU to avoid P7 DABR corruption bug */
-@@ -1713,22 +1720,25 @@ ALT_FTR_SECTION_END_IFCLR(CPU_FTR_ARCH_300)
- 	mtspr	SPRN_PSPB, r0
- 	mtspr	SPRN_WORT, r0
- BEGIN_FTR_SECTION
--	mtspr	SPRN_IAMR, r0
- 	mtspr	SPRN_TCSCR, r0
- 	/* Set MMCRS to 1<<31 to freeze and disable the SPMC counters */
- 	li	r0, 1
- 	sldi	r0, r0, 31
- 	mtspr	SPRN_MMCRS, r0
- END_FTR_SECTION_IFCLR(CPU_FTR_ARCH_300)
--8:
- 
--	/* Save and reset AMR and UAMOR before turning on the MMU */
-+	/* Save and restore AMR, IAMR and UAMOR before turning on the MMU */
-+	ld	r8, STACK_SLOT_IAMR(r1)
-+	mtspr	SPRN_IAMR, r8
-+
-+8:	/* Power7 jumps back in here */
- 	mfspr	r5,SPRN_AMR
- 	mfspr	r6,SPRN_UAMOR
- 	std	r5,VCPU_AMR(r9)
- 	std	r6,VCPU_UAMOR(r9)
--	li	r6,0
--	mtspr	SPRN_AMR,r6
-+	ld	r5,STACK_SLOT_AMR(r1)
-+	ld	r6,STACK_SLOT_UAMOR(r1)
-+	mtspr	SPRN_AMR, r5
- 	mtspr	SPRN_UAMOR, r6
- 
- 	/* Switch DSCR back to host value */
-@@ -1897,11 +1907,9 @@ BEGIN_FTR_SECTION
- 	ld	r5, STACK_SLOT_TID(r1)
- 	ld	r6, STACK_SLOT_PSSCR(r1)
- 	ld	r7, STACK_SLOT_PID(r1)
--	ld	r8, STACK_SLOT_IAMR(r1)
- 	mtspr	SPRN_TIDR, r5
- 	mtspr	SPRN_PSSCR, r6
- 	mtspr	SPRN_PID, r7
--	mtspr	SPRN_IAMR, r8
- END_FTR_SECTION_IFSET(CPU_FTR_ARCH_300)
- 
- #ifdef CONFIG_PPC_RADIX_MMU
--- 
-2.20.1
+- Hari
 
