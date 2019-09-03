@@ -2,71 +2,87 @@ Return-Path: <SRS0=+4wI=W6=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.3 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
+X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7C250C3A5A2
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Sep 2019 20:24:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 830B9C3A5A2
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Sep 2019 21:46:31 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id BBA7321897
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Sep 2019 20:24:43 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BBA7321897
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=iram.es
+	by mail.kernel.org (Postfix) with ESMTPS id B40BF22CF7
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Sep 2019 21:46:30 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=fossix-org.20150623.gappssmtp.com header.i=@fossix-org.20150623.gappssmtp.com header.b="wN1zs7zR"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B40BF22CF7
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=fossix.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46NJMr4zskzDqpk
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Sep 2019 06:24:40 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 46NLBB5fjCzDqnZ
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Sep 2019 07:46:26 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=iram.es
- (client-ip=130.206.19.177; helo=mx02.puc.rediris.es;
- envelope-from=paubert@iram.es; receiver=<UNKNOWN>)
+ spf=none (mailfrom) smtp.mailfrom=fossix.org
+ (client-ip=2607:f8b0:4864:20::443; helo=mail-pf1-x443.google.com;
+ envelope-from=santosh@fossix.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=iram.es
-X-Greylist: delayed 638 seconds by postgrey-1.36 at bilbo;
- Wed, 04 Sep 2019 06:22:46 AEST
-Received: from mx02.puc.rediris.es (outbound4sev.lav.puc.rediris.es
- [130.206.19.177])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ dmarc=none (p=none dis=none) header.from=fossix.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=fossix-org.20150623.gappssmtp.com
+ header.i=@fossix-org.20150623.gappssmtp.com header.b="wN1zs7zR"; 
+ dkim-atps=neutral
+Received: from mail-pf1-x443.google.com (mail-pf1-x443.google.com
+ [IPv6:2607:f8b0:4864:20::443])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46NJKf1SsTzDqm6
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Sep 2019 06:22:45 +1000 (AEST)
-Received: from mta-out01.sim.rediris.es (mta-out01.sim.rediris.es
- [130.206.24.43])
- by mx02.puc.rediris.es  with ESMTP id x83KBN0J009423-x83KBN0L009423
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NO);
- Tue, 3 Sep 2019 22:11:23 +0200
-Received: from mta-out01.sim.rediris.es (localhost.localdomain [127.0.0.1])
- by mta-out01.sim.rediris.es (Postfix) with ESMTPS id 3AE24332E817;
- Tue,  3 Sep 2019 22:11:23 +0200 (CEST)
-Received: from mta-out01.sim.rediris.es (localhost.localdomain [127.0.0.1])
- by mta-out01.sim.rediris.es (Postfix) with ESMTPS id 2A326332E818;
- Tue,  3 Sep 2019 22:11:23 +0200 (CEST)
-Received: from lt-gp.iram.es (219.red-80-24-122.staticip.rima-tde.net
- [80.24.122.219])
- by mta-out01.sim.rediris.es (Postfix) with ESMTPA id 5A9B4332E817;
- Tue,  3 Sep 2019 22:11:22 +0200 (CEST)
-Date: Tue, 3 Sep 2019 22:11:21 +0200
-From: Gabriel Paubert <paubert@iram.es>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH v2 3/6] powerpc: Convert flush_icache_range & friends to C
-Message-ID: <20190903201121.GD3547@lt-gp.iram.es>
-References: <20190903052407.16638-1-alastair@au1.ibm.com>
- <20190903052407.16638-4-alastair@au1.ibm.com>
- <20190903130430.GC31406@gate.crashing.org>
- <d268ee78-607e-5eb3-ed89-d5c07f672046@c-s.fr>
- <20190903160415.GA9749@gate.crashing.org>
- <321b003a-9633-5ff4-c4a2-59a47ec23421@c-s.fr>
- <20190903183157.GB9749@gate.crashing.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46NL7w45jnzDqY2
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Sep 2019 07:44:28 +1000 (AEST)
+Received: by mail-pf1-x443.google.com with SMTP id q10so6682460pfl.0
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 03 Sep 2019 14:44:28 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=fossix-org.20150623.gappssmtp.com; s=20150623;
+ h=from:to:cc:subject:date:message-id:in-reply-to:references
+ :mime-version:content-transfer-encoding;
+ bh=ePHWL5UBGW8VSpLG6dEo3DijGeVx5QzzAUce6TagAfs=;
+ b=wN1zs7zRMQMpq9blbJO3J8E3XyvQwU3H+E0fWNR/Hu0jJlbkGp+y9JDerBZV4RdcOY
+ Fqf855K8aydk7n99NRItkpzLV7xnj1IyoVVGAA0TGQZgLRa/XSDaqKY/EcdwL46m4lsn
+ +hDXABd68P47Xo4mVOJeqNspSBJG3EM6nYVAffXHPaMZ5de+FpRBFNMq44k1cbP+/yXt
+ JF8W1M08q683BrZIfXG3bQ7Px0Z08Ns9tCiMs1AbwkiHHCWKfzC25oLjCjzmob6DOVwn
+ w3yimwfJif6Shcvd61k2leuRx6VomvaJTQy341oMJEa1+S0S0xaGDkI/ObBPE09GwW6I
+ jXXw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+ :references:mime-version:content-transfer-encoding;
+ bh=ePHWL5UBGW8VSpLG6dEo3DijGeVx5QzzAUce6TagAfs=;
+ b=Q0gmORTOj4JUcbIkZMznyA+3MWxUJAlfKlW4Ss/wh83MtnmVjHoDG5SQW6JIpV0gE8
+ d5X0zgXRWsbqnnVLkMwOYBvAF44y3f7SpuMJtkpBQW6n112VsMFSEYN3TxnRdL45FyWA
+ fIEwmnjryXiHdy5ojBPq6te/hErW+RSPfmH5J1VVnYT9CjJ1Us7uc89SoWUzlpwr8t9x
+ B/aSC73iUFmXLN9GgQtZkfGDjgqCggl1ORXjEdF5Tflmd6rf6kBW9r/ztL7+mon04bGH
+ 4yHT+xArgsvqLvdoSAYi5Wnct8LRJf7O+6lnsbrs2bPeXsKTsfL8hJLDmxMfvKYRmsUl
+ thTg==
+X-Gm-Message-State: APjAAAUKSHdm5Pays0w5w+7tnuXfjJnkWCT9Zgl9vmsEO4AiXpIKk88f
+ izb4KozPUM8xlFW8by5dCpX6dK95Zcs=
+X-Google-Smtp-Source: APXvYqxrWjzb0irSaj7Pfo5g4gHJcv2MLq3ShR5b0brXHomU01z3a7Y9mSrf8krtY18aNy+hXKPPuQ==
+X-Received: by 2002:a63:184b:: with SMTP id 11mr33845242pgy.112.1567547065968; 
+ Tue, 03 Sep 2019 14:44:25 -0700 (PDT)
+Received: from santosiv.in.ibm.com.com ([49.207.60.65])
+ by smtp.gmail.com with ESMTPSA id t6sm487970pjy.18.2019.09.03.14.44.22
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Tue, 03 Sep 2019 14:44:25 -0700 (PDT)
+From: Santosh Sivaraj <santosh@fossix.org>
+To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Michael Ellerman <mpe@ellerman.id.au>
+Subject: [PATCH 2/2] seltests/powerpc: Add a selftest for memcpy_mcsafe
+Date: Wed,  4 Sep 2019 03:13:59 +0530
+Message-Id: <20190903214359.23887-2-santosh@fossix.org>
+X-Mailer: git-send-email 2.21.0
+In-Reply-To: <20190903214359.23887-1-santosh@fossix.org>
+References: <20190903214359.23887-1-santosh@fossix.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <20190903183157.GB9749@gate.crashing.org>
-User-Agent: Mutt/1.10.1 (2018-07-13)
-X-FEAS-CONTENT-MODIFICATION: 
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -78,42 +94,74 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Alastair D'Silva <alastair@au1.ibm.com>,
- David Hildenbrand <david@redhat.com>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org,
- Nicholas Piggin <npiggin@gmail.com>, Mike Rapoport <rppt@linux.vnet.ibm.com>,
- Paul Mackerras <paulus@samba.org>, alastair@d-silva.org, Qian Cai <cai@lca.pw>,
- Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@lists.ozlabs.org,
- Andrew Morton <akpm@linux-foundation.org>,
- Allison Randal <allison@lohutok.net>
+Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, Sep 03, 2019 at 01:31:57PM -0500, Segher Boessenkool wrote:
-> On Tue, Sep 03, 2019 at 07:05:19PM +0200, Christophe Leroy wrote:
-> > Le 03/09/2019 à 18:04, Segher Boessenkool a écrit :
-> > >(Why are they separate though?  It could just be one loop var).
-> > 
-> > Yes it could just be a single loop var, but in that case it would have 
-> > to be reset at the start of the second loop, which means we would have 
-> > to pass 'addr' for resetting the loop anyway,
-> 
-> Right, I noticed that after hitting send, as usual.
-> 
-> > so I opted to do it 
-> > outside the inline asm by using to separate loop vars set to their 
-> > starting value outside the inline asm.
-> 
-> The thing is, the way it is written now, it will get separate registers
-> for each loop (with proper earlyclobbers added).  Not that that really
-> matters of course, it just feels wrong :-)
+Appropriate self tests for memcpy_mcsafe
 
-After "mtmsr %3", it is always possible to copy %0 to %3 and use it as
-an address register for the second loop. One register less to allocate
-for the compiler. Constraints of course have to be adjusted.
+Suggested-by: Michael Ellerman <mpe@ellerman.id.au>
+Signed-off-by: Santosh Sivaraj <santosh@fossix.org>
+---
+ tools/testing/selftests/powerpc/copyloops/.gitignore       | 1 +
+ tools/testing/selftests/powerpc/copyloops/Makefile         | 7 ++++++-
+ tools/testing/selftests/powerpc/copyloops/asm/export.h     | 1 +
+ .../testing/selftests/powerpc/copyloops/memcpy_mcsafe_64.S | 1 +
+ 4 files changed, 9 insertions(+), 1 deletion(-)
+ create mode 120000 tools/testing/selftests/powerpc/copyloops/memcpy_mcsafe_64.S
 
-	Gabriel
-> 
-> 
-> Segher
+diff --git a/tools/testing/selftests/powerpc/copyloops/.gitignore b/tools/testing/selftests/powerpc/copyloops/.gitignore
+index de158104912a..12ef5b031974 100644
+--- a/tools/testing/selftests/powerpc/copyloops/.gitignore
++++ b/tools/testing/selftests/powerpc/copyloops/.gitignore
+@@ -11,3 +11,4 @@ memcpy_p7_t1
+ copyuser_64_exc_t0
+ copyuser_64_exc_t1
+ copyuser_64_exc_t2
++memcpy_mcsafe_64
+diff --git a/tools/testing/selftests/powerpc/copyloops/Makefile b/tools/testing/selftests/powerpc/copyloops/Makefile
+index 44574f3818b3..0917983a1c78 100644
+--- a/tools/testing/selftests/powerpc/copyloops/Makefile
++++ b/tools/testing/selftests/powerpc/copyloops/Makefile
+@@ -12,7 +12,7 @@ ASFLAGS = $(CFLAGS) -Wa,-mpower4
+ TEST_GEN_PROGS := copyuser_64_t0 copyuser_64_t1 copyuser_64_t2 \
+ 		copyuser_p7_t0 copyuser_p7_t1 \
+ 		memcpy_64_t0 memcpy_64_t1 memcpy_64_t2 \
+-		memcpy_p7_t0 memcpy_p7_t1 \
++		memcpy_p7_t0 memcpy_p7_t1 memcpy_mcsafe_64 \
+ 		copyuser_64_exc_t0 copyuser_64_exc_t1 copyuser_64_exc_t2
+ 
+ EXTRA_SOURCES := validate.c ../harness.c stubs.S
+@@ -45,6 +45,11 @@ $(OUTPUT)/memcpy_p7_t%:	memcpy_power7.S $(EXTRA_SOURCES)
+ 		-D SELFTEST_CASE=$(subst memcpy_p7_t,,$(notdir $@)) \
+ 		-o $@ $^
+ 
++$(OUTPUT)/memcpy_mcsafe_64: memcpy_mcsafe_64.S $(EXTRA_SOURCES)
++	$(CC) $(CPPFLAGS) $(CFLAGS) \
++		-D COPY_LOOP=test_memcpy_mcsafe \
++		-o $@ $^
++
+ $(OUTPUT)/copyuser_64_exc_t%: copyuser_64.S exc_validate.c ../harness.c \
+ 		copy_tofrom_user_reference.S stubs.S
+ 	$(CC) $(CPPFLAGS) $(CFLAGS) \
+diff --git a/tools/testing/selftests/powerpc/copyloops/asm/export.h b/tools/testing/selftests/powerpc/copyloops/asm/export.h
+index 05c1663c89b0..e6b80d5fbd14 100644
+--- a/tools/testing/selftests/powerpc/copyloops/asm/export.h
++++ b/tools/testing/selftests/powerpc/copyloops/asm/export.h
+@@ -1,3 +1,4 @@
+ /* SPDX-License-Identifier: GPL-2.0 */
+ #define EXPORT_SYMBOL(x)
++#define EXPORT_SYMBOL_GPL(x)
+ #define EXPORT_SYMBOL_KASAN(x)
+diff --git a/tools/testing/selftests/powerpc/copyloops/memcpy_mcsafe_64.S b/tools/testing/selftests/powerpc/copyloops/memcpy_mcsafe_64.S
+new file mode 120000
+index 000000000000..f0feef3062f6
+--- /dev/null
++++ b/tools/testing/selftests/powerpc/copyloops/memcpy_mcsafe_64.S
+@@ -0,0 +1 @@
++../../../../../arch/powerpc/lib/memcpy_mcsafe_64.S
+\ No newline at end of file
+-- 
+2.21.0
+
