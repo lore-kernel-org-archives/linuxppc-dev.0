@@ -6,55 +6,67 @@ X-Spam-Status: No, score=-2.3 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7110AC3A5A2
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Sep 2019 19:33:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7C250C3A5A2
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Sep 2019 20:24:44 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id EEBBE217D7
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Sep 2019 19:33:34 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EEBBE217D7
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kernel.crashing.org
+	by mail.kernel.org (Postfix) with ESMTPS id BBA7321897
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Sep 2019 20:24:43 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BBA7321897
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=iram.es
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46NHDr0TDWzDqlr
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Sep 2019 05:33:32 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=permerror (mailfrom)
- smtp.mailfrom=kernel.crashing.org (client-ip=63.228.1.57;
- helo=gate.crashing.org; envelope-from=segher@kernel.crashing.org;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=kernel.crashing.org
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 46NJMr4zskzDqpk
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Sep 2019 06:24:40 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+ spf=pass (mailfrom) smtp.mailfrom=iram.es
+ (client-ip=130.206.19.177; helo=mx02.puc.rediris.es;
+ envelope-from=paubert@iram.es; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=iram.es
+X-Greylist: delayed 638 seconds by postgrey-1.36 at bilbo;
+ Wed, 04 Sep 2019 06:22:46 AEST
+Received: from mx02.puc.rediris.es (outbound4sev.lav.puc.rediris.es
+ [130.206.19.177])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46NHBj5kDBzDqlg
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Sep 2019 05:31:41 +1000 (AEST)
-Received: from gate.crashing.org (localhost.localdomain [127.0.0.1])
- by gate.crashing.org (8.14.1/8.14.1) with ESMTP id x83JVTV8020900;
- Tue, 3 Sep 2019 14:31:29 -0500
-Received: (from segher@localhost)
- by gate.crashing.org (8.14.1/8.14.1/Submit) id x83JVTPO020899;
- Tue, 3 Sep 2019 14:31:29 -0500
-X-Authentication-Warning: gate.crashing.org: segher set sender to
- segher@kernel.crashing.org using -f
-Date: Tue, 3 Sep 2019 14:31:28 -0500
-From: Segher Boessenkool <segher@kernel.crashing.org>
-To: Nathan Chancellor <natechancellor@gmail.com>
-Subject: Re: [PATCH] powerpc: Avoid clang warnings around setjmp and longjmp
-Message-ID: <20190903193128.GC9749@gate.crashing.org>
-References: <20190812023214.107817-1-natechancellor@gmail.com>
- <878srdv206.fsf@mpe.ellerman.id.au>
- <20190828175322.GA121833@archlinux-threadripper>
- <CAKwvOdmXbYrR6n-cxKt3XxkE4Lmj0sSoZBUtHVb0V2LTUFHmug@mail.gmail.com>
- <20190828184529.GC127646@archlinux-threadripper>
- <6801a83ed6d54d95b87a41c57ef6e6b0@AcuMS.aculab.com>
- <20190903055553.GC60296@archlinux-threadripper>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46NJKf1SsTzDqm6
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Sep 2019 06:22:45 +1000 (AEST)
+Received: from mta-out01.sim.rediris.es (mta-out01.sim.rediris.es
+ [130.206.24.43])
+ by mx02.puc.rediris.es  with ESMTP id x83KBN0J009423-x83KBN0L009423
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NO);
+ Tue, 3 Sep 2019 22:11:23 +0200
+Received: from mta-out01.sim.rediris.es (localhost.localdomain [127.0.0.1])
+ by mta-out01.sim.rediris.es (Postfix) with ESMTPS id 3AE24332E817;
+ Tue,  3 Sep 2019 22:11:23 +0200 (CEST)
+Received: from mta-out01.sim.rediris.es (localhost.localdomain [127.0.0.1])
+ by mta-out01.sim.rediris.es (Postfix) with ESMTPS id 2A326332E818;
+ Tue,  3 Sep 2019 22:11:23 +0200 (CEST)
+Received: from lt-gp.iram.es (219.red-80-24-122.staticip.rima-tde.net
+ [80.24.122.219])
+ by mta-out01.sim.rediris.es (Postfix) with ESMTPA id 5A9B4332E817;
+ Tue,  3 Sep 2019 22:11:22 +0200 (CEST)
+Date: Tue, 3 Sep 2019 22:11:21 +0200
+From: Gabriel Paubert <paubert@iram.es>
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH v2 3/6] powerpc: Convert flush_icache_range & friends to C
+Message-ID: <20190903201121.GD3547@lt-gp.iram.es>
+References: <20190903052407.16638-1-alastair@au1.ibm.com>
+ <20190903052407.16638-4-alastair@au1.ibm.com>
+ <20190903130430.GC31406@gate.crashing.org>
+ <d268ee78-607e-5eb3-ed89-d5c07f672046@c-s.fr>
+ <20190903160415.GA9749@gate.crashing.org>
+ <321b003a-9633-5ff4-c4a2-59a47ec23421@c-s.fr>
+ <20190903183157.GB9749@gate.crashing.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <20190903055553.GC60296@archlinux-threadripper>
-User-Agent: Mutt/1.4.2.3i
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20190903183157.GB9749@gate.crashing.org>
+User-Agent: Mutt/1.10.1 (2018-07-13)
+X-FEAS-CONTENT-MODIFICATION: 
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -66,32 +78,42 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Nick Desaulniers <ndesaulniers@google.com>,
- LKML <linux-kernel@vger.kernel.org>, "# 3.4.x" <stable@vger.kernel.org>,
- clang-built-linux <clang-built-linux@googlegroups.com>,
- David Laight <David.Laight@aculab.com>, Paul Mackerras <paulus@samba.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Cc: Alastair D'Silva <alastair@au1.ibm.com>,
+ David Hildenbrand <david@redhat.com>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org,
+ Nicholas Piggin <npiggin@gmail.com>, Mike Rapoport <rppt@linux.vnet.ibm.com>,
+ Paul Mackerras <paulus@samba.org>, alastair@d-silva.org, Qian Cai <cai@lca.pw>,
+ Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@lists.ozlabs.org,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Allison Randal <allison@lohutok.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, Sep 02, 2019 at 10:55:53PM -0700, Nathan Chancellor wrote:
-> On Thu, Aug 29, 2019 at 09:59:48AM +0000, David Laight wrote:
-> > From: Nathan Chancellor
-> > > Sent: 28 August 2019 19:45
-> > ...
-> > > However, I think that -fno-builtin-* would be appropriate here because
-> > > we are providing our own setjmp implementation, meaning clang should not
-> > > be trying to do anything with the builtin implementation like building a
-> > > declaration for it.
+On Tue, Sep 03, 2019 at 01:31:57PM -0500, Segher Boessenkool wrote:
+> On Tue, Sep 03, 2019 at 07:05:19PM +0200, Christophe Leroy wrote:
+> > Le 03/09/2019 à 18:04, Segher Boessenkool a écrit :
+> > >(Why are they separate though?  It could just be one loop var).
 > > 
-> > Isn't implementing setjmp impossible unless you tell the compiler that
-> > you function is 'setjmp-like' ?
+> > Yes it could just be a single loop var, but in that case it would have 
+> > to be reset at the start of the second loop, which means we would have 
+> > to pass 'addr' for resetting the loop anyway,
 > 
-> No idea, PowerPC is the only architecture that does such a thing.
+> Right, I noticed that after hitting send, as usual.
+> 
+> > so I opted to do it 
+> > outside the inline asm by using to separate loop vars set to their 
+> > starting value outside the inline asm.
+> 
+> The thing is, the way it is written now, it will get separate registers
+> for each loop (with proper earlyclobbers added).  Not that that really
+> matters of course, it just feels wrong :-)
 
-Since setjmp can return more than once, yes, exciting things can happen
-if you do not tell the compiler about this.
+After "mtmsr %3", it is always possible to copy %0 to %3 and use it as
+an address register for the second loop. One register less to allocate
+for the compiler. Constraints of course have to be adjusted.
 
-
-Segher
+	Gabriel
+> 
+> 
+> Segher
