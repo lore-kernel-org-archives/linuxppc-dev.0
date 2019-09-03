@@ -2,93 +2,54 @@ Return-Path: <SRS0=+4wI=W6=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.3 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E3B47C3A5A2
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Sep 2019 12:49:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D9C15C3A5A2
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Sep 2019 13:08:18 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 68DE620870
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Sep 2019 12:49:37 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 68DE620870
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 2327A2173E
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Sep 2019 13:08:18 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2327A2173E
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kernel.crashing.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46N6Gl06j6zDqNV
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Sep 2019 22:49:35 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
- (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=aneesh.kumar@linux.ibm.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 46N6hH3srWzDqlD
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Sep 2019 23:08:15 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=permerror (mailfrom)
+ smtp.mailfrom=kernel.crashing.org (client-ip=63.228.1.57;
+ helo=gate.crashing.org; envelope-from=segher@kernel.crashing.org;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=kernel.crashing.org
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46N65C6N8MzDqYB
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Sep 2019 22:41:19 +1000 (AEST)
-Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x83Cbrwu010473; Tue, 3 Sep 2019 08:41:10 -0400
-Received: from pps.reinject (localhost [127.0.0.1])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2usntwdgr2-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Tue, 03 Sep 2019 08:41:10 -0400
-Received: from m0098419.ppops.net (m0098419.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.27/8.16.0.27) with SMTP id x83Cc4wV011575;
- Tue, 3 Sep 2019 08:41:09 -0400
-Received: from ppma03wdc.us.ibm.com (ba.79.3fa9.ip4.static.sl-reverse.com
- [169.63.121.186])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2usntwdgqh-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Tue, 03 Sep 2019 08:41:09 -0400
-Received: from pps.filterd (ppma03wdc.us.ibm.com [127.0.0.1])
- by ppma03wdc.us.ibm.com (8.16.0.27/8.16.0.27) with SMTP id x83CenIZ005369;
- Tue, 3 Sep 2019 12:41:09 GMT
-Received: from b03cxnp07028.gho.boulder.ibm.com
- (b03cxnp07028.gho.boulder.ibm.com [9.17.130.15])
- by ppma03wdc.us.ibm.com with ESMTP id 2uqgh6jdxw-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Tue, 03 Sep 2019 12:41:09 +0000
-Received: from b03ledav006.gho.boulder.ibm.com
- (b03ledav006.gho.boulder.ibm.com [9.17.130.237])
- by b03cxnp07028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x83Cf8Yu50528542
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Tue, 3 Sep 2019 12:41:08 GMT
-Received: from b03ledav006.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 32CCAC6057;
- Tue,  3 Sep 2019 12:41:08 +0000 (GMT)
-Received: from b03ledav006.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id F3DCCC6055;
- Tue,  3 Sep 2019 12:41:05 +0000 (GMT)
-Received: from skywalker.ibmuc.com (unknown [9.199.33.18])
- by b03ledav006.gho.boulder.ibm.com (Postfix) with ESMTP;
- Tue,  3 Sep 2019 12:41:05 +0000 (GMT)
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
-To: npiggin@gmail.com, paulus@samba.org, mpe@ellerman.id.au
-Subject: [RFC PATCH 2/3] powerpc/mm/book3s64/radix: Use freed_tables instead
- of need_flush_all
-Date: Tue,  3 Sep 2019 18:10:53 +0530
-Message-Id: <20190903124054.30611-2-aneesh.kumar@linux.ibm.com>
-X-Mailer: git-send-email 2.21.0
-In-Reply-To: <20190903124054.30611-1-aneesh.kumar@linux.ibm.com>
-References: <20190903124054.30611-1-aneesh.kumar@linux.ibm.com>
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2019-09-03_01:, , signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- malwarescore=0 suspectscore=2 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1906280000 definitions=main-1909030132
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46N6cT3YqSzDqGk
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Sep 2019 23:04:55 +1000 (AEST)
+Received: from gate.crashing.org (localhost.localdomain [127.0.0.1])
+ by gate.crashing.org (8.14.1/8.14.1) with ESMTP id x83D4XqU001876;
+ Tue, 3 Sep 2019 08:04:33 -0500
+Received: (from segher@localhost)
+ by gate.crashing.org (8.14.1/8.14.1/Submit) id x83D4VSl001875;
+ Tue, 3 Sep 2019 08:04:31 -0500
+X-Authentication-Warning: gate.crashing.org: segher set sender to
+ segher@kernel.crashing.org using -f
+Date: Tue, 3 Sep 2019 08:04:31 -0500
+From: Segher Boessenkool <segher@kernel.crashing.org>
+To: "Alastair D'Silva" <alastair@au1.ibm.com>
+Subject: Re: [PATCH v2 3/6] powerpc: Convert flush_icache_range & friends to C
+Message-ID: <20190903130430.GC31406@gate.crashing.org>
+References: <20190903052407.16638-1-alastair@au1.ibm.com>
+ <20190903052407.16638-4-alastair@au1.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20190903052407.16638-4-alastair@au1.ibm.com>
+User-Agent: Mutt/1.4.2.3i
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -100,126 +61,53 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
- linuxppc-dev@lists.ozlabs.org
+Cc: David Hildenbrand <david@redhat.com>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org,
+ Nicholas Piggin <npiggin@gmail.com>, Mike Rapoport <rppt@linux.vnet.ibm.com>,
+ Paul Mackerras <paulus@samba.org>, alastair@d-silva.org, Qian Cai <cai@lca.pw>,
+ Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@lists.ozlabs.org,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Allison Randal <allison@lohutok.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-With commit: 22a61c3c4f13 ("asm-generic/tlb: Track freeing of page-table
-directories in struct mmu_gather") we now track whether we freed page
-table in mmu_gather. Use that to decide whether to flush Page Walk Cache.
+Hi!
 
-Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
----
- arch/powerpc/include/asm/book3s/64/pgalloc.h  | 15 ---------------
- arch/powerpc/include/asm/book3s/64/tlbflush.h | 15 ---------------
- arch/powerpc/mm/book3s64/radix_tlb.c          | 11 +++--------
- 3 files changed, 3 insertions(+), 38 deletions(-)
+On Tue, Sep 03, 2019 at 03:23:57PM +1000, Alastair D'Silva wrote:
+> diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
 
-diff --git a/arch/powerpc/include/asm/book3s/64/pgalloc.h b/arch/powerpc/include/asm/book3s/64/pgalloc.h
-index d5a44912902f..f6968c811026 100644
---- a/arch/powerpc/include/asm/book3s/64/pgalloc.h
-+++ b/arch/powerpc/include/asm/book3s/64/pgalloc.h
-@@ -122,11 +122,6 @@ static inline void pud_populate(struct mm_struct *mm, pud_t *pud, pmd_t *pmd)
- static inline void __pud_free_tlb(struct mmu_gather *tlb, pud_t *pud,
- 				  unsigned long address)
- {
--	/*
--	 * By now all the pud entries should be none entries. So go
--	 * ahead and flush the page walk cache
--	 */
--	flush_tlb_pgtable(tlb, address);
- 	pgtable_free_tlb(tlb, pud, PUD_INDEX);
- }
- 
-@@ -143,11 +138,6 @@ static inline void pmd_free(struct mm_struct *mm, pmd_t *pmd)
- static inline void __pmd_free_tlb(struct mmu_gather *tlb, pmd_t *pmd,
- 				  unsigned long address)
- {
--	/*
--	 * By now all the pud entries should be none entries. So go
--	 * ahead and flush the page walk cache
--	 */
--	flush_tlb_pgtable(tlb, address);
- 	return pgtable_free_tlb(tlb, pmd, PMD_INDEX);
- }
- 
-@@ -166,11 +156,6 @@ static inline void pmd_populate(struct mm_struct *mm, pmd_t *pmd,
- static inline void __pte_free_tlb(struct mmu_gather *tlb, pgtable_t table,
- 				  unsigned long address)
- {
--	/*
--	 * By now all the pud entries should be none entries. So go
--	 * ahead and flush the page walk cache
--	 */
--	flush_tlb_pgtable(tlb, address);
- 	pgtable_free_tlb(tlb, table, PTE_INDEX);
- }
- 
-diff --git a/arch/powerpc/include/asm/book3s/64/tlbflush.h b/arch/powerpc/include/asm/book3s/64/tlbflush.h
-index ebf572ea621e..250399fa2459 100644
---- a/arch/powerpc/include/asm/book3s/64/tlbflush.h
-+++ b/arch/powerpc/include/asm/book3s/64/tlbflush.h
-@@ -147,19 +147,4 @@ static inline void flush_tlb_fix_spurious_fault(struct vm_area_struct *vma,
- 		flush_tlb_page(vma, address);
- }
- 
--/*
-- * flush the page walk cache for the address
-- */
--static inline void flush_tlb_pgtable(struct mmu_gather *tlb, unsigned long address)
--{
--	/*
--	 * Flush the page table walk cache on freeing a page table. We already
--	 * have marked the upper/higher level page table entry none by now.
--	 * So it is safe to flush PWC here.
--	 */
--	if (!radix_enabled())
--		return;
--
--	radix__flush_tlb_pwc(tlb, address);
--}
- #endif /*  _ASM_POWERPC_BOOK3S_64_TLBFLUSH_H */
-diff --git a/arch/powerpc/mm/book3s64/radix_tlb.c b/arch/powerpc/mm/book3s64/radix_tlb.c
-index 059fef601eb9..dc395152e973 100644
---- a/arch/powerpc/mm/book3s64/radix_tlb.c
-+++ b/arch/powerpc/mm/book3s64/radix_tlb.c
-@@ -616,18 +616,13 @@ static void __flush_all_mm(struct mm_struct *mm, bool fullmm)
- 	}
- 	preempt_enable();
- }
-+
- void radix__flush_all_mm(struct mm_struct *mm)
- {
- 	__flush_all_mm(mm, false);
- }
- EXPORT_SYMBOL(radix__flush_all_mm);
- 
--void radix__flush_tlb_pwc(struct mmu_gather *tlb, unsigned long addr)
--{
--	tlb->need_flush_all = 1;
--}
--EXPORT_SYMBOL(radix__flush_tlb_pwc);
--
- void radix__flush_tlb_page_psize(struct mm_struct *mm, unsigned long vmaddr,
- 				 int psize)
- {
-@@ -866,12 +861,12 @@ void radix__tlb_flush(struct mmu_gather *tlb)
- 	if (tlb->fullmm) {
- 		__flush_all_mm(mm, true);
- 	} else if ( (psize = radix_get_mmu_psize(page_size)) == -1) {
--		if (!tlb->need_flush_all)
-+		if (!tlb->freed_tables)
- 			radix__flush_tlb_mm(mm);
- 		else
- 			radix__flush_all_mm(mm);
- 	} else {
--		if (!tlb->need_flush_all)
-+		if (!tlb->freed_tables)
- 			radix__flush_tlb_range_psize(mm, start, end, psize);
- 		else
- 			radix__flush_tlb_pwc_range_psize(mm, start, end, psize);
--- 
-2.21.0
+> +#if !defined(CONFIG_PPC_8xx) & !defined(CONFIG_PPC64)
 
+Please write that as &&?  That is more usual, and thus, easier to read.
+
+> +static void flush_dcache_icache_phys(unsigned long physaddr)
+
+> +	asm volatile(
+> +		"   mtctr %2;"
+> +		"   mtmsr %3;"
+> +		"   isync;"
+> +		"0: dcbst   0, %0;"
+> +		"   addi    %0, %0, %4;"
+> +		"   bdnz    0b;"
+> +		"   sync;"
+> +		"   mtctr %2;"
+> +		"1: icbi    0, %1;"
+> +		"   addi    %1, %1, %4;"
+> +		"   bdnz    1b;"
+> +		"   sync;"
+> +		"   mtmsr %5;"
+> +		"   isync;"
+> +		: "+r" (loop1), "+r" (loop2)
+> +		: "r" (nb), "r" (msr), "i" (bytes), "r" (msr0)
+> +		: "ctr", "memory");
+
+This outputs as one huge assembler statement, all on one line.  That's
+going to be fun to read or debug.
+
+loop1 and/or loop2 can be assigned the same register as msr0 or nb.  They
+need to be made earlyclobbers.  (msr is fine, all of its reads are before
+any writes to loop1 or loop2; and bytes is fine, it's not a register).
+
+
+Segher
