@@ -2,49 +2,49 @@ Return-Path: <SRS0=+4wI=W6=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DFC96C3A5A2
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Sep 2019 11:14:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CD2F0C3A5A2
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Sep 2019 11:16:34 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 95D2E22CF8
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Sep 2019 11:14:04 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 95D2E22CF8
+	by mail.kernel.org (Postfix) with ESMTPS id 7E51022D6D
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Sep 2019 11:16:34 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7E51022D6D
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46N48V0wnyzDq5y
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Sep 2019 21:14:02 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 46N4CN24XrzDqX8
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Sep 2019 21:16:32 +1000 (AEST)
 Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46N43p2V12zDqjM
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Sep 2019 21:09:58 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46N43w6yWmzDqjM
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Sep 2019 21:10:04 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: by ozlabs.org (Postfix)
- id 46N43p1r0bz9sDB; Tue,  3 Sep 2019 21:09:58 +1000 (AEST)
+ id 46N43w2Bkfz9sN1; Tue,  3 Sep 2019 21:10:04 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
  SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 46N43p017Mz9s7T;
- Tue,  3 Sep 2019 21:09:57 +1000 (AEST)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 46N43v6DbKz9s7T;
+ Tue,  3 Sep 2019 21:10:03 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: Hari Bathini <hbathini@linux.ibm.com>,
  linuxppc-dev <linuxppc-dev@ozlabs.org>
-Subject: Re: [PATCH v5 01/31] powerpc/fadump: move internal macros/definitions
- to a new header
-In-Reply-To: <156630265249.8896.17574594631603225622.stgit@hbathini.in.ibm.com>
+Subject: Re: [PATCH v5 05/31] pseries/fadump: introduce callbacks for platform
+ specific operations
+In-Reply-To: <156630268261.8896.15418812183266232587.stgit@hbathini.in.ibm.com>
 References: <156630261682.8896.3418665808003586786.stgit@hbathini.in.ibm.com>
- <156630265249.8896.17574594631603225622.stgit@hbathini.in.ibm.com>
-Date: Tue, 03 Sep 2019 21:09:57 +1000
-Message-ID: <87zhjlr5yy.fsf@mpe.ellerman.id.au>
+ <156630268261.8896.15418812183266232587.stgit@hbathini.in.ibm.com>
+Date: Tue, 03 Sep 2019 21:10:03 +1000
+Message-ID: <87y2z5r5ys.fsf@mpe.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -67,25 +67,12 @@ Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
 Hari Bathini <hbathini@linux.ibm.com> writes:
-> Though asm/fadump.h is meant to be used by other components dealing
-> with FADump, it also has macros/definitions internal to FADump code.
-> Move them to a new header file used within FADump code. This also
-> makes way for refactoring platform specific FADump code.
->
-> Signed-off-by: Hari Bathini <hbathini@linux.ibm.com>
-> ---
->  arch/powerpc/include/asm/fadump.h   |   71 ----------------------------
->  arch/powerpc/kernel/fadump-common.h |   89 +++++++++++++++++++++++++++++++++++
->  arch/powerpc/kernel/fadump.c        |    2 +
+> Introduce callback functions for platform specific operations like
+> register, unregister, invalidate & such. Also, define place-holders
+> for the same on pSeries platform.
 
-I don't like having a header in kernel that's then used in platform
-code. Because we end up having to do gross things like:
-
-  arch/powerpc/platforms/powernv/opal-core.c:#include "../../kernel/fadump-common.h"
-  arch/powerpc/platforms/powernv/opal-fadump.c:#include "../../kernel/fadump-common.h"
-  arch/powerpc/platforms/pseries/rtas-fadump.c:#include "../../kernel/fadump-common.h"
-
-
-I'd rather you put the internal bits in arch/powerpc/include/asm/fadump-internal.h
+We already have an ops structure for machine specific calls, it's
+ppc_md. Is there a good reason why these aren't just in machdep_calls
+under #ifdef CONFIG_FA_DUMP ?
 
 cheers
