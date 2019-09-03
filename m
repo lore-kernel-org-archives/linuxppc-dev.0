@@ -2,66 +2,71 @@ Return-Path: <SRS0=+4wI=W6=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EBBD2C3A5A2
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Sep 2019 16:57:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6D777C3A5A2
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Sep 2019 17:00:15 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 684FA22CF8
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Sep 2019 16:57:35 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id E1E6C21670
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Sep 2019 17:00:14 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="Wq6xJFgi"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 684FA22CF8
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="S3daUb2+"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E1E6C21670
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46NCms0z05zDqpg
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Sep 2019 02:57:33 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 46NCqw6JrQzDqV6
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Sep 2019 03:00:12 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=none (mailfrom)
+ smtp.mailfrom=bombadil.srs.infradead.org (client-ip=2607:7c80:54:e::133;
+ helo=bombadil.infradead.org;
+ envelope-from=batv+680e2818d6643897e706+5854+infradead.org+hch@bombadil.srs.infradead.org;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=kernel.org
- (client-ip=198.145.29.99; helo=mail.kernel.org;
- envelope-from=sashal@kernel.org; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=kernel.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="Wq6xJFgi"; 
- dkim-atps=neutral
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ dmarc=none (p=none dis=none) header.from=lst.de
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=infradead.org header.i=@infradead.org
+ header.b="S3daUb2+"; dkim-atps=neutral
+Received: from bombadil.infradead.org (bombadil.infradead.org
+ [IPv6:2607:7c80:54:e::133])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46NCCG0WzrzDqSx
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Sep 2019 02:31:54 +1000 (AEST)
-Received: from sasha-vm.mshome.net (c-73-47-72-35.hsd1.nh.comcast.net
- [73.47.72.35])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id C829B238F5;
- Tue,  3 Sep 2019 16:31:50 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1567528311;
- bh=Rc0nyCb11rtoLwKBSMsZv14/IRpM9ByxOTtCoc7QxmI=;
- h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=Wq6xJFgitu45ILS7zCsZPDOuyGMQU4rTRapwTtf/tPW0E7KVLR3TgEprQ2zzSiuYo
- Ukd07FOer0vvRzVe0CS+uU+GzLjDbltJcY5XDcMavKAaBcsvwnoWt2glBruJtjJzaZ
- Mtf/sqbtANuPvhkKumUsdbhpCCEdPgg4S1Al0GTs=
-From: Sasha Levin <sashal@kernel.org>
-To: linux-kernel@vger.kernel.org,
-	stable@vger.kernel.org
-Subject: [PATCH AUTOSEL 4.19 149/167] powerpc/mm: Limit rma_size to 1TB when
- running without HV mode
-Date: Tue,  3 Sep 2019 12:25:01 -0400
-Message-Id: <20190903162519.7136-149-sashal@kernel.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46NCfT4msLzDqnf
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Sep 2019 02:52:01 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+ d=infradead.org; s=bombadil.20170209; h=Content-Transfer-Encoding:
+ MIME-Version:Message-Id:Date:Subject:Cc:To:From:Sender:Reply-To:Content-Type:
+ Content-ID:Content-Description:Resent-Date:Resent-From:Resent-Sender:
+ Resent-To:Resent-Cc:Resent-Message-ID:In-Reply-To:References:List-Id:
+ List-Help:List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
+ bh=LvpBWtVIgybfRt8dClX5c+nTFaEgP5NOqPPGkq3C7hE=; b=S3daUb2++xfMv9DBuUEn+KiRb
+ rDGWJhDdSxuyi8LHgCalEJco7OrwhgpVNs5gWBIPSdVJUIoQjIHXNxck0zZC3O1ToA7HxWBLwaD3m
+ 6JKhhevm/LaZlXaIIZsMZTv+ynO/WuLQ1pFpS+dgWZyDxnuk35McHI30MlMgPdy4vgOiWgOfUL+6p
+ TCNE+FhK2S/7vGyEPbqpKC+0jxETu/74AmU32NNeil0Zt93j39eSMlmjN2J1n/x4IZVZBakd80r4G
+ 02UAYjlqV39IVEqmfq9RGVKBuc6JKVUiFnnflDGzwrq8XeLdSdeTJgnrayY7rMQGbJbz4+VP7WNyY
+ G9LUkQotw==;
+Received: from [2001:4bb8:18c:1755:c70:4a89:bc61:2] (helo=localhost)
+ by bombadil.infradead.org with esmtpsa (Exim 4.92 #3 (Red Hat Linux))
+ id 1i5C25-0002as-8F; Tue, 03 Sep 2019 16:51:53 +0000
+From: Christoph Hellwig <hch@lst.de>
+To: mpe@ellerman.id.au,
+	paulus@samba.org,
+	benh@kernel.crashing.org
+Subject: [PATCH] powerpc/powernv: remove the unused pnv_npu_try_dma_set_bypass
+ function
+Date: Tue,  3 Sep 2019 18:51:47 +0200
+Message-Id: <20190903165147.11099-1-hch@lst.de>
 X-Mailer: git-send-email 2.20.1
-In-Reply-To: <20190903162519.7136-1-sashal@kernel.org>
-References: <20190903162519.7136-1-sashal@kernel.org>
 MIME-Version: 1.0
-X-stable: review
-X-Patchwork-Hint: Ignore
 Content-Transfer-Encoding: 8bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by
+ bombadil.infradead.org. See http://www.infradead.org/rpr.html
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -73,77 +78,130 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Sasha Levin <sashal@kernel.org>,
- Satheesh Rajendran <sathnaga@linux.vnet.ibm.com>,
- Suraj Jitindar Singh <sjitindarsingh@gmail.com>, linuxppc-dev@lists.ozlabs.org,
- David Gibson <david@gibson.dropbear.id.au>
+Cc: linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Suraj Jitindar Singh <sjitindarsingh@gmail.com>
+Neither pnv_npu_try_dma_set_bypass nor the pnv_npu_dma_set_32 and
+pnv_npu_dma_set_bypass helpers called by it are used anywhere in the
+kernel tree, so remove them.
 
-[ Upstream commit da0ef93310e67ae6902efded60b6724dab27a5d1 ]
-
-The virtual real mode addressing (VRMA) mechanism is used when a
-partition is using HPT (Hash Page Table) translation and performs real
-mode accesses (MSR[IR|DR] = 0) in non-hypervisor mode. In this mode
-effective address bits 0:23 are treated as zero (i.e. the access is
-aliased to 0) and the access is performed using an implicit 1TB SLB
-entry.
-
-The size of the RMA (Real Memory Area) is communicated to the guest as
-the size of the first memory region in the device tree. And because of
-the mechanism described above can be expected to not exceed 1TB. In
-the event that the host erroneously represents the RMA as being larger
-than 1TB, guest accesses in real mode to memory addresses above 1TB
-will be aliased down to below 1TB. This means that a memory access
-performed in real mode may differ to one performed in virtual mode for
-the same memory address, which would likely have unintended
-consequences.
-
-To avoid this outcome have the guest explicitly limit the size of the
-RMA to the current maximum, which is 1TB. This means that even if the
-first memory block is larger than 1TB, only the first 1TB should be
-accessed in real mode.
-
-Fixes: c610d65c0ad0 ("powerpc/pseries: lift RTAS limit for hash")
-Cc: stable@vger.kernel.org # v4.16+
-Signed-off-by: Suraj Jitindar Singh <sjitindarsingh@gmail.com>
-Tested-by: Satheesh Rajendran <sathnaga@linux.vnet.ibm.com>
-Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
-Link: https://lore.kernel.org/r/20190710052018.14628-1-sjitindarsingh@gmail.com
-Signed-off-by: Sasha Levin <sashal@kernel.org>
+Signed-off-by: Christoph Hellwig <hch@lst.de>
 ---
- arch/powerpc/mm/hash_utils_64.c | 9 +++++++++
- 1 file changed, 9 insertions(+)
+ arch/powerpc/platforms/powernv/npu-dma.c | 99 ------------------------
+ 1 file changed, 99 deletions(-)
 
-diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
-index f23a89d8e4ce6..29fd8940867e5 100644
---- a/arch/powerpc/mm/hash_utils_64.c
-+++ b/arch/powerpc/mm/hash_utils_64.c
-@@ -1859,11 +1859,20 @@ void hash__setup_initial_memory_limit(phys_addr_t first_memblock_base,
- 	 *
- 	 * For guests on platforms before POWER9, we clamp the it limit to 1G
- 	 * to avoid some funky things such as RTAS bugs etc...
-+	 *
-+	 * On POWER9 we limit to 1TB in case the host erroneously told us that
-+	 * the RMA was >1TB. Effective address bits 0:23 are treated as zero
-+	 * (meaning the access is aliased to zero i.e. addr = addr % 1TB)
-+	 * for virtual real mode addressing and so it doesn't make sense to
-+	 * have an area larger than 1TB as it can't be addressed.
- 	 */
- 	if (!early_cpu_has_feature(CPU_FTR_HVMODE)) {
- 		ppc64_rma_size = first_memblock_size;
- 		if (!early_cpu_has_feature(CPU_FTR_ARCH_300))
- 			ppc64_rma_size = min_t(u64, ppc64_rma_size, 0x40000000);
-+		else
-+			ppc64_rma_size = min_t(u64, ppc64_rma_size,
-+					       1UL << SID_SHIFT_1T);
+diff --git a/arch/powerpc/platforms/powernv/npu-dma.c b/arch/powerpc/platforms/powernv/npu-dma.c
+index c16249d251f1..a570a249edc3 100644
+--- a/arch/powerpc/platforms/powernv/npu-dma.c
++++ b/arch/powerpc/platforms/powernv/npu-dma.c
+@@ -192,105 +192,6 @@ static long pnv_npu_unset_window(struct iommu_table_group *table_group, int num)
+ 	return 0;
+ }
  
- 		/* Finally limit subsequent allocations */
- 		memblock_set_current_limit(ppc64_rma_size);
+-/*
+- * Enables 32 bit DMA on NPU.
+- */
+-static void pnv_npu_dma_set_32(struct pnv_ioda_pe *npe)
+-{
+-	struct pci_dev *gpdev;
+-	struct pnv_ioda_pe *gpe;
+-	int64_t rc;
+-
+-	/*
+-	 * Find the assoicated PCI devices and get the dma window
+-	 * information from there.
+-	 */
+-	if (!npe->pdev || !(npe->flags & PNV_IODA_PE_DEV))
+-		return;
+-
+-	gpe = get_gpu_pci_dev_and_pe(npe, &gpdev);
+-	if (!gpe)
+-		return;
+-
+-	rc = pnv_npu_set_window(&npe->table_group, 0,
+-			gpe->table_group.tables[0]);
+-
+-	/*
+-	 * NVLink devices use the same TCE table configuration as
+-	 * their parent device so drivers shouldn't be doing DMA
+-	 * operations directly on these devices.
+-	 */
+-	set_dma_ops(&npe->pdev->dev, &dma_dummy_ops);
+-}
+-
+-/*
+- * Enables bypass mode on the NPU. The NPU only supports one
+- * window per link, so bypass needs to be explicitly enabled or
+- * disabled. Unlike for a PHB3 bypass and non-bypass modes can't be
+- * active at the same time.
+- */
+-static int pnv_npu_dma_set_bypass(struct pnv_ioda_pe *npe)
+-{
+-	struct pnv_phb *phb = npe->phb;
+-	int64_t rc = 0;
+-	phys_addr_t top = memblock_end_of_DRAM();
+-
+-	if (phb->type != PNV_PHB_NPU_NVLINK || !npe->pdev)
+-		return -EINVAL;
+-
+-	rc = pnv_npu_unset_window(&npe->table_group, 0);
+-	if (rc != OPAL_SUCCESS)
+-		return rc;
+-
+-	/* Enable the bypass window */
+-
+-	top = roundup_pow_of_two(top);
+-	dev_info(&npe->pdev->dev, "Enabling bypass for PE %x\n",
+-			npe->pe_number);
+-	rc = opal_pci_map_pe_dma_window_real(phb->opal_id,
+-			npe->pe_number, npe->pe_number,
+-			0 /* bypass base */, top);
+-
+-	if (rc == OPAL_SUCCESS)
+-		pnv_pci_ioda2_tce_invalidate_entire(phb, false);
+-
+-	return rc;
+-}
+-
+-void pnv_npu_try_dma_set_bypass(struct pci_dev *gpdev, bool bypass)
+-{
+-	int i;
+-	struct pnv_phb *phb;
+-	struct pci_dn *pdn;
+-	struct pnv_ioda_pe *npe;
+-	struct pci_dev *npdev;
+-
+-	for (i = 0; ; ++i) {
+-		npdev = pnv_pci_get_npu_dev(gpdev, i);
+-
+-		if (!npdev)
+-			break;
+-
+-		pdn = pci_get_pdn(npdev);
+-		if (WARN_ON(!pdn || pdn->pe_number == IODA_INVALID_PE))
+-			return;
+-
+-		phb = pci_bus_to_host(npdev->bus)->private_data;
+-
+-		/* We only do bypass if it's enabled on the linked device */
+-		npe = &phb->ioda.pe_array[pdn->pe_number];
+-
+-		if (bypass) {
+-			dev_info(&npdev->dev,
+-					"Using 64-bit DMA iommu bypass\n");
+-			pnv_npu_dma_set_bypass(npe);
+-		} else {
+-			dev_info(&npdev->dev, "Using 32-bit DMA via iommu\n");
+-			pnv_npu_dma_set_32(npe);
+-		}
+-	}
+-}
+-
+ #ifdef CONFIG_IOMMU_API
+ /* Switch ownership from platform code to external user (e.g. VFIO) */
+ static void pnv_npu_take_ownership(struct iommu_table_group *table_group)
 -- 
 2.20.1
 
