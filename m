@@ -4,24 +4,24 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-8.1 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=unavailable
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B3A6FC3A5A5
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Sep 2019 06:10:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9A46FC3A5A5
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Sep 2019 06:21:57 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 320A92054F
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Sep 2019 06:10:56 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id BFC12215EA
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Sep 2019 06:21:56 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="qOnDFPS2"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 320A92054F
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="MLogrkjT"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BFC12215EA
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46MxQj6k9VzDqjp
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Sep 2019 16:10:53 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 46MxgQ1dkszDqYk
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Sep 2019 16:21:54 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=c-s.fr
  (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
@@ -29,54 +29,55 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="qOnDFPS2"; 
+ unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="MLogrkjT"; 
  dkim-atps=neutral
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46MxNW03fzzDqYp
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Sep 2019 16:08:58 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46Mxcv46c6zDqVD
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Sep 2019 16:19:43 +1000 (AEST)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 46MxNP5s0dz9vBnX;
- Tue,  3 Sep 2019 08:08:53 +0200 (CEST)
+ by localhost (Postfix) with ESMTP id 46Mxcq0v7nzB09ZC;
+ Tue,  3 Sep 2019 08:19:39 +0200 (CEST)
 Authentication-Results: localhost; dkim=pass
  reason="1024-bit key; insecure key"
- header.d=c-s.fr header.i=@c-s.fr header.b=qOnDFPS2; dkim-adsp=pass;
+ header.d=c-s.fr header.i=@c-s.fr header.b=MLogrkjT; dkim-adsp=pass;
  dkim-atps=neutral
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id UWjCYuVH87Mu; Tue,  3 Sep 2019 08:08:53 +0200 (CEST)
+ with ESMTP id q27xp8ZHa-je; Tue,  3 Sep 2019 08:19:39 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 46MxNP4fq5z9vBnR;
- Tue,  3 Sep 2019 08:08:53 +0200 (CEST)
+ by pegase1.c-s.fr (Postfix) with ESMTP id 46Mxcp6v03z9vBnX;
+ Tue,  3 Sep 2019 08:19:38 +0200 (CEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
- t=1567490933; bh=i4WXtZNSErlWZ/s2YtUETLOF294Ck9F4jjG8R5cZpQ8=;
+ t=1567491579; bh=vpywQY0jhYCtLj16pKTZzrclmKJxpqH5sO++tsorcW0=;
  h=Subject:To:Cc:References:From:Date:In-Reply-To:From;
- b=qOnDFPS2ECTu+PanjRFoLGSbyy/rQAPPhcF7a/Hxw7qFs78I43MEoWyFk5l8eNaqX
- 3HaEutMauLkti76ryqZqMseUoCuvkKU/WQrkmJ4ZV8Cr0cQyk6glsFpcKwU1EfjJfW
- j1YRN3agrXs9lKx+yWgFtEFj5FUx5hbSjMgvfCw4=
+ b=MLogrkjT5XOSI5cZayVsFTMCcSoCuHf36ABgH/ikEzCiH2/FPIB9FWVSFOLz4UQhK
+ HSIteJrIO9Uh4EL7RssqI+2ia25i4v8EQDp/PA3dj2u+1a9/I0BLYTsE+NwQuxa9t0
+ D7v7bsXUQULUZAhTwvluxL9d+EpRFhNrNed6e3jg=
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 7B95D8B7A9;
- Tue,  3 Sep 2019 08:08:54 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id D15A28B7A3;
+ Tue,  3 Sep 2019 08:19:39 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id 4JYUxvm5X5-0; Tue,  3 Sep 2019 08:08:54 +0200 (CEST)
+ with ESMTP id xkPFnxZYp08y; Tue,  3 Sep 2019 08:19:39 +0200 (CEST)
 Received: from [192.168.4.90] (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id E22048B761;
- Tue,  3 Sep 2019 08:08:52 +0200 (CEST)
-Subject: Re: [PATCH v2 3/6] powerpc: Convert flush_icache_range & friends to C
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id A71078B761;
+ Tue,  3 Sep 2019 08:19:38 +0200 (CEST)
+Subject: Re: [PATCH v2 4/6] powerpc: Chunk calls to flush_dcache_range in
+ arch_*_memory
 To: Alastair D'Silva <alastair@au1.ibm.com>, alastair@d-silva.org
 References: <20190903052407.16638-1-alastair@au1.ibm.com>
- <20190903052407.16638-4-alastair@au1.ibm.com>
+ <20190903052407.16638-5-alastair@au1.ibm.com>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Message-ID: <44b8223d-52d9-e932-4bb7-b7590ea11a03@c-s.fr>
-Date: Tue, 3 Sep 2019 08:08:52 +0200
+Message-ID: <3bde4dbc-5176-0df5-a0bf-993eef2a333b@c-s.fr>
+Date: Tue, 3 Sep 2019 08:19:38 +0200
 User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:60.0) Gecko/20100101
  Thunderbird/60.8.0
 MIME-Version: 1.0
-In-Reply-To: <20190903052407.16638-4-alastair@au1.ibm.com>
+In-Reply-To: <20190903052407.16638-5-alastair@au1.ibm.com>
 Content-Type: text/plain; charset=utf-8; format=flowed
 Content-Language: fr
 Content-Transfer-Encoding: 8bit
@@ -91,9 +92,10 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: David Hildenbrand <david@redhat.com>, linux-kernel@vger.kernel.org,
- Nicholas Piggin <npiggin@gmail.com>, Mike Rapoport <rppt@linux.vnet.ibm.com>,
- Qian Cai <cai@lca.pw>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+Cc: Michal Hocko <mhocko@suse.com>, David Hildenbrand <david@redhat.com>,
+ linux-kernel@vger.kernel.org, Nicholas Piggin <npiggin@gmail.com>,
+ Mike Rapoport <rppt@linux.vnet.ibm.com>, Qian Cai <cai@lca.pw>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
  Paul Mackerras <paulus@samba.org>, Thomas Gleixner <tglx@linutronix.de>,
  linuxppc-dev@lists.ozlabs.org, Andrew Morton <akpm@linux-foundation.org>,
  Allison Randal <allison@lohutok.net>
@@ -106,584 +108,101 @@ Sender: "Linuxppc-dev"
 Le 03/09/2019 à 07:23, Alastair D'Silva a écrit :
 > From: Alastair D'Silva <alastair@d-silva.org>
 > 
-> Similar to commit 22e9c88d486a
-> ("powerpc/64: reuse PPC32 static inline flush_dcache_range()")
-> this patch converts the following ASM symbols to C:
->      flush_icache_range()
->      __flush_dcache_icache()
->      __flush_dcache_icache_phys()
+> When presented with large amounts of memory being hotplugged
+> (in my test case, ~890GB), the call to flush_dcache_range takes
+> a while (~50 seconds), triggering RCU stalls.
 > 
-> This was done as we discovered a long-standing bug where the length of the
-> range was truncated due to using a 32 bit shift instead of a 64 bit one.
-> 
-> By converting these functions to C, it becomes easier to maintain.
-> 
-> flush_dcache_icache_phys() retains a critical assembler section as we must
-> ensure there are no memory accesses while the data MMU is disabled
-> (authored by Christophe Leroy). Since this has no external callers, it has
-> also been made static, allowing the compiler to inline it within
-> flush_dcache_icache_page().
+> This patch breaks up the call into 1GB chunks, calling
+> cond_resched() inbetween to allow the scheduler to run.
 > 
 > Signed-off-by: Alastair D'Silva <alastair@d-silva.org>
-> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 > ---
->   arch/powerpc/include/asm/cache.h      |  26 ++---
->   arch/powerpc/include/asm/cacheflush.h |  24 ++--
->   arch/powerpc/kernel/misc_32.S         | 117 --------------------
->   arch/powerpc/kernel/misc_64.S         | 102 -----------------
->   arch/powerpc/mm/mem.c                 | 152 +++++++++++++++++++++++++-
->   5 files changed, 173 insertions(+), 248 deletions(-)
+>   arch/powerpc/mm/mem.c | 18 ++++++++++++++++--
+>   1 file changed, 16 insertions(+), 2 deletions(-)
 > 
-> diff --git a/arch/powerpc/include/asm/cache.h b/arch/powerpc/include/asm/cache.h
-> index f852d5cd746c..91c808c6738b 100644
-> --- a/arch/powerpc/include/asm/cache.h
-> +++ b/arch/powerpc/include/asm/cache.h
-> @@ -98,20 +98,7 @@ static inline u32 l1_icache_bytes(void)
->   #endif
->   #endif /* ! __ASSEMBLY__ */
->   
-> -#if defined(__ASSEMBLY__)
-> -/*
-> - * For a snooping icache, we still need a dummy icbi to purge all the
-> - * prefetched instructions from the ifetch buffers. We also need a sync
-> - * before the icbi to order the the actual stores to memory that might
-> - * have modified instructions with the icbi.
-> - */
-> -#define PURGE_PREFETCHED_INS	\
-> -	sync;			\
-> -	icbi	0,r3;		\
-> -	sync;			\
-> -	isync
-> -
-> -#else
-> +#if !defined(__ASSEMBLY__)
->   #define __read_mostly __attribute__((__section__(".data..read_mostly")))
->   
->   #ifdef CONFIG_PPC_BOOK3S_32
-> @@ -145,6 +132,17 @@ static inline void dcbst(void *addr)
->   {
->   	__asm__ __volatile__ ("dcbst %y0" : : "Z"(*(u8 *)addr) : "memory");
->   }
-> +
-> +static inline void icbi(void *addr)
-> +{
-> +	__asm__ __volatile__ ("icbi 0, %0" : : "r"(addr) : "memory");
-
-I think "__asm__ __volatile__" is deprecated. Use "asm volatile" instead.
-
-> +}
-> +
-> +static inline void iccci(void *addr)
-> +{
-> +	__asm__ __volatile__ ("iccci 0, %0" : : "r"(addr) : "memory");
-> +}
-> +
-
-Same
-
->   #endif /* !__ASSEMBLY__ */
->   #endif /* __KERNEL__ */
->   #endif /* _ASM_POWERPC_CACHE_H */
-> diff --git a/arch/powerpc/include/asm/cacheflush.h b/arch/powerpc/include/asm/cacheflush.h
-> index ed57843ef452..4a1c9f0200e1 100644
-> --- a/arch/powerpc/include/asm/cacheflush.h
-> +++ b/arch/powerpc/include/asm/cacheflush.h
-> @@ -42,24 +42,20 @@ extern void flush_dcache_page(struct page *page);
->   #define flush_dcache_mmap_lock(mapping)		do { } while (0)
->   #define flush_dcache_mmap_unlock(mapping)	do { } while (0)
->   
-> -extern void flush_icache_range(unsigned long, unsigned long);
-> +void flush_icache_range(unsigned long start, unsigned long stop);
->   extern void flush_icache_user_range(struct vm_area_struct *vma,
->   				    struct page *page, unsigned long addr,
->   				    int len);
-> -extern void __flush_dcache_icache(void *page_va);
->   extern void flush_dcache_icache_page(struct page *page);
-> -#if defined(CONFIG_PPC32) && !defined(CONFIG_BOOKE)
-> -extern void __flush_dcache_icache_phys(unsigned long physaddr);
-> -#else
-> -static inline void __flush_dcache_icache_phys(unsigned long physaddr)
-> -{
-> -	BUG();
-> -}
-> -#endif
-> -
-> -/*
-> - * Write any modified data cache blocks out to memory and invalidate them.
-> - * Does not invalidate the corresponding instruction cache blocks.
-> +void __flush_dcache_icache(void *page);
-> +
-> +/**
-> + * flush_dcache_range(): Write any modified data cache blocks out to memory and
-> + * invalidate them. Does not invalidate the corresponding instruction cache
-> + * blocks.
-> + *
-> + * @start: the start address
-> + * @stop: the stop address (exclusive)
->    */
->   static inline void flush_dcache_range(unsigned long start, unsigned long stop)
->   {
-> diff --git a/arch/powerpc/kernel/misc_32.S b/arch/powerpc/kernel/misc_32.S
-> index fe4bd321730e..12b95e6799d4 100644
-> --- a/arch/powerpc/kernel/misc_32.S
-> +++ b/arch/powerpc/kernel/misc_32.S
-> @@ -318,123 +318,6 @@ END_FTR_SECTION_IFSET(CPU_FTR_UNIFIED_ID_CACHE)
->   EXPORT_SYMBOL(flush_instruction_cache)
->   #endif /* CONFIG_PPC_8xx */
->   
-> -/*
-> - * Write any modified data cache blocks out to memory
-> - * and invalidate the corresponding instruction cache blocks.
-> - * This is a no-op on the 601.
-> - *
-> - * flush_icache_range(unsigned long start, unsigned long stop)
-> - */
-> -_GLOBAL(flush_icache_range)
-> -BEGIN_FTR_SECTION
-> -	PURGE_PREFETCHED_INS
-> -	blr				/* for 601, do nothing */
-> -END_FTR_SECTION_IFSET(CPU_FTR_COHERENT_ICACHE)
-> -	rlwinm	r3,r3,0,0,31 - L1_CACHE_SHIFT
-> -	subf	r4,r3,r4
-> -	addi	r4,r4,L1_CACHE_BYTES - 1
-> -	srwi.	r4,r4,L1_CACHE_SHIFT
-> -	beqlr
-> -	mtctr	r4
-> -	mr	r6,r3
-> -1:	dcbst	0,r3
-> -	addi	r3,r3,L1_CACHE_BYTES
-> -	bdnz	1b
-> -	sync				/* wait for dcbst's to get to ram */
-> -#ifndef CONFIG_44x
-> -	mtctr	r4
-> -2:	icbi	0,r6
-> -	addi	r6,r6,L1_CACHE_BYTES
-> -	bdnz	2b
-> -#else
-> -	/* Flash invalidate on 44x because we are passed kmapped addresses and
-> -	   this doesn't work for userspace pages due to the virtually tagged
-> -	   icache.  Sigh. */
-> -	iccci	0, r0
-> -#endif
-> -	sync				/* additional sync needed on g4 */
-> -	isync
-> -	blr
-> -_ASM_NOKPROBE_SYMBOL(flush_icache_range)
-> -EXPORT_SYMBOL(flush_icache_range)
-> -
-> -/*
-> - * Flush a particular page from the data cache to RAM.
-> - * Note: this is necessary because the instruction cache does *not*
-> - * snoop from the data cache.
-> - * This is a no-op on the 601 which has a unified cache.
-> - *
-> - *	void __flush_dcache_icache(void *page)
-> - */
-> -_GLOBAL(__flush_dcache_icache)
-> -BEGIN_FTR_SECTION
-> -	PURGE_PREFETCHED_INS
-> -	blr
-> -END_FTR_SECTION_IFSET(CPU_FTR_COHERENT_ICACHE)
-> -	rlwinm	r3,r3,0,0,31-PAGE_SHIFT		/* Get page base address */
-> -	li	r4,PAGE_SIZE/L1_CACHE_BYTES	/* Number of lines in a page */
-> -	mtctr	r4
-> -	mr	r6,r3
-> -0:	dcbst	0,r3				/* Write line to ram */
-> -	addi	r3,r3,L1_CACHE_BYTES
-> -	bdnz	0b
-> -	sync
-> -#ifdef CONFIG_44x
-> -	/* We don't flush the icache on 44x. Those have a virtual icache
-> -	 * and we don't have access to the virtual address here (it's
-> -	 * not the page vaddr but where it's mapped in user space). The
-> -	 * flushing of the icache on these is handled elsewhere, when
-> -	 * a change in the address space occurs, before returning to
-> -	 * user space
-> -	 */
-> -BEGIN_MMU_FTR_SECTION
-> -	blr
-> -END_MMU_FTR_SECTION_IFSET(MMU_FTR_TYPE_44x)
-> -#endif /* CONFIG_44x */
-> -	mtctr	r4
-> -1:	icbi	0,r6
-> -	addi	r6,r6,L1_CACHE_BYTES
-> -	bdnz	1b
-> -	sync
-> -	isync
-> -	blr
-> -
-> -#ifndef CONFIG_BOOKE
-> -/*
-> - * Flush a particular page from the data cache to RAM, identified
-> - * by its physical address.  We turn off the MMU so we can just use
-> - * the physical address (this may be a highmem page without a kernel
-> - * mapping).
-> - *
-> - *	void __flush_dcache_icache_phys(unsigned long physaddr)
-> - */
-> -_GLOBAL(__flush_dcache_icache_phys)
-> -BEGIN_FTR_SECTION
-> -	PURGE_PREFETCHED_INS
-> -	blr					/* for 601, do nothing */
-> -END_FTR_SECTION_IFSET(CPU_FTR_COHERENT_ICACHE)
-> -	mfmsr	r10
-> -	rlwinm	r0,r10,0,28,26			/* clear DR */
-> -	mtmsr	r0
-> -	isync
-> -	rlwinm	r3,r3,0,0,31-PAGE_SHIFT		/* Get page base address */
-> -	li	r4,PAGE_SIZE/L1_CACHE_BYTES	/* Number of lines in a page */
-> -	mtctr	r4
-> -	mr	r6,r3
-> -0:	dcbst	0,r3				/* Write line to ram */
-> -	addi	r3,r3,L1_CACHE_BYTES
-> -	bdnz	0b
-> -	sync
-> -	mtctr	r4
-> -1:	icbi	0,r6
-> -	addi	r6,r6,L1_CACHE_BYTES
-> -	bdnz	1b
-> -	sync
-> -	mtmsr	r10				/* restore DR */
-> -	isync
-> -	blr
-> -#endif /* CONFIG_BOOKE */
-> -
->   /*
->    * Copy a whole page.  We use the dcbz instruction on the destination
->    * to reduce memory traffic (it eliminates the unnecessary reads of
-> diff --git a/arch/powerpc/kernel/misc_64.S b/arch/powerpc/kernel/misc_64.S
-> index 9bc0aa9aeb65..ff20c253f273 100644
-> --- a/arch/powerpc/kernel/misc_64.S
-> +++ b/arch/powerpc/kernel/misc_64.S
-> @@ -49,108 +49,6 @@ _GLOBAL(call_do_irq)
->   	mtlr	r0
->   	blr
->   
-> -	.section	".toc","aw"
-> -PPC64_CACHES:
-> -	.tc		ppc64_caches[TC],ppc64_caches
-> -	.section	".text"
-> -
-> -/*
-> - * Write any modified data cache blocks out to memory
-> - * and invalidate the corresponding instruction cache blocks.
-> - *
-> - * flush_icache_range(unsigned long start, unsigned long stop)
-> - *
-> - *   flush all bytes from start through stop-1 inclusive
-> - */
-> -
-> -_GLOBAL_TOC(flush_icache_range)
-> -BEGIN_FTR_SECTION
-> -	PURGE_PREFETCHED_INS
-> -	blr
-> -END_FTR_SECTION_IFSET(CPU_FTR_COHERENT_ICACHE)
-> -/*
-> - * Flush the data cache to memory
-> - *
-> - * Different systems have different cache line sizes
-> - * and in some cases i-cache and d-cache line sizes differ from
-> - * each other.
-> - */
-> - 	ld	r10,PPC64_CACHES@toc(r2)
-> -	lwz	r7,DCACHEL1BLOCKSIZE(r10)/* Get cache block size */
-> -	addi	r5,r7,-1
-> -	andc	r6,r3,r5		/* round low to line bdy */
-> -	subf	r8,r6,r4		/* compute length */
-> -	add	r8,r8,r5		/* ensure we get enough */
-> -	lwz	r9,DCACHEL1LOGBLOCKSIZE(r10)	/* Get log-2 of cache block size */
-> -	srd.	r8,r8,r9		/* compute line count */
-> -	beqlr				/* nothing to do? */
-> -	mtctr	r8
-> -1:	dcbst	0,r6
-> -	add	r6,r6,r7
-> -	bdnz	1b
-> -	sync
-> -
-> -/* Now invalidate the instruction cache */
-> -	
-> -	lwz	r7,ICACHEL1BLOCKSIZE(r10)	/* Get Icache block size */
-> -	addi	r5,r7,-1
-> -	andc	r6,r3,r5		/* round low to line bdy */
-> -	subf	r8,r6,r4		/* compute length */
-> -	add	r8,r8,r5
-> -	lwz	r9,ICACHEL1LOGBLOCKSIZE(r10)	/* Get log-2 of Icache block size */
-> -	srd.	r8,r8,r9		/* compute line count */
-> -	beqlr				/* nothing to do? */
-> -	mtctr	r8
-> -2:	icbi	0,r6
-> -	add	r6,r6,r7
-> -	bdnz	2b
-> -	isync
-> -	blr
-> -_ASM_NOKPROBE_SYMBOL(flush_icache_range)
-> -EXPORT_SYMBOL(flush_icache_range)
-> -
-> -/*
-> - * Flush a particular page from the data cache to RAM.
-> - * Note: this is necessary because the instruction cache does *not*
-> - * snoop from the data cache.
-> - *
-> - *	void __flush_dcache_icache(void *page)
-> - */
-> -_GLOBAL(__flush_dcache_icache)
-> -/*
-> - * Flush the data cache to memory
-> - *
-> - * Different systems have different cache line sizes
-> - */
-> -
-> -BEGIN_FTR_SECTION
-> -	PURGE_PREFETCHED_INS
-> -	blr
-> -END_FTR_SECTION_IFSET(CPU_FTR_COHERENT_ICACHE)
-> -
-> -/* Flush the dcache */
-> - 	ld	r7,PPC64_CACHES@toc(r2)
-> -	clrrdi	r3,r3,PAGE_SHIFT           	    /* Page align */
-> -	lwz	r4,DCACHEL1BLOCKSPERPAGE(r7)	/* Get # dcache blocks per page */
-> -	lwz	r5,DCACHEL1BLOCKSIZE(r7)	/* Get dcache block size */
-> -	mr	r6,r3
-> -	mtctr	r4
-> -0:	dcbst	0,r6
-> -	add	r6,r6,r5
-> -	bdnz	0b
-> -	sync
-> -
-> -/* Now invalidate the icache */	
-> -
-> -	lwz	r4,ICACHEL1BLOCKSPERPAGE(r7)	/* Get # icache blocks per page */
-> -	lwz	r5,ICACHEL1BLOCKSIZE(r7)	/* Get icache block size */
-> -	mtctr	r4
-> -1:	icbi	0,r3
-> -	add	r3,r3,r5
-> -	bdnz	1b
-> -	isync
-> -	blr
-> -
->   _GLOBAL(__bswapdi2)
->   EXPORT_SYMBOL(__bswapdi2)
->   	srdi	r8,r3,32
 > diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
-> index 9191a66b3bc5..cd540123874d 100644
+> index cd540123874d..854aaea2c6ae 100644
 > --- a/arch/powerpc/mm/mem.c
 > +++ b/arch/powerpc/mm/mem.c
-> @@ -321,6 +321,105 @@ void free_initmem(void)
->   	free_initmem_default(POISON_FREE_INITMEM);
+> @@ -104,11 +104,14 @@ int __weak remove_section_mapping(unsigned long start, unsigned long end)
+>   	return -ENODEV;
 >   }
 >   
-> +/*
-> + * Warning: This macro will perform an early return if the CPU has
-> + * a coherent icache. The intent is is call this early in function,
-> + * and handle the non-coherent icache variant afterwards.
-> + *
-> + * For a snooping icache, we still need a dummy icbi to purge all the
-> + * prefetched instructions from the ifetch buffers. We also need a sync
-> + * before the icbi to order the the actual stores to memory that might
-> + * have modified instructions with the icbi.
-> + */
-> +#define flush_coherent_icache_or_return(addr) {			\
-> +	if (cpu_has_feature(CPU_FTR_COHERENT_ICACHE)) {		\
-> +		mb(); /* sync */				\
-> +		icbi(addr);					\
-> +		mb(); /* sync */				\
-> +		isync();					\
-> +		return;						\
-> +	}							\
-> +}
+> +#define FLUSH_CHUNK_SIZE SZ_1G
 
-I hate this kind of awful macro which kills code readability.
-
-Please to something like
-
-static bool flush_coherent_icache_or_return(unsigned long addr)
-{
-	if (!cpu_has_feature(CPU_FTR_COHERENT_ICACHE))
-		return false;
-
-	mb(); /* sync */
-	icbi(addr);
-	mb(); /* sync */
-	isync();
-	return true;
-}
-
-then callers will do:
-
-	if (flush_coherent_icache_or_return(addr))
-		return;
+Maybe the name is a bit long for a local define. See if we could reduce 
+code line splits below by shortening this name.
 
 > +
-> +/**
-> + * flush_icache_range: Write any modified data cache blocks out to memory
-> + * and invalidate the corresponding blocks in the instruction cache
-> + *
-> + * Generic code will call this after writing memory, before executing from it.
-> + *
-> + * @start: the start address
-> + * @stop: the stop address (exclusive)
-> + */
-> +void flush_icache_range(unsigned long start, unsigned long stop)
-> +{
-> +	unsigned long shift = l1_icache_shift();
-> +	unsigned long bytes = l1_icache_bytes();
-> +	char *addr = (char *)(start & ~(bytes - 1));
-> +	unsigned long size = stop - (unsigned long)addr + (bytes - 1);
-> +	unsigned long i;
-
-Could probably move all this and the loop into a __flush_icache_range() 
-helper.
-
+>   int __ref arch_add_memory(int nid, u64 start, u64 size,
+>   			struct mhp_restrictions *restrictions)
+>   {
+>   	unsigned long start_pfn = start >> PAGE_SHIFT;
+>   	unsigned long nr_pages = size >> PAGE_SHIFT;
+> +	u64 i;
+>   	int rc;
+>   
+>   	resize_hpt_for_hotplug(memblock_phys_mem_size());
+> @@ -120,7 +123,12 @@ int __ref arch_add_memory(int nid, u64 start, u64 size,
+>   			start, start + size, rc);
+>   		return -EFAULT;
+>   	}
+> -	flush_dcache_range(start, start + size);
 > +
-> +	flush_coherent_icache_or_return(addr);
-> +	clean_dcache_range(start, stop);
-> +
-> +	if (IS_ENABLED(CONFIG_44x)) {
-> +		/*
-> +		 * Flash invalidate on 44x because we are passed kmapped
-> +		 * addresses and this doesn't work for userspace pages due to
-> +		 * the virtually tagged icache.
-> +		 */
-> +		iccci(addr);
-> +	} else {
-> +		/* Now invalidate the instruction cache */
-> +		for (i = 0; i < size >> shift; i++, addr += bytes)
-> +			icbi(addr);
+> +	for (i = 0; i < size; i += FLUSH_CHUNK_SIZE) {
+> +		flush_dcache_range(start + i,
+> +				   min(start + size, start + i + FLUSH_CHUNK_SIZE));
+
+My eyes don't like it.
+
+What about
+	for (; i < size; i += FLUSH_CHUNK_SIZE) {
+		int len = min(size - i, FLUSH_CHUNK_SIZE);
+
+		flush_dcache_range(start + i, start + i + len);
+		cond_resched();
+	}
+
+or
+
+	end = start + size;
+	for (; start < end; start += FLUSH_CHUNK_SIZE, size -= FLUSH_CHUNK_SIZE) {
+		int len = min(size, FLUSH_CHUNK_SIZE);
+
+		flush_dcache_range(start, start + len);
+		cond_resched();
+	}
+
+> +		cond_resched();
+> +	}
+>   
+>   	return __add_pages(nid, start_pfn, nr_pages, restrictions);
+>   }
+> @@ -131,13 +139,19 @@ void __ref arch_remove_memory(int nid, u64 start, u64 size,
+>   	unsigned long start_pfn = start >> PAGE_SHIFT;
+>   	unsigned long nr_pages = size >> PAGE_SHIFT;
+>   	struct page *page = pfn_to_page(start_pfn) + vmem_altmap_offset(altmap);
+> +	u64 i;
+>   	int ret;
+>   
+>   	__remove_pages(page_zone(page), start_pfn, nr_pages, altmap);
+>   
+>   	/* Remove htab bolted mappings for this section of memory */
+>   	start = (unsigned long)__va(start);
+> -	flush_dcache_range(start, start + size);
+> +	for (i = 0; i < size; i += FLUSH_CHUNK_SIZE) {
+> +		flush_dcache_range(start + i,
+> +				   min(start + size, start + i + FLUSH_CHUNK_SIZE));
+> +		cond_resched();
 > +	}
 > +
-> +	if (!IS_ENABLED(CONFIG_PPC64))
-> +		mb(); /* additional sync needed on g4 */
-> +	isync();
-> +}
-> +EXPORT_SYMBOL(flush_icache_range);
-> +
-> +#if !defined(CONFIG_PPC_8xx) & !defined(CONFIG_PPC64)
-> +/**
-> + * flush_dcache_icache_phys() - Flush a page by it's physical address
-> + * @physaddr: the physical address of the page
-> + */
-> +static void flush_dcache_icache_phys(unsigned long physaddr)
-> +{
-> +	unsigned long bytes = l1_dcache_bytes();
-> +	unsigned long nb = PAGE_SIZE / bytes;
-> +	unsigned long addr = physaddr & PAGE_MASK;
-> +	unsigned long msr, msr0;
-> +	unsigned long loop1 = addr, loop2 = addr;
-> +
-> +	msr0 = mfmsr();
-> +	msr = msr0 & ~MSR_DR;
 
-Maybe we could get rid of msr and just use (msr0 & ~MSR_DR) in the asm 
-inputs parameters.
+This piece of code looks pretty similar to the one before. Can we 
+refactor into a small helper ?
 
-> +	/*
-> +	 * This must remain as ASM to prevent potential memory accesses
-> +	 * while the data MMU is disabled
-> +	 */
-> +	asm volatile(
-> +		"   mtctr %2;"
-> +		"   mtmsr %3;"
-> +		"   isync;"
-> +		"0: dcbst   0, %0;"
-> +		"   addi    %0, %0, %4;"
-> +		"   bdnz    0b;"
-> +		"   sync;"
-> +		"   mtctr %2;"
-> +		"1: icbi    0, %1;"
-> +		"   addi    %1, %1, %4;"
-> +		"   bdnz    1b;"
-> +		"   sync;"
-> +		"   mtmsr %5;"
-> +		"   isync;"
-> +		: "+r" (loop1), "+r" (loop2)
-> +		: "r" (nb), "r" (msr), "i" (bytes), "r" (msr0)
-> +		: "ctr", "memory");
-
-Maybe also add "msr" in the clobbers.
-
-> +}
-> +#endif // !defined(CONFIG_PPC_8xx) & !defined(CONFIG_PPC64)
-> +
->   /*
->    * This is called when a page has been modified by the kernel.
->    * It just marks the page as not i-cache clean.  We do the i-cache
-> @@ -353,12 +452,63 @@ void flush_dcache_icache_page(struct page *page)
->   		__flush_dcache_icache(start);
->   		kunmap_atomic(start);
->   	} else {
-> -		__flush_dcache_icache_phys(page_to_pfn(page) << PAGE_SHIFT);
-> +		unsigned long addr = page_to_pfn(page) << PAGE_SHIFT;
-> +
-> +		flush_coherent_icache_or_return((void *)addr);
-> +		flush_dcache_icache_phys(addr);
->   	}
->   #endif
->   }
->   EXPORT_SYMBOL(flush_dcache_icache_page);
+>   	ret = remove_section_mapping(start, start + size);
+>   	WARN_ON_ONCE(ret);
 >   
-> +/**
-> + * __flush_dcache_icache(): Flush a particular page from the data cache to RAM.
-> + * Note: this is necessary because the instruction cache does *not*
-> + * snoop from the data cache.
-> + *
-> + * @page: the address of the page to flush
-> + */
-> +void __flush_dcache_icache(void *page)
-> +{
-> +	char *addr = page;
-> +	unsigned long lines = PAGE_SIZE >> l1_dcache_shift();
-> +	unsigned long bytes = l1_dcache_bytes();
-> +	unsigned long i;
-> +
-> +	flush_coherent_icache_or_return(addr);
-> +
-> +	/* Flush the data cache to memory */
-> +	for (i = 0; i < lines; i++, addr += bytes)
-> +		dcbst(addr);
-
-Use clean_dcache_range(addr, addr + PAGE_SIZE);
-
-> +
-> +	mb(); /* sync */
-> +
-> +#ifdef CONFIG_44x
-
-This ifdef is useless.
-If CONFIG_44x is not enabled, MMU_FTR_TYPE_44x will not be in 
-MMU_FTRS_POSSIBLE so cpu_has_feature() will return constant false at 
-buildtime and GCC will drop it.
-
-> +	/*
-> +	 * We don't flush the icache on 44x. Those have a virtual icache and we
-> +	 * don't have access to the virtual address here (it's not the page
-> +	 * vaddr but where it's mapped in user space). The flushing of the
-> +	 * icache on these is handled elsewhere, when a change in the address
-> +	 * space occurs, before returning to user space.
-> +	 */
-> +
-> +	if (cpu_has_feature(MMU_FTR_TYPE_44x))
-> +		return;
-> +#endif
-> +
-> +	lines = PAGE_SIZE >> l1_icache_shift();
-> +	bytes = l1_icache_bytes();
-> +	addr = page;
-> +
-> +	/* Now invalidate the instruction cache */
-> +	for (i = 0; i < lines; i++, addr += bytes)
-> +		icbi(addr);
-
-Re-use the __flush_icache_range() helper suggested before.
-
-> +
-> +	mb(); /* sync */
-> +	isync();
-> +}
-> +EXPORT_SYMBOL(__flush_dcache_icache);
-> +
->   void clear_user_page(void *page, unsigned long vaddr, struct page *pg)
->   {
->   	clear_page(page);
 > 
 
 Christophe
