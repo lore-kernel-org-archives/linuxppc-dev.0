@@ -2,53 +2,74 @@ Return-Path: <SRS0=Ib4m=W7=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AE3ADC3A59E
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Sep 2019 06:16:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DAAF0C3A5A7
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Sep 2019 06:25:13 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3735823402
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Sep 2019 06:16:41 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3735823402
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 209DD23401
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Sep 2019 06:25:13 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=nifty.com header.i=@nifty.com header.b="klSroD0q"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 209DD23401
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=socionext.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46NYVv000VzDqsQ
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Sep 2019 16:16:38 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 46NYhj6m6FzDqkP
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Sep 2019 16:25:09 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=arm.com
- (client-ip=217.140.110.172; helo=foss.arm.com;
- envelope-from=anshuman.khandual@arm.com; receiver=<UNKNOWN>)
+ spf=softfail (mailfrom) smtp.mailfrom=socionext.com
+ (client-ip=210.131.2.83; helo=conssluserg-04.nifty.com;
+ envelope-from=yamada.masahiro@socionext.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=arm.com
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
- by lists.ozlabs.org (Postfix) with ESMTP id 46NYSV1pdkzDqQH
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Sep 2019 16:14:31 +1000 (AEST)
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
- by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 312C2344;
- Tue,  3 Sep 2019 23:14:29 -0700 (PDT)
-Received: from [10.162.41.129] (p8cg001049571a15.blr.arm.com [10.162.41.129])
- by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id
- 89A8D3F718; Tue,  3 Sep 2019 23:16:41 -0700 (PDT)
-Subject: Re: [PATCH 1/1] mm/pgtable/debug: Add test validating architecture
- page table helpers
-To: kbuild test robot <lkp@intel.com>
-References: <1567497706-8649-2-git-send-email-anshuman.khandual@arm.com>
- <201909031912.htvWy2Bu%lkp@intel.com>
-From: Anshuman Khandual <anshuman.khandual@arm.com>
-Message-ID: <4dc9698f-dff4-b916-a83e-dc932c8087c0@arm.com>
-Date: Wed, 4 Sep 2019 11:44:25 +0530
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:52.0) Gecko/20100101
- Thunderbird/52.9.1
+ dmarc=none (p=none dis=none) header.from=socionext.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=nifty.com header.i=@nifty.com header.b="klSroD0q"; 
+ dkim-atps=neutral
+Received: from conssluserg-04.nifty.com (conssluserg-04.nifty.com
+ [210.131.2.83])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46NYfH3dvZzDqjX
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Sep 2019 16:23:02 +1000 (AEST)
+Received: from mail-ua1-f43.google.com (mail-ua1-f43.google.com
+ [209.85.222.43]) (authenticated)
+ by conssluserg-04.nifty.com with ESMTP id x846MjDJ001317
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 4 Sep 2019 15:22:46 +0900
+DKIM-Filter: OpenDKIM Filter v2.10.3 conssluserg-04.nifty.com x846MjDJ001317
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nifty.com;
+ s=dec2015msa; t=1567578166;
+ bh=f/Vt6AfJ/h0GmLP4nlGQ6fG5Sb31T5I6KrbEB4uL3XQ=;
+ h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+ b=klSroD0qCQpZ5U6pxi2/qRowXcLbgDr38bNgsFdq09oA5xRagfY68AYymJmL2UKlZ
+ AdN3EX+pOaZXFigtquwmXFnvIz3YR5SyvpELIcqwh15t9FojM4OT3w//5DNBllrIS6
+ 8jcWank4fplhHLSRIv52JaVQuXE5k/O5ezpgG5ovUix9gr7t72Y2U85WCK6zchNNJI
+ IGep9b/kvtqmmEuB+oOySx5SD5G4+ClVDvd1oagm+uuBhiKUFk40Yrf9WaJNoy0z1a
+ NNwxMd4a2bXNJgvA3NvxjGlIrwB+ZlBl4kmYV1maLKxeec0WoF6e/8B3E0jIXdQNVi
+ GUbzyrXAys9UQ==
+X-Nifty-SrcIP: [209.85.222.43]
+Received: by mail-ua1-f43.google.com with SMTP id i17so3049350ual.7
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 03 Sep 2019 23:22:46 -0700 (PDT)
+X-Gm-Message-State: APjAAAXm0CjZ7HW/1JWq2xKkZBWWXeah8ikz4G+tAkbbAmfpYeCopr5n
+ Dywxpz6/ddnjXZIMCxCIsV3mKy143iz4yexQNpI=
+X-Google-Smtp-Source: APXvYqwXqIiEkpz8t5zX3CwWA0I7b3aQl9vXC5xpQV6eLWDVUn+QwNnliorr9pE1hNc0I8hJVRq/h0Tg+eKQL9tTnI0=
+X-Received: by 2002:a9f:2213:: with SMTP id 19mr6836107uad.25.1567578165238;
+ Tue, 03 Sep 2019 23:22:45 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <201909031912.htvWy2Bu%lkp@intel.com>
-Content-Type: text/plain; charset=windows-1252
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
+References: <20190904101259.2687cea4@canb.auug.org.au>
+ <CAK7LNAT=qUi76cF776GcT=UYce5QBo+_24gLwXH7ra15=1xLvQ@mail.gmail.com>
+In-Reply-To: <CAK7LNAT=qUi76cF776GcT=UYce5QBo+_24gLwXH7ra15=1xLvQ@mail.gmail.com>
+From: Masahiro Yamada <yamada.masahiro@socionext.com>
+Date: Wed, 4 Sep 2019 15:22:09 +0900
+X-Gmail-Original-Message-ID: <CAK7LNAQ8VJz8fxecnEWmbFCpD0rgt4tjoipOX0g3oY0xU8xt5w@mail.gmail.com>
+Message-ID: <CAK7LNAQ8VJz8fxecnEWmbFCpD0rgt4tjoipOX0g3oY0xU8xt5w@mail.gmail.com>
+Subject: Re: linux-next: build warnings after merge of the kbuild tree
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -60,87 +81,44 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Mark Rutland <mark.rutland@arm.com>, linux-ia64@vger.kernel.org,
- linux-sh@vger.kernel.org, Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>,
- James Hogan <jhogan@kernel.org>, Heiko Carstens <heiko.carstens@de.ibm.com>,
- Michal Hocko <mhocko@kernel.org>, linux-mm@kvack.org,
- Paul Mackerras <paulus@samba.org>, sparclinux@vger.kernel.org,
- Dan Williams <dan.j.williams@intel.com>, linux-s390@vger.kernel.org,
- x86@kernel.org, Russell King - ARM Linux <linux@armlinux.org.uk>,
- Matthew Wilcox <willy@infradead.org>, Steven Price <Steven.Price@arm.com>,
- Jason Gunthorpe <jgg@ziepe.ca>, Vlastimil Babka <vbabka@suse.cz>,
- linux-snps-arc@lists.infradead.org, kbuild-all@01.org,
- Kees Cook <keescook@chromium.org>, Mark Brown <broonie@kernel.org>,
- Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org,
- Sri Krishna chowdary <schowdary@nvidia.com>,
- Masahiro Yamada <yamada.masahiro@socionext.com>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Ard Biesheuvel <ard.biesheuvel@linaro.org>,
- Dave Hansen <dave.hansen@intel.com>, linux-mips@vger.kernel.org,
- Ralf Baechle <ralf@linux-mips.org>, linux-kernel@vger.kernel.org,
- Peter Zijlstra <peterz@infradead.org>, Mike Rapoport <rppt@linux.vnet.ibm.com>,
- Paul Burton <paul.burton@mips.com>, Vineet Gupta <vgupta@synopsys.com>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>,
- Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
- "David S. Miller" <davem@davemloft.net>
+Cc: Linux Next Mailing List <linux-next@vger.kernel.org>,
+ PowerPC <linuxppc-dev@lists.ozlabs.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+On Wed, Sep 4, 2019 at 10:00 AM Masahiro Yamada
+<yamada.masahiro@socionext.com> wrote:
+>
+> Hi Stephen,
+>
+> On Wed, Sep 4, 2019 at 9:13 AM Stephen Rothwell <sfr@canb.auug.org.au> wrote:
+> >
+
+For today's linux-next, please squash the following too.
+
+(This is my fault, since scripts/mkuboot.sh is a bash script)
 
 
-On 09/03/2019 04:43 PM, kbuild test robot wrote:
-> Hi Anshuman,
-> 
-> Thank you for the patch! Yet something to improve:
-> 
-> [auto build test ERROR on linus/master]
-> [cannot apply to v5.3-rc7 next-20190902]
-> [if your patch is applied to the wrong git tree, please drop us a note to help improve the system]
-> 
-> url:    https://github.com/0day-ci/linux/commits/Anshuman-Khandual/mm-debug-Add-tests-for-architecture-exported-page-table-helpers/20190903-162959
-> config: m68k-allmodconfig (attached as .config)
-> compiler: m68k-linux-gcc (GCC) 7.4.0
-> reproduce:
->         wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
->         chmod +x ~/bin/make.cross
->         # save the attached .config to linux build tree
->         GCC_VERSION=7.4.0 make.cross ARCH=m68k 
-> 
-> If you fix the issue, kindly add following tag
-> Reported-by: kbuild test robot <lkp@intel.com>
-> 
-> All error/warnings (new ones prefixed by >>):
-> 
->    In file included from arch/m68k/include/asm/bug.h:32:0,
->                     from include/linux/bug.h:5,
->                     from include/linux/thread_info.h:12,
->                     from include/asm-generic/preempt.h:5,
->                     from ./arch/m68k/include/generated/asm/preempt.h:1,
->                     from include/linux/preempt.h:78,
->                     from arch/m68k/include/asm/irqflags.h:6,
->                     from include/linux/irqflags.h:16,
->                     from arch/m68k/include/asm/atomic.h:6,
->                     from include/linux/atomic.h:7,
->                     from include/linux/mm_types_task.h:13,
->                     from include/linux/mm_types.h:5,
->                     from include/linux/hugetlb.h:5,
->                     from mm/arch_pgtable_test.c:14:
->    mm/arch_pgtable_test.c: In function 'pmd_clear_tests':
->>> arch/m68k/include/asm/page.h:31:22: error: lvalue required as unary '&' operand
->     #define pmd_val(x) ((&x)->pmd[0])
->                          ^
->    include/asm-generic/bug.h:124:25: note: in definition of macro 'WARN_ON'
->      int __ret_warn_on = !!(condition);    \
->                             ^~~~~~~~~
->>> arch/m68k/include/asm/motorola_pgtable.h:138:26: note: in expansion of macro 'pmd_val'
->     #define pmd_none(pmd)  (!pmd_val(pmd))
->                              ^~~~~~~
->>> mm/arch_pgtable_test.c:233:11: note: in expansion of macro 'pmd_none'
->      WARN_ON(!pmd_none(READ_ONCE(*pmdp)));
->               ^~~~~~~~
->    mm/arch_pgtable_test.c: In function 'pmd_populate_tests':
->>> arch/m68k/include/asm/page.h:31:22: error: lvalue required as unary '&' operand
->     #define pmd_val(x) ((&x)->pmd[0])
+diff --git a/scripts/Makefile.lib b/scripts/Makefile.lib
+index 41c50f9461e5..2d72327417a9 100644
+--- a/scripts/Makefile.lib
++++ b/scripts/Makefile.lib
+@@ -374,7 +374,7 @@ UIMAGE_ENTRYADDR ?= $(UIMAGE_LOADADDR)
+ UIMAGE_NAME ?= 'Linux-$(KERNELRELEASE)'
 
-Storing READ_ONCE(*pmdp) in a local pmd_t variable first solves the problem.
+ quiet_cmd_uimage = UIMAGE  $@
+-      cmd_uimage = $(CONFIG_SHELL) $(MKIMAGE) -A $(UIMAGE_ARCH) -O linux \
++      cmd_uimage = $(BASE) $(MKIMAGE) -A $(UIMAGE_ARCH) -O linux \
+                        -C $(UIMAGE_COMPRESSION) $(UIMAGE_OPTS-y) \
+                        -T $(UIMAGE_TYPE) \
+                        -a $(UIMAGE_LOADADDR) -e $(UIMAGE_ENTRYADDR) \
+
+
+
+
+
+-- 
+Best Regards
+Masahiro Yamada
