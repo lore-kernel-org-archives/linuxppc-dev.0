@@ -2,84 +2,80 @@ Return-Path: <SRS0=Ib4m=W7=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+X-Spam-Status: No, score=-3.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
-	version=3.4.0
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_GIT autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4BA70C3A5A7
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Sep 2019 11:59:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8F9A5C3A5A7
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Sep 2019 12:01:36 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C07E222DBF
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Sep 2019 11:59:30 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id D7CE322CF5
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Sep 2019 12:01:35 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="ZM4v2QHU"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C07E222DBF
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="gXhemPkX"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D7CE322CF5
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46Nj6R2dr7zDqcS
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Sep 2019 21:59:27 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 46Nj8s4kYQzDqCH
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Sep 2019 22:01:33 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=2607:f8b0:4864:20::543; helo=mail-pg1-x543.google.com;
+ (client-ip=2607:f8b0:4864:20::441; helo=mail-pf1-x441.google.com;
  envelope-from=npiggin@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="ZM4v2QHU"; 
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="gXhemPkX"; 
  dkim-atps=neutral
-Received: from mail-pg1-x543.google.com (mail-pg1-x543.google.com
- [IPv6:2607:f8b0:4864:20::543])
+Received: from mail-pf1-x441.google.com (mail-pf1-x441.google.com
+ [IPv6:2607:f8b0:4864:20::441])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46Nj2k1q8WzDqWN
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Sep 2019 21:56:13 +1000 (AEST)
-Received: by mail-pg1-x543.google.com with SMTP id w10so11128954pgj.7
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 04 Sep 2019 04:56:13 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46Nj2j5KQHzDqnR
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Sep 2019 21:56:12 +1000 (AEST)
+Received: by mail-pf1-x441.google.com with SMTP id 205so10644635pfw.2
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 04 Sep 2019 04:56:12 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=from:to:cc:subject:date:message-id:in-reply-to:references
- :mime-version:content-transfer-encoding;
- bh=ZfjVGznsoZIp94XCAqQB/NpSchJMxm2Sht/qL39JRSE=;
- b=ZM4v2QHUOwXkmFktQ9ffw2jMW1Wp3kCgf05wGkHKC40D3d+AWBEDqt4DdOYhMsiw5h
- 8VpjcCgayKjrj36bVRxIm97CzS4GD4CDRI4DBR7xw3C2uXLrkNJLndhcegY6rAgex6p5
- GjBGDX9JogMQ/X+/Dt3dvj3XIV3oxk2Tp5zdqcaGHRa+GdLK1bnNwNuDt+N4fbmw2C99
- bGKDcxvKIhyBLM/soX260CPXq3SfNPoSzdbQjWXgJGINM/1SEF2Ruwi210aLkTm9o6Fl
- Lx2hiLXf2iavntKRCE2HmjFAVHtpJspEtOyA0LVLmrufu5v5fZJteUjqZdXL/JIJNOl1
- eVGQ==
+ h=from:to:cc:subject:date:message-id:mime-version
+ :content-transfer-encoding;
+ bh=1Tdt+m9Pe17PmbDCBykPXAs/aRyoLtwXsPZ3Sa51E28=;
+ b=gXhemPkX1IKdc6eyj6x6gvglb+PK71AK6u9uoFl3X2A8t0Nm0Lq9n6lnvROOZywp4M
+ O8hFWvHU8io49n+oiRan3PzvWrhnBh1ymyFifdVH6prJu0vycQHUFhml1BwDK0neA5Wa
+ h+OM7TxfBbOyTOxJhXRAnDHFBvM69t8Ywjadbswo0PRf1qS9b5kDntHOBMtdUFhbgfMO
+ 2FldV44bsfrOjGQevkCqPEQX+Gtj5uTs1p8dx2Xp02fwNRty/LArgQmc8graLtVD4c1A
+ HsjJq1ORLpx8KRCASZbYTWN7yq0b/oHK52HXz9Uy/KyT5G5QfHAdFH2wXChfHl8NwJkq
+ u7Ww==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
- h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
- :references:mime-version:content-transfer-encoding;
- bh=ZfjVGznsoZIp94XCAqQB/NpSchJMxm2Sht/qL39JRSE=;
- b=rj1xLWCjaxLA1VWUyP5YQO8Zz6nhjgzO5sqSD8yoUNHcsRG0M/RHGDXbShbyLzj4oe
- q8ChxX0aCVtR5SWJWo6Z2z+K/Pfriee6C8vONrgWNk+puuXs2naWjRSVWF7R9J8wgtiU
- uOkuxwAQTJlVOU5fhHDq0Aw0ttRx9Yj+pw9lTG3x2nCqLxGb6hTyzRSJcW7vJ+Z4yzM3
- 1h9VB16J8WsbRyJ3EFc/DoaM7FdnoIiGE0Ik/FCrLPbkmGMv6gX6j7+6KoPdCXTtBIiw
- nE2y7Va1SMkT/cPKSxudCSzQdVBydOm9Y/9XznhGIUV5HJdvYr8v6ljD+mnthDeX69bI
- bh8w==
-X-Gm-Message-State: APjAAAWXmZ8LdiOszVQwxJZnXgEGKzaJgMqwqnTbnM5Oa+r4mJtlwzvn
- 9SHdyT6pSJCvqrB5I0ERojYoztQa
-X-Google-Smtp-Source: APXvYqz/oBfbDcFEGqGc081fOtl7QcxYX0Az9ixcN7EnjID4y7rAhGcPXbegtbXtOPedpB3X5RHcFw==
-X-Received: by 2002:aa7:8251:: with SMTP id e17mr46661361pfn.189.1567598170808; 
- Wed, 04 Sep 2019 04:56:10 -0700 (PDT)
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+ :content-transfer-encoding;
+ bh=1Tdt+m9Pe17PmbDCBykPXAs/aRyoLtwXsPZ3Sa51E28=;
+ b=AzZF2Tlenv00UH3ez98mwa2XSuPLF9z+ivEUw7BS3fOg4br8rog3ThRthZK0GCu3NV
+ dvr5XC0WcrZR8oSJT8rELUZLI+Q0QUop2LUzSs9i8orHCukcntyu1DZSapD4ByaRhOxw
+ e09Ku5P8ztm1sN9KVhzlq2lct3R0kLWV6m/+EWZIrv+x83pSmasrtoLK0+Gn+6BncXz2
+ HcPGIh0delpICm5efgh2IpAwu421iI0Lj62WBq22boHcBp+8N6tGoTpSX/bUSaya3oS7
+ CJfaR0aKJ0pi0mm6eqKUmZAaaGeZhPSlvP1a64myEVTlPXplHs5aMmkBLVsE0hOKP4Hh
+ us6A==
+X-Gm-Message-State: APjAAAXdogJkoesfe1emHWD3FwvybE8hUjyC+ynxFlQObIGDcDLZjpTi
+ ftIvjWPzH1e5AMC6465pl4KMd2Uw
+X-Google-Smtp-Source: APXvYqys0/54lanhSJmRZHdgPpAe2Hfg5cN1idll+2GmbmlgXjogcz9BRYew07pm1uYpVFCVO7iL+g==
+X-Received: by 2002:aa7:9ddd:: with SMTP id g29mr29616936pfq.146.1567598168659; 
+ Wed, 04 Sep 2019 04:56:08 -0700 (PDT)
 Received: from bobo.local0.net ([203.63.189.78])
- by smtp.gmail.com with ESMTPSA id g18sm19554789pgm.9.2019.09.04.04.56.08
+ by smtp.gmail.com with ESMTPSA id g18sm19554789pgm.9.2019.09.04.04.56.06
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Wed, 04 Sep 2019 04:56:10 -0700 (PDT)
+ Wed, 04 Sep 2019 04:56:08 -0700 (PDT)
 From: Nicholas Piggin <npiggin@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v2 01/20] powerpc/64s/exception: Introduce INT_DEFINE
- parameter block for code generation
-Date: Wed,  4 Sep 2019 21:55:16 +1000
-Message-Id: <20190904115535.18559-2-npiggin@gmail.com>
+Subject: [PATCH v2 00/20] remaining interrupt handler changes
+Date: Wed,  4 Sep 2019 21:55:15 +1000
+Message-Id: <20190904115535.18559-1-npiggin@gmail.com>
 X-Mailer: git-send-email 2.22.0
-In-Reply-To: <20190904115535.18559-1-npiggin@gmail.com>
-References: <20190904115535.18559-1-npiggin@gmail.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -98,143 +94,50 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The code generation macro arguments are difficult to read, and
-defaults can't easily be used.
+This is a rebase of the remaining patches in this series to the
+powerpc next branch
 
-This introduces a block where parameters can be set for interrupt
-handler code generation by the subsequent macros, and adds the first
-generation macro for interrupt entry.
+https://lore.kernel.org/r/20190802105709.27696-2-npiggin@gmail.com
 
-One interrupt handler is converted to the new macros to demonstrate
-the change, the rest will be coverted all at once.
+Plus the next series. A few improvements were added, such as using
+the name=val style of parameter for invoking macros.
 
-No generated code change.
 
-Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
----
- arch/powerpc/kernel/exceptions-64s.S | 77 ++++++++++++++++++++++++++--
- 1 file changed, 73 insertions(+), 4 deletions(-)
+Nicholas Piggin (20):
+  powerpc/64s/exception: Introduce INT_DEFINE parameter block for code
+    generation
+  powerpc/64s/exception: Add GEN_COMMON macro that uses INT_DEFINE
+    parameters
+  powerpc/64s/exception: Add GEN_KVM macro that uses INT_DEFINE
+    parameters
+  powerpc/64s/exception: Expand EXC_COMMON and EXC_COMMON_ASYNC macros
+  powerpc/64s/exception: Move all interrupt handlers to new style code
+    gen macros
+  powerpc/64s/exception: Remove old INT_ENTRY macro
+  powerpc/64s/exception: Remove old INT_COMMON macro
+  powerpc/64s/exception: Remove old INT_KVM_HANDLER
+  powerpc/64s/exception: Add ISIDE option
+  powerpc/64s/exception: move real->virt switch into the common handler
+  powerpc/64s/exception: move soft-mask test to common code
+  powerpc/64s/exception: move KVM test to common code
+  powerpc/64s/exception: remove confusing IEARLY option
+  powerpc/64s/exception: remove the SPR saving patch code macros
+  powerpc/64s/exception: trim unused arguments from KVMTEST macro
+  powerpc/64s/exception: hdecrementer avoid touching the stack
+  powerpc/64s/exception: re-inline some handlers
+  powerpc/64s/exception: Clean up SRR specifiers
+  powerpc/64s/exception: add more comments for interrupt handlers
+  powerpc/64s/exception: only test KVM in SRR interrupts when PR KVM is
+    supported
 
-diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
-index d0018dd17e0a..e6ad6e6cf65e 100644
---- a/arch/powerpc/kernel/exceptions-64s.S
-+++ b/arch/powerpc/kernel/exceptions-64s.S
-@@ -193,6 +193,61 @@ END_FTR_SECTION_NESTED(ftr,ftr,943)
- 	mtctr	reg;							\
- 	bctr
- 
-+/*
-+ * Interrupt code generation macros
-+ */
-+#define IVEC		.L_IVEC_\name\()
-+#define IHSRR		.L_IHSRR_\name\()
-+#define IAREA		.L_IAREA_\name\()
-+#define IDAR		.L_IDAR_\name\()
-+#define IDSISR		.L_IDSISR_\name\()
-+#define ISET_RI		.L_ISET_RI_\name\()
-+#define IEARLY		.L_IEARLY_\name\()
-+#define IMASK		.L_IMASK_\name\()
-+#define IKVM_REAL	.L_IKVM_REAL_\name\()
-+#define IKVM_VIRT	.L_IKVM_VIRT_\name\()
-+
-+#define INT_DEFINE_BEGIN(n)						\
-+.macro int_define_ ## n name
-+
-+#define INT_DEFINE_END(n)						\
-+.endm ;									\
-+int_define_ ## n n ;							\
-+do_define_int n
-+
-+.macro do_define_int name
-+	.ifndef IVEC
-+		.error "IVEC not defined"
-+	.endif
-+	.ifndef IHSRR
-+		IHSRR=EXC_STD
-+	.endif
-+	.ifndef IAREA
-+		IAREA=PACA_EXGEN
-+	.endif
-+	.ifndef IDAR
-+		IDAR=0
-+	.endif
-+	.ifndef IDSISR
-+		IDSISR=0
-+	.endif
-+	.ifndef ISET_RI
-+		ISET_RI=1
-+	.endif
-+	.ifndef IEARLY
-+		IEARLY=0
-+	.endif
-+	.ifndef IMASK
-+		IMASK=0
-+	.endif
-+	.ifndef IKVM_REAL
-+		IKVM_REAL=0
-+	.endif
-+	.ifndef IKVM_VIRT
-+		IKVM_VIRT=0
-+	.endif
-+.endm
-+
- .macro INT_KVM_HANDLER name, vec, hsrr, area, skip
- 	TRAMP_KVM_BEGIN(\name\()_kvm)
- 	KVM_HANDLER \vec, \hsrr, \area, \skip
-@@ -474,7 +529,7 @@ END_FTR_SECTION_NESTED(CPU_FTR_HAS_PPR,CPU_FTR_HAS_PPR,948)
- 	 */
- 	GET_SCRATCH0(r10)
- 	std	r10,\area\()+EX_R13(r13)
--	.if \dar
-+	.if \dar == 1
- 	.if \hsrr
- 	mfspr	r10,SPRN_HDAR
- 	.else
-@@ -482,7 +537,7 @@ END_FTR_SECTION_NESTED(CPU_FTR_HAS_PPR,CPU_FTR_HAS_PPR,948)
- 	.endif
- 	std	r10,\area\()+EX_DAR(r13)
- 	.endif
--	.if \dsisr
-+	.if \dsisr == 1
- 	.if \hsrr
- 	mfspr	r10,SPRN_HDSISR
- 	.else
-@@ -506,6 +561,14 @@ END_FTR_SECTION_NESTED(CPU_FTR_HAS_PPR,CPU_FTR_HAS_PPR,948)
- 	.endif
- .endm
- 
-+.macro GEN_INT_ENTRY name, virt, ool=0
-+	.if ! \virt
-+		INT_HANDLER \name, IVEC, \ool, IEARLY, \virt, IHSRR, IAREA, ISET_RI, IDAR, IDSISR, IMASK, IKVM_REAL
-+	.else
-+		INT_HANDLER \name, IVEC, \ool, IEARLY, \virt, IHSRR, IAREA, ISET_RI, IDAR, IDSISR, IMASK, IKVM_VIRT
-+	.endif
-+.endm
-+
- /*
-  * On entry r13 points to the paca, r9-r13 are saved in the paca,
-  * r9 contains the saved CR, r11 and r12 contain the saved SRR0 and
-@@ -1143,12 +1206,18 @@ END_FTR_SECTION_IFSET(CPU_FTR_HVMODE)
- 	bl	unrecoverable_exception
- 	b	.
- 
-+INT_DEFINE_BEGIN(data_access)
-+	IVEC=0x300
-+	IDAR=1
-+	IDSISR=1
-+	IKVM_REAL=1
-+INT_DEFINE_END(data_access)
- 
- EXC_REAL_BEGIN(data_access, 0x300, 0x80)
--	INT_HANDLER data_access, 0x300, ool=1, dar=1, dsisr=1, kvm=1
-+	GEN_INT_ENTRY data_access, virt=0, ool=1
- EXC_REAL_END(data_access, 0x300, 0x80)
- EXC_VIRT_BEGIN(data_access, 0x4300, 0x80)
--	INT_HANDLER data_access, 0x300, virt=1, dar=1, dsisr=1
-+	GEN_INT_ENTRY data_access, virt=1
- EXC_VIRT_END(data_access, 0x4300, 0x80)
- INT_KVM_HANDLER data_access, 0x300, EXC_STD, PACA_EXGEN, 1
- EXC_COMMON_BEGIN(data_access_common)
+ arch/powerpc/include/asm/exception-64s.h |    4 -
+ arch/powerpc/include/asm/time.h          |    1 -
+ arch/powerpc/kernel/exceptions-64s.S     | 1859 +++++++++++++++-------
+ arch/powerpc/kernel/time.c               |    9 -
+ arch/powerpc/kvm/book3s_hv_rmhandlers.S  |   11 -
+ arch/powerpc/kvm/book3s_segment.S        |    7 -
+ 6 files changed, 1303 insertions(+), 588 deletions(-)
+
 -- 
 2.22.0
 
