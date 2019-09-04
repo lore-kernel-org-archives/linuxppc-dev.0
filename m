@@ -2,86 +2,97 @@ Return-Path: <SRS0=Ib4m=W7=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+X-Spam-Status: No, score=-6.5 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
+	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7A223C3A5A7
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Sep 2019 12:55:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4D1D4C3A5A7
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Sep 2019 13:02:39 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id D50802073F
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Sep 2019 12:55:40 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id C18EC2073F
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Sep 2019 13:02:38 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="eeM2uMlQ"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D50802073F
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Prkw+Bw8"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C18EC2073F
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46NkMG428szDqPS
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Sep 2019 22:55:38 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=2607:f8b0:4864:20::444; helo=mail-pf1-x444.google.com;
- envelope-from=npiggin@gmail.com; receiver=<UNKNOWN>)
+	by lists.ozlabs.org (Postfix) with ESMTP id 46NkWF3hrnzDqVp
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Sep 2019 23:02:33 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46NjKH1F7PzDqhC
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Sep 2019 22:08:51 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="eeM2uMlQ"; 
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="Prkw+Bw8"; 
  dkim-atps=neutral
-Received: from mail-pf1-x444.google.com (mail-pf1-x444.google.com
- [IPv6:2607:f8b0:4864:20::444])
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 46NjKG6sg9z8t3b
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Sep 2019 22:08:50 +1000 (AEST)
+Received: by ozlabs.org (Postfix)
+ id 46NjKG5mfjz9sDB; Wed,  4 Sep 2019 22:08:50 +1000 (AEST)
+Authentication-Results: ozlabs.org; spf=pass (mailfrom) smtp.mailfrom=gmail.com
+ (client-ip=2607:f8b0:4864:20::d43; helo=mail-io1-xd43.google.com;
+ envelope-from=oohall@gmail.com; receiver=<UNKNOWN>)
+Authentication-Results: ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="Prkw+Bw8"; 
+ dkim-atps=neutral
+Received: from mail-io1-xd43.google.com (mail-io1-xd43.google.com
+ [IPv6:2607:f8b0:4864:20::d43])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46Nj3d1XkXzDqnR
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Sep 2019 21:57:01 +1000 (AEST)
-Received: by mail-pf1-x444.google.com with SMTP id r12so934307pfh.1
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 04 Sep 2019 04:57:01 -0700 (PDT)
+ by ozlabs.org (Postfix) with ESMTPS id 46NjKG3zLqz9s7T
+ for <linuxppc-dev@ozlabs.org>; Wed,  4 Sep 2019 22:08:50 +1000 (AEST)
+Received: by mail-io1-xd43.google.com with SMTP id b136so19538902iof.3
+ for <linuxppc-dev@ozlabs.org>; Wed, 04 Sep 2019 05:08:50 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=from:to:cc:subject:date:message-id:in-reply-to:references
- :mime-version:content-transfer-encoding;
- bh=LgmLY0QuG8iOauedHf/9F7NJQAgIrZdeAnpSH+vsTBY=;
- b=eeM2uMlQAaEI/uaGgBfqh40Y/eE9IlNnl8LiCEkiFyRLEg2eMbOcXeiJXky8uJTqtR
- k1RP9zUhBKExOiIk5+TMJCm5y3cLpzC3nKyVgpwg8SV7ZW5Cr4MU+qrD6qgWkA6M3MBY
- gjkulqI73tvYzMDSceV5bLwocprIggR/U5mw5L4yrG6HHZ5rlykjNEaI4xhH3mcQ8kha
- pEIiFZOSbzDUWQo9q194OWA/iTPKhTlCMdW1hoTFgIk4XNL2RCKxVmbJgJ82WRIFCCvF
- ATm7JZbIF7xX4hHq4yNningCGZjqrqhLTPT404E5SD2uaA2Zsq8SJr0FtLsW0f8QO90G
- 3zaw==
+ h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+ :cc; bh=lqaK3n67Red/VcPGrjUnY2GXE84+MKMIWyN1XBc9vkY=;
+ b=Prkw+Bw8UgsDUmWS1Ubo2s3b4AbhRQE0TehOR4r4WXnMqADS99ItGEibVJFGQJZj7X
+ rPtPHWhQi8hsEUnYECxkxUDAtl4TcIIg5mReJOc7t5/A+Us4Jo+8B37S9JSlaXSe7pzZ
+ xt658WwkKW1wYudxAStL3wvvRiK9m/2iArm913JyUJA+l8yBE9PKc4Ok7F0SX5PmB3aI
+ qSolQfEK1Cjf9yX1EXD4I3DWoZQ1gQcW8mmo8P1XAV1Un5dmteCJjKYuMnkELGJfA0+y
+ z2+GCDiWpTbBF+BYpj2CvdhjPDVe8cVMgbA94CyUdef5VLFVi+a/+TbalXywPwuscHgC
+ OYcw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
- h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
- :references:mime-version:content-transfer-encoding;
- bh=LgmLY0QuG8iOauedHf/9F7NJQAgIrZdeAnpSH+vsTBY=;
- b=lGU3xfespr4jeWFRN+n1gSNiWLhlUOKjgGLNlaRbgkPX+NrVhjE9+VJmKc/G0jzRgl
- jmqujl94+NE9ex7503m1MaaxelPjHivnk70v/eumhka5bbtbHxoA/rJ9zlEeRGpnwgx/
- hFXNXiW75KkM+S3qFLxGkPvgm4NImB4v8tkEwBIVcZX1Zb6YWxFRzUXKCXLqs1ib5OKa
- LsTXec1deR2EJXX8ilLyJSVLmcM83pT0p5A/sICsiNYrCxJsJnbY38Vn951wMxdzToGj
- kuToc8suU3UkWGcRVlVsBjAeoiHX+mmQwqoJoQ2AzcVZipTqiN9r8VanBzPUN77u8wdU
- vkqA==
-X-Gm-Message-State: APjAAAX5qq6slN+KWAQRcCeHzmI42OovgEGB6g7DsME7TynWO99Fv2JF
- AIRsWfp2DQMTohCqrMIf45chcuY0
-X-Google-Smtp-Source: APXvYqzdT1bIHapviHw+Ki1BbJrXUkYMBI3aZf4JG3c40QDyxZDLwUfkHFcpQkRKqhn0qtSTnvL2aw==
-X-Received: by 2002:a62:3644:: with SMTP id d65mr46152007pfa.128.1567598217056; 
- Wed, 04 Sep 2019 04:56:57 -0700 (PDT)
-Received: from bobo.local0.net ([203.63.189.78])
- by smtp.gmail.com with ESMTPSA id g18sm19554789pgm.9.2019.09.04.04.56.55
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Wed, 04 Sep 2019 04:56:56 -0700 (PDT)
-From: Nicholas Piggin <npiggin@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v2 20/20] powerpc/64s/exception: only test KVM in SRR
- interrupts when PR KVM is supported
-Date: Wed,  4 Sep 2019 21:55:35 +1000
-Message-Id: <20190904115535.18559-21-npiggin@gmail.com>
-X-Mailer: git-send-email 2.22.0
-In-Reply-To: <20190904115535.18559-1-npiggin@gmail.com>
-References: <20190904115535.18559-1-npiggin@gmail.com>
+ h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+ :message-id:subject:to:cc;
+ bh=lqaK3n67Red/VcPGrjUnY2GXE84+MKMIWyN1XBc9vkY=;
+ b=dDfYJGXwLYRFl9J4Zx5mDIM9McPWXk9Zff++ndMEwYw0tZd9P8CYfZgrBC20IGHY1M
+ WaEDe4O/6t49KzAzof2MrmKYgJa75UxGmKTAQU4SCjagFbWp0Wd6Qjipsx6/3YX5dNTb
+ X3oexcjqpR6+ue3SDJBVJay5UEzY+L1pljOQjgUobhZhltObdlqr05OwqsqQgxVadaaA
+ oLwyst6EtATjdMY5oEDK2zBLvGNnB9u44Mboh86U0z4BwdOoHQHYgR6H7r81uGyaTNNE
+ a+nbHVv1pg3q5juybMGHsVti4JI2XzY7Dz4KpD+1E0ErrGyPVOqwz9RwhIRWNnCwwJ/n
+ DrOw==
+X-Gm-Message-State: APjAAAWZc6uIxjqltTQC9MWFopsSOwn5noN7JzQ4SW/y5VHM1ZnTtpG2
+ Y7m0AVbq/uQdnVgRHKGzJsfOdEL1+JdzeL+YOy/9Ug==
+X-Google-Smtp-Source: APXvYqzLAXO5kfZ0jpTB6+NGrHenUbenmDPd4PNJ5RZlMi7z3GktdyL/jHtEfT7vCaJgm2jgWwChwkUEMNzhMv81pdw=
+X-Received: by 2002:a02:9a12:: with SMTP id b18mr7498097jal.70.1567598928359; 
+ Wed, 04 Sep 2019 05:08:48 -0700 (PDT)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+References: <156630261682.8896.3418665808003586786.stgit@hbathini.in.ibm.com>
+ <156630278711.8896.9799921270260662672.stgit@hbathini.in.ibm.com>
+ <87y2z4p9dh.fsf@mpe.ellerman.id.au>
+In-Reply-To: <87y2z4p9dh.fsf@mpe.ellerman.id.au>
+From: "Oliver O'Halloran" <oohall@gmail.com>
+Date: Wed, 4 Sep 2019 22:08:36 +1000
+Message-ID: <CAOSf1CEnhfT5n3sZBiuVM8k8_VTYaoDrSVy3dS-8Tb=pZTQTXw@mail.gmail.com>
+Subject: Re: [PATCH v5 19/31] powerpc/fadump: Update documentation about OPAL
+ platform support
+To: Michael Ellerman <mpe@ellerman.id.au>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -93,235 +104,62 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Nicholas Piggin <npiggin@gmail.com>
+Cc: Ananth N Mavinakayanahalli <ananth@linux.ibm.com>,
+ Mahesh J Salgaonkar <mahesh@linux.ibm.com>,
+ Vasant Hegde <hegdevasant@linux.ibm.com>,
+ linuxppc-dev <linuxppc-dev@ozlabs.org>, Nicholas Piggin <npiggin@gmail.com>,
+ Hari Bathini <hbathini@linux.ibm.com>, Daniel Axtens <dja@axtens.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Apart from SRESET, MCE, and syscall (hcall variant), the SRR type
-interrupts are not escalated to hypervisor mode, so delivered to the OS.
+On Wed, Sep 4, 2019 at 9:51 PM Michael Ellerman <mpe@ellerman.id.au> wrote:
+>
+> Hari Bathini <hbathini@linux.ibm.com> writes:
+> > With FADump support now available on both pseries and OPAL platforms,
+> > update FADump documentation with these details.
+> >
+> > Signed-off-by: Hari Bathini <hbathini@linux.ibm.com>
+> > ---
+> >  Documentation/powerpc/firmware-assisted-dump.rst |  104 +++++++++++++---------
+> >  1 file changed, 63 insertions(+), 41 deletions(-)
+> >
+> > diff --git a/Documentation/powerpc/firmware-assisted-dump.rst b/Documentation/powerpc/firmware-assisted-dump.rst
+> > index d912755..2c3342c 100644
+> > --- a/Documentation/powerpc/firmware-assisted-dump.rst
+> > +++ b/Documentation/powerpc/firmware-assisted-dump.rst
+> > @@ -72,7 +72,8 @@ as follows:
+> >     normal.
+> >
+> >  -  The freshly booted kernel will notice that there is a new
+> > -   node (ibm,dump-kernel) in the device tree, indicating that
+> > +   node (ibm,dump-kernel on PSeries or ibm,opal/dump/mpipl-boot
+> > +   on OPAL platform) in the device tree, indicating that
+> >     there is crash data available from a previous boot. During
+> >     the early boot OS will reserve rest of the memory above
+> >     boot memory size effectively booting with restricted memory
+> > @@ -96,7 +97,9 @@ as follows:
+> >
+> >  Please note that the firmware-assisted dump feature
+> >  is only available on Power6 and above systems with recent
+> > -firmware versions.
+>
+> Notice how "recent" has bit rotted.
+>
+> > +firmware versions on PSeries (PowerVM) platform and Power9
+> > +and above systems with recent firmware versions on PowerNV
+> > +(OPAL) platform.
+>
+> Can we say something more helpful here, ie. "recent" is not very useful.
+> AFAIK it's actually wrong, there isn't a released firmware with the
+> support yet at all, right?
+>
+> Given all the relevant firmware is open source can't we at least point
+> to a commit or release tag or something?
+>
+> cheers
 
-When running PR KVM, the OS is the hypervisor, and the guest runs with
-MSR[PR]=1, so these interrupts must test if a guest was running when
-interrupted. These tests are required at the real-mode entry points
-because the PR KVM host runs with LPCR[AIL]=0.
-
-In HV KVM and nested HV KVM, the guest always receives these interrupts,
-so there is no need for the host to make this test. So remove the tests
-if PR KVM is not configured.
-
-Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
----
- arch/powerpc/kernel/exceptions-64s.S | 65 ++++++++++++++++++++++++++--
- 1 file changed, 62 insertions(+), 3 deletions(-)
-
-diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
-index 5171ed0e5f68..a711adf1e499 100644
---- a/arch/powerpc/kernel/exceptions-64s.S
-+++ b/arch/powerpc/kernel/exceptions-64s.S
-@@ -214,9 +214,36 @@ do_define_int n
- #ifdef CONFIG_KVM_BOOK3S_64_HANDLER
- #ifdef CONFIG_KVM_BOOK3S_HV_POSSIBLE
- /*
-- * If hv is possible, interrupts come into to the hv version
-- * of the kvmppc_interrupt code, which then jumps to the PR handler,
-- * kvmppc_interrupt_pr, if the guest is a PR guest.
-+ * All interrupts which set HSRR registers, as well as SRESET and MCE and
-+ * syscall when invoked with "sc 1" switch to MSR[HV]=1 (HVMODE) to be taken,
-+ * so they all generally need to test whether they were taken in guest context.
-+ *
-+ * Note: SRESET and MCE may also be sent to the guest by the hypervisor, and be
-+ * taken with MSR[HV]=0.
-+ *
-+ * Interrupts which set SRR registers (with the above exceptions) do not
-+ * elevate to MSR[HV]=1 mode, though most can be taken when running with
-+ * MSR[HV]=1  (e.g., bare metal kernel and userspace). So these interrupts do
-+ * not need to test whether a guest is running because they get delivered to
-+ * the guest directly, including nested HV KVM guests.
-+ *
-+ * The exception is PR KVM, where the guest runs with MSR[PR]=1 and the host
-+ * runs with MSR[HV]=0, so the host takes all interrupts on behalf of the
-+ * guest. PR KVM runs with LPCR[AIL]=0 which causes interrupts to always be
-+ * delivered to the real-mode entry point, therefore such interrupts only test
-+ * KVM in their real mode handlers, and only when PR KVM is possible.
-+ *
-+ * Interrupts that are taken in MSR[HV]=0 and escalate to MSR[HV]=1 are always
-+ * delivered in real-mode when the MMU is in hash mode because the MMU
-+ * registers are not set appropriately to translate host addresses. In nested
-+ * radix mode these can be delivered in virt-mode as the host translations are
-+ * used implicitly (see: effective LPID, effective PID).
-+ */
-+
-+/*
-+ * If an interrupt is taken while a guest is running, it is immediately routed
-+ * to KVM to handle. If both HV and PR KVM arepossible, KVM interrupts go first
-+ * to kvmppc_interrupt_hv, which handles the PR guest case.
-  */
- #define kvmppc_interrupt kvmppc_interrupt_hv
- #else
-@@ -1250,8 +1277,10 @@ INT_DEFINE_BEGIN(data_access)
- 	IVEC=0x300
- 	IDAR=1
- 	IDSISR=1
-+#ifdef CONFIG_KVM_BOOK3S_PR_POSSIBLE
- 	IKVM_SKIP=1
- 	IKVM_REAL=1
-+#endif
- INT_DEFINE_END(data_access)
- 
- EXC_REAL_BEGIN(data_access, 0x300, 0x80)
-@@ -1298,8 +1327,10 @@ INT_DEFINE_BEGIN(data_access_slb)
- 	IAREA=PACA_EXSLB
- 	IRECONCILE=0
- 	IDAR=1
-+#ifdef CONFIG_KVM_BOOK3S_PR_POSSIBLE
- 	IKVM_SKIP=1
- 	IKVM_REAL=1
-+#endif
- INT_DEFINE_END(data_access_slb)
- 
- EXC_REAL_BEGIN(data_access_slb, 0x380, 0x80)
-@@ -1349,7 +1380,9 @@ INT_DEFINE_BEGIN(instruction_access)
- 	IISIDE=1
- 	IDAR=1
- 	IDSISR=1
-+#ifdef CONFIG_KVM_BOOK3S_PR_POSSIBLE
- 	IKVM_REAL=1
-+#endif
- INT_DEFINE_END(instruction_access)
- 
- EXC_REAL_BEGIN(instruction_access, 0x400, 0x80)
-@@ -1388,7 +1421,9 @@ INT_DEFINE_BEGIN(instruction_access_slb)
- 	IRECONCILE=0
- 	IISIDE=1
- 	IDAR=1
-+#ifdef CONFIG_KVM_BOOK3S_PR_POSSIBLE
- 	IKVM_REAL=1
-+#endif
- INT_DEFINE_END(instruction_access_slb)
- 
- EXC_REAL_BEGIN(instruction_access_slb, 0x480, 0x80)
-@@ -1480,7 +1515,9 @@ INT_DEFINE_BEGIN(alignment)
- 	IVEC=0x600
- 	IDAR=1
- 	IDSISR=1
-+#ifdef CONFIG_KVM_BOOK3S_PR_POSSIBLE
- 	IKVM_REAL=1
-+#endif
- INT_DEFINE_END(alignment)
- 
- EXC_REAL_BEGIN(alignment, 0x600, 0x100)
-@@ -1510,7 +1547,9 @@ EXC_COMMON_BEGIN(alignment_common)
-  */
- INT_DEFINE_BEGIN(program_check)
- 	IVEC=0x700
-+#ifdef CONFIG_KVM_BOOK3S_PR_POSSIBLE
- 	IKVM_REAL=1
-+#endif
- INT_DEFINE_END(program_check)
- 
- EXC_REAL_BEGIN(program_check, 0x700, 0x100)
-@@ -1573,7 +1612,9 @@ EXC_COMMON_BEGIN(program_check_common)
- INT_DEFINE_BEGIN(fp_unavailable)
- 	IVEC=0x800
- 	IRECONCILE=0
-+#ifdef CONFIG_KVM_BOOK3S_PR_POSSIBLE
- 	IKVM_REAL=1
-+#endif
- INT_DEFINE_END(fp_unavailable)
- 
- EXC_REAL_BEGIN(fp_unavailable, 0x800, 0x100)
-@@ -1635,7 +1676,9 @@ END_FTR_SECTION_IFSET(CPU_FTR_TM)
- INT_DEFINE_BEGIN(decrementer)
- 	IVEC=0x900
- 	IMASK=IRQS_DISABLED
-+#ifdef CONFIG_KVM_BOOK3S_PR_POSSIBLE
- 	IKVM_REAL=1
-+#endif
- INT_DEFINE_END(decrementer)
- 
- EXC_REAL_BEGIN(decrementer, 0x900, 0x80)
-@@ -1720,7 +1763,9 @@ EXC_COMMON_BEGIN(hdecrementer_common)
- INT_DEFINE_BEGIN(doorbell_super)
- 	IVEC=0xa00
- 	IMASK=IRQS_DISABLED
-+#ifdef CONFIG_KVM_BOOK3S_PR_POSSIBLE
- 	IKVM_REAL=1
-+#endif
- INT_DEFINE_END(doorbell_super)
- 
- EXC_REAL_BEGIN(doorbell_super, 0xa00, 0x100)
-@@ -1911,7 +1956,9 @@ END_FTR_SECTION_IFSET(CPU_FTR_HAS_PPR)
-  */
- INT_DEFINE_BEGIN(single_step)
- 	IVEC=0xd00
-+#ifdef CONFIG_KVM_BOOK3S_PR_POSSIBLE
- 	IKVM_REAL=1
-+#endif
- INT_DEFINE_END(single_step)
- 
- EXC_REAL_BEGIN(single_step, 0xd00, 0x100)
-@@ -2200,7 +2247,9 @@ EXC_VIRT_NONE(0x4ee0, 0x20)
- INT_DEFINE_BEGIN(performance_monitor)
- 	IVEC=0xf00
- 	IMASK=IRQS_PMI_DISABLED
-+#ifdef CONFIG_KVM_BOOK3S_PR_POSSIBLE
- 	IKVM_REAL=1
-+#endif
- INT_DEFINE_END(performance_monitor)
- 
- EXC_REAL_BEGIN(performance_monitor, 0xf00, 0x20)
-@@ -2229,7 +2278,9 @@ EXC_COMMON_BEGIN(performance_monitor_common)
- INT_DEFINE_BEGIN(altivec_unavailable)
- 	IVEC=0xf20
- 	IRECONCILE=0
-+#ifdef CONFIG_KVM_BOOK3S_PR_POSSIBLE
- 	IKVM_REAL=1
-+#endif
- INT_DEFINE_END(altivec_unavailable)
- 
- EXC_REAL_BEGIN(altivec_unavailable, 0xf20, 0x20)
-@@ -2283,7 +2334,9 @@ END_FTR_SECTION_IFSET(CPU_FTR_ALTIVEC)
- INT_DEFINE_BEGIN(vsx_unavailable)
- 	IVEC=0xf40
- 	IRECONCILE=0
-+#ifdef CONFIG_KVM_BOOK3S_PR_POSSIBLE
- 	IKVM_REAL=1
-+#endif
- INT_DEFINE_END(vsx_unavailable)
- 
- EXC_REAL_BEGIN(vsx_unavailable, 0xf40, 0x20)
-@@ -2336,7 +2389,9 @@ END_FTR_SECTION_IFSET(CPU_FTR_VSX)
-  */
- INT_DEFINE_BEGIN(facility_unavailable)
- 	IVEC=0xf60
-+#ifdef CONFIG_KVM_BOOK3S_PR_POSSIBLE
- 	IKVM_REAL=1
-+#endif
- INT_DEFINE_END(facility_unavailable)
- 
- EXC_REAL_BEGIN(facility_unavailable, 0xf60, 0x20)
-@@ -2426,8 +2481,10 @@ EXC_VIRT_NONE(0x5200, 0x100)
- 
- INT_DEFINE_BEGIN(instruction_breakpoint)
- 	IVEC=0x1300
-+#ifdef CONFIG_KVM_BOOK3S_PR_POSSIBLE
- 	IKVM_SKIP=1
- 	IKVM_REAL=1
-+#endif
- INT_DEFINE_END(instruction_breakpoint)
- 
- EXC_REAL_BEGIN(instruction_breakpoint, 0x1300, 0x100)
-@@ -2598,7 +2655,9 @@ EXC_VIRT_NONE(0x5600, 0x100)
- 
- INT_DEFINE_BEGIN(altivec_assist)
- 	IVEC=0x1700
-+#ifdef CONFIG_KVM_BOOK3S_PR_POSSIBLE
- 	IKVM_REAL=1
-+#endif
- INT_DEFINE_END(altivec_assist)
- 
- EXC_REAL_BEGIN(altivec_assist, 0x1700, 0x100)
--- 
-2.22.0
-
+Even if we can quote a git sha it's not terrible useful or user
+friendly. We already gate the feature behind DT nodes / properties
+existing, so why not just say "fadump requires XYZ firmware feature,
+as indicated by <ABC> device-tree property."
