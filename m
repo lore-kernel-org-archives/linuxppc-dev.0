@@ -2,49 +2,49 @@ Return-Path: <SRS0=Ib4m=W7=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1F244C3A5A7
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Sep 2019 11:50:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9848CC3A5A7
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Sep 2019 11:53:22 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 787A320820
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Sep 2019 11:50:30 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 787A320820
+	by mail.kernel.org (Postfix) with ESMTPS id 1E6F82186A
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Sep 2019 11:53:22 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1E6F82186A
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46Nhw43L7zzDqpp
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Sep 2019 21:50:28 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 46NhzM5hdNzDqv1
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Sep 2019 21:53:19 +1000 (AEST)
 Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46Nhst4qjxzDqnR
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Sep 2019 21:48:34 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46NhxR4LC8zDqHJ
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Sep 2019 21:51:39 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: by ozlabs.org (Postfix)
- id 46Nhst3rV0z9sNT; Wed,  4 Sep 2019 21:48:34 +1000 (AEST)
+ id 46NhxR3kdfz9sDQ; Wed,  4 Sep 2019 21:51:39 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
  SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 46Nhst0LFBz9sN1;
- Wed,  4 Sep 2019 21:48:34 +1000 (AEST)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 46NhxR06zlz9sDB;
+ Wed,  4 Sep 2019 21:51:38 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: Hari Bathini <hbathini@linux.ibm.com>,
  linuxppc-dev <linuxppc-dev@ozlabs.org>
-Subject: Re: [PATCH v5 17/31] powernv/fadump: Warn before processing partial
- crashdump
-In-Reply-To: <156630277243.8896.14703161064045769922.stgit@hbathini.in.ibm.com>
+Subject: Re: [PATCH v5 19/31] powerpc/fadump: Update documentation about OPAL
+ platform support
+In-Reply-To: <156630278711.8896.9799921270260662672.stgit@hbathini.in.ibm.com>
 References: <156630261682.8896.3418665808003586786.stgit@hbathini.in.ibm.com>
- <156630277243.8896.14703161064045769922.stgit@hbathini.in.ibm.com>
-Date: Wed, 04 Sep 2019 21:48:33 +1000
-Message-ID: <871rwwqo32.fsf@mpe.ellerman.id.au>
+ <156630278711.8896.9799921270260662672.stgit@hbathini.in.ibm.com>
+Date: Wed, 04 Sep 2019 21:51:38 +1000
+Message-ID: <87y2z4p9dh.fsf@mpe.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -67,54 +67,45 @@ Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
 Hari Bathini <hbathini@linux.ibm.com> writes:
-> diff --git a/arch/powerpc/platforms/powernv/opal-fadump.c b/arch/powerpc/platforms/powernv/opal-fadump.c
-> index 10f6086..6a05d51 100644
-> --- a/arch/powerpc/platforms/powernv/opal-fadump.c
-> +++ b/arch/powerpc/platforms/powernv/opal-fadump.c
-> @@ -71,6 +71,30 @@ static void opal_fadump_get_config(struct fw_dump *fadump_conf,
->  	 */
->  	fadump_conf->reserve_dump_area_start = fdm->rgn[0].dest;
+> With FADump support now available on both pseries and OPAL platforms,
+> update FADump documentation with these details.
+>
+> Signed-off-by: Hari Bathini <hbathini@linux.ibm.com>
+> ---
+>  Documentation/powerpc/firmware-assisted-dump.rst |  104 +++++++++++++---------
+>  1 file changed, 63 insertions(+), 41 deletions(-)
+>
+> diff --git a/Documentation/powerpc/firmware-assisted-dump.rst b/Documentation/powerpc/firmware-assisted-dump.rst
+> index d912755..2c3342c 100644
+> --- a/Documentation/powerpc/firmware-assisted-dump.rst
+> +++ b/Documentation/powerpc/firmware-assisted-dump.rst
+> @@ -72,7 +72,8 @@ as follows:
+>     normal.
 >  
-> +	/*
-> +	 * Rarely, but it can so happen that system crashes before all
-> +	 * boot memory regions are registered for MPIPL. In such
-> +	 * cases, warn that the vmcore may not be accurate and proceed
-> +	 * anyway as that is the best bet considering free pages, cache
-> +	 * pages, user pages, etc are usually filtered out.
-> +	 *
-> +	 * Hope the memory that could not be preserved only has pages
-> +	 * that are usually filtered out while saving the vmcore.
-> +	 */
-> +	if (fdm->region_cnt > fdm->registered_regions) {
-> +		pr_warn("Not all memory regions are saved as system seems to have crashed before all the memory regions could be registered for MPIPL!\n");
+>  -  The freshly booted kernel will notice that there is a new
+> -   node (ibm,dump-kernel) in the device tree, indicating that
+> +   node (ibm,dump-kernel on PSeries or ibm,opal/dump/mpipl-boot
+> +   on OPAL platform) in the device tree, indicating that
+>     there is crash data available from a previous boot. During
+>     the early boot OS will reserve rest of the memory above
+>     boot memory size effectively booting with restricted memory
+> @@ -96,7 +97,9 @@ as follows:
+>  
+>  Please note that the firmware-assisted dump feature
+>  is only available on Power6 and above systems with recent
+> -firmware versions.
 
-That line is rather long, I mean the actual printed line not the source line.
+Notice how "recent" has bit rotted.
 
-Also "seems to" is vague, I think better to just state what we know to
-be true, ie: "Not all memory regions were saved".
+> +firmware versions on PSeries (PowerVM) platform and Power9
+> +and above systems with recent firmware versions on PowerNV
+> +(OPAL) platform.
 
-> +		pr_warn("  The below boot memory regions could not be saved:\n");
-> +		i = fdm->registered_regions;
-> +		while (i < fdm->region_cnt) {
-> +			pr_warn("\t%d. base: 0x%llx, size: 0x%llx\n", (i + 1),
-> +				fdm->rgn[i].src, fdm->rgn[i].size);
-> +			i++;
-> +		}
-> +
-> +		pr_warn("  Wishing for the above regions to have only pages that are usually filtered out (user pages, free pages, etc..) and proceeding anyway..\n");
-> +		pr_warn("  But the sanity of the '/proc/vmcore' file depends on whether the above region(s) have any kernel pages or not.\n");
+Can we say something more helpful here, ie. "recent" is not very useful.
+AFAIK it's actually wrong, there isn't a released firmware with the
+support yet at all, right?
 
-Again those lines are too long for people on small consoles.
-
-And "Wishing" is not really what people want to see when their system
-has crashed :)
-
-You should say something more definite, eg:
-  "If the unsaved regions only contain pages that are filtered out (eg.
-   free/user pages), the vmcore should still be usable. If the unsaved
-   regions contain kernel pages the vmcore will be corrupted."
-
-Or something like that.
+Given all the relevant firmware is open source can't we at least point
+to a commit or release tag or something?
 
 cheers
-
