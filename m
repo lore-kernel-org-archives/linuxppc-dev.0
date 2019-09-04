@@ -4,23 +4,24 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 70C91C3A5AA
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Sep 2019 16:06:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EBE07C3A5AA
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Sep 2019 16:11:30 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id AF9E020820
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Sep 2019 16:06:04 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 7042220820
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Sep 2019 16:11:30 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="GH+G2rJx"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org AF9E020820
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="VRaOBFFv"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7042220820
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46NpZv6y5MzDqw2
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 Sep 2019 02:05:59 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 46NpjC0nQCzDqtn
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 Sep 2019 02:11:27 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=kernel.org
  (client-ip=198.145.29.99; helo=mail.kernel.org;
@@ -28,36 +29,36 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="GH+G2rJx"; 
+ unprotected) header.d=kernel.org header.i=@kernel.org header.b="VRaOBFFv"; 
  dkim-atps=neutral
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46NpRL4DRLzDqLc
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Sep 2019 01:59:25 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46NpTH6B5ZzDqsK
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Sep 2019 02:01:07 +1000 (AEST)
 Received: from sasha-vm.mshome.net (c-73-47-72-35.hsd1.nh.comcast.net
  [73.47.72.35])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id B11FA2087E;
- Wed,  4 Sep 2019 15:59:22 +0000 (UTC)
+ by mail.kernel.org (Postfix) with ESMTPSA id 3490F20820;
+ Wed,  4 Sep 2019 16:01:03 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1567612763;
- bh=agH5+U3fXKJyCeEab3jPzf+6QiPNlR+qYEGA4l7+8So=;
+ s=default; t=1567612864;
+ bh=ETTKq18l3/TKxbOChzT+Z6247m0kFpImbJLPV9d70ws=;
  h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=GH+G2rJxoA/JGwP+3GkXVP4FdPd5sJW7Td7V0vF1xe4aEGZNG10UPZwHnjUObp56C
- RWkr7ajmLXxAuw9HF0XE4PP5vk9M6A3PQt6wmf6/7HhQV5C+HCDV1hD1yx6DEYgCYd
- f9Eh5MHq0bqnyhQyMTVzK6i0tV85Zb2TjUPkHr8A=
+ b=VRaOBFFvSHOUBazOezk4BZE+vjJfPl/YAx0QdQe/XgtOILsHw6kjwHNms9nzJy1o9
+ gJ/xXGyous1mAhWEO2rynFCXt/yjapJDlX6YUOTWUUdd295P+79UqNLnyQRgVhrCR3
+ 81pSn51043lLSLlS4KYbTwTX0/WE60syioKOtFR8=
 From: Sasha Levin <sashal@kernel.org>
 To: linux-kernel@vger.kernel.org,
 	stable@vger.kernel.org
-Subject: [PATCH AUTOSEL 5.2 67/94] ibmvnic: Do not process reset during or
+Subject: [PATCH AUTOSEL 4.19 41/52] ibmvnic: Do not process reset during or
  after device removal
-Date: Wed,  4 Sep 2019 11:57:12 -0400
-Message-Id: <20190904155739.2816-67-sashal@kernel.org>
+Date: Wed,  4 Sep 2019 11:59:53 -0400
+Message-Id: <20190904160004.3671-41-sashal@kernel.org>
 X-Mailer: git-send-email 2.20.1
-In-Reply-To: <20190904155739.2816-1-sashal@kernel.org>
-References: <20190904155739.2816-1-sashal@kernel.org>
+In-Reply-To: <20190904160004.3671-1-sashal@kernel.org>
+References: <20190904160004.3671-1-sashal@kernel.org>
 MIME-Version: 1.0
 X-stable: review
 X-Patchwork-Hint: Ignore
@@ -104,10 +105,10 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  1 file changed, 5 insertions(+), 1 deletion(-)
 
 diff --git a/drivers/net/ethernet/ibm/ibmvnic.c b/drivers/net/ethernet/ibm/ibmvnic.c
-index 3da6800732656..d103be77eb406 100644
+index 0ae43d27cdcff..af1e8671515e0 100644
 --- a/drivers/net/ethernet/ibm/ibmvnic.c
 +++ b/drivers/net/ethernet/ibm/ibmvnic.c
-@@ -1981,6 +1981,10 @@ static void __ibmvnic_reset(struct work_struct *work)
+@@ -1996,6 +1996,10 @@ static void __ibmvnic_reset(struct work_struct *work)
  
  	rwi = get_next_rwi(adapter);
  	while (rwi) {
@@ -118,7 +119,7 @@ index 3da6800732656..d103be77eb406 100644
  		if (adapter->force_reset_recovery) {
  			adapter->force_reset_recovery = false;
  			rc = do_hard_reset(adapter, rwi, reset_state);
-@@ -2005,7 +2009,7 @@ static void __ibmvnic_reset(struct work_struct *work)
+@@ -2020,7 +2024,7 @@ static void __ibmvnic_reset(struct work_struct *work)
  		netdev_dbg(adapter->netdev, "Reset failed\n");
  		free_all_rwi(adapter);
  	}
