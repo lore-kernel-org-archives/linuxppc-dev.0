@@ -2,74 +2,92 @@ Return-Path: <SRS0=Ib4m=W7=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DAAF0C3A5A7
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Sep 2019 06:25:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7BC9EC3A5A8
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Sep 2019 07:01:23 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 209DD23401
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Sep 2019 06:25:13 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=nifty.com header.i=@nifty.com header.b="klSroD0q"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 209DD23401
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=socionext.com
+	by mail.kernel.org (Postfix) with ESMTPS id 4418A2339D
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Sep 2019 07:01:22 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4418A2339D
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46NYhj6m6FzDqkP
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Sep 2019 16:25:09 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 46NZVR3zFbzDqs3
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Sep 2019 17:01:19 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=softfail (mailfrom) smtp.mailfrom=socionext.com
- (client-ip=210.131.2.83; helo=conssluserg-04.nifty.com;
- envelope-from=yamada.masahiro@socionext.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
+ (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
+ envelope-from=vaibhav@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=socionext.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=nifty.com header.i=@nifty.com header.b="klSroD0q"; 
- dkim-atps=neutral
-Received: from conssluserg-04.nifty.com (conssluserg-04.nifty.com
- [210.131.2.83])
+ dmarc=none (p=none dis=none) header.from=linux.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46NYfH3dvZzDqjX
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Sep 2019 16:23:02 +1000 (AEST)
-Received: from mail-ua1-f43.google.com (mail-ua1-f43.google.com
- [209.85.222.43]) (authenticated)
- by conssluserg-04.nifty.com with ESMTP id x846MjDJ001317
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 4 Sep 2019 15:22:46 +0900
-DKIM-Filter: OpenDKIM Filter v2.10.3 conssluserg-04.nifty.com x846MjDJ001317
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nifty.com;
- s=dec2015msa; t=1567578166;
- bh=f/Vt6AfJ/h0GmLP4nlGQ6fG5Sb31T5I6KrbEB4uL3XQ=;
- h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
- b=klSroD0qCQpZ5U6pxi2/qRowXcLbgDr38bNgsFdq09oA5xRagfY68AYymJmL2UKlZ
- AdN3EX+pOaZXFigtquwmXFnvIz3YR5SyvpELIcqwh15t9FojM4OT3w//5DNBllrIS6
- 8jcWank4fplhHLSRIv52JaVQuXE5k/O5ezpgG5ovUix9gr7t72Y2U85WCK6zchNNJI
- IGep9b/kvtqmmEuB+oOySx5SD5G4+ClVDvd1oagm+uuBhiKUFk40Yrf9WaJNoy0z1a
- NNwxMd4a2bXNJgvA3NvxjGlIrwB+ZlBl4kmYV1maLKxeec0WoF6e/8B3E0jIXdQNVi
- GUbzyrXAys9UQ==
-X-Nifty-SrcIP: [209.85.222.43]
-Received: by mail-ua1-f43.google.com with SMTP id i17so3049350ual.7
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 03 Sep 2019 23:22:46 -0700 (PDT)
-X-Gm-Message-State: APjAAAXm0CjZ7HW/1JWq2xKkZBWWXeah8ikz4G+tAkbbAmfpYeCopr5n
- Dywxpz6/ddnjXZIMCxCIsV3mKy143iz4yexQNpI=
-X-Google-Smtp-Source: APXvYqwXqIiEkpz8t5zX3CwWA0I7b3aQl9vXC5xpQV6eLWDVUn+QwNnliorr9pE1hNc0I8hJVRq/h0Tg+eKQL9tTnI0=
-X-Received: by 2002:a9f:2213:: with SMTP id 19mr6836107uad.25.1567578165238;
- Tue, 03 Sep 2019 23:22:45 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46NZS969PhzDqSp
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Sep 2019 16:59:21 +1000 (AEST)
+Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
+ x846wfFd025981
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 4 Sep 2019 02:59:18 -0400
+Received: from e06smtp04.uk.ibm.com (e06smtp04.uk.ibm.com [195.75.94.100])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2ut7xah1nf-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 04 Sep 2019 02:59:18 -0400
+Received: from localhost
+ by e06smtp04.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <vaibhav@linux.ibm.com>;
+ Wed, 4 Sep 2019 07:59:16 +0100
+Received: from b06cxnps4075.portsmouth.uk.ibm.com (9.149.109.197)
+ by e06smtp04.uk.ibm.com (192.168.101.134) with IBM ESMTP SMTP Gateway:
+ Authorized Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Wed, 4 Sep 2019 07:59:13 +0100
+Received: from d06av24.portsmouth.uk.ibm.com (mk.ibm.com [9.149.105.60])
+ by b06cxnps4075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x846xCn555705824
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Wed, 4 Sep 2019 06:59:12 GMT
+Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 32D9E42054;
+ Wed,  4 Sep 2019 06:59:12 +0000 (GMT)
+Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id EE11442049;
+ Wed,  4 Sep 2019 06:59:09 +0000 (GMT)
+Received: from vajain21.in.ibm.com (unknown [9.109.195.163])
+ by d06av24.portsmouth.uk.ibm.com (Postfix) with SMTP;
+ Wed,  4 Sep 2019 06:59:09 +0000 (GMT)
+Received: by vajain21.in.ibm.com (sSMTP sendmail emulation);
+ Wed, 04 Sep 2019 12:29:09 +0530
+From: Vaibhav Jain <vaibhav@linux.ibm.com>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>, mpe@ellerman.id.au
+Subject: Re: [PATCH v2 2/2] powerpc/nvdimm: use H_SCM_QUERY hcall on H_OVERLAP
+ error
+In-Reply-To: <20190903123452.28620-2-aneesh.kumar@linux.ibm.com>
+References: <20190903123452.28620-1-aneesh.kumar@linux.ibm.com>
+ <20190903123452.28620-2-aneesh.kumar@linux.ibm.com>
+Date: Wed, 04 Sep 2019 12:29:09 +0530
 MIME-Version: 1.0
-References: <20190904101259.2687cea4@canb.auug.org.au>
- <CAK7LNAT=qUi76cF776GcT=UYce5QBo+_24gLwXH7ra15=1xLvQ@mail.gmail.com>
-In-Reply-To: <CAK7LNAT=qUi76cF776GcT=UYce5QBo+_24gLwXH7ra15=1xLvQ@mail.gmail.com>
-From: Masahiro Yamada <yamada.masahiro@socionext.com>
-Date: Wed, 4 Sep 2019 15:22:09 +0900
-X-Gmail-Original-Message-ID: <CAK7LNAQ8VJz8fxecnEWmbFCpD0rgt4tjoipOX0g3oY0xU8xt5w@mail.gmail.com>
-Message-ID: <CAK7LNAQ8VJz8fxecnEWmbFCpD0rgt4tjoipOX0g3oY0xU8xt5w@mail.gmail.com>
-Subject: Re: linux-next: build warnings after merge of the kbuild tree
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain
+X-TM-AS-GCONF: 00
+x-cbid: 19090406-0016-0000-0000-000002A677BD
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 19090406-0017-0000-0000-00003306E368
+Message-Id: <87v9u8tuma.fsf@vajain21.in.ibm.com>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
+ definitions=2019-09-04_01:, , signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ malwarescore=0 suspectscore=1 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1906280000 definitions=main-1909040071
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -81,44 +99,137 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Linux Next Mailing List <linux-next@vger.kernel.org>,
- PowerPC <linuxppc-dev@lists.ozlabs.org>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: Oliver O'Halloran <oohall@gmail.com>, linuxppc-dev@lists.ozlabs.org,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, Sep 4, 2019 at 10:00 AM Masahiro Yamada
-<yamada.masahiro@socionext.com> wrote:
+Hi Aneesh,
+
+Thanks for the patch. A minor suggestion below:
+
+"Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com> writes:
+
+> Right now we force an unbind of SCM memory at drcindex on H_OVERLAP error.
+> This really slows down operations like kexec where we get the H_OVERLAP
+> error because we don't go through a full hypervisor re init.
 >
-> Hi Stephen,
+> H_OVERLAP error for a H_SCM_BIND_MEM hcall indicates that SCM memory at
+> drc index is already bound. Since we don't specify a logical memory
+> address for bind hcall, we can use the H_SCM_QUERY hcall to query
+> the already bound logical address.
 >
-> On Wed, Sep 4, 2019 at 9:13 AM Stephen Rothwell <sfr@canb.auug.org.au> wrote:
-> >
+> Boot time difference with and without patch is:
+>
+> [    5.583617] IOMMU table initialized, virtual merging enabled
+> [    5.603041] papr_scm ibm,persistent-memory:ibm,pmemory@44104001: Retrying bind after unbinding
+> [  301.514221] papr_scm ibm,persistent-memory:ibm,pmemory@44108001: Retrying bind after unbinding
+> [  340.057238] hv-24x7: read 1530 catalog entries, created 537 event attrs (0 failures), 275 descs
+>
+> after fix
+>
+> [    5.101572] IOMMU table initialized, virtual merging enabled
+> [    5.116984] papr_scm ibm,persistent-memory:ibm,pmemory@44104001: Querying SCM details
+> [    5.117223] papr_scm ibm,persistent-memory:ibm,pmemory@44108001: Querying SCM details
+> [    5.120530] hv-24x7: read 1530 catalog entries, created 537 event attrs (0 failures), 275 descs
+>
+> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
+> ---
+> Changes from V1:
+> * Use the first block and last block to query the logical bind memory
+> * If we fail to query, ubind and retry the bind.
+>
+>
+>  arch/powerpc/platforms/pseries/papr_scm.c | 48 +++++++++++++++++++----
+>  1 file changed, 40 insertions(+), 8 deletions(-)
+>
+> diff --git a/arch/powerpc/platforms/pseries/papr_scm.c b/arch/powerpc/platforms/pseries/papr_scm.c
+> index 3bef4d298ac6..61883291defc 100644
+> --- a/arch/powerpc/platforms/pseries/papr_scm.c
+> +++ b/arch/powerpc/platforms/pseries/papr_scm.c
+> @@ -65,10 +65,8 @@ static int drc_pmem_bind(struct papr_scm_priv *p)
+>  		cond_resched();
+>  	} while (rc == H_BUSY);
+>  
+> -	if (rc) {
+> -		dev_err(&p->pdev->dev, "bind err: %lld\n", rc);
+> +	if (rc)
+>  		return rc;
+> -	}
+>  
+>  	p->bound_addr = saved;
+>  	dev_dbg(&p->pdev->dev, "bound drc 0x%x to %pR\n", p->drc_index, &p->res);
+> @@ -110,6 +108,42 @@ static void drc_pmem_unbind(struct papr_scm_priv *p)
+>  	return;
+>  }
+>  
+> +static int drc_pmem_query_n_bind(struct papr_scm_priv *p)
+> +{
+> +	unsigned long start_addr;
+> +	unsigned long end_addr;
+> +	unsigned long ret[PLPAR_HCALL_BUFSIZE];
+> +	int64_t rc;
+> +
+> +
+> +	rc = plpar_hcall(H_SCM_QUERY_BLOCK_MEM_BINDING, ret,
+> +			 p->drc_index, 0);
+> +	if (rc)
+> +		goto err_out;
+> +	start_addr = ret[0];
+> +
+> +	/* Make sure the full region is bound. */
+> +	rc = plpar_hcall(H_SCM_QUERY_BLOCK_MEM_BINDING, ret,
+> +			 p->drc_index, p->blocks - 1);
+> +	if (rc)
+> +		goto err_out;
+> +	end_addr = ret[0];
+> +
+> +	if ((end_addr - start_addr) != ((p->blocks - 1) * p->block_size))
+> +		goto err_out;
+> +
+> +	p->bound_addr = start_addr;
+> +	dev_dbg(&p->pdev->dev, "bound drc 0x%x to %pR\n", p->drc_index, &p->res);
+> +	return rc;
+> +
 
-For today's linux-next, please squash the following too.
+> +err_out:
+> +	dev_info(&p->pdev->dev,
+> +		 "Failed to query, trying an unbind followed by bind");
+> +	drc_pmem_unbind(p);
+> +	return drc_pmem_bind(p);
+> +}
+Would have preferred error handling for bind failure to be done at
+single location i.e in papr_scm_probe() rather than in
+drc_pmem_query_n_bind().
 
-(This is my fault, since scripts/mkuboot.sh is a bash script)
-
-
-diff --git a/scripts/Makefile.lib b/scripts/Makefile.lib
-index 41c50f9461e5..2d72327417a9 100644
---- a/scripts/Makefile.lib
-+++ b/scripts/Makefile.lib
-@@ -374,7 +374,7 @@ UIMAGE_ENTRYADDR ?= $(UIMAGE_LOADADDR)
- UIMAGE_NAME ?= 'Linux-$(KERNELRELEASE)'
-
- quiet_cmd_uimage = UIMAGE  $@
--      cmd_uimage = $(CONFIG_SHELL) $(MKIMAGE) -A $(UIMAGE_ARCH) -O linux \
-+      cmd_uimage = $(BASE) $(MKIMAGE) -A $(UIMAGE_ARCH) -O linux \
-                        -C $(UIMAGE_COMPRESSION) $(UIMAGE_OPTS-y) \
-                        -T $(UIMAGE_TYPE) \
-                        -a $(UIMAGE_LOADADDR) -e $(UIMAGE_ENTRYADDR) \
-
-
-
-
+> +
+> +
+>  static int papr_scm_meta_get(struct papr_scm_priv *p,
+>  			     struct nd_cmd_get_config_data_hdr *hdr)
+>  {
+> @@ -430,13 +464,11 @@ static int papr_scm_probe(struct platform_device *pdev)
+>  	rc = drc_pmem_bind(p);
+>  
+>  	/* If phyp says drc memory still bound then force unbound and retry */
+> -	if (rc == H_OVERLAP) {
+> -		dev_warn(&pdev->dev, "Retrying bind after unbinding\n");
+> -		drc_pmem_unbind(p);
+> -		rc = drc_pmem_bind(p);
+> -	}
+> +	if (rc == H_OVERLAP)
+> +		rc = drc_pmem_query_n_bind(p);
+>  
+>  	if (rc != H_SUCCESS) {
+> +		dev_err(&p->pdev->dev, "bind err: %d\n", rc);
+>  		rc = -ENXIO;
+>  		goto err;
+>  	}
+> -- 
+> 2.21.0
+>
 
 -- 
-Best Regards
-Masahiro Yamada
+Vaibhav Jain <vaibhav@linux.ibm.com>
+Linux Technology Center, IBM India Pvt. Ltd.
+
