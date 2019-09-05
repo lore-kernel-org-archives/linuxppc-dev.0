@@ -2,96 +2,47 @@ Return-Path: <SRS0=2H2D=XA=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 88AEBC3A5A5
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 Sep 2019 04:06:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 301F1C3A5A5
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 Sep 2019 04:16:36 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 1462B20674
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 Sep 2019 04:06:08 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1462B20674
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=au1.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 8EDC2206DF
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 Sep 2019 04:16:35 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8EDC2206DF
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46P6Yp33BpzDr1R
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 Sep 2019 14:06:06 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=au1.ibm.com
- (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=michaele@au1.ibm.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=au1.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 46P6ns0QCBzDqjy
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 Sep 2019 14:16:33 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46P6Wf0bygzDqKH
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Sep 2019 14:04:07 +1000 (AEST)
-Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x8542Ut6044966
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 5 Sep 2019 00:04:03 -0400
-Received: from e06smtp02.uk.ibm.com (e06smtp02.uk.ibm.com [195.75.94.98])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2utttv8ccb-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Sep 2019 00:04:03 -0400
-Received: from localhost
- by e06smtp02.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <michaele@au1.ibm.com>;
- Thu, 5 Sep 2019 05:04:02 +0100
-Received: from b06cxnps3074.portsmouth.uk.ibm.com (9.149.109.194)
- by e06smtp02.uk.ibm.com (192.168.101.132) with IBM ESMTP SMTP Gateway:
- Authorized Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Thu, 5 Sep 2019 05:03:58 +0100
-Received: from d06av24.portsmouth.uk.ibm.com (mk.ibm.com [9.149.105.60])
- by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x8543uBQ11665444
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Thu, 5 Sep 2019 04:03:57 GMT
-Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id C6C124204C;
- Thu,  5 Sep 2019 04:03:56 +0000 (GMT)
-Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 7279242045;
- Thu,  5 Sep 2019 04:03:56 +0000 (GMT)
-Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
- by d06av24.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Thu,  5 Sep 2019 04:03:56 +0000 (GMT)
-Received: from localhost (unknown [9.81.222.227])
- (using TLSv1.2 with cipher AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by ozlabs.au.ibm.com (Postfix) with ESMTPSA id CF2DFA0231;
- Thu,  5 Sep 2019 14:03:54 +1000 (AEST)
-From: Michael Ellerman <michaele@au1.ibm.com>
-To: Thiago Jung Bauermann <bauerman@linux.ibm.com>,
- Michael Ellerman <patch-notifications@ellerman.id.au>
-Subject: Re: [PATCH v4 02/16] powerpc/pseries: Introduce option to build
- secure virtual machines
-In-Reply-To: <87lfv5ky8j.fsf@morokweng.localdomain>
-References: <20190820021326.6884-3-bauerman@linux.ibm.com>
- <46MFv23NDjz9sNF@ozlabs.org> <87lfv5ky8j.fsf@morokweng.localdomain>
-Date: Thu, 05 Sep 2019 14:03:54 +1000
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46P6lg25ZHzDqd0
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Sep 2019 14:14:39 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=ellerman.id.au
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
+ SHA256) (No client certificate requested)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 46P6lf4H6kz9s7T;
+ Thu,  5 Sep 2019 14:14:38 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH v2] powerpc/64: system call implement the bulk of the
+ logic in C
+In-Reply-To: <20190902225835.17354-1-npiggin@gmail.com>
+References: <20190902225835.17354-1-npiggin@gmail.com>
+Date: Thu, 05 Sep 2019 14:14:38 +1000
+Message-ID: <875zm7pefl.fsf@mpe.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
-X-TM-AS-GCONF: 00
-x-cbid: 19090504-0008-0000-0000-00000311436B
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19090504-0009-0000-0000-00004A2F9AF2
-Message-Id: <878sr3pexh.fsf@mpe.ellerman.id.au>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2019-09-05_01:, , signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1011 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=945 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1906280000 definitions=main-1909050042
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -103,32 +54,46 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Anshuman Khandual <anshuman.linux@gmail.com>,
- Alexey Kardashevskiy <aik@ozlabs.ru>, Mike Anderson <andmike@linux.ibm.com>,
- Ram Pai <linuxram@us.ibm.com>, linux-kernel@vger.kernel.org,
- Claudio Carvalho <cclaudio@linux.ibm.com>, Paul Mackerras <paulus@samba.org>,
- linuxppc-dev@lists.ozlabs.org, Christoph Hellwig <hch@lst.de>
+Cc: Nicholas Piggin <npiggin@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Thiago Jung Bauermann <bauerman@linux.ibm.com> writes:
-> Michael Ellerman <patch-notifications@ellerman.id.au> writes:
->> On Tue, 2019-08-20 at 02:13:12 UTC, Thiago Jung Bauermann wrote:
->>> Introduce CONFIG_PPC_SVM to control support for secure guests and include
->>> Ultravisor-related helpers when it is selected
->>> 
->>> Signed-off-by: Thiago Jung Bauermann <bauerman@linux.ibm.com>
->>
->> Patch 2-14 & 16 applied to powerpc next, thanks.
->>
->> https://git.kernel.org/powerpc/c/136bc0397ae21dbf63ca02e5775ad353a479cd2f
+Nicholas Piggin <npiggin@gmail.com> writes:
+> System call entry and particularly exit code is beyond the limit of what
+> is reasonable to implement in asm.
 >
-> Thank you very much!
+> This conversion moves all conditional branches out of the asm code,
+> except for the case that all GPRs should be restored at exit.
+>
+> Null syscall test is about 5% faster after this patch, because the exit
+> work is handled under local_irq_disable, and the hard mask and pending
+> interrupt replay is handled after that, which avoids games with MSR.
+>
+> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+> ---
+> Since v1:
+> - Fix big endian build (mpe)
+> - Fix order of exit tracing to after the result registers have been set.
+> - Move ->softe store before MSR[EE] is set, fix the now obsolete comment.
+> - More #ifdef tidyups and writing the accounting helpers nicer (Christophe)
+> - Minor things like move the TM debug store into C
 
-No worries. I meant to say, there were some minor differences between
-your patch 15 adding the documentation and Claudio's version. If you
-want those differences applied please send me an incremental patch.
+This doesn't build in a few configs.
+
+It needed:
+
++#else
++static inline void kuap_check_amr(void) { }
+
+In kup-radix.h to fix the KUAP=n build.
+
+It still fails to build on ppc64e with:
+
+  arch/powerpc/kernel/syscall_64.c:161:2: error: implicit declaration of function '__mtmsrd' [-Werror=implicit-function-declaration]
+
+  http://kisskb.ellerman.id.au/kisskb/buildresult/13946972/
+
+Which I haven't debugged yet.
 
 cheers
-
