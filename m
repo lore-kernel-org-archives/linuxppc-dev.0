@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-2.3 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 720C2C43331
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  7 Sep 2019 09:05:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DC89BC43331
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  7 Sep 2019 09:06:44 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id F0D31208C3
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  7 Sep 2019 09:04:59 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org F0D31208C3
+	by mail.kernel.org (Postfix) with ESMTPS id 6C1A0208C3
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  7 Sep 2019 09:06:44 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6C1A0208C3
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ubuntu.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46QT5j4vLTzDqNF
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  7 Sep 2019 19:04:57 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 46QT7k1sGQzDr68
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  7 Sep 2019 19:06:42 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=none (mailfrom) smtp.mailfrom=ubuntu.com
  (client-ip=91.189.89.112; helo=youngberry.canonical.com;
@@ -29,26 +29,28 @@ Received: from youngberry.canonical.com (youngberry.canonical.com
  [91.189.89.112])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46PTbT5tchzDr0w
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Sep 2019 04:23:49 +1000 (AEST)
-Received: from [213.220.153.21] (helo=wittgenstein)
- by youngberry.canonical.com with esmtpsa (TLS1.0:RSA_AES_256_CBC_SHA1:32)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46PTsg6BF7zDqvh
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Sep 2019 04:36:07 +1000 (AEST)
+Received: from [46.114.37.115] (helo=localhost)
+ by youngberry.canonical.com with esmtpsa (TLS1.0:DHE_RSA_AES_256_CBC_SHA1:32)
  (Exim 4.76) (envelope-from <christian.brauner@ubuntu.com>)
- id 1i5wPR-00053t-Nn; Thu, 05 Sep 2019 18:23:05 +0000
-Date: Thu, 5 Sep 2019 20:23:03 +0200
+ id 1i5wbZ-0006Ee-52; Thu, 05 Sep 2019 18:35:37 +0000
+Date: Thu, 5 Sep 2019 20:35:32 +0200
 From: Christian Brauner <christian.brauner@ubuntu.com>
 To: Al Viro <viro@zeniv.linux.org.uk>
 Subject: Re: [PATCH v12 01/12] lib: introduce copy_struct_{to,from}_user
  helpers
-Message-ID: <20190905182303.7f6bxpa2enbgcegv@wittgenstein>
+Message-ID: <20190905183532.GA25049@localhost>
 References: <20190904201933.10736-1-cyphar@cyphar.com>
  <20190904201933.10736-2-cyphar@cyphar.com>
  <20190905180750.GQ1131@ZenIV.linux.org.uk>
+ <20190905182303.7f6bxpa2enbgcegv@wittgenstein>
+ <20190905182801.GR1131@ZenIV.linux.org.uk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20190905180750.GQ1131@ZenIV.linux.org.uk>
-User-Agent: NeoMutt/20180716
+In-Reply-To: <20190905182801.GR1131@ZenIV.linux.org.uk>
+User-Agent: Mutt/1.12.1 (2019-06-15)
 X-Mailman-Approved-At: Sat, 07 Sep 2019 18:55:13 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -90,44 +92,25 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, Sep 05, 2019 at 07:07:50PM +0100, Al Viro wrote:
-> On Thu, Sep 05, 2019 at 06:19:22AM +1000, Aleksa Sarai wrote:
-> > +/*
-> > + * "memset(p, 0, size)" but for user space buffers. Caller must have already
-> > + * checked access_ok(p, size).
-> > + */
-> > +static int __memzero_user(void __user *p, size_t s)
-> > +{
-> > +	const char zeros[BUFFER_SIZE] = {};
-> > +	while (s > 0) {
-> > +		size_t n = min(s, sizeof(zeros));
-> > +
-> > +		if (__copy_to_user(p, zeros, n))
-> > +			return -EFAULT;
-> > +
-> > +		p += n;
-> > +		s -= n;
-> > +	}
-> > +	return 0;
-> > +}
+On Thu, Sep 05, 2019 at 07:28:01PM +0100, Al Viro wrote:
+> On Thu, Sep 05, 2019 at 08:23:03PM +0200, Christian Brauner wrote:
 > 
-> That's called clear_user().
+> > Because every caller of that function right now has that limit set
+> > anyway iirc. So we can either remove it from here and place it back for
+> > the individual callers or leave it in the helper.
+> > Also, I'm really asking, why not? Is it unreasonable to have an upper
+> > bound on the size (for a long time probably) or are you disagreeing with
+> > PAGE_SIZE being used? PAGE_SIZE limit is currently used by sched, perf,
+> > bpf, and clone3 and in a few other places.
 > 
-> > +int copy_struct_to_user(void __user *dst, size_t usize,
-> > +			const void *src, size_t ksize)
-> > +{
-> > +	size_t size = min(ksize, usize);
-> > +	size_t rest = abs(ksize - usize);
-> > +
-> > +	if (unlikely(usize > PAGE_SIZE))
-> > +		return -EFAULT;
-> 
-> Why?
+> For a primitive that can be safely used with any size (OK, any within
+> the usual 2Gb limit)?  Why push the random policy into the place where
+> it doesn't belong?
 
-Because every caller of that function right now has that limit set
-anyway iirc. So we can either remove it from here and place it back for
-the individual callers or leave it in the helper.
-Also, I'm really asking, why not? Is it unreasonable to have an upper
-bound on the size (for a long time probably) or are you disagreeing with
-PAGE_SIZE being used? PAGE_SIZE limit is currently used by sched, perf,
-bpf, and clone3 and in a few other places.
+Ah, the "not in the helper part" makes sense.
+As long as leave the check for the callers themselves.
+
+> 
+> Seriously, what's the point?  If they want to have a large chunk of
+> userland memory zeroed or checked for non-zeroes - why would that
+> be a problem?
