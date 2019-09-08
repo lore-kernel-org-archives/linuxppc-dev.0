@@ -1,89 +1,88 @@
 Return-Path: <SRS0=C3Z2=XD=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-X-Spam-Level: *
-X-Spam-Status: No, score=1.2 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	FSL_HELO_FAKE,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Level: 
+X-Spam-Status: No, score=-0.5 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
+	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5E295C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  8 Sep 2019 08:34:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6D5A1C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  8 Sep 2019 10:28:32 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 80BBF20863
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  8 Sep 2019 08:34:51 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 83BF6207FC
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  8 Sep 2019 10:28:31 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Xy0s84Ep"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 80BBF20863
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="TDtjLmzM"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 83BF6207FC
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46R4NR0TFWzDqXt
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  8 Sep 2019 18:34:47 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 46R6vc26gkzDqXb
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  8 Sep 2019 20:28:28 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=2a00:1450:4864:20::441; helo=mail-wr1-x441.google.com;
- envelope-from=mingo.kernel.org@gmail.com; receiver=<UNKNOWN>)
+ (client-ip=2607:f8b0:4864:20::444; helo=mail-pf1-x444.google.com;
+ envelope-from=npiggin@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=fail (p=none dis=none) header.from=kernel.org
+ dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="Xy0s84Ep"; 
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="TDtjLmzM"; 
  dkim-atps=neutral
-Received: from mail-wr1-x441.google.com (mail-wr1-x441.google.com
- [IPv6:2a00:1450:4864:20::441])
+Received: from mail-pf1-x444.google.com (mail-pf1-x444.google.com
+ [IPv6:2607:f8b0:4864:20::444])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46R4LZ1xCNzDqX1
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  8 Sep 2019 18:33:07 +1000 (AEST)
-Received: by mail-wr1-x441.google.com with SMTP id h7so9561579wrw.8
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 08 Sep 2019 01:33:07 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46R6sf4lQZzDqWh
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  8 Sep 2019 20:26:46 +1000 (AEST)
+Received: by mail-pf1-x444.google.com with SMTP id d15so7317607pfo.10
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 08 Sep 2019 03:26:46 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=sender:date:from:to:cc:subject:message-id:references:mime-version
- :content-disposition:content-transfer-encoding:in-reply-to
- :user-agent; bh=Dvenms9Y7ILBHUAT3jSNMNmZR/R8ixW/QNiX0T3fndY=;
- b=Xy0s84Epf/0r5ThM7KFlOlfZVD9d9Ci5oqr03zZd2VEm3Wi/ir6LN98a2DQWDX1j8/
- TLY4i4EW/VS7X/9Qk5MR6xTXW5Xwp/Yk42/OKbtWmzAEnbbMOHgwhnEIGXoRWJiJPvaW
- keLOxQ3LcKHLh8Sjw+k/LOLV7qVHUjsciT7T5sqN5+1E9yLr7Xp1Ls3SUahRLTXCGKuZ
- TN8O6j+iE5YBIikJvz8S5jBB8UsSE/lzygxaC5IiN6jne2TV4m+DkcsFdCYtcdGfD7RL
- Z+RWoW0KaAYISaO9iSHM71cX9bH2mGEa/l9VSmK19bTHtSWd9XX/VSVDjo+1zerG/v50
- cMXQ==
+ h=date:from:subject:to:cc:references:in-reply-to:mime-version
+ :user-agent:message-id:content-transfer-encoding;
+ bh=QkYYXMpSNzYAnXgT92Zqaztp/WQ//k/Zbw8sD1YwIE8=;
+ b=TDtjLmzMzMYUfGwCMnhxO8O68VZwGA06WS3pvGHpJqsOXHxl0HEZXIiOQMdco1POrN
+ i9ITIc5mJhwJH39EMsgsD7mckU7IOT6B74aBSrVmtFEQQDfepcTJvqdjJl1KGzN1Ydz2
+ LUqgw7lVjf71lx3baw8ZwhYayNgXNpA1Vg0b60IqF0mZfq+RrVaVfNCgQwEbQtTYrbiM
+ mTJhaefFi9EyMQib8v1PXkkHkO/p2T8VTWS19T3B15/W3x2iwUAUoWT9UYI96W4CCfMt
+ HoG6ep48TeyhkzeEog9PpisbiONJ5kVF82qZvC8LO7cNaOj7CkwhLfmODp4wM9xRLMMK
+ 9zgw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
- h=x-gm-message-state:sender:date:from:to:cc:subject:message-id
- :references:mime-version:content-disposition
- :content-transfer-encoding:in-reply-to:user-agent;
- bh=Dvenms9Y7ILBHUAT3jSNMNmZR/R8ixW/QNiX0T3fndY=;
- b=KGfQQBQyG1B69mkAmWZxkKB0I2TSxKRZU1LRj16WDgxybmQnNS7BE3sL30DUzIfl7y
- nXx8qKVcFFRKd3JE4ljbRYqMSFZXda6Ar/yxvUb1TJjFYKpwH+9KgPlBhpE1yhbf4f2Y
- H0a+RPYk1STBNHxkJQJ0+6qjbR1npLATG8Oee5qEDV9IzZZatCzJPnFQaIVgB2NRahmO
- aqG1KX0JYdf4Lstn3vf/BP9jQ+FFfx7C8iavB6BjNZ/R0d8tI0D5Ne0TSa2xb47FAtcT
- YKsK9BfwC9k8AREsXc5OJ2b+hKCYSIOP1Oq1c3js6dzoE0XuhIzndu8CoUlSme4s3vF1
- Lsig==
-X-Gm-Message-State: APjAAAVm2IatmRucvIU8gYoCdITTHDqeqgW+goolmPjIxAR/twk9phtA
- uNvE+xVJNlbTOi4kdzdoEDM=
-X-Google-Smtp-Source: APXvYqxmEXYD4KfHG33ISQrdtsla0hWkLH3IEJfmTrLErV0Ihc/bV5nsvOMFY9z0b/uum8iYI9GRGw==
-X-Received: by 2002:a5d:49c2:: with SMTP id t2mr13914364wrs.351.1567931581038; 
- Sun, 08 Sep 2019 01:33:01 -0700 (PDT)
-Received: from gmail.com (2E8B0CD5.catv.pool.telekom.hu. [46.139.12.213])
- by smtp.gmail.com with ESMTPSA id u68sm17085458wmu.12.2019.09.08.01.32.59
+ h=x-gm-message-state:date:from:subject:to:cc:references:in-reply-to
+ :mime-version:user-agent:message-id:content-transfer-encoding;
+ bh=QkYYXMpSNzYAnXgT92Zqaztp/WQ//k/Zbw8sD1YwIE8=;
+ b=uEuK5JZ3zAgwLriyqaYWkOcHH9fHISVaLXIrrcporLQrW70KStIOWQUCk8s+gDz1w1
+ pXUKM8lCySasAFpCG/6uFSxvyVAyTxfVgshrZQpMiicvgRmgfHwyU3AM+h6F6NcSM29E
+ T1YvM6CO5iUHv+C7EHSFWRzbD1iwfDFCZNyhuq9jC9m4TGDSyVuWD8SGzbsYSyZNlxnv
+ 7Ma3Ri3fSYGoHiyUnv8iFjzHF6+zrWRs+mrMcoAiSbN1HKvsbmzlDeLsEVQBF9FMT5+z
+ 3KsThyhVjwwx/+b9zqlyMS0jF+tM5yOTu2fSW4JXvLOQKwUMucU3xOFFaumkZjcwbSbf
+ Qolw==
+X-Gm-Message-State: APjAAAVN/YB9vdmOYxC+Pcn8Gea9LQQrLmqGoXhifjboiazEtimML5ry
+ 8P/wGwlVKPOg8MLbxLwe8CY=
+X-Google-Smtp-Source: APXvYqyRDujvoPwW9nBBykdDv2L/FTGwjyNT49Y0aRum4eOgjc4JqeQa/t7frZl/oUw2wcLNxwXXsw==
+X-Received: by 2002:a62:583:: with SMTP id 125mr22057982pff.69.1567938403196; 
+ Sun, 08 Sep 2019 03:26:43 -0700 (PDT)
+Received: from localhost ([203.63.189.78])
+ by smtp.gmail.com with ESMTPSA id u21sm10258837pjn.5.2019.09.08.03.26.41
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Sun, 08 Sep 2019 01:33:00 -0700 (PDT)
-Date: Sun, 8 Sep 2019 10:32:58 +0200
-From: Ingo Molnar <mingo@kernel.org>
-To: Qian Cai <cai@lca.pw>
-Subject: Re: [PATCH v2] powerpc/lockdep: fix a false positive warning
-Message-ID: <20190908083257.GA126088@gmail.com>
-References: <20190906231754.830-1-cai@lca.pw>
- <20190907070505.GA88784@gmail.com>
- <420D09F4-FC19-421C-AE46-4B2A9157FAE3@lca.pw>
+ Sun, 08 Sep 2019 03:26:42 -0700 (PDT)
+Date: Sun, 08 Sep 2019 20:25:05 +1000
+From: Nicholas Piggin <npiggin@gmail.com>
+Subject: Re: [PATCH 0/3] powerpc/ftrace: Enable
+ HAVE_FUNCTION_GRAPH_RET_ADDR_PTR
+To: Michael Ellerman <mpe@ellerman.id.au>, "Naveen N. Rao"
+ <naveen.n.rao@linux.vnet.ibm.com>, Steven Rostedt <rostedt@goodmis.org>
+References: <cover.1567707399.git.naveen.n.rao@linux.vnet.ibm.com>
+In-Reply-To: <cover.1567707399.git.naveen.n.rao@linux.vnet.ibm.com>
 MIME-Version: 1.0
+User-Agent: astroid/0.15.0 (https://github.com/astroidmail/astroid)
+Message-Id: <1567937945.w0h0w8qaz6.astroid@bobo.none>
 Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <420D09F4-FC19-421C-AE46-4B2A9157FAE3@lca.pw>
-User-Agent: Mutt/1.10.1 (2018-07-13)
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -95,28 +94,24 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-arch@vger.kernel.org, bvanassche@acm.org, arnd@arndb.de,
- Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
- kvm-ppc@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
- linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+Naveen N. Rao's on September 6, 2019 4:20 am:
+> Enable HAVE_FUNCTION_GRAPH_RET_ADDR_PTR for more robust stack unwinding=20
+> when function graph tracer is in use. Convert powerpc show_stack() to=20
+> use ftrace_graph_ret_addr() for better stack unwinding.
 
-* Qian Cai <cai@lca.pw> wrote:
+This series improved my case of a WARN_ON triggering in=20
+trace_graph_return, the last return_to_handler entry in the stack
+dump has the caller in parenthesis rather than return_to_handler.
 
-> I thought about making it a bool in the first place, but since all 
-> other similar helpers (arch_is_kernel_initmem_freed(), 
-> arch_is_kernel_text(), arch_is_kernel_data() etc) could be bool too but 
-> are not, I kept arch_is_bss_hole() just to be “int” for consistent.
-> 
-> Although then there is is_kernel_rodata() which is bool. I suppose I’ll 
-> change arch_is_bss_hole() to bool, and then could have a follow-up 
-> patch to covert all similar helpers to return boo instead.
+It gives the caller, it would be nice if it could output the actual
+function being traced, and then continue the caller. But at least
+this is a significant improvement. Thanks for the quick turnaround.
 
-Sounds good to me.
+Tested-by: Nicholas Piggin <npiggin@gmail.com>
 
-Thanks,
-
-	Ingo
+=
