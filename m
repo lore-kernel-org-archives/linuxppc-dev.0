@@ -1,59 +1,81 @@
-Return-Path: <SRS0=C3Z2=XD=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
+Return-Path: <SRS0=84HA=XE=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-9.5 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
+	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id ADB94C4332F
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  8 Sep 2019 16:26:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D6547C00307
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  9 Sep 2019 04:07:13 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B3195214DB
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  8 Sep 2019 16:26:45 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B3195214DB
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=cyphar.com
+	by mail.kernel.org (Postfix) with ESMTPS id 02E75218AC
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  9 Sep 2019 04:07:12 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="PZzA3A78"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 02E75218AC
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46RGrz2BVJzDqTN
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  9 Sep 2019 02:26:43 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 46RZPB183ZzDqRN
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  9 Sep 2019 14:07:10 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=cyphar.com
- (client-ip=2001:67c:2050:104:0:2:25:2; helo=mx2.mailbox.org;
- envelope-from=cyphar@cyphar.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=gmail.com
+ (client-ip=2607:f8b0:4864:20::643; helo=mail-pl1-x643.google.com;
+ envelope-from=kernelfans@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=cyphar.com
-Received: from mx2.mailbox.org (mx2a.mailbox.org
- [IPv6:2001:67c:2050:104:0:2:25:2])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="PZzA3A78"; 
+ dkim-atps=neutral
+Received: from mail-pl1-x643.google.com (mail-pl1-x643.google.com
+ [IPv6:2607:f8b0:4864:20::643])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46RGpy4jzxzDqLr
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Sep 2019 02:24:55 +1000 (AEST)
-Received: from smtp1.mailbox.org (smtp1.mailbox.org [80.241.60.240])
- (using TLSv1.2 with cipher ECDHE-RSA-CHACHA20-POLY1305 (256/256 bits))
- (No client certificate requested)
- by mx2.mailbox.org (Postfix) with ESMTPS id F270BA10CE;
- Sun,  8 Sep 2019 18:24:39 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at heinlein-support.de
-Received: from smtp1.mailbox.org ([80.241.60.240])
- by spamfilter04.heinlein-hosting.de (spamfilter04.heinlein-hosting.de
- [80.241.56.122]) (amavisd-new, port 10030)
- with ESMTP id RaAVojXx0viX; Sun,  8 Sep 2019 18:24:32 +0200 (CEST)
-Date: Mon, 9 Sep 2019 02:24:19 +1000
-From: Aleksa Sarai <cyphar@cyphar.com>
-To: Jeff Layton <jlayton@kernel.org>
-Subject: Re: [PATCH v12 11/12] open: openat2(2) syscall
-Message-ID: <20190908162419.yrzm2s7rflqgdxig@yavin>
-References: <20190904201933.10736-1-cyphar@cyphar.com>
- <20190904201933.10736-12-cyphar@cyphar.com>
- <7236f382d72130f2afbbe8940e72cc67e5c6dce0.camel@kernel.org>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="gzznbyzuni6ynbc5"
-Content-Disposition: inline
-In-Reply-To: <7236f382d72130f2afbbe8940e72cc67e5c6dce0.camel@kernel.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46RZMH5cqnzDqNV
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Sep 2019 14:05:28 +1000 (AEST)
+Received: by mail-pl1-x643.google.com with SMTP id d3so5973695plr.1
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 08 Sep 2019 21:05:28 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=from:to:cc:subject:date:message-id;
+ bh=ArKS3KDUZ4lnp20uJakf6XS86Pf1t8mXZvQKLitLAos=;
+ b=PZzA3A78EMRLw6OO8y/ZW/oLlIrAaiFwJHleoonpCDbY4Ab6RiVapEdFf7VIu5pcdT
+ 3s6e9sAAQxP+Rz2sV4YdkPdfalwpe/rs6vUepfVbAvHcnkpAsCm7JohzmsRE56Hna2Vv
+ SRJaoxWXBxXfPmSCQpbR97nwqjREkc5BAGRJomeeNR5+CuOKGKjwQlULPJSYODHINmaY
+ NXLxy/qdAnA4Wq0yww2E0sdJacqwmdc7qRuTR/geVlHFwT1E8W3L7wRwkZHtIxPjZOmW
+ Y6cqb1D3QWOBABNnxaLBZ4LRjNHFB0bQa0Di/LCte6XLwqtuSPrv568M4CI7Aj96fcmu
+ uJ4w==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:from:to:cc:subject:date:message-id;
+ bh=ArKS3KDUZ4lnp20uJakf6XS86Pf1t8mXZvQKLitLAos=;
+ b=Vy9tIEPjrzlzD7DtiwUpyGayGpERAgTFrOiPoS+YGTCfhS/fUXQ3YJioluPLJu1Wcd
+ OuYtoVAYkBxGEnE67p7YKNOaYWbtJsdV/l982CvayS36tHU8y0SbgBogVZ6xl4e8qbWJ
+ abcWiwIdNyJL9PtoFHKcOw+uwDMf/PW8Rw0HkwLYij4/Ua8UniJaUyynx4zDMwqdznm7
+ 5tQmEJqwFV5+yKoyg+y0drUi00J3CuJNyH8ldO8DFe32AllAfDaFhY6ikNqjiqJZuPjs
+ 4fUY8/rx3Z54u/QnMFCTpaGf/c5ORo5b6QAeDpdXKzmsX0DJzbzNlDzvnAQRsEOPBO3/
+ g3VQ==
+X-Gm-Message-State: APjAAAUpYa0snuoI4Zwudn2lclqZft606CFvheuZ/dw6rGPzVopSsYnv
+ qO/eMdZvUI2T2MAG4FSLAUIm9oY=
+X-Google-Smtp-Source: APXvYqwXqfqvooDg/N4B0R1zkLjnGZfLdtJDjC4XV5NxXcglkyZj4X9adL0BkrqIOpbpWHfIgXFL3w==
+X-Received: by 2002:a17:902:854a:: with SMTP id
+ d10mr22390671plo.222.1568001925127; 
+ Sun, 08 Sep 2019 21:05:25 -0700 (PDT)
+Received: from mylaptop.redhat.com ([209.132.188.80])
+ by smtp.gmail.com with ESMTPSA id b20sm15690100pff.158.2019.09.08.21.05.21
+ (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
+ Sun, 08 Sep 2019 21:05:23 -0700 (PDT)
+From: Pingfan Liu <kernelfans@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] powerpc/crashkernel: take mem option into account
+Date: Mon,  9 Sep 2019 12:05:06 +0800
+Message-Id: <1568001906-5750-1-git-send-email-kernelfans@gmail.com>
+X-Mailer: git-send-email 2.7.5
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -65,88 +87,47 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org,
- Peter Zijlstra <peterz@infradead.org>,
- Rasmus Villemoes <linux@rasmusvillemoes.dk>,
- Alexei Starovoitov <ast@kernel.org>, linux-kernel@vger.kernel.org,
- David Howells <dhowells@redhat.com>, linux-kselftest@vger.kernel.org,
- sparclinux@vger.kernel.org, Jiri Olsa <jolsa@redhat.com>,
- linux-arch@vger.kernel.org, linux-s390@vger.kernel.org,
- Tycho Andersen <tycho@tycho.ws>, Aleksa Sarai <asarai@suse.de>,
- Shuah Khan <shuah@kernel.org>,
- Alexander Shishkin <alexander.shishkin@linux.intel.com>,
- Ingo Molnar <mingo@redhat.com>, linux-arm-kernel@lists.infradead.org,
- linux-mips@vger.kernel.org, linux-xtensa@linux-xtensa.org,
- Kees Cook <keescook@chromium.org>, Arnd Bergmann <arnd@arndb.de>,
- Jann Horn <jannh@google.com>, linuxppc-dev@lists.ozlabs.org,
- linux-m68k@lists.linux-m68k.org, Al Viro <viro@zeniv.linux.org.uk>,
- Andy Lutomirski <luto@kernel.org>, Shuah Khan <skhan@linuxfoundation.org>,
- Namhyung Kim <namhyung@kernel.org>, David Drysdale <drysdale@google.com>,
- Christian Brauner <christian@brauner.io>,
- "J. Bruce Fields" <bfields@fieldses.org>, linux-parisc@vger.kernel.org,
- linux-api@vger.kernel.org, Chanho Min <chanho.min@lge.com>,
- Oleg Nesterov <oleg@redhat.com>, Eric Biederman <ebiederm@xmission.com>,
- linux-alpha@vger.kernel.org, linux-fsdevel@vger.kernel.org,
- Andrew Morton <akpm@linux-foundation.org>,
- Linus Torvalds <torvalds@linux-foundation.org>,
- containers@lists.linux-foundation.org
+Cc: Hari Bathini <hbathini@linux.ibm.com>, Pingfan Liu <kernelfans@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+'mem=" option is an easy way to put high pressure on memory during some
+test. Hence in stead of total mem, the effective usable memory size should
+be considered when reserving mem for crashkernel. Otherwise the boot up may
+experience oom issue.
 
---gzznbyzuni6ynbc5
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+E.g passing
+crashkernel="2G-4G:384M,4G-16G:512M,16G-64G:1G,64G-128G:2G,128G-:4G", and
+mem=5G.
 
-On 2019-09-07, Jeff Layton <jlayton@kernel.org> wrote:
-> On Thu, 2019-09-05 at 06:19 +1000, Aleksa Sarai wrote:
-> > + * @flags: O_* flags.
-> > + * @mode: O_CREAT/O_TMPFILE file mode.
-> > + * @upgrade_mask: UPGRADE_* flags (to restrict O_PATH re-opening).
-> > + * @resolve: RESOLVE_* flags.
-> > + */
-> > +struct open_how {
-> > +	__u32 flags;
-> > +	union {
-> > +		__u16 mode;
-> > +		__u16 upgrade_mask;
-> > +	};
-> > +	__u16 resolve;
-> > +};
-> > +
-> > +#define OPEN_HOW_SIZE_VER0	8 /* sizeof first published struct */
-> > +
->=20
-> Hmm, there is no version field. When you want to expand this in the
-> future, what is the plan? Add a new flag to indicate that it's some
-> length?
+Signed-off-by: Pingfan Liu <kernelfans@gmail.com>
+Cc: Hari Bathini <hbathini@linux.ibm.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+To: linuxppc-dev@lists.ozlabs.org
+---
+ arch/powerpc/kernel/machine_kexec.c | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
 
-The "version number" is the size of the struct. Any extensions we make
-are appended to the struct (openat2 now takes a size_t argument), and
-the new copy_struct_{to,from}_user() helpers handle all of the
-permutations of {old,new} kernel and {old,new} user space.
+diff --git a/arch/powerpc/kernel/machine_kexec.c b/arch/powerpc/kernel/machine_kexec.c
+index c4ed328..714b733 100644
+--- a/arch/powerpc/kernel/machine_kexec.c
++++ b/arch/powerpc/kernel/machine_kexec.c
+@@ -114,11 +114,12 @@ void machine_kexec(struct kimage *image)
+ 
+ void __init reserve_crashkernel(void)
+ {
+-	unsigned long long crash_size, crash_base;
++	unsigned long long crash_size, crash_base, total_mem_sz;
+ 	int ret;
+ 
++	total_mem_sz = memory_limit ? memory_limit : memblock_phys_mem_size();
+ 	/* use common parsing */
+-	ret = parse_crashkernel(boot_command_line, memblock_phys_mem_size(),
++	ret = parse_crashkernel(boot_command_line, total_mem_sz,
+ 			&crash_size, &crash_base);
+ 	if (ret == 0 && crash_size > 0) {
+ 		crashk_res.start = crash_base;
+-- 
+2.7.5
 
-This is how clone3(), sched_[gs]etattr() and perf_event_open() all
-operate (all of the sigset syscalls operate similarly but don't
-gracefully handle different kernel vintages -- you just get -EINVAL).
-
---=20
-Aleksa Sarai
-Senior Software Engineer (Containers)
-SUSE Linux GmbH
-<https://www.cyphar.com/>
-
---gzznbyzuni6ynbc5
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iHUEABYIAB0WIQSxZm6dtfE8gxLLfYqdlLljIbnQEgUCXXUrMAAKCRCdlLljIbnQ
-EgC+AQCVKXVqUiPLaSjLjt+ByWrSsopM/OM3NwCHHZ5oD+CB1gD/cSuQohVmXskg
-v8dQLpd9K1QW//8GG3Aa/FRHhqPAfAU=
-=G4Hw
------END PGP SIGNATURE-----
-
---gzznbyzuni6ynbc5--
