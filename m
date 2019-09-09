@@ -7,19 +7,19 @@ X-Spam-Status: No, score=-10.0 required=3.0
 	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7CE7EC4740A
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  9 Sep 2019 16:07:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EDD96C4740A
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  9 Sep 2019 16:09:04 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id A5AE721924
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  9 Sep 2019 16:07:18 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A5AE721924
+	by mail.kernel.org (Postfix) with ESMTPS id 78A852082C
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  9 Sep 2019 16:09:04 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 78A852082C
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46RtN43xddzDqRH
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Sep 2019 02:07:16 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 46RtQ624QlzDqLt
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Sep 2019 02:09:02 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
  (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
@@ -30,61 +30,60 @@ Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46Rsvn1cTQzDqNG
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Sep 2019 01:46:12 +1000 (AEST)
-Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46Rsvn3Nb6zDqNJ
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Sep 2019 01:46:13 +1000 (AEST)
+Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x89Fjld3096096
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 9 Sep 2019 11:46:10 -0400
+ x89FfvvN020287
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 9 Sep 2019 11:46:12 -0400
 Received: from e06smtp04.uk.ibm.com (e06smtp04.uk.ibm.com [195.75.94.100])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2uwsfj8dke-1
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2uwrv3akrh-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 09 Sep 2019 11:46:10 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 09 Sep 2019 11:46:11 -0400
 Received: from localhost
  by e06smtp04.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <fbarrat@linux.ibm.com>;
  Mon, 9 Sep 2019 16:46:08 +0100
-Received: from b06cxnps4074.portsmouth.uk.ibm.com (9.149.109.196)
+Received: from b06cxnps3074.portsmouth.uk.ibm.com (9.149.109.194)
  by e06smtp04.uk.ibm.com (192.168.101.134) with IBM ESMTP SMTP Gateway:
  Authorized Use Only! Violators will be prosecuted; 
  (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Mon, 9 Sep 2019 16:46:05 +0100
-Received: from d06av24.portsmouth.uk.ibm.com (d06av24.portsmouth.uk.ibm.com
- [9.149.105.60])
- by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x89Fk4XW49086648
+ Mon, 9 Sep 2019 16:46:04 +0100
+Received: from d06av24.portsmouth.uk.ibm.com (mk.ibm.com [9.149.105.60])
+ by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x89Fk3YK48103574
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Mon, 9 Sep 2019 15:46:04 GMT
+ Mon, 9 Sep 2019 15:46:03 GMT
 Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 5949A4203F;
- Mon,  9 Sep 2019 15:46:04 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 148A342045;
+ Mon,  9 Sep 2019 15:46:03 +0000 (GMT)
 Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 1DA0142041;
- Mon,  9 Sep 2019 15:46:04 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id CFAAF42047;
+ Mon,  9 Sep 2019 15:46:02 +0000 (GMT)
 Received: from pic2.home (unknown [9.145.178.189])
  by d06av24.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Mon,  9 Sep 2019 15:46:04 +0000 (GMT)
+ Mon,  9 Sep 2019 15:46:02 +0000 (GMT)
 From: Frederic Barrat <fbarrat@linux.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org, andrew.donnellan@au1.ibm.com,
  clombard@linux.ibm.com
-Subject: [PATCH 10/11] pci/hotplug/pnv-php: Wrap warnings in macro
-Date: Mon,  9 Sep 2019 17:45:59 +0200
+Subject: [PATCH 06/11] pci/hotplug/pnv-php: Remove erroneous warning
+Date: Mon,  9 Sep 2019 17:45:55 +0200
 X-Mailer: git-send-email 2.21.0
 In-Reply-To: <20190909154600.19917-1-fbarrat@linux.ibm.com>
 References: <20190909154600.19917-1-fbarrat@linux.ibm.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-x-cbid: 19090915-0016-0000-0000-000002A8DC62
+x-cbid: 19090915-0016-0000-0000-000002A8DC61
 X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19090915-0017-0000-0000-000033095EF6
-Message-Id: <20190909154600.19917-11-fbarrat@linux.ibm.com>
+x-cbparentid: 19090915-0017-0000-0000-000033095EF5
+Message-Id: <20190909154600.19917-7-fbarrat@linux.ibm.com>
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
  definitions=2019-09-09_06:, , signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
  priorityscore=1501
- malwarescore=0 suspectscore=2 phishscore=0 bulkscore=0 spamscore=0
+ malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
  clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
  mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
  scancount=1 engine=8.0.1-1906280000 definitions=main-1909090158
@@ -104,183 +103,43 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-An opencapi slot doesn't have an associated bridge device. It's not
-needed for operation, but any warning is displayed through pci_warn()
-which uses the pci_dev struct of the assocated bridge device. So wrap
-those warning so that a different trace mechanism can be used if it's
-an opencapi slot.
+On powernv, when removing a device through hotplug, the following
+warning is logged:
+
+     Invalid refcount <.> on <...>
+
+It may be incorrect, the refcount may be set to a higher value than 1
+and be valid. of_detach_node() can drop more than one reference. As it
+doesn't seem trivial to assert the correct value, let's remove the
+warning.
 
 Signed-off-by: Frederic Barrat <fbarrat@linux.ibm.com>
 ---
- drivers/pci/hotplug/pnv_php.c | 51 +++++++++++++++++++----------------
- 1 file changed, 28 insertions(+), 23 deletions(-)
+ drivers/pci/hotplug/pnv_php.c | 6 ------
+ 1 file changed, 6 deletions(-)
 
 diff --git a/drivers/pci/hotplug/pnv_php.c b/drivers/pci/hotplug/pnv_php.c
-index 5ca51d67db4b..d01a8595bc5c 100644
+index 6758fd7c382e..5b5cbf1e636d 100644
 --- a/drivers/pci/hotplug/pnv_php.c
 +++ b/drivers/pci/hotplug/pnv_php.c
-@@ -18,6 +18,9 @@
- #define DRIVER_AUTHOR	"Gavin Shan, IBM Corporation"
- #define DRIVER_DESC	"PowerPC PowerNV PCI Hotplug Driver"
+@@ -151,17 +151,11 @@ static void pnv_php_rmv_pdns(struct device_node *dn)
+ static void pnv_php_detach_device_nodes(struct device_node *parent)
+ {
+ 	struct device_node *dn;
+-	int refcount;
  
-+#define SLOT_WARN(sl, x...) \
-+	((sl)->pdev ? pci_warn((sl)->pdev, x) : dev_warn(&(sl)->bus->dev, x))
-+
- struct pnv_php_event {
- 	bool			added;
- 	struct pnv_php_slot	*php_slot;
-@@ -265,7 +268,7 @@ static int pnv_php_add_devtree(struct pnv_php_slot *php_slot)
+ 	for_each_child_of_node(parent, dn) {
+ 		pnv_php_detach_device_nodes(dn);
  
- 	ret = pnv_pci_get_device_tree(php_slot->dn->phandle, fdt1, 0x10000);
- 	if (ret) {
--		pci_warn(php_slot->pdev, "Error %d getting FDT blob\n", ret);
-+		SLOT_WARN(php_slot, "Error %d getting FDT blob\n", ret);
- 		goto free_fdt1;
+ 		of_node_put(dn);
+-		refcount = kref_read(&dn->kobj.kref);
+-		if (refcount != 1)
+-			pr_warn("Invalid refcount %d on <%pOF>\n",
+-				refcount, dn);
+-
+ 		of_detach_node(dn);
  	}
- 
-@@ -279,7 +282,7 @@ static int pnv_php_add_devtree(struct pnv_php_slot *php_slot)
- 	dt = of_fdt_unflatten_tree(fdt, php_slot->dn, NULL);
- 	if (!dt) {
- 		ret = -EINVAL;
--		pci_warn(php_slot->pdev, "Cannot unflatten FDT\n");
-+		SLOT_WARN(php_slot, "Cannot unflatten FDT\n");
- 		goto free_fdt;
- 	}
- 
-@@ -289,15 +292,15 @@ static int pnv_php_add_devtree(struct pnv_php_slot *php_slot)
- 	ret = pnv_php_populate_changeset(&php_slot->ocs, php_slot->dn);
- 	if (ret) {
- 		pnv_php_reverse_nodes(php_slot->dn);
--		pci_warn(php_slot->pdev, "Error %d populating changeset\n",
--			 ret);
-+		SLOT_WARN(php_slot, "Error %d populating changeset\n",
-+			  ret);
- 		goto free_dt;
- 	}
- 
- 	php_slot->dn->child = NULL;
- 	ret = of_changeset_apply(&php_slot->ocs);
- 	if (ret) {
--		pci_warn(php_slot->pdev, "Error %d applying changeset\n", ret);
-+		SLOT_WARN(php_slot, "Error %d applying changeset\n", ret);
- 		goto destroy_changeset;
- 	}
- 
-@@ -337,10 +340,10 @@ int pnv_php_set_slot_power_state(struct hotplug_slot *slot,
- 	if (ret > 0) {
- 		if (be64_to_cpu(msg.params[1]) != php_slot->dn->phandle	||
- 		    be64_to_cpu(msg.params[2]) != state) {
--			pci_warn(php_slot->pdev, "Wrong msg (%lld, %lld, %lld)\n",
--				 be64_to_cpu(msg.params[1]),
--				 be64_to_cpu(msg.params[2]),
--				 be64_to_cpu(msg.params[3]));
-+			SLOT_WARN(php_slot, "Wrong msg (%lld, %lld, %lld)\n",
-+				  be64_to_cpu(msg.params[1]),
-+				  be64_to_cpu(msg.params[2]),
-+				  be64_to_cpu(msg.params[3]));
- 			return -ENOMSG;
- 		}
- 		if (be64_to_cpu(msg.params[3]) != OPAL_SUCCESS) {
-@@ -359,8 +362,8 @@ int pnv_php_set_slot_power_state(struct hotplug_slot *slot,
- 	return ret;
- 
- error:
--	pci_warn(php_slot->pdev, "Error %d powering %s\n",
--		 ret, (state == OPAL_PCI_SLOT_POWER_ON) ? "on" : "off");
-+	SLOT_WARN(php_slot, "Error %d powering %s\n",
-+		  ret, (state == OPAL_PCI_SLOT_POWER_ON) ? "on" : "off");
- 	return ret;
  }
- EXPORT_SYMBOL_GPL(pnv_php_set_slot_power_state);
-@@ -378,8 +381,8 @@ static int pnv_php_get_power_state(struct hotplug_slot *slot, u8 *state)
- 	 */
- 	ret = pnv_pci_get_power_state(php_slot->id, &power_state);
- 	if (ret) {
--		pci_warn(php_slot->pdev, "Error %d getting power status\n",
--			 ret);
-+		SLOT_WARN(php_slot, "Error %d getting power status\n",
-+			  ret);
- 	} else {
- 		*state = power_state;
- 	}
-@@ -402,7 +405,7 @@ static int pnv_php_get_adapter_state(struct hotplug_slot *slot, u8 *state)
- 		*state = presence;
- 		ret = 0;
- 	} else {
--		pci_warn(php_slot->pdev, "Error %d getting presence\n", ret);
-+		SLOT_WARN(php_slot, "Error %d getting presence\n", ret);
- 	}
- 
- 	return ret;
-@@ -637,7 +640,7 @@ static int pnv_php_register_slot(struct pnv_php_slot *php_slot)
- 	ret = pci_hp_register(&php_slot->slot, php_slot->bus,
- 			      php_slot->slot_no, php_slot->name);
- 	if (ret) {
--		pci_warn(php_slot->pdev, "Error %d registering slot\n", ret);
-+		SLOT_WARN(php_slot, "Error %d registering slot\n", ret);
- 		return ret;
- 	}
- 
-@@ -690,7 +693,7 @@ static int pnv_php_enable_msix(struct pnv_php_slot *php_slot)
- 	/* Enable MSIx */
- 	ret = pci_enable_msix_exact(pdev, &entry, 1);
- 	if (ret) {
--		pci_warn(pdev, "Error %d enabling MSIx\n", ret);
-+		SLOT_WARN(php_slot, "Error %d enabling MSIx\n", ret);
- 		return ret;
- 	}
- 
-@@ -734,8 +737,9 @@ static irqreturn_t pnv_php_interrupt(int irq, void *data)
- 		   (sts & PCI_EXP_SLTSTA_PDC)) {
- 		ret = pnv_pci_get_presence_state(php_slot->id, &presence);
- 		if (ret) {
--			pci_warn(pdev, "PCI slot [%s] error %d getting presence (0x%04x), to retry the operation.\n",
--				 php_slot->name, ret, sts);
-+			SLOT_WARN(php_slot,
-+				  "PCI slot [%s] error %d getting presence (0x%04x), to retry the operation.\n",
-+				  php_slot->name, ret, sts);
- 			return IRQ_HANDLED;
- 		}
- 
-@@ -764,8 +768,9 @@ static irqreturn_t pnv_php_interrupt(int irq, void *data)
- 	 */
- 	event = kzalloc(sizeof(*event), GFP_ATOMIC);
- 	if (!event) {
--		pci_warn(pdev, "PCI slot [%s] missed hotplug event 0x%04x\n",
--			 php_slot->name, sts);
-+		SLOT_WARN(php_slot,
-+			  "PCI slot [%s] missed hotplug event 0x%04x\n",
-+			  php_slot->name, sts);
- 		return IRQ_HANDLED;
- 	}
- 
-@@ -789,7 +794,7 @@ static void pnv_php_init_irq(struct pnv_php_slot *php_slot, int irq)
- 	/* Allocate workqueue */
- 	php_slot->wq = alloc_workqueue("pciehp-%s", 0, 0, php_slot->name);
- 	if (!php_slot->wq) {
--		pci_warn(pdev, "Cannot alloc workqueue\n");
-+		SLOT_WARN(php_slot, "Cannot alloc workqueue\n");
- 		pnv_php_disable_irq(php_slot, true);
- 		return;
- 	}
-@@ -813,7 +818,7 @@ static void pnv_php_init_irq(struct pnv_php_slot *php_slot, int irq)
- 			  php_slot->name, php_slot);
- 	if (ret) {
- 		pnv_php_disable_irq(php_slot, true);
--		pci_warn(pdev, "Error %d enabling IRQ %d\n", ret, irq);
-+		SLOT_WARN(php_slot, "Error %d enabling IRQ %d\n", ret, irq);
- 		return;
- 	}
- 
-@@ -849,7 +854,7 @@ static void pnv_php_enable_irq(struct pnv_php_slot *php_slot)
- 
- 	ret = pci_enable_device(pdev);
- 	if (ret) {
--		pci_warn(pdev, "Error %d enabling device\n", ret);
-+		SLOT_WARN(php_slot, "Error %d enabling device\n", ret);
- 		return;
- 	}
- 
 -- 
 2.21.0
 
