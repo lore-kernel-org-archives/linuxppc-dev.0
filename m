@@ -2,48 +2,60 @@ Return-Path: <SRS0=84HA=XE=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS autolearn=ham
+X-Spam-Status: No, score=-10.0 required=3.0 tests=DATE_IN_FUTURE_06_12,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 28657C00307
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  9 Sep 2019 08:21:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 53845C4740A
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  9 Sep 2019 10:37:15 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 57BA220678
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  9 Sep 2019 08:21:50 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 57BA220678
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+	by mail.kernel.org (Postfix) with ESMTPS id 998EB2086D
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  9 Sep 2019 10:37:14 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 998EB2086D
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nxp.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46Rh2z4FBnzDqQy
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  9 Sep 2019 18:21:47 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	by lists.ozlabs.org (Postfix) with ESMTP id 46Rl3C5RJTzDqPG
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  9 Sep 2019 20:37:11 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+ spf=pass (mailfrom) smtp.mailfrom=nxp.com
+ (client-ip=92.121.34.21; helo=inva021.nxp.com;
+ envelope-from=shengjiu.wang@nxp.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=nxp.com
+Received: from inva021.nxp.com (inva021.nxp.com [92.121.34.21])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46Rh0z0vPTzDqDr
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Sep 2019 18:20:03 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=ellerman.id.au
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
- SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 46Rh0w5jnCz9s7T;
- Mon,  9 Sep 2019 18:19:59 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Helge Deller <deller@gmx.de>, Sven Schnelle <svens@stackframe.org>,
- kexec@lists.infradead.org
-Subject: Re: [PATCH v5 0/7] kexec: add generic support for elf kernel images
-In-Reply-To: <22b40bb7-6f86-0a69-12b2-12d90124173d@gmx.de>
-References: <20190823194919.30916-1-svens@stackframe.org>
- <22b40bb7-6f86-0a69-12b2-12d90124173d@gmx.de>
-Date: Mon, 09 Sep 2019 18:20:03 +1000
-Message-ID: <87v9u1zxsc.fsf@mpe.ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46Rl0Z6RFmzDqP8
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Sep 2019 20:34:53 +1000 (AEST)
+Received: from inva021.nxp.com (localhost [127.0.0.1])
+ by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id BB17A200148;
+ Mon,  9 Sep 2019 12:34:49 +0200 (CEST)
+Received: from invc005.ap-rdc01.nxp.com (invc005.ap-rdc01.nxp.com
+ [165.114.16.14])
+ by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id C12212001C3;
+ Mon,  9 Sep 2019 12:34:44 +0200 (CEST)
+Received: from localhost.localdomain (shlinux2.ap.freescale.net
+ [10.192.224.44])
+ by invc005.ap-rdc01.nxp.com (Postfix) with ESMTP id 60346402F3;
+ Mon,  9 Sep 2019 18:34:38 +0800 (SGT)
+From: Shengjiu Wang <shengjiu.wang@nxp.com>
+To: timur@kernel.org, nicoleotsuka@gmail.com, Xiubo.Lee@gmail.com,
+ festevam@gmail.com, lgirdwood@gmail.com, broonie@kernel.org,
+ perex@perex.cz, tiwai@suse.com, alsa-devel@alsa-project.org,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Subject: [PATCH 2/3] ASoC: fsl_asrc: update supported sample format
+Date: Mon,  9 Sep 2019 18:33:20 -0400
+Message-Id: <f62fda1f49af8159eb23a978147a321dd6849d1a.1568025083.git.shengjiu.wang@nxp.com>
+X-Mailer: git-send-email 2.7.4
+In-Reply-To: <cover.1568025083.git.shengjiu.wang@nxp.com>
+References: <cover.1568025083.git.shengjiu.wang@nxp.com>
+In-Reply-To: <cover.1568025083.git.shengjiu.wang@nxp.com>
+References: <cover.1568025083.git.shengjiu.wang@nxp.com>
+X-Virus-Scanned: ClamAV using ClamSMTP
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -55,50 +67,43 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org,
- Thiago Jung Bauermann <bauerman@linux.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi Helge,
+The ASRC support 24bit/16bit/8bit input width, so S20_3LE format
+should not be supported, it is word width is 20bit.
+So replace S20_3LE with S24_3LE in supported list and add S8
+format in TX supported list
 
-Sorry I meant to do something about this series but got swamped by other
-things, as always.
+Signed-off-by: Shengjiu Wang <shengjiu.wang@nxp.com>
+---
+ sound/soc/fsl/fsl_asrc.c | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
 
-Helge Deller <deller@gmx.de> writes:
-> Hi all,
->
-> This kexec patch series is the groundwork for kexec on the parisc architecture.
-> Since we want kexec on parisc, I've applied it to my for-next-kexec tree [1],
-> and can push it to Linus in the next merge window through the parisc tree [2].
->
-> If someone has any objections, or if you prefer to take it through
-> a kexec or powerpc tree, please let me know.
+diff --git a/sound/soc/fsl/fsl_asrc.c b/sound/soc/fsl/fsl_asrc.c
+index 4d3804a1ea55..584badf956d2 100644
+--- a/sound/soc/fsl/fsl_asrc.c
++++ b/sound/soc/fsl/fsl_asrc.c
+@@ -624,7 +624,7 @@ static int fsl_asrc_dai_probe(struct snd_soc_dai *dai)
+ 
+ #define FSL_ASRC_FORMATS	(SNDRV_PCM_FMTBIT_S24_LE | \
+ 				 SNDRV_PCM_FMTBIT_S16_LE | \
+-				 SNDRV_PCM_FMTBIT_S20_3LE)
++				 SNDRV_PCM_FMTBIT_S24_3LE)
+ 
+ static struct snd_soc_dai_driver fsl_asrc_dai = {
+ 	.probe = fsl_asrc_dai_probe,
+@@ -635,7 +635,8 @@ static struct snd_soc_dai_driver fsl_asrc_dai = {
+ 		.rate_min = 5512,
+ 		.rate_max = 192000,
+ 		.rates = SNDRV_PCM_RATE_KNOT,
+-		.formats = FSL_ASRC_FORMATS,
++		.formats = FSL_ASRC_FORMATS |
++			   SNDRV_PCM_FMTBIT_S8,
+ 	},
+ 	.capture = {
+ 		.stream_name = "ASRC-Capture",
+-- 
+2.21.0
 
-The ideal way to handle a series like this is to put it in a topic
-branch based off rc1, so that both trees can merge it without pulling in
-any unrelated arch changes.
-
-But in this case I don't see any conflicts so I think it's fine for it
-to go via your tree, it will get some testing in linux-next.
-
-cheers
-
-> [1] https://git.kernel.org/pub/scm/linux/kernel/git/deller/parisc-linux.git/log/?h=for-next-kexec
-> [2] https://git.kernel.org/pub/scm/linux/kernel/git/deller/parisc-linux.git/log/?h=for-next
->
-> On 23.08.19 21:49, Sven Schnelle wrote:
->> Changes to v4:
->>  - rebase on current powerpc/merge tree
->>  - fix syscall name in commit message
->>  - remove a few unused #defines in arch/powerpc/kernel/kexec_elf_64.c
->>...
->>  arch/Kconfig                                  |   3 +
->>  arch/powerpc/Kconfig                          |   1 +
->>  arch/powerpc/kernel/kexec_elf_64.c            | 545 +-----------------
->>  include/linux/kexec.h                         |  23 +
->>  kernel/Makefile                               |   1 +
->>  .../kexec_elf_64.c => kernel/kexec_elf.c      | 394 +++----------
->>  6 files changed, 115 insertions(+), 852 deletions(-)
->>  copy arch/powerpc/kernel/kexec_elf_64.c => kernel/kexec_elf.c (50%)
