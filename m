@@ -2,91 +2,89 @@ Return-Path: <SRS0=Blre=XF=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.0 required=3.0
-	tests=HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	FSL_HELO_FAKE,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2D9CBC3A5A2
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Sep 2019 06:33:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 86E80C3A5A2
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Sep 2019 06:37:41 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id A8AC72171F
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Sep 2019 06:33:05 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A8AC72171F
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 06F4720872
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Sep 2019 06:37:40 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="RT2CZzYf"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 06F4720872
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46SFb36vrkzDqCs
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Sep 2019 16:33:03 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 46SFhH5SV1zDqXV
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Sep 2019 16:37:35 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
- (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=aneesh.kumar@linux.ibm.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=gmail.com
+ (client-ip=2a00:1450:4864:20::441; helo=mail-wr1-x441.google.com;
+ envelope-from=mingo.kernel.org@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ dmarc=fail (p=none dis=none) header.from=kernel.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="RT2CZzYf"; 
+ dkim-atps=neutral
+Received: from mail-wr1-x441.google.com (mail-wr1-x441.google.com
+ [IPv6:2a00:1450:4864:20::441])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46SFWJ2NPgzDqV8
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Sep 2019 16:29:48 +1000 (AEST)
-Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x8A6TZt8145120; Tue, 10 Sep 2019 02:29:41 -0400
-Received: from pps.reinject (localhost [127.0.0.1])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2ux5hthmwr-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Tue, 10 Sep 2019 02:29:40 -0400
-Received: from m0098413.ppops.net (m0098413.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.27/8.16.0.27) with SMTP id x8A6TaX4145196;
- Tue, 10 Sep 2019 02:29:36 -0400
-Received: from ppma03dal.us.ibm.com (b.bd.3ea9.ip4.static.sl-reverse.com
- [169.62.189.11])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2ux5hthmdw-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Tue, 10 Sep 2019 02:29:36 -0400
-Received: from pps.filterd (ppma03dal.us.ibm.com [127.0.0.1])
- by ppma03dal.us.ibm.com (8.16.0.27/8.16.0.27) with SMTP id x8A6RIEO027725;
- Tue, 10 Sep 2019 06:28:40 GMT
-Received: from b03cxnp08025.gho.boulder.ibm.com
- (b03cxnp08025.gho.boulder.ibm.com [9.17.130.17])
- by ppma03dal.us.ibm.com with ESMTP id 2uv4686r1x-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Tue, 10 Sep 2019 06:28:40 +0000
-Received: from b03ledav005.gho.boulder.ibm.com
- (b03ledav005.gho.boulder.ibm.com [9.17.130.236])
- by b03cxnp08025.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x8A6SdZX34996544
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Tue, 10 Sep 2019 06:28:39 GMT
-Received: from b03ledav005.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 1071BBE053;
- Tue, 10 Sep 2019 06:28:39 +0000 (GMT)
-Received: from b03ledav005.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 5DA6DBE05A;
- Tue, 10 Sep 2019 06:28:36 +0000 (GMT)
-Received: from skywalker.ibmuc.com (unknown [9.199.41.80])
- by b03ledav005.gho.boulder.ibm.com (Postfix) with ESMTP;
- Tue, 10 Sep 2019 06:28:35 +0000 (GMT)
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
-To: dan.j.williams@intel.com, mpe@ellerman.id.au, oohall@gmail.com
-Subject: [PATCH 1/2] libnvdimm/altmap: Track namespace boundaries in altmap
-Date: Tue, 10 Sep 2019 11:58:25 +0530
-Message-Id: <20190910062826.10041-1-aneesh.kumar@linux.ibm.com>
-X-Mailer: git-send-email 2.21.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46SFf74lFYzDqVv
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Sep 2019 16:35:40 +1000 (AEST)
+Received: by mail-wr1-x441.google.com with SMTP id t16so17623758wra.6
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 09 Sep 2019 23:35:40 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=sender:date:from:to:cc:subject:message-id:references:mime-version
+ :content-disposition:in-reply-to:user-agent;
+ bh=9uC8BSyBqqvpBHr+UBJrMjpTjeLS9eaSkiimfXBOGmI=;
+ b=RT2CZzYflWq0hJIviZ1qNiz7T8GR4+WUrisMZXe3m9cauTkqIyyVGGFPULrde7A02W
+ tj7FplDkEllE02owPbUYDzEtapP1C48use/4kFc7fZZmFt/DdDZTI55D8qvOaO2r24Ne
+ q4FNPrvlkjfx+lYW3lSYcZ69k2e463dcG9Y4rn+PPa/Glpr++eDfgJ8gFO5kdGQ+ZZAk
+ nXhnUxrt/DhKZTkCCWYef7FPywkEzNn0z8LUShNXRMIkZZwOG/G3kJoXGIwG7zGeC0aS
+ TI+DZ2QVgsA7VVK9EZCvbN7bPdpk9PkNXAPdUVWeWNcFfO4yiY8K5tj2pJUrGvJYeUSW
+ 9/rw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:sender:date:from:to:cc:subject:message-id
+ :references:mime-version:content-disposition:in-reply-to:user-agent;
+ bh=9uC8BSyBqqvpBHr+UBJrMjpTjeLS9eaSkiimfXBOGmI=;
+ b=hH7cJmzrb4qxU6y1LKQ/4hyQc+FtYW0iDPD89t1+8+tF0KuK1qx1PDBxD7sRrrAK+K
+ 23LF3UzjdzJyspa9Nbxdqgkoa1EVbVaNyBWN12VVQBaDbMzESZqPNrPVvgGXdtQ09J7B
+ J6tWLiDssJn7acEg4pe1GWhZQZm1Vlowj+9T0SD3l4km77aMpedh9EdZ9ZLc57Dg/jyE
+ crzXBJ2S31ZwfDF8WuuleKbDYm9pyOZOpYBxX8O2kwDF96MphIjajHsNlOoqKU4XntXj
+ fhkduLfVT7n+nftLsIqjjsV2ZOF9R6P1reUk/gTfs52eJQ+2VP6NcPYtB+52ae/a1XgU
+ xDiQ==
+X-Gm-Message-State: APjAAAWdGCgjda8P5SGM3unZOnzaMM03MXUC858dtbOgyVRYLZjwx4NY
+ 1btPrZOpNkQrr6i1MwIWhLE=
+X-Google-Smtp-Source: APXvYqw8XHm4leFwnC6sWR8BjhyMsv0e/YjeclMhzrktUUdT/wG1WxzN3IHekSLZEGkf3MnHklk0qA==
+X-Received: by 2002:a5d:6b0f:: with SMTP id v15mr22340960wrw.19.1568097336267; 
+ Mon, 09 Sep 2019 23:35:36 -0700 (PDT)
+Received: from gmail.com (2E8B0CD5.catv.pool.telekom.hu. [46.139.12.213])
+ by smtp.gmail.com with ESMTPSA id u22sm32329249wru.72.2019.09.09.23.35.33
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Mon, 09 Sep 2019 23:35:35 -0700 (PDT)
+Date: Tue, 10 Sep 2019 08:35:32 +0200
+From: Ingo Molnar <mingo@kernel.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [PATCH v12 11/12] open: openat2(2) syscall
+Message-ID: <20190910063532.GB1579@gmail.com>
+References: <20190904201933.10736-1-cyphar@cyphar.com>
+ <20190904201933.10736-12-cyphar@cyphar.com>
+ <7236f382d72130f2afbbe8940e72cc67e5c6dce0.camel@kernel.org>
+ <CAHk-=whZx97Nm-gUK0ppofj2RA2LLz2vmaDUTKSSV-+yYB9q_Q@mail.gmail.com>
+ <C81D6D29-F6BF-48E6-A15E-3ABCB2C992E5@amacapital.net>
+ <CAHk-=whe90Ec_RRrMRLE0=bJOHNS9YmVwcytVxmrfK3oCuZF6A@mail.gmail.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2019-09-10_06:, , signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- malwarescore=0 suspectscore=2 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1906280000 definitions=main-1909100063
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <CAHk-=whe90Ec_RRrMRLE0=bJOHNS9YmVwcytVxmrfK3oCuZF6A@mail.gmail.com>
+User-Agent: Mutt/1.10.1 (2018-07-13)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -98,123 +96,62 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Sachin Sant <sachinp@linux.vnet.ibm.com>,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- linux-nvdimm@lists.01.org
+Cc: linux-ia64@vger.kernel.org, Linux-sh list <linux-sh@vger.kernel.org>,
+ Peter Zijlstra <peterz@infradead.org>,
+ Rasmus Villemoes <linux@rasmusvillemoes.dk>,
+ Alexei Starovoitov <ast@kernel.org>,
+ Linux List Kernel Mailing <linux-kernel@vger.kernel.org>,
+ David Howells <dhowells@redhat.com>,
+ "open list:KERNEL SELFTEST FRAMEWORK" <linux-kselftest@vger.kernel.org>,
+ sparclinux@vger.kernel.org, Shuah Khan <shuah@kernel.org>,
+ linux-arch <linux-arch@vger.kernel.org>,
+ linux-s390 <linux-s390@vger.kernel.org>, Tycho Andersen <tycho@tycho.ws>,
+ Aleksa Sarai <asarai@suse.de>, Jiri Olsa <jolsa@redhat.com>,
+ Alexander Shishkin <alexander.shishkin@linux.intel.com>,
+ Ingo Molnar <mingo@redhat.com>,
+ Linux ARM <linux-arm-kernel@lists.infradead.org>, linux-mips@vger.kernel.org,
+ linux-xtensa@linux-xtensa.org, Kees Cook <keescook@chromium.org>,
+ Arnd Bergmann <arnd@arndb.de>, Jann Horn <jannh@google.com>,
+ Aleksa Sarai <cyphar@cyphar.com>, Al Viro <viro@zeniv.linux.org.uk>,
+ Andy Lutomirski <luto@kernel.org>, Shuah Khan <skhan@linuxfoundation.org>,
+ Namhyung Kim <namhyung@kernel.org>, David Drysdale <drysdale@google.com>,
+ Christian Brauner <christian@brauner.io>,
+ "J. Bruce Fields" <bfields@fieldses.org>, linux-parisc@vger.kernel.org,
+ linux-m68k <linux-m68k@lists.linux-m68k.org>,
+ Linux API <linux-api@vger.kernel.org>, Chanho Min <chanho.min@lge.com>,
+ Jeff Layton <jlayton@kernel.org>, Oleg Nesterov <oleg@redhat.com>,
+ Andy Lutomirski <luto@amacapital.net>, Eric Biederman <ebiederm@xmission.com>,
+ alpha <linux-alpha@vger.kernel.org>,
+ linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+ Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
+ Linux Containers <containers@lists.linux-foundation.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-With PFN_MODE_PMEM namespace, the memmap area is allocated from the device
-area. Some architectures map the memmap area with large page size. On
-architectures like ppc64, 16MB page for memap mapping can map 262144 pfns.
-This maps a namespace size of 16G.
 
-When populating memmap region with 16MB page from the device area,
-make sure the allocated space is not used to map resources outside this
-namespace. Such usage of device area will prevent a namespace destroy.
+* Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
-Add resource end pnf in altmap and use that to check if the memmap area
-allocation can map pfn outside the namespace. On ppc64 in such case we fallback
-to allocation from memory.
+> On Sat, Sep 7, 2019 at 10:42 AM Andy Lutomirski <luto@amacapital.net> wrote:
+> >
+> > Linus, you rejected resolveat() because you wanted a *nice* API
+> 
+> No. I rejected resoveat() because it was a completely broken garbage
+> API that couldn't do even basic stuff right (like O_CREAT).
+> 
+> We have a ton of flag space in the new openat2() model, we might as
+> well leave the old flags alone that people are (a) used to and (b) we
+> have code to support _anyway_.
+> 
+> Making up a new flag namespace is only going to cause us - and users -
+> more work, and more confusion. For no actual advantage. It's not going
+> to be "cleaner". It's just going to be worse.
 
-This fix kernel crash reported below:
+I suspect there is a "add a clean new flags namespace" analogy to the 
+classic "add a clean new standard" XKCD:
 
-[  132.034989] WARNING: CPU: 13 PID: 13719 at mm/memremap.c:133 devm_memremap_pages_release+0x2d8/0x2e0
-[  133.464754] BUG: Unable to handle kernel data access at 0xc00c00010b204000
-[  133.464760] Faulting instruction address: 0xc00000000007580c
-[  133.464766] Oops: Kernel access of bad area, sig: 11 [#1]
-[  133.464771] LE PAGE_SIZE=64K MMU=Hash SMP NR_CPUS=2048 NUMA pSeries
-.....
-[  133.464901] NIP [c00000000007580c] vmemmap_free+0x2ac/0x3d0
-[  133.464906] LR [c0000000000757f8] vmemmap_free+0x298/0x3d0
-[  133.464910] Call Trace:
-[  133.464914] [c000007cbfd0f7b0] [c0000000000757f8] vmemmap_free+0x298/0x3d0 (unreliable)
-[  133.464921] [c000007cbfd0f8d0] [c000000000370a44] section_deactivate+0x1a4/0x240
-[  133.464928] [c000007cbfd0f980] [c000000000386270] __remove_pages+0x3a0/0x590
-[  133.464935] [c000007cbfd0fa50] [c000000000074158] arch_remove_memory+0x88/0x160
-[  133.464942] [c000007cbfd0fae0] [c0000000003be8c0] devm_memremap_pages_release+0x150/0x2e0
-[  133.464949] [c000007cbfd0fb70] [c000000000738ea0] devm_action_release+0x30/0x50
-[  133.464955] [c000007cbfd0fb90] [c00000000073a5a4] release_nodes+0x344/0x400
-[  133.464961] [c000007cbfd0fc40] [c00000000073378c] device_release_driver_internal+0x15c/0x250
-[  133.464968] [c000007cbfd0fc80] [c00000000072fd14] unbind_store+0x104/0x110
-[  133.464973] [c000007cbfd0fcd0] [c00000000072ee24] drv_attr_store+0x44/0x70
-[  133.464981] [c000007cbfd0fcf0] [c0000000004a32bc] sysfs_kf_write+0x6c/0xa0
-[  133.464987] [c000007cbfd0fd10] [c0000000004a1dfc] kernfs_fop_write+0x17c/0x250
-[  133.464993] [c000007cbfd0fd60] [c0000000003c348c] __vfs_write+0x3c/0x70
-[  133.464999] [c000007cbfd0fd80] [c0000000003c75d0] vfs_write+0xd0/0x250
+	https://xkcd.com/927/
 
-Reported-by: Sachin Sant <sachinp@linux.vnet.ibm.com>
-Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
----
- arch/powerpc/mm/init_64.c | 17 ++++++++++++++++-
- drivers/nvdimm/pfn_devs.c |  2 ++
- include/linux/memremap.h  |  1 +
- 3 files changed, 19 insertions(+), 1 deletion(-)
+Thanks,
 
-diff --git a/arch/powerpc/mm/init_64.c b/arch/powerpc/mm/init_64.c
-index a44f6281ca3a..4e08246acd79 100644
---- a/arch/powerpc/mm/init_64.c
-+++ b/arch/powerpc/mm/init_64.c
-@@ -172,6 +172,21 @@ static __meminit void vmemmap_list_populate(unsigned long phys,
- 	vmemmap_list = vmem_back;
- }
- 
-+static bool altmap_cross_boundary(struct vmem_altmap *altmap, unsigned long start,
-+				unsigned long page_size)
-+{
-+	unsigned long nr_pfn = page_size / sizeof(struct page);
-+	unsigned long start_pfn = page_to_pfn((struct page *)start);
-+
-+	if ((start_pfn + nr_pfn) > altmap->end_pfn)
-+		return true;
-+
-+	if (start_pfn < altmap->base_pfn)
-+		return true;
-+
-+	return false;
-+}
-+
- int __meminit vmemmap_populate(unsigned long start, unsigned long end, int node,
- 		struct vmem_altmap *altmap)
- {
-@@ -194,7 +209,7 @@ int __meminit vmemmap_populate(unsigned long start, unsigned long end, int node,
- 		 * fail due to alignment issues when using 16MB hugepages, so
- 		 * fall back to system memory if the altmap allocation fail.
- 		 */
--		if (altmap) {
-+		if (altmap && !altmap_cross_boundary(altmap, start, page_size)) {
- 			p = altmap_alloc_block_buf(page_size, altmap);
- 			if (!p)
- 				pr_debug("altmap block allocation failed, falling back to system memory");
-diff --git a/drivers/nvdimm/pfn_devs.c b/drivers/nvdimm/pfn_devs.c
-index 3e7b11cf1aae..a616d69c8224 100644
---- a/drivers/nvdimm/pfn_devs.c
-+++ b/drivers/nvdimm/pfn_devs.c
-@@ -618,9 +618,11 @@ static int __nvdimm_setup_pfn(struct nd_pfn *nd_pfn, struct dev_pagemap *pgmap)
- 	struct nd_namespace_common *ndns = nd_pfn->ndns;
- 	struct nd_namespace_io *nsio = to_nd_namespace_io(&ndns->dev);
- 	resource_size_t base = nsio->res.start + start_pad;
-+	resource_size_t end = nsio->res.end - end_trunc;
- 	struct vmem_altmap __altmap = {
- 		.base_pfn = init_altmap_base(base),
- 		.reserve = init_altmap_reserve(base),
-+		.end_pfn = PHYS_PFN(end),
- 	};
- 
- 	memcpy(res, &nsio->res, sizeof(*res));
-diff --git a/include/linux/memremap.h b/include/linux/memremap.h
-index f8a5b2a19945..c70996fe48c8 100644
---- a/include/linux/memremap.h
-+++ b/include/linux/memremap.h
-@@ -17,6 +17,7 @@ struct device;
-  */
- struct vmem_altmap {
- 	const unsigned long base_pfn;
-+	const unsigned long end_pfn;
- 	const unsigned long reserve;
- 	unsigned long free;
- 	unsigned long align;
--- 
-2.21.0
-
+	Ingo
