@@ -7,21 +7,21 @@ X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CB571C3A5A2
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Sep 2019 09:35:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 97CE6C3A5A2
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Sep 2019 09:37:16 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 4DA1C2081B
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Sep 2019 09:35:35 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 18A0B2081B
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Sep 2019 09:37:16 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="kkcWCaCT"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4DA1C2081B
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="idHyv23X"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 18A0B2081B
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46SKdb1VkKzDqT9
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Sep 2019 19:35:31 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 46SKgZ1y2ZzDrPP
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Sep 2019 19:37:14 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=c-s.fr
  (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
@@ -29,54 +29,55 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="kkcWCaCT"; 
+ unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="idHyv23X"; 
  dkim-atps=neutral
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46SKDg6BfSzDqvL
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46SKDg6BmmzDqxt
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Sep 2019 19:17:23 +1000 (AEST)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 46SKDZ0xGPz9txWF;
- Tue, 10 Sep 2019 11:17:18 +0200 (CEST)
+ by localhost (Postfix) with ESMTP id 46SKDV11y6z9txW8;
+ Tue, 10 Sep 2019 11:17:14 +0200 (CEST)
 Authentication-Results: localhost; dkim=pass
  reason="1024-bit key; insecure key"
- header.d=c-s.fr header.i=@c-s.fr header.b=kkcWCaCT; dkim-adsp=pass;
+ header.d=c-s.fr header.i=@c-s.fr header.b=idHyv23X; dkim-adsp=pass;
  dkim-atps=neutral
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id nDkcXMjkgDRt; Tue, 10 Sep 2019 11:17:18 +0200 (CEST)
+ with ESMTP id 8aeNip4PjRe5; Tue, 10 Sep 2019 11:17:14 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 46SKDY5crhz9txW3;
- Tue, 10 Sep 2019 11:17:17 +0200 (CEST)
+ by pegase1.c-s.fr (Postfix) with ESMTP id 46SKDT6sgbz9txW2;
+ Tue, 10 Sep 2019 11:17:13 +0200 (CEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
- t=1568107038; bh=NkamMLYWkTRb4MIQTbWL0E/hNXMZkvWH96BKgp+YBow=;
+ t=1568107034; bh=8ftmeyPqqlcOQZKXXYr2+SgDzTYbbqznzk6320BOCv8=;
  h=In-Reply-To:References:From:Subject:To:Cc:Date:From;
- b=kkcWCaCTbkDRLSJzo4u1Zy9iGNFB2ICqDMZEaM9aMdsC1rRC+y70hBPy7dFZnq+WH
- tRN/pYxLaxQwrgpV3NCaBitDiBeS/CrBfq2+J8NZ++JbqnXylJRBZ0GyYPqqvWwJii
- X9qdC07RN5QxkTsWgfcoZ+qkHXu7Jkgi5MSZeOnU=
+ b=idHyv23XV6f0UvTXYGLdedeji+3J0TmcwN9NaKLNFPC+eecfaieHRusltrGx1QCyR
+ Q8h/W1qnkLG0oGVTXcENS4RwPGRkbwMH7zB/aMtm0wqn3ZBOMwAv587Gf2Fb8vKFiG
+ 3ArjbCl1mr0yJP24mpGFE+KNs727Dwf6AX4N8E68=
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 994E68B888;
- Tue, 10 Sep 2019 11:17:16 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 8BF278B87A;
+ Tue, 10 Sep 2019 11:17:13 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id pfq1G8uDpkbN; Tue, 10 Sep 2019 11:17:15 +0200 (CEST)
+ with ESMTP id 93QokzmLfQal; Tue, 10 Sep 2019 11:17:13 +0200 (CEST)
 Received: from pc16032vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id A34A88B89B;
- Tue, 10 Sep 2019 11:16:32 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 6F2048B88B;
+ Tue, 10 Sep 2019 11:16:24 +0200 (CEST)
 Received: by pc16032vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id 532426B739; Tue, 10 Sep 2019 09:16:32 +0000 (UTC)
-Message-Id: <1e17bd51cb1db72fdfb204d9da56df939e14eaba.1568106758.git.christophe.leroy@c-s.fr>
+ id 21A026B739; Tue, 10 Sep 2019 09:16:24 +0000 (UTC)
+Message-Id: <2fee4de4e85fd7fa1afd07d83b2963320795305f.1568106758.git.christophe.leroy@c-s.fr>
 In-Reply-To: <cover.1568106758.git.christophe.leroy@c-s.fr>
 References: <cover.1568106758.git.christophe.leroy@c-s.fr>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v3 13/15] powerpc/8xx: Enable CONFIG_VMAP_STACK
+Subject: [PATCH v3 05/15] powerpc/32: add a macro to get and/or save DAR and
+ DSISR on stack.
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, 
  npiggin@gmail.com, dja@axtens.net
-Date: Tue, 10 Sep 2019 09:16:32 +0000 (UTC)
+Date: Tue, 10 Sep 2019 09:16:24 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -94,128 +95,103 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This patch enables CONFIG_VMAP_STACK. For that, a few changes are
-done in head_8xx.S.
+Refactor reading and saving of DAR and DSISR in exception vectors.
+
+This will ease the implementation of VMAP stack.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
- arch/powerpc/kernel/head_8xx.S         | 34 ++++++++++++++++++++++++++++------
- arch/powerpc/platforms/Kconfig.cputype |  1 +
- 2 files changed, 29 insertions(+), 6 deletions(-)
+ arch/powerpc/kernel/head_32.S  |  5 +----
+ arch/powerpc/kernel/head_32.h  | 11 +++++++++++
+ arch/powerpc/kernel/head_8xx.S | 23 +++++++----------------
+ 3 files changed, 19 insertions(+), 20 deletions(-)
 
+diff --git a/arch/powerpc/kernel/head_32.S b/arch/powerpc/kernel/head_32.S
+index bebb49d877f2..449625b4ff03 100644
+--- a/arch/powerpc/kernel/head_32.S
++++ b/arch/powerpc/kernel/head_32.S
+@@ -339,10 +339,7 @@ END_MMU_FTR_SECTION_IFSET(MMU_FTR_HPTE_TABLE)
+ 	DO_KVM  0x600
+ Alignment:
+ 	EXCEPTION_PROLOG
+-	mfspr	r4,SPRN_DAR
+-	stw	r4,_DAR(r11)
+-	mfspr	r5,SPRN_DSISR
+-	stw	r5,_DSISR(r11)
++	save_dar_dsisr_on_stack r4, r5, r11
+ 	addi	r3,r1,STACK_FRAME_OVERHEAD
+ 	EXC_XFER_STD(0x600, alignment_exception)
+ 
+diff --git a/arch/powerpc/kernel/head_32.h b/arch/powerpc/kernel/head_32.h
+index 436ffd862d2a..f19a1ab91fb5 100644
+--- a/arch/powerpc/kernel/head_32.h
++++ b/arch/powerpc/kernel/head_32.h
+@@ -144,6 +144,17 @@
+ 	RFI				/* jump to handler, enable MMU */
+ .endm
+ 
++.macro save_dar_dsisr_on_stack reg1, reg2, sp
++	mfspr	\reg1, SPRN_DAR
++	mfspr	\reg2, SPRN_DSISR
++	stw	\reg1, _DAR(\sp)
++	stw	\reg2, _DSISR(\sp)
++.endm
++
++.macro get_and_save_dar_dsisr_on_stack reg1, reg2, sp
++	save_dar_dsisr_on_stack \reg1, \reg2, \sp
++.endm
++
+ /*
+  * Note: code which follows this uses cr0.eq (set if from kernel),
+  * r11, r12 (SRR0), and r9 (SRR1).
 diff --git a/arch/powerpc/kernel/head_8xx.S b/arch/powerpc/kernel/head_8xx.S
-index 225e242ce1c5..fc6d4d10e298 100644
+index 175c3cfc8014..25e19af49705 100644
 --- a/arch/powerpc/kernel/head_8xx.S
 +++ b/arch/powerpc/kernel/head_8xx.S
-@@ -127,7 +127,7 @@ instruction_counter:
- /* Machine check */
+@@ -128,12 +128,9 @@ instruction_counter:
  	. = 0x200
  MachineCheck:
--	EXCEPTION_PROLOG
-+	EXCEPTION_PROLOG dar
- 	save_dar_dsisr_on_stack r4, r5, r11
- 	li	r6, RPN_PATTERN
- 	mtspr	SPRN_DAR, r6	/* Tag DAR, to be used in DTLB Error */
-@@ -140,7 +140,7 @@ MachineCheck:
- /* Alignment exception */
+ 	EXCEPTION_PROLOG
+-	mfspr r4,SPRN_DAR
+-	stw r4,_DAR(r11)
+-	li r5,RPN_PATTERN
+-	mtspr SPRN_DAR,r5	/* Tag DAR, to be used in DTLB Error */
+-	mfspr r5,SPRN_DSISR
+-	stw r5,_DSISR(r11)
++	save_dar_dsisr_on_stack r4, r5, r11
++	li	r6, RPN_PATTERN
++	mtspr	SPRN_DAR, r6	/* Tag DAR, to be used in DTLB Error */
+ 	addi r3,r1,STACK_FRAME_OVERHEAD
+ 	EXC_XFER_STD(0x200, machine_check_exception)
+ 
+@@ -156,12 +153,9 @@ InstructionAccess:
  	. = 0x600
  Alignment:
--	EXCEPTION_PROLOG
-+	EXCEPTION_PROLOG dar
- 	save_dar_dsisr_on_stack r4, r5, r11
- 	li	r6, RPN_PATTERN
- 	mtspr	SPRN_DAR, r6	/* Tag DAR, to be used in DTLB Error */
-@@ -457,20 +457,26 @@ InstructionTLBError:
-  */
- 	. = 0x1400
- DataTLBError:
--	EXCEPTION_PROLOG_0
-+	EXCEPTION_PROLOG_0 dar
- 	mfspr	r11, SPRN_DAR
- 	cmpwi	cr1, r11, RPN_PATTERN
- 	beq-	cr1, FixupDAR	/* must be a buggy dcbX, icbi insn. */
+ 	EXCEPTION_PROLOG
+-	mfspr	r4,SPRN_DAR
+-	stw	r4,_DAR(r11)
+-	li	r5,RPN_PATTERN
+-	mtspr	SPRN_DAR,r5	/* Tag DAR, to be used in DTLB Error */
+-	mfspr	r5,SPRN_DSISR
+-	stw	r5,_DSISR(r11)
++	save_dar_dsisr_on_stack r4, r5, r11
++	li	r6, RPN_PATTERN
++	mtspr	SPRN_DAR, r6	/* Tag DAR, to be used in DTLB Error */
+ 	addi	r3,r1,STACK_FRAME_OVERHEAD
+ 	EXC_XFER_STD(0x600, alignment_exception)
+ 
+@@ -502,10 +496,7 @@ DataTLBError:
  DARFixed:/* Return from dcbx instruction bug workaround */
-+#ifdef CONFIG_VMAP_STACK
-+	li	r11, RPN_PATTERN
-+	mtspr	SPRN_DAR, r11	/* Tag DAR, to be used in DTLB Error */
-+#endif
  	EXCEPTION_PROLOG_1
--	EXCEPTION_PROLOG_2
-+	EXCEPTION_PROLOG_2 dar
- 	get_and_save_dar_dsisr_on_stack r4, r5, r11
+ 	EXCEPTION_PROLOG_2
+-	mfspr	r5,SPRN_DSISR
+-	stw	r5,_DSISR(r11)
+-	mfspr	r4,SPRN_DAR
+-	stw	r4, _DAR(r11)
++	get_and_save_dar_dsisr_on_stack r4, r5, r11
  	andis.	r10,r5,DSISR_NOHPTE@h
  	beq+	.Ldtlbie
  	tlbie	r4
- .Ldtlbie:
-+#ifndef CONFIG_VMAP_STACK
- 	li	r10,RPN_PATTERN
- 	mtspr	SPRN_DAR,r10	/* Tag DAR, to be used in DTLB Error */
-+#endif
- 	/* 0x300 is DataAccess exception, needed by bad_page_fault() */
- 	EXC_XFER_LITE(0x300, handle_page_fault)
- 
-@@ -492,16 +498,20 @@ DARFixed:/* Return from dcbx instruction bug workaround */
-  */
- do_databreakpoint:
- 	EXCEPTION_PROLOG_1
--	EXCEPTION_PROLOG_2
-+	EXCEPTION_PROLOG_2 dar
- 	addi	r3,r1,STACK_FRAME_OVERHEAD
- 	mfspr	r4,SPRN_BAR
- 	stw	r4,_DAR(r11)
-+#ifdef CONFIG_VMAP_STACK
-+	lwz	r5,_DSISR(r11)
-+#else
- 	mfspr	r5,SPRN_DSISR
-+#endif
- 	EXC_XFER_STD(0x1c00, do_break)
- 
- 	. = 0x1c00
- DataBreakpoint:
--	EXCEPTION_PROLOG_0
-+	EXCEPTION_PROLOG_0 dar
- 	mfspr	r11, SPRN_SRR0
- 	cmplwi	cr1, r11, (.Ldtlbie - PAGE_OFFSET)@l
- 	cmplwi	cr7, r11, (.Litlbie - PAGE_OFFSET)@l
-@@ -530,6 +540,11 @@ InstructionBreakpoint:
- 	EXCEPTION(0x1e00, Trap_1e, unknown_exception, EXC_XFER_STD)
- 	EXCEPTION(0x1f00, Trap_1f, unknown_exception, EXC_XFER_STD)
- 
-+#ifdef CONFIG_VMAP_STACK
-+stack_ovf_trampoline:
-+	b	stack_ovf
-+#endif
-+
- 	. = 0x2000
- 
- /* This is the procedure to calculate the data EA for buggy dcbx,dcbi instructions
-@@ -650,7 +665,14 @@ FixupDAR:/* Entry point for dcbx workaround. */
- 152:
- 	mfdar	r11
- 	mtctr	r11			/* restore ctr reg from DAR */
-+#ifdef CONFIG_VMAP_STACK
-+	mfspr	r11, SPRN_SPRG_THREAD
-+	stw	r10, DAR(r11)
-+	mfspr	r10, SPRN_DSISR
-+	stw	r10, DSISR(r11)
-+#else
- 	mtdar	r10			/* save fault EA to DAR */
-+#endif
- 	mfspr	r10,SPRN_M_TW
- 	b	DARFixed		/* Go back to normal TLB handling */
- 
-diff --git a/arch/powerpc/platforms/Kconfig.cputype b/arch/powerpc/platforms/Kconfig.cputype
-index 12543e53fa96..3c42569b75cc 100644
---- a/arch/powerpc/platforms/Kconfig.cputype
-+++ b/arch/powerpc/platforms/Kconfig.cputype
-@@ -49,6 +49,7 @@ config PPC_8xx
- 	select PPC_HAVE_KUEP
- 	select PPC_HAVE_KUAP
- 	select PPC_MM_SLICES if HUGETLB_PAGE
-+	select HAVE_ARCH_VMAP_STACK
- 
- config 40x
- 	bool "AMCC 40x"
 -- 
 2.13.3
 
