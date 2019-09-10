@@ -4,23 +4,24 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 16BD3C49ED7
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Sep 2019 14:58:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 19CFEC49ED7
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Sep 2019 15:06:44 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 2E29021479
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Sep 2019 14:58:14 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 8F43C2089F
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Sep 2019 15:06:43 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="M0Ko50v5"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2E29021479
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="acnPfy3K"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8F43C2089F
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46SSnv2M3kzDqVJ
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Sep 2019 00:58:11 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 46SSzh5bfxzF0fR
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Sep 2019 01:06:40 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=c-s.fr
  (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
@@ -28,53 +29,51 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="M0Ko50v5"; 
+ unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="acnPfy3K"; 
  dkim-atps=neutral
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46SSfq5CCpzF0WK
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Sep 2019 00:52:01 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46SSkp1pdDzDqw1
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Sep 2019 00:55:30 +1000 (AEST)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 46SSfh4prCz9tylf;
- Tue, 10 Sep 2019 16:51:56 +0200 (CEST)
+ by localhost (Postfix) with ESMTP id 46SSkj40DMz9txng;
+ Tue, 10 Sep 2019 16:55:25 +0200 (CEST)
 Authentication-Results: localhost; dkim=pass
  reason="1024-bit key; insecure key"
- header.d=c-s.fr header.i=@c-s.fr header.b=M0Ko50v5; dkim-adsp=pass;
+ header.d=c-s.fr header.i=@c-s.fr header.b=acnPfy3K; dkim-adsp=pass;
  dkim-atps=neutral
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id hjbYKRrvUcDC; Tue, 10 Sep 2019 16:51:56 +0200 (CEST)
+ with ESMTP id oX24-gtRTP1o; Tue, 10 Sep 2019 16:55:25 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 46SSfh2YPxz9tyfF;
- Tue, 10 Sep 2019 16:51:56 +0200 (CEST)
+ by pegase1.c-s.fr (Postfix) with ESMTP id 46SSkj2vvNz9txnd;
+ Tue, 10 Sep 2019 16:55:25 +0200 (CEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
- t=1568127116; bh=7G7t5KushY1u9fKqjaLXwP+hQ96lu3PyJmMqwlWfAhM=;
- h=In-Reply-To:References:From:Subject:To:Cc:Date:From;
- b=M0Ko50v5vuorpasLHjvkiIOJL0Ulk3132Xal4jl2WUUl7H8hvkZfN3LJsMNM/sQsW
- kcRMmFilxtc7OhJhIjdy8dzc1Tdw5v/oL+rx692j4NRDL/0YSfPqgNXdpOBo5MyGBG
- ezjZrDug+ExeL9LhE1GLdxbIydEaoljA7StSOu0E=
+ t=1568127325; bh=7G7t5KushY1u9fKqjaLXwP+hQ96lu3PyJmMqwlWfAhM=;
+ h=From:Subject:To:Cc:Date:From;
+ b=acnPfy3K0cpG45wxTDddS9K2W86MNB3mRLIWYWDxdGkGcDxabT36d3Ml+Sr1qs6m7
+ lkAUCOSLssd0zccmxK6qY4KJdgZVcMqa+0KAM0XzmbI5Q6gbW7PanZN5d11CL+dhf1
+ JfNhoJO05HE+ZUQ5nQ2sJAnqB/N3yAhimb1VflIE=
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id D754F8B88C;
- Tue, 10 Sep 2019 16:51:57 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id E5DE48B88B;
+ Tue, 10 Sep 2019 16:55:26 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id Oz5AymsROqkT; Tue, 10 Sep 2019 16:51:57 +0200 (CEST)
+ with ESMTP id 3BMaPCgG69lg; Tue, 10 Sep 2019 16:55:26 +0200 (CEST)
 Received: from pc16032vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 50BEC8B885;
- Tue, 10 Sep 2019 16:51:57 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 74E568B885;
+ Tue, 10 Sep 2019 16:55:26 +0200 (CEST)
 Received: by pc16032vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id 347626B750; Tue, 10 Sep 2019 14:51:57 +0000 (UTC)
-Message-Id: <68d12eb0b815049049babc9be243ffd8521b48c7.1568127106.git.christophe.leroy@c-s.fr>
-In-Reply-To: <eb3d8f42231aec65b64b079dd17bd6c008a3fe29.1568127106.git.christophe.leroy@c-s.fr>
-References: <eb3d8f42231aec65b64b079dd17bd6c008a3fe29.1568127106.git.christophe.leroy@c-s.fr>
+ id 4F0826B750; Tue, 10 Sep 2019 14:55:26 +0000 (UTC)
+Message-Id: <68d12eb0b815049049babc9be243ffd8521b48c7.1568127294.git.christophe.leroy@c-s.fr>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v2 2/2] powerpc/32: Split kexec low level code out of misc_32.S
+Subject: [PATCH v2 1/2] powerpc/32: Split kexec low level code out of misc_32.S
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Date: Tue, 10 Sep 2019 14:51:57 +0000 (UTC)
+Date: Tue, 10 Sep 2019 14:55:26 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
